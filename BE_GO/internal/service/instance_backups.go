@@ -23,9 +23,24 @@ import (
 	passwordcrypto "github.com/carbogninalberto/assozeta/BE_GO/pkg/crypto"
 )
 
-// ErrInstanceBackupsNotPorted marks inputs whose Django handling Go does not
-// carry; the handler answers them with the server error page before any write.
-var ErrInstanceBackupsNotPorted = refusal.New("instance backups request not ported")
+// errInstanceBackupsRunnerReply is a runner reply Go's decoder does not read:
+// JSON nested past its limit (Python raises RecursionError at a depth set by
+// the interpreter's live call stack, which call_runner does not catch) or a
+// lone surrogate. The runner is the platform's update service, an external
+// system: the 500 page, never a handoff (long-tail rule 4).
+var errInstanceBackupsRunnerReply = refusal.AppState("instance backups: runner reply outside the decoded range")
+
+// errInstanceBackupsCachedValue is a cached size outside what the writers
+// store: data_sizes (BE/instance/backups.py:101, Go StoreSizes) caches a dict
+// of 'database' and 'objects', each an int or None. Only the app writes that
+// key: the 500 page, never a handoff.
+var errInstanceBackupsCachedValue = refusal.AppState("instance backups: cached value of another shape")
+
+// errInstanceBackupsTokenActor is a validly signed download token whose actor
+// is not the str(uuid) the minters write (BE/instance/backups.py:275, Go
+// InstanceBackups.Token): only the server signs tokens, so the 500 page, never a
+// handoff.
+var errInstanceBackupsTokenActor = refusal.AppState("instance backups: signed token actor of another form")
 
 // errInstanceBackupsUnhandled is an exception Django lets escape (a 500).
 var errInstanceBackupsUnhandled = errors.New("instance backups unhandled exception")
@@ -109,7 +124,7 @@ func instanceBackupsUnavailable(reason string) *InstanceBackupsReply {
 func instanceBackupsJSON(raw []byte) (any, bool, error) {
 	value, decoded, refused := dto.RunnerJSONDecode(raw)
 	if refused {
-		return nil, false, ErrInstanceBackupsNotPorted
+		return nil, false, errInstanceBackupsRunnerReply
 	}
 	return value, decoded, nil
 }
@@ -207,9 +222,6 @@ func (s *InstanceBackups) dataSizes(ctx context.Context, refresh bool) (domain.R
 	if !refresh {
 		value, found, err := s.store.CachedSizes(ctx)
 		if err != nil {
-			if errors.Is(err, repository.ErrInstanceBackupsCacheShape) {
-				return nil, ErrInstanceBackupsNotPorted
-			}
 			return nil, err
 		}
 		if found {
@@ -254,7 +266,7 @@ func instanceBackupsCached(value any) (domain.RequestObject, error) {
 		case int64:
 			out = append(out, domain.RequestField{Name: key, Value: json.Number(strconv.FormatInt(v, 10))})
 		default:
-			return nil, ErrInstanceBackupsNotPorted
+			return nil, errInstanceBackupsCachedValue
 		}
 	}
 	return out, nil
@@ -283,7 +295,7 @@ func instanceBackupsNext(sizes domain.RequestObject, free, margin any) (any, err
 	left, ok := integer(database)
 	right, ok2 := integer(objects)
 	if !ok || !ok2 {
-		return nil, ErrInstanceBackupsNotPorted
+		return nil, errInstanceBackupsCachedValue
 	}
 	estimated := new(big.Int).Add(left, right)
 	marginMB, ok := integer(margin)
@@ -400,7 +412,7 @@ func instanceBackupsUserID(value any) (string, bool, error) {
 		case len(text) == 32 && (!instanceBackupsASCII(text) || strings.ContainsAny(text, "+_xX \t\n\r\v\f")):
 			// int(hex, 16) also takes a sign, underscores, 0x, whitespace and
 			// non-ASCII digits.
-			return "", false, ErrInstanceBackupsNotPorted
+			return "", false, errInstanceBackupsTokenActor
 		default:
 			return "", false, errInstanceBackupsUnhandled
 		}
@@ -525,9 +537,6 @@ func instanceBackupsPasswordRefusal(ctx context.Context, store instanceBackupsAt
 	const tooMany = "Troppi tentativi. Riprova tra qualche minuto."
 	attempts, err := store.Attempts(ctx, actor)
 	if err != nil {
-		if errors.Is(err, repository.ErrInstanceBackupsCacheShape) {
-			return 0, "", ErrInstanceBackupsNotPorted
-		}
 		return 0, "", err
 	}
 	if attempts >= instanceBackupsAttempts {
