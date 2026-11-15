@@ -334,17 +334,18 @@ def store_lookup(store, manual_revision, identifiers, *, repository, root=ROOT):
     if schema is None or not callable(getattr(evidence, 'lookup', None)):
         return None
     hits, misses, pending, producers = [], [], [], set()
-    for identifier in identifiers:
-        revision = (evidence.workflow_manual_revision(Path(root), identifier)
-                    if callable(getattr(evidence, 'workflow_manual_revision', None)) else manual_revision)
-        fingerprint = evidence.workflow_fingerprint(Path(root), identifier, manual_revision=revision,
-                                                    schema_version=schema)
-        manifest = Path(store) / 'workflows' / identifier / fingerprint / 'manifest.json'
-        if not manifest.is_file():
-            misses.append({'name': identifier, 'detail': 'no evidence for ' + fingerprint[:12]})
-            continue
-        producers.add(str(json.loads(manifest.read_text()).get('producer', {}).get('run_id', '')))
-        pending.append((identifier, fingerprint))
+    with evidence.dependency_snapshot(Path(root)):
+        for identifier in identifiers:
+            revision = (evidence.workflow_manual_revision(Path(root), identifier)
+                        if callable(getattr(evidence, 'workflow_manual_revision', None)) else manual_revision)
+            fingerprint = evidence.workflow_fingerprint(Path(root), identifier, manual_revision=revision,
+                                                        schema_version=schema)
+            manifest = Path(store) / 'workflows' / identifier / fingerprint / 'manifest.json'
+            if not manifest.is_file():
+                misses.append({'name': identifier, 'detail': 'no evidence for ' + fingerprint[:12]})
+                continue
+            producers.add(str(json.loads(manifest.read_text()).get('producer', {}).get('run_id', '')))
+            pending.append((identifier, fingerprint))
     trusted = evidence.github_trusted_producers(repository, producers)[0] if pending else {}
     for identifier, fingerprint in pending:
         try:
