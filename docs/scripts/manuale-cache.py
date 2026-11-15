@@ -1106,50 +1106,51 @@ def _publish_validated_store(run, state, validated, store_path, *, producer=None
     bindings = sidecar.get('sections', {}) if isinstance(sidecar, dict) else {}
     scenarios = {item['id']: item for item in manifest['scenarios']}
     published, skipped = [], []
-    for recipe in validated['registry']['recipes']:
-        identifier = recipe['id']
-        scenario = scenarios[identifier]
-        if 'reuse' in scenario:
-            skipped.append({'workflow_id': identifier, 'reason': 'retained evidence keeps its original producer'})
-            continue
-        report_path = owned(run, identifier + '.json')
-        report_bytes = report_path.read_bytes()
-        if _digest_bytes(report_bytes) != scenario['report_sha256']:
-            raise ValueError('Scenario report changed after validation: ' + identifier)
-        report = json.loads(report_bytes)
-        if report.get('application_revision') != revision:
-            raise ValueError('Fresh scenario was not captured from the evaluated revision: ' + identifier)
-        workflow_revision = _workflow_manual_revision(store, application, identifier, manual_revision)
-        inputs = store.fingerprint_inputs(application, identifier, manual_revision=workflow_revision,
-                                          schema_version=schema_version, reference_date=state['reference_date'])
-        fingerprint = store.digest(store.canonical(inputs))
-        screenshots = {relative: owned(run, relative) for relative in store._report_captures(report)}
-        sections, editorial = [], {}
-        for page in manifest['pages']:
-            for item in page.get('sections', []):
-                if identifier in item.get('scenario_ids', []):
-                    sections.append({'page': page['path'], **item})
-                    key = page['path'] + '#' + item.get('id', '')
-                    if key in bindings:
-                        editorial[key] = bindings[key]
-        origin = {'application_revision': revision, 'capture_id': report['capture_id'],
-                  'reference_date': state['reference_date'], 'manual_revision': validated['manual_revision']}
-        # The reviewed section bindings in exactly the shape the per-recipe reuse
-        # gate derives from a whole-run baseline; None means "not admissible
-        # from the store" (the consumer then captures this workflow fresh).
-        try:
-            reviewed = store.reuse.origin_sections({'manual': str(manual)}, manifest, identifier,
-                                             scenario['report_sha256'], report,
-                                             allow_empty=recipe.get('publication_sections') == [])
-        except (OSError, ValueError, KeyError, TypeError):
-            reviewed = None
-        entry = store.publish(store_path, workflow_id=identifier, fingerprint=fingerprint,
-                              schema_version=schema_version, producer=producer, origin=origin,
-                              report_bytes=report_bytes, screenshots=screenshots, scenario=scenario,
-                              sections=sections, editorial_bindings=editorial, inputs=inputs,
-                              editorial=reviewed, origin_release=state['release'])
-        published.append({'workflow_id': identifier, 'fingerprint': fingerprint,
-                          'manifest_sha256': entry.manifest_sha256})
+    with store.dependency_snapshot(application):
+        for recipe in validated['registry']['recipes']:
+            identifier = recipe['id']
+            scenario = scenarios[identifier]
+            if 'reuse' in scenario:
+                skipped.append({'workflow_id': identifier, 'reason': 'retained evidence keeps its original producer'})
+                continue
+            report_path = owned(run, identifier + '.json')
+            report_bytes = report_path.read_bytes()
+            if _digest_bytes(report_bytes) != scenario['report_sha256']:
+                raise ValueError('Scenario report changed after validation: ' + identifier)
+            report = json.loads(report_bytes)
+            if report.get('application_revision') != revision:
+                raise ValueError('Fresh scenario was not captured from the evaluated revision: ' + identifier)
+            workflow_revision = _workflow_manual_revision(store, application, identifier, manual_revision)
+            inputs = store.fingerprint_inputs(application, identifier, manual_revision=workflow_revision,
+                                              schema_version=schema_version, reference_date=state['reference_date'])
+            fingerprint = store.digest(store.canonical(inputs))
+            screenshots = {relative: owned(run, relative) for relative in store._report_captures(report)}
+            sections, editorial = [], {}
+            for page in manifest['pages']:
+                for item in page.get('sections', []):
+                    if identifier in item.get('scenario_ids', []):
+                        sections.append({'page': page['path'], **item})
+                        key = page['path'] + '#' + item.get('id', '')
+                        if key in bindings:
+                            editorial[key] = bindings[key]
+            origin = {'application_revision': revision, 'capture_id': report['capture_id'],
+                      'reference_date': state['reference_date'], 'manual_revision': validated['manual_revision']}
+            # The reviewed section bindings in exactly the shape the per-recipe reuse
+            # gate derives from a whole-run baseline; None means "not admissible
+            # from the store" (the consumer then captures this workflow fresh).
+            try:
+                reviewed = store.reuse.origin_sections({'manual': str(manual)}, manifest, identifier,
+                                                 scenario['report_sha256'], report,
+                                                 allow_empty=recipe.get('publication_sections') == [])
+            except (OSError, ValueError, KeyError, TypeError):
+                reviewed = None
+            entry = store.publish(store_path, workflow_id=identifier, fingerprint=fingerprint,
+                                  schema_version=schema_version, producer=producer, origin=origin,
+                                  report_bytes=report_bytes, screenshots=screenshots, scenario=scenario,
+                                  sections=sections, editorial_bindings=editorial, inputs=inputs,
+                                  editorial=reviewed, origin_release=state['release'])
+            published.append({'workflow_id': identifier, 'fingerprint': fingerprint,
+                              'manifest_sha256': entry.manifest_sha256})
     return {'store': str(Path(store_path)), 'published': published, 'skipped': skipped,
             'schema_version': schema_version}
 
@@ -1189,37 +1190,39 @@ def plan_store(store_path, application, *, trusted_producers, manual_revision='a
     forced = _impact_forced(impact, selected)
     available = store_path is not None and Path(store_path).is_dir()
     decisions = []
-    for identifier in selected:
-        decision = {'workflow_id': identifier}
-        try:
-            workflow_revision = _workflow_manual_revision(store, application, identifier, manual_revision)
-            decision['fingerprint'] = store.workflow_fingerprint(
-                application, identifier, manual_revision=workflow_revision,
-                schema_version=schema_version, reference_date=reference_date)
-        except ValueError as exc:
-            decisions.append({**decision, 'decision': 'capture', 'reason': 'fingerprint unavailable: ' + str(exc)})
-            continue
-        if identifier in forced:
-            decisions.append({**decision, 'decision': 'capture', 'reason': forced[identifier]})
-            continue
-        if not available:
-            decisions.append({**decision, 'decision': 'capture', 'reason': 'cold: evidence store unavailable'})
-            continue
-        try:
-            entry = store.lookup(store_path, identifier, decision['fingerprint'],
-                                 trusted_producers=trusted_producers, manifest_only=manifest_only,
-                                 repository=repository, reference_date=reference_date,
-                                 schema_version=schema_version)
-        except ValueError as exc:
-            decisions.append({**decision, 'decision': 'capture',
-                              'reason': 'rejected (' + type(exc).__name__ + '): ' + str(exc)})
-            continue
-        if entry is None:
-            decisions.append({**decision, 'decision': 'capture', 'reason': 'miss: no evidence at this fingerprint'})
-            continue
-        decisions.append({**decision, 'decision': 'reuse', 'reason': 'verified trusted evidence at an identical fingerprint',
-                          **{key: value for key, value in entry.provenance().items()
-                             if key in ('manifest_sha256', 'producer', 'origin', 'verified')}})
+    with store.dependency_snapshot(application):
+        for identifier in selected:
+            decision = {'workflow_id': identifier}
+            try:
+                workflow_revision = _workflow_manual_revision(store, application, identifier, manual_revision)
+                decision['fingerprint'] = store.workflow_fingerprint(
+                    application, identifier, manual_revision=workflow_revision,
+                    schema_version=schema_version, reference_date=reference_date)
+            except ValueError as exc:
+                decisions.append({**decision, 'decision': 'capture', 'reason': 'fingerprint unavailable: ' + str(exc)})
+                continue
+            if identifier in forced:
+                decisions.append({**decision, 'decision': 'capture', 'reason': forced[identifier]})
+                continue
+            if not available:
+                decisions.append({**decision, 'decision': 'capture', 'reason': 'cold: evidence store unavailable'})
+                continue
+            try:
+                entry = store.lookup(store_path, identifier, decision['fingerprint'],
+                                     trusted_producers=trusted_producers, manifest_only=manifest_only,
+                                     repository=repository, reference_date=reference_date,
+                                     schema_version=schema_version)
+            except ValueError as exc:
+                decisions.append({**decision, 'decision': 'capture',
+                                  'reason': 'rejected (' + type(exc).__name__ + '): ' + str(exc)})
+                continue
+            if entry is None:
+                decisions.append({**decision, 'decision': 'capture', 'reason': 'miss: no evidence at this fingerprint'})
+                continue
+            decisions.append({**decision, 'decision': 'reuse',
+                              'reason': 'verified trusted evidence at an identical fingerprint',
+                              **{key: value for key, value in entry.provenance().items()
+                                 if key in ('manifest_sha256', 'producer', 'origin', 'verified')}})
     reused = [item['workflow_id'] for item in decisions if item['decision'] == 'reuse']
     return {'format': 1, 'schema_version': schema_version, 'store_available': available,
             'manifest_only': manifest_only, 'workflows': decisions, 'reused_workflows': reused,
@@ -1242,24 +1245,25 @@ def materialize_store(store_path, plan, application, output, *, trusted_producer
         raise ValueError('Reuse plan was produced for another evidence schema')
     application = Path(application).resolve()
     materialized, rejected = [], []
-    for item in plan.get('workflows', []):
-        if item.get('decision') != 'reuse':
-            continue
-        identifier = item['workflow_id']
-        try:
-            workflow_revision = _workflow_manual_revision(store, application, identifier, manual_revision)
-            fingerprint = store.workflow_fingerprint(application, identifier, manual_revision=workflow_revision,
-                                                     schema_version=schema_version, reference_date=reference_date)
-            if fingerprint != item.get('fingerprint'):
-                raise store.IncompatibleEvidence('fingerprint changed since planning')
-            entry = store.verify(store_path, identifier, fingerprint, trusted_producers=trusted_producers,
-                                 repository=repository, reference_date=reference_date,
-                                 schema_version=schema_version)
-            if entry.manifest_sha256 != item.get('manifest_sha256'):
-                raise store.CorruptEvidence('manifest changed since planning')
-            materialized.append(store.materialize(entry, output))
-        except ValueError as exc:
-            rejected.append({'workflow_id': identifier, 'reason': type(exc).__name__ + ': ' + str(exc)})
+    with store.dependency_snapshot(application):
+        for item in plan.get('workflows', []):
+            if item.get('decision') != 'reuse':
+                continue
+            identifier = item['workflow_id']
+            try:
+                workflow_revision = _workflow_manual_revision(store, application, identifier, manual_revision)
+                fingerprint = store.workflow_fingerprint(application, identifier, manual_revision=workflow_revision,
+                                                         schema_version=schema_version, reference_date=reference_date)
+                if fingerprint != item.get('fingerprint'):
+                    raise store.IncompatibleEvidence('fingerprint changed since planning')
+                entry = store.verify(store_path, identifier, fingerprint, trusted_producers=trusted_producers,
+                                     repository=repository, reference_date=reference_date,
+                                     schema_version=schema_version)
+                if entry.manifest_sha256 != item.get('manifest_sha256'):
+                    raise store.CorruptEvidence('manifest changed since planning')
+                materialized.append(store.materialize(entry, output))
+            except ValueError as exc:
+                rejected.append({'workflow_id': identifier, 'reason': type(exc).__name__ + ': ' + str(exc)})
     # The authenticated producer records travel with the selection: the
     # consumer gate admits nothing without them (and only matching producers).
     repositories = sorted({record.get('repository') for record in (trusted_producers or {}).values()
@@ -1446,22 +1450,24 @@ def bind_run(run, *, manual_revision=None, release=None):
     if state.get('evidence_reuse'):
         plan = reuse_module().validate_reuse_plan(state)
     evidence = []
-    for recipe in store._registry(application)[1]:
-        fingerprint = store.workflow_fingerprint(application, recipe, manual_revision=store.workflow_manual_revision(
-            application, recipe), schema_version=store.SCHEMA_VERSION, reference_date=state['reference_date'])
-        entry = (plan.get('recipes') or {}).get(recipe)
-        if entry is None:
-            if recipe not in state['selected_recipes']:
-                raise ValueError('Workflow has neither fresh nor retained evidence: ' + recipe)
-            evidence.append({'workflow_id': recipe, 'fresh': True, 'fingerprint': fingerprint,
-                             'origin': {'application_revision': revision}})
-        elif entry.get('source') == 'evidence-store':
-            pointer = entry['evidence_store']
-            evidence.append({'workflow_id': recipe, 'fingerprint': pointer['fingerprint'],
-                             'manifest_sha256': pointer['manifest_sha256'], 'producer': pointer['producer'],
-                             'origin': entry['origin']})
-        else:
-            evidence.append({'workflow_id': recipe, 'fingerprint': fingerprint, 'origin': entry['origin']})
+    with store.dependency_snapshot(application):
+        for recipe in store._registry(application)[1]:
+            fingerprint = store.workflow_fingerprint(
+                application, recipe, manual_revision=store.workflow_manual_revision(application, recipe),
+                schema_version=store.SCHEMA_VERSION, reference_date=state['reference_date'])
+            entry = (plan.get('recipes') or {}).get(recipe)
+            if entry is None:
+                if recipe not in state['selected_recipes']:
+                    raise ValueError('Workflow has neither fresh nor retained evidence: ' + recipe)
+                evidence.append({'workflow_id': recipe, 'fresh': True, 'fingerprint': fingerprint,
+                                 'origin': {'application_revision': revision}})
+            elif entry.get('source') == 'evidence-store':
+                pointer = entry['evidence_store']
+                evidence.append({'workflow_id': recipe, 'fingerprint': pointer['fingerprint'],
+                                 'manifest_sha256': pointer['manifest_sha256'], 'producer': pointer['producer'],
+                                 'origin': entry['origin']})
+            else:
+                evidence.append({'workflow_id': recipe, 'fingerprint': fingerprint, 'origin': entry['origin']})
     recipes = plan.get('recipes') or {}
     sources = {'fresh': sorted(state['selected_recipes']),
                'evidence_store': sorted(key for key, value in recipes.items() if value.get('source') == 'evidence-store'),
@@ -1626,11 +1632,12 @@ def bind_release(selection_path, fresh, application, *, application_revision, ma
     if selection_path is not None:
         selection = _read_json(selection_path, 'evidence-store selection')
         evidence.extend(selection.get('materialized', []))
-    for identifier in fresh:
-        workflow_revision = _workflow_manual_revision(store, application, identifier, fingerprint_manual_revision)
-        evidence.append({'workflow_id': identifier, 'fresh': True, 'fingerprint': store.workflow_fingerprint(
-            application, identifier, manual_revision=workflow_revision, schema_version=store.SCHEMA_VERSION,
-            reference_date=reference_date), 'origin': {'application_revision': application_revision}})
+    with store.dependency_snapshot(application):
+        for identifier in fresh:
+            workflow_revision = _workflow_manual_revision(store, application, identifier, fingerprint_manual_revision)
+            evidence.append({'workflow_id': identifier, 'fresh': True, 'fingerprint': store.workflow_fingerprint(
+                application, identifier, manual_revision=workflow_revision, schema_version=store.SCHEMA_VERSION,
+                reference_date=reference_date), 'origin': {'application_revision': application_revision}})
     return store.release_binding(evidence, application_revision=application_revision,
                                  manual_revision=manual_revision, release=release)
 

@@ -22,6 +22,7 @@ once in the shared blob pool, so a manifest-only copy of the store (index,
 manifests and evidence records, without blobs) is enough to decide reuse.
 """
 from dataclasses import dataclass, field
+import contextlib
 import fcntl
 import hashlib
 import importlib.util
@@ -246,14 +247,84 @@ def _fallback_workflow_dependencies(root, workflow_id):
     return sorted((known | production | tooling | declared) - {'docs/manuale/recipes.json'})
 
 
+def _impact_cache_key(path):
+    """Resolved path plus content sha256: an edited module is a different key."""
+    path = Path(path).resolve()
+    return str(path), _file_sha256(path)
+
+
+_IMPACT_MODULES = {}
+# Resolved root -> {'depth': nested snapshot count, 'dependencies': one-pass map};
+# present only while a ``dependency_snapshot`` block for that root is active.
+_SNAPSHOTS = {}
+
+
 def _impact_module():
+    """The impact module, executed once per process for unchanged file content.
+
+    Executing ``manuale_impact.py`` used to be repeated for every workflow,
+    which also discarded its derived-context cache and forced a full repository
+    analysis per workflow. The key includes the file's sha256 so a changed
+    module (edited checkout, patched fixture) is reloaded, never served stale.
+    """
     path = ROOT / 'docs/scripts/manuale_impact.py'
     if not path.is_file():
         return None
-    spec = importlib.util.spec_from_file_location('manuale_impact_for_evidence', path)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
+    key = _impact_cache_key(path)
+    module = _IMPACT_MODULES.get(key)
+    if module is None:
+        spec = importlib.util.spec_from_file_location('manuale_impact_for_evidence', path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        _IMPACT_MODULES.clear()
+        _IMPACT_MODULES[key] = module
     return module
+
+
+@contextlib.contextmanager
+def dependency_snapshot(root):
+    """Compute the repository dependency context once for a fingerprint batch.
+
+    Inside the block the first ``workflow_dependencies(root, id)`` derives every
+    workflow from one impact analysis (``all_workflow_dependencies``) and later
+    calls for the same root are served from that snapshot; nested blocks for the
+    same root share it. Outside any block nothing is cached. The snapshot dies
+    with the outermost block, so a later tree change is never served stale.
+    """
+    key = Path(root).resolve()
+    state = _SNAPSHOTS.get(key)
+    if state is None:
+        state = _SNAPSHOTS[key] = {'depth': 0, 'dependencies': None}
+    state['depth'] += 1
+    try:
+        yield
+    finally:
+        state['depth'] -= 1
+        if state['depth'] <= 0:
+            _SNAPSHOTS.pop(key, None)
+
+
+def _validate_dependencies(dependencies):
+    if not isinstance(dependencies, (list, tuple)) or not all(isinstance(item, str) for item in dependencies):
+        raise IncompatibleEvidence('Impact module returned invalid workflow dependencies')
+    return sorted(set(dependencies))
+
+
+def _snapshot_dependencies(root, module):
+    """The one-pass dependency map of the active snapshot for ``root``, if any."""
+    state = _SNAPSHOTS.get(Path(root).resolve())
+    if state is None:
+        return None
+    all_dependencies = getattr(module, 'all_workflow_dependencies', None) if module else None
+    if not callable(all_dependencies):
+        # An older impact module without the batch entry point: per-call behaviour.
+        return None
+    if state['dependencies'] is None:
+        value = all_dependencies(Path(root))
+        if not isinstance(value, dict):
+            raise IncompatibleEvidence('Impact module returned invalid workflow dependencies')
+        state['dependencies'] = value
+    return state['dependencies']
 
 
 def workflow_dependencies(root, workflow_id):
@@ -264,11 +335,14 @@ def workflow_dependencies(root, workflow_id):
     # registry-contract superset, never a narrower guess.
     if function is None or not (Path(root) / 'docs/manuale/impact-map.json').is_file():
         return _fallback_workflow_dependencies(Path(root), workflow_id)
+    dependencies = _snapshot_dependencies(root, module)
+    if dependencies is not None:
+        if workflow_id not in dependencies:
+            # The same rejection the per-workflow analysis raises.
+            raise KeyError('Unknown manual workflow: ' + str(workflow_id))
+        return _validate_dependencies(dependencies[workflow_id])
     # Failures in the precise analysis must not degrade to a narrower fallback.
-    dependencies = function(Path(root), workflow_id)
-    if not isinstance(dependencies, (list, tuple)) or not all(isinstance(item, str) for item in dependencies):
-        raise IncompatibleEvidence('Impact module returned invalid workflow dependencies')
-    return sorted(set(dependencies))
+    return _validate_dependencies(function(Path(root), workflow_id))
 
 
 def _shared_tooling_paths(root):
@@ -866,13 +940,14 @@ def compact(store, application, *, trusted_producers, reference_date, repository
         return {'kept': kept, 'dropped': dropped}
     _value, recipes = _registry(application)
     current = {}
-    for identifier in recipes:
-        try:
-            current[identifier] = workflow_fingerprint(
-                application, identifier, manual_revision=workflow_manual_revision(application, identifier),
-                schema_version=SCHEMA_VERSION, reference_date=reference_date)
-        except ValueError:
-            continue
+    with dependency_snapshot(application):
+        for identifier in recipes:
+            try:
+                current[identifier] = workflow_fingerprint(
+                    application, identifier, manual_revision=workflow_manual_revision(application, identifier),
+                    schema_version=SCHEMA_VERSION, reference_date=reference_date)
+            except ValueError:
+                continue
     with _Lock(store):
         index = read_index(store)
         referenced = set()
@@ -1102,19 +1177,20 @@ def admit_selection(state, selection_dir, *, exclude=(), repository=None, defaul
     trusted, repository = selection_trust(selection_dir, selection, repository=repository)
     registry_value, recipes = _registry(state['application'])
     admitted, rejected = {}, []
-    for item in selection['materialized']:
-        identifier = item.get('workflow_id') if isinstance(item, dict) else None
-        if identifier in exclude:
-            rejected.append({'workflow_id': identifier, 'reason': 'selected for fresh capture'})
-            continue
-        if identifier in admitted:
-            raise CorruptEvidence('Duplicate workflow in the evidence-store selection')
-        try:
-            admitted[identifier] = _admit_one(state, selection_dir, item, recipes, registry_value,
-                                              repository=repository, default_branch=default_branch,
-                                              trusted=trusted)
-        except (OSError, ValueError, KeyError, TypeError) as exc:
-            rejected.append({'workflow_id': identifier, 'reason': type(exc).__name__ + ': ' + str(exc)})
+    with dependency_snapshot(state['application']):
+        for item in selection['materialized']:
+            identifier = item.get('workflow_id') if isinstance(item, dict) else None
+            if identifier in exclude:
+                rejected.append({'workflow_id': identifier, 'reason': 'selected for fresh capture'})
+                continue
+            if identifier in admitted:
+                raise CorruptEvidence('Duplicate workflow in the evidence-store selection')
+            try:
+                admitted[identifier] = _admit_one(state, selection_dir, item, recipes, registry_value,
+                                                  repository=repository, default_branch=default_branch,
+                                                  trusted=trusted)
+            except (OSError, ValueError, KeyError, TypeError) as exc:
+                rejected.append({'workflow_id': identifier, 'reason': type(exc).__name__ + ': ' + str(exc)})
     return {'admitted': admitted, 'rejected': rejected}
 
 
