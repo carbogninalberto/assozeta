@@ -95,8 +95,216 @@ jobs:
         if: always()
         run: python3 docs/scripts/manuale_timing.py summary --title 'Manual contracts'
 
+  # Opt-in distributed capture: only fresh, full runs, and only when the
+  # repository variable names 2..6 runners. The default ('1') never runs this
+  # job, so every existing caller keeps the single-runner verifier untouched.
+  capture-plan:
+    name: Plan distributed capture
+    if: ${{ inputs.force_full && (vars.MANUALE_CAPTURE_RUNNERS || '1') != '1' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    outputs:
+      shard_count: ${{ steps.transport.outputs.shard_count }}
+      matrix: ${{ steps.transport.outputs.matrix }}
+      capture_id: ${{ steps.transport.outputs.capture_id }}
+      manual_revision: ${{ steps.pin.outputs.manual_revision }}
+    env:
+      RELEASE_VERSION: ${{ inputs.release }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: selfhost/tests/browser/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          cache: pip
+          cache-dependency-path: docs/manuale/requirements-offline.txt
+      - name: Record stage timings for this job
+        run: echo "MANUALE_TIMING_FILE=$RUNNER_TEMP/manuale-timing.jsonl" >> "$GITHUB_ENV"
+      - name: Pin immutable manual authoring input
+        id: pin
+        env:
+          MANUAL_REVISION: ${{ inputs.manual_revision }}
+        run: >-
+          python3 docs/scripts/manuale-ci.py pin
+          --manual-repo "$RUNNER_TEMP/manuale"
+          --manual-revision "$MANUAL_REVISION"
+          --output "$RUNNER_TEMP/manual-source.json"
+      - uses: ./.github/actions/prepare-storage
+      - name: Install planning dependencies
+        # The plan only snapshots inputs and computes the workflow inventory.
+        run: >-
+          python3 docs/scripts/manuale_timing.py stage install-dependencies --
+          bash -c 'python3 -m pip install -r docs/manuale/requirements-offline.txt'
+      - name: Validate the distributed capture runner count
+        env:
+          RUNNERS: ${{ vars.MANUALE_CAPTURE_RUNNERS }}
+        run: |
+          if [[ ! "$RUNNERS" =~ ^[0-9]+$ ]] || (( 10#$RUNNERS < 2 || 10#$RUNNERS > 6 )); then
+            echo "::error::MANUALE_CAPTURE_RUNNERS must be an integer from 2 to 6 (got '$RUNNERS'); use '1' or unset it to capture on a single runner."
+            exit 1
+          fi
+      - name: Plan every workflow as fresh
+        # No services start here: this run only mints the transport manifest and
+        # is never used again after this job.
+        run: >-
+          python3 docs/scripts/manuale-ci.py prepare
+          --manual-repo "$RUNNER_TEMP/manuale" --release "$RELEASE_VERSION"
+          --output "$RUNNER_TEMP/manuale-plan-run" --force-full
+      - name: Mint the distributed capture transport
+        id: transport
+        env:
+          RUNNERS: ${{ vars.MANUALE_CAPTURE_RUNNERS }}
+        run: >-
+          python3 docs/scripts/manuale-ci.py transport
+          --run "$RUNNER_TEMP/manuale-plan-run" --runners "$RUNNERS"
+          --output "$RUNNER_TEMP/manuale-transport"
+      - name: Upload the capture transport manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: manuale-capture-transport
+          path: ${{ runner.temp }}/manuale-transport/transport.json
+          if-no-files-found: error
+          overwrite: true
+          retention-days: 3
+      - name: Remove only this run's fixture services
+        if: always()
+        run: |
+          if [[ -f "$RUNNER_TEMP/manuale-plan-run/run.json" ]]; then
+            python3 docs/scripts/manuale-ci.py phase --run "$RUNNER_TEMP/manuale-plan-run" --phase cleanup
+          fi
+
+  capture:
+    name: Capture shard ${{ matrix.index }}
+    needs: capture-plan
+    if: ${{ needs.capture-plan.result == 'success' && needs.capture-plan.outputs.shard_count != '0' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    strategy:
+      fail-fast: true
+      matrix: ${{ fromJSON(needs.capture-plan.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: selfhost/tests/browser/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          cache: pip
+          cache-dependency-path: docs/manuale/requirements-offline.txt
+      - name: Record stage timings for this job
+        run: echo "MANUALE_TIMING_FILE=$RUNNER_TEMP/manuale-timing.jsonl" >> "$GITHUB_ENV"
+      - uses: ./.github/actions/prepare-storage
+      - name: Restore Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('selfhost/tests/browser/package-lock.json') }}
+      - name: Install verifier dependencies
+        run: >-
+          python3 docs/scripts/manuale_timing.py stage install-dependencies --
+          bash -c 'python3 -m pip install -r docs/manuale/requirements-offline.txt
+          && npm --prefix selfhost/tests/browser ci
+          && npm exec --prefix selfhost/tests/browser -- playwright install --with-deps chromium'
+      - name: Check verifier runtime and browser helper contracts
+        run: |
+          python3 docs/scripts/manuale_timing.py stage doctor -- python3 docs/scripts/manuale.py doctor
+          python3 docs/scripts/manuale-ci.py offline --suite node --with-browser
+      - name: Pin immutable manual authoring input
+        id: pin
+        env:
+          MANUAL_REVISION: ${{ inputs.manual_revision }}
+        run: >-
+          python3 docs/scripts/manuale-ci.py pin
+          --manual-repo "$RUNNER_TEMP/manuale"
+          --manual-revision "$MANUAL_REVISION"
+          --output "$RUNNER_TEMP/manual-source.json"
+      - name: Require the manual revision of the capture plan
+        # The materialized pin is a pure function of the vendored tree; the
+        # shard and the merge both reject any other revision.
+        env:
+          PLANNED_REVISION: ${{ needs.capture-plan.outputs.manual_revision }}
+          PINNED_REVISION: ${{ steps.pin.outputs.manual_revision }}
+        run: |
+          if [[ "$PINNED_REVISION" != "$PLANNED_REVISION" ]]; then
+            echo '::error::This shard pinned a different manual revision than the distributed capture plan.'
+            exit 1
+          fi
+      - name: Download the capture transport manifest
+        uses: actions/download-artifact@v4
+        with:
+          name: manuale-capture-transport
+          path: ${{ runner.temp }}/manuale-transport
+      - name: Capture exactly this shard
+        run: >-
+          python3 docs/scripts/manuale-ci.py capture-shard
+          --transport "$RUNNER_TEMP/manuale-transport/transport.json"
+          --shard ${{ matrix.index }}
+          --manual-repo "$RUNNER_TEMP/manuale"
+          --output "$RUNNER_TEMP/manuale-shard"
+      - name: Export this shard's sanitized capture results
+        run: >-
+          python3 docs/scripts/manuale-ci.py capture-export
+          --run "$RUNNER_TEMP/manuale-shard"
+          --transport "$RUNNER_TEMP/manuale-transport/transport.json"
+          --shard ${{ matrix.index }}
+          --output "$RUNNER_TEMP/manuale-shard-export"
+      - name: Retain this shard's capture results
+        # Success only: a shard that failed must never look like a captured one.
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: ${{ runner.temp }}/manuale-shard-export/
+          if-no-files-found: error
+          overwrite: true
+          retention-days: 3
+      - name: Remove only this run's fixture services
+        if: always()
+        run: |
+          if [[ -f "$RUNNER_TEMP/manuale-shard/run.json" ]]; then
+            python3 docs/scripts/manuale-ci.py phase --run "$RUNNER_TEMP/manuale-shard" --phase cleanup
+          fi
+      - name: Export sanitized diagnostics
+        if: always()
+        run: |
+          if [[ -d "$RUNNER_TEMP/manuale-shard" ]]; then
+            python3 docs/scripts/manuale-diagnostics.py --run "$RUNNER_TEMP/manuale-shard"
+          fi
+      - name: Retain shard diagnostics and timings
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: manuale-capture-diag-${{ needs.capture-plan.outputs.capture_id }}-s${{ matrix.index }}-a${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/manuale-shard/diagnostics-public/
+            ${{ runner.temp }}/manuale-timing.jsonl
+          if-no-files-found: warn
+          overwrite: true
+          retention-days: 14
+      - name: Summarize shard timings
+        if: always()
+        run: python3 docs/scripts/manuale_timing.py summary --title 'Manual capture shard'
+
   verify:
     name: Select, verify and package manual content
+    needs: [capture-plan, capture]
+    # Runs after a skipped or failed distributed plan too, so the gate still
+    # reports why nothing was verified instead of silently succeeding.
+    if: >-
+      ${{ !cancelled() && contains(fromJSON('["success","skipped"]'), needs.capture-plan.result) &&
+          contains(fromJSON('["success","skipped"]'), needs.capture.result) }}
     runs-on: ubuntu-24.04
     timeout-minutes: 120
     outputs:
@@ -134,6 +342,15 @@ jobs:
           cache-dependency-path: docs/manuale/requirements-offline.txt
       - name: Record stage timings for this job
         run: echo "MANUALE_TIMING_FILE=$RUNNER_TEMP/manuale-timing.jsonl" >> "$GITHUB_ENV"
+      - name: Detect a distributed capture plan
+        env:
+          SHARD_COUNT: ${{ needs.capture-plan.outputs.shard_count }}
+        run: |
+          if [[ -n "$SHARD_COUNT" && "$SHARD_COUNT" != '0' ]]; then
+            echo 'DISTRIBUTED=true' >> "$GITHUB_ENV"
+          else
+            echo 'DISTRIBUTED=false' >> "$GITHUB_ENV"
+          fi
       - name: Download the impact plan
         if: ${{ inputs.impact && !inputs.comprehensive }}
         uses: actions/download-artifact@v4
@@ -159,6 +376,18 @@ jobs:
           --manual-repo "$RUNNER_TEMP/manuale"
           --manual-revision "$MANUAL_REVISION"
           --output "$RUNNER_TEMP/manual-source.json"
+      - name: Require the manual revision of the capture plan
+        # The distributed shards pinned this plan's revision; the merge rejects
+        # anything else, so fail here with the exact reason first.
+        if: ${{ env.DISTRIBUTED == 'true' }}
+        env:
+          PLANNED_REVISION: ${{ needs.capture-plan.outputs.manual_revision }}
+          PINNED_REVISION: ${{ steps.pin.outputs.manual_revision }}
+        run: |
+          if [[ "$PINNED_REVISION" != "$PLANNED_REVISION" ]]; then
+            echo '::error::This run pinned a different manual revision than the distributed capture plan.'
+            exit 1
+          fi
       - uses: ./.github/actions/prepare-storage
       - name: Restore Playwright browsers
         uses: actions/cache@v4
@@ -226,8 +455,30 @@ jobs:
         env:
           BUILDER: ${{ steps.buildx.outputs.name }}
         run: echo "BUILDX_BUILDER=$BUILDER" >> "$GITHUB_ENV"
+      - name: Download the distributed capture plan
+        if: ${{ env.DISTRIBUTED == 'true' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: manuale-capture-transport
+          path: ${{ runner.temp }}/manuale-transport
+      - name: Download every captured shard
+        # merge-multiple keeps one subdirectory per shard artifact, exactly the
+        # layout the merge validates.
+        if: ${{ env.DISTRIBUTED == 'true' }}
+        uses: actions/download-artifact@v4
+        with:
+          pattern: manuale-capture-${{ needs.capture-plan.outputs.capture_id }}-s*
+          path: ${{ runner.temp }}/manuale-shards
+          merge-multiple: false
       - name: Capture only workflows requiring fresh evidence
+        if: ${{ env.DISTRIBUTED != 'true' }}
         run: python3 docs/scripts/manuale-ci.py phase --run "$RUNNER_TEMP/manuale-run" --phase capture
+      - name: Merge the distributed capture shards
+        if: ${{ env.DISTRIBUTED == 'true' }}
+        run: >-
+          python3 docs/scripts/manuale-ci.py phase --run "$RUNNER_TEMP/manuale-run"
+          --phase capture --transport "$RUNNER_TEMP/manuale-transport/transport.json"
+          --shards "$RUNNER_TEMP/manuale-shards"
       - name: Compile complete content and verify source evidence
         run: python3 docs/scripts/manuale-ci.py phase --run "$RUNNER_TEMP/manuale-run" --phase compile
       - name: Verify changed pages and retain compatible render evidence
@@ -436,7 +687,7 @@ jobs:
     name: Manual verification gate
     # Runs after failures and cancellations too, so that a missing, skipped or
     # failed mandatory job can never leave this reusable workflow "successful".
-    needs: [contracts, verify, appliance]
+    needs: [contracts, capture-plan, capture, verify, appliance]
     if: ${{ always() }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
