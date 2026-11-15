@@ -475,6 +475,10 @@ add('supplier-list-sort-identifier-desc', 'owner', 'GET', query(**{'sort[field]'
     supplier_page(['c', 'b', 'a']))
 add('supplier-list-sort-attname', 'owner', 'GET', query(**{'sort[field]': 'expire_date', 'sort[sort]': 'other'}), 200,
     supplier_page(['b', 'a', 'c']))
+# order_by('?') is ORDER BY RANDOM(): the rows come in any order, so the
+# search leaves the single row and the order cannot matter.
+add('supplier-list-sort-random', 'owner', 'GET', query(**{'query[generalSearch]': 'fornitore uno', 'sort[field]': '?'}), 200,
+    supplier_page(['a']))
 add('supplier-list-sort-unknown-server-error', 'owner', 'GET', query(**{'sort[field]': 'bogus'}), 500, SERVER)
 # Only the invoice's own columns order the list: relation paths, the owner account, transforms and the stored document
 # answer as an unknown ordering.

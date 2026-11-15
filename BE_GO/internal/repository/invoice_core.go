@@ -206,21 +206,27 @@ func (r *InvoiceCore) CountInvoices(ctx context.Context, filter domain.InvoiceCo
 func (r *InvoiceCore) InvoiceRows(ctx context.Context, filter domain.InvoiceCoreFilter, limit, offset int64) ([]string, error) {
 	args := personaArgs{}
 	statement := "SELECT i.invoice_id" + invoiceCoreQuery(filter, &args)
-	terms := []string{"i.number DESC", "i.creation_date DESC"}
-	if filter.Order != nil {
-		terms = make([]string, len(filter.Order))
-		for i, order := range filter.Order {
-			if !invoiceCoreColumns[order.Column] {
-				// invoiceCoreOrder only sets columns of invoiceCoreFields, all in invoiceCoreColumns.
-				return nil, domain.ErrInvoiceCoreUnreachable
-			}
-			terms[i] = "i." + order.Column
-			if order.Descending {
-				terms[i] += " DESC"
+	switch {
+	case filter.Random:
+		statement += " ORDER BY RANDOM()"
+	default:
+		terms := []string{"i.number DESC", "i.creation_date DESC"}
+		if filter.Order != nil {
+			terms = make([]string, len(filter.Order))
+			for i, order := range filter.Order {
+				if !invoiceCoreColumns[order.Column] {
+					// invoiceCoreOrder only sets columns of invoiceCoreFields, all in invoiceCoreColumns.
+					return nil, domain.ErrInvoiceCoreUnreachable
+				}
+				terms[i] = "i." + order.Column
+				if order.Descending {
+					terms[i] += " DESC"
+				}
 			}
 		}
+		statement += " ORDER BY " + strings.Join(terms, ", ")
 	}
-	statement += " ORDER BY " + strings.Join(terms, ", ") + " LIMIT " + args.add(limit) + " OFFSET " + args.add(offset)
+	statement += " LIMIT " + args.add(limit) + " OFFSET " + args.add(offset)
 	ids := []string{}
 	err := r.db.SelectContext(ctx, &ids, statement, args...)
 	return ids, err

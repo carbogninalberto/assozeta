@@ -375,18 +375,20 @@ func (s *InvoiceParties) SupplierList(ctx context.Context, request InvoicePartyR
 			field = "-" + field
 		}
 		if field == "?" {
-			// A random order has no answer to reproduce.
-			return nil, domain.ErrInvoicePartyNotPorted
+			// order_by('?'): ORDER BY RANDOM(), no other ordering ('-?' is
+			// not a column, an unknown ordering: 500).
+			query.Random = true
+		} else {
+			name, descending := strings.CutPrefix(field, "-")
+			column, ok := supplierInvoiceOrder[name]
+			if !ok {
+				// Only the model's own columns order the list; a relation path,
+				// a transform or the stored document is an unknown ordering
+				// (FieldError, 500).
+				return nil, domain.ErrInvoicePartyOrdering
+			}
+			query.OrderColumn, query.Descending = column, descending
 		}
-		name, descending := strings.CutPrefix(field, "-")
-		column, ok := supplierInvoiceOrder[name]
-		if !ok {
-			// Only the model's own columns order the list; a relation path,
-			// a transform or the stored document is an unknown ordering
-			// (FieldError, 500).
-			return nil, domain.ErrInvoicePartyOrdering
-		}
-		query.OrderColumn, query.Descending = column, descending
 	}
 	count, err := s.store.CountSupplierInvoices(ctx, query)
 	if err != nil {

@@ -4154,6 +4154,53 @@
    "celery": []
   },
   {
+   "name": "invoice-core-list-sort-random",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/invoice/list?query%5Bcurrent_year%5D=1&sort%5Bfield%5D=%3F",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "0": {
+      "invoice_id": "a1000000-0000-4000-8000-000000433018",
+      "document_pdf": "a1000000-0000-4000-8000-000000433001",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "creation_date": "2022-12-01T08:00:00Z",
+      "membership_fee": "10.00",
+      "activity_fee": "5.00",
+      "meta_payment_categories": null,
+      "description": "Quota annuale",
+      "number": 1,
+      "archived": false,
+      "cancelled": false,
+      "selected_tutor": null,
+      "imported_from_associami": false,
+      "group": null,
+      "deleted": false,
+      "document_token": "a1000000-0000-4000-8000-000000433002",
+      "attached_documents": [],
+      "payment": {
+       "amount": 10,
+       "description": "Quota annuale"
+      },
+      "no_payment": true
+     }
+    },
+    "meta": {
+     "total": 1,
+     "page": 1,
+     "pages": 1,
+     "perpage": 10,
+     "rowIds": [
+      "a1000000-0000-4000-8000-000000433018"
+     ]
+    }
+   },
+   "effect": null,
+   "celery": []
+  },
+  {
    "name": "invoice-core-list-sort-unknown-server-error",
    "actor": "owner",
    "method": "GET",
