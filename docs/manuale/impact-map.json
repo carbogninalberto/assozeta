@@ -186,7 +186,7 @@
     {"match": ["UI/src/"], "category": "unrelated", "handler": "ui-outside-closures",
      "reason": "Frontend module outside every workflow's import closure (declared route components, app shell and landing dashboard)."},
     {"match": ["docs/scripts/tests/"], "category": "unrelated", "reason": "Manual tooling unit test; unit tests run in every mode."},
-    {"match": ["TESTS/", "BE_GO/", "docs/architecture/", "docs/diagrams/", "docs/goal-prompts/", "docs/matrix/",
+    {"match": ["TESTS/", "BE_GO/", "WEB/", "docs/architecture/", "docs/diagrams/", "docs/goal-prompts/", "docs/matrix/",
                "docs/verification/", "docs/contracts/", "docs/img/", "docs/README.md", "docs/ci.md",
                "docs/scripts/README.md", "docs/scripts/analyze_architecture.mjs",
                "docs/scripts/capture_system_screenshots.mjs", "docs/scripts/generate_coverage_gaps.mjs",
