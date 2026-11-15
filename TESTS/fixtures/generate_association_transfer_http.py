@@ -759,6 +759,12 @@ import_started('setup-token-archive', valid, 'è segreta', actor='anonymous', he
 import_started('windows-zip-type', not_zip, '', kind='application/x-zip-compressed')
 import_started('archive-without-type', valid, '', kind=None, stored='application/zip', filename='export')
 import_started('admin-impersonating-owner-archive', valid, '', actor='admin', headers=ADMIN_OWNER)
+# owner_password as a file part: the task's JSON encoder rejects the upload, and the saved archive and the cache key
+# are removed again, so nothing changes.
+raw, content = upload('start', 'password-file', valid, extra=[('owner_password', 'password.txt', 'text/plain', 'recovery secret')])
+add('import-start-password-file', 'owner', IMPORT_START, 500,
+    {'error': 'Errore durante avvio import: Object of type InMemoryUploadedFile is not JSON serializable'},
+    method='POST', raw_b64=raw, content_type=content)
 
 # === export/list of an export without a stored size ============================================
 # default_storage.size(filepath) is saved on the document (an update entry); a missing object leaves it null.

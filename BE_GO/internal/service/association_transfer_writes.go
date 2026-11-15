@@ -351,6 +351,9 @@ type AssociationImportUpload struct {
 	File *AssociationImportFile
 	// Password is a string, or *AssociationImportFile when the last value is a file.
 	Password any
+	// BodySize is the request Content-Length: Django's file upload handlers
+	// keep an upload in memory at or under FILE_UPLOAD_MAX_MEMORY_SIZE.
+	BodySize int64
 }
 
 var fileRequired = &AssociationTransferReply{Status: 400, Body: map[string]string{"error": "File ZIP richiesto"}}
@@ -363,7 +366,14 @@ func (s *AssociationTransfer) ImportStart(ctx context.Context, upload Associatio
 	}
 	password, ok := upload.Password.(string)
 	if !ok {
-		return nil, domain.ErrAssociationTransferNotPorted // a file is not JSON serializable for the task
+		// start_import passes the UploadedFile to import_association_data.apply_async, whose JSON
+		// encoder raises TypeError("Object of type <Class> is not JSON serializable"); the except
+		// deletes the saved archive and the cache key, so nothing is stored, cached or published.
+		class := "TemporaryUploadedFile"
+		if upload.BodySize <= domain.RequestUploadMemory {
+			class = "InMemoryUploadedFile"
+		}
+		return transferError(500, "Errore durante avvio import: Object of type "+class+" is not JSON serializable"), nil
 	}
 	name := "temp/imports/import_" + s.options.NewID() + ".zip"
 	key, err := documentkey.S3Key(name, s.options.Objects.Location())

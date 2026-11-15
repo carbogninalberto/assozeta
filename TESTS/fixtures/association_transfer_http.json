@@ -8794,6 +8794,27 @@
    "content_type": "multipart/form-data; boundary=association-transfer-boundary"
   },
   {
+   "name": "association-transfer-import-start-password-file",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/start",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante avvio import: Object of type InMemoryUploadedFile is not JSON serializable"
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "raw_b64": "LS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImV4cG9ydC56aXAiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3ppcA0KDQpQSwMEFAAAAAgAAFAvXNb2Exz0AAAA4gEAAA0AAABtYW5pZmVzdC5qc29uZU/BSsQwEP2Vkqu2Toq7unsTwaOX1ZNIGNtZiG4SSdJFKf0X/8UfM5N2sUtDGJj35r1504sj+aCdFdtCyAoqEJeFoK9P56PaO28wMvOGH5a+VcjwxB7lbLTFSDxYQ70uQZZy9SRhC/wvcuVZDME1GuO4rhej3QxVumUTlJBfmcs1l9tTC7C5WW9W2a8l64y2J0OxSz4Uf38KbdgZI44Jo8dEyyE1xrV0CNMJxNteemHR5PA7Bu9mIZNgrw+ZSwfiFUi1yFy9h3GycZ2N055/z+dAfu4DteoSFBay+kx27zofaBFAgmoys9TDmf7RPbBueB3+AFBLAwQUAAAACAAAUC9cYWmhmHMAAAC2AAAAHgAAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvbouuViouyC8qiU8sLs5PzkwsyczPi89MUbJSUEo0NAADXTBhAiIsYFwDA0tzM0tTAyUdBaXS4tQi4rUYgrSkpObl52bmgW0D6QsGWp1acniBQmYuyDGJJYkgVSWJFfHJ+SmpIBUGhkbGJqZm5haWBkq1sQBQSwMEFAAAAAgAAFAvXD3y643RAAAAcQEAABIAAABkYXRhLzAyX3VzZXJzLmpzb26LrlYqLU4tis9MUbJSUEo0NAADXTBhAiIsYFwDA0tzM0tTQyUdBbCWvMTcVJCezNyC/KKS1BTd/PK81CKQbGpuYmYOSAos4gBToJdakZhbkJOqV5JaXAJSV5BYXFyeXwS2uSApOyXNKL44I9HI1EzFDGyfimOSc4prmnuGZ5Z3jm+ef0FgUXBJaJmKo6Ors2N5oJtTerKnc2C+j4ujgb9LhWOQa4ZvqFtQZIS7U3aie0V5ikeGha1SrY4CqV40wunF3NTcJDQ/QoSI86SiUm0sAFBLAQIUAxQAAAAIAABQL1zW9hMc9AAAAOIBAAANAAAAAAAAAAAAAACAAQAAAABtYW5pZmVzdC5qc29uUEsBAhQDFAAAAAgAAFAvXGFpoZhzAAAAtgAAAB4AAAAAAAAAAAAAAIABHwEAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvblBLAQIUAxQAAAAIAABQL1w98uuN0QAAAHEBAAASAAAAAAAAAAAAAACAAc4BAABkYXRhLzAyX3VzZXJzLmpzb25QSwUGAAAAAAMAAwDHAAAAzwIAAAAADQotLWFzc29jaWF0aW9uLXRyYW5zZmVyLWJvdW5kYXJ5DQpDb250ZW50LURpc3Bvc2l0aW9uOiBmb3JtLWRhdGE7IG5hbWU9Im93bmVyX3Bhc3N3b3JkIjsgZmlsZW5hbWU9InBhc3N3b3JkLnR4dCINCkNvbnRlbnQtVHlwZTogdGV4dC9wbGFpbg0KDQpyZWNvdmVyeSBzZWNyZXQNCi0tYXNzb2NpYXRpb24tdHJhbnNmZXItYm91bmRhcnktLQ0K",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
    "name": "association-transfer-list-foreign-legacy-size",
    "actor": "foreign_owner",
    "method": "GET",
