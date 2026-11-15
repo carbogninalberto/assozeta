@@ -97,49 +97,88 @@ try {
     const publicPages = [...new Set(publicSections.map(section => section.page))];
     await expect(navigation.getByRole('link')).toHaveCount(publicPages.length);
     let imageReferences = 0;
-    async function select(section) {
+    const requestedWorkers = Number(process.env.MANUALE_READER_WORKERS || 4);
+    const workerCount = Math.min(8, Math.max(1, Number.isFinite(requestedWorkers) ? Math.floor(requestedWorkers) : 4));
+    async function select(targetPage, section) {
+        const navigation = targetPage.getByRole('navigation', {name: 'Sezioni del manuale'});
         await navigation.locator(`a[href="/#/manuale?page=${encodeURIComponent(section.page)}"]`).click();
-        const article = page.getByRole('article', {name: section.page_title, exact: true});
+        const article = targetPage.getByRole('article', {name: section.page_title, exact: true});
         await expect(article).toBeVisible();
         await article.getByRole('link', {name: 'Apri sezione: ' + section.title, exact: true}).click();
-        return article.locator('.chapter-section').filter({has: page.getByRole('heading', {name: section.title, exact: true, level: 2})});
+        return article.locator('.chapter-section').filter({has: targetPage.getByRole('heading', {name: section.title, exact: true, level: 2})});
     }
-    for (const section of publicSections) {
-        progress = {phase: 'reader-sections', section: section.id};
-        const article = await select(section);
-        await expect(article.getByRole('heading', {name: section.title, exact: true, level: 2})).toBeVisible();
-        const blocks = section.reader || [{title: '', text: section.text, screenshots: section.screenshots.map(image => image.path)}];
-        const renderedBlocks = article.locator('.manual-step');
-        await expect(renderedBlocks).toHaveCount(blocks.length);
-        for (const [index, block] of blocks.entries()) {
-            progress.block = index;
-            if (block.title) await expect(article).toContainText(block.title);
-            const renderedBlock = renderedBlocks.nth(index);
-            const expectedProse = block.content ? markdownParts(block.content) : [block.markdown || block.text].filter(Boolean);
-            const renderedProse = await renderedBlock.locator('.manual-markdown').allInnerTexts();
-            expect(renderedProse.map(proseWords), section.id + ': every prose fragment in order')
-                .toEqual(expectedProse.map(proseWords));
-            await expect(renderedBlock.locator('img')).toHaveCount(block.screenshots.length, {timeout: 45000});
-            if (block.markdown?.includes('**')) expect(await renderedBlock.locator('strong').count()).toBeGreaterThan(0);
+    // One reader page per worker; worker 0 keeps the popup opened from the app link.
+    const extraPages = [];
+    const workerFailures = [];
+    async function checkSections(worker) {
+        let workerPage = page;
+        let section;
+        let currentBlock;
+        try {
+            if (worker) {
+                workerPage = await context.newPage();
+                extraPages.push(workerPage);
+                workerPage.setDefaultTimeout(45000);
+                workerPage.on('pageerror', error => errors.push(error.message));
+                progress = {phase: 'reader-page', worker};
+                await workerPage.goto(input.origin + '/#/manuale');
+                await expect(workerPage.getByRole('heading', {name: 'Come possiamo aiutarti?', exact: true})).toBeVisible();
+            }
+            for (const [index, candidate] of publicSections.entries()) {
+                if (index % workerCount !== worker) continue;
+                section = candidate;
+                currentBlock = undefined;
+                progress = {phase: 'reader-sections', section: section.id, worker};
+                const article = await select(workerPage, section);
+                await expect(article.getByRole('heading', {name: section.title, exact: true, level: 2})).toBeVisible();
+                const blocks = section.reader || [{title: '', text: section.text, screenshots: section.screenshots.map(image => image.path)}];
+                const renderedBlocks = article.locator('.manual-step');
+                await expect(renderedBlocks).toHaveCount(blocks.length);
+                for (const [index, block] of blocks.entries()) {
+                    currentBlock = index;
+                    if (block.title) await expect(article).toContainText(block.title);
+                    const renderedBlock = renderedBlocks.nth(index);
+                    const expectedProse = block.content ? markdownParts(block.content) : [block.markdown || block.text].filter(Boolean);
+                    const renderedProse = await renderedBlock.locator('.manual-markdown').allInnerTexts();
+                    expect(renderedProse.map(proseWords), section.id + ': every prose fragment in order')
+                        .toEqual(expectedProse.map(proseWords));
+                    await expect(renderedBlock.locator('img')).toHaveCount(block.screenshots.length, {timeout: 45000});
+                    if (block.markdown?.includes('**')) expect(await renderedBlock.locator('strong').count()).toBeGreaterThan(0);
+                }
+                const count = blocks.reduce((total, block) => total + block.screenshots.length, 0);
+                await expect(article.locator('img')).toHaveCount(count, {timeout: 45000});
+                await expect.poll(() => article.locator('img').evaluateAll(images => images.every(image => image.complete && image.naturalWidth > 0)), {timeout: 45000}).toBeTruthy();
+                expect(await article.locator('img').evaluateAll(images => images.every(image => {
+                    const box = image.getBoundingClientRect();
+                    return box.width <= 640 && box.height <= 420;
+                })), 'Images should stay comfortably sized in the reader').toBe(true);
+                if (count) {
+                    await article.getByRole('button', {name: /^Ingrandisci:/}).first().click();
+                    const viewer = article.getByRole('dialog');
+                    await expect(viewer).toBeVisible();
+                    await expect(viewer.locator('img')).toBeVisible();
+                    await workerPage.keyboard.press('Escape');
+                    await expect(viewer).not.toBeVisible();
+                }
+                imageReferences += count;
+            }
+        } catch (error) {
+            // Record the failing worker's own section: progress is shared and other workers keep running.
+            workerFailures[worker] = {phase: 'reader-sections', section: section?.id, worker, block: currentBlock};
+            throw error;
         }
-        const count = blocks.reduce((total, block) => total + block.screenshots.length, 0);
-        await expect(article.locator('img')).toHaveCount(count, {timeout: 45000});
-        await expect.poll(() => article.locator('img').evaluateAll(images => images.every(image => image.complete && image.naturalWidth > 0)), {timeout: 45000}).toBeTruthy();
-        expect(await article.locator('img').evaluateAll(images => images.every(image => {
-            const box = image.getBoundingClientRect();
-            return box.width <= 640 && box.height <= 420;
-        })), 'Images should stay comfortably sized in the reader').toBe(true);
-        if (count) {
-            await article.getByRole('button', {name: /^Ingrandisci:/}).first().click();
-            const viewer = article.getByRole('dialog');
-            await expect(viewer).toBeVisible();
-            await expect(viewer.locator('img')).toBeVisible();
-            await page.keyboard.press('Escape');
-            await expect(viewer).not.toBeVisible();
-        }
-        imageReferences += count;
     }
-    await select(plan.section);
+    try {
+        const results = await Promise.allSettled(Array.from({length: workerCount}, (_, worker) => checkSections(worker)));
+        const failed = results.findIndex(result => result.status === 'rejected');
+        if (failed !== -1) {
+            progress = workerFailures[failed];
+            throw results[failed].reason;
+        }
+    } finally {
+        await Promise.allSettled(extraPages.map(extra => extra.close()));
+    }
+    await select(page, plan.section);
     progress = {phase: 'reader-navigation'};
     await page.screenshot({path: path.join(run, 'embedded-manual.png'), fullPage: false, animations: 'disabled'});
     const deepLink = page.url();
@@ -165,17 +204,17 @@ try {
     await expect(toggle).toBeVisible();
     await toggle.click();
     await expect(navigation).toBeVisible();
-    await select(plan.section);
+    await select(page, plan.section);
     await expect(navigation).not.toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
         'Mobile reader should not overflow horizontally').toBe(true);
     await page.setViewportSize(manualConfig.use.viewport);
     if (publicSections.some(section => section.id === 'docs/corsi#creare-un-corso')) {
-        await select(publicSections.find(section => section.id === 'docs/corsi#creare-un-corso'));
+        await select(page, publicSections.find(section => section.id === 'docs/corsi#creare-un-corso'));
         await expect(page.locator('.chapter-section').filter({has: page.getByRole('heading', {name: 'Creare un corso', exact: true})})).toContainText('Un collaboratore con accesso in sola lettura');
     }
     if (publicSections.some(section => section.id === 'faq/come-archiviare-dati#cosa-viene-archiviato')) {
-        await select(publicSections.find(section => section.id === 'faq/come-archiviare-dati#cosa-viene-archiviato'));
+        await select(page, publicSections.find(section => section.id === 'faq/come-archiviare-dati#cosa-viene-archiviato'));
         await expect(page.locator('.chapter-section').filter({has: page.getByRole('heading', {name: 'Cosa viene archiviato', exact: true})}))
             .toContainText('rimane archiviato finché non lo ripristini separatamente');
     }
