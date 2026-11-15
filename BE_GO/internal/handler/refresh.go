@@ -2,12 +2,14 @@ package handler
 
 import (
 	"errors"
+	"log/slog"
 	"net/http"
 	"strings"
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/handoff"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/jwt"
 	"github.com/labstack/echo/v4"
@@ -132,6 +134,12 @@ func restError(c echo.Context, err error) error {
 		// configured and the request is still replayable.
 		if handoff.Serve(c, err) {
 			return nil
+		}
+		// An application-state error is a state only Go writes: Django answers
+		// it with its production 500 page, so Go answers that page itself and
+		// never hands it off. The reason is a constant, safe to log.
+		if reason, ok := refusal.AppStateReason(err); ok {
+			slog.Error("app_state_unexpected", "method", c.Request().Method, "route", c.Path(), "reason", reason)
 		}
 		// Never serialize provider errors or credentials into responses/logs.
 		c.Response().Header().Del("Allow")

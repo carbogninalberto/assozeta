@@ -2,6 +2,7 @@ package handler
 
 import (
 	"errors"
+	"log/slog"
 	"net/http"
 	"regexp"
 	"strings"
@@ -9,7 +10,12 @@ import (
 	"github.com/labstack/echo/v4"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/handoff"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
+
+// djangoServerErrorPage is django.views.defaults.server_error without a
+// 500.html template: what Django answers in production for an exception.
+var djangoServerErrorPage = []byte("\n<!doctype html>\n<html lang=\"en\">\n<head>\n  <title>Server Error (500)</title>\n</head>\n<body>\n  <h1>Server Error (500)</h1><p></p>\n</body>\n</html>\n")
 
 // djangoNotFoundPage is django.views.defaults.page_not_found without a
 // 404.html template (none exists in BE): ERROR_PAGE_TEMPLATE titled
@@ -167,6 +173,14 @@ func DjangoHTTPErrorHandler(e *echo.Echo) echo.HTTPErrorHandler {
 			return
 		}
 		if !c.Response().Committed && handoff.Serve(c, err) {
+			return
+		}
+		// An application-state error is never handed off: log the constant
+		// reason and answer Django's production 500 page.
+		if reason, ok := refusal.AppStateReason(err); ok && !c.Response().Committed {
+			slog.Error("app_state_unexpected", "method", c.Request().Method, "route", c.Path(), "reason", reason)
+			c.Response().Header().Del("Allow")
+			_ = c.Blob(500, "text/html; charset=utf-8", djangoServerErrorPage)
 			return
 		}
 		e.DefaultHTTPErrorHandler(err, c)

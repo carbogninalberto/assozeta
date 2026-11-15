@@ -31,6 +31,26 @@ error reach `restError` (directly or through the family's error mapper) as every
 Errors that are Django's own failures (a Python exception the view also raises: `Err*Server`, `Err*Python`) are not
 refusals. Go answers them itself, as Django would.
 
+## App-state errors
+
+`refusal.AppState(reason)` marks a state only the application itself writes: a cache entry or stored setting that
+does not have the shape the code writes, a server-minted token that does not decode, or a row a database constraint
+makes impossible. Anything a caller sends can never produce one. It is not a refusal: it matches
+`refusal.ErrAppState` and not `refusal.ErrNotPorted`, and `refusal.AppStateReason(err)` returns the reason the same
+way `refusal.Reason` does for refusals.
+
+In production Django has `DEBUG` off, so such an error ends at its plain 500 page (`Server Error (500)`,
+`text/html; charset=utf-8`). Go answers that page itself and never hands the request off: `handoff.Serve` replays
+only `refusal.ErrNotPorted` errors, so Django does not see the request at all.
+
+Both places that answer an unmapped error log the error before answering (`handler/refresh.go`,
+`handler/django_not_found.go`):
+
+    app_state_unexpected method=<HTTP method> route=<Echo route> reason=<constant reason>
+
+The reason is a constant chosen by the code, never request or stored data, so it is safe to log. No header value,
+query string or body is logged.
+
 ## Request flow
 
 1. `handoff.Middleware` is the first `Pre` middleware (`cmd/server/main.go`). It keeps the request as received
@@ -118,6 +138,7 @@ Go unit tests (`go test ./internal/handoff ./internal/refusal`):
 | `TestBodyOverLimitIsNotHandedOff`, `TestStreamedUploadIsNotHandedOff` | limit and `Forbid` |
 | `TestRefusalAfterEffectIsNotHandedOff`, `TestOpenTransactionIsNotHandedOff`, `TestSQLWrites` | effect tracking |
 | `TestStartedResponseIsNotHandedOff`, `TestOnlyRefusalsAreHandedOff`, `TestDisabledKeepsThe500` | the other guards |
+| `TestAppStateIsNotHandedOff`, `TestAppStateIsNotARefusal` | application-state errors are Go's own 500, never replayed |
 | `TestUpstreamErrors` | unreachable Django, Django's own 4xx/5xx passed through, interrupted body |
 | `TestNewRejectsInvalidURLs`, `TestBasePathPrefixesTheRequestTarget` | configuration |
 | `TestRefusalSentinels`, `TestNotPortedSentinelsAreRefusals` | every sentinel matches `refusal.ErrNotPorted` |

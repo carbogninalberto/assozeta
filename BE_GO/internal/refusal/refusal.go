@@ -3,6 +3,10 @@
 // so errors.Is(err, family.ErrX) is unchanged, and every sentinel also matches
 // ErrNotPorted, so one check finds all of them. Handlers refuse such inputs
 // before any write; internal/handoff replays them to Django when configured.
+//
+// It also marks application-state errors (AppState): states only the
+// application itself writes. Django answers those with its production 500 page
+// and Go answers the same page itself; they are never handed off.
 package refusal
 
 import "errors"
@@ -28,6 +32,36 @@ func Reason(err error) (string, bool) {
 	var refused *Error
 	if errors.As(err, &refused) {
 		return refused.reason, true
+	}
+	return "", false
+}
+
+// ErrAppState matches every application-state error, and only those: it never
+// matches ErrNotPorted.
+var ErrAppState = errors.New("unexpected application state")
+
+// AppStateError is an application-state error: a state only the application
+// itself writes (a cache entry, a stored setting, a server-minted token, a row
+// a database constraint makes impossible). Its message is a constant chosen by
+// the code, never request or stored data, so it is safe to log.
+type AppStateError struct{ reason string }
+
+func (e *AppStateError) Error() string { return e.reason }
+
+// Is matches ErrAppState only, and deliberately not ErrNotPorted: such a
+// request must never reach the Django handoff.
+func (e *AppStateError) Is(target error) bool { return target == ErrAppState }
+
+// AppState returns an application-state error with the given reason.
+func AppState(reason string) error { return &AppStateError{reason: reason} }
+
+// AppStateReason reports whether err wraps an application-state error and, if
+// so, the first one's reason. The reason is a constant chosen by the code,
+// never request or stored data, so it is safe to log.
+func AppStateReason(err error) (string, bool) {
+	var state *AppStateError
+	if errors.As(err, &state) {
+		return state.reason, true
 	}
 	return "", false
 }
