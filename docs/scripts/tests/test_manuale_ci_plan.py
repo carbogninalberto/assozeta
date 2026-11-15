@@ -281,6 +281,31 @@ class OfflineTests(unittest.TestCase):
             self.assertRegex(value, r'^(placeholder|manual-ci-offline-placeholder|localhost|false|admin/|9|http://127\.0\.0\.1:9)$')
 
 
+class ReasonCategoryTests(unittest.TestCase):
+    def test_each_reason_form_maps_to_a_stable_label(self):
+        cases = {
+            'impact: full verification required': 'impact: full verification required',
+            'impact: workflow affected by the change': 'impact: workflow affected by the change',
+            'impact report invalid; fail closed': 'impact report invalid; fail closed',
+            'cold: evidence store unavailable': 'cold: evidence store unavailable',
+            'miss: no evidence at this fingerprint': 'miss: no evidence at this fingerprint',
+            'rejected (ValueError): manifest sha256 mismatch at /home/runner/work/x/y.json': 'rejected (ValueError)',
+            'fingerprint unavailable: /home/runner/work/assozeta/assozeta': 'fingerprint unavailable',
+        }
+        for reason, expected in cases.items():
+            with self.subTest(reason):
+                self.assertEqual(ci.reason_category(reason), expected)
+
+    def test_unknown_reasons_are_capped_and_never_publish_local_paths(self):
+        self.assertEqual(ci.reason_category('x' * 100), 'x' * 60)
+        category = ci.reason_category('lookup failed (RuntimeError): /home/runner/private/store')
+        self.assertEqual(category, 'lookup failed')
+        self.assertEqual(ci.reason_category('changed /home/runner/work/UI/x.svelte'), 'changed [local path]')
+        self.assertNotIn('/home/runner', ci.reason_category('changed /home/runner/work/UI/x.svelte'))
+        self.assertEqual(ci.reason_category(None), '')
+        self.assertEqual(ci.reason_category(''), '')
+
+
 class ReportTests(unittest.TestCase):
     def test_cache_report_records_hits_misses_and_sanitizes_paths(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -299,6 +324,53 @@ class ReportTests(unittest.TestCase):
         self.assertIn('workflow evidence', [item['name'] for item in value['hits']])
         self.assertIn('frontend build', [item['name'] for item in value['misses']])
         self.assertNotIn('/home/runner', json.dumps(value))
+
+    def test_cache_report_summarizes_capture_reasons_from_a_store_plan(self):
+        with tempfile.TemporaryDirectory() as directory:
+            directory = Path(directory)
+            plan = directory / 'store-plan.json'
+            plan.write_text(json.dumps({'format': 1, 'workflows': [
+                {'workflow_id': 'a', 'decision': 'capture', 'reason': 'impact: full verification required'},
+                {'workflow_id': 'b', 'decision': 'capture', 'reason': 'impact: full verification required'},
+                {'workflow_id': 'c', 'decision': 'capture', 'reason': 'miss: no evidence at this fingerprint'},
+                {'workflow_id': 'd', 'decision': 'capture',
+                 'reason': 'rejected (ValueError): mismatch at /home/runner/work/x'},
+                {'workflow_id': 'e', 'decision': 'capture',
+                 'reason': 'fingerprint unavailable: /home/runner/work/assozeta/assozeta'},
+                {'workflow_id': 'f', 'decision': 'reuse', 'reason': 'verified trusted evidence'}],
+                'counts': {'capture': 5, 'reuse': 1}}))
+            value = ci.cache_report(store_plan=plan)
+        self.assertEqual(list(value['fresh_reasons'].items()),
+                         [('impact: full verification required', 2),
+                          ('fingerprint unavailable', 1),
+                          ('miss: no evidence at this fingerprint', 1),
+                          ('rejected (ValueError)', 1)])
+        self.assertEqual(value['reused_count'], 1)
+        self.assertNotIn('/home/runner', json.dumps(value))
+
+    def test_cache_report_ignores_missing_or_invalid_store_plans(self):
+        with tempfile.TemporaryDirectory() as directory:
+            directory = Path(directory)
+            invalid = directory / 'invalid.json'
+            invalid.write_text('{"workflows": "not a list"}')
+            broken = directory / 'broken.json'
+            broken.write_text('{not json')
+            without = ci.cache_report()
+            for path in (directory / 'missing.json', invalid, broken):
+                with self.subTest(str(path.name)):
+                    self.assertEqual(ci.cache_report(store_plan=path), without)
+                    self.assertNotIn('fresh_reasons', ci.cache_report(store_plan=path))
+        self.assertNotIn('fresh_reasons', without)
+        self.assertNotIn('reused_count', without)
+
+    def test_cache_report_without_a_store_plan_is_unchanged(self):
+        with tempfile.TemporaryDirectory() as directory:
+            run = Path(directory)
+            (run / 'ci-plan.json').write_text(json.dumps({'mode': 'full', 'fresh_workflows': [IDS[0]],
+                                                          'reused_workflows': []}))
+            self.assertEqual(json.dumps(ci.cache_report(run)),
+                             json.dumps(ci.cache_report(run, None, None, None)))
+            self.assertNotIn('fresh_reasons', ci.cache_report(run))
 
     def test_build_cache_is_added_without_dropping_runtime_configuration(self):
         with tempfile.TemporaryDirectory() as directory:

@@ -359,7 +359,8 @@ jobs:
         if: always()
         run: |
           python3 docs/scripts/manuale-ci.py report --run "$RUNNER_TEMP/manuale-run" \
-            --admission "$RUNNER_TEMP/baseline-admission.json" --output "$RUNNER_TEMP/manuale-cache.json" || true
+            --admission "$RUNNER_TEMP/baseline-admission.json" --output "$RUNNER_TEMP/manuale-cache.json" \
+            --store-plan "$RUNNER_TEMP/manuale-store/store-plan.json" || true
           python3 docs/scripts/manuale_timing.py summary --title 'Manual verification' \
             --impact "$RUNNER_TEMP/manuale-impact/impact.json" --cache "$RUNNER_TEMP/manuale-cache.json" \
             --artifact "verified baseline=$RUNNER_TEMP/manuale-baseline.tar.gz" \

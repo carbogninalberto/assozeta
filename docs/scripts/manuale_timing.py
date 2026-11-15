@@ -287,6 +287,17 @@ def summarize(timing_file, impact_json, cache_json, *, title='Manual CI timing',
                          cache.get('reused_workflows', impact.get('reused_workflows')), limit=6),
               _list_line(label('fresh pages', 'fresh_pages'), cache.get('fresh_pages', impact.get('affected_pages'))),
               _list_line('Reused pages', cache.get('reused_pages'), limit=6), '']
+    fresh_reasons = cache.get('fresh_reasons')
+    if isinstance(fresh_reasons, dict) and fresh_reasons:
+        counts = [(name, count) for name, count in fresh_reasons.items()
+                  if isinstance(count, (int, float)) and not isinstance(count, bool)]
+        counts.sort(key=lambda pair: (-pair[1], str(pair[0])))
+        if counts:
+            lines += ['**Why workflows were captured fresh:**', '', '| Reason | Workflows |', '| --- | --- |']
+            lines += [f'| {_cell(name)} | {int(count)} |' for name, count in counts[:10]]
+            if len(counts) > 10:
+                lines.append(f'... {len(counts) - 10} more')
+            lines.append('')
     hits, misses = cache.get('hits') or [], cache.get('misses') or []
     if hits or misses:
         lines += [f'**Cache:** {len(hits)} hit(s), {len(misses)} miss(es)', '',
