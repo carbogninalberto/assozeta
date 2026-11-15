@@ -330,7 +330,7 @@ func profileTemplatePrettify(value any, field string) (string, error) {
 			return "", &ProfileTemplateTextRejected{Field: field,
 				Message: fmt.Sprintf("Il testo contiene troppi livelli annidati (massimo %d).", profileTemplateMaxHTMLDepth)}
 		}
-		return "", ErrProfileTemplateNotPorted
+		return "", err
 	}
 	return pretty, nil
 }

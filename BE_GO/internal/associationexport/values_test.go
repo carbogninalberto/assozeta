@@ -1,9 +1,12 @@
 package associationexport
 
 import (
+	"errors"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // Expected values are CPython 3.13 outputs (str(Decimal), repr(float),
@@ -47,8 +50,8 @@ func TestPythonValues(t *testing.T) {
 	if PythonISOFormat(time.Date(2026, 1, 2, 3, 4, 5, 0, time.UTC)) != "2026-01-02T03:04:05+00:00" {
 		t.Fatal("whole-second isoformat")
 	}
-	if _, err = parseTimestamp("infinity"); err == nil {
-		t.Fatal("infinity accepted")
+	if _, err = parseTimestamp("infinity"); !errors.Is(err, refusal.ErrAppState) || errors.Is(err, refusal.ErrNotPorted) {
+		t.Fatalf("infinity timestamp: %v", err)
 	}
 	value, err := FromJSONB(`{"b": 1, "a": [1.50, 12345678901234567890, null, "x"]}`)
 	if err != nil {
@@ -56,6 +59,33 @@ func TestPythonValues(t *testing.T) {
 	}
 	if out, _ := AppendJSON(nil, value); string(out) != `{"b": 1, "a": [1.5, 12345678901234567890, null, "x"]}` {
 		t.Fatalf("jsonb: %s", out)
+	}
+}
+
+// Values Django's ORM cannot write are application state: the export answers
+// them with Django's 500 page instead of handing the association off.
+func TestUnexpectedStoredValues(t *testing.T) {
+	cases := []struct {
+		field Field
+		text  string
+	}{
+		{Field{Key: "d", Kind: "date"}, "infinity"},
+		{Field{Key: "d", Kind: "date"}, "10000-01-01"},
+		{Field{Key: "d", Kind: "date"}, "0001-01-01 BC"},
+		{Field{Key: "t", Kind: "datetime"}, "infinity"},
+		{Field{Key: "t", Kind: "datetime"}, "-infinity"},
+		{Field{Key: "t", Kind: "datetime"}, "0001-01-01 00:00:00+00 BC"},
+		{Field{Key: "s", Kind: "time"}, "09:30:15+00:00"},
+		{Field{Key: "n", Kind: "decimal"}, "1e5"},
+	}
+	for _, c := range cases {
+		_, err := Serialize(c.field, c.text, true)
+		if !errors.Is(err, refusal.ErrAppState) || errors.Is(err, refusal.ErrNotPorted) {
+			t.Fatalf("%s %q: %v", c.field.Kind, c.text, err)
+		}
+		if _, ok := refusal.AppStateReason(err); !ok {
+			t.Fatalf("%s %q: no app-state reason: %v", c.field.Kind, c.text, err)
+		}
 	}
 }
 

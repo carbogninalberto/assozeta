@@ -8,10 +8,16 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
-// ErrUnsupportedValue is a stored value outside the reproduced subset
-// (infinite dates or timestamps, BC dates); the export hands such an
-// association to Django before any effect.
-var ErrUnsupportedValue = refusal.New("associationexport: value outside the reproduced subset")
+// ErrUnexpectedValue is a stored value the application cannot have written.
+// Serialize reads PostgreSQL's text output of rows the Django ORM wrote
+// (serialize_record, BE/application/services/export_service.py:611): a
+// DateField, DateTimeField or TimeField row is a Python date, datetime or time
+// (years 1-9999, no 24:00:00, no zone) and a DecimalField row a
+// decimal.Decimal, so PostgreSQL's 'infinity', '-infinity' and BC spellings,
+// a time with an offset or a numeric outside its digits-and-'.' output cannot
+// occur. Such a row cannot be read back into the Python type of the field that
+// wrote it, so Go answers it as application state instead of handing it off.
+var ErrUnexpectedValue = refusal.AppState("associationexport: stored value Django cannot write")
 
 // Serialize is serialize_record's value for one field, from the column's
 // PostgreSQL text output (session TimeZone UTC); valid is false for NULL.
@@ -50,8 +56,10 @@ func Serialize(field Field, text string, valid bool) (any, error) {
 		}
 		return PythonISOFormat(t), nil
 	case "date":
+		// A DateField row is a Python date (0001-01-01..9999-12-31), which
+		// PostgreSQL prints as YYYY-MM-DD and nothing else.
 		if len(text) != 10 || text[4] != '-' || text[7] != '-' {
-			return nil, ErrUnsupportedValue
+			return nil, ErrUnexpectedValue
 		}
 		return text, nil
 	case "time":
@@ -63,12 +71,14 @@ func Serialize(field Field, text string, valid bool) (any, error) {
 }
 
 func parseTimestamp(text string) (time.Time, error) {
+	// A DateTimeField row is a Python datetime (years 1-9999), so PostgreSQL's
+	// 'infinity', '-infinity' and BC spellings cannot come from the ORM.
 	if strings.HasPrefix(text, "infinity") || strings.HasPrefix(text, "-infinity") || strings.HasSuffix(text, " BC") {
-		return time.Time{}, ErrUnsupportedValue
+		return time.Time{}, ErrUnexpectedValue
 	}
 	t, err := time.Parse("2006-01-02 15:04:05.999999-07", text)
 	if err != nil {
-		return time.Time{}, ErrUnsupportedValue
+		return time.Time{}, ErrUnexpectedValue
 	}
 	return t.UTC(), nil
 }
@@ -85,8 +95,10 @@ func PythonISOFormat(t time.Time) string {
 
 // djangoTime is DjangoJSONEncoder's time: isoformat() cut to milliseconds.
 func djangoTime(text string) (string, error) {
+	// A TimeField row is a Python time (00:00:00..23:59:59.999999) and a
+	// PostgreSQL time column's text output carries no offset.
 	if len(text) < 8 || text[2] != ':' || text[5] != ':' || strings.ContainsAny(text, "+-") {
-		return "", ErrUnsupportedValue
+		return "", ErrUnexpectedValue
 	}
 	whole, fraction, found := strings.Cut(text, ".")
 	if !found || strings.Trim(fraction, "0") == "" {
@@ -107,8 +119,10 @@ func DecimalString(text string) (string, error) {
 		sign, text = "-", text[1:]
 	}
 	whole, fraction, _ := strings.Cut(text, ".")
+	// After the special spellings above, PostgreSQL's numeric output is an
+	// optional '-' and digits with an optional '.'.
 	if whole == "" || strings.Trim(whole+fraction, "0123456789") != "" {
-		return "", ErrUnsupportedValue
+		return "", ErrUnexpectedValue
 	}
 	coefficient := strings.TrimLeft(whole+fraction, "0")
 	if coefficient == "" {

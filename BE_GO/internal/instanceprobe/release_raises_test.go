@@ -41,11 +41,11 @@ func TestNormalizeRaisesIsAppState(t *testing.T) {
 
 	notIntID := valid()
 	notIntID["id"] = "abc"
-	if _, err = normalize(notIntID); !errors.Is(err, refusal.ErrNotPorted) {
-		t.Fatalf("id \"abc\": error %v, want refusal.ErrNotPorted", err)
+	if _, err = normalize(notIntID); !errors.Is(err, ErrReleaseUnread) {
+		t.Fatalf("id \"abc\": error %v, want ErrReleaseUnread", err)
 	}
-	if errors.Is(err, refusal.ErrAppState) {
-		t.Fatalf("id \"abc\": error %v must not match refusal.ErrAppState", err)
+	if errors.Is(err, refusal.ErrNotPorted) || errors.Is(err, refusal.ErrAppState) {
+		t.Fatalf("id \"abc\": error %v must be neither a refusal nor app state", err)
 	}
 
 	release, err = normalize(valid())

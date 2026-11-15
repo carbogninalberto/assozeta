@@ -109,7 +109,7 @@ func (s *InstanceOutbound) Releases(ctx context.Context, page string, present bo
 		switch {
 		case errors.As(err, &failure):
 			return nil, instanceAdminError(failure.Message, 503)
-		case errors.Is(err, instanceprobe.ErrReleaseNotPorted), errors.Is(err, instanceprobe.ErrNotPorted):
+		case errors.Is(err, instanceprobe.ErrReleaseUnread), errors.Is(err, instanceprobe.ErrUnreadResponse):
 			// X2 (accepted divergence): a feed or response Go does not read is
 			// answered like a provider failure.
 			return nil, instanceAdminError(instanceprobe.ReleaseNotReadable(err).Message, 503)
@@ -598,10 +598,6 @@ func (s *InstanceOutbound) runIntegrationProbe(ctx context.Context, provider str
 	switch {
 	case ctx.Err() != nil:
 		return timeoutResult(false), nil
-	case errors.Is(err, instanceprobe.ErrProbeNotPorted):
-		// X2 (accepted divergence): a provider body Go does not read (UTF-16/32
-		// JSON) is the probe's generic failure.
-		return instanceprobe.Generic, nil
 	case err != nil:
 		return instanceprobe.Generic, nil
 	}

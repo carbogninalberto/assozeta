@@ -110,20 +110,20 @@ const ReleaseNotPublished = "The selected release is not a published stable rele
 
 // ReleaseNotReadable is the native answer (accepted divergence X2) for a feed
 // this port does not read: Django's text for an invalid catalog when the feed
-// was read (ErrReleaseNotPorted), its unavailable text for a response Go does
-// not decode (ErrNotPorted).
+// was read (ErrReleaseUnread), its unavailable text for a response Go does
+// not decode (ErrUnreadResponse).
 func ReleaseNotReadable(err error) *ReleaseError {
-	if errors.Is(err, ErrReleaseNotPorted) {
+	if errors.Is(err, ErrReleaseUnread) {
 		return &ReleaseError{Message: "Invalid release catalog response."}
 	}
 	return &ReleaseError{Message: "Release service is unavailable. Please try again later."}
 }
 
-// ErrReleaseNotPorted is a feed with values this port does not carry
+// ErrReleaseUnread is a feed with values this port does not carry
 // (non-integer or out-of-range ids, non-string names/dates/notes, lone
 // surrogates). Django answers them; the release views answer them natively
-// (accepted divergence X2).
-var ErrReleaseNotPorted = refusal.New("instanceprobe: release feed not ported")
+// with the invalid-catalog text (accepted divergence X2).
+var ErrReleaseUnread = errors.New("instanceprobe: release feed values answered as an invalid catalog (X2)")
 
 // ErrReleaseRaises is a feed item on which normalize_release raises
 // (AttributeError, KeyError or TypeError). Neither the release list nor the
@@ -207,11 +207,11 @@ func normalize(item any) (*Release, error) {
 	}
 	id, ok := idValue.(Int)
 	if !ok {
-		return nil, ErrReleaseNotPorted
+		return nil, ErrReleaseUnread
 	}
 	number, err := strconv.ParseInt(string(id), 10, 64)
 	if err != nil {
-		return nil, ErrReleaseNotPorted
+		return nil, ErrReleaseUnread
 	}
 	version, _ := VersionTuple(tag)
 	release := &Release{ID: number, Tag: tag, Version: fmt.Sprintf("%s.%s.%s", version[0], version[1], version[2]),
@@ -219,7 +219,7 @@ func normalize(item any) (*Release, error) {
 	if name := raw["name"]; Truthy(name) {
 		text, ok := name.(string)
 		if !ok {
-			return nil, ErrReleaseNotPorted
+			return nil, ErrReleaseUnread
 		}
 		release.Name = text
 	} else {
@@ -227,13 +227,13 @@ func normalize(item any) (*Release, error) {
 	}
 	published, ok := raw["published_at"].(string)
 	if !ok {
-		return nil, ErrReleaseNotPorted
+		return nil, ErrReleaseUnread
 	}
 	release.PublishedAt = published
 	if body := raw["body"]; Truthy(body) {
 		text, ok := body.(string)
 		if !ok {
-			return nil, ErrReleaseNotPorted
+			return nil, ErrReleaseUnread
 		}
 		release.Notes = text
 	}
@@ -243,7 +243,7 @@ func normalize(item any) (*Release, error) {
 	}
 	for _, text := range []string{release.Tag, release.Name, release.PublishedAt, release.Notes} {
 		if HasSurrogate(text) {
-			return nil, ErrReleaseNotPorted
+			return nil, ErrReleaseUnread
 		}
 	}
 	return release, nil

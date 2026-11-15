@@ -45,9 +45,11 @@ const (
 	requestTimeout = 80 * time.Second
 )
 
-// ErrNotPorted refuses a parameter value the SDK would encode in a way this
-// port does not reproduce (a Float outside its fixed-notation repr range).
-var ErrNotPorted = refusal.New("stripe parameter value not ported")
+// ErrUnexpectedValue is a parameter value outside the types the callers pass:
+// service/stripe_routes.go:601 and :890, service/tasks_db_d.go:306 and :319,
+// service/payment_stats_stripe.go:100 and :183 hand over parsed JSON values
+// and literals only, so no other Go type can reach Encode.
+var ErrUnexpectedValue = refusal.AppState("stripe parameter value of an unexpected Go type")
 
 // Error is an SDK exception raised for a request. InvalidRequest is
 // stripe.error.InvalidRequestError (the only class the views catch); every
@@ -202,30 +204,41 @@ func scalar(value any) (string, error) {
 	case int64:
 		return strconv.FormatInt(v, 10), nil
 	case Float:
-		return v.python()
+		return v.python(), nil
 	case json.Number:
 		// str() of the parsed Python value: an int's digits (unbounded) or
 		// str(float).
 		return dto.PythonStr(v), nil
 	}
-	return "", ErrNotPorted
+	return "", fmt.Errorf("%w: %T", ErrUnexpectedValue, value)
 }
 
-// Float is a Python float parameter (str(float) in the form body). Only the
-// fixed-notation range of Python's repr (1e-4 <= |v| < 1e16, or 0) is ported.
+// Float is a Python float parameter, encoded as str(float).
 type Float float64
 
-func (f Float) python() (string, error) {
+// python is str(float): Python's repr, which is nan, inf, -inf, fixed notation
+// when the decimal exponent is in [-4, 16), and the shortest exponent notation
+// otherwise.
+func (f Float) python() string {
 	v := float64(f)
+	switch {
+	case math.IsNaN(v):
+		return "nan"
+	case math.IsInf(v, 1):
+		return "inf"
+	case math.IsInf(v, -1):
+		return "-inf"
+	}
 	abs := math.Abs(v)
-	if math.IsNaN(v) || math.IsInf(v, 0) || (abs != 0 && (abs < 1e-4 || abs >= 1e16)) {
-		return "", ErrNotPorted
+	// repr keeps fixed notation for 1e-4 <= |v| < 1e16 and for zero.
+	if abs == 0 || (abs >= 1e-4 && abs < 1e16) {
+		text := strconv.FormatFloat(v, 'f', -1, 64)
+		if !strings.Contains(text, ".") {
+			text += ".0"
+		}
+		return text
 	}
-	text := strconv.FormatFloat(v, 'f', -1, 64)
-	if !strings.Contains(text, ".") {
-		text += ".0"
-	}
-	return text, nil
+	return strconv.FormatFloat(v, 'e', -1, 64)
 }
 
 // quote is urllib.parse.quote_plus (safe=”): Go's query escaping keeps the same

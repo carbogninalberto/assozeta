@@ -48,10 +48,10 @@ func TestInstanceAdminUnexpectedIsAppState(t *testing.T) {
 
 // X2: a feed Go does not read answers Django's provider-failure texts.
 func TestReleaseNotReadable(t *testing.T) {
-	if got := instanceprobe.ReleaseNotReadable(instanceprobe.ErrReleaseNotPorted).Message; got != "Invalid release catalog response." {
+	if got := instanceprobe.ReleaseNotReadable(instanceprobe.ErrReleaseUnread).Message; got != "Invalid release catalog response." {
 		t.Error(got)
 	}
-	if got := instanceprobe.ReleaseNotReadable(instanceprobe.ErrNotPorted).Message; got != "Release service is unavailable. Please try again later." {
+	if got := instanceprobe.ReleaseNotReadable(instanceprobe.ErrUnreadResponse).Message; got != "Release service is unavailable. Please try again later." {
 		t.Error(got)
 	}
 }

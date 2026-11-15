@@ -18,9 +18,13 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
-// ErrUnsupported refuses markup only when prettify() would produce more than
-// maxOutputBytes of output.
-var ErrUnsupported = refusal.New("prettify output exceeds the supported size")
+// ErrOutputTooLarge reports prettify() output past maxOutputBytes. It is an
+// application state: the only production caller cannot reach it, because
+// PrettifyLimited runs after the profile template checks of at most 500,000
+// characters and depth 32 (internal/dto/profile_template.go), whose prettify()
+// output measures at most about 11 MiB. Django applies the same limits
+// (BE/application/views/profile_views.py:223-224).
+var ErrOutputTooLarge = refusal.AppState("prettify output exceeds the supported size")
 
 // ErrPythonRaises reports that bs4 itself raises on this markup: the integer
 // digit limit or a surrogate in the constructor's pre-check (ValueError /

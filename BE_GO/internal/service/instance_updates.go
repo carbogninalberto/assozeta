@@ -223,7 +223,7 @@ func (s *InstanceAdmin) RequestUpdateFor(ctx context.Context, actor string, body
 	switch {
 	case errors.As(err, &releaseError):
 		return instanceUpdatesError(releaseError.Message)
-	case errors.Is(err, instanceprobe.ErrReleaseNotPorted), errors.Is(err, instanceprobe.ErrNotPorted):
+	case errors.Is(err, instanceprobe.ErrReleaseUnread), errors.Is(err, instanceprobe.ErrUnreadResponse):
 		// X2 (accepted divergence): answered like a provider failure.
 		return instanceUpdatesError(instanceprobe.ReleaseNotReadable(err).Message)
 	case err != nil:

@@ -40,9 +40,10 @@ const (
 // check, then requests.get(base_url.rstrip('/') + '/models'). It returns
 // aiRequestInvalid for the probe's "URL del provider non valido." answer,
 // aiRequestRaises for an exception before the request is sent (the generic
-// failure), and aiRequestReady with the request bytes. The only input that
-// stays unported is an empty user information pair, which the settings
-// endpoint cannot store.
+// failure), and aiRequestReady with the request bytes. An empty user
+// information pair passes the check (integration_probe.py:59-61: urlsplit
+// reports an empty username and password) and requests sends the URL as
+// prepared.
 func prepareAIRequest(base string) (*AIRequest, aiRequestOutcome, error) {
 	split, err := pyURLSplit(base)
 	if err != nil {
@@ -51,11 +52,6 @@ func prepareAIRequest(base string) (*AIRequest, aiRequestOutcome, error) {
 	if split.scheme != "http" && split.scheme != "https" || split.hostname == "" ||
 		split.username != "" || split.password != "" || split.query != "" || split.fragment != "" {
 		return nil, aiRequestInvalid, nil
-	}
-	if split.hasUserInfo && split.username == "" && split.password == "" {
-		// urlsplit accepts 'https://:@host' and requests rewrites it, but the
-		// settings endpoint cannot store it: kept refused.
-		return nil, aiRequestReady, ErrProbeNotPorted
 	}
 
 	raw := strings.TrimRight(base, "/") + "/models"
@@ -174,7 +170,6 @@ type pySplit struct {
 	hostname    string
 	username    string
 	password    string
-	hasUserInfo bool
 	path, query string
 	fragment    string
 }
@@ -227,7 +222,6 @@ func pyURLSplit(raw string) (*pySplit, error) {
 		url = tail
 		hostInfo := netloc
 		if i := strings.LastIndexByte(netloc, '@'); i >= 0 {
-			split.hasUserInfo = true
 			userInfo, host := netloc[:i], netloc[i+1:]
 			hostInfo = host
 			if j := strings.IndexByte(userInfo, ':'); j >= 0 {
