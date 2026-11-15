@@ -136,8 +136,10 @@ temporary files whatever happened to the message (handoff, deferral, completion)
 Arguments other than lowercase canonical UUID strings, other arities or keywords; a credential account whose stored
 password is not unusable/empty and not a `pbkdf2_sha256`/`pbkdf2_sha1` encoding with plain decimal iterations and a
 strict base64 digest (the configured `PASSWORD_HASHERS` would decide it); an export document that another row
-references (the delete would cascade); stored values outside the serialized subset (infinite or BC timestamps, years
-over 9999, unknown field kinds); archives needing ZIP64 or over 1 GiB; any read error during the preparation.
+references (the delete would cascade); stored values the ORM cannot write (infinite or BC timestamps, years over 9999:
+`associationexport.ErrUnexpectedValue`, application state since long tail PR 3; the plan step still hands such a
+task to the Django worker like any other read error); archives needing ZIP64 or over 1 GiB; any read error during the
+preparation.
 
 ### Documented differences
 

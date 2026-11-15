@@ -13,26 +13,25 @@
 //
 // Character classes follow str.isalpha, str.isdigit, str.isspace and the
 // decimal digits int() and Decimal() accept, from tables generated out of
-// the oracle interpreter (unicode_tables.go).
+// the oracle interpreter (unicode_tables.go). Text is a Python str: the
+// callers' encoding of one (pystr) is decoded into its code points once, so a
+// lone surrogate behaves as it does in Python (not a letter, digit or space)
+// and messages quote the str, not the bytes.
 //
 // Golden corpus: testdata/corpus.jsonl.gz, produced from the real library by
-// testdata/gen_corpus.py (run testdata/regen.sh with the oracle interpreter).
+// testdata/gen_corpus.py, and testdata/extras.jsonl.gz (long and non-ASCII
+// text) from testdata/gen_extras.py (run testdata/regen.sh with the oracle
+// interpreter).
 package pydateutil
 
 import (
 	"fmt"
 	"strings"
 	"time"
-	"unicode/utf8"
 
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pystr"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
-
-// ErrUnsupported marks the inputs Parse does not answer because the result
-// could not be shown to equal Python's: text that is not valid UTF-8 (a Python
-// str has no such form, but a caller may hold WTF-8 from a JSON lone surrogate)
-// or is longer than MaxTextBytes.
-var ErrUnsupported = refusal.New("pydateutil: input outside the supported subset")
 
 // ErrUnexpectedZone is a local zone the application never passes: a nil one,
 // or one with more than one abbreviation or offset when the text names one of
@@ -42,10 +41,6 @@ var ErrUnsupported = refusal.New("pydateutil: input outside the supported subset
 // codicefiscale/dateparse.go:64, service/instructor_report.go:49. A fixed
 // zone is answered. It is an application-state error, never handed off.
 var ErrUnexpectedZone = refusal.AppState("pydateutil: unexpected local zone")
-
-// MaxTextBytes bounds the accepted text. Python has no such bound; far above
-// it the arithmetic of decimal.Decimal starts to depend on exponent limits.
-const MaxTextBytes = 1 << 16
 
 // Python exception class names carried by Error.
 const (
@@ -135,8 +130,7 @@ func (r Result) format(sep byte) (string, error) {
 // microsecond=0), which is the date of now in local; the two-digit year
 // pivot is that date's year (see ParseWithPivot).
 //
-// The error is an *Error for a Python exception, ErrUnsupported or
-// ErrUnexpectedZone.
+// The error is an *Error for a Python exception or ErrUnexpectedZone.
 // Python also warns (UnknownTimezoneWarning) and returns a naive datetime
 // for an unknown zone name; Parse returns that naive result.
 func Parse(text string, now time.Time, local *time.Location) (Result, error) {
@@ -185,24 +179,25 @@ func parseWith(text string, now time.Time, pivotYear int, local *time.Location, 
 	if local == nil {
 		return Result{}, ErrUnexpectedZone
 	}
-	if len(text) > MaxTextBytes || !utf8.ValidString(text) {
-		return Result{}, ErrUnsupported
-	}
+	chars := pystr.RunesReplace(text)
+	// The messages quote the Python str, so encode the code points again
+	// (a surrogate stays in its three-byte form, a replaced byte is U+FFFD).
+	pythonText := func() string { return pystr.String(chars) }
 	today := now.In(local)
 	p := &parser{pivot: int64(pivotYear), dayFirst: dayFirst, yearFirst: yearFirst}
-	if !p.parse(text) {
+	if !p.parse(chars) {
 		if p.raised != nil {
 			return Result{}, p.raised
 		}
-		return Result{}, &Error{Class: ClassParserError, Message: "Unknown string format: " + text}
+		return Result{}, &Error{Class: ClassParserError, Message: "Unknown string format: " + pythonText()}
 	}
 	if p.res.empty() {
-		return Result{}, &Error{Class: ClassParserError, Message: "String does not contain a date: " + text}
+		return Result{}, &Error{Class: ClassParserError, Message: "String does not contain a date: " + pythonText()}
 	}
 	result, err := buildNaive(&p.res, today.Year(), int(today.Month()), today.Day())
 	if err != nil {
 		if err.Class == classCaughtValueError {
-			return Result{}, &Error{Class: ClassParserError, Message: err.Message + ": " + text}
+			return Result{}, &Error{Class: ClassParserError, Message: err.Message + ": " + pythonText()}
 		}
 		return Result{}, err
 	}

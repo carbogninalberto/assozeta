@@ -3,40 +3,76 @@ package pydateutil
 import (
 	"bufio"
 	"compress/gzip"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"strings"
 	"testing"
 	"time"
 	_ "time/tzdata"
 
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pystr"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
-// goldenCase is one line of testdata/corpus.jsonl.gz: a call of the real
-// dateutil.parser.parse(text, default=now at midnight) in a process with
-// TZ=tz, see testdata/gen_corpus.py.
+// goldenCase is one line of testdata/corpus.jsonl.gz or testdata/extras.jsonl.gz:
+// a call of the real dateutil.parser.parse(text, default=now at midnight) in a
+// process with TZ=tz, see testdata/gen_corpus.py and testdata/gen_extras.py.
 type goldenCase struct {
 	Group   string   `json:"g"`
 	Zone    string   `json:"tz"`
 	Now     string   `json:"now"`
 	Text    string   `json:"in"`
+	TextHex string   `json:"inhex"`
 	Fields  []int    `json:"ok"`
 	Offset  *int64   `json:"off"`
 	Name    *string  `json:"name"`
 	Str     *string  `json:"str"`
 	StrErr  *string  `json:"strerr"`
 	Err     []string `json:"err"`
+	ErrText string   `json:"errtext"`
+	ErrHex  string   `json:"errhex"`
 	Refused bool     `json:"refused"`
 	// DayFirst: the call passed dayfirst=True.
 	DayFirst int `json:"df"`
 }
 
+// decode replaces the hex fields of an extras line: text or a message with a
+// lone surrogate cannot survive JSON's \udXXX escape (Go decodes an unpaired
+// one to U+FFFD), so it is written as the bytes of the Python str instead.
+func (c *goldenCase) decode() error {
+	if c.TextHex != "" {
+		raw, err := hex.DecodeString(c.TextHex)
+		if err != nil {
+			return err
+		}
+		c.Text, c.TextHex = string(raw), ""
+	}
+	if c.ErrHex != "" || c.ErrText != "" {
+		message := c.ErrText
+		if c.ErrHex != "" {
+			raw, err := hex.DecodeString(c.ErrHex)
+			if err != nil {
+				return err
+			}
+			message = string(raw)
+		}
+		if len(c.Err) != 1 {
+			return fmt.Errorf("err without exactly one class name: %v", c.Err)
+		}
+		c.Err = append(c.Err, message)
+	}
+	return nil
+}
+
 func (c goldenCase) check(got Result, err error) string {
 	if c.Refused {
-		if !errors.Is(err, ErrUnsupported) && !errors.Is(err, ErrUnexpectedZone) {
-			return "want a refusal"
+		// The only line the port does not answer: a text whose zone name is
+		// one of a non-fixed local zone's abbreviations (ErrUnexpectedZone).
+		if !errors.Is(err, ErrUnexpectedZone) {
+			return "want ErrUnexpectedZone"
 		}
 		return ""
 	}
@@ -83,9 +119,19 @@ func (c goldenCase) check(got Result, err error) string {
 func TestGoldenCorpus(t *testing.T) {
 	total, values, raised, refused, dayFirst := replayCorpus(t, "testdata/corpus.jsonl.gz")
 	if total < 100000 || values < 20000 || raised < 20000 || refused == 0 || dayFirst < 40000 {
-		t.Fatalf("corpus too small: %d cases (%d values, %d exceptions, %d refusals)", total, values, raised, refused)
+		t.Fatalf("corpus too small: %d cases (%d values, %d exceptions, %d zone errors)", total, values, raised, refused)
 	}
-	t.Logf("%d cases (%d with dayfirst=True): %d values, %d exceptions, %d refusals", total, dayFirst, values, raised, refused)
+	t.Logf("%d cases (%d with dayfirst=True): %d values, %d exceptions, %d zone errors", total, dayFirst, values, raised, refused)
+}
+
+// TestExtrasCorpus replays the long and non-ASCII cases of testdata/extras.jsonl.gz.
+func TestExtrasCorpus(t *testing.T) {
+	total, values, raised, refused, _ := replayCorpus(t, "testdata/extras.jsonl.gz")
+	if total < 25 || values < 4 || raised < 20 || refused != 0 {
+		t.Fatalf("extras corpus too small or unexpected: %d cases (%d values, %d exceptions, %d zone errors)",
+			total, values, raised, refused)
+	}
+	t.Logf("%d cases: %d values, %d exceptions", total, values, raised)
 }
 
 // replayCorpus runs every case of a corpus file through Parse and fails on
@@ -108,6 +154,9 @@ func replayCorpus(t *testing.T, path string) (total, values, raised, refused, da
 	for scanner.Scan() {
 		var c goldenCase
 		if err := json.Unmarshal(scanner.Bytes(), &c); err != nil {
+			t.Fatalf("line %d: %v", total+1, err)
+		}
+		if err := c.decode(); err != nil {
 			t.Fatalf("line %d: %v", total+1, err)
 		}
 		total++
@@ -153,35 +202,84 @@ func replayCorpus(t *testing.T, path string) (total, values, raised, refused, da
 	return total, values, raised, refused, dayFirst
 }
 
-func TestRefusals(t *testing.T) {
+// Zones the application never passes are application state, never handed off.
+func TestZoneError(t *testing.T) {
 	now := time.Date(2026, 11, 10, 12, 0, 0, 0, time.UTC)
 	rome, err := time.LoadLocation("Europe/Rome")
 	if err != nil {
 		t.Fatal(err)
 	}
-	cases := []struct {
-		name  string
-		text  string
-		local *time.Location
-	}{
-		{"invalid UTF-8", "2020-01-03\xff", time.UTC},
-		{"too long", strings.Repeat("1", MaxTextBytes+1), time.UTC},
-	}
-	for _, c := range cases {
-		_, err := Parse(c.text, now, c.local)
-		if !errors.Is(err, ErrUnsupported) || !errors.Is(err, refusal.ErrNotPorted) {
-			t.Errorf("%s: want ErrUnsupported, got %v", c.name, err)
-		}
-	}
-	// Zones the application never passes: application state, never handed off.
 	for name, local := range map[string]*time.Location{"nil zone": nil, "local abbreviation": rome} {
 		_, err := Parse("10:00 CEST", now, local)
 		if !errors.Is(err, ErrUnexpectedZone) || !errors.Is(err, refusal.ErrAppState) || errors.Is(err, refusal.ErrNotPorted) {
 			t.Errorf("%s: want ErrUnexpectedZone, got %v", name, err)
 		}
 	}
-	if _, err := Parse(strings.Repeat("1", MaxTextBytes), now, time.UTC); errors.Is(err, ErrUnsupported) {
-		t.Errorf("a text of MaxTextBytes must be answered, got %v", err)
+}
+
+// TestTextIsAPythonStr covers the two shapes the port used to refuse: text
+// holding bytes that are not UTF-8 (Django hands over its errors='replace'
+// decoding, a JSON lone surrogate its three-byte form) and text of any length.
+func TestTextIsAPythonStr(t *testing.T) {
+	now := time.Date(2026, 11, 10, 12, 0, 0, 0, time.UTC)
+	for _, item := range []struct {
+		name string
+		text string
+		want string
+	}{
+		{"replaced byte", "2020-01-03\xff", "Unknown string format: 2020-01-03\ufffd"},
+		{"surrogate", "12/03/2020 \xed\xa0\x80", "Unknown string format: 12/03/2020 \xed\xa0\x80"},
+		{"two surrogates", "\xed\xa0\xbd\xed\xb8\x80", "Unknown string format: \xed\xa0\xbd\xed\xb8\x80"},
+	} {
+		var raised *Error
+		if _, err := Parse(item.text, now, time.UTC); !errors.As(err, &raised) || raised.Message != item.want {
+			t.Errorf("%s: got %v, want %q", item.name, err, item.want)
+		}
+	}
+	// 70000 digits: Python's int conversion for the C int of datetime.replace.
+	var raised *Error
+	if _, err := Parse(strings.Repeat("1", 70000), now, time.UTC); !errors.As(err, &raised) ||
+		raised.Class != ClassOverflowError || raised.Message != "Python int too large to convert to C int" {
+		t.Errorf("70000 digits: got %v", err)
+	}
+}
+
+// A lone surrogate is not a letter, digit, space or decimal digit in Python
+// (str.isalpha, .isdigit, .isspace and .isdecimal are all false).
+func TestSurrogateCharacterClasses(t *testing.T) {
+	for r := rune(0xD800); r <= 0xDFFF; r++ {
+		if isAlpha(r) || isDigit(r) || isSpace(r) || decimalValue(r) >= 0 {
+			t.Fatalf("U+%04X is a letter, digit, space or decimal digit", r)
+		}
+		encoded := pystr.String([]rune{r})
+		if runeCount(encoded) != 1 || isDigitString(encoded) {
+			t.Fatalf("U+%04X: runeCount %d, isDigitString %v", r, runeCount(encoded), isDigitString(encoded))
+		}
+	}
+}
+
+// A 1 MiB text stays linear: a 64 KiB bound and per-byte work would show here.
+func TestMebibyteText(t *testing.T) {
+	now := time.Date(2026, 11, 10, 12, 0, 0, 0, time.UTC)
+	started := time.Now()
+	got, err := Parse(strings.Repeat(" ", 1<<20)+"12/03/2020", now, time.UTC)
+	if err != nil || (got != Result{Year: 2020, Month: 12, Day: 3}) {
+		t.Fatalf("got %+v, %v", got, err)
+	}
+	word := strings.Repeat("q", 1<<20)
+	var raised *Error
+	if _, err := Parse(word, now, time.UTC); !errors.As(err, &raised) ||
+		raised.Message != "Unknown string format: "+word {
+		t.Fatalf("1 MiB word: %v", err)
+	}
+	// 1,000,001 digits: the oracle needs about 40 s to raise the same
+	// OverflowError, so the case is not in the generated corpus.
+	if _, err := Parse(strings.Repeat("9", 1000001), now, time.UTC); !errors.As(err, &raised) ||
+		raised.Class != ClassOverflowError || raised.Message != "Python int too large to convert to C int" {
+		t.Fatalf("1,000,001 digits: %v", err)
+	}
+	if elapsed := time.Since(started); elapsed > 3*time.Second {
+		t.Fatalf("3 MiB of text took %v", elapsed)
 	}
 }
 

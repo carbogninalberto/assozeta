@@ -3,7 +3,8 @@ package pydateutil
 import (
 	"math/big"
 	"strings"
-	"unicode/utf8"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pystr"
 )
 
 // parserinfo tables (keys are the lowercase forms, as parserinfo._convert).
@@ -109,7 +110,7 @@ func (y *ymd) label(label byte) bool {
 
 // appendString is _ymd.append for a str.
 func (y *ymd) appendString(value string, label byte) bool {
-	if isDigitString(value) && utf8.RuneCountInString(value) > 2 {
+	if isDigitString(value) && runeCount(value) > 2 {
 		y.centurySpecified = true
 		if label != 0 && label != 'Y' {
 			return false
@@ -291,7 +292,7 @@ func adjustAMPM(hour *big.Int, ampm int) *big.Int {
 }
 
 func (p *parser) couldBeTZName(token string) bool {
-	if p.res.hour == nil || p.res.hasTZName || utf8.RuneCountInString(token) > 5 {
+	if p.res.hour == nil || p.res.hasTZName || runeCount(token) > 5 {
 		return false
 	}
 	switch token {
@@ -308,8 +309,8 @@ func (p *parser) couldBeTZName(token string) bool {
 
 // parse is parser._parse followed by parserinfo.validate. It returns false
 // where _parse returns None (a caught ValueError or IndexError) or raises
-// (p.raised).
-func (p *parser) parse(text string) bool {
+// (p.raised). chars are the Python code points of the input.
+func (p *parser) parse(text []rune) bool {
 	p.res = parsed{weekday: -1, ampm: -1}
 	p.ymd = ymd{dayIdx: -1, monthIdx: -1, yearIdx: -1}
 	res := &p.res
@@ -383,16 +384,16 @@ func (p *parser) parse(text string) bool {
 			if i+1 >= n {
 				return false
 			}
-			next := []rune(l[i+1])
+			next := pystr.Runes(l[i+1])
 			var hours, minutes *big.Int
 			var ok bool
 			switch {
 			case len(next) == 4:
 				// -0300
-				if hours, ok = pyInt(string(next[:2])); !ok {
+				if hours, ok = pyInt(pystr.String(next[:2])); !ok {
 					return false
 				}
-				if minutes, ok = pyInt(string(next[2:])); !ok {
+				if minutes, ok = pyInt(pystr.String(next[2:])); !ok {
 					return false
 				}
 			case i+2 < n && l[i+2] == ":":
@@ -421,7 +422,7 @@ func (p *parser) parse(text string) bool {
 			res.tzoffset = offset
 			// -0300 (BRST)
 			if i+5 < n && isJump(l[i+2]) && l[i+3] == "(" && l[i+5] == ")" &&
-				utf8.RuneCountInString(l[i+4]) >= 3 && p.couldBeTZName(l[i+4]) {
+				runeCount(l[i+4]) >= 3 && p.couldBeTZName(l[i+4]) {
 				res.tzname, res.hasTZName = l[i+4], true
 				i += 4
 			}
@@ -465,11 +466,11 @@ func parseMS(value string) (*big.Int, int, bool) {
 	if !ok {
 		return nil, 0, false
 	}
-	fraction := []rune(parts[1])
+	fraction := pystr.Runes(parts[1])
 	for len(fraction) < 6 {
 		fraction = append(fraction, '0')
 	}
-	micro, ok := pyInt(string(fraction[:6]))
+	micro, ok := pyInt(pystr.String(fraction[:6]))
 	if !ok {
 		return nil, 0, false
 	}
@@ -527,10 +528,10 @@ func (p *parser) numericToken(tokens []string, idx int) (int, bool) {
 	if !ok {
 		return 0, false
 	}
-	chars := []rune(repr)
+	chars := pystr.Runes(repr)
 	size := len(chars)
 	n := len(tokens)
-	sub := func(from, to int) string { return string(chars[min(from, size):min(to, size)]) }
+	sub := func(from, to int) string { return pystr.String(chars[min(from, size):min(to, size)]) }
 	dot := -1
 	for i, c := range chars {
 		if c == '.' {

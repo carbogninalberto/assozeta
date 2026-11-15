@@ -31,7 +31,7 @@
   - `treebuilder.go` builds the bs4 tree (`__init__.py`, `builder/__init__.py`, `element.py`), including the `already_closed_empty_element` state, `<pre>` literal mode, the meta charset rewrite and the comment/declaration join rules;
   - `render.go` is `Tag.decode(indent_level=0, formatter="minimal")`: attribute sorting and quoting, cdata-list attributes re-joined with single spaces, `str.strip()` whitespace.
 
-  Comments, doctypes, script/style and other raw-text elements, unquoted or duplicate attributes, stray `<` or `&`, control characters and lone surrogates all follow bs4. When bs4 itself raises (the integer digit limit for a character reference, or the constructor's surrogate check) `Prettify` returns `ErrPythonRaises`, which the view answers with the 500 page. The one refusal that stays is `ErrUnsupported` when the result would exceed 32 MiB: the indentation grows with the square of the nesting depth, so no streaming can hold it.
+  Comments, doctypes, script/style and other raw-text elements, unquoted or duplicate attributes, stray `<` or `&`, control characters and lone surrogates all follow bs4. When bs4 itself raises (the integer digit limit for a character reference, or the constructor's surrogate check) `Prettify` returns `ErrPythonRaises`, which the view answers with the 500 page. The 32 MiB output bound (`ErrOutputTooLarge`) is application state since long tail PR 3: under the view's limits (500,000 characters, depth 32) the largest output measured with bs4 4.13.3 is about 11 MiB, so the bound cannot be reached.
 
   Evidence: `TESTS/adapters/django/bs4_prettify_corpus.py` runs the real bs4 on:
   - editor documents (TipTap output shapes) and the model's default sections, plus their once- and twice-prettified stored forms;
@@ -48,7 +48,7 @@
 
 ## Not ported (refused with the 500 page before any write)
 
-- A prettified result above 32 MiB in `regulation`, `demand` or a section `text`. The indentation grows with the square of the nesting depth, so the output is refused rather than held.
+- (Long tail PR 3: a prettified result above 32 MiB cannot occur under the 500,000-character and depth-32 limits; the bound is application state, `bs4prettify.ErrOutputTooLarge`.)
 - Section names with characters outside the upper-case subset, for example `ß` or ligatures.
 - A logo or avatar the image processor cannot decode (for example TIFF or AVIF). The request logo and its response re-compression are both checked before writing.
 
@@ -97,7 +97,7 @@ Cases: `float-spellings-and-containers`, `logo-object`, `logo-boolean`, `fee-*-p
 - What bs4 raises (a character reference past the integer digit limit, or a lone surrogate in a short document without `<`) is
   `ErrPythonRaises`: the 500 page and nothing written. A U+0000 or lone surrogate the audit entry cannot hold after prettifying
   is the same 500 page and nothing written.
-- The bound that stays: an output above 32 MiB is `ErrUnsupported`, before any write.
+- The 32 MiB output bound is application state (`ErrOutputTooLarge`): unreachable under the view's limits.
 
 Cases: `legacy-html-regulation`, `legacy-html-demand`, `legacy-html-sections`, `html-resave`, `html-control-characters`,
 `html-charref-too-long`, `html-short-surrogate`, `html-nul-reference`, `html-surrogate-reference` (74 cases in all).
