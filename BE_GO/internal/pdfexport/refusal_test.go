@@ -4,8 +4,6 @@ import (
 	"errors"
 	"testing"
 	"time"
-
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // Paragraph tags whose drawing is not ported (lines, links, others), paragraph attributes, and logo data that is not a
@@ -17,9 +15,11 @@ func TestInputsNotPorted(t *testing.T) {
 	}
 	base := DataTable{Columns: []string{"A"}, Rows: [][]Cell{{{Text: "a"}}}, Title: "T", Portrait: true, IsA3: true}
 	for name, input := range map[string]DataTable{
+		"image file":     {Header: header("None", `A <img src="/tmp/logo.jpg"/> B`)},
 		"image png":      {Header: header("None", `A <img src="data:image/png;base64,iVBORw0KGgo="/> B`)},
 		"anchor":         {Header: header("None", `A <a name="top"/> B`)},
 		"internal link":  {Header: header("None", `A <a href="#top">B</a> C`)},
+		"sequence":       {Header: header("None", "A <seq/>B")},
 		"bullet":         {Header: header("None", "A <bullet>b</bullet> B")},
 		"para attribute": {Header: header("None", `<para align="justify" lindent="12">A</para>`)},
 		"text transform": {Header: header("None", `<para texttransform="uppercase">a</para>`)},
@@ -29,16 +29,6 @@ func TestInputsNotPorted(t *testing.T) {
 	} {
 		input.Columns, input.Rows, input.Title, input.Portrait, input.IsA3 = base.Columns, base.Rows, base.Title, true, true
 		if _, err := input.Build(time.Unix(946684800, 0)); !errors.Is(err, ErrNotPorted) {
-			t.Errorf("%s: %v", name, err)
-		}
-	}
-	// An image file or URL and the <seq> counter depend on something outside the
-	// request: application state (the 500 page), never a handoff.
-	for name, markup := range map[string]string{"image file": `A <img src="/tmp/logo.jpg"/> B`, "sequence": "A <seq/>B"} {
-		input := base
-		input.Header = header("None", markup)
-		if _, err := input.Build(time.Unix(946684800, 0)); !errors.Is(err, ErrOutsideInput) || !errors.Is(err, refusal.ErrAppState) ||
-			errors.Is(err, refusal.ErrNotPorted) {
 			t.Errorf("%s: %v", name, err)
 		}
 	}

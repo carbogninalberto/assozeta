@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"os"
-	"strings"
 	"testing"
 )
 
@@ -107,14 +106,6 @@ func TestParagraphParserCorpus(t *testing.T) {
 		if errors.Is(err, ErrNotPorted) {
 			if !item.Refusable && !item.Other {
 				t.Errorf("%q: refused", item.Text)
-			}
-			continue
-		}
-		if errors.Is(err, ErrOutsideInput) {
-			// A file or URL image (reportlab opens it: drawn, or raises when it is
-			// missing) and the process-wide <seq> counter: the 500 page.
-			if !strings.Contains(item.Text, "<img") && !strings.Contains(item.Text, "<seq") {
-				t.Errorf("%q: outside input", item.Text)
 			}
 			continue
 		}

@@ -6,8 +6,6 @@ import (
 	"strconv"
 	"strings"
 	"unicode"
-
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // _FK_TEXT, _FK_IMG, _FK_APPEND and _FK_BREAK of paragraph.py.
@@ -255,29 +253,11 @@ func (p *paraParser) unsupported() bool {
 	return false
 }
 
-// notPortedTag refuses a tag of paraNotPortedTags: the <seq*> tags are
-// ErrOutsideInput, the others ErrNotPorted.
-func (p *paraParser) notPortedTag(tag string) bool {
-	if strings.HasPrefix(tag, "seq") {
-		if p.err == nil {
-			p.err = ErrOutsideInput
-		}
-		return false
-	}
-	return p.unsupported()
-}
-
 // attrFailure answers the status of a conversion: an exception of reportlab
 // or an input that is not ported.
 func (p *paraParser) attrFailure(st attrStatus, what string) bool {
-	switch st {
-	case attrUnsupported:
+	if st == attrUnsupported {
 		return p.unsupported()
-	case attrOutside:
-		if p.err == nil {
-			p.err = ErrOutsideInput
-		}
-		return false
 	}
 	return p.fail("%s", what)
 }
@@ -549,7 +529,7 @@ func (p *paraParser) startTag(tag string, attrs []htmlAttr) bool {
 		return p.startLink(tag, attrs)
 	}
 	if paraNotPortedTags[tag] && !paraPorted[tag] {
-		return p.notPortedTag(tag)
+		return p.unsupported()
 	}
 	return true
 }
@@ -727,7 +707,7 @@ func (p *paraParser) endTag(tag string) bool {
 		return ok
 	}
 	if paraNotPortedTags[tag] && !paraPorted[tag] {
-		return p.notPortedTag(tag)
+		return p.unsupported()
 	}
 	return true
 }
@@ -993,7 +973,7 @@ func parseParagraph(text string, style paraStyle) ([]*frag, paraStyle, error) {
 		raw = []rune("<para>" + text + "</para>")
 	}
 	ok := (&htmlParser{raw: raw, events: parser}).feed()
-	if errors.Is(parser.err, ErrNotPorted) || errors.Is(parser.err, refusal.ErrAppState) {
+	if errors.Is(parser.err, ErrNotPorted) {
 		return nil, style, parser.err
 	}
 	if parser.err != nil {
@@ -1489,7 +1469,7 @@ func (p *paraParser) startImg(attrs []htmlAttr) bool {
 // other encodings and formats).
 func loadDataImage(src string) (image *jpegImage, st attrStatus) {
 	if len(src) < 5 || !strings.EqualFold(src[:5], "data:") {
-		return nil, attrOutside // a file on the server or a URL
+		return nil, attrUnsupported
 	}
 	typ, data, found := strings.Cut(src, ",")
 	if !found {
