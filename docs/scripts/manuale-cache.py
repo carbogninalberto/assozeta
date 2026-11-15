@@ -137,6 +137,11 @@ def _git(repo, *arguments, text=False):
     return result.stdout.strip() if text else result.stdout
 
 
+# Repository areas that are not part of the application the manual documents.
+# They never enter capture sources, caches or input hashes.
+EXCLUDED_AREAS = ('WEB/',)
+
+
 def validate_application_sources(application):
     """Validate portable source before capture; return copied overlay members.
 
@@ -147,6 +152,9 @@ def validate_application_sources(application):
     application = Path(application).resolve()
     sources = {}
     for relative in sorted(filter(None, _git(application, 'ls-files', '-z').decode().split('\0'))):
+        if relative.startswith(EXCLUDED_AREAS):
+            # Independent areas (the marketing site) are never manual inputs.
+            continue
         if relative == 'UI/.npmrc':
             path = owned(application, 'UI') / '.npmrc'
             if (path.is_symlink() or not path.is_file() or path.stat().st_size > 64

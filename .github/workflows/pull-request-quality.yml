@@ -3,6 +3,10 @@ name: Pull request quality
 on:
   pull_request:
     # Always report the final check, including for documentation-only PRs.
+    # The marketing site (WEB/) is outside every CI check: a PR touching only
+    # WEB/ runs nothing here.
+    paths-ignore:
+      - 'WEB/**'
 
 permissions:
   contents: read
