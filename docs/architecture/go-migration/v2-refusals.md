@@ -577,6 +577,23 @@ Left in these families after this change: the other rows of their appendix table
 template subsets, FatturaPA). `document-render`, `payment-reads`, `subscription-medical` and `docmanager-reads` were
 re-run green for the shared promotion signal.
 
+### Ported in the go-v2only-backupsreq change
+
+The rows of the `instance backups request not ported` sentinel that a request or a runner reply can
+produce. Receipts are `quality-reports/go-migration/instance-backups-http-backupsreq-*`; the family doc
+has the details.
+
+| Family | Route | Was refused | Evidence |
+|---|---|---|---|
+| instance-backups | `GET admin/backups`, `POST admin/backups` (B) | a runner reply bytes-decoded by `json`'s `detect_encoding` (UTF-16/32 with a BOM, and the NUL pattern without one), and Python's `NaN`, `Infinity` and `-Infinity` literals (`dto.RunnerJSONDecode`); a NaN reaching the body stays DRF's 500 (`dto.RenderableJSON`), one in an ignored key is 200, and a NaN `free` compares false | 180 cases; RED `backupsreq-red-r2` (Django 180/180, Go 500 on `overview-utf16-bom`); GREEN `backupsreq-native-r3` (Django and Go 180/180) and `backupsreq-versioned-r2` (180/180 on native Django, native Go, Caddy `/api/v1` and `/api/v2`); mutation `backupsreq-mutation-r1` (surrogate validator dropped) CAUGHT. Cases `overview-utf16-bom`, `overview-utf16-bom-be`, `overview-utf16-no-bom`, `overview-utf32-bom`, `overview-utf32-no-bom-be`, `overview-nan-ignored`, `overview-nan-margin`, `overview-infinity-margin`, `overview-negative-infinity-margin`, `overview-nan-free`, `overview-infinity-free` |
+| instance-backups | `POST admin/backups/download-token` (B) | a lone surrogate code point in `name` or `password` (a `\uD800` escape): DRF's `Surrogate characters are not allowed: U+XXXX.`, after the length and NUL errors and before the pattern; a pair is the character it encodes. The input sentinel of `dto/instance_backups.go` is gone | cases `token-password-lone-surrogate`, `token-name-lone-surrogate`, `token-password-long-lone-surrogate`, `token-paired-surrogate-password`; Go unit `go test ./internal/dto -run 'RunnerJSON\|RenderableJSON'`; same receipts |
+| instance-backups-actions, instance-backups, instance-admin | the backup routes, `admin/restarts`, `admin/updates` | not a refusal of their own: the shared decoder no longer calls `dto.AuditJSONLoads`, so the `audit serializer input not ported` sentinel left these 13 routes | `refusal_reach.py`: `audit serializer input not ported` 20 rows before, 7 after |
+
+Left refused in these families, with the reason: a runner reply nested past the decoder's limit (the
+depth at which Python's json codec raises `RecursionError` is the interpreter's live call stack, X) and
+one holding a lone surrogate (DRF's renderer refuses it only where it reaches the response; X/B for a
+later step); the cached data sizes and attempt counters and the signed download-token claims (C).
+
 ### Ported in the go-v2only-xlsxvalue change
 
 The shared pandas coercion of `get_excel_base64` and of the saved-report exporter (`xlsxexport.toNumeric`) and openpyxl's
@@ -992,9 +1009,10 @@ the renderer now answers them as Django does. The rest stay:
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | POST admin/backups/download-token | non-JSON body | `BE_GO/internal/handler/instance_backups.go:123` | B | UI JSON (`profile/sections/InstanceBackups.svelte:166`). cheap. Ported in t3plat: both fields are required CharFields, so a form or multipart body reads like JSON strings (cases `token-form-*`). |
-| GET/POST admin/backups | runner replies Go cannot decode (UTF-16/32, NaN, surrogates, deep nesting) | `service/instance_backups.go:128` | B | Runner is the project's own updater emitting standard JSON. legacy: no; medium. Kept refused: the runner is the project's own updater service and always emits standard JSON, so no request can produce a reply of this kind. |
-| GET admin/backups | cached sizes/attempt counters of other types | `service/instance_backups.go:227,273` | C | Cache written only by the app. Kept refused: no request can produce this state (only the app writes it). |
-| token/download | actor hex with Python `int()` extras; lone surrogates | `dto/instance_backups.go:89`, `service/instance_backups.go:112` | C | Tokens minted by the server. Kept refused: no request can produce this state (only the app writes it). |
+| POST admin/backups/download-token | a lone surrogate code point in `name` or `password` | `BE_GO/internal/dto/instance_backups.go` (`instanceBackupsChar`) | B (**ported in go-v2only-backupsreq**) | A JSON body can carry a `\uD800` escape (no UI input produces one). DRF's `Surrogate characters are not allowed: U+XXXX.`, after the length and NUL errors and before the pattern; a surrogate pair is the character it encodes. Cases `token-password-lone-surrogate`, `token-name-lone-surrogate`, `token-password-long-lone-surrogate`, `token-paired-surrogate-password`; receipts `backupsreq-*`. |
+| GET/POST admin/backups and the other runner routes | runner replies Python decodes but Go did not: UTF-16/32 JSON and `NaN`/`Infinity` literals (**ported in go-v2only-backupsreq**), lone surrogates and nesting past the decoder's limit (stay) | `dto/runner_json.go` (`RunnerJSONDecode`) | B (UTF-16/32 and the literals ported) / X (lone surrogates, nesting) | The reply comes from the project's own updater, and the fixture scripts it. `json.loads(bytes)` takes `detect_encoding`'s codec (the BOMs and the NUL pattern) and Python's `NaN`, `Infinity` and `-Infinity` literals; a NaN reaching the body is still DRF's 500 and one in an ignored key is 200 (cases `overview-utf16-*`, `overview-nan-*`, `overview-*infinity-*`). Kept refused: a lone surrogate (DRF's renderer refuses it only where it reaches the response, so the render checks would have to model it on every route) and nesting past 500 (the `RecursionError` depth is the interpreter's live call stack). |
+| GET admin/backups | cached sizes/attempt counters of other types | `service/instance_backups.go` (`dataSizes`, `instanceBackupsCached`, `instanceBackupsNext`, `instanceBackupsPasswordRefusal`), `repository/instance_backups.go` | C | Cache written only by the app. Kept refused: no request can produce this state (only the app writes it). |
+| token/download | actor hex with Python `int()` extras | `service/instance_backups.go` (`instanceBackupsUserID`) | C | Tokens minted by the server. Kept refused: no request can produce this state (only the app writes it). |
 | runner transport | odd `Content-Length` | updaterrunner | C | Own runner. Kept refused: no request can produce this state (only the app writes it). |
 
 ### evaluate-manuale.md
@@ -1006,7 +1024,7 @@ the renderer now answers them as Django does. The rest stay:
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | schedule/restore/remote/test/confirm/fetch, item view | form/multipart bodies | `BE_GO/internal/handler/instance_backup_actions.go:130,147`, `dto/instance_backup_actions.go:247` | B | UI JSON (`InstanceBackups.svelte:108,144,190,215`, `RemoteBackup.svelte:66,80,106,141`, `BackupSchedule.svelte:39`); upload uses `application/gzip` (`backupUpload.js:27`). cheap. Ported in t3plat for restore, remote key, key confirmation and fetch (required CharFields only; cases `restore-form-*`). **Ported in t4l2** for schedule, remote settings, remote test and the item view: the serializers read HTML input (`dto.ValidateBackupActionsInput`), cases `schedule-form-*`, `schedule-multipart-*`, `remote-put-form*`, `remote-test-form*`, `keep-multipart-body`, `delete-multipart-*`. |
-| same | lone surrogates in CharFields; undecodable runner replies | `service/instance_backup_actions.go:275,304,334,466` | B | Not typable in the UI; own runner. legacy: no. **Ported in t4l2**: a lone surrogate in a CharField answers DRF's `Surrogate characters are not allowed: U+XXXX.` after the length and NUL errors and before the pattern (cases `restore-lone-surrogates`, `schedule-time-lone-surrogate`, `remote-put-lone-surrogate`). The runner replies are kept refused (own service, see the overview row). |
+| same | lone surrogates in CharFields; undecodable runner replies | `service/instance_backup_actions.go`, `dto/runner_json.go` | B | Not typable in the UI; own runner. legacy: no. **Ported in t4l2**: a lone surrogate in a CharField answers DRF's `Surrogate characters are not allowed: U+XXXX.` after the length and NUL errors and before the pattern (cases `restore-lone-surrogates`, `schedule-time-lone-surrogate`, `remote-put-lone-surrogate`). **Ported in go-v2only-backupsreq**: the runner replies take `detect_encoding`'s codec and Python's `NaN`/`Infinity` literals, and the render checks use `dto.RenderableJSON` so a non-finite value that reaches a reply body is the 500 page (it was refused before it could); a lone surrogate or nesting past the decoder's limit in a reply stays refused (see the row in instance-backups.md). |
 
 ### google-calendar.md
 | route | refusal condition | Go site | class | evidence / notes |

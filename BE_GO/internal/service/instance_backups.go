@@ -1,7 +1,6 @@
 package service
 
 import (
-	"bytes"
 	"context"
 	"crypto/hmac"
 	"crypto/sha256"
@@ -15,7 +14,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"unicode/utf8"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
@@ -103,32 +101,17 @@ func instanceBackupsUnavailable(reason string) *InstanceBackupsReply {
 	return instanceBackupsBody(200, domain.RequestField{Name: "available", Value: false}, domain.RequestField{Name: "reason", Value: reason})
 }
 
-// instanceBackupsJSON is json.loads(bytes): decoded=false for the
+// instanceBackupsJSON is json.loads(response.read()): decoded=false for the
 // ValueErrors call_runner catches (invalid JSON or UTF-8, Python's integer
-// digit limit). A UTF-8 BOM is dropped (utf-8-sig). UTF-16/32 bodies,
-// surrogate code points, NaN/Infinity literals and deep nesting are not ported.
+// digit limit). Go reads the encodings json detects and Python's NaN/Infinity
+// literals; a reply nested past the decoder's limit or holding a lone surrogate
+// is left to Django (dto.RunnerJSONDecode).
 func instanceBackupsJSON(raw []byte) (any, bool, error) {
-	if bytes.HasPrefix(raw, []byte{0xff, 0xfe}) || bytes.HasPrefix(raw, []byte{0xfe, 0xff}) ||
-		len(raw) >= 2 && (raw[0] == 0 || raw[1] == 0) {
+	value, decoded, refused := dto.RunnerJSONDecode(raw)
+	if refused {
 		return nil, false, ErrInstanceBackupsNotPorted
 	}
-	raw = bytes.TrimPrefix(raw, []byte{0xef, 0xbb, 0xbf})
-	for i := 0; i+1 < len(raw); i++ {
-		if raw[i] == 0xed && raw[i+1] >= 0xa0 && raw[i+1] <= 0xbf {
-			return nil, false, ErrInstanceBackupsNotPorted // surrogatepass decoding
-		}
-	}
-	if !utf8.Valid(raw) {
-		return nil, false, nil
-	}
-	value, ok, err := dto.AuditJSONLoads(string(raw))
-	switch {
-	case errors.Is(err, dto.ErrAuditUnhandled):
-		return nil, false, nil
-	case err != nil:
-		return nil, false, ErrInstanceBackupsNotPorted
-	}
-	return value, ok, nil
+	return value, decoded, nil
 }
 
 // Overview is BackupOverviewView.get.
@@ -211,8 +194,8 @@ func (s *InstanceBackups) Overview(ctx context.Context, refresh bool) (*Instance
 	body := domain.RequestObject{{Name: "available", Value: true}, {Name: "archives", Value: archives},
 		{Name: "retention", Value: retention}, {Name: "disk", Value: merged}, {Name: "next_backup", Value: next},
 		{Name: "schedule", Value: schedule}, {Name: "actions", Value: actions}, {Name: "remote", Value: remote}}
-	if !dto.AuditFiniteJSON(body) {
-		return nil, errInstanceBackupsUnhandled // strict JSONRenderer: ValueError
+	if !dto.RenderableJSON(body) {
+		return nil, errInstanceBackupsUnhandled // strict JSONRenderer: a non-finite number raises, a lone surrogate fails the UTF-8 encode
 	}
 	return &InstanceBackupsReply{Status: 200, Body: body}, nil
 }
@@ -331,6 +314,17 @@ func instanceBackupsNext(sizes domain.RequestObject, free, margin any) (any, err
 		default:
 			fits = new(big.Float).SetFloat64(value).Cmp(new(big.Float).SetInt(required)) >= 0
 		}
+	case float64:
+		// Python's NaN, Infinity and -Infinity literals: a NaN comparison is
+		// false.
+		switch {
+		case math.IsInf(v, 1):
+			fits = true
+		case math.IsInf(v, -1), math.IsNaN(v):
+			fits = false
+		default:
+			fits = new(big.Float).SetFloat64(v).Cmp(new(big.Float).SetInt(required)) >= 0
+		}
 	default:
 		return nil, errInstanceBackupsUnhandled // '>=' between str/list/dict and int: TypeError
 	}
@@ -340,10 +334,7 @@ func instanceBackupsNext(sizes domain.RequestObject, free, margin any) (any, err
 
 // Token is BackupDownloadTokenView.post for the authenticated actor.
 func (s *InstanceBackups) Token(ctx context.Context, actor string, body any, audit domain.LoginAuditContext) (*InstanceBackupsReply, error) {
-	input, invalid, err := dto.ParseInstanceBackupsToken(body)
-	if err != nil {
-		return nil, ErrInstanceBackupsNotPorted
-	}
+	input, invalid := dto.ParseInstanceBackupsToken(body)
 	if invalid != nil {
 		return &InstanceBackupsReply{Status: 400, Body: invalid}, nil
 	}

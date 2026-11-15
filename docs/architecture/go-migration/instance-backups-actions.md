@@ -47,7 +47,9 @@ As in [instance-backups](instance-backups.md) (production mode, `<dir>/runner.so
   `Host: localhost` and `Accept-Encoding: identity`, no `User-Agent`. Without a payload (the remote
   settings GET) there is no body and no `Content-Length`. Timeouts are per socket operation: 5 s, 30 s for
   the remote test and fetch.
-- The reply is decoded before the status is looked at; a rejection (status 400 or more) whose body is
+- The reply is decoded before the status is looked at (the shared decoder of
+  [instance-backups](instance-backups.md): `json`'s detected codec and Python's `NaN`/`Infinity`
+  literals); a rejection (status 400 or more) whose body is
   not an object is the 500 page; its message is `body.get('error', default)`, rendered with Python `str()`.
 - `send_runner_stream('/backups/upload', chunks, length)`: `Content-Type: application/gzip` and the
   request's `Content-Length`, then exactly that many bytes copied as they arrive (1 MiB reads). A broken
@@ -188,8 +190,10 @@ middleware, which skips `STREAMED_PATHS`) sees an empty body and the view reads 
   `remote-put-form*`, `remote-put-multipart`, `remote-test-form*`, `keep-multipart-body`,
   `delete-multipart-*`.
 - (t4l2) A lone surrogate in a CharField is DRF's surrogate validator error (served).
-- Runner replies Python decodes but Go does not (as in
-  instance-backups: UTF-16/32, surrogates, NaN/Infinity literals, deep nesting).
+- (go-v2only-backupsreq) A runner reply nested past the decoder's limit or holding a lone surrogate
+  (as in instance-backups: `dto.RunnerJSONDecode`). The render checks now use `dto.RenderableJSON`,
+  so a `NaN`/`Infinity` runner value is the 500 page wherever it reaches a reply body (it was refused
+  before it could).
 
 Implemented but not exercised by the fixture: development mode, an upload whose body ends before its
 Content-Length (the client is gone), a broken pipe while streaming a large body, a non-ASCII archive name
@@ -212,6 +216,8 @@ the limit, and over-limit uploads are written while the early answer is read):
   (a try is counted before the check; simultaneous tries check at most five passwords),
   `./internal/config -run InstanceAdminBackupSettings`.
 - Re-run: `instance-backups` (161, shared `password_refusal`), the backup failure consumer harness.
+- Re-run after `go-v2only-backupsreq` (shared decoder and render checks): `backupsreq-actions-r2`,
+  275/275 on native Django and native Go; `instance-backups` at 180 on the four transports.
 
 Earlier port:
 

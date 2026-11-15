@@ -1,7 +1,6 @@
 package dto
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -155,35 +154,7 @@ func auditPythonJSONLoads(text string) (any, bool, error) {
 		return nil, false, ErrAuditNotPorted
 	}
 	data := []byte(text)
-	constants := map[int64]any{}
-	for i := 0; i < len(data); {
-		switch c := data[i]; {
-		case c == '"':
-			i++
-			for i < len(data) && data[i] != '"' {
-				if data[i] == '\\' {
-					i++
-				}
-				i++
-			}
-			i++
-		case c == 'N' && bytes.HasPrefix(data[i:], []byte("NaN")):
-			copy(data[i:i+3], "  0")
-			constants[int64(i+3)] = math.NaN()
-			i += 3
-		case c == 'I' && bytes.HasPrefix(data[i:], []byte("Infinity")):
-			sign, start := 1, i
-			if i > 0 && data[i-1] == '-' {
-				sign, start = -1, i-1
-			}
-			copy(data[start:i+8], strings.Repeat(" ", i+8-start-1)+"0")
-			constants[int64(i+8)] = math.Inf(sign)
-			i += 8
-		default:
-			i++
-		}
-	}
-	value, err := parseProfileTablesJSONConstants(data, constants, true)
+	value, err := parseProfileTablesJSONConstants(data, pythonJSONConstants(data), true)
 	switch {
 	case errors.Is(err, ErrLoginRateJSONValue):
 		return nil, false, ErrAuditUnhandled

@@ -197,8 +197,8 @@ func backupActionsRejection(outcome *backupActionsOutcome) *BackupActionsReply {
 func (s *InstanceBackupActions) audit(ctx context.Context, request BackupActionsRequest, action, value string,
 	extra domain.RequestObject) error {
 	additional := append(domain.RequestObject{{Name: "actor_id", Value: request.Actor}}, extra...)
-	if !dto.AuditFiniteJSON(additional) {
-		return errInstanceBackupsUnhandled // PostgreSQL rejects the Infinity/NaN JSON tokens
+	if !dto.RenderableJSON(additional) {
+		return errInstanceBackupsUnhandled // PostgreSQL rejects the Infinity/NaN tokens and the lone surrogates of jsonb
 	}
 	target, err := s.store.LogTarget(ctx)
 	if err != nil {
@@ -214,7 +214,7 @@ func (s *InstanceBackupActions) audit(ctx context.Context, request BackupActions
 
 // rendered is the strict JSON renderer: non-finite numbers are a ValueError.
 func backupActionsRendered(reply *BackupActionsReply) (*BackupActionsReply, error) {
-	if !dto.AuditFiniteJSON(reply.Body) {
+	if !dto.RenderableJSON(reply.Body) {
 		return nil, errInstanceBackupsUnhandled
 	}
 	return reply, nil

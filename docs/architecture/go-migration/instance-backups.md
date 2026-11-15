@@ -39,10 +39,13 @@ Go sends the same request http.client does: `Host: localhost`, `Accept-Encoding:
 separators, ASCII) with its `Content-Length` (`updaterrunner.Client.CallPayload`). Python's socket timeout applies to each read and write (5 s, 300 s for
 streams).
 
-`call_runner` decodes the body with `json.loads(bytes)` before it looks at the status: a UTF-8 BOM is
-dropped (`utf-8-sig`); invalid JSON or UTF-8 (and integers over Python's digit limit) are unavailable.
-A status of 400 or more is `UpdaterRejected(body.get('error', 'Aggiornamento non disponibile.'), status)`;
-a body that is not an object is an `AttributeError` (the 500 page).
+`call_runner` decodes the body with `json.loads(bytes)` before it looks at the status: `json`'s
+`detect_encoding` picks the codec (the UTF-8, UTF-16 and UTF-32 BOMs; the NUL pattern that selects
+`utf-16-be/le` and `utf-32-be/le`; otherwise UTF-8, a UTF-8 BOM included), decoded with `surrogatepass`;
+Python's `NaN`, `Infinity` and `-Infinity` literals are floats. Invalid JSON or UTF-8 (and integers over
+Python's digit limit) are unavailable. A status of 400 or more is
+`UpdaterRejected(body.get('error', 'Aggiornamento non disponibile.'), status)`; a body that is not an
+object is an `AttributeError` (the 500 page).
 
 ## GET admin/backups
 
@@ -62,7 +65,8 @@ a body that is not an object is an `AttributeError` (the 500 page).
    `estimated = database + objects`, `required = estimated * 2 + margin * 1 MiB` (margin is
    `space_margin_mb` only when it is an `int` other than `bool` and at least 1, else 1024; Python
    integers, so no overflow) and `fits = free is None or free >= required` (exact int/float
-   comparison; a string `free` is a `TypeError`). Then the runner's `schedule` (default `None`),
+   comparison; a string `free` is a `TypeError`). `NaN` compares false, as it does in Python. Then the
+   runner's `schedule` (default `None`),
   `actions` (default `{}`) and `remote` (default `None`), passed through whatever their type (older
   runners have none of them). Non-finite numbers anywhere fail DRF's strict renderer (500).
 
@@ -90,7 +94,12 @@ is `audit()` (action, change, value, extra `additional_data`).
 `DownloadTokenSerializer`: `name` is a `RegexField` on the archive pattern (trimmed; its `invalid`
 message is the pattern message, also for a bool or a list), `password` a `CharField(max_length=256,
 trim_whitespace=False)` (`'   '` is a password; numbers become their `str()`). Python's `\d` is any
-Unicode decimal digit (Go `\p{Nd}`). Then, per actor (`authenticated_user`):
+Unicode decimal digit (Go `\p{Nd}`). A lone surrogate code point (a `\uD800` escape in the JSON body)
+is DRF's `ProhibitSurrogateCharactersValidator` error
+`Surrogate characters are not allowed: U+D800.`, after the length and NUL errors and before the
+pattern; a surrogate pair is the character it encodes. A form or multipart body reads like JSON
+strings (every field is a required `CharField`; cases `token-form-*`). Then, per actor
+(`authenticated_user`):
 
 - `cache.get('instance:backup-download-attempts:<actor>', 0) >= 5` is 429
   `Troppi tentativi. Riprova tra qualche minuto.` before the password is checked;
@@ -127,18 +136,20 @@ JSON body (`Risorsa non disponibile.` when it does not decode; a non-object is t
 runner's `Content-Length`, `Content-Disposition: attachment; filename="<name>"`,
 `Cache-Control: no-store` and `Referrer-Policy: no-referrer`.
 
+The token is minted by the server, so its claims hold no lone surrogate; a claimed actor whose hex
+form needs Python's `int(..., 16)` extras stays refused (only the application writes that state).
+
 ## Not ported (refused with the 500 page before any write)
 
-- Request bodies other than JSON on the token POST (DRF also parses form and multipart bodies).
-- Runner bodies Python decodes but Go does not: UTF-16/UTF-32 JSON, surrogate code points, `NaN` and
-  `Infinity` literals (Django renders them only where they are not in the response, for example an
-  ignored inventory key or an error message), deep nesting.
-  On the manual backup POST such a reply is refused before the entry is written (Django writes the
-  `backup_create` entry and then fails rendering a `NaN` reply).
+- A runner body nested past the decoder's limit and one holding a lone surrogate (a `\uD800` escape or
+  a `surrogatepass` code unit), which DRF's renderer refuses only where it reaches the response and
+  whose Python answer (`RecursionError` at a depth set by the live call stack, `UnicodeEncodeError` at
+  render time) Go does not model here.
+  On the manual backup POST such a reply is refused before the entry is written.
 - Cached sizes that are not a dict of `None`, `int`, `str` and `bool` values, or whose sizes are not
   both `int` (Django may add floats); attempt counters that are not plain integers.
 - A claimed actor whose hex form needs Python's `int(..., 16)` extras (sign, underscores, `0x`,
-  whitespace, non-ASCII digits); lone surrogates in the token body.
+  whitespace, non-ASCII digits).
 - Runner `Content-Length` values Python's `int()` accepts but Go's HTTP parser rejects (a sign,
   underscores), which Go reports as unavailable.
 
@@ -147,7 +158,7 @@ runner status above 599 (500), a cache or database error.
 
 ## Evidence
 
-`TESTS/fixtures/instance_backups_http.json` (161 cases, from `TESTS/fixtures/generate_instance_backups_http.py`).
+`TESTS/fixtures/instance_backups_http.json` (180 cases, from `TESTS/fixtures/generate_instance_backups_http.py`).
 The adapter (`TESTS/adapters/django/instance_backups_http.py`) owns, for both servers, a private MinIO
 bucket, the update runner stub (an HTTP/1.1 server on a Unix socket in a short `/tmp` directory with a
 placeholder token file) and production mode (`override_settings` for Django, `GO_FIXTURE_ENVIRONMENT`
@@ -163,6 +174,31 @@ must equal the reported one.
 
 Re-run after the shared password check counts each try before checking it (`sec-backups`):
 161/161 on native Django, native Go, Caddy `/api/v1` and `/api/v2` (`sec-versioned-r1`).
+
+Ported in `go-v2only-backupsreq` (the refusals of this sentinel that a request or a runner reply can
+produce, see [v2-refusals](v2-refusals.md)):
+
+- the runner reply is decoded like `json.loads(bytes)`: `json`'s `detect_encoding` (the UTF-8, UTF-16
+  and UTF-32 BOMs and the NUL pattern), `surrogatepass`, and Python's `NaN`, `Infinity` and
+  `-Infinity` literals (`dto.RunnerJSONDecode`); a NaN reaching the body is still DRF's 500
+  (`dto.RenderableJSON`), one in an ignored key stays 200, and a NaN `free` compares false;
+- the download-token serializer answers DRF's surrogate validator error for a lone surrogate code
+  point; the input sentinel of `dto/instance_backups.go` is gone.
+
+Cases `overview-utf16-bom`, `overview-utf16-bom-be`, `overview-utf16-no-bom`, `overview-utf32-bom`,
+`overview-utf32-no-bom-be`, `overview-nan-ignored`, `overview-nan-margin`, `overview-infinity-margin`,
+`overview-negative-infinity-margin`, `overview-nan-free`, `overview-infinity-free`,
+`token-password-lone-surrogate`, `token-name-lone-surrogate`,
+`token-password-long-lone-surrogate`, `token-paired-surrogate-password`; Go unit
+`go test ./internal/dto -run 'RunnerJSON|RenderableJSON'`. RED `backupsreq-red-r2` (Django 180/180, Go
+500 on `overview-utf16-bom`), GREEN `backupsreq-native-r3` (Django and Go 180/180) and
+`backupsreq-versioned-r2` (180/180 on the four transports), mutation `backupsreq-mutation-r1`
+(dropping the surrogate validator) CAUGHT. Re-ran green: `instance-backups-actions`
+(`backupsreq-actions-r2`, 275), `audit-logs` (`backupsreq-auditlogs-r1`, 143, the shared
+`json.loads` constants) and `instance-updates` (`backupsreq-updates-r1`, 40).
+
+Kept refused: a runner reply nested past the decoder's limit or holding a lone surrogate, and the
+cached values, attempt counters and signed-token claims listed above.
 
 Re-verification after the Django main merge (`BE/instance/backups.py` gained the overview's `schedule`,
 `actions` and `remote` keys and its POST; the other new backup routes are a separate family):
