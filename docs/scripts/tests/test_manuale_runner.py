@@ -350,7 +350,7 @@ class ManualRunnerTests(unittest.TestCase):
                                        manual_repository=str(run / 'manual'))
             commands = []
 
-            def management(current, *args):
+            def management(current, *args, reuse=False):
                 commands.append(args)
                 return ['seed-fixture']
 
