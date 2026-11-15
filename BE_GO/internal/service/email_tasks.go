@@ -99,12 +99,14 @@ func (s *EmailTasks) render(ctx context.Context, tx domain.EmailTaskTransaction,
 	brand, err := emailrender.Brand(config, emailrender.Settings{AppURL: s.settings.AppURL, WhitelabelName: s.settings.WhitelabelName,
 		IsWhitelabel: s.settings.IsWhitelabel})
 	if err != nil {
-		return "", errors.Join(domain.ErrEmailTaskUnsupported, err)
+		// emailrender's refusals are application state (repository templates, auto_now brand date): the 500 page, never handed off.
+		return "", err
 	}
 	// No language is activated in the worker: LANGUAGE_CODE.
 	html, err := emailrender.Render(name, context, emailrender.Options{Language: "it", Brand: brand})
 	if err != nil {
-		return "", errors.Join(domain.ErrEmailTaskUnsupported, err)
+		// emailrender's refusals are application state (repository templates, auto_now brand date): the 500 page, never handed off.
+		return "", err
 	}
 	return html, nil
 }

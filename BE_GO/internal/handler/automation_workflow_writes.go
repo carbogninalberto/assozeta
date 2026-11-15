@@ -121,7 +121,7 @@ func (h *AutomationWorkflowWritesHandler) Update(c echo.Context) error {
 		return c.JSON(404, map[string]string{"msg": "workflow not found."})
 	case errors.Is(err, dto.ErrAutomationWorkflowInvalid):
 		return c.JSON(400, map[string]string{"msg": "workflow not valid."})
-	case errors.Is(err, domain.ErrAutomationWorkflowUpdateNotPorted), errors.Is(err, dto.ErrAutomationWorkflowFormTreeNotPorted):
+	case errors.Is(err, dto.ErrAutomationWorkflowFormTreeNotPorted):
 		c.Logger().Error(err)
 	}
 	return messageReadsError(c, err)

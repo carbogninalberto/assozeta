@@ -4,16 +4,10 @@ import (
 	"context"
 	"errors"
 	"time"
-
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // ErrCommunicationConfigurationNotFound is the views' {"msg": "info not found."}.
 var ErrCommunicationConfigurationNotFound = errors.New("info not found.")
-
-// ErrSMTPVerifyNotPorted refuses a verification that would open an SMTP
-// connection (smtplib connect, login and the test email): HTTP 500, no write.
-var ErrSMTPVerifyNotPorted = refusal.New("SMTP verification needs an outbound connection and is not ported")
 
 // ErrCommunicationNotAssociationRole mirrors User.is_sport_association()
 // raising ValueError for a role outside association and collaborator.

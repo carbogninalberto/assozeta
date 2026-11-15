@@ -207,7 +207,7 @@ func (s *CommunicationSMTP) Verify(ctx context.Context, identity domain.Resolved
 	if err == nil {
 		return false, message, tx.Commit()
 	}
-	if !errors.Is(err, domain.ErrSMTPVerifyNotPorted) {
+	if !errors.Is(err, errSMTPVerifyConnects) {
 		return false, "", err
 	}
 	// self.sport_association.user.email (the related user through the base manager).
@@ -220,7 +220,8 @@ func (s *CommunicationSMTP) Verify(ctx context.Context, identity domain.Resolved
 	}
 	plan, err := s.smtpVerifyPlan(row, recipient)
 	if err != nil {
-		return false, "", err
+		// X1 (accepted divergence): verified false with Go's text; Django answers the platform's text.
+		return false, err.Error(), nil
 	}
 	err = s.verifySend(ctx, plan.server, plan.given, recipient, plan.message)
 	if err == nil {
@@ -232,7 +233,8 @@ func (s *CommunicationSMTP) Verify(ctx context.Context, identity domain.Resolved
 	if text, ok := smtpsend.PythonMessage(err); ok {
 		return false, text, nil
 	}
-	return false, "", errors.Join(domain.ErrSMTPVerifyNotPorted, err)
+	// X1 (accepted divergence): verified false with Go's text; Django answers the platform's text.
+	return false, err.Error(), nil
 }
 
 type smtpVerifyPlan struct {
@@ -248,8 +250,7 @@ const smtpVerifyTimeout = 10 * time.Second
 // smtplib's connect() of a falsy port (the number after the host's only ':',
 // else the default port, 465 for SSL), login(None, ...) for a missing user or
 // password, and the from text with the sender name as it is.
-// Refused (domain.ErrSMTPVerifyNotPorted): a port outside 1-65535 and an
-// empty host in front of the port.
+// Verify answers a plan error as X1 (verified false with the error's text).
 func (s *CommunicationSMTP) smtpVerifyPlan(row domain.CommunicationConfigurationRecord, recipient string) (smtpVerifyPlan, error) {
 	server := smtpsend.Server{Host: *row.Host, Encryption: row.Encryption, Timeout: smtpVerifyTimeout}
 	port := int64(0)
@@ -260,14 +261,23 @@ func (s *CommunicationSMTP) smtpVerifyPlan(row domain.CommunicationConfiguration
 		if strings.Count(server.Host, ":") == 1 {
 			host, suffix, _ := strings.Cut(server.Host, ":")
 			number, ok := smtpVerifyPythonInt(suffix)
-			if !ok || host == "" {
-				return smtpVerifyPlan{}, domain.ErrSMTPVerifyNotPorted
+			if !ok {
+				// Unreachable through Verify: SMTPVerifyWithoutConnection answered
+				// "nonnumeric port" before the plan was built.
+				return smtpVerifyPlan{}, errors.New("nonnumeric port " + strconv.Quote(suffix))
 			}
 			if (row.Encryption == "SSL" || row.Encryption == "TLS") && !smtpsend.PlainHostName(server.Host) {
 				// The whole text is the TLS server name ('idna' codec).
-				return smtpVerifyPlan{}, domain.ErrSMTPVerifyNotPorted
+				// X1 (accepted divergence): verified false with Go's text; Django answers the platform's text.
+				return smtpVerifyPlan{}, errors.New("tls: invalid server name " + strconv.Quote(server.Host))
 			}
 			server.ConnectHost, port = host, number
+			if host == "" {
+				// Python's getaddrinfo('') resolves the local system: smtpsend
+				// dials net.JoinHostPort(ConnectHost, port) but falls back to Host
+				// when ConnectHost is empty, so Host is cleared too.
+				server.Host = ""
+			}
 		}
 		if port == 0 {
 			port = 25
@@ -277,7 +287,8 @@ func (s *CommunicationSMTP) smtpVerifyPlan(row domain.CommunicationConfiguration
 		}
 	}
 	if port < 1 || port > 65535 {
-		return smtpVerifyPlan{}, domain.ErrSMTPVerifyNotPorted
+		// X1 (accepted divergence): verified false with Go's text; Django answers the platform's text.
+		return smtpVerifyPlan{}, errors.New("dial tcp: address " + strconv.FormatInt(port, 10) + ": invalid port")
 	}
 	server.Port = int(port)
 	user := "None"
@@ -361,12 +372,16 @@ func smtpVerifyDecimal(r rune) (byte, bool) {
 
 var pythonASCIIInt = regexp.MustCompile(`^[+-]?[0-9](?:_?[0-9])*$`)
 
+// errSMTPVerifyConnects is SMTPVerifyWithoutConnection's internal marker: the
+// configuration would open a socket (Verify then builds the plan).
+var errSMTPVerifyConnects = errors.New("smtp verify: the configuration connects")
+
 // SMTPVerifyWithoutConnection reproduces smtplib for configurations that
 // raise before opening a socket: SMTP()/SMTP_SSL() connect only for a truthy
 // host, so login() or starttls() raise SMTPServerDisconnected('please run
 // connect() first'); connect() with a falsy port splits a host holding exactly
 // one ':' and int() of a non-numeric suffix raises OSError('nonnumeric port').
-// Anything else would connect: domain.ErrSMTPVerifyNotPorted.
+// Anything else would connect: errSMTPVerifyConnects.
 func SMTPVerifyWithoutConnection(row domain.CommunicationConfigurationRecord) (string, error) {
 	if row.Host == nil || *row.Host == "" {
 		return "please run connect() first", nil
@@ -377,5 +392,5 @@ func SMTPVerifyWithoutConnection(row domain.CommunicationConfigurationRecord) (s
 			return "nonnumeric port", nil
 		}
 	}
-	return "", domain.ErrSMTPVerifyNotPorted
+	return "", errSMTPVerifyConnects
 }

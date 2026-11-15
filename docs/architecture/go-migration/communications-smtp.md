@@ -62,20 +62,23 @@ Django remains the production execution owner.
   plain-socket read timeout) and of a refused connection. The row is read and
   the transaction ended before the connection is opened.
 
-## Not ported (refused before any effect)
+## Accepted divergence X1 (long-tail PR 3, agent B)
 
-Go answers HTTP 500 (`domain.ErrSMTPVerifyNotPorted`, logged) for these verify inputs:
+Since long-tail PR 3 nothing on this route is handed off. Where Django answers `{'verified': false, 'msg': str(e)}` with
+a text Go does not rebuild (it depends on the platform libraries), Go answers `{'verified': false, 'msg': <Go's error
+text>}` (approved divergence X1, `accepted-divergences.md`):
 
-- Before connecting: a port outside 1-65535 and the host texts `smtplib` cannot split.
+- before connecting: a port outside 1-65535 (`dial tcp: address <port>: invalid port`) and a TLS or SSL host text that
+  is not a plain host name (`tls: invalid server name "<host>"`). A host with an empty name before its port (`:25`)
+  now connects to the local system, as Python's `getaddrinfo('')` does.
   Ported (restb2, `verify-port-in-host*`, `verify-missing-*`, `verify-cram-md5*`, `verify-login-*`, `verify-sender-*`):
   a falsy port with the number after the host's only colon (Unicode digits, signs and spaces as `int()` reads them), a
   missing user or password (formatted as the text `None` by AUTH PLAIN, a failure text from CRAM-MD5 or LOGIN),
   servers that challenge (CRAM-MD5 first, LOGIN with one challenge per value), and sender names that
   `smtplib.quoteaddr` reads as a second address or a comment.
-- After a failed connection whose Python text depends on the platform
-  libraries, other than the two cases under "Platform texts" below: other TLS
-  handshake errors, temporary resolver failures, connect timeouts, resets and
-  read timeouts inside TLS. Nothing is written in either case.
+- after a failed connection whose Python text depends on the platform libraries, other than the two cases under
+  "Platform texts" below: other TLS handshake errors, temporary resolver failures, connect timeouts, resets and read
+  timeouts inside TLS. Nothing is written in either case.
 
 ## Platform texts (v2-misc-3)
 

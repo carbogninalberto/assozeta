@@ -58,9 +58,6 @@ func communicationSMTPError(c echo.Context, err error) error {
 	case errors.Is(err, dto.ErrCommunicationSMTPInvalid):
 		return c.JSON(400, map[string]string{"msg": "info not valid."})
 	}
-	if errors.Is(err, domain.ErrSMTPVerifyNotPorted) {
-		c.Logger().Error(err)
-	}
 	return restError(c, err)
 }
 

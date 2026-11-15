@@ -203,7 +203,8 @@ func (s *AutomationWorkflowWrites) Update(ctx context.Context, identity domain.R
 		}
 		reset, outcome, scheduleAt = automationWorkflowEnablePlan(tree, s.now(), rome)
 		if outcome == automationWorkflowTriggerSchedule && s.tasks == nil {
-			return domain.ErrAutomationWorkflowUpdateNotPorted
+			// cmd/server always calls WithTasks.
+			return domain.ErrServerComposition
 		}
 	}
 	save := func(before map[string]string) error {

@@ -20,7 +20,7 @@ func TestSMTPVerifyWithoutConnection(t *testing.T) {
 		{text("smtp.example.test:abc"), nil, "nonnumeric port"},
 		{text("smtp.example.test:"), number(0), "nonnumeric port"},
 		{text("smtp.example.test: 2_5x"), nil, "nonnumeric port"},
-		// Outbound connections are refused.
+		// The configuration would connect: errSMTPVerifyConnects.
 		{text("smtp.example.test"), number(587), ""},
 		{text("smtp.example.test"), nil, ""},
 		{text("smtp.example.test:25"), nil, ""},
@@ -28,11 +28,12 @@ func TestSMTPVerifyWithoutConnection(t *testing.T) {
 		{text("smtp.example.test:abc"), number(25), ""},
 		{text("[::1]:abc"), nil, ""},
 		{text("smtp.example.test:٢٥"), nil, ""},
+		{text(":25"), nil, ""},
 	} {
 		message, err := SMTPVerifyWithoutConnection(domain.CommunicationConfigurationRecord{Host: test.host, Port: test.port, Encryption: "TLS"})
 		if test.message == "" {
-			if !errors.Is(err, domain.ErrSMTPVerifyNotPorted) || message != "" {
-				t.Fatalf("%v %v: got %q %v, want refusal", test.host, test.port, message, err)
+			if !errors.Is(err, errSMTPVerifyConnects) || message != "" {
+				t.Fatalf("%v %v: got %q %v, want the connect marker", test.host, test.port, message, err)
 			}
 			continue
 		}
