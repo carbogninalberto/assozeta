@@ -515,7 +515,7 @@ UNICODE_LESSON_DAY = day(3, '10:00:00')
 REGISTRIES['rg_ud'] = {'course': 'c_ud', 'events': [event('ev-ud', UNICODE_LESSON_DAY, fmt=UNICODE_YEAR_START, title='Cifre')]}
 REGISTRIES['rg_um'] = {'course': 'c_um', 'events': [event('ev-um', day(4, '10:00:00'), fmt=UNICODE_MONTH_START, title='Mese')]}
 DAYS['d_ud'] = {'registry': 'rg_ud', 'date': UNICODE_LESSON_DAY, 'attendees': ['cs_ud']}
-for label in ('as_ud', 'as_um', 'c_ud', 'c_um', 'sub_ud', 'sub_um', 'rg_ud', 'rg_um', 'd_ud'):
+for label in ('as_ud', 'as_um', 'c_ud', 'c_um', 'sub_ud', 'sub_um', 'rg_ud', 'rg_um', 'd_ud', 'athlete_digits', 'athlete_month'):
     rid(label)
 
 # ===========================================================================
