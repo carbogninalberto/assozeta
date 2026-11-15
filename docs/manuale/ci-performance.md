@@ -381,15 +381,18 @@ developer laptop (local measurement, not GitHub Actions).
   `test_mcp_stdio.py`. `mcp_server/security.py` is classified `security` and
   runs full verification.
 - `MANUALE_BUILDX_CACHE=gha` is opt-in and was not exercised on GitHub Actions.
-- Capture shards are off by default in CI (`MANUALE_CAPTURE_CONCURRENCY=1`).
-  With `auto` (2 shards on a 4 vCPU / 16 GB hosted runner), full captures on
-  this branch failed 8 or 9 different workflows per run, with a different set
-  each time and mostly click timeouts or browser errors (runs 40770979959,
-  40771977869, 40774163486, 40774816473). The shards ran as separate private
-  stacks, so no state was shared, and the capture step still took about 32 min.
-  The same 60 workflows had passed sequentially in 32 to 43 min on earlier
-  full runs (40688878441, 40609557271, 40570118972). Sharding remains opt-in
-  through `vars.MANUALE_CAPTURE_CONCURRENCY` for larger runners.
+- Capture shards inside the `verify` job are off by default in CI
+  (`MANUALE_CAPTURE_CONCURRENCY=1`). With `auto` (2 shards on a 4 vCPU / 16 GB
+  hosted runner), full captures on this branch failed 8 or 9 different
+  workflows per run, with a different set each time and mostly click timeouts
+  or browser errors (runs 40770979959, 40771977869, 40774163486, 40774816473).
+  The shards ran as separate private stacks, so no state was shared, and the
+  capture step still took about 32 min. The same 60 workflows had passed
+  sequentially in 32 to 43 min on earlier full runs (40688878441, 40609557271,
+  40570118972). Sharding remains opt-in through
+  `vars.MANUALE_CAPTURE_CONCURRENCY` for larger runners. This is not the
+  cross-job split described in "November 2026" below, which has its own
+  variable (`MANUALE_CAPTURE_RUNNERS`).
 - `actionlint` 1.7.7 passed on the workflows. Embedded shell was not checked
   because `shellcheck` was not installed.
 
@@ -401,12 +404,107 @@ developer laptop (local measurement, not GitHub Actions).
 - Skipping or caching the appliance image build in Mode B/C: kept. Package
   startup and the release checks are mandatory, and reusing images across
   revisions would break the exact-revision binding.
-- Larger runners or more than 4 shards: not added. No new paid
-  infrastructure, and the shard cap protects 16 GB hosted runners.
+- Larger runners: not added. No new paid infrastructure. In-job capture shards
+  remain capped to protect 16 GB hosted runners (see the concurrency bullet
+  above); the November 2026 capture jobs also use standard hosted runners and
+  are capped at 6 by `MANUALE_CAPTURE_RUNNERS`.
 - Remote caching services or a database for evidence: not added. Artifacts
   and the GitHub API are the only trust and storage layers.
-- Splitting `embedded.mjs` per page for partial reruns: not done. The real
-  browser reader check stays whole-corpus.
+- Splitting `embedded.mjs` into one page per run for partial reruns: not done.
+  The browser reader check still covers the whole corpus, but its sections are
+  spread over `MANUALE_READER_WORKERS` pages in parallel since November 2026
+  (see below).
+
+## November 2026: distributed capture and parallel checks
+
+The numbers below use the same method as "Baseline". Starting point for the
+work: run 43295016711 took 89 min, with the `verify` job at 67 min and the
+appliance job at 18 min.
+
+### Instrumentation
+
+Capture now emits per-checkpoint spans (`MANUALE_SPAN_FILE`) and writes two
+tables into the job summary: "Capture cost split" and "Why workflows were
+captured fresh". The first measured split (run 43634854259) attributes the
+32.5 min of scenario time as follows.
+
+| Part of scenario time | Share |
+| --- | ---: |
+| Actions outside screenshots | 67% |
+| Screenshot capture | 30% |
+| of which waiting for ready | 11% |
+| of which stability waits | 10% |
+| Browser launch | 0.2% |
+
+That result set the order of work: the capture is dominated by what the
+workflows do, not by Chromium.
+
+### Container reuse
+
+Each scenario reset its fixtures, and two harnesses now use
+`docker compose exec` in the running api container instead of starting a cold
+`run --rm` container. Capture went from 43 m 40 s to 35 m 03 s, and the whole
+run from 84 to 71 min (run 43663692928).
+
+### Distributed capture
+
+The split is opt-in per run: `force_full` plus the repository variable
+`MANUALE_CAPTURE_RUNNERS`, an integer from 2 to 6. It is currently 5; set it to
+1 to go back to one capture runner.
+
+- `capture-plan` prepares once and writes `transport.json`: the shared capture
+  id, pinned revisions, tooling hashes, and shards as contiguous
+  registry-order blocks.
+- One `capture` job per shard runs `manuale-ci.py capture-shard`, then
+  `capture-export`. Only sanitized results leave the job, and a strict
+  inventory is exported.
+- `verify` merges the shards with `phase capture --transport --shards`
+  (exactly-once, identity checks, fail closed) and runs the later phases
+  unchanged.
+- The gate requires every planned shard to succeed.
+
+Shards are contiguous blocks, not interleaved ones. An interleaved split
+exposed cross-scenario state leakage in two "other records unchanged" checks
+(`members-tax-code-correction` and `membership-links-cards`). Contiguous blocks
+keep every workflow's sequential predecessor except the first of each block.
+
+Measured on run 43710050948, 55 min in total:
+
+| Job | Time |
+| --- | --- |
+| `capture-plan` | 40 s |
+| `capture`, one job per shard, in parallel | 11 to 14 min |
+| `verify` | 18 min |
+| `appliance` | about 20 min |
+
+### Parallel checks
+
+- **Reader check.** `embedded.mjs` spreads sections over
+  `MANUALE_READER_WORKERS` pages (default 4; 1 is the old serial behaviour).
+  The reader step went from 7.2 to 4.0 min.
+- **Appliance.** `manual-release-smoke.py` builds images and pulls historical
+  images concurrently, with byte-identical commands per image. The image phase
+  went from 8.3 to 4.6 min and the appliance job from 21 to 15 min.
+- **Release binding.** Workflow fingerprints analyse dependencies once per batch
+  (`dependency_snapshot`). Locally all 60 fingerprints went from 281 to 9 s with
+  identical results; the CI effect is not yet measured.
+
+### Outside manual CI
+
+`WEB/`, the marketing site, is outside manual CI: the capture source preflight
+skips it and it is left out of the capture input hashes.
+
+### Deliberately unchanged
+
+The shared-contract trust gate in `publish-images.yml` stays as it is. It fails
+closed by design, and the measured benefit of changing it was small.
+
+### Remaining costs
+
+- Runtime stack startup in `verify`: about 3 min.
+- The evidence binding steps.
+- The appliance check sequence: about 10 min, because it chains upgrade and
+  rollback on one installation.
 
 ## After
 
@@ -455,6 +553,8 @@ affected workflows, which this redesign does not do.
 
 A change to the shared capture tool and the Mode C release rehearsal both
 captured all 60 workflows and took as long as the full runs before the
-redesign (77 m 35 s and 82 m 09 s): the shared tool is in every workflow's
-closure, and capture runs one workflow at a time in CI (concurrency 1), so
-sharding gives no speed-up there.
+redesign (77 m 35 s and 82 m 09 s). The shared tool is in every workflow's
+closure, and at that point capture ran one workflow at a time in CI
+(concurrency 1), so sharding gave no speed-up there. The November 2026 capture
+jobs change that: the same 60 fresh workflows now run as five parallel jobs,
+and run 43710050948 took 55 min end to end.

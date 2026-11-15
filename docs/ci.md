@@ -25,7 +25,8 @@ repository contents. New commits cancel obsolete runs for the same PR.
 Selections combine for mixed PRs. Stack checks intentionally build the UI and
 run browsers because they verify the assembled installation and update flow.
 Ordinary backend-only changes do not select these checks. The browser fixture
-uses mocked APIs and does not need backend containers.
+uses mocked APIs and does not need backend containers. The marketing site
+`WEB/` is outside all CI: **PR quality** ignores WEB-only changes.
 
 The stable check to require in branch protection is **PR quality**. It runs even
 for docs-only PRs and fails if selection fails or any selected job fails or is
@@ -44,6 +45,15 @@ The Go job also requires native worker/migration process checks and execution of
 the packaged commands in private PostgreSQL containers. The image fixture verifies
 non-root/read-only execution, maintenance exclusion and shutdown/crash recovery;
 it does not activate a backend or prove scheduler and Celery handoff parity.
+
+**Go quality.** The former 42-minute "Go foundation and inventory" job is now
+seven parallel jobs plus a gate job with the same name. `go test -race` is
+sharded by package, with a coverage check. The shared account suite runs as
+three shards (`accounts.py --shard tasks|identity|login`) plus a merge job that
+requires all three and the same report keys as the unsharded run. A parallel Go
+build prewarm (`TESTS/adapters/go/prewarm.py`, `go test -c`) runs only in the
+account jobs, where it pays off. Workflow wall time went from 42+ minutes to
+about 16.
 
 Releases do not rebuild the manual. A published release copies the verified
 manual of the current `:latest` backend image unchanged into both its Django and
