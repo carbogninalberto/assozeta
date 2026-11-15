@@ -22,11 +22,14 @@ var (
 	// ErrAuditUnhandled is an exception the Django serializer lets escape
 	// (AttributeError, TypeError, ValueError): the stable 500 page.
 	ErrAuditUnhandled = errors.New("audit serializer exception")
-	// ErrAuditNotPorted refuses the inputs whose Python semantics are not
-	// ported (see audit-logs.md): the recursion limit of the JSON codec, whose
-	// live value depends on the interpreter's stack, and str.title() of text
-	// only the application writes.
-	ErrAuditNotPorted = refusal.New("audit serializer input not ported")
+	// ErrAuditUnreachable is text only the application writes outside the
+	// ported subset: str.title() of a non-ASCII model or field name (both are
+	// Python identifiers of the application's models), and NaN, Infinity or a
+	// lone surrogate in text PostgreSQL jsonb never stores.
+	ErrAuditUnreachable = refusal.AppState("audit serializer: unreachable state")
+	// ErrAuditRecursion is JSON nested past 500 levels: Python's answer depends
+	// on the interpreter's live call stack (platform; listed in tmp/long-tail).
+	ErrAuditRecursion = refusal.AppState("audit serializer: JSON nesting past the recursion limit")
 )
 
 // AuditResolver is resolve_uuid(value, field) for a value is_uuid accepted:
@@ -65,7 +68,7 @@ func AuditModelVerboseName(model string) (string, error) {
 // only inputs are model and field names, which are ASCII identifiers.
 func auditTitle(text string) (string, error) {
 	if !auditASCII(text) {
-		return "", ErrAuditNotPorted
+		return "", ErrAuditUnreachable
 	}
 	return PythonTitle(text), nil
 }
@@ -129,15 +132,21 @@ var auditBooleanFields = map[string]bool{"archived": true, "deleted": true, "dra
 // digit limit raise ValueError (not caught); NaN/Infinity literals, lone
 // surrogate escapes and deep nesting are refused.
 func AuditJSONLoads(text string) (any, bool, error) {
-	if auditJSONDepth(text) > 500 || auditLoneSurrogate(text) {
-		return nil, false, ErrAuditNotPorted
+	if auditJSONDepth(text) > 500 {
+		return nil, false, ErrAuditRecursion
+	}
+	if auditLoneSurrogate(text) {
+		// jsonb refuses lone surrogates; the instructor-hours form turns any
+		// error into the JSONField save failure, as PostgreSQL does.
+		return nil, false, ErrAuditUnreachable
 	}
 	value, err := parseReferenceJSON([]byte(text), nil, true)
 	switch {
 	case errors.Is(err, ErrLoginRateJSONValue):
 		return nil, false, ErrAuditUnhandled
 	case err != nil && (strings.Contains(text, "NaN") || strings.Contains(text, "Infinity")):
-		return nil, false, ErrAuditNotPorted
+		// jsonb never stores these literals; see the lone surrogate above.
+		return nil, false, ErrAuditUnreachable
 	case err != nil:
 		return nil, false, nil
 	}
@@ -151,7 +160,7 @@ func AuditJSONLoads(text string) (any, bool, error) {
 // limit stays refused: the recursion limit depends on the live call stack.
 func auditPythonJSONLoads(text string) (any, bool, error) {
 	if auditJSONDepth(text) > 500 {
-		return nil, false, ErrAuditNotPorted
+		return nil, false, ErrAuditRecursion
 	}
 	data := []byte(text)
 	value, err := parseProfileTablesJSONConstants(data, pythonJSONConstants(data), true)
@@ -159,7 +168,7 @@ func auditPythonJSONLoads(text string) (any, bool, error) {
 	case errors.Is(err, ErrLoginRateJSONValue):
 		return nil, false, ErrAuditUnhandled
 	case errors.Is(err, ErrReferenceNesting):
-		return nil, false, ErrAuditNotPorted
+		return nil, false, ErrAuditRecursion
 	case err != nil:
 		return nil, false, nil
 	}

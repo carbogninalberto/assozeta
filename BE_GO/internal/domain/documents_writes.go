@@ -12,6 +12,16 @@ var (
 	// ErrDocumentWritesNotPorted refuses, before any write, what the Go port
 	// does not reproduce (see docs/architecture/go-migration/documents-writes.md).
 	ErrDocumentWritesNotPorted = refusal.New("document upload behaviour not ported")
+	// ErrDocumentWritesUnreachable is a state no request or stored row
+	// produces (each site names the decoder or constraint that rules it out).
+	ErrDocumentWritesUnreachable = refusal.AppState("document upload: unreachable state")
+	// ErrDocumentStorageFailed is an object storage (or client cancellation)
+	// failure after the Document exists: Django answers botocore's text, Go its
+	// 500 page (not an approved divergence; listed in tmp/long-tail).
+	ErrDocumentStorageFailed = refusal.AppState("document upload: storage failure")
+	// ErrDocumentUploadTooLarge is a multipart body over 250 MiB, which Go would
+	// have to hold in memory (platform limit; listed in tmp/long-tail).
+	ErrDocumentUploadTooLarge = refusal.AppState("document upload: body over the in-memory limit")
 	// ErrDocumentWritesFailed is an exception the views do not handle (the 500 page).
 	ErrDocumentWritesFailed = errors.New("document upload request failed")
 )

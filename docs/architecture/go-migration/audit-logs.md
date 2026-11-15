@@ -13,9 +13,12 @@
   - `enriched_changes`/`display_changes`: the JSON-field formatters (`additional_fields`, `attendees`/`expected_absences`, `events`, `collaborator_permissions`), Italian booleans, `json.loads` of `[`/`{` strings, UUID field resolvers (`DoesNotExist` → `[Eliminato: xxxxxxxx...]`, other exceptions leave the value), the cross-tenant event-JSON resolver for `associated_event`/`event_id`, Italian field labels.
   - Formatter exceptions Django does not catch (`props` not a dict, non-str permission, non-str event title in the join, non-str event start) are the 500 page; a non-finite float in the body is the strict renderer's 500.
 
-## Not ported (refused explicitly with the 500 page, never a guessed body)
+## Not ported (the 500 page, never a guessed body)
 
-- `json.loads` input nested deeper than 500 (X: the recursion limit depends on the live call stack; PostgreSQL does store a jsonb value nested that deep, so a form field carrying 501..~900 levels of JSON is the one input that is still handed off). `NaN`/`Infinity` literals and lone surrogate escapes are ported (t3plat): they load, and only a value that reaches `enriched_changes` makes the strict renderer answer the 500.
+Since long-tail PR 2 (agent B) these are application-state errors (`refusal.AppState`): Go answers the 500 page itself and
+never hands them off.
+
+- `json.loads` input nested deeper than 500 (X: the recursion limit depends on the live call stack; PostgreSQL does store a jsonb value nested that deep, so a form field carrying 501..~900 levels of JSON answers the 500 page where Django may answer; listed for PR 3). `NaN`/`Infinity` literals and lone surrogate escapes are ported (t3plat): they load, and only a value that reaches `enriched_changes` makes the strict renderer answer the 500.
 - `str.title()` of non-ASCII text (C: the only inputs are content-type model names and `changes` keys, which are Python identifiers the application writes; ASCII labels are ported). `str.capitalize()` of a permission segment is ported (go-v2only-auditser), since a request stores `collaborator_permissions` as sent.
 
 Known unchecked divergences: >4300-digit integers in JSON columns of *resolved* rows (Django swallows the load error; Go formats the row); a database error inside a resolver (Django swallows it; Go answers 500). Tie order of equal sort keys is PostgreSQL's in both.

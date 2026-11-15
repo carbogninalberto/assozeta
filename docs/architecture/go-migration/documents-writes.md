@@ -162,6 +162,9 @@ Every upload creates a Document and then calls `default_storage.save(name, conte
 
 ## Not ported (refused before any write unless noted)
 
+Since long-tail PR 2 (agent B) only the codec item is still a refusal; the body limit, the storage failures and the
+unreachable states are application-state errors (the 500 page, never handed off).
+
 - Multipart bodies over 250 MiB: the request has to be held in memory, so the answer then depends on the host's memory
   and proxy limits, not on the input (class X).
 - RFC 2231 names in the codecs without a faithful Go decoder: `cp932`, `cp949`, `cp950`, `big5hkscs`, the 2004/x0213
