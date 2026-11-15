@@ -16,9 +16,16 @@ import (
 
 type jsonNumber = json.Number
 
-// ErrNotPorted refuses a value whose Python handling this port does not
-// reproduce (the views answer 500 for it here).
-var ErrNotPorted = refusal.New("google: value not ported")
+// ErrUnexpected is a value whose Python handling this port does not
+// reproduce, in data the application never sends itself: the stored
+// credentials (written only by the OAuth callback from Google's token answer,
+// service/google_calendar.go), the client secrets file the operator installs
+// (Google's download: a mapping of plain https URIs and strings), and Google's
+// own answers (a token answer that is not a JSON mapping with string tokens,
+// an expires_in beyond timedelta's range, a redirect to a GET). It is an
+// application-state error (Django's 500 page, never handed off); the views
+// already answer it with their 500 (domain.ErrGoogleServer).
+var ErrUnexpected = refusal.AppState("google: unexpected value")
 
 // PythonError is a Python exception raised by the libraries; Mentions is
 // `text in str(exception)` for the export view's 'quotaExceeded' check.
@@ -142,7 +149,7 @@ func seconds(value any) (time.Duration, error) {
 	case json.Number:
 		parsed, err := v.Float64()
 		if err != nil {
-			return 0, ErrNotPorted
+			return 0, ErrUnexpected
 		}
 		f = parsed
 	case int64:
@@ -152,7 +159,7 @@ func seconds(value any) (time.Duration, error) {
 	}
 	micro := math.RoundToEven(f * 1e6)
 	if math.Abs(micro) > 9e15 {
-		return 0, ErrNotPorted
+		return 0, ErrUnexpected
 	}
 	return time.Duration(micro) * time.Microsecond, nil
 }
