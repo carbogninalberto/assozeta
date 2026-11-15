@@ -40,7 +40,10 @@ const (
 )
 
 // ErrInstanceBackupsCacheShape is a cached value outside the decoded subset.
-var ErrInstanceBackupsCacheShape = refusal.New("cached backup value not ported")
+// Only the app writes these keys: the sizes dict of ints and None
+// (BE/instance/backups.py:101, StoreSizes) and the integer attempt counter
+// (backups.py:240-241, CountAttempt). The 500 page, never a handoff.
+var ErrInstanceBackupsCacheShape = refusal.AppState("cached backup value of another shape")
 
 // DatabaseBytes is SELECT pg_database_size(current_database()).
 func (r *InstanceBackups) DatabaseBytes(ctx context.Context) (int64, error) {

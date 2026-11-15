@@ -93,9 +93,15 @@ const (
 	collaboratorDeleteInvite             = "application.CollaborationInvites"
 )
 
-// ErrCollaboratorDeleteUnsupported refuses a deletion that reaches rows whose
-// Django behaviour this port does not reproduce (see collaborator-delete-go.md).
-var ErrCollaboratorDeleteUnsupported = refusal.New("collaborator delete reaches an unsupported model")
+// ErrCollaboratorDeleteUnsupported is a deletion that reaches a model the
+// committed graph marks unsupported, a fast delete outside the graph, or an
+// audited value outside string/number/bool/time. Every condition is a property
+// of the committed model graphs (collaborator_delete_graph.json and
+// restore_deletion_graph.json), not of a request or a stored row, and
+// TestCollaboratorDeleteRefusalUnreachable pins that none holds; only a model
+// change could make one true. It is an application-state error: the 500 page,
+// never a handoff.
+var ErrCollaboratorDeleteUnsupported = refusal.AppState("collaborator delete reaches an unsupported model")
 
 // ErrCollaboratorDeleteProtected is Django's ProtectedError (a 500).
 var ErrCollaboratorDeleteProtected = errors.New("cannot delete: referenced through a protected foreign key")
