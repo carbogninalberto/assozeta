@@ -31,6 +31,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/handoff"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/idna2008"
 )
 
 // SDKVersion is the openai distribution version the requests name.
@@ -238,6 +239,16 @@ type Event struct {
 // *APIError is the exception the SDK raises; other errors are the context's.
 func (c *Client) Create(ctx context.Context, body []byte) (*Stream, error) {
 	handoff.MarkEffect(ctx, "model request")
+	// httpx reads URL.host while it builds a request, and URL.host decodes a
+	// host that begins "xn--" with idna.decode (httpx/_urls.py). The SDK
+	// builds the request before its retry try (_base_client.py), so an idna
+	// error leaves the stream call without a retry and reaches the agent as
+	// the exception text.
+	if strings.HasPrefix(c.endpoint.hostname, "xn--") {
+		if _, err := idna2008.Decode(c.endpoint.hostname); err != nil {
+			return nil, &APIError{Text: err.Error()}
+		}
+	}
 	for retries := 0; ; retries++ {
 		remaining := maxRetries - retries
 		request := c.request(ctx, body)

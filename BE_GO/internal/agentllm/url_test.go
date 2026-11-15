@@ -4,13 +4,12 @@ import (
 	"bufio"
 	"context"
 	"errors"
+	"io"
 	"net"
 	"net/http"
 	"strings"
 	"testing"
 	"time"
-
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // TestBaseURLMatchesHttpx checks httpx's normalisation of the base URL and the
@@ -163,25 +162,146 @@ func TestRequestHasNoHostForRelativeBaseURL(t *testing.T) {
 
 // TestBaseURLNarrowCases: ports in other scripts are read like int() (httpx
 // 0.28.1: 'http://h.example:٨٠/v1' -> 'http://h.example/v1',
-// 'https://h.example:１_0/v1' -> port 10), and the two inputs this port does
-// not reproduce stay refused: a port past int's range (Python keeps it) and an
-// "xn--" host idna.decode rejects (httpx raises while building each request).
+// 'https://h.example:１_0/v1' -> port 10), and a port Python keeps because its
+// int is unbounded is kept as written after int() normalisation, so the
+// connection attempt is what refuses it.
 func TestBaseURLNarrowCases(t *testing.T) {
 	for raw, want := range map[string]string{
-		"http://h.example:٨٠/v1":   "h.example",
-		"https://h.example:１_0/v1": "h.example:10",
+		"http://h.example:٨٠/v1":                      "h.example",
+		"https://h.example:１_0/v1":                    "h.example:10",
+		"https://h.example:099999999999999999999/v1":  "h.example:99999999999999999999",
+		"https://h.example:-099999999999999999999/v1": "h.example:-99999999999999999999",
 	} {
 		target, err := newEndpoint(raw)
 		if err != nil || target.host != want {
 			t.Errorf("%q: host %q err %v, want %q", raw, target.host, err, want)
 		}
 	}
-	for _, raw := range []string{"http://h.example:99999999999999999999/v1", "https://xn--a.example/v1"} {
-		if _, err := newEndpoint(raw); !errors.Is(err, refusal.ErrNotPorted) {
-			t.Errorf("%q: err %v, want the refusal", raw, err)
-		}
+	// httpx decodes an "xn--" host while it builds each request, so the base
+	// URL itself is accepted; Create reports idna's error (see
+	// TestCreateDecodesXnHosts).
+	if target, err := newEndpoint("https://xn--a.example/v1"); err != nil || target.hostname != "xn--a.example" {
+		t.Errorf("invalid A-label: %q %v", target.hostname, err)
 	}
 	if _, err := newEndpoint("https://xn--bcher-kva.example/v1"); err != nil {
 		t.Errorf("valid A-label: %v", err)
+	}
+}
+
+// roundTripFunc is a transport for one canned exchange.
+type roundTripFunc func(*http.Request) (*http.Response, error)
+
+func (f roundTripFunc) RoundTrip(request *http.Request) (*http.Response, error) { return f(request) }
+
+// TestCreateDecodesXnHosts is httpx's URL.host for a base URL that begins
+// "xn--": a host idna.decode accepts leaves the request as it is, and one it
+// rejects raises the IDNAError text from the stream call, before anything is
+// sent and without the SDK's retries (openai builds the request outside them).
+func TestCreateDecodesXnHosts(t *testing.T) {
+	for _, testCase := range []struct {
+		name, base, host, errText string
+	}{
+		{"valid A-label", "https://xn--bcher-kva.example/v1", "xn--bcher-kva.example", ""},
+		{"disallowed code point", "https://xn--a.example/v1", "xn--a.example",
+			`Codepoint U+0080 at position 1 of '\x80' not allowed`},
+		{"disallowed label", "https://xn--bcher-kva.my_host/v1", "xn--bcher-kva.my_host",
+			`Codepoint U+005F at position 3 of 'my_host' not allowed`},
+	} {
+		sent := 0
+		var sentTo *http.Request
+		transport := roundTripFunc(func(request *http.Request) (*http.Response, error) {
+			sent++
+			sentTo = request
+			return &http.Response{StatusCode: http.StatusOK, Header: make(http.Header),
+				Body: io.NopCloser(strings.NewReader("")), Request: request}, nil
+		})
+		client, err := New(Config{APIKey: "sk-test", BaseURL: testCase.base, Transport: transport})
+		if err != nil {
+			t.Fatalf("%s: New(%q): %v", testCase.name, testCase.base, err)
+		}
+		sleeps := 0
+		client.Sleep = func(context.Context, time.Duration) error { sleeps++; return nil }
+		stream, err := client.Create(context.Background(), []byte(`{}`))
+		if testCase.errText != "" {
+			var failure *APIError
+			if !errors.As(err, &failure) || failure.Text != testCase.errText {
+				t.Errorf("%s: Create error = %v, want %q", testCase.name, err, testCase.errText)
+			}
+			if sent != 0 || sleeps != 0 {
+				t.Errorf("%s: %d requests and %d retries, want neither", testCase.name, sent, sleeps)
+			}
+			continue
+		}
+		if err != nil {
+			t.Fatalf("%s: Create: %v", testCase.name, err)
+		}
+		_ = stream.Close()
+		if sent != 1 || sleeps != 0 {
+			t.Errorf("%s: %d requests and %d retries, want one request", testCase.name, sent, sleeps)
+		}
+		if sentTo.URL.Host != testCase.host {
+			t.Errorf("%s: request host %q, want %q", testCase.name, sentTo.URL.Host, testCase.host)
+		}
+	}
+}
+
+// TestCreateHugePortRetriesAsConnectionError is the port Python keeps because
+// its int is unbounded: the request is addressed to the digits int() produced
+// (leading zeros dropped), the connection fails, and the SDK retries twice
+// before reporting its connection error.
+func TestCreateHugePortRetriesAsConnectionError(t *testing.T) {
+	const base = "http://h.example:099999999999999999999/v1"
+	var dialled []string
+	transport := &http.Transport{
+		DialContext: func(_ context.Context, _, address string) (net.Conn, error) {
+			dialled = append(dialled, address)
+			return nil, errors.New("no route to host")
+		},
+	}
+	client, err := New(Config{APIKey: "sk-test", BaseURL: base, Transport: transport})
+	if err != nil {
+		t.Fatalf("New(%q): %v", base, err)
+	}
+	var delays []time.Duration
+	client.Sleep = func(_ context.Context, delay time.Duration) error {
+		delays = append(delays, delay)
+		return nil
+	}
+	client.Random = func() float64 { return 0 }
+	_, err = client.Create(context.Background(), []byte(`{}`))
+	var failure *APIError
+	if !errors.As(err, &failure) || failure.Text != "Connection error." {
+		t.Fatalf("Create error = %v, want the SDK's connection error", err)
+	}
+	if len(delays) != 2 || delays[0] != 500*time.Millisecond || delays[1] != time.Second {
+		t.Errorf("retry delays = %v, want 0.5s then 1s", delays)
+	}
+	if len(dialled) != 3 {
+		t.Fatalf("dialled %v, want three attempts", dialled)
+	}
+	for _, address := range dialled {
+		if address != "h.example:99999999999999999999" {
+			t.Errorf("dialled %q, want the normalised port", address)
+		}
+	}
+}
+
+// TestCreateHugePortFailsDialling checks the same base URL against the real
+// dialer: an out-of-range port fails before any packet leaves the machine.
+func TestCreateHugePortFailsDialling(t *testing.T) {
+	client, err := New(Config{APIKey: "sk-test", BaseURL: "http://127.0.0.1:099999999999999999999/v1",
+		Transport: &http.Transport{}})
+	if err != nil {
+		t.Fatalf("New: %v", err)
+	}
+	sleeps := 0
+	client.Sleep = func(context.Context, time.Duration) error { sleeps++; return nil }
+	_, err = client.Create(context.Background(), []byte(`{}`))
+	var failure *APIError
+	if !errors.As(err, &failure) || failure.Text != "Connection error." {
+		t.Fatalf("Create error = %v, want the SDK's connection error", err)
+	}
+	if sleeps != 2 {
+		t.Errorf("%d retries, want 2", sleeps)
 	}
 }

@@ -1,6 +1,7 @@
-// Package idna2008 reproduces the label encoder of Python's third-party 'idna' package, IDNA 2008,
-// as HTTP clients drive it: encode(s, strict=True, std3_rules=True) with uts46 left off, so no
-// UTS #46 mapping happens and a label that is not pure ASCII is validated and Punycode-encoded.
+// Package idna2008 reproduces the label encoder and decoder of Python's third-party 'idna'
+// package, IDNA 2008, as HTTP clients drive it: encode(s, strict=True, std3_rules=True) with uts46
+// left off, so no UTS #46 mapping happens and a label that is not pure ASCII is validated and
+// Punycode-encoded, and decode(s), which validates and Punycode-decodes each A-label.
 //
 // The tables in tables.go come from the pinned interpreter's idna.idnadata and unicodedata, so the
 // accepted labels and the A-label bytes match that interpreter exactly. Lengths are counted in code
@@ -12,10 +13,35 @@ import (
 	"fmt"
 	"strings"
 	"unicode/utf8"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 )
 
 // ErrIDNA stands for Python's idna.IDNAError: every failure from this package wraps it.
 var ErrIDNA = errors.New("invalid label")
+
+// Error is Python's idna.IDNAError: Text is str(exception), the message idna writes, and Code is
+// the machine-readable identifier it carries next to the message.
+type Error struct {
+	Text string
+	Code string
+}
+
+func (e *Error) Error() string { return e.Text }
+
+// Unwrap makes errors.Is(err, ErrIDNA) report every failure, like Python's IDNAError base class.
+func (e *Error) Unwrap() error { return ErrIDNA }
+
+// idnaError is one IDNAError: the rule's code and its message.
+func idnaError(code, format string, args ...any) error {
+	return &Error{Text: fmt.Sprintf(format, args...), Code: code}
+}
+
+// unot is idna.core._unot, the code point spelling its messages use.
+func unot(cp rune) string { return fmt.Sprintf("U+%04X", cp) }
+
+// repr is repr() of a label in an idna error message.
+func repr(label string) string { return dto.PythonStringRepr(label) }
 
 const (
 	// maxInputLength is idna.core._max_input_length, a bound on the code points handled at once.
@@ -29,29 +55,25 @@ const (
 	punycodePrefix       = "xn--"
 )
 
-func failure(code string) error {
-	return fmt.Errorf("%w: %s", ErrIDNA, code)
-}
-
 // Encode is idna.encode(s, strict=True, std3_rules=True): the label separators are U+002E only (a
 // trailing one is kept), every label is validated and Punycode-encoded, and the result is the ASCII
-// text. An input that Python rejects, invalid UTF-8 included, returns an error wrapping ErrIDNA.
+// text. An input that Python rejects, invalid UTF-8 included, returns an *Error wrapping ErrIDNA.
 func Encode(s string) (string, error) {
 	if !utf8.ValidString(s) {
-		return "", failure("invalid_utf8")
+		return "", idnaError("invalid_utf8", "Invalid UTF-8 in label")
 	}
 	runes := []rune(s)
 	if len(runes) > maxInputLength {
-		return "", failure("input_too_long")
+		return "", idnaError("input_too_long", "Domain too long")
 	}
 	// valid_string_length(s, trailing_dot=True).
 	if len(runes) > maxDomainLength+1 {
-		return "", failure("domain_too_long")
+		return "", idnaError("domain_too_long", "Domain too long")
 	}
 
 	labels := strings.Split(s, ".")
 	if len(labels) == 1 && labels[0] == "" {
-		return "", failure("empty_domain")
+		return "", idnaError("empty_domain", "Empty domain")
 	}
 	trailingDot := false
 	if labels[len(labels)-1] == "" {
@@ -66,7 +88,7 @@ func Encode(s string) (string, error) {
 			return "", err
 		}
 		if label == "" {
-			return "", failure("empty_label")
+			return "", idnaError("empty_label", "Empty label")
 		}
 		encoded = append(encoded, label)
 	}
@@ -80,46 +102,79 @@ func Encode(s string) (string, error) {
 		limit++
 	}
 	if len(result) > limit {
-		return "", failure("domain_too_long")
+		return "", idnaError("domain_too_long", "Domain too long")
 	}
 	return result, nil
 }
 
-// Decodes reports whether idna.decode(s) succeeds for an ASCII host: every
-// label (split on U+002E, a trailing dot dropped) goes through ulabel, and an
-// empty host or label fails.
-func Decodes(s string) bool {
-	if !isASCII(s) {
-		return false
+// Decode is idna.decode(s): the label separators are U+002E, U+3002, U+FF0E and U+FF61, a trailing
+// one is kept, and every label goes through ulabel. An input Python rejects returns an *Error
+// wrapping ErrIDNA.
+func Decode(s string) (string, error) {
+	if !utf8.ValidString(s) {
+		// Python's str cannot hold bytes that are not UTF-8, so only Go reaches this.
+		return "", idnaError("invalid_utf8", "Invalid UTF-8 in label")
 	}
-	labels := strings.Split(s, ".")
+	if utf8.RuneCountInString(s) > maxInputLength {
+		return "", idnaError("input_too_long", "Domain too long")
+	}
+	if utf8.RuneCountInString(s) > maxDomainLength+1 {
+		return "", idnaError("domain_too_long", "Domain too long")
+	}
+
+	labels := splitLabelSeparators(s)
 	if len(labels) == 1 && labels[0] == "" {
-		return false
+		return "", idnaError("empty_domain", "Empty domain")
 	}
+	trailingDot := false
 	if labels[len(labels)-1] == "" {
 		labels = labels[:len(labels)-1]
+		trailingDot = true
 	}
+
+	decoded := make([]string, 0, len(labels)+1)
 	for _, label := range labels {
-		decoded, err := ulabelASCII(label)
-		if err != nil || decoded == "" {
-			return false
+		u, err := ulabel(label)
+		if err != nil {
+			return "", err
+		}
+		if u == "" {
+			return "", idnaError("empty_label", "Empty label")
+		}
+		decoded = append(decoded, u)
+	}
+	if trailingDot {
+		decoded = append(decoded, "")
+	}
+	return strings.Join(decoded, "."), nil
+}
+
+// splitLabelSeparators is idna.core's _unicode_dots_re.split, which keeps empty labels.
+func splitLabelSeparators(s string) []string {
+	labels := make([]string, 0, 4)
+	start := 0
+	for pos, r := range s {
+		switch r {
+		case '.', 0x3002, 0xFF0E, 0xFF61:
+			labels = append(labels, s[start:pos])
+			start = pos + utf8.RuneLen(r)
 		}
 	}
-	return true
+	return append(labels, s[start:])
 }
 
 // alabel is idna.core.alabel: an ASCII label is validated and returned as it is, any other label is
 // validated, Punycode-encoded and prefixed with "xn--".
 func alabel(label string) (string, error) {
 	if len([]rune(label)) > maxInputLength {
-		return "", failure("input_too_long")
+		return "", idnaError("input_too_long", "Label too long")
 	}
 	if isASCII(label) {
 		if _, err := ulabelASCII(label); err != nil {
 			return "", err
 		}
 		if len(label) > maxLabelLength {
-			return "", failure("label_too_long")
+			return "", idnaError("label_too_long", "Label too long")
 		}
 		return label, nil
 	}
@@ -132,17 +187,31 @@ func alabel(label string) (string, error) {
 	}
 	result := punycodePrefix + encoded
 	if len(result) > maxLabelLength {
-		return "", failure("label_too_long")
+		return "", idnaError("label_too_long", "Label too long")
 	}
 	return result, nil
 }
 
-// ulabelASCII is idna.core.ulabel for a label that is already ASCII; alabel only uses it to
-// validate. The label is lowercased before the checks, and an "xn--" prefix is decoded and required
-// to be the canonical Punycode spelling of a valid U-label.
+// ulabel is idna.core.ulabel: a label that is not ASCII is validated and returned as written, an
+// ASCII label is lowercased and validated, and an "xn--" one is decoded and required to be the
+// canonical Punycode spelling of a valid U-label.
+func ulabel(label string) (string, error) {
+	if len([]rune(label)) > maxInputLength {
+		return "", idnaError("input_too_long", "Label too long")
+	}
+	if !isASCII(label) {
+		if err := checkLabel(label); err != nil {
+			return "", err
+		}
+		return label, nil
+	}
+	return ulabelASCII(label)
+}
+
+// ulabelASCII is ulabel for a label that is already ASCII; alabel only uses it to validate.
 func ulabelASCII(label string) (string, error) {
 	if len([]rune(label)) > maxInputLength {
-		return "", failure("input_too_long")
+		return "", idnaError("input_too_long", "Label too long")
 	}
 	lowered := asciiLower(label)
 	if !strings.HasPrefix(lowered, punycodePrefix) {
@@ -152,16 +221,19 @@ func ulabelASCII(label string) (string, error) {
 		return lowered, nil
 	}
 	content := lowered[len(punycodePrefix):]
-	if content == "" || strings.HasSuffix(content, "-") {
-		return "", failure("invalid_alabel")
+	if content == "" {
+		return "", idnaError("invalid_alabel", "Malformed A-label, no Punycode eligible content found")
+	}
+	if strings.HasSuffix(content, "-") {
+		return "", idnaError("invalid_alabel", "A-label must not end with a hyphen")
 	}
 	decoded, err := punycodeDecode(content)
 	if err != nil {
-		return "", failure("invalid_alabel")
+		return "", idnaError("invalid_alabel", "Invalid A-label")
 	}
 	reencoded, err := punycode(decoded)
 	if err != nil || reencoded != content {
-		return "", failure("non_canonical_alabel")
+		return "", idnaError("non_canonical_alabel", "A-label is not the canonical Punycode encoding of its U-label")
 	}
 	if err := checkLabel(decoded); err != nil {
 		return "", err
@@ -174,24 +246,24 @@ func ulabelASCII(label string) (string, error) {
 func checkLabel(label string) error {
 	runes := []rune(label)
 	if len(runes) > maxInputLength {
-		return failure("input_too_long")
+		return idnaError("input_too_long", "Label too long")
 	}
 	if len(runes) == 0 {
-		return failure("empty_label")
+		return idnaError("empty_label", "Empty Label")
 	}
 	// Like check_nfc, this uses the domain length rather than the label length, which keeps some
 	// UTS #46 callers working while still bounding the work the contextual rules below do.
 	if len(runes) > maxDomainLength+1 {
-		return failure("label_too_long")
+		return idnaError("label_too_long", "Label too long")
 	}
 	// ASCII is invariant under NFC, so only other labels need normalizing.
 	if !isASCII(label) && nfc(label) != label {
-		return failure("not_nfc")
+		return idnaError("not_nfc", "Label must be in Normalization Form C")
 	}
-	if err := checkHyphenOK(runes); err != nil {
+	if err := checkHyphenOK(label); err != nil {
 		return err
 	}
-	if err := checkInitialCombiner(runes); err != nil {
+	if err := checkInitialCombiner(label); err != nil {
 		return err
 	}
 	for pos, cp := range runes {
@@ -200,10 +272,12 @@ func checkLabel(label string) error {
 		case inRanges(contextj, cp):
 			ok, err := validContextJ(runes, pos)
 			if err != nil {
-				return failure("unknown_codepoint")
+				return idnaError("unknown_codepoint",
+					"Unknown codepoint adjacent to joiner %s at position %d in %s", unot(cp), pos+1, repr(label))
 			}
 			if !ok {
-				return failure("contextj")
+				return idnaError("contextj", "Joiner %s not allowed at position %d in %s",
+					unot(cp), pos+1, repr(label))
 			}
 		case inRanges(contexto, cp):
 			ok, err := validContextO(runes, pos)
@@ -211,44 +285,49 @@ func checkLabel(label string) error {
 				return err
 			}
 			if !ok {
-				return failure("contexto")
+				return idnaError("contexto", "Codepoint %s not allowed at position %d in %s",
+					unot(cp), pos+1, repr(label))
 			}
 		default:
-			return failure("disallowed_codepoint")
+			return idnaError("disallowed_codepoint", "Codepoint %s at position %d of %s not allowed",
+				unot(cp), pos+1, repr(label))
 		}
 	}
-	return checkBidi(runes)
+	return checkBidi(label)
 }
 
 // checkHyphenOK is idna.core.check_hyphen_ok.
-func checkHyphenOK(label []rune) error {
-	if len(label) >= 4 && label[2] == '-' && label[3] == '-' {
-		return failure("hyphen_3_4")
+func checkHyphenOK(label string) error {
+	runes := []rune(label)
+	if len(runes) >= 4 && runes[2] == '-' && runes[3] == '-' {
+		return idnaError("hyphen_3_4", "Label has disallowed hyphens in 3rd and 4th position")
 	}
-	if len(label) > 0 && (label[0] == '-' || label[len(label)-1] == '-') {
-		return failure("hyphen_start_end")
+	if len(runes) > 0 && (runes[0] == '-' || runes[len(runes)-1] == '-') {
+		return idnaError("hyphen_start_end", "Label must not start or end with a hyphen")
 	}
 	return nil
 }
 
 // checkInitialCombiner is idna.core.check_initial_combiner.
-func checkInitialCombiner(label []rune) error {
-	if len(label) > 0 && inRanges(markRanges, label[0]) {
-		return failure("leading_combiner")
+func checkInitialCombiner(label string) error {
+	if first, _ := utf8.DecodeRuneInString(label); label != "" && inRanges(markRanges, first) {
+		return idnaError("leading_combiner", "Label begins with an illegal combining character")
 	}
 	return nil
 }
 
 // checkBidi is idna.core.check_bidi with check_ltr left off.
-func checkBidi(label []rune) error {
-	if len(label) > maxInputLength {
-		return failure("input_too_long")
+func checkBidi(label string) error {
+	runes := []rune(label)
+	if len(runes) > maxInputLength {
+		return idnaError("input_too_long", "Label too long")
 	}
 	bidiLabel := false
-	for _, cp := range label {
+	for position, cp := range runes {
 		direction := bidiClassOf(cp)
 		if direction == bidiUnknown {
-			return failure("bidi_unknown_direction")
+			return idnaError("bidi_unknown_direction",
+				"Unknown directionality in label %s at position %d", repr(label), position+1)
 		}
 		if direction == bidiR || direction == bidiAL || direction == bidiAN {
 			bidiLabel = true
@@ -260,23 +339,25 @@ func checkBidi(label []rune) error {
 
 	// Bidi rule 1.
 	rtl := false
-	switch bidiClassOf(label[0]) {
+	switch bidiClassOf(runes[0]) {
 	case bidiR, bidiAL:
 		rtl = true
 	case bidiL:
 		rtl = false
 	default:
-		return failure("bidi_rule_1")
+		return idnaError("bidi_rule_1", "First codepoint in label %s must be directionality L, R or AL",
+			repr(label))
 	}
 
 	validEnding := false
 	numberType := bidiUnknown
-	for _, cp := range label {
+	for position, cp := range runes {
 		direction := bidiClassOf(cp)
 		if rtl {
 			// Bidi rule 2.
 			if !rtlAllowed[direction] {
-				return failure("bidi_rule_2")
+				return idnaError("bidi_rule_2",
+					"Invalid direction for codepoint at position %d in a right-to-left label", position+1)
 			}
 			// Bidi rule 3.
 			if rtlValidEnding[direction] {
@@ -289,14 +370,15 @@ func checkBidi(label []rune) error {
 				if numberType == bidiUnknown {
 					numberType = direction
 				} else if numberType != direction {
-					return failure("bidi_rule_4")
+					return idnaError("bidi_rule_4", "Can not mix numeral types in a right-to-left label")
 				}
 			}
 			continue
 		}
 		// Bidi rule 5.
 		if !ltrAllowed[direction] {
-			return failure("bidi_rule_5")
+			return idnaError("bidi_rule_5",
+				"Invalid direction for codepoint at position %d in a left-to-right label", position+1)
 		}
 		// Bidi rule 6.
 		if ltrValidEnding[direction] {
@@ -306,10 +388,11 @@ func checkBidi(label []rune) error {
 		}
 	}
 	if !validEnding {
+		code := "bidi_rule_6"
 		if rtl {
-			return failure("bidi_rule_3")
+			code = "bidi_rule_3"
 		}
-		return failure("bidi_rule_6")
+		return idnaError(code, "Label ends with illegal codepoint directionality")
 	}
 	return nil
 }
@@ -318,7 +401,7 @@ func checkBidi(label []rune) error {
 // idna.core._combining_class raises next to a joiner.
 func validContextJ(label []rune, pos int) (bool, error) {
 	if len(label) > maxInputLength {
-		return false, failure("input_too_long")
+		return false, idnaError("input_too_long", "Label too long")
 	}
 	switch label[pos] {
 	case 0x200C: // ZERO WIDTH NON-JOINER
@@ -371,7 +454,7 @@ func validContextJ(label []rune, pos int) (bool, error) {
 // validContextO is idna.core.valid_contexto, whose exception argument is unused there.
 func validContextO(label []rune, pos int) (bool, error) {
 	if len(label) > maxInputLength {
-		return false, failure("input_too_long")
+		return false, idnaError("input_too_long", "Label too long")
 	}
 	cp := label[pos]
 	switch {

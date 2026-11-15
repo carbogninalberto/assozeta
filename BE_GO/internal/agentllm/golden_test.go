@@ -133,9 +133,9 @@ var httpxGoldenInvalidURLs = []struct {
 	{"http://[::1/v1", "Invalid port: ':1'"},
 }
 
-// AsyncOpenAI accepts these base URLs, and so does New, but httpx refuses to
-// build their request: URL.host runs idna.decode on a host that begins "xn--",
-// which is not ported here, so the request goes out and fails as a connection
-// error instead of raising idna's InvalidCodepoint.
+// AsyncOpenAI accepts these base URLs too, but httpx refuses to build their
+// request: URL.host decodes a host that begins "xn--" with idna.decode while
+// the SDK builds each request, so the stream call raises idna's error instead
+// of sending anything (Create reproduces it as the *APIError the agent reports):
 //   https://xn--a.example/v1 -> Codepoint U+0080 at position 1 of '\x80' not allowed
 //   https://xn--bcher-kva.my_host/v1 -> Codepoint U+005F at position 3 of 'my_host' not allowed

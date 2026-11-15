@@ -12,6 +12,7 @@ package agentllm
 import (
 	"errors"
 	"fmt"
+	"math/big"
 	"net"
 	"regexp"
 	"strconv"
@@ -21,7 +22,6 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/idna2008"
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // maxURLLength is httpx._urlparse.MAX_URL_LENGTH, counted in code points.
@@ -36,13 +36,6 @@ func (e *InvalidURLError) Error() string { return e.Text }
 func invalidURL(format string, args ...any) error {
 	return &InvalidURLError{Text: fmt.Sprintf(format, args...)}
 }
-
-// ErrNotPorted refuses the base URLs whose httpx behaviour this port does not
-// reproduce: a host starting with "xn--" that idna.decode rejects (httpx's
-// URL.host decodes it while every request is built and the SDK reports the
-// IDNAError text, which Go does not reproduce), and a port written with more
-// digits than an int holds (Python keeps the value).
-var ErrNotPorted = refusal.New("agent model endpoint input not ported")
 
 // errBaseURLEncoding is a base URL that is not UTF-8 text. Go cannot reproduce
 // what Python does with the lone surrogates httpx would receive, so such an
@@ -125,7 +118,7 @@ type parseResult struct {
 	scheme   string
 	userinfo string
 	host     string
-	port     *int
+	port     *big.Int
 	path     string
 	query    *string
 	fragment *string
@@ -141,7 +134,7 @@ func (r *parseResult) authority() string {
 	writeHost(&out, r.host)
 	if r.port != nil {
 		out.WriteByte(':')
-		out.WriteString(strconv.Itoa(*r.port))
+		out.WriteString(r.port.String())
 	}
 	return out.String()
 }
@@ -162,7 +155,7 @@ func (r *parseResult) netloc() string {
 	writeHost(&out, r.host)
 	if r.port != nil {
 		out.WriteByte(':')
-		out.WriteString(strconv.Itoa(*r.port))
+		out.WriteString(r.port.String())
 	}
 	return out.String()
 }
@@ -412,29 +405,28 @@ func validIPv6(text string) bool {
 
 // normalizePort is normalize_port: int(port), with the scheme's default port
 // dropped. Note that httpx compares against the scheme as written, so
-// "HTTP://host:80/" keeps port 80 until the URL is re-parsed.
-func normalizePort(port *string, scheme string) (*int, error) {
+// "HTTP://host:80/" keeps port 80 until the URL is re-parsed. Python ints are
+// unbounded, so a port written with more digits than an int holds is kept as
+// written (after int() normalisation) and left for the connection to refuse.
+func normalizePort(port *string, scheme string) (*big.Int, error) {
 	if port == nil || *port == "" {
 		return nil, nil
 	}
-	number, ok, overflow := pythonInt(*port)
-	if overflow {
-		return nil, ErrNotPorted
-	}
+	number, ok := pythonInt(*port)
 	if !ok {
 		return nil, invalidURL("Invalid port: %s", dto.PythonStringRepr(*port))
 	}
-	defaults := map[string]int{"ftp": 21, "http": 80, "https": 443, "ws": 80, "wss": 443}
-	if value, found := defaults[scheme]; found && value == number {
+	defaults := map[string]int64{"ftp": 21, "http": 80, "https": 443, "ws": 80, "wss": 443}
+	if value, found := defaults[scheme]; found && number.IsInt64() && number.Int64() == value {
 		return nil, nil
 	}
-	return &number, nil
+	return number, nil
 }
 
 // pythonInt is int(text) for a str: surrounding whitespace, an optional sign,
 // and decimal digits of any script (str.isdecimal) that may be separated by
-// single underscores. overflow is set when the value does not fit an int.
-func pythonInt(text string) (number int, ok, overflow bool) {
+// single underscores.
+func pythonInt(text string) (*big.Int, bool) {
 	runes := []rune(strings.TrimFunc(text, pythonSpace))
 	negative := false
 	if len(runes) > 0 && (runes[0] == '+' || runes[0] == '-') {
@@ -442,31 +434,31 @@ func pythonInt(text string) (number int, ok, overflow bool) {
 		runes = runes[1:]
 	}
 	if len(runes) == 0 {
-		return 0, false, false
+		return nil, false
 	}
 	cleaned := make([]byte, 0, len(runes))
 	for position, character := range runes {
 		if character == '_' {
 			if position == 0 || position == len(runes)-1 ||
 				decimalDigit(runes[position-1]) < 0 || decimalDigit(runes[position+1]) < 0 {
-				return 0, false, false
+				return nil, false
 			}
 			continue
 		}
 		digit := decimalDigit(character)
 		if digit < 0 {
-			return 0, false, false
+			return nil, false
 		}
 		cleaned = append(cleaned, byte('0'+digit))
 	}
-	value, err := strconv.Atoi(string(cleaned))
-	if err != nil {
-		return 0, true, true
+	value, ok := new(big.Int).SetString(string(cleaned), 10)
+	if !ok {
+		return nil, false
 	}
 	if negative {
-		value = -value
+		value.Neg(value)
 	}
-	return value, true, false
+	return value, true
 }
 
 // decimalDigit is the value of a Unicode decimal digit (category Nd, which
@@ -614,19 +606,24 @@ func (r *parseResult) mergeRelative(merge *parseResult) (*parseResult, error) {
 }
 
 // endpoint is where a chat/completions request goes: the scheme to dial, the
-// raw_path httpx writes on the request line, and the Host header it sends
-// (empty when the URL has no host and httpx sends none).
+// raw_path httpx writes on the request line, the Host header it sends (empty
+// when the URL has no host and httpx sends none), and the bare host that
+// httpx's URL.host decodes.
 type endpoint struct {
 	scheme string
 	target string
 	host   string
+	// hostname is URL.host: the netloc without the port and, for IPv6
+	// literals, without the brackets.
+	hostname string
 }
 
 // newEndpoint resolves AsyncOpenAI(base_url=raw) and the request URL the SDK
 // builds for "chat/completions": httpx.URL(raw), the enforced trailing slash,
 // the SDK's merge of the relative URL, and httpx's own merge of the result onto
 // the client's base URL, which repeats the base path for a base URL without a
-// scheme or a host.
+// scheme or a host. A host that begins "xn--" is not decoded here: httpx reads
+// URL.host while it builds each request, so Create does that, like the SDK.
 func newEndpoint(raw string) (endpoint, error) {
 	base, err := urlParse(raw)
 	if err != nil {
@@ -650,10 +647,7 @@ func newEndpoint(raw string) (endpoint, error) {
 			return endpoint{}, err
 		}
 	}
-	if strings.HasPrefix(prepared.host, "xn--") && !idna2008.Decodes(prepared.host) {
-		return endpoint{}, ErrNotPorted
-	}
-	result := endpoint{scheme: prepared.scheme, target: prepared.rawPath()}
+	result := endpoint{scheme: prepared.scheme, target: prepared.rawPath(), hostname: prepared.host}
 	if prepared.host != "" {
 		result.host = prepared.netloc()
 	}
