@@ -442,6 +442,22 @@
    "tutor": null,
    "cancelled": false,
    "attached": false
+  },
+  "i_sub_float": {
+   "id": "a1000000-0000-4000-8000-000000998501",
+   "number": 18,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "created": "2026-01-05T09:00:00Z",
+   "archived": false,
+   "deleted": false,
+   "group": null,
+   "document": false,
+   "membership_fee": "0.00",
+   "activity_fee": "10.00",
+   "description": "Ricevuta seed",
+   "tutor": null,
+   "cancelled": false,
+   "attached": false
   }
  },
  "payments": {
@@ -942,6 +958,40 @@
    "deleted": false,
    "group_id": null,
    "course": null
+  },
+  "p_sub_float": {
+   "id": "a1000000-0000-4000-8000-000000998502",
+   "type": "default",
+   "subject": 1,
+   "amount": "10.00",
+   "creation_date": "2026-03-01T08:00:00Z",
+   "payment_date": "2026-02-11T10:30:00Z",
+   "paid": true,
+   "expense": false,
+   "description": "Iscrizione",
+   "payment_category_id": "a1000000-0000-4000-8000-000000998001",
+   "meta_payment_categories": null,
+   "invoice_id": "a1000000-0000-4000-8000-000000998501",
+   "user_id": "a1000000-0000-4000-8000-000000700001",
+   "associate_id": "a1000000-0000-4000-8000-000000998008",
+   "supplier_id": null,
+   "instructor_id": null,
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "payment_intent_id": null,
+   "archived": false,
+   "invoice_fiscal_code": null,
+   "meta": {
+    "subscription_data": {
+     "name": 1.5,
+     "id": "q-float"
+    }
+   },
+   "notes": null,
+   "custom_accounts_id": null,
+   "signature_id": null,
+   "deleted": false,
+   "group_id": null,
+   "course": null
   }
  },
  "customer_invoices": {
@@ -975,12 +1025,30 @@
    "end": "2026-12-31",
    "group": null,
    "created": "2026-01-10T08:00:00Z"
+  },
+  "sub_anna_float": {
+   "id": "a1000000-0000-4000-8000-000000998503",
+   "associate": "a1000000-0000-4000-8000-000000998008",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "payment": "a1000000-0000-4000-8000-000000998502",
+   "start": "2025-09-01",
+   "end": "2026-08-31",
+   "group": null,
+   "created": "2026-01-10T08:00:00Z"
   }
  },
  "memberships": {
   "mem_anna": {
    "id": "a1000000-0000-4000-8000-000000998049",
    "subscription": "a1000000-0000-4000-8000-000000998047",
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "type": "FIDAL"
+  },
+  "mem_anna_float": {
+   "id": "a1000000-0000-4000-8000-000000998504",
+   "subscription": "a1000000-0000-4000-8000-000000998503",
    "start": "2026-01-01",
    "end": "2026-12-31",
    "type": "FIDAL"
@@ -3283,6 +3351,87 @@
    "restore": null,
    "body": {
     "number": 31,
+    "payment_date": "not-a-date"
+   }
+  },
+  {
+   "name": "invoice-sync-print-update-subscription-float-name-invalid-date-ignored",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998501/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Invoice updated",
+    "invoice": {
+     "invoice_id": "a1000000-0000-4000-8000-000000998501",
+     "document_token": null,
+     "creation_date": "2026-01-05T09:00:00Z",
+     "membership_fee": "0.00",
+     "activity_fee": "10.00",
+     "meta_payment_categories": null,
+     "description": "Ricevuta di pagamento per l'iscrizione 25/26 (1.5)  e tesseramento, 2026 (FIDAL) di <b>Anna Bianchi</b> all'associazione <b>Message reads own</b>.",
+     "number": 32,
+     "archived": false,
+     "cancelled": false,
+     "meta": null,
+     "imported_from_associami": false,
+     "deleted": false,
+     "document_pdf": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "selected_tutor": null,
+     "group": null,
+     "attached_documents": []
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "invoices": {
+     "i_sub_float": {
+      "number": 32,
+      "cancelled": false,
+      "description": "Ricevuta di pagamento per l'iscrizione 25/26 (1.5)  e tesseramento, 2026 (FIDAL) di <b>Anna Bianchi</b> all'associazione <b>Message reads own</b>.",
+      "selected_tutor_id": null
+     }
+    },
+    "payments": {
+     "p_sub_float": {}
+    },
+    "customer": null,
+    "audit": [
+     {
+      "model": "invoice",
+      "key": "a1000000-0000-4000-8000-000000998501",
+      "action": 1,
+      "changes": {
+       "number": [
+        "18",
+        "32"
+       ],
+       "description": [
+        "Ricevuta seed",
+        "Ricevuta di pagamento per l'iscrizione 25/26 (1.5)  e tesseramento, 2026 (FIDAL) di <b>Anna Bianchi</b> all'associazione <b>Message reads own</b>."
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "prints": [
+    {
+     "path": "/document/invoice/a1000000-0000-4000-8000-000000998501?send_receipt_email=False",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ],
+   "restore": null,
+   "body": {
+    "number": 32,
     "payment_date": "not-a-date"
    }
   },

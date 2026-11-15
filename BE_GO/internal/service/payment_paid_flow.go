@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math/big"
 	"strings"
@@ -283,10 +284,15 @@ func (s *PaymentStates) approvePaid(ctx context.Context, tx domain.PaymentPaidFl
 		paymentDate = &now
 	}
 	var receipt any = false
+	publish := true
 	if value, present := object.Lookup("send_receipt_email"); present {
 		var err error
 		if receipt, err = paymentStateReceiptArg(value); err != nil {
-			return nil, err
+			if !errors.Is(err, errPaymentStateReceiptUnencodable) {
+				return nil, err
+			}
+			// kombu cannot encode it: on_commit(robust=True) logs the failure and the answer stays 200 (payment_views.py:1940-1955).
+			publish = false
 		}
 	}
 	user := identity.ScopeUser
@@ -322,7 +328,7 @@ func (s *PaymentStates) approvePaid(ctx context.Context, tx domain.PaymentPaidFl
 		number = *last
 	}
 	number = max(number, int64(owner.StartingNumber)) + 1
-	description, err := (&InvoiceGenerations{anyMetaName: true}).description(ctx, tx, row, payment, row.AssociateID, association, group)
+	description, err := (&InvoiceGenerations{}).description(ctx, tx, row, payment, row.AssociateID, association, group)
 	if err != nil {
 		return nil, err
 	}
@@ -438,9 +444,11 @@ func (s *PaymentStates) approvePaid(ctx context.Context, tx domain.PaymentPaidFl
 		return nil, err
 	}
 	if dispatch {
-		// transaction.on_commit(..., robust=True): a broker failure is logged, the answer stays 200.
-		if err := printInvoice(ctx, s.tasks, *invoice, authorizationArg(request.Authorization), receipt); err != nil {
-			s.log.Error("payment approve: invoice task not queued", "payment_id", row.ID, "error", err)
+		if publish {
+			// transaction.on_commit(..., robust=True): a broker failure is logged, the answer stays 200.
+			if err := printInvoice(ctx, s.tasks, *invoice, authorizationArg(request.Authorization), receipt); err != nil {
+				s.log.Error("payment approve: invoice task not queued", "payment_id", row.ID, "error", err)
+			}
 		}
 		item["invoice_generating"] = true
 	}
@@ -516,7 +524,7 @@ func (s *StripeRoutes) stripePaidFlow(ctx context.Context, tx domain.PaymentPaid
 		number = *last
 	}
 	number = max(number, int64(owner.StartingNumber)) + 1
-	description, err := (&InvoiceGenerations{anyMetaName: true}).description(ctx, tx, row, payment, row.AssociateID, row.AssociationID, group)
+	description, err := (&InvoiceGenerations{}).description(ctx, tx, row, payment, row.AssociateID, row.AssociationID, group)
 	if err != nil {
 		return nil, err
 	}

@@ -259,8 +259,6 @@ func (s *InvoiceSyncUpdates) Update(ctx context.Context, identity domain.Resolve
 		}
 		description, err := (&InvoiceGenerations{}).description(ctx, tx, payment, details, payment.AssociateID, association, group)
 		switch {
-		case errors.Is(err, domain.ErrPaymentStateNotPorted):
-			return nil, err
 		case errors.Is(err, domain.ErrPaymentStateServer):
 			describeErr = err
 		case err != nil:

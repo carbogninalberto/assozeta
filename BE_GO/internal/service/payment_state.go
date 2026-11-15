@@ -54,9 +54,15 @@ func (s *PaymentStates) WithPaidFlow(store domain.PaymentPaidFlowStore, notifier
 	return s
 }
 
+// errPaymentStateReceiptUnencodable is send_receipt_email's value when kombu's
+// JSON encoder refuses it: an integer of more than 4300 digits, anywhere in
+// the value. The on_commit callback logs the failure and swallows it.
+var errPaymentStateReceiptUnencodable = errors.New("payment state receipt argument not JSON encodable")
+
 // paymentStateReceiptArg is send_receipt_email as a task argument: the raw
 // request value as kombu's JSON and Celery's saferepr write it (None, bool,
-// str, int, float, list or dict). An uploaded file is not ported.
+// str, int, float, list or dict). An integer of more than 4300 digits is
+// errPaymentStateReceiptUnencodable.
 func paymentStateReceiptArg(value any) (any, error) {
 	switch v := value.(type) {
 	case nil, bool, string:
@@ -66,8 +72,11 @@ func paymentStateReceiptArg(value any) (any, error) {
 		if strings.ContainsAny(text, ".eE") {
 			return celery.Number(text), nil
 		}
-		// str(int) of more than 4300 digits raises in Python.
-		if integer, ok := new(big.Int).SetString(text, 10); ok && len(text) <= 4300 {
+		if integer, ok := new(big.Int).SetString(text, 10); ok {
+			// str() of more than 4300 digits raises in Python: kombu cannot encode it.
+			if len(strings.TrimPrefix(integer.String(), "-")) > 4300 {
+				return nil, errPaymentStateReceiptUnencodable
+			}
 			return celery.Number(integer.String()), nil
 		}
 	case []any:
@@ -96,7 +105,8 @@ func paymentStateReceiptArg(value any) (any, error) {
 		}
 		return items, nil
 	}
-	return nil, domain.ErrPaymentStateNotPorted
+	// the route's body is JSON or a form: no other value type reaches it.
+	return nil, domain.ErrPaymentStateUnreachable
 }
 
 // PaymentStateRequest carries the request values the views read besides the body.
@@ -262,6 +272,7 @@ func (s *PaymentStates) Approve(ctx context.Context, identity domain.ResolvedIde
 	}
 	if row.Paid {
 		dispatch := row.InvoiceID != nil && generate
+		publish := dispatch
 		var receipt any = false
 		if dispatch {
 			if s.tasks == nil {
@@ -269,7 +280,11 @@ func (s *PaymentStates) Approve(ctx context.Context, identity domain.ResolvedIde
 			}
 			if value, present := object.Lookup("send_receipt_email"); present {
 				if receipt, err = paymentStateReceiptArg(value); err != nil {
-					return nil, err
+					if !errors.Is(err, errPaymentStateReceiptUnencodable) {
+						return nil, err
+					}
+					// kombu cannot encode it: on_commit(robust=True) logs the failure and the answer stays 200 (payment_views.py:1940-1955).
+					publish = false
 				}
 			}
 		}
@@ -281,9 +296,11 @@ func (s *PaymentStates) Approve(ctx context.Context, identity domain.ResolvedIde
 			return nil, err
 		}
 		if dispatch {
-			// transaction.on_commit(..., robust=True): a broker failure is logged, the answer stays 200.
-			if err := printInvoice(ctx, s.tasks, *row.InvoiceID, authorizationArg(request.Authorization), receipt); err != nil {
-				s.log.Error("payment approve: invoice task not queued", "payment_id", row.ID, "error", err)
+			if publish {
+				// transaction.on_commit(..., robust=True): a broker failure is logged, the answer stays 200.
+				if err := printInvoice(ctx, s.tasks, *row.InvoiceID, authorizationArg(request.Authorization), receipt); err != nil {
+					s.log.Error("payment approve: invoice task not queued", "payment_id", row.ID, "error", err)
+				}
 			}
 			item["invoice_generating"] = true
 		}

@@ -445,6 +445,13 @@ add('approve-sent-date', 'owner', APPROVE('ap_dated'), 200, {'data': {'payment':
     body={'payment_date': '2026-03-04', 'generate_invoice': True, 'send_receipt_email': True},
     effect=effect('owner', changed={'ap_dated': {'paid': True, 'payment_date': '2026-03-04T00:00:00Z'}},
                   audit=[updated('payment', 'ap_dated', changes)]))
+# The body parser is Python's json: a 4301-digit integer raises before the view runs, so the answer is DRF's
+# parse error and no print_document_invoice is published (the same limit kombu's encoder hits).
+add('approve-sent-date-receipt-integer-over-4300-json-error', 'owner', APPROVE('ap_dated'), 400,
+    {'detail': 'JSON parse error - Exceeds the limit (4300 digits) for integer string conversion: value has 4301 digits; '
+               'use sys.set_int_max_str_digits() to increase the limit'},
+    raw_body='{"payment_date": "2026-03-04", "generate_invoice": true, "send_receipt_email": ' + '9' * 4301 + '}',
+    content_type='application/json', effect=nothing())
 changes = save('ap_stored', {'paid': True})
 add('approve-keeps-stored-date', 'owner', APPROVE('ap_stored'), 200, {'data': {'payment': payment_item('ap_stored')}},
     body={'payment_date': None}, effect=effect('owner', changed={'ap_stored': {'paid': True}}, audit=[updated('payment', 'ap_stored', changes)]))

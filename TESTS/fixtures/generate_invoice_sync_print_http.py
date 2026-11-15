@@ -60,11 +60,11 @@ ASSOCIATES = {
 A = lambda label: ASSOCIATES[label]['id']
 
 
-def invoice(number, *, association=OWN, archived=False, deleted=False, group=None, document=False, tutor=None, cancelled=False,
-            description='Ricevuta seed', attached=False):
-    return {'id': next(ids), 'number': number, 'association': association, 'created': '2026-01-05T09:00:00Z', 'archived': archived,
-            'deleted': deleted, 'group': group, 'document': document, 'membership_fee': '0.00', 'activity_fee': '10.00',
-            'description': description, 'tutor': tutor, 'cancelled': cancelled, 'attached': attached}
+def invoice(number, *, invoice_id=None, association=OWN, archived=False, deleted=False, group=None, document=False, tutor=None,
+            cancelled=False, description='Ricevuta seed', attached=False):
+    return {'id': invoice_id or next(ids), 'number': number, 'association': association, 'created': '2026-01-05T09:00:00Z',
+            'archived': archived, 'deleted': deleted, 'group': group, 'document': document, 'membership_fee': '0.00',
+            'activity_fee': '10.00', 'description': description, 'tutor': tutor, 'cancelled': cancelled, 'attached': attached}
 
 
 INVOICES = {
@@ -137,8 +137,8 @@ CUSTOMER_INVOICES = {
 }
 
 
-def subscription(associate, *, payment=None, start=None, end=None, group=None):
-    return {'id': next(ids), 'associate': A(associate) if associate else None, 'association': OWN, 'user': OWNER,
+def subscription(associate, *, subscription_id=None, payment=None, start=None, end=None, group=None):
+    return {'id': subscription_id or next(ids), 'associate': A(associate) if associate else None, 'association': OWN, 'user': OWNER,
             'payment': P(payment) if payment else None, 'start': start, 'end': end, 'group': group, 'created': '2026-01-10T08:00:00Z'}
 
 
@@ -148,6 +148,16 @@ SUBSCRIPTIONS = {
 }
 MEMBERSHIPS = {'mem_anna': {'id': next(ids), 'subscription': SUBSCRIPTIONS['sub_anna']['id'], 'start': '2026-01-01', 'end': '2026-12-31',
                             'type': 'FIDAL'}}
+# A second subscription payment of anna whose meta.subscription_data.name is the float 1.5: str() writes '(1.5)'.
+INVOICES['i_sub_float'] = invoice(18, invoice_id='a1000000-0000-4000-8000-000000998501')
+PAYMENTS['p_sub_float'] = {'id': 'a1000000-0000-4000-8000-000000998502',
+                           **row(subject=1, associate_id=A('anna'), invoice_id=I('i_sub_float'), description='Iscrizione',
+                                 meta={'subscription_data': {'name': 1.5, 'id': 'q-float'}},
+                                 payment_date='2026-02-11T10:30:00Z')}
+SUBSCRIPTIONS['sub_anna_float'] = subscription('anna', subscription_id='a1000000-0000-4000-8000-000000998503', payment='p_sub_float',
+                                               start='2025-09-01', end='2026-08-31')
+MEMBERSHIPS['mem_anna_float'] = {'id': 'a1000000-0000-4000-8000-000000998504', 'subscription': SUBSCRIPTIONS['sub_anna_float']['id'],
+                                 'start': '2026-01-01', 'end': '2026-12-31', 'type': 'FIDAL'}
 COURSES = {'nuoto': {'id': next(ids), 'title': 'Nuoto & Co'}, 'yoga': {'id': next(ids), 'title': 'Yoga'}}
 COURSE_SUBSCRIPTIONS = {
     'cs_nuoto': {'id': next(ids), 'course': 'nuoto', 'subscription': 'sub_bruno', 'payment': 'p_course'},
@@ -424,6 +434,10 @@ updated('i_other', None, raw_body=mp, content_type=ct, parsed=(25, False), tutor
 SUB_NAME = '25/26 (Quota <A>)  e tesseramento, 2026 (FIDAL) '
 updated('i_sub', {'number': 31, 'payment_date': 'not-a-date'}, payment='p_sub', description=subscribed(SUB_NAME, full_name('anna')),
         name='update-subscription-subject-invalid-date-ignored')
+# meta.subscription_data.name is an f-string: the float 1.5 is str() as '(1.5)'.
+SUB_NAME_FLOAT = '25/26 (1.5)  e tesseramento, 2026 (FIDAL) '
+updated('i_sub_float', {'number': 32, 'payment_date': 'not-a-date'}, payment='p_sub_float',
+        description=subscribed(SUB_NAME_FLOAT, full_name('anna')), name='update-subscription-float-name-invalid-date-ignored')
 updated('i_course', {'number': 41, 'payment_date': 20260101}, payment='p_course', description=course(full_name('bruno'), 'Nuoto & Co'),
         name='update-course-subscription-number-date-ignored')
 updated('i_install', {'number': 51}, payment='p_install', description=course(full_name('anna'), 'Yoga'), name='update-course-installment')

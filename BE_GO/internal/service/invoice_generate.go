@@ -22,16 +22,14 @@ const invoicePublishTimeout = 10 * time.Second
 
 // InvoiceGenerations ports payment_generate_invoice.
 type InvoiceGenerations struct {
-	// anyMetaName formats every meta.subscription_data.name with str().
-	anyMetaName bool
-	store       domain.InvoiceGenerateStore
-	publisher   celery.Publisher
-	now         func() time.Time
-	newID       func() string
+	store     domain.InvoiceGenerateStore
+	publisher celery.Publisher
+	now       func() time.Time
+	newID     func() string
 }
 
 func NewInvoiceGenerations(store domain.InvoiceGenerateStore, publisher celery.Publisher, now func() time.Time) *InvoiceGenerations {
-	return &InvoiceGenerations{anyMetaName: true, store: store, publisher: publisher, now: now, newID: uuid.NewString}
+	return &InvoiceGenerations{store: store, publisher: publisher, now: now, newID: uuid.NewString}
 }
 
 // InvoiceGenerateRequest carries the request values besides the body.
@@ -431,7 +429,7 @@ func invoicePeriod(period domain.InvoiceGeneratePeriod) string {
 
 // metaName is (payment.meta or {}).get('subscription_data') or {} and its
 // truthy 'name' as str(); ok false: nothing to add.
-func metaName(meta *string, anyValue bool) (string, bool, error) {
+func metaName(meta *string) (string, bool, error) {
 	if meta == nil {
 		return "", false, nil
 	}
@@ -468,11 +466,8 @@ func metaName(meta *string, anyValue bool) (string, bool, error) {
 			return string(v), true, nil
 		}
 	}
-	if anyValue {
-		return dto.PythonStr(name), true, nil
-	}
-	// str() of floats, lists and dicts: not ported.
-	return "", false, domain.ErrPaymentStateNotPorted
+	// str() of floats, lists and dicts, as Django's f-string writes them.
+	return dto.PythonStr(name), true, nil
 }
 
 func (s *InvoiceGenerations) description(ctx context.Context, tx domain.InvoiceGenerateTransaction, row *domain.PaymentStateRow,
@@ -521,7 +516,7 @@ func (s *InvoiceGenerations) description(ctx context.Context, tx domain.InvoiceG
 		if subscription != nil {
 			label = invoicePeriod(*period) + " "
 		}
-		metaLabel, present, err := metaName(row.Meta, s.anyMetaName)
+		metaLabel, present, err := metaName(row.Meta)
 		if err != nil {
 			return "", err
 		}
