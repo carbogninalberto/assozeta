@@ -9,6 +9,7 @@ import (
 	"errors"
 	"io"
 	"os"
+	"runtime"
 	"slices"
 	"testing"
 )
@@ -81,8 +82,21 @@ func compare(frame *Frame, err error, want *goldenOutcome) string {
 // TESTS/adapters/go/pandas_csv_frames_golden.py parsed with
 // pandas.read_csv(file, delimiter=';', dtype={column: str, ...}), from an
 // S3File (ReadText) and from a decoded binary handle (ReadDecodedText): every
-// outcome the package gives must be pandas'.
+// outcome the package gives must be pandas'. The corpus was recorded with the
+// macOS arm64 wheel, whose digit accumulation is fused (floatFMA), so the
+// replay reads floats as that wheel on every platform; TestParseFloatPlatform
+// pins the platform's own accumulation.
 func TestFramesMatchPandas(t *testing.T) {
+	platform := runtime.GOOS + "/" + runtime.GOARCH
+	saved, had := floatFMA[platform]
+	floatFMA[platform] = true
+	t.Cleanup(func() {
+		if had {
+			floatFMA[platform] = saved
+		} else {
+			delete(floatFMA, platform)
+		}
+	})
 	file, err := os.Open("testdata/pandas_frames.json.gz")
 	if err != nil {
 		t.Fatal(err)
