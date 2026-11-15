@@ -45,7 +45,7 @@ HOST_USER = 'noreply@example.test'
 SMTP_PASSWORD = 'smtp-fixture-secret'
 TIMER_WAIT = 33
 UUID4 = re.compile(r'[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\Z')
-VARIANTS = ('main', 'stop')
+VARIANTS = ('main', 'stop', 'smtp')
 PROBE = bool(os.environ.get('QUOTE_ASSIGN_PROBE'))
 ORDER_PROBE = bool(os.environ.get('QUOTE_ASSIGN_ORDER_PROBE'))
 EXPECTED = {
@@ -55,7 +55,7 @@ EXPECTED = {
     'a later run on the assigned state creates nothing',
     'unsupported version payload and tenant fail before business effects',
     'a fee outside the ported conversions refuses the run before any effect',
-    'an SMTP subject outside the ported subset refuses the run before any effect',
+    'a plan name with a line break in the SMTP subject: native worker reproduces the Django task',
 }
 
 
@@ -350,6 +350,9 @@ class QuoteRehearsal(Rehearsal):
             assert len(delivered) == 1 and balance == 5, (transcripts, balance)
             # Ten audited creates and the configuration's balance save.
             assert len(after['auditlog.LogEntry']) == 11, len(after['auditlog.LogEntry'])
+        elif variant == 'smtp':
+            # The same quotes as the main seed; the SMTP subject with a line break fails inside send_email's try.
+            assert len(created) == 10, quotes
         else:
             assert len(created) < 10 and (24, 'plan-new', '30.00') in quotes, quotes
 
@@ -433,9 +436,9 @@ class QuoteRehearsal(Rehearsal):
         self.refused(identifier, before, 'unported fee refused')
         self.case('a fee outside the ported conversions refuses the run before any effect')
         identifier, before = self.seed_job(variant='smtp')
-        self.refused(identifier, before, 'unsupported SMTP subject refused')
+        self.matches_django('smtp', identifier, before)
         self.stop(process)
-        self.case('an SMTP subject outside the ported subset refuses the run before any effect')
+        self.case('a plan name with a line break in the SMTP subject: native worker reproduces the Django task')
         assert set(self.completed) == EXPECTED and len(self.completed) == len(EXPECTED)
 
     def worker(self, *arguments):
