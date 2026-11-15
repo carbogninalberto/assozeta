@@ -56,7 +56,8 @@ func (s *PaymentStates) WithPaidFlow(store domain.PaymentPaidFlowStore, notifier
 
 // errPaymentStateReceiptUnencodable is send_receipt_email's value when kombu's
 // JSON encoder refuses it: an integer of more than 4300 digits, anywhere in
-// the value. The on_commit callback logs the failure and swallows it.
+// the value, or an uploaded file. The on_commit callback logs the failure and
+// swallows it.
 var errPaymentStateReceiptUnencodable = errors.New("payment state receipt argument not JSON encodable")
 
 // paymentStateReceiptArg is send_receipt_email as a task argument: the raw
@@ -104,8 +105,12 @@ func paymentStateReceiptArg(value any) (any, error) {
 			items = append(items, celery.Item{Key: field.Name, Value: item})
 		}
 		return items, nil
+	case domain.RequestUpload:
+		// A multipart file part: request.data.get returns the UploadedFile and
+		// kombu cannot encode it (payment_views.py:1792, 1940-1955).
+		return nil, errPaymentStateReceiptUnencodable
 	}
-	// the route's body is JSON or a form: no other value type reaches it.
+	// the route's body is JSON, a form or multipart: no other value type reaches it.
 	return nil, domain.ErrPaymentStateUnreachable
 }
 

@@ -19,7 +19,6 @@ func TestLongTailPR3AppStateErrors(t *testing.T) {
 		"ErrSubscriptionUpdateNotPorted": ErrSubscriptionUpdateNotPorted,
 		"errInstanceBackupsRunnerDepth":  errInstanceBackupsRunnerDepth,
 		"errPersonaPictureKey":           errPersonaPictureKey,
-		"errOnboardingFeeFloat":          errOnboardingFeeFloat,
 	} {
 		wrapped := fmt.Errorf("wrapped: %w", err)
 		if _, ok := refusal.AppStateReason(wrapped); !ok || !errors.Is(wrapped, refusal.ErrAppState) {

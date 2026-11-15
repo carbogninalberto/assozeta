@@ -101,13 +101,13 @@ func subscriptionQuickFee(settings *domain.SubscriptionCreateSettings, data doma
 	}
 	parsed, err := dto.ParsePythonJSON(string(settings.SubscriptionPlans))
 	if err != nil {
-		// subscription_fee_plans is a jsonb array of objects written only by the settings view (profile_views.py:327-340).
+		// jsonb text is valid JSON, within the digit and nesting limits of the Python writers.
 		return nil, nil, domain.ErrSubscriptionCreateUnreachable
 	}
 	available, ok := parsed.([]any)
 	if !ok {
-		// subscription_fee_plans is a jsonb array of objects written only by the settings view (profile_views.py:327-340).
-		return nil, nil, domain.ErrSubscriptionCreateUnreachable
+		// The association import stores the archive's plans as they are (import_service.py), so any jsonb value can be here.
+		return nil, nil, domain.ErrSubscriptionCreateNotPorted
 	}
 	planID, hasPlan := data.Lookup("plan_id")
 	meta := func(plan domain.RequestObject) (*string, error) {
@@ -127,8 +127,8 @@ func subscriptionQuickFee(settings *domain.SubscriptionCreateSettings, data doma
 		last = item
 		plan, isPlan := item.(domain.RequestObject)
 		if !isPlan {
-			// subscription_fee_plans is a jsonb array of objects written only by the settings view (profile_views.py:327-340).
-			return nil, nil, domain.ErrSubscriptionCreateUnreachable
+			// The association import stores the archive's plans as they are (import_service.py).
+			return nil, nil, domain.ErrSubscriptionCreateNotPorted
 		}
 		if !hasPlan {
 			continue

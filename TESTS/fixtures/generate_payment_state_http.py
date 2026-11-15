@@ -199,6 +199,8 @@ def invoice_row(label, number):
 # Archived: the paid flow's invoice numbering skips them.
 INVOICES = {key: invoice_row(label, number) for number, (key, label) in enumerate(
     ((row['invoice'], label) for label, row in PAYMENTS.items() if row['invoice']), start=901)}
+# Added after every other id so the earlier rows keep theirs.
+PAYMENTS['pf_receipt_file'] = payment(subject=0, amount='16.00', associate=True, user=True)
 STATE = copy.deepcopy(PAYMENTS)
 cases = []
 
@@ -701,6 +703,14 @@ paid_flow('approve-paid-flow-meta-name-list', 'pf_name_list', notified="l'iscriz
           description=subscription_text("(['Agonisti', {'ok': True, 'anno': None}, 2]) "))
 paid_flow('approve-paid-flow-meta-name-dict', 'pf_name_dict', notified="l'iscrizione all'associazione sportiva",
           description=subscription_text('''({'it': 'l\\'anno "2026"'}) '''))
+# send_receipt_email as a multipart file part: request.data.get returns the UploadedFile, kombu cannot encode it
+# inside on_commit(robust=True), so the failure is logged, nothing is published and the answer is still 200.
+RECEIPT_BOUNDARY = 'receipt-file-boundary'
+paid_flow('approve-paid-flow-receipt-file-not-published', 'pf_receipt_file', description=other_text(CATEGORY_NAME), notified='Quota',
+          content_type=f'multipart/form-data; boundary={RECEIPT_BOUNDARY}',
+          raw_body=(f'--{RECEIPT_BOUNDARY}\r\nContent-Disposition: form-data; name="send_receipt_email"; filename="ricevuta.txt"\r\n'
+                    f'Content-Type: text/plain\r\n\r\nsi\r\n--{RECEIPT_BOUNDARY}--\r\n'))
+cases[-1]['effect']['celery'] = []
 # float(str('abc')) raises before any write; a carnet subscription without a carnet fails in the description: rolled back.
 add('approve-paid-flow-bad-meta-amount-server-error', 'owner', APPROVE('pf_bad_meta'), 500, SERVER)
 add('approve-paid-flow-carnet-without-carnet-server-error', 'owner', APPROVE('pf_carnet_null'), 500, SERVER)

@@ -151,8 +151,9 @@ course subscription by key (`all_objects()`), else the first installment's (`all
 
 ## Not ported (refused with the 500 page)
 
-- The compressed mode in an association-scoped athlete session is application state (`ErrPaymentReadsUnreachable`,
-  the 500 page): Django answers 500 there too, since an athlete has no association.
+- The compressed mode in an association-scoped athlete session whose athlete owns an association
+  (`ErrPaymentReadsNotPorted`): only the association import can leave such an owner, and Django then answers the list.
+  Without an owned association Django raises `DoesNotExist` and Go answers the same 500 page.
 - In the athlete list: a receipt whose filename is not a valid header value (the association's denomination with control
   characters; `document-render.md`) is refused before any write, where Django stores the Document and ignores the failed
   response.

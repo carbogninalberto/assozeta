@@ -113,8 +113,9 @@ func (s *OrphanMedicalCleanup) plan(ctx context.Context, job domain.Job) ([]orph
 		}
 		name, err := documentkey.StoredName(*certificate.Created, id, *certificate.Filename, nil)
 		if err != nil {
-			// Document.creation_date is written only by the app (default=timezone.now, docmanager/models.py:14).
-			return nil, errors.Join(domain.ErrOrphanMedicalUnreachable, err)
+			// Document.creation_date has a default, not auto_now_add: the association import stores the archived
+			// value, which can lie outside Python's years (the task's except then logs and returns). Not ported.
+			return nil, errors.Join(domain.ErrOrphanMedicalUnsupported, err)
 		}
 		step.key, err = documentkey.S3Key(name, s.objects.Location())
 		var outside *documentkey.OutsideLocationError

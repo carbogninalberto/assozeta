@@ -38,8 +38,8 @@
 ## Not ported (explicit refusals before any committed write)
 
 - **`profile/update/subscription/template` is ported separately** in [profile-template.md](profile-template.md), with a bs4 `prettify()` port and a rectangular image bound.
-- In `onboarding/update`, the former refusals are gone: a fee DRF's `DecimalField` accepted that `float()` rejects cannot
-  exist (the field accepts at most nine ASCII digits, which `float()` reads), so the 500 page is application state; a
+- In `onboarding/update`, the former refusals are gone: a fee DRF's `DecimalField` accepted that `float()` rejects
+  (such as `'_1'`) is the view's `except Exception`, its fixed JSON 500, as for a blank fee; a
   multipart body over 2621440 bytes with a file part is answered as for an in-memory upload (see **Multipart file parts**).
 
 ## Season/fiscal values and NUL characters

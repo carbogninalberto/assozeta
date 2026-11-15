@@ -195,8 +195,8 @@ func TestRenewAssociationOwnedByCollaborator(t *testing.T) {
 		tx := &formRenewTransaction{associationCount: 1, allowed: true, owner: owner, connectedCount: 1}
 		_, err := newFormRenewals(tx).Renew(context.Background(), formRenewIdentity(domain.RoleAthlete),
 			SubscriptionCreateRequest{Body: memberRenewalBody(t), Form: true})
-		if !errors.Is(err, domain.ErrSubscriptionCreateUnreachable) {
-			t.Fatalf("want the unreachable-state answer, got %v", err)
+		if !errors.Is(err, domain.ErrSubscriptionCreateNotPorted) {
+			t.Fatalf("want the not-ported refusal (an imported owner), got %v", err)
 		}
 	})
 }

@@ -1662,7 +1662,7 @@ HTTP/WebSocket 53 -> 28, other roots 12 -> 5; whole report 297 -> 263 (HTTP/WebS
 | `codicefiscale.ErrUnsupported` | 2 -> 0 | **ported**: invalid bytes decoded with errors='replace' |
 | `fatturapa.ErrUnsupported` | 4 -> 0 | **ported**: overflowing floats, str() of lists/dicts, Decimal strings/tuples/huge exponents, XML dates before 1000 (platform C library), the 28-digit context rounding |
 | `mentions.ErrUnsupported` | 7 -> 7 | **ported** in the package: any stored markup through the html.parser/bs4 tree port; a legacy alias whose `lower()` is no key is app state. The sentinel stays for the service resolvers (mention paths naming attributes the port does not read) |
-| `pdfexport.ErrNotPorted` | 16 -> 16 | **ported**: the `<seq*>` tags (process-wide sequencer, as reportlab). Still refused: `<img>` with a server path or URL (owner decision), a template printing the sequencer object, and the paragraph features listed in `pdf-exports.md` |
+| `pdfexport.ErrNotPorted` | 16 -> 16 | **ported**: the `<seq*>` tags (process-wide sequencer, as reportlab). Still refused: `<img>` with a file path or URL source, a template printing the sequencer object, and the paragraph features listed in `pdf-exports.md` |
 | `smtpsend.ErrUnsupported` | 3 -> 1 | **ported**: the send_email path (Header.encode folding, unknown-8bit surrogates, any envelope; Python's exceptions are send_email's `(False, e)`). The Django EmailMessage path is ported as well (`get_mailbox` for addresses, `forbid_multi_line_headers`, folding at 78, quoted-printable bodies). Still refused: an encoded word in an address whose charset is a Python text codec other than UTF-8, US-ASCII or ISO-8859-1 (`smtpsend.ErrEncodedWordCharset`) |
 | `agentllm.ErrNotPorted` | 1 -> 0 | **ported**: the base URL as httpx parses and sends it. An `xn--` host is decoded before each request like httpx's `URL.host` (`idna2008.Decode`, idna's own message texts) and a port past int's range is kept as Python keeps it |
 | `pandascsv.ErrUnsupported` | 1 -> 1 | **ported**: platform-built floats (macOS arm64 fused, Linux plain, as xlsxexport), int32 exponents, the bare-CR re-read; narrowed to `ErrBareCRBacktrack` for the re-read cases pandas answers |
@@ -1742,3 +1742,30 @@ cases) and associates-draft, whose Django side fails the existing `edit-year-bel
 The runner change removes the `service/instance_updates.go` mapping of the runner decoder's refusal (agent B's
 `domain.ErrInstanceAdminRefused` keeps its other sites). `documentkey.AvailableName` (`pkg/storage/documentkey/available.go`) reproduces
 `get_available_name` for every caller that still refuses a taken key.
+
+## Long tail PR 3, combined branch review
+
+The application-state conversions of agents A, B and C were sampled against the Django source (54 sites). A state
+the association import can write from an archive counts as reachable: the import keeps archive values as they are and
+can reuse an existing user as the owner by UUID without checking the role (`import_service.py`).
+
+| Site | Was | Now | Why |
+|---|---|---|---|
+| `service/payment_state.go` `paymentStateReceiptArg` | app state for an upload | **ported** (case `payment-state-approve-paid-flow-receipt-file-not-published`) | a multipart file part as `send_receipt_email`: kombu cannot encode it inside `on_commit(robust=True)`, Django answers 200 |
+| `service/profile_misc.go` onboarding fee | app state | **ported**: the view's fixed JSON 500 | DRF's `DecimalField` accepts `'_1'`, `float()` raises inside the view's `except Exception` |
+| `service/payment_reads.go` compressed athlete list, `service/payment_paid_flow.go` scope user | app state | refusal (`ErrPaymentReadsNotPorted`, `ErrPaymentStateNotPorted`) | an imported archive can make an athlete an owner; Django answers 200 |
+| `service/statistic_reads.go` registry dates with other digits, stored JSON past the reference parser | app state | refusal (`ErrStatisticNotPorted`) | imported registry meta; `Payment.course`/`meta` are writable JSON fields Django stores and reads deeper |
+| `service/course_calendar.go` collaborator scope user | app state | refusal (`ErrCalendarNotPorted`) | the import keeps collaborator chains |
+| `service/subscription_create.go`, `subscription_create_quick.go` fee plans that are not a list of objects | app state | refusal (`ErrSubscriptionCreateNotPorted`) | imported plans; `get_subscription_fee`'s `except` falls back to the default fee |
+| `service/subscription_renew.go` collaborator owner with one association | app state | refusal (`ErrSubscriptionCreateNotPorted`) | the import can reuse a collaborator as the owner |
+| `service/orphan_medical_cleanup.go` creation date outside Python's years | app state | refusal (`ErrOrphanMedicalUnsupported`) | the import stores the archived `creation_date` |
+| `repository/instance_release_cache.go` pickles and release dicts Go does not decode | app state | refusal (`ErrReleaseCacheShape`); a value that is not a list stays app state | Django caches GitHub's payload as it is |
+| `smtpsend` text that is no Python str | app state | refusal | raw process environment bytes, which Python decodes with surrogateescape |
+
+Kept as application state after the check: Stripe cents overflow, the cached Stripe fees, the lazy order marker, the
+export label and decimal invariants, NaN percentages, `subscription_lifecycle` FK and association reads, the
+subscription create invariants, the quick mode's owner association count, the renew scope user and same-transaction
+read, statistic infinities, docmanager stored names, data restore progress and paths, module key collisions, the
+persona picture key, the print deferral during a restore (eager `Task.apply` recursion), supplier ordering, NUL text on
+subscription update, the supplier foreign keys, runner reply depth, the release feed's short body (Django raises
+`IncompleteRead`), the mentions alias `KeyError`, the Stripe encoder's Go types and the subscription export table.

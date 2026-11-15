@@ -17,12 +17,12 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
-// errNotPythonStr is text a Python str cannot hold: Go bytes that are neither
-// UTF-8 nor the WTF-8 form of a lone surrogate (pystr.Runes would have to
-// invent U+FFFD). The fields send_email folds only ever hold str values
-// (BE/communications/models.py:142-152 assigns them from stored and request
-// text), so this state cannot occur; Go answers Django's plain 500 page.
-var errNotPythonStr = refusal.AppState("smtpsend: text not representable as a Python str")
+// errNotPythonStr is text Go holds as bytes that are neither UTF-8 nor the
+// WTF-8 form of a lone surrogate (pystr.Runes would have to invent U+FFFD).
+// Request and stored text never is, but process environment values
+// (WHITELABEL_NAME, EMAIL_HOST_USER) are read as raw bytes, where Python
+// decodes them with surrogateescape and sends. Left to Django.
+var errNotPythonStr = refusal.New("smtpsend: text not representable as a Python str")
 
 // pythonRunes decodes value as the str it stands for: UTF-8, with the
 // three-byte form of a lone surrogate (0xED 0xA0-0xBF 0x80-0xBF) becoming

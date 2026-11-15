@@ -38,7 +38,7 @@ func TestCommunicationSendEmailRenderSubset(t *testing.T) {
 		"subject longer than a line": {strings.Repeat("Riga ", 300000), []string{"socio@example.test"}, nil},
 		"quoted recipient":           {"Avviso", []string{`"a b"@example.test`}, nil},
 		"ip literal":                 {"Avviso", []string{"socio@[127.0.0.1]"}, nil},
-		"invalid text":               {"Avviso\xff", []string{"socio@example.test"}, refusal.ErrAppState},
+		"invalid text":               {"Avviso\xff", []string{"socio@example.test"}, refusal.ErrNotPorted},
 	} {
 		if _, err := s.render(row, dto.SendEmailInput{Subject: input.subject, Message: "Ciao"}, input.to); !errors.Is(err, input.want) {
 			t.Errorf("%s: err = %v, want %v", name, err, input.want)

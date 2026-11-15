@@ -355,8 +355,9 @@ func (s *CourseCalendars) Calendar(ctx context.Context, identity domain.Resolved
 		// The scope user is never a collaborator; the view's collaborator
 		// branch (re-resolving identity) is not ported.
 		if identity.ScopeUser.Role == domain.RoleCollaborator {
-			// The identity resolver rewrites a collaborator target to its owner (service/identity.go): the scope user is never a collaborator.
-			return nil, domain.ErrCalendarUnreachable
+			// The identity resolver rewrites a collaborator target to its connected user, which is a collaborator only
+			// when the association import (import_service.py) kept such a chain from an archive.
+			return nil, domain.ErrCalendarNotPorted
 		}
 		if sync, err = w.tx.GoogleSyncEnabled(ctx, identity.ScopeUser.ID); err != nil {
 			return nil, err

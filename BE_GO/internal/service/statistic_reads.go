@@ -377,8 +377,8 @@ func statisticRecentLesson(meta domain.RequestObject, since time.Time) (bool, er
 			return false, nil // strptime TypeError, caught
 		}
 		if dto.StrptimeUnicodeDigits(text) {
-			// Only the app writes registry dates, as str(datetime) (attendee_views.py:500, tasks.py:736, statistic_views.py:1027).
-			return false, domain.ErrStatisticUnreachable
+			// The association import stores registry meta as the archive has it; strptime reads other digits. Not ported.
+			return false, domain.ErrStatisticNotPorted
 		}
 		moment, ok := dto.StrptimeLessonDate(text)
 		if !ok {
@@ -1051,8 +1051,9 @@ func (s *StatisticReads) paymentTitle(ctx context.Context, payment domain.Statis
 		}
 		value, err := dto.ParseReferenceJSON([]byte(*text))
 		if err != nil {
-			// jsonb always holds valid JSON, and a request body nested past Python's limit fails to parse before it is stored.
-			return nil, domain.ErrStatisticUnreachable
+			// Payment.course and meta are writable JSON fields: Django stores (and json.loads reads) values nested deeper
+			// than this parser reads. Not ported.
+			return nil, domain.ErrStatisticNotPorted
 		}
 		return value, nil
 	}

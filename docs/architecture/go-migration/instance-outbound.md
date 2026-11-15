@@ -217,5 +217,6 @@ escaped, dot-segment and non-ASCII paths. The HTTP sequence adds `integration-te
 fake provider (its certificate covers the fixed ASCII hosts only), so the fixture uses an invalid IDNA label, which
 requests raises on: the probe answers the generic failure and sends nothing.
 
-Long tail PR 3 (agent C): a cached release catalog other than a list of `normalize_release` dicts is
-application state (the 500 page); only the releases view writes that key.
+Long tail PR 3 (agent C, combined branch): a cached catalog that is not a list is application state (the 500 page:
+`fetch_releases` always returns a list). A pickle or release dict outside what Go decodes stays a refusal
+(`ErrReleaseCacheShape`): Django writes the catalog from GitHub's payload as it is.

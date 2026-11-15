@@ -7,12 +7,10 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"unicode"
 	"unicode/utf8"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // ProfileMisc implements profile_associates_course,
@@ -29,11 +27,6 @@ func NewProfileMisc(reader domain.ProfileAssociatesReader, store domain.Onboardi
 
 // ErrProfileMiscServer is an exception Django renders as the 500 page.
 var ErrProfileMiscServer = errors.New("profile misc server error")
-
-// errOnboardingFeeFloat is a fee DRF's DecimalField accepted that float()
-// rejects: the field accepts at most nine ASCII digits, which float() always
-// reads, so no request gets here (long-tail rule 3).
-var errOnboardingFeeFloat = refusal.AppState("onboarding fee DecimalField accepted but float() rejected")
 
 // OnboardingUpdateErrorMessage is the body the view sends for a save error.
 const OnboardingUpdateErrorMessage = "Unable to update the onboarding data."
@@ -526,11 +519,10 @@ func (s *ProfileMisc) onboardingMembership(ctx context.Context, user string, dat
 			continue
 		}
 		repr, ok := dto.PythonFloatRepr(raw)
-		if text, isText := raw.(string); !ok && isText && strings.TrimFunc(text, unicode.IsSpace) == "" {
-			// The serializer read a blank nullable fee as None; float() of the raw text raises.
+		if !ok {
+			// float() of the raw value raises (a blank nullable fee the serializer read as None, or a text DRF's
+			// DecimalField accepts and float() does not, such as '_1'): the view's except answers its fixed 500.
 			return &OnboardingServerError{Message: "a fee is not a number"}
-		} else if !ok {
-			return errOnboardingFeeFloat
 		}
 		*fee.target = repr
 	}

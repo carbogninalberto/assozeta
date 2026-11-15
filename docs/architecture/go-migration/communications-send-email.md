@@ -39,7 +39,8 @@
 
 ## Not ported (refused with the 500 page before any write)
 
-- (Long tail PR 3: nothing is refused here any more. Lone surrogates follow compat32's unknown-8bit path, headers of any
+- (Long tail PR 3: only bytes that are no Python str stay refused, which only raw process environment values can hold
+  (Python decodes them with surrogateescape). Lone surrogates follow compat32's unknown-8bit path, headers of any
   length fold like `Header.encode` at as_string's 1,000,000-character line (`smtpsend/header_encode.go`,
   `testdata/python_header_fold.json`), and any recipient or sender text goes through `smtplib.quoteaddr`. Inputs Python
   raises on are `smtpsend.ErrRaises`: send_email's `(False, e)`, which DRF answers with the 500 page.)

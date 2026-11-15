@@ -139,9 +139,9 @@ Refused before any effect (job fails with `task_failed`):
   collector would delete those rows with their own audit entries, which Go does not reproduce (the
   `cleanup_old_exports` boundary).
 
-Since long-tail PR 3 (agent B) a creation date outside Python's range and a name that is not valid UTF-8 or holds a
-NUL are application state (`ErrOrphanMedicalUnreachable`, the job fails from Go): the application writes the
-creation date, and PostgreSQL refuses the text. A run whose orphan document other rows reference stays refused.
+Since long-tail PR 3 (agent B) a name that is not valid UTF-8 or holds a NUL is application state
+(`ErrOrphanMedicalUnreachable`, the job fails from Go): PostgreSQL refuses the text. A creation date outside Python's
+range stays refused: the association import stores the archived value. A run whose orphan document other rows reference stays refused.
 
 Differences:
 

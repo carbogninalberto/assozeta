@@ -297,8 +297,10 @@ func (s *PaymentStates) approvePaid(ctx context.Context, tx domain.PaymentPaidFl
 	}
 	user := identity.ScopeUser
 	if user == nil || (user.Role != domain.RoleAssociation && user.Role != domain.RoleCollaborator) {
-		// The scope user is the association's owner (role ASSOCIATION, BE/instance/views.py:198-211) or a collaborator; athletes are refused before the view (impersonation_scope.ATHLETE_VIEWS).
-		return nil, domain.ErrPaymentStateUnreachable
+		// Setup makes the owner an association account (BE/instance/views.py:198-211), but the association import
+		// (import_service.py) can make an existing athlete the owner of an imported association; Django then
+		// answers as for the owner. Not ported.
+		return nil, domain.ErrPaymentStateNotPorted
 	}
 	payment, err := tx.InvoiceGeneratePayment(ctx, row.ID)
 	if err != nil {

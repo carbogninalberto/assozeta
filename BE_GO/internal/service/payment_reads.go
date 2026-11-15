@@ -342,8 +342,9 @@ func (s *PaymentReads) List(ctx context.Context, request PaymentReadsRequest) (a
 			return nil, err
 		}
 		if identity.ScopeUser.Role == domain.RoleAthlete && paymentReadsScope(identity) != nil {
-			// SportAssociation rows belong to association accounts (BE/instance/views.py:198-211): an athlete has none, and Django raises DoesNotExist one line earlier (payment_views.py:745-750).
-			return nil, domain.ErrPaymentReadsUnreachable
+			// An athlete owns a SportAssociation only when the association import (import_service.py) made an existing
+			// athlete the owner of an imported association; Django then answers the list. Not ported.
+			return nil, domain.ErrPaymentReadsNotPorted
 		}
 		filter := domain.PaymentReadsFilter{AssociationID: association, Scope: paymentReadsScope(identity), Group: group, Archived: flag}
 		rows, err := s.store.Compressed(ctx, filter)

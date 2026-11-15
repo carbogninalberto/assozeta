@@ -120,8 +120,8 @@ and the scope user's instructors, and the calendar is saved: `{'message': 'Event
   starts.
 - Stored DELETE events that are not a list, or integer event ids in stored events.
 - Datetimes whose UTC instant falls outside years 1..9999 (Python accepts some with an offset).
-- The `calendar` collaborator branch is application state (`ErrCalendarUnreachable`, the 500 page): the identity
-  resolver rewrites a collaborator target to its owner, so the scope user is never a collaborator.
+- The `calendar` collaborator branch (`ErrCalendarNotPorted`): the identity resolver rewrites a collaborator target to
+  its connected user, which is itself a collaborator only when the association import kept such a chain from an archive.
 - `calendar/events/export` (iCalendar rendering with a request-time `dtstamp`): Go has no route.
 
 Since long-tail PR 3 (agent B) the `calendar` collaborator branch is application state (`ErrCalendarUnreachable`): the

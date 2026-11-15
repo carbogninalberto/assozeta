@@ -280,7 +280,8 @@ parsing). The workers' tasks (`print_document_subscription`, `check_workflows_tr
 
 Since long-tail PR 3 (agent B) some entries above are application state, answered with the 500 page and never handed
 off: a null born date in a non-tutor's entry (the first step already answered it), an association the request
-overwrote before validation, fee plans that are not jsonb arrays (the settings view writes arrays) and an account
+overwrote before validation, fee plans jsonb text Go cannot parse (always valid JSON within the Python writers'
+limits) and an account
 name matching several associations (`User.username` is unique, `SportAssociation.user` a `OneToOneField`), all
 `ErrSubscriptionCreateUnreachable`. An owner with several associations is Django's own `AttributeError`
 (`ErrSubscriptionCreateServer`), and a number or boolean associate id in the quick mode is ported

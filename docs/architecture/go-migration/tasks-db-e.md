@@ -118,10 +118,10 @@ and to every other row referencing the document), then
 `medical_certificate.delete()` again on the deleted instance (a second audit
 entry), and a certificate without document ends the whole task.
 
-Since long-tail PR 3 (agent B) a creation date outside Python's range and a
-name that is not UTF-8 or holds a NUL are application state
-(`ErrOrphanMedicalUnreachable`, the job fails from Go): the application writes
-the creation date, and PostgreSQL refuses the text. A run whose document other
+Since long-tail PR 3 (agent B) a name that is not UTF-8 or holds a NUL is
+application state (`ErrOrphanMedicalUnreachable`, the job fails from Go):
+PostgreSQL refuses the text. A creation date outside Python's range stays
+refused: the association import stores the archived value. A run whose document other
 rows reference stays refused.
 
 ## Evidence

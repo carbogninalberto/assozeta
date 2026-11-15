@@ -259,8 +259,9 @@ func (s *SubscriptionRenewals) renewRequesterOwner(ctx context.Context, tx domai
 		if count != 1 {
 			return nil, renewError(subscriptionAssociationGet(count))
 		}
-		// Associations are created for association accounts only (BE/instance/views.py:196-215).
-		return nil, domain.ErrSubscriptionCreateUnreachable
+		// Setup creates associations for association accounts, but the association import (import_service.py) can
+		// make an existing collaborator the owner; Django then reads the connected owner's association. Not ported.
+		return nil, domain.ErrSubscriptionCreateNotPorted
 	}
 	return owner, nil
 }

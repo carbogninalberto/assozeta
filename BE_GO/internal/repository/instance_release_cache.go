@@ -22,12 +22,17 @@ const (
 	ReleaseRefreshKey = ":1:instance:stable-releases:v1:refresh"
 )
 
-// ErrReleaseCacheShape is a cached catalog value other than a pickled list of
-// normalize_release dicts. Only InstanceReleasesView writes this key
-// (BE/instance/administration.py:124, cache.set of fetch_releases(), and the
-// Go port's own writer below): any other value is application state (long-tail
-// rule 3), answered with the 500 page.
-var ErrReleaseCacheShape = refusal.AppState("unexpected cached release catalog")
+// ErrReleaseCacheShape is a cached catalog value this port does not read: a
+// pickle or a release dict outside what Go decodes. Django writes the catalog
+// from GitHub's payload (normalize_release copies its values as they are,
+// BE/instance/release_catalog.py:57-64) and renders it, so such an entry stays
+// with Django.
+var ErrReleaseCacheShape = refusal.New("cached release catalog not ported")
+
+// errReleaseCacheNotList is a cached catalog that is not a list: fetch_releases
+// always returns one (BE/instance/administration.py:124 is the only Django
+// writer, the Go port's writer below the other), so it is application state.
+var errReleaseCacheNotList = refusal.AppState("cached release catalog is not a list")
 
 // ReleaseCache reads and writes the catalog in Django's cache (Redis DB 1).
 type ReleaseCache struct{ client *redis.Client }
@@ -54,7 +59,7 @@ func (c *ReleaseCache) Catalog(ctx context.Context) ([]instanceprobe.Release, bo
 	}
 	items, ok := value.([]any)
 	if !ok {
-		return nil, false, ErrReleaseCacheShape
+		return nil, false, errReleaseCacheNotList
 	}
 	releases := make([]instanceprobe.Release, 0, len(items))
 	for _, item := range items {

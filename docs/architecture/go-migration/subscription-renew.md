@@ -126,8 +126,8 @@ The certificate named by `medical_certificate.medical_id` follows
 ## Not ported
 
 Refused with the 500 page before anything is committed:
-- a collaborator whose connected account owns exactly one association is application state
-  (`ErrSubscriptionCreateUnreachable`): associations are created for association accounts only;
+- a collaborator whose connected account owns exactly one association (`ErrSubscriptionCreateNotPorted`): setup creates
+  associations for association accounts, but the association import can reuse an existing collaborator as the owner;
 - `str(e)` bodies of the Python exceptions not listed above (non-dict tutors and similar; dateutil's own messages are ported with `internal/pydateutil`);
 - the inputs `subscription-create.md` refuses: new member accounts, signature uploads, `type_of_associate`, and the
   rest. A renewal with `preregistration: true` and no `subscription_id` is ported (tailsubs, `renew-preregistration`; with a `subscription_id` in t8subs, cases `renew-preregistration-*`): the renewed subscription's person, certificate, custom data, role and number, the request's type; an unknown or foreign one is the 400 `Iscrizione da rinnovare non trovata.`). A typed certificate expiration date without an upload is ported (tailsubs): the placeholder image, its document and the

@@ -1350,13 +1350,13 @@ func (s *SubscriptionCreates) saveAssociate(ctx context.Context, tx domain.Subsc
 func subscriptionCreatePlan(raw []byte, id any) (domain.RequestObject, error) {
 	parsed, err := dto.ParsePythonJSON(string(raw))
 	if err != nil {
-		// subscription_fee_plans / membership_fee_plans are jsonb arrays written only by the settings view (profile_views.py:327-364).
+		// jsonb text is valid JSON, within the digit and nesting limits of the Python writers.
 		return nil, domain.ErrSubscriptionCreateUnreachable
 	}
 	plans, ok := parsed.([]any)
 	if !ok {
-		// subscription_fee_plans / membership_fee_plans are jsonb arrays written only by the settings view (profile_views.py:327-364).
-		return nil, domain.ErrSubscriptionCreateUnreachable
+		// The association import stores the archive's plans as they are (import_service.py), so any jsonb value can be here.
+		return nil, domain.ErrSubscriptionCreateNotPorted
 	}
 	wanted := dto.PythonStr(id)
 	for _, item := range plans {
@@ -1412,7 +1412,7 @@ func (s *SubscriptionCreates) fees(ctx context.Context, tx domain.SubscriptionCr
 			planID, present := data.Lookup("plan_id")
 			if present {
 				plan, err := subscriptionCreatePlan(settings.SubscriptionPlans, planID)
-				if errors.Is(err, domain.ErrSubscriptionCreateUnreachable) {
+				if errors.Is(err, domain.ErrSubscriptionCreateNotPorted) || errors.Is(err, domain.ErrSubscriptionCreateUnreachable) {
 					return fees, err
 				}
 				if err == nil && plan != nil {
