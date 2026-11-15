@@ -48,3 +48,28 @@ func TestPersonaPicturePlan(t *testing.T) {
 		t.Fatal("no text")
 	}
 }
+
+// A list or dict that reaches the base64 branch answers the exception text of
+// value.split (a ',' element or key) or of base64.b64decode.
+func TestPersonaPicturePlanListAndDict(t *testing.T) {
+	for _, tc := range []struct {
+		value any
+		want  string
+	}{
+		{[]any{"base64"}, "Error processing image: argument should be a bytes-like object or ASCII string, not 'list'"},
+		{[]any{"base64", ","}, "Error processing image: 'list' object has no attribute 'split'"},
+		{domain.RequestObject{{Name: "base64", Value: "x"}}, "Error processing image: argument should be a bytes-like object or ASCII string, not 'dict'"},
+		{domain.RequestObject{{Name: "base64", Value: "x"}, {Name: ",", Value: nil}}, "Error processing image: 'dict' object has no attribute 'split'"},
+	} {
+		_, upload, err := personaPicturePlan(domain.RequestObject{{Name: "picture_path", Value: tc.value}})
+		invalid, ok := err.(*PersonaPictureInvalid)
+		if upload || !ok || invalid.Text != tc.want {
+			t.Errorf("%v: upload %v, error %v, want %q", tc.value, upload, err, tc.want)
+		}
+	}
+	for _, value := range []any{[]any{"base"}, domain.RequestObject{{Name: "x", Value: "base64"}}} {
+		if _, upload, err := personaPicturePlan(domain.RequestObject{{Name: "picture_path", Value: value}}); upload || err != nil {
+			t.Errorf("%v outside the branch: %v %v", value, upload, err)
+		}
+	}
+}

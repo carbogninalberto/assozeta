@@ -63,6 +63,11 @@ the production execution owner.
   association with the associate's tax code iexact, group-aware; `signature_present`; the associate as `BasicAssociateSerializer`
   with M2M tutors; `tags` as keys). `rowIds` are the subscriptions' associate ids.
 
+- **picture_path list or object (add, update; long tail PR 2):** `'base64' in value` also matches a list element or a dict key. Then
+  `',' in value` picks `value.split(',', 1)` (AttributeError `'list' object has no attribute 'split'`, or `'dict' ...`) or
+  `base64.b64decode(value)` (TypeError `argument should be a bytes-like object or ASCII string, not 'list'` / `'dict'`), and the
+  handler answers `400 {'picture_path': 'Error processing image: <text>'}` before the field validation. Cases `add-picture-list`,
+  `add-picture-list-comma`, `add-picture-object`, `add-picture-object-comma`, `update-picture-list`, `update-picture-object-comma`.
 - **picture_path upload (add, update):** `to_internal_value` runs before the field validation. A string containing `base64` is
   decoded with `base64.b64decode` (the text after the first comma, or the whole value) and left out of the validated fields. A
   `binascii.Error` is a ValidationError the surrounding handler wraps again:
@@ -97,8 +102,9 @@ the production execution owner.
 
 ## Not ported (refused with the 500 page before any write)
 
-- A `picture_path` list or object that reaches the upload branch, an existing object under the new key, storage failures other than
-  a 403/404 answer to the ACL request (botocore's and s3transfer's texts), and uploads on the router's stock create.
+- Uploads on the router's stock create (its 400 shape and the upload). An existing object under the new key, a storage failure other
+  than a 403/404 answer to the ACL request, and no configured storage are application-state errors since long tail PR 2: the 500
+  page, never handed off (storage and timing, `errPersonaStorage`).
 - `tutors_data` entries with `born_date` texts with non-ASCII digits, and tutors under an `X-Group-Id` the manager would store raw (not a canonical,
   existing group id) when a tutor may be created; an `X-Group-Id` of that kind on add (Django fails on the insert, or renders the
   raw header).

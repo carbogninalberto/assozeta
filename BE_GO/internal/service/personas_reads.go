@@ -25,6 +25,16 @@ var (
 	ErrPersonaUnhandled = errors.New("unhandled persona queryset error")
 	// ErrPersonaNotPorted refuses inputs whose Django semantics are not ported (the 500 page, never a guessed body).
 	ErrPersonaNotPorted = refusal.New("persona input not ported")
+	// errPersonaDeleteUnwired is Delete with a pk on a handler without the
+	// writes: cmd/server/main.go always wires them (personasHandler.WithWrites),
+	// so the soft delete runs instead. An application-state error.
+	errPersonaDeleteUnwired = refusal.AppState("persona delete without the writes handler")
+	// errPersonaStorage is a picture upload the storage did not complete: no
+	// storage configured, a key the location cannot hold, an object already
+	// under a key built from the microsecond timestamp, or a storage failure
+	// other than a refused ACL. External system and timing (long-tail rule 4):
+	// the 500 page, never a handoff.
+	errPersonaStorage = refusal.AppState("persona picture storage failure")
 )
 
 type Personas struct {
@@ -406,7 +416,7 @@ func (s *Personas) Delete(ctx context.Context, identity domain.ResolvedIdentity,
 	if _, _, err := s.object(ctx, identity, *rawID, query, groupHeader); err != nil {
 		return err
 	}
-	return ErrPersonaNotPorted
+	return errPersonaDeleteUnwired
 }
 
 // All follows AssociateViewSet.all: {'data': [...]}, unordered.

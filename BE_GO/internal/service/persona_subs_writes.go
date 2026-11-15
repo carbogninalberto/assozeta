@@ -9,6 +9,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/importeffects"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 type personaSubsRenderStore interface {
@@ -17,6 +18,10 @@ type personaSubsRenderStore interface {
 
 // personaSubsValidated is the serializer's validated data after the related
 // lookups.
+// errPersonaSubsFormDepth is dto.ErrPersonaSubsFormJSON: the 500 page, never a
+// handoff.
+var errPersonaSubsFormDepth = refusal.AppState("personas-subscriptions form JSON nested past the decoder depth")
+
 type personaSubsValidated struct {
 	write dto.PersonaSubsWrite
 	tags  []string // canonical keys, in input order
@@ -30,7 +35,10 @@ func (s *PersonaSubscriptions) personaSubsValidate(ctx context.Context, tx domai
 	body any, partial, form bool, group *string) (personaSubsValidated, error) {
 	write, invalid, err := dto.ParsePersonaSubsWrite(body, partial, form)
 	if err != nil {
-		return personaSubsValidated{}, ErrPersonaNotPorted
+		// Form JSON text nested past the decoder's depth: Python's json raises
+		// RecursionError at a depth set by the interpreter's live call stack
+		// (long-tail rule 4).
+		return personaSubsValidated{}, errPersonaSubsFormDepth
 	}
 	if _, nonDict := invalid["non_field_errors"]; nonDict {
 		return personaSubsValidated{}, &dto.PersonaInvalid{Fields: invalid}

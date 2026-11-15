@@ -10,6 +10,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // PersonaWriteFailure is an exception Django raised after earlier writes of
@@ -280,32 +281,39 @@ func (r *personaWriteRun) related(ctx context.Context) func(name, id string) (bo
 	}
 }
 
-// pictureUnported: to_internal_value's base64 branch uploads to storage (not
-// ported); `'base64' in value` on numbers is a TypeError (500).
-func pictureUnported(body domain.RequestObject) error {
+// errPersonaTutorKey is a tutor update whose validated associate_id differs
+// from the key the tutor was found by, which no input produces.
+var errPersonaTutorKey = refusal.AppState("persona tutor key changed by its own update")
+
+// pictureBranch reports whether picture_path reaches to_internal_value's
+// base64 branch (`'base64' in value`: a substring of a str, an element of a
+// list, a key of a dict); on numbers and booleans that test is a TypeError
+// (500).
+func pictureBranch(body domain.RequestObject) (bool, error) {
 	value, present := body.Lookup("picture_path")
 	if !present || value == nil || value == "" {
-		return nil
+		return false, nil
 	}
 	switch v := value.(type) {
 	case string:
-		if strings.Contains(v, "base64") {
-			return ErrPersonaNotPorted
-		}
+		return strings.Contains(v, "base64"), nil
 	case []any:
-		for _, item := range v {
-			if item == "base64" {
-				return ErrPersonaNotPorted
-			}
-		}
+		return pictureListHas(v, "base64"), nil
 	case domain.RequestObject:
-		if _, found := v.Lookup("base64"); found {
-			return ErrPersonaNotPorted
-		}
-	default:
-		return ErrPersonaUnhandled
+		_, found := v.Lookup("base64")
+		return found, nil
 	}
-	return nil
+	return false, ErrPersonaUnhandled
+}
+
+// pictureListHas is `text in list`: an element equal to the str.
+func pictureListHas(items []any, text string) bool {
+	for _, item := range items {
+		if item == text {
+			return true
+		}
+	}
+	return false
 }
 
 // pythonIterate is `for item in value` over a decoded request value.
@@ -424,7 +432,10 @@ func (r *personaWriteRun) handleTutors(ctx context.Context, associate domain.Per
 			tutorRow = *tutor
 			dto.ApplyPersonaFields(&tutorRow, fields)
 			if tutorRow.ID != tutor.ID {
-				return ErrPersonaNotPorted
+				// Impossible: the tutor was found by this associate_id, and the
+				// lookup and BasicAssociateSerializer's UUIDField read the value
+				// the same way (UUID(int=n) or UUID(hex=text)).
+				return errPersonaTutorKey
 			}
 			if err = r.save(ctx, *tutor, tutorRow, true); err != nil {
 				return err
@@ -794,8 +805,12 @@ func (s *PersonaWrites) StockCreate(ctx context.Context, identity domain.Resolve
 		}
 		return "", ErrPersonaUnhandled
 	}
-	if err := pictureUnported(object); err != nil {
+	// The picture branch of to_internal_value on the router's create (its
+	// 400 shape and the upload) is not ported.
+	if branch, err := pictureBranch(object); err != nil {
 		return "", err
+	} else if branch {
+		return "", ErrPersonaNotPorted
 	}
 	run, err := s.begin(ctx, identity, header, audit)
 	if err != nil {

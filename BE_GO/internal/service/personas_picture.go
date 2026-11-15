@@ -46,16 +46,29 @@ func (s *PersonaWrites) WithPictures(objects PersonaPictureObjects, settings Per
 // personaPicturePlan reads the body's picture_path like to_internal_value:
 // upload is true for a string containing 'base64', decoded from the text
 // after the first comma (decode failures are the serializer's 400, before
-// the field validation). Other shapes that reach the upload branch are not
-// ported.
+// the field validation). A list or dict that reaches the branch fails in
+// `value.split(',', 1)` (a ',' element or key) or in base64.b64decode(value),
+// and the handler answers that exception's text as the same 400.
 func personaPicturePlan(body domain.RequestObject) (decoded []byte, upload bool, err error) {
-	if err = pictureUnported(body); err == nil {
-		return nil, false, nil
+	branch, err := pictureBranch(body)
+	if err != nil || !branch {
+		return nil, false, err
 	}
 	value, _ := body.Lookup("picture_path")
 	data, ok := value.(string)
 	if !ok {
-		return nil, false, err
+		comma, kind := false, "list"
+		switch v := value.(type) {
+		case []any:
+			comma = pictureListHas(v, ",")
+		case domain.RequestObject:
+			_, comma = v.Lookup(",")
+			kind = "dict"
+		}
+		if comma {
+			return nil, false, &PersonaPictureInvalid{Text: "Error processing image: '" + kind + "' object has no attribute 'split'"}
+		}
+		return nil, false, &PersonaPictureInvalid{Text: "Error processing image: argument should be a bytes-like object or ASCII string, not '" + kind + "'"}
 	}
 	encoded := data
 	if _, after, found := strings.Cut(data, ","); found {
@@ -100,19 +113,19 @@ func personaPictureURL(settings PersonaPictureSettings, key string) string {
 // failures are refused.
 func (s *PersonaWrites) uploadPicture(ctx context.Context, decoded []byte, associate string) (string, error) {
 	if s.pictures == nil {
-		return "", ErrPersonaNotPorted
+		return "", errPersonaStorage
 	}
 	location := strings.Trim(s.pictures.Location(), "/")
 	name := "associates/" + associate + "/picture_" + personaPictureTimestamp(s.now()) + ".jpg"
 	key, err := documentkey.S3Key(name, s.pictures.Location())
 	if err != nil {
-		return "", ErrPersonaNotPorted
+		return "", errPersonaStorage
 	}
 	if !s.pictureSettings.Overwrite {
 		// Storage.save: get_available_name (HeadObject), then one PutObject.
 		exists, err := s.pictures.Exists(ctx, key)
 		if err != nil || exists {
-			return "", ErrPersonaNotPorted
+			return "", errPersonaStorage
 		}
 	}
 	contentType, known, encoding, err := pymime.GuessType(key)
@@ -123,7 +136,7 @@ func (s *PersonaWrites) uploadPicture(ctx context.Context, decoded []byte, assoc
 		contentType = "application/octet-stream"
 	}
 	if err := s.pictures.Put(ctx, key, decoded, contentType, encoding); err != nil {
-		return "", ErrPersonaNotPorted
+		return "", errPersonaStorage
 	}
 	object := name
 	if location != "" {
@@ -139,7 +152,7 @@ func (s *PersonaWrites) uploadPicture(ctx context.Context, decoded []byte, assoc
 				return "", &PersonaPictureInvalid{Text: "Error processing image: An error occurred (" + api.ErrorCode() +
 					") when calling the PutObjectAcl operation: " + api.ErrorMessage()}
 			}
-			return "", ErrPersonaNotPorted
+			return "", errPersonaStorage
 		}
 	}
 	return personaPictureURL(s.pictureSettings, object), nil

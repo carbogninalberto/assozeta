@@ -1127,6 +1127,20 @@ add('add-picture-one-character-quad', 'owner', 'POST', ADD, 400, PICTURE_INVALID
 add('add-picture-non-ascii', 'owner', 'POST', ADD, 400,
     {'picture_path': 'Error processing image: string argument should contain only ASCII characters'},
     body={'first_name': 'Fausto', 'picture_path': 'data:image/png;base64,QUJDè'}, allow=ALLOW_ADD)
+# A list or object reaches the branch through `'base64' in value` (an element, a key): value.split raises on a ','
+# element or key, base64.b64decode on anything else, and the handler answers the exception's text (long tail PR 2).
+add('add-picture-list', 'owner', 'POST', ADD, 400,
+    {'picture_path': "Error processing image: argument should be a bytes-like object or ASCII string, not 'list'"},
+    body={'first_name': 'Fausto', 'picture_path': ['base64', PICTURE]}, allow=ALLOW_ADD)
+add('add-picture-list-comma', 'owner', 'POST', ADD, 400,
+    {'picture_path': "Error processing image: 'list' object has no attribute 'split'"},
+    body={'first_name': 'Fausto', 'picture_path': ['data:image/png', ',', 'base64']}, allow=ALLOW_ADD)
+add('add-picture-object', 'owner', 'POST', ADD, 400,
+    {'picture_path': "Error processing image: argument should be a bytes-like object or ASCII string, not 'dict'"},
+    body={'first_name': 'Fausto', 'email': 'nope', 'picture_path': {'base64': PICTURE}}, allow=ALLOW_ADD)
+add('add-picture-object-comma', 'owner', 'POST', ADD, 400,
+    {'picture_path': "Error processing image: 'dict' object has no attribute 'split'"},
+    body={'first_name': 'Fausto', 'picture_path': {',': 1, 'base64': PICTURE}}, allow=ALLOW_ADD)
 # Characters outside the alphabet are skipped by b64decode.
 effect = Effect('owner')
 ref, upload = created_picture(effect, PICTURE, user=OWNER, first_name='Frida')
@@ -1202,6 +1216,12 @@ add_picture('update-picture-body-associate-id-path-text', 'owner', 'PATCH', upda
 # The field validation precedes the upload: nothing is stored.
 add('update-picture-then-invalid', 'owner', 'PATCH', update_path('pic_keep'), 400, {'sex': ['"X" is not a valid choice.']},
     body={'associate_id': A['pic_keep'], 'sex': 'X', 'picture_path': 'data:image/png;base64,' + PICTURE}, allow=ALLOW_UPDATE)
+add('update-picture-list', 'owner', 'PATCH', update_path('pic_keep'), 400,
+    {'picture_path': "Error processing image: argument should be a bytes-like object or ASCII string, not 'list'"},
+    body={'sex': 'X', 'picture_path': ['base64']}, allow=ALLOW_UPDATE)
+add('update-picture-object-comma', 'owner', 'PATCH', update_path('pic_keep'), 400,
+    {'picture_path': "Error processing image: 'dict' object has no attribute 'split'"},
+    body={'picture_path': {'base64': 1, ',': 2}}, allow=ALLOW_UPDATE)
 # The storage refuses the ACL: the saved object stays, the row is unchanged and the error text is the answer.
 pic, upload = picture(A['pic_denied'], PICTURE, denied=True)
 add_picture('update-picture-acl-refused', 'owner', 'PATCH', update_path('pic_denied'), 400,
