@@ -771,10 +771,17 @@ def prepare(args, runner, policy):
 def phase(args, runner):
     run = Path(args.run).resolve()
     state = json.loads((run / 'run.json').read_text())
-    plan = json.loads((run / 'ci-plan.json').read_text())
+    # A distributed capture shard prepares its run without this job's plan, so a
+    # cleanup of a retained shard run has no ci-plan.json to read.
+    if (run / 'ci-plan.json').is_file():
+        plan = json.loads((run / 'ci-plan.json').read_text())
+    elif args.phase == 'cleanup':
+        plan = {}
+    else:
+        raise FileNotFoundError('The run has no verification plan: ' + str(run / 'ci-plan.json'))
     sealed = None
     try:
-        with runner.timed(run, 'ci-' + args.phase), Stage('phase:' + args.phase, {'mode': plan['mode']}) as stage:
+        with runner.timed(run, 'ci-' + args.phase), Stage('phase:' + args.phase, {'mode': plan.get('mode')}) as stage:
             if args.phase == 'capture':
                 stage.detail['fresh_workflows'] = len(state['selected_recipes'])
                 if getattr(args, 'transport', None) and getattr(args, 'shards', None):
@@ -798,6 +805,9 @@ def phase(args, runner):
             elif args.phase == 'runtime':
                 runner.index(state)
                 if not state.get('env_file'):
+                    # The legacy capture phase leaves its stack running; a
+                    # distributed merge only copies shard results into this run,
+                    # so the runtime phase starts the one stack later phases use.
                     start_services(state, runner)
                 runner.evaluate(state)
                 runner.export(state)
@@ -911,7 +921,9 @@ def capture_shard(args, runner):
     manifest = transport_module.loads(Path(args.transport).read_text())
     workflows = transport_module.shard_workflows(manifest, args.shard)
     # Always cold: this shard owns no baseline, no evidence and no cache.
-    parameters = ['run', '--manual-repo', args.manual_repo, '--output', args.output,
+    # `prepare`, not `run`: a complete run always selects every workflow and
+    # would ignore this shard's --workflow subset.
+    parameters = ['prepare', '--manual-repo', args.manual_repo, '--output', args.output,
                   '--release', manifest['release'], '--reference-date', manifest['reference_date'],
                   '--manual-ref', manifest['manual_revision'], '--no-cache']
     for identifier in workflows:

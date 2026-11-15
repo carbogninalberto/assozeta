@@ -98,6 +98,18 @@ class BuildTests(unittest.TestCase):
         self.assertEqual(len(built['shards']), 1)
         self.assertEqual(built['shards'][0]['workflows'], IDS)
 
+    def test_shards_are_contiguous_registry_order_blocks(self):
+        built = build(fresh=IDS, reused=[], runners=3)
+        self.assertEqual([identifier for shard in built['shards'] for identifier in shard['workflows']], IDS)
+        self.assertTrue(all(shard['workflows'] for shard in built['shards']))
+        self.assertEqual(build(fresh=list(reversed(IDS)), reused=[], runners=3), built)
+        # Reused workflows leave holes; the fresh blocks still follow registry order.
+        picked = ['india', 'charlie', 'alpha', 'golf', 'echo']
+        partial = build(fresh=picked, reused=[identifier for identifier in IDS if identifier not in picked], runners=4)
+        self.assertEqual([identifier for shard in partial['shards'] for identifier in shard['workflows']],
+                         ['alpha', 'charlie', 'echo', 'golf', 'india'])
+        self.assertTrue(all(shard['workflows'] for shard in partial['shards']))
+
     def test_runner_count_must_be_a_bounded_integer(self):
         for invalid in (0, 7, -1, True, False, '3', 3.0, None):
             with self.subTest(invalid=invalid), self.assertRaisesRegex(transport.TransportError, 'runners'):
@@ -279,6 +291,24 @@ class ValidationTests(unittest.TestCase):
         value['shards'][0]['workflows'][0] = IDS[-1]
         with self.assertRaisesRegex(transport.TransportError, 'not fresh'):
             transport.validate_transport(value, recipes=REGISTRY)
+
+    def test_shards_must_be_contiguous_blocks_of_the_fresh_workflows(self):
+        def swap(value):
+            first, second = value['shards'][0]['workflows'], value['shards'][1]['workflows']
+            first[-1], second[0] = second[0], first[-1]
+
+        value = copy.deepcopy(self.base)
+        swap(value)
+        # Every fresh workflow is still assigned exactly once: only the block order is wrong.
+        self.assertEqual(sorted(identifier for shard in value['shards'] for identifier in shard['workflows']),
+                         sorted(IDS))
+        self.assertNotEqual([identifier for shard in value['shards'] for identifier in shard['workflows']],
+                            value['fresh'])
+        with self.assertRaisesRegex(transport.TransportError, 'contiguous'):
+            transport.validate_transport(value, recipes=REGISTRY)
+        # The swapped manifest is not a valid transport, so it never reaches a matrix.
+        with self.assertRaises(transport.TransportError):
+            transport.matrix(value)
 
     def test_shards_must_match_the_fresh_workflows(self):
         value = copy.deepcopy(build(fresh=[], reused=IDS))

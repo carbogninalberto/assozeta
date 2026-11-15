@@ -209,6 +209,53 @@ class PartitionTests(unittest.TestCase):
         self.assertEqual(len(plan), 2)
 
 
+class ContiguousPartitionTests(unittest.TestCase):
+    def test_every_shard_is_a_contiguous_block_of_the_registry_order_selection(self):
+        selected = ['echo', 'alpha', 'charlie', 'delta', 'bravo']
+        plan = shards.contiguous_partition(REGISTRY, selected, 3)
+        self.assertEqual(plan, [['alpha', 'bravo'], ['charlie', 'delta'], ['echo']])
+        self.assertEqual(sum(plan, []), ['alpha', 'bravo', 'charlie', 'delta', 'echo'])
+        self.assertTrue(all(plan))
+        # The order of the selection never changes the plan.
+        self.assertEqual(plan, shards.contiguous_partition(REGISTRY, list(reversed(selected)), 3))
+
+    def test_the_block_count_is_capped_by_the_selection_size(self):
+        self.assertEqual(shards.contiguous_partition(REGISTRY, ['delta'], 4), [['delta']])
+        self.assertEqual(shards.contiguous_partition(REGISTRY, [], 2), [])
+        self.assertEqual(shards.contiguous_partition(REGISTRY, ['delta', 'alpha', 'bravo'], 4),
+                         [['alpha'], ['bravo'], ['delta']])
+        self.assertEqual(shards.contiguous_partition(REGISTRY, ['alpha', 'echo'], 2), [['alpha'], ['echo']])
+
+    def test_the_heaviest_block_is_as_light_as_possible(self):
+        # Workflow weight is checkpoints plus two, so these weigh 7, 3, 3, 3, 7.
+        registry = [recipe('a', 5), recipe('b', 1), recipe('c', 1), recipe('d', 1), recipe('e', 5)]
+        weights = [shards.workflow_weight(item) for item in registry]
+        self.assertEqual(weights, [7, 3, 3, 3, 7])
+        plan = shards.contiguous_partition(registry, ['e', 'c', 'a', 'd', 'b'], 2)
+        # Cuts after a, ab, abc and abcd weigh 16, 13, 13 and 16; the earliest optimum is after ab.
+        self.assertEqual(plan, [['a', 'b'], ['c', 'd', 'e']])
+        loads = [sum(weights[ord(identifier) - ord('a')] for identifier in shard) for shard in plan]
+        self.assertEqual(loads, [10, 13])
+        self.assertEqual(max(loads), min(max(sum(weights[:cut]), sum(weights[cut:])) for cut in range(1, 5)))
+
+    def test_real_registry_contiguous_blocks_keep_the_sequential_predecessors(self):
+        registry = json.loads((ROOT / 'docs/manuale/recipes.json').read_text())['recipes']
+        ids = [item['id'] for item in registry]
+        plan = shards.contiguous_partition(registry, list(reversed(ids)), 3)
+        self.assertEqual(plan, shards.contiguous_partition(registry, sorted(ids), 3))
+        self.assertEqual(sum(plan, []), ids)
+        self.assertEqual(len(plan), 3)
+        self.assertTrue(all(block for block in plan))
+
+    def test_validation_matches_partition(self):
+        with self.assertRaisesRegex(ValueError, 'positive'):
+            shards.contiguous_partition(REGISTRY, ['alpha'], 0)
+        with self.assertRaisesRegex(ValueError, 'Unknown workflows: missing'):
+            shards.contiguous_partition(REGISTRY, ['missing'], 2)
+        with self.assertRaises(shards.ShardError):
+            shards.contiguous_partition([recipe('alpha'), recipe('alpha')], ['alpha'], 2)
+
+
 class IsolationTests(unittest.TestCase):
     def test_shard_configuration_owns_project_ports_origin_and_run_mount(self):
         with tempfile.TemporaryDirectory() as temporary:

@@ -156,6 +156,140 @@ class CaptureConcurrencyDefaultTests(unittest.TestCase):
         self.assertEqual(verify['env']['MANUALE_CAPTURE_CONCURRENCY'], "${{ vars.MANUALE_CAPTURE_CONCURRENCY || '1' }}")
 
 
+class DistributedCaptureWorkflowTests(unittest.TestCase):
+    """Opt-in distributed capture; the default run keeps the single-runner path."""
+
+    def setUp(self):
+        self.shared = yaml.safe_load((ROOT / '.github/workflows/manuale-verify.yml').read_text())
+        self.jobs = self.shared['jobs']
+
+    def steps(self, job):
+        return self.jobs[job]['steps']
+
+    def commands(self, job):
+        return '\n'.join(step.get('run', '') for step in self.steps(job))
+
+    def test_distribution_requires_a_full_run_and_an_explicit_runner_count(self):
+        plan = self.jobs['capture-plan']
+        self.assertEqual(plan['if'], "${{ inputs.force_full && (vars.MANUALE_CAPTURE_RUNNERS || '1') != '1' }}")
+        self.assertEqual(plan['runs-on'], 'ubuntu-24.04')
+        self.assertEqual(plan['timeout-minutes'], 30)
+        self.assertEqual(set(plan['outputs']), {'shard_count', 'matrix', 'capture_id', 'manual_revision'})
+        self.assertEqual(plan['outputs']['manual_revision'], '${{ steps.pin.outputs.manual_revision }}')
+        for output in ('shard_count', 'matrix', 'capture_id'):
+            self.assertEqual(plan['outputs'][output], '${{ steps.transport.outputs.%s }}' % output)
+        commands = self.commands('capture-plan')
+        self.assertIn('manuale-ci.py pin', commands)
+        self.assertIn('--force-full', commands)
+        self.assertIn('manuale-ci.py transport', commands)
+        self.assertIn('--runners "$RUNNERS"', commands)
+        # The plan never starts services and never merges, captures or verifies.
+        for phase in ('capture', 'compile', 'render', 'runtime', 'package', 'baseline'):
+            self.assertNotIn('--phase ' + phase, commands)
+        # An invalid runner count fails with an explicit message.
+        self.assertIn('MANUALE_CAPTURE_RUNNERS must be an integer from 2 to 6', commands)
+        upload = next(step for step in self.steps('capture-plan')
+                      if step.get('with', {}).get('name') == 'manuale-capture-transport')
+        self.assertEqual(upload['with']['path'], '${{ runner.temp }}/manuale-transport/transport.json')
+        self.assertEqual(upload['with']['retention-days'], 3)
+        self.assertIs(upload['with']['overwrite'], True)
+        cleanup = [step for step in self.steps('capture-plan') if step.get('if') == 'always()']
+        self.assertEqual(len(cleanup), 1)
+        self.assertIn('--phase cleanup', cleanup[0]['run'])
+
+    def test_one_job_per_shard_captures_exports_and_cleans_up_itself(self):
+        capture = self.jobs['capture']
+        self.assertEqual(capture['needs'], 'capture-plan')
+        self.assertEqual(capture['if'],
+                         "${{ needs.capture-plan.result == 'success' && needs.capture-plan.outputs.shard_count != '0' }}")
+        self.assertEqual(capture['timeout-minutes'], 90)
+        self.assertEqual(capture['strategy']['fail-fast'], True)
+        self.assertEqual(capture['strategy']['matrix'], '${{ fromJSON(needs.capture-plan.outputs.matrix) }}')
+        commands = self.commands('capture')
+        self.assertIn('manuale-ci.py pin', commands)
+        self.assertIn('manuale.py doctor', commands)
+        download = next(step for step in self.steps('capture')
+                        if step.get('with', {}).get('name') == 'manuale-capture-transport')
+        self.assertEqual(download['with']['path'], '${{ runner.temp }}/manuale-transport')
+        self.assertIn('capture-shard', commands)
+        self.assertIn('--shard ${{ matrix.index }}', commands)
+        self.assertIn('--output "$RUNNER_TEMP/manuale-shard"', commands)
+        self.assertIn('capture-export', commands)
+        self.assertIn('--output "$RUNNER_TEMP/manuale-shard-export"', commands)
+        uploads = [step for step in self.steps('capture') if step.get('uses', '').startswith('actions/upload-artifact')]
+        shard = next(step for step in uploads if step['with']['name'] == '${{ matrix.artifact }}')
+        self.assertEqual(shard['with']['path'], '${{ runner.temp }}/manuale-shard-export/')
+        self.assertEqual(shard['with']['if-no-files-found'], 'error')
+        self.assertEqual(shard['with']['retention-days'], 3)
+        self.assertNotIn('if', shard, 'a failed shard must never upload capture results')
+        for step in uploads:
+            paths = json.dumps(step['with']['path'])
+            for private in ('run.json', 'browser-input', '.env', 'execution.log'):
+                self.assertNotIn(private, paths, step['with']['name'])
+        diagnostics = next(step for step in uploads if step['with']['name'].startswith('manuale-capture-diag-'))
+        self.assertIn('${{ needs.capture-plan.outputs.capture_id }}', diagnostics['with']['name'])
+        self.assertIn('${{ matrix.index }}', diagnostics['with']['name'])
+        self.assertIn('${{ github.run_attempt }}', diagnostics['with']['name'])
+        self.assertEqual(diagnostics['if'], 'always()')
+        self.assertEqual(diagnostics['with']['retention-days'], 14)
+        self.assertIn('manuale-diagnostics.py', self.commands('capture'))
+        cleanup = [step for step in self.steps('capture') if step.get('name') == "Remove only this run's fixture services"]
+        self.assertEqual(cleanup[0]['if'], 'always()')
+        self.assertIn('--phase cleanup', cleanup[0]['run'])
+
+    def test_the_verify_job_merges_shards_and_keeps_every_later_phase(self):
+        verify = self.jobs['verify']
+        self.assertEqual(verify['needs'], ['capture-plan', 'capture'])
+        self.assertIn('!cancelled()', verify['if'])
+        self.assertIn("fromJSON('[\"success\",\"skipped\"]'), needs.capture-plan.result", verify['if'])
+        self.assertIn("fromJSON('[\"success\",\"skipped\"]'), needs.capture.result", verify['if'])
+        detect = next(step for step in self.steps('verify') if step.get('name') == 'Detect a distributed capture plan')
+        self.assertEqual(detect['env']['SHARD_COUNT'], '${{ needs.capture-plan.outputs.shard_count }}')
+        self.assertIn('DISTRIBUTED=true', detect['run'])
+        transport = next(step for step in self.steps('verify')
+                         if step.get('with', {}).get('name') == 'manuale-capture-transport')
+        self.assertEqual(transport['if'], "${{ env.DISTRIBUTED == 'true' }}")
+        shards = next(step for step in self.steps('verify')
+                      if 'pattern' in step.get('with', {}))
+        self.assertEqual(shards['with']['pattern'], 'manuale-capture-${{ needs.capture-plan.outputs.capture_id }}-s*')
+        self.assertEqual(shards['with']['path'], '${{ runner.temp }}/manuale-shards')
+        self.assertIs(shards['with']['merge-multiple'], False)
+        legacy = next(step for step in self.steps('verify')
+                      if step.get('name') == 'Capture only workflows requiring fresh evidence')
+        self.assertEqual(legacy['run'], 'python3 docs/scripts/manuale-ci.py phase --run "$RUNNER_TEMP/manuale-run" --phase capture')
+        self.assertEqual(legacy['if'], "${{ env.DISTRIBUTED != 'true' }}")
+        merge = next(step for step in self.steps('verify')
+                     if step.get('name') == 'Merge the distributed capture shards')
+        self.assertIn('--phase capture', merge['run'])
+        self.assertIn('--transport "$RUNNER_TEMP/manuale-transport/transport.json"', merge['run'])
+        self.assertIn('--shards "$RUNNER_TEMP/manuale-shards"', merge['run'])
+        commands = self.commands('verify')
+        for phase in ('capture', 'compile', 'render', 'runtime', 'package', 'baseline'):
+            self.assertIn('--phase ' + phase, commands)
+        # Planning-only evidence is skipped: a distributed run is always fresh.
+        names = [step.get('name', '') for step in self.steps('verify')]
+        baseline = self.steps('verify')[names.index('Admit a successful trusted baseline')]
+        self.assertEqual(baseline['if'], '${{ !inputs.force_full }}')
+        store = self.steps('verify')[names.index(
+            'Restore trusted per-workflow evidence (manifests first, screenshots only when reusable)')]
+        self.assertEqual(store['if'], '${{ !inputs.force_full }}')
+
+    def test_the_gate_waits_for_the_distributed_jobs(self):
+        self.assertIn('capture-plan', self.jobs['gate']['needs'])
+        self.assertIn('capture', self.jobs['gate']['needs'])
+        self.assertIn('verify', self.jobs['gate']['needs'])
+
+    def test_existing_callers_need_no_new_input(self):
+        inputs = self.shared[True]['workflow_call']['inputs']
+        main = yaml.safe_load((ROOT / '.github/workflows/manuale.yml').read_text())
+        release = yaml.safe_load((ROOT / '.github/workflows/manuale-release.yml').read_text())
+        for call in (main['jobs']['verify']['with'], release['jobs']['bundle']['with']):
+            self.assertLessEqual(set(call), set(inputs))
+        outputs = self.shared[True]['workflow_call']['outputs']
+        self.assertEqual(set(outputs), {'mode', 'appliance_scope', 'authorized'})
+        self.assertEqual(outputs['authorized']['value'], '${{ jobs.gate.outputs.authorized }}')
+
+
 class EvidenceStoreAvailabilityTests(unittest.TestCase):
     """Store publication never blocks image publication and tolerates an empty store."""
 
