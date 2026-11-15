@@ -516,6 +516,8 @@ jobs:
           sudo locale-gen
           python -c "import locale; locale.setlocale(locale.LC_ALL, 'it_IT.UTF-8')"
           echo /usr/lib/postgresql/16/bin >> "$GITHUB_PATH"
+      - name: Prewarm the Go test build cache
+        run: python TESTS/adapters/go/prewarm.py TESTS/adapters/django/accounts.py
       - name: Verify shared accounts, identities and scoped resources
         run: python TESTS/adapters/django/accounts.py
       - uses: actions/upload-artifact@v4
