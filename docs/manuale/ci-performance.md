@@ -506,6 +506,24 @@ closed by design, and the measured benefit of changing it was small.
 - The appliance check sequence: about 10 min, because it chains upgrade and
   rollback on one installation.
 
+
+### Final benchmark
+
+Run 43747303808 on main (push of 53078bf0, full verification, every change
+above in place): 51.5 min end to end, against 89 min at the start.
+
+| Job | Time |
+| --- | --- |
+| `capture-plan` | 51 s |
+| `capture`, 5 shards in parallel | 10 to 13 min |
+| `verify` | 14.5 min |
+| `appliance` | 21 min (image phase 6.2 min; it was 4.6 min on run 43739593638 and 8.3 min before the change, so hosted-runner variance is large) |
+| gate and evidence publish | 1 min |
+
+The appliance is now the longest single job. Its checks after the image phase
+are one chained install, upgrade and rollback sequence on a single
+installation, so they stay serial.
+
 ## After
 
 Measured on GitHub Actions (`ubuntu-24.04`), wall time from `run_started_at`
