@@ -7,37 +7,34 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pystr"
 )
 
 // ErrJSON is the ValueError json.loads raises (JSONDecodeError,
 // UnicodeDecodeError, or the int() digit limit).
 var ErrJSON = errors.New("instanceprobe: invalid JSON document")
 
-// ErrJSONEncoding marks a document json.loads would decode as UTF-16 or
-// UTF-32 (detect_encoding); this port does not read those.
-var ErrJSONEncoding = refusal.New("instanceprobe: JSON text encoding not ported")
-
 // Int is a Python int parsed from JSON (decimal digits, optional minus).
 type Int string
 
 // LoadJSON mirrors json.loads(raw) for a bytes argument: detect_encoding
-// (UTF-8, or UTF-8 with a BOM), decode with 'surrogatepass', then the C
-// scanner (strict control characters, NaN/Infinity/-Infinity, ints with
-// Python's 4300-digit limit, floats through float()). Values are nil, bool,
-// Int, float64, string, []any and map[string]any (the last duplicate key
+// (UTF-8, UTF-8 with a BOM, UTF-16 or UTF-32), decode with 'surrogatepass',
+// then the C scanner (strict control characters, NaN/Infinity/-Infinity, ints
+// with Python's 4300-digit limit, floats through float()). Values are nil,
+// bool, Int, float64, string, []any and map[string]any (the last duplicate key
 // wins). Strings keep a lone surrogate as its three-byte (WTF-8) encoding;
 // HasSurrogate reports them.
 func LoadJSON(raw []byte) (any, error) {
-	switch {
-	case hasPrefix(raw, "\x00\x00\xfe\xff"), hasPrefix(raw, "\xff\xfe\x00\x00"), hasPrefix(raw, "\xfe\xff"), hasPrefix(raw, "\xff\xfe"):
-		return nil, ErrJSONEncoding
-	case hasPrefix(raw, "\xef\xbb\xbf"):
+	switch encoding := detectEncoding(raw); encoding {
+	case "utf-8":
+	case "utf-8-sig":
 		raw = raw[3:]
-	case len(raw) >= 4 && (raw[0] == 0 || raw[1] == 0):
-		return nil, ErrJSONEncoding
-	case len(raw) == 2 && (raw[0] == 0 || raw[1] == 0):
-		return nil, ErrJSONEncoding
+	default:
+		text, ok := decodeWide(raw, encoding)
+		if !ok {
+			return nil, ErrJSON // UnicodeDecodeError, a ValueError
+		}
+		raw = []byte(text)
 	}
 	if !validSurrogatePass(raw) {
 		return nil, ErrJSON
@@ -53,6 +50,89 @@ func LoadJSON(raw []byte) (any, error) {
 		return nil, ErrJSON
 	}
 	return value, nil
+}
+
+// detectEncoding is json.detect_encoding.
+func detectEncoding(b []byte) string {
+	switch {
+	case hasPrefix(b, "\x00\x00\xfe\xff"), hasPrefix(b, "\xff\xfe\x00\x00"):
+		return "utf-32"
+	case hasPrefix(b, "\xfe\xff"), hasPrefix(b, "\xff\xfe"):
+		return "utf-16"
+	case hasPrefix(b, "\xef\xbb\xbf"):
+		return "utf-8-sig"
+	case len(b) >= 4 && b[0] == 0:
+		if b[1] != 0 {
+			return "utf-16-be"
+		}
+		return "utf-32-be"
+	case len(b) >= 4 && b[1] == 0:
+		if b[2] != 0 || b[3] != 0 {
+			return "utf-16-le"
+		}
+		return "utf-32-le"
+	case len(b) == 2 && b[0] == 0:
+		return "utf-16-be"
+	case len(b) == 2 && b[1] == 0:
+		return "utf-16-le"
+	}
+	return "utf-8"
+}
+
+// decodeWide is bytes.decode(encoding, 'surrogatepass') for the UTF-16 and
+// UTF-32 codecs detect_encoding names, as WTF-8 (a lone surrogate keeps its
+// three-byte form). 'utf-16' and 'utf-32' read the byte order from the BOM
+// and drop it; the explicit -be/-le codecs keep a U+FEFF as a character. ok
+// false is the UnicodeDecodeError: truncated data, or a UTF-32 unit beyond
+// U+10FFFF.
+func decodeWide(b []byte, encoding string) (string, bool) {
+	width, big := 2, false
+	switch encoding {
+	case "utf-32":
+		width, big, b = 4, b[0] == 0, b[4:]
+	case "utf-16":
+		big, b = b[0] == 0xfe, b[2:]
+	case "utf-32-be":
+		width, big = 4, true
+	case "utf-32-le":
+		width = 4
+	case "utf-16-be":
+		big = true
+	}
+	if len(b)%width != 0 {
+		return "", false
+	}
+	unit := func(i int) rune {
+		var u uint32
+		for k := 0; k < width; k++ {
+			shift := 8 * k
+			if big {
+				shift = 8 * (width - 1 - k)
+			}
+			u |= uint32(b[i+k]) << shift
+		}
+		return rune(u)
+	}
+	runes := make([]rune, 0, len(b)/width)
+	for i := 0; i < len(b); i += width {
+		r := unit(i)
+		if width == 4 {
+			if uint32(r) > 0x10FFFF {
+				return "", false
+			}
+			runes = append(runes, r)
+			continue
+		}
+		if r >= 0xD800 && r <= 0xDBFF && i+2 < len(b) {
+			if low := unit(i + 2); low >= 0xDC00 && low <= 0xDFFF {
+				runes = append(runes, 0x10000+(r-0xD800)<<10+(low-0xDC00))
+				i += 2
+				continue
+			}
+		}
+		runes = append(runes, r) // a lone surrogate passes ('surrogatepass')
+	}
+	return pystr.String(runes), true
 }
 
 func hasPrefix(raw []byte, prefix string) bool { return strings.HasPrefix(string(raw), prefix) }

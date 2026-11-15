@@ -182,10 +182,7 @@ func (c *Client) ReadJSON(ctx context.Context, target string, headers map[string
 			return nil, ErrUnavailable
 		}
 		value, err := LoadJSON(body)
-		switch {
-		case errors.Is(err, ErrJSONEncoding):
-			return nil, ErrNotPorted
-		case err != nil:
+		if err != nil {
 			return nil, ErrUnavailable
 		}
 		return value, nil

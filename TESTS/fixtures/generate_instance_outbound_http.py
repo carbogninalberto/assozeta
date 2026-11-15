@@ -232,6 +232,15 @@ FEED_A = [
 CATALOG_A = catalog(*FEED_A)
 add('releases-miss-fetches', 'owner', RELEASES, 200, summary(CATALOG_A), outbound=[github(1, reply(200, FEED_A))],
     cache={'catalog': None}, cache_after={'catalog': [FEED_A]})
+# json.load reads bytes in the encoding detect_encoding finds: UTF-16 with a BOM, UTF-32 without one. Truncated UTF-16 is a
+# UnicodeDecodeError, a ValueError: the service is unavailable.
+for label, codec, prefix in (('utf16-bom', 'utf-16-le', b'\xff\xfe'), ('utf32-le', 'utf-32-le', b'')):
+    add(f'releases-feed-{label}', 'owner', RELEASES, 200, summary(CATALOG_A),
+        outbound=[github(1, reply(200, raw=prefix + json.dumps(FEED_A).encode(codec)))],
+        cache={'catalog': None}, cache_after={'catalog': [FEED_A]})
+add('releases-feed-utf16-truncated', 'owner', RELEASES, 503, {'error': 'Release service is unavailable. Please try again later.'},
+    outbound=[github(1, reply(200, raw=json.dumps(FEED_A).encode('utf-16-be') + b'\x00'))],
+    cache={'catalog': None}, cache_after={'catalog': None})
 add('releases-cached', 'owner', RELEASES, 200, summary(CATALOG_A), cache={'catalog': [FEED_A]}, cache_after={'catalog': 'unchanged'})
 add('releases-cached-refresh-bounded', 'owner', f'{RELEASES}?refresh=1', 200, summary(CATALOG_A),
     cache={'catalog': [FEED_A], 'refresh': True}, cache_after={'catalog': 'unchanged', 'refresh': True})
