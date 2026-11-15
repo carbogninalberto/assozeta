@@ -442,8 +442,10 @@ func (s *PaymentReads) List(ctx context.Context, request PaymentReadsRequest) (a
 			return nil, err
 		}
 		if filter.Random && filter.Smart != nil {
-			// Django raises: SELECT DISTINCT ... ORDER BY RANDOM() is refused by PostgreSQL (smart_search returns queryset.distinct()).
-			lazy = domain.ErrPaymentReadsUnreachable
+			// smart_search returns queryset.distinct(): Django's compiler then adds
+			// RANDOM() to the select list, so DISTINCT keeps the rows the search
+			// joins repeat. Not ported (handed off).
+			lazy = domain.ErrPaymentReadsNotPorted
 		}
 	}
 	return s.page(ctx, filter, query, lazy, func(ids []string) ([]map[string]any, error) {
