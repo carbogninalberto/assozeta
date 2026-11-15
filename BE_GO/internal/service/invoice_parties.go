@@ -263,7 +263,7 @@ func (s *InvoiceParties) CustomerAdd(ctx context.Context, request InvoicePartyRe
 			dto.InvoicePartyText + "Invoice already exists!"}}}
 	}
 	if s.customerSync == nil {
-		return domain.ErrInvoicePartyNotPorted
+		return domain.ErrServerComposition
 	}
 	return s.customerAddSave(ctx, request, association, object)
 }

@@ -12,6 +12,9 @@ var (
 	// ErrDocumentWritesNotPorted refuses, before any write, what the Go port
 	// does not reproduce (see docs/architecture/go-migration/documents-writes.md).
 	ErrDocumentWritesNotPorted = refusal.New("document upload behaviour not ported")
+	// ErrDocumentWritesUnreachable is a state no request or stored row
+	// produces (each site names the decoder or constraint that rules it out).
+	ErrDocumentWritesUnreachable = refusal.AppState("document upload: unreachable state")
 	// ErrDocumentWritesFailed is an exception the views do not handle (the 500 page).
 	ErrDocumentWritesFailed = errors.New("document upload request failed")
 )

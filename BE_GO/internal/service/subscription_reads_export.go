@@ -10,6 +10,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/pdfexport"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/xlsxexport"
 )
 
@@ -117,6 +118,8 @@ func (s *SubscriptionReads) Export(ctx context.Context, export *SubscriptionRead
 		switch {
 		case errors.Is(err, pdfexport.ErrNotPorted):
 			return nil, domain.ErrSubscriptionReadsNotPorted
+		case errors.Is(err, refusal.ErrAppState):
+			return nil, err // a layout no export builds (pdfexport.ErrUnexpectedLayout)
 		case err != nil:
 			return nil, domain.ErrSubscriptionReadsServer // an exception of reportlab
 		}
@@ -129,8 +132,8 @@ func (s *SubscriptionReads) Export(ctx context.Context, export *SubscriptionRead
 	}
 	workbook, err := xlsxexport.PandasOpenpyxl(cells, columns, s.now())
 	switch {
-	case errors.Is(err, xlsxexport.ErrNotPorted):
-		return nil, domain.ErrSubscriptionReadsNotPorted
+	case errors.Is(err, refusal.ErrAppState):
+		return nil, err // an input no view builds (xlsxexport.ErrUnexpectedInput)
 	case errors.Is(err, xlsxexport.ErrDjango):
 		return nil, domain.ErrSubscriptionReadsServer // get_excel_base64 returned None: generate_xlsx_from_data raises
 	case err != nil:

@@ -31,11 +31,11 @@ func (t *table) preliminaryWidths(c *canvas, availWidth float64) ([]float64, err
 		final := 0.0
 		for i, row := range t.cells {
 			if !row[j].list {
-				return nil, ErrNotPorted
+				return nil, ErrUnexpectedLayout // ReportTable cells are paragraph lists
 			}
 			w, ok := elementWidth(row[j])
 			if !ok {
-				return nil, ErrNotPorted
+				return nil, ErrUnexpectedLayout
 			}
 			s := t.styles[i][j]
 			w += s.leftPadding + s.rightPadding

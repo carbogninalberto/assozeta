@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"math/big"
 	"os"
 	"strconv"
@@ -94,7 +95,7 @@ func (s *InstanceOutbound) Releases(ctx context.Context, page string, present bo
 	}
 	releases, cached, err := s.cache.Catalog(ctx)
 	if err != nil {
-		return nil, refusedErr("cached release catalog", err)
+		return nil, unexpectedErr("cached release catalog", err)
 	}
 	fetch := !cached
 	if cached && refresh == "1" {
@@ -109,7 +110,9 @@ func (s *InstanceOutbound) Releases(ctx context.Context, page string, present bo
 		case errors.As(err, &failure):
 			return nil, instanceAdminError(failure.Message, 503)
 		case errors.Is(err, instanceprobe.ErrReleaseNotPorted), errors.Is(err, instanceprobe.ErrNotPorted):
-			return nil, refusedErr("release feed", err)
+			// X2 (accepted divergence): a feed or response Go does not read is
+			// answered like a provider failure.
+			return nil, instanceAdminError(instanceprobe.ReleaseNotReadable(err).Message, 503)
 		case err != nil:
 			return nil, err
 		}
@@ -121,11 +124,13 @@ func (s *InstanceOutbound) Releases(ctx context.Context, page string, present bo
 	return instanceprobe.Summary(releases, s.admin.env.Version, number), nil
 }
 
-func refusedErr(reason string, err error) error {
-	if errors.Is(err, domain.ErrInstanceAdminRefused) {
+// unexpectedErr is unexpected(reason) for an err that is not one already
+// (the cached catalog is written only by SetCatalog).
+func unexpectedErr(reason string, err error) error {
+	if errors.Is(err, domain.ErrInstanceAdminUnexpected) {
 		return err
 	}
-	return refused(reason + ": " + err.Error())
+	return fmt.Errorf("%w: %s: %w", domain.ErrInstanceAdminUnexpected, reason, err)
 }
 
 // ---------------------------------------------------------------------------
@@ -162,7 +167,7 @@ func (s *InstanceOutbound) claim(ctx context.Context, name string, seconds int64
 		if stored, present := results["operation_leases"]; present {
 			object, ok := stored.(map[string]any)
 			if !ok {
-				return nil, refused("stored leases are not an object")
+				return nil, unexpected("stored leases are not an object")
 			}
 			leases = instanceAdminCopy(object)
 		}
@@ -173,7 +178,7 @@ func (s *InstanceOutbound) claim(ctx context.Context, name string, seconds int64
 		}
 		until, ok := instanceAdminNumber(lease)
 		if !ok {
-			return nil, refused("stored lease is not a number")
+			return nil, unexpected("stored lease is not a number")
 		}
 		if until.Cmp(new(big.Rat).SetFloat64(now)) > 0 {
 			return nil, nil
@@ -220,7 +225,7 @@ type emailPlan struct {
 func emailText(settings map[string]any, key string) (string, error) {
 	text, ok := settings[key].(string)
 	if !ok {
-		return "", refused("stored email setting " + key)
+		return "", unexpected("stored email setting " + key)
 	}
 	return text, nil
 }
@@ -252,7 +257,7 @@ func (s *InstanceOutbound) emailProbePlan(row *domain.InstanceAdminRow, revision
 		}
 		number, ok := instanceAdminInteger(settings["port"])
 		if !ok || !number.IsInt64() {
-			return nil, refused("stored email port")
+			return nil, unexpected("stored email port")
 		}
 		password, port, plan.revision = plain, number.Int64(), row.EmailRevision
 	} else {
@@ -348,7 +353,7 @@ func (s *InstanceOutbound) EmailTest(ctx context.Context, body any) (map[string]
 	response := s.probeResult(result)
 	err = s.admin.store.Locked(ctx, func(locked *domain.InstanceAdminRow) (*domain.InstanceAdminUpdate, error) {
 		if locked == nil {
-			return nil, refused("no configuration")
+			return nil, unexpected("no configuration")
 		}
 		if !pythonEqual(input.Revision, locked.EmailRevision) {
 			message := "Configurazione cambiata durante il test. Ricarica le impostazioni."
@@ -500,7 +505,7 @@ func (s *InstanceOutbound) IntegrationTest(ctx context.Context, provider string,
 	}
 	enabled, present := current.value["enabled"]
 	if !present {
-		return nil, refused("integration settings without enabled")
+		return nil, unexpected("integration settings without enabled")
 	}
 	if !instanceTruthy(enabled) {
 		return nil, instanceAdminError("Abilita e salva l’integrazione prima di verificarla.", 400)
@@ -510,7 +515,7 @@ func (s *InstanceOutbound) IntegrationTest(ctx context.Context, provider string,
 		return nil, err
 	} else if answer == nil {
 		if _, _, err := instanceprobe.IntegrationTarget(provider, value); err != nil {
-			return nil, refused("integration probe input")
+			return nil, unexpected("integration probe input")
 		}
 	}
 	results, err := s.storedResults(row)
@@ -519,7 +524,7 @@ func (s *InstanceOutbound) IntegrationTest(ctx context.Context, provider string,
 	}
 	if tests, present := results["integration_tests"]; present {
 		if _, ok := tests.(map[string]any); !ok {
-			return nil, refused("stored integration tests are not an object")
+			return nil, unexpected("stored integration tests are not an object")
 		}
 	}
 	claimed, err := s.claim(ctx, "integration_"+provider, 20)
@@ -537,7 +542,7 @@ func (s *InstanceOutbound) IntegrationTest(ctx context.Context, provider string,
 	response := s.probeResult(result)
 	err = s.admin.store.Locked(ctx, func(locked *domain.InstanceAdminRow) (*domain.InstanceAdminUpdate, error) {
 		if locked == nil {
-			return nil, refused("no configuration")
+			return nil, unexpected("no configuration")
 		}
 		latest, err := s.admin.effective(provider, locked, false)
 		if err != nil {
@@ -554,7 +559,7 @@ func (s *InstanceOutbound) IntegrationTest(ctx context.Context, provider string,
 		if stored, present := results["integration_tests"]; present {
 			object, ok := stored.(map[string]any)
 			if !ok {
-				return nil, refused("stored integration tests are not an object")
+				return nil, unexpected("stored integration tests are not an object")
 			}
 			tests = instanceAdminCopy(object)
 		}
@@ -594,7 +599,9 @@ func (s *InstanceOutbound) runIntegrationProbe(ctx context.Context, provider str
 	case ctx.Err() != nil:
 		return timeoutResult(false), nil
 	case errors.Is(err, instanceprobe.ErrProbeNotPorted):
-		return instanceprobe.Result{}, refused("integration probe response")
+		// X2 (accepted divergence): a provider body Go does not read (UTF-16/32
+		// JSON) is the probe's generic failure.
+		return instanceprobe.Generic, nil
 	case err != nil:
 		return instanceprobe.Generic, nil
 	}

@@ -30,6 +30,13 @@ import (
 var (
 	// ErrUnsupported is an input outside the ported subset.
 	ErrUnsupported = refusal.New("fatturapa: input not ported")
+	// ErrUnexpectedJSON is JSON text the invoice columns never hold: the lines
+	// are a jsonb column (CustomerInvoice.lines, a JSONField), so the text is
+	// one valid JSON value; an integer of more than 4300 digits makes Django's
+	// json.loads raise ValueError when the row is read (from_db_value, before
+	// generate_einvoice), the 500 page. An application-state error, never
+	// handed off.
+	ErrUnexpectedJSON = refusal.AppState("fatturapa: unexpected JSON column text")
 	// ErrInvalid is an input for which generate_einvoice raises.
 	ErrInvalid = errors.New("fatturapa: generate_einvoice raises")
 )

@@ -22,6 +22,8 @@ import (
 	"time"
 
 	"github.com/redis/go-redis/v9"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // golden is testdata/channels_redis_group_send.json, captured from the real
@@ -500,7 +502,8 @@ func TestInvalidInputRefusedBeforeAnyCommand(t *testing.T) {
 	for _, message := range []Dict{
 		{{"type", 1.5}}, {{"type", "\xff"}}, {{"\xff", 1}}, {{"a", 1}, {"a", 2}}, {{"a", []any{map[string]any{}}}}, {{"a", []byte("x")}},
 	} {
-		if err := layer.GroupSend(context.Background(), "group", message); !errors.Is(err, ErrUnsupportedValue) {
+		err := layer.GroupSend(context.Background(), "group", message)
+		if !errors.Is(err, ErrUnsupportedValue) || !errors.Is(err, refusal.ErrAppState) || errors.Is(err, refusal.ErrNotPorted) {
 			t.Errorf("%v: %v", message, err)
 		}
 	}

@@ -40,7 +40,7 @@ actor_id})`, relayed with 202; unavailable is 503, rejected keeps the runner's s
 
 ## Not ported (500 page before any write)
 
-- Runner answers Go does not decode like `json.loads` (UTF-16/32, surrogates, NaN, deep nesting) and
+- Runner answers Go does not decode like `json.loads` (surrogates, NaN, deep nesting; UTF-16/32 is read since long tail PR 2) and
   reason texts that are not strings; a release id beyond 64 bits.
 - Release feeds the release normalizer refuses (see `instance-outbound.md`).
 

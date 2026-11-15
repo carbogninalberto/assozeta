@@ -158,7 +158,8 @@ func (r *DocumentViews) Associate(ctx context.Context, id string) (*domain.ViewA
 }
 
 // MainTutor: tutor_relations.filter(is_primary=True).first(); without one,
-// tutor_relations.first() would be promoted and saved (refused).
+// tutor_relations.first() has to be promoted and saved, which the caller does
+// (ErrTutorPromotionNeeded).
 func (r *DocumentViews) MainTutor(ctx context.Context, associate string) (*domain.ViewAssociate, error) {
 	var tutor string
 	err := r.db.GetContext(ctx, &tutor, `SELECT tutor_id::text FROM application_associatetutorrelation
@@ -170,7 +171,7 @@ func (r *DocumentViews) MainTutor(ctx context.Context, associate string) (*domai
 			return nil, err
 		}
 		if any {
-			return nil, domain.ErrViewTutorWrite
+			return nil, domain.ErrTutorPromotionNeeded
 		}
 		return nil, nil
 	}
@@ -182,7 +183,9 @@ func (r *DocumentViews) MainTutor(ctx context.Context, associate string) (*domai
 
 // PromoteMainTutor: tutor_relations.first() saved with is_primary=True. The
 // auditlog entry is indexed through associate.sport_association, or the
-// actor's association when the associate has none.
+// actor's association when the associate has none; a request without a
+// signed-in actor writes no index row (Django's resolver falls through to no
+// actor).
 func (r *DocumentViews) PromoteMainTutor(ctx context.Context, associate string, promotion domain.ViewTutorPromotion) (*domain.ViewAssociate, error) {
 	tx, err := r.db.BeginTxx(ctx, nil)
 	if err != nil {
@@ -209,11 +212,11 @@ func (r *DocumentViews) PromoteMainTutor(ctx context.Context, associate string, 
 			return nil, err
 		}
 		path, association := "associate.sport_association", row.Association
-		if association == nil {
+		if association == nil && promotion.ActorID != nil {
 			path = "actor.sport_association"
 			var id string
 			err = tx.GetContext(ctx, &id, `SELECT sport_association_id::text FROM application_sportassociation
- WHERE user_id=$1 AND NOT deleted ORDER BY sport_association_id LIMIT 1`, promotion.ActorID)
+ WHERE user_id=$1 AND NOT deleted ORDER BY sport_association_id LIMIT 1`, *promotion.ActorID)
 			if err == nil {
 				association = &id
 			} else if !errors.Is(err, sql.ErrNoRows) {

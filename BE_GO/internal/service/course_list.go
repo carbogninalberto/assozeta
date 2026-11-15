@@ -426,6 +426,8 @@ func (s *CourseLists) Export(ctx context.Context, export *CourseListExport, data
 		switch {
 		case errors.Is(err, pdfexport.ErrNotPorted):
 			return nil, ErrCourseListExportUnported
+		case errors.Is(err, refusal.ErrAppState):
+			return nil, err // a layout no export builds (pdfexport.ErrUnexpectedLayout)
 		case err != nil:
 			return nil, ErrCourseListExport // an exception of reportlab
 		}
@@ -453,8 +455,8 @@ func (s *CourseLists) Export(ctx context.Context, export *CourseListExport, data
 	}
 	workbook, err := xlsxexport.PandasOpenpyxl(rows, columns, s.now())
 	switch {
-	case errors.Is(err, xlsxexport.ErrNotPorted):
-		return nil, ErrCourseListExportUnported
+	case errors.Is(err, refusal.ErrAppState):
+		return nil, err // an input no view builds (xlsxexport.ErrUnexpectedInput)
 	case errors.Is(err, xlsxexport.ErrDjango):
 		return nil, ErrCourseListExport // get_excel_base64 returned None: generate_xlsx_from_data raises
 	case err != nil:

@@ -24,7 +24,8 @@ func ParseArchiveUpdate(object domain.RequestObject) (ArchiveUpdate, map[string]
 	invalid := map[string][]string{}
 	for _, field := range object {
 		if _, upload := field.Value.(domain.RequestUpload); upload {
-			return update, nil, domain.ErrDocumentWritesNotPorted
+			// DocumentArchiveViewSet is JSONParser only (BE/application/views/archive_views.py:136): no file reaches it.
+			return update, nil, domain.ErrDocumentWritesUnreachable
 		}
 	}
 	if value, present := object.Lookup("sport_association"); present {

@@ -198,7 +198,8 @@ def seed_rows(source, created):
     associate_ids['athlete'] = 'a1000000-0000-4000-8000-000000700101'
     for label, row in source['associates'].items():
         insert(Associate, Associate(
-            associate_id=row['id'], sport_association_id=associations[row['association']], first_name=row['first'], last_name=row['last'],
+            associate_id=row['id'], sport_association_id=associations[row['association']] if row['association'] else None,
+            first_name=row['first'], last_name=row['last'],
             tax_code=row['tax_code'], sex=row['sex'], born_date=day(row['born']), born_city=row['born_city'], address=row['address'],
             address_city=row['city'], address_cap=row['cap'], phone=row['phone'], email=row['email'], notes=row['notes'],
             creation_date=seeded))
@@ -288,13 +289,17 @@ def assert_effect(case, before, after, source, context):
         expected = {**old_r[key], 'is_primary': True} if key in expected_keys else old_r[key]
         contract.require(new_r[key] == expected, 'state.relation-promoted' if key in expected_keys else 'state.relation-unchanged')
     added, indexes = harness.audit_delta(contract, before, after)
-    contract.require(len(added) == len(promoted) and len(indexes) == len(promoted), 'audit.count')
+    # An entry whose resolver finds no association writes no index row, so the index count is checked per entry.
+    contract.require(len(added) == len(promoted), 'audit.count')
     added.sort(key=lambda event: event['id'])
     for event, key, (child, actor) in zip(added, expected_keys, promoted):
+        # associate_tutor_relation_resolver: the associate's association; an associate without one and a request
+        # without an actor write no index row.
+        association = source['associations'][associates[child]['association']]['id'] if associates[child]['association'] else None
         harness.check_audit_event(contract, case, event, indexes, before=before, ids=ids, model='AssociateTutorRelation', key=key,
                                   action=1, changes={'is_primary': ['False', 'True']}, actor=actor,
-                                  association=source['associations'][associates[child]['association']]['id'],
-                                  path='associate.sport_association', context=context)
+                                  association=association,
+                                  path='associate.sport_association' if association else None, context=context)
 
 
 _run_workload = harness.run_workload_for(contract, assert_effect)

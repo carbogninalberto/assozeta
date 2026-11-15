@@ -32,6 +32,15 @@ var (
 	ErrDocumentViewServer = errors.New("document view: unhandled exception")
 	// ErrDocumentViewNotPorted refuses an input outside the port (the 500 page).
 	ErrDocumentViewNotPorted = refusal.New("document view: input not ported")
+	// errDocumentViewSignature is a view built without the signature storage:
+	// cmd/server/main.go always calls WithSignatureObjects. The 500 page, never
+	// a handoff.
+	errDocumentViewSignature = refusal.AppState("document view: signature image not read")
+	// errDocumentViewCollaboratorOwner is an association whose user is a
+	// collaborator: the writers create it for an ASSOCIATION-role owner
+	// (BE/instance/views.py:200-209, the import's owner user,
+	// BE/application/services/import_service.py:1059-1063). The 500 page.
+	errDocumentViewCollaboratorOwner = refusal.AppState("document view: collaborator account as an association's user")
 )
 
 // PreviewRenderer is pdfrender.Client's call with the request's
@@ -68,7 +77,8 @@ type DocumentViewRequest struct {
 	// Authorization is request.headers.get('authorization'): the preview's
 	// PDF is rendered as the requester.
 	Authorization *string
-	// Promotion admits get_main_tutor's saved relation; nil keeps the refusal.
+	// Promotion admits get_main_tutor's saved relation; nil answers the 500
+	// page instead (the handlers always supply it).
 	Promotion *DocumentViewPromotion
 }
 
@@ -85,30 +95,54 @@ type viewPromotion struct {
 	request  *DocumentViewPromotion
 }
 
+// withViewPromotion makes the request's promotion available to get_main_tutor.
+// A request the renderer's header admits has no account: Django still performs
+// the save, its auditlog entry with no actor.
 func withViewPromotion(ctx context.Context, identity domain.ResolvedIdentity, promotion *DocumentViewPromotion) context.Context {
-	if promotion == nil || identity.ScopeUser == nil {
+	if promotion == nil {
 		return ctx
 	}
 	return context.WithValue(ctx, viewPromotionKey{}, &viewPromotion{identity: identity, request: promotion})
+}
+
+// viewPromotionAuditContext is paymentCategoryAuditContext for a request that
+// may have no account: Django's auditlog entry then carries no actor, address
+// and correlation id as the request supplied them.
+func viewPromotionAuditContext(identity domain.ResolvedIdentity, audit domain.LoginAuditContext) domain.LoginAuditContext {
+	if identity.Actor == nil {
+		audit.ActorID, audit.ActorEmail, audit.AdditionalData = nil, nil, nil
+		return audit
+	}
+	return paymentCategoryAuditContext(identity, audit)
+}
+
+// viewPromotionActorID is the audit actor's id, nil without an account.
+func viewPromotionActorID(identity domain.ResolvedIdentity) *string {
+	if identity.Actor == nil {
+		return nil
+	}
+	id := identity.Actor.ID
+	return &id
 }
 
 // mainTutor is Associate.get_main_tutor(): without a primary relation the
 // first one is promoted and saved as the view renders.
 func (s *DocumentViews) mainTutor(ctx context.Context, associate string) (*domain.ViewAssociate, error) {
 	tutor, err := s.store.MainTutor(ctx, associate)
-	if !errors.Is(err, domain.ErrViewTutorWrite) {
+	if !errors.Is(err, domain.ErrTutorPromotionNeeded) {
 		return tutor, err
 	}
 	promotion, _ := ctx.Value(viewPromotionKey{}).(*viewPromotion)
 	if promotion == nil {
-		return nil, err
+		// The handlers always admit the save; a caller without it cannot do what Django does.
+		return nil, ErrDocumentViewServer
 	}
 	admitted, audit, admitErr := promotion.request.Admit()
 	if admitErr != nil {
 		return nil, admitErr
 	}
 	return s.store.PromoteMainTutor(admitted, associate, domain.ViewTutorPromotion{
-		Context: paymentCategoryAuditContext(promotion.identity, audit), ActorID: promotion.identity.Actor.ID,
+		Context: viewPromotionAuditContext(promotion.identity, audit), ActorID: viewPromotionActorID(promotion.identity),
 		At: s.now().UTC().Truncate(time.Microsecond)})
 }
 
@@ -136,7 +170,7 @@ func (s *DocumentViews) AuthorizeBypass(authorization *string) (bool, error) {
 func (s *DocumentViews) Render(ctx context.Context, identity domain.ResolvedIdentity, request DocumentViewRequest) (*DocumentViewReply, error) {
 	reply, err := s.render(withViewPromotion(ctx, identity, request.Promotion), identity, request)
 	if err != nil {
-		if errors.Is(err, djtemplate.ErrUnsupported) || errors.Is(err, mentions.ErrUnsupported) || errors.Is(err, domain.ErrViewTutorWrite) {
+		if errors.Is(err, mentions.ErrUnsupported) { // djtemplate.ErrUnsupported is app state: it passes through
 			return nil, fmt.Errorf("%w: %v", ErrDocumentViewNotPorted, err)
 		}
 		if errors.Is(err, djtemplate.ErrPython) {
@@ -730,7 +764,7 @@ func (s *DocumentViews) subscription(ctx context.Context, identity domain.Resolv
 			// data URI, then the legacy URL, then None.
 			if key := renderOptionalEmpty(subscription.SignatureStorageKey); key != "" {
 				if s.signatures == nil {
-					return nil, fmt.Errorf("%w: signature image", ErrDocumentViewNotPorted)
+					return nil, errDocumentViewSignature
 				}
 				if content, err := s.signatures.Read(ctx, key); err == nil {
 					return "data:image/png;base64," + base64.StdEncoding.EncodeToString(content), nil
@@ -805,7 +839,7 @@ func (s *DocumentViews) preview(ctx context.Context, identity domain.ResolvedIde
 	case domain.RoleAthlete:
 		return &DocumentViewReply{Status: 403, JSON: map[string]string{"detail": "User is not a sport association"}}, nil
 	case domain.RoleCollaborator:
-		return nil, fmt.Errorf("%w: collaborator account as an association's user", ErrDocumentViewNotPorted)
+		return nil, errDocumentViewCollaboratorOwner
 	}
 	owned, err := s.store.AssociationsOfUser(ctx, association.UserID)
 	if err != nil {

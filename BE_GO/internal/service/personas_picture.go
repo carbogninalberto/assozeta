@@ -46,16 +46,29 @@ func (s *PersonaWrites) WithPictures(objects PersonaPictureObjects, settings Per
 // personaPicturePlan reads the body's picture_path like to_internal_value:
 // upload is true for a string containing 'base64', decoded from the text
 // after the first comma (decode failures are the serializer's 400, before
-// the field validation). Other shapes that reach the upload branch are not
-// ported.
+// the field validation). A list or dict that reaches the branch fails in
+// `value.split(',', 1)` (a ',' element or key) or in base64.b64decode(value),
+// and the handler answers that exception's text as the same 400.
 func personaPicturePlan(body domain.RequestObject) (decoded []byte, upload bool, err error) {
-	if err = pictureUnported(body); err == nil {
-		return nil, false, nil
+	branch, err := pictureBranch(body)
+	if err != nil || !branch {
+		return nil, false, err
 	}
 	value, _ := body.Lookup("picture_path")
 	data, ok := value.(string)
 	if !ok {
-		return nil, false, err
+		comma, kind := false, "list"
+		switch v := value.(type) {
+		case []any:
+			comma = pictureListHas(v, ",")
+		case domain.RequestObject:
+			_, comma = v.Lookup(",")
+			kind = "dict"
+		}
+		if comma {
+			return nil, false, &PersonaPictureInvalid{Text: "Error processing image: '" + kind + "' object has no attribute 'split'"}
+		}
+		return nil, false, &PersonaPictureInvalid{Text: "Error processing image: argument should be a bytes-like object or ASCII string, not '" + kind + "'"}
 	}
 	encoded := data
 	if _, after, found := strings.Cut(data, ","); found {
@@ -96,11 +109,14 @@ func personaPictureURL(settings PersonaPictureSettings, key string) string {
 // uploadPicture is _store_picture, run by create() / update() once the data
 // is valid: the picture saved as associates/<associate id>/picture_<timestamp>.jpg,
 // put_object_acl public-read when object ACLs are on, and the URL stored as
-// picture_path. A refused ACL is the serializer's 400; other storage
-// failures are refused.
+// picture_path. A refused ACL is the serializer's 400; other storage failures
+// and an object already under the new key (Django's get_available_name picks a
+// random name) are refused and handed off: Django answers botocore's text as a
+// 400.
 func (s *PersonaWrites) uploadPicture(ctx context.Context, decoded []byte, associate string) (string, error) {
 	if s.pictures == nil {
-		return "", ErrPersonaNotPorted
+		// cmd/server/main.go always calls WithPictures.
+		return "", domain.ErrServerComposition
 	}
 	location := strings.Trim(s.pictures.Location(), "/")
 	name := "associates/" + associate + "/picture_" + personaPictureTimestamp(s.now()) + ".jpg"

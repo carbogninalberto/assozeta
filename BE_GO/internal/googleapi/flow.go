@@ -47,7 +47,7 @@ func LoadClientSecrets(path string) (*ClientConfig, error) {
 	}
 	root, ok := parsed.(domain.RequestObject)
 	if !ok {
-		return nil, ErrNotPorted
+		return nil, ErrUnexpected
 	}
 	section, present := lookup(root, "web")
 	if !present {
@@ -57,7 +57,7 @@ func LoadClientSecrets(path string) (*ClientConfig, error) {
 	}
 	config, ok := section.(domain.RequestObject)
 	if !ok {
-		return nil, ErrNotPorted
+		return nil, ErrUnexpected
 	}
 	result := &ClientConfig{config: config}
 	for name, target := range map[string]*string{"auth_uri": &result.AuthURI, "token_uri": &result.TokenURI, "client_id": &result.ClientID} {
@@ -67,13 +67,13 @@ func LoadClientSecrets(path string) (*ClientConfig, error) {
 		}
 		text, ok := value.(string)
 		if !ok {
-			return nil, ErrNotPorted
+			return nil, ErrUnexpected
 		}
 		*target = text
 	}
 	result.ClientSecret, result.clientSecretPresent = lookup(config, "client_secret")
 	if !textOrNone(result.ClientSecret) {
-		return nil, ErrNotPorted
+		return nil, ErrUnexpected
 	}
 	return result, nil
 }
@@ -117,7 +117,7 @@ func (c *ClientConfig) AuthorizationURL(redirect string, environment Environment
 		return "", "", &PythonError{Message: "InsecureTransportError: OAuth 2 MUST utilize https."}
 	}
 	if !plainURI(c.AuthURI) {
-		return "", "", ErrNotPorted
+		return "", "", ErrUnexpected
 	}
 	pairs := [][2]string{{"response_type", "code"}, {"client_id", c.ClientID}}
 	if redirect != "" {
@@ -143,7 +143,7 @@ func (c *ClientConfig) FetchToken(ctx context.Context, transport *Transport, cod
 		return "", &PythonError{Message: "ValueError: Please supply either code or authorization_response parameters."}
 	}
 	if !plainURI(c.TokenURI) {
-		return "", ErrNotPorted
+		return "", ErrUnexpected
 	}
 	pairs := [][2]string{{"grant_type", "authorization_code"}, {"code", code}}
 	if redirect != "" {
@@ -174,11 +174,11 @@ func (c *ClientConfig) tokenCredentials(answer *Response, environment Environmen
 	parsed, err := parseJSON(answer.Body)
 	if err != nil {
 		// oauthlib falls back to a form-encoded body: not ported.
-		return "", ErrNotPorted
+		return "", ErrUnexpected
 	}
 	params, ok := parsed.(domain.RequestObject)
 	if !ok {
-		return "", ErrNotPorted
+		return "", ErrUnexpected
 	}
 	var granted []string
 	scopeChanged := false
@@ -190,7 +190,7 @@ func (c *ClientConfig) tokenCredentials(answer *Response, environment Environmen
 			granted = strings.Split(strings.TrimSpace(v), " ")
 			scopeChanged = !sameSet(granted, Scopes)
 		default:
-			return "", ErrNotPorted
+			return "", ErrUnexpected
 		}
 	}
 	// parse_expires
@@ -204,21 +204,21 @@ func (c *ClientConfig) tokenCredentials(answer *Response, environment Environmen
 				return "", &PythonError{Message: "ValueError: expires_in must be an int"}
 			}
 			if !number.IsInt64() {
-				return "", ErrNotPorted
+				return "", ErrUnexpected
 			}
 			expiresIn, hasExpiresIn = number.Int64(), true
 		case jsonNumber:
 			f, err := v.Float64()
 			if err != nil || math.IsInf(f, 0) || math.Abs(f) > 1e15 {
-				return "", ErrNotPorted
+				return "", ErrUnexpected
 			}
 			expiresIn, hasExpiresIn = int64(f), true
 		default:
-			return "", ErrNotPorted
+			return "", ErrUnexpected
 		}
 	}
 	if _, present := lookup(params, "expires_at"); present {
-		return "", ErrNotPorted
+		return "", ErrUnexpected
 	}
 	// validate_token_parameters
 	if _, present := lookup(params, "error"); present {
@@ -235,11 +235,11 @@ func (c *ClientConfig) tokenCredentials(answer *Response, environment Environmen
 		return "", &PythonError{Message: "Warning: Scope has changed."}
 	}
 	if _, ok := token.(string); !ok {
-		return "", ErrNotPorted
+		return "", ErrUnexpected
 	}
 	refresh, _ := lookup(params, "refresh_token")
 	if !textOrNone(refresh) {
-		return "", ErrNotPorted
+		return "", ErrUnexpected
 	}
 	// credentials_from_session: expiry = utcfromtimestamp(token['expires_at']),
 	// expires_at = round(time.time()) + expires_in when expires_in is truthy.
@@ -249,7 +249,7 @@ func (c *ClientConfig) tokenCredentials(answer *Response, environment Environmen
 	stamp := int64(math.RoundToEven(float64(at.UnixNano())/1e9)) + expiresIn
 	expiry := time.Unix(stamp, 0).UTC()
 	if expiry.Year() < 1 || expiry.Year() > 9999 {
-		return "", ErrNotPorted
+		return "", ErrUnexpected
 	}
 	secret, _ := lookup(c.config, "client_secret")
 	credentials := &Credentials{Token: token, RefreshToken: refresh, TokenURI: c.TokenURI, ClientID: c.ClientID, ClientSecret: secret,

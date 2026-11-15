@@ -3151,7 +3151,7 @@
       "declaration": {
         "arguments": "self, *args, **kwargs"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/internal/repository/instance_setup.go",
         "BE_GO/internal/service/instance_setup.go"
@@ -3189,6 +3189,7 @@
       "notes": [
         "Implementing via instance-setup: the fresh setup's create (singleton check, defaults stored) and reconfigure saves (an empty display_settings stored as the defaults).",
         "Re-reviewed after ui_api_version was added to InstanceConfiguration: save() is unchanged; Go inserts the new column's default. instance-setup 86/86 and instance-bootstrap 129/129 pass on the merged tree (ui-v2-beta).",
+        "Re-reviewed after go_tasks_enabled was added to InstanceConfiguration (instance.0010): save() is unchanged. Go's fresh and imported inserts write the field's default (FALSE), the reconfigure updates leave it as stored (Django's save writes the loaded value back), and the owner switch writes it with a queryset update in both, outside save(). instance-setup 107/107 passes on four transports on the merged tree (lt2pr-local).",
         "Implementing evidence: docs/architecture/go-migration/instance-setup.md",
         "Implementing evidence: RED: Django 86/86; Go 404 on the first case. (quality-reports/go-migration/instance-setup-http-native-r1/results.json)",
         "Implementing evidence: GREEN: 86/86 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact row, audit and S3 object effects; exercised by instance-setup-configure-fresh, instance-setup-configure-import-pending-task, instance-setup-reconfigure-setup-owner, instance-setup-reconfigure-admin. (quality-reports/go-migration/instance-setup-http-versioned-r1/results.json)",

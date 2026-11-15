@@ -87,13 +87,14 @@ func TestParagraphParserCorpus(t *testing.T) {
 	}
 	var file struct {
 		Cases []struct {
-			Text      string `json:"text"`
-			Font      string `json:"font"`
-			Refusable bool   `json:"refusable"`
-			Error     bool   `json:"error"`
-			Other     bool   `json:"other"`
-			Frags     []any  `json:"frags"`
-			Style     []any  `json:"style"`
+			Text       string `json:"text"`
+			Font       string `json:"font"`
+			Refusable  bool   `json:"refusable"`
+			Error      bool   `json:"error"`
+			BuildError bool   `json:"build_error"`
+			Other      bool   `json:"other"`
+			Frags      []any  `json:"frags"`
+			Style      []any  `json:"style"`
 		} `json:"cases"`
 	}
 	if err := json.Unmarshal(raw, &file); err != nil {
@@ -109,6 +110,12 @@ func TestParagraphParserCorpus(t *testing.T) {
 			continue
 		}
 		switch {
+		case item.BuildError:
+			// reportlab parses these (an <index> or <onDraw> callback); drawing fails the document, as here.
+			if !errors.Is(err, ErrLayout) {
+				t.Errorf("%q: the document cannot be built; got %d fragments, %v", item.Text, len(frags), err)
+			}
+			failures++
 		case item.Other:
 			t.Errorf("%q: reportlab makes fragments this package does not draw; got %v, %v", item.Text, len(frags), err)
 		case item.Error:

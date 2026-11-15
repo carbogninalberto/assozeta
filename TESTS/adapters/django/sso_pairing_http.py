@@ -311,11 +311,13 @@ def throttle_key(case):
 
 
 def preload_throttle(case):
+    """{'preload': n, 'age': seconds}: n timestamps of that age; the history of a request counted n times.
+    With 'ints' the timestamps are integers."""
     from django.core.cache import cache
     spec = case.get('throttle')
     if spec:
         stamp = time.time() - spec['age']
-        cache.set(throttle_key(case), [stamp] * spec['preload'], 60)
+        cache.set(throttle_key(case), [int(stamp) if spec.get('ints') else stamp] * spec['preload'], 60)
 
 
 def check_throttle(case, status):

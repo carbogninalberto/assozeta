@@ -86,9 +86,12 @@ Refused before any request or write unless noted:
   URIs carrying their own query, parameters or fragment.
 - config GET whose `sessionid` names a cache session holding more than a state (for example a Django admin login), several
   `Cookie` headers carrying a `sessionid`, or a value with characters other than `a-z0-9` (Python's strip and unquoting).
-- Export inputs: an event whose Rome date is before the year 1000 (handed to Django: `strftime('%Y')` is platform
-  dependent). Ported in t4l2: any colour (Python `int(x, 16)` after the calendar and the course save), event dates through
+- Export inputs: none left. An event whose Rome date is before the year 1000 is ported (long tail PR 2): `strftime('%Y')`
+  leaves the year unpadded with glibc (the Linux images) and pads it on macOS, and Go follows the platform it runs on
+  (`pythonStrftimeYear`, `TestGoogleEventYearFollowsPlatform`). Ported in t4l2: any colour (Python `int(x, 16)` after the calendar and the course save), event dates through
   `internal/pydatetime` (fromisoformat and Django's regex), pytz's Rome table (OverflowError past 9999), any instructor label.
+- Stored credentials, the client secrets file and Google's answers below are application state since long tail PR 2
+  (`googleapi.ErrUnexpected`, the 500 page, never handed off).
 - Google answers (refused when they arrive, after the earlier requests and saves): a token answer that is not a JSON
   mapping, carries `expires_at`, or a non-string access/refresh token; an `expires_in` that is not a number or numeric
   string; a calendar `id` that is not a string; `calendarList` pages whose `items` is not a list or whose `nextPageToken`

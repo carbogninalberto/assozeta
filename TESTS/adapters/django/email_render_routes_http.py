@@ -57,17 +57,31 @@ def field_values(model, row):
 
 
 def seed_rows(source, created):
+    from django.db import connection
+
     from application.models import Associate, Invoice, Payment, SupplierAndCustomers
     from docmanager.models import Document
 
+    # DecimalField.get_prep_value rejects a non-finite value even though the
+    # numeric column stores NaN and the database driver reads it back as
+    # Decimal('NaN') without validation. Seed those columns through SQL.
+    non_finite = []
     for model, rows in ((Document, source['documents'].values()), (Associate, source['associates'].values()),
                         (SupplierAndCustomers, source['suppliers'].values()), (Invoice, source['invoices'].values()),
                         (Payment, source['payments'].values())):
+        decimals = {field.name for field in model._meta.concrete_fields if field.get_internal_type() == 'DecimalField'}
         for row in rows:
-            instance = model(**field_values(model, row))
+            finite = {key: '0' if key in decimals and value == 'NaN' else value for key, value in row.items()}
+            instance = model(**field_values(model, finite))
             contract.require(not model._base_manager.filter(pk=instance.pk).exists(), 'fixture.collision')
             model._base_manager.bulk_create([instance])
             created.append((model, instance.pk))
+            non_finite.extend((model._meta.db_table, model._meta.pk.attname, instance.pk, key)
+                              for key in row if key in decimals and row[key] == 'NaN')
+    if non_finite:
+        with connection.cursor() as cursor:
+            for table, pk_name, pk, column in non_finite:
+                cursor.execute(f'UPDATE {table} SET {column} = %s WHERE {pk_name} = %s', ['NaN', pk])
 
 
 def invites_model():

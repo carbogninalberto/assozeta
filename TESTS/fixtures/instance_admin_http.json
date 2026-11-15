@@ -669,7 +669,8 @@
     },
     "running_version": "v0.0.0",
     "configured_version": "latest",
-    "mode": "development"
+    "mode": "development",
+    "go_tasks_enabled": false
    },
    "effect": null,
    "cache_control": null,
@@ -755,7 +756,8 @@
     },
     "running_version": "v0.0.0",
     "configured_version": "latest",
-    "mode": "development"
+    "mode": "development",
+    "go_tasks_enabled": false
    },
    "effect": null,
    "cache_control": null,
@@ -844,7 +846,8 @@
     },
     "running_version": "v0.0.0",
     "configured_version": "latest",
-    "mode": "development"
+    "mode": "development",
+    "go_tasks_enabled": false
    },
    "effect": null,
    "cache_control": null,
@@ -2712,7 +2715,8 @@
     },
     "running_version": "v0.0.0",
     "configured_version": "latest",
-    "mode": "development"
+    "mode": "development",
+    "go_tasks_enabled": false
    },
    "effect": null,
    "cache_control": null,
@@ -5356,7 +5360,8 @@
     },
     "running_version": "v0.0.0",
     "configured_version": "latest",
-    "mode": "development"
+    "mode": "development",
+    "go_tasks_enabled": false
    },
    "effect": null,
    "cache_control": null,
@@ -6566,7 +6571,8 @@
     },
     "running_version": "v0.0.0",
     "configured_version": "latest",
-    "mode": "development"
+    "mode": "development",
+    "go_tasks_enabled": false
    },
    "effect": null,
    "cache_control": null,
@@ -8825,7 +8831,8 @@
     },
     "running_version": "v0.0.0",
     "configured_version": "latest",
-    "mode": "development"
+    "mode": "development",
+    "go_tasks_enabled": false
    },
    "effect": null,
    "cache_control": null,

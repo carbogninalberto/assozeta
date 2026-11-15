@@ -71,16 +71,16 @@ func LoadCredentials(stored any, now time.Time) (*Credentials, error) {
 	for _, value := range []any{credentials.Token, credentials.RefreshToken, credentials.ClientID, credentials.ClientSecret,
 		credentials.Rapt, credentials.Quota, credentials.Account} {
 		if !textOrNone(value) {
-			return nil, ErrNotPorted
+			return nil, ErrUnexpected
 		}
 	}
 	if universe := get("universe_domain"); universe != nil {
 		if text, ok := universe.(string); !ok || (text != "" && text != defaultUniverse) {
-			return nil, ErrNotPorted
+			return nil, ErrUnexpected
 		}
 	}
 	if boundary := get("trust_boundary"); boundary != nil {
-		return nil, ErrNotPorted
+		return nil, ErrUnexpected
 	}
 	if expiry := get("expiry"); truthy(expiry) {
 		text, ok := expiry.(string)
@@ -105,12 +105,12 @@ func LoadCredentials(stored any, now time.Time) (*Credentials, error) {
 			for _, item := range v {
 				text, ok := item.(string)
 				if !ok {
-					return nil, ErrNotPorted
+					return nil, ErrUnexpected
 				}
 				credentials.Scopes = append(credentials.Scopes, text)
 			}
 		default:
-			return nil, ErrNotPorted
+			return nil, ErrUnexpected
 		}
 	}
 	return credentials, nil
@@ -251,11 +251,11 @@ func (c *Credentials) Refresh(ctx context.Context, transport *Transport, profile
 		return &PythonError{Message: "RefreshError: No access token in response.", Data: object}
 	}
 	if _, ok := token.(string); !ok {
-		return ErrNotPorted
+		return ErrUnexpected
 	}
 	if refresh, present := lookup(object, "refresh_token"); present {
 		if !textOrNone(refresh) {
-			return ErrNotPorted
+			return ErrUnexpected
 		}
 		c.RefreshToken = refresh
 	}
@@ -267,7 +267,7 @@ func (c *Credentials) Refresh(ctx context.Context, transport *Transport, profile
 				return &PythonError{Message: "ValueError: invalid literal for int()"}
 			}
 			if !value.IsInt64() {
-				return ErrNotPorted
+				return ErrUnexpected
 			}
 			expiresIn = value.Int64()
 		}

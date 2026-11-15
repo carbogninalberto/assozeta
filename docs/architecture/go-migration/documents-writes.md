@@ -99,7 +99,9 @@ Every upload creates a Document and then calls `default_storage.save(name, conte
   default): requests without an account are counted per address (`get_ident`) in the cache key
   `throttle_medical-certificate-upload_<ident>`, before the method dispatch and before the body is read. A full history is
   `429 {"detail": "Request was throttled. Expected available in N seconds."}` with `Retry-After: N`; signed-in accounts are
-  not counted. Go: `certificateAllow` on `repository.DRFThrottleCache` (the same cache entries).
+  not counted. Go: `certificateAllow` on `repository.DRFThrottleCache` (the same cache entries: the timestamps of a list of
+  numbers, an integer entry counting like a float; any other cached value raises before the method dispatch and is the error
+  page, as in Django — `modules-responses.md` has the cases).
 - A missing `medical_certificate` key, a non-dict body or a value that is not a file is a 500.
 - The file must be a PDF or an image by the type of its name (`mimetypes.guess_type`, the type the stored object is served
   with; Go `pymime.GuessType`): anything else is `400 {"error": "Seleziona un file PDF o un’immagine."}`. A file above
@@ -159,6 +161,12 @@ Every upload creates a Document and then calls `default_storage.save(name, conte
   `documents-writes-http-sweep-restdocs-2` (GitHub run 42908069516): 4 transports. Mutation (the message changed) CAUGHT.
 
 ## Not ported (refused before any write unless noted)
+
+Since long-tail PR 2 the unreachable decoder and key states are application-state errors (the 500 page, never handed
+off). The codec item, multipart bodies over 250 MiB (Django spools the files to disk) and storage provider failures
+(Django answers botocore's text: a 400 on documents/add, its own 500 JSON on the medical upload) stay
+`ErrDocumentWritesNotPorted`. The handoff cannot replay a body over its size limit or a storage failure (the Document
+row and the upload are recorded effects), so Go answers the 500 page there until they are ported.
 
 - Multipart bodies over 250 MiB: the request has to be held in memory, so the answer then depends on the host's memory
   and proxy limits, not on the input (class X).

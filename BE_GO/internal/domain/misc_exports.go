@@ -4,16 +4,10 @@ import (
 	"context"
 	"errors"
 	"time"
-
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
-var (
-	// ErrMiscExportsServer is an exception the export views do not catch (the 500 page).
-	ErrMiscExportsServer = errors.New("misc export raised")
-	// ErrMiscExportsNotPorted refuses the spreadsheet outputs (the 500 page, before any lookup).
-	ErrMiscExportsNotPorted = refusal.New("misc export output not ported")
-)
+// ErrMiscExportsServer is an exception the export views do not catch (the 500 page).
+var ErrMiscExportsServer = errors.New("misc export raised")
 
 // MiscExportPerson is the Associate columns the subscription export renders
 // (the subscription's associate or a tutor).

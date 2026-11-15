@@ -223,6 +223,21 @@
    "phone": null,
    "email": null,
    "is_minor": false
+  },
+  "bea": {
+   "id": "a1000000-0000-4000-8000-000000986030",
+   "first": "Bea",
+   "last": "Viola",
+   "tax_code": null,
+   "sex": "F",
+   "born": "2013-05-05",
+   "born_city": null,
+   "address": null,
+   "city": null,
+   "cap": null,
+   "phone": null,
+   "email": null,
+   "is_minor": false
   }
  },
  "tutors": [
@@ -239,6 +254,11 @@
   [
    "sara",
    "mario",
+   false
+  ],
+  [
+   "bea",
+   "paolo",
    false
   ]
  ],
@@ -697,6 +717,18 @@
   },
   "promote": {
    "id": "a1000000-0000-4000-8000-000000986225",
+   "association": "fallback",
+   "activity": "0.00",
+   "membership": "5.00",
+   "description": "Salvata",
+   "number": 7,
+   "cancelled": false,
+   "selected_tutor": null,
+   "deleted": false,
+   "group": null
+  },
+  "promotebypass": {
+   "id": "a1000000-0000-4000-8000-000000986227",
    "association": "fallback",
    "activity": "0.00",
    "membership": "5.00",
@@ -1235,6 +1267,25 @@
    "category": null,
    "meta_categories": null,
    "associate": "sara",
+   "supplier": null,
+   "instructor": null,
+   "course": null,
+   "meta": null,
+   "deleted": false,
+   "group": null
+  },
+  {
+   "id": "a1000000-0000-4000-8000-000000986127",
+   "invoice": "promotebypass",
+   "association": "fallback",
+   "type": "cash",
+   "subject": 0,
+   "description": "X & Y",
+   "notes": null,
+   "date": "2026-03-04T10:00:00+00:00",
+   "category": null,
+   "meta_categories": null,
+   "associate": "bea",
    "supplier": null,
    "instructor": null,
    "course": null,
@@ -7455,6 +7506,397 @@
             "v": {
              "t": "str",
              "v": "Sara Neri"
+            }
+           }
+          ],
+          [
+           "tutor",
+           {
+            "t": "obj",
+            "v": [
+             [
+              "first_name",
+              {
+               "t": "str",
+               "v": "Paolo"
+              }
+             ],
+             [
+              "last_name",
+              {
+               "t": "str",
+               "v": "Bianchi"
+              }
+             ],
+             [
+              "tax_code",
+              {
+               "t": "str",
+               "v": "BNCPLA75C03L219Z"
+              }
+             ],
+             [
+              "sex",
+              {
+               "t": "str",
+               "v": "M"
+              }
+             ],
+             [
+              "born_date",
+              {
+               "t": "date",
+               "v": "1975-03-03"
+              }
+             ],
+             [
+              "born_city",
+              {
+               "t": "str",
+               "v": "Straße"
+              }
+             ],
+             [
+              "address",
+              {
+               "t": "str",
+               "v": "Corso Francia 9"
+              }
+             ],
+             [
+              "address_city",
+              {
+               "t": "str",
+               "v": "Torino"
+              }
+             ],
+             [
+              "address_cap",
+              {
+               "t": "str",
+               "v": "10138"
+              }
+             ],
+             [
+              "phone",
+              {
+               "t": "str",
+               "v": "011 123"
+              }
+             ],
+             [
+              "email",
+              {
+               "t": "none"
+              }
+             ],
+             [
+              "get_full_name",
+              {
+               "t": "call",
+               "v": {
+                "t": "str",
+                "v": "Paolo Bianchi"
+               }
+              }
+             ]
+            ]
+           }
+          ],
+          [
+           "is_minor",
+           {
+            "t": "bool",
+            "v": true
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "supplier",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "payment_date",
+        {
+         "t": "datetime",
+         "v": "2026-03-04T10:00:00+00:00"
+        }
+       ],
+       [
+        "notes",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "subject",
+        {
+         "t": "int",
+         "v": 0
+        }
+       ]
+      ]
+     },
+     "course_name": {
+      "t": "none"
+     },
+     "enumerate_invoices": {
+      "t": "bool",
+      "v": false
+     },
+     "payment_categories": {
+      "t": "none"
+     },
+     "custom_data": {
+      "t": "none"
+     },
+     "stamp_free": {
+      "t": "bool",
+      "v": false
+     },
+     "invoice": {
+      "t": "obj",
+      "v": [
+       [
+        "sport_association",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "logo",
+           {
+            "t": "str",
+            "v": ""
+           }
+          ],
+          [
+           "denomination",
+           {
+            "t": "str",
+            "v": "Ripiego <srl>"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "number",
+        {
+         "t": "int",
+         "v": 7
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "str",
+         "v": "Ricevuta di pagamento con causale <b>X &amp; Y</b> per l'associazione <b>Ripiego &lt;srl&gt;</b>."
+        }
+       ],
+       [
+        "activity_fee",
+        {
+         "t": "decimal",
+         "v": "0.00"
+        }
+       ],
+       [
+        "membership_fee",
+        {
+         "t": "decimal",
+         "v": "5.00"
+        }
+       ]
+      ]
+     },
+     "payment_method": {
+      "t": "str",
+      "v": "Contanti"
+     },
+     "sub": {
+      "t": "none"
+     },
+     "sub_memebership": {
+      "t": "none"
+     },
+     "sub_period": {
+      "t": "str",
+      "v": ""
+     },
+     "sub_membership_period": {
+      "t": "str",
+      "v": "2024"
+     },
+     "override_label": {
+      "t": "bool",
+      "v": false
+     },
+     "got_plan_name": {
+      "t": "str",
+      "v": "-"
+     },
+     "got_membership_plan_name": {
+      "t": "str",
+      "v": "-"
+     },
+     "got_plan": {
+      "t": "bool",
+      "v": false
+     },
+     "got_membership_plan": {
+      "t": "bool",
+      "v": false
+     },
+     "header": {
+      "t": "str",
+      "v": "<p><br/></p>"
+     },
+     "footer": {
+      "t": "str",
+      "v": ""
+     }
+    }
+   }
+  },
+  {
+   "name": "invoice-views-invoice-bypass-promotes-tutor",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986227/view/",
+   "headers": {
+    "Authorization": "$bypass"
+   },
+   "status": 200,
+   "response": "<html>",
+   "content_language": "en",
+   "promoted": [
+    [
+     "bea",
+     null
+    ]
+   ],
+   "html": {
+    "template": "document/application/invoice.html",
+    "language": "en",
+    "context": {
+     "uid": {
+      "t": "str",
+      "v": "a1000000-0000-4000-8000-000000986227"
+     },
+     "extra_text_invoices": {
+      "t": "str",
+      "v": ""
+     },
+     "total_amount": {
+      "t": "decimal",
+      "v": "5.00"
+     },
+     "body_style": {
+      "t": "str",
+      "v": ""
+     },
+     "payment": {
+      "t": "obj",
+      "v": [
+       [
+        "payment_category",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "str",
+         "v": "X & Y"
+        }
+       ],
+       [
+        "associate",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "first_name",
+           {
+            "t": "str",
+            "v": "Bea"
+           }
+          ],
+          [
+           "last_name",
+           {
+            "t": "str",
+            "v": "Viola"
+           }
+          ],
+          [
+           "tax_code",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "sex",
+           {
+            "t": "str",
+            "v": "F"
+           }
+          ],
+          [
+           "born_date",
+           {
+            "t": "date",
+            "v": "2013-05-05"
+           }
+          ],
+          [
+           "born_city",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "address",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "address_city",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "address_cap",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "phone",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "email",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "get_full_name",
+           {
+            "t": "call",
+            "v": {
+             "t": "str",
+             "v": "Bea Viola"
             }
            }
           ],

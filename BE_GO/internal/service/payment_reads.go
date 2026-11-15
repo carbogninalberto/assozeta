@@ -11,7 +11,6 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // PaymentReads ports payment_list, payment_stats and subscription_payments.
@@ -177,7 +176,9 @@ var paymentReadsFields = map[string]string{"payment_id": "payment_id", "pk": "pa
 
 // errPaymentReadsLazyOrder marks an ordering Django resolves when compiling
 // the rows (after the count and the page checks): an annotation of the view.
-var errPaymentReadsLazyOrder = refusal.New("payment ordering not ported")
+// It is an internal marker, never returned: both callers refuse that ordering
+// with domain.ErrPaymentReadsNotPorted after the page checks.
+var errPaymentReadsLazyOrder = errors.New("payment ordering resolved at compile time")
 
 // paymentReadsOrder is order_by(f"{'-' if desc else ”}{field}"): '?' is
 // random; one leading '-' is stripped, then the name must be one of the
@@ -531,7 +532,7 @@ func (s *PaymentReads) instructorDocuments(ctx context.Context, ids []string, it
 		return nil
 	}
 	if s.printer == nil {
-		return domain.ErrPaymentReadsNotPorted
+		return domain.ErrServerComposition
 	}
 	for _, id := range needing {
 		if err := s.printer.Compensation(ctx, id, authorization); err != nil {

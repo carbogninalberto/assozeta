@@ -57,10 +57,15 @@ func (e *BakneySSOError) Error() string { return e.Code }
 
 func ssoError(code string, status int) error { return &BakneySSOError{Code: code, Status: status} }
 
-// ErrBakneySSOUnsupported marks inputs whose Python behaviour is not ported
-// (non-ASCII hosts needing IDNA, secrets that are not base64); the request is
-// answered with the server error page before any write.
-var ErrBakneySSOUnsupported = refusal.New("bakney sso input not ported")
+// ErrBakneySSOUnsupported is a digest or signature input Django itself raises
+// on: a non-ASCII text (`value.encode('ascii')`, BE/instance/sso/protocol.py:29,121)
+// or a secret urlsafe_b64decode rejects. Neither comes from a request: the
+// request fields that reach them are checked against ASCII patterns or the
+// stored pairing, whose origin normalize_origin stores IDNA-encoded
+// (protocol.py:53, service.py:71) and whose secret is secrets.token_urlsafe(32)
+// (service.py:68-70). An application-state error: the 500 page, never a
+// handoff.
+var ErrBakneySSOUnsupported = refusal.AppState("bakney sso: digest or signature input of another form")
 
 var (
 	bakneyOpaque   = regexp.MustCompile(`^[A-Za-z0-9_-]{32,128}$`)

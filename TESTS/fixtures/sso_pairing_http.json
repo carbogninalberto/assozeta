@@ -5596,6 +5596,73 @@
    }
   },
   {
+   "name": "sso-pairing-challenge-integer-history",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/bakney/v1/pairing/challenge",
+   "view": "PairingChallengeView",
+   "headers": {
+    "Host": "localhost"
+   },
+   "cookies": [],
+   "setup": {
+    "config": {
+     "self_hosted": true,
+     "primary": "own"
+    },
+    "pairing": {
+     "instance_id": "b2000000-0000-4000-8000-000001600001",
+     "pairing_id": "b2000000-0000-4000-8000-000001600002",
+     "secret": "$secret",
+     "authority": "$authority",
+     "ui_origin": "https://app.bakney.example",
+     "remote_pairing_id": null,
+     "remote_generation": null,
+     "origin": "http://localhost",
+     "association_id": "a1000000-0000-4000-8000-000000701001",
+     "association_name": "",
+     "state": "generated",
+     "forwarding_enabled": false,
+     "checked_at": null
+    },
+    "logins": [],
+    "challenges": [],
+    "nonces": [],
+    "revocations": []
+   },
+   "authority": [],
+   "status": 429,
+   "response": {
+    "detail": "Request was throttled. Expected available in 50 seconds."
+   },
+   "location": null,
+   "set_cookies": [],
+   "effect": {
+    "pairing": "unchanged",
+    "logins": "unchanged",
+    "challenges": "unchanged",
+    "nonces": "unchanged",
+    "revocations": "unchanged",
+    "last_login": null
+   },
+   "body": {
+    "protocol": "bakney-pairing-v1",
+    "pairing_id": "b2000000-0000-4000-8000-000001600003",
+    "association_id": "a1000000-0000-4000-8000-000000701001",
+    "instance_id": "",
+    "origin": "http://localhost",
+    "callback_uri": "http://localhost/bakney/v1/callback",
+    "generation": "b2000000-0000-4000-8000-000001600004",
+    "nonce": "nonce-0000000000000000000000000000000000999",
+    "expires_at": "$expires+60"
+   },
+   "throttle": {
+    "preload": 30,
+    "age": 10,
+    "ints": true
+   }
+  },
+  {
    "name": "sso-pairing-commit-accepted",
    "actor": "anonymous",
    "method": "POST",

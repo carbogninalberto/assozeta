@@ -114,6 +114,11 @@ COURSES = {
     'o_session': course('Kick boxing'),
     'o_session_athlete': course('Hockey', one_fee='15.00', one_fee_payment=True),
 }
+# Long tail (lt2B): copies with fixed ids, so the generated ids of the other seeds do not move.
+COURSES['u_tail'] = {**COURSES['u_reject'], 'course_id': 'c0000000-0000-4000-8000-000000000901', 'title': 'Coda',
+                     'description': 'Descrizione Coda'}
+COURSES['u_tail_multi'] = {**COURSES['u_multi'], 'course_id': 'c0000000-0000-4000-8000-000000000902', 'title': 'Coda rate',
+                           'description': 'Descrizione Coda rate', 'events': [{'id': 0, 'amount': '25.00', 'payment_date': '10/01/2099'}]}
 COURSE_LOCATIONS = [('u_main', 'old'), ('d_full', 'own'), ('u_linked', 'far')]
 COURSE_TAGS = [('d_full', 'own')]
 
@@ -578,6 +583,35 @@ for name, body, changes in (
         ('boolean-null', {'billed_from_subscription_date': None}, {'billed_from_subscription_date': ['False', 'None']})):
     add(f'update-rejected-{name}', 'owner', f'/course/{cid("u_reject")}/update', 500, SERVER, method='PATCH', body=body,
         result=effect('owner', audit=[entry(COURSE, COURSES['u_reject']['course_id'], 1, changes, [OWN, DIRECT])]))
+
+# Long tail (lt2B). A JSON float below the float range is Python's 0.0 (str '0.0', stored 0.00).
+rows, audit = updated('u_tail', 'owner', {'fee': ['50.00', '0.0']}, fee='0.00')
+add('update-fee-float-underflow', 'owner', f'/course/{cid("u_tail")}/update', 200, UPDATED, method='PATCH',
+    result=effect('owner', rows=rows, audit=audit))
+cases[-1].update(raw_body='{"fee": 1e-400}', content_type='application/json')
+# Decimal text with an exponent past +-10000 reaches numeric(9,2) unformatted: PostgreSQL rounds a tiny value
+# (or a zero of any exponent) to 0.00.
+rows, audit = updated('u_tail', 'owner', {'fee': ['0.00', '-1E-12000'], 'one_fee': ['40.00', '0E+20000']}, one_fee='0.00')
+add('update-fee-tiny-exponent', 'owner', f'/course/{cid("u_tail")}/update', 200, UPDATED, method='PATCH',
+    body={'fee': '-1E-12000', 'one_fee': '0E+20000'}, result=effect('owner', rows=rows, audit=audit))
+# ...and refuses a large one ("numeric field overflow") or a display scale over 16383 ("value overflows numeric
+# format"): auditlog's entry is written, then the UPDATE fails.
+for name, value in (('huge-exponent', '1E+10001'), ('scale-overflow', '1.000E-16381')):
+    add(f'update-rejected-fee-{name}', 'owner', f'/course/{cid("u_tail")}/update', 500, SERVER, method='PATCH', body={'fee': value},
+        result=effect('owner', audit=[entry(COURSE, cid('u_tail'), 1, {'fee': ['0.00', value]}, [OWN, DIRECT])]))
+# A datetime whose UTC instant is before year 1: auditlog's make_naive raises OverflowError in pre_save (nothing written).
+add('update-start-date-outside-utc', 'owner', f'/course/{cid("u_tail")}/update', 500, SERVER, method='PATCH',
+    body={'start_date': '0001-01-01T00:00:00+01:00'})
+# A writable installment id stays a UUID object in dict(validated_data): auditlog's json.dumps raises TypeError, so
+# the entry records str() of the list, then the JSONField save raises (500 after the entry).
+TAIL_ID = 'c0000000-0000-4000-8000-000000000777'
+add('update-event-installment-id-kept-as-uuid', 'owner', f'/course/{cid("u_tail_multi")}/update', 500, SERVER, method='PATCH',
+    body={'events': [{'id': 3, 'amount': '12.5', 'payment_date': '05/04/2099', KEY: TAIL_ID.upper()},
+                     {'id': 4, 'amount': 7, 'payment_date': '06/04/2099'}]},
+    result=effect('owner', audit=[entry(COURSE, cid('u_tail_multi'), 1, {'events': [
+        '[{"amount": "25.00", "id": 0, "payment_date": "10/01/2099"}]',
+        f"[{{'course_subscription_installment_id': UUID('{TAIL_ID}'), 'id': 3, 'amount': '12.50', 'payment_date': '05/04/2099'}}, "
+        "{'id': 4, 'amount': '7.00', 'payment_date': '06/04/2099'}]"]}, [OWN, DIRECT])]))
 
 # --- course/<uid>/overview/<uid_subscription>/delete ----------------------------------
 

@@ -1,6 +1,7 @@
 package emailrender
 
 import (
+	"errors"
 	"math"
 	"strings"
 	"testing"
@@ -75,5 +76,55 @@ func TestLocalizeNonFinite(t *testing.T) {
 	}
 	if got, err := Localize(math.Copysign(math.NaN(), -1), "it"); err != nil || got != "nan" {
 		t.Fatalf("negative NaN: %q (%v)", got, err)
+	}
+}
+
+// A numeric column stores NaN, and Django's formats.localize raises TypeError
+// while formatting it (render_value_in_context does not catch): the view
+// answers the 500 page.
+func TestLocalizeDecimalNonFiniteRaises(t *testing.T) {
+	for _, text := range []string{"NaN", "Infinity", "-Infinity"} {
+		if _, err := localizeDecimal(text, "it"); !errors.Is(err, ErrNonFiniteDecimal) {
+			t.Fatalf("%s: %v, want ErrNonFiniteDecimal", text, err)
+		}
+		if _, err := Localize(Decimal(text), "it"); !errors.Is(err, ErrNonFiniteDecimal) {
+			t.Fatalf("Localize(%s): %v, want ErrNonFiniteDecimal", text, err)
+		}
+	}
+}
+
+// floatformat returns input_val for a non-finite number instead of raising.
+func TestFloatformatNonFinite(t *testing.T) {
+	values := []struct {
+		value any
+		want  string
+	}{
+		{math.NaN(), "nan"},
+		{math.Inf(1), "inf"},
+		{math.Inf(-1), "-inf"},
+		{Decimal("NaN"), "NaN"},
+		{Decimal("Infinity"), "Infinity"},
+		{Decimal("-Infinity"), "-Infinity"},
+	}
+	for _, test := range values {
+		got, err := floatformat(test.value, int64(2), "it")
+		if err != nil || got != Safe(test.want) {
+			t.Fatalf("%v: %v != %q (%v)", test.value, got, test.want, err)
+		}
+	}
+}
+
+func TestTruthyNonFiniteDecimal(t *testing.T) {
+	for _, text := range []string{"NaN", "Infinity", "-Infinity"} {
+		if got, err := truthy(Decimal(text)); err != nil || !got {
+			t.Fatalf("%s: %v (%v)", text, got, err)
+		}
+	}
+}
+
+func TestRenderNonFiniteDecimalRaises(t *testing.T) {
+	_, err := Render(PaymentPending, map[string]any{"amount": Decimal("NaN")}, Options{Language: "it", Brand: map[string]any{}})
+	if !errors.Is(err, ErrNonFiniteDecimal) {
+		t.Fatalf("Render: %v, want ErrNonFiniteDecimal", err)
 	}
 }

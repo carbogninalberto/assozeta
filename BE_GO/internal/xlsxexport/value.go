@@ -34,9 +34,14 @@ func djangoFailure(text string) error { return &DjangoError{Text: text} }
 // callers that render the agent tool result use its text.
 func DjangoFailure(text string) error { return djangoFailure(text) }
 
-// ErrNotPorted is an input whose workbook this package does not reproduce:
-// callers refuse it before any write.
-var ErrNotPorted = refusal.New("xlsxexport: workbook input not ported")
+// ErrUnexpectedInput is an input no view hands this package: it is an
+// application-state error (Django's 500 page, never handed off). Each site
+// names why the input cannot occur: the exporters build every frame themselves
+// (format_export_data leaves no None, bool or non-finite value; dates are
+// strftime('%d/%m/%Y') labels; sheet names and layouts are fixed in the code),
+// every DecimalField has max_digits <= 10, and images are built for
+// linux/amd64 and linux/arm64 only (selfhost/README.md:472).
+var ErrUnexpectedInput = refusal.AppState("xlsxexport: unexpected workbook input")
 
 // Kind is the Python type of a cell value as the view hands it to pandas.
 type Kind uint8

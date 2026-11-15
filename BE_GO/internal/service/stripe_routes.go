@@ -392,7 +392,7 @@ func (s *StripeRoutes) mark(ctx context.Context, identity domain.ResolvedIdentit
 	if !row.Paid {
 		flow, ok := tx.(domain.PaymentPaidFlowTransaction)
 		if !ok {
-			return domain.ErrStripeNotPorted
+			return domain.ErrServerComposition
 		}
 		if err := stripeMarkPaid(ctx, flow, row.PaymentSaveRow, row.PaymentDate, stripeAuditContext(identity, request.Audit), now); err != nil {
 			return err

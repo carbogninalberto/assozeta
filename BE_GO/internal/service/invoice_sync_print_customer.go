@@ -38,12 +38,16 @@ func (s *InvoiceParties) customerListPending(ctx context.Context, request Invoic
 		return nil
 	}
 	if s.customerSync == nil {
-		return domain.ErrInvoicePartyNotPorted
+		return domain.ErrServerComposition
 	}
 	sample := fatturapa.Progressivo(s.now().Unix(), 0)
 	for i := range pending {
-		if _, err = fatturapa.XML(InvoiceViewsFattura(&pending[i].Row), sample); errors.Is(err, fatturapa.ErrUnsupported) {
+		_, err = fatturapa.XML(InvoiceViewsFattura(&pending[i].Row), sample)
+		switch {
+		case errors.Is(err, fatturapa.ErrUnsupported):
 			return domain.ErrInvoicePartyNotPorted
+		case errors.Is(err, fatturapa.ErrUnexpectedJSON):
+			return err // Django's queryset raises reading the row, before any write
 		}
 	}
 	audit := paymentCategoryAuditContext(request.Identity, request.Audit)
@@ -146,11 +150,12 @@ func (s *InvoiceParties) customerAddSave(ctx context.Context, request InvoicePar
 	// Refuse inputs outside the ported FatturaPA subset before any write.
 	fattura := invoiceSyncFattura(invoice)
 	sample := fatturapa.Progressivo(now.Unix(), 0)
-	if _, err = fatturapa.XML(fattura, sample); errors.Is(err, fatturapa.ErrUnsupported) {
-		return domain.ErrInvoicePartyNotPorted
-	}
-	if _, err = fatturapa.JSON(fattura, sample); errors.Is(err, fatturapa.ErrUnsupported) {
-		return domain.ErrInvoicePartyNotPorted
+	// The lines here are the request's, not a jsonb column: JSON text Go does
+	// not read (fatturapa.ErrUnexpectedJSON) is refused too.
+	for _, build := range []func(fatturapa.Invoice, string) (string, error){fatturapa.XML, fatturapa.JSON} {
+		if _, err = build(fattura, sample); errors.Is(err, fatturapa.ErrUnsupported) || errors.Is(err, fatturapa.ErrUnexpectedJSON) {
+			return domain.ErrInvoicePartyNotPorted
+		}
 	}
 	overrides := map[string]string{}
 	saved := map[string]string{}

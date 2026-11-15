@@ -69,7 +69,7 @@ whatsapp, address, address_city, address_cap, logo, user.email, federation, spor
 `associate.*`/`main_tutor.*` (the editor's associate fields and `sex`), and `other.<key>`. A key for an object the view does not pass
 is `''`, as in Django.
 
-## Main tutor promotion (`v2doc4`)
+## Main tutor promotion (`v2doc4`, `tutorpromo`)
 
 `get_main_tutor()` for an associate whose tutor relations have no primary one saves the first relation (by id) with
 `is_primary=True` while the page renders: one auditlog update entry (`is_primary` False -> True) indexed through
@@ -77,12 +77,19 @@ is `''`, as in Django.
 requests, committing the relation as soon as the view asks for the tutor, so a page that fails later keeps it, as in
 Django. The invoice views share the code.
 
+A request admitted by the renderer's header (`HasBypassAuthorizationHeader`, no account) promotes too (`tutorpromo`).
+Django's auditlog entry then has no actor and no actor e-mail (`AuditlogMiddleware._get_actor` is None for an anonymous
+request), and its index resolver has no `actor.sport_association` to fall through to, so an associate without an
+association writes the entry with no index row. Go does the same: the promotion needs the handler's admission, not a
+signed-in actor, and `PromoteMainTutor` skips the actor fallback without one. Cases
+`template-subscription-bypass-promotes-tutor` (the entry without an actor, indexed through the associate's
+association) and `template-subscription-bypass-promotes-tutor-without-association` (no index row).
+
 `HEAD` answers the views' 405 without a body. The slash-less paths answer Django's `APPEND_SLASH` redirect (the
 unknown-paths family covers them).
 
 ## Not ported (refused with the 500 page; the views write nothing)
 
-- `get_main_tutor()` promotion on a request authorized only by the bypass header (no signed-in actor for the audit entry).
 - `get_signature_base64()`'s legacy `signature_url` fetch (the reply of another server): the stored object is ported (t6x2).
 - Markup outside the `filter_mentions` subset, and mention paths that name an attribute the port declares but does not read
   (for example the model's methods and relations).
@@ -223,3 +230,36 @@ The fixture has 168 cases (2 new): `document-views-subscription-signature-stored
 object, no legacy URL: `None`). The document-views adapter composes the renderer stub with documents-writes'
 `service_context` (its private MinIO bucket, `AWS_LOCATION` and the same `AWS_*` settings for Go), seeds the
 signature objects in `seed_rows` and removes them before that context checks its bucket at exit.
+
+## Tutor promotion without an account (`tutorpromo`)
+
+Until this change the promotion was offered to signed-in requests only: the handler's admission was ignored when the
+identity had no scoped account, and Go answered the `500` page (handed off to Django when the handoff is configured).
+The renderer header admits `template/view` and `invoice/view` without an account (the medical page does not read the
+tutor), so those requests still needed Django for the write.
+
+Django performs the write: `get_main_tutor()` runs for the request like any other, and only the auditlog context
+differs, because `AuditlogMiddleware._get_actor` reads the account from `request.user` (an anonymous request has none).
+The entry therefore stores `actor` and `actor_email` as NULL, with the request's address, port and correlation id, and
+the index resolver's last fallback (`actor.sport_association`) finds nothing: an entry whose associate has no
+association gets no `application_auditlogindex` row at all.
+
+Go now gives the request its promotion whenever the handler supplies one (`withViewPromotion` no longer requires a
+scoped account), writes the entry with the middleware's context untouched when there is no actor
+(`viewPromotionAuditContext`), and skips the actor's-association fallback in `PromoteMainTutor` when
+`ViewTutorPromotion.ActorID` is nil. The refusal sentinel `ErrViewTutorWrite` is gone: `domain.ErrTutorPromotionNeeded`
+is an internal signal the callers always act on, so `refusal_reach.py` lists no route for this condition (14 rows
+before, 0 after).
+
+Cases (fixture `document_views_http.json`, 172 cases): `template-subscription-bypass-promotes-tutor` (a non-primary
+tutor relation of an associate of the association, admitted by the renderer header: 200 with the tutor's first name,
+the relation saved with one update entry with no actor and indexed through the associate's association) and
+`template-subscription-bypass-promotes-tutor-without-association` (the same for an associate whose association is gone:
+no index row). The shared effect check `harness.check_audit_event` accepts `actor=None` (both actor columns NULL) and
+`association=None` (no index row).
+
+- RED (`tutorpromo-red-r4`): Django 172/172, Go 500 on `template-subscription-bypass-promotes-tutor`.
+- GREEN (`tutorpromo-green-r1`): 172/172 on native Django and native Go; `tutorpromo-versioned-r1`: 172/172 on
+  Django, Go, Caddy `/api/v1` and `/api/v2`.
+- Mutation (`tutorpromo-mutation-r1`): giving the promotion only to requests with a scoped account again (the
+  pre-change guard) fails Go on `template-subscription-bypass-promotes-tutor` (500, CAUGHT).

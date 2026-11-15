@@ -6,6 +6,8 @@ import (
 	"math/big"
 	"strings"
 	"testing"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // TestFromJSONStoredNumbers covers the number forms PostgreSQL's jsonb prints
@@ -106,6 +108,11 @@ func TestFromJSONRefusals(t *testing.T) {
 	}
 	if _, err := FromJSON([]byte(`{} {}`)); !errors.Is(err, ErrUnsupported) {
 		t.Errorf("trailing data: %v", err)
+	}
+	// Only the app writes these states: an application-state error, never a
+	// refusal handed off to Django.
+	if _, err := FromJSON([]byte(`{} {}`)); !errors.Is(err, refusal.ErrAppState) || errors.Is(err, refusal.ErrNotPorted) {
+		t.Errorf("trailing data is not app state: %v", err)
 	}
 }
 

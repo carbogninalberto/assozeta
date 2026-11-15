@@ -253,7 +253,7 @@ func mcpBuiltFile(ctx context.Context, file []byte, err error) ([]byte, error) {
 		}
 		return nil, &raisedFile{text: text}
 	}
-	if errors.Is(err, xlsxexport.ErrNotPorted) || errors.Is(err, pdfexport.ErrNotPorted) {
+	if errors.Is(err, pdfexport.ErrNotPorted) { // xlsxexport.ErrUnexpectedInput is app state: it passes through
 		return nil, ErrBusinessMCPNotPorted
 	}
 	return file, err

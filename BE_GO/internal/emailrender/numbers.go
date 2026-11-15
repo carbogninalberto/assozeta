@@ -1,6 +1,7 @@
 package emailrender
 
 import (
+	"errors"
 	"math"
 	"math/big"
 	"regexp"
@@ -18,6 +19,35 @@ type decimalValue struct {
 }
 
 var decimalPattern = regexp.MustCompile(`^([-+]?)([0-9]*)(?:\.([0-9]*))?(?:[eE]([-+]?[0-9]+))?$`)
+
+// ErrNonFiniteDecimal is the error Django raises while formatting a
+// non-finite Decimal (formats.localize's as_tuple has a text exponent):
+// every caller answers the 500 page. It is not a refusal.
+var ErrNonFiniteDecimal = errors.New("emailrender: non-finite decimal")
+
+// nonFiniteDecimal reports Decimal's NaN and infinity forms as str() writes
+// them (a numeric column stores NaN; the database driver reads it back as
+// Decimal('NaN')).
+func nonFiniteDecimal(text string) bool {
+	switch text {
+	case "NaN", "sNaN", "Infinity", "-Infinity", "-sNaN":
+		return true
+	}
+	return false
+}
+
+// pythonFloatText is str(float) for the non-finite values: floatformat
+// returns it unchanged (int(d) raises and the filter returns input_val) and
+// formats.localize leaves a float alone.
+func pythonFloatText(value float64) string {
+	switch {
+	case math.IsNaN(value):
+		return "nan"
+	case math.IsInf(value, 1):
+		return "inf"
+	}
+	return "-inf"
+}
 
 // parseDecimal accepts the finite forms str() of a Decimal, an int or a
 // float produces; anything else (spaces, underscores, NaN, Infinity) is
@@ -128,6 +158,11 @@ func numberFormat(number string, decimalPos int, hasPos bool, separator string) 
 // decimal_pos None ("{:f}" of the value, scientific notation beyond 200
 // digits as numberformat.format avoids the large fixed text).
 func localizeDecimal(text, separator string) (string, error) {
+	if nonFiniteDecimal(text) {
+		// formats.localize calls numberformat.format, whose as_tuple exponent
+		// is text for these values: Django raises TypeError (the 500 page).
+		return "", ErrNonFiniteDecimal
+	}
 	value, err := parseDecimal(text)
 	if err != nil {
 		return "", err
@@ -232,12 +267,21 @@ func floatformat(value any, arg any, separator string) (any, error) {
 	case int64:
 		input = strconv.FormatInt(v, 10)
 	case float64:
+		if math.IsInf(v, 0) || math.IsNaN(v) {
+			// int(d) raises and the filter returns input_val (str(float)).
+			return Safe(pythonFloatText(v)), nil
+		}
 		text, err := pythonFloatRepr(v)
 		if err != nil {
 			return nil, err
 		}
 		input = text
 	case Decimal:
+		if nonFiniteDecimal(string(v)) {
+			// d.as_tuple() has a text exponent; int(d) raises and the filter
+			// returns input_val (str of the Decimal).
+			return Safe(string(v)), nil
+		}
 		input = string(v)
 	default:
 		return nil, unsupported("floatformat of %T", value)

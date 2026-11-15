@@ -444,7 +444,7 @@ func (s *PaymentStates) approvePaid(ctx context.Context, tx domain.PaymentPaidFl
 	}
 	dispatch := invoice != nil && generate
 	if dispatch && s.tasks == nil {
-		return nil, domain.ErrPaymentStateNotPorted
+		return nil, domain.ErrServerComposition
 	}
 	if err = tx.Commit(); err != nil {
 		return nil, err

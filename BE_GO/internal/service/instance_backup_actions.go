@@ -197,8 +197,8 @@ func backupActionsRejection(outcome *backupActionsOutcome) *BackupActionsReply {
 func (s *InstanceBackupActions) audit(ctx context.Context, request BackupActionsRequest, action, value string,
 	extra domain.RequestObject) error {
 	additional := append(domain.RequestObject{{Name: "actor_id", Value: request.Actor}}, extra...)
-	if !dto.AuditFiniteJSON(additional) {
-		return errInstanceBackupsUnhandled // PostgreSQL rejects the Infinity/NaN JSON tokens
+	if !dto.RenderableJSON(additional) {
+		return errInstanceBackupsUnhandled // PostgreSQL rejects the Infinity/NaN tokens and the lone surrogates of jsonb
 	}
 	target, err := s.store.LogTarget(ctx)
 	if err != nil {
@@ -214,7 +214,7 @@ func (s *InstanceBackupActions) audit(ctx context.Context, request BackupActions
 
 // rendered is the strict JSON renderer: non-finite numbers are a ValueError.
 func backupActionsRendered(reply *BackupActionsReply) (*BackupActionsReply, error) {
-	if !dto.AuditFiniteJSON(reply.Body) {
+	if !dto.RenderableJSON(reply.Body) {
 		return nil, errInstanceBackupsUnhandled
 	}
 	return reply, nil
@@ -289,7 +289,7 @@ func (s *InstanceBackupActions) Delete(ctx context.Context, request BackupAction
 func (s *InstanceBackupActions) Schedule(ctx context.Context, request BackupActionsRequest, body any) (*BackupActionsReply, error) {
 	value, errs, err := dto.ValidateBackupActionsInput(body, dto.BackupScheduleFields, request.Form)
 	if err != nil {
-		return nil, ErrInstanceBackupsNotPorted
+		return nil, err // the validator returns no error (dto.ValidateBackupActionsInput)
 	}
 	if errs != nil {
 		return backupActionsInvalid(errs), nil
@@ -318,7 +318,7 @@ func (s *InstanceBackupActions) passwordRefusal(ctx context.Context, actor, pass
 func (s *InstanceBackupActions) passwordConfirmation(ctx context.Context, actor string, body any) (*BackupActionsReply, error) {
 	value, errs, err := dto.ValidateBackupActions(body, dto.BackupPasswordFields)
 	if err != nil {
-		return nil, ErrInstanceBackupsNotPorted
+		return nil, err // the validator returns no error (dto.ValidateBackupActionsInput)
 	}
 	if errs != nil {
 		return backupActionsInvalid(errs), nil
@@ -348,7 +348,7 @@ func (s *InstanceBackupActions) Restore(ctx context.Context, request BackupActio
 	}
 	value, errs, err := dto.ValidateBackupActions(body, dto.BackupRestoreFields)
 	if err != nil {
-		return nil, ErrInstanceBackupsNotPorted
+		return nil, err // the validator returns no error (dto.ValidateBackupActionsInput)
 	}
 	if errs != nil {
 		return backupActionsInvalid(errs), nil
@@ -480,7 +480,7 @@ var remoteSettingsFields = []string{"endpoint", "region", "bucket", "prefix", "a
 func (s *InstanceBackupActions) SaveRemoteSettings(ctx context.Context, request BackupActionsRequest, body any) (*BackupActionsReply, error) {
 	validated, errs, err := dto.ValidateBackupActionsInput(body, dto.BackupRemoteSettingsFields(s.limits.AllowHTTP, true), request.Form)
 	if err != nil {
-		return nil, ErrInstanceBackupsNotPorted
+		return nil, err // the validator returns no error (dto.ValidateBackupActionsInput)
 	}
 	if errs != nil {
 		return backupActionsInvalid(errs), nil
@@ -519,7 +519,7 @@ func (s *InstanceBackupActions) TestRemote(ctx context.Context, request BackupAc
 	}
 	validated, errs, err := dto.ValidateBackupActionsInput(body, dto.BackupRemoteSettingsFields(s.limits.AllowHTTP, true), request.Form)
 	if err != nil {
-		return nil, ErrInstanceBackupsNotPorted
+		return nil, err // the validator returns no error (dto.ValidateBackupActionsInput)
 	}
 	if errs != nil {
 		return backupActionsInvalid(errs), nil
@@ -576,7 +576,7 @@ func (s *InstanceBackupActions) GenerateRemoteKey(ctx context.Context, request B
 func (s *InstanceBackupActions) ConfirmRemoteKey(ctx context.Context, request BackupActionsRequest, body any) (*BackupActionsReply, error) {
 	validated, errs, err := dto.ValidateBackupActions(body, dto.BackupKeyConfirmFields)
 	if err != nil {
-		return nil, ErrInstanceBackupsNotPorted
+		return nil, err // the validator returns no error (dto.ValidateBackupActionsInput)
 	}
 	if errs != nil {
 		return backupActionsInvalid(errs), nil
@@ -601,7 +601,7 @@ func (s *InstanceBackupActions) ConfirmRemoteKey(ctx context.Context, request Ba
 func (s *InstanceBackupActions) FetchRemote(ctx context.Context, request BackupActionsRequest, body any) (*BackupActionsReply, error) {
 	value, errs, err := dto.ValidateBackupActions(body, dto.BackupFetchFields)
 	if err != nil {
-		return nil, ErrInstanceBackupsNotPorted
+		return nil, err // the validator returns no error (dto.ValidateBackupActionsInput)
 	}
 	if errs != nil {
 		return backupActionsInvalid(errs), nil

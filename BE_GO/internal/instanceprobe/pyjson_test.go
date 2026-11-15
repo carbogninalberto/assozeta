@@ -41,8 +41,8 @@ func TestLoadJSON(t *testing.T) {
 	if _, err := LoadJSON(digits[:4300]); err != nil {
 		t.Errorf("4300 digits: %v", err)
 	}
-	if _, err := LoadJSON([]byte("\xff\xfe[\x00]\x00")); !errors.Is(err, ErrJSONEncoding) {
-		t.Errorf("UTF-16: %v", err)
+	if value, err := LoadJSON([]byte("\xff\xfe[\x00]\x00")); err != nil || len(value.([]any)) != 0 {
+		t.Errorf("UTF-16: %v %v", value, err)
 	}
 	if !HasSurrogate("\xed\xa0\x80") || HasSurrogate("🚀") {
 		t.Error("HasSurrogate")

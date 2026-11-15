@@ -174,7 +174,8 @@ func ValidateCourseEvent(value any, taken CourseEventTaken) (CourseEvent, map[st
 		case !valid:
 			errors[name] = []string{PaymentCategoryValidationUUID}
 		case taken == nil:
-			return CourseEvent{}, nil, domain.ErrCourseWritesNotPorted
+			// Only course_subscription_events passes nil, and it skips events carrying this key.
+			return CourseEvent{}, nil, domain.ErrCourseWritesUnreachable
 		default:
 			exists, err := taken(id)
 			if err != nil {
@@ -273,28 +274,33 @@ func pythonRational(value any) (*big.Rat, error) {
 		text := strings.ReplaceAll(strings.TrimFunc(v, unicode.IsSpace), "_", "")
 		number, ok := new(big.Rat).SetString(text)
 		if !ok {
-			return nil, domain.ErrCourseWritesNotPorted
+			// DRFDecimal accepted it: an ASCII decimal literal big.Rat parses.
+			return nil, domain.ErrCourseWritesUnreachable
 		}
 		return number, nil
 	case json.Number:
 		if !strings.ContainsAny(string(v), ".eE") {
 			number, ok := new(big.Rat).SetString(string(v))
 			if !ok {
-				return nil, domain.ErrCourseWritesNotPorted
+				// A JSON integer always parses.
+				return nil, domain.ErrCourseWritesUnreachable
 			}
 			return number, nil
 		}
 		float, err := strconv.ParseFloat(string(v), 64)
-		if err != nil {
-			return nil, domain.ErrCourseWritesNotPorted
+		if err != nil && math.IsInf(float, 0) {
+			// DecimalField refuses an infinite float before this point.
+			return nil, domain.ErrCourseWritesUnreachable
 		}
+		// An underflow is Python's 0.0 (ParseFloat returns the signed zero).
 		number := new(big.Rat)
 		if number.SetFloat64(float) == nil {
-			return nil, domain.ErrCourseWritesNotPorted
+			return nil, domain.ErrCourseWritesUnreachable
 		}
 		return number, nil
 	}
-	return nil, domain.ErrCourseWritesNotPorted
+	// DecimalField refuses every other type before this point.
+	return nil, domain.ErrCourseWritesUnreachable
 }
 
 // ValidateCourseAdd is CourseAddSerializer(data=value).is_valid(raise_exception=True)
@@ -450,13 +456,12 @@ func validateCourseAddEvents(input *CourseAddInput, taken CourseEventTaken) erro
 
 // CourseSaveResult classifies a raw value assigned to a Course column before
 // Course.save(): it is stored, the UPDATE fails after auditlog's entry (the
-// column rejects it), or the input is not reproduced.
+// column rejects it), or the save raises before auditlog's entry.
 type CourseSaveResult int
 
 const (
 	CourseSaveOK CourseSaveResult = iota
 	CourseSaveFails
-	CourseSaveNotPorted
 	// CourseSaveRaises is a DateTimeField.to_python ValidationError inside
 	// auditlog's pre_save: nothing is written, not even the entry.
 	CourseSaveRaises
@@ -480,10 +485,9 @@ func CourseUpdateDecimal(value any) (stored, audit string, result CourseSaveResu
 			exact, _ = new(big.Rat).SetString(text)
 			break
 		}
-		float, err := strconv.ParseFloat(text, 64)
-		if err != nil && !math.IsInf(float, 0) {
-			return "", audit, CourseSaveNotPorted
-		}
+		// json.loads gives inf beyond the float range (the column refuses it)
+		// and 0.0 below it: ParseFloat's ErrRange returns those same values.
+		float, _ := strconv.ParseFloat(text, 64)
 		if math.IsInf(float, 0) {
 			return "", audit, CourseSaveFails
 		}
@@ -494,9 +498,10 @@ func CourseUpdateDecimal(value any) (stored, audit string, result CourseSaveResu
 			return "", audit, CourseSaveFails
 		}
 		if at := strings.IndexAny(parsed.Text, "E"); at >= 0 {
-			exponent, err := strconv.Atoi(strings.TrimPrefix(parsed.Text[at+1:], "+"))
+			exponent, err := strconv.ParseInt(strings.TrimPrefix(parsed.Text[at+1:], "+"), 10, 64)
 			if err != nil || exponent > 10000 || exponent < -10000 {
-				return "", audit, CourseSaveNotPorted
+				stored, result := courseNumericHugeExponent(parsed, at, exponent, err)
+				return stored, audit, result
 			}
 		}
 		exact, _ = new(big.Rat).SetString(parsed.Text)
@@ -505,13 +510,41 @@ func CourseUpdateDecimal(value any) (stored, audit string, result CourseSaveResu
 		return "", audit, CourseSaveFails
 	}
 	if exact == nil {
-		return "", audit, CourseSaveNotPorted
+		// ParsePythonDecimal's text and DecimalFromFloat9 are decimal literals big.Rat parses.
+		return "", audit, CourseSaveFails
 	}
 	text, ok := CourseNumeric92(exact)
 	if !ok {
 		return "", audit, CourseSaveFails
 	}
 	return text, audit, CourseSaveOK
+}
+
+// courseNumericHugeExponent is the numeric(9,2) column receiving str(Decimal)
+// whose scientific exponent is beyond +-10000 (Django 5.2 passes the Decimal
+// unformatted). PostgreSQL refuses an exponent at or past INT_MAX/2 and a
+// display scale over 16383 ("value overflows numeric format"), refuses any
+// other non-zero value of that size ("numeric field overflow") and rounds the
+// rest to zero.
+func courseNumericHugeExponent(parsed PythonDecimal, at int, exponent int64, err error) (string, CourseSaveResult) {
+	if err != nil || exponent >= 1<<30-1 || exponent <= -(1<<30-1) {
+		return "", CourseSaveFails
+	}
+	if exponent > 0 {
+		if parsed.Zero {
+			return "0.00", CourseSaveOK
+		}
+		return "", CourseSaveFails
+	}
+	mantissa := parsed.Text[:at]
+	fraction := 0
+	if dot := strings.IndexByte(mantissa, '.'); dot >= 0 {
+		fraction = len(mantissa) - dot - 1
+	}
+	if int64(fraction)-exponent > 16383 {
+		return "", CourseSaveFails
+	}
+	return "0.00", CourseSaveOK
 }
 
 // CourseNumeric92 rounds an exact value to numeric(9,2), half away from zero;
@@ -595,7 +628,9 @@ func CourseUpdateDateTime(value any) (moment time.Time, audit string, result Cou
 	case DjangoDateTimeParsed:
 		return parsed, CourseWritesNaiveUTC(parsed), CourseSaveOK
 	case DjangoDateTimeNotPorted:
-		return time.Time{}, "", CourseSaveNotPorted
+		// The UTC instant is outside years 1..9999: auditlog's make_naive
+		// raises OverflowError inside pre_save, before any entry is written.
+		return time.Time{}, "", CourseSaveRaises
 	case DjangoDateTimeValueError:
 		return time.Time{}, "", CourseSaveRaises
 	}

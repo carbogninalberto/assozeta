@@ -352,8 +352,6 @@ func (s *CourseWrites) Update(ctx context.Context, identity domain.ResolvedIdent
 	decimal := func(name string, value any, target *string) error {
 		stored, text, result := dto.CourseUpdateDecimal(value)
 		switch result {
-		case dto.CourseSaveNotPorted:
-			return domain.ErrCourseWritesNotPorted
 		case dto.CourseSaveFails:
 			saveFails = true
 		default:
@@ -387,14 +385,8 @@ func (s *CourseWrites) Update(ctx context.Context, identity domain.ResolvedIdent
 	if eventsPresent {
 		if items, ok := dto.PythonIterate(events); ok {
 			for _, item := range items {
-				event, _, err := dto.ValidateCourseEvent(item, courseEventTaken(ctx, tx, request.GroupHeader))
-				if err != nil {
+				if _, _, err := dto.ValidateCourseEvent(item, courseEventTaken(ctx, tx, request.GroupHeader)); err != nil {
 					return err
-				}
-				if event.InstallmentID != nil {
-					// dict(validated_data) keeps the UUID object: the save
-					// fails after auditlog's entry (not ported).
-					return domain.ErrCourseWritesNotPorted
 				}
 			}
 		}
@@ -446,8 +438,6 @@ func (s *CourseWrites) Update(ctx context.Context, identity domain.ResolvedIdent
 		if value != nil {
 			moment, text, result := dto.CourseUpdateDateTime(value)
 			switch result {
-			case dto.CourseSaveNotPorted:
-				return domain.ErrCourseWritesNotPorted
 			case dto.CourseSaveRaises:
 				date.valid = false
 			case dto.CourseSaveFails:
@@ -486,6 +476,10 @@ func (s *CourseWrites) Update(ctx context.Context, identity domain.ResolvedIdent
 			return courseWritesLate(tx, domain.ErrCourseWritesServer)
 		}
 		stored := []any{}
+		// dict(validated_data) keeps a writable installment id as a UUID
+		// object: auditlog's json.dumps raises TypeError and records str() of
+		// the list, then the JSONField save raises (the 500 after the entry).
+		reprs, withID := []string{}, false
 		for _, item := range items {
 			event, invalid, err := dto.ValidateCourseEvent(item, courseEventTaken(ctx, tx, request.GroupHeader))
 			if err != nil {
@@ -496,8 +490,17 @@ func (s *CourseWrites) Update(ctx context.Context, identity domain.ResolvedIdent
 			}
 			stored = append(stored, domain.RequestObject{{Name: "id", Value: json.Number(strconv.Itoa(event.ID))},
 				{Name: "amount", Value: event.Amount}, {Name: "payment_date", Value: event.Date.Format("02/01/2006")}})
+			repr := "{"
+			if event.InstallmentID != nil {
+				repr, withID = repr+"'course_subscription_installment_id': UUID('"+*event.InstallmentID+"'), ", true
+			}
+			reprs = append(reprs, repr+"'id': "+strconv.Itoa(event.ID)+", 'amount': '"+event.Amount+"', 'payment_date': '"+
+				event.Date.Format("02/01/2006")+"'}")
 		}
 		row.Events, after["events"] = dto.CourseWritesJSONText(stored), dto.CourseWritesAuditJSON(stored)
+		if withID {
+			after["events"], saveFails = "["+strings.Join(reprs, ", ")+"]", true
+		}
 	}
 	for name, date := range dates {
 		if !date.valid {

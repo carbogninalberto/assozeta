@@ -176,7 +176,7 @@ func (s *Session) Execute(ctx context.Context, call Call) (any, error) {
 	}
 	if answer.Status >= 300 && answer.Status < 400 && call.Method == "GET" {
 		// httplib2 follows redirects for GET: not ported.
-		return nil, ErrNotPorted
+		return nil, ErrUnexpected
 	}
 	if answer.Status >= 300 {
 		return nil, &HTTPError{Status: answer.Status, Reason: answer.Reason, Body: answer.Body, URI: uri}
@@ -207,7 +207,7 @@ func Revoke(ctx context.Context, transport *Transport, token any) error {
 	if text, ok := token.(string); ok {
 		target += "?" + urlencode([][2]string{{"token", text}})
 	} else if token != nil {
-		return ErrNotPorted
+		return ErrUnexpected
 	}
 	headers := requestsHeaders("*/*", []Header{{"content-type", "application/x-www-form-urlencoded"}}, 0)
 	_, err := transport.Do(ctx, "POST", target, headers, nil)

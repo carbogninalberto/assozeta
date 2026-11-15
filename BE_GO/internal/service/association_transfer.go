@@ -20,8 +20,8 @@ import (
 
 // AssociationTransfer follows AssociationExportViewSet and
 // AssociationImportViewSet (BE/application/views/export_views.py) up to the
-// points that need storage, Celery dispatch or cached export snapshots; those
-// are refused with domain.ErrAssociationTransferNotPorted before any write.
+// points that need storage, Celery dispatch or cached export snapshots; states
+// only the application writes are domain.ErrAssociationTransferUnexpected.
 type AssociationTransfer struct {
 	store   domain.AssociationTransferStore
 	secret  string
@@ -93,7 +93,7 @@ func (s *AssociationTransfer) Active(ctx context.Context, identity domain.Resolv
 		return nil, err
 	}
 	if cached {
-		return nil, domain.ErrAssociationTransferNotPorted
+		return nil, domain.ErrAssociationTransferUnexpected
 	}
 	return &AssociationTransferReply{Status: 200, Body: map[string]bool{"active": false}}, nil
 }
@@ -117,7 +117,7 @@ func (s *AssociationTransfer) Status(ctx context.Context, identity domain.Resolv
 			return nil, err
 		}
 		if registered {
-			return nil, domain.ErrAssociationTransferNotPorted
+			return nil, domain.ErrAssociationTransferUnexpected
 		}
 		return transferError(404, exportNotFound), nil
 	}
@@ -149,7 +149,7 @@ func (s *AssociationTransfer) exportStatus(ctx context.Context, association, tas
 		status = row.Status
 		ready = status == "SUCCESS" || status == "FAILURE" || status == "REVOKED"
 		if row.Encoding != "utf-8" {
-			return nil, domain.ErrAssociationTransferNotPorted
+			return nil, domain.ErrAssociationTransferUnexpected
 		}
 		if row.Meta != nil && *row.Meta != "" {
 			meta, err := celeryJSON(*row.Meta)
@@ -158,12 +158,12 @@ func (s *AssociationTransfer) exportStatus(ctx context.Context, association, tas
 			}
 			object, ok := meta.(map[string]any)
 			if !ok {
-				return nil, domain.ErrAssociationTransferNotPorted
+				return nil, domain.ErrAssociationTransferUnexpected
 			}
 			children, _ := object["children"].([]any)
 			_, hasStatus := object["status"]
 			if hasStatus || len(children) > 0 || (object["children"] != nil && children == nil) {
-				return nil, domain.ErrAssociationTransferNotPorted
+				return nil, domain.ErrAssociationTransferUnexpected
 			}
 		}
 		if status != "FAILURE" && status != "REVOKED" && status != "RETRY" && row.Result != nil && *row.Result != "" {
@@ -253,7 +253,7 @@ func (s *AssociationTransfer) List(ctx context.Context, identity domain.Resolved
 	for _, row := range rows {
 		if row.FileSize == nil && row.Filepath != nil && *row.Filepath != "" {
 			if s.options.Writes == nil {
-				return nil, domain.ErrAssociationTransferNotPorted
+				return nil, domain.ErrAssociationTransferUnexpected
 			}
 			if row.FileSize, err = s.exportSize(ctx, row.DocumentID, *row.Filepath, paymentCategoryAuditContext(identity, audit)); err != nil {
 				return nil, err
@@ -357,7 +357,7 @@ func (s *AssociationTransfer) Delete(ctx context.Context, identity domain.Resolv
 	if !found {
 		return transferError(404, exportNotFound), nil
 	}
-	return nil, domain.ErrAssociationTransferNotPorted
+	return nil, domain.ErrAssociationTransferUnexpected
 }
 
 // Start mirrors start_export.
@@ -384,7 +384,7 @@ func (s *AssociationTransfer) Start(ctx context.Context, identity domain.Resolve
 	if running {
 		return transferError(409, "Un export è già in corso"), nil
 	}
-	return nil, domain.ErrAssociationTransferNotPorted
+	return nil, domain.ErrAssociationTransferUnexpected
 }
 
 // ImportAllowed is SetupTokenOrAuthenticated.has_permission. Without an
@@ -400,7 +400,7 @@ func (s *AssociationTransfer) ImportAllowed(ctx context.Context, identity domain
 			return setupTokenMatches(setupToken, s.options.SetupToken), nil
 		}
 		if setupToken != "" {
-			return false, domain.ErrAssociationTransferNotPorted
+			return false, domain.ErrAssociationTransferUnexpected
 		}
 		return false, nil
 	}
@@ -452,7 +452,7 @@ func (s *AssociationTransfer) ImportStatus(ctx context.Context, task string) (*A
 		return &AssociationTransferReply{Status: 200, Body: map[string]any{"task_id": task, "status": row.Status, "ready": false}}, nil
 	}
 	if row.Encoding != "utf-8" {
-		return nil, domain.ErrAssociationTransferNotPorted
+		return nil, domain.ErrAssociationTransferUnexpected
 	}
 	if row.Meta != nil && *row.Meta != "" {
 		meta, err := celeryJSON(*row.Meta)
@@ -461,12 +461,12 @@ func (s *AssociationTransfer) ImportStatus(ctx context.Context, task string) (*A
 		}
 		object, ok := meta.(map[string]any)
 		if !ok {
-			return nil, domain.ErrAssociationTransferNotPorted
+			return nil, domain.ErrAssociationTransferUnexpected
 		}
 		children, _ := object["children"].([]any)
 		_, status := object["status"]
 		if status || len(children) > 0 || (object["children"] != nil && children == nil) {
-			return nil, domain.ErrAssociationTransferNotPorted
+			return nil, domain.ErrAssociationTransferUnexpected
 		}
 	}
 	body := map[string]any{"task_id": task, "status": row.Status, "ready": row.Status == "SUCCESS"}
@@ -506,7 +506,7 @@ func celeryJSON(text string) (any, error) {
 		switch v := node.(type) {
 		case map[string]any:
 			if _, typed := v["__type__"]; typed {
-				return domain.ErrAssociationTransferNotPorted
+				return domain.ErrAssociationTransferUnexpected
 			}
 			for _, child := range v {
 				if err := walk(child); err != nil {

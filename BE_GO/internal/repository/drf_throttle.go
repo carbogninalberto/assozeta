@@ -3,19 +3,18 @@ package repository
 import (
 	"context"
 	"encoding/binary"
+	"encoding/json"
 	"errors"
 	"math"
+	"strconv"
 	"time"
 
 	"github.com/redis/go-redis/v9"
-
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // DRFThrottleCache stores SimpleRateThrottle histories exactly as Django's
-// django-redis cache does: key ':1:<cache key>', the value a pickled
-// (protocol 5) list of float timestamps, newest first, expiring after the
-// throttle duration.
+// django-redis cache does: key ':1:<cache key>', the value a pickled list of
+// float timestamps, newest first, expiring after the throttle duration.
 type DRFThrottleCache struct{ client *redis.Client }
 
 func NewDRFThrottleCache(client *redis.Client) (*DRFThrottleCache, error) {
@@ -25,7 +24,11 @@ func NewDRFThrottleCache(client *redis.Client) (*DRFThrottleCache, error) {
 	return &DRFThrottleCache{client: client}, nil
 }
 
-var errThrottleHistory = refusal.New("unsupported throttle history value")
+// errThrottleHistoryValue is a cached entry that is not a history of request
+// timestamps. Django's SimpleRateThrottle raises on it (`history[-1] <= ...`,
+// `len(history)`) and the request fails before the view runs; the handlers
+// answer that with the error page, as Django does.
+var errThrottleHistoryValue = errors.New("cached throttle history is not a list of numbers")
 
 // History is cache.get(key, []).
 func (r *DRFThrottleCache) History(ctx context.Context, key string) ([]float64, error) {
@@ -38,21 +41,51 @@ func (r *DRFThrottleCache) History(ctx context.Context, key string) ([]float64, 
 	}
 	value, err := decodeDjangoSession(ctx, raw)
 	if err != nil {
-		return nil, errThrottleHistory
+		return nil, err
 	}
+	return throttleHistory(value)
+}
+
+// throttleHistory reads the value cache.get returned as the history DRF uses:
+// a list of timestamps. Django compares and counts the entries of that list and
+// inserts its own float, so an integer or boolean entry counts like a float;
+// any other value is the exception described on errThrottleHistoryValue.
+func throttleHistory(value any) ([]float64, error) {
 	items, ok := value.([]any)
 	if !ok {
-		return nil, errThrottleHistory
+		return nil, errThrottleHistoryValue
 	}
 	history := make([]float64, 0, len(items))
 	for _, item := range items {
-		number, ok := item.(float64)
-		if !ok {
-			return nil, errThrottleHistory
+		number, err := throttleTimestamp(item)
+		if err != nil {
+			return nil, err
 		}
 		history = append(history, number)
 	}
 	return history, nil
+}
+
+// throttleTimestamp is one entry of the history as the number Django compares:
+// floats as they are, integers and booleans as their numeric value.
+func throttleTimestamp(item any) (float64, error) {
+	switch value := item.(type) {
+	case float64:
+		return value, nil
+	case json.Number:
+		// A Python int; its text is the exact value the decoder read.
+		number, err := strconv.ParseFloat(value.String(), 64)
+		if err != nil || math.IsInf(number, 0) {
+			return 0, errThrottleHistoryValue
+		}
+		return number, nil
+	case bool:
+		if value {
+			return 1, nil
+		}
+		return 0, nil
+	}
+	return 0, errThrottleHistoryValue
 }
 
 // Store is cache.set(key, history, duration).

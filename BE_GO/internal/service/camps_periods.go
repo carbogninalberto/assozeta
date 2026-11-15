@@ -24,6 +24,9 @@ var (
 	// ErrCampsPaymentNotPorted refuses a payment walk outcome this port does
 	// not reproduce before any write.
 	ErrCampsPaymentNotPorted = refusal.New("camps payment walk is not ported")
+	// errCampsGroupRemoved is a group removed while the request ran (the
+	// registrations resolve inside it): timing, long-tail rule 4.
+	errCampsGroupRemoved = refusal.AppState("camps group removed during the request")
 )
 
 // CampsForbidden is the view's PermissionDenied with its message (403).
@@ -776,6 +779,7 @@ func (r *campsRequest) campsWalk(ctx context.Context, row domain.CampsService, g
 	// Django's loop has no ORDER BY, so only an outcome that every order gives
 	// is answered: every walked row fails before its first save, with the same
 	// message.
+	// Other outcomes are handed off to Django (ErrCampsPaymentNotPorted).
 	if failed != len(plans) {
 		return nil, ErrCampsPaymentNotPorted
 	}

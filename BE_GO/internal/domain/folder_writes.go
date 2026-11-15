@@ -4,8 +4,6 @@ import (
 	"context"
 	"errors"
 	"time"
-
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 var (
@@ -16,9 +14,6 @@ var (
 	// assignment on a body that is not a mutable dict (TypeError or an
 	// immutable QueryDict): a 500.
 	ErrFolderAddBody = errors.New("folder add body is not a mutable dict")
-	// ErrFolderWriteNotPorted refuses an input whose Django handling is not
-	// ported (a 500 before any write).
-	ErrFolderWriteNotPorted = refusal.New("folder write input not ported")
 	// ErrFolderPKOverflow is int(float('inf')) on a pk value: OverflowError, a 500.
 	ErrFolderPKOverflow = errors.New("folder pk overflow")
 )

@@ -323,6 +323,31 @@ func TestOnlyRefusalsAreHandedOff(t *testing.T) {
 	}
 }
 
+// An application-state error is a state only Go's own code writes: Django
+// answers it with its production 500 page too, so Go answers that page itself
+// and Django never sees the request.
+func TestAppStateIsNotHandedOff(t *testing.T) {
+	django := &upstream{respond: djangoResponse}
+	upstreamServer := httptest.NewServer(django)
+	defer upstreamServer.Close()
+	h := newHandoff(t, upstreamServer.URL, 0)
+	state := fmt.Errorf("service: %w", refusal.AppState("stored setting missing"))
+	server := app(t, h, func(c echo.Context) error { return refuse(c, state) })
+	response, raw := send(t, http.MethodGet, server.URL+"/x", nil, nil)
+	if response.StatusCode != 500 || string(raw) != serverError || response.Header.Get(Header) != "" {
+		t.Fatalf("status %d body %q marker %q", response.StatusCode, raw, response.Header.Get(Header))
+	}
+	// Returned to Echo it reaches the error handler, which answers it too.
+	server = app(t, h, func(c echo.Context) error { return state })
+	response, raw = send(t, http.MethodGet, server.URL+"/y", nil, nil)
+	if response.StatusCode != 500 || string(raw) != serverError {
+		t.Fatalf("returned state: status %d body %q", response.StatusCode, raw)
+	}
+	if calls := django.calls(); len(calls) != 0 {
+		t.Fatalf("%d upstream calls for an application-state error", len(calls))
+	}
+}
+
 func TestDisabledKeepsThe500(t *testing.T) {
 	h := newHandoff(t, "", 0)
 	if h != nil || h.Enabled() {

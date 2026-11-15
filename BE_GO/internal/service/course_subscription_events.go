@@ -129,9 +129,6 @@ func (s *CourseSubscriptions) planEvents(ctx context.Context, tx domain.CourseSu
 		}
 		parsed, invalid, err := dto.ValidateCourseEvent(event, nil)
 		if err != nil {
-			if err == domain.ErrCourseWritesNotPorted {
-				return plan, ErrCourseSubscriptionNotPorted
-			}
 			return plan, err
 		}
 		if invalid != nil {

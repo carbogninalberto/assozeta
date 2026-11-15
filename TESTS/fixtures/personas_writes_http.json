@@ -16859,6 +16859,103 @@
    }
   },
   {
+   "name": "personas-writes-add-picture-list",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/personas/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "picture_path": "Error processing image: argument should be a bytes-like object or ASCII string, not 'list'"
+   },
+   "allow": [
+    "DELETE",
+    "OPTIONS",
+    "POST"
+   ],
+   "effect": null,
+   "body": {
+    "first_name": "Fausto",
+    "picture_path": [
+     "base64",
+     "iVBORw0KGgogcGVyc29uYXMgcGljdHVyZSBmaXh0dXJlIP/+"
+    ]
+   }
+  },
+  {
+   "name": "personas-writes-add-picture-list-comma",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/personas/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "picture_path": "Error processing image: 'list' object has no attribute 'split'"
+   },
+   "allow": [
+    "DELETE",
+    "OPTIONS",
+    "POST"
+   ],
+   "effect": null,
+   "body": {
+    "first_name": "Fausto",
+    "picture_path": [
+     "data:image/png",
+     ",",
+     "base64"
+    ]
+   }
+  },
+  {
+   "name": "personas-writes-add-picture-object",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/personas/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "picture_path": "Error processing image: argument should be a bytes-like object or ASCII string, not 'dict'"
+   },
+   "allow": [
+    "DELETE",
+    "OPTIONS",
+    "POST"
+   ],
+   "effect": null,
+   "body": {
+    "first_name": "Fausto",
+    "email": "nope",
+    "picture_path": {
+     "base64": "iVBORw0KGgogcGVyc29uYXMgcGljdHVyZSBmaXh0dXJlIP/+"
+    }
+   }
+  },
+  {
+   "name": "personas-writes-add-picture-object-comma",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/personas/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "picture_path": "Error processing image: 'dict' object has no attribute 'split'"
+   },
+   "allow": [
+    "DELETE",
+    "OPTIONS",
+    "POST"
+   ],
+   "effect": null,
+   "body": {
+    "first_name": "Fausto",
+    "picture_path": {
+     ",": 1,
+     "base64": "iVBORw0KGgogcGVyc29uYXMgcGljdHVyZSBmaXh0dXJlIP/+"
+    }
+   }
+  },
+  {
    "name": "personas-writes-add-picture-spaced-base64",
    "actor": "owner",
    "method": "POST",
@@ -18524,6 +18621,52 @@
     "associate_id": "a1000000-0000-4000-8000-000000677055",
     "sex": "X",
     "picture_path": "data:image/png;base64,iVBORw0KGgogcGVyc29uYXMgcGljdHVyZSBmaXh0dXJlIP/+"
+   }
+  },
+  {
+   "name": "personas-writes-update-picture-list",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/personas/a1000000-0000-4000-8000-000000677055/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "picture_path": "Error processing image: argument should be a bytes-like object or ASCII string, not 'list'"
+   },
+   "allow": [
+    "DELETE",
+    "OPTIONS",
+    "PATCH"
+   ],
+   "effect": null,
+   "body": {
+    "sex": "X",
+    "picture_path": [
+     "base64"
+    ]
+   }
+  },
+  {
+   "name": "personas-writes-update-picture-object-comma",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/personas/a1000000-0000-4000-8000-000000677055/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "picture_path": "Error processing image: 'dict' object has no attribute 'split'"
+   },
+   "allow": [
+    "DELETE",
+    "OPTIONS",
+    "PATCH"
+   ],
+   "effect": null,
+   "body": {
+    "picture_path": {
+     "base64": 1,
+     ",": 2
+    }
    }
   },
   {

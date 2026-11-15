@@ -497,6 +497,47 @@ for seed in range(6):
                         text_before=fuzz_text(fuzz, 900), text_after=fuzz_text(fuzz, 300)))
 
 
+# Greek text, single characters by code, and the Courier and Times faces.
+GREEKED = 'il <greek>abgde</greek> di <font name="Times-Italic">nuoto</font> e <font name="Courier">pallanuoto</font> <unichar code="0x263A"/>'
+GREEK_CELLS = [
+    '<greek>abgde</greek>', '<greek>ABC</greek> <greek>xyz</greek>', 'a<greek>ab</greek>b', '<b><greek>de</greek></b>',
+    '<unichar code="65"/> <unichar code="0x263A"/> <unichar code="233"/>', 'a<unichar code="66"/>c', GREEKED,
+    '<font name="Courier">Courier</font> <font name="Courier-Bold">grassetto</font>', '<font name="Courier-Oblique">corsivo</font> a',
+    '<font name="Times-Roman">Romano</font> <font name="Times-Bold">grassetto</font>', '<font name="Times-Italic">corsivo</font> <font name="Times-BoldItalic">entrambi</font>',
+    '<para font="Times-Bold">paragrafo Times</para>', 'testo <font name="Times-Roman">città è €</font> fine',
+    '<greek>' + 'abgde' * 10 + '</greek>', '<font name="Courier">' + 'poli\xadsportiva ' * 3 + '</font>',
+]
+CASES += [
+    balance('bs-greek-unichar', header(None, 'ASD <greek>abg</greek> <unichar code="0x263A"/> club', city='<greek>de</greek>',
+                                       address='<unichar code="233"/> <font name="Times-Italic">Via Roma</font> 1')),
+    balance('bs-greek-unichar-long', header(None, ' '.join([GREEKED] * 4), city=GREEKED, address='<greek>' + LONG + '</greek>')),
+    balance('bs-times-courier', header(None, '<font name="Times-Bold">ASD Aurora</font>', city='<font name="Courier">Roma</font>',
+                                       address='<font name="Times-Italic" size="12">Via Roma 1</font>')),
+    balance('bs-greek-unclosed', header(None, 'ASD <greek>Aurora')),
+    balance('bs-unichar-code-error', header(None, 'ASD <unichar code="x"/> Aurora')),
+    balance('bs-greek-non-latin1', header(None, 'ASD <greek>日</greek> Aurora')),
+    balance('bs-index-error', header(None, 'ASD <index item="a"/> Aurora')),
+    balance('bs-ondraw-error', header(None, 'ASD <onDraw name="a"/> Aurora')),
+    with_additional(balance('bs-greek-additional', header(None, 'ASD Aurora')),
+                    [['balance_at_date', 'I saldi <greek>abg</greek> sono riportati.'], ['altro', ' '.join([GREEKED] * 4)],
+                     ['solo', '<font name="Courier">' + 'tutto a spaziatura fissa ' * 20 + '</font>']]),
+    report('rt-greek-cells', ['<greek>ab</greek>', 'Testo', 'Note'],
+           [[GREEK_CELLS[i], GREEK_CELLS[(i + 5) % len(GREEK_CELLS)], GREEK_CELLS[(i + 9) % len(GREEK_CELLS)]] for i in range(len(GREEK_CELLS))],
+           'Greco'),
+    report('rt-greek-squeezed', ['<greek>ab</greek> %d' % i for i in range(12)],
+           [[GREEK_CELLS[(i * 5 + j) % len(GREEK_CELLS)] for j in range(12)] for i in range(len(GREEK_CELLS))], 'Greco stretto'),
+    report('rt-greek-pages', ['N', 'Testo'], [[str(i), ' '.join([GREEK_CELLS[i % len(GREEK_CELLS)]] * (1 + i % 4))] for i in range(120)],
+           'Greco su pagine'),
+    report('rt-greek-text-cut', ['Nome'], [['x']], 'Tagliato', text_before=' '.join([GREEKED] * 130), text_after=' '.join([GREEKED + '<br/>'] * 70)),
+    report('rt-times-text-whole', ['Nome'], [['x']], 'Tutto', text_before='<font name="Times-Roman">' + 'testo Times ' * 300 + '</font>',
+           text_after='<font name="Courier">' + 'testo Courier ' * 400 + '</font>'),
+    report('rt-unichar-cell-error', ['A'], [['<unichar code="1114112"/>']], 'Errore'),
+    report('rt-greek-cell-error', ['A'], [['<greek>日</greek>']], 'Errore'),
+    attendance('at-greek', ('Yoga <greek>abg</greek>', ['01/01/2026', '<font name="Courier">x</font>'],
+                            [('<greek>de</greek> Rossi', ['P', '<unichar code="65"/>'])]), ('Nuoto', ['02/01/2026'], [('Neri', ['P'])])),
+]
+
+
 def main():
     cases = []
     for case in CASES:

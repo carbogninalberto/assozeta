@@ -6,11 +6,13 @@ import (
 	"math"
 	"os"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 	"unicode/utf8"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 type noResolver struct{}
@@ -92,10 +94,10 @@ func TestAuditFromISOFormat(t *testing.T) {
 }
 
 func TestAuditJSONLoadsRefusals(t *testing.T) {
-	if _, _, err := AuditJSONLoads(`[NaN]`); !errors.Is(err, ErrAuditNotPorted) {
+	if _, _, err := AuditJSONLoads(`[NaN]`); !errors.Is(err, ErrAuditUnreachable) || !errors.Is(err, refusal.ErrAppState) {
 		t.Error("NaN must be refused")
 	}
-	if _, _, err := AuditJSONLoads(`["\ud800"]`); !errors.Is(err, ErrAuditNotPorted) {
+	if _, _, err := AuditJSONLoads(`["\ud800"]`); !errors.Is(err, ErrAuditUnreachable) || errors.Is(err, refusal.ErrNotPorted) {
 		t.Error("lone surrogate must be refused")
 	}
 	if value, decoded, err := AuditJSONLoads(`["😀"]`); err != nil || !decoded || value.([]any)[0] != "😀" {
@@ -116,15 +118,25 @@ func TestAuditJSONLoadsRefusals(t *testing.T) {
 	}
 }
 
+func TestAuditJSONLoadsDeepNestingIsHandedOff(t *testing.T) {
+	deep := strings.Repeat("[", 501) + strings.Repeat("]", 501)
+	if _, _, err := AuditJSONLoads(deep); !errors.Is(err, ErrAuditNotPorted) || !errors.Is(err, refusal.ErrNotPorted) {
+		t.Errorf("AuditJSONLoads: %v", err)
+	}
+	if _, _, err := auditPythonJSONLoads(deep); !errors.Is(err, ErrAuditNotPorted) || !errors.Is(err, refusal.ErrNotPorted) {
+		t.Errorf("auditPythonJSONLoads: %v", err)
+	}
+}
+
 func TestAuditTitleRefusesNonASCII(t *testing.T) {
 	if label, err := auditFieldLabel("camps_and_retreats"); err != nil || label != "Camps And Retreats" {
 		t.Error(label, err)
 	}
-	if _, err := auditFieldLabel("straße"); !errors.Is(err, ErrAuditNotPorted) {
+	if _, err := auditFieldLabel("straße"); !errors.Is(err, ErrAuditUnreachable) {
 		t.Error("non-ASCII title must be refused")
 	}
 	changes := domain.RequestObject{{Name: "straße", Value: []any{"a", "b"}}}
-	if _, err := AuditDisplayChanges(changes, noResolver{}); !errors.Is(err, ErrAuditNotPorted) {
+	if _, err := AuditDisplayChanges(changes, noResolver{}); !errors.Is(err, ErrAuditUnreachable) {
 		t.Error("display of a non-ASCII field key must be refused")
 	}
 }

@@ -146,7 +146,8 @@ func (s *DocumentUploads) SaveGenerated(ctx context.Context, created time.Time, 
 func (s *DocumentUploads) saveNamed(ctx context.Context, name string, content []byte) error {
 	key, err := documentkey.S3Key(name, s.objects.Location())
 	if err != nil {
-		return errors.Join(domain.ErrDocumentWritesNotPorted, err)
+		// documentkey.UploadName already refused NUL, invalid text and path separators in name.
+		return errors.Join(domain.ErrDocumentWritesUnreachable, err)
 	}
 	if !s.overwrite {
 		exists, err := s.objects.Exists(ctx, key)
@@ -154,13 +155,15 @@ func (s *DocumentUploads) saveNamed(ctx context.Context, name string, content []
 			return err
 		}
 		if exists {
-			// get_available_name would pick a random alternative name.
-			return domain.ErrDocumentWritesNotPorted
+			// get_available_name would pick a random alternative name; the key embeds
+			// the new document's uuid4, so only the app's own state could collide.
+			return domain.ErrDocumentWritesUnreachable
 		}
 	}
 	kind, known, encoding, err := pymime.GuessType(key)
 	if err != nil {
-		return errors.Join(domain.ErrDocumentWritesNotPorted, err)
+		// The key is "<timestamp>/<uuid>/<name>": never a URL or data: scheme.
+		return errors.Join(domain.ErrDocumentWritesUnreachable, err)
 	}
 	if !known {
 		kind = "application/octet-stream"
@@ -335,7 +338,8 @@ func (s *DocumentUploads) Add(ctx context.Context, identity domain.ResolvedIdent
 	var folder *int64
 	if value, _ := object.Lookup("folder"); value != nil {
 		if _, upload := value.(domain.RequestUpload); upload {
-			return nil, domain.ErrDocumentWritesNotPorted
+			// documents/add reads JSON only (jsonOnly): no file reaches it.
+			return nil, domain.ErrDocumentWritesUnreachable
 		}
 		pk, code, err := dto.FolderPKValue(value)
 		if err != nil || code != "" || pk.Missing {
@@ -613,7 +617,8 @@ func (s *DocumentUploads) UploadDocument(ctx context.Context, identity domain.Re
 		if documentsUnstorableText(value) != "" {
 			return domain.ErrDocumentWritesFailed // the driver refuses the text: no row
 		}
-		return domain.ErrDocumentWritesNotPorted
+		// storedText and documentsUnstorableText test the same NUL and surrogate rules.
+		return domain.ErrDocumentWritesUnreachable
 	}
 	if utf8.RuneCountInString(text) > 255 {
 		return domain.ErrDocumentWritesFailed // value too long: no row
@@ -790,7 +795,8 @@ func (s *DocumentUploads) MedicalUpload(ctx context.Context, identity domain.Res
 	file, isFile := value.(domain.RequestFile)
 	if !isFile {
 		if _, upload := value.(domain.RequestUpload); upload {
-			return nil, domain.ErrDocumentWritesNotPorted
+			// parseDjangoMultipart only yields RequestFile: no RequestUpload reaches it.
+			return nil, domain.ErrDocumentWritesUnreachable
 		}
 		return nil, &MedicalUploadError{Status: 500, Message: "'" + pythonTypeNameOf(value) + "' object has no attribute 'name'"}
 	}
@@ -837,7 +843,9 @@ func (s *DocumentUploads) MedicalUpload(ctx context.Context, identity domain.Res
 		if commit := tx.Commit(); commit != nil {
 			return nil, commit
 		}
-		return nil, errors.Join(domain.ErrDocumentWritesNotPorted, err)
+		// Every date failure is a CalendarDateError; only a cancelled request (its
+		// client gone) is left.
+		return nil, errors.Join(domain.ErrDocumentWritesUnreachable, err)
 	}
 	if err = tx.AttachCertificate(ctx, *subscription, certificate, dates, context, s.at()); err != nil {
 		return nil, err

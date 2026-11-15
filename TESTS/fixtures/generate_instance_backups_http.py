@@ -289,8 +289,33 @@ add('overview-invalid-json', 'owner', OVERVIEW + '?refresh=1', 200, {'available'
 add('overview-empty-body', 'owner', OVERVIEW, 200, {'available': False, 'reason': UNREACHABLE}, run=runner(204, ''))
 # json.loads(bytes) decodes a UTF-8 BOM away (utf-8-sig); invalid UTF-8 is a ValueError.
 add('overview-bom', 'owner', OVERVIEW, 200, overview({}, SIZES, margin=1024), run=runner(200, '\ufeff{}'), cache=CACHED)
+# json.loads(bytes) also decodes the other BOMs and the NUL pattern that
+# selects UTF-16/32 (json's detect_encoding).
+UTFS = '{"archives": [], "disk": {}, "space_margin_mb": 2}'
+for name, encoded in (
+        ('utf16-bom', UTFS.encode('utf-16')),
+        ('utf16-bom-be', b'\xfe\xff' + UTFS.encode('utf-16-be')),
+        ('utf16-no-bom', UTFS.encode('utf-16-le')),
+        ('utf32-bom', UTFS.encode('utf-32')),
+        ('utf32-no-bom-be', UTFS.encode('utf-32-be'))):
+    add('overview-' + name, 'owner', OVERVIEW, 200, overview({}, SIZES, margin=2),
+        run=runner(200, body_b64=base64.b64encode(encoded).decode()), cache=CACHED)
 add('overview-invalid-utf8', 'owner', OVERVIEW, 200, {'available': False, 'reason': UNREACHABLE},
     run=runner(200, body_b64=base64.b64encode(b'{"archives": ["\xff"]}').decode()))
+# Python's json.loads accepts the NaN, Infinity and -Infinity literals; the
+# strict renderer then fails only where such a value reaches the body.
+add('overview-nan-ignored', 'owner', OVERVIEW, 200, overview({}, SIZES, margin=1024),
+    run=runner(200, '{"archives": [], "disk": {}, "ignored": NaN}'), cache=CACHED)
+add('overview-nan-margin', 'owner', OVERVIEW, 200, overview({'disk': {'free': 1}}, SIZES, margin=1024),
+    run=runner(200, '{"archives": [], "disk": {"free": 1}, "space_margin_mb": NaN}'), cache=CACHED)
+add('overview-infinity-margin', 'owner', OVERVIEW, 200, overview({'disk': {'free': 1}}, SIZES, margin=1024),
+    run=runner(200, '{"archives": [], "disk": {"free": 1}, "space_margin_mb": Infinity}'), cache=CACHED)
+add('overview-negative-infinity-margin', 'owner', OVERVIEW, 200, overview({}, SIZES, margin=1024),
+    run=runner(200, '{"archives": [], "disk": {}, "space_margin_mb": -Infinity}'), cache=CACHED)
+add('overview-nan-free', 'owner', OVERVIEW, 500, SERVER,
+    run=runner(200, '{"archives": [], "disk": {"free": NaN}}'), cache=CACHED)
+add('overview-infinity-free', 'owner', OVERVIEW, 500, SERVER,
+    run=runner(200, '{"archives": [], "disk": {"free": Infinity}}'), cache=CACHED)
 add('overview-runner-404', 'owner', OVERVIEW, 200, {'available': False, 'reason': OUTDATED},
     run=runner(404, '{"error": "Not found"}'))
 add('overview-runner-404-text', 'owner', OVERVIEW, 200, {'available': False, 'reason': UNREACHABLE},
@@ -418,6 +443,21 @@ add('token-wrong-password', 'owner', TOKEN, 400, error(WRONG), method='POST', bo
 add('token-wrong-password-counts', 'owner', TOKEN, 400, error(WRONG), method='POST',
     body={'name': ARCHIVE, 'password': PASSWORD + ' '}, cache=attempts(OWNER, 4), cache_after=kept_attempts(OWNER, 5))
 add('token-whitespace-password', 'owner', TOKEN, 400, error(WRONG), method='POST', body={'name': ARCHIVE, 'password': '   '},
+    cache_after=fresh_attempts(OWNER, 1))
+# A lone surrogate code point is DRF's ProhibitSurrogateCharactersValidator
+# error (after the length and NUL validators, before the pattern); a paired one
+# is the character it encodes.
+SURROGATE = 'Surrogate characters are not allowed: U+%s.'
+MAX_LENGTH = 'Ensure this field has no more than 256 characters.'
+add('token-password-lone-surrogate', 'owner', TOKEN, 400, {'password': [SURROGATE % 'D800']}, method='POST',
+    raw_body='{"name": "%s", "password": "\\ud800"}' % ARCHIVE, content_type='application/json')
+add('token-name-lone-surrogate', 'owner', TOKEN, 400, {'name': [SURROGATE % 'D800', PATTERN]}, method='POST',
+    raw_body='{"name": "%s\\ud800", "password": "%s"}' % (ARCHIVE, PASSWORD), content_type='application/json')
+add('token-password-long-lone-surrogate', 'owner', TOKEN, 400, {'password': [MAX_LENGTH, SURROGATE % 'DFFF']},
+    method='POST', raw_body='{"name": "%s", "password": "%s\\udfff"}' % (ARCHIVE, 'p' * 256),
+    content_type='application/json')
+add('token-paired-surrogate-password', 'owner', TOKEN, 400, error(WRONG), method='POST',
+    raw_body='{"name": "%s", "password": "\\ud83d\\ude00"}' % ARCHIVE, content_type='application/json',
     cache_after=fresh_attempts(OWNER, 1))
 add('token-number-password', 'owner', TOKEN, 400, error(WRONG), method='POST', body={'name': ARCHIVE, 'password': 12345},
     cache_after=fresh_attempts(OWNER, 1))

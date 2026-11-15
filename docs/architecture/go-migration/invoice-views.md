@@ -70,11 +70,15 @@ Golden evidence: `TESTS/adapters/go/fatturapa_golden.py` builds 630 unsaved Cust
 random) and records the real outputs; `go test ./internal/fatturapa` requires identical bytes for the 276 invoices Python renders
 (828 outputs) and `ErrInvalid` for every output Python raises on (1,041).
 
-## Main tutor promotion (`v2doc4`)
+## Main tutor promotion (`v2doc4`, `tutorpromo`)
 
 `document/invoice/<uid>/view/` of a receipt without a selected tutor asks the associate's main tutor: without a primary
 relation the first one (by id) is saved with `is_primary=True` and one auditlog update entry indexed through
-`associate.sport_association`, as in [document-views](document-views.md). Signed-in requests only.
+`associate.sport_association`, as in [document-views](document-views.md). Requests admitted by the renderer's header
+(`HasBypassAuthorizationHeader`, no account) promote too (`tutorpromo`): the auditlog entry then has no actor and no
+actor e-mail, exactly as `AuditlogMiddleware` writes it for an anonymous request. Case
+`invoice-bypass-promotes-tutor` (200 with the receipt's in-memory tutor, the relation saved with one update entry whose
+actor columns are NULL).
 
 ## Mention keys (v2-rest-docs)
 
@@ -85,7 +89,6 @@ from the membership fee) CAUGHT.
 
 ## Not ported (refused with the 500 page; the views write nothing)
 
-- `get_main_tutor()` promotion on a request authorized only by the bypass header.
 - Stored JSON outside the handled shapes: a non-dict truthy subscription meta other than numbers/bools, a non-dict truthy payment
   meta or `course` on a course payment, a non-string meta `description`, non-string `payment_category_id` values, integers beyond
   int64 or float overflow in amounts, `lower()` of the few runes with special Python mappings.
@@ -118,6 +121,12 @@ Both call a print task with `.apply(...)`. What that runs in the request:
 `v2doc4`: 92 cases (a receipt whose associate has no primary tutor relation, and the same receipt again). RED
 `v2doc4-red-r1` (the refusal restored in Go: Django 92/92, Go 500). GREEN `v2doc4-final-r2` on Django, Go, `/api/v1`
 and `/api/v2`. Mutation `v2doc4-mutation-r1` (the last relation promoted instead of the first) CAUGHT.
+
+`tutorpromo`: 93 cases (one new: `invoice-bypass-promotes-tutor`, the renderer's header on a receipt whose associate has
+no primary tutor relation). RED `tutorpromo-red-r1` (the pre-change promotion offered to scoped accounts only: Django
+93/93, Go 500). GREEN `tutorpromo-green-r1` (native) and `tutorpromo-versioned-r1` (Django, Go, Caddy `/api/v1` and
+`/api/v2`). Mutation `tutorpromo-mutation-r1` (the entry's actor e-mail written as the empty text instead of NULL)
+CAUGHT on `invoice-bypass-promotes-tutor` (`audit.actor`).
 
 `TESTS/fixtures/invoice_views_http.json` (generator alongside) authors 76 cases. Invoice HTML expectations are authored template
 contexts rendered by the contract with Django's template engine; einvoice expectations are the authored CustomerInvoice row,

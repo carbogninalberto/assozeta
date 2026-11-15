@@ -27,7 +27,8 @@ var (
 	ErrSubscriptionSignStorage = errors.New("signature storage unavailable")
 	// ErrSubscriptionSignFailed is an exception the view does not handle (the 500 page).
 	ErrSubscriptionSignFailed = errors.New("subscription sign failed")
-	// ErrSubscriptionSignNotPorted refuses, before any write, a path the port does not reproduce.
+	// ErrSubscriptionSignNotPorted refuses, before any write, a path the port does not reproduce:
+	// an object already stored under the new signature key (get_available_name picks a random name).
 	ErrSubscriptionSignNotPorted = refusal.New("subscription sign path not ported")
 )
 

@@ -568,6 +568,23 @@ run('export-pdf-rich-color-error', 'export_data', {**NUOTO_PDF, 'text_before': '
 run('export-pdf-rich-underline-kind-error', 'export_data', {**NUOTO_PDF, 'text_before': 'a <u kind="quad">b</u>'}, 500, FAILED)
 run('export-pdf-rich-label-size-error', 'export_data', {**NUOTO_PDF, 'column_labels': {'tag_name': '<font size="x">A</font>'}}, 500, FAILED)
 
+# Greek text in the Symbol font, a character by its code, the Courier and Times faces, and digits of other scripts:
+# labels, cell values and texts go through the same paragraph parser. The <index> and <onDraw> callbacks these
+# documents cannot draw, a character outside Latin-1 inside <greek> and an invalid <unichar> code fail the export.
+GREEK_LABELS = {'tag_name': '<greek>abg</greek> <unichar code="0x263A"/>', 'creation_date': '<font name="Times-Italic">Data</font>'}
+GREEK_BEFORE = 'Il <greek>corso</greek> di <font name="Courier">nuoto</font> e <font face="Times-Bold">pallanuoto</font> <unichar code="233"/>'
+GREEK_AFTER = '<font name="Courier">a spaziatura fissa</font> <greek>abgde</greek> <unichar code="65"/><br/><font name="Times-Roman">Times</font>'
+run('export-pdf-greek-unichar-fonts', 'export_data', {**NUOTO_PDF, 'column_labels': GREEK_LABELS, 'text_before': GREEK_BEFORE,
+    'text_after': GREEK_AFTER}, 200,
+    download('Tags.pdf', 'application/pdf', pdf={**NUOTO_TABLE, 'headers': list(GREEK_LABELS.values()), 'text_before': GREEK_BEFORE,
+                                                 'text_after': GREEK_AFTER}))
+run('export-pdf-greek-non-latin1-error', 'export_data', {**NUOTO_PDF, 'text_before': 'a <greek>日</greek> b'}, 500, FAILED)
+run('export-pdf-unichar-code-error', 'export_data', {**NUOTO_PDF, 'text_before': 'a <unichar code="x"/> b'}, 500, FAILED)
+run('export-pdf-index-error', 'export_data', {**NUOTO_PDF, 'text_before': 'a <index item="x"/> b'}, 500, FAILED)
+run('export-pdf-ondraw-error', 'export_data', {**NUOTO_PDF, 'text_before': 'a <onDraw name="x"/> b'}, 500, FAILED)
+run('export-pdf-digit-size', 'export_data', {**NUOTO_PDF, 'column_labels': {'tag_name': '<font size="１２">A</font>'}}, 200,
+    download('Tags.pdf', 'application/pdf', pdf={**NUOTO_TABLE, 'headers': ['<font size="１２">A</font>', 'creation_date']}))
+
 run('sheets-missing-error', 'export_multi_sheet', {'filename': 'x'}, 500, FAILED)
 run('sheets-none', 'export_multi_sheet', {'sheets': []}, 400, {'error': 'No sheets specified'})
 run('sheets-model-required', 'export_multi_sheet', {'sheets': [{'model_name': 'Tags'}, {'title': 'x'}]}, 400,

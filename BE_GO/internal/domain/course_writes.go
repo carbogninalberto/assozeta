@@ -19,8 +19,9 @@ var (
 	ErrCourseWritesBodyKeys = errors.New("course add body keys")
 	// ErrCourseWritesServer is a Django server error (500).
 	ErrCourseWritesServer = errors.New("course write server error")
-	// ErrCourseWritesNotPorted refuses an input whose Django behaviour is not ported (500, before any write).
-	ErrCourseWritesNotPorted = refusal.New("course write not ported")
+	// ErrCourseWritesUnreachable is a state no request or stored row produces
+	// (each site names the validation or constraint that rules it out).
+	ErrCourseWritesUnreachable = refusal.AppState("course write: unreachable state")
 	// ErrCourseWritesStalePayment is a course subscription save carrying a
 	// payment that was deleted meanwhile: the deferred foreign key fails.
 	ErrCourseWritesStalePayment = errors.New("course subscription payment deleted")

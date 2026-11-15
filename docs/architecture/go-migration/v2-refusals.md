@@ -18,6 +18,8 @@ below describe what Go itself does not serve; with the handoff on, an A or B ite
 
 Counts (appendix table rows, 2026-11-12, after t11): **377 rows: 276 ported, 72 not a request refusal (structure, ownership or class C notes), 29 kept refused with a one-line reason, 0 open.** Several ported rows keep a narrow sub-case refused, with its reason written in the row. Celery-worker handoffs are not HTTP refusals and are not counted.
 
+After the go-v2only-emailtpl change (2026-11-15): **379 rows: 278 ported, 72 not a request refusal, 29 kept refused, 0 open.** The two new rows are the stored-`NaN` conditions of the e-mail renderer (both B, ported); its remaining sites are class C/X.
+
 After the go-v2only-celery change (2026-11-15): **381 rows: 277 ported, 75 not a request refusal, 29 kept refused, 0 open.** The four new rows classify `internal/celery.ErrUnsupportedValue` by site (one B, ported; three C).
 
 Cross-cutting facts used for the classes:
@@ -145,11 +147,36 @@ Ported in t3pdf: the paragraph tags that draw lines, links, images, rises, other
 `font`, `span`, `nobr`, `sup`, `sub`, base64 JPEG `img`) and a `<para>` with attributes (see "Fragments with their own style" in
 pdf-exports.md). Still refused in these PDFs (B), each because Go cannot or does not reproduce it: `<a name>` anchors and
 `#`/`document:` links (named destinations), `img` of a file, URL, PNG or other format (server files and network, PIL
-re-encoding), the Courier and Times fonts (no metrics), colours that are CMYK, transparent or Python expressions, `<para>`
-indents, justified lines, borders, text transforms, `autoLeading`, `wordWrap`, end dots and hyphenation, the tags `greek`,
-`unichar`, `bullet`, `seq*`, `onDraw` and `index`, and logo data Python's base64 accepts that is not a JPEG Go's decoder reads.
+re-encoding), colours that are CMYK, transparent or Python expressions, `<para>` indents, justified lines, borders, text
+transforms, `autoLeading`, `wordWrap`, end dots and hyphenation, the tags `bullet` and `seq*`, and logo data Python's base64
+accepts that is not a JPEG Go's decoder reads. (The Courier and Times faces, `greek`, `unichar`, `<index>` and `<onDraw>` were
+ported later: "Ported in the go-v2only-pdfcanvas change", below.)
 Markup reportlab's parser raises on (an unclosed tag, `A<B`) is no refusal: the export fails as in Django. Still refused on the MCP transport: an exporter exception whose text Go does not reproduce and argument types `save_info` would write back differently (mcp-server.md). Re-run green natively: printing-generate 113/113 and subscription-reads 350/350
 (`v2rep3-rerun-r1`), course-list 159/159 and course-subscriptions 145/145 (`v2rep3-rerun-r2`).
+
+### Ported in the go-v2only-pdfcanvas change
+
+Receipts are `quality-reports/go-migration/templates-reports-http-s3pdfcanvas-*`; [pdf-exports](pdf-exports.md) ("Greek
+text, characters by code and the other standard faces") has the details. The sentinel `pdfexport.ErrNotPorted`
+(`internal/pdfexport/canvas.go`) is reached from every route that builds a PDF; this change ports the paragraph inputs a
+stored or hand-written text can carry that reportlab draws, and turns the two that reportlab cannot draw in these documents
+into its exception:
+
+| Family | Route | Was refused | Class | Evidence |
+|---|---|---|---|---|
+| templates-reports | `POST saved-reports/<pk>/run` with `export_data`/`export_multi_sheet`/`get_attendance_matrix` (`format: pdf`), and the PDFs of balance-sheet, printing-generate, subscription-reads, course-list and course-subscriptions | `<greek>` (the Symbol font and its byte-to-character table) | B | `export-pdf-greek-unichar-fonts`; RED `s3pdfcanvas-red-r2` Django 246/246, Go 500; GREEN `s3pdfcanvas-versioned-r4` 4 transports 246/246; mutation `s3pdfcanvas-mutation-r4` (the greek table read as identity) CAUGHT on that case |
+| same | same | `<unichar code="…"/>` (a character by its code, decimal/0x/0o/0b) | B | same run (`bs-greek-unichar`, `rt-greek-cells`, `at-greek` goldens) |
+| same | same | `<font name="Courier">`, `<font name="Times-…">`, `<para font="…">` (the Courier and Times width vectors) | B | same run; `go test ./internal/pdfexport` (201 golden documents) |
+| same | same | a number written with the decimal digits of another script (`１２`, `١٢`) | B | `export-pdf-digit-size`; same run |
+| same | same | `<index item="…"/>`, `<onDraw name="…"/>` — reportlab parses them and fails the build (`Missing … callback attribute`), so Go now answers the same 500 page instead of a refusal | B | `export-pdf-index-error`, `export-pdf-ondraw-error`; same run |
+
+Still refused in these PDFs (unchanged by this change, with the class of [the inventory](v2-refusals.md)): `bullet` (B), `seq*`
+(X: reportlab's sequencer is a process-global singleton, so the number drawn depends on the requests served before), `<a
+name>` anchors and `#`/`document:` links (B), `img` of a file, URL, PNG or other format (X for files and URLs, B for a PNG data
+URL), `<unichar name="…">` (B: `unicodedata` names), CMYK, transparent and Python-expression colours (B, B, X), `inf`/`nan`
+and non-ASCII whitespace in numbers (X, B), and in `<para>` the indents, justified lines, borders, text transforms,
+`autoLeading`, `wordWrap`, end dots and hyphenation (B; hyphenation X). The `pdfexport.ErrNotPorted` sentinel stays for those
+conditions.
 
 ### Ported in the v2-pdf change
 
@@ -366,7 +393,6 @@ Receipts are `quality-reports/go-migration/<family>-http-v2doc4-*` (`instance-lo
 | invoice-views | `GET document/invoice/<uid>/view/` | `get_main_tutor()` promotion (B, legacy: yes), for signed-in requests | 92 cases; RED `v2doc4-red-r1` (refusal restored); GREEN `v2doc4-final-r2` 4 transports; mutation `v2doc4-mutation-r1` (last relation promoted) CAUGHT |
 
 Left in these families after this change, with the reason:
-- document-views and invoice-views: tutor promotion on a request authorized only by the bypass header (no signed-in actor for the audit entry).
 - documents-writes: nothing from that change is left; the None filename in `documents/add` was ported in go-v2only-docupload.
 - Not started in this change: document-views mention keys, `get_signature_base64()` and the template subset; documents-writes files sent as text fields, storage failures and the season error; `medical-appointments/list` with a doc-less appointment; Biella without a primary tutor relation (the promotion has to run after the Document is created); every other invoice and instructor B row (invoice-core, invoice-parties, invoice-generate, invoice-sync-print, instructor-hours, instructor-writes, and the rest of invoice-views).
 
@@ -515,6 +541,58 @@ Left refused in these families, with the reason:
 - invoice-generate: `send_receipt_email` of other JSON types; approve without a configured producer (class C).
 - instructor-hours: document deletes that cascade to other models' rows (each with its own audit entry).
 - instructor-writes: report workbook inputs the writer treats as formulas or links with an anchor; subnormal products.
+
+### Ported in the go-v2only-throttle change
+
+The DRF throttle history is a cache entry rather than a database row: `SimpleRateThrottle.allow_request` reads
+`cache.get(key, [])` and treats the value as a list of timestamps. Go read that value with a closed pickled-data decoder
+and refused every shape it did not expect. It now reads it as Django does (`BE_GO/internal/repository/drf_throttle.go`):
+the entries of a list of numbers are the timestamps, and any other value is the exception Django raises before the view
+runs. Receipts are `quality-reports/go-migration/<family>-http-s3throttle-*`; each family doc has the details.
+
+| Family | Route | Was refused | Evidence |
+|---|---|---|---|
+| modules-responses | `POST modules/<id>/response/add`, `POST modules/response/<id>/add-attachment` | the cache entry holds integer timestamps (B): Django compares and counts them like floats, so the history is read and the request is answered normally (429 while full, nothing written) | 243 cases; RED `s3throttle-red-r2` Django 243/243, Go 500 on `add-anonymous-integer-history`; GREEN `s3throttle-green-r1` 4 transports; mutation `s3throttle-mutation-r1` (integer entry read as zero) CAUGHT on `add-anonymous-integer-history` |
+| modules-responses | same | the cache entry is not a list of timestamps, or is not a pickled value Go's decoder reads (B: an entry no application code writes — every writer stores a float list with the window as expiry): Django raises in `initial()` and answers its 500 page with nothing written | same run, cases `add-anonymous-history-not-a-list` and `add-anonymous-history-not-pickled` |
+| sso-pairing | `bakney/v1/{pairing/challenge,pairing/commit,login-start,callback,session}`, `instance/admin/bakney-pairing` | the same two shapes on `HandoffThrottle`'s cache entry (B) | 173 cases; RED `s3throttle-red-r2` Django 173/173, Go 500 on `challenge-integer-history`; GREEN `s3throttle-green-r1` 4 transports |
+
+The 14 routes that could reach the refusal are gone from the reach report (`refusal_reach.py`: 576 rows before, 562 after,
+the difference is exactly these routes for `unsupported throttle history value`).
+
+### Ported in the go-v2only-tutorpromo change
+
+The `document view: main tutor promotion` refusal is gone: `get_main_tutor()` promotes for requests admitted by the
+renderer's header too, with Django's auditlog entry (NULL actor columns) and no index row when neither the associate nor
+an actor has an association. `refusal_reach.py`: 14 rows before (the 14 `document/*` and `payment/list` routes), 0 after
+(576 rows overall before, 562 after, nothing else changed). Receipts are
+`quality-reports/go-migration/document-views-http-tutorpromo-*` and
+`.../invoice-views-http-tutorpromo-*`; the two family docs have the details.
+
+| Family | Route | Was refused | Evidence |
+|---|---|---|---|
+| document-views | `GET document/template/<uid>/view/?subscription_id=<uid>` (B, legacy: yes) | the promotion for a request with no account (the renderer header) | 172 cases; RED `tutorpromo-red-r4` Django 172/172, Go 500; GREEN `tutorpromo-green-r1` native and `tutorpromo-versioned-r1` 4 transports; mutation `tutorpromo-mutation-r1` (the pre-change scoped-account guard) CAUGHT |
+| invoice-views | `GET document/invoice/<uid>/view/` (B, legacy: yes) | the same | 93 cases; RED `tutorpromo-red-r1` Django 93/93, Go 500; GREEN `tutorpromo-green-r1` native and `tutorpromo-versioned-r1` 4 transports; mutation `tutorpromo-mutation-r1` (entry actor e-mail as `''`) CAUGHT |
+
+Left in these families after this change: the other rows of their appendix tables (signature URL fetch, mention and
+template subsets, FatturaPA). `document-render`, `payment-reads`, `subscription-medical` and `docmanager-reads` were
+re-run green for the shared promotion signal.
+
+### Ported in the go-v2only-backupsreq change
+
+The rows of the `instance backups request not ported` sentinel that a request or a runner reply can
+produce. Receipts are `quality-reports/go-migration/instance-backups-http-backupsreq-*`; the family doc
+has the details.
+
+| Family | Route | Was refused | Evidence |
+|---|---|---|---|
+| instance-backups | `GET admin/backups`, `POST admin/backups` (B) | a runner reply bytes-decoded by `json`'s `detect_encoding` (UTF-16/32 with a BOM, and the NUL pattern without one), and Python's `NaN`, `Infinity` and `-Infinity` literals (`dto.RunnerJSONDecode`); a NaN reaching the body stays DRF's 500 (`dto.RenderableJSON`), one in an ignored key is 200, and a NaN `free` compares false | 180 cases; RED `backupsreq-red-r2` (Django 180/180, Go 500 on `overview-utf16-bom`); GREEN `backupsreq-native-r3` (Django and Go 180/180) and `backupsreq-versioned-r2` (180/180 on native Django, native Go, Caddy `/api/v1` and `/api/v2`); mutation `backupsreq-mutation-r1` (surrogate validator dropped) CAUGHT. Cases `overview-utf16-bom`, `overview-utf16-bom-be`, `overview-utf16-no-bom`, `overview-utf32-bom`, `overview-utf32-no-bom-be`, `overview-nan-ignored`, `overview-nan-margin`, `overview-infinity-margin`, `overview-negative-infinity-margin`, `overview-nan-free`, `overview-infinity-free` |
+| instance-backups | `POST admin/backups/download-token` (B) | a lone surrogate code point in `name` or `password` (a `\uD800` escape): DRF's `Surrogate characters are not allowed: U+XXXX.`, after the length and NUL errors and before the pattern; a pair is the character it encodes. The input sentinel of `dto/instance_backups.go` is gone | cases `token-password-lone-surrogate`, `token-name-lone-surrogate`, `token-password-long-lone-surrogate`, `token-paired-surrogate-password`; Go unit `go test ./internal/dto -run 'RunnerJSON\|RenderableJSON'`; same receipts |
+| instance-backups-actions, instance-backups, instance-admin | the backup routes, `admin/restarts`, `admin/updates` | not a refusal of their own: the shared decoder no longer calls `dto.AuditJSONLoads`, so the `audit serializer input not ported` sentinel left these 13 routes | `refusal_reach.py`: `audit serializer input not ported` 20 rows before, 7 after |
+
+Left refused in these families, with the reason: a runner reply nested past the decoder's limit (the
+depth at which Python's json codec raises `RecursionError` is the interpreter's live call stack, X) and
+one holding a lone surrogate (DRF's renderer refuses it only where it reaches the response; X/B for a
+later step); the cached data sizes and attempt counters and the signed download-token claims (C).
 
 ### Ported in the go-v2only-xlsxvalue change
 
@@ -839,7 +917,7 @@ Coordination/status doc; no refusals. Nothing to classify.
 | GET document/subscription/preview/ | header/footer markup outside `mentions` subset — notably `<pre>` (code block) | `BE_GO/internal/mentions/tree.go:34-35` via `service/document_views.go:730-734`, `ErrDocumentViewNotPorted` | **A** (`<pre>` ported in v2-documents) | Preview iframe `routes/association/Members/subscription/partials/Preview.svelte:63`. Header/footer edited with TipTap (`routes/profile/sections/Account.svelte:757,777`); `components/inputs/TipTapEditor.svelte:104` loads StarterKit, whose CodeBlock (``` input rule or pasted `<pre>`) serializes `<pre><code>`. No toolbar button, so infrequent. Other refusals (comments, mismatched tags, unknown entities) are not produced by TipTap's serializer. |
 | GET document/subscription/preview/ | mention keys outside list / `subscription.*` | `service/document_views.go:207,250,259` | B (**ported** in v2-rest-docs) | Editor list `components/inputs/suggestion.js:9-75` matches the resolvers; `invoice.*` keys resolve to '' (no `invoice` object in context). No `subscription.*` in the editor. legacy: yes (old mention keys); cheap. |
 | GET document/subscription/preview/ | association whose user is a collaborator | handler/service preview | C | Association users are owners by construction. |
-| GET document/{subscription,compensation,template,medical-appointment}/<uid>/view/ | `get_main_tutor()` promote write | `domain.ErrViewTutorWrite` via `service/document_views.go:84` | B (**ported** in v2-documents-4 for signed-in requests) | Renderer-only route. legacy: yes (associates whose primary tutor relation was removed); medium (write + audit). |
+| GET document/{subscription,compensation,template,medical-appointment}/<uid>/view/ | `get_main_tutor()` promote write | `domain.ErrTutorPromotionNeeded` via `service/document_views.go:121` (internal signal, no refusal left) | B (**ported in go-v2only-tutorpromo**: signed-in requests in v2-documents-4, the renderer header in tutorpromo; cases `template-subscription-bypass-promotes-tutor`, `template-subscription-bypass-promotes-tutor-without-association`) | Renderer-only route. legacy: yes (associates whose primary tutor relation was removed); the auditlog entry of a request without an account has NULL actor columns, and an associate without an association writes no index row. |
 | same | `get_signature_base64()` | document_views service | B (**ported in t6x2** for the stored signature) | The stored object is read from the object storage and written as a PNG data URI; a missing object with no legacy URL writes `None`; cases `document-views-subscription-signature-stored` and `document-views-subscription-signature-missing`. Kept refused: the legacy `signature_url` fetch (the reply of another server). |
 | same | template inputs outside `djtemplate`, non-ASCII compensation periods | `service/document_views.go:468` | B (non-ASCII periods **ported** in v2-rest-docs; JSON column values **ported in t8out**) | Renderer-only. JSON column values are ported as `json.loads` reads them (big ints beyond int64, floats including `inf`/subnormals/`-0.0`, nested containers, strings with Python's full case mapping; a `{% for %}` over a number is the 500 page). What stays refused is a context value of a type outside `djtemplate`, since the templates are fixed files and only their data varies. legacy: no; medium. |
 | same | HEAD / slash-less paths | router | B (**ported**, v2-documents-4: served; cases added for HEAD) | Renderer uses slash path GET. cheap. |
@@ -871,7 +949,23 @@ Coordination/status doc; no refusals. Nothing to classify.
 |---|---|---|---|---|
 | POST collaborators/add | permission floats with exponent / `-0.0`; NUL or lone surrogates in e-mail | `BE_GO/internal/service/email_render_routes.go:128,166,256` | B (NUL in the e-mail **ported** in taildocs: the 400 validation error; a lone surrogate is the 500 page in Django too, case added. Permission floats with exponent / `-0.0` **ported** in t2docs: the create entry shows the request's own number text and the second `save()` logs an update entry with the numeric reading PostgreSQL's jsonb hands back) | `routes/connectedCollaborators/ConnectedCollaborators.svelte:36-43` sends the permission list built by the UI (no such floats). legacy: no; cheap. |
 | POST invoice/<uid>/send | payment date before year 1000 | `service/email_render_routes.go:434` (`emailrender.ErrUnsupported`) | B | Needs a mistyped date; unusual data. legacy: possible. Stays: `strftime('%Y')` pads such years differently per platform. |
+| POST payment/<uid>/request | a stored `numeric(9,2)` amount is `NaN` (legacy or imported row) | `internal/emailrender/numbers.go` (`localizeDecimal`, `ErrNonFiniteDecimal`) | B (**ported in go-v2only-emailtpl**) | PostgreSQL's `numeric(9,2)` stores `NaN` and the driver reads `Decimal('NaN')` without validation; Django's `formats.localize` raises TypeError, so the view answers the 500 page after rendering. Case `email-render-routes-request-nan-amount`; unit `TestPaymentRequestNonFiniteAmountIsNotARefusal` also proves the error is not a refusal. |
+| POST invoice/<uid>/send | stored `NaN` membership/activity fees (`float('nan')` through `floatformat:2`) | `internal/emailrender/numbers.go` (`floatformat`) | B (**ported in go-v2only-emailtpl**) | Django's floatformat returns `input_val` (`str(float)` is `nan`), so the receipt is queued with `nan`. Case `email-render-routes-send-nan-fees`; units `TestSendInvoiceNonFiniteFeesRenderNan` and `TestFloatformatNonFinite`. |
 | all | non-English `Accept-Language` | — | n/a | Not a refusal (rendered correctly; test harness only). |
+
+#### Ported in the go-v2only-emailtpl change
+
+`internal/emailrender.ErrUnsupported` is static-reachable from the 23 routes/workers the reach tool lists (every caller of
+`Render`, `Brand`, `Localize` and `FloatFormat`). The two conditions above are the ones a request or a stored row can produce;
+the renderer now answers them as Django does. The rest stay:
+
+- **C** — template syntax/tags/filters and the embedded template set (only the app writes `BE/templates`); a template name outside
+  the set (`send_email_template` names are the app's two constants); a language outside Django's `LANGUAGES` (both request
+  resolvers return a supported variant, workers use `it`); context types only the app builds; `instance_email_brand` without a
+  brand; `updated_at` before year 1000 (`InstanceConfiguration.updated_at` is `auto_now`); `floatformat` of text, bool or another
+  type (no template applies it to those values); Decimal text outside plain notation and `floatformat`'s 200-digit guard
+  (every Decimal context value here is a `numeric(9,2)` column, whose text is at most ten characters).
+- **X** — `strftime('%Y')` padding for years before 1000 is a separate sentinel and a platform detail.
 
 ### export-all-data.md
 | route | refusal condition | Go site | class | evidence / notes |
@@ -915,9 +1009,10 @@ Coordination/status doc; no refusals. Nothing to classify.
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | POST admin/backups/download-token | non-JSON body | `BE_GO/internal/handler/instance_backups.go:123` | B | UI JSON (`profile/sections/InstanceBackups.svelte:166`). cheap. Ported in t3plat: both fields are required CharFields, so a form or multipart body reads like JSON strings (cases `token-form-*`). |
-| GET/POST admin/backups | runner replies Go cannot decode (UTF-16/32, NaN, surrogates, deep nesting) | `service/instance_backups.go:128` | B | Runner is the project's own updater emitting standard JSON. legacy: no; medium. Kept refused: the runner is the project's own updater service and always emits standard JSON, so no request can produce a reply of this kind. |
-| GET admin/backups | cached sizes/attempt counters of other types | `service/instance_backups.go:227,273` | C | Cache written only by the app. Kept refused: no request can produce this state (only the app writes it). |
-| token/download | actor hex with Python `int()` extras; lone surrogates | `dto/instance_backups.go:89`, `service/instance_backups.go:112` | C | Tokens minted by the server. Kept refused: no request can produce this state (only the app writes it). |
+| POST admin/backups/download-token | a lone surrogate code point in `name` or `password` | `BE_GO/internal/dto/instance_backups.go` (`instanceBackupsChar`) | B (**ported in go-v2only-backupsreq**) | A JSON body can carry a `\uD800` escape (no UI input produces one). DRF's `Surrogate characters are not allowed: U+XXXX.`, after the length and NUL errors and before the pattern; a surrogate pair is the character it encodes. Cases `token-password-lone-surrogate`, `token-name-lone-surrogate`, `token-password-long-lone-surrogate`, `token-paired-surrogate-password`; receipts `backupsreq-*`. |
+| GET/POST admin/backups and the other runner routes | runner replies Python decodes but Go did not: UTF-16/32 JSON and `NaN`/`Infinity` literals (**ported in go-v2only-backupsreq**), lone surrogates and nesting past the decoder's limit (stay) | `dto/runner_json.go` (`RunnerJSONDecode`) | B (UTF-16/32 and the literals ported) / X (lone surrogates, nesting) | The reply comes from the project's own updater, and the fixture scripts it. `json.loads(bytes)` takes `detect_encoding`'s codec (the BOMs and the NUL pattern) and Python's `NaN`, `Infinity` and `-Infinity` literals; a NaN reaching the body is still DRF's 500 and one in an ignored key is 200 (cases `overview-utf16-*`, `overview-nan-*`, `overview-*infinity-*`). Kept refused: a lone surrogate (DRF's renderer refuses it only where it reaches the response, so the render checks would have to model it on every route) and nesting past 500 (the `RecursionError` depth is the interpreter's live call stack). |
+| GET admin/backups | cached sizes/attempt counters of other types | `service/instance_backups.go` (`dataSizes`, `instanceBackupsCached`, `instanceBackupsNext`, `instanceBackupsPasswordRefusal`), `repository/instance_backups.go` | C | Cache written only by the app. Kept refused: no request can produce this state (only the app writes it). |
+| token/download | actor hex with Python `int()` extras | `service/instance_backups.go` (`instanceBackupsUserID`) | C | Tokens minted by the server. Kept refused: no request can produce this state (only the app writes it). |
 | runner transport | odd `Content-Length` | updaterrunner | C | Own runner. Kept refused: no request can produce this state (only the app writes it). |
 
 ### evaluate-manuale.md
@@ -929,7 +1024,7 @@ Coordination/status doc; no refusals. Nothing to classify.
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | schedule/restore/remote/test/confirm/fetch, item view | form/multipart bodies | `BE_GO/internal/handler/instance_backup_actions.go:130,147`, `dto/instance_backup_actions.go:247` | B | UI JSON (`InstanceBackups.svelte:108,144,190,215`, `RemoteBackup.svelte:66,80,106,141`, `BackupSchedule.svelte:39`); upload uses `application/gzip` (`backupUpload.js:27`). cheap. Ported in t3plat for restore, remote key, key confirmation and fetch (required CharFields only; cases `restore-form-*`). **Ported in t4l2** for schedule, remote settings, remote test and the item view: the serializers read HTML input (`dto.ValidateBackupActionsInput`), cases `schedule-form-*`, `schedule-multipart-*`, `remote-put-form*`, `remote-test-form*`, `keep-multipart-body`, `delete-multipart-*`. |
-| same | lone surrogates in CharFields; undecodable runner replies | `service/instance_backup_actions.go:275,304,334,466` | B | Not typable in the UI; own runner. legacy: no. **Ported in t4l2**: a lone surrogate in a CharField answers DRF's `Surrogate characters are not allowed: U+XXXX.` after the length and NUL errors and before the pattern (cases `restore-lone-surrogates`, `schedule-time-lone-surrogate`, `remote-put-lone-surrogate`). The runner replies are kept refused (own service, see the overview row). |
+| same | lone surrogates in CharFields; undecodable runner replies | `service/instance_backup_actions.go`, `dto/runner_json.go` | B | Not typable in the UI; own runner. legacy: no. **Ported in t4l2**: a lone surrogate in a CharField answers DRF's `Surrogate characters are not allowed: U+XXXX.` after the length and NUL errors and before the pattern (cases `restore-lone-surrogates`, `schedule-time-lone-surrogate`, `remote-put-lone-surrogate`). **Ported in go-v2only-backupsreq**: the runner replies take `detect_encoding`'s codec and Python's `NaN`/`Infinity` literals, and the render checks use `dto.RenderableJSON` so a non-finite value that reaches a reply body is the 500 page (it was refused before it could); a lone surrogate or nesting past the decoder's limit in a reply stays refused (see the row in instance-backups.md). |
 
 ### google-calendar.md
 | route | refusal condition | Go site | class | evidence / notes |
@@ -1022,7 +1117,7 @@ No refusals of its own (re-verification record). Nothing to classify.
 ### invoice-views.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| GET document/invoice/<uid>/view/, document/einvoice/<uid>/view/ | `get_main_tutor()` write; stored JSON outside handled shapes; mentions/template subset; FatturaPA outside subset; HEAD/slash-less | `BE_GO/internal/service/invoice_views.go:55-57,337`; `service/invoice_views_einvoice.go:26-27` | BB (the `get_main_tutor()` write **ported** in v2-documents-4 for signed-in requests; HEAD and slash-less are served; FatturaPA outside the subset kept: the a38 library's validation has no Go equivalent; the JSON shapes and template subset were not reached in t3pay) | Renderer-only routes (no `einvoice`/`document/invoice` in `UI/src`). legacy: yes for tutor relations and old meta JSON; medium–expensive (FatturaPA). |
+| GET document/invoice/<uid>/view/, document/einvoice/<uid>/view/ | `get_main_tutor()` write; stored JSON outside handled shapes; mentions/template subset; FatturaPA outside subset; HEAD/slash-less | `BE_GO/internal/service/invoice_views.go:56-57,337`; `service/invoice_views_einvoice.go:26-27` | BB (the `get_main_tutor()` write **ported in go-v2only-tutorpromo**: signed-in requests in v2-documents-4, the renderer header in tutorpromo, case `invoice-bypass-promotes-tutor`; HEAD and slash-less are served; FatturaPA outside the subset kept: the a38 library's validation has no Go equivalent; the JSON shapes and template subset were not reached in t3pay) | Renderer-only routes (no `einvoice`/`document/invoice` in `UI/src`). legacy: yes for tutor relations and old meta JSON; medium–expensive (FatturaPA). |
 
 ### invoice-sync-print.md
 | route | refusal condition | Go site | class | evidence / notes |
@@ -1077,6 +1172,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | DELETE add-attachment | non-string `document_id`; document referenced elsewhere | `service/modules_responses.go` | ported (v2-rest-b3) | Integer ids resolve through `UUID(int=...)`; a document other rows reference is deleted with the shared collector. |
 | GET modules/<link>/info | module whose association is not active | `service/modules_responses.go` (`Info`) | ported (v2-rest-a, v2-rest-b) | Not a refusal: the public module page returns the fields the form needs, and a module of an association marked deleted answers `module not found` in Django and Go (v2-rest-b). |
 | GET modules/<id>/export | ints beyond int64 (its values are `int64` and strings only, so the column coercion cannot meet one; pandas' `uint64`/`float64` promotion **ported in go-v2only-xlsxvalue**), xlsxwriter-refused text (**ported** in t2docs except dynamic array functions; list/dict labels and non-dict `props` ported in v2-rest-b3) | `service/modules_export.go:94,114,150,162,176,260,266,272` | B | `routes/association/Members/overview/ModuleOverview.svelte:37`. The form builder writes string labels. Free-text answers starting with `=` or holding URLs with `#` would hit the xlsxwriter path. legacy: yes. Cost: medium. |
+| POST response/add, POST add-attachment | the throttle cache entry holds integer timestamps, is not a list, or is not a pickled value Go reads | `repository/drf_throttle.go` (`throttleHistory`, `throttleTimestamp`) | B (**ported** in go-v2only-throttle) | Django compares the entries with a float, so integer timestamps count like floats; every other value raises before the method dispatch and is the error page with nothing written. Cases `add-anonymous-integer-history`, `add-anonymous-history-not-a-list`, `add-anonymous-history-not-pickled` (`s3throttle-green-r1`). Kept different: an entry out of float64's range and a value Django would carry forward into the rewritten list (a non-number the window scan does not reach, or a tuple of timestamps, which the decoder reads as a list) answer the error page here; only a foreign writer can store them. |
 
 ### modules-writes.md
 | route | refusal condition | Go site | class | evidence / notes |
@@ -1230,6 +1326,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | pairing/SSO routes | authority replies in UTF-16/32 or with NaN | `bakney_sso_protocol.go` | B | Depends on the authority, not the UI. Kept refused: the replies come from the pairing authority, an external server; `requests` picks the charset by detection, which has no Go equivalent. |
 | pairing/SSO routes | non-ASCII (IDNA) hosts, non-base64 secrets | `service/bakney_sso.go` | B | An admin would have to enter an IDN host in `BakneyPairing.svelte`. Rare. Cost: cheap. Ported in t3plat for IDNA hosts (`normalizeBakneyOrigin` uses `idna2003`, checked against Python in `TestNormalizeBakneyOriginInternationalizedHosts`). Secrets that are not base64 are kept refused: the secret is generated by the app (`secrets.token_urlsafe`) and stored encrypted, so no request can produce another shape. |
 | pairing/SSO | DEBUG technical page, certifi vs system roots | | C | Deployment differences, not refusals. Kept: deployment difference, not a request refusal. |
+| `bakney/v1/*`, `instance/admin/bakney-pairing` | the throttle cache entry holds integer timestamps, is not a list, or is not a pickled value Go reads | `repository/drf_throttle.go` (`throttleHistory`, `throttleTimestamp`) | B (**ported** in go-v2only-throttle) | Integer timestamps count like floats (`challenge-integer-history`, 429); any other value raises before the view runs and is the error page, which Go answers too. The family authors only the integer case: it runs with `DEBUG` on, where Django answers the technical page instead. |
 
 ### subscription-misc.md
 | route | refusal condition | Go site | class | evidence / notes |
@@ -1428,3 +1525,123 @@ For later reference, these are reachable with UI-made data if Go takes job owner
 - tasks-db-d: `renew_memberships_payments` when a next period is already paid.
 - tasks-db-e/f: cascades of export or orphan certificate documents.
 - tasks-db-d: persisted Beat row `check_workflows_trigger_cron` rejected.
+
+## Long tail PR 2, agent A
+
+Rule of the long tail (owner, 2026-11-15): a state only the application writes, or one Django itself raises on, is
+`refusal.AppState` (Django's production 500 page, never handed off); a reachable input Django answers is ported. Per-site
+tables are in the long-tail working notes (`A-<point>.md`). `refusal_reach.py` HTTP/WebSocket rows for these points: 138 -> 34
+(all routes: 471 -> 364).
+
+| Sentinel | HTTP/WS before -> after | What changed |
+|---|---|---|
+| `celery.ErrUnsupportedValue` | 39 -> 0 | app state: only the app builds task arguments and broker messages |
+| `xlsxexport.ErrNotPorted` | 21 -> 0 | 17+ digit numeric text **ported** (pandas fuses the digit accumulation on macOS arm64 only; Go follows its platform); the rest is `xlsxexport.ErrUnexpectedInput` (app state). This supersedes "numeric-looking text with 17+ significant digits" in "Ported in the go-v2only-xlsxvalue change" |
+| `emailrender.ErrUnsupported` | 17 -> 0 | app state (templates, names, languages, context types are the app's) |
+| `pdfexport.ErrNotPorted` | 16 -> 16 | split: impossible layouts `ErrUnexpectedLayout`, server-file/URL images and `<seq*>` `ErrOutsideInput` (both app state); B markup and user logos stay refused |
+| `channels.ErrUnsupportedValue` | 8 -> 0 | app state (messages and the Redis notification list are the app's) |
+| `djtemplate.ErrUnsupported` | 7 -> 0 | app state (fixed templates, jsonb columns) |
+| `mentions.ErrUnsupported` | 7 -> 7 | unchanged: stored editor HTML outside the html.parser subset (B, needs a bs4 port) |
+| `pydateutil.ErrUnsupported` | 7 -> 7 | split: local-zone states `ErrUnexpectedZone` (app state); WTF-8 text and texts over 64 KiB stay refused |
+| `fatturapa.ErrUnsupported` | 4 -> 4 | split: non-JSON and 4300+ digit jsonb text `ErrUnexpectedJSON` (app state); Decimal shapes, rounding and pre-1000 dates stay refused |
+| `googleapi.ErrNotPorted` | 4 -> 0 | pre-1000 event years **ported** (glibc unpadded, macOS padded); credentials, client secrets and Google answers `googleapi.ErrUnexpected` (app state) |
+| `instanceprobe.ErrJSONEncoding` | 4 -> 0 | **ported**: UTF-16/UTF-32 JSON bodies (cases `releases-feed-utf16-bom`, `releases-feed-utf32-le`, `releases-feed-utf16-truncated`) |
+| `pilplaceholder.ErrUnsupported` | 4 -> 0 | app state (names are CharField(150), validated before the drawing) |
+
+Left for PR 3: `mentions` (bs4 html.parser port), `pydateutil` WTF-8 and long texts, `fatturapa` Decimal/rounding/float overflow
+and pre-1000 dates (same platform rule as Google), `pdfexport` paragraph markup and user logos. Platform answers ported here
+follow `runtime.GOOS`: the parity harness runs Django on macOS, CI and production on Linux, so they have unit evidence and no
+family case.
+
+## Long tail PR 2, agent B
+
+Rule per site (owner decision 2026-11-15): port what a request or a stored row reaches when Django answers normally;
+`refusal.AppState` where Django raises or only the application writes the state; accepted divergence X2 for outbound
+release feeds and provider bodies. `refusal_reach.py` HTTP/WebSocket pairs: documents upload 34 → 14, audit serializer
+6 → 0, course writes 10 → 0, folder writes 10 → 0, instance administration 10 → 7 (other roots 1 → 0), association
+transfer 9 → 4; total 471 → 417.
+
+| point | ported (cases) | AppState | left for PR 3 |
+|---|---|---|---|
+| document upload (`documents-writes.md`) | — | unreachable decoder/key states; storage failures and bodies over 250 MiB (platform/external) | RFC 2231 names in codecs without a faithful decoder |
+| audit serializer (`audit-logs.md`) | — | non-ASCII `title()`, NaN/lone surrogates jsonb never stores; nesting past 500 (platform) | — (sentinel deleted) |
+| course writes (`course-writes.md`) | huge decimal exponents, float underflow, out-of-range UTC datetimes, writable installment ids (6 cases, `lt2B-1`) | unreachable amount parses and the NOT NULL association | — (sentinel deleted) |
+| folder writes (`folders.md`) | `TemporaryUploadedFile` above the in-memory limit (2 cases, `lt2B-2`) | — | — (sentinel deleted) |
+| instance administration (`instance-admin.md`) | runner reason `str()`; X2 release feed and provider bodies | stored shapes, missing configuration row, composition, request data without `get()`, invalid env integers | IDNA 2003 AI `base_url`; nested form list keys |
+| association transfer (`association-transfer.md`) | — | snapshots, Celery rows, storage names, composition, NaN renders, temporary-file failures | import/validate archive texts, multipart decoder, password file, referenced export document |
+
+Also in this change: `domain.ErrServerComposition` (AppState) replaces the refusals returned when an optional service
+dependency or the paid-flow transaction is missing (payment state, stripe, invoice parties, data restore, payment reads
+and misc, statistics, subscription create and renew, docmanager): the server always wires them. The saved-report
+integration settings and the setup wizard's import task row are app-written states. Remaining sites of those points stay
+refusals for PR 3. Total HTTP/WebSocket pairs after this change: 413.
+
+## Long tail PR 2, agent C
+
+Rule per return site (owner decision, 2026-11-15): port what a request or a stored row reaches when Django answers
+normally; `refusal.AppState` (Django's production 500 page, never handed off) where Django itself raises, where only the
+app writes the state or a constraint makes it impossible, and for external, platform or timing outcomes outside the
+approved divergences. Per-site tables: `tmp/long-tail/C-*.md` (worktree notes).
+
+| Refusal | Ported | Now AppState | Left for PR 3 |
+|---|---|---|---|
+| collaborator delete reaches an unsupported model | – | all 5 sites (committed graph, C) | – |
+| unsupported throttle history value | already done in go-v2only-throttle | – | – |
+| instance backups request not ported | – (sentinel deleted) | runner reply past the decoder (4), cached sizes (3), signed token actor (3); the seven action-validator sites were dead code | – |
+| cached backup value not ported | – | both sites (3) | – |
+| cached data restore progress not ported | – | the shared unpickler's error (3: every reader's key is app-written) | – |
+| print task deferred for maintenance | – | the eager-task deferral (4: Celery re-applies synchronously until the restore ends) | – |
+| bakney sso input not ported | – | all 3 sites (Django raises on non-ASCII / non-base64; inputs are app-written) | – |
+| persona input not ported | `picture_path` list or dict on add/update (personas-writes, 6 cases) | delete without writes, tutor key change, form JSON depth, picture storage failures (3/4) | router create picture branch and form body |
+| document render: input not ported | – | missing form storage, scope user role, unbuffered multipart (3); body read errors propagate | filename headers, rejected generated name, X8 signature overlay |
+| document view: input not ported | – | missing signature storage, legacy signature URL (4), collaborator-owned association (3) | template/mention subsets, invoice values |
+| course enrolment input is not ported | – | make-payment's new payment with instructor/invoice (3) | form JSON the jsonb column rejects |
+| course location / subscription membership upload | – | missing document storage (3) | filenames, multipart `documents_data` |
+| subscription sign path not ported | – | key already taken (4, timing) | – |
+| camps payment walk is not ported | – | row-order dependent outcomes (4), group removed mid-request (4) | hidden payment without association, check-constraint texts, other failures |
+| api schema: outside the ported input range | – | OPTIONS on Swagger and identity errors now answer the plain 500 (Django raises) | the eight `apiSchemaRefuse` conditions |
+| email render route input not ported | – | payment year before 1000 (4, C library) | form/upload email values |
+| payment ordering not ported | – | internal marker, never returned (the lazy order stays `domain.ErrPaymentReadsNotPorted`) | annotation ordering |
+| business MCP, course subscription input, invoice view value | – | – | all sites (see the per-point notes) |
+
+Rule-4 sites where Django still answers normally and Go now answers the 500 page (listed for review, not in
+`accepted-divergences.md`): persona picture storage failures (Django answers botocore's text as a 400), an existing object
+under a new picture or signature key (Django picks a random name), a legacy signature URL (Django fetches it), a runner
+reply with a lone surrogate in a key the view ignores, camps walks whose outcome depends on row order, a payment year
+before 1000 in the invoice e-mail, and the print deferral during a restore (Django loops until the restore ends).
+
+`refusal_reach.py` HTTP and WebSocket rows for these points: 134 before, 51 after (all kinds 141 → 54); whole report 471 → 388
+HTTP/WebSocket rows (533 → 446 overall). Evidence: personas-writes 257/257 on four transports (`lt2C-1`), mutation
+(`',' element ignored`) CAUGHT on `add-picture-list-comma`; the 42 other families whose routes reach a changed site
+green on four transports (`sweep-lt2C-2`, with camps-subscriptions, modules-responses, sso-pairing and subscription-create
+rerun alone after load or timing failures: `lt2C-3-*`, `lt2C-4-sso-pairing`).
+
+## Long tail PR 2, combined: sites sent back to the Django handoff
+
+Owner decision (2026-11-15) on the combined branch: a site where Django answers normally stays a refusal (handed off to
+Django) until it is ported, even when the answer depends on an external system, the platform or timing. Only the
+approved divergences (X1, X2, X8, X11) get a native answer. The agent sections above listed these sites as application
+state; they are refusal sentinels again:
+
+| Sentinel | Sites | Django | Replay |
+|---|---|---|---|
+| `pdfexport.ErrNotPorted` | `<img>` with a server file or URL, the `<seq*>` tags | reportlab draws them | before any write |
+| `domain.ErrDocumentWritesNotPorted` | multipart body over 250 MiB; storage failure on documents/add and on the medical upload | spools the body to disk; answers botocore's text (400, or its own 500 JSON) | none: the body is over the handoff limit, or the Document row and the upload are recorded effects |
+| `dto.ErrAuditNotPorted` | JSON nested past 500 levels | answers unless the live stack hits the recursion limit | reads: yes |
+| `domain.ErrAssociationTransferNotPorted` | import/validate temporary-file failures | its own JSON with the `OSError` text | yes, when the body fits the handoff limit |
+| `service.ErrInstanceBackupsNotPorted`, `domain.ErrInstanceAdminRefused` | runner reply nested past the decoder or holding a lone surrogate | answers unless RecursionError or the surrogate reaches the response | GET runner calls only; a POST to the runner is a recorded effect |
+| `service.ErrPersonaNotPorted` | picture storage failures, existing object under the new key | botocore's text as a 400; a random name | HeadObject and key failures: yes; after PutObject: no |
+| `service.ErrSubscriptionSignNotPorted` | existing object under the new signature key | a random name | subscription/sign: yes; subscription create: no (after the insert) |
+| `service.ErrDocumentViewNotPorted` | legacy signature URL | fetches it, `None` on failure | yes, unless the main-tutor promotion wrote first |
+| `service.ErrCampsPaymentNotPorted` | walks whose outcome depends on row order | the heap order's outcome | yes (planned before any write) |
+| `service.ErrEmailRenderNotPorted` | payment year before 1000 in the invoice e-mail | the C library's `strftime` | yes |
+| `service.ErrInvoiceSyncPrintDeferred` | print deferral during a restore | re-applies the task until the restore ends | only when the first print of a read is deferred; after a write: no |
+
+Where the replay is not possible Go still answers the 500 page; those sites are on the PR 3 list. Kept as application
+state: the unwired-storage cases (`domain.ErrServerComposition`, `errDocumentViewSignature`) and every other site of the
+agent sections. `refusal_reach.py` HTTP/WebSocket rows: 516 on main, 223 with the three agents' changes, 260 after these
+reverts.
+
+Also fixed on the combined branch: release feed items `normalize_release` raises on answer Django's 500 page
+(`instanceprobe.ErrReleaseRaises`, application state) instead of the X2 provider-failure body, which stays for values
+Django answers (instance-outbound cases `releases-feed-item-not-object`, `releases-feed-null-assets`).

@@ -277,17 +277,17 @@ func loadReportSettings(ctx context.Context, store reportIntegrationStore) (dto.
 		}
 		root, ok := parsed.(domain.RequestObject)
 		if !ok {
-			return dto.ReportSettings{}, dto.ErrReportNotPorted
+			return dto.ReportSettings{}, domain.ErrInstanceAdminUnexpected
 		}
 		if record, present := root.Lookup("ai"); present {
 			object, ok := record.(domain.RequestObject)
 			if !ok {
-				return dto.ReportSettings{}, dto.ErrReportNotPorted
+				return dto.ReportSettings{}, domain.ErrInstanceAdminUnexpected
 			}
 			if value, _ := object.Lookup("settings"); value != nil {
 				settings, ok := value.(domain.RequestObject)
 				if !ok {
-					return dto.ReportSettings{}, dto.ErrReportNotPorted
+					return dto.ReportSettings{}, domain.ErrInstanceAdminUnexpected
 				}
 				number := func(key string) (int64, error) {
 					value, present := settings.Lookup(key)

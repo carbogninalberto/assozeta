@@ -19,7 +19,8 @@ import (
 
 // ErrInvoiceSyncPrintDeferred is CoordinatedTask's maintenance deferral of an
 // eager task (operation lock busy or unavailable, or a pending restore):
-// Django re-applies the task synchronously; not ported (the 500 page).
+// Django re-applies the task synchronously until the restore ends; not
+// ported, handed off to Django.
 var ErrInvoiceSyncPrintDeferred = refusal.New("print task deferred for maintenance")
 
 // invoiceSyncUserAgent and the other headers are requests' defaults

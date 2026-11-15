@@ -98,7 +98,7 @@ func (h *APISchemaHandler) Swagger(c echo.Context) error {
 		if request.options {
 			// The OPTIONS metadata renders the page template without its
 			// context; including an empty script template name fails.
-			return apiSchemaServerError(c)
+			return apiSchemaFailure(c)
 		}
 		url, ok := apiSchemaURL(request)
 		if !ok {
@@ -279,7 +279,7 @@ func (h *APISchemaHandler) serve(c echo.Context, view apiSchemaView, handle func
 		}
 		return request.error(http.StatusForbidden, data)
 	case err != nil:
-		return apiSchemaServerError(c)
+		return apiSchemaFailure(c)
 	}
 
 	switch httpRequest.Method {
@@ -316,20 +316,16 @@ func apiSchemaFailure(c echo.Context) error {
 	return restError(c, errors.New("api schema: unhandled error"))
 }
 
-func apiSchemaServerError(c echo.Context) error {
+// apiSchemaRefuse answers requests outside the ported input range with the
+// server error page instead of an approximated document.
+func apiSchemaRefuse(c echo.Context) error {
+	c.Logger().Warn(errAPISchemaUnsupported.Error())
 	header := c.Response().Header()
 	header.Del("Allow")
 	header.Del("Vary")
 	header.Del("Content-Disposition")
 	header.Del("Cross-Origin-Opener-Policy")
 	return restError(c, errAPISchemaUnsupported)
-}
-
-// apiSchemaRefuse answers requests outside the ported input range with the
-// server error page instead of an approximated document.
-func apiSchemaRefuse(c echo.Context) error {
-	c.Logger().Warn(errAPISchemaUnsupported.Error())
-	return apiSchemaServerError(c)
 }
 
 // apiSchemaURL is the views' _get_schema_url: DRF's reverse('schema') keeps

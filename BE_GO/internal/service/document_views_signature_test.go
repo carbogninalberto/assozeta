@@ -62,16 +62,16 @@ func TestDocumentViewsSubscriptionSignature(t *testing.T) {
 		subscription *domain.ViewSubscription
 		objects      domain.DocumentViewObjects
 		want         string
-		refused      bool
+		refused      error
 	}{
 		{name: "stored object", subscription: subscription(signatureText(storedName), nil), objects: objects,
 			want: `src="data:image/png;base64,` + base64.StdEncoding.EncodeToString(body) + `"`},
 		{name: "missing object without url", subscription: subscription(signatureText("signatures/missing.png"), nil), objects: objects,
 			want: `src="None"`},
 		{name: "missing object with url", subscription: subscription(signatureText("signatures/missing.png"), signatureText(legacyURL)),
-			objects: objects, refused: true},
-		{name: "url without key", subscription: subscription(nil, signatureText(legacyURL)), objects: objects, refused: true},
-		{name: "stored object without reader", subscription: subscription(signatureText(storedName), nil), refused: true},
+			objects: objects, refused: ErrDocumentViewNotPorted},
+		{name: "url without key", subscription: subscription(nil, signatureText(legacyURL)), objects: objects, refused: ErrDocumentViewNotPorted},
+		{name: "stored object without reader", subscription: subscription(signatureText(storedName), nil), refused: errDocumentViewSignature},
 	}
 	for _, test := range cases {
 		t.Run(test.name, func(t *testing.T) {
@@ -81,9 +81,9 @@ func TestDocumentViewsSubscriptionSignature(t *testing.T) {
 			}
 			reply, err := views.Render(context.Background(), domain.ResolvedIdentity{},
 				DocumentViewRequest{View: ViewSubscription, UID: uid, Language: "en"})
-			if test.refused {
-				if !errors.Is(err, ErrDocumentViewNotPorted) {
-					t.Fatalf("error %v, want the signature refusal", err)
+			if test.refused != nil {
+				if !errors.Is(err, test.refused) {
+					t.Fatalf("error %v, want %v", err, test.refused)
 				}
 				return
 			}

@@ -936,7 +936,7 @@ func statisticListed(text *string, id string) (bool, error) {
 func (s *StatisticReads) todayLessons(ctx context.Context, identity domain.ResolvedIdentity, association string,
 	audit domain.LoginAuditContext) (StatisticResult, error) {
 	if s.lessons == nil {
-		return StatisticResult{}, domain.ErrStatisticNotPorted
+		return StatisticResult{}, domain.ErrServerComposition
 	}
 	now := s.naive()
 	day := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)

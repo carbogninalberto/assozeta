@@ -24,9 +24,13 @@ func NewDataRestoreProgress(client *redis.Client) (*DataRestoreProgress, error) 
 	return &DataRestoreProgress{client: client}, nil
 }
 
-// ErrDataRestoreProgressShape is a stored value outside the decoded subset:
-// Django would unpickle it (or fail and answer None); Go refuses the request.
-var ErrDataRestoreProgressShape = refusal.New("cached data restore progress not ported")
+// ErrDataRestoreProgressShape is a cached value outside the decoded subset.
+// Every reader of this decoder reads a key only the app writes, with plain
+// dicts, lists, str, int, float, bool and None: the restore progress payload
+// (BE/instance/restore/progress.py:47-58), the backup sizes and the export,
+// Stripe, agent and restore task caches. So it is an application-state error:
+// the 500 page, never a handoff.
+var ErrDataRestoreProgressShape = refusal.AppState("cached value outside the unpickled subset")
 
 // DataRestoreProgressValue is cache.get(progress_key(id)) decoded: nil for a
 // miss or a cache error (progress.snapshot catches every exception), an int64

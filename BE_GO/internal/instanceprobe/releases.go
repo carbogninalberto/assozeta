@@ -104,10 +104,32 @@ type ReleaseError struct{ Message string }
 
 func (e *ReleaseError) Error() string { return e.Message }
 
-// ErrReleaseNotPorted is a feed Django would answer with a server error
-// (an exception the view does not catch) or values this port does not
-// carry (non-integer ids, non-string names/dates/notes, lone surrogates).
+// ReleaseNotPublished is fetch_release's answer for a release that is not a
+// published stable one.
+const ReleaseNotPublished = "The selected release is not a published stable release."
+
+// ReleaseNotReadable is the native answer (accepted divergence X2) for a feed
+// this port does not read: Django's text for an invalid catalog when the feed
+// was read (ErrReleaseNotPorted), its unavailable text for a response Go does
+// not decode (ErrNotPorted).
+func ReleaseNotReadable(err error) *ReleaseError {
+	if errors.Is(err, ErrReleaseNotPorted) {
+		return &ReleaseError{Message: "Invalid release catalog response."}
+	}
+	return &ReleaseError{Message: "Release service is unavailable. Please try again later."}
+}
+
+// ErrReleaseNotPorted is a feed with values this port does not carry
+// (non-integer or out-of-range ids, non-string names/dates/notes, lone
+// surrogates). Django answers them; the release views answer them natively
+// (accepted divergence X2).
 var ErrReleaseNotPorted = refusal.New("instanceprobe: release feed not ported")
+
+// ErrReleaseRaises is a feed item on which normalize_release raises
+// (AttributeError, KeyError or TypeError). Neither the release list nor the
+// update request catches it, so Django answers its 500 page; Go answers the
+// same page (application state, never handed off).
+var ErrReleaseRaises = refusal.AppState("instanceprobe: release feed item Django raises on")
 
 // quoteTag is urllib.parse.quote(tag, safe="") for a stable tag (only
 // letters, digits and dots, which quote keeps).
@@ -117,7 +139,7 @@ func quoteTag(tag string) string { return url.PathEscape(tag) }
 func normalize(item any) (*Release, error) {
 	raw, ok := item.(map[string]any)
 	if !ok {
-		return nil, ErrReleaseNotPorted // raw.get: AttributeError
+		return nil, ErrReleaseRaises // raw.get: AttributeError
 	}
 	tagValue, present := raw["tag_name"]
 	if !present {
@@ -143,15 +165,15 @@ func normalize(item any) (*Release, error) {
 		for _, entry := range items {
 			asset, ok := entry.(map[string]any)
 			if !ok {
-				return nil, ErrReleaseNotPorted
+				return nil, ErrReleaseRaises // item.get('name'): AttributeError
 			}
 			name, isString := asset["name"].(string)
 			if !isString {
 				if _, unhashable := asset["name"].([]any); unhashable {
-					return nil, ErrReleaseNotPorted
+					return nil, ErrReleaseRaises // unhashable dict key: TypeError
 				}
 				if _, unhashable := asset["name"].(map[string]any); unhashable {
-					return nil, ErrReleaseNotPorted
+					return nil, ErrReleaseRaises // unhashable dict key: TypeError
 				}
 				continue
 			}
@@ -181,7 +203,7 @@ func normalize(item any) (*Release, error) {
 	}
 	idValue, present := raw["id"]
 	if !present {
-		return nil, ErrReleaseNotPorted // raw['id']: KeyError
+		return nil, ErrReleaseRaises // raw['id']: KeyError
 	}
 	id, ok := idValue.(Int)
 	if !ok {
@@ -242,7 +264,7 @@ func iterate(value any) ([]any, error) {
 			return nil, nil
 		}
 	}
-	return nil, ErrReleaseNotPorted
+	return nil, ErrReleaseRaises // None/int iterate: TypeError; dict/str keys: AttributeError
 }
 
 // greaterThanZero is `value > 0` for a JSON value (bools are ints; other
@@ -256,7 +278,7 @@ func greaterThanZero(value any) (bool, error) {
 	case float64:
 		return v > 0, nil
 	}
-	return false, ErrReleaseNotPorted
+	return false, ErrReleaseRaises // value > 0: TypeError
 }
 
 // ReleaseSet is fetch_releases' dict of normalized releases by id (first

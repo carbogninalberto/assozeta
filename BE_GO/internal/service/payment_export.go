@@ -14,6 +14,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/xlsxexport"
 )
 
@@ -557,8 +558,8 @@ func (s *PaymentExport) workbook(association *domain.PaymentExportAssociation, p
 	}
 	workbook, err := xlsxexport.PandasOpenpyxl(columns, header, s.now())
 	switch {
-	case errors.Is(err, xlsxexport.ErrNotPorted):
-		return nil, domain.ErrPaymentReadsNotPorted
+	case errors.Is(err, refusal.ErrAppState):
+		return nil, err // an input no view builds (xlsxexport.ErrUnexpectedInput)
 	case err != nil:
 		return nil, domain.ErrPaymentReadsServer // get_excel_base64 returned None: raise Exception
 	}

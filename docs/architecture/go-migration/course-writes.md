@@ -104,12 +104,20 @@ carry the session context.
 
 - `course/<uid>/overview/<uid_subscription>/add` (not routed in Go).
 - course/add: a non-canonical `X-Group-Id` spelling (auditlog records it as sent in every created row).
-- course/update: dates outside Python's parsers, exponents beyond 10000 in a decimal, and events whose
-  `course_subscription_installment_id` is valid (`dict(validated_data)` keeps the UUID object: the save fails after
-  auditlog has written its entry). Decimals, floats, booleans, billing integers and dates in other spellings, and values
-  the column rejects (entry, then 500), follow Django. Float event amounts are compared by their binary value.
-- course-overview update for an athlete whose subscription has no association: kept refused, no stored row can reach it
-  (the subscription's association column is NOT NULL).
+- course-overview update for an athlete whose subscription has no association: no stored row can reach it (the
+  subscription's association column is NOT NULL); an application-state error (500 page, never handed off) since
+  long-tail PR 2.
+
+## Ported in long-tail PR 2 (agent B)
+
+course/update: a decimal whose exponent is beyond ±10000 reaches `numeric(9,2)` unformatted (Django 5.2), so PostgreSQL
+rounds a tiny value or a zero to 0.00 and refuses a large one or a display scale over 16383 (entry, then 500); a JSON
+float below the float range is Python's 0.0; a datetime whose UTC instant is outside years 1..9999 raises in auditlog's
+`make_naive` before any entry; an event with a writable `course_subscription_installment_id` keeps the UUID object, so
+auditlog records `str()` of the list and the JSONField save fails after the entry. Cases `update-fee-float-underflow`,
+`update-fee-tiny-exponent`, `update-rejected-fee-huge-exponent`, `update-rejected-fee-scale-overflow`,
+`update-start-date-outside-utc`, `update-event-installment-id-kept-as-uuid` (155 cases; `course-writes` 155/155 on four
+transports, `lt2B-1`).
 
 ## Evidence
 

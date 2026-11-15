@@ -973,6 +973,66 @@
    "auto_renewal": false,
    "deleted": false,
    "group_id": null
+  },
+  "u_tail": {
+   "course_id": "c0000000-0000-4000-8000-000000000901",
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "status_flag": 2,
+   "course_type": 1,
+   "creation_date": "2026-02-01T08:00:00Z",
+   "title": "Coda",
+   "description": "Descrizione Coda",
+   "multi_payments": false,
+   "fee": "50.00",
+   "events": null,
+   "one_fee_payment": true,
+   "one_fee": "40.00",
+   "google_calendar_id": null,
+   "google_background_color": "#123456",
+   "multiple_quotes": null,
+   "start_date": null,
+   "end_date": null,
+   "pinned": false,
+   "billed_duration_is_sport_season": false,
+   "billed_frequency": 1,
+   "billed_from_subscription_date": false,
+   "billed_from_day_of_month": 1,
+   "auto_renewal": false,
+   "deleted": false,
+   "group_id": null
+  },
+  "u_tail_multi": {
+   "course_id": "c0000000-0000-4000-8000-000000000902",
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "status_flag": 2,
+   "course_type": 1,
+   "creation_date": "2026-02-01T08:00:00Z",
+   "title": "Coda rate",
+   "description": "Descrizione Coda rate",
+   "multi_payments": true,
+   "fee": "50.00",
+   "events": [
+    {
+     "id": 0,
+     "amount": "25.00",
+     "payment_date": "10/01/2099"
+    }
+   ],
+   "one_fee_payment": false,
+   "one_fee": "0.00",
+   "google_calendar_id": null,
+   "google_background_color": "#123456",
+   "multiple_quotes": null,
+   "start_date": null,
+   "end_date": null,
+   "pinned": false,
+   "billed_duration_is_sport_season": false,
+   "billed_frequency": 1,
+   "billed_from_subscription_date": false,
+   "billed_from_day_of_month": 1,
+   "auto_renewal": false,
+   "deleted": false,
+   "group_id": null
   }
  },
  "payments": {
@@ -4499,6 +4559,231 @@
    },
    "body": {
     "billed_from_subscription_date": null
+   }
+  },
+  {
+   "name": "course-writes-update-fee-float-underflow",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/course/c0000000-0000-4000-8000-000000000901/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success"
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.Course": {
+      "c0000000-0000-4000-8000-000000000901": {
+       "fee": "0.00"
+      }
+     }
+    },
+    "created": {},
+    "links": {},
+    "audit": [
+     {
+      "model": "course",
+      "key": "c0000000-0000-4000-8000-000000000901",
+      "action": 1,
+      "changes": {
+       "fee": [
+        "50.00",
+        "0.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "repr": null
+     }
+    ]
+   },
+   "raw_body": "{\"fee\": 1e-400}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "course-writes-update-fee-tiny-exponent",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/course/c0000000-0000-4000-8000-000000000901/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success"
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.Course": {
+      "c0000000-0000-4000-8000-000000000901": {
+       "one_fee": "0.00"
+      }
+     }
+    },
+    "created": {},
+    "links": {},
+    "audit": [
+     {
+      "model": "course",
+      "key": "c0000000-0000-4000-8000-000000000901",
+      "action": 1,
+      "changes": {
+       "fee": [
+        "0.00",
+        "-1E-12000"
+       ],
+       "one_fee": [
+        "40.00",
+        "0E+20000"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "repr": null
+     }
+    ]
+   },
+   "body": {
+    "fee": "-1E-12000",
+    "one_fee": "0E+20000"
+   }
+  },
+  {
+   "name": "course-writes-update-rejected-fee-huge-exponent",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/course/c0000000-0000-4000-8000-000000000901/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "rows": {},
+    "created": {},
+    "links": {},
+    "audit": [
+     {
+      "model": "course",
+      "key": "c0000000-0000-4000-8000-000000000901",
+      "action": 1,
+      "changes": {
+       "fee": [
+        "0.00",
+        "1E+10001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "repr": null
+     }
+    ]
+   },
+   "body": {
+    "fee": "1E+10001"
+   }
+  },
+  {
+   "name": "course-writes-update-rejected-fee-scale-overflow",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/course/c0000000-0000-4000-8000-000000000901/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "rows": {},
+    "created": {},
+    "links": {},
+    "audit": [
+     {
+      "model": "course",
+      "key": "c0000000-0000-4000-8000-000000000901",
+      "action": 1,
+      "changes": {
+       "fee": [
+        "0.00",
+        "1.000E-16381"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "repr": null
+     }
+    ]
+   },
+   "body": {
+    "fee": "1.000E-16381"
+   }
+  },
+  {
+   "name": "course-writes-update-start-date-outside-utc",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/course/c0000000-0000-4000-8000-000000000901/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "start_date": "0001-01-01T00:00:00+01:00"
+   }
+  },
+  {
+   "name": "course-writes-update-event-installment-id-kept-as-uuid",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/course/c0000000-0000-4000-8000-000000000902/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "rows": {},
+    "created": {},
+    "links": {},
+    "audit": [
+     {
+      "model": "course",
+      "key": "c0000000-0000-4000-8000-000000000902",
+      "action": 1,
+      "changes": {
+       "events": [
+        "[{\"amount\": \"25.00\", \"id\": 0, \"payment_date\": \"10/01/2099\"}]",
+        "[{'course_subscription_installment_id': UUID('c0000000-0000-4000-8000-000000000777'), 'id': 3, 'amount': '12.50', 'payment_date': '05/04/2099'}, {'id': 4, 'amount': '7.00', 'payment_date': '06/04/2099'}]"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "repr": null
+     }
+    ]
+   },
+   "body": {
+    "events": [
+     {
+      "id": 3,
+      "amount": "12.5",
+      "payment_date": "05/04/2099",
+      "course_subscription_installment_id": "C0000000-0000-4000-8000-000000000777"
+     },
+     {
+      "id": 4,
+      "amount": 7,
+      "payment_date": "06/04/2099"
+     }
+    ]
    }
   },
   {

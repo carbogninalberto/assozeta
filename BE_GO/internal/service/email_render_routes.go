@@ -443,6 +443,7 @@ func (s *EmailRenderRoutes) SendInvoice(ctx context.Context, identity domain.Res
 	}
 	paid := payment.PaymentDate.UTC()
 	if paid.Year() < 1000 {
+		// strftime pads such a year or not depending on the C library: handed off.
 		return ErrEmailRenderNotPorted
 	}
 	day := paid.Format("02/01/2006")

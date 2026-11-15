@@ -36,6 +36,13 @@ is read; `add-attachment` answers the same 413 for a decoded file above the limi
 (text that does not decode keeps its earlier answer). Cases: `add-*-over-the-rate`, `*-below-the-rate`, `*-full-history`,
 `*-above-the-limit`, `attach-anonymous-at-the-limit` (the run uses a limit of 4096 bytes).
 
+The history is whatever the cache entry holds, and `SimpleRateThrottle` compares its entries with a float: a history of
+integer timestamps counts like one of floats (`add-anonymous-integer-history` answers 429 without writing), while an entry
+that is not a list of timestamps, or not a pickle of one, raises before the method dispatch and is the error page
+(`add-anonymous-history-not-a-list`, `add-anonymous-history-not-pickled`) with the entry left as it was. Go reads the same
+django-redis value (`internal/repository/drf_throttle.go`: `:1:` prefix, pickled list, the window as expiry) and answers
+those three shapes as Django does.
+
 ## Routes
 
 - **info:** `Module.objects.filter(custom_link=...).first()` by link, exact match (404 `module not found`). A module whose
@@ -139,3 +146,11 @@ module fields above and `response_data.attachments_docs`), and a module of an as
 before the view change, 56/56 after). Go: `ModulesResponses.Info` with the repository's `PublicAssociation` and
 `ResponseAttachments`. 149 cases; GREEN `v2restb-green-r2` on the four transports; mutation `v2restb-mutation-r2` (the deleted
 check dropped) fails `modules-responses-info-deleted-association` (CAUGHT); modules-reads 81/81 re-run (`v2restb-rerun-r1`).
+
+go-v2only-throttle: the request history of the two routes open without an account is read from whatever its cache entry
+holds, as Django reads it (a list of numbers; integer timestamps count like floats), and any other value is the error page
+before the method dispatch with nothing written. Three cases: `add-anonymous-integer-history` (429),
+`add-anonymous-history-not-a-list` and `add-anonymous-history-not-pickled` (500, the entry left as it was); 243 in all.
+RED `s3throttle-red-r2`: Django 243/243, Go 500 on `add-anonymous-integer-history`; GREEN `s3throttle-green-r1`: 243/243 on
+the four transports; mutation `s3throttle-mutation-r1` (integer entry read as zero) fails `add-anonymous-integer-history`
+(CAUGHT). `go test ./internal/repository -run TestThrottleHistory` pins the value shapes.

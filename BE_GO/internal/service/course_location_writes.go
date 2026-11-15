@@ -44,6 +44,10 @@ var (
 	// storable text, names Storage.save rejects, no document storage) before
 	// any write.
 	ErrCourseLocationUploadUnsupported = refusal.New("course location document upload is not ported")
+	// errCourseLocationNoStorage is a writer built without its document
+	// storage: cmd/server/main.go always calls WithUploads. An
+	// application-state error.
+	errCourseLocationNoStorage = refusal.AppState("course location writes without document storage")
 )
 
 // CourseLocationValidationError is DRF's 400 field map.
@@ -125,7 +129,7 @@ func (s *CourseLocationWrites) courseLocationDocuments(write dto.CourseLocationW
 			return uploads, ErrCourseLocationDocumentDecode, nil
 		}
 		if s.uploads == nil {
-			return nil, nil, ErrCourseLocationUploadUnsupported
+			return nil, nil, errCourseLocationNoStorage
 		}
 		raw, _ := item.Lookup("document")
 		content, err := dto.PythonB64Decode(raw)

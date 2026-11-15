@@ -93,7 +93,7 @@ func setupTokenMatches(provided, expected string) bool {
 func (s *AssociationTransfer) cachedDict(ctx context.Context, key string) (*repository.PickledDict, error) {
 	value, present, err := s.options.Writes.CacheValue(ctx, key)
 	if errors.Is(err, repository.ErrDataRestoreProgressShape) {
-		return nil, domain.ErrAssociationTransferNotPorted
+		return nil, domain.ErrAssociationTransferUnexpected
 	}
 	if err != nil || !present {
 		return nil, err
@@ -143,20 +143,20 @@ func transferJSON(value any) (any, error) {
 		return out, nil
 	case float64:
 		if math.IsNaN(v) || math.IsInf(v, 0) {
-			return nil, domain.ErrAssociationTransferNotPorted
+			return nil, domain.ErrAssociationTransferUnexpected
 		}
 		return dto.PythonFloat(v), nil
 	case json.Number:
 		if number, err := strconv.ParseFloat(string(v), 64); err != nil || math.IsInf(number, 0) {
 			if _, ok := new(big.Int).SetString(string(v), 10); !ok {
-				return nil, domain.ErrAssociationTransferNotPorted
+				return nil, domain.ErrAssociationTransferUnexpected
 			}
 		}
 		return v, nil
 	case nil, string, bool, int64:
 		return v, nil
 	}
-	return nil, domain.ErrAssociationTransferNotPorted
+	return nil, domain.ErrAssociationTransferUnexpected
 }
 
 // taskReady is stored_task(task_id)['status'] in TASK_READY_STATES: the
@@ -209,7 +209,7 @@ func (s *AssociationTransfer) activeExport(ctx context.Context, association, use
 	}
 	task, ok := value.(string)
 	if !ok {
-		return nil, domain.ErrAssociationTransferNotPorted
+		return nil, domain.ErrAssociationTransferUnexpected
 	}
 	ready, err := s.taskReady(ctx, task)
 	if err != nil {
@@ -279,7 +279,7 @@ func (s *AssociationTransfer) deleteExport(ctx context.Context, association, doc
 	var key string
 	if row.Filepath != nil && *row.Filepath != "" {
 		if key, err = documentkey.S3Key(*row.Filepath, s.options.Objects.Location()); err != nil {
-			return nil, domain.ErrAssociationTransferNotPorted
+			return nil, domain.ErrAssociationTransferUnexpected
 		}
 	}
 	var actorAssociation *string
@@ -367,7 +367,7 @@ func (s *AssociationTransfer) ImportStart(ctx context.Context, upload Associatio
 	name := "temp/imports/import_" + s.options.NewID() + ".zip"
 	key, err := documentkey.S3Key(name, s.options.Objects.Location())
 	if err != nil {
-		return nil, domain.ErrAssociationTransferNotPorted
+		return nil, domain.ErrAssociationTransferUnexpected
 	}
 	if !s.options.FileOverwrite {
 		exists, err := s.options.Objects.Exists(ctx, key)
@@ -375,12 +375,12 @@ func (s *AssociationTransfer) ImportStart(ctx context.Context, upload Associatio
 			return nil, err
 		}
 		if exists {
-			return nil, domain.ErrAssociationTransferNotPorted // get_available_name picks another name
+			return nil, domain.ErrAssociationTransferUnexpected // get_available_name picks another name
 		}
 	}
 	guessed, known, encoding, err := pymime.GuessType(key)
 	if err != nil {
-		return nil, domain.ErrAssociationTransferNotPorted
+		return nil, domain.ErrAssociationTransferUnexpected
 	}
 	kind := upload.File.ContentType
 	if kind == "" {
@@ -445,7 +445,7 @@ func (s *AssociationTransfer) ImportValidate(ctx context.Context, upload Associa
 		return fileRequired, nil
 	}
 	if len(upload.File.Name) > 255 {
-		return nil, domain.ErrAssociationTransferNotPorted // OSError text in Django's own 500 answer
+		return nil, domain.ErrAssociationTransferNotPorted // Django answers its own JSON with the OSError text
 	}
 	dir, err := pythonMkdtemp()
 	if err != nil {

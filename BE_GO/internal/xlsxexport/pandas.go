@@ -3,6 +3,7 @@ package xlsxexport
 import (
 	"math"
 	"math/big"
+	"runtime"
 	"strconv"
 	"strings"
 	"unicode/utf8"
@@ -123,7 +124,7 @@ func toNumeric(column frameColumn) (numericResult, error) {
 		case Decimal:
 			number, err := strconv.ParseFloat(value.Text, 64)
 			if err != nil {
-				return numericResult{}, ErrNotPorted
+				return numericResult{}, ErrUnexpectedInput
 			}
 			sawFloat = true
 			floats[i] = number
@@ -257,7 +258,7 @@ func pandasFloatify(text string) (number float64, maybeInt bool, ok bool, err er
 	}
 	number, end, failed, maybeInt, ambiguous := preciseXstrtod(text)
 	if ambiguous {
-		return 0, false, false, ErrNotPorted
+		return 0, false, false, ErrUnexpectedInput
 	}
 	if !failed && end == len(text) {
 		return number, maybeInt, true, nil
@@ -318,19 +319,36 @@ func xstrtodDigit(b byte) bool { return b >= '0' && b <= '9' }
 // sci 'E', no thousands separator and skip_trailing: it returns the value, the
 // end offset, whether it set ERANGE and maybe_int. The float operations are
 // rounded one by one (explicit conversions stop Go from fusing them).
+//
+// The digit accumulation number*10 + digit is contracted into a fused
+// multiply-add by the macOS arm64 pandas wheel and not by the Linux wheels
+// (x86_64 and aarch64): beyond 2**53 the two differ. Measured with pandas
+// 2.2.3 on '3.14159265358979323846': 0x400921fb54442d18 on macOS arm64,
+// 0x400921fb54442d17 on Linux x86_64 and aarch64. Django and Go run on the same
+// platform (the Linux images, or both natively on a macOS workstation), so Go
+// follows its own; on any other platform a value where the two differ is an
+// application-state error (images are built for Linux only).
 func preciseXstrtod(text string) (float64, int, bool, bool, bool) {
 	fused, end, failed, maybeInt := preciseXstrtodWith(text, true)
 	plain, _, plainFailed, _ := preciseXstrtodWith(text, false)
-	if fused != plain || failed != plainFailed {
-		// The digit accumulation number*10 + digit is contracted into a fused
-		// multiply-add where the compiler does it (clang and GCC on arm64, so
-		// the macOS and aarch64 pandas wheels) and not elsewhere (x86-64
-		// wheels): beyond 2**53 the two differ, so the result depends on the
-		// platform Django runs on.
-		return 0, end, failed, maybeInt, true
+	if fused == plain && failed == plainFailed {
+		return fused, end, failed, maybeInt, false
 	}
-	return fused, end, failed, maybeInt, false
+	switch xstrtodFMA {
+	case "fused":
+		return fused, end, failed, maybeInt, false
+	case "plain":
+		return plain, end, plainFailed, maybeInt, false
+	}
+	return 0, end, failed, maybeInt, true
 }
+
+// xstrtodFMA is how the pandas wheel of this platform accumulates digits.
+var xstrtodFMA = map[string]string{
+	"darwin/arm64": "fused",
+	"linux/amd64":  "plain",
+	"linux/arm64":  "plain",
+}[runtime.GOOS+"/"+runtime.GOARCH]
 
 func preciseXstrtodWith(text string, fma bool) (float64, int, bool, bool) {
 	accumulate := func(number float64, digit byte) float64 {

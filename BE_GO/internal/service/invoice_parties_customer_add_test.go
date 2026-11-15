@@ -167,8 +167,8 @@ func TestCustomerAddMultipartFilePartsFieldErrors(t *testing.T) {
 func TestCustomerAddMultipartReachesTheSave(t *testing.T) {
 	file := domain.RequestField{Name: "allegato", Value: domain.RequestUpload{Name: "fattura.txt", Whole: true}}
 	object := customerAddForm(customerAddPairs([2]string{"number", "601"}), file)
-	if err := customerAddRun(t, object); !errors.Is(err, domain.ErrInvoicePartyNotPorted) {
-		// The fake has no customer sync: a valid multipart add is refused there.
+	if err := customerAddRun(t, object); !errors.Is(err, domain.ErrServerComposition) {
+		// The fake has no customer sync (the server always wires it): the save is reached.
 		t.Fatalf("got %v, want the save to be reached", err)
 	}
 }

@@ -94,8 +94,8 @@ func (s *InstanceBackups) Create(ctx context.Context, actor string, audit domain
 	if err := s.instanceBackupsAudit(ctx, actor, "backup_create", dto.PythonStr(id), nil, audit); err != nil {
 		return nil, err
 	}
-	if !dto.AuditFiniteJSON(relayed.Value) {
-		return nil, errInstanceBackupsUnhandled // strict JSONRenderer: ValueError after the entry is written
+	if !dto.RenderableJSON(relayed.Value) {
+		return nil, errInstanceBackupsUnhandled // strict JSONRenderer: after the entry is written (non-finite number, lone surrogate)
 	}
 	return relayed.Reply, nil
 }

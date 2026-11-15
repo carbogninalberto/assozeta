@@ -287,7 +287,7 @@ func (s *DocmanagerReads) stream(ctx context.Context, document *domain.StoredDoc
 			return exception("File not found"), nil
 		}
 		if s.printer == nil {
-			return nil, domain.ErrDocmanagerNotPorted
+			return nil, domain.ErrServerComposition
 		}
 		reprint = view
 	}
@@ -496,7 +496,7 @@ func (s *DocmanagerReads) Delete(ctx context.Context, identity domain.ResolvedId
 		return nil, err
 	}
 	if s.deleter == nil {
-		return nil, domain.ErrDocmanagerNotPorted
+		return nil, domain.ErrServerComposition
 	}
 	found := false
 	if identity.ScopeUser != nil {

@@ -343,27 +343,31 @@ func (s *InstanceSetup) importedAssociation(ctx context.Context, task string) (s
 	if row == nil || (row.Status != "SUCCESS" && row.Status != "FAILURE" && row.Status != "REVOKED") {
 		return "", "Import task is still in progress. Please wait for completion.", nil
 	}
-	if row.Status != "SUCCESS" || row.Encoding != "utf-8" {
-		return "", "", domain.ErrInstanceSetupRefused
+	if row.Status != "SUCCESS" {
+		return "", "", domain.ErrInstanceSetupRefused // a failed import's stored exception
+	}
+	if row.Encoding != "utf-8" {
+		// Celery's django-db rows of the app's own tasks are JSON (BE/core/settings.py:176).
+		return "", "", domain.ErrAssociationTransferUnexpected
 	}
 	if row.Meta != nil && *row.Meta != "" {
 		meta, err := celeryJSON(*row.Meta)
 		if err != nil {
-			return "", "", domain.ErrInstanceSetupRefused
+			return "", "", domain.ErrAssociationTransferUnexpected
 		}
 		object, ok := meta.(map[string]any)
 		if !ok {
-			return "", "", domain.ErrInstanceSetupRefused
+			return "", "", domain.ErrAssociationTransferUnexpected
 		}
 		children, _ := object["children"].([]any)
 		if _, status := object["status"]; status || len(children) > 0 || (object["children"] != nil && children == nil) {
-			return "", "", domain.ErrInstanceSetupRefused
+			return "", "", domain.ErrAssociationTransferUnexpected
 		}
 	}
 	var result any
 	if row.Result != nil && *row.Result != "" {
 		if result, err = celeryJSON(*row.Result); err != nil {
-			return "", "", domain.ErrInstanceSetupRefused
+			return "", "", domain.ErrAssociationTransferUnexpected
 		}
 	}
 	if object, ok := result.(map[string]any); ok {
@@ -375,7 +379,7 @@ func (s *InstanceSetup) importedAssociation(ctx context.Context, task string) (s
 			}
 			text, ok := importSetupText(reason)
 			if !ok {
-				return "", "", domain.ErrInstanceSetupRefused
+				return "", "", domain.ErrAssociationTransferUnexpected
 			}
 			return "", "Import failed: " + text, nil
 		}
@@ -386,7 +390,7 @@ func (s *InstanceSetup) importedAssociation(ctx context.Context, task string) (s
 		if setupTruthy(id) {
 			text, ok := id.(string)
 			if !ok {
-				return "", "", domain.ErrInstanceSetupRefused
+				return "", "", domain.ErrAssociationTransferUnexpected
 			}
 			canonical, err := dto.AssociationExportDocument(text)
 			if err != nil {

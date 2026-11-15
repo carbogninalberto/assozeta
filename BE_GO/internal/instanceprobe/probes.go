@@ -59,10 +59,7 @@ func probeJSON(response *Response) (any, *Result, error) {
 		return nil, result("failed", "Risposta del provider troppo grande per la verifica.", "connectivity"), nil
 	}
 	value, err := LoadJSON(response.Body)
-	switch {
-	case errors.Is(err, ErrJSONEncoding):
-		return nil, nil, ErrProbeNotPorted
-	case err != nil:
+	if err != nil {
 		return nil, nil, errProbe
 	}
 	return value, nil, nil

@@ -5,14 +5,18 @@ Self-host port: adapted from SaaS test_modules_views.py.
 """
 import base64
 import hashlib
+import re
 import uuid
 from datetime import date, timedelta
 
+from django.db import connection
 from django.test import TestCase
+from django.test.utils import CaptureQueriesContext
 from rest_framework.test import APIClient
 from rest_framework import status
 
-from application.models import User, Module, ModuleResponses
+from application.models import Group, User, Module, ModuleResponses
+from application.serializers.modules_serializers import ModulesSerializer
 from application.tests.base import BaseAPITestCase
 from application.tests.fixtures.factories import (
     create_test_user,
@@ -53,6 +57,10 @@ def token_hash(token):
     return hashlib.sha256(token.encode()).hexdigest()
 
 
+# Debug-only profiler (silk) and transaction bookkeeping queries are not the view's own queries.
+IGNORED_QUERY = re.compile(r'silk_|^(EXPLAIN|SAVEPOINT|RELEASE SAVEPOINT)')
+
+
 class ModulesListTests(BaseAPITestCase):
     """Tests for modules_list endpoint: GET /modules/list"""
 
@@ -67,6 +75,32 @@ class ModulesListTests(BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('data', response.data)
         self.assertGreaterEqual(len(response.data['data']), 1)
+
+    def test_list_modules_query_count_does_not_grow_with_modules(self):
+        """The association, its owner and its groups are read once per request, not once per module."""
+        Group.objects.create(name='Gruppo B', sport_association=self.sport_association)
+        Group.objects.create(name='Gruppo A', sport_association=self.sport_association)
+
+        def list_with_query_count():
+            # A fresh user per request, as in production: User.sport_association is a cached_property.
+            self.client.force_authenticate(user=User.objects.get(pk=self.user.pk))
+            with CaptureQueriesContext(connection) as ctx:
+                response = self.client.get('/modules/list')
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+            return response, len([q for q in ctx.captured_queries if not IGNORED_QUERY.search(q['sql'])])
+
+        for _ in range(2):
+            create_test_module(sport_association=self.sport_association)
+        _, with_two = list_with_query_count()
+        for _ in range(18):
+            create_test_module(sport_association=self.sport_association)
+        response, with_twenty = list_with_query_count()
+
+        self.assertEqual(with_two, with_twenty)
+        self.assertEqual(len(response.data['data']), 20)
+        # The same payload as serializing each module on its own (no prefetch, no groups cache).
+        reference = ModulesSerializer(Module.objects.filter(sport_association=self.sport_association), many=True).data
+        self.assertEqual(response.data['data'], reference)
 
     def test_list_modules_unauthenticated(self):
         self.client.force_authenticate(user=None)

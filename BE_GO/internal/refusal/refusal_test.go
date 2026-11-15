@@ -1,6 +1,8 @@
 package refusal
 
 import (
+	"errors"
+	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -8,6 +10,44 @@ import (
 	"strings"
 	"testing"
 )
+
+// An application-state error is not a refusal: it matches ErrAppState and only
+// that, so internal/handoff never replays it to Django.
+func TestAppStateIsNotARefusal(t *testing.T) {
+	err := AppState("missing cache entry")
+	if !errors.Is(err, ErrAppState) {
+		t.Fatal("AppState must match ErrAppState")
+	}
+	if errors.Is(err, ErrNotPorted) {
+		t.Fatal("AppState must not match ErrNotPorted")
+	}
+	if _, refused := Reason(err); refused {
+		t.Fatal("AppState must not be a refusal")
+	}
+}
+
+// A wrapped application-state error is still found, as Reason does for refusals.
+func TestAppStateReasonFindsWrappedErrors(t *testing.T) {
+	wrapped := fmt.Errorf("service: %w", AppState("invalid stored setting"))
+	reason, ok := AppStateReason(wrapped)
+	if !ok || reason != "invalid stored setting" {
+		t.Fatalf("reason %q, ok %v", reason, ok)
+	}
+	if !errors.Is(wrapped, ErrAppState) {
+		t.Fatal("a wrapped AppState must match ErrAppState")
+	}
+}
+
+// A refusal sentinel created with New is a handoff refusal, never app state.
+func TestNewIsNotAppState(t *testing.T) {
+	err := New("test input not ported")
+	if _, ok := AppStateReason(err); ok {
+		t.Fatal("a refusal sentinel must not be an application-state error")
+	}
+	if errors.Is(err, ErrAppState) {
+		t.Fatal("a refusal sentinel must not match ErrAppState")
+	}
+}
 
 // Every "not ported" sentinel must be a refusal, or the handoff to Django
 // (internal/handoff) would answer it with the 500 page.

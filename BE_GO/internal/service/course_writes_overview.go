@@ -293,7 +293,7 @@ func (s *CourseWrites) OverviewUpdate(ctx context.Context, identity domain.Resol
 	if association == nil {
 		// Unreachable with stored data: a subscription's association column is
 		// NOT NULL and other callers were denied above.
-		return domain.ErrCourseWritesNotPorted
+		return domain.ErrCourseWritesUnreachable
 	}
 	audit, err := s.auditContext(ctx, tx, identity, request)
 	if err != nil {

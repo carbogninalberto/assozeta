@@ -365,6 +365,7 @@ func bufferMultipart(c echo.Context) ([]byte, error) {
 		return nil, err
 	}
 	if len(raw) > uploadBodyLimit {
+		// Django spools such a body to disk and answers normally: handed off.
 		return nil, domain.ErrDocumentWritesNotPorted
 	}
 	request.Body = io.NopCloser(bytes.NewReader(raw))
@@ -428,7 +429,8 @@ func parseDjangoMultipart(raw []byte, boundary string) (domain.RequestObject, er
 		if filename := params["filename"]; filename != "" {
 			sanitized, ok := djangoUploadName(filename)
 			if !ok {
-				return nil, domain.ErrDocumentWritesNotPorted
+				// djangoPartHeaders keeps only valid UTF-8 lines and every charset decoder emits valid UTF-8.
+				return nil, domain.ErrDocumentWritesUnreachable
 			}
 			if sanitized != "" {
 				if header.base64 && len(content) > 0 {

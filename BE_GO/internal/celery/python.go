@@ -28,8 +28,20 @@ type Item struct {
 type tuple []any
 
 // ErrUnsupportedValue is a task argument the producer cannot serialize the
-// way kombu's JSON serializer and Celery's saferepr would.
-var ErrUnsupportedValue = refusal.New("celery: unsupported task argument")
+// way kombu's JSON serializer and Celery's saferepr would. Only the
+// application builds task arguments and broker messages, so it is an
+// application-state error, never a refusal handed off to Django:
+//   - a Go value with no Python form: every publish site passes nil, bool,
+//     int/int64, string, []any, Dict, uuid.UUID or Number (a request number is
+//     a Number through paymentStateReceiptArg, service/payment_state.go:59);
+//   - bytes that are neither UTF-8 nor WTF-8: request bodies, the form decoder
+//     and database text never produce them (a lone surrogate is WTF-8 and is
+//     encoded);
+//   - republish options Django never sets (BE/instance/restore/task_base.py:15
+//     keeps only countdown and retries; no BE task uses expires, priority,
+//     group or stamps);
+//   - a malformed number: json.loads numbers and repr(float) are well formed.
+var ErrUnsupportedValue = refusal.AppState("celery: unsupported task argument")
 
 // Supported argument values: nil (None), bool, int, int64, string (valid
 // UTF-8), uuid.UUID, []any (list) and Dict. Floats, Decimals, dates and

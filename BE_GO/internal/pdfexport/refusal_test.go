@@ -6,10 +6,8 @@ import (
 	"time"
 )
 
-// Paragraph tags whose drawing is not ported (lines, links, other sizes and
-// colours, images), paragraph attributes, and logo data that is not a JPEG
-// this package reads, are refused instead of drawn differently from
-// reportlab.
+// Paragraph tags whose drawing is not ported (lines, links, others), paragraph attributes, and logo data that is not a
+// JPEG this package reads, are refused instead of drawn differently from reportlab.
 func TestInputsNotPorted(t *testing.T) {
 	header := func(logo, name string) *string {
 		text := `<img src="` + logo + `" style="height: 1000px;"/><h1 style="font-size: 20px;">` + name + `</h1><h2>x</h2><h3>y</h3>`
@@ -21,9 +19,11 @@ func TestInputsNotPorted(t *testing.T) {
 		"image png":      {Header: header("None", `A <img src="data:image/png;base64,iVBORw0KGgo="/> B`)},
 		"anchor":         {Header: header("None", `A <a name="top"/> B`)},
 		"internal link":  {Header: header("None", `A <a href="#top">B</a> C`)},
-		"greek":          {Header: header("None", "A <greek>B</greek>")},
+		"sequence":       {Header: header("None", "A <seq/>B")},
+		"bullet":         {Header: header("None", "A <bullet>b</bullet> B")},
 		"para attribute": {Header: header("None", `<para align="justify" lindent="12">A</para>`)},
-		"additional":     {Additional: []string{"saldi <index item=\"e\"/> note"}},
+		"text transform": {Header: header("None", `<para texttransform="uppercase">a</para>`)},
+		"unichar name":   {Header: header("None", `A <unichar name="LATIN SMALL LETTER A"/> B`)},
 		"png as jpeg":    {Header: header("data:image/jpeg;base64,iVBORw0KGgo=", "ASD")},
 		"cut jpeg":       {Header: header("data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBD", "ASD")},
 	} {
@@ -32,20 +32,29 @@ func TestInputsNotPorted(t *testing.T) {
 			t.Errorf("%s: %v", name, err)
 		}
 	}
-	// Markup reportlab's parser raises on is an exception of the export, not a refusal.
-	broken := base
-	broken.Header = header("None", "A <b>B")
-	if _, err := broken.Build(time.Unix(946684800, 0)); !errors.Is(err, ErrLayout) || errors.Is(err, ErrNotPorted) {
-		t.Errorf("unclosed tag: %v", err)
+	// Markup reportlab's parser raises on is an exception of the export, not a refusal; the <index> and <onDraw>
+	// callbacks of its documents (they have no canvas hook) fail the build, as here.
+	for name, input := range map[string]DataTable{
+		"unclosed tag":     {Header: header("None", "A <b>B")},
+		"stray end tag":    {Header: header("None", "A </strike> B")},
+		"index":            {Additional: []string{`saldi <index item="e"/> note`}},
+		"onDraw":           {Header: header("None", `A <onDraw name="x"/> B`)},
+		"greek non-latin1": {Header: header("None", "A <greek>日</greek> B")},
+	} {
+		input.Columns, input.Rows, input.Title, input.Portrait, input.IsA3 = base.Columns, base.Rows, base.Title, true, true
+		if _, err := input.Build(time.Unix(946684800, 0)); !errors.Is(err, ErrLayout) || errors.Is(err, ErrNotPorted) {
+			t.Errorf("%s: %v", name, err)
+		}
 	}
-	stray := base
-	stray.Header = header("None", "A </strike> B")
-	if _, err := stray.Build(time.Unix(946684800, 0)); !errors.Is(err, ErrLayout) || errors.Is(err, ErrNotPorted) {
-		t.Errorf("stray end tag: %v", err)
-	}
+	// Greek, unichar, the Courier and Times faces and plain markup are laid out as reportlab lays them out.
 	plain := base
 	plain.Header = header("None", "ASD > Aurora \"1990\" & <b>C</b>")
 	if _, err := plain.Build(time.Unix(946684800, 0)); err != nil {
+		t.Fatal(err)
+	}
+	ported := base
+	ported.Header = header("None", `<greek>abg</greek> <unichar code="0x263A"/> <font name="Times-Italic">a</font> <font name="Courier">b</font>`)
+	if _, err := ported.Build(time.Unix(946684800, 0)); err != nil {
 		t.Fatal(err)
 	}
 }

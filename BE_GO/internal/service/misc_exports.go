@@ -13,6 +13,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/celery"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/xlsxexport"
 	"github.com/google/uuid"
 )
@@ -323,8 +324,8 @@ func miscExportsWorkbook(columns []string, rows [][]string, now time.Time) ([]by
 	}
 	workbook, err := xlsxexport.PandasXlsxwriter(frame, now)
 	switch {
-	case errors.Is(err, xlsxexport.ErrNotPorted):
-		return nil, domain.ErrMiscExportsNotPorted
+	case errors.Is(err, refusal.ErrAppState):
+		return nil, err // an input no view builds (xlsxexport.ErrUnexpectedInput)
 	case err != nil:
 		return nil, domain.ErrMiscExportsServer
 	}
@@ -489,8 +490,8 @@ func miscExportsInvoiceWorkbook(invoices []domain.MiscExportInvoice, payments ma
 	}
 	workbook, err := xlsxexport.PandasOpenpyxl(data, miscExportInvoiceColumns, now)
 	switch {
-	case errors.Is(err, xlsxexport.ErrNotPorted):
-		return nil, domain.ErrMiscExportsNotPorted
+	case errors.Is(err, refusal.ErrAppState):
+		return nil, err // an input no view builds (xlsxexport.ErrUnexpectedInput)
 	case err != nil:
 		return nil, domain.ErrMiscExportsServer // get_excel_base64 returned None: raise Exception
 	}

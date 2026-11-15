@@ -24,7 +24,7 @@ func parseJSON(text string) (any, error) {
 	decoder.UseNumber()
 	var raw any
 	if err := decoder.Decode(&raw); err != nil {
-		return nil, ErrUnsupported
+		return nil, ErrUnexpectedJSON // jsonb holds valid JSON
 	}
 	return convertJSON(raw)
 }
@@ -42,7 +42,10 @@ func convertJSON(value any) (any, error) {
 		}
 		number, ok := new(big.Int).SetString(text, 10)
 		if !ok {
-			return nil, ErrUnsupported
+			return nil, ErrUnexpectedJSON // jsonb prints integers as plain digits
+		}
+		if len(strings.TrimPrefix(text, "-")) > 4300 {
+			return nil, ErrUnexpectedJSON // json.loads raises: int max str digits
 		}
 		return pyInt{number}, nil
 	case []any:
@@ -102,8 +105,8 @@ func pyStr(value any) (*string, error) {
 		}
 	case pyInt:
 		text = v.value.String()
-		if len(text) > 4300 {
-			return nil, ErrUnsupported // int max str digits
+		if len(strings.TrimPrefix(text, "-")) > 4300 {
+			return nil, ErrUnexpectedJSON // int max str digits: json.loads raised first
 		}
 	case pyFloat:
 		text = dto.PythonFloatStr(float64(v))

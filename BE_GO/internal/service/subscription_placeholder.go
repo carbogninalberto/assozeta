@@ -54,26 +54,27 @@ func placeholderFilename(first, last string) string {
 }
 
 // plan checks, before any write, that the image can be drawn and its file
-// stored under the name Django would use: the PNG, or false for the inputs
-// that are refused (a name the storage or the filename column rejects, a text
-// the image port does not draw).
-func (p *SubscriptionPlaceholders) plan(text, filename string, created time.Time, id string) ([]byte, bool) {
+// stored under the name Django would use: the PNG, false for the inputs that
+// are refused (a name the storage or the filename column rejects), or the
+// application-state error of a text the drawing never receives
+// (pilplaceholder.ErrUnsupported).
+func (p *SubscriptionPlaceholders) plan(text, filename string, created time.Time, id string) ([]byte, bool, error) {
 	if p == nil || p.uploads == nil || utf8.RuneCountInString(filename) > 255 || !utf8.ValidString(filename) {
-		return nil, false
+		return nil, false, nil
 	}
 	for _, r := range filename {
 		if r < 0x20 || r == 0x7f {
-			return nil, false
+			return nil, false, nil
 		}
 	}
 	if p.uploads.GeneratedName(created, id, filename) != nil {
-		return nil, false
+		return nil, false, nil
 	}
 	image, err := pilplaceholder.RenderWith(text, p.zlib)
 	if err != nil {
-		return nil, false
+		return nil, false, err
 	}
-	return image, true
+	return image, true, nil
 }
 
 // store is default_storage.save(<timestamp>/<id>/<filename>, ContentFile(png)).
@@ -122,8 +123,11 @@ func (s *SubscriptionCreates) createPlaceholder(ctx context.Context, tx domain.S
 	created := s.now().UTC().Truncate(time.Microsecond)
 	document := domain.NewDocument{ID: uuid.NewString(), Token: uuid.NewString(), Filename: placeholderFilename(firstText, lastText),
 		Created: created}
-	image, ok := s.placeholders.plan(placeholderCreateText(firstText, lastText, placeholderMoment(date)), document.Filename, created,
+	image, ok, err := s.placeholders.plan(placeholderCreateText(firstText, lastText, placeholderMoment(date)), document.Filename, created,
 		document.ID)
+	if err != nil {
+		return nil, err
+	}
 	if !ok {
 		return nil, domain.ErrSubscriptionCreateNotPorted
 	}

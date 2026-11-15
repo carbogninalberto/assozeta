@@ -4,7 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
+	"runtime"
+	"strconv"
 	"strings"
 	"time"
 
@@ -51,7 +54,7 @@ func googleFailure(err error) error {
 	var python *googleapi.PythonError
 	var connection *googleapi.ConnectionError
 	var api *googleapi.HTTPError
-	if errors.As(err, &python) || errors.As(err, &connection) || errors.As(err, &api) || errors.Is(err, googleapi.ErrNotPorted) {
+	if errors.As(err, &python) || errors.As(err, &connection) || errors.As(err, &api) || errors.Is(err, googleapi.ErrUnexpected) {
 		return domain.ErrGoogleServer
 	}
 	return err
@@ -368,7 +371,7 @@ func (s *GoogleCalendar) Export(ctx context.Context, identity domain.ResolvedIde
 	}
 	session := googleapi.NewSession(s.transport, credentials, s.now)
 	swallow := func(err error) error {
-		if errors.Is(err, googleapi.ErrNotPorted) {
+		if errors.Is(err, googleapi.ErrUnexpected) {
 			return domain.ErrGoogleServer
 		}
 		return nil
@@ -400,7 +403,7 @@ func (s *GoogleCalendar) Export(ctx context.Context, identity domain.ResolvedIde
 		}
 		calendarID = text
 	} else {
-		if errors.Is(err, googleapi.ErrNotPorted) {
+		if errors.Is(err, googleapi.ErrUnexpected) {
 			return nil, domain.ErrGoogleServer
 		}
 		if mentioning, ok := err.(interface{ Mentions(string) bool }); ok && mentioning.Mentions("quotaExceeded") {
@@ -543,13 +546,6 @@ func googleRegistryEvents(registry *domain.GoogleRegistry, courseID string) (goo
 	}
 	switch v := parsed.(type) {
 	case []any:
-		for _, raw := range v {
-			// A dry run of the conversion: only years below 1000 are refused (strftime('%Y')
-			// pads on BSD libc and not on glibc), every other failure is the view's 500 later.
-			if _, err := googleEventBody(courseID, "", raw); errors.Is(err, errGoogleYearUnpadded) {
-				return googleEvents{}, googleapi.ErrNotPorted
-			}
-		}
 		return googleEvents{items: v}, nil
 	case domain.RequestObject:
 		return googleEvents{failure: len(v) > 0}, nil
@@ -558,9 +554,6 @@ func googleRegistryEvents(registry *domain.GoogleRegistry, courseID string) (goo
 	}
 	return googleEvents{failure: true}, nil
 }
-
-// errGoogleYearUnpadded marks an event date before the year 1000.
-var errGoogleYearUnpadded = errors.New("google: event year below 1000")
 
 func googleLookupObject(object domain.RequestObject, name string) (domain.RequestObject, bool) {
 	value, present := googleLookup(object, name)
@@ -654,9 +647,6 @@ func googleEventBody(courseID, calendarID string, raw any) (domain.RequestObject
 	if !ok1 || !ok2 {
 		return nil, domain.ErrGoogleServer // OverflowError
 	}
-	if startRome.Year() < 1000 || endRome.Year() < 1000 {
-		return nil, errGoogleYearUnpadded
-	}
 	body := domain.RequestObject{
 		{Name: "extendedProperties", Value: domain.RequestObject{{Name: "private", Value: domain.RequestObject{
 			{Name: "course_id", Value: courseID}, {Name: "event_id", Value: identifier}}}}},
@@ -669,9 +659,9 @@ func googleEventBody(courseID, calendarID string, raw any) (domain.RequestObject
 	}
 	moment := func(at time.Time) domain.RequestObject {
 		if allDay {
-			return domain.RequestObject{{Name: "date", Value: at.Format("2006-01-02")}, {Name: "timeZone", Value: "Europe/Rome"}}
+			return domain.RequestObject{{Name: "date", Value: pythonStrftimeYear(at.Year()) + at.Format("-01-02")}, {Name: "timeZone", Value: "Europe/Rome"}}
 		}
-		return domain.RequestObject{{Name: "dateTime", Value: at.Format("2006-01-02T15:04:05")}, {Name: "timeZone", Value: "Europe/Rome"}}
+		return domain.RequestObject{{Name: "dateTime", Value: pythonStrftimeYear(at.Year()) + at.Format("-01-02T15:04:05")}, {Name: "timeZone", Value: "Europe/Rome"}}
 	}
 	return append(body, domain.RequestField{Name: "start", Value: moment(startRome)}, domain.RequestField{Name: "end", Value: moment(endRome)}), nil
 }
@@ -706,4 +696,16 @@ func GoogleCalendarSettingsFrom(getenv func(string) string) (GoogleCalendarSetti
 	return GoogleCalendarSettings{ClientSecretFile: secrets, RedirectURL: redirect, Environment: googleapi.Environment{
 		InsecureTransport: getenv("OAUTHLIB_INSECURE_TRANSPORT") != "", RelaxTokenScope: getenv("OAUTHLIB_RELAX_TOKEN_SCOPE") != "",
 		StrictTokenType: getenv("OAUTHLIB_STRICT_TOKEN_TYPE") != ""}}, secure
+}
+
+// pythonStrftimeYear is CPython 3.13's strftime('%Y') (google_views.py:302-315):
+// the C library writes the year, and below 1000 glibc (the Linux images,
+// python:3.13 on x86_64 and aarch64) leaves it unpadded ('999') while macOS
+// pads it to four digits ('0999'). Django and Go run on the same platform, so
+// Go follows its own.
+func pythonStrftimeYear(year int) string {
+	if year >= 1000 || year < 0 || runtime.GOOS == "darwin" {
+		return fmt.Sprintf("%04d", year)
+	}
+	return strconv.Itoa(year)
 }
