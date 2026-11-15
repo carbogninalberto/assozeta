@@ -376,6 +376,11 @@ func excelUtilsCoerce(column frameColumn) (frameColumn, error) {
 	if err != nil {
 		return frameColumn{}, err
 	}
+	if converted.dtype == dtUint64 {
+		// astype('Int64') of a uint64 column raises (caught): it stays uint64,
+		// so its width is the exact digits and its cells their float.
+		return frameColumn{dtype: dtUint64, values: converted.values}, nil
+	}
 	integral := true
 	for _, value := range converted.values {
 		switch {

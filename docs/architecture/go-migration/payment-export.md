@@ -70,8 +70,8 @@ rows; the subscription export goes through pandas) and are not part of this fami
 
 ## Not ported (refused with the 500 page)
 
-- `m=xlsx` inputs the writer refuses ([xlsx-exports](xlsx-exports.md)), and course labels that are bools, lists, objects or
-  integers beyond int64.
+- `m=xlsx` inputs the writer refuses ([xlsx-exports](xlsx-exports.md)); the course label itself is answered for every stored
+  value (see below, t3pay and go-v2only-xlsxvalue).
 
 Ported in tailpay: an infinite float search term (`inf`, `-Infinity`) follows `nan` into the text search (the amount lookup refuses it
 while the filter is built, inside the view's `try`), and smart-search terms are decoded (`replace` for malformed bytes), lower-cased
@@ -106,8 +106,16 @@ compares the base64 of the exact CSV bytes and accepts the server's UTC date in 
 Archived rows of the second association carry labels `true`, a 30-digit integer, a 401-digit integer, a list and an object;
 each is picked by its description (`generalSearch`). CSV writes `str(label)`. XLSX: a boolean is a boolean cell (a column of
 booleans alone becomes `1`), an integer beyond 64 bits is a numeric cell (`"%.16g" % int`), an integer beyond the float range
-raises `OverflowError` (the 500 page); a list or object is written as its Python repr text (pandas stringifies it; Django answers 200). A column of big integers alone stays
-refused (pandas' uint64/float promotion). The label cannot be non-finite: jsonb has no NaN or Infinity and a huge exponent is
+raises `OverflowError` (the 500 page); a list or object is written as its Python repr text (pandas stringifies it; Django answers 200). The label cannot be non-finite: jsonb has no NaN or Infinity and a huge exponent is
 stored as an exact integer.
 
 GREEN `t3pay-5` (run 43084300494) 104/104; mutation (boolean label written as text) CAUGHT, run 43084305252.
+
+Ported in go-v2only-xlsxvalue: archived rows whose labels are numbers beyond int64 pick a column of numbers only, which the
+per-column coercion reads as `uint64` (a text within the unsigned range: `18446744073709551615`, `9223372036854775808`) or as
+`float64` (a Python int: `2**65`, `123456789012345678901234567890`). Django answers a workbook in both cases: the `uint64`
+width is the exact digits and its cell their float, the `float64` column keeps the float repr; above the double range the
+conversion raises (`label-huge-xlsx-server-error`). Cases `label-u64-csv`/`label-u64-xlsx` and `label-f64-csv`/`label-f64-xlsx`
+(fixture 108 cases): RED `s3xlsx-red-r1` Django 108/108, Go 500 on `payment-export-label-u64-xlsx`; GREEN
+`s3xlsx-versioned-r1` 4 transports 108/108; mutation `s3xlsx-mutation-r1` (the `uint64` column cast to `Int64`) CAUGHT on
+`payment-export-label-u64-xlsx`. The 7 new golden workbooks are in [xlsx-exports](xlsx-exports.md).

@@ -516,6 +516,24 @@ Left refused in these families, with the reason:
 - instructor-hours: document deletes that cascade to other models' rows (each with its own audit entry).
 - instructor-writes: report workbook inputs the writer treats as formulas or links with an anchor; subnormal products.
 
+### Ported in the go-v2only-xlsxvalue change
+
+The shared pandas coercion of `get_excel_base64` and of the saved-report exporter (`xlsxexport.toNumeric`) and openpyxl's
+sheet-title comparison. Receipts are `quality-reports/go-migration/payment-export-http-s3xlsx-*`; the golden workbooks are
+`BE_GO/internal/xlsxexport/testdata/golden.json` and [xlsx-exports](xlsx-exports.md) has the details.
+
+| Family | Route | Was refused | Evidence |
+|---|---|---|---|
+| payment-export (shared by invoice/list/export, printing/generate, balance-sheet, course-list, course-subscriptions, subscription-reads, saved-reports) | `GET payment/list/export?m=xlsx` with a course column of numbers beyond int64 (B, legacy: yes) | always (a text within the unsigned 64-bit range was `ErrNotPorted`; a Python int beyond it was too) | 108 cases; RED `s3xlsx-red-r1` Django 108/108, Go 500 on `payment-export-label-u64-xlsx`; GREEN `s3xlsx-versioned-r1` 4 transports 108/108; mutation `s3xlsx-mutation-r1` (the `uint64` column cast to `Int64`) CAUGHT on `payment-export-label-u64-xlsx`; 7 new golden cases (`eu-uint64-strings`, `eu-uint64-mixed-int`, `eu-big-int-ints`, `eu-int-too-large`, `eu-int-too-large-text`, `rx-uint64-strings`, `rs-title-final-sigma`), 226 in all; re-run green natively: misc-exports 70/70, balance-sheet 97/97, course-list 175/175, course-subscriptions 168/168, printing-generate 113/113, subscription-reads 364/364, templates-reports 240/240 (`s3xlsx-rerun-r1`) |
+| templates-reports | `POST saved-reports/<pk>/run`, the file tools | two sheet titles that differ only by their Python `str.lower()` (a capital and a final sigma) | same golden case `rs-title-final-sigma` (Django raises `KeyError('Ας')`; Go answers the same); templates-reports 240/240 |
+
+Still refused in this writer, each with state a request or a stored row cannot produce (class C) or the platform (X):
+more than 702 columns (a model row with 703 kept fields), a frame without rows, a `None`, bool or non-finite cell or label
+(`format_export_data` writes `''`/`Vero`/`Falso`), an attendance date label equal to `#`, `Corso`, `Nome e Cognome` or
+`Presenze` (labels are `strftime('%d/%m/%Y')`), a single-course layout with more than one course, a Decimal that
+`strconv.ParseFloat` rejects (every `DecimalField` here has `max_digits` ≤ 10), an empty workbook, the fixed sheet names of
+the xlsxwriter exports, and numeric-looking text with 17+ significant digits (the platform-dependent fma parse).
+
 ## Remaining A items, per family
 
 UI paths under `UI/src/`, Go under `BE_GO/internal/`. Cost: cheap (hours), medium (a family change with new
@@ -1047,7 +1065,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | GET subscription/list/export?filetype=xlsx | xlsxwriter-refused cell text (**ported** in t2docs: formulas, `{=...}`, `<r>` text (written as an escaped run), links with anchors and `internal:`/`external:`; dynamic array functions such as `=SEQUENCE(` are **ported**: the shared writer writes the `cm="1"` cell and `xl/metadata.xml` since t3courses; case data in t11camps) | `service/misc_exports.go:327` (`ErrMiscExportsNotPorted`) | ported (t2docs, t11camps) | The UI calls it (`routes/association/Members/MembersList.svelte:1704`, `shared/ExportData.svelte:18`). The refusal needs formula-like/rich-string/`#` URL text in member fields. legacy: yes. Cost: medium. |
-| GET invoice/list/export?m=xlsx | openpyxl-refused input (bool columns **ported** in t2docs; the remaining refusals are pandas dtype cases that need a Python int beyond int64) | `service/misc_exports.go:493` | B (ported; big ints stay: pandas keeps them as objects/uint64 and the coercion depends on the dtype mix, no Go counterpart) | `routes/accounting/receipts/ReceiptList.svelte:344`. Columns are fixed strings and decimals, so only exotic values can trigger it. legacy: low. |
+| GET invoice/list/export?m=xlsx | openpyxl-refused input (bool columns **ported** in t2docs; the pandas dtype cases are **ported in go-v2only-xlsxvalue**: a column of integers beyond int64 is its `uint64` or `float64`) | `service/misc_exports.go:493` | B (ported; columns of this route are fixed strings, decimals and an int) | `routes/accounting/receipts/ReceiptList.svelte:344`. Columns are fixed strings and decimals, so only exotic values can trigger it. legacy: low. |
 
 ### modules-responses.md
 | route | refusal condition | Go site | class | evidence / notes |
@@ -1058,7 +1076,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | POST add-attachment | non-string `filename`/`base64` | `service/modules_responses.go` | ported (v2-rest-b3) | The CharField stores `str()` of the value. |
 | DELETE add-attachment | non-string `document_id`; document referenced elsewhere | `service/modules_responses.go` | ported (v2-rest-b3) | Integer ids resolve through `UUID(int=...)`; a document other rows reference is deleted with the shared collector. |
 | GET modules/<link>/info | module whose association is not active | `service/modules_responses.go` (`Info`) | ported (v2-rest-a, v2-rest-b) | Not a refusal: the public module page returns the fields the form needs, and a module of an association marked deleted answers `module not found` in Django and Go (v2-rest-b). |
-| GET modules/<id>/export | ints beyond int64 (stays: the answer is a Python int object, pandas stores it as an object/uint64 column, no Go counterpart), xlsxwriter-refused text (**ported** in t2docs except dynamic array functions; list/dict labels and non-dict `props` ported in v2-rest-b3) | `service/modules_export.go:94,114,150,162,176,260,266,272` | B | `routes/association/Members/overview/ModuleOverview.svelte:37`. The form builder writes string labels. Free-text answers starting with `=` or holding URLs with `#` would hit the xlsxwriter path. legacy: yes. Cost: medium. |
+| GET modules/<id>/export | ints beyond int64 (its values are `int64` and strings only, so the column coercion cannot meet one; pandas' `uint64`/`float64` promotion **ported in go-v2only-xlsxvalue**), xlsxwriter-refused text (**ported** in t2docs except dynamic array functions; list/dict labels and non-dict `props` ported in v2-rest-b3) | `service/modules_export.go:94,114,150,162,176,260,266,272` | B | `routes/association/Members/overview/ModuleOverview.svelte:37`. The form builder writes string labels. Free-text answers starting with `=` or holding URLs with `#` would hit the xlsxwriter path. legacy: yes. Cost: medium. |
 
 ### modules-writes.md
 | route | refusal condition | Go site | class | evidence / notes |
@@ -1109,7 +1127,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### payment-export.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| GET payment/list/export?m=xlsx | openpyxl-refused input; course label bool/list/dict/huge int/non-finite | `service/payment_export.go:557` and the label conversion | ported (t3pay: a bool label is a boolean cell, an int beyond 64 bits a numeric cell, a list or object is its repr text; a label beyond the float range raises: the 500 page). Kept refused: a column holding only ints beyond 64 bits (pandas' uint64/float promotion). Non-finite labels cannot be stored (jsonb has no NaN or Infinity; a huge exponent is stored as an exact integer) | Called at `routes/accounting/payment/PaymentList.svelte:739,783`. Course JSON is written by the UI as `{label,value}` strings (`modals/AddEditModal.svelte:63`). legacy: yes. Cost: cheap. |
+| GET payment/list/export?m=xlsx | openpyxl-refused input; course label bool/list/dict/huge int/non-finite | `service/payment_export.go:557` and the label conversion | ported (t3pay: a bool label is a boolean cell, an int beyond 64 bits a numeric cell, a list or object is its repr text; a label beyond the float range raises: the 500 page; **go-v2only-xlsxvalue**: a column of numbers beyond int64 is pandas' `uint64` (exact digits in the width, the float in the cell) or `float64`, cases `payment-export-label-u64-xlsx` and `payment-export-label-f64-xlsx`) | Called at `routes/accounting/payment/PaymentList.svelte:739,783`. Course JSON is written by the UI as `{label,value}` strings (`modals/AddEditModal.svelte:63`). legacy: yes. Cost: cheap. |
 | same (+csv) | infinite float search / special lower-casing | shared smart search | ported (tailpay) | An infinite term (`inf`, `-Infinity`) follows `nan` into the text search; terms beyond Latin are decoded, lower-cased and split on `\w+` as Python does (`personaSearch`, shared with personas, payment-reads, invoice-core and subscription search). |
 
 ### payment-reads.md

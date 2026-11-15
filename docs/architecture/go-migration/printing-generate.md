@@ -47,8 +47,9 @@
 
 ## Not ported
 
-- Workbook inputs `xlsxexport` refuses (`ErrNotPorted`, see [xlsx-exports](xlsx-exports.md)) and integers beyond int64
-  in a payment's `meta.description`: the 500 page before any write.
+- Workbook inputs `xlsxexport` refuses (`ErrNotPorted`, see [xlsx-exports](xlsx-exports.md): none of them reachable from the
+  rows this route builds) and integers beyond int64 in a payment's `meta.description` (refused where the cell is read): the
+  500 page before any write.
 
 ## Evidence
 
