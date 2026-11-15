@@ -2,6 +2,7 @@ package fatturapa
 
 import (
 	"fmt"
+	"runtime"
 	"strconv"
 	"strings"
 )
@@ -20,14 +21,37 @@ func Progressivo(unix int64, sequence int) string {
 	return string(out)
 }
 
+// goos is runtime.GOOS; tests set it to exercise both C libraries.
+var goos = runtime.GOOS
+
 func isoDate(year, month, day int) string { return fmt.Sprintf("%04d-%02d-%02d", year, month, day) }
 
+// xmlDate is DateField.to_str (a38 fields.py:481-484), strftime('%Y-%m-%d'):
+// below year 1000 the C library writes the year, and glibc (the Linux images)
+// leaves it unpadded ('999', '1') while the BSD library pads it ('0999').
+// Django and Go run on the same platform, so Go follows its own.
+func xmlDate(year, month, day int) string {
+	text := isoDate(year, month, day)
+	if year >= 1000 || goos == "darwin" {
+		return text
+	}
+	return strconv.Itoa(year) + text[4:]
+}
+
+// dateText is str(date): the HTML and JSON print the date object itself, whose
+// isoformat always pads the year to four digits.
 func (f *fattura) dateText() string {
 	return isoDate(f.date.Year(), int(f.date.Month()), f.date.Day())
 }
 
+// expiryText is str(date) of the payment expiry, as the HTML and JSON print it.
 func (f *fattura) expiryText() string {
 	return isoDate(f.expiry.Year(), int(f.expiry.Month()), f.expiry.Day())
+}
+
+// xmlExpiryText is strftime('%Y-%m-%d') of the payment expiry in the XML.
+func (f *fattura) xmlExpiryText() string {
+	return xmlDate(f.expiry.Year(), int(f.expiry.Month()), f.expiry.Day())
 }
 
 // HTML is generate_invoice_html.
@@ -209,7 +233,7 @@ func XML(inv Invoice, progressivo string) (string, error) {
 	w.open("DatiGeneraliDocumento")
 	w.leaf("TipoDocumento", f.documentType)
 	w.leaf("Divisa", f.currency)
-	w.leaf("Data", f.dateText())
+	w.leaf("Data", xmlDate(f.date.Year(), int(f.date.Month()), f.date.Day()))
 	w.leaf("Numero", f.numero)
 	w.leaf("ImportoTotaleDocumento", f.total.String())
 	for _, causal := range f.causal {
@@ -244,7 +268,7 @@ func XML(inv Invoice, progressivo string) (string, error) {
 	w.leaf("CondizioniPagamento", f.condition)
 	w.open("DettaglioPagamento")
 	w.leaf("ModalitaPagamento", f.modality)
-	w.leaf("DataScadenzaPagamento", f.expiryText())
+	w.leaf("DataScadenzaPagamento", f.xmlExpiryText())
 	w.leaf("ImportoPagamento", f.total.String())
 	w.close("DettaglioPagamento")
 	w.close("DatiPagamento")

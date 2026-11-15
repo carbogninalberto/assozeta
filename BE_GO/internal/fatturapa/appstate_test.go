@@ -25,3 +25,18 @@ func TestUnexpectedJSONIsAppState(t *testing.T) {
 		t.Errorf("4300 digits: %v", err)
 	}
 }
+
+// A literal beyond float64 is what json.loads makes of it (+/-inf), so it is
+// read rather than refused: generation answers it (the field then raises).
+func TestOverflowNumberIsRead(t *testing.T) {
+	for _, text := range []string{`[1e400]`, `[-1e400]`, `[` + strings.Repeat("9", 400) + `.5]`} {
+		value, err := parseJSON(text)
+		if err != nil {
+			t.Errorf("%s: %v", shortText(text), err)
+			continue
+		}
+		if _, ok := value.([]any)[0].(pyFloat); !ok {
+			t.Errorf("%s: %T", shortText(text), value.([]any)[0])
+		}
+	}
+}

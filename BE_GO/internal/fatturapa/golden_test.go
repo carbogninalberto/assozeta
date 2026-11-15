@@ -74,6 +74,26 @@ func goldenInvoice(t *testing.T, fields map[string]any) Invoice {
 	}
 }
 
+// goldenInvoiceNamed is the invoice of one authored golden case.
+func goldenInvoiceNamed(t *testing.T, name string) Invoice {
+	t.Helper()
+	raw, err := os.ReadFile(filepath.Join("testdata", "a38_renders.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var golden goldenFile
+	if err := json.Unmarshal(raw, &golden); err != nil {
+		t.Fatal(err)
+	}
+	for _, c := range golden.Cases {
+		if c.Name == name {
+			return goldenInvoice(t, c.Fields)
+		}
+	}
+	t.Fatalf("golden case %q not found", name)
+	return Invoice{}
+}
+
 func TestGoldenRenders(t *testing.T) {
 	raw, err := os.ReadFile(filepath.Join("testdata", "a38_renders.json"))
 	if err != nil {

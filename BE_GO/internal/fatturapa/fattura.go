@@ -16,6 +16,13 @@
 //   - DecimalField quantizes half up to its decimals range; Python's context
 //     arithmetic (28 digits, half even) is exact for the values that fit, and
 //     inputs whose arithmetic would round are refused (ErrUnsupported).
+//   - Decimal(str) follows _decimal: surrounding whitespace, ignored
+//     underscores and Unicode digits; json.loads' numbers are ints, or floats
+//     whose overflow is +/-inf. A (sign, digits, exponent) list builds a
+//     Decimal the same way.
+//   - the XML prints dates with strftime('%Y-%m-%d'), whose year below 1000 is
+//     the C library's (three digits on glibc, four on the BSD library); the
+//     HTML and JSON print str(date), always four digits.
 package fatturapa
 
 import (
@@ -28,8 +35,8 @@ import (
 )
 
 var (
-	// ErrUnsupported is an input outside the ported subset.
-	ErrUnsupported = refusal.New("fatturapa: input not ported")
+	// ErrUnsupported is arithmetic that Python's 28-digit context would round.
+	ErrUnsupported = refusal.New("fatturapa: arithmetic Python's context would round")
 	// ErrUnexpectedJSON is JSON text the invoice columns never hold: the lines
 	// are a jsonb column (CustomerInvoice.lines, a JSONField), so the text is
 	// one valid JSON value; an integer of more than 4300 digits makes Django's
@@ -194,23 +201,8 @@ func (p party) valid(cedente bool) bool {
 	return runes(p.address) <= 60 && runes(p.cap) == 5 && runes(p.city) <= 60 && runes(p.province) == 2 && runes(p.country) == 2
 }
 
-func checkDate(value time.Time) error {
-	if value.Year() < 1000 {
-		return ErrUnsupported // str(date) and strftime('%Y') padding
-	}
-	return nil
-}
-
 // build is generate_einvoice.
 func build(inv Invoice, progressivo string) (*fattura, error) {
-	if inv.TransmittingDate != nil {
-		if err := checkDate(*inv.TransmittingDate); err != nil {
-			return nil, err
-		}
-	}
-	if err := checkDate(inv.PaymentExpiryDate); err != nil {
-		return nil, err
-	}
 	b := &builder{}
 	f := &fattura{
 		transmitterCountry: inv.CountryTransmitterPrefix, transmitterCode: "0000000", progressivo: progressivo,
@@ -310,13 +302,13 @@ func (b *builder) lines(f *fattura, raw *string) error {
 		b.invalid = true // dettaglio_linee: missing value
 	}
 	for index, item := range items {
-		object, ok := item.(map[string]any)
+		object, ok := item.(pyObject)
 		if !ok {
 			return ErrInvalid
 		}
 		var values [5]any
 		for i, key := range []string{"description", "quantity", "unit_of_measure", "unit_price", "vat"} {
-			value, present := object[key]
+			value, present := object.get(key)
 			if !present {
 				return ErrInvalid // KeyError
 			}
