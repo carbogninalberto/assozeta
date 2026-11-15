@@ -11,11 +11,14 @@ test('titles name the operation in plain words', () => {
     assert.equal(historyTitle({kind: 'restart', target_version: '1.0.33'}), 'Riavvio');
     assert.equal(historyTitle({kind: 'backup', origin: 'scheduled'}), 'Backup automatico');
     assert.equal(historyTitle({kind: 'backup', origin: 'manual'}), 'Backup manuale');
+    assert.equal(operationTitle({kind: 'go_tasks'}), 'Attività in background su Go');
+    assert.equal(historyTitle({kind: 'go_tasks'}), 'Attività su Go');
 });
 
 test('progress counts the steps of each kind of operation', () => {
     assert.deepEqual(operationProgress({stage: 'downloading'}), {label: 'Download della versione', step: 3, total: 6});
     assert.deepEqual(operationProgress({kind: 'restart', stage: 'health_check'}), {label: 'Verifica finale', step: 3, total: 3});
+    assert.deepEqual(operationProgress({kind: 'go_tasks', stage: 'restarting'}), {label: 'Riavvio dei servizi', step: 2, total: 2});
     assert.deepEqual(operationProgress({stage: 'queued'}), {label: 'In coda', step: 0, total: 6});
     assert.equal(operationProgress({stage: 'unknown_stage'}).total, 0);
 });

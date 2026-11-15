@@ -55,6 +55,20 @@ The configuration body reuses the bootstrap service (`InstanceConfigSerializer`,
   EmailField(blank). Email and regex fields render a non-string with their own invalid
   message. Only the edited columns and `updated_at` are saved (`{'oem': {}}` saves just
   `updated_at`). The response is `{'config': ...}`.
+- Go background tasks (beta). GET adds `go_tasks_enabled`
+  (`InstanceConfiguration.go_tasks_enabled`, migration `instance.0010_go_tasks_enabled`,
+  DB default false). A PUT whose keys include `goTasksEnabled` or `password` takes this
+  path instead of the branding one: the keys must be exactly
+  `{'goTasksEnabled', 'password'}` (else 400
+  `["Per le attività in background su Go invia soltanto goTasksEnabled e password."]`),
+  `goTasksEnabled` must be a JSON bool (else 400 `{'error': 'Richiesta non valida.'}`, always
+  for a form body), then `backups.password_confirmation`, then `remote_backups.relay('POST',
+  '/go-tasks', {'request_id', 'actor_id', 'enabled'}, success=202, timeout=30)`. Only on 202
+  the column is updated (with `updated_at`) and a changed value writes one UPDATE entry
+  `{'go_tasks_enabled': [str(previous), str(new)]}`. The response is the runner's
+  `{'operation': ...}` with `Cache-Control: no-store`. Task names never come from the
+  request: the runner owns the fixed list (`selfhost/updater/go_tasks.py`). Go:
+  `InstanceBackupActions.GoTasks`, dispatched from the admin PUT handler.
 
 ## admin/email
 

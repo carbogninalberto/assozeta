@@ -23,6 +23,8 @@ const (
 	backupActionsWord        = "RIPRISTINA"
 	backupActionsDefault     = "Aggiornamento non disponibile."
 	backupActionsUploadError = "Caricamento non riuscito."
+	// InstanceAdminView.put_go_tasks accepts only the switch and its password.
+	backupActionsGoTasksOnly = "Per le attività in background su Go invia soltanto goTasksEnabled e password."
 	// remote_backups.SLOW: S3 round trips take longer.
 	backupActionsSlow   = 30 * time.Second
 	backupActionsNormal = 5 * time.Second
@@ -39,12 +41,24 @@ type InstanceBackupActionsRunner interface {
 // (BackupItemView, BackupScheduleView, BackupRestoreView, BackupUploadView)
 // and BE/instance/remote_backups.py.
 type InstanceBackupActions struct {
-	store     *repository.InstanceBackups
+	store *repository.InstanceBackups
+	// passwords is the re-entered owner password's store (the stored hash and
+	// the attempts cache of repository.InstanceBackups).
+	passwords instanceBackupsAttemptStore
+	// tasks stores the go-tasks switch after the runner accepted it
+	// (repository.InstanceBackups).
+	tasks     InstanceGoTasksStore
 	runner    InstanceBackupActionsRunner
 	hashes    InstanceBackupsHasher
 	now       func() time.Time
 	requestID func() string
 	limits    BackupActionsLimits
+}
+
+// InstanceGoTasksStore is the stored switch and its log entry of
+// InstanceAdminView.put_go_tasks.
+type InstanceGoTasksStore interface {
+	SetGoTasksEnabled(context.Context, domain.InstanceGoTasksChange) error
 }
 
 // BackupActionsLimits are the settings the views read: the largest upload
@@ -57,7 +71,8 @@ type BackupActionsLimits struct {
 
 func NewInstanceBackupActions(store *repository.InstanceBackups, runner InstanceBackupActionsRunner, hashes InstanceBackupsHasher,
 	now func() time.Time, requestID func() string, limits BackupActionsLimits) *InstanceBackupActions {
-	return &InstanceBackupActions{store: store, runner: runner, hashes: hashes, now: now, requestID: requestID, limits: limits}
+	return &InstanceBackupActions{store: store, passwords: store, tasks: store, runner: runner, hashes: hashes, now: now,
+		requestID: requestID, limits: limits}
 }
 
 // BackupActionsReply is one DRF Response: Body rendered as JSON (None renders
@@ -291,7 +306,7 @@ func (s *InstanceBackupActions) Schedule(ctx context.Context, request BackupActi
 
 // passwordRefusal is backups.password_refusal on the shared attempts key.
 func (s *InstanceBackupActions) passwordRefusal(ctx context.Context, actor, password string) (*BackupActionsReply, error) {
-	status, message, err := instanceBackupsPasswordRefusal(ctx, s.store, s.hashes, actor, password)
+	status, message, err := instanceBackupsPasswordRefusal(ctx, s.passwords, s.hashes, actor, password)
 	if err != nil || status == 0 {
 		return nil, err
 	}
@@ -600,6 +615,43 @@ func (s *InstanceBackupActions) FetchRemote(ctx context.Context, request BackupA
 		return reply, err
 	}
 	if err := s.audit(ctx, request, "backup_remote_fetch", name.(string), domain.RequestObject{{Name: "backup", Value: name}}); err != nil {
+		return nil, err
+	}
+	return backupActionsRendered(reply)
+}
+
+// GoTasks is InstanceAdminView.put_go_tasks: the owner switch for the Go
+// background tasks. The runner owns the fixed task list, so only the switch
+// and the password travel; the stored value follows the runner's acceptance.
+func (s *InstanceBackupActions) GoTasks(ctx context.Context, request BackupActionsRequest, body any) (*BackupActionsReply, error) {
+	// keys != {'goTasksEnabled', 'password'}: DRF's ValidationError(str) body.
+	only, err := dto.InstanceAdminKeysExactly(body, "goTasksEnabled", "password")
+	if err != nil {
+		return nil, err
+	}
+	if !only {
+		return nil, &dto.InstanceAdminInvalid{Body: []string{backupActionsGoTasksOnly}}
+	}
+	object, ok := body.(domain.RequestObject)
+	if !ok {
+		return nil, errInstanceBackupsUnhandled // request.data.get: AttributeError
+	}
+	// type(request.data.get('goTasksEnabled')) is not bool: a form value is a string.
+	wanted, _ := object.Lookup("goTasksEnabled")
+	enabled, ok := wanted.(bool)
+	if !ok {
+		return backupActionsError(400, backupActionsBadRequest), nil
+	}
+	if refusal, err := s.passwordConfirmation(ctx, request.Actor, body); refusal != nil || err != nil {
+		return refusal, err
+	}
+	reply, err := s.remoteRelay(ctx, "POST", "/go-tasks", domain.RequestObject{{Name: "request_id", Value: s.requestID()},
+		{Name: "actor_id", Value: request.Actor}, {Name: "enabled", Value: enabled}}, 202, backupActionsSlow)
+	if err != nil || reply.Status != 202 {
+		return reply, err
+	}
+	if err = s.tasks.SetGoTasksEnabled(ctx, domain.InstanceGoTasksChange{ActorID: request.Actor, Enabled: enabled,
+		Audit: request.Audit, At: s.now()}); err != nil {
 		return nil, err
 	}
 	return backupActionsRendered(reply)

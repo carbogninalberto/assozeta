@@ -11,6 +11,8 @@ I due pannelli hanno salvataggi distinti. Il menu comprende anche **Stripe** e *
 
 Nelle installazioni self-hosted il proprietario trova anche **Profilo → Istanza**. In **Impostazioni → API (beta)**, l’interruttore **Usa la nuova API (v2) — beta** fa usare il nuovo server API all’interfaccia web di tutti gli utenti. Prima di attivarlo l’applicazione controlla che la nuova API risponda; se non risponde, l’interruttore resta spento. Se in seguito la nuova API non risponde, l’app torna da sola all’API attuale. Per tornare indietro spegni lo stesso interruttore: l’interfaccia riprende a usare l’API attuale (v1).
 
+Nella stessa sezione l’interruttore **Attività in background su Go (beta)** fa eseguire gli invii email in background al servizio Go: chiede la password del proprietario e riavvia l’applicazione per circa un minuto. Se il servizio Go non è attivo, le attività restano in attesa finché non lo riattivi o spegni l’interruttore.
+
 Le sezioni seguenti distinguono le impostazioni proposte dalla loro applicazione a iscrizioni, pagamenti e documenti. Una scelta nel modulo deve essere salvata prima di essere usata.
 
 ## Informazioni dell'organizzazione

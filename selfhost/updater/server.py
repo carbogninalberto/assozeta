@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 import signal
 from socketserver import ThreadingMixIn, UnixStreamServer
+import subprocess
 import sys
 import threading
 import time
@@ -19,6 +20,7 @@ from backup_jobs import (BackupRejected, create_backup, delete_archive, run_back
                          schedule_tick, set_keep, update_schedule)
 from restore_jobs import ArchiveInvalid, UploadIncomplete, receive_upload, run_restore, start_restore
 from engine import Engine
+from go_tasks import CHECK_FAILED, MISSING_WORKER, apply_go_tasks, release_has_go_worker, validate_go_tasks_request
 from journal import Journal, Conflict
 from release_catalog import version_tuple
 import remote_backups
@@ -88,6 +90,13 @@ def serve(root, env_file, engine_class=Engine):
 
     def blocked_reason():
         return update_blocked_reason(root, env_file, journal)
+
+    def go_worker_available():
+        """None when Docker cannot be queried: the caller reports it, never assumes."""
+        try:
+            return release_has_go_worker(root, env_file)
+        except (OSError, subprocess.SubprocessError, ValueError):
+            return None
 
     def status_payload():
         records = journal.records()
@@ -273,7 +282,7 @@ def serve(root, env_file, engine_class=Engine):
                 return
             if not self.authorized():
                 return
-            if self.path not in ('/updates', '/restarts'):
+            if self.path not in ('/updates', '/restarts', '/go-tasks'):
                 self.respond(404, {'error': 'Unknown endpoint.'})
                 return
             try:
@@ -281,9 +290,20 @@ def serve(root, env_file, engine_class=Engine):
                 if not 0 < length < 4096 or stop.is_set():
                     raise ValueError('Request cannot be accepted.')
                 body = json.loads(self.rfile.read(length))
+                reason = 'La transazione precedente richiede un ripristino.' if (directory / 'pending-distribution').exists() else None
                 if self.path == '/restarts':
                     request = validate_restart_request(body, env_file)
-                    reason = 'La transazione precedente richiede un ripristino.' if (directory / 'pending-distribution').exists() else None
+                elif self.path == '/go-tasks':
+                    request = validate_go_tasks_request(body, env_file)
+                    # The web UI shows this refusal before anything is recorded.
+                    if request['enabled']:
+                        available = go_worker_available()
+                        if available is None:
+                            self.respond(503, {'error': CHECK_FAILED})
+                            return
+                        if not available:
+                            self.respond(409, {'error': MISSING_WORKER})
+                            return
                 else:
                     request, reason = validate_request(body), blocked_reason()
                 operation = journal.create(request, blocked_reason=reason)
@@ -352,6 +372,8 @@ def serve(root, env_file, engine_class=Engine):
                     uploader.kick()
                 elif pending.get('kind') == 'fetch':
                     remote_backups.run_fetch(root, env_file, journal, pending)
+                elif pending.get('kind') == 'go_tasks':
+                    apply_go_tasks(root, env_file, journal, pending)
                 else:
                     engine.execute(pending)
             else:

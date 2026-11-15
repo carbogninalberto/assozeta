@@ -20178,6 +20178,21 @@
      ]
     },
     {
+     "name": "go_tasks_enabled",
+     "class": "BooleanField",
+     "relation": false,
+     "concrete": true,
+     "attname": "go_tasks_enabled",
+     "column": "go_tasks_enabled",
+     "internal": "BooleanField",
+     "null": false,
+     "blank": false,
+     "has_default": true,
+     "max_length": null,
+     "verbose_name": "go tasks enabled",
+     "help_text": ""
+    },
+    {
      "name": "is_reseller",
      "class": "BooleanField",
      "relation": false,

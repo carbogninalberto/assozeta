@@ -22,11 +22,20 @@ type InstanceAdminHandler struct {
 	identities *service.IdentityResolver
 	audit      LoginAuditReader
 	operations *paymentcategorylifecycle.Lifecycle
+	// backups serves the go-tasks switch InstanceAdminView.put shares with the
+	// owner's backup actions (set by composeInstanceBackupActions).
+	backups *service.InstanceBackupActions
 }
 
 func NewInstanceAdminHandler(admin *service.InstanceAdmin, actors *service.ActorAuthentication, identities *service.IdentityResolver,
 	audit LoginAuditReader, operations *paymentcategorylifecycle.Lifecycle) *InstanceAdminHandler {
 	return &InstanceAdminHandler{admin: admin, actors: actors, identities: identities, audit: audit, operations: operations}
+}
+
+// SetBackupActions wires the backup actions service: InstanceAdminView.put
+// takes the go-tasks path for {'goTasksEnabled', 'password'}.
+func (h *InstanceAdminHandler) SetBackupActions(actions *service.InstanceBackupActions) {
+	h.backups = actions
 }
 
 const instanceAdminDenied = "Only the instance owner or an administrator can administer this installation."
@@ -127,12 +136,20 @@ func (h *InstanceAdminHandler) Admin(c echo.Context) error {
 		}
 		defer release()
 		data := write.Body
+		c.SetRequest(c.Request().WithContext(write.Context))
+		// set(request.data) & {'goTasksEnabled', 'password'}: the go-tasks
+		// switch (an unhashable body keeps the branding path).
+		if goTasks, _ := dto.InstanceAdminKeysIntersect(data, "goTasksEnabled", "password"); goTasks && h.backups != nil {
+			actor, _ := c.Get(instanceAdminActorKey).(string)
+			reply, err := h.backups.GoTasks(c.Request().Context(), service.BackupActionsRequest{Actor: actor,
+				Form: write.Form, Audit: write.Audit}, data)
+			return h.backupActionsReply(c, reply, err)
+		}
 		if write.Form {
 			if data, err = dto.InstanceAdminBrandingForm(data); err != nil {
 				return h.fail(c, err)
 			}
 		}
-		c.SetRequest(c.Request().WithContext(write.Context))
 		actor, _ := c.Get(instanceAdminActorKey).(string)
 		body, err := h.admin.Branding(c.Request().Context(), data, actor, write.Audit)
 		return h.answer(c, body, err)

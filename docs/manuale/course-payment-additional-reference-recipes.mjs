@@ -30,7 +30,7 @@ export const coursePaymentAdditionalReviewedSources = Object.freeze({
     "UI/src/routes/accounting/receipts/modals/ShareModal.svelte": "0c86445d001a0d9141f26b673471a5b8b1ed1b9f15dc22264e125dc34d61bda3",
     "BE/application/views/invoice_views.py": "efaa933dd75f26a644a617ea7a604493936b737cd5ad458bd0239cfb98ce439e",
     "UI/src/routes/profile/sections/Stripe.svelte": "75899c0eb6ed827a07b0d2ad47ea102353a25a0c575c941757a828d5c65529be",
-    "UI/src/routes/profile/sections/SelfInstance.svelte": "13b31bc8ee3d904cb0d18f4a531bc7b91ee7c5f1f30361c262a40c3448aa6ab7",
+    "UI/src/routes/profile/sections/SelfInstance.svelte": "8b39187d4614b8ed73c00a301b552cf8217ba67a071ca26df5e27e15e1e6fff5",
     "UI/src/routes/profile/sections/InstanceIntegrations.svelte": "3fb8d12712e3088142b367b144dca0c70151a2c2692ad8dd69eacc88a4720332",
     "UI/src/routes/profile/sections/InstanceIntegration.svelte": "2da3929b737ab1d7c7ee43d9a4b7f96666e382228eac579fde7976730666c3eb",
     "BE/instance/integrations.py": "c7bb11e0eb4e587b5334b2661c6ca2def5118b93c4dcb12373cc399e83a8ef59",

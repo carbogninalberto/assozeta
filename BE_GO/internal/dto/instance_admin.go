@@ -120,6 +120,93 @@ func InstanceAdminKeysWithin(body any, allowed ...string) (bool, error) {
 	return false, ErrInstanceAdminUnhashable
 }
 
+// InstanceAdminKeys is set(request.data): the keys of a JSON object, the items
+// of a JSON list, the characters of a JSON string, or a form's raw keys. A
+// list holding a list or a dictionary, or a non-iterable body, is the
+// TypeError of set() (ErrInstanceAdminUnhashable). Repeated strings collapse
+// as in a set; other hashable members are kept for the comparison to fail.
+func InstanceAdminKeys(body any) ([]any, error) {
+	keys := []any{}
+	seen := map[string]bool{}
+	add := func(key any) {
+		if text, ok := key.(string); ok {
+			if seen[text] {
+				return
+			}
+			seen[text] = true
+		}
+		keys = append(keys, key)
+	}
+	switch v := body.(type) {
+	case InstanceAdminFormInput:
+		// set(request.data) is the form's keys, not the normalised fields.
+		return InstanceAdminKeys(v.Raw)
+	case domain.RequestObject:
+		for _, field := range v {
+			add(field.Name)
+		}
+		return keys, nil
+	case []any:
+		for _, item := range v {
+			switch item.(type) {
+			case domain.RequestObject, []any:
+				return nil, ErrInstanceAdminUnhashable
+			}
+			add(item)
+		}
+		return keys, nil
+	case string:
+		for _, r := range v {
+			add(string(r))
+		}
+		return keys, nil
+	}
+	return nil, ErrInstanceAdminUnhashable
+}
+
+// InstanceAdminKeysIntersect is `set(request.data) & set(keys)`: the body
+// holds one of these keys.
+func InstanceAdminKeysIntersect(body any, keys ...string) (bool, error) {
+	members, err := InstanceAdminKeys(body)
+	if err != nil {
+		return false, err
+	}
+	for _, member := range members {
+		if text, ok := member.(string); ok {
+			for _, key := range keys {
+				if text == key {
+					return true, nil
+				}
+			}
+		}
+	}
+	return false, nil
+}
+
+// InstanceAdminKeysExactly is `set(request.data) == set(keys)`.
+func InstanceAdminKeysExactly(body any, keys ...string) (bool, error) {
+	members, err := InstanceAdminKeys(body)
+	if err != nil {
+		return false, err
+	}
+	if len(members) != len(keys) {
+		return false, nil
+	}
+	for _, key := range keys {
+		found := false
+		for _, member := range members {
+			if text, ok := member.(string); ok && text == key {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return false, nil
+		}
+	}
+	return true, nil
+}
+
 type drfText struct {
 	max        int
 	allowBlank bool

@@ -62,6 +62,10 @@ class InstanceConfiguration(models.Model):
     UI_API_VERSION_CHOICES = ((UI_API_V1, 'Django API (v1)'), (UI_API_V2, 'Go API (v2, beta)'))
     ui_api_version = models.CharField(max_length=2, choices=UI_API_VERSION_CHOICES, default=UI_API_V1)
 
+    # Go background tasks (beta): the owner switch routes the fixed task list
+    # of the updater runner to the Go queue (worker-go). False keeps Django.
+    go_tasks_enabled = models.BooleanField(default=False, db_default=False)
+
     # Feature flags
     is_reseller = models.BooleanField(default=False)
     self_hosted = models.BooleanField(default=True)

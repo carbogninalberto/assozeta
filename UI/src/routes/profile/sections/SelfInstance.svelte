@@ -21,6 +21,7 @@
     import InstanceIntegration from './InstanceIntegration.svelte';
     import BakneyPairing from './BakneyPairing.svelte';
     import InstanceApiVersion from './InstanceApiVersion.svelte';
+    import InstanceGoTasks from './InstanceGoTasks.svelte';
 
     export let changes = false;
     const endpoint = `${getApiHost()}/instance`;
@@ -75,6 +76,7 @@
     let integrationBusy = false;
     let pairingBusy = false;
     let apiBusy = false;
+    let goTasksBusy = false;
 
     let diagnostics;
     let diagnosticError = '';
@@ -113,7 +115,7 @@
 
     $: settingsDirty = {branding: logoChanges, email: emailChanges, integrations: integrationChanges, ai: aiChanges, pairing: false, api: false};
     $: changes = aiChanges || integrationChanges || emailChanges || logoChanges;
-    $: settingsBusy = logoBusy || emailBusy || aiBusy || integrationBusy || pairingBusy || apiBusy;
+    $: settingsBusy = logoBusy || emailBusy || aiBusy || integrationBusy || pairingBusy || apiBusy || goTasksBusy;
     $: active = simulation || runner.active || (restartRequestId ? {kind: 'restart', stage: 'queued'} : null);
     $: locked = apiUnavailable || !!active || starting;
     $: restartBlocked = info?.mode !== 'production' ? 'Disponibile solo in produzione.'
@@ -228,6 +230,17 @@
         finally { refreshingInfo = false; }
     }
 
+    // A go_tasks change restarts every service, like a restart: follow it with
+    // the same polling so the page reloads on success and shows the failure.
+    function followOperation(operation) {
+        if (!operation) return;
+        restartRequestId = operation.request_id;
+        restartStartedAt = Date.now();
+        restartTimedOut = false;
+        runner = {...runner, active: operation};
+        if (!disposed) loadRunner();
+    }
+
     async function loadReleases(refresh = false, page = 1) {
         checkingReleases = true;
         releaseError = '';
@@ -242,7 +255,7 @@
 
     async function loadRunner() {
         let status;
-        if (!restartRequestId && runner.active?.kind !== 'restart') {
+        if (!restartRequestId && !['restart', 'go_tasks'].includes(runner.active?.kind)) {
             try {
                 status = await request('/admin/updates');
                 apiUnavailable = false;
@@ -457,6 +470,7 @@
                         </div>
                         <div id="instance-settings-panel-api" role="tabpanel" aria-labelledby="instance-settings-api" hidden={settingsSection !== 'api'}>
                             <InstanceApiVersion {request} config={info.config} bind:busy={apiBusy} disabled={locked} onSaved={config => info = {...info, config}} />
+                            <InstanceGoTasks {request} enabled={!!info.go_tasks_enabled} mode={info.mode} bind:busy={goTasksBusy} disabled={locked} onStarted={followOperation} />
                         </div>
                     </div>
                 </div>

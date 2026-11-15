@@ -270,6 +270,7 @@
     "UI/src/routes/profile/sections/Account.svelte",
     "UI/src/routes/profile/sections/DataExports.svelte",
     "UI/src/routes/profile/sections/InstanceApiVersion.svelte",
+    "UI/src/routes/profile/sections/InstanceGoTasks.svelte",
     "UI/src/routes/profile/sections/InstanceIntegration.svelte",
     "UI/src/routes/profile/sections/InstanceIntegrations.svelte",
     "UI/src/routes/profile/sections/Integrations.svelte",
@@ -4373,6 +4374,7 @@
       "UI/src/routes/profile/ProfileMenu.svelte",
       "UI/src/routes/profile/sections/Account.svelte",
       "UI/src/routes/profile/sections/InstanceApiVersion.svelte",
+      "UI/src/routes/profile/sections/InstanceGoTasks.svelte",
       "UI/src/routes/profile/sections/SelfInstance.svelte",
       "UI/src/routes/profile/sections/Settings.svelte",
       "UI/src/utils/apiVersion.js"

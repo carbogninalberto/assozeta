@@ -4,6 +4,7 @@ const STEPS = {
     restart: ['checking', 'restarting', 'health_check'],
     backup: ['checking', 'backup', 'restarting'],
     restore: ['checking', 'backup', 'restoring', 'restarting', 'health_check'],
+    go_tasks: ['checking', 'restarting'],
     fetch: ['checking', 'downloading'],
 };
 
@@ -22,6 +23,7 @@ export function operationTitle(operation) {
     if (kind === 'backup') return 'Backup in corso';
     if (kind === 'restore') return 'Ripristino in corso';
     if (kind === 'fetch') return 'Recupero dalla copia remota';
+    if (kind === 'go_tasks') return 'Attività in background su Go';
     return `Aggiornamento a ${operation.target_version}`;
 }
 
@@ -43,6 +45,7 @@ export function historyTitle(operation) {
     if (kind === 'backup') return operation.origin === 'scheduled' ? 'Backup automatico' : 'Backup manuale';
     if (kind === 'restore') return 'Ripristino';
     if (kind === 'fetch') return 'Recupero da remoto';
+    if (kind === 'go_tasks') return 'Attività su Go';
     return operation.source_version ? `${operation.source_version} → ${operation.target_version}` : `Aggiornamento a ${operation.target_version}`;
 }
 
@@ -67,6 +70,7 @@ export function recentOutcome(history = [], now = Date.now()) {
         backup: ok ? 'Backup completato' : 'Backup non riuscito',
         restore: ok ? 'Ripristino completato' : 'Ripristino non riuscito',
         fetch: ok ? 'Backup recuperato sul server' : 'Recupero non riuscito',
+        go_tasks: ok ? 'Attività su Go aggiornate' : 'Attività su Go non riuscite',
     };
     return {id: latest.id, ok, title: titles[kind] || titles.update, detail: ok ? '' : latest.error || ''};
 }
