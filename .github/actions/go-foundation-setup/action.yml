@@ -1,0 +1,61 @@
+name: Go foundation setup
+description: >-
+  Reproduce the Go, production Python and disposable service setup that every Go
+  foundation job previously repeated inline. Checkout stays in each job because a
+  composite action cannot check out the caller's repository.
+inputs:
+  go:
+    description: Install the Go toolchain pinned by BE_GO/go.mod.
+    default: 'true'
+  python:
+    description: Install the production Python interpreter and its credential dependencies.
+    default: 'true'
+  system:
+    description: Install disposable PostgreSQL, Redis, locales and native build dependencies.
+    default: 'true'
+runs:
+  using: composite
+  steps:
+    - if: inputs.go == 'true'
+      uses: actions/setup-go@v5
+      with:
+        go-version-file: BE_GO/go.mod
+        cache-dependency-path: BE_GO/go.sum
+    - if: inputs.python == 'true'
+      name: Read production Python version
+      id: production-python
+      shell: bash
+      run: |
+        python3 - <<'PY'
+        import os
+        from TESTS.adapters.django.production_runtime import production_python_version
+        with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+            output.write(f'version={production_python_version()}\n')
+        PY
+    - if: inputs.python == 'true'
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ steps.production-python.outputs.version }}
+        cache: pip
+        cache-dependency-path: |
+          BE/requirements.txt
+          TESTS/adapters/django/requirements-credentials.txt
+          TESTS/contracts/requirements-qr.txt
+    - if: inputs.system == 'true'
+      name: Install disposable integration dependencies
+      shell: bash
+      run: |
+        # The runner's default mirror is sometimes unreachable; use the main archive then.
+        curl -fsS --max-time 15 -o /dev/null http://azure.archive.ubuntu.com/ubuntu/dists/noble/InRelease || sudo sed -i 's|azure.archive.ubuntu.com|archive.ubuntu.com|g' /etc/apt/apt-mirrors.txt /etc/apt/sources.list /etc/apt/sources.list.d/* 2>/dev/null || true
+        sudo apt-get update
+        sudo apt-get install -y postgresql-16 redis-server locales build-essential pkg-config libjpeg-dev zlib1g-dev libwebp-dev
+        sudo sed -i 's/^# *it_IT.UTF-8 UTF-8/it_IT.UTF-8 UTF-8/' /etc/locale.gen
+        sudo locale-gen
+        python -c "import locale; locale.setlocale(locale.LC_ALL, 'it_IT.UTF-8')"
+        echo /usr/lib/postgresql/16/bin >> "$GITHUB_PATH"
+    - if: inputs.python == 'true'
+      name: Verify production runtime and install credential dependencies
+      shell: bash
+      run: |
+        python TESTS/adapters/django/production_runtime.py
+        python -m pip install -r TESTS/adapters/django/requirements-credentials.txt

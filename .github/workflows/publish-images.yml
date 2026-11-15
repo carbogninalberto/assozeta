@@ -8,6 +8,7 @@ on:
       - "BE_GO/**"
       - "TESTS/**"
       - ".github/workflows/go-quality.yml"
+      - ".github/actions/go-foundation-setup/**"
       - "UI/**"
       - "selfhost/**"
       - ".github/workflows/publish-images.yml"
