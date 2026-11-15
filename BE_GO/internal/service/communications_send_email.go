@@ -194,9 +194,10 @@ func (s *CommunicationSendEmail) render(row domain.CommunicationConfigurationRec
 		Text: input.Message}, s.boundary())
 }
 
-// refuseUnsupported reads the configuration before any write: when it would
-// take the SMTP path, a message smtpsend does not render is refused (text
-// that is not valid Unicode, a header over its size bound).
+// refuseUnsupported reads the configuration before any write. smtpsend renders
+// every value a Python str can hold and answers Python's own exceptions with
+// ErrRaises (send_email's (False, e) answer), so no SMTP message is refused
+// any more; only a failing configuration read stops the request here.
 func (s *CommunicationSendEmail) refuseUnsupported(ctx context.Context, association string, input dto.SendEmailInput, recipients []string) error {
 	return s.step(ctx, func(tx domain.CommunicationSendEmailTransaction) error {
 		row, err := tx.FirstConfiguration(ctx, association, false)
@@ -205,9 +206,6 @@ func (s *CommunicationSendEmail) refuseUnsupported(ctx context.Context, associat
 		}
 		if err != nil || row.DailyBalance >= row.DailyLimit || !sendEmailConfigured(row) {
 			return err
-		}
-		if _, err = s.render(row, input, recipients); errors.Is(err, smtpsend.ErrUnsupported) {
-			return errors.Join(domain.ErrSendEmailNotPorted, err)
 		}
 		return nil
 	})

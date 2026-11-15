@@ -25,7 +25,6 @@ func VerifySend(ctx context.Context, s Server, given, address, to string, messag
 		return err
 	}
 	defer c.close()
-	c.anyAddress = true
 	if err = c.login(s.User, s.Password); err != nil {
 		return err
 	}

@@ -329,30 +329,6 @@ func TestRenderMatchesPythonAsString(t *testing.T) {
 	t.Logf("rendered %d, raised %d", rendered, raised)
 }
 
-// TestCheckEnvelopeAcceptsEveryAddress keeps CheckEnvelope's answer for every
-// address (send_email quotes whatever smtplib.quoteaddr parses) and checks
-// that the plain quoting helper still matches Python for the addresses
-// email.utils.parseaddr leaves unchanged.
-func TestCheckEnvelopeAcceptsEveryAddress(t *testing.T) {
-	golden := loadGolden(t)
-	accepted := 0
-	for _, item := range golden.Addresses {
-		if err := CheckEnvelope(item.Address, []string{item.Address}); err != nil {
-			t.Fatalf("%q refused: %v", item.Address, err)
-		}
-		if !plainAddress(item.Address) {
-			continue
-		}
-		accepted++
-		if quoteaddr(item.Address) != item.Quoted {
-			t.Fatalf("%q: go %q python %q", item.Address, quoteaddr(item.Address), item.Quoted)
-		}
-	}
-	if accepted < 1000 {
-		t.Fatalf("only %d addresses covered", accepted)
-	}
-}
-
 // TestImpossibleAndRaisingInputs covers the two answers left once the subset is
 // gone: text a Python str cannot hold (impossible for a Django writer) and a
 // value Python raises on inside send_email's try, which is a (False, e)

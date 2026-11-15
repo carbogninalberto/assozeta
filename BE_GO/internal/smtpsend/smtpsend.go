@@ -1,6 +1,9 @@
-// Package smtpsend sends mail the way CommunicationConfiguration does in
-// BE/communications/models.py: Python 3.13 smtplib for the dialogue and
-// email.mime (compat32, as_string) for the message, not Django's EmailMessage.
+// Package smtpsend sends mail the two ways Assozeta does: CommunicationConfiguration
+// in BE/communications/models.py builds its own MIMEMultipart and sends it with
+// Python 3.13 smtplib (email.mime, compat32, as_string), and django.core.mail's
+// EmailMessage (the instance e-mail probe and core.tasks.send_mail_async) builds
+// and sends message().as_bytes(linesep='\r\n') under the same policy, addresses
+// through sanitize_address and headers folded as compat32 folds them.
 //
 // Verify mirrors verify_smtp(send_email=False): connect (SMTP_SSL, or SMTP
 // followed by starttls() when the encryption is "TLS"), login, then the
@@ -16,8 +19,11 @@
 // Golden evidence: TESTS/adapters/go/smtpsend_golden.py records the client
 // bytes of the actual Django methods against a scripted server, the
 // send_email messages and smtplib.quoteaddr results in
-// testdata/python_smtp.json; the tests replay the same scripts against this
-// client and require identical bytes.
+// testdata/python_smtp.json; testdata/django_mail.json, django_text.json and
+// django_test_mail.json hold the EmailMessage bytes, and django_any.json and
+// django_addresses.json every header, body and address shape of it and the
+// exceptions Django raises. The tests replay them against this client and
+// require identical bytes.
 package smtpsend
 
 import (
@@ -138,7 +144,6 @@ func Send(ctx context.Context, s Server, from string, to []string, message strin
 		return err
 	}
 	defer c.close()
-	c.anyAddress = true
 	if err = c.login(s.User, s.Password); err != nil {
 		return err
 	}
@@ -149,24 +154,22 @@ func Send(ctx context.Context, s Server, from string, to []string, message strin
 }
 
 type client struct {
-	ctx      context.Context
-	raw      net.Conn
-	conn     net.Conn
-	reader   *bufio.Reader
-	timeout  time.Duration
-	host     string
-	local    string
-	features map[string]string
-	order    []string
-	esmtp    bool
-	heloResp []byte
-	ehloResp []byte
-	helo     bool
-	ehlo     bool
-	count    int
-	stop     func() bool
-	// anyAddress: envelope addresses go through QuoteAddr (any text).
-	anyAddress         bool
+	ctx                context.Context
+	raw                net.Conn
+	conn               net.Conn
+	reader             *bufio.Reader
+	timeout            time.Duration
+	host               string
+	local              string
+	features           map[string]string
+	order              []string
+	esmtp              bool
+	heloResp           []byte
+	ehloResp           []byte
+	helo               bool
+	ehlo               bool
+	count              int
+	stop               func() bool
 	noUser, noPassword bool
 	tls                *tls.Config
 	// handshake records a failed TLS handshake: Python has then detached
@@ -717,14 +720,6 @@ var periodPattern = regexp.MustCompile(`(?m)^\.`)
 
 func quotePeriods(b []byte) []byte { return periodPattern.ReplaceAll(b, []byte("..")) }
 
-// quoteaddr is smtplib.quoteaddr for addresses email.utils.parseaddr returns
-// unchanged, which is what Django's EmailMessage path passes; send_email's
-// own path quotes any text with QuoteAddr.
-func quoteaddr(address string) string { return "<" + address + ">" }
-
-func (c *client) quote(address string) string {
-	if c.anyAddress {
-		return QuoteAddr(address)
-	}
-	return quoteaddr(address)
-}
+// quote is smtplib.sendmail's quoteaddr of an envelope address: email.utils
+// parseaddr reads it (any text) and the command carries the address it finds.
+func (c *client) quote(address string) string { return QuoteAddr(address) }

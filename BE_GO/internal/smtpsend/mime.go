@@ -7,7 +7,6 @@ import (
 	"math/rand/v2"
 	"regexp"
 	"strings"
-	"unicode"
 	"unicode/utf8"
 )
 
@@ -121,40 +120,4 @@ func bodyBase64(raw []byte) string {
 		out.WriteByte('\n')
 	}
 	return out.String()
-}
-
-const addressSpecials = ".!#$%&'*+/=?^_`{|}~-"
-
-// CheckEnvelope accepts every envelope address: smtplib.quoteaddr parses any
-// text (email.utils.parseaddr), and a command Python cannot encode fails when
-// it is sent, like any other smtplib failure. The signature is kept for the
-// callers that check the envelope before any effect.
-func CheckEnvelope(from string, to []string) error { return nil }
-
-// plainAddress reports an address without quoting to add: email.utils.parseaddr
-// returns it unchanged. Only Django's EmailMessage path uses it; send_email's
-// Send takes smtplib.quoteaddr's parse of any text.
-func plainAddress(address string) bool {
-	if !utf8.ValidString(address) || address == "" {
-		return false
-	}
-	switch strings.Count(address, "@") {
-	case 0:
-	case 1:
-		local, domain, _ := strings.Cut(address, "@")
-		if local == "" || domain == "" {
-			return false
-		}
-	default:
-		return false
-	}
-	for _, r := range address {
-		switch {
-		case r == '@', r < 0x80 && (r >= 'a' && r <= 'z' || r >= 'A' && r <= 'Z' || r >= '0' && r <= '9'),
-			r < 0x80 && strings.ContainsRune(addressSpecials, r), r >= 0x80 && unicode.IsLetter(r):
-		default:
-			return false
-		}
-	}
-	return true
 }

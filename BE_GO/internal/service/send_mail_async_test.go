@@ -88,7 +88,8 @@ func TestSendMailAsyncPlan(t *testing.T) {
 		{name: "fail silently", kwargs: base(celery.Item{Key: "fail_silently", Value: true})},
 		{name: "unknown keyword", kwargs: base(celery.Item{Key: "connection", Value: nil}), handoff: true},
 		{name: "reply_to string", kwargs: base(celery.Item{Key: "reply_to", Value: "r@example.test"}), handoff: true},
-		{name: "utf-8 recipient", kwargs: base()[:3].Set("recipient_list", []any{"çağla@example.test"}), handoff: true},
+		// A non-ASCII recipient is sanitized into an RFC 2047 local part.
+		{name: "utf-8 recipient", kwargs: base()[:3].Set("recipient_list", []any{"çağla@example.test"})},
 		{name: "empty recipients", kwargs: base()[:3].Set("recipient_list", []any{}), handoff: true},
 		{name: "duplicate argument", args: []any{"Oggetto"}, kwargs: base(), handoff: true},
 		{name: "malformed association", kwargs: base(celery.Item{Key: "sport_association_id", Value: "x"}), handoff: true},

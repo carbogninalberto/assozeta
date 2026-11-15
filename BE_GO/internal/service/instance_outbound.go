@@ -208,7 +208,7 @@ func timeoutResult(send bool) instanceprobe.Result {
 // ---------------------------------------------------------------------------
 
 const (
-	emailTestSubject = "=?utf-8?q?Assozeta_=E2=80=94_verifica_email?=" // Header('Assozeta — verifica email', 'utf-8').encode()
+	emailTestSubject = "Assozeta — verifica email" // EmailMessage's subject: smtpsend encodes it
 	emailTestBody    = "Questo messaggio è stato richiesto dal proprietario dell’istanza per verificare la configurazione email."
 )
 
@@ -308,7 +308,7 @@ func (s *InstanceOutbound) emailMessage(plan *emailPlan, recipient string) ([]by
 		return nil, "", err
 	}
 	now := s.now()
-	message, err := smtpsend.RenderDjangoText(smtpsend.DjangoText{EncodedSubject: emailTestSubject, Body: emailTestBody, SenderName: plan.sender,
+	message, err := smtpsend.RenderDjangoText(smtpsend.DjangoText{Subject: emailTestSubject, Body: emailTestBody, SenderName: plan.sender,
 		FromEmail: plan.from, To: recipient, Date: now, MessageID: smtpsend.MessageID(now, s.localName())})
 	return message, from, err
 }
