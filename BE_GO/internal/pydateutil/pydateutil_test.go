@@ -35,7 +35,7 @@ type goldenCase struct {
 
 func (c goldenCase) check(got Result, err error) string {
 	if c.Refused {
-		if !errors.Is(err, ErrUnsupported) {
+		if !errors.Is(err, ErrUnsupported) && !errors.Is(err, ErrUnexpectedZone) {
 			return "want a refusal"
 		}
 		return ""
@@ -166,13 +166,18 @@ func TestRefusals(t *testing.T) {
 	}{
 		{"invalid UTF-8", "2020-01-03\xff", time.UTC},
 		{"too long", strings.Repeat("1", MaxTextBytes+1), time.UTC},
-		{"nil zone", "2020-01-03", nil},
-		{"local abbreviation", "10:00 CEST", rome},
 	}
 	for _, c := range cases {
 		_, err := Parse(c.text, now, c.local)
 		if !errors.Is(err, ErrUnsupported) || !errors.Is(err, refusal.ErrNotPorted) {
 			t.Errorf("%s: want ErrUnsupported, got %v", c.name, err)
+		}
+	}
+	// Zones the application never passes: application state, never handed off.
+	for name, local := range map[string]*time.Location{"nil zone": nil, "local abbreviation": rome} {
+		_, err := Parse("10:00 CEST", now, local)
+		if !errors.Is(err, ErrUnexpectedZone) || !errors.Is(err, refusal.ErrAppState) || errors.Is(err, refusal.ErrNotPorted) {
+			t.Errorf("%s: want ErrUnexpectedZone, got %v", name, err)
 		}
 	}
 	if _, err := Parse(strings.Repeat("1", MaxTextBytes), now, time.UTC); errors.Is(err, ErrUnsupported) {

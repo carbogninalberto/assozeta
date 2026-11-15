@@ -29,16 +29,19 @@ import (
 )
 
 // ErrUnsupported marks the inputs Parse does not answer because the result
-// could not be shown to equal Python's:
-//   - text that is not valid UTF-8 (a Python str has no such form) or is
-//     longer than MaxTextBytes;
-//   - a nil local zone;
-//   - a zone name in the text (as in '10:00 CET') that is an abbreviation of
-//     a local zone with more than one abbreviation or offset: Python then
-//     depends on time.tzname and on dateutil.tz.tzlocal, which are derived
-//     from the platform's C library. A local zone with a single abbreviation
-//     and offset (UTC, Etc/GMT) is answered.
+// could not be shown to equal Python's: text that is not valid UTF-8 (a Python
+// str has no such form, but a caller may hold WTF-8 from a JSON lone surrogate)
+// or is longer than MaxTextBytes.
 var ErrUnsupported = refusal.New("pydateutil: input outside the supported subset")
+
+// ErrUnexpectedZone is a local zone the application never passes: a nil one,
+// or one with more than one abbreviation or offset when the text names one of
+// them (as in '10:00 CET'; Python then depends on time.tzname and
+// dateutil.tz.tzlocal, from the platform's C library). Every caller passes
+// time.UTC (Django sets TZ from TIME_ZONE, UTC): dto/associates_draft.go:183,
+// codicefiscale/dateparse.go:64, service/instructor_report.go:49. A fixed
+// zone is answered. It is an application-state error, never handed off.
+var ErrUnexpectedZone = refusal.AppState("pydateutil: unexpected local zone")
 
 // MaxTextBytes bounds the accepted text. Python has no such bound; far above
 // it the arithmetic of decimal.Decimal starts to depend on exponent limits.
@@ -132,12 +135,13 @@ func (r Result) format(sep byte) (string, error) {
 // microsecond=0), which is the date of now in local; the two-digit year
 // pivot is that date's year (see ParseWithPivot).
 //
-// The error is an *Error for a Python exception, or wraps ErrUnsupported.
+// The error is an *Error for a Python exception, ErrUnsupported or
+// ErrUnexpectedZone.
 // Python also warns (UnknownTimezoneWarning) and returns a naive datetime
 // for an unknown zone name; Parse returns that naive result.
 func Parse(text string, now time.Time, local *time.Location) (Result, error) {
 	if local == nil {
-		return Result{}, ErrUnsupported
+		return Result{}, ErrUnexpectedZone
 	}
 	return ParseWithPivot(text, now, now.In(local).Year(), local)
 }
@@ -157,7 +161,7 @@ func ParseWithPivot(text string, now time.Time, pivotYear int, local *time.Locat
 // too, since the rule also applies after a leading year).
 func ParseDayFirst(text string, now time.Time, local *time.Location) (Result, error) {
 	if local == nil {
-		return Result{}, ErrUnsupported
+		return Result{}, ErrUnexpectedZone
 	}
 	return ParseDayFirstWithPivot(text, now, now.In(local).Year(), local)
 }
@@ -172,13 +176,16 @@ func ParseDayFirstWithPivot(text string, now time.Time, pivotYear int, local *ti
 // a month and the third a day ('10-11-12' is 12 November 2010).
 func ParseYearFirst(text string, now time.Time, local *time.Location) (Result, error) {
 	if local == nil {
-		return Result{}, ErrUnsupported
+		return Result{}, ErrUnexpectedZone
 	}
 	return parseWith(text, now, now.In(local).Year(), local, false, true)
 }
 
 func parseWith(text string, now time.Time, pivotYear int, local *time.Location, dayFirst, yearFirst bool) (Result, error) {
-	if local == nil || len(text) > MaxTextBytes || !utf8.ValidString(text) {
+	if local == nil {
+		return Result{}, ErrUnexpectedZone
+	}
+	if len(text) > MaxTextBytes || !utf8.ValidString(text) {
 		return Result{}, ErrUnsupported
 	}
 	today := now.In(local)

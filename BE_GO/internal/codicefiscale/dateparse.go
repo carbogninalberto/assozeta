@@ -66,6 +66,8 @@ func parseLetterSlug(slug string, yearFirst bool, now time.Time) (time.Time, err
 	switch {
 	case errors.As(err, &raised):
 		return time.Time{}, errDateParse
+	case errors.Is(err, pydateutil.ErrUnexpectedZone):
+		return time.Time{}, err
 	case err != nil:
 		return time.Time{}, ErrUnsupported
 	}

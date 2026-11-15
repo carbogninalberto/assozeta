@@ -127,7 +127,7 @@ func first(s string, n int) string {
 func encodeBirthdate(birthdate, gender string, now time.Time) (time.Time, string, error) {
 	date, err := getDate(birthdate, now)
 	if err != nil {
-		if errors.Is(err, ErrUnsupported) {
+		if errors.Is(err, ErrUnsupported) || errors.Is(err, refusal.ErrAppState) {
 			return time.Time{}, "", err
 		}
 		return time.Time{}, "", ErrInvalid

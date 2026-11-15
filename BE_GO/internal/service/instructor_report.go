@@ -52,6 +52,9 @@ func instructorReportParse(text string, now time.Time) (time.Time, error) {
 		if errors.As(err, &raised) {
 			return time.Time{}, ErrInstructorReportServer
 		}
+		if errors.Is(err, pydateutil.ErrUnexpectedZone) {
+			return time.Time{}, err
+		}
 		return time.Time{}, ErrInstructorReportNotPorted
 	}
 	if parsed.HasTZ {

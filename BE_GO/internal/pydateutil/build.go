@@ -138,7 +138,7 @@ func buildAware(naive Result, res *parsed, local *time.Location) (Result, error)
 			naive.TZName, naive.HasTZName = res.tzname, true
 			return naive, nil
 		case !zone.fixed && zone.abbreviations[res.tzname]:
-			return Result{}, ErrUnsupported
+			return Result{}, ErrUnexpectedZone // callers pass time.UTC (ErrUnexpectedZone)
 		}
 	}
 	switch {
