@@ -49,6 +49,11 @@
 - Not compared: the EHLO name follows `socket.getfqdn()` (normalized in the evidence, as in [tasks-db-c](tasks-db-c.md));
   the MIME boundary is random in both.
 
+Since long-tail PR 3 (agent B) text that is not valid Unicode (a lone surrogate) is no longer refused before the
+writes: Go answers the 500 page after the Message and transaction rows, as Django's `as_string()` raises inside
+`send_email`'s try after them (the same path as a header error). A header over 200,000 bytes and an address outside
+`parseaddr` stay refusals.
+
 ## Evidence (TDD)
 
 `TESTS/fixtures/communications_send_email_http.json` (61 cases, `generate_communications_send_email_http.py`). The adapter

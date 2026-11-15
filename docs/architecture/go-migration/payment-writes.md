@@ -92,6 +92,11 @@ payment dates are a 500 with nothing written. Response `201`.
   UUID and `null` all give the same answer).
 - Update form bodies and add multipart bodies carrying files (mutable QueryDict).
 
+Since long-tail PR 3 (agent B) none of the listed refusals is ported: the attachment filename shapes, `payment_id`
+in the add body and form bodies on update stay refusals. The unwired document storage and printer are application
+state (`ErrServerComposition`, the 500 page, never handed off), and `createGroup` with its fee-tie pre-check was
+dead code and is deleted.
+
 ## Attachments (`attachments_data`)
 
 `PaymentEntrySerializer._handle_documents` runs after the payment's save on add (after `Payment.objects.create`, before the

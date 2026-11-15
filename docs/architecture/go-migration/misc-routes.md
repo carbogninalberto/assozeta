@@ -80,6 +80,10 @@ The other routes looked at for this family are not ported (see the end of this p
   `1e-07`, `-inf` beyond the float range).
 - Card GET through the paired server: an `expires_at` whose instant lies outside years 1..9999.
 
+Since long-tail PR 3 (agent B) the subscription card's public links are application state (`ErrServerComposition`,
+the 500 page): the server always composes them, and `ErrMiscRoutesNotPorted` is deleted. The paired-server
+`expires_at` outside years 1..9999 stays a refusal.
+
 Not authored: the refused inputs above (Django answers 200 there), association-scoped sessions on the card GET, events in
 registries of equal physical order.
 

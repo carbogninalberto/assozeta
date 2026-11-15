@@ -91,11 +91,13 @@ athletes and owners without an association), today in Europe/Rome compared with 
 
 ## Not ported (refused with the 500 page; the transaction is rolled back)
 
-- Integer (or boolean) ids where Django accepts `uuid.UUID(int=...)` lookups: attendee and absence ids, instructor ids,
-  the check-in day id (event ids are ported, see "Events of older calendars").
-- `lessons_left` that is a float or a boolean when a carnet is consumed or given back; lesson dates that Python's
-  `fromisoformat` accepts outside `YYYY-MM-DD[(T| )HH:MM[:SS[.fff|.ffffff]][±HH:MM]]` (or years below 1000); event
-  starts with non-ASCII digits.
+- `lessons_left` read as an infinite float is application state (`ErrCalendarUnreachable`, the 500 page): every writer
+  stores an integer counter and jsonb cannot hold the value. Float and boolean counters, integer and boolean ids, lesson
+  dates, years below 1000 and event starts with non-ASCII digits are ported (see "Round t3courses").
+
+Since long-tail PR 3 (agent B) the infinite `lessons_left` is application state (`ErrCalendarUnreachable`): the carnet
+writers store integers and jsonb refuses the value. `domain.ErrCalendarNotPorted` has no site left and is deleted. The
+`lessons_left` arithmetic, the integer ids and the lesson-date conversions are unchanged (see "Round t3courses").
 
 ## Events of older calendars (v2-rest-c)
 

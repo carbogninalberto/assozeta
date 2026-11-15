@@ -81,6 +81,11 @@ CAUGHT.
 - Not authored (ordering only): a malformed JSON body from an athlete is DRF's 400 in Go and the association 500 in Django (Go reads the
   body before the association lookup).
 
+Since long-tail PR 3 (agent B) `meta.subscription_data.name` as a float, list or dict is ported: Django formats it
+with `str()`. An integer over 4300 digits in `send_receipt_email` is ported too: Django's `on_commit(robust=True)`
+swallows the publish error and answers 200. The float fee-tie wrappers were test-only and are deleted; the callers
+use the Any variants. An uploaded file as `send_receipt_email` and a missing Celery producer stay refusals.
+
 ## Routes reviewed and not ported
 
 - `invoice/<uid>/update`: every success path calls `print_document_invoice.apply(...)` — synchronous, in-process execution of the task

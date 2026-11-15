@@ -38,8 +38,14 @@
 
 ## Not ported
 
-- `subscription/associates-draft/list/approve`. Its main path calls `create_subscription` for every valid draft, and that call creates users, associates, subscriptions, payments and documents and sends emails. The route stays on Django.
+- `subscription/associates-draft/list/approve`. Its main path calls `create_subscription` for every valid draft, and
+  that call creates users, associates, subscriptions, payments and documents and sends emails. The route is ported
+  ([subscription-renew](subscription-renew.md)): a draft hitting one of that flow's refusals refuses the whole request.
 - In edit, `person_date` is the whole dateutil parser (`internal/pydateutil` with `dayfirst`, through `dto.PersonDate`): dashes, dots, month names, times, a year alone (the rest from today's date, UTC). A year before 1000 is Django's `strftime('%d/%m/%Y')` round trip failing on Linux (the year is not padded): the associate's is the 500 page, the tutor's is ignored. (Long tail PR 3: texts of any length and lone surrogates are parsed like dateutil, `internal/pydateutil`.)
+
+Since long-tail PR 3 (agent B) approve's refusals are `subscription-create`'s: the entries that flow answers as
+application state (`ErrSubscriptionCreateUnreachable`, the 500 page, a unique `username` among them) refuse the
+whole request the same way, and its ported quick-mode ids stay ported. Nothing else in this section changed.
 
 ## Evidence
 

@@ -115,9 +115,15 @@ Stripe settings are `effective_integration('stripe')`: the self-hosted instance 
 
 - (Ported in v2-rest-a, see the end of this page: `X-Group-Id` in another spelling, float fee ties and
   `meta.subscription_data.name` values of any JSON type.)
-- Amounts outside int64 cents, and a created PaymentIntent whose `id` is a list or object (a reply shape the API never
-  sends).
+- Amounts outside int64 cents are application state (`ErrStripeUnreachable`, the 500 page: the column is
+  `numeric(9,2)`). A created PaymentIntent whose `id` is a list or object (a reply shape the API never sends) stays
+  refused.
 - A webhook body over `DATA_UPLOAD_MAX_MEMORY_SIZE` (Django's 413 handling).
+
+Since long-tail PR 3 (agent B) cents outside int64 are application state (`ErrStripeUnreachable`): the amount column
+is `numeric(9,2)`, so no request or stored row reaches the overflow. The non-canonical `X-Group-Id` helper had no
+caller and is deleted. A Stripe reply whose intent `id` is not a string stays refused, and so does a webhook body
+over `DATA_UPLOAD_MAX_MEMORY_SIZE`.
 
 ## Scheduled tasks (not ported, listed)
 

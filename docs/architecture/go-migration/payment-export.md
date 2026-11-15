@@ -78,7 +78,13 @@ while the filter is built, inside the view's `try`), and smart-search terms are 
 (`U+0130`, final sigma) and split on `\w+` as Python does, so Cyrillic, Greek and CJK terms are answered; 94 cases (7 more:
 `search-inf-is-text`, `search-infinity-is-text`, `search-cyrillic`, `search-greek-final-sigma`, `search-dotted-capital-i`,
 `search-malformed-byte`, `search-truncated-sequence`; the pending payment's description now also holds `infanzia`, so `inf` matches it).
-- A course JSON `label` that is a list or an object (its Python repr) or a non-finite number.
+- A course JSON `label` that is a decimal number whose float overflows or underflows (the CSV writes `inf` or `0.0`).
+  A list or an object is ported as its Python repr.
+
+Since long-tail PR 3 (agent B) a persona lookup error, a `ParseFloat` error outside the range check and any other
+stored type are application state (`ErrPaymentReadsUnreachable`, the 500 page, never handed off): the lookup never
+fails and the JSON parser only hands over decoded types. A decimal label whose float overflows or underflows stays
+refused.
 
 Not authored: association-scoped sessions of non-athlete users (the scoped course subscription and installment
 filters are ported from `scoped_queryset`), additional categories that raise, equal payment dates (Django leaves their order

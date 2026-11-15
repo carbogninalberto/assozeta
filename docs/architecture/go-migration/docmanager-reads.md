@@ -74,15 +74,22 @@ active `SportAssociation`, gets `404 {"error": "Document not found."}`. The owne
 
 ## Not ported (refused with the 500 page before any write)
 
-- **Retrieve** provider errors other than a client-error HEAD answer: a HEAD failing with 429 or a 5xx status or without
-  an answer, and a `GetObject` failure other than a missing key. Django answers `500 {"exception": "<botocore text>"}`;
-  the text carries botocore's retry count or the storage endpoint.
+- **Retrieve** provider errors that are not a client error: a HEAD failing with 429 or a 5xx status or without an
+  answer, and a `GetObject` transport error or exhausted retry. Django answers `500 {"exception": "<botocore text>"}`;
+  the text carries botocore's retry count or the storage endpoint. A client-error `GetObject` is ported (the same
+  text, 500 JSON).
 - **Retrieve** names outside the modelled grammar: none left (t2docs ported the bracketed and non-ASCII network locations and the `data:` types).
 - Rows Django cannot read either (both sides answer the 500 page): creation dates outside Python's range. Invalid UTF-8
   and NUL cannot be stored in the database.
 - **Retrieve** download-token payloads using JSON that Go's decoder rejects but Python accepts, such as `NaN` or
   `Infinity`. Only a holder of `SECRET_KEY` can produce them.
 - `SECRET_KEY_FALLBACKS` are not consulted (they are not configured).
+
+Since long-tail PR 3 (agent B) a client-error `GetObject` is ported, and so is the `Content-Disposition` of an empty
+inline name (`None`). A HEAD transport error or exhausted retry, and the download-token payloads Go's decoder
+rejects, stay refusals. The service's unwired printer is application state (`ErrServerComposition`), as are the
+stored date and name shapes and the shipped mime table (`ErrDocmanagerUnreachable`), each the 500 page and never
+handed off.
 
 ## Routes not in this family
 

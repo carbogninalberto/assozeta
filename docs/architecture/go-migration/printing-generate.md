@@ -51,6 +51,10 @@
   rows this route builds) and integers beyond int64 in a payment's `meta.description` (refused where the cell is read): the
   500 page before any write.
 
+Since long-tail PR 3 (agent B) a `ParseFloat` error other than a range error is application state
+(`ErrPrintingGenerateUnreachable`, the 500 page): the value comes from the JSON parser, which produces no other
+shape. The `xlsxexport` inputs and integers beyond int64 stay refusals.
+
 ## Evidence
 
 `TESTS/fixtures/generate_printing_generate_http.py` authors 91 cases (dates relative to the day of the run; the adapter

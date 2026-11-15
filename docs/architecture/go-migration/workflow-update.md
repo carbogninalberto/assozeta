@@ -56,8 +56,12 @@ last table transition (2037-10-25), where the system zone would apply summer
 time. A past time publishes nothing.
 - t5pk: any `automation_workflow_id` in the body (new, another row's, malformed) is ignored and the named workflow is
   saved in place (cases `new-id-ignored`, `new-id-ignored-enable`, `id-of-other-row-ignored`, `id-malformed-ignored`).
-- A form-encoded `automation_tree` (DRF parses the HTML value with Python's
-  `json.loads`).
+- A form-encoded `automation_tree` nested past 500 levels (DRF parses the HTML value with Python's
+  `json.loads`, up to the interpreter's limit).
+
+Since long-tail PR 3 (agent B) the tasks the update publishes are always wired: a missing task service is
+application state (`ErrServerComposition`, the 500 page, never handed off). An `automation_tree` read from a form is
+ported except past 500 levels, and the time texts Python rejects stay the 500 after the saves.
 
 These are covered by `TestAutomationWorkflowEnablePlan`, `TestAutomationWorkflowRomeLocalize` and
 `TestAutomationWorkflowPatchFormTreeRefused`, not by the HTTP sequence.

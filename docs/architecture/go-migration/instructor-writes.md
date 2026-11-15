@@ -83,6 +83,10 @@ workbook ([xlsx-exports](xlsx-exports.md)) with `max(len(str(value)), len(label)
 - Refused with a 500 before any write: calculation amounts whose product falls in the subnormal range (below the context's
   smallest exponent) and NaN diagnostics of 28 digits or more.
 
+Since long-tail PR 3 (agent B) a non-finite percentage is application state (`ErrInstructorWritesUnreachable`, the
+500 page): the column is `numeric(4,2)` and its validator rejects the value. The subnormal amounts, the NaN payloads
+and the workbook inputs stay refusals.
+
 ## Rare inputs (v2-rest-docs)
 
 - report dates go through `dateutil` (`dayfirst=True`, `internal/pydateutil`): ISO dates, month names, two-digit years, times and

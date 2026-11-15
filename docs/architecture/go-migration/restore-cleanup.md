@@ -55,16 +55,20 @@ stop on the same signal and drain within the same deadline; a failure of either 
 
 ## Not ported or refused
 
-- Refused before any effect (job fails with `task_failed`): a completed receipt whose `media` is
-  not a JSON object of strings, or a name pruning could delete (an unreferenced media key, any
-  terminal backup path) that resolves outside `AWS_LOCATION`. Django raises midway through such
-  runs, after deletes in Python set order. The check also covers the newest completed backup that
-  would be retained.
+- Application state (the job fails from Go, never handed off, `ErrDataRestoreCleanupUnreachable`): a
+  completed receipt whose `media` is not a JSON object of strings, or a name pruning could delete
+  (an unreferenced media key, any terminal backup path) that resolves outside `AWS_LOCATION`. The
+  restore writers store neither; Django raises midway through such runs, after deletes in Python set
+  order. The check also covers the newest completed backup that would be retained.
 - `DATA_RESTORE_RECOVERY_BACKUPS` with non-ASCII digits (Python `int()` accepts them): Go fails
   the job at the same point where Django raises for other invalid values (after the receipt loop).
 - Differences only under infrastructure failures: a database error inside `cleanup(op)` is
   swallowed by Django's `except Exception`; Go returns it to the executor (the job fails).
 - `FileSystemStorage` (Go always uses the S3 default storage).
+
+Since long-tail PR 3 (agent B) the receipt `media` shape and a name outside `AWS_LOCATION` are application state
+(`ErrDataRestoreCleanupUnreachable`, the job fails from Go, never handed off): the restore writers produce neither,
+and the refusal sentinel is deleted. `DATA_RESTORE_RECOVERY_BACKUPS` with non-ASCII digits stays refused.
 
 ## Schedule declaration
 

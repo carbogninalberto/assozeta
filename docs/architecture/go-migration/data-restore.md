@@ -162,13 +162,20 @@ self-hosted instance) and the receipt's association the primary one, else 403
   `Content-Transfer-Encoding` is decoded like Django does (white space stripped, a failure is the
   400 parse error, decoded bytes count towards the limit) and RFC 2231 file names are read by the
   shared `djangoPartHeaders` (cases `upload-base64-*`, `upload-rfc2231-file-name`).
-- Cached progress values outside the decoded pickle subset (Django may read them or treat a
-  failure as None); dict keys other than str.
-- Backup paths that resolve outside `AWS_LOCATION` on a stream (Django raises `SuspiciousOperation`).
+- Cached progress values outside the decoded pickle subset, and dict keys other than str, are application state
+  (`ErrDataRestoreUnreachable`, the 500 page): the progress writer produces the subset (Django may read a value it does
+  not understand, or treat the failure as None).
+- Backup paths that resolve outside `AWS_LOCATION` on a stream are application state
+  (`ErrDataRestoreUnreachable`): the execution writers store paths inside the location.
 - `FileSystemStorage` (Go always uses the S3 default storage).
 
 Implemented but not exercised by the fixture: an unset `DATA_RESTORE_LOCK_PATH` (the run always has
 one), a storage delete failure (503) and a broker failure on publish (503).
+
+Since long-tail PR 3 (agent B) a progress cache read that fails is ported as no progress. A progress value outside the
+pickle subset, a stored backup path outside `AWS_LOCATION` and a summary written after validation are application state
+(`ErrDataRestoreUnreachable`, the 500 page): the progress and execution writers produce them. The archive shapes the
+validation port hands off and the RFC 2231 charsets stay refusals.
 
 ## Evidence
 

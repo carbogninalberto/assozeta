@@ -105,6 +105,11 @@ their invoice is rendered whatever `generate_invoice` says.
   Django and they stay refused. (Digits of other scripts and `X-Group-Id` in another spelling are ported, v2-rest-a
   below.)
 
+Since long-tail PR 3 (agent B) the regex-built decimal and the dead date branch are not refusals: the first is
+application state (`ErrPaymentMiscUnreachable`, the 500 page, since the regex admits only well-formed text) and the
+second is deleted. The unwired mail sender is `ErrServerComposition`. A null plan id and a list or object fee stay
+refusals, as do the big integers and the Decimal texts.
+
 ## Routes left out of this family
 
 - `payment/<uid>/request`: ported with its rendered e-mail in [email-render-routes](email-render-routes.md).

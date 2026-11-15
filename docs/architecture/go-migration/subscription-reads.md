@@ -161,6 +161,11 @@ resources reader (`repository.ScopedResources.Available`, kind `subscription`; `
   terms beyond Latin are ported in tailpay, personas-reads). `sort[field]=_has_future_renewal`, the queryset's own annotation,
   is ported (t2subsa): it orders by the `future_renewal_exists()` expression, false before true.
 
+Since long-tail PR 3 (agent B) the unwired sessions, tasks and athlete list are application state
+(`ErrServerComposition`, the 500 page): the server always wires them. So are a persona lookup error, an unknown order
+column and the export's `pdfexport` refusal (`ErrSubscriptionReadsUnreachable`): the lookup never fails, the columns are
+whitelisted and the export table has no header, logo or paragraphs. `?` ordering stays a refusal.
+
 Not authored: the Italian invalid-page message, two course subscriptions of one course in info, a null end date in the
 archived renewal lookup.
 

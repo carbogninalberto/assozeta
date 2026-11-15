@@ -1670,3 +1670,32 @@ HTTP/WebSocket 53 -> 28, other roots 12 -> 5; whole report 297 -> 263 (HTTP/WebS
 | `importeffects.ErrUnsupported` | 2 -> 2 | unchanged (crafted archive values and ZIP shapes) |
 
 Family runs (local, `--versioned`, 4 transports): profile-template 86, stripe-routes 127, payment-reads 293, instance-updates 40, subscription-create 212, instructor-writes 180, subscription-renew 131, subscription-misc 178, document-views 172, balance-sheet 97, course-list 175, saved-reports 32, subscription-reads 364, printing-generate 113, course-subscriptions 168 (cases per transport, all green); associates-draft stops on django-native at `associates-draft-edit-year-below-1000-born-date-server-error` (the fixture is Linux's `strftime`; macOS pads the year), so it is left to CI; on the final code communications-send-email 61, invoice-parties 277, invoice-sync-print 82, invoice-views 93, payment-misc 120, subscription-import-upload 98 and ws-agent 60 (54 through Caddy) are green. instance-outbound passed 130 on four transports before the Django e-mail path change; on the final code three local reruns stopped on a different django-native diagnostics-probe case each (deadline under load 20-50), so it is left to CI.
+
+## Long tail PR 3, agent B
+
+Rule per return site (owner decision, 2026-11-15): port what a request or a stored row reaches when Django answers
+normally; `refusal.AppState` where Django raises, where only the application writes the state, where a constraint or the
+server's own composition rules it out (`domain.ErrServerComposition`), or delete the dead code; only the approved
+divergences answer external, platform or timing outcomes natively (X1 here). Everything else stays a refusal and is
+listed. Per-site table: `tmp/long-tail/pr3-B.md` (worktree notes).
+
+| point | ported (cases) | now application state / composition / deleted | left |
+|---|---|---|---|
+| document upload (`documents-writes.md`) | storage client errors botocore raises at once: documents/add 400 after deleting the Document, medical upload 500 JSON, certificate upload 500 page (`add-storage-refused-removes-document`, `add-storage-key-too-long-removes-document`, `medical-storage-refused-keeps-certificate`, `certificate-storage-refused-keeps-document`) | — | transport and retried storage failures, multipart-size bodies (not replayable), bodies over 250 MiB, RFC 2231 codecs |
+| association transfer (`association-transfer.md`) | import/validate temporary-file OSError text (`import-validate-name-over-255-bytes`); import/start with a password file part (`import-start-password-file`) | — | archive texts, multipart decoder, referenced export document, negative stored size |
+| instance administration (`instance-admin.md`) | nested form list keys as a MultiValueDict repr (`integration-ai-put-form-list-nested`) | runner replies past the decoder (the runner is the app's own process); dead IDNA guard | a multipart upload in a nested list key |
+| SMTP verify (`communications-smtp.md`) | X1: verified false with Go's text | marker made private; sentinel deleted | — |
+| send e-mail (`communications-send-email.md`) | (combined branch: agent A's smtpsend renders every message, so the send path refuses nothing) | — | — |
+| e-mail tasks (`tasks-db-c.md`) | — | emailrender's refusals returned as application state | concurrent configuration delete (header folding and envelope: agent A's smtpsend) |
+| workflow update, profile template | — | composition guard; decoder and prettify bounds; both sentinels deleted | form tree nesting band |
+| payment state, writes, stripe, invoice core/parties | every invoice description name formatted with `str()` (`invoice-sync-print-update-subscription-float-name-invalid-date-ignored`); a receipt value kombu cannot encode skips the publish (`payment-state-approve-sent-date-receipt-integer-over-4300-json-error` pins the parser's 400 that precedes it); random order on invoice/list and invoice-suppliers/list (`invoice-core-list-sort-random`, `invoice-parties-supplier-list-sort-random`) | composition guards, dead fee wrappers and helpers, amount precision, personaSearch, column sets; payment state and invoice core sentinels deleted | payment add `payment_id`, form update, SuspiciousFileOperation, Stripe reply ids, nesting bands, fatturapa-dependent sites |
+| payment reads, statistics, calendar | — | app-written caches and dates, composition, jsonb values, collaborator scope; calendar sentinel deleted | `?` with a text search, `full_name` order, export float under/overflow, Stripe payloads, meta floats, pre-1000 years, Unicode digits in event starts |
+| subscriptions | quick-mode numeric ids as `uuid.UUID(int=...)` (`quick-associate-id-as-integer`, `quick-associate-number-server-error`, `quick-associate-true-server-error`, `quick-associate-float-server-error`) | composition, unique usernames, jsonb plan arrays, FK constraints; misc-routes and clear-deleted sentinels deleted | random order (agent C's marker), lifecycle concurrent deletes, most create/renew value ports, document cascades of the cleanup workers |
+| data restore, instance setup | progress read failures are no progress (progress.snapshot) | app-written progress, paths and summaries; dead IDNA guards; restore-cleanup sentinel deleted | upload part headers, archive validation outside the port, failed import exception text, logo collision |
+| docmanager, modules, printing, instructors, payment misc | GetObject client error text; `Content-Disposition: None` | composition, decoders, uuid4 keys, numeric(4,2); instructor-hours sentinel deleted | raw HEAD errors, module depth band and big ints, pdfexport subset, decimal context cases, quote values |
+| audit serializer, saved reports | — | — | JSON nested past 500 (platform); the report/MCP conversions (a subsystem) |
+
+`refusal_reach.py` HTTP/WebSocket rows of agent B's points: 102 before, 79 after (other roots 17 → 12); 36 points
+before, 26 after. Sentinels deleted: SMTP verify, workflow update, profile template, calendar, misc routes, instructor
+hours, payment state, invoice core, clear-deleted and restore-cleanup workers. Whole report on this branch: 254 → 231
+HTTP/WebSocket rows (43 → 38 other).

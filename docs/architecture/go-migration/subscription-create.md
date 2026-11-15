@@ -256,12 +256,13 @@ A request without an account that declares a body above `PUBLIC_UPLOAD_MAX_BYTES
 
 Refused with the 500 page before anything is committed:
 - an athlete request from an account that
-  is neither an athlete nor an association; the quick mode from a member account with an id that is a number or a boolean; a `sport_association` that is a list or an object;
+  is neither an athlete nor an association; a `sport_association` that is a list or an object;
 - in the family wizard's entries every input refused for a single registration; in the quick subscription an
-  owner with several associations, plan ids of other shapes (booleans, containers) and a
+  owner with several associations (`ErrSubscriptionCreateServer`, the 500 page, Django's own `AttributeError`), plan ids
+  of other shapes (booleans, containers) and a
   certificate choice that depends on the unordered subscriptions;
 - in a preregistration that renews a subscription: an account name matching several
-  associations, a renewed subscription without an associate;
+  associations (application state: `User.username` is unique), a renewed subscription without an associate;
 - new member info with a non-string e-mail, a numeric
   `new_member` flag; a signature upload whose generated key already exists;
 - the placeholder certificate when the names sent are not strings, when the file name is not storable (over 255 characters,
@@ -274,6 +275,14 @@ Refused with the 500 page before anything is committed:
 
 Routes (not routed in Go): `subscription/<uid>/transfer`, `subscription/sign` (signature upload) and `subscription/import/upload` (spreadsheet
 parsing). The workers' tasks (`print_document_subscription`, `check_workflows_trigger`) stay in Django.
+
+Since long-tail PR 3 (agent B) some entries above are application state, answered with the 500 page and never handed
+off: a null born date in a non-tutor's entry (the first step already answered it), an association the request
+overwrote before validation, fee plans that are not jsonb arrays (the settings view writes arrays) and an account
+name matching several associations (`User.username` is unique, `SportAssociation.user` a `OneToOneField`), all
+`ErrSubscriptionCreateUnreachable`. An owner with several associations is Django's own `AttributeError`
+(`ErrSubscriptionCreateServer`), and a number or boolean associate id in the quick mode is ported
+(`renewalSourceKey`).
 
 ## t2subsa: type of associate, Unicode text and tied tax codes
 

@@ -137,15 +137,18 @@ without an associate is a 500.
 - `todaylessons` refuses what the CourseAttendance helper refuses: an
   unlinked day whose event has a non-string or non-UUID `event_id`, and
   instructor entries that are neither dicts nor lists of dicts.
-- `expiredPayments`: stored `meta`/`course` JSON that the reference parser
-  does not accept.
-- Non-ASCII decimal digits in event start or lesson registry dates (Python's
-  `\d` accepts them), non-finite JSON numbers in rendered carnet metadata or
-  event fields, and `currentDate` years below 1000 are refused with the stable
-  500 page.
+- `expiredPayments`: a stored `meta`/`course` JSON the reference parser does not accept is application state
+  (`ErrStatisticUnreachable`, the 500 page): jsonb always holds valid JSON.
+- Non-ASCII decimal digits in an event start and `currentDate` years below
+  1000 are refused with the stable 500 page.
 - Ordering left unspecified by Django (ties in `bestcourses`, carnets with equal
   `lessons_left`, medical certificates with equal `days_left`, lessons on the
   same day, several course titles in the report) is not pinned.
+
+Since long-tail PR 3 (agent B) the non-finite `lessons_left`, the non-ASCII registry dates, the non-finite event ids
+and the stored JSON the reference parser rejects are application state (`ErrStatisticUnreachable`): the writers
+store integer counters and `str(datetime)`, and jsonb refuses infinities. A meta float outside the float range, an
+event start with Unicode digits and a report year below 1000 stay refusals.
 
 ## Evidence (TDD)
 
