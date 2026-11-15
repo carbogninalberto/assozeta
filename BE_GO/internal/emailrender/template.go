@@ -29,7 +29,14 @@ import (
 var files embed.FS
 
 // ErrUnsupported marks a template feature or context value outside the port.
-var ErrUnsupported = refusal.New("emailrender: unsupported template input")
+// Every one is a state only the application writes, so it is an
+// application-state error (Django's 500 page, never handed off): the templates
+// and their syntax (BE/templates, the embedded set), the template names (the
+// app's constants), the language (both request resolvers return a LANGUAGES
+// variant; workers use it), the context types and brands the callers build,
+// InstanceConfiguration.updated_at (auto_now, never before year 1000) and the
+// Decimal values (numeric(9,2) columns: at most ten characters).
+var ErrUnsupported = refusal.AppState("emailrender: unsupported template input")
 
 func unsupported(format string, args ...any) error {
 	return fmt.Errorf("%w: %s", ErrUnsupported, fmt.Sprintf(format, args...))

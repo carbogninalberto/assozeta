@@ -12,6 +12,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // golden is testdata/django_renders.json, captured from Django's
@@ -253,12 +255,17 @@ func TestRefusesUnportedInput(t *testing.T) {
 		"list value":    {"recipient_name": []any{"a"}},
 		"struct value":  {"amount": struct{}{}},
 		"malformed dec": {"amount": Decimal("1,5")},
-		"text amount":      {"amount": "12"},
-		"bool amount":      {"amount": true},
+		"text amount":   {"amount": "12"},
+		"bool amount":   {"amount": true},
 	} {
 		if _, err := Render(PaymentReceipt, context, options); !errors.Is(err, ErrUnsupported) {
 			t.Fatalf("%s: %v", name, err)
 		}
+	}
+	// Only the app writes these states: an application-state error, never a
+	// refusal handed off to Django.
+	if _, err := Render("email/other.html", map[string]any{}, options); !errors.Is(err, refusal.ErrAppState) || errors.Is(err, refusal.ErrNotPorted) {
+		t.Fatalf("unknown template is not app state: %v", err)
 	}
 	if _, err := Render(CollaboratorInvite, map[string]any{"sport_association": "x"}, options); !errors.Is(err, ErrUnsupported) {
 		t.Fatalf("attribute of a string: %v", err)
