@@ -95,9 +95,9 @@ func (r *InstanceSetup) CreateImported(ctx context.Context, input domain.Instanc
   email_settings,email_password_encrypted,email_revision,diagnostic_results,integration_settings,display_settings,is_reseller,
   self_hosted,support_multiple_associations,show_course_athletes,show_minor_exemption,show_tutorial,google_client_id,apple_client_id,
   stripe_public_key,stripe_secret_key,stripe_webhook_secret,stripe_pricing_table,stripe_client_portal,meta_title,meta_description,
-  primary_association_id,ui_api_version)
+  primary_association_id,ui_api_version,go_tasks_enabled)
  VALUES ($1,$2,$2,'import',$3,$4,$5,$6,$7,$8,'{}'::jsonb,'',0,'{}'::jsonb,'{}'::jsonb,$9::jsonb,FALSE,TRUE,FALSE,TRUE,TRUE,TRUE,$10,$11,
-  '','','','','','','',NULL,'v1') RETURNING id`,
+  '','','','','','','',NULL,'v1',FALSE) RETURNING id`,
 		input.Domain, created, completed, input.Name, input.Abbreviation, input.PrimaryColor, input.SupportEmail, input.LogoPath,
 		instanceSetupDisplay, input.GoogleClientID, input.AppleClientID); err != nil {
 		return err
@@ -147,9 +147,9 @@ func (r *InstanceSetup) CreateFresh(ctx context.Context, fresh domain.InstanceSe
   email_settings,email_password_encrypted,email_revision,diagnostic_results,integration_settings,display_settings,is_reseller,
   self_hosted,support_multiple_associations,show_course_athletes,show_minor_exemption,show_tutorial,google_client_id,apple_client_id,
   stripe_public_key,stripe_secret_key,stripe_webhook_secret,stripe_pricing_table,stripe_client_portal,meta_title,meta_description,
-  primary_association_id,ui_api_version)
+  primary_association_id,ui_api_version,go_tasks_enabled)
  VALUES ($1,$2,$2,'fresh',NULL,$3,$4,$5,$6,$7,'{}'::jsonb,'',0,'{}'::jsonb,'{}'::jsonb,$8::jsonb,FALSE,TRUE,FALSE,TRUE,TRUE,TRUE,$9,$10,
-  '','','','','','','',NULL,'v1') RETURNING id`,
+  '','','','','','','',NULL,'v1',FALSE) RETURNING id`,
 		fresh.Domain, created, fresh.Name, fresh.Abbreviation, fresh.PrimaryColor, fresh.SupportEmail, fresh.LogoPath, instanceSetupDisplay,
 		fresh.GoogleClientID, fresh.AppleClientID); err != nil {
 		return err

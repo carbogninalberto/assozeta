@@ -351,6 +351,28 @@ service consumes. `ASSOZETA_GO_TASKS=1` is also refused on a release without
 `worker-go`. Set `ASSOZETA_GO_TASKS` only in the instance `.env`; the lifecycle
 passes the Compose profile (`go-tasks`) itself, so do not use `COMPOSE_PROFILES`.
 
+## Switch from Self Instance
+
+The owner can do steps 1–3 from **Istanza → Impostazioni → API (beta)** with
+the switch **Attività in background su Go (beta)**. Each change asks for the
+owner's password and restarts the installation (about a minute).
+
+- Turning it on writes `ASSOZETA_GO_TASKS=1` and the fixed task list
+  `GO_TASK_QUEUE_TASKS=core.tasks.send_mail_async` (`GO_TASK_NAMES` in
+  `selfhost/updater/go_tasks.py`; requests never carry task names), then runs
+  `./bin/assozeta restart` from the updater. It is refused, with an Italian
+  message, on a release without `worker-go`.
+- Turning it off empties `GO_TASK_QUEUE_TASKS` and restarts. `ASSOZETA_GO_TASKS`
+  stays `1` so `worker-go` drains the `assozeta-go` queue; set it to `0` by hand
+  afterwards, as in step 3.
+- Tasks routed to Go do not fall back to Django. If `worker-go` is down they
+  wait in the queue until it runs again. Turning the switch off sends new tasks
+  to Django; tasks already queued still need `worker-go` to run.
+
+The restart log is in `.updater/logs/<operation id>.log`. If it fails the
+configuration is already saved: check the services and run
+`./bin/assozeta restart`.
+
 # Restarting from Self Instance
 
 The instance owner can choose **Ricarica applicazione** in Self Instance. The

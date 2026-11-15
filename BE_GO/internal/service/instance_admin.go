@@ -48,6 +48,7 @@ type InstanceAdminStore interface {
 	UpdateBranding(context.Context, map[string]string, time.Time) error
 	UIAPIVersion(context.Context) (string, error)
 	AppendUIAPIVersionChange(context.Context, domain.InstanceUIAPIVersionChange) error
+	GoTasksEnabled(context.Context) (bool, error)
 }
 
 // InstanceAdminBootstrap is InstanceConfigSerializer and is_instance_administrator
@@ -141,8 +142,12 @@ func (s *InstanceAdmin) Admin(ctx context.Context) (map[string]any, error) {
 	if err != nil {
 		return nil, err
 	}
+	enabled, err := s.store.GoTasksEnabled(ctx)
+	if err != nil {
+		return nil, err
+	}
 	return map[string]any{"config": config, "running_version": s.env.Version, "configured_version": s.env.ConfiguredVersion,
-		"mode": s.env.DeploymentMode}, nil
+		"mode": s.env.DeploymentMode, "go_tasks_enabled": enabled}, nil
 }
 
 // Branding is InstanceAdminView.put: the branding ('oem') and the web UI API

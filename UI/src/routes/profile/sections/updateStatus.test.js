@@ -22,6 +22,16 @@ test('restart failure and timeout are explicit and late verified recovery is acc
     assert.equal(restartResult({available: true, history: [{...operation, status: 'succeeded', stage: 'completed', verified_at: 'now'}]}, 'request', 0, 700000).phase, 'ready');
 });
 
+test('a go_tasks operation is followed like a restart and reports its outcome', () => {
+    const succeeded = {kind: 'go_tasks', request_id: 'go-request', status: 'succeeded', stage: 'completed', verified_at: 'now'};
+    assert.equal(restartResult({available: true, history: [succeeded]}, 'go-request', 0, 10).phase, 'ready');
+    const failed = {kind: 'go_tasks', request_id: 'go-request', status: 'failed', stage: 'failed', error: 'Servizio worker-go assente.', recovery: 'Controlla i servizi.'};
+    const result = restartResult({available: true, history: [failed]}, 'go-request', 0, 10);
+    assert.equal(result.phase, 'failed');
+    assert.equal(result.operation.error, 'Servizio worker-go assente.');
+    assert.equal(restartResult({available: true, history: [succeeded]}, 'other-request', 0, 10).phase, 'waiting');
+});
+
 test('temporary runner outages retain the operation until authoritative status returns', () => {
     const operation = {id: 'durable-id', stage: 'migrating'};
     const previous = {available: true, active: operation, history: [operation]};

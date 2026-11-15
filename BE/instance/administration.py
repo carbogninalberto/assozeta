@@ -1,14 +1,19 @@
 """Authenticated, owner-only instance administration, separate from public bootstrap."""
+from uuid import uuid4
+
 from auditlog.models import LogEntry
 from django.conf import settings
 from django.core.cache import cache
+from django.utils import timezone
 from rest_framework import serializers, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from .backups import actor_of, password_confirmation
 from .models import InstanceConfiguration
 from .permissions import IsInstanceOwner, is_instance_owner, is_instance_administrator
+from .remote_backups import SLOW, relay
 from .serializers import InstanceAdminSerializer, InstanceConfigSerializer
 from .views import InstanceLogoUploadView
 from .release_catalog import ReleaseError, fetch_releases, fetch_release, release_summary, version_tuple
@@ -46,12 +51,15 @@ class InstanceAdminView(APIView):
             'running_version': settings.RUNNING_VERSION,
             'configured_version': getattr(settings, 'ASSOZETA_CONFIGURED_VERSION', ''),
             'mode': deployment_mode(),
+            'go_tasks_enabled': config.go_tasks_enabled,
         })
 
     EDITABLE = {'oem', 'uiApiVersion'}
 
     def put(self, request):
         keys = set(request.data)
+        if keys & {'goTasksEnabled', 'password'}:
+            return self.put_go_tasks(request, keys)
         if not keys or not keys <= self.EDITABLE:
             raise serializers.ValidationError('Only instance branding can be edited here.')
         config = InstanceConfiguration.get_config()
@@ -66,6 +74,35 @@ class InstanceAdminView(APIView):
                 changes={'ui_api_version': [previous, config.ui_api_version]},
                 additional_data={'actor_id': str(actor.pk)}, force_log=True)
         return Response({'config': InstanceConfigSerializer(config).data})
+
+    def put_go_tasks(self, request, keys):
+        """The owner switch for the Go background tasks: password, then the runner.
+
+        The runner owns the fixed task list, so only the switch and the
+        password travel; task names are never accepted or forwarded.
+        """
+        if keys != {'goTasksEnabled', 'password'}:
+            raise serializers.ValidationError('Per le attività in background su Go invia soltanto goTasksEnabled e password.')
+        wanted = request.data.get('goTasksEnabled')
+        if type(wanted) is not bool:
+            return Response({'error': 'Richiesta non valida.'}, status=400)
+        refusal = password_confirmation(request)
+        if refusal:
+            return refusal
+        actor = actor_of(request)
+        response = relay('POST', '/go-tasks', {
+            'request_id': str(uuid4()), 'actor_id': str(actor.pk), 'enabled': wanted,
+        }, success=202, timeout=SLOW)
+        if response.status_code == 202:
+            config = InstanceConfiguration.get_config()
+            previous = config.go_tasks_enabled
+            InstanceConfiguration.objects.filter(pk=config.pk).update(go_tasks_enabled=wanted, updated_at=timezone.now())
+            if previous != wanted:
+                LogEntry.objects.log_create(
+                    config, action=LogEntry.Action.UPDATE, actor=actor,
+                    changes={'go_tasks_enabled': [str(previous), str(wanted)]},
+                    additional_data={'actor_id': str(actor.pk)}, force_log=True)
+        return response
 
 
 class InstanceReleasesView(APIView):

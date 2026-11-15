@@ -56,7 +56,12 @@ class Journal:
             existing = db.execute('SELECT record FROM operations WHERE request_id=?', (request['request_id'],)).fetchone()
             if existing:
                 record = json.loads(existing[0])
-                keys = ('actor_id',) if request.get('kind') == 'restart' else ('actor_id', 'release_id', 'tag')
+                if request.get('kind') == 'restart':
+                    keys = ('actor_id',)
+                elif request.get('kind') == 'go_tasks':
+                    keys = ('actor_id', 'enabled')
+                else:
+                    keys = ('actor_id', 'release_id', 'tag')
                 if record.get('kind', 'update') != request.get('kind', 'update') or any(record[key] != request[key] for key in keys):
                     raise Conflict('This request identifier was already used for a different update.')
                 return record
@@ -110,6 +115,11 @@ class Journal:
                 # The recovery key lived only in memory: a fetch cannot resume.
                 self.update(record['id'], status='failed', stage='failed', interrupted_at=now(),
                             error='Il recupero dalla copia remota è stato interrotto. Riprova.')
+            elif record['status'] == 'running' and record.get('kind') == 'go_tasks':
+                # The configuration is saved and the CLI restart is idempotent.
+                self.update(record['id'], status='failed', stage='failed', interrupted_at=now(),
+                            error='La modifica delle attività in background su Go è stata interrotta.',
+                            recovery='Se l’app non torna disponibile, esegui ./bin/assozeta restart dal server.')
             elif record['status'] == 'running' and record.get('kind') != 'restart':
                 self.update(record['id'], status='recovery_required', stage='recovery_required',
                             interrupted_at=now(), failed_stage=record['stage'],

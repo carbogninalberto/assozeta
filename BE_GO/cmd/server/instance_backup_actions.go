@@ -28,5 +28,7 @@ func composeInstanceBackupActions(cfg config.Config, db *sqlx.DB, cache *redis.C
 	actions := service.NewInstanceBackupActions(store, runner, passwordcrypto.NewPasswordVerifier(passwordcrypto.DefaultPasswordLimits()),
 		time.Now, uuid.NewString, // str(uuid4())
 		service.BackupActionsLimits{UploadMaxBytes: cfg.InstanceAdmin.BackupUploadMaxBytes, AllowHTTP: cfg.InstanceAdmin.BackupRemoteAllowHTTP})
+	// InstanceAdminView.put's go-tasks switch runs through these actions.
+	admin.SetBackupActions(actions)
 	return handler.NewInstanceBackupActionsHandler(admin, actions), nil
 }

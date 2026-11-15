@@ -6,7 +6,8 @@ export function mergeRunnerStatus(previous, incoming) {
 
 export function restartResult(status, requestId, startedAt, now = Date.now()) {
     const records = [status?.active, ...(status?.history || [])].filter(Boolean);
-    const operation = status?.available && records.find(item => item.kind === 'restart' && item.request_id === requestId);
+    // 'go_tasks' restarts every service too, so it is followed the same way.
+    const operation = status?.available && records.find(item => ['restart', 'go_tasks'].includes(item.kind) && item.request_id === requestId);
     if (operation?.status === 'succeeded' && operation.stage === 'completed' && operation.verified_at) return {phase: 'ready', operation};
     if (operation && ['failed', 'recovery_required'].includes(operation.status)) return {phase: 'failed', operation};
     if (now - startedAt >= 10 * 60 * 1000) return {phase: 'timeout', operation};

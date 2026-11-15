@@ -80,7 +80,9 @@ func (h *InstanceBackupActionsHandler) backupActionsWrite(c echo.Context, actor 
 	return h.backupActionsReply(c, reply, err)
 }
 
-func (h *InstanceBackupActionsHandler) backupActionsReply(c echo.Context, reply *service.BackupActionsReply, err error) error {
+// backupActionsReply renders a service reply; it lives on the administration
+// handler because InstanceAdminView.put shares the go-tasks path with it.
+func (h *InstanceAdminHandler) backupActionsReply(c echo.Context, reply *service.BackupActionsReply, err error) error {
 	if err != nil {
 		return h.fail(c, err)
 	}

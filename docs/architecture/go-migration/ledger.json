@@ -3143,15 +3143,15 @@
       "kind": "model_hook",
       "django": {
         "file": "BE/instance/models.py",
-        "line": 104,
+        "line": 108,
         "symbol": "InstanceConfiguration.save",
-        "sha256": "460da3b534772cf2d6eda78d430df4827d97fdb8fad0ca2fa79d3a12f7836211"
+        "sha256": "436c76fb372ae5e43cbdb3168ffedd5958b66e924abdd794e446c63a0963e7e7"
       },
       "source_present": true,
       "declaration": {
         "arguments": "self, *args, **kwargs"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/repository/instance_setup.go",
         "BE_GO/internal/service/instance_setup.go"

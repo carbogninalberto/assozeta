@@ -120,6 +120,13 @@ func (r *InstanceAdmin) UIAPIVersion(ctx context.Context) (string, error) {
 	return version, err
 }
 
+// GoTasksEnabled is InstanceConfiguration.get_config().go_tasks_enabled.
+func (r *InstanceAdmin) GoTasksEnabled(ctx context.Context) (bool, error) {
+	var enabled bool
+	err := r.db.GetContext(ctx, &enabled, `SELECT go_tasks_enabled FROM instance_instanceconfiguration ORDER BY id LIMIT 1`)
+	return enabled, err
+}
+
 // AppendUIAPIVersionChange is LogEntry.objects.log_create(config, action=UPDATE,
 // actor=actor, changes={'ui_api_version': [previous, new]},
 // additional_data={'actor_id': actor}, force_log=True) with its AuditLogIndex

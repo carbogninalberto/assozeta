@@ -46,3 +46,12 @@ type InstanceUIAPIVersionChange struct {
 	Audit                      LoginAuditContext
 	At                         time.Time
 }
+
+// InstanceGoTasksChange is InstanceAdminView.put_go_tasks' stored switch and,
+// when it changed, its UPDATE log entry.
+type InstanceGoTasksChange struct {
+	ActorID string
+	Enabled bool
+	Audit   LoginAuditContext
+	At      time.Time
+}

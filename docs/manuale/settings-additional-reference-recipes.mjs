@@ -6,6 +6,7 @@
 // locked reads and selected columns preserve concurrent profile changes.
 // Prose belongs to authored MDX; this module only records reviewed implementation evidence.
 // Reviewed: the Istanza settings switch for API v2 (beta), its readiness check and the fallback to v1.
+// Reviewed: the Go background tasks (beta) switch, its password dialog and the restart it starts.
 export const settingsAdditionalReviewedSources = Object.freeze({
   "BE/application/audit_context.py": "8609c865f5b2d5c4f818cd6b4fe6620ec9504fae2d5a2368fccb5745cbce25ff",
   "BE/application/signals.py": "a14dd1d21a83573a8d2da26ca6da76c2c090d6bc419b51d593a7ead1012d2ff1",
@@ -29,9 +30,10 @@ export const settingsAdditionalReviewedSources = Object.freeze({
   "UI/src/routes/profile/sections/Stripe.svelte": "75899c0eb6ed827a07b0d2ad47ea102353a25a0c575c941757a828d5c65529be",
   "UI/src/routes/profile/sections/TwoFactor.svelte": "45f92360b4bd393d80d06c7f890ca290f172d7166eb8527eb586aa8802cd2a39",
   "BE/application/views/two_fa_views.py": "51b94979b66fae4afc9f65386b0f619258c061fc608b1dd29d3dc59a071cfdf3",
-  "UI/src/routes/profile/sections/SelfInstance.svelte": "13b31bc8ee3d904cb0d18f4a531bc7b91ee7c5f1f30361c262a40c3448aa6ab7",
+  "UI/src/routes/profile/sections/SelfInstance.svelte": "8b39187d4614b8ed73c00a301b552cf8217ba67a071ca26df5e27e15e1e6fff5",
   "UI/src/routes/profile/sections/InstanceApiVersion.svelte": "28a42cb508a214877d0237104702e75eedf472678c3df3f4c2968b3588ad8c17",
-  "UI/src/utils/apiVersion.js": "1e57f66925758f499fd5b5ac9c1a0dc022ab5e2799b7576409981aee167709fa"
+  "UI/src/utils/apiVersion.js": "1e57f66925758f499fd5b5ac9c1a0dc022ab5e2799b7576409981aee167709fa",
+  "UI/src/routes/profile/sections/InstanceGoTasks.svelte": "a0640aa83ca9799f1bcf2121291c524ed0285f50f3bbf3eff96f028568893637"
 });
 const contracts = {
   "atomic_audit_context": ["BE/application/audit_context.py", "_strict_audit_indexes = ContextVar(", 20],
@@ -245,6 +247,11 @@ const contracts = {
     "UI/src/utils/apiVersion.js",
     "export function fallbackToDefaultApi(",
     10
+  ],
+  "go_tasks_switch": [
+    "UI/src/routes/profile/sections/InstanceGoTasks.svelte",
+    "async function confirm()",
+    18
   ]
 };
 export const settingsAdditionalSourceContracts = Object.freeze(Object.values(contracts));
@@ -263,7 +270,8 @@ const sections = [
             "settings_save",
             "instance_settings_menu",
             "api_version_switch",
-            "api_version_fallback"
+            "api_version_fallback",
+            "go_tasks_switch"
         ]
     },
     {
