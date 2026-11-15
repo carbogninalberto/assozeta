@@ -18,6 +18,8 @@ below describe what Go itself does not serve; with the handoff on, an A or B ite
 
 Counts (appendix table rows, 2026-11-12, after t11): **377 rows: 276 ported, 72 not a request refusal (structure, ownership or class C notes), 29 kept refused with a one-line reason, 0 open.** Several ported rows keep a narrow sub-case refused, with its reason written in the row. Celery-worker handoffs are not HTTP refusals and are not counted.
 
+After the go-v2only-emailtpl change (2026-11-15): **379 rows: 278 ported, 72 not a request refusal, 29 kept refused, 0 open.** The two new rows are the stored-`NaN` conditions of the e-mail renderer (both B, ported); its remaining sites are class C/X.
+
 After the go-v2only-celery change (2026-11-15): **381 rows: 277 ported, 75 not a request refusal, 29 kept refused, 0 open.** The four new rows classify `internal/celery.ErrUnsupportedValue` by site (one B, ported; three C).
 
 Cross-cutting facts used for the classes:
@@ -871,7 +873,23 @@ Coordination/status doc; no refusals. Nothing to classify.
 |---|---|---|---|---|
 | POST collaborators/add | permission floats with exponent / `-0.0`; NUL or lone surrogates in e-mail | `BE_GO/internal/service/email_render_routes.go:128,166,256` | B (NUL in the e-mail **ported** in taildocs: the 400 validation error; a lone surrogate is the 500 page in Django too, case added. Permission floats with exponent / `-0.0` **ported** in t2docs: the create entry shows the request's own number text and the second `save()` logs an update entry with the numeric reading PostgreSQL's jsonb hands back) | `routes/connectedCollaborators/ConnectedCollaborators.svelte:36-43` sends the permission list built by the UI (no such floats). legacy: no; cheap. |
 | POST invoice/<uid>/send | payment date before year 1000 | `service/email_render_routes.go:434` (`emailrender.ErrUnsupported`) | B | Needs a mistyped date; unusual data. legacy: possible. Stays: `strftime('%Y')` pads such years differently per platform. |
+| POST payment/<uid>/request | a stored `numeric(9,2)` amount is `NaN` (legacy or imported row) | `internal/emailrender/numbers.go` (`localizeDecimal`, `ErrNonFiniteDecimal`) | B (**ported in go-v2only-emailtpl**) | PostgreSQL's `numeric(9,2)` stores `NaN` and the driver reads `Decimal('NaN')` without validation; Django's `formats.localize` raises TypeError, so the view answers the 500 page after rendering. Case `email-render-routes-request-nan-amount`; unit `TestPaymentRequestNonFiniteAmountIsNotARefusal` also proves the error is not a refusal. |
+| POST invoice/<uid>/send | stored `NaN` membership/activity fees (`float('nan')` through `floatformat:2`) | `internal/emailrender/numbers.go` (`floatformat`) | B (**ported in go-v2only-emailtpl**) | Django's floatformat returns `input_val` (`str(float)` is `nan`), so the receipt is queued with `nan`. Case `email-render-routes-send-nan-fees`; units `TestSendInvoiceNonFiniteFeesRenderNan` and `TestFloatformatNonFinite`. |
 | all | non-English `Accept-Language` | — | n/a | Not a refusal (rendered correctly; test harness only). |
+
+#### Ported in the go-v2only-emailtpl change
+
+`internal/emailrender.ErrUnsupported` is static-reachable from the 23 routes/workers the reach tool lists (every caller of
+`Render`, `Brand`, `Localize` and `FloatFormat`). The two conditions above are the ones a request or a stored row can produce;
+the renderer now answers them as Django does. The rest stay:
+
+- **C** — template syntax/tags/filters and the embedded template set (only the app writes `BE/templates`); a template name outside
+  the set (`send_email_template` names are the app's two constants); a language outside Django's `LANGUAGES` (both request
+  resolvers return a supported variant, workers use `it`); context types only the app builds; `instance_email_brand` without a
+  brand; `updated_at` before year 1000 (`InstanceConfiguration.updated_at` is `auto_now`); `floatformat` of text, bool or another
+  type (no template applies it to those values); Decimal text outside plain notation and `floatformat`'s 200-digit guard
+  (every Decimal context value here is a `numeric(9,2)` column, whose text is at most ten characters).
+- **X** — `strftime('%Y')` padding for years before 1000 is a separate sentinel and a platform detail.
 
 ### export-all-data.md
 | route | refusal condition | Go site | class | evidence / notes |

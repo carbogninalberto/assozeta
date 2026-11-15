@@ -9,6 +9,8 @@ import (
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/emailrender"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/google/uuid"
 )
 
@@ -117,5 +119,91 @@ func TestCollaboratorInviteRefusalsWriteNothing(t *testing.T) {
 		if got := permissionsLoaded(json.Number(in)); got != json.Number(want) {
 			t.Fatalf("%s -> %v", in, got)
 		}
+	}
+}
+
+// nanPaymentStore is payment_request's read of a payment whose numeric(9,2)
+// amount holds NaN (a legacy or imported row).
+type nanPaymentStore struct{ domain.EmailRenderStore }
+
+func (nanPaymentStore) InstanceConfig(context.Context) (domain.EmailRenderInstanceConfig, error) {
+	return domain.EmailRenderInstanceConfig{}, nil
+}
+
+func (nanPaymentStore) Associations(context.Context, string, *string) ([]domain.EmailRenderAssociation, error) {
+	return []domain.EmailRenderAssociation{{ID: emailAssociation}}, nil
+}
+
+func (nanPaymentStore) PaymentForRequest(context.Context, string, *string, *string) (*domain.EmailPaymentRequest, error) {
+	association, first, last, email := emailAssociation, "Mario", "Rossi", "mario.rossi@example.test"
+	return &domain.EmailPaymentRequest{ID: "a1000000-0000-4000-8000-000000699003", Amount: "NaN", Association: &association,
+		HasAssociate: true, AssociateFirst: &first, AssociateLast: &last, AssociateEmail: &email}, nil
+}
+
+// formats.localize raises while formatting Decimal('NaN'), so Django answers
+// the 500 page after rendering: Go returns that error, not a refusal.
+func TestPaymentRequestNonFiniteAmountIsNotARefusal(t *testing.T) {
+	events := []string{}
+	publisher := &orderedPublisher{events: &events}
+	routes := NewEmailRenderRoutes(nanPaymentStore{}, publisher,
+		EmailRenderSettings{AppURL: "https://app.example.test", WhitelabelName: "W"}, time.Now)
+	owner := &domain.Account{ID: "a1000000-0000-4000-8000-000000700001", Role: domain.RoleAssociation,
+		Email: "owner@example.test"}
+	identity := domain.ResolvedIdentity{Actor: owner, Effective: owner, ScopeUser: owner}
+	err := routes.RequestPayment(context.Background(), identity, "a1000000-0000-4000-8000-000000699003", "", "it")
+	if !errors.Is(err, emailrender.ErrNonFiniteDecimal) {
+		t.Fatalf("error %v", err)
+	}
+	if _, refused := refusal.Reason(err); refused {
+		t.Fatalf("refusal: %v", err)
+	}
+	if len(publisher.tasks) != 0 {
+		t.Fatalf("published %d tasks", len(publisher.tasks))
+	}
+}
+
+// nanInvoiceStore is invoice_send's read of an invoice whose numeric(9,2)
+// fees hold NaN (a legacy or imported row).
+type nanInvoiceStore struct{ domain.EmailRenderStore }
+
+func (nanInvoiceStore) InstanceConfig(context.Context) (domain.EmailRenderInstanceConfig, error) {
+	return domain.EmailRenderInstanceConfig{}, nil
+}
+
+func (nanInvoiceStore) Associations(context.Context, string, *string) ([]domain.EmailRenderAssociation, error) {
+	return []domain.EmailRenderAssociation{{ID: emailAssociation}}, nil
+}
+
+func (nanInvoiceStore) InvoiceForSend(context.Context, string, *string, *string) (*domain.EmailInvoice, error) {
+	token := "document-token"
+	return &domain.EmailInvoice{ID: "a1000000-0000-4000-8000-000000699001", Association: emailAssociation,
+		MembershipFee: "NaN", ActivityFee: "NaN", DocumentToken: &token, HasDocumentPDF: true}, nil
+}
+
+func (nanInvoiceStore) InvoicePayment(context.Context, string, *string, *string) (*domain.EmailInvoicePayment, error) {
+	first, last, email := "Mario", "Rossi", "mario.rossi@example.test"
+	paid := time.Date(2026, 3, 5, 10, 0, 0, 0, time.UTC)
+	return &domain.EmailInvoicePayment{PaymentDate: &paid, HasAssociate: true, AssociateFirst: &first, AssociateLast: &last,
+		AssociateEmail: &email}, nil
+}
+
+// floatformat returns str(float) for a non-finite value, so Django renders the
+// receipt with "nan" and queues it.
+func TestSendInvoiceNonFiniteFeesRenderNan(t *testing.T) {
+	events := []string{}
+	publisher := &orderedPublisher{events: &events}
+	routes := NewEmailRenderRoutes(nanInvoiceStore{}, publisher,
+		EmailRenderSettings{AppURL: "https://app.example.test", WhitelabelName: "W", DefaultTeamEmail: "team@example.test"}, time.Now)
+	owner := &domain.Account{ID: "a1000000-0000-4000-8000-000000700001", Role: domain.RoleAssociation,
+		Email: "owner@example.test"}
+	identity := domain.ResolvedIdentity{Actor: owner, Effective: owner, ScopeUser: owner}
+	if err := routes.SendInvoice(context.Background(), identity, "a1000000-0000-4000-8000-000000699001", "", "it"); err != nil {
+		t.Fatal(err)
+	}
+	if len(publisher.tasks) != 1 {
+		t.Fatalf("published %d tasks", len(publisher.tasks))
+	}
+	if message := publisher.tasks[0].Kwargs[1].Value.(string); !strings.Contains(message, "nan") {
+		t.Fatal("receipt does not render nan")
 	}
 }

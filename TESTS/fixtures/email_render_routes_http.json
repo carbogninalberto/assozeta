@@ -342,6 +342,20 @@
    "cancelled": false,
    "group": null,
    "deleted": false
+  },
+  "nan_fees": {
+   "invoice_id": "a1000000-0000-4000-8000-000000699001",
+   "document_pdf": "a1000000-0000-4000-8000-000000690001",
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "creation_date": "2026-02-01T09:00:00Z",
+   "membership_fee": "NaN",
+   "activity_fee": "NaN",
+   "description": "Quota annuale",
+   "number": 21,
+   "archived": false,
+   "cancelled": false,
+   "group": null,
+   "deleted": false
   }
  },
  "payments": {
@@ -816,6 +830,44 @@
    "associate": "a1000000-0000-4000-8000-000000690009",
    "supplier": null,
    "sport_association": "a1000000-0000-4000-8000-000000701002",
+   "archived": false,
+   "deleted": false,
+   "group": null
+  },
+  "i_nan_fees": {
+   "payment_id": "a1000000-0000-4000-8000-000000699002",
+   "type": "cash",
+   "subject": 0,
+   "amount": "15.00",
+   "creation_date": "2026-01-01T09:00:00Z",
+   "payment_date": "2026-03-05T10:00:00Z",
+   "paid": true,
+   "expense": false,
+   "description": "Quota",
+   "invoice": "a1000000-0000-4000-8000-000000699001",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "associate": "a1000000-0000-4000-8000-000000690005",
+   "supplier": null,
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "archived": false,
+   "deleted": false,
+   "group": null
+  },
+  "p_nan": {
+   "payment_id": "a1000000-0000-4000-8000-000000699003",
+   "type": "cash",
+   "subject": 2,
+   "amount": "NaN",
+   "creation_date": "2026-01-01T09:00:00Z",
+   "payment_date": "2026-03-05T10:00:00Z",
+   "paid": false,
+   "expense": false,
+   "description": "Quota",
+   "invoice": null,
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "associate": "a1000000-0000-4000-8000-000000690005",
+   "supplier": null,
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
    "archived": false,
    "deleted": false,
    "group": null
@@ -3301,6 +3353,16 @@
    }
   },
   {
+   "name": "email-render-routes-request-nan-amount",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000699003/request",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
    "name": "email-render-routes-request-no-associate",
    "actor": "owner",
    "method": "POST",
@@ -3534,6 +3596,100 @@
           "payment_date": "05/03/2026",
           "description": "Quota\r\nannuale & <altro>\nfine",
           "download_url": "$app_url/api/document/retrieve/a1000000-0000-4000-8000-000000690012?download=true&token=a1000000-0000-4000-8000-000000690002",
+          "association_name": "$denomination:own"
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "reply_to",
+        [
+         "$email:owner"
+        ]
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "email-render-routes-send-nan-fees",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice/a1000000-0000-4000-8000-000000699001/send",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "email sent."
+   },
+   "effect": {
+    "kind": "mail",
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "$denomination:own | Ricevuta di pagamento n. 21 - 05/03/2026"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/payment/payment_receipt.html",
+         "language": "en",
+         "context": {
+          "recipient_name": "Mario Rossi",
+          "amount": {
+           "float_sum": [
+            "NaN",
+            "NaN"
+           ]
+          },
+          "receipt_number": 21,
+          "payment_date": "05/03/2026",
+          "description": "Quota annuale",
+          "download_url": "$app_url/api/document/retrieve/a1000000-0000-4000-8000-000000699001?download=true&token=a1000000-0000-4000-8000-000000690002",
+          "association_name": "$denomination:own"
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$team_email"
+       ],
+       [
+        "recipient_list",
+        [
+         "mario.rossi@example.test"
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/payment/payment_receipt.html",
+         "language": "en",
+         "context": {
+          "recipient_name": "Mario Rossi",
+          "amount": {
+           "float_sum": [
+            "NaN",
+            "NaN"
+           ]
+          },
+          "receipt_number": 21,
+          "payment_date": "05/03/2026",
+          "description": "Quota annuale",
+          "download_url": "$app_url/api/document/retrieve/a1000000-0000-4000-8000-000000699001?download=true&token=a1000000-0000-4000-8000-000000690002",
           "association_name": "$denomination:own"
          }
         }

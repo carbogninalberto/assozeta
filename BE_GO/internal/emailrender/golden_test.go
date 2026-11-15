@@ -250,10 +250,9 @@ func TestRefusesUnportedInput(t *testing.T) {
 	}
 	options := Options{Language: "it", Brand: brand}
 	for name, context := range map[string]map[string]any{
-		"list value":       {"recipient_name": []any{"a"}},
-		"struct value":     {"amount": struct{}{}},
-		"non-finite float": {"amount": math.Inf(1)},
-		"malformed dec":    {"amount": Decimal("1,5")},
+		"list value":    {"recipient_name": []any{"a"}},
+		"struct value":  {"amount": struct{}{}},
+		"malformed dec": {"amount": Decimal("1,5")},
 		"text amount":      {"amount": "12"},
 		"bool amount":      {"amount": true},
 	} {

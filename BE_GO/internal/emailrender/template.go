@@ -547,6 +547,10 @@ func checkValue(value any) error {
 	case nil, string, Safe, bool, int64, float64, invalid:
 		return nil
 	case Decimal:
+		if nonFiniteDecimal(string(v)) {
+			// Django keeps the value; formatting it raises (the 500 page).
+			return nil
+		}
 		_, err := parseDecimal(string(v))
 		return err
 	case map[string]any:
@@ -605,6 +609,9 @@ func truthy(value any) (bool, error) {
 	case float64:
 		return v != 0, nil
 	case Decimal:
+		if nonFiniteDecimal(string(v)) {
+			return true, nil // bool(Decimal('NaN')) and bool(Decimal('Infinity'))
+		}
 		parsed, err := parseDecimal(string(v))
 		return err == nil && parsed.coefficient.Sign() != 0, err
 	case map[string]any:

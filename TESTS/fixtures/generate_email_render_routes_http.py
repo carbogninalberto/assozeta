@@ -37,7 +37,9 @@ payment 500. Email from the associate, the user, then the supplier (truthy);
 none: 412 {'msg': 'Nessuna email associata.'}. No PDF or no payment date: 500.
 The receipt template (amount float(membership_fee) + float(activity_fee)) and
 send_mail_async(subject=f'{denomination} | Ricevuta di pagamento n. {number} -
-{dd/mm/YYYY}', ...). Run with ``python3 -I``.
+{dd/mm/YYYY}', ...). A stored numeric(9,2) NaN fee or amount is authored for the
+two non-finite cases (a legacy or imported row; the adapter seeds it through
+SQL because DecimalField validates writes). Run with ``python3 -I``.
 """
 import json
 from pathlib import Path
@@ -145,6 +147,15 @@ PAYMENTS = {
     'p_orphan': payment(associate=A['mario'], sport_association=None),
     'p_abroad': payment(associate=A['hans'], sport_association=FOREIGN, user=IDS['foreign_owner']),
 }
+
+# A numeric(9,2) column stores NaN, which Django reads back as Decimal('NaN').
+# Fixed ids keep the rows above in their sequence positions.
+INVOICES['nan_fees'] = {**INVOICES['associate'], 'invoice_id': 'a1000000-0000-4000-8000-000000699001',
+                        'membership_fee': 'NaN', 'activity_fee': 'NaN', 'number': 21, 'description': 'Quota annuale'}
+PAYMENTS['i_nan_fees'] = {**PAYMENTS['i_associate'], 'payment_id': 'a1000000-0000-4000-8000-000000699002',
+                          'invoice': INVOICES['nan_fees']['invoice_id']}
+PAYMENTS['p_nan'] = {**PAYMENTS['p_course'], 'payment_id': 'a1000000-0000-4000-8000-000000699003',
+                     'amount': 'NaN', 'invoice': None}
 
 cases = []
 
@@ -296,6 +307,7 @@ add('request-other-group', 'owner', request('p_grouped'), 500, SERVER, headers={
 add('request-foreign-owner', 'foreign_owner', request('p_abroad'), 200, SENT,
     effect=requested('p_abroad', ['hans@example.test'], 'Quota ', 'Hans Muller', association=FOREIGN, denomination='$denomination:foreign',
                      owner='foreign_owner'))
+add('request-nan-amount', 'owner', request('p_nan'), 500, SERVER)
 add('request-no-associate', 'owner', request('p_no_associate'), 500, SERVER)
 add('request-paid', 'owner', request('p_paid'), 412, {'msg': 'email not sent, payment already paid.'})
 add('request-deleted', 'owner', request('p_deleted'), 500, SERVER)
@@ -343,6 +355,8 @@ def sent_receipt(label, payment_label, email, name):
 
 
 add('send-associate', 'owner', send('associate'), 200, SENT, effect=sent_receipt('associate', 'i_associate', 'mario.rossi@example.test', 'Mario Rossi'))
+add('send-nan-fees', 'owner', send('nan_fees'), 200, SENT,
+    effect=sent_receipt('nan_fees', 'i_nan_fees', 'mario.rossi@example.test', 'Mario Rossi'))
 add('send-user', 'owner', send('user'), 200, SENT, effect=sent_receipt('user', 'i_user', '$email:owner', '$name:owner'))
 add('send-supplier', 'owner', send('supplier'), 200, SENT,
     effect=sent_receipt('supplier', 'i_supplier', 'fornitore@example.test', 'Fornitore "Uno" & C.'))
