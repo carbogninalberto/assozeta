@@ -240,14 +240,82 @@ func TestInstanceAdminFormIntegration(t *testing.T) {
 	}
 }
 
-func TestInstanceAdminFormIntegrationNestedListRefused(t *testing.T) {
-	body := instanceAdminFormBody(t, instanceAdminAIBase+"&clear_secrets%5B0%5Dx=api_key")
-	if _, err := InstanceAdminIntegrationForm("ai", body); !errors.Is(err, domain.ErrInstanceAdminRefused) {
+func TestInstanceAdminFormListNested(t *testing.T) {
+	type testCase struct {
+		name    string
+		raw     string
+		files   []domain.RequestField
+		items   []any
+		present bool
+	}
+	cases := []testCase{
+		{name: "one nested key", raw: "clear_secrets%5B0%5Dx=api_key",
+			items: []any{"<MultiValueDict: {'x': ['api_key']}>"}, present: true},
+		{name: "two keys keep their order",
+			raw:   "clear_secrets%5B0%5Dx=api_key&clear_secrets%5B0%5Dy=b",
+			items: []any{"<MultiValueDict: {'x': ['api_key'], 'y': ['b']}>"}, present: true},
+		{name: "replaced key keeps its position",
+			raw:   "clear_secrets%5B0%5Dx=a&clear_secrets%5B0%5Dy=b&clear_secrets%5B0%5Dx=c",
+			items: []any{"<MultiValueDict: {'x': ['c'], 'y': ['b']}>"}, present: true},
+		{name: "plain after nested", raw: "clear_secrets%5B0%5Dx=a&clear_secrets%5B0%5D=api_key",
+			items: []any{"api_key"}, present: true},
+		{name: "nested after plain", raw: "clear_secrets%5B0%5D=api_key&clear_secrets%5B0%5Dx=a",
+			items: []any{"<MultiValueDict: {'x': ['a']}>"}, present: true},
+		{name: "leading zeros collapse",
+			raw:   "clear_secrets%5B01%5Dx=a&clear_secrets%5B1%5Dy=b",
+			items: []any{"<MultiValueDict: {'x': ['a'], 'y': ['b']}>"}, present: true},
+		{name: "indexes sort as integers",
+			raw:   "clear_secrets%5B2%5D=c&clear_secrets%5B10%5D=k&clear_secrets%5B1%5D=b",
+			items: []any{"b", "c", "k"}, present: true},
+		// '$' also matches before a single final newline, which is then not part
+		// of the suffix: empty means a plain item.
+		{name: "one trailing newline is plain", raw: "clear_secrets%5B0%5D%0A=v",
+			items: []any{"v"}, present: true},
+		{name: "one trailing newline after the key", raw: "clear_secrets%5B0%5Dx%0A=v",
+			items: []any{"<MultiValueDict: {'x': ['v']}>"}, present: true},
+		// '.' does not cross a newline: any other newline makes the key match
+		// nothing.
+		{name: "inner newline is skipped", raw: "clear_secrets%5B0%5Dx%0Ay=v", items: []any{}},
+		{name: "two trailing newlines are skipped", raw: "clear_secrets%5B0%5Dx%0A%0A=v", items: []any{}},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			items, present, err := instanceAdminHTMLList(instanceAdminFormBody(t, tc.raw, tc.files...), "clear_secrets")
+			if err != nil {
+				t.Fatalf("list: %v", err)
+			}
+			if present != tc.present || !reflect.DeepEqual(items, tc.items) {
+				t.Fatalf("got (%#v, %v), want (%#v, %v)", items, present, tc.items, tc.present)
+			}
+		})
+	}
+}
+
+// A nested item holding a multipart upload keeps the refusal: its repr needs
+// the content type, which the form parser does not keep.
+func TestInstanceAdminFormListNestedUploadRefused(t *testing.T) {
+	body := instanceAdminFormBody(t, "clear_secrets%5B0%5Dx=api_key", instanceAdminUpload("clear_secrets[0]y", "p.txt"))
+	if _, _, err := instanceAdminHTMLList(body, "clear_secrets"); !errors.Is(err, domain.ErrInstanceAdminRefused) {
 		t.Fatalf("got %v, want the refusal", err)
+	}
+}
+
+func TestInstanceAdminFormIntegrationNestedList(t *testing.T) {
+	// str() of the MultiValueDict is its repr, which is then not a choice.
+	body := instanceAdminFormBody(t, instanceAdminAIBase+"&clear_secrets%5B0%5Dx=api_key&clear_secrets%5B0%5Dy=b")
+	normalised, err := InstanceAdminIntegrationForm("ai", body)
+	if err != nil {
+		t.Fatalf("normalise: %v", err)
+	}
+	_, err = InstanceAdminIntegration("ai", normalised)
+	want := map[string]any{"clear_secrets": map[string]any{"0": []string{
+		"choice:<MultiValueDict: {'x': ['api_key'], 'y': ['b']}>"}}}
+	if got := instanceAdminFailure(t, err); !reflect.DeepEqual(got, want) {
+		t.Fatalf("got %#v, want %#v", got, want)
 	}
 	// A plain value with the same index replaces the nested shape.
 	body = instanceAdminFormBody(t, instanceAdminAIBase+"&clear_secrets%5B0%5Dx=api_key&clear_secrets%5B0%5D=api_key")
-	normalised, err := InstanceAdminIntegrationForm("ai", body)
+	normalised, err = InstanceAdminIntegrationForm("ai", body)
 	if err != nil {
 		t.Fatalf("normalise: %v", err)
 	}

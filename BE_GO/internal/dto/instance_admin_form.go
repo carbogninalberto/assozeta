@@ -151,10 +151,17 @@ func instanceAdminHTMLDict(object domain.RequestObject, prefix string) domain.Re
 	return result
 }
 
+// instanceAdminHTMLListPair is one key of a nested list item, in the order the
+// body sent it (a replaced key keeps its position).
+type instanceAdminHTMLListPair struct {
+	key   string
+	value any
+}
+
 // instanceAdminHTMLList is ListField.get_value for a form: every value of the
-// plain key (getlist), else the keys '<name>[<digits>]' ordered by their
-// integer index, else the field's default (an empty list). present is false
-// only when neither shape matched.
+// plain key (getlist), else the keys '<name>[<digits>]<suffix>' ordered by
+// their integer index, else the field's default (an empty list). present is
+// false only when neither shape matched.
 func instanceAdminHTMLList(object domain.RequestObject, name string) (items []any, present bool, err error) {
 	if values, ok := object.List(name); ok {
 		items = make([]any, len(values))
@@ -164,8 +171,10 @@ func instanceAdminHTMLList(object domain.RequestObject, name string) (items []an
 		return items, true, nil
 	}
 	type entry struct {
-		value  any
-		nested bool
+		value any
+		// pairs is html.parse_html_list's MultiValueDict: nil for the plain
+		// shape, at least one key once a suffix built one.
+		pairs []instanceAdminHTMLListPair
 	}
 	indexed := map[string]entry{}
 	for _, field := range object {
@@ -181,18 +190,26 @@ func instanceAdminHTMLList(object domain.RequestObject, name string) (items []an
 		if digits == "" || strings.Trim(digits, "0123456789") != "" {
 			continue
 		}
+		suffix, ok := instanceAdminHTMLListSuffix(rest[closing+1:])
+		if !ok {
+			continue
+		}
 		index := strings.TrimLeft(digits, "0")
 		if index == "" {
 			index = "0"
 		}
-		if rest[closing+1:] == "" {
+		if suffix == "" {
+			// A plain value with this index replaces the nested dictionary.
 			indexed[index] = entry{value: instanceAdminHTMLListItem(field.Value)}
-		} else {
-			// The suffix builds a nested dictionary. Its error message is the
-			// repr of a nested MultiValueDict, a shape this port does not
-			// reproduce, so the request keeps going to the Django backend.
-			indexed[index] = entry{nested: true}
+			continue
 		}
+		current := indexed[index]
+		if current.pairs == nil {
+			// A nested key on a plain value starts a new dictionary.
+			current = entry{}
+		}
+		current.pairs = instanceAdminHTMLListSet(current.pairs, suffix, field.Value)
+		indexed[index] = current
 	}
 	if len(indexed) == 0 {
 		return []any{}, false, nil
@@ -210,12 +227,67 @@ func instanceAdminHTMLList(object domain.RequestObject, name string) (items []an
 	items = make([]any, 0, len(indexes))
 	for _, text := range indexes {
 		entry := indexed[text]
-		if entry.nested {
-			return nil, false, domain.ErrInstanceAdminRefused
+		if entry.pairs != nil {
+			repr, ok := instanceAdminHTMLListRepr(entry.pairs)
+			if !ok {
+				return nil, false, domain.ErrInstanceAdminRefused
+			}
+			items = append(items, repr)
+			continue
 		}
 		items = append(items, entry.value)
 	}
 	return items, true, nil
+}
+
+// instanceAdminHTMLListSuffix is the '(.*)$' group of DRF's key regex: '.' does
+// not cross a newline and '$' only also matches before a single final one, so
+// a suffix holding any other newline makes the key match nothing.
+func instanceAdminHTMLListSuffix(suffix string) (string, bool) {
+	if at := strings.IndexByte(suffix, '\n'); at >= 0 {
+		if at != len(suffix)-1 {
+			return "", false
+		}
+		return suffix[:at], true
+	}
+	return suffix, true
+}
+
+// instanceAdminHTMLListSet is MultiValueDict.__setitem__: it adds the key or
+// replaces its value, keeping the position of a replaced key.
+func instanceAdminHTMLListSet(pairs []instanceAdminHTMLListPair, key string, value any) []instanceAdminHTMLListPair {
+	for at := range pairs {
+		if pairs[at].key == key {
+			pairs[at].value = value
+			return pairs
+		}
+	}
+	return append(pairs, instanceAdminHTMLListPair{key: key, value: value})
+}
+
+// instanceAdminHTMLListRepr is str() of the MultiValueDict html.parse_html_list
+// builds for a nested item, which the ChoiceField child then quotes in its
+// "'%(input)s' is not a valid choice." message. ok is false for a part whose
+// repr carries its content type (a multipart upload), metadata the form parser
+// does not keep: only such a nested item is left to the Django backend.
+func instanceAdminHTMLListRepr(pairs []instanceAdminHTMLListPair) (repr string, ok bool) {
+	var out strings.Builder
+	out.WriteString("<MultiValueDict: {")
+	for index, pair := range pairs {
+		value, isText := pair.value.(string)
+		if !isText {
+			return "", false
+		}
+		if index > 0 {
+			out.WriteString(", ")
+		}
+		out.WriteString(PythonStringRepr(pair.key))
+		out.WriteString(": [")
+		out.WriteString(PythonStringRepr(value))
+		out.WriteString("]")
+	}
+	out.WriteString("}>")
+	return out.String(), true
 }
 
 // instanceAdminHTMLListItem reads one list value: the child is always a

@@ -61,7 +61,12 @@ func (s *InstanceAdmin) callRunner(ctx context.Context, method, path string, pay
 	}
 	value, decoded, err := instanceBackupsJSON(reply.Body)
 	if errors.Is(err, ErrInstanceBackupsNotPorted) {
-		return nil, domain.ErrInstanceAdminRefused
+		// The runner is the application's own process: respond() in
+		// selfhost/updater/server.py sends json.dumps of the fixed shapes it
+		// builds, from texts it reads as strict UTF-8 (backups.py _meta). A
+		// reply nested past the decoder or holding a lone surrogate is a state
+		// only the application could write (application state, never handed off).
+		return nil, domain.ErrInstanceAdminUnexpected
 	}
 	if err != nil {
 		return nil, err

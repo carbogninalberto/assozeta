@@ -732,6 +732,10 @@ AI_FORM = ('revision=2&model=fixture-model&cheap_model=fixture-cheap&base_url=&m
 add('integration-ai-put-form-list-positions', 'owner', integration('ai'), 400,
     {'clear_secrets': {'1': ['"x" is not a valid choice.']}}, method='PUT',
     raw_body=AI_FORM + '&clear_secrets%5B0%5D=api_key&clear_secrets%5B2%5D=x', content_type=FORM)
+# Text after the index builds a MultiValueDict, whose str() is its repr.
+add('integration-ai-put-form-list-nested', 'owner', integration('ai'), 400,
+    {'clear_secrets': {'0': ['"<MultiValueDict: {\'x\': [\'api_key\'], \'y\': [\'b\']}>" is not a valid choice.']}},
+    method='PUT', raw_body=AI_FORM + '&clear_secrets%5B0%5Dx=api_key&clear_secrets%5B0%5Dy=b', content_type=FORM)
 add('integration-ai-put-form-blank-list', 'owner', integration('ai'), 400,
     {'clear_secrets': {'0': ['"" is not a valid choice.']}}, method='PUT', raw_body=AI_FORM + '&clear_secrets=',
     content_type=FORM)
