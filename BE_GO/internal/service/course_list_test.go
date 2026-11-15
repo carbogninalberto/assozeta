@@ -42,7 +42,6 @@ func TestCourseListOrdering(t *testing.T) {
 	for _, test := range []struct {
 		name, column     string
 		descending, rand bool
-		unported         bool
 		server           bool
 	}{
 		{name: "title", column: "title"},
@@ -63,10 +62,10 @@ func TestCourseListOrdering(t *testing.T) {
 		{name: "athletes", server: true},
 	} {
 		query := domain.CourseListQuery{}
-		unported, err := courseListOrdering(&query, test.name)
-		if errors.Is(err, ErrCourseListServer) != test.server || unported != test.unported || query.Random != test.rand ||
+		err := courseListOrdering(&query, test.name)
+		if errors.Is(err, ErrCourseListServer) != test.server || query.Random != test.rand ||
 			query.OrderColumn != test.column || query.Descending != test.descending {
-			t.Errorf("%s: got %+v unported=%v err=%v", test.name, query, unported, err)
+			t.Errorf("%s: got %+v err=%v", test.name, query, err)
 		}
 	}
 }

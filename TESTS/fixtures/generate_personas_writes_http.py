@@ -1057,19 +1057,32 @@ add('subscriptions-delete-athlete', 'athlete', 'DELETE', subs_path('subbed'), 40
 # after the first comma) before the field validation and left out of it. create() / update() then save it through the
 # default storage as associates/<the associate's id>/picture_<timestamp>.jpg (a new associate gets its id first),
 # put_object_acl public-read (AWS_S3_USE_OBJECT_ACL, on for the run) and store the object's URL under the storage's
-# public address (the run has no public base URL: <endpoint>/<bucket>).
+# public address (the run has no public base URL: <endpoint>/<bucket>). With AWS_S3_FILE_OVERWRITE off (the default)
+# get_available_name puts the object at picture_<timestamp>_<7 alphanumerics>.<fraction>.jpg when the plain name is
+# taken; a storage exception (HeadObject, PutObject, PutObjectAcl) answers 400 with the exception's text.
 PICTURE = base64.b64encode(b'\x89PNG\r\n\x1a\n personas picture fixture \xff\xfe').decode()
 PICTURE_2 = base64.b64encode(b'\xff\xd8\xff\xe0 second picture ?>~').decode()
 assert '+' in PICTURE_2 or '/' in PICTURE_2
 _pictures = iter(range(1, 100))
 
 
-def picture(folder, body, *, denied=False, case=None):
+def picture(folder, body, *, denied=False, case=None, failed=None, taken=False):
     """A stored picture: its placeholder (the object's URL) and the storage requests of the upload.
-    folder: the associate's id, or None until created_picture names the new associate."""
+    folder: the associate's id, or None until created_picture names the new associate.
+    denied: the storage refuses the object ACL; failed: 'head' or 'put' when it refuses that request
+    instead (nothing is stored); taken: the plain key already exists, so Django saves the object under
+    an alternative name (the storage list starts with 'HEAD $taken', the plain key)."""
     ref = f'$pic{next(_pictures)}'
-    return ref, {'pictures': {ref: {'folder': folder, 'body_b64': body}},
-                 'storage': [f'HEAD {ref}', f'PUT {ref}', f'ACL {ref}' + (' denied' if denied else '')]}
+    spec = {'folder': folder, 'body_b64': body}
+    if failed:
+        spec['stored'] = False
+        storage = [f'HEAD {ref} denied'] if failed == 'head' else [f'HEAD {ref}', f'PUT {ref} denied']
+    elif taken:
+        spec['taken'] = True
+        storage = ['HEAD $taken', f'HEAD {ref}', f'PUT {ref}', f'ACL {ref}']
+    else:
+        storage = [f'HEAD {ref}', f'PUT {ref}', f'ACL {ref}' + (' denied' if denied else '')]
+    return ref, {'pictures': {ref: spec}, 'storage': storage}
 
 
 def created_picture(effect, body, **values):
@@ -1227,6 +1240,37 @@ pic, upload = picture(A['pic_denied'], PICTURE, denied=True)
 add_picture('update-picture-acl-refused', 'owner', 'PATCH', update_path('pic_denied'), 400,
             {'picture_path': 'Error processing image: An error occurred (AccessDenied) when calling the PutObjectAcl operation: Access Denied.'},
             body={'first_name': 'Fermo Maria', 'picture_path': 'data:image/png;base64,' + PICTURE}, allow=ALLOW_UPDATE, upload=upload)
+# The storage refuses the HeadObject (get_available_name) or the PutObject: nothing is stored, the row is
+# unchanged, and botocore's text of the refusal is the answer (a HeadObject answer has no body: the code is 403).
+# The three associates of these cases and the storage stub's plain-object answers (HeadObject 403, PutObject 403,
+# the taken plain key of 'pic_taken'); each answer is used once, so the requests after it reach MinIO.
+for _label, _first, _last in (('pic_head_denied', 'Nino', 'Testanegata'), ('pic_put_denied', 'Pino', 'Caricanegato'),
+                              ('pic_taken', 'Tino', 'Nomeoccupato')):
+    SEED[_label] = person(_first, _last)
+    A[_label] = SEED[_label]['id']
+    WORLD['assoc'][_label] = copy.deepcopy(SEED[_label])
+STORAGE_ANSWERS = [
+    {'method': 'HEAD', 'contains': A['pic_head_denied'], 'status': 403, 'body': '', 'times': 1},
+    {'method': 'PUT', 'contains': A['pic_put_denied'], 'status': 403,
+     'body': '<?xml version="1.0" encoding="UTF-8"?>\n<Error><Code>AccessDenied</Code><Message>Access Denied.</Message></Error>',
+     'times': 1},
+    {'method': 'HEAD', 'contains': A['pic_taken'], 'status': 200, 'body': '', 'times': 1},
+]
+pic, upload = picture(A['pic_head_denied'], PICTURE, failed='head')
+add_picture('update-picture-head-denied', 'owner', 'PATCH', update_path('pic_head_denied'), 400,
+            {'picture_path': 'Error processing image: An error occurred (403) when calling the HeadObject operation: Forbidden'},
+            body={'first_name': 'Nino Maria', 'picture_path': 'data:image/png;base64,' + PICTURE}, allow=ALLOW_UPDATE, upload=upload)
+pic, upload = picture(A['pic_put_denied'], PICTURE, failed='put')
+add_picture('update-picture-put-denied', 'owner', 'PATCH', update_path('pic_put_denied'), 400,
+            {'picture_path': 'Error processing image: An error occurred (AccessDenied) when calling the PutObject operation: Access Denied.'},
+            body={'first_name': 'Pino Maria', 'picture_path': 'data:image/png;base64,' + PICTURE}, allow=ALLOW_UPDATE, upload=upload)
+# The plain key is taken: the HeadObject finds it, the alternative name is free, and the row keeps its URL.
+effect = Effect('owner')
+pic, upload = picture(A['pic_taken'], PICTURE, taken=True)
+effect.save('pic_taken', picture_path=pic)
+handle_tutors(effect, 'pic_taken', [])
+add_picture('update-picture-key-taken', 'owner', 'PATCH', update_path('pic_taken'), 200, info('pic_taken'),
+            body={'picture_path': 'data:image/png;base64,' + PICTURE}, allow=ALLOW_UPDATE, effect=effect, upload=upload)
 add('update-picture-incorrect-padding', 'owner', 'PATCH', update_path('pic_keep'), 400, PICTURE_INVALID,
     body={'picture_path': 'data:image/png;base64,QUJDQQ'}, allow=ALLOW_UPDATE)
 # get_object() precedes the serializer: nothing is uploaded for a row that is not found.
@@ -1378,6 +1422,6 @@ OUTPUT.write_text(json.dumps({
     'ids': IDS, 'families': [F1, F2], 'associates': SEED, 'relations': RELATIONS, 'medical': MEDICAL, 'tag': TAG,
     'subscriptions': {label: {'id': SUB_IDS[label], 'associate': A[a], 'start': s, 'end': e, 'created': c, **x}
                       for label, (a, s, e, c, x) in SUBSCRIPTIONS.items()},
-    'reverse': REVERSE, 'acl_denied': ACL_DENIED,
+    'reverse': REVERSE, 'acl_denied': ACL_DENIED, 'storage_answers': STORAGE_ANSWERS,
     'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

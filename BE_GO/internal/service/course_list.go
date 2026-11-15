@@ -22,18 +22,11 @@ var (
 	// a malformed or missing subscription_id, a malformed tag id or status,
 	// an order_by name the model does not have, an invalid balance start.
 	ErrCourseListServer = errors.New("course list server error")
-	// ErrCourseListUnported refuses an ordering Django accepts lazily but Go
-	// does not port (relations, reverse relations, transforms); it is raised
-	// where Django compiles the ordering, after the pagination checks.
-	ErrCourseListUnported = refusal.New("course list ordering not ported")
 	// ErrCourseListExport is current_view_course raising (a 500): a missing
 	// or unsupported format, a body that is not a dict, a workbook
 	// get_excel_base64 fails on. A POST without all=1 returns a
 	// *CourseListExport wrapping it.
 	ErrCourseListExport = errors.New("course list export")
-	// ErrCourseListExportUnported refuses the PDF file, an ordering Django
-	// resolves lazily and workbook inputs xlsxexport does not reproduce.
-	ErrCourseListExportUnported = refusal.New("course list export file generation not ported")
 )
 
 // CourseListExport is a POST without all=1: the handler reads request.data
@@ -41,7 +34,6 @@ var (
 type CourseListExport struct {
 	query       domain.CourseListQuery
 	association string
-	unported    bool
 }
 
 func (e *CourseListExport) Error() string { return ErrCourseListExport.Error() }
@@ -113,10 +105,10 @@ func courseListScope(identity domain.ResolvedIdentity) *string {
 // descending; only the course's own columns order the list, so any other
 // name (a relation, a path through one, a transform) is a FieldError at
 // order_by() (a 500).
-func courseListOrdering(query *domain.CourseListQuery, name string) (unported bool, err error) {
+func courseListOrdering(query *domain.CourseListQuery, name string) error {
 	if name == "?" {
 		query.Random = true
-		return false, nil
+		return nil
 	}
 	field, descending := strings.CutPrefix(name, "-")
 	if field == "pk" {
@@ -124,10 +116,10 @@ func courseListOrdering(query *domain.CourseListQuery, name string) (unported bo
 	}
 	column, ok := courseListColumns[field]
 	if !ok {
-		return false, ErrCourseListServer
+		return ErrCourseListServer
 	}
 	query.OrderColumn, query.Descending = column, descending
-	return false, nil
+	return nil
 }
 
 // List follows course_list.
@@ -193,20 +185,16 @@ func (s *CourseLists) List(ctx context.Context, identity domain.ResolvedIdentity
 			query.Status = &value
 		}
 	}
-	unported := false
 	field, direction := courseListText(request.Query, "sort[field]"), courseListText(request.Query, "sort[sort]")
 	if field != "" && direction != "" {
 		if direction != "asc" {
 			field = "-" + field
 		}
-		if unported, err = courseListOrdering(&query, field); err != nil {
+		if err := courseListOrdering(&query, field); err != nil {
 			return nil, err
 		}
 	}
 	if courseListText(request.Query, "all") == "1" {
-		if unported {
-			return nil, ErrCourseListUnported
-		}
 		if courseListText(request.Query, "optimized") == "1" {
 			values, err := s.store.CourseValues(ctx, query)
 			if err != nil {
@@ -225,14 +213,14 @@ func (s *CourseLists) List(ctx context.Context, identity domain.ResolvedIdentity
 		return map[string]any{"data": courseListSerialized(rows)}, nil
 	}
 	if request.Method == "POST" {
-		return nil, &CourseListExport{query: query, association: association, unported: unported}
+		return nil, &CourseListExport{query: query, association: association}
 	}
-	return s.page(ctx, identity, query, request.Query, unported)
+	return s.page(ctx, identity, query, request.Query)
 }
 
 // page is KTDatatablePagination, then current_year and athletes per course.
 func (s *CourseLists) page(ctx context.Context, identity domain.ResolvedIdentity, query domain.CourseListQuery,
-	parameters domain.RequestObject, unported bool) (map[string]any, error) {
+	parameters domain.RequestObject) (map[string]any, error) {
 	count, err := s.store.CountCourses(ctx, query)
 	if err != nil {
 		return nil, err
@@ -242,9 +230,6 @@ func (s *CourseLists) page(ctx context.Context, identity domain.ResolvedIdentity
 	page, err := dto.DRFPageNumber(number, numberPresent, count, dto.DRFPageSize(size, sizePresent, 10))
 	if err != nil {
 		return nil, err
-	}
-	if unported {
-		return nil, ErrCourseListUnported
 	}
 	rows, err := s.store.Courses(ctx, query, page.Size, page.Offset())
 	if err != nil {
@@ -353,10 +338,6 @@ func (s *CourseLists) Export(ctx context.Context, export *CourseListExport, data
 		return nil, ErrCourseListExport // Exception('Format not valid')
 	}
 	today := s.now().UTC()
-	if export.unported {
-		// The ordering is compiled when the rows are iterated (here).
-		return nil, ErrCourseListExportUnported
-	}
 	courses, err := s.store.ExportCourses(ctx, export.query)
 	if err != nil {
 		return nil, err
@@ -425,7 +406,7 @@ func (s *CourseLists) Export(ctx context.Context, export *CourseListExport, data
 			Title: "Corsi filtrati (giorno stampa " + printingDate(today) + ")"}.Build(today)
 		switch {
 		case errors.Is(err, pdfexport.ErrNotPorted):
-			return nil, ErrCourseListExportUnported
+			return nil, err // the input pdfexport does not reproduce
 		case errors.Is(err, refusal.ErrAppState):
 			return nil, err // a layout no export builds (pdfexport.ErrUnexpectedLayout)
 		case err != nil:

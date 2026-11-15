@@ -9,7 +9,6 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // ProfileSettingsCards is the membership-card get-or-create shared with the
@@ -42,9 +41,6 @@ var (
 	// writes made so far (KeyError, TypeError, ValueError, ValidationError,
 	// IntegrityError, DataError): the HTML 500 page.
 	ErrProfileSettingsServer = errors.New("profile settings server error")
-	// ErrProfileSettingsUpload refuses a multipart file in the request data
-	// before any write (not ported).
-	ErrProfileSettingsUpload = refusal.New("profile settings upload is not ported")
 )
 
 // ProfileIntegrations is the PATCH response: the assigned request values.
@@ -157,9 +153,6 @@ func (s *ProfileSettings) UpdateSettings(ctx context.Context, identity domain.Re
 	owner, association, err := s.owner(ctx, identity)
 	if err != nil {
 		return err
-	}
-	if dto.ProfileSettingsHasUpload(body) {
-		return ErrProfileSettingsUpload
 	}
 	if _, err = s.card(ctx, identity, owner, association, audit); err != nil {
 		return err

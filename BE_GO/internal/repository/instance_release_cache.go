@@ -22,10 +22,12 @@ const (
 	ReleaseRefreshKey = ":1:instance:stable-releases:v1:refresh"
 )
 
-// ErrReleaseCacheShape is a cached catalog value this port does not read:
-// anything but a list of normalize_release dicts (Django would render or
-// fail on it).
-var ErrReleaseCacheShape = refusal.New("cached release catalog not ported")
+// ErrReleaseCacheShape is a cached catalog value other than a pickled list of
+// normalize_release dicts. Only InstanceReleasesView writes this key
+// (BE/instance/administration.py:124, cache.set of fetch_releases(), and the
+// Go port's own writer below): any other value is application state (long-tail
+// rule 3), answered with the 500 page.
+var ErrReleaseCacheShape = refusal.AppState("unexpected cached release catalog")
 
 // ReleaseCache reads and writes the catalog in Django's cache (Redis DB 1).
 type ReleaseCache struct{ client *redis.Client }

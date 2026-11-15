@@ -248,8 +248,6 @@ func run(args []string, stdout, stderr *os.File) int {
 		return 0
 	case errors.As(err, &fatal):
 		fmt.Fprintln(stderr, fatal.Message)
-	case errors.Is(err, service.ErrSubscriptionSignatureMigrationNotPorted):
-		fmt.Fprintln(stderr, "migrate-subscription-signatures-to-s3: refused: a generated storage key already exists (not ported)")
 	default:
 		// Database and storage errors may contain private values; Django prints a traceback.
 		fmt.Fprintln(stderr, "migrate-subscription-signatures-to-s3 failed")

@@ -261,6 +261,14 @@ add('overview-schedule-nan', 'owner', OVERVIEW, 500, SERVER,
     run=runner(200, '{"archives": [], "disk": {}, "schedule": {"keep": NaN}}'), cache=CACHED)
 add('overview-remote-infinite', 'owner', OVERVIEW, 500, SERVER,
     run=runner(200, '{"archives": [], "disk": {}, "remote": {"size": -1e400}}'), cache=CACHED)
+# A JSON "\ud800" escape decodes (json.loads) to a lone surrogate, which DRF's
+# renderer cannot UTF-8 encode: only the values the view copies into the
+# response fail, and PostgreSQL refuses a LogEntry whose changes hold one.
+add('overview-ignored-key-lone-surrogate', 'owner', OVERVIEW, 200, overview({}, SIZES, margin=1024),
+    run=runner(200, '{"archives": [], "disk": {}, "ignored": "\\ud800"}'), cache=CACHED)
+add('overview-archive-lone-surrogate', 'owner', OVERVIEW, 500, SERVER,
+    run=runner(200, '{"archives": ["\\udfff"], "disk": {}}'), cache=CACHED)
+add('overview-runner-error-lone-surrogate', 'owner', OVERVIEW, 500, SERVER, run=runner(409, '{"error": "\\ud800"}'))
 add('overview-number-forms', 'owner', OVERVIEW, 200,
     overview({'archives': [1.5, 100.0, 1e-07, 12345678901234567890], 'disk': {'free': 1}}, SIZES, margin=1024),
     run=runner(200, '{"archives": [1.50, 1E2, 1e-7, 12345678901234567890], "disk": {"free": 1}, "space_margin_mb": 1.0}'),
@@ -388,6 +396,12 @@ add('create-runner-500', 'owner', OVERVIEW, 503, error('Runner non pronto.'), me
 add('create-runner-507', 'owner', OVERVIEW, 503, error('Spazio insufficiente.'), method='POST',
     run=create_runner(507, '{"error": "Spazio insufficiente."}'))
 add('create-runner-error-list', 'owner', OVERVIEW, 500, SERVER, method='POST', run=create_runner(409, '["x"]'))
+# The audited operation id is what audit() copies into the LogEntry: PostgreSQL
+# refuses it (500, no entry), while the entry is written first for any other value.
+add('create-operation-id-lone-surrogate', 'owner', OVERVIEW, 500, SERVER, method='POST',
+    run=create_runner(202, '{"operation": {"id": "\\ud800"}}'))
+add('create-operation-note-lone-surrogate', 'owner', OVERVIEW, 500, SERVER, method='POST',
+    run=create_runner(202, '{"operation": {"id": "op-s", "note": "\\udfff"}}'), audit=created('op-s'))
 
 # ---------------------------------------------------------------------------
 # POST admin/backups/download-token

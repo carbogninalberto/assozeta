@@ -246,6 +246,9 @@ func subscriptionReadsOrder(order []domain.SubscriptionReadsOrder, args *persona
 			terms[i] = "a." + strings.TrimPrefix(term.Column, "associate.")
 		case term.Column == "age":
 			terms[i] = "EXTRACT(YEAR FROM a.born_date)"
+		case term.Column == "?":
+			// order_by('?') is RANDOM(): the page's rows come back in a random order.
+			terms[i] = "RANDOM()"
 		case term.Column == "_has_future_renewal":
 			// The annotation's expression (future_renewal_exists()), with the group parameter bound here.
 			terms[i] = strings.Replace(strings.TrimSuffix(subscriptionReadsRenewal, " AS future_renewal"), "$2::uuid", args.add(group)+"::uuid", -1)

@@ -30,8 +30,6 @@ const (
 var (
 	// ErrDocumentViewServer is an exception the view does not handle (the 500 page).
 	ErrDocumentViewServer = errors.New("document view: unhandled exception")
-	// ErrDocumentViewNotPorted refuses an input outside the port (the 500 page).
-	ErrDocumentViewNotPorted = refusal.New("document view: input not ported")
 	// errDocumentViewSignature is a view built without the signature storage:
 	// cmd/server/main.go always calls WithSignatureObjects. The 500 page, never
 	// a handoff.
@@ -50,11 +48,12 @@ type PreviewRenderer interface {
 }
 
 type DocumentViews struct {
-	store       domain.DocumentViewStore
-	renderer    PreviewRenderer
-	signatures  domain.DocumentViewObjects
-	bypassToken string
-	now         func() time.Time
+	store            domain.DocumentViewStore
+	renderer         PreviewRenderer
+	signatures       domain.DocumentViewObjects
+	signatureFetcher LegacySignatureFetcher
+	bypassToken      string
+	now              func() time.Time
 }
 
 func NewDocumentViews(store domain.DocumentViewStore, renderer PreviewRenderer, bypassToken string, now func() time.Time) *DocumentViews {
@@ -65,6 +64,13 @@ func NewDocumentViews(store domain.DocumentViewStore, renderer PreviewRenderer, 
 // Without it a subscription that names a stored signature stays refused.
 func (s *DocumentViews) WithSignatureObjects(objects domain.DocumentViewObjects) *DocumentViews {
 	s.signatures = objects
+	return s
+}
+
+// WithLegacySignatureFetcher configures the HTTP read of a subscription whose
+// signature_url is set. cmd/server always calls it.
+func (s *DocumentViews) WithLegacySignatureFetcher(f LegacySignatureFetcher) *DocumentViews {
+	s.signatureFetcher = f
 	return s
 }
 
@@ -171,7 +177,7 @@ func (s *DocumentViews) Render(ctx context.Context, identity domain.ResolvedIden
 	reply, err := s.render(withViewPromotion(ctx, identity, request.Promotion), identity, request)
 	if err != nil {
 		if errors.Is(err, mentions.ErrUnsupported) { // djtemplate.ErrUnsupported is app state: it passes through
-			return nil, fmt.Errorf("%w: %v", ErrDocumentViewNotPorted, err)
+			return nil, err
 		}
 		if errors.Is(err, djtemplate.ErrPython) {
 			// An exception Django raises for a value the database can hold:
@@ -771,9 +777,16 @@ func (s *DocumentViews) subscription(ctx context.Context, identity domain.Resolv
 				}
 				// Every read error is logged and falls through to the legacy URL.
 			}
-			if renderOptionalEmpty(subscription.SignatureURL) != "" {
-				// The legacy URL is fetched from another server.
-				return nil, fmt.Errorf("%w: signature image", ErrDocumentViewNotPorted)
+			if url := renderOptionalEmpty(subscription.SignatureURL); url != "" {
+				if s.signatureFetcher == nil {
+					return nil, domain.ErrServerComposition
+				}
+				content, err := s.signatureFetcher.Fetch(ctx, url)
+				if err != nil {
+					// Every fetch error is logged and the signature is None.
+					return nil, nil
+				}
+				return "data:image/png;base64," + base64.StdEncoding.EncodeToString(content), nil
 			}
 			return nil, nil
 		}),

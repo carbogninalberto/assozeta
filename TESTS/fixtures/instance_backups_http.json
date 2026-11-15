@@ -3643,6 +3643,161 @@
    "database": false
   },
   {
+   "name": "instance-backups-overview-ignored-key-lone-surrogate",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instance/admin/backups",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "available": true,
+    "archives": [],
+    "retention": {},
+    "disk": {
+     "database": 3145728,
+     "objects": 5242880
+    },
+    "next_backup": {
+     "estimated": 8388608,
+     "required": 1090519040,
+     "fits": true
+    },
+    "schedule": null,
+    "actions": {},
+    "remote": null
+   },
+   "runner": {
+    "state": "up",
+    "status": 200,
+    "body": "{\"archives\": [], \"disk\": {}, \"ignored\": \"\\ud800\"}",
+    "chunked": false,
+    "expect": [
+     {
+      "method": "GET",
+      "path": "/backups",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json"
+      }
+     }
+    ]
+   },
+   "objects": {},
+   "bucket_absent": false,
+   "cache": {
+    "sizes": {
+     "payload": {
+      "database": 3145728,
+      "objects": 5242880
+     }
+    }
+   },
+   "cache_after": {
+    "sizes": {
+     "payload": {
+      "database": 3145728,
+      "objects": 5242880
+     }
+    }
+   },
+   "token": null,
+   "password": null,
+   "audit": null,
+   "rehash": false,
+   "stream": null,
+   "database": false
+  },
+  {
+   "name": "instance-backups-overview-archive-lone-surrogate",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instance/admin/backups",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "runner": {
+    "state": "up",
+    "status": 200,
+    "body": "{\"archives\": [\"\\udfff\"], \"disk\": {}}",
+    "chunked": false,
+    "expect": [
+     {
+      "method": "GET",
+      "path": "/backups",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json"
+      }
+     }
+    ]
+   },
+   "objects": {},
+   "bucket_absent": false,
+   "cache": {
+    "sizes": {
+     "payload": {
+      "database": 3145728,
+      "objects": 5242880
+     }
+    }
+   },
+   "cache_after": {
+    "sizes": {
+     "payload": {
+      "database": 3145728,
+      "objects": 5242880
+     }
+    }
+   },
+   "token": null,
+   "password": null,
+   "audit": null,
+   "rehash": false,
+   "stream": null,
+   "database": false
+  },
+  {
+   "name": "instance-backups-overview-runner-error-lone-surrogate",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instance/admin/backups",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "runner": {
+    "state": "up",
+    "status": 409,
+    "body": "{\"error\": \"\\ud800\"}",
+    "chunked": false,
+    "expect": [
+     {
+      "method": "GET",
+      "path": "/backups",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json"
+      }
+     }
+    ]
+   },
+   "objects": {},
+   "bucket_absent": false,
+   "cache": {},
+   "cache_after": {},
+   "token": null,
+   "password": null,
+   "audit": null,
+   "rehash": false,
+   "stream": null,
+   "database": false
+  },
+  {
    "name": "instance-backups-overview-number-forms",
    "actor": "owner",
    "method": "GET",
@@ -6605,6 +6760,106 @@
    "token": null,
    "password": null,
    "audit": null,
+   "rehash": false,
+   "stream": null,
+   "database": false
+  },
+  {
+   "name": "instance-backups-create-operation-id-lone-surrogate",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "runner": {
+    "state": "up",
+    "status": 202,
+    "body": "{\"operation\": {\"id\": \"\\ud800\"}}",
+    "chunked": false,
+    "expect": [
+     {
+      "method": "POST",
+      "path": "/backups",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "106"
+      },
+      "json": {
+       "request_id": "$uuid4",
+       "actor_id": "a1000000-0000-4000-8000-000000700001"
+      }
+     }
+    ]
+   },
+   "objects": {},
+   "bucket_absent": false,
+   "cache": {},
+   "cache_after": {},
+   "token": null,
+   "password": null,
+   "audit": null,
+   "rehash": false,
+   "stream": null,
+   "database": false
+  },
+  {
+   "name": "instance-backups-create-operation-note-lone-surrogate",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "runner": {
+    "state": "up",
+    "status": 202,
+    "body": "{\"operation\": {\"id\": \"op-s\", \"note\": \"\\udfff\"}}",
+    "chunked": false,
+    "expect": [
+     {
+      "method": "POST",
+      "path": "/backups",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "106"
+      },
+      "json": {
+       "request_id": "$uuid4",
+       "actor_id": "a1000000-0000-4000-8000-000000700001"
+      }
+     }
+    ]
+   },
+   "objects": {},
+   "bucket_absent": false,
+   "cache": {},
+   "cache_after": {},
+   "token": null,
+   "password": null,
+   "audit": {
+    "action": 1,
+    "object_pk": "7305",
+    "object_repr": "Instance: Istanza di prova (instance-backups.example.test)",
+    "changes": {
+     "backup_create": [
+      "",
+      "op-s"
+     ]
+    },
+    "additional_data": {
+     "actor_id": "a1000000-0000-4000-8000-000000700001"
+    },
+    "actor": "owner",
+    "association": "own_association",
+    "resolution_path": "actor.sport_association"
+   },
    "rehash": false,
    "stream": null,
    "database": false

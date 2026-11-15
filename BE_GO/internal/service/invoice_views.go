@@ -54,10 +54,8 @@ func (s *InvoiceViews) Render(ctx context.Context, identity domain.ResolvedIdent
 		err = ErrDocumentViewServer
 	}
 	if err != nil {
-		// djtemplate.ErrUnsupported is app state: it passes through.
-		if errors.Is(err, mentions.ErrUnsupported) || errors.Is(err, errInvoiceViewsNotPorted) {
-			return nil, fmt.Errorf("%w: %v", ErrDocumentViewNotPorted, err)
-		}
+		// mentions.ErrUnsupported and errInvoiceViewsNotPorted are refusal
+		// sentinels themselves: they pass through for the handoff.
 		return nil, err
 	}
 	return reply, nil

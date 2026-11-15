@@ -60,14 +60,6 @@ func (s *InstanceAdmin) callRunner(ctx context.Context, method, path string, pay
 		return nil, err
 	}
 	value, decoded, err := instanceBackupsJSON(reply.Body)
-	if errors.Is(err, ErrInstanceBackupsNotPorted) {
-		// The runner is the application's own process: respond() in
-		// selfhost/updater/server.py sends json.dumps of the fixed shapes it
-		// builds, from texts it reads as strict UTF-8 (backups.py _meta). A
-		// reply nested past the decoder or holding a lone surrogate is a state
-		// only the application could write (application state, never handed off).
-		return nil, domain.ErrInstanceAdminUnexpected
-	}
 	if err != nil {
 		return nil, err
 	}
@@ -99,17 +91,26 @@ func runnerFailure(err error, unavailable func(string) error) error {
 		if rejected.status > 599 {
 			return errInstanceUpdatesUnhandled // HttpResponse: status out of range
 		}
+		if !dto.RenderableJSON(rejected.message) {
+			return errInstanceUpdatesUnhandled // strict JSONRenderer: a lone surrogate fails the UTF-8 encode
+		}
 		return &InstanceAdminResponse{Status: rejected.status, Body: map[string]any{"error": rejected.message}}
 	}
 	return err
 }
 
 func instanceUpdatesError(message string) error {
+	if !dto.RenderableJSON(message) {
+		return errInstanceUpdatesUnhandled // strict JSONRenderer: a lone surrogate fails the UTF-8 encode
+	}
 	return &InstanceAdminResponse{Status: 503, Body: map[string]any{"error": message}}
 }
 
 // relayed is Response(value, status) for a decoded runner value.
 func relayed(status int, value any) error {
+	if !dto.RenderableJSON(value) {
+		return errInstanceUpdatesUnhandled // strict JSONRenderer: a non-finite number raises, a lone surrogate fails the UTF-8 encode
+	}
 	return &InstanceAdminResponse{Status: status, Body: json.RawMessage(dto.PythonJSONDumpsCompact(value))}
 }
 
@@ -132,6 +133,9 @@ func (s *InstanceAdmin) UpdatesStatus(ctx context.Context) (any, error) {
 	protocol, _ := status.Lookup("protocol")
 	if !dto.PythonEqual(protocol, json.Number("1")) {
 		return map[string]any{"available": false, "reason": instanceUpdatesCompatible, "active": nil, "history": []any{}}, nil
+	}
+	if !dto.RenderableJSON(value) {
+		return nil, errInstanceUpdatesUnhandled // strict JSONRenderer: a non-finite number raises, a lone surrogate fails the UTF-8 encode
 	}
 	return json.RawMessage(dto.PythonJSONDumpsCompact(value)), nil
 }

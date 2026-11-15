@@ -99,13 +99,16 @@ NO_ASSOCIATION_BALANCE = {'balance_sheet_start_day': 30, 'balance_sheet_start_mo
 cases = []
 
 
-def add(name, actor, path, status, response, *, method='GET', body=None, raw_body=None, content_type=None, headers=None, effect=None):
+def add(name, actor, path, status, response, *, method='GET', body=None, raw_body=None, raw_parts=None, content_type=None,
+        headers=None, effect=None):
     case = {'name': f'profile-misc-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
             'status': status, 'response': response, 'effect': effect}
     if body is not None:
         case['body'] = body
     if raw_body is not None:
         case['raw_body'], case['content_type'] = raw_body, content_type
+    if raw_parts is not None:
+        case['raw_parts'], case['content_type'] = raw_parts, content_type
     cases.append(case)
 
 
@@ -537,6 +540,21 @@ UPLOAD_ERRORS = {'error': repr_errors({'non_field_errors': [(UPLOAD_DICT, 'inval
 for branch in ('sport_association', 'membership_data', 'onboarding_data'):
     add('multipart-file-' + branch, 'owner', ONBOARD, 400, UPLOAD_ERRORS, method='PATCH',
         raw_body=multipart((branch, 'a.txt', 'ciao')), content_type=MULTI, effect=effect())
+
+
+def spooled(name, filename='a.txt'):
+    """The parts of a multipart body whose only file part is spooled over FILE_UPLOAD_MAX_MEMORY_SIZE."""
+    return [f'--profilo\r\nContent-Disposition: form-data; name="{name}"; filename="{filename}"\r\n'
+            f'Content-Type: application/octet-stream\r\n\r\n', {'repeat': 'x', 'count': 2700000}, '\r\n--profilo--\r\n']
+
+
+# A spooled upload is a TemporaryUploadedFile in request.data; the view names its type.
+UPLOAD_SPOOLED = {'error': repr_errors({'non_field_errors': [
+    ('Invalid data. Expected a dictionary, but got TemporaryUploadedFile.', 'invalid')]})}
+add('multipart-spooled-file-membership-data', 'owner', ONBOARD, 400, UPLOAD_SPOOLED, method='PATCH',
+    raw_parts=spooled('membership_data'), content_type=MULTI, effect=effect())
+add('multipart-spooled-file-without-branch', 'owner', ONBOARD, 200, UPDATED, method='PATCH',
+    raw_parts=spooled('doc'), content_type=MULTI, effect=effect())
 add('multipart-file-lead-data', 'owner', ONBOARD, 500, FIXED_ERROR, method='PATCH',
     raw_body=multipart(('lead_data', 'a.txt', 'ciao')), content_type=MULTI, effect=effect())
 add('multipart-file-after-text-branch', 'owner', ONBOARD, 500, FIXED_ERROR, method='PATCH',

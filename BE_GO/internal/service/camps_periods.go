@@ -22,7 +22,8 @@ var (
 	// related field validates.
 	ErrCampsTenant = errors.New("camps relation of another tenant")
 	// ErrCampsPaymentNotPorted refuses a payment walk outcome this port does
-	// not reproduce before any write.
+	// not reproduce before any write: a hidden payment without an association,
+	// a save failure without a message, or a negative amount.
 	ErrCampsPaymentNotPorted = refusal.New("camps payment walk is not ported")
 	// errCampsGroupRemoved is a group removed while the request ran (the
 	// registrations resolve inside it): timing, long-tail rule 4.
@@ -716,15 +717,12 @@ type campsPaymentSave struct {
 	rejected *dto.CampsPythonError
 }
 
-// campsPaymentRowPlan is one subscription period's saves before its failure (if
-// any).
-type campsPaymentRowPlan struct {
-	saves   []campsPaymentSave
-	failure *dto.CampsPythonError
-}
-
 // campsWalk plans the view's payment loop before any write: every save with
-// its row and audit entry, then the exception that stops the request.
+// its row and audit entry, then the exception that stops the request. The rows
+// come in the order Django's own query returned them, which is the loop's
+// order: the walk stops at the first row that fails (every earlier row's saves,
+// then the saves it made before failing, then its failure) or whose save the
+// database refuses (its saves are the last ones).
 func (r *campsRequest) campsWalk(ctx context.Context, row domain.CampsService, group *string) ([]campsPaymentSave, error) {
 	rows, err := r.tx.WalkRows(ctx, row.PeriodID)
 	if err != nil {
@@ -733,63 +731,22 @@ func (r *campsRequest) campsWalk(ctx context.Context, row domain.CampsService, g
 	update := dto.CampsServiceMeta{ServiceID: row.ID, Title: row.Title, Category: campsText(row.CategoryID)}
 	update.Amount, _ = strconv.ParseFloat(row.Fee, 64)
 	state := map[string]*domain.CampsPayment{}
-	plans := make([]campsPaymentRowPlan, 0, len(rows))
-	failureSeen := false
+	var all []campsPaymentSave
 	for _, walkRow := range rows {
 		saves, failure, rejected, err := r.campsWalkRow(ctx, walkRow, update, state, group)
 		if err != nil {
-			if failureSeen {
-				return nil, ErrCampsPaymentNotPorted
-			}
 			return nil, err
 		}
+		all = append(all, saves...)
 		if rejected {
 			// A save the database refuses stops the walk immediately.
-			if failureSeen {
-				return nil, ErrCampsPaymentNotPorted
-			}
-			plans = append(plans, campsPaymentRowPlan{saves: saves})
-			var all []campsPaymentSave
-			for _, plan := range plans {
-				all = append(all, plan.saves...)
-			}
 			return all, nil
 		}
-		plans = append(plans, campsPaymentRowPlan{saves: saves, failure: failure})
 		if failure != nil {
-			failureSeen = true
+			return append(all, campsPaymentSave{failure: failure}), nil
 		}
 	}
-	failed := 0
-	for _, plan := range plans {
-		if plan.failure != nil {
-			failed++
-		}
-	}
-	if failed == 0 {
-		var all []campsPaymentSave
-		for _, plan := range plans {
-			all = append(all, plan.saves...)
-		}
-		return all, nil
-	}
-	if len(plans) == 1 {
-		return append(plans[0].saves, campsPaymentSave{failure: plans[0].failure}), nil
-	}
-	// Django's loop has no ORDER BY, so only an outcome that every order gives
-	// is answered: every walked row fails before its first save, with the same
-	// message.
-	// Other outcomes are handed off to Django (ErrCampsPaymentNotPorted).
-	if failed != len(plans) {
-		return nil, ErrCampsPaymentNotPorted
-	}
-	message := plans[0].failure.Message
-	for _, plan := range plans {
-		if plan.failure == nil || len(plan.saves) != 0 || plan.failure.Message != message {
-			return nil, ErrCampsPaymentNotPorted
-		}
-	}
-	return []campsPaymentSave{{failure: plans[0].failure}}, nil
+	return all, nil
 }
 
 // campsWalkRow plans one subscription period's saves. It returns the saves made

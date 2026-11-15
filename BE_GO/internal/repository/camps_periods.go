@@ -201,6 +201,32 @@ func (t *campsTransaction) UpdateService(ctx context.Context, row domain.CampsSe
 }
 
 func (t *campsTransaction) WalkRows(ctx context.Context, period string) ([]domain.CampsWalkRow, error) {
+	// The order is the database's answer to Django's own query (no ORDER BY),
+	// which is what Django iterates. The statement keeps selecting sp.* so the
+	// planner sees the same row width as Django's queryset; only the id column
+	// is read from each row.
+	idRows, err := t.tx.QueryxContext(ctx, `SELECT sp.* FROM application_campsandretreatssubscriptionperiod sp
+ INNER JOIN application_payment ON (sp.payment_id = application_payment.payment_id)
+ WHERE (sp.camps_and_retreats_period_id = $1 AND NOT application_payment.paid)`, period)
+	if err != nil {
+		return nil, err
+	}
+	var ordered []string
+	for idRows.Next() {
+		row := map[string]any{}
+		if err := idRows.MapScan(row); err != nil {
+			_ = idRows.Close()
+			return nil, err
+		}
+		ordered = append(ordered, tasksDBFText(row["camps_and_retreats_subscription_period_id"]))
+	}
+	if err := idRows.Err(); err != nil {
+		_ = idRows.Close()
+		return nil, err
+	}
+	if err := idRows.Close(); err != nil {
+		return nil, err
+	}
 	var rows []struct {
 		SubscriptionPeriodID string  `db:"camps_and_retreats_subscription_period_id"`
 		PeriodTitle          *string `db:"period_title"`
@@ -209,7 +235,7 @@ func (t *campsTransaction) WalkRows(ctx context.Context, period string) ([]domai
 		CampDescription      *string `db:"camp_description"`
 		domain.CampsPayment
 	}
-	err := t.tx.SelectContext(ctx, &rows, `SELECT sp.camps_and_retreats_subscription_period_id, p.title AS period_title,
+	err = t.tx.SelectContext(ctx, &rows, `SELECT sp.camps_and_retreats_subscription_period_id, p.title AS period_title,
  p.fee::text AS period_fee, c.title AS camp_title, c.description AS camp_description,
  pay.payment_id, COALESCE(pay.sport_association_id::text, '') AS sport_association_id, pay.sport_association_id IS NULL AS association_null,
  pay.subject, pay.archived, pay.payment_category_id, cat.name AS payment_category_name, pay.description, pay.meta::text AS meta,
@@ -226,10 +252,17 @@ func (t *campsTransaction) WalkRows(ctx context.Context, period string) ([]domai
 	if err != nil {
 		return nil, err
 	}
-	result := make([]domain.CampsWalkRow, 0, len(rows))
+	detailed := make(map[string]domain.CampsWalkRow, len(rows))
 	for _, row := range rows {
-		result = append(result, domain.CampsWalkRow{SubscriptionPeriodID: row.SubscriptionPeriodID, PeriodTitle: row.PeriodTitle,
-			PeriodFee: row.PeriodFee, CampTitle: row.CampTitle, CampDescription: row.CampDescription, Payment: row.CampsPayment})
+		detailed[row.SubscriptionPeriodID] = domain.CampsWalkRow{SubscriptionPeriodID: row.SubscriptionPeriodID,
+			PeriodTitle: row.PeriodTitle, PeriodFee: row.PeriodFee, CampTitle: row.CampTitle,
+			CampDescription: row.CampDescription, Payment: row.CampsPayment}
+	}
+	result := make([]domain.CampsWalkRow, 0, len(ordered))
+	for _, id := range ordered {
+		if walkRow, ok := detailed[id]; ok {
+			result = append(result, walkRow)
+		}
 	}
 	return result, nil
 }

@@ -451,6 +451,70 @@
    "github": []
   },
   {
+   "name": "instance-updates-status-lone-surrogate",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instance/admin/updates",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "runner": {
+    "state": "ok",
+    "replies": [
+     {
+      "status": 200,
+      "body_b64": "eyJwcm90b2NvbCI6IDEsICJhdmFpbGFibGUiOiB0cnVlLCAiY2FuX3VwZGF0ZSI6IHRydWUsICJhY3RpdmUiOiBudWxsLCAicmVhc29uIjogIiIsICJoaXN0b3J5IjogW10sICJpbnN0YWxsZWRfdmVyc2lvbiI6ICJ2MC4wLjAiLCAibm90ZSI6ICJcdWQ4MDAifQ=="
+     }
+    ],
+    "expect": [
+     {
+      "method": "GET",
+      "path": "/status",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json"
+      }
+     }
+    ]
+   },
+   "github": []
+  },
+  {
+   "name": "instance-updates-status-runner-error-lone-surrogate",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instance/admin/updates",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "runner": {
+    "state": "ok",
+    "replies": [
+     {
+      "status": 409,
+      "body_b64": "eyJlcnJvciI6ICJcdWQ4MDAifQ=="
+     }
+    ],
+    "expect": [
+     {
+      "method": "GET",
+      "path": "/status",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json"
+      }
+     }
+    ]
+   },
+   "github": []
+  },
+  {
    "name": "instance-updates-status-no-socket",
    "actor": "owner",
    "method": "GET",

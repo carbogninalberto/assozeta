@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
@@ -51,19 +52,19 @@ func TestLongTailAppStateErrors(t *testing.T) {
 	}
 }
 
-// A runner reply Go's decoder does not read is the family's refusal, handed
-// off to Django.
-func TestInstanceBackupsRunnerReplyIsHandedOff(t *testing.T) {
-	deep := ""
-	for i := 0; i < 10000; i++ {
-		deep += "["
-	}
+// A runner reply nested past the decoder's limit is a state only a runner
+// that is not this application's could write: the 500 page, never a handoff.
+func TestInstanceBackupsRunnerReplyDepthIsAppState(t *testing.T) {
+	deep := strings.Repeat("[", 10000)
 	_, _, err := instanceBackupsJSON([]byte(deep))
-	if !errors.Is(err, ErrInstanceBackupsNotPorted) {
+	if !errors.Is(err, errInstanceBackupsRunnerDepth) {
 		t.Fatalf("deep runner reply: %v", err)
 	}
-	if !errors.Is(err, refusal.ErrNotPorted) {
-		t.Fatalf("deep runner reply is not a refusal: %v", err)
+	if !errors.Is(err, refusal.ErrAppState) {
+		t.Fatalf("deep runner reply is not an application-state error: %v", err)
+	}
+	if errors.Is(err, refusal.ErrNotPorted) {
+		t.Fatalf("deep runner reply is handed off: %v", err)
 	}
 }
 
@@ -71,13 +72,9 @@ func TestInstanceBackupsRunnerReplyIsHandedOff(t *testing.T) {
 // Django answers them normally, so they stay refusal sentinels.
 func TestLongTailHandoffRefusals(t *testing.T) {
 	for name, err := range map[string]error{
-		"ErrInstanceBackupsNotPorted":  ErrInstanceBackupsNotPorted,
-		"ErrInvoiceSyncPrintDeferred":  ErrInvoiceSyncPrintDeferred,
-		"ErrPersonaNotPorted":          ErrPersonaNotPorted,
-		"ErrSubscriptionSignNotPorted": ErrSubscriptionSignNotPorted,
-		"ErrCampsPaymentNotPorted":     ErrCampsPaymentNotPorted,
-		"ErrEmailRenderNotPorted":      ErrEmailRenderNotPorted,
-		"ErrDocumentViewNotPorted":     ErrDocumentViewNotPorted,
+		"ErrPersonaNotPorted":      ErrPersonaNotPorted,
+		"ErrCampsPaymentNotPorted": ErrCampsPaymentNotPorted,
+		"ErrEmailRenderNotPorted":  ErrEmailRenderNotPorted,
 	} {
 		wrapped := fmt.Errorf("wrapped: %w", err)
 		if !errors.Is(wrapped, refusal.ErrNotPorted) || errors.Is(wrapped, refusal.ErrAppState) {

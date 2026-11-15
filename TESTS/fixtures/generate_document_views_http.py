@@ -56,6 +56,8 @@ ATHLETE_ASSOCIATE = 'a1000000-0000-4000-8000-000000700101'
 # as default_storage does and writes the bytes as a PNG data URI.
 SIGNATURE_OBJECTS = [{'name': 'signatures/t6x2-stored.png', 'body_b64': base64.b64encode(b'signature fixture bytes').decode('ascii')}]
 SIGNATURE_MISSING = 'signatures/t6x2-missing.png'
+# A legacy signature URL nothing answers: requests.get raises (connection refused) and Django returns None.
+LEGACY_SIGNATURE_URL = 'http://127.0.0.1:9/legacy-signature.png'
 
 
 # --- tagged template values (rendered by the contract with Django) ----------------------------
@@ -301,6 +303,10 @@ SUBSCRIPTIONS = {
     'signaturemissing': {'id': uid(47), 'association': 'alpha', 'associate': 'mario', 'type': 2, 'role': 5,
                          'created': '2026-10-11T11:11:11+00:00', 'payment': None, 'additional_fields': None,
                          'signature_url': None, 'signature_key': SIGNATURE_MISSING, 'group': None},
+    # A legacy URL signature with no stored object: the fetch fails and get_signature_base64 is None.
+    'legacysignature': {'id': uid(119), 'association': 'alpha', 'associate': 'mario', 'type': 2, 'role': 5,
+                        'created': '2026-10-12T12:12:12+00:00', 'payment': None, 'additional_fields': None,
+                        'signature_url': LEGACY_SIGNATURE_URL, 'group': None},
     'own': {'id': uid(50), 'association': 'own', 'associate': 'athlete', 'type': 2, 'role': 1, 'created': '2026-08-08T08:08:08+00:00',
             'payment': None, 'additional_fields': None, 'signature_url': None, 'group': None, 'user': 'athlete'},
     # A later subscription of the athlete's associate, entered by the association.
@@ -493,13 +499,15 @@ def associate_object(label, *, with_tutor=True):
 
 
 def signature_context_value(sub):
-    """Subscription.get_signature_base64: a readable stored object's data URI, else None (the legacy URL stays refused)."""
+    """Subscription.get_signature_base64: a readable stored object's data URI, else None (the legacy URL read)."""
     key, url = sub.get('signature_key'), sub['signature_url']
     if key:
         stored = next((row for row in SIGNATURE_OBJECTS if row['name'] == key), None)
         if stored:
             return s('data:image/png;base64,' + stored['body_b64'])
-    assert not url, 'fixture.signature-url-refused'
+    if url:
+        # Nothing listens on the loopback port: requests.get raises and Django returns None.
+        assert url == LEGACY_SIGNATURE_URL, 'fixture.signature-url-refused'
     return NONE
 
 
@@ -557,6 +565,9 @@ add('subscription-signature-stored', 'owner', SUB('signaturestored'), 200, HTML,
     html=subscription_context('signaturestored', *ALPHA_SUB))
 add('subscription-signature-missing', 'owner', SUB('signaturemissing'), 200, HTML,
     html=subscription_context('signaturemissing', *ALPHA_SUB))
+# The legacy URL is fetched: with nothing listening on the loopback port the fetch fails and the page shows None.
+add('subscription-legacy-signature-unreachable', 'owner', SUB('legacysignature'), 200, HTML,
+    html=subscription_context('legacysignature', *ALPHA_SUB))
 add('subscription-fallback-template', 'owner', SUB('fallback'), 200, HTML, html=subscription_context('fallback', '<p><br/></p>', FALLBACK_FOOTER_OUT))
 # The JSON columns' values render as json.loads gives them (a big int, a
 # float, a list, a dict and a non-ASCII string); additional_fields holding a

@@ -27,7 +27,7 @@ var (
 
 // SubscriptionReadsOrder is one ORDER BY term (an SQL expression the repository resolves).
 type SubscriptionReadsOrder struct {
-	// Column is a Subscription column, or "associate.first_name", "associate.last_name", "age".
+	// Column is a Subscription column, or "associate.first_name", "associate.last_name", "age", or "?" (random order).
 	Column     string
 	Descending bool
 }

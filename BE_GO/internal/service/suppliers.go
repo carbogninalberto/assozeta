@@ -13,10 +13,12 @@ import (
 var (
 	// ErrSupplierForbidden is the views' bare 403 for athletes.
 	ErrSupplierForbidden = errors.New("supplier access forbidden")
-	// ErrSupplierOrdering is the FieldError 500 for an ordering the list does
-	// not accept: only the model's own columns are orderable, so paths
-	// through relations fail the same way as an unknown name.
-	ErrSupplierOrdering = refusal.New("supplier ordering unsupported")
+	// ErrSupplierOrdering is order_by(UNKNOWN_ORDERING): checked_ordering
+	// (BE/application/utils/api_utils.py:570) accepts only pk, the model's
+	// concrete field names and attnames (supplierOrderColumns) and '?', and
+	// order_by raises FieldError for the placeholder before the page is read.
+	// Django raises: the 500 page (long-tail rule 2).
+	ErrSupplierOrdering = refusal.AppState("supplier ordering unknown")
 )
 
 // supplierOrderColumns maps the model's field names (and attnames) to columns.

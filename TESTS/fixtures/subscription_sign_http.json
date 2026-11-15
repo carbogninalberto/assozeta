@@ -213,12 +213,32 @@
    "group": null,
    "signature_key": null,
    "signature_url": null
+  },
+  "taken": {
+   "id": "a1000000-0000-4000-8000-000000998018",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "status": 1,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "group": null,
+   "signature_key": null,
+   "signature_url": null
   }
  },
  "objects": {
   "subscriptions/a1000000-0000-4000-8000-000000998003/signature_1700000000.25.png": "c2VlZGVkIGtleWVkIHNpZ25hdHVyZQ==",
   "signatures/firma-condivisa.png": "c2VlZGVkIHNoYXJlZCBzaWduYXR1cmU="
  },
+ "storage_answers": [
+  {
+   "method": "HEAD",
+   "contains": "subscriptions/a1000000-0000-4000-8000-000000998018/signature_",
+   "status": 200,
+   "body": "",
+   "times": 1
+  }
+ ],
  "unknown": "a1000000-0000-4000-8000-000000998999",
  "cases": [
   {
@@ -1253,6 +1273,107 @@
     "signature": {
      "there_is_signature": true,
      "data": "data:image/png;base64,iVBORw0KGgpmaXJtYSBwcmltYQ=="
+    }
+   }
+  },
+  {
+   "name": "subscription-sign-upload-key-taken-alternative-name",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/sign",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success"
+   },
+   "effect": {
+    "subscription": "taken",
+    "columns": {
+     "status_flag": 2,
+     "signature_storage_key": "$key",
+     "signature_url": "$public"
+    },
+    "signature": {
+     "user": "owner",
+     "data": "iVBORw0KGgpmaXJtYSBvY2N1cGF0YQ==",
+     "index": [
+      "a1000000-0000-4000-8000-000000701001",
+      "actor.sport_association"
+     ]
+    },
+    "stored": "iVBORw0KGgpmaXJtYSBvY2N1cGF0YQ==",
+    "old": null,
+    "storage": [
+     "HEAD $taken",
+     "HEAD $new",
+     "PUT $new",
+     "ACL $new"
+    ],
+    "audit": [
+     {
+      "model": "signature",
+      "changes": "$created"
+     },
+     {
+      "model": "subscription",
+      "changes": {
+       "status_flag": [
+        "1",
+        "2"
+       ],
+       "signature_storage_key": [
+        "None",
+        "$key"
+       ],
+       "signature_url": [
+        "None",
+        "$public"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "subscription_signed"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000998018"
+        }
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "a1000000-0000-4000-8000-000000998018",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ]
+   },
+   "body": {
+    "subscription_id": "a1000000-0000-4000-8000-000000998018",
+    "signature": {
+     "there_is_signature": true,
+     "data": "iVBORw0KGgpmaXJtYSBvY2N1cGF0YQ=="
     }
    }
   },

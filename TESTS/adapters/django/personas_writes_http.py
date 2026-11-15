@@ -21,7 +21,12 @@ on '<AWS_LOCATION>/associates/<associate id>/picture_<repr(timestamp)>.jpg'
 with the timestamp inside the request window; the folder of a new associate is
 the id of the row the case creates), the stored bytes and metadata, and the
 picture URL of the response and of the saved row; the objects are removed once
-verified. Cases without an upload must send no storage request.
+verified. Cases without an upload must send no storage request. The proxy also
+answers the authored plain-object rules (source.storage_answers): a refused
+HeadObject or PutObject (nothing is stored, the case answers the storage's error
+text) and a HeadObject that finds the plain key taken, so Django saves the
+picture under 'picture_<timestamp>_<7 alphanumerics>.<fraction>.jpg' (the plain
+key is bound to '$taken').
 """
 from contextlib import contextmanager
 from datetime import date, datetime, timedelta, timezone
@@ -74,7 +79,7 @@ def service_context(report, log):
                               region_name='us-east-1',
                               config=Config(signature_version='s3v4', retries={'max_attempts': 0}, s3={'addressing_style': 'path'}))
         client.create_bucket(Bucket=bucket)
-        proxy = RecordingProxy(endpoint, source['acl_denied'], bucket)
+        proxy = RecordingProxy(endpoint, source['acl_denied'], bucket, answers=source.get('storage_answers', []))
         storages = {'default': {'BACKEND': 'storages.backends.s3boto3.S3Boto3Storage'},
                     'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'}}
         STORAGE.update(client=client, proxy=proxy, bucket=bucket, location=location,
@@ -121,31 +126,56 @@ def verify_storage(case, source, since, bindings):
     requests = STORAGE['proxy'].take()
     until = time.time()
     expected, objects = [], {}
-    puts = [item[1] for item in requests if item[0] == 'PUT']
     pictures = case.get('pictures', {})
-    contract.require(len(puts) == len(pictures), 'storage.put-count:' + json.dumps(requests))
+    # Only a stored picture has a successful PutObject: a failed upload ('stored': False) is named by its
+    # HeadObject or refused PutObject instead.
+    puts = [item[1] for item in requests if item[0] == 'PUT' and item[3] == 200]
+    uploaded = [(ref, spec) for ref, spec in pictures.items() if spec.get('stored', True)]
+    contract.require(len(puts) == len(uploaded), 'storage.put-count:' + json.dumps(requests))
     base = STORAGE['picture_base']
-    for (ref, spec), key in zip(pictures.items(), puts):
+    location = f"{STORAGE['location']}/associates/"
+    names = {}
+    for (ref, spec), key in zip(uploaded, puts):
         # A new associate's folder ('$a<n>') is checked against the created row once it is known.
         created = spec['folder'].startswith('$')
         folder = '([0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12})' if created else '(' + re.escape(spec['folder']) + ')'
-        match = re.fullmatch(re.escape(f"{STORAGE['location']}/associates/") + folder + r'/picture_(\d+\.\d+)\.jpg', key)
+        # A taken key ('taken': True) is saved under <file_root>_<7 alphanumerics><suffixes>.
+        taken = spec.get('taken', False)
+        shape = r'/picture_(\d+)_([A-Za-z0-9]{7})(\.\d+)\.jpg' if taken else r'/picture_(\d+\.\d+)\.jpg'
+        match = re.fullmatch(re.escape(location) + folder + shape, key)
         contract.require(match is not None, 'storage.key-shape:' + key)
-        stamp = match.group(2)
+        # The alternative name drops the '_<7>' from the plain name: <file_root>_<7><suffixes>.
+        stamp = match.group(2) + match.group(4) if taken else match.group(2)
         contract.require(repr(float(stamp)) == stamp and since - 1 <= float(stamp) <= until + 1, 'storage.key-timestamp')
+        names[ref] = key
         bindings[ref] = base + '/' + key
         if created:
             bindings.setdefault('$folders', {})[spec['folder']] = match.group(1)
         objects[key] = spec
-    keys = {ref: bindings[ref][len(base) + 1:] for ref in pictures}
+        if taken:
+            plain = f'{location}{match.group(1)}/picture_{stamp}.jpg'
+            heads = [item[1] for item in requests if item[0] == 'HEAD']
+            contract.require(bool(heads) and heads[0] == plain, 'storage.taken-key')
+            names['$taken'] = plain
+    for ref, spec in pictures.items():
+        if spec.get('stored', True):
+            continue
+        named = [item[1] for item in requests if item[0] in ('HEAD', 'PUT') and spec['folder'] in item[1]]
+        contract.require(bool(named), 'storage.failed-key:' + ref)
+        match = re.fullmatch(re.escape(location) + '(' + re.escape(spec['folder']) + r')/picture_(\d+\.\d+)\.jpg', named[0])
+        contract.require(match is not None, 'storage.key-shape:' + named[0])
+        stamp = match.group(2)
+        contract.require(repr(float(stamp)) == stamp and since - 1 <= float(stamp) <= until + 1, 'storage.key-timestamp')
+        names[ref] = named[0]
     for item in case.get('storage', []):
         operation, ref, *rest = item.split(' ')
+        refused = 403 if rest == ['denied'] else None
         if operation == 'ACL':
-            expected.append(('ACL', keys[ref], 'public-read', 403 if rest == ['denied'] else 200))
+            expected.append(('ACL', names[ref], 'public-read', refused or 200))
         elif operation == 'HEAD':
-            expected.append(('HEAD', keys[ref], '', 404))
+            expected.append(('HEAD', names[ref], '', refused or (200 if ref == '$taken' else 404)))
         else:
-            expected.append(('PUT', keys[ref], '', 200))
+            expected.append(('PUT', names[ref], '', refused or 200))
     contract.require(requests == expected, 'storage.requests:' + json.dumps([requests, expected]))
     contract.require(listing() == set(objects), 'storage.objects')
     client = STORAGE['client']

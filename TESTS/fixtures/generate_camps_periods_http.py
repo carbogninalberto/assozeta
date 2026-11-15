@@ -156,6 +156,23 @@ PERIOD_LINKS['november'] = ['sled']
 PERIOD_LINKS['december'] = ['skates']
 PERIOD_LINKS['winter'] = ['boots']
 
+# The walk follows the database's order for the unpaid subscription periods of the period, which is insertion order for rows
+# seeded in sequence: the good payment is walked (and saved) before the payment without metas raises.
+PERIODS['february'] = copy.deepcopy(PERIODS['november'])
+PERIODS['february'].update({'id': next(extra_ids), 'start': '2027-02-01T08:00:00Z', 'end': '2027-02-05T18:00:00Z', 'title': 'Febbraio',
+                            'created': '2026-06-14T09:00:01Z'})
+SERVICES['poles'] = copy.deepcopy(SERVICES['sled'])
+SERVICES['poles'].update({'id': next(extra_ids), 'period': 'february', 'title': 'Palline', 'created': '2026-06-14T12:00:03Z'})
+PAYMENTS['february_ok'] = {'id': next(extra_ids), 'amount': '25.00', 'paid': False, 'subject': 1, 'description': 'Febbraio', 'category': 'own',
+                           'notes': None, 'meta': [meta('poles', 5.0, 'own')], 'created': '2026-06-14T13:00:05Z'}
+PAYMENTS['february_broken'] = {'id': next(extra_ids), 'amount': '25.00', 'paid': False, 'subject': 1, 'description': 'Febbraio', 'category': 'own',
+                               'notes': None, 'meta': None, 'created': '2026-06-14T13:00:06Z'}
+SUBSCRIPTION_PERIODS['february_ok'] = {'id': next(extra_ids), 'period': 'february', 'subscription': 'camp', 'payment': 'february_ok',
+                                       'services': ['poles']}
+SUBSCRIPTION_PERIODS['february_broken'] = {'id': next(extra_ids), 'period': 'february', 'subscription': 'camp', 'payment': 'february_broken',
+                                           'services': ['poles']}
+PERIOD_LINKS['february'] = ['poles']
+
 PERIOD, SERVICE, SUBPERIOD, PAYMENT = ('application.CampsAndRetreatsPeriod', 'application.CampsAndRetreatsPeriodsService',
                                        'application.CampsAndRetreatsSubscriptionPeriod', 'application.Payment')
 PERIOD_LINK = 'application.CampsAndRetreatsPeriod_camps_and_Retreats_period_services'
@@ -628,47 +645,52 @@ def hidden_payment(payment, amount, notes):
                  'changes_json.sport_association')
 
 
+def payment_walk_row(sp, service, rows, events, other_group=False):
+    """One subscription period of the view's walk: the meta saves, then the amount and notes recomputation."""
+    payment = STATE['payments'][sp['payment']]
+    association = OWN
+    for item in payment['meta']:
+        if item['camps_and_retreats_period_service_id'] == service['id']:
+            old = dumps(payment['meta'])
+            item['amount'] = float(service['fee'])
+            item['title'] = service['title']
+            item['payment_category_id'] = CATEGORIES[service['category']]['id'] if service['category'] else 'None'
+            if payment.get('deleted') or other_group:
+                events.append(hidden_payment(payment, payment['amount'], payment['notes']))
+            elif dumps(payment['meta']) != old:
+                events.append(audit('Payment', payment['id'], 1, {'meta_payment_categories': [old, dumps(payment['meta'])]}, association,
+                                    'direct'))
+    period = STATE['periods'][sp['period']]
+    camp = CAMPS[SUBSCRIPTIONS[sp['subscription']]['camp']]
+    notes = f"Iscrizione al periodo {period['title']} del campo {camp['title']}"
+    notes += f"\n{camp['description']}"
+    amount = 0
+    notes += '\n'
+    for item in payment['meta']:
+        notes += f"\n{item['title']} - {item['amount']}€"
+        amount += item['amount']
+    amount += float(period['fee'])
+    changes = {}
+    if repr(amount) != payment['amount']:
+        changes['amount'] = [payment['amount'], repr(amount)]
+    if notes != payment['notes']:
+        changes['notes'] = [text(payment['notes']), notes]
+    if payment.get('deleted') or other_group:
+        events.append(hidden_payment(payment, repr(amount), notes))
+    elif changes:
+        events.append(audit('Payment', payment['id'], 1, changes, association, 'direct'))
+    payment['amount'], payment['notes'] = f'{amount:.2f}', notes
+    rows.setdefault(PAYMENT, {})[payment['id']] = {'amount': payment['amount'], 'notes': notes,
+                                                   'meta_payment_categories': copy.deepcopy(payment['meta'])}
+
+
 def payment_effects(label, rows, events, other_group=False):
     """The view's walk over the unpaid subscription periods of the service's period."""
     service = STATE['services'][label]
     for sp in SUBSCRIPTION_PERIODS.values():
         if sp['period'] != service['period'] or sp['payment'] is None or STATE['payments'][sp['payment']]['paid']:
             continue
-        payment = STATE['payments'][sp['payment']]
-        association = OWN
-        for item in payment['meta']:
-            if item['camps_and_retreats_period_service_id'] == service['id']:
-                old = dumps(payment['meta'])
-                item['amount'] = float(service['fee'])
-                item['title'] = service['title']
-                item['payment_category_id'] = CATEGORIES[service['category']]['id'] if service['category'] else 'None'
-                if payment.get('deleted') or other_group:
-                    events.append(hidden_payment(payment, payment['amount'], payment['notes']))
-                elif dumps(payment['meta']) != old:
-                    events.append(audit('Payment', payment['id'], 1, {'meta_payment_categories': [old, dumps(payment['meta'])]}, association,
-                                        'direct'))
-        period = STATE['periods'][sp['period']]
-        camp = CAMPS[SUBSCRIPTIONS[sp['subscription']]['camp']]
-        notes = f"Iscrizione al periodo {period['title']} del campo {camp['title']}"
-        notes += f"\n{camp['description']}"
-        amount = 0
-        notes += '\n'
-        for item in payment['meta']:
-            notes += f"\n{item['title']} - {item['amount']}€"
-            amount += item['amount']
-        amount += float(period['fee'])
-        changes = {}
-        if repr(amount) != payment['amount']:
-            changes['amount'] = [payment['amount'], repr(amount)]
-        if notes != payment['notes']:
-            changes['notes'] = [text(payment['notes']), notes]
-        if payment.get('deleted') or other_group:
-            events.append(hidden_payment(payment, repr(amount), notes))
-        elif changes:
-            events.append(audit('Payment', payment['id'], 1, changes, association, 'direct'))
-        payment['amount'], payment['notes'] = f'{amount:.2f}', notes
-        rows.setdefault(PAYMENT, {})[payment['id']] = {'amount': payment['amount'], 'notes': notes,
-                                                       'meta_payment_categories': copy.deepcopy(payment['meta'])}
+        payment_walk_row(sp, service, rows, events, other_group)
 
 
 def updated_service(actor, name, label, body, values, *, form=None, walk=True, headers=None, form_type='application/x-www-form-urlencoded'):
@@ -817,6 +839,29 @@ description_failure('services-update-description-failure-server-error', 'skates'
                     'list indices must be integers or slices, not str')
 description_failure('services-update-transfer-description-two-payments-server-error', 'boots', 'Scarponi nuovi',
                     "'NoneType' object has no attribute 'name'")
+
+
+# The walk follows the unpaid subscription periods of the period in seed order: the first payment is wholly walked (its meta
+# save, then its amount and notes save) and the payment without metas then raises, so the rows after it are not walked.
+def walk_failure(name, label, title, message):
+    row = STATE['services'][label]
+    before = service_audit_view(row)
+    row['title'] = title
+    events = [audit('CampsAndRetreatsPeriodsService', row['id'], 1, stored_changes(before, service_audit_view(row), SERVICE_FIELDS), OWN,
+                    SERVICE_PATH)]
+    rows = {SERVICE: {row['id']: service_row(row)}}
+    service = STATE['services'][label]
+    for sp in SUBSCRIPTION_PERIODS.values():
+        if sp['period'] != service['period'] or sp['payment'] is None or STATE['payments'][sp['payment']]['paid']:
+            continue
+        if STATE['payments'][sp['payment']]['meta'] is None:
+            break  # the walk raises on this payment, so the saves made before it stay and the later rows are not walked
+        payment_walk_row(sp, service, rows, events)
+    add(name, 'owner', service_path(label, 'update'), 500, {'error': message}, method='PATCH', body={'title': title},
+        effect={'actor': 'owner', 'rows': rows, 'audit': events})
+
+
+walk_failure('services-update-walk-first-completes-second-fails', 'poles', 'Racchette', "'NoneType' object is not iterable")
 
 # ---------------------------------------------------------------------------
 # periods/services/<uid>/delete

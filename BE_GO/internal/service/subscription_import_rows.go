@@ -15,6 +15,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/pandascsv"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/pandasxlsx"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pydateutil"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
@@ -65,8 +66,8 @@ func subscriptionImportTextColumns(mapping any) map[string]bool {
 // subscriptionImportDate is import_date(text) for a value that is no date
 // cell: dateutil.parser.parse(text, dayfirst=...) with the day first unless
 // the text starts with the year (dto.PersonDateText), at now. parsed is false
-// where parse raises (import_date answers None); the texts
-// internal/pydateutil refuses are not ported.
+// where parse raises (import_date answers None); a text internal/pydateutil
+// refuses is its own refusal (pydateutil.ErrUnsupported).
 func subscriptionImportDate(text string, now time.Time) (date time.Time, parsed bool, err error) {
 	date, result := dto.PersonDateAnyYear(text, now)
 	switch result {
@@ -75,7 +76,8 @@ func subscriptionImportDate(text string, now time.Time) (date time.Time, parsed 
 	case dto.DateutilFailed:
 		return time.Time{}, false, nil
 	}
-	return time.Time{}, false, ErrSubscriptionImportNotPorted
+	// pydateutil's own refusal: the text is outside its supported subset.
+	return time.Time{}, false, pydateutil.ErrUnsupported
 }
 
 // subscriptionImportUnstorable is a value json.dumps does not encode (a

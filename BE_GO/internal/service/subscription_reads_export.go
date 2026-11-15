@@ -21,7 +21,6 @@ type SubscriptionReadsExport struct {
 	group       *string
 	association string
 	title       string
-	lazy        bool
 }
 
 func (e *SubscriptionReadsExport) Error() string { return "subscription list export" }
@@ -50,10 +49,6 @@ func (s *SubscriptionReads) Export(ctx context.Context, export *SubscriptionRead
 		return nil, domain.ErrSubscriptionReadsServer // Exception('Format not valid')
 	}
 	now := s.now().UTC()
-	if export.lazy {
-		// The ordering is compiled when the rows are iterated (here).
-		return nil, domain.ErrSubscriptionReadsNotPorted
-	}
 	ids, err := s.store.Subscriptions(ctx, export.filter, -1, 0)
 	if err != nil {
 		return nil, err

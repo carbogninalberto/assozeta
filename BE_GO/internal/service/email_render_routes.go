@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"math"
 	"strconv"
 	"strings"
@@ -396,6 +397,11 @@ func (s *EmailRenderRoutes) RequestPayment(ctx context.Context, identity domain.
 
 // --- invoice/<uid>/send -----------------------------------------------------------------------
 
+// strftime('%d/%m/%Y') with glibc (the production image): %Y is not zero-padded below year 1000 (04/03/999).
+func emailPaymentDay(paid time.Time) string {
+	return fmt.Sprintf("%02d/%02d/%d", paid.Day(), int(paid.Month()), paid.Year())
+}
+
 // SendInvoice follows invoice_send; nothing is written.
 func (s *EmailRenderRoutes) SendInvoice(ctx context.Context, identity domain.ResolvedIdentity, raw, groupHeader, language string) error {
 	parsed, err := paymentInfoParseUUID(raw)
@@ -442,11 +448,7 @@ func (s *EmailRenderRoutes) SendInvoice(ctx context.Context, identity domain.Res
 		return ErrEmailRenderServer // document_pdf.token / payment_date.strftime on None
 	}
 	paid := payment.PaymentDate.UTC()
-	if paid.Year() < 1000 {
-		// strftime pads such a year or not depending on the C library: handed off.
-		return ErrEmailRenderNotPorted
-	}
-	day := paid.Format("02/01/2006")
+	day := emailPaymentDay(paid)
 	membership, err := strconv.ParseFloat(invoice.MembershipFee, 64)
 	if err != nil {
 		return err

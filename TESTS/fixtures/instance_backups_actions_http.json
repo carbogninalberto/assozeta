@@ -1861,6 +1861,105 @@
    }
   },
   {
+   "name": "instance-backups-actions-keep-runner-error-lone-surrogate",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/instance/admin/backups/assozeta-20261101T020000Z.tar.gz",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "runner": {
+    "state": "up",
+    "status": 409,
+    "body": "{\"error\": \"\\ud800\"}",
+    "early": false,
+    "expect": [
+     {
+      "method": "PATCH",
+      "path": "/backups/assozeta-20261101T020000Z.tar.gz",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "$length"
+      },
+      "body": {
+       "json": {
+        "keep": true
+       }
+      }
+     }
+    ]
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "keep": true
+   }
+  },
+  {
+   "name": "instance-backups-actions-keep-accepted-lone-surrogate",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/instance/admin/backups/assozeta-20261101T020000Z.tar.gz",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "runner": {
+    "state": "up",
+    "status": 200,
+    "body": "{\"archive\": {\"name\": \"\\udfff\"}}",
+    "early": false,
+    "expect": [
+     {
+      "method": "PATCH",
+      "path": "/backups/assozeta-20261101T020000Z.tar.gz",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "$length"
+      },
+      "body": {
+       "json": {
+        "keep": true
+       }
+      }
+     }
+    ]
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": {
+    "changes": {
+     "backup_keep": [
+      "",
+      "assozeta-20261101T020000Z.tar.gz"
+     ]
+    },
+    "additional_data": {
+     "actor_id": "a1000000-0000-4000-8000-000000700001",
+     "backup": "assozeta-20261101T020000Z.tar.gz"
+    },
+    "actor": "owner",
+    "association": "own_association"
+   },
+   "send": null,
+   "no_store": false,
+   "body": {
+    "keep": true
+   }
+  },
+  {
    "name": "instance-backups-actions-keep-runner-invalid-json",
    "actor": "owner",
    "method": "PATCH",

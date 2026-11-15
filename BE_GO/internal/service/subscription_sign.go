@@ -12,7 +12,6 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/celery"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/pymime"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/documentkey"
 	"github.com/google/uuid"
@@ -27,9 +26,6 @@ var (
 	ErrSubscriptionSignStorage = errors.New("signature storage unavailable")
 	// ErrSubscriptionSignFailed is an exception the view does not handle (the 500 page).
 	ErrSubscriptionSignFailed = errors.New("subscription sign failed")
-	// ErrSubscriptionSignNotPorted refuses, before any write, a path the port does not reproduce:
-	// an object already stored under the new signature key (get_available_name picks a random name).
-	ErrSubscriptionSignNotPorted = refusal.New("subscription sign path not ported")
 )
 
 // SubscriptionSignUUIDError is is_valid_uuid's ValidationError(<exception>): a 400 list.
@@ -74,6 +70,9 @@ type SubscriptionSigns struct {
 	tasks    celery.Publisher
 	now      func() time.Time
 	logger   *slog.Logger
+	// random is get_random_string(7) for a taken name; nil means
+	// documentkey.RandomName7.
+	random func() string
 }
 
 func NewSubscriptionSigns(store domain.SubscriptionSignStore, objects SubscriptionSignObjects, settings SubscriptionSignSettings,
@@ -155,14 +154,24 @@ func (s *SubscriptionSigns) upload(ctx context.Context, subscription, data strin
 		return "", nil, err
 	}
 	// Storage.save: get_available_name (HeadObject), then one PutObject.
-	exists, err := s.objects.Exists(ctx, key)
+	random := s.random
+	if random == nil {
+		random = documentkey.RandomName7
+	}
+	name, err = documentkey.AvailableName(ctx, name, func(ctx context.Context, candidate string) (bool, error) {
+		candidateKey, err := documentkey.S3Key(candidate, s.objects.Location())
+		if err != nil {
+			return false, err
+		}
+		return s.objects.Exists(ctx, candidateKey)
+	}, random)
 	if err != nil {
 		s.logger.Error("Failed to upload signature to storage", "subscription_id", subscription, "error", err)
 		return "", nil, ErrSubscriptionSignStorage
 	}
-	if exists {
-		// get_available_name would pick a random alternative name.
-		return "", nil, ErrSubscriptionSignNotPorted
+	key, err = documentkey.S3Key(name, s.objects.Location())
+	if err != nil {
+		return "", nil, err
 	}
 	contentType, known, encoding, err := pymime.GuessType(key)
 	if err != nil {

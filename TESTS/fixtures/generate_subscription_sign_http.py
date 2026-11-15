@@ -27,8 +27,9 @@ subscription_sign (@api_view(['POST']), IsAuthenticated, subscriptions_views.py)
 Response 200 {'status': 'success'}.
 
 The run sets AWS_S3_USE_OBJECT_ACL and AWS_S3_PUBLIC_BASE_URL for both servers; a recording
-storage proxy in front of the private MinIO answers the object ACL calls itself and denies the
-ACL of the 'acl_denied' row. Run with ``python3 -I``.
+storage proxy in front of the private MinIO answers the object ACL calls itself, denies the
+ACL of the 'acl_denied' row and answers the HeadObject of the 'taken' row with 200 (the upload
+is then saved under an alternative name). Run with ``python3 -I``.
 """
 import base64
 import json
@@ -82,6 +83,9 @@ SUBSCRIPTIONS = {
 # (get_range_from_year_and_starting_date: 31 April is not a date), with a dated row.
 SEASON = {'owner': next(ids), 'association': next(ids), 'start_day': 31, 'start_month': 4}
 SUBSCRIPTIONS['season'] = subscription(association=SEASON['association'])
+# A signature key already taken in the bucket: the storage finds it (HeadObject 200) and saves the
+# upload under an alternative name.
+SUBSCRIPTIONS['taken'] = subscription()
 # Seeded keys with an object in the bucket (relative to AWS_LOCATION).
 SUBSCRIPTIONS['keyed']['signature_key'] = f'subscriptions/{SUBSCRIPTIONS["keyed"]["id"]}/signature_1700000000.25.png'
 SUBSCRIPTIONS['shared_a']['signature_key'] = SUBSCRIPTIONS['shared_b']['signature_key'] = 'signatures/firma-condivisa.png'
@@ -89,6 +93,10 @@ SUBSCRIPTIONS['shared_b']['signature_url'] = PUBLIC_BASE + '/' + LOCATION + '/si
 OBJECTS = {SUBSCRIPTIONS['keyed']['signature_key']: base64.b64encode(b'seeded keyed signature').decode(),
            'signatures/firma-condivisa.png': base64.b64encode(b'seeded shared signature').decode()}
 ACL_DENIED = SUBSCRIPTIONS['acl_denied']['id']
+# The storage's plain-object answers through the recording proxy: the upload of the 'taken' row finds
+# its signature key already there (HeadObject 200), so Django saves it under an alternative name.
+STORAGE_ANSWERS = [{'method': 'HEAD', 'contains': f'subscriptions/{SUBSCRIPTIONS["taken"]["id"]}/signature_',
+                    'status': 200, 'body': '', 'times': 1}]
 
 cases = []
 
@@ -246,6 +254,13 @@ add('other-association-row-no-signature', 'owner', 200, SUCCESS, body=payload('o
 first_raw, first_b64 = png('prima')
 add('upload-data-uri', 'owner', 200, SUCCESS, body=payload('first', {'there_is_signature': True, 'data': 'data:image/png;base64,' + first_b64}),
     effect=signed('first', 'owner', 'data:image/png;base64,' + first_b64, stored=first_raw))
+# The key is taken: get_available_name (HeadObject 200) saves the upload under
+# signature_<timestamp>_<7 alphanumerics>.<fraction>.png, which does not exist yet (HeadObject 404).
+taken_raw, taken_b64 = png('occupata')
+taken = signed('taken', 'owner', taken_b64, stored=taken_raw)
+taken['storage'] = ['HEAD $taken', 'HEAD $new', 'PUT $new', 'ACL $new']
+add('upload-key-taken-alternative-name', 'owner', 200, SUCCESS, body=payload('taken', {'there_is_signature': True, 'data': taken_b64}),
+    effect=taken)
 again_raw, again_b64 = png('seconda')
 resign = signed('first', 'owner', '  ' + again_b64 + '  ', stored=again_raw, old='deleted')
 resign['signature']['data'] = again_b64  # CharField trims the text
@@ -277,5 +292,5 @@ assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({
     'matrix_version': 1, 'scope': 'subscription/sign authored sequence with row, audit, storage and Celery effects',
     'ids': IDS, 'location': LOCATION, 'public_base': PUBLIC_BASE, 'acl_denied': ACL_DENIED, 'season': SEASON, 'subscriptions': SUBSCRIPTIONS,
-    'objects': OBJECTS, 'unknown': UNKNOWN, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
+    'objects': OBJECTS, 'storage_answers': STORAGE_ANSWERS, 'unknown': UNKNOWN, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

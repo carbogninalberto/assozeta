@@ -83,9 +83,14 @@ func drfSerializerData(value any) (domain.RequestObject, []DRFFieldError) {
 	if value == nil {
 		return nil, []DRFFieldError{{Field: "non_field_errors", Codes: []string{"no-data"}}}
 	}
-	if _, ok := value.(domain.RequestUpload); ok {
-		// A multipart file part of a size the in-memory upload handler keeps.
-		return nil, []DRFFieldError{{Field: "non_field_errors", Codes: []string{"dictionary:InMemoryUploadedFile"}}}
+	if upload, ok := value.(domain.RequestUpload); ok {
+		// A multipart file part: Django names its upload class (spooled over
+		// FILE_UPLOAD_MAX_MEMORY_SIZE).
+		kind := "InMemoryUploadedFile"
+		if upload.Temp {
+			kind = "TemporaryUploadedFile"
+		}
+		return nil, []DRFFieldError{{Field: "non_field_errors", Codes: []string{"dictionary:" + kind}}}
 	}
 	return nil, []DRFFieldError{{Field: "non_field_errors", Codes: []string{"dictionary:" + pythonTypeName(value)}}}
 }

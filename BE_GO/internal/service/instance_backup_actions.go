@@ -160,7 +160,7 @@ func (s *InstanceBackupActions) relay(ctx context.Context, method, path string, 
 	case outcome.rejected && outcome.status == 404 && (path == "/backups" || path == "/backups/schedule"):
 		return backupActionsError(409, backupActionsNewer), nil
 	case outcome.rejected:
-		return backupActionsRejection(outcome), nil
+		return backupActionsRejection(outcome)
 	}
 	return &BackupActionsReply{Status: success, Body: outcome.value}, nil
 }
@@ -178,18 +178,24 @@ func (s *InstanceBackupActions) remoteRelay(ctx context.Context, method, path st
 	case outcome.rejected && outcome.status == 404 && dto.PythonStr(outcome.message) == "Unknown endpoint.":
 		return backupActionsError(409, backupActionsNewer), nil
 	case outcome.rejected:
-		return backupActionsRejection(outcome), nil
+		return backupActionsRejection(outcome)
 	}
 	return &BackupActionsReply{Status: success, Body: outcome.value, NoStore: true}, nil
 }
 
-// backupActionsRejection keeps a 4xx status, other statuses are 503.
-func backupActionsRejection(outcome *backupActionsOutcome) *BackupActionsReply {
+// backupActionsRejection keeps a 4xx status, other statuses are 503. Its
+// message is rendered, so a lone surrogate answers the 500 page (DRF's
+// encoder fails on it after the view returned).
+func backupActionsRejection(outcome *backupActionsOutcome) (*BackupActionsReply, error) {
+	message := dto.PythonStr(outcome.message)
+	if !dto.RenderableJSON(message) {
+		return nil, errInstanceBackupsUnhandled
+	}
 	status := 503
 	if outcome.status >= 400 && outcome.status < 500 {
 		status = outcome.status
 	}
-	return backupActionsError(status, dto.PythonStr(outcome.message))
+	return backupActionsError(status, message), nil
 }
 
 // audit is backups.audit: the UPDATE entry, then the response is rendered (a
@@ -415,7 +421,7 @@ func (s *InstanceBackupActions) Upload(ctx context.Context, request BackupAction
 	case outcome.rejected && outcome.status == 404:
 		return backupActionsError(409, backupActionsNewer), nil
 	case outcome.rejected:
-		return backupActionsRejection(outcome), nil
+		return backupActionsRejection(outcome)
 	}
 	result, ok := outcome.value.(domain.RequestObject)
 	if !ok {

@@ -18,10 +18,16 @@ import (
 )
 
 // ErrInvoiceSyncPrintDeferred is CoordinatedTask's maintenance deferral of an
-// eager task (operation lock busy or unavailable, or a pending restore):
-// Django re-applies the task synchronously until the restore ends; not
-// ported, handed off to Django.
-var ErrInvoiceSyncPrintDeferred = refusal.New("print task deferred for maintenance")
+// eager task (operation lock busy or unavailable, or a pending restore). The
+// request's own maintenance admission has passed, so only a restore that
+// starts mid-request gets here. Django's defer_for_maintenance raises Retry
+// with the signature, and Celery's Task.apply re-applies it synchronously
+// (`retval.sig.apply(retries=retries + 1)`, celery 5.6.2) while the restore
+// is pending: the recursion ends in a RecursionError that escapes apply
+// (probed at every starting depth from 0 to 959), and no caller catches it
+// (payment_views.py:191, 443, 585, 686, 1075; invoice_views.py:267, 847, 896;
+// instructor_views.py:253, 475). Django raises: the 500 page (long-tail rule 2).
+var ErrInvoiceSyncPrintDeferred = refusal.AppState("print task deferred for maintenance")
 
 // invoiceSyncUserAgent and the other headers are requests' defaults
 // (requests 2.34.2, urllib3 without brotli/zstd: 'gzip, deflate').
