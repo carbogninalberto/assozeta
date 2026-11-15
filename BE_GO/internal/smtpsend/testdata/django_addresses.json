@@ -1,0 +1,2974 @@
+{
+ "addresses": [
+  {
+   "address": "a@b.test",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "a@b.test",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "a.b.c@d.example.test",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "a.b.c",
+    "domain": "d.example.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "a.b.c@d.example.test",
+   "sanitized_error": null,
+   "envelope": "<a.b.c@d.example.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "A@B.TEST",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "A",
+    "domain": "B.TEST",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "A@B.TEST",
+   "sanitized_error": null,
+   "envelope": "<A@B.TEST>",
+   "envelope_error": null
+  },
+  {
+   "address": "user+tag@example.test",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "user+tag",
+    "domain": "example.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "user+tag@example.test",
+   "sanitized_error": null,
+   "envelope": "<user+tag@example.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "a_b@c.test",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "a_b",
+    "domain": "c.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "a_b@c.test",
+   "sanitized_error": null,
+   "envelope": "<a_b@c.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "a-b@c.test",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "a-b",
+    "domain": "c.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "a-b@c.test",
+   "sanitized_error": null,
+   "envelope": "<a-b@c.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "a@b_c.test",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "a",
+    "domain": "b_c.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "a@b_c.test",
+   "sanitized_error": null,
+   "envelope": "<a@b_c.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "a@-b.test",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "a",
+    "domain": "-b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "a@-b.test",
+   "sanitized_error": null,
+   "envelope": "<a@-b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "a@b-.test",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "a",
+    "domain": "b-.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "a@b-.test",
+   "sanitized_error": null,
+   "envelope": "<a@b-.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "a@[1.2.3.4]",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "a",
+    "domain": "[1.2.3.4]",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "a@[1.2.3.4]",
+   "sanitized_error": null,
+   "envelope": "<a@[1.2.3.4]>",
+   "envelope_error": null
+  },
+  {
+   "address": "a@[IPv6:::1]",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "a",
+    "domain": "[IPv6:::1]",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "a@[IPv6:::1]",
+   "sanitized_error": null,
+   "envelope": "<a@[IPv6:::1]>",
+   "envelope_error": null
+  },
+  {
+   "address": "x@[IPv6:2001:db8::1]",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "x",
+    "domain": "[IPv6:2001:db8::1]",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "x@[IPv6:2001:db8::1]",
+   "sanitized_error": null,
+   "envelope": "<x@[IPv6:2001:db8::1]>",
+   "envelope_error": null
+  },
+  {
+   "address": "a@b.test.",
+   "mailbox": null,
+   "mailbox_error": "HeaderParseError",
+   "mailbox_text": "expected mailbox but found 'a@b.test.'",
+   "sanitized": null,
+   "sanitized_error": "ValueError",
+   "envelope": null,
+   "envelope_error": "ValueError"
+  },
+  {
+   "address": "a@b..test",
+   "mailbox": null,
+   "mailbox_error": "HeaderParseError",
+   "mailbox_text": "expected mailbox but found 'a@b..test'",
+   "sanitized": null,
+   "sanitized_error": "ValueError",
+   "envelope": null,
+   "envelope_error": "ValueError"
+  },
+  {
+   "address": ".a@b.test",
+   "mailbox": {
+    "display_name": null,
+    "local_part": ".a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": ".a@b.test",
+   "sanitized_error": null,
+   "envelope": "<.a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "a..b@c.test",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "a..b",
+    "domain": "c.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "a..b@c.test",
+   "sanitized_error": null,
+   "envelope": "<a..b@c.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "a.@b.test",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "a.",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "a.@b.test",
+   "sanitized_error": null,
+   "envelope": "<a.@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": ".@b.test",
+   "mailbox": {
+    "display_name": null,
+    "local_part": ".",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": ".@b.test",
+   "sanitized_error": null,
+   "envelope": "<.@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "a@",
+   "mailbox": null,
+   "mailbox_error": "HeaderParseError",
+   "mailbox_text": "expected mailbox but found 'a@'",
+   "sanitized": null,
+   "sanitized_error": "ValueError",
+   "envelope": null,
+   "envelope_error": "ValueError"
+  },
+  {
+   "address": "@b.test",
+   "mailbox": null,
+   "mailbox_error": "HeaderParseError",
+   "mailbox_text": "expected mailbox but found '@b.test'",
+   "sanitized": null,
+   "sanitized_error": "ValueError",
+   "envelope": null,
+   "envelope_error": "ValueError"
+  },
+  {
+   "address": "@",
+   "mailbox": null,
+   "mailbox_error": "HeaderParseError",
+   "mailbox_text": "expected mailbox but found '@'",
+   "sanitized": null,
+   "sanitized_error": "ValueError",
+   "envelope": null,
+   "envelope_error": "ValueError"
+  },
+  {
+   "address": "",
+   "mailbox": null,
+   "mailbox_error": "HeaderParseError",
+   "mailbox_text": "expected mailbox but found ''",
+   "sanitized": null,
+   "sanitized_error": "ValueError",
+   "envelope": null,
+   "envelope_error": "ValueError"
+  },
+  {
+   "address": " ",
+   "mailbox": null,
+   "mailbox_error": "HeaderParseError",
+   "mailbox_text": "expected mailbox but found ' '",
+   "sanitized": null,
+   "sanitized_error": "ValueError",
+   "envelope": null,
+   "envelope_error": "ValueError"
+  },
+  {
+   "address": "\t",
+   "mailbox": null,
+   "mailbox_error": "HeaderParseError",
+   "mailbox_text": "expected mailbox but found '\t'",
+   "sanitized": null,
+   "sanitized_error": "ValueError",
+   "envelope": null,
+   "envelope_error": "ValueError"
+  },
+  {
+   "address": "\n",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "\n",
+    "domain": null,
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": null,
+   "sanitized_error": "ValueError",
+   "envelope": null,
+   "envelope_error": "ValueError"
+  },
+  {
+   "address": "\u00c3\u00a8@b.test",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "\u00c3\u00a8",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "=?utf-8?b?w6g=?=@b.test",
+   "sanitized_error": null,
+   "envelope": "<=?utf-8?b?w6g=?=@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "a@\u00c3\u00a8.test",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "a",
+    "domain": "\u00c3\u00a8.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "a@xn--8ca.test",
+   "sanitized_error": null,
+   "envelope": "<a@xn--8ca.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "a@b\u00c3\u00a8.test",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "a",
+    "domain": "b\u00c3\u00a8.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "a@xn--b-8fa.test",
+   "sanitized_error": null,
+   "envelope": "<a@xn--b-8fa.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "Societ\u00c3\u00a0 <a@b.test>",
+   "mailbox": {
+    "display_name": "Societ\u00c3\u00a0",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "=?utf-8?q?Societ=C3=A0?= <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "Societ\u00c3\u00a0 Tre <noreply@example.test>",
+   "mailbox": {
+    "display_name": "Societ\u00c3\u00a0 Tre",
+    "local_part": "noreply",
+    "domain": "example.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "=?utf-8?q?Societ=C3=A0_Tre?= <noreply@example.test>",
+   "sanitized_error": null,
+   "envelope": "<noreply@example.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "Emoji \u00f0\u009f\u008f\u0090 <a@b.test>",
+   "mailbox": {
+    "display_name": "Emoji \u00f0\u009f\u008f\u0090",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "=?utf-8?b?RW1vamkg8J+PkA==?= <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "Mario \u00f0\u009f\u008f\u0090 Rossi <a@b.test>",
+   "mailbox": {
+    "display_name": "Mario \u00f0\u009f\u008f\u0090 Rossi",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "=?utf-8?q?Mario_=F0=9F=8F=90_Rossi?= <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "Line\u00e2\u0080\u00a8sep <a@b.test>",
+   "mailbox": {
+    "display_name": "Line\u00e2\u0080\u00a8sep",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "=?utf-8?q?Line?=\n =?utf-8?q?_sep?= <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "Line\u00e2\u0080\u00a9sep <a@b.test>",
+   "mailbox": {
+    "display_name": "Line\u00e2\u0080\u00a9sep",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "=?utf-8?q?Line?=\n =?utf-8?q?_sep?= <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "Non\u00c2\u00a0break <a@b.test>",
+   "mailbox": {
+    "display_name": "Non\u00c2\u00a0break",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "=?utf-8?q?Non=C2=A0break?= <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "Soft\u00e2\u0080\u008bhyphen <a@b.test>",
+   "mailbox": {
+    "display_name": "Soft\u00e2\u0080\u008bhyphen",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "=?utf-8?q?Soft=E2=80=8Bhyphen?= <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "Zero\u00e2\u0080\u008bwidth <a@b.test.\u00c3\u00a8>",
+   "mailbox": {
+    "display_name": "Zero\u00e2\u0080\u008bwidth",
+    "local_part": "a",
+    "domain": "b.test.\u00c3\u00a8",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "=?utf-8?b?WmVyb+KAi3dpZHRo?= <a@b.test.xn--8ca>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test.xn--8ca>",
+   "envelope_error": null
+  },
+  {
+   "address": "\u00c4\u00b0stanbul <i@b.test>",
+   "mailbox": {
+    "display_name": "\u00c4\u00b0stanbul",
+    "local_part": "i",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "=?utf-8?b?xLBzdGFuYnVs?= <i@b.test>",
+   "sanitized_error": null,
+   "envelope": "<i@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "\u00ef\u00ac\u0080 <a@b.test>",
+   "mailbox": {
+    "display_name": "\u00ef\u00ac\u0080",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "=?utf-8?b?76yA?= <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "\u00ce\u0095\u00ce\u00bb\u00ce\u00bb\u00ce\u00ac\u00ce\u00b4\u00ce\u00b1 <a@b.test>",
+   "mailbox": {
+    "display_name": "\u00ce\u0095\u00ce\u00bb\u00ce\u00bb\u00ce\u00ac\u00ce\u00b4\u00ce\u00b1",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "=?utf-8?b?zpXOu867zqzOtM6x?= <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "\u00d0\u009c\u00d0\u00be\u00d1\u0081\u00d0\u00ba\u00d0\u00b2\u00d0\u00b0 <a@b.test>",
+   "mailbox": {
+    "display_name": "\u00d0\u009c\u00d0\u00be\u00d1\u0081\u00d0\u00ba\u00d0\u00b2\u00d0\u00b0",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "=?utf-8?b?0JzQvtGB0LrQstCw?= <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "\u00e5\u008c\u0097\u00e4\u00ba\u00ac\u00e5\u00b8\u0082 <a@b.test>",
+   "mailbox": {
+    "display_name": "\u00e5\u008c\u0097\u00e4\u00ba\u00ac\u00e5\u00b8\u0082",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "=?utf-8?b?5YyX5Lqs5biC?= <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "a@xn--8ca.test",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "a",
+    "domain": "xn--8ca.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "a@xn--8ca.test",
+   "sanitized_error": null,
+   "envelope": "<a@xn--8ca.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "a@B\u00c3\u009cCHER.test",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "a",
+    "domain": "B\u00c3\u009cCHER.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "a@xn--bcher-kva.test",
+   "sanitized_error": null,
+   "envelope": "<a@xn--bcher-kva.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "Name <a@b\u00c3\u00bccher.test>",
+   "mailbox": {
+    "display_name": "Name",
+    "local_part": "a",
+    "domain": "b\u00c3\u00bccher.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "Name <a@xn--bcher-kva.test>",
+   "sanitized_error": null,
+   "envelope": "<a@xn--bcher-kva.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "Name <a@b\u00c3\u00bccher.test.>",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "Name",
+    "domain": null,
+    "rest": "<a@b\u00c3\u00bccher.test.>"
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": null,
+   "sanitized_error": "ValueError",
+   "envelope": null,
+   "envelope_error": "ValueError"
+  },
+  {
+   "address": "\"Q\" <a@b.test>",
+   "mailbox": {
+    "display_name": "Q",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "Q <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "\"Famiglia, Rossi\" <a@b.test>",
+   "mailbox": {
+    "display_name": "Famiglia, Rossi",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "\"Famiglia, Rossi\" <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "\"a@b\" <c@d.test>",
+   "mailbox": {
+    "display_name": "a@b",
+    "local_part": "c",
+    "domain": "d.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "\"a@b\" <c@d.test>",
+   "sanitized_error": null,
+   "envelope": "<c@d.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "\"Cognome; Nome\" <a@b.test>",
+   "mailbox": {
+    "display_name": "Cognome; Nome",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "\"Cognome; Nome\" <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "\"Punto. Nome\" <a@b.test>",
+   "mailbox": {
+    "display_name": "Punto. Nome",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "\"Punto. Nome\" <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "Name (comment) <a@b.test>",
+   "mailbox": {
+    "display_name": "Name",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "Name <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "Name (c) <a@b.test> (trailing)",
+   "mailbox": {
+    "display_name": "Name",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "Name <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "(only comment) a@b.test",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "a@b.test",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "Name <(c) a@b.test>",
+   "mailbox": {
+    "display_name": "Name",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "Name <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "Name <a(comment)@b.test>",
+   "mailbox": {
+    "display_name": "Name",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "Name <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "a(comment)@b.test",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "a@b.test",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "Back\\slash <a@b.test>",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "Back\\slash",
+    "domain": null,
+    "rest": "<a@b.test>"
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": null,
+   "sanitized_error": "ValueError",
+   "envelope": null,
+   "envelope_error": "ValueError"
+  },
+  {
+   "address": "\"Back\\\\slash\" <a@b.test>",
+   "mailbox": {
+    "display_name": "Back\\slash",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "\"Back\\\\slash\" <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "Quote \"in\" name <a@b.test>",
+   "mailbox": {
+    "display_name": "Quote in name",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "Quote in name <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "A<B <a@b.test>",
+   "mailbox": {
+    "display_name": "A",
+    "local_part": "B",
+    "domain": null,
+    "rest": "<a@b.test>"
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": null,
+   "sanitized_error": "ValueError",
+   "envelope": null,
+   "envelope_error": "ValueError"
+  },
+  {
+   "address": "A> B <a@b.test>",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "A",
+    "domain": null,
+    "rest": "> B <a@b.test>"
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": null,
+   "sanitized_error": "ValueError",
+   "envelope": null,
+   "envelope_error": "ValueError"
+  },
+  {
+   "address": "Angle <like> <a@b.test>",
+   "mailbox": {
+    "display_name": "Angle",
+    "local_part": "like",
+    "domain": null,
+    "rest": "<a@b.test>"
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": null,
+   "sanitized_error": "ValueError",
+   "envelope": null,
+   "envelope_error": "ValueError"
+  },
+  {
+   "address": "Semi;colon <a@b.test>",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "Semi",
+    "domain": null,
+    "rest": ";colon <a@b.test>"
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": null,
+   "sanitized_error": "ValueError",
+   "envelope": null,
+   "envelope_error": "ValueError"
+  },
+  {
+   "address": "Comma, name <a@b.test>",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "Comma",
+    "domain": null,
+    "rest": ", name <a@b.test>"
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": null,
+   "sanitized_error": "ValueError",
+   "envelope": null,
+   "envelope_error": "ValueError"
+  },
+  {
+   "address": "At @ name <a@b.test>",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "At",
+    "domain": "name",
+    "rest": "<a@b.test>"
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": null,
+   "sanitized_error": "ValueError",
+   "envelope": null,
+   "envelope_error": "ValueError"
+  },
+  {
+   "address": "Colon: name <a@b.test>",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "Colon",
+    "domain": null,
+    "rest": ": name <a@b.test>"
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": null,
+   "sanitized_error": "ValueError",
+   "envelope": null,
+   "envelope_error": "ValueError"
+  },
+  {
+   "address": "a b <c@d.test>",
+   "mailbox": {
+    "display_name": "a b",
+    "local_part": "c",
+    "domain": "d.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "a b <c@d.test>",
+   "sanitized_error": null,
+   "envelope": "<c@d.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "a\tb <c@d.test>",
+   "mailbox": {
+    "display_name": "a b",
+    "local_part": "c",
+    "domain": "d.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "a b <c@d.test>",
+   "sanitized_error": null,
+   "envelope": "<c@d.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "a\nb@c.test",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "a\nb",
+    "domain": "c.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": null,
+   "sanitized_error": "ValueError",
+   "envelope": null,
+   "envelope_error": "ValueError"
+  },
+  {
+   "address": "a\rb@c.test",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "a\rb",
+    "domain": "c.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": null,
+   "sanitized_error": "ValueError",
+   "envelope": null,
+   "envelope_error": "ValueError"
+  },
+  {
+   "address": "Name\n<a@b.test>",
+   "mailbox": {
+    "display_name": "Name\n",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": null,
+   "sanitized_error": "ValueError",
+   "envelope": null,
+   "envelope_error": "ValueError"
+  },
+  {
+   "address": "Name <a@b\ntest>",
+   "mailbox": {
+    "display_name": "Name",
+    "local_part": "a",
+    "domain": "btest",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "Name <a@btest>",
+   "sanitized_error": null,
+   "envelope": "<a@btest>",
+   "envelope_error": null
+  },
+  {
+   "address": "Name <a@b.test> ",
+   "mailbox": {
+    "display_name": "Name",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "Name <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": " a@b.test",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "a@b.test",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "a@b.test (c) ",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "a@b.test",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "a@b.test (nested (comment))",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "a@b.test",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "\"a b\"@c.test",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "a b",
+    "domain": "c.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "\"a b\"@c.test",
+   "sanitized_error": null,
+   "envelope": "<\"a b\"@c.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "\"a@b\"@c.test",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "a@b",
+    "domain": "c.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "\"a@b\"@c.test",
+   "sanitized_error": null,
+   "envelope": "<\"a@b\"@c.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "\"\" <a@b.test>",
+   "mailbox": {
+    "display_name": "",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "a@b.test",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "\"\"@c.test",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "",
+    "domain": "c.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "@c.test",
+   "sanitized_error": null,
+   "envelope": "<@c.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "\"a\\\"b\"@c.test",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "a\"b",
+    "domain": "c.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "\"a\\\"b\"@c.test",
+   "sanitized_error": null,
+   "envelope": "<\"a\\\"b\"@c.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "\"a\\\\b\"@c.test",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "a\\b",
+    "domain": "c.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "\"a\\\\b\"@c.test",
+   "sanitized_error": null,
+   "envelope": "<\"a\\\\b\"@c.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "Name <\"a b\"@c.test>",
+   "mailbox": {
+    "display_name": "Name",
+    "local_part": "a b",
+    "domain": "c.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "Name <\"a b\"@c.test>",
+   "sanitized_error": null,
+   "envelope": "<\"a b\"@c.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "Name <\"a@b\"@c.test>",
+   "mailbox": {
+    "display_name": "Name",
+    "local_part": "a@b",
+    "domain": "c.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "Name <\"a@b\"@c.test>",
+   "sanitized_error": null,
+   "envelope": "<\"a@b\"@c.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "a . b <c@d.test>",
+   "mailbox": {
+    "display_name": "a . b",
+    "local_part": "c",
+    "domain": "d.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "\"a . b\" <c@d.test>",
+   "sanitized_error": null,
+   "envelope": "<c@d.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "A . B <c@d.test>",
+   "mailbox": {
+    "display_name": "A . B",
+    "local_part": "c",
+    "domain": "d.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "\"A . B\" <c@d.test>",
+   "sanitized_error": null,
+   "envelope": "<c@d.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "a.b <c@d.test>",
+   "mailbox": {
+    "display_name": "a.b",
+    "local_part": "c",
+    "domain": "d.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "\"a.b\" <c@d.test>",
+   "sanitized_error": null,
+   "envelope": "<c@d.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "a..b <c@d.test>",
+   "mailbox": {
+    "display_name": "a..b",
+    "local_part": "c",
+    "domain": "d.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "\"a..b\" <c@d.test>",
+   "sanitized_error": null,
+   "envelope": "<c@d.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "a .b@c.test",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "a.b",
+    "domain": "c.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "a.b@c.test",
+   "sanitized_error": null,
+   "envelope": "<a.b@c.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "a. b@c.test",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "a.b",
+    "domain": "c.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "a.b@c.test",
+   "sanitized_error": null,
+   "envelope": "<a.b@c.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "a @ b.test",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "a@b.test",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "a\t@\tb.test",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "a@b.test",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "Dotted. Name <a@b.test>",
+   "mailbox": {
+    "display_name": "Dotted. Name",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "\"Dotted. Name\" <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "\"Dotted. Name\" <a@b.test>",
+   "mailbox": {
+    "display_name": "Dotted. Name",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "\"Dotted. Name\" <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "Name <a.b@c.test>",
+   "mailbox": {
+    "display_name": "Name",
+    "local_part": "a.b",
+    "domain": "c.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "Name <a.b@c.test>",
+   "sanitized_error": null,
+   "envelope": "<a.b@c.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "Name <a..b@c.test>",
+   "mailbox": {
+    "display_name": "Name",
+    "local_part": "a..b",
+    "domain": "c.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "Name <a..b@c.test>",
+   "sanitized_error": null,
+   "envelope": "<a..b@c.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "Name <a@b.test",
+   "mailbox": {
+    "display_name": "Name",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "Name <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "Name a@b.test>",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "Name a",
+    "domain": "b.test",
+    "rest": ">"
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": null,
+   "sanitized_error": "ValueError",
+   "envelope": null,
+   "envelope_error": "ValueError"
+  },
+  {
+   "address": "a@b.test>",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ">"
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": null,
+   "sanitized_error": "ValueError",
+   "envelope": null,
+   "envelope_error": "ValueError"
+  },
+  {
+   "address": "<a@b.test",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "a@b.test",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "<<a@b.test>>",
+   "mailbox": null,
+   "mailbox_error": "HeaderParseError",
+   "mailbox_text": "expected mailbox but found '<<a@b.test>>'",
+   "sanitized": null,
+   "sanitized_error": "ValueError",
+   "envelope": null,
+   "envelope_error": "ValueError"
+  },
+  {
+   "address": "<>",
+   "mailbox": {
+    "display_name": null,
+    "local_part": null,
+    "domain": null,
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": null,
+   "sanitized_error": "TypeError",
+   "envelope": null,
+   "envelope_error": "TypeError"
+  },
+  {
+   "address": "Name <>",
+   "mailbox": {
+    "display_name": "Name",
+    "local_part": null,
+    "domain": null,
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": null,
+   "sanitized_error": "TypeError",
+   "envelope": null,
+   "envelope_error": "TypeError"
+  },
+  {
+   "address": "< <a@b.test>>",
+   "mailbox": null,
+   "mailbox_error": "HeaderParseError",
+   "mailbox_text": "expected mailbox but found '< <a@b.test>>'",
+   "sanitized": null,
+   "sanitized_error": "ValueError",
+   "envelope": null,
+   "envelope_error": "ValueError"
+  },
+  {
+   "address": "a@b.test<b>",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": "<b>"
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": null,
+   "sanitized_error": "ValueError",
+   "envelope": null,
+   "envelope_error": "ValueError"
+  },
+  {
+   "address": "Name <a@b@c.test>",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "Name",
+    "domain": null,
+    "rest": "<a@b@c.test>"
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": null,
+   "sanitized_error": "ValueError",
+   "envelope": null,
+   "envelope_error": "ValueError"
+  },
+  {
+   "address": "Name <@b.test>",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "Name",
+    "domain": null,
+    "rest": "<@b.test>"
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": null,
+   "sanitized_error": "ValueError",
+   "envelope": null,
+   "envelope_error": "ValueError"
+  },
+  {
+   "address": "Name <a@>",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "Name",
+    "domain": null,
+    "rest": "<a@>"
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": null,
+   "sanitized_error": "ValueError",
+   "envelope": null,
+   "envelope_error": "ValueError"
+  },
+  {
+   "address": "Group: a@b.test, c@d.test;",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "Group",
+    "domain": null,
+    "rest": ": a@b.test, c@d.test;"
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": null,
+   "sanitized_error": "ValueError",
+   "envelope": null,
+   "envelope_error": "ValueError"
+  },
+  {
+   "address": "Undisclosed:;",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "Undisclosed",
+    "domain": null,
+    "rest": ":;"
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": null,
+   "sanitized_error": "ValueError",
+   "envelope": null,
+   "envelope_error": "ValueError"
+  },
+  {
+   "address": "Group:;",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "Group",
+    "domain": null,
+    "rest": ":;"
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": null,
+   "sanitized_error": "ValueError",
+   "envelope": null,
+   "envelope_error": "ValueError"
+  },
+  {
+   "address": "a@b.test, c@d.test",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ", c@d.test"
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": null,
+   "sanitized_error": "ValueError",
+   "envelope": null,
+   "envelope_error": "ValueError"
+  },
+  {
+   "address": "A <a@b.test>, B <c@d.test>",
+   "mailbox": {
+    "display_name": "A",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ", B <c@d.test>"
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": null,
+   "sanitized_error": "ValueError",
+   "envelope": null,
+   "envelope_error": "ValueError"
+  },
+  {
+   "address": "a@b.test;",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ";"
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": null,
+   "sanitized_error": "ValueError",
+   "envelope": null,
+   "envelope_error": "ValueError"
+  },
+  {
+   "address": ";",
+   "mailbox": null,
+   "mailbox_error": "HeaderParseError",
+   "mailbox_text": "expected mailbox but found ';'",
+   "sanitized": null,
+   "sanitized_error": "ValueError",
+   "envelope": null,
+   "envelope_error": "ValueError"
+  },
+  {
+   "address": ":",
+   "mailbox": null,
+   "mailbox_error": "HeaderParseError",
+   "mailbox_text": "expected mailbox but found ':'",
+   "sanitized": null,
+   "sanitized_error": "ValueError",
+   "envelope": null,
+   "envelope_error": "ValueError"
+  },
+  {
+   "address": ",",
+   "mailbox": null,
+   "mailbox_error": "HeaderParseError",
+   "mailbox_text": "expected mailbox but found ','",
+   "sanitized": null,
+   "sanitized_error": "ValueError",
+   "envelope": null,
+   "envelope_error": "ValueError"
+  },
+  {
+   "address": ",,",
+   "mailbox": null,
+   "mailbox_error": "HeaderParseError",
+   "mailbox_text": "expected mailbox but found ',,'",
+   "sanitized": null,
+   "sanitized_error": "ValueError",
+   "envelope": null,
+   "envelope_error": "ValueError"
+  },
+  {
+   "address": "a@b.test,",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ","
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": null,
+   "sanitized_error": "ValueError",
+   "envelope": null,
+   "envelope_error": "ValueError"
+  },
+  {
+   "address": "=?utf-8?q?Societ=C3=A0?= <a@b.test>",
+   "mailbox": {
+    "display_name": "Societ\u00c3\u00a0",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "=?utf-8?q?Societ=C3=A0?= <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "=?utf-8?b?U29jaWV0w6A=?= <a@b.test>",
+   "mailbox": {
+    "display_name": "Societ\u00c3\u00a0",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "=?utf-8?q?Societ=C3=A0?= <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "=?utf-8?q?A?= =?utf-8?q?B?= <a@b.test>",
+   "mailbox": {
+    "display_name": "AB",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "AB <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "Comp =?utf-8?q?A?= <a@b.test>",
+   "mailbox": {
+    "display_name": "Comp A",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "Comp A <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "\"=?utf-8?q?x?=\" <a@b.test>",
+   "mailbox": {
+    "display_name": "x",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "x <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "=?utf-8?q?x?= <a@b.test>",
+   "mailbox": {
+    "display_name": "x",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "x <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "=?iso-8859-1?q?Soci=E9t=E9?= <a@b.test>",
+   "mailbox": {
+    "display_name": "Soci\u00c3\u00a9t\u00c3\u00a9",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "=?utf-8?b?U29jacOpdMOp?= <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "=?us-ascii?q?Plain?= <a@b.test>",
+   "mailbox": {
+    "display_name": "Plain",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "Plain <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "=?unknown-8bit?q?=E9?= <a@b.test>",
+   "mailbox": {
+    "display_name": "\u00ed\u00b3\u00a9",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": null,
+   "sanitized_error": "UnicodeEncodeError",
+   "envelope": null,
+   "envelope_error": "UnicodeEncodeError"
+  },
+  {
+   "address": "=?utf-8?q?bad?=x@b.test",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "badx",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "badx@b.test",
+   "sanitized_error": null,
+   "envelope": "<badx@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "=?bogus?q?x?= <a@b.test>",
+   "mailbox": {
+    "display_name": "x",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "x <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "=?utf-8?q??= <a@b.test>",
+   "mailbox": {
+    "display_name": "",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "a@b.test",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "=?utf-8?q?a?= =?utf-8?q?b?= <a@b.test>",
+   "mailbox": {
+    "display_name": "ab",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "ab <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "=?utf-8?b?w6A=?= <a@b.test>",
+   "mailbox": {
+    "display_name": "\u00c3\u00a0",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "=?utf-8?b?w6A=?= <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "=?utf-8?b?w6A?= <a@b.test>",
+   "mailbox": {
+    "display_name": "\u00c3\u00a0",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "=?utf-8?b?w6A=?= <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "(a\\(b) x@y.test",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "x",
+    "domain": "y.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "x@y.test",
+   "sanitized_error": null,
+   "envelope": "<x@y.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "(a\\\\) x@y.test",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "x",
+    "domain": "y.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "x@y.test",
+   "sanitized_error": null,
+   "envelope": "<x@y.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "((deep)) x@y.test",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "x",
+    "domain": "y.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "x@y.test",
+   "sanitized_error": null,
+   "envelope": "<x@y.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "(\\() x@y.test",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "x",
+    "domain": "y.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "x@y.test",
+   "sanitized_error": null,
+   "envelope": "<x@y.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "x@y.test (unterminated",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "x",
+    "domain": "y.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "x@y.test",
+   "sanitized_error": null,
+   "envelope": "<x@y.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "x@y.test (a) (b)",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "x",
+    "domain": "y.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "x@y.test",
+   "sanitized_error": null,
+   "envelope": "<x@y.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx <a@b.test>",
+   "mailbox": {
+    "display_name": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "Name <aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@b.test>",
+   "mailbox": {
+    "display_name": "Name",
+    "local_part": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "Name <aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@b.test>",
+   "sanitized_error": null,
+   "envelope": "<aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "\"yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy\" <a@b.test>",
+   "mailbox": {
+    "display_name": "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "Name <a@dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd.test>",
+   "mailbox": {
+    "display_name": "Name",
+    "local_part": "a",
+    "domain": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": null,
+   "sanitized_error": "UnicodeEncodeError",
+   "envelope": null,
+   "envelope_error": "UnicodeEncodeError"
+  },
+  {
+   "address": "A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A <a@b.test>",
+   "mailbox": {
+    "display_name": "A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A\n A A A A A A A A A A A A A A A A A A A A A <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "\"A B A B A B A B A B A B A B A B A B A B A B A B A B A B A B A B A B A B A B A B A B A B A B A B A B A B A B A B A B A B \" <a@b.test>",
+   "mailbox": {
+    "display_name": "A B A B A B A B A B A B A B A B A B A B A B A B A B A B A B A B A B A B A B A B A B A B A B A B A B A B A B A B A B A B ",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "A B A B A B A B A B A B A B A B A B A B A B A B A B A B A B A B A B A B A B A\n B A B A B A B A B A B A B A B A B A B A B  <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": " <a@b.test>",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "a@b.test",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "  Name  <a@b.test>",
+   "mailbox": {
+    "display_name": "Name",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "Name <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "Name<a@b.test>",
+   "mailbox": {
+    "display_name": "Name",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "Name <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "Name<a@b.test> ",
+   "mailbox": {
+    "display_name": "Name",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "Name <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "Name  <  a@b.test  >",
+   "mailbox": {
+    "display_name": "Name",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "Name <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "Name <a@b.test>  (c)  ",
+   "mailbox": {
+    "display_name": "Name",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "Name <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "(c) <a@b.test>",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "a@b.test",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "(c)Name <a@b.test>",
+   "mailbox": {
+    "display_name": "Name",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "Name <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "Name(c)<a@b.test>",
+   "mailbox": {
+    "display_name": "Name",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "Name <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "Name (a) (b) <a@b.test>",
+   "mailbox": {
+    "display_name": "Name",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "Name <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "@a,@b:c@d.test",
+   "mailbox": null,
+   "mailbox_error": "HeaderParseError",
+   "mailbox_text": "expected mailbox but found '@a,@b:c@d.test'",
+   "sanitized": null,
+   "sanitized_error": "ValueError",
+   "envelope": null,
+   "envelope_error": "ValueError"
+  },
+  {
+   "address": "<@a,@b:c@d.test>",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "c",
+    "domain": "d.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "c@d.test",
+   "sanitized_error": null,
+   "envelope": "<c@d.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "Name <@a:c@d.test>",
+   "mailbox": {
+    "display_name": "Name",
+    "local_part": "c",
+    "domain": "d.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "Name <c@d.test>",
+   "sanitized_error": null,
+   "envelope": "<c@d.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "x <@a,@b:c@d.test>",
+   "mailbox": {
+    "display_name": "x",
+    "local_part": "c",
+    "domain": "d.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "x <c@d.test>",
+   "sanitized_error": null,
+   "envelope": "<c@d.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "x <@a:c@d.test>",
+   "mailbox": {
+    "display_name": "x",
+    "local_part": "c",
+    "domain": "d.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "x <c@d.test>",
+   "sanitized_error": null,
+   "envelope": "<c@d.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "x <:@b:c@d.test>",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "x",
+    "domain": null,
+    "rest": "<:@b:c@d.test>"
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": null,
+   "sanitized_error": "ValueError",
+   "envelope": null,
+   "envelope_error": "ValueError"
+  },
+  {
+   "address": "=?utf-8*it?q?x?= <a@b.test>",
+   "mailbox": {
+    "display_name": "x",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "x <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "=?utf-8?q?a?b?= <a@b.test>",
+   "mailbox": {
+    "display_name": "=?utf-8?q?a?b?=",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "=?utf-8?q?a?b?= <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "=?utf-8?b?!!!?= <a@b.test>",
+   "mailbox": {
+    "display_name": "",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "a@b.test",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "=?utf-8?b?w6A?= <a@b.test>",
+   "mailbox": {
+    "display_name": "\u00c3\u00a0",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "=?utf-8?b?w6A=?= <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "=?UTF-8?Q?x?= <a@b.test>",
+   "mailbox": {
+    "display_name": "x",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "x <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "=?utf-8?x?x?= <a@b.test>",
+   "mailbox": {
+    "display_name": "=?utf-8?x?x?=",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "=?utf-8?x?x?= <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "=?utf-8?q?trailing_?= <a@b.test>",
+   "mailbox": {
+    "display_name": "trailing ",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "trailing  <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "=?utf-8?q?=?= <a@b.test>",
+   "mailbox": {
+    "display_name": "=?utf-8?q?=?=",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "=?utf-8?q?=?= <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "=?utf-8?q?a?=x <a@b.test>",
+   "mailbox": {
+    "display_name": "ax",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "ax <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "x=?utf-8?q?a?= <a@b.test>",
+   "mailbox": {
+    "display_name": "x=?utf-8?q?a?=",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "x=?utf-8?q?a?= <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "Name <x@b.test> Name2 <y@b.test>",
+   "mailbox": {
+    "display_name": "Name",
+    "local_part": "x",
+    "domain": "b.test",
+    "rest": "Name2 <y@b.test>"
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": null,
+   "sanitized_error": "ValueError",
+   "envelope": null,
+   "envelope_error": "ValueError"
+  },
+  {
+   "address": "Name <a@b.test>Name2 <c@d.test>",
+   "mailbox": {
+    "display_name": "Name",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": "Name2 <c@d.test>"
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": null,
+   "sanitized_error": "ValueError",
+   "envelope": null,
+   "envelope_error": "ValueError"
+  },
+  {
+   "address": "a@b.test\t(c)",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "a@b.test",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "A\tB <a@b.test>",
+   "mailbox": {
+    "display_name": "A B",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "A B <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "A  B  <a@b.test>",
+   "mailbox": {
+    "display_name": "A B",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "A B <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "\"A\" \"B\" <a@b.test>",
+   "mailbox": {
+    "display_name": "A B",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "A B <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "A \"B\" C <a@b.test>",
+   "mailbox": {
+    "display_name": "A B C",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "A B C <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "\"A\" <a@b.test>",
+   "mailbox": {
+    "display_name": "A",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "A <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "\"\" <a@b.test>",
+   "mailbox": {
+    "display_name": "",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "a@b.test",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "\"\"\" <a@b.test>",
+   "mailbox": {
+    "display_name": null,
+    "local_part": " <a@b.test>",
+    "domain": null,
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "\" <a@b.test>\"",
+   "sanitized_error": null,
+   "envelope": "< <a@b.test>>",
+   "envelope_error": null
+  },
+  {
+   "address": "Name <a@[1.2.3.4]>",
+   "mailbox": {
+    "display_name": "Name",
+    "local_part": "a",
+    "domain": "[1.2.3.4]",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "Name <a@[1.2.3.4]>",
+   "sanitized_error": null,
+   "envelope": "<Name <a@[1.2.3.4]>>",
+   "envelope_error": null
+  },
+  {
+   "address": "Name <a@[ ]>",
+   "mailbox": {
+    "display_name": "Name",
+    "local_part": "a",
+    "domain": "[]",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "Name <a@[]>",
+   "sanitized_error": null,
+   "envelope": "<Name <a@[]>>",
+   "envelope_error": null
+  },
+  {
+   "address": "Name <a@[\\]]>",
+   "mailbox": {
+    "display_name": "Name",
+    "local_part": "a",
+    "domain": "[]]",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "Name <a@[]]>",
+   "sanitized_error": null,
+   "envelope": "<Name <a@[]]>>",
+   "envelope_error": null
+  },
+  {
+   "address": "Name <a@[1.2.3.4]x>",
+   "mailbox": {
+    "display_name": "Name",
+    "local_part": "a",
+    "domain": "[1.2.3.4]",
+    "rest": "x>"
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": null,
+   "sanitized_error": "ValueError",
+   "envelope": null,
+   "envelope_error": "ValueError"
+  },
+  {
+   "address": "\"Quoted\" <x@y.test> (c)",
+   "mailbox": {
+    "display_name": "Quoted",
+    "local_part": "x",
+    "domain": "y.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "Quoted <x@y.test>",
+   "sanitized_error": null,
+   "envelope": "<x@y.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "Name <x@y.test> (c (d))",
+   "mailbox": {
+    "display_name": "Name",
+    "local_part": "x",
+    "domain": "y.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "Name <x@y.test>",
+   "sanitized_error": null,
+   "envelope": "<x@y.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "x@y.test\u00c2\u00a0",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "x",
+    "domain": "y.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "x@y.test",
+   "sanitized_error": null,
+   "envelope": "<x@y.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "\u00c2\u00a0x@y.test",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "\u00c2\u00a0x",
+    "domain": "y.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "=?utf-8?b?wqB4?=@y.test",
+   "sanitized_error": null,
+   "envelope": "<=?utf-8?b?wqB4?=@y.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "x\u00c2\u00a0@y.test",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "x\u00c2\u00a0",
+    "domain": "y.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "=?utf-8?b?eMKg?=@y.test",
+   "sanitized_error": null,
+   "envelope": "<=?utf-8?b?eMKg?=@y.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "x@\u00c2\u00a0y.test",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "x",
+    "domain": "y.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "x@y.test",
+   "sanitized_error": null,
+   "envelope": "<x@y.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "\u00c3\u009f <a@b.test>",
+   "mailbox": {
+    "display_name": "\u00c3\u009f",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "=?utf-8?b?w58=?= <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "\u00e1\u00ba\u009e <a@b.test>",
+   "mailbox": {
+    "display_name": "\u00e1\u00ba\u009e",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "=?utf-8?b?4bqe?= <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "\u00c7\u0085ungla <a@b.test>",
+   "mailbox": {
+    "display_name": "\u00c7\u0085ungla",
+    "local_part": "a",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "=?utf-8?q?=C7=85ungla?= <a@b.test>",
+   "sanitized_error": null,
+   "envelope": "<a@b.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "a@fa\u00c3\u009f.test",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "a",
+    "domain": "fa\u00c3\u009f.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "a@fass.test",
+   "sanitized_error": null,
+   "envelope": "<a@fass.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "a@\u00e1\u00ba\u009e.test",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "a",
+    "domain": "\u00e1\u00ba\u009e.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "a@xn--kkg.test",
+   "sanitized_error": null,
+   "envelope": "<a@xn--kkg.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "a@\u00c7\u0085.test",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "a",
+    "domain": "\u00c7\u0085.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "a@xn--d-toa.test",
+   "sanitized_error": null,
+   "envelope": "<a@xn--d-toa.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "a@m\u00c3\u00bcnchen.test",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "a",
+    "domain": "m\u00c3\u00bcnchen.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "a@xn--mnchen-3ya.test",
+   "sanitized_error": null,
+   "envelope": "<a@xn--mnchen-3ya.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "a@M\u00c3\u009cNCHEN.test",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "a",
+    "domain": "M\u00c3\u009cNCHEN.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "a@xn--mnchen-3ya.test",
+   "sanitized_error": null,
+   "envelope": "<a@xn--mnchen-3ya.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "a@e\u00cc\u0081.test",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "a",
+    "domain": "e\u00cc\u0081.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "a@xn--9ca.test",
+   "sanitized_error": null,
+   "envelope": "<a@xn--9ca.test>",
+   "envelope_error": null
+  },
+  {
+   "address": "e\u00cc\u0081@b.test",
+   "mailbox": {
+    "display_name": null,
+    "local_part": "e\u00cc\u0081",
+    "domain": "b.test",
+    "rest": ""
+   },
+   "mailbox_error": null,
+   "mailbox_text": null,
+   "sanitized": "=?utf-8?b?ZcyB?=@b.test",
+   "sanitized_error": null,
+   "envelope": "<=?utf-8?b?ZcyB?=@b.test>",
+   "envelope_error": null
+  }
+ ]
+}

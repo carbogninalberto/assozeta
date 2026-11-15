@@ -12,6 +12,10 @@ import (
 // port does not reproduce. It is answered with the 500 page before any write.
 var ErrDocmanagerNotPorted = refusal.New("docmanager path not ported")
 
+// ErrDocmanagerUnreachable is a state no request or stored row produces (each
+// site names the decoder or constraint that rules it out).
+var ErrDocmanagerUnreachable = refusal.AppState("docmanager: unreachable state")
+
 // StoredDocument is the docmanager.Document row a retrieval streams.
 type StoredDocument struct {
 	ID       string    `db:"document_id"`

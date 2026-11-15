@@ -1,6 +1,9 @@
-// Package smtpsend sends mail the way CommunicationConfiguration does in
-// BE/communications/models.py: Python 3.13 smtplib for the dialogue and
-// email.mime (compat32, as_string) for the message, not Django's EmailMessage.
+// Package smtpsend sends mail the two ways Assozeta does: CommunicationConfiguration
+// in BE/communications/models.py builds its own MIMEMultipart and sends it with
+// Python 3.13 smtplib (email.mime, compat32, as_string), and django.core.mail's
+// EmailMessage (the instance e-mail probe and core.tasks.send_mail_async) builds
+// and sends message().as_bytes(linesep='\r\n') under the same policy, addresses
+// through sanitize_address and headers folded as compat32 folds them.
 //
 // Verify mirrors verify_smtp(send_email=False): connect (SMTP_SSL, or SMTP
 // followed by starttls() when the encryption is "TLS"), login, then the
@@ -16,8 +19,11 @@
 // Golden evidence: TESTS/adapters/go/smtpsend_golden.py records the client
 // bytes of the actual Django methods against a scripted server, the
 // send_email messages and smtplib.quoteaddr results in
-// testdata/python_smtp.json; the tests replay the same scripts against this
-// client and require identical bytes.
+// testdata/python_smtp.json; testdata/django_mail.json, django_text.json and
+// django_test_mail.json hold the EmailMessage bytes, and django_any.json and
+// django_addresses.json every header, body and address shape of it and the
+// exceptions Django raises. The tests replay them against this client and
+// require identical bytes.
 package smtpsend
 
 import (
@@ -43,9 +49,10 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
-// ErrUnsupported marks input outside the subset proven against Python; it is
-// returned before any connection is made.
-var ErrUnsupported = refusal.New("smtpsend: input outside the supported subset")
+// ErrRaises is a Python exception raised while the message is built or folded.
+// send_email wraps its whole body in try/except and returns (False, e) for it
+// (BE/communications/models.py:94-183), so it is an answer, never a crash.
+var ErrRaises = errors.New("smtpsend: Python raises while rendering the message")
 
 // Server is the SMTP part of a CommunicationConfiguration.
 type Server struct {
@@ -119,19 +126,19 @@ func Verify(ctx context.Context, s Server) error {
 	return c.login(s.User, s.Password)
 }
 
-// Send mirrors the delivery connection of send_email. from and to must pass
-// CheckEnvelope and message must be ASCII (Render's output); otherwise
-// ErrUnsupported is returned before connecting.
+// Send mirrors the delivery connection of send_email: verify has succeeded,
+// so it connects, starts TLS, logs in, sends mail from the user to the
+// recipients and quits. from and to are quoted the way smtplib.quoteaddr
+// parses them (any text; a command Python cannot encode fails when it is
+// sent) and message is Render's output.
 func Send(ctx context.Context, s Server, from string, to []string, message string) error {
-	if err := CheckEnvelope(from, to); err != nil {
-		return err
+	if !isASCII(message) {
+		// Render writes every header as RFC 2047 encoded words and every body
+		// as base64, so its output is ASCII and a message that is not cannot
+		// come from it: application state, never handed off.
+		return refusal.AppState("smtpsend: rendered message is not ASCII")
 	}
 	handoff.MarkEffect(ctx, "smtp send")
-	for i := 0; i < len(message); i++ {
-		if message[i] >= 0x80 {
-			return ErrUnsupported
-		}
-	}
 	c, err := open(ctx, s)
 	if err != nil {
 		return err
@@ -147,24 +154,22 @@ func Send(ctx context.Context, s Server, from string, to []string, message strin
 }
 
 type client struct {
-	ctx      context.Context
-	raw      net.Conn
-	conn     net.Conn
-	reader   *bufio.Reader
-	timeout  time.Duration
-	host     string
-	local    string
-	features map[string]string
-	order    []string
-	esmtp    bool
-	heloResp []byte
-	ehloResp []byte
-	helo     bool
-	ehlo     bool
-	count    int
-	stop     func() bool
-	// anyAddress: envelope addresses go through QuoteAddr (any text).
-	anyAddress         bool
+	ctx                context.Context
+	raw                net.Conn
+	conn               net.Conn
+	reader             *bufio.Reader
+	timeout            time.Duration
+	host               string
+	local              string
+	features           map[string]string
+	order              []string
+	esmtp              bool
+	heloResp           []byte
+	ehloResp           []byte
+	helo               bool
+	ehlo               bool
+	count              int
+	stop               func() bool
 	noUser, noPassword bool
 	tls                *tls.Config
 	// handshake records a failed TLS handshake: Python has then detached
@@ -715,13 +720,6 @@ var periodPattern = regexp.MustCompile(`(?m)^\.`)
 
 func quotePeriods(b []byte) []byte { return periodPattern.ReplaceAll(b, []byte("..")) }
 
-// quoteaddr is smtplib.quoteaddr for addresses CheckEnvelope accepts, which
-// email.utils.parseaddr returns unchanged.
-func quoteaddr(address string) string { return "<" + address + ">" }
-
-func (c *client) quote(address string) string {
-	if c.anyAddress {
-		return QuoteAddr(address)
-	}
-	return quoteaddr(address)
-}
+// quote is smtplib.sendmail's quoteaddr of an envelope address: email.utils
+// parseaddr reads it (any text) and the command carries the address it finds.
+func (c *client) quote(address string) string { return QuoteAddr(address) }

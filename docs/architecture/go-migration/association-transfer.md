@@ -38,16 +38,22 @@
 ## Not ported (explicit refusals, 500 page, before any write)
 
 Since long-tail PR 2 (agent B) the cached snapshots, Celery result rows, stored and generated storage names and the
-composition checks are application-state errors (the 500 page, never handed off). The import/validate archive
-contents and temporary-file failures (Django answers its own JSON with the `OSError` text), the multipart decoder,
-`owner_password` as a file and the referenced export document stay refusals.
+composition checks are application-state errors (the 500 page, never handed off). Since long-tail PR 3 (agent B) a
+temporary-file failure of import/validate is answered as Django answers it: 500 `{"error": "Errore durante la
+validazione: <str(OSError)>"}`, `[Errno N] <strerror>: '<path>'` for open() (a name over the file system's limit gives
+ENAMETOOLONG) and `[Errno N] <strerror>` for write and close (case `import-validate-name-over-255-bytes`; the contract's
+`{errno}` accepts the platform's number). import/start with `owner_password` sent as a file is answered as Django's
+except block answers it: 500 `{"error": "Errore durante avvio import: Object of type InMemoryUploadedFile is not JSON
+serializable"}` (`TemporaryUploadedFile` above the in-memory upload limit), with nothing stored, cached or published (case
+`import-start-password-file`). The import/validate archive contents, the multipart decoder and the referenced export
+document stay refusals.
 
 - **status** when the task owner key exists. Django renders cached progress and the Celery result.
 - **active** when a cached value is outside the unpickled subset, or when `task_id` is not a string. Only the stored status of the task row is read (`SUCCESS`, `FAILURE`, `REVOKED` are ready; no row is not ready).
 - **delete** of a document that other rows reference (Document.delete()'s collector), or whose `filepath` the storage key builder does not reproduce.
 - **import/status** for non-`utf-8` content encodings and for metadata with a `status` key or children. Results that Celery's JSON decoder would transform are also refused: `__type__` objects, lone surrogate escapes, and floats beyond float64.
-- **import/validate** inputs whose Python exception text would reach the answer: archives the ZIP reader port does not open, undecodable or non-object JSON, identifiers that are not strings or not UUIDs, model entries that are not objects, password hashes outside the PBKDF2 hashers, names longer than 255 bytes.
-- **import/start** when `owner_password` is a file part, or when the generated storage name exists with `AWS_S3_FILE_OVERWRITE` off. A failed Celery publish deletes the stored archive and answers the 500 page (Django answers its own JSON 500 with the exception text).
+- **import/validate** inputs whose Python exception text would reach the answer: archives the ZIP reader port does not open, undecodable or non-object JSON, identifiers that are not strings or not UUIDs, model entries that are not objects, password hashes outside the PBKDF2 hashers.
+- **import/start** when the generated storage name exists with `AWS_S3_FILE_OVERWRITE` off. A failed Celery publish deletes the stored archive and answers the 500 page (Django answers its own JSON 500 with the exception text).
 - A `document_id` string containing `_`, `+` or whitespace, which Python's `int(hex, 16)` reads differently from a plain hex check.
 
 ## Task rows in an exception state

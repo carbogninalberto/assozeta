@@ -60,13 +60,14 @@ var invoiceCoreFields = map[string]string{"invoice_id": "invoice_id", "pk": "inv
 // invoiceCoreOrder is order_by(f"{'-' if desc else ”}{field}"): one leading
 // '-' is stripped, then the name must be one of the model's own columns
 // (a path through a relation or a transform is an unknown ordering:
-// FieldError, 500); random stays refused (a random order has no answer).
+// FieldError, 500); '?' is the random order ('-?' is not a column: 500).
 func invoiceCoreOrder(filter *domain.InvoiceCoreFilter, field, direction string) error {
 	if direction == "desc" {
 		field = "-" + field
 	}
 	if field == "?" {
-		return domain.ErrInvoiceCoreNotPorted
+		filter.Random, filter.Order = true, nil
+		return nil
 	}
 	name, descending := strings.CutPrefix(field, "-")
 	if column, ok := invoiceCoreFields[name]; ok {
@@ -152,7 +153,8 @@ func (s *InvoiceCore) List(ctx context.Context, request InvoiceCoreRequest) (any
 		} else {
 			search, err := personaSearch(raw, s.now().UTC().Year()%100)
 			if err != nil {
-				return nil, domain.ErrInvoiceCoreNotPorted
+				// personaSearch never fails.
+				return nil, domain.ErrInvoiceCoreUnreachable
 			}
 			filter.Smart = &domain.PaymentReadsSmartSearch{Words: search.Words, Dates: search.Dates, Permutations: search.Permutations}
 		}

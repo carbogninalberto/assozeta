@@ -44,8 +44,8 @@ func TestPrettifyAgainstBS4(t *testing.T) {
 			problem = "accepted markup bs4 rejects"
 		case c.Output == nil:
 			problem = "error is not ErrPythonRaises: " + err.Error()
-		case errors.Is(err, ErrUnsupported):
-			problem = "returned ErrUnsupported"
+		case errors.Is(err, ErrOutputTooLarge):
+			problem = "returned ErrOutputTooLarge"
 		case err != nil:
 			problem = "error: " + err.Error()
 		case got != c.Output.value:

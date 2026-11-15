@@ -14,6 +14,9 @@ var (
 	// ErrPaymentReadsNotPorted refuses inputs whose Django behaviour is not
 	// ported (the 500 page, never a guessed body).
 	ErrPaymentReadsNotPorted = refusal.New("payment reads input not ported")
+	// ErrPaymentReadsUnreachable is a state no request or stored row produces
+	// (each site names the decoder or constraint that rules it out).
+	ErrPaymentReadsUnreachable = refusal.AppState("payment reads: unreachable state")
 	// ErrPaymentReadsAthlete is subscription_payments' Response(status=401) for athletes.
 	ErrPaymentReadsAthlete = errors.New("payment reads athlete")
 )

@@ -123,9 +123,14 @@ func (r *InvoiceParties) CountSupplierInvoices(ctx context.Context, query domain
 func (r *InvoiceParties) SupplierInvoices(ctx context.Context, query domain.SupplierInvoiceQuery, limit, offset int64,
 	group *string) ([]domain.SupplierInvoiceRow, error) {
 	where, args := supplierInvoiceWhere(query)
-	statement := `SELECT ` + supplierInvoiceColumns + where + ` ORDER BY i.` + query.OrderColumn
-	if query.Descending {
-		statement += ` DESC`
+	statement := `SELECT ` + supplierInvoiceColumns + where
+	if query.Random {
+		statement += ` ORDER BY RANDOM()`
+	} else {
+		statement += ` ORDER BY i.` + query.OrderColumn
+		if query.Descending {
+			statement += ` DESC`
+		}
 	}
 	statement += ` LIMIT ` + strconv.FormatInt(limit, 10) + ` OFFSET ` + strconv.FormatInt(offset, 10)
 	rows := []domain.SupplierInvoiceRow{}

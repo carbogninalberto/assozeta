@@ -96,8 +96,36 @@ func TestIntegrationTargetOutcomes(t *testing.T) {
 	if _, invalid, err := IntegrationTarget("ai", value("https://user@api.example.com/v1")); err != nil || !invalid {
 		t.Fatalf("user info: invalid=%v err=%v", invalid, err)
 	}
-	if _, _, err := IntegrationTarget("ai", value("https://:@api.example.com/v1")); err != ErrProbeNotPorted {
-		t.Fatalf("empty user info: err=%v", err)
+	// An empty user information pair passes the probe's check
+	// (integration_probe.py:59-61) and is sent as requests prepares it.
+	if target, invalid, err := IntegrationTarget("ai", value("https://:@api.example.com/v1")); err != nil || invalid ||
+		target != "https://:@api.example.com/v1/models" {
+		t.Fatalf("empty user info: target=%q invalid=%v err=%v", target, invalid, err)
+	}
+}
+
+// TestAIRequestEmptyUserInfo is requests 2.34.2 / urllib3 2.8.0 (the pinned
+// interpreter) for a base URL whose user information pair is empty:
+// PreparedRequest.url, the host and port urllib3 connects to, the Host header
+// and the request target.
+func TestAIRequestEmptyUserInfo(t *testing.T) {
+	for _, test := range []struct {
+		base, url, scheme, connectHost, hostHeader, target string
+		port                                               int
+	}{
+		{"https://:@api.example.com/v1", "https://:@api.example.com/v1/models", "https", "api.example.com", "api.example.com", "/v1/models", 443},
+		{"http://:@h.example:8080/x/", "http://:@h.example:8080/x/models", "http", "h.example", "h.example:8080", "/x/models", 8080},
+		{"https://:@API.Example.com", "https://:@api.example.com/models", "https", "api.example.com", "api.example.com", "/models", 443},
+	} {
+		request, outcome, err := prepareAIRequest(test.base)
+		if err != nil || outcome != aiRequestReady || request == nil {
+			t.Fatalf("%q: outcome %v err %v", test.base, outcome, err)
+		}
+		if request.URL != test.url || request.Scheme != test.scheme || request.ConnectHost != test.connectHost ||
+			request.Port != test.port || request.HostHeader != test.hostHeader || request.Target != test.target {
+			t.Errorf("%q:\n got  %#v\n want url=%q scheme=%q host=%q port=%d header=%q target=%q",
+				test.base, request, test.url, test.scheme, test.connectHost, test.port, test.hostHeader, test.target)
+		}
 	}
 }
 

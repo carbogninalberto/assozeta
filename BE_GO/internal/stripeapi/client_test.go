@@ -8,14 +8,17 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
+	"strings"
 	"sync"
 	"testing"
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 func TestEncodeMatchesStripePython(t *testing.T) {
@@ -188,9 +191,96 @@ func TestEncodeFloatsLikeStripePython(t *testing.T) {
 	if want := "a=0.5&b=123.25&c=1000000000000000.0&d=0.0001&e=-2.0&f=0.0"; err != nil || got != want {
 		t.Fatalf("Encode = %q, %v; want %q", got, err, want)
 	}
-	for _, value := range []float64{1e16, 1e-5} {
-		if _, err := Encode([]Param{{Key: "x", Value: Float(value)}}); !errors.Is(err, ErrNotPorted) {
-			t.Fatalf("exponent repr %v: %v", value, err)
+	// The exponent-notation repr the SDK writes for the same values.
+	got, err = Encode([]Param{{Key: "a", Value: Float(1e16)}, {Key: "b", Value: Float(1e-5)}, {Key: "c", Value: Float(-2.5e-300)},
+		{Key: "d", Value: Float(math.Inf(-1))}, {Key: "e", Value: Float(math.NaN())}})
+	if want := "a=1e%2B16&b=1e-05&c=-2.5e-300&d=-inf&e=nan"; err != nil || got != want {
+		t.Fatalf("Encode = %q, %v; want %q", got, err, want)
+	}
+}
+
+func TestFloatPythonRepr(t *testing.T) {
+	// repr(float) in CPython 3.13 (the reference interpreter), collected with
+	// repr(): fixed notation inside 1e-4 <= |v| < 1e16 and for zero, the
+	// shortest exponent notation outside that range, and nan/inf/-inf.
+	cases := []struct {
+		value float64
+		want  string
+	}{
+		{0, "0.0"},
+		{math.Copysign(0, -1), "-0.0"},
+		{1, "1.0"},
+		{-1, "-1.0"},
+		{0.5, "0.5"},
+		{123.25, "123.25"},
+		{1e-4, "0.0001"},
+		{-1e-4, "-0.0001"},
+		{9.999999999999999e-05, "9.999999999999999e-05"},
+		{-9.999999999999999e-05, "-9.999999999999999e-05"},
+		{1e-5, "1e-05"},
+		{5e-324, "5e-324"},
+		{-5e-324, "-5e-324"},
+		{1.7976931348623157e308, "1.7976931348623157e+308"},
+		{-1.7976931348623157e308, "-1.7976931348623157e+308"},
+		{1e16, "1e+16"},
+		{-1e16, "-1e+16"},
+		{9999999999999998.0, "9999999999999998.0"},
+		{-9999999999999998.0, "-9999999999999998.0"},
+		{1e17, "1e+17"},
+		{1e100, "1e+100"},
+		{-1e100, "-1e+100"},
+		{2.5e-300, "2.5e-300"},
+		{-2.5e-300, "-2.5e-300"},
+		{1e15, "1000000000000000.0"},
+		{1.5e-05, "1.5e-05"},
+		{1234567890123456.0, "1234567890123456.0"},
+		{123456789012345678.0, "1.2345678901234568e+17"},
+		{0.0001234, "0.0001234"},
+		{0.00009999999999999999, "9.999999999999999e-05"},
+		{3.141592653589793, "3.141592653589793"},
+		{2.718281828459045, "2.718281828459045"},
+		{1.2345678901234567e200, "1.2345678901234567e+200"},
+		{-1.2345678901234567e200, "-1.2345678901234567e+200"},
+		{1e-200, "1e-200"},
+		{-1e-200, "-1e-200"},
+		{2.2250738585072014e-308, "2.2250738585072014e-308"},
+		{4.9e-324, "5e-324"},
+		{1e-323, "1e-323"},
+		{6.02214076e23, "6.02214076e+23"},
+		{-6.02214076e23, "-6.02214076e+23"},
+		{1.602176634e-19, "1.602176634e-19"},
+		{9007199254740993.0, "9007199254740992.0"},
+		{0.1, "0.1"},
+		{0.2, "0.2"},
+		{1.0 / 3, "0.3333333333333333"},
+		{1e21, "1e+21"},
+		{-1e21, "-1e+21"},
+		{123456.789, "123456.789"},
+		{-123456.789, "-123456.789"},
+		{1e-4 + 1e-19, "0.0001000000000000001"},
+		{1000000000000000.0, "1000000000000000.0"},
+		{math.NaN(), "nan"},
+		{math.Inf(1), "inf"},
+		{math.Inf(-1), "-inf"},
+	}
+	for _, c := range cases {
+		if got := Float(c.value).python(); got != c.want {
+			t.Errorf("Float(%v).python() = %q, want %q", c.value, got, c.want)
 		}
+	}
+}
+
+func TestEncodeUnexpectedValueIsAppState(t *testing.T) {
+	// float32 is outside the JSON values and literals the callers pass, so it
+	// is an application-state error, never a Django handoff.
+	_, err := Encode([]Param{{Key: "x", Value: float32(1)}})
+	if !errors.Is(err, ErrUnexpectedValue) || !errors.Is(err, refusal.ErrAppState) {
+		t.Fatalf("float32 value: %v, want an application-state error", err)
+	}
+	if errors.Is(err, refusal.ErrNotPorted) {
+		t.Fatalf("float32 value: %v, must not be a refusal", err)
+	}
+	if !strings.Contains(err.Error(), "float32") {
+		t.Fatalf("float32 value: %v, want the Go type in the message", err)
 	}
 }

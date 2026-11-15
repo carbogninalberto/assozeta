@@ -725,6 +725,11 @@ no_users = make_zip({key: value for key, value in export_members().items() if ke
 validate_case('missing-users-file', no_users, validation(no_users, valid=False, errors=['Missing required data file: 02_users.json'],
               warnings=['Missing data file: data/02_users.json', 'Missing data file: data/10_courses.json'],
               info={**FILES_INFO, 'missing_files': 2, 'association': MANIFEST['association']}))
+# The name is under 255 characters but over the file system's name limit (255 bytes on Linux,
+# 255 UTF-16 units on macOS): open() fails with ENAMETOOLONG and the view answers the OSError text.
+LONG_ZIP = '\U0001F4E6' * 130 + '.zip'
+validate_case('name-over-255-bytes', valid, {'error': "$tmp-path:Errore durante la validazione: [Errno {errno}] File name too long: ':" + LONG_ZIP + "'"},
+              filename=LONG_ZIP, status=500)
 raw, kind = upload('validate', 'upper', valid, filename='EXPORT.ZIP')
 add('import-validate-admin-impersonating-owner-archive', 'admin', VALIDATE, 200,
     validation(valid, warnings=['Missing data file: data/10_courses.json'],
@@ -754,6 +759,12 @@ import_started('setup-token-archive', valid, 'è segreta', actor='anonymous', he
 import_started('windows-zip-type', not_zip, '', kind='application/x-zip-compressed')
 import_started('archive-without-type', valid, '', kind=None, stored='application/zip', filename='export')
 import_started('admin-impersonating-owner-archive', valid, '', actor='admin', headers=ADMIN_OWNER)
+# owner_password as a file part: the task's JSON encoder rejects the upload, and the saved archive and the cache key
+# are removed again, so nothing changes.
+raw, content = upload('start', 'password-file', valid, extra=[('owner_password', 'password.txt', 'text/plain', 'recovery secret')])
+add('import-start-password-file', 'owner', IMPORT_START, 500,
+    {'error': 'Errore durante avvio import: Object of type InMemoryUploadedFile is not JSON serializable'},
+    method='POST', raw_b64=raw, content_type=content)
 
 # === export/list of an export without a stored size ============================================
 # default_storage.size(filepath) is saved on the document (an update entry); a missing object leaves it null.

@@ -54,7 +54,11 @@ var supplierReferences = map[string]bool{
 	"application_subscription.supplier_id": true, "application_soldproducts.supplier_id": true,
 }
 
-var errSupplierReferenceUnknown = refusal.New("unported supplier reference")
+// errSupplierReferenceUnknown is a foreign key to SupplierAndCustomers outside
+// the four the Django models declare (invoices_models.py:87, payment_models.py:116,
+// subscriptions_models.py:264 and 873, all SET_NULL): only a schema the
+// migrations did not create has one (long-tail rule 3).
+var errSupplierReferenceUnknown = refusal.AppState("unexpected supplier reference")
 
 func (t *supplierWriteTransaction) DeleteSupplier(ctx context.Context, id string, audit domain.LoginAuditContext, at time.Time) error {
 	refs, err := modelReferences(ctx, t.tx, "application_supplierandcustomers", "supplier_id")

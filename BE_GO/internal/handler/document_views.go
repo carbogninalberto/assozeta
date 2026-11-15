@@ -7,6 +7,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/paymentcategorylifecycle"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
 	"github.com/labstack/echo/v4"
 )
@@ -126,8 +127,8 @@ func (h *DocumentViewsHandler) serve(c echo.Context, view, operation, name strin
 		Promotion: promotion,
 	})
 	if err != nil {
-		if errors.Is(err, service.ErrDocumentViewNotPorted) {
-			c.Logger().Warn(err.Error())
+		if reason, ok := refusal.Reason(err); ok {
+			c.Logger().Warn(reason)
 		}
 		if errors.Is(err, paymentcategorylifecycle.ErrAdmissionStopped) {
 			return paymentCategoryError(c, err)

@@ -99,12 +99,14 @@ func (s *EmailTasks) render(ctx context.Context, tx domain.EmailTaskTransaction,
 	brand, err := emailrender.Brand(config, emailrender.Settings{AppURL: s.settings.AppURL, WhitelabelName: s.settings.WhitelabelName,
 		IsWhitelabel: s.settings.IsWhitelabel})
 	if err != nil {
-		return "", errors.Join(domain.ErrEmailTaskUnsupported, err)
+		// emailrender's refusals are application state (repository templates, auto_now brand date): the 500 page, never handed off.
+		return "", err
 	}
 	// No language is activated in the worker: LANGUAGE_CODE.
 	html, err := emailrender.Render(name, context, emailrender.Options{Language: "it", Brand: brand})
 	if err != nil {
-		return "", errors.Join(domain.ErrEmailTaskUnsupported, err)
+		// emailrender's refusals are application state (repository templates, auto_now brand date): the 500 page, never handed off.
+		return "", err
 	}
 	return html, nil
 }
@@ -669,19 +671,19 @@ func (m SMTPMailer) Verify(ctx context.Context, server domain.SMTPServer) error 
 }
 
 func (m SMTPMailer) render(server domain.SMTPServer, message domain.SMTPMessage) (string, error) {
-	rendered, err := smtpsend.Render(smtpsend.Message{SenderName: message.SenderName, SenderUser: message.SenderUser, To: message.To,
+	// A message Python raises on while building it (ErrRaises) is not outside
+	// the port: Send below answers it the way Send answers any failure, which
+	// is send_email's (False, e) branch.
+	return smtpsend.Render(smtpsend.Message{SenderName: message.SenderName, SenderUser: message.SenderUser, To: message.To,
 		Subject: message.Subject, ReplyTo: message.ReplyTo, HTML: message.HTML}, smtpsend.NewBoundary())
-	if err == nil {
-		err = smtpsend.CheckEnvelope(server.User, message.To)
-	}
-	if errors.Is(err, smtpsend.ErrUnsupported) {
-		return "", errors.Join(domain.ErrEmailTaskUnsupported, err)
-	}
-	return rendered, err
 }
 
 func (m SMTPMailer) Check(server domain.SMTPServer, message domain.SMTPMessage) error {
 	_, err := m.render(server, message)
+	if errors.Is(err, smtpsend.ErrRaises) {
+		// send_email answers (False, e); configurationSend logs it and goes on.
+		return nil
+	}
 	return err
 }
 

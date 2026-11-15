@@ -152,7 +152,9 @@ var goldenCases = []encodeCase{
 	{"Rossi", "Mario", "M", "12 maggio 1990", "Roma", "", ErrInvalid, ""},
 	{"Rossi", "Mario", "M", "1990-05-12T10:00", "Roma", "RSSMRA90E12H501K", nil, ""},
 	{"Rossi", "Mario", "M", "12/05/1990", "Roma ☃", "RSSMRA90E12H501K", nil, ""},
-	{"Rossi", "Mario", "M", "12/05/1990", "Roma\xff", "", ErrUnsupported, ""}, // no Python str has this form
+	// A byte Django's request decoding replaces with U+FFFD, which
+	// python-slugify drops: encode(..., 'Roma\ufffd') is RSSMRA90E12H501K.
+	{"Rossi", "Mario", "M", "12/05/1990", "Roma\xff", "RSSMRA90E12H501K", nil, ""},
 	{"R&ssi;", "Ma&#;rio", "M", "12/05/1990", "Roma &foo;", "", ErrNotMapped, ""},
 	{"Rossi", "Mario", "M", "12/05/1990", "Roma &amp", "", ErrNotMapped, ""},
 	{"Rossi", "Mario", "M", "02/2024", "Roma", "RSSMRA24B29H501G", nil, "2026-01-31"},

@@ -583,6 +583,9 @@ paired_card('card-paired-server-other-origin', 400, EXPIRED,
 paired_card('card-paired-server-generation-not-canonical', 400, EXPIRED,
             paired(ASK, ok({**grant('card', resource_id=CARD_ID), 'generation': PAIR['generation'].upper()})))
 paired_card('card-paired-server-expired-grant', 400, EXPIRED, paired(ASK, ok(grant('card', resource_id=CARD_ID, expires_at='$iso-60'))))
+# Aware, future, though its UTC instant is in year 10000: Python compares it with now without error.
+paired_card('card-paired-server-far-future-grant', 200, member('card'),
+            paired(ASK, ok(grant('card', resource_id=CARD_ID, expires_at='9999-12-31T23:59:59-23:59'))))
 paired_card('card-paired-server-naive-expiry', 400, EXPIRED, paired(ASK, ok(grant('card', resource_id=CARD_ID, expires_at='$naive+600'))))
 paired_card('card-paired-server-expiry-not-a-date', 400, EXPIRED, paired(ASK, ok(grant('card', resource_id=CARD_ID, expires_at='domani'))))
 paired_card('card-paired-server-expiry-number', 400, EXPIRED, paired(ASK, ok(grant('card', resource_id=CARD_ID, expires_at=4102444800))))

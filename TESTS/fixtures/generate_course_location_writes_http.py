@@ -13,9 +13,13 @@ viewset's own delete() also answers DELETE on the add (no pk: 500) and update
 routes, which deletes the location. The
 serializer saves the location before handling documents_data, so a document
 without its keys (400) or with bad base64 (500) still leaves the saved row:
-requests are not atomic. Each documents_data item creates a Document, stores
-its decoded bytes (default_storage.save on the runner's MinIO) and links it. auditlog records the create, the changed fields and
-the delete. Run with ``python3 -I`` after the course-locations list generator.
+requests are not atomic. An invalid filename behaves like a later write: None
+and over 255 characters fail at the Document INSERT, while a number, list or a
+traversal (saved as str(value)) write the Document row and its entry before
+os.path.join or default_storage.save raises. Each documents_data item creates a
+Document, stores its decoded bytes (default_storage.save on the runner's MinIO)
+and links it. auditlog records the create, the changed fields and the delete.
+Run with ``python3 -I`` after the course-locations list generator.
 """
 import copy
 import json
@@ -29,6 +33,7 @@ DOCUMENTS, LOCATIONS = SOURCE['documents'], SOURCE['locations']
 UNKNOWN = 'a1000000-0000-4000-8000-000000989999'
 NEW_ID = 'a1000000-0000-4000-8000-000000989001'
 SERVER = '<stable-server-error-page>'
+BAD_REQUEST = '<bad-request-page>'
 STATE = copy.deepcopy(LOCATIONS)
 cases = []
 
@@ -148,6 +153,26 @@ def upload(filename, text, content_type, encoding=None):
     return {'document': body, 'filename': filename}, {'filename': filename, 'body_b64': body, 'content_type': content_type, 'encoding': encoding}
 
 
+# Invalid filenames: None and 256 characters are refused by the row's INSERT (no Document); a JSON number is stored in the
+# row as str(123) and a list too, then os.path.join raises TypeError (500) after the row and its entry, without object or
+# link. '../fuori.pdf' writes the row too and default_storage.save rejects the traversal the same way.
+empty = upload('vuoto.txt', 'Vuoto', 'text/plain')[0]['document']
+response, effect = created('owner', {'title': 'Nome nullo'})
+add('add-document-filename-null-keeps-location', 'owner', ADD, 500, SERVER,
+    body={'title': 'Nome nullo', 'documents_data': [{'document': empty, 'filename': None}]}, effect=effect)
+response, effect = created('owner', {'title': 'Nome lungo'})
+add('add-document-filename-too-long-keeps-location', 'owner', ADD, 500, SERVER,
+    body={'title': 'Nome lungo', 'documents_data': [{'document': empty, 'filename': 'a' * 252 + '.pdf'}]}, effect=effect)
+response, effect = created('owner', {'title': 'Nome numero'})
+effect['uploads'] = [{'filename': '123', 'row_only': True}]
+add('add-document-filename-number-keeps-row', 'owner', ADD, 500, SERVER,
+    body={'title': 'Nome numero', 'documents_data': [{'document': empty, 'filename': 123}]}, effect=effect)
+response, effect = created('owner', {'title': 'Fuori cartella'})
+effect['uploads'] = [{'filename': '../fuori.pdf', 'row_only': True}]
+add('add-document-filename-traversal-keeps-row', 'owner', ADD, 400, BAD_REQUEST,
+    body={'title': 'Fuori cartella', 'documents_data': [{'document': empty, 'filename': '../fuori.pdf'}]}, effect=effect)
+
+
 def new_documents(*specs):
     return [{'document_id': '$document', 'creation_date': '$now', 'filepath': None, 'filename': spec['filename'], 'file_size_bytes': None,
              'token': '$token'} for spec in specs]
@@ -216,6 +241,13 @@ response, effect = changed('owner', 'pool')
 effect['uploads'] = [fourth_spec]
 add('update-document-then-missing-key', 'owner', one('pool', 'update'), 400, MISSING_KEY, method='PATCH',
     body={'documents_data': [fourth, {'filename': 'senza.pdf'}]}, effect=effect)
+# Same shape with a list filename: the first item is stored and linked, the second one only writes its row (str(['a'])).
+tenth, tenth_spec = upload('elenco.pdf', 'Elenco corsi', 'application/pdf')
+# On 'pool' (deleted later with its documents): no later answer lists its documents.
+response, effect = changed('owner', 'pool')
+effect['uploads'] = [tenth_spec, {'filename': "['a']", 'row_only': True}]
+add('update-document-then-filename-list', 'owner', one('pool', 'update'), 500, SERVER, method='PATCH',
+    body={'documents_data': [tenth, {'document': tenth['document'], 'filename': ['a']}]}, effect=effect)
 fifth, fifth_spec = upload('nuovo.pdf', 'Nuovo regolamento', 'application/pdf')
 response, effect = changed('owner', 'gym', title='Palestra grande')
 response['documents'] = response['documents'] + new_documents(fifth_spec)

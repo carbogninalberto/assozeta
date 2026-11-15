@@ -190,10 +190,11 @@ middleware, which skips `STREAMED_PATHS`) sees an empty body and the view reads 
   `remote-put-form*`, `remote-put-multipart`, `remote-test-form*`, `keep-multipart-body`,
   `delete-multipart-*`.
 - (t4l2) A lone surrogate in a CharField is DRF's surrogate validator error (served).
-- (go-v2only-backupsreq) A runner reply nested past the decoder's limit or holding a lone surrogate
-  (as in instance-backups: `dto.RunnerJSONDecode`). The render checks now use `dto.RenderableJSON`,
-  so a `NaN`/`Infinity` runner value is the 500 page wherever it reaches a reply body (it was refused
-  before it could).
+- (go-v2only-backupsreq) The render checks use `dto.RenderableJSON`, so a `NaN`/`Infinity` runner
+  value is the 500 page wherever it reaches a reply body. A runner reply holding a lone surrogate is
+  served as in instance-backups: the value answers the 500 page where it reaches a rendered response,
+  and a surrogate under a key the view ignores is answered normally. A reply nested past 500 levels
+  is application state (the 500 page).
 
 Implemented but not exercised by the fixture: development mode, an upload whose body ends before its
 Content-Length (the client is gone), a broken pipe while streaming a large body, a non-ASCII archive name
@@ -239,3 +240,7 @@ the stored result, and requires the exact audit entry with its index row, or non
 - `go test ./internal/dto -run BackupActions` (IntegerField and BooleanField coercion, the schedule payload).
 - Shared code: `internal/updaterrunner/send.go` is a new file and `cmd/server/main.go` only gains routes;
   the existing transport and routes are unchanged.
+
+Long tail PR 3 (agent C): runner replies holding a lone surrogate are served and answer the 500 page
+where the value reaches the response. Cases `keep-runner-error-lone-surrogate` and
+`keep-accepted-lone-surrogate`.

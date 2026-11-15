@@ -1065,6 +1065,12 @@ add('list-sort-creation', 'owner', LIST + '?sort[field]=creation_date', 200, pag
 add('list-sort-status-desc-pk', 'owner', LIST + '?query[status_flag]=4&sort[field]=pk&sort[sort]=desc', 200,
     page(where(lambda r: r['status'] == 4), ordered=sorted(where(lambda r: r['status'] == 4), key=lambda k: S[k], reverse=True)))
 add('list-sort-unknown', 'owner', LIST + '?sort[field]=nope', 500, SERVER)
+# checked_ordering keeps '?': order_by('?') is RANDOM(), compiled when the page's rows are read (the count and the page
+# checks are unaffected), so exactly one row leaves the order unambiguous. A '-' before it is not '?' (a FieldError).
+RANDOM_ROW = where(lambda r: r['status'] == 2)
+assert len(RANDOM_ROW) == 1
+add('list-sort-random-one-row', 'owner', LIST + '?query[status_flag]=2&sort[field]=?&sort[sort]=asc', 200, page(RANDOM_ROW))
+add('list-sort-random-desc', 'owner', LIST + '?sort[field]=?&sort[sort]=desc', 500, SERVER)
 add('list-sort-double-dash', 'owner', LIST + '?sort[field]=-creation_date&sort[sort]=desc', 500, SERVER)
 add('list-sort-invalid-page-first', 'owner', LIST + '?sort[field]=nope&pagination[page]=9', 500, SERVER)
 # Only the member's own columns order the list; paths through a relation or the owner account, transforms and the stored
@@ -1335,6 +1341,13 @@ add('archived-sort-lastname-flag-zero', 'owner', ARCHIVED + '?query[generalSearc
 add('archived-sort-lastname-desc', 'owner', ARCHIVED + '?query[sort_lastname_desc_flag]=1&sort[field]=start_date', 200,
     archived_page(OWN_ARCHIVED, ordered=ordered_by(OWN_ARCHIVED, lambda k: last(k) if SUBSCRIPTIONS[k]['associate'] else '\uffff', True)))
 add('archived-sort-unknown', 'owner', ARCHIVED + '?sort[field]=nope', 500, SERVER)
+# order_by('?') is RANDOM() compiled with the page; the archived view has no field filters, and one subscription id leaves
+# the order unambiguous. '-?' is a FieldError.
+RANDOM_ARCHIVED = searched(OWN_ARCHIVED, S['arch_late'])
+assert len(RANDOM_ARCHIVED) == 1
+add('archived-sort-random-one-row', 'owner', ARCHIVED + f"?query[generalSearch]={S['arch_late']}&sort[field]=?&sort[sort]=asc", 200,
+    archived_page(RANDOM_ARCHIVED))
+add('archived-sort-random-desc', 'owner', ARCHIVED + '?sort[field]=?&sort[sort]=desc', 500, SERVER)
 add('archived-sort-own-relation-invalid-page', 'owner', ARCHIVED + '?sort[field]=payment&pagination[page]=4', 404, INVALID_PAGE)
 add('archived-sort-age-unknown', 'owner', ARCHIVED + '?sort[field]=age', 500, SERVER)
 add('archived-sort-relation-replaced-by-lastname', 'owner', ARCHIVED + '?sort[field]=medical&query[sort_lastname_desc_flag]=1', 200,

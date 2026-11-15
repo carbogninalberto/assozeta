@@ -24,6 +24,9 @@ var (
 	// ErrModuleResponsesNotPorted refuses an input whose Django path is not
 	// ported, before any write (the 500 page).
 	ErrModuleResponsesNotPorted = refusal.New("module responses input not ported")
+	// ErrModuleResponsesUnreachable is a state no request or stored row
+	// produces (each site names the decoder or constraint that rules it out).
+	ErrModuleResponsesUnreachable = refusal.AppState("module responses: unreachable state")
 )
 
 // ModuleQueueRow is one response of update_queue's queryset.

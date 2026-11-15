@@ -196,7 +196,7 @@ func TestRenewAssociationOwnedByCollaborator(t *testing.T) {
 		_, err := newFormRenewals(tx).Renew(context.Background(), formRenewIdentity(domain.RoleAthlete),
 			SubscriptionCreateRequest{Body: memberRenewalBody(t), Form: true})
 		if !errors.Is(err, domain.ErrSubscriptionCreateNotPorted) {
-			t.Fatalf("want the not-ported refusal, got %v", err)
+			t.Fatalf("want the not-ported refusal (an imported owner), got %v", err)
 		}
 	})
 }

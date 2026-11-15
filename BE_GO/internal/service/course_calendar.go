@@ -44,10 +44,7 @@ var calendarColors = []string{"fc-event-primary fc-event-light-primary", "fc-eve
 var calendarReminderSeconds = map[string]int64{"minutes": 60, "hours": 3600, "days": 86400}
 var calendarReminderText = map[string]string{"minutes": "minuti", "hours": "ore", "days": "giorni"}
 
-var (
-	errCalendarRaised    = domain.ErrCalendarRaised
-	errCalendarNotPorted = domain.ErrCalendarNotPorted
-)
+var errCalendarRaised = domain.ErrCalendarRaised
 
 func calendarObject(fields ...any) domain.RequestObject {
 	object := domain.RequestObject{}
@@ -358,7 +355,9 @@ func (s *CourseCalendars) Calendar(ctx context.Context, identity domain.Resolved
 		// The scope user is never a collaborator; the view's collaborator
 		// branch (re-resolving identity) is not ported.
 		if identity.ScopeUser.Role == domain.RoleCollaborator {
-			return nil, errCalendarNotPorted
+			// The identity resolver rewrites a collaborator target to its connected user, which is a collaborator only
+			// when the association import (import_service.py) kept such a chain from an archive.
+			return nil, domain.ErrCalendarNotPorted
 		}
 		if sync, err = w.tx.GoogleSyncEnabled(ctx, identity.ScopeUser.ID); err != nil {
 			return nil, err

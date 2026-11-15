@@ -203,10 +203,7 @@ func ConsumerStorageException(operation string, err error) *celeryworker.Excepti
 			return consumerStorageFailure
 		}
 		code, message = api.ErrorCode(), api.ErrorMessage()
-		switch code {
-		case "RequestTimeout", "RequestTimeoutException", "Throttling", "ThrottlingException", "SlowDown", "RequestLimitExceeded",
-			"TooManyRequestsException", "ProvisionedThroughputExceededException", "TransactionInProgressException", "PriorRequestNotComplete",
-			"BandwidthLimitExceeded", "EC2ThrottledException", "RequestThrottled", "RequestThrottledException":
+		if botocoreRetriedCodes[code] {
 			return consumerStorageFailure
 		}
 	}

@@ -1124,7 +1124,7 @@ No refusals of its own (re-verification record). Nothing to classify.
 |---|---|---|---|---|
 | PATCH invoice/<uid>/update, POST invoice-customers/add | restore becomes pending between admission and task | `service/invoice_sync_print.go:258` (`ErrInvoiceSyncPrintDeferred`) | B (kept: a timing race between two requests, with no input that reproduces it) | Race window only. |
 | PATCH invoice/<uid>/update | multipart file parts | `service/invoice_sync_print.go:173` | B (**ported** in v2-rest-docs) | UI JSON (`accounting/receipts/modals/EditModal.svelte:47`). |
-| POST invoice-customers/add | dates before year 1000; FatturaPA inputs outside subset | `service/invoice_sync_print_customer.go:60,93-97` | B (kept: `strftime` of such a year is the C library's, and the a38 FatturaPA generator's validation outside the ported subset has no Go equivalent) | UI sends numeric line values (`components/invoice/InvoiceForm.svelte:13,594`). legacy: no; medium. |
+| POST invoice-customers/add | dates before year 1000; FatturaPA inputs outside subset | `service/invoice_sync_print_customer.go:60,93-97` | B (**ported in long tail PR 3**: platform `strftime` year and every `fatturapa` input; previously kept: `strftime` of such a year is the C library's, and the a38 FatturaPA generator's validation outside the ported subset has no Go equivalent) | UI sends numeric line values (`components/invoice/InvoiceForm.svelte:13,594`). legacy: no; medium. |
 
 ### maintainer-report.md
 Status report; it lists no per-route refusals beyond those in the family docs. Nothing to classify.
@@ -1308,9 +1308,9 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | POST subscription/import/upload `{document_id, map, default}` | import of a stored Excel workbook | ported (`importDocument`, `subscription_import_rows.go`) | ported | `routes/association/Members/import/ImportMembers.svelte:46-52`. Workbooks and values outside the subset in subscription-import-upload.md stay refused (B). |
-| same | the stored document is a CSV file | ported (v2subs: `pandascsv.ReadText`, `subscriptionImportCSVCell`) | **ported** | The dropzone accepts `text/csv` (`sections/Section1.svelte:63`). Files outside `pandascsv`'s subset stay refused (B): a whitespace-led line after a bare carriage return, decimal text whose value depends on how pandas was compiled. |
+| same | the stored document is a CSV file | ported (v2subs: `pandascsv.ReadText`, `subscriptionImportCSVCell`) | **ported** | The dropzone accepts `text/csv` (`sections/Section1.svelte:63`). Files outside `pandascsv`'s subset stay refused (B): a whitespace-led line after a bare carriage return, decimal text whose value depends on how pandas was compiled. **Long tail PR 3:** the platform-built decimals follow the platform (macOS arm64 fused, Linux plain) and the bare-CR re-read is ported; only the re-read cases pandas answers stay refused (`pandascsv.ErrBareCRBacktrack`). |
 | same, multipart `associates_file` | Excel suffix (xls/xlsx/…) | ported (`pandasxlsx.Read`) | ported | `sections/Section1.svelte:33-37` uploads the file. A legacy `.xls` or an `.ods` file answers the 500 page on Django too. |
-| same | workbook with boolean, error, time-of-day or duration cells, the 1904 date system, a non-text header cell, only whole-number columns | `pandasxlsx.ErrUnsupported` | B (**ported**: cell kinds and the 1904 system in v2subs; a non-text header **ported in t6x2** ; whole numbers outside int64 **ported in t11camps**) | Member sheets carry names and text columns; these forms need a hand-made or converted sheet. Cost: medium. Non-text header labels are answered as the JSON renderer writes them (numbers and booleans as they are, a date as its ISO text, a duration as its seconds) and each value of the request's `map` is looked up in the row's Index as pandas does (`pandasxlsx.Frame.Lookup`): cases `xlsx-mixed-labels`, `mixed-labels`, `xlsx-number-labels`, `number-labels`, `xlsx-decimal-labels`, `decimal-labels`, `xlsx-boolean-labels`, `boolean-labels`, `xlsx-text-boolean-labels`, `text-boolean-labels`, `xlsx-date-labels`, `date-labels`, `xlsx-time-label`, `xlsx-error-label-server-error`, `error-label-server-error`. **Ported in t11camps**: a label that is a whole number outside int64 (also an integral float cell such as 1E+20): pandas' uint64, float64 or object Index and its lookups, positions included (cases `xlsx-big-number-labels`, `big-number-labels`, `xlsx-uint-labels`, `uint-labels`, `xlsx-big-float-labels`, `big-float-labels-position-fails`, `big-float-labels`, `xlsx-uint-float-labels`, `uint-float-labels`; lookups checked against pandas in `pandasxlsx/testdata/pandas_lookups.json`). Kept refused: text looked up in a header of only dates or only durations (pandas' partial-date lookup). |
+| same | workbook with boolean, error, time-of-day or duration cells, the 1904 date system, a non-text header cell, only whole-number columns | `pandasxlsx.ErrUnsupported` (long tail PR 3: every site checked against pandas; what read_excel raises on is the same 500, the rest ported; left as `pandasxlsx.ErrWorkbookNotPorted`: non-UTF-8 XML, durations past `Timedelta.max`, size bounds, date-index text lookup) | B (**ported**: cell kinds and the 1904 system in v2subs; a non-text header **ported in t6x2** ; whole numbers outside int64 **ported in t11camps**) | Member sheets carry names and text columns; these forms need a hand-made or converted sheet. Cost: medium. Non-text header labels are answered as the JSON renderer writes them (numbers and booleans as they are, a date as its ISO text, a duration as its seconds) and each value of the request's `map` is looked up in the row's Index as pandas does (`pandasxlsx.Frame.Lookup`): cases `xlsx-mixed-labels`, `mixed-labels`, `xlsx-number-labels`, `number-labels`, `xlsx-decimal-labels`, `decimal-labels`, `xlsx-boolean-labels`, `boolean-labels`, `xlsx-text-boolean-labels`, `text-boolean-labels`, `xlsx-date-labels`, `date-labels`, `xlsx-time-label`, `xlsx-error-label-server-error`, `error-label-server-error`. **Ported in t11camps**: a label that is a whole number outside int64 (also an integral float cell such as 1E+20): pandas' uint64, float64 or object Index and its lookups, positions included (cases `xlsx-big-number-labels`, `big-number-labels`, `xlsx-uint-labels`, `uint-labels`, `xlsx-big-float-labels`, `big-float-labels-position-fails`, `big-float-labels`, `xlsx-uint-float-labels`, `uint-float-labels`; lookups checked against pandas in `pandasxlsx/testdata/pandas_lookups.json`). Kept refused: text looked up in a header of only dates or only durations (pandas' partial-date lookup). |
 | same | a number or date text in a date column that dateutil reads as a year below 1000 | `service/subscription_import_rows.go` (`subscriptionImportDate`) | B (**ported in t6x2**) | A date cell or date text with a year below 1000 is written by `strftime('%d/%m/%Y')` as the C library does (four digits on macOS, the digits alone on glibc: `dto.LibcYear`); where the year is not padded `strptime` refuses the certificate's date and the certificate is deleted. Cases `xlsx-early-years`, `early-years` (the fixture carries both expectations; the adapter picks the one of the platform Django runs on). |
 | same | CSV invalid UTF-8, NUL, bare CR, columns with İ/Σ | `service/subscription_import_upload.go` | B (columns with İ/Σ ported in t4l1 through `dto.PythonLower`; invalid UTF-8 and NUL were ported in v2subs. Kept refused: a whitespace-led line after a bare carriage return (the C tokenizer steps back over lines it already consumed; what it yields, repeated lines or its "Buffer overflow caught" error, follows its internal buffer state); decimal text whose value depends on how pandas was compiled; invalid UTF-8 in a file larger than the parser's read buffer) | A Latin-1 CSV exported from old Excel gives invalid UTF-8: user-producible but a minority. legacy: n/a. Cost: medium. |
 | same | file given as `document_id` | `service/subscription_import_upload.go` | B (ported in t4l1: `uuid.UUID(file)` is the 400 `'InMemoryUploadedFile' object has no attribute 'replace'`, `TemporaryUploadedFile` for a request over the in-memory upload size) | The UI sends a string. The temporary upload class has a case since t6x2 (`large-file-document-id`). |
@@ -1625,7 +1625,7 @@ state; they are refusal sentinels again:
 
 | Sentinel | Sites | Django | Replay |
 |---|---|---|---|
-| `pdfexport.ErrNotPorted` | `<img>` with a server file or URL, the `<seq*>` tags | reportlab draws them | before any write |
+| `pdfexport.ErrNotPorted` | `<img>` with a server file or URL, the `<seq*>` tags (`<seq*>` **ported in long tail PR 3**) | reportlab draws them | before any write |
 | `domain.ErrDocumentWritesNotPorted` | multipart body over 250 MiB; storage failure on documents/add and on the medical upload | spools the body to disk; answers botocore's text (400, or its own 500 JSON) | none: the body is over the handoff limit, or the Document row and the upload are recorded effects |
 | `dto.ErrAuditNotPorted` | JSON nested past 500 levels | answers unless the live stack hits the recursion limit | reads: yes |
 | `domain.ErrAssociationTransferNotPorted` | import/validate temporary-file failures | its own JSON with the `OSError` text | yes, when the body fits the handoff limit |
@@ -1645,3 +1645,127 @@ reverts.
 Also fixed on the combined branch: release feed items `normalize_release` raises on answer Django's 500 page
 (`instanceprobe.ErrReleaseRaises`, application state) instead of the X2 provider-failure body, which stays for values
 Django answers (instance-outbound cases `releases-feed-item-not-object`, `releases-feed-null-assets`).
+
+## Long tail PR 3, agent A
+
+Same rule per return site (owner decision 2026-11-15). Approved divergences used: X2 only (release feed and redirects
+already answered natively; their sentinels are now plain errors). `refusal_reach.py` rows for these points:
+HTTP/WebSocket 53 -> 28, other roots 12 -> 5; whole report 297 -> 263 (HTTP/WebSocket 260 -> 233; `service.errInvoiceViewsNotPorted` 2 -> 0 too, its only source was the FatturaPA mapping).
+
+| Sentinel | HTTP/WS before -> after | What changed |
+|---|---|---|
+| `stripeapi.ErrNotPorted` | 3 -> 0 | **ported**: `str(float)` for every value (exponent notation, nan, inf); a Go type outside the parsed JSON values is app state |
+| `bs4prettify.ErrUnsupported` | 1 -> 0 | app state: the 32 MiB output cap cannot be reached under the 500,000-character, depth-32 limits (10.3 MiB measured) |
+| `associationexport.ErrUnsupportedValue` | 0 -> 0 (worker 1 -> 0) | app state: date/time/numeric texts the ORM cannot write |
+| `instanceprobe.ErrNotPorted`, `ErrReleaseNotPorted`, `ErrProbeNotPorted` | 5 -> 0 | short bodies are Django's 500 (`IncompleteRead` escapes `read_json`): app state; redirects and feed values keep the X2 answers as plain errors; an empty user info pair in the AI base URL is **ported** |
+| `pydateutil.ErrUnsupported` | 7 -> 0 | **ported**: any Python str (lone surrogates, invalid bytes decoded like Django's query text) and any length |
+| `codicefiscale.ErrUnsupported` | 2 -> 0 | **ported**: invalid bytes decoded with errors='replace' |
+| `fatturapa.ErrUnsupported` | 4 -> 0 | **ported**: overflowing floats, str() of lists/dicts, Decimal strings/tuples/huge exponents, XML dates before 1000 (platform C library), the 28-digit context rounding |
+| `mentions.ErrUnsupported` | 7 -> 7 | **ported** in the package: any stored markup through the html.parser/bs4 tree port; a legacy alias whose `lower()` is no key is app state. The sentinel stays for the service resolvers (mention paths naming attributes the port does not read) |
+| `pdfexport.ErrNotPorted` | 16 -> 16 | **ported**: the `<seq*>` tags (process-wide sequencer, as reportlab). Still refused: `<img>` with a file path or URL source, a template printing the sequencer object, and the paragraph features listed in `pdf-exports.md` |
+| `smtpsend.ErrUnsupported` | 3 -> 1 | **ported**: the send_email path (Header.encode folding, unknown-8bit surrogates, any envelope; Python's exceptions are send_email's `(False, e)`). The Django EmailMessage path is ported as well (`get_mailbox` for addresses, `forbid_multi_line_headers`, folding at 78, quoted-printable bodies). Still refused: an encoded word in an address whose charset is a Python text codec other than UTF-8, US-ASCII or ISO-8859-1 (`smtpsend.ErrEncodedWordCharset`) |
+| `agentllm.ErrNotPorted` | 1 -> 0 | **ported**: the base URL as httpx parses and sends it. An `xn--` host is decoded before each request like httpx's `URL.host` (`idna2008.Decode`, idna's own message texts) and a port past int's range is kept as Python keeps it |
+| `pandascsv.ErrUnsupported` | 1 -> 1 | **ported**: platform-built floats (macOS arm64 fused, Linux plain, as xlsxexport), int32 exponents, the bare-CR re-read; narrowed to `ErrBareCRBacktrack` for the re-read cases pandas answers |
+| `pandasxlsx.ErrUnsupported` | 1 -> 1 | every site checked against pandas with a hand-built workbook: raises -> the same 500 (`ErrInvalid`), answers -> **ported**; narrowed to `ErrWorkbookNotPorted` (non-UTF-8 XML, durations past `Timedelta.max`, size bounds, date-index text lookup) |
+| `importeffects.ErrUnsupported` | 2 -> 2 | unchanged (crafted archive values and ZIP shapes) |
+
+Family runs (local, `--versioned`, 4 transports): profile-template 86, stripe-routes 127, payment-reads 293, instance-updates 40, subscription-create 212, instructor-writes 180, subscription-renew 131, subscription-misc 178, document-views 172, balance-sheet 97, course-list 175, saved-reports 32, subscription-reads 364, printing-generate 113, course-subscriptions 168 (cases per transport, all green); associates-draft stops on django-native at `associates-draft-edit-year-below-1000-born-date-server-error` (the fixture is Linux's `strftime`; macOS pads the year), so it is left to CI; on the final code communications-send-email 61, invoice-parties 277, invoice-sync-print 82, invoice-views 93, payment-misc 120, subscription-import-upload 98 and ws-agent 60 (54 through Caddy) are green. instance-outbound passed 130 on four transports before the Django e-mail path change; on the final code three local reruns stopped on a different django-native diagnostics-probe case each (deadline under load 20-50), so it is left to CI.
+
+## Long tail PR 3, agent B
+
+Rule per return site (owner decision, 2026-11-15): port what a request or a stored row reaches when Django answers
+normally; `refusal.AppState` where Django raises, where only the application writes the state, where a constraint or the
+server's own composition rules it out (`domain.ErrServerComposition`), or delete the dead code; only the approved
+divergences answer external, platform or timing outcomes natively (X1 here). Everything else stays a refusal and is
+listed. Per-site table: `tmp/long-tail/pr3-B.md` (worktree notes).
+
+| point | ported (cases) | now application state / composition / deleted | left |
+|---|---|---|---|
+| document upload (`documents-writes.md`) | storage client errors botocore raises at once: documents/add 400 after deleting the Document, medical upload 500 JSON, certificate upload 500 page (`add-storage-refused-removes-document`, `add-storage-key-too-long-removes-document`, `medical-storage-refused-keeps-certificate`, `certificate-storage-refused-keeps-document`) | — | transport and retried storage failures, multipart-size bodies (not replayable), bodies over 250 MiB, RFC 2231 codecs |
+| association transfer (`association-transfer.md`) | import/validate temporary-file OSError text (`import-validate-name-over-255-bytes`); import/start with a password file part (`import-start-password-file`) | — | archive texts, multipart decoder, referenced export document, negative stored size |
+| instance administration (`instance-admin.md`) | nested form list keys as a MultiValueDict repr (`integration-ai-put-form-list-nested`) | runner replies nested past the decoder (combined branch: agent C's runner depth error; lone surrogates are ported by agent C); dead IDNA guard | a multipart upload in a nested list key |
+| SMTP verify (`communications-smtp.md`) | X1: verified false with Go's text | marker made private; sentinel deleted | — |
+| send e-mail (`communications-send-email.md`) | (combined branch: agent A's smtpsend renders every message, so the send path refuses nothing) | — | — |
+| e-mail tasks (`tasks-db-c.md`) | — | emailrender's refusals returned as application state | concurrent configuration delete (header folding and envelope: agent A's smtpsend) |
+| workflow update, profile template | — | composition guard; decoder and prettify bounds; both sentinels deleted | form tree nesting band |
+| payment state, writes, stripe, invoice core/parties | every invoice description name formatted with `str()` (`invoice-sync-print-update-subscription-float-name-invalid-date-ignored`); a receipt value kombu cannot encode skips the publish (`payment-state-approve-sent-date-receipt-integer-over-4300-json-error` pins the parser's 400 that precedes it); random order on invoice/list and invoice-suppliers/list (`invoice-core-list-sort-random`, `invoice-parties-supplier-list-sort-random`) | composition guards, dead fee wrappers and helpers, amount precision, personaSearch, column sets; payment state and invoice core sentinels deleted | payment add `payment_id`, form update, SuspiciousFileOperation, Stripe reply ids, nesting bands, fatturapa-dependent sites |
+| payment reads, statistics, calendar | Unicode digits in athlete-dashboard event starts (`statistic-reads-athlete-unicode-digit-start-listed`, `statistic-reads-athlete-unicode-digit-month-skipped`) | app-written caches and dates, composition, jsonb values, collaborator scope; calendar sentinel deleted | `?` with a text search, `full_name` order, export float under/overflow, Stripe payloads, meta floats, pre-1000 years |
+| subscriptions | quick-mode numeric ids as `uuid.UUID(int=...)` (`quick-duplicate-current-id-as-integer`, `quick-associate-number-server-error`, `quick-associate-true-server-error`, `quick-associate-float-server-error`) | composition, unique usernames, jsonb plan arrays, FK constraints; misc-routes and clear-deleted sentinels deleted | random order (agent C's marker), lifecycle concurrent deletes, most create/renew value ports, document cascades of the cleanup workers |
+| data restore, instance setup | progress read failures are no progress (progress.snapshot) | app-written progress, paths and summaries; dead IDNA guards; restore-cleanup sentinel deleted | upload part headers, archive validation outside the port, failed import exception text, logo collision |
+| docmanager, modules, printing, instructors, payment misc | GetObject client error text; `Content-Disposition: None` | composition, decoders, uuid4 keys, numeric(4,2); instructor-hours sentinel deleted | raw HEAD errors, module depth band and big ints, pdfexport subset, decimal context cases, quote values |
+| audit serializer, saved reports | — | — | JSON nested past 500 (platform); the report/MCP conversions (a subsystem) |
+
+`refusal_reach.py` HTTP/WebSocket rows of agent B's points: 102 before, 78 after (other roots 17 → 12); 36 points
+before, 26 after. Sentinels deleted: SMTP verify, workflow update, profile template, calendar, misc routes, instructor
+hours, payment state, invoice core, clear-deleted and restore-cleanup workers. Whole report on this branch: 254 → 230
+HTTP/WebSocket rows (43 → 38 other).
+
+## Long tail PR 3, agent C
+
+Same rule as PR 2 (owner decision, 2026-11-15): port what Django answers normally, with a parity case; `refusal.AppState`
+(Django's 500 page, never handed off) where Django raises, or where only the application writes the state or a
+constraint makes it impossible; external, platform or timing sites outside the approved divergences stay refusals.
+
+| Sentinel | Ported (cases) | Now AppState (rule) | Passed through | Left (refusal) |
+|---|---|---|---|---|
+| `service.ErrInstanceBackupsNotPorted` (deleted) | runner replies holding a lone surrogate: kept as Python keeps them; the 500 page where the value reaches a rendered body, a rendered error message or the manual backup's audit entry (instance-backups `overview-ignored-key-lone-surrogate`, `overview-archive-lone-surrogate`, `overview-runner-error-lone-surrogate`, `create-operation-id-lone-surrogate`, `create-operation-note-lone-surrogate`; instance-backups-actions `keep-runner-error-lone-surrogate`, `keep-accepted-lone-surrogate`; instance-updates `status-lone-surrogate`, `status-runner-error-lone-surrogate`) | a reply nested past 500 levels (3: the runner, `selfhost/updater/server.py`, writes `json.dumps` of fixed shapes) | – | – |
+| `service.ErrInvoiceSyncPrintDeferred` | – | the eager print deferred during a restore (2: Celery's `Task.apply` re-applies the Retry signature recursively and the recursion ends in a `RecursionError` no view catches; probed at 960 starting depths) | – | – |
+| `repository.errSupplierReferenceUnknown` | – | a foreign key to the supplier other than the four the models declare (3) | – | – |
+| `repository.ErrReleaseCacheShape` | – | a cached release catalog the releases view did not write (3) | – | – |
+| `service.ErrSupplierOrdering` | – | an ordering outside the model's columns (2: `order_by` raises `FieldError`) | – | – |
+| `service.ErrSubscriptionUpdateNotPorted` | – | text with NUL or a lone surrogate (2: auditlog's pre-save entry is rejected by PostgreSQL before any write) | – | – |
+| `service.ErrCourseListUnported`, `ErrCourseListExportUnported` (deleted) | – | – | pdfexport's own refusal | – (the ordering branch was dead code) |
+| `service.ErrCourseSubscriptionExportUnsupported` (deleted) | `lessons_left` stored as a list or dict: Python's `str()` in stored key order (unit test) | – | pdfexport's own refusal | – |
+| `service.ErrBalanceSheetExportNotPorted` | amounts `float()` reads as nan or infinity, formatted as Python does (unit test) | – | pdfexport's own refusal | a description that is a number, list or dict |
+| `service.ErrSubscriptionSignNotPorted`, `ErrSubscriptionSignatureMigrationNotPorted` (deleted) | an existing object under the new signature key: `get_available_name`'s alternative name (`documentkey.AvailableName`; subscription-sign `upload-key-taken-alternative-name`) | – | – | – |
+| `service.ErrPersonaNotPorted` | a taken picture key (alternative name); HeadObject, PutObject and PutObjectAcl error answers botocore raises without retrying: the serializer's 400 with botocore's text (personas-writes `update-picture-head-denied`, `update-picture-put-denied`, `update-picture-key-taken`) | a key the storage location cannot hold (3) | – | errors botocore retries (HTTP 429, 500, 502, 503, 504, 509, the throttling codes, `RequestTimeout`, `BadDigest`) and connection failures; the router create picture branch; HTML form bodies |
+| `service.errSubscriptionReadsLazyOrder` (deleted) | `sort[field]=?`: `ORDER BY RANDOM()` (subscription-reads `list-sort-random-one-row`, `list-sort-random-desc`, `archived-sort-random-one-row`, `archived-sort-random-desc`) | – | – | – |
+| `service.ErrDocumentViewNotPorted` (deleted) | the legacy signature URL: fetched like `requests.get(url, timeout=10)`, `None` on any failure (document-views `document-views-subscription-legacy-signature-unreachable`) | – | mentions' and the invoice view's own refusals | – |
+| `service.ErrSubscriptionMedicalNotPorted` | NULL member names (`None` in the placeholder); a placeholder name over 255 characters (certificate written, then the 500 page) (unit tests) | an unwired appointment printer (3, `domain.ErrServerComposition`) | – | a placeholder name with a control character or one the storage rejects |
+| `service.ErrEmailRenderNotPorted` | a payment year before 1000: glibc's unpadded `%Y` (production image; macOS pads, so unit test only) | – | – | `collaborators/add` e-mail values from form bodies and uploads |
+| `service.ErrCampsPaymentNotPorted` | walks whose outcome depends on the row order: Go reads the order PostgreSQL returns for Django's own query and stops at the first failure (camps-periods `services-update-walk-first-completes-second-fails`) | – | – | hidden payment without association, a save failure without a message, negative amounts (check-constraint texts) |
+| `service.ErrAssociateDraftNotPorted` (deleted), `ErrInstructorReportNotPorted`, `ErrSubscriptionImportNotPorted` | date texts of any kind (combined branch: agent A's pydateutil reads every Python str) | pydateutil's unexpected local zone (3: every caller passes UTC) | – | the other sites of the last two |
+| `service.ErrCourseLocationUploadUnsupported`, `ErrSubscriptionMembershipUploadUnsupported` (deleted) | `documents_data` filenames Django cannot store, in Django's order (no row for a failed insert; the row and its entry, then the 500 page, for a non-str value or a name `Storage.save` rejects); membership form bodies through DRF's HTML list parsing (course-location-writes `add-document-filename-*`, `update-document-then-filename-list`; subscription-memberships `add-document-filename-*`, `update-form-documents-data-key`, `update-form-indexed-keys-ignored`, `add-multipart-indexed-documents`) | – | – | – |
+| `service.ErrBakneyPublicLinkNotPorted` (deleted) | a paired server's `expires_at` whose UTC instant lies outside years 1..9999: Python compares it with now without error (misc-routes `card-paired-server-far-future-grant`, subscription-misc `validate-paired-server-far-future-grant`) | – | – | – |
+| `service.ErrProfileSettingsUpload`, `ErrOnboardingNotPorted` (deleted) | multipart bodies over 2.5 MiB with a file part: Django spools the file (`TemporaryUploadedFile`) and answers as for an in-memory one, except that DRF names the class (profile-settings `post-multipart-spooled-file-saves-user-then-server-error`; profile-misc `multipart-spooled-file-membership-data`, `multipart-spooled-file-without-branch`) | an onboarding fee DRF's `DecimalField` accepted that `float()` rejects (3: none exists) | – | – |
+
+`refusal_reach.py` HTTP and WebSocket rows for these points: 104 before, 43 after (other rows 9 → 7; 35 → 16 sentinels);
+whole report 260 → 199 HTTP/WebSocket (297 → 234 overall). Evidence: local sweep `lt3C-1` from the branch head, 46 HTTP
+families on four transports and the signature migration command harness (10/10), green except camps-periods,
+course-location-writes and subscription-memberships (expectations fixed; reruns `lt3C-2`, `lt3C-3` green: 140, 73, 103
+cases) and associates-draft, whose Django side fails the existing `edit-year-below-1000-born-date-server-error` on macOS
+(the local Python pads `%Y`; the production image does not) in every local sweep, unrelated to this change. Mutations, each CAUGHT: dropping the overview body's render check
+(`lt3C-mut1`, `overview-schedule-nan`), refusing lone surrogates in the runner decoder again (`lt3C-mut3`,
+`overview-ignored-key-lone-surrogate`), a `-` instead of `_` in the alternative storage name (`lt3C-mut2`,
+`upload-key-taken-alternative-name`).
+
+The runner change removes the `service/instance_updates.go` mapping of the runner decoder's refusal (agent B's
+`domain.ErrInstanceAdminRefused` keeps its other sites). `documentkey.AvailableName` (`pkg/storage/documentkey/available.go`) reproduces
+`get_available_name` for every caller that still refuses a taken key.
+
+## Long tail PR 3, combined branch review
+
+The application-state conversions of agents A, B and C were sampled against the Django source (54 sites). A state
+the association import can write from an archive counts as reachable: the import keeps archive values as they are and
+can reuse an existing user as the owner by UUID without checking the role (`import_service.py`).
+
+| Site | Was | Now | Why |
+|---|---|---|---|
+| `service/payment_state.go` `paymentStateReceiptArg` | app state for an upload | **ported** (case `payment-state-approve-paid-flow-receipt-file-not-published`) | a multipart file part as `send_receipt_email`: kombu cannot encode it inside `on_commit(robust=True)`, Django answers 200 |
+| `service/profile_misc.go` onboarding fee | app state | **ported**: the view's fixed JSON 500 | DRF's `DecimalField` accepts `'_1'`, `float()` raises inside the view's `except Exception` |
+| `service/payment_reads.go` compressed athlete list, `service/payment_paid_flow.go` scope user | app state | refusal (`ErrPaymentReadsNotPorted`, `ErrPaymentStateNotPorted`) | an imported archive can make an athlete an owner; Django answers 200 |
+| `service/statistic_reads.go` registry dates with other digits, stored JSON past the reference parser | app state | refusal (`ErrStatisticNotPorted`) | imported registry meta; `Payment.course`/`meta` are writable JSON fields Django stores and reads deeper |
+| `service/course_calendar.go` collaborator scope user | app state | refusal (`ErrCalendarNotPorted`) | the import keeps collaborator chains |
+| `service/subscription_create.go`, `subscription_create_quick.go` fee plans that are not a list of objects | app state | refusal (`ErrSubscriptionCreateNotPorted`) | imported plans; `get_subscription_fee`'s `except` falls back to the default fee |
+| `service/subscription_renew.go` collaborator owner with one association | app state | refusal (`ErrSubscriptionCreateNotPorted`) | the import can reuse a collaborator as the owner |
+| `service/orphan_medical_cleanup.go` creation date outside Python's years | app state | refusal (`ErrOrphanMedicalUnsupported`) | the import stores the archived `creation_date` |
+| `repository/instance_release_cache.go` pickles and release dicts Go does not decode | app state | refusal (`ErrReleaseCacheShape`); a value that is not a list stays app state | Django caches GitHub's payload as it is |
+| `smtpsend` text that is no Python str | app state | refusal | raw process environment bytes, which Python decodes with surrogateescape |
+
+Kept as application state after the check: Stripe cents overflow, the cached Stripe fees, the lazy order marker, the
+export label and decimal invariants, NaN percentages, `subscription_lifecycle` FK and association reads, the
+subscription create invariants, the quick mode's owner association count, the renew scope user and same-transaction
+read, statistic infinities, docmanager stored names, data restore progress and paths, module key collisions, the
+persona picture key, the print deferral during a restore (eager `Task.apply` recursion), supplier ordering, NUL text on
+subscription update, the supplier foreign keys, runner reply depth, the release feed's short body (Django raises
+`IncompleteRead`), the mentions alias `KeyError`, the Stripe encoder's Go types and the subscription export table.

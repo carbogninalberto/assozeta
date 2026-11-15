@@ -54,7 +54,13 @@ cursor advanced to the dispatch time, three operational attempts, idempotency ke
 - `renew_memberships_payments`: Django cache lock, `send_mail` to support and a
   self-scheduled Celery retry (`apply_async`).
 - `association_quote_assign`: sends a templated email to each assigned member.
-- `cleanup_old_exports_task`: deletes export files from storage.
+- `cleanup_old_exports_task`: deletes export files from storage; ported in
+  [tasks-db-e](tasks-db-e.md), where a run whose export document other rows
+  reference stays refused.
+
+Since long-tail PR 3 (agent B) `clear_deleted_subscription`'s collector graph refusal is application state
+(`ErrClearDeletedUnreachable`, the job fails from Go, never handed off): the committed model graphs never reach it,
+and `ErrClearDeletedUnsupported` is deleted. The document-reference refusal of `cleanup_old_exports_task` stays.
 
 ## Evidence
 

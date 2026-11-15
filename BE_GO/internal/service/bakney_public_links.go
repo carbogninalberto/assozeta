@@ -8,7 +8,6 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // BakneyPublicLinkTransaction is the transaction.atomic block of
@@ -45,9 +44,6 @@ type BakneyPublicLinks struct {
 func NewBakneyPublicLinks(sso *BakneySSO, store BakneyPublicLinkStore) *BakneyPublicLinks {
 	return &BakneyPublicLinks{sso: sso, store: store}
 }
-
-// ErrBakneyPublicLinkNotPorted: an expires_at whose instant Go's time does not hold.
-var ErrBakneyPublicLinkNotPorted = refusal.New("bakney public link value is not ported")
 
 // SourceToken is source_token(kind, token, resource_id): nil when the paired
 // server does not vouch for the token (or cannot be asked). kind is "card"
@@ -126,10 +122,8 @@ func (l *BakneyPublicLinks) source(ctx context.Context, tx BakneyPublicLinkTrans
 	if !ok {
 		return nil, nil // fromisoformat on a non-str: TypeError
 	}
-	expires, aware, outcome := dto.DjangoParseDateTime(raw)
+	expires, aware, outcome := dto.DjangoParseDateTimeWide(raw)
 	switch outcome {
-	case dto.DjangoDateTimeNotPorted:
-		return nil, ErrBakneyPublicLinkNotPorted
 	case dto.DjangoDateTimeParsed:
 	default:
 		return nil, nil

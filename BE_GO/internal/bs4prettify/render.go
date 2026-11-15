@@ -8,7 +8,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/pystr"
 )
 
-// maxOutputBytes bounds the output; past it Prettify returns ErrUnsupported.
+// maxOutputBytes bounds the output; past it Prettify returns ErrOutputTooLarge.
 const maxOutputBytes = 32 << 20
 
 const (
@@ -116,7 +116,7 @@ func shouldPrettyPrint(n *node) bool { return !preserveWhitespaceTags[n.name] }
 
 func (r *renderer) write(piece string) error {
 	if r.out.Len()+len(piece) > maxOutputBytes {
-		return ErrUnsupported
+		return ErrOutputTooLarge
 	}
 	r.out.WriteString(piece)
 	return nil
@@ -134,7 +134,7 @@ func (r *renderer) writeIndented(piece string, before, after bool) error {
 		newline = 1
 	}
 	if r.out.Len()+spaces+len(piece)+newline > maxOutputBytes {
-		return ErrUnsupported
+		return ErrOutputTooLarge
 	}
 	for spaces > 0 {
 		chunk := spaces

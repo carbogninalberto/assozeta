@@ -124,8 +124,12 @@ Refused explicitly (the connection ends, or run-agent exits 1):
   names, tool call indexes that are floats, booleans or containers, and a
   forced loop-detection answer that fails (its error text would become an
   assistant message).
-- Base URLs httpx would rewrite (non-ASCII, upper-case hosts, user info,
-  query, fragment, percent escapes).
+- (Long tail PR 3: base URLs are parsed and sent the way httpx 0.28.1 does, `internal/agentllm/url.go`, 96 golden URLs;
+  httpx.InvalidURL is `agentllm.InvalidURLError` with Python's text; an `xn--` host is decoded with `idna.decode`
+  before each request (`idna2008.Decode`, idna's own message texts) and a port beyond int's range is kept as Python
+  keeps it, so the connection fails as `Connection error.`. A base URL httpx rejects makes `AsyncOpenAI(...)` raise
+  while the provider is built: Go answers like the consumer, close 4004 on connect and the "Configurazione AI non
+  disponibile" frame on a refresh; cases `invalid-base-url`, `refresh-invalid-base-url`.)
 - Configuration values outside the integer/number forms (`max_iterations`,
   `history_cap`, `ws_rate_limit`, `ws_timeout`), missing configuration keys.
 - A business tool input the [mcp-server](mcp-server.md) family refuses (the

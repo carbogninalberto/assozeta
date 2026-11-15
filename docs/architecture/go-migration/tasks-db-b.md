@@ -68,18 +68,15 @@ schedules, activates Go ownership or installs a service.
   saves, including the paths where malformed `meta` or `expected_absences` end
   the task midway with earlier saves kept.
 - `generate_coupon_if_not_exists`: creates Stripe coupons and promotion codes.
-- `send_reminders`: calls `send_email_html` in-process; with a communication
-  configuration it sends SMTP from a timer thread in the worker, otherwise it
-  publishes `send_mail_async` with a body rendered from a Django template.
-- `send_expiring_certificate_email`, `send_expired_certificate_email`: render
-  Django templates and send SMTP synchronously through the association's
-  configuration (or publish `send_mail_async` with the rendered body).
+- `send_reminders`, `send_expiring_certificate_email` and
+  `send_expired_certificate_email` are ported in [tasks-db-c](tasks-db-c.md); the
+  notes that stood here described the earlier slice.
 - `send_user_partial_registration_email`: the published body is a rendered
   Django template (`email/_base.html` and the brand context processor); Go has
   no template parity yet.
-- `auto_delete_orphan_medical_certificate`: see the ledger entry; the destructive
-  Document cascade and storage deletion keep it in review, and Go keeps
-  candidate discovery only.
+- `auto_delete_orphan_medical_certificate`: ported in
+  [tasks-db-f](tasks-db-f.md) with the destructive Document cascade; runs whose
+  document other rows reference stay refused.
 - `check_workflows_trigger`, `check_workflows_trigger_cron`,
   `workflow_block_execute`: not periodic. They are produced only as Celery
   messages by Django (signals, `AutomationWorkflow.trigger`, and their own ETA
@@ -92,6 +89,12 @@ schedules, activates Go ownership or installs a service.
   the routes that send those signals (subscription creation, signing) are not in
   Go yet. `new_course_subscription`, `medical_certificate_expired`,
   `medical_certificate_expiring` and `payment_paid` have no sender in `BE`.
+
+Since long-tail PR 3 (agent B) the e-mail tasks keep one refusal: an SMTP message or envelope outside the `smtpsend`
+subset (a reminder title with a line break, an address with quotes or spaces). Template inputs the renderer refuses
+are application state (`emailrender`'s own error, the job fails from Go, never handed off), since the repository
+templates and the `auto_now` brand date are the app's own. `auto_delete_orphan_medical_certificate` keeps its
+referenced-document refusal.
 
 ## Evidence
 

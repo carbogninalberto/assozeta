@@ -7169,6 +7169,194 @@
    "content_type": "multipart/form-data; boundary=profilo"
   },
   {
+   "name": "profile-misc-multipart-spooled-file-membership-data",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'non_field_errors': [ErrorDetail(string='Invalid data. Expected a dictionary, but got TemporaryUploadedFile.', code='invalid')]}"
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "20.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "5",
+      "lead_sport_association_size": "True",
+      "lead_sport_market_channel": null,
+      "phone": "+39 333 0000000"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "raw_parts": [
+    "--profilo\r\nContent-Disposition: form-data; name=\"membership_data\"; filename=\"a.txt\"\r\nContent-Type: application/octet-stream\r\n\r\n",
+    {
+     "repeat": "x",
+     "count": 2700000
+    },
+    "\r\n--profilo--\r\n"
+   ],
+   "content_type": "multipart/form-data; boundary=profilo"
+  },
+  {
+   "name": "profile-misc-multipart-spooled-file-without-branch",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully"
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "20.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "5",
+      "lead_sport_association_size": "True",
+      "lead_sport_market_channel": null,
+      "phone": "+39 333 0000000"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "raw_parts": [
+    "--profilo\r\nContent-Disposition: form-data; name=\"doc\"; filename=\"a.txt\"\r\nContent-Type: application/octet-stream\r\n\r\n",
+    {
+     "repeat": "x",
+     "count": 2700000
+    },
+    "\r\n--profilo--\r\n"
+   ],
+   "content_type": "multipart/form-data; boundary=profilo"
+  },
+  {
    "name": "profile-misc-multipart-file-lead-data",
    "actor": "owner",
    "method": "PATCH",

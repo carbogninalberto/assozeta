@@ -145,13 +145,21 @@ it: 500 with the entry kept (case `customer-update-paid-as-file-audited-server-e
 
 ## Not ported (refused with a 500 before any write)
 
-- Customer-list invoices without a PDF whose FatturaPA inputs are outside `internal/fatturapa`'s subset (`ErrUnsupported`,
-  checked for all of them before the first save).
+- (Long tail PR 3: the FatturaPA inputs of customer-list invoices without a PDF are ported in `internal/fatturapa`.)
 - A valid customer add was refused here; it is ported in
   [invoice-sync-print](invoice-sync-print.md) (save, XML/JSON, eager print task).
 - Two sub-cases stay refused through the persona helpers: a `DD/MM/YYYY` date with non-ASCII digits, and form JSON nested
   deeper than the ported depth.
-- `?` ordering (a random order has no answer to reproduce). Client-chosen orderings (t4l1): the list orders by the model's own columns (names and attnames, `pk`, a foreign key by its key column) and the columns the view annotated. A path through a relation or the owner account, a transform, a reverse accessor and a few stored columns (the stored document) answer as an unknown ordering (FieldError, the 500 page) on both sides; the shared helper is `checked_ordering` in `BE/application/utils/api_utils.py`.
+- The supplier list answers `?` ordering as `ORDER BY RANDOM()`. Client-chosen orderings (t4l1): the list orders by
+  the model's own columns (names and attnames, `pk`, a foreign key by its key column) and the columns the view
+  annotated. A path through a relation or the owner account, a transform, a reverse accessor and a few stored
+  columns (the stored document) answer as an unknown ordering (FieldError, the 500 page) on both sides; the shared
+  helper is `checked_ordering` in `BE/application/utils/api_utils.py`.
+
+Since long-tail PR 3 (agent B) the supplier list's `?` ordering is ported, as on invoice/list. The pending customers
+store is application state (`ErrServerComposition`): the server always wires it. `SupplierInvoiceInput.NotPorted`
+was never set, so the field and its branches are deleted. The FatturaPA subset and form JSON nested past 500 levels
+stay refusals.
 
 ## Evidence (TDD)
 

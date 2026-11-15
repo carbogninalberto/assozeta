@@ -9,7 +9,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pydateutil"
 )
 
 // AssociateDrafts ports the subscription/associates-draft list, add, edit,
@@ -24,13 +24,8 @@ func NewAssociateDrafts(store domain.AssociateDraftStore, now func() time.Time, 
 	return &AssociateDrafts{store: store, now: now, ids: ids}
 }
 
-var (
-	// ErrAssociateDraftFailed is an exception the views do not handle (a 500).
-	ErrAssociateDraftFailed = errors.New("associate import draft request failed")
-	// ErrAssociateDraftNotPorted refuses inputs whose Django behaviour is not
-	// reproduced (dateutil formats outside the ported subset), before any write.
-	ErrAssociateDraftNotPorted = refusal.New("associate import draft input not ported")
-)
+// ErrAssociateDraftFailed is an exception the views do not handle (a 500).
+var ErrAssociateDraftFailed = errors.New("associate import draft request failed")
 
 // associateDraftMandatory is SubscriptionMaps.get_mandatory_fields().
 var associateDraftMandatory = []string{"first_name", "last_name", "sex", "tax_code", "born_date", "born_city", "address", "address_cap",
@@ -284,7 +279,9 @@ func (s *AssociateDrafts) associateDraftValidity(editData domain.RequestObject) 
 	case dto.DateutilFailed:
 		return false, ErrAssociateDraftFailed
 	case dto.DateutilUnsupported:
-		return false, ErrAssociateDraftNotPorted
+		// pydateutil reads every Python str; with any year allowed the only
+		// result left is its unexpected-zone application state (time.UTC is passed).
+		return false, pydateutil.ErrUnexpectedZone
 	}
 	if date.Year() < 1000 {
 		// strftime('%d/%m/%Y') leaves the year unpadded and strptime rejects it.
@@ -312,7 +309,9 @@ func (s *AssociateDrafts) associateDraftValidity(editData domain.RequestObject) 
 	case dto.DateutilFailed:
 		return valid, nil
 	case dto.DateutilUnsupported:
-		return false, ErrAssociateDraftNotPorted
+		// pydateutil reads every Python str; with any year allowed the only
+		// result left is its unexpected-zone application state (time.UTC is passed).
+		return false, pydateutil.ErrUnexpectedZone
 	}
 	if date.Year() < 1000 {
 		return valid, nil // the same round trip fails: logged and ignored

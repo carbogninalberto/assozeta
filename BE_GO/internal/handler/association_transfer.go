@@ -225,7 +225,11 @@ func importUpload(c echo.Context) (*service.AssociationImportUpload, *service.As
 		return upload, nil, nil
 	}
 	raw, _ := c.Get(importRawBodyKey).([]byte)
-	return parseImportMultipart(raw, params["boundary"])
+	upload, reply, err := parseImportMultipart(raw, params["boundary"])
+	if upload != nil {
+		upload.BodySize = int64(len(raw))
+	}
+	return upload, reply, err
 }
 
 // parseImportMultipart is Django's MultiPartParser for the import routes:

@@ -8249,6 +8249,27 @@
    "content_type": "application/x-www-form-urlencoded"
   },
   {
+   "name": "instance-admin-integration-ai-put-form-list-nested",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin/integrations/ai",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "clear_secrets": {
+     "0": [
+      "\"<MultiValueDict: {'x': ['api_key'], 'y': ['b']}>\" is not a valid choice."
+     ]
+    }
+   },
+   "effect": null,
+   "cache_control": "no-store",
+   "retry_after": null,
+   "audit": null,
+   "raw_body": "revision=2&model=fixture-model&cheap_model=fixture-cheap&base_url=&max_iterations=5&max_results=10&query_timeout=5&ws_rate_limit=5&ws_timeout=5&history_cap=5&clear_secrets%5B0%5Dx=api_key&clear_secrets%5B0%5Dy=b",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
    "name": "instance-admin-integration-ai-put-form-blank-list",
    "actor": "owner",
    "method": "PUT",

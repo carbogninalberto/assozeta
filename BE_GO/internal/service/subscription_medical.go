@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
@@ -44,10 +45,9 @@ func (s *SubscriptionMedical) WithAppointmentPrinter(printer MedicalAppointmentP
 var (
 	// ErrSubscriptionMedicalFailed is an exception the views do not handle (a 500).
 	ErrSubscriptionMedicalFailed = errors.New("subscription medical request failed")
-	// ErrSubscriptionMedicalNotPorted refuses, before any write, what the Go
-	// port does not reproduce: printing an appointment without a document
-	// (print_document_medical_appointment) and the placeholder certificate
-	// image a subscription without a certificate would get uploaded.
+	// ErrSubscriptionMedicalNotPorted refuses, before any write, the placeholder
+	// certificate file name the Go port does not reproduce: a name holding a
+	// control character, or one the storage rejects.
 	ErrSubscriptionMedicalNotPorted = refusal.New("subscription medical behaviour not ported")
 )
 
@@ -119,7 +119,8 @@ func (s *SubscriptionMedical) List(ctx context.Context, identity domain.Resolved
 	}
 	for _, row := range rows {
 		if row.Document == nil && s.printer == nil {
-			return nil, ErrSubscriptionMedicalNotPorted
+			// cmd/server always wires the appointment printer: an unwired one is application state.
+			return nil, domain.ErrServerComposition
 		}
 	}
 	// The rows are read: the prints below run outside the read transaction.
@@ -436,13 +437,23 @@ func (s *SubscriptionMedical) SetExpiration(ctx context.Context, identity domain
 	return "Medical certificate update with date " + date + " 00:00:00+00:00", r.tx.Commit()
 }
 
+// placeholderName is the f-string's value for a member's name: str(None) is
+// "None", the text both the file name and the image carry.
+func placeholderName(name *string) string {
+	if name == nil {
+		return "None"
+	}
+	return *name
+}
+
 // placeholderExpiration is the view's branch for a subscription without a
 // certificate: MedicalCertificate.objects.create(user=request.user), the
 // placeholder image and its Document, the stored PNG, subscription.save() with
 // the new certificate, then the certificate's save() with the document and the
 // date. The request is not atomic: a missing member, a value that is no
-// '%d/%m/%Y' date (None included) or a failed storage write answers 500 and
-// keeps the rows written before it.
+// '%d/%m/%Y' date (None included), a file name over the filename column's 255
+// characters or a failed storage write answers 500 and keeps the rows written
+// before it.
 func (r *medicalRequest) placeholderExpiration(ctx context.Context, subscription *domain.MedicalSubscription, expiration any) (string, error) {
 	s := r.service
 	date, parsed := "", false
@@ -456,24 +467,31 @@ func (r *medicalRequest) placeholderExpiration(ctx context.Context, subscription
 	created := s.at()
 	document := domain.NewDocument{ID: s.ids(), Token: s.ids(), Created: created}
 	var image []byte
+	overflow := false
 	if found && parsed {
-		if first == nil || last == nil {
-			return "", ErrSubscriptionMedicalNotPorted // str(None) in the file name and the image
+		firstText, lastText := placeholderName(first), placeholderName(last)
+		document.Filename = placeholderFilename(firstText, lastText)
+		// document.filename is a varchar(255): Document.objects.create raises
+		// DataError on a longer name, after the certificate row exists.
+		overflow = utf8.RuneCountInString(document.Filename) > 255
+		if !overflow {
+			planned, ok, err := s.placeholders.plan(placeholderExpirationText(firstText, lastText, date+" 00:00:00+00:00"), document.Filename,
+				created, document.ID)
+			if err != nil {
+				return "", err
+			}
+			if !ok {
+				return "", ErrSubscriptionMedicalNotPorted
+			}
+			image = planned
 		}
-		document.Filename = placeholderFilename(*first, *last)
-		planned, ok, err := s.placeholders.plan(placeholderExpirationText(*first, *last, date+" 00:00:00+00:00"), document.Filename, created,
-			document.ID)
-		if err != nil {
-			return "", err
-		}
-		if !ok {
-			return "", ErrSubscriptionMedicalNotPorted
-		}
-		image = planned
 	}
 	certificate := domain.MedicalCertificateRow{ID: s.ids()}
 	if err = r.tx.CreateCertificate(ctx, certificate.ID, r.identity.ScopeUser.ID, r.actorAssociation, r.audit, s.at()); err != nil {
 		return "", err
+	}
+	if overflow {
+		return "", r.fail() // DataError on the filename column: the certificate stays
 	}
 	if !found || !parsed {
 		return "", r.fail() // None.first_name, or strptime(value, '%d/%m/%Y')

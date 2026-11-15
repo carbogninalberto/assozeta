@@ -9,6 +9,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/paymentcategorylifecycle"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
+	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/documentkey"
 	"github.com/labstack/echo/v4"
 )
 
@@ -106,7 +107,11 @@ func (h *SubscriptionMembershipsHandler) request(c echo.Context) service.Subscri
 func (h *SubscriptionMembershipsHandler) failure(c echo.Context, err error) error {
 	request := c.Request()
 	var invalid *service.SubscriptionMembershipValidationError
+	var suspicious *documentkey.SuspiciousFileError
 	switch {
+	case errors.As(err, &suspicious):
+		c.Response().Header().Del("Allow")
+		return c.Blob(400, "text/html; charset=utf-8", djangoBadRequestPage)
 	case errors.As(err, &invalid):
 		return c.JSON(400, subscriptionMembershipMessages(request, invalid.Fields))
 	case errors.Is(err, domain.ErrSubscriptionMembershipForeignReference):

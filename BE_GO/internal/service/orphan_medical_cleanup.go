@@ -113,6 +113,8 @@ func (s *OrphanMedicalCleanup) plan(ctx context.Context, job domain.Job) ([]orph
 		}
 		name, err := documentkey.StoredName(*certificate.Created, id, *certificate.Filename, nil)
 		if err != nil {
+			// Document.creation_date has a default, not auto_now_add: the association import stores the archived
+			// value, which can lie outside Python's years (the task's except then logs and returns). Not ported.
 			return nil, errors.Join(domain.ErrOrphanMedicalUnsupported, err)
 		}
 		step.key, err = documentkey.S3Key(name, s.objects.Location())
@@ -121,7 +123,8 @@ func (s *OrphanMedicalCleanup) plan(ctx context.Context, job domain.Job) ([]orph
 			// django-storages raises SuspiciousOperation.
 			step.stop = true
 		} else if err != nil {
-			return nil, errors.Join(domain.ErrOrphanMedicalUnsupported, err)
+			// filename is PostgreSQL text in a UTF-8 database: no NUL, always valid UTF-8.
+			return nil, errors.Join(domain.ErrOrphanMedicalUnreachable, err)
 		}
 		steps = append(steps, step)
 	}

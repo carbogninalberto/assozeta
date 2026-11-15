@@ -6,8 +6,6 @@ import (
 	"math"
 	"math/big"
 	"strings"
-
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // Result is diagnostic_probe.result(status, message, level).
@@ -25,11 +23,6 @@ var Generic = Result{Status: "failed", Level: "connectivity",
 
 // errProbe is an exception inside the probe (the generic failure).
 var errProbe = errors.New("instanceprobe: probe raised")
-
-// ErrProbeNotPorted marks an integration probe input this port does not
-// send (an empty user information pair, which the settings endpoint cannot
-// store).
-var ErrProbeNotPorted = refusal.New("instanceprobe: integration probe input not ported")
 
 const maxProbeBody = 262144
 
@@ -104,10 +97,8 @@ func text(value any) (string, bool) {
 // IntegrationTarget is the request verify_integration would send for the
 // effective settings, "" when it answers without one (invalid is then the
 // probe's "URL del provider non valido." answer, and no request with invalid
-// false is an input requests raises on: the generic failure), or
-// ErrProbeNotPorted for an input this port does not send (an empty user
-// information pair, which the settings endpoint cannot store), checked
-// before the lease is claimed.
+// false is an input requests raises on: the generic failure), checked before
+// the lease is claimed.
 func IntegrationTarget(provider string, value map[string]any) (target string, invalid bool, err error) {
 	request, invalid, err := integrationRequest(provider, value)
 	if err != nil {

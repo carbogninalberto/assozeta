@@ -120,13 +120,23 @@ untouched. Responses `{'message': 'All payments archived'}` / `{'message': 'All 
 
 ## Not ported (refused with a 500 before any write)
 
-- A paid flow whose request.user is not an owner or collaborator (no association id): it needs an association owned by
-  an account with another role. An uploaded file as `send_receipt_email`. Every JSON value of `send_receipt_email`
+- A paid flow whose request.user is not an owner or collaborator (`ErrPaymentStateNotPorted`): it needs an
+  association owned by an account with another role, which only the association import can leave (it reuses an
+  existing user as the archive's owner). An uploaded file as `send_receipt_email` (a multipart file part) is what
+  kombu cannot encode: the publish is skipped and the answer stays 200, as in Django. Every JSON value of `send_receipt_email`
   (floats, integers of any size, lists, objects) reaches the task as sent (rest-b1, see
   [invoice-generate](invoice-generate.md)); a lone surrogate (`"\ud800"`) too (go-v2only-celery, case
   `invoice-generate-approve-receipt-lone-surrogate`). The other paid flow conversions are ported (v2-rest-a, below).
 - Delete of an invoiced payment while the print task is deferred for maintenance (a pending restore or a busy operation
   lock: Django re-applies the task synchronously); the invoice save is already committed, as in Django.
+
+Since long-tail PR 3 the paid flow's scope user is a refusal again (combined branch review: an imported archive can make
+an athlete an owner). A `send_receipt_email` integer
+over 4300 digits is already the JSON parser's 400 over HTTP (case
+`payment-state-approve-sent-date-receipt-integer-over-4300-json-error`); past the parser the service skips the publish and
+keeps the 200, as Django's `on_commit(robust=True)` does. Every meta name of an invoice description is formatted with
+`str()` on every route. The payment state refusal has no site left and is deleted; a delete whose print is deferred is
+agent C's print-deferral refusal.
 
 ## Evidence
 

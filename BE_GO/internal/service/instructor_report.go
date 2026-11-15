@@ -44,7 +44,8 @@ var instructorReportSchema = []struct{ key, label string }{{"first_name", "Nome"
 	{"attendees", "Partecipanti"}, {"expected_absences", "Assenti previsti"}}
 
 // instructorReportParse is dateutil's parser.parse(text, dayfirst=True): the date of the parsed value. A value that raises is
-// the 500 page, as is a zone-aware value; the texts the parser port does not read are not ported.
+// the 500 page, as is a zone-aware value. internal/pydateutil reads every Python str: its only other error is the
+// ErrUnexpectedZone application state (time.UTC is passed).
 func instructorReportParse(text string, now time.Time) (time.Time, error) {
 	parsed, err := pydateutil.ParseDayFirst(text, now, time.UTC)
 	if err != nil {
@@ -52,10 +53,7 @@ func instructorReportParse(text string, now time.Time) (time.Time, error) {
 		if errors.As(err, &raised) {
 			return time.Time{}, ErrInstructorReportServer
 		}
-		if errors.Is(err, pydateutil.ErrUnexpectedZone) {
-			return time.Time{}, err
-		}
-		return time.Time{}, ErrInstructorReportNotPorted
+		return time.Time{}, err
 	}
 	if parsed.HasTZ {
 		// The view keeps the zone and get_report's rome_tz.localize raises "Not naive datetime".

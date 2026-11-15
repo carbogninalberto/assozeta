@@ -82,7 +82,7 @@ The refusal sites, and why the ones left stay (s3pdfcanvas):
 | `widths.go` `preliminaryWidths` (2 returns) | a table without column widths holding a string cell, or a cell whose flowables are not paragraphs | C | no builder of this package makes one: the data table, the header table and the attendance table pass every width, and the saved-report table is Paragraph cells only; a split keeps `colWidths` |
 | `header.go` `loadJPEG` (2 returns) | the base64 logo is not a JPEG `image/jpeg` reads | C | the logo rows are written by `compress_base64`, which re-encodes to JPEG and prefixes `data:image/jpeg`; the header pattern only looks at that prefix |
 | `header.go` (2 returns) | a decoded JPEG with another colour model, or a zero dimension | C | `image/jpeg` yields only grey, YCbCr, RGBA and CMYK, always with positive dimensions |
-| `paraparser.go` `unsupported` | `bullet`, `seq*`, `<a name>`/`#`/`document:` links, `img` of a file/URL/PNG, `<unichar name>`, CMYK/alpha/expression colours, `inf`/`nan`, `<para>` indents, justification, borders, text transforms, `autoLeading`, `wordWrap`, end dots, hyphenation | B (X for `seq*`, file/URL `img`, expressions, hyphenation) | Django draws them (or, for `seq*`, numbers from a process-global sequencer); each needs a layout, a font, a destination tree or an image format this package does not carry yet |
+| `paraparser.go` `unsupported` | `bullet`, (`seq*` ported in long tail PR 3), `<a name>`/`#`/`document:` links, `img` of a file/URL/PNG, `<unichar name>`, CMYK/alpha/expression colours, `inf`/`nan`, `<para>` indents, justification, borders, text transforms, `autoLeading`, `wordWrap`, end dots, hyphenation | B (X for `seq*`, file/URL `img`, expressions, hyphenation) | Django draws them (or, for `seq*`, numbers from a process-global sequencer); each needs a layout, a font, a destination tree or an image format this package does not carry yet |
 
 A document reportlab fails to build is `ErrLayout`, which each caller answers as Django answers an exception of the export:
 a row taller than a page (`LayoutError`), a list value in a cell (reportlab takes it for a list of flowables), rows of
@@ -106,7 +106,9 @@ alone. Go ports both:
   the Courier and Times faces (their width vectors and ascents), the decimal digits of other scripts in numbers, and the
   `<index>` and `<onDraw>` callbacks are ported in s3pdfcanvas: those two parse, then fail the document the way reportlab
   fails it in a `SimpleDocTemplate` (its canvas has no `_indexAdd` or callback attribute), so they raise the same exception
-  text. Still refused: `bullet`, `seq*`, `<a name="..."/>` anchors and `#name` or `document:name` links (named destinations
+  text. The `seq*` tags are ported in long tail PR 3 (`sequencer.go`: one process-wide sequencer, as reportlab's
+`getSequencer()`; 53 paragraph texts checked against reportlab 4.2.5; a template that prints the sequencer object
+itself stays refused). Still refused: `bullet`, `<a name="..."/>` anchors and `#name` or `document:name` links (named destinations
   are not ported), `img` whose `src` is not a base64 JPEG data URL (a file or URL read depends on the server; a PNG or other
   format is re-encoded by PIL), `<unichar name="...">` (Python's `unicodedata` names), a colour that is CMYK, has an alpha,
   or is written as a Python expression, `inf` or `nan` as numbers, and in `<para>` the indents, justified lines, borders,

@@ -97,9 +97,14 @@ Django is not atomic: work saved before a failure stays, and the Go port commits
 
 ## Not ported (refused with a 500 before any write)
 
-- Archive and delete: a related unpaid payment whose row does not exist (a dangling foreign key, which the database constraints forbid).
+- Archive and delete: a related unpaid payment whose row does not exist is application state
+  (`ErrSubscriptionLifecycleUnreachable`, the 500 page): the foreign key is `SET NULL`, so no stored row is dangling.
   An unpaid payment hidden by `X-Group-Id` is saved like a soft-deleted one: auditlog's old-row lookup misses it, so the update entry
   diffs the saved payment against nothing (indexed through the actor's association when the payment has none).
+
+Since long-tail PR 3 (agent B) a related unpaid payment whose row does not exist, and a payment the range lookup returns
+without an association, are application state (`ErrSubscriptionLifecycleUnreachable`): the foreign key is `SET NULL` and
+the lookup filters the association. A payment row deleted between two reads stays a refusal (timing).
 
 ## Evidence
 

@@ -810,7 +810,8 @@ func printingCell(value any) (xlsxexport.Value, error) {
 		}
 		number, err := strconv.ParseFloat(string(v), 64)
 		if err != nil && !errors.Is(err, strconv.ErrRange) {
-			return xlsxexport.Value{}, domain.ErrPrintingGenerateNotPorted
+			// the text comes from a JSON parser, always a valid number
+			return xlsxexport.Value{}, domain.ErrPrintingGenerateUnreachable
 		}
 		return xlsxexport.FloatValue(number), nil // float('1e999') is inf
 	}

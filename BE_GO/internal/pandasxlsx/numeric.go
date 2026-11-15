@@ -1,10 +1,14 @@
 package pandasxlsx
 
 import (
+	"errors"
 	"math"
 	"math/big"
 	"strconv"
 	"strings"
+	"unicode"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // powersOfTen is precise_xstrtod's table of 1e0 to 1e308.
@@ -165,15 +169,16 @@ func preciseStrtod(text string) (value float64, maybeInt, ok, certain bool) {
 // numericText is floatify and the int() that follows it in
 // maybe_convert_numeric, for a str that is not an NA value. ok is false where
 // the conversion raises (text that is no number, an integer outside int64 and
-// uint64). ErrUnsupported: whether it raises depends on the build.
+// uint64). ErrWorkbookNotPorted: whether it raises depends on the build.
 func numericText(text string) (numeric, bool, error) {
 	if strings.IndexByte(text, 0) >= 0 {
-		return numeric{}, false, ErrUnsupported
+		// XML carries no NUL (the decoder rejects it), so no cell text has one.
+		return numeric{}, false, refusal.AppState("pandasxlsx: a text with a NUL byte")
 	}
 	value, maybeInt, ok, certain := preciseStrtod(text)
 	if !ok {
 		if !certain {
-			return numeric{}, false, ErrUnsupported
+			return numeric{}, false, ErrWorkbookNotPorted
 		}
 		// The words floatify accepts: an optional sign and 'inf' or
 		// 'infinity' in any case.
@@ -198,12 +203,192 @@ func numericText(text string) (numeric, bool, error) {
 	}
 	integer, parsed := new(big.Int).SetString(strings.TrimPrefix(body, "+"), 10)
 	if !parsed {
-		return numeric{}, false, ErrUnsupported
+		// preciseStrtod only reports an integer for a sign and ASCII digits.
+		return numeric{}, false, refusal.AppState("pandasxlsx: a text that reads as an integer and does not parse")
 	}
 	if integer.Cmp(minInt64) < 0 || integer.Cmp(maxUint64) > 0 {
 		return numeric{}, false, nil // 'Integer out of range.'
 	}
 	return numeric{integer: true, i: integer, f: value, uncertain: !certain}, true, nil
+}
+
+// pythonSpace is str.isspace for the characters int() and float() strip.
+func pythonSpace(r rune) bool { return unicode.IsSpace(r) || r >= 0x1c && r <= 0x1f }
+
+// decimalDigit is the value of a Unicode decimal digit: Python's \d and
+// str.isdecimal (the category Nd). Every Nd block starts at its zero.
+func decimalDigit(r rune) (int, bool) {
+	if r >= '0' && r <= '9' {
+		return int(r - '0'), true
+	}
+	if !unicode.Is(unicode.Nd, r) {
+		return 0, false
+	}
+	for _, entry := range unicode.Nd.R16 {
+		if r >= rune(entry.Lo) && r <= rune(entry.Hi) {
+			return int(r-rune(entry.Lo)) % 10, true
+		}
+	}
+	for _, entry := range unicode.Nd.R32 {
+		if r >= rune(entry.Lo) && r <= rune(entry.Hi) {
+			return int(r-rune(entry.Lo)) % 10, true
+		}
+	}
+	return 0, false
+}
+
+// digitText rewrites every decimal digit of text as its ASCII digit (a point
+// stays one, the way ISO_DURATION writes fractional seconds), and reports
+// whether text was nothing else.
+func digitText(text string) (string, bool) {
+	var builder strings.Builder
+	for _, r := range text {
+		if r == '.' {
+			builder.WriteByte('.')
+			continue
+		}
+		digit, ok := decimalDigit(r)
+		if !ok {
+			return "", false
+		}
+		builder.WriteByte(byte('0' + digit))
+	}
+	return builder.String(), true
+}
+
+// pythonInt is int(text) for a str in base 10: leading and trailing
+// whitespace, an optional sign, then decimal digits (any script) with single
+// underscores between them. More than 4300 digits raise in CPython.
+func pythonInt(text string) (*big.Int, bool) {
+	runes := []rune(text)
+	at, end := 0, len(runes)
+	for at < end && pythonSpace(runes[at]) {
+		at++
+	}
+	for end > at && pythonSpace(runes[end-1]) {
+		end--
+	}
+	negative := false
+	if at < end && (runes[at] == '+' || runes[at] == '-') {
+		negative = runes[at] == '-'
+		at++
+	}
+	var digits strings.Builder
+	count, previous := 0, false
+	for ; at < end; at++ {
+		if digit, ok := decimalDigit(runes[at]); ok {
+			digits.WriteByte(byte('0' + digit))
+			count, previous = count+1, true
+			continue
+		}
+		if runes[at] == '_' && previous && at+1 < end {
+			if _, ok := decimalDigit(runes[at+1]); ok {
+				previous = false
+				continue
+			}
+		}
+		return nil, false
+	}
+	if count == 0 || count > 4300 {
+		return nil, false
+	}
+	value, ok := new(big.Int).SetString(digits.String(), 10)
+	if !ok {
+		return nil, false
+	}
+	if negative {
+		value.Neg(value)
+	}
+	return value, true
+}
+
+// pythonFloat is float(text) for a str: leading and trailing whitespace, an
+// optional sign, then 'inf', 'infinity' or 'nan' in any case, or a decimal
+// number with an optional exponent (single underscores may sit between
+// digits). A value past float64's range is an infinity, as CPython's is.
+func pythonFloat(text string) (float64, bool) {
+	runes := []rune(text)
+	at, end := 0, len(runes)
+	for at < end && pythonSpace(runes[at]) {
+		at++
+	}
+	for end > at && pythonSpace(runes[end-1]) {
+		end--
+	}
+	negative := false
+	if at < end && (runes[at] == '+' || runes[at] == '-') {
+		negative = runes[at] == '-'
+		at++
+	}
+	switch word := strings.ToLower(string(runes[at:end])); word {
+	case "inf", "infinity":
+		if negative {
+			return math.Inf(-1), true
+		}
+		return math.Inf(1), true
+	case "nan":
+		return math.NaN(), true
+	}
+	// The decimal number in ASCII, for strconv: digits, an optional point and
+	// an optional exponent.
+	var ascii strings.Builder
+	if negative {
+		ascii.WriteByte('-')
+	}
+	digits, point, exponent := 0, false, false
+	previous := false
+	for at < end && !exponent {
+		r := runes[at]
+		if digit, ok := decimalDigit(r); ok {
+			ascii.WriteByte(byte('0' + digit))
+			digits, previous = digits+1, true
+			at++
+			continue
+		}
+		switch {
+		case r == '_' && previous && at+1 < end:
+			if _, ok := decimalDigit(runes[at+1]); !ok {
+				return 0, false
+			}
+			previous = false
+			at++
+		case r == '.' && !point:
+			point, previous = true, false
+			ascii.WriteByte('.')
+			at++
+		case (r == 'e' || r == 'E') && digits > 0:
+			exponent = true
+			ascii.WriteByte('e')
+			at++
+			if at < end && (runes[at] == '+' || runes[at] == '-') {
+				ascii.WriteByte(byte(runes[at]))
+				at++
+			}
+		default:
+			return 0, false
+		}
+	}
+	if digits == 0 {
+		return 0, false
+	}
+	if exponent && at == end {
+		return 0, false // an exponent mark with no digits
+	}
+	for ; at < end; at++ {
+		digit, ok := decimalDigit(runes[at])
+		if !ok {
+			return 0, false
+		}
+		ascii.WriteByte(byte('0' + digit))
+	}
+	value, err := strconv.ParseFloat(ascii.String(), 64)
+	if err != nil {
+		var number *strconv.NumError
+		if !errors.As(err, &number) || number.Err != strconv.ErrRange {
+			return 0, false
+		}
+	}
+	return value, true
 }
 
 func isASCII(text string) bool {

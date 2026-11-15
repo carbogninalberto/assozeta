@@ -14,6 +14,9 @@ var (
 	// ErrSubscriptionCreateNotPorted refuses input this port does not handle (the
 	// 500 page, nothing committed).
 	ErrSubscriptionCreateNotPorted = refusal.New("subscription create input not ported")
+	// ErrSubscriptionCreateUnreachable is a state no request or stored row
+	// produces (each site names the decoder or constraint that rules it out).
+	ErrSubscriptionCreateUnreachable = refusal.AppState("subscription create: unreachable state")
 	// ErrSubscriptionCreateDuplicate is DuplicateSubscriptionError (409).
 	ErrSubscriptionCreateDuplicate = errors.New("subscription already exists")
 )

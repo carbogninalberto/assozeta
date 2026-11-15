@@ -11,15 +11,9 @@ import (
 	"unicode/utf8"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/documentkey"
 	"github.com/jackc/pgx/v5/pgconn"
 )
-
-// ErrSubscriptionSignatureMigrationNotPorted stops the command where Django
-// would take a path the port does not reproduce (a generated storage key that
-// already exists: get_available_name would pick a random alternative name).
-var ErrSubscriptionSignatureMigrationNotPorted = refusal.New("subscription signature migration path not ported")
 
 // SubscriptionSignatureMigrationOutput is BaseCommand.stdout with its style.
 type SubscriptionSignatureMigrationOutput interface {
@@ -100,8 +94,6 @@ func (m *SubscriptionSignatureMigrations) Run(ctx context.Context, options Subsc
 		for _, legacy := range rows {
 			result, err := m.row(ctx, legacy, options.DryRun, out)
 			switch {
-			case errors.Is(err, ErrSubscriptionSignatureMigrationNotPorted):
-				return err
 			case err != nil:
 				failed++
 				out.Error("Error processing subscription " + legacy.ID + ": " + subscriptionSignatureMigrationErrorText(err))
@@ -200,9 +192,6 @@ func (m *SubscriptionSignatureMigrations) migrate(ctx context.Context, row domai
 	// transaction.atomic(): set_signature_from_base64, then save; a stored
 	// object is deleted when the save fails.
 	name, public, err := m.signs.upload(ctx, row.ID, legacy)
-	if errors.Is(err, ErrSubscriptionSignNotPorted) {
-		return "", ErrSubscriptionSignatureMigrationNotPorted
-	}
 	if err != nil {
 		return "", err
 	}

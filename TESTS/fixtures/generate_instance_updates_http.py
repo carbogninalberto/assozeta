@@ -113,6 +113,14 @@ add('status-rejected-default', 'owner', UPDATES, 500, {'error': 'Aggiornamento n
 add('status-not-json', 'owner', UPDATES, 200, {'available': False, 'reason': UNREACHABLE, 'active': None, 'history': []},
     runner=runner((GET_STATUS, answer(200, raw='<html>'))))
 add('status-list', 'owner', UPDATES, 500, SERVER, runner=runner((GET_STATUS, answer(200, [1]))))
+# The view returns the runner's object as it is: a lone surrogate (a decoded
+# "\ud800" escape) in any value reaches the response and fails its encoding.
+add('status-lone-surrogate', 'owner', UPDATES, 500, SERVER,
+    runner=runner((GET_STATUS, answer(200, raw='{"protocol": 1, "available": true, "can_update": true, "active": null, '
+                                             '"reason": "", "history": [], "installed_version": "v0.0.0", '
+                                             '"note": "\\ud800"}'))))
+add('status-runner-error-lone-surrogate', 'owner', UPDATES, 500, SERVER,
+    runner=runner((GET_STATUS, answer(409, raw='{"error": "\\ud800"}'))))
 for state in ('no-socket', 'no-token', 'empty-token'):
     add(f'status-{state}', 'owner', UPDATES, 200, {'available': False, 'reason': UNREACHABLE, 'active': None, 'history': []},
         runner={'state': state, 'replies': [], 'expect': []})

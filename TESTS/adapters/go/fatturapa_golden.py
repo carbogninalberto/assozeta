@@ -9,7 +9,9 @@ JSON text and set to ``json.loads(text)``, which is what the jsonb column yields
 ``generate_invoice_xml`` and ``generate_invoice_json`` run with ``ProgressivoInvioField.get_construct_default``
 patched to a fixed value. For each output the case records whether it raised, else its SHA-256 and length; the result
 goes to ``BE_GO/internal/fatturapa/testdata/a38_renders.json``. Cases tagged ``unsupported`` are inputs the Go port
-refuses on purpose (the reason is recorded); Go may answer ErrUnsupported only for them.
+refuses on purpose: Python's own context arithmetic would round them (the reason is recorded), and Go answers
+ErrUnsupported only for them. Dates before year 1000 are covered by the Go unit tests instead, because the XML writes
+them with strftime('%Y') whose padding is the C library's: three digits on glibc, four on the BSD library.
 
 Set GOLDEN_DUMP=<dir> to also write each output there for diffing.
 """
@@ -63,6 +65,17 @@ def line(description='Riga', quantity=1, unit='unita', price=10, vat=22, **extra
     item = {'description': description, 'quantity': quantity, 'unit_of_measure': unit, 'unit_price': price, 'vat': vat}
     item.update(extra)
     return item
+
+
+def raw_line(**tokens):
+    """A line as raw JSON text.
+
+    jsonb stores numbers as text, so a literal beyond the double range (which no
+    ``json.dumps`` of a Python float can write) reaches ``json.loads`` as inf.
+    """
+    item = {'description': '"Riga"', 'quantity': '1', 'unit_of_measure': '"unita"', 'unit_price': '10', 'vat': '22'}
+    item.update(tokens)
+    return '[{' + ', '.join(f'"{key}": {value}' for key, value in item.items() if value is not None) + '}]'
 
 
 def authored():
@@ -134,8 +147,12 @@ def authored():
     case('description-bool', lines=[line(description=True)])
     case('description-1000', lines=[line(description='d' * 1000)])
     case('description-1001', lines=[line(description='d' * 1001)])
-    case('description-list', 'str() of a list', lines=[line(description=['a'])])
-    case('description-dict', 'str() of a dict', lines=[line(description={'a': 1})])
+    case('description-list', lines=[line(description=['a'])])
+    case('description-dict', lines=[line(description={'a': 1})])
+    case('description-mixed-list', lines=[line(description=['a', 1, 1.5, -0.0, True, None, {'k': 1}, [2]])])
+    case('description-nested-dict', lines=[line(description={'b': 2, 'a': [1, {'x': None}], 'c': "quo'te"})])
+    case('unit-list', lines=[line(unit=['unita'])])
+    case('unit-float', lines=[line(unit=1.5)])
     case('unit-none-quantity', lines=[line(unit=None)])
     case('unit-none-quantity-none', lines=[line(unit=None, quantity=None)])
     case('quantity-none-unit', lines=[line(quantity=None)])
@@ -148,8 +165,38 @@ def authored():
     case('price-string-inf', lines=[line(price='Infinity')])
     case('price-string-nan', lines=[line(price='nan')])
     case('price-string-exp', lines=[line(price='1e2')])
-    case('price-string-space', 'Decimal() whitespace stripping', lines=[line(price=' 5 ')])
-    case('price-string-underscore', 'Decimal() underscore grouping', lines=[line(price='1_000')])
+    case('price-string-space', lines=[line(price=' 5 ')])
+    case('price-string-unicode-space', lines=[line(price='\u00a05\u3000')])
+    case('price-string-underscore', lines=[line(price='1_000')])
+    case('price-string-underscore-double', lines=[line(price='1__2')])
+    case('price-string-underscore-loose', lines=[line(price='_1_')])
+    case('price-string-underscore-point', lines=[line(price='1_.5')])
+    case('price-string-underscore-exponent', lines=[line(price='1e1_0')])
+    case('price-string-unicode-digits', lines=[line(price='١٢')])
+    case('price-string-exponent-huge', lines=[line(price='1e999999999')])
+    case('price-string-exponent-tiny', lines=[line(price='1e-999999999')])
+    case('quantity-string-exponent-tiny', lines=[line(quantity='1e-999999999')])
+    case('vat-string-exponent-tiny', lines=[line(vat='1e-999999999')])
+    case('price-list-tuple', lines=[line(price=[0, [1, 5], -2])])
+    case('price-list-tuple-negative', lines=[line(price=[1, [1], 0])])
+    case('price-list-tuple-coefficient-list', lines=[line(price=[0, [0, 0, 1], 0])])
+    case('price-list-tuple-empty', lines=[line(price=[0, [], 0])])
+    case('price-list-tuple-bools', lines=[line(price=[True, [5], True])])
+    case('price-list-tuple-tiny', lines=[line(price=[0, [1], -9])])
+    case('price-list-tuple-infinity', lines=[line(price=[0, [1], 'F'])])
+    case('price-list-tuple-nan', lines=[line(price=[0, [1], 'n'])])
+    case('price-list-tuple-sign-bad', lines=[line(price=[2, [1], 0])])
+    case('price-list-tuple-digit-bad', lines=[line(price=[0, [10], 0])])
+    case('price-list-tuple-long', lines=[line(price=[0, [1], 0, 0])])
+    case('price-list-tuple-exponent-float', lines=[line(price=[0, [1], 1.5])])
+    case('line-overflow-description', lines=raw_line(description='1e400'))
+    case('line-overflow-description-negative', lines=raw_line(description='-1e400'))
+    case('line-overflow-unit', lines=raw_line(unit_of_measure='1e400'))
+    case('line-overflow-price-digits', lines=raw_line(unit_price='1' + '0' * 400 + '.5'))
+    case('line-overflow-quantity', lines=raw_line(quantity='1e400'))
+    case('line-overflow-vat', lines=raw_line(vat='1e400'))
+    case('line-duplicate-keys', lines='[{"description": {"a": 1, "b": 2, "a": 3}, "quantity": 1,'
+         ' "unit_of_measure": "u", "unit_price": 1, "vat": 22}]')
     case('price-string-empty', lines=[line(price='')])
     case('price-list', lines=[line(price=[1])])
     case('price-dict', lines=[line(price={'a': 1})])
@@ -196,7 +243,6 @@ def authored():
     case('rounding-product-negative', 'context rounding beyond 28 digits',
          lines=[line(price='-99999999999.9999999', quantity='9999999.99999999')])
     case('date-y1000', transmitting_date='1000-01-01', payment_expiry_date='1000-12-31')
-    case('date-y999', 'year before 1000 (strftime padding)', transmitting_date='0999-01-01')
     case('unicode-text', assignor_denomination='ΑΘΗΝΑ straße 🎉', assignor_city='Città', causal='Ünïcödé 🎉',
          lines=[line(description='Ñandú 🎉\nnuova riga\ttab')])
     case('control-chars', causal='a\x01b\x7fc', lines=[line(description='x\ry')])

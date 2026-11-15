@@ -253,6 +253,14 @@ add('keep-runner-500', 'owner', item(), 503, error("{'a': [1, None]}"), method='
     run=runner(500, {'error': {'a': [1, None]}}, expect=[call('PATCH', f'/backups/{ARCHIVE}', {'keep': True})]))
 add('keep-runner-error-list', 'owner', item(), 500, SERVER, method='PATCH', body={'keep': True},
     run=runner(409, ['x'], expect=[call('PATCH', f'/backups/{ARCHIVE}', {'keep': True})]))
+# A runner refusal is not audited; the message is relayed as the response body,
+# whose lone surrogate DRF cannot encode.
+add('keep-runner-error-lone-surrogate', 'owner', item(), 500, SERVER, method='PATCH', body={'keep': True},
+    run=runner(409, '{"error": "\\ud800"}', expect=[call('PATCH', f'/backups/{ARCHIVE}', {'keep': True})]))
+# An accepted change is audited before the reply is rendered: the entry is kept.
+add('keep-accepted-lone-surrogate', 'owner', item(), 500, SERVER, method='PATCH', body={'keep': True},
+    run=runner(200, '{"archive": {"name": "\\udfff"}}', expect=[call('PATCH', f'/backups/{ARCHIVE}', {'keep': True})]),
+    audit=logged('backup_keep', ARCHIVE, backup=ARCHIVE))
 add('keep-runner-invalid-json', 'owner', item(), 503, error(UNREACHABLE), method='PATCH', body={'keep': True},
     run=runner(200, '{"archive": ', expect=[call('PATCH', f'/backups/{ARCHIVE}', {'keep': True})]))
 add('keep-no-socket', 'owner', item(), 503, error(UNREACHABLE), method='PATCH', body={'keep': True},

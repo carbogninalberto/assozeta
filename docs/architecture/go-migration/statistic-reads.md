@@ -137,15 +137,21 @@ without an associate is a 500.
 - `todaylessons` refuses what the CourseAttendance helper refuses: an
   unlinked day whose event has a non-string or non-UUID `event_id`, and
   instructor entries that are neither dicts nor lists of dicts.
-- `expiredPayments`: stored `meta`/`course` JSON that the reference parser
-  does not accept.
-- Non-ASCII decimal digits in event start or lesson registry dates (Python's
-  `\d` accepts them), non-finite JSON numbers in rendered carnet metadata or
-  event fields, and `currentDate` years below 1000 are refused with the stable
-  500 page.
+- `expiredPayments`: a stored `meta`/`course` JSON the reference parser does not accept is application state
+  (`ErrStatisticUnreachable`, the 500 page): jsonb always holds valid JSON.
+- `currentDate` years below 1000 are refused with the stable 500 page.
 - Ordering left unspecified by Django (ties in `bestcourses`, carnets with equal
   `lessons_left`, medical certificates with equal `days_left`, lessons on the
   same day, several course titles in the report) is not pinned.
+
+Since long-tail PR 3 (agent B) the non-finite `lessons_left` and the non-finite event ids are application state
+(`ErrStatisticUnreachable`): jsonb refuses infinities. Registry dates with non-ASCII digits (the association import
+stores registry meta as the archive has it) and payment `course`/`meta` JSON nested deeper than the reference parser
+reads (Django stores and reads it) stay refusals (`ErrStatisticNotPorted`). An athlete-dashboard event start with
+Unicode decimal digits is parsed as CPython's `_strptime` does (`\d` for the year and the second digit of the day, hour,
+minute and second; cases `statistic-reads-athlete-unicode-digit-start-listed`,
+`statistic-reads-athlete-unicode-digit-month-skipped`). A meta float outside the float range and a report year below
+1000 stay refusals.
 
 ## Evidence (TDD)
 

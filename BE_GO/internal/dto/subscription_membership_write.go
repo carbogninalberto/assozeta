@@ -44,10 +44,8 @@ type SubscriptionMembershipWrite struct {
 	Text         map[string]*string
 	PricePresent bool
 	Price        *string
-	Documents    []domain.RequestObject
-	// FormDocuments marks form keys for documents_data (ListField HTML input,
-	// not ported).
-	FormDocuments bool
+	// Documents is the validated documents_data list (dicts).
+	Documents []domain.RequestObject
 }
 
 // SubscriptionMembershipQueryUUID is UUIDField.to_python for a query value.
@@ -107,8 +105,9 @@ func subscriptionMembershipRelated(value any, null bool) (SubscriptionMembership
 }
 
 // subscriptionMembershipFiles reads a multipart file the way each field does: the related fields and the price
-// see str(file) (the uploaded name, DRF quotes it or reads it as a number), every other field sees an object it
-// rejects (a list stands in: not a string, not a date, not a UUID).
+// see str(file) (the uploaded name, DRF quotes it or reads it as a number), an indexed documents_data item keeps
+// the file (parse_html_dict hands it to DictField, then _handle_documents stores str(file)), every other field
+// sees an object it rejects (a list stands in: not a string, not a date, not a UUID).
 func subscriptionMembershipFiles(object domain.RequestObject) domain.RequestObject {
 	var copied domain.RequestObject
 	for index, field := range object {
@@ -118,6 +117,10 @@ func subscriptionMembershipFiles(object domain.RequestObject) domain.RequestObje
 		}
 		if copied == nil {
 			copied = append(domain.RequestObject(nil), object...)
+		}
+		if strings.HasPrefix(field.Name, "documents_data[") {
+			// documents_data[N]<name>: ListField.get_value's parse_html_list keeps the file as the dict value.
+			continue
 		}
 		switch field.Name {
 		case "sport_association", "associate", "payment", "price":
@@ -151,7 +154,7 @@ func SubscriptionMembershipHasFile(body any) bool {
 // field validation (partial or not; every field is optional except
 // sport_association, which the add view always supplies). Uniqueness, the
 // related querysets and the tenant scope are checked by the service.
-func ParseSubscriptionMembershipWrite(body any, form bool) (SubscriptionMembershipWrite, map[string]any) {
+func ParseSubscriptionMembershipWrite(body any, form, partial bool) (SubscriptionMembershipWrite, map[string]any) {
 	object, ok := body.(domain.RequestObject)
 	if !ok {
 		return SubscriptionMembershipWrite{}, map[string]any{"non_field_errors": []string{"dictionary:" + pythonTypeName(body)}}
@@ -236,12 +239,15 @@ func ParseSubscriptionMembershipWrite(body any, form bool) (SubscriptionMembersh
 			write.Price = &price
 		}
 	}
+	var items any
+	var present bool
 	if form {
-		for _, field := range object {
-			write.FormDocuments = write.FormDocuments || strings.HasPrefix(field.Name, "documents_data")
-		}
-	} else if value, present := object.Lookup("documents_data"); present {
-		switch items := value.(type) {
+		items, present = courseLocationFormDocuments(object, partial)
+	} else {
+		items, present = object.Lookup("documents_data")
+	}
+	if present {
+		switch items := items.(type) {
 		case nil:
 			errs["documents_data"] = []string{PaymentCategoryValidationNull}
 		case []any:
@@ -260,7 +266,7 @@ func ParseSubscriptionMembershipWrite(body any, form bool) (SubscriptionMembersh
 				errs["documents_data"] = children
 			}
 		default:
-			errs["documents_data"] = []string{courseLocationList + pythonTypeName(value)}
+			errs["documents_data"] = []string{courseLocationList + pythonTypeName(items)}
 		}
 	}
 	if len(errs) > 0 {

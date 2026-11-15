@@ -23,9 +23,15 @@
 
 The rest of the route is not atomic. Go commits each Django autocommit step separately (configuration creation, user save, configuration save).
 
-Not ported: a multipart body carrying an uploaded file. Go refuses it with a 500 after the association check and before any write. The configuration get-or-create keeps the login service's association lock. That lock coordinates Go writers only; Django has none (see `BE_GO/internal/service/membership_card_configuration.md`).
+A multipart body carrying an uploaded file is answered as Django does. A file part over `FILE_UPLOAD_MAX_MEMORY_SIZE` (2621440 bytes, 2.5 MiB) is spooled by Django (a `TemporaryUploadedFile`), and the view answers as for an in-memory upload: a file under `membership_card_configuration` saves the user, then answers the 500 page. The configuration get-or-create keeps the login service's association lock. That lock coordinates Go writers only; Django has none (see `BE_GO/internal/service/membership_card_configuration.md`).
 
 Evidence: `TESTS/fixtures/profile_settings_http.json` (59 cases, with the contract computing `current_year` at request time). RED: Django 59/59, Go 404. GREEN: 59/59 on native Django, native Go, Caddy `/api/v1` and `/api/v2`, with exact configuration, user, association, audit and index effects. Rolling back the configuration's pre_save audit when the model rejects the boolean fails `post-card-invalid-boolean-keeps-audit`.
+
+Long tail PR 3 (agent C): a multipart body over 2.5 MiB (`FILE_UPLOAD_MAX_MEMORY_SIZE`, 2621440 bytes) with a file part is no
+longer refused. Django spools the file (`TemporaryUploadedFile`) and the view answers as for an in-memory upload:
+`post-multipart-spooled-file-saves-user-then-server-error` sends the file part under `membership_card_configuration`, so the
+user is saved and then the 500 page. The fixture stores the 2.7 MB file content as a repeat count (`raw_parts` in
+`TESTS/contracts/http_family.py`).
 
 ## Validated PATCH (integrations)
 
@@ -39,5 +45,5 @@ name, echoed as lines, `review_url_enabled` with a file answering a 500) is gone
 the in-memory limit (`Temp`). `POST profile/settings`: the typed fields reject a file (boolean, choice quoting the file
 name, integer, text, related uuid). `PATCH profile/integrations`: `review_url` stores the file name and the answer lists
 the lines of `File.__iter__` (`bytes.splitlines(True)` decoded as UTF-8; invalid UTF-8 is the 500 after the save);
-`review_url_enabled` keeps the audit entry and answers the 500 page. Spooled files (request over 2621440 bytes) stay
-refused.
+`review_url_enabled` keeps the audit entry and answers the 500 page. Spooled files (request over 2621440 bytes) are no
+longer refused.

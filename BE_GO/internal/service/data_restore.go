@@ -165,7 +165,11 @@ func (s *DataRestore) snapshot(ctx context.Context, op *domain.DataRestoreReceip
 	}
 	cached, err := s.progress.Snapshot(ctx, op.ID)
 	if err != nil {
-		return nil, domain.ErrDataRestoreNotPorted
+		if ctx.Err() != nil {
+			return nil, err
+		}
+		// progress.snapshot: every exception is None.
+		return nil, nil
 	}
 	dict, ok := cached.Value.(*repository.PickledDict)
 	if !cached.Found || !ok || len(dict.Keys) == 0 {
@@ -226,7 +230,8 @@ func dataRestoreRendered(value any) (any, error) {
 	case string, bool, nil:
 		return v, nil
 	}
-	return nil, domain.ErrDataRestoreNotPorted
+	// the payload is written only by restore/progress.py (str, int, float, None, isoformat).
+	return nil, domain.ErrDataRestoreUnreachable
 }
 
 // downloadToken is signing.dumps({'operation', 'owner', 'sha256'}, salt=SALT).
@@ -455,7 +460,8 @@ func (s *DataRestore) streamBackup(ctx context.Context, op *domain.DataRestoreRe
 	filename := "backup-prima-del-ripristino-" + op.ID + ".zip"
 	key, err := documentkey.S3Key(op.BackupPath, s.objects.Location())
 	if err != nil {
-		return nil, domain.ErrDataRestoreNotPorted
+		// backup_path is written only as restores/<id>/recovery/<uuid>.zip (restore/execution.py:75-76).
+		return nil, domain.ErrDataRestoreUnreachable
 	}
 	object, err := s.objects.Open(ctx, key)
 	if err != nil {

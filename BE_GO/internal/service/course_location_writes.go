@@ -39,11 +39,12 @@ var (
 	// ErrCourseLocationDocumentDecode is base64.b64decode's failure (500),
 	// raised after the location was saved.
 	ErrCourseLocationDocumentDecode = errors.New("course location document is not base64")
-	// ErrCourseLocationUploadUnsupported refuses documents_data uploads the
-	// port does not reproduce (indexed form keys, filenames that are not plain
-	// storable text, names Storage.save rejects, no document storage) before
-	// any write.
-	ErrCourseLocationUploadUnsupported = refusal.New("course location document upload is not ported")
+	// errCourseLocationDocumentStore is the exception Django raises while
+	// creating or storing a document (the INSERT, os.path.join or
+	// Storage.save): the 500 page, after the earlier writes. A name
+	// Storage.save rejects is a SuspiciousFileOperation, which the walk returns
+	// as a *documentkey.SuspiciousFileError (the 400 page) instead.
+	errCourseLocationDocumentStore = errors.New("course location document could not be stored")
 	// errCourseLocationNoStorage is a writer built without its document
 	// storage: cmd/server/main.go always calls WithUploads. An
 	// application-state error.
@@ -112,13 +113,20 @@ func (s *CourseLocationWrites) validate(ctx context.Context, tx domain.CourseLoc
 type courseLocationUpload struct {
 	filename string
 	content  []byte
+	// rowOnly creates the Document row and its auditlog entry, but does not
+	// store the bytes and does not link it: the item's filename made
+	// os.path.join or Storage.save raise after the INSERT.
+	rowOnly bool
 }
 
 // courseLocationDocuments walks _handle_documents without writing: the items
 // that store a document (in order) up to the first one that raises, whose
-// failure is returned after the save. Inputs whose failure the port does not
-// reproduce (filenames that are not plain storable text of at most 255
-// characters, names Storage.save rejects) are refused before any write.
+// failure is returned after the save. A filename Django cannot store stops the
+// walk with errCourseLocationDocumentStore: None, text PostgreSQL refuses (NUL,
+// lone surrogates, over 255 characters) leaves no Document row, while a name
+// Storage.save rejects, or a value that is not a str (CharField stores str()
+// of it, then os.path.join raises TypeError on the original object), creates
+// the row with that text and then raises.
 func (s *CourseLocationWrites) courseLocationDocuments(write dto.CourseLocationWrite) ([]courseLocationUpload, error, error) {
 	var uploads []courseLocationUpload
 	for _, item := range write.Documents {
@@ -137,13 +145,35 @@ func (s *CourseLocationWrites) courseLocationDocuments(write dto.CourseLocationW
 			return uploads, ErrCourseLocationDocumentDecode, nil
 		}
 		value, _ := item.Lookup("filename")
-		filename, ok := value.(string)
-		if !ok || !dto.AssociateDraftStorable(filename) || utf8.RuneCountInString(filename) > 255 {
-			return nil, nil, ErrCourseLocationUploadUnsupported
+		if value == nil {
+			// Document.objects.create(filename=None): NOT NULL, no row.
+			return uploads, errCourseLocationDocumentStore, nil
+		}
+		// CharField stores str(value): a str unchanged, a JSON number/bool/
+		// list/object its Python repr, an uploaded file its name.
+		filename := dto.PythonStr(value)
+		if !dto.AssociateDraftStorable(filename) || utf8.RuneCountInString(filename) > 255 {
+			// psycopg2 refuses NUL and lone surrogates, varchar(255) the rest
+			// over the column length: no row.
+			return uploads, errCourseLocationDocumentStore, nil
+		}
+		if _, isText := value.(string); !isText {
+			// os.path.join(storing_path, document.filename) is a TypeError for
+			// a value that is not a str: the row is written, then it raises.
+			uploads = append(uploads, courseLocationUpload{filename: filename, rowOnly: true})
+			return uploads, errCourseLocationDocumentStore, nil
 		}
 		// The stored name uses the document's creation time, which has microsecond precision.
 		if _, err = documentkey.UploadName(s.uploads.at(), uuid.New(), filename); err != nil {
-			return nil, nil, ErrCourseLocationUploadUnsupported
+			// Storage.save's validate_file_name rejects the name after the INSERT:
+			// a SuspiciousFileOperation is a SuspiciousOperation (the 400 page),
+			// any other failure the 500 page.
+			uploads = append(uploads, courseLocationUpload{filename: filename, rowOnly: true})
+			var suspicious *documentkey.SuspiciousFileError
+			if errors.As(err, &suspicious) {
+				return uploads, err, nil
+			}
+			return uploads, errCourseLocationDocumentStore, nil
 		}
 		uploads = append(uploads, courseLocationUpload{filename: filename, content: content})
 	}
@@ -151,7 +181,8 @@ func (s *CourseLocationWrites) courseLocationDocuments(write dto.CourseLocationW
 }
 
 // storeDocuments creates each Document (auditlog entry), stores its bytes and
-// links it to the location.
+// links it to the location. A rowOnly upload stops after its INSERT: the item
+// that created it raised before storing, and it is not linked.
 func (s *CourseLocationWrites) storeDocuments(ctx context.Context, tx domain.CourseLocationWriteTransaction, identity domain.ResolvedIdentity,
 	location string, uploads []courseLocationUpload, audit domain.LoginAuditContext) error {
 	if len(uploads) == 0 {
@@ -165,6 +196,9 @@ func (s *CourseLocationWrites) storeDocuments(ctx context.Context, tx domain.Cou
 		document := s.uploads.newDocument(upload.filename)
 		if err = tx.CreateDocument(ctx, document, actor, audit, s.uploads.at()); err != nil {
 			return err
+		}
+		if upload.rowOnly {
+			continue
 		}
 		if err = s.uploads.save(ctx, document, upload.content); err != nil {
 			return err

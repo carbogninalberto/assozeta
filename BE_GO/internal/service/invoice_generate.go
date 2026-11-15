@@ -22,16 +22,14 @@ const invoicePublishTimeout = 10 * time.Second
 
 // InvoiceGenerations ports payment_generate_invoice.
 type InvoiceGenerations struct {
-	// anyMetaName formats every meta.subscription_data.name with str().
-	anyMetaName bool
-	store       domain.InvoiceGenerateStore
-	publisher   celery.Publisher
-	now         func() time.Time
-	newID       func() string
+	store     domain.InvoiceGenerateStore
+	publisher celery.Publisher
+	now       func() time.Time
+	newID     func() string
 }
 
 func NewInvoiceGenerations(store domain.InvoiceGenerateStore, publisher celery.Publisher, now func() time.Time) *InvoiceGenerations {
-	return &InvoiceGenerations{anyMetaName: true, store: store, publisher: publisher, now: now, newID: uuid.NewString}
+	return &InvoiceGenerations{store: store, publisher: publisher, now: now, newID: uuid.NewString}
 }
 
 // InvoiceGenerateRequest carries the request values besides the body.
@@ -273,20 +271,9 @@ func decimalFee(text string) invoiceFee {
 	return invoiceFee{memory: text, stored: text, rendered: text, column: text}
 }
 
-// floatFee is a Python float fee: Decimal from float at max_digits 9 in the
-// column (refused when its two-place rounding is an exact tie, where
-// PostgreSQL and DRF round differently), Decimal(str(value)) quantized half
-// even in the response.
-func floatFee(value float64) (invoiceFee, error) {
-	fee, err := floatFeeAny(value)
-	if err == nil && fee.tie {
-		return invoiceFee{}, domain.ErrPaymentStateNotPorted
-	}
-	return fee, err
-}
-
-// floatFeeAny is floatFee with the ties: the column rounds half away from
-// zero, the response half to even.
+// floatFeeAny is a Python float fee: Decimal from float at max_digits 9 in the
+// column, Decimal(str(value)) quantized half even in the response. On a tie
+// the column rounds half away from zero, the response half to even.
 func floatFeeAny(value float64) (invoiceFee, error) {
 	if math.IsNaN(value) || math.IsInf(value, 0) {
 		// The invoice insert rejects the value (a 500 inside the view's transaction).
@@ -311,26 +298,17 @@ func floatFeeAny(value float64) (invoiceFee, error) {
 		tie: tie}, nil
 }
 
-// invoiceFees is the view's fee arithmetic: a subscription payment's
+// invoiceFeesAny is the view's fee arithmetic: a subscription payment's
 // activity fee is the float sum of the truthy meta_payment_categories amounts
 // (float(str(amount))) and its positive amount minus that sum the membership
 // fee; other payments have membership 0.0 and the amount as activity fee.
-func invoiceFees(subject int, payment domain.InvoiceGeneratePayment) (invoiceFeePair, error) {
-	pair, err := invoiceFeesAny(subject, payment)
-	if err == nil && (pair.membership.tie || pair.activity.tie) {
-		return invoiceFeePair{}, domain.ErrPaymentStateNotPorted
-	}
-	return pair, err
-}
-
-// invoiceFeesAny is invoiceFees with the fees that round on a tie.
 func invoiceFeesAny(subject int, payment domain.InvoiceGeneratePayment) (invoiceFeePair, error) {
 	amount, ok := new(big.Rat).SetString(payment.Amount)
 	if !ok {
 		return invoiceFeePair{}, domain.ErrPaymentStateServer
 	}
 	if subject != 1 {
-		zero, _ := floatFee(0)
+		zero, _ := floatFeeAny(0)
 		return invoiceFeePair{membership: zero, activity: decimalFee(payment.Amount)}, nil
 	}
 	activity := 0.0
@@ -451,7 +429,7 @@ func invoicePeriod(period domain.InvoiceGeneratePeriod) string {
 
 // metaName is (payment.meta or {}).get('subscription_data') or {} and its
 // truthy 'name' as str(); ok false: nothing to add.
-func metaName(meta *string, anyValue bool) (string, bool, error) {
+func metaName(meta *string) (string, bool, error) {
 	if meta == nil {
 		return "", false, nil
 	}
@@ -488,11 +466,8 @@ func metaName(meta *string, anyValue bool) (string, bool, error) {
 			return string(v), true, nil
 		}
 	}
-	if anyValue {
-		return dto.PythonStr(name), true, nil
-	}
-	// str() of floats, lists and dicts: not ported.
-	return "", false, domain.ErrPaymentStateNotPorted
+	// str() of floats, lists and dicts, as Django's f-string writes them.
+	return dto.PythonStr(name), true, nil
 }
 
 func (s *InvoiceGenerations) description(ctx context.Context, tx domain.InvoiceGenerateTransaction, row *domain.PaymentStateRow,
@@ -541,7 +516,7 @@ func (s *InvoiceGenerations) description(ctx context.Context, tx domain.InvoiceG
 		if subscription != nil {
 			label = invoicePeriod(*period) + " "
 		}
-		metaLabel, present, err := metaName(row.Meta, s.anyMetaName)
+		metaLabel, present, err := metaName(row.Meta)
 		if err != nil {
 			return "", err
 		}

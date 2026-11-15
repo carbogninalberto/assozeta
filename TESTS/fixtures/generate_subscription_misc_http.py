@@ -510,6 +510,10 @@ paired_link('validate-paired-server-without-gym-name', EXPIRED, paired(ASK, ok(g
 paired_link('validate-paired-server-gym-name-number', EXPIRED, paired(ASK, ok(grant('cumulative', gym_name=7))))
 paired_link('validate-paired-server-gym-name-too-long', EXPIRED, paired(ASK, ok(grant('cumulative', gym_name='O' * 256))))
 paired_link('validate-paired-server-expired-grant', EXPIRED, paired(ASK, ok(grant('cumulative', gym_name=GYM_OLIMPIA, expires_at='$iso-60'))))
+# Aware, future, though its UTC instant is in year 10000: Python compares it with now without error.
+paired_link('validate-paired-server-far-future-grant', OLIMPIA,
+            paired(ASK, ok(grant('cumulative', gym_name=GYM_OLIMPIA, expires_at='9999-12-31T23:59:59-23:59'))),
+            unordered='subscription_id')
 paired_link('validate-paired-server-other-association', EXPIRED,
             paired(ASK, ok({**grant('cumulative', gym_name=GYM_OLIMPIA), 'association_id': FOREIGN})))
 paired_link('validate-paired-upper-case-token-not-asked', EXPIRED, paired(), token=PAIR_TOKEN.upper())

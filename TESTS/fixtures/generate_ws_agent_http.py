@@ -343,6 +343,8 @@ add('owner-without-association', handshake=FORBIDDEN, query='token={token:owner_
 add('disabled-without-manual', handshake=FORBIDDEN, ai=NO_AI, manual=False)
 add('unreadable-key', handshake=FORBIDDEN, ai={'enabled': True, 'api_key': '<<undecryptable>>'})
 add('enabled-without-key', handshake=FORBIDDEN, ai={'enabled': True, 'api_key': ''})
+# AsyncOpenAI(base_url=...) raises httpx.InvalidURL while _init_agent builds the provider: close(4004).
+add('invalid-base-url', handshake=FORBIDDEN, ai={'enabled': True, 'base_url': 'http://127.0.0.1:abc/v1'})
 add('concurrent-session', handshake=FORBIDDEN, cache_seed={f'ws_concurrent:{OWNER}': {'value': '1', 'ttl': 300}},
     cache={f'ws_concurrent:{OWNER}': {'value': '1', 'ttl': 300}})
 add('impersonation-scoped-restricted', handshake=FORBIDDEN, query='token={token:owner}&impersonation={session:owner_restricted}')
@@ -1006,6 +1008,12 @@ add('throttle-and-refresh', [
     send({'type': 'user_message', 'message': 'Esporta i soci'}), error_frame(THROTTLED),
     send({'type': 'list_reports'}), error_frame(NEEDS_AI),
     *CLOSE], ai={'enabled': True, 'ws_rate_limit': 2}, llm=[reply('A'), reply('B')], requests=c.requests, cache=throttle(6))
+# A refresh whose provider raises httpx.InvalidURL: the configuration error frame, the old provider stays.
+add('refresh-invalid-base-url', [
+    welcome(),
+    {'produce': {'ai': {'enabled': True, 'base_url': 'http://127.0.0.1:abc/v1'}}},
+    send({'type': 'user_message', 'message': 'Uno'}), error_frame(CONFIG_UNAVAILABLE),
+    *CLOSE])
 # The lease is checked when the task (or handler) starts: no status frame, the save and delete never run.
 add('restore-lease', [
     welcome(),

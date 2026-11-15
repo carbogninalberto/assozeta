@@ -182,21 +182,23 @@ The result shape and messages are Django's, including the URL validation.
 
 ## Not ported (Django keeps these)
 
-Since long-tail PR 2 (agent B) only the non-ASCII AI `base_url` and the form list key with text after its index are
-still refusals. The stored shapes, the missing configuration row, the composed runner client and the exceptions Django
-lets escape are application-state errors (the 500 page, never handed off). Release feeds and provider bodies Go does
-not read answer Django's provider-failure body (accepted divergence X2), and a runner reason that is not a string is its
-`str()`.
+Since long-tail PR 2 (agent B) the stored shapes, the missing configuration row, the composed runner client and the
+exceptions Django lets escape are application-state errors (the 500 page, never handed off). Release feeds and
+provider bodies Go does not read answer Django's provider-failure body (accepted divergence X2), and a runner reason
+that is not a string is its `str()`.
 
 Go answers these with the server error page before any write:
 
-- Form-encoded and multipart bodies on every write (the frontend sends JSON).
-- An AI `base_url` with non-ASCII characters (URLValidator's IDNA fallback).
 - Environment email when `EMAIL_PORT` is not an integer.
 - Stored JSON shapes Django would only partly accept: non-object settings, leases or records,
   non-list `checks`, `dict()` of pair lists, and non-integer stored revisions on a write. For a
   diagnostics run they are checked before the lease is claimed.
 - A diagnostics run in production mode when the update runner client could not be built.
+
+Since long-tail PR 3 (agent B) a non-ASCII AI `base_url` is ported: the guard was dead, since `DjangoURL` already
+applies URLValidator's IDNA fallback. A form list key with text after the index is ported too, as the
+`MultiValueDict` repr item; only a multipart upload inside a nested key stays a refusal, because the repr needs its
+content type.
 
 Documented differences inside a diagnostics run (each probe still answers; none is reachable with
 data the application writes):
@@ -268,9 +270,9 @@ absent BooleanField is false, a blank value of a field that is not required is s
 default), a repeated key keeps its last value, a `ListField` keeps every value (`getlist`) or its indexed
 keys ordered by the integer index, and an uploaded file reads as its name where the field calls `str()`
 on it (a text field still answers `Not a valid string.`, a UUID field `Must be a valid UUID.`). The key
-checks `set(request.data)` and `request.data.get('revision')` read the raw form. Kept refused: a list key
-with text after its index (`clear_secrets[0]x`), whose error message is the repr of a nested
-MultiValueDict.
+checks `set(request.data)` and `request.data.get('revision')` read the raw form. A list key
+with text after its index (`clear_secrets[0]x`) carries the repr of a nested MultiValueDict; only a
+multipart upload inside it stays refused.
 
 The HTTP fixtures add form and multipart cases in `instance_admin_http.json` (`branding-form-*`,
 `email-put-form*`, `email-delete-form*`, `integration-ai-put-form*`, `integration-google-delete-form`,

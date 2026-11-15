@@ -1,10 +1,10 @@
 package handler
 
 import (
-	"errors"
 	"net/http"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/paymentcategorylifecycle"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
 	"github.com/labstack/echo/v4"
 )
@@ -70,8 +70,8 @@ func (h *InvoiceViewsHandler) serve(c echo.Context, view, operation, name string
 		Group: request.Header.Get("X-Group-Id"), Language: restLanguage(request), Promotion: promotion,
 	})
 	if err != nil {
-		if errors.Is(err, service.ErrDocumentViewNotPorted) {
-			c.Logger().Warn(err.Error())
+		if reason, ok := refusal.Reason(err); ok {
+			c.Logger().Warn(reason)
 		}
 		return messageReadsError(c, err)
 	}

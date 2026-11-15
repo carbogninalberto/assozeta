@@ -102,11 +102,15 @@ the production execution owner.
 
 ## Not ported (refused with the 500 page before any write)
 
-- Uploads on the router's stock create (its 400 shape and the upload), an existing object under the new key (Django's
-  `get_available_name` picks a random name) and storage failures other than a 403/404 answer to the ACL request (Django
-  answers botocore's and s3transfer's texts as a 400): `ErrPersonaNotPorted`, handed off to Django. A failure after the
-  PutObject cannot be replayed (the upload is a recorded effect), so Go answers the 500 page there. No configured storage
-  is `domain.ErrServerComposition` (the server always wires it).
+- Uploads on the router's stock create (its 400 shape and the upload), errors botocore retries in its legacy mode
+  (HTTP 429, 500, 502, 503, 504, 509; HTTP 400 Throttling codes, `RequestTimeout`, `BadDigest`) and connection
+  failures, and the HTML form body: `ErrPersonaNotPorted`, handed off to Django. A taken key gets
+  `get_available_name`'s alternative name. A HeadObject, PutObject or PutObjectAcl error answer botocore raises
+  without retrying is the serializer's 400 with botocore's text (`Error processing image: An error occurred (<code>)
+  when calling the <Operation> operation: <message>`; a HEAD answer has no body, so the code is the status and the
+  message its reason phrase). A refused failure after the PutObject cannot be replayed (the upload is a recorded
+  effect), so Go answers the 500 page there. A picture key the storage location cannot hold is application state. No
+  configured storage is `domain.ErrServerComposition` (the server always wires it).
 - `tutors_data` entries with `born_date` texts with non-ASCII digits, and tutors under an `X-Group-Id` the manager would store raw (not a canonical,
   existing group id) when a tutor may be created; an `X-Group-Id` of that kind on add (Django fails on the insert, or renders the
   raw header).
@@ -176,3 +180,7 @@ case, braces, no hyphens, urn) is stored as the uuid, while the create audit ent
 sent (the manager hands the raw value to the instance). A header that is not a UUID, or an unknown group, is the 500
 after the writes already made. `DELETE personas-subscriptions/<pk>/list` on a found subscription is the soft delete
 through `Subscription.save()` (season fill, audit entry), 204; its cases are in router-persona-subscriptions.
+
+Long tail PR 3 (agent C): a taken picture key gets the alternative name, and a storage error answer botocore
+raises without retrying is the serializer's 400 with botocore's text. Cases `update-picture-head-denied`,
+`update-picture-put-denied` and `update-picture-key-taken`.

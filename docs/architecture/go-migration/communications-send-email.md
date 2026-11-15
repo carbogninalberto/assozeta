@@ -39,16 +39,21 @@
 
 ## Not ported (refused with the 500 page before any write)
 
-- An SMTP delivery whose message `smtpsend` still cannot render (restb2): text that is not valid Unicode, a header over
-  200,000 bytes, a recipient or sender text outside what `smtpsend/python_addr.go` reads like `email.utils.parseaddr`
-  (covered by `TestSend*` in `smtpsend/python_full_test.go`, which replays Python's own answers from
-  `testdata/python_full.json`, recorded by `TESTS/adapters/go/smtpsend_full_golden.py`). The check runs whenever the
-  configuration would take the SMTP path.
+- (Long tail PR 3: only bytes that are no Python str stay refused, which only raw process environment values can hold
+  (Python decodes them with surrogateescape). Lone surrogates follow compat32's unknown-8bit path, headers of any
+  length fold like `Header.encode` at as_string's 1,000,000-character line (`smtpsend/header_encode.go`,
+  `testdata/python_header_fold.json`), and any recipient or sender text goes through `smtplib.quoteaddr`. Inputs Python
+  raises on are `smtpsend.ErrRaises`: send_email's `(False, e)`, which DRF answers with the 500 page.)
 - Ported (restb2): subjects with line breaks (continuation lines are folded as Python writes them; a break not followed by
   a space or tab is the 500 page after the verify connection, as `as_string()` raises inside `send_email`), quoted local
   parts, address literals, and non-ASCII recipients (the commands before the failing one are sent, then the 500).
 - Not compared: the EHLO name follows `socket.getfqdn()` (normalized in the evidence, as in [tasks-db-c](tasks-db-c.md));
   the MIME boundary is random in both.
+
+Since long-tail PR 3 (agent B) text that is not valid Unicode (a lone surrogate) is no longer refused before the
+writes: Go answers the 500 page after the Message and transaction rows, as Django's `as_string()` raises inside
+`send_email`'s try after them (the same path as a header error). A header over 200,000 bytes and an address outside
+`parseaddr` stay refusals.
 
 ## Evidence (TDD)
 

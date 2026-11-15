@@ -13,7 +13,7 @@ Both views end with `<task>.apply(args=[str(id), request.headers.get('authorizat
 (`BE/instance/restore/task_base.py`), so the eager call runs its `__call__` (`InvoiceSyncPrint.apply`):
 
 - with `DATA_RESTORE_LOCK_PATH` set, the shared operation lock is taken (`JobRestoreAdmission`, the same flock); a pending restore or a
-  busy/unavailable lock is `Busy`, which defers the task (see "Not ported");
+  busy/unavailable lock is `Busy`, which defers the task (application state, see "Not ported");
 - an eager call has no `assozeta_published_at` header, so any completed restore (`completed_at` set) raises `StaleDataTask`; eager
   `apply()` keeps the exception in its result: no request, the view answers normally. Any other exception in the task is kept the same way;
 - otherwise the task body: `requests.get(f"{CURRENT_HOST}/document/invoice/<id>?send_receipt_email=False")` (update) or
@@ -79,10 +79,12 @@ transports. Mutation (the cancelled flag taken from a literal true) CAUGHT.
 
 ## Not ported (refused with the 500 page before any write unless noted)
 
-- A restore that becomes pending (or a lock that becomes busy) between the request's admission and the task: Django re-applies the
-  eager task synchronously until admission passes. Go answers the 500 page after the writes (`ErrInvoiceSyncPrintDeferred`).
-- Add dates before year 1000 (`strftime('%Y')` is unpadded on glibc) and FatturaPA inputs outside `internal/fatturapa`'s subset
-  (`ErrUnsupported`, checked with a dry run before the insert).
+- A restore that becomes pending (or a lock that becomes busy) between the request's admission and the task is
+  application state (Django's 500 page): the eager `Task.apply` re-applies the `Retry` signature recursively while
+  the restore is pending, the recursion ends in a `RecursionError` that escapes `apply`, and no view catches it.
+  Go answers the same page after the writes.
+- (Long tail PR 3: dates before year 1000 follow the platform's `strftime('%Y')` and the FatturaPA inputs are ported in
+  `internal/fatturapa`; the dry run before the insert now only catches JSON text Go does not read.)
 - Not compared: the outbound header order (Go writes `Host`, `User-Agent`, then the rest sorted); redirects to another host follow Go's
   `Authorization` forwarding rule (same host or subdomain) rather than requests' (same hostname).
 
@@ -103,3 +105,7 @@ ProgressivoInvio normalized, each value decoded and checked: request time `<< 16
 - `go test ./internal/service -run InvoiceSync`: request headers, redirect without Referer, lease release, stale/deferred admission,
   the ProgressivoInvio counter.
 - Re-run for shared code: invoice-parties (`native-r1`, 136/136; service and handler).
+
+Long tail PR 3 (agent C): the print deferral during a restore is application state. Django's eager
+`Task.apply` re-applies the `Retry` signature recursively, the recursion ends in a `RecursionError`
+that escapes `apply`, and no view catches it: Django's 500 page, which Go answers.

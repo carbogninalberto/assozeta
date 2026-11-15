@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"math/big"
 	"sort"
 	"strings"
@@ -12,7 +11,6 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/celery"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // SubscriptionReads ports subscription_list, subscription_list_all,
@@ -78,7 +76,8 @@ func (s *SubscriptionReads) sessionVisible(ctx context.Context, identity domain.
 		return ids, nil
 	}
 	if s.sessions == nil {
-		return nil, domain.ErrSubscriptionReadsNotPorted
+		// cmd/server always wires it (WithSessionVisibility).
+		return nil, domain.ErrServerComposition
 	}
 	scope := domain.ResourceScope{AssociationID: identity.ImpersonationAssociationID, EffectiveID: identity.ScopeUser.ID, Role: identity.ScopeUser.Role}
 	if group != nil {
@@ -159,18 +158,17 @@ var subscriptionReadsFields = map[string]string{"pk": "subscription_id", "subscr
 	"sport_association": "sport_association_id", "associate": "associate_id", "supplier": "supplier_id", "instructor": "instructor_id",
 	"user": "user_id", "medical": "medical_id", "payment": "payment_id", "group": "group_id"}
 
-// errSubscriptionReadsLazyOrder marks an ordering Django resolves when
-// compiling the rows (after the count and the page checks).
-var errSubscriptionReadsLazyOrder = refusal.New("subscription ordering not ported")
-
 // subscriptionReadsOrder is order_by(f"{'-' if desc else ”}{field}"): one
 // leading '-' is stripped, then the name must resolve (FieldError, 500).
+// Django's '?' (order_by('?')) is kept as the "?" term: it orders by RANDOM()
+// when the page's rows are read, and the count and the page checks are
+// unaffected. A '-' before it is not '?' (order_by('-?') is a FieldError).
 func subscriptionReadsOrder(field string, descending bool, annotations map[string]bool) ([]domain.SubscriptionReadsOrder, error) {
 	if descending {
 		field = "-" + field
 	}
 	if field == "?" {
-		return nil, errSubscriptionReadsLazyOrder
+		return []domain.SubscriptionReadsOrder{{Column: "?"}}, nil
 	}
 	name, desc := strings.CutPrefix(field, "-")
 	if column, ok := subscriptionReadsFields[name]; ok {
@@ -187,7 +185,8 @@ func subscriptionReadsOrder(field string, descending bool, annotations map[strin
 func (s *SubscriptionReads) subscriptionReadsSmart(filter *domain.SubscriptionReadsFilter, term string) error {
 	search, err := personaSearch(term, s.now().UTC().Year()%100)
 	if err != nil {
-		return domain.ErrSubscriptionReadsNotPorted
+		// personaSearch never fails.
+		return domain.ErrSubscriptionReadsUnreachable
 	}
 	filter.Smart = search
 	return nil
@@ -200,8 +199,8 @@ func subscriptionReadsDMY(raw string) string {
 	return raw
 }
 
-// page counts, checks the page, refuses a lazy ordering, then renders the rows.
-func (s *SubscriptionReads) page(ctx context.Context, filter domain.SubscriptionReadsFilter, query domain.RequestObject, lazy bool,
+// page counts, checks the page, then renders the rows.
+func (s *SubscriptionReads) page(ctx context.Context, filter domain.SubscriptionReadsFilter, query domain.RequestObject,
 	render func([]string) ([]any, error)) (any, error) {
 	count, err := s.store.CountSubscriptions(ctx, filter)
 	if err != nil {
@@ -210,9 +209,6 @@ func (s *SubscriptionReads) page(ctx context.Context, filter domain.Subscription
 	number, size, pages, limit, offset, err := paymentReadsPage(count, query)
 	if err != nil {
 		return nil, err
-	}
-	if lazy {
-		return nil, domain.ErrSubscriptionReadsNotPorted
 	}
 	ids := []string{}
 	if limit > 0 {
@@ -384,8 +380,7 @@ func (s *SubscriptionReads) List(ctx context.Context, request SubscriptionReadsR
 		return nil, err
 	}
 	s.additionalFilters(&filter, query)
-	lazy, err := subscriptionReadsSorting(&filter, query)
-	if err != nil {
+	if err := subscriptionReadsSorting(&filter, query); err != nil {
 		return nil, err
 	}
 	if request.Method == "POST" {
@@ -396,9 +391,9 @@ func (s *SubscriptionReads) List(ctx context.Context, request SubscriptionReadsR
 		case "associates":
 			title = "Libro Soci"
 		}
-		return nil, &SubscriptionReadsExport{filter: filter, group: group, association: association, title: title, lazy: lazy}
+		return nil, &SubscriptionReadsExport{filter: filter, group: group, association: association, title: title}
 	}
-	return s.page(ctx, filter, query, lazy, func(ids []string) ([]any, error) {
+	return s.page(ctx, filter, query, func(ids []string) ([]any, error) {
 		rows, err := s.rows(ctx, ids, group)
 		if err != nil {
 			return nil, err
@@ -565,15 +560,15 @@ func (s *SubscriptionReads) additionalFilters(filter *domain.SubscriptionReadsFi
 	}
 }
 
-// subscriptionReadsSorting is _apply_sorting; lazy reports an ordering refused after the page checks.
-func subscriptionReadsSorting(filter *domain.SubscriptionReadsFilter, query domain.RequestObject) (bool, error) {
+// subscriptionReadsSorting is _apply_sorting.
+func subscriptionReadsSorting(filter *domain.SubscriptionReadsFilter, query domain.RequestObject) error {
 	ascending, descending := subscriptionReadsTruthy(query, "query[sort_lastname_asc_flag]"), subscriptionReadsTruthy(query, "query[sort_lastname_desc_flag]")
 	if (ascending != "" && ascending != "0") || (descending != "" && descending != "0") {
 		filter.Order = []domain.SubscriptionReadsOrder{{Column: "associate.last_name", Descending: descending == "1"}}
 	}
 	field := subscriptionReadsTruthy(query, "sort[field]")
 	if field == "" {
-		return false, nil
+		return nil
 	}
 	desc := subscriptionReadsTruthy(query, "sort[sort]") == "desc"
 	switch field {
@@ -583,15 +578,12 @@ func subscriptionReadsSorting(filter *domain.SubscriptionReadsFilter, query doma
 		filter.Order = []domain.SubscriptionReadsOrder{{Column: "age", Descending: desc}}
 	default:
 		order, err := subscriptionReadsOrder(field, desc, map[string]bool{"_has_future_renewal": true})
-		if errors.Is(err, errSubscriptionReadsLazyOrder) {
-			return true, nil
-		}
 		if err != nil {
-			return false, err
+			return err
 		}
 		filter.Order = order
 	}
-	return false, nil
+	return nil
 }
 
 // ListAll follows subscription_list_all.
@@ -763,33 +755,27 @@ func (s *SubscriptionReads) Archived(ctx context.Context, request SubscriptionRe
 			return nil, err
 		}
 	}
-	lazy := false
 	if field := subscriptionReadsTruthy(query, "sort[field]"); field != "" {
 		desc := subscriptionReadsTruthy(query, "sort[sort]") == "desc"
 		if field == "associate" {
 			filter.Order = []domain.SubscriptionReadsOrder{{Column: "associate.first_name", Descending: desc}, {Column: "associate.last_name", Descending: desc}}
 		} else {
 			order, err := subscriptionReadsOrder(field, desc, map[string]bool{"_has_future_renewal": true})
-			switch {
-			case errors.Is(err, errSubscriptionReadsLazyOrder):
-				lazy = true
-			case err != nil:
+			if err != nil {
 				return nil, err
-			default:
-				filter.Order = order
 			}
+			filter.Order = order
 		}
 	}
 	ascending, descending := subscriptionReadsTruthy(query, "query[sort_lastname_asc_flag]"), subscriptionReadsTruthy(query, "query[sort_lastname_desc_flag]")
 	if ascending != "" || descending != "" {
 		filter.Order = []domain.SubscriptionReadsOrder{{Column: "associate.last_name", Descending: descending == "1"}}
-		lazy = false
 	}
 	day, month, err := s.store.BalanceStart(ctx, identity.ScopeUser.ID)
 	if err != nil {
 		return nil, err
 	}
-	return s.page(ctx, filter, query, lazy, func(ids []string) ([]any, error) {
+	return s.page(ctx, filter, query, func(ids []string) ([]any, error) {
 		rows, err := s.rows(ctx, ids, group)
 		if err != nil {
 			return nil, err
@@ -905,7 +891,8 @@ func (s *SubscriptionReads) Info(ctx context.Context, request SubscriptionReadsR
 		return nil, domain.ErrSubscriptionReadsServer // get_plain_medical_label() dereferences the associate
 	}
 	if row.DocumentID == nil && s.tasks == nil {
-		return nil, domain.ErrSubscriptionReadsNotPorted
+		// cmd/server always wires it (WithTasks).
+		return nil, domain.ErrServerComposition
 	}
 	tags, err := dto.ParseReferenceJSON([]byte(row.Tags))
 	if err != nil {

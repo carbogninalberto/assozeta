@@ -22,10 +22,6 @@ func NewCourseSubscriptions(store domain.CourseSubscriptionStore, now func() tim
 }
 
 var (
-	// ErrCourseSubscriptionExportUnsupported refuses list's POST: the PDF and
-	// Excel export (current_view_course_subscription) is not ported. Its
-	// invalid formats are Django's 500 as well.
-	ErrCourseSubscriptionExportUnsupported = refusal.New("course subscription export is not ported")
 	// ErrCourseSubscriptionNotPorted refuses inputs this port does not
 	// reproduce, before any write: events given as an object or a string,
 	// unmatched installments sharing a payment and HTML-form JSON fields.

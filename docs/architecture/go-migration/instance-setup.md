@@ -110,6 +110,10 @@ Go answers the server error page before any write:
   would save under a generated alternative name).
 - Other exceptions inside the setup transaction (Django answers 500 with the exception text).
 
+Since long-tail PR 3 (agent B) the IDNA URL fallback flags are dead code and are deleted: `DjangoURL` already ports
+URLValidator's fallback (always `ported`), so the guards and their fields are gone. The import-task row shapes, the logo
+name collision, the non-UUID stored association id and the other exceptions in the setup transaction stay refusals.
+
 ## Evidence
 
 `TESTS/fixtures/instance_setup_http.json` has 86 cases, from

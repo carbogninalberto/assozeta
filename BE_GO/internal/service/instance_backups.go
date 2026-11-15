@@ -23,11 +23,11 @@ import (
 	passwordcrypto "github.com/carbogninalberto/assozeta/BE_GO/pkg/crypto"
 )
 
-// ErrInstanceBackupsNotPorted is a runner reply Go's decoder does not read:
-// JSON nested past its limit (Python's RecursionError depth depends on the
-// interpreter's live call stack, so Django may still answer) or a lone
-// surrogate (Django answers unless the view renders it). Handed off to Django.
-var ErrInstanceBackupsNotPorted = refusal.New("instance backups request not ported")
+// errInstanceBackupsRunnerDepth is a runner reply nested past the decoder's
+// limit. The runner writes json.dumps of fixed shapes (selfhost/updater/server.py
+// respond(); the request fields it echoes are validated scalars), so only a
+// runner that is not this application's could send one (long-tail rule 3).
+var errInstanceBackupsRunnerDepth = refusal.AppState("instance backups: runner reply nested past the decoder")
 
 // errInstanceBackupsCachedValue is a cached size outside what the writers
 // store: data_sizes (BE/instance/backups.py:101, Go StoreSizes) caches a dict
@@ -118,12 +118,13 @@ func instanceBackupsUnavailable(reason string) *InstanceBackupsReply {
 // instanceBackupsJSON is json.loads(response.read()): decoded=false for the
 // ValueErrors call_runner catches (invalid JSON or UTF-8, Python's integer
 // digit limit). Go reads the encodings json detects and Python's NaN/Infinity
-// literals; a reply nested past the decoder's limit or holding a lone surrogate
-// is left to Django (dto.RunnerJSONDecode).
+// literals; a reply nested past the decoder's limit is an application-state
+// error, and a lone surrogate is kept (a Response holding one answers the 500
+// page where Django renders it).
 func instanceBackupsJSON(raw []byte) (any, bool, error) {
-	value, decoded, refused := dto.RunnerJSONDecode(raw)
-	if refused {
-		return nil, false, ErrInstanceBackupsNotPorted
+	value, decoded, deep := dto.RunnerJSONValues(raw)
+	if deep {
+		return nil, false, errInstanceBackupsRunnerDepth
 	}
 	return value, decoded, nil
 }
@@ -153,15 +154,20 @@ func (s *InstanceBackups) Overview(ctx context.Context, refresh bool) (*Instance
 		if !found {
 			message = "Aggiornamento non disponibile."
 		}
-		switch {
-		case reply.Status == 404:
+		if reply.Status == 404 {
 			return instanceBackupsUnavailable(instanceBackupsOutdated), nil
-		case reply.Status > 599:
-			return nil, errInstanceBackupsUnhandled // HttpResponse: status out of range
-		case reply.Status >= 500:
-			return instanceBackupsError(reply.Status, dto.PythonStr(message)), nil
 		}
-		return instanceBackupsError(503, dto.PythonStr(message)), nil
+		if reply.Status > 599 {
+			return nil, errInstanceBackupsUnhandled // HttpResponse: status out of range
+		}
+		text := dto.PythonStr(message)
+		if !dto.RenderableJSON(text) {
+			return nil, errInstanceBackupsUnhandled // strict JSONRenderer: a lone surrogate fails the UTF-8 encode
+		}
+		if reply.Status >= 500 {
+			return instanceBackupsError(reply.Status, text), nil
+		}
+		return instanceBackupsError(503, text), nil
 	}
 	inventory, ok := value.(domain.RequestObject)
 	if !ok {
@@ -496,7 +502,11 @@ func (s *InstanceBackups) Download(ctx context.Context, name, token string) (*In
 		if stream.Status == 404 {
 			return instanceBackupsError(404, "Backup non trovato."), nil
 		}
-		return instanceBackupsError(503, dto.PythonStr(message)), nil
+		text := dto.PythonStr(message)
+		if !dto.RenderableJSON(text) {
+			return nil, errInstanceBackupsUnhandled // strict JSONRenderer: a lone surrogate fails the UTF-8 encode
+		}
+		return instanceBackupsError(503, text), nil
 	}
 	if stream.ContentLength < 0 {
 		_ = stream.Body.Close()

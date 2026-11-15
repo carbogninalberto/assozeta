@@ -101,6 +101,8 @@ func TestParagraphParserCorpus(t *testing.T) {
 		t.Fatal(err)
 	}
 	exact, failures := 0, 0
+	// The corpus has a <seq/> case: reportlab numbered it on a fresh Sequencer.
+	resetParaSequencer()
 	for _, item := range file.Cases {
 		frags, style, err := parseParagraph(paraClean(item.Text), paraStyle{fontName: item.Font, fontSize: 9, leading: 12})
 		if errors.Is(err, ErrNotPorted) {

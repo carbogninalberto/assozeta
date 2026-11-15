@@ -29,16 +29,12 @@ const (
 const unset = -1
 
 // getDate ports _get_date for a non-datetime argument. It returns
-// errDateParse when Python returns None or raises, and ErrUnsupported when the
-// slug is outside the ported subset.
+// errDateParse when Python returns None or raises.
 func getDate(date string, now time.Time) (time.Time, error) {
 	if date == "" {
 		return time.Time{}, errDateParse
 	}
-	slug, err := slugify(date)
-	if err != nil {
-		return time.Time{}, err
-	}
+	slug := slugify(date)
 	var groups []string
 	if slug != "" {
 		groups = strings.Split(slug, "-")
@@ -69,7 +65,9 @@ func parseLetterSlug(slug string, yearFirst bool, now time.Time) (time.Time, err
 	case errors.Is(err, pydateutil.ErrUnexpectedZone):
 		return time.Time{}, err
 	case err != nil:
-		return time.Time{}, ErrUnsupported
+		// pydateutil returns no other error: an *Error, handled above, or
+		// ErrUnexpectedZone, which passes through.
+		return time.Time{}, err
 	}
 	return time.Date(result.Year, time.Month(result.Month), result.Day, result.Hour, result.Minute, result.Second,
 		result.Microsecond*1000, time.UTC), nil

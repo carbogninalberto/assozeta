@@ -23,8 +23,10 @@ Evidence: `TESTS/fixtures/course_locations_list_http.json` (13 cases). RED: Djan
   `<str(creation_date.timestamp())>/<id>/<filename>` (the document storage of `documents-writes.md`: name validation, the
   exists check, one PutObject with `mimetypes.guess_type` type and encoding and the cache header) and `documents.add`. An item
   that raises leaves the location and the earlier documents saved.
-- Not ported: indexed form keys `documents_data[n]`, filenames that are not plain storable text of at most 255 characters or
-  that `Storage.save` rejects. Go refuses them with a 500 before any write.
+- A filename Django cannot store answers the 500 page after the earlier writes (the location and the documents before it): a
+  null filename, NUL, a lone surrogate or more than 255 characters fail the `Document` insert (no row); a value that is not a
+  str (stored as `str(value)`, then `os.path.join` raises `TypeError`) or a name `Storage.save` rejects leaves the `Document`
+  row and its create entry, not stored and not linked.
 
 Evidence: `TESTS/fixtures/course_location_writes_http.json` (47 cases). RED: Django 47/47, Go 404. GREEN: 47/47 on native Django, native Go, Caddy `/api/v1` and `/api/v2` with exact location, link, audit and index effects. Rolling back the save on a `documents_data` failure fails the first add whose document lacks its keys. The supplier writes (31) and the locations list (13) stay green after sharing their text-field and rendering helpers.
 
@@ -41,3 +43,7 @@ read-only. The same holds on the stock router (`router_course_locations`).
 ## Round t3courses (course-location-writes)
 
 Indexed form keys `documents_data[n]` and the repeated `documents_data` key follow DRF's `parse_html_list` / `parse_html_dict`; a partial update ignores them. 68 cases GREEN natively (CI run recorded in the final sweep). Mutation (index leading zeros kept) CAUGHT.
+
+Long tail PR 3 (agent C): filenames Django cannot store follow Django's order instead of being refused. Cases
+`add-document-filename-null-keeps-location`, `add-document-filename-too-long-keeps-location`,
+`add-document-filename-number-keeps-row`, `add-document-filename-traversal-keeps-row`, `update-document-then-filename-list`.

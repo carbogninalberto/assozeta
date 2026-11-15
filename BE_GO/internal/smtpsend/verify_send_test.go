@@ -2,6 +2,7 @@ package smtpsend
 
 import (
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"net"
 	"testing"
@@ -22,7 +23,7 @@ func TestPythonMessage(t *testing.T) {
 		{&Error{Kind: "SMTPRecipientsRefused", Refused: []Refusal{{Address: "a@b.test", Code: 550, Msg: "refused"}}}, `{'a@b.test': (550, b'refused')}`, true},
 		{&Error{Kind: "SMTPNotSupportedError", Text: "STARTTLS extension not supported by server."}, "STARTTLS extension not supported by server.", true},
 		{&Error{Kind: "SMTPServerDisconnected"}, "", false},
-		{ErrUnsupported, "", false},
+		{errors.New("other"), "", false},
 	}
 	for _, c := range cases {
 		got, ok := PythonMessage(c.err)

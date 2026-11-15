@@ -22,8 +22,8 @@ import (
 //
 // None of these views is atomic: an exception the view does not handle
 // (domain.ErrCalendarRaised) commits the work saved before it and answers the
-// 500 page; an input whose Python semantics are not ported
-// (domain.ErrCalendarNotPorted) rolls everything back and answers the 500 page.
+// 500 page; a stored state no request produces (domain.ErrCalendarUnreachable)
+// answers it too, never the Django handoff.
 type CourseAttendance struct {
 	store domain.CourseAttendanceStore
 	now   func() time.Time
@@ -218,7 +218,8 @@ func attendanceCountOf(value any) (attendanceCount, error) {
 				return attendanceCount{}, errCalendarRaised
 			}
 			if math.IsInf(number, 0) {
-				return attendanceCount{}, errCalendarNotPorted
+				// Every writer stores lessons_left as an int (carnet_views.py:225, 277-281, 589-592) and consumption only adds ±1.
+				return attendanceCount{}, domain.ErrCalendarUnreachable
 			}
 			return attendanceCount{float: true, real: number}, nil
 		}

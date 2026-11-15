@@ -327,6 +327,9 @@ add('list-sort-number-asc', 'owner', 'GET', listing(**{'sort[field]': 'number', 
     page(['meta', 'supplier', 'mario', 'mario', 'bulk', 'single', 'single', 'grouped']))
 add('list-sort-creation-desc', 'owner', 'GET', listing(**{'sort[field]': 'creation_date', 'sort[sort]': 'desc'}), 200,
     page(['bulk', 'single', 'single', 'grouped', 'mario', 'mario', 'supplier', 'meta']))
+# order_by('?') is ORDER BY RANDOM(): the rows come in any order, so the
+# filter leaves the single row this year and the order cannot matter.
+add('list-sort-random', 'owner', 'GET', listing(**{'query[current_year]': '1', 'sort[field]': '?'}), 200, page(['meta']))
 add('list-sort-unknown-server-error', 'owner', 'GET', listing(**{'sort[field]': 'bogus'}), 500, SERVER)
 add('list-sort-double-minus-server-error', 'owner', 'GET', listing(**{'sort[field]': '-number', 'sort[sort]': 'desc'}), 500, SERVER)
 # Only the invoice's own columns order the list; paths through a relation or the owner account, transforms and

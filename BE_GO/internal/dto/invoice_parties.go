@@ -410,9 +410,6 @@ type SupplierInvoiceInput struct {
 	NestedPayment     any
 	NestedPaymentSet  bool
 	NestedPaymentForm bool
-	// NotPorted marks an input this port refuses. The supplier views still
-	// check it, but nothing sets it any more: the nested payment is validated.
-	NotPorted bool
 }
 
 // ParseSupplierInvoice ports InvoiceSuppliersSerializer field validation;

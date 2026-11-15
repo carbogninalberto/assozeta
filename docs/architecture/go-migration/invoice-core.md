@@ -84,14 +84,23 @@ rendering the page; a broker failure is the 500 page, as in Django.
   receipt e-mail in [email-render-routes](email-render-routes.md); `invoice/list/export` (file export) is out of scope.
 - `invoice-customers/add` stays with invoice-parties (its validation is ported there; a valid add generates the XML and the
   PDF).
-- invoice/list refuses (500) random
-  ordering (nothing to compare). Client-chosen orderings (t4l1): the list orders by the model's own columns (names and attnames, `pk`, a foreign key by its key column) and the columns the view annotated. A path through a relation or the owner account, a transform, a reverse accessor and a few stored columns (the stored document) answer as an unknown ordering (FieldError, the 500 page) on both sides; the shared helper is `checked_ordering` in `BE/application/utils/api_utils.py`. Smart-search terms outside the
-  Latin script personas-reads supports (ported in tailpay: terms are lower-cased and split as Python does, see payment-export.md).
+- invoice/list answers a random ordering (`?`) as `ORDER BY RANDOM()`. Client-chosen orderings (t4l1): the list
+  orders by the model's own columns (names and attnames, `pk`, a foreign key by its key column) and the columns the
+  view annotated. A path through a relation or the owner account, a transform, a reverse accessor and a few stored
+  columns (the stored document) answer as an unknown ordering (FieldError, the 500 page) on both sides; the shared
+  helper is `checked_ordering` in `BE/application/utils/api_utils.py`. Smart-search terms outside the Latin script
+  personas-reads supports (ported in tailpay: terms are lower-cased and split as Python does, see
+  payment-export.md).
 - An infinite float search term (`inf`, `-Infinity`) is the 500 page, as `nan` is: the fee lookup cannot adapt an infinite decimal
   when the SQL is compiled (cases `list-search-infinite-server-error`, `list-search-negative-infinity-server-error`; 108 cases, receipt
   `invoice-core-http-sweep-restdocs-2`, GitHub run 42908069516, 4 transports; mutation (infinity read as an amount) CAUGHT).
 - (Ported in tailpay.) Bulk bodies with a file part as `invoice_ids`: `invoice_id__in` iterates the upload by lines (bytes), so an empty
   file matches nothing (200) and any line fails the uuid lookup (the 500 page, before any write); four cases (112 in all).
+
+Since long-tail PR 3 (agent B) `sort[field]=?` is ported on invoice/list and on the supplier list: the rows come
+back in the database's random order. A persona lookup error and an order column outside the model's columns are
+application state (`ErrInvoiceCoreUnreachable`, the 500 page, never handed off): the lookup never fails and the
+columns are the query's own. The update route, the infinite search term and the bulk file bodies stay refusals.
 
 Not authored: tutor relations in `available_tutors`, instructor payments, payments with a matching subscription or a course
 subject, HEAD, the Italian invalid-page message.

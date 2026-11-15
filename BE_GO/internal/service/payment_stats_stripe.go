@@ -98,9 +98,6 @@ func (f *PaymentStatsStripe) fees(ctx context.Context, session *stripeapi.Sessio
 	created := domain.RequestObject{{Name: "gte", Value: json.Number(strconv.FormatInt(start, 10))},
 		{Name: "lte", Value: json.Number(strconv.FormatInt(end, 10))}}
 	page, err := session.List(ctx, "/v1/balance_transactions", []stripeapi.Param{{Key: "created", Value: created}})
-	if errors.Is(err, stripeapi.ErrNotPorted) {
-		return 0, domain.ErrPaymentReadsNotPorted
-	}
 	if err != nil {
 		return 0, zero
 	}

@@ -5,10 +5,13 @@
 // (text, numbers, booleans, errors, dates, times and durations in the 1900
 // and 1904 date systems, ISO 8601 date cells), pandas' row trimming, the
 // python parser's column names and per-column type inference, and the values
-// DataFrame.iterrows() hands out. Anything outside the modelled subset is
-// ErrUnsupported, never a guess. Golden cases: testdata/pandas_frames.json.gz,
+// DataFrame.iterrows() hands out. Input read_excel raises on is ErrInvalid.
+// The few workbook features not modelled are ErrWorkbookNotPorted, never a
+// guess. Golden cases: testdata/pandas_frames.json.gz,
 // testdata/pandas_text_frames.json.gz and testdata/numeric_texts.json.gz,
-// written by TESTS/adapters/go/pandas_xlsx_golden.py from pandas itself.
+// written by TESTS/adapters/go/pandas_xlsx_golden.py from pandas itself;
+// testdata/raise_cases.json holds the workbooks read_excel raises on and
+// testdata/ported_cases.json the frames it answers and this package reads.
 package pandasxlsx
 
 import (
@@ -21,12 +24,21 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
-// ErrInvalid is input read_excel raises on: not a ZIP archive, or an archive
-// without '[Content_Types].xml'.
+// ErrInvalid is input read_excel raises on (not a ZIP archive, an archive
+// without '[Content_Types].xml', a part openpyxl cannot find or parse, a cell
+// whose text or reference it cannot convert, a workbook without a
+// worksheet, a chartsheet where read_excel wants a sheet): the view answers
+// its 500 page. The cases of testdata/raise_cases.json name the exception
+// pandas raises.
 var ErrInvalid = errors.New("pandasxlsx: not a workbook")
 
-// ErrUnsupported marks a workbook outside the modelled subset.
-var ErrUnsupported = refusal.New("pandasxlsx: workbook outside the supported subset")
+// ErrWorkbookNotPorted is a workbook pandas reads and this package does not
+// model: an XML encoding other than UTF-8, a part larger than 256 MiB, a
+// text whose float depends on the C build, a Python value the frame model
+// cannot carry (a timedelta past Timedelta's range, a datetime outside
+// Timestamp's), a header the Lookup model cannot resolve (a text key against
+// a date or duration Index). The caller hands these to Django.
+var ErrWorkbookNotPorted = refusal.New("pandasxlsx: workbook feature not ported")
 
 // Frame is the DataFrame: its column labels and the rows of iterrows().
 type Frame struct {
@@ -55,14 +67,15 @@ func Read(data []byte) (*Frame, error) { return ReadText(data, nil) }
 // ReadText is ReadAll for the frames made of text labels and of str, int,
 // finite float, datetime, nan and NaT values (the kinds NaN, String, Int,
 // Float, Time and NaT; a numpy.int64 is the Int the import takes with
-// item()); any other frame is ErrUnsupported.
+// item()). Every other frame is ErrWorkbookNotPorted: the narrow view reads
+// no other kind.
 func ReadText(data []byte, textual func(column string) bool) (*Frame, error) {
 	frame, err := ReadAll(data, textual)
 	if err != nil {
 		return nil, err
 	}
 	if !frame.TextLabels() {
-		return nil, ErrUnsupported
+		return nil, ErrWorkbookNotPorted
 	}
 	for _, row := range frame.Rows {
 		for index, value := range row {
@@ -72,10 +85,10 @@ func ReadText(data []byte, textual func(column string) bool) (*Frame, error) {
 				row[index].Kind = Int
 			case Float:
 				if math.IsInf(value.F, 0) {
-					return nil, ErrUnsupported
+					return nil, ErrWorkbookNotPorted
 				}
 			default:
-				return nil, ErrUnsupported
+				return nil, ErrWorkbookNotPorted
 			}
 		}
 	}
@@ -445,16 +458,16 @@ func inferColumn(rows [][]cell, index int) (column, error) {
 			switch value.kind {
 			case cellString:
 				if numbers[position].uncertain {
-					return column{}, ErrUnsupported
+					return column{}, ErrWorkbookNotPorted // the float depends on the C build
 				}
 				result = Value{Kind: Float, F: numbers[position].f}
 			case cellInt:
 				result = Value{Kind: Float, F: float64(value.i)}
 				if value.n != nil {
-					if value.n.BitLen() > 1024 {
-						return column{}, ErrUnsupported // beyond a float: OverflowError
-					}
 					result.F, _ = new(big.Float).SetInt(value.n).Float64()
+					if math.IsInf(result.F, 0) {
+						return column{}, ErrInvalid // float(int) raises OverflowError
+					}
 				}
 			case cellBool:
 				if value.b {
@@ -708,16 +721,6 @@ func columnLabels(header []cell) ([]Value, IndexClass, error) {
 			labels[index] = Value{Kind: NaT}
 		case present > 0 && timedeltas && column.kind == cellDelta:
 			labels[index].Kind = Timedelta
-		}
-	}
-	// Integers that are one float64 would be one label.
-	floats := map[float64]bool{}
-	for _, label := range labels {
-		if label.Kind == Float {
-			if floats[label.F] {
-				return nil, ObjectIndex, ErrUnsupported
-			}
-			floats[label.F] = true
 		}
 	}
 	return labels, class, nil

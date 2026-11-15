@@ -90,7 +90,8 @@ func (s *SubscriptionRenewals) Renew(ctx context.Context, identity domain.Resolv
 	// A form body is a parsed RequestObject like a JSON one: its values are
 	// strings (the last value of a repeated key) or file parts.
 	if user == nil {
-		return nil, domain.ErrSubscriptionCreateNotPorted
+		// The handler answers 401 for an anonymous request before the service runs.
+		return nil, domain.ErrSubscriptionCreateUnreachable
 	}
 	group, sentGroup := subscriptionCreateGroup(request.Group)
 	queryGroup, invalidGroup := subscriptionRenewGroup(group)
@@ -258,6 +259,8 @@ func (s *SubscriptionRenewals) renewRequesterOwner(ctx context.Context, tx domai
 		if count != 1 {
 			return nil, renewError(subscriptionAssociationGet(count))
 		}
+		// Setup creates associations for association accounts, but the association import (import_service.py) can
+		// make an existing collaborator the owner; Django then reads the connected owner's association. Not ported.
 		return nil, domain.ErrSubscriptionCreateNotPorted
 	}
 	return owner, nil
@@ -468,7 +471,8 @@ func (s *SubscriptionRenewals) courses(ctx context.Context, tx domain.Subscripti
 			return err
 		}
 		if subscription == nil {
-			return domain.ErrSubscriptionCreateNotPorted
+			// The row was inserted in this transaction with the same group.
+			return domain.ErrSubscriptionCreateUnreachable
 		}
 		_, err = s.enrolment.addCourseToSubscription(ctx, enrolment, *course, *subscription, created.association, domain.RequestObject{}, false,
 			CourseEnrolmentRequest{Audit: request.Audit}, audit, true)

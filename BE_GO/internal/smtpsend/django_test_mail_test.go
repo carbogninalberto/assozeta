@@ -54,7 +54,6 @@ func TestDjangoTestMailGolden(t *testing.T) {
 	}
 	date := time.Date(2026, 11, 11, 10, 0, 0, 0, time.UTC)
 	const messageID = "<177000000000.1.2@host.example>"
-	subject := HeaderEncode(golden.Subject)
 	accepted, refused := 0, 0
 	for i, item := range golden.Cases {
 		from, err := FormatAddr(item.SenderName, item.FromEmail)
@@ -65,7 +64,7 @@ func TestDjangoTestMailGolden(t *testing.T) {
 			if !errors.Is(err, ErrFormatAddr) {
 				t.Fatalf("%d %q: FormatAddr = %v, want ErrFormatAddr", i, item.FromEmail, err)
 			}
-			_, err = RenderDjangoText(DjangoText{EncodedSubject: subject, Body: golden.Body, SenderName: item.SenderName,
+			_, err = RenderDjangoText(DjangoText{Subject: golden.Subject, Body: golden.Body, SenderName: item.SenderName,
 				FromEmail: item.FromEmail, To: item.Recipient, Date: date, MessageID: messageID})
 			if !errors.Is(err, ErrFormatAddr) {
 				t.Fatalf("%d %q: RenderDjangoText = %v, want ErrFormatAddr", i, item.FromEmail, err)
@@ -79,7 +78,7 @@ func TestDjangoTestMailGolden(t *testing.T) {
 		if from != item.FormatAddr {
 			t.Fatalf("%d %q: formataddr\ngo:     %q\npython: %q", i, item.FromEmail, from, item.FormatAddr)
 		}
-		message, err := RenderDjangoText(DjangoText{EncodedSubject: subject, Body: golden.Body, SenderName: item.SenderName,
+		message, err := RenderDjangoText(DjangoText{Subject: golden.Subject, Body: golden.Body, SenderName: item.SenderName,
 			FromEmail: item.FromEmail, To: item.Recipient, Date: date, MessageID: messageID})
 		if err != nil {
 			t.Fatalf("%d %q -> %q: RenderDjangoText = %v", i, item.FromEmail, item.Recipient, err)

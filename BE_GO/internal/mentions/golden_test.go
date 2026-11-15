@@ -134,15 +134,96 @@ func TestFilterMatchesDjango(t *testing.T) {
 	}
 }
 
-func TestRefusesUnsupportedMarkup(t *testing.T) {
-	for _, html := range []string{
-		"<!-- c -->", "<!DOCTYPE html>", "<?xml?>", "<script>x</script>", "<style>p{}</style>",
-		"<textarea>x</textarea>", "a < b", "<p>x</b>", "<p>x</p></p>", "</br>", "&copy;", "&foo;", "&#150;", "&#0;", "x &",
-		"&amp", `<a href="?a=1&b=2">x</a>`, `<p class=x>`, `<p class="a" class="b">`, "<p", `<a title="x>y">`, "\ufeffx",
-		"<p>@nome \u212a</p>", "<p>a<br>b<br/>c</p>",
-	} {
-		if _, err := Filter(html, true, Context{"associate": func(string) (string, error) { return "v", nil }}); !errors.Is(err, ErrUnsupported) {
-			t.Errorf("%q: %v", html, err)
+// filterGolden is testdata/filter_python.json, captured by
+// testdata/gen_filter_python.py from the real filter_mentions
+// (BE/application/models/utils.py:151-216) with a plain dict context.
+type filterGolden struct {
+	BS4     string                    `json:"bs4"`
+	Context map[string]map[string]any `json:"context"`
+	Cases   []struct {
+		Name   string  `json:"name"`
+		HTML   string  `json:"html"`
+		Output *string `json:"output"` // nil: filter_mentions raised
+		Blank  *bool   `json:"blank"`
+		Error  *string `json:"error"`
+	} `json:"cases"`
+}
+
+// filterGoldenResolver is get_nested_attr over decoded JSON objects: a
+// missing attribute and a JSON null are both str() of None, i.e. "".
+func filterGoldenResolver(object map[string]any) Resolver {
+	return func(path string) (string, error) {
+		var current any = object
+		for _, attr := range strings.Split(path, ".") {
+			if current == nil {
+				return "", nil
+			}
+			fields, ok := current.(map[string]any)
+			if !ok {
+				return "", errors.New("attribute of a non-object")
+			}
+			current = fields[attr]
+		}
+		if current == nil {
+			return "", nil
+		}
+		text, ok := current.(string)
+		if !ok {
+			return "", errors.New("str() of a non-string")
+		}
+		return text, nil
+	}
+}
+
+// TestFilterMatchesPythonGolden checks the markup the old parser refused
+// (comments, doctypes, processing instructions, CDATA, script/style/textarea,
+// mismatched end tags, odd attributes, entity edge cases, case folding) and
+// the FilterBlank answer against the real filter_mentions.
+func TestFilterMatchesPythonGolden(t *testing.T) {
+	raw, err := os.ReadFile("testdata/filter_python.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var data filterGolden
+	if err := json.Unmarshal(raw, &data); err != nil {
+		t.Fatal(err)
+	}
+	if data.BS4 != "4.13.3" || len(data.Cases) < 50 {
+		t.Fatalf("golden data: bs4 %s, %d cases", data.BS4, len(data.Cases))
+	}
+	context := Context{}
+	for name, object := range data.Context {
+		context[name] = filterGoldenResolver(object)
+	}
+	if len(context) == 0 {
+		t.Fatal("golden data has no context")
+	}
+	for _, c := range data.Cases {
+		output, err := Filter(c.HTML, true, context)
+		if c.Error != nil {
+			if !errors.Is(err, ErrAliasKeyError) {
+				t.Errorf("%s: got %v, want %s", c.Name, err, *c.Error)
+			}
+			continue
+		}
+		if err != nil {
+			t.Errorf("%s: %v", c.Name, err)
+			continue
+		}
+		if c.Output == nil || c.Blank == nil {
+			t.Errorf("%s: golden data has no output", c.Name)
+			continue
+		}
+		if output != *c.Output {
+			t.Errorf("%s: %q\n python %q", c.Name, output, *c.Output)
+		}
+		blankOutput, blank, err := FilterBlank(c.HTML, context)
+		if err != nil {
+			t.Errorf("%s: FilterBlank: %v", c.Name, err)
+			continue
+		}
+		if blankOutput != output || blank != *c.Blank {
+			t.Errorf("%s: FilterBlank %q %v, want %q %v", c.Name, blankOutput, blank, output, *c.Blank)
 		}
 	}
 }

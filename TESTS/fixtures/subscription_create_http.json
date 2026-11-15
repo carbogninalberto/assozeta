@@ -8098,6 +8098,48 @@
    "setup": null
   },
   {
+   "name": "subscription-create-quick-associate-number-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add?m=only_associate",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "associate": 5
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-create-quick-associate-true-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add?m=only_associate",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "associate": true
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-create-quick-associate-float-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add?m=only_associate",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "associate": 1.5
+   },
+   "setup": null
+  },
+  {
    "name": "subscription-create-quick-associate-without-account-server-error",
    "actor": "owner",
    "method": "POST",
@@ -8128,6 +8170,24 @@
     "associate": "a1000000-0000-4000-8000-000000930003"
    },
    "setup": null
+  },
+  {
+   "name": "subscription-create-quick-duplicate-current-id-as-integer",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add?m=only_associate",
+   "headers": {},
+   "status": 409,
+   "response": {
+    "msg": "Questa iscrizione esiste già.",
+    "code": "409",
+    "ref": "subscription_duplicate"
+   },
+   "effect": null,
+   "body": null,
+   "setup": null,
+   "raw_body": "{\"associate\": 214005707321371757778191212399293562883}",
+   "content_type": "application/json"
   },
   {
    "name": "subscription-create-quick-quick",

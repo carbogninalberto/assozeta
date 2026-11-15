@@ -22,11 +22,12 @@ import (
 var (
 	// ErrSubscriptionUpdateFailed is an exception the view does not handle (the 500 page).
 	ErrSubscriptionUpdateFailed = errors.New("subscription update failed")
-	// ErrSubscriptionUpdateNotPorted refuses, before any write, values whose
-	// Django conversion the port does not reproduce: date strings other than
-	// ASCII YYYY-MM-DD (date.fromisoformat's other formats, non-ASCII digits)
-	// and text with NUL characters or lone surrogates.
-	ErrSubscriptionUpdateNotPorted = refusal.New("subscription update value not ported")
+	// ErrSubscriptionUpdateNotPorted is a value whose text holds a NUL character
+	// or a lone surrogate. auditlog's log_update (pre_save) inserts the LogEntry
+	// first and PostgreSQL rejects its jsonb changes (\u0000, unpaired
+	// surrogate escapes), so Django raises before any write and answers its 500
+	// page (long-tail rule 2).
+	ErrSubscriptionUpdateNotPorted = refusal.AppState("subscription update text PostgreSQL rejects")
 )
 
 // SubscriptionUpdateInvalid is check_date's ValidationError('Invalid <key> format').
@@ -186,8 +187,8 @@ func (v *subscriptionUpdateValues) compare(name, old, new string) {
 	}
 }
 
-// storable: PostgreSQL text and auditlog's jsonb entry refuse NUL characters
-// and lone surrogates.
+// storable: PostgreSQL text and auditlog's jsonb entry reject NUL characters
+// and lone surrogates, so the save raises (the 500 page) before any row.
 func storable(value any) error {
 	if !dto.TextStorable(value) {
 		return ErrSubscriptionUpdateNotPorted

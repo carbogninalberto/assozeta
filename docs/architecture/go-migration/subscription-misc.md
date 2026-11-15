@@ -25,10 +25,15 @@
 
 ## Not ported
 
-- `subscription/associates-draft/list/approve`: every successful draft goes through `create_subscription` (users, associates, subscriptions, payments, documents, emails). It stays on Django (see `associates-draft.md`).
-- calculate-tax-code (t4l1): the whole input range is ported. The complete text-unidecode table is embedded (`unidecode.bin.gz`), NFKD is applied per code point with the canonical ordering of combining marks (no limit on a run), lone surrogates are code points like any other, named, decimal and hexadecimal character references are substituted as python-slugify does (a pass with a reference out of `chr()`'s range is dropped as a whole), and a date slug with letters goes through `internal/pydateutil` (day first, or year first when the slug's first part has four characters). Golden vectors from the real libraries: `BE_GO/internal/codicefiscale/testdata/golden.json.gz` (3857 calls, `gen_golden.py`). Cases `tax-cjk-last-name` ... `tax-italian-month-date` (178 cases); mutation `t4l1-mut-sm` (named entities left as text) fails Go on `tax-entity-last-name`, CAUGHT. Only a body string that is no Python str (malformed UTF-8, which the parsers never hand over) stays refused. If the `Unidecode` package were installed next to python-slugify, Django would transliterate differently.
-- validate-token-link through the paired server: an `expires_at` whose instant lies outside years 1..9999. Go answers 500 (the expired links are already deleted, as in Django).
+- `subscription/associates-draft/list/approve`: every successful draft goes through `create_subscription` (users,
+  associates, subscriptions, payments, documents, emails). The route is ported; a draft hitting one of that flow's
+  refusals refuses the whole request (see `associates-draft.md`).
+- calculate-tax-code (t4l1): the whole input range is ported. The complete text-unidecode table is embedded (`unidecode.bin.gz`), NFKD is applied per code point with the canonical ordering of combining marks (no limit on a run), lone surrogates are code points like any other, named, decimal and hexadecimal character references are substituted as python-slugify does (a pass with a reference out of `chr()`'s range is dropped as a whole), and a date slug with letters goes through `internal/pydateutil` (day first, or year first when the slug's first part has four characters). Golden vectors from the real libraries: `BE_GO/internal/codicefiscale/testdata/golden.json.gz` (3857 calls, `gen_golden.py`). Cases `tax-cjk-last-name` ... `tax-italian-month-date` (178 cases); mutation `t4l1-mut-sm` (named entities left as text) fails Go on `tax-entity-last-name`, CAUGHT. Since long tail PR 3 malformed UTF-8 (form or query text) is decoded the way Django decodes it (`errors='replace'`), so nothing stays refused. If the `Unidecode` package were installed next to python-slugify, Django would transliterate differently.
 - generate-token-link with an uploaded file as `gym_name` (multipart): the row stores `str(file)` (the sanitized name) and the response carries the file's lines decoded as UTF-8 (the renderer iterates the file; a line that is not UTF-8 is the 500 page after the save). Files over one 64 KiB chunk are refused with a 500 before any write (only the first chunk is read). The file is the last value of the key when a text part has the same name.
+
+Since long-tail PR 3 (agent B) the public links the server always wires are application state (`ErrServerComposition`,
+the 500 page, never handed off), and `ErrMiscRoutesNotPorted` is deleted. The `gym_name` file over one chunk stays a
+refusal (the 64 KiB `born_date` and the paired-server `expires_at` are ported by agents A and C).
 
 ## Evidence
 
@@ -63,3 +68,7 @@ that ask nothing (upper-case token, disconnected pairing, an instance that is no
   `subscription-misc-validate-paired-server-gym-name-too-long` (CAUGHT).
 
 - Shared document (later change): the cases of one document under two files now expect the caller's link removed with the Document kept, then a repeat (500), then the last link taking the Document with it. Replaces the v2-rest-c cascade cases.
+
+Long tail PR 3 (agent C): a paired server's `expires_at` whose UTC instant lies outside years 1..9999 is read as
+Django reads it (an aware value it compares with now without error) instead of being refused. Case
+`validate-paired-server-far-future-grant`.

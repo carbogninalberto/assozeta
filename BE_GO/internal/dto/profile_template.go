@@ -21,9 +21,11 @@ import (
 // view answers the 500 page and nothing is written.
 var ErrProfileTemplatePython = errors.New("profile template view exception")
 
-// ErrProfileTemplateNotPorted refuses, before any write, a value whose Python
-// conversion this port does not reproduce (see profile-template.md).
-var ErrProfileTemplateNotPorted = refusal.New("profile template input not ported")
+// ErrProfileTemplateUnreachable is a state Go's own code cannot produce: the
+// request decoders never yield a section name that is not UTF-8, and the
+// length and depth limits run before prettify, so its output stays far below
+// the prettifier's size bound. The 500 page, never handed off.
+var ErrProfileTemplateUnreachable = refusal.AppState("profile template: unreachable state")
 
 // ProfileTemplateTextRejected is the 400 the view returns for a section text
 // before save(): the body is {"<Field>": ["<Message>"]} and nothing is written.
@@ -132,7 +134,8 @@ func PlanProfileTemplate(data domain.RequestObject) (*ProfileTemplatePlan, error
 			}
 			upper, ok := ProfileTemplateUpper(label)
 			if !ok {
-				return nil, ErrProfileTemplateNotPorted
+				// Go's request decoders never produce a section name that is not valid UTF-8.
+				return nil, ErrProfileTemplateUnreachable
 			}
 			copied := append(domain.RequestObject(nil), section...)
 			copied = PythonSet(copied, "text", pretty)
@@ -330,7 +333,9 @@ func profileTemplatePrettify(value any, field string) (string, error) {
 			return "", &ProfileTemplateTextRejected{Field: field,
 				Message: fmt.Sprintf("Il testo contiene troppi livelli annidati (massimo %d).", profileTemplateMaxHTMLDepth)}
 		}
-		return "", ErrProfileTemplateNotPorted
+		// The view refuses texts over 500,000 code points and trees deeper than 32 tags before prettify,
+		// so the output stays far below the 32 MiB bound: bs4prettify's ErrOutputTooLarge is application state.
+		return "", err
 	}
 	return pretty, nil
 }

@@ -153,7 +153,11 @@ def stored(row, expected):
 
 
 def check_documents(case, effect, before, after, key, context):
-    """The request's new documents: rows, links to the membership, stored objects and their create entries' changes."""
+    """The request's new documents: rows, links to the membership, stored objects and their create entries' changes.
+
+    A spec with 'row_only' (no 'content') is a document the request wrote and linked nowhere: its row and create entry
+    exist, no stored object is expected.
+    """
     Document = document_model()
     old, new = keyed(before[DOCUMENT], 'document_id'), keyed(after[DOCUMENT], 'document_id')
     contract.require(set(old) <= set(new) and all(new[k] == old[k] for k in old), 'state.documents-changed')
@@ -178,15 +182,18 @@ def check_documents(case, effect, before, after, key, context):
             item = listed.get(ident)
             contract.require(item is not None and item['token'] == str(document.token)
                              and item['creation_date'] == document.creation_date.isoformat().replace('+00:00', 'Z'), 'response.document-row')
+        entries[ident] = {**topup.created_changes(Document, document, {'creation_date': topup.auditlog_moment(document.creation_date)}),
+                          # the reverse foreign key with a related_name renders as its empty manager
+                          'customer_invoice_pdf': ['None', 'application.CustomerInvoice.None']}
+        if spec.get('row_only'):
+            # the request failed after the row and its create entry: no stored object and no link
+            continue
         object_key = f'{LOCATION}/{repr(document.creation_date.timestamp())}/{ident}/{document.filename}'
         contract.require(object_key in objects, 'storage.object:' + object_key)
         stored = STORAGE['client'].get_object(Bucket=BUCKET, Key=object_key)
         contract.require(stored['Body'].read() == base64.b64decode(spec['content']), 'storage.bytes')
         expected_objects.add(object_key)
         expected_links.add((key, ident))
-        entries[ident] = {**topup.created_changes(Document, document, {'creation_date': topup.auditlog_moment(document.creation_date)}),
-                          # the reverse foreign key with a related_name renders as its empty manager
-                          'customer_invoice_pdf': ['None', 'application.CustomerInvoice.None']}
     contract.require(objects == expected_objects, 'storage.objects')
     contract.require(harness.pairs(after[LINK], 'subscriptionmembership_id', 'document_id') == expected_links
                      and len(after[LINK]) == len(expected_links), 'state.links')

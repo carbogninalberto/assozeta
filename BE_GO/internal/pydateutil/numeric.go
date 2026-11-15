@@ -14,6 +14,9 @@ var (
 	// decimalPrec is the precision of decimal's default context.
 	decimalPrec = 28
 	pow28       = new(big.Int).Exp(bigTen, big.NewInt(28), nil)
+	// powMaxStrDigits is 10**maxStrDigits: the magnitude parseDecimal gives an
+	// integer part with more significant digits than that (see parseDecimal).
+	powMaxStrDigits = new(big.Int).Exp(bigTen, big.NewInt(maxStrDigits), nil)
 )
 
 func small(v int64) *big.Int { return big.NewInt(v) }
@@ -66,8 +69,25 @@ func parseDecimal(token string) (decimal, bool) {
 		return decimal{}, false
 	}
 	value := new(big.Int)
-	if len(ip) > 0 {
-		value.SetString(string(ip), 10)
+	significant := 0
+	for significant < len(ip) && ip[significant] == '0' {
+		significant++
+	}
+	if len(ip)-significant > maxStrDigits {
+		// An integer part this long is above every threshold the parser
+		// compares with (31, 100, 10**28) and the only message that carries
+		// one, the month of calendar.IllegalMonthError, raises the integer
+		// string conversion limit (str() of an int that long does). Keep a
+		// digit count above that limit and the residue modulo 400, which is
+		// all calendar.isleap reads, instead of converting millions of digits
+		// (math/big's base-10 conversion is quadratic).
+		residue := 0
+		for _, c := range ip {
+			residue = (residue*10 + int(c-'0')) % 400
+		}
+		value.Add(powMaxStrDigits, small(int64(residue)))
+	} else if significant < len(ip) {
+		value.SetString(string(ip[significant:]), 10)
 	}
 	return decimal{ip: value, frac: string(frac)}, true
 }
@@ -121,6 +141,40 @@ func roundPrec(coefficient *big.Int, exp int) (*big.Int, int) {
 	return q, exp + drop
 }
 
+// roundSignificant rounds the integer whose decimal digits are digits (no
+// leading zeros) to decimalPrec significant digits, half even, and reports how
+// many digits it dropped (roundPrec's exp adjustment).
+func roundSignificant(digits string) (*big.Int, int) {
+	if len(digits) <= decimalPrec {
+		v, _ := new(big.Int).SetString(digits, 10)
+		return v, 0
+	}
+	drop := len(digits) - decimalPrec
+	q, _ := new(big.Int).SetString(digits[:decimalPrec], 10)
+	roundUp := false
+	switch first := digits[decimalPrec]; {
+	case first > '5':
+		roundUp = true
+	case first == '5':
+		// A tie means every digit of the dropped part after the first is 0.
+		roundUp = true
+		tie := true
+		for i := decimalPrec + 1; i < len(digits); i++ {
+			if digits[i] != '0' {
+				tie = false
+				break
+			}
+		}
+		if tie {
+			roundUp = q.Bit(0) == 1
+		}
+	}
+	if roundUp {
+		q.Add(q, small(1))
+	}
+	return q, drop
+}
+
 // sixtyFrac is int(60 * (d % 1)): the remainder and the product are each
 // rounded to 28 significant digits before the truncation, so a fraction
 // close enough to one yields 60.
@@ -129,9 +183,10 @@ func (d decimal) sixtyFrac() *big.Int {
 	if significant == "" {
 		return small(0)
 	}
-	coefficient, _ := new(big.Int).SetString(significant, 10)
-	coefficient, exp := roundPrec(coefficient, -len(d.frac))
-	coefficient, exp = roundPrec(new(big.Int).Mul(coefficient, bigSixty), exp)
+	// The remainder keeps the leading significant digits only, so a fraction
+	// of a million digits costs no more than a short one.
+	coefficient, dropped := roundSignificant(significant)
+	coefficient, exp := roundPrec(new(big.Int).Mul(coefficient, bigSixty), -len(d.frac)+dropped)
 	if exp >= 0 {
 		return coefficient.Mul(coefficient, new(big.Int).Exp(bigTen, small(int64(exp)), nil))
 	}

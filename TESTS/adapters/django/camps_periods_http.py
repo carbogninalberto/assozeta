@@ -95,8 +95,19 @@ def seed_rows(source, created):
 
 
 def deleted_rows(source):
-    """auditlog's delete diffs of every camp period, service and subscription period, captured before each case."""
-    return {str(row.pk): replace.deleted_changes(model, row) for model in models().values() for row in model._base_manager.all()}
+    """auditlog's delete diffs of every camp period, service and subscription period, captured before each case.
+
+    '$walk_order' also captures, per camp period id, the order in which the services update walk reads that period's
+    unpaid subscription periods: the view filters without ORDER BY, so the order is PostgreSQL's.
+    """
+    found = models()
+    rows = {str(row.pk): replace.deleted_changes(model, row) for model in found.values() for row in model._base_manager.all()}
+    rows['$walk_order'] = {
+        # Whole rows, as the view iterates them: the same statement, so the same plan and order.
+        str(period.pk): [str(row.pk) for row in found[SUBPERIOD].objects.filter(camps_and_retreats_period_id=period.pk,
+                                                                               payment__paid=False)]
+        for period in found[PERIOD]._base_manager.all()}
+    return rows
 
 
 def plain(value):
@@ -189,6 +200,10 @@ def assert_effect(case, before, after, source, context):
     if effect is None:
         contract.require(all(before[k] == after[k] for k in MANAGED), 'state.no-effect')
         return
+    if 'walk_alternatives' in effect:
+        first = context['prepared']['$walk_order'][effect['walk_period']][0]
+        contract.require(first in effect['walk_alternatives'], 'state.walk-order')
+        effect = effect['walk_alternatives'][first]
     created = {}
     for label in (PERIOD, SERVICE, SUBPERIOD, PAYMENT):
         check_rows(label, before, after, effect['rows'].get(label), created)

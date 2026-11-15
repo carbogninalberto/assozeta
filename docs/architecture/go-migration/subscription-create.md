@@ -139,7 +139,9 @@ association: another association's username is DRF's 403 `User not allowed.`, be
   `set_signature_from_base64(data)`: an http(s) URL becomes `signature_url`; otherwise the text after the first `,` through
   `base64.b64decode(validate=True)` (invalid: 400 `{'msg': 'Firma non valida.', 'code': '400', 'ref': 'invalid_signature'}`, rolled
   back) is stored at `<AWS_LOCATION>/subscriptions/<id>/signature_<timestamp>.png` (the subscription/sign upload, shared; a storage
-  failure is the 503 `signature_storage` body) and `save(update_fields=[signature_url, signature_storage_key])` writes the name and
+  failure is the 503 `signature_storage` body). A taken key gets `get_available_name`'s alternative name
+  (`<root>_<7 random letters or digits><suffixes>`, e.g. `signature_1731686400_AbC12xY.123456.png`), then
+  `save(update_fields=[signature_url, signature_storage_key])` writes the name and
   the public URL (one update entry; the create entry was written without them). A later failure deletes the stored object.
 - `new_user_account.new_member` true: `new_member_info['email']` (missing: 500) is checked for an account:
   one with that exact e-mail links nothing (the rows stay with the request's user, as without `new_member`, and no account or
@@ -256,14 +258,15 @@ A request without an account that declares a body above `PUBLIC_UPLOAD_MAX_BYTES
 
 Refused with the 500 page before anything is committed:
 - an athlete request from an account that
-  is neither an athlete nor an association; the quick mode from a member account with an id that is a number or a boolean; a `sport_association` that is a list or an object;
+  is neither an athlete nor an association; a `sport_association` that is a list or an object;
 - in the family wizard's entries every input refused for a single registration; in the quick subscription an
-  owner with several associations, plan ids of other shapes (booleans, containers) and a
+  owner with several associations (`ErrSubscriptionCreateServer`, the 500 page, Django's own `AttributeError`), plan ids
+  of other shapes (booleans, containers) and a
   certificate choice that depends on the unordered subscriptions;
 - in a preregistration that renews a subscription: an account name matching several
-  associations, a renewed subscription without an associate;
+  associations (application state: `User.username` is unique), a renewed subscription without an associate;
 - new member info with a non-string e-mail, a numeric
-  `new_member` flag; a signature upload whose generated key already exists;
+  `new_member` flag;
 - the placeholder certificate when the names sent are not strings, when the file name is not storable (over 255 characters,
   control characters, a path the storage rejects), when the text is outside `pilplaceholder`'s subset, or when
   `PIL_PLACEHOLDER_ZLIB` names an unknown zlib; 
@@ -274,6 +277,15 @@ Refused with the 500 page before anything is committed:
 
 Routes (not routed in Go): `subscription/<uid>/transfer`, `subscription/sign` (signature upload) and `subscription/import/upload` (spreadsheet
 parsing). The workers' tasks (`print_document_subscription`, `check_workflows_trigger`) stay in Django.
+
+Since long-tail PR 3 (agent B) some entries above are application state, answered with the 500 page and never handed
+off: a null born date in a non-tutor's entry (the first step already answered it), an association the request
+overwrote before validation, fee plans jsonb text Go cannot parse (always valid JSON within the Python writers'
+limits) and an account
+name matching several associations (`User.username` is unique, `SportAssociation.user` a `OneToOneField`), all
+`ErrSubscriptionCreateUnreachable`. An owner with several associations is Django's own `AttributeError`
+(`ErrSubscriptionCreateServer`), and a number or boolean associate id in the quick mode is ported
+(`renewalSourceKey`).
 
 ## t2subsa: type of associate, Unicode text and tied tax codes
 
@@ -425,3 +437,6 @@ Re-run green natively (`famwiz-rerun-r1`): `subscription-renew` 75/75, `subscrip
 - Plan ids compare as `str()`, fees read Python `float()` spellings (a rejected text and inf are 500s, nan no payment), a third decimal
   is rounded in the column and audited as the float, and a membership plan name is `str()`.
 - Cases `group-*`, `form-*`, `born-date-*`, `tutor-*`, `plan-*`, `fee-*` and the two ties.
+
+Long tail PR 3 (agent C): a signature upload whose generated key is already taken gets
+`get_available_name`'s alternative name instead of a refusal.

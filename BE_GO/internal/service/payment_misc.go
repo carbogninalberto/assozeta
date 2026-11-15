@@ -341,7 +341,8 @@ func paymentMiscAmountRange(fee any) (stored, audit string, float *float64, outO
 	// numeric(9, 2): larger values match no row and fail the insert.
 	number, ok := new(big.Float).SetString(stored)
 	if !ok {
-		return "", "", nil, false, domain.ErrPaymentMiscNotPorted
+		// SetString of a text built by the decimal regex
+		return "", "", nil, false, domain.ErrPaymentMiscUnreachable
 	}
 	return stored, audit, float, new(big.Float).Abs(number).Cmp(big.NewFloat(9999999.995)) >= 0, nil
 }
@@ -421,10 +422,7 @@ func (s *PaymentMisc) prepare(ctx context.Context, identity domain.ResolvedIdent
 	day := now
 	if value, present := request.Query.Lookup("date"); present {
 		parsed, err := paymentStateDateAny(value)
-		switch {
-		case errors.Is(err, domain.ErrPaymentStateNotPorted):
-			return fail(domain.ErrPaymentMiscNotPorted)
-		case err != nil:
+		if err != nil {
 			return run, errPaymentMiscStop
 		}
 		day = *parsed
@@ -589,7 +587,8 @@ func (s *PaymentMisc) Apply(ctx context.Context, identity domain.ResolvedIdentit
 				return err
 			}
 			if found && s.configured == nil {
-				return domain.ErrPaymentMiscNotPorted
+				// cmd/server always calls WithConfiguredMail.
+				return domain.ErrServerComposition
 			}
 			configured = found
 		}

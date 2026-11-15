@@ -110,18 +110,19 @@ Files: `BE_GO/internal/{domain,repository,service}/export_cleanup.go`,
   delete that succeeded before a failed transaction is not undone, as in
   Django.
 
-## Not ported: auto_delete_orphan_medical_certificate
+## Ported in tasks-db-f: auto_delete_orphan_medical_certificate
 
-Stays `needs_review` and unregistered. The task deletes the file, then
-`document.delete()` (which cascades to the certificate and to every other row
-referencing the document), then `medical_certificate.delete()` again on the
-deleted instance (a second audit entry), and a certificate without document
-ends the whole task. Go keeps candidate discovery only
-(`medical_cleanup_candidates.go`), which protects every current reference;
-running the legacy deletion would need the Document cascade characterized
-first. The `auto-delete-orphan-medical-certificate` schedule stays
-unsupported.
-Now ported in [tasks-db-f](tasks-db-f.md), with the same cascade refusal.
+Ported in [tasks-db-f](tasks-db-f.md), with the same cascade refusal. The task
+deletes the file, then `document.delete()` (which cascades to the certificate
+and to every other row referencing the document), then
+`medical_certificate.delete()` again on the deleted instance (a second audit
+entry), and a certificate without document ends the whole task.
+
+Since long-tail PR 3 (agent B) a name that is not UTF-8 or holds a NUL is
+application state (`ErrOrphanMedicalUnreachable`, the job fails from Go):
+PostgreSQL refuses the text. A creation date outside Python's range stays
+refused: the association import stores the archived value. A run whose document other
+rows reference stays refused.
 
 ## Evidence
 

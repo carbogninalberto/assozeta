@@ -147,11 +147,10 @@ have no Go counterpart; Go runs one job per published occurrence.
 
 ## Not ported or refused
 
-- Refused before any effect (job fails with `task_failed`): a run whose SMTP
-  path would need a message or envelope outside the smtpsend subset (for
-  example a reminder title with a line break, or an address with quotes or
-  spaces), and template inputs the renderer refuses. The check covers every
-  item the run would process; Django would send these.
+- Template inputs the renderer refuses are application state (`emailrender`'s
+  own error: the job fails from Go, never handed off). (Long tail PR 3: every
+  SMTP message and envelope renders; one Python raises on is logged and skipped
+  like send_email's `(False, e)`.)
 - `send_updated_certificate_email`: its only call site
   (`BE/application/views/subscriptions_views.py`) is commented out, so no
   producer exists and the Go worker consumes only its own job table. Not
@@ -162,6 +161,10 @@ have no Go counterpart; Go runs one job per published occurrence.
 - The EHLO name follows `socket.getfqdn()` with Go's resolver; where the C
   resolver reports extra aliases (macOS reports an `ip6.arpa` alias for `::1`)
   the name differs. The evidence normalizes the EHLO argument.
+
+Since long-tail PR 3 (agent B) template inputs `emailrender` refuses are application state, returned as they are:
+the repository templates and the `auto_now` brand date are the app's own, so the Go job fails and the task is never
+handed off. The `smtpsend` subset stays a refusal.
 
 ## Evidence
 

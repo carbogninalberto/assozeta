@@ -14,6 +14,7 @@ $income) are computed by the contract. Run with ``python3 -I`` and commit the ou
 """
 import json
 from collections import Counter
+from datetime import datetime
 from decimal import Decimal
 from pathlib import Path
 
@@ -475,6 +476,48 @@ for label in FOUR_DAYS:
     rid(label)
 DAYS.update(FOUR_DAYS)
 
+# ---------------------------------------------------------------------------
+# Two third-association athletes whose registry events carry decimal digits of another script
+# (athlete_dashboard's datetime.strptime(event['start'], '%Y-%m-%dT%H:%M:%S.%fZ')).
+# CPython's _strptime builds %Y, the second digit of %d/%H/%M/%S and int() from \d (any decimal
+# digit), but %m's alternatives, the first digit of %M/%S and %f stay ASCII. strftime cannot emit
+# another script's digits, so only the parts known before seeding are literals ('٢٠' is the year's
+# century, valid until 2099, and '1٠:0٠:0٠' the event's 10:00:00) and %y/%m/%d stay strftime
+# fields: on 2026-11-18 the accepted start is '٢٠26-11-18T1٠:0٠:0٠.000Z'. As with the fourth
+# association, no widget case reads these rows.
+# ---------------------------------------------------------------------------
+STRPTIME_EVENT = '%Y-%m-%dT%H:%M:%S.%fZ'
+UNICODE_YEAR_START = '٢٠%y-%m-%dT1٠:0٠:0٠.000Z'  # year century, hour, minute and second digits: \d
+UNICODE_MONTH_START = '٢٠%y-١١-%dT1٠:0٠:0٠.000Z'  # %m is ASCII only: ValueError, the event is skipped
+UNICODE_PROBE = datetime(2026, 11, 18, 10, 0)
+assert datetime.strptime(UNICODE_PROBE.strftime(UNICODE_YEAR_START), STRPTIME_EVENT) == UNICODE_PROBE
+try:
+    datetime.strptime(UNICODE_PROBE.strftime(UNICODE_MONTH_START), STRPTIME_EVENT)
+except ValueError:
+    pass
+else:
+    raise AssertionError('a Unicode month must not parse')
+USERS['athlete_digits'] = {'role': 'athlete'}
+USERS['athlete_month'] = {'role': 'athlete'}
+ASSOCIATES['as_ud'] = {'association': 'association_three', 'first': 'Atleta', 'last': 'Cifre', 'sex': 'M', 'born': None, 'age': 0,
+                       'user': 'athlete_digits'}
+ASSOCIATES['as_um'] = {'association': 'association_three', 'first': 'Atleta', 'last': 'Mese', 'sex': 'F', 'born': None, 'age': 0,
+                       'user': 'athlete_month'}
+COURSES['c_ud'] = course('Corso cifre', association='association_three')
+COURSES['c_um'] = course('Corso mese', association='association_three')
+SUBSCRIPTIONS['sub_ud'] = sub('association_three', status=5, start=day(-10), end=day(10), created=OLD, associate='as_ud',
+                              user='athlete_digits')
+SUBSCRIPTIONS['sub_um'] = sub('association_three', status=5, start=day(-10), end=day(10), created=OLD, associate='as_um',
+                              user='athlete_month')
+cs('cs_ud', 'c_ud', subscription='sub_ud')
+cs('cs_um', 'c_um', subscription='sub_um')
+UNICODE_LESSON_DAY = day(3, '10:00:00')
+REGISTRIES['rg_ud'] = {'course': 'c_ud', 'events': [event('ev-ud', UNICODE_LESSON_DAY, fmt=UNICODE_YEAR_START, title='Cifre')]}
+REGISTRIES['rg_um'] = {'course': 'c_um', 'events': [event('ev-um', day(4, '10:00:00'), fmt=UNICODE_MONTH_START, title='Mese')]}
+DAYS['d_ud'] = {'registry': 'rg_ud', 'date': UNICODE_LESSON_DAY, 'attendees': ['cs_ud']}
+for label in ('as_ud', 'as_um', 'c_ud', 'c_um', 'sub_ud', 'sub_um', 'rg_ud', 'rg_um', 'd_ud', 'athlete_digits', 'athlete_month'):
+    rid(label)
+
 # ===========================================================================
 # Oracle (statistic_views.py read line by line).
 # ===========================================================================
@@ -914,6 +957,18 @@ def athlete_body(active, lessons):
                       'subscriptions': active}], 'upcoming_lessons': lessons}
 
 
+THIRD_USER = {'user_id': R['owner_three'], 'avatar_image': None, 'first_name': 'Statistic', 'last_name': 'Fixture',
+              'username': 'statistic-reads-owner_three'}
+
+
+def third_athlete_body(active, lessons):
+    """The athlete dashboard of the third association: its owner, no review link, no communications."""
+    return {'data': [{'sport_association': {'denomination': 'Statistiche terza', 'sport_association_id': R['association_three'],
+                                            'user': THIRD_USER, 'review_url': None, 'review_url_enabled': False,
+                                            'communications': []},
+                      'subscriptions': active}], 'upcoming_lessons': lessons}
+
+
 ATHLETE_LESSONS = [
     lesson('ev-9', 'Basket mattina', day(1), 'd9', 'cs_a2', 'sub_a2', 'c2'),
     lesson('ev-1', 'Allenamento', day(2), 'd1', 'cs_a1', 'sub_a1', 'c1', present=True),
@@ -1023,6 +1078,13 @@ add('athlete-admin-impersonating', 'admin', A, 200, ATHLETE_BODY, headers={'X-Im
 add('athlete-owner-impersonating', 'owner', A, 200, ATHLETE_SCOPED_BODY, headers={'X-Impersonation-Id': '$session:owner_athlete', 'User-Id': ATHLETE})
 add('athlete-without-subscriptions', 'athlete_two', A, 200, athlete_body(0, []))
 add('athlete-blank-tax-code', 'athlete_blank', A, 200, athlete_body(1, []))
+# The third association's registry events (see the seed): a start mixing scripts names the same
+# lesson as an ASCII one, while a Unicode month is the ValueError that skips that event.
+THIRD_SETUP = {'primary_association': R['association_three']}
+add('athlete-unicode-digit-start-listed', 'athlete_digits', A, 200,
+    third_athlete_body(1, [lesson('ev-ud', 'Cifre', UNICODE_LESSON_DAY, 'd_ud', 'cs_ud', 'sub_ud', 'c_ud', present=True)]),
+    setup=THIRD_SETUP)
+add('athlete-unicode-digit-month-skipped', 'athlete_month', A, 200, third_athlete_body(1, []), setup=THIRD_SETUP)
 add('athlete-invalid-event-json-error', 'athlete_broken', A, 500, {'error': 'An error occurred while loading the dashboard'})
 add('athlete-no-primary-association', 'athlete', A, 503, {'error': 'Primary sport association is not configured.'},
     setup={'primary_association': None})

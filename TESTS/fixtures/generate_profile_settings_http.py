@@ -40,13 +40,16 @@ SETTINGS, INTEGRATIONS = '/profile/settings', '/profile/integrations'
 cases = []
 
 
-def add(name, actor, path, status, response, *, method='GET', body=None, raw_body=None, content_type=None, headers=None, effect=None):
+def add(name, actor, path, status, response, *, method='GET', body=None, raw_body=None, raw_parts=None, content_type=None,
+        headers=None, effect=None):
     case = {'name': f'profile-settings-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
             'status': status, 'response': response, 'effect': effect}
     if body is not None:
         case['body'] = body
     if raw_body is not None:
         case['raw_body'], case['content_type'] = raw_body, content_type
+    if raw_parts is not None:
+        case['raw_parts'], case['content_type'] = raw_parts, content_type
     cases.append(case)
 
 
@@ -302,6 +305,15 @@ add('post-multipart-file-fields-invalid', 'owner', SETTINGS, 400, {
     raw_body=multipart([('auto_archive', 'true')], [(key, 'nota.txt', 'ciao') for key in (
         'dark_mode', 'balance_sheet_year', 'membership_starting_number', 'default_membership_type', 'default_payment_category',
         'default_payment_category_courses')]), content_type=MULTIPART)
+# A spooled upload (TemporaryUploadedFile, request Content-Length over FILE_UPLOAD_MAX_MEMORY_SIZE) under the key
+# the serializer ignores: the view treats it like the in-memory one (user saved, then the card lookup fails: 500).
+spooled = [f'--{BOUNDARY}\r\nContent-Disposition: form-data; name="{key}"\r\n\r\n{value}\r\n'
+           for key, value in FORM if key != 'membership_card_configuration']
+spooled.append(f'--{BOUNDARY}\r\nContent-Disposition: form-data; name="membership_card_configuration"; filename="nota.txt"\r\n'
+               f'Content-Type: text/plain\r\n\r\n')
+add('post-multipart-spooled-file-saves-user-then-server-error', 'owner', SETTINGS, 500, SERVER, method='POST',
+    raw_parts=spooled + [{'repeat': 'x', 'count': 2700000}, f'\r\n--{BOUNDARY}--\r\n'], content_type=MULTIPART,
+    effect={'user': saved('owner', form_stored)})
 # A file under a key the serializer ignores: the user is saved, then the card lookup fails on the file (500).
 add('post-multipart-file-saves-user-then-server-error', 'owner', SETTINGS, 500, SERVER, method='POST',
     raw_body=multipart([(key, value) for key, value in FORM if key != 'membership_card_configuration'],

@@ -27,6 +27,8 @@ execution owner. CourseSerializer rendering is shared with `course/<uid>/overvie
   - `query[status_flag]`: Python `int()` (else a 500); outside `0..32767` the lookup is EmptyResultSet (no rows);
   - `sort[field]`/`sort[sort]` (both non-empty): `order_by(field)` for `asc`, otherwise `order_by('-' + field)`. An
     unknown first name (including `--x`, `-?`, empty) is a FieldError raised by `order_by()` (500); `?` is random.
+    A relation path, a transform, a reverse accessor or a stored column outside the model's own is the same
+    FieldError (the 500 page): `checked_ordering` in `BE/application/utils/api_utils.py` selects the orderable names.
 - **all == '1':** `{'data': [CourseSerializer]}` (`optimized == '1'`: `values('course_id', 'title')`), any method,
   pagination ignored, duplicates kept.
 - **POST without all:** `request.data` (a parse error is DRF's 400) and `current_view_course`: a missing or other
@@ -70,8 +72,7 @@ names: pandas keeps them, skips the numeric coercion for those columns and sizes
 ## Not ported (refused with the stable 500 page before any work)
 
 - **Exports:** workbook inputs `xlsxexport` does not reproduce (formula-like text and the other cases in
-  `xlsx-exports.md`) and an export (either format) whose ordering is one of the lazy names below.
-- **Orderings:** Client-chosen orderings (t4l1): the list orders by the model's own columns (names and attnames, `pk`, a foreign key by its key column) and the columns the view annotated. A path through a relation or the owner account, a transform, a reverse accessor and a few stored columns (none of the course's own columns are held back) answer as an unknown ordering (FieldError, the 500 page) on both sides; the shared helper is `checked_ordering` in `BE/application/utils/api_utils.py`. Transforms of a field (`title__lower`, JSON keys, chains, the date extracts that earlier rounds ported), M2M/reverse relations (`tags`, `locations`, `coursesubscription`, `attendanceregistry`) and relation paths (`sport_association__...`) are therefore the 500 page, before the page checks.
+  `xlsx-exports.md`). A PDF input `pdfexport` does not reproduce is pdfexport's own refusal.
 - The order of one course's athletes is the database's (no `ORDER BY` in either backend); with a broken associate
   among several athletes, which entries precede the stop depends on it. The contract compares athletes as a set.
 
@@ -95,3 +96,7 @@ PDF export: 17 more cases (159 in all). RED `v2pdf-red-r2`: Django 159/159, Go a
 authored expectation carried the per-tag columns and failed on Django; they belong to the workbook only). GREEN
 `v2pdf-versioned-r1` (and `v2pdf-versioned-r2` after merging `codex/go-backend-parity`): 159/159 on native Django, native Go, Caddy `/api/v1` and `/api/v2`, each document compared in decoded
 form. Mutation `v2pdf-mutation-r1`: a document without the Tag column fails `pdf-owner` (CAUGHT).
+
+Long tail PR 3 (agent C): the ordering refusal was dead code and is removed; an ordering outside the
+model's own columns answers the 500 page like Django. A PDF input `pdfexport` does not reproduce is
+pdfexport's own refusal.

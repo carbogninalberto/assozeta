@@ -141,17 +141,20 @@ form needs Python's `int(..., 16)` extras stays refused (only the application wr
 
 ## Not ported (refused with the 500 page before any write)
 
-- A runner body nested past the decoder's limit and one holding a lone surrogate (a `\uD800` escape or
-  a `surrogatepass` code unit), which DRF's renderer refuses only where it reaches the response and
-  whose Python answer (`RecursionError` at a depth set by the live call stack, `UnicodeEncodeError` at
-  render time) Go does not model here.
-  On the manual backup POST such a reply is refused before the entry is written.
 - Cached sizes that are not a dict of `None`, `int`, `str` and `bool` values, or whose sizes are not
   both `int` (Django may add floats); attempt counters that are not plain integers.
 - A claimed actor whose hex form needs Python's `int(..., 16)` extras (sign, underscores, `0x`,
   whitespace, non-ASCII digits).
 - Runner `Content-Length` values Python's `int()` accepts but Go's HTTP parser rejects (a sign,
   underscores), which Go reports as unavailable.
+
+A runner reply nested past 500 levels is application state (the 500 page): the runner
+(`selfhost/updater/server.py`) writes `json.dumps` of fixed shapes. A reply holding a lone surrogate
+is served: Go keeps the code point, as Python's `json` does. It answers the 500 page wherever the
+value reaches a rendered response, an error message the view renders, or the manual backup's audit
+entry (PostgreSQL rejects the unpaired surrogate escape in the changes jsonb, so the entry is not
+written); a surrogate under a key the view ignores is answered normally. Actions that audit before
+rendering keep their entry, then answer the 500 page.
 
 Implemented but not exercised by the fixture: development mode (the run is in production mode), a
 runner status above 599 (500), a cache or database error.
@@ -180,7 +183,7 @@ produce, see [v2-refusals](v2-refusals.md)):
 
 - the runner reply is decoded like `json.loads(bytes)`: `json`'s `detect_encoding` (the UTF-8, UTF-16
   and UTF-32 BOMs and the NUL pattern), `surrogatepass`, and Python's `NaN`, `Infinity` and
-  `-Infinity` literals (`dto.RunnerJSONDecode`); a NaN reaching the body is still DRF's 500
+  `-Infinity` literals (`dto.RunnerJSONValues`, which keeps a lone surrogate); a NaN reaching the body is still DRF's 500
   (`dto.RenderableJSON`), one in an ignored key stays 200, and a NaN `free` compares false;
 - the download-token serializer answers DRF's surrogate validator error for a lone surrogate code
   point; the input sentinel of `dto/instance_backups.go` is gone.
@@ -197,8 +200,9 @@ Cases `overview-utf16-bom`, `overview-utf16-bom-be`, `overview-utf16-no-bom`, `o
 (`backupsreq-actions-r2`, 275), `audit-logs` (`backupsreq-auditlogs-r1`, 143, the shared
 `json.loads` constants) and `instance-updates` (`backupsreq-updates-r1`, 40).
 
-Kept refused: a runner reply nested past the decoder's limit or holding a lone surrogate, and the
-cached values, attempt counters and signed-token claims listed above.
+Kept refused: the cached values, attempt counters and signed-token claims listed above. A runner reply
+nested past 500 levels is application state (the 500 page); a reply holding a lone surrogate is served
+as described above.
 
 Re-verification after the Django main merge (`BE/instance/backups.py` gained the overview's `schedule`,
 `actions` and `remote` keys and its POST; the other new backup routes are a separate family):
@@ -217,3 +221,8 @@ Original port:
 - `go test ./internal/repository -run InstanceBackups` (CPython 3.13 protocol 4 pickles).
 - Re-run green after the shared changes: `instance-admin` (141, `config.InstanceAdminSettings`) and
   `data-restore` (139, `documentobjects.S3`, the administration handler).
+
+Long tail PR 3 (agent C): a runner reply holding a lone surrogate is served, with cases
+`overview-ignored-key-lone-surrogate`, `overview-archive-lone-surrogate`,
+`overview-runner-error-lone-surrogate`, `create-operation-id-lone-surrogate` and
+`create-operation-note-lone-surrogate`. A reply nested past 500 levels is application state.

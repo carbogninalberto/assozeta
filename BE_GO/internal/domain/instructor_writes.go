@@ -11,6 +11,10 @@ import (
 // outcome Go does not reproduce.
 var ErrInstructorWritesNotPorted = refusal.New("instructor writes input not ported")
 
+// ErrInstructorWritesUnreachable is a state no request or stored row produces
+// (each site names the constraint that rules it out).
+var ErrInstructorWritesUnreachable = refusal.AppState("instructor writes: unreachable state")
+
 // InstructorRecord is one application_instructor row; dates are ISO
 // 'YYYY-MM-DD', decimals their stored text.
 type InstructorRecord struct {

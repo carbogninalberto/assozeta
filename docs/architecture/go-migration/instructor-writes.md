@@ -83,10 +83,15 @@ workbook ([xlsx-exports](xlsx-exports.md)) with `max(len(str(value)), len(label)
 - Refused with a 500 before any write: calculation amounts whose product falls in the subnormal range (below the context's
   smallest exponent) and NaN diagnostics of 28 digits or more.
 
+Since long-tail PR 3 (agent B) a non-finite percentage is application state (`ErrInstructorWritesUnreachable`, the
+500 page): the column is `numeric(4,2)` and its validator rejects the value. The subnormal amounts, the NaN payloads
+and the workbook inputs stay refusals.
+
 ## Rare inputs (v2-rest-docs)
 
 - report dates go through `dateutil` (`dayfirst=True`, `internal/pydateutil`): ISO dates, month names, two-digit years, times and
-  swapped months are read; a text it rejects is the 500 page. Zone-aware results (the view keeps the zone) stay refused.
+  swapped months are read, and any other text as dateutil reads it (long tail PR 3). Zone-aware results (the view keeps the
+  zone) are the 500 page.
 - report: `course_subscription_id` values that are integers or booleans read as `UUID(int=...)` and name no athlete; floats,
   integers outside 0..2^128-1, lists and objects are the 500 page.
 - compensation: the header is read as a uuid in any spelling, the payment keeps the text as sent in memory (create entry and the
@@ -120,3 +125,6 @@ workbook ([xlsx-exports](xlsx-exports.md)) with `max(len(str(value)), len(label)
 ## Round t3courses
 
 The report workbook writes dynamic array formulas (`cm="1"`, expanded `_xlfn.` names, `xl/metadata.xml`); the golden `sub-dynamic` case now matches Python byte for byte. 177 cases GREEN natively. Mutation (`cm` value) CAUGHT.
+
+Long tail PR 3: `internal/pydateutil` reads every Python str (agent A), so no report date text is refused here any more; the
+only other result is pydateutil's unexpected local zone, application state (every caller passes UTC).

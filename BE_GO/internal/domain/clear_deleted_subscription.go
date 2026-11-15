@@ -11,10 +11,11 @@ import (
 // JobClearDeletedSubscription is the Celery name of clear_deleted_subscription.
 const JobClearDeletedSubscription = "clear_deleted_subscription"
 
-// ErrClearDeletedUnsupported ends the run when a subscription's deletion
-// reaches a model the Collector port does not reproduce; that block is
-// rolled back before its commit.
-var ErrClearDeletedUnsupported = refusal.New("clear_deleted_subscription reaches behaviour Go does not reproduce")
+// ErrClearDeletedUnreachable ends the run when a subscription's deletion
+// reaches a model the Collector port does not reproduce: the committed model
+// graphs never reach it, so it is an application-state error (the 500 page),
+// and that block is rolled back before its commit.
+var ErrClearDeletedUnreachable = refusal.AppState("clear_deleted_subscription: unreachable state")
 
 type ClearDeletedSubscriptionStore interface {
 	// BeginClearDeleted opens a READ COMMITTED transaction fenced by the job

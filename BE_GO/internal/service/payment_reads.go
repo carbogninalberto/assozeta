@@ -155,7 +155,8 @@ func (s *PaymentReads) paymentReadsSearch(filter *domain.PaymentReadsFilter, raw
 	}
 	search, err := personaSearch(raw, s.now().UTC().Year()%100)
 	if err != nil {
-		return domain.ErrPaymentReadsNotPorted
+		// personaSearch never fails.
+		return domain.ErrPaymentReadsUnreachable
 	}
 	filter.Smart = &domain.PaymentReadsSmartSearch{Words: search.Words, Dates: search.Dates, Permutations: search.Permutations}
 	return nil
@@ -176,8 +177,8 @@ var paymentReadsFields = map[string]string{"payment_id": "payment_id", "pk": "pa
 
 // errPaymentReadsLazyOrder marks an ordering Django resolves when compiling
 // the rows (after the count and the page checks): an annotation of the view.
-// It is an internal marker, never returned: both callers refuse that ordering
-// with domain.ErrPaymentReadsNotPorted after the page checks.
+// It is an internal marker, never returned: subscription_payments refuses that
+// ordering with domain.ErrPaymentReadsNotPorted after the page checks.
 var errPaymentReadsLazyOrder = errors.New("payment ordering resolved at compile time")
 
 // paymentReadsOrder is order_by(f"{'-' if desc else ”}{field}"): '?' is
@@ -341,7 +342,8 @@ func (s *PaymentReads) List(ctx context.Context, request PaymentReadsRequest) (a
 			return nil, err
 		}
 		if identity.ScopeUser.Role == domain.RoleAthlete && paymentReadsScope(identity) != nil {
-			// scoped_queryset's athlete boundary on Payment (own and family payments) is not ported.
+			// An athlete owns a SportAssociation only when the association import (import_service.py) made an existing
+			// athlete the owner of an imported association; Django then answers the list. Not ported.
 			return nil, domain.ErrPaymentReadsNotPorted
 		}
 		filter := domain.PaymentReadsFilter{AssociationID: association, Scope: paymentReadsScope(identity), Group: group, Archived: flag}
@@ -435,12 +437,15 @@ func (s *PaymentReads) List(ctx context.Context, request PaymentReadsRequest) (a
 	if field, _ := paymentReadsParam(query, "sort[field]"); field != "" {
 		direction, _ := paymentReadsParam(query, "sort[sort]")
 		if err := paymentReadsOrder(&filter, field, direction, nil); errors.Is(err, errPaymentReadsLazyOrder) {
-			lazy = domain.ErrPaymentReadsNotPorted
+			// payment_list annotates nothing: the marker needs an annotation.
+			lazy = domain.ErrPaymentReadsUnreachable
 		} else if err != nil {
 			return nil, err
 		}
 		if filter.Random && filter.Smart != nil {
-			// distinct() with RANDOM() in the select list repeats joined rows: not ported.
+			// smart_search returns queryset.distinct(): Django's compiler then adds
+			// RANDOM() to the select list, so DISTINCT keeps the rows the search
+			// joins repeat. Not ported (handed off).
 			lazy = domain.ErrPaymentReadsNotPorted
 		}
 	}
@@ -623,8 +628,8 @@ func (s *PaymentReads) Stats(ctx context.Context, request PaymentReadsRequest) (
 			return nil, err
 		}
 		if instance || s.stripeEnvironment {
-			// Without the Stripe client and cache the balance transactions are refused.
-			return nil, domain.ErrPaymentReadsNotPorted
+			// cmd/server always wires it (WithAthleteList / WithStripeFees).
+			return nil, domain.ErrServerComposition
 		}
 	}
 	totals, err := s.store.Totals(ctx, filter)

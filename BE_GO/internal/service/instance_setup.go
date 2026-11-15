@@ -123,9 +123,6 @@ func (s *InstanceSetup) Configure(ctx context.Context, body any, audit domain.Lo
 	if err != nil {
 		return nil, err
 	}
-	if input.RefusedURL {
-		return nil, domain.ErrInstanceSetupRefused
-	}
 	// The configuration row is the first insert of the transaction; Python's lower() can lengthen the domain
 	// (U+0130 becomes two characters) past its column.
 	if len([]rune(input.Domain)) > 255 {
@@ -219,9 +216,6 @@ func (s *InstanceSetup) Reconfigure(ctx context.Context, user *domain.Account, b
 	update, err := dto.InstanceReconfigureInput(data)
 	if err != nil {
 		return nil, err
-	}
-	if update.RefusedURL {
-		return nil, domain.ErrInstanceSetupRefused
 	}
 	var display *string
 	if update.HasDisplay {

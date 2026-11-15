@@ -11,8 +11,8 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/handoff"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/mentions"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/paymentcategorylifecycle"
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
 	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
 )
@@ -33,7 +33,7 @@ func TestRefusalAfterTutorPromotionIsNotHandedOff(t *testing.T) {
 		t.Fatal(err)
 	}
 	audit := func(*http.Request) (domain.LoginAuditContext, error) { return domain.LoginAuditContext{}, nil }
-	refused := fmt.Errorf("%w: template input", service.ErrDocumentViewNotPorted)
+	refused := fmt.Errorf("%w: template input", mentions.ErrUnsupported)
 	for name, test := range map[string]struct {
 		promote bool
 		status  int

@@ -37,8 +37,17 @@ const balanceSheetHeader = `
         </div>
         `
 
-// balanceSheetComma is f"{value:.2f}".replace(".", ",").
+// balanceSheetComma is f"{value:.2f}".replace(".", ","), including Python's
+// spelling of the non-finite values ("nan", "inf", "-inf").
 func balanceSheetComma(value float64) string {
+	switch {
+	case math.IsNaN(value):
+		return "nan"
+	case math.IsInf(value, 1):
+		return "inf"
+	case math.IsInf(value, -1):
+		return "-inf"
+	}
 	return strings.ReplaceAll(strconv.FormatFloat(value, 'f', 2, 64), ".", ",")
 }
 
@@ -88,9 +97,6 @@ func (r *sheetRun) export(ctx context.Context, data *pyDict, year int, format st
 				if amounts[i], err = pyFloat(raw); err != nil {
 					return failed, nil
 				}
-				if math.IsNaN(amounts[i]) || math.IsInf(amounts[i], 0) {
-					return nil, ErrBalanceSheetExportNotPorted
-				}
 			}
 			raw, err := pyIndex(item, "description")
 			if err != nil {
@@ -114,6 +120,9 @@ func (r *sheetRun) export(ctx context.Context, data *pyDict, year int, format st
 	}
 	income, outgoing := sums[0][0]+sums[0][1], sums[1][0]+sums[1][1]
 	add(xlsxexport.StrValue(""), "ENTRATE", "USCITE", "BILANCIO FINALE")
+	// Django formats the outgoing cell as f"-{total:.2f}".replace(".", ","):
+	// the sign is prepended to the formatted text, so -inf prints "--inf" and
+	// nan "-nan". Prefixing balanceSheetComma's text is the same expression.
 	add(xlsxexport.StrValue("C) RENDICONTO DELLA GESTIONE"), balanceSheetComma(income), "-"+balanceSheetComma(outgoing),
 		balanceSheetComma(income-sums[1][0]-sums[1][1]))
 	text("")
@@ -126,9 +135,6 @@ func (r *sheetRun) export(ctx context.Context, data *pyDict, year int, format st
 		amount, err := pyFloat(raw)
 		if err != nil {
 			return failed, nil
-		}
-		if math.IsNaN(amount) || math.IsInf(amount, 0) {
-			return nil, ErrBalanceSheetExportNotPorted
 		}
 		add(xlsxexport.StrValue(line[0]), "", "", balanceSheetComma(amount))
 	}
@@ -171,7 +177,7 @@ func (r *sheetRun) export(ctx context.Context, data *pyDict, year int, format st
 			Additional: []string{"I saldi sono riportati al " + closing + "."}}.Build(today)
 		switch {
 		case errors.Is(err, pdfexport.ErrNotPorted):
-			return nil, ErrBalanceSheetExportNotPorted
+			return nil, err // the input pdfexport does not reproduce
 		case errors.Is(err, refusal.ErrAppState):
 			return nil, err // a layout no export builds (pdfexport.ErrUnexpectedLayout)
 		case err != nil:

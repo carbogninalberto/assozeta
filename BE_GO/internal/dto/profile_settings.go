@@ -66,36 +66,6 @@ type ProfileSettingsRelation struct {
 // int64, *string (None is nil) or ProfileSettingsRelation per present field.
 type ProfileSettingsInput map[string]any
 
-// ProfileSettingsUploadUnsupported marks an uploaded file in the request
-// data (multipart); the port refuses it before any write.
-type ProfileSettingsUploadUnsupported struct{}
-
-func (ProfileSettingsUploadUnsupported) Error() string {
-	return "profile settings upload is not ported"
-}
-
-// ProfileSettingsHasUpload reports whether the parsed body carries a spooled file.
-func ProfileSettingsHasUpload(body any) bool {
-	switch value := body.(type) {
-	case domain.RequestUpload:
-		// Only a spooled file (TemporaryUploadedFile) is refused; an in-memory one is a QueryDict value.
-		return value.Temp
-	case domain.RequestObject:
-		for _, field := range value {
-			if ProfileSettingsHasUpload(field.Value) {
-				return true
-			}
-		}
-	case []any:
-		for _, item := range value {
-			if ProfileSettingsHasUpload(item) {
-				return true
-			}
-		}
-	}
-	return false
-}
-
 // ParseProfileSettings ports UserSettingsSerializer(data=request.data)
 // field validation (codes rendered by the payment-category message table and
 // "max-value:N"). Relation existence and tenant scope are the service's.

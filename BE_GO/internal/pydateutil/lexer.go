@@ -3,6 +3,9 @@ package pydateutil
 import (
 	"sort"
 	"strings"
+	"unicode/utf8"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pystr"
 )
 
 func inRanges(table [][2]rune, r rune) bool {
@@ -55,6 +58,28 @@ func isDigitString(s string) bool {
 	return s != ""
 }
 
+// runeCount is len() of the Python str a token encodes: a lone surrogate is
+// written as a three-byte form, which a Go range would count three times.
+func runeCount(s string) int {
+	count := 0
+	for i := 0; i < len(s); {
+		if s[i] < utf8.RuneSelf {
+			count++
+			i++
+			continue
+		}
+		if s[i] == 0xED && i+2 < len(s) && s[i+1] >= 0xA0 && s[i+1] <= 0xBF && s[i+2] >= 0x80 && s[i+2] <= 0xBF {
+			count++
+			i += 3
+			continue
+		}
+		_, size := utf8.DecodeRuneInString(s[i:])
+		count++
+		i += size
+	}
+	return count
+}
+
 const (
 	lexStart = iota
 	lexWord
@@ -65,24 +90,25 @@ const (
 
 // timelex is _timelex.split(text): runs of letters, runs of digits, single
 // other characters (whitespace becomes ' '), with dotted runs kept whole or
-// split around '.' and ',' exactly as get_token does.
-func timelex(text string) []string {
+// split around '.' and ',' exactly as get_token does. chars are the Python
+// code points of the text and the tokens are their Python str forms.
+func timelex(chars []rune) []string {
 	// get_token skips every NUL it reads from the stream.
-	chars := make([]rune, 0, len(text))
-	for _, r := range text {
+	text := make([]rune, 0, len(chars))
+	for _, r := range chars {
 		if r != 0 {
-			chars = append(chars, r)
+			text = append(text, r)
 		}
 	}
 	var tokens []string
 	pos := 0
-	for pos < len(chars) {
+	for pos < len(text) {
 		var token []rune
 		state := lexStart
 		seenLetters := false
 	scan:
-		for pos < len(chars) {
-			c := chars[pos]
+		for pos < len(text) {
+			c := text[pos]
 			pos++
 			switch state {
 			case lexStart:
@@ -160,10 +186,10 @@ func timelex(text string) []string {
 			start := 0
 			emit := func(piece []rune) {
 				if first {
-					tokens = append(tokens, string(piece))
+					tokens = append(tokens, pystr.String(piece))
 					first = false
 				} else if len(piece) > 0 {
-					tokens = append(tokens, string(piece))
+					tokens = append(tokens, pystr.String(piece))
 				}
 			}
 			for i, c := range token {
@@ -176,7 +202,7 @@ func timelex(text string) []string {
 			emit(token[start:])
 			continue
 		}
-		text := string(token)
+		text := pystr.String(token)
 		if state == lexNumberDot && dots == 0 {
 			text = strings.ReplaceAll(text, ",", ".")
 		}

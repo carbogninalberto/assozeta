@@ -109,7 +109,7 @@ func (s *InstanceOutbound) Releases(ctx context.Context, page string, present bo
 		switch {
 		case errors.As(err, &failure):
 			return nil, instanceAdminError(failure.Message, 503)
-		case errors.Is(err, instanceprobe.ErrReleaseNotPorted), errors.Is(err, instanceprobe.ErrNotPorted):
+		case errors.Is(err, instanceprobe.ErrReleaseUnread), errors.Is(err, instanceprobe.ErrUnreadResponse):
 			// X2 (accepted divergence): a feed or response Go does not read is
 			// answered like a provider failure.
 			return nil, instanceAdminError(instanceprobe.ReleaseNotReadable(err).Message, 503)
@@ -208,7 +208,7 @@ func timeoutResult(send bool) instanceprobe.Result {
 // ---------------------------------------------------------------------------
 
 const (
-	emailTestSubject = "=?utf-8?q?Assozeta_=E2=80=94_verifica_email?=" // Header('Assozeta — verifica email', 'utf-8').encode()
+	emailTestSubject = "Assozeta — verifica email" // EmailMessage's subject: smtpsend encodes it
 	emailTestBody    = "Questo messaggio è stato richiesto dal proprietario dell’istanza per verificare la configurazione email."
 )
 
@@ -308,7 +308,7 @@ func (s *InstanceOutbound) emailMessage(plan *emailPlan, recipient string) ([]by
 		return nil, "", err
 	}
 	now := s.now()
-	message, err := smtpsend.RenderDjangoText(smtpsend.DjangoText{EncodedSubject: emailTestSubject, Body: emailTestBody, SenderName: plan.sender,
+	message, err := smtpsend.RenderDjangoText(smtpsend.DjangoText{Subject: emailTestSubject, Body: emailTestBody, SenderName: plan.sender,
 		FromEmail: plan.from, To: recipient, Date: now, MessageID: smtpsend.MessageID(now, s.localName())})
 	return message, from, err
 }
@@ -598,10 +598,6 @@ func (s *InstanceOutbound) runIntegrationProbe(ctx context.Context, provider str
 	switch {
 	case ctx.Err() != nil:
 		return timeoutResult(false), nil
-	case errors.Is(err, instanceprobe.ErrProbeNotPorted):
-		// X2 (accepted divergence): a provider body Go does not read (UTF-16/32
-		// JSON) is the probe's generic failure.
-		return instanceprobe.Generic, nil
 	case err != nil:
 		return instanceprobe.Generic, nil
 	}

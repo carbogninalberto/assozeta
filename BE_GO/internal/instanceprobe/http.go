@@ -114,11 +114,18 @@ func (e *HTTPError) Error() string { return "instanceprobe: HTTP " + http.Status
 // json.load) inside read_json.
 var ErrUnavailable = errors.New("instanceprobe: service unavailable")
 
-// ErrNotPorted marks a response this port does not reproduce (it answers
-// with the server error page): a body shorter than its Content-Length
-// (http.client.IncompleteRead), an encoding json.loads would read as UTF-16
-// or UTF-32, or a redirect target urllib would rewrite.
-var ErrNotPorted = refusal.New("instanceprobe: outbound response not ported")
+// ErrIncompleteRead is a body shorter than its Content-Length
+// (http.client.IncompleteRead). release_catalog.py:39-45 catches only
+// HTTPError, URLError, TimeoutError, ValueError and OSError, and
+// IncompleteRead is an HTTPException, so it escapes read_json and Django
+// answers its 500 page: application state, never handed off.
+var ErrIncompleteRead = refusal.AppState("instanceprobe: response shorter than its Content-Length")
+
+// ErrUnreadResponse is a response this port answers like a provider failure:
+// a redirect target urllib would quote or cannot follow, or an unparsable
+// URL. The release views answer it with Django's "Release service is
+// unavailable." text (accepted divergence X2).
+var ErrUnreadResponse = errors.New("instanceprobe: outbound response answered as unavailable (X2)")
 
 // ReadJSON is release_catalog.read_json(url) on urllib.request.urlopen with
 // a 15 s timeout: the GitHub headers plus urllib's Accept-Encoding: identity
@@ -177,7 +184,7 @@ func (c *Client) ReadJSON(ctx context.Context, target string, headers map[string
 		}
 		if readErr != nil {
 			if errors.Is(readErr, io.ErrUnexpectedEOF) {
-				return nil, ErrNotPorted
+				return nil, ErrIncompleteRead
 			}
 			return nil, ErrUnavailable
 		}
@@ -191,26 +198,28 @@ func (c *Client) ReadJSON(ctx context.Context, target string, headers map[string
 
 // redirectTarget is HTTPRedirectHandler.redirect_request's URL handling for
 // a Location that needs no quoting: urljoin, then only http, https and ftp
-// (anything else: "" for the redirect's HTTPError).
+// (anything else: "" for the redirect's HTTPError). A target urllib would
+// quote, an unparsable URL and an ftp redirect are answered natively as a
+// provider failure (ErrUnreadResponse, X2).
 func redirectTarget(base, location string) (string, error) {
 	for _, r := range location {
 		if r <= ' ' || r >= 0x7f || strings.ContainsRune(`"<>\^`+"`{|}", r) {
-			return "", ErrNotPorted
+			return "", ErrUnreadResponse
 		}
 	}
 	from, err := url.Parse(base)
 	if err != nil {
-		return "", ErrNotPorted
+		return "", ErrUnreadResponse
 	}
 	to, err := url.Parse(location)
 	if err != nil {
-		return "", ErrNotPorted
+		return "", ErrUnreadResponse
 	}
 	next := from.ResolveReference(to)
 	switch next.Scheme {
 	case "http", "https":
 	case "ftp":
-		return "", ErrNotPorted
+		return "", ErrUnreadResponse
 	default:
 		return "", nil
 	}

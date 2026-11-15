@@ -126,7 +126,8 @@ The certificate named by `medical_certificate.medical_id` follows
 ## Not ported
 
 Refused with the 500 page before anything is committed:
-- a collaborator whose connected account owns exactly one association;
+- a collaborator whose connected account owns exactly one association (`ErrSubscriptionCreateNotPorted`): setup creates
+  associations for association accounts, but the association import can reuse an existing collaborator as the owner;
 - `str(e)` bodies of the Python exceptions not listed above (non-dict tutors and similar; dateutil's own messages are ported with `internal/pydateutil`);
 - the inputs `subscription-create.md` refuses: new member accounts, signature uploads, `type_of_associate`, and the
   rest. A renewal with `preregistration: true` and no `subscription_id` is ported (tailsubs, `renew-preregistration`; with a `subscription_id` in t8subs, cases `renew-preregistration-*`): the renewed subscription's person, certificate, custom data, role and number, the request's type; an unknown or foreign one is the 400 `Iscrizione da rinnovare non trovata.`). A typed certificate expiration date without an upload is ported (tailsubs): the placeholder image, its document and the
@@ -135,6 +136,11 @@ Refused with the 500 page before anything is committed:
 
 A `tags` text (iterated by character), tag ids that are ints, bools, floats, lists or dicts, and a `user.email` that is a list or dict
 are ported (t2subsb): the tag errors are `['“<str(value)>” is not a valid UUID.']` in the 400 body; the e-mail is searched as its `str()`.
+
+Since long-tail PR 3 (agent B) a collaborator whose connected account owns exactly one association is application
+state (`ErrSubscriptionCreateUnreachable`, the 500 page): associations belong to association accounts. So are a
+request without an account (the handler answers 401 first) and a course subscription the same transaction just
+inserted. The `str(e)` bodies and the `subscription-create` refusals stay refusals.
 
 ## Evidence
 

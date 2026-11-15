@@ -42,16 +42,25 @@ func (o signatureDocumentViewObjects) Read(_ context.Context, name string) ([]by
 
 func signatureText(value string) *string { return &value }
 
+// signatureFetcherFunc is LegacySignatureFetcher with a fixed reply.
+type signatureFetcherFunc func(context.Context, string) ([]byte, error)
+
+func (f signatureFetcherFunc) Fetch(ctx context.Context, url string) ([]byte, error) {
+	return f(ctx, url)
+}
+
 // TestDocumentViewsSubscriptionSignature is Subscription.get_signature_base64:
-// a readable stored object is a PNG data URI, a failed read without the
-// legacy URL is None, and every case that would fetch the legacy URL (or
-// read storage without a configured reader) stays refused.
+// a readable stored object is a PNG data URI, a failed read falls back to the
+// legacy URL, a failed legacy fetch or no URL is None, and reading storage
+// without a configured reader is app state.
 func TestDocumentViewsSubscriptionSignature(t *testing.T) {
 	const uid = "a1000000-0000-4000-8000-000000000046"
 	const storedName = "signatures/stored.png"
 	const legacyURL = "https://legacy.example.test/signature.png"
 	body := []byte("signature fixture bytes")
 	objects := signatureDocumentViewObjects{content: map[string][]byte{storedName: body}}
+	fetched := signatureFetcherFunc(func(context.Context, string) ([]byte, error) { return body, nil })
+	failing := signatureFetcherFunc(func(context.Context, string) ([]byte, error) { return nil, errors.New("connection refused") })
 	subscription := func(key, url *string) *domain.ViewSubscription {
 		return &domain.ViewSubscription{ID: uid, Association: "a1000000-0000-4000-8000-000000000001",
 			CreationDate: time.Date(2026, 3, 4, 10, 0, 0, 0, time.UTC), Type: 2, Role: 5,
@@ -61,6 +70,7 @@ func TestDocumentViewsSubscriptionSignature(t *testing.T) {
 		name         string
 		subscription *domain.ViewSubscription
 		objects      domain.DocumentViewObjects
+		fetcher      LegacySignatureFetcher
 		want         string
 		refused      error
 	}{
@@ -69,15 +79,22 @@ func TestDocumentViewsSubscriptionSignature(t *testing.T) {
 		{name: "missing object without url", subscription: subscription(signatureText("signatures/missing.png"), nil), objects: objects,
 			want: `src="None"`},
 		{name: "missing object with url", subscription: subscription(signatureText("signatures/missing.png"), signatureText(legacyURL)),
-			objects: objects, refused: ErrDocumentViewNotPorted},
-		{name: "url without key", subscription: subscription(nil, signatureText(legacyURL)), objects: objects, refused: ErrDocumentViewNotPorted},
+			objects: objects, fetcher: fetched, want: `src="data:image/png;base64,` + base64.StdEncoding.EncodeToString(body) + `"`},
+		{name: "url without key", subscription: subscription(nil, signatureText(legacyURL)), objects: objects, fetcher: fetched,
+			want: `src="data:image/png;base64,` + base64.StdEncoding.EncodeToString(body) + `"`},
+		{name: "url failing", subscription: subscription(nil, signatureText(legacyURL)), objects: objects, fetcher: failing,
+			want: `src="None"`},
 		{name: "stored object without reader", subscription: subscription(signatureText(storedName), nil), refused: errDocumentViewSignature},
+		{name: "url without fetcher", subscription: subscription(nil, signatureText(legacyURL)), refused: domain.ErrServerComposition},
 	}
 	for _, test := range cases {
 		t.Run(test.name, func(t *testing.T) {
 			views := NewDocumentViews(signatureDocumentViewStore{subscription: test.subscription}, nil, "", time.Now)
 			if test.objects != nil {
 				views = views.WithSignatureObjects(test.objects)
+			}
+			if test.fetcher != nil {
+				views = views.WithLegacySignatureFetcher(test.fetcher)
 			}
 			reply, err := views.Render(context.Background(), domain.ResolvedIdentity{},
 				DocumentViewRequest{View: ViewSubscription, UID: uid, Language: "en"})

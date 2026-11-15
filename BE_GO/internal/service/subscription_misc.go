@@ -14,6 +14,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/codicefiscale"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // SubscriptionMisc ports subscription_calculate_tax_code, subscription_import_status,
@@ -123,6 +124,8 @@ func (s *SubscriptionMisc) TaxCode(body any) (any, error) {
 		return nil, ErrSubscriptionMiscUnmapped
 	case errors.Is(err, codicefiscale.ErrInvalid):
 		return nil, ErrSubscriptionMiscInvalidData
+	case errors.Is(err, refusal.ErrAppState):
+		return nil, err
 	case err != nil:
 		return nil, domain.ErrSubscriptionMiscNotPorted
 	}
@@ -333,7 +336,8 @@ func (s *SubscriptionMisc) ValidateLink(ctx context.Context, identity domain.Res
 			return nil, err
 		}
 		if lookup {
-			return nil, domain.ErrSubscriptionMiscNotPorted
+			// cmd/server always calls WithPublicLinks (composeBakneyPublicLinks never returns nil).
+			return nil, domain.ErrServerComposition
 		}
 	}
 	var actorAssociation *string

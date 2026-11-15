@@ -11,13 +11,14 @@ import (
 var (
 	// ErrPaymentStateServer is an unhandled exception in the Django view (the 500 page).
 	ErrPaymentStateServer = errors.New("payment state server error")
-	// ErrPaymentStateNotPorted refuses, before any write, a path whose Django
-	// behaviour is not ported (invoice creation, notifications, PDF tasks).
-	ErrPaymentStateNotPorted = refusal.New("payment state behaviour not ported")
 	// ErrPaymentStateNotFound is payment_delete's 404 {'msg': 'Payment not found.'}.
 	ErrPaymentStateNotFound = errors.New("payment not found")
 	// ErrPaymentStateNotPaid is payment_cancel's 400 {'error': 'Payment not paid.'}.
 	ErrPaymentStateNotPaid = errors.New("payment not paid")
+	// ErrPaymentStateNotPorted refuses a path whose Django behaviour is not ported.
+	ErrPaymentStateNotPorted = refusal.New("payment state behaviour not ported")
+	// ErrPaymentStateUnreachable is a state no request or stored row reaches.
+	ErrPaymentStateUnreachable = refusal.AppState("payment state: unreachable state")
 )
 
 // PaymentStateRow is a locked live payment with what the approve, cancel and

@@ -1,0 +1,1107 @@
+{
+ "date": "Mon, 09 Nov 2026 08:43:54 -0000",
+ "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+ "boundary": "===============1234567890123456789==",
+ "cases": [
+  {
+   "name": "subject-empty",
+   "subject": "",
+   "body": "x",
+   "html": null,
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: \r\nFrom: Assozeta <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "subject-70",
+   "subject": "Abcdefghij Abcdefghij Abcdefghij Abcdefghij Abcdefghij Abcdefghij Abcd",
+   "body": "x",
+   "html": null,
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: Abcdefghij Abcdefghij Abcdefghij Abcdefghij Abcdefghij Abcdefghij\r\n Abcd\r\nFrom: Assozeta <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "subject-77",
+   "subject": "Avviso importante per tutti i soci della associazione sportiva",
+   "body": "x",
+   "html": null,
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: Avviso importante per tutti i soci della associazione sportiva\r\nFrom: Assozeta <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "subject-200",
+   "subject": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+   "body": "x",
+   "html": null,
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: \r\n AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\r\nFrom: Assozeta <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "subject-spaces",
+   "subject": "  leading and trailing  ",
+   "body": "x",
+   "html": null,
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject:   leading and trailing  \r\nFrom: Assozeta <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "subject-tabs",
+   "subject": "A\tB\tC",
+   "body": "x",
+   "html": null,
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: A\tB\tC\r\nFrom: Assozeta <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "subject-double-space",
+   "subject": "Due  spazi",
+   "body": "x",
+   "html": null,
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: Due  spazi\r\nFrom: Assozeta <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "subject-utf8-short",
+   "subject": "Città",
+   "body": "x",
+   "html": null,
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: =?utf-8?b?Q2l0dMOg?=\r\nFrom: Assozeta <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "subject-utf8-base64",
+   "subject": "àèìòù€€€",
+   "body": "x",
+   "html": null,
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: =?utf-8?b?w6DDqMOsw7LDueKCrOKCrOKCrA==?=\r\nFrom: Assozeta <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "subject-utf8-long",
+   "subject": "Il tuo certificato medico è in scadenza: rinnovalo prima della prossima gara",
+   "body": "x",
+   "html": null,
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: \r\n =?utf-8?q?Il_tuo_certificato_medico_=C3=A8_in_scadenza=3A_rinnovalo_prima_de?=\r\n =?utf-8?q?lla_prossima_gara?=\r\nFrom: Assozeta <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "subject-utf8-repeat",
+   "subject": "Società Società Società Società Società Società Società Società Società Società Società Società Società Società Società Società Società Società Società Società Società Società Società Società Società Società Società Società Società Società ",
+   "body": "x",
+   "html": null,
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: \r\n =?utf-8?b?U29jaWV0w6AgU29jaWV0w6AgU29jaWV0w6AgU29jaWV0w6AgU29jaWV0w6AgU29j?=\r\n =?utf-8?b?aWV0w6AgU29jaWV0w6AgU29jaWV0w6AgU29jaWV0w6AgU29jaWV0w6AgU29jaWV0?=\r\n =?utf-8?b?w6AgU29jaWV0w6AgU29jaWV0w6AgU29jaWV0w6AgU29jaWV0w6AgU29jaWV0w6Ag?=\r\n =?utf-8?b?U29jaWV0w6AgU29jaWV0w6AgU29jaWV0w6AgU29jaWV0w6AgU29jaWV0w6AgU29j?=\r\n =?utf-8?b?aWV0w6AgU29jaWV0w6AgU29jaWV0w6AgU29jaWV0w6AgU29jaWV0w6AgU29jaWV0?=\r\n =?utf-8?b?w6AgU29jaWV0w6AgU29jaWV0w6AgU29jaWV0w6Ag?=\r\nFrom: Assozeta <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "subject-utf8-leading-space",
+   "subject": " spazi",
+   "body": "x",
+   "html": null,
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject:  spazi\r\nFrom: Assozeta <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "subject-encoded-word",
+   "subject": "=?utf-8?q?x?=",
+   "body": "x",
+   "html": null,
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: =?utf-8?q?x?=\r\nFrom: Assozeta <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "subject-newline",
+   "subject": "a\nb",
+   "body": "x",
+   "html": null,
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "error": "BadHeaderError",
+   "error_text": "Header values can't contain newlines (got 'a\\nb' for header 'Subject')"
+  },
+  {
+   "name": "subject-cr",
+   "subject": "a\rb",
+   "body": "x",
+   "html": null,
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "error": "BadHeaderError",
+   "error_text": "Header values can't contain newlines (got 'a\\rb' for header 'Subject')"
+  },
+  {
+   "name": "body-empty",
+   "subject": "S",
+   "body": "",
+   "html": null,
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: Assozeta <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\n"
+  },
+  {
+   "name": "body-plain",
+   "subject": "S",
+   "body": "Ciao,\nla tua iscrizione è confermata.\n",
+   "html": null,
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: S\r\nFrom: Assozeta <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nCiao,\r\nla tua iscrizione Ã¨ confermata.\r\n"
+  },
+  {
+   "name": "body-crlf",
+   "subject": "S",
+   "body": "uno\r\ndue\rtre\n\nquattro",
+   "html": null,
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: Assozeta <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nuno\r\ndue\r\ntre\r\n\r\nquattro"
+  },
+  {
+   "name": "body-long-997",
+   "subject": "S",
+   "body": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "html": null,
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: Assozeta <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  {
+   "name": "body-long-998",
+   "subject": "S",
+   "body": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "html": null,
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: Assozeta <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  {
+   "name": "body-long-999",
+   "subject": "S",
+   "body": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "html": null,
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: quoted-printable\r\nSubject: S\r\nFrom: Assozeta <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa=\r\naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa=\r\naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa=\r\naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa=\r\naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa=\r\naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa=\r\naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa=\r\naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa=\r\naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa=\r\naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa=\r\naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa=\r\naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa=\r\naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa=\r\naaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  {
+   "name": "body-long-utf8",
+   "subject": "S",
+   "body": "èèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèè",
+   "html": null,
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: quoted-printable\r\nSubject: S\r\nFrom: Assozeta <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\n=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=\r\n=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=\r\n=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=\r\n=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=\r\n=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=\r\n=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=\r\n=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=\r\n=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=\r\n=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=\r\n=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=\r\n=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=\r\n=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=\r\n=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=\r\n=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=\r\n=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=\r\n=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=\r\n=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=\r\n=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=\r\n=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=\r\n=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=\r\n=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=\r\n=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=\r\n=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=\r\n=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=\r\n=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=\r\n=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=\r\n=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=\r\n=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=\r\n=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=\r\n=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=\r\n=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=\r\n=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=\r\n=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=\r\n=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=\r\n=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=\r\n=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=\r\n=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=\r\n=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=\r\n=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=\r\n=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=\r\n=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=\r\n=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=\r\n=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=\r\n=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=\r\n=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=\r\n=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=\r\n=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=\r\n=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8"
+  },
+  {
+   "name": "body-long-middle",
+   "subject": "S",
+   "body": "short\nbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\nshort",
+   "html": null,
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: quoted-printable\r\nSubject: S\r\nFrom: Assozeta <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nshort\r\nbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb=\r\nbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb=\r\nbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb=\r\nbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb=\r\nbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb=\r\nbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb=\r\nbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb=\r\nbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb=\r\nbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb=\r\nbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb=\r\nbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb=\r\nbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb=\r\nbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb=\r\nbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb=\r\nbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb=\r\nbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\r\nshort"
+  },
+  {
+   "name": "body-trailing-space-long",
+   "subject": "S",
+   "body": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+   "html": null,
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: quoted-printable\r\nSubject: S\r\nFrom: Assozeta <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\ncccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc =\r\nddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd=\r\nddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd=\r\nddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd=\r\nddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd=\r\nddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd=\r\nddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd=\r\nddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd=\r\nddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd=\r\nddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd=\r\nddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd=\r\nddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd=\r\nddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd=\r\nddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd=\r\nddddddddddddddddddddddddd"
+  },
+  {
+   "name": "body-only-spaces-long",
+   "subject": "S",
+   "body": "                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                ",
+   "html": null,
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: quoted-printable\r\nSubject: S\r\nFrom: Assozeta <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\n                                                                           =\r\n                                                                           =\r\n                                                                           =\r\n                                                                           =\r\n                                                                           =\r\n                                                                           =\r\n                                                                           =\r\n                                                                           =\r\n                                                                           =\r\n                                                                           =\r\n                                                                           =\r\n                                                                           =\r\n                                                                           =\r\n                                                                           =\r\n                                                                           =\r\n                                                                           =\r\n"
+  },
+  {
+   "name": "body-tabs-long",
+   "subject": "S",
+   "body": "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t",
+   "html": null,
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: quoted-printable\r\nSubject: S\r\nFrom: Assozeta <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t=\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t=\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t=\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t=\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t=\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t=\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t=\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t=\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t=\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t=\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t=\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t=\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t=\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t=09"
+  },
+  {
+   "name": "body-line-sep",
+   "subject": "S",
+   "body": "a b cd\u000be",
+   "html": null,
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: S\r\nFrom: Assozeta <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\naâ¨bâ©cÂd\u000be"
+  },
+  {
+   "name": "body-html-alt",
+   "subject": "S",
+   "body": "Testo semplice",
+   "html": "<p>Quota <b>già</b> scaduta</p>\n",
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: multipart/alternative;\r\n boundary=\"===============1234567890123456789==\"\r\nMIME-Version: 1.0\r\nSubject: S\r\nFrom: Assozeta <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\n--===============1234567890123456789==\r\nContent-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\n\r\nTesto semplice\r\n--===============1234567890123456789==\r\nContent-Type: text/html; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\n\r\n<p>Quota <b>giÃ </b> scaduta</p>\r\n\r\n--===============1234567890123456789==--\r\n"
+  },
+  {
+   "name": "body-html-only",
+   "subject": "S",
+   "body": "",
+   "html": "<p>solo html</p>",
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: multipart/alternative;\r\n boundary=\"===============1234567890123456789==\"\r\nMIME-Version: 1.0\r\nSubject: S\r\nFrom: Assozeta <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\n--===============1234567890123456789==\r\nContent-Type: text/html; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\n\r\n<p>solo html</p>\r\n--===============1234567890123456789==--\r\n"
+  },
+  {
+   "name": "body-html-long-line",
+   "subject": "S",
+   "body": "t",
+   "html": "<p>xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</p>",
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: multipart/alternative;\r\n boundary=\"===============1234567890123456789==\"\r\nMIME-Version: 1.0\r\nSubject: S\r\nFrom: Assozeta <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\n--===============1234567890123456789==\r\nContent-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\n\r\nt\r\n--===============1234567890123456789==\r\nContent-Type: text/html; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\n<p>xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx=\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx=\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx=\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx=\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx=\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx=\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx=\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx=\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx=\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx=\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx=\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx=\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx=\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx=\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx=\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx=\r\nxxx</p>\r\n--===============1234567890123456789==--\r\n"
+  },
+  {
+   "name": "body-html-long-utf8",
+   "subject": "S",
+   "body": "",
+   "html": "<p>èèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèè</p>",
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: multipart/alternative;\r\n boundary=\"===============1234567890123456789==\"\r\nMIME-Version: 1.0\r\nSubject: S\r\nFrom: Assozeta <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\n--===============1234567890123456789==\r\nContent-Type: text/html; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\n<p>=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=\r\n=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=\r\n=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=\r\n=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=\r\n=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=\r\n=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=\r\n=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=\r\n=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=\r\n=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=\r\n=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=\r\n=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=\r\n=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=\r\n=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=\r\n=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=\r\n=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=\r\n=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=\r\n=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=\r\n=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=\r\n=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=\r\n=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=\r\n=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=\r\n=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=\r\n=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=\r\n=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=\r\n=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=\r\n=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=\r\n=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=\r\n=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=\r\n=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=\r\n=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=\r\n=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=\r\n=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=\r\n=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=\r\n=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=\r\n=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=\r\n=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=\r\n=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=\r\n=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=\r\n=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=\r\n=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=\r\n=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=\r\n=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=\r\n=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=\r\n=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=\r\n=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=\r\n=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=\r\n=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=\r\n=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=\r\n=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=\r\n=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=\r\n=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=\r\n=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=\r\n=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=\r\n=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=\r\n=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=\r\n=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=A8=C3=\r\n=A8</p>\r\n--===============1234567890123456789==--\r\n"
+  },
+  {
+   "name": "from-00",
+   "subject": "S",
+   "body": "x",
+   "html": null,
+   "from": "noreply@example.test",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: noreply@example.test\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "from-01",
+   "subject": "S",
+   "body": "x",
+   "html": null,
+   "from": "<noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "from-02",
+   "subject": "S",
+   "body": "x",
+   "html": null,
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: Assozeta <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "from-03",
+   "subject": "S",
+   "body": "x",
+   "html": null,
+   "from": "Società Tre <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: =?utf-8?q?Societ=C3=A0_Tre?= <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "from-04",
+   "subject": "S",
+   "body": "x",
+   "html": null,
+   "from": "\"Cinque, SMTP\" <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: \"Cinque, SMTP\" <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "from-05",
+   "subject": "S",
+   "body": "x",
+   "html": null,
+   "from": "\"Famiglia Rossi\" <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: \"Famiglia Rossi\" <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "from-06",
+   "subject": "S",
+   "body": "x",
+   "html": null,
+   "from": "L'Associazione <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: L'Associazione <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "from-07",
+   "subject": "S",
+   "body": "x",
+   "html": null,
+   "from": "Denominazione con \"virgolette\", virgola e @ <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: Denominazione con \"virgolette\", virgola e @ <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "from-08",
+   "subject": "S",
+   "body": "x",
+   "html": null,
+   "from": "Parentesi (aperta e chiusa) <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: Parentesi (aperta e chiusa) <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "from-09",
+   "subject": "S",
+   "body": "x",
+   "html": null,
+   "from": "Minore <maggiore> <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: Minore <maggiore> <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "from-10",
+   "subject": "S",
+   "body": "x",
+   "html": null,
+   "from": "Back\\slash <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: Back\\slash <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "from-11",
+   "subject": "S",
+   "body": "x",
+   "html": null,
+   "from": "Emoji 🏐 <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: =?utf-8?b?RW1vamkg8J+PkA==?= <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "from-12",
+   "subject": "S",
+   "body": "x",
+   "html": null,
+   "from": "Mario 🏐 Rossi <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: =?utf-8?q?Mario_=F0=9F=8F=90_Rossi?= <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "from-13",
+   "subject": "S",
+   "body": "x",
+   "html": null,
+   "from": "Line sep <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: =?utf-8?q?Line?=\r\n =?utf-8?q?_sep?= <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "from-14",
+   "subject": "S",
+   "body": "x",
+   "html": null,
+   "from": "Non break <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: =?utf-8?q?Non=C2=A0break?= <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "from-15",
+   "subject": "S",
+   "body": "x",
+   "html": null,
+   "from": "a.b <c@d.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: a.b <c@d.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "from-16",
+   "subject": "S",
+   "body": "x",
+   "html": null,
+   "from": "Associazione Sportiva Dilettantistica Polisportiva Molto Lunga <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: Associazione Sportiva Dilettantistica Polisportiva Molto Lunga\r\n <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "from-17",
+   "subject": "S",
+   "body": "x",
+   "html": null,
+   "from": "=?utf-8?q?Societ=C3=A0?= <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: =?utf-8?q?Societ=C3=A0?= <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "from-18",
+   "subject": "S",
+   "body": "x",
+   "html": null,
+   "from": "xkcd <a@[1.2.3.4]>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: xkcd <a@[1.2.3.4]>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "from-19",
+   "subject": "S",
+   "body": "x",
+   "html": null,
+   "from": "<?>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: <?>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "from-20",
+   "subject": "S",
+   "body": "x",
+   "html": null,
+   "from": "<>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: <>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "from-21",
+   "subject": "S",
+   "body": "x",
+   "html": null,
+   "from": "Name <>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: Name <>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "from-22",
+   "subject": "S",
+   "body": "x",
+   "html": null,
+   "from": "a@b@c.test",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: a@b@c.test\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "from-23",
+   "subject": "S",
+   "body": "x",
+   "html": null,
+   "from": "Name <a@b.test",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: Name <a@b.test\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "from-24",
+   "subject": "S",
+   "body": "x",
+   "html": null,
+   "from": "Undisclosed:;",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: Undisclosed:;\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "from-25",
+   "subject": "S",
+   "body": "x",
+   "html": null,
+   "from": "Name <a@b.test> extra",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: Name <a@b.test> extra\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "to-two",
+   "subject": "S",
+   "body": "x",
+   "html": null,
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "a@example.test",
+    "b@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: Assozeta <noreply@example.test>\r\nTo: a@example.test, b@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "to-many",
+   "subject": "S",
+   "body": "x",
+   "html": null,
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "destinatario.numero0@example.test",
+    "destinatario.numero1@example.test",
+    "destinatario.numero2@example.test",
+    "destinatario.numero3@example.test",
+    "destinatario.numero4@example.test",
+    "destinatario.numero5@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: Assozeta <noreply@example.test>\r\nTo: destinatario.numero0@example.test, destinatario.numero1@example.test,\r\n destinatario.numero2@example.test, destinatario.numero3@example.test,\r\n destinatario.numero4@example.test, destinatario.numero5@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "to-display",
+   "subject": "S",
+   "body": "x",
+   "html": null,
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "Mario <m@example.test>"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: Assozeta <noreply@example.test>\r\nTo: Mario <m@example.test>\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "to-utf8",
+   "subject": "S",
+   "body": "x",
+   "html": null,
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "çağla@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: Assozeta <noreply@example.test>\r\nTo: =?utf-8?b?w6dhxJ9sYQ==?=@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "to-utf8-display",
+   "subject": "S",
+   "body": "x",
+   "html": null,
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "Società Tre <s@example.test>"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: Assozeta <noreply@example.test>\r\nTo: =?utf-8?q?Societ=C3=A0_Tre?= <s@example.test>\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "to-two-mixed",
+   "subject": "S",
+   "body": "x",
+   "html": null,
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "Società <s@example.test>",
+    "Plain <p@example.test>"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: Assozeta <noreply@example.test>\r\nTo: =?utf-8?q?Societ=C3=A0?= <s@example.test>, Plain <p@example.test>\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "to-quoted",
+   "subject": "S",
+   "body": "x",
+   "html": null,
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "\"Cognome, Nome\" <q@example.test>"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: Assozeta <noreply@example.test>\r\nTo: \"Cognome, Nome\" <q@example.test>\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "to-group",
+   "subject": "S",
+   "body": "x",
+   "html": null,
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "Undisclosed:;"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: Assozeta <noreply@example.test>\r\nTo: Undisclosed:;\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "to-empty-address",
+   "subject": "S",
+   "body": "x",
+   "html": null,
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "<>"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: Assozeta <noreply@example.test>\r\nTo: <>\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "to-unparseable",
+   "subject": "S",
+   "body": "x",
+   "html": null,
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "Name <a@b.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: Assozeta <noreply@example.test>\r\nTo: Name <a@b.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "to-nonascii-comma",
+   "subject": "S",
+   "body": "x",
+   "html": null,
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "\"Società, Tre\" <s@example.test>",
+    "Altro <a@b.test>"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: Assozeta <noreply@example.test>\r\nTo: =?utf-8?q?Societ=C3=A0=2C_Tre?= <s@example.test>, Altro <a@b.test>\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "to-nonascii-paren",
+   "subject": "S",
+   "body": "x",
+   "html": null,
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "Società (x) <s@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: Assozeta <noreply@example.test>\r\nTo: =?utf-8?b?U29jaWV0w6AgKHgp?= <s@example.test>\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "to-nonascii-group",
+   "subject": "S",
+   "body": "x",
+   "html": null,
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "Società: a@b.test;"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: Assozeta <noreply@example.test>\r\nTo: a@b.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "to-nonascii-domainliteral",
+   "subject": "S",
+   "body": "x",
+   "html": null,
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "Società <s@[1.2.3.4]>"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "error": "ValueError",
+   "error_text": "Invalid address \"\""
+  },
+  {
+   "name": "from-nonascii-comma",
+   "subject": "S",
+   "body": "x",
+   "html": null,
+   "from": "\"Società, Tre\" <s@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: =?utf-8?q?Societ=C3=A0=2C_Tre?= <s@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "from-nonascii-bad",
+   "subject": "S",
+   "body": "x",
+   "html": null,
+   "from": "Società <s@b@c>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "error": "ValueError",
+   "error_text": "Invalid address \"\""
+  },
+  {
+   "name": "reply-nonascii-comma",
+   "subject": "S",
+   "body": "x",
+   "html": null,
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": [
+    "\"Società, Tre\" <s@example.test>"
+   ],
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: Assozeta <noreply@example.test>\r\nTo: a@example.test\r\nReply-To: =?utf-8?q?Societ=C3=A0=2C_Tre?= <s@example.test>\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "reply-to-two",
+   "subject": "S",
+   "body": "x",
+   "html": null,
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": [
+    "r1@example.test",
+    "r2@example.test"
+   ],
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: Assozeta <noreply@example.test>\r\nTo: a@example.test\r\nReply-To: r1@example.test, r2@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "reply-to-utf8",
+   "subject": "S",
+   "body": "x",
+   "html": null,
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": [
+    "Risposta <r@example.test>",
+    "è@example.test"
+   ],
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: Assozeta <noreply@example.test>\r\nTo: a@example.test\r\nReply-To: Risposta <r@example.test>, =?utf-8?b?w6g=?=@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "message-id-plain",
+   "subject": "S",
+   "body": "x",
+   "html": null,
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<a@b.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: Assozeta <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <a@b.test>\r\n\r\nx"
+  },
+  {
+   "name": "message-id-long",
+   "subject": "S",
+   "body": "x",
+   "html": null,
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx@b.test>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: Assozeta <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: \r\n <xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx@b.test>\r\n\r\nx"
+  },
+  {
+   "name": "message-id-utf8",
+   "subject": "S",
+   "body": "x",
+   "html": null,
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "nonascii è@b",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: Assozeta <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: =?utf-8?q?nonascii_=C3=A8=40b?=\r\n\r\nx"
+  },
+  {
+   "name": "message-id-spaces",
+   "subject": "S",
+   "body": "x",
+   "html": null,
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "a b <c>",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: Assozeta <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: a b <c>\r\n\r\nx"
+  },
+  {
+   "name": "message-id-newline",
+   "subject": "S",
+   "body": "x",
+   "html": null,
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "a\nb",
+   "error": "BadHeaderError",
+   "error_text": "Header values can't contain newlines (got 'a\\nb' for header 'Message-ID')"
+  },
+  {
+   "name": "boundary-long",
+   "subject": "S",
+   "body": "t",
+   "html": "<p>h</p>",
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: multipart/alternative;\r\n boundary=\"===============1234567890123456789==\"\r\nMIME-Version: 1.0\r\nSubject: S\r\nFrom: Assozeta <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\n--===============1234567890123456789==\r\nContent-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\n\r\nt\r\n--===============1234567890123456789==\r\nContent-Type: text/html; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\n\r\n<p>h</p>\r\n--===============1234567890123456789==--\r\n"
+  },
+  {
+   "name": "boundary-in-body",
+   "subject": "S",
+   "body": "--===============1234567890123456789==",
+   "html": "<p>x</p>",
+   "from": "Assozeta <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": null,
+   "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+   "bytes": "Content-Type: multipart/alternative;\r\n boundary=\"===============1234567890123456789==.0\"\r\nMIME-Version: 1.0\r\nSubject: S\r\nFrom: Assozeta <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\n--===============1234567890123456789==.0\r\nContent-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\n\r\n--===============1234567890123456789==\r\n--===============1234567890123456789==.0\r\nContent-Type: text/html; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\n\r\n<p>x</p>\r\n--===============1234567890123456789==.0--\r\n"
+  }
+ ]
+}

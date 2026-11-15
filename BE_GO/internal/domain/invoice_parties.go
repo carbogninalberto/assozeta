@@ -185,6 +185,8 @@ type SupplierInvoiceQuery struct {
 	AmountText  *string
 	AmountExact *string
 	Text        *string
+	// Random is order_by('?'): ORDER BY RANDOM(), ignoring OrderColumn.
+	Random      bool
 	OrderColumn string
 	Descending  bool
 }

@@ -13,12 +13,13 @@ import (
 
 // testdata/a38_renders.json comes from TESTS/adapters/go/fatturapa_golden.py:
 // the real generate_invoice_{html,xml,json} on authored and seeded invoices.
+// The file's "unsupported" tags marked the cases whose amounts round in Python's
+// 28-digit context; the port rounds them the same way, so they are plain cases.
 type goldenFile struct {
 	Progressivi [][3]any `json:"progressivi"`
 	Cases       []struct {
 		Name        string                    `json:"name"`
 		Fields      map[string]any            `json:"fields"`
-		Unsupported *string                   `json:"unsupported"`
 		Progressivo string                    `json:"progressivo"`
 		Outputs     map[string]map[string]any `json:"outputs"`
 	} `json:"cases"`
@@ -74,6 +75,26 @@ func goldenInvoice(t *testing.T, fields map[string]any) Invoice {
 	}
 }
 
+// goldenInvoiceNamed is the invoice of one authored golden case.
+func goldenInvoiceNamed(t *testing.T, name string) Invoice {
+	t.Helper()
+	raw, err := os.ReadFile(filepath.Join("testdata", "a38_renders.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var golden goldenFile
+	if err := json.Unmarshal(raw, &golden); err != nil {
+		t.Fatal(err)
+	}
+	for _, c := range golden.Cases {
+		if c.Name == name {
+			return goldenInvoice(t, c.Fields)
+		}
+	}
+	t.Fatalf("golden case %q not found", name)
+	return Invoice{}
+}
+
 func TestGoldenRenders(t *testing.T) {
 	raw, err := os.ReadFile(filepath.Join("testdata", "a38_renders.json"))
 	if err != nil {
@@ -101,11 +122,6 @@ func TestGoldenRenders(t *testing.T) {
 			want := c.Outputs[kind]
 			got, err := render()
 			switch {
-			case errors.Is(err, ErrUnsupported):
-				if c.Unsupported == nil {
-					t.Errorf("%s %s: unexpected ErrUnsupported", c.Name, kind)
-				}
-				counts["unsupported"]++
 			case want["raised"] != nil:
 				if !errors.Is(err, ErrInvalid) {
 					t.Errorf("%s %s: Python raised %v, Go gave %v", c.Name, kind, want["raised"], err)
@@ -123,11 +139,6 @@ func TestGoldenRenders(t *testing.T) {
 					}
 				}
 				counts["identical"]++
-			}
-		}
-		if c.Unsupported != nil {
-			if _, err := HTML(inv); !errors.Is(err, ErrUnsupported) {
-				t.Errorf("%s: tagged unsupported but Go answered %v", c.Name, err)
 			}
 		}
 	}

@@ -2,7 +2,6 @@ package codicefiscale
 
 import (
 	"encoding/json"
-	"errors"
 	"os"
 	"testing"
 	"time"
@@ -29,13 +28,9 @@ func TestDecodedBirthplaceName(t *testing.T) {
 		t.Fatalf("only %d cases", len(golden.Cases))
 	}
 	now := time.Date(golden.Year, 6, 1, 0, 0, 0, 0, time.UTC)
-	named, refused := 0, 0
+	named := 0
 	for _, item := range golden.Cases {
 		name, found, err := DecodedBirthplaceName(item.Code, now)
-		if errors.Is(err, ErrUnsupported) {
-			refused++
-			continue
-		}
 		if err != nil {
 			t.Fatalf("%q: %v", item.Code, err)
 		}
@@ -49,7 +44,7 @@ func TestDecodedBirthplaceName(t *testing.T) {
 			named++
 		}
 	}
-	if named < 500 || refused > 5 {
-		t.Fatalf("%d named, %d refused", named, refused)
+	if named < 500 {
+		t.Fatalf("%d named", named)
 	}
 }

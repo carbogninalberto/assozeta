@@ -14,6 +14,9 @@ var (
 	// ErrSubscriptionReadsNotPorted refuses inputs whose Django behaviour is
 	// not ported (the 500 page, never a guessed body).
 	ErrSubscriptionReadsNotPorted = refusal.New("subscription reads input not ported")
+	// ErrSubscriptionReadsUnreachable is a state no request or stored row
+	// produces (each site names the decoder or constraint that rules it out).
+	ErrSubscriptionReadsUnreachable = refusal.AppState("subscription reads: unreachable state")
 	// ErrSubscriptionReadsAthlete is subscription_list_archived's Response(status=401) for athletes.
 	ErrSubscriptionReadsAthlete = errors.New("subscription reads athlete")
 	// ErrSubscriptionReadsNotFound is subscription_info's {'msg': 'Subscription not found.'} (404).
@@ -24,7 +27,7 @@ var (
 
 // SubscriptionReadsOrder is one ORDER BY term (an SQL expression the repository resolves).
 type SubscriptionReadsOrder struct {
-	// Column is a Subscription column, or "associate.first_name", "associate.last_name", "age".
+	// Column is a Subscription column, or "associate.first_name", "associate.last_name", "age", or "?" (random order).
 	Column     string
 	Descending bool
 }

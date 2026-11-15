@@ -38,8 +38,14 @@
 
 ## Not ported
 
-- `subscription/associates-draft/list/approve`. Its main path calls `create_subscription` for every valid draft, and that call creates users, associates, subscriptions, payments and documents and sends emails. The route stays on Django.
-- In edit, `person_date` is the whole dateutil parser (`internal/pydateutil` with `dayfirst`, through `dto.PersonDate`): dashes, dots, month names, times, a year alone (the rest from today's date, UTC). A year before 1000 is Django's `strftime('%d/%m/%Y')` round trip failing on Linux (the year is not padded): the associate's is the 500 page, the tutor's is ignored. Texts over 64 KiB are refused with a 500 before any write, for the associate's and the tutor's date alike.
+- `subscription/associates-draft/list/approve`. Its main path calls `create_subscription` for every valid draft, and
+  that call creates users, associates, subscriptions, payments and documents and sends emails. The route is ported
+  ([subscription-renew](subscription-renew.md)): a draft hitting one of that flow's refusals refuses the whole request.
+- In edit, `person_date` is the whole dateutil parser (`internal/pydateutil` with `dayfirst`, through `dto.PersonDate`): dashes, dots, month names, times, a year alone (the rest from today's date, UTC). A year before 1000 is Django's `strftime('%d/%m/%Y')` round trip failing on Linux (the year is not padded): the associate's is the 500 page, the tutor's is ignored. (Long tail PR 3: texts of any length and lone surrogates are parsed like dateutil, `internal/pydateutil`.)
+
+Since long-tail PR 3 (agent B) approve's refusals are `subscription-create`'s: the entries that flow answers as
+application state (`ErrSubscriptionCreateUnreachable`, the 500 page, a unique `username` among them) refuse the
+whole request the same way, and its ported quick-mode ids stay ported. Nothing else in this section changed.
 
 ## Evidence
 
@@ -60,3 +66,6 @@
 - RED (`native-r2`): Django 128/128; Go 404 on the first case.
 - GREEN (`versioned-r1`): 128/128 on native Django, native Go, Caddy `/api/v1` and `/api/v2`, with exact draft, status, certificate, audit and index effects.
 - Mutation (`mutation-r1`): rolling back the edit when the expiration date does not parse fails the first case that expects the saved draft and the created certificate (CAUGHT).
+
+Long tail PR 3: `internal/pydateutil` reads every Python str (agent A), so no date text is refused here any more; the
+only other result is pydateutil's unexpected local zone, application state (every caller passes UTC).

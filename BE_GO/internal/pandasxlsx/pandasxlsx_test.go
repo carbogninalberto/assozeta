@@ -80,6 +80,10 @@ func sameValue(want, got []string) bool {
 	return len(want) == 3 && want[0] == got[0] && want[1] == got[1] && want[2] == got[2]
 }
 
+// refused reports a workbook pandas reads and the package does not model
+// (ErrWorkbookNotPorted, or ReadText's narrow view).
+func refused(err error) bool { return errors.Is(err, ErrWorkbookNotPorted) }
+
 // compare requires pandas' outcome for every reading the package accepts,
 // and acceptance of the readings marked required. ReadText gives the same
 // frame as ReadAll (a numpy.int64 as an Int) or refuses.
@@ -106,11 +110,11 @@ func compare(t *testing.T, corpus goldenCorpus, readings []goldenCase) {
 		}
 		narrow, narrowErr := ReadText(data, textual)
 		switch {
-		case errors.Is(err, ErrUnsupported):
+		case refused(err):
 			if item.Required {
 				fail("required workbook refused")
 			}
-			if !errors.Is(narrowErr, ErrUnsupported) {
+			if !refused(narrowErr) {
 				fail("ReadText: %v", narrowErr)
 			}
 			continue
@@ -157,7 +161,7 @@ func compare(t *testing.T, corpus goldenCorpus, readings []goldenCase) {
 		switch {
 		case plain && narrowErr != nil:
 			fail("ReadText refuses a frame of its kinds: %v", narrowErr)
-		case !plain && !errors.Is(narrowErr, ErrUnsupported):
+		case !plain && !refused(narrowErr):
 			fail("ReadText accepts a frame beyond its kinds")
 		case plain:
 			narrowed++

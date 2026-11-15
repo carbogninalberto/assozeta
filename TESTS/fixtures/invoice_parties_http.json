@@ -4082,6 +4082,133 @@
    "prints": []
   },
   {
+   "name": "invoice-parties-supplier-list-sort-random",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/invoice-suppliers/list?query%5BgeneralSearch%5D=fornitore+uno&sort%5Bfield%5D=%3F",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "0": {
+      "invoice_supplier_id": "a1000000-0000-4000-8000-000000846125",
+      "payment": {
+       "payment_id": "a1000000-0000-4000-8000-000000846120",
+       "user": {
+        "first_name": "Message",
+        "last_name": "Fixture",
+        "email": "message-reads-700001@example.test",
+        "phone": null,
+        "username": "message-reads-700001",
+        "role": 1
+       },
+       "associate": null,
+       "subscription_id": null,
+       "instructor_id": null,
+       "instructor": null,
+       "supplier": {
+        "supplier_id": "a1000000-0000-4000-8000-000000846110",
+        "name": "Fornitore Uno",
+        "address": "Via Roma 1",
+        "tax_code": null,
+        "sport_association": "a1000000-0000-4000-8000-000000701001",
+        "vat_number": "01234567890",
+        "type": "supplier",
+        "email": null,
+        "phone_number": null,
+        "city": "Torino",
+        "cap": "10100",
+        "state": null,
+        "country": "Italia",
+        "nationality": "Italiana",
+        "note": null,
+        "group": null,
+        "deleted": false
+       },
+       "supplier_id": "a1000000-0000-4000-8000-000000846110",
+       "custom_account_type": 2,
+       "custom_account_name": "Banca",
+       "invoice": null,
+       "attachments": [
+        {
+         "document_id": "a1000000-0000-4000-8000-000000846106",
+         "creation_date": "2026-09-01T08:00:00Z",
+         "filepath": "private/attachment.pdf",
+         "filename": "attachment.pdf",
+         "file_size_bytes": 2048,
+         "token": "a1000000-0000-4000-8000-000000846107"
+        }
+       ],
+       "payment_category_name": "pagamento FORNITORE",
+       "type": "transfer",
+       "subject": 0,
+       "amount": "120.50",
+       "creation_date": "2026-10-01T09:00:00Z",
+       "payment_date": null,
+       "paid": false,
+       "expense": true,
+       "description": "Fattura fornitore A",
+       "meta_payment_categories": null,
+       "payment_intent_id": null,
+       "archived": false,
+       "invoice_fiscal_code": null,
+       "meta": {
+        "source": "seed"
+       },
+       "notes": null,
+       "deleted": false,
+       "course": null,
+       "payment_category": "a1000000-0000-4000-8000-000000846117",
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "custom_accounts": "a1000000-0000-4000-8000-000000846114",
+       "signature": null,
+       "group": null
+      },
+      "payment_id": "a1000000-0000-4000-8000-000000846120",
+      "document_token": "a1000000-0000-4000-8000-000000846109",
+      "notes": "nota interna",
+      "supplier": {
+       "supplier_id": "a1000000-0000-4000-8000-000000846110",
+       "name": "Fornitore Uno",
+       "address": "Via Roma 1",
+       "tax_code": null,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "vat_number": "01234567890",
+       "type": "supplier",
+       "email": null,
+       "phone_number": null,
+       "city": "Torino",
+       "cap": "10100",
+       "state": null,
+       "country": "Italia",
+       "nationality": "Italiana",
+       "note": null,
+       "group": null,
+       "deleted": false
+      },
+      "invoice_identifier": "FA-001",
+      "amount": "120.50",
+      "payment_date": null,
+      "expire_date": "2026-12-01T00:00:00Z",
+      "paid": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "document_pdf": "a1000000-0000-4000-8000-000000846108"
+     }
+    },
+    "meta": {
+     "total": 1,
+     "page": 1,
+     "pages": 1,
+     "perpage": 10,
+     "rowIds": [
+      "a1000000-0000-4000-8000-000000846125"
+     ]
+    }
+   },
+   "effect": null,
+   "prints": []
+  },
+  {
    "name": "invoice-parties-supplier-list-sort-unknown-server-error",
    "actor": "owner",
    "method": "GET",

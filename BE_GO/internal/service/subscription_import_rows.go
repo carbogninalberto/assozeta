@@ -15,6 +15,8 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/pandascsv"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/pandasxlsx"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pydateutil"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // subscriptionImportFields is SubscriptionMaps.KEY_TO_FIELD_ASSOCIATE.
@@ -64,8 +66,9 @@ func subscriptionImportTextColumns(mapping any) map[string]bool {
 // subscriptionImportDate is import_date(text) for a value that is no date
 // cell: dateutil.parser.parse(text, dayfirst=...) with the day first unless
 // the text starts with the year (dto.PersonDateText), at now. parsed is false
-// where parse raises (import_date answers None); the texts
-// internal/pydateutil refuses are not ported.
+// where parse raises (import_date answers None). internal/pydateutil reads
+// every Python str, so the only other result is its unexpected-zone
+// application state (time.UTC is passed).
 func subscriptionImportDate(text string, now time.Time) (date time.Time, parsed bool, err error) {
 	date, result := dto.PersonDateAnyYear(text, now)
 	switch result {
@@ -74,7 +77,7 @@ func subscriptionImportDate(text string, now time.Time) (date time.Time, parsed 
 	case dto.DateutilFailed:
 		return time.Time{}, false, nil
 	}
-	return time.Time{}, false, ErrSubscriptionImportNotPorted
+	return time.Time{}, false, pydateutil.ErrUnexpectedZone
 }
 
 // subscriptionImportUnstorable is a value json.dumps does not encode (a
@@ -324,6 +327,9 @@ func (s *SubscriptionImportUpload) subscriptionImportPlan(lookup func(column any
 				continue // decode raises on anything but text
 			}
 			name, found, err := codicefiscale.DecodedBirthplaceName(text, now)
+			if errors.Is(err, refusal.ErrAppState) {
+				return effects, err
+			}
 			if err != nil {
 				return effects, ErrSubscriptionImportNotPorted
 			}

@@ -21,18 +21,13 @@ import (
 var subscriptionQuickDecimal = regexp.MustCompile(`^-?\d{1,7}(\.\d{1,2})?$`)
 
 // subscriptionQuickID is Associate.objects.get(associate_id=value)'s
-// UUIDField.to_python: a malformed text, None and containers are the 500
-// page; numbers (uuid.UUID(int=...)) are not ported.
+// UUIDField.to_python: a text through uuid.UUID(hex=...) and a number through
+// uuid.UUID(int=...) (a bool included); a malformed text, a float, a negative
+// number or one past 128 bits is a ValidationError and None or a container
+// finds no row: the 500 page.
 func subscriptionQuickID(value any) (string, error) {
-	switch v := value.(type) {
-	case string:
-		id, err := paymentInfoParseUUID(v)
-		if err != nil {
-			return "", domain.ErrSubscriptionCreateServer
-		}
-		return id.String(), nil
-	case json.Number, bool:
-		return "", domain.ErrSubscriptionCreateNotPorted
+	if id, ok := renewalSourceKey(value); ok {
+		return id, nil
 	}
 	return "", domain.ErrSubscriptionCreateServer
 }
@@ -106,10 +101,12 @@ func subscriptionQuickFee(settings *domain.SubscriptionCreateSettings, data doma
 	}
 	parsed, err := dto.ParsePythonJSON(string(settings.SubscriptionPlans))
 	if err != nil {
-		return nil, nil, domain.ErrSubscriptionCreateNotPorted
+		// jsonb text is valid JSON, within the digit and nesting limits of the Python writers.
+		return nil, nil, domain.ErrSubscriptionCreateUnreachable
 	}
 	available, ok := parsed.([]any)
 	if !ok {
+		// The association import stores the archive's plans as they are (import_service.py), so any jsonb value can be here.
 		return nil, nil, domain.ErrSubscriptionCreateNotPorted
 	}
 	planID, hasPlan := data.Lookup("plan_id")
@@ -130,6 +127,7 @@ func subscriptionQuickFee(settings *domain.SubscriptionCreateSettings, data doma
 		last = item
 		plan, isPlan := item.(domain.RequestObject)
 		if !isPlan {
+			// The association import stores the archive's plans as they are (import_service.py).
 			return nil, nil, domain.ErrSubscriptionCreateNotPorted
 		}
 		if !hasPlan {
@@ -273,7 +271,8 @@ func (s *SubscriptionCreates) quick(ctx context.Context, identity domain.Resolve
 		return nil, err
 	}
 	if count != 1 {
-		return nil, domain.ErrSubscriptionCreateNotPorted
+		// Django raises AttributeError on None: the 500 page.
+		return nil, domain.ErrSubscriptionCreateServer
 	}
 	association := settings.AssociationID
 	if scope != "" && association != scope {

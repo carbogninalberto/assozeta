@@ -5,16 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"time"
-
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 var ErrAutomationWorkflowNotFound = errors.New("workflow not found.")
-
-// ErrAutomationWorkflowUpdateNotPorted refuses, before any write, an update whose
-// Django behaviour is not ported: a cron trigger enabled for a future or
-// unclassified time (Celery check_workflows_trigger_cron) or a changed key.
-var ErrAutomationWorkflowUpdateNotPorted = refusal.New("workflow update not ported")
 
 // ErrAutomationWorkflowTrigger reproduces trigger() raising after the update
 // was saved (HTTP 500; the saves stay, requests are not atomic).

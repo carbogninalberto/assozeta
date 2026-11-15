@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"log/slog"
 	"math/rand/v2"
 	"regexp"
@@ -246,8 +247,10 @@ func (c *consumerEmailConfigSend) smtpMessage() (smtpsend.Message, bool) {
 	return message, true
 }
 
-// planConfigSend loads what send_email reads and refuses, before any effect,
-// a call whose SMTP message or envelope is outside the smtpsend subset.
+// planConfigSend loads what send_email reads and refuses, before any effect, a
+// call whose SMTP message is outside the smtpsend subset. A message Python
+// raises on while building it is not outside the port: send_email answers
+// (False, e), which configSend already models, so the call is planned.
 func (s *SendMailAsync) planConfigSend(ctx context.Context, configuration domain.CommunicationConfiguration, subject string,
 	body, html *string, recipients, replyTo any) (*consumerEmailConfigSend, error) {
 	call := &consumerEmailConfigSend{configuration: configuration, subject: subject, body: body, html: html,
@@ -267,10 +270,7 @@ func (s *SendMailAsync) planConfigSend(ctx context.Context, configuration domain
 	}
 	if smtpConfigured(configuration) {
 		if message, ok := call.smtpMessage(); ok {
-			if _, err := smtpsend.Render(message, smtpsend.NewBoundary()); err != nil {
-				return nil, celeryworker.ErrHandoff
-			}
-			if err := smtpsend.CheckEnvelope(*configuration.User, call.to); err != nil {
+			if _, err := smtpsend.Render(message, smtpsend.NewBoundary()); err != nil && !errors.Is(err, smtpsend.ErrRaises) {
 				return nil, celeryworker.ErrHandoff
 			}
 		}

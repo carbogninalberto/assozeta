@@ -40,9 +40,14 @@ actor_id})`, relayed with 202; unavailable is 503, rejected keeps the runner's s
 
 ## Not ported (500 page before any write)
 
-- Runner answers Go does not decode like `json.loads` (surrogates, NaN, deep nesting; UTF-16/32 is read since long tail PR 2) and
-  reason texts that are not strings; a release id beyond 64 bits.
+- Runner answers Go does not decode like `json.loads` (invalid JSON or UTF-8) and reason texts that
+  are not strings; a release id beyond 64 bits.
 - Release feeds the release normalizer refuses (see `instance-outbound.md`).
+
+A runner reply holding a lone surrogate is served: Go keeps the code point, as Python's `json` does,
+and answers the 500 page wherever it reaches a rendered response or a rendered error message. A reply
+nested past 500 levels is application state (the 500 page): the runner writes `json.dumps` of fixed
+shapes.
 
 ## Evidence
 
@@ -57,3 +62,6 @@ servers run in production mode. Every runner and release API request is compared
   running version fails `instance-updates-request-release-not-newer`.
 - Re-run with the shared changes: instance-admin 164/164 and instance-outbound 106/106 native
   (`v2-admin-rerun`).
+
+Long tail PR 3 (agent C): runner replies holding a lone surrogate are served. Cases `status-lone-surrogate`
+and `status-runner-error-lone-surrogate`.

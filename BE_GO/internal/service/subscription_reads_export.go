@@ -21,7 +21,6 @@ type SubscriptionReadsExport struct {
 	group       *string
 	association string
 	title       string
-	lazy        bool
 }
 
 func (e *SubscriptionReadsExport) Error() string { return "subscription list export" }
@@ -50,10 +49,6 @@ func (s *SubscriptionReads) Export(ctx context.Context, export *SubscriptionRead
 		return nil, domain.ErrSubscriptionReadsServer // Exception('Format not valid')
 	}
 	now := s.now().UTC()
-	if export.lazy {
-		// The ordering is compiled when the rows are iterated (here).
-		return nil, domain.ErrSubscriptionReadsNotPorted
-	}
 	ids, err := s.store.Subscriptions(ctx, export.filter, -1, 0)
 	if err != nil {
 		return nil, err
@@ -117,7 +112,8 @@ func (s *SubscriptionReads) Export(ctx context.Context, export *SubscriptionRead
 			Title: export.title + " (giorno stampa " + printingDate(now) + ")"}.Build(now)
 		switch {
 		case errors.Is(err, pdfexport.ErrNotPorted):
-			return nil, domain.ErrSubscriptionReadsNotPorted
+			// this table has no header, logo or paragraphs: the only inputs pdfexport refuses.
+			return nil, errors.Join(domain.ErrSubscriptionReadsUnreachable, err)
 		case errors.Is(err, refusal.ErrAppState):
 			return nil, err // a layout no export builds (pdfexport.ErrUnexpectedLayout)
 		case err != nil:

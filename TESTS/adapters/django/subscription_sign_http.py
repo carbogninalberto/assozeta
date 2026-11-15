@@ -7,7 +7,9 @@ AWS_S3_PUBLIC_BASE_URL set the same way (Django through override_settings, Go
 through GO_FIXTURE_ENVIRONMENT). The proxy forwards every request unchanged to
 MinIO except the object ACL calls, which it answers itself (MinIO only supports
 the private canned ACL): 200 for public-read, AccessDenied for the fixture's
-acl_denied row. Every request is recorded.
+acl_denied row, and the authored plain-object answers (source.storage_answers: a
+HeadObject that finds the object or one the storage refuses, a PutObject the
+storage refuses). Every request is recorded.
 
 seed_rows inserts (audit disabled) the subscriptions; each workload starts with
 the seeded signature objects in the bucket and ends with only the sentinel.
@@ -16,7 +18,9 @@ requests and the bucket:
 - the storage requests are exactly the authored ones, in order (HeadObject,
   PutObject, PutObjectAcl public-read, DeleteObject), with the new key bound to
   '<AWS_LOCATION>/subscriptions/<id>/signature_<repr(float)>.png' whose
-  timestamp lies in the request window;
+  timestamp lies in the request window, or to
+  'signature_<timestamp>_<7 alphanumerics>.<fraction>.png' when the plain key is
+  taken (HeadObject 200; the plain key is bound to '$taken');
 - a stored object has the decoded bytes, ContentType image/png, no
   ContentEncoding and CacheControl max-age=86400; an old object is deleted or
   kept as authored; nothing else in the bucket changes;
@@ -63,12 +67,14 @@ STORAGE = {}
 
 class RecordingProxy:
     """Forwards S3 requests to MinIO byte for byte (signed Host kept) and records them;
-    answers PutObjectAcl itself."""
+    answers PutObjectAcl itself and the authored plain-object answers (answers)."""
 
-    def __init__(self, endpoint, denied, bucket=None):
+    def __init__(self, endpoint, denied, bucket=None, answers=()):
         target = endpoint.removeprefix('http://')
         self.host, self.port = target.rsplit(':', 1)[0], int(target.rsplit(':', 1)[1])
         self.denied, self.lock, self.requests = denied, threading.Lock(), []
+        self.initial = [dict(rule) for rule in answers]
+        self.answers = [dict(rule) for rule in self.initial]
         self.bucket = bucket or BUCKET
         outer = self
 
@@ -117,6 +123,18 @@ class RecordingProxy:
                 query = sorted(set(urllib.parse.parse_qs(parsed.query, keep_blank_values=True)) - {'x-id'})
                 prefix = f'/{outer.bucket}/'
                 key = urllib.parse.unquote(parsed.path[len(prefix):]) if parsed.path.startswith(prefix) else None
+                if query == [] and key is not None:
+                    rule = None
+                    with outer.lock:
+                        for candidate in outer.answers:
+                            if candidate['method'] == self.command and candidate['contains'] in key and candidate['times'] > 0:
+                                candidate['times'] -= 1
+                                outer.requests.append((self.command, key, '', candidate['status']))
+                                rule = candidate
+                                break
+                    if rule is not None:
+                        return self.respond(rule['status'], rule['body'].encode(),
+                                            'application/xml' if rule['body'] else None)
                 if self.command == 'PUT' and query == ['acl'] and key is not None:
                     acl = self.headers.get('x-amz-acl')
                     refused = outer.denied in key
@@ -157,8 +175,10 @@ class RecordingProxy:
         self.endpoint = f'http://127.0.0.1:{self.server.server_port}'
 
     def take(self):
+        """The requests recorded since the last call; each case starts with the authored answers."""
         with self.lock:
             items, self.requests = self.requests, []
+            self.answers = [dict(rule) for rule in self.initial]
         return items
 
     def close(self):
@@ -180,7 +200,7 @@ def service_context(report, log):
                               config=Config(signature_version='s3v4', retries={'max_attempts': 0}, s3={'addressing_style': 'path'}))
         client.create_bucket(Bucket=BUCKET)
         client.put_object(Bucket=BUCKET, Key=SENTINEL[0], Body=SENTINEL[1], ContentType='text/plain')
-        proxy = RecordingProxy(endpoint, source['acl_denied'])
+        proxy = RecordingProxy(endpoint, source['acl_denied'], answers=source.get('storage_answers', []))
         storages = {'default': {'BACKEND': 'storages.backends.s3boto3.S3Boto3Storage'},
                     'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'}}
         STORAGE.update(client=client, proxy=proxy, location=source['location'])
@@ -292,11 +312,26 @@ def resolve(value, binding):
     return value
 
 
-def new_key(requests, row_id, since, until):
-    """The key of the case's upload: <location>/subscriptions/<id>/signature_<repr(timestamp)>.png."""
+def new_key(requests, row_id, since, until, effect, binding):
+    """The key of the case's upload: <location>/subscriptions/<id>/signature_<repr(timestamp)>.png.
+
+    When the storage found the key taken (HEAD $taken: HTTP 200) Django saves the object under
+    '<file_root>_<7 alphanumerics><suffixes>': signature_<timestamp>_<7>.<fraction>.png for the
+    'signature_<timestamp>.<fraction>.png' name; the plain key is bound to '$taken'."""
     keys = [item[1] for item in requests if item[0] == 'PUT']
     contract.require(len(keys) == 1, 'storage.new-key-count')
-    match = re.fullmatch(re.escape(f'{STORAGE["location"]}/subscriptions/{row_id}/signature_') + r'(\d+\.\d+)\.png', keys[0])
+    prefix = f'{STORAGE["location"]}/subscriptions/{row_id}/signature_'
+    if 'HEAD $taken' in effect['storage']:
+        match = re.fullmatch(re.escape(prefix) + r'(\d+)_([A-Za-z0-9]{7})(\.\d+)\.png', keys[0])
+        contract.require(match is not None, 'storage.new-key-shape')
+        stamp = match.group(1) + match.group(3)
+        contract.require(repr(float(stamp)) == stamp and since - 1 <= float(stamp) <= until + 1, 'storage.new-key-timestamp')
+        taken = f'{prefix}{stamp}.png'
+        heads = [item[1] for item in requests if item[0] == 'HEAD']
+        contract.require(bool(heads) and heads[0] == taken, 'storage.taken-key')
+        binding['$taken'] = taken
+        return keys[0]
+    match = re.fullmatch(re.escape(prefix) + r'(\d+\.\d+)\.png', keys[0])
     contract.require(match is not None, 'storage.new-key-shape')
     stamp = match.group(1)
     contract.require(repr(float(stamp)) == stamp and since - 1 <= float(stamp) <= until + 1, 'storage.new-key-timestamp')
@@ -311,7 +346,7 @@ def check_requests(requests, effect, binding):
         if operation == 'ACL':
             expected.append(('ACL', key, 'public-read', 403 if rest == ['denied'] else 200))
         elif operation == 'HEAD':
-            expected.append(('HEAD', key, '', 404))
+            expected.append(('HEAD', key, '', 200 if name == '$taken' else 404))
         elif operation == 'PUT':
             expected.append(('PUT', key, '', 200))
         else:
@@ -342,7 +377,7 @@ def assert_effect(case, before, after, source, context):
     if previous['signature_storage_key']:
         binding['$old'] = object_key(previous['signature_storage_key'])
     if any('$new' in item for item in effect['storage']):
-        key = new_key(requests, row['id'], since, until)
+        key = new_key(requests, row['id'], since, until, effect, binding)
         binding.update({'$new': key, '$key': key[len(STORAGE['location']) + 1:], '$public': source['public_base'] + '/' + key})
     check_requests(requests, effect, binding)
 

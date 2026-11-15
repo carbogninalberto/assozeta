@@ -15,6 +15,9 @@ import (
 var (
 	ErrPrintingGenerateServer    = errors.New("printing generate: unhandled exception")
 	ErrPrintingGenerateNotPorted = refusal.New("printing generate: output not ported")
+	// ErrPrintingGenerateUnreachable is a state no request or stored row
+	// produces (the site names the decoder or constraint that rules it out).
+	ErrPrintingGenerateUnreachable = refusal.AppState("printing generate: unreachable state")
 )
 
 // PrintingAssociation is request.user.sport_association.

@@ -13,6 +13,9 @@ var (
 	ErrSubscriptionLifecycleNotFound = errors.New("subscription not found")
 	// ErrSubscriptionLifecycleNotPorted is a path the Go port refuses (500) before any write.
 	ErrSubscriptionLifecycleNotPorted = refusal.New("subscription lifecycle path not ported")
+	// ErrSubscriptionLifecycleUnreachable is a state no request or stored row
+	// produces (each site names the constraint that rules it out).
+	ErrSubscriptionLifecycleUnreachable = refusal.AppState("subscription lifecycle: unreachable state")
 )
 
 // SubscriptionLifecycleRow is a locked subscription with the columns the

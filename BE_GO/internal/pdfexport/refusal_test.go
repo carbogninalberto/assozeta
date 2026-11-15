@@ -19,7 +19,6 @@ func TestInputsNotPorted(t *testing.T) {
 		"image png":      {Header: header("None", `A <img src="data:image/png;base64,iVBORw0KGgo="/> B`)},
 		"anchor":         {Header: header("None", `A <a name="top"/> B`)},
 		"internal link":  {Header: header("None", `A <a href="#top">B</a> C`)},
-		"sequence":       {Header: header("None", "A <seq/>B")},
 		"bullet":         {Header: header("None", "A <bullet>b</bullet> B")},
 		"para attribute": {Header: header("None", `<para align="justify" lindent="12">A</para>`)},
 		"text transform": {Header: header("None", `<para texttransform="uppercase">a</para>`)},
@@ -55,6 +54,12 @@ func TestInputsNotPorted(t *testing.T) {
 	ported := base
 	ported.Header = header("None", `<greek>abg</greek> <unichar code="0x263A"/> <font name="Times-Italic">a</font> <font name="Courier">b</font>`)
 	if _, err := ported.Build(time.Unix(946684800, 0)); err != nil {
+		t.Fatal(err)
+	}
+	// A sequence counts in a cell; the numbers of the process-wide Sequencer are the ones reportlab gives.
+	sequenced := base
+	sequenced.Rows = [][]Cell{{{Text: `saldi <seq id="golden"/> note`}}}
+	if _, err := sequenced.Build(time.Unix(946684800, 0)); err != nil {
 		t.Fatal(err)
 	}
 }

@@ -20,6 +20,8 @@ import (
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 type goldenReply struct {
@@ -276,9 +278,13 @@ func TestPythonSMTPTranscripts(t *testing.T) {
 
 var boundaryPattern = regexp.MustCompile(`boundary="([^"]+)"`)
 
+// TestRenderMatchesPythonAsString replays the send_email samples through
+// Render: it folds every header value the way RenderAny does (one generator
+// patch for both), giving the same text as Python or ErrHeader where Python
+// raised.
 func TestRenderMatchesPythonAsString(t *testing.T) {
 	golden := loadGolden(t)
-	accepted, refused := 0, 0
+	rendered, raised := 0, 0
 	for i, item := range golden.MIME {
 		input := item.Input
 		if (input.HTML == nil || *input.HTML == "") && input.Text == nil {
@@ -298,85 +304,86 @@ func TestRenderMatchesPythonAsString(t *testing.T) {
 		if item.Message != nil {
 			boundary = boundaryPattern.FindStringSubmatch(*item.Message)[1]
 		}
-		rendered, err := Render(message, boundary)
-		if err != nil {
-			if !errors.Is(err, ErrUnsupported) {
-				t.Fatalf("%d: %v", i, err)
+		text, err := Render(message, boundary)
+		anyText, anyErr := RenderAny(message, boundary)
+		if text != anyText || (err == nil) != (anyErr == nil) {
+			t.Fatalf("%d: Render and RenderAny differ", i)
+		}
+		switch {
+		case item.Message == nil:
+			if !errors.Is(err, ErrRaises) {
+				t.Fatalf("%d: Python raised, Go %v %q", i, err, text)
 			}
-			if i < 8 {
-				t.Fatalf("authored sample %d refused", i)
-			}
-			refused++
-			continue
+			raised++
+		case err != nil:
+			t.Fatalf("%d: %v", i, err)
+		case text != *item.Message:
+			t.Fatalf("%d: render differs\ngo:     %q\npython: %q", i, text, *item.Message)
+		default:
+			rendered++
 		}
-		if !item.OK || item.Message == nil {
-			t.Fatalf("%d: Python failed but Go rendered %q", i, rendered)
-		}
-		if rendered != *item.Message {
-			t.Fatalf("%d: render differs\ngo:     %q\npython: %q", i, rendered, *item.Message)
-		}
-		accepted++
 	}
-	if accepted < 150 || refused == 0 {
-		t.Fatalf("coverage: accepted %d refused %d", accepted, refused)
+	if rendered < 200 {
+		t.Fatalf("coverage: rendered %d raised %d", rendered, raised)
 	}
-	t.Logf("accepted %d, refused %d", accepted, refused)
+	t.Logf("rendered %d, raised %d", rendered, raised)
 }
 
-func TestCheckEnvelopeMatchesQuoteaddr(t *testing.T) {
-	golden := loadGolden(t)
-	accepted := 0
-	for _, item := range golden.Addresses {
-		if CheckEnvelope(item.Address, nil) != nil {
-			continue
-		}
-		accepted++
-		if quoteaddr(item.Address) != item.Quoted {
-			t.Fatalf("%q: go %q python %q", item.Address, quoteaddr(item.Address), item.Quoted)
-		}
-	}
-	if accepted < 1000 {
-		t.Fatalf("only %d addresses accepted", accepted)
-	}
-	for _, login := range []string{"apikey", "user.name"} {
-		if CheckEnvelope(login, nil) != nil {
-			t.Fatalf("%q refused", login)
-		}
-	}
-}
-
-func TestRefusalsBeforeConnecting(t *testing.T) {
-	dial := func(context.Context, string, string) (net.Conn, error) {
-		t.Fatal("refused input must not connect")
+// TestImpossibleAndRaisingInputs covers the answers left once the subset is
+// gone: text a Python str cannot hold (only raw environment bytes reach it:
+// left to Django) and a value Python raises on inside send_email's try, which
+// is a (False, e) answer, never a handoff.
+func TestImpossibleAndRaisingInputs(t *testing.T) {
+	server := Server{Host: "127.0.0.1", Port: 25, Dial: func(context.Context, string, string) (net.Conn, error) {
+		t.Fatal("a refused message must not connect")
 		return nil, nil
-	}
-	server := Server{Host: "127.0.0.1", Port: 25, Dial: dial}
-	for _, args := range []struct {
-		from string
-		to   []string
-		body string
-	}{
-		{"a@b", []string{"x y@z"}, "m"}, {"<a@b>", []string{"c@d"}, "m"}, {"a@b", []string{"c@d@e"}, "m"},
-		{"a@b", []string{"\"q\"@x"}, "m"}, {"a@b", []string{"c@d"}, "è"}, {"a@b", []string{""}, "m"},
-		{"api key", []string{"c@d"}, "m"}, {"a@b", []string{"@d"}, "m"}, {"a@b", []string{"c@"}, "m"},
-	} {
-		if err := Send(context.Background(), server, args.from, args.to, args.body); !errors.Is(err, ErrUnsupported) {
-			t.Fatalf("%+v: %v", args, err)
-		}
+	}}
+	if err := Send(context.Background(), server, "a@b", []string{"c@d"}, "è"); !errors.Is(err, refusal.ErrAppState) {
+		t.Fatalf("non-ASCII message: %v", err)
 	}
 	base := Message{SenderUser: "u@x", To: []string{"a@x"}, Subject: "s", HTML: "<p>"}
 	for name, mutate := range map[string]func(*Message){
-		"subject newline":   func(m *Message) { m.Subject = "a\nb" },
-		"subject separator": func(m *Message) { m.Subject = "a b" },
-		"name vertical tab": func(m *Message) { m.SenderName = "a\vb" },
-		"reply invalid":     func(m *Message) { m.ReplyTo = []string{"\xff"} },
-		"body invalid":      func(m *Message) { m.HTML = "\xff" },
-		"long subject":      func(m *Message) { m.Subject = strings.Repeat("é", maxHeaderRunes+1) },
+		"subject invalid byte": func(m *Message) { m.Subject = "a\xffb" },
+		"reply invalid byte":   func(m *Message) { m.ReplyTo = []string{"\xff"} },
+		"body invalid byte":    func(m *Message) { m.HTML = "\xff" },
 	} {
 		message := base
 		mutate(&message)
-		if _, err := Render(message, NewBoundary()); !errors.Is(err, ErrUnsupported) {
-			t.Fatalf("%s: %v", name, err)
+		if _, err := Render(message, NewBoundary()); !errors.Is(err, refusal.ErrNotPorted) {
+			t.Errorf("%s: %v", name, err)
+		}
+	}
+	for name, mutate := range map[string]func(*Message){
+		"subject surrogate": func(m *Message) { m.Subject = "a\xed\xa0\x80b" },
+		"body surrogate":    func(m *Message) { m.HTML = "a\xed\xa0\x80b" },
+		"subject newline":   func(m *Message) { m.Subject = "a\nb" },
+		"name vertical tab": func(m *Message) { m.SenderName = "a\vb" },
+	} {
+		message := base
+		mutate(&message)
+		if _, err := Render(message, NewBoundary()); !errors.Is(err, ErrRaises) {
+			t.Errorf("%s: %v", name, err)
+		}
+	}
+	// A lone surrogate DC80..DCFF is bytes 0x80..0xFF to compat32, and a long
+	// value is folded rather than refused.
+	for name, mutate := range map[string]func(*Message){
+		"subject lone surrogate": func(m *Message) { m.Subject = "a\xed\xb2\x80b" },
+		"body lone surrogate":    func(m *Message) { m.HTML = "a\xed\xb2\x80b" },
+		"long subject":           func(m *Message) { m.Subject = strings.Repeat("é", 500000) },
+		"very long subject":      func(m *Message) { m.Subject = strings.Repeat("a", 1000001) },
+		"continuation line":      func(m *Message) { m.Subject = "a\n b" },
+	} {
+		message := base
+		mutate(&message)
+		rendered, err := Render(message, NewBoundary())
+		if err != nil {
+			t.Errorf("%s: %v", name, err)
+		}
+		// Send's AppState rests on this: rendered headers are RFC 2047 words
+		// and the body is base64, so the message is ASCII.
+		if !isASCII(rendered) {
+			t.Errorf("%s: rendered message is not ASCII", name)
 		}
 	}
 }

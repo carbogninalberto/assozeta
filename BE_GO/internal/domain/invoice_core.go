@@ -11,10 +11,10 @@ import (
 var (
 	// ErrInvoiceCoreServer is an exception Django raises inside the view (a 500).
 	ErrInvoiceCoreServer = errors.New("invoice core server error")
-	// ErrInvoiceCoreNotPorted refuses a path Go does not implement (a 500 before any write).
-	ErrInvoiceCoreNotPorted = refusal.New("invoice core path not ported")
 	// ErrInvoiceCoreMissing is invoice_list's 404 {'error': 'Invoice not found'}.
 	ErrInvoiceCoreMissing = errors.New("Invoice not found")
+	// ErrInvoiceCoreUnreachable is a state no request or stored row reaches.
+	ErrInvoiceCoreUnreachable = refusal.AppState("invoice core: unreachable state")
 )
 
 // InvoiceCoreYear is invoice_list's query[current_year] filter: a second
@@ -35,7 +35,9 @@ type InvoiceCoreFilter struct {
 	AmountText, AmountExact *string
 	// Smart is smart_search (it makes the queryset distinct).
 	Smart *PaymentReadsSmartSearch
-	Order []PaymentReadsOrder
+	// Random is order_by('?'): ORDER BY RANDOM(), no other ordering.
+	Random bool
+	Order  []PaymentReadsOrder
 }
 
 // InvoiceCorePayment is one invoice's first prefetched payment.

@@ -674,6 +674,130 @@
    }
   },
   {
+   "name": "course-location-writes-add-document-filename-null-keeps-location",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/locations/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "id": "$new",
+    "stored": {
+     "title": "Nome nullo",
+     "description": null,
+     "address": null
+    }
+   },
+   "body": {
+    "title": "Nome nullo",
+    "documents_data": [
+     {
+      "document": "VnVvdG8=",
+      "filename": null
+     }
+    ]
+   }
+  },
+  {
+   "name": "course-location-writes-add-document-filename-too-long-keeps-location",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/locations/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "id": "$new",
+    "stored": {
+     "title": "Nome lungo",
+     "description": null,
+     "address": null
+    }
+   },
+   "body": {
+    "title": "Nome lungo",
+    "documents_data": [
+     {
+      "document": "VnVvdG8=",
+      "filename": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.pdf"
+     }
+    ]
+   }
+  },
+  {
+   "name": "course-location-writes-add-document-filename-number-keeps-row",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/locations/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "id": "$new",
+    "stored": {
+     "title": "Nome numero",
+     "description": null,
+     "address": null
+    },
+    "uploads": [
+     {
+      "filename": "123",
+      "row_only": true
+     }
+    ]
+   },
+   "body": {
+    "title": "Nome numero",
+    "documents_data": [
+     {
+      "document": "VnVvdG8=",
+      "filename": 123
+     }
+    ]
+   }
+  },
+  {
+   "name": "course-location-writes-add-document-filename-traversal-keeps-row",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/locations/add",
+   "headers": {},
+   "status": 400,
+   "response": "<bad-request-page>",
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "id": "$new",
+    "stored": {
+     "title": "Fuori cartella",
+     "description": null,
+     "address": null
+    },
+    "uploads": [
+     {
+      "filename": "../fuori.pdf",
+      "row_only": true
+     }
+    ]
+   },
+   "body": {
+    "title": "Fuori cartella",
+    "documents_data": [
+     {
+      "document": "VnVvdG8=",
+      "filename": "../fuori.pdf"
+     }
+    ]
+   }
+  },
+  {
    "name": "course-location-writes-add-with-documents",
    "actor": "owner",
    "method": "POST",
@@ -1341,6 +1465,52 @@
      },
      {
       "filename": "senza.pdf"
+     }
+    ]
+   }
+  },
+  {
+   "name": "course-location-writes-update-document-then-filename-list",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/course/locations/a1000000-0000-4000-8000-000000980005/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "update",
+    "actor": "owner",
+    "label": "pool",
+    "changes": {},
+    "stored": {
+     "title": "Copia",
+     "description": "Vasca",
+     "address": ""
+    },
+    "uploads": [
+     {
+      "filename": "elenco.pdf",
+      "body_b64": "RWxlbmNvIGNvcnNp",
+      "content_type": "application/pdf",
+      "encoding": null
+     },
+     {
+      "filename": "['a']",
+      "row_only": true
+     }
+    ]
+   },
+   "body": {
+    "documents_data": [
+     {
+      "document": "RWxlbmNvIGNvcnNp",
+      "filename": "elenco.pdf"
+     },
+     {
+      "document": "RWxlbmNvIGNvcnNp",
+      "filename": [
+       "a"
+      ]
      }
     ]
    }

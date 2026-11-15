@@ -243,7 +243,8 @@ func (s *SubscriptionLifecycles) archivable(ctx context.Context, request *subscr
 		return err
 	}
 	if payment == nil {
-		return domain.ErrSubscriptionLifecycleNotPorted
+		// payment_id is a foreign key (SET_NULL, subscriptions_models.py:300, 791, 878): a row cannot name a missing payment.
+		return domain.ErrSubscriptionLifecycleUnreachable
 	}
 	return nil
 }
@@ -279,7 +280,8 @@ func (s *SubscriptionLifecycles) archivePayment(ctx context.Context, request *su
 		return err
 	}
 	if payment == nil {
-		return domain.ErrSubscriptionLifecycleNotPorted
+		// payment_id is a foreign key (SET_NULL, subscriptions_models.py:300, 791, 878): a row cannot name a missing payment.
+		return domain.ErrSubscriptionLifecycleUnreachable
 	}
 	if payment.Paid {
 		return nil
@@ -438,8 +440,13 @@ func (s *SubscriptionLifecycles) Archive(ctx context.Context, identity domain.Re
 		if err != nil {
 			return err
 		}
-		if payment == nil || payment.AssociationID == "" {
+		if payment == nil {
+			// deleted by a concurrent request between the two reads (timing): left to Django.
 			return domain.ErrSubscriptionLifecycleNotPorted
+		}
+		if payment.AssociationID == "" {
+			// RangePayments selects the association's own payments (sport_association filter).
+			return domain.ErrSubscriptionLifecycleUnreachable
 		}
 		if err = s.savePaymentArchived(ctx, request, payment.PaymentSaveRow); err != nil {
 			return kept(err)

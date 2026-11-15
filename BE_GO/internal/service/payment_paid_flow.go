@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math/big"
 	"strings"
@@ -84,22 +85,6 @@ func paymentPaidFlowSentGroup(header string) (stored, sent *string, err error) {
 	return &canonical, &header, nil
 }
 
-// paymentPaidFlowInvoiceGroup is the group Invoice.objects.create stores: the
-// raw X-Group-Id (a non-canonical spelling is not ported).
-func paymentPaidFlowInvoiceGroup(header string) (*string, error) {
-	if header == "" {
-		return nil, nil
-	}
-	parsed, err := uuid.Parse(header)
-	if err != nil {
-		return nil, domain.ErrPaymentStateServer
-	}
-	if parsed.String() != header {
-		return nil, domain.ErrPaymentStateNotPorted
-	}
-	return &header, nil
-}
-
 // paymentPaidFlowMessage is the notification text both views build:
 // 'Pagamento di € <amount with a comma>', 'per <description>' (no space) when
 // there is one, '.', then the associate's or the user's full name.
@@ -136,7 +121,7 @@ func paymentPaidFlowStripeFees(subject int, payment domain.InvoiceGeneratePaymen
 	if subject != 1 {
 		return invoiceFeesAny(subject, payment)
 	}
-	zero, _ := floatFee(0)
+	zero, _ := floatFeeAny(0)
 	pair := invoiceFeePair{membership: decimalFee(payment.Amount), activity: zero}
 	if payment.MetaPaymentCategories == nil {
 		return pair, nil
@@ -299,15 +284,22 @@ func (s *PaymentStates) approvePaid(ctx context.Context, tx domain.PaymentPaidFl
 		paymentDate = &now
 	}
 	var receipt any = false
+	publish := true
 	if value, present := object.Lookup("send_receipt_email"); present {
 		var err error
 		if receipt, err = paymentStateReceiptArg(value); err != nil {
-			return nil, err
+			if !errors.Is(err, errPaymentStateReceiptUnencodable) {
+				return nil, err
+			}
+			// kombu cannot encode it: on_commit(robust=True) logs the failure and the answer stays 200 (payment_views.py:1940-1955).
+			publish = false
 		}
 	}
 	user := identity.ScopeUser
 	if user == nil || (user.Role != domain.RoleAssociation && user.Role != domain.RoleCollaborator) {
-		// send_notification without an association id: not ported.
+		// Setup makes the owner an association account (BE/instance/views.py:198-211), but the association import
+		// (import_service.py) can make an existing athlete the owner of an imported association; Django then
+		// answers as for the owner. Not ported.
 		return nil, domain.ErrPaymentStateNotPorted
 	}
 	payment, err := tx.InvoiceGeneratePayment(ctx, row.ID)
@@ -338,7 +330,7 @@ func (s *PaymentStates) approvePaid(ctx context.Context, tx domain.PaymentPaidFl
 		number = *last
 	}
 	number = max(number, int64(owner.StartingNumber)) + 1
-	description, err := (&InvoiceGenerations{anyMetaName: true}).description(ctx, tx, row, payment, row.AssociateID, association, group)
+	description, err := (&InvoiceGenerations{}).description(ctx, tx, row, payment, row.AssociateID, association, group)
 	if err != nil {
 		return nil, err
 	}
@@ -454,9 +446,11 @@ func (s *PaymentStates) approvePaid(ctx context.Context, tx domain.PaymentPaidFl
 		return nil, err
 	}
 	if dispatch {
-		// transaction.on_commit(..., robust=True): a broker failure is logged, the answer stays 200.
-		if err := printInvoice(ctx, s.tasks, *invoice, authorizationArg(request.Authorization), receipt); err != nil {
-			s.log.Error("payment approve: invoice task not queued", "payment_id", row.ID, "error", err)
+		if publish {
+			// transaction.on_commit(..., robust=True): a broker failure is logged, the answer stays 200.
+			if err := printInvoice(ctx, s.tasks, *invoice, authorizationArg(request.Authorization), receipt); err != nil {
+				s.log.Error("payment approve: invoice task not queued", "payment_id", row.ID, "error", err)
+			}
 		}
 		item["invoice_generating"] = true
 	}
@@ -532,7 +526,7 @@ func (s *StripeRoutes) stripePaidFlow(ctx context.Context, tx domain.PaymentPaid
 		number = *last
 	}
 	number = max(number, int64(owner.StartingNumber)) + 1
-	description, err := (&InvoiceGenerations{anyMetaName: true}).description(ctx, tx, row, payment, row.AssociateID, row.AssociationID, group)
+	description, err := (&InvoiceGenerations{}).description(ctx, tx, row, payment, row.AssociateID, row.AssociationID, group)
 	if err != nil {
 		return nil, err
 	}

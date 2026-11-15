@@ -28,7 +28,7 @@ const paymentStatsStripeTTL = 300 * time.Second
 
 // StripeCharges is cache.get(key): found, and the cached dict when it is the
 // {'total': float, 'stripe_fee': float} payment_stats writes (anything else:
-// ErrPaymentReadsNotPorted).
+// ErrPaymentReadsUnreachable).
 func (r *PaymentStatsStripeCache) StripeCharges(ctx context.Context, key string) (domain.PaymentStripeCharges, bool, error) {
 	raw, err := r.client.Get(ctx, ":1:"+key).Bytes()
 	if errors.Is(err, redis.Nil) {
@@ -39,16 +39,19 @@ func (r *PaymentStatsStripeCache) StripeCharges(ctx context.Context, key string)
 	}
 	value, err := unpickleDataRestoreProgress(raw)
 	if err != nil {
-		return domain.PaymentStripeCharges{}, true, domain.ErrPaymentReadsNotPorted
+		// Only payment_stats writes this key, always {'total': float, 'stripe_fee': float} (payment_views.py:1254-1258).
+		return domain.PaymentStripeCharges{}, true, domain.ErrPaymentReadsUnreachable
 	}
 	dict, ok := value.(*PickledDict)
 	if !ok || len(dict.Keys) != 2 || dict.Keys[0] != "total" || dict.Keys[1] != "stripe_fee" {
-		return domain.PaymentStripeCharges{}, true, domain.ErrPaymentReadsNotPorted
+		// Only payment_stats writes this key, always {'total': float, 'stripe_fee': float} (payment_views.py:1254-1258).
+		return domain.PaymentStripeCharges{}, true, domain.ErrPaymentReadsUnreachable
 	}
 	total, okTotal := dict.Values["total"].(float64)
 	fee, okFee := dict.Values["stripe_fee"].(float64)
 	if !okTotal || !okFee {
-		return domain.PaymentStripeCharges{}, true, domain.ErrPaymentReadsNotPorted
+		// Only payment_stats writes this key, always {'total': float, 'stripe_fee': float} (payment_views.py:1254-1258).
+		return domain.PaymentStripeCharges{}, true, domain.ErrPaymentReadsUnreachable
 	}
 	return domain.PaymentStripeCharges{Total: total, StripeFee: fee}, true, nil
 }

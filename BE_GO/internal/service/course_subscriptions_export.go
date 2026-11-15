@@ -1,7 +1,6 @@
 package service
 
 import (
-	"bytes"
 	"context"
 	"encoding/base64"
 	"encoding/json"
@@ -27,20 +26,20 @@ func (e *CourseSubscriptionExport) Error() string { return "course subscription 
 
 // courseSubscriptionExportLessons is the carnet's lessons text:
 // lessons_left = cs.meta.get('lessons_left', total) if cs.meta else total,
-// then f"{lessons_left}/{total}" if total else ”.
+// then f"{lessons_left}/{total}" if total else ”. The meta jsonb is parsed in
+// its stored order (dto.ParseReferenceJSON), so a list or a dict renders as
+// Python's str() of it.
 func courseSubscriptionExportLessons(meta *string, total int64) (string, error) {
 	left := strconv.FormatInt(total, 10)
 	if meta != nil {
-		decoder := json.NewDecoder(bytes.NewReader([]byte(*meta)))
-		decoder.UseNumber()
-		var value any
-		if err := decoder.Decode(&value); err != nil {
+		value, err := dto.ParseReferenceJSON([]byte(*meta))
+		if err != nil {
 			return "", err
 		}
 		switch typed := value.(type) {
 		case nil:
-		case map[string]any:
-			if stored, present := typed["lessons_left"]; present {
+		case domain.RequestObject:
+			if stored, present := typed.Lookup("lessons_left"); present {
 				switch number := stored.(type) {
 				case nil:
 					left = "None"
@@ -55,7 +54,8 @@ func courseSubscriptionExportLessons(meta *string, total int64) (string, error) 
 					// An integer as written, a float with its repr.
 					left = dto.PythonStr(number)
 				default:
-					return "", ErrCourseSubscriptionExportUnsupported // a list or dict
+					// A list or dict: repr with the stored key order.
+					left = dto.PythonStr(number)
 				}
 			}
 		case string:
@@ -211,7 +211,7 @@ func (s *CourseSubscriptions) Export(ctx context.Context, export *CourseSubscrip
 			Title: title + " (giorno stampa " + printingDate(today) + ")"}.Build(today)
 		switch {
 		case errors.Is(err, pdfexport.ErrNotPorted):
-			return nil, ErrCourseSubscriptionExportUnsupported
+			return nil, err // the input pdfexport does not reproduce
 		case errors.Is(err, refusal.ErrAppState):
 			return nil, err // a layout no export builds (pdfexport.ErrUnexpectedLayout)
 		case err != nil:

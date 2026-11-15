@@ -15,6 +15,8 @@ var (
 	// behaviour is not ported: mark_payment_as_paid for an unpaid payment
 	// without an invoice (invoice creation, PDF task and notification).
 	ErrStripeNotPorted = refusal.New("stripe view behaviour not ported")
+	// ErrStripeUnreachable is a state no request or stored row reaches.
+	ErrStripeUnreachable = refusal.AppState("stripe view: unreachable state")
 )
 
 // StripePayment is what the stripe views read of one live payment, with its

@@ -10,6 +10,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 type goldenCase struct {
@@ -30,7 +32,7 @@ func checkGolden(t *testing.T, cases []goldenCase) (accepted int) {
 			t.Errorf("%d %s: %q\n got %q\nwant %q", i, c.Kind, c.Input, got, *c.Output)
 		case err != nil && c.Subset:
 			t.Errorf("%d %s: subset input refused: %q", i, c.Kind, c.Input)
-		case err != nil && !errors.Is(err, ErrUnsupported):
+		case err != nil && !errors.Is(err, ErrOutputTooLarge):
 			t.Errorf("%d %s: unexpected error %v", i, c.Kind, err)
 		case err == nil:
 			accepted++
@@ -223,8 +225,8 @@ func TestPrettifyFullGolden(t *testing.T) {
 			problem = fmt.Sprintf("got %q, want ErrPythonRaises", got)
 		case c.Output == nil:
 			problem = fmt.Sprintf("got error %v, want ErrPythonRaises", err)
-		case errors.Is(err, ErrUnsupported):
-			problem = "ErrUnsupported"
+		case errors.Is(err, ErrOutputTooLarge):
+			problem = "ErrOutputTooLarge"
 		case err != nil:
 			problem = fmt.Sprintf("got error %v, want %q", err, c.Output.value)
 		case got != c.Output.value:
@@ -249,8 +251,12 @@ func TestPrettifyFullGolden(t *testing.T) {
 // quickly, while moderate nesting is rendered.
 func TestPrettifyOutputBound(t *testing.T) {
 	start := time.Now()
-	if _, err := Prettify(strings.Repeat("<div>", 6000)); !errors.Is(err, ErrUnsupported) {
+	_, err := Prettify(strings.Repeat("<div>", 6000))
+	if !errors.Is(err, ErrOutputTooLarge) {
 		t.Fatalf("deep nesting: %v", err)
+	}
+	if !errors.Is(err, refusal.ErrAppState) || errors.Is(err, refusal.ErrNotPorted) {
+		t.Fatalf("deep nesting: want an application state, got %v", err)
 	}
 	if elapsed := time.Since(start); elapsed > 2*time.Second {
 		t.Fatalf("deep nesting took %v", elapsed)

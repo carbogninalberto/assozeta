@@ -52,13 +52,18 @@ func (s *InstanceBackups) Relay(ctx context.Context, method, path string, payloa
 		if !found {
 			message = "Aggiornamento non disponibile."
 		}
-		switch {
-		case reply.Status == 404 && (path == "/backups" || path == "/backups/schedule"):
+		if reply.Status == 404 && (path == "/backups" || path == "/backups/schedule") {
 			return &InstanceBackupsRelayed{Reply: instanceBackupsError(409, instanceBackupsOutdatedAction)}, nil
-		case reply.Status < 500:
-			return &InstanceBackupsRelayed{Reply: instanceBackupsError(reply.Status, dto.PythonStr(message))}, nil
 		}
-		return &InstanceBackupsRelayed{Reply: instanceBackupsError(503, dto.PythonStr(message))}, nil
+		text := dto.PythonStr(message)
+		if !dto.RenderableJSON(text) {
+			return nil, errInstanceBackupsUnhandled // strict JSONRenderer: a lone surrogate fails the UTF-8 encode
+		}
+		status := 503
+		if reply.Status < 500 {
+			status = reply.Status
+		}
+		return &InstanceBackupsRelayed{Reply: instanceBackupsError(status, text)}, nil
 	}
 	return &InstanceBackupsRelayed{Reply: &InstanceBackupsReply{Status: success, Data: value, Relayed: true}, Value: value}, nil
 }
@@ -91,7 +96,13 @@ func (s *InstanceBackups) Create(ctx context.Context, actor string, audit domain
 	if !found {
 		id = ""
 	}
-	if err := s.instanceBackupsAudit(ctx, actor, "backup_create", dto.PythonStr(id), nil, audit); err != nil {
+	idText := dto.PythonStr(id)
+	if !dto.RenderableJSON(idText) {
+		// The entry's changes jsonb holds str(value): PostgreSQL rejects a lone
+		// surrogate escape, so Django raises before the entry is written.
+		return nil, errInstanceBackupsUnhandled
+	}
+	if err := s.instanceBackupsAudit(ctx, actor, "backup_create", idText, nil, audit); err != nil {
 		return nil, err
 	}
 	if !dto.RenderableJSON(relayed.Value) {

@@ -4,16 +4,10 @@ import (
 	"context"
 	"errors"
 	"time"
-
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // ErrMiscRoutesServer is an exception the Django view raises (the 500 page).
 var ErrMiscRoutesServer = errors.New("misc route view raised")
-
-// ErrMiscRoutesNotPorted refuses an input whose Django answer Go does not
-// reproduce (the 500 page, before any write).
-var ErrMiscRoutesNotPorted = refusal.New("misc route input not ported")
 
 // MiscRoutesAnswer is a JSON answer the view returns itself.
 type MiscRoutesAnswer struct {
