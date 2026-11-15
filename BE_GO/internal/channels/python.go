@@ -34,8 +34,14 @@ type Item struct {
 var ErrInvalidGroupName = errors.New("channels: group name not valid")
 
 // ErrUnsupportedValue is a message value GroupSend cannot encode the way
-// msgpack and json.dumps would.
-var ErrUnsupportedValue = refusal.New("channels: unsupported message value")
+// msgpack and json.dumps would. Only the application builds group messages:
+// the callers write Dict literals of strings and integers, and the one that
+// copies stored data (channelsValue, service/subscription_notifier.go:148)
+// copies a notification list only the app writes to Redis (append, :111),
+// with no repeated key and texts that are valid UTF-8. So it is an
+// application-state error (Django's 500 page), never a refusal handed off to
+// Django; every caller logs it and carries on (a push is best effort).
+var ErrUnsupportedValue = refusal.AppState("channels: unsupported message value")
 
 // maxNameLength is BaseChannelLayer.MAX_NAME_LENGTH (names must be shorter).
 const maxNameLength = 100
