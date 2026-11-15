@@ -78,7 +78,8 @@ func (s *SubscriptionReads) sessionVisible(ctx context.Context, identity domain.
 		return ids, nil
 	}
 	if s.sessions == nil {
-		return nil, domain.ErrSubscriptionReadsNotPorted
+		// cmd/server always wires it (WithSessionVisibility).
+		return nil, domain.ErrServerComposition
 	}
 	scope := domain.ResourceScope{AssociationID: identity.ImpersonationAssociationID, EffectiveID: identity.ScopeUser.ID, Role: identity.ScopeUser.Role}
 	if group != nil {
@@ -187,7 +188,8 @@ func subscriptionReadsOrder(field string, descending bool, annotations map[strin
 func (s *SubscriptionReads) subscriptionReadsSmart(filter *domain.SubscriptionReadsFilter, term string) error {
 	search, err := personaSearch(term, s.now().UTC().Year()%100)
 	if err != nil {
-		return domain.ErrSubscriptionReadsNotPorted
+		// personaSearch never fails.
+		return domain.ErrSubscriptionReadsUnreachable
 	}
 	filter.Smart = search
 	return nil
@@ -905,7 +907,8 @@ func (s *SubscriptionReads) Info(ctx context.Context, request SubscriptionReadsR
 		return nil, domain.ErrSubscriptionReadsServer // get_plain_medical_label() dereferences the associate
 	}
 	if row.DocumentID == nil && s.tasks == nil {
-		return nil, domain.ErrSubscriptionReadsNotPorted
+		// cmd/server always wires it (WithTasks).
+		return nil, domain.ErrServerComposition
 	}
 	tags, err := dto.ParseReferenceJSON([]byte(row.Tags))
 	if err != nil {

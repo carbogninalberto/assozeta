@@ -226,18 +226,9 @@ func subscriptionCreateToday(now time.Time) string {
 	return DjangoNaiveNow(now, time.Local).Format("2006-01-02")
 }
 
-// refuse rejects the inputs whose create_subscription paths are not ported,
-// before anything is read or written. today is the naive current date.
-func subscriptionCreateRefuse(data domain.RequestObject, today string) error {
-	// A preregistration that names the subscription it renews is not ported inside a renewal or a draft approval.
-	if value, _ := data.Lookup("preregistration"); value == true && subscriptionRenewalRequested(data) {
-		return domain.ErrSubscriptionCreateNotPorted
-	}
-	return subscriptionCreateRefuseInputs(data, today)
-}
-
-// subscriptionCreateRefuseInputs is refuse for subscription/add, which ports
-// the next-season preregistration.
+// subscriptionCreateRefuseInputs refuses the inputs whose create_subscription
+// paths are not ported, before anything is read or written. today is the naive
+// current date.
 func subscriptionCreateRefuseInputs(data domain.RequestObject, today string) error {
 	if medical, ok := data.Lookup("medical_certificate"); ok {
 		if object, isObject := medical.(domain.RequestObject); isObject {
@@ -1225,7 +1216,8 @@ func (s *SubscriptionCreates) saveAssociate(ctx context.Context, tx domain.Subsc
 	switch v := bornValue.(type) {
 	case nil:
 		if !isTutor {
-			return nil, domain.ErrSubscriptionCreateNotPorted
+			// createSubscription already answered a missing or unparsable born_date.
+			return nil, domain.ErrSubscriptionCreateUnreachable
 		}
 		bornNull = true
 	case string:
@@ -1241,8 +1233,8 @@ func (s *SubscriptionCreates) saveAssociate(ctx context.Context, tx domain.Subsc
 	}
 	write, invalid, err := dto.ParseAssociateTutor(object, born, func(id string) (bool, error) {
 		if id != association {
-			// The association is set from request.user; another one is not ported.
-			return false, domain.ErrSubscriptionCreateNotPorted
+			// sport_association was overwritten with the request's association before validation.
+			return false, domain.ErrSubscriptionCreateUnreachable
 		}
 		return tx.AssociationExists(ctx, id)
 	}, func(id string) (bool, error) { return tx.FamilyExists(ctx, id) })
@@ -1358,11 +1350,13 @@ func (s *SubscriptionCreates) saveAssociate(ctx context.Context, tx domain.Subsc
 func subscriptionCreatePlan(raw []byte, id any) (domain.RequestObject, error) {
 	parsed, err := dto.ParsePythonJSON(string(raw))
 	if err != nil {
-		return nil, domain.ErrSubscriptionCreateNotPorted
+		// subscription_fee_plans / membership_fee_plans are jsonb arrays written only by the settings view (profile_views.py:327-364).
+		return nil, domain.ErrSubscriptionCreateUnreachable
 	}
 	plans, ok := parsed.([]any)
 	if !ok {
-		return nil, domain.ErrSubscriptionCreateNotPorted
+		// subscription_fee_plans / membership_fee_plans are jsonb arrays written only by the settings view (profile_views.py:327-364).
+		return nil, domain.ErrSubscriptionCreateUnreachable
 	}
 	wanted := dto.PythonStr(id)
 	for _, item := range plans {
@@ -1418,7 +1412,7 @@ func (s *SubscriptionCreates) fees(ctx context.Context, tx domain.SubscriptionCr
 			planID, present := data.Lookup("plan_id")
 			if present {
 				plan, err := subscriptionCreatePlan(settings.SubscriptionPlans, planID)
-				if errors.Is(err, domain.ErrSubscriptionCreateNotPorted) {
+				if errors.Is(err, domain.ErrSubscriptionCreateUnreachable) {
 					return fees, err
 				}
 				if err == nil && plan != nil {

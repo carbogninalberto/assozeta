@@ -64,7 +64,8 @@ func tutorPersonObject(born any, present bool) domain.RequestObject {
 // TestSubscriptionCreateTutorBornDateNone drives AssociateSerializer's
 // DateField(null=True, blank=True): a tutor whose born_date key is missing or
 // explicitly null is created with born_date NULL; an associate (minorOf nil)
-// never reaches this call and keeps refusing.
+// never reaches this call (create_subscription answered its born_date) and
+// answers the unreachable state.
 func TestSubscriptionCreateTutorBornDateNone(t *testing.T) {
 	creates := tutorCreates()
 	minor := "a1000000-0000-4000-8000-000000700002"
@@ -98,8 +99,8 @@ func TestSubscriptionCreateTutorBornDateNone(t *testing.T) {
 			tx := &tutorTransaction{}
 			audit := subscriptionAudit{tx: tx, now: creates.now}
 			row, err := creates.saveAssociate(context.Background(), tx, audit, spelling.object, tutorAssociation, nil, nil)
-			if !errors.Is(err, domain.ErrSubscriptionCreateNotPorted) || row != nil {
-				t.Fatalf("saved=%v err=%v, want the not-ported refusal", row, err)
+			if !errors.Is(err, domain.ErrSubscriptionCreateUnreachable) || row != nil {
+				t.Fatalf("saved=%v err=%v, want the unreachable-state answer", row, err)
 			}
 			if len(tx.inserted) != 0 || len(tx.saved) != 0 || len(tx.audits) != 0 {
 				t.Fatalf("a refused associate wrote %v %v %v", tx.inserted, tx.saved, tx.audits)

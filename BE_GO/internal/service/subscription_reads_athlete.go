@@ -100,7 +100,8 @@ func (s *SubscriptionReads) searchAssociation(ctx context.Context, association s
 // subscriptions (request.user carries the session's association).
 func (s *SubscriptionReads) athleteList(ctx context.Context, identity domain.ResolvedIdentity, group *string) (any, error) {
 	if s.athletes == nil {
-		return nil, domain.ErrSubscriptionReadsNotPorted
+		// cmd/server always wires it (WithAthleteList).
+		return nil, domain.ErrServerComposition
 	}
 	ids, err := s.store.AllowedForAthlete(ctx, identity.ScopeUser.ID, group, paymentReadsScope(identity))
 	if err != nil {

@@ -108,7 +108,8 @@ func (s *SubscriptionCreates) namedAssociation(ctx context.Context, tx domain.Su
 		return err
 	}
 	if len(associations) > 1 {
-		return domain.ErrSubscriptionCreateNotPorted
+		// User.username is unique and SportAssociation.user is a OneToOneField (user_models.py:641).
+		return domain.ErrSubscriptionCreateUnreachable
 	}
 	if len(associations) == 1 && associations[0] != own {
 		return &domain.PermissionDenied{Detail: "User not allowed."}

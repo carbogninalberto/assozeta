@@ -15,8 +15,13 @@ const JobAutoDeleteOrphanMedicalCertificate = "auto_delete_orphan_medical_certif
 
 // ErrOrphanMedicalUnsupported refuses a run before any effect: a document in
 // scope is referenced by a row Django's collector would cascade to (other
-// than its one certificate), or its storage name is outside the modelled subset.
+// than its one certificate).
 var ErrOrphanMedicalUnsupported = refusal.New("orphan medical cleanup needs behaviour Go does not reproduce")
+
+// ErrOrphanMedicalUnreachable is a document name no stored row can produce
+// (creation_date is written only by the app, filename is UTF-8 text without
+// NUL): an application-state error (the 500 page).
+var ErrOrphanMedicalUnreachable = refusal.AppState("orphan medical cleanup: unreachable state")
 
 // OrphanMedicalCertificate is one MedicalCertificate the task iterates, with
 // the select_related document fields it reads. DocumentID is nil for a

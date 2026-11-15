@@ -72,7 +72,8 @@ func (s *SubscriptionCard) Read(ctx context.Context, identity domain.ResolvedIde
 					return nil, err
 				}
 				if lookup {
-					return nil, domain.ErrMiscRoutesNotPorted
+					// cmd/server always calls WithPublicLinks (composeBakneyPublicLinks never returns nil).
+					return nil, domain.ErrServerComposition
 				}
 			} else {
 				granted, err := s.links.SourceToken(ctx, "card", *token, raw, supplierGroup(groupHeader))

@@ -21,18 +21,13 @@ import (
 var subscriptionQuickDecimal = regexp.MustCompile(`^-?\d{1,7}(\.\d{1,2})?$`)
 
 // subscriptionQuickID is Associate.objects.get(associate_id=value)'s
-// UUIDField.to_python: a malformed text, None and containers are the 500
-// page; numbers (uuid.UUID(int=...)) are not ported.
+// UUIDField.to_python: a text through uuid.UUID(hex=...) and a number through
+// uuid.UUID(int=...) (a bool included); a malformed text, a float, a negative
+// number or one past 128 bits is a ValidationError and None or a container
+// finds no row: the 500 page.
 func subscriptionQuickID(value any) (string, error) {
-	switch v := value.(type) {
-	case string:
-		id, err := paymentInfoParseUUID(v)
-		if err != nil {
-			return "", domain.ErrSubscriptionCreateServer
-		}
-		return id.String(), nil
-	case json.Number, bool:
-		return "", domain.ErrSubscriptionCreateNotPorted
+	if id, ok := renewalSourceKey(value); ok {
+		return id, nil
 	}
 	return "", domain.ErrSubscriptionCreateServer
 }
@@ -106,11 +101,13 @@ func subscriptionQuickFee(settings *domain.SubscriptionCreateSettings, data doma
 	}
 	parsed, err := dto.ParsePythonJSON(string(settings.SubscriptionPlans))
 	if err != nil {
-		return nil, nil, domain.ErrSubscriptionCreateNotPorted
+		// subscription_fee_plans is a jsonb array of objects written only by the settings view (profile_views.py:327-340).
+		return nil, nil, domain.ErrSubscriptionCreateUnreachable
 	}
 	available, ok := parsed.([]any)
 	if !ok {
-		return nil, nil, domain.ErrSubscriptionCreateNotPorted
+		// subscription_fee_plans is a jsonb array of objects written only by the settings view (profile_views.py:327-340).
+		return nil, nil, domain.ErrSubscriptionCreateUnreachable
 	}
 	planID, hasPlan := data.Lookup("plan_id")
 	meta := func(plan domain.RequestObject) (*string, error) {
@@ -130,7 +127,8 @@ func subscriptionQuickFee(settings *domain.SubscriptionCreateSettings, data doma
 		last = item
 		plan, isPlan := item.(domain.RequestObject)
 		if !isPlan {
-			return nil, nil, domain.ErrSubscriptionCreateNotPorted
+			// subscription_fee_plans is a jsonb array of objects written only by the settings view (profile_views.py:327-340).
+			return nil, nil, domain.ErrSubscriptionCreateUnreachable
 		}
 		if !hasPlan {
 			continue
@@ -273,7 +271,8 @@ func (s *SubscriptionCreates) quick(ctx context.Context, identity domain.Resolve
 		return nil, err
 	}
 	if count != 1 {
-		return nil, domain.ErrSubscriptionCreateNotPorted
+		// Django raises AttributeError on None: the 500 page.
+		return nil, domain.ErrSubscriptionCreateServer
 	}
 	association := settings.AssociationID
 	if scope != "" && association != scope {

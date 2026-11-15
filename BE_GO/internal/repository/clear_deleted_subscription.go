@@ -51,7 +51,8 @@ func (t *clearDeletedTransaction) DeletedSubscriptionIDs(ctx context.Context) ([
 func (t *clearDeletedTransaction) PurgeDeletedSubscription(ctx context.Context, id uuid.UUID) (bool, *string, error) {
 	found, key, err := t.purge(ctx, id)
 	if errors.Is(err, ErrCollaboratorDeleteUnsupported) {
-		err = errors.Join(domain.ErrClearDeletedUnsupported, err)
+		// the committed model graphs never reach it (TestCollaboratorDeleteRefusalUnreachable).
+		err = errors.Join(domain.ErrClearDeletedUnreachable, err)
 	}
 	return found, key, err
 }

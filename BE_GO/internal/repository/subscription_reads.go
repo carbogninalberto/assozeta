@@ -252,7 +252,8 @@ func subscriptionReadsOrder(order []domain.SubscriptionReadsOrder, args *persona
 		case subscriptionReadsColumns[term.Column]:
 			terms[i] = "s." + term.Column
 		default:
-			return "", domain.ErrSubscriptionReadsNotPorted
+			// the service only orders by the whitelisted columns (service/subscription_reads.go sort mapping).
+			return "", domain.ErrSubscriptionReadsUnreachable
 		}
 		if term.Descending {
 			terms[i] += " DESC"

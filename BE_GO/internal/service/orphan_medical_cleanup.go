@@ -113,7 +113,8 @@ func (s *OrphanMedicalCleanup) plan(ctx context.Context, job domain.Job) ([]orph
 		}
 		name, err := documentkey.StoredName(*certificate.Created, id, *certificate.Filename, nil)
 		if err != nil {
-			return nil, errors.Join(domain.ErrOrphanMedicalUnsupported, err)
+			// Document.creation_date is written only by the app (default=timezone.now, docmanager/models.py:14).
+			return nil, errors.Join(domain.ErrOrphanMedicalUnreachable, err)
 		}
 		step.key, err = documentkey.S3Key(name, s.objects.Location())
 		var outside *documentkey.OutsideLocationError
@@ -121,7 +122,8 @@ func (s *OrphanMedicalCleanup) plan(ctx context.Context, job domain.Job) ([]orph
 			// django-storages raises SuspiciousOperation.
 			step.stop = true
 		} else if err != nil {
-			return nil, errors.Join(domain.ErrOrphanMedicalUnsupported, err)
+			// filename is PostgreSQL text in a UTF-8 database: no NUL, always valid UTF-8.
+			return nil, errors.Join(domain.ErrOrphanMedicalUnreachable, err)
 		}
 		steps = append(steps, step)
 	}

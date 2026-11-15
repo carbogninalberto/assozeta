@@ -53,7 +53,8 @@ func (s *SubscriptionCreates) renewalSource(ctx context.Context, tx domain.Subsc
 			return nil, err
 		}
 		if len(associations) > 1 {
-			return nil, domain.ErrSubscriptionCreateNotPorted
+			// User.username is unique and SportAssociation.user is a OneToOneField (user_models.py:641).
+			return nil, domain.ErrSubscriptionCreateUnreachable
 		}
 		if len(associations) == 0 {
 			return nil, nil

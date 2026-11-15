@@ -336,7 +336,8 @@ func (s *SubscriptionMisc) ValidateLink(ctx context.Context, identity domain.Res
 			return nil, err
 		}
 		if lookup {
-			return nil, domain.ErrSubscriptionMiscNotPorted
+			// cmd/server always calls WithPublicLinks (composeBakneyPublicLinks never returns nil).
+			return nil, domain.ErrServerComposition
 		}
 	}
 	var actorAssociation *string

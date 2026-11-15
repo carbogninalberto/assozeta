@@ -107,7 +107,7 @@ func (s *ClearDeletedSubscription) purge(ctx context.Context, job domain.Job, id
 		if errors.Is(err, domain.ErrJobLeaseLost) {
 			return false, nil, err
 		}
-		if errors.Is(err, domain.ErrClearDeletedUnsupported) {
+		if errors.Is(err, domain.ErrClearDeletedUnreachable) {
 			return false, nil, err
 		}
 		s.logger.WarnContext(ctx, "clear_deleted_subscription: could not remove subscription", "code", "subscription_clear_failed",
