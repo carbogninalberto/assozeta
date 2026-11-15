@@ -178,12 +178,11 @@ type imgAttrs struct {
 // are ignored, as it does.
 var paraPorted = map[string]bool{"para": true, "b": true, "strong": true, "i": true, "em": true, "br": true, "u": true, "strike": true,
 	"font": true, "span": true, "nobr": true, "sup": true, "super": true, "sub": true, "link": true, "a": true, "img": true,
-	"greek": true, "unichar": true, "index": true, "ondraw": true}
+	"greek": true, "unichar": true, "index": true, "ondraw": true, "seq": true, "seqchain": true, "seqdefault": true,
+	"seqformat": true, "seqreset": true}
 
 // paraNotPortedTags are the tags of ParaParser that are still refused.
-var paraNotPortedTags = map[string]bool{"bullet": true,
-	"link": true, "seq": true, "seqchain": true, "seqdefault": true, "seqformat": true,
-	"seqreset": true}
+var paraNotPortedTags = map[string]bool{"bullet": true, "link": true}
 
 // lineAttr is what <u> and <strike> (and <link underline>) set on a frag.
 type lineAttr struct {
@@ -516,6 +515,16 @@ func (p *paraParser) startTag(tag string, attrs []htmlAttr) bool {
 		return p.startIndex(attrs)
 	case "ondraw":
 		return p.startOnDraw(attrs)
+	case "seq":
+		return p.startSeq(attrs)
+	case "seqreset":
+		return p.startSeqReset(attrs)
+	case "seqchain":
+		return p.startSeqChain(attrs)
+	case "seqdefault":
+		return p.startSeqDefault(attrs)
+	case "seqformat":
+		return p.startSeqFormat(attrs)
 	case "img":
 		return p.startImg(attrs)
 	case "link":
