@@ -1641,3 +1641,7 @@ Where the replay is not possible Go still answers the 500 page; those sites are 
 state: the unwired-storage cases (`domain.ErrServerComposition`, `errDocumentViewSignature`) and every other site of the
 agent sections. `refusal_reach.py` HTTP/WebSocket rows: 516 on main, 223 with the three agents' changes, 260 after these
 reverts.
+
+Also fixed on the combined branch: release feed items `normalize_release` raises on answer Django's 500 page
+(`instanceprobe.ErrReleaseRaises`, application state) instead of the X2 provider-failure body, which stays for values
+Django answers (instance-outbound cases `releases-feed-item-not-object`, `releases-feed-null-assets`).

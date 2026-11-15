@@ -125,7 +125,12 @@ Depending on the response, so after the lease (tests) or a manual refresh bound 
   `releases-feed-utf16-truncated`.)
 - Release feeds Go does not carry: non-integer or out-of-int64 ids, truthy non-string names,
   dates or notes, lone surrogates, redirect targets urllib would rewrite,
-  a body shorter than its Content-Length (`IncompleteRead`). Nothing is cached.
+  a body shorter than its Content-Length (`IncompleteRead`). Nothing is cached. Since long tail
+  PR 2 these answer Django's provider-failure body with Go's reason (accepted divergence X2).
+- Feed items `normalize_release` raises on (an item that is not an object, an asset that is not
+  one, an unhashable asset name, a missing `id`, `assets` Python cannot iterate, a size `> 0`
+  cannot compare): Django's 500 page in both, as an application-state error in Go
+  (`instanceprobe.ErrReleaseRaises`; cases `releases-feed-item-not-object`, `releases-feed-null-assets`).
 - Differences in the deadline: Django's 10 s include the probe interpreter's start; Python's
   strict X.509 checks (`VERIFY_X509_STRICT`) are not applied by Go; a malformed HTTP status line
   from GitHub (an uncaught `http.client` exception in Django) is "unavailable" in Go.
