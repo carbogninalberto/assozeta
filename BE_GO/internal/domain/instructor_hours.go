@@ -3,8 +3,6 @@ package domain
 import (
 	"context"
 	"time"
-
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // InstructorHour is one application_instructorhours row; JSON columns are
@@ -89,12 +87,6 @@ type InstructorHoursAudit struct {
 	// entry through the instructor's owner's association (else the actor's).
 	Instructor *string
 }
-
-var (
-	// ErrInstructorHoursNotPorted refuses list rows whose compensation
-	// document would be printed (print_document_compensation).
-	ErrInstructorHoursNotPorted = refusal.New("instructor hours compensation printing is not ported")
-)
 
 type InstructorHoursTransaction interface {
 	// InstructorAssociation is the instructor (found) and its owner's

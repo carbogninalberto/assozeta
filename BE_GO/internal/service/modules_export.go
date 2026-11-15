@@ -274,13 +274,15 @@ func modulesExportValue(value any) (xlsxexport.Value, error) {
 		}
 		number, err := strconv.ParseFloat(text, 64)
 		if err != nil && !errors.Is(err, strconv.ErrRange) {
-			return xlsxexport.Value{}, domain.ErrModuleResponsesNotPorted
+			// the text comes from a JSON parser, always a valid number
+			return xlsxexport.Value{}, domain.ErrModuleResponsesUnreachable
 		}
 		return xlsxexport.FloatValue(number), nil
 	case []any, domain.RequestObject:
 		return xlsxexport.ObjectValue(dto.PythonStr(typed)), nil
 	}
-	return xlsxexport.Value{}, domain.ErrModuleResponsesNotPorted
+	// a type outside the decoded JSON types
+	return xlsxexport.Value{}, domain.ErrModuleResponsesUnreachable
 }
 
 // modulesExportDistinct is len() of a JSON object: repeated keys count once.

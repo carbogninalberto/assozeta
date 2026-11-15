@@ -15,6 +15,9 @@ var (
 	// behaviour is not ported (e-mails, signature storage with its PDF, plan
 	// values outside the ported Python conversions).
 	ErrPaymentMiscNotPorted = refusal.New("payment misc behaviour not ported")
+	// ErrPaymentMiscUnreachable is a state no request or stored row produces
+	// (each site names the decoder or constraint that rules it out).
+	ErrPaymentMiscUnreachable = refusal.AppState("payment misc: unreachable state")
 	// ErrPaymentMiscBadRequest is payment_sign's 400 {'msg': 'validation errors.'}.
 	ErrPaymentMiscBadRequest = errors.New("validation errors.")
 )

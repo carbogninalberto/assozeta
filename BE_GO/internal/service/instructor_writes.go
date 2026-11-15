@@ -387,7 +387,8 @@ func compensationDetails(notes *strings.Builder, hour domain.InstructorHour) (bo
 		percentageText = *hour.PercentageBilling
 		value, outcome := dto.ParseInstructorDecimal(*hour.PercentageBilling)
 		if outcome != dto.DecimalFinite || value.Special != "" {
-			return false, domain.ErrInstructorWritesNotPorted
+			// the column is numeric(4,2) with DecimalValidator, user_models.py:333
+			return false, domain.ErrInstructorWritesUnreachable
 		}
 		if !value.IsZero() {
 			scaled := value.PercentOf()

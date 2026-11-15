@@ -243,8 +243,9 @@ func (s *DocmanagerReads) relatedDocument(ctx context.Context, uid string, group
 }
 
 // stream is PrintingService.download_file (download) or view_file. Their
-// exceptions become 500 {'exception': str(e)}; the ones whose text is a
-// provider error other than a missing key are refused instead. A missing
+// exceptions become 500 {'exception': str(e)}: a missing key and a client
+// error botocore raises once (botocoreClientErrorText) included. Transport
+// errors and retried answers are refused instead. A missing
 // object that one subscription or invoice has as its PDF is printed again
 // (the renderer, then the save_to_storage task) and the stream is still
 // attempted: until the worker has stored the file the answer is the missing
@@ -258,7 +259,8 @@ func (s *DocmanagerReads) stream(ctx context.Context, document *domain.StoredDoc
 	}
 	name, err := documentkey.StoredName(document.Created, id, document.Filename, document.Filepath)
 	if err != nil {
-		return nil, domain.ErrDocmanagerNotPorted
+		// creation_date out of 1..9999 or sub-microsecond: default=timezone.now, timestamptz has microsecond resolution
+		return nil, domain.ErrDocmanagerUnreachable
 	}
 	key, err := documentkey.S3Key(name, s.objects.Location())
 	var outside *documentkey.OutsideLocationError
@@ -266,7 +268,8 @@ func (s *DocmanagerReads) stream(ctx context.Context, document *domain.StoredDoc
 		return exception(outside.Error()), nil
 	}
 	if err != nil {
-		return nil, domain.ErrDocmanagerNotPorted
+		// invalid UTF-8 or NUL, which PostgreSQL text cannot hold
+		return nil, domain.ErrDocmanagerUnreachable
 	}
 	exists, err := s.objects.Exists(ctx, key)
 	var head *documentobjects.HeadStatusError
@@ -298,7 +301,8 @@ func (s *DocmanagerReads) stream(ctx context.Context, document *domain.StoredDoc
 	guessed, known, err := s.guess(filename)
 	var refusedName *pymime.ValueError
 	if err != nil && !errors.As(err, &refusedName) {
-		return nil, domain.ErrDocmanagerNotPorted
+		// the mime table the image ships failed to load
+		return nil, domain.ErrDocmanagerUnreachable
 	}
 	// Documents are served with a fixed set of inline types; every other file
 	// is a download, whatever the request asks.
@@ -312,11 +316,7 @@ func (s *DocmanagerReads) stream(ctx context.Context, document *domain.StoredDoc
 		named = false
 	}
 	if named {
-		value, ok := contentDisposition(attachment, filename)
-		if !ok {
-			return nil, domain.ErrDocmanagerNotPorted
-		}
-		disposition = value
+		disposition = docmanagerDisposition(attachment, filename)
 	}
 	// Django's response refuses a header value with a line break after the
 	// object was opened: a missing object answers first.
@@ -331,6 +331,10 @@ func (s *DocmanagerReads) stream(ctx context.Context, document *domain.StoredDoc
 		return exception(missing.Error()), nil
 	}
 	if err != nil {
+		if text, ok := botocoreClientErrorText(err); ok {
+			return exception(text), nil
+		}
+		// transport errors and retried answers: botocore's text names retries and endpoints (external).
 		return nil, domain.ErrDocmanagerNotPorted
 	}
 	if refusedName != nil {
@@ -384,6 +388,18 @@ func contentDisposition(attachment bool, filename string) (*string, bool) {
 		value = kind + "; filename*=utf-8''" + pythonQuote(filename)
 	}
 	return &value, true
+}
+
+// docmanagerDisposition is content_disposition_header as the response stores
+// it: the None of an inline header without a filename becomes the text 'None'
+// (ResponseHeaders.__setitem__ str()s a value that is not str or bytes).
+func docmanagerDisposition(attachment bool, filename string) *string {
+	value, ok := contentDisposition(attachment, filename)
+	if !ok {
+		none := "None"
+		return &none
+	}
+	return value
 }
 
 // pythonQuote is urllib.parse.quote(text) with its default safe '/'.

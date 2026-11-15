@@ -664,7 +664,8 @@ func (s *ModulesResponses) attach(ctx context.Context, tx domain.ModulesResponse
 			return "", err
 		}
 		if taken {
-			return "", domain.ErrModuleResponsesNotPorted
+			// the key embeds the new Document's uuid4: only the application's own object could be there.
+			return "", domain.ErrModuleResponsesUnreachable
 		}
 	}
 	if err = s.storage.Save(ctx, stored, content, instancelogo.WriteParameters{ContentType: kind, ContentEncoding: encoding,

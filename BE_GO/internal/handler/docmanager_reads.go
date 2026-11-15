@@ -110,7 +110,8 @@ func (h *DocmanagerReadsHandler) Delete(c echo.Context) error {
 		return restError(c, &restInputError{Status: 405, Detail: restText(request, "method")})
 	}
 	if h.audit == nil || h.operations == nil {
-		return docmanagerRespond(c, nil, domain.ErrDocmanagerNotPorted)
+		// cmd/server always calls WithWrites.
+		return docmanagerRespond(c, nil, domain.ErrServerComposition)
 	}
 	tracked, err := h.operations.Track(request.Context())
 	if err != nil {

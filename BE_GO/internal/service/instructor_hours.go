@@ -137,7 +137,8 @@ func (s *InstructorHoursService) List(ctx context.Context, identity domain.Resol
 		switch {
 		case row.PaymentID != nil && row.DocumentID == nil:
 			if s.printer == nil {
-				return nil, domain.ErrInstructorHoursNotPorted
+				// cmd/server always calls WithCompensationPrint.
+				return nil, domain.ErrServerComposition
 			}
 		}
 	}
