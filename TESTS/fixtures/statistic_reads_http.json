@@ -293,7 +293,18 @@
   "d4i": "a1000000-0000-4000-8000-000000930246",
   "d4b": "a1000000-0000-4000-8000-000000930247",
   "d4e": "a1000000-0000-4000-8000-000000930248",
-  "d4h": "a1000000-0000-4000-8000-000000930249"
+  "d4h": "a1000000-0000-4000-8000-000000930249",
+  "cs_ud": "a1000000-0000-4000-8000-000000930250",
+  "cs_um": "a1000000-0000-4000-8000-000000930251",
+  "as_ud": "a1000000-0000-4000-8000-000000930252",
+  "as_um": "a1000000-0000-4000-8000-000000930253",
+  "c_ud": "a1000000-0000-4000-8000-000000930254",
+  "c_um": "a1000000-0000-4000-8000-000000930255",
+  "sub_ud": "a1000000-0000-4000-8000-000000930256",
+  "sub_um": "a1000000-0000-4000-8000-000000930257",
+  "rg_ud": "a1000000-0000-4000-8000-000000930258",
+  "rg_um": "a1000000-0000-4000-8000-000000930259",
+  "d_ud": "a1000000-0000-4000-8000-000000930260"
  },
  "users": {
   "athlete_two": {
@@ -314,6 +325,12 @@
   "collab_four": {
    "role": "collaborator",
    "connected": "owner_four"
+  },
+  "athlete_digits": {
+   "role": "athlete"
+  },
+  "athlete_month": {
+   "role": "athlete"
   }
  },
  "owner_balance": {
@@ -447,6 +464,24 @@
    "sex": "M",
    "born": null,
    "age": 0
+  },
+  "as_ud": {
+   "association": "association_three",
+   "first": "Atleta",
+   "last": "Cifre",
+   "sex": "M",
+   "born": null,
+   "age": 0,
+   "user": "athlete_digits"
+  },
+  "as_um": {
+   "association": "association_three",
+   "first": "Atleta",
+   "last": "Mese",
+   "sex": "F",
+   "born": null,
+   "age": 0,
+   "user": "athlete_month"
   }
  },
  "medicals": {
@@ -1147,6 +1182,40 @@
    "archived": false,
    "group": null,
    "user": "owner_four"
+  },
+  "sub_ud": {
+   "association": "association_three",
+   "status": 5,
+   "type": 2,
+   "start": {
+    "day": -10
+   },
+   "end": {
+    "day": 10
+   },
+   "created": "2023-01-01T10:00:00Z",
+   "associate": "as_ud",
+   "medical": null,
+   "archived": false,
+   "group": null,
+   "user": "athlete_digits"
+  },
+  "sub_um": {
+   "association": "association_three",
+   "status": 5,
+   "type": 2,
+   "start": {
+    "day": -10
+   },
+   "end": {
+    "day": 10
+   },
+   "created": "2023-01-01T10:00:00Z",
+   "associate": "as_um",
+   "medical": null,
+   "archived": false,
+   "group": null,
+   "user": "athlete_month"
   }
  },
  "payments": {
@@ -2109,6 +2178,26 @@
    "deleted": false,
    "description": null,
    "group": null
+  },
+  "c_ud": {
+   "association": "association_three",
+   "title": "Corso cifre",
+   "status": 2,
+   "fee": "10.00",
+   "created": "2023-01-01T10:00:00Z",
+   "deleted": false,
+   "description": null,
+   "group": null
+  },
+  "c_um": {
+   "association": "association_three",
+   "title": "Corso mese",
+   "status": 2,
+   "fee": "10.00",
+   "created": "2023-01-01T10:00:00Z",
+   "deleted": false,
+   "description": null,
+   "group": null
   }
  },
  "course_subscriptions": {
@@ -2464,6 +2553,18 @@
    "deleted": false,
    "subscription": "s4_3",
    "payment": "e3"
+  },
+  "cs_ud": {
+   "course": "c_ud",
+   "created": "2023-01-01T10:00:00Z",
+   "deleted": false,
+   "subscription": "sub_ud"
+  },
+  "cs_um": {
+   "course": "c_um",
+   "created": "2023-01-01T10:00:00Z",
+   "deleted": false,
+   "subscription": "sub_um"
   }
  },
  "registries": {
@@ -2786,6 +2887,44 @@
      }
     }
    ]
+  },
+  "rg_ud": {
+   "course": "c_ud",
+   "events": [
+    {
+     "event_id": "ev-ud",
+     "start": {
+      "$fmt": [
+       {
+        "day": 3,
+        "at": "10:00:00"
+       },
+       "٢٠%y-%m-%dT1٠:0٠:0٠.000Z"
+      ]
+     },
+     "end": null,
+     "title": "Cifre"
+    }
+   ]
+  },
+  "rg_um": {
+   "course": "c_um",
+   "events": [
+    {
+     "event_id": "ev-um",
+     "start": {
+      "$fmt": [
+       {
+        "day": 4,
+        "at": "10:00:00"
+       },
+       "٢٠%y-١١-%dT1٠:0٠:0٠.000Z"
+      ]
+     },
+     "end": null,
+     "title": "Mese"
+    }
+   ]
   }
  },
  "days": {
@@ -2918,6 +3057,16 @@
    },
    "title": "Lezione",
    "event": "ev4h"
+  },
+  "d_ud": {
+   "registry": "rg_ud",
+   "date": {
+    "day": 3,
+    "at": "10:00:00"
+   },
+   "attendees": [
+    "cs_ud"
+   ]
   }
  },
  "messages": {
@@ -5976,6 +6125,97 @@
      }
     ],
     "upcoming_lessons": []
+   }
+  },
+  {
+   "name": "statistic-reads-athlete-unicode-digit-start-listed",
+   "actor": "athlete_digits",
+   "method": "GET",
+   "path": "/statistic/athlete-dashboard",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "sport_association": {
+       "denomination": "Statistiche terza",
+       "sport_association_id": "a1000000-0000-4000-8000-000000930004",
+       "user": {
+        "user_id": "a1000000-0000-4000-8000-000000930003",
+        "avatar_image": null,
+        "first_name": "Statistic",
+        "last_name": "Fixture",
+        "username": "statistic-reads-owner_three"
+       },
+       "review_url": null,
+       "review_url_enabled": false,
+       "communications": []
+      },
+      "subscriptions": 1
+     }
+    ],
+    "upcoming_lessons": [
+     {
+      "event_id": "ev-ud",
+      "is_absent": false,
+      "is_present": true,
+      "attendance_day_id": "a1000000-0000-4000-8000-000000930260",
+      "title": "Cifre",
+      "start": {
+       "$dmy": {
+        "day": 3,
+        "at": "10:00:00"
+       }
+      },
+      "course_subscription_id": "a1000000-0000-4000-8000-000000930250",
+      "course_id": "a1000000-0000-4000-8000-000000930254",
+      "course_title": "Corso cifre",
+      "subscription": {
+       "subscription_id": "a1000000-0000-4000-8000-000000930256",
+       "associate": {
+        "associate_id": "a1000000-0000-4000-8000-000000930252",
+        "first_name": "Atleta",
+        "last_name": "Cifre"
+       }
+      }
+     }
+    ]
+   },
+   "setup": {
+    "primary_association": "a1000000-0000-4000-8000-000000930004"
+   }
+  },
+  {
+   "name": "statistic-reads-athlete-unicode-digit-month-skipped",
+   "actor": "athlete_month",
+   "method": "GET",
+   "path": "/statistic/athlete-dashboard",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "sport_association": {
+       "denomination": "Statistiche terza",
+       "sport_association_id": "a1000000-0000-4000-8000-000000930004",
+       "user": {
+        "user_id": "a1000000-0000-4000-8000-000000930003",
+        "avatar_image": null,
+        "first_name": "Statistic",
+        "last_name": "Fixture",
+        "username": "statistic-reads-owner_three"
+       },
+       "review_url": null,
+       "review_url_enabled": false,
+       "communications": []
+      },
+      "subscriptions": 1
+     }
+    ],
+    "upcoming_lessons": []
+   },
+   "setup": {
+    "primary_association": "a1000000-0000-4000-8000-000000930004"
    }
   },
   {

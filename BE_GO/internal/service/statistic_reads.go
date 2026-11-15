@@ -825,9 +825,6 @@ func (s *StatisticReads) registryLessons(ctx context.Context, scope domain.Stati
 		if !ok {
 			return nil, errStatisticTypeError
 		}
-		if dto.StrptimeUnicodeDigits(text) {
-			return nil, domain.ErrStatisticNotPorted
-		}
 		start, ok := dto.StrptimeEventStart(text)
 		if !ok {
 			continue // ValueError

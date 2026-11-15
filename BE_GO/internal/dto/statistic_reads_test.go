@@ -30,12 +30,32 @@ func TestStrptimeEventStart(t *testing.T) {
 		"2026-2-3T1:2:3.123456Z": "2026-02-03T01:02:03.123456Z", "2026-11- 3T10:00:00.0Z": "2026-11-03T10:00:00Z",
 		"2026-02-30T10:00:00.0Z": "", "2026-11-03T10:00:60.0Z": "", "2026-11-03T10:00:00Z": "",
 		"2026-11-03T10:00:00.1234567Z": "", "0000-01-01T00:00:00.0Z": "",
+		"٢٠26-11-18T1٠:0٠:0٠.000Z": "2026-11-18T10:00:00Z", // the fixture's literal + strftime seed
 	}
 	for input, want := range cases {
 		got, ok := StrptimeEventStart(input)
 		if (want == "") == ok || (ok && got.Format(time.RFC3339Nano) != want) {
 			t.Errorf("%q: got %v %v, want %q", input, got, ok, want)
 		}
+	}
+}
+
+// CPython's _strptime uses \d for %Y, for the second digit of %d/%H/%M/%S and for int(), so a
+// start mixing scripts names the same instant; %m's alternatives and %f stay ASCII.
+func TestStrptimeEventStartUnicodeDigits(t *testing.T) {
+	want, ok := StrptimeEventStart("2026-11-20T10:00:00.000Z")
+	if !ok {
+		t.Fatal("the ASCII start must parse")
+	}
+	got, ok := StrptimeEventStart("٢٠٢٦-11-2٠T1٠:0٠:0٠.000Z")
+	if !ok || !got.Equal(want) {
+		t.Errorf("Unicode digits: got %v %v, want %v", got, ok, want)
+	}
+	if _, ok := StrptimeEventStart("2026-١١-20T10:00:00.000Z"); ok {
+		t.Error("a Unicode month is a ValueError in CPython")
+	}
+	if _, ok := StrptimeEventStart("2026-11-20T10:٠٠:00.000Z"); ok {
+		t.Error("CPython's first minute digit is ASCII only")
 	}
 }
 
