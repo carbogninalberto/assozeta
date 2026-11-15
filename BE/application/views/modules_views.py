@@ -12,13 +12,14 @@ import uuid
 import pandas
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
+from django.db.models import Prefetch
 from rest_framework.exceptions import ValidationError, PermissionDenied
 from rest_framework.response import Response
 from rest_framework import status
 from django.conf import settings as django_settings
 from rest_framework.decorators import api_view, permission_classes, throttle_classes
 
-from application.models import Module, ModuleResponses
+from application.models import Module, ModuleResponses, SportAssociation
 from application.serializers.modules_serializers import ModulesSerializer, ModulesSerializerWithResponses, \
     ModuleResponseSerializer, ModulesAddSerializer, PublicModuleSerializer, PublicModuleResponseSerializer
 from application.public_limits import (PublicModuleAttachmentThrottle, PublicModuleResponseThrottle, body_too_large,
@@ -60,9 +61,12 @@ def modules_list(request):
 
     user = request.user
 
-    modules = Module.objects.filter(sport_association=user.sport_association)
+    # The module query is unchanged (no ORDER BY, so the row order stays the same). The association and its owner
+    # are prefetched once through the base manager, which is what module.sport_association and association.user use.
+    modules = Module.objects.filter(sport_association=user.sport_association).prefetch_related(
+        Prefetch('sport_association', queryset=SportAssociation._base_manager.select_related('user')))
 
-    data = ModulesSerializer(modules, many=True).data
+    data = ModulesSerializer(modules, many=True, context={'sport_association_groups': {}}).data
 
     return Response({'data': data}, status=status.HTTP_200_OK)
 

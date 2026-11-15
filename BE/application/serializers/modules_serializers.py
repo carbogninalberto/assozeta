@@ -19,10 +19,26 @@ class ModulesAddSerializer(ReadOnlyPrimaryKeyMixin, serializers.ModelSerializer)
         model = Module
         fields = '__all__'
 
+class ModuleSportAssociationSerializer(SportAssociationSerializer):
+    """SportAssociationSerializer nested in ModulesSerializer.
+
+    modules_list passes context={'sport_association_groups': {}} so each association's groups are read once per
+    request instead of once per module. Without that key it runs the same query as SportAssociationSerializer.
+    """
+
+    def get_groups(self, obj):
+        cache = self.context.get('sport_association_groups')
+        if cache is None:
+            return super().get_groups(obj)
+        if obj.pk not in cache:
+            cache[obj.pk] = super().get_groups(obj)
+        return [dict(group) for group in cache[obj.pk]]
+
+
 class ModulesSerializer(ReadOnlyPrimaryKeyMixin, serializers.ModelSerializer):
 
     enabled = serializers.SerializerMethodField()
-    sport_association = SportAssociationSerializer()
+    sport_association = ModuleSportAssociationSerializer()
 
     def get_enabled(self, obj):
         return obj.enabled
