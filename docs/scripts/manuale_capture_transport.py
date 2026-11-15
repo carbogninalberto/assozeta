@@ -8,9 +8,10 @@ passwords, no environment values, no absolute paths and no browser input ever
 belong in it.
 
 Sharding is delegated to :mod:`manuale_capture_shards`, so a distributed plan
-and a local sharded run assign exactly the same workflows in exactly the same
-way (deterministic longest-processing-time partition in registry order, never
-with an empty shard).
+cuts the fresh workflows into contiguous registry-order blocks: every workflow
+except the first of a block keeps the predecessor of the sequential run, the
+heaviest block is as light as possible (classic linear partition) and no shard is
+ever empty.
 
 Usage::
 
@@ -75,9 +76,10 @@ def build_transport(*, run_id, run_attempt, capture_id, application_revision, ma
                     release, reference_date, tooling_hashes, recipes, fresh, reused, runners):
     """Build and strictly validate the transport manifest of one capture batch.
 
-    ``fresh`` workflows are captured by this batch and are partitioned across
-    ``runners`` shards; ``reused`` workflows keep evidence captured earlier.
-    Together they must be exactly the recipe registry.
+    ``fresh`` workflows are captured by this batch and are split across
+    ``runners`` contiguous shards of the registry order; ``reused`` workflows
+    keep evidence captured earlier. Together they must be exactly the recipe
+    registry.
     """
     if type(runners) is not int or not 1 <= runners <= MAX_RUNNERS:
         raise TransportError(f'runners must be an integer from 1 to {MAX_RUNNERS}')
@@ -92,7 +94,7 @@ def build_transport(*, run_id, run_attempt, capture_id, application_revision, ma
         raise TransportError('Workflows are neither fresh nor reused: ' + ', '.join(missing))
     count = min(runners, len(fresh_ids))
     try:
-        plan = capture_shards.partition(recipes, fresh_ids, count) if count else []
+        plan = capture_shards.contiguous_partition(recipes, fresh_ids, count) if count else []
     except (ValueError, capture_shards.ShardError) as error:
         raise TransportError('Cannot partition the fresh workflows: ' + str(error)) from error
     built = {
@@ -122,9 +124,10 @@ def validate_transport(transport, *, recipes=None):
 
     Every object has an exact key set, every scalar has an exact format, the
     fresh and reused workflows are unique registry-order lists, and the shards
-    cover each fresh workflow exactly once under their canonical artifact names.
-    With ``recipes`` the registry digest and the fresh-plus-reused registry must
-    match too.
+    cover each fresh workflow exactly once under their canonical artifact names:
+    concatenated, they are exactly the fresh list, so every shard is one
+    contiguous registry-order block. With ``recipes`` the registry digest and the
+    fresh-plus-reused registry must match too.
     """
     if not isinstance(transport, dict):
         raise TransportError('Transport manifest must be an object')
@@ -156,6 +159,10 @@ def validate_transport(transport, *, recipes=None):
             raise TransportError('Fresh and reused workflows do not match the recipe registry')
         if transport['registry_sha256'] != registry_sha256(recipes):
             raise TransportError('Transport registry_sha256 does not match the recipe registry')
+    if [identifier for shard in transport['shards'] for identifier in shard['workflows']] != fresh:
+        # Each shard must be one contiguous block, so every workflow except the
+        # first of a block keeps the predecessor of the sequential run.
+        raise TransportError('Shard workflows must be contiguous registry-order blocks of the fresh workflows')
     return transport
 
 

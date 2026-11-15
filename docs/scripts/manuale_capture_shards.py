@@ -10,6 +10,10 @@ partitioned deterministically into independent shards:
   database, Redis, MinIO object storage, renderer, API, UI and worker), private
   host ports, a private ``/manual-run`` directory and its own browser process.
 
+Distributed capture (:mod:`manuale_capture_transport`) instead cuts the fresh
+workflows into contiguous registry-order blocks, so every workflow except the
+first of a block keeps the predecessor of the sequential run.
+
 Every workflow is still reseeded before it runs, so shards never share mutable
 application state. Results are merged into the primary run only after every
 report, screenshot, master and referenced artifact has been validated; duplicate,
@@ -150,6 +154,55 @@ def partition(recipes, selected, concurrency):
         loads[target] += workflow_weight(recipe)
         shards[target].append(index)
     return [[known[index]['id'] for index in sorted(shard)] for shard in shards]
+
+
+def contiguous_partition(recipes, selected, count):
+    """Deterministic contiguous partition of the selected workflows in registry order.
+
+    Each shard is one contiguous run of ``chosen`` (the selected workflows in
+    registry order), so every workflow except the first of a block keeps the
+    predecessor it has in the sequential registry-order run. The cuts minimise the
+    heaviest block, as the classic linear-partition problem does; ties prefer the
+    earliest cut positions. The result depends only on the registry and the
+    selected set, never on the order of ``selected``.
+    """
+    if count < 1:
+        raise ValueError('Capture concurrency must be positive')
+    known = [recipe for recipe in recipes]
+    ids = [recipe['id'] for recipe in known]
+    if len(set(ids)) != len(ids):
+        raise ShardError('Duplicate workflow ids in the recipe registry')
+    wanted = set(selected)
+    unknown = wanted - set(ids)
+    if unknown:
+        raise ValueError('Unknown workflows: ' + ', '.join(sorted(unknown)))
+    chosen = [recipe for recipe in known if recipe['id'] in wanted]
+    shards = min(count, len(chosen))
+    if shards == 0:
+        return []
+    weights = [workflow_weight(recipe) for recipe in chosen]
+    prefix = [0]
+    for weight in weights:
+        prefix.append(prefix[-1] + weight)
+    total = prefix[-1]
+    # best[blocks][start] is the lightest possible heaviest block when the weights
+    # from ``start`` to the end are split into exactly ``blocks`` non-empty runs.
+    best = [{} for _ in range(shards + 1)]
+    for start in range(len(weights)):
+        best[1][start] = total - prefix[start]
+    for blocks in range(2, shards + 1):
+        for start in range(len(weights) - blocks + 1):
+            best[blocks][start] = min(max(prefix[end] - prefix[start], best[blocks - 1][end])
+                                      for end in range(start + 1, len(weights) - blocks + 2))
+    plan, start = [], 0
+    for blocks in range(shards, 1, -1):
+        # The earliest cut that still reaches the optimum keeps the plan unique.
+        end = next(end for end in range(start + 1, len(weights) - blocks + 2)
+                   if max(prefix[end] - prefix[start], best[blocks - 1][end]) == best[blocks][start])
+        plan.append([recipe['id'] for recipe in chosen[start:end]])
+        start = end
+    plan.append([recipe['id'] for recipe in chosen[start:]])
+    return plan
 
 
 def shard_project(state, index):
