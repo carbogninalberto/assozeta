@@ -212,6 +212,8 @@ func (s *CourseSubscriptions) Export(ctx context.Context, export *CourseSubscrip
 		switch {
 		case errors.Is(err, pdfexport.ErrNotPorted):
 			return nil, ErrCourseSubscriptionExportUnsupported
+		case errors.Is(err, refusal.ErrAppState):
+			return nil, err // a layout no export builds (pdfexport.ErrUnexpectedLayout)
 		case err != nil:
 			return nil, domain.ErrCourseSubscriptionServer // an exception of reportlab
 		}

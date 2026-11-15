@@ -118,6 +118,8 @@ func (s *SubscriptionReads) Export(ctx context.Context, export *SubscriptionRead
 		switch {
 		case errors.Is(err, pdfexport.ErrNotPorted):
 			return nil, domain.ErrSubscriptionReadsNotPorted
+		case errors.Is(err, refusal.ErrAppState):
+			return nil, err // a layout no export builds (pdfexport.ErrUnexpectedLayout)
 		case err != nil:
 			return nil, domain.ErrSubscriptionReadsServer // an exception of reportlab
 		}

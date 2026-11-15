@@ -224,6 +224,8 @@ func (r *printingRun) finish(report *printingReport) (*printingReport, error) {
 		switch {
 		case errors.Is(err, pdfexport.ErrNotPorted):
 			return nil, domain.ErrPrintingGenerateNotPorted
+		case errors.Is(err, refusal.ErrAppState):
+			return nil, err // a layout no export builds (pdfexport.ErrUnexpectedLayout)
 		case err != nil:
 			return nil, errPrintingFailure
 		}

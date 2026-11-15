@@ -100,10 +100,10 @@ func loadJPEG(encoded string) (*jpegImage, error) {
 		// Four components: reportlab adds the inverting /Decode array.
 		space, inverted = "DeviceCMYK", true
 	default:
-		return nil, ErrNotPorted
+		return nil, ErrUnexpectedLayout // image/jpeg reports gray, YCbCr, RGBA or CMYK only
 	}
 	if config.Width <= 0 || config.Height <= 0 {
-		return nil, ErrNotPorted
+		return nil, ErrUnexpectedLayout // jpeg.Decode above refuses an empty image
 	}
 	digest := md5.Sum(data)
 	return &jpegImage{name: "FormXob." + hex.EncodeToString(digest[:]), data: data, width: config.Width, height: config.Height,

@@ -46,6 +46,13 @@ func layoutFailure(text string) error { return &LayoutError{Text: text} }
 // callers refuse it before any write.
 var ErrNotPorted = refusal.New("pdfexport: document input not ported")
 
+// ErrUnexpectedLayout is a document structure the builders never make: an
+// auto-width table cell that is not a list of paragraphs (the one auto-width
+// table, ReportTable, holds paragraph cells only), and a JPEG whose colour
+// model or size image/jpeg never reports once it has decoded the data. It is
+// an application-state error (Django's 500 page), never handed off.
+var ErrUnexpectedLayout = refusal.AppState("pdfexport: unexpected document layout")
+
 const fuzz = 1e-6 // rl_config._FUZZ
 
 // fpStr is rl_accel.fp_str (the Python implementation) of one number.

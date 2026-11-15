@@ -172,6 +172,8 @@ func (r *sheetRun) export(ctx context.Context, data *pyDict, year int, format st
 		switch {
 		case errors.Is(err, pdfexport.ErrNotPorted):
 			return nil, ErrBalanceSheetExportNotPorted
+		case errors.Is(err, refusal.ErrAppState):
+			return nil, err // a layout no export builds (pdfexport.ErrUnexpectedLayout)
 		case err != nil:
 			return failed, nil // an exception of reportlab
 		}
