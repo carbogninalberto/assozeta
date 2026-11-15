@@ -4,8 +4,6 @@ import (
 	"context"
 	"errors"
 	"time"
-
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // Rows the HTML views of BE/docmanager/views/printing_views.py read. JSON
@@ -119,8 +117,11 @@ type ViewAppointment struct {
 var (
 	// ErrViewNotFound is DoesNotExist (or .first() returning None).
 	ErrViewNotFound = errors.New("document view: row not found")
-	// ErrViewTutorWrite: get_main_tutor() would promote a tutor relation (a write).
-	ErrViewTutorWrite = refusal.New("document view: main tutor promotion")
+	// ErrTutorPromotionNeeded is get_main_tutor() finding tutor relations
+	// without a primary one: the first relation (by id) has to be saved with
+	// is_primary=True. It is a control signal inside this port, not a refusal:
+	// every caller promotes the relation as the view renders.
+	ErrTutorPromotionNeeded = errors.New("document view: tutor promotion needed")
 	// ErrViewCourseTitle: a course without a title (", ".join raises TypeError).
 	ErrViewCourseTitle = errors.New("document view: course without title")
 )
@@ -134,7 +135,9 @@ type DocumentViewStore interface {
 	// AssociationsOfUser is SportAssociation.objects.filter(user=user)[:21].
 	AssociationsOfUser(ctx context.Context, user string) ([]ViewAssociation, error)
 	Associate(ctx context.Context, id string) (*ViewAssociate, error)
-	// MainTutor is Associate.get_main_tutor(): nil, the tutor, or ErrViewTutorWrite.
+	// MainTutor is Associate.get_main_tutor(): nil, the primary relation's
+	// tutor, or ErrTutorPromotionNeeded when the first relation has to be
+	// saved as primary first.
 	MainTutor(ctx context.Context, associate string) (*ViewAssociate, error)
 	// PromoteMainTutor is get_main_tutor() without a primary relation: the
 	// associate's first relation is saved with is_primary=True (one auditlog
@@ -159,8 +162,11 @@ type DocumentViewObjects interface {
 }
 
 // ViewTutorPromotion is the audit context of get_main_tutor's saved relation.
+// ActorID is the signed-in actor's id; a request admitted only by the
+// renderer's header has none (Django's auditlog entry then has no actor and,
+// for an associate without an association, no index row).
 type ViewTutorPromotion struct {
 	Context LoginAuditContext
-	ActorID string
+	ActorID *string
 	At      time.Time
 }

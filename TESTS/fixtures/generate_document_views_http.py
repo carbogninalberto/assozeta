@@ -238,8 +238,19 @@ ASSOCIATES = {
     'tino': {'id': uid(27), 'association': 'alpha', 'first': 'Tino', 'last': 'Gialli', 'tax_code': 'GLLTNI13A01L219B', 'sex': 'M',
              'born': '2013-01-01', 'born_city': None, 'address': None, 'city': None, 'cap': None, 'phone': None, 'email': None,
              'notes': None},
+    # Associates whose tutor relations have no primary one, used by the renderer's-header cases only (a promoted
+    # relation stays promoted for the rest of the workload).
+    'bianca': {'id': uid(28), 'association': 'alpha', 'first': 'Bianca', 'last': 'Rosa', 'tax_code': None, 'sex': 'F',
+               'born': '2013-03-03', 'born_city': None, 'address': None, 'city': None, 'cap': None, 'phone': None, 'email': None,
+               'notes': None},
+    # An associate whose association is gone (Associate.sport_association is SET_NULL): the audit index has no
+    # associate.sport_association to resolve, and a request without an actor has no actor.sport_association either.
+    'orphan': {'id': uid(29), 'association': None, 'first': 'Nadia', 'last': 'Sola', 'tax_code': None, 'sex': 'F',
+               'born': '2012-02-02', 'born_city': None, 'address': None, 'city': None, 'cap': None, 'phone': None, 'email': None,
+               'notes': None},
 }
-TUTORS = [('giulia', 'paolo', True), ('sara', 'paolo', False), ('sara', 'mario', False), ('tino', 'mario', False)]
+TUTORS = [('giulia', 'paolo', True), ('sara', 'paolo', False), ('sara', 'mario', False), ('tino', 'mario', False),
+          ('bianca', 'paolo', False), ('orphan', 'paolo', False)]
 PAYMENTS = {
     'meta': {'id': uid(40), 'association': 'alpha', 'meta': {'subscription_data': {'name': 'Annuale <b>', 'subscription_fee': 30}}},
     'emptymeta': {'id': uid(41), 'association': 'alpha', 'meta': {}},
@@ -276,6 +287,13 @@ SUBSCRIPTIONS = {
              'payment': None, 'additional_fields': None, 'signature_url': None, 'group': None},
     'tino': {'id': uid(45), 'association': 'alpha', 'associate': 'tino', 'type': 1, 'role': 1, 'created': '2026-04-05T04:04:04+00:00',
              'payment': None, 'additional_fields': None, 'signature_url': None, 'group': None},
+    'bianca': {'id': uid(118), 'association': 'alpha', 'associate': 'bianca', 'type': 1, 'role': 1,
+               'created': '2026-04-07T04:04:04+00:00', 'payment': None, 'additional_fields': None, 'signature_url': None,
+               'group': None},
+    # A subscription of the association whose associate has no association left.
+    'orphan': {'id': uid(117), 'association': 'alpha', 'associate': 'orphan', 'type': 1, 'role': 1,
+               'created': '2026-04-06T04:04:04+00:00', 'payment': None, 'additional_fields': None, 'signature_url': None,
+               'group': None},
     # The stored signature: one object under the bucket's location, one missing name.
     'signaturestored': {'id': uid(46), 'association': 'alpha', 'associate': 'mario', 'type': 2, 'role': 5,
                         'created': '2026-10-10T10:10:10+00:00', 'payment': None, 'additional_fields': None,
@@ -728,6 +746,17 @@ add('template-subscription-bypass', 'anonymous', f"{TPL('plain')}?subscription_i
     headers={'Authorization': '$bypass'},
     html=model_context(plain_body('Mario Rossi', 'RSSMRA80A01L219X', '01/01/1980', '', 'Nuoto &amp; Acqua'), ALPHA_HEADER_OUT,
                        alpha_footer_out('Nuoto &amp; Acqua')))
+# The renderer's header admits the request without an account: get_main_tutor() still saves the relation, its
+# auditlog entry without an actor.
+add('template-subscription-bypass-promotes-tutor', 'anonymous', f"{TPL('plain')}?subscription_id={S('bianca')}", 200, HTML,
+    headers={'Authorization': '$bypass'},
+    html=model_context(plain_body('Bianca Rosa', '', '03/03/2013', 'Paolo', ''), ALPHA_HEADER_OUT, alpha_footer_out('')),
+    promoted=[['bianca', None]])
+# The associate has no association to index the entry through and there is no actor: no index row.
+add('template-subscription-bypass-promotes-tutor-without-association', 'anonymous',
+    f"{TPL('plain')}?subscription_id={S('orphan')}", 200, HTML, headers={'Authorization': '$bypass'},
+    html=model_context(plain_body('Nadia Sola', '', '02/02/2012', 'Paolo', ''), ALPHA_HEADER_OUT, alpha_footer_out('')),
+    promoted=[['orphan', None]])
 add('template-subscription-group-hidden', 'owner', f"{TPL('plain')}?subscription_id={S('group')}", 200, HTML,
     headers={'X-Group-Id': IDS['foreign_group']}, html=PLAIN_EMPTY)
 add('template-custom-header', 'owner', TPL('custom'), 200, HTML,

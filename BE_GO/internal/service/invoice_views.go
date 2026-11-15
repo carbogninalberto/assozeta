@@ -54,7 +54,7 @@ func (s *InvoiceViews) Render(ctx context.Context, identity domain.ResolvedIdent
 		err = ErrDocumentViewServer
 	}
 	if err != nil {
-		if errors.Is(err, djtemplate.ErrUnsupported) || errors.Is(err, mentions.ErrUnsupported) || errors.Is(err, domain.ErrViewTutorWrite) ||
+		if errors.Is(err, djtemplate.ErrUnsupported) || errors.Is(err, mentions.ErrUnsupported) ||
 			errors.Is(err, errInvoiceViewsNotPorted) {
 			return nil, fmt.Errorf("%w: %v", ErrDocumentViewNotPorted, err)
 		}

@@ -138,7 +138,9 @@ type DocumentRenderStore interface {
 	Appointment(ctx context.Context, id string) (*RenderAppointment, error)
 	// AppointmentForm reads the values of the appointment's regional PDF form.
 	AppointmentForm(ctx context.Context, id string) (*RenderAppointmentForm, error)
-	// AppointmentFormTutor is Associate.get_main_tutor(): nil, the tutor, or ErrViewTutorWrite.
+	// AppointmentFormTutor is Associate.get_main_tutor(): nil, the primary
+	// relation's tutor, or ErrTutorPromotionNeeded when the first relation has
+	// to be saved as primary first.
 	AppointmentFormTutor(ctx context.Context, associate string) (*RenderFormTutor, error)
 	// PromoteAppointmentFormTutor saves the associate's first tutor relation as primary, with its audit entry.
 	PromoteAppointmentFormTutor(ctx context.Context, associate string, audit LoginAuditContext, at time.Time) (*RenderFormTutor, error)

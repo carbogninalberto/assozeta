@@ -875,7 +875,7 @@ func (s *DocumentRender) medicalJob(ctx context.Context, identity domain.Resolve
 		return nil, nil, ErrDocumentRenderNotPorted
 	}
 	tutor, err := s.store.AppointmentFormTutor(ctx, *form.Associate)
-	if errors.Is(err, domain.ErrViewTutorWrite) {
+	if errors.Is(err, domain.ErrTutorPromotionNeeded) {
 		// get_main_tutor() promotes the first tutor relation while the view maps the form's fields, after
 		// the Document exists.
 		associate := *form.Associate

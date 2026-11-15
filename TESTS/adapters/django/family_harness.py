@@ -194,17 +194,28 @@ def audit_delta(contract, before, after):
 
 
 def check_audit_event(contract, case, event, indexes, *, before, ids, model, key, action, changes, actor, association, path, context):
-    """One auditlog entry of the application model class `model` for `key`, with its index row."""
+    """One auditlog entry of the application model class `model` for `key`, with its index row.
+
+    `actor=None` is an entry written without a signed-in account (actor_id and
+    actor_email are NULL); `association=None` is an entry whose index row the
+    resolver did not write.
+    """
     types = {ct['model']: ct['id'] for ct in before['contenttypes.ContentType'] if ct['app_label'] == 'application'}
     users = keyed(before['application.User'], 'user_id')
-    actor_id = ids[actor]
     contract.require(event['content_type_id'] == types[model.lower()] and event['action'] == action and event['object_pk'] == key
                      and event['object_repr'] == f'{model} object ({key})', 'audit.identity')
     contract.require(event['changes'] == changes, 'audit.changes')
-    contract.require(event['actor_id'] == actor_id and event['actor_email'] == users[actor_id]['email'], 'audit.actor')
+    if actor is None:
+        contract.require(event['actor_id'] is None and event['actor_email'] is None, 'audit.actor')
+    else:
+        actor_id = ids[actor]
+        contract.require(event['actor_id'] == actor_id and event['actor_email'] == users[actor_id]['email'], 'audit.actor')
     contract.require(event['cid'] == case['name'] and event['additional_data'] is None and event['changes_text'] == '', 'audit.context')
     ipaddress.ip_address(event['remote_addr'])
     contract.require(context['remote'].setdefault('addr', event['remote_addr']) == event['remote_addr'], 'audit.remote-consistent')
+    if association is None:
+        contract.require(indexes.get(str(event['id'])) is None, 'index.absent')
+        return
     index = indexes[str(event['id'])]
     contract.require(index['sport_association_id'] == association and index['resolution_path'] == path, 'index.fields')
 

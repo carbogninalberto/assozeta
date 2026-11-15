@@ -366,8 +366,8 @@ func (r *DocumentRender) AppointmentForm(ctx context.Context, id string) (*domai
 }
 
 // AppointmentFormTutor: tutor_relations.filter(is_primary=True).first().tutor;
-// without a primary relation, tutor_relations.first() would be promoted and
-// saved (ErrViewTutorWrite).
+// without a primary relation, tutor_relations.first() has to be promoted and
+// saved, which the caller does (ErrTutorPromotionNeeded).
 func (r *DocumentRender) AppointmentFormTutor(ctx context.Context, associate string) (*domain.RenderFormTutor, error) {
 	var tutor domain.RenderFormTutor
 	var row struct {
@@ -384,7 +384,7 @@ func (r *DocumentRender) AppointmentFormTutor(ctx context.Context, associate str
 			return nil, err
 		}
 		if related {
-			return nil, domain.ErrViewTutorWrite
+			return nil, domain.ErrTutorPromotionNeeded
 		}
 		return nil, nil
 	}

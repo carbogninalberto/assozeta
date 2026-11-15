@@ -393,7 +393,6 @@ Receipts are `quality-reports/go-migration/<family>-http-v2doc4-*` (`instance-lo
 | invoice-views | `GET document/invoice/<uid>/view/` | `get_main_tutor()` promotion (B, legacy: yes), for signed-in requests | 92 cases; RED `v2doc4-red-r1` (refusal restored); GREEN `v2doc4-final-r2` 4 transports; mutation `v2doc4-mutation-r1` (last relation promoted) CAUGHT |
 
 Left in these families after this change, with the reason:
-- document-views and invoice-views: tutor promotion on a request authorized only by the bypass header (no signed-in actor for the audit entry).
 - documents-writes: nothing from that change is left; the None filename in `documents/add` was ported in go-v2only-docupload.
 - Not started in this change: document-views mention keys, `get_signature_base64()` and the template subset; documents-writes files sent as text fields, storage failures and the season error; `medical-appointments/list` with a doc-less appointment; Biella without a primary tutor relation (the promotion has to run after the Document is created); every other invoice and instructor B row (invoice-core, invoice-parties, invoice-generate, invoice-sync-print, instructor-hours, instructor-writes, and the rest of invoice-views).
 
@@ -559,6 +558,24 @@ runs. Receipts are `quality-reports/go-migration/<family>-http-s3throttle-*`; ea
 
 The 14 routes that could reach the refusal are gone from the reach report (`refusal_reach.py`: 576 rows before, 562 after,
 the difference is exactly these routes for `unsupported throttle history value`).
+
+### Ported in the go-v2only-tutorpromo change
+
+The `document view: main tutor promotion` refusal is gone: `get_main_tutor()` promotes for requests admitted by the
+renderer's header too, with Django's auditlog entry (NULL actor columns) and no index row when neither the associate nor
+an actor has an association. `refusal_reach.py`: 14 rows before (the 14 `document/*` and `payment/list` routes), 0 after
+(576 rows overall before, 562 after, nothing else changed). Receipts are
+`quality-reports/go-migration/document-views-http-tutorpromo-*` and
+`.../invoice-views-http-tutorpromo-*`; the two family docs have the details.
+
+| Family | Route | Was refused | Evidence |
+|---|---|---|---|
+| document-views | `GET document/template/<uid>/view/?subscription_id=<uid>` (B, legacy: yes) | the promotion for a request with no account (the renderer header) | 172 cases; RED `tutorpromo-red-r4` Django 172/172, Go 500; GREEN `tutorpromo-green-r1` native and `tutorpromo-versioned-r1` 4 transports; mutation `tutorpromo-mutation-r1` (the pre-change scoped-account guard) CAUGHT |
+| invoice-views | `GET document/invoice/<uid>/view/` (B, legacy: yes) | the same | 93 cases; RED `tutorpromo-red-r1` Django 93/93, Go 500; GREEN `tutorpromo-green-r1` native and `tutorpromo-versioned-r1` 4 transports; mutation `tutorpromo-mutation-r1` (entry actor e-mail as `''`) CAUGHT |
+
+Left in these families after this change: the other rows of their appendix tables (signature URL fetch, mention and
+template subsets, FatturaPA). `document-render`, `payment-reads`, `subscription-medical` and `docmanager-reads` were
+re-run green for the shared promotion signal.
 
 ### Ported in the go-v2only-xlsxvalue change
 
@@ -883,7 +900,7 @@ Coordination/status doc; no refusals. Nothing to classify.
 | GET document/subscription/preview/ | header/footer markup outside `mentions` subset — notably `<pre>` (code block) | `BE_GO/internal/mentions/tree.go:34-35` via `service/document_views.go:730-734`, `ErrDocumentViewNotPorted` | **A** (`<pre>` ported in v2-documents) | Preview iframe `routes/association/Members/subscription/partials/Preview.svelte:63`. Header/footer edited with TipTap (`routes/profile/sections/Account.svelte:757,777`); `components/inputs/TipTapEditor.svelte:104` loads StarterKit, whose CodeBlock (``` input rule or pasted `<pre>`) serializes `<pre><code>`. No toolbar button, so infrequent. Other refusals (comments, mismatched tags, unknown entities) are not produced by TipTap's serializer. |
 | GET document/subscription/preview/ | mention keys outside list / `subscription.*` | `service/document_views.go:207,250,259` | B (**ported** in v2-rest-docs) | Editor list `components/inputs/suggestion.js:9-75` matches the resolvers; `invoice.*` keys resolve to '' (no `invoice` object in context). No `subscription.*` in the editor. legacy: yes (old mention keys); cheap. |
 | GET document/subscription/preview/ | association whose user is a collaborator | handler/service preview | C | Association users are owners by construction. |
-| GET document/{subscription,compensation,template,medical-appointment}/<uid>/view/ | `get_main_tutor()` promote write | `domain.ErrViewTutorWrite` via `service/document_views.go:84` | B (**ported** in v2-documents-4 for signed-in requests) | Renderer-only route. legacy: yes (associates whose primary tutor relation was removed); medium (write + audit). |
+| GET document/{subscription,compensation,template,medical-appointment}/<uid>/view/ | `get_main_tutor()` promote write | `domain.ErrTutorPromotionNeeded` via `service/document_views.go:121` (internal signal, no refusal left) | B (**ported in go-v2only-tutorpromo**: signed-in requests in v2-documents-4, the renderer header in tutorpromo; cases `template-subscription-bypass-promotes-tutor`, `template-subscription-bypass-promotes-tutor-without-association`) | Renderer-only route. legacy: yes (associates whose primary tutor relation was removed); the auditlog entry of a request without an account has NULL actor columns, and an associate without an association writes no index row. |
 | same | `get_signature_base64()` | document_views service | B (**ported in t6x2** for the stored signature) | The stored object is read from the object storage and written as a PNG data URI; a missing object with no legacy URL writes `None`; cases `document-views-subscription-signature-stored` and `document-views-subscription-signature-missing`. Kept refused: the legacy `signature_url` fetch (the reply of another server). |
 | same | template inputs outside `djtemplate`, non-ASCII compensation periods | `service/document_views.go:468` | B (non-ASCII periods **ported** in v2-rest-docs; JSON column values **ported in t8out**) | Renderer-only. JSON column values are ported as `json.loads` reads them (big ints beyond int64, floats including `inf`/subnormals/`-0.0`, nested containers, strings with Python's full case mapping; a `{% for %}` over a number is the 500 page). What stays refused is a context value of a type outside `djtemplate`, since the templates are fixed files and only their data varies. legacy: no; medium. |
 | same | HEAD / slash-less paths | router | B (**ported**, v2-documents-4: served; cases added for HEAD) | Renderer uses slash path GET. cheap. |
@@ -1082,7 +1099,7 @@ No refusals of its own (re-verification record). Nothing to classify.
 ### invoice-views.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| GET document/invoice/<uid>/view/, document/einvoice/<uid>/view/ | `get_main_tutor()` write; stored JSON outside handled shapes; mentions/template subset; FatturaPA outside subset; HEAD/slash-less | `BE_GO/internal/service/invoice_views.go:55-57,337`; `service/invoice_views_einvoice.go:26-27` | BB (the `get_main_tutor()` write **ported** in v2-documents-4 for signed-in requests; HEAD and slash-less are served; FatturaPA outside the subset kept: the a38 library's validation has no Go equivalent; the JSON shapes and template subset were not reached in t3pay) | Renderer-only routes (no `einvoice`/`document/invoice` in `UI/src`). legacy: yes for tutor relations and old meta JSON; medium–expensive (FatturaPA). |
+| GET document/invoice/<uid>/view/, document/einvoice/<uid>/view/ | `get_main_tutor()` write; stored JSON outside handled shapes; mentions/template subset; FatturaPA outside subset; HEAD/slash-less | `BE_GO/internal/service/invoice_views.go:56-57,337`; `service/invoice_views_einvoice.go:26-27` | BB (the `get_main_tutor()` write **ported in go-v2only-tutorpromo**: signed-in requests in v2-documents-4, the renderer header in tutorpromo, case `invoice-bypass-promotes-tutor`; HEAD and slash-less are served; FatturaPA outside the subset kept: the a38 library's validation has no Go equivalent; the JSON shapes and template subset were not reached in t3pay) | Renderer-only routes (no `einvoice`/`document/invoice` in `UI/src`). legacy: yes for tutor relations and old meta JSON; medium–expensive (FatturaPA). |
 
 ### invoice-sync-print.md
 | route | refusal condition | Go site | class | evidence / notes |
