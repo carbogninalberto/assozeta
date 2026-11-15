@@ -636,12 +636,12 @@ add('quick-associate-without-account-server-error', 'owner', 500, SERVER, query=
     body={'associate': ASSOCIATES['quick_no_account']['id']})
 add('quick-duplicate-current', 'owner', 409, {'msg': 'Questa iscrizione esiste già.', 'code': '409', 'ref': 'subscription_duplicate'},
     query='?m=only_associate', body={'associate': ASSOCIATES['current']['id']})
+# The member's key sent as the integer of its UUID finds the same row (here the duplicate answer).
+add('quick-duplicate-current-id-as-integer', 'owner', 409,
+    {'msg': 'Questa iscrizione esiste già.', 'code': '409', 'ref': 'subscription_duplicate'}, query='?m=only_associate',
+    raw_body='{"associate": %d}' % uuid.UUID(ASSOCIATES['current']['id']).int, content_type='application/json')
 quick('owner', 'quick', 'Quinto Rapido', payment={'amount': '25.00', '$audit': '25.00'},
       subscription={'medical_id': CERTIFICATES['quick_latest']['id']})
-# The member's key sent as the integer of its UUID finds the same row.
-quick('owner', 'quick', 'Quinto Rapido', payment={'amount': '25.00', '$audit': '25.00'},
-      subscription={'medical_id': CERTIFICATES['quick_latest']['id']}, name='quick-associate-id-as-integer',
-      raw_body='{"associate": %d}' % uuid.UUID(ASSOCIATES['quick']['id']).int, content_type='application/json')
 quick('full_collaborator', 'quick_plan', 'Pia Pianificata', setup={'association': {'multiple_subscription_fee': True}}, plan='plan-base',
       payment={'amount': '40.00', '$audit': '40', 'meta': {'subscription_data': {'subscription_fee': 40, 'name': 'Piano base', 'id': 'plan-base'}}},
       subscription={})
