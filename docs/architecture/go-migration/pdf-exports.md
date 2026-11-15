@@ -75,6 +75,15 @@ Refused (`ErrNotPorted`, the callers answer the 500 page before any write): the 
 (see "Paragraph markup"), and logo data that is neither refused by Python's base64 nor a JPEG Go's decoder reads (whether PIL
 reads it, and as what, is not reproduced).
 
+The refusal sites, and why the ones left stay (s3pdfcanvas):
+
+| Site | Condition | Class | Why |
+| --- | --- | --- | --- |
+| `widths.go` `preliminaryWidths` (2 returns) | a table without column widths holding a string cell, or a cell whose flowables are not paragraphs | C | no builder of this package makes one: the data table, the header table and the attendance table pass every width, and the saved-report table is Paragraph cells only; a split keeps `colWidths` |
+| `header.go` `loadJPEG` (2 returns) | the base64 logo is not a JPEG `image/jpeg` reads | C | the logo rows are written by `compress_base64`, which re-encodes to JPEG and prefixes `data:image/jpeg`; the header pattern only looks at that prefix |
+| `header.go` (2 returns) | a decoded JPEG with another colour model, or a zero dimension | C | `image/jpeg` yields only grey, YCbCr, RGBA and CMYK, always with positive dimensions |
+| `paraparser.go` `unsupported` | `bullet`, `seq*`, `<a name>`/`#`/`document:` links, `img` of a file/URL/PNG, `<unichar name>`, CMYK/alpha/expression colours, `inf`/`nan`, `<para>` indents, justification, borders, text transforms, `autoLeading`, `wordWrap`, end dots, hyphenation | B (X for `seq*`, file/URL `img`, expressions, hyphenation) | Django draws them (or, for `seq*`, numbers from a process-global sequencer); each needs a layout, a font, a destination tree or an image format this package does not carry yet |
+
 A document reportlab fails to build is `ErrLayout`, which each caller answers as Django answers an exception of the export:
 a row taller than a page (`LayoutError`), a list value in a cell (reportlab takes it for a list of flowables), rows of
 another length than the columns, an invalid alignment, paragraph markup the parser raises on.
@@ -92,13 +101,16 @@ alone. Go ports both:
   breaks the line, unknown tags are ignored, the 2121 entity names reportlab knows are replaced (`entities_gen.go`), an
   unknown one is drawn as written. A tag closed out of order or left open, text inside `<br>`, a character reference beyond
   U+10FFFF and the other inputs the parser raises on are `ErrLayout`: the export fails as in Django (`A<B` opens a tag `b`
-  that is never closed). The tags that draw lines, links, images, rises, other sizes and colours are ported (t3pdf, below).
-  Still refused: `greek`, `unichar`, `bullet`, `seq*`, `onDraw`, `index` (callbacks the canvas has no hook for, or tables Go
-  does not carry), `<a name="..."/>` anchors and `#name` or `document:name` links (named destinations are not ported), `img`
-  whose `src` is not a base64 JPEG data URL (a file or URL read depends on the server; a PNG or other format is re-encoded by
-  PIL), the Courier and Times fonts (no metrics in Go), a colour that is CMYK, has an alpha, or is written as a Python
-  expression, `inf` or `nan` and non-ASCII digits as numbers, and in `<para>` the indents, justified lines, borders, text
-  transforms, `autoLeading`, `wordWrap`, end dots and hyphenation.
+  that is never closed). The tags that draw lines, links, images, rises, other sizes and colours are ported (t3pdf, below);
+  `greek` (the Symbol font and its byte-to-character table, `fonts_std_gen.go`), `unichar` (a character by its `code`),
+  the Courier and Times faces (their width vectors and ascents), the decimal digits of other scripts in numbers, and the
+  `<index>` and `<onDraw>` callbacks are ported in s3pdfcanvas: those two parse, then fail the document the way reportlab
+  fails it in a `SimpleDocTemplate` (its canvas has no `_indexAdd` or callback attribute), so they raise the same exception
+  text. Still refused: `bullet`, `seq*`, `<a name="..."/>` anchors and `#name` or `document:name` links (named destinations
+  are not ported), `img` whose `src` is not a base64 JPEG data URL (a file or URL read depends on the server; a PNG or other
+  format is re-encoded by PIL), `<unichar name="...">` (Python's `unicodedata` names), a colour that is CMYK, has an alpha,
+  or is written as a Python expression, `inf` or `nan` as numbers, and in `<para>` the indents, justified lines, borders,
+  text transforms, `autoLeading`, `wordWrap`, end dots and hyphenation.
 
 ### Fragments with their own style (t3pdf)
 
@@ -145,6 +157,20 @@ The logo is read as Django reads it: `base64.b64decode` without validation (char
 an unfinished group, or no data at all, gives the `[LOGO]` paragraph), and a four-component JPEG is embedded as `DeviceCMYK`
 with the inverting `/Decode` array.
 
+### Greek text, characters by code and the other standard faces (s3pdfcanvas)
+
+`greek` draws its text in `Symbol`: each Latin-1 character is the Symbol glyph of that byte (`symbolGreek`, generated from
+reportlab's symbol codec, so `a` is `α` and `à` is `◊`), and a character outside Latin-1 raises `KeyError` and fails the
+export as in reportlab. `unichar code="…"` is the character of a Python integer literal (decimal, `0x`, `0o`, `0b`,
+underscores, surrounding spaces); `0x41` is `A`, an invalid literal or a code beyond U+10FFFF is the parser's syntax error.
+The Courier and Times families are the four faces each, with their reportlab width vectors in WinAnsiEncoding, their
+ascents and descents, and the same Symbol/ZapfDingbats substitution as Helvetica, so `<font name="Times-Italic">`,
+`<font face="Courier">` and `<para font="Times-Bold">` are measured and drawn like reportlab's. Numbers may be written with
+the decimal digits of any script (`unicode.Nd`): `１２` and `١٢` are `12` in a size, a rise, an offset or a `<unichar>` code.
+`<index>` and `<onDraw>` parse and then fail the build: these documents have no index or callback hook, so reportlab raises
+`Missing index callback attribute '_indexAdd'` (or `Missing onDraw callback attribute '<name>'`) and the export is the
+Django 500 page; the Go error carries the same text.
+
 ## Golden test
 
 `TESTS/fixtures/generate_pdf_golden.py` builds the golden documents with the contract's own builders (reportlab) and stores
@@ -154,10 +180,13 @@ a page filled exactly, A3, A2, wider than A2, a row taller than the page, alignm
 with colour and grey JPEG logos, on several pages, with long, unbroken, empty and multi-line denominations, substitution
 fonts in the header, and the closing line on a page of its own: 35 documents, 66 with the saved-report ones below, 106
 with the markup ones: entities, `&` and `<`, tags, soft hyphens, long words and paragraphs cut over pages in both layouts,
-logos in lenient base64 and CMYK, 14 of them raising), and checks the digest of a document against
-reportlab's invariant one. `TESTS/fixtures/generate_pdf_paragraphs.py` writes `testdata/paragraphs.json`: what reportlab's
-`Paragraph` makes of 2755 texts (155 authored, 2600 drawn from markup pieces with a fixed seed): the fragments, an exception,
-or fragments Go refuses; `TestParagraphParserCorpus` compares each one. `refusal_test.go` pins the refused inputs.
+logos in lenient base64 and CMYK, 14 of them raising, and 17 more in s3pdfcanvas for `<greek>`, `<unichar>`, the Courier and
+Times faces, the index/onDraw failures and Greek text in headers, cells and dates: 201 documents, 48 raising), and checks the
+digest of a document against reportlab's invariant one. `TESTS/fixtures/generate_pdf_paragraphs.py` writes
+`testdata/paragraphs.json`: what reportlab's `Paragraph` makes of 3057 texts (457 authored, 2600 drawn from markup pieces with
+a fixed seed), the fragments, an exception, or a document the build cannot draw; `TestParagraphParserCorpus` compares each
+one. The same generator writes the tables of reportlab's own data (`entities_gen.go`, `colors_gen.go`, `html5_gen.go`,
+`fonts_std_gen.go`). `refusal_test.go` pins the refused inputs.
 
 ## Evidence
 
@@ -166,6 +195,12 @@ subscription-reads 350/350, course-list 159/159, course-subscriptions 145/145 an
 Go, Caddy `/api/v1` and `/api/v2` (`v2pdf-versioned-r2`, after merging `codex/go-backend-parity`), each with a RED run on Go's
 earlier refusal and a mutation control (see the family docs). `xlsxexport` gained `Value.PythonStr`; payment-export 87/87
 and misc-exports 70/70 re-run natively (`v2pdf-rerun-r1`).
+
+The paragraph ports of s3pdfcanvas are proven on the saved-report file tools (templates-reports): RED
+`s3pdfcanvas-red-r2` (Django 246/246, Go 500 on `run-export-pdf-greek-unichar-fonts`), GREEN `s3pdfcanvas-versioned-r4`
+(native Django, native Go, Caddy `/api/v1` and `/api/v2`, 246/246 each) and mutation `s3pdfcanvas-mutation-r4` (the greek
+byte table read as identity) CAUGHT; the other PDF families re-ran green with the same label: balance-sheet 97/97,
+printing-generate 113/113, course-list 175/175, course-subscriptions 168/168, subscription-reads 364/364.
 
 ## The saved-report documents
 

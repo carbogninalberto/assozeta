@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"unicode"
 )
 
 // _FK_TEXT, _FK_IMG, _FK_APPEND and _FK_BREAK of paragraph.py.
@@ -176,12 +177,13 @@ type imgAttrs struct {
 // other tag ParaParser has a handler for is refused; tags it does not know
 // are ignored, as it does.
 var paraPorted = map[string]bool{"para": true, "b": true, "strong": true, "i": true, "em": true, "br": true, "u": true, "strike": true,
-	"font": true, "span": true, "nobr": true, "sup": true, "super": true, "sub": true, "link": true, "a": true, "img": true}
+	"font": true, "span": true, "nobr": true, "sup": true, "super": true, "sub": true, "link": true, "a": true, "img": true,
+	"greek": true, "unichar": true, "index": true, "ondraw": true}
 
 // paraNotPortedTags are the tags of ParaParser that are still refused.
-var paraNotPortedTags = map[string]bool{"bullet": true, "greek": true, "index": true,
-	"link": true, "ondraw": true, "seq": true, "seqchain": true, "seqdefault": true, "seqformat": true,
-	"seqreset": true, "unichar": true}
+var paraNotPortedTags = map[string]bool{"bullet": true,
+	"link": true, "seq": true, "seqchain": true, "seqdefault": true, "seqformat": true,
+	"seqreset": true}
 
 // lineAttr is what <u> and <strike> (and <link underline>) set on a frag.
 type lineAttr struct {
@@ -211,6 +213,7 @@ type paraTag struct {
 	line         [2]lineAttr
 	supr, sups   supSpec
 	nobr         bool
+	greek        bool // <greek>: the fragment's text goes through the Symbol font
 	imgAttrs     *imgAttrs
 	selfClosing  string
 	lineBreak    bool
@@ -339,10 +342,7 @@ func (p *paraParser) usValue(raw string, has bool) (*usVal, bool) {
 		p.fail("invalid value for a line attribute")
 		return nil, false
 	}
-	if !asciiOnly(raw) {
-		p.unsupported()
-		return nil, false
-	}
+	// _CheckUS validates the value and keeps the string as written: the number is read where the line is drawn.
 	s := pyTrimASCII(raw)
 	if s != "" {
 		if idx := strings.LastIndex(s, "*"); idx >= 0 && !strings.Contains(s[:idx], "\n") && len(pyTrimASCII(s[idx+1:])) == 1 &&
@@ -504,6 +504,18 @@ func (p *paraParser) startTag(tag string, attrs []htmlAttr) bool {
 		return p.push(tag, func(t *paraTag) { t.nobr = true })
 	case "sup", "super", "sub":
 		return p.startSup(tag, attrs)
+	case "greek":
+		if len(p.stack) == 0 {
+			return p.fail("tag outside the paragraph")
+		}
+		// start_greek ignores the attributes of the tag.
+		return p.push(tag, func(t *paraTag) { t.greek = true })
+	case "unichar":
+		return p.startUnichar(attrs)
+	case "index":
+		return p.startIndex(attrs)
+	case "ondraw":
+		return p.startOnDraw(attrs)
 	case "img":
 		return p.startImg(attrs)
 	case "link":
@@ -674,6 +686,12 @@ func (p *paraParser) endTag(tag string) bool {
 	case "sup", "super":
 		_, ok := p.pop("super")
 		return ok
+	case "greek":
+		_, ok := p.pop("greek")
+		return ok
+	case "unichar":
+		_, ok := p.pop("unichar")
+		return ok
 	case "sub":
 		_, ok := p.pop("sub")
 		return ok
@@ -695,8 +713,7 @@ func (p *paraParser) endTag(tag string) bool {
 }
 
 // fontName is tt2ps(family, bold, italic) of a family ps2tt or a link's
-// name attribute gave; st says when the family is not known (an exception)
-// or not ported (Courier and Times).
+// name attribute gave; st says when the family is not known (an exception).
 func (t *paraTag) fontName() (name string, st attrStatus) {
 	family, bold, italic := strings.ToLower(t.family), t.bold, t.italic
 	switch family {
@@ -714,8 +731,26 @@ func (t *paraTag) fontName() (name string, st attrStatus) {
 		return "Symbol", attrOK
 	case "zapfdingbats":
 		return "ZapfDingbats", attrOK
-	case "courier", "times":
-		return "", attrUnsupported
+	case "times":
+		switch {
+		case bold && italic:
+			return "Times-BoldItalic", attrOK
+		case bold:
+			return "Times-Bold", attrOK
+		case italic:
+			return "Times-Italic", attrOK
+		}
+		return "Times-Roman", attrOK
+	case "courier":
+		switch {
+		case bold && italic:
+			return "Courier-BoldOblique", attrOK
+		case bold:
+			return "Courier-Bold", attrOK
+		case italic:
+			return "Courier-Oblique", attrOK
+		}
+		return "Courier", attrOK
 	}
 	name = "Helvetica"
 	switch {
@@ -730,8 +765,7 @@ func (t *paraTag) fontName() (name string, st attrStatus) {
 }
 
 // ps2tt is the mapping of reportlab.lib.fonts for the font names the markup
-// can use: the family and the bold and italic flags. The Courier and Times
-// families are not ported (their metrics are not in this package).
+// can use: the family and the bold and italic flags.
 func ps2tt(name string) (family string, bold, italic bool, st attrStatus) {
 	switch strings.ToLower(name) {
 	case "helvetica":
@@ -742,13 +776,26 @@ func ps2tt(name string) (family string, bold, italic bool, st attrStatus) {
 		return "helvetica", true, true, attrOK
 	case "helvetica-oblique":
 		return "helvetica", false, true, attrOK
+	case "courier":
+		return "courier", false, false, attrOK
+	case "courier-bold":
+		return "courier", true, false, attrOK
+	case "courier-oblique":
+		return "courier", false, true, attrOK
+	case "courier-boldoblique":
+		return "courier", true, true, attrOK
+	case "times", "times-roman":
+		return "times", false, false, attrOK
+	case "times-bold":
+		return "times", true, false, attrOK
+	case "times-italic":
+		return "times", false, true, attrOK
+	case "times-bolditalic":
+		return "times", true, true, attrOK
 	case "symbol":
 		return "symbol", false, false, attrOK
 	case "zapfdingbats":
 		return "zapfdingbats", false, false, attrOK
-	case "courier", "courier-bold", "courier-boldoblique", "courier-oblique", "times", "times-bold", "times-bolditalic", "times-italic",
-		"times-roman":
-		return "", false, false, attrUnsupported
 	}
 	return "", false, false, attrInvalid
 }
@@ -799,10 +846,61 @@ func (p *paraParser) data(text string) bool {
 	if st != attrOK {
 		return p.attrFailure(st, "Can't find font family "+top.family)
 	}
+	if top.greek {
+		// _handle_data: <greek> draws in Symbol, its bytes standing for the Greek letters.
+		fontName = "Symbol"
+		converted, missing, ok := greekConvert(text)
+		if !ok {
+			// _greekConvert raises KeyError for the first character outside Latin-1.
+			p.err = fmt.Errorf("%s", pythonReprChar(string(missing)))
+			return false
+		}
+		text = converted
+	}
 	back := top.back
 	p.frags = append(p.frags, &frag{font: fontsByName[fontName], size: top.size, color: top.color, rise: top.rise, text: text,
 		lineBreak: top.lineBreak, us: top.us, links: top.links, back: back, nobr: top.nobr, img: top.img})
 	return true
+}
+
+// greekConvert is paraparser._greekConvert for text of Latin-1 characters:
+// each byte's Symbol glyph, or the first character outside Latin-1 and ok
+// false.
+func greekConvert(text string) (string, rune, bool) {
+	var out strings.Builder
+	for _, r := range text {
+		if r > 0xFF {
+			return "", r, false
+		}
+		out.WriteRune(symbolGreek[r])
+	}
+	return out.String(), 0, true
+}
+
+// pythonReprChar is repr() of the one-character str text starts with: a
+// printable character stands for itself, the others are escaped.
+func pythonReprChar(text string) string {
+	for _, r := range text {
+		switch {
+		case r == '\'' || r == '\\':
+			return "'\\" + string(r) + "'"
+		case r == '\t':
+			return `'\t'`
+		case r == '\n':
+			return `'\n'`
+		case r == '\r':
+			return `'\r'`
+		case r >= ' ' && unicode.IsPrint(r):
+			return "'" + string(r) + "'"
+		case r < 0x100:
+			return `'\x` + padHex(int(r), 2) + "'"
+		case r < 0x10000:
+			return `'\u` + padHex(int(r), 4) + "'"
+		default:
+			return `'\U` + padHex(int(r), 8) + "'"
+		}
+	}
+	return "''"
 }
 
 func (p *paraParser) entityRef(name string) bool {
@@ -952,6 +1050,142 @@ func (p *paraParser) startAnchor(attrs []htmlAttr) bool {
 		return p.syntaxError("<a name=\"...\"/> anchor variant requires non-blank name")
 	}
 	return p.unsupported()
+}
+
+// startUnichar is start_unichar: the character of the code attribute is data
+// of the paragraph, then the tag has to close empty. A name attribute needs
+// Python's unicodedata table and stays refused.
+func (p *paraParser) startUnichar(attrs []htmlAttr) bool {
+	if len(p.stack) == 0 {
+		return p.fail("tag outside the paragraph")
+	}
+	order, values := dedupeAttrs(attrs)
+	code, hasCode := values["code"]
+	if _, hasName := values["name"]; hasName {
+		for _, name := range order {
+			if name != "name" && name != "code" {
+				return p.fail("invalid attribute name %s", name)
+			}
+		}
+		if hasCode {
+			return p.syntaxError("<unichar/> invalid with both name and code attributes")
+		}
+		return p.unsupported() // unicodedata.lookup
+	}
+	if !hasCode {
+		for _, name := range order {
+			if name != "code" {
+				return p.fail("invalid attribute name %s", name)
+			}
+		}
+	} else {
+		value, ok := pyIntLiteral(code.value)
+		if !ok || value < 0 || value > 0x10FFFF {
+			return p.syntaxError("<unichar/> invalid code attribute %s", pythonAscii(code.value))
+		}
+		if !p.data(string(rune(value))) {
+			return false
+		}
+	}
+	return p.push("unichar", func(t *paraTag) { t.selfClosing = "unichar" })
+}
+
+// startIndex answers what drawing an <index> fragment answers in these
+// documents: the canvas has no index callback, so reportlab raises.
+func (p *paraParser) startIndex(attrs []htmlAttr) bool {
+	if len(p.stack) == 0 {
+		return p.fail("tag outside the paragraph")
+	}
+	_, values := dedupeAttrs(attrs)
+	for name := range values {
+		switch name {
+		case "item", "name", "format", "offset":
+		default:
+			return p.fail("invalid attribute name %s", name)
+		}
+	}
+	if _, ok := values["item"]; !ok {
+		return p.syntaxError("<index> needs at least an item attribute")
+	}
+	if format, ok := values["format"]; ok {
+		switch format.value {
+		case "123", "I", "i", "ABC", "abc":
+		default:
+			return p.fail("index tag format is %s not valid 123 I i ABC or abc", pythonAscii(format.value))
+		}
+	}
+	if offset, ok := values["offset"]; ok {
+		if _, st := pyInt(offset.value, 10); st != attrOK {
+			return p.fail("index tag offset is %s not an int", pythonAscii(offset.value))
+		}
+	}
+	return p.fail("Missing index callback attribute '_indexAdd'")
+}
+
+// startOnDraw answers what drawing an <onDraw> fragment answers in these
+// documents: the canvas has no such callback, so reportlab raises.
+func (p *paraParser) startOnDraw(attrs []htmlAttr) bool {
+	if len(p.stack) == 0 {
+		return p.fail("tag outside the paragraph")
+	}
+	_, values := dedupeAttrs(attrs)
+	name, ok := values["name"]
+	if !ok {
+		return p.syntaxError("<onDraw> needs at least a name attribute")
+	}
+	for key := range values {
+		switch key {
+		case "name", "label":
+		default:
+			return p.fail("invalid attribute name %s", key)
+		}
+	}
+	return p.fail("Missing onDraw callback attribute '%s'", name.value)
+}
+
+// pyIntLiteral is int(s, 0) of the input of numeric text: a Python integer
+// literal (decimal, 0x, 0o, 0b, with single underscores between digits) with
+// surrounding whitespace.
+func pyIntLiteral(text string) (int64, bool) {
+	value, ok := normalizeDigits(text)
+	if !ok {
+		return 0, false
+	}
+	value = pyTrimASCII(value)
+	negative := false
+	if value != "" && (value[0] == '+' || value[0] == '-') {
+		negative = value[0] == '-'
+		value = value[1:]
+	}
+	base, prefixed := 10, false
+	for _, prefix := range []struct {
+		text string
+		base int
+	}{{"0x", 16}, {"0o", 8}, {"0b", 2}} {
+		if len(value) > 2 && value[0] == '0' && (value[1] == prefix.text[1] || value[1] == prefix.text[1]-32) {
+			base, prefixed = prefix.base, true
+			value = value[2:]
+			break
+		}
+	}
+	if prefixed && strings.HasPrefix(value, "_") {
+		value = value[1:]
+	}
+	digits, end, ok := digitRun(value, 0, base)
+	if !ok || digits == "" || end != len(value) {
+		return 0, false
+	}
+	if !prefixed && len(digits) > 1 && digits[0] == '0' {
+		return 0, false // int('010', 0) is a ValueError
+	}
+	number, err := strconv.ParseInt(digits, base, 64)
+	if err != nil {
+		return 0, false
+	}
+	if negative {
+		number = -number
+	}
+	return number, true
 }
 
 // pyTrimUnicode is str.strip().
@@ -1152,8 +1386,9 @@ func numPct(s string) (dim, attrStatus) {
 }
 
 // valignPct is _valignpc.
-func valignPct(s string) (valign, attrStatus) {
-	if !asciiOnly(s) {
+func valignPct(text string) (valign, attrStatus) {
+	s, ok := normalizeDigits(text)
+	if !ok {
 		return valign{}, attrUnsupported
 	}
 	lower := strings.ToLower(s)
@@ -1555,6 +1790,22 @@ func canonicalFontName(name string) string {
 		return "Helvetica-BoldOblique"
 	case "helvetica-oblique":
 		return "Helvetica-Oblique"
+	case "courier":
+		return "Courier"
+	case "courier-bold":
+		return "Courier-Bold"
+	case "courier-oblique":
+		return "Courier-Oblique"
+	case "courier-boldoblique":
+		return "Courier-BoldOblique"
+	case "times", "times-roman":
+		return "Times-Roman"
+	case "times-bold":
+		return "Times-Bold"
+	case "times-italic":
+		return "Times-Italic"
+	case "times-bolditalic":
+		return "Times-BoldItalic"
 	case "symbol":
 		return "Symbol"
 	}

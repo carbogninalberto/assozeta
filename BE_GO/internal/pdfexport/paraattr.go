@@ -4,13 +4,14 @@ import (
 	"math"
 	"strconv"
 	"strings"
+	"unicode"
 )
 
 // The attribute values of paraparser.py. Every conversion answers one of
 // three things: a value, an exception reportlab raises (the export fails:
 // ErrLayout) or an input whose Python semantics this package does not
-// reproduce (ErrNotPorted: non-ASCII digits, nan and infinity, colour
-// expressions beyond names, hex and css functions).
+// reproduce (ErrNotPorted: nan and infinity, colour expressions beyond names
+// and the css functions, non-digit non-ASCII text in a number).
 
 type attrStatus int
 
@@ -48,6 +49,50 @@ func asciiOnly(s string) bool {
 	return true
 }
 
+// normalizeDigits is the ASCII form of a string Python's int() and float()
+// read: every decimal digit of another script (unicode.Nd) becomes its ASCII
+// digit, and a character that is not ASCII is refused (ok false).
+func normalizeDigits(s string) (string, bool) {
+	ascii := true
+	for i := 0; i < len(s); i++ {
+		if s[i] >= 0x80 {
+			ascii = false
+			break
+		}
+	}
+	if ascii {
+		return s, true
+	}
+	var out strings.Builder
+	for _, r := range s {
+		switch {
+		case r < 0x80:
+			out.WriteRune(r)
+		case unicode.Is(unicode.Nd, r):
+			out.WriteByte(digitValue(r))
+		default:
+			return "", false
+		}
+	}
+	return out.String(), true
+}
+
+// digitValue is the ASCII digit of a unicode.Nd rune: an Nd range starts at
+// the zero of its script.
+func digitValue(r rune) byte {
+	for _, entry := range unicode.Nd.R16 {
+		if r >= rune(entry.Lo) && r <= rune(entry.Hi) {
+			return byte('0' + (r - rune(entry.Lo)))
+		}
+	}
+	for _, entry := range unicode.Nd.R32 {
+		if r >= rune(entry.Lo) && r <= rune(entry.Hi) {
+			return byte('0' + (r - rune(entry.Lo)))
+		}
+	}
+	return 0
+}
+
 // digitRun reads digits of a base with single underscores between them from
 // i: the digits without underscores and the end, or ok false for a malformed
 // run.
@@ -77,8 +122,9 @@ func digitRun(s string, i, base int) (string, int, bool) {
 }
 
 // pyInt is int(s, base) for the values the markup meets.
-func pyInt(s string, base int) (int64, attrStatus) {
-	if !asciiOnly(s) {
+func pyInt(text string, base int) (int64, attrStatus) {
+	s, ok := normalizeDigits(text)
+	if !ok {
 		return 0, attrUnsupported
 	}
 	s = pyTrimASCII(s)
@@ -112,8 +158,9 @@ func pyInt(s string, base int) (int64, attrStatus) {
 }
 
 // pyFloat is float(s).
-func pyFloat(s string) (float64, attrStatus) {
-	if !asciiOnly(s) {
+func pyFloat(text string) (float64, attrStatus) {
+	s, ok := normalizeDigits(text)
+	if !ok {
 		return 0, attrUnsupported
 	}
 	s = pyTrimASCII(s)
@@ -163,11 +210,11 @@ func pyFloat(s string) (float64, attrStatus) {
 	if fracPart == "" {
 		fracPart = "0"
 	}
-	text := intPart + "." + fracPart + exponent
+	number := intPart + "." + fracPart + exponent
 	if s != "" && s[0] == '-' {
-		text = "-" + text
+		number = "-" + number
 	}
-	value, err := strconv.ParseFloat(text, 64)
+	value, err := strconv.ParseFloat(number, 64)
 	if err != nil || math.IsInf(value, 0) {
 		return 0, attrUnsupported
 	}
@@ -211,8 +258,9 @@ var (
 func divide(a, b float64) float64 { return a / b }
 
 // paraNum is _num(s, allowRelative=...): a number with an optional unit.
-func paraNum(s string, allowRelative bool) (numVal, attrStatus) {
-	if !asciiOnly(s) {
+func paraNum(text string, allowRelative bool) (numVal, attrStatus) {
+	s, ok := normalizeDigits(text)
+	if !ok {
 		return numVal{}, attrUnsupported
 	}
 	body := strings.TrimLeft(s, " \t\n\v\f\r\x1c\x1d\x1e\x1f")
@@ -230,10 +278,10 @@ func paraNum(s string, allowRelative bool) (numVal, attrStatus) {
 	return paraConvNum(s, 1, allowRelative)
 }
 
-// paraBool is _bool.
+// paraBool is _bool: a value that is not one of its words is an exception.
 func paraBool(s string) (bool, attrStatus) {
 	if !asciiOnly(s) {
-		return false, attrUnsupported
+		return false, attrInvalid
 	}
 	switch strings.ToLower(s) {
 	case "true", "1", "yes":
@@ -406,7 +454,7 @@ func paraCSSColor(s string) (color, attrStatus, bool) {
 // Blacker(...), spaces around a name) is not ported.
 func paraColor(s string) (color, attrStatus) {
 	if !asciiOnly(s) {
-		return color{}, attrUnsupported
+		return color{}, attrInvalid // HexColor raises for a value that is not a number
 	}
 	if c, st, matched := paraCSSColor(s); matched {
 		return c, st

@@ -25,8 +25,10 @@ from reportlab.platypus.paraparser import known_entities
 
 ROOT = Path(__file__).resolve().parents[2]
 PACKAGE = ROOT / 'BE_GO/internal/pdfexport'
-REFUSED = ('bullet', 'greek', 'index', 'ondraw', 'seq', 'seqchain', 'seqdefault', 'seqformat', 'seqreset', 'unichar')
-FONTS = ('Helvetica', 'Helvetica-Bold', 'Helvetica-Oblique', 'Helvetica-BoldOblique')
+REFUSED = ('bullet', 'seq', 'seqchain', 'seqdefault', 'seqformat', 'seqreset')
+FONTS = ('Helvetica', 'Helvetica-Bold', 'Helvetica-Oblique', 'Helvetica-BoldOblique',
+         'Courier', 'Courier-Bold', 'Courier-Oblique', 'Courier-BoldOblique',
+         'Times-Roman', 'Times-Bold', 'Times-Italic', 'Times-BoldItalic')
 
 def image_data(width=4, height=3, colour=(200, 30, 30)):
     import base64
@@ -114,6 +116,32 @@ TEXTS = [
     '<unichar code="65"/>', '<link href="x">a</link>', '<super>a</super>', '<onDraw name="x"/>', '<index item="a"/>',
     'a\nb', '  a   b  ', 'a\tb', 'a\xa0b', '<b>a</b> <i>b</i>', '<b>a </b>b', 'a<b> b</b>', '<b> </b>', 'x &#x1F600; y', 'è &egrave; €',
     '<em>a<strong>b</strong></em>c', '<i><i>a</i></i>', '<b>a<br/>b</b>', 'a &lt; b &gt; c &quot;d&quot; &apos;e&apos;',
+    # The Symbol font of <greek>, the character of <unichar>, the Courier and Times faces, and the callbacks <index>
+    # and <onDraw> that these documents cannot draw.
+    '<greek>abg</greek>', '<greek>città</greek>', 'a<greek>ab</greek>b', '<b><greek>a</greek></b>', '<greek>a&amp;b</greek>',
+    '<greek></greek>', '<greek>a</greek><greek>b</greek>', '<greek>a<br/>b</greek>', '<i><greek>de</greek></i>', '<greek>日</greek>',
+    '<greek>ab日</greek>', '<greek>a</greek> ê <greek>日本</greek>',
+    '<greek>ab</greek> &amp; <greek>gd</greek>', '<greek>a</greek>', '<greek>xyz</greek>', '<greek>ab cd</greek>', '<greek x="1">a</greek>',
+    '<greek>a</greek></greek>', '<unichar code="65"/>', '<unichar code="0x263A"/>', '<unichar code="0b101"/>', '<unichar code="010"/>',
+    '<unichar code="1114112"/>', '<unichar code="x"/>', '<unichar/>x', '<unichar code="65">x</unichar>', '<unichar code="+65"/>',
+    '<unichar code=" 65 "/>', '<unichar code="0x1F600"/>', '<unichar code="233"/>', '<unichar code="0o101"/>', '<unichar code="-1"/>',
+    '<unichar code="1_0"/>', '<unichar code="0x_41"/>', '<unichar code=""/>', '<unichar code>', '<unichar foo="1"/>',
+    '<unichar name="LATIN SMALL LETTER A"/>', '<unichar name="zzz"/>', '<unichar name="LATIN SMALL LETTER A" code="65"/>',
+    'a<unichar code="65"/>b', '<b><unichar code="65"/></b>', '<greek><unichar code="65"/></greek>',
+    '<font name="Courier">a</font>', '<font face="Times-Italic">a b</font>', '<b><font name="Times">x</font></b>',
+    '<para font="Times-Bold">a</para>', '<font name="Courier-BoldOblique">a</font>', '<font name="Times-BoldItalic">a</font>',
+    '<link href="x" name="Times-Bold">a</link>', '<font name="Times-Roman">a</font>', '<font name="Courier">αβγ 日本</font>',
+    '<font name="Times-Italic">città è €</font>', '<para face="Courier">a <b>b</b></para>', '<font name="Courier">a</font><font name="Times-Roman">b</font>',
+    '<font name="Times-Bold">a</font> b <font name="Times-Italic">c</font>', '<u><font name="Courier">a</font></u>',
+    '<index item="a"/>x', '<onDraw name="x"/>y', '<index item="a" format="I"/>x', '<index/>', '<index item="a" format="Z"/>',
+    '<index item="a" offset="x"/>', '<onDraw/>', '<onDraw name="x" label="l"/>', '<onDraw foo="1"/>', '<index item="a" foo="1"/>',
+    # Numbers written with the decimal digits of other scripts (Python's int() and float() read them).
+    '<font size="１２">a</font>', '<font size="١٢">a</font>', '<para size="١٢">a</para>', '<para lindent="1٢">a</para>',
+    '<font size="१२">a</font>', '<font size="١٢٣">a</font>', '<para spaceb="٢" spacea="٣">a</para>',
+    '<unichar code="٦٥"/>', '<unichar code="٠x٤١"/>', '<font size="１２.５">a</font>', '<u width="١.٥">a</u>',
+    '<sup rise="١">a</sup>', '<img src="%s" width="١٠"/>' % IMAGE,
+    '<para alloworphans="π">a</para>', '<font color="città">a</font>', '<font color="π">a</font>', '<u color="rosso">a</u>',
+    '<img src="%s" valign="١"/>' % IMAGE,
 ]
 TOKENS = [
     'a', 'b c', ' ', 'Città', '&', '&amp;', '&lt;', '&gt;', '&nbsp;', '&#65;', '&#x41;', '&#X41;', '&#;', '&#12a', '&foo;', '&alpha;',
@@ -125,6 +153,7 @@ TOKENS = [
     '<font bgcolor="yellow">', '\xad', 'é', '"', "'", '=', '/', '<x/>', '<x a=b c>', '<3', '&&', '&;', '&#', '&#x;', '-', '.', ';',
     '<plaintext>', '<textarea>', '</textarea>', '<b', '</b', '<x "a">', "<x 'a>", '\n', '\t', '\xa0', '<br />', '<BR/>', '&AMP;',
     '&Alpha;', '&#0;', '&#55296;', '&#1114112;', '&#955;', 'x= "y', '<x y= "z', '<x/y>', '<x//>', '<!>', '<!->', '-->', ']]>',
+    '<greek>', '</greek>', '<unichar code="65"/>', '<font name="Courier">', '</font>', '<font name="Times-Roman">',
 ]
 
 
@@ -136,11 +165,13 @@ def refusable(text):
     lowered = text.lower()
     if '<img' in lowered and not ('src="%s"' % IMAGE) in text:
         return True
+    if '<unichar' in lowered and 'name' in lowered:
+        return True
+    digits = any(char.isdigit() and not char.isascii() for char in text)
     return (any('<' + tag in lowered or '</' + tag in lowered for tag in REFUSED) or ('<para' in lowered and any(word in lowered for word in PARA_REFUSED))
             or 'blacker(' in lowered
             or 'whiter(' in lowered or (('<a' in lowered or '<link' in lowered) and ('#' in text or 'document:' in lowered or 'name' in lowered))
-            or ('<' in text and (not text.isascii() or 'inf' in lowered or 'nan' in lowered
-                                                         or 'courier' in lowered or 'times' in lowered)))
+            or ('<' in text and (not text.isascii() or digits or 'inf' in lowered or 'nan' in lowered)))
 
 
 def rgb(colour):
@@ -216,9 +247,14 @@ def outcome(text, font):
     other = bool(paragraph.bulletText) or bool(style_unported(paragraph.style))
     frags = []
     for frag in paragraph.frags:
-        if frag.greek or frag.fontName not in FONTS + ('Symbol', 'ZapfDingbats'):
+        if frag.fontName not in FONTS + ('Symbol', 'ZapfDingbats'):
             other = True
             continue
+        defn = getattr(frag, 'cbDefn', None)
+        if defn is not None and defn.kind in ('index', 'onDraw'):
+            # The paragraph parses; building the document calls a canvas callback these documents do not have.
+            entry['build_error'] = True
+            return entry
         try:
             frags.append(describe(frag))
         except TypeError:
@@ -279,6 +315,44 @@ def colours():
     return subprocess.run([gofmt], input='\n'.join(lines + ['}', '']), capture_output=True, text=True, check=True).stdout
 
 
+def standard_fonts():
+    """The width vectors of the standard faces the markup can name, Courier and Times; Helvetica, Symbol and
+    ZapfDingbats are in fonts_gen.go. Also paraparser._greekConvert's byte-to-character table."""
+    from reportlab.pdfbase.pdfmetrics import getFont
+    names = [('courier', 'Courier'), ('courierBold', 'Courier-Bold'), ('courierOblique', 'Courier-Oblique'),
+             ('courierBoldOblique', 'Courier-BoldOblique'), ('timesRoman', 'Times-Roman'), ('timesBold', 'Times-Bold'),
+             ('timesItalic', 'Times-Italic'), ('timesBoldItalic', 'Times-BoldItalic')]
+    lines = ['// Code generated from reportlab 4.2.5 (pdfmetrics width vectors of the standard faces and the symbol',
+             '// codec); DO NOT EDIT.', '', 'package pdfexport', '']
+    for variable, face in names:
+        widths = getFont(face).widths
+        lines.append('// %sWidths is %s in WinAnsiEncoding.' % (variable, face))
+        lines.append('var %sWidths = [256]int{' % variable)
+        for start in range(0, 256, 16):
+            lines.append('\t' + ' '.join('%d,' % widths[start + i] for i in range(16)))
+        lines.append('}')
+        lines.append('')
+    from reportlab.pdfbase.rl_codecs import RL_Codecs
+    decode = dict(RL_Codecs._RL_Codecs__rl_codecs_data['symbol'][0])
+    table = []
+    for byte in range(256):
+        if byte < 32:
+            table.append(0)
+            continue
+        value = decode.get(byte, byte)
+        table.append(value if value else 0)
+    lines.append('// symbolGreek is paraparser._greekConvert: the character each Symbol byte stands for (0..31 give NUL).')
+    lines.append('var symbolGreek = [256]rune{')
+    for start in range(0, 256, 8):
+        lines.append('\t' + ' '.join('0x%04X,' % value for value in table[start:start + 8]))
+    lines.append('}')
+    lines.append('')
+    gofmt = shutil.which('gofmt')
+    if not gofmt:
+        raise SystemExit('gofmt is needed to write fonts_std_gen.go')
+    return subprocess.run([gofmt], input='\n'.join(lines), capture_output=True, text=True, check=True).stdout
+
+
 def html5_entities():
     from html.entities import html5
     lines = ['// Code generated from html.entities.html5 of the pinned interpreter; DO NOT EDIT.', '', 'package pdfexport', '',
@@ -301,7 +375,8 @@ def corpus():
 
 
 def main():
-    outputs = {PACKAGE / 'entities_gen.go': entities(), PACKAGE / 'colors_gen.go': colours(), PACKAGE / 'html5_gen.go': html5_entities(), PACKAGE / 'testdata/paragraphs.json': corpus()}
+    outputs = {PACKAGE / 'entities_gen.go': entities(), PACKAGE / 'colors_gen.go': colours(), PACKAGE / 'html5_gen.go': html5_entities(),
+               PACKAGE / 'fonts_std_gen.go': standard_fonts(), PACKAGE / 'testdata/paragraphs.json': corpus()}
     if '--check' in sys.argv[1:]:
         stale = [str(path) for path, text in outputs.items() if not path.is_file() or path.read_text() != text]
         if stale:

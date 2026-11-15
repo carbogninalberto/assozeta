@@ -142,10 +142,11 @@ matrix for the MCP server as well.
 ## Not ported (refused with the HTML 500 page before any query)
 
 - In the file tools: the paragraph markup `pdfexport` still refuses (pdf-exports.md,
-  "Paragraph markup": anchors, internal links, images that are not base64 JPEG data URLs, Courier and Times, `<para>` indents,
-  justification and borders). `u`, `strike`, `font`, `span`, `nobr`, `sup`, `sub`, `a`, `link`, base64 JPEG `img` and `<para>`
-  with attributes are drawn (cases `export-pdf-rich-markup`, `export-pdf-rich-markup-over-pages`, `export-pdf-inline-image` and
-  the three `export-pdf-rich-*-error` ones). Labels, cells and texts with `&`, `<`, entities, `<b>`,
+  "Paragraph markup": anchors, internal links, images that are not base64 JPEG data URLs, `<unichar name="…">`, CMYK and
+  transparent colours, `<para>` indents, justification and borders, bullets and sequences). `u`, `strike`, `font`, `span`, `nobr`,
+  `sup`, `sub`, `a`, `link`, base64 JPEG `img`, `<para>` with attributes, `<greek>`, `<unichar code="…"/>`, the Courier and
+  Times faces and digits of other scripts are drawn (cases `export-pdf-rich-markup`, `export-pdf-rich-markup-over-pages`,
+  `export-pdf-inline-image`, `export-pdf-greek-unichar-fonts`, `export-pdf-digit-size` and the `export-pdf-rich-*-error` ones). Labels, cells and texts with `&`, `<`, entities, `<b>`,
   `<i>`, `<br/>` or soft hyphens are drawn as reportlab draws them, and markup
   its parser raises on (`A<B` opens a tag) fails the export like any other
   exception (`v2rep3-*` receipts).
@@ -257,6 +258,23 @@ Paragraph markup (`v2rep3-*` receipts): 178 cases (4 more: `run-export-pdf-marku
 9000-character word cut over pages, `run-export-pdf-markup-unclosed-error` and
 `run-export-pdf-label-markup-error`). RED: the documented refusal. GREEN and
 mutation: see v2-refusals.md, "Ported in the v2-reports-3 change".
+
+Greek text, characters by code and the Courier and Times faces (`s3pdfcanvas-*`
+receipts): 246 cases, 6 more in the file tools:
+`run-export-pdf-greek-unichar-fonts` (`<greek>`, `<unichar code="0x263A"/>`,
+`<font name="Times-Italic">`, `<font name="Courier">`, `<font face="Times-Bold">`
+in a label and in the texts), `run-export-pdf-digit-size` (a full-width `１２` as
+a font size), `run-export-pdf-greek-non-latin1-error` and
+`run-export-pdf-unichar-code-error` (the parser's exceptions) and
+`run-export-pdf-index-error`/`run-export-pdf-ondraw-error` (reportlab parses
+them and fails the build: `Missing index callback attribute '_indexAdd'`), all
+five answering the 500 page. RED `s3pdfcanvas-red-r2`: Django 246/246, Go 500 on
+`run-export-pdf-greek-unichar-fonts`. GREEN `s3pdfcanvas-versioned-r4`: native
+Django, native Go, Caddy `/api/v1` and `/api/v2` 246/246. Mutation
+`s3pdfcanvas-mutation-r4` (the greek byte table read as identity) CAUGHT. The
+PDF families that share `pdfexport` re-ran green on four transports with the same
+receipt label: balance-sheet 97/97, printing-generate 113/113, course-list
+175/175, course-subscriptions 168/168 and subscription-reads 364/364.
 
 t6x3: the lookups and date/time parts above were compared call by call between
 Django's tool functions and the Go engine on the seeded private PostgreSQL (54

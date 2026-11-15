@@ -128,8 +128,21 @@ var (
 	// The oblique fonts share the widths of the upright ones.
 	fontHelveticaOblique     = &font{name: "Helvetica-Oblique", widths: &helveticaWidths, encoding: winAnsiEncoding, subs: []*font{fontSymbol, fontZapfDingbats}, ascent: 718, descent: -207}
 	fontHelveticaBoldOblique = &font{name: "Helvetica-BoldOblique", widths: &helveticaBoldWidths, encoding: winAnsiEncoding, subs: []*font{fontSymbol, fontZapfDingbats}, ascent: 718, descent: -207}
-	fontsByName              = map[string]*font{"Helvetica": fontHelvetica, "Helvetica-Bold": fontHelveticaBold, "Helvetica-Oblique": fontHelveticaOblique,
-		"Helvetica-BoldOblique": fontHelveticaBoldOblique, "Symbol": fontSymbol, "ZapfDingbats": fontZapfDingbats}
+	// The Courier and Times faces the markup can name (std_fonts_gen.go); every standard font falls back to Symbol
+	// and ZapfDingbats for the characters its encoding lacks.
+	fontCourier            = &font{name: "Courier", widths: &courierWidths, encoding: winAnsiEncoding, subs: []*font{fontSymbol, fontZapfDingbats}, ascent: 629, descent: -157}
+	fontCourierBold        = &font{name: "Courier-Bold", widths: &courierBoldWidths, encoding: winAnsiEncoding, subs: []*font{fontSymbol, fontZapfDingbats}, ascent: 626, descent: -142}
+	fontCourierOblique     = &font{name: "Courier-Oblique", widths: &courierObliqueWidths, encoding: winAnsiEncoding, subs: []*font{fontSymbol, fontZapfDingbats}, ascent: 629, descent: -157}
+	fontCourierBoldOblique = &font{name: "Courier-BoldOblique", widths: &courierBoldObliqueWidths, encoding: winAnsiEncoding, subs: []*font{fontSymbol, fontZapfDingbats}, ascent: 626, descent: -142}
+	fontTimesRoman         = &font{name: "Times-Roman", widths: &timesRomanWidths, encoding: winAnsiEncoding, subs: []*font{fontSymbol, fontZapfDingbats}, ascent: 683, descent: -217}
+	fontTimesBold          = &font{name: "Times-Bold", widths: &timesBoldWidths, encoding: winAnsiEncoding, subs: []*font{fontSymbol, fontZapfDingbats}, ascent: 676, descent: -205}
+	fontTimesItalic        = &font{name: "Times-Italic", widths: &timesItalicWidths, encoding: winAnsiEncoding, subs: []*font{fontSymbol, fontZapfDingbats}, ascent: 683, descent: -205}
+	fontTimesBoldItalic    = &font{name: "Times-BoldItalic", widths: &timesBoldItalicWidths, encoding: winAnsiEncoding, subs: []*font{fontSymbol, fontZapfDingbats}, ascent: 699, descent: -205}
+	fontsByName            = map[string]*font{"Helvetica": fontHelvetica, "Helvetica-Bold": fontHelveticaBold, "Helvetica-Oblique": fontHelveticaOblique,
+		"Helvetica-BoldOblique": fontHelveticaBoldOblique, "Symbol": fontSymbol, "ZapfDingbats": fontZapfDingbats,
+		"Courier": fontCourier, "Courier-Bold": fontCourierBold, "Courier-Oblique": fontCourierOblique,
+		"Courier-BoldOblique": fontCourierBoldOblique, "Times-Roman": fontTimesRoman, "Times-Bold": fontTimesBold,
+		"Times-Italic": fontTimesItalic, "Times-BoldItalic": fontTimesBoldItalic}
 	notdefChar byte = 'n' // every standard font falls back to ZapfDingbats 'n'
 )
 

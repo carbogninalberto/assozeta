@@ -147,11 +147,36 @@ Ported in t3pdf: the paragraph tags that draw lines, links, images, rises, other
 `font`, `span`, `nobr`, `sup`, `sub`, base64 JPEG `img`) and a `<para>` with attributes (see "Fragments with their own style" in
 pdf-exports.md). Still refused in these PDFs (B), each because Go cannot or does not reproduce it: `<a name>` anchors and
 `#`/`document:` links (named destinations), `img` of a file, URL, PNG or other format (server files and network, PIL
-re-encoding), the Courier and Times fonts (no metrics), colours that are CMYK, transparent or Python expressions, `<para>`
-indents, justified lines, borders, text transforms, `autoLeading`, `wordWrap`, end dots and hyphenation, the tags `greek`,
-`unichar`, `bullet`, `seq*`, `onDraw` and `index`, and logo data Python's base64 accepts that is not a JPEG Go's decoder reads.
+re-encoding), colours that are CMYK, transparent or Python expressions, `<para>` indents, justified lines, borders, text
+transforms, `autoLeading`, `wordWrap`, end dots and hyphenation, the tags `bullet` and `seq*`, and logo data Python's base64
+accepts that is not a JPEG Go's decoder reads. (The Courier and Times faces, `greek`, `unichar`, `<index>` and `<onDraw>` were
+ported later: "Ported in the go-v2only-pdfcanvas change", below.)
 Markup reportlab's parser raises on (an unclosed tag, `A<B`) is no refusal: the export fails as in Django. Still refused on the MCP transport: an exporter exception whose text Go does not reproduce and argument types `save_info` would write back differently (mcp-server.md). Re-run green natively: printing-generate 113/113 and subscription-reads 350/350
 (`v2rep3-rerun-r1`), course-list 159/159 and course-subscriptions 145/145 (`v2rep3-rerun-r2`).
+
+### Ported in the go-v2only-pdfcanvas change
+
+Receipts are `quality-reports/go-migration/templates-reports-http-s3pdfcanvas-*`; [pdf-exports](pdf-exports.md) ("Greek
+text, characters by code and the other standard faces") has the details. The sentinel `pdfexport.ErrNotPorted`
+(`internal/pdfexport/canvas.go`) is reached from every route that builds a PDF; this change ports the paragraph inputs a
+stored or hand-written text can carry that reportlab draws, and turns the two that reportlab cannot draw in these documents
+into its exception:
+
+| Family | Route | Was refused | Class | Evidence |
+|---|---|---|---|---|
+| templates-reports | `POST saved-reports/<pk>/run` with `export_data`/`export_multi_sheet`/`get_attendance_matrix` (`format: pdf`), and the PDFs of balance-sheet, printing-generate, subscription-reads, course-list and course-subscriptions | `<greek>` (the Symbol font and its byte-to-character table) | B | `export-pdf-greek-unichar-fonts`; RED `s3pdfcanvas-red-r2` Django 246/246, Go 500; GREEN `s3pdfcanvas-versioned-r4` 4 transports 246/246; mutation `s3pdfcanvas-mutation-r4` (the greek table read as identity) CAUGHT on that case |
+| same | same | `<unichar code="…"/>` (a character by its code, decimal/0x/0o/0b) | B | same run (`bs-greek-unichar`, `rt-greek-cells`, `at-greek` goldens) |
+| same | same | `<font name="Courier">`, `<font name="Times-…">`, `<para font="…">` (the Courier and Times width vectors) | B | same run; `go test ./internal/pdfexport` (201 golden documents) |
+| same | same | a number written with the decimal digits of another script (`１２`, `١٢`) | B | `export-pdf-digit-size`; same run |
+| same | same | `<index item="…"/>`, `<onDraw name="…"/>` — reportlab parses them and fails the build (`Missing … callback attribute`), so Go now answers the same 500 page instead of a refusal | B | `export-pdf-index-error`, `export-pdf-ondraw-error`; same run |
+
+Still refused in these PDFs (unchanged by this change, with the class of [the inventory](v2-refusals.md)): `bullet` (B), `seq*`
+(X: reportlab's sequencer is a process-global singleton, so the number drawn depends on the requests served before), `<a
+name>` anchors and `#`/`document:` links (B), `img` of a file, URL, PNG or other format (X for files and URLs, B for a PNG data
+URL), `<unichar name="…">` (B: `unicodedata` names), CMYK, transparent and Python-expression colours (B, B, X), `inf`/`nan`
+and non-ASCII whitespace in numbers (X, B), and in `<para>` the indents, justified lines, borders, text transforms,
+`autoLeading`, `wordWrap`, end dots and hyphenation (B; hyphenation X). The `pdfexport.ErrNotPorted` sentinel stays for those
+conditions.
 
 ### Ported in the v2-pdf change
 
