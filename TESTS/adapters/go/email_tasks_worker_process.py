@@ -57,7 +57,7 @@ EXPECTED = {
     'expired certificates: native worker reproduces the Django task and its stop',
     'reminders: native worker reproduces the Django task and its delayed sends',
     'unsupported version and tenant fail before business effects',
-    'an SMTP subject outside the ported subset refuses the run before any effect',
+    'a reminder subject with a line break: native worker reproduces the Django task',
 }
 
 
@@ -332,6 +332,7 @@ class EmailRehearsal(Rehearsal):
         self.redis_port = redis_port
         self.fixture = EmailFixture(servers['TLS'].port, servers['SSL'].port)
         self.django = {task: self.django_expected(task) for task in TASKS}
+        self.django_line_break = self.django_expected('send_reminders', variant='unsupported')
 
     def connect(self, name):
         connection = psycopg2.connect(host=str(self.work), user='contracts', dbname=DATABASE,
@@ -347,7 +348,7 @@ class EmailRehearsal(Rehearsal):
     def transcripts(self):
         return {mode: server.take() for mode, server in self.servers.items()}
 
-    def django_expected(self, task):
+    def django_expected(self, task, variant='main'):
         """Run the actual Django task on a fresh seed with the production broker settings."""
         from contextlib import redirect_stdout, ExitStack
         import io
@@ -357,7 +358,7 @@ class EmailRehearsal(Rehearsal):
         from core import settings as core_settings
         from TESTS.adapters.django.family_harness import _reset_celery_app
         from application import tasks
-        before = self.fixture.seed()
+        before = self.fixture.seed(variant)
         self.drain(); self.transcripts()
         keys = ('CELERY_BROKER_URL', 'CELERY_TASK_DEFAULT_QUEUE', 'CELERY_TASK_ROUTES')
         saved = {key: app.conf[key] for key in keys}
@@ -381,14 +382,19 @@ class EmailRehearsal(Rehearsal):
             _reset_celery_app(app)
         until = datetime.now(timezone.utc)
         raw = self.drain()
-        assert raw, f'Django {task} published no Celery message'
+        assert raw or variant != 'main', f'Django {task} published no Celery message'
         specs = [spec_from(item) for item in raw]
         for i, (item, spec) in enumerate(zip(raw, specs)):
             from TESTS.adapters.django.family_harness import check_celery_message
             check_celery_message(Contract(), item, spec, since=started, until=time.time(), where=f':{i}')
         after = self.fixture.snapshot()
         transcripts = self.transcripts()
-        self.authored_checks(task, before, after, specs, transcripts)
+        if variant == 'main':
+            self.authored_checks(task, before, after, specs, transcripts)
+        else:
+            # The SMTP path: as_string() raises inside send_email's try, the failure is logged and the reminder completed.
+            completed = {row['reminders_id'] for row in after['application.Reminders'] if row['completed']}
+            assert completed == {U(301)} and not raw, (completed, raw)
         # (body, task header, spec) from Django's own messages; the Go side is
         # checked against these, never against a spec derived from Go's output.
         messages = sorted(((json.loads(item)['body'], spec['task'], spec) for item, spec in zip(raw, specs)),
@@ -438,13 +444,13 @@ class EmailRehearsal(Rehearsal):
         self.started, self.since = time.time(), datetime.now(timezone.utc)
         return identifier, before
 
-    def matches_django(self, task, identifier):
+    def matches_django(self, task, identifier, expected=None):
         await_condition(lambda: self.job(identifier)[0] == 'completed', 'registered e-mail worker durable completion', timeout=60)
         assert self.job(identifier)[:3] == ('completed', 1, '')
         assert self.sql('SELECT result FROM assozeta_go_jobs WHERE id=%s', (identifier,)) == [(None,)]
         if task == 'send_reminders':
             time.sleep(TIMER_WAIT)
-        state, messages, transcripts = self.django[task]
+        state, messages, transcripts = expected or self.django[task]
         bodies = [body for body, _, _ in messages]
         actual = self.fixture.normalized(self.fixture.snapshot(), self.since, datetime.now(timezone.utc))
         if actual != state:
@@ -458,7 +464,8 @@ class EmailRehearsal(Rehearsal):
             decode = lambda items: [json.loads(base64.b64decode(item)) for item in items]
             (self.output / f'messages-{task}.json').write_text(json.dumps({'django': decode(bodies), 'go': decode([body for body, _ in go])},
                                                                          indent=1, ensure_ascii=False) + '\n')
-        assert go and messages, f'Go {task} or Django published no Celery message'
+        assert (go and messages) or (expected is not None and not go and not messages), \
+            f'Go {task} or Django published no Celery message'
         assert [body for body, _ in go] == bodies, f'Go {task} messages differ from the Django task'
         go_names = sorted((body, json.loads(item)['headers']['task']) for body, item in go)
         django_names = [(body, name) for body, name, _ in messages]
@@ -507,13 +514,11 @@ class EmailRehearsal(Rehearsal):
                 assert self.fixture.snapshot() == before and not self.drain() and not any(self.transcripts().values())
         self.case('unsupported version and tenant fail before business effects')
 
-        identifier, before = self.seed_job('send_reminders', variant='unsupported')
+        identifier, _ = self.seed_job('send_reminders', variant='unsupported')
         process = self.worker()
-        await_condition(lambda: self.job(identifier)[0] == 'failed', 'unsupported SMTP subject refused')
+        self.matches_django('send_reminders', identifier, self.django_line_break)
         self.stop(process)
-        assert self.sql('SELECT error_code FROM assozeta_go_jobs WHERE id=%s', (identifier,)) == [('task_failed',)]
-        assert self.fixture.snapshot() == before and not self.drain() and not any(self.transcripts().values())
-        self.case('an SMTP subject outside the ported subset refuses the run before any effect')
+        self.case('a reminder subject with a line break: native worker reproduces the Django task')
         assert set(self.completed) == EXPECTED and len(self.completed) == len(EXPECTED)
 
     def worker(self, *arguments):
