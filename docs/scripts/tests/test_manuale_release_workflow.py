@@ -38,11 +38,19 @@ class ReleaseWorkflowTests(unittest.TestCase):
         jobs = yaml.safe_load((ROOT / '.github/workflows/publish-images.yml').read_text())['jobs']
         self.assertEqual(jobs['go-quality']['uses'], './.github/workflows/go-quality.yml')
         self.assertIn('go-quality', jobs['publish']['needs'])
-        quality = yaml.safe_load((ROOT / '.github/workflows/go-quality.yml').read_text())['jobs']['golang']
-        inventory_gate = next(step for step in quality['steps']
+        quality = yaml.safe_load((ROOT / '.github/workflows/go-quality.yml').read_text())['jobs']
+        inventory_gate = next(step for step in quality['go-inventory']['steps']
                               if step.get('run') == 'python3 -m TESTS.inventory.release_gate')
         self.assertEqual(inventory_gate['if'], "github.event_name == 'release'")
         self.assertFalse(inventory_gate.get('continue-on-error', False))
+        # The foundation job keeps its id and name as a gate over the split jobs.
+        gate = quality['golang']
+        self.assertEqual(gate['name'], 'Go foundation and inventory')
+        self.assertEqual(gate['if'], 'always()')
+        self.assertEqual(sorted(gate['needs']), sorted([
+            'go-inventory', 'go-race', 'go-django-contracts', 'go-manual-contracts',
+            'go-logo-storage', 'go-runtime-adapters', 'go-image']))
+        self.assertFalse([step for step in gate['steps'] if 'uses' in step])
 
     def test_release_images_bundle_a_fresh_or_carried_manual(self):
         jobs = yaml.safe_load((ROOT / '.github/workflows/publish-images.yml').read_text())['jobs']

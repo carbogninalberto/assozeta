@@ -22,10 +22,39 @@ jobs:
 
   golang:
     name: Go foundation and inventory
+    # Gate only: the checks themselves run in the parallel jobs below. This job
+    # keeps the previous job id and name so callers and publication gates keep
+    # requiring one stable name, and it fails unless every split job succeeded.
     runs-on: ubuntu-24.04
-    # The expanded real-Django/Go suite plus setup/image checks exceeds 30 min.
-    # Individual adapters retain their own bounded subprocess deadlines.
-    timeout-minutes: 60
+    if: always()
+    needs:
+      - go-inventory
+      - go-race
+      - go-django-contracts
+      - go-manual-contracts
+      - go-logo-storage
+      - go-runtime-adapters
+      - go-image
+    steps:
+      - name: Require every Go foundation job to succeed
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          results = {name: job.get('result') for name, job in json.loads(os.environ['NEEDS']).items()}
+          failed = {name: result for name, result in sorted(results.items()) if result != 'success'}
+          assert not failed, 'incomplete Go foundation evidence: ' + repr(failed)
+          print('Go foundation jobs succeeded:', ', '.join(sorted(results)))
+          PY
+
+  go-inventory:
+    name: Go inventory and static checks
+    runs-on: ubuntu-24.04
+    # Inventory, formatting, vet and the deadline-tagged client test stay in one
+    # job: they ran before setup-python and must keep the runner's system python3.
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
         with:
@@ -33,10 +62,11 @@ jobs:
       - name: Reject installable releases with incomplete compatibility evidence
         if: github.event_name == 'release'
         run: python3 -m TESTS.inventory.release_gate
-      - uses: actions/setup-go@v5
+      - uses: ./.github/actions/go-foundation-setup
         with:
-          go-version-file: BE_GO/go.mod
-          cache-dependency-path: BE_GO/go.sum
+          go: 'true'
+          python: 'false'
+          system: 'false'
       - name: Check inventory and Go code
         run: |
           python3 -m unittest discover -s TESTS/inventory -v
@@ -45,39 +75,77 @@ jobs:
           python3 -m TESTS.inventory.catalog --check
           test -z "$(gofmt -l BE_GO)"
           go -C BE_GO vet ./...
-          go -C BE_GO test -race ./...
           go -C BE_GO test -race -tags=redisdeadlineintegration ./internal/redisclient -count=1 -timeout=90s
-      - name: Read production Python version
-        id: production-python
+      - name: Assert the race shards cover every Go package exactly once
         run: |
-          python3 - <<'PY'
-          import os
-          from TESTS.adapters.django.production_runtime import production_python_version
-          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
-              output.write(f'version={production_python_version()}\n')
-          PY
-      - uses: actions/setup-python@v5
+          go -C BE_GO list ./... | sort > "$RUNNER_TEMP/race-all.txt"
+          {
+            go -C BE_GO list ./internal/pilplaceholder/... ./internal/pandasxlsx/... ./internal/pandascsv/...
+            go -C BE_GO list ./... | grep -v -E '/internal/(pilplaceholder|pandasxlsx|pandascsv)(/|$)'
+          } | sort > "$RUNNER_TEMP/race-shards.txt"
+          test -s "$RUNNER_TEMP/race-shards.txt"
+          test "$(sort -u "$RUNNER_TEMP/race-shards.txt" | wc -l)" -eq "$(wc -l < "$RUNNER_TEMP/race-shards.txt")"
+          diff -u "$RUNNER_TEMP/race-all.txt" "$RUNNER_TEMP/race-shards.txt"
+
+  go-race:
+    name: Go race tests (${{ matrix.name }})
+    runs-on: ubuntu-24.04
+    # The former single `go test -race ./...` command, split over disjoint package
+    # sets. go-inventory asserts in the same run that the union is `go list ./...`.
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: pilplaceholder
+            packages: ./internal/pilplaceholder/...
+          - name: tabular
+            packages: ./internal/pandasxlsx/... ./internal/pandascsv/...
+          - name: rest
+            packages: ''
+    steps:
+      - uses: actions/checkout@v4
         with:
-          python-version: ${{ steps.production-python.outputs.version }}
-          cache: pip
-          cache-dependency-path: |
-            BE/requirements.txt
-            TESTS/adapters/django/requirements-credentials.txt
-            TESTS/contracts/requirements-qr.txt
-      - name: Install disposable integration dependencies
+          persist-credentials: false
+      - uses: ./.github/actions/go-foundation-setup
+        with:
+          go: 'true'
+          python: 'false'
+          system: 'false'
+      - name: Run Go race tests for this shard
+        env:
+          SHARD_NAME: ${{ matrix.name }}
+          SHARD_PACKAGES: ${{ matrix.packages }}
         run: |
-          # The runner's default mirror is sometimes unreachable; use the main archive then.
-          curl -fsS --max-time 15 -o /dev/null http://azure.archive.ubuntu.com/ubuntu/dists/noble/InRelease || sudo sed -i 's|azure.archive.ubuntu.com|archive.ubuntu.com|g' /etc/apt/apt-mirrors.txt /etc/apt/sources.list /etc/apt/sources.list.d/* 2>/dev/null || true
-          sudo apt-get update
-          sudo apt-get install -y postgresql-16 redis-server locales build-essential pkg-config libjpeg-dev zlib1g-dev libwebp-dev
-          sudo sed -i 's/^# *it_IT.UTF-8 UTF-8/it_IT.UTF-8 UTF-8/' /etc/locale.gen
-          sudo locale-gen
-          python -c "import locale; locale.setlocale(locale.LC_ALL, 'it_IT.UTF-8')"
-          echo /usr/lib/postgresql/16/bin >> "$GITHUB_PATH"
+          if [ "$SHARD_NAME" = rest ]; then
+            pkgs=$(go -C BE_GO list ./... | grep -v -E '/internal/(pilplaceholder|pandasxlsx|pandascsv)(/|$)')
+            go -C BE_GO test -race $pkgs
+          else
+            go -C BE_GO test -race $SHARD_PACKAGES
+          fi
+      - name: Assert this race shard selected at least one Go package
+        env:
+          SHARD_NAME: ${{ matrix.name }}
+          SHARD_PACKAGES: ${{ matrix.packages }}
+        run: |
+          if [ "$SHARD_NAME" = rest ]; then
+            pkgs=$(go -C BE_GO list ./... | grep -v -E '/internal/(pilplaceholder|pandasxlsx|pandascsv)(/|$)')
+          else
+            pkgs=$(go -C BE_GO list $SHARD_PACKAGES)
+          fi
+          test -n "$pkgs"
+
+  go-django-contracts:
+    name: Django environment, credentials and HTTP policies
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/go-foundation-setup
       - name: Verify environment, credentials and provider protocols
         run: |
-          python TESTS/adapters/django/production_runtime.py
-          python -m pip install -r TESTS/adapters/django/requirements-credentials.txt
           python TESTS/adapters/django/environment.py
           python TESTS/adapters/django/credentials.py
           python TESTS/adapters/django/permissions.py
@@ -92,6 +160,29 @@ jobs:
         run: python TESTS/adapters/django/cors.py
       - name: Verify current Django security headers
         run: python TESTS/adapters/django/security_headers.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: go-foundation-evidence-go-django-contracts
+          path: |
+            quality-reports/go-migration/credentials.json
+            quality-reports/go-migration/permissions.json
+            quality-reports/go-migration/impersonation-cache/
+            quality-reports/go-migration/login-rate/
+            quality-reports/go-migration/cors/
+            quality-reports/go-migration/security-headers/
+            quality-reports/go-migration/environment/
+            quality-reports/go-migration/runtime.json
+
+  go-manual-contracts:
+    name: Manual package and bootstrap contracts
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/go-foundation-setup
       - name: Verify public instance bootstrap and manual package contracts
         run: |
           python -m pip install -r docs/manuale/requirements-offline.txt
@@ -127,6 +218,38 @@ jobs:
           python -m unittest TESTS.contracts.test_manual_reader_http
           python TESTS/adapters/django/instance_bootstrap.py --backend django
           python TESTS/adapters/django/instance_bootstrap.py --backend go --manifest-versioned
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: go-foundation-evidence-go-manual-contracts
+          path: |
+            quality-reports/go-migration/instance-bootstrap/
+            quality-reports/go-migration/instance-bootstrap-go/
+            quality-reports/go-migration/manual-availability/
+            quality-reports/go-migration/manual-bundle/
+            quality-reports/go-migration/manual-reader/
+            quality-reports/go-migration/manual-asset-scope/results.json
+            quality-reports/go-migration/manual-retrieval/
+            quality-reports/go-migration/manual-tools/
+            quality-reports/go-migration/manual-tools-go-library/
+            quality-reports/go-migration/manual-tools-go-service/
+            quality-reports/go-migration/manual-mcp-django/
+            quality-reports/go-migration/manual-mcp-go/
+            quality-reports/go-migration/manual-reader-http/
+            quality-reports/go-migration/manual-reader-http-go/
+            quality-reports/go-migration/manual-reader-http-versioned/
+            quality-reports/go-migration/manual-reader-http-go-versioned/
+            quality-reports/go-migration/manual-refresh-lock/
+
+  go-logo-storage:
+    name: Public logo storage contracts
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/go-foundation-setup
       - name: Verify public logo storage contracts through both API versions
         run: |
           python - <<'PY'
@@ -137,6 +260,39 @@ jobs:
           python -m unittest TESTS.contracts.test_instance_logo -v
           python TESTS/adapters/django/instance_logo.py --backend both --versioned --output quality-reports/go-migration/instance-logo
           python TESTS/adapters/django/instance_logo.py --backend go --disk-injection --output quality-reports/go-migration/instance-logo-disk
+      - name: Verify legacy medical storage keys
+        run: python TESTS/adapters/django/document_keys.py
+      - name: Verify existing storage environment and backend options
+        run: |
+          python TESTS/adapters/django/storage_configuration.py
+          python TESTS/adapters/django/storage_credentials.py
+          python TESTS/adapters/django/storage_roles.py
+          python TESTS/adapters/django/storage_web_identity.py
+      - name: Verify S3 deletion against disposable MinIO
+        run: python TESTS/adapters/django/s3_objects.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: go-foundation-evidence-go-logo-storage
+          path: |
+            quality-reports/go-migration/instance-logo/results.json
+            quality-reports/go-migration/instance-logo-disk/results.json
+            quality-reports/go-migration/document-keys/
+            quality-reports/go-migration/storage-configuration/
+            quality-reports/go-migration/storage-credentials/
+            quality-reports/go-migration/storage-roles/
+            quality-reports/go-migration/storage-web-identity/
+            quality-reports/go-migration/s3-objects/
+
+  go-runtime-adapters:
+    name: Go scheduler, transaction, job and worker adapters
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/go-foundation-setup
       - name: Verify effective scheduler authority and Go timing
         run: python TESTS/adapters/go/schedule_due.py
       - name: Verify atomic periodic publication on the Django schedule schema
@@ -153,16 +309,6 @@ jobs:
         run: python TESTS/adapters/go/restore_drain_pooler.py
       - name: Verify Django restore drains cooperating Go transactions
         run: python TESTS/adapters/django/restore_server_barrier.py
-      - name: Verify legacy medical storage keys
-        run: python TESTS/adapters/django/document_keys.py
-      - name: Verify existing storage environment and backend options
-        run: |
-          python TESTS/adapters/django/storage_configuration.py
-          python TESTS/adapters/django/storage_credentials.py
-          python TESTS/adapters/django/storage_roles.py
-          python TESTS/adapters/django/storage_web_identity.py
-      - name: Verify S3 deletion against disposable MinIO
-        run: python TESTS/adapters/django/s3_objects.py
       - name: Verify transactional durable jobs and lease recovery
         run: python TESTS/adapters/go/jobs.py
       - name: Verify native worker and explicit migration processes
@@ -179,6 +325,36 @@ jobs:
         run: python TESTS/adapters/go/login_webp_sanitizer.py
       - name: Rehearse health and dependency failure recovery
         run: python3 TESTS/adapters/go/health.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: go-foundation-evidence-go-runtime-adapters
+          path: |
+            quality-reports/go-migration/go-health/
+            quality-reports/go-migration/jobs/
+            quality-reports/go-migration/job-executor/
+            quality-reports/go-migration/worker-process/
+            quality-reports/go-migration/age-worker-process/
+            quality-reports/go-migration/token-worker-process/
+            quality-reports/go-migration/scheduler-process/
+            quality-reports/go-migration/scheduler-authority/
+            quality-reports/go-migration/schedule-due/
+            quality-reports/go-migration/occurrence/
+            quality-reports/go-migration/schedule-page/
+            quality-reports/go-migration/transaction-lifetime/
+            quality-reports/go-migration/server-fence/
+            quality-reports/go-migration/restore-drain-pooler/
+            quality-reports/go-migration/restore-server-barrier/
+
+  go-image:
+    name: Isolated Go image and packaged processes
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/go-foundation-setup
       - name: Build isolated Go image and verify non-root execution
         run: |
           docker build --build-arg CODE_REVISION="${{ github.sha }}" -t assozeta-go-foundation:test BE_GO
@@ -194,61 +370,13 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: go-foundation-evidence
+          name: go-foundation-evidence-go-image
           path: |
-            quality-reports/go-migration/go-health/
-            quality-reports/go-migration/credentials.json
-            quality-reports/go-migration/permissions.json
-            quality-reports/go-migration/impersonation-cache/
-            quality-reports/go-migration/login-rate/
-            quality-reports/go-migration/cors/
-            quality-reports/go-migration/security-headers/
-            quality-reports/go-migration/instance-bootstrap/
-            quality-reports/go-migration/instance-bootstrap-go/
-            quality-reports/go-migration/instance-logo/results.json
-            quality-reports/go-migration/instance-logo-disk/results.json
-            quality-reports/go-migration/manual-availability/
-            quality-reports/go-migration/manual-bundle/
-            quality-reports/go-migration/manual-reader/
-            quality-reports/go-migration/manual-asset-scope/results.json
-            quality-reports/go-migration/manual-retrieval/
-            quality-reports/go-migration/manual-tools/
-            quality-reports/go-migration/manual-tools-go-library/
-            quality-reports/go-migration/manual-tools-go-service/
-            quality-reports/go-migration/manual-mcp-django/
-            quality-reports/go-migration/manual-mcp-go/
-            quality-reports/go-migration/manual-reader-http/
-            quality-reports/go-migration/manual-reader-http-go/
-            quality-reports/go-migration/manual-reader-http-versioned/
-            quality-reports/go-migration/manual-reader-http-go-versioned/
-            quality-reports/go-migration/manual-refresh-lock/
             quality-reports/go-migration/manual-image/
-            quality-reports/go-migration/environment/
-            quality-reports/go-migration/runtime.json
-            quality-reports/go-migration/jobs/
-            quality-reports/go-migration/job-executor/
-            quality-reports/go-migration/worker-process/
             quality-reports/go-migration/worker-image/
-            quality-reports/go-migration/age-worker-process/
-            quality-reports/go-migration/token-worker-process/
             quality-reports/go-migration/token-worker-image/
             quality-reports/go-migration/age-worker-image/
-            quality-reports/go-migration/scheduler-process/
             quality-reports/go-migration/scheduler-image/
-            quality-reports/go-migration/scheduler-authority/
-            quality-reports/go-migration/schedule-due/
-            quality-reports/go-migration/occurrence/
-            quality-reports/go-migration/schedule-page/
-            quality-reports/go-migration/transaction-lifetime/
-            quality-reports/go-migration/server-fence/
-            quality-reports/go-migration/restore-drain-pooler/
-            quality-reports/go-migration/restore-server-barrier/
-            quality-reports/go-migration/document-keys/
-            quality-reports/go-migration/s3-objects/
-            quality-reports/go-migration/storage-configuration/
-            quality-reports/go-migration/storage-credentials/
-            quality-reports/go-migration/storage-roles/
-            quality-reports/go-migration/storage-web-identity/
 
   storage-tls:
     name: Storage trust and packaged manifest, logo and HTTPS
