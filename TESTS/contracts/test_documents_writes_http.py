@@ -8,6 +8,7 @@ The checks are http_family's (status, error pages, Allow, Content-Language, the
   runner can bind them to the rows and audit entries the request created;
 - '<bad-request-page>' is Django's SuspiciousOperation 400 page.
 """
+from datetime import datetime, timezone
 import json
 from pathlib import Path
 import re
@@ -22,6 +23,14 @@ BAD_REQUEST_DOCUMENT = (b'\n<!doctype html>\n<html lang="en">\n<head>\n  <title>
                         b'  <h1>Bad Request (400)</h1><p></p>\n</body>\n</html>\n')
 RUNTIME = {}
 PLACEHOLDER = re.compile(r'^\$(doc|archive|cert|file)\d+(\.(created|token|date))?$')
+# Document.objects.create(filename=None): PostgreSQL lists the row whose INSERT
+# failed, in the table's column order. The ids and the timestamp are generated.
+NULL_FILENAME_EXCEPTION = re.compile(
+    r'null value in column "filename" of relation "docmanager_document" violates not-null constraint\n'
+    r'DETAIL:  Failing row contains \('
+    r'[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}, '
+    r'([0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}(?:\.[0-9]{1,6})?\+00), '
+    r'null, [0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}, null, null\)\.\n')
 
 
 def load_source(path=SOURCE):
@@ -102,6 +111,22 @@ def assert_case(case, base_url, *, token, sessions, folders):
     check(received.get('Retry-After') == case.get('retry_after'), 'response.retry-after')
     if case['response'] == '<empty>':
         check(raw == b'', 'response.empty')
+        return status
+    if case['response'] == '<null-filename-exception>':
+        try:
+            actual = json.loads(raw)
+        except (ValueError, UnicodeDecodeError):
+            raise ResponseFailure('response.json', status) from None
+        check(isinstance(actual, dict) and list(actual) == ['exception'], 'response.null-filename-keys')
+        check(isinstance(actual.get('exception'), str), 'response.null-filename-type')
+        match = NULL_FILENAME_EXCEPTION.fullmatch(actual.get('exception') or '')
+        check(match is not None, 'response.null-filename-message')
+        if match:
+            stamp = match.group(1).removesuffix('+00')
+            moment = datetime.strptime(stamp, '%Y-%m-%d %H:%M:%S.%f' if '.' in stamp else '%Y-%m-%d %H:%M:%S')
+            now = datetime.now(timezone.utc).replace(tzinfo=None)
+            check(abs((now - moment).total_seconds()) < 3600, 'response.null-filename-time')
+        check(received.get('Content-Type', '').split(';')[0] == 'application/json', 'response.type')
         return status
     try:
         actual = json.loads(raw)

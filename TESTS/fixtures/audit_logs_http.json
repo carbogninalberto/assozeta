@@ -82,7 +82,10 @@
    "event_unknown": "e7000004-0000-4000-8000-000000996039",
    "missing": "deadbeef-0000-4000-8000-000000996040",
    "missing_two": "feedface-0000-4000-8000-000000996041",
-   "event_numeric": "e7000005-0000-4000-8000-000000996042"
+   "event_numeric": "e7000005-0000-4000-8000-000000996042",
+   "day_early": "da100002-0000-4000-8000-000000996043",
+   "period_early": "ca300004-0000-4000-8000-000000996044",
+   "event_early": "e7000006-0000-4000-8000-000000996045"
   },
   "users": {
    "user_named": {
@@ -118,6 +121,11 @@
     "event_id": "e7000005-0000-4000-8000-000000996042",
     "title": 5,
     "start": "2026-13-01"
+   },
+   {
+    "event_id": "e7000006-0000-4000-8000-000000996045",
+    "title": "Vecchia",
+    "start": "0999-09-15T18:30:00Z"
    }
   ],
   "events_calendar": [
@@ -2600,6 +2608,169 @@
      "formatted": "Campi aggiuntivi: N/D → A: B"
     }
    ]
+  },
+  "early-year-day": {
+   "id": 996000059,
+   "app": "application",
+   "model": "attendanceday",
+   "pk": "da100002-0000-4000-8000-000000996043",
+   "repr": "Attendanceday object (da100002-0000-4000-8000-000000996043)",
+   "action": 1,
+   "changes": {
+    "attendance_day": [
+     "None",
+     "da100002-0000-4000-8000-000000996043"
+    ],
+    "associated_event": [
+     "None",
+     "e7000006-0000-4000-8000-000000996045"
+    ]
+   },
+   "actor": "user_named",
+   "actor_email": "stale@example.test",
+   "remote": "10.0.0.1",
+   "extra": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "timestamp": "2026-10-05T15:00:00Z",
+   "indexed": true,
+   "description": "Presenze - Giornata (15/09/$libc_year:999)",
+   "enriched": {
+    "attendance_day": [
+     "None",
+     "Giornata - 15/09/$libc_year:999"
+    ],
+    "associated_event": [
+     "None",
+     "Vecchia - 15/09/$libc_year:999 18:30"
+    ]
+   },
+   "display": [
+    {
+     "field": "Attendance Day",
+     "field_key": "attendance_day",
+     "old": "N/D",
+     "new": "Giornata - 15/09/$libc_year:999",
+     "formatted": "Attendance Day: N/D → Giornata - 15/09/$libc_year:999"
+    },
+    {
+     "field": "Evento associato",
+     "field_key": "associated_event",
+     "old": "N/D",
+     "new": "Vecchia - 15/09/$libc_year:999 18:30",
+     "formatted": "Evento associato: N/D → Vecchia - 15/09/$libc_year:999 18:30"
+    }
+   ]
+  },
+  "early-year-period": {
+   "id": 996000060,
+   "app": "application",
+   "model": "campsandretreatsperiod",
+   "pk": "ca300004-0000-4000-8000-000000996044",
+   "repr": "Campsandretreatsperiod object (ca300004-0000-4000-8000-000000996044)",
+   "action": 1,
+   "changes": {
+    "camps_and_retreats_period_id": [
+     "None",
+     "ca300004-0000-4000-8000-000000996044"
+    ]
+   },
+   "actor": "user_named",
+   "actor_email": "stale@example.test",
+   "remote": "10.0.0.1",
+   "extra": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "timestamp": "2026-10-05T18:00:00Z",
+   "indexed": true,
+   "description": "Periodo - Campo estivo (01/07/$libc_year:1)",
+   "enriched": {
+    "camps_and_retreats_period_id": [
+     "None",
+     "Campo estivo - 01/07/$libc_year:1"
+    ]
+   },
+   "display": [
+    {
+     "field": "Camps And Retreats Period Id",
+     "field_key": "camps_and_retreats_period_id",
+     "old": "N/D",
+     "new": "Campo estivo - 01/07/$libc_year:1",
+     "formatted": "Camps And Retreats Period Id: N/D → Campo estivo - 01/07/$libc_year:1"
+    }
+   ]
+  },
+  "early-year-events": {
+   "id": 996000061,
+   "app": "application",
+   "model": "attendanceregistry",
+   "pk": "e1000001-0000-4000-8000-000000996022",
+   "repr": "Attendanceregistry object (e1000001-0000-4000-8000-000000996022)",
+   "action": 1,
+   "changes": {
+    "events": [
+     "None",
+     "[{\"title\": \"Vecchia\", \"start\": \"0999-09-15T18:30:00Z\"}, {\"title\": \"Antica\", \"start\": \"0001-07-01\"}]"
+    ]
+   },
+   "actor": "user_named",
+   "actor_email": "stale@example.test",
+   "remote": "10.0.0.1",
+   "extra": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "timestamp": "2026-10-05T21:00:00Z",
+   "indexed": true,
+   "description": "Registro Presenze - Nuoto è",
+   "enriched": {
+    "events": [
+     "None",
+     "Vecchia (15/09/$libc_year:999), Antica (01/07/$libc_year:1)"
+    ]
+   },
+   "display": [
+    {
+     "field": "Eventi",
+     "field_key": "events",
+     "old": "N/D",
+     "new": "Vecchia (15/09/$libc_year:999), Antica (01/07/$libc_year:1)",
+     "formatted": "Eventi: N/D → Vecchia (15/09/$libc_year:999), Antica (01/07/$libc_year:1)"
+    }
+   ]
+  },
+  "user-permissions-unicode": {
+   "id": 996000062,
+   "app": "application",
+   "model": "user",
+   "pk": "a1000000-0000-4000-8000-000000996001",
+   "repr": "User object (a1000000-0000-4000-8000-000000996001)",
+   "action": 1,
+   "changes": {
+    "collaborator_permissions": [
+     "[]",
+     "[\"caf\\u00e9\", \"x.\\u00dfeta\", \"ab\\u0130\"]"
+    ]
+   },
+   "actor": "user_named",
+   "actor_email": "stale@example.test",
+   "remote": "10.0.0.1",
+   "extra": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "timestamp": "2026-10-06T00:00:00Z",
+   "indexed": true,
+   "description": "Utente - Mario Rossi",
+   "enriched": {
+    "collaborator_permissions": [
+     "Nessun permesso",
+     "Café, Sseta, Abi̇"
+    ]
+   },
+   "display": [
+    {
+     "field": "Permessi collaboratore",
+     "field_key": "collaborator_permissions",
+     "old": "Nessun permesso",
+     "new": "Café, Sseta, Abi̇",
+     "formatted": "Permessi collaboratore: Nessun permesso → Café, Sseta, Abi̇"
+    }
+   ]
   }
  },
  "cases": [
@@ -2834,6 +3005,169 @@
    "status": 200,
    "response": {
     "data": [
+     {
+      "id": 996000062,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-06T00:00:00Z",
+      "object_pk": "a1000000-0000-4000-8000-000000996001",
+      "object_repr": "User object (a1000000-0000-4000-8000-000000996001)",
+      "object_description": "Utente - Mario Rossi",
+      "model_name": "user",
+      "model_verbose_name": "Utente",
+      "actor_name": "Mario Rossi",
+      "actor_email": "mario.audit@example.test",
+      "remote_addr": "10.0.0.1",
+      "changes": {
+       "collaborator_permissions": [
+        "[]",
+        "[\"caf\\u00e9\", \"x.\\u00dfeta\", \"ab\\u0130\"]"
+       ]
+      },
+      "enriched_changes": {
+       "collaborator_permissions": [
+        "Nessun permesso",
+        "Café, Sseta, Abi̇"
+       ]
+      },
+      "display_changes": [
+       {
+        "field": "Permessi collaboratore",
+        "field_key": "collaborator_permissions",
+        "old": "Nessun permesso",
+        "new": "Café, Sseta, Abi̇",
+        "formatted": "Permessi collaboratore: Nessun permesso → Café, Sseta, Abi̇"
+       }
+      ],
+      "changes_summary": "Modificato: collaborator_permissions",
+      "additional_data": null
+     },
+     {
+      "id": 996000061,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T21:00:00Z",
+      "object_pk": "e1000001-0000-4000-8000-000000996022",
+      "object_repr": "Attendanceregistry object (e1000001-0000-4000-8000-000000996022)",
+      "object_description": "Registro Presenze - Nuoto è",
+      "model_name": "attendanceregistry",
+      "model_verbose_name": "Registro Presenze",
+      "actor_name": "Mario Rossi",
+      "actor_email": "mario.audit@example.test",
+      "remote_addr": "10.0.0.1",
+      "changes": {
+       "events": [
+        "None",
+        "[{\"title\": \"Vecchia\", \"start\": \"0999-09-15T18:30:00Z\"}, {\"title\": \"Antica\", \"start\": \"0001-07-01\"}]"
+       ]
+      },
+      "enriched_changes": {
+       "events": [
+        "None",
+        "Vecchia (15/09/$libc_year:999), Antica (01/07/$libc_year:1)"
+       ]
+      },
+      "display_changes": [
+       {
+        "field": "Eventi",
+        "field_key": "events",
+        "old": "N/D",
+        "new": "Vecchia (15/09/$libc_year:999), Antica (01/07/$libc_year:1)",
+        "formatted": "Eventi: N/D → Vecchia (15/09/$libc_year:999), Antica (01/07/$libc_year:1)"
+       }
+      ],
+      "changes_summary": "Modificato: events",
+      "additional_data": null
+     },
+     {
+      "id": 996000060,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T18:00:00Z",
+      "object_pk": "ca300004-0000-4000-8000-000000996044",
+      "object_repr": "Campsandretreatsperiod object (ca300004-0000-4000-8000-000000996044)",
+      "object_description": "Periodo - Campo estivo (01/07/$libc_year:1)",
+      "model_name": "campsandretreatsperiod",
+      "model_verbose_name": "Periodo Campo",
+      "actor_name": "Mario Rossi",
+      "actor_email": "mario.audit@example.test",
+      "remote_addr": "10.0.0.1",
+      "changes": {
+       "camps_and_retreats_period_id": [
+        "None",
+        "ca300004-0000-4000-8000-000000996044"
+       ]
+      },
+      "enriched_changes": {
+       "camps_and_retreats_period_id": [
+        "None",
+        "Campo estivo - 01/07/$libc_year:1"
+       ]
+      },
+      "display_changes": [
+       {
+        "field": "Camps And Retreats Period Id",
+        "field_key": "camps_and_retreats_period_id",
+        "old": "N/D",
+        "new": "Campo estivo - 01/07/$libc_year:1",
+        "formatted": "Camps And Retreats Period Id: N/D → Campo estivo - 01/07/$libc_year:1"
+       }
+      ],
+      "changes_summary": "Modificato: camps_and_retreats_period_id",
+      "additional_data": null
+     },
+     {
+      "id": 996000059,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T15:00:00Z",
+      "object_pk": "da100002-0000-4000-8000-000000996043",
+      "object_repr": "Attendanceday object (da100002-0000-4000-8000-000000996043)",
+      "object_description": "Presenze - Giornata (15/09/$libc_year:999)",
+      "model_name": "attendanceday",
+      "model_verbose_name": "Giornata Presenze",
+      "actor_name": "Mario Rossi",
+      "actor_email": "mario.audit@example.test",
+      "remote_addr": "10.0.0.1",
+      "changes": {
+       "attendance_day": [
+        "None",
+        "da100002-0000-4000-8000-000000996043"
+       ],
+       "associated_event": [
+        "None",
+        "e7000006-0000-4000-8000-000000996045"
+       ]
+      },
+      "enriched_changes": {
+       "attendance_day": [
+        "None",
+        "Giornata - 15/09/$libc_year:999"
+       ],
+       "associated_event": [
+        "None",
+        "Vecchia - 15/09/$libc_year:999 18:30"
+       ]
+      },
+      "display_changes": [
+       {
+        "field": "Attendance Day",
+        "field_key": "attendance_day",
+        "old": "N/D",
+        "new": "Giornata - 15/09/$libc_year:999",
+        "formatted": "Attendance Day: N/D → Giornata - 15/09/$libc_year:999"
+       },
+       {
+        "field": "Evento associato",
+        "field_key": "associated_event",
+        "old": "N/D",
+        "new": "Vecchia - 15/09/$libc_year:999 18:30",
+        "formatted": "Evento associato: N/D → Vecchia - 15/09/$libc_year:999 18:30"
+       }
+      ],
+      "changes_summary": "Modificato: attendance_day, associated_event",
+      "additional_data": null
+     },
      {
       "id": 996000046,
       "action": 1,
@@ -3208,170 +3542,10 @@
       ],
       "changes_summary": "Record creato",
       "additional_data": null
-     },
-     {
-      "id": 996000039,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-03T03:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000701001",
-      "object_repr": "Sportassociation object (a1000000-0000-4000-8000-000000701001)",
-      "object_description": "Associazione - Message reads own",
-      "model_name": "sportassociation",
-      "model_verbose_name": "Associazione Sportiva",
-      "actor_name": "Mario Rossi",
-      "actor_email": "mario.audit@example.test",
-      "remote_addr": "10.0.0.1",
-      "changes": {
-       "denomination": [
-        "Vecchia",
-        "Message reads own"
-       ]
-      },
-      "enriched_changes": {
-       "denomination": [
-        "Vecchia",
-        "Message reads own"
-       ]
-      },
-      "display_changes": [
-       {
-        "field": "Denomination",
-        "field_key": "denomination",
-        "old": "Vecchia",
-        "new": "Message reads own",
-        "formatted": "Denomination: Vecchia → Message reads own"
-       }
-      ],
-      "changes_summary": "Modificato: denomination",
-      "additional_data": null
-     },
-     {
-      "id": 996000037,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-02T21:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000996003",
-      "object_repr": "Gina Neri",
-      "object_description": "Gina Neri",
-      "model_name": "user",
-      "model_verbose_name": "Utente",
-      "actor_name": "Mario Rossi",
-      "actor_email": "mario.audit@example.test",
-      "remote_addr": "10.0.0.1",
-      "changes": null,
-      "enriched_changes": null,
-      "display_changes": null,
-      "changes_summary": null,
-      "additional_data": null
-     },
-     {
-      "id": 996000036,
-      "action": 0,
-      "action_label": "Creazione",
-      "timestamp": "2026-10-02T18:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000996002",
-      "object_repr": "User object (a1000000-0000-4000-8000-000000996002)",
-      "object_description": "Utente - blank.audit@example.test",
-      "model_name": "user",
-      "model_verbose_name": "Utente",
-      "actor_name": "Gina Neri",
-      "actor_email": "gina.audit@example.test",
-      "remote_addr": "10.0.0.1",
-      "changes": {
-       "email": [
-        "None",
-        "blank.audit@example.test"
-       ]
-      },
-      "enriched_changes": {
-       "email": [
-        "None",
-        "blank.audit@example.test"
-       ]
-      },
-      "display_changes": [
-       {
-        "field": "Email",
-        "field_key": "email",
-        "old": "N/D",
-        "new": "blank.audit@example.test",
-        "formatted": "Email: N/D → blank.audit@example.test"
-       }
-      ],
-      "changes_summary": "Record creato",
-      "additional_data": null
-     },
-     {
-      "id": 996000035,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-02T15:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000996001",
-      "object_repr": "User object (a1000000-0000-4000-8000-000000996001)",
-      "object_description": "Utente - Mario Rossi",
-      "model_name": "user",
-      "model_verbose_name": "Utente",
-      "actor_name": "Mario Rossi",
-      "actor_email": "mario.audit@example.test",
-      "remote_addr": "10.0.0.1",
-      "changes": {
-       "collaborator_permissions": [
-        "[]",
-        "[\"association.courses.read\", \"bookeeping.payments.read\", \"custom.thing.EXPORT_all\"]"
-       ],
-       "archived": [
-        "false",
-        "TRUE"
-       ],
-       "active": [
-        false,
-        true
-       ]
-      },
-      "enriched_changes": {
-       "collaborator_permissions": [
-        "Nessun permesso",
-        "Lettura corsi, Lettura pagamenti, Export_all"
-       ],
-       "archived": [
-        "No",
-        "Sì"
-       ],
-       "active": [
-        "No",
-        "Sì"
-       ]
-      },
-      "display_changes": [
-       {
-        "field": "Attivo",
-        "field_key": "active",
-        "old": "No",
-        "new": "Sì",
-        "formatted": "Attivo: No → Sì"
-       },
-       {
-        "field": "Archiviato",
-        "field_key": "archived",
-        "old": "No",
-        "new": "Sì",
-        "formatted": "Archiviato: No → Sì"
-       },
-       {
-        "field": "Permessi collaboratore",
-        "field_key": "collaborator_permissions",
-        "old": "Nessun permesso",
-        "new": "Lettura corsi, Lettura pagamenti, Export_all",
-        "formatted": "Permessi collaboratore: Nessun permesso → Lettura corsi, Lettura pagamenti, Export_all"
-       }
-      ],
-      "changes_summary": "Modificato: active, archived, collaborator_permissions",
-      "additional_data": null
      }
     ],
     "meta": {
-     "total": 54,
+     "total": 58,
      "page": 1,
      "pages": 6,
      "perpage": 10
@@ -3388,6 +3562,46 @@
    "response": {
     "data": [
      {
+      "id": 996000062,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-06T00:00:00Z",
+      "object_pk": "a1000000-0000-4000-8000-000000996001",
+      "object_repr": "User object (a1000000-0000-4000-8000-000000996001)",
+      "model_verbose_name": "Utente",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000061,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T21:00:00Z",
+      "object_pk": "e1000001-0000-4000-8000-000000996022",
+      "object_repr": "Attendanceregistry object (e1000001-0000-4000-8000-000000996022)",
+      "model_verbose_name": "Registro Presenze",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000060,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T18:00:00Z",
+      "object_pk": "ca300004-0000-4000-8000-000000996044",
+      "object_repr": "Campsandretreatsperiod object (ca300004-0000-4000-8000-000000996044)",
+      "model_verbose_name": "Periodo Campo",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000059,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T15:00:00Z",
+      "object_pk": "da100002-0000-4000-8000-000000996043",
+      "object_repr": "Attendanceday object (da100002-0000-4000-8000-000000996043)",
+      "model_verbose_name": "Giornata Presenze",
+      "actor_name": "Mario Rossi"
+     },
+     {
       "id": 996000046,
       "action": 1,
       "action_label": "Modifica",
@@ -3446,50 +3660,10 @@
       "object_repr": "Message object (e5000001-0000-4000-8000-000000996032)",
       "model_verbose_name": "Messaggio",
       "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000039,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-03T03:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000701001",
-      "object_repr": "Sportassociation object (a1000000-0000-4000-8000-000000701001)",
-      "model_verbose_name": "Associazione Sportiva",
-      "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000037,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-02T21:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000996003",
-      "object_repr": "Gina Neri",
-      "model_verbose_name": "Utente",
-      "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000036,
-      "action": 0,
-      "action_label": "Creazione",
-      "timestamp": "2026-10-02T18:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000996002",
-      "object_repr": "User object (a1000000-0000-4000-8000-000000996002)",
-      "model_verbose_name": "Utente",
-      "actor_name": "Gina Neri"
-     },
-     {
-      "id": 996000035,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-02T15:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000996001",
-      "object_repr": "User object (a1000000-0000-4000-8000-000000996001)",
-      "model_verbose_name": "Utente",
-      "actor_name": "Mario Rossi"
      }
     ],
     "meta": {
-     "total": 54,
+     "total": 58,
      "page": 1,
      "pages": 6,
      "perpage": 10
@@ -3506,6 +3680,46 @@
    "response": {
     "data": [
      {
+      "id": 996000062,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-06T00:00:00Z",
+      "object_pk": "a1000000-0000-4000-8000-000000996001",
+      "object_repr": "User object (a1000000-0000-4000-8000-000000996001)",
+      "model_verbose_name": "Utente",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000061,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T21:00:00Z",
+      "object_pk": "e1000001-0000-4000-8000-000000996022",
+      "object_repr": "Attendanceregistry object (e1000001-0000-4000-8000-000000996022)",
+      "model_verbose_name": "Registro Presenze",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000060,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T18:00:00Z",
+      "object_pk": "ca300004-0000-4000-8000-000000996044",
+      "object_repr": "Campsandretreatsperiod object (ca300004-0000-4000-8000-000000996044)",
+      "model_verbose_name": "Periodo Campo",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000059,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T15:00:00Z",
+      "object_pk": "da100002-0000-4000-8000-000000996043",
+      "object_repr": "Attendanceday object (da100002-0000-4000-8000-000000996043)",
+      "model_verbose_name": "Giornata Presenze",
+      "actor_name": "Mario Rossi"
+     },
+     {
       "id": 996000046,
       "action": 1,
       "action_label": "Modifica",
@@ -3564,50 +3778,10 @@
       "object_repr": "Message object (e5000001-0000-4000-8000-000000996032)",
       "model_verbose_name": "Messaggio",
       "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000039,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-03T03:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000701001",
-      "object_repr": "Sportassociation object (a1000000-0000-4000-8000-000000701001)",
-      "model_verbose_name": "Associazione Sportiva",
-      "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000037,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-02T21:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000996003",
-      "object_repr": "Gina Neri",
-      "model_verbose_name": "Utente",
-      "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000036,
-      "action": 0,
-      "action_label": "Creazione",
-      "timestamp": "2026-10-02T18:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000996002",
-      "object_repr": "User object (a1000000-0000-4000-8000-000000996002)",
-      "model_verbose_name": "Utente",
-      "actor_name": "Gina Neri"
-     },
-     {
-      "id": 996000035,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-02T15:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000996001",
-      "object_repr": "User object (a1000000-0000-4000-8000-000000996001)",
-      "model_verbose_name": "Utente",
-      "actor_name": "Mario Rossi"
      }
     ],
     "meta": {
-     "total": 54,
+     "total": 58,
      "page": 1,
      "pages": 6,
      "perpage": 10
@@ -3627,6 +3801,46 @@
    "response": {
     "data": [
      {
+      "id": 996000062,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-06T00:00:00Z",
+      "object_pk": "a1000000-0000-4000-8000-000000996001",
+      "object_repr": "User object (a1000000-0000-4000-8000-000000996001)",
+      "model_verbose_name": "Utente",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000061,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T21:00:00Z",
+      "object_pk": "e1000001-0000-4000-8000-000000996022",
+      "object_repr": "Attendanceregistry object (e1000001-0000-4000-8000-000000996022)",
+      "model_verbose_name": "Registro Presenze",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000060,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T18:00:00Z",
+      "object_pk": "ca300004-0000-4000-8000-000000996044",
+      "object_repr": "Campsandretreatsperiod object (ca300004-0000-4000-8000-000000996044)",
+      "model_verbose_name": "Periodo Campo",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000059,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T15:00:00Z",
+      "object_pk": "da100002-0000-4000-8000-000000996043",
+      "object_repr": "Attendanceday object (da100002-0000-4000-8000-000000996043)",
+      "model_verbose_name": "Giornata Presenze",
+      "actor_name": "Mario Rossi"
+     },
+     {
       "id": 996000046,
       "action": 1,
       "action_label": "Modifica",
@@ -3685,50 +3899,10 @@
       "object_repr": "Message object (e5000001-0000-4000-8000-000000996032)",
       "model_verbose_name": "Messaggio",
       "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000039,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-03T03:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000701001",
-      "object_repr": "Sportassociation object (a1000000-0000-4000-8000-000000701001)",
-      "model_verbose_name": "Associazione Sportiva",
-      "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000037,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-02T21:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000996003",
-      "object_repr": "Gina Neri",
-      "model_verbose_name": "Utente",
-      "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000036,
-      "action": 0,
-      "action_label": "Creazione",
-      "timestamp": "2026-10-02T18:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000996002",
-      "object_repr": "User object (a1000000-0000-4000-8000-000000996002)",
-      "model_verbose_name": "Utente",
-      "actor_name": "Gina Neri"
-     },
-     {
-      "id": 996000035,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-02T15:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000996001",
-      "object_repr": "User object (a1000000-0000-4000-8000-000000996001)",
-      "model_verbose_name": "Utente",
-      "actor_name": "Mario Rossi"
      }
     ],
     "meta": {
-     "total": 54,
+     "total": 58,
      "page": 1,
      "pages": 6,
      "perpage": 10
@@ -3800,237 +3974,84 @@
    "response": {
     "data": [
      {
-      "id": 996000046,
+      "id": 996000062,
       "action": 1,
       "action_label": "Modifica",
-      "timestamp": "2026-10-04T00:00:00Z",
-      "object_pk": "feedface-0000-4000-8000-000000996041",
-      "object_repr": "Campsandretreatsperiodsservice object (feedface-0000-4000-8000-000000996041)",
-      "object_description": "Campsandretreatsperiodsservice #feedface",
-      "model_name": "campsandretreatsperiodsservice",
-      "model_verbose_name": "Campsandretreatsperiodsservice",
+      "timestamp": "2026-10-06T00:00:00Z",
+      "object_pk": "a1000000-0000-4000-8000-000000996001",
+      "object_repr": "User object (a1000000-0000-4000-8000-000000996001)",
+      "object_description": "Utente - Mario Rossi",
+      "model_name": "user",
+      "model_verbose_name": "Utente",
       "actor_name": "Mario Rossi",
       "actor_email": "mario.audit@example.test",
       "remote_addr": "10.0.0.1",
       "changes": {
-       "notes": [
-        "",
-        "\"\""
-       ],
-       "scores": [
-        "[1, 2.50, true, null]",
-        "[\"a\", \"b\"]"
-       ],
-       "labelled": [
-        "{\"label\": \"L\", \"value\": 3}",
-        "{\"course\": \"C0A5E001-0000-4000-8000-000000996004\", \"active\": \"yes\", \"\": \"c0a5e001-0000-4000-8000-000000996004\"}"
-       ],
-       "numbers": [
-        5,
-        7.0
-       ],
-       "flags": [
-        true,
-        false
-       ],
-       "sport_association": [
-        "None",
-        "a1000000-0000-4000-8000-000000701001"
-       ],
-       "broken": [
-        "[not json",
-        "[]"
-       ],
-       "m2m": {
-        "type": "m2m",
-        "operation": "add",
-        "objects": [
-         "a",
-         "b",
-         "c",
-         "d",
-         "e",
-         "f"
-        ]
-       },
-       "single": [
-        "solo"
-       ],
-       "course_id": [
-        "None",
-        "c0a5e001-0000-4000-8000-000000996004\n"
+       "collaborator_permissions": [
+        "[]",
+        "[\"caf\\u00e9\", \"x.\\u00dfeta\", \"ab\\u0130\"]"
        ]
       },
       "enriched_changes": {
-       "notes": [
-        "",
-        "\"\""
-       ],
-       "scores": [
-        [
-         1,
-         2.5,
-         "Sì",
-         null
-        ],
-        [
-         "a",
-         "b"
-        ]
-       ],
-       "labelled": [
-        {
-         "label": "L",
-         "value": 3
-        },
-        {
-         "course": "Nuoto è",
-         "active": "Sì",
-         "": "c0a5e001-0000-4000-8000-000000996004"
-        }
-       ],
-       "numbers": [
-        5,
-        7.0
-       ],
-       "flags": [
-        "Sì",
-        "No"
-       ],
-       "sport_association": [
-        "None",
-        "a1000000-0000-4000-8000-000000701001"
-       ],
-       "broken": [
-        "[not json",
-        "(vuoto)"
-       ],
-       "m2m": {
-        "type": "m2m",
-        "operation": "add",
-        "objects": [
-         "a",
-         "b",
-         "c",
-         "d",
-         "e",
-         "f"
-        ]
-       },
-       "single": [
-        "solo"
-       ],
-       "course_id": [
-        "None",
-        "c0a5e001-0000-4000-8000-000000996004\n"
+       "collaborator_permissions": [
+        "Nessun permesso",
+        "Café, Sseta, Abi̇"
        ]
       },
       "display_changes": [
        {
-        "field": "M2M",
-        "field_key": "m2m",
-        "value": "3 campi",
-        "formatted": "M2M: 3 campi"
-       },
-       {
-        "field": "Flags",
-        "field_key": "flags",
-        "old": "Sì",
-        "new": "No",
-        "formatted": "Flags: Sì → No"
-       },
-       {
-        "field": "Note",
-        "field_key": "notes",
-        "old": "(vuoto)",
-        "new": "(vuoto)",
-        "formatted": "Note: (vuoto) → (vuoto)"
-       },
-       {
-        "field": "Broken",
-        "field_key": "broken",
-        "old": "[not json",
-        "new": "(vuoto)",
-        "formatted": "Broken: [not json → (vuoto)"
-       },
-       {
-        "field": "Scores",
-        "field_key": "scores",
-        "old": "4 elementi",
-        "new": "a, b",
-        "formatted": "Scores: 4 elementi → a, b"
-       },
-       {
-        "field": "Single",
-        "field_key": "single",
-        "value": "solo",
-        "formatted": "Single: solo"
-       },
-       {
-        "field": "Numbers",
-        "field_key": "numbers",
-        "old": "5",
-        "new": "7.0",
-        "formatted": "Numbers: 5 → 7.0"
-       },
-       {
-        "field": "Labelled",
-        "field_key": "labelled",
-        "old": "L: 3",
-        "new": "3 campi",
-        "formatted": "Labelled: L: 3 → 3 campi"
-       },
-       {
-        "field": "Course Id",
-        "field_key": "course_id",
-        "old": "N/D",
-        "new": "c0a5e001-0000-4000-8000-000000996004\n",
-        "formatted": "Course Id: N/D → c0a5e001-0000-4000-8000-000000996004\n"
-       },
-       {
-        "field": "Associazione",
-        "field_key": "sport_association",
-        "old": "N/D",
-        "new": "a1000000-0000-4000-8000-000000701001",
-        "formatted": "Associazione: N/D → a1000000-0000-4000-8000-000000701001"
+        "field": "Permessi collaboratore",
+        "field_key": "collaborator_permissions",
+        "old": "Nessun permesso",
+        "new": "Café, Sseta, Abi̇",
+        "formatted": "Permessi collaboratore: Nessun permesso → Café, Sseta, Abi̇"
        }
       ],
-      "changes_summary": "Modificati 10 campi",
-      "additional_data": {
-       "reason": "import",
-       "count": 2
-      }
+      "changes_summary": "Modificato: collaborator_permissions",
+      "additional_data": null
      },
      {
-      "id": 996000044,
+      "id": 996000061,
       "action": 1,
       "action_label": "Modifica",
-      "timestamp": "2026-10-03T18:00:00Z",
-      "object_pk": "deadbeef-0000-4000-8000-000000996040",
-      "object_repr": "Sconto 50%_x",
-      "object_description": "Sconto 50%_x",
-      "model_name": "associatetutorrelation",
-      "model_verbose_name": "Associatetutorrelation",
+      "timestamp": "2026-10-05T21:00:00Z",
+      "object_pk": "e1000001-0000-4000-8000-000000996022",
+      "object_repr": "Attendanceregistry object (e1000001-0000-4000-8000-000000996022)",
+      "object_description": "Registro Presenze - Nuoto è",
+      "model_name": "attendanceregistry",
+      "model_verbose_name": "Registro Presenze",
       "actor_name": "Mario Rossi",
       "actor_email": "mario.audit@example.test",
       "remote_addr": "10.0.0.1",
-      "changes": [
-       "a",
-       "b"
+      "changes": {
+       "events": [
+        "None",
+        "[{\"title\": \"Vecchia\", \"start\": \"0999-09-15T18:30:00Z\"}, {\"title\": \"Antica\", \"start\": \"0001-07-01\"}]"
+       ]
+      },
+      "enriched_changes": {
+       "events": [
+        "None",
+        "Vecchia (15/09/$libc_year:999), Antica (01/07/$libc_year:1)"
+       ]
+      },
+      "display_changes": [
+       {
+        "field": "Eventi",
+        "field_key": "events",
+        "old": "N/D",
+        "new": "Vecchia (15/09/$libc_year:999), Antica (01/07/$libc_year:1)",
+        "formatted": "Eventi: N/D → Vecchia (15/09/$libc_year:999), Antica (01/07/$libc_year:1)"
+       }
       ],
-      "enriched_changes": [
-       "a",
-       "b"
-      ],
-      "display_changes": [],
-      "changes_summary": "Nessuna modifica",
+      "changes_summary": "Modificato: events",
       "additional_data": null
      }
     ],
     "meta": {
-     "total": 54,
+     "total": 58,
      "page": 1,
-     "pages": 27,
+     "pages": 29,
      "perpage": 10
     }
    }
@@ -4044,6 +4065,46 @@
    "status": 200,
    "response": {
     "data": [
+     {
+      "id": 996000039,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-03T03:00:00Z",
+      "object_pk": "a1000000-0000-4000-8000-000000701001",
+      "object_repr": "Sportassociation object (a1000000-0000-4000-8000-000000701001)",
+      "model_verbose_name": "Associazione Sportiva",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000037,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-02T21:00:00Z",
+      "object_pk": "a1000000-0000-4000-8000-000000996003",
+      "object_repr": "Gina Neri",
+      "model_verbose_name": "Utente",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000036,
+      "action": 0,
+      "action_label": "Creazione",
+      "timestamp": "2026-10-02T18:00:00Z",
+      "object_pk": "a1000000-0000-4000-8000-000000996002",
+      "object_repr": "User object (a1000000-0000-4000-8000-000000996002)",
+      "model_verbose_name": "Utente",
+      "actor_name": "Gina Neri"
+     },
+     {
+      "id": 996000035,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-02T15:00:00Z",
+      "object_pk": "a1000000-0000-4000-8000-000000996001",
+      "object_repr": "User object (a1000000-0000-4000-8000-000000996001)",
+      "model_verbose_name": "Utente",
+      "actor_name": "Mario Rossi"
+     },
      {
       "id": 996000034,
       "action": 1,
@@ -4103,50 +4164,10 @@
       "object_repr": "Carnet object (ca000001-0000-4000-8000-000000996019)",
       "model_verbose_name": "Carnet",
       "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000028,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-01T18:00:00Z",
-      "object_pk": "ed000001-0000-4000-8000-000000996030",
-      "object_repr": "Medicalcertificate object (ed000001-0000-4000-8000-000000996030)",
-      "model_verbose_name": "Certificato Medico",
-      "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000027,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-01T15:00:00Z",
-      "object_pk": "eb000001-0000-4000-8000-000000996029",
-      "object_repr": "Subscriptionmembership object (eb000001-0000-4000-8000-000000996029)",
-      "model_verbose_name": "Tesseramento",
-      "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000026,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-01T12:00:00Z",
-      "object_pk": "ca300003-0000-4000-8000-000000996028",
-      "object_repr": "Campsandretreatssubscription object (ca300003-0000-4000-8000-000000996028)",
-      "model_verbose_name": "Iscrizione Campo",
-      "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000025,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-01T09:00:00Z",
-      "object_pk": "ca300002-0000-4000-8000-000000996027",
-      "object_repr": "Campsandretreatsperiod object (ca300002-0000-4000-8000-000000996027)",
-      "model_verbose_name": "Periodo Campo",
-      "actor_name": "Mario Rossi"
      }
     ],
     "meta": {
-     "total": 54,
+     "total": 58,
      "page": 2,
      "pages": 6,
      "perpage": 10
@@ -4162,6 +4183,46 @@
    "status": 200,
    "response": {
     "data": [
+     {
+      "id": 996000057,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-09-20T16:00:00Z",
+      "object_pk": "b0d00001-0000-4000-8000-000000996021",
+      "object_repr": "Module object (b0d00001-0000-4000-8000-000000996021)",
+      "model_verbose_name": "Modulo",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000056,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-09-20T15:00:00Z",
+      "object_pk": "b0d00001-0000-4000-8000-000000996021",
+      "object_repr": "Module object (b0d00001-0000-4000-8000-000000996021)",
+      "model_verbose_name": "Modulo",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000055,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-09-20T14:00:00Z",
+      "object_pk": "b0d00001-0000-4000-8000-000000996021",
+      "object_repr": "Module object (b0d00001-0000-4000-8000-000000996021)",
+      "model_verbose_name": "Modulo",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000054,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-09-20T13:00:00Z",
+      "object_pk": "b0d00001-0000-4000-8000-000000996021",
+      "object_repr": "Module object (b0d00001-0000-4000-8000-000000996021)",
+      "model_verbose_name": "Modulo",
+      "actor_name": "Mario Rossi"
+     },
      {
       "id": 996000053,
       "action": 1,
@@ -4204,7 +4265,7 @@
      }
     ],
     "meta": {
-     "total": 54,
+     "total": 58,
      "page": 6,
      "pages": 6,
      "perpage": 10
@@ -4220,6 +4281,46 @@
    "status": 200,
    "response": {
     "data": [
+     {
+      "id": 996000062,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-06T00:00:00Z",
+      "object_pk": "a1000000-0000-4000-8000-000000996001",
+      "object_repr": "User object (a1000000-0000-4000-8000-000000996001)",
+      "model_verbose_name": "Utente",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000061,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T21:00:00Z",
+      "object_pk": "e1000001-0000-4000-8000-000000996022",
+      "object_repr": "Attendanceregistry object (e1000001-0000-4000-8000-000000996022)",
+      "model_verbose_name": "Registro Presenze",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000060,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T18:00:00Z",
+      "object_pk": "ca300004-0000-4000-8000-000000996044",
+      "object_repr": "Campsandretreatsperiod object (ca300004-0000-4000-8000-000000996044)",
+      "model_verbose_name": "Periodo Campo",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000059,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T15:00:00Z",
+      "object_pk": "da100002-0000-4000-8000-000000996043",
+      "object_repr": "Attendanceday object (da100002-0000-4000-8000-000000996043)",
+      "model_verbose_name": "Giornata Presenze",
+      "actor_name": "Mario Rossi"
+     },
      {
       "id": 996000046,
       "action": 1,
@@ -4279,50 +4380,10 @@
       "object_repr": "Message object (e5000001-0000-4000-8000-000000996032)",
       "model_verbose_name": "Messaggio",
       "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000039,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-03T03:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000701001",
-      "object_repr": "Sportassociation object (a1000000-0000-4000-8000-000000701001)",
-      "model_verbose_name": "Associazione Sportiva",
-      "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000037,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-02T21:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000996003",
-      "object_repr": "Gina Neri",
-      "model_verbose_name": "Utente",
-      "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000036,
-      "action": 0,
-      "action_label": "Creazione",
-      "timestamp": "2026-10-02T18:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000996002",
-      "object_repr": "User object (a1000000-0000-4000-8000-000000996002)",
-      "model_verbose_name": "Utente",
-      "actor_name": "Gina Neri"
-     },
-     {
-      "id": 996000035,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-02T15:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000996001",
-      "object_repr": "User object (a1000000-0000-4000-8000-000000996001)",
-      "model_verbose_name": "Utente",
-      "actor_name": "Mario Rossi"
      }
     ],
     "meta": {
-     "total": 54,
+     "total": 58,
      "page": 1,
      "pages": 6,
      "perpage": 10
@@ -4339,40 +4400,40 @@
    "response": {
     "data": [
      {
-      "id": 996000042,
+      "id": 996000059,
       "action": 1,
       "action_label": "Modifica",
-      "timestamp": "2026-10-03T12:00:00Z",
-      "object_pk": "a0000001-0000-4000-8000-000000996034",
-      "object_repr": "Automationworkflow object (a0000001-0000-4000-8000-000000996034)",
-      "model_verbose_name": "Automazione",
+      "timestamp": "2026-10-05T15:00:00Z",
+      "object_pk": "da100002-0000-4000-8000-000000996043",
+      "object_repr": "Attendanceday object (da100002-0000-4000-8000-000000996043)",
+      "model_verbose_name": "Giornata Presenze",
       "actor_name": "Mario Rossi"
      },
      {
-      "id": 996000041,
-      "action": 3,
-      "action_label": "Sconosciuto",
-      "timestamp": "2026-10-03T09:00:00Z",
-      "object_pk": "e5000002-0000-4000-8000-000000996033",
-      "object_repr": "Message object (e5000002-0000-4000-8000-000000996033)",
-      "model_verbose_name": "Messaggio",
+      "id": 996000046,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-04T00:00:00Z",
+      "object_pk": "feedface-0000-4000-8000-000000996041",
+      "object_repr": "Campsandretreatsperiodsservice object (feedface-0000-4000-8000-000000996041)",
+      "model_verbose_name": "Campsandretreatsperiodsservice",
       "actor_name": "Mario Rossi"
      },
      {
-      "id": 996000040,
-      "action": 0,
-      "action_label": "Creazione",
-      "timestamp": "2026-10-03T06:00:00Z",
-      "object_pk": "e5000001-0000-4000-8000-000000996032",
-      "object_repr": "Message object (e5000001-0000-4000-8000-000000996032)",
-      "model_verbose_name": "Messaggio",
+      "id": 996000044,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-03T18:00:00Z",
+      "object_pk": "deadbeef-0000-4000-8000-000000996040",
+      "object_repr": "Sconto 50%_x",
+      "model_verbose_name": "Associatetutorrelation",
       "actor_name": "Mario Rossi"
      }
     ],
     "meta": {
-     "total": 54,
+     "total": 58,
      "page": 2,
-     "pages": 18,
+     "pages": 20,
      "perpage": 10
     }
    }
@@ -4386,6 +4447,46 @@
    "status": 200,
    "response": {
     "data": [
+     {
+      "id": 996000062,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-06T00:00:00Z",
+      "object_pk": "a1000000-0000-4000-8000-000000996001",
+      "object_repr": "User object (a1000000-0000-4000-8000-000000996001)",
+      "model_verbose_name": "Utente",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000061,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T21:00:00Z",
+      "object_pk": "e1000001-0000-4000-8000-000000996022",
+      "object_repr": "Attendanceregistry object (e1000001-0000-4000-8000-000000996022)",
+      "model_verbose_name": "Registro Presenze",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000060,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T18:00:00Z",
+      "object_pk": "ca300004-0000-4000-8000-000000996044",
+      "object_repr": "Campsandretreatsperiod object (ca300004-0000-4000-8000-000000996044)",
+      "model_verbose_name": "Periodo Campo",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000059,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T15:00:00Z",
+      "object_pk": "da100002-0000-4000-8000-000000996043",
+      "object_repr": "Attendanceday object (da100002-0000-4000-8000-000000996043)",
+      "model_verbose_name": "Giornata Presenze",
+      "actor_name": "Mario Rossi"
+     },
      {
       "id": 996000046,
       "action": 1,
@@ -4545,50 +4646,10 @@
       "object_repr": "Carnet object (ca000001-0000-4000-8000-000000996019)",
       "model_verbose_name": "Carnet",
       "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000028,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-01T18:00:00Z",
-      "object_pk": "ed000001-0000-4000-8000-000000996030",
-      "object_repr": "Medicalcertificate object (ed000001-0000-4000-8000-000000996030)",
-      "model_verbose_name": "Certificato Medico",
-      "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000027,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-01T15:00:00Z",
-      "object_pk": "eb000001-0000-4000-8000-000000996029",
-      "object_repr": "Subscriptionmembership object (eb000001-0000-4000-8000-000000996029)",
-      "model_verbose_name": "Tesseramento",
-      "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000026,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-01T12:00:00Z",
-      "object_pk": "ca300003-0000-4000-8000-000000996028",
-      "object_repr": "Campsandretreatssubscription object (ca300003-0000-4000-8000-000000996028)",
-      "model_verbose_name": "Iscrizione Campo",
-      "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000025,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-01T09:00:00Z",
-      "object_pk": "ca300002-0000-4000-8000-000000996027",
-      "object_repr": "Campsandretreatsperiod object (ca300002-0000-4000-8000-000000996027)",
-      "model_verbose_name": "Periodo Campo",
-      "actor_name": "Mario Rossi"
      }
     ],
     "meta": {
-     "total": 54,
+     "total": 58,
      "page": 1,
      "pages": 3,
      "perpage": 10
@@ -4605,6 +4666,46 @@
    "response": {
     "data": [
      {
+      "id": 996000062,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-06T00:00:00Z",
+      "object_pk": "a1000000-0000-4000-8000-000000996001",
+      "object_repr": "User object (a1000000-0000-4000-8000-000000996001)",
+      "model_verbose_name": "Utente",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000061,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T21:00:00Z",
+      "object_pk": "e1000001-0000-4000-8000-000000996022",
+      "object_repr": "Attendanceregistry object (e1000001-0000-4000-8000-000000996022)",
+      "model_verbose_name": "Registro Presenze",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000060,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T18:00:00Z",
+      "object_pk": "ca300004-0000-4000-8000-000000996044",
+      "object_repr": "Campsandretreatsperiod object (ca300004-0000-4000-8000-000000996044)",
+      "model_verbose_name": "Periodo Campo",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000059,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T15:00:00Z",
+      "object_pk": "da100002-0000-4000-8000-000000996043",
+      "object_repr": "Attendanceday object (da100002-0000-4000-8000-000000996043)",
+      "model_verbose_name": "Giornata Presenze",
+      "actor_name": "Mario Rossi"
+     },
+     {
       "id": 996000046,
       "action": 1,
       "action_label": "Modifica",
@@ -4663,50 +4764,10 @@
       "object_repr": "Message object (e5000001-0000-4000-8000-000000996032)",
       "model_verbose_name": "Messaggio",
       "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000039,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-03T03:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000701001",
-      "object_repr": "Sportassociation object (a1000000-0000-4000-8000-000000701001)",
-      "model_verbose_name": "Associazione Sportiva",
-      "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000037,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-02T21:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000996003",
-      "object_repr": "Gina Neri",
-      "model_verbose_name": "Utente",
-      "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000036,
-      "action": 0,
-      "action_label": "Creazione",
-      "timestamp": "2026-10-02T18:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000996002",
-      "object_repr": "User object (a1000000-0000-4000-8000-000000996002)",
-      "model_verbose_name": "Utente",
-      "actor_name": "Gina Neri"
-     },
-     {
-      "id": 996000035,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-02T15:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000996001",
-      "object_repr": "User object (a1000000-0000-4000-8000-000000996001)",
-      "model_verbose_name": "Utente",
-      "actor_name": "Mario Rossi"
      }
     ],
     "meta": {
-     "total": 54,
+     "total": 58,
      "page": 1,
      "pages": 6,
      "perpage": 10
@@ -4723,6 +4784,46 @@
    "response": {
     "data": [
      {
+      "id": 996000062,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-06T00:00:00Z",
+      "object_pk": "a1000000-0000-4000-8000-000000996001",
+      "object_repr": "User object (a1000000-0000-4000-8000-000000996001)",
+      "model_verbose_name": "Utente",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000061,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T21:00:00Z",
+      "object_pk": "e1000001-0000-4000-8000-000000996022",
+      "object_repr": "Attendanceregistry object (e1000001-0000-4000-8000-000000996022)",
+      "model_verbose_name": "Registro Presenze",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000060,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T18:00:00Z",
+      "object_pk": "ca300004-0000-4000-8000-000000996044",
+      "object_repr": "Campsandretreatsperiod object (ca300004-0000-4000-8000-000000996044)",
+      "model_verbose_name": "Periodo Campo",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000059,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T15:00:00Z",
+      "object_pk": "da100002-0000-4000-8000-000000996043",
+      "object_repr": "Attendanceday object (da100002-0000-4000-8000-000000996043)",
+      "model_verbose_name": "Giornata Presenze",
+      "actor_name": "Mario Rossi"
+     },
+     {
       "id": 996000046,
       "action": 1,
       "action_label": "Modifica",
@@ -4781,50 +4882,10 @@
       "object_repr": "Message object (e5000001-0000-4000-8000-000000996032)",
       "model_verbose_name": "Messaggio",
       "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000039,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-03T03:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000701001",
-      "object_repr": "Sportassociation object (a1000000-0000-4000-8000-000000701001)",
-      "model_verbose_name": "Associazione Sportiva",
-      "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000037,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-02T21:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000996003",
-      "object_repr": "Gina Neri",
-      "model_verbose_name": "Utente",
-      "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000036,
-      "action": 0,
-      "action_label": "Creazione",
-      "timestamp": "2026-10-02T18:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000996002",
-      "object_repr": "User object (a1000000-0000-4000-8000-000000996002)",
-      "model_verbose_name": "Utente",
-      "actor_name": "Gina Neri"
-     },
-     {
-      "id": 996000035,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-02T15:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000996001",
-      "object_repr": "User object (a1000000-0000-4000-8000-000000996001)",
-      "model_verbose_name": "Utente",
-      "actor_name": "Mario Rossi"
      }
     ],
     "meta": {
-     "total": 54,
+     "total": 58,
      "page": 1,
      "pages": 6,
      "perpage": 10
@@ -4841,6 +4902,46 @@
    "response": {
     "data": [
      {
+      "id": 996000062,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-06T00:00:00Z",
+      "object_pk": "a1000000-0000-4000-8000-000000996001",
+      "object_repr": "User object (a1000000-0000-4000-8000-000000996001)",
+      "model_verbose_name": "Utente",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000061,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T21:00:00Z",
+      "object_pk": "e1000001-0000-4000-8000-000000996022",
+      "object_repr": "Attendanceregistry object (e1000001-0000-4000-8000-000000996022)",
+      "model_verbose_name": "Registro Presenze",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000060,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T18:00:00Z",
+      "object_pk": "ca300004-0000-4000-8000-000000996044",
+      "object_repr": "Campsandretreatsperiod object (ca300004-0000-4000-8000-000000996044)",
+      "model_verbose_name": "Periodo Campo",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000059,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T15:00:00Z",
+      "object_pk": "da100002-0000-4000-8000-000000996043",
+      "object_repr": "Attendanceday object (da100002-0000-4000-8000-000000996043)",
+      "model_verbose_name": "Giornata Presenze",
+      "actor_name": "Mario Rossi"
+     },
+     {
       "id": 996000046,
       "action": 1,
       "action_label": "Modifica",
@@ -4899,50 +5000,10 @@
       "object_repr": "Message object (e5000001-0000-4000-8000-000000996032)",
       "model_verbose_name": "Messaggio",
       "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000039,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-03T03:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000701001",
-      "object_repr": "Sportassociation object (a1000000-0000-4000-8000-000000701001)",
-      "model_verbose_name": "Associazione Sportiva",
-      "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000037,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-02T21:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000996003",
-      "object_repr": "Gina Neri",
-      "model_verbose_name": "Utente",
-      "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000036,
-      "action": 0,
-      "action_label": "Creazione",
-      "timestamp": "2026-10-02T18:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000996002",
-      "object_repr": "User object (a1000000-0000-4000-8000-000000996002)",
-      "model_verbose_name": "Utente",
-      "actor_name": "Gina Neri"
-     },
-     {
-      "id": 996000035,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-02T15:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000996001",
-      "object_repr": "User object (a1000000-0000-4000-8000-000000996001)",
-      "model_verbose_name": "Utente",
-      "actor_name": "Mario Rossi"
      }
     ],
     "meta": {
-     "total": 54,
+     "total": 58,
      "page": 1,
      "pages": 6,
      "perpage": 10
@@ -4958,6 +5019,46 @@
    "status": 200,
    "response": {
     "data": [
+     {
+      "id": 996000062,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-06T00:00:00Z",
+      "object_pk": "a1000000-0000-4000-8000-000000996001",
+      "object_repr": "User object (a1000000-0000-4000-8000-000000996001)",
+      "model_verbose_name": "Utente",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000061,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T21:00:00Z",
+      "object_pk": "e1000001-0000-4000-8000-000000996022",
+      "object_repr": "Attendanceregistry object (e1000001-0000-4000-8000-000000996022)",
+      "model_verbose_name": "Registro Presenze",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000060,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T18:00:00Z",
+      "object_pk": "ca300004-0000-4000-8000-000000996044",
+      "object_repr": "Campsandretreatsperiod object (ca300004-0000-4000-8000-000000996044)",
+      "model_verbose_name": "Periodo Campo",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000059,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T15:00:00Z",
+      "object_pk": "da100002-0000-4000-8000-000000996043",
+      "object_repr": "Attendanceday object (da100002-0000-4000-8000-000000996043)",
+      "model_verbose_name": "Giornata Presenze",
+      "actor_name": "Mario Rossi"
+     },
      {
       "id": 996000046,
       "action": 1,
@@ -5500,7 +5601,7 @@
      }
     ],
     "meta": {
-     "total": 54,
+     "total": 58,
      "page": 1,
      "pages": 1,
      "perpage": 10
@@ -5516,6 +5617,46 @@
    "status": 200,
    "response": {
     "data": [
+     {
+      "id": 996000039,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-03T03:00:00Z",
+      "object_pk": "a1000000-0000-4000-8000-000000701001",
+      "object_repr": "Sportassociation object (a1000000-0000-4000-8000-000000701001)",
+      "model_verbose_name": "Associazione Sportiva",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000037,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-02T21:00:00Z",
+      "object_pk": "a1000000-0000-4000-8000-000000996003",
+      "object_repr": "Gina Neri",
+      "model_verbose_name": "Utente",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000036,
+      "action": 0,
+      "action_label": "Creazione",
+      "timestamp": "2026-10-02T18:00:00Z",
+      "object_pk": "a1000000-0000-4000-8000-000000996002",
+      "object_repr": "User object (a1000000-0000-4000-8000-000000996002)",
+      "model_verbose_name": "Utente",
+      "actor_name": "Gina Neri"
+     },
+     {
+      "id": 996000035,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-02T15:00:00Z",
+      "object_pk": "a1000000-0000-4000-8000-000000996001",
+      "object_repr": "User object (a1000000-0000-4000-8000-000000996001)",
+      "model_verbose_name": "Utente",
+      "actor_name": "Mario Rossi"
+     },
      {
       "id": 996000034,
       "action": 1,
@@ -5575,50 +5716,10 @@
       "object_repr": "Carnet object (ca000001-0000-4000-8000-000000996019)",
       "model_verbose_name": "Carnet",
       "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000028,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-01T18:00:00Z",
-      "object_pk": "ed000001-0000-4000-8000-000000996030",
-      "object_repr": "Medicalcertificate object (ed000001-0000-4000-8000-000000996030)",
-      "model_verbose_name": "Certificato Medico",
-      "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000027,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-01T15:00:00Z",
-      "object_pk": "eb000001-0000-4000-8000-000000996029",
-      "object_repr": "Subscriptionmembership object (eb000001-0000-4000-8000-000000996029)",
-      "model_verbose_name": "Tesseramento",
-      "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000026,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-01T12:00:00Z",
-      "object_pk": "ca300003-0000-4000-8000-000000996028",
-      "object_repr": "Campsandretreatssubscription object (ca300003-0000-4000-8000-000000996028)",
-      "model_verbose_name": "Iscrizione Campo",
-      "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000025,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-01T09:00:00Z",
-      "object_pk": "ca300002-0000-4000-8000-000000996027",
-      "object_repr": "Campsandretreatsperiod object (ca300002-0000-4000-8000-000000996027)",
-      "model_verbose_name": "Periodo Campo",
-      "actor_name": "Mario Rossi"
      }
     ],
     "meta": {
-     "total": 54,
+     "total": 58,
      "page": 2,
      "pages": 6,
      "perpage": 10
@@ -5679,6 +5780,46 @@
    "response": {
     "data": [
      {
+      "id": 996000039,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-03T03:00:00Z",
+      "object_pk": "a1000000-0000-4000-8000-000000701001",
+      "object_repr": "Sportassociation object (a1000000-0000-4000-8000-000000701001)",
+      "model_verbose_name": "Associazione Sportiva",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000037,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-02T21:00:00Z",
+      "object_pk": "a1000000-0000-4000-8000-000000996003",
+      "object_repr": "Gina Neri",
+      "model_verbose_name": "Utente",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000036,
+      "action": 0,
+      "action_label": "Creazione",
+      "timestamp": "2026-10-02T18:00:00Z",
+      "object_pk": "a1000000-0000-4000-8000-000000996002",
+      "object_repr": "User object (a1000000-0000-4000-8000-000000996002)",
+      "model_verbose_name": "Utente",
+      "actor_name": "Gina Neri"
+     },
+     {
+      "id": 996000035,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-02T15:00:00Z",
+      "object_pk": "a1000000-0000-4000-8000-000000996001",
+      "object_repr": "User object (a1000000-0000-4000-8000-000000996001)",
+      "model_verbose_name": "Utente",
+      "actor_name": "Mario Rossi"
+     },
+     {
       "id": 996000034,
       "action": 1,
       "action_label": "Modifica",
@@ -5737,50 +5878,10 @@
       "object_repr": "Carnet object (ca000001-0000-4000-8000-000000996019)",
       "model_verbose_name": "Carnet",
       "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000028,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-01T18:00:00Z",
-      "object_pk": "ed000001-0000-4000-8000-000000996030",
-      "object_repr": "Medicalcertificate object (ed000001-0000-4000-8000-000000996030)",
-      "model_verbose_name": "Certificato Medico",
-      "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000027,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-01T15:00:00Z",
-      "object_pk": "eb000001-0000-4000-8000-000000996029",
-      "object_repr": "Subscriptionmembership object (eb000001-0000-4000-8000-000000996029)",
-      "model_verbose_name": "Tesseramento",
-      "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000026,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-01T12:00:00Z",
-      "object_pk": "ca300003-0000-4000-8000-000000996028",
-      "object_repr": "Campsandretreatssubscription object (ca300003-0000-4000-8000-000000996028)",
-      "model_verbose_name": "Iscrizione Campo",
-      "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000025,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-01T09:00:00Z",
-      "object_pk": "ca300002-0000-4000-8000-000000996027",
-      "object_repr": "Campsandretreatsperiod object (ca300002-0000-4000-8000-000000996027)",
-      "model_verbose_name": "Periodo Campo",
-      "actor_name": "Mario Rossi"
      }
     ],
     "meta": {
-     "total": 54,
+     "total": 58,
      "page": 2,
      "pages": 6,
      "perpage": 10
@@ -5805,6 +5906,46 @@
    "status": 200,
    "response": {
     "data": [
+     {
+      "id": 996000062,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-06T00:00:00Z",
+      "object_pk": "a1000000-0000-4000-8000-000000996001",
+      "object_repr": "User object (a1000000-0000-4000-8000-000000996001)",
+      "model_verbose_name": "Utente",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000061,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T21:00:00Z",
+      "object_pk": "e1000001-0000-4000-8000-000000996022",
+      "object_repr": "Attendanceregistry object (e1000001-0000-4000-8000-000000996022)",
+      "model_verbose_name": "Registro Presenze",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000060,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T18:00:00Z",
+      "object_pk": "ca300004-0000-4000-8000-000000996044",
+      "object_repr": "Campsandretreatsperiod object (ca300004-0000-4000-8000-000000996044)",
+      "model_verbose_name": "Periodo Campo",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000059,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T15:00:00Z",
+      "object_pk": "da100002-0000-4000-8000-000000996043",
+      "object_repr": "Attendanceday object (da100002-0000-4000-8000-000000996043)",
+      "model_verbose_name": "Giornata Presenze",
+      "actor_name": "Mario Rossi"
+     },
      {
       "id": 996000046,
       "action": 1,
@@ -6257,7 +6398,7 @@
      }
     ],
     "meta": {
-     "total": 45,
+     "total": 49,
      "page": 1,
      "pages": 1,
      "perpage": 10
@@ -6350,6 +6491,46 @@
    "response": {
     "data": [
      {
+      "id": 996000062,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-06T00:00:00Z",
+      "object_pk": "a1000000-0000-4000-8000-000000996001",
+      "object_repr": "User object (a1000000-0000-4000-8000-000000996001)",
+      "model_verbose_name": "Utente",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000061,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T21:00:00Z",
+      "object_pk": "e1000001-0000-4000-8000-000000996022",
+      "object_repr": "Attendanceregistry object (e1000001-0000-4000-8000-000000996022)",
+      "model_verbose_name": "Registro Presenze",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000060,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T18:00:00Z",
+      "object_pk": "ca300004-0000-4000-8000-000000996044",
+      "object_repr": "Campsandretreatsperiod object (ca300004-0000-4000-8000-000000996044)",
+      "model_verbose_name": "Periodo Campo",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000059,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T15:00:00Z",
+      "object_pk": "da100002-0000-4000-8000-000000996043",
+      "object_repr": "Attendanceday object (da100002-0000-4000-8000-000000996043)",
+      "model_verbose_name": "Giornata Presenze",
+      "actor_name": "Mario Rossi"
+     },
+     {
       "id": 996000046,
       "action": 1,
       "action_label": "Modifica",
@@ -6408,50 +6589,10 @@
       "object_repr": "Message object (e5000001-0000-4000-8000-000000996032)",
       "model_verbose_name": "Messaggio",
       "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000039,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-03T03:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000701001",
-      "object_repr": "Sportassociation object (a1000000-0000-4000-8000-000000701001)",
-      "model_verbose_name": "Associazione Sportiva",
-      "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000037,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-02T21:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000996003",
-      "object_repr": "Gina Neri",
-      "model_verbose_name": "Utente",
-      "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000036,
-      "action": 0,
-      "action_label": "Creazione",
-      "timestamp": "2026-10-02T18:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000996002",
-      "object_repr": "User object (a1000000-0000-4000-8000-000000996002)",
-      "model_verbose_name": "Utente",
-      "actor_name": "Gina Neri"
-     },
-     {
-      "id": 996000035,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-02T15:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000996001",
-      "object_repr": "User object (a1000000-0000-4000-8000-000000996001)",
-      "model_verbose_name": "Utente",
-      "actor_name": "Mario Rossi"
      }
     ],
     "meta": {
-     "total": 54,
+     "total": 58,
      "page": 1,
      "pages": 6,
      "perpage": 10
@@ -6468,6 +6609,46 @@
    "response": {
     "data": [
      {
+      "id": 996000062,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-06T00:00:00Z",
+      "object_pk": "a1000000-0000-4000-8000-000000996001",
+      "object_repr": "User object (a1000000-0000-4000-8000-000000996001)",
+      "model_verbose_name": "Utente",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000061,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T21:00:00Z",
+      "object_pk": "e1000001-0000-4000-8000-000000996022",
+      "object_repr": "Attendanceregistry object (e1000001-0000-4000-8000-000000996022)",
+      "model_verbose_name": "Registro Presenze",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000060,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T18:00:00Z",
+      "object_pk": "ca300004-0000-4000-8000-000000996044",
+      "object_repr": "Campsandretreatsperiod object (ca300004-0000-4000-8000-000000996044)",
+      "model_verbose_name": "Periodo Campo",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000059,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T15:00:00Z",
+      "object_pk": "da100002-0000-4000-8000-000000996043",
+      "object_repr": "Attendanceday object (da100002-0000-4000-8000-000000996043)",
+      "model_verbose_name": "Giornata Presenze",
+      "actor_name": "Mario Rossi"
+     },
+     {
       "id": 996000046,
       "action": 1,
       "action_label": "Modifica",
@@ -6526,50 +6707,10 @@
       "object_repr": "Message object (e5000001-0000-4000-8000-000000996032)",
       "model_verbose_name": "Messaggio",
       "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000039,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-03T03:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000701001",
-      "object_repr": "Sportassociation object (a1000000-0000-4000-8000-000000701001)",
-      "model_verbose_name": "Associazione Sportiva",
-      "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000037,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-02T21:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000996003",
-      "object_repr": "Gina Neri",
-      "model_verbose_name": "Utente",
-      "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000036,
-      "action": 0,
-      "action_label": "Creazione",
-      "timestamp": "2026-10-02T18:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000996002",
-      "object_repr": "User object (a1000000-0000-4000-8000-000000996002)",
-      "model_verbose_name": "Utente",
-      "actor_name": "Gina Neri"
-     },
-     {
-      "id": 996000035,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-02T15:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000996001",
-      "object_repr": "User object (a1000000-0000-4000-8000-000000996001)",
-      "model_verbose_name": "Utente",
-      "actor_name": "Mario Rossi"
      }
     ],
     "meta": {
-     "total": 54,
+     "total": 58,
      "page": 1,
      "pages": 6,
      "perpage": 10
@@ -6846,6 +6987,46 @@
    "response": {
     "data": [
      {
+      "id": 996000062,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-06T00:00:00Z",
+      "object_pk": "a1000000-0000-4000-8000-000000996001",
+      "object_repr": "User object (a1000000-0000-4000-8000-000000996001)",
+      "model_verbose_name": "Utente",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000061,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T21:00:00Z",
+      "object_pk": "e1000001-0000-4000-8000-000000996022",
+      "object_repr": "Attendanceregistry object (e1000001-0000-4000-8000-000000996022)",
+      "model_verbose_name": "Registro Presenze",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000060,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T18:00:00Z",
+      "object_pk": "ca300004-0000-4000-8000-000000996044",
+      "object_repr": "Campsandretreatsperiod object (ca300004-0000-4000-8000-000000996044)",
+      "model_verbose_name": "Periodo Campo",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000059,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T15:00:00Z",
+      "object_pk": "da100002-0000-4000-8000-000000996043",
+      "object_repr": "Attendanceday object (da100002-0000-4000-8000-000000996043)",
+      "model_verbose_name": "Giornata Presenze",
+      "actor_name": "Mario Rossi"
+     },
+     {
       "id": 996000046,
       "action": 1,
       "action_label": "Modifica",
@@ -7304,50 +7485,10 @@
       "object_repr": "Module object (b0d00001-0000-4000-8000-000000996021)",
       "model_verbose_name": "Modulo",
       "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000054,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-09-20T13:00:00Z",
-      "object_pk": "b0d00001-0000-4000-8000-000000996021",
-      "object_repr": "Module object (b0d00001-0000-4000-8000-000000996021)",
-      "model_verbose_name": "Modulo",
-      "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000053,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-09-20T12:00:00Z",
-      "object_pk": "e1000001-0000-4000-8000-000000996022",
-      "object_repr": "Attendanceregistry object (e1000001-0000-4000-8000-000000996022)",
-      "model_verbose_name": "Registro Presenze",
-      "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000052,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-09-20T11:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000996001",
-      "object_repr": "User object (a1000000-0000-4000-8000-000000996001)",
-      "model_verbose_name": "Utente",
-      "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000051,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-09-20T10:00:00Z",
-      "object_pk": "b0d00001-0000-4000-8000-000000996021",
-      "object_repr": "Module object (b0d00001-0000-4000-8000-000000996021)",
-      "model_verbose_name": "Modulo",
-      "actor_name": "Mario Rossi"
      }
     ],
     "meta": {
-     "total": 51,
+     "total": 55,
      "page": 1,
      "pages": 2,
      "perpage": 10
@@ -7527,6 +7668,46 @@
    "response": {
     "data": [
      {
+      "id": 996000062,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-06T00:00:00Z",
+      "object_pk": "a1000000-0000-4000-8000-000000996001",
+      "object_repr": "User object (a1000000-0000-4000-8000-000000996001)",
+      "model_verbose_name": "Utente",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000061,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T21:00:00Z",
+      "object_pk": "e1000001-0000-4000-8000-000000996022",
+      "object_repr": "Attendanceregistry object (e1000001-0000-4000-8000-000000996022)",
+      "model_verbose_name": "Registro Presenze",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000060,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T18:00:00Z",
+      "object_pk": "ca300004-0000-4000-8000-000000996044",
+      "object_repr": "Campsandretreatsperiod object (ca300004-0000-4000-8000-000000996044)",
+      "model_verbose_name": "Periodo Campo",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000059,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T15:00:00Z",
+      "object_pk": "da100002-0000-4000-8000-000000996043",
+      "object_repr": "Attendanceday object (da100002-0000-4000-8000-000000996043)",
+      "model_verbose_name": "Giornata Presenze",
+      "actor_name": "Mario Rossi"
+     },
+     {
       "id": 996000046,
       "action": 1,
       "action_label": "Modifica",
@@ -7585,50 +7766,10 @@
       "object_repr": "Message object (e5000001-0000-4000-8000-000000996032)",
       "model_verbose_name": "Messaggio",
       "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000039,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-03T03:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000701001",
-      "object_repr": "Sportassociation object (a1000000-0000-4000-8000-000000701001)",
-      "model_verbose_name": "Associazione Sportiva",
-      "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000037,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-02T21:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000996003",
-      "object_repr": "Gina Neri",
-      "model_verbose_name": "Utente",
-      "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000036,
-      "action": 0,
-      "action_label": "Creazione",
-      "timestamp": "2026-10-02T18:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000996002",
-      "object_repr": "User object (a1000000-0000-4000-8000-000000996002)",
-      "model_verbose_name": "Utente",
-      "actor_name": "Gina Neri"
-     },
-     {
-      "id": 996000035,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-02T15:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000996001",
-      "object_repr": "User object (a1000000-0000-4000-8000-000000996001)",
-      "model_verbose_name": "Utente",
-      "actor_name": "Mario Rossi"
      }
     ],
     "meta": {
-     "total": 15,
+     "total": 19,
      "page": 1,
      "pages": 2,
      "perpage": 10
@@ -8001,6 +8142,46 @@
    "response": {
     "data": [
      {
+      "id": 996000062,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-06T00:00:00Z",
+      "object_pk": "a1000000-0000-4000-8000-000000996001",
+      "object_repr": "User object (a1000000-0000-4000-8000-000000996001)",
+      "model_verbose_name": "Utente",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000061,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T21:00:00Z",
+      "object_pk": "e1000001-0000-4000-8000-000000996022",
+      "object_repr": "Attendanceregistry object (e1000001-0000-4000-8000-000000996022)",
+      "model_verbose_name": "Registro Presenze",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000060,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T18:00:00Z",
+      "object_pk": "ca300004-0000-4000-8000-000000996044",
+      "object_repr": "Campsandretreatsperiod object (ca300004-0000-4000-8000-000000996044)",
+      "model_verbose_name": "Periodo Campo",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000059,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T15:00:00Z",
+      "object_pk": "da100002-0000-4000-8000-000000996043",
+      "object_repr": "Attendanceday object (da100002-0000-4000-8000-000000996043)",
+      "model_verbose_name": "Giornata Presenze",
+      "actor_name": "Mario Rossi"
+     },
+     {
       "id": 996000046,
       "action": 1,
       "action_label": "Modifica",
@@ -8059,50 +8240,10 @@
       "object_repr": "Message object (e5000001-0000-4000-8000-000000996032)",
       "model_verbose_name": "Messaggio",
       "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000039,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-03T03:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000701001",
-      "object_repr": "Sportassociation object (a1000000-0000-4000-8000-000000701001)",
-      "model_verbose_name": "Associazione Sportiva",
-      "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000037,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-02T21:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000996003",
-      "object_repr": "Gina Neri",
-      "model_verbose_name": "Utente",
-      "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000036,
-      "action": 0,
-      "action_label": "Creazione",
-      "timestamp": "2026-10-02T18:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000996002",
-      "object_repr": "User object (a1000000-0000-4000-8000-000000996002)",
-      "model_verbose_name": "Utente",
-      "actor_name": "Gina Neri"
-     },
-     {
-      "id": 996000035,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-02T15:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000996001",
-      "object_repr": "User object (a1000000-0000-4000-8000-000000996001)",
-      "model_verbose_name": "Utente",
-      "actor_name": "Mario Rossi"
      }
     ],
     "meta": {
-     "total": 15,
+     "total": 19,
      "page": 1,
      "pages": 2,
      "perpage": 10
@@ -8119,6 +8260,46 @@
    "response": {
     "data": [
      {
+      "id": 996000062,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-06T00:00:00Z",
+      "object_pk": "a1000000-0000-4000-8000-000000996001",
+      "object_repr": "User object (a1000000-0000-4000-8000-000000996001)",
+      "model_verbose_name": "Utente",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000061,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T21:00:00Z",
+      "object_pk": "e1000001-0000-4000-8000-000000996022",
+      "object_repr": "Attendanceregistry object (e1000001-0000-4000-8000-000000996022)",
+      "model_verbose_name": "Registro Presenze",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000060,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T18:00:00Z",
+      "object_pk": "ca300004-0000-4000-8000-000000996044",
+      "object_repr": "Campsandretreatsperiod object (ca300004-0000-4000-8000-000000996044)",
+      "model_verbose_name": "Periodo Campo",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000059,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T15:00:00Z",
+      "object_pk": "da100002-0000-4000-8000-000000996043",
+      "object_repr": "Attendanceday object (da100002-0000-4000-8000-000000996043)",
+      "model_verbose_name": "Giornata Presenze",
+      "actor_name": "Mario Rossi"
+     },
+     {
       "id": 996000046,
       "action": 1,
       "action_label": "Modifica",
@@ -8177,50 +8358,10 @@
       "object_repr": "Message object (e5000001-0000-4000-8000-000000996032)",
       "model_verbose_name": "Messaggio",
       "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000039,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-03T03:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000701001",
-      "object_repr": "Sportassociation object (a1000000-0000-4000-8000-000000701001)",
-      "model_verbose_name": "Associazione Sportiva",
-      "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000037,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-02T21:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000996003",
-      "object_repr": "Gina Neri",
-      "model_verbose_name": "Utente",
-      "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000036,
-      "action": 0,
-      "action_label": "Creazione",
-      "timestamp": "2026-10-02T18:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000996002",
-      "object_repr": "User object (a1000000-0000-4000-8000-000000996002)",
-      "model_verbose_name": "Utente",
-      "actor_name": "Gina Neri"
-     },
-     {
-      "id": 996000035,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-02T15:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000996001",
-      "object_repr": "User object (a1000000-0000-4000-8000-000000996001)",
-      "model_verbose_name": "Utente",
-      "actor_name": "Mario Rossi"
      }
     ],
     "meta": {
-     "total": 54,
+     "total": 58,
      "page": 1,
      "pages": 6,
      "perpage": 10
@@ -8237,6 +8378,46 @@
    "response": {
     "data": [
      {
+      "id": 996000062,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-06T00:00:00Z",
+      "object_pk": "a1000000-0000-4000-8000-000000996001",
+      "object_repr": "User object (a1000000-0000-4000-8000-000000996001)",
+      "model_verbose_name": "Utente",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000061,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T21:00:00Z",
+      "object_pk": "e1000001-0000-4000-8000-000000996022",
+      "object_repr": "Attendanceregistry object (e1000001-0000-4000-8000-000000996022)",
+      "model_verbose_name": "Registro Presenze",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000060,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T18:00:00Z",
+      "object_pk": "ca300004-0000-4000-8000-000000996044",
+      "object_repr": "Campsandretreatsperiod object (ca300004-0000-4000-8000-000000996044)",
+      "model_verbose_name": "Periodo Campo",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000059,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T15:00:00Z",
+      "object_pk": "da100002-0000-4000-8000-000000996043",
+      "object_repr": "Attendanceday object (da100002-0000-4000-8000-000000996043)",
+      "model_verbose_name": "Giornata Presenze",
+      "actor_name": "Mario Rossi"
+     },
+     {
       "id": 996000046,
       "action": 1,
       "action_label": "Modifica",
@@ -8295,50 +8476,10 @@
       "object_repr": "Message object (e5000001-0000-4000-8000-000000996032)",
       "model_verbose_name": "Messaggio",
       "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000039,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-03T03:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000701001",
-      "object_repr": "Sportassociation object (a1000000-0000-4000-8000-000000701001)",
-      "model_verbose_name": "Associazione Sportiva",
-      "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000037,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-02T21:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000996003",
-      "object_repr": "Gina Neri",
-      "model_verbose_name": "Utente",
-      "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000036,
-      "action": 0,
-      "action_label": "Creazione",
-      "timestamp": "2026-10-02T18:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000996002",
-      "object_repr": "User object (a1000000-0000-4000-8000-000000996002)",
-      "model_verbose_name": "Utente",
-      "actor_name": "Gina Neri"
-     },
-     {
-      "id": 996000035,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-02T15:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000996001",
-      "object_repr": "User object (a1000000-0000-4000-8000-000000996001)",
-      "model_verbose_name": "Utente",
-      "actor_name": "Mario Rossi"
      }
     ],
     "meta": {
-     "total": 54,
+     "total": 58,
      "page": 1,
      "pages": 6,
      "perpage": 10
@@ -8728,7 +8869,7 @@
      }
     ],
     "meta": {
-     "total": 54,
+     "total": 58,
      "page": 1,
      "pages": 6,
      "perpage": 10
@@ -8744,6 +8885,46 @@
    "status": 200,
    "response": {
     "data": [
+     {
+      "id": 996000062,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-06T00:00:00Z",
+      "object_pk": "a1000000-0000-4000-8000-000000996001",
+      "object_repr": "User object (a1000000-0000-4000-8000-000000996001)",
+      "model_verbose_name": "Utente",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000061,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T21:00:00Z",
+      "object_pk": "e1000001-0000-4000-8000-000000996022",
+      "object_repr": "Attendanceregistry object (e1000001-0000-4000-8000-000000996022)",
+      "model_verbose_name": "Registro Presenze",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000060,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T18:00:00Z",
+      "object_pk": "ca300004-0000-4000-8000-000000996044",
+      "object_repr": "Campsandretreatsperiod object (ca300004-0000-4000-8000-000000996044)",
+      "model_verbose_name": "Periodo Campo",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000059,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-10-05T15:00:00Z",
+      "object_pk": "da100002-0000-4000-8000-000000996043",
+      "object_repr": "Attendanceday object (da100002-0000-4000-8000-000000996043)",
+      "model_verbose_name": "Giornata Presenze",
+      "actor_name": "Mario Rossi"
+     },
      {
       "id": 996000046,
       "action": 1,
@@ -8803,50 +8984,10 @@
       "object_repr": "Message object (e5000001-0000-4000-8000-000000996032)",
       "model_verbose_name": "Messaggio",
       "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000039,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-03T03:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000701001",
-      "object_repr": "Sportassociation object (a1000000-0000-4000-8000-000000701001)",
-      "model_verbose_name": "Associazione Sportiva",
-      "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000037,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-02T21:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000996003",
-      "object_repr": "Gina Neri",
-      "model_verbose_name": "Utente",
-      "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000036,
-      "action": 0,
-      "action_label": "Creazione",
-      "timestamp": "2026-10-02T18:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000996002",
-      "object_repr": "User object (a1000000-0000-4000-8000-000000996002)",
-      "model_verbose_name": "Utente",
-      "actor_name": "Gina Neri"
-     },
-     {
-      "id": 996000035,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-10-02T15:00:00Z",
-      "object_pk": "a1000000-0000-4000-8000-000000996001",
-      "object_repr": "User object (a1000000-0000-4000-8000-000000996001)",
-      "model_verbose_name": "Utente",
-      "actor_name": "Mario Rossi"
      }
     ],
     "meta": {
-     "total": 54,
+     "total": 58,
      "page": 1,
      "pages": 6,
      "perpage": 10
@@ -11669,6 +11810,209 @@
       }
      ],
      "changes_summary": "Modificato: additional_fields",
+     "additional_data": null
+    }
+   }
+  },
+  {
+   "name": "audit-logs-detail-early-year-day",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/audit-logs/996000059/detail",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "id": 996000059,
+     "action": 1,
+     "action_label": "Modifica",
+     "timestamp": "2026-10-05T15:00:00Z",
+     "object_pk": "da100002-0000-4000-8000-000000996043",
+     "object_repr": "Attendanceday object (da100002-0000-4000-8000-000000996043)",
+     "object_description": "Presenze - Giornata (15/09/$libc_year:999)",
+     "model_name": "attendanceday",
+     "model_verbose_name": "Giornata Presenze",
+     "actor_name": "Mario Rossi",
+     "actor_email": "mario.audit@example.test",
+     "remote_addr": "10.0.0.1",
+     "changes": {
+      "attendance_day": [
+       "None",
+       "da100002-0000-4000-8000-000000996043"
+      ],
+      "associated_event": [
+       "None",
+       "e7000006-0000-4000-8000-000000996045"
+      ]
+     },
+     "enriched_changes": {
+      "attendance_day": [
+       "None",
+       "Giornata - 15/09/$libc_year:999"
+      ],
+      "associated_event": [
+       "None",
+       "Vecchia - 15/09/$libc_year:999 18:30"
+      ]
+     },
+     "display_changes": [
+      {
+       "field": "Attendance Day",
+       "field_key": "attendance_day",
+       "old": "N/D",
+       "new": "Giornata - 15/09/$libc_year:999",
+       "formatted": "Attendance Day: N/D → Giornata - 15/09/$libc_year:999"
+      },
+      {
+       "field": "Evento associato",
+       "field_key": "associated_event",
+       "old": "N/D",
+       "new": "Vecchia - 15/09/$libc_year:999 18:30",
+       "formatted": "Evento associato: N/D → Vecchia - 15/09/$libc_year:999 18:30"
+      }
+     ],
+     "changes_summary": "Modificato: attendance_day, associated_event",
+     "additional_data": null
+    }
+   }
+  },
+  {
+   "name": "audit-logs-detail-early-year-period",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/audit-logs/996000060/detail",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "id": 996000060,
+     "action": 1,
+     "action_label": "Modifica",
+     "timestamp": "2026-10-05T18:00:00Z",
+     "object_pk": "ca300004-0000-4000-8000-000000996044",
+     "object_repr": "Campsandretreatsperiod object (ca300004-0000-4000-8000-000000996044)",
+     "object_description": "Periodo - Campo estivo (01/07/$libc_year:1)",
+     "model_name": "campsandretreatsperiod",
+     "model_verbose_name": "Periodo Campo",
+     "actor_name": "Mario Rossi",
+     "actor_email": "mario.audit@example.test",
+     "remote_addr": "10.0.0.1",
+     "changes": {
+      "camps_and_retreats_period_id": [
+       "None",
+       "ca300004-0000-4000-8000-000000996044"
+      ]
+     },
+     "enriched_changes": {
+      "camps_and_retreats_period_id": [
+       "None",
+       "Campo estivo - 01/07/$libc_year:1"
+      ]
+     },
+     "display_changes": [
+      {
+       "field": "Camps And Retreats Period Id",
+       "field_key": "camps_and_retreats_period_id",
+       "old": "N/D",
+       "new": "Campo estivo - 01/07/$libc_year:1",
+       "formatted": "Camps And Retreats Period Id: N/D → Campo estivo - 01/07/$libc_year:1"
+      }
+     ],
+     "changes_summary": "Modificato: camps_and_retreats_period_id",
+     "additional_data": null
+    }
+   }
+  },
+  {
+   "name": "audit-logs-detail-early-year-events",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/audit-logs/996000061/detail",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "id": 996000061,
+     "action": 1,
+     "action_label": "Modifica",
+     "timestamp": "2026-10-05T21:00:00Z",
+     "object_pk": "e1000001-0000-4000-8000-000000996022",
+     "object_repr": "Attendanceregistry object (e1000001-0000-4000-8000-000000996022)",
+     "object_description": "Registro Presenze - Nuoto è",
+     "model_name": "attendanceregistry",
+     "model_verbose_name": "Registro Presenze",
+     "actor_name": "Mario Rossi",
+     "actor_email": "mario.audit@example.test",
+     "remote_addr": "10.0.0.1",
+     "changes": {
+      "events": [
+       "None",
+       "[{\"title\": \"Vecchia\", \"start\": \"0999-09-15T18:30:00Z\"}, {\"title\": \"Antica\", \"start\": \"0001-07-01\"}]"
+      ]
+     },
+     "enriched_changes": {
+      "events": [
+       "None",
+       "Vecchia (15/09/$libc_year:999), Antica (01/07/$libc_year:1)"
+      ]
+     },
+     "display_changes": [
+      {
+       "field": "Eventi",
+       "field_key": "events",
+       "old": "N/D",
+       "new": "Vecchia (15/09/$libc_year:999), Antica (01/07/$libc_year:1)",
+       "formatted": "Eventi: N/D → Vecchia (15/09/$libc_year:999), Antica (01/07/$libc_year:1)"
+      }
+     ],
+     "changes_summary": "Modificato: events",
+     "additional_data": null
+    }
+   }
+  },
+  {
+   "name": "audit-logs-detail-user-permissions-unicode",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/audit-logs/996000062/detail",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "id": 996000062,
+     "action": 1,
+     "action_label": "Modifica",
+     "timestamp": "2026-10-06T00:00:00Z",
+     "object_pk": "a1000000-0000-4000-8000-000000996001",
+     "object_repr": "User object (a1000000-0000-4000-8000-000000996001)",
+     "object_description": "Utente - Mario Rossi",
+     "model_name": "user",
+     "model_verbose_name": "Utente",
+     "actor_name": "Mario Rossi",
+     "actor_email": "mario.audit@example.test",
+     "remote_addr": "10.0.0.1",
+     "changes": {
+      "collaborator_permissions": [
+       "[]",
+       "[\"caf\\u00e9\", \"x.\\u00dfeta\", \"ab\\u0130\"]"
+      ]
+     },
+     "enriched_changes": {
+      "collaborator_permissions": [
+       "Nessun permesso",
+       "Café, Sseta, Abi̇"
+      ]
+     },
+     "display_changes": [
+      {
+       "field": "Permessi collaboratore",
+       "field_key": "collaborator_permissions",
+       "old": "Nessun permesso",
+       "new": "Café, Sseta, Abi̇",
+       "formatted": "Permessi collaboratore: Nessun permesso → Café, Sseta, Abi̇"
+      }
+     ],
+     "changes_summary": "Modificato: collaborator_permissions",
      "additional_data": null
     }
    }

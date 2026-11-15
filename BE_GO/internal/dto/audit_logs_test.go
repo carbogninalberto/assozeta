@@ -4,8 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"math"
+	"os"
+	"strconv"
 	"testing"
 	"time"
+	"unicode/utf8"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 )
@@ -73,11 +76,15 @@ func TestAuditFromISOFormat(t *testing.T) {
 	if _, err := AuditFromISOFormat("2026-10-01T24:00"); !IsAuditISOValueError(err) {
 		t.Errorf("24:00: want ValueError, got %v", err)
 	}
-	// Years below 1000: strftime('%Y') padding depends on the C library, so they stay refused.
-	for _, input := range []string{"0999-01-01"} {
-		if _, err := AuditFromISOFormat(input); !errors.Is(err, ErrAuditNotPorted) {
-			t.Errorf("%q: want refusal, got %v", input, err)
+	// Years below 1000: strftime('%Y') is the platform C library's (LibcYear).
+	for input, want := range map[string]string{"0999-01-01": "01/01/" + LibcYear(999), "0001-07-01": "01/07/" + LibcYear(1)} {
+		moment, err := AuditFromISOFormat(input)
+		if err != nil || moment.Date != want {
+			t.Errorf("%q: %v %v, want %s", input, moment, err, want)
 		}
+	}
+	if moment, err := AuditFromISOFormatAnyYear("0999-01-01"); err != nil || moment.Date != "01/01/999" {
+		t.Errorf("any-year keeps its own digits: %v %v", moment, err)
 	}
 	if _, err := AuditFromISOFormat(json.Number("5")); !errors.Is(err, ErrAuditUnhandled) {
 		t.Error("non-str start must be the unhandled AttributeError")
@@ -131,6 +138,51 @@ func TestAuditFormatterExceptionsEscape(t *testing.T) {
 	}
 }
 
+// testdata/python_capitalize.json is CPython 3.13.16 str.capitalize() for every
+// accepted code point (generated with the interpreter, like python_upper.json).
+func TestAuditCapitalizeMatchesPython(t *testing.T) {
+	raw, err := os.ReadFile("testdata/python_capitalize.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var golden struct {
+		Accepted int               `json:"accepted"`
+		Title    map[string]string `json:"title"`
+	}
+	if err := json.Unmarshal(raw, &golden); err != nil {
+		t.Fatal(err)
+	}
+	accepted := 0
+	for r := rune(0); r <= utf8.MaxRune; r++ {
+		if r >= 0xd800 && r <= 0xdfff {
+			continue
+		}
+		accepted++
+		want, ok := golden.Title[strconv.Itoa(int(r))]
+		if !ok {
+			want = string(r)
+		}
+		if got := auditCapitalize(string(r)); got != want {
+			t.Fatalf("U+%04X: %q, want %q", r, got, want)
+		}
+	}
+	if accepted != golden.Accepted {
+		t.Fatalf("accepted %d, golden %d", accepted, golden.Accepted)
+	}
+	// Whole strings: the rest of the code points keep their lower-case mappings and the final sigma
+	// rule sees the first code point (CPython 3.13.16).
+	for in, want := range map[string]string{"": "", "café": "Café", "ßeta": "Sseta", "abİ": "Abi̇", "ﬁx": "Fix",
+		"ŉx": "ʼNx", "ΐx": "Ϊ́x", "ǰx": "J̌x", "ΑΣ": "Ας", "ΣΣ": "Σς", "aΣb": "Aσb", "x ﬁ": "X ﬁ", "1abc": "1abc",
+		"ßΣ": "Ssς", "\U0001F600x": "\U0001F600x"} {
+		if got := auditCapitalize(in); got != want {
+			t.Errorf("%q: %q, want %q", in, got, want)
+		}
+	}
+	if got := auditCapitalize("\xed\xa0\x80x"); got != "\xed\xa0\x80x" {
+		t.Errorf("a lone surrogate stays as it is: %q", got)
+	}
+}
+
 func TestAuditFiniteJSON(t *testing.T) {
 	if AuditFiniteJSON([]any{json.Number("1e400")}) || !AuditFiniteJSON([]any{json.Number("1"), json.Number("2.5")}) {
 		t.Fatal("finite check")
@@ -139,17 +191,17 @@ func TestAuditFiniteJSON(t *testing.T) {
 
 func TestAuditStoredDate(t *testing.T) {
 	year, dayMonth := "2026", "15/09"
-	if date, ok, err := AuditStoredDate(&year, &dayMonth); !ok || err != nil || date != "15/09/2026" {
-		t.Fatal(date, ok, err)
+	if date, ok := AuditStoredDate(&year, &dayMonth); !ok || date != "15/09/2026" {
+		t.Fatal(date, ok)
 	}
 	for _, y := range []string{"0", "-5", "10000", "Infinity"} {
-		if _, ok, err := AuditStoredDate(&y, &dayMonth); ok || err != nil {
+		if _, ok := AuditStoredDate(&y, &dayMonth); ok {
 			t.Errorf("%s must be an unloadable row", y)
 		}
 	}
 	early := "999"
-	if _, _, err := AuditStoredDate(&early, &dayMonth); !errors.Is(err, ErrAuditNotPorted) {
-		t.Error("years below 1000 are refused")
+	if date, ok := AuditStoredDate(&early, &dayMonth); !ok || date != "15/09/"+LibcYear(999) {
+		t.Errorf("years below 1000 are the C library's strftime year: %s %v", date, ok)
 	}
 }
 

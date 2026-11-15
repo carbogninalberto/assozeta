@@ -63,9 +63,9 @@ func auditFullName(row domain.AuditObject) string {
 
 // auditDated formats a resolver datetime column; an unloadable year fails.
 func auditDated(row domain.AuditObject, name string, format func(date string) string) (any, error) {
-	date, ok, err := dto.AuditStoredDate(row[name+"_year"], row[name+"_daymonth"])
-	if err != nil || !ok {
-		return auditFailed{}, err
+	date, ok := dto.AuditStoredDate(row[name+"_year"], row[name+"_daymonth"])
+	if !ok {
+		return auditFailed{}, nil
 	}
 	return format(date), nil
 }

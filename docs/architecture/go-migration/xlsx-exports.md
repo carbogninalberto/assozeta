@@ -50,10 +50,13 @@ Inputs Go refuses (`ErrNotPorted`; the callers answer the 500 page before any wr
 - numeric-looking text with 17 or more significant digits beyond 2**53: pandas accumulates digits with `number * 10 + digit`,
   which the compiler contracts into a fused multiply-add on arm64 (the macOS and aarch64 wheels) and not on x86-64, so the
   parsed value depends on the platform Django runs on;
-- xlsxwriter dynamic array functions (`=SEQUENCE(`, `=FILTER(` ...): they write the metadata parts of a dynamic array formula;
-- integers beyond int64 in a column `get_excel_base64` coerces: pandas keeps them as Python objects or `uint64` and the
-  numeric coercion then depends on which kinds meet in the column (uint64/int64 conflicts), a numpy dtype lattice that has no
-  Go counterpart.
+- xlsxwriter dynamic array functions (`=SEQUENCE(`, `=FILTER(` ...): they write the metadata parts of a dynamic array formula.
+
+Ported in go-v2only-xlsxvalue: an integer beyond int64 in a column `get_excel_base64` (and the saved-report exporter)
+coerces. As a text within the unsigned 64-bit range pandas keeps `uint64`: the column width is the exact digits
+(`astype(str)`) and the cell is their float (`"%.16g"`, openpyxl converts the value), because `astype('Int64')` raises and
+the column stays `uint64`. As a Python int beyond it pandas reads `float64` (a float cell), and one beyond the double range
+makes `float()` raise `OverflowError: int too large to convert to float`, which `get_excel_base64` turns into the 500 page.
 
 Ported in t2docs: xlsxwriter formulas (`=...`, `{=...}`, a plain formula with value 0 or a one-cell array formula, SINGLE typo of
 `_prepare_formula` included), rich-string text (`<r>...</r>`: Django's export hands it over as one escaped run, `xlsx_text.py`, so the cell shows the text), `internal:` and `external:`
@@ -63,7 +66,7 @@ next to text they stay boolean cells). Duplicate column names were already handl
 
 ## Golden test
 
-`TESTS/fixtures/generate_xlsx_golden.py` builds 216 workbooks with Django's own functions (extracted from the sources with
+`TESTS/fixtures/generate_xlsx_golden.py` builds 226 workbooks with Django's own functions (extracted from the sources with
 `ast`; the two inline view workbooks are copied line for line) and stores their zip entries and parts in
 `BE_GO/internal/xlsxexport/testdata/golden.json`. `go test ./internal/xlsxexport` rebuilds each one in Go and compares it part
 by part; Django's failures (`None` or a raise) must be `ErrDjango`, the listed refusals `ErrNotPorted`. The cases cover the
@@ -102,7 +105,7 @@ they are, widths for any number of columns, sheet names cut and numbered), and `
 `export_attendance_matrix_xlsx` in its three layouts (fixed widths, the rotated alignment as a third cell style on the first
 row of as many columns as there are dates: a repeated date label moves it onto the `Presenze` header and onto empty cells
 past the data, as openpyxl writes them). openpyxl's sheet-title rules apply: an invalid or empty title and one that differs
-from an earlier title only by case fail as in Django. Contract engines `report_sheets` and `attendance`
+from an earlier title only by its `str.lower()` fail as in Django. Contract engines `report_sheets` and `attendance`
 (`TESTS/contracts/xlsx.py`); the golden generator builds 40 more workbooks with Django's own code and checks that the
 contract's builders give the same parts. Evidence: templates-reports 125/125 on four transports (`v2rep-versioned-r2`).
 
@@ -117,3 +120,14 @@ v2-reports-3: labels that compare equal in Python (`1`, `1.0`, `true`) name the 
 (widths follow the number of rows); an integer label beyond 64 bits is a number in the header row (`BigInt` value, object
 index; the unsigned range and a `None` before the integers read as pandas does). 21 more golden workbooks. The MCP transport
 now builds the same workbooks (mcp-server.md). Evidence: templates-reports 182/182 on four transports (`v2rep3-b-versioned-r2`).
+
+go-v2only-xlsxvalue: the numeric coercion above now answers every integer pandas can meet in a coerced column (`toNumeric`):
+numeric text within the unsigned 64-bit range is `uint64` (`uint64` width = exact digits, the cell = the float), a Python int
+beyond it is `float64`, and one beyond the double range raises as `get_excel_base64` does (`OverflowError: int too large to
+convert to float`, the 500 page; the report exporter carries the same text to the agent). The sheet-title comparison follows
+openpyxl's `avoid_duplicate_name`: titles are equal when their Python `str.lower()` is equal, so a capital and a final sigma
+(`ΑΣ`, `Ας`) are the same title and the second lookup raises `KeyError('Ας')`, as Django answers. Golden cases `eu-uint64-strings`,
+`eu-uint64-mixed-int`, `eu-big-int-ints`, `eu-int-too-large`, `eu-int-too-large-text`, `rx-uint64-strings` and
+`rs-title-final-sigma` (7 new, 226 in all); family cases `payment-export-label-u64-xlsx` and `payment-export-label-f64-xlsx`
+(payment-export 108 cases, four transports, `s3xlsx-versioned-r1`; mutation `s3xlsx-mutation-r1` CAUGHT on
+`payment-export-label-u64-xlsx`).

@@ -158,27 +158,56 @@ Every upload creates a Document and then calls `default_storage.save(name, conte
   Case `medical-season-error-keeps-certificate` (the owner's start day and month are seeded). 150 cases; receipt
   `documents-writes-http-sweep-restdocs-2` (GitHub run 42908069516): 4 transports. Mutation (the message changed) CAUGHT.
 
-## Not ported (refused with the 500 page before any write unless noted)
+## Not ported (refused before any write unless noted)
 
-- A None filename in `documents/add`: the database error text carries the new row's id and timestamp. A None
-  filename in upload-document is a 500 without writes in both.
-- `documents/add` items reached after an unmodelled item are never run. The request is refused when the loop would
-  reach such an item.
-- Multipart bodies over 250 MiB (the request has to be held in memory; the answer then depends on the host's memory and proxy limits, not on the input), and RFC 2231 names in a charset other than utf-8, ascii, latin-1 and windows-1252 (the decoder is not ported; a charset name Python does not know is a skipped header line, as in Django).
-- Uploaded files as values of the archive update fields (upload-document's `document` and `filename` are ported, see below).
+- Multipart bodies over 250 MiB: the request has to be held in memory, so the answer then depends on the host's memory
+  and proxy limits, not on the input (class X).
+- RFC 2231 names in the codecs without a faithful Go decoder: `cp932`, `cp949`, `cp950`, `big5hkscs`, the 2004/x0213
+  variants, `gb2312`, `iso2022_jp_1/2/2004/3/ext`, `iso2022_kr`, `johab`, `utf-7`, `utf-16/32`, `unicode-escape`,
+  `raw-unicode-escape`, `idna` and `punycode`. A charset name Python does not know is a skipped header line, as in Django.
+  The 8-bit codecs and the multibyte codecs Go shares with Python are decoded (below).
+- Uploaded files as values of the archive update fields: not reachable through a request (the viewset is `JSONParser`
+  only, so DRF answers 415 before the serializer), so this is a defensive check, not a refusal of a real input.
 - After the Document exists (the earlier writes are kept, and Go answers the 500 page):
-  - a storage key that already exists, where `get_available_name` would pick a random alternative;
+  - a storage key that already exists, where `get_available_name` would pick a random alternative (the key embeds the new
+    document's uuid4, so only the application's own generated state could produce it);
   - storage provider failures, which Django answers with botocore's text in `documents/add` and in the medical upload (an
     infrastructure failure the fixtures cannot provoke on a private MinIO without breaking it for the other cases).
 - Image compression, thumbnails and PDF rendering: none of these views run them.
+
+## Ported in go-v2only-docupload
+
+`docs/architecture/go-migration/v2-refusals.md` row `documents-writes.md` records the receipts; the fixture now has 186
+cases. RED `docupload-red-r1` (Django 186/186, Go 500 on `add-filename-none`), GREEN `docupload-native-r1` (Django and
+Go 186/186) and `docupload-versioned-r1` (186/186 on `/api/v1` and `/api/v2`), mutation `docupload-mutation-r1` (the
+relation name in the driver text) CAUGHT.
+
+- `documents/add` with `files[i].filename: null` (B): Django evaluates the model defaults, then PostgreSQL refuses the
+  INSERT with `null value in column "filename" of relation "docmanager_document" violates not-null constraint` and a
+  `DETAIL: Failing row contains (...)` line listing the new document's uuid4 id, its `timezone.now()` timestamp, the null
+  filename, its token and the null filepath/size. The loop's `except` answers `400 {'exception': <that text>}` and deletes
+  the previous document, if any. Go builds the same text from the generated id, token and timestamp
+  (`notNullFilenameError`, `postgresTimestamp`); cases `add-filename-none` and
+  `add-second-filename-none-removes-last-document`.
+- `PATCH documents/<pk>/update` (and the router's stock create) with `folder: 1e999` or `-1e999` (B): DRF's related
+  lookup prepares the pk with `int(float('inf'))`, an `OverflowError` the view does not handle, so the answer is the 500
+  page before any write. Cases `update-folder-infinite-number` and `update-folder-negative-infinite-number`.
+- RFC 2231 file names in more charsets (B): the 8-bit codecs decode through tables generated from CPython
+  (`internal/pyheader/singlebyte_gen.go`), and `big5`, `gbk`, `gb18030`, `hz`, `euc-jp`, `euc-kr`, `shift_jis`,
+  `iso2022_jp` and `utf-8-sig` through the codecs x/text decodes with the same tables. Cases
+  `certificate-rfc2231-{iso8859-2,windows-1251,koi8-r,cp437,mac-roman,big5,gbk,euc-jp,shift-jis,euc-kr,utf8-sig}-name`;
+  Go unit test `TestParseRFC2231Decoders` pins the decoded names. The shared header helper is also used by data-restore,
+  subscription-import-upload, association-transfer, subscription-memberships and document-render; those families re-ran
+  green natively (`docupload-data-restore-r1` 157, `docupload-import-r1` 98, `docupload-transfer-r1` 283,
+  `docupload-memberships-r1` 98, `docupload-render-r1` 241).
 
 ## Evidence (TDD)
 
 `v2doc4`: 147 cases. RED `v2doc4-red-r1` (the refusal restored in Go: Django 147/147, Go 500). GREEN `v2doc4-final-r2` on
 Django, Go, `/api/v1` and `/api/v2`. Mutation `v2doc4-mutation-r1` (NUL check dropped) CAUGHT on `add-filename-nul`.
 
-`TESTS/fixtures/documents_writes_http.json` (generator alongside) authors 124 cases: 38 add, 25 update, 20
-upload-document, 15 medical/certificate and 26 medical-certificate/upload.
+`TESTS/fixtures/documents_writes_http.json` (generator alongside) authors 186 cases: 43 add, 30 update, 33
+upload-document, 53 medical/certificate and 27 medical-certificate/upload.
 
 The runner owns a private MinIO through the `service_context` hook. It creates an empty bucket plus one sentinel
 object and switches Django's default storage to `S3Boto3Storage`. Each case is checked as follows:

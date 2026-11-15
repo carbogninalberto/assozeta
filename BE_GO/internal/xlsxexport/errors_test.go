@@ -50,6 +50,14 @@ func TestDjangoExceptionTexts(t *testing.T) {
 				{Title: "tags", Columns: []string{"a"}, Data: data}}, now)
 			return err
 		}, "'tags'"},
+		{"title-final-sigma", func() error {
+			// str.lower() maps a capital and a final sigma alike: openpyxl
+			// renames the second sheet, pandas raises its KeyError.
+			_, err := ReportSheetsWorkbook([]ReportSheet{
+				{Title: "ΑΣ", Columns: []string{"a"}, Data: data},
+				{Title: "Ας", Columns: []string{"a"}, Data: data}}, now)
+			return err
+		}, "'Ας'"},
 		{"cell-illegal", func() error {
 			_, err := ReportWorkbook(ReportSheet{Title: "T", Columns: []string{"a"}, Data: [][]Value{{StrValue("a\ab")}}}, now)
 			return err

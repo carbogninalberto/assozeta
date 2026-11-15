@@ -50,6 +50,8 @@ ids = iter(f'a1000000-0000-4000-8000-{995001 + n:012d}' for n in range(300))
 SERVER = '<stable-server-error-page>'
 DENOMINATION = 'Message reads own'
 DIRECT = 'direct'
+# A lone surrogate code point, which a Python str keeps (see the approve receipt cases).
+LONE = '\ud800'
 # Dates relative to the run: '$year:' is the current year, '$lastyear:' the previous one.
 IN_YEAR = '$year:-10-01T08:00:00Z'
 LAST_YEAR = '$lastyear:-06-01T08:00:00Z'
@@ -573,16 +575,24 @@ for receipt_name, receipt_value in (('float', 1.5), ('float-exponent', 1e+22), (
                                     ('object', {'b': 1, 'a': {'c': [1.25, 'x'], 'd': None}}), ('empty-list', [])):
     add(f'approve-receipt-{receipt_name}', 'owner', APPROVE('p_invoiced'), 200, APPROVED('p_invoiced'),
         body={'send_receipt_email': receipt_value}, effect=dispatch('p_invoiced', receipt_value))
+# A JSON string may hold a lone surrogate escape: Python's json.loads keeps the
+# code point, saferepr writes it raw and json.dumps escapes it in the body.
+add('approve-receipt-lone-surrogate', 'owner', APPROVE('p_invoiced'), 200, APPROVED('p_invoiced'),
+    raw_body='{"send_receipt_email": "\\ud800"}', content_type='application/json', effect=dispatch('p_invoiced', LONE))
 add('approve-admin-impersonating-owner', 'admin', APPROVE('p_invoiced'), 200, APPROVED('p_invoiced'), body={'send_receipt_email': False},
     headers=ADMIN_OWNER, effect=dispatch('p_invoiced', False, 'admin'))
 
 assert len({c['name'] for c in cases}) == len(cases)
-OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Payment invoice generation (numbering, description, invoice create, PDF task '
-                                                            'dispatch) and invoiced approve dispatch with payment, invoice, audit and '
-                                                            'Celery effects',
-                              'ids': IDS, 'flag_owner': FLAG, 'category': CATEGORY, 'document': DOCUMENT, 'supplier': SUPPLIER,
-                              'associates': ASSOCIATES, 'invoices': INVOICES, 'payments': PAYMENTS, 'subscriptions': SUBSCRIPTIONS,
-                              'memberships': MEMBERSHIPS, 'courses': COURSES, 'course_subscriptions': COURSE_SUBSCRIPTIONS,
-                              'installments': INSTALLMENTS, 'carnets': CARNETS, 'carnet_subscriptions': CARNET_SUBSCRIPTIONS,
-                              'cases': cases}, ensure_ascii=False, indent=1) + '\n')
+# A lone surrogate cannot be written as UTF-8, and json.dumps(ensure_ascii=False)
+# would emit it raw: write its \uXXXX escape instead, which json.loads reads back
+# as the same code point.
+document = json.dumps({'matrix_version': 1, 'scope': 'Payment invoice generation (numbering, description, invoice create, PDF task '
+                                                   'dispatch) and invoiced approve dispatch with payment, invoice, audit and '
+                                                   'Celery effects',
+                       'ids': IDS, 'flag_owner': FLAG, 'category': CATEGORY, 'document': DOCUMENT, 'supplier': SUPPLIER,
+                       'associates': ASSOCIATES, 'invoices': INVOICES, 'payments': PAYMENTS, 'subscriptions': SUBSCRIPTIONS,
+                       'memberships': MEMBERSHIPS, 'courses': COURSES, 'course_subscriptions': COURSE_SUBSCRIPTIONS,
+                       'installments': INSTALLMENTS, 'carnets': CARNETS, 'carnet_subscriptions': CARNET_SUBSCRIPTIONS,
+                       'cases': cases}, ensure_ascii=False, indent=1)
+OUTPUT.write_text(document.replace(LONE, '\\ud800') + '\n')
 print(len(cases), 'cases')

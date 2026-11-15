@@ -937,23 +937,139 @@
    "paid_on": "2024-02-06T10:00:00Z",
    "id": "ba1dface-ffff-4fff-8fff-fffffffffbae",
    "created": "2024-02-06T09:00:00Z"
+  },
+  "label_u64": {
+   "subject": 0,
+   "type": "default",
+   "amount": "1.00",
+   "paid": false,
+   "expense": false,
+   "description": "et-u64 uno",
+   "category": null,
+   "meta_payment_categories": null,
+   "invoice": false,
+   "associate": null,
+   "supplier": false,
+   "instructor": false,
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "payment_intent_id": null,
+   "archived": true,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "account": null,
+   "deleted": false,
+   "group": null,
+   "course": {
+    "label": "18446744073709551615"
+   },
+   "paid_on": "2024-02-07T10:00:00Z",
+   "id": "ba1dface-ffff-4fff-8fff-fffffffffbaf",
+   "created": "2024-02-07T09:00:00Z"
+  },
+  "label_u64b": {
+   "subject": 0,
+   "type": "default",
+   "amount": "2.00",
+   "paid": false,
+   "expense": false,
+   "description": "et-u64 due",
+   "category": null,
+   "meta_payment_categories": null,
+   "invoice": false,
+   "associate": null,
+   "supplier": false,
+   "instructor": false,
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "payment_intent_id": null,
+   "archived": true,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "account": null,
+   "deleted": false,
+   "group": null,
+   "course": {
+    "label": "9223372036854775808"
+   },
+   "paid_on": "2024-02-08T10:00:00Z",
+   "id": "ba1dface-ffff-4fff-8fff-fffffffffbba",
+   "created": "2024-02-08T09:00:00Z"
+  },
+  "label_f64": {
+   "subject": 0,
+   "type": "default",
+   "amount": "1.00",
+   "paid": false,
+   "expense": false,
+   "description": "et-f64 uno",
+   "category": null,
+   "meta_payment_categories": null,
+   "invoice": false,
+   "associate": null,
+   "supplier": false,
+   "instructor": false,
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "payment_intent_id": null,
+   "archived": true,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "account": null,
+   "deleted": false,
+   "group": null,
+   "course": {
+    "label": 36893488147419103232
+   },
+   "paid_on": "2024-02-09T10:00:00Z",
+   "id": "ba1dface-ffff-4fff-8fff-fffffffffbbb",
+   "created": "2024-02-09T09:00:00Z"
+  },
+  "label_f64b": {
+   "subject": 0,
+   "type": "default",
+   "amount": "2.00",
+   "paid": false,
+   "expense": false,
+   "description": "et-f64 due",
+   "category": null,
+   "meta_payment_categories": null,
+   "invoice": false,
+   "associate": null,
+   "supplier": false,
+   "instructor": false,
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "payment_intent_id": null,
+   "archived": true,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "account": null,
+   "deleted": false,
+   "group": null,
+   "course": {
+    "label": 123456789012345678901234567890
+   },
+   "paid_on": "2024-02-10T10:00:00Z",
+   "id": "ba1dface-ffff-4fff-8fff-fffffffffbbc",
+   "created": "2024-02-10T09:00:00Z"
   }
  },
  "course_subscriptions": {
   "swim": {
-   "id": "c5c5c5c5-ffff-4fff-8fff-fffffffffbaf",
+   "id": "c5c5c5c5-ffff-4fff-8fff-fffffffffbbd",
    "course": "swim",
    "payment": "course",
    "deleted": false
   },
   "rates": {
-   "id": "c5c5c5c5-ffff-4fff-8fff-fffffffffbba",
+   "id": "c5c5c5c5-ffff-4fff-8fff-fffffffffbbe",
    "course": "swim",
    "payment": null,
    "deleted": false
   },
   "old": {
-   "id": "c5c5c5c5-ffff-4fff-8fff-fffffffffbbb",
+   "id": "c5c5c5c5-ffff-4fff-8fff-fffffffffbbf",
    "course": "old",
    "payment": null,
    "deleted": true
@@ -961,14 +1077,14 @@
  },
  "installments": {
   "old": {
-   "id": "11a5aaaa-ffff-4fff-8fff-fffffffffbbc",
+   "id": "11a5aaaa-ffff-4fff-8fff-fffffffffbca",
    "cs": "old",
    "payment": "installment",
    "deleted": true,
    "number": 1
   },
   "live": {
-   "id": "11a5bbbb-ffff-4fff-8fff-fffffffffbbd",
+   "id": "11a5bbbb-ffff-4fff-8fff-fffffffffbcb",
    "cs": "rates",
    "payment": "installment",
    "deleted": false,
@@ -977,7 +1093,7 @@
  },
  "transfers": {
   "before": {
-   "id": "7a0f7a0f-ffff-4fff-8fff-fffffffffbbe",
+   "id": "7a0f7a0f-ffff-4fff-8fff-fffffffffbcc",
    "from": "cash",
    "to": "bank",
    "amount": "5.00",
@@ -985,7 +1101,7 @@
    "association": "a1000000-0000-4000-8000-000000701001"
   },
   "foreign_in": {
-   "id": "7a0f7a0f-ffff-4fff-8fff-fffffffffbbf",
+   "id": "7a0f7a0f-ffff-4fff-8fff-fffffffffbcd",
    "from": "abroad",
    "to": "cash",
    "amount": "7.00",
@@ -993,7 +1109,7 @@
    "association": "a1000000-0000-4000-8000-000000701002"
   },
   "t1": {
-   "id": "7a0f7a0f-ffff-4fff-8fff-fffffffffbca",
+   "id": "7a0f7a0f-ffff-4fff-8fff-fffffffffbce",
    "from": "cash",
    "to": "bank",
    "amount": "30.00",
@@ -1001,7 +1117,7 @@
    "association": "a1000000-0000-4000-8000-000000701001"
   },
   "t2": {
-   "id": "7a0f7a0f-ffff-4fff-8fff-fffffffffbcb",
+   "id": "7a0f7a0f-ffff-4fff-8fff-fffffffffbcf",
    "from": "bank",
    "to": "cash",
    "amount": "12.34",
@@ -1009,7 +1125,7 @@
    "association": "a1000000-0000-4000-8000-000000701001"
   },
   "dangling": {
-   "id": "7a0f7a0f-ffff-4fff-8fff-fffffffffbcc",
+   "id": "7a0f7a0f-ffff-4fff-8fff-fffffffffbda",
    "from": "abroad",
    "to": null,
    "amount": "1.00",
@@ -4998,6 +5114,238 @@
          }
         ],
         [
+         null
+        ]
+       ]
+      }
+     },
+     "type": "xlsx",
+     "filename": "[$today] PAGAMENTI a Message reads foreign.xlsx"
+    }
+   }
+  },
+  {
+   "name": "payment-export-label-u64-csv",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/payment/list/export?archived=1&query[generalSearch]=et-u64",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$csv": "Informazioni intestatario,Stato,Modalità di pagamento,Data creazione,Data pagamento,Numero ricevuta,Attività,Causali aggiuntive,Causale,Conto,Tipo,Corso,Importo,Note\r\net-u64 uno,In Attesa,-,2024-02-07,2024-02-07,,Altro,,-,-,Entrata,18446744073709551615,1.00,\r\net-u64 due,In Attesa,-,2024-02-08,2024-02-08,,Altro,,-,-,Entrata,9223372036854775808,2.00,\r\n"
+     },
+     "type": "csv",
+     "filename": "[$today] PAGAMENTI a Message reads foreign.csv"
+    }
+   }
+  },
+  {
+   "name": "payment-export-label-u64-xlsx",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/payment/list/export?archived=1&query[generalSearch]=et-u64&m=xlsx",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$xlsx": {
+       "engine": "excel_utils",
+       "columns": [
+        "Informazioni intestatario",
+        "Stato",
+        "Modalità di pagamento",
+        "Data creazione",
+        "Data pagamento",
+        "Numero ricevuta",
+        "Attività",
+        "Causali aggiuntive",
+        "Causale",
+        "Conto",
+        "Tipo",
+        "Corso",
+        "Importo",
+        "Note"
+       ],
+       "data": [
+        [
+         "et-u64 uno",
+         "et-u64 due"
+        ],
+        [
+         "In Attesa",
+         "In Attesa"
+        ],
+        [
+         "-",
+         "-"
+        ],
+        [
+         "2024-02-07",
+         "2024-02-08"
+        ],
+        [
+         "2024-02-07",
+         "2024-02-08"
+        ],
+        [
+         "",
+         ""
+        ],
+        [
+         "Altro",
+         "Altro"
+        ],
+        [
+         "",
+         ""
+        ],
+        [
+         "-",
+         "-"
+        ],
+        [
+         "-",
+         "-"
+        ],
+        [
+         "Entrata",
+         "Entrata"
+        ],
+        [
+         "18446744073709551615",
+         "9223372036854775808"
+        ],
+        [
+         {
+          "decimal": "1.00"
+         },
+         {
+          "decimal": "2.00"
+         }
+        ],
+        [
+         null,
+         null
+        ]
+       ]
+      }
+     },
+     "type": "xlsx",
+     "filename": "[$today] PAGAMENTI a Message reads foreign.xlsx"
+    }
+   }
+  },
+  {
+   "name": "payment-export-label-f64-csv",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/payment/list/export?archived=1&query[generalSearch]=et-f64",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$csv": "Informazioni intestatario,Stato,Modalità di pagamento,Data creazione,Data pagamento,Numero ricevuta,Attività,Causali aggiuntive,Causale,Conto,Tipo,Corso,Importo,Note\r\net-f64 uno,In Attesa,-,2024-02-09,2024-02-09,,Altro,,-,-,Entrata,36893488147419103232,1.00,\r\net-f64 due,In Attesa,-,2024-02-10,2024-02-10,,Altro,,-,-,Entrata,123456789012345678901234567890,2.00,\r\n"
+     },
+     "type": "csv",
+     "filename": "[$today] PAGAMENTI a Message reads foreign.csv"
+    }
+   }
+  },
+  {
+   "name": "payment-export-label-f64-xlsx",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/payment/list/export?archived=1&query[generalSearch]=et-f64&m=xlsx",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$xlsx": {
+       "engine": "excel_utils",
+       "columns": [
+        "Informazioni intestatario",
+        "Stato",
+        "Modalità di pagamento",
+        "Data creazione",
+        "Data pagamento",
+        "Numero ricevuta",
+        "Attività",
+        "Causali aggiuntive",
+        "Causale",
+        "Conto",
+        "Tipo",
+        "Corso",
+        "Importo",
+        "Note"
+       ],
+       "data": [
+        [
+         "et-f64 uno",
+         "et-f64 due"
+        ],
+        [
+         "In Attesa",
+         "In Attesa"
+        ],
+        [
+         "-",
+         "-"
+        ],
+        [
+         "2024-02-09",
+         "2024-02-10"
+        ],
+        [
+         "2024-02-09",
+         "2024-02-10"
+        ],
+        [
+         "",
+         ""
+        ],
+        [
+         "Altro",
+         "Altro"
+        ],
+        [
+         "",
+         ""
+        ],
+        [
+         "-",
+         "-"
+        ],
+        [
+         "-",
+         "-"
+        ],
+        [
+         "Entrata",
+         "Entrata"
+        ],
+        [
+         {
+          "int": "36893488147419103232"
+         },
+         {
+          "int": "123456789012345678901234567890"
+         }
+        ],
+        [
+         {
+          "decimal": "1.00"
+         },
+         {
+          "decimal": "2.00"
+         }
+        ],
+        [
+         null,
          null
         ]
        ]

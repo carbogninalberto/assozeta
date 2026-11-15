@@ -191,6 +191,17 @@ PAYMENTS = {
                           course={'label': [1, 'a']}, paid_on='2024-02-05T10:00:00Z'),
     'label_dict': payment('2024-02-06T09:00:00Z', association=FOREIGN, archived=True, amount='1.00', description='et-dict',
                           course={'label': {'k': 1}}, paid_on='2024-02-06T10:00:00Z'),
+    # Two archived rows whose course label is a number beyond int64: as a text within the unsigned 64-bit range pandas
+    # reads the column as uint64, as a Python int beyond it as float64. Both answer a workbook; the cases pick them by
+    # description.
+    'label_u64': payment('2024-02-07T09:00:00Z', association=FOREIGN, archived=True, amount='1.00', description='et-u64 uno',
+                         course={'label': '18446744073709551615'}, paid_on='2024-02-07T10:00:00Z'),
+    'label_u64b': payment('2024-02-08T09:00:00Z', association=FOREIGN, archived=True, amount='2.00', description='et-u64 due',
+                          course={'label': '9223372036854775808'}, paid_on='2024-02-08T10:00:00Z'),
+    'label_f64': payment('2024-02-09T09:00:00Z', association=FOREIGN, archived=True, amount='1.00', description='et-f64 uno',
+                         course={'label': 2 ** 65}, paid_on='2024-02-09T10:00:00Z'),
+    'label_f64b': payment('2024-02-10T09:00:00Z', association=FOREIGN, archived=True, amount='2.00', description='et-f64 due',
+                          course={'label': 123456789012345678901234567890}, paid_on='2024-02-10T10:00:00Z'),
 }
 COURSE_SUBSCRIPTIONS = {
     'swim': {'id': uid('c5c5c5c5'), 'course': 'swim', 'payment': 'course', 'deleted': False},
@@ -705,6 +716,15 @@ for token, label in (('bool', 'label_bool'), ('big', 'label_big'), ('huge', 'lab
         add(f'label-{token}-xlsx', 'foreign_owner', path + '&m=xlsx', 200, xbody(export_xlsx(rows, association=FOREIGN), FOREIGN))
     else:
         add(f'label-{token}-xlsx-server-error', 'foreign_owner', path + '&m=xlsx', 500, SERVER)
+
+# A course column of numbers beyond int64: a text within the unsigned range is pandas' uint64 (the width is the exact
+# digits, the cell the float openpyxl writes), a Python int beyond it pandas' float64. Both answer a workbook.
+for token in ('u64', 'f64'):
+    path = EXPORT + f'?archived=1&query[generalSearch]=et-{token}'
+    rows = listed(association=FOREIGN, archived=True, search=f'et-{token}')
+    assert rows == [f'label_{token}b', f'label_{token}'], rows
+    add(f'label-{token}-csv', 'foreign_owner', path, 200, body(export_csv(rows, association=FOREIGN), FOREIGN))
+    add(f'label-{token}-xlsx', 'foreign_owner', path + '&m=xlsx', 200, xbody(export_xlsx(rows, association=FOREIGN), FOREIGN))
 
 # The fallback window starts a year ago: no authored transfer or payment is in it, the header only.
 TEN_YEARS = (datetime.now(timezone.utc) - timedelta(days=3650), datetime.now(timezone.utc) + timedelta(days=1))

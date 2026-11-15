@@ -41,7 +41,9 @@ func appendNumber(b []byte, n Number) ([]byte, error) {
 }
 
 // numberFloat is the float json.loads reads from a number written with a
-// fraction or an exponent (an overflowing one is an infinity).
+// fraction or an exponent (an overflowing one is an infinity; a value below
+// the smallest subnormal is a signed zero, which ParseFloat returns without an
+// error).
 func jsonNumberFloat(n Number) (float64, error) {
 	value, err := strconv.ParseFloat(string(n), 64)
 	if err != nil && !(errors.Is(err, strconv.ErrRange) && math.IsInf(value, 0)) {

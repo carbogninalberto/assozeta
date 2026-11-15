@@ -15,6 +15,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pystr"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
@@ -22,8 +23,10 @@ var (
 	// ErrAuditUnhandled is an exception the Django serializer lets escape
 	// (AttributeError, TypeError, ValueError): the stable 500 page.
 	ErrAuditUnhandled = errors.New("audit serializer exception")
-	// ErrAuditNotPorted refuses inputs whose Python semantics are not ported
-	// (see audit-logs.md): also the 500 page, never a guessed body.
+	// ErrAuditNotPorted refuses the inputs whose Python semantics are not
+	// ported (see audit-logs.md): the recursion limit of the JSON codec, whose
+	// live value depends on the interpreter's stack, and str.title() of text
+	// only the application writes.
 	ErrAuditNotPorted = refusal.New("audit serializer input not ported")
 )
 
@@ -59,8 +62,8 @@ func AuditModelVerboseName(model string) (string, error) {
 	return auditTitle(strings.ReplaceAll(model, "_", " "))
 }
 
-// auditTitle is str.title() for ASCII text; other text is refused because
-// Python's full case mappings and cased-character rules are not ported.
+// auditTitle is str.title() for ASCII text; other text is refused because the
+// only inputs are model and field names, which are ASCII identifiers.
 func auditTitle(text string) (string, error) {
 	if !auditASCII(text) {
 		return "", ErrAuditNotPorted
@@ -513,24 +516,37 @@ func auditFormatPermissions(value any) (*string, error) {
 		label, known := auditPermissionLabels[text]
 		if !known {
 			parts := strings.Split(text, ".")
-			if label, err = auditCapitalize(parts[len(parts)-1]); err != nil {
-				return nil, err
-			}
+			label = auditCapitalize(parts[len(parts)-1])
 		}
 		labels = append(labels, label)
 	}
 	return auditPtr(strings.Join(labels, ", ")), nil
 }
 
-// auditCapitalize is str.capitalize() for ASCII text (others are refused).
-func auditCapitalize(text string) (string, error) {
-	if !auditASCII(text) {
-		return "", ErrAuditNotPorted
+// auditCapitalize is str.capitalize(): the first code point's full title-case
+// mapping and every other code point's lower-case one (SpecialCasing included,
+// so a leading 'ß' is "Ss"). CPython lowercases the whole string first, so the
+// final-sigma rule sees the first code point as context.
+func auditCapitalize(text string) string {
+	runes := pystr.Runes(text)
+	if len(runes) == 0 {
+		return ""
 	}
-	if text == "" {
-		return "", nil
+	lowered := pystr.LowerRunes(runes)
+	drop := 1
+	if runes[0] == 0x130 {
+		drop = 2 // str.lower('İ') is 'i' plus a combining dot.
 	}
-	return strings.ToUpper(text[:1]) + strings.ToLower(text[1:]), nil
+	return pythonTitleRune(runes[0]) + pystr.String(lowered[drop:])
+}
+
+// pythonTitleRune is _PyUnicode_ToTitleFull: a multi-code-point title mapping
+// (pythonTitleTable) or the simple title-case mapping of CPython's database.
+func pythonTitleRune(r rune) string {
+	if mapped, ok := pythonTitleTable[r]; ok {
+		return mapped
+	}
+	return pystr.String([]rune{unicode.ToTitle(r)})
 }
 
 func auditPtr(value any) *string {
@@ -796,15 +812,15 @@ var errAuditISOValue = errors.New("fromisoformat ValueError")
 // for a str start (another type has no .replace: AttributeError), following
 // CPython 3.13's parser (basic and extended date forms, ISO week dates, any
 // one-character separator, fractions, UTC offsets with seconds). Anything
-// Python rejects is errAuditISOValue (ValueError). Years below 1000 are the
-// one refusal: strftime('%Y') pads on BSD libc and not on glibc.
+// Python rejects is errAuditISOValue (ValueError). strftime('%Y') of a year
+// below 1000 is the C library's (LibcYear).
 func AuditFromISOFormat(value any) (AuditMoment, error) {
 	return auditFromISOFormat(value, false)
 }
 
 // AuditFromISOFormatAnyYear is AuditFromISOFormat for callers that only
-// compare the calendar date: a year below 1000 keeps its unpadded digits (the
-// way strftime('%Y') writes it on Linux) instead of being refused.
+// compare the calendar date: such a year keeps its own digits on every
+// platform, so the comparison is the same on glibc and on the BSD library.
 func AuditFromISOFormatAnyYear(value any) (AuditMoment, error) {
 	return auditFromISOFormat(value, true)
 }
@@ -818,10 +834,11 @@ func auditFromISOFormat(value any, anyYear bool) (AuditMoment, error) {
 	if !valid {
 		return AuditMoment{}, errAuditISOValue
 	}
-	if moment.year < 1000 && !anyYear {
-		return AuditMoment{}, ErrAuditNotPorted
+	year := strconv.Itoa(moment.year)
+	if !anyYear {
+		year = LibcYear(moment.year)
 	}
-	date := fmt.Sprintf("%02d/%02d/%d", moment.day, moment.month, moment.year)
+	date := fmt.Sprintf("%02d/%02d/%s", moment.day, moment.month, year)
 	return AuditMoment{Date: date, DateTime: fmt.Sprintf("%s %02d:%02d", date, moment.hour, moment.minute)}, nil
 }
 
@@ -1122,19 +1139,17 @@ func auditDaysIn(year, month int) int {
 
 // AuditStoredDate is strftime('%d/%m/%Y') of a loaded datetime column given
 // as its UTC year and 'DD/MM'; ok=false is a row Django cannot load (Python
-// datetime years 1..9999), which the resolvers swallow.
-func AuditStoredDate(year, dayMonth *string) (string, bool, error) {
+// datetime years 1..9999), which the resolvers swallow. The year is written
+// as the platform's C library writes it (LibcYear).
+func AuditStoredDate(year, dayMonth *string) (string, bool) {
 	if year == nil || dayMonth == nil {
-		return "", false, nil
+		return "", false
 	}
 	value, err := strconv.ParseFloat(*year, 64)
 	if err != nil || value < 1 || value > 9999 {
-		return "", false, nil
+		return "", false
 	}
-	if value < 1000 {
-		return "", false, ErrAuditNotPorted
-	}
-	return *dayMonth + "/" + strconv.Itoa(int(value)), true, nil
+	return *dayMonth + "/" + LibcYear(int(value)), true
 }
 
 // pythonDigit is the value of a Unicode decimal digit (category Nd).

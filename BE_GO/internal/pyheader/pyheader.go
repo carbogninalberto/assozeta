@@ -8,6 +8,12 @@ import (
 	"unicode"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"golang.org/x/text/encoding"
+	"golang.org/x/text/encoding/japanese"
+	"golang.org/x/text/encoding/korean"
+	"golang.org/x/text/encoding/simplifiedchinese"
+	"golang.org/x/text/encoding/traditionalchinese"
+	"golang.org/x/text/transform"
 )
 
 type pythonCodec struct {
@@ -345,8 +351,23 @@ func lookupPythonCodec(name string) (pythonCodec, bool) {
 	return pythonCodec{}, false
 }
 
+// multiByteDecoders are the Python text codecs x/text decodes from the same
+// standard tables, replacing ill-formed sequences with U+FFFD as
+// errors='replace' does (charset aliases resolve to these canonical names).
+var multiByteDecoders = map[string]encoding.Encoding{
+	"big5":       traditionalchinese.Big5,
+	"euc_jp":     japanese.EUCJP,
+	"euc_kr":     korean.EUCKR,
+	"gb18030":    simplifiedchinese.GB18030,
+	"gbk":        simplifiedchinese.GBK,
+	"hz":         simplifiedchinese.HZGB2312,
+	"iso2022_jp": japanese.ISO2022JP,
+	"shift_jis":  japanese.ShiftJIS,
+}
+
 // decodeRawUnicodeEscape is str(bytes(text, 'raw-unicode-escape'), charset,
-// 'replace') for the supported decoders.
+// 'replace') for the supported decoders. Codecs without a faithful decoder
+// stay NotPorted.
 func decodeRawUnicodeEscape(text, charset string) (string, Outcome) {
 	var raw []byte
 	for _, r := range text {
@@ -363,41 +384,28 @@ func decodeRawUnicodeEscape(text, charset string) (string, Outcome) {
 	switch codec.Name {
 	case "utf-8":
 		return dto.PythonUTF8Replace(string(raw)), Parsed
-	case "ascii":
-		var out strings.Builder
-		for _, b := range raw {
-			if b < 0x80 {
-				out.WriteByte(b)
-			} else {
-				out.WriteRune('�')
-			}
+	case "utf-8-sig":
+		if rest, found := strings.CutPrefix(string(raw), "\xef\xbb\xbf"); found {
+			return dto.PythonUTF8Replace(rest), Parsed
 		}
-		return out.String(), Parsed
-	case "iso8859-1":
-		var out strings.Builder
-		for _, b := range raw {
-			out.WriteRune(rune(b))
-		}
-		return out.String(), Parsed
-	case "cp1252":
-		var out strings.Builder
-		for _, b := range raw {
-			switch {
-			case b < 0x80 || b >= 0xa0:
-				out.WriteRune(rune(b))
-			case cp1252High[b-0x80] == 0:
-				out.WriteRune('\ufffd')
-			default:
-				out.WriteRune(cp1252High[b-0x80])
-			}
-		}
-		return out.String(), Parsed
+		return dto.PythonUTF8Replace(string(raw)), Parsed
 	case "undefined":
 		return "", Invalid
 	}
+	if table, ok := singleByteDecoders[codec.Name]; ok {
+		var out strings.Builder
+		out.Grow(len(raw))
+		for _, b := range raw {
+			out.WriteRune(table[b])
+		}
+		return out.String(), Parsed
+	}
+	if decoder, ok := multiByteDecoders[codec.Name]; ok {
+		decoded, _, err := transform.String(decoder.NewDecoder(), string(raw))
+		if err != nil {
+			return "", NotPorted
+		}
+		return decoded, Parsed
+	}
 	return "", NotPorted
 }
-
-// cp1252High is windows-1252 for the bytes 0x80..0x9f (0 where undefined).
-var cp1252High = [32]rune{0x20ac, 0, 0x201a, 0x0192, 0x201e, 0x2026, 0x2020, 0x2021, 0x02c6, 0x2030, 0x0160, 0x2039, 0x0152, 0, 0x017d, 0,
-	0, 0x2018, 0x2019, 0x201c, 0x201d, 0x2022, 0x2013, 0x2014, 0x02dc, 0x2122, 0x0161, 0x203a, 0x0153, 0, 0x017e, 0x0178}

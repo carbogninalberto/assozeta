@@ -256,6 +256,13 @@ excel_utils('eu-mixed-int-numstr', ['a'], [I(1), '2', '3.5'])
 excel_utils('eu-str-none', ['a'], ['5', None, '6'])
 excel_utils('eu-float-none', ['a'], [F(1.5), None])
 excel_utils('eu-neg-zero', ['a', 'b'], [F(-0.0), F(1.0)], [D('-0.00'), D('1')])
+# An integer beyond int64: as a text within the unsigned 64-bit range pandas keeps uint64 (the width is the exact
+# digits, the cell their float), as a Python int beyond it float64, and beyond the double range float() raises.
+excel_utils('eu-uint64-strings', ['a', 't'], ['18446744073709551615', '1', '9223372036854775808'], ['x', 'y', 'z'])
+excel_utils('eu-uint64-mixed-int', ['a'], ['18446744073709551615', I(5), '9223372036854775808'])
+excel_utils('eu-big-int-ints', ['a'], [I(2 ** 65), I(123456789012345678901234567890)])
+excel_utils('eu-int-too-large', ['a'], [I(10 ** 400)])
+excel_utils('eu-int-too-large-text', ['a'], ['1' + '0' * 400, '1'])
 excel_utils('eu-decimal-repr', ['a'], [D('1E+2'), D('0.000001'), 'x'])
 excel_utils('eu-int-huge', ['a'], [I(12345678901234567), I(1)])
 excel_utils('eu-int-huge-none', ['a'], [I(12345678901234567), None])
@@ -513,6 +520,10 @@ report_sheets('rs-label-types', ('Tags', [I(0), None], [['1', 'x']]), ('Carnet',
 report_xlsx('rx-no-columns', 'Tags', [], [[], [], []])
 report_sheets('rs-no-columns', ('Tags', [], [[], []]), ('Carnet', ['a'], [['x']]), names=['Tags', 'Carnet'])
 report_sheets('rs-case', ('Tags', ['a'], [['1']]), ('tags', ['b'], [['x']]))
+# openpyxl compares titles by str.lower(): a capital and a final sigma lower to the same letter, so the second sheet is
+# renamed and pandas' lookup of the requested name raises.
+report_sheets('rs-title-final-sigma', ('ΑΣ', ['a'], [['1']]), ('Ας', ['a'], [['1']]))
+report_xlsx('rx-uint64-strings', 'U', ['a', 't'], [['18446744073709551615', 'x'], ['9223372036854775808', 'y']])
 report_sheets('rs-empty-title', ('', ['a'], [['1']]))
 report_sheets('rs-title-invalid', ('ok', ['a'], [['1']]), ('a:b', ['a'], [['1']]))
 

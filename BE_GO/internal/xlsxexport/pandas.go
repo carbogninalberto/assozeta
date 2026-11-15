@@ -19,6 +19,7 @@ const (
 	dtFloat64        // float64 (None is NaN)
 	dtBool           // bool
 	dtNullable       // Int64 (None is <NA>)
+	dtUint64         // uint64 (an integer beyond int64: written as its float, measured by its digits)
 )
 
 // frameColumn is one DataFrame column: values keep their Python kinds; in a
@@ -80,19 +81,26 @@ func isNA(value Value) bool {
 
 // numericResult is lib.maybe_convert_numeric(values, set(), coerce_numeric=True).
 type numericResult struct {
-	dtype  dtype // dtFloat64, dtInt64 or dtBool
+	dtype  dtype // dtFloat64, dtInt64, dtUint64 or dtBool
 	values []Value
 }
+
+// errIntTooLarge is Python's OverflowError when float() of an integer beyond
+// the double range is taken: pandas' floatify of such a Python int raises it,
+// and get_excel_base64's outer handler turns the exception into the 500 page
+// (the report exporters carry its text to the agent).
+func errIntTooLarge() error { return djangoFailure("int too large to convert to float") }
 
 // toNumeric is pandas.to_numeric(series, errors='coerce') of a column.
 func toNumeric(column frameColumn) (numericResult, error) {
 	switch column.dtype {
-	case dtInt64, dtFloat64, dtBool:
+	case dtInt64, dtFloat64, dtBool, dtUint64:
 		return numericResult{dtype: column.dtype, values: column.values}, nil
 	}
-	var sawFloat, sawInt, sawBool, sawBig bool
+	var sawFloat, sawInt, sawUint, sawNegative, sawBool bool
 	floats := make([]float64, len(column.values))
 	ints := make([]int64, len(column.values))
+	digits := make([]string, len(column.values)) // the exact value of an integer: what astype(str) shows
 	for i, value := range column.values {
 		switch value.Kind {
 		case None:
@@ -104,11 +112,14 @@ func toNumeric(column frameColumn) (numericResult, error) {
 		case Int:
 			sawInt = true
 			floats[i], ints[i] = float64(value.Int), value.Int
+			digits[i] = strconv.FormatInt(value.Int, 10)
+			sawNegative = sawNegative || value.Int < 0
 		case Bool:
 			sawBool = true
 			if value.Bool {
 				floats[i], ints[i] = 1, 1
 			}
+			digits[i] = strconv.FormatInt(ints[i], 10)
 		case Decimal:
 			number, err := strconv.ParseFloat(value.Text, 64)
 			if err != nil {
@@ -121,11 +132,29 @@ func toNumeric(column frameColumn) (numericResult, error) {
 			sawFloat = true
 			floats[i] = math.NaN()
 		case BigInt:
-			// An int beyond int64: a column of numbers only is not ported; next to text it only decides the mask.
-			sawBig = true
+			// A Python int: floatify takes float(), which raises beyond the
+			// double range; one in the unsigned 64-bit range is pandas' uint64
+			// when nothing else in the column is a float or a negative integer.
+			number, ok := new(big.Float).SetString(value.Text)
+			if !ok {
+				sawFloat = true // no decimal integer: floatify's ValueError, coerced to NaN
+				floats[i] = math.NaN()
+				continue
+			}
+			approx, _ := number.Float64()
+			if math.IsInf(approx, 0) {
+				return numericResult{}, errIntTooLarge()
+			}
+			floats[i], digits[i] = approx, value.Text
+			whole, _ := new(big.Int).SetString(value.Text, 10)
+			if whole != nil && whole.Sign() > 0 && whole.Cmp(labelMaxUint) <= 0 {
+				sawUint = true
+				continue
+			}
+			// A negative beyond int64 (or a value that is no decimal integer):
+			// the column is float64 and the value its float.
 			sawFloat = true
-			number, _ := new(big.Float).SetString(value.Text)
-			floats[i], _ = number.Float64()
+			sawNegative = sawNegative || strings.HasPrefix(strings.TrimSpace(value.Text), "-")
 		case Str:
 			if value.Text == "" {
 				sawFloat = true
@@ -156,31 +185,47 @@ func toNumeric(column frameColumn) (numericResult, error) {
 			case whole.IsInt64():
 				sawInt = true
 				ints[i] = whole.Int64()
-			case whole.Sign() > 0 && whole.BitLen() <= 64:
-				return numericResult{}, ErrNotPorted // uint64 results
+				digits[i] = strconv.FormatInt(whole.Int64(), 10)
+				sawNegative = sawNegative || whole.Sign() < 0
+			case whole.Sign() > 0 && whole.Cmp(labelMaxUint) <= 0:
+				sawUint = true
+				digits[i] = whole.String()
 			default:
 				sawFloat = true
 			}
 		}
 	}
-	if sawBig {
-		// Numbers only would need pandas' uint64/float rules for the big int.
-		sawNaN := false
-		for _, number := range floats {
-			sawNaN = sawNaN || math.IsNaN(number)
-		}
-		if !sawNaN {
-			return numericResult{}, ErrNotPorted
-		}
-	}
 	result := numericResult{values: make([]Value, len(column.values))}
-	if sawBool && !sawFloat && !sawInt {
+	if sawFloat {
+		result.dtype = dtFloat64
+		for i, number := range floats {
+			result.values[i] = FloatValue(number)
+		}
+		return result, nil
+	}
+	if sawUint {
+		if sawNegative {
+			// maybe_convert_numeric: unsigned and negative integers together
+			// keep the float64 array.
+			result.dtype = dtFloat64
+			for i, number := range floats {
+				result.values[i] = FloatValue(number)
+			}
+			return result, nil
+		}
+		result.dtype = dtUint64
+		for i := range digits {
+			result.values[i] = BigIntValue(digits[i])
+		}
+		return result, nil
+	}
+	if sawBool && !sawInt {
 		// maybe_convert_numeric: only bools seen (no int, float or null) gives a bool array.
 		result.dtype = dtBool
 		copy(result.values, column.values)
 		return result, nil
 	}
-	if sawFloat || !sawInt {
+	if !sawInt {
 		result.dtype = dtFloat64
 		for i, number := range floats {
 			result.values[i] = FloatValue(number)

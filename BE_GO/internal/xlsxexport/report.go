@@ -228,13 +228,11 @@ func (titles *sheetTitles) add(title string) error {
 		if earlier == title {
 			return errSheetExists
 		}
-		if strings.EqualFold(earlier, title) {
-			if strings.ToLower(earlier) == strings.ToLower(title) {
-				// openpyxl renames the sheet instead of failing; pandas then
-				// looks up the name it asked for and raises KeyError(name).
-				return djangoFailure(pythonKeyError(title))
-			}
-			return ErrNotPorted // openpyxl's case-insensitive naming beyond lower()
+		// openpyxl compares titles by str.lower() (avoid_duplicate_name) and
+		// renames a case-insensitive one instead of failing; pandas then looks
+		// up the name it asked for and raises KeyError(name).
+		if dto.PythonLower(earlier) == dto.PythonLower(title) {
+			return djangoFailure(pythonKeyError(title))
 		}
 	}
 	*titles = append(*titles, title)

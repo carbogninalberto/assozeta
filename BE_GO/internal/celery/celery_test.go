@@ -11,6 +11,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pystr"
 )
 
 // golden is testdata/kombu_messages.json, captured from the real Celery/kombu
@@ -33,6 +35,9 @@ type golden struct {
 		Routes   string   `json:"routes"`
 		Payload  string   `json:"payload"`
 		Commands []string `json:"broker_commands"`
+		// Undecodable marks a payload whose body holds a lone surrogate
+		// escape: DecodeJSON keeps those outside the decoded subset.
+		Undecodable bool `json:"undecodable"`
 	} `json:"cases"`
 }
 
@@ -50,6 +55,25 @@ func taggedValue(t *testing.T, raw json.RawMessage) any {
 		var text string
 		json.Unmarshal(tagged.V, &text)
 		return text
+	case "number":
+		// A JSON number kept as its text (json.loads keeps the int or float it
+		// reads, and the producer passes that value on).
+		var text string
+		if err := json.Unmarshal(tagged.V, &text); err != nil {
+			t.Fatal(err)
+		}
+		return Number(text)
+	case "surrogate":
+		// A lone surrogate, which Python keeps in a str (WTF-8 here).
+		var text string
+		if err := json.Unmarshal(tagged.V, &text); err != nil {
+			t.Fatal(err)
+		}
+		unit, err := strconv.ParseUint(text, 16, 16)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return pystr.String([]rune{rune(unit)})
 	case "int":
 		value, err := strconv.ParseInt(string(tagged.V), 10, 64)
 		if err != nil {
@@ -283,6 +307,50 @@ func TestUnsupportedValuesAreRefused(t *testing.T) {
 	}
 	if _, err := Encode(Task{}, Envelope{}); err == nil {
 		t.Fatal("missing task name accepted")
+	}
+}
+
+// TestPythonStrValues covers the strings a Python str can hold besides UTF-8
+// text: a lone surrogate is json.dumps's own \uXXXX escape and stays raw in
+// saferepr (kombu escapes it when the envelope is written).
+func TestPythonStrValues(t *testing.T) {
+	lone := pystr.String([]rune{0xd800})
+	text := "a" + lone + "b"
+	body, err := EncodeJSON([]any{text})
+	if err != nil || string(body) != `["a\ud800b"]` {
+		t.Fatalf("body %s, %v", body, err)
+	}
+	shown, err := saferepr([]any{text}, reprMaxSize)
+	if err != nil || shown != "['a"+lone+"b']" {
+		t.Fatalf("saferepr %q, %v", shown, err)
+	}
+	// Truncation counts Python code points, and keeps the surrogate bytes.
+	long := strings.Repeat("x", 10) + lone + strings.Repeat("y", 10)
+	if got := truncateText(long, 11); got != strings.Repeat("x", 10)+lone+"..." {
+		t.Fatalf("truncateText %q", got)
+	}
+	// Bytes outside UTF-8 and WTF-8 are not a Python string.
+	if _, err = EncodeJSON("a\xffb"); !errors.Is(err, ErrUnsupportedValue) {
+		t.Fatalf("invalid byte accepted: %v", err)
+	}
+}
+
+// TestNumberFloatEdges: Python's float() reads a number below the smallest
+// subnormal as a signed zero and one above the largest as an infinity, and
+// json.dumps/saferepr write those back the same way.
+func TestNumberFloatEdges(t *testing.T) {
+	for text, want := range map[string][2]string{
+		"1e-400": {"0.0", "(0.0,)"}, "-1e-400": {"-0.0", "(-0.0,)"}, "1e-324": {"0.0", "(0.0,)"},
+		"5e-324": {"5e-324", "(5e-324,)"}, "1e400": {"Infinity", "(inf,)"}, "-1e400": {"-Infinity", "(-inf,)"},
+		"1e16": {"1e+16", "(1e+16,)"},
+	} {
+		body, err := EncodeJSON(Number(text))
+		if err != nil || string(body) != want[0] {
+			t.Fatalf("%s: body %s, %v", text, body, err)
+		}
+		if shown, err := saferepr(tuple{Number(text)}, reprMaxSize); err != nil || shown != want[1] {
+			t.Fatalf("%s: saferepr %q, %v", text, shown, err)
+		}
 	}
 }
 

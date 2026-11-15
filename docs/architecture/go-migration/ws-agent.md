@@ -138,9 +138,10 @@ Refused explicitly (the connection ends, or run-agent exits 1):
   [pdf-exports](pdf-exports.md) (`u`, `strike`, `a`, `font`, `sup`, `img` and
   the others), a reportlab `LayoutError` (its text carries object addresses),
   an attendance date label equal to `#`, `Corso`, `Nome e Cognome` or
-  `Presenze`, more than 702 columns, and a numeric column with an integer
-  beyond the int64 range or 17+ significant digits (pandas' platform-dependent
-  parse).
+  `Presenze`, more than 702 columns, and numeric-looking text with 17+
+  significant digits (pandas' platform-dependent parse). Integers beyond
+  int64 in a numeric column are answered as Django answers them
+  (go-v2only-xlsxvalue, [xlsx-exports](xlsx-exports.md)).
 - Cached agent values outside the ported shape (`ws_throttle`,
   `ws_concurrent`), and the AI configuration of another shape: only the app
   writes them, no request can create the state.

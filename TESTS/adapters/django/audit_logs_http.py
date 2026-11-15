@@ -73,12 +73,17 @@ def seed_rows(source, created):
     put(Module, module_id=R['module'], sport_association_id=own, title='Modulo privacy')
     put(AttendanceRegistry, attendance_registry_id=R['registry'], course_id=R['course'], events=rows['events_registry'])
     put(AttendanceDay, attendance_day_id=R['day'], attendance_registry_id=R['registry'], title=None, date=moment('2026-09-15T18:30:00Z'))
+    # A day and a camp period before year 1000: strftime('%Y') is the C library's (see the early-year entries).
+    put(AttendanceDay, attendance_day_id=R['day_early'], attendance_registry_id=R['registry'], title=None,
+        date=moment('0999-09-15T18:30:00Z'))
     put(GlobalCalendarEvents, global_calendar_id=R['calendar'], sport_association_id=own, events=rows['events_calendar'])
     put(Reminders, reminders_id=R['reminder'], event_title='Promemoria gara', send_at=moment('2026-10-02T07:00:00Z'), user_id=owner,
         sport_association_id=own)
     put(CampsAndRetreats, camps_and_retreats_id=R['camp'], title='Campo estivo', sport_association_id=own)
     put(CampsAndRetreatsPeriod, camps_and_retreats_period_id=R['period'], camps_and_retreats_id=R['camp'],
         start_date=moment('2026-07-01T08:00:00Z'), end_date=moment('2026-07-10T08:00:00Z'))
+    put(CampsAndRetreatsPeriod, camps_and_retreats_period_id=R['period_early'], camps_and_retreats_id=R['camp'],
+        start_date=moment('0001-07-01T08:00:00Z'), end_date=moment('0001-07-10T08:00:00Z'))
     put(CampsAndRetreatsSubscription, camps_and_retreats_subscription_id=R['camp_subscription'], camps_and_retreats_id=R['camp'],
         subscription_id=R['subscription'])
     put(SubscriptionMembership, subscription_membership_id=R['membership'], subscription_id=R['subscription'], sport_association_id=own)

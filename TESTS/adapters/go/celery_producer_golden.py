@@ -59,6 +59,15 @@ CASES = [
     # apply_async(args=[...]) with a list: argsrepr is the list's repr.
     {'name': 'list-args', 'task': 'print_document_invoice', 'args': [s(U2), {'t': 'none', 'v': None}, {'t': 'bool', 'v': False}],
      'kwargs': [], 'args_list': True},
+    # A raw request value reaches the task as sent: a number below the smallest
+    # subnormal is a signed zero in Python's float() (json.dumps writes 0.0),
+    # and a lone surrogate stays in the str (the body escapes it, argsrepr keeps
+    # it raw and the envelope escapes it).
+    {'name': 'number-underflow', 'task': 'print_document_invoice',
+     'args': [s(U2), {'t': 'none', 'v': None}, {'t': 'number', 'v': '1e-400'}, {'t': 'number', 'v': '-1e-400'}],
+     'kwargs': [], 'args_list': True},
+    {'name': 'lone-surrogate', 'task': 'surrogate_text', 'args': [{'t': 'surrogate', 'v': 'd800'}, s('ok')],
+     'kwargs': [['x', {'t': 'surrogate', 'v': 'dfff'}]], 'undecodable': True},
     # restore_instance_data.apply_async(args=[id], task_id=id): the task's time limits and the given id.
     {'name': 'task-id-time-limits', 'task': 'instance.restore.execute', 'args': [s('d7000000-0000-4000-8000-000000000101')],
      'kwargs': [], 'args_list': True, 'task_id': 'd7000000-0000-4000-8000-000000000101',
@@ -82,6 +91,12 @@ def value(tagged):
         return None
     if kind == 'uuid':
         return uuid.UUID(tagged['v'])
+    if kind == 'number':
+        # A JSON number kept as its text (json.loads keeps the int/float it reads).
+        return json.loads(tagged['v'])
+    if kind == 'surrogate':
+        # A lone surrogate, which Python keeps in a str.
+        return chr(int(tagged['v'], 16))
     if kind == 'list':
         return [value(item) for item in tagged['v']]
     if kind == 'dict':

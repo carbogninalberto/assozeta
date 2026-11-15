@@ -81,6 +81,38 @@ every write, inside a receiver's nested collector the whole transaction is rolle
 89 current models is marked (`TestCollaboratorDeleteGraphSupported`); a model change shows up first
 as `graph.drift` in the family. No physical file or object-storage deletion is involved.
 
+Every return site of the sentinel, with its exact condition (`rg -n ErrCollaboratorDeleteUnsupported
+BE_GO --glob '!*_test.go'`):
+
+| site | condition |
+|---|---|
+| `repository/collaborator_delete_collector.go:321` | `collect` reaches a model `loadCollaboratorDeleteGraph` marked unsupported |
+| `repository/collaborator_delete_collector.go:401` | a queued fast delete names a model the graph lacks |
+| `repository/collaborator_delete_collector.go:643` | an audited value is neither a string nor a number, in a field type without its own case |
+| `repository/balance_sheet.go:185` | `DeleteAccount` finds `application.CustomAccounts` missing from the graph |
+| `repository/router_stock_deletes.go:29` | `DeleteModel` receives a label the graph lacks (`application.Associate`, `application.Subscription`) |
+| `repository/restore_deletion.go:66` | `ErrRestoreDeletionUnsupported`: the same sentinel for the restore graph |
+
+The restore graph (`restore_deletion_graph.json`, 92 models, `docmanager.Document` included, used by
+`Document.delete()` and its bulk/instructor-hours/module-response paths) goes through the same
+`collect`/`delete` code, with `PositiveBigIntegerField` read as `BigIntegerField` for the audit renderer
+(`NewRestoreDeletion`).
+
+No site is reachable from a request or a stored row: every condition is a property of the committed
+graphs or of the label literals the Go code passes, and none of them is selected by a body, query,
+header or row value. Both graphs mark no model, all 33 (collaborator) and 39 (restore) fast relations
+point inside their graph, every audited field is rendered (value fields are strings, numbers or the
+bool/time cases), and every delete entry point names a model of the graph it uses.
+`TestCollaboratorDeleteRefusalUnreachable` pins those four properties, one subtest each (control:
+changing one relation's `target_column` in the graph makes `no model is marked unsupported` fail). A
+model change that would make a site reachable fails the graph drift fixtures and that test before any
+request can reach it. The 21 HTTP routes `tools/go-migration/refusal_reach.py` lists for this sentinel
+reach it only statically: the collector serves them in Go today. Three of the route groups were re-run
+on four transports (`balance-sheet` 97/97 including the account deletes through `DeleteAccount`,
+`router-personas` 51/51 including the two hard deletes, `document-delete` 57/57, native Django, native
+Go, Caddy `/api/v1` and `/api/v2`, label `v2colldelete-r1`); the other families keep their recorded
+green receipts ([handoff.md](handoff.md)). `v2-refusals.md` keeps the row as class C for that reason.
+
 ## Evidence
 
 Fixture generator `TESTS/fixtures/generate_collaborator_delete_go_http.py` (46 cases, 170 seeded

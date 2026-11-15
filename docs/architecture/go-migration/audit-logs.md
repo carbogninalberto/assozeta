@@ -15,21 +15,30 @@
 
 ## Not ported (refused explicitly with the 500 page, never a guessed body)
 
-- `datetime.fromisoformat` forms outside `YYYY-MM-DD[(T| )HH:MM[:SS[.fff|.ffffff]][±HH:MM]]` when the text starts with a 4-digit year (compact, week dates, other fraction widths, `24:00`); years below 1000 in any strftime.
-- `json.loads` input nested deeper than 500 (the recursion limit depends on the live call stack). `NaN`/`Infinity` literals and lone surrogate escapes are ported (t3plat): they load, and only a value that reaches `enriched_changes` makes the strict renderer answer the 500.
-- `str.title()`/`str.capitalize()` of non-ASCII text (field labels, unlabelled model names, permission segments).
-- Malformed UTF-8 in the query parameters the list reads.
+- `json.loads` input nested deeper than 500 (X: the recursion limit depends on the live call stack; PostgreSQL does store a jsonb value nested that deep, so a form field carrying 501..~900 levels of JSON is the one input that is still handed off). `NaN`/`Infinity` literals and lone surrogate escapes are ported (t3plat): they load, and only a value that reaches `enriched_changes` makes the strict renderer answer the 500.
+- `str.title()` of non-ASCII text (C: the only inputs are content-type model names and `changes` keys, which are Python identifiers the application writes; ASCII labels are ported). `str.capitalize()` of a permission segment is ported (go-v2only-auditser), since a request stores `collaborator_permissions` as sent.
 
 Known unchecked divergences: >4300-digit integers in JSON columns of *resolved* rows (Django swallows the load error; Go formats the row); a database error inside a resolver (Django swallows it; Go answers 500). Tie order of equal sort keys is PostgreSQL's in both.
 
 ## Evidence (TDD)
 
-`TESTS/fixtures/audit_logs_http.json` (generator alongside; contract `TESTS/contracts/test_audit_logs_http.py`, adapter `TESTS/adapters/django/audit_logs_http.py`) authors 132 cases over 49 seeded log entries and the rows every resolver reads. RED: Django 132/132 and Go 404 (`red-final`, run with the two Go routes unregistered; the first 122 cases were RED before any Go code). GREEN: 132/132 on native Django, native Go, Caddy `/api/v1` and `/api/v2` with the model state unchanged. Dropping the `changes IS NOT NULL` guard of the noise filter fails `audit-logs-list-owner-full`. `go test ./internal/dto` covers the Python-semantics helpers and every refusal.
+`TESTS/fixtures/audit_logs_http.json` (generator alongside; contract `TESTS/contracts/test_audit_logs_http.py`, adapter `TESTS/adapters/django/audit_logs_http.py`) authors 147 cases over 62 seeded log entries and the rows every resolver reads. RED: Django 147/147 and Go 500 on `audit-logs-list-owner-full` (`s3auditser-red-r1`, the four new cases failing on Go while Django passes all 147). GREEN: 147/147 on native Django, native Go, Caddy `/api/v1` and `/api/v2` with the model state unchanged (`s3auditser-green-r1`). Mutation `s3auditser-mutation-r1` (the ISO year formatted with `strconv.Itoa` instead of the platform `dto.LibcYear`) CAUGHT by `audit-logs-list-owner-full` (`enriched_changes.events[1]`). Dropping the `changes IS NOT NULL` guard of the noise filter fails `audit-logs-list-owner-full`. `go test ./internal/dto` covers the Python-semantics helpers and every refusal, including `str.capitalize()` over `dto/testdata/python_capitalize.json` (every code point, CPython 3.13.16).
 
 ## Date forms and query decoding
 
 Event `start` values are read with the CPython 3.13 `datetime.fromisoformat` grammar (basic and extended dates, ISO week
 dates, any one-character separator, fractions, offsets with seconds); `dto/testdata/audit_isoformat.json` holds strings
-checked against the interpreter. Years below 1000 stay refused: `strftime("%Y")` pads on BSD libc and not on glibc.
+checked against the interpreter. A year below 1000 is written by `strftime('%Y')` as the platform's C library writes it
+(`dto.LibcYear`): four digits where it pads (macOS), the digits alone on glibc. The fixture keeps a `$libc_year:<digits>`
+placeholder in such texts and the contract resolves it for the run's platform, so the same cases hold on both.
+Cases: `audit-logs-detail-early-year-*`, `audit-logs-detail-registry-forms-*`, `audit-logs-list-search-malformed-utf8`.
 A malformed UTF-8 query parameter decodes with one replacement character per ill-formed subpart, as Python does.
-Cases: `audit-logs-detail-registry-forms-*`, `audit-logs-list-search-malformed-utf8`.
+
+## Case mappings
+
+Permission segments outside the registry take `str.capitalize()` (`dto.auditCapitalize`): the first code point's full
+title-case mapping and the rest's lower-case ones, SpecialCasing included (`ßeta` → `Sseta`, `abİ` → `Abi̇`) and with the
+final-sigma rule seeing the whole string (`ΑΣ` → `Ας`). `dto/testdata/python_capitalize.json` holds the mapping of every
+code point (CPython 3.13.16) and `TestAuditCapitalizeMatchesPython` walks it. Case:
+`audit-logs-detail-user-permissions-unicode`. `str.title()` of model and field names is ASCII-only because those names are
+Python identifiers the application writes; other text stays refused.

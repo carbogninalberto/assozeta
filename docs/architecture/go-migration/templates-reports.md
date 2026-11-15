@@ -141,8 +141,7 @@ matrix for the MCP server as well.
 
 ## Not ported (refused with the HTML 500 page before any query)
 
-- In the file tools: workbook labels that are numbers equal to one another or
-  beyond 64 bits, and the paragraph markup `pdfexport` still refuses (pdf-exports.md,
+- In the file tools: the paragraph markup `pdfexport` still refuses (pdf-exports.md,
   "Paragraph markup": anchors, internal links, images that are not base64 JPEG data URLs, Courier and Times, `<para>` indents,
   justification and borders). `u`, `strike`, `font`, `span`, `nobr`, `sup`, `sub`, `a`, `link`, base64 JPEG `img` and `<para>`
   with attributes are drawn (cases `export-pdf-rich-markup`, `export-pdf-rich-markup-over-pages`, `export-pdf-inline-image` and
@@ -170,6 +169,14 @@ matrix for the MCP server as well.
   unhashable choice maps, a method call on a value outside the parsed JSON
   types, integers beyond 64 bits and non-finite floats as parameters, a
   non-finite `limit`/`offset`, and a `__year` comparison without an integer.
+
+The XLSX workbooks of the file tools answer every stored label and cell ([xlsx-exports](xlsx-exports.md)); openpyxl's
+sheet-title comparison is `str.lower()` (avoid_duplicate_name), so two titles that differ only by their lower-case form (a
+capital and a final sigma, `ΑΣ` and `Ας`) are the same title and pandas' lookup of the second raises `KeyError('<title>')`:
+the export fails as in Django (go-v2only-xlsxvalue, golden case `rs-title-final-sigma`). The remaining `ErrNotPorted` sites
+of the report writer need state the app cannot write: more than 702 columns (a model row with 703 kept fields), a frame
+without rows, a `None`, bool or non-finite cell (`format_export_data` writes `''`/`Vero`/`Falso` and the label reader refuses
+them), and a `None` or non-finite label.
 
 ## Group and unusual arguments (`v2rep2-*` receipts)
 
