@@ -265,7 +265,7 @@ func (s *PaymentStates) Approve(ctx context.Context, identity domain.ResolvedIde
 		var receipt any = false
 		if dispatch {
 			if s.tasks == nil {
-				return nil, domain.ErrPaymentStateNotPorted
+				return nil, domain.ErrServerComposition
 			}
 			if value, present := object.Lookup("send_receipt_email"); present {
 				if receipt, err = paymentStateReceiptArg(value); err != nil {
@@ -292,7 +292,7 @@ func (s *PaymentStates) Approve(ctx context.Context, identity domain.ResolvedIde
 	if !row.Expense && (row.AssociateID != nil || row.SupplierID != nil || row.InstructorID != nil) {
 		flow, ok := tx.(domain.PaymentPaidFlowTransaction)
 		if !ok {
-			return nil, domain.ErrPaymentStateNotPorted
+			return nil, domain.ErrServerComposition
 		}
 		return s.approvePaid(ctx, flow, identity, request, object, row, association, group, sent, generate)
 	}
@@ -410,7 +410,7 @@ func (s *PaymentStates) Delete(ctx context.Context, identity domain.ResolvedIden
 	}
 	if row.InvoiceID != nil {
 		if s.printer == nil {
-			return nil, domain.ErrPaymentStateNotPorted
+			return nil, domain.ErrServerComposition
 		}
 		if err = s.cancelInvoice(ctx, tx, identity, request, row.ID, *row.InvoiceID, group); err != nil {
 			return nil, err
@@ -439,7 +439,7 @@ func (s *PaymentStates) Delete(ctx context.Context, identity domain.ResolvedIden
 func (s *PaymentStates) cancelInvoiced(ctx context.Context, tx domain.PaymentStateTransaction, identity domain.ResolvedIdentity,
 	request PaymentStateRequest, row *domain.PaymentStateRow, group *string) (map[string]any, error) {
 	if s.tasks == nil {
-		return nil, domain.ErrPaymentStateNotPorted
+		return nil, domain.ErrServerComposition
 	}
 	if err := s.save(ctx, tx, identity, row, false, row.PaymentDate, request.Audit); err != nil {
 		return nil, err

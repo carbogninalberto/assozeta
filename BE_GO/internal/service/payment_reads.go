@@ -531,7 +531,7 @@ func (s *PaymentReads) instructorDocuments(ctx context.Context, ids []string, it
 		return nil
 	}
 	if s.printer == nil {
-		return domain.ErrPaymentReadsNotPorted
+		return domain.ErrServerComposition
 	}
 	for _, id := range needing {
 		if err := s.printer.Compensation(ctx, id, authorization); err != nil {

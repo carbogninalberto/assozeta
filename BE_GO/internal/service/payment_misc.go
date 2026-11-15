@@ -582,7 +582,7 @@ func (s *PaymentMisc) Apply(ctx context.Context, identity domain.ResolvedIdentit
 		other := subscription.UserID != run.association.OwnerID
 		if other && subscription.AssociateID != nil {
 			if s.mails == nil {
-				return domain.ErrPaymentMiscNotPorted
+				return domain.ErrServerComposition
 			}
 			found, err := tx.CommunicationConfigured(ctx, run.association.ID)
 			if err != nil {
@@ -798,7 +798,7 @@ func (s *PaymentMisc) Sign(ctx context.Context, identity domain.ResolvedIdentity
 	}
 	if flag {
 		if s.printer == nil {
-			return nil, domain.ErrPaymentMiscNotPorted
+			return nil, domain.ErrServerComposition
 		}
 		if err := s.storeSignature(ctx, tx, identity, request, key, data); err != nil {
 			return nil, err

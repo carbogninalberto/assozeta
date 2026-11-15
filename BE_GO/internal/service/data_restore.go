@@ -404,7 +404,7 @@ func (s *DataRestore) Upload(ctx context.Context, user string, upload DataRestor
 		return dataRestoreError(400, dataRestoreUploadText), nil
 	}
 	if s.archives == nil {
-		return nil, domain.ErrDataRestoreNotPorted
+		return nil, domain.ErrServerComposition
 	}
 	return s.acceptUpload(ctx, user, config, content)
 }

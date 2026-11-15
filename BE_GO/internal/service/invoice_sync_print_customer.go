@@ -38,7 +38,7 @@ func (s *InvoiceParties) customerListPending(ctx context.Context, request Invoic
 		return nil
 	}
 	if s.customerSync == nil {
-		return domain.ErrInvoicePartyNotPorted
+		return domain.ErrServerComposition
 	}
 	sample := fatturapa.Progressivo(s.now().Unix(), 0)
 	for i := range pending {

@@ -421,7 +421,7 @@ func (s *SubscriptionRenewals) courses(ctx context.Context, tx domain.Subscripti
 		return pythonSubscriptError("")
 	}
 	if s.enrolment == nil {
-		return domain.ErrSubscriptionCreateNotPorted
+		return domain.ErrServerComposition
 	}
 	enrolment := tx.Enrolment()
 	actor, err := s.creates.actorAssociation(ctx, tx, request.Audit)

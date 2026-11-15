@@ -111,7 +111,7 @@ func (s *SubscriptionCreates) newMember(ctx context.Context, tx domain.Subscript
 		return nil, nil
 	}
 	if s.accounts == nil {
-		return nil, domain.ErrSubscriptionCreateNotPorted
+		return nil, domain.ErrServerComposition
 	}
 	// UserSerializer(data=new_member_info).is_valid(raise_exception=True).
 	fields := map[string][]string{}
@@ -276,7 +276,7 @@ func (s *SubscriptionCreates) uploadSignature(ctx context.Context, subscription,
 		return &data, nil, nil
 	}
 	if s.signatures == nil {
-		return nil, nil, domain.ErrSubscriptionCreateNotPorted
+		return nil, nil, domain.ErrServerComposition
 	}
 	name, public, err := s.signatures.upload(ctx, subscription, data)
 	switch {
