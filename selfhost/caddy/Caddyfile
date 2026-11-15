@@ -1,5 +1,11 @@
 {
     email {$ACME_EMAIL:localhost@example.invalid}
+
+    # Behind a shared front proxy, trust its forwarded client IP and protocol.
+    # Empty (the default) trusts no proxy, exactly as before.
+    servers {
+        trusted_proxies static {$ASSOZETA_TRUSTED_PROXIES}
+    }
 }
 
 {$SITE_ADDRESS} {

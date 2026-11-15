@@ -16,6 +16,12 @@ Self-hosted deployments are coordinated from `selfhost/compose.yml` and `selfhos
 - `web`: reverse proxy/static frontend (Caddy in production compose)
 - `ui` (dev compose): Vite dev server
 
+`selfhost/config/compose.edge.yml` is an optional production overlay applied by the CLI
+and the updater when `ASSOZETA_EDGE_NETWORK` is set: no `web` host ports, `web`
+joins that external network under `ASSOZETA_EDGE_ALIAS`, and
+`ASSOZETA_TRUSTED_PROXIES` lets web Caddy trust the front proxy's forwarded
+headers. See [self-host configuration](../../selfhost/README.md#behind-a-front-proxy).
+
 The PDF renderer uses a bounded Puppeteer Chrome Headless Shell pool. Each
 render owns a fresh browser context, while browser processes are recycled by
 age and request count. Its container is non-root, read-only except for a
