@@ -8,7 +8,8 @@ Self Instance page, opens a new browser, uses the ``?api=v1`` override,
 simulates a failing readiness probe and switches the setting off. This runner
 then checks the stored setting, the two audit entries and, from an independent
 observer on the Django server, that no API request reached Django while the
-browser was on v2 (only the canonical manifest/logo URLs and WebSockets).
+browser was on v2 (only the canonical manifest/logo URLs), and that the page
+opened WebSockets on the backend of the active API version.
 
 Usage (migration interpreter, pinned Go on PATH, Docker running):
   python TESTS/adapters/django/ui_api_version_browser.py --ui-dir UI-BUILD/dist/public

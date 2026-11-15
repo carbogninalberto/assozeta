@@ -16,9 +16,9 @@ const browser = await chromium.launch();
 const phases = [], failures = [], checks = [];
 const pageIds = new WeakMap();
 let contexts = 0;
-let phase = 'initialization', phaseRequests = [], success = false, current = null;
+let phase = 'initialization', phaseRequests = [], phaseWebSockets = [], success = false, current = null;
 const deadline = setTimeout(() => {failures.push({kind: 'workflow-deadline', phase}); void browser.close();}, 420000);
-// The canonical logo/manifest URLs and WebSockets stay on Django by design.
+// The canonical logo/manifest URLs stay on Django by design.
 const DJANGO_BY_DESIGN = [/^\/api\/instance\/manifest\.json$/, /^\/api\/instance\/logo\.png$/];
 // Go refuses these inputs explicitly (not ported; docs/architecture/go-migration):
 // recorded as known gaps instead of failing the run.
@@ -26,8 +26,8 @@ const KNOWN_V2_GAPS = ['/api/v2/statistic/dashboard?widget=todaylessons'];
 const knownGaps = [];
 
 function begin(name) {
-    phase = name; phaseRequests = [];
-    phases.push({name, start: Date.now(), end: null, requests: phaseRequests});
+    phase = name; phaseRequests = []; phaseWebSockets = [];
+    phases.push({name, start: Date.now(), end: null, requests: phaseRequests, websockets: phaseWebSockets});
 }
 function end() { phases.at(-1).end = Date.now(); }
 
@@ -44,6 +44,10 @@ async function context({query = '', readyz = null} = {}) {
         const url = new URL(request.url());
         if (url.origin === input.origin && (url.pathname.startsWith('/api') || url.pathname.startsWith('/ws/')))
             phaseRequests.push({context: id, method: request.method(), path: url.pathname, type: request.resourceType()});
+    });
+    page.on('websocket', socket => {
+        const url = new URL(socket.url());
+        if (url.origin === input.origin) phaseWebSockets.push({context: id, path: url.pathname});
     });
     page.on('response', response => {
         const url = new URL(response.url());
@@ -118,6 +122,24 @@ function requireOnly(page, version, {bootstrapOnV1 = false} = {}) {
     assert.deepEqual(wrong, [], phase + ': API requests on the wrong version');
     checks.push(phase + ': ' + requests.length + ' API requests all on ' + (version === 'v2' ? '/api/v2' : '/api'));
 }
+// WebSockets follow the API version too: on v2 the UI opens /api/v2/ws/... on
+// the Go server, on /api it opens Django's /ws/...; a socket that cannot open
+// on v2 falls back to /ws/ for the session.
+function webSocketPaths(page) {
+    return phaseWebSockets.filter(socket => socket.context === pageIds.get(page)).map(socket => socket.path);
+}
+function requireSockets(page, version) {
+    const paths = webSocketPaths(page);
+    assert(paths.length >= 1, phase + ': no WebSocket connection observed');
+    if (version === 'v2') {
+        assert(paths.includes('/api/v2/ws/notifications/'), phase + ': notifications WebSocket not on /api/v2/ws/ (' + paths + ')');
+        assert.deepEqual(paths.filter(path => !path.startsWith('/api/v2/ws/')), [], phase + ': WebSocket not on the Go server while on v2');
+        checks.push(phase + ': ' + paths.length + ' WebSockets on /api/v2/ws (' + [...new Set(paths)].join(', ') + ')');
+    } else {
+        assert.deepEqual(paths.filter(path => !path.startsWith('/ws/')), [], phase + ': WebSocket not on Django while on /api');
+        checks.push(phase + ': ' + paths.length + ' WebSockets on /ws');
+    }
+}
 async function noScaryUi(page) {
     await expect(page.locator('.swal2-popup:visible')).toHaveCount(0);
     await expect(page.locator('[data-sonner-toast][data-type="error"]:visible')).toHaveCount(0);
@@ -132,6 +154,7 @@ try {
     await expect(toggle).not.toBeChecked();
     await expect(a.page.getByText('Questo browser usa ora l’API attuale (v1).')).toBeVisible();
     requireOnly(a.page, 'v1');
+    requireSockets(a.page, 'v1');
     end();
 
     begin('enable');
@@ -146,6 +169,7 @@ try {
     begin('v2-same-session');
     await corePages(a.page);
     requireOnly(a.page, 'v2');
+    requireSockets(a.page, 'v2');
     await a.ctx.close();
     end();
 
@@ -155,6 +179,7 @@ try {
     await corePages(b.page);
     await noScaryUi(b.page);
     requireOnly(b.page, 'v2', {bootstrapOnV1: true});
+    requireSockets(b.page, 'v2');
     assert(phaseRequests.some(r => r.path === '/api/v2/readyz'), 'v2: readiness probe');
     assert(phaseRequests.some(r => r.path === '/api/v2/oauth2/login'), 'v2: password login on v2');
     end();
@@ -164,6 +189,7 @@ try {
     await login(c.page);
     await corePages(c.page);
     requireOnly(c.page, 'v1');
+    requireSockets(c.page, 'v1');
     assert.equal(await c.page.evaluate(() => localStorage.getItem('assozeta_api_override')), 'v1');
     await expect(c.page.getByText('Questo browser usa la v1 (override ?api=v1).')).toBeVisible();
     await c.ctx.close();
@@ -175,6 +201,7 @@ try {
     await corePages(d.page);
     await noScaryUi(d.page);
     requireOnly(d.page, 'v1');
+    requireSockets(d.page, 'v1');
     assert(phaseRequests.some(r => r.path === '/api/v2/readyz'), 'fallback: probe attempted');
     await d.ctx.close();
     end();
@@ -194,6 +221,7 @@ try {
     await login(e.page);
     await corePages(e.page);
     requireOnly(e.page, 'v1');
+    requireSockets(e.page, 'v1');
     await e.ctx.close();
     end();
 
