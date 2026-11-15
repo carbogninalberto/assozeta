@@ -128,7 +128,7 @@ func TestFramesMatchPandas(t *testing.T) {
 			want *goldenOutcome
 		}{{"ReadText", ReadText, item.Raw}, {"ReadDecodedText", ReadDecodedText, item.Text}} {
 			frame, err := run.read(data, textual)
-			if errors.Is(err, ErrUnsupported) {
+			if errors.Is(err, ErrBareCRBacktrack) {
 				refused++
 				continue
 			}
@@ -149,14 +149,16 @@ func TestFramesMatchPandas(t *testing.T) {
 	if failures > 0 {
 		t.Fatalf("%d outcomes differ", failures)
 	}
-	if refused > len(golden.Cases)/5 {
+	// The re-read case is refused, not reproduced: pandas fills its parser
+	// buffers or stops at the reader's row limit, whichever comes first.
+	if refused > len(golden.Cases)/100 {
 		t.Fatalf("%d of %d outcomes refused", refused, 2*len(golden.Cases))
 	}
 	if typed < 5000 {
 		t.Fatalf("only %d cases with text columns", typed)
 	}
-	t.Logf("%d inputs (%d with text columns): %d frames, %d refused of %d outcomes", len(golden.Cases), typed, frames, refused,
-		2*len(golden.Cases))
+	t.Logf("%d inputs (%d with text columns): %d frames, %d refused of %d outcomes", len(golden.Cases), typed, frames,
+		refused, 2*len(golden.Cases))
 }
 
 func TestValueRendering(t *testing.T) {
@@ -185,16 +187,27 @@ func TestValueRendering(t *testing.T) {
 	}
 }
 
-func TestReadRefusals(t *testing.T) {
-	for _, data := range [][]byte{[]byte("a\rb\rc\r d\r"), []byte("x\n-98712257126468995.\n")} {
-		if _, err := Read(data); !errors.Is(err, ErrUnsupported) {
-			t.Errorf("%q: %v", data, err)
-		}
+func TestReadErrors(t *testing.T) {
+	// A whitespace-led line after a bare carriage return makes the tokenizer
+	// read the lines before it again; how many it fits is left to Django.
+	if _, err := Read([]byte("a\rb\rc\r d\r")); !errors.Is(err, ErrBareCRBacktrack) {
+		t.Errorf("%v", err)
 	}
 	if _, err := Read([]byte("x\n1\xff\n")); !errors.Is(err, ErrDecode) {
 		t.Error(err)
 	}
 	if frame, err := Read([]byte("x;y\n1;\xff\n")); !errors.Is(err, ErrDecode) {
 		t.Error(frame, err)
+	}
+	// The re-read rows are those pandas buffers when its row limit comes
+	// first: the header line, then the lines read again from the start of the
+	// buffer (pandas 2.2.3: read_csv('a\\r d\\r') has one column 'a' and the
+	// rows 'a', ' d').
+	frame, err := Read([]byte("a\r d\r"))
+	if err != nil || !slices.Equal(frame.Columns, []string{"a"}) || len(frame.Rows) != 2 {
+		t.Fatalf("%v %v", frame, err)
+	}
+	if frame.Rows[1][0].Kind != String || frame.Rows[1][0].S != " d" {
+		t.Errorf("%+v", frame.Rows[1])
 	}
 }

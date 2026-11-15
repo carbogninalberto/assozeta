@@ -34,14 +34,14 @@ const (
 // of a JSON document: a string, a bool or a json.Number (any other value is
 // no label). found is false where the key is no label. raises is true where
 // row[key] raises although the key is a label (a whole number read as a
-// position past the row's end). ErrUnsupported: text looked up in a
+// position past the row's end). ErrWorkbookNotPorted: text looked up in a
 // DatetimeIndex or a TimedeltaIndex, which pandas parses as a date or a
-// duration.
+// duration (dateutil's grammar, not modelled).
 func (f *Frame) Lookup(key any) (position int, found, raises bool, err error) {
 	switch f.Index {
 	case DatetimeIndex, TimedeltaIndex:
 		if _, text := key.(string); text {
-			return 0, false, false, ErrUnsupported
+			return 0, false, false, ErrWorkbookNotPorted
 		}
 		return 0, false, false, nil
 	case BoolIndex:

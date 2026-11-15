@@ -45,9 +45,22 @@ type tokenizer struct {
 	lineStart  []int // index of each line's first word; one entry past lines
 	lineFields []int
 
-	// blankStart is where the whitespace that opens the current line began
-	// in the buffer (0 when it began in an earlier one).
+	// The parser's buffers only grow, in makeStreamSpace, and a word, a field
+	// byte or a line past the capacity is the ParserError 'Buffer overflow
+	// caught - possible malformed input file.'. streamLen is the C parser's
+	// stream_p: the bytes in the stream from streamBase on, every word being
+	// its bytes and a NUL.
+	streamLen  int
+	streamCap  int
+	streamBase int
+	wordsCap   int
+	linesCap   int
+
+	// blankStart is where the whitespace that opens the current line began in
+	// the buffer (0 when it began in an earlier one); reread records that a
+	// rewind went back to before it, so buffered lines were read again.
 	blankStart int
+	reread     bool
 }
 
 func newTokenizer(source []byte, decoded bool) *tokenizer {
@@ -70,11 +83,64 @@ func (t *tokenizer) field(line, column int) []byte {
 	return t.word(index)
 }
 
-func (t *tokenizer) endField() {
+// overflow is the ParserError a full buffer raises. After the tokenizer has
+// read buffered lines again it is not known how many lines the C parser fits
+// before its buffers are full (or whether the reader's row limit stops it
+// first), so the outcome is left to Django.
+func (t *tokenizer) overflow() error {
+	if t.reread {
+		return ErrBareCRBacktrack
+	}
+	return ErrParser
+}
+
+// growCap is make_stream_space's doubling: the smallest power of two above
+// need, starting from the capacity the buffer has.
+func growCap(need, capacity int) int {
+	for capacity == 0 || need >= capacity {
+		if capacity == 0 {
+			capacity = 2
+		} else {
+			capacity *= 2
+		}
+	}
+	return capacity
+}
+
+// makeStreamSpace is make_stream_space: room for nbytes more bytes of fields,
+// and for as many more words and lines.
+func (t *tokenizer) makeStreamSpace(nbytes int) {
+	t.streamCap = growCap(t.streamLen+2*nbytes, t.streamCap)
+	base := len(t.wordStarts)
+	if len(t.wordStarts)+nbytes < t.wordsCap {
+		base = t.wordsCap - nbytes - 1
+	}
+	t.wordsCap = growCap(base+nbytes, t.wordsCap)
+	t.linesCap = growCap(t.lines+nbytes+1, t.linesCap)
+}
+
+// appendByte appends one byte of a field to the stream.
+func (t *tokenizer) appendByte(c byte) error {
+	if t.streamLen >= t.streamCap {
+		return t.overflow()
+	}
+	t.stream = append(t.stream, c)
+	t.streamLen++
+	return nil
+}
+
+// endField is the end of a field: the word's NUL, the word and the line's
+// field count.
+func (t *tokenizer) endField() error {
+	if len(t.wordStarts) >= t.wordsCap || t.streamLen >= t.streamCap {
+		return t.overflow()
+	}
 	t.stream = append(t.stream, 0)
+	t.streamLen++
 	t.wordStarts = append(t.wordStarts, t.pending)
 	t.lineFields[t.lines]++
 	t.pending = len(t.stream)
+	return nil
 }
 
 // endLine is end_line: a line after the first data line with more fields
@@ -88,13 +154,19 @@ func (t *tokenizer) endLine() error {
 	if t.lines > 1 && fields > expected {
 		return ErrParser
 	}
-	if t.lines >= 1 {
+	if t.lines >= 1 && fields < expected {
+		t.makeStreamSpace(expected - fields)
 		for ; fields < expected; fields++ {
-			t.endField()
+			if err := t.endField(); err != nil {
+				return err
+			}
 		}
 	}
 	t.fileLines++
 	t.lines++
+	if t.lines >= t.linesCap {
+		return t.overflow()
+	}
 	t.lineStart = append(t.lineStart, t.lineStart[t.lines-1]+fields)
 	t.lineFields = append(t.lineFields, 0)
 	return nil
@@ -107,6 +179,14 @@ func (t *tokenizer) consume(rows int) {
 		return
 	}
 	words := t.lineStart[rows-1] + t.lineFields[rows-1]
+	if words > 0 {
+		end := len(t.stream)
+		if words < len(t.wordStarts) {
+			end = t.wordStarts[words]
+		}
+		t.streamLen -= end - t.streamBase
+		t.streamBase = end
+	}
 	t.wordStarts = t.wordStarts[words:]
 	t.lineFields = t.lineFields[rows:]
 	t.lineStart = t.lineStart[rows:]
@@ -129,6 +209,9 @@ func (t *tokenizer) fill() bool {
 	}
 	t.data, t.datapos, t.blankStart = rest[:size], 0, 0
 	t.next += size
+	if size > 0 {
+		t.makeStreamSpace(size)
+	}
 	return size > 0
 }
 
@@ -163,7 +246,9 @@ func (t *tokenizer) handleEOF() error {
 	case tokInQuoted:
 		return ErrParser
 	case tokInField, tokStartField, tokQuoteInQuoted:
-		t.endField()
+		if err := t.endField(); err != nil {
+			return err
+		}
 	}
 	return t.endLine()
 }
@@ -190,8 +275,11 @@ func (t *tokenizer) tokenizeBytes(limit int) error {
 				t.state = tokEatCRNLNop
 			case isBlank(c) && c != ';':
 			default:
-				// Back to the character after the last line feed of this
-				// buffer, or to where this call began.
+				// Not a blank line after all: back to the character after
+				// the last line feed of this buffer, or to where this call
+				// began, and read from there as a field. The leading
+				// whitespace then becomes the first field's text, and the
+				// lines buffered since that point are appended again.
 				j := i
 				for j > origin && data[j] != '\n' {
 					j--
@@ -200,10 +288,7 @@ func (t *tokenizer) tokenizeBytes(limit int) error {
 					j++
 				}
 				if j < t.blankStart {
-					// Only after a bare carriage return: the tokenizer
-					// reads the lines since the last line feed again, up
-					// to its row limit or the end of its buffers.
-					return ErrUnsupported
+					t.reread = true
 				}
 				i = j - 1
 				t.state = tokStartField
@@ -227,64 +312,90 @@ func (t *tokenizer) tokenizeBytes(limit int) error {
 			}
 			switch c {
 			case '\n':
-				t.endField()
+				if err := t.endField(); err != nil {
+					return err
+				}
 				if err := t.endLine(); err != nil {
 					return err
 				}
 				t.state, lineEnded = tokStartRecord, true
 			case '\r':
-				t.endField()
+				if err := t.endField(); err != nil {
+					return err
+				}
 				t.state = tokEatCRNL
 			case '"':
 				t.state = tokInQuoted
 			case ';':
-				t.endField()
+				if err := t.endField(); err != nil {
+					return err
+				}
 			default:
-				t.stream = append(t.stream, c)
+				if err := t.appendByte(c); err != nil {
+					return err
+				}
 				t.state = tokInField
 			}
 		case tokInField:
 			switch c {
 			case '\n':
-				t.endField()
+				if err := t.endField(); err != nil {
+					return err
+				}
 				if err := t.endLine(); err != nil {
 					return err
 				}
 				t.state, lineEnded = tokStartRecord, true
 			case '\r':
-				t.endField()
+				if err := t.endField(); err != nil {
+					return err
+				}
 				t.state = tokEatCRNL
 			case ';':
-				t.endField()
+				if err := t.endField(); err != nil {
+					return err
+				}
 				t.state = tokStartField
 			default:
-				t.stream = append(t.stream, c)
+				if err := t.appendByte(c); err != nil {
+					return err
+				}
 			}
 		case tokInQuoted:
 			if c == '"' {
 				t.state = tokQuoteInQuoted
-			} else {
-				t.stream = append(t.stream, c)
+			} else if err := t.appendByte(c); err != nil {
+				return err
 			}
 		case tokQuoteInQuoted:
 			switch c {
 			case '"':
-				t.stream = append(t.stream, c)
+				if err := t.appendByte(c); err != nil {
+					return err
+				}
 				t.state = tokInQuoted
 			case ';':
-				t.endField()
+				if err := t.endField(); err != nil {
+					return err
+				}
 				t.state = tokStartField
 			case '\n':
-				t.endField()
+				if err := t.endField(); err != nil {
+					return err
+				}
 				if err := t.endLine(); err != nil {
 					return err
 				}
 				t.state, lineEnded = tokStartRecord, true
 			case '\r':
-				t.endField()
+				if err := t.endField(); err != nil {
+					return err
+				}
 				t.state = tokEatCRNL
 			default:
-				t.stream = append(t.stream, c)
+				if err := t.appendByte(c); err != nil {
+					return err
+				}
 				t.state = tokInField
 			}
 		case tokEatCRNL:
@@ -296,7 +407,9 @@ func (t *tokenizer) tokenizeBytes(limit int) error {
 			case '\n':
 				t.state = tokStartRecord
 			case ';':
-				t.endField()
+				if err := t.endField(); err != nil {
+					return err
+				}
 				t.state = tokStartField
 			default:
 				// A bare carriage return ended the line: read c again.

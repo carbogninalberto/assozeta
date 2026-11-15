@@ -404,7 +404,7 @@ func (s *SubscriptionImportUpload) importDocument(ctx context.Context, identity 
 	if csv {
 		frame, err := pandascsv.ReadText(content, textual)
 		switch {
-		case errors.Is(err, pandascsv.ErrUnsupported):
+		case errors.Is(err, pandascsv.ErrBareCRBacktrack):
 			return nil, errors.Join(ErrSubscriptionImportNotPorted, err)
 		case err != nil:
 			return nil, errors.Join(ErrSubscriptionImportServerError, err) // EmptyDataError, ParserError, UnicodeDecodeError
@@ -482,7 +482,7 @@ func (s *SubscriptionImportUpload) upload(ctx context.Context, identity domain.R
 	case csv:
 		var frame *pandascsv.Frame
 		frame, parseErr = pandascsv.Read(file.Content)
-		if errors.Is(parseErr, pandascsv.ErrUnsupported) {
+		if errors.Is(parseErr, pandascsv.ErrBareCRBacktrack) {
 			return nil, errors.Join(ErrSubscriptionImportNotPorted, parseErr)
 		}
 		if parseErr == nil {
@@ -496,7 +496,7 @@ func (s *SubscriptionImportUpload) upload(ctx context.Context, identity domain.R
 		// xlrd fallback's ImportError) is the 500 page after the writes.
 		var frame *pandasxlsx.Frame
 		frame, parseErr = pandasxlsx.ReadAll(file.Content, nil)
-		if errors.Is(parseErr, pandasxlsx.ErrUnsupported) {
+		if errors.Is(parseErr, pandasxlsx.ErrWorkbookNotPorted) {
 			return nil, errors.Join(ErrSubscriptionImportNotPorted, parseErr)
 		}
 		if parseErr == nil {

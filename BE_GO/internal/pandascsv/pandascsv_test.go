@@ -10,7 +10,9 @@ import (
 )
 
 // TestColumnsMatchPandas replays the inputs TESTS/adapters/go/pandas_csv_golden.py
-// parsed with pandas.read_csv(file, delimiter=';').
+// parsed with pandas.read_csv(file, delimiter=';') and compares their columns
+// with the ones Read reports (testdata/pandas_headers.json holds only the
+// columns, or the exception pandas raises).
 func TestColumnsMatchPandas(t *testing.T) {
 	raw, err := os.ReadFile("testdata/pandas_headers.json")
 	if err != nil {
@@ -30,9 +32,16 @@ func TestColumnsMatchPandas(t *testing.T) {
 	failures, refused := 0, 0
 	for _, tc := range golden.Cases {
 		data, _ := base64.StdEncoding.DecodeString(tc.Input)
-		columns, err := Columns(data)
-		if errors.Is(err, ErrUnsupported) {
-			refused++ // bare carriage returns: outside the subset
+		frame, err := Read(data)
+		var columns []string
+		if err == nil {
+			columns = frame.Columns
+		}
+		if errors.Is(err, ErrBareCRBacktrack) {
+			// The lines a bare carriage return makes the tokenizer read again
+			// are not modelled, so the columns of a re-read header are not
+			// reported here either.
+			refused++
 			continue
 		}
 		var ok bool
@@ -41,6 +50,8 @@ func TestColumnsMatchPandas(t *testing.T) {
 			ok = errors.Is(err, ErrEmpty)
 		case "parser":
 			ok = errors.Is(err, ErrParser)
+		case "decode":
+			ok = errors.Is(err, ErrDecode)
 		default:
 			ok = err == nil && slices.Equal(columns, tc.Columns)
 		}
@@ -51,18 +62,34 @@ func TestColumnsMatchPandas(t *testing.T) {
 			}
 		}
 	}
-	if refused > len(golden.Cases)/2 {
-		t.Fatalf("%d of %d inputs refused", refused, len(golden.Cases))
-	}
 	if failures > 0 {
 		t.Fatalf("%d of %d inputs differ", failures, len(golden.Cases))
 	}
+	if refused > len(golden.Cases)/20 {
+		t.Fatalf("%d of %d inputs refused", refused, len(golden.Cases))
+	}
+	t.Logf("%d inputs, %d refused", len(golden.Cases), refused)
 }
 
-func TestColumnsRefusesUnsupported(t *testing.T) {
-	for _, data := range [][]byte{[]byte("a\x00;b\n"), {0xff, ';', 'b'}, []byte("a;b\r1;2\r"), []byte("a\r")} {
-		if _, err := Columns(data); !errors.Is(err, ErrUnsupported) {
-			t.Errorf("%q: %v", data, err)
+// TestReadHandlesCarriageReturnsAndNUL exercises the inputs the tokenizer's
+// blank-line backtrack and the NUL truncation make special; the expectations
+// are pandas 2.2.3 (read_csv of the same bytes, from a raw and a decoded
+// handle, delimiter=';').
+func TestReadHandlesCarriageReturnsAndNUL(t *testing.T) {
+	for _, tc := range []struct {
+		data    string
+		columns []string
+	}{
+		{"a\rb\r1\r2\r", []string{"a"}},
+		{"a\r;b\r", []string{"a"}},
+		{"a\r d\r", []string{"a"}},
+		{"a;b\r1;2\r", []string{"a", "b"}},
+		{"a\x00;b\n1;2\n", []string{"a", "b"}},
+		{"a;b\r1;2\r3;4\r", []string{"a", "b"}},
+	} {
+		frame, err := Read([]byte(tc.data))
+		if err != nil || !slices.Equal(frame.Columns, tc.columns) {
+			t.Errorf("%q: %q %v, want %q", tc.data, frame.Columns, err, tc.columns)
 		}
 	}
 }

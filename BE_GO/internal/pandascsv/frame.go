@@ -152,7 +152,9 @@ type Frame struct {
 // Read is pandas.read_csv(file, delimiter=';') on the file object
 // django-storages' S3 backend opens. That object has no 'mode', so pandas
 // hands its bytes to the C parser undecoded: only column names and text
-// values are decoded, and invalid UTF-8 there is ErrDecode.
+// values are decoded, and invalid UTF-8 there is ErrDecode. Input whose
+// outcome a whitespace-led line after a bare carriage return makes uncertain
+// is ErrBareCRBacktrack.
 func Read(data []byte) (*Frame, error) { return read(data, false, nil) }
 
 // ReadText is Read with dtype={column: str} for every column name textual
@@ -171,13 +173,13 @@ func ReadText(data []byte, textual func(column string) bool) (*Frame, error) {
 func ReadDecoded(data []byte) (*Frame, error) { return ReadDecodedText(data, nil) }
 
 // ReadDecodedText is ReadDecoded with ReadText's text columns.
+//
+// Invalid UTF-8 anywhere is ErrDecode. When the file is longer than the
+// parser's first read() the decoder may report the bad byte after the parser
+// has already failed on earlier buffers (a ParserError), but both outcomes are
+// an exception, and where the decoder stops reading is not modelled.
 func ReadDecodedText(data []byte, textual func(column string) bool) (*Frame, error) {
 	if !utf8.Valid(data) {
-		if len(data) > readBuffer {
-			// A ParserError in an earlier buffer comes first; where the
-			// decoder stops reading is not modelled.
-			return nil, ErrUnsupported
-		}
 		return nil, ErrDecode
 	}
 	return read(data, true, textual)
@@ -211,10 +213,7 @@ func convert(words [][]byte) (*column, error) {
 	if result, ok, err := tryInt(words); ok || err != nil {
 		return result, err
 	}
-	if result := tryFloat(words); result != nil {
-		return result, nil
-	}
-	if result, err := tryFloatPlatform(words); err != nil {
+	if result, err := tryFloat(words); result != nil || err != nil {
 		return result, err
 	}
 	if result := tryBool(words); result != nil {
@@ -311,34 +310,22 @@ func floatField(word []byte) (float64, int) {
 	return 0, status
 }
 
-func tryFloat(words [][]byte) *column {
+// tryFloat is _try_double: every field a float, or the column is not float.
+// A field whose value depends on the pandas build on an unmeasured platform is
+// errFloatPlatform.
+func tryFloat(words [][]byte) (*column, error) {
 	floats := make([]float64, len(words))
 	for index, word := range words {
 		value, status := floatField(word)
-		if status != floatOK {
-			return nil
-		}
-		floats[index] = value
-	}
-	return &column{dtype: Float64, floats: floats}
-}
-
-// tryFloatPlatform refuses a column that is float64 only if a field pandas
-// reads differently per platform is a number.
-func tryFloatPlatform(words [][]byte) (*column, error) {
-	platform := false
-	for _, word := range words {
-		switch _, status := floatField(word); status {
+		switch status {
 		case floatInvalid:
 			return nil, nil
 		case floatPlatform:
-			platform = true
+			return nil, errFloatPlatform
 		}
+		floats[index] = value
 	}
-	if platform {
-		return nil, ErrUnsupported
-	}
-	return nil, nil
+	return &column{dtype: Float64, floats: floats}, nil
 }
 
 func tryBool(words [][]byte) *column {
