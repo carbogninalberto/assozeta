@@ -53,6 +53,14 @@ var ErrNotPorted = refusal.New("pdfexport: document input not ported")
 // an application-state error (Django's 500 page), never handed off.
 var ErrUnexpectedLayout = refusal.AppState("pdfexport: unexpected document layout")
 
+// ErrOutsideInput is paragraph markup whose drawing depends on something
+// outside the request, the "external system, platform or timing" class: an
+// <img> whose src is a file on the server or a URL (reportlab opens or
+// fetches it), and the <seq*> tags (reportlab's sequencer is a process-wide
+// counter, so the number drawn depends on the requests the process served
+// before). Go answers Django's 500 page (application state), never a handoff.
+var ErrOutsideInput = refusal.AppState("pdfexport: markup depends on an outside resource")
+
 const fuzz = 1e-6 // rl_config._FUZZ
 
 // fpStr is rl_accel.fp_str (the Python implementation) of one number.

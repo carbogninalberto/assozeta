@@ -19,6 +19,7 @@ const (
 	attrOK attrStatus = iota
 	attrInvalid
 	attrUnsupported
+	attrOutside // a resource outside the request (ErrOutsideInput)
 )
 
 func pySpaceByte(b byte) bool {
