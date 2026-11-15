@@ -8,13 +8,7 @@ import (
 	"strings"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
-
-// ErrCampsPaymentNotPorted refuses a payment walk whose Python failure this
-// port does not reproduce (a database rejection of the computed amount or
-// notes) before any write.
-var ErrCampsPaymentNotPorted = refusal.New("camps payment walk outcome is not ported")
 
 // CampsServiceMeta is what camps_and_retreats_periods_services_update writes
 // into each matching meta_payment_categories item.
