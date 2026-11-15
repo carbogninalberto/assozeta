@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 import re
 import secrets
+import shutil
 import subprocess
 import sys
 
@@ -760,9 +761,14 @@ def phase(args, runner):
         with runner.timed(run, 'ci-' + args.phase), Stage('phase:' + args.phase, {'mode': plan['mode']}) as stage:
             if args.phase == 'capture':
                 stage.detail['fresh_workflows'] = len(state['selected_recipes'])
-                if state['selected_recipes']:
-                    start_services(state, runner)
-                runner.capture(state)
+                if getattr(args, 'transport', None) and getattr(args, 'shards', None):
+                    # Every shard captured on its own runner: validate and merge,
+                    # never start services or capture again here.
+                    stage.detail['shards'] = len(merge_capture(run, state, plan, args, runner))
+                else:
+                    if state['selected_recipes']:
+                        start_services(state, runner)
+                    runner.capture(state)
             elif args.phase == 'compile':
                 runner.generate(state)
                 runner.compile_content(state)
@@ -913,10 +919,157 @@ def capture_shard(args, runner):
         stage.detail['captured'] = len(workflows)
 
 
+def shard_execution(directory, manifest):
+    """The scenario list of one exported shard's ``capture-execution.json``."""
+    path = Path(directory) / 'capture-execution.json'
+    name = Path(directory).name
+    if not path.is_file() or path.is_symlink():
+        raise RuntimeError('Capture shard has no execution report: ' + name)
+    try:
+        value = json.loads(path.read_text())
+    except ValueError as error:
+        raise RuntimeError('Unreadable capture shard execution report: ' + name) from error
+    if not isinstance(value, dict) or value.get('capture_id') != manifest['capture_id']:
+        raise RuntimeError('Capture shard results belong to another capture id: ' + name)
+    if value.get('status') != 'passed':
+        raise RuntimeError('Capture shard did not pass: ' + name)
+    scenarios = value.get('scenarios')
+    if not isinstance(scenarios, list):
+        raise RuntimeError('Capture shard execution report has no scenario list: ' + name)
+    for scenario in scenarios:
+        if (not isinstance(scenario, dict) or not isinstance(scenario.get('id'), str)
+                or not isinstance(scenario.get('status'), str)):
+            raise RuntimeError('Capture shard execution report has an invalid scenario: ' + name)
+    return [{'id': scenario['id'], 'status': scenario['status']} for scenario in scenarios]
+
+
+def shard_results(root, manifest):
+    """The one validated directory per transport shard, as ``validate_merge`` expects them."""
+    root = Path(root)
+    if not root.is_dir() or root.is_symlink():
+        raise RuntimeError('The capture shard results directory is missing')
+    expected = {shard['artifact']: shard for shard in manifest['shards']}
+    for entry in sorted(root.iterdir()):
+        if entry.is_symlink() or not entry.is_dir():
+            raise RuntimeError('Unexpected entry in the capture shard results: ' + entry.name)
+    names = {entry.name for entry in root.iterdir()}
+    missing, extra = sorted(set(expected) - names), sorted(names - set(expected))
+    if missing or extra:
+        parts = [f'missing {", ".join(missing)}'] if missing else []
+        parts += [f'extra {", ".join(extra)}'] if extra else []
+        raise RuntimeError('Capture shard results differ from the transport plan: ' + '; '.join(parts))
+    return [{'index': shard['index'], 'dir': str(root / shard['artifact']),
+             'workflows': list(shard['workflows']),
+             'scenarios': shard_execution(root / shard['artifact'], manifest)}
+            for shard in manifest['shards']]
+
+
+def merge_capture(run, state, plan, args, runner):
+    """Merge every validated distributed shard result into this prepared run."""
+    run = Path(run)
+    transport_module = module('manuale_capture_transport')
+    capture_shards = module('manuale_capture_shards')
+    manifest = transport_module.loads(Path(args.transport).read_text())
+    try:
+        # The same pinned inputs as one shard, and the plan the transport carries.
+        mismatch = shard_mismatch(state, manifest, manifest['fresh'])
+        if mismatch:
+            raise RuntimeError(mismatch)
+        if state.get('selected_recipes') != manifest['fresh']:
+            raise RuntimeError('Capture run does not match its transport plan: workflow selection')
+        if set(planned_workflows(plan, 'fresh_workflows')) != set(manifest['fresh']):
+            raise RuntimeError('Capture plan does not match its transport plan: fresh workflows')
+        if set(planned_workflows(plan, 'reused_workflows')) != set(manifest['reused']):
+            raise RuntimeError('Capture plan does not match its transport plan: reused workflows')
+        state['capture_id'] = manifest['capture_id']
+        shards = shard_results(args.shards, manifest)
+        registry = runner.recipe_registry(Path(state['application']))['recipes']
+        scenarios, copies = capture_shards.validate_merge(
+            registry, shards, state, required=manifest['fresh'], strict=True,
+            allowed_extra=('capture-execution.json',))
+        capture_shards.copy_validated(run, copies)
+        write(run / 'capture-execution.json', {'format': 1, 'status': 'passed',
+                                               'capture_id': state['capture_id'], 'scenarios': scenarios})
+        # The same manifest the local sharded merge writes, one row per shard.
+        write(run / capture_shards.MANIFEST, {
+            'format': 1, 'capture_id': state['capture_id'], 'concurrency': len(shards),
+            'shards': [{'index': index, 'workflows': list(shard['workflows']),
+                        'files': {relative: digest for relative, digest in sorted(files.items()) if digest}}
+                       for index, (shard, files) in enumerate(copies)]})
+        state.update(status='captured', capture_mode='distributed')
+        write(run / 'run.json', state)
+    except Exception:
+        state['status'] = 'failed'
+        write(run / 'run.json', state)
+        raise
+    return shards
+
+
+def capture_export(args, runner):
+    """Export one captured shard as a sanitized result directory another run can merge."""
+    transport_module = module('manuale_capture_transport')
+    capture_shards = module('manuale_capture_shards')
+    run = Path(args.run).resolve()
+    manifest = transport_module.loads(Path(args.transport).read_text())
+    workflows = transport_module.shard_workflows(manifest, args.shard)
+    state = json.loads((run / 'run.json').read_text())
+    mismatch = shard_mismatch(state, manifest, workflows)
+    if mismatch:
+        raise RuntimeError(mismatch)
+    if state.get('capture_id') != manifest['capture_id']:
+        raise RuntimeError('The capture shard was captured under another capture id')
+    if state.get('status') != 'captured':
+        raise RuntimeError('The capture shard did not finish capturing')
+    execution = json.loads((run / 'capture-execution.json').read_text())
+    if not isinstance(execution, dict) or execution.get('status') != 'passed':
+        raise RuntimeError('The capture shard execution report did not pass')
+    if execution.get('capture_id') != manifest['capture_id']:
+        raise RuntimeError('The capture shard execution report belongs to another capture id')
+    scenarios = execution.get('scenarios')
+    if not isinstance(scenarios, list) or any(
+            not isinstance(scenario, dict) or not isinstance(scenario.get('id'), str)
+            or scenario.get('status') != 'passed' for scenario in scenarios):
+        raise RuntimeError('The capture shard execution report is not a passed scenario list')
+    if sorted(scenario['id'] for scenario in scenarios) != sorted(workflows):
+        raise RuntimeError('The capture shard execution report does not match its workflows')
+    by_id = {recipe['id']: recipe for recipe in runner.recipe_registry(Path(state['application']))['recipes']}
+    expected = capture_shards.expected_report_fields(state)
+    files = {}
+    for identifier in workflows:
+        _, owned = capture_shards.validate_report(run, by_id[identifier], expected)
+        for relative, digest in owned.items():
+            if files.get(relative, digest) != digest:
+                raise RuntimeError('Conflicting capture export artifact: ' + relative)
+            files[relative] = digest
+    # Fail closed before anything is written: a new or empty output directory only.
+    output = Path(args.output)
+    if output.exists() and (output.is_symlink() or not output.is_dir() or any(output.iterdir())):
+        raise RuntimeError('The capture export output must be a new or empty directory')
+    sources = {}
+    for relative, digest in sorted(files.items()):
+        name = Path(relative).name
+        if name in capture_shards.PRIVATE_NAMES or name.lower().endswith(capture_shards.PRIVATE_SUFFIXES):
+            raise RuntimeError('Refusing to export a private file: ' + relative)
+        source = run / relative
+        if source.is_symlink() or not source.is_file():
+            raise RuntimeError('Capture export artifact is missing: ' + relative)
+        if digest is not None and capture_shards.sha256(source) != digest:
+            raise RuntimeError('Capture export artifact changed during export: ' + relative)
+        sources[relative] = source
+    output.mkdir(parents=True, exist_ok=True)
+    for relative, source in sorted(sources.items()):
+        target = output / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, target)
+    shutil.copy2(run / 'capture-execution.json', output / 'capture-execution.json')
+    # Self-check: nothing but the declared artifacts and the execution report.
+    capture_shards.check_inventory(output, files, allowed_extra=('capture-execution.json',))
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('command', choices=('pin', 'baseline', 'prepare', 'phase', 'plan', 'offline', 'lookup', 'report',
-                                            'gate', 'store', 'transport', 'capture-shard'))
+                                            'gate', 'store', 'transport', 'capture-shard', 'capture-export'))
     parser.add_argument('--manual-repo')
     parser.add_argument('--manual-revision')
     parser.add_argument('--repository', default=os.environ.get('GITHUB_REPOSITORY', 'carbogninalberto/assozeta'))
@@ -946,8 +1099,9 @@ def main():
     parser.add_argument('--evidence-selection', help='prepare: store-materialized selection directory (from store)')
     parser.add_argument('--reference-date', default='2026-09-30', help='store: capture reference date')
     parser.add_argument('--runners', type=int, default=1, help='transport: capture shards (1..6)')
-    parser.add_argument('--transport', help='capture-shard: transport manifest written by the plan job')
-    parser.add_argument('--shard', type=int, help='capture-shard: index of this runner’s shard')
+    parser.add_argument('--transport', help='capture-shard/capture-export/phase: transport manifest written by the plan job')
+    parser.add_argument('--shard', type=int, help='capture-shard/capture-export: index of this runner’s shard')
+    parser.add_argument('--shards', help='phase capture: directory with one result subdirectory per transport shard')
     parser.add_argument('--run-id', default=os.environ.get('GITHUB_RUN_ID'), help='transport: CI run id (default GITHUB_RUN_ID)')
     parser.add_argument('--run-attempt', default=os.environ.get('GITHUB_RUN_ATTEMPT'),
                         help='transport: CI run attempt (default GITHUB_RUN_ATTEMPT)')
@@ -985,6 +1139,11 @@ def main():
             parser.error('--transport, --shard, --manual-repo and --output are required')
         capture_shard(args, module('manuale'))
         return
+    if args.command == 'capture-export':
+        if not args.run or not args.transport or args.shard is None or not args.output:
+            parser.error('--run, --transport, --shard and --output are required')
+        capture_export(args, module('manuale'))
+        return
     policy = module('manuale-policy')
     if args.command == 'lookup':
         lookup(args, policy)
@@ -1007,6 +1166,8 @@ def main():
     elif args.command == 'phase':
         if not args.run or not args.phase:
             parser.error('--run and --phase are required')
+        if bool(args.transport) != bool(args.shards):
+            parser.error('--transport and --shards must be given together')
         phase(args, module('manuale'))
 
 
