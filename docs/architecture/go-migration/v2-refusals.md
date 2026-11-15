@@ -1552,3 +1552,20 @@ Left for PR 3: `mentions` (bs4 html.parser port), `pydateutil` WTF-8 and long te
 and pre-1000 dates (same platform rule as Google), `pdfexport` paragraph markup and user logos. Platform answers ported here
 follow `runtime.GOOS`: the parity harness runs Django on macOS, CI and production on Linux, so they have unit evidence and no
 family case.
+
+## Long tail PR 2, agent B
+
+Rule per site (owner decision 2026-11-15): port what a request or a stored row reaches when Django answers normally;
+`refusal.AppState` where Django raises or only the application writes the state; accepted divergence X2 for outbound
+release feeds and provider bodies. `refusal_reach.py` HTTP/WebSocket pairs: documents upload 34 → 14, audit serializer
+6 → 0, course writes 10 → 0, folder writes 10 → 0, instance administration 10 → 7 (other roots 1 → 0), association
+transfer 9 → 4; total 471 → 417.
+
+| point | ported (cases) | AppState | left for PR 3 |
+|---|---|---|---|
+| document upload (`documents-writes.md`) | — | unreachable decoder/key states; storage failures and bodies over 250 MiB (platform/external) | RFC 2231 names in codecs without a faithful decoder |
+| audit serializer (`audit-logs.md`) | — | non-ASCII `title()`, NaN/lone surrogates jsonb never stores; nesting past 500 (platform) | — (sentinel deleted) |
+| course writes (`course-writes.md`) | huge decimal exponents, float underflow, out-of-range UTC datetimes, writable installment ids (6 cases, `lt2B-1`) | unreachable amount parses and the NOT NULL association | — (sentinel deleted) |
+| folder writes (`folders.md`) | `TemporaryUploadedFile` above the in-memory limit (2 cases, `lt2B-2`) | — | — (sentinel deleted) |
+| instance administration (`instance-admin.md`) | runner reason `str()`; X2 release feed and provider bodies | stored shapes, missing configuration row, composition, request data without `get()`, invalid env integers | IDNA 2003 AI `base_url`; nested form list keys |
+| association transfer (`association-transfer.md`) | — | snapshots, Celery rows, storage names, composition, NaN renders, temporary-file failures | import/validate archive texts, multipart decoder, password file, referenced export document |
