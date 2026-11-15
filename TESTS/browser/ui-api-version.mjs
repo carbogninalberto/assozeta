@@ -46,8 +46,9 @@ async function context({query = '', readyz = null} = {}) {
             phaseRequests.push({context: id, method: request.method(), path: url.pathname, type: request.resourceType()});
     });
     page.on('websocket', socket => {
+        // A socket URL is ws:// or wss://, so compare host and port, not the origin.
         const url = new URL(socket.url());
-        if (url.origin === input.origin) phaseWebSockets.push({context: id, path: url.pathname});
+        if (url.host === new URL(input.origin).host) phaseWebSockets.push({context: id, path: url.pathname});
     });
     page.on('response', response => {
         const url = new URL(response.url());
@@ -125,11 +126,14 @@ function requireOnly(page, version, {bootstrapOnV1 = false} = {}) {
 // WebSockets follow the API version too: on v2 the UI opens /api/v2/ws/... on
 // the Go server, on /api it opens Django's /ws/...; a socket that cannot open
 // on v2 falls back to /ws/ for the session.
-function webSocketPaths(page) {
-    return phaseWebSockets.filter(socket => socket.context === pageIds.get(page)).map(socket => socket.path);
+function webSocketPaths(page, since = []) {
+    // `since` adds the sockets of earlier phases of the same page (an open page
+    // reconnects its sockets while the switch is saved).
+    const sockets = phases.filter(p => since.includes(p.name)).flatMap(p => p.websockets).concat(phaseWebSockets);
+    return sockets.filter(socket => socket.context === pageIds.get(page)).map(socket => socket.path);
 }
-function requireSockets(page, version) {
-    const paths = webSocketPaths(page);
+function requireSockets(page, version, {since = []} = {}) {
+    const paths = webSocketPaths(page, since);
     assert(paths.length >= 1, phase + ': no WebSocket connection observed');
     if (version === 'v2') {
         assert(paths.includes('/api/v2/ws/notifications/'), phase + ': notifications WebSocket not on /api/v2/ws/ (' + paths + ')');
@@ -169,7 +173,7 @@ try {
     begin('v2-same-session');
     await corePages(a.page);
     requireOnly(a.page, 'v2');
-    requireSockets(a.page, 'v2');
+    requireSockets(a.page, 'v2', {since: ['enable']});
     await a.ctx.close();
     end();
 

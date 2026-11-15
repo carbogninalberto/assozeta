@@ -27,6 +27,9 @@ import {apiFetch} from './ApiMiddleware.js';
 import {exportProgress} from 'store/exportProgressStore.js';
 import {role} from 'store/stores.js';
 
+// Dispatched on globalThis when the session switches between '/api' and '/api/v2'.
+const API_VERSION_EVENT = 'assozeta:api-version';
+
 class NotificationService {
     constructor() {
         this.ws = null;
@@ -35,6 +38,7 @@ class NotificationService {
         this.isInitialized = false;
         this.onNewNotificationCallback = null;
         this.visibilityHandler = null;
+        this.apiVersionHandler = null;
         this.activeExportSync = null;
         this.restoreListeners = new Set();
         this.staffBoardListeners = new Set();
@@ -118,6 +122,15 @@ class NotificationService {
             }
         };
         document.addEventListener('visibilitychange', this.visibilityHandler);
+
+        // Reconnect on the new socket when the session switches API version,
+        // otherwise the open socket would stay on the previous backend.
+        this.apiVersionHandler = () => {
+            if (this.isInitialized) this.reconnect();
+        };
+        if (typeof globalThis.addEventListener === 'function') {
+            globalThis.addEventListener(API_VERSION_EVENT, this.apiVersionHandler);
+        }
     }
 
     /**
@@ -225,6 +238,12 @@ class NotificationService {
         if (this.visibilityHandler) {
             document.removeEventListener('visibilitychange', this.visibilityHandler);
             this.visibilityHandler = null;
+        }
+        if (this.apiVersionHandler) {
+            if (typeof globalThis.removeEventListener === 'function') {
+                globalThis.removeEventListener(API_VERSION_EVENT, this.apiVersionHandler);
+            }
+            this.apiVersionHandler = null;
         }
         if (this.ws) {
             this.ws.disconnect();
