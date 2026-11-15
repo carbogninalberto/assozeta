@@ -163,10 +163,17 @@ Every upload creates a Document and then calls `default_storage.save(name, conte
 ## Not ported (refused before any write unless noted)
 
 Since long-tail PR 2 the unreachable decoder and key states are application-state errors (the 500 page, never handed
-off). The codec item, multipart bodies over 250 MiB (Django spools the files to disk) and storage provider failures
-(Django answers botocore's text: a 400 on documents/add, its own 500 JSON on the medical upload) stay
-`ErrDocumentWritesNotPorted`. The handoff cannot replay a body over its size limit or a storage failure (the Document
-row and the upload are recorded effects), so Go answers the 500 page there until they are ported.
+off). Since long-tail PR 3 (agent B) a storage client error botocore raises at once (a HEAD client error other than 404,
+or a PutObject 4xx that neither client retries) is answered as Django answers it: `documents/add` deletes the Document
+and answers 400 `{"exception": "<botocore text>"}`, the medical upload keeps the Document and answers 500
+`{"error": "<botocore text>"}`, and `document/medical/certificate/` (no `try`) answers the 500 page with the row kept.
+Cases `add-storage-refused-removes-document`, `certificate-storage-refused-keeps-document` and
+`medical-storage-refused-keeps-certificate` (a 255-character name whose key MinIO refuses on HEAD). The codec item,
+multipart bodies over 250 MiB (Django spools the files to disk) and the other storage failures (transport errors, answers
+botocore retries and then reports with " (reached max retries: N)" or an endpoint URL, and PutObject failures of bodies
+of 8 MiB and more, which boto3 sends as multipart operations) stay `ErrDocumentWritesNotPorted`. The handoff cannot
+replay a body over its size limit or a storage failure (the Document row and the upload are recorded effects), so Go
+answers the 500 page there.
 
 - Multipart bodies over 250 MiB: the request has to be held in memory, so the answer then depends on the host's memory
   and proxy limits, not on the input (class X).
@@ -179,8 +186,8 @@ row and the upload are recorded effects), so Go answers the 500 page there until
 - After the Document exists (the earlier writes are kept, and Go answers the 500 page):
   - a storage key that already exists, where `get_available_name` would pick a random alternative (the key embeds the new
     document's uuid4, so only the application's own generated state could produce it);
-  - storage provider failures, which Django answers with botocore's text in `documents/add` and in the medical upload (an
-    infrastructure failure the fixtures cannot provoke on a private MinIO without breaking it for the other cases).
+  - storage failures other than an immediate client error (above): transport errors, retried answers and multipart-size
+    bodies, which Django answers with botocore's text in `documents/add` and in the medical upload (external).
 - Image compression, thumbnails and PDF rendering: none of these views run them.
 
 ## Ported in go-v2only-docupload

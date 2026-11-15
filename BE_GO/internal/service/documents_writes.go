@@ -413,7 +413,13 @@ func (s *DocumentUploads) Add(ctx context.Context, identity domain.ResolvedIdent
 			if errors.As(err, &suspicious) {
 				return nil, fail(suspicious.Message)
 			}
-			// Provider failures: Django answers with botocore's text after the delete.
+			// A client error botocore raises at once: Django deletes the Document and answers its text.
+			if text, ok := documentSaveFailureText(err, len(step.content)); ok {
+				return nil, fail(text)
+			}
+			// Other storage failures (transport errors, retried provider answers,
+			// multipart-size bodies): Django's text names retries and endpoints; they
+			// stay with Django (external, not replayable after the Document row).
 			if failed := unwind(); failed != nil {
 				return nil, failed
 			}
@@ -667,6 +673,18 @@ func (s *DocumentUploads) UploadDocument(ctx context.Context, identity domain.Re
 	return tx.Commit()
 }
 
+// documentSaveError is default_storage.save's exception, raised after the
+// Document row exists (the caller keeps the row): each view answers with it
+// differently.
+type documentSaveError struct {
+	Err  error
+	Size int
+}
+
+func (e *documentSaveError) Error() string { return e.Err.Error() }
+
+func (e *documentSaveError) Unwrap() error { return e.Err }
+
 // uploadCertificate is MedicalCertificateService.upload_medical_certificate
 // (and the same steps in medical_certificate_document): Document, storage,
 // then MedicalCertificate(document, user).
@@ -687,7 +705,7 @@ func (s *DocumentUploads) uploadCertificate(ctx context.Context, tx domain.Docum
 		if commit := tx.Commit(); commit != nil {
 			return document, "", commit
 		}
-		return document, "", errors.Join(domain.ErrDocumentWritesNotPorted, err)
+		return document, "", &documentSaveError{Err: err, Size: len(file.Content)}
 	}
 	var user *string
 	if identity.ScopeUser != nil {
@@ -738,6 +756,11 @@ func (s *DocumentUploads) CertificateDocument(ctx context.Context, identity doma
 	defer tx.Rollback()
 	_, certificate, err := s.uploadCertificate(ctx, tx, identity, file, uploadAuditContext(identity, audit))
 	if err != nil {
+		var saveErr *documentSaveError
+		if errors.As(err, &saveErr) {
+			// default_storage.save raises outside any try: Django's 500 page (a SuspiciousFileError is its 400 page).
+			return "", errors.Join(domain.ErrDocumentWritesFailed, saveErr.Err)
+		}
 		return "", err
 	}
 	if err = tx.Commit(); err != nil {
@@ -812,7 +835,20 @@ func (s *DocumentUploads) MedicalUpload(ctx context.Context, identity domain.Res
 	context := uploadAuditContext(identity, audit)
 	document, certificate, err := s.uploadCertificate(ctx, tx, identity, file, context)
 	if err != nil {
-		return nil, err
+		var saveErr *documentSaveError
+		if !errors.As(err, &saveErr) {
+			return nil, err
+		}
+		var suspicious *documentkey.SuspiciousFileError
+		if errors.As(err, &suspicious) {
+			return nil, &MedicalUploadError{Status: 500, Message: suspicious.Message}
+		}
+		if text, ok := documentSaveFailureText(saveErr.Err, saveErr.Size); ok {
+			return nil, &MedicalUploadError{Status: 500, Message: text}
+		}
+		// Transport errors, retried provider answers and multipart-size bodies
+		// (external; Django's text names retries and endpoints) stay with Django.
+		return nil, errors.Join(domain.ErrDocumentWritesNotPorted, saveErr.Err)
 	}
 	fail := func(message string) error {
 		if err := tx.Commit(); err != nil {

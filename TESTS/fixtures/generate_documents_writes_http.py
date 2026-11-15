@@ -176,6 +176,10 @@ def multipart(*parts, boundary='documentswritesboundary'):
 
 # ---------------------------------------------------------------- documents/add
 ADD = '/documents/add'
+# A name the storage refuses on any call (255 characters, about 1 KB in UTF-8: the stored key passes MinIO's limit),
+# and the text botocore gives for that HEAD answer (no body: the code is the status and the message its reason phrase).
+LONG_NAME = '\U0001F600' * 251 + '.pdf'
+HEAD_REFUSED = 'An error occurred (400) when calling the HeadObject operation: Bad Request'
 ADD_OPTIONS = {**options('Document Archive', ('application/json',)), 'actions': {'POST': {
     'sport_association_documents_archive_id': {'type': 'string', 'required': False, 'read_only': True,
                                                'label': 'Sport association documents archive id'},
@@ -285,6 +289,10 @@ add('add-number-filename-removes-document', 'owner', ADD, 400,
     {'exception': "join() argument must be str, bytes, or os.PathLike object, not 'int'"},
     body={'files': [{'document': B64('x'), 'filename': 7}]},
     effect=effect('owner', documents=[stored('7', 'x', None, kept=False, object_stored=False)], audit=[doc_create(0), doc_delete(0)]))
+# default_storage.save raises after the Document exists: the view deletes it and answers with botocore's text.
+add('add-storage-refused-removes-document', 'owner', ADD, 400, {'exception': HEAD_REFUSED},
+    body={'files': [{'document': B64('x'), 'filename': LONG_NAME}]},
+    effect=effect('owner', documents=[stored(LONG_NAME, 'x', None, kept=False, object_stored=False)], audit=[doc_create(0), doc_delete(0)]))
 # Document.objects.create(filename=None) generates the model defaults and then PostgreSQL
 # refuses the INSERT: the message names that document's id and timestamp, and no row is kept.
 add('add-filename-none', 'owner', ADD, 400, '<null-filename-exception>',
@@ -585,6 +593,11 @@ certificate_case('base64-file-empty', certificate_part(b'filename="b64.pdf"', co
 certificate_case('quoted-printable-ignored', certificate_part(b'filename="qp.pdf"', content=b'%PDF=3D1',
                                                               extra=(b'Content-Transfer-Encoding: quoted-printable',)),
                  filename='qp.pdf', content='%PDF=3D1')
+# The storage refuses the stored key on the exists check: default_storage.save raises after the Document exists, outside
+# any try: Django's 500 page answers and the row stays.
+LONG_CERT = multipart_bytes(certificate_part(b'filename="' + LONG_NAME.encode() + b'"', content=b'%PDF-1.4 lungo'))
+add('certificate-storage-refused-keeps-document', 'owner', CERT, 500, SERVER, raw_b64=LONG_CERT[0], content_type=LONG_CERT[1],
+    effect=effect('owner', documents=[stored(LONG_NAME, '%PDF-1.4 lungo', None, object_stored=False)], audit=[doc_create(0)]))
 # Fields: a base64 value is decoded (kept as sent when it is not base64) and invalid UTF-8 is replaced.
 _field = lambda name, content, *extra: ([f'Content-Disposition: form-data; name="{name}"'.encode(), *extra], content)
 _cte = b'Content-Transfer-Encoding: base64'
@@ -683,6 +696,11 @@ add('medical-draft-list-data-keeps-certificate', 'owner', MED('list'), 500, {'er
     raw_body=MED_BODY[0], content_type=MED_BODY[1],
     effect=effect('owner', documents=[stored('visita.pdf', '%PDF-1.4 visita', 'application/pdf')], certificates=[{'document': 0, 'user': 'owner'}],
                   audit=[doc_create(0), cert_create(0)]))
+# The storage refuses the stored key: the view catches default_storage.save's exception and answers {'error': str(e)};
+# nothing is atomic here, so the Document row stays.
+add('medical-storage-refused-keeps-certificate', 'owner', MED('main'), 500, {'error': HEAD_REFUSED},
+    raw_b64=LONG_CERT[0], content_type=LONG_CERT[1],
+    effect=effect('owner', documents=[stored(LONG_NAME, '%PDF-1.4 lungo', None, object_stored=False)], audit=[doc_create(0)]))
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Document uploads: archive add/update, subscription files and medical certificates',
