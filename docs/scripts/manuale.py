@@ -159,12 +159,19 @@ def remember_run(state):
     temporary.replace(path)
 
 
+# Repository areas outside the documented application (kept in sync with
+# EXCLUDED_AREAS in manuale-cache.py).
+EXCLUDED_AREAS = ('WEB/',)
+
+
 def capture_input_hashes(application):
     """Compare actual source snapshots, including dirty, added and deleted inputs."""
     application = Path(application)
     names = git(application, 'ls-files', '--cached', '--others', '--exclude-standard', '-z').split('\0')
+    # The marketing site is independent of the application: its edits must never
+    # invalidate captured evidence.
     return {relative: sha(application / relative) if (application / relative).is_file() else None
-            for relative in sorted(set(filter(None, names)))}
+            for relative in sorted(set(filter(None, names))) if not relative.startswith(EXCLUDED_AREAS)}
 
 
 EVIDENCE_STORE_MODULE = 'docs/scripts/manuale_evidence_store.py'

@@ -381,6 +381,19 @@ class VerifiedPortableCacheTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'Private configuration'):
             cache.owned(self.fixture.old_code, 'UI/.npmrc')
 
+    def test_marketing_site_is_never_a_capture_source(self):
+        code = self.fixture.old_code
+        (code / 'WEB').mkdir(exist_ok=True)
+        # Even private-looking configuration under WEB/ is ignored, never copied.
+        (code / 'WEB/.npmrc').write_text('//example.invalid/:_authToken=<fixture-placeholder>\n')
+        (code / 'WEB/index.html').write_text('<p>site</p>')
+        fixtures.command(code, 'add', '-f', 'WEB/.npmrc', 'WEB/index.html')
+        sources = cache.validate_application_sources(code)
+        self.assertFalse([relative for relative in sources if relative.startswith('WEB/')])
+        hashes = fixtures.runner.capture_input_hashes(code)
+        self.assertFalse([relative for relative in hashes if relative.startswith('WEB/')])
+        self.assertTrue(hashes)
+
     def test_named_output_directory_preserves_independent_run_identity(self):
         f = self.fixture
         f.old['run_id'] = 'abcdef012345'
