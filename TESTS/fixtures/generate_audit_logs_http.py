@@ -54,7 +54,8 @@ R = {k: uid(p) for k, p in (
     ('medical', 'ed000001'), ('invoice', 'f0000001'), ('message', 'e5000001'), ('message_bare', 'e5000002'),
     ('workflow', 'a0000001'), ('configuration', 'c0f00001'),
     ('event_registry', 'e7000001'), ('event_calendar', 'e7000002'), ('event_untitled', 'e7000003'), ('event_unknown', 'e7000004'),
-    ('missing', 'deadbeef'), ('missing_two', 'feedface'), ('event_numeric', 'e7000005'))}
+    ('missing', 'deadbeef'), ('missing_two', 'feedface'), ('event_numeric', 'e7000005'),
+    ('day_early', 'da100002'), ('period_early', 'ca300004'), ('event_early', 'e7000006'))}
 USERS = {
     'user_named': {'first_name': 'Mario', 'last_name': 'Rossi', 'email': 'mario.audit@example.test', 'deleted': False},
     'user_blank': {'first_name': '', 'last_name': '  ', 'email': 'blank.audit@example.test', 'deleted': False},
@@ -63,7 +64,9 @@ USERS = {
 EVENTS_REGISTRY = [{'event_id': R['event_registry'], 'title': 'Lezione', 'start': '2026-09-15T18:30:00Z'},
                    {'event_id': R['event_untitled'], 'start': 'domani'},
                    # fromisoformat ValueError (month 13): the non-str title itself is the resolved value.
-                   {'event_id': R['event_numeric'], 'title': 5, 'start': '2026-13-01'}]
+                   {'event_id': R['event_numeric'], 'title': 5, 'start': '2026-13-01'},
+                   # A year below 1000: strftime('%Y') is the C library's (see the early-year entries).
+                   {'event_id': R['event_early'], 'title': 'Vecchia', 'start': '0999-09-15T18:30:00Z'}]
 EVENTS_CALENDAR = [{'event_id': R['event_calendar'], 'title': 'Gara', 'start': '2026-10-01'}]
 ROWS = {'ids': R, 'users': USERS, 'events_registry': EVENTS_REGISTRY, 'events_calendar': EVENTS_CALENDAR,
         'own_group': IDS['own_group'], 'own': OWN, 'foreign': FOREIGN}
@@ -344,6 +347,34 @@ entry('surrogate-unused-additional-fields', 'module', R['module'],
       changes={'additional_fields': [N, '[{"props": {"label": "A", "value": "B"}, "note": "\\ud800"}]']}, at='2026-09-20T17:00:00Z',
       description='Modulo - Modulo privacy', enriched={'additional_fields': [N, 'A: B']},
       display=[show('Campi aggiuntivi', 'additional_fields', 'N/D', 'A: B')])
+# A stored datetime before year 1000: strftime('%Y') is the C library's, four digits where it pads (macOS) and the
+# digits alone on glibc. The fixture keeps the placeholder and the contract resolves it for the platform Django runs on.
+Y999, Y1 = '$libc_year:999', '$libc_year:1'
+entry('early-year-day', 'attendanceday', R['day_early'],
+      changes={'attendance_day': [N, R['day_early']], 'associated_event': [N, R['event_early']]},
+      description=f'Presenze - Giornata (15/09/{Y999})',
+      enriched={'attendance_day': [N, f'Giornata - 15/09/{Y999}'],
+                'associated_event': [N, f'Vecchia - 15/09/{Y999} 18:30']},
+      display=[show('Attendance Day', 'attendance_day', 'N/D', f'Giornata - 15/09/{Y999}'),
+               show('Evento associato', 'associated_event', 'N/D', f'Vecchia - 15/09/{Y999} 18:30')])
+entry('early-year-period', 'campsandretreatsperiod', R['period_early'],
+      changes={'camps_and_retreats_period_id': [N, R['period_early']]},
+      description=f'Periodo - Campo estivo (01/07/{Y1})',
+      enriched={'camps_and_retreats_period_id': [N, f'Campo estivo - 01/07/{Y1}']},
+      display=[show('Camps And Retreats Period Id', 'camps_and_retreats_period_id', 'N/D', f'Campo estivo - 01/07/{Y1}')])
+early_events = json.dumps([{'title': 'Vecchia', 'start': '0999-09-15T18:30:00Z'}, {'title': 'Antica', 'start': '0001-07-01'}])
+entry('early-year-events', 'attendanceregistry', R['registry'], changes={'events': [N, early_events]},
+      description='Registro Presenze - Nuoto è',
+      enriched={'events': [N, f'Vecchia (15/09/{Y999}), Antica (01/07/{Y1})']},
+      display=[show('Eventi', 'events', 'N/D', f'Vecchia (15/09/{Y999}), Antica (01/07/{Y1})')])
+# A collaborator's permissions are stored as the request sends them, so an unknown segment reaches str.capitalize():
+# the first code point takes its title-case mapping and the rest their lower-case ones (SpecialCasing included).
+UNICODE_PERMISSIONS = ['café', 'x.ßeta', 'abİ']
+PERMISSION_LABELS = ', '.join(segment.split('.')[-1].capitalize() for segment in UNICODE_PERMISSIONS)
+entry('user-permissions-unicode', 'user', R['user_named'],
+      changes={'collaborator_permissions': ['[]', json.dumps(UNICODE_PERMISSIONS)]}, description='Utente - Mario Rossi',
+      enriched={'collaborator_permissions': ['Nessun permesso', PERMISSION_LABELS]},
+      display=[show('Permessi collaboratore', 'collaborator_permissions', 'Nessun permesso', PERMISSION_LABELS)])
 ENTRIES['events-crash']['timestamp'] = '2026-09-20T09:00:00Z'
 CRASHES = ('events-crash', 'props-crash', 'permissions-crash', 'events-title-crash', 'nan-meta-crash', 'infinity-meta-crash',
            'surrogate-meta-crash')
