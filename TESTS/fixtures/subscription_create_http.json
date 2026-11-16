@@ -26123,9 +26123,9 @@
      "new_member": false
     },
     "associate_data": {
-     "first_name": "Nadia",
-     "last_name": "Numero",
-     "tax_code": "NMRNDA90C41H501S",
+     "first_name": "Nora",
+     "last_name": "Virgola",
+     "tax_code": "VRGNRO90C41H501T",
      "born_date": "15/03/1990",
      "sex": "M"
     },
@@ -26938,7 +26938,18 @@
        "sport_association": [
         "a1000000-0000-4000-8000-000000701002",
         "a1000000-0000-4000-8000-000000701001"
-       ],
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701002",
+       "direct"
+      ]
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "tutor",
+      "changes": {
        "user": [
         "None",
         "a1000000-0000-4000-8000-000000700001"

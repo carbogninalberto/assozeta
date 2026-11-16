@@ -380,7 +380,9 @@ func (s *SubscriptionCreates) saveAssociateByID(ctx context.Context, tx domain.S
 		return &row, nil
 	}
 	changes := associateChanges(old, row)
-	index, path, err := s.associateUpdateIndex(ctx, tx, audit, row, changes)
+	// auditlog writes the entry in pre_save: its index reads the stored row,
+	// still in the association the update starts from.
+	index, path, err := s.associateUpdateIndex(ctx, tx, audit, old, changes)
 	if err != nil {
 		return nil, err
 	}

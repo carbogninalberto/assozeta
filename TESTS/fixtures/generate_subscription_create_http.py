@@ -1875,8 +1875,9 @@ add('medical-id-number-no-certificate', 'owner', 200, SUCCESS(25.0), setup=RENEW
     body=request(medical_number, medical_certificate={'medical_id': 5}),
     effect=success('owner', 'Nadia Numero', associate=created_associate(medical_number), payment=new_payment('25.00', audit_amount='25.0'),
                    subscription=dict(PLAIN), membership=dict(MEMBER)))
+# Another person: the previous case's registration would make this one the duplicate (409) first.
 add('medical-id-float-server-error', 'owner', 500, SERVER, setup=RENEW_SETUP,
-    body=request(person('Nadia', 'Numero', 'NMRNDA90C41H501S'), medical_certificate={'medical_id': 1.5}))
+    body=request(person('Nora', 'Virgola', 'VRGNRO90C41H501T'), medical_certificate={'medical_id': 1.5}))
 
 # The wizard's certificate date: strptime's \d reads the decimal digits of other scripts.
 CERTIFICATES['unicode_digits'] = {'id': next(site_ids), 'user': 'owner'}
@@ -1937,8 +1938,12 @@ effect = success('owner', 'Mina Estera', associate={'match': 'abroad_minor', 'co
                                **NEXT})
 NUMBER[0] -= 1
 effect['tutor'] = {'match': 'abroad_tutor', 'columns': {'sport_association_id': OWN, 'user_id': OWNER}}
-effect['audit'].insert(0, {'model': 'associate', 'action': 1, 'ref': 'tutor',
-                           'changes': {'sport_association': [FOREIGN, OWN], 'user': ['None', OWNER]}, 'index': [OWN, 'direct']})
+# The serializer's save moves the row (user is read-only there), then associate_tutor.user = user; save() is a second
+# entry. The first entry is indexed from the stored row (still the other association) when it is written in pre_save.
+effect['audit'][0:0] = [{'model': 'associate', 'action': 1, 'ref': 'tutor', 'changes': {'sport_association': [FOREIGN, OWN]},
+                         'index': [FOREIGN, 'direct']},
+                        {'model': 'associate', 'action': 1, 'ref': 'tutor', 'changes': {'user': ['None', OWNER]},
+                         'index': [OWN, 'direct']}]
 add('preregistration-renewal-tutor-of-another-association', 'owner', 200, SUCCESS(25.0), setup=RENEW_SETUP,
     body=renewal('renewable_abroad_minor'), effect=next_season(effect))
 
