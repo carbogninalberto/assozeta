@@ -21,6 +21,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/pystr"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pyzipfile"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/pymime"
@@ -599,25 +600,23 @@ type importValidationFailure struct{ text string }
 
 func (e *importValidationFailure) Error() string { return e.text }
 
-// importArchiveFailure is a refusal whose cause is the ZIP reader
-// (zipfile.is_zipfile, ZipFile, ZipFile.read). The reader is ported
-// separately: this keeps the refusal recognisable and names the reader call so
-// it can carry Django's exception text once the reader reports it.
-type importArchiveFailure struct {
-	stage string
-	err   error
-}
+// importArchiveFailure is an I/O error of the server's own temporary copy of
+// the upload while the ZIP reader reads it (Django reads the same file): not
+// an archive property, the 500 page.
+type importArchiveFailure struct{ err error }
 
-func (e *importArchiveFailure) Error() string { return "archive " + e.stage + ": " + e.err.Error() }
+func (e *importArchiveFailure) Error() string { return "archive: " + e.err.Error() }
+func (e *importArchiveFailure) Unwrap() error { return e.err }
 
-// Unwrap matches ErrAssociationTransferNotPorted and the reader's own error.
-func (e *importArchiveFailure) Unwrap() []error {
-	return []error{domain.ErrAssociationTransferNotPorted, e.err}
-}
-
-// importArchiveError marks a ZIP reader failure at stage.
-func importArchiveError(stage string, err error) error {
-	return &importArchiveFailure{stage: stage, err: err}
+// importArchiveError is a ZIP reader failure: the Python exception zipfile,
+// zlib, bz2 or lzma raised (its Error() is str(e), which the stage's except
+// branch renders), or an importArchiveFailure.
+func importArchiveError(err error) error {
+	var exception *pyzipfile.Exception
+	if errors.As(err, &exception) {
+		return exception
+	}
+	return &importArchiveFailure{err: err}
 }
 
 func importIsArchiveError(err error) bool {
@@ -629,7 +628,7 @@ func importIsArchiveError(err error) bool {
 func importMemberJSON(archive *consumerImportArchive, name string) (any, error) {
 	data, err := archive.read(name)
 	if err != nil {
-		return nil, importArchiveError("read", err)
+		return nil, importArchiveError(err)
 	}
 	return importJSONParse(data)
 }
@@ -665,16 +664,21 @@ func importManifestShapeFailure(value any) error {
 	return &importValidationFailure{text: "argument of type '" + kind + "' is not iterable"}
 }
 
-// validateArchive is ImportValidator(path).validate_all(). A ZIP reader
-// failure is still a refusal; every other input is answered with Django's
-// value (a ValidationResult, or the exception text of the view's 500).
+// validateArchive is ImportValidator(path).validate_all(): Django's value (a
+// ValidationResult, or the exception text of the view's 500) for every
+// archive, a ZIP reader exception included (internal/pyzipfile).
 func (s *AssociationTransfer) validateArchive(ctx context.Context, path string) (*importValidation, error) {
 	result := newImportValidation()
 	// validate_file
 	file := newImportValidation()
 	isZip, err := consumerImportIsZipFile(path)
 	if err != nil {
-		return nil, importArchiveError("is_zipfile", err)
+		if failure := importArchiveError(err); !importIsArchiveError(failure) {
+			// is_zipfile catches OSError only: a BadZipFile from the ZIP64
+			// records escapes validate_all, the view's 500 JSON.
+			return nil, &importValidationFailure{text: failure.Error()}
+		}
+		return nil, err
 	}
 	if !isZip {
 		file.fail("Not a valid ZIP file: " + path)
@@ -691,7 +695,15 @@ func (s *AssociationTransfer) validateArchive(ctx context.Context, path string) 
 
 	archive, err := consumerImportOpenArchive(path)
 	if err != nil {
-		return nil, importArchiveError("open", err)
+		failure := importArchiveError(err)
+		if importIsArchiveError(failure) {
+			return nil, err
+		}
+		// validate_manifest opens the ZipFile inside its try: except Exception.
+		manifestResult := newImportValidation()
+		manifestResult.fail("Error reading manifest: " + failure.Error())
+		result.merge(manifestResult)
+		return result, nil
 	}
 	defer archive.Close()
 
@@ -849,14 +861,24 @@ func (s *AssociationTransfer) validateOwnerIdentity(archive *consumerImportArchi
 		result.fail("Missing required data file: 02_users.json")
 		return result, nil, nil
 	}
-	users, err := archive.read("data/02_users.json")
+	// with zf.open('data/02_users.json') as stream: iter_json_array(stream):
+	// the member is read in iter_json_array's chunks, so a reader exception
+	// (zlib, CRC, EOFError) comes after the items read before it, inside
+	// validate_owner_identity's except Exception.
+	users, err := archive.openMember("data/02_users.json")
 	if err != nil {
-		return nil, nil, importArchiveError("read", err)
+		failure := importArchiveError(err)
+		if importIsArchiveError(failure) {
+			return nil, nil, err
+		}
+		result.fail(importJSONReadMessage(false, failure))
+		return result, nil, nil
 	}
+	defer users.Close()
 	var matches []domain.RequestObject
 	seen := map[string]bool{}
 	var userIDs []string
-	err = importIterJSONArray(&importBytesReader{data: users}, importJSONChunkSize, func(item any) error {
+	err = importIterJSONArray(users, importJSONChunkSize, func(item any) error {
 		user, ok := item.(domain.RequestObject)
 		if !ok {
 			return &importJSONAttributeError{kind: importJSONTypeName(item), attribute: "get"}

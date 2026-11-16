@@ -494,8 +494,8 @@ func (s *ConsumerRestoreInstance) prepareMedia(ctx context.Context, call *restor
 		seen[key] = true
 		entry := archive.zip.byName[member]
 		call.media = append(call.media, restoreStaged{identity: identity, member: member, name: name, key: key, contentType: kind,
-			encoding: encoding, size: int64(entry.UncompressedSize64)})
-		call.totalBytes += int64(entry.UncompressedSize64)
+			encoding: encoding, size: int64(entry.FileSize)})
+		call.totalBytes += int64(entry.FileSize)
 	}
 	return nil
 }

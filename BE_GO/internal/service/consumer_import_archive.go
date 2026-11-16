@@ -1,13 +1,9 @@
 package service
 
 import (
-	"archive/zip"
 	"bytes"
-	"encoding/binary"
 	"encoding/json"
 	"errors"
-	"io"
-	"os"
 	"strconv"
 	"strings"
 	"unicode/utf8"
@@ -15,206 +11,124 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/importeffects"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pyzipfile"
 )
 
 // errConsumerImportUnsupported marks archive content outside the reproduced
 // subset (the message is handed to Django).
 var errConsumerImportUnsupported = importeffects.ErrUnsupported
 
-// consumerImportIsZipFile is zipfile.is_zipfile: an end of central directory
-// record found at the end of the file or within the last 64 KiB + 22 bytes
-// (the archive comment). A ZIP64 locator before it is unsupported here.
-func consumerImportIsZipFile(path string) (bool, error) {
-	file, err := os.Open(path)
-	if err != nil {
-		return false, err
+// archiveError is a Python exception from reading the archive. It still
+// matches errConsumerImportUnsupported for callers that do not reproduce
+// Django's handling of it yet; callers that do read the exception with
+// errors.As.
+type archiveError struct{ exc *pyzipfile.Exception }
+
+func (e *archiveError) Error() string { return e.exc.Text }
+
+// Is makes every Python exception match the old refusal sentinel.
+func (e *archiveError) Is(target error) bool { return target == errConsumerImportUnsupported }
+
+// As exposes the Python exception to callers that reproduce Django's
+// handling of a particular class or message.
+func (e *archiveError) As(target any) bool {
+	if p, ok := target.(**pyzipfile.Exception); ok {
+		*p = e.exc
+		return true
 	}
-	defer file.Close()
-	info, err := file.Stat()
-	if err != nil {
-		return false, err
-	}
-	size := info.Size()
-	const record = 22
-	if size < record {
-		return false, nil
-	}
-	start := max(size-(1<<16)-record, 0)
-	data := make([]byte, size-start)
-	if _, err := file.ReadAt(data, start); err != nil {
-		return false, err
-	}
-	signature := []byte("PK\x05\x06")
-	at := -1
-	tail := data[len(data)-record:]
-	if bytes.HasPrefix(tail, signature) && tail[record-2] == 0 && tail[record-1] == 0 {
-		at = len(data) - record
-	} else {
-		at = bytes.LastIndex(data, signature)
-		if at < 0 || at+record > len(data) {
-			return false, nil
-		}
-	}
-	// _EndRecData64: a ZIP64 locator 20 bytes before the record.
-	if offset := start + int64(at) - 20; offset >= 0 {
-		locator := make([]byte, 4)
-		if _, err := file.ReadAt(locator, offset); err != nil {
-			return false, err
-		}
-		if string(locator) == "PK\x06\x07" {
-			return false, errConsumerImportUnsupported
-		}
-	}
-	return true, nil
+	return false
 }
 
-// consumerImportArchive is zipfile.ZipFile(path) for the archives the port
-// reads: unique member names, UTF-8 (flagged) or ASCII names, stored or
-// deflated members whose local header names match the central directory.
+// archiveWrap converts a pyzipfile Python exception to the service's error.
+func archiveWrap(err error) error {
+	if err == nil {
+		return nil
+	}
+	var exc *pyzipfile.Exception
+	if errors.As(err, &exc) {
+		return &archiveError{exc: exc}
+	}
+	return err
+}
+
+// consumerImportIsZipFile is zipfile.is_zipfile(path). Python swallows every
+// read error and returns False, so this returns a nil error for content and
+// I/O failures alike.
+func consumerImportIsZipFile(path string) (bool, error) {
+	return pyzipfile.IsZipfile(path)
+}
+
+// consumerImportArchive is zipfile.ZipFile(path) in read mode.
 type consumerImportArchive struct {
-	reader *zip.ReadCloser
-	file   *os.File
-	names  []string
-	byName map[string]*zip.File
+	archive *pyzipfile.Archive
+	names   []string
+	byName  map[string]pyzipfile.Info
 }
 
 func consumerImportOpenArchive(path string) (*consumerImportArchive, error) {
-	reader, err := zip.OpenReader(path)
+	archive, err := pyzipfile.Open(path)
 	if err != nil {
-		return nil, errConsumerImportUnsupported
+		return nil, archiveWrap(err)
 	}
-	file, err := os.Open(path)
-	if err != nil {
-		reader.Close()
-		return nil, err
+	a := &consumerImportArchive{
+		archive: archive,
+		names:   archive.NameList(),
 	}
-	archive := &consumerImportArchive{reader: reader, file: file, byName: map[string]*zip.File{}}
-	headers, err := consumerImportLocalHeaders(file, len(reader.File))
-	if err != nil {
-		archive.Close()
-		return nil, errConsumerImportUnsupported
+	a.byName = make(map[string]pyzipfile.Info, len(a.names))
+	for _, name := range a.names {
+		info, _ := archive.Info(name)
+		a.byName[name] = info
 	}
-	fail := func() (*consumerImportArchive, error) {
-		archive.Close()
-		return nil, errConsumerImportUnsupported
-	}
-	for _, member := range reader.File {
-		name := member.Name
-		if !utf8.ValidString(name) || strings.ContainsAny(name, "\x00\\") {
-			return fail()
-		}
-		if member.NonUTF8 {
-			for i := 0; i < len(name); i++ {
-				if name[i] >= 0x80 {
-					return fail()
-				}
-			}
-		}
-		if _, duplicate := archive.byName[name]; duplicate {
-			return fail()
-		}
-		if member.Method != zip.Store && member.Method != zip.Deflate || member.Flags&0x1 != 0 {
-			return fail()
-		}
-		// ZipFile.open compares the local header's name with the directory's.
-		offset, ok := headers[len(archive.names)]
-		if !ok {
-			return fail()
-		}
-		header := make([]byte, 30+len(name))
-		if _, err := file.ReadAt(header, offset); err != nil || string(header[:4]) != "PK\x03\x04" ||
-			int(binary.LittleEndian.Uint16(header[26:28])) != len(name) || string(header[30:]) != name {
-			return fail()
-		}
-		archive.names = append(archive.names, name)
-		archive.byName[name] = member
-	}
-	return archive, nil
+	return a, nil
 }
 
-// consumerImportLocalHeaders lists the local header offset of every central
-// directory entry, in directory order (archives without ZIP64 or a prefix).
-func consumerImportLocalHeaders(file *os.File, count int) (map[int]int64, error) {
-	info, err := file.Stat()
-	if err != nil {
-		return nil, err
-	}
-	size := info.Size()
-	start := max(size-(1<<16)-22, 0)
-	data := make([]byte, size-start)
-	if _, err := file.ReadAt(data, start); err != nil {
-		return nil, err
-	}
-	at := bytes.LastIndex(data, []byte("PK\x05\x06"))
-	if at < 0 || at+22 > len(data) {
-		return nil, errConsumerImportUnsupported
-	}
-	end := data[at : at+22]
-	entries := int(binary.LittleEndian.Uint16(end[10:12]))
-	cdSize := int64(binary.LittleEndian.Uint32(end[12:16]))
-	cdOffset := int64(binary.LittleEndian.Uint32(end[16:20]))
-	if entries != count || cdOffset+cdSize != start+int64(at) {
-		return nil, errConsumerImportUnsupported
-	}
-	directory := make([]byte, cdSize)
-	if _, err := file.ReadAt(directory, cdOffset); err != nil {
-		return nil, err
-	}
-	offsets := map[int]int64{}
-	for i, position := 0, 0; i < entries; i++ {
-		if position+46 > len(directory) || string(directory[position:position+4]) != "PK\x01\x02" {
-			return nil, errConsumerImportUnsupported
-		}
-		entry := directory[position:]
-		names, extra, comment := int(binary.LittleEndian.Uint16(entry[28:30])), int(binary.LittleEndian.Uint16(entry[30:32])),
-			int(binary.LittleEndian.Uint16(entry[32:34]))
-		offsets[i] = int64(binary.LittleEndian.Uint32(entry[42:46]))
-		position += 46 + names + extra + comment
-	}
-	return offsets, nil
-}
+func (a *consumerImportArchive) Close() { a.archive.Close() }
 
-func (a *consumerImportArchive) Close() {
-	a.reader.Close()
-	a.file.Close()
-}
-
-func (a *consumerImportArchive) has(name string) bool { return a.byName[name] != nil }
+func (a *consumerImportArchive) has(name string) bool { return a.archive.Has(name) }
 
 // read is ZipFile.read(name): the decompressed member, CRC checked.
 func (a *consumerImportArchive) read(name string) ([]byte, error) {
-	member := a.byName[name]
-	if member == nil {
-		return nil, errors.New("missing member")
-	}
-	reader, err := member.Open()
+	data, err := a.archive.Read(name)
 	if err != nil {
-		return nil, errConsumerImportUnsupported
-	}
-	defer reader.Close()
-	data, err := io.ReadAll(reader)
-	if err != nil {
-		return nil, errConsumerImportUnsupported
+		return nil, archiveWrap(err)
 	}
 	return data, nil
 }
 
 // verify reads a member through and checks its CRC without keeping it.
 func (a *consumerImportArchive) verify(name string) (int64, error) {
-	member := a.byName[name]
-	if member == nil {
-		return 0, errors.New("missing member")
-	}
-	reader, err := member.Open()
+	member, err := a.archive.OpenMember(name)
 	if err != nil {
-		return 0, errConsumerImportUnsupported
+		return 0, archiveWrap(err)
 	}
-	defer reader.Close()
-	n, err := io.Copy(io.Discard, reader)
+	defer member.Close()
+	var total int64
+	for {
+		data, err := member.Read(1 << 20)
+		if err != nil {
+			return total, archiveWrap(err)
+		}
+		total += int64(len(data))
+		if len(data) == 0 {
+			return total, nil
+		}
+	}
+}
+
+// openMember is ZipFile.open(name).
+func (a *consumerImportArchive) openMember(name string) (*pyzipfile.Member, error) {
+	member, err := a.archive.OpenMember(name)
 	if err != nil {
-		return 0, errConsumerImportUnsupported
+		return nil, archiveWrap(err)
 	}
-	return n, nil
+	return member, nil
+}
+
+// archiveBadCRC reports the BadZipFile("Bad CRC-32 for file ...") exception.
+func archiveBadCRC(err error) bool {
+	var exc *pyzipfile.Exception
+	return errors.As(err, &exc) && exc.Type == "BadZipFile" &&
+		strings.HasPrefix(exc.Text, "Bad CRC-32 for file ")
 }
 
 // consumerImportJSON is json.loads(data) (and iter_json_array for an array)

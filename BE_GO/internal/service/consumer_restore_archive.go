@@ -1,11 +1,9 @@
 package service
 
 import (
-	"archive/zip"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"math"
 	"regexp"
 	"sort"
@@ -17,6 +15,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/importeffects"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pyzipfile"
 )
 
 // restoreDamaged is the RestoreError Archive.validate() raises for the Python
@@ -117,8 +116,8 @@ func validateRestoreArchive(run *consumerImportRun, path string, limits restoreL
 	return archive, nil
 }
 
-func (a *restoreArchive) entries() []*zip.File {
-	out := make([]*zip.File, len(a.zip.names))
+func (a *restoreArchive) entries() []pyzipfile.Info {
+	out := make([]pyzipfile.Info, len(a.zip.names))
 	for i, name := range a.zip.names {
 		out[i] = a.zip.byName[name]
 	}
@@ -140,7 +139,7 @@ func (a *restoreArchive) validate(run *consumerImportRun, limits restoreLimits) 
 	}
 	var expanded uint64
 	for _, entry := range entries {
-		name := entry.Name
+		name := entry.Filename
 		if strings.HasPrefix(name, "/") || restoreContains(restorePosixParts(name), "..") || restoreWindowsDrive(name) {
 			return restoreFail("Percorso non consentito nel backup: %s.", name)
 		}
@@ -158,14 +157,14 @@ func (a *restoreArchive) validate(run *consumerImportRun, limits restoreLimits) 
 		if isJSON {
 			limit, setting = limits.JSON, "DATA_RESTORE_MAX_JSON_BYTES"
 		}
-		if entry.UncompressedSize64 > math.MaxInt64/2 {
+		if entry.FileSize > math.MaxInt64/2 {
 			return errConsumerImportUnsupported
 		}
-		if int64(entry.UncompressedSize64) > limit {
+		if int64(entry.FileSize) > limit {
 			return restoreFail("Il file %s è troppo grande: %s non compressi; limite %s (%s).", name,
-				restoreFormatSize(int64(entry.UncompressedSize64)), restoreFormatSize(limit), setting)
+				restoreFormatSize(int64(entry.FileSize)), restoreFormatSize(limit), setting)
 		}
-		expanded += entry.UncompressedSize64
+		expanded += entry.FileSize
 	}
 	if expanded > uint64(limits.Expanded) {
 		return restoreFail("Il backup occupa %s non compressi; limite %s (DATA_RESTORE_MAX_EXPANDED_BYTES).",
@@ -354,7 +353,7 @@ func (a *restoreArchive) validate(run *consumerImportRun, limits restoreLimits) 
 		return err
 	}
 	for _, entry := range entries {
-		name := entry.Name
+		name := entry.Filename
 		if strings.HasSuffix(name, "/") || !strings.HasPrefix(name, "files/") {
 			continue
 		}
@@ -381,17 +380,10 @@ func (a *restoreArchive) validate(run *consumerImportRun, limits restoreLimits) 
 		return restoreFail("Il numero degli allegati non corrisponde al manifest.")
 	}
 	for _, name := range a.zip.names {
-		member := a.zip.byName[name]
-		reader, err := member.Open()
-		if err != nil {
-			return errConsumerImportUnsupported
-		}
-		_, err = io.Copy(io.Discard, reader)
-		reader.Close()
-		if errors.Is(err, zip.ErrChecksum) {
-			return restoreFail("Il backup contiene un file danneggiato.")
-		}
-		if err != nil {
+		if _, err := a.zip.verify(name); err != nil {
+			if archiveBadCRC(err) {
+				return restoreFail("Il backup contiene un file danneggiato.")
+			}
 			return errConsumerImportUnsupported
 		}
 	}
