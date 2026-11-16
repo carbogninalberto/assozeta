@@ -9,8 +9,8 @@ import (
 
 // TestEncodedWordCharsets: codecs.lookup's names (CPython 3.13.16) decide the
 // path. UTF-8, US-ASCII and ISO-8859-1 under any spelling are decoded, a name
-// Python does not know (or a bytes-to-bytes codec) is unknown bytes, and any
-// other text codec stays with Django.
+// Python does not know (or a bytes-to-bytes codec) is unknown bytes, and a
+// text codec this package does not carry stays with Django.
 func TestEncodedWordCharsets(t *testing.T) {
 	for name, want := range map[string]string{
 		"UTF-8": "utf-8", "utf 8": "utf-8", "U8": "utf-8", "us-ascii": "ascii", "ANSI_X3.4-1968": "ascii",
