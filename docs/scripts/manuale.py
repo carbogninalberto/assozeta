@@ -69,9 +69,11 @@ def runtime_check(root=None):
     command('python-index', [sys.executable, '-c', 'import numpy; print(numpy.__version__)'],
             'Run from a Python environment with docs/manuale/requirements-offline.txt installed.')
     node = command('node', ['node', '--version'], 'Install Node and the browser project dependencies.')
-    command('compose', ['docker', 'compose', 'version', '--short'], 'Install Docker Compose v2.')
+    # Docker answers slowly right after the CI dependency installs; 5 s failed
+    # whole capture shards on healthy GitHub runners (run 43870309500).
+    command('compose', ['docker', 'compose', 'version', '--short'], 'Install Docker Compose v2.', timeout=60)
     command('docker-engine', ['docker', 'info', '--format', '{{.ServerVersion}}'],
-            'Start Docker and allow this session to access its daemon.')
+            'Start Docker and allow this session to access its daemon.', timeout=60)
     try:
         with socket.socket() as connection:
             connection.bind(('127.0.0.1', 0))
