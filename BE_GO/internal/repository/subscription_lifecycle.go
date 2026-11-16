@@ -143,7 +143,9 @@ func (t *subscriptionLifecycleTransaction) DeletePayments(ctx context.Context, i
 			return err
 		}
 		if snapshot == nil {
-			return domain.ErrSubscriptionLifecycleNotPorted
+			// Deleted by a concurrent request before the delete: Django's
+			// queryset no longer selects the row, so it is not part of the work.
+			continue
 		}
 		payments = append(payments, snapshot)
 	}
@@ -164,7 +166,9 @@ func (t *subscriptionLifecycleTransaction) DeleteLoopInstallment(ctx context.Con
 		return err
 	}
 	if loaded == nil {
-		return domain.ErrSubscriptionLifecycleNotPorted
+		// Deleted by a concurrent request before the delete: the row is not
+		// part of the work (no delete, no entry).
+		return nil
 	}
 	if invoice != nil {
 		err = t.DeleteInvoicedPayment(ctx, *installment.PaymentID, *invoice, audit)
@@ -201,7 +205,9 @@ func (t *subscriptionLifecycleTransaction) collectorDelete(ctx context.Context, 
 		return err
 	}
 	if len(rows) == 0 {
-		return domain.ErrSubscriptionLifecycleNotPorted
+		// Deleted by a concurrent request before the delete: the collector has
+		// nothing to remove.
+		return nil
 	}
 	return run.Delete(ctx, label, rows)
 }
@@ -216,7 +222,9 @@ func (t *subscriptionLifecycleTransaction) DeleteInvoicedPayment(ctx context.Con
 		return err
 	}
 	if snapshot == nil {
-		return domain.ErrSubscriptionLifecycleNotPorted
+		// Deleted by a concurrent request before the delete: the payment (and
+		// its in-memory invoice reference) is not part of the work.
+		return nil
 	}
 	snapshot.changes["invoice"] = [2]string{invoice, "None"}
 	return t.deletePayments(ctx, []*courseSubscriptionSnapshot{snapshot}, true, audit)

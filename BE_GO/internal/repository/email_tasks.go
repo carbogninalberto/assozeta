@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -227,7 +228,10 @@ func (t *emailTaskTransaction) AssociationDenomination(ctx context.Context, asso
 
 // SaveCommunicationConfiguration is configuration.save() of the in-memory
 // instance: auditlog compares every field but the password with the stored
-// row, then every column is written.
+// row, then every column is written. Model.save() updates the row, or (when
+// the UPDATE matched none, because the configuration was deleted after it was
+// read) inserts it under the same primary key; auditlog then finds no old row
+// and logs a create entry instead of an update.
 func (t *emailTaskTransaction) SaveCommunicationConfiguration(ctx context.Context, configuration domain.CommunicationConfiguration, at time.Time) error {
 	var stored communicationConfigurationRow
 	err := t.tx.GetContext(ctx, &stored, `SELECT `+emailTaskConfigurationColumns+` FROM communications_communicationconfiguration
@@ -236,8 +240,8 @@ func (t *emailTaskTransaction) SaveCommunicationConfiguration(ctx context.Contex
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return err
 	}
+	changes := map[string][2]string{}
 	if exists {
-		changes := map[string][2]string{}
 		add := func(name, old, new string) {
 			if old != new {
 				changes[name] = [2]string{old, new}
@@ -251,20 +255,7 @@ func (t *emailTaskTransaction) SaveCommunicationConfiguration(ctx context.Contex
 		add("email_encryption", stored.Encryption, configuration.Encryption)
 		add("daily_email_limit", strconv.FormatInt(stored.Limit, 10), strconv.FormatInt(configuration.DailyLimit, 10))
 		add("daily_email_balance", strconv.FormatInt(stored.Balance, 10), strconv.FormatInt(configuration.DailyBalance, 10))
-		if len(changes) != 0 {
-			id := configuration.ID.String()
-			entry := modelAuditEntry{Model: "communicationconfiguration", Key: id,
-				Representation: "CommunicationConfiguration object (" + id + ")", Action: 1, Changes: changes, At: at}
-			if configuration.AssociationID != nil {
-				association, path := configuration.AssociationID.String(), "direct"
-				entry.AssociationID, entry.ResolutionPath = &association, &path
-			}
-			if err = appendModelAuditForApp(ctx, t.tx, "communications", entry); err != nil {
-				return err
-			}
-		}
 	}
-	// Model.save() updates the row, or inserts it when the UPDATE matched none.
 	result, err := t.tx.ExecContext(ctx, `UPDATE communications_communicationconfiguration SET sport_association_id=$2,email_smtp_host=$3,
  email_smtp_port=$4,email_smtp_user=$5,email_smtp_password=$6,email_sender_name=$7,email_encryption=$8,daily_email_limit=$9,
  daily_email_balance=$10 WHERE communication_configuration_id=$1`, configuration.ID, configuration.AssociationID, configuration.Host,
@@ -273,13 +264,50 @@ func (t *emailTaskTransaction) SaveCommunicationConfiguration(ctx context.Contex
 	if err != nil {
 		return err
 	}
-	if affected, err := result.RowsAffected(); err != nil || affected != 1 {
-		if err == nil {
-			err = domain.ErrEmailTaskUnsupported
-		}
+	affected, err := result.RowsAffected()
+	if err != nil {
 		return err
 	}
-	return nil
+	if affected > 1 {
+		return fmt.Errorf("communications_communicationconfiguration update matched %d rows", affected)
+	}
+	if affected == 1 {
+		if len(changes) == 0 {
+			return nil
+		}
+		return t.appendConfigurationAudit(ctx, configuration, 1, changes, at)
+	}
+	// The row is gone: Django's _save_table inserts it with every field.
+	if _, err = t.tx.ExecContext(ctx, `INSERT INTO communications_communicationconfiguration
+ (communication_configuration_id,sport_association_id,email_smtp_host,email_smtp_port,email_smtp_user,email_smtp_password,
+ email_sender_name,email_encryption,daily_email_limit,daily_email_balance)
+ VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`, configuration.ID, configuration.AssociationID, configuration.Host,
+		configuration.Port, configuration.User, configuration.Password, configuration.SenderName, configuration.Encryption,
+		configuration.DailyLimit, configuration.DailyBalance); err != nil {
+		return err
+	}
+	created, err := createdModelChanges(ctx, t.tx, "communications_communicationconfiguration", "communication_configuration_id",
+		configuration.ID.String())
+	if err != nil {
+		return err
+	}
+	// auditlog.register(CommunicationConfiguration, exclude_fields=['email_smtp_password']).
+	delete(created, "email_smtp_password")
+	return t.appendConfigurationAudit(ctx, configuration, 0, created, at)
+}
+
+// appendConfigurationAudit writes auditlog's entry for the configuration save,
+// indexed through the configuration's association.
+func (t *emailTaskTransaction) appendConfigurationAudit(ctx context.Context, configuration domain.CommunicationConfiguration, action int,
+	changes map[string][2]string, at time.Time) error {
+	id := configuration.ID.String()
+	entry := modelAuditEntry{Model: "communicationconfiguration", Key: id,
+		Representation: "CommunicationConfiguration object (" + id + ")", Action: action, Changes: changes, At: at}
+	if configuration.AssociationID != nil {
+		association, path := configuration.AssociationID.String(), "direct"
+		entry.AssociationID, entry.ResolutionPath = &association, &path
+	}
+	return appendModelAuditForApp(ctx, t.tx, "communications", entry)
 }
 
 // DueReminders is the send_reminders queryset with its select_related joins.

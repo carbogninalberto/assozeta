@@ -441,8 +441,9 @@ func (s *SubscriptionLifecycles) Archive(ctx context.Context, identity domain.Re
 			return err
 		}
 		if payment == nil {
-			// deleted by a concurrent request between the two reads (timing): left to Django.
-			return domain.ErrSubscriptionLifecycleNotPorted
+			// Deleted by a concurrent request between the two reads: Django's
+			// iterator no longer yields it, so it is not part of the work.
+			continue
 		}
 		if payment.AssociationID == "" {
 			// RangePayments selects the association's own payments (sport_association filter).

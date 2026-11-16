@@ -84,7 +84,8 @@ func (s *QuoteAssign) Run(ctx context.Context, job domain.Job) error {
 // plan reads the associations (the iterator's cursor) and, for each one the
 // run reaches, its balance year and active plans; it then checks every
 // conversion, render and SMTP message the run could need and refuses the run
-// (ErrPaymentMiscNotPorted, ErrEmailTaskUnsupported) before any effect.
+// (ErrPaymentMiscNotPorted, and the messages smtpsend refuses) before any
+// effect.
 func (s *QuoteAssign) plan(ctx context.Context, job domain.Job, now time.Time) ([]quoteAssignAssociation, error) {
 	tx, err := s.store.BeginQuoteAssign(ctx, job)
 	if err != nil {

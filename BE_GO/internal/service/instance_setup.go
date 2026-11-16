@@ -12,6 +12,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/documentkey"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/instancelogo"
 	"github.com/google/uuid"
 )
@@ -281,18 +282,19 @@ func (s *InstanceSetup) saveLogo(ctx context.Context, name string, file *Instanc
 			}
 		}
 	}
+	saved := name
 	if !s.settings.FileOverwrite {
-		// get_available_name: a name taken again after the deletes would be
-		// saved under a generated alternative.
-		exists, err := s.storage.Exists(ctx, name)
+		// default_storage.save(name, file) with file_overwrite off calls
+		// get_available_name: a name taken again after the deletes is saved
+		// under file_root_<7 random characters><ext>, and the view stores the
+		// name save() returned.
+		available, err := documentkey.AvailableName(ctx, name, s.storage.Exists, documentkey.RandomName7)
 		if err != nil {
 			return nil, err
 		}
-		if exists {
-			return nil, domain.ErrInstanceSetupRefused
-		}
+		saved = available
 	}
-	if err := s.storage.Save(ctx, name, file.Content, instancelogo.WriteParameters{ContentType: file.ContentType,
+	if err := s.storage.Save(ctx, saved, file.Content, instancelogo.WriteParameters{ContentType: file.ContentType,
 		CacheControl: s.settings.CacheControl, ACL: s.settings.DefaultACL}); err != nil {
 		return nil, err
 	}
