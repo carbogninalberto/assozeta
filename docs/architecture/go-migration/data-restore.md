@@ -157,14 +157,16 @@ self-hosted instance) and the receipt's association the primary one, else 403
   invoices become association documents and count in `legacy_invoices`; tutors are reassigned, cleared or ignored as
   `_normalize_legacy_tutors` does, with the preview's `reassigned_tutors`, `tutor_tax_code_conflicts` and
   `tutor_reassignment_details`; every JSON value is read as `json.loads(zf.read(name))` (BOM and UTF-16/32 detection,
-  surrogatepass, `NaN`/`Infinity`) and converted by the plan's field kinds as `to_python` does; duplicate, encrypted
+  surrogatepass, `NaN`/`Infinity` tokens, the 4300-digit limit, RecursionError from 9999 levels; `dto.PythonJSONLoads`)
+  and converted by the plan's field kinds as `to_python` does; duplicate, encrypted
   and backslash member names follow `_validate_entries`. A ZIP reader exception the except tuple catches is the damaged
   archive 400; the others (EOFError, OSError from bz2, LZMAError) and `int(inf)`'s OverflowError escape the view and
   answer Django's 500 page (`errRestoreReaderRaised`, application state). A field kind outside the generated plan is
   `errRestorePlanKind` (application state, pinned by `TestRestorePlanKindsConverted`). Cases `upload-archive-text-*`,
   `-int-*`, `-uuid-float`, `-date-basic`, `-version-int`, `-errors-*`, `-spec-*`, `-specs-null`, `-denomination-list`,
   `-folder-*`, `-tutor-*`, `-corrupt-deflate`, `-bzip2-corrupt`, `-encrypted-member`, `-truncated-member`,
-  `-huge-declared-size`, `-duplicate-member`, `-backslash-*`, `-drive-digit`.)
+  `-huge-declared-size`, `-duplicate-member`, `-backslash-*`, `-drive-digit`.) A member nested 9800 to 9998 levels deep
+  stays a refusal (`dto.ErrJSONRecursionBand`: CPython's C stack decides).
 - (Long tail PR 4: RFC 2231 names in every Python text codec decode through `internal/pycodecs`, and a name that
   decodes to a lone surrogate skips its line, so the part is not the upload: cases `upload-rfc2231-cp932-file-name`,
   `upload-rfc2231-surrogate-name-skipped`.) Other media types answer DRF's 415; a base64
@@ -188,7 +190,9 @@ the archive validation and the RFC 2231 charsets are ported (see above).
 
 ## Evidence
 
-`TESTS/fixtures/data_restore_http.json` (192 cases since long tail PR 4, from `TESTS/fixtures/generate_data_restore_http.py`).
+`TESTS/fixtures/data_restore_http.json` (192 cases since long tail PR 4, from `TESTS/fixtures/generate_data_restore_http.py`;
+long tail PR 4 run `lt4B-s10`: 192/192 on the four transports; mutation `lt4B-mut7c` (backslash rule dropped) fails
+`data-restore-upload-archive-backslash-folder` on Go).
 The adapter (`TESTS/adapters/django/data_restore_http.py`) seeds the instance and 24 receipts, owns a
 private MinIO (S3 storage with `AWS_LOCATION`, objects per case, exact remaining keys afterwards),
 lowers `DATA_RESTORE_MAX_UPLOAD_BYTES` for both servers, holds the lock file per case, stores

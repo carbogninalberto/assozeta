@@ -1826,3 +1826,30 @@ X11 extension, X12, X13, X14, X17, X18; the X lines are added by the combiner). 
 shared sentinels belong to other sites: `parseDjangoMultipart` (RFC 2231 codecs), `StockCreate`, the payment list/export
 reads and `importedAssociation`.
 
+## Long tail PR 4, agent B
+
+Rendering and archives: the pdfexport paragraph subset and the export values that reach it, document render, the
+mentions resolvers, the API schema, the e-mail render routes, association transfer (multipart, validator, ZIP reader,
+document delete), data restore, RFC 2231 part names, and the pandas readers. Same rules as PR 3, with the owner's
+decisions of 2026-11-16: `<img src>` paths and URLs are read as reportlab reads them, and Python object addresses in
+output answer with a stable placeholder (`pystr.ObjectAddress`, approved divergence X18). Per-site table:
+`tmp/long-tail/pr4-B.md` (worktree notes).
+
+| point | ported (cases) | now application state / deleted | left |
+|---|---|---|---|
+| RFC 2231 part names and Accept parameters (`documents-writes.md`, `data-restore.md`, `api-schema.md`, `association-transfer.md`) | every Python text codec decodes through the new `internal/pycodecs` (CPython 3.13.16 decoders and error handlers); a name that decodes to a lone surrogate skips its line (`certificate-rfc2231-*`, `upload-rfc2231-*`, `accept-indent-rfc2231-*`, `import-start-*`) | `pyheader`'s not-ported outcome and `Negotiation.NotPorted` removed | — |
+| API schema (`api-schema.md`) | more than 1000 query fields is Django's 400 page (`query-1001-fields-bad-request`) | generator-covered catalog misses; dead URL branches deleted | `lang` with a path separator (host file layout) |
+| printing, balance sheet, instructor report exports (`printing-generate.md`, `balance-sheet.md`, `instructor-writes.md`) | ints beyond int64 and JSON description values in xlsx and pdf cells (`*-big-int-description`, `*-description-values`, `report-description-int-*`, `report-deep-*`) | three sentinels deleted; stored JSON at 9999 levels or more is RecursionError's 500 | stored JSON nested 9800..9998 deep (`dto.ErrJSONRecursionBand`, C stack) |
+| e-mail render routes (`email-render-routes.md`) | e-mails with lone surrogates or replaced bytes, an uploaded file as the e-mail (`add-surrogate-*`, `add-replacement-domain-email`, `add-multipart-file-email`) | sentinel deleted | — |
+| document render (`document-render.md`) | filename headers uvicorn sends (`subscription-name-with-nel-header`, `-with-control-header`) | — | header bytes uvicorn refuses (transport), a generated name storage rejects after the Document, the X8 overlay (not implemented), a filled form with a line break |
+| pdfexport (`pdf-exports.md`) | `<img src>` paths, `data:` and http(s) URLs as `ImageReader` (`img-src-*`); `<seq template="%s">` printing the sequencer (X18) | — | bullets, anchors and named links, non-JPEG images, `ftp:` URLs, `<unichar>`, CMYK/alpha/expression colours, inf/nan, the `<para>` layout options |
+| mentions (`document-views.md`) | `other.<key>.<attr...>` over the str object graph (X18 for method reprs) | — | model attributes the resolvers do not carry, the `str` type's layout fields |
+| association transfer (`association-transfer.md`) | import multipart as MultiPartParser; validation for any archive content (`import-validate-*`); CPython's zipfile, zlib, bz2 and lzma reading (`internal/pyzipfile`); deleting a referenced export document with Django's Collector (`delete-owner-referenced-*`) | sentinel deleted | — |
+| data restore (`data-restore.md`, `consumer-restore.md`) | the whole `Archive.validate()`: legacy invoices, tutor normalization and preview counts, any JSON value, member name rules (`upload-archive-*`, 33 new cases); the Celery restore stages a backslash basename with `_` (`backslash-media`) | sentinel deleted; uncaught reader exceptions and `int(inf)` are Django's 500 page; plan kinds outside the converted set | a member nested in the C recursion band (`dto.ErrJSONRecursionBand`); the Celery restore hands off archives `validate()` rewrites |
+| pandas (`subscription-import-upload.md`) | the CSV tokenizer's re-read buffers after a bare CR; xlsx XML encodings, number text, out-of-range durations and datetimes, streamed sheets | `pandascsv.ErrBareCRBacktrack` deleted | xlsx parts over 256 MiB and sheets past 1,048,576 rows (host memory), a duration column label, dateutil default-date text |
+
+`refusal_reach.py`, whole report: 50 points, 148 HTTP/WebSocket and 28 other rows before; 44 points, 135 and 29 after.
+Agent B's points: 14 → 7 (61 → 46 HTTP rows, 4 other), plus the shared `dto.ErrJSONRecursionBand` (3 HTTP rows and 1
+other: the instructor report and the restore archive members).
+Sentinels deleted: printing generate, balance sheet export, e-mail render, instructor report, association transfer,
+data restore and the pandas CSV backtrack.
