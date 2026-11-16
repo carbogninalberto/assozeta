@@ -1,0 +1,1119 @@
+{
+ "python": "CPython 3.13.16",
+ "placeholder": "0x7f0000000000",
+ "other": {
+  "today": "16/11/2026",
+  "courses_list": "Pilates, Yoga",
+  "empty": ""
+ },
+ "cases": [
+  {
+   "key": "other.today",
+   "value": "16/11/2026"
+  },
+  {
+   "key": "other.courses_list",
+   "value": "Pilates, Yoga"
+  },
+  {
+   "key": "other.empty",
+   "value": ""
+  },
+  {
+   "key": "other.missing",
+   "value": ""
+  },
+  {
+   "key": "other.today.__add__",
+   "value": "<method-wrapper '__add__' of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.__class__",
+   "value": "<class 'str'>"
+  },
+  {
+   "key": "other.today.__contains__",
+   "value": "<method-wrapper '__contains__' of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.__delattr__",
+   "value": "<method-wrapper '__delattr__' of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.__dir__",
+   "value": "<built-in method __dir__ of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.__doc__",
+   "value": "str(object='') -> str\nstr(bytes_or_buffer[, encoding[, errors]]) -> str\n\nCreate a new string object from the given object. If encoding or\nerrors is specified, then the object must expose a data buffer\nthat will be decoded using the given encoding and error handler.\nOtherwise, returns the result of object.__str__() (if defined)\nor repr(object).\nencoding defaults to 'utf-8'.\nerrors defaults to 'strict'."
+  },
+  {
+   "key": "other.today.__eq__",
+   "value": "<method-wrapper '__eq__' of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.__format__",
+   "value": "<built-in method __format__ of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.__ge__",
+   "value": "<method-wrapper '__ge__' of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.__getattribute__",
+   "value": "<method-wrapper '__getattribute__' of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.__getitem__",
+   "value": "<method-wrapper '__getitem__' of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.__getnewargs__",
+   "value": "<built-in method __getnewargs__ of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.__getstate__",
+   "value": "<built-in method __getstate__ of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.__gt__",
+   "value": "<method-wrapper '__gt__' of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.__hash__",
+   "value": "<method-wrapper '__hash__' of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.__init__",
+   "value": "<method-wrapper '__init__' of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.__init_subclass__",
+   "value": "<built-in method __init_subclass__ of type object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.__iter__",
+   "value": "<method-wrapper '__iter__' of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.__le__",
+   "value": "<method-wrapper '__le__' of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.__len__",
+   "value": "<method-wrapper '__len__' of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.__lt__",
+   "value": "<method-wrapper '__lt__' of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.__mod__",
+   "value": "<method-wrapper '__mod__' of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.__mul__",
+   "value": "<method-wrapper '__mul__' of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.__ne__",
+   "value": "<method-wrapper '__ne__' of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.__new__",
+   "value": "<built-in method __new__ of type object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.__reduce__",
+   "value": "<built-in method __reduce__ of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.__reduce_ex__",
+   "value": "<built-in method __reduce_ex__ of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.__repr__",
+   "value": "<method-wrapper '__repr__' of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.__rmod__",
+   "value": "<method-wrapper '__rmod__' of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.__rmul__",
+   "value": "<method-wrapper '__rmul__' of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.__setattr__",
+   "value": "<method-wrapper '__setattr__' of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.__sizeof__",
+   "value": "<built-in method __sizeof__ of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.__str__",
+   "value": "<method-wrapper '__str__' of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.__subclasshook__",
+   "value": "<built-in method __subclasshook__ of type object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.capitalize",
+   "value": "<built-in method capitalize of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.casefold",
+   "value": "<built-in method casefold of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.center",
+   "value": "<built-in method center of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.count",
+   "value": "<built-in method count of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.encode",
+   "value": "<built-in method encode of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.endswith",
+   "value": "<built-in method endswith of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.expandtabs",
+   "value": "<built-in method expandtabs of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.find",
+   "value": "<built-in method find of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.format",
+   "value": "<built-in method format of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.format_map",
+   "value": "<built-in method format_map of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.index",
+   "value": "<built-in method index of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.isalnum",
+   "value": "<built-in method isalnum of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.isalpha",
+   "value": "<built-in method isalpha of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.isascii",
+   "value": "<built-in method isascii of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.isdecimal",
+   "value": "<built-in method isdecimal of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.isdigit",
+   "value": "<built-in method isdigit of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.isidentifier",
+   "value": "<built-in method isidentifier of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.islower",
+   "value": "<built-in method islower of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.isnumeric",
+   "value": "<built-in method isnumeric of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.isprintable",
+   "value": "<built-in method isprintable of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.isspace",
+   "value": "<built-in method isspace of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.istitle",
+   "value": "<built-in method istitle of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.isupper",
+   "value": "<built-in method isupper of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.join",
+   "value": "<built-in method join of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.ljust",
+   "value": "<built-in method ljust of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.lower",
+   "value": "<built-in method lower of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.lstrip",
+   "value": "<built-in method lstrip of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.maketrans",
+   "value": "<built-in method maketrans of type object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.partition",
+   "value": "<built-in method partition of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.removeprefix",
+   "value": "<built-in method removeprefix of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.removesuffix",
+   "value": "<built-in method removesuffix of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.replace",
+   "value": "<built-in method replace of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.rfind",
+   "value": "<built-in method rfind of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.rindex",
+   "value": "<built-in method rindex of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.rjust",
+   "value": "<built-in method rjust of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.rpartition",
+   "value": "<built-in method rpartition of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.rsplit",
+   "value": "<built-in method rsplit of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.rstrip",
+   "value": "<built-in method rstrip of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.split",
+   "value": "<built-in method split of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.splitlines",
+   "value": "<built-in method splitlines of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.startswith",
+   "value": "<built-in method startswith of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.strip",
+   "value": "<built-in method strip of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.swapcase",
+   "value": "<built-in method swapcase of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.title",
+   "value": "<built-in method title of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.translate",
+   "value": "<built-in method translate of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.upper",
+   "value": "<built-in method upper of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.zfill",
+   "value": "<built-in method zfill of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.nope",
+   "value": ""
+  },
+  {
+   "key": "other.today.Upper",
+   "value": ""
+  },
+  {
+   "key": "other.today.upper ",
+   "value": ""
+  },
+  {
+   "key": "other.today.__get__",
+   "value": ""
+  },
+  {
+   "key": "other.today.missing",
+   "value": ""
+  },
+  {
+   "key": "other.today.missing.upper",
+   "value": ""
+  },
+  {
+   "key": "other.today.nope.upper",
+   "value": ""
+  },
+  {
+   "key": "other.missing.upper",
+   "value": ""
+  },
+  {
+   "key": "other.today.",
+   "value": ""
+  },
+  {
+   "key": "other.today..upper",
+   "value": ""
+  },
+  {
+   "key": "other.",
+   "value": ""
+  },
+  {
+   "key": "other.empty.upper",
+   "value": "<built-in method upper of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.empty.nope",
+   "value": ""
+  },
+  {
+   "key": "other.today.upper.__name__",
+   "value": "upper"
+  },
+  {
+   "key": "other.today.upper.__qualname__",
+   "value": "str.upper"
+  },
+  {
+   "key": "other.today.upper.__self__",
+   "value": "16/11/2026"
+  },
+  {
+   "key": "other.today.upper.__doc__",
+   "value": "Return a copy of the string converted to uppercase."
+  },
+  {
+   "key": "other.today.upper.__module__",
+   "value": ""
+  },
+  {
+   "key": "other.today.upper.__class__",
+   "value": "<class 'builtin_function_or_method'>"
+  },
+  {
+   "key": "other.today.upper.__text_signature__",
+   "value": "($self, /)"
+  },
+  {
+   "key": "other.today.maketrans.__name__",
+   "value": "maketrans"
+  },
+  {
+   "key": "other.today.maketrans.__qualname__",
+   "value": "str.maketrans"
+  },
+  {
+   "key": "other.today.maketrans.__self__",
+   "value": ""
+  },
+  {
+   "key": "other.today.maketrans.__doc__",
+   "value": "Return a translation table usable for str.translate().\n\nIf there is only one argument, it must be a dictionary mapping\nUnicode ordinals (integers) or characters to Unicode ordinals,\nstrings or None.  Character keys will be then converted to ordinals.\nIf there are two arguments, they must be strings of equal length,\nand in the resulting dictionary, each character in x will be mapped\nto the character at the same position in y.  If there is a third\nargument, it must be a string, whose characters will be mapped to\nNone in the result."
+  },
+  {
+   "key": "other.today.maketrans.__module__",
+   "value": ""
+  },
+  {
+   "key": "other.today.maketrans.__class__",
+   "value": "<class 'builtin_function_or_method'>"
+  },
+  {
+   "key": "other.today.maketrans.__text_signature__",
+   "value": "(x, y=<unrepresentable>, z=<unrepresentable>, /)"
+  },
+  {
+   "key": "other.today.__new__.__name__",
+   "value": "__new__"
+  },
+  {
+   "key": "other.today.__new__.__qualname__",
+   "value": "str.__new__"
+  },
+  {
+   "key": "other.today.__new__.__self__",
+   "value": "<class 'str'>"
+  },
+  {
+   "key": "other.today.__new__.__doc__",
+   "value": "Create and return a new object.  See help(type) for accurate signature."
+  },
+  {
+   "key": "other.today.__new__.__module__",
+   "value": ""
+  },
+  {
+   "key": "other.today.__new__.__class__",
+   "value": "<class 'builtin_function_or_method'>"
+  },
+  {
+   "key": "other.today.__new__.__text_signature__",
+   "value": "($type, *args, **kwargs)"
+  },
+  {
+   "key": "other.today.__add__.__name__",
+   "value": "__add__"
+  },
+  {
+   "key": "other.today.__add__.__qualname__",
+   "value": "str.__add__"
+  },
+  {
+   "key": "other.today.__add__.__self__",
+   "value": "16/11/2026"
+  },
+  {
+   "key": "other.today.__add__.__doc__",
+   "value": "Return self+value."
+  },
+  {
+   "key": "other.today.__add__.__module__",
+   "value": ""
+  },
+  {
+   "key": "other.today.__add__.__class__",
+   "value": "<class 'method-wrapper'>"
+  },
+  {
+   "key": "other.today.__add__.__text_signature__",
+   "value": "($self, value, /)"
+  },
+  {
+   "key": "other.today.__add__.__objclass__",
+   "value": "<class 'str'>"
+  },
+  {
+   "key": "other.today.__delattr__.__name__",
+   "value": "__delattr__"
+  },
+  {
+   "key": "other.today.__delattr__.__qualname__",
+   "value": "object.__delattr__"
+  },
+  {
+   "key": "other.today.__delattr__.__self__",
+   "value": "16/11/2026"
+  },
+  {
+   "key": "other.today.__delattr__.__doc__",
+   "value": "Implement delattr(self, name)."
+  },
+  {
+   "key": "other.today.__delattr__.__module__",
+   "value": ""
+  },
+  {
+   "key": "other.today.__delattr__.__class__",
+   "value": "<class 'method-wrapper'>"
+  },
+  {
+   "key": "other.today.__delattr__.__text_signature__",
+   "value": "($self, name, /)"
+  },
+  {
+   "key": "other.today.__delattr__.__objclass__",
+   "value": "<class 'object'>"
+  },
+  {
+   "key": "other.today.__class__.__name__",
+   "value": "str"
+  },
+  {
+   "key": "other.today.__class__.__qualname__",
+   "value": "str"
+  },
+  {
+   "key": "other.today.__class__.__module__",
+   "value": "builtins"
+  },
+  {
+   "key": "other.today.__class__.__class__",
+   "value": "<class 'type'>"
+  },
+  {
+   "key": "other.today.__class__.__doc__",
+   "value": "str(object='') -> str\nstr(bytes_or_buffer[, encoding[, errors]]) -> str\n\nCreate a new string object from the given object. If encoding or\nerrors is specified, then the object must expose a data buffer\nthat will be decoded using the given encoding and error handler.\nOtherwise, returns the result of object.__str__() (if defined)\nor repr(object).\nencoding defaults to 'utf-8'.\nerrors defaults to 'strict'."
+  },
+  {
+   "key": "other.today.__class__.__text_signature__",
+   "value": ""
+  },
+  {
+   "key": "other.today.__class__.__bases__",
+   "value": "(<class 'object'>,)"
+  },
+  {
+   "key": "other.today.__class__.__base__",
+   "value": "<class 'object'>"
+  },
+  {
+   "key": "other.today.__class__.__mro__",
+   "value": "(<class 'str'>, <class 'object'>)"
+  },
+  {
+   "key": "other.today.__class__.__type_params__",
+   "value": "()"
+  },
+  {
+   "key": "other.today.__class__.__add__",
+   "value": "<slot wrapper '__add__' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.__class__",
+   "value": "<class 'type'>"
+  },
+  {
+   "key": "other.today.__class__.__contains__",
+   "value": "<slot wrapper '__contains__' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.__delattr__",
+   "value": "<slot wrapper '__delattr__' of 'object' objects>"
+  },
+  {
+   "key": "other.today.__class__.__dir__",
+   "value": "<method '__dir__' of 'object' objects>"
+  },
+  {
+   "key": "other.today.__class__.__doc__",
+   "value": "str(object='') -> str\nstr(bytes_or_buffer[, encoding[, errors]]) -> str\n\nCreate a new string object from the given object. If encoding or\nerrors is specified, then the object must expose a data buffer\nthat will be decoded using the given encoding and error handler.\nOtherwise, returns the result of object.__str__() (if defined)\nor repr(object).\nencoding defaults to 'utf-8'.\nerrors defaults to 'strict'."
+  },
+  {
+   "key": "other.today.__class__.__eq__",
+   "value": "<slot wrapper '__eq__' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.__format__",
+   "value": "<method '__format__' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.__ge__",
+   "value": "<slot wrapper '__ge__' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.__getattribute__",
+   "value": "<slot wrapper '__getattribute__' of 'object' objects>"
+  },
+  {
+   "key": "other.today.__class__.__getitem__",
+   "value": "<slot wrapper '__getitem__' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.__getnewargs__",
+   "value": "<method '__getnewargs__' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.__getstate__",
+   "value": "<method '__getstate__' of 'object' objects>"
+  },
+  {
+   "key": "other.today.__class__.__gt__",
+   "value": "<slot wrapper '__gt__' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.__hash__",
+   "value": "<slot wrapper '__hash__' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.__init__",
+   "value": "<slot wrapper '__init__' of 'object' objects>"
+  },
+  {
+   "key": "other.today.__class__.__init_subclass__",
+   "value": "<built-in method __init_subclass__ of type object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.__class__.__iter__",
+   "value": "<slot wrapper '__iter__' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.__le__",
+   "value": "<slot wrapper '__le__' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.__len__",
+   "value": "<slot wrapper '__len__' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.__lt__",
+   "value": "<slot wrapper '__lt__' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.__mod__",
+   "value": "<slot wrapper '__mod__' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.__mul__",
+   "value": "<slot wrapper '__mul__' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.__ne__",
+   "value": "<slot wrapper '__ne__' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.__new__",
+   "value": "<built-in method __new__ of type object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.__class__.__reduce__",
+   "value": "<method '__reduce__' of 'object' objects>"
+  },
+  {
+   "key": "other.today.__class__.__reduce_ex__",
+   "value": "<method '__reduce_ex__' of 'object' objects>"
+  },
+  {
+   "key": "other.today.__class__.__repr__",
+   "value": "<slot wrapper '__repr__' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.__rmod__",
+   "value": "<slot wrapper '__rmod__' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.__rmul__",
+   "value": "<slot wrapper '__rmul__' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.__setattr__",
+   "value": "<slot wrapper '__setattr__' of 'object' objects>"
+  },
+  {
+   "key": "other.today.__class__.__sizeof__",
+   "value": "<method '__sizeof__' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.__str__",
+   "value": "<slot wrapper '__str__' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.__subclasshook__",
+   "value": "<built-in method __subclasshook__ of type object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.__class__.capitalize",
+   "value": "<method 'capitalize' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.casefold",
+   "value": "<method 'casefold' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.center",
+   "value": "<method 'center' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.count",
+   "value": "<method 'count' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.encode",
+   "value": "<method 'encode' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.endswith",
+   "value": "<method 'endswith' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.expandtabs",
+   "value": "<method 'expandtabs' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.find",
+   "value": "<method 'find' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.format",
+   "value": "<method 'format' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.format_map",
+   "value": "<method 'format_map' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.index",
+   "value": "<method 'index' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.isalnum",
+   "value": "<method 'isalnum' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.isalpha",
+   "value": "<method 'isalpha' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.isascii",
+   "value": "<method 'isascii' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.isdecimal",
+   "value": "<method 'isdecimal' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.isdigit",
+   "value": "<method 'isdigit' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.isidentifier",
+   "value": "<method 'isidentifier' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.islower",
+   "value": "<method 'islower' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.isnumeric",
+   "value": "<method 'isnumeric' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.isprintable",
+   "value": "<method 'isprintable' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.isspace",
+   "value": "<method 'isspace' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.istitle",
+   "value": "<method 'istitle' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.isupper",
+   "value": "<method 'isupper' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.join",
+   "value": "<method 'join' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.ljust",
+   "value": "<method 'ljust' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.lower",
+   "value": "<method 'lower' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.lstrip",
+   "value": "<method 'lstrip' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.maketrans",
+   "value": "<built-in method maketrans of type object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.__class__.partition",
+   "value": "<method 'partition' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.removeprefix",
+   "value": "<method 'removeprefix' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.removesuffix",
+   "value": "<method 'removesuffix' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.replace",
+   "value": "<method 'replace' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.rfind",
+   "value": "<method 'rfind' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.rindex",
+   "value": "<method 'rindex' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.rjust",
+   "value": "<method 'rjust' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.rpartition",
+   "value": "<method 'rpartition' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.rsplit",
+   "value": "<method 'rsplit' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.rstrip",
+   "value": "<method 'rstrip' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.split",
+   "value": "<method 'split' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.splitlines",
+   "value": "<method 'splitlines' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.startswith",
+   "value": "<method 'startswith' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.strip",
+   "value": "<method 'strip' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.swapcase",
+   "value": "<method 'swapcase' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.title",
+   "value": "<method 'title' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.translate",
+   "value": "<method 'translate' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.upper",
+   "value": "<method 'upper' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.zfill",
+   "value": "<method 'zfill' of 'str' objects>"
+  },
+  {
+   "key": "other.today.__class__.__bases__",
+   "value": "(<class 'object'>,)"
+  },
+  {
+   "key": "other.today.__class__.__base__",
+   "value": "<class 'object'>"
+  },
+  {
+   "key": "other.today.__class__.__mro__",
+   "value": "(<class 'str'>, <class 'object'>)"
+  },
+  {
+   "key": "other.today.__class__.__type_params__",
+   "value": "()"
+  },
+  {
+   "key": "other.today.__class__.__text_signature__",
+   "value": ""
+  },
+  {
+   "key": "other.today.__class__.mro",
+   "value": "<built-in method mro of type object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.__class__.__subclasses__",
+   "value": "<built-in method __subclasses__ of type object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.__class__.__call__",
+   "value": "<method-wrapper '__call__' of type object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.__class__.__prepare__",
+   "value": "<built-in method __prepare__ of type object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.__class__.__instancecheck__",
+   "value": "<built-in method __instancecheck__ of type object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.__class__.__subclasscheck__",
+   "value": "<built-in method __subclasscheck__ of type object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.__class__.__abstractmethods__",
+   "value": ""
+  },
+  {
+   "key": "other.today.__class__.__annotations__",
+   "value": ""
+  },
+  {
+   "key": "other.today.__doc__.upper",
+   "value": "<built-in method upper of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.__doc__.__class__",
+   "value": "<class 'str'>"
+  },
+  {
+   "key": "other.today.__doc__.__len__",
+   "value": "<method-wrapper '__len__' of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.__doc__.__doc__",
+   "value": "str(object='') -> str\nstr(bytes_or_buffer[, encoding[, errors]]) -> str\n\nCreate a new string object from the given object. If encoding or\nerrors is specified, then the object must expose a data buffer\nthat will be decoded using the given encoding and error handler.\nOtherwise, returns the result of object.__str__() (if defined)\nor repr(object).\nencoding defaults to 'utf-8'.\nerrors defaults to 'strict'."
+  },
+  {
+   "key": "other.today.upper.__self__",
+   "value": "16/11/2026"
+  },
+  {
+   "key": "other.today.upper.__self__.upper",
+   "value": "<built-in method upper of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.upper.__self__.__class__.__name__",
+   "value": "str"
+  },
+  {
+   "key": "other.today.upper.__self__.__class__.__mro__",
+   "value": "(<class 'str'>, <class 'object'>)"
+  },
+  {
+   "key": "other.today.upper.__self__.__doc__.upper",
+   "value": "<built-in method upper of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.__add__.__self__",
+   "value": "16/11/2026"
+  },
+  {
+   "key": "other.today.__add__.__self__.upper",
+   "value": "<built-in method upper of str object at 0x7f0000000000>"
+  },
+  {
+   "key": "other.today.__add__.__objclass__.__name__",
+   "value": "str"
+  },
+  {
+   "key": "other.today.__add__.__objclass__.__mro__",
+   "value": "(<class 'str'>, <class 'object'>)"
+  },
+  {
+   "key": "other.today.maketrans.__self__",
+   "value": ""
+  },
+  {
+   "key": "other.today.maketrans.__self__.upper",
+   "value": ""
+  },
+  {
+   "key": "other.today.__new__.__self__.__name__",
+   "value": "str"
+  },
+  {
+   "key": "other.today.__new__.__class__.__name__",
+   "value": "builtin_function_or_method"
+  },
+  {
+   "key": "other.today.upper.__class__.__name__",
+   "value": "builtin_function_or_method"
+  },
+  {
+   "key": "other.today.upper.__class__.__module__",
+   "value": "builtins"
+  },
+  {
+   "key": "other.today.upper.__class__.__doc__.upper",
+   "value": ""
+  },
+  {
+   "key": "other.today.upper.__class__.upper",
+   "value": ""
+  },
+  {
+   "key": "other.today.__class__.__name__",
+   "value": "str"
+  },
+  {
+   "key": "other.today.__class__.__qualname__",
+   "value": "str"
+  },
+  {
+   "key": "other.today.__class__.__module__",
+   "value": "builtins"
+  },
+  {
+   "key": "other.today.__class__.__base__.__name__",
+   "value": "object"
+  },
+  {
+   "key": "other.today.__class__.__base__.__mro__",
+   "value": "(<class 'object'>,)"
+  },
+  {
+   "key": "other.today.__class__.__subclasses__.__doc__",
+   "value": "Return a list of immediate subclasses."
+  },
+  {
+   "key": "other.today.__class__.mro.__qualname__",
+   "value": "str.mro"
+  },
+  {
+   "key": "other.today.__class__.__call__.__objclass__.__name__",
+   "value": "type"
+  },
+  {
+   "key": "other.today.__class__.upper.__name__",
+   "value": "upper"
+  },
+  {
+   "key": "other.today.__class__.upper.__qualname__",
+   "value": "str.upper"
+  },
+  {
+   "key": "other.today.__class__.upper.__objclass__.__name__",
+   "value": "str"
+  },
+  {
+   "key": "other.today.__class__.upper.__doc__",
+   "value": "Return a copy of the string converted to uppercase."
+  },
+  {
+   "key": "other.today.__class__.upper.__text_signature__",
+   "value": "($self, /)"
+  },
+  {
+   "key": "other.today.__class__.__add__.__name__",
+   "value": "__add__"
+  },
+  {
+   "key": "other.today.__class__.__add__.__objclass__.__name__",
+   "value": "str"
+  },
+  {
+   "key": "other.today.__class__.__new__.__self__.__name__",
+   "value": "str"
+  },
+  {
+   "key": "other.today.__class__.__delattr__.__objclass__.__name__",
+   "value": "object"
+  }
+ ]
+}

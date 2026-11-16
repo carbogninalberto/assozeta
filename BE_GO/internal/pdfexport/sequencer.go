@@ -7,6 +7,8 @@ import (
 	"strings"
 	"sync"
 	"unicode/utf8"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pystr"
 )
 
 // This file ports reportlab/lib/sequencer.py and the <seq>, <seqreset>,
@@ -156,9 +158,13 @@ func (s *seqSequencer) getitem(key string) (string, error) {
 const seqMaxWidth = 1 << 20
 
 // errSeqTemplateHandoff marks a template this package does not format (the
-// parse answers ErrNotPorted): one whose text would hold a process memory
-// address, and one that pads a value beyond seqMaxWidth.
+// parse answers ErrNotPorted): one that pads a value beyond seqMaxWidth.
 var errSeqTemplateHandoff = errors.New("pdfexport: sequence template outside the formatted subset")
+
+// seqObjectText is str(Sequencer()): Sequencer has no __repr__ of its own, so
+// CPython prints the default repr with the object's address, which this port
+// answers as pystr.ObjectAddress (approved divergence X18).
+const seqObjectText = "<reportlab.lib.sequencer.Sequencer object at " + pystr.ObjectAddress + ">"
 
 var rnTemplates = [10]int{0, 1, 9, 73, 10, 2, 17, 137, 1097, 11} // _RN_TEMPLATES, in octal there
 
@@ -216,8 +222,15 @@ func formatSeq(format byte, value int64) (string, error) {
 // values __getitem__ answers with the flags, width and precision that apply
 // to a str. The values are always text, so the number conversions raise, as
 // they do in Python.
+//
+// A template without a (key) formats the Sequencer object itself. Python
+// prints its default repr, and its first positional conversion consumes the
+// object: a second one is "not enough arguments for format string", and a
+// conversion after a mapping key is too (`'%(x)s %s' % seq`). A `*` also
+// takes a positional argument, so `'%*s' % seq` is int(seq)'s TypeError.
 func (s *seqSequencer) format(template string) (string, error) {
 	var out strings.Builder
+	argUsed, keyUsed := false, false
 	for pos := 0; pos < len(template); {
 		if template[pos] != '%' {
 			out.WriteByte(template[pos])
@@ -234,9 +247,13 @@ func (s *seqSequencer) format(template string) (string, error) {
 			continue
 		}
 		arg, hasArg := "", false
+		keyStart, keyEnd, hasKey := 0, 0, false
 		if template[pos] == '(' {
 			// Skip over balanced parentheses: the key of the conversion.
-			start, depth := pos+1, 1
+			// The value is read with __getitem__ once the flags, width and
+			// precision are parsed, as CPython does.
+			keyStart = pos + 1
+			depth := 1
 			for pos++; depth > 0; pos++ {
 				if pos >= len(template) {
 					return "", errors.New("incomplete format key")
@@ -248,11 +265,7 @@ func (s *seqSequencer) format(template string) (string, error) {
 					depth--
 				}
 			}
-			value, err := s.getitem(template[start : pos-1])
-			if err != nil {
-				return "", err
-			}
-			arg, hasArg = value, true
+			keyEnd, hasKey = pos-1, true
 		}
 		left := false
 	flags:
@@ -270,6 +283,12 @@ func (s *seqSequencer) format(template string) (string, error) {
 		}
 		width := 0
 		if pos < len(template) && template[pos] == '*' {
+			// `*` takes the next positional argument. Here that is the
+			// Sequencer itself, which int() refuses, or nothing after it.
+			if argUsed || keyUsed {
+				return "", errors.New("not enough arguments for format string")
+			}
+			argUsed = true
 			return "", errors.New("* wants int")
 		}
 		for pos < len(template) && template[pos] >= '0' && template[pos] <= '9' {
@@ -283,6 +302,10 @@ func (s *seqSequencer) format(template string) (string, error) {
 		if pos < len(template) && template[pos] == '.' {
 			precision, pos = 0, pos+1
 			if pos < len(template) && template[pos] == '*' {
+				if argUsed || keyUsed {
+					return "", errors.New("not enough arguments for format string")
+				}
+				argUsed = true
 				return "", errors.New("* wants int")
 			}
 			for pos < len(template) && template[pos] >= '0' && template[pos] <= '9' {
@@ -298,36 +321,65 @@ func (s *seqSequencer) format(template string) (string, error) {
 		}
 		conversion := pos
 		pos++
-		if !hasArg {
-			// `template % self._seq` without a (key) formats the Sequencer
-			// object: its text holds a memory address, so it is not ported.
-			return "", errSeqTemplateHandoff
+		if hasKey {
+			value, err := s.getitem(template[keyStart:keyEnd])
+			if err != nil {
+				return "", err
+			}
+			arg, hasArg, keyUsed = value, true, true
 		}
 		text := ""
-		switch template[conversion] {
-		case 's':
-			text = arg
-		case 'r', 'a':
-			text = pythonAscii(arg) // repr() and ascii() of the text a counter makes
-		case 'c':
-			if utf8.RuneCountInString(arg) != 1 {
+		if !hasArg {
+			if argUsed || keyUsed {
+				return "", errors.New("not enough arguments for format string")
+			}
+			argUsed = true
+			switch template[conversion] {
+			case 's', 'r', 'a':
+				text = seqObjectText
+			case 'c':
 				return "", errors.New("%c requires int or char")
+			case 'd', 'i', 'u':
+				return "", fmt.Errorf("%%%c format: a real number is required, not Sequencer", template[conversion])
+			case 'o', 'x', 'X':
+				return "", fmt.Errorf("%%%c format: an integer is required, not Sequencer", template[conversion])
+			case 'e', 'E', 'f', 'F', 'g', 'G':
+				return "", errors.New("must be real number, not Sequencer")
+			default:
+				char, _ := utf8.DecodeRuneInString(template[conversion:])
+				name := string(char)
+				if char >= 0x80 {
+					name = "?" // Python prints %c of a code point above ASCII as '?'
+				}
+				return "", fmt.Errorf("unsupported format character '%s' (0x%x) at index %d", name, char,
+					utf8.RuneCountInString(template[:conversion]))
 			}
-			text = arg
-		case 'd', 'i', 'u':
-			return "", fmt.Errorf("%%%c format: a real number is required, not str", template[conversion])
-		case 'o', 'x', 'X':
-			return "", fmt.Errorf("%%%c format: an integer is required, not str", template[conversion])
-		case 'e', 'E', 'f', 'F', 'g', 'G':
-			return "", errors.New("must be real number, not str")
-		default:
-			char, _ := utf8.DecodeRuneInString(template[conversion:])
-			name := string(char)
-			if char >= 0x80 {
-				name = "?" // Python prints %c of a code point above ASCII as '?'
+		} else {
+			switch template[conversion] {
+			case 's':
+				text = arg
+			case 'r', 'a':
+				text = pythonAscii(arg) // repr() and ascii() of the text a counter makes
+			case 'c':
+				if utf8.RuneCountInString(arg) != 1 {
+					return "", errors.New("%c requires int or char")
+				}
+				text = arg
+			case 'd', 'i', 'u':
+				return "", fmt.Errorf("%%%c format: a real number is required, not str", template[conversion])
+			case 'o', 'x', 'X':
+				return "", fmt.Errorf("%%%c format: an integer is required, not str", template[conversion])
+			case 'e', 'E', 'f', 'F', 'g', 'G':
+				return "", errors.New("must be real number, not str")
+			default:
+				char, _ := utf8.DecodeRuneInString(template[conversion:])
+				name := string(char)
+				if char >= 0x80 {
+					name = "?" // Python prints %c of a code point above ASCII as '?'
+				}
+				return "", fmt.Errorf("unsupported format character '%s' (0x%x) at index %d", name, char,
+					utf8.RuneCountInString(template[:conversion]))
 			}
-			return "", fmt.Errorf("unsupported format character '%s' (0x%x) at index %d", name, char,
-				utf8.RuneCountInString(template[:conversion]))
 		}
 		runes := []rune(text)
 		if precision >= 0 && len(runes) > precision {

@@ -5,6 +5,12 @@ import (
 	"unicode/utf8"
 )
 
+// ObjectAddress is the address CPython writes for an object that has no
+// __repr__ of its own ("<... object at 0x...>"): id() is printed as %p.
+// The address of a live object cannot be reproduced, so ports write this
+// placeholder: approved divergence X18.
+const ObjectAddress = "0x7f0000000000"
+
 // Runes decodes s into Python code points. The three-byte form of a lone
 // surrogate (0xED 0xA0..0xBF 0x80..0xBF) becomes that surrogate code point;
 // any other invalid byte becomes U+FFFD.
