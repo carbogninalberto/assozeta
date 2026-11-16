@@ -51,3 +51,21 @@ func TestStripeIDPythonStr(t *testing.T) {
 		})
 	}
 }
+
+// StripeObject.__repr__ names the class convert_to_stripe_object picks, the
+// "object" string and the string id (stripe-python 11.6.0's output, with the
+// placeholder address).
+func TestStripeIDListReprIdentParts(t *testing.T) {
+	id := []any{
+		domain.RequestObject{{Name: "id", Value: "x1"}, {Name: "object", Value: "charge"}},
+		domain.RequestObject{{Name: "id", Value: json.Number("5")}, {Name: "object", Value: json.Number("7")}},
+		domain.RequestObject{{Name: "object", Value: "nope"}, {Name: "id", Value: "y"}},
+	}
+	want := "[<Charge charge id=x1 at 0x0000000000000000> JSON: {\n  \"id\": \"x1\",\n  \"object\": \"charge\"\n}, " +
+		"<StripeObject at 0x0000000000000000> JSON: {\n  \"id\": 5,\n  \"object\": 7\n}, " +
+		"<StripeObject nope id=y at 0x0000000000000000> JSON: {\n  \"id\": \"y\",\n  \"object\": \"nope\"\n}]"
+	got, err := stripeID(stripeapi.Object{{Name: "id", Value: id}})
+	if err != nil || got == nil || *got != want {
+		t.Fatalf("stripeID = %v, %v\nwant %q", got, err, want)
+	}
+}

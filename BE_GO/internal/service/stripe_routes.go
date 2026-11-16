@@ -330,9 +330,28 @@ func stripeRepr(value any) string {
 }
 
 // stripeObjectRepr is StripeObject.__repr__ with the fixed placeholder address
-// (owner decision X18): the class name and StripeObject.__str__'s JSON.
+// (owner decision X18): the class convert_to_stripe_object picks for the
+// object's "object" string, that string and "id=<id>" when they are strings,
+// then StripeObject.__str__'s JSON.
 func stripeObjectRepr(object domain.RequestObject) string {
-	return "<StripeObject at 0x0000000000000000> JSON: " + string(dto.PythonJSONDumpsSortedIndent(object, 2))
+	parts := []string{"StripeObject"}
+	if kind, ok := lookupString(object, "object"); ok {
+		if class, known := stripeObjectClasses[kind]; known {
+			parts[0] = class
+		}
+		parts = append(parts, kind)
+	}
+	if id, ok := lookupString(object, "id"); ok {
+		parts = append(parts, "id="+id)
+	}
+	return "<" + strings.Join(parts, " ") + " at 0x0000000000000000> JSON: " + string(dto.PythonJSONDumpsSortedIndent(object, 2))
+}
+
+// lookupString is self.get(key) when it is a str.
+func lookupString(object domain.RequestObject, key string) (string, bool) {
+	value, _ := object.Lookup(key)
+	text, ok := value.(string)
+	return text, ok
 }
 
 // pythonText is f'{value}' for a nullable text column.

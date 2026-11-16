@@ -12,6 +12,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/stripeapi"
 )
 
@@ -219,4 +220,18 @@ func runFees(t *testing.T, responses ...feeResponse) (float64, error, []string) 
 	mu.Lock()
 	defer mu.Unlock()
 	return fee, err, append([]string(nil), queries...)
+}
+
+// A non-finite sum is cached and then fails DRF's strict JSON rendering (the
+// 500 page); finite charges are answered as they are.
+func TestPaymentStatsStripeNonFiniteChargesFailToRender(t *testing.T) {
+	for name, value := range map[string]float64{"inf": math.Inf(1), "-inf": math.Inf(-1), "nan": math.NaN()} {
+		if _, err := paymentStatsRenderable(&domain.PaymentStripeCharges{Total: value, StripeFee: value}); !errors.Is(err, errPaymentStatsNonFinite) {
+			t.Errorf("%s: err = %v", name, err)
+		}
+	}
+	charges := &domain.PaymentStripeCharges{Total: 2.67, StripeFee: 2.67}
+	if got, err := paymentStatsRenderable(charges); err != nil || got != charges {
+		t.Fatalf("finite charges: %v, %v", got, err)
+	}
 }

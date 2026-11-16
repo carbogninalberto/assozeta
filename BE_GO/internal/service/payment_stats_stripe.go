@@ -58,7 +58,7 @@ func (f *PaymentStatsStripe) charges(ctx context.Context, from, to time.Time) (*
 		return nil, err
 	}
 	if found {
-		return &cached, nil
+		return paymentStatsRenderable(&cached)
 	}
 	fee, err := f.fees(ctx, f.routes.client.Session(key), start, end)
 	if errors.Is(err, errPaymentStatsStripeZero) {
@@ -72,7 +72,24 @@ func (f *PaymentStatsStripe) charges(ctx context.Context, from, to time.Time) (*
 		// cache.set runs inside the view's try: the except answers zero charges.
 		return nil, nil
 	}
-	return &charges, nil
+	return paymentStatsRenderable(&charges)
+}
+
+// errPaymentStatsNonFinite is DRF's JSONRenderer (STRICT_JSON) rendering a
+// non-finite float in stripe_charges: json.dumps(allow_nan=False) raises
+// ValueError while the response renders, which is the 500 page. The cache
+// entry is already written, as in Django.
+var errPaymentStatsNonFinite = errors.New("payment_stats: out of range float values are not JSON compliant")
+
+// paymentStatsRenderable answers charges the view can render: a sum of
+// float amounts can reach an infinity or NaN (json.loads reads 1e400 and NaN).
+func paymentStatsRenderable(charges *domain.PaymentStripeCharges) (*domain.PaymentStripeCharges, error) {
+	for _, value := range []float64{charges.Total, charges.StripeFee} {
+		if math.IsInf(value, 0) || math.IsNaN(value) {
+			return nil, errPaymentStatsNonFinite
+		}
+	}
+	return charges, nil
 }
 
 // paymentStatsItems is iterating a list object's data (getattr(self, 'data', [])): a
