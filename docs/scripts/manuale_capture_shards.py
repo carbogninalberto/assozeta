@@ -21,6 +21,7 @@ missing, conflicting or inconsistent results are rejected. Extra shard stacks ar
 always removed, including on failure.
 """
 import json
+import math
 import os
 import re
 import shutil
@@ -44,6 +45,12 @@ WORKFLOW_OVERHEAD = 2
 SHARDS_DIRECTORY = 'capture-shards'
 MANIFEST = 'capture-shards.json'
 WORKFLOW_ID = re.compile(r'[a-z0-9][a-z0-9-]*')
+# Measured per-workflow capture seconds, committed so every runner balances alike.
+CAPTURE_COSTS_FORMAT = 1
+CAPTURE_COSTS_PATH = Path(__file__).resolve().parents[1] / 'manuale' / 'capture-costs.json'
+MILLISECONDS = 1000
+# Marker for ``contiguous_partition``: load the repository's measured costs.
+DEFAULT_CAPTURE_COSTS = object()
 # Port-dependent settings written by configure_runtime; a shard replaces each.
 ORIGIN_SETTINGS = ('APP_URL', 'SITE_ADDRESS', 'CSRF_TRUSTED_ORIGINS')
 PORT_SETTINGS = ('DEV_UI_PORT', 'DEV_API_PORT', 'DEV_MINIO_CONSOLE_PORT')
@@ -127,6 +134,76 @@ def workflow_weight(recipe):
     return len(recipe.get('checkpoints') or ()) + WORKFLOW_OVERHEAD
 
 
+def validate_capture_costs(document, source='Capture costs'):
+    """Return the validated ``{workflow id: seconds}`` of a capture-costs document.
+
+    Anything that is not a format 1 object of workflow-id-shaped keys mapped to
+    positive finite numbers raises :class:`ShardError`: a malformed file must fail
+    the capture instead of silently falling back to checkpoint weights.
+    """
+    if not isinstance(document, dict):
+        raise ShardError(source + ' must be a JSON object')
+    if type(document.get('format')) is not int or document['format'] != CAPTURE_COSTS_FORMAT:
+        raise ShardError(f'{source} must declare format {CAPTURE_COSTS_FORMAT}')
+    return validate_capture_seconds(document.get('seconds'), source)
+
+
+def capture_weights(chosen, costs=None):
+    """Partition weights of ``chosen``: measured milliseconds, or checkpoint units.
+
+    With measured costs the DP works on integer milliseconds so every platform
+    cuts identically. Workflows without a measurement are weighted by
+    :func:`workflow_weight` scaled by the selection's measured seconds per
+    checkpoint unit; without any measurement the historical integer weights stay
+    exactly as they were.
+    """
+    measured = {recipe['id']: costs[recipe['id']] for recipe in chosen if costs and recipe['id'] in costs}
+    if not measured:
+        return [workflow_weight(recipe) for recipe in chosen]
+    seen = [recipe for recipe in chosen if recipe['id'] in measured]
+    calibration = sum(measured[recipe['id']] for recipe in seen) / sum(workflow_weight(recipe) for recipe in seen)
+    return [max(1, round(MILLISECONDS * (measured[recipe['id']] if recipe['id'] in measured
+                                         else workflow_weight(recipe) * calibration)))
+            for recipe in chosen]
+
+
+def validate_capture_seconds(seconds, source='Capture costs'):
+    """Return ``{workflow id: seconds}`` from a measured-costs mapping, validated strictly."""
+    if not isinstance(seconds, dict):
+        raise ShardError(source + ' must map workflow ids to measured seconds')
+    costs = {}
+    for identifier, value in seconds.items():
+        if not isinstance(identifier, str) or not WORKFLOW_ID.fullmatch(identifier):
+            raise ShardError(f'{source} has an invalid workflow id: {identifier!r}')
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            raise ShardError(f'{source} has a non-numeric cost for {identifier}')
+        number = float(value)
+        if not math.isfinite(number) or number <= 0:
+            raise ShardError(f'{source} has an invalid cost for {identifier}: {value!r}')
+        costs[identifier] = number
+    return costs
+
+
+def load_capture_costs(path=None):
+    """Measured seconds per workflow from the repository's ``docs/manuale/capture-costs.json``.
+
+    ``None`` means no measurement is available, so callers keep checkpoint
+    weights. A present but malformed file raises :class:`ShardError`.
+    """
+    target = CAPTURE_COSTS_PATH if path is None else Path(path)
+    try:
+        text = target.read_text()
+    except FileNotFoundError:
+        return None
+    except OSError as error:
+        raise ShardError('Unreadable capture costs: ' + str(target)) from error
+    try:
+        document = json.loads(text)
+    except ValueError as error:
+        raise ShardError('Unreadable capture costs: ' + str(target)) from error
+    return validate_capture_costs(document, 'Capture costs ' + target.name)
+
+
 def partition(recipes, selected, concurrency):
     """Deterministic longest-processing-time partition in registry order.
 
@@ -156,7 +233,7 @@ def partition(recipes, selected, concurrency):
     return [[known[index]['id'] for index in sorted(shard)] for shard in shards]
 
 
-def contiguous_partition(recipes, selected, count):
+def contiguous_partition(recipes, selected, count, costs=DEFAULT_CAPTURE_COSTS):
     """Deterministic contiguous partition of the selected workflows in registry order.
 
     Each shard is one contiguous run of ``chosen`` (the selected workflows in
@@ -165,6 +242,12 @@ def contiguous_partition(recipes, selected, count):
     heaviest block, as the classic linear-partition problem does; ties prefer the
     earliest cut positions. The result depends only on the registry and the
     selected set, never on the order of ``selected``.
+
+    ``costs`` maps workflow ids to measured seconds; by default the repository's
+    ``docs/manuale/capture-costs.json`` is loaded. Workflows without a measured
+    cost are weighted by :func:`workflow_weight` scaled so that the measured part
+    of the selection keeps its real proportion. ``costs=None`` (or a selection
+    with no measured workflow) keeps the historical checkpoint weights.
     """
     if count < 1:
         raise ValueError('Capture concurrency must be positive')
@@ -180,7 +263,11 @@ def contiguous_partition(recipes, selected, count):
     shards = min(count, len(chosen))
     if shards == 0:
         return []
-    weights = [workflow_weight(recipe) for recipe in chosen]
+    if costs is DEFAULT_CAPTURE_COSTS:
+        costs = load_capture_costs()
+    elif costs is not None:
+        costs = validate_capture_seconds(costs)
+    weights = capture_weights(chosen, costs)
     prefix = [0]
     for weight in weights:
         prefix.append(prefix[-1] + weight)

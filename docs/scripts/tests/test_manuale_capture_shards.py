@@ -212,26 +212,27 @@ class PartitionTests(unittest.TestCase):
 class ContiguousPartitionTests(unittest.TestCase):
     def test_every_shard_is_a_contiguous_block_of_the_registry_order_selection(self):
         selected = ['echo', 'alpha', 'charlie', 'delta', 'bravo']
-        plan = shards.contiguous_partition(REGISTRY, selected, 3)
+        plan = shards.contiguous_partition(REGISTRY, selected, 3, costs=None)
         self.assertEqual(plan, [['alpha', 'bravo'], ['charlie', 'delta'], ['echo']])
         self.assertEqual(sum(plan, []), ['alpha', 'bravo', 'charlie', 'delta', 'echo'])
         self.assertTrue(all(plan))
         # The order of the selection never changes the plan.
-        self.assertEqual(plan, shards.contiguous_partition(REGISTRY, list(reversed(selected)), 3))
+        self.assertEqual(plan, shards.contiguous_partition(REGISTRY, list(reversed(selected)), 3, costs=None))
 
     def test_the_block_count_is_capped_by_the_selection_size(self):
-        self.assertEqual(shards.contiguous_partition(REGISTRY, ['delta'], 4), [['delta']])
-        self.assertEqual(shards.contiguous_partition(REGISTRY, [], 2), [])
-        self.assertEqual(shards.contiguous_partition(REGISTRY, ['delta', 'alpha', 'bravo'], 4),
+        self.assertEqual(shards.contiguous_partition(REGISTRY, ['delta'], 4, costs=None), [['delta']])
+        self.assertEqual(shards.contiguous_partition(REGISTRY, [], 2, costs=None), [])
+        self.assertEqual(shards.contiguous_partition(REGISTRY, ['delta', 'alpha', 'bravo'], 4, costs=None),
                          [['alpha'], ['bravo'], ['delta']])
-        self.assertEqual(shards.contiguous_partition(REGISTRY, ['alpha', 'echo'], 2), [['alpha'], ['echo']])
+        self.assertEqual(shards.contiguous_partition(REGISTRY, ['alpha', 'echo'], 2, costs=None),
+                         [['alpha'], ['echo']])
 
     def test_the_heaviest_block_is_as_light_as_possible(self):
         # Workflow weight is checkpoints plus two, so these weigh 7, 3, 3, 3, 7.
         registry = [recipe('a', 5), recipe('b', 1), recipe('c', 1), recipe('d', 1), recipe('e', 5)]
         weights = [shards.workflow_weight(item) for item in registry]
         self.assertEqual(weights, [7, 3, 3, 3, 7])
-        plan = shards.contiguous_partition(registry, ['e', 'c', 'a', 'd', 'b'], 2)
+        plan = shards.contiguous_partition(registry, ['e', 'c', 'a', 'd', 'b'], 2, costs=None)
         # Cuts after a, ab, abc and abcd weigh 16, 13, 13 and 16; the earliest optimum is after ab.
         self.assertEqual(plan, [['a', 'b'], ['c', 'd', 'e']])
         loads = [sum(weights[ord(identifier) - ord('a')] for identifier in shard) for shard in plan]
@@ -241,19 +242,149 @@ class ContiguousPartitionTests(unittest.TestCase):
     def test_real_registry_contiguous_blocks_keep_the_sequential_predecessors(self):
         registry = json.loads((ROOT / 'docs/manuale/recipes.json').read_text())['recipes']
         ids = [item['id'] for item in registry]
-        plan = shards.contiguous_partition(registry, list(reversed(ids)), 3)
-        self.assertEqual(plan, shards.contiguous_partition(registry, sorted(ids), 3))
+        plan = shards.contiguous_partition(registry, list(reversed(ids)), 3, costs=None)
+        self.assertEqual(plan, shards.contiguous_partition(registry, sorted(ids), 3, costs=None))
         self.assertEqual(sum(plan, []), ids)
         self.assertEqual(len(plan), 3)
         self.assertTrue(all(block for block in plan))
 
     def test_validation_matches_partition(self):
         with self.assertRaisesRegex(ValueError, 'positive'):
-            shards.contiguous_partition(REGISTRY, ['alpha'], 0)
+            shards.contiguous_partition(REGISTRY, ['alpha'], 0, costs=None)
         with self.assertRaisesRegex(ValueError, 'Unknown workflows: missing'):
-            shards.contiguous_partition(REGISTRY, ['missing'], 2)
+            shards.contiguous_partition(REGISTRY, ['missing'], 2, costs=None)
         with self.assertRaises(shards.ShardError):
-            shards.contiguous_partition([recipe('alpha'), recipe('alpha')], ['alpha'], 2)
+            shards.contiguous_partition([recipe('alpha'), recipe('alpha')], ['alpha'], 2, costs=None)
+
+
+def real_registry():
+    return json.loads((ROOT / 'docs/manuale/recipes.json').read_text())['recipes']
+
+
+def block_seconds(recipes, plan, costs):
+    """Measured seconds per block, calibrating the workflows without a measurement."""
+    by_id = {item['id']: item for item in recipes}
+    measured = {identifier: costs[identifier] for identifier in by_id if identifier in costs}
+    calibration = sum(measured.values()) / sum(shards.workflow_weight(by_id[identifier]) for identifier in measured)
+    return [round(sum(costs[identifier] if identifier in costs
+                      else shards.workflow_weight(by_id[identifier]) * calibration for identifier in block), 1)
+            for block in plan]
+
+
+class MeasuredCostTests(unittest.TestCase):
+    def setUp(self):
+        self.temporary = tempfile.TemporaryDirectory()
+        self.root = Path(self.temporary.name)
+
+    def tearDown(self):
+        self.temporary.cleanup()
+
+    def write_costs(self, document):
+        path = self.root / 'capture-costs.json'
+        path.write_text(document if isinstance(document, str) else json.dumps(document))
+        return path
+
+    def test_measured_costs_move_the_cut(self):
+        # Five workflows of equal checkpoint weight split evenly after the second one.
+        registry = [recipe(identifier, 1) for identifier in 'abcde']
+        selected = ['d', 'b', 'a', 'e', 'c']
+        self.assertEqual(shards.contiguous_partition(registry, selected, 2, costs=None),
+                         [['a', 'b'], ['c', 'd', 'e']])
+        # A cheap start and an expensive end make the third workflow a better cut.
+        plan = shards.contiguous_partition(registry, selected, 2, costs={'a': 1.0, 'e': 40.0})
+        self.assertEqual(plan, [['a', 'b', 'c'], ['d', 'e']])
+        self.assertEqual(plan, shards.contiguous_partition(registry, list(reversed(selected)), 2,
+                                                           costs={'a': 1.0, 'e': 40.0}))
+
+    def test_workflows_without_a_measurement_use_calibrated_checkpoint_weights(self):
+        # 120 measured seconds over 10 checkpoint units make one unit 12 s, so the
+        # unmeasured five-unit workflow b weighs 5 * 12 = 60 s.
+        registry = [recipe('a', 1), recipe('b', 3), recipe('c', 5)]
+        self.assertEqual(shards.capture_weights(registry, {'a': 30.0, 'c': 90.0}), [30000, 60000, 90000])
+        self.assertEqual(shards.capture_weights(registry, None), [3, 5, 7])
+        # b's calibrated 55 s sits between a's 10 s and c's 100 s, so it joins a;
+        # with checkpoint units alone the even weights cut before b.
+        registry = [recipe(identifier, 1) for identifier in 'abc']
+        self.assertEqual(shards.contiguous_partition(registry, ['c', 'a', 'b'], 2, costs={'a': 10.0, 'c': 100.0}),
+                         [['a', 'b'], ['c']])
+        self.assertEqual(shards.contiguous_partition(registry, ['c', 'a', 'b'], 2, costs=None),
+                         [['a'], ['b', 'c']])
+
+    def test_costs_none_keeps_the_checkpoint_weight_behaviour(self):
+        selected = ['echo', 'alpha', 'charlie', 'delta', 'bravo']
+        self.assertEqual(shards.contiguous_partition(REGISTRY, selected, 2, costs=None),
+                         [['alpha', 'bravo', 'charlie'], ['delta', 'echo']])
+        self.assertEqual(shards.contiguous_partition(REGISTRY, selected, 3, costs=None),
+                         [['alpha', 'bravo'], ['charlie', 'delta'], ['echo']])
+        # No synthetic id is measured, so the default already equals the old weights.
+        self.assertEqual(shards.contiguous_partition(REGISTRY, selected, 2),
+                         shards.contiguous_partition(REGISTRY, selected, 2, costs=None))
+        registry = real_registry()
+        ids = [item['id'] for item in registry]
+        self.assertNotEqual(shards.contiguous_partition(registry, ids, 5, costs=None),
+                            shards.contiguous_partition(registry, ids, 5))
+
+    def test_malformed_cost_documents_fail_closed(self):
+        invalid = [
+            '[]',
+            'not json',
+            {'seconds': {'alpha': 1.0}},
+            {'format': 2, 'seconds': {'alpha': 1.0}},
+            {'format': True, 'seconds': {'alpha': 1.0}},
+            {'format': '1', 'seconds': {'alpha': 1.0}},
+            {'format': 1, 'seconds': []},
+            {'format': 1},
+            {'format': 1, 'seconds': {'alpha': -1.0}},
+            {'format': 1, 'seconds': {'alpha': 0}},
+            {'format': 1, 'seconds': {'alpha': 'fast'}},
+            {'format': 1, 'seconds': {'alpha': True}},
+            {'format': 1, 'seconds': {'Alpha': 1.0}},
+            {'format': 1, 'seconds': {'../alpha': 1.0}},
+            '{"format": 1, "seconds": {"alpha": NaN}}',
+            '{"format": 1, "seconds": {"alpha": Infinity}}',
+        ]
+        for document in invalid:
+            with self.subTest(document=document), self.assertRaises(shards.ShardError):
+                shards.load_capture_costs(self.write_costs(document))
+
+    def test_missing_cost_file_means_no_measurement(self):
+        self.assertIsNone(shards.load_capture_costs(self.root / 'absent.json'))
+        for costs in ({'alpha': -1.0}, {'alpha': float('nan')}, {'Alpha': 1.0}, []):
+            with self.subTest(costs=costs), self.assertRaises(shards.ShardError):
+                shards.contiguous_partition(REGISTRY, ['alpha'], 1, costs=costs)
+
+    def test_repository_costs_cover_only_registry_workflows(self):
+        path = ROOT / 'docs/manuale/capture-costs.json'
+        document = json.loads(path.read_text())
+        costs = shards.load_capture_costs()
+        self.assertEqual(document['format'], 1)
+        self.assertEqual(document['source_run'], 43764477224)
+        self.assertEqual(costs, {identifier: round(value, 1) for identifier, value in document['seconds'].items()})
+        self.assertIsNotNone(costs)
+        registry_ids = {item['id'] for item in real_registry()}
+        self.assertEqual(sorted(set(costs) - registry_ids), [])
+        self.assertTrue(all(value > 0 for value in costs.values()))
+        # The default path is the file resolved next to this module's package.
+        self.assertEqual(shards.load_capture_costs(shards.CAPTURE_COSTS_PATH), costs)
+
+    def test_the_plan_ignores_the_order_of_the_selection(self):
+        registry = real_registry()
+        ids = [item['id'] for item in registry]
+        plan = shards.contiguous_partition(registry, ids, 4)
+        for order in (list(reversed(ids)), ids[::2] + ids[1::2]):
+            self.assertEqual(shards.contiguous_partition(registry, order, 4), plan)
+        self.assertEqual(sum(plan, []), ids)
+
+    def test_real_registry_measured_blocks_are_balanced(self):
+        registry = real_registry()
+        ids = [item['id'] for item in registry]
+        costs = shards.load_capture_costs()
+        plan = shards.contiguous_partition(registry, ids, 5)
+        self.assertEqual([len(block) for block in plan], [8, 9, 11, 17, 15])
+        sums = block_seconds(registry, plan, costs)
+        print('measured block seconds per shard:', sums)
+        self.assertEqual(len(sums), 5)
+        self.assertLessEqual(max(sums), 456)
 
 
 class IsolationTests(unittest.TestCase):
