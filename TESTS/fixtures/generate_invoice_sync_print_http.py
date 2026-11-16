@@ -623,6 +623,12 @@ add('add-number-taken', 'owner', ADD, 400, {'non_field_errors': ['Invoice alread
 add('add-transmitting-date-three-digit-year-server-error', 'owner', ADD, 500, SERVER, method='POST',
     body={**BASE, 'number': 702, 'transmitting_date': '999-03-05'}, effect=nothing())
 
+# A line quantity beyond the double range: json.loads makes 1e400 float('inf') and the serializer's JSONField keeps it;
+# the INSERT dumps it as Infinity, which jsonb rejects (DataError) before any row or audit entry: the 500 page.
+add('add-line-infinite-quantity-server-error', 'owner', ADD, 500, SERVER, method='POST',
+    raw_body=json.dumps({**BASE, 'number': 703}).replace('"quantity": 1,', '"quantity": 1e400,', 1),
+    content_type='application/json', effect=nothing())
+
 # Dates before 1000. The view rewrites each date through
 # datetime.strptime(value, '%Y-%m-%d').strftime('%d/%m/%Y') and
 # CustomerInvoiceSerializer's DateField (input_formats ['%d/%m/%Y']) re-reads that
