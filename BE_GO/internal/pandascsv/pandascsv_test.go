@@ -29,20 +29,13 @@ func TestColumnsMatchPandas(t *testing.T) {
 	if err := json.Unmarshal(raw, &golden); err != nil || golden.Pandas != "2.2.3" || len(golden.Cases) < 8000 {
 		t.Fatal("invalid golden file", err)
 	}
-	failures, refused := 0, 0
+	failures := 0
 	for _, tc := range golden.Cases {
 		data, _ := base64.StdEncoding.DecodeString(tc.Input)
 		frame, err := Read(data)
 		var columns []string
 		if err == nil {
 			columns = frame.Columns
-		}
-		if errors.Is(err, ErrBareCRBacktrack) {
-			// The lines a bare carriage return makes the tokenizer read again
-			// are not modelled, so the columns of a re-read header are not
-			// reported here either.
-			refused++
-			continue
 		}
 		var ok bool
 		switch tc.Error {
@@ -65,10 +58,7 @@ func TestColumnsMatchPandas(t *testing.T) {
 	if failures > 0 {
 		t.Fatalf("%d of %d inputs differ", failures, len(golden.Cases))
 	}
-	if refused > len(golden.Cases)/20 {
-		t.Fatalf("%d of %d inputs refused", refused, len(golden.Cases))
-	}
-	t.Logf("%d inputs, %d refused", len(golden.Cases), refused)
+	t.Logf("%d inputs", len(golden.Cases))
 }
 
 // TestReadHandlesCarriageReturnsAndNUL exercises the inputs the tokenizer's

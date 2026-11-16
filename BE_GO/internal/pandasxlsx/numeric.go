@@ -4,6 +4,7 @@ import (
 	"errors"
 	"math"
 	"math/big"
+	"runtime"
 	"strconv"
 	"strings"
 	"unicode"
@@ -38,16 +39,58 @@ type numeric struct {
 	i       *big.Int
 	// f is the float the tokenizer's precise_xstrtod gives.
 	f float64
-	// uncertain: f depends on how the tokenizer was compiled.
-	uncertain bool
+}
+
+// floatAccumulation is how the pandas wheel of this platform accumulates the
+// digits of a float: 'number * 10 + digit' is contracted into a fused
+// multiply-add by the macOS arm64 wheel and not by the Linux wheels. Measured
+// with pandas 2.2.3 on '3.14159265358979323846': 0x400921fb54442d18 on
+// darwin/arm64, 0x400921fb54442d17 on linux/amd64 and linux/arm64; beyond
+// 2**53 the two differ. Same measurement and rule as
+// internal/pandascsv/frame.go and internal/xlsxexport/pandas.go, which convert
+// the same texts with the same pandas function.
+var floatAccumulation = map[string]bool{
+	"darwin/arm64": true,
+	"linux/amd64":  false,
+	"linux/arm64":  false,
+}
+
+// errFloatPlatform is an application state: the value of a text here depends
+// on whether the pandas wheel contracted the digit accumulation, and this
+// platform's wheel was never measured (images are built for Linux only).
+var errFloatPlatform = refusal.AppState("pandasxlsx: float value depends on the pandas build")
+
+// strtod is precise_xstrtod followed by to_double's end-of-text check, read
+// as the pandas wheel of this platform compiles it: the fused or the plain
+// accumulation (floatAccumulation). ok is false for text the tokenizer does
+// not read as a number. The error is errFloatPlatform where the two
+// accumulations differ on a platform whose wheel was never measured.
+func strtod(text string) (value float64, maybeInt, ok bool, err error) {
+	fused, plain, maybeInt, ok := preciseStrtod(text)
+	if !ok {
+		return 0, false, false, nil
+	}
+	if fused == plain {
+		return fused, maybeInt, true, nil
+	}
+	contracted, measured := floatAccumulation[runtime.GOOS+"/"+runtime.GOARCH]
+	if !measured {
+		return 0, false, false, errFloatPlatform
+	}
+	if contracted {
+		return fused, maybeInt, true, nil
+	}
+	return plain, maybeInt, true, nil
 }
 
 // preciseStrtod is the tokenizer's precise_xstrtod (decimal '.', exponent
-// 'e', no thousands separator, trailing whitespace skipped) followed by
-// to_double's end-of-text check. certain is false where the C result depends
-// on the build: a 17th digit accumulated with or without a fused
-// multiply-add, or an exponent of more than nine digits.
-func preciseStrtod(text string) (value float64, maybeInt, ok, certain bool) {
+// 'e', no thousands separator, trailing whitespace skipped) as pandas'
+// tokenizer.c computes it. The exponent is the C int it is accumulated in:
+// an int32, wrapping like two's complement in its digits and in its sum
+// (pandas 2.2.3: '1e4294967296' is 1.0, '1e2147483648' is 0.0,
+// '1e-2147483649' is not a float). fused and plain are the two digit
+// accumulations the wheels compile.
+func preciseStrtod(text string) (fused, plain float64, maybeInt, ok bool) {
 	at := func(index int) byte {
 		if index < len(text) {
 			return text[index]
@@ -56,7 +99,7 @@ func preciseStrtod(text string) (value float64, maybeInt, ok, certain bool) {
 	}
 	const maxDigits = 17
 	p := 0
-	maybeInt, certain = true, true
+	maybeInt = true
 	for isASCIISpace(at(p)) {
 		p++
 	}
@@ -68,13 +111,14 @@ func preciseStrtod(text string) (value float64, maybeInt, ok, certain bool) {
 	case '+':
 		p++
 	}
-	number, fused := 0.0, 0.0
-	exponent, digits, decimals := 0, 0, 0
+	number, contracted := 0.0, 0.0
+	exponent, digits, decimals := int32(0), 0, int32(0)
 	push := func(c byte) {
 		digit := float64(c - '0')
-		// The conversion keeps the product and the sum two rounded operations.
+		// The plain accumulation keeps the product and the sum two rounded
+		// operations; the contracted one is a single fused multiply-add.
 		number = float64(number*10) + digit
-		fused = math.FMA(fused, 10, digit)
+		contracted = math.FMA(contracted, 10, digit)
 		digits++
 	}
 	for isASCIIDigit(at(p)) {
@@ -101,13 +145,10 @@ func preciseStrtod(text string) (value float64, maybeInt, ok, certain bool) {
 		exponent -= decimals
 	}
 	if digits == 0 {
-		return 0, false, false, true
-	}
-	if number != fused {
-		certain = false
+		return 0, 0, false, false
 	}
 	if negative {
-		number = -number
+		number, contracted = -number, -contracted
 	}
 	if at(p) == 'e' || at(p) == 'E' {
 		maybeInt = false
@@ -120,66 +161,64 @@ func preciseStrtod(text string) (value float64, maybeInt, ok, certain bool) {
 		case '+':
 			p++
 		}
-		count, n := 0, 0
-		for count < maxDigits && isASCIIDigit(at(p)) {
-			if count < 9 {
-				n = n*10 + int(at(p)-'0')
-			} else {
-				certain = false
-			}
+		count, n := 0, int32(0)
+		for ; count < maxDigits && isASCIIDigit(at(p)); p++ {
+			n = n*10 + int32(at(p)-'0')
 			count++
-			p++
-		}
-		if count == 0 {
-			return 0, false, false, true // the exponent mark is not consumed
 		}
 		if negative {
 			exponent -= n
 		} else {
 			exponent += n
 		}
+		if count == 0 {
+			p-- // the exponent mark is not consumed
+		}
 	}
 	switch {
 	case exponent > 308:
-		return 0, false, false, certain
+		return 0, 0, false, false
 	case exponent > 0:
-		number *= powersOfTen[exponent]
+		power := powersOfTen[exponent]
+		number, contracted = number*power, contracted*power
 	case exponent < -308:
 		if exponent < -616 {
-			number = 0
+			number, contracted = 0, 0
 		} else {
-			number /= powersOfTen[-308-exponent]
-			number /= powersOfTen[308]
+			first, second := powersOfTen[-308-exponent], powersOfTen[308]
+			number, contracted = number/first/second, contracted/first/second
 		}
 	default:
-		number /= powersOfTen[-exponent]
+		power := powersOfTen[-exponent]
+		number, contracted = number/power, contracted/power
 	}
-	if math.IsInf(number, 0) {
-		return 0, false, false, certain
+	if math.IsInf(number, 0) || math.IsInf(contracted, 0) {
+		return 0, 0, false, false
 	}
 	for isASCIISpace(at(p)) {
 		p++
 	}
 	if p != len(text) {
-		return 0, false, false, true
+		return 0, 0, false, false
 	}
-	return number, maybeInt, true, certain
+	return contracted, number, maybeInt, true
 }
 
 // numericText is floatify and the int() that follows it in
 // maybe_convert_numeric, for a str that is not an NA value. ok is false where
 // the conversion raises (text that is no number, an integer outside int64 and
-// uint64). ErrWorkbookNotPorted: whether it raises depends on the build.
+// uint64). The error is errFloatPlatform on a platform whose wheel was never
+// measured.
 func numericText(text string) (numeric, bool, error) {
 	if strings.IndexByte(text, 0) >= 0 {
 		// XML carries no NUL (the decoder rejects it), so no cell text has one.
 		return numeric{}, false, refusal.AppState("pandasxlsx: a text with a NUL byte")
 	}
-	value, maybeInt, ok, certain := preciseStrtod(text)
+	value, maybeInt, ok, err := strtod(text)
+	if err != nil {
+		return numeric{}, false, err
+	}
 	if !ok {
-		if !certain {
-			return numeric{}, false, ErrWorkbookNotPorted
-		}
 		// The words floatify accepts: an optional sign and 'inf' or
 		// 'infinity' in any case.
 		word, sign := text, 1
@@ -195,7 +234,7 @@ func numericText(text string) (numeric, bool, error) {
 		return numeric{}, false, nil
 	}
 	if !maybeInt {
-		return numeric{f: value, uncertain: !certain}, true, nil
+		return numeric{f: value}, true, nil
 	}
 	body := strings.TrimFunc(text, func(r rune) bool { return r < 0x80 && isASCIISpace(byte(r)) })
 	if len(body) > 4300 {
@@ -209,7 +248,7 @@ func numericText(text string) (numeric, bool, error) {
 	if integer.Cmp(minInt64) < 0 || integer.Cmp(maxUint64) > 0 {
 		return numeric{}, false, nil // 'Integer out of range.'
 	}
-	return numeric{integer: true, i: integer, f: value, uncertain: !certain}, true, nil
+	return numeric{integer: true, i: integer, f: value}, true, nil
 }
 
 // pythonSpace is str.isspace for the characters int() and float() strip.

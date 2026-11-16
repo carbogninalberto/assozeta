@@ -358,12 +358,13 @@ func roundMilliseconds(total *big.Int) *big.Int {
 	return seconds.Add(seconds, thousands.Mul(thousands, big.NewInt(1000)))
 }
 
-// deltaCell is a duration within datetime.timedelta as pandas holds it.
-// ErrWorkbookNotPorted: a value past Timedelta's range stays a Python
-// timedelta object, which the frame model does not carry.
+// deltaCell is a duration as pandas holds it: a timedelta within Timedelta's
+// range (datetime.timedelta as openpyxl reads it, carried as
+// timedelta64[ns]), and a value past it as the Python datetime.timedelta
+// object pandas keeps, whose total microseconds Micro carries.
 func deltaCell(total *big.Int) (cell, error) {
 	if total.Cmp(maxTimedelta) > 0 || total.Cmp(minTimedelta) < 0 {
-		return cell{}, ErrWorkbookNotPorted
+		return cell{kind: cellDelta, micro: total}, nil
 	}
 	return cell{kind: cellDelta, d: time.Duration(total.Int64()) * time.Microsecond}, nil
 }

@@ -403,10 +403,7 @@ func (s *SubscriptionImportUpload) importDocument(ctx context.Context, identity 
 	var lookup func(column any) (int, bool, bool, error)
 	if csv {
 		frame, err := pandascsv.ReadText(content, textual)
-		switch {
-		case errors.Is(err, pandascsv.ErrBareCRBacktrack):
-			return nil, errors.Join(ErrSubscriptionImportNotPorted, err)
-		case err != nil:
+		if err != nil {
 			return nil, errors.Join(ErrSubscriptionImportServerError, err) // EmptyDataError, ParserError, UnicodeDecodeError
 		}
 		// read_csv's labels are text: any other key is no column.
@@ -482,9 +479,6 @@ func (s *SubscriptionImportUpload) upload(ctx context.Context, identity domain.R
 	case csv:
 		var frame *pandascsv.Frame
 		frame, parseErr = pandascsv.Read(file.Content)
-		if errors.Is(parseErr, pandascsv.ErrBareCRBacktrack) {
-			return nil, errors.Join(ErrSubscriptionImportNotPorted, parseErr)
-		}
 		if parseErr == nil {
 			columns = frame.Columns
 			for _, column := range columns {

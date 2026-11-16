@@ -21,37 +21,29 @@
 //
 // A whitespace-led line after a bare carriage return makes the C tokenizer
 // read the lines buffered since the previous line feed, or since the start of
-// the buffer, a second time. Those rows are reproduced, but when the re-read
-// fills the parser's buffers the answer depends on how they grow: pandas either
-// raises its ParserError ('Buffer overflow caught') or reaches the reader's
-// row limit first and returns the rows read so far. That case is
-// ErrBareCRBacktrack.
+// the tokenize call, a second time: the words and lines that pass appends are
+// dups of buffered ones. Whether pandas raises its ParserError ('Buffer
+// overflow caught - possible malformed input file.') or reaches the reader's
+// row limit first and answers the rows read so far is decided by the parser's
+// buffers, and both are ported: one read of 262144 bytes (or characters) a
+// call, make_stream_space's doubling from parser_init's capacities, the NUL
+// end_field skips writing when the stream is full, and TextReader's chunk of
+// 2**20 // width rows.
 package pandascsv
 
 import (
 	"errors"
 	"slices"
 	"strconv"
-
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // ErrEmpty is pandas' EmptyDataError ('No columns to parse from file').
 var ErrEmpty = errors.New("pandas: no columns to parse from file")
 
-// ErrParser is pandas' ParserError: EOF inside a quoted field, or a row with
-// more fields than the row before it.
+// ErrParser is pandas' ParserError: EOF inside a quoted field, a row with
+// more fields than the row before it, or a re-read that fills the parser's
+// buffers ('Buffer overflow caught - possible malformed input file.').
 var ErrParser = errors.New("pandas: error tokenizing data")
-
-// ErrBareCRBacktrack marks the input whose outcome a whitespace-led line after
-// a bare carriage return makes uncertain. The C tokenizer then reads the lines
-// buffered since the previous line feed, or since the start of the buffer, a
-// second time: the rows it repeats are reproduced, but when the re-read fills
-// the parser's buffers pandas either raises the ParserError 'Buffer overflow
-// caught - possible malformed input file.' or reaches the reader's row limit
-// first and answers the rows it read so far. Which of the two, and how many
-// rows the limit leaves, is not reproduced.
-var ErrBareCRBacktrack = refusal.New("pandascsv: whitespace line after a bare carriage return")
 
 // names is the C parser's header naming: ” is 'Unnamed: <i>'; duplicates
 // get '.<n>', named columns first, then the unnamed ones.

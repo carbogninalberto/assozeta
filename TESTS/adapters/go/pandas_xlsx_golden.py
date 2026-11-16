@@ -23,12 +23,15 @@ text converter (_import_cell_text) on every other text-named column and on
 all of them (ReadAll's text columns); ``numeric_texts.json.gz`` what pandas'
 maybe_convert_numeric reads in single texts (the tokenizer's float parsing).
 """
+import base64
 import datetime
 import gzip
 import io
 import json
 from pathlib import Path
 import random
+import platform
+import sys
 import warnings
 import zipfile
 from xml.sax.saxutils import escape
@@ -41,6 +44,7 @@ TESTDATA = Path(__file__).resolve().parents[3] / 'BE_GO/internal/pandasxlsx/test
 OUTPUT = TESTDATA / 'pandas_frames.json.gz'
 TEXT_OUTPUT = TESTDATA / 'pandas_text_frames.json.gz'
 NUMERIC_OUTPUT = TESTDATA / 'numeric_texts.json.gz'
+LOOKUP_OUTPUT = TESTDATA / 'pandas_date_lookups.json.gz'
 D = datetime.datetime
 
 CONTENT_TYPES = ('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'
@@ -98,11 +102,31 @@ def letters(column):
 
 
 def archive(parts, method=zipfile.ZIP_DEFLATED):
+    """The ZIP of the parts: a str part is its UTF-8 bytes, a bytes part is written as it is."""
     buffer = io.BytesIO()
     with zipfile.ZipFile(buffer, 'w', method) as bundle:
-        for name, text in parts:
-            bundle.writestr(zipfile.ZipInfo(name, (2026, 1, 1, 0, 0, 0)), text.encode('utf-8'), method)
+        for name, content in parts:
+            if isinstance(content, str):
+                content = content.encode('utf-8')
+            bundle.writestr(zipfile.ZipInfo(name, (2026, 1, 1, 0, 0, 0)), content, method)
     return buffer.getvalue()
+
+
+def reencoded(data, part, codec, name, bom=b''):
+    """The workbook with one XML part written in another encoding, declaration included."""
+    source = zipfile.ZipFile(io.BytesIO(data))
+    parts = []
+    for item in source.infolist():
+        content = source.read(item.filename)
+        if item.filename == part:
+            text = content.decode('utf-8')
+            if name is None:
+                text = text.replace(' encoding="UTF-8"', '', 1)
+            elif name != 'UTF-8':
+                text = text.replace('encoding="UTF-8"', f'encoding="{name}"', 1)
+            content = bom + text.encode(codec)
+        parts.append((item.filename, content))
+    return archive(parts, zipfile.ZIP_STORED)
 
 
 def minimal(rows, *, dimension=None, row_refs=True, cell_refs=True, strings=None, sheet=None, workbook=WORKBOOK, styles=STYLES):
@@ -989,6 +1013,58 @@ def new_books():
     generator = random.Random(2026111001)
     for _ in range(RANDOM_BOOKS):
         yield random_book(generator), False
+    # A duration past Timedelta's range as a *label*: pandas keeps a datetime.timedelta label, which the
+    # response renderer writes from Value.D, so the lookup is left to Django.
+    yield book([[N('200000', 'duration'), S('B')], [N(1), N(2)]]), False
+    yield book([[N('-200000.5', 'duration'), S('B')], [N(1), N(2)]]), False
+    # A datetime outside Timestamp's range, as a label and as a value: pandas keeps the Python objects.
+    yield book([[N('-81081.2', 'datetime'), S('B')], [N(1), N(2)]]), True
+    yield book([[S('A'), S('B')], [N('-81081.2', 'datetime'), S('x')]]), True
+    for data, required in encoding_books():
+        yield data, required
+
+
+def encoding_books():
+    """(workbook, required): the XML part encodings expat decodes and the ones it refuses.
+
+    The parts are the minimal workbook with an inline string, rewritten in the encoding their first
+    bytes and declaration name select: the 8-bit codecs pyexpat's unknown-encoding handler maps,
+    expat's own ISO-8859-1, US-ASCII and UTF-16, and the encodings it refuses.
+    """
+    inline = book([[IS('Nome'), IS('Città')], [N(1), IS('à')]], styles=STYLES)
+    shared = book([[S('Nome'), S('Città')], [N(1), S('à')]], styles=STYLES)
+    sheet = 'xl/worksheets/sheet1.xml'
+    strings = 'xl/sharedStrings.xml'
+    for codec, name in [('iso-8859-1', 'ISO-8859-1'), ('iso-8859-1', 'iso-8859-1'), ('iso-8859-1', 'latin-1'),
+                        ('iso-8859-1', 'latin1'), ('cp1252', 'windows-1252'), ('mac-roman', 'mac-roman'),
+                        ('cp850', 'cp850'), ('iso-8859-15', 'ISO-8859-15')]:
+        yield reencoded(inline, sheet, codec, name), True
+    for part in (sheet, strings, 'xl/workbook.xml', 'xl/styles.xml'):
+        yield reencoded(shared if part == strings else inline, part, 'iso-8859-1', 'ISO-8859-1'), True
+    yield reencoded(shared, strings, 'cp1252', 'windows-1252'), True
+    yield reencoded(inline, sheet, 'utf-8', 'UTF-8'), True
+    yield reencoded(inline, sheet, 'utf-8', None), True
+    yield reencoded(inline, sheet, 'utf-8', 'utf8'), True
+    yield reencoded(inline, sheet, 'utf-8', 'US-ASCII'), True
+    yield reencoded(book([[IS('Nome'), IS('Citta')], [N(1), IS('a')]], styles=STYLES), sheet, 'utf-8', 'US-ASCII'), True
+    yield reencoded(inline, sheet, 'utf-16-be', 'UTF-16', b'\xfe\xff'), True
+    yield reencoded(inline, sheet, 'utf-16-le', 'UTF-16LE', b'\xff\xfe'), True
+    yield reencoded(inline, sheet, 'utf-16-be', 'UTF-16BE', b'\xfe\xff'), True
+    yield reencoded(inline, sheet, 'utf-16-le', 'UTF-16LE'), True
+    yield reencoded(inline, sheet, 'utf-16-be', 'UTF-16BE'), True
+    yield reencoded(inline, sheet, 'utf-16-le', 'UTF-16', b''), True
+    yield reencoded(inline, sheet, 'utf-8', 'UTF-8', b'\xef\xbb\xbf'), True
+    # expat refuses these: a codec that is multi-byte, a name codecs.lookup does not resolve, a UTF-16
+    # form the bytes are not, an 8-bit name over a UTF-16 part, a UTF-32 part, and a byte US-ASCII has not.
+    ascii_book = book([[IS('Nome'), IS('Citta')], [N(1), IS('a')]], styles=STYLES)
+    for codec, name in [('gb2312', 'gb2312'), ('shift_jis', 'shift_jis'), ('euc-jp', 'euc-jp')]:
+        yield reencoded(ascii_book, sheet, codec, name), True
+    for codec, name in [('utf-16-le', 'utf16'), ('utf-16-le', 'utf-16-le'), ('utf-32-le', 'UTF-32')]:
+        yield reencoded(inline, sheet, codec, name), True
+    yield reencoded(ascii_book, sheet, 'ascii', 'foo'), True
+    yield reencoded(inline, sheet, 'utf-8', 'UTF-16'), True
+    yield reencoded(inline, sheet, 'utf-16-le', 'ISO-8859-1', b'\xff\xfe'), True
+    yield reencoded(inline, sheet, 'utf-32-le', None, b'\xff\xfe\x00\x00'), True
 
 
 RANDOM_BOOKS = 3000
@@ -1111,6 +1187,85 @@ def numeric_texts():
     return cases
 
 
+# ---------------------------------------------------------------------------
+# Lookups of a text key in a date or duration Index (DatetimeIndex.get_loc,
+# TimedeltaIndex.get_loc).
+# ---------------------------------------------------------------------------
+
+DATE_LOOKUPS = [
+    # a day-resolution DatetimeIndex
+    [[N('45000', 'date'), N('45001', 'date')], [S('v0'), S('v1')]],
+    # the same labels in another order (a non-monotonic Index)
+    [[N('45001', 'date'), N('45000', 'date')], [S('v0'), S('v1')]],
+    # an hour-resolution Index
+    [[N('45000.5', 'datetime'), N('45001.5', 'datetime')], [S('v0'), S('v1')]],
+    # a single label
+    [[N('45000', 'date')], [S('v0')]],
+    # a NaT label next to a date
+    [[N('45000', 'date'), ('raw', ' t="e"', '<v>#N/A</v>')], [S('v0'), S('v1')]],
+    # a duration Index
+    [[N('1.5', 'duration'), N('2', 'duration')], [S('v0'), S('v1')]],
+    # a duration Index with a NaT
+    [[N('1.5', 'duration'), ('raw', ' t="e"', '<v>#N/A</v>')], [S('v0'), S('v1')]],
+    # duration labels that are the same value
+    [[N('1.5', 'duration'), N('1.5', 'duration')], [S('v0'), S('v1')]],
+    # a millisecond-resolution DatetimeIndex
+    [[N('45000.000011574', 'datetime'), N('45000.000023148', 'datetime')], [S('v0'), S('v1')]],
+    # a date next to a text label: an object Index
+    [[N('45000', 'date'), S('Nome')], [S('v0'), S('v1')]],
+    # a duration next to a text label: an object Index
+    [[N('1.5', 'duration'), S('Nome')], [S('v0'), S('v1')]],
+]
+
+LOOKUP_KEYS = ['"2023-03-15"', '"2023-03-16"', '"2023-03-15 00:00:00"', '"2023-03-15 12:00"',
+               '"2023-03-15 12:00:00"', '"2023-03-15T12:00:00"', '"2023-03"', '"2023"', '"2023Q1"',
+               '"01/2023"', '"March 2023"', '"1 March 2023"', '"2023-03-31"', '"NaT"', '"nan"', '"x"',
+               '"36:00:00"', '"1.5 days"', '"P1DT12H"', '"1 days 12:00:00"', '"1.5"', '"129600000000000"',
+               '"1 day"', '"2160 minutes"', '2', '2.5', 'true', 'false', '"0 days"', '""',
+               '"1.5d"', '"-0.5 days"', '"1 day 12:00:00"', '"0"', '"2.5"', '"1E2"', '"45000"',
+               '"2023-03-15 12:00:30"', '"2023-03-15 12:00:30.5"', '"12:00 AM"', '"2023-03-15T00:00:00"',
+               '"2023-03-15 00:00:00.000"', '"20230515"', '"15/03/2023"', '"2023/03/15"', '"March"',
+               '"1 March"', '"0:00:00"', '"1 days 12:00:00.500"', '"1.5 ms"', '"1 day 12:00:00"',
+               '"2023-03-15T12:00:00.000Z"', '"2023-03-15 12:00:00+00:00"', '"2023-3-15"', '"20230315"',
+               '"20230315120000"', '"2023-03-15 12"', '"2023-03-15 12 PM"', '"12:00"', '"15 March 2023"',
+               '"2023-03-15 00:00:00.000000001"', '"1677-09-21 00:12:43.145224193"',
+               '"1677-09-21 00:12:43.145224192"', '"2262-04-11 23:47:16.854775807"', '"1.5 us"',
+               '"1500 ms"', '"1 days 12:00:00.123456789"', '"2W"', '"1 days, 12:00:00"', '"PT1.5H"',
+               '"-P1DT12H"', '"1 day 12:00:00,500"', '"1 days 12:00:00.5"', '"90 minutes"', '"0.0625 days"']
+
+
+def date_lookup_outcome(frame, key):
+    """``if key in frame.columns: frame.iloc[0][key]``: absent, raises, series or the column it read."""
+    if key not in frame.columns:
+        return 'absent'
+    try:
+        value = frame.iloc[0][key]
+    except KeyError:
+        return 'absent'
+    except Exception:
+        return 'raises'
+    if isinstance(value, pandas.Series):
+        return 'series'
+    try:
+        return int(value[1:])
+    except (TypeError, ValueError):
+        return 'other:' + type(value).__name__
+
+
+def date_lookups():
+    """(workbook, labels, outcomes) for every authored date and duration header."""
+    cases = []
+    for grid in DATE_LOOKUPS:
+        data = book(grid)
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            frame = pandas.read_excel(io.BytesIO(data), engine='openpyxl')
+        labels = json.dumps(frame.columns.tolist(), default=str)
+        outcomes = {text: date_lookup_outcome(frame, json.loads(text)) for text in LOOKUP_KEYS}
+        cases.append({'workbook': base64.b64encode(data).decode(), 'labels': labels, 'outcomes': outcomes})
+    return cases
+
+
 def pieces(data, blobs):
     """The bytes as text (one character per byte), each occurrence of a blob replaced by its index."""
     out = [data]
@@ -1160,17 +1315,22 @@ def main():
                 texts.append(read)
         cases.append(case)
     versions = {'pandas': pandas.__version__, 'openpyxl': openpyxl.__version__, 'numpy': numpy.__version__}
-    OUTPUT.write_bytes(compressed({**versions, 'blobs': [blob.decode('latin-1') for blob in blobs], 'cases': cases}))
+    OUTPUT.write_bytes(compressed({'platform': sys.platform + '/' + platform.machine(), **versions,
+                                   'blobs': [blob.decode('latin-1') for blob in blobs], 'cases': cases}))
     TEXT_OUTPUT.write_bytes(compressed({**versions, 'cases': texts}))
     numbers = numeric_texts()
     NUMERIC_OUTPUT.write_bytes(compressed({**versions, 'cases': numbers}))
+    lookups = date_lookups()
+    LOOKUP_OUTPUT.write_bytes(compressed({'platform': sys.platform + '/' + platform.machine(), **versions,
+                                          'cases': lookups}))
     kinds = {}
     for case in cases:
         kind = 'error:' + case['error'] if 'error' in case else 'other' if 'other' in case else 'frame'
         kinds[kind] = kinds.get(kind, 0) + 1
     print(len(cases), 'cases', kinds, sum(1 for case in cases if case.get('required')), 'required', OUTPUT.stat().st_size, 'bytes;',
           len(texts), 'text readings', sum('rows' in case for case in texts), 'frames', TEXT_OUTPUT.stat().st_size, 'bytes;',
-          len(numbers), 'numeric texts', NUMERIC_OUTPUT.stat().st_size, 'bytes')
+          len(numbers), 'numeric texts', NUMERIC_OUTPUT.stat().st_size, 'bytes;',
+          len(lookups), 'date lookups', LOOKUP_OUTPUT.stat().st_size, 'bytes')
 
 
 if __name__ == '__main__':

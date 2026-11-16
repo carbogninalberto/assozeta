@@ -21,8 +21,11 @@ const (
 	stringsContent = "application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml"
 	stylesPart     = "xl/styles.xml"
 	arcWorkbook    = "xl/workbook.xml"
-	maxPartBytes   = 256 << 20
 )
+
+// maxPartBytes bounds the parts openpyxl parses whole (see archive.read). It is
+// a variable so a test can lower it.
+var maxPartBytes = 256 << 20
 
 var workbookTypes = map[string]bool{
 	"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml":    true,
@@ -74,23 +77,42 @@ func isTimedeltaFormat(format string) bool {
 
 type archive map[string]*zip.File
 
-// read is the part named, as zipfile hands it to openpyxl: a part the archive
-// does not hold and a corrupt entry raise there (ErrInvalid), and the parts
-// past this package's size bound are ErrWorkbookNotPorted.
-func (a archive) read(name string) ([]byte, error) {
+// open is the part named as openpyxl's archive.open hands it to iterparse: a
+// reader of its decompressed bytes, with no size bound (a worksheet is read as
+// it is parsed: openpyxl's iterparse clears each element, so its size alone is
+// no memory question). A part the archive does not hold raises there
+// (ErrInvalid).
+func (a archive) open(name string) (io.ReadCloser, error) {
 	file, ok := a[name]
 	if !ok {
 		return nil, ErrInvalid
-	}
-	if file.UncompressedSize64 > maxPartBytes {
-		return nil, ErrWorkbookNotPorted
 	}
 	reader, err := file.Open()
 	if err != nil {
 		return nil, ErrInvalid
 	}
-	defer reader.Close()
-	data, err := io.ReadAll(io.LimitReader(reader, maxPartBytes+1))
+	return reader, nil
+}
+
+// read is the part named as fromstring reads it: whole, and bound to
+// maxPartBytes. openpyxl parses the workbook, its relationships, the content
+// types, the shared strings and the stylesheet with fromstring, so a part past
+// the bound needs that much memory on top of the rest of the request; whether
+// pandas manages is a question for the production image's memory, and such a
+// part is left to Django (ErrWorkbookNotPorted). A part the archive does not
+// hold and a corrupt entry raise in pandas (ErrInvalid).
+func (a archive) read(name string) ([]byte, error) {
+	reader, err := a.open(name)
+	if err != nil {
+		return nil, err
+	}
+	file := a[name]
+	if file.UncompressedSize64 > uint64(maxPartBytes) {
+		reader.Close()
+		return nil, ErrWorkbookNotPorted
+	}
+	data, err := io.ReadAll(io.LimitReader(reader, int64(maxPartBytes)+1))
+	reader.Close()
 	if err != nil {
 		return nil, ErrInvalid
 	}
@@ -100,27 +122,19 @@ func (a archive) read(name string) ([]byte, error) {
 	return data, nil
 }
 
-// decode is openpyxl's from_tree: malformed XML raises there (ErrInvalid), and
-// an XML encoding other than UTF-8 is ErrWorkbookNotPorted (lxml and
-// ElementTree decode the declared encoding; encoding/xml does not).
+// decode is openpyxl's from_tree: a part is parsed as expat parses it (see
+// encoding.go for the declaration's encoding), and malformed XML raises there
+// (ErrInvalid).
 func decode(data []byte, target any) error {
-	charset := false
-	decoder := xml.NewDecoder(bytes.NewReader(data))
-	decoder.CharsetReader = func(string, io.Reader) (io.Reader, error) {
-		charset = true
-		return nil, errCharset
+	content, err := xmlContent(bytes.NewReader(data))
+	if err != nil {
+		return err
 	}
-	if err := decoder.Decode(target); err != nil {
-		if charset {
-			return ErrWorkbookNotPorted
-		}
+	if err = xml.NewDecoder(content).Decode(target); err != nil {
 		return ErrInvalid
 	}
 	return nil
 }
-
-// errCharset ends a decode of a part whose XML declares another encoding.
-var errCharset = errors.New("pandasxlsx: XML encoding")
 
 type relationships struct {
 	XMLName xml.Name `xml:"http://schemas.openxmlformats.org/package/2006/relationships Relationships"`
@@ -381,10 +395,12 @@ func ReadAll(data []byte, textual func(column string) bool) (*Frame, error) {
 			}
 		}
 	}
-	if raw, err = files.read(sheetPart); err != nil {
+	sheet, err := files.open(sheetPart)
+	if err != nil {
 		return nil, err
 	}
-	rows, err := sheetRows(raw, sheetContext{shared: shared, styleKinds: styleKinds, mac: mac})
+	rows, err := sheetRows(sheet, sheetContext{shared: shared, styleKinds: styleKinds, mac: mac})
+	sheet.Close()
 	if err != nil {
 		return nil, err
 	}
@@ -413,8 +429,15 @@ type sheetRow struct {
 }
 
 // maxRowNumber is the last row a workbook may number: the rows before it are
-// held as empty ones, so a larger number is left to Django (print_excel would
-// read a frame of that many rows).
+// held as empty ones. openpyxl's read-only reader pads every skipped row
+// (ReadOnlyWorksheet._cells_by_row yields an empty row per number between the
+// rows it has), so the DataFrame holds one row per number: measured with
+// pandas 2.2.3, a workbook whose only row is numbered 1048577 answers a frame
+// of 1048576 rows (322 MB resident), and 10000000 a frame of 9999999 rows
+// (1.66 GB). The answer is therefore a question of memory, and a larger number
+// is one this package does not answer: it holds the same rows in a process
+// that serves every request, so those workbooks are left to Django
+// (ErrWorkbookNotPorted). 1048576 is also the last row Excel writes.
 const maxRowNumber = 1048576
 
 // rowNumber is openpyxl's parse_row row number: int(text), or float(text) when
@@ -442,13 +465,12 @@ func rowNumber(text string) (int64, error) {
 // worksheet's XML holds (a row is any element of the main namespace named
 // 'row', wherever it sits), from row 1 with the cells from column 1 to each
 // row's last cell.
-func sheetRows(data []byte, context sheetContext) ([][]cell, error) {
-	charset := false
-	decoder := xml.NewDecoder(bytes.NewReader(data))
-	decoder.CharsetReader = func(string, io.Reader) (io.Reader, error) {
-		charset = true
-		return nil, errCharset
+func sheetRows(part io.Reader, context sheetContext) ([][]cell, error) {
+	content, err := xmlContent(part)
+	if err != nil {
+		return nil, err
 	}
+	decoder := xml.NewDecoder(content)
 	var rows [][]cell
 	rowCounter, root := int64(0), false
 	for {
@@ -457,9 +479,6 @@ func sheetRows(data []byte, context sheetContext) ([][]cell, error) {
 			break
 		}
 		if err != nil {
-			if charset {
-				return nil, ErrWorkbookNotPorted
-			}
 			return nil, ErrInvalid
 		}
 		element, ok := token.(xml.StartElement)
@@ -472,9 +491,6 @@ func sheetRows(data []byte, context sheetContext) ([][]cell, error) {
 		}
 		var row sheetRow
 		if err = decoder.DecodeElement(&row, &element); err != nil {
-			if charset {
-				return nil, ErrWorkbookNotPorted
-			}
 			return nil, ErrInvalid
 		}
 		if row.Number != nil {

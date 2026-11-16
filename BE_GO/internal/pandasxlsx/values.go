@@ -2,6 +2,7 @@ package pandasxlsx
 
 import (
 	"math"
+	"math/big"
 	"strconv"
 	"time"
 )
@@ -39,7 +40,9 @@ const (
 	TimeOfDay
 	// Timedelta is a pandas Timedelta (D).
 	Timedelta
-	// PyTimedelta is a datetime.timedelta (D).
+	// PyTimedelta is a datetime.timedelta (D); Micro holds its total
+	// microseconds when it is past Timedelta's range, which time.Duration
+	// cannot carry.
 	PyTimedelta
 	// Date is a datetime.date; T is its midnight.
 	Date
@@ -55,6 +58,9 @@ type Value struct {
 	U    uint64
 	B    bool
 	D    time.Duration
+	// Micro is a PyTimedelta's total microseconds when it is outside
+	// timedelta64[ns]'s range (Timedelta.min..Timedelta.max); nil otherwise.
+	Micro *big.Int
 }
 
 // TimeText is str() of a Time value.
@@ -116,6 +122,9 @@ func (v Value) Str() string {
 		// timedelta.__str__: '[<days> day[s], ]H:MM:SS[.ffffff]'.
 		days, rest := floorDays(v.D)
 		hours, minutes, seconds, micro := clockParts(rest)
+		if v.Micro != nil {
+			days, hours, minutes, seconds, micro = microSecondParts(v.Micro)
+		}
 		text := strconv.FormatInt(hours, 10) + ":" + leftPad(strconv.FormatInt(minutes, 10), 2) + ":" +
 			leftPad(strconv.FormatInt(seconds, 10), 2)
 		if days != 0 {
@@ -147,6 +156,9 @@ func (v Value) Truthy() bool {
 	case Bool, NumpyBool:
 		return v.B
 	case Timedelta, PyTimedelta:
+		if v.Micro != nil {
+			return v.Micro.Sign() != 0
+		}
 		return v.D != 0
 	}
 	return true // nan, NaT, a big int, a datetime, a time, a date
@@ -188,4 +200,14 @@ func clockParts(d time.Duration) (hours, minutes, seconds, micro int64) {
 	micro = total % 1000000
 	total /= 1000000
 	return total / 3600, total / 60 % 60, total % 60, micro
+}
+
+// microSecondParts splits a duration in microseconds into whole days (rounded
+// down) and the time of day, as datetime.timedelta's fields are.
+func microSecondParts(micro *big.Int) (days, hours, minutes, seconds, fraction int64) {
+	day := big.NewInt(microsecondsPerDay)
+	daysValue, rest := new(big.Int).DivMod(new(big.Int).Set(micro), day, new(big.Int))
+	total := rest.Int64() / 1000000
+	fraction = rest.Int64() % 1000000
+	return daysValue.Int64(), total / 3600, total / 60 % 60, total % 60, fraction
 }

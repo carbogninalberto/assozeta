@@ -3,12 +3,13 @@
 // workbook, first worksheet, header row 0, default NA values) for the
 // workbooks spreadsheet applications write: the cell values openpyxl yields
 // (text, numbers, booleans, errors, dates, times and durations in the 1900
-// and 1904 date systems, ISO 8601 date cells), pandas' row trimming, the
-// python parser's column names and per-column type inference, and the values
-// DataFrame.iterrows() hands out. Input read_excel raises on is ErrInvalid.
-// The few workbook features not modelled are ErrWorkbookNotPorted, never a
-// guess. Golden cases: testdata/pandas_frames.json.gz,
-// testdata/pandas_text_frames.json.gz and testdata/numeric_texts.json.gz,
+// and 1904 date systems, ISO 8601 date cells), the XML encodings expat decodes
+// (see encoding.go), pandas' row trimming, the python parser's column names
+// and per-column type inference, and the values DataFrame.iterrows() hands
+// out. Input read_excel raises on is ErrInvalid. The few workbook features not
+// modelled are ErrWorkbookNotPorted, never a guess. Golden cases:
+// testdata/pandas_frames.json.gz, testdata/pandas_text_frames.json.gz,
+// testdata/numeric_texts.json.gz and testdata/pandas_date_lookups.json.gz,
 // written by TESTS/adapters/go/pandas_xlsx_golden.py from pandas itself;
 // testdata/raise_cases.json holds the workbooks read_excel raises on and
 // testdata/ported_cases.json the frames it answers and this package reads.
@@ -26,18 +27,19 @@ import (
 
 // ErrInvalid is input read_excel raises on (not a ZIP archive, an archive
 // without '[Content_Types].xml', a part openpyxl cannot find or parse, a cell
-// whose text or reference it cannot convert, a workbook without a
-// worksheet, a chartsheet where read_excel wants a sheet): the view answers
-// its 500 page. The cases of testdata/raise_cases.json name the exception
-// pandas raises.
+// whose text or reference it cannot convert, an encoding expat refuses, text
+// it cannot decode, a workbook without a worksheet, a chartsheet where
+// read_excel wants a sheet): the view answers its 500 page. The cases of
+// testdata/raise_cases.json name the exception pandas raises.
 var ErrInvalid = errors.New("pandasxlsx: not a workbook")
 
 // ErrWorkbookNotPorted is a workbook pandas reads and this package does not
-// model: an XML encoding other than UTF-8, a part larger than 256 MiB, a
-// text whose float depends on the C build, a Python value the frame model
-// cannot carry (a timedelta past Timedelta's range, a datetime outside
-// Timestamp's), a header the Lookup model cannot resolve (a text key against
-// a date or duration Index). The caller hands these to Django.
+// model: a part openpyxl parses whole past maxPartBytes (the answer then
+// depends on the production image's memory), a row numbered past what a frame
+// of one row per number fits the same way, and a header cell that is a
+// duration past Timedelta's range (the response renderer writes a duration
+// label from Value.D, which such a value does not fit). The caller hands these
+// to Django.
 var ErrWorkbookNotPorted = refusal.New("pandasxlsx: workbook feature not ported")
 
 // Frame is the DataFrame: its column labels and the rows of iterrows().
@@ -62,37 +64,15 @@ func (f *Frame) TextLabels() bool {
 }
 
 // Read is ReadText without text columns.
-func Read(data []byte) (*Frame, error) { return ReadText(data, nil) }
+func Read(data []byte) (*Frame, error) { return ReadAll(data, nil) }
 
 // ReadText is ReadAll for the frames made of text labels and of str, int,
 // finite float, datetime, nan and NaT values (the kinds NaN, String, Int,
 // Float, Time and NaT; a numpy.int64 is the Int the import takes with
-// item()). Every other frame is ErrWorkbookNotPorted: the narrow view reads
-// no other kind.
+// item()). It is ReadAll: every frame pandas builds is carried as it is, so
+// the same workbook reads the same values with and without converters.
 func ReadText(data []byte, textual func(column string) bool) (*Frame, error) {
-	frame, err := ReadAll(data, textual)
-	if err != nil {
-		return nil, err
-	}
-	if !frame.TextLabels() {
-		return nil, ErrWorkbookNotPorted
-	}
-	for _, row := range frame.Rows {
-		for index, value := range row {
-			switch value.Kind {
-			case NaN, String, Int, Time, NaT:
-			case Int64:
-				row[index].Kind = Int
-			case Float:
-				if math.IsInf(value.F, 0) {
-					return nil, ErrWorkbookNotPorted
-				}
-			default:
-				return nil, ErrWorkbookNotPorted
-			}
-		}
-	}
-	return frame, nil
+	return ReadAll(data, textual)
 }
 
 // naValues is pandas' STR_NA_VALUES.
@@ -128,6 +108,9 @@ type cell struct {
 	b    bool
 	t    time.Time
 	d    time.Duration
+	// micro is a cellDelta past Timedelta's range (time.Duration is a
+	// timedelta64[ns]); nil otherwise.
+	micro *big.Int
 }
 
 func (c cell) blank() bool { return c.kind == cellEmpty || c.kind == cellString && c.s == "" }
@@ -163,12 +146,20 @@ func (c cell) value() Value {
 	case cellClock:
 		return Value{Kind: TimeOfDay, D: c.d}
 	case cellDelta:
+		if c.micro != nil {
+			return Value{Kind: PyTimedelta, Micro: c.micro}
+		}
 		return Value{Kind: PyTimedelta, D: c.d}
 	case cellCalendar:
 		return Value{Kind: Date, T: c.t}
 	}
 	return Value{Kind: String}
 }
+
+// inTimedeltaRange reports whether a duration cell is one pandas holds as
+// timedelta64[ns] (Timedelta.min..Timedelta.max); one past it stays a Python
+// datetime.timedelta object, which keeps its column (and its row) object.
+func (c cell) inTimedeltaRange() bool { return c.kind != cellDelta || c.micro == nil }
 
 // Timestamp.min and Timestamp.max: datetimes outside them keep their column
 // an object column.
@@ -312,6 +303,7 @@ func inferRow(row []Value) {
 		case Timedelta, PyTimedelta:
 			present++
 			datetimes = false
+			timedeltas = timedeltas && value.Micro == nil
 		default:
 			present++
 			datetimes, timedeltas = false, false
@@ -355,7 +347,7 @@ func textColumn(rows [][]cell, index int) column {
 		present++
 		booleans = booleans && value.kind == cellBool
 		datetimes = datetimes && value.kind == cellTime && inTimestampBounds(value.t)
-		timedeltas = timedeltas && value.kind == cellDelta
+		timedeltas = timedeltas && value.kind == cellDelta && value.inTimedeltaRange()
 	}
 	switch {
 	case booleans:
@@ -457,9 +449,6 @@ func inferColumn(rows [][]cell, index int) (column, error) {
 		case float:
 			switch value.kind {
 			case cellString:
-				if numbers[position].uncertain {
-					return column{}, ErrWorkbookNotPorted // the float depends on the C build
-				}
 				result = Value{Kind: Float, F: numbers[position].f}
 			case cellInt:
 				result = Value{Kind: Float, F: float64(value.i)}
@@ -558,6 +547,7 @@ func objectColumn(rows [][]cell, index int, out column) column {
 			datetimes = datetimes && inTimestampBounds(value.t)
 		case value.kind == cellDelta:
 			booleans, datetimes = false, false
+			timedeltas = timedeltas && value.inTimedeltaRange()
 		default:
 			booleans, datetimes, timedeltas = false, false, false
 		}
@@ -615,6 +605,9 @@ func labelKey(value cell) string {
 	case cellClock:
 		return "c" + strconv.FormatInt(int64(value.d), 10)
 	default:
+		if value.micro != nil {
+			return "e" + value.micro.String()
+		}
 		return "e" + strconv.FormatInt(int64(value.d), 10)
 	}
 }
@@ -627,6 +620,11 @@ func labelKey(value cell) string {
 // objects otherwise), booleans only a bool one, datetimes (or timedeltas) and
 // nan only a DatetimeIndex (TimedeltaIndex) with NaT, anything else keeps its
 // objects.
+// ErrWorkbookNotPorted: a header cell that is a duration past Timedelta's
+// range. pandas keeps it as a datetime.timedelta label, which the response
+// renderer (internal/service, out of this package) writes as the float
+// total_seconds() of Value.D; that value does not fit Value.D, so the label
+// cannot be rendered.
 func columnLabels(header []cell) ([]Value, IndexClass, error) {
 	columns := append([]cell(nil), header...)
 	unnamed := map[int]bool{}
@@ -677,6 +675,9 @@ func columnLabels(header []cell) ([]Value, IndexClass, error) {
 	datetimes, timedeltas, present, anyBoolean := true, true, 0, false
 	intsInt64, intsUint64 := true, true
 	for index, column := range columns {
+		if column.kind == cellDelta && column.micro != nil {
+			return nil, ObjectIndex, ErrWorkbookNotPorted // a duration label the renderer cannot write
+		}
 		anyBoolean = anyBoolean || column.kind == cellBool
 		labels[index] = column.value()
 		numbers = numbers && (column.kind == cellInt || column.kind == cellFloat || column.kind == cellBool || column.kind == cellNaN)
@@ -693,7 +694,7 @@ func columnLabels(header []cell) ([]Value, IndexClass, error) {
 		if column.kind != cellNaN {
 			present++
 			datetimes = datetimes && column.kind == cellTime && inTimestampBounds(column.t)
-			timedeltas = timedeltas && column.kind == cellDelta
+			timedeltas = timedeltas && column.kind == cellDelta && column.inTimedeltaRange()
 		}
 	}
 	class := ObjectIndex
