@@ -7065,6 +7065,18 @@
    }
   },
   {
+   "name": "modules-responses-attach-name-lone-surrogate-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "raw_body": "{\"filename\": \"a\\ud800.pdf\", \"base64\": \"Y2lhbw==\"}",
+   "content_type": "application/json"
+  },
+  {
    "name": "modules-responses-attach-name-null-server-error",
    "actor": "anonymous",
    "method": "POST",

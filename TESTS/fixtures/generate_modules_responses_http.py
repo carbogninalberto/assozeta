@@ -737,6 +737,10 @@ add('attach-name-255-characters', 'anonymous', 'POST', attach('att_r'), 200, ATT
 add('attach-name-256-characters-server-error', 'anonymous', 'POST', attach('att_r'), 500, SERVER,
     body={'filename': 'x' * 256, 'base64': 'Y2lhbw=='})
 add('attach-name-nul-server-error', 'anonymous', 'POST', attach('att_r'), 500, SERVER, body={'filename': 'nul\x00.txt', 'base64': 'Y2lhbw=='})
+# A filename the JSON parser keeps as WTF-8 (a lone surrogate escape): psycopg2
+# refuses the INSERT encoding, before any row or audit entry. Nothing written.
+add('attach-name-lone-surrogate-server-error', 'owner', 'POST', attach('att_r'), 500, SERVER,
+    raw_body='{"filename": "a\\ud800.pdf", "base64": "Y2lhbw=="}', content_type='application/json')
 add('attach-name-null-server-error', 'anonymous', 'POST', attach('att_r'), 500, SERVER, body={'filename': None, 'base64': 'Y2lhbw=='})
 # The document is created, then Storage.save refuses the name (Django's 400 page).
 for name, filename in [('empty', ''), ('dot-dot', '..'), ('traversal', 'a/../b.txt'), ('backslash-traversal', 'a\\..\\b.txt'),

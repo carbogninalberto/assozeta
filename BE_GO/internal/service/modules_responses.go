@@ -16,6 +16,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/pymime"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/documentkey"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/instancelogo"
@@ -50,6 +51,11 @@ type ModuleAttachmentSettings struct {
 type PublicUploadTooLargeError struct{ Limit int64 }
 
 func (e *PublicUploadTooLargeError) Error() string { return PublicUploadTooLarge(e.Limit) }
+
+// errModuleAttachmentNameUnencodable is a filename JSON kept as WTF-8 (a lone
+// surrogate escape): Document.objects.create makes psycopg2 raise
+// UnicodeEncodeError encoding the INSERT, before any row or audit entry.
+var errModuleAttachmentNameUnencodable = refusal.AppState("module attachment: filename psycopg2 cannot encode")
 
 // ModulesResponses follows modules_custom_link_info, modules_response_add,
 // modules_response_approve, modules_response_delete and
@@ -620,7 +626,9 @@ func (s *ModulesResponses) attach(ctx context.Context, tx domain.ModulesResponse
 		filename = dto.PythonStr(name)
 	}
 	if !utf8.ValidString(filename) {
-		return "", domain.ErrModuleResponsesNotPorted
+		// A JSON string holding a lone surrogate escape: psycopg2 refuses the
+		// INSERT, so Django answers its 500 page with nothing written.
+		return "", errModuleAttachmentNameUnencodable
 	}
 	if strings.ContainsRune(filename, 0) || utf8.RuneCountInString(filename) > 255 {
 		// The database refuses the text: nothing is written.

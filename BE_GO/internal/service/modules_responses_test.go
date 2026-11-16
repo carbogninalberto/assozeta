@@ -4,10 +4,12 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"testing"
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // The expected values are the view's decode_base64 results on Python 3.13.
@@ -68,6 +70,30 @@ func (t *attachTx) Commit() error {
 }
 
 func (t *attachTx) Rollback() error { return nil }
+
+// A filename that is not valid UTF-8 is a JSON string holding a lone surrogate
+// escape (WTF-8): psycopg2 refuses the INSERT, so nothing is created or
+// committed and the answer is the 500 page (an application-state error).
+func TestModuleAttachmentFilenameUnencodable(t *testing.T) {
+	at := time.Date(2026, time.September, 1, 8, 0, 0, 0, time.UTC)
+	subject := NewModulesResponses(nil, nil, nil, nil, ModuleAttachmentSettings{},
+		func() time.Time { return at }, func() string { return "a1000000-0000-4000-8000-000000644002" })
+	tx := &attachTx{}
+	body := domain.RequestObject{
+		{Name: "filename", Value: "a\xed\xa0\x80.pdf"},
+		{Name: "base64", Value: "Y2lhbw=="},
+	}
+	_, err := subject.attach(context.Background(), tx, "response", body, domain.ModuleResponseAudit{At: at})
+	if !errors.Is(err, refusal.ErrAppState) {
+		t.Fatalf("err=%v, want the application-state error", err)
+	}
+	if errors.Is(err, refusal.ErrNotPorted) {
+		t.Fatal("the psycopg2 refusal must never be handed off")
+	}
+	if len(tx.documents) != 0 || tx.commits != 0 {
+		t.Fatalf("documents=%#v commits=%d, want nothing written", tx.documents, tx.commits)
+	}
+}
 
 // An uploaded file as `filename` stores the name the multipart parser gave it
 // (str(UploadedFile)), then raises where os.path.join(storing_path,
