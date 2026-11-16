@@ -93,9 +93,11 @@
             respond 503
         }
 
-        # Bakney contracts use root paths, without the /api prefix.
+        # Bakney contracts use root paths, without the /api prefix. The upstream
+        # is Django unless the instance selects the Go backend; the path always
+        # reaches the chosen backend unchanged.
         handle /bakney/v1/* {
-            reverse_proxy api:8000
+            reverse_proxy {$ASSOZETA_BAKNEY_PROTOCOL_UPSTREAM:api:8000}
         }
 
         # Versioned routes must precede the compatibility alias. Root protocols

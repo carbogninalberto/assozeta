@@ -13,7 +13,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 
 
 @contextlib.contextmanager
-def proxy(django, golang, log, *, operations=None, network=None, network_alias=None, container_observer=None, pull_policy=None):
+def proxy(django, golang, log, *, operations=None, network=None, network_alias=None, container_observer=None, pull_policy=None, environment=None):
     if pull_policy not in (None, 'never'):
         raise ValueError('Unsupported proxy pull policy')
     if network_alias and not network:
@@ -30,7 +30,10 @@ def proxy(django, golang, log, *, operations=None, network=None, network_alias=N
         (work / 'site/maintenance.html').write_text('fixture maintenance')
         configuration = (ROOT / 'selfhost/caddy/Caddyfile').read_text()
         # Substitute both original upstreams once: an injected alias such as
-        # category-api:8000 must not be rewritten as the Django upstream.
+        # category-api:8000 must not be rewritten as the Django upstream. This
+        # includes the default of an env placeholder such as
+        # {$ASSOZETA_BAKNEY_PROTOCOL_UPSTREAM:api:8000}, so the default case
+        # keeps reaching the Django fixture; `environment` can override it.
         configuration = re.sub(r'api-go:8000|api:8000',
             lambda match: golang if match[0] == 'api-go:8000' else django, configuration)
         # Observe the container's client address independently of application
@@ -49,6 +52,8 @@ def proxy(django, golang, log, *, operations=None, network=None, network_alias=N
                    *(['--network-alias', network_alias] if network_alias else []),
                    '--add-host', 'host.docker.internal:host-gateway',
                    '-p', '127.0.0.1::80', '-e', 'SITE_ADDRESS=:80',
+                   *[argument for name, value in (environment or {}).items()
+                     for argument in ('-e', f'{name}={value}')],
                    '-v', f'{work}/Caddyfile:/etc/caddy/Caddyfile:ro',
                    '-v', f'{work}/site:/srv:ro',
                    '-v', f'{state}:/run/assozeta-operations:ro', image)

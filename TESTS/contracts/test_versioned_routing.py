@@ -216,6 +216,23 @@ class VersionedRoutingContracts(unittest.TestCase):
                 conn.close()
 
 
+class BakneyProtocolBackendContracts(unittest.TestCase):
+    """The Bakney protocol root paths follow the configured upstream unchanged."""
+
+    def assert_protocol_route(self, url, owner):
+        status, data, headers = Client(url).request('GET', '/bakney/v1/session', include_headers=True)
+        self.assertEqual(status, 200)
+        self.assertEqual((data['backend'], data['path']), (owner, '/bakney/v1/session'))
+        self.assertEqual(headers['Cache-Control'], 'no-store')
+        self.assertEqual(headers['Referrer-Policy'], 'no-referrer')
+
+    def test_default_backend_serves_the_bakney_protocol_on_django(self):
+        self.assert_protocol_route(os.environ['TESTS_ROUTING_URL'], 'django')
+
+    def test_go_backend_receives_the_bakney_protocol_path_unchanged(self):
+        self.assert_protocol_route(os.environ['TESTS_ROUTING_BAKNEY_URL'], 'go')
+
+
 class RoutingMaintenanceContracts(unittest.TestCase):
     def test_all_api_versions_block_mutations_but_keep_readiness(self):
         client = Client(os.environ['TESTS_ROUTING_URL'])

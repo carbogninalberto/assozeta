@@ -285,6 +285,18 @@ is always served by Django, so a browser that cannot load the page can still be
 moved with `?api=v1`. A custom `HOST` baked into a frontend build keeps that
 host and ignores the setting.
 
+## Bakney SSO protocol root paths
+
+The Bakney SSO protocol paths (`/bakney/v1/*`, without the `/api` prefix) are
+served by Django. To serve them from the Go API instead, set
+`ASSOZETA_BAKNEY_PROTOCOL_BACKEND=go` in `.env` and run
+`./bin/assozeta restart`; `django` (the default) keeps the current behaviour.
+`./bin/assozeta` accepts only those two values and writes the Caddy upstream it
+derives from them into `ASSOZETA_BAKNEY_PROTOCOL_UPSTREAM` (`api:8000` or
+`api-go:8000`), which `compose.yml` passes to the web service. The paths reach
+the selected backend unchanged, and both keep `Cache-Control: no-store` and
+`Referrer-Policy: no-referrer`.
+
 ## Requests the Go API passes to Django
 
 The Go API does not serve some rare inputs yet. With `DJANGO_HANDOFF_URL` set,
