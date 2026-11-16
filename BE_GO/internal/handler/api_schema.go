@@ -49,9 +49,11 @@ var (
 	apiSchemaSwaggerView  = apiSchemaView{"SpectacularSwaggerView", apischema.PageRenderers}
 	apiSchemaRedocView    = apiSchemaView{"SpectacularRedocView", apischema.PageRenderers}
 	// A `lang` with a path separator makes gettext look outside the locale
-	// directories (the answer depends on the Django host's file layout) and
-	// an Accept charset without a ported decoder is refused as well.
+	// directories: the answer depends on the Django host's file layout
+	// (long-tail rule 4, platform).
 	errAPISchemaUnsupported = refusal.New("api schema: request outside the ported input range")
+	// errAPISchemaUnreachable is a catalog lookup the generated tables cover.
+	errAPISchemaUnreachable = refusal.AppState("api schema: catalog entry outside the generated tables")
 )
 
 const apiSchemaPath = "/schema/"
@@ -62,7 +64,9 @@ func (h *APISchemaHandler) Schema(c echo.Context) error {
 		if request.options {
 			body, ok := apischema.Options(request.format(), request.language)
 			if !ok {
-				return apiSchemaRefuse(c)
+				// LocaleMiddleware selects one of LANGUAGES, and the generator renders the
+				// OPTIONS bodies of each (TESTS/adapters/django/api_schema.py).
+				return apiSchemaUnreachable(c)
 			}
 			return request.respond(http.StatusOK, request.reindent(body), "")
 		}
@@ -76,7 +80,9 @@ func (h *APISchemaHandler) Schema(c echo.Context) error {
 		}
 		document, ok := apischema.Document(request.format(), key, version)
 		if !ok {
-			return apiSchemaRefuse(c)
+			// The generator renders every catalog key a language can select
+			// (candidate_languages in TESTS/adapters/django/api_schema.py).
+			return apiSchemaUnreachable(c)
 		}
 		suffix := ""
 		if version != "" {
@@ -100,10 +106,7 @@ func (h *APISchemaHandler) Swagger(c echo.Context) error {
 			// context; including an empty script template name fails.
 			return apiSchemaFailure(c)
 		}
-		url, ok := apiSchemaURL(request)
-		if !ok {
-			return apiSchemaRefuse(c)
-		}
+		url := apiSchemaURL(request)
 		token := h.issueCSRFToken(c)
 		page := strings.Replace(apischema.Page("swagger"), "{{schema_url}}", djangoEscapeJS(url), 1)
 		page = strings.Replace(page, "{{csrf_token}}", token, 1)
@@ -118,10 +121,7 @@ func (h *APISchemaHandler) Redoc(c echo.Context) error {
 		if request.options {
 			return request.respond(http.StatusOK, apischema.Page("redoc_options"), "")
 		}
-		url, ok := apiSchemaURL(request)
-		if !ok {
-			return apiSchemaRefuse(c)
-		}
+		url := apiSchemaURL(request)
 		return request.respond(http.StatusOK, strings.Replace(apischema.Page("redoc"), "{{schema_url}}", djangoEscapeHTML(url), 1), "")
 	})
 }
@@ -202,18 +202,18 @@ func (h *APISchemaHandler) serve(c echo.Context, view apiSchemaView, handle func
 	if len(view.renderers) > 1 {
 		header.Set("Vary", "Accept")
 	}
-	values, ok := djangoQueryLast(httpRequest.URL.RawQuery)
+	if strings.Count(httpRequest.URL.RawQuery, "&") >= 1000 {
+		// parse_qsl counts 1 + the separators against
+		// DATA_UPLOAD_MAX_NUMBER_FIELDS (1000), empty segments included:
+		// QueryDict raises TooManyFieldsSent, Django's 400 page.
+		return apiSchemaBadRequest(c)
+	}
+	values := djangoQueryLast(httpRequest.URL.RawQuery)
 	accept := strings.Join(httpRequest.Header.Values("Accept"), ",")
 	_, acceptPresent := httpRequest.Header["Accept"]
-	if !ok {
-		return apiSchemaRefuse(c)
-	}
 	accept = readRouteDjangoHeaderString(accept)
 	request := apiSchemaRequest{c: c, values: values, language: handlerReadRouteLocale.Language(httpRequest)}
 	negotiation := apischema.Negotiate(view.renderers, accept, acceptPresent, values["format"])
-	if negotiation.NotPorted {
-		return apiSchemaRefuse(c)
-	}
 	if negotiation.Status == http.StatusInternalServerError {
 		// A ValueError from the Accept parameters is not handled by DRF.
 		return apiSchemaFailure(c)
@@ -232,8 +232,6 @@ func (h *APISchemaHandler) serve(c echo.Context, view apiSchemaView, handle func
 	if request.renderer.Format == "json" {
 		if _, outcome := apischema.JSONIndent(request.media); outcome == pyheader.Invalid {
 			return apiSchemaFailure(c)
-		} else if outcome == pyheader.NotPorted {
-			return apiSchemaRefuse(c)
 		}
 	}
 
@@ -316,6 +314,25 @@ func apiSchemaFailure(c echo.Context) error {
 	return restError(c, errors.New("api schema: unhandled error"))
 }
 
+// apiSchemaUnreachable is the 500 page for a lookup the generated tables
+// cover (application state, logged as such).
+func apiSchemaUnreachable(c echo.Context) error {
+	header := c.Response().Header()
+	header.Del("Allow")
+	header.Del("Vary")
+	header.Del("Content-Disposition")
+	header.Del("Cross-Origin-Opener-Policy")
+	return restError(c, errAPISchemaUnreachable)
+}
+
+// apiSchemaBadRequest is Django's SuspiciousOperation answer (the 400 page).
+func apiSchemaBadRequest(c echo.Context) error {
+	header := c.Response().Header()
+	header.Del("Allow")
+	header.Del("Vary")
+	return c.Blob(http.StatusBadRequest, "text/html; charset=utf-8", djangoBadRequestPage)
+}
+
 // apiSchemaRefuse answers requests outside the ported input range with the
 // server error page instead of an approximated document.
 func apiSchemaRefuse(c echo.Context) error {
@@ -332,7 +349,7 @@ func apiSchemaRefuse(c echo.Context) error {
 // the request's `format` (set_query_parameters then drops it when blank, and a
 // page request only gets here with "html" or blank), followed by `lang` and
 // `version` when sent, even empty, urlencoded.
-func apiSchemaURL(request apiSchemaRequest) (string, bool) {
+func apiSchemaURL(request apiSchemaRequest) string {
 	url := apiSchemaPath
 	var query []string
 	if format := request.values["format"]; format != "" {
@@ -348,7 +365,7 @@ func apiSchemaURL(request apiSchemaRequest) (string, bool) {
 	if len(query) > 0 {
 		url += "?" + strings.Join(query, "&")
 	}
-	return url, true
+	return url
 }
 
 // pythonQuotePlus is urllib.parse.quote_plus for the ASCII values admitted above.
@@ -410,24 +427,17 @@ func djangoIRIToURI(raw string) string {
 
 // djangoQueryLast parses QUERY_STRING as QueryDict does (parse_qsl with
 // keep_blank_values) and returns the last value of each name, as
-// QueryDict.get does. ok is false for a query of more than the 1000 fields
-// DATA_UPLOAD_MAX_NUMBER_FIELDS admits.
-func djangoQueryLast(raw string) (map[string]string, bool) {
+// QueryDict.get does. The caller has checked the field limit.
+func djangoQueryLast(raw string) map[string]string {
 	values := map[string]string{}
-	pairs := strings.Split(raw, "&")
-	fields := 0
-	for _, pair := range pairs {
+	for _, pair := range strings.Split(raw, "&") {
 		if pair == "" {
 			continue
-		}
-		fields++
-		if fields > 1000 {
-			return nil, false
 		}
 		name, value, _ := strings.Cut(pair, "=")
 		values[pythonUnquotePlus(name)] = pythonUnquotePlus(value)
 	}
-	return values, true
+	return values
 }
 
 // pythonUnquotePlus is urllib.parse.unquote_plus over the latin-1 decoded

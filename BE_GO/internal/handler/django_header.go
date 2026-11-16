@@ -12,9 +12,8 @@ import (
 type djangoHeaderOutcome = pyheader.Outcome
 
 const (
-	headerParsed    = pyheader.Parsed
-	headerInvalid   = pyheader.Invalid
-	headerNotPorted = pyheader.NotPorted
+	headerParsed  = pyheader.Parsed
+	headerInvalid = pyheader.Invalid
 )
 
 func pyIsSpace(r rune) bool { return pyheader.IsSpace(r) }
@@ -35,16 +34,19 @@ type djangoPart struct {
 	disposition    map[string]string
 	hasDisposition bool
 	base64         bool
+	// contentType is meta_data.get('content-type', ('', {}))[0].strip(): the
+	// lower-cased main value of the last valid content-type line.
+	contentType string
 }
 
 // djangoPartHeaders is the header loop of parse_boundary_stream for one part:
 // each line is decoded as UTF-8 and parsed, a line that raises a ValueError is
 // skipped, and the last line of a name wins.
-func djangoPartHeaders(header textproto.MIMEHeader) (djangoPart, djangoHeaderOutcome) {
+func djangoPartHeaders(header textproto.MIMEHeader) djangoPart {
 	var part djangoPart
 	for key, values := range header {
 		lower := strings.ToLower(key)
-		if lower != "content-disposition" && lower != "content-transfer-encoding" {
+		if lower != "content-disposition" && lower != "content-transfer-encoding" && lower != "content-type" {
 			continue
 		}
 		for _, value := range values {
@@ -53,11 +55,12 @@ func djangoPartHeaders(header textproto.MIMEHeader) (djangoPart, djangoHeaderOut
 				continue
 			}
 			main, params, outcome := djangoParseHeader(line)
-			if outcome == headerNotPorted {
-				return part, outcome
-			}
 			name, rest, found := strings.Cut(main, ":")
-			if outcome != headerParsed || !found {
+			if outcome != headerParsed || !found || headerParamsHoldSurrogate(params) {
+				// {k: v.encode() for ...} raises UnicodeEncodeError (a
+				// ValueError) for a decoded value holding a lone surrogate,
+				// which utf-7 and the escape codecs can produce: the line is
+				// skipped like any invalid header.
 				continue
 			}
 			switch name {
@@ -65,10 +68,25 @@ func djangoPartHeaders(header textproto.MIMEHeader) (djangoPart, djangoHeaderOut
 				part.disposition, part.hasDisposition = params, true
 			case "content-transfer-encoding":
 				part.base64 = strings.TrimFunc(rest, pyIsSpace) == "base64"
+			case "content-type":
+				part.contentType = strings.TrimFunc(rest, pyIsSpace)
 			}
 		}
 	}
-	return part, headerParsed
+	return part
+}
+
+// headerParamsHoldSurrogate reports a parameter value holding a lone
+// surrogate (pyheader writes them as their 3-byte WTF-8 form).
+func headerParamsHoldSurrogate(params map[string]string) bool {
+	for _, value := range params {
+		for i := 0; i+2 < len(value); i++ {
+			if value[i] == 0xED && value[i+1] >= 0xA0 && value[i+1] <= 0xBF {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func stripASCIISpace(data []byte) []byte {
@@ -128,12 +146,4 @@ func pyBase64Decode(data []byte) ([]byte, error) {
 		return nil, errPyBase64
 	}
 	return out, nil
-}
-
-// djangoHeaderParameters is the parameter map of a Content-Disposition value;
-// ok is false for a line parse_header_parameters rejects or this port does not
-// decode.
-func djangoHeaderParameters(line string) (map[string]string, bool) {
-	_, params, outcome := djangoParseHeader("content-disposition: " + line)
-	return params, outcome == headerParsed
 }

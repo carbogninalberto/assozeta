@@ -169,13 +169,17 @@ and answers 400 `{"exception": "<botocore text>"}`, the medical upload keeps the
 `{"error": "<botocore text>"}`, and `document/medical/certificate/` (no `try`) answers the 500 page with the row kept.
 Cases `add-storage-refused-removes-document`, `certificate-storage-refused-keeps-document` and
 `medical-storage-refused-keeps-certificate` (a 255-character name whose key MinIO refuses on HEAD). Since long tail
-PR 4 the other storage failures and multipart bodies over 250 MiB are answered natively too (below); only the codec
-item stays `ErrDocumentWritesNotPorted`.
+PR 4 the other storage failures and multipart bodies over 250 MiB are answered natively too (below), and so are the
+RFC 2231 names.
 
-- RFC 2231 names in the codecs without a faithful Go decoder: `cp932`, `cp949`, `cp950`, `big5hkscs`, the 2004/x0213
-  variants, `gb2312`, `iso2022_jp_1/2/2004/3/ext`, `iso2022_kr`, `johab`, `utf-7`, `utf-16/32`, `unicode-escape`,
-  `raw-unicode-escape`, `idna` and `punycode`. A charset name Python does not know is a skipped header line, as in Django.
-  The 8-bit codecs and the multibyte codecs Go shares with Python are decoded (below).
+- (Long tail PR 4) RFC 2231 names in every Python text codec are decoded: `internal/pycodecs` ports CPython 3.13's
+  decoders with their exact error spans (the 8-bit tables, the stateless CJK codecs as tries generated from CPython, the
+  stateful iso2022/hz codecs, utf-7/16/32, the escape codecs, punycode; idna and undefined raise, a skipped line). The
+  x/text decoders used before were WHATWG's: CPython's `shift_jis` has no NEC row, so `87 40` is `\ufffd@`, not `①`
+  (`certificate-rfc2231-shift-jis-nec-replaced`). A decoded value holding a lone surrogate (utf-7, the escapes) fails
+  `v.encode()` in `parse_boundary_stream`, so the whole line is skipped (`certificate-rfc2231-utf-7-surrogate-ignored`).
+  Cases `certificate-rfc2231-cp932-nec-name`, `-utf-16-name`. A charset name Python does not know is a skipped header
+  line, as in Django.
 - Uploaded files as values of the archive update fields: not reachable through a request (the viewset is `JSONParser`
   only, so DRF answers 415 before the serializer), so this is a defensive check, not a refusal of a real input.
 - After the Document exists (the earlier writes are kept, and Go answers the 500 page):

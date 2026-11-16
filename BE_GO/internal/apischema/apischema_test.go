@@ -137,10 +137,6 @@ func TestNegotiationMatchesDRF(t *testing.T) {
 			format = *item.Format
 		}
 		got := Negotiate(renderers, accept, item.Accept != nil, format)
-		if got.NotPorted {
-			t.Errorf("%s Accept %q: charset decoder is not ported", item.View, accept)
-			continue
-		}
 		want := Negotiation{Renderer: item.Renderer, MediaType: item.MediaType}
 		if item.Outcome != 200 {
 			want = Negotiation{Status: item.Outcome}

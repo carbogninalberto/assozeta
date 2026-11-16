@@ -473,10 +473,7 @@ func parseDjangoMultipart(raw []byte, boundary string) (domain.RequestObject, er
 		if err != nil {
 			return nil, &restInputError{Status: 400, Detail: "Multipart form parse error - Invalid multipart data"}
 		}
-		header, outcome := djangoPartHeaders(part.Header)
-		if outcome == headerNotPorted {
-			return nil, domain.ErrDocumentWritesNotPorted
-		}
+		header := djangoPartHeaders(part.Header)
 		params, named := header.disposition, header.hasDisposition
 		if !named {
 			continue

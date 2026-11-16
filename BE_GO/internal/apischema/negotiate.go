@@ -26,9 +26,7 @@ var (
 
 // Negotiation is the outcome of DRF's DefaultContentNegotiation.
 type Negotiation struct {
-	Status int // 0 when a renderer was selected, else 404 (format), 406, or 500 (a ValueError from the Accept parameters)
-	// NotPorted is set when an Accept parameter names a charset whose decoder is not ported.
-	NotPorted bool
+	Status    int // 0 when a renderer was selected, else 404 (format), 406, or 500 (a ValueError from the Accept parameters)
 	Renderer  int // index into the renderer list
 	MediaType string
 }
@@ -60,9 +58,6 @@ func Negotiate(renderers []Renderer, accept string, present bool, format string)
 		_, outcome := parseMediaType(strings.TrimSpace(token))
 		if outcome == pyheader.Invalid {
 			return Negotiation{Status: 500}
-		}
-		if outcome == pyheader.NotPorted {
-			return Negotiation{NotPorted: true}
 		}
 	}
 	for _, token := range strings.Split(accept, ",") {

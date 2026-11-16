@@ -81,9 +81,13 @@ unhandled ValueError, the 500 page).
 
 - A `lang` containing `/` (gettext then looks up paths relative to the Django
   host's file layout).
-- Accept parameters in RFC 2231 charsets whose decoder is not ported (anything
-  but utf-8, ascii, latin-1 and windows-1252).
-- A query with more than 1000 fields (Django: 400 `TooManyFieldsSent`).
+- (Long tail PR 4) Accept parameters in any Python text codec decode through
+  `internal/pycodecs` (cases `accept-indent-rfc2231-utf-16-le`, `-cp932`, `-utf-7`),
+  and a query whose `1 + count('&')` passes DATA_UPLOAD_MAX_NUMBER_FIELDS is
+  Django's 400 page from `TooManyFieldsSent` (`query-1000-fields`,
+  `query-1001-fields-bad-request`). An OPTIONS language or a catalog key outside
+  the generated tables is application state (the generator covers every
+  language LocaleMiddleware selects and every reachable key).
 
 Known differences outside parity: with several Accept values of the same
 precedence matching the same renderer, Django picks one in set-iteration order;

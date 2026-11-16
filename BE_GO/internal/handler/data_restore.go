@@ -292,11 +292,7 @@ func (h *DataRestoreHandler) uploadedFile(c echo.Context, limit int64) ([]byte, 
 		if err != nil {
 			return nil, &restInputError{Status: 400, Detail: "Multipart form parse error - Invalid multipart data"}
 		}
-		header, outcome := djangoPartHeaders(part.Header)
-		if outcome == headerNotPorted {
-			// An RFC 2231 charset whose decoder is not ported.
-			return nil, domain.ErrDataRestoreNotPorted
-		}
+		header := djangoPartHeaders(part.Header)
 		if !header.hasDisposition {
 			continue
 		}
@@ -307,7 +303,8 @@ func (h *DataRestoreHandler) uploadedFile(c echo.Context, limit int64) ([]byte, 
 		}
 		sanitized, ok := djangoUploadName(filename)
 		if !ok {
-			return nil, domain.ErrDataRestoreNotPorted
+			// djangoPartHeaders keeps only valid UTF-8 lines without lone surrogates.
+			return nil, domain.ErrDataRestoreUnreachable
 		}
 		if sanitized == "" {
 			continue

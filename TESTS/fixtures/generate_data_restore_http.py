@@ -620,6 +620,12 @@ add('upload-base64-file-undecodable', 'owner', ROOT, 400, {'detail': 'Multipart 
     method='POST', raw=body, content_type=kind, setup=IDLE)
 body, kind = multipart_headers(([FILE + b"filename*=utf-8''backup%C3%A8.zip"], b'not a zip archive'))
 add('upload-rfc2231-file-name', 'owner', ROOT, 400, error(DAMAGED), method='POST', raw=body, content_type=kind, setup=IDLE)
+# Any Python text codec decodes the name; a name that decodes to a lone surrogate fails v.encode() and the whole
+# content-disposition line is skipped, so the part is not the upload.
+body, kind = multipart_headers(([FILE + b"filename*=cp932''%87%40.zip"], b'not a zip archive'))
+add('upload-rfc2231-cp932-file-name', 'owner', ROOT, 400, error(DAMAGED), method='POST', raw=body, content_type=kind, setup=IDLE)
+body, kind = multipart_headers(([FILE + b"filename*=utf-7''%2B2AA-.zip"], b'not a zip archive'))
+add('upload-rfc2231-surrogate-name-skipped', 'owner', ROOT, 400, error(UPLOAD), method='POST', raw=body, content_type=kind)
 body, kind = multipart_headers(([b'Content-Disposition: form-data; name="extra"; filename="notes.zip"', B64], base64.b64encode(b'N' * 30000)),
                                ([FILE + b'filename="backup.zip"', B64], base64.b64encode(b'not a zip archive' * 1700)))
 add('upload-base64-counts-decoded-bytes', 'owner', ROOT, 400, error(DAMAGED), method='POST', raw=body, content_type=kind, setup=IDLE)

@@ -4798,6 +4798,186 @@
    "content_type": "multipart/form-data; boundary=documentswritesboundary"
   },
   {
+   "name": "documents-writes-certificate-rfc2231-cp932-nec-name",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/medical/certificate/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!",
+    "uid": "$cert0",
+    "expiring_date": null
+   },
+   "effect": {
+    "actor": "owner",
+    "documents": [
+     {
+      "filename": "①日.pdf",
+      "body_b64": "JVBERi0xLjQgcGFydGU=",
+      "content_type": "application/pdf",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [],
+    "certificates": [
+     {
+      "document": 0,
+      "user": "owner"
+     }
+    ],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "$cert0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "raw_b64": "LS1kb2N1bWVudHN3cml0ZXNib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJtZWRpY2FsX2NlcnRpZmljYXRlIjsgZmlsZW5hbWUqPWNwOTMyJyclODclNDAlOTMlRkEucGRmDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3BkZg0KDQolUERGLTEuNCBwYXJ0ZQ0KLS1kb2N1bWVudHN3cml0ZXNib3VuZGFyeS0tDQo=",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-certificate-rfc2231-shift-jis-nec-replaced",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/medical/certificate/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!",
+    "uid": "$cert0",
+    "expiring_date": null
+   },
+   "effect": {
+    "actor": "owner",
+    "documents": [
+     {
+      "filename": "�@日.pdf",
+      "body_b64": "JVBERi0xLjQgcGFydGU=",
+      "content_type": "application/pdf",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [],
+    "certificates": [
+     {
+      "document": 0,
+      "user": "owner"
+     }
+    ],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "$cert0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "raw_b64": "LS1kb2N1bWVudHN3cml0ZXNib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJtZWRpY2FsX2NlcnRpZmljYXRlIjsgZmlsZW5hbWUqPXNoaWZ0X2ppcycnJTg3JTQwJTkzJUZBLnBkZg0KQ29udGVudC1UeXBlOiBhcHBsaWNhdGlvbi9wZGYNCg0KJVBERi0xLjQgcGFydGUNCi0tZG9jdW1lbnRzd3JpdGVzYm91bmRhcnktLQ0K",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-certificate-rfc2231-utf-16-name",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/medical/certificate/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!",
+    "uid": "$cert0",
+    "expiring_date": null
+   },
+   "effect": {
+    "actor": "owner",
+    "documents": [
+     {
+      "filename": "ab.pdf",
+      "body_b64": "JVBERi0xLjQgcGFydGU=",
+      "content_type": "application/pdf",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [],
+    "certificates": [
+     {
+      "document": 0,
+      "user": "owner"
+     }
+    ],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "$cert0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "raw_b64": "LS1kb2N1bWVudHN3cml0ZXNib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJtZWRpY2FsX2NlcnRpZmljYXRlIjsgZmlsZW5hbWUqPXV0Zi0xNicnJUZGJUZFYSUwMGIlMDAuJTAwcCUwMGQlMDBmJTAwDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3BkZg0KDQolUERGLTEuNCBwYXJ0ZQ0KLS1kb2N1bWVudHN3cml0ZXNib3VuZGFyeS0tDQo=",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-certificate-rfc2231-utf-7-surrogate-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/medical/certificate/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "raw_b64": "LS1kb2N1bWVudHN3cml0ZXNib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJtZWRpY2FsX2NlcnRpZmljYXRlIjsgZmlsZW5hbWUqPXV0Zi03JyclMkIyQUEtLnBkZg0KQ29udGVudC1UeXBlOiBhcHBsaWNhdGlvbi9wZGYNCg0KJVBERi0xLjQgcGFydGUNCi0tZG9jdW1lbnRzd3JpdGVzYm91bmRhcnktLQ0K",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
    "name": "documents-writes-certificate-invalid-utf8-disposition-ignored",
    "actor": "owner",
    "method": "POST",

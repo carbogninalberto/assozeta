@@ -157,8 +157,9 @@ self-hosted instance) and the receipt's association the primary one, else 403
   Bakney invoices, tutors that would be reassigned, cleared or ignored, members the ZIP reader port
   does not open, values outside its decoded subset. Their summary counts in Go are therefore always
   zero for legacy invoices and tutor reassignments.
-- Multipart parts whose RFC 2231 name uses a charset other than utf-8, ascii, latin-1 or
-  windows-1252 (decoder not ported). Other media types answer DRF's 415; a base64
+- (Long tail PR 4: RFC 2231 names in every Python text codec decode through `internal/pycodecs`, and a name that
+  decodes to a lone surrogate skips its line, so the part is not the upload: cases `upload-rfc2231-cp932-file-name`,
+  `upload-rfc2231-surrogate-name-skipped`.) Other media types answer DRF's 415; a base64
   `Content-Transfer-Encoding` is decoded like Django does (white space stripped, a failure is the
   400 parse error, decoded bytes count towards the limit) and RFC 2231 file names are read by the
   shared `djangoPartHeaders` (cases `upload-base64-*`, `upload-rfc2231-file-name`).
@@ -175,7 +176,7 @@ one), a storage delete failure (503) and a broker failure on publish (503).
 Since long-tail PR 3 (agent B) a progress cache read that fails is ported as no progress. A progress value outside the
 pickle subset, a stored backup path outside `AWS_LOCATION` and a summary written after validation are application state
 (`ErrDataRestoreUnreachable`, the 500 page): the progress and execution writers produce them. The archive shapes the
-validation port hands off and the RFC 2231 charsets stay refusals.
+validation port hands off stay refusals (the RFC 2231 charsets are decoded since long tail PR 4).
 
 ## Evidence
 

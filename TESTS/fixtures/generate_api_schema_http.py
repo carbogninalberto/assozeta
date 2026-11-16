@@ -155,6 +155,13 @@ schema('version-yaml-non-latin', 200, document('yaml', 'it', version='\u65e5\u67
        disposition='=?utf-8?b?aW5saW5lOyBmaWxlbmFtZT0iQmFrbmV5IFNwb3J0IEFQSSAo5pel5pysKS55YW1sIg==?=')
 add('version-line-break-server-error', '/schema/?version=a%0Ab', 500, SERVER, content_type='text/html; charset=utf-8',
     vary=('Cookie', 'origin', 'Accept-Language'), allow=None)
+# QueryDict: parse_qsl counts 1 + the '&' separators (empty segments too) against DATA_UPLOAD_MAX_NUMBER_FIELDS.
+schema('query-1000-fields', 200, document('yaml', 'it'), content_type=YAML + '; charset=utf-8', query='?' + '&' * 999,
+       disposition=yaml_disposition())
+BAD_REQUEST_PAGE = ('\n<!doctype html>\n<html lang="en">\n<head>\n  <title>Bad Request (400)</title>\n</head>\n<body>\n'
+                    '  <h1>Bad Request (400)</h1><p></p>\n</body>\n</html>\n')
+add('query-1001-fields-bad-request', '/schema/?' + '&' * 1000, 400, BAD_REQUEST_PAGE, content_type='text/html; charset=utf-8',
+    vary=('Cookie', 'origin', 'Accept-Language'), allow=None)
 schema('lang-space-unknown', 200, document('json', 'de ch'), content_type=JSON2, query='?lang=de+ch', headers={'Accept': JSON2},
        disposition=json_disposition())
 schema('lang-non-ascii', 200, document('yaml', 'd\u00e9'), content_type=YAML + '; charset=utf-8', query='?lang=d%C3%A9',
@@ -173,6 +180,13 @@ schema('accept-indent-rfc2231', 200, document('json', 'it', indent=2), content_t
        headers={'Accept': JSON2 + "; indent*=utf-8''2"}, disposition=json_disposition())
 schema('accept-indent-rfc2231-continued', 200, document('json', 'it', indent=6), content_type=JSON2,
        headers={'Accept': JSON2 + "; indent*0*=utf-8'en'%36; x=1"}, disposition=json_disposition())
+# Any text codec of the Python registry decodes an RFC 2231 value (bytes.decode(charset, 'replace')).
+schema('accept-indent-rfc2231-utf-16-le', 200, document('json', 'it', indent=3), content_type=JSON2,
+       headers={'Accept': JSON2 + "; indent*=utf-16-le''%33%00"}, disposition=json_disposition())
+schema('accept-indent-rfc2231-cp932', 200, document('json', 'it', indent=2), content_type=JSON2,
+       headers={'Accept': JSON2 + "; indent*=cp932''%32"}, disposition=json_disposition())
+schema('accept-indent-rfc2231-utf-7', 200, document('json', 'it', indent=7), content_type=JSON2,
+       headers={'Accept': JSON2 + "; indent*=utf-7''+ADc-"}, disposition=json_disposition())
 add('accept-unknown-rfc2231-charset-server-error', '/schema/', 500, SERVER, content_type='text/html; charset=utf-8',
     headers={'Accept': JSON2 + "; indent*=bogus''3"}, vary=('Cookie', 'origin', 'Accept-Language'), allow=None)
 schema('accept-comment-parameter-ignored', 200, document('json', 'it'), content_type=JSON2,
