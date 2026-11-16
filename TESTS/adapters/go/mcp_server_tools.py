@@ -46,7 +46,9 @@ INF, NAN = float('inf'), float('nan')
 
 # (tool, arguments, authored expectation): None (Django/Go parity only), a
 # dict whose items the result must contain, ('prefix', text) for an error
-# text prefix, or 'refused' for a call Go must refuse.
+# text prefix, or 'native' for an exception whose text Go answers natively
+# (accepted divergence X11: a PostgreSQL error without the LINE/caret lines,
+# which quote Django's own statement, and object addresses as a placeholder).
 CASES = [
     ('count_data', {'model_name': 'Associate'}, {'count': 3}),
     ('query_data', {'model_name': 'Associate', 'fields': ['first_name', 'last_name', 'sex'], 'order_by': ['last_name']}, {'count': 3, 'data': [{'first_name': 'Marco', 'last_name': 'Bianchi', 'sex': 'Maschio'}, {'first_name': 'Luca', 'last_name': 'D&Angelo', 'sex': 'Altro'}, {'first_name': 'Anna', 'last_name': 'Rossi', 'sex': 'Femmina'}]}),
@@ -497,8 +499,8 @@ CASES = [
     for tool, filters, expected in [
         ('query_data', {'title__regex': []}, {'count': 0}),
         ('query_data', {'title__iexact': []}, {'count': 0}),
-        ('query_data', {'title__regex': 5}, 'refused'),
-        ('query_data', {'title__iexact': ['Nuoto Adulti']}, 'refused'),
+        ('query_data', {'title__regex': 5}, 'native'),
+        ('query_data', {'title__iexact': ['Nuoto Adulti']}, 'native'),
         ('query_data', {'title__iexact': {'a': 1}}, {'error': "can't adapt type 'dict'"}),
         ('query_data', {'title__contains': INF}, {'count': 0}),
         ('query_data', {'title__icontains': NAN}, {'count': 0}),
@@ -554,10 +556,10 @@ CASES = [
     ('query_data', {'model_name': 'Course', 'fields': ['status_flag'], 'filters': {'status_flag': 2}, 'order_by': ['?', 'status_flag']},
      {'count': 2, 'data': [{'status_flag': 'Attivo'}, {'status_flag': 'Attivo'}]}),
     ('query_data', {'model_name': 'Course', 'fields': ['status_flag'], 'order_by': ['-?']}, ('prefix', "Cannot resolve keyword '?' into field.")),
-    ('query_data', {'model_name': 'Payment', 'fields': ['amount'], 'filters': {'meta__has_key': INF}, 'order_by': ['amount']}, 'refused'),
+    ('query_data', {'model_name': 'Payment', 'fields': ['amount'], 'filters': {'meta__has_key': INF}, 'order_by': ['amount']}, 'native'),
     ('query_data', {'model_name': 'Payment', 'fields': ['amount'], 'filters': {'meta__has_keys': [NAN]}, 'order_by': ['amount']}, {'count': 0}),
     ('query_data', {'model_name': 'Payment', 'fields': ['amount'], 'filters': {'meta__has_keys': [INF, 'b']}, 'order_by': ['amount']}, None),
-    ('query_data', {'model_name': 'Payment', 'fields': ['amount'], 'filters': {'meta__b': NAN}, 'order_by': ['amount']}, 'refused'),
+    ('query_data', {'model_name': 'Payment', 'fields': ['amount'], 'filters': {'meta__b': NAN}, 'order_by': ['amount']}, 'native'),
     ('query_data', {'model_name': 'Payment', 'fields': ['meta__type', 'amount'], 'order_by': ['amount']}, None),
     ('query_data', {'model_name': 'Tags', 'fields': ['tag_name'], 'order_by': [NAN]}, {'error': "'float' object has no attribute 'lstrip'"}),
     ('query_data', {'model_name': 'Tags', 'fields': [NAN]}, {'error': "'float' object has no attribute 'split'"}),
@@ -588,7 +590,7 @@ CASES = [
      {'error': "'int' object has no attribute 'decode'"}),
     ('export_data', {'model_name': 'Tags', 'format': 'pdf', 'fields': ['tag_name'], 'text_before': ['x']},
      {'error': "'list' object has no attribute 'split'"}),
-    ('export_data', {'model_name': 'Tags', 'format': 'pdf', 'fields': ['tag_id']}, 'refused'),
+    ('export_data', {'model_name': 'Tags', 'format': 'pdf', 'fields': ['tag_id']}, 'native'),
     ('export_multi_sheet', {'sheets': 5}, {'error': "'int' object is not iterable"}),
     ('export_multi_sheet', {'sheets': 'abc'}, {'error': "'str' object has no attribute 'get'"}),
     ('export_multi_sheet', {'sheets': {'a': 1}}, {'error': "'str' object has no attribute 'get'"}),
@@ -725,6 +727,14 @@ def matches(result, expected):
     return isinstance(result, dict) and all(result.get(key) == value for key, value in expected.items())
 
 
+def native_text(result):
+    """An exception text without what Go cannot reproduce: the LINE and caret lines of a PostgreSQL error
+    (they quote Django's statement) and Python object addresses."""
+    assert isinstance(result, dict) and list(result) == ['error'], result
+    text = re.sub(r'LINE \d+: [^\n]*\n[ ]*\^\n', '', result['error'])
+    return re.sub(r'0x[0-9A-Fa-f]+', '0x0', text)
+
+
 def file_digest(text):
     """The result text with a data_base64 file replaced by its normalized parts (the creation times set aside)."""
     result = json.loads(text)
@@ -845,7 +855,7 @@ def main():
                 django_text = django_call(tool, arguments)
                 assert snapshot() == seeded, f'{label_case}: Django changed rows'
                 django_result = json.loads(django_text)
-                if expected != 'refused':
+                if expected not in ('refused', 'native'):
                     assert matches(django_result, expected), (label_case, django_text[:500])
                 outcome = {'case': label_case, 'django': 'pass'}
                 if driver is None:
@@ -870,14 +880,19 @@ def main():
                     if file_digest(go_text) != file_digest(django_text):
                         (output / 'difference.json').write_text(json.dumps({'case': label_case, 'django': django_text, 'go': go_text}) + '\n')
                     assert expected != 'refused', f'{label_case}: Go must refuse'
-                    assert file_digest(go_text) == file_digest(django_text), f'{label_case}: Go result differs from Django'
-                    go = 'pass'
+                    if expected == 'native':
+                        assert native_text(json.loads(go_text)) == native_text(django_result), f'{label_case}: Go native answer differs'
+                        go = 'native'
+                    else:
+                        assert file_digest(go_text) == file_digest(django_text), f'{label_case}: Go result differs from Django'
+                        go = 'pass'
                 outcomes.append(dict(outcome, go=go))
                 print(f'{go.upper()}: {label_case}', flush=True)
             result['cases'] = outcomes
             result['django_passed'] = len(outcomes)
             result['go_passed'] = sum(o['go'] == 'pass' for o in outcomes)
             result['go_refused'] = sum(o['go'] == 'refused' for o in outcomes)
+            result['go_native'] = sum(o['go'] == 'native' for o in outcomes)
 
             env = dict(os.environ, PYTHONPATH=str(ROOT) + os.pathsep + str(ROOT / 'BE'), PYTHONUNBUFFERED='1')
             sessions = []
@@ -925,10 +940,10 @@ def main():
                     item['go_exit'] = go.returncode
                 cli.append(item)
             result['sessions'], result['cli'] = sessions, cli
-            print(json.dumps({'django': f"{len(outcomes)}/{len(CASES)}", 'go': f"{result['go_passed']}+{result['go_refused']} refused/{len(CASES)}",
+            print(json.dumps({'django': f"{len(outcomes)}/{len(CASES)}", 'go': f"{result['go_passed']}+{result['go_native']} native+{result['go_refused']} refused/{len(CASES)}",
                               'sessions': [s['go'] for s in sessions]}))
             assert driver is not None and command is not None, 'Go MCP server missing'
-            assert result['go_passed'] + result['go_refused'] == len(CASES)
+            assert result['go_passed'] + result['go_native'] + result['go_refused'] == len(CASES)
         finally:
             try:
                 from django.db import connections

@@ -65,16 +65,17 @@ func (t *AgentTools) Coordinate(ctx context.Context) (func(), string, error) {
 	return t.Coordinator.Acquire(ctx)
 }
 
-// agentToolNotReproduced is the tool result for a business tool call whose
-// Django answer Go does not reproduce (accepted divergence X11): the
-// conversation continues, where Django would answer the exception's own text.
-const agentToolNotReproduced = "Errore durante l'esecuzione dello strumento."
-
+// AgentTools.Business answers a business tool exception with Django's
+// str(e); a refusal (a tool or input pdfexport does not reproduce) keeps
+// X11's generic result.
 func (t *AgentTools) Business(ctx context.Context, name string, arguments domain.RequestObject) (any, bool, error) {
 	raised := false
 	value, err := t.BusinessTools.Execute(WithMCPRaised(ctx, &raised), name, arguments)
-	if errors.Is(err, ErrBusinessToolRaised) || errors.Is(err, refusal.ErrNotPorted) {
-		return mcpErrorResult(agentToolNotReproduced), true, nil
+	if errors.Is(err, ErrBusinessToolRaised) {
+		return mcpErrorResult(BusinessToolRaisedText(err)), true, nil
+	}
+	if errors.Is(err, refusal.ErrNotPorted) {
+		return mcpErrorResult(businessToolGenericText), true, nil
 	}
 	return value, raised, err
 }

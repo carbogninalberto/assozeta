@@ -18,10 +18,6 @@ import (
 	"github.com/google/uuid"
 )
 
-// ErrBusinessMCPNotPorted refuses a business MCP tool call (or argument)
-// whose Django behaviour is not ported, before any query or write.
-var ErrBusinessMCPNotPorted = refusal.New("business MCP tool input not ported")
-
 // BusinessMCPStore is the persistence the ported tool functions use.
 type BusinessMCPStore interface {
 	SavedReports(ctx context.Context, association, creator string) ([]domain.SavedReport, error)
@@ -708,11 +704,11 @@ func (t *BusinessMCPTools) saveReport(ctx context.Context, arguments domain.Requ
 	// writes; the NOT NULL columns reject None.
 	if name == nil || description == nil || tool == nil || params == nil ||
 		jsonContainsNUL(params) || jsonContainsNUL(config) || jsonContainsNonFinite(params) || jsonContainsNonFinite(config) {
-		return nil, ErrBusinessToolRaised
+		return nil, newBusinessToolRaised("", nil)
 	}
 	if exists, err = t.store.AssociationExists(ctx, t.association); err != nil || !exists {
 		if err == nil {
-			err = ErrBusinessToolRaised // ForeignKeyViolation of the INSERT
+			err = newBusinessToolRaised("", nil) // ForeignKeyViolation of the INSERT
 		}
 		return nil, err
 	}

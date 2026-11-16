@@ -29,11 +29,6 @@ func NewAgentCache(client *redis.Client) (*AgentCache, error) {
 	return &AgentCache{client: client}, nil
 }
 
-// ErrAgentCacheShape is a stored value outside the ported subset. The only
-// remaining site is ConcurrencyGuard's decr race (the key expired between the
-// two calls): timing, which the input cannot determine.
-var ErrAgentCacheShape = refusal.New("agent cache value not ported")
-
 // errAgentCacheCounter is a ws_throttle/ws_concurrent value that is not the
 // integer digits the app always writes (django-redis' slow path).
 var errAgentCacheCounter = refusal.AppState("agent cache counter is not an integer")
@@ -95,22 +90,28 @@ func (c *AgentCache) GuardAcquire(ctx context.Context, user string) (bool, error
 		return true, c.setInt(ctx, key, 1, 300)
 	}
 	if count > 1 {
-		if _, found, err := c.incr(ctx, key, -1); err != nil || !found {
-			if err == nil {
-				err = ErrAgentCacheShape // cache.decr raises ValueError
-			}
-			return false, err
-		}
-		return false, nil
+		_, found, err := c.incr(ctx, key, -1)
+		return guardConcurrent(found, err)
 	}
 	return true, nil
+}
+
+// guardConcurrent is ConcurrencyGuard.acquire's count > 1 branch. The decr
+// can find the key gone (it expired between the two calls), which Django's
+// cache.decr raises ValueError for; X17 answers the common outcome instead:
+// the session is a concurrent one and the consumer closes 4002.
+func guardConcurrent(_ bool, err error) (bool, error) {
+	if err != nil {
+		return false, err
+	}
+	return false, nil
 }
 
 // GuardRelease is ConcurrencyGuard.release() for an acquired slot.
 func (c *AgentCache) GuardRelease(ctx context.Context, user string) error {
 	key := "ws_concurrent:" + user
 	value, found, err := c.incr(ctx, key, -1)
-	if err != nil && !errors.Is(err, ErrAgentCacheShape) {
+	if err != nil {
 		return err
 	}
 	if !found || value <= 0 {

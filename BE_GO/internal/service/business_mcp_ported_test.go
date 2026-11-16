@@ -13,6 +13,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 // ---------------------------------------------------------------------------
@@ -1063,7 +1064,7 @@ func TestSavedReportRunFiles(t *testing.T) {
 
 	t.Run("exception-is-the-json-500", func(t *testing.T) {
 		_, err := runReport(t, "export_data", `{"model_name": "Tags", "fields": ["tag_name"], "format": "csv", "title": 5}`)
-		if !errors.Is(err, dto.ErrReportFailed) || errors.Is(err, service.ErrBusinessMCPNotPorted) {
+		if !errors.Is(err, dto.ErrReportFailed) {
 			t.Fatalf("expected dto.ErrReportFailed, got %v", err)
 		}
 	})
@@ -1073,7 +1074,7 @@ func TestSavedReportRunFiles(t *testing.T) {
 			ToolName: "export_data", Params: `{"model_name": "Tags", "fields": ["tag_name"], "format": "csv"}`,
 			UIConfig: "{}"}, runErr: &domain.ReportQueryError{Err: errors.New("connection lost")}}
 		_, err := runReportStore(t, store)
-		if !errors.Is(err, dto.ErrReportFailed) || errors.Is(err, service.ErrBusinessMCPNotPorted) {
+		if !errors.Is(err, dto.ErrReportFailed) {
 			t.Fatalf("expected dto.ErrReportFailed, got %v", err)
 		}
 	})
@@ -1168,6 +1169,33 @@ func TestExportDataCSVNUL(t *testing.T) {
 // agent tool result (item 4)
 // ---------------------------------------------------------------------------
 
+// A report query's PostgreSQL error answers psycopg2's text: the server
+// message, then DETAIL, HINT and CONTEXT (the LINE is skipped because Go's
+// statement has placeholders). The agent answers {"error": str(e)}.
+func TestAgentAnswersTheReportQueryText(t *testing.T) {
+	pg := &pgconn.PgError{
+		Message:  "operator does not exist: text ~ integer",
+		Detail:   `Token "NaN" is invalid.`,
+		Hint:     "No operator matches the given name and argument types. You might need to add explicit type casts.",
+		Position: 105,
+		Where:    "JSON data, line 1: NaN",
+	}
+	store := &portedStore{runErr: &domain.ReportQueryError{Err: pg}}
+	agent := &service.AgentTools{BusinessTools: portedTools(store)}
+	result, raised, err := agent.Business(context.Background(), "query_data", portedObject("model_name", "Tags"))
+	if err != nil || !raised {
+		t.Fatalf("result %v raised %v err %v", result, raised, err)
+	}
+	text := "operator does not exist: text ~ integer\n" +
+		"DETAIL:  Token \"NaN\" is invalid.\n" +
+		"HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.\n" +
+		"CONTEXT:  JSON data, line 1: NaN\n"
+	if got := string(dto.PythonJSONDumps(result)); got != `{"error": `+string(dto.PythonJSONDumps(text))+`}` {
+		t.Fatalf("result %s", got)
+	}
+}
+
+// An exception without a known text keeps the generic tool error.
 func TestAgentAnswersTheGenericToolError(t *testing.T) {
 	store := &portedStore{runErr: &domain.ReportQueryError{Err: errors.New("connection lost")}}
 	agent := &service.AgentTools{BusinessTools: portedTools(store)}

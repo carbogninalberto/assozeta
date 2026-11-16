@@ -6,7 +6,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"regexp"
 	"sort"
 	"strconv"
@@ -43,7 +42,8 @@ func mcpErrorResult(message string) domain.RequestObject { return mcpObj("error"
 
 // mcpToolOutcome maps a planning/execution error to the call_tool result:
 // exceptions are {'error': str(e)}, not-ported inputs are refused, an
-// exception whose text Go does not reproduce is ErrBusinessToolRaised.
+// exception whose text Go does not reproduce keeps its closest text in a
+// BusinessToolRaised for the hosts.
 func mcpToolOutcome(ctx context.Context, err error) (any, error) {
 	var raised *dto.MCPToolException
 	if errors.As(err, &raised) {
@@ -57,18 +57,18 @@ func mcpToolOutcome(ctx context.Context, err error) (any, error) {
 		return mcpErrorResult(""), nil
 	}
 	if errors.Is(err, dto.ErrReportFailed) || errors.As(err, &query) {
-		return nil, fmt.Errorf("%w: %w", ErrBusinessToolRaised, err)
+		return nil, newBusinessToolRaised(closestBusinessToolText(err), err)
 	}
 	return nil, err
 }
 
 // mcpRaisedResult is an exception raised inside a tool function. A
-// saved-report run answers every exception alike; the MCP transport returns
-// str(e), so an exception whose text is not given (message "") is
-// ErrBusinessToolRaised there.
+// saved-report run answers every exception alike; otherwise the MCP transport
+// returns str(e), so an exception whose text is not given (message "") gets
+// the generic text.
 func mcpRaisedResult(ctx context.Context, message string) (any, error) {
 	if message == "" && ctx.Value(reportRunKey{}) == nil {
-		return nil, ErrBusinessToolRaised
+		return nil, newBusinessToolRaised("", nil)
 	}
 	markMCPRaised(ctx)
 	return mcpErrorResult(message), nil

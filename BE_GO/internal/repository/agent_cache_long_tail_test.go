@@ -76,7 +76,7 @@ func TestPickleAgentSaveInfoMatchesCPython(t *testing.T) {
 }
 
 // Item 9: values an agent save_info cache key cannot hold are application
-// states, and only the decr race stays a refusal.
+// states.
 func TestAgentSaveInfoDecoderAppStates(t *testing.T) {
 	if _, err := decodeAgentSaveInfo([]byte("123")); !errors.Is(err, refusal.ErrAppState) {
 		t.Fatalf("raw integer: %v", err)
@@ -84,8 +84,22 @@ func TestAgentSaveInfoDecoderAppStates(t *testing.T) {
 	if _, err := decodeAgentSaveInfo([]byte("not a pickle")); !errors.Is(err, refusal.ErrAppState) {
 		t.Fatalf("bad pickle: %v", err)
 	}
-	if errors.Is(ErrAgentCacheShape, refusal.ErrAppState) {
-		t.Fatal("the decr race must stay a refusal")
+}
+
+// Item 9 / X17: the decr race of ConcurrencyGuard.acquire resolves as a
+// concurrent session whether the key vanished between the two calls or the
+// decr succeeded; only a Redis failure is an error.
+func TestGuardConcurrentDecrRace(t *testing.T) {
+	for _, found := range []bool{true, false} {
+		allowed, err := guardConcurrent(found, nil)
+		if allowed || err != nil {
+			t.Fatalf("found %v: allowed %v err %v", found, allowed, err)
+		}
+	}
+	failure := errors.New("connection lost")
+	allowed, err := guardConcurrent(false, failure)
+	if allowed || !errors.Is(err, failure) {
+		t.Fatalf("failure: allowed %v err %v", allowed, err)
 	}
 }
 

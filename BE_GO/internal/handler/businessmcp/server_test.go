@@ -3,7 +3,6 @@ package businessmcp
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"testing"
 
@@ -21,14 +20,31 @@ func (s stubBusiness) Execute(context.Context, string, domain.RequestObject) (an
 	return s.result, s.err
 }
 
-// A business tool exception whose text Go does not reproduce refuses the MCP
-// command: Django answers str(e).
-func TestExecuteRefusesTheUnreproducedException(t *testing.T) {
-	raised := fmt.Errorf("tool: %w", service.ErrBusinessToolRaised)
+// A business tool exception answers Django's {"error": str(e)}: the raised
+// error carries the closest text.
+func TestExecuteAnswersTheRaisedExceptionText(t *testing.T) {
+	raised := &service.BusinessToolRaised{Text: "operator does not exist: text ~ integer\nHINT:  No operator matches the given name and argument types.\n"}
 	calls := NewCalls(stubBusiness{err: raised}, nil, "")
-	_, err := calls.Execute(context.Background(), "sanitize_text", json.RawMessage(`{"text": "a/b"}`), true)
-	if !errors.Is(err, service.ErrBusinessMCPNotPorted) {
-		t.Fatalf("expected the refusal, got %v", err)
+	text, err := calls.Execute(context.Background(), "sanitize_text", json.RawMessage(`{"text": "a/b"}`), true)
+	if err != nil {
+		t.Fatalf("call: %v", err)
+	}
+	want := errorText("operator does not exist: text ~ integer\nHINT:  No operator matches the given name and argument types.\n")
+	if text != want {
+		t.Fatalf("text %q, want %q", text, want)
+	}
+}
+
+// A raised exception without a text still answers the generic tool error.
+func TestExecuteAnswersTheGenericText(t *testing.T) {
+	calls := NewCalls(stubBusiness{err: fmt.Errorf("tool: %w", service.ErrBusinessToolRaised)}, nil, "")
+	text, err := calls.Execute(context.Background(), "sanitize_text", json.RawMessage(`{"text": "a/b"}`), true)
+	if err != nil {
+		t.Fatalf("call: %v", err)
+	}
+	want := errorText("Errore durante l'esecuzione dello strumento.")
+	if text != want {
+		t.Fatalf("text %q, want %q", text, want)
 	}
 }
 

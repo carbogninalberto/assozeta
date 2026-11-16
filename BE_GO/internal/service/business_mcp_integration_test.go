@@ -4,7 +4,6 @@ package service_test
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"os"
 	"strings"
@@ -49,10 +48,11 @@ func TestBusinessMCPToolCall(t *testing.T) {
 	result, err := tools.Execute(context.Background(), os.Getenv("ASSOZETA_BUSINESS_MCP_TOOL"), object)
 	// The result as call_tool's json.dumps(result, default=str) writes it.
 	var encoded []byte
-	// An exception whose text Go does not reproduce is refused by the MCP command too.
-	if errors.Is(err, service.ErrBusinessMCPNotPorted) || errors.Is(err, service.ErrBusinessToolRaised) {
-		encoded, _ = json.Marshal(map[string]any{"refused": true})
-	} else if err != nil {
+	if errors.Is(err, service.ErrBusinessToolRaised) {
+		// The MCP command answers the closest text of an exception Go does not reproduce exactly.
+		result, err = domain.RequestObject{{Name: "error", Value: service.BusinessToolRaisedText(err)}}, nil
+	}
+	if err != nil {
 		t.Fatal(err)
 	} else {
 		dumps := dto.PythonJSONDumps(result)

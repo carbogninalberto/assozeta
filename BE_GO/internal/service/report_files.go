@@ -117,12 +117,12 @@ func (s *SavedReports) runFileTool(ctx context.Context, tool string, params doma
 	return &ReportDownload{Bytes: data, ContentType: contentType.(string), Disposition: pdfrender.HeaderBytes(disposition)}, nil
 }
 
-// mcpRunOnly marks an exception whose text is not given: a saved-report run
-// answers every exception alike, the MCP transport returns str(e), so the
-// other hosts get ErrBusinessToolRaised (the agent answers X11's text).
-func mcpRunOnly(ctx context.Context) error {
+// mcpRunOnly marks an exception of a document builder whose text the call
+// site does not know (text ""): a saved-report run answers every exception
+// alike, the other hosts get a BusinessToolRaised with the closest text.
+func mcpRunOnly(ctx context.Context, text string) error {
 	if ctx.Value(reportRunKey{}) == nil {
-		return ErrBusinessToolRaised
+		return newBusinessToolRaised(text, nil)
 	}
 	markMCPRaised(ctx)
 	return nil
@@ -164,6 +164,13 @@ func mcpExportColumns(data []any, labels domain.RequestObject) ([]string, []stri
 // errReportExportLabel is a column label that is not a str reaching the
 // column headers: both exporters reject it earlier.
 var errReportExportLabel = refusal.AppState("business MCP export label that is not a string")
+
+// reportlabTableText is reportlab's ValueError for a table without a column:
+// Table.identity() with a placeholder object address. rows counts the header
+// row the exporter prepends.
+func reportlabTableText(rows int) string {
+	return fmt.Sprintf("<Table@0x0000000000000000 %d rows x 0 cols>... must have at least a row and column", rows)
+}
 
 // mcpExportXLSXValue is format_export_data's value in a workbook cell. A JSON
 // column holds no non-finite float (Python's json.loads makes 1e400 inf, but
@@ -296,7 +303,7 @@ func mcpBuiltFile(ctx context.Context, file []byte, err error) ([]byte, error) {
 	if errors.Is(err, xlsxexport.ErrDjango) || errors.Is(err, pdfexport.ErrLayout) {
 		text, ok := djangoFailureText(err)
 		if !ok {
-			return nil, mcpRunOnly(ctx)
+			return nil, mcpRunOnly(ctx, "")
 		}
 		return nil, &raisedFile{text: text}
 	}
@@ -336,8 +343,9 @@ func (t *BusinessMCPTools) exportPDF(ctx context.Context, data []any, labels dom
 	// header_text or title with canvas.drawCentredString.
 	columns, _, _ := mcpExportColumns(data, nil)
 	if len(columns) == 0 {
-		// Table([]): reportlab's text carries an object address.
-		return nil, mcpRunOnly(ctx)
+		// Table([]): reportlab's text carries an object address; the address
+		// is a fixed placeholder because Go has no stable one.
+		return nil, mcpRunOnly(ctx, reportlabTableText(len(data)+1))
 	}
 	for _, column := range columns {
 		if label, present := labels.Lookup(column); present {
@@ -459,7 +467,7 @@ func (t *BusinessMCPTools) exportSheets(ctx context.Context, prepared []reportSh
 			if failure, ok := djangoFailureText(err); ok {
 				return mcpRaisedResult(ctx, failure)
 			}
-			return nil, mcpRunOnly(ctx)
+			return nil, mcpRunOnly(ctx, "")
 		}
 		if err != nil {
 			return nil, err
@@ -505,7 +513,7 @@ func (t *BusinessMCPTools) exportSheets(ctx context.Context, prepared []reportSh
 // attendanceFile is the export branch of tool_get_attendance_matrix for a
 // run: the PDF, or the workbook in one of its three layouts.
 func (t *BusinessMCPTools) attendanceFile(ctx context.Context, matrices []*attendanceMatrix, multi bool, arguments domain.RequestObject) (any, error) {
-	raised := func() (any, error) { return mcpErrorResult(""), mcpRunOnly(ctx) }
+	raised := func(text string) (any, error) { return mcpErrorResult(""), mcpRunOnly(ctx, text) }
 	pdf := false
 	if format, ok := mcpLookupOr(arguments, "format", "xlsx").(string); ok && format == "pdf" {
 		pdf = true
@@ -515,7 +523,8 @@ func (t *BusinessMCPTools) attendanceFile(ctx context.Context, matrices []*atten
 		// f'Presenze - {course}': a course without a title is written None.
 		name = "Presenze - " + dto.PythonStr(mcpOptional(matrices[0].course))
 		if matrices[0].course == nil && !pdf {
-			return raised() // the sheet name is a slice of the title
+			// (title or course_title)[:31] with course_title None.
+			return raised("'NoneType' object is not subscriptable")
 		}
 	}
 	var document pdfexport.Attendance
@@ -525,7 +534,8 @@ func (t *BusinessMCPTools) attendanceFile(ctx context.Context, matrices []*atten
 		if matrix.course != nil {
 			title = *matrix.course
 		} else if pdf && len(matrices) > 1 {
-			return raised() // Paragraph(None) above the course's table
+			// Paragraph(None): its text.split() raises.
+			return raised("'NoneType' object has no attribute 'split'")
 		}
 		dates := make([]string, len(matrix.dates))
 		for i, date := range matrix.dates {
