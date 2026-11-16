@@ -16,6 +16,7 @@ before the fixture cleanup compares the model state.
 from contextlib import contextmanager
 from datetime import date
 from decimal import Decimal
+import types
 
 from TESTS.contracts import test_camps_subscriptions_http as contract
 from TESTS.adapters.django import camps_periods_http as periods
@@ -281,4 +282,10 @@ def assert_effect(case, before, after, source, context):
     contract.require(len(indexes) == sum(1 for spec in effect['audit'] if spec['association'] is not None), 'index.count')
 
 
-run_workload = harness.run_workload_for(contract, assert_effect, prepare=deleted_rows)
+def run_workload(label, backend, base_url, fixture, apps, raw, observer):
+    """harness.run_workload_for with the seeded default payment category bound into the expected responses."""
+    bindings = {'$default_category': fixture['default_category'], '$default_category_name': fixture['default_category_name']}
+    bound = types.SimpleNamespace(load_source=contract.load_source, require=contract.require,
+                                  assert_case=lambda case, case_base, *, token, sessions: contract.assert_case(
+                                      case, case_base, token=token, sessions=sessions, bindings=bindings))
+    return harness.run_workload_for(bound, assert_effect, prepare=deleted_rows)(label, backend, base_url, fixture, apps, raw, observer)

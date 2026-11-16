@@ -7,6 +7,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 var (
@@ -36,6 +37,11 @@ func paymentJSON(text *string) (any, error) {
 // ResolvePaymentDescription port of its description hook.
 var errSecCategoryAssociation = errors.New("payment save defaults: payment association not loaded")
 
+// errPaymentStoredJSON is a stored meta/course value the JSON decoder refuses:
+// both columns are jsonb, whose text PostgreSQL always returns as valid JSON,
+// so this is application state rather than a value a request can send.
+var errPaymentStoredJSON = refusal.AppState("payment save: stored meta or course is not JSON")
+
 func paymentSaveDefaults(ctx context.Context, tx domain.PaymentArchiveTransaction, row *domain.PaymentSaveRow, changes map[string][2]string) error {
 	if row.CategoryID == nil && row.AssociationID == "" {
 		// The row's association must be loaded: the default is taken from it.
@@ -60,11 +66,11 @@ func secCategorySaveDefaults(ctx context.Context, tx domain.PaymentArchiveTransa
 	}
 	meta, err := paymentJSON(row.Meta)
 	if err != nil {
-		return ErrPaymentSaveFailed
+		return errPaymentStoredJSON
 	}
 	course, err := paymentJSON(row.Course)
 	if err != nil {
-		return ErrPaymentSaveFailed
+		return errPaymentStoredJSON
 	}
 	input := domain.PaymentDescriptionInput{Subject: row.Subject, Description: row.Description, CategoryName: row.CategoryName, Meta: meta, Course: course,
 		CustomAccounts: row.CustomAccounts}

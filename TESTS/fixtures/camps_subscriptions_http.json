@@ -325,6 +325,17 @@
    "fee": "1.00",
    "max": null,
    "created": "2026-06-06T10:00:00Z"
+  },
+  "negative": {
+   "id": "a1000000-0000-4000-8000-000000986082",
+   "camp": "camp",
+   "start": "2026-12-01T07:00:00Z",
+   "end": "2026-12-02T07:00:00Z",
+   "title": "Sconto",
+   "description": null,
+   "fee": "0.00",
+   "max": null,
+   "created": "2026-06-09T10:00:00Z"
   }
  },
  "services": {
@@ -579,6 +590,15 @@
    "fee": "3.00",
    "category": "foreign",
    "created": "2026-06-11T09:00:00Z"
+  },
+  "loss": {
+   "id": "a1000000-0000-4000-8000-000000986083",
+   "period": "negative",
+   "title": "Sconto",
+   "description": null,
+   "fee": "-50.00",
+   "category": "own",
+   "created": "2026-06-09T11:00:00Z"
   }
  },
  "period_links": {
@@ -613,6 +633,9 @@
    "wordy_17",
    "wordy_18",
    "wordy_19"
+  ],
+  "negative": [
+   "loss"
   ]
  },
  "camp_subscriptions": {
@@ -6591,6 +6614,31 @@
       "services": [
        {
         "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986030"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "camps-subscriptions-add-negative-generated-payment",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986019/subscriptions/add",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "new row for relation \"application_payment\" violates check constraint \"payment_amount_positive\"\nDETAIL:  Failing row contains ($payment, default, 0, -50.00, $created, null, f, a1000000-0000-4000-8000-000000986007, null, a1000000-0000-4000-8000-000000701001, a1000000-0000-4000-8000-000000700001, null, f, null, a1000000-0000-4000-8000-000000986004, f, $default_category, $default_category_name, null, null, null, Iscrizione al periodo Sconto del campo Campo estivo è\nSconto: -..., [{\"title\": \"Sconto\", \"amount\": -50.0, \"subject\": 0, \"payment_cat..., null, f, null, null).\n"
+   },
+   "effect": null,
+   "body": {
+    "subscription": "a1000000-0000-4000-8000-000000986011",
+    "periods": [
+     {
+      "camps_and_retreats_period": "a1000000-0000-4000-8000-000000986082",
+      "services": [
+       {
+        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986083"
        }
       ]
      }

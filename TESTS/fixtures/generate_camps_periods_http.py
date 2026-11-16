@@ -174,6 +174,32 @@ SUBSCRIPTION_PERIODS['february_broken'] = {'id': next(extra_ids), 'period': 'feb
                                            'services': ['poles']}
 PERIOD_LINKS['february'] = ['poles']
 
+# Long-tail PR 4: a hidden payment without a sport association (the walk saves
+# it and auditlog's entry indexes through the actor) and a payment a fee update
+# makes negative (the check constraint's text dumps the row). Their ids come
+# from a separate sequence.
+tail_ids = iter(f'a1000000-0000-4000-8000-{985401 + n:012d}' for n in range(20))
+PERIODS['april'] = {'id': next(tail_ids), 'camp': 'camp', 'start': '2027-04-01T08:00:00Z', 'end': '2027-04-05T18:00:00Z',
+                    'title': 'Aprile', 'description': None, 'fee': '40.00', 'max': None, 'created': '2026-06-16T09:00:00Z'}
+SERVICES['raft'] = {'id': next(tail_ids), 'period': 'april', 'title': 'Gommone', 'description': None, 'fee': '8.00',
+                    'category': 'own', 'created': '2026-06-16T10:00:00Z'}
+PAYMENTS['hidden'] = {'id': next(tail_ids), 'amount': '48.00', 'paid': False, 'subject': 1, 'description': 'Aprile',
+                      'category': 'own', 'notes': 'Note nascoste', 'meta': [meta('raft', 8.0, 'own')],
+                      'created': '2026-06-16T11:00:00Z', 'deleted': True, 'association': None}
+SUBSCRIPTION_PERIODS['april'] = {'id': next(tail_ids), 'period': 'april', 'subscription': 'camp', 'payment': 'hidden',
+                                 'services': ['raft']}
+PERIOD_LINKS['april'] = ['raft']
+PERIODS['march'] = {'id': next(tail_ids), 'camp': 'camp', 'start': '2027-03-01T08:00:00Z', 'end': '2027-03-05T18:00:00Z',
+                    'title': 'Marzo', 'description': None, 'fee': '10.00', 'max': None, 'created': '2026-06-16T12:00:00Z'}
+SERVICES['refund'] = {'id': next(tail_ids), 'period': 'march', 'title': 'Rimborso', 'description': None, 'fee': '5.00',
+                      'category': 'own', 'created': '2026-06-16T13:00:00Z'}
+PAYMENTS['march'] = {'id': next(tail_ids), 'amount': '15.00', 'paid': False, 'subject': 1, 'description': 'Marzo',
+                     'category': 'own', 'notes': 'Vecchie note', 'meta': [meta('refund', 5.0, 'own')],
+                     'created': '2026-06-16T14:00:00Z'}
+SUBSCRIPTION_PERIODS['march'] = {'id': next(tail_ids), 'period': 'march', 'subscription': 'camp', 'payment': 'march',
+                                 'services': ['refund']}
+PERIOD_LINKS['march'] = ['refund']
+
 PERIOD, SERVICE, SUBPERIOD, PAYMENT = ('application.CampsAndRetreatsPeriod', 'application.CampsAndRetreatsPeriodsService',
                                        'application.CampsAndRetreatsSubscriptionPeriod', 'application.Payment')
 PERIOD_LINK = 'application.CampsAndRetreatsPeriod_camps_and_Retreats_period_services'
@@ -633,17 +659,78 @@ def dumps(value):
     return json.dumps(value, sort_keys=True)
 
 
+def payment_association(payment):
+    """The audit change value of the payment's sport_association (None when it has none)."""
+    return OWN if payment.get('association', 'own') else 'None'
+
+
 def hidden_payment(payment, amount, notes):
     """auditlog reads the stored row through the soft-delete, group-aware manager, finds none and diffs the instance against None:
-    every field as on a create, action update, indexed through the entry's own sport_association."""
+    every field as on a create, action update. The index resolves the entry's own sport_association; a payment without one
+    falls back to the actor's association."""
     changes = {
-        'payment_id': payment['id'], 'sport_association': OWN, 'user': 'None', 'associate': 'None', 'instructor': 'None',
-        'supplier': 'None', 'invoice': 'None', 'group': 'None', 'signature': 'None', 'custom_accounts': 'None', 'payment_date': 'None',
-        'payment_category': CATEGORIES[payment['category']]['id'], 'subject': str(payment['subject']), 'description': payment['description'],
-        'paid': 'False', 'type': 'default', 'expense': 'False', 'archived': 'False', 'deleted': str(bool(payment.get('deleted'))), 'meta': 'null', 'course': 'null',
-        'creation_date': naive(payment['created']), 'amount': amount, 'notes': notes, 'meta_payment_categories': dumps(payment['meta'])}
+        'payment_id': payment['id'], 'sport_association': payment_association(payment), 'user': 'None', 'associate': 'None',
+        'instructor': 'None', 'supplier': 'None', 'invoice': 'None', 'group': 'None', 'signature': 'None', 'custom_accounts': 'None',
+        'payment_date': 'None', 'payment_category': CATEGORIES[payment['category']]['id'], 'subject': str(payment['subject']),
+        'description': payment['description'], 'paid': 'False', 'type': 'default', 'expense': 'False', 'archived': 'False',
+        'deleted': str(bool(payment.get('deleted'))), 'meta': 'null', 'course': 'null', 'creation_date': naive(payment['created']),
+        'amount': amount, 'notes': notes, 'meta_payment_categories': dumps(payment['meta'])}
+    indexed = payment.get('association', 'own')
     return audit('Payment', payment['id'], 1, {field: ['None', value] for field, value in changes.items()}, OWN,
-                 'changes_json.sport_association')
+                 'changes_json.sport_association' if indexed else 'actor.sport_association')
+
+
+# PostgreSQL's text output of a row, as the check constraint's DETAIL renders it:
+# every column of application_payment in table order, each value clipped to 64
+# bytes (multibyte aware) with '...', NULL as null.
+def pg_text(value):
+    if value is None:
+        return 'null'
+    if isinstance(value, bool):
+        return 't' if value else 'f'
+    if isinstance(value, (list, dict)):
+        return jsonb_text(value)
+    return str(value)
+
+
+def jsonb_text(value):
+    """jsonb's text output: keys ordered by length then bytes, ', ' and ': ' separators."""
+    if isinstance(value, dict):
+        keys = sorted(value, key=lambda key: (len(key.encode()), key.encode()))
+        return '{' + ', '.join(json.dumps(key, ensure_ascii=False) + ': ' + jsonb_text(value[key]) for key in keys) + '}'
+    if isinstance(value, list):
+        return '[' + ', '.join(jsonb_text(item) for item in value) + ']'
+    return json.dumps(value, ensure_ascii=False)
+
+
+def pg_clip(text):
+    encoded = text.encode()
+    if len(encoded) <= 64:
+        return text
+    return encoded[:64].decode('utf-8', 'ignore') + '...'
+
+
+def pg_timestamp(text):
+    """PostgreSQL's timestamptz output in a UTC session: whole seconds, a trimmed fraction, then +00."""
+    rendered = str(moment(text).replace(tzinfo=None))
+    if '.' in rendered:
+        rendered = rendered.rstrip('0').rstrip('.')
+    return rendered + '+00'
+
+
+def payment_columns(payment, *, amount, notes, metas):
+    """application_payment's columns in table order for the row a save writes."""
+    association = payment.get('association', 'own')
+    return [payment['id'], 'default', str(payment['subject']), amount, pg_timestamp(payment['created']), None, payment['paid'],
+            None, None, OWN if association else None, None, None, False, None, None, False,
+            CATEGORIES[payment['category']]['id'] if payment['category'] else None, payment['description'], None, None, None,
+            notes, metas, None, bool(payment.get('deleted')), None, None]
+
+
+def check_constraint_text(columns):
+    """psycopg2's IntegrityError text for the amount check constraint of the written row."""
+    return ('new row for relation "application_payment" violates check constraint "payment_amount_positive"\n'
+            'DETAIL:  Failing row contains (' + ', '.join(pg_clip(pg_text(value)) for value in columns) + ').\n')
 
 
 def payment_walk_row(sp, service, rows, events, other_group=False):
@@ -965,6 +1052,59 @@ add('delete-collaborator-unindexed', 'full_collaborator', period_path('august', 
     effect={'actor': 'full_collaborator', 'rows': {PERIOD: {PERIODS['august']['id']: None}},
             'audit': [audit('CampsAndRetreatsPeriod', PERIODS['august']['id'], 2, '$deleted', None, None)]})
 add('delete-again-not-found', 'owner', period_path('june', 'delete'), 404, NOT_FOUND, method='DELETE')
+
+# ---------------------------------------------------------------------------
+# long-tail PR 4: the remaining payment walk outcomes
+# ---------------------------------------------------------------------------
+# A hidden payment (soft-deleted) without a sport association: Payment.save()
+# still runs, auditlog audits each save as a full update against None and the
+# entry's index falls back to the actor's association.
+updated_service('owner', 'services-update-hidden-payment-without-association', 'raft', {'fee': '9.50'}, {'fee': '9.50'})
+
+
+def negative_service(name, label, fee):
+    """A fee that makes the walked payment's recomputed amount negative: the final save's UPDATE is refused by the amount
+    check constraint, whose text dumps the new row. The meta save before it stays and the refused save is audited."""
+    row = STATE['services'][label]
+    before = service_audit_view(row)
+    row.update({'fee': fee})
+    events = [audit('CampsAndRetreatsPeriodsService', row['id'], 1, stored_changes(before, service_audit_view(row), SERVICE_FIELDS),
+                    CAMPS[PERIODS[row['period']]['camp']]['association'], SERVICE_PATH)]
+    rows = {SERVICE: {row['id']: service_row(row)}}
+    sp = next(sp for sp in SUBSCRIPTION_PERIODS.values() if sp['period'] == row['period'] and sp['payment'])
+    payment = STATE['payments'][sp['payment']]
+    old = dumps(payment['meta'])
+    for item in payment['meta']:
+        if item['camps_and_retreats_period_service_id'] == row['id']:
+            item['amount'] = float(row['fee'])
+            item['title'] = row['title']
+            item['payment_category_id'] = CATEGORIES[row['category']]['id'] if row['category'] else 'None'
+    if dumps(payment['meta']) != old:
+        events.append(audit('Payment', payment['id'], 1, {'meta_payment_categories': [old, dumps(payment['meta'])]}, OWN, 'direct'))
+    period = STATE['periods'][sp['period']]
+    camp = CAMPS[SUBSCRIPTIONS[sp['subscription']]['camp']]
+    notes = f"Iscrizione al periodo {period['title']} del campo {camp['title']}"
+    notes += f"\n{camp['description']}"
+    total = 0
+    notes += '\n'
+    for item in payment['meta']:
+        notes += f"\n{item['title']} - {item['amount']}€"
+        total += item['amount']
+    total += float(period['fee'])
+    changes = {}
+    if repr(total) != payment['amount']:
+        changes['amount'] = [payment['amount'], repr(total)]
+    if notes != payment['notes']:
+        changes['notes'] = [text(payment['notes']), notes]
+    events.append(audit('Payment', payment['id'], 1, changes, OWN, 'direct'))
+    rows[PAYMENT] = {payment['id']: {'meta_payment_categories': copy.deepcopy(payment['meta'])}}
+    expected = check_constraint_text(payment_columns(payment, amount=f'{total:.2f}', notes=notes,
+                                                     metas=copy.deepcopy(payment['meta'])))
+    add(name, 'owner', service_path(label, 'update'), 500, {'error': expected}, method='PATCH', body={'fee': fee},
+        effect={'actor': 'owner', 'rows': rows, 'audit': events})
+
+
+negative_service('services-update-walk-negative-amount-check-constraint', 'refund', '-100.00')
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Camps and retreats periods and period services authored sequence with audit effects',

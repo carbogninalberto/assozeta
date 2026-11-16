@@ -119,6 +119,10 @@ type CampsSubscriptionsTransaction interface {
 	SelectedServices(ctx context.Context, subscriptionPeriod string) ([]CampSelectedService, error)
 	PeriodServicesUnordered(ctx context.Context, period string) ([]CampsService, error)
 	CreatePayment(ctx context.Context, row CampPaymentCreate) (map[string][2]string, error)
+	// CreatePaymentRejected runs generate_payment_for_periods' INSERT inside a
+	// savepoint, which is rolled back, and returns psycopg2's exception text for
+	// the row. ok is false when the database accepted the statement.
+	CreatePaymentRejected(ctx context.Context, row CampPaymentCreate) (text string, ok bool, err error)
 	SetSubscriptionPeriodPayment(ctx context.Context, id, payment string) error
 	// DeletePayment is payment.delete() (signal, SET_NULL, join rows) with its
 	// audit entry.

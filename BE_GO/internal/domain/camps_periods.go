@@ -97,6 +97,11 @@ type CampsTransaction interface {
 	UpdateService(ctx context.Context, row CampsService) error
 	WalkRows(ctx context.Context, period string) ([]CampsWalkRow, error)
 	SavePayment(ctx context.Context, row CampsPayment) error
+	// SavePaymentRejected runs the walk's UPDATE of a save the amount check
+	// constraint rejects inside a savepoint, which is rolled back, and returns
+	// psycopg2's exception text for the row. ok is false when the database
+	// accepted the statement.
+	SavePaymentRejected(ctx context.Context, row CampsPayment) (text string, ok bool, err error)
 	DefaultPaymentCategory(ctx context.Context, association *string) (id, name *string, err error)
 	PaymentLinkedName(ctx context.Context, payment string) (PaymentLinkedName, error)
 	// DeletePeriod deletes the period, its services and subscription periods

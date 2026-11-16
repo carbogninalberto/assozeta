@@ -178,6 +178,15 @@ SUBPERIODS = {
     'lp_sept': {'id': next(ids), 'cs': 'luisa_plain', 'period': 'sept', 'payment': 'luisa_paid', 'services': ['guide']},
     'a_abroad': {'id': next(ids), 'cs': 'abroad', 'period': 'abroad', 'payment': 'abroad', 'services': ['abroad']},
 }
+# Long-tail PR 4: a period whose service fee is negative, so the payment
+# generate_payment_for_periods creates has a negative amount and the check
+# constraint refuses the INSERT (after all of the definition above, so the
+# existing ids do not move).
+PERIODS['negative'] = {'id': next(ids), 'camp': 'camp', 'start': '2026-12-01T07:00:00Z', 'end': '2026-12-02T07:00:00Z',
+                       'title': 'Sconto', 'description': None, 'fee': '0.00', 'max': None, 'created': '2026-06-09T10:00:00Z'}
+SERVICES['loss'] = {'id': next(ids), 'period': 'negative', 'title': 'Sconto', 'description': None, 'fee': '-50.00',
+                    'category': 'own', 'created': '2026-06-09T11:00:00Z'}
+PERIOD_LINKS['negative'] = ['loss']
 
 CSUB, SUBPERIOD, PAYMENT = 'CampsAndRetreatsSubscription', 'CampsAndRetreatsSubscriptionPeriod', 'Payment'
 CS_PATH, SP_PATH = 'camps_and_retreats.sport_association', 'subscription.camps_and_retreats.sport_association'
@@ -698,6 +707,60 @@ failed_payment('add-notes-too-long-rolls-back', 'luisa', [('wordy', [f'wordy_{n}
 failed_payment('add-malformed-group-payment', 'sibling', [('july', ['kayak'])],
                {'subscription': rid('sibling'), 'periods': [period_body('july', 'kayak')]}, "['“abc” is not a valid UUID.']",
                headers={'X-Group-Id': 'abc'})
+
+
+# PostgreSQL's text output of a row, as the check constraint's DETAIL renders
+# it: every column of application_payment in table order, each value clipped to
+# 64 bytes (multibyte aware) with '...', NULL as null.
+def pg_text(value):
+    if value is None:
+        return 'null'
+    if isinstance(value, bool):
+        return 't' if value else 'f'
+    if isinstance(value, (list, dict)):
+        return jsonb_text(value)
+    return str(value)
+
+
+def jsonb_text(value):
+    """jsonb's text output: keys ordered by length then bytes, ', ' and ': ' separators."""
+    if isinstance(value, dict):
+        keys = sorted(value, key=lambda key: (len(key.encode()), key.encode()))
+        return '{' + ', '.join(json.dumps(key, ensure_ascii=False) + ': ' + jsonb_text(value[key]) for key in keys) + '}'
+    if isinstance(value, list):
+        return '[' + ', '.join(jsonb_text(item) for item in value) + ']'
+    return json.dumps(value, ensure_ascii=False)
+
+
+def pg_clip(text):
+    encoded = text.encode()
+    if len(encoded) <= 64:
+        return text
+    return encoded[:64].decode('utf-8', 'ignore') + '...'
+
+
+def generated_row(amount, notes, metas):
+    """application_payment's columns in table order for the payment generate_payment_for_periods inserts. The payment id
+    and creation date are generated: the family contract replaces them by placeholders on both sides."""
+    values = ['$payment', 'default', '0', f'{amount:.2f}', '$created', None, False,
+              ASSOCIATES[REGISTRATIONS['mario']['associate']]['id'], None, OWN, OWNER, None, False, None, ACCOUNT['id'], False,
+              '$default_category', '$default_category_name', None, None, None, notes, metas, None, False, None, None]
+    return '(' + ', '.join(pg_clip(pg_text(value)) for value in values) + ').'
+
+
+# The generated payment's negative amount fails the check constraint: the add is
+# atomic, so nothing stays, and the view answers the driver's text naming the
+# row (its id and creation date are generated).
+def negative_payment(name, camp, registration, selected):
+    metas, notes, amount = generated(camp, selected)
+    assert amount < 0, name
+    period, services = selected[-1]
+    failed_payment(name, registration, selected, {'subscription': rid(registration), 'periods': [period_body(period, *services)]},
+                   'new row for relation "application_payment" violates check constraint "payment_amount_positive"\n'
+                   'DETAIL:  Failing row contains ' + generated_row(amount, notes, metas) + '\n')
+
+
+negative_payment('add-negative-generated-payment', 'camp', 'mario', [('negative', ['loss'])])
 
 add('add-existing-explicit-id', 'owner', A('camp'), 400, {'error': repr_detail([('camps_and_retreats_subscription_id', [UNIQUE])])},
     method='POST', body={'camps_and_retreats_subscription_id': NEW_SUB, 'subscription': rid('mario')})

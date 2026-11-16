@@ -29,6 +29,10 @@ func TestLongTailAppStateErrors(t *testing.T) {
 		"errCourseLocationNoStorage":         errCourseLocationNoStorage,
 		"errSubscriptionMembershipNoStorage": errSubscriptionMembershipNoStorage,
 		"errCampsGroupRemoved":               errCampsGroupRemoved,
+		"errCampsWalkFailure":                errCampsWalkFailure,
+		"errCampsRejectedAccepted":           errCampsRejectedAccepted,
+		"errCampsUnknownSaveFailure":         errCampsUnknownSaveFailure,
+		"errPaymentStoredJSON":               errPaymentStoredJSON,
 		"ErrPaymentStateUnreachable":         domain.ErrPaymentStateUnreachable,
 		"ErrStripeUnreachable":               domain.ErrStripeUnreachable,
 		"ErrInvoiceCoreUnreachable":          domain.ErrInvoiceCoreUnreachable,
@@ -69,8 +73,7 @@ func TestInstanceBackupsRunnerReplyDepthIsAppState(t *testing.T) {
 // Django answers them normally, so they stay refusal sentinels.
 func TestLongTailHandoffRefusals(t *testing.T) {
 	for name, err := range map[string]error{
-		"ErrPersonaNotPorted":      ErrPersonaNotPorted,
-		"ErrCampsPaymentNotPorted": ErrCampsPaymentNotPorted,
+		"ErrPersonaNotPorted": ErrPersonaNotPorted,
 	} {
 		wrapped := fmt.Errorf("wrapped: %w", err)
 		if !errors.Is(wrapped, refusal.ErrNotPorted) || errors.Is(wrapped, refusal.ErrAppState) {

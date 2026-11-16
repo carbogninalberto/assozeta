@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"strconv"
+	"strings"
 	"time"
 	"unicode/utf8"
 
@@ -383,8 +384,7 @@ func (r *campsSubscriptionRequest) createSubscriptionPeriod(ctx context.Context,
 }
 
 // generatePayment is generate_payment_for_periods. A *dto.CampsPythonError is
-// the exception that stops the view; ErrCampsPaymentNotPorted refuses an
-// outcome this port does not reproduce.
+// the exception that stops the view.
 func (r *campsSubscriptionRequest) generatePayment(ctx context.Context, cs domain.CampSubscription, campTitle *string,
 	registration *domain.CampRegistration) error {
 	rows, err := r.subs.GenerateRows(ctx, cs.ID)
@@ -446,13 +446,9 @@ func (r *campsSubscriptionRequest) generatePayment(ctx context.Context, cs domai
 			return errCampsGroupRemoved
 		}
 	}
-	_, stored, ok := dto.CampsStoredAmount(amount)
-	if !ok {
-		if dto.CampsAmountOverflows(amount) {
-			return &dto.CampsPythonError{Message: campsNumericOverflow}
-		}
-		// A negative amount fails the check constraint, whose message dumps the new row (generated ids).
-		return ErrCampsPaymentNotPorted
+	stored, numeric := dto.CampsStoredSignedAmount(amount)
+	if !numeric {
+		return &dto.CampsPythonError{Message: campsNumericOverflow}
 	}
 	if utf8.RuneCountInString(notes) > 5120 {
 		return &dto.CampsPythonError{Message: campsNotesTooLong}
@@ -464,6 +460,19 @@ func (r *campsSubscriptionRequest) generatePayment(ctx context.Context, cs domai
 	payment := domain.CampPaymentCreate{ID: r.s.ids(), Amount: stored, AmountRepr: dto.CampsFloat(amount), CreatedAt: r.at,
 		Description: categoryName, CategoryID: category, Metas: dto.CampsJSONText(metas), MetasAudit: dto.CampsJSONAudit(metas), UserID: owner,
 		AssociateID: registration.AssociateID, AssociationID: cs.CampAssociationID, AccountID: account, Notes: notes, GroupID: group}
+	if strings.HasPrefix(stored, "-") {
+		// The amount check constraint rejects the row: the INSERT runs in a
+		// savepoint so the exception text is the database's own (it names the
+		// generated id and creation date).
+		text, refused, err := r.subs.CreatePaymentRejected(ctx, payment)
+		if err != nil {
+			return err
+		}
+		if !refused {
+			return errCampsRejectedAccepted
+		}
+		return &dto.CampsPythonError{Message: text}
+	}
 	changes, err := r.subs.CreatePayment(ctx, payment)
 	if err != nil {
 		return err

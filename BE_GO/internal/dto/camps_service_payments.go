@@ -223,6 +223,19 @@ func (n campsNumber) add(value any) (campsNumber, error) {
 // numeric(9,2) rounding (half away from zero). ok is false when PostgreSQL
 // would reject the value (overflow) or the amount check constraint fails.
 func CampsStoredAmount(value float64) (string, string, bool) {
+	return campsStoredAmount(value, false)
+}
+
+// CampsStoredSignedAmount is CampsStoredAmount without the payment amount check
+// constraint: the numeric(9,2) text PostgreSQL stores for a value it accepts as
+// a number, negative values included. ok is false when numeric(9,2) refuses the
+// value (absolute value >= 10^7), which the caller reports as the overflow.
+func CampsStoredSignedAmount(value float64) (string, bool) {
+	_, stored, ok := campsStoredAmount(value, true)
+	return stored, ok
+}
+
+func campsStoredAmount(value float64, signed bool) (string, string, bool) {
 	if math.IsInf(value, 0) || math.IsNaN(value) {
 		return "", "", false
 	}
@@ -247,7 +260,10 @@ func CampsStoredAmount(value float64) (string, string, bool) {
 	}
 	stored := digits[:len(digits)-2] + "." + digits[len(digits)-2:]
 	if negative && quotient.Sign() != 0 {
-		return "", "", false
+		if !signed {
+			return "", "", false
+		}
+		stored = "-" + stored
 	}
 	return nine, stored, true
 }
