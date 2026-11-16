@@ -112,15 +112,17 @@ After steps 1–3 above, with `token`, `username` and `backend` in the body:
 6. The shared tail: the `UserPartial` of the body's e-mail is deleted (after the user, unlike the password path), a subscription
    transfer raises (the user is kept), then tokens, response and the welcome e-mail as in the password path.
 
-## Not ported (Go answers the 500 page before any write)
+## Not ported
 
-- signup social path: an identity or body first/last name that is not a string, and a non-ASCII identity e-mail or username when
-  a new account would be created (Python's Unicode `lower()`/`upper()`).
-- signup e-mails with non-ASCII characters (Python's Unicode `lower()`) and usernames with non-ASCII characters (Python's
-  Unicode `\w` and `upper()`).
-- reset passwords with NUL characters or lone surrogates.
-- Non-English languages are rendered (validation messages in Italian for other languages, e-mails through `emailrender`) but the
-  HTTP family runs in English only.
+None of these views refuses an input. Signup uses Python's full case mappings (`str.lower()`/`str.upper()`, including `İ` and the
+final-sigma rule) for the disposable check, the `skrank.com` comparison, `normalize_email`, the stored username and the welcome
+mail's recipient. `EmailValidator` follows Django for a Unicode domain and rejects a Unicode local part, except for the four code
+points `re.IGNORECASE` folds into an ASCII class (`İ`, `ı`, `ſ`, `K`), which are matched explicitly. A social name that PostgreSQL
+cannot store (a NUL) fails `create_user`, after the collaboration invite is consumed and before the partial user is deleted, and
+therefore answers the 500 page as Django does.
+
+Known limitation outside the refusal list: non-English languages are rendered (validation messages in Italian for other languages,
+e-mails through `emailrender`) but the HTTP family runs in English only.
 
 ## Evidence
 
@@ -182,3 +184,19 @@ column length: the 500 page. A float name is still handed off (the mail writes i
 
 **Ported in t6x2**: a float name is stored and answered as its `str()` and the welcome mail writes it in the language's number
 format (`emailrender.Localize`); cases `names-float`, `names-float-from-claims`.
+
+## Long-tail t4c
+
+The oauth2 signup flow no longer refuses non-ASCII or NUL input:
+
+- the disposable check, the `skrank.com` comparison, `normalize_email` (strip, domain only) and the welcome mail's recipient use
+  Python's full `str.lower()`, the stored username Python's full `str.upper()` (`ß` → `SS`, `İ` → `i` + U+0307, final sigma);
+  cases `signup-unicode-email-domain`, `signup-email-dotted-i`, `signup-username-sharp-s`;
+- `EmailValidator` accepts a Unicode domain label and rejects a non-ASCII local part (apart from the `re.IGNORECASE` extras
+  `İ`, `ı`, `ſ`, `K`, now matched explicitly); case `signup-unicode-email-local-part`;
+- a social signup uses the identity's e-mail as sent (normalized at `create_user` and lower-cased for the welcome mail); case
+  `signup-social-google-unicode-email-domain`;
+- a social first/last name with a NUL is not refused before the write: `create_user`'s INSERT fails, after the collaboration
+  invite has been consumed and before the partial user is deleted, and answers the 500 page; case `signup-social-name-nul`.
+
+The fixture has 176 cases; `ErrOAuthNotPorted` and `dto.IsASCII` are deleted.

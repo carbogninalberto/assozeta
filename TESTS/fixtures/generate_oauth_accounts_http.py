@@ -131,6 +131,9 @@ INVITES = {
     'social_valid': {'collaboration_invite_id': uid(761100), 'user': OWNER, 'email': 'collab.social@example.test',
                      'token': 'oauth-invite-social-valid', 'expiration_date': '2099-01-01T00:00:00Z', 'collaborator_role': 3,
                      'collaborator_permissions': ['association.members.read', 'association.members.update']},
+    'social_nul': {'collaboration_invite_id': uid(761110), 'user': OWNER, 'email': 'collab.nul@example.test',
+                   'token': 'oauth-invite-social-nul', 'expiration_date': '2099-01-01T00:00:00Z', 'collaborator_role': 1,
+                   'collaborator_permissions': None},
 }
 PARTIALS = {
     'existing': {'id': 990001, 'email': 'partial.existing@example.test'},
@@ -487,6 +490,21 @@ add('signup-username-with-nul', 'anonymous', SIGNUP, 400,
     details(username=['Enter a valid username. This value may contain only letters, numbers, and @/./+/-/_ characters.',
                       'Null characters are not allowed.']),
     body=body(33, username='abc\u0000def'))
+# EmailValidator accepts a Unicode domain label (hostname_re's \u00a1-\uffff); create_user lower-cases only the
+# domain and the welcome mail lower-cases the whole normalized address. The local part stays ASCII (re.IGNORECASE).
+add('signup-unicode-email-domain', 'anonymous', SIGNUP, 200, '$signup',
+    body=body(34, email='Ana@Bücher.EXAMPLE', username='ana-buecher'),
+    effect=created(username='ANA-BUECHER', email='Ana@bücher.example'))
+add('signup-unicode-email-local-part', 'anonymous', SIGNUP, 400, details(email=['Enter a valid email address.']),
+    body=body(35, email='Zoë@example.test'))
+add('signup-email-dotted-i', 'anonymous', SIGNUP, 200, '$signup', body=body(37, email='İ@Example.TEST'),
+    effect=created(username='PERSONA-37', email='İ@example.test'))
+add('signup-username-sharp-s', 'anonymous', SIGNUP, 200, '$signup', body=body(36, username='straße'),
+    effect=created(username='STRASSE', email='persona36@example.test'))
+# create_user stores str.upper() then normalize_username (NFKC): full-width
+# letters upper-case to full-width capitals, which NFKC folds to ASCII.
+add('signup-unicode-username-nfkc', 'anonymous', SIGNUP, 200, '$signup', body=body(38, username='ｍａｒｉｏ７'),
+    effect=created(username='MARIO7', email='persona38@example.test'))
 add('signup-athlete-username-taken-now', 'anonymous', SIGNUP, 400, details(username=['A user with that username already exists.']),
     body=body(8, username='NUOVO-ATLETA'))
 add('signup-athlete-owner-actor', 'owner', SIGNUP, 200, '$signup',
@@ -627,6 +645,11 @@ sadd('username-conflict', 500, SERVER, social(21, identity('google', 'persona21@
 # A name that is not a string is stored, mailed and answered as its str(); None fails the insert.
 sadd('name-null', 500, SERVER, social(21, identity('google', 'persona21@example.test'), first_name=None), GOOGLE)
 sadd('name-too-long-list', 500, SERVER, social(21, identity('google', 'persona21@example.test'), last_name=['x' * 150]), GOOGLE)
+# create_user's INSERT refuses a NUL (psycopg2 raises while building the query); the invite was consumed first
+# and the partial deletion is later in the try, so only the invite is gone.
+sadd('name-nul', 500, SERVER,
+     social(45, identity('google', 'persona45@example.test', claims={'given_name': 'A\u0000B'}),
+            collaboratorToken='oauth-invite-social-nul'), GOOGLE, effect=removed(invite='social_nul'))
 sadd('names-not-strings', 200, '$signup',
      social(40, identity('google', 'persona40@example.test'), first_name=['a', 1, None, {'k': "it's <b>"}], last_name=12), GOOGLE,
      effect=created(first="['a', 1, None, {'k': \"it's <b>\"}]", last='12', username='PERSONA-40', email='persona40@example.test',
@@ -643,6 +666,11 @@ sadd('names-float-from-claims', 200, '$signup',
      social(43, identity('google', 'persona43@example.test', claims={'given_name': 2.0, 'family_name': -2.5e-07})), GOOGLE,
      effect=created(first='2.0', last='-2.5e-07', mail_first=2.0, mail_last=-2.5e-07, username='PERSONA-43',
                     email='persona43@example.test', password=None, social=True))
+# The identity's e-mail is not run through the serializer here: normalize_email lower-cases its domain, the
+# welcome mail lower-cases the whole address.
+sadd('google-unicode-email-domain', 200, '$signup',
+     social(46, identity('google', 'Ana@Bücher.EXAMPLE', claims={'given_name': 'Ana', 'family_name': 'Bücher'})), GOOGLE,
+     effect=created(first='Ana', last='Bücher', username='PERSONA-46', email='Ana@bücher.example', password=None, social=True))
 sadd('google-athlete', 200, '$signup',
      social(22, identity('google', 'Social.New@Example.TEST', claims={'given_name': 'Zoë', 'family_name': "D'Arco <it>"}),
             email='Social.Partial@example.test', username='social-nuovo', first_name='ignored', last_name='ignored', unknown=1),
