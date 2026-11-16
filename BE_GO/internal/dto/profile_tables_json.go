@@ -21,10 +21,16 @@ func ParseProfileTablesJSON(data []byte) (any, error) {
 // parseProfileTablesJSONConstants adds the lone surrogate strings to constants
 // (already holding other substituted tokens, keyed by end offset) and parses.
 func parseProfileTablesJSONConstants(data []byte, constants map[int64]any, rateLimit bool) (any, error) {
+	return parseProfileTablesJSONConstantsLimit(data, constants, rateLimit, referenceJSONNesting)
+}
+
+// parseProfileTablesJSONConstantsLimit is parseProfileTablesJSONConstants with
+// an explicit container nesting limit.
+func parseProfileTablesJSONConstantsLimit(data []byte, constants map[int64]any, rateLimit bool, limit int) (any, error) {
 	if err := jsonLoneSurrogateStrings(data, constants); err != nil {
 		return nil, err
 	}
-	return parseReferenceJSON(data, constants, rateLimit)
+	return parseReferenceJSONLimit(data, constants, rateLimit, limit)
 }
 
 // jsonLoneSurrogateStrings adds each string literal holding a lone surrogate
