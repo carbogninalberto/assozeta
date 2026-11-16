@@ -263,11 +263,14 @@ func (s *DocumentRender) Render(ctx context.Context, identity domain.ResolvedIde
 	if err != nil || reply != nil {
 		return reply, err
 	}
-	if !job.ignore && job.failed == nil && !pdfrender.HeaderSafe(job.filename) &&
-		(job.fill != nil || !strings.ContainsAny(job.filename, "\r\n")) {
-		// A header the HTTP server itself refuses, or email.header splits: not ported. A line break is Django's own
-		// BadHeaderError, answered by print after the storage task.
-		return nil, ErrDocumentRenderNotPorted
+	if !job.ignore && job.failed == nil {
+		lineBreak := strings.ContainsAny(job.filename, "\r\n")
+		if lineBreak && job.fill != nil || !lineBreak && pdfrender.ServerRefusesHeader(job.filename) {
+			// A filled form with a line break, or a header the HTTP server refuses after the view's writes
+			// (uvicorn closes the connection: long-tail rule 4, platform). A line break otherwise is Django's own
+			// BadHeaderError, answered by print after the storage task.
+			return nil, ErrDocumentRenderNotPorted
+		}
 	}
 	return s.print(ctx, identity, request, job)
 }

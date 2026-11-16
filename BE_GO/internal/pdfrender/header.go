@@ -24,6 +24,34 @@ func HeaderSafe(text string) bool {
 	return true
 }
 
+// ServerRefusesHeader reports whether the HTTP server in front of Django
+// (uvicorn 0.35 with httptools) refuses the Content-Disposition Django writes
+// for text, a value without CR or LF: the bytes match
+// [\x00-\x08\x0a-\x1f\x7f] (HEADER_VALUE_RE), and uvicorn then closes the
+// connection after the view ran. An ISO-8859-1 value is written as its bytes
+// (0x85 passes); another value becomes email.header MIME words, which a
+// str.splitlines() boundary folds with "\n " (any other control character is
+// encoded inside the word).
+func ServerRefusesHeader(text string) bool {
+	latin := true
+	for _, r := range text {
+		if r > 0xff {
+			latin = false
+			break
+		}
+	}
+	for _, r := range text {
+		switch {
+		case latin && (r < 0x20 && r != '\t' || r == 0x7f):
+			return true
+		case !latin && (r == '\n' || r == '\r' || r == '\v' || r == '\f' || r == 0x1c || r == 0x1d || r == 0x1e ||
+			r == 0x85 || r == 0x2028 || r == 0x2029):
+			return true
+		}
+	}
+	return false
+}
+
 // HeaderBytes is the header value Django writes for text: its ISO-8859-1
 // bytes when every code point fits, otherwise
 // email.header.Header(text, 'utf-8', maxlinelen=sys.maxsize).encode(), one

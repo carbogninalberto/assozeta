@@ -172,6 +172,22 @@
    "last": "Ne\r\nri x",
    "email": null,
    "user": null
+  },
+  "nel": {
+   "id": "a1000000-0000-4000-8000-000000984135",
+   "association": "own",
+   "first": "Lia",
+   "last": "Bianchi",
+   "email": null,
+   "user": null
+  },
+  "control": {
+   "id": "a1000000-0000-4000-8000-000000984136",
+   "association": "own",
+   "first": "Ωmega",
+   "last": "Ne\u0001ri",
+   "email": null,
+   "user": null
   }
  },
  "documents": {
@@ -377,6 +393,22 @@
    "id": "a1000000-0000-4000-8000-000000984097",
    "association": "own",
    "associate": "separators",
+   "user": "owner",
+   "group": null,
+   "document": null
+  },
+  "nel": {
+   "id": "a1000000-0000-4000-8000-000000984137",
+   "association": "own",
+   "associate": "nel",
+   "user": "owner",
+   "group": null,
+   "document": null
+  },
+  "control": {
+   "id": "a1000000-0000-4000-8000-000000984138",
+   "association": "own",
+   "associate": "control",
    "user": "owner",
    "group": null,
    "document": null
@@ -5741,6 +5773,78 @@
     "stored": false,
     "promoted": []
    }
+  },
+  {
+   "name": "document-render-subscription-name-with-nel-header",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984137",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/subscription/a1000000-0000-4000-8000-000000984137/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo di Iscrizione Lia Bianchi.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [
+     [
+      "subscription",
+      "nel"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "disposition": "inline; filename=[Message reads own] Modulo di Iscrizione Lia Bianchi.pdf"
+  },
+  {
+   "name": "document-render-subscription-name-with-control-header",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984138",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/subscription/a1000000-0000-4000-8000-000000984138/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo di Iscrizione Ωmega Ne\u0001ri.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [
+     [
+      "subscription",
+      "control"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "disposition": "inline; filename=[Message reads own] Modulo di Iscrizione Ωmega Ne\u0001ri.pdf"
   },
   {
    "name": "document-render-compensation-instructor-owner-without-association",
