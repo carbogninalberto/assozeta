@@ -197,6 +197,21 @@ func (a *restoreArchive) json(name string) (any, error) {
 	return restoreJSON(data)
 }
 
+// restoreStreamError classifies an iter_json_array failure: a ZIP reader
+// exception as restoreReaderError does, the C recursion band as itself, and
+// everything else (the array grammar's ValueError, JSONDecodeError,
+// UnicodeDecodeError, RecursionError) as the damaged archive validate() raises.
+func restoreStreamError(err error) error {
+	var exc *pyzipfile.Exception
+	switch {
+	case errors.Is(err, dto.ErrJSONRecursionBand):
+		return err
+	case errors.As(err, &exc):
+		return restoreReaderError(err)
+	}
+	return errRestoreDamaged
+}
+
 // restoreJSON is json.loads(zf.read(name)) for the bytes of a member: the
 // same BOM/UTF-8/16/32 detection and surrogatepass decoding, then
 // dto.PythonJSONLoads. Every ValueError, UnicodeError and RecursionError it
@@ -835,28 +850,30 @@ func (a *restoreArchive) skippedRecords(plan *importeffects.Plan) (celery.Dict, 
 		if !a.zip.has(expected) {
 			return nil, errRestoreDamaged // KeyError: Missing retired section
 		}
-		data, err := a.zip.read(expected)
+		// with archive.open(filename) as source: iter_json_array(source): the
+		// member is read in chunks, so a JSON error can come before a reader
+		// exception further on.
+		source, err := a.zip.openMember(expected)
 		if err != nil {
 			return nil, restoreReaderError(err)
 		}
-		decoded, err := restoreJSON(data)
-		if err != nil {
-			return nil, err
-		}
-		rows, ok := decoded.([]any)
-		if !ok {
-			return nil, errRestoreDamaged
-		}
-		for _, row := range rows {
+		rows := 0
+		err = importIterJSONArray(source, importJSONChunkSize, func(row any) error {
 			if _, ok := row.(domain.RequestObject); !ok {
-				return nil, errRestoreDamaged
+				return errRestoreDamaged // ValueError: Invalid retired record
 			}
+			rows++
+			return nil
+		})
+		source.Close()
+		if err != nil {
+			return nil, restoreStreamError(err)
 		}
 		count, _ := importGet(spec, "count")
-		if importTypeName(count) != "int" || !restoreEqual(count, int64ToNumber(len(rows))) {
+		if importTypeName(count) != "int" || !restoreEqual(count, int64ToNumber(rows)) {
 			return nil, errRestoreDamaged
 		}
-		counts = append(counts, celery.Item{Key: name, Value: int64(len(rows))})
+		counts = append(counts, celery.Item{Key: name, Value: int64(rows)})
 	}
 	return counts, nil
 }

@@ -8,6 +8,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pyzipfile"
 )
 
 // TestRestoreJSONLiteralsAndLimits pins json.loads outcomes measured under
@@ -51,5 +52,24 @@ func TestRestoreJSONLiteralsAndLimits(t *testing.T) {
 	many := []byte("[" + strings.Repeat("NaN,", 1<<16) + "NaN]")
 	if value, err := restoreJSON(many); err != nil || len(value.([]any)) != 1<<16+1 {
 		t.Errorf("NaN list: %v", err)
+	}
+}
+
+// TestRestoreStreamError: iter_json_array's failures in skipped_records.
+func TestRestoreStreamError(t *testing.T) {
+	cases := []struct {
+		err  error
+		want error
+	}{
+		{dto.ErrJSONRecursionBand, dto.ErrJSONRecursionBand},
+		{&pyzipfile.Exception{Type: "EOFError", Text: "Compressed file ended before the end-of-stream marker was reached"}, errRestoreReaderRaised},
+		{&pyzipfile.Exception{Type: "BadZipFile", Text: "Bad CRC-32 for file 'x'"}, errRestoreDamaged},
+		{errors.New("Expecting value"), errRestoreDamaged},
+		{errRestoreDamaged, errRestoreDamaged},
+	}
+	for _, c := range cases {
+		if got := restoreStreamError(c.err); !errors.Is(got, c.want) {
+			t.Errorf("restoreStreamError(%v) = %v, want %v", c.err, got, c.want)
+		}
 	}
 }
