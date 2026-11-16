@@ -28,6 +28,7 @@ from datetime import date, datetime, time as day_time, timedelta, timezone
 import json
 import os
 import pickle
+import re
 import threading
 import time
 import uuid
@@ -738,7 +739,6 @@ def check_audit(case, effect, before, after, fixture, ids, context, binding):
         instance = model._base_manager.filter(pk=pk).first()
         if spec['model'] == 'user' and spec['action'] == 0:
             # create_user saved the token_hex(10) username first.
-            import re
             token = (event['changes'].get('username') or [None, ''])[1]
             contract.require(re.fullmatch(r'[0-9a-f]{20}', token) is not None, 'audit.token-username')
             binding['$token_username'] = token

@@ -112,9 +112,9 @@ segment or an absolute name) raises `SuspiciousFileOperation` inside the view's 
 `Document` the view created (the create and delete entries are each other's inverse) and the registration continues
 without a certificate (`wizard-certificate-placeholder-traversal-name`); `../x` is one file-name component, not a path
 segment, so its certificate is created (`wizard-certificate-placeholder-dotdot-component`). The f-string takes `str()` of
-each name: a NULL name draws and names `None`, and a number is its digits (`7` names
-`medical_certificate_7_<last>.png`, `wizard-certificate-placeholder-numeric-name`, while the serializer stores the same
-`str()`). Go draws the same bytes with `internal/pilplaceholder`
+each name: a NULL name draws and names `None`. A number never gets there: `check_if_subscription_exists` runs first
+on the raw value and PostgreSQL has no `UPPER(7)`, so the registration is the 500 page
+(`wizard-certificate-placeholder-numeric-name-server-error`). Go draws the same bytes with `internal/pilplaceholder`
 (Pillow's embedded font and PNG encoder; `PIL_PLACEHOLDER_ZLIB` names the zlib of the Django side's Pillow: classic `zlib` by
 default, as in the Django image, or `zlib-ng`). The same parse and placeholder branch are shared by renewals and the draft approval
 (`subscription-renew`).
@@ -455,7 +455,7 @@ Long tail PR 4: the placeholder branch ports the view's whole try block. The fil
 the request's names; a name `Storage.save` rejects (`SuspiciousFileOperation`) deletes the placeholder `Document` and the
 registration goes on without a certificate; a database error on the `Document` insert is the 500 page and rolls the whole
 registration back. Cases `wizard-certificate-placeholder-dotdot-component`,
-`wizard-certificate-placeholder-traversal-name`, `wizard-certificate-placeholder-numeric-name` and
+`wizard-certificate-placeholder-traversal-name`, `wizard-certificate-placeholder-numeric-name-server-error` and
 `wizard-certificate-placeholder-name-over-255-server-error`; `subscription/renew` and the draft approval run the same
 branch.
 ## Long tail PR 4 (agent C): the create sites of the not-ported list
@@ -523,8 +523,10 @@ branch.
 - An athlete request names an account and reads *its* association: `SportAssociation.objects.get(user=...)` is the
   500 page for an account without one (`athlete-form-athlete-username-server-error`). The port no longer requires the
   named account to be an athlete: an imported collaborator that owns an association runs the registration in it.
-- `subscription_exists` compares `str()` of the names/tax code sent (CharField), while the serializer takes an int as
-  its text and rejects a container; cases `associate-first-name-number`, `associate-first-name-list-invalid`.
+- `subscription_exists` runs before the serializer on the names/tax code sent, and `IExact` does not prepare its value
+  (`prepare_rhs = False`): a number, a boolean or a list reaches `UPPER(%s)` as it is (PostgreSQL has no such function)
+  and a dict cannot be adapted, so any value but a text or None is the 500 page with the atomic block rolled back; cases
+  `associate-first-name-number-server-error`, `associate-first-name-list-server-error`.
 - `MedicalCertificate.objects.filter(medical_id=...)` reads an int (a bool included) as `uuid.UUID(int=...)` (no
   certificate) and a float/container as its `ValidationError` (the 500 page); cases
   `medical-id-number-no-certificate`, `medical-id-float-server-error`.

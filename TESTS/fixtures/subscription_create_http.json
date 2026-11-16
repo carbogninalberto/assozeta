@@ -24101,210 +24101,14 @@
    "setup": null
   },
   {
-   "name": "subscription-create-wizard-certificate-placeholder-numeric-name",
+   "name": "subscription-create-wizard-certificate-placeholder-numeric-name-server-error",
    "actor": "owner",
    "method": "POST",
    "path": "/subscription/add",
    "headers": {},
-   "status": 200,
-   "response": {
-    "status": "success",
-    "payment_id": "$new",
-    "amount": 25.0
-   },
-   "effect": {
-    "actor": "owner",
-    "associate": {
-     "match": "new",
-     "columns": {
-      "first_name": "7",
-      "last_name": "Numerico",
-      "tax_code": "NMRCNT90C41H501K",
-      "born_date": "1990-03-15",
-      "sex": "M",
-      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
-      "user_id": "a1000000-0000-4000-8000-000000700001"
-     }
-    },
-    "tutor": null,
-    "relation": false,
-    "payment": {
-     "match": "new",
-     "columns": {
-      "amount": "25.00",
-      "meta_payment_categories": null,
-      "meta": null
-     },
-     "audit": {
-      "amount": [
-       "None",
-       "25.0"
-      ]
-     }
-    },
-    "subscription": {
-     "type": 2,
-     "role": 1,
-     "status_flag": 1,
-     "meta": {
-      "plan_id": null,
-      "plan_name": null,
-      "membership_plan_id": null,
-      "membership_plan_name": null
-     },
-     "subscription_type": "",
-     "start_date": "$season_start",
-     "end_date": "$season_end",
-     "medical_id": "$placeholder_medical",
-     "subscription_number": "573"
-    },
-    "membership": {
-     "membership_type": "$default_membership_type",
-     "start_date": "$season_start",
-     "end_date": "$season_end",
-     "price": null,
-     "membership_number": "573"
-    },
-    "medical": null,
-    "broadcast_created": false,
-    "audit": [
-     {
-      "model": "associate",
-      "action": 0,
-      "ref": "associate",
-      "changes": {
-       "user": [
-        "None",
-        "None"
-       ]
-      },
-      "index": [
-       "a1000000-0000-4000-8000-000000701001",
-       "direct"
-      ]
-     },
-     {
-      "model": "associate",
-      "action": 1,
-      "ref": "associate",
-      "changes": {
-       "user": [
-        "None",
-        "a1000000-0000-4000-8000-000000700001"
-       ]
-      },
-      "index": [
-       "a1000000-0000-4000-8000-000000701001",
-       "direct"
-      ]
-     },
-     {
-      "model": "document",
-      "action": 0,
-      "ref": "placeholder_document",
-      "changes": {
-       "customer_invoice_pdf": [
-        "None",
-        "application.CustomerInvoice.None"
-       ]
-      },
-      "app": "docmanager",
-      "index": [
-       "a1000000-0000-4000-8000-000000701001",
-       "actor.sport_association"
-      ]
-     },
-     {
-      "model": "medicalcertificate",
-      "action": 0,
-      "ref": "placeholder_medical",
-      "changes": {
-       "expiration_date": [
-        "None",
-        "2027-03-31 00:00:00"
-       ]
-      },
-      "index": [
-       "a1000000-0000-4000-8000-000000701001",
-       "actor.sport_association"
-      ]
-     },
-     {
-      "model": "payment",
-      "action": 0,
-      "ref": "payment",
-      "changes": {
-       "amount": [
-        "None",
-        "25.0"
-       ]
-      },
-      "index": [
-       "a1000000-0000-4000-8000-000000701001",
-       "direct"
-      ]
-     },
-     {
-      "model": "subscription",
-      "action": 0,
-      "ref": "subscription",
-      "changes": {},
-      "index": [
-       "a1000000-0000-4000-8000-000000701001",
-       "direct"
-      ]
-     },
-     {
-      "model": "subscriptionmembership",
-      "action": 0,
-      "ref": "membership",
-      "changes": {},
-      "index": [
-       "a1000000-0000-4000-8000-000000701001",
-       "direct"
-      ]
-     }
-    ],
-    "celery": [
-     {
-      "task": "check_workflows_trigger",
-      "args": [],
-      "kwargs": [
-       [
-        "trigger_type",
-        "new_subscription"
-       ],
-       [
-        "sport_association_id",
-        {
-         "uuid": "a1000000-0000-4000-8000-000000701001"
-        }
-       ],
-       [
-        "subscription_id",
-        "$subscription_uuid"
-       ]
-      ]
-     },
-     {
-      "task": "print_document_subscription",
-      "args": [
-       "$subscription",
-       "$authorization"
-      ],
-      "kwargs": []
-     }
-    ],
-    "notification": {
-     "msg": "Nuova Iscrizione aggiunta per 7 Numerico.",
-     "association": "a1000000-0000-4000-8000-000000701001"
-    },
-    "placeholder": {
-     "filename": "medical_certificate_7_Numerico.png",
-     "expiration": "2027-03-31",
-     "text": "\n            7 Numerico\n\n            \n\n            Questa certificazione è valida fino al 2027-03-31 00:00:00+00:00\n\n            \n\n            \n\n            Attenzione: questo è un placeholder, il certificato medico deve essere caricato in seguito.\n                        "
-    }
-   },
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
    "body": {
     "new_user_account": {
      "new_member": false
@@ -25404,14 +25208,14 @@
      "subscription_type": "",
      "start_date": "$season_start",
      "end_date": "$season_end",
-     "subscription_number": "574"
+     "subscription_number": "573"
     },
     "membership": {
      "membership_type": "$default_membership_type",
      "start_date": "$season_start",
      "end_date": "$season_end",
      "price": null,
-     "membership_number": "574"
+     "membership_number": "573"
     },
     "medical": null,
     "broadcast_created": false,
@@ -25627,14 +25431,14 @@
      "subscription_type": "",
      "start_date": "$season_start",
      "end_date": "$season_end",
-     "subscription_number": "575"
+     "subscription_number": "574"
     },
     "membership": {
      "membership_type": "$default_membership_type",
      "start_date": "$season_start",
      "end_date": "$season_end",
      "price": null,
-     "membership_number": "575"
+     "membership_number": "574"
     },
     "medical": null,
     "broadcast_created": false,
@@ -25872,7 +25676,7 @@
    "status": 400,
    "response": {
     "email": [
-     "Not a valid string."
+     "Enter a valid email address."
     ]
    },
    "effect": null,
@@ -25965,173 +25769,14 @@
    "setup": null
   },
   {
-   "name": "subscription-create-associate-first-name-number",
+   "name": "subscription-create-associate-first-name-number-server-error",
    "actor": "owner",
    "method": "POST",
    "path": "/subscription/add",
    "headers": {},
-   "status": 200,
-   "response": {
-    "status": "success",
-    "payment_id": "$new",
-    "amount": 25.0
-   },
-   "effect": {
-    "actor": "owner",
-    "associate": {
-     "match": "new",
-     "columns": {
-      "first_name": "42",
-      "last_name": "Due",
-      "tax_code": "DRQNTA90C41H501Q",
-      "born_date": "1990-03-15",
-      "sex": "M",
-      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
-      "user_id": "a1000000-0000-4000-8000-000000700001"
-     }
-    },
-    "tutor": null,
-    "relation": false,
-    "payment": {
-     "match": "new",
-     "columns": {
-      "amount": "25.00",
-      "meta_payment_categories": null,
-      "meta": null
-     },
-     "audit": {
-      "amount": [
-       "None",
-       "25.0"
-      ]
-     }
-    },
-    "subscription": {
-     "type": 2,
-     "role": 1,
-     "status_flag": 1,
-     "meta": {
-      "plan_id": null,
-      "plan_name": null,
-      "membership_plan_id": null,
-      "membership_plan_name": null
-     },
-     "subscription_type": "",
-     "start_date": "$season_start",
-     "end_date": "$season_end",
-     "subscription_number": "576"
-    },
-    "membership": {
-     "membership_type": "$default_membership_type",
-     "start_date": "$season_start",
-     "end_date": "$season_end",
-     "price": null,
-     "membership_number": "576"
-    },
-    "medical": null,
-    "broadcast_created": false,
-    "audit": [
-     {
-      "model": "associate",
-      "action": 0,
-      "ref": "associate",
-      "changes": {
-       "user": [
-        "None",
-        "None"
-       ]
-      },
-      "index": [
-       "a1000000-0000-4000-8000-000000701001",
-       "direct"
-      ]
-     },
-     {
-      "model": "associate",
-      "action": 1,
-      "ref": "associate",
-      "changes": {
-       "user": [
-        "None",
-        "a1000000-0000-4000-8000-000000700001"
-       ]
-      },
-      "index": [
-       "a1000000-0000-4000-8000-000000701001",
-       "direct"
-      ]
-     },
-     {
-      "model": "payment",
-      "action": 0,
-      "ref": "payment",
-      "changes": {
-       "amount": [
-        "None",
-        "25.0"
-       ]
-      },
-      "index": [
-       "a1000000-0000-4000-8000-000000701001",
-       "direct"
-      ]
-     },
-     {
-      "model": "subscription",
-      "action": 0,
-      "ref": "subscription",
-      "changes": {},
-      "index": [
-       "a1000000-0000-4000-8000-000000701001",
-       "direct"
-      ]
-     },
-     {
-      "model": "subscriptionmembership",
-      "action": 0,
-      "ref": "membership",
-      "changes": {},
-      "index": [
-       "a1000000-0000-4000-8000-000000701001",
-       "direct"
-      ]
-     }
-    ],
-    "celery": [
-     {
-      "task": "check_workflows_trigger",
-      "args": [],
-      "kwargs": [
-       [
-        "trigger_type",
-        "new_subscription"
-       ],
-       [
-        "sport_association_id",
-        {
-         "uuid": "a1000000-0000-4000-8000-000000701001"
-        }
-       ],
-       [
-        "subscription_id",
-        "$subscription_uuid"
-       ]
-      ]
-     },
-     {
-      "task": "print_document_subscription",
-      "args": [
-       "$subscription",
-       "$authorization"
-      ],
-      "kwargs": []
-     }
-    ],
-    "notification": {
-     "msg": "Nuova Iscrizione aggiunta per 42 Due.",
-     "association": "a1000000-0000-4000-8000-000000701001"
-    }
-   },
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
    "body": {
     "new_user_account": {
      "new_member": false
@@ -26183,17 +25828,13 @@
    }
   },
   {
-   "name": "subscription-create-associate-first-name-list-invalid",
+   "name": "subscription-create-associate-first-name-list-server-error",
    "actor": "owner",
    "method": "POST",
    "path": "/subscription/add",
    "headers": {},
-   "status": 400,
-   "response": {
-    "first_name": [
-     "Not a valid string."
-    ]
-   },
+   "status": 500,
+   "response": "<stable-server-error-page>",
    "effect": null,
    "body": {
     "new_user_account": {
@@ -26302,14 +25943,14 @@
      "subscription_type": "",
      "start_date": "$season_start",
      "end_date": "$season_end",
-     "subscription_number": "577"
+     "subscription_number": "575"
     },
     "membership": {
      "membership_type": "$default_membership_type",
      "start_date": "$season_start",
      "end_date": "$season_end",
      "price": null,
-     "membership_number": "577"
+     "membership_number": "575"
     },
     "medical": null,
     "broadcast_created": false,
@@ -26586,14 +26227,14 @@
      "start_date": "$season_start",
      "end_date": "$season_end",
      "medical_id": "a1000000-0000-4000-8000-000000980007",
-     "subscription_number": "578"
+     "subscription_number": "576"
     },
     "membership": {
      "membership_type": "$default_membership_type",
      "start_date": "$season_start",
      "end_date": "$season_end",
      "price": null,
-     "membership_number": "578"
+     "membership_number": "576"
     },
     "medical": {
      "label": "unicode_digits",
@@ -26808,14 +26449,14 @@
      "subscription_type": "",
      "start_date": "$season_start",
      "end_date": "$season_end",
-     "subscription_number": "579"
+     "subscription_number": "577"
     },
     "membership": {
      "membership_type": "$default_membership_type",
      "start_date": "$season_start",
      "end_date": "$season_end",
      "price": null,
-     "membership_number": "579"
+     "membership_number": "577"
     },
     "medical": null,
     "broadcast_created": false,

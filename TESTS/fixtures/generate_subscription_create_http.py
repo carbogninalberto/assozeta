@@ -1732,11 +1732,12 @@ placeholder_rejected('wizard-certificate-placeholder-traversal-name', person('x/
 add('wizard-certificate-placeholder-name-over-255-server-error', 'owner', 500, SERVER,
     body=request(person('A' * 150, 'B' * 150, 'LNGNME90C41H501K'),
                  medical_certificate={'medical_id': None, 'filename': '', 'certificate_expring_date': '2027-03-31'}))
-# A numeric first name: DRF's CharField stores its str() ('7'), while the view's f-string reads initial_data's number and
-# names the placeholder medical_certificate_7_Numerico.png (str(7), not the stored text).
-placeholder('wizard-certificate-placeholder-numeric-name', person(7, 'Numerico', 'NMRCNT90C41H501K'), '7 Numerico',
-            {'medical_id': None, 'filename': '', 'certificate_expring_date': '2027-03-31'}, '2027-03-31',
-            stored={'first_name': '7'})
+# A numeric first name never reaches the placeholder: check_if_subscription_exists runs first with initial_data's raw
+# value, and IExact does not prepare it, so PostgreSQL is asked for UPPER(7) (no such function): the atomic block rolls
+# back and the view answers the 500 page.
+add('wizard-certificate-placeholder-numeric-name-server-error', 'owner', 500, SERVER,
+    body=request(person(7, 'Numerico', 'NMRCNT90C41H501K'),
+                 medical_certificate={'medical_id': None, 'filename': '', 'certificate_expring_date': '2027-03-31'}))
 
 # --- The sites this round ports --------------------------------------------------------------------------------
 # The association import writes the archive's values as they are: fee plans and
@@ -1847,11 +1848,12 @@ add('new-member-float-false', 'owner', 200, SUCCESS(25.0), setup=RENEW_SETUP,
     effect=success('owner', 'Franco Virgola', associate=created_associate(float_false), payment=new_payment('25.00', audit_amount='25.0'),
                    subscription=dict(PLAIN), membership=dict(MEMBER)))
 # The e-mail lookup compares str() of the value (CharField), then UserSerializer validates it:
-# a number becomes its text and fails the e-mail rule, a container is not a string.
+# a number becomes its text and fails the e-mail rule; a container fails CharField's 'invalid', which EmailField
+# words as the e-mail rule too.
 add('new-member-email-number', 'owner', 400, {'email': ['Enter a valid email address.']}, setup=RENEW_SETUP,
     body=request(person('Nino', 'Email', 'EMLNMR90C01H501N'),
                  account={'new_member': True, 'new_member_info': {'first_name': 'Nino', 'last_name': 'Email', 'email': 5}}))
-add('new-member-email-list', 'owner', 400, {'email': ['Not a valid string.']}, setup=RENEW_SETUP,
+add('new-member-email-list', 'owner', 400, {'email': ['Enter a valid email address.']}, setup=RENEW_SETUP,
     body=request(person('Nino', 'Email', 'EMLNMR90C01H501N'),
                  account={'new_member': True, 'new_member_info': {'first_name': 'Nino', 'last_name': 'Email', 'email': ['a@example.test']}}))
 
@@ -1859,14 +1861,11 @@ add('new-member-email-list', 'owner', 400, {'email': ['Not a valid string.']}, s
 add('anonymous-association-list-server-error', 'anonymous', 500, SERVER,
     body=request(person('Anna', 'Lista', 'LSTNNA90C41H501P'), sport_association=[OWNER_NAME]))
 
-# check_if_subscription_exists compares str() of the raw names (CharField); the serializer then
-# takes an int as its text and rejects a container.
+# check_if_subscription_exists runs before the serializer on initial_data's raw names: IExact does not prepare its value,
+# so a number is UPPER(42) and a list UPPER(ARRAY['x']), functions PostgreSQL does not have: the 500 page, nothing kept.
 named_number = person('Quaranta', 'Due', 'DRQNTA90C41H501Q', first_name=42)
-add('associate-first-name-number', 'owner', 200, SUCCESS(25.0), setup=RENEW_SETUP,
-    body=request(named_number),
-    effect=success('owner', '42 Due', associate=created_associate({**named_number, 'first_name': '42'}),
-                   payment=new_payment('25.00', audit_amount='25.0'), subscription=dict(PLAIN), membership=dict(MEMBER)))
-add('associate-first-name-list-invalid', 'owner', 400, {'first_name': ['Not a valid string.']}, setup=RENEW_SETUP,
+add('associate-first-name-number-server-error', 'owner', 500, SERVER, setup=RENEW_SETUP, body=request(named_number))
+add('associate-first-name-list-server-error', 'owner', 500, SERVER, setup=RENEW_SETUP,
     body=request(person('Rita', 'Lista', 'LSTRTI90C41H501R', first_name=['x'])))
 
 # MedicalCertificate.objects.filter(medical_id=<value>): UUIDField.to_python reads an int (a bool

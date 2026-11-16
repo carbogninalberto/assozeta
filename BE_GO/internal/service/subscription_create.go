@@ -607,11 +607,18 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 	if err != nil {
 		return nil, subscriptionCreateCalendar(err)
 	}
-	// check_if_subscription_exists on the raw names and tax code (a CharField
-	// lookup compares str() of any other JSON value).
+	// check_if_subscription_exists on the raw names and tax code of
+	// initial_data. IExact does not prepare its value (prepare_rhs = False), so
+	// anything but a text or None reaches UPPER(%s) as it is: PostgreSQL has no
+	// upper() for a number, a boolean or an array, and psycopg2 cannot adapt a
+	// dict. The ProgrammingError rolls the atomic block back: the 500 page.
 	names := make([]*string, 3)
+	rawNonText := false
 	for i, name := range []string{"first_name", "last_name", "tax_code"} {
 		value, _ := associate.Lookup(name)
+		if _, isText := value.(string); value != nil && !isText {
+			rawNonText = true
+		}
 		names[i] = dto.SubscriptionCreateText(value)
 	}
 	if custom, present := data.Lookup("custom_data"); present && custom != nil {
@@ -619,6 +626,9 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 			// data.get('custom_data', {}).get(...) on a non-dict.
 			return nil, pythonAttributeError(custom, "get")
 		}
+	}
+	if rawNonText {
+		return nil, domain.ErrSubscriptionCreateServer
 	}
 	// Q(custom_data__icontains=custom_data['type_of_associate']) with str(value).
 	customKind := subscriptionCustomKind(data)

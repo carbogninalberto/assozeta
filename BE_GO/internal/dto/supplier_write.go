@@ -256,8 +256,12 @@ func modelTextValue(field SupplierField, value any, form bool) (*string, []strin
 		return &empty, nil
 	}
 	// run_validators collects every validator error; EmailValidator runs
-	// after the length and character validators on any string value.
-	if field.Email && !(len(codes) == 1 && codes[0] == PaymentCategoryValidationString) && !SupplierEmail(text) {
+	// after the length and character validators on any string value. A value
+	// that is not text fails CharField's 'invalid', which EmailField's
+	// error_messages word as the e-mail rule.
+	if field.Email && len(codes) == 1 && codes[0] == PaymentCategoryValidationString {
+		codes = []string{SupplierValidationEmail}
+	} else if field.Email && !SupplierEmail(text) {
 		codes = append(codes, SupplierValidationEmail)
 	}
 	if len(codes) > 0 {
