@@ -142,23 +142,20 @@ func readReferenceBodyJSON(r *http.Request, parseJSON func([]byte) (any, error))
 				// is Go's filepath.Base: it keeps what Django rewrites
 				// (entities, backslash paths) or skips (non-printables, "..").
 				uploadName := part.FileName()
-				if header, outcome := djangoPartHeaders(part.Header); outcome != headerNotPorted {
-					if raw := header.disposition["filename"]; raw != "" {
-						sanitized, valid := djangoUploadName(raw)
-						if !valid {
-							// djangoPartHeaders keeps only valid UTF-8 lines and every
-							// decoded parameter is valid UTF-8: no request reaches this.
-							return nil, refusal.AppState("multipart file name: unreachable state")
-						}
-						if sanitized == "" {
-							// Django skips the part entirely: it is neither a field nor a file.
-							part.Close()
-							continue
-						}
-						uploadName = sanitized
+				if raw := djangoPartHeaders(part.Header).disposition["filename"]; raw != "" {
+					sanitized, valid := djangoUploadName(raw)
+					if !valid {
+						// djangoPartHeaders keeps only valid UTF-8 lines and every
+						// decoded parameter is valid UTF-8: no request reaches this.
+						return nil, refusal.AppState("multipart file name: unreachable state")
 					}
+					if sanitized == "" {
+						// Django skips the part entirely: it is neither a field nor a file.
+						part.Close()
+						continue
+					}
+					uploadName = sanitized
 				}
-				// An RFC 2231 charset without a Go decoder keeps the name Go read.
 				upload := domain.RequestUpload{
 					Name:        uploadName,
 					Temp:        r.ContentLength > domain.RequestUploadMemory,

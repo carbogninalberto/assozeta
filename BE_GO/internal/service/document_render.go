@@ -767,8 +767,7 @@ func (s *DocumentRender) templateJob(ctx context.Context, identity domain.Resolv
 		failed = renderException(500, input.Detail)
 	case err != nil:
 		// A body read failure (the client or the network, long-tail rule 4)
-		// is the 500 page; a multipart body the parser refuses keeps its
-		// own refusal (domain.ErrDocumentWritesNotPorted).
+		// is the 500 page.
 		return nil, nil, err
 	default:
 		plan := planTemplateData(body)

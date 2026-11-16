@@ -259,9 +259,6 @@ func (s *InstanceSetup) UploadLogo(ctx context.Context, file *InstanceSetupUploa
 		return setupFailure(400, "File too large. Maximum size is 5MB."), nil
 	}
 	reply, err := s.saveLogo(ctx, "instance/logo."+extension, file)
-	if errors.Is(err, domain.ErrInstanceSetupRefused) {
-		return nil, err
-	}
 	if err != nil {
 		// The view's except Exception branch.
 		return setupFailure(500, "Failed to save logo"), nil

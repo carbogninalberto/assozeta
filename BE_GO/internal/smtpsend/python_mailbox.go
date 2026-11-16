@@ -15,14 +15,12 @@ package smtpsend
 
 import (
 	"encoding/base64"
-	"encoding/binary"
 	"errors"
 	"fmt"
 	"strings"
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/pyheader"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/pystr"
 )
 
@@ -1224,9 +1222,10 @@ func decodeB(encoded []byte) ([]byte, error) {
 }
 
 // decodeCharset is the bstring.decode(charset) of _encoded_words.decode: the
-// strict decode, then the surrogateescape retry (python_charset.go), with a
-// re-raised UnicodeDecodeError becoming the _InvalidEwError get_encoded_word
-// raises.
+// strict decode, then the surrogateescape retry when it raises
+// UnicodeDecodeError (python_charset.go), with any exception of the retry, or
+// another UnicodeError of the strict decode, becoming the _InvalidEwError
+// get_encoded_word raises.
 func decodeCharset(raw []byte, charset string) (string, error) {
 	name := pythonCodecName(charset)
 	switch name {
@@ -1245,35 +1244,7 @@ func decodeCharset(raw []byte, charset string) (string, error) {
 		// codec): the bytes are decoded as unknown bytes.
 		return decodeASCIISurrogateescape(raw), nil
 	}
-	if table := pyheader.SingleByteTable(name); table != nil {
-		return decodeSingleByteSurrogateescape(raw, table)
-	}
-	switch name {
-	case "utf-16":
-		// CPython's native order, little-endian on the production platforms.
-		return decodedOrInvalid(decodeUTF16Surrogateescape(raw, binary.NativeEndian, true))
-	case "utf-16-le":
-		return decodedOrInvalid(decodeUTF16Surrogateescape(raw, binary.LittleEndian, false))
-	case "utf-16-be":
-		return decodedOrInvalid(decodeUTF16Surrogateescape(raw, binary.BigEndian, false))
-	case "utf-32":
-		return decodedOrInvalid(decodeUTF32Surrogateescape(raw, binary.NativeEndian, true))
-	case "utf-32-le":
-		return decodedOrInvalid(decodeUTF32Surrogateescape(raw, binary.LittleEndian, false))
-	case "utf-32-be":
-		return decodedOrInvalid(decodeUTF32Surrogateescape(raw, binary.BigEndian, false))
-	case "utf-8-sig":
-		return decodeUTF8SigSurrogateescape(raw), nil
-	case "undefined":
-		// encodings.undefined has no decoder: its UnicodeError is a
-		// ValueError, so get_encoded_word raises _InvalidEwError. The codec
-		// is not reached for empty bytes, which decode to "".
-		if len(raw) == 0 {
-			return "", nil
-		}
-		return "", errInvalidEncodedWord
-	}
-	return "", ErrEncodedWordCharset
+	return decodePythonCodec(raw, name)
 }
 
 // pythonCodecName is codecs.lookup(charset).name for a text encoding that

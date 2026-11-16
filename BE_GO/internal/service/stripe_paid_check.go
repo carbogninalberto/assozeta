@@ -7,6 +7,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/celery"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/stripeapi"
 )
 
@@ -45,15 +46,6 @@ func stripePaidCheckPython(err error) bool {
 	for _, target := range []error{domain.ErrStripeServer, domain.ErrPaymentStateServer, domain.ErrInvoiceCoreServer, domain.ErrInvoicePartyServer,
 		domain.ErrInvoicePartyMissing, domain.ErrPaymentDescription, domain.ErrPaymentSaveScope, ErrPaymentSaveFailed,
 		errStripePaidCheckException} {
-		if errors.Is(err, target) {
-			return true
-		}
-	}
-	return false
-}
-
-func stripePaidCheckNotPorted(err error) bool {
-	for _, target := range []error{domain.ErrInvoicePartyNotPorted} {
 		if errors.Is(err, target) {
 			return true
 		}
@@ -122,7 +114,7 @@ func (s *StripePaidCheck) plan(ctx context.Context, job domain.Job) ([]string, e
 			_, err = s.mark(ctx, tx, &dry, *row)
 		}
 		_ = tx.Rollback()
-		if err != nil && stripePaidCheckNotPorted(err) {
+		if err != nil && errors.Is(err, refusal.ErrNotPorted) {
 			s.logger.WarnContext(ctx, "stripe paid check refused", "code", "stripe_paid_check_not_ported")
 			return nil, err
 		}

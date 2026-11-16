@@ -1,7 +1,7 @@
 """Parent-only API v2 handoff HTTP runner; imports are inert.
 
 Seeds the personas-reads, course-list and workflow-update rows (their own seed
-functions; the ids do not overlap) and runs Go with DJANGO_HANDOFF_URL set to
+functions; the ids do not overlap; api-schema reads no rows) and runs Go with DJANGO_HANDOFF_URL set to
 the native Django of the run (GO_DJANGO_HANDOFF). Read cases must leave the
 complete state unchanged; workflow cases are checked by workflow-update's effect
 check (the authored row and audit entries, actor, correlation id and no
@@ -14,14 +14,16 @@ import os
 
 from TESTS.contracts import test_django_handoff_http as contract
 from TESTS.adapters.django import family_harness as harness
+from TESTS.adapters.django import api_schema_http as api_schema
 from TESTS.adapters.django import course_list_http as course_list
 from TESTS.adapters.django import personas_reads_http as personas_reads
 from TESTS.adapters.django import workflow_update_http as workflow_update
 
 SOURCES = ('TESTS/fixtures/django_handoff_http.json', 'TESTS/contracts/test_django_handoff_http.py', 'TESTS/adapters/django/django_handoff_http.py',
            'BE_GO/internal/handoff/handoff.go', 'BE_GO/internal/handoff/effects.go', 'BE_GO/internal/refusal/refusal.go') \
-    + tuple(dict.fromkeys(personas_reads.SOURCES + course_list.SOURCES + workflow_update.SOURCES))
-FAMILIES = {'personas-reads': personas_reads, 'course-list': course_list, 'workflow-update': workflow_update}
+    + tuple(dict.fromkeys(personas_reads.SOURCES + course_list.SOURCES + workflow_update.SOURCES + api_schema.SOURCES))
+FAMILIES = {'personas-reads': personas_reads, 'course-list': course_list, 'workflow-update': workflow_update,
+            'api-schema': api_schema}
 GO_DJANGO_HANDOFF = os.environ.get('HANDOFF_FAMILY', 'on') != 'off'
 
 

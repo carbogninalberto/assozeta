@@ -4,18 +4,12 @@ import (
 	"context"
 	"errors"
 	"time"
-
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // Invoice parties: customer and supplier invoice list, add and update
 // (invoice_customers_* and invoice_suppliers_* in invoice_views.py).
 
 var (
-	// ErrInvoicePartyNotPorted refuses behaviour the Go port does not carry
-	// (XML/PDF generation, print tasks, nested payment writes), always before
-	// any write.
-	ErrInvoicePartyNotPorted = refusal.New("invoice party behaviour not ported")
 	// ErrInvoicePartyNotAssociation is User.sport_association's
 	// PermissionDenied('User is not a sport association') for athletes.
 	ErrInvoicePartyNotAssociation = errors.New("User is not a sport association")

@@ -23,7 +23,7 @@ type charsetCase struct {
 
 // singleByteCases covers every CPython text codec whose decoding is a
 // 256-entry table: one five-byte probe each, then the undefined bytes. A byte
-// the table leaves undefined (U+FFFD in pyheader.SingleByteTable) escapes as
+// the table leaves undefined escapes as
 // U+DC00+byte, and cp424's undefined bytes below 0x80 are the ones that make
 // Python's handler re-raise.
 var singleByteCases = []charsetCase{
@@ -265,8 +265,8 @@ func TestCharsetDecode(t *testing.T) {
 // display name is decoded and re-encoded as UTF-8, an encoded word whose
 // surrogateescape retry re-raises keeps its text (the invalid-word fallback
 // Python's header parser makes), a name holding a lone surrogate reaches
-// Django's Header.encode UnicodeEncodeError, and a charset that is still not
-// ported stays with Django as the refusal.
+// Django's Header.encode UnicodeEncodeError, and idna, whose strict decode is
+// not carried, stays with Django as the refusal.
 func TestCharsetAddress(t *testing.T) {
 	for _, test := range []struct{ address, want string }{
 		{"=?cp1251?b?yOLg7Q==?= <ivan@example.test>", "=?utf-8?b?0JjQstCw0L0=?= <ivan@example.test>"},
@@ -288,42 +288,47 @@ func TestCharsetAddress(t *testing.T) {
 	if _, err := SanitizeAddress("=?utf-16-be?b?2ABh?= <a@example.test>"); !errors.Is(err, ErrRaises) {
 		t.Errorf("utf-16-be lone surrogate: %v, want ErrRaises", err)
 	}
-	if _, err := SanitizeAddress("=?gb2312?b?xOO6ww==?= <a@example.test>"); !errors.Is(err, ErrEncodedWordCharset) {
-		t.Errorf("gb2312: %v, want the refusal", err)
+	// The multibyte and stateful codecs decode through pycodecs (CPython
+	// 3.13.16 with Django 5.2.18); idna stays with Django.
+	for address, want := range map[string]string{
+		"=?gb2312?b?xOO6ww==?= <a@example.test>":    "=?utf-8?b?5L2g5aW9?= <a@example.test>",
+		"=?shift_jis?b?gsiCsQ==?= <a@example.test>": "=?utf-8?b?44Gq44GT?= <a@example.test>",
+		"=?utf-7?q?+AGEAYgBj-?= <a@example.test>":   "abc <a@example.test>",
+	} {
+		if got, err := SanitizeAddress(address); err != nil || got != want {
+			t.Errorf("%q = %q, %v; want %q", address, got, err, want)
+		}
+	}
+	if _, err := SanitizeAddress("=?idna?q?xn--bcher-kva?= <a@example.test>"); !errors.Is(err, ErrEncodedWordCharset) {
+		t.Errorf("idna: %v, want the refusal", err)
 	}
 }
 
-// TestCharsetCoverage: every text codec of CPython's registry is decoded here,
-// except the named refusals (the multibyte CJK codecs, the iso2022 and hz
-// escape codecs, utf-7, and the codecs that are not a fixed byte -> character
-// map), which stay with Django. A refusal name that Python no longer knows
+// TestCharsetCoverage: every text codec of CPython's registry is decoded here
+// (through internal/pycodecs), except idna, whose strict decode needs
+// nameprep and stays with Django. A refusal name that Python no longer knows
 // would mean this list has gone stale.
 func TestCharsetCoverage(t *testing.T) {
-	refused := map[string]bool{
-		"big5": true, "big5hkscs": true, "cp932": true, "cp949": true, "cp950": true,
-		"euc_jis_2004": true, "euc_jisx0213": true, "euc_jp": true, "euc_kr": true,
-		"gb18030": true, "gb2312": true, "gbk": true, "hz": true, "johab": true,
-		"iso2022_jp": true, "iso2022_jp_1": true, "iso2022_jp_2": true,
-		"iso2022_jp_2004": true, "iso2022_jp_3": true, "iso2022_jp_ext": true,
-		"iso2022_kr": true, "shift_jis": true, "shift_jis_2004": true,
-		"shift_jisx0213": true, "utf-7": true, "idna": true, "punycode": true,
-		"unicode-escape": true, "raw-unicode-escape": true,
-	}
+	refused := map[string]bool{"idna": true}
 	known := map[string]bool{}
 	for _, canonical := range pythonTextCodecs {
 		if known[canonical] {
 			continue
 		}
 		known[canonical] = true
-		_, err := decodeCharset(nil, canonical)
+		// Empty bytes decode to "" before any codec runs (PyUnicode_Decode).
+		if got, err := decodeCharset(nil, canonical); got != "" || err != nil {
+			t.Errorf("%s empty: %q, %v", canonical, got, err)
+		}
+		_, err := decodeCharset([]byte("a"), canonical)
 		if refused[canonical] {
 			if !errors.Is(err, refusal.ErrNotPorted) {
 				t.Errorf("%s: %v, want the refusal", canonical, err)
 			}
 			continue
 		}
-		if err != nil {
-			t.Errorf("%s: %v", canonical, err)
+		if errors.Is(err, refusal.ErrNotPorted) {
+			t.Errorf("%s: %v, want a decode", canonical, err)
 		}
 	}
 	if len(known) < 100 {

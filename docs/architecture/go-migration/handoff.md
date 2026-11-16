@@ -143,8 +143,8 @@ Go unit tests (`go test ./internal/handoff ./internal/refusal`):
 | `TestNewRejectsInvalidURLs`, `TestBasePathPrefixesTheRequestTarget` | configuration |
 | `TestRefusalSentinels`, `TestNotPortedSentinelsAreRefusals` | every sentinel matches `refusal.ErrNotPorted` |
 
-Harness family `django-handoff` (`TESTS/fixtures/django_handoff_http.json`, 10 cases): refused inputs of one
-family (workflow-update) plus ported controls for it, for course-list and for personas-reads. The harness starts Go with `DJANGO_HANDOFF_URL` pointing at the run's
+Harness family `django-handoff` (`TESTS/fixtures/django_handoff_http.json`, 12 cases): refused inputs of one
+family (api-schema) plus ported controls for it, for workflow-update, course-list and personas-reads. The harness starts Go with `DJANGO_HANDOFF_URL` pointing at the run's
 Django. Each case is checked by its source family's contract (exact status, headers, body; for the workflow writes the
 saved row and the audit entry with the client's correlation id), then for the marker: `X-Assozeta-Handoff: django`
 on the Go transports for a refused case and no marker otherwise. A handed-off case must be observed as one Django
@@ -155,8 +155,11 @@ request with the case's method, path, status and correlation id.
 | personas-reads | none: Cyrillic search terms are ported and served by Go (controls, no marker) | 200, empty page (control) |
 | course-list | none: the orderings are the course's own columns, served by Go (control, no marker) | 200, the listed course (control) |
 | workflow-update | none since long-tail PR 4: a form `automation_tree` nested past Python's recursion band is answered by Go (X15, control, no marker) | the stable 500 page (control) |
+| api-schema | `GET schema/?lang=xx/yy` (a `lang` with a path separator, `errAPISchemaUnsupported`) | 200, the document of the unknown `lang=xx`: no catalog exists at `<localedir>/xx/yy` (`lang=xx` is the control) |
 
-The sequence needs a refused input again (its contract checks the mix): pick one from a source family that keeps a refusal.
+The contract checks the mix, so when Go ports the api-schema input too, the sequence needs another refused input. The
+request counter of the contract wraps `urllib`'s opener, which both `TESTS.http_client.Client` and the api-schema
+contract use.
 
 Receipts (`quality-reports/go-migration/django-handoff-http-<label>`):
 

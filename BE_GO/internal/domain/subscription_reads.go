@@ -11,9 +11,6 @@ import (
 var (
 	// ErrSubscriptionReadsServer is an exception Django does not handle (the 500 page).
 	ErrSubscriptionReadsServer = errors.New("subscription reads unhandled error")
-	// ErrSubscriptionReadsNotPorted refuses inputs whose Django behaviour is
-	// not ported (the 500 page, never a guessed body).
-	ErrSubscriptionReadsNotPorted = refusal.New("subscription reads input not ported")
 	// ErrSubscriptionReadsUnreachable is a state no request or stored row
 	// produces (each site names the decoder or constraint that rules it out).
 	ErrSubscriptionReadsUnreachable = refusal.AppState("subscription reads: unreachable state")
