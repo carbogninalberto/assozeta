@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"unicode/utf8"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pystr"
 )
 
 // ErrHeader is the exception Python raises while a header is written: a
@@ -47,20 +49,20 @@ func foldHeader(name, value string) (string, error) { return foldHeaderLine(name
 // foldHeaderLine is foldHeader with an explicit maximum line length, as
 // Header.encode(maxlinelen) takes it (0 means no wrapping).
 func foldHeaderLine(name, value string, maxlinelen int) (string, error) {
-	runes, ok := pythonRunes(value)
-	if !ok {
-		return "", errNotPythonStr
-	}
+	runes := pythonRunes(value)
+	// Header text is a Python str: environment bytes decoded with
+	// surrogateescape are the WTF-8 form the rest of the package reads.
+	text := pystr.String(runes)
 	charset := charsetUSASCII
 	switch {
 	case hasSurrogate(runes):
 		// email/_policybase.py _fold: Header(value, charset=UNKNOWN8BIT).
 		charset = charsetUnknown8bit
-	case !isASCII(value):
+	case !isASCII(text):
 		// Header.append switches a value us-ascii cannot encode to UTF8.
 		charset = charsetUTF8
 	}
-	return headerEncode([]headerChunk{{text: value, charset: charset}}, maxlinelen, name, " ")
+	return headerEncode([]headerChunk{{text: text, charset: charset}}, maxlinelen, name, " ")
 }
 
 // RenderAny is Render: header text is folded the way compat32 does, for any

@@ -954,6 +954,53 @@
    "csrf": null
   },
   {
+   "name": "api-schema-query-1000-fields",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/schema/?&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "kind": "document",
+    "format": "yaml",
+    "lang": "it",
+    "version": "",
+    "indent": 4
+   },
+   "content_type": "application/vnd.oai.openapi; charset=utf-8",
+   "allow": "GET, HEAD, OPTIONS",
+   "vary": [
+    "Accept",
+    "Cookie",
+    "origin",
+    "Accept-Language"
+   ],
+   "content_language": "it",
+   "disposition": "inline; filename=\"Bakney Sport API.yaml\"",
+   "location": null,
+   "csrf": null
+  },
+  {
+   "name": "api-schema-query-1001-fields-bad-request",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/schema/?&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&",
+   "headers": {},
+   "status": 400,
+   "response": "\n<!doctype html>\n<html lang=\"en\">\n<head>\n  <title>Bad Request (400)</title>\n</head>\n<body>\n  <h1>Bad Request (400)</h1><p></p>\n</body>\n</html>\n",
+   "content_type": "text/html; charset=utf-8",
+   "allow": null,
+   "vary": [
+    "Cookie",
+    "origin",
+    "Accept-Language"
+   ],
+   "content_language": "it",
+   "disposition": null,
+   "location": null,
+   "csrf": null
+  },
+  {
    "name": "api-schema-lang-space-unknown",
    "actor": "anonymous",
    "method": "GET",
@@ -1169,6 +1216,93 @@
     "lang": "it",
     "version": "",
     "indent": 6
+   },
+   "content_type": "application/json",
+   "allow": "GET, HEAD, OPTIONS",
+   "vary": [
+    "Accept",
+    "Cookie",
+    "origin",
+    "Accept-Language"
+   ],
+   "content_language": "it",
+   "disposition": "inline; filename=\"Bakney Sport API.json\"",
+   "location": null,
+   "csrf": null
+  },
+  {
+   "name": "api-schema-accept-indent-rfc2231-utf-16-le",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/schema/",
+   "headers": {
+    "Accept": "application/json; indent*=utf-16-le''%33%00"
+   },
+   "status": 200,
+   "response": {
+    "kind": "document",
+    "format": "json",
+    "lang": "it",
+    "version": "",
+    "indent": 3
+   },
+   "content_type": "application/json",
+   "allow": "GET, HEAD, OPTIONS",
+   "vary": [
+    "Accept",
+    "Cookie",
+    "origin",
+    "Accept-Language"
+   ],
+   "content_language": "it",
+   "disposition": "inline; filename=\"Bakney Sport API.json\"",
+   "location": null,
+   "csrf": null
+  },
+  {
+   "name": "api-schema-accept-indent-rfc2231-cp932",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/schema/",
+   "headers": {
+    "Accept": "application/json; indent*=cp932''%32"
+   },
+   "status": 200,
+   "response": {
+    "kind": "document",
+    "format": "json",
+    "lang": "it",
+    "version": "",
+    "indent": 2
+   },
+   "content_type": "application/json",
+   "allow": "GET, HEAD, OPTIONS",
+   "vary": [
+    "Accept",
+    "Cookie",
+    "origin",
+    "Accept-Language"
+   ],
+   "content_language": "it",
+   "disposition": "inline; filename=\"Bakney Sport API.json\"",
+   "location": null,
+   "csrf": null
+  },
+  {
+   "name": "api-schema-accept-indent-rfc2231-utf-7",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/schema/",
+   "headers": {
+    "Accept": "application/json; indent*=utf-7''+ADc-"
+   },
+   "status": 200,
+   "response": {
+    "kind": "document",
+    "format": "json",
+    "lang": "it",
+    "version": "",
+    "indent": 7
    },
    "content_type": "application/json",
    "allow": "GET, HEAD, OPTIONS",

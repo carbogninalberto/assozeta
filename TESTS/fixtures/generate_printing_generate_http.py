@@ -147,6 +147,8 @@ PAYMENTS = {
     # A JSON boolean as the description: the column holds bools next to strings (an openpyxl boolean cell).
     'p15': payment('anna', 2, '12.00', [-4, '10:30:00'], meta={'description': True}, link=['course', 'nuoto']),
     'p16': payment('marco', 2, '13.00', [-9, '10:45:00'], meta={'description': False}, link=['course', 'nuoto']),
+    # A JSON integer beyond int64 as the description: pandas writes its float, reportlab its digits.
+    'p17': payment('anna', 2, '14.00', [-12, '09:15:00'], meta={'description': 2 ** 63}, link=['course', 'nuoto']),
 }
 SUBJECT = {0: 'Altro', 1: 'Iscrizione', 2: 'Corso', 3: 'Giroconto'}
 TYPE = {1: 'associato', 2: 'associato e tesserato', 3: 'tesserato'}
@@ -423,7 +425,11 @@ def course_name(p):
         if p['link']:
             if p['meta'] and 'description' in p['meta']:
                 description = p['meta']['description']
-                return {'bool': description} if isinstance(description, bool) else description
+                if isinstance(description, bool):
+                    return {'bool': description}
+                if isinstance(description, int):
+                    return number(description)
+                return description
             kind, name = p['link']
             return (CARNETS if kind == 'carnet' else COURSES)[name]['title']
         if p['course'] and 'label' in p['course']:
@@ -657,6 +663,14 @@ report('expired-payments', 'owner', 'expired_payments', D)
 report('expired-payments-period', 'owner', 'expired_payments', {**D, 'period': {'from_date': '$date:-21', 'to_date': '$date:-1'}})
 report('expired-payments-account-transfer', 'owner', 'expired_payments', {'status': [4, 5]})
 report('expired-payments-group', 'full_collaborator', 'expired_payments', D, group='own_group', headers=OWN_GROUP_HEADER)
+# A stored JSON integer beyond int64 (json.loads keeps a Python int of any size): pandas writes its float and reportlab
+# its digits, isolated by the period of that payment alone.
+BIG_INT_PERIOD = {'from_date': '$date:-12', 'to_date': '$date:-11'}
+report('not-paid-courses-big-int-description', 'owner', 'not_paid_courses_subscriptions', {**D, 'period': BIG_INT_PERIOD})
+report('expired-payments-big-int-description', 'owner', 'expired_payments', {**D, 'period': BIG_INT_PERIOD})
+report('pdf-not-paid-courses-big-int-description', 'owner', 'not_paid_courses_subscriptions', {**D, 'period': BIG_INT_PERIOD},
+       fmt='pdf')
+report('pdf-expired-payments-big-int-description', 'owner', 'expired_payments', {**D, 'period': BIG_INT_PERIOD}, fmt='pdf')
 report('with-all-payments', 'owner', 'subscriptions_with_all_payments', D)
 report('with-all-payments-period', 'owner', 'subscriptions_with_all_payments', {**D, 'period': PERIOD})
 report('with-all-payments-period-empty', 'owner', 'subscriptions_with_all_payments',

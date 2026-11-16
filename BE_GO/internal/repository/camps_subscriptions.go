@@ -271,11 +271,7 @@ func (t *campsTransaction) PeriodServicesUnordered(ctx context.Context, period s
 // CreatePayment inserts the payment and returns auditlog's create changes:
 // the in-memory float amount and metas replace the stored renderings.
 func (t *campsTransaction) CreatePayment(ctx context.Context, row domain.CampPaymentCreate) (map[string][2]string, error) {
-	if _, err := t.tx.ExecContext(ctx, `INSERT INTO application_payment (payment_id,type,subject,amount,creation_date,paid,expense,
- description,payment_category_id,meta_payment_categories,user_id,associate_id,sport_association_id,archived,notes,custom_accounts_id,
- deleted,group_id) VALUES ($1,'default',0,$2::numeric,$3,false,false,$4,$5,$6::jsonb,$7,$8,$9,false,$10,$11,false,$12)`,
-		row.ID, row.Amount, row.CreatedAt, row.Description, row.CategoryID, row.Metas, row.UserID, row.AssociateID, row.AssociationID, row.Notes,
-		row.AccountID, row.GroupID); err != nil {
+	if err := t.createPayment(ctx, row); err != nil {
 		return nil, err
 	}
 	changes, err := createdModelChanges(ctx, t.tx, "application_payment", "payment_id", row.ID)
@@ -285,6 +281,23 @@ func (t *campsTransaction) CreatePayment(ctx context.Context, row domain.CampPay
 	changes["amount"] = [2]string{"None", row.AmountRepr}
 	changes["meta_payment_categories"] = [2]string{"None", row.MetasAudit}
 	return changes, nil
+}
+
+// createPayment is Payment.objects.create's INSERT, also used by the savepoint
+// of a rejected row.
+func (t *campsTransaction) createPayment(ctx context.Context, row domain.CampPaymentCreate) error {
+	_, err := t.tx.ExecContext(ctx, `INSERT INTO application_payment (payment_id,type,subject,amount,creation_date,paid,expense,
+ description,payment_category_id,meta_payment_categories,user_id,associate_id,sport_association_id,archived,notes,custom_accounts_id,
+ deleted,group_id) VALUES ($1,'default',0,$2::numeric,$3,false,false,$4,$5,$6::jsonb,$7,$8,$9,false,$10,$11,false,$12)`,
+		row.ID, row.Amount, row.CreatedAt, row.Description, row.CategoryID, row.Metas, row.UserID, row.AssociateID, row.AssociationID, row.Notes,
+		row.AccountID, row.GroupID)
+	return err
+}
+
+// CreatePaymentRejected runs a generated payment the amount check constraint
+// rejects inside a savepoint and answers the database's own text for the row.
+func (t *campsTransaction) CreatePaymentRejected(ctx context.Context, row domain.CampPaymentCreate) (string, bool, error) {
+	return runRejectedPayment(ctx, t.tx, func() error { return t.createPayment(ctx, row) })
 }
 
 func (t *campsTransaction) SetSubscriptionPeriodPayment(ctx context.Context, id, payment string) error {

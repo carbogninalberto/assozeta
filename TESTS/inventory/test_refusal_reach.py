@@ -1,8 +1,8 @@
 """The refusal-reach analyzer and its HTTP/WebSocket gate.
 
-The fixture module exercises the four refusal shapes the analyzer must tell
-apart: a direct return, a wrapped %w, an interface dispatch, and a sentinel
-used only with errors.Is.
+The fixture module exercises the refusal shapes the analyzer must tell apart: a
+direct return, a wrapped %w, a wrap through append, an interface dispatch, and a
+sentinel used only with errors.Is.
 """
 import json
 import subprocess
@@ -30,17 +30,30 @@ def run_fixture_tool():
     return completed.stdout
 
 
-def run_gate(report, accepted):
-    """Run the wrapper against an existing report and an accepted list."""
+MISSING = object()
+
+
+def run_gate(report, accepted, ceiling=None):
+    """Run the wrapper against an existing report and an accepted list.
+
+    ``ceiling`` is a ceiling file body, ``None`` to omit ``--ceiling``, or
+    ``MISSING`` to pass the flag a path that does not exist.
+    """
     with tempfile.TemporaryDirectory() as directory:
         directory = Path(directory)
         report_path = directory / 'report.json'
         report_path.write_text(json.dumps(report))
         accepted_path = directory / 'accepted.md'
         accepted_path.write_text(accepted)
+        command = [sys.executable, str(SCRIPT), '--input', str(report_path),
+                   '--accepted', str(accepted_path), '--http']
+        if ceiling is not None:
+            ceiling_path = directory / 'ceiling.json'
+            if ceiling is not MISSING:
+                ceiling_path.write_text(ceiling)
+            command += ['--ceiling', str(ceiling_path)]
         return subprocess.run(
-            [sys.executable, str(SCRIPT), '--input', str(report_path),
-             '--accepted', str(accepted_path), '--http'],
+            command,
             cwd=ROOT,
             text=True,
             capture_output=True,
@@ -63,7 +76,8 @@ class RefusalReachToolTests(unittest.TestCase):
 
     def test_direct_wrapped_and_interface_returns_are_rows(self):
         reasons = {row['reason'] for row in self.report['rows']}
-        self.assertEqual(reasons, {'direct sentinel', 'wrapped sentinel', 'interface sentinel'})
+        self.assertEqual(reasons, {'direct sentinel', 'wrapped sentinel', 'appended sentinel',
+                                   'interface sentinel'})
         for row in self.report['rows']:
             self.assertEqual(row['root_kind'], 'command')
             self.assertEqual(row['route'], 'fixture')
@@ -71,6 +85,7 @@ class RefusalReachToolTests(unittest.TestCase):
         chains = {row['reason']: row['chain'] for row in self.report['rows']}
         self.assertEqual(chains['direct sentinel'][-1], 'fixture/refusalreach/cases.Direct')
         self.assertEqual(chains['wrapped sentinel'][-1], 'fixture/refusalreach/cases.Wrapped')
+        self.assertEqual(chains['appended sentinel'][-1], 'fixture/refusalreach/cases.Appended')
         self.assertEqual(chains['interface sentinel'][-1],
                          '(fixture/refusalreach/cases.implementation).Run')
 
@@ -124,6 +139,60 @@ class RefusalReachGateTests(unittest.TestCase):
         accepted_example = '```\n- <reason string> | <route or *> | <why>\n```\n'
         completed = run_gate(REPORT, accepted_example)
         self.assertEqual(completed.returncode, 1)
+
+
+class RefusalReachCeilingTests(unittest.TestCase):
+    """The --http --ceiling ratchet: the committed count may only go down."""
+
+    def test_above_the_ceiling_fails_and_prints_the_rows(self):
+        completed = run_gate(REPORT, '', '{"http": 1}\n')
+        self.assertEqual(completed.returncode, 1, completed.stderr)
+        self.assertIn('/x | reason one | a.go:1', completed.stdout)
+        self.assertIn('ceiling 1: a change added refusal rows', completed.stderr)
+
+    def test_equal_to_the_ceiling_passes(self):
+        completed = run_gate(REPORT, '', '{"http": 2}\n')
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        self.assertIn('2 HTTP/WebSocket refusal(s) not accepted (ceiling 2)', completed.stdout)
+
+    def test_below_the_ceiling_fails_and_names_the_new_value(self):
+        completed = run_gate(REPORT, '', '{"http": 5}\n')
+        self.assertEqual(completed.returncode, 1, completed.stderr)
+        self.assertIn('2 HTTP/WebSocket refusal(s) not accepted', completed.stderr)
+        self.assertIn('below the ceiling 5', completed.stderr)
+        self.assertIn('lower "http" in', completed.stderr)
+        self.assertIn('to 2', completed.stderr)
+
+    def test_accepted_rows_are_not_counted(self):
+        completed = run_gate(REPORT, '- reason one | /x | first\n', '{"http": 1}\n')
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+
+    def test_missing_ceiling_file_is_an_error(self):
+        completed = run_gate(REPORT, '', MISSING)
+        self.assertEqual(completed.returncode, 2, completed.stderr)
+        self.assertIn('ceiling', completed.stderr)
+
+    def test_malformed_ceiling_file_is_an_error(self):
+        for ceiling in ('not json\n', '[]\n', '{"http": "many"}\n', '{"http": -1}\n',
+                        '{"https": 0}\n'):
+            with self.subTest(ceiling=ceiling):
+                completed = run_gate(REPORT, '', ceiling)
+                self.assertEqual(completed.returncode, 2, completed.stderr)
+                self.assertIn('ceiling', completed.stderr)
+
+    def test_ceiling_requires_http(self):
+        with tempfile.TemporaryDirectory() as directory:
+            directory = Path(directory)
+            report_path = directory / 'report.json'
+            report_path.write_text(json.dumps(REPORT))
+            ceiling_path = directory / 'ceiling.json'
+            ceiling_path.write_text('{"http": 2}\n')
+            completed = subprocess.run(
+                [sys.executable, str(SCRIPT), '--input', str(report_path),
+                 '--ceiling', str(ceiling_path)],
+                cwd=ROOT, text=True, capture_output=True, timeout=120)
+            self.assertEqual(completed.returncode, 2, completed.stderr)
+            self.assertIn('--ceiling requires --http', completed.stderr)
 
 
 if __name__ == '__main__':

@@ -12,6 +12,10 @@ import (
 
 var ErrReferenceNesting = errors.New("JSON nesting exceeds parser limit")
 
+// referenceJSONNesting is the default parser limit for request bodies and
+// stored values (deep form JSON uses its own, measured limit).
+const referenceJSONNesting = 1000
+
 // ParseReferenceJSON keeps integer precision and dictionary insertion order,
 // including Python JSON's last-value/first-position behavior for duplicate keys.
 // The HTTP transport must independently bound request bytes and upload sizes.
@@ -20,11 +24,35 @@ func ParseReferenceJSON(data []byte) (any, error) {
 }
 
 func parseReferenceJSON(data []byte, constants map[int64]any, rateLimit bool) (any, error) {
+	return parseReferenceJSONLimit(data, constants, rateLimit, referenceJSONNesting)
+}
+
+// AuditJSONDepth is auditJSONDepth: the container nesting of a whole JSON text
+// ('[]' is 1, '{"a": {"a": 1}}' is 2).
+func AuditJSONDepth(text string) int { return auditJSONDepth(text) }
+
+// ParseStoredJSONDepth is json.loads for a stored jsonb text with the site's
+// measured total nesting band: text whose whole depth (AuditJSONDepth) exceeds
+// maxDepth is refused with ErrReferenceNesting before parsing, while a document
+// at the edge still parses. Python's integer digit limit applies too
+// (ErrLoginRateJSONValue). Callers treat every error as json.loads raising.
+func ParseStoredJSONDepth(text string, maxDepth int) (any, error) {
+	if auditJSONDepth(text) > maxDepth {
+		return nil, ErrReferenceNesting
+	}
+	// The parser reads the innermost scalar one level past the last container, so
+	// its depth limit is the document's total depth.
+	return parseReferenceJSONLimit([]byte(text), nil, true, maxDepth)
+}
+
+// parseReferenceJSONLimit is parseReferenceJSON with an explicit container
+// nesting limit (a document nested deeper returns ErrReferenceNesting).
+func parseReferenceJSONLimit(data []byte, constants map[int64]any, rateLimit bool, limit int) (any, error) {
 	decoder := json.NewDecoder(bytes.NewReader(data))
 	decoder.UseNumber()
 	var read func(int) (any, error)
 	read = func(depth int) (any, error) {
-		if depth > 1000 {
+		if depth > limit {
 			return nil, ErrReferenceNesting
 		}
 		token, err := decoder.Token()

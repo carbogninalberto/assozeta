@@ -20,15 +20,12 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/emailrender"
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/google/uuid"
 )
 
 var (
 	// ErrOAuthServer stands for the views' uncaught exceptions (the 500 page).
 	ErrOAuthServer = errors.New("oauth2 account view raised")
-	// ErrOAuthNotPorted refuses inputs outside the port (500 before any write).
-	ErrOAuthNotPorted = refusal.New("oauth2 account input not ported")
 )
 
 // OAuthAnswer is a Response(...) the views build themselves.
@@ -374,13 +371,23 @@ func transferTokenValid(value any) bool {
 	return false
 }
 
-// normalizeEmail is BaseUserManager.normalize_email.
+// oauthStoredUsername is the username create_user writes: oauth2_signup
+// upper-cases it, then UserManager._create_user calls normalize_username
+// (AbstractBaseUser: NFKC for a string). The stored value is what the login
+// response and the create audit entry carry.
+func oauthStoredUsername(value string) string {
+	return djangoauth.NormalizeUsername(dto.PythonUpper(value))
+}
+
+// normalizeEmail is BaseUserManager.normalize_email: the stripped address with
+// only its domain lower-cased by Python's full Unicode mapping.
 func normalizeEmail(email string) string {
+	email = dto.PythonStrip(email)
 	at := strings.LastIndex(email, "@")
 	if at < 0 {
 		return email
 	}
-	return email[:at] + "@" + strings.ToLower(email[at+1:])
+	return email[:at] + "@" + dto.PythonLower(email[at+1:])
 }
 
 // Signup follows oauth2_signup. The result is the response body for 200, or
@@ -408,11 +415,8 @@ func (s *OAuthAccounts) Signup(ctx context.Context, identity domain.ResolvedIden
 	if !ok {
 		return nil, ErrOAuthServer // .lower() / .split()
 	}
-	if !dto.IsASCII(rawEmail) {
-		return nil, ErrOAuthNotPorted // Python's Unicode lower()/upper()
-	}
 	if !s.settings.Debug {
-		lower := strings.ToLower(rawEmail)
+		lower := dto.PythonLower(rawEmail)
 		if dto.SupplierEmail(lower) && oauthDisposable.MatchString(lower) {
 			return OAuthAnswer{400, map[string]string{"msg": "You are nasty 🖕( •_• )🖕"}}, nil
 		}
@@ -421,7 +425,7 @@ func (s *OAuthAccounts) Signup(ctx context.Context, identity domain.ResolvedIden
 	if len(parts) < 2 {
 		return nil, ErrOAuthServer // IndexError
 	}
-	if strings.ToLower(parts[1]) == "skrank.com" {
+	if dto.PythonLower(parts[1]) == "skrank.com" {
 		return nil, ErrOAuthServer // `raise ValidationError` without a message: TypeError
 	}
 	_, collaborator := object.Lookup("collaboratorToken")
@@ -449,10 +453,7 @@ func (s *OAuthAccounts) Signup(ctx context.Context, identity domain.ResolvedIden
 		token, _ := object.Lookup("token")
 		return s.socialSignup(ctx, identity, object, provider, token, rawEmail, collaborator, transfer, audit, language)
 	}
-	fields, validation, unported := dto.ParseOAuthSignup(object)
-	if unported {
-		return nil, ErrOAuthNotPorted
-	}
+	fields, validation := dto.ParseOAuthSignup(object)
 	if fields.UsernameChecked {
 		taken := false
 		if !fields.UsernameNUL {
@@ -497,7 +498,7 @@ func (s *OAuthAccounts) Signup(ctx context.Context, identity domain.ResolvedIden
 	if err != nil {
 		return nil, err
 	}
-	user := domain.OAuthNewUser{ID: uuid.NewString(), Username: djangoauth.PythonUpper(fields.Username), Email: normalizeEmail(fields.Email),
+	user := domain.OAuthNewUser{ID: uuid.NewString(), Username: oauthStoredUsername(fields.Username), Email: normalizeEmail(fields.Email),
 		PasswordHash: hash, FirstName: *fields.FirstName, LastName: *fields.LastName, Role: role, CollaboratorRole: collaboratorRole,
 		ConnectedUserID: connected, Permissions: permissions, Joined: s.now().UTC()}
 	if err = s.store.CreateUser(ctx, user, audit); errors.Is(err, domain.ErrOAuthUsernameConflict) {
@@ -605,10 +606,12 @@ func (s *OAuthAccounts) socialSignup(ctx context.Context, identity domain.Resolv
 	if count > 0 {
 		return s.existingAccountSignin(ctx, existing, count, object, audit)
 	}
-	// Values Python would convert differently are refused before any write.
+	// create_user stores the names as sent; values the INSERT cannot take fail
+	// there, after the collaboration invite (if any) has been consumed.
 	names := [2]string{}
 	mailNames := [2]any{}
 	namesStorable := true
+	namesUnsupported := false
 	for index, pair := range [2][2]any{{social.FirstName, "first_name"}, {social.LastName, "last_name"}} {
 		value := pair[0]
 		if pythonFalsy(value) {
@@ -620,9 +623,12 @@ func (s *OAuthAccounts) socialSignup(ctx context.Context, identity domain.Resolv
 		var text string
 		switch v := value.(type) {
 		case string:
-			if oauthTextUnsupported(v) {
-				return nil, ErrOAuthNotPorted
-			}
+			// PostgreSQL refuses a NUL in a text parameter (psycopg2 raises
+			// while it builds the query), so create_user writes no row; the
+			// failure is checked here, at the same point of the flow, and the
+			// answer is the 500 page. Invalid UTF-8 cannot come from a JSON
+			// string (the body parser validates it).
+			namesUnsupported = namesUnsupported || oauthTextUnsupported(v)
 			text = v
 		case nil:
 			namesStorable = false // NOT NULL: create_user raises IntegrityError
@@ -648,9 +654,6 @@ func (s *OAuthAccounts) socialSignup(ctx context.Context, identity domain.Resolv
 	}
 	usernameValue, _ := object.Lookup("username")
 	username, usernameText := usernameValue.(string)
-	if !dto.IsASCII(email) {
-		return nil, ErrOAuthNotPorted // the welcome mail to a non-ASCII address depends on the SMTP server's SMTPUTF8 support
-	}
 	membership, refusal, err := s.signupMembership(ctx, object, collaborator, audit)
 	if err != nil || refusal != nil {
 		return refusal, err
@@ -658,14 +661,14 @@ func (s *OAuthAccounts) socialSignup(ctx context.Context, identity domain.Resolv
 	if !usernameText || username == "" {
 		return nil, ErrOAuthServer // data['username'].upper() / "The given username must be set"
 	}
-	if !namesStorable {
-		return nil, ErrOAuthServer
+	if namesUnsupported || !namesStorable {
+		return nil, ErrOAuthServer // the INSERT refuses the value (create_user's ValueError)
 	}
 	hash, err := s.oauthUnusablePassword()
 	if err != nil {
 		return nil, err
 	}
-	user := domain.OAuthNewUser{ID: uuid.NewString(), Username: djangoauth.PythonUpper(username), Email: normalizeEmail(email),
+	user := domain.OAuthNewUser{ID: uuid.NewString(), Username: oauthStoredUsername(username), Email: normalizeEmail(email),
 		PasswordHash: hash, FirstName: names[0], LastName: names[1], MailFirstName: mailNames[0], MailLastName: mailNames[1],
 		Role: membership.role, CollaboratorRole: membership.collaboratorRole, ConnectedUserID: membership.connected,
 		Permissions: membership.permissions, Joined: s.now().UTC()}
@@ -734,7 +737,7 @@ func (s *OAuthAccounts) welcomeNewUser(ctx context.Context, user domain.OAuthNew
 	if err != nil {
 		return nil, err
 	}
-	if err = s.sendMail(ctx, s.settings.WhitelabelName+" | Benvenuto", message, strings.ToLower(user.Email)); err != nil {
+	if err = s.sendMail(ctx, s.settings.WhitelabelName+" | Benvenuto", message, dto.PythonLower(user.Email)); err != nil {
 		return nil, err
 	}
 	return s.signupContent(ctx, account, result)

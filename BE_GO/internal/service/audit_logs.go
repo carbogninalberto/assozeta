@@ -134,12 +134,15 @@ func (s *AuditLogs) List(ctx context.Context, identity domain.ResolvedIdentity, 
 			return nil, err
 		}
 	}
-	resolver := s.resolver(ctx, groupHeader)
+	// X15: the list's measured recursion bands (the full serializer enriches
+	// one frame deeper than the detail; minimal reads the columns only).
+	band := dto.AuditListBand()
+	resolver := s.resolver(ctx, groupHeader, band)
 	data := make([]any, 0, len(rows))
 	for _, row := range rows {
 		var item any
 		if minimal {
-			item, err = s.minimal(row)
+			item, err = s.minimal(row, band)
 		} else {
 			item, err = s.full(row, resolver)
 		}
@@ -171,7 +174,7 @@ func (s *AuditLogs) Detail(ctx context.Context, identity domain.ResolvedIdentity
 	if row == nil {
 		return nil, ErrAuditLogNotFound
 	}
-	item, err := s.full(*row, s.resolver(ctx, groupHeader))
+	item, err := s.full(*row, s.resolver(ctx, groupHeader, dto.AuditDetailBand()))
 	if err != nil {
 		return nil, err
 	}
@@ -195,15 +198,16 @@ func nullable(valid bool, text string) *string {
 }
 
 // auditLoad is the JSONField from_db_value of the row's JSON columns (Django
-// loads every concrete field, serialized_data included).
-func auditLoad(row domain.AuditLogRow) (changes, additional any, err error) {
-	if changes, err = dto.AuditStoredJSON(nullable(row.Changes.Valid, row.Changes.String)); err != nil {
+// loads every concrete field, serialized_data included), at the endpoint's
+// total-depth band (X15): a deeper column is the 500 page.
+func auditLoad(row domain.AuditLogRow, band dto.AuditBand) (changes, additional any, err error) {
+	if changes, err = dto.AuditStoredJSONAt(nullable(row.Changes.Valid, row.Changes.String), band.Depth); err != nil {
 		return nil, nil, err
 	}
-	if additional, err = dto.AuditStoredJSON(nullable(row.AdditionalData.Valid, row.AdditionalData.String)); err != nil {
+	if additional, err = dto.AuditStoredJSONAt(nullable(row.AdditionalData.Valid, row.AdditionalData.String), band.Depth); err != nil {
 		return nil, nil, err
 	}
-	if _, err = dto.AuditStoredJSON(nullable(row.SerializedData.Valid, row.SerializedData.String)); err != nil {
+	if _, err = dto.AuditStoredJSONAt(nullable(row.SerializedData.Valid, row.SerializedData.String), band.Depth); err != nil {
 		return nil, nil, err
 	}
 	return changes, additional, nil
@@ -219,9 +223,10 @@ func auditActorName(row domain.AuditLogRow) any {
 	return row.ActorEmail.String
 }
 
-// minimal is AuditLogListMinimalSerializer.
-func (s *AuditLogs) minimal(row domain.AuditLogRow) (any, error) {
-	if _, _, err := auditLoad(row); err != nil {
+// minimal is AuditLogListMinimalSerializer; it reads the columns at the list's
+// depth band without enriching them (no frame band).
+func (s *AuditLogs) minimal(row domain.AuditLogRow, band dto.AuditBand) (any, error) {
+	if _, _, err := auditLoad(row, band); err != nil {
 		return nil, err
 	}
 	verbose, err := dto.AuditModelVerboseName(row.Model)
@@ -236,7 +241,7 @@ func (s *AuditLogs) minimal(row domain.AuditLogRow) (any, error) {
 
 // full is AuditLogEntrySerializer.
 func (s *AuditLogs) full(row domain.AuditLogRow, resolver *auditResolver) (any, error) {
-	changes, additional, err := auditLoad(row)
+	changes, additional, err := auditLoad(row, resolver.band)
 	if err != nil {
 		return nil, err
 	}
@@ -254,10 +259,10 @@ func (s *AuditLogs) full(row domain.AuditLogRow, resolver *auditResolver) (any, 
 	}
 	var enriched, display any
 	if dto.PythonTruthy(changes) {
-		if enriched, err = dto.AuditEnrichChanges(changes, resolver); err != nil {
+		if enriched, err = dto.AuditEnrichChanges(changes, resolver, resolver.band); err != nil {
 			return nil, err
 		}
-		if display, err = dto.AuditDisplayChanges(changes, resolver); err != nil {
+		if display, err = dto.AuditDisplayChanges(changes, resolver, resolver.band); err != nil {
 			return nil, err
 		}
 	}

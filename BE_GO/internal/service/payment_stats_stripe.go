@@ -9,6 +9,7 @@ import (
 	"math"
 	"math/big"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
@@ -57,7 +58,7 @@ func (f *PaymentStatsStripe) charges(ctx context.Context, from, to time.Time) (*
 		return nil, err
 	}
 	if found {
-		return &cached, nil
+		return paymentStatsRenderable(&cached)
 	}
 	fee, err := f.fees(ctx, f.routes.client.Session(key), start, end)
 	if errors.Is(err, errPaymentStatsStripeZero) {
@@ -66,12 +67,29 @@ func (f *PaymentStatsStripe) charges(ctx context.Context, from, to time.Time) (*
 	if err != nil {
 		return nil, err
 	}
-	charges := domain.PaymentStripeCharges{Total: pythonRound2(float64(fee) / 100), StripeFee: pythonRound2(float64(fee) / 100)}
+	charges := domain.PaymentStripeCharges{Total: fee, StripeFee: fee}
 	if err := f.cache.StoreStripeCharges(ctx, cacheKey, charges); err != nil {
 		// cache.set runs inside the view's try: the except answers zero charges.
 		return nil, nil
 	}
-	return &charges, nil
+	return paymentStatsRenderable(&charges)
+}
+
+// errPaymentStatsNonFinite is DRF's JSONRenderer (STRICT_JSON) rendering a
+// non-finite float in stripe_charges: json.dumps(allow_nan=False) raises
+// ValueError while the response renders, which is the 500 page. The cache
+// entry is already written, as in Django.
+var errPaymentStatsNonFinite = errors.New("payment_stats: out of range float values are not JSON compliant")
+
+// paymentStatsRenderable answers charges the view can render: a sum of
+// float amounts can reach an infinity or NaN (json.loads reads 1e400 and NaN).
+func paymentStatsRenderable(charges *domain.PaymentStripeCharges) (*domain.PaymentStripeCharges, error) {
+	for _, value := range []float64{charges.Total, charges.StripeFee} {
+		if math.IsInf(value, 0) || math.IsNaN(value) {
+			return nil, errPaymentStatsNonFinite
+		}
+	}
+	return charges, nil
 }
 
 // paymentStatsItems is iterating a list object's data (getattr(self, 'data', [])): a
@@ -91,9 +109,117 @@ func paymentStatsItems(value any, present bool) ([]any, bool) {
 	return nil, false
 }
 
+// paymentStatsSum is the Python sum of the fee amounts: int of any size until a
+// float joins (int + float converts the int with float(), which raises
+// OverflowError beyond the float range), then a float.
+type paymentStatsSum struct {
+	float   bool
+	integer *big.Int
+	number  float64
+}
+
+func newPaymentStatsSum() paymentStatsSum { return paymentStatsSum{integer: new(big.Int)} }
+
+// add is += for a parsed JSON value; false is the TypeError or OverflowError
+// the view's except turns into zero charges.
+func (s *paymentStatsSum) add(value any) bool {
+	switch v := value.(type) {
+	case bool:
+		number := int64(0)
+		if v {
+			number = 1
+		}
+		return s.addInt(big.NewInt(number))
+	case json.Number:
+		if !strings.ContainsAny(string(v), ".eE") {
+			if number, ok := new(big.Int).SetString(string(v), 10); ok {
+				return s.addInt(number)
+			}
+		}
+		number, ok := parsePythonFloat(string(v))
+		return ok && s.addFloat(number)
+	case float64:
+		// A JSON reader that yields float64 (NaN and infinities included).
+		return s.addFloat(v)
+	case int64:
+		return s.addInt(big.NewInt(v))
+	case int:
+		return s.addInt(big.NewInt(int64(v)))
+	case *big.Int:
+		return s.addInt(v)
+	}
+	// str, None, list and dict raise a TypeError.
+	return false
+}
+
+func (s *paymentStatsSum) addInt(value *big.Int) bool {
+	if !s.float {
+		s.integer.Add(s.integer, value)
+		return true
+	}
+	number, ok := pythonIntFloat(value)
+	if !ok {
+		return false
+	}
+	s.number += number
+	return true
+}
+
+func (s *paymentStatsSum) addFloat(value float64) bool {
+	if s.float {
+		s.number += value
+		return true
+	}
+	number, ok := pythonIntFloat(s.integer)
+	if !ok {
+		return false
+	}
+	s.float, s.number = true, number+value
+	return true
+}
+
+// charge is round(float(total) / 100, 2); float(total) of a huge int raises
+// OverflowError, and round keeps NaN and infinities (json.dumps then writes
+// NaN and Infinity).
+func (s paymentStatsSum) charge() (float64, bool) {
+	number := s.number
+	if !s.float {
+		var ok bool
+		if number, ok = pythonIntFloat(s.integer); !ok {
+			return 0, false
+		}
+	}
+	return pythonRound2(number / 100), true
+}
+
+// pythonIntFloat is float(int): the correctly rounded float64, false where
+// Python raises OverflowError.
+func pythonIntFloat(value *big.Int) (float64, bool) {
+	number, _ := new(big.Float).SetInt(value).Float64()
+	return number, !math.IsInf(number, 0)
+}
+
+// parsePythonFloat is float() of a JSON number token, and json.loads' NaN and
+// Infinity literals.
+func parsePythonFloat(text string) (float64, bool) {
+	switch text {
+	case "NaN":
+		return math.NaN(), true
+	case "Infinity":
+		return math.Inf(1), true
+	case "-Infinity":
+		return math.Inf(-1), true
+	}
+	number, err := strconv.ParseFloat(text, 64)
+	// A decimal exponent beyond the float range is float()'s infinity or zero,
+	// not an error.
+	return number, err == nil || errors.Is(err, strconv.ErrRange)
+}
+
 // fees sums the stripe_fee amounts of every non-payout balance transaction
-// (the view adds to total only inside the stripe_fee branch, so both sums are equal).
-func (f *PaymentStatsStripe) fees(ctx context.Context, session *stripeapi.Session, start, end int64) (int64, error) {
+// (the view adds to total only inside the stripe_fee branch, so both sums are equal)
+// and returns round(float(total) / 100, 2).
+func (f *PaymentStatsStripe) fees(ctx context.Context, session *stripeapi.Session, start, end int64) (float64, error) {
 	zero := errPaymentStatsStripeZero
 	created := domain.RequestObject{{Name: "gte", Value: json.Number(strconv.FormatInt(start, 10))},
 		{Name: "lte", Value: json.Number(strconv.FormatInt(end, 10))}}
@@ -101,7 +227,7 @@ func (f *PaymentStatsStripe) fees(ctx context.Context, session *stripeapi.Sessio
 	if err != nil {
 		return 0, zero
 	}
-	var total int64
+	total := newPaymentStatsSum()
 	for {
 		items, ok := paymentStatsItems(page.Lookup("data"))
 		if !ok {
@@ -140,36 +266,28 @@ func (f *PaymentStatsStripe) fees(ctx context.Context, session *stripeapi.Sessio
 					continue
 				}
 				amount, present := detail.Lookup("amount")
-				if !present {
+				if !present || !total.add(amount) {
 					return 0, zero
 				}
-				number, isNumber := amount.(json.Number)
-				value, parseErr := strconv.ParseInt(string(number), 10, 64)
-				if !isNumber || parseErr != nil || (value > 0 && total > math.MaxInt64-value) || (value < 0 && total < math.MinInt64-value) {
-					// floats, bools and big ints add in Python; strings and None raise.
-					if _, isText := amount.(string); isText || amount == nil {
-						return 0, zero
-					}
-					return 0, domain.ErrPaymentReadsNotPorted
-				}
-				total += value
 			}
 		}
 		more, _ := page.Lookup("has_more")
 		if !dto.PythonTruthy(more) {
-			return total, nil
+			charge, ok := total.charge()
+			if !ok {
+				return 0, zero
+			}
+			return charge, nil
 		}
 		// next_page: list(**_retrieve_params, starting_after=data[-1].id) on the list's url.
+		// The SDK encodes whatever Python value the id is (str(int), str(bool),
+		// a dict's nested keys) and the request's outcome decides.
 		if len(items) == 0 {
 			return 0, zero
 		}
 		last, _ := items[len(items)-1].(domain.RequestObject)
 		id, present := last.Lookup("id")
-		text, isText := id.(string)
-		if !present || !isText || text == "" {
-			if present && !isText && dto.PythonTruthy(id) {
-				return 0, domain.ErrPaymentReadsNotPorted
-			}
+		if !present || !dto.PythonTruthy(id) {
 			return 0, zero
 		}
 		url, _ := page.Lookup("url")
@@ -177,13 +295,17 @@ func (f *PaymentStatsStripe) fees(ctx context.Context, session *stripeapi.Sessio
 		if !isPath {
 			return 0, zero
 		}
-		page, err = session.List(ctx, path, []stripeapi.Param{{Key: "created", Value: created}, {Key: "starting_after", Value: text}})
+		page, err = session.List(ctx, path, []stripeapi.Param{{Key: "created", Value: created}, {Key: "starting_after", Value: id}})
 		if err != nil {
 			return 0, zero
 		}
 		// page.is_empty is `not self.data`.
 		if value, _ := page.Lookup("data"); !dto.PythonTruthy(value) {
-			return total, nil
+			charge, ok := total.charge()
+			if !ok {
+				return 0, zero
+			}
+			return charge, nil
 		}
 	}
 }

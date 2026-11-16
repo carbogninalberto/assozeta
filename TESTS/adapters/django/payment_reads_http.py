@@ -4,13 +4,16 @@ Seeds a payment category, two accounts, four documents, five associates (two
 tutor relations), an instructor, a supplier, two courses, a carnet, an invoice,
 five subscriptions, the authored payments (one attachment), course
 subscriptions, installments, a carnet holding and an instructor-hours row with
-its document (audit disabled). For the athlete list it also seeds two further
-associations with their owners and a group, three athletes (extra_users),
-their associates, subscriptions, courses, course subscriptions, installments,
-a carnet holding, a camp period, invoices and payments, an access token for the
-first owner and an association-scoped impersonation session of that owner for
-one athlete. Every case must leave the complete model state unchanged, except
-the athlete list's receipts.
+its document (audit disabled). Two further associations are seeded before the
+payments: one owned by an athlete (the association import reuses an existing
+user by UUID; it owns the imported payments) and one owned by a further
+association user (the random-search and full-name-order rows). For the athlete
+list it also seeds two more associations with their owners and a group, the
+athletes (extra_users), their associates, subscriptions, courses, course
+subscriptions, installments, a carnet holding, a camp period, invoices and
+payments, an access token for each association owner and association-scoped
+impersonation sessions of the first owner for two athletes. Every case must
+leave the complete model state unchanged, except the athlete list's receipts.
 
 The athlete list calls document_invoice in-process for listed paid payments
 whose invoice has no PDF. document-render's renderer stub (its
@@ -87,8 +90,8 @@ def moment(text):
 
 def seed_rows(source, created):
     from application.models import (Associate, AssociateTutorRelation, Course, CourseSubscription, CourseSubscriptionInstallment,
-                                    Instructor, InstructorHours, Invoice, Payment, PaymentCategory, Subscription,
-                                    SupplierAndCustomers)
+                                    Instructor, InstructorHours, Invoice, Payment, PaymentCategory, SportAssociation, Subscription,
+                                    SupplierAndCustomers, User)
     from application.models.balance_sheet_models import CustomAccounts
     from application.models.carnet_models import Carnet, CarnetSubscription
     from docmanager.models import Document
@@ -100,6 +103,18 @@ def seed_rows(source, created):
         model._base_manager.bulk_create([row])
         created.append((model, row.pk))
         return row
+
+    # The two associations the ported sites need before their payments: one owned by an athlete (the association
+    # import reuses an existing user by UUID) and one owned by an association user whose rows no other case lists.
+    data = source['athlete']
+    extra = data['extra_owner']
+    insert(User, User(user_id=extra['id'], username=extra['username'], email=extra['email'], password='!synthetic',
+                      role=User.ASSOCIATION))
+    insert(SportAssociation, SportAssociation(sport_association_id=extra['association'], user_id=extra['id'],
+                                              denomination=extra['denomination'], tax_code=extra['tax_code']))
+    insert(SportAssociation, SportAssociation(sport_association_id=data['imported_association'],
+                                              user_id=source['extra_users']['imported']['id'],
+                                              denomination='Importata atleta', tax_code='77410000004'))
 
     documents = source['documents']
     for row in documents.values():
@@ -293,6 +308,19 @@ def seed_athlete_rows(source, insert, created):
     cache.set(session_key(identifier), record, SESSION_TTL)
     contract.require(cache.get(session_key(identifier)) == record, 'fixture.session')
     EXTRA['sessions'][session['label']] = identifier
+    # A second session: the same owner impersonating the athlete that owns the imported association.
+    session = data['imported_session']
+    identifier = str(uuid.uuid4())
+    record = {'actor_id': users[session['actor']], 'target_id': users[session['target']], 'association_id': session['association']}
+    contract.require(cache.get(session_key(identifier)) is None, 'fixture.session-collision')
+    cache.set(session_key(identifier), record, SESSION_TTL)
+    contract.require(cache.get(session_key(identifier)) == record, 'fixture.session')
+    EXTRA['sessions'][session['label']] = identifier
+    # The extra association's owner token (its rows are the random-search and full-name-order cases').
+    extra = data['extra_owner']
+    token = AccessToken()
+    token['user_id'] = extra['id']
+    EXTRA['tokens']['extra_owner'] = str(token)
 
 
 @contextmanager
@@ -409,7 +437,7 @@ _fixture_context = harness.with_celery_broker(harness.fixture_context_for(contra
 def fixture_context(apps, private_work, raw, *, cleanup_receipt=None):
     """The shared fixture plus the token and the session seed_athlete_rows created."""
     with _fixture_context(apps, private_work, raw, cleanup_receipt=cleanup_receipt) as fixture:
-        contract.require(len(EXTRA['tokens']) == 2 and len(EXTRA['sessions']) == 1, 'fixture.athlete-identities')
+        contract.require(len(EXTRA['tokens']) == 3 and len(EXTRA['sessions']) == 2, 'fixture.athlete-identities')
         contract.require(not set(EXTRA['tokens']) & set(fixture['tokens']) and not set(EXTRA['sessions']) & set(fixture['sessions']),
                          'fixture.identity-collision')
         fixture['tokens'] = {**fixture['tokens'], **EXTRA['tokens']}

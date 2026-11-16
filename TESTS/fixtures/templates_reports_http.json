@@ -4497,6 +4497,308 @@
     "ui": {},
     "created": "2026-10-01T08:00:00+00:00",
     "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_categories_random_order": {
+    "id": "a1000000-0000-4000-8000-000000930283",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_categories_random_order",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "PaymentCategory",
+     "fields": [
+      "type"
+     ],
+     "filters": {
+      "type": 1
+     },
+     "order_by": [
+      "?"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_carnets_decimal_spellings": {
+    "id": "a1000000-0000-4000-8000-000000930284",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_carnets_decimal_spellings",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Carnet",
+     "fields": [
+      "title"
+     ],
+     "filters": {
+      "fee__in": [
+       "4.55e1",
+       " 80.00 ",
+       "8_0"
+      ]
+     },
+     "order_by": [
+      "title"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_carnets_decimal_infinity_error": {
+    "id": "a1000000-0000-4000-8000-000000930285",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_carnets_decimal_infinity_error",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Carnet",
+     "filters": {
+      "fee__in": [
+       "Infinity"
+      ]
+     }
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_carnets_in_huge_integer": {
+    "id": "a1000000-0000-4000-8000-000000930286",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_carnets_in_huge_integer",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Carnet",
+     "fields": [
+      "title"
+     ],
+     "filters": {
+      "lessons_number__in": [
+       5,
+       99999999999999999999
+      ]
+     }
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_tags_regex_empty_list": {
+    "id": "a1000000-0000-4000-8000-000000930287",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_tags_regex_empty_list",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name"
+     ],
+     "filters": {
+      "tag_name__regex": []
+     }
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_tags_regex_number_error": {
+    "id": "a1000000-0000-4000-8000-000000930288",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_tags_regex_number_error",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Tags",
+     "filters": {
+      "tag_name__regex": 5
+     }
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_tags_time_basic_format": {
+    "id": "a1000000-0000-4000-8000-000000930289",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_tags_time_basic_format",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name"
+     ],
+     "filters": {
+      "creation_date__time": "1000"
+     }
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_tags_time_arabic_digits": {
+    "id": "a1000000-0000-4000-8000-000000930290",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_tags_time_arabic_digits",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name"
+     ],
+     "filters": {
+      "creation_date__time": "٠٠:00"
+     }
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_tags_time_number_error": {
+    "id": "a1000000-0000-4000-8000-000000930291",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_tags_time_number_error",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Tags",
+     "filters": {
+      "creation_date__time": 5
+     }
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "overflow_limit-overflow": {
+    "id": "a1000000-0000-4000-8000-000000930292",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report overflow_limit-overflow",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name"
+     ],
+     "order_by": [
+      "tag_name"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "overflow_offset-overflow-error": {
+    "id": "a1000000-0000-4000-8000-000000930293",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report overflow_offset-overflow-error",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name"
+     ],
+     "order_by": [
+      "tag_name"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "overflow_filter-overflow-error": {
+    "id": "a1000000-0000-4000-8000-000000930294",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report overflow_filter-overflow-error",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name"
+     ],
+     "order_by": [
+      "tag_name"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "attendance_course_id_number": {
+    "id": "a1000000-0000-4000-8000-000000930295",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report attendance_course_id_number",
+    "description": "",
+    "tool": "get_attendance_matrix",
+    "params": {
+     "course_id": 5
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "attendance_course_id_float_error": {
+    "id": "a1000000-0000-4000-8000-000000930296",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report attendance_course_id_float_error",
+    "description": "",
+    "tool": "get_attendance_matrix",
+    "params": {
+     "course_id": 1.5
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "attendance_course_name_number": {
+    "id": "a1000000-0000-4000-8000-000000930297",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report attendance_course_name_number",
+    "description": "",
+    "tool": "get_attendance_matrix",
+    "params": {
+     "course_name": 7
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "export_multi_sheet_number_error": {
+    "id": "a1000000-0000-4000-8000-000000930298",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report export_multi_sheet_number_error",
+    "description": "",
+    "tool": "export_multi_sheet",
+    "params": {
+     "sheets": 5
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
    }
   },
   "people": {
@@ -11127,6 +11429,313 @@
       }
      ]
     }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-categories-random-order",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930283/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 2,
+     "has_more": false,
+     "data": [
+      {
+       "type": "Istituzionale"
+      },
+      {
+       "type": "Istituzionale"
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-carnets-decimal-spellings",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930284/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 2,
+     "has_more": false,
+     "data": [
+      {
+       "title": "Cinque"
+      },
+      {
+       "title": "Dieci ingressi"
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-carnets-decimal-infinity-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930285/run",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante l'esecuzione del report."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-carnets-in-huge-integer",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930286/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 1,
+     "has_more": false,
+     "data": [
+      {
+       "title": "Cinque"
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-tags-regex-empty-list",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930287/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 0,
+     "has_more": false,
+     "data": []
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-tags-regex-number-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930288/run",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante l'esecuzione del report."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-tags-time-basic-format",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930289/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 1,
+     "has_more": false,
+     "data": [
+      {
+       "tag_name": "Calcio & Basket"
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-tags-time-arabic-digits",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930290/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 1,
+     "has_more": false,
+     "data": [
+      {
+       "tag_name": "nuoto agonistico"
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-tags-time-number-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930291/run",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante l'esecuzione del report."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-tags-limit-overflow",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930292/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 3,
+     "has_more": false,
+     "data": [
+      {
+       "tag_name": "Calcio & Basket"
+      },
+      {
+       "tag_name": "Nuoto"
+      },
+      {
+       "tag_name": "nuoto agonistico"
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "raw_body": "{\"overrides\": {\"limit\": 1e400}}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "templates-reports-run-query-tags-offset-overflow-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930293/run",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante l'esecuzione del report."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "raw_body": "{\"overrides\": {\"offset\": 1e400}}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "templates-reports-run-query-tags-filter-overflow-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930294/run",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante l'esecuzione del report."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "raw_body": "{\"overrides\": {\"filters\": {\"creation_date__year\": 1e400}}}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "templates-reports-run-attendance-course-id-number",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930295/run",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Corso non trovato con ID: 5"
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-attendance-course-id-float-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930296/run",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante l'esecuzione del report."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-attendance-course-name-number",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930297/run",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Nessun corso trovato con nome: 7"
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-export-multi-sheet-number-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930298/run",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante l'esecuzione del report."
    },
    "effect": {
     "kind": "none"

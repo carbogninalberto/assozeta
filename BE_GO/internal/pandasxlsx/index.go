@@ -34,14 +34,24 @@ const (
 // of a JSON document: a string, a bool or a json.Number (any other value is
 // no label). found is false where the key is no label. raises is true where
 // row[key] raises although the key is a label (a whole number read as a
-// position past the row's end). ErrWorkbookNotPorted: text looked up in a
-// DatetimeIndex or a TimedeltaIndex, which pandas parses as a date or a
-// duration (dateutil's grammar, not modelled).
+// position past the row's end) and where it reads a partial date slice (a
+// text coarser than a datetime Index's resolution finds a Series, not a
+// value). A text key against a DatetimeIndex or a TimedeltaIndex is parsed as
+// pandas parses it (dateutil, the quarter forms, Timedelta's grammar); see
+// datekey.go.
 func (f *Frame) Lookup(key any) (position int, found, raises bool, err error) {
 	switch f.Index {
-	case DatetimeIndex, TimedeltaIndex:
-		if _, text := key.(string); text {
-			return 0, false, false, ErrWorkbookNotPorted
+	case DatetimeIndex:
+		// DatetimeIndex.get_loc parses a str (dateutil) and slices the
+		// labels a coarser text covers.
+		if text, isText := key.(string); isText {
+			return f.dateKey(text)
+		}
+		return 0, false, false, nil
+	case TimedeltaIndex:
+		// TimedeltaIndex.get_loc parses a str as Timedelta nanoseconds.
+		if text, isText := key.(string); isText {
+			return f.timedeltaKey(text)
 		}
 		return 0, false, false, nil
 	case BoolIndex:

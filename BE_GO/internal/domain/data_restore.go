@@ -42,11 +42,6 @@ type DataRestoreInstance struct {
 	PrimaryOwnerID              *string `db:"primary_owner_id"`
 }
 
-// ErrDataRestoreNotPorted marks requests Django answers with code Go does not
-// carry (archive validation of an upload, a multipart body outside the ported
-// subset); they are refused with the server error page before any write.
-var ErrDataRestoreNotPorted = refusal.New("data restore path not ported")
-
 // ErrDataRestoreUnreachable is a state no request or stored row produces
 // (each site names the writer that rules it out). Never handed off.
 var ErrDataRestoreUnreachable = refusal.AppState("data restore: unreachable state")

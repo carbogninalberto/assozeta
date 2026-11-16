@@ -2,6 +2,7 @@ package dto
 
 import (
 	"encoding/json"
+	"fmt"
 	"math"
 	"math/big"
 	"strconv"
@@ -282,8 +283,8 @@ type CustomerInvoiceAdd struct {
 }
 
 // ParseCustomerInvoiceAdd ports CustomerInvoiceSerializer field validation
-// (the view already replaced both dates with valid DD/MM/YYYY text and the
-// association with the user's own).
+// (the view already replaced both dates with strftime('%d/%m/%Y') of the
+// parsed value and the association with the user's own).
 func ParseCustomerInvoiceAdd(object domain.RequestObject) (CustomerInvoiceAdd, InvoicePartyErrors) {
 	fpr := "FPR"
 	input := CustomerInvoiceAdd{Prefix: &fpr}
@@ -373,6 +374,31 @@ func ParseCustomerInvoiceAdd(object domain.RequestObject) (CustomerInvoiceAdd, I
 			input.PDF = related
 		} else {
 			input.Payment = related
+		}
+	}
+	// transmitting_date and payment_expiry_date are DateFields (input_formats
+	// ['%d/%m/%Y']). The view first rewrites both:
+	// datetime.strptime(value, '%Y-%m-%d').strftime('%d/%m/%Y')
+	// (invoice_views.py:878-881); strftime('%Y') is the platform C library's
+	// while strptime needs exactly four digits, so a date before 1000 does not
+	// survive the rewrite on glibc (a field error) and does on macOS (the add
+	// goes on). The view's own strptime failures are asked before this parser.
+	for _, name := range []string{"transmitting_date", "payment_expiry_date"} {
+		value, present := object.Lookup(name)
+		if !present || value == nil {
+			continue
+		}
+		text, isText := value.(string)
+		if !isText {
+			continue
+		}
+		parsed, ok := PythonStrptimeDate(text)
+		if !ok {
+			continue
+		}
+		converted := fmt.Sprintf("%02d/%02d/%s", parsed.Day(), parsed.Month(), PythonStrftimeYear(parsed.Year()))
+		if _, ok = PythonStrptimeDMY(converted); !ok {
+			errors.add(name, PersonaDateFormat)
 		}
 	}
 	return input, errors
@@ -758,8 +784,19 @@ func PythonFloatParse(text string) (float64, bool) {
 	return value, true
 }
 
-// PythonFloatStr is str(float) for a finite value.
-func PythonFloatStr(value float64) string { return pythonFloatRepr(value) }
+// PythonFloatStr is str(float): 'inf', '-inf' and 'nan' for the non-finite
+// values, the shortest round-trip repr otherwise.
+func PythonFloatStr(value float64) string {
+	switch {
+	case math.IsInf(value, 1):
+		return "inf"
+	case math.IsInf(value, -1):
+		return "-inf"
+	case math.IsNaN(value):
+		return "nan"
+	}
+	return pythonFloatRepr(value)
+}
 
 // DecimalFromFloat9 is Context(prec=9).create_decimal_from_float(value) text.
 func DecimalFromFloat9(value float64) string {

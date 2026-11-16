@@ -163,14 +163,16 @@ LINKS = {
 }
 
 
-def add(name, actor, path, status, response, *, method='GET', body=None, raw_body=None, content_type=None, headers=None, effect=None,
-        unordered=None):
+def add(name, actor, path, status, response, *, method='GET', body=None, raw_body=None, raw_parts=None, content_type=None,
+        headers=None, effect=None, unordered=None):
     case = {'name': f'subscription-misc-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
             'status': status, 'response': response, 'effect': effect}
     if body is not None:
         case['body'] = body
     if raw_body is not None:
         case['raw_body'], case['content_type'] = raw_body, content_type
+    if raw_parts is not None:
+        case['raw_parts'], case['content_type'] = raw_parts, content_type
     if unordered:
         case['unordered'] = unordered
     cases.append(case)
@@ -359,6 +361,39 @@ for label, text, lines in (('lines', 'uno\ndue\r\ntre\rquattro', ['uno\n', 'due\
     body, content_type = multipart(('gym_name', 'palestra.txt', 'text/plain', text))
     add(f'generate-file-{label}', 'owner', GENERATE, 201, {'token': '$new', 'gym_name': lines, 'expires_at': '$later'}, method='POST',
         raw_body=body, content_type=content_type, effect={'kind': 'link', 'gym_name': 'palestra.txt', 'association': OWN})
+
+
+def file_lines(content):
+    """tuple(file): the whole file's lines with their \\n, \\r or \\r\\n endings, as Django's File.__iter__ rebuilds
+    them across its 64 KiB chunks (a line split by the boundary is joined back)."""
+    raw, lines, start, index = content.encode(), [], 0, 0
+    while index < len(raw):
+        if raw[index] == 0x0A:
+            end = index + 1
+        elif raw[index] == 0x0D:
+            end = index + 2 if raw[index + 1:index + 2] == b'\n' else index + 1
+        else:
+            index += 1
+            continue
+        lines.append(raw[start:end].decode())
+        start = index = end
+    if start < len(raw):
+        lines.append(raw[start:].decode())
+    return lines
+
+
+# A file over one 64 KiB chunk: File.__iter__ reads 64 KiB at a time and the DRF renderer keeps every line, so the
+# echo is the whole file's lines, not the first chunk's. The '\\r' of the second line is byte 65,535 and its '\\n' is
+# byte 65,536: the boundary falls inside the pair. raw_parts keeps the body compact ({'repeat', 'count'} runs).
+BOUNDARY = 'submiscboundary'
+OVER_CHUNK = 'x' * 65535 + '\r\n' + 'riga\n' + 'y' * 3990 + '\n' + 'coda'
+add('generate-file-over-one-chunk', 'owner', GENERATE, 201,
+    {'token': '$new', 'gym_name': file_lines(OVER_CHUNK), 'expires_at': '$later'}, method='POST',
+    raw_parts=[f'--{BOUNDARY}\r\nContent-Disposition: form-data; name="gym_name"; filename="palestra.txt"\r\n'
+               f'Content-Type: text/plain\r\n\r\n', {'repeat': 'x', 'count': 65535}, '\r\nriga\n',
+               {'repeat': 'y', 'count': 3990}, '\ncoda', f'\r\n--{BOUNDARY}--\r\n'],
+    content_type=f'multipart/form-data; boundary={BOUNDARY}',
+    effect={'kind': 'link', 'gym_name': 'palestra.txt', 'association': OWN})
 body, content_type = multipart(('gym_name', 'a/b/../percorso.csv', 'text/csv', 'x'))
 add('generate-file-path-name', 'owner', GENERATE, 201, {'token': '$new', 'gym_name': ['x'], 'expires_at': '$later'}, method='POST',
     raw_body=body, content_type=content_type, effect={'kind': 'link', 'gym_name': 'percorso.csv', 'association': OWN})

@@ -174,6 +174,12 @@ def main():
                         result = unittest.TextTestRunner(verbosity=2).run(unittest.defaultTestLoader.loadTestsFromName('TESTS.contracts.test_versioned_routing.' + name))
                         assert result.wasSuccessful() and not result.skipped
                     contracts('VersionedRoutingContracts')
+                    # The Bakney SSO protocol root paths follow the backend the
+                    # instance selects: Django by default, Go when configured.
+                    with proxy(*addresses, log, operations=temporary, environment={
+                            'ASSOZETA_BAKNEY_PROTOCOL_UPSTREAM': addresses[1]}) as (bakney_base, _bakney_image):
+                        with patch.dict(os.environ, TESTS_ROUTING_BAKNEY_URL=bakney_base):
+                            contracts('BakneyProtocolBackendContracts')
                     maintenance = Path(temporary) / 'maintenance.flag'
                     maintenance.touch()
                     try:

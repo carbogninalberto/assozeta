@@ -119,6 +119,52 @@ add('owner-without-association-keeps-row-server-error', 'owner_without_associati
 add('athlete-membership-without-prefill-server-error', 'athlete', LIST, 500, SERVER, body=BY_NAME['athlete-membership-server-error']['body'],
     effect=row_only('membership-without-fee', '@re4', actor='athlete', billed=False, float_fee=True))
 
+import urllib.parse
+
+# The stock create's form JSON recursion bands (owner decision X15, see course-enrolment.md). D is the maximum nesting
+# of the field's text. Its edge moves a level or two with the value's shape and the live stack, so the cases sit inside
+# each band with a margin instead of at the edges: 9900 for today's answer and 9980 past the measured edge (9943 for
+# events, 9934 for multiple_quote's validation). The narrow band where only the quote payment fails (9929..9933) is
+# pinned by the Go unit tests. The deep text is shaped so nothing deep is stored, which the shared state snapshot could
+# not traverse: events is write-only and the event serializer drops an unknown key, and the quote text repeats the
+# amount key before the real one, so json.loads (and Go's reader) keep the last value and the row, the payment meta and
+# the audit reprs stay the shallow ones the reused effects describe.
+FORM = 'application/x-www-form-urlencoded'
+
+
+def add_parts(name, actor, path, parts, *, effect=None):
+    """A 500-page form case whose body is raw_parts (the filler is stored as a repeat count)."""
+    add(name, actor, path, 500, SERVER, effect=effect)
+    cases[-1].update(raw_parts=parts, content_type=FORM)
+
+
+EVENTS = BY_NAME['form-events']['effect']
+EVENTS_ROW = EVENTS['created']['application.CourseSubscription'][0]
+QUOTE = BY_NAME['form-quote']
+QUOTE_REQUEST = urllib.parse.parse_qs(QUOTE['raw_body'])
+QUOTE_FIELDS = json.loads(QUOTE_REQUEST['multiple_quote'][0])
+
+
+def deep_events_parts(depth):
+    return [f'course={EVENTS_ROW["course_id"]}&subscription_id={EVENTS_ROW["subscription_id"]}&events='
+            + urllib.parse.quote('[{"id":3,"amount":"12","payment_date":"05/05/2099","deep":'),
+            {'repeat': '%5B', 'count': depth - 2}, {'repeat': '%5D', 'count': depth - 2}, urllib.parse.quote('}]')]
+
+
+def deep_quote_parts(depth):
+    head = '{"quote_id": %s, "title": %s, "amount":' % (json.dumps(QUOTE_FIELDS['quote_id']), json.dumps(QUOTE_FIELDS['title']))
+    tail = ', "payment_category": %s, "amount": %s}' % (json.dumps(QUOTE_FIELDS['payment_category']), json.dumps(QUOTE_FIELDS['amount']))
+    return [f'course={QUOTE_REQUEST["course"][0]}&subscription_id={QUOTE_REQUEST["subscription_id"][0]}&multiple_quote='
+            + urllib.parse.quote(head),
+            {'repeat': '%5B', 'count': depth - 1}, {'repeat': '%5D', 'count': depth - 1}, urllib.parse.quote(tail)]
+
+
+# The event still creates its payment and installment before the 500, so its writes are the shallow form events' effect.
+add_parts('form-events-depth-9900-server-error', 'owner', LIST, deep_events_parts(9900), effect=copy.deepcopy(EVENTS))
+add_parts('form-events-depth-9980-server-error', 'owner', LIST, deep_events_parts(9980))
+add_parts('form-multiple-quote-depth-9900-server-error', 'owner', LIST, deep_quote_parts(9900), effect=copy.deepcopy(QUOTE['effect']))
+add_parts('form-multiple-quote-depth-9980-server-error', 'owner', LIST, deep_quote_parts(9980))
+
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({**{k: v for k, v in ENROLMENT.items() if k != 'cases'},
                               'scope': 'DefaultRouter course-subscriptions stock create with row, link, audit and index effects',

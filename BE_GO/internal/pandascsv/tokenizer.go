@@ -23,6 +23,13 @@ const (
 // file object, in bytes for a raw handle and in characters for a decoded one.
 const readBuffer = 262144
 
+// The capacities parser_init gives its buffers: STREAM_INIT_SIZE bytes of
+// stream, and STREAM_INIT_SIZE/10 words and lines.
+const (
+	streamInitSize = 32
+	wordsInitSize  = streamInitSize / 10
+)
+
 // tokenizer is tokenizer.c's parser_t: the token stream of the lines that are
 // buffered and the state that survives between tokenize calls.
 type tokenizer struct {
@@ -31,7 +38,8 @@ type tokenizer struct {
 	decoded bool // buffers hold readBuffer characters, not bytes
 
 	data    []byte // the current buffer
-	datapos int
+	datapos int    // where the next tokenize call resumes in it
+	datalen int
 
 	state     int
 	lines     int // completed buffered lines
@@ -55,22 +63,25 @@ type tokenizer struct {
 	streamBase int
 	wordsCap   int
 	linesCap   int
-
-	// blankStart is where the whitespace that opens the current line began in
-	// the buffer (0 when it began in an earlier one); reread records that a
-	// rewind went back to before it, so buffered lines were read again.
-	blankStart int
-	reread     bool
 }
 
 func newTokenizer(source []byte, decoded bool) *tokenizer {
-	return &tokenizer{source: source, decoded: decoded, lineStart: []int{0}, lineFields: []int{0}}
+	return &tokenizer{
+		source: source, decoded: decoded,
+		streamCap: streamInitSize, wordsCap: wordsInitSize, linesCap: wordsInitSize,
+		lineStart: []int{0}, lineFields: []int{0},
+	}
 }
 
-// word is the C string of word index.
+// word is the C string of word index: its bytes up to its NUL. end_field can
+// leave a word unterminated when the stream is full; C's strlen then reads
+// past the buffer, which the bytes left in the stream stand in for.
 func (t *tokenizer) word(index int) []byte {
 	start := t.wordStarts[index]
-	return t.stream[start : start+bytes.IndexByte(t.stream[start:], 0)]
+	if end := bytes.IndexByte(t.stream[start:], 0); end >= 0 {
+		return t.stream[start : start+end]
+	}
+	return t.stream[start:]
 }
 
 // field is COLITER_NEXT: the word of a buffered line's column, or "" past
@@ -83,40 +94,35 @@ func (t *tokenizer) field(line, column int) []byte {
 	return t.word(index)
 }
 
-// overflow is the ParserError a full buffer raises. After the tokenizer has
-// read buffered lines again it is not known how many lines the C parser fits
-// before its buffers are full (or whether the reader's row limit stops it
-// first), so the outcome is left to Django.
-func (t *tokenizer) overflow() error {
-	if t.reread {
-		return ErrBareCRBacktrack
-	}
-	return ErrParser
-}
+// overflow is the ParserError a full buffer raises.
+func (t *tokenizer) overflow() error { return ErrParser }
 
-// growCap is make_stream_space's doubling: the smallest power of two above
-// need, starting from the capacity the buffer has.
-func growCap(need, capacity int) int {
-	for capacity == 0 || need >= capacity {
-		if capacity == 0 {
-			capacity = 2
-		} else {
-			capacity *= 2
-		}
+// growBuffer is grow_buffer: the capacity doubles, from the capacity it has,
+// while it cannot hold length+space elements.
+func growBuffer(capacity, length, space int) int {
+	for length+space >= capacity {
+		capacity *= 2
 	}
 	return capacity
 }
 
 // makeStreamSpace is make_stream_space: room for nbytes more bytes of fields,
-// and for as many more words and lines.
+// and for as many more words and lines. It is called at the start of every
+// tokenize call with the bytes of the buffer that are left, and when end_line
+// pads a short line.
 func (t *tokenizer) makeStreamSpace(nbytes int) {
-	t.streamCap = growCap(t.streamLen+2*nbytes, t.streamCap)
-	base := len(t.wordStarts)
-	if len(t.wordStarts)+nbytes < t.wordsCap {
-		base = t.wordsCap - nbytes - 1
+	t.streamCap = growBuffer(t.streamCap, t.streamLen, 2*nbytes)
+	// grow_buffer(words, ...) reserves room for the words nbytes hold, unless
+	// parser_trim_buffers raised max_words_cap, the largest capacity the words
+	// ever had, above the words buffered: then it reserves from there. Trimming
+	// is what raises it, and the low_memory path trims only after the last
+	// tokenize call, so max_words_cap is parser_init's capacity.
+	length := len(t.wordStarts)
+	if length+nbytes < wordsInitSize {
+		length = wordsInitSize - nbytes - 1
 	}
-	t.wordsCap = growCap(base+nbytes, t.wordsCap)
-	t.linesCap = growCap(t.lines+nbytes+1, t.linesCap)
+	t.wordsCap = growBuffer(t.wordsCap, length, nbytes)
+	t.linesCap = growBuffer(t.linesCap, t.lines+1, nbytes)
 }
 
 // appendByte appends one byte of a field to the stream.
@@ -130,13 +136,17 @@ func (t *tokenizer) appendByte(c byte) error {
 }
 
 // endField is the end of a field: the word's NUL, the word and the line's
-// field count.
+// field count. A full stream does not fail it, because end_field ignores
+// push_char's error: the NUL is not written and the word then starts where
+// the next field's bytes go, so the two read the same text.
 func (t *tokenizer) endField() error {
-	if len(t.wordStarts) >= t.wordsCap || t.streamLen >= t.streamCap {
+	if len(t.wordStarts) >= t.wordsCap {
 		return t.overflow()
 	}
-	t.stream = append(t.stream, 0)
-	t.streamLen++
+	if t.streamLen < t.streamCap {
+		t.stream = append(t.stream, 0)
+		t.streamLen++
+	}
 	t.wordStarts = append(t.wordStarts, t.pending)
 	t.lineFields[t.lines]++
 	t.pending = len(t.stream)
@@ -180,12 +190,12 @@ func (t *tokenizer) consume(rows int) {
 	}
 	words := t.lineStart[rows-1] + t.lineFields[rows-1]
 	if words > 0 {
-		end := len(t.stream)
-		if words < len(t.wordStarts) {
-			end = t.wordStarts[words]
-		}
-		t.streamLen -= end - t.streamBase
-		t.streamBase = end
+		// The bytes of the last deleted word: its text up to its NUL,
+		// which strlen also stops at when the field holds one.
+		start := t.wordStarts[words-1]
+		chars := start + len(t.word(words-1)) + 1
+		t.streamLen -= chars - t.streamBase
+		t.streamBase = chars
 	}
 	t.wordStarts = t.wordStarts[words:]
 	t.lineFields = t.lineFields[rows:]
@@ -207,11 +217,8 @@ func (t *tokenizer) fill() bool {
 			size += width
 		}
 	}
-	t.data, t.datapos, t.blankStart = rest[:size], 0, 0
+	t.data, t.datapos, t.datalen = rest[:size], 0, size
 	t.next += size
-	if size > 0 {
-		t.makeStreamSpace(size)
-	}
 	return size > 0
 }
 
@@ -224,7 +231,7 @@ func (t *tokenizer) tokenizeRows(rows int) error {
 		return nil
 	}
 	for t.lines-start < rows {
-		if t.datapos == len(t.data) {
+		if t.datapos == t.datalen {
 			if !t.fill() {
 				err := t.handleEOF()
 				t.state = tokFinished
@@ -254,14 +261,15 @@ func (t *tokenizer) handleEOF() error {
 }
 
 // tokenizeBytes is tokenize_bytes: it stops at the end of the buffer or once
-// limit lines are buffered.
+// limit lines are buffered. i is the C loop's byte, so a state that reads one
+// again leaves i where the for statement takes it back to that byte.
 func (t *tokenizer) tokenizeBytes(limit int) error {
+	t.makeStreamSpace(t.datalen - t.datapos)
 	data := t.data
 	if t.fileLines == 0 && bytes.HasPrefix(data[t.datapos:], []byte{0xef, 0xbb, 0xbf}) {
 		t.datapos += 3
 	}
-	origin := t.datapos
-	for i := origin; i < len(data); i++ {
+	for i := t.datapos; i < t.datalen; i++ {
 		c := data[i]
 		lineEnded := false
 		switch t.state {
@@ -275,38 +283,37 @@ func (t *tokenizer) tokenizeBytes(limit int) error {
 				t.state = tokEatCRNLNop
 			case isBlank(c) && c != ';':
 			default:
-				// Not a blank line after all: back to the character after
-				// the last line feed of this buffer, or to where this call
-				// began, and read from there as a field. The leading
-				// whitespace then becomes the first field's text, and the
-				// lines buffered since that point are appended again.
-				j := i
-				for j > origin && data[j] != '\n' {
-					j--
+				// Not a blank line after all: step back to the first byte
+				// after the last line feed of this call, or to where the
+				// call began, and read from there as a field. The leading
+				// whitespace becomes the field's text, and the lines
+				// buffered since that point are appended again.
+				for {
+					i--
+					// buf is one byte after i: the loop tests that byte,
+					// and the byte past the buffer is the C string's NUL.
+					if i+1 <= t.datapos || i+1 < t.datalen && data[i+1] == '\n' {
+						break
+					}
 				}
-				if data[j] == '\n' {
-					j++
+				if i+1 < t.datalen && data[i+1] == '\n' {
+					i++
 				}
-				if j < t.blankStart {
-					t.reread = true
-				}
-				i = j - 1
 				t.state = tokStartField
 			}
 		case tokStartRecord, tokStartField:
 			if t.state == tokStartRecord {
-				if c == '\n' {
+				switch {
+				case c == '\n':
 					t.fileLines++
-					break
-				}
-				if c == '\r' {
+					continue
+				case c == '\r':
 					t.fileLines++
 					t.state = tokEatCRNLNop
-					break
-				}
-				if isBlank(c) && c != ';' {
-					t.state, t.blankStart = tokWhitespaceLine, i
-					break
+					continue
+				case isBlank(c) && c != ';':
+					t.state = tokWhitespaceLine
+					continue
 				}
 				t.state = tokStartField
 			}
@@ -427,6 +434,6 @@ func (t *tokenizer) tokenizeBytes(limit int) error {
 			return nil
 		}
 	}
-	t.datapos = len(data)
+	t.datapos = t.datalen
 	return nil
 }

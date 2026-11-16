@@ -9,6 +9,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/celery"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/smtpsend"
 	"github.com/google/uuid"
 )
@@ -41,6 +42,9 @@ type CommunicationSendEmail struct {
 	settings  CommunicationSendEmailSettings
 	now       func() time.Time
 	boundary  func() string
+	// renderedMessage replaces smtpsend's render when a test sets it, like
+	// boundary replaces the random one.
+	renderedMessage func(domain.CommunicationConfigurationRecord, dto.SendEmailInput, []string) (string, error)
 }
 
 func NewCommunicationSendEmail(store domain.CommunicationSendEmailStore, publisher celery.Publisher, settings CommunicationSendEmailSettings,
@@ -186,6 +190,9 @@ func sendEmailServer(row domain.CommunicationConfigurationRecord) smtpsend.Serve
 }
 
 func (s *CommunicationSendEmail) render(row domain.CommunicationConfigurationRecord, input dto.SendEmailInput, recipients []string) (string, error) {
+	if s.renderedMessage != nil {
+		return s.renderedMessage(row, input, recipients)
+	}
 	sender := ""
 	if row.SenderName != nil {
 		sender = *row.SenderName
@@ -226,6 +233,10 @@ func (s *CommunicationSendEmail) sendEmail(ctx context.Context, row domain.Commu
 			if errors.Is(err, smtpsend.ErrRaises) {
 				// as_string() raises inside send_email's try: (False, exception).
 				return SendEmailResult{}, errors.Join(domain.ErrSendEmailServerError, err)
+			}
+			if errors.Is(err, refusal.ErrAppState) {
+				// An application-state error is Django's 500 page, not a handoff.
+				return SendEmailResult{}, err
 			}
 			if err != nil {
 				return SendEmailResult{}, errors.Join(domain.ErrSendEmailNotPorted, err)

@@ -44,6 +44,7 @@ import datetime as dt
 import decimal
 import json
 from pathlib import Path
+import urllib.parse
 import uuid
 import zoneinfo
 
@@ -271,19 +272,35 @@ for number, (label, gone) in enumerate((('shared', False), ('shared_gone', True)
                                      'paid': False}
 INSTALLMENTS['sh_i_plain'] = {**INSTALLMENTS['sh_i_shared'], 'id': 'a1000000-0000-4000-8000-000000669949', 'number': 1, 'payment': None}
 
+# Two installments of one row sharing a paid payment: the events edit that keeps neither relabels and saves the
+# payment once per installment (the second save sees the first), then deletes both.
+PAYMENTS['ev_shared_pay'] = {**copy.deepcopy(PAYMENTS['inst_b']), 'id': 'a1000000-0000-4000-8000-000000669951',
+                             'amount': '40.00', 'description': 'Rata condivisa'}
+CS['cs_ev_shared'] = {**copy.deepcopy(CS['cs_ev']), 'id': 'a1000000-0000-4000-8000-000000669952', 'subscription': 'sub_luisa',
+                      'payment': None}
+INSTALLMENTS['evs_a'] = {'id': 'a1000000-0000-4000-8000-000000669953', 'cs': 'cs_ev_shared', 'number': 0, 'amount': '20.00',
+                         'payment': 'ev_shared_pay', 'group': None, 'deleted': False, 'payment_date': '2026-10-01T22:30:00Z',
+                         'paid': False}
+INSTALLMENTS['evs_b'] = {'id': 'a1000000-0000-4000-8000-000000669954', 'cs': 'cs_ev_shared', 'number': 1, 'amount': '20.00',
+                         'payment': 'ev_shared_pay', 'group': None, 'deleted': False, 'payment_date': '2026-11-01T00:00:00Z',
+                         'paid': False}
+
 STATE = {'cs': copy.deepcopy(CS), 'payments': copy.deepcopy(PAYMENTS), 'installments': copy.deepcopy(INSTALLMENTS)}
 for row in STATE['installments'].values():
     row['paid'] = False
 cases = []
 
 
-def add(name, actor, path, status, response, *, method='GET', body=None, raw_body=None, content_type=None, headers=None, effect=None):
+def add(name, actor, path, status, response, *, method='GET', body=None, raw_body=None, raw_parts=None, content_type=None, headers=None,
+        effect=None):
     case = {'name': f'course-subscriptions-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
             'status': status, 'response': response, 'effect': effect}
     if body is not None:
         case['body'] = body
     if raw_body is not None:
         case['raw_body'], case['content_type'] = raw_body, content_type
+    if raw_parts is not None:
+        case['raw_parts'], case['content_type'] = raw_parts, content_type
     cases.append(case)
 
 
@@ -1042,6 +1059,29 @@ del STATE['installments']['ev2_only']
 add('update-events-empty', 'full_collaborator', one('cs_ev2', 'update'), 200, item('cs_ev2'), method='PATCH', body={'events': []},
     effect={'kind': 'update', 'actor': 'full_collaborator', 'cs_changed': {}, 'cs_deleted': [], 'installments_deleted': ['ev2_only'],
             'payments_deleted': [], 'payments_changed': {}, 'audit': audit})
+# Two installments of one row share a paid payment: the drop loop reads the payment afresh for each installment,
+# relabels and saves it (the second save's diff starts from the first), then deletes the installment; the paid
+# payment stays, with the second label.
+actor = 'owner'
+shared_a, shared_b = 'Rata n.1 del 01/10/26 (Corsa)', 'Rata n.2 del 01/11/26 (Corsa)'
+shared_meta_a = ev_meta(shared_a, '2026-10-01 22:30:00+00:00', 'cs_ev_shared')
+shared_meta_b = ev_meta(shared_b, '2026-11-01 00:00:00+00:00', 'cs_ev_shared')
+audit = [
+    changed_entry('payment', 'ev_shared_pay', [OWN, 'direct'],
+                  {'description': ['Rata condivisa', shared_a], 'meta': ['null', json.dumps(shared_meta_a, sort_keys=True)]}),
+    deleted('coursesubscriptioninstallment', 'evs_a', actor_index(actor)),
+    changed_entry('payment', 'ev_shared_pay', [OWN, 'direct'],
+                  {'description': [shared_a, shared_b],
+                   'meta': [json.dumps(shared_meta_a, sort_keys=True), json.dumps(shared_meta_b, sort_keys=True)]}),
+    deleted('coursesubscriptioninstallment', 'evs_b', actor_index(actor))]
+STATE['payments']['ev_shared_pay'].update({'description': shared_b, 'meta': shared_meta_b})
+for key in ('evs_a', 'evs_b'):
+    del STATE['installments'][key]
+add('update-events-shared-payment-dropped', actor, one('cs_ev_shared', 'update'), 200, item('cs_ev_shared'), method='PATCH',
+    body={'events': []},
+    effect={'kind': 'update', 'actor': actor, 'cs_changed': {}, 'cs_deleted': [], 'installments_deleted': ['evs_a', 'evs_b'],
+            'payments_deleted': [], 'payments_changed': {'ev_shared_pay': {'description': shared_b, 'meta': shared_meta_b}},
+            'audit': audit})
 # `events` sent as an object or as text: the loops walk its keys or its characters. With installments the id
 # comparison fails (500); without, a key or character is validated as an event (400) unless it holds the
 # installment id key's name, which leaves it out.
@@ -1061,11 +1101,43 @@ add('update-form-events-empty-list', 'owner', one('cs_ev2', 'update'), 200, item
     content_type=FORM, effect=copy.deepcopy(UNCHANGED))
 add('update-form-events-object-key-invalid', 'owner', one('cs_ev2', 'update'), 400, NOT_A_DICT, method='PATCH',
     raw_body='events=%7B%22rata%22%3A+1%7D', content_type=FORM)
+# A lone surrogate in the `events` text parses (json.loads keeps the code unit): the event is a string, so reading
+# its id against the row's installment raises (500, nothing written).
+add('update-form-events-lone-surrogate-server-error', 'owner', one('cs_ev', 'update'), 500, SERVER, method='PATCH',
+    raw_body='events=' + urllib.parse.quote(json.dumps(['\ud800'])), content_type=FORM)
 QUOTE = {'title': 'Da modulo', 'amount': '7,50', 'dettagli': [1, {'a': None}]}
 effect = updated('owner', 'cs_ev2', {'multiple_quote': QUOTE}, {'multiple_quote': ['null', json.dumps(QUOTE, sort_keys=True)]},
                  sent=('multiple_quote',))
 add('update-form-multiple-quote', 'owner', one('cs_ev2', 'update'), 200, item('cs_ev2'), method='PATCH',
     raw_body='multiple_quote=' + __import__('urllib.parse', fromlist=['quote']).quote(json.dumps(QUOTE)), content_type=FORM, effect=effect)
+# The measured form JSON recursion bands (owner decision X15, see course-subscriptions.md). D is the maximum nesting
+# of the text. The invalid billed_frequency keeps the normal answer a 400 with nothing written, so no deep value is
+# stored. Django's edge moves by a level or two with the value's shape and the live stack: the cases sit inside each
+# side of the measured band with a margin (the exact edges are pinned by the Go tests).
+
+
+OBJECT_LEVEL = urllib.parse.quote('{"a":')
+
+
+def quote_depth_parts(depth):
+    # The measured shape: the quote's "deep" member holds `depth` nested objects (total nesting depth + 1).
+    return ['multiple_quote=' + urllib.parse.quote('{"title": "Deep", "amount": "1", "deep": '), {'repeat': OBJECT_LEVEL, 'count': depth},
+            '1', {'repeat': '%7D', 'count': depth}, urllib.parse.quote('}')]
+
+
+def events_depth_parts(depth):
+    # The measured shape: the event's "deep" member holds nested objects, `depth` levels in total.
+    return ['events=', urllib.parse.quote('[{"id": 7, "amount": "1", "payment_date": "05/05/2099", "deep": '),
+            {'repeat': OBJECT_LEVEL, 'count': depth - 2}, '1', {'repeat': '%7D', 'count': depth - 2}, urllib.parse.quote('}]')]
+
+
+# Inside the band the update stores the deep quote, a value the state snapshot cannot read: that side is pinned by the
+# Go tests; past the band nothing is written.
+# On cs_ev2 (a default course, as measured); past the band nothing is written, so the row is unchanged.
+add('update-form-multiple-quote-depth-9966-server-error', 'owner', one('cs_ev2', 'update'), 500, SERVER, method='PATCH',
+    raw_parts=quote_depth_parts(9965), content_type=FORM)
+add('update-form-events-depth-9970-server-error', 'owner', one('cs_ev2', 'update'), 500, SERVER, method='PATCH',
+    raw_parts=events_depth_parts(9970), content_type=FORM)
 BOUNDARY = 'testboundary4f2a'
 FILE_PART = (f'--{BOUNDARY}\r\nContent-Disposition: form-data; name="multiple_quote"; filename="q.json"\r\n\r\n{{"a": 1}}\r\n--{BOUNDARY}--\r\n')
 add('update-multipart-multiple-quote-file-invalid-json', 'owner', one('cs_ev2', 'update'), 400, {'multiple_quote': ['Value must be valid JSON.']},

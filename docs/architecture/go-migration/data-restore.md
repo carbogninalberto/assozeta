@@ -153,12 +153,23 @@ self-hosted instance) and the receipt's association the primary one, else 403
 
 ## Not ported (refused with the 500 page before any write)
 
-- Uploads whose archive the validation port hands off (`errConsumerImportUnsupported`): legacy
-  Bakney invoices, tutors that would be reassigned, cleared or ignored, members the ZIP reader port
-  does not open, values outside its decoded subset. Their summary counts in Go are therefore always
-  zero for legacy invoices and tutor reassignments.
-- Multipart parts whose RFC 2231 name uses a charset other than utf-8, ascii, latin-1 or
-  windows-1252 (decoder not ported). Other media types answer DRF's 415; a base64
+- (Long tail PR 4: `Archive.validate()` is ported whole and `domain.ErrDataRestoreNotPorted` is gone. Legacy Bakney
+  invoices become association documents and count in `legacy_invoices`; tutors are reassigned, cleared or ignored as
+  `_normalize_legacy_tutors` does, with the preview's `reassigned_tutors`, `tutor_tax_code_conflicts` and
+  `tutor_reassignment_details`; every JSON value is read as `json.loads(zf.read(name))` (BOM and UTF-16/32 detection,
+  surrogatepass, `NaN`/`Infinity` tokens, the 4300-digit limit, RecursionError from 9999 levels; `dto.PythonJSONLoads`)
+  and converted by the plan's field kinds as `to_python` does; duplicate, encrypted
+  and backslash member names follow `_validate_entries`. A ZIP reader exception the except tuple catches is the damaged
+  archive 400; the others (EOFError, OSError from bz2, LZMAError) and `int(inf)`'s OverflowError escape the view and
+  answer Django's 500 page (`errRestoreReaderRaised`, application state). A field kind outside the generated plan is
+  `errRestorePlanKind` (application state, pinned by `TestRestorePlanKindsConverted`). Cases `upload-archive-text-*`,
+  `-int-*`, `-uuid-float`, `-date-basic`, `-version-int`, `-errors-*`, `-spec-*`, `-specs-null`, `-denomination-list`,
+  `-folder-*`, `-tutor-*`, `-corrupt-deflate`, `-bzip2-corrupt`, `-encrypted-member`, `-truncated-member`,
+  `-huge-declared-size`, `-duplicate-member`, `-backslash-*`, `-drive-digit`.) A member nested 9800 to 9998 levels deep
+  stays a refusal (`dto.ErrJSONRecursionBand`: CPython's C stack decides).
+- (Long tail PR 4: RFC 2231 names in every Python text codec decode through `internal/pycodecs`, and a name that
+  decodes to a lone surrogate skips its line, so the part is not the upload: cases `upload-rfc2231-cp932-file-name`,
+  `upload-rfc2231-surrogate-name-skipped`.) Other media types answer DRF's 415; a base64
   `Content-Transfer-Encoding` is decoded like Django does (white space stripped, a failure is the
   400 parse error, decoded bytes count towards the limit) and RFC 2231 file names are read by the
   shared `djangoPartHeaders` (cases `upload-base64-*`, `upload-rfc2231-file-name`).
@@ -174,12 +185,14 @@ one), a storage delete failure (503) and a broker failure on publish (503).
 
 Since long-tail PR 3 (agent B) a progress cache read that fails is ported as no progress. A progress value outside the
 pickle subset, a stored backup path outside `AWS_LOCATION` and a summary written after validation are application state
-(`ErrDataRestoreUnreachable`, the 500 page): the progress and execution writers produce them. The archive shapes the
-validation port hands off and the RFC 2231 charsets stay refusals.
+(`ErrDataRestoreUnreachable`, the 500 page): the progress and execution writers produce them. Since long tail PR 4
+the archive validation and the RFC 2231 charsets are ported (see above).
 
 ## Evidence
 
-`TESTS/fixtures/data_restore_http.json` (139 cases, from `TESTS/fixtures/generate_data_restore_http.py`).
+`TESTS/fixtures/data_restore_http.json` (192 cases since long tail PR 4, from `TESTS/fixtures/generate_data_restore_http.py`;
+long tail PR 4 run `lt4B-s10`: 192/192 on the four transports; mutation `lt4B-mut7c` (backslash rule dropped) fails
+`data-restore-upload-archive-backslash-folder` on Go).
 The adapter (`TESTS/adapters/django/data_restore_http.py`) seeds the instance and 24 receipts, owns a
 private MinIO (S3 storage with `AWS_LOCATION`, objects per case, exact remaining keys afterwards),
 lowers `DATA_RESTORE_MAX_UPLOAD_BYTES` for both servers, holds the lock file per case, stores

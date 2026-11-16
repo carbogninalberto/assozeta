@@ -29,9 +29,68 @@ var (
 	ErrAuditUnreachable = refusal.AppState("audit serializer: unreachable state")
 	// ErrAuditNotPorted refuses JSON nested past 500 levels: Python's
 	// RecursionError depth depends on the interpreter's live call stack, so
-	// Django may still answer. Handed off to Django.
+	// Django may still answer. Handed off to Django by the readers outside the
+	// audit-logs endpoints (instructor hours and report, modules export); the
+	// audit-logs reads use the measured bands below instead.
 	ErrAuditNotPorted = refusal.New("audit serializer input not ported")
 )
+
+// Audit recursion bands (owner decision X15), measured on the parity harness's
+// Django (CPython 3.13.16, default recursion limit). "Frames" counts the deepest
+// Python frame the serializer's enrichment reaches from its first enrich_value
+// call (frame 1: enrich_value itself, then one frame per nested list item, dict
+// value, formatter or format_boolean, three frames for the json.loads of a
+// string value, one for is_uuid/resolve_uuid). "Depth" is the container nesting
+// of a stored JSON column text, as auditJSONDepth counts it. A value past a band
+// is Django's RecursionError, which no handler catches: the plain 500 page
+// (ErrAuditUnhandled).
+const (
+	// AuditDetailFrames is audit_log_detail's frame band: frames <= 954 answer
+	// normally, 955 is the 500 page (measured: string-encoded lists up to 953
+	// levels, raw lists up to 954, a string leaf up to 951).
+	AuditDetailFrames = 954
+	// AuditListFrames is audit_log_list's frame band with the full serializer,
+	// one frame shallower: <= 953 answers, 954 is the 500 page (measured:
+	// string-encoded lists up to 952 levels, raw lists up to 953). minimal=true
+	// does not enrich and has no frame band.
+	AuditListFrames = 953
+	// AuditDetailJSONDepth is audit_log_detail's total-depth band for one JSON
+	// column load (changes, additional_data, serialized_data): <= 9935 loads,
+	// deeper is the 500 page.
+	AuditDetailJSONDepth = 9935
+	// AuditListJSONDepth is audit_log_list's total-depth band (minimal and
+	// full): <= 9934 loads, deeper is the 500 page.
+	AuditListJSONDepth = 9934
+)
+
+// AuditBand is one audit-logs endpoint's measured recursion band (X15).
+type AuditBand struct {
+	// Frames is the deepest Python frame the enrichment may reach.
+	Frames int
+	// Depth is the deepest container nesting a json.loads reached from the
+	// serializer may read (the endpoint's column-load band).
+	Depth int
+}
+
+// AuditDetailBand is GET audit-logs/<int:log_id>/detail.
+func AuditDetailBand() AuditBand {
+	return AuditBand{Frames: AuditDetailFrames, Depth: AuditDetailJSONDepth}
+}
+
+// AuditListBand is GET audit-logs/list (the full serializer; minimal reads the
+// columns at the same depth without enriching).
+func AuditListBand() AuditBand {
+	return AuditBand{Frames: AuditListFrames, Depth: AuditListJSONDepth}
+}
+
+// auditFrame reports whether the enrichment may reach the given Python frame:
+// Django raises RecursionError one frame past its band, which no caller catches.
+func auditFrame(frame int, band AuditBand) error {
+	if frame > band.Frames {
+		return ErrAuditUnhandled
+	}
+	return nil
+}
 
 // AuditResolver is resolve_uuid(value, field) for a value is_uuid accepted:
 // nil when Python returns (None, None), else the resolved value.
@@ -133,21 +192,38 @@ var auditBooleanFields = map[string]bool{"archived": true, "deleted": true, "dra
 // digit limit raise ValueError (not caught); NaN/Infinity literals, lone
 // surrogate escapes and deep nesting are refused.
 func AuditJSONLoads(text string) (any, bool, error) {
-	if auditJSONDepth(text) > 500 {
-		return nil, false, ErrAuditNotPorted
+	return auditJSONLoads(text, 500, referenceJSONNesting, ErrAuditNotPorted)
+}
+
+// AuditJSONLoadsAt is AuditJSONLoads at an endpoint's total-depth band: text
+// nested deeper than depth is the C scanner's RecursionError, which the
+// serializer does not catch (the 500 page). The parser reads up to the same
+// limit.
+func AuditJSONLoadsAt(text string, depth int) (any, bool, error) {
+	return auditJSONLoads(text, depth, depth, ErrAuditUnhandled)
+}
+
+// auditJSONLoads is the JSONField's json.loads: text nested deeper than
+// refuseDepth is nestingErr, and the parser itself reads up to parseLimit
+// containers.
+func auditJSONLoads(text string, refuseDepth, parseLimit int, nestingErr error) (any, bool, error) {
+	if auditJSONDepth(text) > refuseDepth {
+		return nil, false, nestingErr
 	}
 	if auditLoneSurrogate(text) {
 		// jsonb refuses lone surrogates; the instructor-hours form turns any
 		// error into the JSONField save failure, as PostgreSQL does.
 		return nil, false, ErrAuditUnreachable
 	}
-	value, err := parseReferenceJSON([]byte(text), nil, true)
+	value, err := parseReferenceJSONLimit([]byte(text), nil, true, parseLimit)
 	switch {
 	case errors.Is(err, ErrLoginRateJSONValue):
 		return nil, false, ErrAuditUnhandled
 	case err != nil && (strings.Contains(text, "NaN") || strings.Contains(text, "Infinity")):
 		// jsonb never stores these literals; see the lone surrogate above.
 		return nil, false, ErrAuditUnreachable
+	case errors.Is(err, ErrReferenceNesting):
+		return nil, false, nestingErr
 	case err != nil:
 		return nil, false, nil
 	}
@@ -160,20 +236,43 @@ func AuditJSONLoads(text string) (any, bool, error) {
 // whatever reaches the output (AuditResponseEncodable). Nesting past the
 // limit stays refused: the recursion limit depends on the live call stack.
 func auditPythonJSONLoads(text string) (any, bool, error) {
-	if auditJSONDepth(text) > 500 {
-		return nil, false, ErrAuditNotPorted
+	return auditPythonJSONLoadsDepth(text, 500, referenceJSONNesting, ErrAuditNotPorted)
+}
+
+// auditPythonJSONLoadsAt is auditPythonJSONLoads at an endpoint's total-depth
+// band (see AuditJSONLoadsAt). It approximates the C scanner's own band inside
+// the X15 measurement: the serializer's json.loads calls are banded by the
+// endpoint's column-load depth.
+func auditPythonJSONLoadsAt(text string, depth int) (any, bool, error) {
+	return auditPythonJSONLoadsDepth(text, depth, depth, ErrAuditUnhandled)
+}
+
+// auditPythonJSONLoadsDepth is auditPythonJSONLoads with an explicit band.
+func auditPythonJSONLoadsDepth(text string, refuseDepth, parseLimit int, nestingErr error) (any, bool, error) {
+	if auditJSONDepth(text) > refuseDepth {
+		return nil, false, nestingErr
 	}
 	data := []byte(text)
-	value, err := parseProfileTablesJSONConstants(data, pythonJSONConstants(data), true)
+	value, err := parseProfileTablesJSONConstantsLimit(data, pythonJSONConstants(data), true, parseLimit)
 	switch {
 	case errors.Is(err, ErrLoginRateJSONValue):
 		return nil, false, ErrAuditUnhandled
 	case errors.Is(err, ErrReferenceNesting):
-		return nil, false, ErrAuditNotPorted
+		return nil, false, nestingErr
 	case err != nil:
 		return nil, false, nil
 	}
 	return value, true, nil
+}
+
+// auditJSONLoadsBand is the serializer's json.loads(value) at a known Python
+// frame: json.loads, JSONDecoder.decode and raw_decode are the given frame and
+// the two above it, and the text is read up to the endpoint's total-depth band.
+func auditJSONLoadsBand(text string, band AuditBand, loads int) (any, bool, error) {
+	if err := auditFrame(loads+2, band); err != nil {
+		return nil, false, err
+	}
+	return auditPythonJSONLoadsAt(text, band.Depth)
 }
 
 // AuditResponseEncodable reports whether DRF's JSONRenderer can write the
@@ -209,6 +308,23 @@ func AuditStoredJSON(text *string) (any, error) {
 		return nil, nil
 	}
 	value, ok, err := AuditJSONLoads(*text)
+	if err != nil {
+		return nil, err
+	}
+	if !ok {
+		return nil, fmt.Errorf("stored audit JSON is not valid JSON")
+	}
+	return value, nil
+}
+
+// AuditStoredJSONAt is AuditStoredJSON at an endpoint's total-depth band (the
+// audit-logs reads; X15). Deeper column text is Django's RecursionError, the
+// 500 page.
+func AuditStoredJSONAt(text *string, depth int) (any, error) {
+	if text == nil {
+		return nil, nil
+	}
+	value, ok, err := AuditJSONLoadsAt(*text, depth)
 	if err != nil {
 		return nil, err
 	}
@@ -316,13 +432,15 @@ func auditGet(object domain.RequestObject, key string, fallback any) any {
 }
 
 // auditLoadText applies the formatters' "json.loads a str, return it on a
-// JSONDecodeError" step; done reports that the str itself is the result.
-func auditLoadText(value any) (any, bool, error) {
+// JSONDecodeError" step; done reports that the str itself is the result. loads
+// is the Python frame of the formatter's json.loads (its decode and raw_decode
+// are the two frames above it).
+func auditLoadText(value any, band AuditBand, loads int) (any, bool, error) {
 	text, ok := value.(string)
 	if !ok {
 		return value, false, nil
 	}
-	parsed, decoded, err := auditPythonJSONLoads(text)
+	parsed, decoded, err := auditJSONLoadsBand(text, band, loads)
 	if err != nil || !decoded {
 		return text, err == nil, err
 	}
@@ -330,11 +448,14 @@ func auditLoadText(value any) (any, bool, error) {
 }
 
 // format_additional_fields; nil is None.
-func auditFormatAdditionalFields(value any) (*string, error) {
+func auditFormatAdditionalFields(value any, band AuditBand, frame int) (*string, error) {
+	if err := auditFrame(frame+1, band); err != nil {
+		return nil, err
+	}
 	if !PythonTruthy(value) {
 		return nil, nil
 	}
-	value, done, err := auditLoadText(value)
+	value, done, err := auditLoadText(value, band, frame+2)
 	if err != nil || done {
 		return auditPtr(value), err
 	}
@@ -364,11 +485,14 @@ func auditFormatAdditionalFields(value any) (*string, error) {
 }
 
 // format_attendees (also expected_absences).
-func auditFormatAttendees(value any, resolver AuditResolver) (*string, error) {
+func auditFormatAttendees(value any, resolver AuditResolver, band AuditBand, frame int) (*string, error) {
+	if err := auditFrame(frame+1, band); err != nil {
+		return nil, err
+	}
 	if !PythonTruthy(value) {
 		return nil, nil
 	}
-	value, done, err := auditLoadText(value)
+	value, done, err := auditLoadText(value, band, frame+2)
 	if err != nil || done {
 		return auditPtr(value), err
 	}
@@ -412,11 +536,14 @@ func auditFormatAttendees(value any, resolver AuditResolver) (*string, error) {
 }
 
 // format_events.
-func auditFormatEvents(value any) (*string, error) {
+func auditFormatEvents(value any, band AuditBand, frame int) (*string, error) {
+	if err := auditFrame(frame+1, band); err != nil {
+		return nil, err
+	}
 	if !PythonTruthy(value) {
 		return nil, nil
 	}
-	value, done, err := auditLoadText(value)
+	value, done, err := auditLoadText(value, band, frame+2)
 	if err != nil || done {
 		return auditPtr(value), err
 	}
@@ -470,11 +597,14 @@ func auditJoin(items []any) (*string, error) {
 }
 
 // format_collaborator_permissions (never None).
-func auditFormatPermissions(value any) (*string, error) {
+func auditFormatPermissions(value any, band AuditBand, frame int) (*string, error) {
+	if err := auditFrame(frame+1, band); err != nil {
+		return nil, err
+	}
 	if !PythonTruthy(value) {
 		return auditPtr("Nessun permesso"), nil
 	}
-	value, done, err := auditLoadText(value)
+	value, done, err := auditLoadText(value, band, frame+2)
 	if err != nil || done {
 		return auditPtr(value), err
 	}
@@ -571,20 +701,30 @@ func PythonStripText(text string) string { return pythonStrip(text) }
 // AuditPythonLower is str.lower() for comparisons against ASCII names.
 func AuditPythonLower(text string) string { return auditPythonLower(text) }
 
-// AuditEnrich is enrich_value(value, field).
-func AuditEnrich(value any, field string, resolver AuditResolver) (any, error) {
+// AuditEnrich is enrich_value(value, field), counted from its first Python
+// frame (frame 1) to the endpoint's band: a deeper frame is Django's
+// RecursionError (ErrAuditUnhandled).
+func AuditEnrich(value any, field string, resolver AuditResolver, band AuditBand) (any, error) {
+	return auditEnrich(value, field, resolver, band, 1)
+}
+
+// auditEnrich is AuditEnrich at a known frame.
+func auditEnrich(value any, field string, resolver AuditResolver, band AuditBand, frame int) (any, error) {
+	if err := auditFrame(frame, band); err != nil {
+		return nil, err
+	}
 	if field != "" {
 		var formatted *string
 		var err error
 		switch field {
 		case "additional_fields":
-			formatted, err = auditFormatAdditionalFields(value)
+			formatted, err = auditFormatAdditionalFields(value, band, frame)
 		case "attendees", "expected_absences":
-			formatted, err = auditFormatAttendees(value, resolver)
+			formatted, err = auditFormatAttendees(value, resolver, band, frame)
 		case "events":
-			formatted, err = auditFormatEvents(value)
+			formatted, err = auditFormatEvents(value, band, frame)
 		case "collaborator_permissions":
-			formatted, err = auditFormatPermissions(value)
+			formatted, err = auditFormatPermissions(value, band, frame)
 		}
 		if err != nil {
 			return nil, err
@@ -593,19 +733,27 @@ func AuditEnrich(value any, field string, resolver AuditResolver) (any, error) {
 			return *formatted, nil
 		}
 		if auditBooleanFields[field] {
+			if err := auditFrame(frame+1, band); err != nil {
+				return nil, err
+			}
 			return auditFormatBoolean(value), nil
 		}
 	}
 	switch v := value.(type) {
 	case string:
 		if strings.HasPrefix(v, "[") || strings.HasPrefix(v, "{") {
-			parsed, decoded, err := auditPythonJSONLoads(v)
+			parsed, decoded, err := auditJSONLoadsBand(v, band, frame+1)
 			if err != nil {
 				return nil, err
 			}
 			if decoded {
-				return AuditEnrich(parsed, field, resolver)
+				return auditEnrich(parsed, field, resolver, band, frame+1)
 			}
+		}
+		// is_uuid is one frame; a resolve_uuid through the ORM needs more in
+		// Django than the one frame counted here (the edge of the X15 band).
+		if err := auditFrame(frame+1, band); err != nil {
+			return nil, err
 		}
 		if AuditIsUUID(v) && field != "" {
 			resolved, err := resolver.ResolveUUID(v, field)
@@ -618,6 +766,9 @@ func AuditEnrich(value any, field string, resolver AuditResolver) (any, error) {
 		}
 		return v, nil
 	case bool:
+		if err := auditFrame(frame+1, band); err != nil {
+			return nil, err
+		}
 		return auditFormatBoolean(v), nil
 	case []any:
 		if len(v) == 0 {
@@ -625,7 +776,7 @@ func AuditEnrich(value any, field string, resolver AuditResolver) (any, error) {
 		}
 		items := make([]any, len(v))
 		for i, item := range v {
-			enriched, err := AuditEnrich(item, field, resolver)
+			enriched, err := auditEnrich(item, field, resolver, band, frame+1)
 			if err != nil {
 				return nil, err
 			}
@@ -635,7 +786,7 @@ func AuditEnrich(value any, field string, resolver AuditResolver) (any, error) {
 	case domain.RequestObject:
 		object := make(domain.RequestObject, len(v))
 		for i, entry := range v {
-			enriched, err := AuditEnrich(entry.Value, entry.Name, resolver)
+			enriched, err := auditEnrich(entry.Value, entry.Name, resolver, band, frame+1)
 			if err != nil {
 				return nil, err
 			}
@@ -647,7 +798,7 @@ func AuditEnrich(value any, field string, resolver AuditResolver) (any, error) {
 }
 
 // AuditEnrichChanges is enrich_changes (called only for truthy changes).
-func AuditEnrichChanges(changes any, resolver AuditResolver) (any, error) {
+func AuditEnrichChanges(changes any, resolver AuditResolver, band AuditBand) (any, error) {
 	object, ok := changes.(domain.RequestObject)
 	if !ok || len(object) == 0 {
 		return changes, nil
@@ -658,14 +809,14 @@ func AuditEnrichChanges(changes any, resolver AuditResolver) (any, error) {
 		var err error
 		if pair, ok := entry.Value.([]any); ok && len(pair) == 2 {
 			var old, updated any
-			if old, err = AuditEnrich(pair[0], entry.Name, resolver); err != nil {
+			if old, err = AuditEnrich(pair[0], entry.Name, resolver, band); err != nil {
 				return nil, err
 			}
-			if updated, err = AuditEnrich(pair[1], entry.Name, resolver); err != nil {
+			if updated, err = AuditEnrich(pair[1], entry.Name, resolver, band); err != nil {
 				return nil, err
 			}
 			value = []any{old, updated}
-		} else if value, err = AuditEnrich(entry.Value, entry.Name, resolver); err != nil {
+		} else if value, err = AuditEnrich(entry.Value, entry.Name, resolver, band); err != nil {
 			return nil, err
 		}
 		enriched[i] = domain.RequestField{Name: entry.Name, Value: value}
@@ -674,7 +825,9 @@ func AuditEnrichChanges(changes any, resolver AuditResolver) (any, error) {
 }
 
 // AuditDisplayChanges is get_display_changes (called only for truthy changes).
-func AuditDisplayChanges(changes any, resolver AuditResolver) ([]any, error) {
+// It calls enrich_value one frame shallower than enrich_changes, so its band
+// never binds; the same frame 1 is used (X15).
+func AuditDisplayChanges(changes any, resolver AuditResolver, band AuditBand) ([]any, error) {
 	object, _ := changes.(domain.RequestObject)
 	rows := []any{}
 	for _, entry := range object {
@@ -683,11 +836,11 @@ func AuditDisplayChanges(changes any, resolver AuditResolver) ([]any, error) {
 			return nil, err
 		}
 		if pair, ok := entry.Value.([]any); ok && len(pair) == 2 {
-			old, err := AuditEnrich(pair[0], entry.Name, resolver)
+			old, err := AuditEnrich(pair[0], entry.Name, resolver, band)
 			if err != nil {
 				return nil, err
 			}
-			updated, err := AuditEnrich(pair[1], entry.Name, resolver)
+			updated, err := AuditEnrich(pair[1], entry.Name, resolver, band)
 			if err != nil {
 				return nil, err
 			}
@@ -697,7 +850,7 @@ func AuditDisplayChanges(changes any, resolver AuditResolver) ([]any, error) {
 				{Name: "formatted", Value: label + ": " + oldText + " → " + newText}})
 			continue
 		}
-		enriched, err := AuditEnrich(entry.Value, entry.Name, resolver)
+		enriched, err := AuditEnrich(entry.Value, entry.Name, resolver, band)
 		if err != nil {
 			return nil, err
 		}

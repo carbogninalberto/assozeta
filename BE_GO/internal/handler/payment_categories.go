@@ -404,6 +404,13 @@ func paymentCategoryValidationMessage(code string, english bool) string {
 			return model + " with this " + field + " already exists."
 		}
 		return model + " con questo " + field + " esiste già."
+	case strings.HasPrefix(code, "unique-group-invalid:"):
+		// The UniqueValidator's manager filtered by an X-Group-Id the UUIDField rejects.
+		value := strings.TrimPrefix(code, "unique-group-invalid:")
+		if english {
+			return "“" + value + "” is not a valid UUID."
+		}
+		return `"` + value + `" non è uno UUID valido.`
 	case code == dto.DRFValidationInteger:
 		if english {
 			return "A valid integer is required."

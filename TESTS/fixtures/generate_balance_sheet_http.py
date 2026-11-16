@@ -120,6 +120,23 @@ S2025 = {'incoming': {'generalIncome': [entry('Quote è', 99, 1.5, CAT['a']), en
          'outgoing': {'generalExpenses': []}, 'cash': 0, 'bank': 0, 'other': 0, 'draft': True, 'version': 1}
 S2024 = {'incoming': {'generalIncome': []}, 'outgoing': {'generalExpenses': []}, 'cash': 3, 'bank': 4, 'other': 0, 'total': 7, 'draft': False,
          'version': 1}
+# A draft whose income/expense descriptions are the JSON kinds a jsonb column keeps: an int, a float, a bool, a list and a
+# dict (with strings around them), and, for the workbook openpyxl cannot write, an entry with an enormous int.
+S2020 = {'incoming': {'generalIncome': [entry(5, 10, 0, 'int-desc', editable=True, default=False),
+                                        entry(1.5, 20, 0, 'float-desc', editable=True, default=False),
+                                        entry(True, 30, 0, 'bool-desc', editable=True, default=False),
+                                        entry({'k': 1}, 40, 0, 'dict-desc', editable=True, default=False),
+                                        entry([1, 'due'], 50, 0, 'list-desc', editable=True, default=False)]},
+         'outgoing': {'generalExpenses': [entry('Spese', 5, 2.5, 'spese-desc', editable=True, default=False)]},
+         'cash': 0, 'bank': 0, 'other': 0, 'draft': True, 'version': 1}
+S2016 = {'incoming': {'generalIncome': [entry(5, 10, 0, 'int-desc', editable=True, default=False),
+                                        entry(1.5, 20, 0, 'float-desc', editable=True, default=False),
+                                        entry(True, 30, 0, 'bool-desc', editable=True, default=False),
+                                        entry({'k': 1}, 40, 0, 'dict-desc', editable=True, default=False)]},
+         'outgoing': {'generalExpenses': []}, 'cash': 0, 'bank': 0, 'other': 0, 'draft': True, 'version': 1}
+S2014 = {'incoming': {'generalIncome': [entry(10 ** 400, 10, 0, 'huge-desc', editable=True, default=False)]},
+         'outgoing': {'generalExpenses': []}, 'cash': 0, 'bank': 0, 'other': 0, 'draft': True, 'version': 1}
+# get_excel_base64 logs and returns None on that workbook: generate_xlsx_from_data raises after the sheet is saved.
 SHEETS = {
     'y2025': {'id': next(ids), 'association': OWN, 'status': 1, 'year': 2025, 'archived': False, 'created': '2025-02-01T09:00:00Z', 'data': S2025},
     'y2024': {'id': next(ids), 'association': OWN, 'status': 2, 'year': 2024, 'archived': False, 'created': '2025-01-10T09:00:00.250000Z',
@@ -129,6 +146,9 @@ SHEETS = {
     'y2021': {'id': next(ids), 'association': OWN, 'status': 1, 'year': 2021, 'archived': False, 'created': '2022-01-10T09:00:00Z',
               'data': {'note': 'x'}},
     'y2019': {'id': next(ids), 'association': OWN, 'status': 1, 'year': 2019, 'archived': False, 'created': '2020-01-10T09:00:00Z', 'data': None},
+    'y2020': {'id': next(ids), 'association': OWN, 'status': 1, 'year': 2020, 'archived': False, 'created': '2021-01-10T09:00:00Z', 'data': S2020},
+    'y2016': {'id': next(ids), 'association': OWN, 'status': 1, 'year': 2016, 'archived': False, 'created': '2017-01-10T09:00:00Z', 'data': S2016},
+    'y2014': {'id': next(ids), 'association': OWN, 'status': 1, 'year': 2014, 'archived': False, 'created': '2015-01-10T09:00:00Z', 'data': S2014},
 }
 # Profile fields the adapter writes on the seeded associations (the others keep the base fixture's: no logo, no address).
 LOGO = ('/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABsSFBcUERsXFhceHBsgKEIrKCUlKFE6PTBCYFVlZF9VXVtqeJmBanGQc1tdhbWGkJ6jq62rZ4C8ybqmx5moq6T/2wBD'
@@ -292,6 +312,26 @@ def comma(value):
     return f'{value:.2f}'.replace('.', ',')
 
 
+def typed(value):
+    """The $xlsx/$pdf typed value of a stored description (TESTS/contracts/xlsx.py decode)."""
+    if isinstance(value, bool):
+        return {'bool': value}
+    if isinstance(value, int):
+        return {'int': str(value)}
+    if isinstance(value, float):
+        return {'float': repr(value)}
+    if isinstance(value, list):
+        return {'list': [typed(item) for item in value]}
+    if isinstance(value, dict):
+        return {'dict': [[key, typed(item)] for key, item in value.items()]}
+    return value
+
+
+def regenerated(label):
+    """generate_balance_sheet of a sheet whose year has no payment: the stored entries, the account totals written."""
+    return totals(json.loads(json.dumps(STATE[label]['data'])), f"{STATE[label]['year']}-12-31")
+
+
 def export(label, denomination='Message reads own', fmt='excel', profile=None):
     """{'file': get_excel_base64(descriptions, institutional, commercial, totals), 'filename': ...} of export_balance_sheet."""
     data, rows = STATE[label]['data'], []
@@ -304,7 +344,7 @@ def export(label, denomination='Message reads own', fmt='excel', profile=None):
         institutional = commercial = 0
         for item in data[direction][key]:
             first, second = float(item['institutional']), float(item['commercial'])
-            rows.append([item['description'], comma(first), comma(second), comma(first + second)])
+            rows.append([typed(item['description']), comma(first), comma(second), comma(first + second)])
             institutional += first
             commercial += second
         rows.append([footer, comma(institutional), comma(commercial), comma(institutional + commercial)])
@@ -390,6 +430,18 @@ add('pdf-invalid-date-server-error', 'owner', at('2025-02-30'), 500, SERVER, met
 add('pdf-restricted-missing-permission', 'restricted_collaborator', at('2025-01-01'), 403,
     {'detail': 'Missing permission: bookeeping.management.balancesheet.update'}, method='POST', body=PDF)
 add('pdf-athlete-forbidden', 'athlete', at('2025-01-01'), 403, FORBIDDEN, method='POST', body=PDF)
+# --- POST format excel/pdf of a stored jsonb description of any JSON kind ----------------------------------------------
+# pandas writes an int, a float and a bool as their value and a list or dict as str() (the column is objects); reportlab
+# draws str() and takes a non-empty list for a list of flowables, which stops the export after the sheet is saved. An
+# integer whose float is out of range fails get_excel_base64 (None): generate_xlsx_from_data raises.
+effect = save('y2020', regenerated('y2020'), 'owner')
+add('excel-description-values', 'owner', at('2020-06-01'), 200, export('y2020'), method='POST', body=EXCEL, effect=effect)
+effect = save('y2020', regenerated('y2020'), 'owner')
+add('pdf-description-list-server-error', 'owner', at('2020-06-01'), 500, SERVER, method='POST', body=PDF, effect=effect)
+effect = save('y2016', regenerated('y2016'), 'owner')
+add('pdf-description-values', 'owner', at('2016-06-01'), 200, export('y2016', fmt='pdf'), method='POST', body=PDF, effect=effect)
+effect = save('y2014', regenerated('y2014'), 'owner')
+add('excel-description-int-too-large-server-error', 'owner', at('2014-06-01'), 500, SERVER, method='POST', body=EXCEL, effect=effect)
 # The stored data has no 'incoming': the KeyError is swallowed, the totals are still written.
 effect = save('y2021', totals({'note': 'x'}, '2021-12-31'), 'owner')
 add('draft-generation-error-keeps-data', 'owner', at('2021-06-01'), 200, body('y2021'), effect=effect)

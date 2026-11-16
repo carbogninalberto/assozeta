@@ -95,8 +95,9 @@ An exception of the export is the same 500 after the save as for `excel`.
 
 ## Not ported (refused before any write)
 
-- In the exports: a description that is a number, list or dict, and the
-  workbook inputs `xlsxexport` does not reproduce (`xlsx-exports.md`).
+- In the exports: the workbook inputs `xlsxexport` does not reproduce
+  (`xlsx-exports.md`). (A description that is a number, list or dict is
+  answered since long tail PR 4.)
   Amounts `float()` reads as `nan` or infinity are formatted as Python does
   (`nan`, `inf`, `-inf`; the outgoing cell prefixes `-`, so `-nan` and
   `--inf`). A PDF input `pdfexport` does not reproduce is pdfexport's own
@@ -187,3 +188,11 @@ Long tail PR 3 (agent C): amounts `float()` reads as `nan` or infinity are forma
 (`nan`, `inf`, `-inf`; the outgoing cell prefixes `-`, so `-nan` and `--inf`). A PDF input
 `pdfexport` does not reproduce is pdfexport's own refusal, and a description that is a number, list
 or dict stays refused.
+
+Long tail PR 4 (agent B): such a description is the Python value Django hands the writers. In the workbook an int is
+pandas' int (beyond int64 the Python int, beyond the double range `get_excel_base64` fails: the 500 after the save), a
+float, a bool, a list or dict its `str()`. In the PDF the cell is `str(value)` and a list is drawn as its items, so a
+non-empty list of strings raises in reportlab (`'int' object has no attribute 'wrapOn'` for an int item): the 500 after
+the save. The export sentinel is deleted. Cases `balance-sheet-excel-description-values`,
+`-pdf-description-values`, `-pdf-description-list-server-error`, `-excel-description-int-too-large-server-error`
+(101/101 on the four transports); pdf goldens `bs-description-*`.

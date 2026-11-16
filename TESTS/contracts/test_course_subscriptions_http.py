@@ -114,6 +114,11 @@ def assert_case(case, base_url, *, token, sessions):
     if 'raw_body' in case:
         body = case['raw_body'].encode()
         headers['Content-Type'] = case['content_type']
+    elif 'raw_parts' in case:
+        # Large bodies whose filler is stored as a repeat count (http_family's format).
+        body = ''.join(part if isinstance(part, str) else part['repeat'] * part['count']
+                       for part in case['raw_parts']).encode('utf-8')
+        headers['Content-Type'] = case['content_type']
     before, started = datetime.now(timezone.utc).date(), datetime.now(timezone.utc)
     status, raw, received = Client(base_url, token).request(case['method'], case['path'], body, headers, raw=True, include_headers=True)
     finished, after = datetime.now(timezone.utc), datetime.now(timezone.utc).date()

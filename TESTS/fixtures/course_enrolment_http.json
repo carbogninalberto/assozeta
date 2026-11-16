@@ -13974,6 +13974,88 @@
    "content_type": "application/x-www-form-urlencoded"
   },
   {
+   "name": "course-enrolment-add-form-multiple-quote-lone-surrogate-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-subscriptions/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "rows": {},
+    "created": {},
+    "links": {},
+    "audit": []
+   },
+   "raw_body": "course=e0000000-0000-4000-8000-000000000014&subscription_id=e0000000-0000-4000-8000-000000000006&multiple_quote=%5B%22%5Cud800%22%5D",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "course-enrolment-add-form-multiple-quote-lone-surrogate-other-field-invalid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-subscriptions/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "billed_frequency": [
+     "Ensure this value is greater than or equal to 0."
+    ]
+   },
+   "effect": null,
+   "raw_body": "course=e0000000-0000-4000-8000-000000000014&subscription_id=e0000000-0000-4000-8000-000000000006&multiple_quote=%5B%22%5Cud800%22%5D&billed_frequency=-1",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "course-enrolment-add-form-multiple-quote-depth-9961-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-subscriptions/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "raw_parts": [
+    "course=e0000000-0000-4000-8000-000000000014&subscription_id=e0000000-0000-4000-8000-000000000005&multiple_quote=%7B%22title%22%3A%20%22Deep%22%2C%20%22amount%22%3A%20%221%22%2C%20%22deep%22%3A%20",
+    {
+     "repeat": "%7B%22a%22%3A",
+     "count": 9960
+    },
+    "1",
+    {
+     "repeat": "%7D",
+     "count": 9960
+    },
+    "%7D"
+   ],
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "course-enrolment-add-form-events-depth-9972-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-subscriptions/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "raw_parts": [
+    "course=e0000000-0000-4000-8000-000000000014&subscription_id=e0000000-0000-4000-8000-000000000005&events=%5B%7B%22id%22%3A%207%2C%20%22amount%22%3A%20%221%22%2C%20%22payment_date%22%3A%20%2205/05/2099%22%2C%20%22deep%22%3A%20",
+    {
+     "repeat": "%7B%22a%22%3A",
+     "count": 9970
+    },
+    "1",
+    {
+     "repeat": "%7D",
+     "count": 9970
+    },
+    "%7D%5D"
+   ],
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
    "name": "course-enrolment-add-form-one-fee",
    "actor": "owner",
    "method": "POST",

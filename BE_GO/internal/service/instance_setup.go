@@ -12,6 +12,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/documentkey"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/instancelogo"
 	"github.com/google/uuid"
 )
@@ -258,9 +259,6 @@ func (s *InstanceSetup) UploadLogo(ctx context.Context, file *InstanceSetupUploa
 		return setupFailure(400, "File too large. Maximum size is 5MB."), nil
 	}
 	reply, err := s.saveLogo(ctx, "instance/logo."+extension, file)
-	if errors.Is(err, domain.ErrInstanceSetupRefused) {
-		return nil, err
-	}
 	if err != nil {
 		// The view's except Exception branch.
 		return setupFailure(500, "Failed to save logo"), nil
@@ -281,18 +279,19 @@ func (s *InstanceSetup) saveLogo(ctx context.Context, name string, file *Instanc
 			}
 		}
 	}
+	saved := name
 	if !s.settings.FileOverwrite {
-		// get_available_name: a name taken again after the deletes would be
-		// saved under a generated alternative.
-		exists, err := s.storage.Exists(ctx, name)
+		// default_storage.save(name, file) with file_overwrite off calls
+		// get_available_name: a name taken again after the deletes is saved
+		// under file_root_<7 random characters><ext>, and the view stores the
+		// name save() returned.
+		available, err := documentkey.AvailableName(ctx, name, s.storage.Exists, documentkey.RandomName7)
 		if err != nil {
 			return nil, err
 		}
-		if exists {
-			return nil, domain.ErrInstanceSetupRefused
-		}
+		saved = available
 	}
-	if err := s.storage.Save(ctx, name, file.Content, instancelogo.WriteParameters{ContentType: file.ContentType,
+	if err := s.storage.Save(ctx, saved, file.Content, instancelogo.WriteParameters{ContentType: file.ContentType,
 		CacheControl: s.settings.CacheControl, ACL: s.settings.DefaultACL}); err != nil {
 		return nil, err
 	}
@@ -326,9 +325,12 @@ func (s *InstanceSetup) InstanceOwner(ctx context.Context, actor domain.Account)
 
 // importedAssociation is _link_imported_instance: the association an import
 // task's stored result names, or the last association by primary key. A
-// failure is the ValueError text Django answers. Rows whose decoding rebuilds
-// exceptions or merges metadata, and values Django would render with
-// Python-specific text, are refused.
+// failure is the view's 500 answer: a FAILURE row's stored exception text, a
+// REVOKED row whose exception rebuild raises, or the "Import failed: ..." /
+// "Association ... not found" ValueError texts. A REVOKED row's rebuilt
+// exception is not a dict, so Django links the last association. Rows whose
+// decoding merges metadata, and values Django would render with Python-specific
+// text, are refused.
 func (s *InstanceSetup) importedAssociation(ctx context.Context, task string) (string, string, error) {
 	row, err := s.store.ImportTask(ctx, task)
 	if err != nil {
@@ -336,9 +338,6 @@ func (s *InstanceSetup) importedAssociation(ctx context.Context, task string) (s
 	}
 	if row == nil || (row.Status != "SUCCESS" && row.Status != "FAILURE" && row.Status != "REVOKED") {
 		return "", "Import task is still in progress. Please wait for completion.", nil
-	}
-	if row.Status != "SUCCESS" {
-		return "", "", domain.ErrInstanceSetupRefused // a failed import's stored exception
 	}
 	if row.Encoding != "utf-8" {
 		// Celery's django-db rows of the app's own tasks are JSON (BE/core/settings.py:176).
@@ -360,8 +359,23 @@ func (s *InstanceSetup) importedAssociation(ctx context.Context, task string) (s
 	}
 	var result any
 	if row.Result != nil && *row.Result != "" {
+		// Celery decodes the result column with its own JSON reader; a value it
+		// cannot decode stays a refusal.
 		if result, err = celeryJSON(*row.Result); err != nil {
 			return "", "", domain.ErrAssociationTransferUnexpected
+		}
+	}
+	if row.Status == "FAILURE" {
+		// The stored exception, rebuilt and printed like Celery does it.
+		return "", celeryExceptionText(result), nil
+	}
+	if row.Status == "REVOKED" {
+		// AsyncResult.failed() is the FAILURE state alone, so Django decodes
+		// the stored exception and, because it is not a dict, falls through to
+		// the last association. A rebuild that raises is the view's 500 text,
+		// without the "Import task failed: " prefix.
+		if text, rebuilt := celeryExceptionValue(result); !rebuilt {
+			return "", text, nil
 		}
 	}
 	if object, ok := result.(map[string]any); ok {
@@ -388,7 +402,8 @@ func (s *InstanceSetup) importedAssociation(ctx context.Context, task string) (s
 			}
 			canonical, err := dto.AssociationExportDocument(text)
 			if err != nil {
-				return "", "", domain.ErrInstanceSetupRefused // ValidationError text in Django's answer
+				// The writers store str() of a UUID (BE/application/tasks.py:2186,2193).
+				return "", "", domain.ErrInstanceSetupUnexpected
 			}
 			found, err := s.store.ImportedAssociation(ctx, canonical)
 			if err != nil {

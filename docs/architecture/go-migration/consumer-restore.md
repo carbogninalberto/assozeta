@@ -365,10 +365,9 @@ keeping the transaction open; Run performs the effects in Django's order and com
 
 Arguments other than one canonical UUID string; a lock file the consumer cannot open for another reason; a database
 error while reading; an upload path outside `AWS_LOCATION` or an empty one; a non-positive `DATA_RESTORE_MAX_*` value;
-archives Go's ZIP reader or JSON decoder rejects (ZIP64, duplicate, backslash or non-UTF-8 names, encrypted or
-non-deflate members, non-UTF-8 or BOM JSON, `NaN`), `to_python` inputs whose outcome Python decides with rules not
-reproduced (`int()`/`UUID()` text with signs, underscores, `0x` or non-ASCII digits, non-canonical date/time text);
-legacy platform invoices; tutor records the validation would reassign, clear or ignore; non-ASCII tax codes; a deleted
+a ZIP reader exception `Archive.validate()` does not catch (EOFError, OSError from bz2, LZMAError) or `int()` of an
+infinity; archives whose records `validate()` rewrites (legacy platform invoices, tutors reassigned, cleared or ignored),
+since the replacement streams the ZIP as exported; members and values the import stage hands off (Step 3); a deleted
 primary association; credential hashes the export does not decide; models the deletion graph marks unsupported;
 values `internal/importeffects` does not reproduce (CourseSubscription records among them); a storage name that is
 taken; a completed receipt's media that pruning could not handle; any database error inside the replacement
@@ -402,6 +401,8 @@ administers; a second association; a changed upload; a truncated archive; anothe
 another association; unconfirmed and confirmed missing attachments; circular folders rolled back; a value the database
 rejects and course subscriptions handed off; an unknown keyword handed off; a worker killed at the `files` stage and the
 acks_late redelivery completing with two attempts; a concurrent delivery deferred while the restore holds the lock.
+Since long tail PR 4 the validation is the HTTP port's whole `Archive.validate()` (see `data-restore.md`), and an
+attachment whose basename holds a backslash is staged with `_` (scenario `backslash-media`).
 
 - Oracle: Django alone 22/22 (`consumer-restore-instance-oracle`).
 - RED: consumer without the registration; Django passed, Go did not consume the message and timed out on the first

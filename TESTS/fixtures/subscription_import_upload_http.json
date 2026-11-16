@@ -5181,6 +5181,419 @@
      "nome": "Nome"
     }
    }
+  },
+  {
+   "name": "subscription-import-upload-csv-tax-code-letters",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/import/upload",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "columns": [
+     "Nome",
+     "Cognome",
+     "Sesso",
+     "Codice fiscale",
+     "Data di nascita",
+     "Città di nascita",
+     "Indirizzo",
+     "CAP",
+     "Città di residenza"
+    ],
+    "map": {
+     "nome": "Nome",
+     "cognome": "Cognome",
+     "sesso": "Sesso",
+     "codice fiscale": "Codice fiscale",
+     "data di nascita": "Data di nascita",
+     "città di nascita": "Città di nascita",
+     "indirizzo": "Indirizzo",
+     "città di residenza": "Città di residenza",
+     "cap": "CAP",
+     "email": null,
+     "telefono": null,
+     "nome tutore": null,
+     "cognome tutore": null,
+     "sesso tutore": null,
+     "codice fiscale tutore": null,
+     "data di nascita tutore": null,
+     "città di nascita tutore": null,
+     "città di residenza tutore": null,
+     "indirizzo tutore": null,
+     "cap tutore": null,
+     "email tutore": null,
+     "telefono tutore": null,
+     "scadenza certificato medico": null,
+     "data tesseramento": null,
+     "data scadenza tesseramento": null,
+     "numero tessera": null
+    },
+    "document_id": "$new"
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "filename": "codici.csv",
+    "body_b64": "Tm9tZTtDb2dub21lO1Nlc3NvO0NvZGljZSBmaXNjYWxlO0RhdGEgZGkgbmFzY2l0YTtDaXR0w6AgZGkgbmFzY2l0YTtJbmRpcml6em87Q0FQO0NpdHTDoCBkaSByZXNpZGVuemEKQWRhO1Jvc3NpO0Y7UsW/U01SQTgwQTAxSDUwMVU7MDEvMDEvMTk4MDtSb21hO1ZpYSBSb21hIDE7MDAxMDA7Um9tYQpCZWE7QmlhbmNoaTtGO1JTU01SQTgwQTAxSDUwMeKEqjswMi8wMi8xOTgxO1JvbWE7VmlhIE1pbGFubyAyOzIwMTAwO01pbGFubwpDYXJsYTtWZXJkaTtGO1JTU01SQTgwQTAxw6k1MDFVOzAzLzAzLzE5ODI7Um9tYTtWaWEgUG8gMzsxMDEwMDtUb3Jpbm8K",
+    "content_type": "text/csv",
+    "association": "own_association",
+    "expired": [],
+    "keep": "taxcodes"
+   },
+   "raw_body": "--ImportBoundary7d1f\r\nContent-Disposition: form-data; name=\"associates_file\"; filename=\"codici.csv\"\r\nContent-Type: text/csv\r\n\r\nNome;Cognome;Sesso;Codice fiscale;Data di nascita;Città di nascita;Indirizzo;CAP;Città di residenza\nAda;Rossi;F;RſSMRA80A01H501U;01/01/1980;Roma;Via Roma 1;00100;Roma\nBea;Bianchi;F;RSSMRA80A01H501K;02/02/1981;Roma;Via Milano 2;20100;Milano\nCarla;Verdi;F;RSSMRA80A01é501U;03/03/1982;Roma;Via Po 3;10100;Torino\n\r\n--ImportBoundary7d1f--\r\n",
+   "content_type": "multipart/form-data; boundary=ImportBoundary7d1f"
+  },
+  {
+   "name": "subscription-import-upload-tax-code-letters",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/import/upload",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "columns": [
+     "Nome",
+     "Cognome",
+     "Sesso",
+     "Codice fiscale",
+     "Data di nascita",
+     "Città di nascita",
+     "Indirizzo",
+     "CAP",
+     "Città di residenza"
+    ],
+    "map": {
+     "nome": null,
+     "cognome": null,
+     "sesso": null,
+     "codice fiscale": null,
+     "data di nascita": null,
+     "città di nascita": null,
+     "indirizzo": null,
+     "città di residenza": null,
+     "cap": null,
+     "email": null,
+     "telefono": null,
+     "nome tutore": null,
+     "cognome tutore": null,
+     "sesso tutore": null,
+     "codice fiscale tutore": null,
+     "data di nascita tutore": null,
+     "città di nascita tutore": null,
+     "città di residenza tutore": null,
+     "indirizzo tutore": null,
+     "cap tutore": null,
+     "email tutore": null,
+     "telefono tutore": null,
+     "scadenza certificato medico": null,
+     "data tesseramento": null,
+     "data scadenza tesseramento": null,
+     "numero tessera": null
+    }
+   },
+   "effect": {
+    "kind": "import",
+    "actor": "owner",
+    "session": null,
+    "statuses": [],
+    "steps": [],
+    "drafts": [
+     {
+      "data": {
+       "associate": {
+        "first_name": "Ada",
+        "last_name": "Rossi",
+        "sex": "F",
+        "tax_code": "RſSMRA80A01H501U",
+        "born_date": "01/01/1980",
+        "born_city": "Roma",
+        "address": "Via Roma 1",
+        "address_cap": "00100",
+        "address_city": "Roma"
+       },
+       "associate_tutor": {}
+      },
+      "valid": true
+     },
+     {
+      "data": {
+       "associate": {
+        "first_name": "Bea",
+        "last_name": "Bianchi",
+        "sex": "F",
+        "tax_code": "RSSMRA80A01H501K",
+        "born_date": "02/02/1981",
+        "born_city": "Roma",
+        "address": "Via Milano 2",
+        "address_cap": "20100",
+        "address_city": "Milano"
+       },
+       "associate_tutor": {}
+      },
+      "valid": true
+     },
+     {
+      "data": {
+       "associate": {
+        "first_name": "Carla",
+        "last_name": "Verdi",
+        "sex": "F",
+        "tax_code": "RSSMRA80A01é501U",
+        "born_date": "03/03/1982",
+        "born_city": "Roma",
+        "address": "Via Po 3",
+        "address_cap": "10100",
+        "address_city": "Torino"
+       },
+       "associate_tutor": {}
+      },
+      "valid": false
+     }
+    ],
+    "document": "taxcodes",
+    "failed": false
+   },
+   "body": {
+    "document_id": "$document:taxcodes",
+    "map": {
+     "nome": "Nome",
+     "cognome": "Cognome",
+     "sesso": "Sesso",
+     "codice fiscale": "Codice fiscale",
+     "data di nascita": "Data di nascita",
+     "città di nascita": "Città di nascita",
+     "indirizzo": "Indirizzo",
+     "cap": "CAP",
+     "città di residenza": "Città di residenza"
+    }
+   }
+  },
+  {
+   "name": "subscription-import-upload-csv-defaults",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/import/upload",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "columns": [
+     "Nome",
+     "CAP"
+    ],
+    "map": {
+     "nome": "Nome",
+     "cognome": null,
+     "sesso": null,
+     "codice fiscale": null,
+     "data di nascita": null,
+     "città di nascita": null,
+     "indirizzo": null,
+     "città di residenza": null,
+     "cap": "CAP",
+     "email": null,
+     "telefono": null,
+     "nome tutore": null,
+     "cognome tutore": null,
+     "sesso tutore": null,
+     "codice fiscale tutore": null,
+     "data di nascita tutore": null,
+     "città di nascita tutore": null,
+     "città di residenza tutore": null,
+     "indirizzo tutore": null,
+     "cap tutore": null,
+     "email tutore": null,
+     "telefono tutore": null,
+     "scadenza certificato medico": null,
+     "data tesseramento": null,
+     "data scadenza tesseramento": null,
+     "numero tessera": null
+    },
+    "document_id": "$new"
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "filename": "predefiniti.csv",
+    "body_b64": "Tm9tZTtDQVAKQWRhOzAwMTAwCkJlYTsK",
+    "content_type": "text/csv",
+    "association": "own_association",
+    "expired": [],
+    "keep": "defaults"
+   },
+   "raw_body": "--ImportBoundary7d1f\r\nContent-Disposition: form-data; name=\"associates_file\"; filename=\"predefiniti.csv\"\r\nContent-Type: text/csv\r\n\r\nNome;CAP\nAda;00100\nBea;\n\r\n--ImportBoundary7d1f--\r\n",
+   "content_type": "multipart/form-data; boundary=ImportBoundary7d1f"
+  },
+  {
+   "name": "subscription-import-upload-string-default-fails",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/import/upload",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "Importazione non riuscita. Controlla i dati e riprova."
+   },
+   "effect": {
+    "kind": "import",
+    "actor": "owner",
+    "session": null,
+    "statuses": [],
+    "steps": [],
+    "drafts": [],
+    "document": "defaults",
+    "failed": true
+   },
+   "body": {
+    "document_id": "$document:defaults",
+    "map": {
+     "nome": "Nome",
+     "cap": "CAP"
+    },
+    "default": "xcapx"
+   }
+  },
+  {
+   "name": "subscription-import-upload-list-default-fails",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/import/upload",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "Importazione non riuscita. Controlla i dati e riprova."
+   },
+   "effect": {
+    "kind": "import",
+    "actor": "owner",
+    "session": null,
+    "statuses": [],
+    "steps": [],
+    "drafts": [],
+    "document": "defaults",
+    "failed": true
+   },
+   "body": {
+    "document_id": "$document:defaults",
+    "map": {
+     "nome": "Nome",
+     "cap": "CAP"
+    },
+    "default": [
+     "cap"
+    ]
+   }
+  },
+  {
+   "name": "subscription-import-upload-number-default-fails",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/import/upload",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "Importazione non riuscita. Controlla i dati e riprova."
+   },
+   "effect": {
+    "kind": "import",
+    "actor": "owner",
+    "session": null,
+    "statuses": [],
+    "steps": [],
+    "drafts": [],
+    "document": "defaults",
+    "failed": true
+   },
+   "body": {
+    "document_id": "$document:defaults",
+    "map": {
+     "nome": "Nome",
+     "cap": "CAP"
+    },
+    "default": 5
+   }
+  },
+  {
+   "name": "subscription-import-upload-list-default-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/import/upload",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "columns": [
+     "Nome",
+     "CAP"
+    ],
+    "map": {
+     "nome": null,
+     "cognome": null,
+     "sesso": null,
+     "codice fiscale": null,
+     "data di nascita": null,
+     "città di nascita": null,
+     "indirizzo": null,
+     "città di residenza": null,
+     "cap": null,
+     "email": null,
+     "telefono": null,
+     "nome tutore": null,
+     "cognome tutore": null,
+     "sesso tutore": null,
+     "codice fiscale tutore": null,
+     "data di nascita tutore": null,
+     "città di nascita tutore": null,
+     "città di residenza tutore": null,
+     "indirizzo tutore": null,
+     "cap tutore": null,
+     "email tutore": null,
+     "telefono tutore": null,
+     "scadenza certificato medico": null,
+     "data tesseramento": null,
+     "data scadenza tesseramento": null,
+     "numero tessera": null
+    }
+   },
+   "effect": {
+    "kind": "import",
+    "actor": "owner",
+    "session": null,
+    "statuses": [],
+    "steps": [],
+    "drafts": [
+     {
+      "data": {
+       "associate": {
+        "first_name": "Ada",
+        "address_cap": "00100"
+       },
+       "associate_tutor": {}
+      },
+      "valid": false
+     },
+     {
+      "data": {
+       "associate": {
+        "first_name": "Bea"
+       },
+       "associate_tutor": {}
+      },
+      "valid": false
+     }
+    ],
+    "document": "defaults",
+    "failed": false
+   },
+   "body": {
+    "document_id": "$document:defaults",
+    "map": {
+     "nome": "Nome",
+     "cap": "CAP"
+    },
+    "default": [
+     "xcapx"
+    ]
+   }
   }
  ]
 }

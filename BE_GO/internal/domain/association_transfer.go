@@ -7,11 +7,6 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
-// ErrAssociationTransferNotPorted refuses association export/import paths
-// whose Django behaviour needs storage, Celery or cache values this port does
-// not read (see docs/architecture/go-migration/association-transfer.md).
-var ErrAssociationTransferNotPorted = refusal.New("association transfer path not ported")
-
 // ErrAssociationTransferUnexpected is a state only the application writes:
 // the export cache snapshots and task owner entries (export_views.py), the
 // django-db Celery result rows of its own tasks (JSON, CELERY_RESULT_BACKEND

@@ -292,6 +292,50 @@ def assert_effect(case, before, after, source, context):
         check_entries(case, added, indexes, expected, before=before, ids=ids, actor=actor, context=context)
         return
 
+    if effect['kind'] == 'placeholder-rejected':
+        # default_storage.save raised before storing: the certificate and the
+        # Document created before it stay, the subscription is not linked and
+        # the bucket keeps its objects.
+        contract.require(listing() == STATE['objects'], 'storage.rejected-no-object')
+        contract.require(len(added) == 2, f'audit.count:{len(added)}')
+        new, doc = added[0]['object_pk'], added[1]['object_pk']
+        old_c, new_c = state['MedicalCertificate']
+        old_doc, new_doc = state['Document']
+        contract.require(set(new_c) == set(old_c) | {new} and new not in old_c and all(new_c[k] == old_c[k] for k in old_c),
+                         'state.rejected-certificate-rows')
+        contract.require(set(new_doc) == set(old_doc) | {doc} and doc not in old_doc and all(new_doc[k] == old_doc[k] for k in old_doc),
+                         'state.rejected-document-rows')
+        row, stored_doc = new_c[new], new_doc[doc]
+        uuid4_text = lambda text: uuid.UUID(text).version == 4 and str(uuid.UUID(text)) == text
+        contract.require(uuid4_text(new) and uuid4_text(doc) and uuid4_text(str(stored_doc['token']))
+                         and len({new, doc, str(stored_doc['token'])}) == 3, 'state.rejected-ids')
+        contract.require(row == {
+            'medical_id': new, 'document_id': None, 'user_id': ids[effect['user']], 'creation_date': row['creation_date'],
+            'expiration_date': None, 'competitive_medical_certificate': False, 'notes': None}, 'state.rejected-certificate')
+        contract.require(stored_doc == {
+            'document_id': doc, 'token': stored_doc['token'], 'creation_date': stored_doc['creation_date'], 'filepath': None,
+            'filename': effect['filename'], 'file_size_bytes': None}, 'state.rejected-document')
+        since, until = STATE['started'], time.time()
+        created = document_model()._base_manager.get(pk=doc).creation_date
+        for stamp in (certificate_model()._base_manager.get(pk=new).creation_date, created):
+            contract.require(since - 1 <= stamp.timestamp() <= until + 1, 'state.rejected-created')
+        for name in ('Subscription', 'AssociateImportDraft', 'MedicalAppointments'):
+            contract.require(state[name][0] == state[name][1], 'state.rejected-' + name)
+        text = topup.auditlog_moment
+        association = actor_association
+        path = 'actor.sport_association'
+        expected = [
+            ('application', 'MedicalCertificate', new, 0, {
+                'medical_id': ['None', new], 'document': ['None', 'None'], 'user': ['None', ids[effect['user']]],
+                'creation_date': ['None', text(certificate_model()._base_manager.get(pk=new).creation_date)],
+                'competitive_medical_certificate': ['None', 'False']}, association, path),
+            ('docmanager', 'Document', doc, 0, {
+                'document_id': ['None', doc], 'token': ['None', str(stored_doc['token'])], 'filename': ['None', effect['filename']],
+                'creation_date': ['None', text(document_model()._base_manager.get(pk=doc).creation_date)],
+                'customer_invoice_pdf': ['None', 'application.CustomerInvoice.None']}, association, path)]
+        check_entries(case, added, indexes, expected, before=before, ids=ids, actor=actor, context=context)
+        return
+
     contract.require(listing() == STATE['objects'], 'storage.unchanged')
     if effect['kind'] == 'delete':
         old_a, new_a = state['MedicalAppointments']

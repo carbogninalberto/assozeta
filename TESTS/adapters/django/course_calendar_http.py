@@ -41,6 +41,12 @@ def seed_rows(source, created):
     ids, seed = source['ids'], source['seed']
     User._base_manager.filter(pk=ids['owner']).update(integration_google_credentials=seed['credentials'])
     User._base_manager.filter(pk=ids['restricted_collaborator']).update(collaborator_permissions=seed['restricted_permissions'])
+    # Family identities inserted among the extra users are rewritten to the
+    # authored collaborator row (a chain whose connected user is a collaborator).
+    for row in source.get('extra_users', {}).values():
+        User._base_manager.filter(pk=row['id']).update(
+            role=row['role'], connected_user_id=row['connected_user'], collaborator_role=row['collaborator_role'],
+            collaborator_permissions=row['permissions'], integration_google_credentials=row['credentials'])
     SportAssociation._base_manager.filter(pk=ids['own_association']).update(logo=seed['logo'])
     for row in seed['instructors'].values():
         Instructor._base_manager.bulk_create([Instructor(instructor_id=row['id'], user_id=row['user'], first_name=row['first_name'],

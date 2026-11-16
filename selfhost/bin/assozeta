@@ -440,6 +440,15 @@ set_env_value() {
     mv "$temporary" "$file"
 }
 
+bakney_protocol_upstream() {
+    # The operator chooses a backend name; Caddy needs its in-network address.
+    case "$1" in
+        django) printf 'api:8000\n' ;;
+        go) printf 'api-go:8000\n' ;;
+        *) return 1 ;;
+    esac
+}
+
 ensure_configuration_values() {
     file=$1
     [ -f "$file" ] || return
@@ -469,6 +478,18 @@ ensure_configuration_values() {
         [ -n "$app_url" ] || die "missing APP_URL in $file"
         set_env_value GOOGLE_CALENDAR_REDIRECT_URL "${app_url%/}/api/google/oauth2callback" "$file"
         log "added GOOGLE_CALENDAR_REDIRECT_URL to $file"
+    fi
+
+    # ASSOZETA_BAKNEY_PROTOCOL_BACKEND selects the backend for /bakney/v1/*.
+    # Keep the address Caddy reads in step with it; only django and go exist.
+    backend=$(env_value ASSOZETA_BAKNEY_PROTOCOL_BACKEND "$file")
+    if [ -n "$backend" ]; then
+        upstream=$(bakney_protocol_upstream "$backend") \
+            || die "invalid ASSOZETA_BAKNEY_PROTOCOL_BACKEND in $file: $backend (use django or go)"
+        if [ "$(env_value ASSOZETA_BAKNEY_PROTOCOL_UPSTREAM "$file")" != "$upstream" ]; then
+            set_env_value ASSOZETA_BAKNEY_PROTOCOL_UPSTREAM "$upstream" "$file"
+            log "Bakney protocol backend $backend: /bakney/v1/* uses $upstream"
+        fi
     fi
 }
 
@@ -760,6 +781,11 @@ WEB_CONCURRENCY=2
 CELERY_CONCURRENCY=2
 ASSOZETA_GO_TASKS=0
 GO_TASK_QUEUE_TASKS=
+# The Bakney SSO protocol root paths (/bakney/v1/*) stay on Django. Set
+# ASSOZETA_BAKNEY_PROTOCOL_BACKEND=go to serve them from the Go API; the
+# upstream address below is derived from it and passed to Caddy.
+ASSOZETA_BAKNEY_PROTOCOL_BACKEND=django
+ASSOZETA_BAKNEY_PROTOCOL_UPSTREAM=api:8000
 TZ=Europe/Rome
 DEV_UI_PORT=5001
 DEV_API_PORT=8000

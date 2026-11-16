@@ -13,6 +13,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/wsproto"
@@ -47,6 +48,13 @@ const (
 	agentInternal          = "Si è verificato un errore interno. Riprova."
 )
 
+// errAgentConfigKey is a missing configuration key: AISettingsSerializer and
+// environmentIntegration always write every key.
+var errAgentConfigKey = refusal.AppState("AI configuration without a required key")
+
+// errAgentConfigValue is a configuration value outside those two writers.
+var errAgentConfigValue = refusal.AppState("agent configuration value outside the ported subset")
+
 type agentConsumer struct {
 	rt          *AgentWebSocket
 	user        string
@@ -70,14 +78,6 @@ func newAgentConsumer(rt *AgentWebSocket) *agentConsumer { return &agentConsumer
 
 func (c *agentConsumer) event(*session, domain.RequestObject) error { return errCrash }
 
-// refused ends the connection for an input the port does not reproduce.
-func agentRefused(err error) error {
-	if errors.Is(err, service.ErrAgentNotPorted) {
-		slog.Warn("websocket agent input not ported", "error", err)
-	}
-	return err
-}
-
 func (c *agentConsumer) connect(s *session) (bool, error) {
 	if s.user == nil {
 		return false, nil // close(4001)
@@ -88,13 +88,13 @@ func (c *agentConsumer) connect(s *session) (bool, error) {
 		return false, nil // close(4004)
 	}
 	if err != nil {
-		return false, agentRefused(err)
+		return false, err
 	}
 	c.config = config
 	manual := c.rt.Runtime.ManualAvailable(s.ctx)
 	enabled, present := config["enabled"]
 	if !present {
-		return false, agentRefused(service.ErrAgentNotPorted)
+		return false, errAgentConfigKey
 	}
 	if !dto.PythonTruthy(enabled) && !manual {
 		return false, nil // close(4004)
@@ -108,9 +108,6 @@ func (c *agentConsumer) connect(s *session) (bool, error) {
 	}
 	c.acquired = true
 	association, ok, err := c.rt.Runtime.Association(s.ctx, s.user)
-	if errors.Is(err, service.ErrAgentNotPorted) {
-		return false, agentRefused(err)
-	}
 	if err != nil || !ok {
 		c.release(s)
 		return false, nil // close(4003)
@@ -118,13 +115,10 @@ func (c *agentConsumer) connect(s *session) (bool, error) {
 	c.association = association
 	limit, present := config["ws_rate_limit"]
 	if !present {
-		return false, agentRefused(service.ErrAgentNotPorted)
+		return false, errAgentConfigKey
 	}
 	c.limit = limit
 	provider, err := c.rt.Runtime.Provider(config)
-	if errors.Is(err, service.ErrAgentNotPorted) {
-		return false, agentRefused(err)
-	}
 	if err != nil {
 		c.release(s)
 		return false, nil // close(4004)
@@ -186,7 +180,7 @@ func (c *agentConsumer) receive(s *session, message *wsproto.Message) error {
 	if isString(kind, "save_report") || isString(kind, "delete_report") || isString(kind, "list_reports") {
 		current, err := c.rt.Runtime.AIConfig(s.ctx)
 		if err != nil {
-			return agentRefused(err)
+			return err
 		}
 		if !dto.PythonTruthy(current["enabled"]) {
 			return s.send(agentErrorFrame(agentNeedsAI))
@@ -245,14 +239,20 @@ func agentLessEqual(count int64, limit any) (bool, error) {
 	case json.Number:
 		var ok bool
 		if bound, ok = new(big.Rat).SetString(string(typed)); !ok {
-			return false, service.ErrAgentNotPorted
+			return false, errAgentConfigValue
 		}
 	case int64:
 		bound = big.NewRat(typed, 1)
 	case bool:
 		bound = big.NewRat(map[bool]int64{true: 1, false: 0}[typed], 1)
+	case string:
+		if typed == "" {
+			// Django's `count <= ''` raises inside receive_json.
+			return false, errCrash
+		}
+		return false, errAgentConfigValue
 	default:
-		return false, service.ErrAgentNotPorted
+		return false, errAgentConfigValue
 	}
 	return big.NewRat(count, 1).Cmp(bound) <= 0, nil
 }
@@ -272,19 +272,13 @@ func (c *agentConsumer) userMessage(s *session, content any) error {
 		return s.send(agentErrorFrame(agentBusyElaborating))
 	}
 	current, err := c.rt.Runtime.AIConfig(s.ctx)
-	if errors.Is(err, service.ErrAgentNotPorted) {
-		return agentRefused(err)
-	}
 	if err == nil && !service.AgentConfigEqual(current, c.config) {
 		var provider service.AgentProvider
 		provider, err = c.rt.Runtime.Provider(current)
-		if errors.Is(err, service.ErrAgentNotPorted) {
-			return agentRefused(err)
-		}
 		if err == nil {
 			for _, key := range []string{"max_iterations", "history_cap", "ws_rate_limit"} {
 				if _, present := current[key]; !present {
-					return agentRefused(service.ErrAgentNotPorted)
+					return errAgentConfigKey
 				}
 			}
 			c.agent.Provider = provider
@@ -307,33 +301,64 @@ func (c *agentConsumer) userMessage(s *session, content any) error {
 		err = compare
 	}
 	if err != nil {
-		return agentRefused(err)
+		return err
 	}
 	if !allowed {
 		return s.send(agentErrorFrame(agentThrottled))
 	}
-	seconds, ok := agentSeconds(c.config["ws_timeout"])
-	if !ok {
-		return agentRefused(service.ErrAgentNotPorted)
+	seconds, timeoutMode, err := agentSeconds(c.config["ws_timeout"])
+	if err != nil {
+		return err
 	}
 	ctx, cancel := context.WithCancel(s.ctx)
 	c.mu.Lock()
 	c.running, c.cancel = true, cancel
 	c.mu.Unlock()
-	go c.run(s, ctx, cancel, message, seconds)
+	go c.run(s, ctx, cancel, message, seconds, timeoutMode)
 	return nil
 }
 
-func agentSeconds(value any) (time.Duration, bool) {
-	number, ok := value.(json.Number)
-	if !ok {
-		return 0, false
+// agentTimeoutMode is what asyncio.wait_for does with the configuration value.
+type agentTimeoutMode int
+
+const (
+	agentTimeoutWait      agentTimeoutMode = iota // a positive timeout
+	agentTimeoutExpired                           // <= 0: the task is cancelled before it runs
+	agentTimeoutTypeError                         // '': `'' <= 0` raises inside the try
+)
+
+// agentSeconds reads ws_timeout: the instance AISettingsSerializer writes an
+// int, environmentIntegration an int64 or the empty string for 0.
+func agentSeconds(value any) (time.Duration, agentTimeoutMode, error) {
+	var seconds float64
+	switch typed := value.(type) {
+	case json.Number:
+		parsed, err := strconv.ParseFloat(string(typed), 64)
+		if err != nil && !errors.Is(err, strconv.ErrRange) {
+			return 0, agentTimeoutWait, errAgentConfigValue
+		}
+		seconds = parsed // an over-range value is ±Inf, as Python's float would be
+	case int64:
+		seconds = float64(typed)
+	case string:
+		if typed == "" {
+			return 0, agentTimeoutTypeError, nil
+		}
+		return 0, agentTimeoutWait, errAgentConfigValue
+	default:
+		return 0, agentTimeoutWait, errAgentConfigValue
 	}
-	seconds, err := strconv.ParseFloat(string(number), 64)
-	if err != nil || math.IsNaN(seconds) || seconds <= 0 || seconds > 1e6 {
-		return 0, false
+	if math.IsNaN(seconds) {
+		return 0, agentTimeoutWait, errAgentConfigValue
 	}
-	return time.Duration(seconds * float64(time.Second)), true
+	if seconds <= 0 {
+		return 0, agentTimeoutExpired, nil
+	}
+	// Python waits as long as it is asked to; Go clamps to its largest duration.
+	if maximum := float64(math.MaxInt64) / float64(time.Second); seconds >= maximum {
+		return time.Duration(math.MaxInt64), agentTimeoutWait, nil
+	}
+	return time.Duration(seconds * float64(time.Second)), agentTimeoutWait, nil
 }
 
 // finish sends the task's final frames and marks it done for the receive loop.
@@ -347,7 +372,7 @@ func (c *agentConsumer) finish(s *session, frames ...domain.RequestObject) {
 }
 
 // run is _run_agent_with_timeout under coordinated_async.
-func (c *agentConsumer) run(s *session, ctx context.Context, cancel context.CancelFunc, message string, timeout time.Duration) {
+func (c *agentConsumer) run(s *session, ctx context.Context, cancel context.CancelFunc, message string, timeout time.Duration, mode agentTimeoutMode) {
 	defer cancel()
 	release, busy, err := c.rt.Runtime.Coordination.Acquire(ctx)
 	if err != nil {
@@ -359,16 +384,22 @@ func (c *agentConsumer) run(s *session, ctx context.Context, cancel context.Canc
 		return
 	}
 	defer release()
+	switch mode {
+	case agentTimeoutTypeError:
+		// `'' <= 0` raises after the lease: Django's except Exception frame.
+		c.finish(s, agentErrorFrame(agentInternal), object("type", "done"))
+		return
+	case agentTimeoutExpired:
+		// wait_for cancels the task before it runs and raises TimeoutError.
+		c.finish(s, agentErrorFrame(agentTimeout), object("type", "done"))
+		return
+	}
 	work, stop := context.WithTimeout(ctx, timeout)
 	defer stop()
 	err = c.agent.ProcessMessage(work, message)
 	switch {
 	case err == nil:
 		c.finish(s)
-	case errors.Is(err, service.ErrAgentNotPorted):
-		_ = agentRefused(err)
-		c.finish(s)
-		s.conn.Abort()
 	case ctx.Err() != nil:
 		c.finish(s, object("type", "status", "status", "cancelled"), object("type", "done"))
 	case work.Err() != nil:
@@ -410,7 +441,7 @@ func (c *agentConsumer) saveReport(s *session, content any) error {
 		if !dto.PythonTruthy(saveInfo) {
 			cached, err := c.rt.Cache.SaveInfo(s.ctx, c.user)
 			if err != nil {
-				return agentRefused(service.ErrAgentNotPorted)
+				return err
 			}
 			if dto.PythonTruthy(cached) {
 				object, ok := cached.(domain.RequestObject)
@@ -458,9 +489,6 @@ func (c *agentConsumer) saveReport(s *session, content any) error {
 		}
 		result, err := c.rt.Runtime.BusinessTools(c.association.ID).Execute(s.ctx, "save_report", arguments)
 		release()
-		if errors.Is(err, service.ErrBusinessMCPNotPorted) {
-			return agentRefused(service.ErrAgentNotPorted)
-		}
 		if err != nil {
 			return failed()
 		}
@@ -512,9 +540,6 @@ func (c *agentConsumer) deleteReport(s *session, content any) error {
 
 func (c *agentConsumer) listReports(s *session) error {
 	result, err := c.rt.Runtime.BusinessTools(c.association.ID).Execute(s.ctx, "list_reports", object("user_id", c.user))
-	if errors.Is(err, service.ErrBusinessMCPNotPorted) {
-		return agentRefused(service.ErrAgentNotPorted)
-	}
 	if err != nil {
 		return s.send(agentErrorFrame("Errore nel recupero dei report. Riprova."))
 	}
@@ -569,9 +594,6 @@ func (b *agentSocketCallback) OnExportReady(ctx context.Context, export domain.R
 		b.c.saveInfo, b.c.saveFilename = info, filename
 		b.c.mu.Unlock()
 		if err := b.c.rt.Cache.SetSaveInfo(ctx, b.c.user, info, filename); err != nil {
-			if errors.Is(err, repository.ErrAgentCacheShape) {
-				return service.ErrAgentNotPorted
-			}
 			return err
 		}
 	}

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -176,6 +177,9 @@ func (h *SubscriptionMiscHandler) Federation(c echo.Context) error {
 }
 
 func (h *SubscriptionMiscHandler) GenerateLink(c echo.Context) error {
+	// The response echoes the whole uploaded gym_name file (its lines), so this
+	// one route asks the body reader to keep every byte of a file part.
+	c.SetRequest(c.Request().WithContext(withWholeUploads(c.Request().Context())))
 	return h.serve(c, http.MethodPost, "subscription_generate_token_link", "Subscription Generate Token Link", false,
 		func(identity domain.ResolvedIdentity) error {
 			return h.admitted(c, func(write *restWrite) error {
@@ -186,6 +190,23 @@ func (h *SubscriptionMiscHandler) GenerateLink(c echo.Context) error {
 				return h.respond(c, http.StatusCreated, result)
 			})
 		})
+}
+
+// wholeUploadsKey marks a request whose file parts the body reader keeps in
+// full: DRF's JSON encoder iterates an uploaded file object, so the views that
+// echo one need every line, not just the first 64 KiB chunk.
+type wholeUploadsKey struct{}
+
+// withWholeUploads asks the multipart body reader to keep the whole content of
+// every file part (Content = all bytes, Whole = true, Size unchanged).
+func withWholeUploads(ctx context.Context) context.Context {
+	return context.WithValue(ctx, wholeUploadsKey{}, true)
+}
+
+// wholeUploads reports whether the request keeps whole file parts.
+func wholeUploads(ctx context.Context) bool {
+	keep, _ := ctx.Value(wholeUploadsKey{}).(bool)
+	return keep
 }
 
 func (h *SubscriptionMiscHandler) ValidateLink(c echo.Context) error {

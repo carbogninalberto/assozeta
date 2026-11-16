@@ -518,6 +518,102 @@ DAYS['d_ud'] = {'registry': 'rg_ud', 'date': UNICODE_LESSON_DAY, 'attendees': ['
 for label in ('as_ud', 'as_um', 'c_ud', 'c_um', 'sub_ud', 'sub_um', 'rg_ud', 'rg_um', 'd_ud', 'athlete_digits', 'athlete_month'):
     rid(label)
 
+# ---------------------------------------------------------------------------
+# Fifth and sixth associations for the expiring carnets widget's stored values.
+# The fifth's registry dates carry another script's decimal digits where CPython's _strptime accepts
+# them (\d for %Y, for the second digit of %d/%H/%M/%S and for int()); %m, the first digit of
+# %d/%H/%M and the minute's first digit are ASCII classes. strftime cannot emit another script's
+# digits, so the year's century ('٢٠', valid until 2099) and 10:00:00 ('1٠:0٠:0٠') are literals and
+# %y/%m/%d stay strftime fields. The date 5 days ago is listed, the one 40 days ago is skipped.
+# The sixth's meta stores a fraction beyond the double range as PostgreSQL jsonb text: json.loads
+# reads it as inf and DRF's strict renderer raises while rendering, after the view returned.
+# ---------------------------------------------------------------------------
+REG_STRPTIME = '%Y-%m-%d %H:%M:%S%z'
+UNICODE_REG_FMT = '٢٠%y-%m-%d 1٠:0٠:0٠+0000'  # year century, hour, minute and second digits: \d
+_probe = datetime(2026, 11, 10, 10, 0)
+assert datetime.strptime(_probe.strftime(UNICODE_REG_FMT), REG_STRPTIME) == datetime.strptime(
+    '2026-11-10 10:00:00+0000', REG_STRPTIME), 'the accepted registry form must parse'
+FIVE = 'association_five'
+USERS['owner_five'] = {'role': 'association'}
+EXTRA_ASSOCIATIONS[FIVE] = {'owner': 'owner_five', 'denomination': 'Statistiche quinta', 'tax_code': '93000000005'}
+ASSOCIATES['a5_1'] = {'association': FIVE, 'first': 'Nadia', 'last': 'Viola', 'sex': 'F', 'born': None, 'age': 0}
+SUBSCRIPTIONS['s5_1'] = sub(FIVE, status=4, created=OLD, associate='a5_1', user='owner_five')
+CARNETS['k5'] = {'association': FIVE, 'title': 'Carnet quinto', 'description': None, 'lessons': 10, 'fee': '55.00',
+                 'public': True}
+CARNET_SUBSCRIPTIONS['ck5_digits_recent'] = {
+    'subscription': 's5_1', 'carnet': 'k5', 'created': '2026-09-01T10:00:00.123456Z',
+    'meta': {'lessons_left': 0, 'lessons_registry': [{'date': {'$fmt': [{'now': -5 * 86400}, UNICODE_REG_FMT]}}]}}
+CARNET_SUBSCRIPTIONS['ck5_digits_old'] = {
+    'subscription': 's5_1', 'carnet': 'k5', 'created': '2026-09-01T10:00:00.123456Z',
+    'meta': {'lessons_left': 0, 'lessons_registry': [{'date': {'$fmt': [{'now': -40 * 86400}, UNICODE_REG_FMT]}}]}}
+
+SIX = 'association_six'
+USERS['owner_six'] = {'role': 'association'}
+EXTRA_ASSOCIATIONS[SIX] = {'owner': 'owner_six', 'denomination': 'Statistiche sesta', 'tax_code': '93000000006'}
+ASSOCIATES['a6_1'] = {'association': SIX, 'first': 'Oscar', 'last': 'Grigi', 'sex': 'M', 'born': None, 'age': 0}
+SUBSCRIPTIONS['s6_1'] = sub(SIX, status=4, created=OLD, associate='a6_1', user='owner_six')
+CARNETS['k6'] = {'association': SIX, 'title': 'Carnet sesto', 'description': None, 'lessons': 10, 'fee': '60.00',
+                 'public': True}
+# SQL seeds the jsonb text: a Python float fixture value would round or refuse the fraction.
+RAW_OVERFLOW_META = '{"lessons_left": 1, "big": ' + '1' + '0' * 400 + '.5}'
+CARNET_SUBSCRIPTIONS['ck6_overflow'] = {
+    'subscription': 's6_1', 'carnet': 'k6', 'created': '2026-09-01T10:00:00.123456Z',
+    'meta': {'$raw_json': RAW_OVERFLOW_META}}
+for label in ('owner_five', FIVE, 'a5_1', 's5_1', 'k5', 'ck5_digits_recent', 'ck5_digits_old',
+              'owner_six', SIX, 'a6_1', 's6_1', 'k6', 'ck6_overflow'):
+    rid(label)
+
+# ---------------------------------------------------------------------------
+# Deep stored JSON (owner decision X15). Payment.course and Payment.meta are
+# jsonb columns psycopg2 loads with json.loads: the parity harness's Django
+# (CPython 3.13.16) reads 9936 levels of total nesting and raises RecursionError
+# at 9937, which the view does not handle (its plain 500 page). Each deep payment
+# exists only around its own case (the harness's state snapshot decodes every
+# JSON column and walks it in Python, which cannot hold a value this deep).
+# ---------------------------------------------------------------------------
+
+
+def json_depth(text):
+    """The total nesting of a JSON text ('[]' is 1)."""
+    depth = deepest = 0
+    for char in text:
+        if char in '[{':
+            depth += 1
+            deepest = max(deepest, depth)
+        elif char in ']}':
+            depth -= 1
+    return deepest
+
+
+DEEP_COURSE_LOADED = '{"label": "Corso profondo", "unused": ' + '[' * 9899 + ']' * 9899 + '}'
+DEEP_COURSE_REFUSED = '{"label": "Corso profondo", "unused": ' + '[' * 9969 + ']' * 9969 + '}'
+# Django's edge moves by a level or two with the value's shape and the live stack: inside each side with a margin.
+assert json_depth(DEEP_COURSE_LOADED) == 9900 and json_depth(DEEP_COURSE_REFUSED) == 9970
+
+SEVEN, EIGHT = 'association_seven', 'association_eight'
+USERS['owner_seven'] = {'role': 'association'}
+USERS['owner_eight'] = {'role': 'association'}
+EXTRA_ASSOCIATIONS[SEVEN] = {'owner': 'owner_seven', 'denomination': 'Statistiche settima', 'tax_code': '93000000007'}
+EXTRA_ASSOCIATIONS[EIGHT] = {'owner': 'owner_eight', 'denomination': 'Statistiche ottava', 'tax_code': '93000000008'}
+ASSOCIATES['a7_1'] = {'association': SEVEN, 'first': 'Profonda', 'last': 'Sette', 'sex': 'F', 'born': None, 'age': 0}
+ASSOCIATES['a8_1'] = {'association': EIGHT, 'first': 'Profonda', 'last': 'Otto', 'sex': 'M', 'born': None, 'age': 0}
+SUBSCRIPTIONS['s7_1'] = sub(SEVEN, status=4, start=day(-10), end=day(10), created=OLD, associate='a7_1', user='owner_seven')
+SUBSCRIPTIONS['s8_1'] = sub(EIGHT, status=4, start=day(-10), end=day(10), created=OLD, associate='a8_1', user='owner_eight')
+
+
+def deep_payment(association, associate, course):
+    """A payment whose course is jsonb text (a Python structure cannot hold this depth)."""
+    row = pay('10.00', association=association, paid=False, subject=2, created=day(-4, '10:00:00'), paid_on=day(-4, '10:00:00'))
+    row.update({'associate': associate, 'course': {'$raw_json': course}, 'description': 'autunno', 'setup_only': True,
+                'title': 'Corso profondo, autunno'})
+    return row
+
+
+PAYMENTS['e7_deep'] = deep_payment(SEVEN, 'a7_1', DEEP_COURSE_LOADED)
+PAYMENTS['e8_deep'] = deep_payment(EIGHT, 'a8_1', DEEP_COURSE_REFUSED)
+for label in ('owner_seven', 'owner_eight', SEVEN, EIGHT, 'a7_1', 'a8_1', 's7_1', 's8_1', 'e7_deep', 'e8_deep'):
+    rid(label)
+
 # ===========================================================================
 # Oracle (statistic_views.py read line by line).
 # ===========================================================================
@@ -869,6 +965,10 @@ TODAY_LINK = {'day': R['d4b'], 'associated_event': R['ev4b'], 'attendees': None,
 
 def payment_title(label):
     row = PAYMENTS[label]
+    if 'title' in row:
+        # Authored: a course stored past the interpreter's recursion limit cannot be
+        # json.loads'd here; it is an object whose label is 'Corso profondo'.
+        return row['title']
     if row['subject'] == 2:
         for cs_label, cs_row in COURSE_SUBSCRIPTIONS.items():
             if cs_row.get('payment') == label:
@@ -1023,6 +1123,13 @@ add('bestcourses-owner', 'owner', w('bestcourses'), 200, widget_bestcourses(OWN)
 add('bestcourses-foreign-owner', 'foreign_owner', w('bestcourses'), 200, widget_bestcourses(FOREIGN))
 add('expiringcarnets-owner', 'owner', w('expiringcarnets'), 200, widget_carnets(OWN))
 add('expiringcarnets-missing-associate', 'owner_three', w('expiringcarnets'), 500, SERVER)
+# The fifth association's registry dates carry another script's decimal digits: the 5-day-old one is
+# listed (its meta rendered as stored), the 40-day-old one is skipped.
+add('owner-expiring-carnet-registry-unicode-digits-recent', 'owner_five', w('expiringcarnets'), 200, widget_carnets(FIVE))
+add('owner-expiring-carnet-registry-unicode-digits-skipped', 'owner_five', w('expiringcarnets'), 200, widget_carnets(FIVE))
+# The sixth's stored fraction is beyond the double range: json.loads makes it inf and the renderer
+# raises while rendering, so Django answers its plain 500 page.
+add('owner-expiring-carnet-meta-float-overflow-server-error', 'owner_six', w('expiringcarnets'), 500, SERVER)
 add('expiringmedical-owner', 'owner', w('expiringmedicalcertificates'), 200, widget_medical(OWN, True))
 add('expiredmedical-owner', 'owner', w('expiredmedicalcertificates'), 200, widget_medical(OWN, False))
 add('expiringmedical-foreign-owner', 'foreign_owner', w('expiringmedicalcertificates'), 200, {'data': {'expiring_medical_certificates': []}})
@@ -1127,6 +1234,25 @@ add('report-anonymous', 'anonymous', P, 401, {'detail': 'Authentication credenti
 add('report-wrong-method', 'owner', P, 405, {'detail': 'Method "POST" not allowed.'}, method='POST')
 add('report-options', 'owner', P, 200, {'name': 'Statistic Report', 'description': '', 'renders': ['application/json'],
                                         'parses': OPTIONS_PARSES}, method='OPTIONS')
+
+# Deep stored JSON (owner decision X15): the harness's Django (CPython 3.13.16) loads
+# Payment.course up to 9936 levels of total nesting, so the widget lists the payment as
+# any other; one level deeper is the plain 500 page. Each payment exists only around its
+# request (the setup in the adapter), the state snapshot cannot hold such a value.
+add('expiredpayments-course-json-at-depth-band', 'owner_seven', w('expiredPayments'), 200, expired_payments(SEVEN),
+    setup={'payment': 'e7_deep'})
+add('expiredpayments-course-json-past-depth-band-server-error', 'owner_eight', w('expiredPayments'), 500, SERVER,
+    setup={'payment': 'e8_deep'})
+
+# Years before 1000. The view removes the time from the parsed currentDate by
+# round-tripping it: datetime.strptime(current_date.strftime('%Y-%m-%d'), '%Y-%m-%d')
+# (statistic_views.py:1215). CPython's strptime needs exactly four year digits, and
+# strftime('%Y') is the platform C library's: on glibc (the Linux production image
+# and CI) the year of 999 is written unpadded ('999-03-05') and the second strptime
+# raises, so the view answers its 500 page. On macOS the BSD library pads
+# ('0999-03-05') and the report goes on for that year. This case states the glibc
+# answer (owner decision X16: the server follows its platform).
+add('report-current-date-before-1000-server-error', 'owner', P + '?currentDate=0999-03-05', 500, SERVER)
 
 # Sanity of the authored oracle itself.
 naive = 0.0

@@ -168,26 +168,23 @@ or a PutObject 4xx that neither client retries) is answered as Django answers it
 and answers 400 `{"exception": "<botocore text>"}`, the medical upload keeps the Document and answers 500
 `{"error": "<botocore text>"}`, and `document/medical/certificate/` (no `try`) answers the 500 page with the row kept.
 Cases `add-storage-refused-removes-document`, `certificate-storage-refused-keeps-document` and
-`medical-storage-refused-keeps-certificate` (a 255-character name whose key MinIO refuses on HEAD). The codec item,
-multipart bodies over 250 MiB (Django spools the files to disk) and the other storage failures (transport errors, answers
-botocore retries and then reports with " (reached max retries: N)" or an endpoint URL, and PutObject failures of bodies
-of 8 MiB and more, which boto3 sends as multipart operations) stay `ErrDocumentWritesNotPorted`. The handoff cannot
-replay a body over its size limit or a storage failure (the Document row and the upload are recorded effects), so Go
-answers the 500 page there.
+`medical-storage-refused-keeps-certificate` (a 255-character name whose key MinIO refuses on HEAD). Since long tail
+PR 4 the other storage failures and multipart bodies over 250 MiB are answered natively too (below), and so are the
+RFC 2231 names.
 
-- Multipart bodies over 250 MiB: the request has to be held in memory, so the answer then depends on the host's memory
-  and proxy limits, not on the input (class X).
-- RFC 2231 names in the codecs without a faithful Go decoder: `cp932`, `cp949`, `cp950`, `big5hkscs`, the 2004/x0213
-  variants, `gb2312`, `iso2022_jp_1/2/2004/3/ext`, `iso2022_kr`, `johab`, `utf-7`, `utf-16/32`, `unicode-escape`,
-  `raw-unicode-escape`, `idna` and `punycode`. A charset name Python does not know is a skipped header line, as in Django.
-  The 8-bit codecs and the multibyte codecs Go shares with Python are decoded (below).
+- (Long tail PR 4) RFC 2231 names in every Python text codec are decoded: `internal/pycodecs` ports CPython 3.13's
+  decoders with their exact error spans (the 8-bit tables, the stateless CJK codecs as tries generated from CPython, the
+  stateful iso2022/hz codecs, utf-7/16/32, the escape codecs, punycode; idna and undefined raise, a skipped line). The
+  x/text decoders used before were WHATWG's: CPython's `shift_jis` has no NEC row, so `87 40` is `\ufffd@`, not `①`
+  (`certificate-rfc2231-shift-jis-nec-replaced`). A decoded value holding a lone surrogate (utf-7, the escapes) fails
+  `v.encode()` in `parse_boundary_stream`, so the whole line is skipped (`certificate-rfc2231-utf-7-surrogate-ignored`).
+  Cases `certificate-rfc2231-cp932-nec-name`, `-utf-16-name`. A charset name Python does not know is a skipped header
+  line, as in Django.
 - Uploaded files as values of the archive update fields: not reachable through a request (the viewset is `JSONParser`
   only, so DRF answers 415 before the serializer), so this is a defensive check, not a refusal of a real input.
 - After the Document exists (the earlier writes are kept, and Go answers the 500 page):
   - a storage key that already exists, where `get_available_name` would pick a random alternative (the key embeds the new
-    document's uuid4, so only the application's own generated state could produce it);
-  - storage failures other than an immediate client error (above): transport errors, retried answers and multipart-size
-    bodies, which Django answers with botocore's text in `documents/add` and in the medical upload (external).
+    document's uuid4, so only the application's own generated state could produce it).
 - Image compression, thumbnails and PDF rendering: none of these views run them.
 
 ## Ported in go-v2only-docupload
@@ -293,3 +290,22 @@ charset Python does not know, is skipped, so a part without a content-dispositio
 (a failure is `400 Multipart form parse error - Could not decode base64 data.`); other encodings are ignored. Field values are decoded
 as UTF-8 with replacement characters. Unit tests compare 49 header lines and 49 base64 inputs with CPython/Django answers
 (`internal/handler/testdata`). Cases added to `documents-writes` (certificate upload and `upload-document` fields).
+
+Long tail PR 4 (agent A, accepted divergence X12): every storage failure gets botocore's final text
+(`service/storage_client_error.go` `botocoreFinalErrorText`): an answer botocore's legacy retry mode retries (HTTP 429,
+500, 502, 503, 504, 509; HTTP 400 `Throttling`, `ThrottlingException`, `ThrottledException`,
+`RequestThrottledException`, `ProvisionedThroughputExceededException`, and S3's `RequestTimeout` and `BadDigest`; or
+any answer once the SDK's retryer gave up) is `An error occurred (<code>) when calling the <Operation> operation
+(reached max retries: 4): <message>` (5 attempts, 4 retries; without a parsed code the status and
+`http.client.responses`' phrase); a transport failure is `Could not connect to the endpoint URL: "<url>"`, `Connect
+timeout on endpoint URL: "<url>"`, `Read timeout on endpoint URL: "<url>"` or `Connection was closed before we
+received a valid response from endpoint URL: "<url>".`; content of 8 MiB and more names `CreateMultipartUpload`
+(and `<url>?uploads`), boto3's first multipart request. Unit tests in `storage_client_error_test.go`; the shared
+harness storage cannot inject these failures, so no HTTP case pins them.
+
+The same texts answer `documents/add` (the Document is deleted, 400 `{"exception": ...}`) and the medical upload (500
+`{"error": ...}`). A multipart body over 250 MiB is no longer handed off: `bufferMultipart` writes it to a temporary
+file and parses it through a read-only memory mapping (`multipart_map_unix.go`; other platforms read the file), as
+Django's MultiPartParser spools uploaded files to disk; the cleanup deferred by every caller unmaps and deletes the file
+(`documents_writes_multipart_test.go`, with and without `Content-Length`). The handoff recorder keeps its own copy of
+the body, so it never reads the mapping.

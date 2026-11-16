@@ -198,6 +198,18 @@ def invited(email, role, permissions=None, *, actor='owner', index=(OWN, 'actor.
 
 
 ADD = '/collaborators/add'
+
+
+def multipart(*parts):
+    """A multipart/form-data body: (name, filename or None, content) parts; returns (body, content type)."""
+    boundary = 'testboundary69a1'
+    lines = []
+    for name, filename, content in parts:
+        disposition = f'form-data; name="{name}"' + (f'; filename="{filename}"' if filename else '')
+        lines.append(f'--{boundary}\r\nContent-Disposition: {disposition}\r\n\r\n{content}\r\n')
+    return ''.join(lines) + f'--{boundary}--\r\n', f'multipart/form-data; boundary={boundary}'
+
+
 add('add-full-role-with-permissions', 'owner', ADD, 200, INVITED,
     body={'email': 'nuovo@example.test', 'collaborator_role': 2, 'collaborator_permissions': {'b': [1, 2.5, None], 'a': 'è'}},
     effect=invited('nuovo@example.test', 2, {'b': [1, 2.5, None], 'a': 'è'}))
@@ -225,6 +237,20 @@ add('add-null-email', 'owner', ADD, 400, ['Email is not valid.'], body={'email':
 add('add-nul-email', 'owner', ADD, 400, ['Email is not valid.'], raw_body='{"email": "a\\u0000@b.it"}', content_type='application/json')
 add('add-nul-domain-email', 'owner', ADD, 400, ['Email is not valid.'], raw_body='{"email": "a@b.it\\u0000"}', content_type='application/json')
 add('add-surrogate-email-server-error', 'owner', ADD, 500, SERVER, raw_body='{"email": "a@b\\ud800.it"}', content_type='application/json')
+# validate_email accepts a lone surrogate in the domain part (U+00A1..U+FFFF) and the INSERT then fails: no row.
+add('add-surrogate-tld-email-server-error', 'owner', ADD, 500, SERVER, raw_body='{"email": "a@b.\\ud800\\ud800"}',
+    content_type='application/json')
+# A surrogate in the local part never matches the user regex (dot-atom or quoted-string over ASCII).
+add('add-surrogate-local-email', 'owner', ADD, 400, ['Email is not valid.'], raw_body='{"email": "\\ud800@b.it"}',
+    content_type='application/json')
+add('add-surrogate-quoted-local-email', 'owner', ADD, 400, ['Email is not valid.'], raw_body='{"email": "\\"\\ud800\\"@b.it"}',
+    content_type='application/json')
+# U+FFFD is what a urlencoded or multipart body decodes invalid bytes to: the domain accepts it and the row stores it.
+add('add-replacement-domain-email', 'owner', ADD, 200, INVITED, raw_body='{"email": "a@b\\ufffd.it"}', content_type='application/json',
+    effect=invited('a@b\ufffd.it', 3))
+# An uploaded file as email: validate_email reads "@" in its byte lines (never true) and len(value), so 400.
+UPLOAD_BODY, UPLOAD_TYPE = multipart(('email', 'email.txt', 'a@b.c'))
+add('add-multipart-file-email', 'owner', ADD, 400, ['Email is not valid.'], raw_body=UPLOAD_BODY, content_type=UPLOAD_TYPE)
 add('add-list-email-without-at', 'owner', ADD, 400, ['Email is not valid.'], body={'email': ['a@b.it']})
 add('add-list-email-with-at', 'owner', ADD, 500, SERVER, body={'email': ['@']})
 add('add-number-email', 'owner', ADD, 500, SERVER, body={'email': 5})

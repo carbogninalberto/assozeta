@@ -162,10 +162,11 @@ func (h *SubscriptionMembershipsHandler) write(c echo.Context, method, operation
 	c.Response().Header().Set("Allow", allow)
 	if r := c.Request(); r.Method == method && method != http.MethodDelete {
 		// A multipart body keeps its files: parse it once, before identity resolution and the view read request.data.
-		raw, err := bufferMultipart(c)
+		raw, cleanup, err := bufferMultipart(c)
 		if err != nil {
 			return restError(c, err)
 		}
+		defer cleanup()
 		if raw != nil {
 			_, _ = readAuthenticatedRESTBodyUsing(c, func(*http.Request) (any, error) { return uploadBody(c, raw)() })
 		}

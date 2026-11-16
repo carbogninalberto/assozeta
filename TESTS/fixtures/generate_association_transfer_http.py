@@ -92,6 +92,83 @@ for n, (filepath, size) in enumerate((('exports/own/export_old_a.zip', 10), (Non
     DOCUMENTS[key]['token'] = uid(700 + n)
     ARCHIVES[key]['date'] = f'2025-06-0{n}'
 
+# Export documents that another row also references, deleted by the cascade cases below. Older than
+# every listed export, so the list cases are unaffected; fixed tokens make their delete entries exact.
+for n, key in enumerate(('ref_mc', 'ref_sf', 'ref_pdf', 'ref_inv', 'ref_all'), 1):
+    document(key, 'own_association', f'export_ref_{key}.zip', day=n, created=f'2025-05-0{n}T09:00:00+00:00',
+             filepath=f'exports/own/export_ref_{key}.zip', size=2000 + n)
+    DOCUMENTS[key]['token'] = uid(730 + n)
+    ARCHIVES[key]['date'] = f'2025-05-0{n}'
+
+MED_ONE, MED_ALL = uid(6201), uid(6202)
+SF_ONE, SF_ALL = uid(6211), uid(6213)
+SUB_MED_ONE, SUB_PDF, SUB_SF_ONE, SUB_SF_ALL, SUB_ALL = uid(6221), uid(6222), uid(6223), uid(6224), uid(6225)
+INV_ONE, INV_ALL = uid(6231), uid(6232)
+
+
+def naive(text):
+    return text.replace('T', ' ').removesuffix('+00:00')
+
+
+# Rows the seeded export documents are referenced by. The export/delete cases remove one document,
+# so every other seeded row of the cascade must survive (or lose its SET_NULL column).
+DELETE_REFERENCES = {
+    'medical_certificates': [
+        {'id': MED_ONE, 'document': DOCUMENTS['ref_mc']['id'], 'user': None, 'created': '2025-05-01T10:00:00+00:00',
+         'expiration': '2026-05-01', 'competitive': False, 'notes': None},
+        {'id': MED_ALL, 'document': DOCUMENTS['ref_all']['id'], 'user': None, 'created': '2025-05-01T10:00:00+00:00',
+         'expiration': '2026-05-01', 'competitive': True, 'notes': None},
+    ],
+    'subscriptions': [
+        {'id': SUB_MED_ONE, 'medical': MED_ONE, 'document_pdf': None, 'created': '2025-05-01T10:00:00+00:00'},
+        {'id': SUB_PDF, 'medical': None, 'document_pdf': DOCUMENTS['ref_pdf']['id'], 'created': '2025-05-02T10:00:00+00:00'},
+        {'id': SUB_SF_ONE, 'medical': None, 'document_pdf': None, 'created': '2025-05-02T10:00:00+00:00'},
+        {'id': SUB_SF_ALL, 'medical': None, 'document_pdf': None, 'created': '2025-05-03T10:00:00+00:00'},
+        {'id': SUB_ALL, 'medical': MED_ALL, 'document_pdf': DOCUMENTS['ref_all']['id'], 'created': '2025-05-01T10:00:00+00:00'},
+    ],
+    'subscription_files': [
+        {'id': SF_ONE, 'subscription': SUB_SF_ONE, 'document': DOCUMENTS['ref_sf']['id'], 'created': '2025-05-02T10:00:00+00:00'},
+        {'id': SF_ALL, 'subscription': SUB_SF_ALL, 'document': DOCUMENTS['ref_all']['id'], 'created': '2025-05-03T10:00:00+00:00'},
+    ],
+    'invoices': [{'id': INV_ONE}, {'id': INV_ALL}],
+    'invoice_attachments': [
+        {'invoice': INV_ONE, 'document': DOCUMENTS['ref_inv']['id']},
+        {'invoice': INV_ALL, 'document': DOCUMENTS['ref_all']['id']},
+    ],
+}
+
+
+def medical_changes(row):
+    """auditlog's delete diff of a MedicalCertificate row (model_instance_diff(row, None))."""
+    changes = {
+        'medical_id': [row['id'], 'None'], 'document': [row['document'], 'None'],
+        'user': ['None' if row['user'] is None else row['user'], 'None'],
+        'creation_date': [naive(row['created']), 'None'], 'expiration_date': [row['expiration'], 'None'],
+        'competitive_medical_certificate': ['True' if row['competitive'] else 'False', 'None'],
+    }
+    if row['notes'] is not None:
+        changes['notes'] = [row['notes'], 'None']
+    return changes
+
+
+def subscription_file_changes(row):
+    """auditlog's delete diff of a SubscriptionFile row (model_instance_diff(row, None))."""
+    return {'subscription_file_id': [row['id'], 'None'], 'subscription': [row['subscription'], 'None'],
+            'document': [row['document'], 'None'], 'creation_date': [naive(row['created']), 'None']}
+
+
+def cascade_deleted(model, key, key_field, changes):
+    return {'model': model, 'key': key, 'key_field': key_field, 'changes': changes}
+
+
+def set_null(model, key_field, row, fields):
+    return {'model': model, 'key_field': key_field, 'rows': {row: fields}}
+
+
+def through_deleted(model, left, right, pair):
+    return {'model': model, 'left': left, 'right': right, 'pair': pair}
+
+
 TASKS = {
     'export_running': {'task_id': uid(810), 'status': 'PROGRESS', 'result': '{"percent": 40}'},
     'export_done': {'task_id': uid(811), 'status': 'SUCCESS', 'result': '{"success": true}'},
@@ -502,7 +579,7 @@ add('active-owner-foreign-snapshot-ignored', 'owner', ACTIVE, 200, {'active': Fa
 # === export/delete of an existing export ========================================================
 
 
-def deleted(*keys, actor_association='own_association', additional=None):
+def deleted(*keys, actor_association='own_association', additional=None, cascades=(), nulled=(), through=()):
     return {'archives': [ARCHIVES[k]['id'] for k in keys], 'documents': [DOCUMENTS[k]['id'] for k in keys],
             'archive_changes': {ARCHIVES[k]['id']: {'sport_association_documents_archive_id': [ARCHIVES[k]['id'], 'None'],
                                                     'sport_association': [OWN, 'None'], 'document': [DOCUMENTS[k]['id'], 'None'],
@@ -513,6 +590,7 @@ def deleted(*keys, actor_association='own_association', additional=None):
                 ('file_size_bytes', None if DOCUMENTS[k]['size'] is None else str(DOCUMENTS[k]['size'])),
                 ('token', DOCUMENTS[k]['token'])) if value is not None}
                 | {'customer_invoice_pdf': ['application.CustomerInvoice.None', 'None']} for k in keys},
+            'cascade_deletes': list(cascades), 'nullable_updates': list(nulled), 'through_deletes': list(through),
             'actor_association': actor_association, 'additional_data': additional, 'celery': []}
 
 
@@ -534,6 +612,37 @@ add('delete-owner-form-existing-export', 'owner', DELETE, 200, SUCCESS_DELETE, m
     raw_body='document_id=' + DOCUMENTS['olde']['id'].replace('-', ''), content_type='application/x-www-form-urlencoded',
     setup={'objects': {DOCUMENTS['olde']['filepath']: OBJECT}}, objects_after={}, effect=deleted('olde'))
 add('delete-owner-already-deleted', 'owner', DELETE, 404, NOT_FOUND, method='DELETE', body=d(DOCUMENTS['olda']['id']))
+
+# The export document is also referenced by another row: Document.delete() cascades it, clears its
+# SET_NULL columns or removes its many-to-many through row, exactly as Django's Collector does.
+MED_ONE_ROW, MED_ALL_ROW = DELETE_REFERENCES['medical_certificates']
+SF_ONE_ROW, SF_ALL_ROW = DELETE_REFERENCES['subscription_files']
+add('delete-owner-referenced-medical-certificate', 'owner', DELETE, 200, SUCCESS_DELETE, method='DELETE',
+    body=d(DOCUMENTS['ref_mc']['id']), setup={'objects': {DOCUMENTS['ref_mc']['filepath']: OBJECT}}, objects_after={},
+    effect=deleted('ref_mc',
+                   cascades=[cascade_deleted('application.MedicalCertificate', MED_ONE, 'medical_id', medical_changes(MED_ONE_ROW))],
+                   nulled=[set_null('application.Subscription', 'subscription_id', SUB_MED_ONE, {'medical_id': None})]))
+add('delete-owner-referenced-subscription-file', 'owner', DELETE, 200, SUCCESS_DELETE, method='DELETE',
+    body=d(DOCUMENTS['ref_sf']['id']),
+    effect=deleted('ref_sf', cascades=[cascade_deleted('application.SubscriptionFile', SF_ONE, 'subscription_file_id',
+                                                       subscription_file_changes(SF_ONE_ROW))]))
+add('delete-owner-referenced-subscription-pdf', 'owner', DELETE, 200, SUCCESS_DELETE, method='DELETE',
+    body=d(DOCUMENTS['ref_pdf']['id']),
+    effect=deleted('ref_pdf', nulled=[set_null('application.Subscription', 'subscription_id', SUB_PDF, {'document_pdf_id': None})]))
+add('delete-owner-referenced-invoice-attachment', 'owner', DELETE, 200, SUCCESS_DELETE, method='DELETE',
+    body=d(DOCUMENTS['ref_inv']['id']),
+    effect=deleted('ref_inv', through=[through_deleted('application.Invoice_attached_documents', 'invoice_id', 'document_id',
+                                                       [INV_ONE, DOCUMENTS['ref_inv']['id']])]))
+add('delete-owner-referenced-by-every-row', 'owner', DELETE, 200, SUCCESS_DELETE, method='DELETE',
+    body=d(DOCUMENTS['ref_all']['id']),
+    effect=deleted('ref_all',
+                   cascades=[cascade_deleted('application.MedicalCertificate', MED_ALL, 'medical_id', medical_changes(MED_ALL_ROW)),
+                             cascade_deleted('application.SubscriptionFile', SF_ALL, 'subscription_file_id',
+                                             subscription_file_changes(SF_ALL_ROW))],
+                   nulled=[set_null('application.Subscription', 'subscription_id', SUB_ALL,
+                                    {'medical_id': None, 'document_pdf_id': None})],
+                   through=[through_deleted('application.Invoice_attached_documents', 'invoice_id', 'document_id',
+                                            [INV_ALL, DOCUMENTS['ref_all']['id']])]))
 
 # === export/start dispatch =======================================================================
 QUEUED = {'percent': 0, 'phase': 'queued', 'label': 'Export in attesa', 'completed': None, 'total': None}
@@ -605,13 +714,20 @@ NEW_ASSOCIATION, NEW_OWNER, NEW_MEMBER = uid(950), uid(951), uid(952)
 PBKDF2 = 'pbkdf2_sha256$600000$AbCdEfGhIjKlMnOpQrStUv$' + base64.b64encode(bytes(range(32))).decode()
 
 
-def make_zip(members):
+def make_zip(members, *, raw=()):
+    """ZIP the members; ``raw`` names members written as given bytes instead
+    of as json.dumps of a value (JSON text Python cannot author, e.g. a lone
+    surrogate escape, or undecodable bytes)."""
     buffer = io.BytesIO()
     with zipfile.ZipFile(buffer, 'w', zipfile.ZIP_DEFLATED) as archive:
         for name, value in members.items():
+            if name in raw:
+                data = value.encode() if isinstance(value, str) else value
+            else:
+                data = value if isinstance(value, bytes) else json.dumps(value, ensure_ascii=False).encode()
             info = zipfile.ZipInfo(name, date_time=(2026, 1, 15, 10, 0, 0))
             info.compress_type = zipfile.ZIP_DEFLATED
-            archive.writestr(info, value if isinstance(value, bytes) else json.dumps(value, ensure_ascii=False).encode())
+            archive.writestr(info, data)
     return buffer.getvalue()
 
 
@@ -725,6 +841,17 @@ no_users = make_zip({key: value for key, value in export_members().items() if ke
 validate_case('missing-users-file', no_users, validation(no_users, valid=False, errors=['Missing required data file: 02_users.json'],
               warnings=['Missing data file: data/02_users.json', 'Missing data file: data/10_courses.json'],
               info={**FILES_INFO, 'missing_files': 2, 'association': MANIFEST['association']}))
+# The owner is matched through str(): an owner id "None" matches a user whose user_id is null. validate_uuid_conflicts
+# then skips the owner block (`if owner_id:`): only the association lookup runs.
+null_owner = make_zip(export_members(
+    associations=[{'sport_association_id': NEW_ASSOCIATION, 'user_id': 'None', 'denomination': 'Società importata',
+                   'tax_code': '01234567890'}],
+    users=[{'user_id': None, 'username': 'imported-owner', 'email': 'owner@imported.example.test', 'password': PBKDF2}]))
+validate_case('owner-null-user-id-matches-none', null_owner, validation(
+    null_owner, warnings=['Missing data file: data/10_courses.json'],
+    info={**FILES_INFO, 'association': IMPORTED, 'owner_user': {'user_id': None, 'username': 'imported-owner',
+                                                                'email': 'owner@imported.example.test',
+                                                                'requires_recovery_password': False}}))
 # The name is under 255 characters but over the file system's name limit (255 bytes on Linux,
 # 255 UTF-16 units on macOS): open() fails with ENAMETOOLONG and the view answers the OSError text.
 LONG_ZIP = '\U0001F4E6' * 130 + '.zip'
@@ -735,6 +862,122 @@ add('import-validate-admin-impersonating-owner-archive', 'admin', VALIDATE, 200,
     validation(valid, warnings=['Missing data file: data/10_courses.json'],
                info={**FILES_INFO, 'association': IMPORTED, 'owner_user': OWNER_INFO(False)}),
     method='POST', raw_b64=raw, content_type=kind, headers=ADMIN_OWNER)
+
+# --- what validate_all does with an archive anyone allowed to import can craft -------------------------------------
+# A manifest that is not an object raises outside validate_manifest's own
+# except: `field not in manifest` is a TypeError for a scalar, and manifest.get
+# an AttributeError for a str/list. validate_import answers its 500 with str().
+def shape_error(message):
+    return {'error': 'Errore durante la validazione: ' + message}
+
+
+MISSING = ['Missing data file: data/10_courses.json']
+
+for label, manifest, message in (
+        ('manifest-list', [1], "'list' object has no attribute 'get'"),
+        ('manifest-int', 5, "argument of type 'int' is not iterable"),
+        ('manifest-null', None, "argument of type 'NoneType' is not iterable"),
+        ('manifest-bool', True, "argument of type 'bool' is not iterable")):
+    archive = make_zip({**export_members(), 'manifest.json': manifest})
+    validate_case('shape-' + label, archive, shape_error(message), status=500)
+
+# export_format is any JSON value: str() of it is the message and the info
+# keeps the raw value (no data-file or identity step runs).
+for label, value, message in (('object', {'format': 'x'}, "Unsupported export format: {'format': 'x'}"),
+                              ('number', 5, 'Unsupported export format: 5')):
+    manifest = {**MANIFEST, 'export_format': value}
+    archive = make_zip({**export_members(), 'manifest.json': manifest})
+    validate_case('export-format-' + label, archive, validation(archive, valid=False, errors=[message],
+                  info={'export_format': value, 'export_date': MANIFEST['export_date'],
+                        'association': MANIFEST['association']}))
+
+# models_exported: iteration of a dict yields its keys (strings, so .get is an
+# AttributeError), of a str its characters; a number is not iterable.
+for label, models, message in (
+        ('object', {'file': 'x'}, "'str' object has no attribute 'get'"),
+        ('string', 'ab', "'str' object has no attribute 'get'"),
+        ('number', 5, "'int' object is not iterable")):
+    archive = make_zip({**export_members(), 'manifest.json': {**MANIFEST, 'models_exported': models}})
+    validate_case('models-' + label, archive, shape_error(message), status=500)
+
+# Items without a file expect nothing; a list file is kept as the expected
+# member, so str() of the list is the warning.
+no_file = make_zip(export_members(manifest={**MANIFEST, 'models_exported': [{'name': 'NoFile'}]}))
+validate_case('models-without-file', no_file, validation(no_file, info={
+    **FILES_INFO, 'expected_files': 0, 'missing_files': 0, 'association': IMPORTED, 'owner_user': OWNER_INFO(False)}))
+list_file = make_zip(export_members(manifest={**MANIFEST, 'models_exported': [
+    {'name': 'Course', 'file': ['data/10_courses.json']}]}))
+validate_case('models-list-file', list_file, validation(list_file, warnings=["Missing data file: data/['data/10_courses.json']"],
+    info={**FILES_INFO, 'expected_files': 1, 'association': IMPORTED, 'owner_user': OWNER_INFO(False)}))
+
+# associations[0] must be an object: `.get` on a list is the outer except.
+record_list = make_zip(export_members(associations=[[{'sport_association_id': NEW_ASSOCIATION}]]))
+validate_case('association-record-list', record_list, validation(record_list, valid=False, errors=[
+    "Error reading owner identity: 'list' object has no attribute 'get'"], warnings=MISSING,
+    info={**FILES_INFO, 'association': MANIFEST['association']}))
+
+# data/02_users.json goes through iter_json_array: a non-array, a truncated
+# array and non-object items each raise before any owner is selected.
+users_object = make_zip({**export_members(), 'data/02_users.json': {'user_id': NEW_OWNER}})
+validate_case('users-object', users_object, validation(users_object, valid=False, errors=[
+    'Error reading owner identity: Expected a JSON array'], warnings=MISSING,
+    info={**FILES_INFO, 'association': MANIFEST['association']}))
+users_truncated = make_zip({**export_members(), 'data/02_users.json': b'[{"user_id": "a"}, {"use'},
+                           raw=('data/02_users.json',))
+validate_case('users-truncated', users_truncated, validation(users_truncated, valid=False, errors=[
+    'Invalid JSON in data files: Unterminated string starting at: line 1 column 21 (char 20)'], warnings=MISSING,
+    info={**FILES_INFO, 'association': MANIFEST['association']}))
+users_non_dict = make_zip({**export_members(), 'data/02_users.json': [1]})
+validate_case('users-non-dict-item', users_non_dict, validation(users_non_dict, valid=False, errors=[
+    "Error reading owner identity: 'int' object has no attribute 'get'"], warnings=MISSING,
+    info={**FILES_INFO, 'association': MANIFEST['association']}))
+# str() of the ids is compared, so an int user_id matches an int owner id and
+# the owner info keeps the raw int.
+INT_ASSOCIATION = {'sport_association_id': NEW_ASSOCIATION, 'user_id': 5, 'denomination': 'Società importata',
+                   'tax_code': '01234567890'}
+integer_ids = make_zip(export_members(associations=[INT_ASSOCIATION],
+                                      users=[{'user_id': 5, 'username': 'imported-owner', 'email': 'owner@imported.example.test'}]))
+validate_case('users-integer-id', integer_ids, validation(integer_ids, warnings=MISSING, info={
+    **FILES_INFO, 'association': {**IMPORTED, 'sport_association_id': NEW_ASSOCIATION},
+    'owner_user': {'user_id': 5, 'username': 'imported-owner', 'email': 'owner@imported.example.test',
+                   'requires_recovery_password': True}}))
+
+# json.loads(bytes): a UTF-16 manifest with a BOM reads, invalid UTF-8 is a
+# UnicodeDecodeError (the generic manifest text), and a lone surrogate makes
+# DRF's UTF-8 encode raise: Django's 500 page.
+manifest_text = json.dumps(MANIFEST, ensure_ascii=False)
+utf16 = make_zip({**export_members(), 'manifest.json': b'\xff\xfe' + manifest_text.encode('utf-16-le')},
+                 raw=('manifest.json',))
+validate_case('manifest-utf16', utf16, validation(utf16, warnings=MISSING, info={
+    **FILES_INFO, 'association': IMPORTED, 'owner_user': OWNER_INFO(False)}))
+invalid_utf8 = make_zip({**export_members(), 'manifest.json': b'{"a": "\xff"}'}, raw=('manifest.json',))
+validate_case('manifest-invalid-utf8', invalid_utf8, validation(invalid_utf8, valid=False, errors=[
+    "Error reading manifest: 'utf-8' codec can't decode byte 0xff in position 7: invalid start byte"],
+    info={'file_size_bytes': len(invalid_utf8), 'file_size_mb': round(len(invalid_utf8) / (1024 * 1024), 2)}))
+surrogate = make_zip({**export_members(), 'manifest.json':
+                      manifest_text.replace('"bakney_sport_export_v1"', '"bakney_sport_export_v1\\ud800"')},
+                     raw=('manifest.json',))
+validate_case('manifest-lone-surrogate', surrogate, SERVER, status=500)
+
+# validate_uuid_conflicts runs UUIDField.to_python on the association id: a
+# string that is not a UUID is the ValidationError the view's except renders.
+not_uuid = make_zip(export_members(associations=[{'sport_association_id': 'abc', 'user_id': NEW_OWNER,
+                                                  'denomination': 'Società importata'}],
+                                   users=[{'user_id': NEW_OWNER, 'username': 'imported-owner',
+                                           'email': 'owner@imported.example.test', 'password': '!'}]))
+validate_case('association-not-uuid', not_uuid, shape_error("['“abc” is not a valid UUID.']"), status=500)
+
+# Every hasher settings.PASSWORD_HASHERS configures decodes to a restorable
+# hash (Django's defaults; fixed salts keep the archive stable).
+for algorithm, encoded in (
+        ('pbkdf2-sha256', 'pbkdf2_sha256$1000000$abcdefghijklmnopqrstuv$tW94pSigUM2AlIkWSQO4yVeVgz1Hy8/tw6HFhR010Gk='),
+        ('pbkdf2-sha1', 'pbkdf2_sha1$1000000$abcdefghijklmnopqrstuv$sFm5hQjQKip5kpM2m+9tpSNirH8='),
+        ('argon2', 'argon2$argon2id$v=19$m=102400,t=2,p=8$YWJjZGVmZ2hpamtsbW5vcHFyc3R1dg$A9DAPQnz27exXaIEX/gYEkGY9RGfCEFQQ/I38bD2xuM'),
+        ('bcrypt-sha256', 'bcrypt_sha256$$2b$12$aEUW1bUZP8SXpoiwC.Z5s.0XhWu9QyrdHKaP1s1qq7U0BeMjP2DZy'),
+        ('scrypt', 'scrypt$16384$abcdefghijklmnopqrstuv$8$5$7+fVdWAoYF5tiOFUhWAk9HPmdFw5yyZqSz8ThhvgSnI4xqXq4vnGiy+ngEpPYnpZTfLd3D4CXVjanFjRQ/qFrg==')):
+    archive = make_zip(export_members(password=encoded))
+    validate_case('owner-password-' + algorithm, archive, validation(archive, warnings=MISSING, info={
+        **FILES_INFO, 'association': IMPORTED, 'owner_user': OWNER_INFO(False)}))
 
 # === import/start with an archive ================================================================
 IMPORT_STARTED = {'task_id': '$task', 'status': 'started', 'message': 'Import avviato. Controlla lo stato con task_id.'}
@@ -765,6 +1008,43 @@ raw, content = upload('start', 'password-file', valid, extra=[('owner_password',
 add('import-start-password-file', 'owner', IMPORT_START, 500,
     {'error': 'Errore durante avvio import: Object of type InMemoryUploadedFile is not JSON serializable'},
     method='POST', raw_b64=raw, content_type=content)
+
+
+# MultiPartParser's own header handling: each part header line goes through parse_header_parameters (RFC 2231
+# names decoded with their codec, a line whose decoded value holds a lone surrogate skipped), base64
+# Content-Transfer-Encoding decodes files and fields, and field text is decoded with errors='replace'.
+def raw_upload(*parts):
+    lines = b''
+    for headers, value in parts:
+        lines += f'--{BOUNDARY}\r\n'.encode() + b''.join(header.encode('latin-1') + b'\r\n' for header in headers)
+        lines += b'\r\n' + value + b'\r\n'
+    return base64.b64encode(lines + f'--{BOUNDARY}--\r\n'.encode()).decode(), f'multipart/form-data; boundary={BOUNDARY}'
+
+
+def start_raw(name, raw_and_kind, password, stored):
+    raw, content = raw_and_kind
+    add('import-start-' + name, 'owner', IMPORT_START, 202, IMPORT_STARTED, method='POST', raw_b64=raw, content_type=content,
+        cache_after={IMPORT_KEY('$task'): {'value': IMPORT_TASK, 'ttl': 86400}},
+        objects_after={'$upload': {'body_b64': base64.b64encode(valid).decode(), 'content_type': stored}},
+        effect={'celery': [{'task': 'import_association_data', 'args': [],
+                            'kwargs': [['zip_file_path', '$upload'], ['owner_password', password]], 'id': '$task'}]})
+
+
+ZIP_PART = (['Content-Disposition: form-data; name="file"; filename="export.zip"', 'Content-Type: application/zip'], valid)
+start_raw('base64-file-latin1-filename', raw_upload(
+    (["Content-Disposition: form-data; name=\"file\"; filename*=iso-8859-1''esportazion%E9.zip", 'Content-Type: Application/ZIP',
+      'Content-Transfer-Encoding: base64'], base64.b64encode(valid))), '', 'application/zip')
+start_raw('base64-password-field', raw_upload(
+    ZIP_PART, (['Content-Disposition: form-data; name="owner_password"', 'Content-Transfer-Encoding: base64'],
+               base64.b64encode('pässword'.encode()))), 'pässword', 'application/zip')
+start_raw('invalid-utf8-password-field', raw_upload(
+    ZIP_PART, (['Content-Disposition: form-data; name="owner_password"'], b'se\xffcret\xed\xa0\x80')),
+    'se�cret���', 'application/zip')
+start_raw('cp932-filename', raw_upload(
+    (["Content-Disposition: form-data; name=\"file\"; filename*=cp932''%93%FA%96%7B.zip"], valid)), '', 'application/zip')
+raw, content = raw_upload((["Content-Disposition: form-data; name=\"file\"; filename*=utf-7''%2B2AA-.zip"], valid))
+add('import-start-utf7-surrogate-filename-skipped', 'owner', IMPORT_START, 400, FILE_REQUIRED, method='POST', raw_b64=raw,
+    content_type=content)
 
 # === export/list of an export without a stored size ============================================
 # default_storage.size(filepath) is saved on the document (an update entry); a missing object leaves it null.
@@ -853,5 +1133,5 @@ assert len({c['name'] for c in cases}) == len(cases), [k for k, v in collections
 OUTPUT.write_text(json.dumps({
     'matrix_version': 1, 'scope': 'association export/import routes: reads, refusals and pre-dispatch checks',
     'ids': IDS, 'documents': DOCUMENTS, 'archives': ARCHIVES, 'tasks': TASKS, 'setup_token': SETUP_TOKEN,
-    'instance': INSTANCE, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
+    'instance': INSTANCE, 'delete_references': DELETE_REFERENCES, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

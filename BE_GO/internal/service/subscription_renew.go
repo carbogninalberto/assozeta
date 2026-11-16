@@ -139,13 +139,7 @@ func (s *SubscriptionRenewals) Renew(ctx context.Context, identity domain.Resolv
 		}
 	}
 	// A preregistration that renews a subscription replaces these inputs: they
-	// are checked after the fill, inside create_subscription (which fills the
-	// person, certificate and data from the renewed subscription).
-	if !subscriptionRenewalRequested(data) {
-		if err = subscriptionCreateRefuseInputs(data, subscriptionCreateToday(s.creates.now())); err != nil {
-			return nil, err
-		}
-	}
+	// are filled, inside create_subscription, from the renewed subscription.
 	keys := []string{}
 	request.StorageKeys = &keys
 	defer func() {
@@ -311,7 +305,9 @@ func renewMemberAllowed(ctx context.Context, tx domain.SubscriptionRenewTransact
 func (s *SubscriptionRenewals) cleanPayments(ctx context.Context, tx domain.SubscriptionRenewTransaction, identity domain.ResolvedIdentity,
 	created *subscriptionCreated, request SubscriptionCreateRequest) error {
 	if created.start == nil || created.end == nil {
-		return domain.ErrSubscriptionCreateNotPorted
+		// A subscription_duration outside 1..3 leaves Subscription.save()'s dates
+		// NULL: creation_date__gte/lte=None raises (the 400 body).
+		return pythonFailure("Cannot use None as a query value")
 	}
 	// QuerySet.delete() of invoiced payments leaves their invoices: Payment.invoice points from the payment.
 	ids, _, err := tx.RenewalPayments(ctx, created.association, created.first, created.last, created.tax, calendarTime(*created.start),
@@ -453,8 +449,15 @@ func (s *SubscriptionRenewals) courses(ctx context.Context, tx domain.Subscripti
 				return err
 			}
 		default:
-			// Numbers (uuid.UUID(int=...)), booleans and containers are not ported.
-			return domain.ErrSubscriptionCreateNotPorted
+			// UUIDField.to_python: an int (a bool included) is uuid.UUID(int=...);
+			// a float or a container is its ValidationError (the 400 body).
+			id, valid := dto.UUIDFieldValue(raw)
+			if !valid {
+				return djangoInvalidUUID(dto.PythonStr(raw))
+			}
+			if course, err = enrolment.Course(ctx, id, request.GroupID); err != nil {
+				return err
+			}
 		}
 		if course != nil && (!courseEnrolmentScoped(identity, course.AssociationID) || course.AssociationID == nil ||
 			*course.AssociationID != created.association) {
@@ -480,7 +483,7 @@ func (s *SubscriptionRenewals) courses(ctx context.Context, tx domain.Subscripti
 		switch {
 		case errors.As(err, &invalid):
 			return err
-		case errors.Is(err, courseEnrolmentServer), errors.Is(err, ErrCourseEnrolmentNotPorted):
+		case errors.Is(err, courseEnrolmentServer):
 			// A Python exception whose text is not reproduced.
 			return domain.ErrSubscriptionCreateNotPorted
 		case err != nil:
@@ -659,13 +662,8 @@ func (s *SubscriptionDraftApprovals) Approve(ctx context.Context, identity domai
 			crashed = true
 			break
 		}
-		// A draft whose data renews a subscription replaces these inputs; they
-		// are checked after the fill, inside create_subscription.
-		if !subscriptionRenewalRequested(draft) {
-			if err = subscriptionCreateRefuseInputs(draft, subscriptionCreateToday(s.creates.now())); err != nil {
-				return nil, err
-			}
-		}
+		// A draft whose data renews a subscription is filled, inside
+		// create_subscription, from the renewed subscription.
 		if err = tx.Savepoint(ctx); err != nil {
 			return nil, err
 		}

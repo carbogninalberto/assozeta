@@ -109,8 +109,12 @@ func SupplierDRFCode(code string) string {
 
 const SupplierValidationEmail = "supplier-email"
 
-var supplierUserRegexp = regexp.MustCompile(`(?i)(^[-!#$%&'*+/=?^_` + "`" + `{}|~0-9A-Z]+(\.[-!#$%&'*+/=?^_` + "`" + `{}|~0-9A-Z]+)*\z` +
-	`|^"([\x01-\x08\x0b\x0c\x0e-\x1f!#-\[\]-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*"\z)`)
+// supplierUserRegexp is EmailValidator.user_regex. Python's re.IGNORECASE also
+// matches U+0130/U+0131 for a class holding "i"/"I" (the documented four
+// extra code points, with U+017F/U+212A already folding in Go); the explicit
+// pair keeps the two engines' verdicts equal.
+var supplierUserRegexp = regexp.MustCompile(`(?i)(^[-!#$%&'*+/=?^_` + "`" + `{}|~\x{0130}\x{0131}0-9A-Z]+(\.[-!#$%&'*+/=?^_` + "`" + `{}|~\x{0130}\x{0131}0-9A-Z]+)*\z` +
+	`|^"([\x01-\x08\x0b\x0c\x0e-\x1f!#-\[\]-\x7f\x{0130}\x{0131}]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*"\z)`)
 
 func supplierLabelRune(r rune, digits bool) bool {
 	return r >= 'a' && r <= 'z' || r >= 'A' && r <= 'Z' || r >= 0x00a1 && r <= 0xffff || digits && r >= '0' && r <= '9'
@@ -252,8 +256,12 @@ func modelTextValue(field SupplierField, value any, form bool) (*string, []strin
 		return &empty, nil
 	}
 	// run_validators collects every validator error; EmailValidator runs
-	// after the length and character validators on any string value.
-	if field.Email && !(len(codes) == 1 && codes[0] == PaymentCategoryValidationString) && !SupplierEmail(text) {
+	// after the length and character validators on any string value. A value
+	// that is not text fails CharField's 'invalid', which EmailField's
+	// error_messages word as the e-mail rule.
+	if field.Email && len(codes) == 1 && codes[0] == PaymentCategoryValidationString {
+		codes = []string{SupplierValidationEmail}
+	} else if field.Email && !SupplierEmail(text) {
 		codes = append(codes, SupplierValidationEmail)
 	}
 	if len(codes) > 0 {

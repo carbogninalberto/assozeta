@@ -520,6 +520,29 @@ add('loop-several-tools', [
     *CLOSE], llm=[tool_reply(*[(i, n, json.dumps(a)) for i, n, a in calls], content=['Controllo.']), reply('Hai 2 report.')],
     requests=c.requests, cache=throttle(1))
 
+# The model's arguments may hold Python-only numbers (json.loads reads Infinity), and filter values Go handed to Django
+# before long tail PR 4: min() caps an infinite limit, an empty list is the regex literal '{}', __time needs a str.
+c = Conversation()
+c.user('Elenca i tag')
+c.request()
+calls = [('p1', 'query_data', {'model_name': 'Tags', 'fields': ['tag_name'], 'filters': {'tag_name__startswith': 'WSAgent'},
+                               'order_by': ['tag_name'], 'limit': float('inf')}),
+         ('p2', 'count_data', {'model_name': 'Tags', 'filters': {'tag_name__regex': []}}),
+         ('p3', 'count_data', {'model_name': 'Tags', 'filters': {'creation_date__time': 5}})]
+c.tool_calls('', calls)
+c.tool_result('p1', tool_text({'count': 2, 'has_more': False, 'data': [{'tag_name': 'WSAgent Alfa'}, {'tag_name': 'WSAgent Beta'}]}))
+c.tool_result('p2', tool_text({'count': 0}))
+c.tool_result('p3', raised('fromisoformat: argument must be str'))
+c.request()
+c.assistant('Ci sono 2 tag.')
+add('loop-python-values', [
+    welcome(),
+    send({'type': 'user_message', 'message': 'Elenca i tag'}), status('thinking'),
+    *[item for _, name, arguments in calls for item in (status('querying'), tool_call_frame(name, arguments))],
+    chunk_frame('Ci sono 2 tag.'), END, DONE,
+    *CLOSE], llm=[tool_reply(*[(i, n, json.dumps(a)) for i, n, a in calls]), reply('Ci sono 2 tag.')],
+    requests=c.requests, cache=throttle(1))
+
 # Invalid and non-object arguments; a missing tool id and name.
 c = Conversation()
 c.user('Conta i tag')

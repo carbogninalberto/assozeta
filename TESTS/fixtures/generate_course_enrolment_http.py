@@ -305,13 +305,16 @@ def effect(actor, *, rows=None, created=None, links=None, audit=()):
     return {'actor': actor, 'rows': rows or {}, 'created': created or {}, 'links': links or {}, 'audit': list(audit)}
 
 
-def add(name, actor, path, status, response, *, method='POST', body=None, headers=None, result=None, raw_body=None, content_type=None):
+def add(name, actor, path, status, response, *, method='POST', body=None, headers=None, result=None, raw_body=None, raw_parts=None,
+        content_type=None):
     case = {'name': f'course-enrolment-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
             'status': status, 'response': response, 'effect': result}
     if body is not None:
         case['body'] = body
     if raw_body is not None:
         case['raw_body'], case['content_type'] = raw_body, content_type
+    if raw_parts is not None:
+        case['raw_parts'], case['content_type'] = raw_parts, content_type
     cases.append(case)
 
 
@@ -934,6 +937,50 @@ fee_row('add-form-multipart', 'cf2', 'x_form_empty', 'mario',
 add('add-form-empty-body', 'owner', CA, 400, {'course': REQUIRED, 'subscription_id': REQUIRED}, raw_body='', content_type=FORM)
 add('add-form-invalid-json', 'owner', CA, 400, {'multiple_quote': ['Value must be valid JSON.']},
     raw_body=form(course=cid('quotes'), subscription_id=sid('luisa'), multiple_quote='nope'), content_type=FORM)
+# A lone surrogate escape parses (json.loads keeps the code unit) and the field keeps it: the jsonb column refuses
+# the INSERT, which the atomic add does not catch (500, nothing written). Other field errors still answer first.
+LONE = json.dumps(['\ud800'])
+add('add-form-multiple-quote-lone-surrogate-server-error', 'owner', CA, 500, SERVER, result=effect('owner'),
+    raw_body=form(course=cid('quotes'), subscription_id=sid('luisa'), multiple_quote=LONE), content_type=FORM)
+add('add-form-multiple-quote-lone-surrogate-other-field-invalid', 'owner', CA, 400,
+    {'billed_frequency': ['Ensure this value is greater than or equal to 0.']},
+    raw_body=form(course=cid('quotes'), subscription_id=sid('luisa'), multiple_quote=LONE, billed_frequency='-1'), content_type=FORM)
+# The measured form JSON recursion bands (owner decision X15, see course-enrolment.md). D is the maximum nesting of
+# the text; billed_frequency='-1' keeps the normal answer a 400 with nothing written, so the fixture carries no deep
+# stored value.
+BILLED_FREQUENCY_ERROR = {'billed_frequency': ['Ensure this value is greater than or equal to 0.']}
+
+
+def quote_depth_parts(depth):
+    return [f'course={cid("quotes")}&subscription_id={sid("luisa")}&billed_frequency=-1&multiple_quote=',
+            {'repeat': '%5B', 'count': depth}, {'repeat': '%5D', 'count': depth}]
+
+
+def event_depth_parts(depth, *, course, subscription, extra=''):
+    return [f'course={course}&subscription_id={subscription}{extra}&events=',
+            urllib.parse.quote('[{"id":0,"amount":"10","payment_date":"05/05/2099","deep":'),
+            {'repeat': '%5B', 'count': depth - 2}, {'repeat': '%5D', 'count': depth - 2}, urllib.parse.quote('}]')]
+
+
+# The bands were measured with nested objects (an extra "deep" member) on these exact bodies; Django's edge moves by a
+# level or two with the value's shape and the live stack, so the cases sit past the band with a margin. A value inside
+# the band is stored (the quote) or written into the payment, which the state snapshot cannot read: that side is
+# pinned by the Go tests.
+OBJECT_LEVEL = urllib.parse.quote('{"a":')
+
+
+def deep_member_parts(prefix, field, head, depth, tail):
+    """A form body whose `field` is head + `depth` nested objects + tail (the measured shapes)."""
+    return [prefix + f'&{field}=' + urllib.parse.quote(head), {'repeat': OBJECT_LEVEL, 'count': depth}, '1',
+            {'repeat': '%7D', 'count': depth}, urllib.parse.quote(tail)]
+
+
+add('add-form-multiple-quote-depth-9961-server-error', 'owner', CA, 500, SERVER, content_type=FORM,
+    raw_parts=deep_member_parts(f'course={cid("quotes")}&subscription_id={sid("mario")}', 'multiple_quote',
+                                '{"title": "Deep", "amount": "1", "deep": ', 9960, '}'))
+add('add-form-events-depth-9972-server-error', 'owner', CA, 500, SERVER, content_type=FORM,
+    raw_parts=deep_member_parts(f'course={cid("quotes")}&subscription_id={sid("mario")}', 'events',
+                                '[{"id": 7, "amount": "1", "payment_date": "05/05/2099", "deep": ', 9970, '}]'))
 # one_fee_payment=false as text still marks the row; the payment follows the course's one-fee flag.
 row = new_cs('@cf3', 'one', 'luisa', payment='@cf3p', one_fee=True, active=False)
 text = "Pagamento in un'unica soluzione per Tennis"

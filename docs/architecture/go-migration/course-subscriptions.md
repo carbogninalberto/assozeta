@@ -131,6 +131,11 @@ the instance save, inside the atomic update:
   compare by value, booleans as 0/1) goes: a paid payment is relabelled first (`Rata n.<id+1> del <dd/mm/yy> (<course>)`, its
   meta replaced, `Payment.save()` filling a missing category), then `installment.delete()`, whose `pre_delete` deletes an
   unpaid payment (the Payment `pre_delete` nests the installment delete: P, I, P, then the outer I);
+- two installments of the row can share a payment (a stored state the schema allows): each iteration reads
+  `installment.payment` afresh through the base manager, so a paid shared payment is relabelled and saved twice (the second
+  save's diff starts from the first) and stays, while an unpaid one goes with the first installment and the second read
+  raises (500, rolled back). Case `update-events-shared-payment-dropped`; Go answers the sequence in
+  `service.dropInstallments` (unit tests `TestCourseSubscriptionEventDropsShared*`);
 - each event without `course_subscription_installment_id` is validated by `CourseEventsSerializer` (400 with its field errors)
   and becomes a payment of the course's association (its owner, the default bank account and category, the raw `X-Group-Id`)
   and an installment.
@@ -138,10 +143,31 @@ the instance save, inside the atomic update:
 
 Membership payments render PaymentSerializer's nested `instructor` and `invoice`.
 
-## Not ported (refused before any write)
+A form `multiple_quote` text that keeps a lone surrogate is not a validation error: `json.loads` keeps the code unit, and the
+instance save (after the events edit, inside the atomic update) is where jsonb refuses it, so the 500 page leaves nothing and
+the view's membership-payment checks (400) still come first. Go answers it at the row's UPDATE
+(`service/course_subscriptionJSONValue`, `errCourseSubscriptionJSONColumn`). The form `events` text is write-only: it is
+parsed and the events loop decides (a lone surrogate in an ignored key changes nothing; a string element makes the id
+comparison raise, case `update-form-events-lone-surrogate-server-error`).
 
-- Update: unmatched installments sharing one payment, and an HTML-form `multiple_quote` or `events` document the jsonb
-  column rejects: 500.
+## Form JSON recursion bands (X15)
+
+An HTML-form `multiple_quote` or `events` text is read with `json.loads`; the measured answer (CPython 3.13.16 on the
+parity harness's Django) depends on its maximum nesting D:
+
+- `multiple_quote`: D <= 9934 normal answer; D >= 9935 `json.loads` raises RecursionError during validation, the plain
+  500 page with nothing written (the update is atomic).
+- `events`: D <= 9941 normal answer; D >= 9942 the same 500 page.
+
+Constants and the application-state error live in `service/course_subscription_update.go`
+(`errCourseSubscriptionFormJSONTooDeep`); the add route's bands are in [course-enrolment](course-enrolment.md). Values
+within the bands (including those past 500) are parsed by `dto/automationFormTree` up to its 20000-level limit, stored
+and echoed without a Go-side depth limit.
+
+Django's edge is not a fixed number: it moves by a few levels with the value's shape (arrays or objects, where the
+deep part sits) and with the live stack of the run (the same module elements loaded at 9934 levels in one run and
+not in another). The bands above were measured with nested objects; the parity cases sit inside or past each band
+with a margin, and the exact edges are pinned by the Go tests (X15 is the accepted divergence there).
 
 ## Primary key in the body and shared payment delete (t5pk)
 

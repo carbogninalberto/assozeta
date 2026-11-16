@@ -102,9 +102,9 @@ the production execution owner.
 
 ## Not ported (refused with the 500 page before any write)
 
-- Uploads on the router's stock create (its 400 shape and the upload), errors botocore retries in its legacy mode
-  (HTTP 429, 500, 502, 503, 504, 509; HTTP 400 Throttling codes, `RequestTimeout`, `BadDigest`) and connection
-  failures, and the HTML form body: `ErrPersonaNotPorted`, handed off to Django. A taken key gets
+- Uploads on the router's stock create (its 400 shape and the upload) and the HTML form body: `ErrPersonaNotPorted`,
+  handed off to Django. (Since long tail PR 4, X12, errors botocore retries and connection failures are the
+  serializer's 400 with botocore's final text, below.) A taken key gets
   `get_available_name`'s alternative name. A HeadObject, PutObject or PutObjectAcl error answer botocore raises
   without retrying is the serializer's 400 with botocore's text (`Error processing image: An error occurred (<code>)
   when calling the <Operation> operation: <message>`; a HEAD answer has no body, so the code is the status and the
@@ -184,3 +184,8 @@ through `Subscription.save()` (season fill, audit entry), 204; its cases are in 
 Long tail PR 3 (agent C): a taken picture key gets the alternative name, and a storage error answer botocore
 raises without retrying is the serializer's 400 with botocore's text. Cases `update-picture-head-denied`,
 `update-picture-put-denied` and `update-picture-key-taken`.
+
+Long tail PR 4 (agent A, accepted divergence X12): a picture HeadObject, PutObject or PutObjectAcl failure that
+botocore retries (or a transport failure) is the serializer's 400 `Error processing image: <botocore final text>`
+(`(reached max retries: 4)`, the endpoint connection errors, `CreateMultipartUpload` for a picture of 8 MiB and more;
+see documents-writes.md).

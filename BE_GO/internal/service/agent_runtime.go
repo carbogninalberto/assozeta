@@ -11,6 +11,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/agentllm"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
 )
 
@@ -54,7 +55,7 @@ func (r *AgentRuntime) AIConfig(ctx context.Context) (map[string]any, error) {
 		return nil, ErrAgentConfigUnavailable
 	}
 	if err != nil {
-		return nil, ErrAgentNotPorted
+		return nil, err
 	}
 	value := instanceAdminCopy(current.value)
 	value["source"] = map[bool]string{true: "instance", false: "environment"}[current.instance]
@@ -111,7 +112,9 @@ func (r *AgentRuntime) Association(ctx context.Context, user *domain.Account) (r
 		return repository.AgentAssociation{}, false, nil
 	case domain.RoleCollaborator:
 		if user.ConnectedUserID == nil {
-			return repository.AgentAssociation{}, false, ErrAgentNotPorted
+			// SportAssociation.objects.get(user=None) raises DoesNotExist: the
+			// consumer releases the slot and closes 4003.
+			return repository.AgentAssociation{}, false, nil
 		}
 		owner = *user.ConnectedUserID
 	}
@@ -125,6 +128,11 @@ func (r *AgentRuntime) Association(ctx context.Context, user *domain.Account) (r
 	return rows[0], true, nil
 }
 
+// errAgentConfigKey is a missing key: both writers (AISettingsSerializer and
+// environmentIntegration) always write every key, so only a state outside
+// those writers reaches it.
+var errAgentConfigKey = refusal.AppState("AI configuration without a required key")
+
 // Provider is AIProvider(...) when the configuration is enabled, else None.
 func (r *AgentRuntime) Provider(config map[string]any) (AgentProvider, error) {
 	if !dto.PythonTruthy(config["enabled"]) {
@@ -132,7 +140,7 @@ func (r *AgentRuntime) Provider(config map[string]any) (AgentProvider, error) {
 	}
 	for _, key := range []string{"api_key", "model", "base_url"} {
 		if _, present := config[key]; !present {
-			return nil, ErrAgentNotPorted // KeyError
+			return nil, errAgentConfigKey // KeyError
 		}
 	}
 	provider, err := NewAgentAIProvider(r.Environment, config["api_key"], config["model"], config["base_url"], r.Transport)

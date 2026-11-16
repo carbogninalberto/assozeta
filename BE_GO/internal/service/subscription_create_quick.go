@@ -3,6 +3,8 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"math"
 	"math/big"
 	"regexp"
 	"strconv"
@@ -17,9 +19,6 @@ import (
 // _handle_quick_subscription and SubscriptionService.create_quick_subscription
 // (subscription-create.md).
 
-// subscriptionQuickDecimal is a fee text the DecimalField(9, 2) stores unchanged.
-var subscriptionQuickDecimal = regexp.MustCompile(`^-?\d{1,7}(\.\d{1,2})?$`)
-
 // subscriptionQuickID is Associate.objects.get(associate_id=value)'s
 // UUIDField.to_python: a text through uuid.UUID(hex=...) and a number through
 // uuid.UUID(int=...) (a bool included); a malformed text, a float, a negative
@@ -32,68 +31,219 @@ func subscriptionQuickID(value any) (string, error) {
 	return "", domain.ErrSubscriptionCreateServer
 }
 
-// subscriptionQuickEqual is Python's == for plan ids; shapes it does not
-// decide reliably are not ported.
-func subscriptionQuickEqual(left, right any) (bool, error) {
-	switch l := left.(type) {
-	case nil:
-		return right == nil, nil
-	case string:
-		r, ok := right.(string)
-		if ok {
-			return l == r, nil
-		}
-		switch right.(type) {
-		case nil, json.Number:
-			return false, nil
-		}
-	case json.Number:
-		switch r := right.(type) {
-		case json.Number:
-			a, okA := new(big.Float).SetString(string(l))
-			b, okB := new(big.Float).SetString(string(r))
-			if !okA || !okB {
-				return false, domain.ErrSubscriptionCreateNotPorted
-			}
-			return a.Cmp(b) == 0, nil
-		case nil, string:
-			return false, nil
-		}
-	}
-	return false, domain.ErrSubscriptionCreateNotPorted
+// quickDecimal is DecimalField(9, 2)'s reading of the fee a plan or the
+// association holds: the exact decimal the field's to_python returns (a text
+// through Decimal(), an int exactly, a float through Context(prec=9)
+// .create_decimal_from_float), as coefficient digits and a power of ten.
+type quickDecimal struct {
+	digits   string
+	exponent int
+	negative bool
 }
 
-// subscriptionQuickAmount is the in-memory fee: the stored decimal text and
-// str() of the value auditlog renders.
-func subscriptionQuickAmount(value any) (stored, rendered string, err error) {
+// quickDecimalGrammar is decimal.Decimal()'s finite grammar after the
+// underscores are removed and the decimal digits mapped to ASCII.
+var quickDecimalGrammar = regexp.MustCompile(`^([+-]?)(?:(\d+)(?:\.(\d*))?|\.(\d+))(?:[eE]([+-]?\d+))?$`)
+
+// quickDecimalText is Decimal(text) of DecimalField.to_python when the fee is a
+// text: the C decimal's syntax (surrounding whitespace and every underscore
+// removed, any script's decimal digits) and no context rounding. ok is false
+// for what to_python rejects: a syntax Decimal() raises on and a non-finite
+// value, whose ValidationError the quick view does not catch.
+func quickDecimalText(text string) (quickDecimal, bool) {
+	value := dto.PythonASCIIDigits(strings.ReplaceAll(dto.PythonStrip(text), "_", ""))
+	switch strings.ToLower(value) {
+	case "inf", "+inf", "infinity", "+infinity", "-inf", "-infinity", "nan", "+nan", "-nan":
+		return quickDecimal{}, false
+	}
+	match := quickDecimalGrammar.FindStringSubmatch(value)
+	if match == nil {
+		return quickDecimal{}, false
+	}
+	whole, fraction := match[2], match[3]
+	if whole == "" {
+		whole = "0"
+	}
+	if match[4] != "" {
+		fraction = match[4]
+	}
+	exponent := 0
+	if match[5] != "" {
+		parsed, err := strconv.Atoi(match[5])
+		if err != nil {
+			// Decimal() rejects an exponent beyond its own limits: the 500 page.
+			return quickDecimal{}, false
+		}
+		exponent = parsed
+	}
+	return quickDecimal{digits: whole + fraction, exponent: exponent - len(fraction), negative: match[1] == "-"}, true
+}
+
+// quickDecimalOf is DecimalField.to_python of the fee: a text, an int (a bool
+// included) or a float (Context.create_decimal_from_float); ok is false for
+// what to_python rejects (None, containers and the non-finite values).
+func quickDecimalOf(value any) (quickDecimal, bool) {
 	switch v := value.(type) {
 	case string:
-		if !subscriptionQuickDecimal.MatchString(v) {
-			return "", "", domain.ErrSubscriptionCreateNotPorted
+		return quickDecimalText(v)
+	case bool:
+		if v {
+			return quickDecimal{digits: "1"}, true
 		}
-		return v, v, nil
+		return quickDecimal{digits: "0"}, true
 	case json.Number:
 		text := string(v)
 		if !strings.ContainsAny(text, ".eE") {
-			if !subscriptionQuickDecimal.MatchString(text) {
-				return "", "", domain.ErrSubscriptionCreateNotPorted
+			integer, ok := new(big.Int).SetString(text, 10)
+			if !ok {
+				return quickDecimal{}, false
 			}
-			return text, text, nil
+			negative := integer.Sign() < 0
+			return quickDecimal{digits: new(big.Int).Abs(integer).String(), negative: negative}, true
 		}
-		number, parseErr := strconv.ParseFloat(text, 64)
-		if parseErr != nil {
-			return "", "", domain.ErrSubscriptionCreateNotPorted
+		number, err := strconv.ParseFloat(text, 64)
+		if err != nil {
+			if failure, ok := err.(*strconv.NumError); !ok || failure.Err != strconv.ErrRange {
+				return quickDecimal{}, false
+			}
 		}
-		rendered := dto.PythonFloatText(number)
-		if !subscriptionQuickDecimal.MatchString(rendered) {
-			return "", "", domain.ErrSubscriptionCreateNotPorted
-		}
-		return rendered, rendered, nil
+		return quickDecimalFloat(number)
+	case float64:
+		return quickDecimalFloat(v)
 	}
-	return "", "", domain.ErrSubscriptionCreateNotPorted
+	return quickDecimal{}, false
 }
 
-// subscriptionQuickFee is resolve_subscription_fee_and_meta.
+func quickDecimalFloat(value float64) (quickDecimal, bool) {
+	if math.IsNaN(value) || math.IsInf(value, 0) {
+		return quickDecimal{}, false
+	}
+	// Context(prec=9).create_decimal_from_float: nine significant digits, halves even.
+	parsed, ok := quickDecimalText(dto.DecimalFromFloat9(value))
+	if !ok {
+		return quickDecimal{}, false
+	}
+	parsed.negative = math.Signbit(value) && parsed.digits != "0"
+	return parsed, true
+}
+
+// quickNumericText is the numeric(9,2) value PostgreSQL stores: two decimals,
+// halves away from zero. ok is false when the value does not fit the column
+// (numeric field overflow).
+func (d quickDecimal) numericText() (string, bool) {
+	coefficient, ok := new(big.Int).SetString(d.digits, 10)
+	if !ok {
+		return "", false
+	}
+	scale := d.exponent + 2
+	switch {
+	case scale < 0:
+		// Only the kept digits take part: a value below half a cent rounds to
+		// zero without materialising a huge power of ten.
+		digits := len(strings.TrimLeft(d.digits, "0"))
+		if coefficient.Sign() == 0 || -scale > digits {
+			coefficient = big.NewInt(0)
+			break
+		}
+		divisor := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(-scale)), nil)
+		quotient, remainder := new(big.Int).QuoRem(coefficient, divisor, new(big.Int))
+		if new(big.Int).Mul(remainder, big.NewInt(2)).Cmp(divisor) >= 0 {
+			quotient.Add(quotient, big.NewInt(1))
+		}
+		coefficient = quotient
+	case scale > 0:
+		if coefficient.Sign() != 0 && len(coefficient.String())+scale > 10 {
+			return "", false // past numeric(9,2)'s seven integer digits
+		}
+		coefficient.Mul(coefficient, new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(scale)), nil))
+	}
+	if coefficient.Cmp(big.NewInt(1000000000)) >= 0 {
+		return "", false // numeric(9,2) holds at most 9999999.99
+	}
+	text := coefficient.String()
+	for len(text) <= 2 {
+		text = "0" + text
+	}
+	sign := ""
+	if d.negative && coefficient.Sign() != 0 {
+		sign = "-"
+	}
+	return sign + text[:len(text)-2] + "." + text[len(text)-2:], true
+}
+
+// subscriptionQuickAmount is Payment.objects.create(amount=fee) of
+// create_quick_subscription: the numeric(9,2) text the row stores and str() of
+// the in-memory value auditlog renders (the fee as the plan holds it).
+func subscriptionQuickAmount(value any) (stored, rendered string, err error) {
+	rendered = dto.PythonStr(value)
+	number, ok := quickDecimalOf(value)
+	if !ok {
+		// Decimal(amount) raises for a container or None: Payment.save does not
+		// handle it, and the column is NOT NULL.
+		return "", "", domain.ErrSubscriptionCreateServer
+	}
+	if stored, ok = number.numericText(); !ok {
+		return "", "", domain.ErrSubscriptionCreateServer
+	}
+	return stored, rendered, nil
+}
+
+// quickPlanItem is value['key'] on a plan of subscription_fee_plans.
+func quickPlanItem(plan any, key string) (any, error) {
+	object, ok := plan.(domain.RequestObject)
+	if !ok {
+		return nil, pythonSubscriptError(plan)
+	}
+	value, present := object.Lookup(key)
+	if !present {
+		return nil, pythonKeyError(key)
+	}
+	return value, nil
+}
+
+// quickPlanMeta is the payment meta of a plan: its subscription_fee, name and
+// id in that order.
+func quickPlanMeta(plan any) (string, error) {
+	values := domain.RequestObject{}
+	for _, key := range []string{"subscription_fee", "name", "id"} {
+		value, err := quickPlanItem(plan, key)
+		if err != nil {
+			return "", err
+		}
+		values = append(values, domain.RequestField{Name: key, Value: value})
+	}
+	return string(dto.PythonJSONDumps(domain.RequestObject{{Name: "subscription_data", Value: values}})), nil
+}
+
+// quickPlanFirst is available[0]: the first item of a list, the first character
+// of a text (Python code points); a JSON object has no 0 key.
+func quickPlanFirst(available any) (any, error) {
+	switch v := available.(type) {
+	case []any:
+		return v[0], nil
+	case string:
+		for _, point := range v {
+			return string(point), nil
+		}
+		return nil, domain.ErrSubscriptionCreateUnreachable // not empty (len checked)
+	}
+	// available[0] on a dict: KeyError(0).
+	return nil, domain.ErrSubscriptionCreateServer
+}
+
+// subscriptionQuickRejected is ValidationError(str(e)): DRF renders the message
+// as a one-item list.
+func subscriptionQuickRejected(err error) error {
+	var failure *domain.SubscriptionCreateFailure
+	if errors.As(err, &failure) {
+		return &domain.SubscriptionCreateRejected{Messages: []string{failure.Text}}
+	}
+	return err
+}
+
+// subscriptionQuickFee is resolve_subscription_fee_and_meta: the association's
+// fee, or with several plans the one whose id equals plan_id (Python's ==), else
+// the first plan's fee with the last plan's data.
 func subscriptionQuickFee(settings *domain.SubscriptionCreateSettings, data domain.RequestObject) (any, *string, error) {
 	var fee any = settings.SubscriptionFee
 	if !settings.MultipleSubscriptionFee {
@@ -104,108 +254,80 @@ func subscriptionQuickFee(settings *domain.SubscriptionCreateSettings, data doma
 		// jsonb text is valid JSON, within the digit and nesting limits of the Python writers.
 		return nil, nil, domain.ErrSubscriptionCreateUnreachable
 	}
-	available, ok := parsed.([]any)
-	if !ok {
-		// The association import stores the archive's plans as they are (import_service.py), so any jsonb value can be here.
-		return nil, nil, domain.ErrSubscriptionCreateNotPorted
+	size, err := pythonLen(parsed)
+	if err != nil {
+		// len(subscription_fee_plans) raises for a number, a boolean or None.
+		return nil, nil, domain.ErrSubscriptionCreateServer
 	}
+	// plan = available[0] if len(available) > 0 else None
+	var plan any
+	if size > 0 {
+		if plan, err = quickPlanFirst(parsed); err != nil {
+			return nil, nil, err
+		}
+	}
+	available, _ := dto.PythonIterate(parsed)
 	planID, hasPlan := data.Lookup("plan_id")
-	meta := func(plan domain.RequestObject) (*string, error) {
-		values := domain.RequestObject{}
-		for _, key := range []string{"subscription_fee", "name", "id"} {
-			value, present := plan.Lookup(key)
-			if !present {
-				return nil, domain.ErrSubscriptionCreateNotPorted
-			}
-			values = append(values, domain.RequestField{Name: key, Value: value})
-		}
-		text := string(dto.PythonJSONDumps(domain.RequestObject{{Name: "subscription_data", Value: values}}))
-		return &text, nil
-	}
-	var last any
 	for _, item := range available {
-		last = item
-		plan, isPlan := item.(domain.RequestObject)
-		if !isPlan {
-			// The association import stores the archive's plans as they are (import_service.py).
-			return nil, nil, domain.ErrSubscriptionCreateNotPorted
-		}
+		plan = item
 		if !hasPlan {
 			continue
 		}
-		id, present := plan.Lookup("id")
-		if !present {
-			return nil, nil, domain.ErrSubscriptionCreateServer // plan['id']: KeyError
+		id, err := quickPlanItem(item, "id")
+		if err != nil {
+			// An uncaught exception in the loop: the 500 page.
+			return nil, nil, err
 		}
-		equal, err := subscriptionQuickEqual(id, planID)
+		if !pythonJSONEqual(id, planID) {
+			continue
+		}
+		value, err := quickPlanItem(item, "subscription_fee")
 		if err != nil {
 			return nil, nil, err
 		}
-		if equal {
-			value, present := plan.Lookup("subscription_fee")
-			if !present {
-				return nil, nil, domain.ErrSubscriptionCreateServer
-			}
-			text, err := meta(plan)
-			if err != nil {
-				return nil, nil, domain.ErrSubscriptionCreateServer
-			}
-			return value, text, nil
-		}
-	}
-	// Not found: the first plan's fee with the last iterated plan's data (a truthy dict).
-	if plan, isPlan := last.(domain.RequestObject); isPlan && len(plan) > 0 {
-		first := available[0].(domain.RequestObject)
-		value, present := first.Lookup("subscription_fee")
-		if !present {
-			// ValidationError(str(KeyError)) is not ported.
-			return nil, nil, domain.ErrSubscriptionCreateNotPorted
-		}
-		text, err := meta(plan)
+		text, err := quickPlanMeta(item)
 		if err != nil {
 			return nil, nil, err
 		}
-		return value, text, nil
+		return value, &text, nil
 	}
-	if last != nil {
-		return nil, nil, domain.ErrSubscriptionCreateNotPorted
+	// Not found: the first plan's fee with the last iterated plan's data.
+	if !dto.PythonTruthy(plan) {
+		return fee, nil, nil
 	}
-	return fee, nil, nil
+	first, err := quickPlanFirst(parsed)
+	if err != nil {
+		return nil, nil, subscriptionQuickRejected(err)
+	}
+	value, err := quickPlanItem(first, "subscription_fee")
+	if err != nil {
+		return nil, nil, subscriptionQuickRejected(err)
+	}
+	text, err := quickPlanMeta(plan)
+	if err != nil {
+		return nil, nil, subscriptionQuickRejected(err)
+	}
+	return value, &text, nil
 }
 
 // subscriptionQuickCertificate is get_latest_medical_certificate: the first
-// certificate, replaced by any with a later (or a first) expiration date. A
-// result that depends on the unordered subscriptions is not ported.
-func subscriptionQuickCertificate(certificates []domain.SubscriptionQuickCertificate) (*string, error) {
-	if len(certificates) == 0 {
-		return nil, nil
-	}
+// subscription's certificate, replaced by any whose expiration date is later
+// (or by the first one that has a date), in the subscriptions' order.
+func subscriptionQuickCertificate(certificates []domain.SubscriptionQuickCertificate) *string {
 	var best *domain.SubscriptionQuickCertificate
-	ties := map[string]bool{}
-	for i := range certificates {
-		item := &certificates[i]
-		if item.Expiration == nil {
-			continue
-		}
+	for index := range certificates {
+		item := &certificates[index]
 		switch {
-		case best == nil || item.Expiration.After(*best.Expiration):
-			best, ties = item, map[string]bool{item.ID: true}
-		case item.Expiration.Equal(*best.Expiration):
-			ties[item.ID] = true
+		case best == nil:
+			best = item
+		case item.Expiration != nil && (best.Expiration == nil || item.Expiration.After(*best.Expiration)):
+			best = item
 		}
 	}
-	if best != nil {
-		if len(ties) > 1 {
-			return nil, domain.ErrSubscriptionCreateNotPorted
-		}
-		return &best.ID, nil
+	if best == nil {
+		return nil
 	}
-	for _, item := range certificates[1:] {
-		if item.ID != certificates[0].ID {
-			return nil, domain.ErrSubscriptionCreateNotPorted
-		}
-	}
-	return &certificates[0].ID, nil
+	return &best.ID
 }
 
 // quickMember is _handle_quick_subscription for an account that is not an
@@ -329,10 +451,7 @@ func (s *SubscriptionCreates) quick(ctx context.Context, identity domain.Resolve
 	if err != nil {
 		return nil, err
 	}
-	medical, err := subscriptionQuickCertificate(certificates)
-	if err != nil {
-		return nil, err
-	}
+	medical := subscriptionQuickCertificate(certificates)
 	if associate.UserID == nil {
 		return nil, domain.ErrSubscriptionCreateServer // associate.user.user_id on None
 	}

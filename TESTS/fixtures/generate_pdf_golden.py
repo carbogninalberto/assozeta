@@ -8,9 +8,16 @@ Run from the repository root with the migration interpreter:
 ``python -I TESTS/fixtures/generate_pdf_golden.py``.
 """
 import base64
+import contextlib
+import http.server
 import io
 import json
+import os
+import shutil
+import socketserver
 import sys
+import tempfile
+import threading
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -538,19 +545,141 @@ CASES += [
 ]
 
 
-def main():
+# /balance-sheet: an income/expense description is any json.loads value; reportlab draws str(value), a list taken for a
+# list of flowables (which raises unless it flattens to nothing), in the sheet's portrait A3 layout with its header.
+DESCRIBED = [['A) ENTRATE', '', '', ''], ['Entrate Generali', '', '', ''],
+             [{'int': '5'}, '1,00', '0,00', '1,00'], [{'float': '1.5'}, '2,00', '0,00', '2,00'],
+             [{'bool': True}, '3,00', '0,00', '3,00'], [{'dict': [['k', {'int': '1'}], ['s', 'v']]}, '4,00', '0,00', '4,00'],
+             [{'int': '9223372036854775808'}, '5,00', '0,00', '5,00'], ['Totale entrate', '15,00', '0,00', '15,00']]
+CASES += [
+    balance('bs-description-values', header(None, 'ASD Aurora'), rows=DESCRIBED),
+    balance('bs-description-list', header(None, 'ASD Aurora'), rows=DESCRIBED + [[{'list': ['a', {'int': '1'}]}, '', '', '']]),
+    balance('bs-description-empty-list', header(None, 'ASD Aurora'), rows=DESCRIBED + [[{'list': []}, '', '', '']]),
+]
+
+
+# Inline images whose src names a file, a data: URL or a URL. reportlab's ImageReader reads such a source with
+# open_for_read (lib/utils.py): it opens the name as a path (a relative path in the working directory), and when that
+# fails it reads a data: URL or fetches the name as a URL. These cases therefore name resources: main() writes the files
+# in a temporary directory, which is the working directory while they are built, and serves the URLs from a local
+# server. The golden keeps the sources, so the replay writes the same files and serves the same bytes.
+IMG_DIR = '$IMG_DIR'
+IMG_BASE = '$IMG_BASE'
+IMG_LOGO = jpeg(24, 16, (9, 200, 30))
+IMG_LOGO_BYTES = base64.b64decode(IMG_LOGO)
+
+
+def image_source_cases():
+    """The <img src> cases of a path, a data: URL and a URL, with the sources they name."""
+    sources = {'dir': IMG_DIR, 'base': IMG_BASE,
+               'files': [{'path': 'logo.jpg', 'base64': IMG_LOGO}],
+               'routes': [{'path': '/logo.jpg', 'base64': IMG_LOGO},
+                          {'path': '/missing', 'status': 404},
+                          {'path': '/redirect', 'status': 302, 'location': '/logo.jpg'}]}
     cases = []
-    for case in CASES:
-        entry = {'name': case['name'], 'spec': case['spec']}
+
+    def case(name, src):
+        cases.append({**report(name, ['Immagine', 'Testo'], [['a <img src="%s"/> b' % src, 'x']], 'Sorgente'),
+                      'resources': sources})
+
+    case('img-src-file', 'logo.jpg')
+    case('img-src-file-absolute', IMG_DIR + '/logo.jpg')
+    case('img-src-file-missing', 'missing.jpg')
+    # The header of the balance sheet: the h1 paragraph reads a path that is not a data: URL (the logo pattern of the
+    # view reads only a base64 JPEG data URL, so the logo itself is the '[LOGO]' paragraph on both sides).
+    cases.append({**balance('img-src-header-file', header(None, 'ASD <img src="' + IMG_DIR + '/logo.jpg"/> Aurora')),
+                  'resources': sources})
+    case('img-src-url', IMG_BASE + '/logo.jpg')
+    case('img-src-url-missing', IMG_BASE + '/missing')
+    case('img-src-url-redirect', IMG_BASE + '/redirect')
+    case('img-src-file-url', 'file://' + IMG_DIR + '/logo.jpg')
+    case('img-src-file-url-missing', 'file://' + IMG_DIR + '/missing.jpg')
+    case('img-src-scheme-unknown', 'gopher://127.0.0.1/logo.jpg')
+    case('img-src-data-no-media', 'data:;base64,' + IMG_LOGO)
+    case('img-src-data-percent', 'data:image/jpeg,' + ''.join('%%%02X' % byte for byte in IMG_LOGO_BYTES))
+    case('img-src-data-no-comma', 'data:image/jpeg;base64')
+    case('img-src-data-percent-invalid', 'data:,%FF')
+    return cases
+
+
+@contextlib.contextmanager
+def image_sources():
+    """A working directory holding logo.jpg and a server answering the image routes."""
+    class Handler(http.server.BaseHTTPRequestHandler):
+        def log_message(self, *args):
+            pass
+
+        def do_GET(self):
+            if self.path == '/logo.jpg':
+                self.send_response(200)
+                self.send_header('Content-Type', 'image/jpeg')
+                self.send_header('Content-Length', str(len(IMG_LOGO_BYTES)))
+                self.end_headers()
+                self.wfile.write(IMG_LOGO_BYTES)
+            elif self.path == '/redirect':
+                self.send_response(302)
+                self.send_header('Location', '/logo.jpg')
+                self.send_header('Content-Length', '0')
+                self.end_headers()
+            else:
+                self.send_response(404)
+                self.send_header('Content-Length', '0')
+                self.end_headers()
+
+    directory = tempfile.mkdtemp()
+    with open(os.path.join(directory, 'logo.jpg'), 'wb') as image:
+        image.write(IMG_LOGO_BYTES)
+    server = socketserver.TCPServer(('127.0.0.1', 0), Handler)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    try:
+        yield directory, 'http://127.0.0.1:%d' % server.server_address[1]
+    finally:
+        server.shutdown()
+        server.server_close()
+        shutil.rmtree(directory, ignore_errors=True)
+
+
+def filled(value, replace):
+    """value with every placeholder of replace replaced, in strings, lists and dicts."""
+    if isinstance(value, str):
+        for old, new in replace.items():
+            value = value.replace(old, new)
+        return value
+    if isinstance(value, list):
+        return [filled(item, replace) for item in value]
+    if isinstance(value, dict):
+        return {key: filled(item, replace) for key, item in value.items()}
+    return value
+
+
+def entry_of(case, replace):
+    """The golden entry of a case: built with its sources filled in, recorded with the placeholders, which the replay
+    replaces with its own directory and server (the document does not depend on them: images are named after a digest
+    of their bytes)."""
+    entry = {'name': case['name'], 'spec': case['spec']}
+    if 'resources' in case:
+        entry['resources'] = case['resources']
+    try:
+        parts, _, _ = pdf.normalize(pdf.build(filled(case['spec'], replace)))
+    except pdf.Malformed:
+        raise
+    except Exception as error:
+        entry['raises'] = type(error).__name__
+    else:
+        entry['document'] = base64.b64encode(SEPARATOR.join(parts)).decode()
+    return entry
+
+
+def main():
+    cases = [entry_of(case, {}) for case in CASES]
+    # The image cases read their sources in the working directory of the build, as reportlab does.
+    with image_sources() as (directory, base):
+        previous = os.getcwd()
+        os.chdir(directory)
         try:
-            parts, _, _ = pdf.normalize(pdf.build(case['spec']))
-        except pdf.Malformed:
-            raise
-        except Exception as error:
-            entry['raises'] = type(error).__name__
-        else:
-            entry['document'] = base64.b64encode(SEPARATOR.join(parts)).decode()
-        cases.append(entry)
+            cases += [entry_of(case, {IMG_DIR: directory, IMG_BASE: base}) for case in image_source_cases()]
+        finally:
+            os.chdir(previous)
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     OUTPUT.write_text(json.dumps({'cases': cases}, ensure_ascii=False, indent=1) + '\n')
     print(len(cases), 'cases,', sum('raises' in case for case in cases), 'raising')

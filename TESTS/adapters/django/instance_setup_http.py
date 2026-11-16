@@ -10,10 +10,14 @@ CacheControl, no ContentEncoding or user metadata) must equal the case's
 'storage'.
 
 Only the import tasks' TaskResult rows are seeded: the sequence starts
-without an InstanceConfiguration. An import setup creates only the
+without an InstanceConfiguration. A FAILURE row answers 500 with the text
+Celery's django-db backend prints for the row's stored exception and stores
+nothing; a REVOKED row is ready but not failed, so its rebuilt exception is not
+a dict and the setup links the last association, unless the rebuild raises, in
+which case its text is the 500 error. An import setup creates only the
 configuration (checked field by field, linked to the authored association or,
-for '$latest', to the last association by primary key) and the runner removes
-it after the check, so the next setup starts unconfigured again.
+for '$latest', to the last association by primary key) and the runner removes it
+after the check, so the next setup starts unconfigured again.
 Rows the fresh setup creates (configuration, owner, association, accounts,
 onboarding) are purged at cleanup. Reads and refusals must leave the complete
 model state unchanged. A configuration write may change only that row: every

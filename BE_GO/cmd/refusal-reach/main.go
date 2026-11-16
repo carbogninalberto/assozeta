@@ -530,6 +530,14 @@ func (a *analyzer) returnedSentinels(fn *ssa.Function) map[*sentinel]token.Posit
 					if s := a.sentinelOfCall(ins); s != nil {
 						changed = add(taint(ins), s) || changed
 					}
+					if builtin, ok := ins.Common().Value.(*ssa.Builtin); ok && builtin.Name() == "append" {
+						// append([]any{sentinel}, args...) carries the slices'
+						// elements, so a later fmt.Errorf("%w", that...) wraps it.
+						for _, argument := range ins.Common().Args {
+							changed = merge(taint(ins), values[argument]) || changed
+						}
+						continue
+					}
 					if !a.implementsError(ins.Type()) {
 						continue
 					}

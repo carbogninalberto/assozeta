@@ -11,8 +11,6 @@ import (
 var (
 	// ErrSubscriptionLifecycleNotFound is the view's own "Subscription not found" response.
 	ErrSubscriptionLifecycleNotFound = errors.New("subscription not found")
-	// ErrSubscriptionLifecycleNotPorted is a path the Go port refuses (500) before any write.
-	ErrSubscriptionLifecycleNotPorted = refusal.New("subscription lifecycle path not ported")
 	// ErrSubscriptionLifecycleUnreachable is a state no request or stored row
 	// produces (each site names the constraint that rules it out).
 	ErrSubscriptionLifecycleUnreachable = refusal.AppState("subscription lifecycle: unreachable state")
@@ -95,10 +93,14 @@ type SubscriptionLifecycleTransaction interface {
 	// and associate created within [from, to], unarchived and unpaid, in physical order.
 	RangePayments(ctx context.Context, association string, associate *string, from, to time.Time, group *string) ([]string, error)
 	// DeletePayments is payment.delete() / QuerySet.delete() with Payment's pre_delete.
+	// A row deleted by a concurrent request is skipped, as the queryset would
+	// no longer select it.
 	DeletePayments(ctx context.Context, ids []string, audit CourseSubscriptionAudit) error
 	// DeleteLoopInstallment is installment.payment.delete(), then
 	// installment.payment = None and installment.delete(); invoice is the
 	// payment's invoice_id still held in memory after its invoice was deleted.
+	// An installment deleted by a concurrent request is skipped, as if it had
+	// not been selected.
 	DeleteLoopInstallment(ctx context.Context, installment SubscriptionLifecycleInstallment, invoice *string, audit CourseSubscriptionAudit) error
 	// DeleteInvoice is payment.invoice.delete(): the Collector from the invoice
 	// (its rows, the many-to-many rows, Payment.invoice set NULL).

@@ -92,7 +92,12 @@ empty) `404 ["error: widget not found."]`.
   `(payment_date or creation_date).date()`. Matched payments render
   `get_course_carnet_name()` (course subscription, installment, carnet
   subscription, `course.label`, `Iscrizione`, category name; account transfers
-  raise), sorted by `expired_days`.
+  raise), sorted by `expired_days`. `Payment.course` and `Payment.meta` are
+  loaded by psycopg2's `json.loads`: the measured band is 9936 levels of total
+  JSON nesting (`'[]'` is 1), and 9937 raises `RecursionError`, which the view
+  does not catch (the plain 500 page; owner decision X15, CPython 3.13.16 on
+  the parity harness's Django). Go parses the stored text with that band
+  (`statisticExpiredPaymentJSONDepth`).
 
 ## statistic/athlete-dashboard
 
@@ -118,40 +123,52 @@ are sorted by day.
 `IsAssociationUser` (association owners and collaborators) runs with the other
 permissions, so athletes get DRF's generic 403 even for OPTIONS. `currentDate`
 (`'%Y-%m-%d'`, unpadded fields accepted, empty means today) selects the
-balance-sheet year; an invalid date is a 500. `available_years` are the previous
-and current year starts from today. Per month (rotated from the owner's start
-month): non-archived subscriptions created in the year (`TruncMonth`; when two
-groups share a month number the first returned wins) and accepted ones; course
-groups by title over live course subscriptions of active courses created in the
-year (sized by the course count, padded with `''`/`0`); all-time status counts
-(index `status - 1`); paid, non-expense payments in range (payment date, or
-creation date when unpaid-dated) grouped by creation month (a later year
-overwrites the same month number); `Decimal or 0` paid/unpaid totals (a zero sum
-is the integer 0); subscription/course paid sums (`null` when none); payment and
-invoice counts; mean accepted per month and mean age (`int(days / 365.25)`, born
-date missing is 0) formatted `{:.2f}`, sex counts. An accepted subscription
-without an associate is a 500.
+balance-sheet year; an invalid date is a 500. The view then removes the time by
+round-tripping the parsed datetime through `strftime('%Y-%m-%d')` and
+`strptime` (`statistic_views.py:1215`); that follows the platform (X16): below
+year 1000 strftime is the C library's (glibc writes `'999-03-05'`, the BSD
+library on macOS `'0999-03-05'`) while strptime needs exactly four digits, so a
+pre-1000 `currentDate` is a 500 on Linux and a normal report on macOS. Go asks
+`dto.PythonStrftimeYear` and answers the same on the platform it runs on.
+`available_years` are the previous and current year starts from today. Per
+month (rotated from the owner's start month): non-archived subscriptions created
+in the year (`TruncMonth`; when two groups share a month number the first
+returned wins) and accepted ones; course groups by title over live course
+subscriptions of active courses created in the year (sized by the course count,
+padded with `''`/`0`); all-time status counts (index `status - 1`); paid,
+non-expense payments in range (payment date, or creation date when unpaid-dated)
+grouped by creation month (a later year overwrites the same month number);
+`Decimal or 0` paid/unpaid totals (a zero sum is the integer 0);
+subscription/course paid sums (`null` when none); payment and invoice counts;
+mean accepted per month and mean age (`int(days / 365.25)`, born date missing is
+0) formatted `{:.2f}`, sex counts. An accepted subscription without an associate
+is a 500.
 
 ## Not ported (refused before any work)
 
 - `todaylessons` refuses what the CourseAttendance helper refuses: an
   unlinked day whose event has a non-string or non-UUID `event_id`, and
   instructor entries that are neither dicts nor lists of dicts.
-- `expiredPayments`: a stored `meta`/`course` JSON the reference parser does not accept is application state
-  (`ErrStatisticUnreachable`, the 500 page): jsonb always holds valid JSON.
-- `currentDate` years below 1000 are refused with the stable 500 page.
 - Ordering left unspecified by Django (ties in `bestcourses`, carnets with equal
   `lessons_left`, medical certificates with equal `days_left`, lessons on the
   same day, several course titles in the report) is not pinned.
 
 Since long-tail PR 3 (agent B) the non-finite `lessons_left` and the non-finite event ids are application state
-(`ErrStatisticUnreachable`): jsonb refuses infinities. Registry dates with non-ASCII digits (the association import
-stores registry meta as the archive has it) and payment `course`/`meta` JSON nested deeper than the reference parser
-reads (Django stores and reads it) stay refusals (`ErrStatisticNotPorted`). An athlete-dashboard event start with
-Unicode decimal digits is parsed as CPython's `_strptime` does (`\d` for the year and the second digit of the day, hour,
-minute and second; cases `statistic-reads-athlete-unicode-digit-start-listed`,
-`statistic-reads-athlete-unicode-digit-month-skipped`). A meta float outside the float range and a report year below
-1000 stay refusals.
+(`ErrStatisticUnreachable`): jsonb refuses infinities. Registry dates with decimal digits of another script are parsed
+as CPython's `_strptime` does (`\d` for `%Y`, the second digit of `%d`/`%H`/`%M`/`%S` and the digits of `%z`; `%m`, the
+first digit of `%d`/`%H`/`%M` and the second digit of `%z`'s minute stay ASCII), so a carnet's meta is listed or skipped
+as Django does (cases `statistic-reads-owner-expiring-carnet-registry-unicode-digits-recent` and
+`statistic-reads-owner-expiring-carnet-registry-unicode-digits-skipped`). A stored meta number beyond the double range
+with a fraction is a state jsonb holds: `json.loads` reads it as inf and DRF's strict renderer raises while rendering,
+after the view returned, so it is application state (`errStatisticRenderNonFinite`, the 500 page; case
+`statistic-reads-owner-expiring-carnet-meta-float-overflow-server-error`). A fraction that underflows is rendered as
+Python's float `0.0` (`-0.0` with a negative sign). Payment `course`/`meta` JSON is loaded by psycopg2's `json.loads`
+up to the measured band: 9936 levels of total nesting answer as today and 9937 is the view's uncaught exception (the
+500 page; owner decision X15, see the `expiredPayments` behaviour above; cases
+`statistic-reads-expiredpayments-course-json-at-depth-band` and
+`statistic-reads-expiredpayments-course-json-past-depth-band-server-error`). A report year below 1000 is ported and
+follows the platform (X16, see statistic/report above): 500 on Linux, a normal report on macOS; the case
+`statistic-reads-report-current-date-before-1000-server-error` states the glibc answer.
 
 ## Evidence (TDD)
 
@@ -193,3 +210,20 @@ member has a blank tax code and a removed member with a blank tax code): RED
 GREEN (`secaw-green`) 87/87 on native Django, native Go, Caddy `/api/v1` and
 `/api/v2`. Mutation (`secaw-mutation`): the dashboard codes without
 `familyTaxCodeFilled`'s blank filter fail `athlete-blank-tax-code` (CAUGHT).
+
+Deep stored JSON (owner decision X15; 95 cases in the fixture): two
+more associations carry an unpaid course payment
+whose `course` is jsonb text built by repetition, at 9936 and 9937 levels of total
+nesting. The adapter inserts each payment for its case only (`setup: {'payment': ...}`)
+and removes it afterwards, because the harness's state snapshot decodes every JSON
+column and walks it in Python, which cannot hold a value this deep. Cases
+`statistic-reads-expiredpayments-course-json-at-depth-band` (200, the payment listed
+with its `course.label` and description) and
+`statistic-reads-expiredpayments-course-json-past-depth-band-server-error` (the plain
+500 page); they sit just before the glibc `report-current-date-before-1000-server-error`
+case, which stays last. `go test ./internal/service -run DepthBand` pins both edges.
+
+X15 edges: django's edge is not a fixed number: it moves by a few levels with the value's shape (arrays or objects, where the
+deep part sits) and with the live stack of the run (the same module elements loaded at 9934 levels in one run and
+not in another). The bands above were measured with nested objects; the parity cases sit inside or past each band
+with a margin, and the exact edges are pinned by the Go tests (X15 is the accepted divergence there).

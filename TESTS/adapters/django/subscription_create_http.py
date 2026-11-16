@@ -28,6 +28,7 @@ from datetime import date, datetime, time as day_time, timedelta, timezone
 import json
 import os
 import pickle
+import re
 import threading
 import time
 import uuid
@@ -196,9 +197,12 @@ def seed_rows(source, created):
                                     user_id=ids[row['user']] if row['user'] else None, email=row['email'],
                                     is_minor=row.get('is_minor', False)))
     from application.models.user_models import AssociateTutorRelation
-    for row in source.get('relations', {}).values():
-        insert(AssociateTutorRelation, AssociateTutorRelation(associate_id=source['associates'][row['associate']]['id'],
-                                                              tutor_id=source['associates'][row['tutor']]['id'], is_primary=row['primary']))
+    STATE['relations'] = {}
+    for label, row in source.get('relations', {}).items():
+        relation = insert(AssociateTutorRelation, AssociateTutorRelation(associate_id=source['associates'][row['associate']]['id'],
+                                                                        tutor_id=source['associates'][row['tutor']]['id'],
+                                                                        is_primary=row['primary']))
+        STATE['relations'][label] = relation.pk
     for row in source['certificates'].values():
         insert(MedicalCertificate, MedicalCertificate(medical_id=row['id'], user_id=ids[row['user']] if row['user'] else None,
                                                       expiration_date=date.fromisoformat(row['expiration']) if row.get('expiration') else None))
@@ -213,7 +217,8 @@ def seed_rows(source, created):
             extra['creation_date'] = datetime.fromisoformat(row['created'].replace('Z', '+00:00'))
         insert(Subscription, Subscription(
             subscription_id=row['id'], sport_association_id=association, user_id=ids[row['user']] if 'user' in row else owner,
-            associate_id=source['associates'][row['associate']]['id'], start_date=resolve_date(row['start']),
+            associate_id=source['associates'][row['associate']]['id'] if row.get('associate') else None,
+            start_date=resolve_date(row['start']),
             end_date=resolve_date(row['end']), archived=row['archived'], subscription_number=row['number'], status_flag=4,
             medical_id=source['certificates'][row['medical']]['id'] if row.get('medical') else None, **extra))
     for row in source['payments'].values():
@@ -505,6 +510,13 @@ def check_rows(case, effect, before, after, ids, since, until, binding):
     for identifier, row in associates_old.items():
         expected = {**row, **resolve(changed.get(identifier, {}), binding)}
         contract.require(associates[identifier] == expected, 'state.associate-changed')
+    # Tutor relations: the seeded rows stay, except the one get_main_tutor made primary.
+    primary = effect.get('relation_primary')
+    for identifier, row in rows(before, LABELS['relation']).items():
+        expected = {**row, 'is_primary': True} if primary and identifier == str(STATE['relations'][primary]) else row
+        contract.require(rows(after, LABELS['relation']).get(identifier) == expected, 'state.relation-changed:' + str(identifier))
+    if primary:
+        binding['$relation'] = str(STATE['relations'][primary])
     # Tutor relation.
     relations = new[LABELS['relation']]
     contract.require(len(relations) == (1 if effect.get('relation') else 0), 'state.relation-count')
@@ -714,22 +726,49 @@ def check_audit(case, effect, before, after, fixture, ids, context, binding):
         ref = spec['ref']
         if ref in STATE['source']['certificates']:
             pk = STATE['source']['certificates'][ref]['id']
-        else:
+        elif '$' + ref in binding:
             pk = binding['$' + ref]
+        else:
+            # A row this request created and deleted (the abandoned placeholder
+            # Document): only its audit entries carry its id.
+            contract.require(spec['model'] == 'document', 'audit.unbound-ref' + where)
+            pk = event['object_pk']
+            binding['$' + ref] = pk
+            contract.require(pk not in rows(after, DOCUMENT), 'audit.unbound-live-row' + where)
         model = user_model() if spec['model'] == 'user' else models()[classes[spec['model']]]
-        instance = model._base_manager.get(pk=pk)
+        instance = model._base_manager.filter(pk=pk).first()
         if spec['model'] == 'user' and spec['action'] == 0:
             # create_user saved the token_hex(10) username first.
-            import re
             token = (event['changes'].get('username') or [None, ''])[1]
             contract.require(re.fullmatch(r'[0-9a-f]{20}', token) is not None, 'audit.token-username')
             binding['$token_username'] = token
-        representation = str(instance)
+        # A Document created and deleted in this request has no row left; its
+        # representation is the model's str() either way.
+        representation = str(instance) if instance is not None else f'Document object ({pk})'
         contract.require(event['content_type_id'] == types[(app, spec['model'])] and event['action'] == spec['action']
                          and event['object_pk'] == str(pk) and event['object_repr'] == representation, 'audit.identity' + where + json.dumps(
                              [event['content_type_id'], types[(app, spec['model'])], event['action'], event['object_pk'], str(pk),
                               event['object_repr'], str(instance)]))
-        if spec['action'] == 0:
+        if instance is None:
+            # The two entries of a row that is gone record the stored values, so
+            # each is the other's inverse; the filename is the authored one.
+            paired = [item for item in added if item['object_pk'] == str(pk) and item['action'] != spec['action']]
+            contract.require(len(paired) == 1, 'audit.deleted-document-pair' + where)
+            expected = {name: [pair[1], pair[0]] for name, pair in paired[0]['changes'].items()}
+            contract.require(set(expected) == {'document_id', 'token', 'filename', 'creation_date', 'customer_invoice_pdf'},
+                             'audit.deleted-document-columns' + where)
+            created_entry = spec['action'] == 0
+            contract.require(expected['document_id'] == (['None', str(pk)] if created_entry else [str(pk), 'None'])
+                             and expected['filename'] == (['None', spec['filename']] if created_entry
+                                                          else [spec['filename'], 'None'])
+                             and expected['customer_invoice_pdf'] == (
+                                 ['None', 'application.CustomerInvoice.None'] if created_entry
+                                 else ['application.CustomerInvoice.None', 'None']),
+                             'audit.deleted-document-values' + where + json.dumps(expected))
+            token = expected['token'][1] if created_entry else expected['token'][0]
+            contract.require(re.fullmatch(r'[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}', token) is not None,
+                             'audit.deleted-document-token' + where)
+        elif spec['action'] == 0:
             overrides = resolve(spec['changes'], binding)
             if spec['model'] == 'user':
                 overrides = {**overrides, 'username': ['None', binding['$token_username']]}

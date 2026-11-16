@@ -432,9 +432,6 @@ func (s *EmailTasks) configurationSend(ctx context.Context, job *domain.Job, con
 				if ctx.Err() != nil {
 					return ctx.Err()
 				}
-				if errors.Is(err, domain.ErrEmailTaskUnsupported) {
-					return err
-				}
 				s.logger.WarnContext(ctx, "communication smtp send failed", "code", "communication_smtp_failed")
 				return nil
 			}
@@ -445,7 +442,13 @@ func (s *EmailTasks) configurationSend(ctx context.Context, job *domain.Job, con
 			}
 			defer writer.Rollback()
 			if err = writer.SaveCommunicationConfiguration(ctx, configuration, s.now().UTC().Truncate(time.Microsecond)); err != nil {
-				return err
+				if ctx.Err() != nil {
+					return ctx.Err()
+				}
+				// A save that raises is inside send_email's try: it answers
+				// (False, e), so the delivery stands and the run goes on.
+				s.logger.WarnContext(ctx, "communication configuration save failed", "code", "communication_balance_failed")
+				return nil
 			}
 			return writer.Commit()
 		} else if ctx.Err() != nil {
@@ -646,7 +649,8 @@ func (s *EmailTasks) CheckEmailHTML(ctx context.Context, job domain.Job, associa
 }
 
 // RenderEmail is render_to_string(name, context) in the worker (instance
-// branding, LANGUAGE_CODE); inputs the renderer refuses are ErrEmailTaskUnsupported.
+// branding, LANGUAGE_CODE); inputs the renderer refuses end the run with its
+// refusal.
 func (s *EmailTasks) RenderEmail(ctx context.Context, job domain.Job, name string, context map[string]any) (string, error) {
 	reader, err := s.store.BeginEmailTask(ctx, &job)
 	if err != nil {

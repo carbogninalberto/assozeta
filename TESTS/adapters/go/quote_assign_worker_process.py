@@ -45,7 +45,7 @@ HOST_USER = 'noreply@example.test'
 SMTP_PASSWORD = 'smtp-fixture-secret'
 TIMER_WAIT = 33
 UUID4 = re.compile(r'[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\Z')
-VARIANTS = ('main', 'stop', 'smtp')
+VARIANTS = ('main', 'stop', 'smtp', 'odd', 'overflow')
 PROBE = bool(os.environ.get('QUOTE_ASSIGN_PROBE'))
 ORDER_PROBE = bool(os.environ.get('QUOTE_ASSIGN_ORDER_PROBE'))
 EXPECTED = {
@@ -54,7 +54,8 @@ EXPECTED = {
     'a subscription without associate ends the run like Django',
     'a later run on the assigned state creates nothing',
     'unsupported version payload and tenant fail before business effects',
-    'a fee outside the ported conversions refuses the run before any effect',
+    'plan values Decimal() and the template read match the Django task',
+    'a fee beyond numeric(9, 2) stops the run after the earlier payments, like Django',
     'a plan name with a line break in the SMTP subject: native worker reproduces the Django task',
 }
 
@@ -97,15 +98,16 @@ class QuoteFixture:
                  (4, 'owner4@example.test', 1), (5, 'owner5@example.test', 1), (6, 'owner6@example.test', 1),
                  (21, 'Athlete.One@Example.TEST', 2), (22, 'athlete2@example.test', 2), (23, 'athlete3@example.test', 2),
                  (24, 'athlete4@example.test', 2)]
+        if variant in ('odd', 'overflow'):
+            users.append((7, 'owner7@example.test', 1))  # owner of the seventh association below
         User.original_objects.bulk_create([User(user_id=U(n), username=f'quote-{n}', role=role, email=email, password='!private-fixture',
             first_name=f'Nome{n}', last_name='Fixture', date_joined=self.base) for n, email, role in users])
         day, month = today.day, today.month
-        fee_two = 12.5
-        if variant == 'unported':
-            fee_two = '1e2'  # Decimal('1e2') in Django; exponent text is not a ported fee conversion
+        recent, old = self.base - timedelta(days=2), self.base - timedelta(days=500)
+        previous = lambda pid: {'subscription_data': {'id': pid, 'name': 'Precedente', 'subscription_fee': 10}}
         plans = {
             1: [plan('plan-new', 'plan-old', 30, 'Quota "Seconda" & <rata>', day=day, month=month),
-                plan('plan-float', 'plan-old', fee_two, 'Quota float', day=str(day), month=month),
+                plan('plan-float', 'plan-old', 12.5, 'Quota float', day=str(day), month=month),
                 plan('plan-str', 'plan-old-2', '45.00', 'Quota stringa', day=day, month=month),
                 plan('plan-tomorrow', 'plan-old', 99, 'Domani', day=other.day, month=other.month),
                 plan('plan-manual', 'plan-old', 98, 'Manuale', day=day, month=month, auto=False),
@@ -116,24 +118,11 @@ class QuoteFixture:
             5: [plan('plan-deleted', 'plan-old', 15, 'Eliminata', day=day, month=month)],
             6: [plan('plan-mail', 'plan-old', 25, 'Quota mail', day=day, month=month)],
         }
-        SportAssociation.original_objects.bulk_create([SportAssociation(sport_association_id=U(10 + n), user_id=U(n),
-            denomination=name, tax_code='00000000000', multiple_subscription_fee=n != 3, subscription_fee_plans=plans[n], deleted=n == 5)
-            for n, name in [(1, "Società Uno & C."), (2, 'Due SMTP'), (3, 'Tre singola'), (4, 'Quattro base'), (5, 'Cinque eliminata'),
-                            (6, 'Sei mail')]])
-        CustomAccounts.objects.bulk_create([CustomAccounts(custom_account_id=U(30 + n), sport_association_id=U(10 + n), name='Banca',
-            account_type=CustomAccounts.BANK, editable=False, enabled=True, initial_balance=Decimal('0.00')) for n in (1, 2)])
-        PaymentCategory.objects.bulk_create([PaymentCategory(payment_category_id=U(40), name='Entrate e proventi da attività tipiche')])
-        CommunicationConfiguration.objects.bulk_create([CommunicationConfiguration(communication_configuration_id=U(50),
-            sport_association_id=U(12), email_smtp_host='127.0.0.1', email_smtp_port=self.smtp_port, email_smtp_user='mailer@example.test',
-            email_smtp_password=SMTP_PASSWORD, email_sender_name='Due SMTP', email_encryption='TLS', daily_email_limit=1000,
-            daily_email_balance=4)])
+        associations = [(1, "Società Uno & C."), (2, 'Due SMTP'), (3, 'Tre singola'), (4, 'Quattro base'), (5, 'Cinque eliminata'),
+                        (6, 'Sei mail')]
+        accounts = [1, 2]
         associates = [(61, 11, 'Anna', "D'Amico"), (62, 11, None, 'Senza nome'), (63, 11, 'Carla', 'Esistente'),
                       (64, 12, 'Dario', 'Smtp'), (65, 13, 'Elena', 'Singola'), (66, 16, 'Fabio', 'Mail'), (67, 11, 'Gaia', 'Owner')]
-        Associate.objects.bulk_create([Associate(associate_id=U(n), sport_association_id=U(a), first_name=f, last_name=l)
-                                       for n, a, f, l in associates])
-        recent, old = self.base - timedelta(days=2), self.base - timedelta(days=500)
-        previous = lambda pid: {'subscription_data': {'id': pid, 'name': 'Precedente', 'subscription_fee': 10}}
-        # n, association, user, associate, payment meta, subscription meta, extra
         subscriptions = [
             (101, 11, 21, 61, previous('plan-old'), {'plan_id': 'plan-old'}, {}),
             (102, 11, 22, 62, previous('PLAN-OLD'), {'plan_id': 'x'}, {}),
@@ -154,6 +143,38 @@ class QuoteFixture:
             (117, 16, 22, 66, previous('plan-old'), {'plan_id': 'x'}, {}),
             (118, 11, 21, 61, previous('plan-old'), {'plan_id': 'x'}, {}),
         ]
+        if variant in ('odd', 'overflow'):
+            # A seventh association carries the fee shapes: the first plan is
+            # created before the second one stops the run (overflow variant).
+            plans[7] = [plan('plan-big-day', 'prev-odd', 30, 'Giorno enorme', day=10 ** 29, month=month),
+                        plan('plan-exp', 'prev-odd', '1e2', 'Quota esponente', day=day, month=month),
+                        plan('plan-underscore', 'prev-odd', '1_000', 'Quota underscore', day=day, month=month),
+                        plan('plan-script', 'prev-odd', '\u0661\u0662.\u0665\u0660', 'Quota scrittura', day=day, month=month),
+                        plan('plan-rounding', 'prev-odd', '2.665', 'Quota arrotondata', day=day, month=month),
+                        plan('plan-list-name', 'prev-odd', 6.5, ['Quota', 1], day=day, month=month),
+                        plan('plan-dict-name', 'prev-odd', '7', {'label': 'Quota'}, day=day, month=month)]
+            if variant == 'overflow':
+                # A value numeric(9, 2) cannot hold: format_number raises while
+                # its INSERT is prepared, after the first plan's payments.
+                plans[7] = [plan('plan-ok', 'prev-odd', 25, 'Quota prima', day=day, month=month),
+                            plan('plan-over', 'prev-odd', 10000000, 'Quota enorme', day=day, month=month)]
+            associations.append((7, 'Sette valori'))
+            accounts.append(7)
+            associates.append((68, 17, 'Enrico', 'Valori'))
+            subscriptions.append((120, 17, 22, 68, previous('prev-odd'), {'plan_id': 'x'}, {}))
+        SportAssociation.original_objects.bulk_create([SportAssociation(sport_association_id=U(10 + n), user_id=U(n),
+            denomination=name, tax_code='00000000000', multiple_subscription_fee=n != 3, subscription_fee_plans=plans[n], deleted=n == 5)
+            for n, name in associations])
+        CustomAccounts.objects.bulk_create([CustomAccounts(custom_account_id=U(30 + n), sport_association_id=U(10 + n), name='Banca',
+            account_type=CustomAccounts.BANK, editable=False, enabled=True, initial_balance=Decimal('0.00')) for n in accounts])
+        PaymentCategory.objects.bulk_create([PaymentCategory(payment_category_id=U(40), name='Entrate e proventi da attività tipiche')])
+        CommunicationConfiguration.objects.bulk_create([CommunicationConfiguration(communication_configuration_id=U(50),
+            sport_association_id=U(12), email_smtp_host='127.0.0.1', email_smtp_port=self.smtp_port, email_smtp_user='mailer@example.test',
+            email_smtp_password=SMTP_PASSWORD, email_sender_name='Due SMTP', email_encryption='TLS', daily_email_limit=1000,
+            daily_email_balance=4)])
+        Associate.objects.bulk_create([Associate(associate_id=U(n), sport_association_id=U(a), first_name=f, last_name=l)
+                                       for n, a, f, l in associates])
+        # n, association, user, associate, payment meta, subscription meta, extra
         if variant == 'stop':
             subscriptions.insert(3, (119, 11, 24, None, previous('plan-old'), {'plan_id': 'x'}, {}))
         payments = [Payment(payment_id=U(200 + n), amount=Decimal('10.00'), subject=1, user_id=U(u), sport_association_id=U(a),
@@ -353,6 +374,24 @@ class QuoteRehearsal(Rehearsal):
         elif variant == 'smtp':
             # The same quotes as the main seed; the SMTP subject with a line break fails inside send_email's try.
             assert len(created) == 10, quotes
+        elif variant == 'odd':
+            # The main seed's quotes plus the seventh association's: the 30-digit
+            # day bound equals no date, and every other fee shape converts.
+            assert len(created) == 16, quotes
+            assert sorted(q for q in quotes if q[0] == 22 and q[1] in ('plan-exp', 'plan-underscore', 'plan-script', 'plan-rounding',
+                                                                       'plan-list-name', 'plan-dict-name')) == sorted([
+                (22, 'plan-exp', '100.00'), (22, 'plan-underscore', '1000.00'), (22, 'plan-script', '12.50'),
+                (22, 'plan-rounding', '2.67'), (22, 'plan-list-name', '6.50'), (22, 'plan-dict-name', '7.00')]), quotes
+            assert all(row['custom_accounts_id'] == U(37) for row in created if row['sport_association_id'] == U(17))
+            assert len(delivered) == 1 and balance == 5, (transcripts, balance)
+            assert len(after['auditlog.LogEntry']) == 17, len(after['auditlog.LogEntry'])
+        elif variant == 'overflow':
+            # The first plan of the seventh association is created; the second
+            # stops the run while its INSERT is prepared. The earlier quotes stay.
+            assert len(created) == 11, quotes
+            assert (22, 'plan-ok', '25.00') in quotes, quotes
+            assert all(row['custom_accounts_id'] == U(37) for row in created if row['sport_association_id'] == U(17))
+            assert len(delivered) == 1 and balance == 5, (transcripts, balance)
         else:
             assert len(created) < 10 and (24, 'plan-new', '30.00') in quotes, quotes
 
@@ -394,11 +433,6 @@ class QuoteRehearsal(Rehearsal):
             (self.output / f'smtp-{variant}.json').write_text(json.dumps({'django': transcripts, 'go': actual_transcripts}, indent=1) + '\n')
         assert actual_transcripts == transcripts, f'Go quote assign SMTP transcripts differ from the Django task on the {variant} seed'
 
-    def refused(self, identifier, before, label):
-        await_condition(lambda: self.job(identifier)[0] == 'failed', label)
-        assert self.sql('SELECT error_code FROM assozeta_go_jobs WHERE id=%s', (identifier,)) == [('task_failed',)]
-        assert self.fixture.snapshot() == before and not self.drain() and not self.smtp.take()
-
     def run(self):
         self.command('migrate')
         assert self.sql('SELECT runtime,generation FROM assozeta_go_job_ownership') == [('django', 1)]
@@ -432,9 +466,12 @@ class QuoteRehearsal(Rehearsal):
             assert self.fixture.snapshot() == before and not self.drain() and not self.smtp.take()
         self.case('unsupported version payload and tenant fail before business effects')
 
-        identifier, before = self.seed_job(variant='unported')
-        self.refused(identifier, before, 'unported fee refused')
-        self.case('a fee outside the ported conversions refuses the run before any effect')
+        identifier, before = self.seed_job(variant='odd')
+        self.matches_django('odd', identifier, before)
+        self.case('plan values Decimal() and the template read match the Django task')
+        identifier, before = self.seed_job(variant='overflow')
+        self.matches_django('overflow', identifier, before)
+        self.case('a fee beyond numeric(9, 2) stops the run after the earlier payments, like Django')
         identifier, before = self.seed_job(variant='smtp')
         self.matches_django('smtp', identifier, before)
         self.stop(process)

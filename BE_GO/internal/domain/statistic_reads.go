@@ -7,11 +7,6 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
-// ErrStatisticNotPorted refuses statistic/dashboard widgets the Go port does
-// not implement (todaylessons, expiredPayments) and inputs it does not
-// characterize; the handler answers with the stable 500 page before any work.
-var ErrStatisticNotPorted = refusal.New("statistic input is not ported")
-
 // ErrStatisticUnreachable is a state no request or stored row produces (each
 // site names the decoder or constraint that rules it out).
 var ErrStatisticUnreachable = refusal.AppState("statistic: unreachable state")

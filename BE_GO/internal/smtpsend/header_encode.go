@@ -14,22 +14,37 @@ import (
 	"unicode/utf8"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/pystr"
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
-// errNotPythonStr is text Go holds as bytes that are neither UTF-8 nor the
-// WTF-8 form of a lone surrogate (pystr.Runes would have to invent U+FFFD).
-// Request and stored text never is, but process environment values
-// (WHITELABEL_NAME, EMAIL_HOST_USER) are read as raw bytes, where Python
-// decodes them with surrogateescape and sends. Left to Django.
-var errNotPythonStr = refusal.New("smtpsend: text not representable as a Python str")
-
-// pythonRunes decodes value as the str it stands for: UTF-8, with the
-// three-byte form of a lone surrogate (0xED 0xA0-0xBF 0x80-0xBF) becoming
-// that surrogate. ok is false for any other invalid byte.
-func pythonRunes(value string) ([]rune, bool) {
-	runes := pystr.Runes(value)
-	return runes, pystr.String(runes) == value
+// pythonRunes decodes value as the Python str it stands for: UTF-8, with the
+// three-byte form of a lone surrogate (0xED 0xA0-0xBF 0x80-0xBF) becoming that
+// surrogate, and every other invalid byte decoded with 'surrogateescape' as
+// U+DC00|byte. Process environment values (WHITELABEL_NAME, EMAIL_HOST_USER)
+// reach Go as raw bytes and Python decodes them the second way; the result is
+// always a valid Python str.
+func pythonRunes(value string) []rune {
+	runes := make([]rune, 0, len(value))
+	for i := 0; i < len(value); {
+		if c := value[i]; c < utf8.RuneSelf {
+			runes = append(runes, rune(c))
+			i++
+			continue
+		}
+		if value[i] == 0xED && i+2 < len(value) && value[i+1] >= 0xA0 && value[i+1] <= 0xBF && value[i+2] >= 0x80 && value[i+2] <= 0xBF {
+			runes = append(runes, 0xD800|rune(value[i+1]&0x3F)<<6|rune(value[i+2]&0x3F))
+			i += 3
+			continue
+		}
+		r, size := utf8.DecodeRuneInString(value[i:])
+		if r != utf8.RuneError || size > 1 {
+			runes = append(runes, r)
+			i += size
+			continue
+		}
+		runes = append(runes, 0xDC00+rune(value[i]))
+		i++
+	}
+	return runes
 }
 
 // hasSurrogate is email.header._has_surrogates: a code point in

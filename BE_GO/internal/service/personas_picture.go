@@ -3,19 +3,15 @@ package service
 import (
 	"context"
 	"errors"
-	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
-	smithy "github.com/aws/smithy-go"
-	smithyhttp "github.com/aws/smithy-go/transport/http"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/pymime"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/documentkey"
-	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/documentobjects"
 )
 
 // PersonaPictureObjects is the default storage the picture upload uses.
@@ -118,9 +114,7 @@ func personaPictureURL(settings PersonaPictureSettings, key string) string {
 // (Django's get_available_name picks a random alternative name when the key is
 // taken, unless AWS_S3_FILE_OVERWRITE is on), put_object_acl public-read when
 // object ACLs are on, and the URL stored as picture_path. Every storage
-// exception is the serializer's 400 with botocore's text; the storage answers
-// botocore retries (throttling, server errors, connection failures) stay
-// refused and are handed off.
+// exception is the serializer's 400 with botocore's final text.
 func (s *PersonaWrites) uploadPicture(ctx context.Context, decoded []byte, associate string) (string, error) {
 	if s.pictures == nil {
 		// cmd/server/main.go always calls WithPictures.
@@ -142,10 +136,10 @@ func (s *PersonaWrites) uploadPicture(ctx context.Context, decoded []byte, assoc
 			return s.pictures.Exists(ctx, candidateKey)
 		}, documentkey.RandomName7)
 		if err != nil {
-			if text, ok := botocoreClientError(err, "HeadObject", true); ok {
+			if text, ok := botocoreFinalErrorText(err, "HeadObject"); ok {
 				return "", &PersonaPictureInvalid{Text: "Error processing image: " + text}
 			}
-			return "", ErrPersonaNotPorted
+			return "", err
 		}
 		key, err = documentkey.S3Key(name, s.pictures.Location())
 		if err != nil {
@@ -160,10 +154,11 @@ func (s *PersonaWrites) uploadPicture(ctx context.Context, decoded []byte, assoc
 		contentType = "application/octet-stream"
 	}
 	if err := s.pictures.Put(ctx, key, decoded, contentType, encoding); err != nil {
-		if text, ok := botocoreClientError(err, "PutObject", false); ok {
+		// default_storage.save's exception, as for the document uploads.
+		if text, ok := documentSaveFailureText(err, len(decoded)); ok {
 			return "", &PersonaPictureInvalid{Text: "Error processing image: " + text}
 		}
-		return "", ErrPersonaNotPorted
+		return "", err
 	}
 	object := name
 	if location != "" {
@@ -171,77 +166,14 @@ func (s *PersonaWrites) uploadPicture(ctx context.Context, decoded []byte, assoc
 	}
 	if s.pictureSettings.UseObjectACL {
 		if err := s.pictures.PutACL(ctx, object, "public-read"); err != nil {
-			// botocore's ClientError text for a refused request.
-			if text, ok := botocoreClientError(err, "PutObjectAcl", false); ok {
+			// botocore's text for a failed put_object_acl.
+			if text, ok := botocoreFinalErrorText(err, "PutObjectAcl"); ok {
 				return "", &PersonaPictureInvalid{Text: "Error processing image: " + text}
 			}
-			return "", ErrPersonaNotPorted
+			return "", err
 		}
 	}
 	return personaPictureURL(s.pictureSettings, object), nil
-}
-
-// botocoreClientError is str(ClientError) for an S3 error answer botocore
-// raises without retrying: "An error occurred (<code>) when calling the
-// <operation> operation: <message>". ok=false for errors botocore retries
-// (legacy mode: HTTP 429, 500, 502, 503, 504, 509; HTTP 400 with code
-// Throttling, ThrottlingException, ThrottledException,
-// RequestThrottledException, ProvisionedThroughputExceededException,
-// RequestTimeout or BadDigest), for 3xx answers and for errors without an
-// HTTP answer (connection failures): those stay refused.
-func botocoreClientError(err error, operation string, head bool) (string, bool) {
-	// documentobjects.S3.Exists already turned a HEAD client-error answer into
-	// botocore's text (the code is the status, the message its reason phrase).
-	var headStatus *documentobjects.HeadStatusError
-	if head && errors.As(err, &headStatus) {
-		return headStatus.Error(), true
-	}
-	var response *smithyhttp.ResponseError
-	if !errors.As(err, &response) {
-		return "", false
-	}
-	status := response.HTTPStatusCode()
-	if status < 400 || status >= 600 || botocoreRetriedStatuses[status] {
-		return "", false
-	}
-	var api smithy.APIError
-	known := errors.As(err, &api)
-	if status == http.StatusBadRequest && known && botocoreRetried400Codes[api.ErrorCode()] {
-		return "", false
-	}
-	if !head && !known {
-		return "", false
-	}
-	code, message := strconv.Itoa(status), botocoreHTTPPhrases[status]
-	if !head {
-		code, message = api.ErrorCode(), api.ErrorMessage()
-	}
-	return "An error occurred (" + code + ") when calling the " + operation + " operation: " + message, true
-}
-
-// botocoreRetriedStatuses are the HTTP answers botocore's legacy retry mode
-// retries (retryhandler.py's throttle and general error checks).
-var botocoreRetriedStatuses = map[int]bool{429: true, 500: true, 502: true, 503: true, 504: true, 509: true}
-
-// botocoreRetried400Codes are the HTTP 400 codes botocore's legacy retry mode
-// retries.
-var botocoreRetried400Codes = map[string]bool{"Throttling": true, "ThrottlingException": true, "ThrottledException": true,
-	"RequestThrottledException": true, "ProvisionedThroughputExceededException": true, "RequestTimeout": true, "BadDigest": true}
-
-// botocoreHTTPPhrases holds http.client.responses for HTTPStatus 400-599: a
-// HEAD error answer has no body, so botocore's message is the status phrase
-// (empty for a status Python does not name).
-var botocoreHTTPPhrases = map[int]string{
-	400: "Bad Request", 401: "Unauthorized", 402: "Payment Required", 403: "Forbidden", 404: "Not Found",
-	405: "Method Not Allowed", 406: "Not Acceptable", 407: "Proxy Authentication Required", 408: "Request Timeout",
-	409: "Conflict", 410: "Gone", 411: "Length Required", 412: "Precondition Failed", 413: "Content Too Large",
-	414: "URI Too Long", 415: "Unsupported Media Type", 416: "Range Not Satisfiable", 417: "Expectation Failed",
-	418: "I'm a Teapot", 421: "Misdirected Request", 422: "Unprocessable Content", 423: "Locked",
-	424: "Failed Dependency", 425: "Too Early", 426: "Upgrade Required", 428: "Precondition Required",
-	429: "Too Many Requests", 431: "Request Header Fields Too Large", 451: "Unavailable For Legal Reasons",
-	500: "Internal Server Error", 501: "Not Implemented", 502: "Bad Gateway", 503: "Service Unavailable",
-	504: "Gateway Timeout", 505: "HTTP Version Not Supported", 506: "Variant Also Negotiates",
-	507: "Insufficient Storage", 508: "Loop Detected", 510: "Not Extended", 511: "Network Authentication Required",
 }
 
 // personaWithoutPicture is the body without picture_path: the serializer

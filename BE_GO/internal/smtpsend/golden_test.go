@@ -330,9 +330,9 @@ func TestRenderMatchesPythonAsString(t *testing.T) {
 }
 
 // TestImpossibleAndRaisingInputs covers the answers left once the subset is
-// gone: text a Python str cannot hold (only raw environment bytes reach it:
-// left to Django) and a value Python raises on inside send_email's try, which
-// is a (False, e) answer, never a handoff.
+// gone: raw environment bytes (decoded with surrogateescape and sent) and a
+// value Python raises on inside send_email's try, which is a (False, e)
+// answer, never a handoff.
 func TestImpossibleAndRaisingInputs(t *testing.T) {
 	server := Server{Host: "127.0.0.1", Port: 25, Dial: func(context.Context, string, string) (net.Conn, error) {
 		t.Fatal("a refused message must not connect")
@@ -349,7 +349,7 @@ func TestImpossibleAndRaisingInputs(t *testing.T) {
 	} {
 		message := base
 		mutate(&message)
-		if _, err := Render(message, NewBoundary()); !errors.Is(err, refusal.ErrNotPorted) {
+		if _, err := Render(message, NewBoundary()); err != nil {
 			t.Errorf("%s: %v", name, err)
 		}
 	}

@@ -49,12 +49,15 @@ func compare(frame *Frame, err error, want *goldenOutcome) string {
 	}
 	if want.Digest != "" {
 		digest := sha256.New()
+		line := make([]byte, 0, 64*len(frame.Columns))
 		for _, row := range frame.Rows {
+			line = line[:0]
 			for _, value := range row {
-				digest.Write([]byte(tagged(value)))
-				digest.Write([]byte{0x1f})
+				line = append(line, tagged(value)...)
+				line = append(line, 0x1f)
 			}
-			digest.Write([]byte{0x1e})
+			line = append(line, 0x1e)
+			digest.Write(line)
 		}
 		if len(frame.Rows) != want.Count || hex.EncodeToString(digest.Sum(nil)) != want.Digest {
 			return "rows differ (digest)"
@@ -122,7 +125,7 @@ func TestFramesMatchPandas(t *testing.T) {
 	if err := json.Unmarshal(raw, &golden); err != nil || golden.Pandas != "2.2.3" || len(golden.Cases) < 45000 {
 		t.Fatal("invalid golden file", err)
 	}
-	failures, refused, frames, typed := 0, 0, 0, 0
+	failures, frames, typed := 0, 0, 0
 	for index, item := range golden.Cases {
 		data, err := base64.StdEncoding.DecodeString(item.Input)
 		if err != nil {
@@ -142,10 +145,6 @@ func TestFramesMatchPandas(t *testing.T) {
 			want *goldenOutcome
 		}{{"ReadText", ReadText, item.Raw}, {"ReadDecodedText", ReadDecodedText, item.Text}} {
 			frame, err := run.read(data, textual)
-			if errors.Is(err, ErrBareCRBacktrack) {
-				refused++
-				continue
-			}
 			if err == nil {
 				frames++
 			}
@@ -163,16 +162,11 @@ func TestFramesMatchPandas(t *testing.T) {
 	if failures > 0 {
 		t.Fatalf("%d outcomes differ", failures)
 	}
-	// The re-read case is refused, not reproduced: pandas fills its parser
-	// buffers or stops at the reader's row limit, whichever comes first.
-	if refused > len(golden.Cases)/100 {
-		t.Fatalf("%d of %d outcomes refused", refused, 2*len(golden.Cases))
-	}
 	if typed < 5000 {
 		t.Fatalf("only %d cases with text columns", typed)
 	}
-	t.Logf("%d inputs (%d with text columns): %d frames, %d refused of %d outcomes", len(golden.Cases), typed, frames,
-		refused, 2*len(golden.Cases))
+	t.Logf("%d inputs (%d with text columns): %d frames of %d outcomes", len(golden.Cases), typed, frames,
+		2*len(golden.Cases))
 }
 
 func TestValueRendering(t *testing.T) {
@@ -202,9 +196,10 @@ func TestValueRendering(t *testing.T) {
 }
 
 func TestReadErrors(t *testing.T) {
-	// A whitespace-led line after a bare carriage return makes the tokenizer
-	// read the lines before it again; how many it fits is left to Django.
-	if _, err := Read([]byte("a\rb\rc\r d\r")); !errors.Is(err, ErrBareCRBacktrack) {
+	// A whitespace-led line after a bare carriage return reads the lines
+	// before it again: here the re-read fills the word buffer pandas starts
+	// with, so it raises its ParserError.
+	if _, err := Read([]byte("a\rb\rc\r d\r")); !errors.Is(err, ErrParser) {
 		t.Errorf("%v", err)
 	}
 	if _, err := Read([]byte("x\n1\xff\n")); !errors.Is(err, ErrDecode) {
@@ -215,8 +210,8 @@ func TestReadErrors(t *testing.T) {
 	}
 	// The re-read rows are those pandas buffers when its row limit comes
 	// first: the header line, then the lines read again from the start of the
-	// buffer (pandas 2.2.3: read_csv('a\\r d\\r') has one column 'a' and the
-	// rows 'a', ' d').
+	// tokenize call (pandas 2.2.3: read_csv('a\\r d\\r') has one column 'a'
+	// and the rows 'a', ' d').
 	frame, err := Read([]byte("a\r d\r"))
 	if err != nil || !slices.Equal(frame.Columns, []string{"a"}) || len(frame.Rows) != 2 {
 		t.Fatalf("%v %v", frame, err)

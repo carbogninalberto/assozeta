@@ -8,6 +8,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/fatturapa"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // invoiceSyncCustomer is the valid invoice_customers_add (invoice-sync-print):
@@ -106,19 +107,22 @@ func invoiceSyncFattura(c domain.NewCustomerInvoice) fatturapa.Invoice {
 	}
 }
 
-// invoiceSyncDate is the view's default (today) or strptime('%Y-%m-%d') of the value.
+// invoiceSyncDate is the view's default (today) or strptime('%Y-%m-%d') of the
+// value. A date before 1000 is already accepted or rejected by CustomerAdd's
+// DateField re-read of strftime('%d/%m/%Y') (invoice_parties.go), which follows
+// the platform's C library like the XML's own strftime in internal/fatturapa.
 func invoiceSyncDate(object domain.RequestObject, name string, today time.Time) (time.Time, error) {
 	value, present := object.Lookup(name)
 	if !present || value == nil {
 		return today, nil
 	}
 	parsed, _ := dto.PythonStrptimeDate(value.(string))
-	if parsed.Year() < 1000 {
-		// strftime('%Y') of a year below 1000 is platform dependent (unpadded on glibc).
-		return time.Time{}, domain.ErrInvoicePartyNotPorted
-	}
 	return parsed, nil
 }
+
+// errCustomerInvoiceJSONColumn is the customer invoice INSERT jsonb rejects
+// (a non-finite number in the request's JSON fields): Django raises DataError.
+var errCustomerInvoiceJSONColumn = refusal.AppState("customer invoice add: JSON value jsonb rejects")
 
 // customerAddSave continues a validated invoice_customers_add: serializer.save()
 // (create entry from the in-memory values), invoice.save() (an entry for what
@@ -148,11 +152,15 @@ func (s *InvoiceParties) customerAddSave(ctx context.Context, request InvoicePar
 	// Refuse inputs outside the ported FatturaPA subset before any write.
 	fattura := invoiceSyncFattura(invoice)
 	sample := fatturapa.Progressivo(now.Unix(), 0)
-	// The lines here are the request's, not a jsonb column: JSON text Go does
-	// not read (fatturapa.ErrUnexpectedJSON) is refused too.
+	// The lines here are the request's, not a jsonb column. The only request
+	// JSON fatturapa does not read (fatturapa.ErrUnexpectedJSON) is a NaN or
+	// +/-Infinity (json.loads accepts the literals and float() makes 1e400
+	// infinite): serializer.save()'s INSERT dumps them as tokens jsonb
+	// rejects (DataError), before any row or audit entry (log_update skips an
+	// instance being added), so Django answers the 500 page.
 	for _, build := range []func(fatturapa.Invoice, string) (string, error){fatturapa.XML, fatturapa.JSON} {
 		if _, err = build(fattura, sample); errors.Is(err, fatturapa.ErrUnexpectedJSON) {
-			return domain.ErrInvoicePartyNotPorted
+			return errCustomerInvoiceJSONColumn
 		}
 	}
 	overrides := map[string]string{}

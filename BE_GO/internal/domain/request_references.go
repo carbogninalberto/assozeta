@@ -46,11 +46,16 @@ func (o RequestObject) List(name string) ([]any, bool) {
 type RequestUpload struct {
 	Name string
 	Size int64
-	// Content is the whole file when it fits one 64 KiB chunk (Whole), else empty.
+	// Content is the whole file when it fits one 64 KiB chunk (Whole), else
+	// empty; a route that asks for whole file parts (handler.withWholeUploads)
+	// gets all of it (Whole) whatever its size.
 	Content string
 	Whole   bool
 	// Temp is a request over FILE_UPLOAD_MAX_MEMORY_SIZE: Django spools the file (TemporaryUploadedFile).
 	Temp bool
+	// ContentType is the part's Content-Type main value, lower-cased and stripped
+	// (Django's UploadedFile.content_type); empty when the part sent no header.
+	ContentType string
 }
 
 // RequestUploadHead is the size of the first chunk Django's File.chunks reads.

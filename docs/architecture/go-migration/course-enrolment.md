@@ -79,12 +79,50 @@ the course). Response `{'data': PaymentSerializer}`.
   `payment_amount_positive` check constraint) raise: a rollback on course-subscriptions/add, the created row kept on
   course-overview add (not atomic).
 
+## Form JSON recursion bands (X15)
+
+An HTML form `multiple_quote` or `events` text is read with `json.loads`; the measured answer (CPython 3.13.16 on the
+parity harness's Django) depends on its maximum nesting D:
+
+- both fields: D >= 9943 `json.loads` raises RecursionError while DRF reads the field, the plain 500 page with nothing
+  written (the add view is atomic; the stock create validates before its first write).
+- `events`: D <= 9942 normal answer.
+- `multiple_quote`: D <= 9928 normal answer. Between 9929 and 9942 validation passes and a later `json.dumps` raises
+  instead: the quote payment's meta (only for a multiple-quote course, from about 9929) or the row's INSERT (from about
+  9934), while a request with another invalid field still answers its 400. Long tail PR 4's review handed this band
+  off (`errCourseEnrolmentFormJSONBand`, before any write) instead of answering the 500 page, because Django's answer
+  depends on the course and the other fields.
+
+Go answers the 9943 band before any write (`errCourseEnrolmentFormJSONTooDeep`, `courseEnrolmentFormJSONBand` in
+`service/course_enrolment.go`). Values within the bands (including those past 500) are parsed by
+`dto/automationFormTree` up to its 20000-level limit and served. The stock router create (`POST course-subscriptions/`,
+family `router-course-subscriptions-create`) shares the serializer and the same check. The cases
+`...-form-events-depth-9900-`/`-9980-` and `...-form-multiple-quote-depth-9900-`/`-9980-` cover both fields with a
+margin, keeping the stored values shallow (the event serializer drops an unknown key; the quote text repeats `amount`
+before the real one); the handed-off band is pinned by `TestCourseEnrolmentFormJSONBands`.
+
+Django's edge is not a fixed number: it moves by a few levels with the value's shape (arrays or objects, where the
+deep part sits) and with the live stack of the run (the same module elements loaded at 9934 levels in one run and
+not in another). The bands above were measured with nested objects; the parity cases sit inside or past each band
+with a margin, and the exact edges are pinned by the Go tests (X15 is the accepted divergence there).
+
 ## Not ported (refused with a 500 before any write)
 
-- An HTML form `multiple_quote` or `events` document the jsonb column rejects (lone surrogates, nesting past the parser
-  limit): the answer is the database's error text.
 - Payments rendered with an instructor or invoice (make-payment): the view renders the payment it has just created, so
   no request reaches this.
+
+## Form JSON with a lone surrogate
+
+`json.loads` keeps an escape of a lone surrogate as a code unit, so the field validates like any other JSON text; the
+`multiple_quote` column then refuses the INSERT: `JSONField.get_prep_value`'s `json.dumps(ensure_ascii)` writes the
+`\udXXX` escape and jsonb rejects it, which the view does not catch. `course-subscriptions/add` is atomic, so the answer
+is the 500 page with nothing written, and the other field errors (a 400) still come first. Go keeps the parsed value
+through validation and answers that state at the row's INSERT (`service/course_subscriptionJSONValue`,
+`errCourseSubscriptionJSONColumn`). Cases `add-form-multiple-quote-lone-surrogate-server-error` and
+`add-form-multiple-quote-lone-surrogate-other-field-invalid`.
+
+`events` is never stored, so a lone surrogate there is just parsed: an ignored key changes nothing and a string element
+raises the events loop (see [course-subscriptions](course-subscriptions.md)).
 
 ## Form bodies, loose quote values and the athlete prefill (t4l3)
 

@@ -76,6 +76,13 @@ func (t *paymentWritesTransaction) LockPayment(ctx context.Context, id string, g
 	return &row, nil
 }
 
+// PaymentIDVisible is Payment.objects.filter(payment_id=id).exists(): the
+// manager's soft-delete and group filters, then the key.
+func (t *paymentWritesTransaction) PaymentIDVisible(ctx context.Context, id string, group *string) (bool, error) {
+	return t.exists(ctx, `SELECT 1 FROM application_payment WHERE payment_id=$1 AND NOT deleted
+ AND ($2::uuid IS NULL OR group_id=$2::uuid)`, id, group)
+}
+
 var paymentWritesRelated = map[string]string{
 	"payment_category": `SELECT sport_association_id::text FROM application_paymentcategory WHERE payment_category_id=$1`,
 	"custom_accounts":  `SELECT sport_association_id::text FROM application_customaccounts WHERE custom_account_id=$1`,

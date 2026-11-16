@@ -140,20 +140,16 @@ func (r *AssociationTransfer) DeleteArchive(ctx context.Context, id, association
 	return tx.Commit()
 }
 
-// DeleteDocument is document.delete() of delete_export with its audit entry,
-// indexed through the actor's association.
-func (r *AssociationTransfer) DeleteDocument(ctx context.Context, id string, actorAssociation *string, audit domain.LoginAuditContext,
+// DeleteDocument is document.delete() of delete_export: Django's Collector in
+// its own transaction, with its cascade, SET_NULL updates and audit entries.
+func (r *AssociationTransfer) DeleteDocument(ctx context.Context, id string, audit domain.LoginAuditContext,
 	at time.Time) error {
 	tx, err := r.db.BeginTxx(ctx, nil)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
-	changes, _, err := deleteModelWithAuditReverse(ctx, tx, "docmanager_document", "document_id", id, documentReverse)
-	if err != nil {
-		return err
-	}
-	if err = appendModelAuditForApp(ctx, tx, "docmanager", documentAudit(id, 2, changes, actorAssociation, audit, at)); err != nil {
+	if err = deleteDocumentCascade(ctx, tx, id, audit, at); err != nil {
 		return err
 	}
 	return tx.Commit()

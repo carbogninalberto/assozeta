@@ -136,7 +136,7 @@ func TestAuditTitleRefusesNonASCII(t *testing.T) {
 		t.Error("non-ASCII title must be refused")
 	}
 	changes := domain.RequestObject{{Name: "straße", Value: []any{"a", "b"}}}
-	if _, err := AuditDisplayChanges(changes, noResolver{}); !errors.Is(err, ErrAuditUnreachable) {
+	if _, err := AuditDisplayChanges(changes, noResolver{}, AuditDetailBand()); !errors.Is(err, ErrAuditUnreachable) {
 		t.Error("display of a non-ASCII field key must be refused")
 	}
 }
@@ -144,7 +144,7 @@ func TestAuditTitleRefusesNonASCII(t *testing.T) {
 func TestAuditFormatterExceptionsEscape(t *testing.T) {
 	for field, value := range map[string]any{"additional_fields": `[{"props": "x"}]`, "collaborator_permissions": `[1]`,
 		"events": `[{"title": 5}]`} {
-		if _, err := AuditEnrich(value, field, noResolver{}); !errors.Is(err, ErrAuditUnhandled) {
+		if _, err := AuditEnrich(value, field, noResolver{}, AuditDetailBand()); !errors.Is(err, ErrAuditUnhandled) {
 			t.Errorf("%s: %v", field, err)
 		}
 	}

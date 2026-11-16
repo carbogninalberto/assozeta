@@ -220,3 +220,8 @@ requests raises on: the probe answers the generic failure and sends nothing.
 Long tail PR 3 (agent C, combined branch): a cached catalog that is not a list is application state (the 500 page:
 `fetch_releases` always returns a list). A pickle or release dict outside what Go decodes stays a refusal
 (`ErrReleaseCacheShape`): Django writes the catalog from GitHub's payload as it is.
+
+Long tail PR 4 (agent A, accepted divergence X14): a cached catalog Go cannot read (a pickle outside the data subset, a
+release entry whose values have other types, which Django would serve as `normalize_release` copied them) is answered as a
+cache miss: the catalog is fetched from the feed again and the Go-built catalog is stored. Pickle protocols 2 to 5 and
+floats are read (`instance_release_cache_pickle_test.go`); `ErrReleaseCacheShape` is gone.

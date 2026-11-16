@@ -7,6 +7,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 var (
@@ -36,6 +37,30 @@ func paymentJSON(text *string) (any, error) {
 // ResolvePaymentDescription port of its description hook.
 var errSecCategoryAssociation = errors.New("payment save defaults: payment association not loaded")
 
+// errPaymentStoredJSON is a stored meta/course value the JSON decoder refuses:
+// both columns are jsonb, whose text PostgreSQL always returns as valid JSON,
+// so this is application state rather than a value a request can send.
+var errPaymentStoredJSON = refusal.AppState("payment save: stored meta or course is not JSON")
+
+// errPaymentStoredJSONNested is a stored meta/course nested past the reference
+// parser's 1000 levels: a request (the form JSON of a payment update) or the
+// association import can write one, and Django loads it (psycopg2's json.loads
+// reads about 9900 levels), so it is handed off.
+var errPaymentStoredJSONNested = refusal.New("payment save: stored meta or course nested past the reference parser not ported")
+
+// paymentStoredJSON is paymentJSON for the save hook: nesting past the
+// reference parser is the handoff, any other failure application state.
+func paymentStoredJSON(text *string) (any, error) {
+	value, err := paymentJSON(text)
+	switch {
+	case errors.Is(err, dto.ErrReferenceNesting):
+		return nil, errPaymentStoredJSONNested
+	case err != nil:
+		return nil, errPaymentStoredJSON
+	}
+	return value, nil
+}
+
 func paymentSaveDefaults(ctx context.Context, tx domain.PaymentArchiveTransaction, row *domain.PaymentSaveRow, changes map[string][2]string) error {
 	if row.CategoryID == nil && row.AssociationID == "" {
 		// The row's association must be loaded: the default is taken from it.
@@ -58,13 +83,13 @@ func secCategorySaveDefaults(ctx context.Context, tx domain.PaymentArchiveTransa
 			row.CategoryID, row.CategoryName = id, name
 		}
 	}
-	meta, err := paymentJSON(row.Meta)
+	meta, err := paymentStoredJSON(row.Meta)
 	if err != nil {
-		return ErrPaymentSaveFailed
+		return err
 	}
-	course, err := paymentJSON(row.Course)
+	course, err := paymentStoredJSON(row.Course)
 	if err != nil {
-		return ErrPaymentSaveFailed
+		return err
 	}
 	input := domain.PaymentDescriptionInput{Subject: row.Subject, Description: row.Description, CategoryName: row.CategoryName, Meta: meta, Course: course,
 		CustomAccounts: row.CustomAccounts}

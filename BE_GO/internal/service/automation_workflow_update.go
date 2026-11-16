@@ -9,8 +9,46 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/celery"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/google/uuid"
 )
+
+// communication_workflows_update's measured form automation_tree bands (owner
+// decision X15), measured with CPython 3.13.16 on the parity harness's Django:
+//   - D <= 9937: the save and its audit entry complete normally;
+//   - D = 9938: the row is updated and audited, then the plain 500 page;
+//   - 9939 <= D <= 9941: auditlog's pre_save entry is kept, the row is not
+//     updated (the jsonb column refuses the document), then the plain 500 page;
+//   - D >= 9942: json.loads raises RecursionError during validation: the plain
+//     500 page and nothing written.
+//
+// D is auditJSONDepth's maximum nesting of the form text.
+const (
+	automationWorkflowFormTreeSavedDepth   = 9938
+	automationWorkflowFormTreeAuditDepth   = 9939
+	automationWorkflowFormTreeRefusedDepth = 9942
+)
+
+// errAutomationWorkflowFormTreeSavedThenFailed is the failure after the save
+// and commit at automationWorkflowFormTreeSavedDepth (the plain 500 page).
+var errAutomationWorkflowFormTreeSavedThenFailed = refusal.AppState("automation workflow: form tree saved, then the request failed")
+
+// errAutomationWorkflowFormTreeTooDeep is the RecursionError band: nothing is
+// written (the plain 500 page).
+var errAutomationWorkflowFormTreeTooDeep = refusal.AppState("automation workflow: form tree nested past the measured depth")
+
+// automationWorkflowFormTreeBand maps a measured depth D to its outcome.
+func automationWorkflowFormTreeBand(depth int) (savedThenFailed, auditOnly, refused bool) {
+	switch {
+	case depth >= automationWorkflowFormTreeRefusedDepth:
+		return false, false, true
+	case depth >= automationWorkflowFormTreeAuditDepth:
+		return false, true, false
+	case depth >= automationWorkflowFormTreeSavedDepth:
+		return true, false, false
+	}
+	return false, false, false
+}
 
 // automationWorkflowUpdateValues renders auditlog's update strings of the
 // fields it diffs in pre_save (updated_at is set later by auto_now, so it is
@@ -172,11 +210,19 @@ func (s *AutomationWorkflowWrites) Update(ctx context.Context, identity domain.R
 			return domain.ErrMessageReadForbidden
 		}
 	}
+	treeSavedThenFailed, treeAuditOnly, treeRefused := automationWorkflowFormTreeBand(patch.TreeDepth)
+	if treeRefused {
+		// json.loads raises while DRF reads the field, after the earlier
+		// field errors were collected: the plain 500 page wins.
+		return errAutomationWorkflowFormTreeTooDeep
+	}
 	if invalid {
 		return dto.ErrAutomationWorkflowInvalid
 	}
-	if patch.TreeTooDeep {
-		return dto.ErrAutomationWorkflowFormTreeNotPorted
+	if treeAuditOnly {
+		// The measured band where the jsonb column refuses the document after
+		// auditlog's pre_save entry: reuse exactly the lone-surrogate path.
+		patch.TreeRejected = true
 	}
 	oldTree, err := dto.ParseProfileTablesJSON(old.Tree)
 	if err != nil {
@@ -236,6 +282,16 @@ func (s *AutomationWorkflowWrites) Update(ctx context.Context, identity domain.R
 	}
 	if err = save(automationWorkflowUpdateValues(old, oldTree)); err != nil {
 		return err
+	}
+	if treeSavedThenFailed {
+		// The view logs serializer.data right after the save, before its
+		// enable block: that repr is what raises, so the reset save and the
+		// trigger never run. The row and its audit entry are committed and
+		// the answer is the plain 500 page.
+		if err = tx.Commit(); err != nil {
+			return err
+		}
+		return errAutomationWorkflowFormTreeSavedThenFailed
 	}
 	if reset {
 		before := automationWorkflowUpdateValues(row, tree)

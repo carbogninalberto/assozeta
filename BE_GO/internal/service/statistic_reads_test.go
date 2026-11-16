@@ -1,9 +1,50 @@
 package service
 
 import (
+	"errors"
+	"strings"
 	"testing"
 	"time"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 )
+
+// The expiredPayments band (owner decision X15): psycopg2 loads Payment.course
+// and Payment.meta with json.loads, so 9936 levels load and 9937 are the view's
+// unhandled exception (the 500 page). The band is the harness's measured one,
+// not a number this test derives.
+func TestStatisticExpiredPaymentJSONDepthBand(t *testing.T) {
+	const measured = 9936
+	if statisticExpiredPaymentJSONDepth != measured {
+		t.Fatalf("band: %d, want %d", statisticExpiredPaymentJSONDepth, measured)
+	}
+	value := func(levels int) string {
+		return `{"label": "Corso", "unused": ` + strings.Repeat("[", levels) + strings.Repeat("]", levels) + `}`
+	}
+	atBand := value(measured - 1) // the object is the last level
+	overBand := value(measured)
+	if dto.AuditJSONDepth(atBand) != measured || dto.AuditJSONDepth(overBand) != measured+1 {
+		t.Fatalf("authored depths: %d %d", dto.AuditJSONDepth(atBand), dto.AuditJSONDepth(overBand))
+	}
+	loaded, err := statisticStoredJSON(&atBand)
+	if err != nil {
+		t.Fatalf("at the band: %v", err)
+	}
+	object, ok := loaded.(domain.RequestObject)
+	if !ok || len(object) != 2 {
+		t.Fatalf("at the band: %#v", loaded)
+	}
+	if label, found := object.Lookup("label"); !found || label != "Corso" {
+		t.Fatalf("at the band: label %#v %v", label, found)
+	}
+	if _, err := statisticStoredJSON(&overBand); !errors.Is(err, ErrStatisticPythonError) {
+		t.Fatalf("past the band: %v", err)
+	}
+	if loaded, err := statisticStoredJSON(nil); loaded != nil || err != nil {
+		t.Fatalf("absent column: %#v %v", loaded, err)
+	}
+}
 
 func TestBalanceSheetRange(t *testing.T) {
 	at := func(text string) time.Time {
@@ -48,5 +89,40 @@ func TestStatisticMonths(t *testing.T) {
 	names, numbers := statisticMonths(9)
 	if names[0] != "Set" || names[11] != "Ago" || numbers[0] != 9 || numbers[4] != 1 || numbers[11] != 8 {
 		t.Errorf("%v %v", names, numbers)
+	}
+}
+
+// statisticRecentLesson is any(datetime.strptime(lesson['date'], '%Y-%m-%d %H:%M:%S%z') > since):
+// a registry date of another script is read where CPython's \d patterns accept it and is the caught
+// ValueError otherwise, never a refusal of the whole widget.
+func TestStatisticRecentLessonReadsStoredRegistryDates(t *testing.T) {
+	since := time.Date(2026, 10, 17, 10, 0, 0, 0, time.UTC)
+	meta := func(date string) domain.RequestObject {
+		value, err := dto.ParseReferenceJSON([]byte(`{"lessons_left": 0, "lessons_registry": [{"date": "` + date + `"}]}`))
+		if err != nil {
+			t.Fatal(err)
+		}
+		object, ok := value.(domain.RequestObject)
+		if !ok {
+			t.Fatalf("meta: %T", value)
+		}
+		return object
+	}
+	cases := map[string]bool{
+		"٢٠26-11-11 1٠:0٠:0٠+0000": true,  // 5 days before the 2026-11-16 anchor: after the 30-day bound
+		"٢٠26-10-07 1٠:0٠:0٠+0000": false, // 40 days before the anchor: before the bound
+		"2026-11-11 10:00:00+0000": true,
+		"٢٠٢٦-١١-١٠ ١٠:٠٠:٠٠+0000": false, // %m is ASCII only: ValueError, the carnet is skipped
+		"garbage":                  false,
+	}
+	for date, want := range cases {
+		got, err := statisticRecentLesson(meta(date), since)
+		if err != nil {
+			t.Errorf("%q: %v", date, err)
+			continue
+		}
+		if got != want {
+			t.Errorf("%q: got %v, want %v", date, got, want)
+		}
 	}
 }

@@ -856,6 +856,35 @@
     "course",
     "nuoto"
    ]
+  },
+  "p17": {
+   "id": "a1000000-0000-4000-8000-000002710060",
+   "associate": "anna",
+   "subject": 2,
+   "amount": "14.00",
+   "created": [
+    -12,
+    "09:15:00"
+   ],
+   "paid_on": null,
+   "paid": false,
+   "archived": false,
+   "expense": false,
+   "deleted": false,
+   "group": null,
+   "description": null,
+   "meta": {
+    "description": 9223372036854775808
+   },
+   "course": null,
+   "category": null,
+   "account": null,
+   "invoice": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "link": [
+    "course",
+    "nuoto"
+   ]
   }
  },
  "cases": [
@@ -4629,7 +4658,8 @@
         "Lia",
         "Anna",
         "Anna",
-        "Marco"
+        "Marco",
+        "Anna"
        ],
        [
         "Bianchi",
@@ -4637,7 +4667,8 @@
         "Verdi",
         "Rossi",
         "Rossi",
-        "Bianchi"
+        "Bianchi",
+        "Rossi"
        ],
        [
         "-",
@@ -4645,7 +4676,8 @@
         "lia@example.test",
         "anna@example.test",
         "anna@example.test",
-        "-"
+        "-",
+        "anna@example.test"
        ],
        [
         "-",
@@ -4653,7 +4685,8 @@
         "0451234",
         "3331234567",
         "3331234567",
-        "-"
+        "-",
+        "3331234567"
        ],
        [
         "3470001111",
@@ -4661,7 +4694,8 @@
         "-",
         "-",
         "-",
-        "3470001111"
+        "3470001111",
+        "-"
        ],
        [
         "Tutore",
@@ -4669,7 +4703,8 @@
         "Socio",
         "Socio",
         "Socio",
-        "Tutore"
+        "Tutore",
+        "Socio"
        ],
        [
         "120,50",
@@ -4677,7 +4712,8 @@
         "45,00",
         "10,00",
         "12,00",
-        "13,00"
+        "13,00",
+        "14,00"
        ],
        [
         "Nuoto",
@@ -4689,6 +4725,9 @@
         },
         {
          "bool": false
+        },
+        {
+         "int": "9223372036854775808"
         }
        ],
        [
@@ -4697,7 +4736,8 @@
         "$date:-8",
         "$date:-30",
         "$date:-4",
-        "$date:-9"
+        "$date:-9",
+        "$date:-12"
        ],
        [
         {
@@ -4717,6 +4757,9 @@
         },
         {
          "int": "9"
+        },
+        {
+         "int": "12"
         }
        ]
       ]
@@ -4819,6 +4862,7 @@
         "Lia",
         "Marco",
         "Tobia",
+        "Anna",
         "Marco",
         "Anna",
         "Anna"
@@ -4830,6 +4874,7 @@
         "Verdi",
         "Bianchi",
         "Neri",
+        "Rossi",
         "Bianchi",
         "Rossi",
         "Rossi"
@@ -4841,6 +4886,7 @@
         "lia@example.test",
         "-",
         "-",
+        "anna@example.test",
         "-",
         "anna@example.test",
         "anna@example.test"
@@ -4852,6 +4898,7 @@
         "0451234",
         "-",
         "-",
+        "3331234567",
         "-",
         "3331234567",
         "3331234567"
@@ -4862,6 +4909,7 @@
         "-",
         "-",
         "3470001111",
+        "-",
         "-",
         "3470001111",
         "-",
@@ -4874,6 +4922,7 @@
         "Socio",
         "Tutore",
         "Socio",
+        "Socio",
         "Tutore",
         "Socio",
         "Socio"
@@ -4885,6 +4934,7 @@
         "45,00",
         "13,00",
         "30,00",
+        "14,00",
         "120,50",
         "20,00",
         "50,00"
@@ -4900,6 +4950,9 @@
          "bool": false
         },
         "Rata 1 Yoga",
+        {
+         "int": "9223372036854775808"
+        },
         "Nuoto",
         "Iscrizione",
         "Iscrizione"
@@ -4910,6 +4963,7 @@
         "$date:-5",
         "$date:-8",
         "$date:-9",
+        "$date:-12",
         "$date:-12",
         "$date:-20",
         "$date:-25",
@@ -4930,6 +4984,9 @@
         },
         {
          "int": "9"
+        },
+        {
+         "int": "12"
         },
         {
          "int": "12"
@@ -4993,6 +5050,7 @@
         "Lia",
         "Marco",
         "Tobia",
+        "Anna",
         "Marco"
        ],
        [
@@ -5002,6 +5060,7 @@
         "Verdi",
         "Bianchi",
         "Neri",
+        "Rossi",
         "Bianchi"
        ],
        [
@@ -5011,6 +5070,7 @@
         "lia@example.test",
         "-",
         "-",
+        "anna@example.test",
         "-"
        ],
        [
@@ -5020,6 +5080,7 @@
         "0451234",
         "-",
         "-",
+        "3331234567",
         "-"
        ],
        [
@@ -5028,6 +5089,7 @@
         "-",
         "-",
         "3470001111",
+        "-",
         "-",
         "3470001111"
        ],
@@ -5038,6 +5100,7 @@
         "Socio",
         "Tutore",
         "Socio",
+        "Socio",
         "Tutore"
        ],
        [
@@ -5047,6 +5110,7 @@
         "45,00",
         "13,00",
         "30,00",
+        "14,00",
         "120,50"
        ],
        [
@@ -5060,6 +5124,9 @@
          "bool": false
         },
         "Rata 1 Yoga",
+        {
+         "int": "9223372036854775808"
+        },
         "Nuoto"
        ],
        [
@@ -5068,6 +5135,7 @@
         "$date:-5",
         "$date:-8",
         "$date:-9",
+        "$date:-12",
         "$date:-12",
         "$date:-20"
        ],
@@ -5086,6 +5154,9 @@
         },
         {
          "int": "9"
+        },
+        {
+         "int": "12"
         },
         {
          "int": "12"
@@ -5215,6 +5286,292 @@
    }
   },
   {
+   "name": "printing-generate-not-paid-courses-big-int-description",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/printing/generate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$xlsx": {
+      "engine": "excel_utils",
+      "columns": [
+       "Nome",
+       "Cognome",
+       "Email",
+       "Telefono",
+       "Tel. Tutore",
+       "Contatto",
+       "quota (€)",
+       "corso/carnet",
+       "data",
+       "ritardo pagamento (gg)"
+      ],
+      "data": [
+       [
+        "Anna"
+       ],
+       [
+        "Rossi"
+       ],
+       [
+        "anna@example.test"
+       ],
+       [
+        "3331234567"
+       ],
+       [
+        "-"
+       ],
+       [
+        "Socio"
+       ],
+       [
+        "14,00"
+       ],
+       [
+        {
+         "int": "9223372036854775808"
+        }
+       ],
+       [
+        "$date:-12"
+       ],
+       [
+        {
+         "int": "12"
+        }
+       ]
+      ]
+     }
+    },
+    "filename": "[$today] Quote/Carnet corso non pagate - Message reads own.xlsx"
+   },
+   "effect": null,
+   "body": {
+    "type": "not_paid_courses_subscriptions",
+    "format": "excel",
+    "filters": {
+     "status": [
+      1,
+      2,
+      4
+     ],
+     "period": {
+      "from_date": "$date:-12",
+      "to_date": "$date:-11"
+     }
+    }
+   }
+  },
+  {
+   "name": "printing-generate-expired-payments-big-int-description",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/printing/generate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$xlsx": {
+      "engine": "excel_utils",
+      "columns": [
+       "Nome",
+       "Cognome",
+       "Email",
+       "Telefono",
+       "Tel. Tutore",
+       "Contatto",
+       "quota (€)",
+       "attività",
+       "data",
+       "ritardo pagamento (gg)"
+      ],
+      "data": [
+       [
+        "Anna"
+       ],
+       [
+        "Rossi"
+       ],
+       [
+        "anna@example.test"
+       ],
+       [
+        "3331234567"
+       ],
+       [
+        "-"
+       ],
+       [
+        "Socio"
+       ],
+       [
+        "14,00"
+       ],
+       [
+        {
+         "int": "9223372036854775808"
+        }
+       ],
+       [
+        "$date:-12"
+       ],
+       [
+        {
+         "int": "12"
+        }
+       ]
+      ]
+     }
+    },
+    "filename": "[$today] Pagamenti scaduti - Message reads own.xlsx"
+   },
+   "effect": null,
+   "body": {
+    "type": "expired_payments",
+    "format": "excel",
+    "filters": {
+     "status": [
+      1,
+      2,
+      4
+     ],
+     "period": {
+      "from_date": "$date:-12",
+      "to_date": "$date:-11"
+     }
+    }
+   }
+  },
+  {
+   "name": "printing-generate-pdf-not-paid-courses-big-int-description",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/printing/generate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Nome",
+       "Cognome",
+       "Email",
+       "Telefono",
+       "Tel. Tutore",
+       "Contatto",
+       "quota (€)",
+       "corso/carnet",
+       "data",
+       "ritardo pagamento (gg)"
+      ],
+      "rows": [
+       [
+        "Anna",
+        "Rossi",
+        "anna@example.test",
+        "3331234567",
+        "-",
+        "Socio",
+        "14,00",
+        {
+         "int": "9223372036854775808"
+        },
+        "$date:-12",
+        {
+         "int": "12"
+        }
+       ]
+      ],
+      "title": "Quote corso/carnet non pagate (giorno stampa $today)"
+     }
+    },
+    "filename": "[$today] Quote/Carnet corso non pagate - Message reads own.pdf"
+   },
+   "effect": null,
+   "body": {
+    "type": "not_paid_courses_subscriptions",
+    "format": "pdf",
+    "filters": {
+     "status": [
+      1,
+      2,
+      4
+     ],
+     "period": {
+      "from_date": "$date:-12",
+      "to_date": "$date:-11"
+     }
+    }
+   }
+  },
+  {
+   "name": "printing-generate-pdf-expired-payments-big-int-description",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/printing/generate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Nome",
+       "Cognome",
+       "Email",
+       "Telefono",
+       "Tel. Tutore",
+       "Contatto",
+       "quota (€)",
+       "attività",
+       "data",
+       "ritardo pagamento (gg)"
+      ],
+      "rows": [
+       [
+        "Anna",
+        "Rossi",
+        "anna@example.test",
+        "3331234567",
+        "-",
+        "Socio",
+        "14,00",
+        {
+         "int": "9223372036854775808"
+        },
+        "$date:-12",
+        {
+         "int": "12"
+        }
+       ]
+      ],
+      "title": "Pagamenti scaduti (giorno stampa $today)"
+     }
+    },
+    "filename": "[$today] Pagamenti scaduti - Message reads own.pdf"
+   },
+   "effect": null,
+   "body": {
+    "type": "expired_payments",
+    "format": "pdf",
+    "filters": {
+     "status": [
+      1,
+      2,
+      4
+     ],
+     "period": {
+      "from_date": "$date:-12",
+      "to_date": "$date:-11"
+     }
+    }
+   }
+  },
+  {
    "name": "printing-generate-with-all-payments",
    "actor": "owner",
    "method": "POST",
@@ -5249,6 +5606,7 @@
         "Rossi",
         "Rossi",
         "Rossi",
+        "Rossi",
         "Bianchi",
         "Bianchi",
         "Bianchi",
@@ -5257,6 +5615,7 @@
         "Gialli"
        ],
        [
+        "Anna",
         "Anna",
         "Anna",
         "Anna",
@@ -5275,6 +5634,7 @@
         "$date:-11000",
         "$date:-11000",
         "$date:-11000",
+        "$date:-11000",
         "$date:-3000",
         "$date:-3000",
         "$date:-3000",
@@ -5283,6 +5643,7 @@
         "$date:-2192"
        ],
        [
+        "anna@example.test",
         "anna@example.test",
         "anna@example.test",
         "anna@example.test",
@@ -5301,6 +5662,7 @@
         "3331234567",
         "3331234567",
         "3331234567",
+        "3331234567",
         "-",
         "-",
         "-",
@@ -5309,6 +5671,7 @@
         "-"
        ],
        [
+        "-",
         "-",
         "-",
         "-",
@@ -5327,6 +5690,7 @@
         "Socio",
         "Socio",
         "Socio",
+        "Socio",
         "Tutore",
         "Tutore",
         "Tutore",
@@ -5335,6 +5699,7 @@
         "Tutore"
        ],
        [
+        "associato e tesserato",
         "associato e tesserato",
         "associato e tesserato",
         "associato e tesserato",
@@ -5350,6 +5715,7 @@
        [
         "Corso",
         "Altro",
+        "Corso",
         "Iscrizione",
         "Iscrizione",
         "Iscrizione",
@@ -5369,6 +5735,7 @@
         "-",
         "-",
         "-",
+        "-",
         "Mensile",
         "-",
         "-"
@@ -5376,6 +5743,7 @@
        [
         "12.00",
         "25.00",
+        "14.00",
         "20.00",
         "50.00",
         "50.00",
@@ -5391,6 +5759,7 @@
         "Non pagato",
         "Non pagato",
         "Non pagato",
+        "Non pagato",
         "Pagato",
         "Non pagato",
         "Non pagato",
@@ -5402,6 +5771,7 @@
        [
         "$date:-4",
         "$date:-5",
+        "$date:-12",
         "$date:-25",
         "$date:-40",
         "$date:-60",
@@ -5417,6 +5787,7 @@
         "-",
         "-",
         "-",
+        "-",
         "$date:-59",
         "-",
         "-",
@@ -5426,6 +5797,7 @@
         "-"
        ],
        [
+        "-",
         "-",
         "-",
         "-",
@@ -6602,6 +6974,22 @@
         {
          "int": "9"
         }
+       ],
+       [
+        "Anna",
+        "Rossi",
+        "anna@example.test",
+        "3331234567",
+        "-",
+        "Socio",
+        "14,00",
+        {
+         "int": "9223372036854775808"
+        },
+        "$date:-12",
+        {
+         "int": "12"
+        }
        ]
       ],
       "title": "Quote corso/carnet non pagate (giorno stampa $today)"
@@ -6735,6 +7123,22 @@
         }
        ],
        [
+        "Anna",
+        "Rossi",
+        "anna@example.test",
+        "3331234567",
+        "-",
+        "Socio",
+        "14,00",
+        {
+         "int": "9223372036854775808"
+        },
+        "$date:-12",
+        {
+         "int": "12"
+        }
+       ],
+       [
         "Marco",
         "Bianchi",
         "-",
@@ -6855,6 +7259,23 @@
         "25.00",
         "Non pagato",
         "$date:-5",
+        "-",
+        "-"
+       ],
+       [
+        "Rossi",
+        "Anna",
+        "$date:-11000",
+        "anna@example.test",
+        "3331234567",
+        "-",
+        "Socio",
+        "associato e tesserato",
+        "Corso",
+        "-",
+        "14.00",
+        "Non pagato",
+        "$date:-12",
         "-",
         "-"
        ],
@@ -7451,6 +7872,22 @@
         "Socio",
         "30,00",
         "Rata 1 Yoga",
+        "$date:-12",
+        {
+         "int": "12"
+        }
+       ],
+       [
+        "Anna",
+        "Rossi",
+        "anna@example.test",
+        "3331234567",
+        "-",
+        "Socio",
+        "14,00",
+        {
+         "int": "9223372036854775808"
+        },
         "$date:-12",
         {
          "int": "12"

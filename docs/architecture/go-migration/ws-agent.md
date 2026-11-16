@@ -119,36 +119,26 @@ rebuilt per message, `CLICallback`'s ANSI output (tool arguments
 
 ## Not ported or not reproduced
 
-Refused explicitly (the connection ends, or run-agent exits 1):
-- Stream chunks with a non-string content, non-string tool call ids or
-  names, tool call indexes that are floats, booleans or containers, and a
-  forced loop-detection answer that fails (its error text would become an
-  assistant message).
-- (Long tail PR 3: base URLs are parsed and sent the way httpx 0.28.1 does, `internal/agentllm/url.go`, 96 golden URLs;
-  httpx.InvalidURL is `agentllm.InvalidURLError` with Python's text; an `xn--` host is decoded with `idna.decode`
-  before each request (`idna2008.Decode`, idna's own message texts) and a port beyond int's range is kept as Python
-  keeps it, so the connection fails as `Connection error.`. A base URL httpx rejects makes `AsyncOpenAI(...)` raise
-  while the provider is built: Go answers like the consumer, close 4004 on connect and the "Configurazione AI non
-  disponibile" frame on a refresh; cases `invalid-base-url`, `refresh-invalid-base-url`.)
-- Configuration values outside the integer/number forms (`max_iterations`,
-  `history_cap`, `ws_rate_limit`, `ws_timeout`), missing configuration keys.
-- A business tool input the [mcp-server](mcp-server.md) family refuses (the
-  listed ORM inputs, `sanitize_text` with a backslash in the replacement),
-  `save_report` with a non-string `tool_name` or a non-object
-  `params`/`ui_config` (Django stores or fails with a database error),
-  cached `agent_save_info` values that are not the pickle of a JSON-like dict.
-- An exporter exception whose text Go does not reproduce, and an exporter input
-  the writers do not reproduce: the PDF paragraph tags still refused in
-  [pdf-exports](pdf-exports.md) (`u`, `strike`, `a`, `font`, `sup`, `img` and
-  the others), a reportlab `LayoutError` (its text carries object addresses),
-  an attendance date label equal to `#`, `Corso`, `Nome e Cognome` or
-  `Presenze`, more than 702 columns, and numeric-looking text with 17+
-  significant digits (pandas' platform-dependent parse). Integers beyond
-  int64 in a numeric column are answered as Django answers them
-  (go-v2only-xlsxvalue, [xlsx-exports](xlsx-exports.md)).
-- Cached agent values outside the ported shape (`ws_throttle`,
-  `ws_concurrent`), and the AI configuration of another shape: only the app
-  writes them, no request can create the state.
+Long tail PR 4: the agent refuses nothing any more.
+- Accepted divergence X11 (owner, 2026-11-15): a business tool call whose Django answer Go does not reproduce (an
+  exception whose text carries SQL or an object address, an input another package still refuses, such as pdfexport's
+  paragraph subset) answers the tool result `{"error": "Errore durante l'esecuzione dello strumento."}` and the
+  conversation continues; Django would send `str(e)`. `run_agent` and `manuale evaluate` share the agent and answer
+  the same. Stream shapes outside the port (a non-string content chunk, non-string tool call ids or names, a NaN
+  index) are a failed stream, the generic temporary-error frame; Django would stream the odd chunk first.
+- Ported: tool call indexes that are numbers or booleans (Python dict keys: `1 == 1.0 == True`, numeric sort; lists and
+  dicts are the failed stream Django has), the failed forced loop-detection answer (its text becomes the assistant
+  message), a base URL that is not UTF-8 (close 4004 / configuration frame, like httpx.InvalidURL), a collaborator
+  without `connected_user` (close 4003), environment integers of 0 (`''`: `range('')`/`len() > ''` answer the internal
+  error frame, `count <= ''` ends the connection, `wait_for(timeout='')` answers the internal error frame) and of
+  negative values (`wait_for` with a timeout <= 0 answers the timeout frames without running), cached `save_info`
+  pickles with lone surrogates, integers of any size and infinities.
+- Application state (Go's own error, never handed off): configuration keys and value types both writers
+  (`AISettingsSerializer`, the environment form) never produce, manual tool result shapes the manual builders never
+  produce, counter values only the app writes.
+- Long tail PR 4, extension (2026-11-16): an exception whose text Go does not reproduce exactly answers its closest
+  text (mcp-server.md) instead of the generic one, which stays for other refusals; the concurrency slot's `cache.decr`
+  after the key expired between `incr` and `decr` resolves as a decr that worked (close 4002, X17). Nothing is refused.
 
 Ported refusals (the agent answers what Django answers; a saved-report run
 keeps its own 500/400 answers, and the stdio transport answers the same
@@ -236,4 +226,10 @@ Exports and the remaining refusals (`ws-agent-exports-*`):
   `TestParagraphExceptionTexts`, `TestPythonAscii`) and the export results
   through the agent's tool runner (`TestExportDataFiles`,
   `TestExportDataFileErrors`).
+
+Long tail PR 4 (`ws-agent-http-lt4A`): case `loop-python-values` (a tool call whose `limit` the model wrote as
+`Infinity`, an empty-list `__regex` value, a `__time` number answering its TypeError text), 63/63 on native Django and
+native Go, 57/57 sessions on Caddy `/api/v1` and `/api/v2`. The X11 answer and the other ported shapes are unit tests
+(`TestAgentAnswersTheGenericToolError`, `TestAgentToolCall*`, `TestAgentSecondsShapes`, `TestAgentLessEqualShapes`,
+`TestPickleAgentSaveInfoMatchesCPython`, `TestAgentForcedAnswerFailureBecomesAssistantMessage`).
 

@@ -14,12 +14,18 @@ response Django gives (and, for writes, Django's effect):
 - course-list: ported control only (an ordering by a foreign-key column). Go keeps no
   refusal on a course list that this sequence can rely on, so the family carries no
   hand-off case.
-- workflow-update: `PATCH communications/workflows/<id>/update` with a form
-  `automation_tree` nested past 500 levels (ErrAutomationWorkflowFormTreeNotPorted;
-  Python's json.loads raises RecursionError, an unhandled 500, before anything is
-  written). Form and multipart trees of ordinary depth are ported controls: a
-  valid tree is saved (200, audited; the entry carries the correlation id the
-  client sent to Go), an invalid one is 400 `workflow not valid.`.
+- workflow-update: form and multipart trees are ported controls: a valid tree is
+  saved (200, audited; the entry carries the correlation id the client sent to
+  Go), an invalid one is 400 `workflow not valid.`, and a tree nested past
+  Python's recursion band is the 500 page Go now answers itself (X15). Go keeps no
+  refusal on a workflow update either, so the family carries no hand-off case.
+- api-schema: `GET schema/?lang=xx/yy`. A `lang` with a path separator makes
+  gettext look outside the locale directories, which Go refuses
+  (errAPISchemaUnsupported) and hands to Django. No catalog exists at
+  `<localedir>/xx/yy`, so Django renders the same document as for the unknown
+  `lang=xx` (api-schema-lang-unknown), which is the ported control. This is the
+  sequence's only hand-off case: when Go ports that input too, the contract needs
+  another refused input.
 
 Each family also has one ported control case that Go serves itself. Cases marked
 `handoff` must be attributed to Django on the Go transports and carry
@@ -35,7 +41,7 @@ from urllib.parse import urlencode
 HERE = Path(__file__).parent
 OUTPUT = HERE / 'django_handoff_http.json'
 SOURCES = {name: json.loads((HERE / f'{name.replace("-", "_")}_http.json').read_text())
-           for name in ('personas-reads', 'course-list', 'workflow-update')}
+           for name in ('personas-reads', 'course-list', 'workflow-update', 'api-schema')}
 IDS = SOURCES['workflow-update']['ids']
 cases = []
 
@@ -46,13 +52,17 @@ def source_case(family, name):
     return found[0]
 
 
+# api-schema's contract also checks these response headers.
+SCHEMA_KEYS = ('content_type', 'allow', 'vary', 'content_language', 'disposition', 'location', 'csrf')
+
+
 def add(family, name, *, handoff, path, response_of=None, status=None, response=None, method='GET', headers=None, effect=None,
-        body=None, raw_body=None, content_type=None, extra=None):
+        body=None, raw_body=None, content_type=None, extra=None, actor='owner'):
     if response_of is not None:
         reference = source_case(family, response_of)
         status, response = reference['status'], copy.deepcopy(reference['response'])
-        extra = {key: reference[key] for key in ('ordered',) if key in reference}
-    case = {'name': f'django-handoff-{name}', 'family': family, 'handoff': handoff, 'actor': 'owner', 'method': method, 'path': path,
+        extra = {key: copy.deepcopy(reference[key]) for key in ('ordered',) + SCHEMA_KEYS if key in reference}
+    case = {'name': f'django-handoff-{name}', 'family': family, 'handoff': handoff, 'actor': actor, 'method': method, 'path': path,
             'headers': headers or {}, 'status': status, 'response': response, 'effect': effect, **(extra or {})}
     if body is not None:
         case['body'] = body
@@ -133,13 +143,22 @@ add('workflow-update', 'workflow-multipart-tree-ported', handoff=False, method='
     raw_body=BODY, content_type=CONTENT_TYPE, effect=saved('owner', {'description': 'Da parti', 'automation_tree': PART_TREE}))
 
 # Past the C recursion limit (10000 levels in the pinned interpreter) json.loads raises RecursionError, which the
-# serializer does not catch: the stable 500 page, nothing written.
+# serializer does not catch: the stable 500 page, nothing written. Go answers the measured band itself (X15).
 DEEP = '[' * 30000 + ']' * 30000
-add('workflow-update', 'workflow-form-tree-too-deep', handoff=True, method='PATCH', path=PATH, status=500, response='<stable-server-error-page>',
+add('workflow-update', 'workflow-form-tree-too-deep', handoff=False, method='PATCH', path=PATH, status=500, response='<stable-server-error-page>',
     raw_body=urlencode({'automation_tree': DEEP}), content_type='application/x-www-form-urlencoded', effect=None)
 
+# api-schema: the unknown language is the ported control; the same language behind a path separator is refused by Go
+# and handed off, and Django finds no catalog at <localedir>/xx/yy either.
+UNKNOWN = source_case('api-schema', 'api-schema-lang-unknown')
+assert UNKNOWN['path'] == '/schema/?lang=xx' and UNKNOWN['actor'] == 'anonymous'
+add('api-schema', 'schema-lang-unknown-ported', handoff=False, actor='anonymous', path=UNKNOWN['path'],
+    headers=copy.deepcopy(UNKNOWN['headers']), response_of='api-schema-lang-unknown')
+add('api-schema', 'schema-lang-path-separator', handoff=True, actor='anonymous', path='/schema/?lang=xx/yy',
+    headers=copy.deepcopy(UNKNOWN['headers']), response_of='api-schema-lang-unknown')
+
 assert len({c['name'] for c in cases}) == len(cases)
-assert {c['family'] for c in cases if c['handoff']} == {'workflow-update'}
+assert {c['family'] for c in cases if c['handoff']} == {'api-schema'}
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'API v2 handoff of refused inputs to Django', 'ids': IDS,
                               'sources': sorted(SOURCES), 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

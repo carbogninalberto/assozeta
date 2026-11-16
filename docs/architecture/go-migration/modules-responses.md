@@ -80,7 +80,11 @@ those three shapes as Django does.
     group; non-ASCII text and a length one more than a multiple of four raise, keeping the document); then `default_storage.save` at
     `<str(creation_date.timestamp())>/<document_id>/<filename>` with `mimetypes.guess_type` (else `application/octet-stream`),
     `AWS_S3_OBJECT_PARAMETERS` and `AWS_DEFAULT_ACL`; then the link (a missing response is a 500 after the document and the object
-    exist). `200 {'msg': 'attachment added'}`.
+    exist). `200 {'msg': 'attachment added'}`. A `filename` sent as an uploaded file is stored as `str(UploadedFile)`, the
+    name `MultiPartParser.sanitize_file_name` gives it (entities unescaped, the text after the last `/` or `\`, non-printables
+    dropped, `UploadedFile`'s 255-character truncation keeping the extension), and the path join then raises because the instance
+    still holds the upload: the 500 page, the document kept. A filename that sanitizes to `''`, `'.'` or `'..'` makes the parser
+    skip the part, so `request.data` has no `filename` and the view answers as if only `base64` was sent.
 
 - **export** (`IsAuthenticated`, `association.modules.read`): `is_valid_uuid`, then `request.user.sport_association` (athletes 403
   `User is not a sport association`, owners without an active association 500) in
@@ -93,12 +97,19 @@ those three shapes as Django does.
   through the base manager), `Approvata`/`Non approvata` and the attachment filenames joined by `,`. The workbook is pandas'
   xlsxwriter one ([xlsx-exports](xlsx-exports.md)): sheet `Risposte`, `index=False`, `set_column(i, i, len(label) + 10)`.
   `200 {'data': {'file': base64, 'filename': '[<today>] Risposte al modulo (<title>).xls', 'type': 'xlsx'}}`.
+  `module.elements` is a jsonb column loaded by psycopg2's `json.loads`: the measured band is 9933 levels of total JSON
+  nesting (`'[]'` is 1), and 9934 raises `RecursionError`, which the view does not catch (the plain 500 page; owner decision
+  X15, CPython 3.13.16 on the parity harness's Django). Go reads the stored text with that band
+  (`modulesExportElementsJSONDepth`). Each `ModuleResponses.response` is loaded the same way, with its own band: 9935
+  levels of total nesting answer as today and 9936 is the plain 500 page, measured on
+  `{"nome": "Anna", "deep": <nested objects>}` (`modulesExportResponseJSONDepth`).
 
 ## Not ported (refused with the 500 page before any write)
 
-- export: integers beyond int64 and inputs the workbook writer refuses ([xlsx-exports](xlsx-exports.md)). List and object labels are
-  ported (the header cell is the value's text, the column width its item count); `props` that is not an object, and a label that is
-  null, a number or a boolean, answer the 500 page as Django does.
+- export: inputs the workbook writer refuses ([xlsx-exports](xlsx-exports.md)). A response value that is an integer beyond
+  int64 is written as its float (xlsxwriter's `float(number)` with `'%.16G'`); one beyond the double range is `float()`'s
+  `OverflowError`, the 500 page. List and object labels are ported (the header cell is the value's text, the column width its
+  item count); `props` that is not an object, and a label that is null, a number or a boolean, answer the 500 page as Django does.
 - add-attachment with a storage name already taken when `AWS_S3_FILE_OVERWRITE` is off.
 - add-attachment DELETE with a non-string `document_id` that is not an integer.
 
@@ -111,7 +122,29 @@ of malformed JSON bodies.
 
 Since long-tail PR 3 (agent B) an invalid UTF-8 attachment name, the `uuid4` key collision and the JSON types the
 request parser never hands over are application state (`ErrModuleResponsesUnreachable`, the 500 page, never handed
-off). The attachment used as a filename, the body depth band and the big integers stay refusals.
+off). A body depth band stays a refusal (it is the request parser's, not a stored column's).
+
+Module `elements` nested past the interpreter's recursion band is no longer a refusal (owner decision X15): 9933 levels of
+total nesting answer as today and 9934 is the export's 500 page, see the export behaviour above. Cases
+`export-elements-json-at-depth-band` (200, the workbook over a module whose heading props hold the 9933-level list) and
+`export-elements-json-past-depth-band-server-error` (the plain 500 page). The adapter inserts the module and its response
+for the case only (`setup: {'module': ...}`, the harness's `case_scope`) and removes them afterwards, because the state
+snapshot decodes every JSON column and walks it in Python, which cannot hold a value this deep. `go test ./internal/service
+-run DepthBand` pins both edges.
+
+The response column follows the same decision (X15) with its own band: a `ModuleResponses.response` of 9935 levels
+answers as today and 9936 is the plain 500 page. Cases `export-response-json-at-depth-band` (200, the workbook over a
+module whose response is `{"nome": "Anna", "deep": <9933 nested objects>}`) and
+`export-response-json-past-depth-band-server-error`. The fixture carries the response as text (`response_raw`) and the
+adapter inserts it with raw SQL, because psycopg2's `json.dumps` of a Python structure at that depth raises too;
+`go test ./internal/service -run ModulesExportResponseJSONDepthBand` pins the band.
+
+An attachment `filename` sent as an uploaded file and a response integer beyond int64 are ported. The multipart reader
+(`internal/handler/reference_body.go`) names an upload as Django does (`djangoUploadName`: `sanitize_file_name` then
+`UploadedFile`'s name handling) and skips a part whose name sanitizes away; an RFC 2231 charset without a Go decoder keeps
+Go's own `part.FileName()` for that part. The modules export writes an integer beyond int64 as its float and answers the
+500 page when `float()` overflows. Cases: `attach-filename-upload-keeps-document` (a document named `scan&1.pdf`, kept),
+`attach-filename-upload-sanitized-away`, `export-big-integer`, `export-integer-beyond-double-server-error`.
 
 ## Evidence (TDD)
 
@@ -158,3 +191,16 @@ before the method dispatch with nothing written. Three cases: `add-anonymous-int
 RED `s3throttle-red-r2`: Django 243/243, Go 500 on `add-anonymous-integer-history`; GREEN `s3throttle-green-r1`: 243/243 on
 the four transports; mutation `s3throttle-mutation-r1` (integer entry read as zero) fails `add-anonymous-integer-history`
 (CAUGHT). `go test ./internal/repository -run TestThrottleHistory` pins the value shapes.
+
+Long-tail PR 4: an uploaded attachment `filename` and response integers beyond int64. Four cases (247 in all):
+`attach-filename-upload-keeps-document` (500, one document named `scan&1.pdf` and nothing stored),
+`attach-filename-upload-sanitized-away` (200, no write), `export-big-integer` (a workbook whose cell is
+`1.234567890123457E+29`) and `export-integer-beyond-double-server-error` (500). `go test ./internal/handler -run
+'TestReferenceBodyMultipartUploadName|TestDjangoUploadName'`, `go test ./internal/service -run
+TestModuleAttachmentFilenameValues` and `go test ./internal/xlsxexport -run TestPandasXlsxwriterBigInt` pin the parts
+without a database.
+
+X15 edges: django's edge is not a fixed number: it moves by a few levels with the value's shape (arrays or objects, where the
+deep part sits) and with the live stack of the run (the same module elements loaded at 9934 levels in one run and
+not in another). The bands above were measured with nested objects; the parity cases sit inside or past each band
+with a margin, and the exact edges are pinned by the Go tests (X15 is the accepted divergence there).

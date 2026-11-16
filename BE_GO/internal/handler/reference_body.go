@@ -6,12 +6,12 @@ import (
 	"mime"
 	"mime/multipart"
 	"net/http"
-	"net/url"
 	"strings"
 	"unicode/utf8"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"golang.org/x/text/encoding/charmap"
 )
 
@@ -72,35 +72,12 @@ func acceptsJSON(accept string) bool {
 	return false
 }
 
+// parseReferenceForm is the QueryDict of a request's query string: '+' becomes
+// ' ', every valid percent escape is decoded, a malformed one stays as written,
+// the bytes are read as UTF-8 with errors='replace', and repeated keys keep
+// every value.
 func parseReferenceForm(raw string) domain.RequestObject {
-	result := domain.RequestObject{}
-	positions := map[string]int{}
-	decode := func(s string) string {
-		decoded, err := url.QueryUnescape(s)
-		if err != nil {
-			return strings.ReplaceAll(s, "+", " ")
-		}
-		return decoded
-	}
-	for _, pair := range strings.Split(raw, "&") {
-		if pair == "" {
-			continue
-		}
-		key, value, _ := strings.Cut(pair, "=")
-		key = decode(key)
-		value = decode(value)
-		if i, ok := positions[key]; ok {
-			if result[i].All == nil {
-				result[i].All = []any{result[i].Value}
-			}
-			result[i].Value = value
-			result[i].All = append(result[i].All, value)
-		} else {
-			positions[key] = len(result)
-			result = append(result, domain.RequestField{Name: key, Value: value})
-		}
-	}
-	return result
+	return parseQueryPairs(raw, true)
 }
 
 func readReferenceBody(r *http.Request) (any, error) {
@@ -134,29 +111,97 @@ func readReferenceBodyJSON(r *http.Request, parseJSON func([]byte) (any, error))
 			*object = append(*object, domain.RequestField{Name: name, Value: value})
 		}
 		for {
-			part, err := reader.NextPart()
+			// NextRawPart leaves a quoted-printable body undecoded, as Django does.
+			part, err := reader.NextRawPart()
 			if err == io.EOF {
 				break
 			}
 			if err != nil {
 				return nil, &restInputError{Status: 400, Detail: "Multipart form parse error - Invalid multipart data"}
 			}
+			// Django decodes every header line as UTF-8 and skips the part when
+			// no Content-Disposition line survives.
+			disposed := false
+			for _, value := range part.Header.Values("Content-Disposition") {
+				if utf8.ValidString("Content-Disposition: " + value) {
+					disposed = true
+					break
+				}
+			}
+			if !disposed {
+				part.Close()
+				continue
+			}
+			transferEncoding, _ := djangoHeaderValue(part.Header, "Content-Transfer-Encoding")
+			base64 := transferEncoding == "base64"
+			contentType, _ := djangoHeaderValue(part.Header, "Content-Type")
 			if part.FileName() != "" {
-				// The first chunk (64 KiB, Django's File.chunks size) is kept for the consumers that read the lines.
-				head, _ := io.ReadAll(io.LimitReader(part, domain.RequestUploadHead+1))
-				size := int64(len(head))
-				var rest int64
-				rest, err = io.Copy(io.Discard, part)
-				size += rest
-				upload := domain.RequestUpload{Name: part.FileName(), Size: size, Temp: r.ContentLength > domain.RequestUploadMemory}
-				if size <= domain.RequestUploadHead {
-					upload.Content, upload.Whole = string(head), true
+				// Django only makes a part a file when the Content-Disposition
+				// carries a non-empty filename, and UploadedFile.name is
+				// MultiPartParser.sanitize_file_name's name. part.FileName()
+				// is Go's filepath.Base: it keeps what Django rewrites
+				// (entities, backslash paths) or skips (non-printables, "..").
+				uploadName := part.FileName()
+				if raw := djangoPartHeaders(part.Header).disposition["filename"]; raw != "" {
+					sanitized, valid := djangoUploadName(raw)
+					if !valid {
+						// djangoPartHeaders keeps only valid UTF-8 lines and every
+						// decoded parameter is valid UTF-8: no request reaches this.
+						return nil, refusal.AppState("multipart file name: unreachable state")
+					}
+					if sanitized == "" {
+						// Django skips the part entirely: it is neither a field nor a file.
+						part.Close()
+						continue
+					}
+					uploadName = sanitized
+				}
+				upload := domain.RequestUpload{
+					Name:        uploadName,
+					Temp:        r.ContentLength > domain.RequestUploadMemory,
+					ContentType: contentType,
+				}
+				// A route that echoes the whole file (withWholeUploads) keeps every byte.
+				keepAll := wholeUploads(r.Context())
+				if base64 {
+					var content []byte
+					content, err = io.ReadAll(part)
+					if err == nil {
+						content, err = pyBase64Decode(stripASCIISpace(content))
+						if err != nil {
+							return nil, &restInputError{Status: 400, Detail: "Multipart form parse error - Could not decode base64 data."}
+						}
+					}
+					upload.Size = int64(len(content))
+					if keepAll || upload.Size <= domain.RequestUploadHead {
+						upload.Content, upload.Whole = string(content), true
+					}
+				} else {
+					// The first chunk (64 KiB, Django's File.chunks size) is kept for the consumers that read the lines.
+					var head []byte
+					if keepAll {
+						head, _ = io.ReadAll(part)
+					} else {
+						head, _ = io.ReadAll(io.LimitReader(part, domain.RequestUploadHead+1))
+					}
+					upload.Size = int64(len(head))
+					var rest int64
+					rest, err = io.Copy(io.Discard, part)
+					upload.Size += rest
+					if keepAll || upload.Size <= domain.RequestUploadHead {
+						upload.Content, upload.Whole = string(head), true
+					}
 				}
 				put(&files, part.FormName(), upload)
 			} else {
 				var value []byte
 				value, err = io.ReadAll(part)
-				put(&fields, part.FormName(), string(value))
+				if base64 {
+					if decoded, decodeErr := pyBase64Decode(value); decodeErr == nil {
+						value = decoded
+					}
+				}
+				put(&fields, part.FormName(), dto.PythonUTF8Replace(string(value)))
 			}
 			part.Close()
 			if err != nil {
@@ -209,6 +254,15 @@ func readReferenceBodyJSON(r *http.Request, parseJSON func([]byte) (any, error))
 		}
 		return value, nil
 	case "application/x-www-form-urlencoded":
+		switch strings.ToLower(strings.ReplaceAll(params["charset"], "_", "-")) {
+		case "", "utf-8", "utf8":
+			// QueryDict falls back to Latin-1 for a raw body that cannot
+			// decode as UTF-8; percent escapes still use replacement UTF-8.
+			if !utf8.Valid(raw) {
+				raw, _ = charmap.ISO8859_1.NewDecoder().Bytes(raw)
+			}
+			return parseQueryPairs(string(raw), true), nil
+		}
 		return parseReferenceForm(string(raw)), nil
 	default:
 		return nil, &restInputError{Status: 415, Detail: restText(r, "media")}

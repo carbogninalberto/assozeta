@@ -45,6 +45,11 @@ def assert_case(case, base_url, *, token, sessions):
         check(raw == SERVER_ERROR_DOCUMENT, 'response.error-document')
         check(received.get('Content-Type', '').split(';')[0] == 'text/html', 'response.error-type')
         return status
+    if case['response'] == '<bad-request-page>':
+        # Django's SuspiciousOperation answer (a storage name validation).
+        check(raw == family.BAD_REQUEST_DOCUMENT, 'response.bad-request-document')
+        check(received.get('Content-Type', '').split(';')[0] == 'text/html', 'response.bad-request-type')
+        return status
     check(set(received.get('Allow', '').replace(' ', '').split(',')) == allowed(case), 'response.allow')
     check(received.get('Content-Language') == 'en' and received.get('Set-Cookie') is None, 'response.headers')
     check(received.get('WWW-Authenticate') == ('Bearer realm="api"' if status == 401 else None), 'response.authentication')

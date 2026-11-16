@@ -165,9 +165,6 @@ func TestMessageHeaderFoldMatchesPython(t *testing.T) {
 		value := item.text(t)
 		text, err := foldHeader(item.Name, value)
 		label := item.Name + " " + shortValue(value)
-		if errors.Is(err, errNotPythonStr) {
-			t.Fatalf("%s: %v", label, err)
-		}
 		if !checkRaised(t, label, item.DigestFields, item.Raised, err) {
 			raised++
 			continue

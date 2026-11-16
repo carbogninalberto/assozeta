@@ -62,8 +62,7 @@ func (h *CourseEnrolmentHandler) failure(c echo.Context, err error) error {
 	case errors.As(err, &denied):
 		return restError(c, err)
 	}
-	// Every other failure is an unhandled exception in Django (or a refused
-	// input that is not ported): the 500 page.
+	// Every other failure is an unhandled exception in Django: the 500 page.
 	return restError(c, domain.ErrCourseSubscriptionServer)
 }
 

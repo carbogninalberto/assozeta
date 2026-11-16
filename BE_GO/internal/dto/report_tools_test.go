@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 func reportParams(t *testing.T, text string) domain.RequestObject {
@@ -69,14 +70,14 @@ func TestReportToolOutcomes(t *testing.T) {
 		{"query_data", `{"model_name": "Tags", "exclude": {"subscription__status_flag": 1}}`, nil},
 		{"query_data", `{"model_name": "Tags", "filters": {"tag_name__regex": "x"}}`, nil},
 		{"query_data", `{"model_name": "Tags", "filters": {"tag_id": "nope"}}`, ErrReportFailed},
-		{"query_data", `{"model_name": "Tags", "order_by": ["?"]}`, ErrReportNotPorted},
+		{"query_data", `{"model_name": "Tags", "order_by": ["?"]}`, nil},
 		{"query_data", `{"model_name": "Tags", "filters": {"creation_date__minute": 1}}`, nil},
 		{"query_data", `{"model_name": "Tags", "limit": true}`, nil},
 		{"query_data", `{"model_name": "Tags", "limit": "5"}`, ErrReportFailed},
 		{"query_data", `{"model_name": "Carnet", "filters": {"meta__colore__icontains": "blu"}}`, nil},
 		{"get_field_values", `{"model_name": "Tags", "field_name": "password"}`, ErrReportFailed},
 		{"aggregate_data", `{"model_name": "Tags", "aggregations": [{"function": "sum", "field": "tag_name"}]}`, nil},
-		{"export_data", `{"model_name": "Tags"}`, ErrReportNotPorted},
+		{"export_data", `{"model_name": "Tags"}`, refusal.ErrAppState},
 	} {
 		_, err := PlanReportTool(tc.tool, reportParams(t, tc.params), "a1000000-0000-4000-8000-000000701001", settings)
 		if !errors.Is(err, tc.want) {

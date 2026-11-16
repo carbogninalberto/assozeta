@@ -131,11 +131,15 @@ func TestExportDataFiles(t *testing.T) {
 	}
 }
 
-// Inputs whose Django text is not reproduced stay refused (ws-agent.md).
-func TestExportDataRefusedInput(t *testing.T) {
+// A title that is not a str raises in sanitize_text; the MCP command answers
+// its text, the agent X11's generic result (ws-agent.md).
+func TestExportDataTitleNotString(t *testing.T) {
 	arguments := `{"format": "xlsx", "model_name": "Tags", "fields": ["tag_name"], "title": 5}`
-	if _, _, err := exportCall(t, arguments); err == nil ||
-		!strings.Contains(err.Error(), "business MCP tool input not ported") {
-		t.Fatalf("expected the refusal, got %v", err)
+	result, raised, err := exportCall(t, arguments)
+	if err != nil || !raised {
+		t.Fatalf("expected the raised result, got %v raised=%v", err, raised)
+	}
+	if got := string(dto.PythonJSONDumps(result)); got != `{"error": "expected string or bytes-like object, got 'int'"}` {
+		t.Fatalf("result %s", got)
 	}
 }

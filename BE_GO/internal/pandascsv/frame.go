@@ -152,9 +152,7 @@ type Frame struct {
 // Read is pandas.read_csv(file, delimiter=';') on the file object
 // django-storages' S3 backend opens. That object has no 'mode', so pandas
 // hands its bytes to the C parser undecoded: only column names and text
-// values are decoded, and invalid UTF-8 there is ErrDecode. Input whose
-// outcome a whitespace-led line after a bare carriage return makes uncertain
-// is ErrBareCRBacktrack.
+// values are decoded, and invalid UTF-8 there is ErrDecode.
 func Read(data []byte) (*Frame, error) { return read(data, false, nil) }
 
 // ReadText is Read with dtype={column: str} for every column name textual

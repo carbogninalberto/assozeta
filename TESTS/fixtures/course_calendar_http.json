@@ -39,6 +39,20 @@
   "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
   "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
  },
+ "extra_users": {
+  "chain_collaborator": {
+   "id": "f6000000-0000-4000-8000-000000000001",
+   "username": "course-calendar-chain-collaborator",
+   "email": "course-calendar-chain-collaborator@example.test",
+   "role": 3,
+   "connected_user": "a1000000-0000-4000-8000-000000700002",
+   "collaborator_role": 3,
+   "permissions": [
+    "association.courses.read"
+   ],
+   "credentials": "{\"token\": \"synthetic\"}"
+  }
+ },
  "seed": {
   "instructors": {
    "ines": {
@@ -2605,6 +2619,79 @@
   {
    "name": "course-calendar-calendar-full-collaborator",
    "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/course/a1000000-0000-4000-8000-000000960004/calendar",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "status": 2,
+     "events": [
+      {
+       "event_id": "a0000000-0000-4000-8000-000000000001",
+       "title": "Lezione 1",
+       "start": "2026-11-02T17:00:00.000Z",
+       "end": "2026-11-02T18:00:00.000Z",
+       "allDay": false,
+       "extendedProps": {
+        "instructor": {
+         "instructor_id": "a1000000-0000-4000-8000-000000960001",
+         "label": "Ines Uno"
+        },
+        "groupId": "gA",
+        "description": "Corso Alfa - Lezione 1"
+       }
+      },
+      {
+       "event_id": "a0000000-0000-4000-8000-000000000002",
+       "title": "Lezione 2",
+       "start": "2026-11-09T17:00:00.000Z",
+       "end": "2026-11-09T18:00:00.000Z",
+       "allDay": false,
+       "extendedProps": {
+        "groupId": "gA",
+        "reminder_enabled": true,
+        "reminder_amount": 1,
+        "reminder_unit": "hours",
+        "description": "Portare scarpe"
+       }
+      },
+      {
+       "event_id": "a0000000-0000-4000-8000-000000000003",
+       "title": "Lezione 3",
+       "start": "2026-11-16T17:00:00.000Z",
+       "end": "2026-11-16T18:00:00.000Z",
+       "allDay": false,
+       "extendedProps": {
+        "groupId": "gA",
+        "description": "Corso Alfa - Lezione 3"
+       },
+       "className": "fc-custom"
+      },
+      {
+       "event_id": "a0000000-0000-4000-8000-000000000004",
+       "title": "Recupero",
+       "start": "2026-11-20T09:00:00.000Z",
+       "end": null,
+       "allDay": true
+      }
+     ],
+     "course": {
+      "title": "Corso Alfa"
+     },
+     "sport_association": {
+      "denomination": "Message reads own",
+      "logo": "data:image/png;base64,QUJD"
+     },
+     "google_calendar_id": "alpha@calendar.test",
+     "google_sync_enabled": true
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "course-calendar-calendar-collaborator-chain-effective-sync",
+   "actor": "chain_collaborator",
    "method": "GET",
    "path": "/course/a1000000-0000-4000-8000-000000960004/calendar",
    "headers": {},

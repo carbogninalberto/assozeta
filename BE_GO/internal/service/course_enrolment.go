@@ -30,9 +30,41 @@ func NewCourseEnrolment(store domain.CourseEnrolmentStore, now func() time.Time,
 	return &CourseEnrolment{store: store, now: now, newID: newID, renderer: &CourseSubscriptions{now: now}}
 }
 
-// ErrCourseEnrolmentNotPorted refuses inputs this port does not reproduce,
-// before any write (see course-enrolment.md).
-var ErrCourseEnrolmentNotPorted = refusal.New("course enrolment input is not ported")
+// The measured form JSON bands of course-subscriptions/add and the stock
+// router create (owner decision X15), measured with CPython 3.13.16 on the
+// parity harness's Django. D is auditJSONDepth's maximum nesting of the form
+// text. multiple_quote and events are the same serializers.JSONField read at
+// the same point, so DRF's json.loads raises RecursionError for either from
+// D >= 9943: the plain 500 page before any write (add is atomic; the stock
+// create validates first).
+//
+// Below that, multiple_quote fails later and only on some paths: from about
+// 9929 the quote payment's meta dump raises (multiple-quote courses only) and
+// from about 9934 the row INSERT dump does, while another invalid field still
+// answers its 400. Those depths are handed off before any write.
+const (
+	courseEnrolmentFieldJSONDepth = 9943
+	courseEnrolmentQuoteJSONDepth = 9929
+)
+
+var errCourseEnrolmentFormJSONTooDeep = refusal.AppState("course enrolment: form JSON nested past the measured depth")
+
+// errCourseEnrolmentFormJSONBand is multiple_quote nested in the band where
+// Django's answer depends on the course and the other fields: handed off.
+var errCourseEnrolmentFormJSONBand = refusal.New("course enrolment: multiple_quote nested in the dump band not ported")
+
+// courseEnrolmentFormJSONBand is the add and stock create check before any
+// write: the validation RecursionError (application state, the 500 page) or
+// the multiple_quote dump band (handed off); nil below both.
+func courseEnrolmentFormJSONBand(depths map[string]int) error {
+	switch {
+	case depths["events"] >= courseEnrolmentFieldJSONDepth || depths["multiple_quote"] >= courseEnrolmentFieldJSONDepth:
+		return errCourseEnrolmentFormJSONTooDeep
+	case depths["multiple_quote"] >= courseEnrolmentQuoteJSONDepth:
+		return errCourseEnrolmentFormJSONBand
+	}
+	return nil
+}
 
 // errCourseEnrolmentRenderedPayment is make-payment's new payment read back
 // with an instructor or an invoice, which its own insert never sets. An
@@ -269,11 +301,10 @@ func (s *CourseEnrolment) associationOf(ctx context.Context, tx domain.CourseEnr
 // validateItem is one serializer child: the fields, the course lookup, then
 // validate() for memberships.
 func (s *CourseEnrolment) validateItem(ctx context.Context, tx domain.CourseEnrolmentTransaction, identity domain.ResolvedIdentity, item any,
-	group *string, form bool) (*enrolmentItem, map[string]any, error) {
+	group *string, form, add bool) (*enrolmentItem, map[string]any, error) {
 	write, invalid := dto.ParseCourseSubscriptionWrite(item, form)
-	if write.FormJSON {
-		// A JSON document the jsonb column rejects: a database error text.
-		return nil, nil, ErrCourseEnrolmentNotPorted
+	if err := courseEnrolmentFormJSONBand(write.FormJSONDepth); err != nil {
+		return nil, nil, err
 	}
 	object, isObject := item.(domain.RequestObject)
 	if !isObject {
@@ -438,6 +469,11 @@ func (s *CourseEnrolment) serializerCreate(ctx context.Context, tx domain.Course
 	overrides := map[string][2]string{}
 	if created.floatFee {
 		overrides["membership_fee"] = [2]string{"None", "0.0"}
+	}
+	// CourseSubscription.objects.create(): the INSERT is where the jsonb column
+	// meets multiple_quote (the add is atomic, so nothing written stays).
+	if err = courseSubscriptionJSONValue(write, created.row.MultipleQuote); err != nil {
+		return nil, err
 	}
 	if err = tx.CreateRow(ctx, created.row, overrides, enrolmentRepr(created.row, created.memory, created.floatFee), audit); err != nil {
 		return nil, err
@@ -750,7 +786,7 @@ func (s *CourseEnrolment) Add(ctx context.Context, identity domain.ResolvedIdent
 	errs := make([]map[string]any, len(items))
 	failed := false
 	for index, item := range items {
-		plan, invalid, err := s.validateItem(ctx, tx, identity, item, group, request.Form)
+		plan, invalid, err := s.validateItem(ctx, tx, identity, item, group, request.Form, true)
 		if err != nil {
 			return nil, err
 		}
@@ -820,7 +856,9 @@ func (s *CourseEnrolment) Add(ctx context.Context, identity domain.ResolvedIdent
 // is_athlete=False and no transaction, then get_success_headers(
 // serializer.data), which renders the validated dict: the installments method
 // field filters by the dict and raises (500) after every write is kept. A
-// failure after the first write keeps what was written before it.
+// failure after the first write keeps what was written before it. A form JSON
+// field past its measured depth answers before any write
+// (courseEnrolmentFormJSONBand, owner decision X15).
 func (s *CourseEnrolment) StockCreate(ctx context.Context, identity domain.ResolvedIdentity, request CourseEnrolmentRequest) error {
 	tx, err := s.begin(ctx)
 	if err != nil {
@@ -831,7 +869,7 @@ func (s *CourseEnrolment) StockCreate(ctx context.Context, identity domain.Resol
 	if body == nil {
 		body = domain.RequestObject{}
 	}
-	plan, invalid, err := s.validateItem(ctx, tx, identity, body, supplierGroup(request.GroupHeader), request.Form)
+	plan, invalid, err := s.validateItem(ctx, tx, identity, body, supplierGroup(request.GroupHeader), request.Form, false)
 	if err != nil {
 		return err
 	}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"strconv"
+	"strings"
 	"time"
 	"unicode/utf8"
 
@@ -21,13 +22,24 @@ var (
 	// ErrCampsTenant is the tenant scope's PermissionDenied raised while a
 	// related field validates.
 	ErrCampsTenant = errors.New("camps relation of another tenant")
-	// ErrCampsPaymentNotPorted refuses a payment walk outcome this port does
-	// not reproduce before any write: a hidden payment without an association,
-	// a save failure without a message, or a negative amount.
-	ErrCampsPaymentNotPorted = refusal.New("camps payment walk is not ported")
 	// errCampsGroupRemoved is a group removed while the request ran (the
 	// registrations resolve inside it): timing, long-tail rule 4.
 	errCampsGroupRemoved = refusal.AppState("camps group removed during the request")
+	// errCampsWalkFailure is a walk exception that is not a *dto.CampsPythonError:
+	// dto.CampsWalkPayment only fails with those (the iteration, subscript and
+	// arithmetic errors of the view's loop), so this is state the code never
+	// produces.
+	errCampsWalkFailure = refusal.AppState("camps walk failure is not a Python exception")
+	// errCampsRejectedAccepted is a payment save planned as refused by the
+	// amount check constraint whose statement the database accepted.
+	errCampsRejectedAccepted = refusal.AppState("camps payment save the amount check constraint accepts")
+	// errCampsUnknownSaveFailure is a Payment.save() exception without a known
+	// text. The description hook's renderer fails only on an integer past
+	// Python's 4300 digits, which no writer can store (json.loads refuses it,
+	// in requests and in the association import), and on nesting past the
+	// reference parser, which paymentSaveDefaults hands off first
+	// (errPaymentStoredJSONNested), so this is application state.
+	errCampsUnknownSaveFailure = refusal.AppState("camps payment save failure without an exception message")
 )
 
 // CampsForbidden is the view's PermissionDenied with its message (403).
@@ -712,9 +724,12 @@ type campsPaymentSave struct {
 	row     domain.CampsPayment
 	event   *domain.CampsAudit
 	failure *dto.CampsPythonError
-	// rejected is a save the database refuses: auditlog's entry is written
-	// first, then the UPDATE raises and stops the request.
+	// rejected is a save the database refuses before it runs: auditlog's entry
+	// is written first, then the UPDATE raises and stops the request.
 	rejected *dto.CampsPythonError
+	// refused is a save the amount check constraint rejects: the UPDATE runs in
+	// a savepoint so its text is the database's own (the row is unchanged).
+	refused bool
 }
 
 // campsWalk plans the view's payment loop before any write: every save with
@@ -763,9 +778,6 @@ func (r *campsRequest) campsWalkRow(ctx context.Context, walkRow domain.CampsWal
 	// saved all the same and each save is audited as an update of every
 	// field against None, indexed through the entry's own association.
 	hidden := payment.Deleted || (group != nil && (payment.GroupID == nil || *payment.GroupID != *group))
-	if hidden && payment.AssociationNull {
-		return nil, nil, false, ErrCampsPaymentNotPorted
-	}
 	var metas any
 	var err error
 	if payment.Metas != nil {
@@ -782,8 +794,11 @@ func (r *campsRequest) campsWalkRow(ctx context.Context, walkRow domain.CampsWal
 	var saves []campsPaymentSave
 	for _, step := range walk.Steps {
 		var rejected *dto.CampsPythonError
+		refused := false
 		changes := map[string][2]string{}
-		if err = paymentSaveDefaults(ctx, campsPaymentAdapter{tx: r.tx}, &payment.PaymentSaveRow, changes); err != nil {
+		// A payment without an association takes the global default category,
+		// which default_for(None) resolves from the null association.
+		if err = secCategorySaveDefaults(ctx, campsPaymentAdapter{tx: r.tx}, &payment.PaymentSaveRow, association, changes); err != nil {
 			if errors.Is(err, ErrPaymentSaveFailed) {
 				var description *domain.PaymentDescriptionError
 				if errors.As(err, &description) && description.Message != "" {
@@ -791,20 +806,21 @@ func (r *campsRequest) campsWalkRow(ctx context.Context, walkRow domain.CampsWal
 					// here and later steps do not run.
 					return saves, &dto.CampsPythonError{Message: description.Message}, false, nil
 				}
-				return nil, nil, false, ErrCampsPaymentNotPorted
+				return nil, nil, false, errCampsUnknownSaveFailure
 			}
 			return nil, nil, false, err
 		}
 		if step.Final {
-			_, stored, ok := dto.CampsStoredAmount(step.Amount)
+			stored, numeric := dto.CampsStoredSignedAmount(step.Amount)
 			switch {
-			case !ok && dto.CampsAmountOverflows(step.Amount):
+			case !numeric:
 				rejected = &dto.CampsPythonError{Message: campsNumericOverflow}
-			case !ok:
-				// A negative amount fails the check constraint, whose message dumps the row (generated ids).
-				return nil, nil, false, ErrCampsPaymentNotPorted
 			case utf8.RuneCountInString(step.Notes) > 5120:
 				rejected = &dto.CampsPythonError{Message: campsNotesTooLong}
+			case strings.HasPrefix(stored, "-"):
+				// The amount check constraint rejects the row: the UPDATE runs in a
+				// savepoint so the exception text is the database's own.
+				refused = true
 			}
 			if repr := dto.CampsFloat(step.Amount); repr != payment.Amount {
 				changes["amount"] = [2]string{payment.Amount, repr}
@@ -826,7 +842,7 @@ func (r *campsRequest) campsWalkRow(ctx context.Context, walkRow domain.CampsWal
 			text := dto.CampsJSONText(step.Meta)
 			payment.Metas = &text
 		}
-		save := campsPaymentSave{row: payment, rejected: rejected}
+		save := campsPaymentSave{row: payment, rejected: rejected, refused: refused}
 		if hidden {
 			// The instance holds the float amount after the final step; every other field renders as stored.
 			full := map[string][2]string{}
@@ -840,7 +856,7 @@ func (r *campsRequest) campsWalkRow(ctx context.Context, walkRow domain.CampsWal
 			save.event = &event
 		}
 		saves = append(saves, save)
-		if rejected != nil {
+		if rejected != nil || refused {
 			return saves, nil, true, nil
 		}
 	}
@@ -849,7 +865,7 @@ func (r *campsRequest) campsWalkRow(ctx context.Context, walkRow domain.CampsWal
 	if walk.Failure != nil {
 		var python *dto.CampsPythonError
 		if !errors.As(walk.Failure, &python) {
-			return nil, nil, false, ErrCampsPaymentNotPorted
+			return nil, nil, false, errCampsWalkFailure
 		}
 		return saves, python, false, nil
 	}
@@ -925,7 +941,19 @@ func (s *CampsPeriods) UpdateService(ctx context.Context, identity domain.Resolv
 			}
 			return nil, &CampsSaveFailure{Err: save.failure}
 		}
-		if save.rejected == nil {
+		refused := save.rejected
+		if save.refused {
+			// The check constraint's text dumps the row: run the UPDATE in a
+			// savepoint, roll it back and answer what the database said.
+			text, refusedSave, err := r.tx.SavePaymentRejected(ctx, save.row)
+			if err != nil {
+				return nil, err
+			}
+			if !refusedSave {
+				return nil, errCampsRejectedAccepted
+			}
+			refused = &dto.CampsPythonError{Message: text}
+		} else if save.rejected == nil {
 			if err = r.tx.SavePayment(ctx, save.row); err != nil {
 				return nil, err
 			}
@@ -941,11 +969,11 @@ func (s *CampsPeriods) UpdateService(ctx context.Context, identity domain.Resolv
 				return nil, err
 			}
 		}
-		if save.rejected != nil {
+		if refused != nil {
 			if err = r.tx.Commit(); err != nil {
 				return nil, err
 			}
-			return nil, &CampsSaveFailure{Err: save.rejected}
+			return nil, &CampsSaveFailure{Err: refused}
 		}
 	}
 	return &row, r.tx.Commit()

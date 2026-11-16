@@ -7,13 +7,8 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
-	"golang.org/x/text/encoding"
-	"golang.org/x/text/encoding/japanese"
-	"golang.org/x/text/encoding/korean"
-	"golang.org/x/text/encoding/simplifiedchinese"
-	"golang.org/x/text/encoding/traditionalchinese"
-	"golang.org/x/text/transform"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pycodecs"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pystr"
 )
 
 type pythonCodec struct {
@@ -26,9 +21,8 @@ type pythonCodec struct {
 type Outcome int
 
 const (
-	Parsed    Outcome = iota
-	Invalid           // a ValueError: parse_boundary_stream skips the line
-	NotPorted         // a charset whose decoder is not ported
+	Parsed  Outcome = iota
+	Invalid         // a ValueError: parse_boundary_stream skips the line
 )
 
 // pyIndex is str.find(sub, start, end) on code points.
@@ -351,23 +345,9 @@ func lookupPythonCodec(name string) (pythonCodec, bool) {
 	return pythonCodec{}, false
 }
 
-// multiByteDecoders are the Python text codecs x/text decodes from the same
-// standard tables, replacing ill-formed sequences with U+FFFD as
-// errors='replace' does (charset aliases resolve to these canonical names).
-var multiByteDecoders = map[string]encoding.Encoding{
-	"big5":       traditionalchinese.Big5,
-	"euc_jp":     japanese.EUCJP,
-	"euc_kr":     korean.EUCKR,
-	"gb18030":    simplifiedchinese.GB18030,
-	"gbk":        simplifiedchinese.GBK,
-	"hz":         simplifiedchinese.HZGB2312,
-	"iso2022_jp": japanese.ISO2022JP,
-	"shift_jis":  japanese.ShiftJIS,
-}
-
 // decodeRawUnicodeEscape is str(bytes(text, 'raw-unicode-escape'), charset,
-// 'replace') for the supported decoders. Codecs without a faithful decoder
-// stay NotPorted.
+// 'replace') for a text codec of the registry; one that raises regardless of
+// the handler (a ValueError subclass in CPython) is Invalid.
 func decodeRawUnicodeEscape(text, charset string) (string, Outcome) {
 	var raw []byte
 	for _, r := range text {
@@ -381,31 +361,17 @@ func decodeRawUnicodeEscape(text, charset string) (string, Outcome) {
 		}
 	}
 	codec, _ := lookupPythonCodec(charset)
-	switch codec.Name {
-	case "utf-8":
-		return dto.PythonUTF8Replace(string(raw)), Parsed
-	case "utf-8-sig":
-		if rest, found := strings.CutPrefix(string(raw), "\xef\xbb\xbf"); found {
-			return dto.PythonUTF8Replace(rest), Parsed
-		}
-		return dto.PythonUTF8Replace(string(raw)), Parsed
-	case "undefined":
+	decoded, err, ok := pycodecs.Decode(codec.Name, raw, pycodecs.Replace)
+	if !ok {
+		// pycodecs carries every text codec of the registry table
+		// (TestEveryTextCodecDecodes); the caller checked the codec is one.
+		panic("pyheader: text codec without a decoder: " + codec.Name)
+	}
+	if err != nil {
+		// errors='replace' writes U+FFFD for a reported span, so what is left
+		// is an exception the codec raises whatever the handler is (idna,
+		// undefined): a ValueError subclass, the line is invalid.
 		return "", Invalid
 	}
-	if table, ok := singleByteDecoders[codec.Name]; ok {
-		var out strings.Builder
-		out.Grow(len(raw))
-		for _, b := range raw {
-			out.WriteRune(table[b])
-		}
-		return out.String(), Parsed
-	}
-	if decoder, ok := multiByteDecoders[codec.Name]; ok {
-		decoded, _, err := transform.String(decoder.NewDecoder(), string(raw))
-		if err != nil {
-			return "", NotPorted
-		}
-		return decoded, Parsed
-	}
-	return "", NotPorted
+	return pystr.String(decoded), Parsed
 }

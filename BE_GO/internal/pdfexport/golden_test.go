@@ -9,7 +9,10 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net/http"
+	"net/http/httptest"
 	"os"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strconv"
@@ -24,10 +27,73 @@ import (
 // raises on must fail here with ErrLayout.
 
 type goldenCase struct {
-	Name     string          `json:"name"`
-	Spec     json.RawMessage `json:"spec"`
-	Raises   string          `json:"raises"`
-	Document string          `json:"document"`
+	Name      string           `json:"name"`
+	Spec      json.RawMessage  `json:"spec"`
+	Raises    string           `json:"raises"`
+	Document  string           `json:"document"`
+	Resources *goldenResources `json:"resources"`
+}
+
+// goldenResources are the files and the routes an image case names: reportlab
+// opens the path or fetches the URL, so the replay provides the same sources.
+type goldenResources struct {
+	Dir   string `json:"dir"`
+	Base  string `json:"base"`
+	Files []struct {
+		Path   string `json:"path"`
+		Base64 string `json:"base64"`
+	} `json:"files"`
+	Routes []struct {
+		Path     string `json:"path"`
+		Status   int    `json:"status"`
+		Base64   string `json:"base64"`
+		Location string `json:"location"`
+	} `json:"routes"`
+}
+
+// serveResources writes the files of an image case in a temporary directory,
+// which becomes the working directory of the build as it was reportlab's, and
+// serves its routes; the spec answers with the directory and the URL of the
+// server in place of the ones reportlab was given.
+func serveResources(t *testing.T, raw json.RawMessage, sources *goldenResources) json.RawMessage {
+	t.Helper()
+	directory := t.TempDir()
+	for _, file := range sources.Files {
+		data, err := base64.StdEncoding.DecodeString(file.Base64)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(directory, file.Path), data, 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	mux := http.NewServeMux()
+	for _, route := range sources.Routes {
+		route := route
+		mux.HandleFunc(route.Path, func(w http.ResponseWriter, _ *http.Request) {
+			if route.Status >= 300 && route.Status < 400 {
+				w.Header().Set("Location", route.Location)
+				w.WriteHeader(route.Status)
+				return
+			}
+			if route.Status != 0 {
+				w.WriteHeader(route.Status)
+				return
+			}
+			data, err := base64.StdEncoding.DecodeString(route.Base64)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			w.Header().Set("Content-Type", "image/jpeg")
+			w.Write(data)
+		})
+	}
+	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
+	t.Chdir(directory)
+	replaced := bytes.ReplaceAll(raw, []byte(sources.Dir), []byte(directory))
+	return bytes.ReplaceAll(replaced, []byte(sources.Base), []byte(server.URL))
 }
 
 var (
@@ -299,7 +365,11 @@ func TestGoldenDocuments(t *testing.T) {
 	now := time.Date(2026, 11, 10, 9, 8, 7, 123456000, time.UTC)
 	for _, item := range file.Cases {
 		t.Run(item.Name, func(t *testing.T) {
-			got, err := buildGolden(t, item.Spec, now)
+			spec := item.Spec
+			if item.Resources != nil {
+				spec = serveResources(t, spec, item.Resources)
+			}
+			got, err := buildGolden(t, spec, now)
 			if item.Raises != "" {
 				if !errors.Is(err, ErrLayout) {
 					t.Fatalf("reportlab raises %s; got %v", item.Raises, err)

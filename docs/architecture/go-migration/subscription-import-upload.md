@@ -130,6 +130,18 @@ owner. There is no Celery dispatch on this route: the mapping branch imports syn
   a stored file above 64 MiB. In the golden corpus 6,133 of the 6,246 workbooks pandas reads are accepted.
 - CSV files outside `pandascsv`'s subset (`Read`, `ReadText`): a line that starts with whitespace after a bare carriage
   return, and decimal text whose value depends on how pandas was compiled (1,904 of 97,442 corpus outcomes).
+
+Long tail PR 4 (agent B): `pandascsv` ports the C tokenizer's buffers (parser_init's capacities, make_stream_space's
+doubling, the NUL `end_field` skips when the stream is full, the whitespace-line re-read and TextReader's row limit), so
+a whitespace-led line after a bare carriage return is answered as pandas answers it (ParserError 'Buffer overflow
+caught' or the rows read up to the limit); its sentinel is deleted (`testdata/pandas_backtrack.json.gz`, 4,043 inputs).
+`pandasxlsx` now reads XML in any encoding expat reads (UTF-16, ISO-8859-1, US-ASCII natively, single-byte Python codecs
+through pyexpat's handler, the same refusals for multi-byte ones), number-like text with the build's accumulation
+(linux plain, darwin/arm64 fused, the same measured rule as `pandascsv` and `xlsxexport`), durations and datetimes
+outside pandas' range as Python objects, text looked up in a date or duration header, and a streamed worksheet of any
+size. Still refused: parts openpyxl parses whole above 256 MiB and sheets past 1,048,576 rows (the answer depends on the
+host's memory, long-tail rule 4), a duration beyond Timedelta's range as a column label, and a header text dateutil reads
+only under some default dates.
 - Import values: a tax code beyond ASCII in a complete row or outside the transliteration subset; a `default` that is
   not an object when a value is missing. (Date text and numbers in a date column of any length are read by the whole
   dateutil parser, `internal/pydateutil`, day first unless the text starts with the year.)

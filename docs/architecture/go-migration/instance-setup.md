@@ -56,6 +56,26 @@ is the [instance-logo](instance-logo.md) storage with its own instance and two a
 - Import setup: a task without a ready result (no stored row, or a state other than SUCCESS,
   FAILURE or REVOKED) answers 500 `{"success": false, "error": "Import task is still in progress. Please wait for completion."}`
   and nothing is stored (Django rolls the configuration back).
+- Import setup with a ready FAILURE row: `AsyncResult.result` is Celery's
+  `exception_to_python(stored)`, so the view raises `ValueError` and answers 500
+  `{"success": false, "error": "Import task failed: <str(exception)>"}`. When the
+  rebuild itself raises — a result that is not a dict of pairs, a stored attribute
+  that is not an exception class, a class whose constructor refuses the arguments
+  — the answer is that exception's text without the prefix. `celery_exception.go`
+  reproduces it: the argument rules of `BaseException.__str__`, `KeyError`,
+  `OSError` (errno/strerror/filename forms), the Unicode errors, `SyntaxError`,
+  the exception groups, `json.decoder.JSONDecodeError`, `ssl.SSLError`, `smtplib`,
+  `socket.gaierror`, billiard's time limit errors and celery's `Retry`/`Reject`,
+  and `create_exception_cls`'s plain class for a module or name Celery cannot
+  resolve. The table names the classes of the modules the web process loads; a
+  module it happens to load later with a class that overrides `__str__` is the
+  residual difference, as is a JSON object (Python keeps its insertion order, a
+  decoded one does not).
+- Import setup with a ready REVOKED row: `AsyncResult.ready()` is true but `failed()` is the
+  FAILURE state alone, so the view decodes the stored exception and, because the rebuilt object
+  is not a dict, links the last association by primary key. A rebuild that raises (the
+  SecurityError of a stored attribute that is not an exception class, a non-dict value, ...)
+  answers 500 with that text and no prefix, inside the transaction, so nothing is stored.
 - Import setup with a ready SUCCESS row: the stored result decides the association. A dict whose
   `success` key is present and falsy answers 500 `Import failed: <error or 'Unknown error'>`. Its
   `sport_association_id` (or, when falsy, `association_id`) is looked up in
@@ -97,22 +117,26 @@ is the [instance-logo](instance-logo.md) storage with its own instance and two a
 
 Go answers the server error page before any write:
 
-- `configure` with `type: import` whose task row is `FAILURE` or `REVOKED` (Celery rebuilds the
-  exception and Django answers its text), whose row Celery would decode differently (non-`utf-8`
-  encoding, metadata with `status` or children, `__type__` values) or not at all, whose association id
-  is not a string UUID, or whose error value is not a string, integer, boolean or null.
+- `configure` with `type: import` whose row Celery would decode differently (non-`utf-8` encoding,
+  metadata with `status` or children, `__type__` values) or not at all (a result
+  column that is not JSON), whose association id
+  is not a string, or whose error value is not a string, integer, boolean or null.
 - (Ported in t3plat) Values the model columns reject inside Django's transaction answer the database text
   `value too long for type character varying(N)` with the 500 body: an owner or support email over 254
   characters, a domain over 255 characters once Python has lower-cased it. Domains and e-mail domains are
   lower-cased with `str.lower()`; a `clientPortal` that needs URLValidator's IDNA retry runs through
   `internal/idna2003` (Python's 'idna' codec).
-- A logo name that exists again after the deletes when `AWS_S3_FILE_OVERWRITE` is false (Django
-  would save under a generated alternative name).
 - Other exceptions inside the setup transaction (Django answers 500 with the exception text).
+
+A stored association id that is not a UUID is application state rather than a refusal: every writer
+stores `str()` of one (`import_association_data` in `BE/application/tasks.py:2186,2193`, and the Go
+import worker at `BE_GO/internal/service/consumer_import_association.go:370`), so the Django
+`UUIDField` lookup can only raise for a row the application did not write. Go answers its server
+error page (`domain.ErrInstanceSetupUnexpected`) and never hands the request off.
 
 Since long-tail PR 3 (agent B) the IDNA URL fallback flags are dead code and are deleted: `DjangoURL` already ports
 URLValidator's fallback (always `ported`), so the guards and their fields are gone. The import-task row shapes, the logo
-name collision, the non-UUID stored association id and the other exceptions in the setup transaction stay refusals.
+name collision and the other exceptions in the setup transaction stay refusals.
 
 ## Evidence
 
@@ -141,3 +165,23 @@ configuration checked field by field and removed by the runner. RED (`v2-admin-r
 Go 500 on `instance-setup-configure-import-linked`. GREEN (`v2-admin-green`): 99/99 on the four
 transports. Mutation (`v2-admin-mutation-association-key`): ignoring the `association_id` key fails
 `instance-setup-configure-import-association-id-key` on `import.primary-association`.
+
+Long tail PR 4 (agent A, accepted divergence X17): a logo name taken again after the deletes when
+`AWS_S3_FILE_OVERWRITE` is false is saved under `get_available_name`'s alternative (`_<7 random characters>` before the
+extension, `documentkey.AvailableName`), as Django's `default_storage.save` does; the configuration keeps the canonical
+logo URL, as the view stores it (unit test `TestUploadLogoSavesUnderAvailableName`).
+
+FAILURE rows (long-tail lt4-C): 116 cases. Nine `configure` cases read a `FAILURE` row and answer the
+text Celery prints for its stored exception, with nothing stored: `WorkerLostError` ("Worker exited
+prematurely: signal 9 (SIGKILL) Job: 0."), `TimeLimitExceeded([3600.0])`, `KeyError(['x'])`, an unknown
+module, an unknown name with `exc_module` null, `os.system` (the SecurityError), a non-dict result, a
+null result and a `UnicodeEncodeError`. The stored values, their texts and the texts of 514 further
+values are in `BE_GO/internal/service/testdata/instance_setup_celery_exceptions.json`, produced with
+CPython 3.13.16 and celery's `Backend.exception_to_python`; `go test ./internal/service/ -run
+CeleryException` replays them.
+
+REVOKED rows (long-tail lt4-C, round 2): 118 cases. Two `configure` cases read a `REVOKED` row: a
+`TaskRevokedError` stored exception is rebuilt, is not a dict, and links the last association (the
+configuration is created and checked field by field); `os.system` raises the SecurityError, whose text
+is the 500 body's error and stores nothing. `go test ./internal/service/ -run InstanceSetup` covers the
+same two branches with a fake store.

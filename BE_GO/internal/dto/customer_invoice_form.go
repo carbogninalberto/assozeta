@@ -29,8 +29,9 @@ var customerInvoiceFormBooleans = []string{"e_invoice", "paid", "transmitted"}
 // file's name is its text); any other present empty input is None, kept empty or
 // absent according to the field's allow_null/allow_blank/required options.
 // transmitting_date, payment_expiry_date and keys outside the serializer are
-// copied unchanged. notPorted marks JSON text nested past the ported depth.
-func CustomerInvoiceFormData(object domain.RequestObject) (data domain.RequestObject, errs InvoicePartyErrors, notPorted bool) {
+// copied unchanged. depth is the maximum nesting (auditJSONDepth's D) of the
+// form JSON texts, answered by the caller's measured band (owner decision X15).
+func CustomerInvoiceFormData(object domain.RequestObject) (data domain.RequestObject, errs InvoicePartyErrors, depth int) {
 	errs = InvoicePartyErrors{}
 	data = make(domain.RequestObject, 0, len(object)+len(customerInvoiceFormBooleans))
 	seen := make(map[string]bool, len(object))
@@ -42,13 +43,13 @@ func CustomerInvoiceFormData(object domain.RequestObject) (data domain.RequestOb
 			if upload, isUpload := value.(domain.RequestUpload); isUpload {
 				value = upload.Name
 			}
-			tree, valid, _, deep := automationFormTree(value)
-			switch {
-			case deep:
-				return nil, errs, true
-			case !valid:
+			tree, valid, _, fieldDepth := automationFormTree(value)
+			if fieldDepth > depth {
+				depth = fieldDepth
+			}
+			if !valid {
 				errs.add(name, CourseSubscriptionJSONInvalid)
-			default:
+			} else {
 				data = append(data, domain.RequestField{Name: name, Value: tree})
 			}
 			continue
@@ -62,7 +63,7 @@ func CustomerInvoiceFormData(object domain.RequestObject) (data domain.RequestOb
 			data = append(data, domain.RequestField{Name: name, Value: false})
 		}
 	}
-	return data, errs, false
+	return data, errs, depth
 }
 
 // customerInvoiceFormValue is Field.get_value for a present key: a non-empty

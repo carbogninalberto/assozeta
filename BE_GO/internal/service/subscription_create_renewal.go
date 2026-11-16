@@ -3,9 +3,11 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"math/big"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
@@ -126,6 +128,12 @@ func renewalSourceKey(value any) (string, bool) {
 	return uuid.UUID(raw).String(), true
 }
 
+// renewalDateText is date.strftime('%d/%m/%Y'): the year width follows the C
+// library of the platform the server runs on (dto.PythonStrftimeYear).
+func renewalDateText(date time.Time) string {
+	return fmt.Sprintf("%02d/%02d/%s", date.Day(), int(date.Month()), dto.PythonStrftimeYear(date.Year()))
+}
+
 // renewalPerson is AssociateSerializer(associate).data in Meta.fields order,
 // born_date as DD/MM/YYYY (None stays None).
 func renewalPerson(associate *domain.SubscriptionEditAssociate, owner string) domain.RequestObject {
@@ -143,7 +151,7 @@ func renewalPerson(associate *domain.SubscriptionEditAssociate, owner string) do
 	}
 	var born any
 	if associate.BornDate != nil {
-		born = associate.BornDate.Format("02/01/2006")
+		born = renewalDateText(*associate.BornDate)
 	}
 	return domain.RequestObject{
 		{Name: "associate_id", Value: associate.ID}, {Name: "address", Value: text(associate.Address)},
@@ -157,9 +165,11 @@ func renewalPerson(associate *domain.SubscriptionEditAssociate, owner string) do
 	}
 }
 
-// mainTutor is Associate.get_main_tutor: the primary relation's tutor; ""
-// without relations.
-func (s *SubscriptionCreates) mainTutor(ctx context.Context, tx domain.SubscriptionCreateTransaction, associate string) (string, error) {
+// mainTutor is Associate.get_main_tutor: the primary relation's tutor; when no
+// relation is primary the first one (by key) becomes primary, saved with its
+// update entry; "" without relations.
+func (s *SubscriptionCreates) mainTutor(ctx context.Context, tx domain.SubscriptionCreateTransaction, associate string,
+	audit domain.LoginAuditContext, association *string) (string, error) {
 	relations, err := tx.Relations(ctx, associate)
 	if err != nil || len(relations) == 0 {
 		return "", err
@@ -169,8 +179,17 @@ func (s *SubscriptionCreates) mainTutor(ctx context.Context, tx domain.Subscript
 			return relation.TutorID, nil
 		}
 	}
-	// Relations without a primary one (get_main_tutor makes the first primary) are not ported.
-	return "", domain.ErrSubscriptionCreateNotPorted
+	first := relations[0]
+	if err = tx.MarkRelationPrimary(ctx, first.ID); err != nil {
+		return "", err
+	}
+	if err = tx.AuditEntry(ctx, domain.SubscriptionCreateAudit{App: "application", Model: "associatetutorrelation",
+		Representation: "AssociateTutorRelation", Key: fmt.Sprint(first.ID), Action: 1,
+		Changes: map[string][2]string{"is_primary": {"False", "True"}}, Association: association,
+		Path: "associate.sport_association", Context: audit, At: s.now().UTC()}); err != nil {
+		return "", err
+	}
+	return first.TutorID, nil
 }
 
 // groupedCustomData is _get_asd_custom_data_for_grouped_subscriptions: the
@@ -243,8 +262,9 @@ func (s *SubscriptionCreates) fillPreregistration(ctx context.Context, tx domain
 		return nil, nil, pythonKeyError("type")
 	}
 	if source.AssociateID == nil {
-		// AssociateSerializer(None).data.
-		return nil, nil, domain.ErrSubscriptionCreateNotPorted
+		// AssociateSerializer(None).data is a dict of empty fields; the next line,
+		// subscription.associate.get_main_tutor(), is the AttributeError Django raises.
+		return nil, nil, pythonAttributeError(nil, "get_main_tutor")
 	}
 	associate, err := tx.AssociateAny(ctx, *source.AssociateID)
 	if err != nil {
@@ -253,7 +273,7 @@ func (s *SubscriptionCreates) fillPreregistration(ctx context.Context, tx domain
 	if associate == nil {
 		return nil, nil, domain.ErrSubscriptionCreateServer
 	}
-	tutorID, err := s.mainTutor(ctx, tx, associate.ID)
+	tutorID, err := s.mainTutor(ctx, tx, associate.ID, request.Audit, associate.AssociationID)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -265,10 +285,6 @@ func (s *SubscriptionCreates) fillPreregistration(ctx context.Context, tx domain
 		}
 		if tutor == nil {
 			return nil, nil, domain.ErrSubscriptionCreateServer
-		}
-		if tutor.UserID == nil && tutor.AssociationID != nil && (associate.AssociationID == nil || *tutor.AssociationID != *associate.AssociationID) {
-			// A tutor without an account stored in another association is not ported.
-			return nil, nil, domain.ErrSubscriptionCreateNotPorted
 		}
 		tutorData = renewalPerson(tutor, source.OwnerID)
 	}
@@ -294,7 +310,7 @@ func (s *SubscriptionCreates) fillPreregistration(ctx context.Context, tx domain
 			return nil, nil, err
 		}
 		if expiration != nil {
-			medical[1].Value = expiration.Format("02/01/2006")
+			medical[1].Value = renewalDateText(*expiration)
 		}
 	}
 	stored := func(raw *string) (any, error) {

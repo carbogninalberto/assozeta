@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"math"
 	"math/big"
 	"strings"
@@ -175,12 +174,6 @@ var paymentReadsFields = map[string]string{"payment_id": "payment_id", "pk": "pa
 	"supplier": "supplier_id", "instructor": "instructor_id", "sport_association": "sport_association_id",
 	"custom_accounts": "custom_accounts_id", "group": "group_id"}
 
-// errPaymentReadsLazyOrder marks an ordering Django resolves when compiling
-// the rows (after the count and the page checks): an annotation of the view.
-// It is an internal marker, never returned: subscription_payments refuses that
-// ordering with domain.ErrPaymentReadsNotPorted after the page checks.
-var errPaymentReadsLazyOrder = errors.New("payment ordering resolved at compile time")
-
 // paymentReadsOrder is order_by(f"{'-' if desc else ”}{field}"): '?' is
 // random; one leading '-' is stripped, then the name must be one of the
 // model's own columns (or a column the view annotated); anything else, such
@@ -200,7 +193,10 @@ func paymentReadsOrder(filter *domain.PaymentReadsFilter, field, direction strin
 		return nil
 	}
 	if annotations[name] {
-		return errPaymentReadsLazyOrder
+		// An annotation of the view (subscription_payments' full_name with a text
+		// search) resolves when Django compiles its expression.
+		filter.Order = []domain.PaymentReadsOrder{{Column: name, Descending: descending}}
+		return nil
 	}
 	return domain.ErrPaymentReadsServer
 }
@@ -341,11 +337,10 @@ func (s *PaymentReads) List(ctx context.Context, request PaymentReadsRequest) (a
 		if err != nil {
 			return nil, err
 		}
-		if identity.ScopeUser.Role == domain.RoleAthlete && paymentReadsScope(identity) != nil {
-			// An athlete owns a SportAssociation only when the association import (import_service.py) made an existing
-			// athlete the owner of an imported association; Django then answers the list. Not ported.
-			return nil, domain.ErrPaymentReadsNotPorted
-		}
+		// An athlete owns a SportAssociation only when the association import (import_service.py) made an existing
+		// athlete the owner of an imported association. userAssociation finds it through the same reverse
+		// one-to-one Django reads; without one the scoped lookup fails (500). The session association stays in Scope,
+		// as scoped_queryset adds it for association users, so an athlete of another association lists nothing.
 		filter := domain.PaymentReadsFilter{AssociationID: association, Scope: paymentReadsScope(identity), Group: group, Archived: flag}
 		rows, err := s.store.Compressed(ctx, filter)
 		if err != nil {
@@ -433,23 +428,13 @@ func (s *PaymentReads) List(ctx context.Context, request PaymentReadsRequest) (a
 			return nil, err
 		}
 	}
-	var lazy error
 	if field, _ := paymentReadsParam(query, "sort[field]"); field != "" {
 		direction, _ := paymentReadsParam(query, "sort[sort]")
-		if err := paymentReadsOrder(&filter, field, direction, nil); errors.Is(err, errPaymentReadsLazyOrder) {
-			// payment_list annotates nothing: the marker needs an annotation.
-			lazy = domain.ErrPaymentReadsUnreachable
-		} else if err != nil {
+		if err := paymentReadsOrder(&filter, field, direction, nil); err != nil {
 			return nil, err
 		}
-		if filter.Random && filter.Smart != nil {
-			// smart_search returns queryset.distinct(): Django's compiler then adds
-			// RANDOM() to the select list, so DISTINCT keeps the rows the search
-			// joins repeat. Not ported (handed off).
-			lazy = domain.ErrPaymentReadsNotPorted
-		}
 	}
-	return s.page(ctx, filter, query, lazy, func(ids []string) ([]map[string]any, error) {
+	return s.page(ctx, filter, query, func(ids []string) ([]map[string]any, error) {
 		items, err := s.rows(ctx, ids, group)
 		if err != nil {
 			return nil, err
@@ -461,8 +446,8 @@ func (s *PaymentReads) List(ctx context.Context, request PaymentReadsRequest) (a
 	})
 }
 
-// page counts, checks the page, refuses a lazy ordering, then renders the rows.
-func (s *PaymentReads) page(ctx context.Context, filter domain.PaymentReadsFilter, query domain.RequestObject, lazy error,
+// page counts, checks the page, then renders the rows.
+func (s *PaymentReads) page(ctx context.Context, filter domain.PaymentReadsFilter, query domain.RequestObject,
 	render func([]string) ([]map[string]any, error)) (any, error) {
 	count, err := s.store.CountPayments(ctx, filter)
 	if err != nil {
@@ -471,9 +456,6 @@ func (s *PaymentReads) page(ctx context.Context, filter domain.PaymentReadsFilte
 	number, size, pages, limit, offset, err := paymentReadsPage(count, query)
 	if err != nil {
 		return nil, err
-	}
-	if lazy != nil {
-		return nil, lazy
 	}
 	ids := []string{}
 	if limit > 0 {
@@ -779,17 +761,14 @@ func (s *PaymentReads) SubscriptionPayments(ctx context.Context, request Payment
 			return nil, err
 		}
 	}
-	var lazy error
 	if field, _ := paymentReadsParam(query, "sort[field]"); field != "" {
 		direction, _ := paymentReadsParam(query, "sort[sort]")
 		annotations := map[string]bool{"full_name": filter.MemberText != nil}
-		if err := paymentReadsOrder(&filter, field, direction, annotations); errors.Is(err, errPaymentReadsLazyOrder) {
-			lazy = domain.ErrPaymentReadsNotPorted
-		} else if err != nil {
+		if err := paymentReadsOrder(&filter, field, direction, annotations); err != nil {
 			return nil, err
 		}
 	}
-	return s.page(ctx, filter, query, lazy, func(ids []string) ([]map[string]any, error) {
+	return s.page(ctx, filter, query, func(ids []string) ([]map[string]any, error) {
 		items, err := s.rows(ctx, ids, group)
 		if err != nil {
 			return nil, err

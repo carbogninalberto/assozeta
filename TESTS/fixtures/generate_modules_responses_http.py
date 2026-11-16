@@ -93,6 +93,8 @@ BASE = {'association': OWN, 'link': None, 'created': '2026-09-01T08:00:00Z', 'ti
         'start': None, 'end': None, 'always_active': True, 'max_responses': None, 'queue_mode': False, 'only_users': False,
         'payment_required': False, 'payment_data': {}, 'response_message': None, 'allow_attachments': False, 'elements': ELEMENTS}
 xids = iter(f'a1000000-0000-4000-8000-{643101 + n:012d}' for n in range(60))
+# Ids of the modules and responses added for the big integers (a range of their own: the earlier ids stay).
+zids = iter(f'a1000000-0000-4000-8000-{644200 + n:012d}' for n in range(10))
 EXPORT_ELEMENTS = [
     {'type': 'heading', 'props': {'label': 'Intestazione'}},
     {'type': 'text', 'props': {'label': 'Nome', 'name': 'nome'}},
@@ -144,6 +146,13 @@ MODULES = {
                           'elements': [{'type': 'text', 'props': {'label': ['a', 'b'], 'name': 'x'}}]},
     'export_label_dict': {**BASE, 'id': next(yids), 'link': 'risposte-export-etichetta-oggetto',
                           'elements': [{'type': 'text', 'props': {'label': {'a': 1}, 'name': 'x'}}]},
+    # An integer beyond int64 in a response: pandas reads it as a float (or keeps
+    # it an int) and xlsxwriter writes its float with '%.16G'.
+    'export_big': {**BASE, 'id': next(zids), 'link': 'risposte-export-grande',
+                   'elements': [{'type': 'number', 'props': {'label': 'Grande', 'name': 'grande'}}]},
+    # One beyond the double range: float() raises (the 500 page).
+    'export_huge': {**BASE, 'id': next(zids), 'link': 'risposte-export-enorme',
+                    'elements': [{'type': 'number', 'props': {'label': 'Enorme', 'name': 'enorme'}}]},
 }
 DOCUMENTS = {'d1': {'id': next(ids), 'filename': 'certificato è.pdf', 'token': next(ids)},
              'd2': {'id': next(ids), 'filename': 'foto.png', 'token': next(ids)},
@@ -201,6 +210,11 @@ RESPONSES = {
     'props_number_r': {**R, 'id': next(yids), 'module': 'export_props_number', 'number': 0},
     'label_list_r': {**R, 'id': next(yids), 'module': 'export_label_list', 'number': 0},
     'label_dict_r': {**R, 'id': next(yids), 'module': 'export_label_dict', 'number': 0},
+    # Integers beyond int64: the export writes their float, or answers the 500 page.
+    'big_r': {**R, 'id': next(zids), 'module': 'export_big', 'number': 0,
+              'response': {'grande': 123456789012345678901234567890}},
+    'huge_r': {**R, 'id': next(zids), 'module': 'export_huge', 'number': 0,
+               'response': {'enorme': int('1' + '0' * 400)}},
 }
 RESPONSES['full_r']['attachments'] = ['d8']
 # Payment.attachments links (payment label, document label).
@@ -228,11 +242,14 @@ def with_response_token(actor, method, path, body, *, enabled=True):
 
 
 def add(name, actor, method, path, status, response, *, body=None, raw_body=None, content_type=None, headers=None, effect=None,
-        throttle=None, retry_after=None, token=True):
+        throttle=None, retry_after=None, token=True, setup=None):
     """token=False: an anonymous request keeps the body as authored (no response secret).
-    throttle: {'preload': n, 'age': seconds}: the address's request history for the route holds n entries of that age."""
+    throttle: {'preload': n, 'age': seconds}: the address's request history for the route holds n entries of that age.
+    setup: {'module': label}: rows inserted for the case's request only."""
     case = {'name': f'modules-responses-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
             'status': status, 'response': response, 'effect': effect}
+    if setup is not None:
+        case['setup'] = setup
     if throttle is not None:
         case['throttle'] = throttle
     if retry_after is not None:
@@ -436,6 +453,13 @@ def typed(value):
     return value
 
 
+def stored_response(row):
+    """The response value the row holds ('response_raw' text when a Python
+    structure cannot hold it: the harness's state snapshot walks every JSON
+    value)."""
+    return json.loads(row['response_raw']) if 'response_raw' in row else row['response']
+
+
 def exported(module):
     """The export body over the module's seeded responses (insertion order)."""
     columns = [(e['props']['label'], e['props']['name']) for e in MODULES[module]['elements']
@@ -444,7 +468,8 @@ def exported(module):
     for row in RESPONSES.values():
         if row['module'] != module:
             continue
-        values = [typed(row['response'][name]) if name in row['response'] else '-' for _, name in columns]
+        response = stored_response(row)
+        values = [typed(response[name]) if name in response else '-' for _, name in columns]
         created = row['created'].replace('Z', '')
         stamp = f'{created[8:10]}/{created[5:7]}/{created[:4]} {created[11:16]}'
         user = full_name(row['export_user']) if row['export_user'] else ('-' if not row['user'] else '$base-user')
@@ -499,6 +524,10 @@ add('export-props-number', 'owner', 'GET', export('export_props_number'), 500, S
 # A list or an object as column label: the header cell is its text, the column width its item count.
 add('export-label-list', 'owner', 'GET', export('export_label_list'), 200, exported('export_label_list'))
 add('export-label-dict', 'owner', 'GET', export('export_label_dict'), 200, exported('export_label_dict'))
+# An integer beyond int64 is float() then '%.16G' (xlsxwriter's write_number);
+# one beyond the double range makes float() raise.
+add('export-big-integer', 'owner', 'GET', export('export_big'), 200, exported('export_big'))
+add('export-integer-beyond-double-server-error', 'owner', 'GET', export('export_huge'), 500, SERVER)
 
 add('info-anonymous', 'anonymous', 'GET', info('risposte-aperto'), 200, INFO_OPEN)
 add('info-admin-without-session', 'admin', 'GET', info('risposte-aperto'), 403, NO_SESSION)
@@ -719,6 +748,10 @@ add('attach-name-255-characters', 'anonymous', 'POST', attach('att_r'), 200, ATT
 add('attach-name-256-characters-server-error', 'anonymous', 'POST', attach('att_r'), 500, SERVER,
     body={'filename': 'x' * 256, 'base64': 'Y2lhbw=='})
 add('attach-name-nul-server-error', 'anonymous', 'POST', attach('att_r'), 500, SERVER, body={'filename': 'nul\x00.txt', 'base64': 'Y2lhbw=='})
+# A filename the JSON parser keeps as WTF-8 (a lone surrogate escape): psycopg2
+# refuses the INSERT encoding, before any row or audit entry. Nothing written.
+add('attach-name-lone-surrogate-server-error', 'owner', 'POST', attach('att_r'), 500, SERVER,
+    raw_body='{"filename": "a\\ud800.pdf", "base64": "Y2lhbw=="}', content_type='application/json')
 add('attach-name-null-server-error', 'anonymous', 'POST', attach('att_r'), 500, SERVER, body={'filename': None, 'base64': 'Y2lhbw=='})
 # The document is created, then Storage.save refuses the name (Django's 400 page).
 for name, filename in [('empty', ''), ('dot-dot', '..'), ('traversal', 'a/../b.txt'), ('backslash-traversal', 'a\\..\\b.txt'),
@@ -748,6 +781,17 @@ add('attach-multipart', 'owner', 'POST', attach('att_r'), 200, ATTACHED,
 add('attach-multipart-file-server-error', 'anonymous', 'POST', attach('att_r'), 500, SERVER,
     raw_body=multipart(('filename', 'caricato.txt'), ('attachment_token', TOKENS['att_r']), ('base64', 'a.txt', 'Y2lhbw==')), content_type=MULTIPART,
     effect=uploaded(None, 'caricato.txt', None, link=None, stored=False))
+# An uploaded file as filename: the Document row keeps str(UploadedFile), the
+# multipart parser's sanitized name ('&amp;' is an entity, so '&'), and the
+# path join raises because the instance still holds the upload.
+add('attach-filename-upload-keeps-document', 'anonymous', 'POST', attach('att_r'), 500, SERVER,
+    raw_body=multipart(('filename', 'scan&amp;1.pdf', 'ignorato'), ('attachment_token', TOKENS['att_r']), ('base64', 'Y2lhbw==')),
+    content_type=MULTIPART, effect=uploaded(None, 'scan&1.pdf', None, link=None, stored=False))
+# A filename that sanitizes away is no part at all: 'filename' is missing from
+# request.data, so the view answers 'attachment added' and writes nothing.
+add('attach-filename-upload-sanitized-away', 'anonymous', 'POST', attach('att_r'), 200, ATTACHED,
+    raw_body=multipart(('filename', '..', 'ignorato'), ('attachment_token', TOKENS['att_r']), ('base64', 'Y2lhbw==')),
+    content_type=MULTIPART)
 add('attach-delete-missing-key', 'anonymous', 'DELETE', attach('att_r'), 404, NO_DOCUMENT, body={})
 add('attach-delete-null-document', 'anonymous', 'DELETE', attach('att_r'), 404, NO_DOCUMENT, body={'document_id': None})
 add('attach-delete-unknown-document', 'owner', 'DELETE', attach('att_r'), 404, NO_DOCUMENT, body={'document_id': UNKNOWN})
@@ -860,6 +904,84 @@ add('attach-anonymous-at-the-limit', 'anonymous', 'POST', attach('att_r'), 200, 
 # Text that does not decode keeps the answer it had: the create, then the error.
 add('attach-anonymous-undecodable-keeps-its-answer', 'anonymous', 'POST', attach('att_r'), 500, SERVER,
     body={'filename': 'rotto.bin', 'base64': 'abcde'}, effect=uploaded(None, 'rotto.bin', None, link=None, stored=False))
+
+# ---------------------------------------------------------------------------
+# module.elements nested up to the interpreter's recursion band (owner decision
+# X15). The export loads the column with json.loads: the parity harness's Django
+# (CPython 3.13.16) reads 9933 levels of total nesting and raises RecursionError
+# at 9934, which the view does not handle (its plain 500 page). The deep value
+# sits in a props key the export never reads, so only the band decides the
+# answer; each module exists only around its own case (the state snapshot walks
+# JSON values in Python, which cannot hold a value this deep).
+# ---------------------------------------------------------------------------
+def json_depth(text):
+    """The total nesting of a JSON text ('[]' is 1)."""
+    depth = deepest = 0
+    for char in text:
+        if char in '[{':
+            depth += 1
+            deepest = max(deepest, depth)
+        elif char in ']}':
+            depth -= 1
+    return deepest
+
+
+def deep_elements(levels):
+    """Elements whose heading props carry a list nested `levels` deep."""
+    return ('[{"type": "heading", "props": {"label": "Intestazione", "unused": ' + '[' * levels + ']' * levels + '}},'
+            ' {"type": "text", "props": {"label": "Nome", "name": "nome"}}]')
+
+
+# Django's edge moves by a level or two with the value's shape and the live stack: inside each side with a margin.
+DEEP_ELEMENTS_LOADED, DEEP_ELEMENTS_REFUSED = deep_elements(9897), deep_elements(9967)
+assert json_depth(DEEP_ELEMENTS_LOADED) == 9900 and json_depth(DEEP_ELEMENTS_REFUSED) == 9970
+MODULES['export_deep'] = {**EXPORT_BASE, 'id': next(zids), 'link': 'risposte-export-profonde', 'title': 'Profondo',
+                          'elements': [{'type': 'heading', 'props': {'label': 'Intestazione'}},
+                                       {'type': 'text', 'props': {'label': 'Nome', 'name': 'nome'}}],
+                          'elements_raw': DEEP_ELEMENTS_LOADED}
+MODULES['export_deep_over'] = {**MODULES['export_deep'], 'id': next(zids), 'link': 'risposte-export-troppo-profonde',
+                               'elements_raw': DEEP_ELEMENTS_REFUSED}
+RESPONSES['deep_r'] = {**R, 'id': next(zids), 'module': 'export_deep', 'number': 0, 'response': {'nome': 'Anna è'},
+                       'token': '', 'export_user': None, 'payment': None}
+RESPONSES['deep_over_r'] = {**R, 'id': next(zids), 'module': 'export_deep_over', 'number': 0, 'response': {'nome': 'Anna è'},
+                            'token': '', 'export_user': None, 'payment': None}
+add('export-elements-json-at-depth-band', 'owner', 'GET', export('export_deep'), 200, exported('export_deep'),
+    setup={'module': 'export_deep'})
+add('export-elements-json-past-depth-band-server-error', 'owner', 'GET', export('export_deep_over'), 500, SERVER,
+    setup={'module': 'export_deep_over'})
+
+# ---------------------------------------------------------------------------
+# ModuleResponses.response nested up to the interpreter's recursion band (owner
+# decision X15). The export loads each response with psycopg2's json.loads: the
+# parity harness's Django (CPython 3.13.16) reads 9935 levels of {"nome": "Anna",
+# "deep": <nested objects>} and raises RecursionError at 9936, which the view
+# does not handle (its plain 500 page). Each module and its response exist only
+# around their own case (the state snapshot walks JSON values in Python, which
+# cannot hold a value this deep), so the response is authored as text and
+# inserted with raw SQL ('response_raw').
+# ---------------------------------------------------------------------------
+def deep_response(depth):
+    """{"nome": "Anna", "deep": <nested objects>} whose total nesting is depth."""
+    return '{"nome": "Anna", "deep": ' + '{"a": ' * (depth - 2) + '{}' + '}' * (depth - 2) + '}'
+
+
+# Inside each side of the band with a margin: the edge moves by a level or two with the live stack.
+DEEP_RESPONSE_LOADED, DEEP_RESPONSE_REFUSED = deep_response(9900), deep_response(9970)
+assert json_depth(DEEP_RESPONSE_LOADED) == 9900 and json_depth(DEEP_RESPONSE_REFUSED) == 9970
+# A range of their own (the earlier id iterators are not touched).
+DEEP_RESPONSE_IDS = iter(f'a1000000-0000-4000-8000-{648201 + n:012d}' for n in range(4))
+MODULES['export_deep_response'] = {**EXPORT_BASE, 'id': next(DEEP_RESPONSE_IDS), 'link': 'risposte-export-risposta-profonda',
+                                   'title': 'Risposta profonda', 'elements_raw': json.dumps(EXPORT_ELEMENTS)}
+MODULES['export_deep_response_over'] = {**MODULES['export_deep_response'], 'id': next(DEEP_RESPONSE_IDS),
+                                        'link': 'risposte-export-risposta-troppo-profonda'}
+RESPONSES['deep_response_r'] = {**R, 'id': next(DEEP_RESPONSE_IDS), 'module': 'export_deep_response', 'number': 0,
+                                'response_raw': DEEP_RESPONSE_LOADED, 'token': '', 'export_user': None, 'payment': None}
+RESPONSES['deep_response_over_r'] = {**R, 'id': next(DEEP_RESPONSE_IDS), 'module': 'export_deep_response_over', 'number': 0,
+                                     'response_raw': DEEP_RESPONSE_REFUSED, 'token': '', 'export_user': None, 'payment': None}
+add('export-response-json-at-depth-band', 'owner', 'GET', export('export_deep_response'), 200, exported('export_deep_response'),
+    setup={'module': 'export_deep_response'})
+add('export-response-json-past-depth-band-server-error', 'owner', 'GET', export('export_deep_response_over'), 500, SERVER,
+    setup={'module': 'export_deep_response_over'})
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Module responses info/add/approve/delete/add-attachment/export authored sequence',

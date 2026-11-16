@@ -50,17 +50,6 @@ func oauthUsernameValid(text string) bool {
 	return true
 }
 
-// IsASCII reports text without non-ASCII code points (Python's Unicode
-// case mapping and \w classes are not ported).
-func IsASCII(text string) bool {
-	for i := 0; i < len(text); i++ {
-		if text[i] >= utf8.RuneSelf {
-			return false
-		}
-	}
-	return true
-}
-
 // OAuthPasswordMatches is re.search(r'^(?=.*[A-Z])(?=.*[!@#$&\.\-\_*])(?=.*[0-9]).{10,}$', text):
 // the first line (up to a newline) holds an upper-case letter, one of
 // !@#$&.-_* and a digit, has at least ten characters, and is the whole text
@@ -76,9 +65,7 @@ func OAuthPasswordMatches(text string) bool {
 
 // ParseOAuthSignup runs UserSerializerSignup's field validation except the
 // username UniqueValidator (a database query; see OAuthSignupFields).
-// unported reports input outside the port (non-ASCII usernames, NUL in the
-// username: the UniqueValidator query raises in Django).
-func ParseOAuthSignup(object domain.RequestObject) (fields OAuthSignupFields, validation OAuthSignupValidation, unported bool) {
+func ParseOAuthSignup(object domain.RequestObject) (fields OAuthSignupFields, validation OAuthSignupValidation) {
 	validation.Errors = map[string][]string{}
 	text := func(name string, field SupplierField) *string {
 		value, present := object.Lookup(name)
@@ -130,5 +117,5 @@ func ParseOAuthSignup(object domain.RequestObject) (fields OAuthSignupFields, va
 			validation.Errors["password"] = codes
 		}
 	}
-	return fields, validation, false
+	return fields, validation
 }

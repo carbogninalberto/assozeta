@@ -89,9 +89,9 @@ func personaSubsFormObject(form domain.RequestObject, partial bool, invalid map[
 			value = upload.Name
 		}
 		// A lone surrogate escape stays in the value: the jsonb column rejects it at the save.
-		tree, valid, _, deep := automationFormTree(value)
+		tree, valid, _, depth := automationFormTree(value)
 		switch {
-		case deep:
+		case depth > 500:
 			rejected = true
 		case !valid:
 			invalid[name] = []string{CourseSubscriptionJSONInvalid}

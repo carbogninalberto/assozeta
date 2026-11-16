@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log/slog"
 	"math/rand/v2"
 	"regexp"
@@ -14,6 +15,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/celeryworker"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/emailrender"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/smtpsend"
 	"github.com/google/uuid"
 )
@@ -271,7 +273,14 @@ func (s *SendMailAsync) planConfigSend(ctx context.Context, configuration domain
 	if smtpConfigured(configuration) {
 		if message, ok := call.smtpMessage(); ok {
 			if _, err := smtpsend.Render(message, smtpsend.NewBoundary()); err != nil && !errors.Is(err, smtpsend.ErrRaises) {
-				return nil, celeryworker.ErrHandoff
+				if errors.Is(err, refusal.ErrAppState) {
+					// An application-state error is Django's 500 page, not a handoff.
+					return nil, err
+				}
+				// The handoff keeps the refusal that caused it: callers that
+				// only hand the task over still match ErrHandoff, and a web
+				// view can answer the smtpsend refusal itself.
+				return nil, fmt.Errorf("%w: %w", celeryworker.ErrHandoff, err)
 			}
 		}
 	}

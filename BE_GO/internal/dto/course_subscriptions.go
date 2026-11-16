@@ -323,8 +323,15 @@ type CourseSubscriptionWrite struct {
 	FeeSet         bool
 	Fee            *string
 	Events         any
-	// FormJSON marks a form JSON text the jsonb column rejects at save time (not ported).
-	FormJSON bool
+	// FormJSONDepth holds the maximum nesting (auditJSONDepth's D) of each form
+	// JSON field that was present (multiple_quote, events). The callers answer
+	// the measured recursion bands (owner decision X15); nil for a JSON body.
+	FormJSONDepth map[string]int
+	// FormJSONSurrogate marks a form JSON text that parses but holds a lone
+	// surrogate escape (json.loads keeps the code unit): the value is valid, so
+	// validation runs as for any other value, and the jsonb column rejects it at
+	// the row's save (the callers answer it there).
+	FormJSONSurrogate bool
 }
 
 // CourseSubscriptionBooleans are the serializer's BooleanFields.
@@ -374,7 +381,7 @@ func ParseCourseSubscriptionWrite(body any, form bool) (CourseSubscriptionWrite,
 	if !ok {
 		return CourseSubscriptionWrite{}, map[string]any{"non_field_errors": []string{"dictionary:" + pythonTypeName(body)}}
 	}
-	write := CourseSubscriptionWrite{Bools: map[string]bool{}, Ints: map[string]int{}, Times: map[string]*time.Time{}}
+	write := CourseSubscriptionWrite{Bools: map[string]bool{}, Ints: map[string]int{}, Times: map[string]*time.Time{}, FormJSONDepth: map[string]int{}}
 	errs := map[string]any{}
 	// get_value: an empty HTML value of a non-null optional field is skipped.
 	skip := func(value any) bool { return form && value == "" }
@@ -421,16 +428,14 @@ func ParseCourseSubscriptionWrite(body any, form bool) (CourseSubscriptionWrite,
 			if upload, isUpload := value.(domain.RequestUpload); isUpload {
 				text = upload.Name
 			}
-			tree, valid, rejectedColumn, deep := automationFormTree(text)
-			rejected := rejectedColumn || deep
+			tree, valid, rejectedColumn, depth := automationFormTree(text)
+			write.FormJSONDepth[name] = depth
 			switch {
-			case rejected:
-				write.FormJSON = true
-				continue
 			case !valid:
 				errs[name] = []string{CourseSubscriptionJSONInvalid}
 				continue
 			}
+			write.FormJSONSurrogate = write.FormJSONSurrogate || rejectedColumn
 			value = tree
 		}
 		if name == "events" {

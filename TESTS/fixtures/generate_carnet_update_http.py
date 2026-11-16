@@ -78,6 +78,13 @@ add('owner-updates', 'owner', 'c1', 200, OK, body=valid(title='  Nuovo è  ', le
                     'fee': ['50.00', '1.00'], 'public': ['True', 'False']}))
 add('same-values-no-audit', 'owner', 'c1', 200, OK, body=valid(fee='1'),
     effect=updated('c1', {'title': 'Nuovo è', 'description': 'Dieci ingressi', 'lessons_number': 20, 'fee': '1.00', 'public': False}, None))
+# decimal.Decimal() maps category-Nd digits to ASCII and removes every underscore
+# before its grammar, so both forms reach the quantized DecimalField column.
+current = {'title': 'Nuovo è', 'description': 'Dieci ingressi', 'lessons_number': 20, 'public': False}
+add('fee-arabic-indic-digits', 'owner', 'c1', 200, OK, body=valid(**current, fee='١٢٣'),
+    effect=updated('c1', {**current, 'fee': '123.00'}, {'fee': ['1.00', '123.00']}))
+add('fee-underscore-one', 'owner', 'c1', 200, OK, body=valid(**current, fee='_1'),
+    effect=updated('c1', {**current, 'fee': '1.00'}, {'fee': ['123.00', '1.00']}))
 c2 = CARNETS['c2']
 add('full-collaborator-form-update', 'full_collaborator', 'c2', 200, OK,
     raw_body='title=Form&description=Da+form&lessons_number=3&fee=12.5&public=true', content_type='application/x-www-form-urlencoded',

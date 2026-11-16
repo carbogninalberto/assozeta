@@ -4,7 +4,8 @@ Routes (BE/application/views/attendee_views.py):
 - GET course/<uid>/calendar (`calendar`, AllowAny): is_valid_uuid, then the live
   group-aware course of any association (404 'Course not found.'); the first
   registry's events with `description` added to events that have extendedProps;
-  `google_sync_enabled` is the scope user's Google credentials flag.
+  `google_sync_enabled` is the acting person's Google credentials flag (the
+  scope user's, or a collaborator's own row before the tenant swap).
 - POST/DELETE course/<uid>/calendar/update (`calendar_update`, IsAuthenticated +
   IsAssociationUser): POST validates the body keys and status, resolves the
   owner's association (a 500 without one) and course (404), updates the
@@ -158,6 +159,15 @@ REMINDERS = {
     REMINDER_IDS['foreign_z']: reminder(EZ, 'Zeta 1', '', None, '2 ore', '2026-11-05T08:00:00Z', user=FOREIGN_OWNER, association=FOREIGN),
 }
 RM = REMINDER_IDS
+
+# A collaborator whose connected user is itself a collaborator: a chain the
+# association import keeps from an archive. Its own flags differ from the full
+# collaborator's so the response says which person's are read: the acting
+# person (this row) has credentials, its connected user has none.
+EXTRA_USERS = {'chain_collaborator': {'id': eid('f6', 1), 'username': 'course-calendar-chain-collaborator',
+                                      'email': 'course-calendar-chain-collaborator@example.test', 'role': 3,
+                                      'connected_user': IDS['full_collaborator'], 'collaborator_role': 3,
+                                      'permissions': ['association.courses.read'], 'credentials': CREDENTIALS}}
 
 SEED = {'instructors': INSTRUCTORS, 'courses': COURSES, 'registries': REGISTRIES, 'days': DAYS, 'reminders': REMINDERS,
         'logo': LOGO, 'credentials': CREDENTIALS,
@@ -506,6 +516,11 @@ add('global-snapshot-creates-calendar', 'owner', EVENTS_UPDATE, 200, ADDED, meth
 add('calendar-anonymous', 'anonymous', CAL('alpha'), 200, course_calendar('alpha', PUBLISHED, [A1, A2, A3, A4], sync=False))
 add('calendar-owner', 'owner', CAL('alpha'), 200, course_calendar('alpha', PUBLISHED, [A1, A2, A3, A4], sync=True))
 add('calendar-full-collaborator', 'full_collaborator', CAL('alpha'), 200, course_calendar('alpha', PUBLISHED, [A1, A2, A3, A4], sync=True))
+# The connected user of this collaborator is the full collaborator, so the
+# scope user is a collaborator too: the view re-resolves (no change) and reads
+# the acting person's flag, which is true while the connected user's is false.
+add('calendar-collaborator-chain-effective-sync', 'chain_collaborator', CAL('alpha'), 200,
+    course_calendar('alpha', PUBLISHED, [A1, A2, A3, A4], sync=True))
 add('calendar-athlete', 'athlete', CAL('alpha'), 200, course_calendar('alpha', PUBLISHED, [A1, A2, A3, A4], sync=False))
 add('calendar-admin-session', 'admin', CAL('alpha'), 200, course_calendar('alpha', PUBLISHED, [A1, A2, A3, A4], sync=True),
     headers=SESSION('admin_owner', 'owner'))
@@ -1027,5 +1042,5 @@ add('update-moves-day-outside-year-range', 'owner', UPD('psi'), 500, SERVER, met
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Course calendar and full events calendar authored sequence with exact effects',
-                              'ids': IDS, 'seed': SEED, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
+                              'ids': IDS, 'extra_users': EXTRA_USERS, 'seed': SEED, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

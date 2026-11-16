@@ -1,10 +1,10 @@
 package dto
 
 import (
+	"encoding/json"
 	"errors"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // ErrAutomationWorkflowInvalid is the view's generic {"msg": "workflow not valid."}.
@@ -80,31 +80,49 @@ func ParseAutomationWorkflowWrite(body any, form bool) (AutomationWorkflowWrite,
 	return input, nil
 }
 
-// ErrAutomationWorkflowFormTreeNotPorted refuses a form-encoded automation_tree nested past 500 levels: the
-// recursion limit of Python's JSON codec depends on the live call stack, so the outcome is not a fixed number.
-var ErrAutomationWorkflowFormTreeNotPorted = refusal.New("form-encoded automation_tree nested past the ported depth")
+// formJSONNesting is the parser limit of the HTML-form JSON fields (owner
+// decision X15): the measured Python bands sit just below CPython's C recursion
+// limit (10000), and this reader must parse every depth up to them. Deeper
+// documents are still marked with their depth and answered by the callers'
+// measured bands, never by the parser.
+const formJSONNesting = 20000
 
 // automationFormTree is DRF's JSONField.get_value/to_internal_value for an HTML
 // form value: json.loads of the text. ok=false is "Value must be valid JSON."
 // (a 400); rejected=true is a document Python parses (lone surrogate escapes
-// are kept as code units) but the jsonb column refuses at save time; deep
-// marks nesting past the ported depth.
-func automationFormTree(value any) (tree any, ok, rejected, deep bool) {
+// are kept as code units) but the jsonb column refuses at save time; depth is
+// the maximum nesting of the text (auditJSONDepth's D), used by the callers'
+// measured recursion bands (X15).
+func automationFormTree(value any) (tree any, ok, rejected bool, depth int) {
 	text, isText := value.(string)
 	if !isText {
-		return nil, false, false, false
+		return nil, false, false, 0
 	}
-	if auditJSONDepth(text) > 500 {
-		return []any{}, true, false, true
-	}
-	tree, err := parseProfileTablesJSONConstants([]byte(text), map[int64]any{}, true)
+	depth = auditJSONDepth(text)
+	tree, err := parseProfileTablesJSONConstantsLimit([]byte(text), map[int64]any{}, true, formJSONNesting)
 	switch {
 	case err == nil:
-		return tree, true, auditLoneSurrogate(text), false
+		return tree, true, auditLoneSurrogate(text), depth
 	case errors.Is(err, ErrReferenceNesting):
-		return []any{}, true, false, true
+		// Past even the reader's limit: keep the depth so the callers answer
+		// their measured band, with an empty list they never store.
+		return []any{}, true, false, depth
 	}
-	return nil, false, false, false
+	// json.loads stops at the first syntax error: only the nesting reached
+	// before it can raise RecursionError, so a deeper tail after the error is
+	// still "Value must be valid JSON.".
+	var syntax *json.SyntaxError
+	if errors.As(err, &syntax) && syntax.Offset >= 0 && syntax.Offset <= int64(len(text)) {
+		depth = auditJSONDepth(text[:syntax.Offset])
+	}
+	return nil, false, false, depth
+}
+
+// ParseFormJSON is json.loads for an HTML form JSON value the serializer
+// accepted: the same reader as automationFormTree (lone surrogate escapes kept
+// as code units) at the parser limit that covers the measured bands (X15).
+func ParseFormJSON(text string) (any, error) {
+	return parseProfileTablesJSONConstantsLimit([]byte(text), map[int64]any{}, true, formJSONNesting)
 }
 
 // AutomationWorkflowPatch holds the present fields of a partial
@@ -115,11 +133,13 @@ type AutomationWorkflowPatch struct {
 	Name        *string
 	Description **string
 	Tree        *any
-	// TreeRejected: the list passed validation but the jsonb column refuses it (lone surrogate escapes).
+	// TreeRejected: the list passed validation but the jsonb column refuses it (lone surrogate escapes, or the
+	// audit-only band of the measured form-tree depths).
 	TreeRejected bool
-	// TreeTooDeep: nesting past the ported depth.
-	TreeTooDeep bool
-	Enabled     *bool
+	// TreeDepth is the maximum nesting of a form-encoded automation_tree (0 when
+	// absent or sent as JSON); the service answers the measured bands (X15).
+	TreeDepth int
+	Enabled   *bool
 }
 
 // ParseAutomationWorkflowPatch ports AutomationWorkflowSerializer(partial=True)
@@ -157,12 +177,13 @@ func ParseAutomationWorkflowPatch(body any, form bool) (AutomationWorkflowPatch,
 	if value, present := object.Lookup("automation_tree"); present {
 		rejected := false
 		if form {
-			parsed, valid, refused, deep := automationFormTree(value)
+			parsed, valid, refused, depth := automationFormTree(value)
+			patch.TreeDepth = depth
 			if !valid {
 				invalid = true
 				value = nil
 			} else {
-				value, rejected, patch.TreeTooDeep = parsed, refused, deep
+				value, rejected = parsed, refused
 			}
 		}
 		tree, isList := value.([]any)

@@ -15,7 +15,16 @@ type NestedPaymentLookups struct {
 	Related func(model, id string) (bool, error)
 	// Taken is a primary key's UniqueValidator: true when the id is already used.
 	Taken func(model, id string) (bool, error)
+	// FormJSONDepth is the measured form-JSON depth at which Python's json.loads
+	// raises for this view (owner decision X15): a nested payment form field at
+	// least that deep aborts validation with the 500 page. Zero keeps the
+	// ported default for other callers.
+	FormJSONDepth int
 }
+
+// nestedPaymentFormJSONDefault is the boundary other callers keep: form JSON
+// nested past 500 levels.
+const nestedPaymentFormJSONDefault = 501
 
 // ValidateNestedPayment validates the nested payment value of the invoice-parties add/update views with
 // PaymentSerializer(data=value, partial=partial): errs is nil when the value is valid, else serializer.errors of the
@@ -23,7 +32,11 @@ type NestedPaymentLookups struct {
 // reports as unported. err is the Related lookup's error (a foreign row: DRF raises PermissionDenied from inside
 // validation, so every other error is dropped).
 func ValidateNestedPayment(value any, partial, form bool, lookups NestedPaymentLookups) (errs any, notPorted bool, err error) {
-	validator := nestedPaymentValidator{partial: partial, form: form, lookups: lookups}
+	limit := lookups.FormJSONDepth
+	if limit <= 0 {
+		limit = nestedPaymentFormJSONDefault
+	}
+	validator := nestedPaymentValidator{partial: partial, form: form, lookups: lookups, jsonDepth: limit}
 	return validator.object(value, nestedPaymentSerializer)
 }
 
@@ -195,9 +208,10 @@ func nestedPaymentSupplier() *nestedPaymentSchema {
 
 // nestedPaymentValidator holds the view's partial/form flags and the lookups.
 type nestedPaymentValidator struct {
-	partial bool
-	form    bool
-	lookups NestedPaymentLookups
+	partial   bool
+	form      bool
+	lookups   NestedPaymentLookups
+	jsonDepth int
 }
 
 // object validates one serializer level: serializer.errors, or nil when valid.
@@ -267,9 +281,11 @@ func (v *nestedPaymentValidator) input(object domain.RequestObject, field nested
 		if upload, isUpload := value.(domain.RequestUpload); isUpload {
 			value = upload.Name
 		}
-		tree, valid, _, deep := automationFormTree(value)
+		tree, valid, _, depth := automationFormTree(value)
 		switch {
-		case deep:
+		case depth >= v.jsonDepth:
+			// json.loads raises RecursionError while DRF reads the field: the 500
+			// page, before any later field of the same object is validated.
 			return nil, false, nil, true
 		case !valid:
 			return nil, false, []string{CourseSubscriptionJSONInvalid}, false

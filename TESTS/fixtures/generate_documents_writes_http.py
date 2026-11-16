@@ -577,6 +577,15 @@ certificate_case('rfc2231-ascii-name-replaces', certificate_part(b"filename*=us-
 certificate_case('rfc2231-invalid-utf8-name-replaces', certificate_part(b"filename*=utf-8''scan%FF%E2%82.png", extra=()),
                  filename='scan\ufffd\ufffd.png', content='%PDF-1.4 parte', content_type='image/png')
 certificate_case('rfc2231-unknown-charset-ignored', certificate_part(b"filename*=bogus''visita.pdf"), 500)
+# Every text codec of the Python registry decodes a name: CPython's shift_jis has no NEC row (cp932 has), utf-16 reads
+# its byte order mark, and a utf-7 name that decodes to a lone surrogate fails v.encode(), so the line is skipped.
+certificate_case('rfc2231-cp932-nec-name', certificate_part(b"filename*=cp932''%87%40%93%FA.pdf"), filename='①日.pdf',
+                 content='%PDF-1.4 parte')
+certificate_case('rfc2231-shift-jis-nec-replaced', certificate_part(b"filename*=shift_jis''%87%40%93%FA.pdf"),
+                 filename='�@日.pdf', content='%PDF-1.4 parte')
+certificate_case('rfc2231-utf-16-name', certificate_part(b"filename*=utf-16''%FF%FEa%00b%00.%00p%00d%00f%00"), filename='ab.pdf',
+                 content='%PDF-1.4 parte')
+certificate_case('rfc2231-utf-7-surrogate-ignored', certificate_part(b"filename*=utf-7''%2B2AA-.pdf"), 500)
 certificate_case('invalid-utf8-disposition-ignored', certificate_part(b'filename="visita\xff.pdf"'), 500)
 certificate_case('invalid-utf8-other-header-kept', certificate_part(b'filename="visita.pdf"', extra=(b'Content-Type: application/pdf; x=\xff',)),
                  filename='visita.pdf', content='%PDF-1.4 parte')

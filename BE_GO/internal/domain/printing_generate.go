@@ -9,12 +9,10 @@ import (
 )
 
 // ErrPrintingGenerateServer is an exception printing_generate does not catch
-// (the 500 page); ErrPrintingGenerateNotPorted is an output Go does not
-// reproduce (a workbook input xlsxexport refuses), refused with the 500 page
-// before any write.
+// (the 500 page); an output pdfexport refuses is its own refusal
+// (pdfexport.ErrNotPorted), answered 500 before any write.
 var (
-	ErrPrintingGenerateServer    = errors.New("printing generate: unhandled exception")
-	ErrPrintingGenerateNotPorted = refusal.New("printing generate: output not ported")
+	ErrPrintingGenerateServer = errors.New("printing generate: unhandled exception")
 	// ErrPrintingGenerateUnreachable is a state no request or stored row
 	// produces (the site names the decoder or constraint that rules it out).
 	ErrPrintingGenerateUnreachable = refusal.AppState("printing generate: unreachable state")

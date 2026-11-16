@@ -148,9 +148,14 @@ Document is created, so nothing is written; the promotion itself runs only on th
   keep image processing out of Go. Without a signature the stamp is never drawn (its text only fills the field).
 - **medical-appointment**, Piemonte Biella, for a filename `default_storage.save` rejects.
 - A storage failure while saving a filled form is the 500 page (Django answers the provider's text); the Document stays.
-- Filenames with a C0 control other than tab, CR and LF, or DEL (the HTTP server refuses the header, and each server
-  does it its own way), and filenames that would split `email.header` words (`\x85`, `\u2028`, `\u2029`) without a
-  line break. A filename with CR or LF is served (see the evidence); for a filled form it stays refused.
+- Filenames whose Content-Disposition bytes uvicorn refuses (`HEADER_VALUE_RE`, `[\x00-\x08\x0a-\x1f\x7f]`): it closes
+  the connection after the view ran, which Go does not reproduce (long-tail rule 4, platform). Django writes an
+  ISO-8859-1 value as its bytes (a C0 control other than tab, or DEL, is refused; U+0085 is sent) and any other value as
+  `email.header` MIME words, folded with `"\n "` at a `str.splitlines()` boundary (`\x0b`, `\x0c`, `\x1c`-`\x1e`,
+  `\x85`, `\u2028`, `\u2029`: refused); other control characters are encoded inside the word and sent. Since long
+  tail PR 4 the served ones are answered (`pdfrender.ServerRefusesHeader`, cases `subscription-name-with-nel-header`,
+  `subscription-name-with-control-header`). A filename with CR or LF is served (see the evidence); for a filled form
+  it stays refused.
 - **template** and **invoice** bodies the parsers refuse for reasons the port does not model (a multipart body over the
   upload limit or with the encodings `documents-writes.md` lists).
 - A collaborator account as `request.user` in the template route (identity resolution maps collaborators to the owner).

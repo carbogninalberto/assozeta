@@ -55,14 +55,20 @@ are implemented in Go (`BE_GO/internal/{domain,repository,service,handler}/camps
   any other. auditlog reads the stored row through that manager, finds none and diffs the instance against None:
   each save writes an update entry with every field as on a create (`deleted` included, the amount as the stored
   decimal on the metas save and as `str(float)` on the final save). Its index row is resolved from the entry's own
-  `sport_association` (`changes_json.sport_association`).
+  `sport_association` (`changes_json.sport_association`), and from the actor's association when the payment has none.
+- A save the database refuses answers its own text, and the request keeps the writes made before it. A recomputed
+  amount the `amount >= 0` check constraint rejects runs the same UPDATE inside a savepoint in the request's
+  transaction, which is rolled back, so the 500 body is psycopg2's `str(e)` for the failing row (PostgreSQL dumps
+  every column of `application_payment` in table order, each value clipped to 64 bytes, with the session's UTC
+  time zone). The audit entry auditlog writes in `pre_save` stays; the row itself keeps the metas save.
 
 ## Not ported (refused with a 500 before any write)
 
 - HTML form input carrying the many-to-many services key (QueryDict.getlist) or file parts.
-- Payment walk outcomes: a hidden payment (soft-deleted or outside the request's `X-Group-Id`) without an association,
-  a `Payment.save()` failure without a message, a negative amount (the check constraint's message) and a negative
-  generate-payment total.
+
+Two walk outcomes are application state rather than refusals: a `Payment.save()` exception whose text is unknown
+(`ErrPaymentSaveFailed` from a stored value Python's `str()` cannot render) and a walk failure that is not a
+`*dto.CampsPythonError` (the walk builder only raises those). Both answer the 500 page; no request reaches them.
 
 ## Primary key in the body (t5pk)
 
@@ -103,3 +109,16 @@ message, answers that 500 whatever the database's order. Cases `services-update-
 Long tail PR 3 (agent C): the service update's payment walk follows the order PostgreSQL returns for Django's own
 query and stops at the first failure, keeping the earlier saves. Case
 `services-update-walk-first-completes-second-fails`.
+
+## Round lt4c
+
+The walk's last refused outcomes are ported (142 cases). `services-update-hidden-payment-without-association`: a
+soft-deleted payment with a NULL `sport_association` is saved, its two full entries are indexed through the actor
+(`actor.sport_association`); a payment without a category takes `PaymentCategory.default_for(None)`, the global rows.
+`services-update-walk-negative-amount-check-constraint`: a fee update that makes the recomputed amount negative — the
+meta save stays, the refused save is audited and the 500 body is the driver's text for the row (authored in the
+fixture from `application_payment`'s columns in table order, 64-byte clipping included, and verified against
+PostgreSQL). The negative amount now runs the UPDATE inside a savepoint (`repository.runRejectedPayment`) with
+Django's session settings (`TimeZone` UTC, `DateStyle` ISO, transaction-local). Unit tests: the hidden payment, the
+negative save, a negative amount rounded to zero, the varchar refusal winning over the amount, and the savepoint text
+helper. The message-less save failure and the non-Python walk failure are application-state errors.

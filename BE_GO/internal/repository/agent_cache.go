@@ -29,8 +29,14 @@ func NewAgentCache(client *redis.Client) (*AgentCache, error) {
 	return &AgentCache{client: client}, nil
 }
 
-// ErrAgentCacheShape is a stored value outside the ported subset.
-var ErrAgentCacheShape = refusal.New("agent cache value not ported")
+// errAgentCacheCounter is a ws_throttle/ws_concurrent value that is not the
+// integer digits the app always writes (django-redis' slow path).
+var errAgentCacheCounter = refusal.AppState("agent cache counter is not an integer")
+
+// errAgentCacheValue is an agent_save_info value outside what its only writer
+// (the consumer's json.loads result: dict, list, str, int, float, bool, None)
+// can pickle, or a shape this decoder does not read.
+var errAgentCacheValue = refusal.AppState("agent cache value outside the pickled subset")
 
 // django-redis' _incr script: INCRBY only when the key exists.
 var agentIncr = redis.NewScript(`
@@ -50,7 +56,7 @@ func (c *AgentCache) incr(ctx context.Context, key string, delta int64) (int64, 
 	}
 	var reply redis.Error
 	if errors.As(err, &reply) {
-		return 0, false, ErrAgentCacheShape // a pickled or out-of-range value (django-redis' slow path)
+		return 0, false, errAgentCacheCounter
 	}
 	return value, err == nil, err
 }
@@ -84,22 +90,28 @@ func (c *AgentCache) GuardAcquire(ctx context.Context, user string) (bool, error
 		return true, c.setInt(ctx, key, 1, 300)
 	}
 	if count > 1 {
-		if _, found, err := c.incr(ctx, key, -1); err != nil || !found {
-			if err == nil {
-				err = ErrAgentCacheShape // cache.decr raises ValueError
-			}
-			return false, err
-		}
-		return false, nil
+		_, found, err := c.incr(ctx, key, -1)
+		return guardConcurrent(found, err)
 	}
 	return true, nil
+}
+
+// guardConcurrent is ConcurrencyGuard.acquire's count > 1 branch. The decr
+// can find the key gone (it expired between the two calls), which Django's
+// cache.decr raises ValueError for; X17 answers the common outcome instead:
+// the session is a concurrent one and the consumer closes 4002.
+func guardConcurrent(_ bool, err error) (bool, error) {
+	if err != nil {
+		return false, err
+	}
+	return false, nil
 }
 
 // GuardRelease is ConcurrencyGuard.release() for an acquired slot.
 func (c *AgentCache) GuardRelease(ctx context.Context, user string) error {
 	key := "ws_concurrent:" + user
 	value, found, err := c.incr(ctx, key, -1)
-	if err != nil && !errors.Is(err, ErrAgentCacheShape) {
+	if err != nil {
 		return err
 	}
 	if !found || value <= 0 {
@@ -126,12 +138,18 @@ func (c *AgentCache) SaveInfo(ctx context.Context, user string) (any, error) {
 	if err != nil {
 		return nil, err
 	}
+	return decodeAgentSaveInfo(data)
+}
+
+// decodeAgentSaveInfo is django-redis' decode for the save_info key: a plain
+// integer is a value only something else writes, then pickle.loads.
+func decodeAgentSaveInfo(data []byte) (any, error) {
 	if _, isInt := pythonIntBytes(data); isInt {
-		return nil, ErrAgentCacheShape
+		return nil, errAgentCacheValue
 	}
-	value, err := unpickleDataRestoreProgress(data)
+	value, err := unpicklePython(data, pythonUnpickleOptions{wtf8: true, bigInts: true})
 	if err != nil {
-		return nil, ErrAgentCacheShape
+		return nil, errAgentCacheValue
 	}
 	return agentOrderedPickled(value)
 }
@@ -158,12 +176,14 @@ func agentOrderedPickled(value any) (any, error) {
 			result[i] = converted
 		}
 		return result, nil
+	case *big.Int:
+		return json.Number(typed.String()), nil
 	case int64:
 		return json.Number(strconv.FormatInt(typed, 10)), nil
 	case float64, string, bool, nil:
 		return typed, nil
 	}
-	return nil, ErrAgentCacheShape
+	return nil, errAgentCacheValue
 }
 
 // PickleAgentSaveInfo is pickle.dumps({'save_info': export_data['save_info'],
@@ -227,8 +247,10 @@ func (p *agentPickler) save(value any) error {
 	case bool:
 		p.saveBool(typed)
 	case string:
-		if !utf8.ValidString(typed) {
-			return ErrAgentCacheShape
+		// Python pickles a lone surrogate with surrogatepass: its WTF-8 bytes
+		// are exactly the bytes of the Go string the JSON parser kept.
+		if !validWTF8([]byte(typed)) {
+			return errAgentCacheValue
 		}
 		p.saveString(p.identity(typed, false), typed)
 	case json.Number:
@@ -279,7 +301,7 @@ func (p *agentPickler) save(value any) error {
 			}
 		}
 	default:
-		return ErrAgentCacheShape
+		return errAgentCacheValue
 	}
 	return nil
 }
@@ -288,8 +310,12 @@ func (p *agentPickler) saveNumber(token string) error {
 	integer, ok := new(big.Int).SetString(token, 10)
 	if !ok {
 		value, err := strconv.ParseFloat(token, 64)
-		if err != nil || math.IsInf(value, 0) {
-			return ErrAgentCacheShape
+		if err != nil {
+			// Python's json.loads turns an over-range literal into ±inf, which
+			// pickle writes as BINFLOAT.
+			if !errors.Is(err, strconv.ErrRange) || !math.IsInf(value, 0) {
+				return errAgentCacheValue
+			}
 		}
 		p.boundary()
 		p.write(append([]byte{'G'}, binary.BigEndian.AppendUint64(nil, math.Float64bits(value))...)...)

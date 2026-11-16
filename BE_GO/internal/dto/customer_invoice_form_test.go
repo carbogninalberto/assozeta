@@ -110,12 +110,11 @@ func TestCustomerInvoiceFormDataProbes(t *testing.T) {
 	file := customerInvoiceFormUpload("allegato", "fattura.txt")
 	base := func() map[string]any { return customerInvoiceFormExpected(t) }
 	for _, test := range []struct {
-		name      string
-		pairs     [][2]string
-		files     []domain.RequestField
-		expected  map[string]any
-		errs      InvoicePartyErrors
-		notPorted bool
+		name     string
+		pairs    [][2]string
+		files    []domain.RequestField
+		expected map[string]any
+		errs     InvoicePartyErrors
 	}{
 		{
 			name:  "number with file",
@@ -291,10 +290,7 @@ func TestCustomerInvoiceFormDataProbes(t *testing.T) {
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			object := customerInvoiceFormRequest(t, test.pairs, test.files...)
-			data, errs, notPorted := CustomerInvoiceFormData(object)
-			if notPorted != test.notPorted {
-				t.Fatalf("notPorted %v, want %v", notPorted, test.notPorted)
-			}
+			data, errs, _ := CustomerInvoiceFormData(object)
 			if !reflect.DeepEqual(errs, test.errs) {
 				t.Fatalf("errors %#v, want %#v", errs, test.errs)
 			}
@@ -305,11 +301,15 @@ func TestCustomerInvoiceFormDataProbes(t *testing.T) {
 	}
 }
 
-func TestCustomerInvoiceFormDataDeepJSONNotPorted(t *testing.T) {
+func TestCustomerInvoiceFormDataDeepJSONKeepsItsDepth(t *testing.T) {
 	deep := strings.Repeat("[", 501) + "0" + strings.Repeat("]", 501)
 	object := customerInvoiceFormRequest(t, [][2]string{{"number", "1"}, {"lines", deep}}, customerInvoiceFormUpload("allegato", "a.txt"))
-	if _, _, notPorted := CustomerInvoiceFormData(object); !notPorted {
-		t.Fatal("deep JSON text is not ported")
+	data, errs, depth := CustomerInvoiceFormData(object)
+	if depth != 501 || len(errs) != 0 {
+		t.Fatalf("depth %d errors %#v, want 501 and no error", depth, errs)
+	}
+	if value, present := data.Lookup("lines"); !present || value == nil {
+		t.Fatalf("deep lines not parsed: %#v", data)
 	}
 }
 

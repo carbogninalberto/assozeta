@@ -228,9 +228,9 @@ func instanceAdminHTMLList(object domain.RequestObject, name string) (items []an
 	for _, text := range indexes {
 		entry := indexed[text]
 		if entry.pairs != nil {
-			repr, ok := instanceAdminHTMLListRepr(entry.pairs)
-			if !ok {
-				return nil, false, domain.ErrInstanceAdminRefused
+			repr, err := instanceAdminHTMLListRepr(entry.pairs)
+			if err != nil {
+				return nil, false, err
 			}
 			items = append(items, repr)
 			continue
@@ -267,27 +267,36 @@ func instanceAdminHTMLListSet(pairs []instanceAdminHTMLListPair, key string, val
 
 // instanceAdminHTMLListRepr is str() of the MultiValueDict html.parse_html_list
 // builds for a nested item, which the ChoiceField child then quotes in its
-// "'%(input)s' is not a valid choice." message. ok is false for a part whose
-// repr carries its content type (a multipart upload), metadata the form parser
-// does not keep: only such a nested item is left to the Django backend.
-func instanceAdminHTMLListRepr(pairs []instanceAdminHTMLListPair) (repr string, ok bool) {
+// "'%(input)s' is not a valid choice." message. A file value is UploadedFile's
+// repr, which names the class of the handler that received it.
+func instanceAdminHTMLListRepr(pairs []instanceAdminHTMLListPair) (string, error) {
 	var out strings.Builder
 	out.WriteString("<MultiValueDict: {")
 	for index, pair := range pairs {
-		value, isText := pair.value.(string)
-		if !isText {
-			return "", false
+		var value string
+		switch item := pair.value.(type) {
+		case string:
+			value = PythonStringRepr(item)
+		case domain.RequestUpload:
+			class := "InMemoryUploadedFile"
+			if item.Temp {
+				class = "TemporaryUploadedFile"
+			}
+			value = "<" + class + ": " + item.Name + " (" + item.ContentType + ")>"
+		default:
+			// Form objects hold only strings and uploaded files.
+			return "", domain.ErrInstanceAdminUnexpected
 		}
 		if index > 0 {
 			out.WriteString(", ")
 		}
 		out.WriteString(PythonStringRepr(pair.key))
 		out.WriteString(": [")
-		out.WriteString(PythonStringRepr(value))
+		out.WriteString(value)
 		out.WriteString("]")
 	}
 	out.WriteString("}>")
-	return out.String(), true
+	return out.String(), nil
 }
 
 // instanceAdminHTMLListItem reads one list value: the child is always a

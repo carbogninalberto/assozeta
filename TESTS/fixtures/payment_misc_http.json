@@ -384,6 +384,119 @@
     "from_month": 9,
     "to_day": 30,
     "to_month": 9
+   },
+   {
+    "id": "plan-big-day",
+    "name": "Giorno enorme",
+    "subscription_fee": "6",
+    "auto_assign": true,
+    "advanced_options": true,
+    "previous_subscription_fee_plan": "prev-big-day",
+    "from_day": 123456789012345678901234567890,
+    "from_month": 9,
+    "to_day": 30,
+    "to_month": 9
+   },
+   {
+    "id": "plan-underscore",
+    "name": "Importo underscore",
+    "subscription_fee": "1_000",
+    "auto_assign": true,
+    "advanced_options": true,
+    "previous_subscription_fee_plan": "prev-underscore",
+    "from_day": 11,
+    "from_month": 9,
+    "to_day": 30,
+    "to_month": 9
+   },
+   {
+    "id": "plan-script",
+    "name": "Importo altra scrittura",
+    "subscription_fee": "١٢.٥٠",
+    "auto_assign": true,
+    "advanced_options": true,
+    "previous_subscription_fee_plan": "prev-script",
+    "from_day": 12,
+    "from_month": 9,
+    "to_day": 30,
+    "to_month": 9
+   },
+   {
+    "id": "plan-script-sep",
+    "name": "Importo separatore",
+    "subscription_fee": "١٢٫٥٠",
+    "auto_assign": true,
+    "advanced_options": true,
+    "previous_subscription_fee_plan": "prev-sep-script",
+    "from_day": 13,
+    "from_month": 9,
+    "to_day": 30,
+    "to_month": 9
+   },
+   {
+    "id": "plan-exp-big",
+    "name": "Importo esponente",
+    "subscription_fee": "1e400",
+    "auto_assign": true,
+    "advanced_options": true,
+    "previous_subscription_fee_plan": "prev-xp-big",
+    "from_day": 14,
+    "from_month": 9,
+    "to_day": 30,
+    "to_month": 9
+   },
+   {
+    "id": "plan-over",
+    "name": "Importo enorme",
+    "subscription_fee": 10000000,
+    "auto_assign": true,
+    "advanced_options": true,
+    "previous_subscription_fee_plan": "prev-over",
+    "from_day": 15,
+    "from_month": 9,
+    "to_day": 30,
+    "to_month": 9
+   },
+   {
+    "id": "plan-rounding",
+    "name": "Importo arrotondato",
+    "subscription_fee": "2.665",
+    "auto_assign": true,
+    "advanced_options": true,
+    "previous_subscription_fee_plan": "prev-rounding",
+    "from_day": 16,
+    "from_month": 9,
+    "to_day": 30,
+    "to_month": 9
+   },
+   {
+    "id": "plan-list-name",
+    "name": [
+     "Quota",
+     1
+    ],
+    "subscription_fee": 6.5,
+    "auto_assign": true,
+    "advanced_options": true,
+    "previous_subscription_fee_plan": "prev-list-name",
+    "from_day": 17,
+    "from_month": 9,
+    "to_day": 30,
+    "to_month": 9
+   },
+   {
+    "id": "plan-dict-name",
+    "name": {
+     "label": "Quota"
+    },
+    "subscription_fee": "7",
+    "auto_assign": true,
+    "advanced_options": true,
+    "previous_subscription_fee_plan": "prev-dict-name",
+    "from_day": 18,
+    "from_month": 9,
+    "to_day": 30,
+    "to_month": 9
    }
   ],
   "a1000000-0000-4000-8000-000000701002": [
@@ -1024,6 +1137,186 @@
    "payment_meta": {
     "subscription_data": {
      "id": "prev-message",
+     "name": "Quota precedente"
+    }
+   },
+   "group": null
+  },
+  "s_big_day": {
+   "id": "a1000000-0000-4000-8000-000000994001",
+   "payment": "a1000000-0000-4000-8000-000000994002",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700004",
+   "associate": "a1000000-0000-4000-8000-000000993010",
+   "created": "in_year",
+   "deleted": false,
+   "archived": false,
+   "meta": {
+    "plan_id": "prev-big-day"
+   },
+   "payment_meta": {
+    "subscription_data": {
+     "id": "prev-big-day",
+     "name": "Quota precedente"
+    }
+   },
+   "group": null
+  },
+  "s_underscore": {
+   "id": "a1000000-0000-4000-8000-000000994003",
+   "payment": "a1000000-0000-4000-8000-000000994004",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700004",
+   "associate": "a1000000-0000-4000-8000-000000993011",
+   "created": "in_year",
+   "deleted": false,
+   "archived": false,
+   "meta": {
+    "plan_id": "prev-underscore"
+   },
+   "payment_meta": {
+    "subscription_data": {
+     "id": "prev-underscore",
+     "name": "Quota precedente"
+    }
+   },
+   "group": null
+  },
+  "s_script": {
+   "id": "a1000000-0000-4000-8000-000000994005",
+   "payment": "a1000000-0000-4000-8000-000000994006",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700004",
+   "associate": "a1000000-0000-4000-8000-000000993012",
+   "created": "in_year",
+   "deleted": false,
+   "archived": false,
+   "meta": {
+    "plan_id": "prev-script"
+   },
+   "payment_meta": {
+    "subscription_data": {
+     "id": "prev-script",
+     "name": "Quota precedente"
+    }
+   },
+   "group": null
+  },
+  "s_script_sep": {
+   "id": "a1000000-0000-4000-8000-000000994007",
+   "payment": "a1000000-0000-4000-8000-000000994008",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700004",
+   "associate": "a1000000-0000-4000-8000-000000993010",
+   "created": "in_year",
+   "deleted": false,
+   "archived": false,
+   "meta": {
+    "plan_id": "prev-sep-script"
+   },
+   "payment_meta": {
+    "subscription_data": {
+     "id": "prev-sep-script",
+     "name": "Quota precedente"
+    }
+   },
+   "group": null
+  },
+  "s_exp_big": {
+   "id": "a1000000-0000-4000-8000-000000994009",
+   "payment": "a1000000-0000-4000-8000-000000994010",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700004",
+   "associate": "a1000000-0000-4000-8000-000000993014",
+   "created": "in_year",
+   "deleted": false,
+   "archived": false,
+   "meta": {
+    "plan_id": "prev-xp-big"
+   },
+   "payment_meta": {
+    "subscription_data": {
+     "id": "prev-xp-big",
+     "name": "Quota precedente"
+    }
+   },
+   "group": null
+  },
+  "s_over": {
+   "id": "a1000000-0000-4000-8000-000000994011",
+   "payment": "a1000000-0000-4000-8000-000000994012",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700004",
+   "associate": "a1000000-0000-4000-8000-000000993011",
+   "created": "in_year",
+   "deleted": false,
+   "archived": false,
+   "meta": {
+    "plan_id": "prev-over"
+   },
+   "payment_meta": {
+    "subscription_data": {
+     "id": "prev-over",
+     "name": "Quota precedente"
+    }
+   },
+   "group": null
+  },
+  "s_rounding": {
+   "id": "a1000000-0000-4000-8000-000000994013",
+   "payment": "a1000000-0000-4000-8000-000000994014",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700004",
+   "associate": "a1000000-0000-4000-8000-000000993013",
+   "created": "in_year",
+   "deleted": false,
+   "archived": false,
+   "meta": {
+    "plan_id": "prev-rounding"
+   },
+   "payment_meta": {
+    "subscription_data": {
+     "id": "prev-rounding",
+     "name": "Quota precedente"
+    }
+   },
+   "group": null
+  },
+  "s_list_name": {
+   "id": "a1000000-0000-4000-8000-000000994015",
+   "payment": "a1000000-0000-4000-8000-000000994016",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700004",
+   "associate": "a1000000-0000-4000-8000-000000993012",
+   "created": "in_year",
+   "deleted": false,
+   "archived": false,
+   "meta": {
+    "plan_id": "prev-list-name"
+   },
+   "payment_meta": {
+    "subscription_data": {
+     "id": "prev-list-name",
+     "name": "Quota precedente"
+    }
+   },
+   "group": null
+  },
+  "s_dict_name": {
+   "id": "a1000000-0000-4000-8000-000000994017",
+   "payment": "a1000000-0000-4000-8000-000000994018",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700004",
+   "associate": "a1000000-0000-4000-8000-000000993014",
+   "created": "in_year",
+   "deleted": false,
+   "archived": false,
+   "meta": {
+    "plan_id": "prev-dict-name"
+   },
+   "payment_meta": {
+    "subscription_data": {
+     "id": "prev-dict-name",
      "name": "Quota precedente"
     }
    },
@@ -2928,6 +3221,356 @@
        }
       },
       "message": "\n                            <p>Ciao Luca Verdi è,</p>\n                            <p>Ti è stata assegnata la quota associativa \"['a', 1]\" con importo 6.5 €.</p>\n                            <br>\n                            <p>Per maggiori informazioni, visita il tuo profilo su $whitelabel.</p>\n    \n                            <p>Cordialmente, <br />\n                             Message reads own</p>\n                        "
+     }
+    ]
+   },
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "payment-misc-simulation-big-day-plan",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes?date=2026-09-10",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "subscription_plans_considered": [],
+    "quotes_to_emit": []
+   },
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "payment-misc-simulation-underscore-fee",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes?date=2026-09-11",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "subscription_plans_considered": [
+     {
+      "from_day": 11,
+      "from_month": 9,
+      "to_day": 30,
+      "to_month": 9,
+      "previous_subscription_fee_plan": "prev-underscore",
+      "name": "Importo underscore",
+      "subscription_fee": "1_000",
+      "id": "plan-underscore"
+     }
+    ],
+    "quotes_to_emit": [
+     {
+      "user": "Message Fixture",
+      "associate": {
+       "first_name": "Luca",
+       "last_name": "Verdi è"
+      },
+      "amount": "1_000",
+      "subject": 1,
+      "meta": {
+       "subscription_data": {
+        "subscription_fee": "1_000",
+        "name": "Importo underscore",
+        "id": "plan-underscore"
+       }
+      },
+      "message": "\n                            <p>Ciao Luca Verdi è,</p>\n                            <p>Ti è stata assegnata la quota associativa \"Importo underscore\" con importo 1_000 €.</p>\n                            <br>\n                            <p>Per maggiori informazioni, visita il tuo profilo su $whitelabel.</p>\n    \n                            <p>Cordialmente, <br />\n                             Message reads own</p>\n                        "
+     }
+    ]
+   },
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "payment-misc-simulation-script-fee",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes?date=2026-09-12",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "subscription_plans_considered": [
+     {
+      "from_day": 12,
+      "from_month": 9,
+      "to_day": 30,
+      "to_month": 9,
+      "previous_subscription_fee_plan": "prev-script",
+      "name": "Importo altra scrittura",
+      "subscription_fee": "١٢.٥٠",
+      "id": "plan-script"
+     }
+    ],
+    "quotes_to_emit": [
+     {
+      "user": "Message Fixture",
+      "associate": {
+       "first_name": "Giulia",
+       "last_name": "Neri"
+      },
+      "amount": "١٢.٥٠",
+      "subject": 1,
+      "meta": {
+       "subscription_data": {
+        "subscription_fee": "١٢.٥٠",
+        "name": "Importo altra scrittura",
+        "id": "plan-script"
+       }
+      },
+      "message": "\n                            <p>Ciao Giulia Neri,</p>\n                            <p>Ti è stata assegnata la quota associativa \"Importo altra scrittura\" con importo ١٢.٥٠ €.</p>\n                            <br>\n                            <p>Per maggiori informazioni, visita il tuo profilo su $whitelabel.</p>\n    \n                            <p>Cordialmente, <br />\n                             Message reads own</p>\n                        "
+     }
+    ]
+   },
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "payment-misc-simulation-script-separator-fee-stops",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes?date=2026-09-13",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "subscription_plans_considered": [
+     {
+      "from_day": 13,
+      "from_month": 9,
+      "to_day": 30,
+      "to_month": 9,
+      "previous_subscription_fee_plan": "prev-sep-script",
+      "name": "Importo separatore",
+      "subscription_fee": "١٢٫٥٠",
+      "id": "plan-script-sep"
+     }
+    ],
+    "quotes_to_emit": []
+   },
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "payment-misc-simulation-big-exponent-fee",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes?date=2026-09-14",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "subscription_plans_considered": [
+     {
+      "from_day": 14,
+      "from_month": 9,
+      "to_day": 30,
+      "to_month": 9,
+      "previous_subscription_fee_plan": "prev-xp-big",
+      "name": "Importo esponente",
+      "subscription_fee": "1e400",
+      "id": "plan-exp-big"
+     }
+    ],
+    "quotes_to_emit": [
+     {
+      "user": "Message Fixture",
+      "associate": {
+       "first_name": "Sara",
+       "last_name": "Blu"
+      },
+      "amount": "1e400",
+      "subject": 1,
+      "meta": {
+       "subscription_data": {
+        "subscription_fee": "1e400",
+        "name": "Importo esponente",
+        "id": "plan-exp-big"
+       }
+      },
+      "message": "\n                            <p>Ciao Sara Blu,</p>\n                            <p>Ti è stata assegnata la quota associativa \"Importo esponente\" con importo 1e400 €.</p>\n                            <br>\n                            <p>Per maggiori informazioni, visita il tuo profilo su $whitelabel.</p>\n    \n                            <p>Cordialmente, <br />\n                             Message reads own</p>\n                        "
+     }
+    ]
+   },
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "payment-misc-simulation-over-range-fee",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes?date=2026-09-15",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "subscription_plans_considered": [
+     {
+      "from_day": 15,
+      "from_month": 9,
+      "to_day": 30,
+      "to_month": 9,
+      "previous_subscription_fee_plan": "prev-over",
+      "name": "Importo enorme",
+      "subscription_fee": 10000000,
+      "id": "plan-over"
+     }
+    ],
+    "quotes_to_emit": [
+     {
+      "user": "Message Fixture",
+      "associate": {
+       "first_name": "Luca",
+       "last_name": "Verdi è"
+      },
+      "amount": 10000000,
+      "subject": 1,
+      "meta": {
+       "subscription_data": {
+        "subscription_fee": 10000000,
+        "name": "Importo enorme",
+        "id": "plan-over"
+       }
+      },
+      "message": "\n                            <p>Ciao Luca Verdi è,</p>\n                            <p>Ti è stata assegnata la quota associativa \"Importo enorme\" con importo 10000000 €.</p>\n                            <br>\n                            <p>Per maggiori informazioni, visita il tuo profilo su $whitelabel.</p>\n    \n                            <p>Cordialmente, <br />\n                             Message reads own</p>\n                        "
+     }
+    ]
+   },
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "payment-misc-simulation-rounding-fee",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes?date=2026-09-16",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "subscription_plans_considered": [
+     {
+      "from_day": 16,
+      "from_month": 9,
+      "to_day": 30,
+      "to_month": 9,
+      "previous_subscription_fee_plan": "prev-rounding",
+      "name": "Importo arrotondato",
+      "subscription_fee": "2.665",
+      "id": "plan-rounding"
+     }
+    ],
+    "quotes_to_emit": [
+     {
+      "user": "Message Fixture",
+      "associate": {
+       "first_name": "Paolo",
+       "last_name": "Bianchi"
+      },
+      "amount": "2.665",
+      "subject": 1,
+      "meta": {
+       "subscription_data": {
+        "subscription_fee": "2.665",
+        "name": "Importo arrotondato",
+        "id": "plan-rounding"
+       }
+      },
+      "message": "\n                            <p>Ciao Paolo Bianchi,</p>\n                            <p>Ti è stata assegnata la quota associativa \"Importo arrotondato\" con importo 2.665 €.</p>\n                            <br>\n                            <p>Per maggiori informazioni, visita il tuo profilo su $whitelabel.</p>\n    \n                            <p>Cordialmente, <br />\n                             Message reads own</p>\n                        "
+     }
+    ]
+   },
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "payment-misc-simulation-list-name-mail",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes?date=2026-09-17",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "subscription_plans_considered": [
+     {
+      "from_day": 17,
+      "from_month": 9,
+      "to_day": 30,
+      "to_month": 9,
+      "previous_subscription_fee_plan": "prev-list-name",
+      "name": [
+       "Quota",
+       1
+      ],
+      "subscription_fee": 6.5,
+      "id": "plan-list-name"
+     }
+    ],
+    "quotes_to_emit": [
+     {
+      "user": "Message Fixture",
+      "associate": {
+       "first_name": "Giulia",
+       "last_name": "Neri"
+      },
+      "amount": 6.5,
+      "subject": 1,
+      "meta": {
+       "subscription_data": {
+        "subscription_fee": 6.5,
+        "name": [
+         "Quota",
+         1
+        ],
+        "id": "plan-list-name"
+       }
+      },
+      "message": "\n                            <p>Ciao Giulia Neri,</p>\n                            <p>Ti è stata assegnata la quota associativa \"['Quota', 1]\" con importo 6.5 €.</p>\n                            <br>\n                            <p>Per maggiori informazioni, visita il tuo profilo su $whitelabel.</p>\n    \n                            <p>Cordialmente, <br />\n                             Message reads own</p>\n                        "
+     }
+    ]
+   },
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "payment-misc-simulation-dict-name-mail",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes?date=2026-09-18",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "subscription_plans_considered": [
+     {
+      "from_day": 18,
+      "from_month": 9,
+      "to_day": 30,
+      "to_month": 9,
+      "previous_subscription_fee_plan": "prev-dict-name",
+      "name": {
+       "label": "Quota"
+      },
+      "subscription_fee": "7",
+      "id": "plan-dict-name"
+     }
+    ],
+    "quotes_to_emit": [
+     {
+      "user": "Message Fixture",
+      "associate": {
+       "first_name": "Sara",
+       "last_name": "Blu"
+      },
+      "amount": "7",
+      "subject": 1,
+      "meta": {
+       "subscription_data": {
+        "subscription_fee": "7",
+        "name": {
+         "label": "Quota"
+        },
+        "id": "plan-dict-name"
+       }
+      },
+      "message": "\n                            <p>Ciao Sara Blu,</p>\n                            <p>Ti è stata assegnata la quota associativa \"{'label': 'Quota'}\" con importo 7 €.</p>\n                            <br>\n                            <p>Per maggiori informazioni, visita il tuo profilo su $whitelabel.</p>\n    \n                            <p>Cordialmente, <br />\n                             Message reads own</p>\n                        "
      }
     ]
    },
@@ -5078,6 +5721,1230 @@
     "created": [],
     "changed": {},
     "audit": []
+   },
+   "prints": []
+  },
+  {
+   "name": "payment-misc-apply-underscore-fee-mail",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes-apply?date=2026-09-11",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Partial quotes applied."
+   },
+   "effect": {
+    "actor": "owner",
+    "created": [
+     {
+      "type": "default",
+      "subject": 1,
+      "amount": "1000.00",
+      "creation_date": "$now",
+      "payment_date": null,
+      "paid": false,
+      "expense": false,
+      "description": "Iscrizione",
+      "payment_category_id": "$default_category",
+      "meta_payment_categories": null,
+      "invoice_id": null,
+      "user_id": "a1000000-0000-4000-8000-000000700004",
+      "associate_id": "a1000000-0000-4000-8000-000000993011",
+      "supplier_id": null,
+      "instructor_id": null,
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": {
+       "subscription_data": {
+        "subscription_fee": "1_000",
+        "name": "Importo underscore",
+        "id": "plan-underscore"
+       }
+      },
+      "notes": null,
+      "custom_accounts_id": "a1000000-0000-4000-8000-000000993004",
+      "signature_id": null,
+      "deleted": false,
+      "group_id": null,
+      "course": null
+     }
+    ],
+    "changed": {},
+    "audit": [
+     {
+      "key": "$id",
+      "action": 0,
+      "changes": {
+       "payment_id": [
+        "None",
+        "$id"
+       ],
+       "type": [
+        "None",
+        "default"
+       ],
+       "subject": [
+        "None",
+        "1"
+       ],
+       "amount": [
+        "None",
+        "1_000"
+       ],
+       "creation_date": [
+        "None",
+        "$now"
+       ],
+       "payment_date": [
+        "None",
+        "None"
+       ],
+       "paid": [
+        "None",
+        "False"
+       ],
+       "expense": [
+        "None",
+        "False"
+       ],
+       "description": [
+        "None",
+        "Iscrizione"
+       ],
+       "payment_category": [
+        "None",
+        "$default_category"
+       ],
+       "meta_payment_categories": [
+        "None",
+        "null"
+       ],
+       "invoice": [
+        "None",
+        "None"
+       ],
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700004"
+       ],
+       "associate": [
+        "None",
+        "a1000000-0000-4000-8000-000000993011"
+       ],
+       "supplier": [
+        "None",
+        "None"
+       ],
+       "instructor": [
+        "None",
+        "None"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "archived": [
+        "None",
+        "False"
+       ],
+       "meta": [
+        "None",
+        "{\"subscription_data\": {\"id\": \"plan-underscore\", \"name\": \"Importo underscore\", \"subscription_fee\": \"1_000\"}}"
+       ],
+       "custom_accounts": [
+        "None",
+        "a1000000-0000-4000-8000-000000993004"
+       ],
+       "signature": [
+        "None",
+        "None"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "course": [
+        "None",
+        "null"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "Message reads own | Nuova quota associativa 'Importo underscore' assegnata"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/payment/fee_assigned.html",
+         "language": "en",
+         "context": {
+          "recipient_name": "Luca Verdi è",
+          "fee_name": "Importo underscore",
+          "amount": "1_000",
+          "application_name": "$whitelabel",
+          "association_name": "Message reads own"
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$from_email"
+       ],
+       [
+        "recipient_list",
+        [
+         "$email:athlete"
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/payment/fee_assigned.html",
+         "language": "en",
+         "context": {
+          "recipient_name": "Luca Verdi è",
+          "fee_name": "Importo underscore",
+          "amount": "1_000",
+          "application_name": "$whitelabel",
+          "association_name": "Message reads own"
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "reply_to",
+        [
+         "$email:owner"
+        ]
+       ]
+      ]
+     }
+    ]
+   },
+   "prints": []
+  },
+  {
+   "name": "payment-misc-simulation-underscore-after-apply",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes?date=2026-09-11",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "subscription_plans_considered": [
+     {
+      "from_day": 11,
+      "from_month": 9,
+      "to_day": 30,
+      "to_month": 9,
+      "previous_subscription_fee_plan": "prev-underscore",
+      "name": "Importo underscore",
+      "subscription_fee": "1_000",
+      "id": "plan-underscore"
+     }
+    ],
+    "quotes_to_emit": []
+   },
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "payment-misc-apply-script-fee-mail",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes-apply?date=2026-09-12",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Partial quotes applied."
+   },
+   "effect": {
+    "actor": "owner",
+    "created": [
+     {
+      "type": "default",
+      "subject": 1,
+      "amount": "12.50",
+      "creation_date": "$now",
+      "payment_date": null,
+      "paid": false,
+      "expense": false,
+      "description": "Iscrizione",
+      "payment_category_id": "$default_category",
+      "meta_payment_categories": null,
+      "invoice_id": null,
+      "user_id": "a1000000-0000-4000-8000-000000700004",
+      "associate_id": "a1000000-0000-4000-8000-000000993012",
+      "supplier_id": null,
+      "instructor_id": null,
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": {
+       "subscription_data": {
+        "subscription_fee": "١٢.٥٠",
+        "name": "Importo altra scrittura",
+        "id": "plan-script"
+       }
+      },
+      "notes": null,
+      "custom_accounts_id": "a1000000-0000-4000-8000-000000993004",
+      "signature_id": null,
+      "deleted": false,
+      "group_id": null,
+      "course": null
+     }
+    ],
+    "changed": {},
+    "audit": [
+     {
+      "key": "$id",
+      "action": 0,
+      "changes": {
+       "payment_id": [
+        "None",
+        "$id"
+       ],
+       "type": [
+        "None",
+        "default"
+       ],
+       "subject": [
+        "None",
+        "1"
+       ],
+       "amount": [
+        "None",
+        "١٢.٥٠"
+       ],
+       "creation_date": [
+        "None",
+        "$now"
+       ],
+       "payment_date": [
+        "None",
+        "None"
+       ],
+       "paid": [
+        "None",
+        "False"
+       ],
+       "expense": [
+        "None",
+        "False"
+       ],
+       "description": [
+        "None",
+        "Iscrizione"
+       ],
+       "payment_category": [
+        "None",
+        "$default_category"
+       ],
+       "meta_payment_categories": [
+        "None",
+        "null"
+       ],
+       "invoice": [
+        "None",
+        "None"
+       ],
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700004"
+       ],
+       "associate": [
+        "None",
+        "a1000000-0000-4000-8000-000000993012"
+       ],
+       "supplier": [
+        "None",
+        "None"
+       ],
+       "instructor": [
+        "None",
+        "None"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "archived": [
+        "None",
+        "False"
+       ],
+       "meta": [
+        "None",
+        "{\"subscription_data\": {\"id\": \"plan-script\", \"name\": \"Importo altra scrittura\", \"subscription_fee\": \"\\u0661\\u0662.\\u0665\\u0660\"}}"
+       ],
+       "custom_accounts": [
+        "None",
+        "a1000000-0000-4000-8000-000000993004"
+       ],
+       "signature": [
+        "None",
+        "None"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "course": [
+        "None",
+        "null"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "Message reads own | Nuova quota associativa 'Importo altra scrittura' assegnata"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/payment/fee_assigned.html",
+         "language": "en",
+         "context": {
+          "recipient_name": "Giulia Neri",
+          "fee_name": "Importo altra scrittura",
+          "amount": "١٢.٥٠",
+          "application_name": "$whitelabel",
+          "association_name": "Message reads own"
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$from_email"
+       ],
+       [
+        "recipient_list",
+        [
+         "$email:athlete"
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/payment/fee_assigned.html",
+         "language": "en",
+         "context": {
+          "recipient_name": "Giulia Neri",
+          "fee_name": "Importo altra scrittura",
+          "amount": "١٢.٥٠",
+          "application_name": "$whitelabel",
+          "association_name": "Message reads own"
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "reply_to",
+        [
+         "$email:owner"
+        ]
+       ]
+      ]
+     }
+    ]
+   },
+   "prints": []
+  },
+  {
+   "name": "payment-misc-apply-script-separator-fee-nothing",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes-apply?date=2026-09-13",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Partial quotes applied."
+   },
+   "effect": {
+    "actor": "owner",
+    "created": [],
+    "changed": {},
+    "audit": []
+   },
+   "prints": []
+  },
+  {
+   "name": "payment-misc-apply-big-exponent-fee-nothing",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes-apply?date=2026-09-14",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Partial quotes applied."
+   },
+   "effect": {
+    "actor": "owner",
+    "created": [],
+    "changed": {},
+    "audit": []
+   },
+   "prints": []
+  },
+  {
+   "name": "payment-misc-apply-over-range-fee-nothing",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes-apply?date=2026-09-15",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Partial quotes applied."
+   },
+   "effect": {
+    "actor": "owner",
+    "created": [],
+    "changed": {},
+    "audit": []
+   },
+   "prints": []
+  },
+  {
+   "name": "payment-misc-apply-rounding-fee-mail",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes-apply?date=2026-09-16",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Partial quotes applied."
+   },
+   "effect": {
+    "actor": "owner",
+    "created": [
+     {
+      "type": "default",
+      "subject": 1,
+      "amount": "2.67",
+      "creation_date": "$now",
+      "payment_date": null,
+      "paid": false,
+      "expense": false,
+      "description": "Iscrizione",
+      "payment_category_id": "$default_category",
+      "meta_payment_categories": null,
+      "invoice_id": null,
+      "user_id": "a1000000-0000-4000-8000-000000700004",
+      "associate_id": "a1000000-0000-4000-8000-000000993013",
+      "supplier_id": null,
+      "instructor_id": null,
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": {
+       "subscription_data": {
+        "subscription_fee": "2.665",
+        "name": "Importo arrotondato",
+        "id": "plan-rounding"
+       }
+      },
+      "notes": null,
+      "custom_accounts_id": "a1000000-0000-4000-8000-000000993004",
+      "signature_id": null,
+      "deleted": false,
+      "group_id": null,
+      "course": null
+     }
+    ],
+    "changed": {},
+    "audit": [
+     {
+      "key": "$id",
+      "action": 0,
+      "changes": {
+       "payment_id": [
+        "None",
+        "$id"
+       ],
+       "type": [
+        "None",
+        "default"
+       ],
+       "subject": [
+        "None",
+        "1"
+       ],
+       "amount": [
+        "None",
+        "2.665"
+       ],
+       "creation_date": [
+        "None",
+        "$now"
+       ],
+       "payment_date": [
+        "None",
+        "None"
+       ],
+       "paid": [
+        "None",
+        "False"
+       ],
+       "expense": [
+        "None",
+        "False"
+       ],
+       "description": [
+        "None",
+        "Iscrizione"
+       ],
+       "payment_category": [
+        "None",
+        "$default_category"
+       ],
+       "meta_payment_categories": [
+        "None",
+        "null"
+       ],
+       "invoice": [
+        "None",
+        "None"
+       ],
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700004"
+       ],
+       "associate": [
+        "None",
+        "a1000000-0000-4000-8000-000000993013"
+       ],
+       "supplier": [
+        "None",
+        "None"
+       ],
+       "instructor": [
+        "None",
+        "None"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "archived": [
+        "None",
+        "False"
+       ],
+       "meta": [
+        "None",
+        "{\"subscription_data\": {\"id\": \"plan-rounding\", \"name\": \"Importo arrotondato\", \"subscription_fee\": \"2.665\"}}"
+       ],
+       "custom_accounts": [
+        "None",
+        "a1000000-0000-4000-8000-000000993004"
+       ],
+       "signature": [
+        "None",
+        "None"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "course": [
+        "None",
+        "null"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "Message reads own | Nuova quota associativa 'Importo arrotondato' assegnata"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/payment/fee_assigned.html",
+         "language": "en",
+         "context": {
+          "recipient_name": "Paolo Bianchi",
+          "fee_name": "Importo arrotondato",
+          "amount": "2.665",
+          "application_name": "$whitelabel",
+          "association_name": "Message reads own"
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$from_email"
+       ],
+       [
+        "recipient_list",
+        [
+         "$email:athlete"
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/payment/fee_assigned.html",
+         "language": "en",
+         "context": {
+          "recipient_name": "Paolo Bianchi",
+          "fee_name": "Importo arrotondato",
+          "amount": "2.665",
+          "application_name": "$whitelabel",
+          "association_name": "Message reads own"
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "reply_to",
+        [
+         "$email:owner"
+        ]
+       ]
+      ]
+     }
+    ]
+   },
+   "prints": []
+  },
+  {
+   "name": "payment-misc-apply-list-name-mail",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes-apply?date=2026-09-17",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Partial quotes applied."
+   },
+   "effect": {
+    "actor": "owner",
+    "created": [
+     {
+      "type": "default",
+      "subject": 1,
+      "amount": "6.50",
+      "creation_date": "$now",
+      "payment_date": null,
+      "paid": false,
+      "expense": false,
+      "description": "Iscrizione",
+      "payment_category_id": "$default_category",
+      "meta_payment_categories": null,
+      "invoice_id": null,
+      "user_id": "a1000000-0000-4000-8000-000000700004",
+      "associate_id": "a1000000-0000-4000-8000-000000993012",
+      "supplier_id": null,
+      "instructor_id": null,
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": {
+       "subscription_data": {
+        "subscription_fee": 6.5,
+        "name": [
+         "Quota",
+         1
+        ],
+        "id": "plan-list-name"
+       }
+      },
+      "notes": null,
+      "custom_accounts_id": "a1000000-0000-4000-8000-000000993004",
+      "signature_id": null,
+      "deleted": false,
+      "group_id": null,
+      "course": null
+     }
+    ],
+    "changed": {},
+    "audit": [
+     {
+      "key": "$id",
+      "action": 0,
+      "changes": {
+       "payment_id": [
+        "None",
+        "$id"
+       ],
+       "type": [
+        "None",
+        "default"
+       ],
+       "subject": [
+        "None",
+        "1"
+       ],
+       "amount": [
+        "None",
+        "6.5"
+       ],
+       "creation_date": [
+        "None",
+        "$now"
+       ],
+       "payment_date": [
+        "None",
+        "None"
+       ],
+       "paid": [
+        "None",
+        "False"
+       ],
+       "expense": [
+        "None",
+        "False"
+       ],
+       "description": [
+        "None",
+        "Iscrizione"
+       ],
+       "payment_category": [
+        "None",
+        "$default_category"
+       ],
+       "meta_payment_categories": [
+        "None",
+        "null"
+       ],
+       "invoice": [
+        "None",
+        "None"
+       ],
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700004"
+       ],
+       "associate": [
+        "None",
+        "a1000000-0000-4000-8000-000000993012"
+       ],
+       "supplier": [
+        "None",
+        "None"
+       ],
+       "instructor": [
+        "None",
+        "None"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "archived": [
+        "None",
+        "False"
+       ],
+       "meta": [
+        "None",
+        "{\"subscription_data\": {\"id\": \"plan-list-name\", \"name\": [\"Quota\", 1], \"subscription_fee\": 6.5}}"
+       ],
+       "custom_accounts": [
+        "None",
+        "a1000000-0000-4000-8000-000000993004"
+       ],
+       "signature": [
+        "None",
+        "None"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "course": [
+        "None",
+        "null"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "Message reads own | Nuova quota associativa '['Quota', 1]' assegnata"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/payment/fee_assigned.html",
+         "language": "en",
+         "context": {
+          "recipient_name": "Giulia Neri",
+          "fee_name": [
+           "Quota",
+           1
+          ],
+          "amount": 6.5,
+          "application_name": "$whitelabel",
+          "association_name": "Message reads own"
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$from_email"
+       ],
+       [
+        "recipient_list",
+        [
+         "$email:athlete"
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/payment/fee_assigned.html",
+         "language": "en",
+         "context": {
+          "recipient_name": "Giulia Neri",
+          "fee_name": [
+           "Quota",
+           1
+          ],
+          "amount": 6.5,
+          "application_name": "$whitelabel",
+          "association_name": "Message reads own"
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "reply_to",
+        [
+         "$email:owner"
+        ]
+       ]
+      ]
+     }
+    ]
+   },
+   "prints": []
+  },
+  {
+   "name": "payment-misc-apply-dict-name-mail",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes-apply?date=2026-09-18",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Partial quotes applied."
+   },
+   "effect": {
+    "actor": "owner",
+    "created": [
+     {
+      "type": "default",
+      "subject": 1,
+      "amount": "7.00",
+      "creation_date": "$now",
+      "payment_date": null,
+      "paid": false,
+      "expense": false,
+      "description": "Iscrizione",
+      "payment_category_id": "$default_category",
+      "meta_payment_categories": null,
+      "invoice_id": null,
+      "user_id": "a1000000-0000-4000-8000-000000700004",
+      "associate_id": "a1000000-0000-4000-8000-000000993014",
+      "supplier_id": null,
+      "instructor_id": null,
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": {
+       "subscription_data": {
+        "subscription_fee": "7",
+        "name": {
+         "label": "Quota"
+        },
+        "id": "plan-dict-name"
+       }
+      },
+      "notes": null,
+      "custom_accounts_id": "a1000000-0000-4000-8000-000000993004",
+      "signature_id": null,
+      "deleted": false,
+      "group_id": null,
+      "course": null
+     }
+    ],
+    "changed": {},
+    "audit": [
+     {
+      "key": "$id",
+      "action": 0,
+      "changes": {
+       "payment_id": [
+        "None",
+        "$id"
+       ],
+       "type": [
+        "None",
+        "default"
+       ],
+       "subject": [
+        "None",
+        "1"
+       ],
+       "amount": [
+        "None",
+        "7"
+       ],
+       "creation_date": [
+        "None",
+        "$now"
+       ],
+       "payment_date": [
+        "None",
+        "None"
+       ],
+       "paid": [
+        "None",
+        "False"
+       ],
+       "expense": [
+        "None",
+        "False"
+       ],
+       "description": [
+        "None",
+        "Iscrizione"
+       ],
+       "payment_category": [
+        "None",
+        "$default_category"
+       ],
+       "meta_payment_categories": [
+        "None",
+        "null"
+       ],
+       "invoice": [
+        "None",
+        "None"
+       ],
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700004"
+       ],
+       "associate": [
+        "None",
+        "a1000000-0000-4000-8000-000000993014"
+       ],
+       "supplier": [
+        "None",
+        "None"
+       ],
+       "instructor": [
+        "None",
+        "None"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "archived": [
+        "None",
+        "False"
+       ],
+       "meta": [
+        "None",
+        "{\"subscription_data\": {\"id\": \"plan-dict-name\", \"name\": {\"label\": \"Quota\"}, \"subscription_fee\": \"7\"}}"
+       ],
+       "custom_accounts": [
+        "None",
+        "a1000000-0000-4000-8000-000000993004"
+       ],
+       "signature": [
+        "None",
+        "None"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "course": [
+        "None",
+        "null"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "Message reads own | Nuova quota associativa '{'label': 'Quota'}' assegnata"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/payment/fee_assigned.html",
+         "language": "en",
+         "context": {
+          "recipient_name": "Sara Blu",
+          "fee_name": {
+           "label": "Quota"
+          },
+          "amount": "7",
+          "application_name": "$whitelabel",
+          "association_name": "Message reads own"
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$from_email"
+       ],
+       [
+        "recipient_list",
+        [
+         "$email:athlete"
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/payment/fee_assigned.html",
+         "language": "en",
+         "context": {
+          "recipient_name": "Sara Blu",
+          "fee_name": {
+           "label": "Quota"
+          },
+          "amount": "7",
+          "application_name": "$whitelabel",
+          "association_name": "Message reads own"
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "reply_to",
+        [
+         "$email:owner"
+        ]
+       ]
+      ]
+     }
+    ]
    },
    "prints": []
   },

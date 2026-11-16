@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"math"
+	"math/big"
 	"strings"
 	"unicode/utf8"
 
@@ -115,6 +116,17 @@ const maxProgressBytes = 1 << 20
 // and memo references. It is a data decoder: no global, reduce or object
 // construction exists, and anything else is ErrDataRestoreProgressShape.
 func unpickleDataRestoreProgress(data []byte) (any, error) {
+	return unpicklePython(data, pythonUnpickleOptions{})
+}
+
+// pythonUnpickleOptions widens the decoder for the agent save_info cache, whose
+// writer is Python's json.loads: lone surrogate escapes and arbitrary-size ints.
+type pythonUnpickleOptions struct {
+	wtf8    bool // keep surrogatepass strings as their raw WTF-8 bytes
+	bigInts bool // LONG1/LONG4 of any size become *big.Int
+}
+
+func unpicklePython(data []byte, opts pythonUnpickleOptions) (any, error) {
 	bad := ErrDataRestoreProgressShape
 	if len(data) < 3 || len(data) > maxProgressBytes || data[0] != 0x80 || data[1] < 2 || data[1] > 5 {
 		return nil, bad
@@ -263,8 +275,16 @@ func unpickleDataRestoreProgress(data []byte) (any, error) {
 				return nil, bad
 			}
 			text, ok := take(int(size))
-			// Lone surrogates (surrogatepass) are outside the subset.
-			if !ok || !utf8.Valid(text) {
+			// Lone surrogates (surrogatepass) are outside the data restore
+			// subset; the agent save_info writer can produce them.
+			if !ok {
+				return nil, bad
+			}
+			if opts.wtf8 {
+				if !validWTF8(text) {
+					return nil, bad
+				}
+			} else if !utf8.Valid(text) {
 				return nil, bad
 			}
 			stack = append(stack, string(text))
@@ -288,7 +308,14 @@ func unpickleDataRestoreProgress(data []byte) (any, error) {
 				return nil, bad
 			}
 			body, ok := take(int(raw[0]))
-			if !ok || len(body) > 8 {
+			if !ok {
+				return nil, bad
+			}
+			if opts.bigInts {
+				stack = append(stack, pythonLong(body))
+				break
+			}
+			if len(body) > 8 {
 				return nil, bad
 			}
 			var value int64
@@ -299,6 +326,16 @@ func unpickleDataRestoreProgress(data []byte) (any, error) {
 				value -= 1 << (8 * len(body))
 			}
 			stack = append(stack, value)
+		case 0x8b: // LONG4
+			raw, ok := take(4)
+			if !ok || !opts.bigInts {
+				return nil, bad
+			}
+			body, ok := take(int(binary.LittleEndian.Uint32(raw)))
+			if !ok {
+				return nil, bad
+			}
+			stack = append(stack, pythonLong(body))
 		case 'G': // BINFLOAT
 			raw, ok := take(8)
 			if !ok {
@@ -394,4 +431,56 @@ func plainPickledItems(items []any, depth int) ([]any, error) {
 		out = append(out, plain)
 	}
 	return out, nil
+}
+
+// pythonLong is pickle's decode_long: little-endian two's complement.
+func pythonLong(body []byte) *big.Int {
+	value := new(big.Int)
+	for i := len(body) - 1; i >= 0; i-- {
+		value.Lsh(value, 8)
+		value.Or(value, big.NewInt(int64(body[i])))
+	}
+	if len(body) > 0 && body[len(body)-1]&0x80 != 0 {
+		value.Sub(value, new(big.Int).Lsh(big.NewInt(1), uint(8*len(body))))
+	}
+	return value
+}
+
+// validWTF8 accepts UTF-8 plus the surrogate code points U+D800..U+DFFF that
+// CPython writes with surrogatepass (ED A0..BF 80..BF), and nothing else.
+func validWTF8(text []byte) bool {
+	if utf8.Valid(text) {
+		return true
+	}
+	for i := 0; i < len(text); {
+		c := text[i]
+		switch {
+		case c < 0x80:
+			i++
+		case c >= 0xc2 && c <= 0xdf:
+			if i+1 >= len(text) || text[i+1]&0xc0 != 0x80 {
+				return false
+			}
+			i += 2
+		case c >= 0xe0 && c <= 0xef:
+			if i+2 >= len(text) || text[i+1]&0xc0 != 0x80 || text[i+2]&0xc0 != 0x80 {
+				return false
+			}
+			if c == 0xe0 && text[i+1] < 0xa0 {
+				return false
+			}
+			i += 3
+		case c >= 0xf0 && c <= 0xf4:
+			if i+3 >= len(text) || text[i+1]&0xc0 != 0x80 || text[i+2]&0xc0 != 0x80 || text[i+3]&0xc0 != 0x80 {
+				return false
+			}
+			if c == 0xf0 && text[i+1] < 0x90 || c == 0xf4 && text[i+1] > 0x8f {
+				return false
+			}
+			i += 4
+		default:
+			return false
+		}
+	}
+	return true
 }

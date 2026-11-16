@@ -22,7 +22,6 @@ import (
 	"unicode/utf8"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/pystr"
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 const (
@@ -1126,8 +1125,8 @@ func mailboxDomain(mailbox *hdrToken) (*string, error) {
 var errInvalidEncodedWord = headerParsef("encoded word format invalid")
 
 // decodeEncodedWord is email._encoded_words.decode for one encoded word: the
-// decoded text. Charsets are decoded as UTF-8, US-ASCII and ISO-8859-1 (the
-// ones addresses carry); every other name takes Python's unknown-charset path.
+// decoded text. decodeCharset carries the charsets; an unknown name decodes
+// as unknown bytes.
 func decodeEncodedWord(word string) (string, error) {
 	parts := strings.Split(word, "?")
 	if len(parts) != 5 {
@@ -1222,9 +1221,14 @@ func decodeB(encoded []byte) ([]byte, error) {
 	return encoded, nil
 }
 
-// decodeCharset is the bstring.decode(charset) of _encoded_words.decode.
+// decodeCharset is the bstring.decode(charset) of _encoded_words.decode: the
+// strict decode, then the surrogateescape retry when it raises
+// UnicodeDecodeError (python_charset.go), with any exception of the retry, or
+// another UnicodeError of the strict decode, becoming the _InvalidEwError
+// get_encoded_word raises.
 func decodeCharset(raw []byte, charset string) (string, error) {
-	switch pythonCodecName(charset) {
+	name := pythonCodecName(charset)
+	switch name {
 	case "utf-8":
 		return decodeUTF8Surrogateescape(raw), nil
 	case "ascii":
@@ -1240,10 +1244,7 @@ func decodeCharset(raw []byte, charset string) (string, error) {
 		// codec): the bytes are decoded as unknown bytes.
 		return decodeASCIISurrogateescape(raw), nil
 	}
-	// Python decodes any other text codec of its registry (gb2312,
-	// shift_jis, koi8-r, utf-16, ...); those codecs are not ported, so such a
-	// word stays with Django.
-	return "", ErrEncodedWordCharset
+	return decodePythonCodec(raw, name)
 }
 
 // pythonCodecName is codecs.lookup(charset).name for a text encoding that
@@ -1275,11 +1276,6 @@ func pythonCodecName(charset string) string {
 	}
 	return pythonTextCodecs[strings.ReplaceAll(name, ".", "_")]
 }
-
-// ErrEncodedWordCharset refuses an RFC 2047 encoded word in an address whose
-// charset is not UTF-8, US-ASCII or ISO-8859-1: Python decodes it with its
-// codec, which this package does not carry.
-var ErrEncodedWordCharset = refusal.New("smtpsend: encoded-word charset not ported")
 
 // decodeUTF8Surrogateescape is b.decode('utf-8', 'surrogateescape').
 func decodeUTF8Surrogateescape(raw []byte) string {

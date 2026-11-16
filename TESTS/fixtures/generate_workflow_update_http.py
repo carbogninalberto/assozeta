@@ -88,18 +88,23 @@ WORKFLOWS = {
     'cron_year_one': workflow(cron({'time': '0001-01-01'})),
     'cron_year_max': workflow(cron({'time': '9999-12-31T10:00'})),
     'copy_plain': workflow(TREE_PLAIN, name='Da copiare', description='Nota'),
+    # The form-tree recursion bands (X15): a row of its own, so the deep saved values never reach another case.
+    'deep': workflow(TREE_PLAIN, name='Profondo'),
 }
 STATE = copy.deepcopy(WORKFLOWS)
 cases = []
 
 
-def add(name, actor, path, status, response, *, method='PATCH', body=None, raw_body=None, content_type=None, headers=None, effect=None):
+def add(name, actor, path, status, response, *, method='PATCH', body=None, raw_body=None, raw_parts=None, content_type=None, headers=None,
+        effect=None):
     case = {'name': f'workflow-update-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
             'status': status, 'response': response, 'effect': effect}
     if body is not None:
         case['body'] = body
     if raw_body is not None:
         case['raw_body'], case['content_type'] = raw_body, content_type
+    if raw_parts is not None:
+        case['raw_parts'], case['content_type'] = raw_parts, content_type
     cases.append(case)
 
 
@@ -231,6 +236,41 @@ add('form-tree-surrogate-pair-saved', 'owner', path('plain'), 200, UPDATED,
 add('form-tree-and-fields', 'owner', path('plain'), 200, UPDATED,
     raw_body='name=Misto&enabled=false&automation_tree=' + urllib.parse.quote(json.dumps(TREE_NEW)), content_type=FORM,
     effect=saved('owner', 'plain', {'name': 'Misto', 'automation_tree': TREE_NEW, 'enabled': False}))
+# The measured form-tree recursion bands (owner decision X15, see workflow-update.md). D is the maximum nesting of
+# the text. The audit changes stay strings (json.dumps of the tree), so the fixture keeps no deep JSON value; the row
+# check lists the scalar columns for the cases that stored a deep tree.
+DEEP_LABEL = 'deep'
+DEEP_INITIAL = dumps(STATE[DEEP_LABEL]['tree'])
+
+
+def deep_parts(depth, *, invalid_enabled=False):
+    parts = ['automation_tree=', {'repeat': '%5B', 'count': depth}, {'repeat': '%5D', 'count': depth}]
+    if invalid_enabled:
+        parts.append('&enabled=maybe')
+    return parts
+
+
+def deep_dumps(depth):
+    return '[' * depth + ']' * depth
+
+
+def deep_effect(changes, *, kept=False):
+    row = STATE[DEEP_LABEL]
+    return {'actor': 'owner', 'session': None, 'label': DEEP_LABEL, 'kept': kept,
+            'row': {key: row[key] for key in ('name', 'description', 'enabled')},
+            'audit': [{'changes': changes}] if changes else []}
+
+
+add('form-tree-depth-600', 'owner', path(DEEP_LABEL), 400, INVALID, raw_parts=deep_parts(600, invalid_enabled=True), content_type=FORM)
+add('form-tree-depth-9900', 'owner', path(DEEP_LABEL), 400, INVALID, raw_parts=deep_parts(9900, invalid_enabled=True), content_type=FORM)
+add('form-tree-depth-9938', 'owner', path(DEEP_LABEL), 400, INVALID, raw_parts=deep_parts(9938, invalid_enabled=True), content_type=FORM)
+# From 9939 to 9941 auditlog's pre_save entry is kept and the row is not updated; 9940 pins the band. The valid-body
+# case at 9938 (row saved, then the 500 page) stores a deep tree, which the shared state snapshot cannot traverse, so
+# the unit tests pin that outcome (service/automation_workflow_update.go).
+add('form-tree-depth-9940-audit-kept', 'owner', path(DEEP_LABEL), 500, SERVER, raw_parts=deep_parts(9940), content_type=FORM,
+    effect=deep_effect({'automation_tree': [DEEP_INITIAL, deep_dumps(9940)]}, kept=True))
+# Django's edge moves by a level or two with the live stack: the refused case sits past it with a margin.
+add('form-tree-depth-9970-refused', 'owner', path(DEEP_LABEL), 500, SERVER, raw_parts=deep_parts(9970), content_type=FORM)
 add('admin-impersonating-owner', 'admin', path('plain'), 200, UPDATED, body={'description': '  Spazi  '}, headers=ADMIN_OWNER,
     effect=saved('admin', 'plain', {'description': 'Spazi'}, session='admin_owner'))
 add('enable-plain-trigger-schedules-nothing', 'owner', path('plain'), 200, UPDATED, body={'enabled': True},

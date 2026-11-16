@@ -4,7 +4,6 @@ package service_test
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"os"
 	"strings"
@@ -31,7 +30,13 @@ func TestBusinessMCPToolCall(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer db.Close()
-	arguments, err := dto.ParseReferenceJSON([]byte(os.Getenv("ASSOZETA_BUSINESS_MCP_ARGUMENTS")))
+	raw := os.Getenv("ASSOZETA_BUSINESS_MCP_ARGUMENTS")
+	arguments, err := dto.ParseReferenceJSON([]byte(raw))
+	if err != nil {
+		// NaN and Infinity: Python's json.dumps writes them, and the MCP and
+		// agent transports read them with Python's json.loads.
+		arguments, err = dto.ParsePythonJSON(raw)
+	}
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -43,9 +48,11 @@ func TestBusinessMCPToolCall(t *testing.T) {
 	result, err := tools.Execute(context.Background(), os.Getenv("ASSOZETA_BUSINESS_MCP_TOOL"), object)
 	// The result as call_tool's json.dumps(result, default=str) writes it.
 	var encoded []byte
-	if errors.Is(err, service.ErrBusinessMCPNotPorted) {
-		encoded, _ = json.Marshal(map[string]any{"refused": true})
-	} else if err != nil {
+	if errors.Is(err, service.ErrBusinessToolRaised) {
+		// The MCP command answers the closest text of an exception Go does not reproduce exactly.
+		result, err = domain.RequestObject{{Name: "error", Value: service.BusinessToolRaisedText(err)}}, nil
+	}
+	if err != nil {
 		t.Fatal(err)
 	} else {
 		dumps := dto.PythonJSONDumps(result)

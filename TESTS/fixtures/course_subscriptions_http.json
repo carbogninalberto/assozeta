@@ -862,6 +862,23 @@
    "payment_date": null,
    "description": "Quota unica",
    "attachment": false
+  },
+  "ev_shared_pay": {
+   "id": "a1000000-0000-4000-8000-000000669951",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "40.00",
+   "paid": true,
+   "meta": null,
+   "associate": null,
+   "user": null,
+   "group": null,
+   "deleted": false,
+   "category": "a1000000-0000-4000-8000-000000660001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Rata condivisa",
+   "attachment": false
   }
  },
  "course_subscriptions": {
@@ -1503,6 +1520,28 @@
    "auto_renewal": false,
    "deleted": false,
    "membership_payments": []
+  },
+  "cs_ev_shared": {
+   "id": "a1000000-0000-4000-8000-000000669952",
+   "course": "corsa",
+   "subscription": "sub_luisa",
+   "paid": false,
+   "created": "2026-09-10T08:00:00Z",
+   "payment": null,
+   "multi_payments": true,
+   "one_fee_payment": false,
+   "archived": false,
+   "type": 1,
+   "multiple_quote": null,
+   "billed_frequency": 1,
+   "billed_from": null,
+   "billed_until": null,
+   "billed_from_day_of_month": 1,
+   "membership_active": true,
+   "membership_fee": "0.00",
+   "auto_renewal": false,
+   "deleted": false,
+   "membership_payments": []
   }
  },
  "installments": {
@@ -1812,6 +1851,28 @@
    "group": null,
    "deleted": false,
    "payment_date": "2026-10-01T22:30:00Z",
+   "paid": false
+  },
+  "evs_a": {
+   "id": "a1000000-0000-4000-8000-000000669953",
+   "cs": "cs_ev_shared",
+   "number": 0,
+   "amount": "20.00",
+   "payment": "ev_shared_pay",
+   "group": null,
+   "deleted": false,
+   "payment_date": "2026-10-01T22:30:00Z",
+   "paid": false
+  },
+  "evs_b": {
+   "id": "a1000000-0000-4000-8000-000000669954",
+   "cs": "cs_ev_shared",
+   "number": 1,
+   "amount": "20.00",
+   "payment": "ev_shared_pay",
+   "group": null,
+   "deleted": false,
+   "payment_date": "2026-11-01T00:00:00Z",
    "paid": false
   }
  },
@@ -3811,6 +3872,65 @@
       "auto_renewal": false,
       "membership_payments": [],
       "medical_label": null,
+      "carnets": []
+     },
+     {
+      "course_subscription_id": "a1000000-0000-4000-8000-000000669952",
+      "creation_date": "2026-09-10T08:00:00Z",
+      "paid": false,
+      "subscription": {
+       "subscription_id": "a1000000-0000-4000-8000-000000660014",
+       "associate": {
+        "associate_id": "a1000000-0000-4000-8000-000000660005",
+        "address": null,
+        "address_cap": null,
+        "address_city": null,
+        "born_city": null,
+        "born_date": "1985-02-02",
+        "email": null,
+        "sex": "F",
+        "first_name": "Luisa",
+        "last_name": "Bianchi",
+        "is_minor": false,
+        "sport_association": "a1000000-0000-4000-8000-000000701001",
+        "tax_code": null,
+        "user": "a1000000-0000-4000-8000-000000700001",
+        "phone": null,
+        "family": null,
+        "family_role": null
+       },
+       "current_year": "precedente"
+      },
+      "multi_payments": true,
+      "multiple_quote": null,
+      "one_fee_payment": false,
+      "installments": [
+       {
+        "course_subscription_installment_id": "a1000000-0000-4000-8000-000000669953",
+        "id": 0,
+        "amount": "20.00",
+        "payment_date": "2026-10-01",
+        "paid": true
+       },
+       {
+        "course_subscription_installment_id": "a1000000-0000-4000-8000-000000669954",
+        "id": 1,
+        "amount": "20.00",
+        "payment_date": "2026-11-01",
+        "paid": true
+       }
+      ],
+      "course": "a1000000-0000-4000-8000-000000660027",
+      "type": 1,
+      "billed_frequency": 1,
+      "billed_from": null,
+      "billed_until": null,
+      "billed_from_day_of_month": 1,
+      "membership_active": true,
+      "membership_fee": "0.00",
+      "auto_renewal": false,
+      "membership_payments": [],
+      "medical_label": "<span class=\"text-success font-weight-boldest\"><i class=\"ph-bold ph-first-aid-kit\"></i>{until:2099-12-31} rimanenti</span>",
       "carnets": []
      }
     ]
@@ -13335,6 +13455,152 @@
    }
   },
   {
+   "name": "course-subscriptions-update-events-shared-payment-dropped",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/course-subscriptions/a1000000-0000-4000-8000-000000669952/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "course_subscription_id": "a1000000-0000-4000-8000-000000669952",
+    "creation_date": "2026-09-10T08:00:00Z",
+    "paid": false,
+    "subscription": {
+     "subscription_id": "a1000000-0000-4000-8000-000000660014",
+     "associate": {
+      "associate_id": "a1000000-0000-4000-8000-000000660005",
+      "address": null,
+      "address_cap": null,
+      "address_city": null,
+      "born_city": null,
+      "born_date": "1985-02-02",
+      "email": null,
+      "sex": "F",
+      "first_name": "Luisa",
+      "last_name": "Bianchi",
+      "is_minor": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "tax_code": null,
+      "user": "a1000000-0000-4000-8000-000000700001",
+      "phone": null,
+      "family": null,
+      "family_role": null
+     },
+     "current_year": "precedente"
+    },
+    "multi_payments": true,
+    "multiple_quote": null,
+    "one_fee_payment": false,
+    "installments": [],
+    "course": "a1000000-0000-4000-8000-000000660027",
+    "type": 1,
+    "billed_frequency": 1,
+    "billed_from": null,
+    "billed_until": null,
+    "billed_from_day_of_month": 1,
+    "membership_active": true,
+    "membership_fee": "0.00",
+    "auto_renewal": false,
+    "membership_payments": [],
+    "medical_label": "<span class=\"text-success font-weight-boldest\"><i class=\"ph-bold ph-first-aid-kit\"></i>{until:2099-12-31} rimanenti</span>",
+    "carnets": []
+   },
+   "effect": {
+    "kind": "update",
+    "actor": "owner",
+    "cs_changed": {},
+    "cs_deleted": [],
+    "installments_deleted": [
+     "evs_a",
+     "evs_b"
+    ],
+    "payments_deleted": [],
+    "payments_changed": {
+     "ev_shared_pay": {
+      "description": "Rata n.2 del 01/11/26 (Corsa)",
+      "meta": {
+       "description": "Rata n.2 del 01/11/26 (Corsa)",
+       "course_id": "a1000000-0000-4000-8000-000000660027",
+       "course_title": "Corsa",
+       "course_subscription_id": "a1000000-0000-4000-8000-000000669952",
+       "payment_date": "2026-11-01 00:00:00+00:00"
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "payment",
+      "label": "ev_shared_pay",
+      "action": 1,
+      "changes": {
+       "description": [
+        "Rata condivisa",
+        "Rata n.1 del 01/10/26 (Corsa)"
+       ],
+       "meta": [
+        "null",
+        "{\"course_id\": \"a1000000-0000-4000-8000-000000660027\", \"course_subscription_id\": \"a1000000-0000-4000-8000-000000669952\", \"course_title\": \"Corsa\", \"description\": \"Rata n.1 del 01/10/26 (Corsa)\", \"payment_date\": \"2026-10-01 22:30:00+00:00\"}"
+       ]
+      },
+      "overrides": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "repr": null
+     },
+     {
+      "model": "coursesubscriptioninstallment",
+      "label": "evs_a",
+      "action": 2,
+      "changes": null,
+      "overrides": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ],
+      "repr": null
+     },
+     {
+      "model": "payment",
+      "label": "ev_shared_pay",
+      "action": 1,
+      "changes": {
+       "description": [
+        "Rata n.1 del 01/10/26 (Corsa)",
+        "Rata n.2 del 01/11/26 (Corsa)"
+       ],
+       "meta": [
+        "{\"course_id\": \"a1000000-0000-4000-8000-000000660027\", \"course_subscription_id\": \"a1000000-0000-4000-8000-000000669952\", \"course_title\": \"Corsa\", \"description\": \"Rata n.1 del 01/10/26 (Corsa)\", \"payment_date\": \"2026-10-01 22:30:00+00:00\"}",
+        "{\"course_id\": \"a1000000-0000-4000-8000-000000660027\", \"course_subscription_id\": \"a1000000-0000-4000-8000-000000669952\", \"course_title\": \"Corsa\", \"description\": \"Rata n.2 del 01/11/26 (Corsa)\", \"payment_date\": \"2026-11-01 00:00:00+00:00\"}"
+       ]
+      },
+      "overrides": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "repr": null
+     },
+     {
+      "model": "coursesubscriptioninstallment",
+      "label": "evs_b",
+      "action": 2,
+      "changes": null,
+      "overrides": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ],
+      "repr": null
+     }
+    ]
+   },
+   "body": {
+    "events": []
+   }
+  },
+  {
    "name": "course-subscriptions-update-events-object-key-invalid",
    "actor": "owner",
    "method": "PATCH",
@@ -13502,6 +13768,18 @@
    "content_type": "application/x-www-form-urlencoded"
   },
   {
+   "name": "course-subscriptions-update-form-events-lone-surrogate-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/course-subscriptions/a1000000-0000-4000-8000-000000660080/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "raw_body": "events=%5B%22%5Cud800%22%5D",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
    "name": "course-subscriptions-update-form-multiple-quote",
    "actor": "owner",
    "method": "PATCH",
@@ -13603,6 +13881,55 @@
     ]
    },
    "raw_body": "multiple_quote=%7B%22title%22%3A%20%22Da%20modulo%22%2C%20%22amount%22%3A%20%227%2C50%22%2C%20%22dettagli%22%3A%20%5B1%2C%20%7B%22a%22%3A%20null%7D%5D%7D",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "course-subscriptions-update-form-multiple-quote-depth-9966-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/course-subscriptions/a1000000-0000-4000-8000-000000660081/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "raw_parts": [
+    "multiple_quote=%7B%22title%22%3A%20%22Deep%22%2C%20%22amount%22%3A%20%221%22%2C%20%22deep%22%3A%20",
+    {
+     "repeat": "%7B%22a%22%3A",
+     "count": 9965
+    },
+    "1",
+    {
+     "repeat": "%7D",
+     "count": 9965
+    },
+    "%7D"
+   ],
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "course-subscriptions-update-form-events-depth-9970-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/course-subscriptions/a1000000-0000-4000-8000-000000660081/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "raw_parts": [
+    "events=",
+    "%5B%7B%22id%22%3A%207%2C%20%22amount%22%3A%20%221%22%2C%20%22payment_date%22%3A%20%2205/05/2099%22%2C%20%22deep%22%3A%20",
+    {
+     "repeat": "%7B%22a%22%3A",
+     "count": 9968
+    },
+    "1",
+    {
+     "repeat": "%7D",
+     "count": 9968
+    },
+    "%7D%5D"
+   ],
    "content_type": "application/x-www-form-urlencoded"
   },
   {

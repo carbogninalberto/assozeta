@@ -713,6 +713,48 @@ add('unreadable-document-server-error', 'owner', 500, SERVER, body={'document_id
 # An imported upload is gone: the same request again answers like an unknown document.
 add('imported-upload-again-server-error', 'owner', 500, SERVER, body={'document_id': '$document:numbers-imported', 'map': {'nome': 'Nome'}})
 
+# --- t3: the tax code pattern under re.IGNORECASE, and a `default` that is not an object ----------------------------
+# process_import_rows compiles the tax code pattern with re.IGNORECASE: a class matches a character whose Python simple
+# lowercase is in it, plus sre's extra equivalences ('ſ' for 's', 'ı' for 'i'). So 'ſ' and the KELVIN sign are letters
+# of a valid code and the code is stored as written; 'é' is no letter of the pattern and only clears valid.
+TAX_CODE_COLUMNS = ['Nome', 'Cognome', 'Sesso', 'Codice fiscale', 'Data di nascita', 'Città di nascita', 'Indirizzo', 'CAP',
+                    'Città di residenza']
+upload('csv-tax-code-letters', 'owner', 'codici.csv', (
+    'Nome;Cognome;Sesso;Codice fiscale;Data di nascita;Città di nascita;Indirizzo;CAP;Città di residenza\n'
+    'Ada;Rossi;F;RſSMRA80A01H501U;01/01/1980;Roma;Via Roma 1;00100;Roma\n'
+    'Bea;Bianchi;F;RSSMRA80A01H501\u212a;02/02/1981;Roma;Via Milano 2;20100;Milano\n'
+    'Carla;Verdi;F;RSSMRA80A01é501U;03/03/1982;Roma;Via Po 3;10100;Torino\n').encode(), columns=TAX_CODE_COLUMNS,
+    keep='taxcodes')
+imported('tax-code-letters', 'owner', 'taxcodes', {'map': {key: column for key, column in zip(
+    ('nome', 'cognome', 'sesso', 'codice fiscale', 'data di nascita', 'città di nascita', 'indirizzo', 'cap',
+     'città di residenza'), TAX_CODE_COLUMNS)}}, columns=TAX_CODE_COLUMNS,
+    drafts=[({'associate': {'first_name': 'Ada', 'last_name': 'Rossi', 'sex': 'F', 'tax_code': 'RſSMRA80A01H501U',
+                            'born_date': '01/01/1980', 'born_city': 'Roma', 'address': 'Via Roma 1', 'address_cap': '00100',
+                            'address_city': 'Roma'}, 'associate_tutor': {}}, True),
+            ({'associate': {'first_name': 'Bea', 'last_name': 'Bianchi', 'sex': 'F',
+                            'tax_code': 'RSSMRA80A01H501\u212a', 'born_date': '02/02/1981', 'born_city': 'Roma',
+                            'address': 'Via Milano 2', 'address_cap': '20100', 'address_city': 'Milano'},
+              'associate_tutor': {}}, True),
+            ({'associate': {'first_name': 'Carla', 'last_name': 'Verdi', 'sex': 'F', 'tax_code': 'RSSMRA80A01é501U',
+                            'born_date': '03/03/1982', 'born_city': 'Roma', 'address': 'Via Po 3', 'address_cap': '10100',
+                            'address_city': 'Torino'}, 'associate_tutor': {}}, False)])
+# `data['default']` is used as Python uses it when a mapped value is missing: `key in data['default']` is a substring
+# test for a str and a membership test for a list, and `data['default'][key]` then indexes it with a text key
+# (TypeError, the rows raise: 400, the upload stays); a number is not iterable (TypeError). A list without the key
+# leaves the row as it is.
+DEFAULT_COLUMNS = ['Nome', 'CAP']
+DEFAULT_MAP = {'nome': 'Nome', 'cap': 'CAP'}
+upload('csv-defaults', 'owner', 'predefiniti.csv', b'Nome;CAP\nAda;00100\nBea;\n', columns=DEFAULT_COLUMNS, keep='defaults')
+imported('string-default-fails', 'owner', 'defaults', {'map': DEFAULT_MAP, 'default': 'xcapx'}, columns=DEFAULT_COLUMNS,
+         failed=True)
+imported('list-default-fails', 'owner', 'defaults', {'map': DEFAULT_MAP, 'default': ['cap']}, columns=DEFAULT_COLUMNS,
+         failed=True)
+imported('number-default-fails', 'owner', 'defaults', {'map': DEFAULT_MAP, 'default': 5}, columns=DEFAULT_COLUMNS,
+         failed=True)
+imported('list-default-ignored', 'owner', 'defaults', {'map': DEFAULT_MAP, 'default': ['xcapx']}, columns=DEFAULT_COLUMNS,
+         drafts=[({'associate': {'first_name': 'Ada', 'address_cap': '00100'}, 'associate_tutor': {}}, False),
+                 ({'associate': {'first_name': 'Bea'}, 'associate_tutor': {}}, False)])
+
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'subscription/import/upload', 'ids': IDS, 'location': 'import-uploads',
                               'limit': LIMIT, 'statuses': STATUSES, 'stored': STORED, 'expired': EXPIRED, 'cases': cases},

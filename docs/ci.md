@@ -55,6 +55,14 @@ build prewarm (`TESTS/adapters/go/prewarm.py`, `go test -c`) runs only in the
 account jobs, where it pays off. Workflow wall time went from 42+ minutes to
 about 16.
 
+**Refusal ratchet.** The `go-inventory` job fails when an HTTP route or
+WebSocket of the Go backend can return a "not ported" refusal that is not an
+accepted divergence. The allowed number of unaccepted rows is committed in
+`tools/go-migration/refusal_ceiling.json` as `{"http": <int>}`. The ceiling only
+goes down: lower `http` in the same change that removes rows, and never raise it.
+Accepted divergences are listed in
+`docs/architecture/go-migration/accepted-divergences.md`.
+
 Releases do not rebuild the manual. A published release copies the verified
 manual of the current `:latest` backend image unchanged into both its Django and
 Go backend images and records its origin in `MANUAL_CARRIED_FROM`; both readers

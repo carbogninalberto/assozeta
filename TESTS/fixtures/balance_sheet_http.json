@@ -685,6 +685,168 @@
    "archived": false,
    "created": "2020-01-10T09:00:00Z",
    "data": null
+  },
+  "y2020": {
+   "id": "a1000000-0000-4000-8000-000001300049",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "status": 1,
+   "year": 2020,
+   "archived": false,
+   "created": "2021-01-10T09:00:00Z",
+   "data": {
+    "incoming": {
+     "generalIncome": [
+      {
+       "description": 5,
+       "institutional": 10,
+       "commercial": 0,
+       "id": "int-desc",
+       "editable": true,
+       "default": false
+      },
+      {
+       "description": 1.5,
+       "institutional": 20,
+       "commercial": 0,
+       "id": "float-desc",
+       "editable": true,
+       "default": false
+      },
+      {
+       "description": true,
+       "institutional": 30,
+       "commercial": 0,
+       "id": "bool-desc",
+       "editable": true,
+       "default": false
+      },
+      {
+       "description": {
+        "k": 1
+       },
+       "institutional": 40,
+       "commercial": 0,
+       "id": "dict-desc",
+       "editable": true,
+       "default": false
+      },
+      {
+       "description": [
+        1,
+        "due"
+       ],
+       "institutional": 50,
+       "commercial": 0,
+       "id": "list-desc",
+       "editable": true,
+       "default": false
+      }
+     ]
+    },
+    "outgoing": {
+     "generalExpenses": [
+      {
+       "description": "Spese",
+       "institutional": 5,
+       "commercial": 2.5,
+       "id": "spese-desc",
+       "editable": true,
+       "default": false
+      }
+     ]
+    },
+    "cash": 0,
+    "bank": 0,
+    "other": 0,
+    "draft": true,
+    "version": 1
+   }
+  },
+  "y2016": {
+   "id": "a1000000-0000-4000-8000-000001300050",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "status": 1,
+   "year": 2016,
+   "archived": false,
+   "created": "2017-01-10T09:00:00Z",
+   "data": {
+    "incoming": {
+     "generalIncome": [
+      {
+       "description": 5,
+       "institutional": 10,
+       "commercial": 0,
+       "id": "int-desc",
+       "editable": true,
+       "default": false
+      },
+      {
+       "description": 1.5,
+       "institutional": 20,
+       "commercial": 0,
+       "id": "float-desc",
+       "editable": true,
+       "default": false
+      },
+      {
+       "description": true,
+       "institutional": 30,
+       "commercial": 0,
+       "id": "bool-desc",
+       "editable": true,
+       "default": false
+      },
+      {
+       "description": {
+        "k": 1
+       },
+       "institutional": 40,
+       "commercial": 0,
+       "id": "dict-desc",
+       "editable": true,
+       "default": false
+      }
+     ]
+    },
+    "outgoing": {
+     "generalExpenses": []
+    },
+    "cash": 0,
+    "bank": 0,
+    "other": 0,
+    "draft": true,
+    "version": 1
+   }
+  },
+  "y2014": {
+   "id": "a1000000-0000-4000-8000-000001300051",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "status": 1,
+   "year": 2014,
+   "archived": false,
+   "created": "2015-01-10T09:00:00Z",
+   "data": {
+    "incoming": {
+     "generalIncome": [
+      {
+       "description": 10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000,
+       "institutional": 10,
+       "commercial": 0,
+       "id": "huge-desc",
+       "editable": true,
+       "default": false
+      }
+     ]
+    },
+    "outgoing": {
+     "generalExpenses": []
+    },
+    "cash": 0,
+    "bank": 0,
+    "other": 0,
+    "draft": true,
+    "version": 1
+   }
   }
  },
  "profiles": {
@@ -4193,6 +4355,618 @@
    "effect": null,
    "body": {
     "format": "pdf"
+   }
+  },
+  {
+   "name": "balance-sheet-excel-description-values",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/balance-sheet?currentDate=2020-06-01",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$xlsx": {
+      "engine": "excel_utils",
+      "columns": [
+       "Descrizione",
+       "Istituzionale (€)",
+       "Commerciale (€)",
+       "Totale (€)"
+      ],
+      "data": [
+       [
+        "A) ENTRATE",
+        "Entrate Generali",
+        {
+         "int": "5"
+        },
+        {
+         "float": "1.5"
+        },
+        {
+         "bool": true
+        },
+        {
+         "dict": [
+          [
+           "k",
+           {
+            "int": "1"
+           }
+          ]
+         ]
+        },
+        {
+         "list": [
+          {
+           "int": "1"
+          },
+          "due"
+         ]
+        },
+        "Totale entrate",
+        "",
+        "B) USCITE",
+        "Spese generali",
+        "Spese",
+        "Totale uscite",
+        "",
+        "",
+        "C) RENDICONTO DELLA GESTIONE",
+        "",
+        "D) LIQUIDITÀ",
+        "Banca",
+        "Cassa",
+        "Altro",
+        "Totale"
+       ],
+       [
+        "",
+        "",
+        "10,00",
+        "20,00",
+        "30,00",
+        "40,00",
+        "50,00",
+        "150,00",
+        "",
+        "",
+        "",
+        "5,00",
+        "5,00",
+        "",
+        "ENTRATE",
+        "150,00",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+       ],
+       [
+        "",
+        "",
+        "0,00",
+        "0,00",
+        "0,00",
+        "0,00",
+        "0,00",
+        "0,00",
+        "",
+        "",
+        "",
+        "2,50",
+        "2,50",
+        "",
+        "USCITE",
+        "-7,50",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+       ],
+       [
+        "",
+        "",
+        "10,00",
+        "20,00",
+        "30,00",
+        "40,00",
+        "50,00",
+        "150,00",
+        "",
+        "",
+        "",
+        "7,50",
+        "7,50",
+        "",
+        "BILANCIO FINALE",
+        "142,50",
+        "",
+        "",
+        "100,50",
+        "8,25",
+        "0,00",
+        "108,75"
+       ]
+      ]
+     }
+    },
+    "filename": "[$today] Bilancio 2020 - Message reads own.xlsx"
+   },
+   "effect": {
+    "kind": "update",
+    "sheet": "y2020",
+    "actor": "owner",
+    "row": {
+     "data": {
+      "incoming": {
+       "generalIncome": [
+        {
+         "description": 5,
+         "institutional": 10,
+         "commercial": 0,
+         "id": "int-desc",
+         "editable": true,
+         "default": false
+        },
+        {
+         "description": 1.5,
+         "institutional": 20,
+         "commercial": 0,
+         "id": "float-desc",
+         "editable": true,
+         "default": false
+        },
+        {
+         "description": true,
+         "institutional": 30,
+         "commercial": 0,
+         "id": "bool-desc",
+         "editable": true,
+         "default": false
+        },
+        {
+         "description": {
+          "k": 1
+         },
+         "institutional": 40,
+         "commercial": 0,
+         "id": "dict-desc",
+         "editable": true,
+         "default": false
+        },
+        {
+         "description": [
+          1,
+          "due"
+         ],
+         "institutional": 50,
+         "commercial": 0,
+         "id": "list-desc",
+         "editable": true,
+         "default": false
+        }
+       ]
+      },
+      "outgoing": {
+       "generalExpenses": [
+        {
+         "description": "Spese",
+         "institutional": 5,
+         "commercial": 2.5,
+         "id": "spese-desc",
+         "editable": true,
+         "default": false
+        }
+       ]
+      },
+      "cash": 8.25,
+      "bank": 100.5,
+      "other": 0,
+      "draft": true,
+      "version": 1,
+      "total": 108.75
+     },
+     "year": 2020,
+     "status": 1
+    },
+    "changes": {
+     "data": [
+      "{\"bank\": 0, \"cash\": 0, \"draft\": true, \"incoming\": {\"generalIncome\": [{\"commercial\": 0, \"default\": false, \"description\": 5, \"editable\": true, \"id\": \"int-desc\", \"institutional\": 10}, {\"commercial\": 0, \"default\": false, \"description\": 1.5, \"editable\": true, \"id\": \"float-desc\", \"institutional\": 20}, {\"commercial\": 0, \"default\": false, \"description\": true, \"editable\": true, \"id\": \"bool-desc\", \"institutional\": 30}, {\"commercial\": 0, \"default\": false, \"description\": {\"k\": 1}, \"editable\": true, \"id\": \"dict-desc\", \"institutional\": 40}, {\"commercial\": 0, \"default\": false, \"description\": [1, \"due\"], \"editable\": true, \"id\": \"list-desc\", \"institutional\": 50}]}, \"other\": 0, \"outgoing\": {\"generalExpenses\": [{\"commercial\": 2.5, \"default\": false, \"description\": \"Spese\", \"editable\": true, \"id\": \"spese-desc\", \"institutional\": 5}]}, \"version\": 1}",
+      "{\"bank\": 100.5, \"cash\": 8.25, \"draft\": true, \"incoming\": {\"generalIncome\": [{\"commercial\": 0, \"default\": false, \"description\": 5, \"editable\": true, \"id\": \"int-desc\", \"institutional\": 10}, {\"commercial\": 0, \"default\": false, \"description\": 1.5, \"editable\": true, \"id\": \"float-desc\", \"institutional\": 20}, {\"commercial\": 0, \"default\": false, \"description\": true, \"editable\": true, \"id\": \"bool-desc\", \"institutional\": 30}, {\"commercial\": 0, \"default\": false, \"description\": {\"k\": 1}, \"editable\": true, \"id\": \"dict-desc\", \"institutional\": 40}, {\"commercial\": 0, \"default\": false, \"description\": [1, \"due\"], \"editable\": true, \"id\": \"list-desc\", \"institutional\": 50}]}, \"other\": 0, \"outgoing\": {\"generalExpenses\": [{\"commercial\": 2.5, \"default\": false, \"description\": \"Spese\", \"editable\": true, \"id\": \"spese-desc\", \"institutional\": 5}]}, \"total\": 108.75, \"version\": 1}"
+     ]
+    }
+   },
+   "body": {
+    "format": "excel"
+   }
+  },
+  {
+   "name": "balance-sheet-pdf-description-list-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/balance-sheet?currentDate=2020-06-01",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "update",
+    "sheet": "y2020",
+    "actor": "owner",
+    "row": {
+     "data": {
+      "incoming": {
+       "generalIncome": [
+        {
+         "description": 5,
+         "institutional": 10,
+         "commercial": 0,
+         "id": "int-desc",
+         "editable": true,
+         "default": false
+        },
+        {
+         "description": 1.5,
+         "institutional": 20,
+         "commercial": 0,
+         "id": "float-desc",
+         "editable": true,
+         "default": false
+        },
+        {
+         "description": true,
+         "institutional": 30,
+         "commercial": 0,
+         "id": "bool-desc",
+         "editable": true,
+         "default": false
+        },
+        {
+         "description": {
+          "k": 1
+         },
+         "institutional": 40,
+         "commercial": 0,
+         "id": "dict-desc",
+         "editable": true,
+         "default": false
+        },
+        {
+         "description": [
+          1,
+          "due"
+         ],
+         "institutional": 50,
+         "commercial": 0,
+         "id": "list-desc",
+         "editable": true,
+         "default": false
+        }
+       ]
+      },
+      "outgoing": {
+       "generalExpenses": [
+        {
+         "description": "Spese",
+         "institutional": 5,
+         "commercial": 2.5,
+         "id": "spese-desc",
+         "editable": true,
+         "default": false
+        }
+       ]
+      },
+      "cash": 8.25,
+      "bank": 100.5,
+      "other": 0,
+      "draft": true,
+      "version": 1,
+      "total": 108.75
+     },
+     "year": 2020,
+     "status": 1
+    },
+    "changes": {}
+   },
+   "body": {
+    "format": "pdf"
+   }
+  },
+  {
+   "name": "balance-sheet-pdf-description-values",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/balance-sheet?currentDate=2016-06-01",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Descrizione",
+       "Istituzionale (€)",
+       "Commerciale (€)",
+       "Totale (€)"
+      ],
+      "rows": [
+       [
+        "A) ENTRATE",
+        "",
+        "",
+        ""
+       ],
+       [
+        "Entrate Generali",
+        "",
+        "",
+        ""
+       ],
+       [
+        {
+         "int": "5"
+        },
+        "10,00",
+        "0,00",
+        "10,00"
+       ],
+       [
+        {
+         "float": "1.5"
+        },
+        "20,00",
+        "0,00",
+        "20,00"
+       ],
+       [
+        {
+         "bool": true
+        },
+        "30,00",
+        "0,00",
+        "30,00"
+       ],
+       [
+        {
+         "dict": [
+          [
+           "k",
+           {
+            "int": "1"
+           }
+          ]
+         ]
+        },
+        "40,00",
+        "0,00",
+        "40,00"
+       ],
+       [
+        "Totale entrate",
+        "100,00",
+        "0,00",
+        "100,00"
+       ],
+       [
+        "",
+        "",
+        "",
+        ""
+       ],
+       [
+        "B) USCITE",
+        "",
+        "",
+        ""
+       ],
+       [
+        "Spese generali",
+        "",
+        "",
+        ""
+       ],
+       [
+        "Totale uscite",
+        "0,00",
+        "0,00",
+        "0,00"
+       ],
+       [
+        "",
+        "",
+        "",
+        ""
+       ],
+       [
+        "",
+        "ENTRATE",
+        "USCITE",
+        "BILANCIO FINALE"
+       ],
+       [
+        "C) RENDICONTO DELLA GESTIONE",
+        "100,00",
+        "-0,00",
+        "100,00"
+       ],
+       [
+        "",
+        "",
+        "",
+        ""
+       ],
+       [
+        "D) LIQUIDITÀ",
+        "",
+        "",
+        ""
+       ],
+       [
+        "Banca",
+        "",
+        "",
+        "100,50"
+       ],
+       [
+        "Cassa",
+        "",
+        "",
+        "8,25"
+       ],
+       [
+        "Altro",
+        "",
+        "",
+        "0,00"
+       ],
+       [
+        "Totale",
+        "",
+        "",
+        "108,75"
+       ]
+      ],
+      "title": "Bilancio 2016 al 31/12/2016",
+      "align": [
+       "LEFT",
+       "RIGHT",
+       "RIGHT",
+       "RIGHT"
+      ],
+      "header": "\n        <div style=\"text-align: center;display:flex;justify-content: center;width: 200px;margin:auto; margin-bottom: 20px;\">\n            <div style=\"text-align: center;\">\n                <img src=\"None\" style=\"height: 1000px;\"/>\n            </div>\n            <div style=\"text-align: center;\">\n                <h1 style=\"font-size: 20px;\">Message reads own</h1>\n                <h2 style=\"font-size: 16px;\">, , </h2>\n                <h3 style=\"font-size: 16px;\">Approvato il ____/____/______</h3>\n            </div>\n        </div>\n        ",
+      "is_a3": true,
+      "landscape": false,
+      "additional": [
+       [
+        "balance_at_date",
+        "I saldi sono riportati al 31/12/2016."
+       ]
+      ]
+     }
+    },
+    "filename": "[$today] Bilancio 2016 - Message reads own.pdf"
+   },
+   "effect": {
+    "kind": "update",
+    "sheet": "y2016",
+    "actor": "owner",
+    "row": {
+     "data": {
+      "incoming": {
+       "generalIncome": [
+        {
+         "description": 5,
+         "institutional": 10,
+         "commercial": 0,
+         "id": "int-desc",
+         "editable": true,
+         "default": false
+        },
+        {
+         "description": 1.5,
+         "institutional": 20,
+         "commercial": 0,
+         "id": "float-desc",
+         "editable": true,
+         "default": false
+        },
+        {
+         "description": true,
+         "institutional": 30,
+         "commercial": 0,
+         "id": "bool-desc",
+         "editable": true,
+         "default": false
+        },
+        {
+         "description": {
+          "k": 1
+         },
+         "institutional": 40,
+         "commercial": 0,
+         "id": "dict-desc",
+         "editable": true,
+         "default": false
+        }
+       ]
+      },
+      "outgoing": {
+       "generalExpenses": []
+      },
+      "cash": 8.25,
+      "bank": 100.5,
+      "other": 0,
+      "draft": true,
+      "version": 1,
+      "total": 108.75
+     },
+     "year": 2016,
+     "status": 1
+    },
+    "changes": {
+     "data": [
+      "{\"bank\": 0, \"cash\": 0, \"draft\": true, \"incoming\": {\"generalIncome\": [{\"commercial\": 0, \"default\": false, \"description\": 5, \"editable\": true, \"id\": \"int-desc\", \"institutional\": 10}, {\"commercial\": 0, \"default\": false, \"description\": 1.5, \"editable\": true, \"id\": \"float-desc\", \"institutional\": 20}, {\"commercial\": 0, \"default\": false, \"description\": true, \"editable\": true, \"id\": \"bool-desc\", \"institutional\": 30}, {\"commercial\": 0, \"default\": false, \"description\": {\"k\": 1}, \"editable\": true, \"id\": \"dict-desc\", \"institutional\": 40}]}, \"other\": 0, \"outgoing\": {\"generalExpenses\": []}, \"version\": 1}",
+      "{\"bank\": 100.5, \"cash\": 8.25, \"draft\": true, \"incoming\": {\"generalIncome\": [{\"commercial\": 0, \"default\": false, \"description\": 5, \"editable\": true, \"id\": \"int-desc\", \"institutional\": 10}, {\"commercial\": 0, \"default\": false, \"description\": 1.5, \"editable\": true, \"id\": \"float-desc\", \"institutional\": 20}, {\"commercial\": 0, \"default\": false, \"description\": true, \"editable\": true, \"id\": \"bool-desc\", \"institutional\": 30}, {\"commercial\": 0, \"default\": false, \"description\": {\"k\": 1}, \"editable\": true, \"id\": \"dict-desc\", \"institutional\": 40}]}, \"other\": 0, \"outgoing\": {\"generalExpenses\": []}, \"total\": 108.75, \"version\": 1}"
+     ]
+    }
+   },
+   "body": {
+    "format": "pdf"
+   }
+  },
+  {
+   "name": "balance-sheet-excel-description-int-too-large-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/balance-sheet?currentDate=2014-06-01",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "update",
+    "sheet": "y2014",
+    "actor": "owner",
+    "row": {
+     "data": {
+      "incoming": {
+       "generalIncome": [
+        {
+         "description": 10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000,
+         "institutional": 10,
+         "commercial": 0,
+         "id": "huge-desc",
+         "editable": true,
+         "default": false
+        }
+       ]
+      },
+      "outgoing": {
+       "generalExpenses": []
+      },
+      "cash": 10.25,
+      "bank": 100.5,
+      "other": 0,
+      "draft": true,
+      "version": 1,
+      "total": 110.75
+     },
+     "year": 2014,
+     "status": 1
+    },
+    "changes": {
+     "data": [
+      "{\"bank\": 0, \"cash\": 0, \"draft\": true, \"incoming\": {\"generalIncome\": [{\"commercial\": 0, \"default\": false, \"description\": 10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000, \"editable\": true, \"id\": \"huge-desc\", \"institutional\": 10}]}, \"other\": 0, \"outgoing\": {\"generalExpenses\": []}, \"version\": 1}",
+      "{\"bank\": 100.5, \"cash\": 10.25, \"draft\": true, \"incoming\": {\"generalIncome\": [{\"commercial\": 0, \"default\": false, \"description\": 10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000, \"editable\": true, \"id\": \"huge-desc\", \"institutional\": 10}]}, \"other\": 0, \"outgoing\": {\"generalExpenses\": []}, \"total\": 110.75, \"version\": 1}"
+     ]
+    }
+   },
+   "body": {
+    "format": "excel"
    }
   },
   {

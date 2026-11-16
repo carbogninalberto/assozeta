@@ -15,6 +15,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/mentions"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pystr"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
@@ -350,16 +351,572 @@ func associateResolver(a *domain.ViewAssociate) mentions.Resolver {
 		"phone_2_label": a.Phone2Label, "phone_3_label": a.Phone3Label, "phone_4_label": a.Phone4Label, "notes": a.Notes, "sex": &sex})
 }
 
-// otherResolver is the 'other' dict: dict.get(key) of its entries; a
-// missing key is None ("", for a longer path as well).
+// --- other.<key>.<attribute...> ----------------------------------------------------------------
+
+// get_nested_attr (BE/application/models/utils.py:118-136) reads the 'other'
+// dict with .get, then getattr(obj, name, None) for each following step, and
+// answers str() of the last object ("" for None). Every view fills 'other'
+// with str: 'today' and 'today_datetime' are strftime texts, 'courses_list'
+// is Subscription.get_courses_list() and the medical view's 'address' is a
+// model field (BE/docmanager/views/printing_views.py:165-177, 253-265,
+// 495-500, 755-760, 845-851). A path below a key therefore walks CPython's
+// str object graph, which is closed: a str's attributes are its methods,
+// method-wrappers, __class__ and __doc__; a method's are its name, qualname,
+// __self__, __doc__, __module__, __class__ and __text_signature__; and the
+// str type's are its descriptors and the metadata every type has. The text
+// below is what CPython 3.13.16 prints for each of them, with
+// pystr.ObjectAddress in place of the address of a live object (approved
+// divergence X18).
+//
+// A path outside the model is mentions.ErrUnsupported, so the request goes to
+// Django, which prints it: the str type's __dict__, __flags__, __basicsize__,
+// __itemsize__ and offsets (a mappingproxy of addresses and values that
+// depend on the build), and the dunder methods of a method object
+// (`other.today.upper.__call__` and the like: determined, but a second object
+// layer this file does not reproduce).
+
+// mentionPyKind is the type of one object of that walk.
+type mentionPyKind uint8
+
+const (
+	mentionNone mentionPyKind = iota
+	mentionStr
+	mentionStrType
+	mentionType
+	mentionBuiltin
+	mentionWrapper
+	mentionMethod
+	mentionSlot
+	mentionGetSet
+)
+
+// mentionBind is which object a built-in method's m_self is: its repr and
+// __qualname__ print it. __self__ is None for a static method.
+type mentionBind uint8
+
+const (
+	mentionBindValue      mentionBind = iota // the object getattr read it from
+	mentionBindType                          // that object's type (a str's is str)
+	mentionBindStaticType                    // that object's type; __self__ is None
+	mentionBindStatic                        // the object itself; __self__ is None
+	mentionBindMeta                          // type
+)
+
+// mentionSpec is one attribute getattr answers on the objects below: the
+// object, and the docstring and text signature CPython gives it. owner is the
+// type that defines a method-wrapper or a method/slot descriptor (its repr
+// and __qualname__); doc and sig are "" where Python has None.
+type mentionSpec struct {
+	kind  mentionPyKind
+	bind  mentionBind
+	owner string
+	doc   string
+	sig   string
+}
+
+// mentionPy is one object of the walk.
+type mentionPy struct {
+	kind mentionPyKind
+	name string     // a str's text, a method's name, a type's name
+	recv *mentionPy // a built-in method's m_self, a method-wrapper's object
+	spec mentionSpec
+}
+
+// mentionStrDoc is str.__doc__ (CPython 3.13.16).
+const mentionStrDoc = "str(object='') -> str\nstr(bytes_or_buffer[, encoding[, errors]]) -> str\n\nCreate a new string object from the given object. If encoding or\nerrors is specified, then the object must expose a data buffer\nthat will be decoded using the given encoding and error handler.\nOtherwise, returns the result of object.__str__() (if defined)\nor repr(object).\nencoding defaults to 'utf-8'.\nerrors defaults to 'strict'."
+
+var (
+	mentionStrTypeObject  = &mentionPy{kind: mentionStrType, name: "str"}
+	mentionTypeTypeObject = &mentionPy{kind: mentionType, name: "type"}
+	mentionStrDocObject   = &mentionPy{kind: mentionStr, name: mentionStrDoc}
+)
+
+func mentionStrObject(text string) *mentionPy { return &mentionPy{kind: mentionStr, name: text} }
+
+func mentionTypeObject(name string) *mentionPy { return &mentionPy{kind: mentionType, name: name} }
+
+// mentionTypeName is type(obj).__name__, the word between "of" and "object"
+// in a method's repr.
+func mentionTypeName(v *mentionPy) string {
+	switch v.kind {
+	case mentionStr:
+		return "str"
+	case mentionStrType, mentionType:
+		return "type"
+	case mentionBuiltin:
+		return "builtin_function_or_method"
+	case mentionWrapper:
+		return "method-wrapper"
+	case mentionMethod:
+		return "method_descriptor"
+	case mentionSlot:
+		return "wrapper_descriptor"
+	case mentionGetSet:
+		return "getset_descriptor"
+	}
+	return ""
+}
+
+// mentionTypeOf is type(obj).
+func mentionTypeOf(v *mentionPy) *mentionPy {
+	switch v.kind {
+	case mentionStr:
+		return mentionStrTypeObject
+	case mentionStrType, mentionType:
+		return mentionTypeTypeObject
+	}
+	return mentionTypeObject(mentionTypeName(v))
+}
+
+// mentionText is str(obj); nil is None, whose text get_nested_attr answers as "".
+func mentionText(v *mentionPy) string {
+	if v == nil {
+		return ""
+	}
+	switch v.kind {
+	case mentionStr:
+		return v.name
+	case mentionStrType, mentionType:
+		return "<class '" + v.name + "'>"
+	case mentionBuiltin:
+		return "<built-in method " + v.name + " of " + mentionTypeName(v.recv) + " object at " + pystr.ObjectAddress + ">"
+	case mentionWrapper:
+		return "<method-wrapper '" + v.name + "' of " + mentionTypeName(v.recv) + " object at " + pystr.ObjectAddress + ">"
+	case mentionMethod:
+		return "<method '" + v.name + "' of '" + v.spec.owner + "' objects>"
+	case mentionSlot:
+		return "<slot wrapper '" + v.name + "' of '" + v.spec.owner + "' objects>"
+	case mentionGetSet:
+		return "<attribute '" + v.name + "' of '" + v.spec.owner + "' objects>"
+	}
+	return ""
+}
+
+// mentionQualname is obj.__qualname__: a built-in method's is its m_self's
+// qualname (a type's own name) and a wrapper's or descriptor's is fixed by
+// the type that defines it.
+func mentionQualname(v *mentionPy) string {
+	if v.kind == mentionBuiltin {
+		if owner := v.recv; owner.kind == mentionStrType || owner.kind == mentionType {
+			return owner.name + "." + v.name
+		}
+		return mentionTypeName(v.recv) + "." + v.name
+	}
+	return v.spec.owner + "." + v.name
+}
+
+// mentionBound is getattr(obj, name) for a spec of obj's attribute table.
+func mentionBound(obj *mentionPy, name string, spec mentionSpec) *mentionPy {
+	switch spec.kind {
+	case mentionBuiltin:
+		method := &mentionPy{kind: mentionBuiltin, name: name, spec: spec}
+		switch spec.bind {
+		case mentionBindValue, mentionBindStatic:
+			method.recv = obj
+		case mentionBindType, mentionBindStaticType:
+			method.recv = mentionTypeOf(obj)
+		case mentionBindMeta:
+			method.recv = mentionTypeTypeObject
+		}
+		return method
+	case mentionWrapper:
+		return &mentionPy{kind: mentionWrapper, name: name, recv: obj, spec: spec}
+	}
+	return &mentionPy{kind: spec.kind, name: name, spec: spec}
+}
+
+// mentionTypeMetadata is the part of a type object's namespace that `type`
+// provides for every type.
+func mentionTypeMetadata(obj *mentionPy, name string) (*mentionPy, bool) {
+	switch name {
+	case "__name__", "__qualname__":
+		return mentionStrObject(obj.name), true
+	case "__module__":
+		return mentionStrObject("builtins"), true
+	case "__class__":
+		return mentionTypeTypeObject, true
+	case "__doc__":
+		if doc, ok := mentionTypeDocs[obj.name]; ok {
+			return mentionStrObject(doc), true
+		}
+		// A C type's __doc__ is a getset descriptor, not a str.
+		return &mentionPy{kind: mentionGetSet, name: "__doc__", spec: mentionSpec{owner: obj.name}}, true
+	case "__text_signature__":
+		return nil, true
+	case "__bases__":
+		if obj.name == "object" {
+			return mentionStrObject("()"), true
+		}
+		return mentionStrObject("(<class 'object'>,)"), true
+	case "__base__":
+		if obj.name == "object" {
+			return nil, true
+		}
+		return mentionTypeObject("object"), true
+	case "__mro__":
+		if obj.name == "object" {
+			return mentionStrObject("(<class 'object'>,)"), true
+		}
+		return mentionStrObject("(<class '" + obj.name + "'>, <class 'object'>)"), true
+	case "__type_params__":
+		return mentionStrObject("()"), true
+	case "__abstractmethods__", "__annotations__":
+		// type's getset raises AttributeError here: getattr's None.
+		return nil, true
+	}
+	return nil, false
+}
+
+// mentionObjectMetadata is the part of a method or descriptor's namespace
+// that CPython provides for every one of them.
+func mentionObjectMetadata(obj *mentionPy, name string) (*mentionPy, bool) {
+	switch name {
+	case "__name__":
+		return mentionStrObject(obj.name), true
+	case "__qualname__":
+		return mentionStrObject(mentionQualname(obj)), true
+	case "__doc__":
+		if obj.spec.doc == "" {
+			return nil, true
+		}
+		return mentionStrObject(obj.spec.doc), true
+	case "__text_signature__":
+		if obj.spec.sig == "" {
+			return nil, true
+		}
+		return mentionStrObject(obj.spec.sig), true
+	case "__module__":
+		// A built-in method's m_module is NULL and a descriptor has no
+		// __module__: getattr answers None.
+		return nil, true
+	case "__self__":
+		if obj.kind == mentionBuiltin {
+			if obj.spec.bind == mentionBindStatic || obj.spec.bind == mentionBindStaticType {
+				return nil, true
+			}
+			return obj.recv, true
+		}
+		if obj.kind == mentionWrapper {
+			return obj.recv, true
+		}
+		return nil, true
+	case "__objclass__":
+		switch obj.kind {
+		case mentionWrapper, mentionMethod, mentionSlot:
+			return mentionTypeObject(obj.spec.owner), true
+		}
+		return nil, true
+	case "__class__":
+		return mentionTypeOf(obj), true
+	}
+	return nil, false
+}
+
+// mentionAttr is getattr(obj, name, None). A nil answer is None; the error is
+// a path outside the model.
+func mentionAttr(obj *mentionPy, name string) (*mentionPy, error) {
+	switch obj.kind {
+	case mentionStr:
+		switch name {
+		case "__class__":
+			return mentionStrTypeObject, nil
+		case "__doc__":
+			return mentionStrDocObject, nil
+		}
+		if spec, ok := mentionStrInstanceAttrs[name]; ok {
+			return mentionBound(obj, name, spec), nil
+		}
+	case mentionStrType:
+		if value, ok := mentionTypeMetadata(obj, name); ok {
+			return value, nil
+		}
+		if spec, ok := mentionStrTypeAttrs[name]; ok {
+			return mentionBound(obj, name, spec), nil
+		}
+		if _, ok := mentionTypeMemory[name]; ok {
+			return nil, errors.New("attribute of a type object that depends on its memory layout")
+		}
+	case mentionType:
+		if value, ok := mentionTypeMetadata(obj, name); ok {
+			return value, nil
+		}
+		if _, ok := mentionTypeAttributes[name]; ok {
+			return nil, errors.New("method of a type object")
+		}
+	case mentionBuiltin, mentionWrapper, mentionMethod, mentionSlot:
+		if value, ok := mentionObjectMetadata(obj, name); ok {
+			return value, nil
+		}
+		_, dunder := mentionObjectMethods[name]
+		if name == "__get__" && (obj.kind == mentionMethod || obj.kind == mentionSlot) {
+			dunder = true
+		}
+		if dunder {
+			return nil, errors.New("dunder method of a method object")
+		}
+	case mentionGetSet:
+		switch name {
+		case "__name__":
+			return mentionStrObject(obj.name), nil
+		case "__qualname__":
+			return mentionStrObject(obj.spec.owner + "." + obj.name), nil
+		case "__objclass__":
+			return mentionTypeObject(obj.spec.owner), nil
+		case "__class__":
+			return mentionTypeObject("getset_descriptor"), nil
+		case "__doc__", "__text_signature__":
+			return nil, nil
+		}
+		_, dunder := mentionObjectMethods[name]
+		if name == "__get__" || name == "__set__" || name == "__delete__" {
+			dunder = true
+		}
+		if dunder {
+			return nil, errors.New("dunder method of a getset descriptor")
+		}
+	}
+	return nil, nil
+}
+
+// otherResolver is the 'other' dict: dict.get(key) of its entries for the
+// first step, getattr(obj, name, None) for every following one, and str() of
+// the last object ("" for None and for a step after None). A missing key is
+// None, as dict.get answers.
 func otherResolver(values map[string]string) mentions.Resolver {
 	return func(path string) (string, error) {
-		first, _, nested := strings.Cut(path, ".")
-		if _, present := values[first]; present && nested {
-			return "", fmt.Errorf("%w: mention other.%s", mentions.ErrUnsupported, path)
+		name, rest, nested := strings.Cut(path, ".")
+		var value *mentionPy
+		if text, present := values[name]; present {
+			value = mentionStrObject(text)
 		}
-		return values[first], nil
+		if !nested {
+			return mentionText(value), nil
+		}
+		if value == nil {
+			// get_nested_attr: a step after None answers "".
+			return "", nil
+		}
+		for _, attr := range strings.Split(rest, ".") {
+			next, err := mentionAttr(value, attr)
+			if err != nil {
+				return "", fmt.Errorf("%w: mention other.%s: %v", mentions.ErrUnsupported, path, err)
+			}
+			if next == nil {
+				return "", nil
+			}
+			value = next
+		}
+		return mentionText(value), nil
 	}
+}
+
+// mentionStrInstanceAttrs is dir(str): the attributes getattr answers for
+// any str value (its __class__ and __doc__ are handled in mentionAttr).
+var mentionStrInstanceAttrs = map[string]mentionSpec{
+	"__add__":           {kind: mentionWrapper, owner: "str", doc: "Return self+value.", sig: "($self, value, /)"},
+	"__contains__":      {kind: mentionWrapper, owner: "str", doc: "Return bool(key in self).", sig: "($self, key, /)"},
+	"__delattr__":       {kind: mentionWrapper, owner: "object", doc: "Implement delattr(self, name).", sig: "($self, name, /)"},
+	"__dir__":           {kind: mentionBuiltin, bind: mentionBindValue, doc: "Default dir() implementation.", sig: "($self, /)"},
+	"__eq__":            {kind: mentionWrapper, owner: "str", doc: "Return self==value.", sig: "($self, value, /)"},
+	"__format__":        {kind: mentionBuiltin, bind: mentionBindValue, doc: "Return a formatted version of the string as described by format_spec.", sig: "($self, format_spec, /)"},
+	"__ge__":            {kind: mentionWrapper, owner: "str", doc: "Return self>=value.", sig: "($self, value, /)"},
+	"__getattribute__":  {kind: mentionWrapper, owner: "object", doc: "Return getattr(self, name).", sig: "($self, name, /)"},
+	"__getitem__":       {kind: mentionWrapper, owner: "str", doc: "Return self[key].", sig: "($self, key, /)"},
+	"__getnewargs__":    {kind: mentionBuiltin, bind: mentionBindValue, sig: "($self, /)"},
+	"__getstate__":      {kind: mentionBuiltin, bind: mentionBindValue, doc: "Helper for pickle.", sig: "($self, /)"},
+	"__gt__":            {kind: mentionWrapper, owner: "str", doc: "Return self>value.", sig: "($self, value, /)"},
+	"__hash__":          {kind: mentionWrapper, owner: "str", doc: "Return hash(self).", sig: "($self, /)"},
+	"__init__":          {kind: mentionWrapper, owner: "object", doc: "Initialize self.  See help(type(self)) for accurate signature.", sig: "($self, /, *args, **kwargs)"},
+	"__init_subclass__": {kind: mentionBuiltin, bind: mentionBindType, doc: "This method is called when a class is subclassed.\n\nThe default implementation does nothing. It may be\noverridden to extend subclasses.\n", sig: "($type, /)"},
+	"__iter__":          {kind: mentionWrapper, owner: "str", doc: "Implement iter(self).", sig: "($self, /)"},
+	"__le__":            {kind: mentionWrapper, owner: "str", doc: "Return self<=value.", sig: "($self, value, /)"},
+	"__len__":           {kind: mentionWrapper, owner: "str", doc: "Return len(self).", sig: "($self, /)"},
+	"__lt__":            {kind: mentionWrapper, owner: "str", doc: "Return self<value.", sig: "($self, value, /)"},
+	"__mod__":           {kind: mentionWrapper, owner: "str", doc: "Return self%value.", sig: "($self, value, /)"},
+	"__mul__":           {kind: mentionWrapper, owner: "str", doc: "Return self*value.", sig: "($self, value, /)"},
+	"__ne__":            {kind: mentionWrapper, owner: "str", doc: "Return self!=value.", sig: "($self, value, /)"},
+	"__new__":           {kind: mentionBuiltin, bind: mentionBindType, doc: "Create and return a new object.  See help(type) for accurate signature.", sig: "($type, *args, **kwargs)"},
+	"__reduce__":        {kind: mentionBuiltin, bind: mentionBindValue, doc: "Helper for pickle.", sig: "($self, /)"},
+	"__reduce_ex__":     {kind: mentionBuiltin, bind: mentionBindValue, doc: "Helper for pickle.", sig: "($self, protocol, /)"},
+	"__repr__":          {kind: mentionWrapper, owner: "str", doc: "Return repr(self).", sig: "($self, /)"},
+	"__rmod__":          {kind: mentionWrapper, owner: "str", doc: "Return value%self.", sig: "($self, value, /)"},
+	"__rmul__":          {kind: mentionWrapper, owner: "str", doc: "Return value*self.", sig: "($self, value, /)"},
+	"__setattr__":       {kind: mentionWrapper, owner: "object", doc: "Implement setattr(self, name, value).", sig: "($self, name, value, /)"},
+	"__sizeof__":        {kind: mentionBuiltin, bind: mentionBindValue, doc: "Return the size of the string in memory, in bytes.", sig: "($self, /)"},
+	"__str__":           {kind: mentionWrapper, owner: "str", doc: "Return str(self).", sig: "($self, /)"},
+	"__subclasshook__":  {kind: mentionBuiltin, bind: mentionBindType, doc: "Abstract classes can override this to customize issubclass().\n\nThis is invoked early on by abc.ABCMeta.__subclasscheck__().\nIt should return True, False or NotImplemented.  If it returns\nNotImplemented, the normal algorithm is used.  Otherwise, it\noverrides the normal algorithm (and the outcome is cached).\n", sig: "($type, object, /)"},
+	"capitalize":        {kind: mentionBuiltin, bind: mentionBindValue, doc: "Return a capitalized version of the string.\n\nMore specifically, make the first character have upper case and the\nrest lower case.", sig: "($self, /)"},
+	"casefold":          {kind: mentionBuiltin, bind: mentionBindValue, doc: "Return a version of the string suitable for caseless comparisons.", sig: "($self, /)"},
+	"center":            {kind: mentionBuiltin, bind: mentionBindValue, doc: "Return a centered string of length width.\n\nPadding is done using the specified fill character (default is\na space).", sig: "($self, width, fillchar=' ', /)"},
+	"count":             {kind: mentionBuiltin, bind: mentionBindValue, doc: "Return the number of non-overlapping occurrences of substring sub in string S[start:end].\n\nOptional arguments start and end are interpreted as in slice\nnotation.", sig: "($self, sub[, start[, end]], /)"},
+	"encode":            {kind: mentionBuiltin, bind: mentionBindValue, doc: "Encode the string using the codec registered for encoding.\n\n  encoding\n    The encoding in which to encode the string.\n  errors\n    The error handling scheme to use for encoding errors.\n    The default is 'strict' meaning that encoding errors raise a\n    UnicodeEncodeError.  Other possible values are 'ignore', 'replace'\n    and 'xmlcharrefreplace' as well as any other name registered with\n    codecs.register_error that can handle UnicodeEncodeErrors.", sig: "($self, /, encoding='utf-8', errors='strict')"},
+	"endswith":          {kind: mentionBuiltin, bind: mentionBindValue, doc: "Return True if the string ends with the specified suffix, False otherwise.\n\n  suffix\n    A string or a tuple of strings to try.\n  start\n    Optional start position. Default: start of the string.\n  end\n    Optional stop position. Default: end of the string.", sig: "($self, suffix[, start[, end]], /)"},
+	"expandtabs":        {kind: mentionBuiltin, bind: mentionBindValue, doc: "Return a copy where all tab characters are expanded using spaces.\n\nIf tabsize is not given, a tab size of 8 characters is assumed.", sig: "($self, /, tabsize=8)"},
+	"find":              {kind: mentionBuiltin, bind: mentionBindValue, doc: "Return the lowest index in S where substring sub is found, such that sub is contained within S[start:end].\n\nOptional arguments start and end are interpreted as in slice\nnotation.  Return -1 on failure.", sig: "($self, sub[, start[, end]], /)"},
+	"format":            {kind: mentionBuiltin, bind: mentionBindValue, doc: "Return a formatted version of the string, using substitutions from args and kwargs.\nThe substitutions are identified by braces ('{' and '}').", sig: "($self, /, *args, **kwargs)"},
+	"format_map":        {kind: mentionBuiltin, bind: mentionBindValue, doc: "Return a formatted version of the string, using substitutions from mapping.\nThe substitutions are identified by braces ('{' and '}').", sig: "($self, mapping, /)"},
+	"index":             {kind: mentionBuiltin, bind: mentionBindValue, doc: "Return the lowest index in S where substring sub is found, such that sub is contained within S[start:end].\n\nOptional arguments start and end are interpreted as in slice\nnotation.  Raises ValueError when the substring is not found.", sig: "($self, sub[, start[, end]], /)"},
+	"isalnum":           {kind: mentionBuiltin, bind: mentionBindValue, doc: "Return True if the string is an alpha-numeric string, False otherwise.\n\nA string is alpha-numeric if all characters in the string are\nalpha-numeric and there is at least one character in the string.", sig: "($self, /)"},
+	"isalpha":           {kind: mentionBuiltin, bind: mentionBindValue, doc: "Return True if the string is an alphabetic string, False otherwise.\n\nA string is alphabetic if all characters in the string are\nalphabetic and there is at least one character in the string.", sig: "($self, /)"},
+	"isascii":           {kind: mentionBuiltin, bind: mentionBindValue, doc: "Return True if all characters in the string are ASCII, False otherwise.\n\nASCII characters have code points in the range U+0000-U+007F.\nEmpty string is ASCII too.", sig: "($self, /)"},
+	"isdecimal":         {kind: mentionBuiltin, bind: mentionBindValue, doc: "Return True if the string is a decimal string, False otherwise.\n\nA string is a decimal string if all characters in the string are\ndecimal and there is at least one character in the string.", sig: "($self, /)"},
+	"isdigit":           {kind: mentionBuiltin, bind: mentionBindValue, doc: "Return True if the string is a digit string, False otherwise.\n\nA string is a digit string if all characters in the string are\ndigits and there is at least one character in the string.", sig: "($self, /)"},
+	"isidentifier":      {kind: mentionBuiltin, bind: mentionBindValue, doc: "Return True if the string is a valid Python identifier, False otherwise.\n\nCall keyword.iskeyword(s) to test whether string s is a reserved\nidentifier, such as \"def\" or \"class\".", sig: "($self, /)"},
+	"islower":           {kind: mentionBuiltin, bind: mentionBindValue, doc: "Return True if the string is a lowercase string, False otherwise.\n\nA string is lowercase if all cased characters in the string are\nlowercase and there is at least one cased character in the string.", sig: "($self, /)"},
+	"isnumeric":         {kind: mentionBuiltin, bind: mentionBindValue, doc: "Return True if the string is a numeric string, False otherwise.\n\nA string is numeric if all characters in the string are numeric and\nthere is at least one character in the string.", sig: "($self, /)"},
+	"isprintable":       {kind: mentionBuiltin, bind: mentionBindValue, doc: "Return True if all characters in the string are printable, False otherwise.\n\nA character is printable if repr() may use it in its output.", sig: "($self, /)"},
+	"isspace":           {kind: mentionBuiltin, bind: mentionBindValue, doc: "Return True if the string is a whitespace string, False otherwise.\n\nA string is whitespace if all characters in the string are\nwhitespace and there is at least one character in the string.", sig: "($self, /)"},
+	"istitle":           {kind: mentionBuiltin, bind: mentionBindValue, doc: "Return True if the string is a title-cased string, False otherwise.\n\nIn a title-cased string, upper- and title-case characters may only\nfollow uncased characters and lowercase characters only cased ones.", sig: "($self, /)"},
+	"isupper":           {kind: mentionBuiltin, bind: mentionBindValue, doc: "Return True if the string is an uppercase string, False otherwise.\n\nA string is uppercase if all cased characters in the string are\nuppercase and there is at least one cased character in the string.", sig: "($self, /)"},
+	"join":              {kind: mentionBuiltin, bind: mentionBindValue, doc: "Concatenate any number of strings.\n\nThe string whose method is called is inserted in between each given\nstring.  The result is returned as a new string.\n\nExample: '.'.join(['ab', 'pq', 'rs']) -> 'ab.pq.rs'", sig: "($self, iterable, /)"},
+	"ljust":             {kind: mentionBuiltin, bind: mentionBindValue, doc: "Return a left-justified string of length width.\n\nPadding is done using the specified fill character (default is\na space).", sig: "($self, width, fillchar=' ', /)"},
+	"lower":             {kind: mentionBuiltin, bind: mentionBindValue, doc: "Return a copy of the string converted to lowercase.", sig: "($self, /)"},
+	"lstrip":            {kind: mentionBuiltin, bind: mentionBindValue, doc: "Return a copy of the string with leading whitespace removed.\n\nIf chars is given and not None, remove characters in chars instead.", sig: "($self, chars=None, /)"},
+	"maketrans":         {kind: mentionBuiltin, bind: mentionBindStaticType, doc: "Return a translation table usable for str.translate().\n\nIf there is only one argument, it must be a dictionary mapping\nUnicode ordinals (integers) or characters to Unicode ordinals,\nstrings or None.  Character keys will be then converted to ordinals.\nIf there are two arguments, they must be strings of equal length,\nand in the resulting dictionary, each character in x will be mapped\nto the character at the same position in y.  If there is a third\nargument, it must be a string, whose characters will be mapped to\nNone in the result.", sig: "(x, y=<unrepresentable>, z=<unrepresentable>, /)"},
+	"partition":         {kind: mentionBuiltin, bind: mentionBindValue, doc: "Partition the string into three parts using the given separator.\n\nThis will search for the separator in the string.  If the separator\nis found, returns a 3-tuple containing the part before the\nseparator, the separator itself, and the part after it.\n\nIf the separator is not found, returns a 3-tuple containing\nthe original string and two empty strings.", sig: "($self, sep, /)"},
+	"removeprefix":      {kind: mentionBuiltin, bind: mentionBindValue, doc: "Return a str with the given prefix string removed if present.\n\nIf the string starts with the prefix string, return\nstring[len(prefix):].  Otherwise, return a copy of the original\nstring.", sig: "($self, prefix, /)"},
+	"removesuffix":      {kind: mentionBuiltin, bind: mentionBindValue, doc: "Return a str with the given suffix string removed if present.\n\nIf the string ends with the suffix string and that suffix is not\nempty, return string[:-len(suffix)].  Otherwise, return a copy of\nthe original string.", sig: "($self, suffix, /)"},
+	"replace":           {kind: mentionBuiltin, bind: mentionBindValue, doc: "Return a copy with all occurrences of substring old replaced by new.\n\n  count\n    Maximum number of occurrences to replace.\n    -1 (the default value) means replace all occurrences.\n\nIf the optional argument count is given, only the first count occurrences are\nreplaced.", sig: "($self, old, new, /, count=-1)"},
+	"rfind":             {kind: mentionBuiltin, bind: mentionBindValue, doc: "Return the highest index in S where substring sub is found, such that sub is contained within S[start:end].\n\nOptional arguments start and end are interpreted as in slice\nnotation.  Return -1 on failure.", sig: "($self, sub[, start[, end]], /)"},
+	"rindex":            {kind: mentionBuiltin, bind: mentionBindValue, doc: "Return the highest index in S where substring sub is found, such that sub is contained within S[start:end].\n\nOptional arguments start and end are interpreted as in slice\nnotation.  Raises ValueError when the substring is not found.", sig: "($self, sub[, start[, end]], /)"},
+	"rjust":             {kind: mentionBuiltin, bind: mentionBindValue, doc: "Return a right-justified string of length width.\n\nPadding is done using the specified fill character (default is\na space).", sig: "($self, width, fillchar=' ', /)"},
+	"rpartition":        {kind: mentionBuiltin, bind: mentionBindValue, doc: "Partition the string into three parts using the given separator.\n\nThis will search for the separator in the string, starting at the\nend.  If the separator is found, returns a 3-tuple containing the\npart before the separator, the separator itself, and the part after\nit.\n\nIf the separator is not found, returns a 3-tuple containing two\nempty strings and the original string.", sig: "($self, sep, /)"},
+	"rsplit":            {kind: mentionBuiltin, bind: mentionBindValue, doc: "Return a list of the substrings in the string, using sep as the separator string.\n\n  sep\n    The separator used to split the string.\n\n    When set to None (the default value), will split on any\n    whitespace character (including \\n \\r \\t \\f and spaces) and\n    will discard empty strings from the result.\n  maxsplit\n    Maximum number of splits.\n    -1 (the default value) means no limit.\n\nSplitting starts at the end of the string and works to the front.", sig: "($self, /, sep=None, maxsplit=-1)"},
+	"rstrip":            {kind: mentionBuiltin, bind: mentionBindValue, doc: "Return a copy of the string with trailing whitespace removed.\n\nIf chars is given and not None, remove characters in chars instead.", sig: "($self, chars=None, /)"},
+	"split":             {kind: mentionBuiltin, bind: mentionBindValue, doc: "Return a list of the substrings in the string, using sep as the separator string.\n\n  sep\n    The separator used to split the string.\n\n    When set to None (the default value), will split on any\n    whitespace character (including \\n \\r \\t \\f and spaces) and\n    will discard empty strings from the result.\n  maxsplit\n    Maximum number of splits.\n    -1 (the default value) means no limit.\n\nSplitting starts at the front of the string and works to the end.\n\nNote, str.split() is mainly useful for data that has been\nintentionally delimited.  With natural text that includes\npunctuation, consider using the regular expression module.", sig: "($self, /, sep=None, maxsplit=-1)"},
+	"splitlines":        {kind: mentionBuiltin, bind: mentionBindValue, doc: "Return a list of the lines in the string, breaking at line boundaries.\n\nLine breaks are not included in the resulting list unless keepends\nis given and true.", sig: "($self, /, keepends=False)"},
+	"startswith":        {kind: mentionBuiltin, bind: mentionBindValue, doc: "Return True if the string starts with the specified prefix, False otherwise.\n\n  prefix\n    A string or a tuple of strings to try.\n  start\n    Optional start position. Default: start of the string.\n  end\n    Optional stop position. Default: end of the string.", sig: "($self, prefix[, start[, end]], /)"},
+	"strip":             {kind: mentionBuiltin, bind: mentionBindValue, doc: "Return a copy of the string with leading and trailing whitespace removed.\n\nIf chars is given and not None, remove characters in chars instead.", sig: "($self, chars=None, /)"},
+	"swapcase":          {kind: mentionBuiltin, bind: mentionBindValue, doc: "Convert uppercase characters to lowercase and lowercase characters to uppercase.", sig: "($self, /)"},
+	"title":             {kind: mentionBuiltin, bind: mentionBindValue, doc: "Return a version of the string where each word is titlecased.\n\nMore specifically, words start with uppercased characters and all\nremaining cased characters have lower case.", sig: "($self, /)"},
+	"translate":         {kind: mentionBuiltin, bind: mentionBindValue, doc: "Replace each character in the string using the given translation table.\n\n  table\n    Translation table, which must be a mapping of Unicode ordinals\n    to Unicode ordinals, strings, or None.\n\nThe table must implement lookup/indexing via __getitem__, for\ninstance a dictionary or list.  If this operation raises\nLookupError, the character is left untouched.  Characters mapped to\nNone are deleted.", sig: "($self, table, /)"},
+	"upper":             {kind: mentionBuiltin, bind: mentionBindValue, doc: "Return a copy of the string converted to uppercase.", sig: "($self, /)"},
+	"zfill":             {kind: mentionBuiltin, bind: mentionBindValue, doc: "Pad a numeric string with zeros on the left, to fill a field of the given width.\n\nThe string is never truncated.", sig: "($self, width, /)"},
+}
+
+// mentionStrTypeAttrs is the str type's namespace: dir(str) plus the attributes
+// a type object also answers from `type` (__call__, mro and the checks).
+var mentionStrTypeAttrs = map[string]mentionSpec{
+	"__add__":           {kind: mentionSlot, owner: "str", doc: "Return self+value.", sig: "($self, value, /)"},
+	"__call__":          {kind: mentionWrapper, owner: "type", doc: "Call self as a function.", sig: "($self, /, *args, **kwargs)"},
+	"__contains__":      {kind: mentionSlot, owner: "str", doc: "Return bool(key in self).", sig: "($self, key, /)"},
+	"__delattr__":       {kind: mentionSlot, owner: "object", doc: "Implement delattr(self, name).", sig: "($self, name, /)"},
+	"__dir__":           {kind: mentionMethod, owner: "object", doc: "Default dir() implementation.", sig: "($self, /)"},
+	"__eq__":            {kind: mentionSlot, owner: "str", doc: "Return self==value.", sig: "($self, value, /)"},
+	"__format__":        {kind: mentionMethod, owner: "str", doc: "Return a formatted version of the string as described by format_spec.", sig: "($self, format_spec, /)"},
+	"__ge__":            {kind: mentionSlot, owner: "str", doc: "Return self>=value.", sig: "($self, value, /)"},
+	"__getattribute__":  {kind: mentionSlot, owner: "object", doc: "Return getattr(self, name).", sig: "($self, name, /)"},
+	"__getitem__":       {kind: mentionSlot, owner: "str", doc: "Return self[key].", sig: "($self, key, /)"},
+	"__getnewargs__":    {kind: mentionMethod, owner: "str", sig: "($self, /)"},
+	"__getstate__":      {kind: mentionMethod, owner: "object", doc: "Helper for pickle.", sig: "($self, /)"},
+	"__gt__":            {kind: mentionSlot, owner: "str", doc: "Return self>value.", sig: "($self, value, /)"},
+	"__hash__":          {kind: mentionSlot, owner: "str", doc: "Return hash(self).", sig: "($self, /)"},
+	"__init__":          {kind: mentionSlot, owner: "object", doc: "Initialize self.  See help(type(self)) for accurate signature.", sig: "($self, /, *args, **kwargs)"},
+	"__init_subclass__": {kind: mentionBuiltin, bind: mentionBindValue, doc: "This method is called when a class is subclassed.\n\nThe default implementation does nothing. It may be\noverridden to extend subclasses.\n", sig: "($type, /)"},
+	"__instancecheck__": {kind: mentionBuiltin, bind: mentionBindValue, doc: "Check if an object is an instance.", sig: "($self, instance, /)"},
+	"__iter__":          {kind: mentionSlot, owner: "str", doc: "Implement iter(self).", sig: "($self, /)"},
+	"__le__":            {kind: mentionSlot, owner: "str", doc: "Return self<=value.", sig: "($self, value, /)"},
+	"__len__":           {kind: mentionSlot, owner: "str", doc: "Return len(self).", sig: "($self, /)"},
+	"__lt__":            {kind: mentionSlot, owner: "str", doc: "Return self<value.", sig: "($self, value, /)"},
+	"__mod__":           {kind: mentionSlot, owner: "str", doc: "Return self%value.", sig: "($self, value, /)"},
+	"__mul__":           {kind: mentionSlot, owner: "str", doc: "Return self*value.", sig: "($self, value, /)"},
+	"__ne__":            {kind: mentionSlot, owner: "str", doc: "Return self!=value.", sig: "($self, value, /)"},
+	"__new__":           {kind: mentionBuiltin, bind: mentionBindValue, doc: "Create and return a new object.  See help(type) for accurate signature.", sig: "($type, *args, **kwargs)"},
+	"__or__":            {kind: mentionWrapper, owner: "type", doc: "Return self|value.", sig: "($self, value, /)"},
+	"__prepare__":       {kind: mentionBuiltin, bind: mentionBindMeta, doc: "Create the namespace for the class statement", sig: "($cls, name, bases, /, **kwds)"},
+	"__reduce__":        {kind: mentionMethod, owner: "object", doc: "Helper for pickle.", sig: "($self, /)"},
+	"__reduce_ex__":     {kind: mentionMethod, owner: "object", doc: "Helper for pickle.", sig: "($self, protocol, /)"},
+	"__repr__":          {kind: mentionSlot, owner: "str", doc: "Return repr(self).", sig: "($self, /)"},
+	"__rmod__":          {kind: mentionSlot, owner: "str", doc: "Return value%self.", sig: "($self, value, /)"},
+	"__rmul__":          {kind: mentionSlot, owner: "str", doc: "Return value*self.", sig: "($self, value, /)"},
+	"__ror__":           {kind: mentionWrapper, owner: "type", doc: "Return value|self.", sig: "($self, value, /)"},
+	"__setattr__":       {kind: mentionSlot, owner: "object", doc: "Implement setattr(self, name, value).", sig: "($self, name, value, /)"},
+	"__sizeof__":        {kind: mentionMethod, owner: "str", doc: "Return the size of the string in memory, in bytes.", sig: "($self, /)"},
+	"__str__":           {kind: mentionSlot, owner: "str", doc: "Return str(self).", sig: "($self, /)"},
+	"__subclasscheck__": {kind: mentionBuiltin, bind: mentionBindValue, doc: "Check if a class is a subclass.", sig: "($self, subclass, /)"},
+	"__subclasses__":    {kind: mentionBuiltin, bind: mentionBindValue, doc: "Return a list of immediate subclasses.", sig: "($self, /)"},
+	"__subclasshook__":  {kind: mentionBuiltin, bind: mentionBindValue, doc: "Abstract classes can override this to customize issubclass().\n\nThis is invoked early on by abc.ABCMeta.__subclasscheck__().\nIt should return True, False or NotImplemented.  If it returns\nNotImplemented, the normal algorithm is used.  Otherwise, it\noverrides the normal algorithm (and the outcome is cached).\n", sig: "($type, object, /)"},
+	"capitalize":        {kind: mentionMethod, owner: "str", doc: "Return a capitalized version of the string.\n\nMore specifically, make the first character have upper case and the\nrest lower case.", sig: "($self, /)"},
+	"casefold":          {kind: mentionMethod, owner: "str", doc: "Return a version of the string suitable for caseless comparisons.", sig: "($self, /)"},
+	"center":            {kind: mentionMethod, owner: "str", doc: "Return a centered string of length width.\n\nPadding is done using the specified fill character (default is\na space).", sig: "($self, width, fillchar=' ', /)"},
+	"count":             {kind: mentionMethod, owner: "str", doc: "Return the number of non-overlapping occurrences of substring sub in string S[start:end].\n\nOptional arguments start and end are interpreted as in slice\nnotation.", sig: "($self, sub[, start[, end]], /)"},
+	"encode":            {kind: mentionMethod, owner: "str", doc: "Encode the string using the codec registered for encoding.\n\n  encoding\n    The encoding in which to encode the string.\n  errors\n    The error handling scheme to use for encoding errors.\n    The default is 'strict' meaning that encoding errors raise a\n    UnicodeEncodeError.  Other possible values are 'ignore', 'replace'\n    and 'xmlcharrefreplace' as well as any other name registered with\n    codecs.register_error that can handle UnicodeEncodeErrors.", sig: "($self, /, encoding='utf-8', errors='strict')"},
+	"endswith":          {kind: mentionMethod, owner: "str", doc: "Return True if the string ends with the specified suffix, False otherwise.\n\n  suffix\n    A string or a tuple of strings to try.\n  start\n    Optional start position. Default: start of the string.\n  end\n    Optional stop position. Default: end of the string.", sig: "($self, suffix[, start[, end]], /)"},
+	"expandtabs":        {kind: mentionMethod, owner: "str", doc: "Return a copy where all tab characters are expanded using spaces.\n\nIf tabsize is not given, a tab size of 8 characters is assumed.", sig: "($self, /, tabsize=8)"},
+	"find":              {kind: mentionMethod, owner: "str", doc: "Return the lowest index in S where substring sub is found, such that sub is contained within S[start:end].\n\nOptional arguments start and end are interpreted as in slice\nnotation.  Return -1 on failure.", sig: "($self, sub[, start[, end]], /)"},
+	"format":            {kind: mentionMethod, owner: "str", doc: "Return a formatted version of the string, using substitutions from args and kwargs.\nThe substitutions are identified by braces ('{' and '}').", sig: "($self, /, *args, **kwargs)"},
+	"format_map":        {kind: mentionMethod, owner: "str", doc: "Return a formatted version of the string, using substitutions from mapping.\nThe substitutions are identified by braces ('{' and '}').", sig: "($self, mapping, /)"},
+	"index":             {kind: mentionMethod, owner: "str", doc: "Return the lowest index in S where substring sub is found, such that sub is contained within S[start:end].\n\nOptional arguments start and end are interpreted as in slice\nnotation.  Raises ValueError when the substring is not found.", sig: "($self, sub[, start[, end]], /)"},
+	"isalnum":           {kind: mentionMethod, owner: "str", doc: "Return True if the string is an alpha-numeric string, False otherwise.\n\nA string is alpha-numeric if all characters in the string are\nalpha-numeric and there is at least one character in the string.", sig: "($self, /)"},
+	"isalpha":           {kind: mentionMethod, owner: "str", doc: "Return True if the string is an alphabetic string, False otherwise.\n\nA string is alphabetic if all characters in the string are\nalphabetic and there is at least one character in the string.", sig: "($self, /)"},
+	"isascii":           {kind: mentionMethod, owner: "str", doc: "Return True if all characters in the string are ASCII, False otherwise.\n\nASCII characters have code points in the range U+0000-U+007F.\nEmpty string is ASCII too.", sig: "($self, /)"},
+	"isdecimal":         {kind: mentionMethod, owner: "str", doc: "Return True if the string is a decimal string, False otherwise.\n\nA string is a decimal string if all characters in the string are\ndecimal and there is at least one character in the string.", sig: "($self, /)"},
+	"isdigit":           {kind: mentionMethod, owner: "str", doc: "Return True if the string is a digit string, False otherwise.\n\nA string is a digit string if all characters in the string are\ndigits and there is at least one character in the string.", sig: "($self, /)"},
+	"isidentifier":      {kind: mentionMethod, owner: "str", doc: "Return True if the string is a valid Python identifier, False otherwise.\n\nCall keyword.iskeyword(s) to test whether string s is a reserved\nidentifier, such as \"def\" or \"class\".", sig: "($self, /)"},
+	"islower":           {kind: mentionMethod, owner: "str", doc: "Return True if the string is a lowercase string, False otherwise.\n\nA string is lowercase if all cased characters in the string are\nlowercase and there is at least one cased character in the string.", sig: "($self, /)"},
+	"isnumeric":         {kind: mentionMethod, owner: "str", doc: "Return True if the string is a numeric string, False otherwise.\n\nA string is numeric if all characters in the string are numeric and\nthere is at least one character in the string.", sig: "($self, /)"},
+	"isprintable":       {kind: mentionMethod, owner: "str", doc: "Return True if all characters in the string are printable, False otherwise.\n\nA character is printable if repr() may use it in its output.", sig: "($self, /)"},
+	"isspace":           {kind: mentionMethod, owner: "str", doc: "Return True if the string is a whitespace string, False otherwise.\n\nA string is whitespace if all characters in the string are\nwhitespace and there is at least one character in the string.", sig: "($self, /)"},
+	"istitle":           {kind: mentionMethod, owner: "str", doc: "Return True if the string is a title-cased string, False otherwise.\n\nIn a title-cased string, upper- and title-case characters may only\nfollow uncased characters and lowercase characters only cased ones.", sig: "($self, /)"},
+	"isupper":           {kind: mentionMethod, owner: "str", doc: "Return True if the string is an uppercase string, False otherwise.\n\nA string is uppercase if all cased characters in the string are\nuppercase and there is at least one cased character in the string.", sig: "($self, /)"},
+	"join":              {kind: mentionMethod, owner: "str", doc: "Concatenate any number of strings.\n\nThe string whose method is called is inserted in between each given\nstring.  The result is returned as a new string.\n\nExample: '.'.join(['ab', 'pq', 'rs']) -> 'ab.pq.rs'", sig: "($self, iterable, /)"},
+	"ljust":             {kind: mentionMethod, owner: "str", doc: "Return a left-justified string of length width.\n\nPadding is done using the specified fill character (default is\na space).", sig: "($self, width, fillchar=' ', /)"},
+	"lower":             {kind: mentionMethod, owner: "str", doc: "Return a copy of the string converted to lowercase.", sig: "($self, /)"},
+	"lstrip":            {kind: mentionMethod, owner: "str", doc: "Return a copy of the string with leading whitespace removed.\n\nIf chars is given and not None, remove characters in chars instead.", sig: "($self, chars=None, /)"},
+	"maketrans":         {kind: mentionBuiltin, bind: mentionBindStatic, doc: "Return a translation table usable for str.translate().\n\nIf there is only one argument, it must be a dictionary mapping\nUnicode ordinals (integers) or characters to Unicode ordinals,\nstrings or None.  Character keys will be then converted to ordinals.\nIf there are two arguments, they must be strings of equal length,\nand in the resulting dictionary, each character in x will be mapped\nto the character at the same position in y.  If there is a third\nargument, it must be a string, whose characters will be mapped to\nNone in the result.", sig: "(x, y=<unrepresentable>, z=<unrepresentable>, /)"},
+	"mro":               {kind: mentionBuiltin, bind: mentionBindValue, doc: "Return a type's method resolution order.", sig: "($self, /)"},
+	"partition":         {kind: mentionMethod, owner: "str", doc: "Partition the string into three parts using the given separator.\n\nThis will search for the separator in the string.  If the separator\nis found, returns a 3-tuple containing the part before the\nseparator, the separator itself, and the part after it.\n\nIf the separator is not found, returns a 3-tuple containing\nthe original string and two empty strings.", sig: "($self, sep, /)"},
+	"removeprefix":      {kind: mentionMethod, owner: "str", doc: "Return a str with the given prefix string removed if present.\n\nIf the string starts with the prefix string, return\nstring[len(prefix):].  Otherwise, return a copy of the original\nstring.", sig: "($self, prefix, /)"},
+	"removesuffix":      {kind: mentionMethod, owner: "str", doc: "Return a str with the given suffix string removed if present.\n\nIf the string ends with the suffix string and that suffix is not\nempty, return string[:-len(suffix)].  Otherwise, return a copy of\nthe original string.", sig: "($self, suffix, /)"},
+	"replace":           {kind: mentionMethod, owner: "str", doc: "Return a copy with all occurrences of substring old replaced by new.\n\n  count\n    Maximum number of occurrences to replace.\n    -1 (the default value) means replace all occurrences.\n\nIf the optional argument count is given, only the first count occurrences are\nreplaced.", sig: "($self, old, new, /, count=-1)"},
+	"rfind":             {kind: mentionMethod, owner: "str", doc: "Return the highest index in S where substring sub is found, such that sub is contained within S[start:end].\n\nOptional arguments start and end are interpreted as in slice\nnotation.  Return -1 on failure.", sig: "($self, sub[, start[, end]], /)"},
+	"rindex":            {kind: mentionMethod, owner: "str", doc: "Return the highest index in S where substring sub is found, such that sub is contained within S[start:end].\n\nOptional arguments start and end are interpreted as in slice\nnotation.  Raises ValueError when the substring is not found.", sig: "($self, sub[, start[, end]], /)"},
+	"rjust":             {kind: mentionMethod, owner: "str", doc: "Return a right-justified string of length width.\n\nPadding is done using the specified fill character (default is\na space).", sig: "($self, width, fillchar=' ', /)"},
+	"rpartition":        {kind: mentionMethod, owner: "str", doc: "Partition the string into three parts using the given separator.\n\nThis will search for the separator in the string, starting at the\nend.  If the separator is found, returns a 3-tuple containing the\npart before the separator, the separator itself, and the part after\nit.\n\nIf the separator is not found, returns a 3-tuple containing two\nempty strings and the original string.", sig: "($self, sep, /)"},
+	"rsplit":            {kind: mentionMethod, owner: "str", doc: "Return a list of the substrings in the string, using sep as the separator string.\n\n  sep\n    The separator used to split the string.\n\n    When set to None (the default value), will split on any\n    whitespace character (including \\n \\r \\t \\f and spaces) and\n    will discard empty strings from the result.\n  maxsplit\n    Maximum number of splits.\n    -1 (the default value) means no limit.\n\nSplitting starts at the end of the string and works to the front.", sig: "($self, /, sep=None, maxsplit=-1)"},
+	"rstrip":            {kind: mentionMethod, owner: "str", doc: "Return a copy of the string with trailing whitespace removed.\n\nIf chars is given and not None, remove characters in chars instead.", sig: "($self, chars=None, /)"},
+	"split":             {kind: mentionMethod, owner: "str", doc: "Return a list of the substrings in the string, using sep as the separator string.\n\n  sep\n    The separator used to split the string.\n\n    When set to None (the default value), will split on any\n    whitespace character (including \\n \\r \\t \\f and spaces) and\n    will discard empty strings from the result.\n  maxsplit\n    Maximum number of splits.\n    -1 (the default value) means no limit.\n\nSplitting starts at the front of the string and works to the end.\n\nNote, str.split() is mainly useful for data that has been\nintentionally delimited.  With natural text that includes\npunctuation, consider using the regular expression module.", sig: "($self, /, sep=None, maxsplit=-1)"},
+	"splitlines":        {kind: mentionMethod, owner: "str", doc: "Return a list of the lines in the string, breaking at line boundaries.\n\nLine breaks are not included in the resulting list unless keepends\nis given and true.", sig: "($self, /, keepends=False)"},
+	"startswith":        {kind: mentionMethod, owner: "str", doc: "Return True if the string starts with the specified prefix, False otherwise.\n\n  prefix\n    A string or a tuple of strings to try.\n  start\n    Optional start position. Default: start of the string.\n  end\n    Optional stop position. Default: end of the string.", sig: "($self, prefix[, start[, end]], /)"},
+	"strip":             {kind: mentionMethod, owner: "str", doc: "Return a copy of the string with leading and trailing whitespace removed.\n\nIf chars is given and not None, remove characters in chars instead.", sig: "($self, chars=None, /)"},
+	"swapcase":          {kind: mentionMethod, owner: "str", doc: "Convert uppercase characters to lowercase and lowercase characters to uppercase.", sig: "($self, /)"},
+	"title":             {kind: mentionMethod, owner: "str", doc: "Return a version of the string where each word is titlecased.\n\nMore specifically, words start with uppercased characters and all\nremaining cased characters have lower case.", sig: "($self, /)"},
+	"translate":         {kind: mentionMethod, owner: "str", doc: "Replace each character in the string using the given translation table.\n\n  table\n    Translation table, which must be a mapping of Unicode ordinals\n    to Unicode ordinals, strings, or None.\n\nThe table must implement lookup/indexing via __getitem__, for\ninstance a dictionary or list.  If this operation raises\nLookupError, the character is left untouched.  Characters mapped to\nNone are deleted.", sig: "($self, table, /)"},
+	"upper":             {kind: mentionMethod, owner: "str", doc: "Return a copy of the string converted to uppercase.", sig: "($self, /)"},
+	"zfill":             {kind: mentionMethod, owner: "str", doc: "Pad a numeric string with zeros on the left, to fill a field of the given width.\n\nThe string is never truncated.", sig: "($self, width, /)"},
+}
+
+// mentionTypeMemory is what a type object answers with an address or a
+// build-dependent number: not reproduced, the request goes to Django.
+var mentionTypeMemory = mentionAttributeSet("__dict__", "__flags__", "__basicsize__",
+	"__itemsize__", "__weakrefoffset__", "__dictoffset__")
+
+// mentionTypeAttributes is dir(type): the attributes of a type object. The
+// port answers the metadata (mentionTypeMetadata) and refuses the rest.
+var mentionTypeAttributes = mentionAttributeSet(
+	"__abstractmethods__", "__annotations__", "__base__", "__bases__", "__basicsize__", "__call__", "__class__",
+	"__delattr__", "__dict__", "__dictoffset__", "__dir__", "__doc__", "__eq__", "__flags__", "__format__", "__ge__",
+	"__getattribute__", "__getstate__", "__gt__", "__hash__", "__init__", "__init_subclass__", "__instancecheck__",
+	"__itemsize__", "__le__", "__lt__", "__module__", "__mro__", "__name__", "__ne__", "__new__", "__or__",
+	"__prepare__", "__qualname__", "__reduce__", "__reduce_ex__", "__repr__", "__ror__", "__setattr__", "__sizeof__",
+	"__str__", "__subclasscheck__", "__subclasses__", "__subclasshook__", "__text_signature__", "__type_params__",
+	"__weakrefoffset__", "mro",
+)
+
+// mentionObjectMethods is the dunder methods of a method object or a
+// descriptor: `other.today.upper.__call__` and the like.
+var mentionObjectMethods = mentionAttributeSet(
+	"__call__", "__delattr__", "__dir__", "__eq__", "__format__", "__ge__", "__getattribute__", "__getstate__",
+	"__gt__", "__hash__", "__init__", "__init_subclass__", "__le__", "__lt__", "__ne__", "__new__", "__reduce__",
+	"__reduce_ex__", "__repr__", "__setattr__", "__sizeof__", "__str__", "__subclasshook__",
+)
+
+// mentionTypeDocs is __doc__ of the type objects whose __doc__ is a str. A C
+// type's __doc__ is a getset descriptor (mentionTypeMetadata).
+var mentionTypeDocs = map[string]string{
+	"str":    "str(object='') -> str\nstr(bytes_or_buffer[, encoding[, errors]]) -> str\n\nCreate a new string object from the given object. If encoding or\nerrors is specified, then the object must expose a data buffer\nthat will be decoded using the given encoding and error handler.\nOtherwise, returns the result of object.__str__() (if defined)\nor repr(object).\nencoding defaults to 'utf-8'.\nerrors defaults to 'strict'.",
+	"type":   "type(object) -> the object's type\ntype(name, bases, dict, **kwds) -> a new type",
+	"object": "The base class of the class hierarchy.\n\nWhen called, it accepts no arguments and returns a new featureless\ninstance that has no instance attributes and cannot be given any.\n",
 }
 
 // modelResolver: a model instance none of whose attributes the port reads.

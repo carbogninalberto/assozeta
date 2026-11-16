@@ -11,6 +11,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // This file is BE/application/agent/core.py (Agent) with prompts.py.
@@ -147,20 +148,43 @@ func (a *Agent) ClearHistory() {
 	a.mu.Unlock()
 }
 
+// errAgentConfigValue is a configuration value outside the two writers:
+// instance/integrations.py's AISettingsSerializer and
+// instance_admin.environmentIntegration.
+var errAgentConfigValue = refusal.AppState("agent configuration value outside the ported subset")
+
+// errAgentEmptyIterations is Django raising where the value is used: range over
+// the empty string, or len(...) compared with it (the environment value 0 is
+// the empty string). It is a plain error, answered by the consumer's
+// internal-error frame.
+var errAgentEmptyIterations = errors.New("'str' object cannot be interpreted as an integer")
+
+// errAgentToolResultShape is a tool result outside the JSON object shapes the
+// business and manual builders return (business_mcp*.go, manual_tools.go and
+// pkg/manual/tools.go).
+var errAgentToolResultShape = refusal.AppState("agent tool result is not a JSON object")
+
+// errAgentRaisedShape is a raised result whose error is not the string every
+// business tool puts there.
+var errAgentRaisedShape = refusal.AppState("agent raised tool result without a string error")
+
 // agentInt reads an integer configuration value (range()/comparison operand).
 func agentInt(value any) (int, error) {
-	number, ok := value.(json.Number)
-	if !ok {
-		if integer, ok := value.(int64); ok {
-			return int(integer), nil
+	switch typed := value.(type) {
+	case json.Number:
+		parsed, ok := new(big.Int).SetString(string(typed), 10)
+		if !ok || !parsed.IsInt64() || parsed.Int64() > 1<<30 || parsed.Int64() < -(1<<30) {
+			return 0, errAgentConfigValue
 		}
-		return 0, ErrAgentNotPorted
+		return int(parsed.Int64()), nil
+	case int64:
+		return int(typed), nil
+	case string:
+		if typed == "" {
+			return 0, errAgentEmptyIterations
+		}
 	}
-	parsed, ok := new(big.Int).SetString(string(number), 10)
-	if !ok || !parsed.IsInt64() || parsed.Int64() > 1<<30 || parsed.Int64() < -(1<<30) {
-		return 0, ErrAgentNotPorted
-	}
-	return int(parsed.Int64()), nil
+	return 0, errAgentConfigValue
 }
 
 // pythonTail is list[-n:].
@@ -305,7 +329,7 @@ func (a *Agent) processMessage(ctx context.Context, message string) error {
 		}
 		object, ok := result.(domain.RequestObject)
 		if !ok {
-			return ErrAgentNotPorted
+			return errAgentToolResultShape
 		}
 		var answer string
 		var attachment any
@@ -414,10 +438,6 @@ func (a *Agent) processMessage(ctx context.Context, message string) error {
 			})
 			if err != nil {
 				return err
-			}
-			if forced.failed() {
-				// The error text would become an assistant message.
-				return ErrAgentNotPorted
 			}
 			a.setPending(agentRequiresFollowUp(forced.Content))
 			if forced.Content != "" {
@@ -551,7 +571,7 @@ func (a *Agent) executeTool(ctx context.Context, name any, arguments any) (strin
 	if raised {
 		message, ok := lookupValue(value.(domain.RequestObject), "error").(string)
 		if !ok {
-			return "", ErrAgentNotPorted
+			return "", errAgentRaisedShape
 		}
 		return agentRaisedText(message), nil
 	}

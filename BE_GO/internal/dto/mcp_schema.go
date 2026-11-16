@@ -65,7 +65,9 @@ func mcpSchemaField(field *mcpField, model string) (domain.RequestObject, error)
 		info = append(info, domain.RequestField{Name: "help_text", Value: field.HelpText})
 	}
 	if field.GroupedChoices {
-		return nil, mcpNotPorted("grouped choices")
+		// No field in mcp_models.json has grouped choices (asserted by
+		// mcp_models_invariants_test.go).
+		return nil, errMCPGroupedChoices
 	}
 	if len(field.Choices) > 0 {
 		choices := make([]any, 0, len(field.Choices))
@@ -155,14 +157,17 @@ func MCPSchema(value any) (ReportPlan, error) {
 	switch v := value.(type) {
 	case string:
 		text = v
-	case bool, json.Number:
+	case bool, json.Number, float64:
+		// str(model_name): a non-finite float64 (NaN/Infinity) renders as
+		// Python's str of it.
 		text = PythonStr(v)
 	case domain.RequestObject:
 		return ReportPlan{}, mcpRaise("unhashable type: 'dict'")
 	case []any:
 		return ReportPlan{}, mcpRaise("unhashable type: 'list'")
 	default:
-		return ReportPlan{}, mcpNotPorted("model_name type")
+		// None is answered above and every other value is a parsed JSON value.
+		return ReportPlan{}, errMCPSchemaModelName
 	}
 	for _, candidate := range []string{"application." + text, text} {
 		if _, isText := value.(string); !isText && candidate == text {

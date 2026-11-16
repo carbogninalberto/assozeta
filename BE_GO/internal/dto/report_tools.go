@@ -3,6 +3,7 @@ package dto
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"math"
 	"math/big"
 	"strconv"
@@ -10,22 +11,19 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/pyhtml"
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // The MCP tool functions of application/mcp_server (QueryBuilder in
 // query_builder.py, security.py, schema.py) on the generic engine of
 // mcp_query.go: query_data, count_data, get_field_values, aggregate_data
-// and get_schema for every whitelisted model. Inputs whose Django behaviour
-// is not ported are refused (ErrReportNotPorted) before any query; tool
-// exceptions are *MCPToolException (errors.Is ErrReportFailed) with
-// Django's str(e).
+// and get_schema for every whitelisted model. States only the application
+// itself can produce are refusal.AppState errors (mcp_appstate.go); tool
+// exceptions are *MCPToolException (errors.Is ErrReportFailed) with Django's
+// str(e).
 
 var (
 	// ErrReportFailed is an exception inside the tool: the view's JSON 500.
 	ErrReportFailed = errors.New("report tool raised")
-	// ErrReportNotPorted marks inputs whose Django behaviour is not ported.
-	ErrReportNotPorted = refusal.New("report tool input not ported")
 )
 
 // ReportToolError is a tool result carrying 'error' (the view's 400).
@@ -38,9 +36,33 @@ type ReportToolError struct {
 func (e *ReportToolError) Error() string { return e.Message }
 
 // ReportSettings are QueryBuilder's effective_integration('ai') values.
+// The environment form of both fields is Django's `getattr(settings, NAME, "")
+// or ""`: 0 stands for the empty string (the instance-stored settings are
+// always >= 1, and a negative environment value stays negative).
 type ReportSettings struct {
 	MaxResults   int64
 	QueryTimeout int64
+}
+
+// mcpEffectiveMaxResults is the effective_limit arithmetic: `min(limit or
+// self.max_results, self.max_results)` with self.max_results the empty string
+// (0) raises a TypeError in Python (at min(), or at the following
+// offset + limit), whose text is not reproduced.
+func mcpEffectiveMaxResults(maximum int64) error {
+	if maximum == 0 {
+		return fmt.Errorf("%w: effective limit against an empty max_results", ErrReportFailed)
+	}
+	return nil
+}
+
+// mcpSetQueryTimeout is QueryBuilder._set_query_timeout: PostgreSQL rejects
+// the empty string (0) and every value <= 0 in SET statement_timeout, so the
+// tool raises there with a database error whose text is not reproduced.
+func mcpSetQueryTimeout(config ReportSettings) error {
+	if config.QueryTimeout <= 0 {
+		return fmt.Errorf("%w: query timeout %d cannot set statement_timeout", ErrReportFailed, config.QueryTimeout)
+	}
+	return nil
 }
 
 // ReportPlan is one tool call: statements to run in order, then Render.
@@ -79,8 +101,10 @@ func PlanReportToolGroup(tool string, params domain.RequestObject, association s
 		return MCPSchema(value)
 	case "query_data", "count_data", "aggregate_data", "get_field_values":
 	default:
-		// export_data, export_multi_sheet and get_attendance_matrix build files.
-		return ReportPlan{}, ErrReportNotPorted
+		// export_data, export_multi_sheet and get_attendance_matrix build files:
+		// service/saved_reports.go RunGroup routes them to runFileTool first, and
+		// dto.SavedReportTools lists no other tool.
+		return ReportPlan{}, errMCPToolDispatch
 	}
 	if _, present := params.Lookup("model_name"); !present {
 		return ReportPlan{}, ErrReportFailed // missing required positional argument
@@ -132,6 +156,10 @@ func PlanMCPToolGroup(tool string, params domain.RequestObject, association stri
 		if q.compileErr != nil {
 			return ReportPlan{}, q.compileErr
 		}
+		// QueryBuilder.count logs the compiled query, then sets the timeout.
+		if err := mcpSetQueryTimeout(config); err != nil {
+			return ReportPlan{}, err
+		}
 		return ReportPlan{Statements: []domain.ReportStatement{q.countStatement()},
 			Render: func(results [][][]*string) (any, error) {
 				return domain.RequestObject{{Name: "count", Value: json.Number(*results[0][0][0])}}, nil
@@ -140,9 +168,9 @@ func PlanMCPToolGroup(tool string, params domain.RequestObject, association stri
 		return q.planQuery(params, config)
 	case "get_field_values":
 		value, _ := params.Lookup("field_name")
-		return q.planFieldValues(value.(string), params)
+		return q.planFieldValues(value.(string), params, config)
 	}
-	return q.planAggregate(params)
+	return q.planAggregate(params, config)
 }
 
 // PythonDict is json.loads' dict for an object with repeated keys: the first
@@ -186,12 +214,14 @@ func reportAllowed(name string) bool {
 // the wrong type.
 func mcpAttributeError(value any, method string) error {
 	switch value.(type) {
-	case []any, string, bool, json.Number, domain.RequestObject:
+	case []any, string, bool, json.Number, float64, domain.RequestObject:
 		return mcpRaise("'%s' object has no attribute '%s'", pythonTypeName(value), method)
 	case nil:
 		return mcpRaise("'NoneType' object has no attribute '%s'", method)
 	}
-	return mcpNotPorted("attribute error")
+	// A parsed JSON value is one of the types above (float64 only for the
+	// non-finite tokens the parser produces).
+	return errMCPAttributeValue
 }
 
 // pythonIter is `for item in value` for the parsed JSON types.
@@ -388,6 +418,9 @@ func mcpRender(expr mcpExpr, sql string) string {
 type mcpOrder struct {
 	name       string
 	descending bool
+	// random is Django's '?': an OrderBy(Random()) expression, ordered
+	// RANDOM() ASC.
+	random bool
 }
 
 // validateOrder is the blacklist filter of execute_query followed by
@@ -407,7 +440,10 @@ func (q *mcpQuery) validateOrder(value any) ([]mcpOrder, error) {
 			continue
 		}
 		if item == "?" {
-			return nil, mcpNotPorted("random ordering")
+			// Django's random ordering, OrderBy(Random()); '-?' is not random
+			// and fails names_to_path below.
+			orders = append(orders, mcpOrder{random: true})
+			continue
 		}
 		name := strings.TrimPrefix(item, "-")
 		if _, err := mcpNamesToPath(q.model, strings.Split(name, "__"), true, false); err != nil {
@@ -428,7 +464,10 @@ func (q *mcpQuery) orderExpr(order mcpOrder) (mcpExpr, error) {
 	final := info.path.final
 	if final.Relation && len(info.transforms) == 0 && order.name != "pk" && final.Attname != pieces[len(pieces)-1] {
 		if related := final.relatedModel(); related != nil && len(related.Ordering) > 0 {
-			return mcpExpr{}, mcpNotPorted("ordering by a relation with Meta.ordering")
+			// No relation in report_relations reaches a model with Meta.ordering
+			// (asserted by mcp_models_invariants_test.go), so Django never
+			// expands a related model's default ordering here.
+			return mcpExpr{}, errMCPRelationOrdering
 		}
 	}
 	target, alias, _ := q.trimJoins(info)
@@ -487,13 +526,18 @@ func (n mcpPyNumber) isNegative() bool {
 	return n.integer.Sign() < 0
 }
 
-// intValue is int(n): truncation toward zero.
+// intValue is int(n): truncation toward zero, with Python's errors for the
+// non-finite floats a JSON token (NaN, Infinity, or a number that overflows
+// float64) produces.
 func (n mcpPyNumber) intValue() (*big.Int, error) {
 	if !n.isFloat {
 		return new(big.Int).Set(n.integer), nil
 	}
-	if math.IsNaN(n.float) || math.IsInf(n.float, 0) {
-		return nil, mcpNotPorted("non-finite limit or offset")
+	if math.IsNaN(n.float) {
+		return nil, mcpRaise("cannot convert float NaN to integer")
+	}
+	if math.IsInf(n.float, 0) {
+		return nil, mcpRaise("cannot convert float infinity to integer")
 	}
 	value, _ := new(big.Float).SetFloat64(n.float).Int(nil)
 	return value, nil
@@ -508,12 +552,17 @@ func mcpPyNumberValue(value any) (mcpPyNumber, bool) {
 			integer = big.NewInt(1)
 		}
 		return mcpPyNumber{isBool: true, integer: integer}, true
+	case float64:
+		// The JSON parser's non-finite floats (NaN, Infinity).
+		return mcpPyNumber{isFloat: true, float: typed}, true
 	case json.Number:
 		if strings.ContainsAny(string(typed), ".eE") {
 			number, err := strconv.ParseFloat(string(typed), 64)
-			if err != nil {
+			if err != nil && !errors.Is(err, strconv.ErrRange) {
 				return mcpPyNumber{}, false
 			}
+			// An overflowing token is Python's float infinity: ParseFloat
+			// returns it alongside the range error.
 			return mcpPyNumber{isFloat: true, float: number}, true
 		}
 		number, ok := new(big.Int).SetString(string(typed), 10)
@@ -527,6 +576,9 @@ func mcpPyNumberValue(value any) (mcpPyNumber, bool) {
 
 // mcpEffectiveLimit is min(limit or MAX, MAX).
 func mcpEffectiveLimit(value any, maximum int64) (mcpPyNumber, error) {
+	if err := mcpEffectiveMaxResults(maximum); err != nil {
+		return mcpPyNumber{}, err
+	}
 	limit := mcpPyInt(maximum)
 	if !PythonTruthy(value) {
 		return limit, nil
@@ -537,10 +589,12 @@ func mcpEffectiveLimit(value any, maximum int64) (mcpPyNumber, error) {
 		return mcpPyNumber{}, mcpRaise("'<' not supported between instances of 'int' and '%s'", pythonTypeName(value))
 	}
 	if number.isFloat {
-		if number.float < float64(maximum) {
-			return number, nil
+		// min(limit, MAX) keeps limit unless MAX < limit; NaN compares false,
+		// so Python keeps it too.
+		if float64(maximum) < number.float {
+			return limit, nil
 		}
-		return limit, nil
+		return number, nil
 	}
 	if number.integer.Cmp(limit.integer) < 0 {
 		return number, nil
@@ -567,7 +621,8 @@ func mcpPyAdd(left any, right mcpPyNumber) (mcpPyNumber, error) {
 	case domain.RequestObject:
 		return mcpPyNumber{}, mcpRaise("unsupported operand type(s) for +: 'dict' and '%s'", right.typeName())
 	}
-	return mcpPyNumber{}, mcpNotPorted("limit or offset type")
+	// mcpPyNumberValue accepts every parsed JSON value left here.
+	return mcpPyNumber{}, errMCPNumberOperand
 }
 
 // mcpPyNumberLess is (offset + effective_limit) < total_count.
@@ -596,6 +651,9 @@ type mcpSliceBounds struct {
 // qs[offset:offset+effective_limit] (Django's QuerySet.__getitem__ calls
 // int() on both bounds).
 func mcpSlice(params domain.RequestObject, maximum int64) (mcpSliceBounds, error) {
+	if err := mcpEffectiveMaxResults(maximum); err != nil {
+		return mcpSliceBounds{}, err
+	}
 	effective := mcpPyInt(maximum)
 	if value, _ := params.Lookup("limit"); PythonTruthy(value) {
 		number, err := mcpEffectiveLimit(value, maximum)
@@ -614,7 +672,8 @@ func mcpSlice(params domain.RequestObject, maximum int64) (mcpSliceBounds, error
 	}
 	offset, ok := mcpPyNumberValue(offsetValue)
 	if !ok {
-		return mcpSliceBounds{}, mcpNotPorted("limit or offset type")
+		// offsetValue is the value mcpPyAdd just read as a number.
+		return mcpSliceBounds{}, errMCPNumberOperand
 	}
 	if offset.isNegative() || end.isNegative() {
 		return mcpSliceBounds{}, mcpRaise("Negative indexing is not supported.")
@@ -762,6 +821,10 @@ func (q *mcpQuery) planQuery(params domain.RequestObject, config ReportSettings)
 	if err != nil {
 		return ReportPlan{}, err
 	}
+	// QueryBuilder.execute_query sets the timeout after the slice.
+	if err := mcpSetQueryTimeout(config); err != nil {
+		return ReportPlan{}, err
+	}
 	var columns []mcpColumnOut
 	var selects []string
 	for i, name := range names {
@@ -780,11 +843,29 @@ func (q *mcpQuery) planQuery(params domain.RequestObject, config ReportSettings)
 		selects = append(selects, expr.sql+` AS "`+alias+`"`)
 	}
 	var keys []string
+	// get_order_by skips an order expression it has already seen (the direction
+	// is not part of the key), so a repeated column or '?' appears once.
+	seen := map[string]bool{}
 	for i, order := range orders {
+		if order.random {
+			// OrderBy(Random()): no alias, appended to the DISTINCT select list
+			// like any order expression that is not selected yet.
+			if seen["RANDOM()"] {
+				continue
+			}
+			seen["RANDOM()"] = true
+			selects = append(selects, "RANDOM()")
+			keys = append(keys, "RANDOM() ASC")
+			continue
+		}
 		expr, err := q.orderExpr(order)
 		if err != nil {
 			return ReportPlan{}, err
 		}
+		if seen[expr.sql] {
+			continue
+		}
+		seen[expr.sql] = true
 		reference := expr.sql
 		found := false
 		for _, column := range columns {
@@ -850,8 +931,13 @@ func (q *mcpQuery) planQuery(params domain.RequestObject, config ReportSettings)
 // get_field_values
 // ---------------------------------------------------------------------------
 
-func (q *mcpQuery) planFieldValues(name string, params domain.RequestObject) (ReportPlan, error) {
+func (q *mcpQuery) planFieldValues(name string, params domain.RequestObject, config ReportSettings) (ReportPlan, error) {
 	labels := mcpChoiceMap(q.model, []string{name})
+	// QueryBuilder.get_field_values sets the timeout after the field and filter
+	// checks, before both queries.
+	if err := mcpSetQueryTimeout(config); err != nil {
+		return ReportPlan{}, err
+	}
 	counted := q.clone()
 	expr, err := counted.resolveField(name)
 	if err != nil {
@@ -964,7 +1050,7 @@ var mcpForbiddenAlias = func(alias string) bool {
 
 const mcpAliasError = "Column aliases cannot contain whitespace characters, hashes, control characters, quotation marks, semicolons, or SQL comments."
 
-func (q *mcpQuery) planAggregate(params domain.RequestObject) (ReportPlan, error) {
+func (q *mcpQuery) planAggregate(params domain.RequestObject, config ReportSettings) (ReportPlan, error) {
 	value, _ := params.Lookup("aggregations")
 	if !PythonTruthy(value) {
 		return ReportPlan{Immediate: &ReportToolError{Message: "No aggregations specified"}}, nil
@@ -1029,6 +1115,11 @@ func (q *mcpQuery) planAggregate(params domain.RequestObject) (ReportPlan, error
 	}
 	if len(aggregates) == 0 {
 		return ReportPlan{Immediate: &ReportToolError{Message: "No valid aggregations"}}, nil
+	}
+	// QueryBuilder.execute_aggregation sets the timeout after those two
+	// answers and before it validates group_by.
+	if err := mcpSetQueryTimeout(config); err != nil {
+		return ReportPlan{}, err
 	}
 	groupValue, _ := params.Lookup("group_by")
 	if !PythonTruthy(groupValue) {
@@ -1199,7 +1290,10 @@ func mcpValue(expr mcpExpr, text *string) (any, error) {
 		if strings.Contains(*text, ".") {
 			number, ok := new(big.Float).SetString(*text)
 			if !ok || !number.IsInt() {
-				return nil, mcpNotPorted("non-integral integer output")
+				// PostgreSQL's integer outputs are integral: EXTRACT('second')
+				// truncates with DATE_TRUNC, and COUNT/SUM of an integer column
+				// stay integral.
+				return nil, errMCPUnexpectedOutput
 			}
 			integer, _ := number.Int(nil)
 			return json.Number(integer.String()), nil
@@ -1225,14 +1319,17 @@ func mcpValue(expr mcpExpr, text *string) (any, error) {
 		}
 		return parsed, nil
 	}
-	return nil, mcpNotPorted("output type " + expr.kind)
+	// Every output column comes from targetExpr or an aggregate over one, whose
+	// kind mcpKind maps.
+	return nil, errMCPUnexpectedOutput
 }
 
 // mcpTimeISO turns PostgreSQL's time text into time.isoformat().
 func mcpTimeISO(text string) (any, error) {
 	main, fraction, found := strings.Cut(text, ".")
 	if len(main) != 8 {
-		return nil, mcpNotPorted("time output")
+		// PostgreSQL renders a time column as HH:MM:SS[.ffffff].
+		return nil, errMCPUnexpectedOutput
 	}
 	if !found || strings.Trim(fraction, "0") == "" {
 		return main, nil
@@ -1354,11 +1451,16 @@ func mcpApplyLabels(row domain.RequestObject, labels mcpLabels) error {
 				continue
 			}
 			if mapping == nil {
-				return mcpNotPorted("grouped choices")
+				// mcpChoiceMap marks grouped choices with a nil mapping; no field
+				// in mcp_models.json has grouped choices.
+				return errMCPGroupedChoices
 			}
+			// `raw in mapping` hashes raw: a list or dict raises TypeError.
 			switch row[i].Value.(type) {
-			case domain.RequestObject, []any:
-				return mcpNotPorted("unhashable choice lookup")
+			case domain.RequestObject:
+				return mcpRaise("unhashable type: 'dict'")
+			case []any:
+				return mcpRaise("unhashable type: 'list'")
 			}
 			if label, ok := mcpLabel(mapping, row[i].Value); ok {
 				row[i].Value = label

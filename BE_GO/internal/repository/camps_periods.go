@@ -269,10 +269,21 @@ func (t *campsTransaction) WalkRows(ctx context.Context, period string) ([]domai
 
 // SavePayment writes the columns the walk's Payment.save() can change.
 func (t *campsTransaction) SavePayment(ctx context.Context, row domain.CampsPayment) error {
+	return t.savePayment(ctx, row)
+}
+
+// savePayment is the walk's UPDATE, also used by the savepoint of a rejected row.
+func (t *campsTransaction) savePayment(ctx context.Context, row domain.CampsPayment) error {
 	_, err := t.tx.ExecContext(ctx, `UPDATE application_payment SET payment_category_id=$2, description=$3,
  meta_payment_categories=$4::jsonb, amount=$5::numeric, notes=$6 WHERE payment_id=$1`,
 		row.ID, row.CategoryID, row.Description, row.Metas, row.Amount, row.Notes)
 	return err
+}
+
+// SavePaymentRejected runs a save the amount check constraint rejects inside a
+// savepoint and answers the database's own text for the failing row.
+func (t *campsTransaction) SavePaymentRejected(ctx context.Context, row domain.CampsPayment) (string, bool, error) {
+	return runRejectedPayment(ctx, t.tx, func() error { return t.savePayment(ctx, row) })
 }
 
 func (t *campsTransaction) DeleteService(ctx context.Context, id string) (domain.CampsAudit, error) {

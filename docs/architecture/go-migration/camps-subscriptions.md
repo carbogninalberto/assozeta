@@ -58,8 +58,8 @@ remains the execution owner.
 ## Not ported (refused before any write: the 500 page, nothing committed)
 
 - HTML form input with file parts (add and update) and update forms carrying a `periods` key (`QueryDict.get` of repeated keys).
-- Payment creation with an `X-Group-Id` that is not an existing group, an amount the
-  `numeric(9,2)` column or the non-negative constraint would reject, or notes over 5120 characters.
+- Payment creation with an `X-Group-Id` that is not an existing group (registrations resolve inside the group, so only
+  a group removed during the request reaches it; the foreign key error names a constraint the Go side cannot know).
 
 ## Evidence
 
@@ -75,8 +75,20 @@ render PaymentSerializer's nested invoice and instructor. The fixture seeds both
 `v2misc-red-r3`: Django 111/111, Go 500. GREEN `v2misc-green-r1`: 111/111 on the four transports. Mutation `v2misc-mutation-r1`
 (the nested instructor dropped) fails `list-owner` on Go.
 
-tailcourses: the generated payment's INSERT refusals answer the driver's text: `numeric field overflow` (amount past numeric(9,2)) and `value too long for type character varying(5120)` (notes); the add is atomic so nothing stays. A malformed `X-Group-Id` raises the UUID field error. Cases `add-amount-overflow-rolls-back`, `add-notes-too-long-rolls-back`, `add-malformed-group-payment` (114 cases). Still refused: negative amounts (the check-constraint message dumps the new row) and a group that vanishes mid-request. GREEN CI `tailcourses-2`. Mutation `tc-mut5` (overflow text changed) CAUGHT.
+tailcourses: the generated payment's INSERT refusals answer the driver's text: `numeric field overflow` (amount past numeric(9,2)) and `value too long for type character varying(5120)` (notes); the add is atomic so nothing stays. A malformed `X-Group-Id` raises the UUID field error. Cases `add-amount-overflow-rolls-back`, `add-notes-too-long-rolls-back`, `add-malformed-group-payment` (114 cases). GREEN CI `tailcourses-2`. Mutation `tc-mut5` (overflow text changed) CAUGHT.
 
 ## Round t3courses
 
 Multipart/form bodies with file parts and a `periods` file or text part (file iteration yields bytes lines). 122 cases GREEN on four transports (run 43085954222). Mutation (error text) CAUGHT.
+
+## Round lt4c
+
+`add-negative-generated-payment`: a period whose service fee is negative makes the generated amount negative and the
+`amount >= 0` check constraint refuses the INSERT (123 cases). The INSERT runs inside a savepoint of the atomic add
+(`repository.runRejectedPayment`), the savepoint is rolled back and the view answers psycopg2's text for the row:
+PostgreSQL dumps every column of `application_payment` in table order, each value clipped to 64 bytes. The fixture
+authors that row (the notes and metas it generates, the default category bound by the adapter) and the family
+contract's `normalize` replaces the generated payment id and creation date by placeholders on both sides; the rest of
+the text is compared exactly. The session settings that change the row text (`TimeZone` UTC, `DateStyle` ISO) are set
+transaction-locally, matching Django's connection. Unit tests cover the savepoint text helper and the branch that
+answers the database's text (and the application-state error for a row the constraint accepts).

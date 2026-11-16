@@ -1,22 +1,29 @@
 package service
 
 import (
-	"archive/zip"
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"math"
+	"math/big"
 	"regexp"
 	"sort"
 	"strconv"
 	"strings"
+	"unicode"
 	"unicode/utf8"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/associationexport"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/celery"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/importeffects"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pycodecs"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pydatetime"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pystr"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pyzipfile"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // restoreDamaged is the RestoreError Archive.validate() raises for the Python
@@ -34,6 +41,39 @@ func restoreFail(format string, args ...any) error {
 }
 
 var errRestoreDamaged = &restoreError{message: restoreDamaged}
+
+// errRestoreReaderRaised is the exception Archive.validate() does not catch
+// (EOFError, OSError from bz2, LZMAError, or a class outside its except tuple):
+// Django lets it escape the view and answers its 500 page.
+var errRestoreReaderRaised = refusal.AppState("data restore: ZIP reader raised a class Archive.validate() does not catch")
+
+// restoreDamagedClass reports whether validate()'s except tuple catches the
+// Python exception class (including its subclasses the ZIP reader raises:
+// NotImplementedError is a RuntimeError, UnicodeDecodeError a UnicodeError).
+func restoreDamagedClass(class string) bool {
+	switch class {
+	case "ValueError", "TypeError", "KeyError", "AttributeError", "BadZipFile", "zlib.error",
+		"UnicodeError", "UnicodeDecodeError", "UnicodeEncodeError", "UnicodeTranslateError",
+		"RuntimeError", "NotImplementedError", "RecursionError", "ValidationError":
+		return true
+	}
+	return false
+}
+
+// restoreReaderError classifies an exception the ZIP reader raised: validate()
+// turns a caught class into its RestoreError and lets every other class escape.
+func restoreReaderError(err error) error {
+	if err == nil {
+		return nil
+	}
+	var exc *pyzipfile.Exception
+	if errors.As(err, &exc) && restoreDamagedClass(exc.Type) {
+		return errRestoreDamaged
+	}
+	// EOFError, OSError, LZMAError (and a non-Python read failure: Python's
+	// io.open/read raises OSError there too).
+	return errRestoreReaderRaised
+}
 
 // restoreLimits are DATA_RESTORE_MAX_EXPANDED_BYTES, _JSON_BYTES, _FILE_BYTES.
 type restoreLimits struct{ Expanded, JSON, File int64 }
@@ -58,6 +98,16 @@ type restoreArchive struct {
 	missingMedia     int
 	associationID    string
 	ownerID          string
+	// skipped is skipped_records() of the validated manifest (summary reuses it).
+	skipped celery.Dict
+	// legacyInvoices counts the normalized legacy platform invoices.
+	legacyInvoices int
+	// reassignedTutors and tutorReassignments are _normalize_legacy_tutors'
+	// report for the preview.
+	reassignedTutors   map[string]bool
+	tutorReassignments []domain.RequestObject
+	// ignoredTutors counts the foreign anagrafiche nothing references.
+	ignoredTutors int
 }
 
 func (a *restoreArchive) Close() {
@@ -67,8 +117,14 @@ func (a *restoreArchive) Close() {
 	}
 }
 
-// restoreStr is str(value) for a decoded JSON scalar; containers are unsupported.
-func restoreStr(value any) (string, error) { return importStr(value) }
+// restoreStr is str(value) for a decoded JSON value: Python's str() of a
+// scalar, and repr() of a list or object. It never raises.
+func restoreStr(value any) (string, error) {
+	if parsed, ok := value.(importeffects.Value); ok {
+		return parsed.Text()
+	}
+	return dto.PythonStr(value), nil
+}
 
 func restoreFormatSize(size int64) string {
 	for _, unit := range []struct {
@@ -80,6 +136,14 @@ func restoreFormatSize(size int64) string {
 		}
 	}
 	return strconv.FormatInt(size, 10) + " byte"
+}
+
+// restoreFormatSizeUint is format_size for zipfile's unsigned file_size.
+func restoreFormatSizeUint(size uint64) string {
+	if size <= math.MaxInt64 {
+		return restoreFormatSize(int64(size))
+	}
+	return strconv.FormatFloat(float64(size)/float64(1<<30), 'f', 2, 64) + " GiB"
 }
 
 // restorePosixParts is PurePosixPath(name).parts without the root.
@@ -94,8 +158,8 @@ func restorePosixParts(name string) []string {
 }
 
 // validateRestoreArchive is Archive(path).validate(). It returns a
-// *restoreError for the RestoreErrors Django raises, errConsumerImportUnsupported
-// for inputs the port hands to Django, or another error (read failures).
+// *restoreError for the RestoreErrors Django raises, errRestoreReaderRaised
+// where an uncaught exception reaches Django's 500 page, or another error.
 func validateRestoreArchive(run *consumerImportRun, path string, limits restoreLimits) (*restoreArchive, error) {
 	archive := &restoreArchive{path: path, records: map[string][]domain.RequestObject{}, media: map[string]string{}}
 	isZip, err := consumerImportIsZipFile(path)
@@ -107,7 +171,7 @@ func validateRestoreArchive(run *consumerImportRun, path string, limits restoreL
 	}
 	zf, err := consumerImportOpenArchive(path)
 	if err != nil {
-		return nil, err
+		return nil, restoreReaderError(err)
 	}
 	archive.zip = zf
 	if err := archive.validate(run, limits); err != nil {
@@ -117,8 +181,8 @@ func validateRestoreArchive(run *consumerImportRun, path string, limits restoreL
 	return archive, nil
 }
 
-func (a *restoreArchive) entries() []*zip.File {
-	out := make([]*zip.File, len(a.zip.names))
+func (a *restoreArchive) entries() []pyzipfile.Info {
+	out := make([]pyzipfile.Info, len(a.zip.names))
 	for i, name := range a.zip.names {
 		out[i] = a.zip.byName[name]
 	}
@@ -128,9 +192,173 @@ func (a *restoreArchive) entries() []*zip.File {
 func (a *restoreArchive) json(name string) (any, error) {
 	data, err := a.zip.read(name)
 	if err != nil {
-		return nil, errConsumerImportUnsupported
+		return nil, restoreReaderError(err)
 	}
-	return consumerImportJSON(data)
+	return restoreJSON(data)
+}
+
+// restoreStreamError classifies an iter_json_array failure: a ZIP reader
+// exception as restoreReaderError does, the C recursion band as itself, and
+// everything else (the array grammar's ValueError, JSONDecodeError,
+// UnicodeDecodeError, RecursionError) as the damaged archive validate() raises.
+func restoreStreamError(err error) error {
+	var exc *pyzipfile.Exception
+	switch {
+	case errors.Is(err, dto.ErrJSONRecursionBand):
+		return err
+	case errors.As(err, &exc):
+		return restoreReaderError(err)
+	}
+	return errRestoreDamaged
+}
+
+// restoreJSON is json.loads(zf.read(name)) for the bytes of a member: the
+// same BOM/UTF-8/16/32 detection and surrogatepass decoding, then
+// dto.PythonJSONLoads. Every ValueError, UnicodeError and RecursionError it
+// raises is caught by validate(), so a failure is errRestoreDamaged; nesting in
+// CPython's C recursion band stays dto.ErrJSONRecursionBand.
+func restoreJSON(data []byte) (any, error) {
+	name := restoreJSONEncoding(data)
+	runes, err, ok := pycodecs.Decode(name, data, pycodecs.SurrogatePass)
+	if !ok || err != nil {
+		return nil, errRestoreDamaged
+	}
+	text, ok := restoreJSONText(runes)
+	if !ok {
+		return nil, errRestoreDamaged
+	}
+	value, err := dto.PythonJSONLoads([]byte(text))
+	if errors.Is(err, dto.ErrJSONRecursionBand) {
+		return nil, err
+	}
+	if err != nil {
+		return nil, errRestoreDamaged
+	}
+	return restoreJSONFloats(value), nil
+}
+
+// restoreJSONEncoding is json.detect_encoding.
+func restoreJSONEncoding(data []byte) string {
+	switch {
+	case bytes.HasPrefix(data, []byte{0x00, 0x00, 0xfe, 0xff}), bytes.HasPrefix(data, []byte{0xff, 0xfe, 0x00, 0x00}):
+		return "utf-32"
+	case bytes.HasPrefix(data, []byte{0xfe, 0xff}), bytes.HasPrefix(data, []byte{0xff, 0xfe}):
+		return "utf-16"
+	case bytes.HasPrefix(data, []byte{0xef, 0xbb, 0xbf}):
+		return "utf-8-sig"
+	}
+	if len(data) >= 4 {
+		switch {
+		case data[0] == 0:
+			if data[1] == 0 {
+				return "utf-32-be"
+			}
+			return "utf-16-be"
+		case data[1] == 0:
+			if data[2] == 0 && data[3] == 0 {
+				return "utf-32-le"
+			}
+			return "utf-16-le"
+		}
+	} else if len(data) == 2 {
+		if data[0] == 0 {
+			return "utf-16-be"
+		}
+		if data[1] == 0 {
+			return "utf-16-le"
+		}
+	}
+	return "utf-8"
+}
+
+// restoreJSONText is the decoded str as UTF-8 JSON text. A lone surrogate
+// (which a Python str keeps) becomes its \uXXXX escape so the JSON scanner can
+// carry it through; the value it produces is the same lone surrogate. A
+// surrogate right after an escaping backslash is json.loads' invalid escape
+// (ok false): written as an escape it would read as an escaped backslash.
+func restoreJSONText(runes []rune) (string, bool) {
+	surrogate := false
+	for _, r := range runes {
+		if r >= 0xd800 && r <= 0xdfff {
+			surrogate = true
+			break
+		}
+	}
+	if !surrogate {
+		return string(runes), true
+	}
+	var out strings.Builder
+	backslashes := 0
+	for _, r := range runes {
+		if r >= 0xd800 && r <= 0xdfff {
+			if backslashes%2 == 1 {
+				return "", false
+			}
+			fmt.Fprintf(&out, `\u%04x`, r)
+			backslashes = 0
+			continue
+		}
+		if r == '\\' {
+			backslashes++
+		} else {
+			backslashes = 0
+		}
+		out.WriteRune(r)
+	}
+	return out.String(), true
+}
+
+// restoreJSONFloats turns a float literal Python reads as an infinity
+// (json.loads("1e999")) into that float64, as the NaN and Infinity constants
+// already are.
+func restoreJSONFloats(value any) any {
+	switch v := value.(type) {
+	case json.Number:
+		if strings.ContainsAny(string(v), ".eE") {
+			if f, _ := strconv.ParseFloat(string(v), 64); math.IsInf(f, 0) {
+				return f
+			}
+		}
+		return v
+	case domain.RequestObject:
+		for i := range v {
+			v[i].Value = restoreJSONFloats(v[i].Value)
+		}
+		return v
+	case []any:
+		for i := range v {
+			v[i] = restoreJSONFloats(v[i])
+		}
+		return v
+	}
+	return value
+}
+
+// restoreSpecialFloat is the float64 a decoded JSON value holds when Python's
+// json module produced a non-finite float (NaN, +/-Infinity or an overflow).
+func restoreSpecialFloat(value any) (float64, bool) {
+	switch v := value.(type) {
+	case float64:
+		return v, true
+	case json.Number:
+		if strings.ContainsAny(string(v), ".eE") {
+			if f, _ := strconv.ParseFloat(string(v), 64); math.IsInf(f, 0) {
+				return f, true
+			}
+		}
+	}
+	return 0, false
+}
+
+// restoreEqual is Python == of two decoded JSON values, including the
+// non-finite floats json.loads produces (NaN never equals, infinities do).
+func restoreEqual(left, right any) bool {
+	lf, leftFloat := restoreSpecialFloat(left)
+	rf, rightFloat := restoreSpecialFloat(right)
+	if leftFloat || rightFloat {
+		return leftFloat && rightFloat && lf == rf
+	}
+	return dto.PythonEqual(left, right)
 }
 
 func (a *restoreArchive) validate(run *consumerImportRun, limits restoreLimits) error {
@@ -139,33 +367,35 @@ func (a *restoreArchive) validate(run *consumerImportRun, limits restoreLimits) 
 		return restoreFail("Il backup contiene più di 50.000 file.")
 	}
 	var expanded uint64
+	names := map[string]bool{}
 	for _, entry := range entries {
-		name := entry.Name
+		name := entry.Filename
+		if names[name] {
+			return restoreFail("File duplicato nel backup: %s.", name)
+		}
+		names[name] = true
 		if strings.HasPrefix(name, "/") || restoreContains(restorePosixParts(name), "..") || restoreWindowsDrive(name) {
+			return restoreFail("Percorso non consentito nel backup: %s.", name)
+		}
+		if strings.Contains(name, "\\") && !restoreBackslashMedia(name) {
 			return restoreFail("Percorso non consentito nel backup: %s.", name)
 		}
 		if (entry.ExternalAttrs>>16)&0o170000 == 0o120000 {
 			return restoreFail("Il backup contiene un collegamento simbolico non consentito: %s.", name)
 		}
-		isJSON := strings.HasSuffix(strings.ToLower(name), ".json")
-		if !restoreASCII(name) {
-			isJSON = strings.HasSuffix(name, ".json")
-			if strings.ToLower(name) != name && strings.HasSuffix(strings.ToLower(name), ".json") != isJSON {
-				return errConsumerImportUnsupported
-			}
+		if entry.FlagBits&1 != 0 {
+			return restoreFail("Il backup contiene un file cifrato non supportato: %s.", name)
 		}
+		isJSON := strings.HasSuffix(pystr.Lower(name), ".json")
 		limit, setting := limits.File, "DATA_RESTORE_MAX_FILE_BYTES"
 		if isJSON {
 			limit, setting = limits.JSON, "DATA_RESTORE_MAX_JSON_BYTES"
 		}
-		if entry.UncompressedSize64 > math.MaxInt64/2 {
-			return errConsumerImportUnsupported
-		}
-		if int64(entry.UncompressedSize64) > limit {
+		if limit < 0 || entry.FileSize > uint64(limit) {
 			return restoreFail("Il file %s è troppo grande: %s non compressi; limite %s (%s).", name,
-				restoreFormatSize(int64(entry.UncompressedSize64)), restoreFormatSize(limit), setting)
+				restoreFormatSizeUint(entry.FileSize), restoreFormatSize(limit), setting)
 		}
-		expanded += entry.UncompressedSize64
+		expanded += entry.FileSize
 	}
 	if expanded > uint64(limits.Expanded) {
 		return restoreFail("Il backup occupa %s non compressi; limite %s (DATA_RESTORE_MAX_EXPANDED_BYTES).",
@@ -185,16 +415,19 @@ func (a *restoreArchive) validate(run *consumerImportRun, limits restoreLimits) 
 	a.manifest = manifest
 	format, _ := importGet(manifest, "export_format")
 	version, _ := importGet(manifest, "version")
-	if !dto.PythonEqual(format, "bakney_sport_export_v1") || !dto.PythonEqual(version, "1.0.0") {
+	if !restoreEqual(format, "bakney_sport_export_v1") || !restoreEqual(version, "1.0.0") {
 		return restoreFail("Formato non supportato. Carica un export ZIP Bakney versione 1.0.0.")
+	}
+	manifestErrors, _ := importGet(manifest, "errors")
+	if importTruthy(manifestErrors) {
+		return restoreFail("Il backup segnala errori di esportazione. Genera un export completo.")
 	}
 	statistics, err := restoreGetDict(manifest, "statistics")
 	if err != nil {
 		return err
 	}
-	manifestErrors, _ := importGet(manifest, "errors")
 	failed, _ := importGet(statistics, "files_failed")
-	if importTruthy(manifestErrors) || importTruthy(failed) {
+	if importTruthy(failed) {
 		return restoreFail("Il backup segnala errori di esportazione. Genera un export completo.")
 	}
 	plan := run.s.plan
@@ -205,13 +438,11 @@ func (a *restoreArchive) validate(run *consumerImportRun, limits restoreLimits) 
 	for name, file := range plan.DeprecatedSections {
 		expected[name] = file
 	}
-	if _, err := run.skippedRecords(manifest); err != nil {
-		var python *consumerImportPyError
-		if errors.As(err, &python) {
-			return errRestoreDamaged
-		}
-		return errConsumerImportUnsupported
+	skipped, err := a.skippedRecords(plan)
+	if err != nil {
+		return err
 	}
+	a.skipped = skipped
 	expected["SportAssociationInvoices"] = "data/48_sport_association_invoices.json"
 	specsValue, present := importGet(manifest, "models_exported")
 	var specs []any
@@ -246,16 +477,10 @@ func (a *restoreArchive) validate(run *consumerImportRun, limits restoreLimits) 
 		case []any, domain.RequestObject:
 			return errRestoreDamaged
 		}
-		nameText, err := restoreStr(nameValue)
-		if err != nil {
-			return errConsumerImportUnsupported
-		}
+		nameText, _ := restoreStr(nameValue)
 		name, isText := nameValue.(string)
 		file, fileIsText := fileValue.(string)
 		if !isText || expected[name] == "" || seen[name] || !fileIsText || file != expected[name] {
-			if _, isNumber := nameValue.(json.Number); isNumber {
-				return errConsumerImportUnsupported // a float or int equal to no key; its str() is reproduced but rare
-			}
 			return restoreFail("Modello o percorso non supportato nel backup: %s.", nameText)
 		}
 		seen[name] = true
@@ -272,7 +497,7 @@ func (a *restoreArchive) validate(run *consumerImportRun, limits restoreLimits) 
 			if !present {
 				return errRestoreDamaged
 			}
-			if !dto.PythonEqual(int64ToNumber(len(rows)), count) {
+			if !restoreEqual(int64ToNumber(len(rows)), count) {
 				isList = false
 			}
 		}
@@ -312,18 +537,11 @@ func (a *restoreArchive) validate(run *consumerImportRun, limits restoreLimits) 
 	if !ok1 || !ok2 {
 		return errRestoreDamaged
 	}
-	if a.associationID, err = restoreStr(idValue); err != nil {
-		return errConsumerImportUnsupported
-	}
-	if a.ownerID, err = restoreStr(ownerValue); err != nil {
-		return errConsumerImportUnsupported
-	}
+	a.associationID, _ = restoreStr(idValue)
+	a.ownerID, _ = restoreStr(ownerValue)
 	owners := 0
 	for _, user := range a.records["User"] {
-		text, err := restoreStr(importGetValue(user, "user_id"))
-		if err != nil {
-			return errConsumerImportUnsupported
-		}
+		text, _ := restoreStr(importGetValue(user, "user_id"))
 		if text == a.ownerID {
 			owners++
 		}
@@ -335,26 +553,21 @@ func (a *restoreArchive) validate(run *consumerImportRun, limits restoreLimits) 
 	if err != nil {
 		return err
 	}
-	infoID, err := restoreStr(importGetValue(info, "sport_association_id"))
-	if err != nil {
-		return errConsumerImportUnsupported
-	}
-	if infoID != a.associationID || !dto.PythonEqual(importGetValue(info, "denomination"), importGetValue(association, "denomination")) {
+	infoID, _ := restoreStr(importGetValue(info, "sport_association_id"))
+	if infoID != a.associationID || !restoreEqual(importGetValue(info, "denomination"), importGetValue(association, "denomination")) {
 		return restoreFail("Il manifest non corrisponde all’associazione esportata.")
 	}
-	if invoices := a.records["SportAssociationInvoices"]; len(invoices) > 0 {
-		// Legacy platform invoices become association documents; not reproduced.
-		return errConsumerImportUnsupported
+	if err := a.normalizeLegacyInvoices(); err != nil {
+		return err
 	}
-	delete(a.records, "SportAssociationInvoices")
-	if err := a.checkTutors(plan); err != nil {
+	if err := a.normalizeLegacyTutors(plan); err != nil {
 		return err
 	}
 	if err := a.validateGraph(plan); err != nil {
 		return err
 	}
 	for _, entry := range entries {
-		name := entry.Name
+		name := entry.Filename
 		if strings.HasSuffix(name, "/") || !strings.HasPrefix(name, "files/") {
 			continue
 		}
@@ -377,39 +590,28 @@ func (a *restoreArchive) validate(run *consumerImportRun, limits restoreLimits) 
 		a.mediaKeys = append(a.mediaKeys, key)
 	}
 	exported, present := importGet(statistics, "files_exported")
-	if present && !dto.PythonEqual(exported, int64ToNumber(len(a.media))) {
+	if present && !restoreEqual(exported, int64ToNumber(len(a.media))) {
 		return restoreFail("Il numero degli allegati non corrisponde al manifest.")
 	}
 	for _, name := range a.zip.names {
-		member := a.zip.byName[name]
-		reader, err := member.Open()
-		if err != nil {
-			return errConsumerImportUnsupported
-		}
-		_, err = io.Copy(io.Discard, reader)
-		reader.Close()
-		if errors.Is(err, zip.ErrChecksum) {
-			return restoreFail("Il backup contiene un file danneggiato.")
-		}
-		if err != nil {
-			return errConsumerImportUnsupported
+		if _, err := a.zip.verify(name); err != nil {
+			var exc *pyzipfile.Exception
+			if errors.As(err, &exc) && exc.Type == "BadZipFile" {
+				// testzip() returns the first name whose read raised BadZipFile.
+				return restoreFail("Il backup contiene un file danneggiato.")
+			}
+			return restoreReaderError(err)
 		}
 	}
 	for _, row := range a.records["Document"] {
-		id, err := restoreStr(importGetValue(row, "document_id"))
-		if err != nil {
-			return errConsumerImportUnsupported
-		}
+		id, _ := restoreStr(importGetValue(row, "document_id"))
 		if _, staged := a.media["Document:"+id]; importTruthy(importGetValue(row, "filepath")) && !staged {
 			a.missingBinary++
 		}
 	}
 	urlOnly := 0
 	for _, row := range a.records["Subscription"] {
-		id, err := restoreStr(importGetValue(row, "subscription_id"))
-		if err != nil {
-			return errConsumerImportUnsupported
-		}
+		id, _ := restoreStr(importGetValue(row, "subscription_id"))
 		_, staged := a.media["Subscription:"+id]
 		key := importTruthy(importGetValue(row, "signature_storage_key"))
 		if key && !staged {
@@ -439,53 +641,268 @@ func restoreGetDict(object domain.RequestObject, key string) (domain.RequestObje
 	return dict, nil
 }
 
-func restoreASCII(text string) bool {
-	for i := 0; i < len(text); i++ {
-		if text[i] >= 0x80 {
+// restoreWindowsSeparator is a separator of ntpath ("\\" or "/").
+func restoreWindowsSeparator(r rune) bool { return r == '\\' || r == '/' }
+
+// restoreWindowsDrive is bool(PureWindowsPath(name).drive): ntpath.splitroot
+// gives a drive to any code point followed by ":" and to a name starting with
+// two separators (a UNC or device path).
+func restoreWindowsDrive(name string) bool {
+	runes := pystr.Runes(name)
+	if len(runes) < 2 {
+		return false
+	}
+	return runes[1] == ':' || restoreWindowsSeparator(runes[0]) && restoreWindowsSeparator(runes[1])
+}
+
+// restoreBackslashMedia is the check _validate_entries makes on a name holding
+// a backslash: only a media member files/<category>/<id>/<basename> may carry
+// one, in its basename, and that basename must have no Windows drive or root
+// and no ".." component once its backslashes are read as separators.
+func restoreBackslashMedia(name string) bool {
+	parts := strings.Split(name, "/")
+	if len(parts) != 4 || parts[0] != "files" {
+		return false
+	}
+	for index, part := range parts {
+		if part == "" || index < len(parts)-1 && strings.Contains(part, "\\") {
 			return false
+		}
+	}
+	basename := parts[3]
+	runes := pystr.Runes(basename)
+	if restoreWindowsDrive(basename) || len(runes) > 0 && restoreWindowsSeparator(runes[0]) {
+		return false
+	}
+	return !restoreContains(restorePosixParts(strings.ReplaceAll(basename, "\\", "/")), "..")
+}
+
+// restoreIterable is Python's iteration over a decoded JSON value as
+// `for value in values`: lists yield their items, a str its code points and a
+// dict its keys; None and numbers raise TypeError.
+func restoreIterable(value any) ([]any, bool) {
+	switch v := value.(type) {
+	case []any:
+		return v, true
+	case string:
+		items := []any{}
+		for _, r := range pystr.Runes(v) {
+			items = append(items, pystr.String([]rune{r}))
+		}
+		return items, true
+	case domain.RequestObject:
+		items := make([]any, len(v))
+		for i, field := range v {
+			items[i] = field.Name
+		}
+		return items, true
+	}
+	return nil, false
+}
+
+// restoreUpper is str.upper(): the full case mapping of dto.PythonUpper, with
+// a lone surrogate (which a decoded JSON str can hold) kept as is.
+func restoreUpper(text string) string {
+	var out strings.Builder
+	for _, r := range pystr.Runes(text) {
+		if r >= 0xd800 && r <= 0xdfff {
+			out.WriteString(pystr.String([]rune{r}))
+			continue
+		}
+		out.WriteString(dto.PythonUpper(string(r)))
+	}
+	return out.String()
+}
+
+// restoreDatePattern is django.utils.dateparse.date_re: four digits, two
+// one-or-two digit groups, with a final newline allowed by $.
+func restoreDatePattern(text string) bool {
+	text = strings.TrimSuffix(text, "\n")
+	parts := strings.Split(text, "-")
+	if len(parts) != 3 {
+		return false
+	}
+	for index, part := range parts {
+		runes := []rune(part)
+		if len(runes) == 0 || (index == 0 && len(runes) != 4) || (index > 0 && len(runes) > 2) {
+			return false
+		}
+		for _, r := range runes {
+			if !unicode.IsDigit(r) {
+				return false
+			}
 		}
 	}
 	return true
 }
 
-// restoreWindowsDrive is PureWindowsPath(name).drive for names without a
-// backslash (the archive reader refuses those): "X:" prefixes and UNC
-// "//server/share" paths (already refused as absolute).
-func restoreWindowsDrive(name string) bool {
-	return len(name) >= 2 && name[1] == ':' && (name[0]|0x20 >= 'a' && name[0]|0x20 <= 'z')
+// normalizeLegacyInvoices is _normalize_legacy_invoices: each legacy platform
+// invoice becomes an association document with the same identity and date.
+func (a *restoreArchive) normalizeLegacyInvoices() error {
+	rows := a.records["SportAssociationInvoices"]
+	links := make([]domain.RequestObject, 0, len(rows))
+	for _, row := range rows {
+		idValue, present := importGet(row, "sport_association_invoice_id")
+		if !present {
+			return errRestoreDamaged // KeyError
+		}
+		identity, err := restoreUUIDText(dto.PythonStr(idValue))
+		if err != nil {
+			return err
+		}
+		associationValue, present := importGet(row, "sport_association_id")
+		if !present {
+			return errRestoreDamaged // KeyError
+		}
+		association, _ := restoreStr(associationValue)
+		if association != a.associationID {
+			return restoreFail("Una fattura Bakney appartiene a un’altra associazione.")
+		}
+		dateValue, present := importGet(row, "invoice_date")
+		if !present {
+			return errRestoreDamaged // KeyError
+		}
+		text, isText := dateValue.(string)
+		if !isText {
+			return errRestoreDamaged // TypeError from date.fromisoformat
+		}
+		date, ok := dto.PythonParseDate(text)
+		if !ok {
+			if restoreDatePattern(text) {
+				return errRestoreDamaged // well formatted but not a date: ValueError
+			}
+			return restoreFail("Data della fattura Bakney non valida.")
+		}
+		documentValue, present := importGet(row, "document_id")
+		if !present {
+			return errRestoreDamaged // KeyError
+		}
+		document, err := restoreUUIDText(dto.PythonStr(documentValue))
+		if err != nil {
+			return err
+		}
+		links = append(links, domain.RequestObject{
+			{Name: "sport_association_documents_archive_id", Value: identity},
+			{Name: "sport_association_id", Value: a.associationID},
+			{Name: "document_id", Value: document},
+			{Name: "date", Value: date},
+		})
+	}
+	if _, present := a.records["SportAssociationDocumentsArchive"]; !present {
+		return errRestoreDamaged // KeyError from records[...].extend
+	}
+	a.records["SportAssociationDocumentsArchive"] = append(a.records["SportAssociationDocumentsArchive"], links...)
+	a.legacyInvoices = len(links)
+	delete(a.records, "SportAssociationInvoices")
+	return nil
 }
 
-// checkTutors is _normalize_legacy_tutors without its rewrites: the duplicate
-// active tax code RestoreError is reproduced; an archive whose tutors would be
-// reassigned, cleared or ignored is handed off.
-func (a *restoreArchive) checkTutors(plan *importeffects.Plan) error {
+// skippedRecords is legacy_backup.skipped_records. Every check it makes raises
+// ValueError/AttributeError/TypeError/KeyError (or a JSON read error), which
+// validate() catches: a failure is errRestoreDamaged, except a reader class it
+// does not catch (errRestoreReaderRaised).
+func (a *restoreArchive) skippedRecords(plan *importeffects.Plan) (celery.Dict, error) {
+	counts := celery.Dict{}
+	specsValue, present := importGet(a.manifest, "models_exported")
+	var specs []any
+	if present {
+		switch v := specsValue.(type) {
+		case []any:
+			specs = v
+		case string:
+			if v != "" {
+				return nil, errRestoreDamaged // spec.get on a str character
+			}
+		case domain.RequestObject:
+			if len(v) > 0 {
+				return nil, errRestoreDamaged // spec.get on a dict key
+			}
+		default:
+			return nil, errRestoreDamaged // None/int/bool are not iterable
+		}
+	}
+	for _, raw := range specs {
+		spec, ok := raw.(domain.RequestObject)
+		if !ok {
+			return nil, errRestoreDamaged // spec.get on a non-dict
+		}
+		nameValue, _ := importGet(spec, "name")
+		name, isText := nameValue.(string)
+		if !isText {
+			switch nameValue.(type) {
+			case []any, domain.RequestObject:
+				return nil, errRestoreDamaged // TypeError: unhashable name
+			}
+			continue
+		}
+		expected, deprecated := plan.DeprecatedSections[name]
+		if !deprecated {
+			continue
+		}
+		file, _ := importGet(spec, "file")
+		duplicate := false
+		for _, item := range counts {
+			duplicate = duplicate || item.Key == name
+		}
+		if duplicate || !restoreEqual(file, expected) {
+			return nil, errRestoreDamaged
+		}
+		if !a.zip.has(expected) {
+			return nil, errRestoreDamaged // KeyError: Missing retired section
+		}
+		// with archive.open(filename) as source: iter_json_array(source): the
+		// member is read in chunks, so a JSON error can come before a reader
+		// exception further on.
+		source, err := a.zip.openMember(expected)
+		if err != nil {
+			return nil, restoreReaderError(err)
+		}
+		rows := 0
+		err = importIterJSONArray(source, importJSONChunkSize, func(row any) error {
+			if _, ok := row.(domain.RequestObject); !ok {
+				return errRestoreDamaged // ValueError: Invalid retired record
+			}
+			rows++
+			return nil
+		})
+		source.Close()
+		if err != nil {
+			return nil, restoreStreamError(err)
+		}
+		count, _ := importGet(spec, "count")
+		if importTypeName(count) != "int" || !restoreEqual(count, int64ToNumber(rows)) {
+			return nil, errRestoreDamaged
+		}
+		counts = append(counts, celery.Item{Key: name, Value: int64(rows)})
+	}
+	return counts, nil
+}
+
+// normalizeLegacyTutors is _normalize_legacy_tutors: the duplicate active tax
+// code RestoreError, the reassigned/ignored tutor bookkeeping and the tax-code
+// overrides the preview reports.
+func (a *restoreArchive) normalizeLegacyTutors(plan *importeffects.Plan) error {
+	a.reassignedTutors = map[string]bool{}
+	a.tutorReassignments = nil
 	associates := a.records["Associate"]
 	member := map[string]bool{}
 	for _, row := range associates {
 		association := importGetValue(row, "sport_association_id")
-		id, err := restoreStr(importGetValue(row, "associate_id"))
-		if err != nil {
-			return errConsumerImportUnsupported
+		id, _ := restoreStr(importGetValue(row, "associate_id"))
+		if !importTruthy(association) {
+			member[id] = true
+			continue
 		}
-		text, err := restoreStr(association)
-		if err != nil {
-			return errConsumerImportUnsupported
-		}
-		if !importTruthy(association) || text == a.associationID {
+		text, _ := restoreStr(association)
+		if text == a.associationID {
 			member[id] = true
 		}
 	}
 	tutors := map[string]bool{}
 	for _, row := range a.records["AssociateTutorRelation"] {
-		associate, err := restoreStr(importGetValue(row, "associate_id"))
-		if err != nil {
-			return errConsumerImportUnsupported
-		}
+		associate, _ := restoreStr(importGetValue(row, "associate_id"))
 		if member[associate] {
-			tutor, err := restoreStr(importGetValue(row, "tutor_id"))
-			if err != nil {
-				return errConsumerImportUnsupported
-			}
+			tutor, _ := restoreStr(importGetValue(row, "tutor_id"))
 			tutors[tutor] = true
 		}
 	}
@@ -496,10 +913,7 @@ func (a *restoreArchive) checkTutors(plan *importeffects.Plan) error {
 			for _, field := range model.Fields {
 				if field.IsFK() && field.TargetModel == "Associate" && field.TargetApp == "application" {
 					if value := importGetValue(row, field.Attname); importTruthy(value) {
-						text, err := restoreStr(value)
-						if err != nil {
-							return errConsumerImportUnsupported
-						}
+						text, _ := restoreStr(value)
 						referenced[text] = true
 					}
 				}
@@ -512,15 +926,12 @@ func (a *restoreArchive) checkTutors(plan *importeffects.Plan) error {
 				if !present {
 					continue
 				}
-				list, ok := values.([]any)
+				items, ok := restoreIterable(values)
 				if !ok {
-					return errConsumerImportUnsupported
+					return errRestoreDamaged // TypeError from `for value in values`
 				}
-				for _, value := range list {
-					text, err := restoreStr(value)
-					if err != nil {
-						return errConsumerImportUnsupported
-					}
+				for _, value := range items {
+					text, _ := restoreStr(value)
 					referenced[text] = true
 				}
 			}
@@ -530,7 +941,7 @@ func (a *restoreArchive) checkTutors(plan *importeffects.Plan) error {
 	deletedOf := func(row domain.RequestObject) (bool, error) {
 		value, present := importGet(row, "deleted")
 		if !present {
-			return false, nil
+			value = false
 		}
 		return restoreBool(value)
 	}
@@ -539,11 +950,7 @@ func (a *restoreArchive) checkTutors(plan *importeffects.Plan) error {
 		if !present || value == nil {
 			return "", false, nil
 		}
-		text, ok := value.(string)
-		if !ok || !restoreASCII(text) {
-			return "", false, errConsumerImportUnsupported
-		}
-		return strings.ToUpper(text), true, nil
+		return restoreUpper(dto.PythonStr(value)), true, nil
 	}
 	for _, row := range associates {
 		association := importGetValue(row, "sport_association_id")
@@ -564,31 +971,28 @@ func (a *restoreArchive) checkTutors(plan *importeffects.Plan) error {
 		}
 		id, present := importGet(row, "associate_id")
 		if !present {
-			return errRestoreDamaged
+			return errRestoreDamaged // KeyError in the duplicate message
 		}
-		idText, err := restoreStr(id)
-		if err != nil {
-			return errConsumerImportUnsupported
-		}
+		idText, _ := restoreStr(id)
 		if _, duplicate := active[tax]; duplicate {
 			return restoreFail("Codice fiscale duplicato tra le anagrafiche attive: %s.", idText)
 		}
 		active[tax] = idText
 	}
 	type candidate struct {
+		index          int
 		hasAssociation bool
 		id             string
-		row            domain.RequestObject
 	}
 	others := []candidate{}
-	for _, row := range associates {
+	for index, row := range associates {
 		association := importGetValue(row, "sport_association_id")
 		text, _ := restoreStr(association)
 		if importTruthy(association) && text == a.associationID {
 			continue
 		}
 		id, _ := restoreStr(importGetValue(row, "associate_id"))
-		others = append(others, candidate{hasAssociation: importTruthy(association), id: id, row: row})
+		others = append(others, candidate{index: index, hasAssociation: importTruthy(association), id: id})
 	}
 	sort.SliceStable(others, func(i, j int) bool {
 		if others[i].hasAssociation != others[j].hasAssociation {
@@ -596,29 +1000,95 @@ func (a *restoreArchive) checkTutors(plan *importeffects.Plan) error {
 		}
 		return restorePyLess(others[i].id, others[j].id)
 	})
+	ignored := map[string]bool{}
 	for _, item := range others {
+		row := associates[item.index]
+		association := importGetValue(row, "sport_association_id")
 		if item.hasAssociation {
-			if !referenced[item.id] || tutors[item.id] {
-				return errConsumerImportUnsupported // ignored or reassigned tutor records
+			if !referenced[item.id] {
+				ignored[item.id] = true
+				continue
+			}
+			if !tutors[item.id] {
+				continue
+			}
+			text, _ := restoreStr(association)
+			if _, err := restoreUUIDText(text); err != nil {
+				return err // UUID(str(association)) raised
+			}
+		}
+		overrides := domain.RequestObject{}
+		if item.hasAssociation {
+			overrides = append(overrides, domain.RequestField{Name: "sport_association_id", Value: a.associationID})
+		}
+		first, last := "", ""
+		if value := importGetValue(row, "first_name"); importTruthy(value) {
+			first, _ = restoreStr(value)
+		}
+		if value := importGetValue(row, "last_name"); importTruthy(value) {
+			last, _ = restoreStr(value)
+		}
+		detail := domain.RequestObject{{Name: "associate_id", Value: item.id}}
+		if item.hasAssociation {
+			source, _ := restoreStr(association)
+			detail = append(detail, domain.RequestField{Name: "source_association_id", Value: source})
+		} else {
+			detail = append(detail, domain.RequestField{Name: "source_association_id", Value: nil})
+		}
+		detail = append(detail, domain.RequestField{Name: "name", Value: dto.PythonStrip(first + " " + last)})
+		taxValue, present := importGet(row, "tax_code")
+		if present && taxValue != nil {
+			taxCode := dto.PythonStr(taxValue)
+			deleted, err := deletedOf(row)
+			if err != nil {
+				return err
+			}
+			if !deleted {
+				if conflict, ok := active[restoreUpper(taxCode)]; ok {
+					overrides = importSet(overrides, "tax_code", nil)
+					detail = append(detail, domain.RequestField{Name: "original_tax_code", Value: taxCode},
+						domain.RequestField{Name: "conflicting_associate_id", Value: conflict})
+				} else {
+					active[restoreUpper(taxCode)] = item.id
+				}
+			}
+		}
+		if !item.hasAssociation {
+			if len(overrides) > 0 {
+				updated := row
+				for _, field := range overrides {
+					updated = importSet(updated, field.Name, field.Value)
+				}
+				associates[item.index] = updated
+				a.tutorReassignments = append(a.tutorReassignments, detail)
 			}
 			continue
 		}
-		tax, has, err := taxOf(item.row)
-		if err != nil {
-			return err
+		updated := row
+		for _, field := range overrides {
+			updated = importSet(updated, field.Name, field.Value)
 		}
-		deleted, err := deletedOf(item.row)
-		if err != nil {
-			return err
-		}
-		if has && !deleted {
-			if _, conflict := active[tax]; conflict {
-				return errConsumerImportUnsupported // the tax code would be cleared
-			}
-			active[tax] = item.id
+		associates[item.index] = updated
+		a.reassignedTutors[item.id] = true
+		a.tutorReassignments = append(a.tutorReassignments, detail)
+	}
+	a.records["Associate"] = associates
+	kept := make([]domain.RequestObject, 0, len(associates))
+	for _, row := range associates {
+		id, _ := restoreStr(importGetValue(row, "associate_id"))
+		if !ignored[id] {
+			kept = append(kept, row)
 		}
 	}
+	a.records["Associate"] = kept
+	a.ignoredTutors = len(associates) - len(kept)
 	return nil
+}
+
+// normalized reports whether validate() rewrote the archive's records (legacy
+// invoice links, tutor overrides or ignored tutors).
+func (a *restoreArchive) normalized() bool {
+	return a.legacyInvoices > 0 || len(a.reassignedTutors) > 0 || len(a.tutorReassignments) > 0 || a.ignoredTutors > 0
 }
 
 // restorePyLess is Python str ordering (code points).
@@ -655,30 +1125,13 @@ func restoreBool(value any) (bool, error) {
 	return false, errRestoreDamaged
 }
 
-var (
-	restoreDateTimeText = regexp.MustCompile(`^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{1,6}))?)?(Z|[+-]\d{2}:\d{2})?$`)
-	restoreDateText     = regexp.MustCompile(`^(\d{4})-(\d{2})-(\d{2})$`)
-	restoreTimeText     = regexp.MustCompile(`^(\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{1,6}))?)?$`)
-	restoreDecimalText  = regexp.MustCompile(`^[+-]?(\d(_?\d)*(\.(\d(_?\d)*)?)?|\.\d(_?\d)*)([eE][+-]?\d(_?\d)*)?$`)
-)
-
-func restoreValidDate(year, month, day int) bool {
-	if year < 1 || month < 1 || month > 12 || day < 1 {
-		return false
-	}
-	days := [...]int{31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31}[month-1]
-	if month == 2 && (year%4 == 0 && (year%100 != 0 || year%400 == 0)) {
-		days = 29
-	}
-	return day <= days
-}
-
-func restoreAtoi(text string) int { n, _ := strconv.Atoi(text); return n }
-
 // restoreToPython is field.to_python(value) as _validate_graph calls it
 // (the target field for a relation): nil when it returns, errRestoreDamaged
 // when it raises one of the exceptions validate() catches, and
-// errConsumerImportUnsupported for inputs whose outcome is not reproduced.
+// errRestoreReaderRaised for OverflowError, which validate() does not catch.
+// errRestorePlanKind is a field kind the generated import plan does not have.
+var errRestorePlanKind = refusal.AppState("data restore: plan field kind outside the converted set")
+
 func restoreToPython(kind, fieldType string, null bool, value any) error {
 	if value == nil {
 		if kind == "bool" && !null {
@@ -698,31 +1151,32 @@ func restoreToPython(kind, fieldType string, null bool, value any) error {
 				return errRestoreDamaged
 			}
 			n, ok := dto.PythonIntText(string(v))
-			if !ok {
-				return errConsumerImportUnsupported
-			}
-			if n.Sign() < 0 || n.BitLen() > 128 {
+			if !ok || n.Sign() < 0 || n.BitLen() > 128 {
 				return errRestoreDamaged
 			}
 			return nil
+		case float64:
+			return errRestoreDamaged
 		case string:
 			_, err := restoreUUIDText(v)
 			return err
 		}
 		return errRestoreDamaged
 	case "int":
-		number, result := dto.PythonInt(value)
-		switch {
-		case result == dto.PythonIntOverflow:
-			return errConsumerImportUnsupported
-		case result != dto.PythonIntOK:
-			if text, ok := value.(string); ok && !restoreASCII(text) {
-				return errConsumerImportUnsupported
+		if special, ok := value.(float64); ok {
+			if math.IsNaN(special) {
+				return errRestoreDamaged
 			}
-			return errRestoreDamaged
+			return errRestoreReaderRaised // OverflowError from int(inf)
 		}
-		_ = number
-		return nil
+		_, result := dto.PythonInt(value)
+		switch result {
+		case dto.PythonIntOverflow:
+			return errRestoreReaderRaised
+		case dto.PythonIntOK:
+			return nil
+		}
+		return errRestoreDamaged
 	case "bool":
 		if null {
 			switch v := value.(type) {
@@ -746,24 +1200,21 @@ func restoreToPython(kind, fieldType string, null bool, value any) error {
 		switch v := value.(type) {
 		case bool:
 			return nil
+		case float64:
+			return errRestoreDamaged // DecimalField rejects a non-finite float
 		case json.Number:
-			if _, err := strconv.ParseFloat(string(v), 64); err != nil {
-				return errConsumerImportUnsupported
+			if !strings.ContainsAny(string(v), ".eE") {
+				return nil // Decimal(int) is always finite
+			}
+			if f, _ := strconv.ParseFloat(string(v), 64); math.IsNaN(f) || math.IsInf(f, 0) {
+				return errRestoreDamaged
 			}
 			return nil
 		case string:
-			text := dto.PythonStrip(v)
-			if !restoreASCII(v) {
-				return errConsumerImportUnsupported
+			if parsed := dto.ParsePythonDecimal(v); parsed.Kind == "" || parsed.Kind == "inf" || parsed.Kind == "nan" {
+				return errRestoreDamaged
 			}
-			lower := strings.ToLower(strings.TrimLeft(text, "+-"))
-			if restoreDecimalText.MatchString(text) || lower == "inf" || lower == "infinity" || lower == "nan" || lower == "snan" {
-				return nil
-			}
-			if strings.HasPrefix(lower, "nan") || strings.HasPrefix(lower, "snan") {
-				return errConsumerImportUnsupported
-			}
-			return errRestoreDamaged
+			return nil
 		}
 		return errRestoreDamaged
 	case "datetime":
@@ -771,81 +1222,164 @@ func restoreToPython(kind, fieldType string, null bool, value any) error {
 		if !ok {
 			return errRestoreDamaged
 		}
-		m := restoreDateTimeText.FindStringSubmatch(text)
-		if m == nil {
-			if d := restoreDateText.FindStringSubmatch(text); d != nil {
-				if !restoreValidDate(restoreAtoi(d[1]), restoreAtoi(d[2]), restoreAtoi(d[3])) {
-					return errRestoreDamaged
-				}
-				return nil
-			}
-			return errConsumerImportUnsupported
+		if _, ok := dto.DjangoDateTimePrep(text); ok {
+			return nil
 		}
-		if !restoreValidDate(restoreAtoi(m[1]), restoreAtoi(m[2]), restoreAtoi(m[3])) || restoreAtoi(m[4]) > 23 ||
-			restoreAtoi(m[5]) > 59 || (m[6] != "" && restoreAtoi(m[6]) > 59) {
-			return errRestoreDamaged
+		// parse_datetime returned None: DateTimeField.to_python then tries
+		// parse_date, which accepts Unicode decimal digits.
+		if _, ok := dto.PythonParseDate(text); ok {
+			return nil
 		}
-		if zone := m[8]; len(zone) == 6 && (restoreAtoi(zone[1:3]) > 23 || restoreAtoi(zone[4:6]) > 59) {
-			return errConsumerImportUnsupported
-		}
-		return nil
+		return errRestoreDamaged
 	case "date":
 		text, ok := value.(string)
 		if !ok {
 			return errRestoreDamaged
 		}
-		m := restoreDateText.FindStringSubmatch(text)
-		if m == nil {
-			return errConsumerImportUnsupported
+		if _, ok := dto.PythonParseDate(text); ok {
+			return nil
 		}
-		if !restoreValidDate(restoreAtoi(m[1]), restoreAtoi(m[2]), restoreAtoi(m[3])) {
-			return errRestoreDamaged
-		}
-		return nil
+		return errRestoreDamaged
 	case "time":
 		text, ok := value.(string)
 		if !ok {
 			return errRestoreDamaged
 		}
-		m := restoreTimeText.FindStringSubmatch(text)
-		if m == nil {
-			return errConsumerImportUnsupported
+		if restoreValidTime(text) {
+			return nil
 		}
-		if restoreAtoi(m[1]) > 23 || restoreAtoi(m[2]) > 59 || (m[3] != "" && restoreAtoi(m[3]) > 59) {
-			return errRestoreDamaged
-		}
-		return nil
+		return errRestoreDamaged
 	}
-	return errConsumerImportUnsupported
+	// plan.json lists only the kinds above (a foreign key takes its target's
+	// kind): TestRestorePlanKindsConverted pins it.
+	return errRestorePlanKind
 }
 
-// restoreUUIDText is str(uuid.UUID(hex=text)) for ASCII text: braces, a
-// urn:uuid: prefix and hyphens removed, then int(text, 16) of 32 characters.
-func restoreUUIDText(text string) (string, error) {
-	if !restoreASCII(text) {
-		return "", errConsumerImportUnsupported
+// restoreTimePattern is Django's time_re (one- or two-digit components, a
+// comma or dot fraction) followed by datetime.time's range checks.
+var restoreTimePattern = regexp.MustCompile(`^(\p{Nd}{1,2}):(\p{Nd}{1,2})(?::(\p{Nd}{1,2})(?:[.,](\p{Nd}{1,6})\p{Nd}{0,6})?)?$`)
+
+func restoreDecimalDigits(text string) int {
+	value := 0
+	for _, r := range text {
+		digit, _ := restoreHexDigit(r)
+		value = value*10 + digit
 	}
-	hex := strings.ReplaceAll(strings.ReplaceAll(text, "urn:", ""), "uuid:", "")
-	hex = strings.ReplaceAll(strings.Trim(hex, "{}"), "-", "")
-	if len(hex) != 32 {
-		return "", errRestoreDamaged
+	return value
+}
+
+// restoreValidTime reports whether parse_time accepts text:
+// datetime.time.fromisoformat, then Django's time_re.
+func restoreValidTime(text string) bool {
+	body := strings.TrimPrefix(text, "T")
+	if body != "" {
+		if _, ok := pydatetime.FromISOFormat("2000-01-01T" + body); ok {
+			return true
+		}
 	}
-	plain := true
-	for i := 0; i < len(hex); i++ {
-		c := hex[i] | 0x20
-		if !(hex[i] >= '0' && hex[i] <= '9') && !(c >= 'a' && c <= 'f') {
-			plain = false
-			if !strings.ContainsRune("xX_+ \t\n\r\v\f", rune(hex[i])) {
-				return "", errRestoreDamaged
+	match := restoreTimePattern.FindStringSubmatch(strings.TrimSuffix(text, "\n"))
+	if match == nil {
+		return false
+	}
+	return restoreDecimalDigits(match[1]) <= 23 && restoreDecimalDigits(match[2]) <= 59 &&
+		(match[3] == "" || restoreDecimalDigits(match[3]) <= 59)
+}
+
+// restoreIntBase16 is int(text, 16) for the text uuid.UUID(hex=...) passes on:
+// surrounding whitespace, a sign, an optional 0x prefix, underscores between
+// digits (or right after 0x) and Unicode decimal digits.
+func restoreIntBase16(text string) (*big.Int, bool) {
+	text = dto.PythonStrip(text)
+	runes := pystr.Runes(text)
+	sign := 1
+	if len(runes) > 0 && (runes[0] == '+' || runes[0] == '-') {
+		if runes[0] == '-' {
+			sign = -1
+		}
+		runes = runes[1:]
+	}
+	afterPrefix := false
+	if len(runes) >= 2 && runes[0] == '0' && (runes[1] == 'x' || runes[1] == 'X') {
+		runes = runes[2:]
+		afterPrefix = true
+	}
+	var digits strings.Builder
+	sawDigit, previousUnderscore := false, false
+	for _, r := range runes {
+		if r == '_' {
+			if previousUnderscore || (!sawDigit && !afterPrefix) {
+				return nil, false
+			}
+			previousUnderscore, afterPrefix = true, false
+			continue
+		}
+		value, ok := restoreHexDigit(r)
+		if !ok {
+			return nil, false
+		}
+		digits.WriteByte("0123456789abcdef"[value])
+		sawDigit, previousUnderscore, afterPrefix = true, false, false
+	}
+	if !sawDigit || previousUnderscore {
+		return nil, false
+	}
+	number, ok := new(big.Int).SetString(digits.String(), 16)
+	if !ok {
+		return nil, false
+	}
+	if sign < 0 {
+		number.Neg(number)
+	}
+	return number, true
+}
+
+// restoreHexDigit is one digit of int(text, 16): an ASCII hex digit or a
+// Unicode Nd digit.
+func restoreHexDigit(r rune) (int, bool) {
+	switch {
+	case r >= '0' && r <= '9':
+		return int(r - '0'), true
+	case r >= 'a' && r <= 'f':
+		return int(r-'a') + 10, true
+	case r >= 'A' && r <= 'F':
+		return int(r-'A') + 10, true
+	}
+	if r > 127 && unicode.IsDigit(r) {
+		// Nd digits come in runs of ten starting at zero.
+		for _, span := range unicode.Nd.R16 {
+			if r >= rune(span.Lo) && r <= rune(span.Hi) {
+				return int(r-rune(span.Lo)) % 10, true
+			}
+		}
+		for _, span := range unicode.Nd.R32 {
+			if r >= rune(span.Lo) && r <= rune(span.Hi) {
+				return int(r-rune(span.Lo)) % 10, true
 			}
 		}
 	}
-	if !plain {
-		// int(hex, 16) also takes whitespace, a sign, 0x and underscores.
-		return "", errConsumerImportUnsupported
+	return 0, false
+}
+
+// restoreUUIDCanonical is str(uuid.UUID(int=number)).
+func restoreUUIDCanonical(number *big.Int) string {
+	digits := number.Text(16)
+	digits = strings.Repeat("0", 32-len(digits)) + digits
+	return digits[0:8] + "-" + digits[8:12] + "-" + digits[12:16] + "-" + digits[16:20] + "-" + digits[20:32]
+}
+
+// restoreUUIDText is str(uuid.UUID(hex=text)): braces, a urn:uuid: prefix and
+// hyphens removed, then int(text, 16) of 32 characters.
+func restoreUUIDText(text string) (string, error) {
+	hex := strings.ReplaceAll(strings.ReplaceAll(text, "urn:", ""), "uuid:", "")
+	hex = strings.ReplaceAll(strings.Trim(hex, "{}"), "-", "")
+	if len(pystr.Runes(hex)) != 32 {
+		return "", errRestoreDamaged
 	}
-	lower := strings.ToLower(hex)
-	return lower[0:8] + "-" + lower[8:12] + "-" + lower[12:16] + "-" + lower[16:20] + "-" + lower[20:32], nil
+	number, ok := restoreIntBase16(hex)
+	if !ok || number.Sign() < 0 || number.BitLen() > 128 {
+		return "", errRestoreDamaged
+	}
+	return restoreUUIDCanonical(number), nil
 }
 
 // restoreIdentity is str(pk.to_python(value)).
@@ -855,24 +1389,41 @@ func restoreIdentity(kind string, value any) (string, error) {
 		switch v := value.(type) {
 		case string:
 			return restoreUUIDText(v)
-		case json.Number, bool:
-			return "", errConsumerImportUnsupported
+		case bool:
+			if v {
+				return restoreUUIDCanonical(big.NewInt(1)), nil
+			}
+			return restoreUUIDCanonical(big.NewInt(0)), nil
+		case json.Number:
+			if strings.ContainsAny(string(v), ".eE") {
+				return "", errRestoreDamaged
+			}
+			number, ok := dto.PythonIntText(string(v))
+			if !ok || number.Sign() < 0 || number.BitLen() > 128 {
+				return "", errRestoreDamaged
+			}
+			return restoreUUIDCanonical(number), nil
 		}
 		return "", errRestoreDamaged
 	case "int":
+		if special, ok := value.(float64); ok {
+			if math.IsNaN(special) {
+				return "", errRestoreDamaged
+			}
+			return "", errRestoreReaderRaised // OverflowError from int(inf)
+		}
 		number, result := dto.PythonInt(value)
 		if result == dto.PythonIntOverflow {
-			return "", errConsumerImportUnsupported
+			return "", errRestoreReaderRaised
 		}
 		if result != dto.PythonIntOK {
-			if text, ok := value.(string); ok && !restoreASCII(text) {
-				return "", errConsumerImportUnsupported
-			}
 			return "", errRestoreDamaged
 		}
 		return number.String(), nil
 	}
-	return "", errConsumerImportUnsupported
+	// plan.json's primary keys and foreign key targets are uuid or int:
+	// TestRestorePlanKindsConverted pins it.
+	return "", errRestorePlanKind
 }
 
 // restoreCharFields are CharField and its subclasses in the plan.
@@ -926,10 +1477,7 @@ func (a *restoreArchive) validateGraph(plan *importeffects.Plan) error {
 			if name != "SportAssociation" {
 				association := importGetValue(row, "sport_association_id")
 				if importTruthy(association) {
-					text, err := restoreStr(association)
-					if err != nil {
-						return errConsumerImportUnsupported
-					}
+					text, _ := restoreStr(association)
 					if text != a.associationID {
 						return restoreFail("Il backup contiene riferimenti a un’altra associazione.")
 					}
@@ -959,18 +1507,12 @@ func (a *restoreArchive) validateGraph(plan *importeffects.Plan) error {
 				if !importTruthy(value) {
 					continue
 				}
-				text, err := restoreStr(value)
-				if err != nil {
-					return errConsumerImportUnsupported
-				}
+				text, _ := restoreStr(value)
 				if !a.identities[field.TargetModel][text] {
 					if !field.Null || name == "Folder" {
 						return restoreFail("Relazione mancante: %s.%s.", name, field.Name)
 					}
-					record, err := restoreStr(importGetValue(row, model.PK.Name))
-					if err != nil {
-						return errConsumerImportUnsupported
-					}
+					record, _ := restoreStr(importGetValue(row, model.PK.Name))
 					a.missingRelations = append(a.missingRelations, restoreMissingRelation{model: name, record: record, field: field.Attname,
 						targetModel: field.TargetModel, target: text})
 				}
@@ -999,10 +1541,7 @@ func (a *restoreArchive) validateGraph(plan *importeffects.Plan) error {
 					return errRestoreDamaged
 				}
 				for _, item := range items {
-					text, err := restoreStr(item)
-					if err != nil {
-						return errConsumerImportUnsupported
-					}
+					text, _ := restoreStr(item)
 					if !a.identities[field.TargetModel][text] {
 						return restoreFail("Relazione multipla mancante: %s.%s.", name, field.Name)
 					}

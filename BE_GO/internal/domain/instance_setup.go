@@ -6,12 +6,13 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
-// ErrInstanceSetupRefused marks an instance setup request the Go port does
-// not serve (an import whose task has a ready result, values the database
-// columns would reject inside Django's transaction, a domain that needs
-// Python's Unicode lowercasing, a storage name collision after the old logos
-// are deleted). Handlers answer with the server error page before any write.
-var ErrInstanceSetupRefused = refusal.New("instance setup request not ported")
+// ErrInstanceSetupUnexpected is a state only the application writes: the
+// association id of a stored import task result is not a UUID, while every
+// writer stores str() of one (BE/application/tasks.py:2186,2193 and the
+// send_mail/import workers of BE_GO). Django's UUIDField lookup raises a
+// ValidationError no request can produce, so Go answers the server error page
+// instead of handing the request off.
+var ErrInstanceSetupUnexpected = refusal.AppState("instance setup: stored association id is not a UUID")
 
 // ErrInstanceSetupExists is InstanceConfiguration.save's singleton check
 // failing inside the setup transaction (a configuration appeared after the

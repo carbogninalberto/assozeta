@@ -2,7 +2,14 @@ package service
 
 import (
 	"bytes"
+	"context"
+	"encoding/json"
+	"errors"
 	"testing"
+	"time"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // The expected values are the view's decode_base64 results on Python 3.13.
@@ -41,5 +48,84 @@ func TestModuleContains(t *testing.T) {
 	}
 	if _, _, err := moduleContains(nil, "filename"); err == nil {
 		t.Fatal("None is not iterable")
+	}
+}
+
+// attachTx answers the attachment paths under test: the Document create and
+// its commit; the other methods stay unimplemented (a call on them panics).
+type attachTx struct {
+	domain.ModulesResponsesTransaction
+	documents []domain.ModuleDocumentCreate
+	commits   int
+}
+
+func (t *attachTx) CreateDocument(_ context.Context, row domain.ModuleDocumentCreate, _ domain.ModuleResponseAudit) error {
+	t.documents = append(t.documents, row)
+	return nil
+}
+
+func (t *attachTx) Commit() error {
+	t.commits++
+	return nil
+}
+
+func (t *attachTx) Rollback() error { return nil }
+
+// A filename that is not valid UTF-8 is a JSON string holding a lone surrogate
+// escape (WTF-8): psycopg2 refuses the INSERT, so nothing is created or
+// committed and the answer is the 500 page (an application-state error).
+func TestModuleAttachmentFilenameUnencodable(t *testing.T) {
+	at := time.Date(2026, time.September, 1, 8, 0, 0, 0, time.UTC)
+	subject := NewModulesResponses(nil, nil, nil, nil, ModuleAttachmentSettings{},
+		func() time.Time { return at }, func() string { return "a1000000-0000-4000-8000-000000644002" })
+	tx := &attachTx{}
+	body := domain.RequestObject{
+		{Name: "filename", Value: "a\xed\xa0\x80.pdf"},
+		{Name: "base64", Value: "Y2lhbw=="},
+	}
+	_, err := subject.attach(context.Background(), tx, "response", body, domain.ModuleResponseAudit{At: at})
+	if !errors.Is(err, refusal.ErrAppState) {
+		t.Fatalf("err=%v, want the application-state error", err)
+	}
+	if errors.Is(err, refusal.ErrNotPorted) {
+		t.Fatal("the psycopg2 refusal must never be handed off")
+	}
+	if len(tx.documents) != 0 || tx.commits != 0 {
+		t.Fatalf("documents=%#v commits=%d, want nothing written", tx.documents, tx.commits)
+	}
+}
+
+// An uploaded file as `filename` stores the name the multipart parser gave it
+// (str(UploadedFile)), then raises where os.path.join(storing_path,
+// document.filename) does, after the document's commit; a value that is not a
+// str keeps its str().
+func TestModuleAttachmentFilenameValues(t *testing.T) {
+	at := time.Date(2026, time.September, 1, 8, 0, 0, 0, time.UTC)
+	for _, tc := range []struct {
+		name   string
+		value  any
+		stored string
+	}{
+		{"upload", domain.RequestUpload{Name: "scan&1.pdf"}, "scan&1.pdf"},
+		{"integer", json.Number("5"), "5"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			subject := NewModulesResponses(nil, nil, nil, nil, ModuleAttachmentSettings{},
+				func() time.Time { return at }, func() string { return "a1000000-0000-4000-8000-000000644001" })
+			tx := &attachTx{}
+			body := domain.RequestObject{
+				{Name: "filename", Value: tc.value},
+				{Name: "base64", Value: "Y2lhbw=="},
+			}
+			if _, err := subject.attach(context.Background(), tx, "response", body, domain.ModuleResponseAudit{At: at}); err == nil {
+				t.Fatal("want the path join's TypeError after the create")
+			}
+			if len(tx.documents) != 1 || tx.documents[0].Filename != tc.stored {
+				t.Fatalf("got %#v, want one document named %q", tx.documents, tc.stored)
+			}
+			if tx.commits != 1 {
+				t.Fatalf("got %d commits, want the document create's commit", tx.commits)
+			}
+		})
 	}
 }

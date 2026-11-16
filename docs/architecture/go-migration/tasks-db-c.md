@@ -126,7 +126,9 @@ have no Go counterpart; Go runs one job per published occurrence.
   Otherwise the MIME message is sent on a second connection, then
   `daily_email_balance += 1` and `save()` of the loaded instance (every column;
   the audit entry compares every field but the password with the stored row,
-  indexed `direct`). Any failure inside returns False and ends nothing.
+  indexed `direct`). When the configuration was deleted after it was read, `save()`'s UPDATE matches no row and
+  Django inserts it again (same key, every field) with an auditlog create entry; Go does the same (long tail PR 4,
+  accepted divergence X17; before, the run was handed to Django). Any failure inside returns False and ends nothing.
 - SMTP timeouts are 10 s per socket operation.
 
 ### send_reminders

@@ -342,6 +342,11 @@ func (s *ConsumerRestoreInstance) prepare(ctx context.Context, call *restoreCall
 		return err
 	}
 	defer archive.Close()
+	if archive.normalized() {
+		// The replacement streams the ZIP as exported and does not apply
+		// validate()'s legacy invoice links or tutor overrides: Django restores it.
+		return errConsumerImportUnsupported
+	}
 	if archive.missingMedia > 0 && !op.AllowMissingMedia {
 		return restoreStop(&call.validation, "Conferma esplicitamente l’assenza degli allegati indicati.")
 	}
@@ -483,7 +488,8 @@ func (s *ConsumerRestoreInstance) prepareMedia(ctx context.Context, call *restor
 	seen := map[string]bool{}
 	for _, identity := range archive.mediaKeys {
 		member := archive.media[identity]
-		filename := member[strings.LastIndex(member, "/")+1:]
+		// A literal backslash in the basename becomes "_" (stage_media).
+		filename := strings.ReplaceAll(member[strings.LastIndex(member, "/")+1:], "\\", "_")
 		name, key, kind, encoding, err := s.saveName("restores/" + op.ID + "/media/" + s.ids() + "/" + filename)
 		if err != nil {
 			return err
@@ -494,8 +500,8 @@ func (s *ConsumerRestoreInstance) prepareMedia(ctx context.Context, call *restor
 		seen[key] = true
 		entry := archive.zip.byName[member]
 		call.media = append(call.media, restoreStaged{identity: identity, member: member, name: name, key: key, contentType: kind,
-			encoding: encoding, size: int64(entry.UncompressedSize64)})
-		call.totalBytes += int64(entry.UncompressedSize64)
+			encoding: encoding, size: int64(entry.FileSize)})
+		call.totalBytes += int64(entry.FileSize)
 	}
 	return nil
 }

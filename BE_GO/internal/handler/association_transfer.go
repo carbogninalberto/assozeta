@@ -11,6 +11,7 @@ import (
 	"unicode"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
 	"github.com/labstack/echo/v4"
 )
@@ -254,38 +255,42 @@ func parseImportMultipart(raw []byte, boundary string) (*service.AssociationImpo
 		if err != nil {
 			return nil, nil, &restInputError{Status: 400, Detail: "Multipart form parse error - Invalid multipart data"}
 		}
-		if part.Header.Get("Content-Transfer-Encoding") != "" {
-			return nil, nil, domain.ErrAssociationTransferNotPorted
-		}
-		disposition := part.Header.Get("Content-Disposition")
-		if disposition == "" {
+		header := djangoPartHeaders(part.Header)
+		if !header.hasDisposition {
 			continue
 		}
-		parameters, ok := djangoHeaderParameters(disposition)
-		if !ok {
-			return nil, nil, domain.ErrAssociationTransferNotPorted
-		}
-		name, named := parameters["name"]
+		name, named := header.disposition["name"]
 		if !named {
 			continue
 		}
 		name = strings.TrimFunc(name, unicode.IsSpace)
-		if filename := parameters["filename"]; filename != "" {
+		if filename := header.disposition["filename"]; filename != "" {
 			sanitized, ok := djangoUploadName(filename)
 			if !ok {
-				return nil, nil, domain.ErrAssociationTransferNotPorted
+				// djangoPartHeaders keeps only valid UTF-8 lines without lone surrogates.
+				return nil, nil, domain.ErrAssociationTransferUnexpected
 			}
 			if sanitized != "" {
-				kind := part.Header.Get("Content-Type")
-				if index := strings.IndexByte(kind, ';'); index >= 0 {
-					kind = kind[:index]
+				if header.base64 && len(content) > 0 {
+					// The chunk is decoded after its white space is stripped; any failure ends the request.
+					decoded, err := pyBase64Decode(stripASCIISpace(content))
+					if err != nil {
+						return nil, nil, &restInputError{Status: 400, Detail: "Multipart form parse error - Could not decode base64 data."}
+					}
+					content = decoded
 				}
-				files[name] = &service.AssociationImportFile{Name: sanitized, ContentType: strings.ToLower(strings.TrimSpace(kind)),
-					Content: content}
+				files[name] = &service.AssociationImportFile{Name: sanitized, ContentType: header.contentType, Content: content}
 			}
 			continue
 		}
-		fields[name] = string(content)
+		if header.base64 {
+			// A field's base64 that does not decode is kept as sent.
+			if decoded, err := pyBase64Decode(content); err == nil {
+				content = decoded
+			}
+		}
+		// force_str(data, 'utf-8', errors='replace').
+		fields[name] = dto.PythonUTF8Replace(string(content))
 	}
 	upload := &service.AssociationImportUpload{File: files["file"], Password: ""}
 	if file, ok := files["owner_password"]; ok {

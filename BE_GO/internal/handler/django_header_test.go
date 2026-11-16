@@ -27,12 +27,6 @@ func TestDjangoParseHeaderMatchesDjango(t *testing.T) {
 		var status string
 		_ = json.Unmarshal(want[0], &status)
 		main, params, outcome := djangoParseHeader(line)
-		if strings.Contains(line, "utf-16") {
-			if outcome != headerNotPorted {
-				t.Errorf("%q: outcome %v; want not ported", line, outcome)
-			}
-			continue
-		}
 		if status == "err" {
 			if outcome != headerInvalid {
 				t.Errorf("%q: outcome %v; want invalid", line, outcome)

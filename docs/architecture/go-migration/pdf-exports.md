@@ -108,9 +108,13 @@ alone. Go ports both:
   fails it in a `SimpleDocTemplate` (its canvas has no `_indexAdd` or callback attribute), so they raise the same exception
   text. The `seq*` tags are ported in long tail PR 3 (`sequencer.go`: one process-wide sequencer, as reportlab's
 `getSequencer()`; 53 paragraph texts checked against reportlab 4.2.5; a template that prints the sequencer object
-itself stays refused). Still refused: `bullet`, `<a name="..."/>` anchors and `#name` or `document:name` links (named destinations
-  are not ported), `img` whose `src` is not a base64 JPEG data URL (a file or URL read depends on the server; a PNG or other
-  format is re-encoded by PIL), `<unichar name="...">` (Python's `unicodedata` names), a colour that is CMYK, has an alpha,
+itself stays refused). Long tail PR 4 (agent B): an `img` `src` is read as reportlab's `ImageReader` reads it
+(`open_for_read`: the name as a path relative to the working directory, else a `data:` URL, else `urlopen`; any failure
+is its `Cannot open resource` OSError with the reader's identity), through `ResourceOpener` (`resource.go`), and a
+template that prints the sequencer object answers its repr; both object addresses are `pystr.ObjectAddress` (approved
+divergence X18). Still refused: `bullet`, `<a name="..."/>` anchors and `#name` or `document:name` links (named destinations
+  are not ported), `img` whose image is not a JPEG (a PNG or other format is re-encoded by PIL) or whose `src` is an `ftp:`
+  URL, `<unichar name="...">` (Python's `unicodedata` names), a colour that is CMYK, has an alpha,
   or is written as a Python expression, `inf` or `nan` as numbers, and in `<para>` the indents, justified lines, borders,
   text transforms, `autoLeading`, `wordWrap`, end dots and hyphenation.
 

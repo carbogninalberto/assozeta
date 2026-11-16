@@ -6,7 +6,29 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
+
+// course-subscriptions/<pk>/update measured form JSON bands (owner decision
+// X15), measured with CPython 3.13.16 on the parity harness's Django:
+//   - multiple_quote: D <= 9934 normal answer, D >= 9935 the plain 500 page with
+//     nothing written (the view is atomic);
+//   - events: D <= 9941 normal answer, D >= 9942 the same 500 page.
+//
+// D is auditJSONDepth's maximum nesting of the form text.
+const (
+	courseSubscriptionUpdateQuoteJSONDepth  = 9935
+	courseSubscriptionUpdateEventsJSONDepth = 9942
+)
+
+var errCourseSubscriptionFormJSONTooDeep = refusal.AppState("course subscription update: form JSON nested past the measured depth")
+
+// courseSubscriptionFormJSONTooDeep is the update's measured band: a
+// RecursionError while DRF reads the field, before any field error is returned.
+func courseSubscriptionFormJSONTooDeep(depths map[string]int) bool {
+	return depths["multiple_quote"] >= courseSubscriptionUpdateQuoteJSONDepth ||
+		depths["events"] >= courseSubscriptionUpdateEventsJSONDepth
+}
 
 // Membership validation and payment period messages (validate() and update()).
 const (
@@ -364,8 +386,8 @@ func (s *CourseSubscriptions) Update(ctx context.Context, identity domain.Resolv
 	}
 	group := supplierGroup(request.GroupHeader)
 	write, invalid := dto.ParseCourseSubscriptionWrite(body, form)
-	if write.FormJSON {
-		return nil, ErrCourseSubscriptionNotPorted
+	if courseSubscriptionFormJSONTooDeep(write.FormJSONDepth) {
+		return nil, errCourseSubscriptionFormJSONTooDeep
 	}
 	if invalid == nil {
 		invalid = map[string]any{}
@@ -425,6 +447,11 @@ func (s *CourseSubscriptions) Update(ctx context.Context, identity domain.Resolv
 	}
 	save := domain.CourseSubscriptionSave{Row: row, Changes: changes, Representation: dto.CourseSubscriptionRepr(row, memory),
 		AssociationID: instance.CourseAssociationID, ResolutionPath: "course.sport_association"}
+	// Model.save(): the UPDATE is where the jsonb column meets multiple_quote
+	// (after the events edit, which the atomic update rolls back with it).
+	if err = courseSubscriptionJSONValue(write, save.Row.MultipleQuote); err != nil {
+		return nil, err
+	}
 	if err = tx.SaveCourseSubscription(ctx, save, context); err != nil {
 		return nil, err
 	}

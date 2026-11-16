@@ -342,6 +342,12 @@ func (t *subscriptionCreateTransaction) InsertRelation(ctx context.Context, asso
 	return id, err
 }
 
+// MarkRelationPrimary is AssociateTutorRelation.save() of get_main_tutor.
+func (t *subscriptionCreateTransaction) MarkRelationPrimary(ctx context.Context, id int64) error {
+	_, err := t.tx.ExecContext(ctx, `UPDATE application_associatetutorrelation SET is_primary=true WHERE id=$1`, id)
+	return err
+}
+
 func (t *subscriptionCreateTransaction) AuditEntry(ctx context.Context, entry domain.SubscriptionCreateAudit) error {
 	return appendSubscriptionCreateAudit(ctx, t.tx, entry)
 }
@@ -472,6 +478,18 @@ func insertPlaceholderDocument(ctx context.Context, tx *sqlx.Tx, document domain
 func (t *subscriptionCreateTransaction) CreatePlaceholderDocument(ctx context.Context, document domain.NewDocument, actorAssociation *string,
 	audit domain.LoginAuditContext, at time.Time) error {
 	return insertPlaceholderDocument(ctx, t.tx, document, actorAssociation, audit, at)
+}
+
+// DeletePlaceholderDocument is document.delete() of a placeholder Document
+// whose storage write failed: the row and auditlog's delete entry. No other row
+// can reference a Document created in the same request.
+func (t *subscriptionCreateTransaction) DeletePlaceholderDocument(ctx context.Context, document domain.NewDocument, actorAssociation *string,
+	audit domain.LoginAuditContext, at time.Time) error {
+	changes, _, err := deleteModelWithAuditReverse(ctx, t.tx, "docmanager_document", "document_id", document.ID, documentReverse)
+	if err != nil {
+		return err
+	}
+	return appendModelAuditForApp(ctx, t.tx, "docmanager", documentAudit(document.ID, 2, changes, actorAssociation, audit, at))
 }
 
 func (t *subscriptionCreateTransaction) InsertPlaceholderCertificate(ctx context.Context, id, user, document string, expiration,

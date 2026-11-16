@@ -61,12 +61,14 @@ import copy
 import json
 from decimal import Context, Decimal, ROUND_HALF_EVEN, ROUND_HALF_UP
 from pathlib import Path
+from urllib.parse import quote
 
 OUTPUT = Path(__file__).with_name('payment_writes_http.json')
 IDS = json.loads(Path(__file__).with_name('message_mutations.json').read_text())['ids']
 OWN, FOREIGN, OWNER = IDS['own_association'], IDS['foreign_association'], IDS['owner']
 ids = iter(f'a1000000-0000-4000-8000-{988001 + n:012d}' for n in range(300))
 SERVER = '<stable-server-error-page>'
+BAD_REQUEST = '<bad-request-page>'
 EMPTY = '<empty>'
 
 CATEGORIES = {
@@ -135,9 +137,14 @@ def row(**values):
 
 
 def payment(**values):
+    return keyed_payment(next(ids), **values)
+
+
+def keyed_payment(key, **values):
+    """A payment row with a chosen primary key (the id iterator is untouched)."""
     seeded = row(**{'user_id': OWNER, 'sport_association_id': OWN, 'creation_date': '2026-10-01T08:00:00Z', 'amount': '10.00',
                     'description': 'Quota', 'payment_category_id': CATEGORIES['own']['id'], **values})
-    return {'id': next(ids), **seeded}
+    return {'id': key, **seeded}
 
 
 # An invoice of two updated payments: the update prints it (print_document_invoice.apply) after the save.
@@ -184,6 +191,9 @@ PAYMENTS = {
     'up_attach_object': payment(),
     'up_attach_traversal': payment(),
     'up_attach_directory': payment(),
+    'up_form_body': keyed_payment('a1000000-0000-4000-8000-000000988460'),
+    'up_form_blank_creation': keyed_payment('a1000000-0000-4000-8000-000000988461'),
+    'up_form_invalid_boolean': keyed_payment('a1000000-0000-4000-8000-000000988462'),
 }
 STATE = copy.deepcopy(PAYMENTS)
 cases = []
@@ -1108,6 +1118,116 @@ add('bulk-add-overflow-server-error', 'owner', BULK, 500, SERVER, body={'associa
     effect=effect('owner'))
 add('bulk-add-invalid-payment-date-server-error', 'owner', BULK, 500, SERVER,
     body={'associate_ids': [A('mario')], 'amount': 1, 'payment_date': 'domani'}, effect=effect('owner'))
+
+# --- payment_id in the add body, storage-refused attachment names and update form bodies -------------
+# payment_id is the model's primary key: the serializer's UUIDField and its UniqueValidator on Payment.objects
+# (live, X-Group-Id aware) validate it, and the created payment keeps the key.
+add('add-payment-id-invalid', 'owner', ADD, 400, errors_repr([('payment_id', [('Must be a valid UUID.', 'invalid')])]),
+    body={'creation_date': '2026-06-01', 'payment_date': None, 'payment_id': 'not-a-uuid', 'complex_item': None},
+    effect=effect('owner'))
+add('add-payment-id-taken', 'owner', ADD, 400, errors_repr([('payment_id', [('payment with this payment id already exists.', 'unique')])]),
+    body={'creation_date': '2026-06-01', 'payment_date': None, 'payment_id': PAYMENTS['up_plain']['id'], 'complex_item': None},
+    effect=effect('owner'))
+NEW_PAYMENT_ID = 'a1000000-0000-4000-8000-000000988450'
+new_id_values = {**plain, 'creation_date': '2026-06-01T00:00:00Z', 'amount': '13.00', 'description': 'Chiave scelta'}
+added('add-payment-id-new', 'owner', {'creation_date': '2026-06-01', 'payment_date': None, 'amount': '13', 'description': 'Chiave scelta',
+                                      'payment_id': NEW_PAYMENT_ID, 'complex_item': None},
+      new_id_values, response=payment_item(row(**new_id_values), NEW_PAYMENT_ID))
+
+# A name Storage.save refuses: the Document row is created and audited, then default_storage.save raises
+# SuspiciousFileOperation, a SuspiciousOperation: Django answers its plain 400 page. The payment and the Document stay
+# (the request is not atomic) and nothing is linked or stored.
+added('add-attachment-traversal-name-keeps-rows', 'owner',
+      {'creation_date': '2026-03-20', 'payment_date': None, 'amount': '12', 'description': 'Traversal',
+       'complex_item': None, 'attachments_data': [{'document': b64(PDF), 'filename': '../ricevuta.pdf'}]},
+      {**plain, 'creation_date': '2026-03-20T00:00:00Z', 'amount': '12.00', 'description': 'Traversal'}, status=400,
+      response=BAD_REQUEST, finish=False, documents=[('../ricevuta.pdf', PDF, True)])
+
+
+# A form body is a QueryDict: partial=True validates the HTML input (a missing field is skipped, an empty one follows
+# allow_null/allow_blank), the view's del of a blank creation_date or payment_date or of a payment_id raises
+# AttributeError on the immutable QueryDict (the 500 page), and complex_item/subscription_id are read as text.
+def updated_form(name, actor, label, raw, changes, *, status=200, response=None):
+    """A urlencoded PATCH: Payment.save() of the in-memory payment."""
+    old = STATE[label]
+    new = {**old, **changes}
+    columns = {column: value for column, value in new.items() if column != 'id' and old[column] != value}
+    STATE[label] = new
+    audit_changes = updated_changes(old, new)
+    audit = [event(label, 1, audit_changes, DIRECT)] if audit_changes else []
+    if response is None:
+        response = {'data': {'payment': payment_item(new, old['id'])}}
+    add(name, actor, UPDATE(label), status, response, method='PATCH', raw_body=raw,
+        content_type='application/x-www-form-urlencoded', effect={**effect(actor, changed={label: columns}, audit=audit), 'documents': []})
+
+
+updated_form('update-form-body', 'owner', 'up_form_body', 'description=Nuova+descrizione&amount=12.5',
+             {'amount': '12.50', 'description': 'Nuova descrizione'})
+add('update-form-blank-creation-date-server-error', 'owner', UPDATE('up_form_blank_creation'), 500, SERVER, method='PATCH',
+    raw_body='creation_date=&amount=3', content_type='application/x-www-form-urlencoded', effect=effect('owner'))
+add('update-form-invalid-boolean', 'owner', UPDATE('up_form_invalid_boolean'), 400, {'paid': ['Must be a valid boolean.']}, method='PATCH',
+    raw_body='paid=maybe', content_type='application/x-www-form-urlencoded', effect=effect('owner'))
+# A form JSON field whose text parses but keeps a lone surrogate escape: the
+# serializer validates and saves, auditlog's pre_save update entry is written,
+# then jsonb refuses the value (Django's DataError, the plain 500 page). The
+# entry stays and the payment is unchanged (the view is not atomic).
+SURROGATE_META = [{'amount': '0.1', 'title': '\ud800'}]
+surrogate_total = float('20') + float('0.1')
+surrogate_old = STATE['up_meta']
+surrogate_new = {**surrogate_old, 'amount': '20.10', 'meta_payment_categories': SURROGATE_META}
+add('update-form-meta-lone-surrogate-keeps-audit', 'owner', UPDATE('up_meta'), 500, SERVER, method='PATCH',
+    raw_body='amount=20&meta_payment_categories=' + quote(json.dumps(SURROGATE_META)),
+    content_type='application/x-www-form-urlencoded',
+    effect=effect('owner', audit=[event('up_meta', 1, updated_changes(surrogate_old, surrogate_new, repr(surrogate_total)), DIRECT)]))
+
+# --- form JSON fields at the interpreter's recursion band (owner decision X15) -----------------------
+# PaymentEntrySerializer validates course and meta_payment_categories with json.loads. On the parity
+# harness's Django (CPython 3.13.16) a text of 9934 levels validates and saves as any shallow value,
+# 9935..9937 parse and reach the save, where auditlog's pre_save entry is written and psycopg2's
+# json.dumps raises RecursionError (the entry stays, the payment is unchanged, the plain 500 page),
+# and 9938 raises inside validation (the plain 500 page, nothing written). The 9934 body repeats its
+# key, so the stored value stays shallow: the harness's state snapshot walks every JSON value in
+# Python, which cannot hold a value this deep.
+
+
+def json_depth(text):
+    """The total nesting of a JSON text ('[]' is 1)."""
+    depth = deepest = 0
+    for char in text:
+        if char in '[{':
+            depth += 1
+            deepest = max(deepest, depth)
+        elif char in ']}':
+            depth -= 1
+    return deepest
+
+
+def deep_objects(levels):
+    """`levels` nested objects in json.dumps' own spelling (the measured shape)."""
+    return '{"a": ' * levels + '1' + '}' * levels
+
+
+# Django's edge moves with the value's shape and by a level or two with the live stack: the cases use the measured
+# shape ({"deep": <nested objects>}) and sit inside each band with a margin, the audit-only band in its middle.
+DEEP_COURSE_NORMAL = '{"label": ' + deep_objects(9899) + ', "label": "Corso"}'
+DEEP_COURSE_AUDIT = '{"deep": ' + deep_objects(9935) + '}'
+DEEP_COURSE_REFUSED = '{"deep": ' + deep_objects(9969) + '}'
+assert [json_depth(text) for text in (DEEP_COURSE_NORMAL, DEEP_COURSE_AUDIT, DEEP_COURSE_REFUSED)] == [9900, 9936, 9970]
+# A key range of their own (the earlier id iterators are not touched).
+PAYMENTS['up_deep_course'] = keyed_payment('a1000000-0000-4000-8000-000000988463')
+PAYMENTS['up_deep_course_audit'] = keyed_payment('a1000000-0000-4000-8000-000000988464')
+PAYMENTS['up_deep_course_refused'] = keyed_payment('a1000000-0000-4000-8000-000000988465')
+for label in ('up_deep_course', 'up_deep_course_audit', 'up_deep_course_refused'):
+    STATE[label] = copy.deepcopy(PAYMENTS[label])
+
+updated_form('update-form-course-json-at-depth-band', 'owner', 'up_deep_course', 'course=' + quote(DEEP_COURSE_NORMAL),
+             {'course': {'label': 'Corso'}})
+for suffix, text in (('audit-band', DEEP_COURSE_AUDIT),):
+    add(f'update-form-course-json-{suffix}-keeps-audit', 'owner', UPDATE('up_deep_course_audit'), 500, SERVER, method='PATCH',
+        raw_body='course=' + quote(text), content_type='application/x-www-form-urlencoded',
+        effect=effect('owner', audit=[event('up_deep_course_audit', 1, {'course': ['null', text]}, DIRECT)]))
+add('update-form-course-json-past-depth-band-server-error', 'owner', UPDATE('up_deep_course_refused'), 500, SERVER, method='PATCH',
+    raw_body='course=' + quote(DEEP_COURSE_REFUSED), content_type='application/x-www-form-urlencoded', effect=effect('owner'))
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Payment add, update and bulk add authored sequence with payment and audit effects',

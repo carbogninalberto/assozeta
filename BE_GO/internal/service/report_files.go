@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"math"
 	"math/big"
 	"strconv"
@@ -14,6 +15,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/pdfexport"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/pdfrender"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/xlsxexport"
 )
 
@@ -37,18 +39,29 @@ type ReportDownload struct {
 // reportRunStore lends the query store to the tool functions a run uses.
 type reportRunStore struct{ BusinessMCPQueryStore }
 
+// mcpRunStoreOnly is a business store call during a saved-report run: a run
+// only builds files, and the three file tools never list or save reports.
+var mcpRunStoreOnly = refusal.AppState("business store called during a saved-report run")
+
 func (reportRunStore) SavedReports(context.Context, string, string) ([]domain.SavedReport, error) {
-	return nil, ErrBusinessMCPNotPorted
+	return nil, mcpRunStoreOnly
 }
 func (reportRunStore) InsertSavedReport(context.Context, string, string, string, domain.SavedReportWrite) error {
-	return ErrBusinessMCPNotPorted
+	return mcpRunStoreOnly
 }
 func (reportRunStore) ActiveUserExists(context.Context, string) (bool, error) {
-	return false, ErrBusinessMCPNotPorted
+	return false, mcpRunStoreOnly
 }
 func (reportRunStore) AssociationExists(context.Context, string) (bool, error) {
-	return false, ErrBusinessMCPNotPorted
+	return false, mcpRunStoreOnly
 }
+
+// errReportRunTool is a tool name RunGroup does not pass to runFileTool (it
+// passes the three file tools only).
+var errReportRunTool = refusal.AppState("saved-report run of a tool that does not build a file")
+
+// errReportRunResult is a file tool answering no dict: all three answer one.
+var errReportRunResult = refusal.AppState("saved-report run result that is not a dict")
 
 // runFileTool runs one of the three file tools as SavedReportViewSet.run
 // does: an exception is the JSON 500, a result with 'error' the 400 with the
@@ -60,7 +73,19 @@ func (s *SavedReports) runFileTool(ctx context.Context, tool string, params doma
 	raised := false
 	ctx = context.WithValue(WithMCPRaised(ctx, &raised), reportRunKey{}, true)
 	tools := &BusinessMCPTools{store: reportRunStore{s.store}, association: association, now: s.now, group: group}
-	result, err := tools.Execute(ctx, tool, params)
+	params = dto.PythonDict(params)
+	var result any
+	var err error
+	switch tool {
+	case "export_data":
+		result, err = tools.exportData(ctx, params)
+	case "export_multi_sheet":
+		result, err = tools.exportMultiSheet(ctx, params)
+	case "get_attendance_matrix":
+		result, err = tools.attendance(ctx, params)
+	default:
+		return nil, errReportRunTool
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +94,7 @@ func (s *SavedReports) runFileTool(ctx context.Context, tool string, params doma
 	}
 	object, ok := result.(domain.RequestObject)
 	if !ok {
-		return nil, ErrBusinessMCPNotPorted
+		return nil, errReportRunResult
 	}
 	if message, failed := object.Lookup("error"); failed {
 		text, _ := message.(string)
@@ -92,12 +117,12 @@ func (s *SavedReports) runFileTool(ctx context.Context, tool string, params doma
 	return &ReportDownload{Bytes: data, ContentType: contentType.(string), Disposition: pdfrender.HeaderBytes(disposition)}, nil
 }
 
-// mcpRunOnly marks an exception whose text is not given: a saved-report run
-// answers every exception alike, the MCP transport returns str(e) and stays
-// refused.
-func mcpRunOnly(ctx context.Context) error {
+// mcpRunOnly marks an exception of a document builder whose text the call
+// site does not know (text ""): a saved-report run answers every exception
+// alike, the other hosts get a BusinessToolRaised with the closest text.
+func mcpRunOnly(ctx context.Context, text string) error {
 	if ctx.Value(reportRunKey{}) == nil {
-		return ErrBusinessMCPNotPorted
+		return newBusinessToolRaised(text, nil)
 	}
 	markMCPRaised(ctx)
 	return nil
@@ -125,7 +150,9 @@ func mcpExportColumns(data []any, labels domain.RequestObject) ([]string, []stri
 		if label, present := labels.Lookup(field.Name); present {
 			text, ok := label.(string)
 			if !ok {
-				return nil, nil, ErrBusinessMCPNotPorted // a label that is not a str
+				// export_data's PDF branch raises on the label's Paragraph and
+				// export_data's XLSX branch on its cell before this.
+				return nil, nil, errReportExportLabel
 			}
 			header = text
 		}
@@ -134,6 +161,20 @@ func mcpExportColumns(data []any, labels domain.RequestObject) ([]string, []stri
 	return columns, headers, nil
 }
 
+// errReportExportLabel is a column label that is not a str reaching the
+// column headers: both exporters reject it earlier.
+var errReportExportLabel = refusal.AppState("business MCP export label that is not a string")
+
+// reportlabTableText is reportlab's ValueError for a table without a column:
+// Table.identity() with a placeholder object address. rows counts the header
+// row the exporter prepends.
+func reportlabTableText(rows int) string {
+	return fmt.Sprintf("<Table@0x0000000000000000 %d rows x 0 cols>... must have at least a row and column", rows)
+}
+
+// mcpExportXLSXValue is format_export_data's value in a workbook cell. A JSON
+// column holds no non-finite float (Python's json.loads makes 1e400 inf, but
+// PostgreSQL rejects Infinity) and an integer outside int64 stays an int.
 func mcpExportXLSXValue(value any) (xlsxexport.Value, error) {
 	formatted, err := mcpFormatExportValue(value)
 	if err != nil {
@@ -144,23 +185,50 @@ func mcpExportXLSXValue(value any) (xlsxexport.Value, error) {
 		return xlsxexport.StrValue(typed), nil
 	case json.Number:
 		text := string(typed)
-		if strings.ContainsAny(text, ".eEinIN") {
+		if strings.ContainsAny(text, ".eE") {
 			number, err := strconv.ParseFloat(text, 64)
 			if err != nil || math.IsInf(number, 0) || math.IsNaN(number) {
-				return xlsxexport.Value{}, ErrBusinessMCPNotPorted
+				return xlsxexport.Value{}, mcpXLSXNonFinite
 			}
 			return xlsxexport.FloatValue(number), nil
 		}
+		if whole, ok := new(big.Int).SetString(text, 10); ok && !whole.IsInt64() {
+			return xlsxexport.BigIntValue(whole.String()), nil
+		}
 		number, err := strconv.ParseInt(text, 10, 64)
 		if err != nil {
-			return xlsxexport.Value{}, ErrBusinessMCPNotPorted
+			return xlsxexport.Value{}, mcpXLSXValueType
 		}
 		return xlsxexport.IntValue(number), nil
 	case domain.RequestObject, []any:
 		return xlsxexport.ObjectValue(dto.PythonStr(typed)), nil
 	}
-	return xlsxexport.Value{}, ErrBusinessMCPNotPorted
+	return xlsxexport.Value{}, mcpXLSXValueType
 }
+
+// mcpXLSXNonFinite is a non-finite float in a query result: a JSON column
+// cannot hold one.
+var mcpXLSXNonFinite = refusal.AppState("business MCP query result with a non-finite float")
+
+// errReportLabelNonFinite is a column label float() reads as an infinity: a
+// label comes from the request (the run's overrides) or the tool arguments,
+// and Django writes the header pandas formats ('inf'), so it is handed off.
+var errReportLabelNonFinite = refusal.New("business MCP non-finite export label not ported")
+
+// mcpNonFiniteNumber reports a JSON float literal float() reads as an infinity.
+func mcpNonFiniteNumber(number json.Number) bool {
+	text := string(number)
+	if !strings.ContainsAny(text, ".eE") {
+		return false
+	}
+	// ParseFloat answers ±Inf (with ErrRange) where float() overflows.
+	value, _ := strconv.ParseFloat(text, 64)
+	return math.IsInf(value, 0) || math.IsNaN(value)
+}
+
+// mcpXLSXValueType is a query result value of a type the serializer never
+// produces: strings, numbers, booleans, None, lists and dicts.
+var mcpXLSXValueType = refusal.AppState("business MCP query result of an unexpected type")
 
 // labelFailureText is the TypeError pandas raises for a column label that is a
 // list or a dict (a label that is not hashable cannot rename a column).
@@ -191,6 +259,10 @@ func mcpReportSheet(title string, data []any, labels domain.RequestObject) (xlsx
 				var err error
 				if whole, ok := new(big.Int).SetString(string(typed), 10); ok && !whole.IsInt64() {
 					label = xlsxexport.BigIntValue(whole.String()) // an int label of any size names the column
+				} else if mcpNonFiniteNumber(typed) {
+					// A label float() makes inf (1e400 in the run's overrides):
+					// pandas writes the header 'inf' and Django answers 200.
+					return xlsxexport.ReportSheet{}, errReportLabelNonFinite
 				} else if label, err = mcpExportXLSXValue(typed); err != nil {
 					return xlsxexport.ReportSheet{}, err
 				}
@@ -244,17 +316,19 @@ func raisedText(err error) (string, bool) {
 }
 
 // mcpBuiltFile maps a document builder's outcome: an exception of the Django
-// exporter is a raisedFile with its text, a refused input stays refused.
+// exporter is a raisedFile with its text, an input pdfexport does not
+// reproduce keeps its own refusal, xlsxexport's unexpected input is app
+// state and passes through.
 func mcpBuiltFile(ctx context.Context, file []byte, err error) ([]byte, error) {
 	if errors.Is(err, xlsxexport.ErrDjango) || errors.Is(err, pdfexport.ErrLayout) {
 		text, ok := djangoFailureText(err)
 		if !ok {
-			return nil, mcpRunOnly(ctx)
+			return nil, mcpRunOnly(ctx, "")
 		}
 		return nil, &raisedFile{text: text}
 	}
-	if errors.Is(err, pdfexport.ErrNotPorted) { // xlsxexport.ErrUnexpectedInput is app state: it passes through
-		return nil, ErrBusinessMCPNotPorted
+	if errors.Is(err, pdfexport.ErrNotPorted) {
+		return nil, fmt.Errorf("pdf exporter: %w", err)
 	}
 	return file, err
 }
@@ -268,38 +342,53 @@ func (t *BusinessMCPTools) exportXLSX(ctx context.Context, data []any, labels do
 	return mcpBuiltFile(ctx, file, err)
 }
 
-// mcpOptionalText is a str argument with a ” default: falsy values count as
-// ”; ok is false for other values that are not a str.
-func mcpOptionalText(arguments domain.RequestObject, name string) (string, bool) {
-	value, _ := arguments.Lookup(name)
+// mcpPDFText is a str argument of PDFExporter: a falsy value is the empty
+// text, a truthy non-str raises in Paragraph's text.split(), reported as the
+// second value.
+func mcpPDFText(value any) (string, string) {
 	if !mcpTruthy(value) {
-		return "", true
+		return "", ""
 	}
 	text, ok := value.(string)
-	return text, ok
+	if !ok {
+		return "", "'" + mcpValueTypeName(value) + "' object has no attribute 'split'"
+	}
+	return text, ""
 }
 
 func (t *BusinessMCPTools) exportPDF(ctx context.Context, data []any, labels domain.RequestObject, title string, arguments domain.RequestObject) ([]byte, error) {
-	raised := func() ([]byte, error) { return nil, mcpRunOnly(ctx) }
-	// PDFExporter raises on: a label that is not a str (Paragraph), a table
-	// without columns, a header or body text that is not a str (stringWidth,
-	// Paragraph). The footer is written with '%s'.
+	raised := func(text string) ([]byte, error) { return nil, &raisedFile{text: text} }
+	// PDFExporter builds the header Paragraphs, then the table, then the
+	// text_before and text_after Paragraphs; the page callback draws
+	// header_text or title with canvas.drawCentredString.
 	columns, _, _ := mcpExportColumns(data, nil)
 	if len(columns) == 0 {
-		return raised()
+		// Table([]): reportlab's text carries an object address; the address
+		// is a fixed placeholder because Go has no stable one.
+		return nil, mcpRunOnly(ctx, reportlabTableText(len(data)+1))
 	}
 	for _, column := range columns {
 		if label, present := labels.Lookup(column); present {
 			if _, ok := label.(string); !ok {
-				return raised()
+				return raised("'" + mcpValueTypeName(label) + "' object has no attribute 'split'")
 			}
 		}
 	}
-	header, headerOK := mcpOptionalText(arguments, "header_text")
-	before, beforeOK := mcpOptionalText(arguments, "text_before")
-	after, afterOK := mcpOptionalText(arguments, "text_after")
-	if !headerOK || !beforeOK || !afterOK {
-		return raised()
+	before, failure := mcpPDFText(mcpLookupOr(arguments, "text_before", ""))
+	if failure != "" {
+		return raised(failure)
+	}
+	after, failure := mcpPDFText(mcpLookupOr(arguments, "text_after", ""))
+	if failure != "" {
+		return raised(failure)
+	}
+	header := ""
+	if value := mcpLookupOr(arguments, "header_text", ""); mcpTruthy(value) {
+		text, ok := value.(string)
+		if !ok {
+			return raised("'" + mcpValueTypeName(value) + "' object has no attribute 'decode'")
+		}
+		header = text
 	}
 	columns, headers, err := mcpExportColumns(data, labels)
 	if err != nil {
@@ -344,21 +433,28 @@ func mcpFileResult(filename, contentType string, file []byte) domain.RequestObje
 // exportSheets is the end of tool_export_multi_sheet for a run: the file
 // name, the workbook and the result's file keys.
 func (t *BusinessMCPTools) exportSheets(ctx context.Context, prepared []reportSheetData, specs []any, arguments domain.RequestObject) (any, error) {
-	raise := func() (any, error) { return mcpErrorResult(""), mcpRunOnly(ctx) }
+	filenameValue := mcpLookupOr(arguments, "filename", "Export")
 	name := "Export"
-	switch value := mcpLookupOr(arguments, "filename", "Export").(type) {
+	switch value := filenameValue.(type) {
 	case string:
-		var err error
-		if name, err = SanitizeText(value, "-"); err != nil {
-			return nil, err
-		}
+		name = sanitizeFilename(value)
 	default:
 		if mcpTruthy(value) {
-			return raise() // re.sub on a value that is not a str
+			// sanitize_text: re.sub on a value that is not a str.
+			return mcpRaisedResult(ctx, "expected string or bytes-like object, got '"+mcpValueTypeName(value)+"'")
 		}
 		name = dto.PythonStr(value)
 	}
 	var sheets []xlsxexport.ReportSheet
+	// ExcelWriter's close answers "At least one sheet must be visible" for the
+	// workbook of a sheet that failed before df.to_excel wrote it, when no
+	// earlier sheet was written; otherwise the original error propagates.
+	raiseBefore := func(text string) (any, error) {
+		if len(sheets) == 0 {
+			text = "At least one sheet must be visible"
+		}
+		return mcpRaisedResult(ctx, text)
+	}
 	for _, item := range prepared {
 		title := item.model
 		if value, present := item.spec.Lookup("title"); present {
@@ -366,19 +462,32 @@ func (t *BusinessMCPTools) exportSheets(ctx context.Context, prepared []reportSh
 		}
 		text, ok := title.(string)
 		if !ok {
-			return raise() // raw_title[:31] or the name lookup fails
+			// raw_title[:31]: a dict answers the slice KeyError, a list an
+			// unhashable sheet name, the other types fail to slice.
+			switch title.(type) {
+			case []any:
+				return raiseBefore("unhashable type: 'list'")
+			case domain.RequestObject:
+				return raiseBefore("slice(None, 31, None)")
+			}
+			return raiseBefore("'" + mcpValueTypeName(title) + "' object is not subscriptable")
 		}
 		labels := domain.RequestObject{}
 		if value, _ := item.spec.Lookup("column_labels"); mcpTruthy(value) {
 			object, ok := value.(domain.RequestObject)
 			if !ok {
-				return raise() // .get on a value that is not a dict
+				return raiseBefore("'" + mcpValueTypeName(value) + "' object has no attribute 'get'")
 			}
 			labels = dto.PythonDict(object)
 		}
 		sheet, err := mcpReportSheet(text, item.data, labels)
 		if errors.Is(err, xlsxexport.ErrDjango) {
-			return raise()
+			// The label failures happen while to_excel writes the header cells
+			// of a sheet that already exists.
+			if failure, ok := djangoFailureText(err); ok {
+				return mcpRaisedResult(ctx, failure)
+			}
+			return nil, mcpRunOnly(ctx, "")
 		}
 		if err != nil {
 			return nil, err
@@ -396,11 +505,9 @@ func (t *BusinessMCPTools) exportSheets(ctx context.Context, prepared []reportSh
 	if ctx.Value(reportRunKey{}) != nil {
 		return result, nil
 	}
-	// The MCP transport answers the whole dict (row and sheet counts, save_info).
-	filename, ok := mcpLookupOr(arguments, "filename", "Export").(string)
-	if !ok {
-		return nil, ErrBusinessMCPNotPorted
-	}
+	// The MCP transport answers the whole dict (row and sheet counts, save_info);
+	// the arguments are written back as they came.
+	filenameText := dto.PythonStr(filenameValue)
 	rows := 0
 	for _, item := range prepared {
 		rows += len(item.data)
@@ -417,8 +524,8 @@ func (t *BusinessMCPTools) exportSheets(ctx context.Context, prepared []reportSh
 		domain.RequestField{Name: "row_count", Value: json.Number(strconv.Itoa(rows))},
 		domain.RequestField{Name: "sheet_count", Value: json.Number(strconv.Itoa(len(prepared)))},
 		domain.RequestField{Name: "save_info", Value: mcpObj("tool_name", "export_multi_sheet",
-			"params", mcpObj("filename", filename, "sheets", sheetsValue),
-			"name", filename+" - "+t.now().Format("02/01/2006"), "description", "Export multi-foglio "+filename+" - "+hint,
+			"params", mcpObj("filename", filenameValue, "sheets", sheetsValue),
+			"name", filenameText+" - "+t.now().Format("02/01/2006"), "description", "Export multi-foglio "+filenameText+" - "+hint,
 			"description_hint", hint, "ui_config", mcpObj(), "model_names", modelNames)})
 	return result, nil
 }
@@ -426,7 +533,7 @@ func (t *BusinessMCPTools) exportSheets(ctx context.Context, prepared []reportSh
 // attendanceFile is the export branch of tool_get_attendance_matrix for a
 // run: the PDF, or the workbook in one of its three layouts.
 func (t *BusinessMCPTools) attendanceFile(ctx context.Context, matrices []*attendanceMatrix, multi bool, arguments domain.RequestObject) (any, error) {
-	raised := func() (any, error) { return mcpErrorResult(""), mcpRunOnly(ctx) }
+	raised := func(text string) (any, error) { return mcpErrorResult(""), mcpRunOnly(ctx, text) }
 	pdf := false
 	if format, ok := mcpLookupOr(arguments, "format", "xlsx").(string); ok && format == "pdf" {
 		pdf = true
@@ -436,7 +543,8 @@ func (t *BusinessMCPTools) attendanceFile(ctx context.Context, matrices []*atten
 		// f'Presenze - {course}': a course without a title is written None.
 		name = "Presenze - " + dto.PythonStr(mcpOptional(matrices[0].course))
 		if matrices[0].course == nil && !pdf {
-			return raised() // the sheet name is a slice of the title
+			// (title or course_title)[:31] with course_title None.
+			return raised("'NoneType' object is not subscriptable")
 		}
 	}
 	var document pdfexport.Attendance
@@ -446,7 +554,8 @@ func (t *BusinessMCPTools) attendanceFile(ctx context.Context, matrices []*atten
 		if matrix.course != nil {
 			title = *matrix.course
 		} else if pdf && len(matrices) > 1 {
-			return raised() // Paragraph(None) above the course's table
+			// Paragraph(None): its text.split() raises.
+			return raised("'NoneType' object has no attribute 'split'")
 		}
 		dates := make([]string, len(matrix.dates))
 		for i, date := range matrix.dates {
@@ -495,45 +604,23 @@ func (t *BusinessMCPTools) attendanceFile(ctx context.Context, matrices []*atten
 }
 
 // attendanceSaveInfo adds row_count, total_dates and save_info to the file
-// result of tool_get_attendance_matrix. Argument values it writes back as
-// they came stay refused unless they are strings (booleans for the flags).
+// result of tool_get_attendance_matrix. Django writes the arguments back as
+// they came; the f-strings read them with str().
 func (t *BusinessMCPTools) attendanceSaveInfo(result domain.RequestObject, matrices []*attendanceMatrix, multi bool,
 	arguments domain.RequestObject) (any, error) {
-	text := func(name string) (string, bool, bool) {
-		value, present := arguments.Lookup(name)
-		if !present || value == nil {
-			return "", false, true
-		}
-		str, ok := value.(string)
-		return str, str != "", ok
-	}
-	params := mcpObj("export", true)
-	format, ok := mcpLookupOr(arguments, "format", "xlsx").(string)
-	if !ok {
-		return nil, ErrBusinessMCPNotPorted
-	}
-	params = append(params, domain.RequestField{Name: "format", Value: format})
-	var courseID, courseName, dateFrom, dateTo string
+	params := mcpObj("export", mcpLookupOr(arguments, "export", false))
+	params = append(params, domain.RequestField{Name: "format", Value: mcpLookupOr(arguments, "format", "xlsx")})
+	var courseID, courseName, dateFrom, dateTo any
 	var truthy [4]bool
-	for i, target := range []*string{&courseID, &courseName, &dateFrom, &dateTo} {
-		var ok bool
+	for i, target := range []*any{&courseID, &courseName, &dateFrom, &dateTo} {
 		name := []string{"course_id", "course_name", "date_from", "date_to"}[i]
-		if *target, truthy[i], ok = text(name); !ok {
-			return nil, ErrBusinessMCPNotPorted
-		}
-		if truthy[i] {
-			params = append(params, domain.RequestField{Name: name, Value: *target})
+		if value, present := arguments.Lookup(name); present && mcpTruthy(value) {
+			*target, truthy[i] = value, true
+			params = append(params, domain.RequestField{Name: name, Value: value})
 		}
 	}
 	if value := mcpLookupOr(arguments, "multi_sheet", false); mcpTruthy(value) {
-		flag, ok := value.(bool)
-		if !ok {
-			return nil, ErrBusinessMCPNotPorted
-		}
-		params = append(params, domain.RequestField{Name: "multi_sheet", Value: flag})
-	}
-	if value := mcpLookupOr(arguments, "export", false); value != true {
-		return nil, ErrBusinessMCPNotPorted
+		params = append(params, domain.RequestField{Name: "multi_sheet", Value: value})
 	}
 	rows, totalDates := 0, 0
 	for _, matrix := range matrices {
@@ -542,10 +629,10 @@ func (t *BusinessMCPTools) attendanceSaveInfo(result domain.RequestObject, matri
 	}
 	fromDisplay, toDisplay := "inizio", "oggi"
 	if truthy[2] {
-		fromDisplay = dateFrom
+		fromDisplay = dto.PythonStr(dateFrom)
 	}
 	if truthy[3] {
-		toDisplay = dateTo
+		toDisplay = dto.PythonStr(dateTo)
 	}
 	hint := strconv.Itoa(rows) + " iscritti, " + strconv.Itoa(totalDates) + " lezioni"
 	if multi {

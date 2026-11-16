@@ -11,6 +11,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/paymentcategorylifecycle"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
+	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/documentkey"
 	"github.com/labstack/echo/v4"
 )
 
@@ -106,7 +107,12 @@ func (h *PaymentWritesHandler) failure(c echo.Context, err error, repr bool) err
 	var message *domain.PaymentWritesMessage
 	var invalid *dto.PaymentEntryValidationError
 	var uuid *dto.MessageReadUUIDError
+	var suspicious *documentkey.SuspiciousFileError
 	switch {
+	case errors.As(err, &suspicious):
+		// default_storage.save's validate_file_name: Django's SuspiciousOperation page.
+		c.Response().Header().Del("Allow")
+		return c.Blob(400, "text/html; charset=utf-8", djangoBadRequestPage)
 	case errors.As(err, &denied):
 		return restError(c, err)
 	case errors.Is(err, domain.ErrPaymentWritesForeignReference):
@@ -125,8 +131,11 @@ func (h *PaymentWritesHandler) failure(c echo.Context, err error, repr bool) err
 	case errors.As(err, &uuid):
 		return messageReadsError(c, err)
 	}
-	// Every other failure (including refused, not ported paths) is the 500 page.
-	return restError(c, domain.ErrPaymentWritesServer)
+	// A refused (not ported) input is answered by Django when the handoff is
+	// configured; every other unhandled failure is the 500 page (the measured
+	// form JSON bands and the jsonb refusal are application state, never handed
+	// off).
+	return restError(c, err)
 }
 
 func (h *PaymentWritesHandler) serve(c echo.Context, verb, operation, name, description string, repr bool,

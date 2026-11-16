@@ -69,6 +69,24 @@ The validation is invoice-parties' (see [invoice-parties](invoice-parties.md)). 
 ProgressivoInvio is a38's `(int(time.time()) << 16) + sequence` in base 43, the sequence kept per process and reset every second;
 Go keeps the same process-wide counter (`invoiceSyncNextProgressivo`), one value per generated output (the XML's, then the JSON's).
 
+## Dates before year 1000 (follows the platform, X16)
+
+Before validating, the view rewrites both dates with
+`datetime.datetime.strptime(value, '%Y-%m-%d').strftime('%d/%m/%Y')` (`invoice_views.py:878-881`); the serializer's `DateField`
+(`input_formats ['%d/%m/%Y']`, `core/settings.py:249`) then re-reads that text with CPython's `strptime`, whose `%Y` needs exactly
+four digits. `strftime('%Y')` is the platform C library's, so the outcome follows the platform the server runs on: below year 1000
+glibc (the Linux production image and CI) writes the year unpadded (`'05/03/999'`), the field rejects it, and the add is DRF's 400
+`{"transmitting_date": ["Date has wrong format. Use one of these formats instead: DD/MM/YYYY."]}` (only the offending fields) before
+any write; the BSD library on macOS pads it (`'05/03/0999'`), the date parses, and the add succeeds as above, the XML's own dates
+written by `internal/fatturapa`'s `strftime` with the same rule. Go formats the value with `dto.PythonStrftimeYear` and re-reads it
+with `dto.PythonStrptimeDMY`, so it answers what Django answers on the same platform. The former
+`ErrInvoicePartyNotPorted` refusal for these dates is removed, in the view's field re-read and in the FatturaPA inputs; the dry run
+before the insert only catches JSON text Go does not read. A request whose own `transmitting_date`/`payment_expiry_date` already has a
+three-digit year (`'999-03-05'`) fails the view's first `strptime` on every platform: the 500 page, before any write (case
+`invoice-sync-print-add-transmitting-date-three-digit-year-server-error`). Cases
+`invoice-sync-print-add-dates-before-1000-field-errors` and `invoice-sync-print-add-transmitting-date-before-1000-field-error` state
+the glibc answer.
+
 ## Update bodies with file parts (v2-rest-docs)
 
 A file part is truthy for `cancelled` (the invoice is cancelled), ignored as `payment_date` (strptime of a file fails and the
@@ -83,8 +101,6 @@ transports. Mutation (the cancelled flag taken from a literal true) CAUGHT.
   application state (Django's 500 page): the eager `Task.apply` re-applies the `Retry` signature recursively while
   the restore is pending, the recursion ends in a `RecursionError` that escapes `apply`, and no view catches it.
   Go answers the same page after the writes.
-- (Long tail PR 3: dates before year 1000 follow the platform's `strftime('%Y')` and the FatturaPA inputs are ported in
-  `internal/fatturapa`; the dry run before the insert now only catches JSON text Go does not read.)
 - Not compared: the outbound header order (Go writes `Host`, `User-Agent`, then the rest sorted); redirects to another host follow Go's
   `Authorization` forwarding rule (same host or subdomain) rather than requests' (same hostname).
 

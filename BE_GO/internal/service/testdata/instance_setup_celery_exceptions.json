@@ -1,0 +1,7067 @@
+{
+ "producer": "produced with CPython 3.13.16 and celery 5.6.2 Backend.exception_to_python; the error of each case is the 500 body's error text of BE/instance/views.py _link_imported_instance (See tmp/long-tail/lt4-C/excprobe/golden.py)",
+ "cases": [
+  {
+   "label": "stored-none",
+   "stored": null,
+   "outcome": "none",
+   "text": "None",
+   "error": "Import task failed: None"
+  },
+  {
+   "label": "stored-empty-string",
+   "stored": "",
+   "outcome": "none",
+   "text": "None",
+   "error": "Import task failed: None"
+  },
+  {
+   "label": "stored-zero",
+   "stored": 0,
+   "outcome": "none",
+   "text": "None",
+   "error": "Import task failed: None"
+  },
+  {
+   "label": "stored-zero-float",
+   "stored": 0.0,
+   "outcome": "none",
+   "text": "None",
+   "error": "Import task failed: None"
+  },
+  {
+   "label": "stored-false",
+   "stored": false,
+   "outcome": "none",
+   "text": "None",
+   "error": "Import task failed: None"
+  },
+  {
+   "label": "stored-empty-list",
+   "stored": [],
+   "outcome": "none",
+   "text": "None",
+   "error": "Import task failed: None"
+  },
+  {
+   "label": "stored-empty-dict",
+   "stored": {},
+   "outcome": "none",
+   "text": "None",
+   "error": "Import task failed: None"
+  },
+  {
+   "label": "stored-string",
+   "stored": "boom",
+   "outcome": "raised",
+   "text": "dictionary update sequence element #0 has length 1; 2 is required",
+   "error": "dictionary update sequence element #0 has length 1; 2 is required"
+  },
+  {
+   "label": "stored-string-pair",
+   "stored": "ab",
+   "outcome": "raised",
+   "text": "dictionary update sequence element #0 has length 1; 2 is required",
+   "error": "dictionary update sequence element #0 has length 1; 2 is required"
+  },
+  {
+   "label": "stored-int",
+   "stored": 5,
+   "outcome": "raised",
+   "text": "If the stored exception isn't an instance of BaseException, it must be a dictionary.\nInstead got: 5",
+   "error": "If the stored exception isn't an instance of BaseException, it must be a dictionary.\nInstead got: 5"
+  },
+  {
+   "label": "stored-float",
+   "stored": 1.5,
+   "outcome": "raised",
+   "text": "If the stored exception isn't an instance of BaseException, it must be a dictionary.\nInstead got: 1.5",
+   "error": "If the stored exception isn't an instance of BaseException, it must be a dictionary.\nInstead got: 1.5"
+  },
+  {
+   "label": "stored-true",
+   "stored": true,
+   "outcome": "raised",
+   "text": "If the stored exception isn't an instance of BaseException, it must be a dictionary.\nInstead got: True",
+   "error": "If the stored exception isn't an instance of BaseException, it must be a dictionary.\nInstead got: True"
+  },
+  {
+   "label": "stored-list-ints",
+   "stored": [
+    1,
+    2
+   ],
+   "outcome": "raised",
+   "text": "If the stored exception isn't an instance of BaseException, it must be a dictionary.\nInstead got: [1, 2]",
+   "error": "If the stored exception isn't an instance of BaseException, it must be a dictionary.\nInstead got: [1, 2]"
+  },
+  {
+   "label": "stored-list-mixed",
+   "stored": [
+    "a",
+    1
+   ],
+   "outcome": "raised",
+   "text": "dictionary update sequence element #0 has length 1; 2 is required",
+   "error": "dictionary update sequence element #0 has length 1; 2 is required"
+  },
+  {
+   "label": "stored-list-string",
+   "stored": [
+    "ab"
+   ],
+   "outcome": "raised",
+   "text": "Exception information must include the exception type",
+   "error": "Exception information must include the exception type"
+  },
+  {
+   "label": "stored-list-two-strings",
+   "stored": [
+    "ab",
+    "cd"
+   ],
+   "outcome": "raised",
+   "text": "Exception information must include the exception type",
+   "error": "Exception information must include the exception type"
+  },
+  {
+   "label": "stored-list-of-pairs",
+   "stored": [
+    [
+     "exc_type",
+     "ValueError"
+    ],
+    [
+     "exc_message",
+     "from pairs"
+    ]
+   ],
+   "outcome": "rebuilt",
+   "text": "from pairs",
+   "error": "Import task failed: from pairs"
+  },
+  {
+   "label": "stored-list-pair-and-int",
+   "stored": [
+    [
+     "exc_type",
+     "ValueError"
+    ],
+    3
+   ],
+   "outcome": "raised",
+   "text": "If the stored exception isn't an instance of BaseException, it must be a dictionary.\nInstead got: [['exc_type', 'ValueError'], 3]",
+   "error": "If the stored exception isn't an instance of BaseException, it must be a dictionary.\nInstead got: [['exc_type', 'ValueError'], 3]"
+  },
+  {
+   "label": "stored-list-long-pair",
+   "stored": [
+    [
+     "a",
+     "b",
+     "c"
+    ]
+   ],
+   "outcome": "raised",
+   "text": "dictionary update sequence element #0 has length 3; 2 is required",
+   "error": "dictionary update sequence element #0 has length 3; 2 is required"
+  },
+  {
+   "label": "stored-list-pair-of-ints",
+   "stored": [
+    [
+     1,
+     2
+    ]
+   ],
+   "outcome": "raised",
+   "text": "Exception information must include the exception type",
+   "error": "Exception information must include the exception type"
+  },
+  {
+   "label": "stored-list-dict-element",
+   "stored": [
+    {
+     "a": 1
+    }
+   ],
+   "outcome": "raised",
+   "text": "dictionary update sequence element #0 has length 1; 2 is required",
+   "error": "dictionary update sequence element #0 has length 1; 2 is required"
+  },
+  {
+   "label": "stored-list-none-element",
+   "stored": [
+    null
+   ],
+   "outcome": "raised",
+   "text": "If the stored exception isn't an instance of BaseException, it must be a dictionary.\nInstead got: [None]",
+   "error": "If the stored exception isn't an instance of BaseException, it must be a dictionary.\nInstead got: [None]"
+  },
+  {
+   "label": "stored-dict-other-keys",
+   "stored": {
+    "other": 1
+   },
+   "outcome": "raised",
+   "text": "Exception information must include the exception type",
+   "error": "Exception information must include the exception type"
+  },
+  {
+   "label": "dict-no-exc-type",
+   "stored": {
+    "exc_module": "builtins"
+   },
+   "outcome": "raised",
+   "text": "Exception information must include the exception type",
+   "error": "Exception information must include the exception type"
+  },
+  {
+   "label": "dict-exc-type-null",
+   "stored": {
+    "exc_module": null,
+    "exc_type": null,
+    "exc_message": "x"
+   },
+   "outcome": "raised",
+   "text": "type.__new__() argument 1 must be str, not None",
+   "error": "type.__new__() argument 1 must be str, not None"
+  },
+  {
+   "label": "dict-exc-type-int",
+   "stored": {
+    "exc_module": null,
+    "exc_type": 5,
+    "exc_message": "x"
+   },
+   "outcome": "raised",
+   "text": "type.__new__() argument 1 must be str, not int",
+   "error": "type.__new__() argument 1 must be str, not int"
+  },
+  {
+   "label": "dict-exc-type-bool",
+   "stored": {
+    "exc_module": null,
+    "exc_type": true,
+    "exc_message": "x"
+   },
+   "outcome": "raised",
+   "text": "type.__new__() argument 1 must be str, not bool",
+   "error": "type.__new__() argument 1 must be str, not bool"
+  },
+  {
+   "label": "dict-exc-type-float",
+   "stored": {
+    "exc_module": null,
+    "exc_type": 1.5,
+    "exc_message": "x"
+   },
+   "outcome": "raised",
+   "text": "type.__new__() argument 1 must be str, not float",
+   "error": "type.__new__() argument 1 must be str, not float"
+  },
+  {
+   "label": "dict-exc-type-list",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": [
+     "a"
+    ],
+    "exc_message": "x"
+   },
+   "outcome": "raised",
+   "text": "type.__new__() argument 1 must be str, not list",
+   "error": "type.__new__() argument 1 must be str, not list"
+  },
+  {
+   "label": "dict-exc-type-dict",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": {
+     "a": 1
+    },
+    "exc_message": "x"
+   },
+   "outcome": "raised",
+   "text": "type.__new__() argument 1 must be str, not dict",
+   "error": "type.__new__() argument 1 must be str, not dict"
+  },
+  {
+   "label": "dict-exc-module-none",
+   "stored": {
+    "exc_module": null,
+    "exc_type": "ValueError",
+    "exc_message": "boom"
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "dict-exc-module-missing",
+   "stored": {
+    "exc_type": "ValueError",
+    "exc_message": "boom"
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "dict-exc-module-null-valueerror",
+   "stored": {
+    "exc_module": null,
+    "exc_type": "KeyError",
+    "exc_message": [
+     "x"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "x",
+   "error": "Import task failed: x"
+  },
+  {
+   "label": "dict-exc-module-unknown",
+   "stored": {
+    "exc_module": "nomod",
+    "exc_type": "Wat",
+    "exc_message": "boom"
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "dict-exc-module-unknown-dotted",
+   "stored": {
+    "exc_module": "nomod",
+    "exc_type": "a.b",
+    "exc_message": [
+     "x",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('x', 2)",
+   "error": "Import task failed: ('x', 2)"
+  },
+  {
+   "label": "dict-exc-module-unknown-empty",
+   "stored": {
+    "exc_module": "nomod",
+    "exc_type": "",
+    "exc_message": "x"
+   },
+   "outcome": "rebuilt",
+   "text": "x",
+   "error": "Import task failed: x"
+  },
+  {
+   "label": "dict-exc-module-builtins-unknown",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "Wat",
+    "exc_message": "boom"
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "dict-exc-module-builtins-dotted-unknown",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "Wat.Inner",
+    "exc_message": 7
+   },
+   "outcome": "rebuilt",
+   "text": "7",
+   "error": "Import task failed: 7"
+  },
+  {
+   "label": "dict-exc-module-builtins-trailing-dot",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ValueError.",
+    "exc_message": "x"
+   },
+   "outcome": "rebuilt",
+   "text": "x",
+   "error": "Import task failed: x"
+  },
+  {
+   "label": "dict-exc-type-dotted-known",
+   "stored": {
+    "exc_module": "json",
+    "exc_type": "decoder.JSONDecodeError",
+    "exc_message": [
+     "m",
+     "d",
+     0
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "m: line 1 column 1 (char 0)",
+   "error": "Import task failed: m: line 1 column 1 (char 0)"
+  },
+  {
+   "label": "dict-exc-module-nonstring",
+   "stored": {
+    "exc_module": 5,
+    "exc_type": "Wat",
+    "exc_message": "boom"
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "dict-exc-module-bool",
+   "stored": {
+    "exc_module": true,
+    "exc_type": "Wat",
+    "exc_message": "boom"
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "dict-exc-module-list",
+   "stored": {
+    "exc_module": [
+     "builtins"
+    ],
+    "exc_type": "Wat",
+    "exc_message": "boom"
+   },
+   "outcome": "raised",
+   "text": "unhashable type: 'list'",
+   "error": "unhashable type: 'list'"
+  },
+  {
+   "label": "dict-exc-module-dict",
+   "stored": {
+    "exc_module": {
+     "a": 1
+    },
+    "exc_type": "Wat",
+    "exc_message": "x"
+   },
+   "outcome": "raised",
+   "text": "unhashable type: 'dict'",
+   "error": "unhashable type: 'dict'"
+  },
+  {
+   "label": "dict-os-system",
+   "stored": {
+    "exc_module": "os",
+    "exc_type": "system",
+    "exc_message": "rsync -a /data host:/data"
+   },
+   "outcome": "raised",
+   "text": "Expected an exception class, got os.system with payload rsync -a /data host:/data",
+   "error": "Expected an exception class, got os.system with payload rsync -a /data host:/data"
+  },
+  {
+   "label": "dict-os-path-join",
+   "stored": {
+    "exc_module": "os.path",
+    "exc_type": "join",
+    "exc_message": [
+     "a",
+     "b"
+    ]
+   },
+   "outcome": "raised",
+   "text": "Expected an exception class, got os.path.join with payload ['a', 'b']",
+   "error": "Expected an exception class, got os.path.join with payload ['a', 'b']"
+  },
+  {
+   "label": "dict-posix-system-dict-payload",
+   "stored": {
+    "exc_module": "posix",
+    "exc_type": "system",
+    "exc_message": {
+     "a": 1
+    }
+   },
+   "outcome": "raised",
+   "text": "Expected an exception class, got posix.system with payload {'a': 1}",
+   "error": "Expected an exception class, got posix.system with payload {'a': 1}"
+  },
+  {
+   "label": "dict-builtins-len",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "len",
+    "exc_message": [
+     1,
+     2
+    ]
+   },
+   "outcome": "raised",
+   "text": "Expected an exception class, got builtins.len with payload [1, 2]",
+   "error": "Expected an exception class, got builtins.len with payload [1, 2]"
+  },
+  {
+   "label": "dict-builtins-int-int-payload",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "int",
+    "exc_message": 5
+   },
+   "outcome": "raised",
+   "text": "Expected an exception class, got builtins.int with payload 5",
+   "error": "Expected an exception class, got builtins.int with payload 5"
+  },
+  {
+   "label": "dict-os-system-no-payload",
+   "stored": {
+    "exc_module": "os",
+    "exc_type": "system"
+   },
+   "outcome": "raised",
+   "text": "Expected an exception class, got os.system with payload ",
+   "error": "Expected an exception class, got os.system with payload "
+  },
+  {
+   "label": "dict-os-system-null-payload",
+   "stored": {
+    "exc_module": "os",
+    "exc_type": "system",
+    "exc_message": null
+   },
+   "outcome": "raised",
+   "text": "Expected an exception class, got os.system with payload None",
+   "error": "Expected an exception class, got os.system with payload None"
+  },
+  {
+   "label": "dict-exc-message-missing",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ValueError"
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "dict-exc-message-null",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ValueError",
+    "exc_message": null
+   },
+   "outcome": "rebuilt",
+   "text": "None",
+   "error": "Import task failed: None"
+  },
+  {
+   "label": "dict-exc-message-string",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ValueError",
+    "exc_message": "boom"
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "dict-exc-message-list",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ValueError",
+    "exc_message": [
+     "a",
+     1,
+     null,
+     true
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('a', 1, None, True)",
+   "error": "Import task failed: ('a', 1, None, True)"
+  },
+  {
+   "label": "dict-exc-message-empty-list",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ValueError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "dict-exc-message-dict",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ValueError",
+    "exc_message": {
+     "a": 1
+    }
+   },
+   "outcome": "rebuilt",
+   "text": "{'a': 1}",
+   "error": "Import task failed: {'a': 1}"
+  },
+  {
+   "label": "dict-exc-message-int",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ValueError",
+    "exc_message": 42
+   },
+   "outcome": "rebuilt",
+   "text": "42",
+   "error": "Import task failed: 42"
+  },
+  {
+   "label": "dict-exc-message-float",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ValueError",
+    "exc_message": 1.5
+   },
+   "outcome": "rebuilt",
+   "text": "1.5",
+   "error": "Import task failed: 1.5"
+  },
+  {
+   "label": "dict-exc-message-bool",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ValueError",
+    "exc_message": false
+   },
+   "outcome": "rebuilt",
+   "text": "False",
+   "error": "Import task failed: False"
+  },
+  {
+   "label": "dict-exc-message-nested",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ValueError",
+    "exc_message": [
+     [
+      "x"
+     ],
+     {
+      "k": "v"
+     },
+     0.5
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "(['x'], {'k': 'v'}, 0.5)",
+   "error": "Import task failed: (['x'], {'k': 'v'}, 0.5)"
+  },
+  {
+   "label": "dict-extra-keys",
+   "stored": {
+    "exc_module": null,
+    "exc_type": "ValueError",
+    "exc_message": [
+     "a"
+    ],
+    "status": "FAILURE"
+   },
+   "outcome": "rebuilt",
+   "text": "a",
+   "error": "Import task failed: a"
+  },
+  {
+   "label": "builtins-ArithmeticError-62",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ArithmeticError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-ArithmeticError-63",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ArithmeticError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-ArithmeticError-64",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ArithmeticError",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2)",
+   "error": "Import task failed: ('boom', 2)"
+  },
+  {
+   "label": "builtins-ArithmeticError-65",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ArithmeticError",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2, 'extra')",
+   "error": "Import task failed: ('boom', 2, 'extra')"
+  },
+  {
+   "label": "builtins-AssertionError-66",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "AssertionError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-AssertionError-67",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "AssertionError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-AssertionError-68",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "AssertionError",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2)",
+   "error": "Import task failed: ('boom', 2)"
+  },
+  {
+   "label": "builtins-AssertionError-69",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "AssertionError",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2, 'extra')",
+   "error": "Import task failed: ('boom', 2, 'extra')"
+  },
+  {
+   "label": "builtins-AttributeError-70",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "AttributeError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-AttributeError-71",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "AttributeError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-AttributeError-72",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "AttributeError",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2)",
+   "error": "Import task failed: ('boom', 2)"
+  },
+  {
+   "label": "builtins-AttributeError-73",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "AttributeError",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2, 'extra')",
+   "error": "Import task failed: ('boom', 2, 'extra')"
+  },
+  {
+   "label": "builtins-BaseException-74",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "BaseException",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-BaseException-75",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "BaseException",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-BaseException-76",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "BaseException",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2)",
+   "error": "Import task failed: ('boom', 2)"
+  },
+  {
+   "label": "builtins-BaseException-77",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "BaseException",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2, 'extra')",
+   "error": "Import task failed: ('boom', 2, 'extra')"
+  },
+  {
+   "label": "builtins-BaseExceptionGroup-78",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "BaseExceptionGroup",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "<class 'BaseExceptionGroup'>([])",
+   "error": "Import task failed: <class 'BaseExceptionGroup'>([])"
+  },
+  {
+   "label": "builtins-BaseExceptionGroup-79",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "BaseExceptionGroup",
+    "exc_message": [
+     "boom",
+     []
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "<class 'BaseExceptionGroup'>(['boom', []])",
+   "error": "Import task failed: <class 'BaseExceptionGroup'>(['boom', []])"
+  },
+  {
+   "label": "builtins-BaseExceptionGroup-80",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "BaseExceptionGroup",
+    "exc_message": [
+     "boom",
+     [
+      "x"
+     ]
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "<class 'BaseExceptionGroup'>(['boom', ['x']])",
+   "error": "Import task failed: <class 'BaseExceptionGroup'>(['boom', ['x']])"
+  },
+  {
+   "label": "builtins-BaseExceptionGroup-81",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "BaseExceptionGroup",
+    "exc_message": [
+     "boom",
+     [
+      "x",
+      "y"
+     ]
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "<class 'BaseExceptionGroup'>(['boom', ['x', 'y']])",
+   "error": "Import task failed: <class 'BaseExceptionGroup'>(['boom', ['x', 'y']])"
+  },
+  {
+   "label": "builtins-BaseExceptionGroup-82",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "BaseExceptionGroup",
+    "exc_message": [
+     "boom",
+     [
+      null
+     ]
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "<class 'BaseExceptionGroup'>(['boom', [None]])",
+   "error": "Import task failed: <class 'BaseExceptionGroup'>(['boom', [None]])"
+  },
+  {
+   "label": "builtins-BlockingIOError-83",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "BlockingIOError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-BlockingIOError-84",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "BlockingIOError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-BlockingIOError-85",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "BlockingIOError",
+    "exc_message": [
+     11,
+     "msg",
+     "/tmp/x"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "[Errno 11] msg: '/tmp/x'",
+   "error": "Import task failed: [Errno 11] msg: '/tmp/x'"
+  },
+  {
+   "label": "builtins-BrokenPipeError-86",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "BrokenPipeError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-BrokenPipeError-87",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "BrokenPipeError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-BrokenPipeError-88",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "BrokenPipeError",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "[Errno boom] 2",
+   "error": "Import task failed: [Errno boom] 2"
+  },
+  {
+   "label": "builtins-BrokenPipeError-89",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "BrokenPipeError",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "[Errno boom] 2: 'extra'",
+   "error": "Import task failed: [Errno boom] 2: 'extra'"
+  },
+  {
+   "label": "builtins-BufferError-90",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "BufferError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-BufferError-91",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "BufferError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-BufferError-92",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "BufferError",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2)",
+   "error": "Import task failed: ('boom', 2)"
+  },
+  {
+   "label": "builtins-BufferError-93",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "BufferError",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2, 'extra')",
+   "error": "Import task failed: ('boom', 2, 'extra')"
+  },
+  {
+   "label": "builtins-BytesWarning-94",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "BytesWarning",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-BytesWarning-95",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "BytesWarning",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-BytesWarning-96",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "BytesWarning",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2)",
+   "error": "Import task failed: ('boom', 2)"
+  },
+  {
+   "label": "builtins-BytesWarning-97",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "BytesWarning",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2, 'extra')",
+   "error": "Import task failed: ('boom', 2, 'extra')"
+  },
+  {
+   "label": "builtins-ChildProcessError-98",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ChildProcessError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-ChildProcessError-99",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ChildProcessError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-ChildProcessError-100",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ChildProcessError",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "[Errno boom] 2",
+   "error": "Import task failed: [Errno boom] 2"
+  },
+  {
+   "label": "builtins-ChildProcessError-101",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ChildProcessError",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "[Errno boom] 2: 'extra'",
+   "error": "Import task failed: [Errno boom] 2: 'extra'"
+  },
+  {
+   "label": "builtins-ConnectionAbortedError-102",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ConnectionAbortedError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-ConnectionAbortedError-103",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ConnectionAbortedError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-ConnectionAbortedError-104",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ConnectionAbortedError",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "[Errno boom] 2",
+   "error": "Import task failed: [Errno boom] 2"
+  },
+  {
+   "label": "builtins-ConnectionAbortedError-105",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ConnectionAbortedError",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "[Errno boom] 2: 'extra'",
+   "error": "Import task failed: [Errno boom] 2: 'extra'"
+  },
+  {
+   "label": "builtins-ConnectionError-106",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ConnectionError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-ConnectionError-107",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ConnectionError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-ConnectionError-108",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ConnectionError",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "[Errno boom] 2",
+   "error": "Import task failed: [Errno boom] 2"
+  },
+  {
+   "label": "builtins-ConnectionError-109",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ConnectionError",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "[Errno boom] 2: 'extra'",
+   "error": "Import task failed: [Errno boom] 2: 'extra'"
+  },
+  {
+   "label": "builtins-ConnectionRefusedError-110",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ConnectionRefusedError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-ConnectionRefusedError-111",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ConnectionRefusedError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-ConnectionRefusedError-112",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ConnectionRefusedError",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "[Errno boom] 2",
+   "error": "Import task failed: [Errno boom] 2"
+  },
+  {
+   "label": "builtins-ConnectionRefusedError-113",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ConnectionRefusedError",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "[Errno boom] 2: 'extra'",
+   "error": "Import task failed: [Errno boom] 2: 'extra'"
+  },
+  {
+   "label": "builtins-ConnectionResetError-114",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ConnectionResetError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-ConnectionResetError-115",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ConnectionResetError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-ConnectionResetError-116",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ConnectionResetError",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "[Errno boom] 2",
+   "error": "Import task failed: [Errno boom] 2"
+  },
+  {
+   "label": "builtins-ConnectionResetError-117",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ConnectionResetError",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "[Errno boom] 2: 'extra'",
+   "error": "Import task failed: [Errno boom] 2: 'extra'"
+  },
+  {
+   "label": "builtins-DeprecationWarning-118",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "DeprecationWarning",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-DeprecationWarning-119",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "DeprecationWarning",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-DeprecationWarning-120",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "DeprecationWarning",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2)",
+   "error": "Import task failed: ('boom', 2)"
+  },
+  {
+   "label": "builtins-DeprecationWarning-121",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "DeprecationWarning",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2, 'extra')",
+   "error": "Import task failed: ('boom', 2, 'extra')"
+  },
+  {
+   "label": "builtins-EOFError-122",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "EOFError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-EOFError-123",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "EOFError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-EOFError-124",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "EOFError",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2)",
+   "error": "Import task failed: ('boom', 2)"
+  },
+  {
+   "label": "builtins-EOFError-125",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "EOFError",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2, 'extra')",
+   "error": "Import task failed: ('boom', 2, 'extra')"
+  },
+  {
+   "label": "builtins-EncodingWarning-126",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "EncodingWarning",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-EncodingWarning-127",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "EncodingWarning",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-EncodingWarning-128",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "EncodingWarning",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2)",
+   "error": "Import task failed: ('boom', 2)"
+  },
+  {
+   "label": "builtins-EncodingWarning-129",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "EncodingWarning",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2, 'extra')",
+   "error": "Import task failed: ('boom', 2, 'extra')"
+  },
+  {
+   "label": "builtins-EnvironmentError-130",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "EnvironmentError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-EnvironmentError-131",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "EnvironmentError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-EnvironmentError-132",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "EnvironmentError",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "[Errno boom] 2",
+   "error": "Import task failed: [Errno boom] 2"
+  },
+  {
+   "label": "builtins-EnvironmentError-133",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "EnvironmentError",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "[Errno boom] 2: 'extra'",
+   "error": "Import task failed: [Errno boom] 2: 'extra'"
+  },
+  {
+   "label": "builtins-Exception-134",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "Exception",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-Exception-135",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "Exception",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-Exception-136",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "Exception",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2)",
+   "error": "Import task failed: ('boom', 2)"
+  },
+  {
+   "label": "builtins-Exception-137",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "Exception",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2, 'extra')",
+   "error": "Import task failed: ('boom', 2, 'extra')"
+  },
+  {
+   "label": "builtins-ExceptionGroup-138",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ExceptionGroup",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "<class 'ExceptionGroup'>([])",
+   "error": "Import task failed: <class 'ExceptionGroup'>([])"
+  },
+  {
+   "label": "builtins-ExceptionGroup-139",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ExceptionGroup",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "<class 'ExceptionGroup'>(['boom'])",
+   "error": "Import task failed: <class 'ExceptionGroup'>(['boom'])"
+  },
+  {
+   "label": "builtins-ExceptionGroup-140",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ExceptionGroup",
+    "exc_message": [
+     "boom",
+     []
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "<class 'ExceptionGroup'>(['boom', []])",
+   "error": "Import task failed: <class 'ExceptionGroup'>(['boom', []])"
+  },
+  {
+   "label": "builtins-ExceptionGroup-141",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ExceptionGroup",
+    "exc_message": [
+     "boom",
+     [
+      "x"
+     ]
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "<class 'ExceptionGroup'>(['boom', ['x']])",
+   "error": "Import task failed: <class 'ExceptionGroup'>(['boom', ['x']])"
+  },
+  {
+   "label": "builtins-ExceptionGroup-142",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ExceptionGroup",
+    "exc_message": [
+     "boom",
+     5
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "<class 'ExceptionGroup'>(['boom', 5])",
+   "error": "Import task failed: <class 'ExceptionGroup'>(['boom', 5])"
+  },
+  {
+   "label": "builtins-ExceptionGroup-143",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ExceptionGroup",
+    "exc_message": [
+     "boom",
+     {
+      "a": 1
+     }
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "<class 'ExceptionGroup'>(['boom', {'a': 1}])",
+   "error": "Import task failed: <class 'ExceptionGroup'>(['boom', {'a': 1}])"
+  },
+  {
+   "label": "builtins-ExceptionGroup-144",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ExceptionGroup",
+    "exc_message": [
+     "boom",
+     [
+      "x"
+     ],
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "<class 'ExceptionGroup'>(['boom', ['x'], 2])",
+   "error": "Import task failed: <class 'ExceptionGroup'>(['boom', ['x'], 2])"
+  },
+  {
+   "label": "builtins-ExceptionGroup-145",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ExceptionGroup",
+    "exc_message": [
+     [
+      "x"
+     ],
+     [
+      "y"
+     ]
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "<class 'ExceptionGroup'>([['x'], ['y']])",
+   "error": "Import task failed: <class 'ExceptionGroup'>([['x'], ['y']])"
+  },
+  {
+   "label": "builtins-FileExistsError-146",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "FileExistsError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-FileExistsError-147",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "FileExistsError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-FileExistsError-148",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "FileExistsError",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "[Errno boom] 2",
+   "error": "Import task failed: [Errno boom] 2"
+  },
+  {
+   "label": "builtins-FileExistsError-149",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "FileExistsError",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "[Errno boom] 2: 'extra'",
+   "error": "Import task failed: [Errno boom] 2: 'extra'"
+  },
+  {
+   "label": "builtins-FileNotFoundError-150",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "FileNotFoundError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-FileNotFoundError-151",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "FileNotFoundError",
+    "exc_message": [
+     "msg"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "msg",
+   "error": "Import task failed: msg"
+  },
+  {
+   "label": "builtins-FileNotFoundError-152",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "FileNotFoundError",
+    "exc_message": [
+     2,
+     "msg",
+     "/tmp/x"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "[Errno 2] msg: '/tmp/x'",
+   "error": "Import task failed: [Errno 2] msg: '/tmp/x'"
+  },
+  {
+   "label": "builtins-FileNotFoundError-153",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "FileNotFoundError",
+    "exc_message": [
+     2,
+     "msg",
+     [
+      "a"
+     ]
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "[Errno 2] msg: ['a']",
+   "error": "Import task failed: [Errno 2] msg: ['a']"
+  },
+  {
+   "label": "builtins-FloatingPointError-154",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "FloatingPointError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-FloatingPointError-155",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "FloatingPointError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-FloatingPointError-156",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "FloatingPointError",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2)",
+   "error": "Import task failed: ('boom', 2)"
+  },
+  {
+   "label": "builtins-FloatingPointError-157",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "FloatingPointError",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2, 'extra')",
+   "error": "Import task failed: ('boom', 2, 'extra')"
+  },
+  {
+   "label": "builtins-FutureWarning-158",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "FutureWarning",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-FutureWarning-159",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "FutureWarning",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-FutureWarning-160",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "FutureWarning",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2)",
+   "error": "Import task failed: ('boom', 2)"
+  },
+  {
+   "label": "builtins-FutureWarning-161",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "FutureWarning",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2, 'extra')",
+   "error": "Import task failed: ('boom', 2, 'extra')"
+  },
+  {
+   "label": "builtins-GeneratorExit-162",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "GeneratorExit",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-GeneratorExit-163",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "GeneratorExit",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-GeneratorExit-164",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "GeneratorExit",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2)",
+   "error": "Import task failed: ('boom', 2)"
+  },
+  {
+   "label": "builtins-GeneratorExit-165",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "GeneratorExit",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2, 'extra')",
+   "error": "Import task failed: ('boom', 2, 'extra')"
+  },
+  {
+   "label": "builtins-IOError-166",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "IOError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-IOError-167",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "IOError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-IOError-168",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "IOError",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "[Errno boom] 2",
+   "error": "Import task failed: [Errno boom] 2"
+  },
+  {
+   "label": "builtins-IOError-169",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "IOError",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "[Errno boom] 2: 'extra'",
+   "error": "Import task failed: [Errno boom] 2: 'extra'"
+  },
+  {
+   "label": "builtins-ImportError-170",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ImportError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-ImportError-171",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ImportError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-ImportError-172",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ImportError",
+    "exc_message": [
+     "boom",
+     "pkg"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 'pkg')",
+   "error": "Import task failed: ('boom', 'pkg')"
+  },
+  {
+   "label": "builtins-ImportError-173",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ImportError",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2)",
+   "error": "Import task failed: ('boom', 2)"
+  },
+  {
+   "label": "builtins-ImportWarning-174",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ImportWarning",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-ImportWarning-175",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ImportWarning",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-ImportWarning-176",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ImportWarning",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2)",
+   "error": "Import task failed: ('boom', 2)"
+  },
+  {
+   "label": "builtins-ImportWarning-177",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ImportWarning",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2, 'extra')",
+   "error": "Import task failed: ('boom', 2, 'extra')"
+  },
+  {
+   "label": "builtins-IndentationError-178",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "IndentationError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "None",
+   "error": "Import task failed: None"
+  },
+  {
+   "label": "builtins-IndentationError-179",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "IndentationError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-IndentationError-180",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "IndentationError",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "<class 'IndentationError'>(['boom', 2])",
+   "error": "Import task failed: <class 'IndentationError'>(['boom', 2])"
+  },
+  {
+   "label": "builtins-IndentationError-181",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "IndentationError",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-IndentationError-182",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "IndentationError",
+    "exc_message": [
+     "unexpected indent",
+     [
+      "f.py",
+      1,
+      2,
+      " x"
+     ]
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "unexpected indent (f.py, line 1)",
+   "error": "Import task failed: unexpected indent (f.py, line 1)"
+  },
+  {
+   "label": "builtins-IndexError-183",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "IndexError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-IndexError-184",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "IndexError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-IndexError-185",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "IndexError",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2)",
+   "error": "Import task failed: ('boom', 2)"
+  },
+  {
+   "label": "builtins-IndexError-186",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "IndexError",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2, 'extra')",
+   "error": "Import task failed: ('boom', 2, 'extra')"
+  },
+  {
+   "label": "builtins-InterruptedError-187",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "InterruptedError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-InterruptedError-188",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "InterruptedError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-InterruptedError-189",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "InterruptedError",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "[Errno boom] 2",
+   "error": "Import task failed: [Errno boom] 2"
+  },
+  {
+   "label": "builtins-InterruptedError-190",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "InterruptedError",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "[Errno boom] 2: 'extra'",
+   "error": "Import task failed: [Errno boom] 2: 'extra'"
+  },
+  {
+   "label": "builtins-IsADirectoryError-191",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "IsADirectoryError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-IsADirectoryError-192",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "IsADirectoryError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-IsADirectoryError-193",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "IsADirectoryError",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "[Errno boom] 2",
+   "error": "Import task failed: [Errno boom] 2"
+  },
+  {
+   "label": "builtins-IsADirectoryError-194",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "IsADirectoryError",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "[Errno boom] 2: 'extra'",
+   "error": "Import task failed: [Errno boom] 2: 'extra'"
+  },
+  {
+   "label": "builtins-KeyError-195",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "KeyError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-KeyError-196",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "KeyError",
+    "exc_message": [
+     "x"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "'x'",
+   "error": "Import task failed: 'x'"
+  },
+  {
+   "label": "builtins-KeyError-197",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "KeyError",
+    "exc_message": [
+     1
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "1",
+   "error": "Import task failed: 1"
+  },
+  {
+   "label": "builtins-KeyError-198",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "KeyError",
+    "exc_message": [
+     [
+      "x"
+     ]
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "['x']",
+   "error": "Import task failed: ['x']"
+  },
+  {
+   "label": "builtins-KeyError-199",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "KeyError",
+    "exc_message": [
+     "x",
+     "y"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('x', 'y')",
+   "error": "Import task failed: ('x', 'y')"
+  },
+  {
+   "label": "builtins-KeyError-200",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "KeyError",
+    "exc_message": [
+     null
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "None",
+   "error": "Import task failed: None"
+  },
+  {
+   "label": "builtins-KeyError-201",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "KeyError",
+    "exc_message": [
+     {
+      "a": 1
+     }
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "{'a': 1}",
+   "error": "Import task failed: {'a': 1}"
+  },
+  {
+   "label": "builtins-KeyError-202",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "KeyError",
+    "exc_message": [
+     "é"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "'é'",
+   "error": "Import task failed: 'é'"
+  },
+  {
+   "label": "builtins-KeyError-203",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "KeyError",
+    "exc_message": [
+     "a'b"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "\"a'b\"",
+   "error": "Import task failed: \"a'b\""
+  },
+  {
+   "label": "builtins-KeyError-204",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "KeyError",
+    "exc_message": [
+     "a\"b"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "'a\"b'",
+   "error": "Import task failed: 'a\"b'"
+  },
+  {
+   "label": "builtins-KeyError-205",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "KeyError",
+    "exc_message": [
+     "a\nb"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "'a\\nb'",
+   "error": "Import task failed: 'a\\nb'"
+  },
+  {
+   "label": "builtins-KeyError-206",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "KeyError",
+    "exc_message": [
+     "a\\b"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "'a\\\\b'",
+   "error": "Import task failed: 'a\\\\b'"
+  },
+  {
+   "label": "builtins-KeyError-207",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "KeyError",
+    "exc_message": [
+     1.5
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "1.5",
+   "error": "Import task failed: 1.5"
+  },
+  {
+   "label": "builtins-KeyError-208",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "KeyError",
+    "exc_message": [
+     true
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "True",
+   "error": "Import task failed: True"
+  },
+  {
+   "label": "builtins-KeyboardInterrupt-209",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "KeyboardInterrupt",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-KeyboardInterrupt-210",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "KeyboardInterrupt",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-KeyboardInterrupt-211",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "KeyboardInterrupt",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2)",
+   "error": "Import task failed: ('boom', 2)"
+  },
+  {
+   "label": "builtins-KeyboardInterrupt-212",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "KeyboardInterrupt",
+    "exc_message": [
+     null
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "None",
+   "error": "Import task failed: None"
+  },
+  {
+   "label": "builtins-KeyboardInterrupt-213",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "KeyboardInterrupt",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2, 'extra')",
+   "error": "Import task failed: ('boom', 2, 'extra')"
+  },
+  {
+   "label": "builtins-LookupError-214",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "LookupError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-LookupError-215",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "LookupError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-LookupError-216",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "LookupError",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2)",
+   "error": "Import task failed: ('boom', 2)"
+  },
+  {
+   "label": "builtins-LookupError-217",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "LookupError",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2, 'extra')",
+   "error": "Import task failed: ('boom', 2, 'extra')"
+  },
+  {
+   "label": "builtins-MemoryError-218",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "MemoryError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-MemoryError-219",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "MemoryError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-MemoryError-220",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "MemoryError",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2)",
+   "error": "Import task failed: ('boom', 2)"
+  },
+  {
+   "label": "builtins-MemoryError-221",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "MemoryError",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2, 'extra')",
+   "error": "Import task failed: ('boom', 2, 'extra')"
+  },
+  {
+   "label": "builtins-ModuleNotFoundError-222",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ModuleNotFoundError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-ModuleNotFoundError-223",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ModuleNotFoundError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-ModuleNotFoundError-224",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ModuleNotFoundError",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2)",
+   "error": "Import task failed: ('boom', 2)"
+  },
+  {
+   "label": "builtins-ModuleNotFoundError-225",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ModuleNotFoundError",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2, 'extra')",
+   "error": "Import task failed: ('boom', 2, 'extra')"
+  },
+  {
+   "label": "builtins-NameError-226",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "NameError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-NameError-227",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "NameError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-NameError-228",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "NameError",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2)",
+   "error": "Import task failed: ('boom', 2)"
+  },
+  {
+   "label": "builtins-NameError-229",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "NameError",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2, 'extra')",
+   "error": "Import task failed: ('boom', 2, 'extra')"
+  },
+  {
+   "label": "builtins-NotADirectoryError-230",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "NotADirectoryError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-NotADirectoryError-231",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "NotADirectoryError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-NotADirectoryError-232",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "NotADirectoryError",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "[Errno boom] 2",
+   "error": "Import task failed: [Errno boom] 2"
+  },
+  {
+   "label": "builtins-NotADirectoryError-233",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "NotADirectoryError",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "[Errno boom] 2: 'extra'",
+   "error": "Import task failed: [Errno boom] 2: 'extra'"
+  },
+  {
+   "label": "builtins-NotImplementedError-234",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "NotImplementedError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-NotImplementedError-235",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "NotImplementedError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-NotImplementedError-236",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "NotImplementedError",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2)",
+   "error": "Import task failed: ('boom', 2)"
+  },
+  {
+   "label": "builtins-NotImplementedError-237",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "NotImplementedError",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2, 'extra')",
+   "error": "Import task failed: ('boom', 2, 'extra')"
+  },
+  {
+   "label": "builtins-OSError-238",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "OSError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-OSError-239",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "OSError",
+    "exc_message": [
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "2",
+   "error": "Import task failed: 2"
+  },
+  {
+   "label": "builtins-OSError-240",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "OSError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-OSError-241",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "OSError",
+    "exc_message": [
+     null
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "None",
+   "error": "Import task failed: None"
+  },
+  {
+   "label": "builtins-OSError-242",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "OSError",
+    "exc_message": [
+     2,
+     "No such file or directory"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "[Errno 2] No such file or directory",
+   "error": "Import task failed: [Errno 2] No such file or directory"
+  },
+  {
+   "label": "builtins-OSError-243",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "OSError",
+    "exc_message": [
+     2,
+     null
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "[Errno 2] None",
+   "error": "Import task failed: [Errno 2] None"
+  },
+  {
+   "label": "builtins-OSError-244",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "OSError",
+    "exc_message": [
+     2,
+     "No such file or directory",
+     "/tmp/x"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "[Errno 2] No such file or directory: '/tmp/x'",
+   "error": "Import task failed: [Errno 2] No such file or directory: '/tmp/x'"
+  },
+  {
+   "label": "builtins-OSError-245",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "OSError",
+    "exc_message": [
+     2,
+     "No such file or directory",
+     null
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "[Errno 2] No such file or directory",
+   "error": "Import task failed: [Errno 2] No such file or directory"
+  },
+  {
+   "label": "builtins-OSError-246",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "OSError",
+    "exc_message": [
+     null,
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "[Errno None] boom",
+   "error": "Import task failed: [Errno None] boom"
+  },
+  {
+   "label": "builtins-OSError-247",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "OSError",
+    "exc_message": [
+     0,
+     "Success"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "[Errno 0] Success",
+   "error": "Import task failed: [Errno 0] Success"
+  },
+  {
+   "label": "builtins-OSError-248",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "OSError",
+    "exc_message": [
+     2,
+     "No such file or directory",
+     "/tmp/x",
+     null,
+     "/tmp/y"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "[Errno 2] No such file or directory: '/tmp/x' -> '/tmp/y'",
+   "error": "Import task failed: [Errno 2] No such file or directory: '/tmp/x' -> '/tmp/y'"
+  },
+  {
+   "label": "builtins-OSError-249",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "OSError",
+    "exc_message": [
+     2,
+     "No such file or directory",
+     "/tmp/x",
+     0
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "[Errno 2] No such file or directory: '/tmp/x'",
+   "error": "Import task failed: [Errno 2] No such file or directory: '/tmp/x'"
+  },
+  {
+   "label": "builtins-OSError-250",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "OSError",
+    "exc_message": [
+     2,
+     "No such file or directory",
+     5
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "[Errno 2] No such file or directory: 5",
+   "error": "Import task failed: [Errno 2] No such file or directory: 5"
+  },
+  {
+   "label": "builtins-OSError-251",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "OSError",
+    "exc_message": [
+     2,
+     "a",
+     "b",
+     0,
+     "c",
+     "d"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "(2, 'a', 'b', 0, 'c', 'd')",
+   "error": "Import task failed: (2, 'a', 'b', 0, 'c', 'd')"
+  },
+  {
+   "label": "builtins-OSError-252",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "OSError",
+    "exc_message": [
+     true,
+     "msg"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "[Errno True] msg",
+   "error": "Import task failed: [Errno True] msg"
+  },
+  {
+   "label": "builtins-OverflowError-253",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "OverflowError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-OverflowError-254",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "OverflowError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-OverflowError-255",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "OverflowError",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2)",
+   "error": "Import task failed: ('boom', 2)"
+  },
+  {
+   "label": "builtins-OverflowError-256",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "OverflowError",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2, 'extra')",
+   "error": "Import task failed: ('boom', 2, 'extra')"
+  },
+  {
+   "label": "builtins-PendingDeprecationWarning-257",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "PendingDeprecationWarning",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-PendingDeprecationWarning-258",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "PendingDeprecationWarning",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-PendingDeprecationWarning-259",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "PendingDeprecationWarning",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2)",
+   "error": "Import task failed: ('boom', 2)"
+  },
+  {
+   "label": "builtins-PendingDeprecationWarning-260",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "PendingDeprecationWarning",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2, 'extra')",
+   "error": "Import task failed: ('boom', 2, 'extra')"
+  },
+  {
+   "label": "builtins-PermissionError-261",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "PermissionError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-PermissionError-262",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "PermissionError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-PermissionError-263",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "PermissionError",
+    "exc_message": [
+     13,
+     "Permission denied",
+     "/etc/x"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "[Errno 13] Permission denied: '/etc/x'",
+   "error": "Import task failed: [Errno 13] Permission denied: '/etc/x'"
+  },
+  {
+   "label": "builtins-ProcessLookupError-264",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ProcessLookupError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-ProcessLookupError-265",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ProcessLookupError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-ProcessLookupError-266",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ProcessLookupError",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "[Errno boom] 2",
+   "error": "Import task failed: [Errno boom] 2"
+  },
+  {
+   "label": "builtins-ProcessLookupError-267",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ProcessLookupError",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "[Errno boom] 2: 'extra'",
+   "error": "Import task failed: [Errno boom] 2: 'extra'"
+  },
+  {
+   "label": "builtins-PythonFinalizationError-268",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "PythonFinalizationError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-PythonFinalizationError-269",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "PythonFinalizationError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-PythonFinalizationError-270",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "PythonFinalizationError",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2)",
+   "error": "Import task failed: ('boom', 2)"
+  },
+  {
+   "label": "builtins-PythonFinalizationError-271",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "PythonFinalizationError",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2, 'extra')",
+   "error": "Import task failed: ('boom', 2, 'extra')"
+  },
+  {
+   "label": "builtins-RecursionError-272",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "RecursionError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-RecursionError-273",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "RecursionError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-RecursionError-274",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "RecursionError",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2)",
+   "error": "Import task failed: ('boom', 2)"
+  },
+  {
+   "label": "builtins-RecursionError-275",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "RecursionError",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2, 'extra')",
+   "error": "Import task failed: ('boom', 2, 'extra')"
+  },
+  {
+   "label": "builtins-ReferenceError-276",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ReferenceError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-ReferenceError-277",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ReferenceError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-ReferenceError-278",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ReferenceError",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2)",
+   "error": "Import task failed: ('boom', 2)"
+  },
+  {
+   "label": "builtins-ReferenceError-279",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ReferenceError",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2, 'extra')",
+   "error": "Import task failed: ('boom', 2, 'extra')"
+  },
+  {
+   "label": "builtins-ResourceWarning-280",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ResourceWarning",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-ResourceWarning-281",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ResourceWarning",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-ResourceWarning-282",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ResourceWarning",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2)",
+   "error": "Import task failed: ('boom', 2)"
+  },
+  {
+   "label": "builtins-ResourceWarning-283",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ResourceWarning",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2, 'extra')",
+   "error": "Import task failed: ('boom', 2, 'extra')"
+  },
+  {
+   "label": "builtins-RuntimeError-284",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "RuntimeError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-RuntimeError-285",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "RuntimeError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-RuntimeError-286",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "RuntimeError",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2)",
+   "error": "Import task failed: ('boom', 2)"
+  },
+  {
+   "label": "builtins-RuntimeError-287",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "RuntimeError",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2, 'extra')",
+   "error": "Import task failed: ('boom', 2, 'extra')"
+  },
+  {
+   "label": "builtins-RuntimeWarning-288",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "RuntimeWarning",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-RuntimeWarning-289",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "RuntimeWarning",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-RuntimeWarning-290",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "RuntimeWarning",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2)",
+   "error": "Import task failed: ('boom', 2)"
+  },
+  {
+   "label": "builtins-RuntimeWarning-291",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "RuntimeWarning",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2, 'extra')",
+   "error": "Import task failed: ('boom', 2, 'extra')"
+  },
+  {
+   "label": "builtins-StopAsyncIteration-292",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "StopAsyncIteration",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-StopAsyncIteration-293",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "StopAsyncIteration",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-StopIteration-294",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "StopIteration",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-StopIteration-295",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "StopIteration",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-StopIteration-296",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "StopIteration",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2)",
+   "error": "Import task failed: ('boom', 2)"
+  },
+  {
+   "label": "builtins-StopIteration-297",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "StopIteration",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2, 'extra')",
+   "error": "Import task failed: ('boom', 2, 'extra')"
+  },
+  {
+   "label": "builtins-SyntaxError-298",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "SyntaxError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "None",
+   "error": "Import task failed: None"
+  },
+  {
+   "label": "builtins-SyntaxError-299",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "SyntaxError",
+    "exc_message": [
+     "invalid syntax"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "invalid syntax",
+   "error": "Import task failed: invalid syntax"
+  },
+  {
+   "label": "builtins-SyntaxError-300",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "SyntaxError",
+    "exc_message": [
+     "invalid syntax",
+     [
+      "f.py",
+      1,
+      2,
+      "x = "
+     ]
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "invalid syntax (f.py, line 1)",
+   "error": "Import task failed: invalid syntax (f.py, line 1)"
+  },
+  {
+   "label": "builtins-SyntaxError-301",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "SyntaxError",
+    "exc_message": [
+     "invalid syntax",
+     [
+      "f.py",
+      1,
+      2
+     ]
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "<class 'SyntaxError'>(['invalid syntax', ['f.py', 1, 2]])",
+   "error": "Import task failed: <class 'SyntaxError'>(['invalid syntax', ['f.py', 1, 2]])"
+  },
+  {
+   "label": "builtins-SyntaxError-302",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "SyntaxError",
+    "exc_message": [
+     "invalid syntax",
+     [
+      "f.py",
+      1
+     ]
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "<class 'SyntaxError'>(['invalid syntax', ['f.py', 1]])",
+   "error": "Import task failed: <class 'SyntaxError'>(['invalid syntax', ['f.py', 1]])"
+  },
+  {
+   "label": "builtins-SyntaxError-303",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "SyntaxError",
+    "exc_message": [
+     [
+      "f.py",
+      1,
+      2,
+      "x = "
+     ]
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "['f.py', 1, 2, 'x = ']",
+   "error": "Import task failed: ['f.py', 1, 2, 'x = ']"
+  },
+  {
+   "label": "builtins-SyntaxError-304",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "SyntaxError",
+    "exc_message": [
+     [
+      "f.py",
+      1
+     ]
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "['f.py', 1]",
+   "error": "Import task failed: ['f.py', 1]"
+  },
+  {
+   "label": "builtins-SyntaxError-305",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "SyntaxError",
+    "exc_message": [
+     5
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "5",
+   "error": "Import task failed: 5"
+  },
+  {
+   "label": "builtins-SyntaxError-306",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "SyntaxError",
+    "exc_message": [
+     "msg",
+     null
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "<class 'SyntaxError'>(['msg', None])",
+   "error": "Import task failed: <class 'SyntaxError'>(['msg', None])"
+  },
+  {
+   "label": "builtins-SyntaxError-307",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "SyntaxError",
+    "exc_message": [
+     "msg",
+     5
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "<class 'SyntaxError'>(['msg', 5])",
+   "error": "Import task failed: <class 'SyntaxError'>(['msg', 5])"
+  },
+  {
+   "label": "builtins-SyntaxError-308",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "SyntaxError",
+    "exc_message": [
+     "msg",
+     "file.py"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "<class 'SyntaxError'>(['msg', 'file.py'])",
+   "error": "Import task failed: <class 'SyntaxError'>(['msg', 'file.py'])"
+  },
+  {
+   "label": "builtins-SyntaxError-309",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "SyntaxError",
+    "exc_message": [
+     "msg",
+     [
+      "f.py",
+      1,
+      2,
+      "x = "
+     ],
+     0,
+     1
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "msg",
+   "error": "Import task failed: msg"
+  },
+  {
+   "label": "builtins-SyntaxError-310",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "SyntaxError",
+    "exc_message": [
+     5,
+     [
+      "f.py",
+      1,
+      2,
+      "x = "
+     ],
+     0
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "5",
+   "error": "Import task failed: 5"
+  },
+  {
+   "label": "builtins-SyntaxError-311",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "SyntaxError",
+    "exc_message": [
+     "msg",
+     [
+      "f.py",
+      null,
+      2,
+      "x"
+     ]
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "msg (f.py)",
+   "error": "Import task failed: msg (f.py)"
+  },
+  {
+   "label": "builtins-SyntaxError-312",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "SyntaxError",
+    "exc_message": [
+     "msg",
+     [
+      5,
+      1,
+      2,
+      "x"
+     ]
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "msg (line 1)",
+   "error": "Import task failed: msg (line 1)"
+  },
+  {
+   "label": "builtins-SyntaxError-313",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "SyntaxError",
+    "exc_message": [
+     "msg",
+     [
+      "f.py",
+      1,
+      2,
+      "x",
+      "extra"
+     ]
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "<class 'SyntaxError'>(['msg', ['f.py', 1, 2, 'x', 'extra']])",
+   "error": "Import task failed: <class 'SyntaxError'>(['msg', ['f.py', 1, 2, 'x', 'extra']])"
+  },
+  {
+   "label": "builtins-SyntaxError-314",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "SyntaxError",
+    "exc_message": [
+     null,
+     [
+      "f.py",
+      1,
+      2,
+      ""
+     ]
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "None (f.py, line 1)",
+   "error": "Import task failed: None (f.py, line 1)"
+  },
+  {
+   "label": "builtins-SyntaxError-315",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "SyntaxError",
+    "exc_message": [
+     "",
+     [
+      "f.py",
+      1,
+      2,
+      ""
+     ]
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": " (f.py, line 1)",
+   "error": "Import task failed:  (f.py, line 1)"
+  },
+  {
+   "label": "builtins-SyntaxWarning-316",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "SyntaxWarning",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-SyntaxWarning-317",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "SyntaxWarning",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-SyntaxWarning-318",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "SyntaxWarning",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2)",
+   "error": "Import task failed: ('boom', 2)"
+  },
+  {
+   "label": "builtins-SyntaxWarning-319",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "SyntaxWarning",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2, 'extra')",
+   "error": "Import task failed: ('boom', 2, 'extra')"
+  },
+  {
+   "label": "builtins-SystemError-320",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "SystemError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-SystemError-321",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "SystemError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-SystemError-322",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "SystemError",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2)",
+   "error": "Import task failed: ('boom', 2)"
+  },
+  {
+   "label": "builtins-SystemError-323",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "SystemError",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2, 'extra')",
+   "error": "Import task failed: ('boom', 2, 'extra')"
+  },
+  {
+   "label": "builtins-SystemExit-324",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "SystemExit",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-SystemExit-325",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "SystemExit",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-SystemExit-326",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "SystemExit",
+    "exc_message": [
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "2",
+   "error": "Import task failed: 2"
+  },
+  {
+   "label": "builtins-SystemExit-327",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "SystemExit",
+    "exc_message": [
+     2,
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "(2, 'boom')",
+   "error": "Import task failed: (2, 'boom')"
+  },
+  {
+   "label": "builtins-SystemExit-328",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "SystemExit",
+    "exc_message": [
+     null
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "None",
+   "error": "Import task failed: None"
+  },
+  {
+   "label": "builtins-SystemExit-329",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "SystemExit",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2, 'extra')",
+   "error": "Import task failed: ('boom', 2, 'extra')"
+  },
+  {
+   "label": "builtins-TabError-330",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "TabError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "None",
+   "error": "Import task failed: None"
+  },
+  {
+   "label": "builtins-TabError-331",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "TabError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-TabError-332",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "TabError",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "<class 'TabError'>(['boom', 2])",
+   "error": "Import task failed: <class 'TabError'>(['boom', 2])"
+  },
+  {
+   "label": "builtins-TabError-333",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "TabError",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-TimeoutError-334",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "TimeoutError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-TimeoutError-335",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "TimeoutError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-TimeoutError-336",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "TimeoutError",
+    "exc_message": [
+     110,
+     "timed out"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "[Errno 110] timed out",
+   "error": "Import task failed: [Errno 110] timed out"
+  },
+  {
+   "label": "builtins-TypeError-337",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "TypeError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-TypeError-338",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "TypeError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-TypeError-339",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "TypeError",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2)",
+   "error": "Import task failed: ('boom', 2)"
+  },
+  {
+   "label": "builtins-TypeError-340",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "TypeError",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2, 'extra')",
+   "error": "Import task failed: ('boom', 2, 'extra')"
+  },
+  {
+   "label": "builtins-UnboundLocalError-341",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnboundLocalError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-UnboundLocalError-342",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnboundLocalError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-UnboundLocalError-343",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnboundLocalError",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2)",
+   "error": "Import task failed: ('boom', 2)"
+  },
+  {
+   "label": "builtins-UnboundLocalError-344",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnboundLocalError",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2, 'extra')",
+   "error": "Import task failed: ('boom', 2, 'extra')"
+  },
+  {
+   "label": "builtins-UnicodeDecodeError-345",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeDecodeError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "<class 'UnicodeDecodeError'>([])",
+   "error": "Import task failed: <class 'UnicodeDecodeError'>([])"
+  },
+  {
+   "label": "builtins-UnicodeDecodeError-346",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeDecodeError",
+    "exc_message": [
+     "utf-8"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "<class 'UnicodeDecodeError'>(['utf-8'])",
+   "error": "Import task failed: <class 'UnicodeDecodeError'>(['utf-8'])"
+  },
+  {
+   "label": "builtins-UnicodeDecodeError-347",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeDecodeError",
+    "exc_message": [
+     "utf-8",
+     "text",
+     0
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "<class 'UnicodeDecodeError'>(['utf-8', 'text', 0])",
+   "error": "Import task failed: <class 'UnicodeDecodeError'>(['utf-8', 'text', 0])"
+  },
+  {
+   "label": "builtins-UnicodeDecodeError-348",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeDecodeError",
+    "exc_message": [
+     "utf-8",
+     "text",
+     0,
+     1
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "<class 'UnicodeDecodeError'>(['utf-8', 'text', 0, 1])",
+   "error": "Import task failed: <class 'UnicodeDecodeError'>(['utf-8', 'text', 0, 1])"
+  },
+  {
+   "label": "builtins-UnicodeDecodeError-349",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeDecodeError",
+    "exc_message": [
+     "utf-8",
+     "text",
+     0,
+     1,
+     "bad"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "<class 'UnicodeDecodeError'>(['utf-8', 'text', 0, 1, 'bad'])",
+   "error": "Import task failed: <class 'UnicodeDecodeError'>(['utf-8', 'text', 0, 1, 'bad'])"
+  },
+  {
+   "label": "builtins-UnicodeDecodeError-350",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeDecodeError",
+    "exc_message": [
+     "utf-8",
+     "text",
+     0,
+     1,
+     "bad",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "<class 'UnicodeDecodeError'>(['utf-8', 'text', 0, 1, 'bad', 2])",
+   "error": "Import task failed: <class 'UnicodeDecodeError'>(['utf-8', 'text', 0, 1, 'bad', 2])"
+  },
+  {
+   "label": "builtins-UnicodeEncodeError-351",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeEncodeError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "<class 'UnicodeEncodeError'>([])",
+   "error": "Import task failed: <class 'UnicodeEncodeError'>([])"
+  },
+  {
+   "label": "builtins-UnicodeEncodeError-352",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeEncodeError",
+    "exc_message": [
+     "utf-8"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "<class 'UnicodeEncodeError'>(['utf-8'])",
+   "error": "Import task failed: <class 'UnicodeEncodeError'>(['utf-8'])"
+  },
+  {
+   "label": "builtins-UnicodeEncodeError-353",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeEncodeError",
+    "exc_message": [
+     "ascii",
+     "é",
+     0
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "<class 'UnicodeEncodeError'>(['ascii', 'é', 0])",
+   "error": "Import task failed: <class 'UnicodeEncodeError'>(['ascii', 'é', 0])"
+  },
+  {
+   "label": "builtins-UnicodeEncodeError-354",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeEncodeError",
+    "exc_message": [
+     "ascii",
+     "é",
+     0,
+     1
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "<class 'UnicodeEncodeError'>(['ascii', 'é', 0, 1])",
+   "error": "Import task failed: <class 'UnicodeEncodeError'>(['ascii', 'é', 0, 1])"
+  },
+  {
+   "label": "builtins-UnicodeEncodeError-355",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeEncodeError",
+    "exc_message": [
+     "ascii",
+     "é",
+     0,
+     1,
+     "bad"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "'ascii' codec can't encode character '\\xe9' in position 0: bad",
+   "error": "Import task failed: 'ascii' codec can't encode character '\\xe9' in position 0: bad"
+  },
+  {
+   "label": "builtins-UnicodeEncodeError-356",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeEncodeError",
+    "exc_message": [
+     "utf-8",
+     "é",
+     0,
+     1,
+     "bad"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "'utf-8' codec can't encode character '\\xe9' in position 0: bad",
+   "error": "Import task failed: 'utf-8' codec can't encode character '\\xe9' in position 0: bad"
+  },
+  {
+   "label": "builtins-UnicodeEncodeError-357",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeEncodeError",
+    "exc_message": [
+     "ascii",
+     "x",
+     0,
+     1,
+     "bad"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "'ascii' codec can't encode character '\\x78' in position 0: bad",
+   "error": "Import task failed: 'ascii' codec can't encode character '\\x78' in position 0: bad"
+  },
+  {
+   "label": "builtins-UnicodeEncodeError-358",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeEncodeError",
+    "exc_message": [
+     "ascii",
+     "ab",
+     0,
+     2,
+     "bad"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "'ascii' codec can't encode characters in position 0-1: bad",
+   "error": "Import task failed: 'ascii' codec can't encode characters in position 0-1: bad"
+  },
+  {
+   "label": "builtins-UnicodeEncodeError-359",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeEncodeError",
+    "exc_message": [
+     "ascii",
+     "aé",
+     1,
+     2,
+     "bad"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "'ascii' codec can't encode character '\\xe9' in position 1: bad",
+   "error": "Import task failed: 'ascii' codec can't encode character '\\xe9' in position 1: bad"
+  },
+  {
+   "label": "builtins-UnicodeEncodeError-360",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeEncodeError",
+    "exc_message": [
+     "ascii",
+     "é",
+     1,
+     2,
+     "bad"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "'ascii' codec can't encode characters in position 1-1: bad",
+   "error": "Import task failed: 'ascii' codec can't encode characters in position 1-1: bad"
+  },
+  {
+   "label": "builtins-UnicodeEncodeError-361",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeEncodeError",
+    "exc_message": [
+     "ascii",
+     "é",
+     -1,
+     9,
+     "bad"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "'ascii' codec can't encode characters in position -1-8: bad",
+   "error": "Import task failed: 'ascii' codec can't encode characters in position -1-8: bad"
+  },
+  {
+   "label": "builtins-UnicodeEncodeError-362",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeEncodeError",
+    "exc_message": [
+     "ascii",
+     "é",
+     2,
+     1,
+     "bad"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "'ascii' codec can't encode characters in position 2-0: bad",
+   "error": "Import task failed: 'ascii' codec can't encode characters in position 2-0: bad"
+  },
+  {
+   "label": "builtins-UnicodeEncodeError-363",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeEncodeError",
+    "exc_message": [
+     "ascii",
+     "é",
+     5,
+     6,
+     "bad"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "'ascii' codec can't encode characters in position 5-5: bad",
+   "error": "Import task failed: 'ascii' codec can't encode characters in position 5-5: bad"
+  },
+  {
+   "label": "builtins-UnicodeEncodeError-364",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeEncodeError",
+    "exc_message": [
+     "ascii",
+     "",
+     0,
+     1,
+     "bad"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "'ascii' codec can't encode characters in position 0-0: bad",
+   "error": "Import task failed: 'ascii' codec can't encode characters in position 0-0: bad"
+  },
+  {
+   "label": "builtins-UnicodeEncodeError-365",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeEncodeError",
+    "exc_message": [
+     "ascii",
+     "é",
+     true,
+     1,
+     "bad"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "'ascii' codec can't encode characters in position 1-0: bad",
+   "error": "Import task failed: 'ascii' codec can't encode characters in position 1-0: bad"
+  },
+  {
+   "label": "builtins-UnicodeEncodeError-366",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeEncodeError",
+    "exc_message": [
+     "ascii",
+     "é",
+     0,
+     1,
+     ""
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "'ascii' codec can't encode character '\\xe9' in position 0: ",
+   "error": "Import task failed: 'ascii' codec can't encode character '\\xe9' in position 0: "
+  },
+  {
+   "label": "builtins-UnicodeEncodeError-367",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeEncodeError",
+    "exc_message": [
+     "",
+     "é",
+     0,
+     1,
+     "bad"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "'' codec can't encode character '\\xe9' in position 0: bad",
+   "error": "Import task failed: '' codec can't encode character '\\xe9' in position 0: bad"
+  },
+  {
+   "label": "builtins-UnicodeEncodeError-368",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeEncodeError",
+    "exc_message": [
+     "ascii",
+     "€",
+     0,
+     1,
+     "bad"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "'ascii' codec can't encode character '\\u20ac' in position 0: bad",
+   "error": "Import task failed: 'ascii' codec can't encode character '\\u20ac' in position 0: bad"
+  },
+  {
+   "label": "builtins-UnicodeEncodeError-369",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeEncodeError",
+    "exc_message": [
+     "ascii",
+     "中",
+     0,
+     1,
+     "bad"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "'ascii' codec can't encode character '\\u4e2d' in position 0: bad",
+   "error": "Import task failed: 'ascii' codec can't encode character '\\u4e2d' in position 0: bad"
+  },
+  {
+   "label": "builtins-UnicodeEncodeError-370",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeEncodeError",
+    "exc_message": [
+     "ascii",
+     "😀",
+     0,
+     1,
+     "bad"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "'ascii' codec can't encode character '\\U0001f600' in position 0: bad",
+   "error": "Import task failed: 'ascii' codec can't encode character '\\U0001f600' in position 0: bad"
+  },
+  {
+   "label": "builtins-UnicodeEncodeError-371",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeEncodeError",
+    "exc_message": [
+     "ascii",
+     "é",
+     0,
+     1,
+     "bad",
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "<class 'UnicodeEncodeError'>(['ascii', 'é', 0, 1, 'bad', 'extra'])",
+   "error": "Import task failed: <class 'UnicodeEncodeError'>(['ascii', 'é', 0, 1, 'bad', 'extra'])"
+  },
+  {
+   "label": "builtins-UnicodeEncodeError-372",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeEncodeError",
+    "exc_message": [
+     "ascii",
+     "é",
+     0,
+     1
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "<class 'UnicodeEncodeError'>(['ascii', 'é', 0, 1])",
+   "error": "Import task failed: <class 'UnicodeEncodeError'>(['ascii', 'é', 0, 1])"
+  },
+  {
+   "label": "builtins-UnicodeEncodeError-373",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeEncodeError",
+    "exc_message": [
+     "ascii",
+     5,
+     0,
+     1,
+     "bad"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "<class 'UnicodeEncodeError'>(['ascii', 5, 0, 1, 'bad'])",
+   "error": "Import task failed: <class 'UnicodeEncodeError'>(['ascii', 5, 0, 1, 'bad'])"
+  },
+  {
+   "label": "builtins-UnicodeEncodeError-374",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeEncodeError",
+    "exc_message": [
+     "ascii",
+     "é",
+     0.0,
+     1,
+     "bad"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "<class 'UnicodeEncodeError'>(['ascii', 'é', 0.0, 1, 'bad'])",
+   "error": "Import task failed: <class 'UnicodeEncodeError'>(['ascii', 'é', 0.0, 1, 'bad'])"
+  },
+  {
+   "label": "builtins-UnicodeEncodeError-375",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeEncodeError",
+    "exc_message": [
+     "ascii",
+     "é",
+     0,
+     1,
+     null
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "<class 'UnicodeEncodeError'>(['ascii', 'é', 0, 1, None])",
+   "error": "Import task failed: <class 'UnicodeEncodeError'>(['ascii', 'é', 0, 1, None])"
+  },
+  {
+   "label": "builtins-UnicodeEncodeError-376",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeEncodeError",
+    "exc_message": [
+     "ascii",
+     "é",
+     0,
+     1,
+     5
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "<class 'UnicodeEncodeError'>(['ascii', 'é', 0, 1, 5])",
+   "error": "Import task failed: <class 'UnicodeEncodeError'>(['ascii', 'é', 0, 1, 5])"
+  },
+  {
+   "label": "builtins-UnicodeError-377",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-UnicodeError-378",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-UnicodeError-379",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeError",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2)",
+   "error": "Import task failed: ('boom', 2)"
+  },
+  {
+   "label": "builtins-UnicodeError-380",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeError",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2, 'extra')",
+   "error": "Import task failed: ('boom', 2, 'extra')"
+  },
+  {
+   "label": "builtins-UnicodeTranslateError-381",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeTranslateError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "<class 'UnicodeTranslateError'>([])",
+   "error": "Import task failed: <class 'UnicodeTranslateError'>([])"
+  },
+  {
+   "label": "builtins-UnicodeTranslateError-382",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeTranslateError",
+    "exc_message": [
+     "é"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "<class 'UnicodeTranslateError'>(['é'])",
+   "error": "Import task failed: <class 'UnicodeTranslateError'>(['é'])"
+  },
+  {
+   "label": "builtins-UnicodeTranslateError-383",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeTranslateError",
+    "exc_message": [
+     "é",
+     0
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "<class 'UnicodeTranslateError'>(['é', 0])",
+   "error": "Import task failed: <class 'UnicodeTranslateError'>(['é', 0])"
+  },
+  {
+   "label": "builtins-UnicodeTranslateError-384",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeTranslateError",
+    "exc_message": [
+     "é",
+     0,
+     1
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "<class 'UnicodeTranslateError'>(['é', 0, 1])",
+   "error": "Import task failed: <class 'UnicodeTranslateError'>(['é', 0, 1])"
+  },
+  {
+   "label": "builtins-UnicodeTranslateError-385",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeTranslateError",
+    "exc_message": [
+     "é",
+     0,
+     1,
+     "bad"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "can't translate character '\\xe9' in position 0: bad",
+   "error": "Import task failed: can't translate character '\\xe9' in position 0: bad"
+  },
+  {
+   "label": "builtins-UnicodeTranslateError-386",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeTranslateError",
+    "exc_message": [
+     "é",
+     0,
+     2,
+     "bad"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "can't translate characters in position 0-1: bad",
+   "error": "Import task failed: can't translate characters in position 0-1: bad"
+  },
+  {
+   "label": "builtins-UnicodeTranslateError-387",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeTranslateError",
+    "exc_message": [
+     "aé",
+     1,
+     2,
+     "bad"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "can't translate character '\\xe9' in position 1: bad",
+   "error": "Import task failed: can't translate character '\\xe9' in position 1: bad"
+  },
+  {
+   "label": "builtins-UnicodeTranslateError-388",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeTranslateError",
+    "exc_message": [
+     "é",
+     -1,
+     0,
+     "bad"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "can't translate characters in position -1--1: bad",
+   "error": "Import task failed: can't translate characters in position -1--1: bad"
+  },
+  {
+   "label": "builtins-UnicodeTranslateError-389",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeTranslateError",
+    "exc_message": [
+     "",
+     0,
+     1,
+     "bad"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "can't translate characters in position 0-0: bad",
+   "error": "Import task failed: can't translate characters in position 0-0: bad"
+  },
+  {
+   "label": "builtins-UnicodeTranslateError-390",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeTranslateError",
+    "exc_message": [
+     "中",
+     0,
+     1,
+     "bad"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "can't translate character '\\u4e2d' in position 0: bad",
+   "error": "Import task failed: can't translate character '\\u4e2d' in position 0: bad"
+  },
+  {
+   "label": "builtins-UnicodeTranslateError-391",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeTranslateError",
+    "exc_message": [
+     "é",
+     0,
+     1,
+     ""
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "can't translate character '\\xe9' in position 0: ",
+   "error": "Import task failed: can't translate character '\\xe9' in position 0: "
+  },
+  {
+   "label": "builtins-UnicodeTranslateError-392",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeTranslateError",
+    "exc_message": [
+     "é",
+     0,
+     1,
+     "bad",
+     "x"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "<class 'UnicodeTranslateError'>(['é', 0, 1, 'bad', 'x'])",
+   "error": "Import task failed: <class 'UnicodeTranslateError'>(['é', 0, 1, 'bad', 'x'])"
+  },
+  {
+   "label": "builtins-UnicodeTranslateError-393",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeTranslateError",
+    "exc_message": [
+     5,
+     0,
+     1,
+     "bad"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "<class 'UnicodeTranslateError'>([5, 0, 1, 'bad'])",
+   "error": "Import task failed: <class 'UnicodeTranslateError'>([5, 0, 1, 'bad'])"
+  },
+  {
+   "label": "builtins-UnicodeTranslateError-394",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeTranslateError",
+    "exc_message": [
+     "é",
+     0.0,
+     1,
+     "bad"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "<class 'UnicodeTranslateError'>(['é', 0.0, 1, 'bad'])",
+   "error": "Import task failed: <class 'UnicodeTranslateError'>(['é', 0.0, 1, 'bad'])"
+  },
+  {
+   "label": "builtins-UnicodeWarning-395",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeWarning",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-UnicodeWarning-396",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeWarning",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-UnicodeWarning-397",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeWarning",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2)",
+   "error": "Import task failed: ('boom', 2)"
+  },
+  {
+   "label": "builtins-UnicodeWarning-398",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UnicodeWarning",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2, 'extra')",
+   "error": "Import task failed: ('boom', 2, 'extra')"
+  },
+  {
+   "label": "builtins-UserWarning-399",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UserWarning",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-UserWarning-400",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UserWarning",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-UserWarning-401",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UserWarning",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2)",
+   "error": "Import task failed: ('boom', 2)"
+  },
+  {
+   "label": "builtins-UserWarning-402",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "UserWarning",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2, 'extra')",
+   "error": "Import task failed: ('boom', 2, 'extra')"
+  },
+  {
+   "label": "builtins-ValueError-403",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ValueError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-ValueError-404",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ValueError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-ValueError-405",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ValueError",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2)",
+   "error": "Import task failed: ('boom', 2)"
+  },
+  {
+   "label": "builtins-ValueError-406",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ValueError",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2, 'extra')",
+   "error": "Import task failed: ('boom', 2, 'extra')"
+  },
+  {
+   "label": "builtins-Warning-407",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "Warning",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-Warning-408",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "Warning",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-Warning-409",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "Warning",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2)",
+   "error": "Import task failed: ('boom', 2)"
+  },
+  {
+   "label": "builtins-Warning-410",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "Warning",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2, 'extra')",
+   "error": "Import task failed: ('boom', 2, 'extra')"
+  },
+  {
+   "label": "builtins-ZeroDivisionError-411",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ZeroDivisionError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "builtins-ZeroDivisionError-412",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ZeroDivisionError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-ZeroDivisionError-413",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ZeroDivisionError",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2)",
+   "error": "Import task failed: ('boom', 2)"
+  },
+  {
+   "label": "builtins-ZeroDivisionError-414",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "ZeroDivisionError",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2, 'extra')",
+   "error": "Import task failed: ('boom', 2, 'extra')"
+  },
+  {
+   "label": "builtins-_IncompleteInputError-415",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "_IncompleteInputError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "None",
+   "error": "Import task failed: None"
+  },
+  {
+   "label": "builtins-_IncompleteInputError-416",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "_IncompleteInputError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "builtins-_IncompleteInputError-417",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "_IncompleteInputError",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "<class '_IncompleteInputError'>(['boom', 2])",
+   "error": "Import task failed: <class '_IncompleteInputError'>(['boom', 2])"
+  },
+  {
+   "label": "builtins-_IncompleteInputError-418",
+   "stored": {
+    "exc_module": "builtins",
+    "exc_type": "_IncompleteInputError",
+    "exc_message": [
+     "boom",
+     2,
+     "extra"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "billiard-worker-lost",
+   "stored": {
+    "exc_module": "billiard.exceptions",
+    "exc_type": "WorkerLostError",
+    "exc_message": [
+     "Worker exited prematurely: signal 9 (SIGKILL) Job: 0."
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "Worker exited prematurely: signal 9 (SIGKILL) Job: 0.",
+   "error": "Import task failed: Worker exited prematurely: signal 9 (SIGKILL) Job: 0."
+  },
+  {
+   "label": "billiard-worker-lost-empty",
+   "stored": {
+    "exc_module": "billiard.exceptions",
+    "exc_type": "WorkerLostError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "billiard-worker-lost-two",
+   "stored": {
+    "exc_module": "billiard.exceptions",
+    "exc_type": "WorkerLostError",
+    "exc_message": [
+     "a",
+     "b"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('a', 'b')",
+   "error": "Import task failed: ('a', 'b')"
+  },
+  {
+   "label": "billiard-worker-lost-list",
+   "stored": {
+    "exc_module": "billiard.exceptions",
+    "exc_type": "WorkerLostError",
+    "exc_message": [
+     [
+      "a",
+      1
+     ]
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "['a', 1]",
+   "error": "Import task failed: ['a', 1]"
+  },
+  {
+   "label": "billiard-timelimit-3600",
+   "stored": {
+    "exc_module": "billiard.exceptions",
+    "exc_type": "TimeLimitExceeded",
+    "exc_message": [
+     3600.0
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "TimeLimitExceeded(3600.0,)",
+   "error": "Import task failed: TimeLimitExceeded(3600.0,)"
+  },
+  {
+   "label": "billiard-timelimit-empty",
+   "stored": {
+    "exc_module": "billiard.exceptions",
+    "exc_type": "TimeLimitExceeded",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "TimeLimitExceeded()",
+   "error": "Import task failed: TimeLimitExceeded()"
+  },
+  {
+   "label": "billiard-timelimit-list",
+   "stored": {
+    "exc_module": "billiard.exceptions",
+    "exc_type": "TimeLimitExceeded",
+    "exc_message": [
+     [
+      "a",
+      1
+     ]
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "TimeLimitExceeded(['a', 1],)",
+   "error": "Import task failed: TimeLimitExceeded(['a', 1],)"
+  },
+  {
+   "label": "billiard-timelimit-three",
+   "stored": {
+    "exc_module": "billiard.exceptions",
+    "exc_type": "TimeLimitExceeded",
+    "exc_message": [
+     "a",
+     1,
+     null
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "TimeLimitExceeded('a', 1, None)",
+   "error": "Import task failed: TimeLimitExceeded('a', 1, None)"
+  },
+  {
+   "label": "billiard-soft-timelimit",
+   "stored": {
+    "exc_module": "billiard.exceptions",
+    "exc_type": "SoftTimeLimitExceeded",
+    "exc_message": [
+     3600.0
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "SoftTimeLimitExceeded(3600.0,)",
+   "error": "Import task failed: SoftTimeLimitExceeded(3600.0,)"
+  },
+  {
+   "label": "billiard-soft-timelimit-none",
+   "stored": {
+    "exc_module": "billiard.exceptions",
+    "exc_type": "SoftTimeLimitExceeded",
+    "exc_message": [
+     null
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "SoftTimeLimitExceeded(None,)",
+   "error": "Import task failed: SoftTimeLimitExceeded(None,)"
+  },
+  {
+   "label": "billiard-terminated",
+   "stored": {
+    "exc_module": "billiard.exceptions",
+    "exc_type": "Terminated",
+    "exc_message": [
+     15
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "15",
+   "error": "Import task failed: 15"
+  },
+  {
+   "label": "billiard-terminated-list",
+   "stored": {
+    "exc_module": "billiard.exceptions",
+    "exc_type": "Terminated",
+    "exc_message": [
+     [
+      15,
+      "SIGTERM"
+     ]
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "[15, 'SIGTERM']",
+   "error": "Import task failed: [15, 'SIGTERM']"
+  },
+  {
+   "label": "billiard-timeout",
+   "stored": {
+    "exc_module": "billiard.exceptions",
+    "exc_type": "TimeoutError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "billiard-process-error",
+   "stored": {
+    "exc_module": "billiard.exceptions",
+    "exc_type": "ProcessError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "billliard-timeout-two",
+   "stored": {
+    "exc_module": "multiprocessing.context",
+    "exc_type": "TimeoutError",
+    "exc_message": [
+     "boom",
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', 2)",
+   "error": "Import task failed: ('boom', 2)"
+  },
+  {
+   "label": "celery-retry-message",
+   "stored": {
+    "exc_module": "celery.exceptions",
+    "exc_type": "Retry",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "celery-retry-empty",
+   "stored": {
+    "exc_module": "celery.exceptions",
+    "exc_type": "Retry",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "Retry at None",
+   "error": "Import task failed: Retry at None"
+  },
+  {
+   "label": "celery-retry-null",
+   "stored": {
+    "exc_module": "celery.exceptions",
+    "exc_type": "Retry",
+    "exc_message": [
+     null
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "Retry at None",
+   "error": "Import task failed: Retry at None"
+  },
+  {
+   "label": "celery-retry-false",
+   "stored": {
+    "exc_module": "celery.exceptions",
+    "exc_type": "Retry",
+    "exc_message": [
+     false
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "Retry at None",
+   "error": "Import task failed: Retry at None"
+  },
+  {
+   "label": "celery-retry-zero",
+   "stored": {
+    "exc_module": "celery.exceptions",
+    "exc_type": "Retry",
+    "exc_message": [
+     0
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "Retry at None",
+   "error": "Import task failed: Retry at None"
+  },
+  {
+   "label": "celery-retry-empty-string",
+   "stored": {
+    "exc_module": "celery.exceptions",
+    "exc_type": "Retry",
+    "exc_message": [
+     ""
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "Retry at None",
+   "error": "Import task failed: Retry at None"
+  },
+  {
+   "label": "celery-retry-two",
+   "stored": {
+    "exc_module": "celery.exceptions",
+    "exc_type": "Retry",
+    "exc_message": [
+     "a",
+     "b"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "a",
+   "error": "Import task failed: a"
+  },
+  {
+   "label": "celery-retry-list-message",
+   "stored": {
+    "exc_module": "celery.exceptions",
+    "exc_type": "Retry",
+    "exc_message": [
+     [
+      "boom",
+      3
+     ]
+    ]
+   },
+   "outcome": "str-raised",
+   "text": "__str__ returned non-string (type list)",
+   "error": "__str__ returned non-string (type list)"
+  },
+  {
+   "label": "celery-retry-int-message",
+   "stored": {
+    "exc_module": "celery.exceptions",
+    "exc_type": "Retry",
+    "exc_message": [
+     1
+    ]
+   },
+   "outcome": "str-raised",
+   "text": "__str__ returned non-string (type int)",
+   "error": "__str__ returned non-string (type int)"
+  },
+  {
+   "label": "celery-retry-exc-when",
+   "stored": {
+    "exc_module": "celery.exceptions",
+    "exc_type": "Retry",
+    "exc_message": [
+     null,
+     "boom",
+     5
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "Retry in 5s: boom",
+   "error": "Import task failed: Retry in 5s: boom"
+  },
+  {
+   "label": "celery-retry-dict-exc",
+   "stored": {
+    "exc_module": "celery.exceptions",
+    "exc_type": "Retry",
+    "exc_message": [
+     null,
+     {
+      "a": 1
+     },
+     5
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "Retry in 5s: {'a': 1}",
+   "error": "Import task failed: Retry in 5s: {'a': 1}"
+  },
+  {
+   "label": "celery-retry-when-string",
+   "stored": {
+    "exc_module": "celery.exceptions",
+    "exc_type": "Retry",
+    "exc_message": [
+     null,
+     "boom",
+     "later"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "Retry at later: boom",
+   "error": "Import task failed: Retry at later: boom"
+  },
+  {
+   "label": "celery-reject-message",
+   "stored": {
+    "exc_module": "celery.exceptions",
+    "exc_type": "Reject",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', False)",
+   "error": "Import task failed: ('boom', False)"
+  },
+  {
+   "label": "celery-reject-empty",
+   "stored": {
+    "exc_module": "celery.exceptions",
+    "exc_type": "Reject",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "(None, False)",
+   "error": "Import task failed: (None, False)"
+  },
+  {
+   "label": "celery-reject-two",
+   "stored": {
+    "exc_module": "celery.exceptions",
+    "exc_type": "Reject",
+    "exc_message": [
+     "boom",
+     true
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('boom', True)",
+   "error": "Import task failed: ('boom', True)"
+  },
+  {
+   "label": "celery-reject-list",
+   "stored": {
+    "exc_module": "celery.exceptions",
+    "exc_type": "Reject",
+    "exc_message": [
+     [
+      "boom",
+      true
+     ]
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "(['boom', True], False)",
+   "error": "Import task failed: (['boom', True], False)"
+  },
+  {
+   "label": "celery-ignore",
+   "stored": {
+    "exc_module": "celery.exceptions",
+    "exc_type": "Ignore",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "celery-ignore-message",
+   "stored": {
+    "exc_module": "celery.exceptions",
+    "exc_type": "Ignore",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "celery-notregistered",
+   "stored": {
+    "exc_module": "celery.exceptions",
+    "exc_type": "NotRegistered",
+    "exc_message": [
+     "app.tasks.x"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "'app.tasks.x'",
+   "error": "Import task failed: 'app.tasks.x'"
+  },
+  {
+   "label": "celery-notregistered-list",
+   "stored": {
+    "exc_module": "celery.exceptions",
+    "exc_type": "NotRegistered",
+    "exc_message": [
+     [
+      "a"
+     ]
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "['a']",
+   "error": "Import task failed: ['a']"
+  },
+  {
+   "label": "celery-timeout",
+   "stored": {
+    "exc_module": "celery.exceptions",
+    "exc_type": "TimeoutError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "celery-chorderror",
+   "stored": {
+    "exc_module": "celery.exceptions",
+    "exc_type": "ChordError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "celery-taskrevoked",
+   "stored": {
+    "exc_module": "celery.exceptions",
+    "exc_type": "TaskRevokedError",
+    "exc_message": [
+     "expired"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "expired",
+   "error": "Import task failed: expired"
+  },
+  {
+   "label": "celery-maxretries",
+   "stored": {
+    "exc_module": "celery.exceptions",
+    "exc_type": "MaxRetriesExceededError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "celery-alreadyregistered",
+   "stored": {
+    "exc_module": "celery.exceptions",
+    "exc_type": "AlreadyRegistered",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "celery-improperly",
+   "stored": {
+    "exc_module": "celery.exceptions",
+    "exc_type": "ImproperlyConfigured",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "celery-serializationerror",
+   "stored": {
+    "exc_module": "celery.exceptions",
+    "exc_type": "SerializationError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "celery-backenderror",
+   "stored": {
+    "exc_module": "celery.exceptions",
+    "exc_type": "BackendError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "celery-backendgetmeta",
+   "stored": {
+    "exc_module": "celery.exceptions",
+    "exc_type": "BackendGetMetaError",
+    "exc_message": [
+     "failed to get meta"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "failed to get meta",
+   "error": "Import task failed: failed to get meta"
+  },
+  {
+   "label": "celery-securityerror",
+   "stored": {
+    "exc_module": "celery.exceptions",
+    "exc_type": "SecurityError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "celery-taskerror",
+   "stored": {
+    "exc_module": "celery.exceptions",
+    "exc_type": "TaskError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "celery-celeryerror",
+   "stored": {
+    "exc_module": "celery.exceptions",
+    "exc_type": "CeleryError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "kombu-encodeerror",
+   "stored": {
+    "exc_module": "kombu.exceptions",
+    "exc_type": "EncodeError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "kombu-encodeerror-list",
+   "stored": {
+    "exc_module": "kombu.exceptions",
+    "exc_type": "EncodeError",
+    "exc_message": [
+     [
+      "boom",
+      {
+       "a": 1
+      }
+     ]
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "['boom', {'a': 1}]",
+   "error": "Import task failed: ['boom', {'a': 1}]"
+  },
+  {
+   "label": "kombu-decodeerror",
+   "stored": {
+    "exc_module": "kombu.exceptions",
+    "exc_type": "DecodeError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "kombu-versionmismatch",
+   "stored": {
+    "exc_module": "kombu.exceptions",
+    "exc_type": "VersionMismatch",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "kombu-operational",
+   "stored": {
+    "exc_module": "kombu.exceptions",
+    "exc_type": "OperationalError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "django-integrity",
+   "stored": {
+    "exc_module": "django.db.utils",
+    "exc_type": "IntegrityError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "django-integrity-list",
+   "stored": {
+    "exc_module": "django.db.utils",
+    "exc_type": "IntegrityError",
+    "exc_message": [
+     [
+      "boom",
+      2
+     ]
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "['boom', 2]",
+   "error": "Import task failed: ['boom', 2]"
+  },
+  {
+   "label": "django-dataerror",
+   "stored": {
+    "exc_module": "django.db.utils",
+    "exc_type": "DataError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "django-operational",
+   "stored": {
+    "exc_module": "django.db.utils",
+    "exc_type": "OperationalError",
+    "exc_message": [
+     "database error"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "database error",
+   "error": "Import task failed: database error"
+  },
+  {
+   "label": "django-operational-list",
+   "stored": {
+    "exc_module": "django.db.utils",
+    "exc_type": "OperationalError",
+    "exc_message": [
+     [
+      "database error",
+      "more"
+     ]
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "['database error', 'more']",
+   "error": "Import task failed: ['database error', 'more']"
+  },
+  {
+   "label": "django-interface",
+   "stored": {
+    "exc_module": "django.db.utils",
+    "exc_type": "InterfaceError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "json-decode",
+   "stored": {
+    "exc_module": "json.decoder",
+    "exc_type": "JSONDecodeError",
+    "exc_message": [
+     "Expecting value",
+     "oops",
+     0
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "Expecting value: line 1 column 1 (char 0)",
+   "error": "Import task failed: Expecting value: line 1 column 1 (char 0)"
+  },
+  {
+   "label": "json-decode-position",
+   "stored": {
+    "exc_module": "json.decoder",
+    "exc_type": "JSONDecodeError",
+    "exc_message": [
+     "Expecting value",
+     "{\"a\":}",
+     5
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "Expecting value: line 1 column 6 (char 5)",
+   "error": "Import task failed: Expecting value: line 1 column 6 (char 5)"
+  },
+  {
+   "label": "json-decode-multiline",
+   "stored": {
+    "exc_module": "json.decoder",
+    "exc_type": "JSONDecodeError",
+    "exc_message": [
+     "m",
+     "line1\nline2\nline3",
+     8
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "m: line 2 column 3 (char 8)",
+   "error": "Import task failed: m: line 2 column 3 (char 8)"
+  },
+  {
+   "label": "json-decode-negative",
+   "stored": {
+    "exc_module": "json.decoder",
+    "exc_type": "JSONDecodeError",
+    "exc_message": [
+     "m",
+     "d",
+     -5
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "m: line 1 column -4 (char -5)",
+   "error": "Import task failed: m: line 1 column -4 (char -5)"
+  },
+  {
+   "label": "json-decode-bool-pos",
+   "stored": {
+    "exc_module": "json.decoder",
+    "exc_type": "JSONDecodeError",
+    "exc_message": [
+     "m",
+     "d",
+     true
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "m: line 1 column 2 (char 1)",
+   "error": "Import task failed: m: line 1 column 2 (char 1)"
+  },
+  {
+   "label": "json-decode-null-pos",
+   "stored": {
+    "exc_module": "json.decoder",
+    "exc_type": "JSONDecodeError",
+    "exc_message": [
+     "m",
+     "d",
+     null
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "<class 'json.decoder.JSONDecodeError'>(['m', 'd', None])",
+   "error": "Import task failed: <class 'json.decoder.JSONDecodeError'>(['m', 'd', None])"
+  },
+  {
+   "label": "json-decode-empty-doc",
+   "stored": {
+    "exc_module": "json.decoder",
+    "exc_type": "JSONDecodeError",
+    "exc_message": [
+     "m",
+     "",
+     0
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "m: line 1 column 1 (char 0)",
+   "error": "Import task failed: m: line 1 column 1 (char 0)"
+  },
+  {
+   "label": "json-decode-list-msg",
+   "stored": {
+    "exc_module": "json.decoder",
+    "exc_type": "JSONDecodeError",
+    "exc_message": [
+     [
+      1
+     ],
+     "d",
+     0
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "[1]: line 1 column 1 (char 0)",
+   "error": "Import task failed: [1]: line 1 column 1 (char 0)"
+  },
+  {
+   "label": "json-decode-short",
+   "stored": {
+    "exc_module": "json.decoder",
+    "exc_type": "JSONDecodeError",
+    "exc_message": [
+     "Expecting value"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "<class 'json.decoder.JSONDecodeError'>(['Expecting value'])",
+   "error": "Import task failed: <class 'json.decoder.JSONDecodeError'>(['Expecting value'])"
+  },
+  {
+   "label": "json-decode-long",
+   "stored": {
+    "exc_module": "json.decoder",
+    "exc_type": "JSONDecodeError",
+    "exc_message": [
+     "m",
+     "d",
+     0,
+     1
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "<class 'json.decoder.JSONDecodeError'>(['m', 'd', 0, 1])",
+   "error": "Import task failed: <class 'json.decoder.JSONDecodeError'>(['m', 'd', 0, 1])"
+  },
+  {
+   "label": "json-decode-empty",
+   "stored": {
+    "exc_module": "json.decoder",
+    "exc_type": "JSONDecodeError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "<class 'json.decoder.JSONDecodeError'>([])",
+   "error": "Import task failed: <class 'json.decoder.JSONDecodeError'>([])"
+  },
+  {
+   "label": "json-decode-float-pos",
+   "stored": {
+    "exc_module": "json.decoder",
+    "exc_type": "JSONDecodeError",
+    "exc_message": [
+     "m",
+     "d",
+     1.5
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "<class 'json.decoder.JSONDecodeError'>(['m', 'd', 1.5])",
+   "error": "Import task failed: <class 'json.decoder.JSONDecodeError'>(['m', 'd', 1.5])"
+  },
+  {
+   "label": "json-decode-int-doc",
+   "stored": {
+    "exc_module": "json.decoder",
+    "exc_type": "JSONDecodeError",
+    "exc_message": [
+     "m",
+     5,
+     0
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "<class 'json.decoder.JSONDecodeError'>(['m', 5, 0])",
+   "error": "Import task failed: <class 'json.decoder.JSONDecodeError'>(['m', 5, 0])"
+  },
+  {
+   "label": "zipfile-badzip",
+   "stored": {
+    "exc_module": "zipfile",
+    "exc_type": "BadZipFile",
+    "exc_message": [
+     "File is not a zip file"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "File is not a zip file",
+   "error": "Import task failed: File is not a zip file"
+  },
+  {
+   "label": "zipfile-badzip-list",
+   "stored": {
+    "exc_module": "zipfile",
+    "exc_type": "BadZipFile",
+    "exc_message": [
+     [
+      "a",
+      1
+     ]
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "['a', 1]",
+   "error": "Import task failed: ['a', 1]"
+  },
+  {
+   "label": "smtplib-exception",
+   "stored": {
+    "exc_module": "smtplib",
+    "exc_type": "SMTPException",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "smtplib-exception-two",
+   "stored": {
+    "exc_module": "smtplib",
+    "exc_type": "SMTPException",
+    "exc_message": [
+     2,
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "[Errno 2] boom",
+   "error": "Import task failed: [Errno 2] boom"
+  },
+  {
+   "label": "smtplib-disconnected",
+   "stored": {
+    "exc_module": "smtplib",
+    "exc_type": "SMTPServerDisconnected",
+    "exc_message": [
+     "Connection unexpectedly closed"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "Connection unexpectedly closed",
+   "error": "Import task failed: Connection unexpectedly closed"
+  },
+  {
+   "label": "smtplib-not-supported",
+   "stored": {
+    "exc_module": "smtplib",
+    "exc_type": "SMTPNotSupportedError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "smtplib-recipients",
+   "stored": {
+    "exc_module": "smtplib",
+    "exc_type": "SMTPRecipientsRefused",
+    "exc_message": [
+     {
+      "a@example.test": [
+       550,
+       "no"
+      ]
+     }
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "{'a@example.test': [550, 'no']}",
+   "error": "Import task failed: {'a@example.test': [550, 'no']}"
+  },
+  {
+   "label": "smtplib-recipients-empty",
+   "stored": {
+    "exc_module": "smtplib",
+    "exc_type": "SMTPRecipientsRefused",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "<class 'smtplib.SMTPRecipientsRefused'>([])",
+   "error": "Import task failed: <class 'smtplib.SMTPRecipientsRefused'>([])"
+  },
+  {
+   "label": "smtplib-recipients-two",
+   "stored": {
+    "exc_module": "smtplib",
+    "exc_type": "SMTPRecipientsRefused",
+    "exc_message": [
+     {
+      "a": 1
+     },
+     2
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "<class 'smtplib.SMTPRecipientsRefused'>([{'a': 1}, 2])",
+   "error": "Import task failed: <class 'smtplib.SMTPRecipientsRefused'>([{'a': 1}, 2])"
+  },
+  {
+   "label": "socket-gaierror",
+   "stored": {
+    "exc_module": "socket",
+    "exc_type": "gaierror",
+    "exc_message": [
+     -2,
+     "Name or service not known"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "[Errno -2] Name or service not known",
+   "error": "Import task failed: [Errno -2] Name or service not known"
+  },
+  {
+   "label": "socket-gaierror-message",
+   "stored": {
+    "exc_module": "socket",
+    "exc_type": "gaierror",
+    "exc_message": [
+     "Name or service not known"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "Name or service not known",
+   "error": "Import task failed: Name or service not known"
+  },
+  {
+   "label": "socket-gaierror-empty",
+   "stored": {
+    "exc_module": "socket",
+    "exc_type": "gaierror",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "",
+   "error": "Import task failed: "
+  },
+  {
+   "label": "socket-herror",
+   "stored": {
+    "exc_module": "socket",
+    "exc_type": "herror",
+    "exc_message": [
+     1,
+     "Unknown host"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "[Errno 1] Unknown host",
+   "error": "Import task failed: [Errno 1] Unknown host"
+  },
+  {
+   "label": "socket-herror-message",
+   "stored": {
+    "exc_module": "socket",
+    "exc_type": "herror",
+    "exc_message": [
+     "Unknown host"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "Unknown host",
+   "error": "Import task failed: Unknown host"
+  },
+  {
+   "label": "socket-timeout",
+   "stored": {
+    "exc_module": "socket",
+    "exc_type": "timeout",
+    "exc_message": [
+     "timed out"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "timed out",
+   "error": "Import task failed: timed out"
+  },
+  {
+   "label": "socket-error",
+   "stored": {
+    "exc_module": "socket",
+    "exc_type": "error",
+    "exc_message": [
+     111,
+     "Connection refused"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "[Errno 111] Connection refused",
+   "error": "Import task failed: [Errno 111] Connection refused"
+  },
+  {
+   "label": "os-error",
+   "stored": {
+    "exc_module": "os",
+    "exc_type": "error",
+    "exc_message": [
+     2,
+     "No such file or directory",
+     "/tmp/x"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "[Errno 2] No such file or directory: '/tmp/x'",
+   "error": "Import task failed: [Errno 2] No such file or directory: '/tmp/x'"
+  },
+  {
+   "label": "ssl-error",
+   "stored": {
+    "exc_module": "ssl",
+    "exc_type": "SSLError",
+    "exc_message": [
+     1,
+     "wrong version number"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "wrong version number",
+   "error": "Import task failed: wrong version number"
+  },
+  {
+   "label": "ssl-error-message",
+   "stored": {
+    "exc_module": "ssl",
+    "exc_type": "SSLError",
+    "exc_message": [
+     "wrong version number"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('wrong version number',)",
+   "error": "Import task failed: ('wrong version number',)"
+  },
+  {
+   "label": "ssl-error-empty",
+   "stored": {
+    "exc_module": "ssl",
+    "exc_type": "SSLError",
+    "exc_message": []
+   },
+   "outcome": "rebuilt",
+   "text": "()",
+   "error": "Import task failed: ()"
+  },
+  {
+   "label": "ssl-error-three",
+   "stored": {
+    "exc_module": "ssl",
+    "exc_type": "SSLError",
+    "exc_message": [
+     1,
+     "x",
+     "y"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "x",
+   "error": "Import task failed: x"
+  },
+  {
+   "label": "threading-threaderror",
+   "stored": {
+    "exc_module": "threading",
+    "exc_type": "ThreadError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "unittest-skip",
+   "stored": {
+    "exc_module": "unittest.case",
+    "exc_type": "SkipTest",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "uuid-unknown",
+   "stored": {
+    "exc_module": "uuid",
+    "exc_type": "UUIDError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "psycopg2-error",
+   "stored": {
+    "exc_module": "psycopg2",
+    "exc_type": "Error",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "psycopg2-error-list",
+   "stored": {
+    "exc_module": "psycopg2",
+    "exc_type": "Error",
+    "exc_message": [
+     [
+      "a",
+      1
+     ]
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "['a', 1]",
+   "error": "Import task failed: ['a', 1]"
+  },
+  {
+   "label": "psycopg2-error-two",
+   "stored": {
+    "exc_module": "psycopg2",
+    "exc_type": "Error",
+    "exc_message": [
+     "a",
+     "b"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "('a', 'b')",
+   "error": "Import task failed: ('a', 'b')"
+  },
+  {
+   "label": "psycopg2-operational",
+   "stored": {
+    "exc_module": "psycopg2",
+    "exc_type": "OperationalError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "psycopg2-operational-list",
+   "stored": {
+    "exc_module": "psycopg2",
+    "exc_type": "OperationalError",
+    "exc_message": [
+     [
+      "boom",
+      2
+     ]
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "['boom', 2]",
+   "error": "Import task failed: ['boom', 2]"
+  },
+  {
+   "label": "psycopg2-integrity",
+   "stored": {
+    "exc_module": "psycopg2",
+    "exc_type": "IntegrityError",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "psycopg2-databaseerror-list",
+   "stored": {
+    "exc_module": "psycopg2",
+    "exc_type": "DatabaseError",
+    "exc_message": [
+     [
+      "boom",
+      2
+     ]
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "['boom', 2]",
+   "error": "Import task failed: ['boom', 2]"
+  },
+  {
+   "label": "psycopg2-unique",
+   "stored": {
+    "exc_module": "psycopg2",
+    "exc_type": "errors.UniqueViolation",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  },
+  {
+   "label": "psycopg2-undefined",
+   "stored": {
+    "exc_module": "psycopg2",
+    "exc_type": "errors.UndefinedTable",
+    "exc_message": [
+     "boom"
+    ]
+   },
+   "outcome": "rebuilt",
+   "text": "boom",
+   "error": "Import task failed: boom"
+  }
+ ]
+}

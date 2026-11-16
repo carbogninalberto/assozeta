@@ -73,12 +73,13 @@ def seed_rows(source, created):
         insert(CampsAndRetreatsSubscription, CampsAndRetreatsSubscription(
             camps_and_retreats_subscription_id=row['id'], camps_and_retreats_id=camps[row['camp']]['id'], created_at=when(row['created'])))
     for row in source['payments'].values():
+        association = row.get('association', 'own')
         insert(Payment, Payment(payment_id=row['id'], amount=Decimal(row['amount']), paid=row['paid'], subject=row['subject'],
                                 description=row['description'], payment_category_id=categories[row['category']]['id'],
                                 notes=row['notes'], meta_payment_categories=row['meta'], meta=row.get('payment_meta'),
                                 creation_date=when(row['created']),
                                 deleted=row.get('deleted', False),
-                                sport_association_id=source['ids']['own_association']))
+                                sport_association_id=source['ids'][f'{association}_association'] if association else None))
     services, payments = source['services'], source['payments']
     for row in source['subscription_periods'].values():
         insert(CampsAndRetreatsSubscriptionPeriod, CampsAndRetreatsSubscriptionPeriod(

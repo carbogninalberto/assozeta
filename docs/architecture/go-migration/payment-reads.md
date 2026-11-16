@@ -38,7 +38,10 @@ word preparation (`personaSearch`) and KTDatatable page resolution (`personaPage
 - `course_subscription_id` (truthy) through `is_valid_uuid` (400 list) before anything else.
 - `mode=compressed`: `request.user.sportassociation` (without one the scoped live lookup fails, 500), the `query[archived]` filter (BooleanField `to_python`: `t`,
   `True`, `1`, `f`, `False`, `0`; anything else, including `true` and empty, is a 500), `values(...)` by `-creation_date` with
-  Decimals as floats. Other parameters are ignored.
+  Decimals as floats. Other parameters are ignored. The reverse one-to-one is the association whose `user` is the scope
+  user, so an athlete whom the association import made the owner of an imported association lists it through the same
+  lookup; in an association-scoped session `scoped_queryset` also keeps the session's association (a different one for
+  such an athlete: no rows).
 - Athletes: their own branch ("payment/list for athletes" below).
 - Otherwise the same association and archived filter, then one `filter()` of `associate_id`, `query[payment_range]`,
   `query[subject]`, `query[type]`, `query[paid]` / `query[expense]` (`== 'true'`), `query[payment_categories]` (`[]`: no
@@ -56,7 +59,12 @@ word preparation (`personaSearch`) and KTDatatable page resolution (`personaPage
   matching two different tutors do not match), the result is distinct and Payment gets no relevance ordering (its first ten
   fields are its own).
 - `sort[field]` orders ascending unless `sort[sort] == 'desc'`: `?` random, one leading `-` stripped (so `-x` with `desc`
-  is a FieldError), unknown names a FieldError (500) before pagination.
+  is a FieldError), unknown names a FieldError (500) before pagination. `?` together with a text search keeps the search
+  joins in the page query: Django's compiler adds `RANDOM()` to the DISTINCT select list, so one row survives per matching
+  join row, while the count, whose subquery clears the ordering, counts the distinct payments. The Paginator's window is
+  capped at that count, so a payment reached through two tutors is shown twice only when the window has room for the
+  repeated row (a multi-payment page can repeat one payment instead of showing another, by the database's random choice);
+  the single-payment case lists it once. A term without a `\w+` word adds no join (no repeats).
 - Rows: PaymentOptimizedSerializer plus, for instructor payments, `instructor_document` / `instructor_document_token` from
   the payment's InstructorHours document.
 
@@ -145,15 +153,15 @@ any archived state, by `-creation_date`. `subject`, `type`, `paid` and `expense`
 the whole term icontains over the payment id, notes, meta, description, category name, `first_name || ' ' || last_name`,
 supplier name, instructor and associate names, tax code, payment and creation dates, type, subject, account name and the
 course titles reached through the payment's course subscriptions and installments (any state); without `distinct()` a
-payment joined to two installments is listed (and counted) twice. Rows add `is_carnet` and, for course payments, the first
+payment joined to two installments is listed (and counted) twice. A text search (not a float) also annotates
+`full_name = Concat('associate__first_name', V(' '), 'associate__last_name')`, so `sort[field]=full_name` (and `desc`)
+orders the page by `COALESCE(first, '') || ' ' || COALESCE(last, '')`; without the annotation the name is an unknown
+ordering (500). Rows add `is_carnet` and, for course payments, the first
 course subscription by key (`all_objects()`), else the first installment's (`all_objects()`, group-aware) as
 `course_subscriptions {course_id, title, deleted}`, else the first carnet holding as `carnet {course_id, title}`.
 
 ## Not ported (refused with the 500 page)
 
-- The compressed mode in an association-scoped athlete session whose athlete owns an association
-  (`ErrPaymentReadsNotPorted`): only the association import can leave such an owner, and Django then answers the list.
-  Without an owned association Django raises `DoesNotExist` and Go answers the same 500 page.
 - In the athlete list: a receipt whose filename is not a valid header value (the association's denomination with control
   characters; `document-render.md`) is refused before any write, where Django stores the Document and ignores the failed
   response.
@@ -161,18 +169,15 @@ course subscription by key (`all_objects()`), else the first installment's (`all
   key by its key column) and the columns the view annotated. A path through a relation or the owner account, a
   transform, a reverse accessor and a few stored columns (`payment_intent_id`, the signature) answer as an unknown
   ordering (FieldError, the 500 page) on both sides; the shared helper is `checked_ordering` in
-  `BE/application/utils/api_utils.py`. The lazy annotation order on payment/list is application state
-  (`ErrPaymentReadsUnreachable`): the list annotates nothing. The `full_name` annotation of the subscription search
-  is resolved when compiling the rows and stays refused after the count and page checks, as does random ordering
-  together with the payment/list text search (DISTINCT with `RANDOM()` in the select list); reverse relation names are
-  refused as unknown.
+  `BE/application/utils/api_utils.py`. The `full_name` annotation of the subscription search and random ordering with the
+  payment/list text search are ported (above); reverse relation names are refused as unknown.
 - (Ported in tailpay.) Smart-search terms with characters Python lower-cases differently: see personas-reads.
 
-Since long-tail PR 3 (agent B) the lazy annotation order on payment/list and the compressed list in an
-association-scoped athlete session are application state (`ErrPaymentReadsUnreachable`, the 500 page): the list
-annotates nothing and an athlete has no association. So are the cached Stripe fees, an unknown order column and the
-other stored shapes, while the athlete list and the Stripe fees the server always wires are `ErrServerComposition`.
-`?` with a text search and the subscription list ordered by `full_name` stay refusals.
+Since long-tail PR 3 (agent B) the cached Stripe fees, an unknown order column and the other stored shapes are
+application state (`ErrPaymentReadsUnreachable`, the 500 page), while the athlete list and the Stripe fees the server
+always wires are `ErrServerComposition`. The compressed list in an association-scoped athlete session and the two
+annotation orderings were ported afterwards: the association import can leave an athlete as an owner, and Django answers
+both orderings.
 
 Instructor payments in payment/list: the hours rows of the page's instructor payments are mapped by payment in database
 order (a later row replaces an earlier one); a row with a document sets `instructor_document` and its token; for each
@@ -246,6 +251,21 @@ the athlete's condition) CAUGHT. payment-writes, payment-misc and payment-state 
 v2-rest-b: an infinite search term (`inf`, `-Infinity`) follows NaN: the amount lookup refuses it when the filter is built, so
 `payment/list` and `payment/stats` answer the 500 page and `subscription/<uid>/payments` falls back to the text search. Four
 cases (280 in all); RED is the documented refusal (v2-refusals.md, payment-reads "search" row). GREEN `v2restb-green-r3`:
-280/280 on the four transports. Mutation `v2restb-mutation-r1` (infinity searched as an amount) CAUGHT. Still refused: random
-ordering with the text search (the rows repeat in random order, nothing to compare) and an athlete receipt whose filename
-is not a valid header value.
+280/280 on the four transports. Mutation `v2restb-mutation-r1` (infinity searched as an amount) CAUGHT.
+
+Long-tail payment reads (lt4-C): the four remaining `ErrPaymentReadsNotPorted` sites of this family are ported (the two
+Stripe fee sites are answered under X13, next paragraph). The compressed list resolves the owned association for an
+athlete (three cases on a further association and an athlete whose user owns it, plus the session that filters both
+associations); random ordering with the text search keeps the search joins in the page query (`DISTINCT ..., RANDOM()` on
+Django's side, with the Paginator window capped at the distinct count); the subscription text search's
+`full_name` annotation orders the page (`payments-search-order-full-name` and `-desc`, with a null first name sorting
+first); the export's label float renders `inf`/`-inf`/`0.0`/`-0.0` through `dto.PythonFloatStr`. The fixture has 299 cases
+(`payment-export` adds `export-label-float-overflow` and `export-label-float-underflow` with raw jsonb numeric labels).
+Still refused: an athlete receipt whose filename is not a valid header value.
+
+Long tail PR 4 (agent A, accepted divergence X13): the Stripe fee sum follows Python's arithmetic for every amount the
+balance API can send (ints of any size, booleans, floats; once a float joins the sum is a float, and `float()` of an int
+beyond the float range is the OverflowError the view's `except` answers with zero charges), and a pagination id that is not
+a string is sent as stripe-python encodes it; the request's outcome decides (`payment_stats_stripe_test.go`). A sum that
+reaches an infinity or NaN (`1e400`, `NaN` in the reply) is cached and then answered with the 500 page, as DRF's strict
+JSON renderer fails on it.

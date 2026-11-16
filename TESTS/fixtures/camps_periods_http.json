@@ -183,6 +183,28 @@
    "fee": "20.00",
    "max": null,
    "created": "2026-06-14T09:00:01Z"
+  },
+  "april": {
+   "id": "a1000000-0000-4000-8000-000000985401",
+   "camp": "camp",
+   "start": "2027-04-01T08:00:00Z",
+   "end": "2027-04-05T18:00:00Z",
+   "title": "Aprile",
+   "description": null,
+   "fee": "40.00",
+   "max": null,
+   "created": "2026-06-16T09:00:00Z"
+  },
+  "march": {
+   "id": "a1000000-0000-4000-8000-000000985405",
+   "camp": "camp",
+   "start": "2027-03-01T08:00:00Z",
+   "end": "2027-03-05T18:00:00Z",
+   "title": "Marzo",
+   "description": null,
+   "fee": "10.00",
+   "max": null,
+   "created": "2026-06-16T12:00:00Z"
   }
  },
  "services": {
@@ -293,6 +315,24 @@
    "fee": "5.00",
    "category": "own",
    "created": "2026-06-14T12:00:03Z"
+  },
+  "raft": {
+   "id": "a1000000-0000-4000-8000-000000985402",
+   "period": "april",
+   "title": "Gommone",
+   "description": null,
+   "fee": "8.00",
+   "category": "own",
+   "created": "2026-06-16T10:00:00Z"
+  },
+  "refund": {
+   "id": "a1000000-0000-4000-8000-000000985406",
+   "period": "march",
+   "title": "Rimborso",
+   "description": null,
+   "fee": "5.00",
+   "category": "own",
+   "created": "2026-06-16T13:00:00Z"
   }
  },
  "subscriptions": {
@@ -487,6 +527,44 @@
    "notes": null,
    "meta": null,
    "created": "2026-06-14T13:00:06Z"
+  },
+  "hidden": {
+   "id": "a1000000-0000-4000-8000-000000985403",
+   "amount": "48.00",
+   "paid": false,
+   "subject": 1,
+   "description": "Aprile",
+   "category": "own",
+   "notes": "Note nascoste",
+   "meta": [
+    {
+     "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985402",
+     "title": "Gommone",
+     "amount": 8.0,
+     "payment_category_id": "a1000000-0000-4000-8000-000000985004"
+    }
+   ],
+   "created": "2026-06-16T11:00:00Z",
+   "deleted": true,
+   "association": null
+  },
+  "march": {
+   "id": "a1000000-0000-4000-8000-000000985407",
+   "amount": "15.00",
+   "paid": false,
+   "subject": 1,
+   "description": "Marzo",
+   "category": "own",
+   "notes": "Vecchie note",
+   "meta": [
+    {
+     "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985406",
+     "title": "Rimborso",
+     "amount": 5.0,
+     "payment_category_id": "a1000000-0000-4000-8000-000000985004"
+    }
+   ],
+   "created": "2026-06-16T14:00:00Z"
   }
  },
  "subscription_periods": {
@@ -603,6 +681,24 @@
    "services": [
     "poles"
    ]
+  },
+  "april": {
+   "id": "a1000000-0000-4000-8000-000000985404",
+   "period": "april",
+   "subscription": "camp",
+   "payment": "hidden",
+   "services": [
+    "raft"
+   ]
+  },
+  "march": {
+   "id": "a1000000-0000-4000-8000-000000985408",
+   "period": "march",
+   "subscription": "camp",
+   "payment": "march",
+   "services": [
+    "refund"
+   ]
   }
  },
  "period_links": {
@@ -627,6 +723,12 @@
   ],
   "february": [
    "poles"
+  ],
+  "april": [
+   "raft"
+  ],
+  "march": [
+   "refund"
   ]
  },
  "cases": [
@@ -5774,6 +5876,375 @@
     "error": "Not found"
    },
    "effect": null
+  },
+  {
+   "name": "camps-periods-services-update-hidden-payment-without-association",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/services/a1000000-0000-4000-8000-000000985402/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully",
+    "period": {
+     "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985402",
+     "title": "Gommone",
+     "description": null,
+     "fee": "9.50",
+     "created_at": "2026-06-16T10:00:00Z",
+     "camps_and_retreats_period": "a1000000-0000-4000-8000-000000985401",
+     "payment_category": "a1000000-0000-4000-8000-000000985004"
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreatsPeriodsService": {
+      "a1000000-0000-4000-8000-000000985402": {
+       "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985401",
+       "title": "Gommone",
+       "description": null,
+       "fee": "9.50",
+       "payment_category_id": "a1000000-0000-4000-8000-000000985004"
+      }
+     },
+     "application.Payment": {
+      "a1000000-0000-4000-8000-000000985403": {
+       "amount": "49.50",
+       "notes": "Iscrizione al periodo Aprile del campo Campo estivo è\nMare e monti\n\nGommone - 9.5€",
+       "meta_payment_categories": [
+        {
+         "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985402",
+         "title": "Gommone",
+         "amount": 9.5,
+         "payment_category_id": "a1000000-0000-4000-8000-000000985004"
+        }
+       ]
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreatsPeriodsService",
+      "key": "a1000000-0000-4000-8000-000000985402",
+      "action": 1,
+      "changes": {
+       "fee": [
+        "8.00",
+        "9.50"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "period.camps_and_retreats.sport_association"
+     },
+     {
+      "model": "Payment",
+      "key": "a1000000-0000-4000-8000-000000985403",
+      "action": 1,
+      "changes": {
+       "payment_id": [
+        "None",
+        "a1000000-0000-4000-8000-000000985403"
+       ],
+       "sport_association": [
+        "None",
+        "None"
+       ],
+       "user": [
+        "None",
+        "None"
+       ],
+       "associate": [
+        "None",
+        "None"
+       ],
+       "instructor": [
+        "None",
+        "None"
+       ],
+       "supplier": [
+        "None",
+        "None"
+       ],
+       "invoice": [
+        "None",
+        "None"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "signature": [
+        "None",
+        "None"
+       ],
+       "custom_accounts": [
+        "None",
+        "None"
+       ],
+       "payment_date": [
+        "None",
+        "None"
+       ],
+       "payment_category": [
+        "None",
+        "a1000000-0000-4000-8000-000000985004"
+       ],
+       "subject": [
+        "None",
+        "1"
+       ],
+       "description": [
+        "None",
+        "Aprile"
+       ],
+       "paid": [
+        "None",
+        "False"
+       ],
+       "type": [
+        "None",
+        "default"
+       ],
+       "expense": [
+        "None",
+        "False"
+       ],
+       "archived": [
+        "None",
+        "False"
+       ],
+       "deleted": [
+        "None",
+        "True"
+       ],
+       "meta": [
+        "None",
+        "null"
+       ],
+       "course": [
+        "None",
+        "null"
+       ],
+       "creation_date": [
+        "None",
+        "2026-06-16 11:00:00"
+       ],
+       "amount": [
+        "None",
+        "48.00"
+       ],
+       "notes": [
+        "None",
+        "Note nascoste"
+       ],
+       "meta_payment_categories": [
+        "None",
+        "[{\"amount\": 9.5, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985402\", \"payment_category_id\": \"a1000000-0000-4000-8000-000000985004\", \"title\": \"Gommone\"}]"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     },
+     {
+      "model": "Payment",
+      "key": "a1000000-0000-4000-8000-000000985403",
+      "action": 1,
+      "changes": {
+       "payment_id": [
+        "None",
+        "a1000000-0000-4000-8000-000000985403"
+       ],
+       "sport_association": [
+        "None",
+        "None"
+       ],
+       "user": [
+        "None",
+        "None"
+       ],
+       "associate": [
+        "None",
+        "None"
+       ],
+       "instructor": [
+        "None",
+        "None"
+       ],
+       "supplier": [
+        "None",
+        "None"
+       ],
+       "invoice": [
+        "None",
+        "None"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "signature": [
+        "None",
+        "None"
+       ],
+       "custom_accounts": [
+        "None",
+        "None"
+       ],
+       "payment_date": [
+        "None",
+        "None"
+       ],
+       "payment_category": [
+        "None",
+        "a1000000-0000-4000-8000-000000985004"
+       ],
+       "subject": [
+        "None",
+        "1"
+       ],
+       "description": [
+        "None",
+        "Aprile"
+       ],
+       "paid": [
+        "None",
+        "False"
+       ],
+       "type": [
+        "None",
+        "default"
+       ],
+       "expense": [
+        "None",
+        "False"
+       ],
+       "archived": [
+        "None",
+        "False"
+       ],
+       "deleted": [
+        "None",
+        "True"
+       ],
+       "meta": [
+        "None",
+        "null"
+       ],
+       "course": [
+        "None",
+        "null"
+       ],
+       "creation_date": [
+        "None",
+        "2026-06-16 11:00:00"
+       ],
+       "amount": [
+        "None",
+        "49.5"
+       ],
+       "notes": [
+        "None",
+        "Iscrizione al periodo Aprile del campo Campo estivo è\nMare e monti\n\nGommone - 9.5€"
+       ],
+       "meta_payment_categories": [
+        "None",
+        "[{\"amount\": 9.5, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985402\", \"payment_category_id\": \"a1000000-0000-4000-8000-000000985004\", \"title\": \"Gommone\"}]"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     }
+    ]
+   },
+   "body": {
+    "fee": "9.50"
+   }
+  },
+  {
+   "name": "camps-periods-services-update-walk-negative-amount-check-constraint",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/services/a1000000-0000-4000-8000-000000985406/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "new row for relation \"application_payment\" violates check constraint \"payment_amount_positive\"\nDETAIL:  Failing row contains (a1000000-0000-4000-8000-000000985407, default, 1, -90.00, 2026-06-16 14:00:00+00, null, f, null, null, a1000000-0000-4000-8000-000000701001, null, null, f, null, null, f, a1000000-0000-4000-8000-000000985004, Marzo, null, null, null, Iscrizione al periodo Marzo del campo Campo estivo è\nMare e mon..., [{\"title\": \"Rimborso\", \"amount\": -100.0, \"payment_category_id\": ..., null, f, null, null).\n"
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreatsPeriodsService": {
+      "a1000000-0000-4000-8000-000000985406": {
+       "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985405",
+       "title": "Rimborso",
+       "description": null,
+       "fee": "-100.00",
+       "payment_category_id": "a1000000-0000-4000-8000-000000985004"
+      }
+     },
+     "application.Payment": {
+      "a1000000-0000-4000-8000-000000985407": {
+       "meta_payment_categories": [
+        {
+         "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985406",
+         "title": "Rimborso",
+         "amount": -100.0,
+         "payment_category_id": "a1000000-0000-4000-8000-000000985004"
+        }
+       ]
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreatsPeriodsService",
+      "key": "a1000000-0000-4000-8000-000000985406",
+      "action": 1,
+      "changes": {
+       "fee": [
+        "5.00",
+        "-100.00"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "period.camps_and_retreats.sport_association"
+     },
+     {
+      "model": "Payment",
+      "key": "a1000000-0000-4000-8000-000000985407",
+      "action": 1,
+      "changes": {
+       "meta_payment_categories": [
+        "[{\"amount\": 5.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985406\", \"payment_category_id\": \"a1000000-0000-4000-8000-000000985004\", \"title\": \"Rimborso\"}]",
+        "[{\"amount\": -100.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985406\", \"payment_category_id\": \"a1000000-0000-4000-8000-000000985004\", \"title\": \"Rimborso\"}]"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "direct"
+     },
+     {
+      "model": "Payment",
+      "key": "a1000000-0000-4000-8000-000000985407",
+      "action": 1,
+      "changes": {
+       "amount": [
+        "15.00",
+        "-90.0"
+       ],
+       "notes": [
+        "Vecchie note",
+        "Iscrizione al periodo Marzo del campo Campo estivo è\nMare e monti\n\nRimborso - -100.0€"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "direct"
+     }
+    ]
+   },
+   "body": {
+    "fee": "-100.00"
+   }
   }
  ]
 }

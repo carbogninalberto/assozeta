@@ -87,13 +87,18 @@ ASSOCIATES = {
     # Names with line breaks (pasted or imported data).
     'newline': {'id': uid(94), 'association': 'own', 'first': 'Lia', 'last': 'Bian\nchi', 'email': None, 'user': None},
     'separators': {'id': uid(95), 'association': 'own', 'first': 'Ωmega', 'last': 'Ne\r\nri\u2028x', 'email': None, 'user': None},
+    # Names whose header Django and the HTTP server serve: U+0085 in an ISO-8859-1 value is written as its byte, a
+    # control character that is no line boundary goes inside the MIME word of a value that is not ISO-8859-1.
+    'nel': {'id': uid(135), 'association': 'own', 'first': 'Lia', 'last': 'Bian\x85chi', 'email': None, 'user': None},
+    'control': {'id': uid(136), 'association': 'own', 'first': 'Ωmega', 'last': 'Ne\x01ri', 'email': None, 'user': None},
 }
 # Tutor relations (associate, tutor, primary).
 TUTORS = [{'associate': 'formfull', 'tutor': 'formtutor', 'primary': True},
           {'associate': 'formminor', 'tutor': 'formtutor', 'primary': False},
           {'associate': 'formminor', 'tutor': 'formbare', 'primary': False}]
 FULL_NAMES = {'formminor': 'Leo Piccolo', 'formfull': "Maria Chiara D'Angelò", 'formtutor': 'Paola Tutrice', 'formbare': 'Zoe None', 'mario': 'Mario Rossi', 'noemail': 'Anna Verdi', 'greek': 'Δημήτρης Παπαδόπουλος', 'odd': 'None  Neri',
-              'athlete': 'Athlete Fixture', 'newline': 'Lia Bian\nchi', 'separators': 'Ωmega Ne\r\nri\u2028x'}
+              'athlete': 'Athlete Fixture', 'newline': 'Lia Bian\nchi', 'separators': 'Ωmega Ne\r\nri\u2028x',
+              'nel': 'Lia Bian\x85chi', 'control': 'Ωmega Ne\x01ri'}
 ASSOCIATE_IDS = {**{k: v['id'] for k, v in ASSOCIATES.items()}, 'athlete': BASE_ATHLETE_ASSOCIATE}
 
 DOCUMENTS = {
@@ -132,6 +137,8 @@ SUBSCRIPTIONS = {
     'formminor': {'id': uid(120), 'association': 'form', 'associate': 'formminor', 'user': 'owner', 'group': None, 'document': None},
     'newline': {'id': uid(96), 'association': 'own', 'associate': 'newline', 'user': 'owner', 'group': None, 'document': None},
     'separators': {'id': uid(97), 'association': 'own', 'associate': 'separators', 'user': 'owner', 'group': None, 'document': None},
+    'nel': {'id': uid(137), 'association': 'own', 'associate': 'nel', 'user': 'owner', 'group': None, 'document': None},
+    'control': {'id': uid(138), 'association': 'own', 'associate': 'control', 'user': 'owner', 'group': None, 'document': None},
 }
 # Another member of the association (an athlete account without records).
 EXTRA_USERS = {'member': {'id': uid(27), 'username': 'document-render-member', 'email': 'document-render-member@example.test'},
@@ -750,6 +757,14 @@ add('subscription-name-with-line-break-renderer-error', 'owner', f"/document/sub
     failure('Renderer returned HTTP 500: down'),
     renders=[render('subscription', S('newline'), answer=reply(500, 'text/plain', 'down'))],
     effect=effect(subscription_name('newline'), actor='owner', celery=False))
+
+# Headers Django writes and the HTTP server sends: U+0085 as an ISO-8859-1 byte, U+0001 inside a MIME word. (A
+# control character in an ISO-8859-1 value, or a line boundary in a MIME value, makes uvicorn close the connection
+# after the view's writes: not reproduced.)
+for key in ('nel', 'control'):
+    add(f'subscription-name-with-{key}-header', 'owner', f"/document/subscription/{S(key)}", 200, PDF,
+        renders=[render('subscription', S(key))], effect=effect(subscription_name(key), actor='owner', links=[('subscription', key)]),
+        disposition='inline; filename=' + subscription_name(key))
 
 # Hours of an instructor whose owner has no association: the audit index of each link is the actor's association
 # ('actor.sport_association'), or absent when the actor has none.

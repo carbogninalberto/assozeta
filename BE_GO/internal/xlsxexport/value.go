@@ -54,7 +54,7 @@ const (
 	Decimal             // decimal.Decimal (Text is str(value))
 	Bool                // bool
 	Object              // a list or dict: Text is str(value) (its repr)
-	BigInt              // an int outside the int64 range: Text is its decimal digits (column labels only)
+	BigInt              // an int outside the int64 range: Text is its decimal digits
 )
 
 // Value is one Python value.

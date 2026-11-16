@@ -5,8 +5,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 const (
@@ -15,10 +13,6 @@ const (
 	JobSendExpiredCertificateEmail      = "send_expired_certificate_email"
 	JobSendReminders                    = "send_reminders"
 )
-
-// ErrEmailTaskUnsupported refuses a run, before any effect, whose SMTP
-// message or envelope is outside the proven smtpsend subset.
-var ErrEmailTaskUnsupported = refusal.New("email task input outside the ported subset")
 
 // UserPartialRegistration is one bakney_user_partial row.
 type UserPartialRegistration struct {
@@ -125,6 +119,6 @@ type SMTPMessage struct {
 type SMTPMailer interface {
 	Verify(context.Context, SMTPServer) error
 	Send(context.Context, SMTPServer, SMTPMessage) error
-	// Check reports ErrEmailTaskUnsupported for a message Send would refuse.
+	// Check reports a message Send would refuse.
 	Check(SMTPServer, SMTPMessage) error
 }

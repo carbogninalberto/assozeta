@@ -80,10 +80,7 @@ func djangoHeaderLine(name, value string) (string, error) {
 // foldDjangoHeader is compat32's fold_binary of a header value:
 // Header(value, header_name=name).encode(linesep="\r\n", maxlinelen=78).
 func foldDjangoHeader(name, value string) (string, error) {
-	runes, ok := pythonRunes(value)
-	if !ok {
-		return "", errNotPythonStr
-	}
+	runes := pythonRunes(value)
 	if hasSurrogate(runes) {
 		// compat32 writes a value with surrogates unchanged for cte_type
 		// '8bit', but forbid_multi_line_headers re-encodes every value it

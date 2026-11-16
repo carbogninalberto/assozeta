@@ -139,8 +139,13 @@ it: 500 with the entry kept (case `customer-update-paid-as-file-audited-server-e
 - Customer add with a multipart body that carries file parts: every field is read with DRF's HTML-form rules (absent
   booleans False, `''` to null or absent per field, JSON fields parsed from text) (`dto/customer_invoice_form.go`). Other
   form bodies stay the 500 page in both. Success cases live in the invoice-sync-print fixture, error cases here.
-- Still refused through the persona helpers: a `DD/MM/YYYY` date with non-ASCII digits, and form JSON nested deeper than the
-  ported depth.
+- Form JSON recursion bands (X15): supplier update's nested payment form JSON fields (`payment.course`,
+  `payment.meta`, `payment.meta_payment_categories`) answer as usual up to D = 9941 and the plain 500 page from
+  D = 9942 (json.loads's RecursionError, whatever the other fields hold, nothing written); customer add's `lines`/`json`
+  fields of a multipart body that carries a file answer as for a shallow value up to D = 9942 and the 500 page from
+  D = 9943. Values within the bands are parsed up to the reader's 20000-level limit. Constants and the
+  application-state errors live in `service/invoice_parties.go`.
+- Still refused through the persona helpers: a `DD/MM/YYYY` date with non-ASCII digits.
 - Fixture: 277 cases (was 186); invoice-sync-print 82 (was 77). Local sweep `t11inv-local`: both green (CI `t11inv-1`, GitHub run 43213252219: 4 transports green).
 
 ## Not ported (refused with a 500 before any write)
@@ -148,8 +153,8 @@ it: 500 with the entry kept (case `customer-update-paid-as-file-audited-server-e
 - (Long tail PR 3: the FatturaPA inputs of customer-list invoices without a PDF are ported in `internal/fatturapa`.)
 - A valid customer add was refused here; it is ported in
   [invoice-sync-print](invoice-sync-print.md) (save, XML/JSON, eager print task).
-- Two sub-cases stay refused through the persona helpers: a `DD/MM/YYYY` date with non-ASCII digits, and form JSON nested
-  deeper than the ported depth.
+- Two sub-cases stay refused through the persona helpers: a `DD/MM/YYYY` date with non-ASCII digits, and (for the routes
+  whose bands are not measured) form JSON deeper than the ported depth.
 - The supplier list answers `?` ordering as `ORDER BY RANDOM()`. Client-chosen orderings (t4l1): the list orders by
   the model's own columns (names and attnames, `pk`, a foreign key by its key column) and the columns the view
   annotated. A path through a relation or the owner account, a transform, a reverse accessor and a few stored
@@ -158,8 +163,8 @@ it: 500 with the entry kept (case `customer-update-paid-as-file-audited-server-e
 
 Since long-tail PR 3 (agent B) the supplier list's `?` ordering is ported, as on invoice/list. The pending customers
 store is application state (`ErrServerComposition`): the server always wires it. `SupplierInvoiceInput.NotPorted`
-was never set, so the field and its branches are deleted. The FatturaPA subset and form JSON nested past 500 levels
-stay refusals.
+was never set, so the field and its branches are deleted. The FatturaPA subset stays a refusal; form JSON follows the
+measured bands above (X15).
 
 ## Evidence (TDD)
 
@@ -209,3 +214,8 @@ gone. The fixture (regenerated from its generator) authors 144 cases, adding
 `supplier-add-malformed-invoice-id-ignored` and the four
 `supplier-update-*-ignored` cases and turning the add's unique error into
 `supplier-add-existing-invoice-id-ignored`.
+
+X15 edges: django's edge is not a fixed number: it moves by a few levels with the value's shape (arrays or objects, where the
+deep part sits) and with the live stack of the run (the same module elements loaded at 9934 levels in one run and
+not in another). The bands above were measured with nested objects; the parity cases sit inside or past each band
+with a margin, and the exact edges are pinned by the Go tests (X15 is the accepted divergence there).

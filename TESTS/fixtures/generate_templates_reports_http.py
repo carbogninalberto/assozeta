@@ -863,6 +863,43 @@ run('query-carnets-or-filters-huge-integer', 'query_data', {'model_name': 'Carne
 run('query-carnets-exclude-huge-integer', 'query_data', {'model_name': 'Carnet', 'fields': ['title'],
     'exclude': {'lessons_number': 99999999999999999999}, 'order_by': ['lessons_number']}, 200,
     listing(3, [{'title': None}, {'title': 'Cinque'}, {'title': 'Dieci ingressi'}]))
+# Long tail PR 4: inputs Go handed to Django before.
+# order_by('?'): RANDOM() joins the DISTINCT select list, so equal rows are no longer collapsed.
+run('query-categories-random-order', 'query_data', {'model_name': 'PaymentCategory', 'fields': ['type'], 'filters': {'type': 1},
+    'order_by': ['?']}, 200, listing(2, [{'type': 'Istituzionale'}, {'type': 'Istituzionale'}]))
+# Values inside an `in` list skip _coerce_filter_values: Decimal(str) reads these spellings.
+run('query-carnets-decimal-spellings', 'query_data', {'model_name': 'Carnet', 'fields': ['title'],
+    'filters': {'fee__in': ['4.55e1', ' 80.00 ', '8_0']}, 'order_by': ['title']}, 200,
+    listing(2, [{'title': 'Cinque'}, {'title': 'Dieci ingressi'}]))
+run('query-carnets-decimal-infinity-error', 'query_data', {'model_name': 'Carnet', 'filters': {'fee__in': ['Infinity']}}, 500, FAILED)
+# Integers beyond int64 inside `in`: psycopg2 writes a numeric literal.
+run('query-carnets-in-huge-integer', 'query_data', {'model_name': 'Carnet', 'fields': ['title'],
+    'filters': {'lessons_number__in': [5, 99999999999999999999]}}, 200, listing(1, [{'title': 'Cinque'}]))
+# regex/iexact values reach the driver unconverted: an empty list is the literal '{}', a number fails in PostgreSQL.
+run('query-tags-regex-empty-list', 'query_data', {'model_name': 'Tags', 'fields': ['tag_name'], 'filters': {'tag_name__regex': []}}, 200,
+    listing(0, []))
+run('query-tags-regex-number-error', 'query_data', {'model_name': 'Tags', 'filters': {'tag_name__regex': 5}}, 500, FAILED)
+# __time: datetime.time.fromisoformat, then Django's time_re (Unicode digits).
+run('query-tags-time-basic-format', 'query_data', {'model_name': 'Tags', 'fields': ['tag_name'], 'filters': {'creation_date__time': '1000'}},
+    200, listing(1, [{'tag_name': 'Calcio & Basket'}]))
+run('query-tags-time-arabic-digits', 'query_data', {'model_name': 'Tags', 'fields': ['tag_name'],
+    'filters': {'creation_date__time': '٠٠:00'}}, 200, listing(1, [{'tag_name': 'nuoto agonistico'}]))
+run('query-tags-time-number-error', 'query_data', {'model_name': 'Tags', 'filters': {'creation_date__time': 5}}, 500, FAILED)
+# A body number beyond the float range is Python's inf: min() caps a limit, int() raises for an offset or an integer filter.
+for name, overrides, status, response in [
+        ('limit-overflow', '{"limit": 1e400}', 200, listing(3, [{'tag_name': 'Calcio & Basket'}, {'tag_name': 'Nuoto'},
+                                                                 {'tag_name': 'nuoto agonistico'}])),
+        ('offset-overflow-error', '{"offset": 1e400}', 500, FAILED),
+        ('filter-overflow-error', '{"filters": {"creation_date__year": 1e400}}', 500, FAILED)]:
+    report(f'overflow_{name}', 'query_data', {'model_name': 'Tags', 'fields': ['tag_name'], 'order_by': ['tag_name']})
+    add(f'run-query-tags-{name}', 'owner', 'POST', RUN(f'overflow_{name}'), status, response,
+        raw_body='{"overrides": ' + overrides + '}', content_type='application/json')
+# get_attendance_matrix: course_id through UUIDField.to_python (an int is UUID(int=...)), course_name through str().
+run('attendance-course-id-number', 'get_attendance_matrix', {'course_id': 5}, 400, {'error': 'Corso non trovato con ID: 5'})
+run('attendance-course-id-float-error', 'get_attendance_matrix', {'course_id': 1.5}, 500, FAILED)
+run('attendance-course-name-number', 'get_attendance_matrix', {'course_name': 7}, 400, {'error': 'Nessun corso trovato con nome: 7'})
+# Exporter exceptions: the run answers every one with its 500.
+run('export-multi-sheet-number-error', 'export_multi_sheet', {'sheets': 5}, 500, FAILED)
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Template update and saved report run authored sequence', 'ids': IDS,

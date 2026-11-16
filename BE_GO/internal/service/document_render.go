@@ -263,11 +263,14 @@ func (s *DocumentRender) Render(ctx context.Context, identity domain.ResolvedIde
 	if err != nil || reply != nil {
 		return reply, err
 	}
-	if !job.ignore && job.failed == nil && !pdfrender.HeaderSafe(job.filename) &&
-		(job.fill != nil || !strings.ContainsAny(job.filename, "\r\n")) {
-		// A header the HTTP server itself refuses, or email.header splits: not ported. A line break is Django's own
-		// BadHeaderError, answered by print after the storage task.
-		return nil, ErrDocumentRenderNotPorted
+	if !job.ignore && job.failed == nil {
+		lineBreak := strings.ContainsAny(job.filename, "\r\n")
+		if lineBreak && job.fill != nil || !lineBreak && pdfrender.ServerRefusesHeader(job.filename) {
+			// A filled form with a line break, or a header the HTTP server refuses after the view's writes
+			// (uvicorn closes the connection: long-tail rule 4, platform). A line break otherwise is Django's own
+			// BadHeaderError, answered by print after the storage task.
+			return nil, ErrDocumentRenderNotPorted
+		}
 	}
 	return s.print(ctx, identity, request, job)
 }
@@ -764,8 +767,7 @@ func (s *DocumentRender) templateJob(ctx context.Context, identity domain.Resolv
 		failed = renderException(500, input.Detail)
 	case err != nil:
 		// A body read failure (the client or the network, long-tail rule 4)
-		// is the 500 page; a multipart body the parser refuses keeps its
-		// own refusal (domain.ErrDocumentWritesNotPorted).
+		// is the 500 page.
 		return nil, nil, err
 	default:
 		plan := planTemplateData(body)

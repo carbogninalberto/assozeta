@@ -887,6 +887,76 @@
    }
   },
   {
+   "name": "carnet-update-fee-arabic-indic-digits",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/carnet/a1000000-0000-4000-8000-000000880001/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Carnet updated successfully."
+   },
+   "effect": {
+    "carnet": "c1",
+    "values": {
+     "title": "Nuovo è",
+     "description": "Dieci ingressi",
+     "lessons_number": 20,
+     "public": false,
+     "fee": "123.00"
+    },
+    "changes": {
+     "fee": [
+      "1.00",
+      "123.00"
+     ]
+    },
+    "actor": "owner"
+   },
+   "body": {
+    "title": "Nuovo è",
+    "description": "Dieci ingressi",
+    "lessons_number": 20,
+    "fee": "١٢٣",
+    "public": false
+   }
+  },
+  {
+   "name": "carnet-update-fee-underscore-one",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/carnet/a1000000-0000-4000-8000-000000880001/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Carnet updated successfully."
+   },
+   "effect": {
+    "carnet": "c1",
+    "values": {
+     "title": "Nuovo è",
+     "description": "Dieci ingressi",
+     "lessons_number": 20,
+     "public": false,
+     "fee": "1.00"
+    },
+    "changes": {
+     "fee": [
+      "123.00",
+      "1.00"
+     ]
+    },
+    "actor": "owner"
+   },
+   "body": {
+    "title": "Nuovo è",
+    "description": "Dieci ingressi",
+    "lessons_number": 20,
+    "fee": "_1",
+    "public": false
+   }
+  },
+  {
    "name": "carnet-update-full-collaborator-form-update",
    "actor": "full_collaborator",
    "method": "PATCH",

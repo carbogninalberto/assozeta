@@ -9,8 +9,8 @@ import (
 
 // TestEncodedWordCharsets: codecs.lookup's names (CPython 3.13.16) decide the
 // path. UTF-8, US-ASCII and ISO-8859-1 under any spelling are decoded, a name
-// Python does not know (or a bytes-to-bytes codec) is unknown bytes, and any
-// other text codec stays with Django.
+// Python does not know (or a bytes-to-bytes codec) is unknown bytes, and idna
+// stays with Django.
 func TestEncodedWordCharsets(t *testing.T) {
 	for name, want := range map[string]string{
 		"UTF-8": "utf-8", "utf 8": "utf-8", "U8": "utf-8", "us-ascii": "ascii", "ANSI_X3.4-1968": "ascii",
@@ -21,8 +21,11 @@ func TestEncodedWordCharsets(t *testing.T) {
 			t.Errorf("%q: %q, want %q", name, got, want)
 		}
 	}
-	if _, err := decodeCharset([]byte{0xc4, 0xe3}, "gb2312"); !errors.Is(err, refusal.ErrNotPorted) {
-		t.Errorf("gb2312: %v, want the refusal", err)
+	if got, err := decodeCharset([]byte{0xc4, 0xe3}, "gb2312"); err != nil || got != "你" {
+		t.Errorf("gb2312: %q, %v", got, err)
+	}
+	if _, err := decodeCharset([]byte("xn--bcher-kva"), "idna"); !errors.Is(err, refusal.ErrNotPorted) {
+		t.Errorf("idna: %v, want the refusal", err)
 	}
 	if got, err := decodeCharset([]byte("x\xff"), "bogus"); err != nil || got != "x\xed\xb3\xbf" {
 		t.Errorf("bogus: %q %v", got, err)

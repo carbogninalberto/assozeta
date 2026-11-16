@@ -111,13 +111,34 @@ func (s *ModulesExport) Export(ctx context.Context, identity domain.ResolvedIden
 		{Name: "type", Value: "xlsx"}}}}, nil
 }
 
+// modulesExportElementsJSONDepth is the deepest total JSON nesting (as
+// dto.AuditJSONDepth counts it: '[]' is 1) the export loads from
+// module.elements. Measured on the parity harness's Django (CPython 3.13.16):
+// 9933 levels load and 9934 raise RecursionError in json.loads, which the view
+// does not handle (the 500 page). Owner decision X15: the band, not a refusal.
+const modulesExportElementsJSONDepth = 9933
+
+// modulesExportElements is json.loads of the stored module.elements text (the
+// response column keeps its own reader): a value past the interpreter's
+// recursion band is the export's unhandled exception.
+func modulesExportElements(text *string) (any, error) {
+	if text == nil {
+		return nil, nil
+	}
+	value, err := dto.ParseStoredJSONDepth(*text, modulesExportElementsJSONDepth)
+	if err != nil {
+		return nil, domain.ErrModulesExportServer
+	}
+	return value, nil
+}
+
 // modulesExportColumns reads module.elements: element['type'] not in
 // ['heading', 'paragraph', 'link'] adds element['props']['label'] and
 // ['name']. Iterating a str or a dict yields str elements, which raise.
 func modulesExportColumns(text *string) ([]modulesExportColumn, error) {
-	value, err := dto.AuditStoredJSON(text)
+	value, err := modulesExportElements(text)
 	if err != nil {
-		return nil, domain.ErrModuleResponsesNotPorted
+		return nil, err
 	}
 	var elements []any
 	switch typed := value.(type) {
@@ -179,12 +200,30 @@ func modulesExportColumns(text *string) ([]modulesExportColumn, error) {
 	return columns, nil
 }
 
+// modulesExportResponseJSONDepth is the deepest total JSON nesting (as
+// dto.AuditJSONDepth counts it: '[]' is 1) the export loads from a response
+// column. Measured on {"nome": "Anna", "deep": <nested objects>} with the parity
+// harness's Django (CPython 3.13.16): 9935 levels load and 9936 raise
+// RecursionError in psycopg2's json.loads, which the view does not handle (the
+// 500 page). Owner decision X15: the band, not a refusal.
+const modulesExportResponseJSONDepth = 9935
+
+// modulesExportResponse is json.loads of the stored response text: a value past
+// the interpreter's recursion band is the export's unhandled exception.
+func modulesExportResponse(text *string) (any, error) {
+	value, err := dto.AuditStoredJSONAt(text, modulesExportResponseJSONDepth)
+	if err != nil {
+		return nil, domain.ErrModulesExportServer
+	}
+	return value, nil
+}
+
 func (s *ModulesExport) row(ctx context.Context, columns []modulesExportColumn, response domain.ModuleExportResponse) ([]xlsxexport.Value, error) {
 	row := []xlsxexport.Value{}
 	if len(columns) > 0 {
-		value, err := dto.AuditStoredJSON(&response.Response)
+		value, err := modulesExportResponse(&response.Response)
 		if err != nil {
-			return nil, domain.ErrModuleResponsesNotPorted
+			return nil, err
 		}
 		object, ok := value.(domain.RequestObject)
 		if !ok {
@@ -267,10 +306,16 @@ func modulesExportValue(value any) (xlsxexport.Value, error) {
 		text := typed.String()
 		if !strings.ContainsAny(text, ".eE") {
 			number, err := strconv.ParseInt(text, 10, 64)
-			if err != nil {
-				return xlsxexport.Value{}, domain.ErrModuleResponsesNotPorted // beyond int64
+			if err == nil {
+				return xlsxexport.IntValue(number), nil
 			}
-			return xlsxexport.IntValue(number), nil
+			if !errors.Is(err, strconv.ErrRange) {
+				// the text comes from a JSON parser, always a valid integer
+				return xlsxexport.Value{}, domain.ErrModuleResponsesUnreachable
+			}
+			// A Python int beyond int64: pandas reads it as float64 (or keeps
+			// it an int) and xlsxwriter writes float(number) with '%.16G'.
+			return xlsxexport.BigIntValue(text), nil
 		}
 		number, err := strconv.ParseFloat(text, 64)
 		if err != nil && !errors.Is(err, strconv.ErrRange) {

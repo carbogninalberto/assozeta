@@ -109,7 +109,8 @@ var ErrCollaboratorDeleteProtected = errors.New("cannot delete: referenced throu
 var collaboratorDeleteValueTypes = map[string]bool{
 	"CharField": true, "TextField": true, "UUIDField": true, "BooleanField": true, "IntegerField": true,
 	"PositiveIntegerField": true, "PositiveSmallIntegerField": true, "SmallIntegerField": true, "BigIntegerField": true,
-	"AutoField": true, "BigAutoField": true, "DecimalField": true, "DateField": true, "TimeField": true,
+	"PositiveBigIntegerField": true,
+	"AutoField":               true, "BigAutoField": true, "DecimalField": true, "DateField": true, "TimeField": true,
 }
 
 var collaboratorDeleteReceivers = map[string]string{

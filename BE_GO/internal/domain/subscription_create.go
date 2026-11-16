@@ -30,6 +30,12 @@ type SubscriptionCreateInvalid struct {
 
 func (e *SubscriptionCreateInvalid) Error() string { return "invalid subscription data" }
 
+// SubscriptionCreateRejected is DRF's ValidationError(<text>): the body is the
+// JSON array of the messages the exception carries (list(ValidationError)).
+type SubscriptionCreateRejected struct{ Messages []string }
+
+func (e *SubscriptionCreateRejected) Error() string { return "subscription create rejected" }
+
 // SubscriptionCreateSettings are the association and its owner's settings
 // create_subscription reads (the owner is request.user for owners and
 // collaborators, so both settings sources are the same row).
@@ -199,6 +205,9 @@ type SubscriptionCreateTransaction interface {
 	InsertSubscription(ctx context.Context, row SubscriptionCreateRow) error
 	InsertMembership(ctx context.Context, row SubscriptionCreateMembership) error
 	InsertRelation(ctx context.Context, associate, tutor string) (int64, error)
+	// MarkRelationPrimary is AssociateTutorRelation.save() of get_main_tutor:
+	// the first relation without a primary one becomes primary.
+	MarkRelationPrimary(ctx context.Context, id int64) error
 	AuditEntry(ctx context.Context, entry SubscriptionCreateAudit) error
 	// QuickAssociate is Associate.objects.get(associate_id=id): a live row (nil when none).
 	QuickAssociate(ctx context.Context, id string) (*SubscriptionEditAssociate, error)
@@ -212,6 +221,9 @@ type SubscriptionCreateTransaction interface {
 	QuickCertificates(ctx context.Context, associate string) ([]SubscriptionQuickCertificate, error)
 	// CreatePlaceholderDocument is Document.objects.create(filename=...) with its create entry.
 	CreatePlaceholderDocument(ctx context.Context, document NewDocument, actorAssociation *string, audit LoginAuditContext, at time.Time) error
+	// DeletePlaceholderDocument is document.delete() of a placeholder Document the view abandons
+	// (its storage write failed): the row and auditlog's delete entry.
+	DeletePlaceholderDocument(ctx context.Context, document NewDocument, actorAssociation *string, audit LoginAuditContext, at time.Time) error
 	// InsertPlaceholderCertificate is MedicalCertificate.objects.create(expiration_date=..., user=..., document=...).
 	InsertPlaceholderCertificate(ctx context.Context, id, user, document string, expiration, created time.Time) error
 	// InsertSignature is Signature.objects.create(signature=data, user=user) with its create entry.

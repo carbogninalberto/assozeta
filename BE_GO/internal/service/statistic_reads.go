@@ -30,6 +30,11 @@ var ErrStatisticPythonError = errors.New("statistic view raised")
 // try block: Django answers 500 with its JSON error body.
 var ErrStatisticAthleteFailure = errors.New("athlete dashboard failed")
 
+// errStatisticRenderNonFinite is a stored float beyond the double range:
+// json.loads reads it as inf and DRF's strict JSONRenderer raises ValueError
+// when it renders the response, after the view returned.
+var errStatisticRenderNonFinite = refusal.AppState("statistic: rendered float beyond the double range")
+
 type statisticStore interface {
 	domain.StatisticDashboardStore
 	domain.StatisticReportStore
@@ -332,7 +337,7 @@ func (s *StatisticReads) expiringCarnets(ctx context.Context, scope domain.Stati
 			return StatisticResult{}, ErrStatisticPythonError
 		}
 		if !dto.PythonJSONFinite(meta) {
-			return StatisticResult{}, domain.ErrStatisticNotPorted // DRF's strict renderer refuses inf
+			return StatisticResult{}, errStatisticRenderNonFinite
 		}
 		item := statisticCarnetItem{ID: row.CarnetSubscriptionID, left: left}
 		item.Subscription.ID = row.SubscriptionID
@@ -375,10 +380,6 @@ func statisticRecentLesson(meta domain.RequestObject, since time.Time) (bool, er
 		text, ok := date.(string)
 		if !ok {
 			return false, nil // strptime TypeError, caught
-		}
-		if dto.StrptimeUnicodeDigits(text) {
-			// The association import stores registry meta as the archive has it; strptime reads other digits. Not ported.
-			return false, domain.ErrStatisticNotPorted
 		}
 		moment, ok := dto.StrptimeLessonDate(text)
 		if !ok {
@@ -507,9 +508,15 @@ func (s *StatisticReads) Report(ctx context.Context, identity domain.ResolvedIde
 		if !ok {
 			return StatisticResult{}, ErrStatisticPythonError
 		}
-		if parsed.Year() < 1000 {
-			// strftime('%Y') of a year below 1000 is platform dependent: not characterized.
-			return StatisticResult{}, domain.ErrStatisticNotPorted
+		// The view removes the time by round-tripping the datetime:
+		// datetime.strptime(current_date.strftime('%Y-%m-%d'), '%Y-%m-%d')
+		// (statistic_views.py:1215). strftime('%Y') is the platform C
+		// library's, but strptime needs exactly four digits, so a date
+		// before 1000 raises ValueError on glibc (the 500 page) and survives
+		// on macOS (the report goes on for that year).
+		roundTrip := fmt.Sprintf("%s-%02d-%02d", dto.PythonStrftimeYear(parsed.Year()), parsed.Month(), parsed.Day())
+		if _, ok = dto.PythonStrptimeDate(roundTrip); !ok {
+			return StatisticResult{}, ErrStatisticPythonError
 		}
 		current = parsed
 	}
@@ -700,7 +707,7 @@ func (s *StatisticReads) Athlete(ctx context.Context, identity domain.ResolvedId
 	result, err := s.athlete(ctx, identity, group)
 	// An application-state error is a value the strict renderer refuses after
 	// the view returned (outside its try): the 500 page, not the view's JSON 500.
-	if err != nil && !errors.Is(err, domain.ErrStatisticNotPorted) && !errors.Is(err, refusal.ErrAppState) {
+	if err != nil && !errors.Is(err, refusal.ErrAppState) {
 		return StatisticResult{}, errors.Join(ErrStatisticAthleteFailure, err)
 	}
 	return result, err
@@ -971,6 +978,15 @@ func (s *StatisticReads) expiredPayments(ctx context.Context, scope domain.Stati
 	if err != nil {
 		return StatisticResult{}, err
 	}
+	// Iterating the queryset loads every fetched row's course and meta, so a
+	// value past the band fails before the subscription match (X15).
+	for _, payment := range payments {
+		for _, text := range []*string{payment.Course, payment.Meta} {
+			if text != nil && dto.AuditJSONDepth(*text) > statisticExpiredPaymentJSONDepth {
+				return StatisticResult{}, ErrStatisticPythonError
+			}
+		}
+	}
 	associates, seen := []string{}, map[string]bool{}
 	for _, payment := range payments {
 		if !seen[payment.AssociateID] {
@@ -1043,20 +1059,31 @@ func (s *StatisticReads) expiredPayments(ctx context.Context, scope domain.Stati
 	return statisticData(map[string]any{"expired_payments": sorted}), nil
 }
 
+// statisticExpiredPaymentJSONDepth is the deepest total JSON nesting (as
+// dto.AuditJSONDepth counts it: '[]' is 1) the expiredPayments widget loads
+// from Payment.course and Payment.meta. Measured on the parity harness's
+// Django (CPython 3.13.16): 9936 levels load and 9937 raise RecursionError in
+// json.loads, which the view does not handle (the 500 page). Owner decision
+// X15: the band, not a refusal.
+const statisticExpiredPaymentJSONDepth = 9936
+
+// statisticStoredJSON is json.loads of a stored Payment jsonb column: psycopg2
+// loads every JSON column of a fetched row, so a value past the interpreter's
+// recursion band is the view's unhandled exception.
+func statisticStoredJSON(text *string) (any, error) {
+	if text == nil {
+		return nil, nil
+	}
+	value, err := dto.ParseStoredJSONDepth(*text, statisticExpiredPaymentJSONDepth)
+	if err != nil {
+		return nil, ErrStatisticPythonError
+	}
+	return value, nil
+}
+
 // paymentTitle is Payment.get_course_carnet_name() as a JSON value.
 func (s *StatisticReads) paymentTitle(ctx context.Context, payment domain.StatisticExpiredPayment, group *string) (any, error) {
-	parse := func(text *string) (any, error) {
-		if text == nil {
-			return nil, nil
-		}
-		value, err := dto.ParseReferenceJSON([]byte(*text))
-		if err != nil {
-			// Payment.course and meta are writable JSON fields: Django stores (and json.loads reads) values nested deeper
-			// than this parser reads. Not ported.
-			return nil, domain.ErrStatisticNotPorted
-		}
-		return value, nil
-	}
+	parse := statisticStoredJSON
 	// `key in container` then container[key], with Python's errors as the 500 page.
 	lookup := func(container any, key string) (any, bool, error) {
 		if !dto.PythonTruthy(container) {

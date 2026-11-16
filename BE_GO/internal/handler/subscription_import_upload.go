@@ -8,6 +8,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/paymentcategorylifecycle"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
+	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/documentkey"
 	"github.com/labstack/echo/v4"
 )
 
@@ -24,10 +25,11 @@ func NewSubscriptionImportUploadHandler(imports *service.SubscriptionImportUploa
 }
 
 func (h *SubscriptionImportUploadHandler) Upload(c echo.Context) error {
-	raw, err := bufferMultipart(c)
+	raw, cleanup, err := bufferMultipart(c)
 	if err != nil {
 		return restError(c, err)
 	}
+	defer cleanup()
 	identity, err := messageMutationsIdentity(c, h.uploads.actors, h.uploads.identities, http.MethodPost, "subscription_import_upload")
 	if identity == nil {
 		return err
@@ -46,6 +48,7 @@ func (h *SubscriptionImportUploadHandler) Upload(c echo.Context) error {
 	defer release()
 	result, err := h.imports.Upload(ctx, *identity, body, audit, c.Request().ContentLength > domain.RequestUploadMemory)
 	var large *service.SubscriptionImportTooLarge
+	var outside *documentkey.OutsideLocationError
 	switch {
 	case err == nil:
 		return c.Blob(http.StatusOK, echo.MIMEApplicationJSON, dto.PythonJSONDumpsCompact(result))
@@ -55,8 +58,10 @@ func (h *SubscriptionImportUploadHandler) Upload(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"msg": service.SubscriptionImportFailedMessage})
 	case errors.Is(err, service.ErrSubscriptionImportUnauthorized):
 		return c.NoContent(http.StatusUnauthorized)
-	case errors.Is(err, service.ErrSubscriptionImportNotPorted):
-		c.Logger().Error(err)
+	case errors.As(err, &outside):
+		// default_storage's SuspiciousOperation for the stored document's path: Django's 400 page.
+		c.Response().Header().Del("Allow")
+		return c.Blob(http.StatusBadRequest, "text/html; charset=utf-8", djangoBadRequestPage)
 	}
 	return h.uploads.failure(c, err)
 }

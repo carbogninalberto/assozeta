@@ -12,6 +12,21 @@ import (
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
+)
+
+var (
+	// errMCPJSONCoerced: a JSONField lookup or has_key value the coercion walk
+	// turned into a float, int, date or datetime (it keeps resolving the names
+	// after a JSONField on the same model). Django sends it (Jsonb(12.0), or
+	// the operator error PostgreSQL raises), so it is handed off.
+	errMCPJSONCoerced = refusal.New("mcp: coerced value in a JSON lookup not ported")
+	// errMCPYearValue: prepare always returns an integer for an int-kind
+	// expression; a None value is handled before yearLookup.
+	errMCPYearValue = refusal.AppState("mcp: year lookup without an integer value")
+	// errMCPPreparedKind: mcpKind only returns kinds lookupSQL handles before
+	// prepare (json) and the ones prepare switches on.
+	errMCPPreparedKind = refusal.AppState("mcp: prepared value of an unexpected kind")
 )
 
 // The Django ORM subset QueryBuilder (application/mcp_server/query_builder.py)
@@ -37,8 +52,6 @@ func mcpValidationError(template string, value string) error {
 	message := strings.ReplaceAll(template, "%(value)s", value)
 	return &MCPToolException{Message: PythonStr([]any{message})}
 }
-
-func mcpNotPorted(what string) error { return fmt.Errorf("%w: %s", ErrReportNotPorted, what) }
 
 // ---------------------------------------------------------------------------
 // Alias map
@@ -241,7 +254,9 @@ func mcpColumnTarget(field *mcpField) mcpTarget {
 func mcpRelationHops(field *mcpField) ([]mcpHop, mcpTarget, error) {
 	related := field.relatedModel()
 	if related == nil {
-		return nil, mcpTarget{}, mcpNotPorted("relation without metadata " + field.Related)
+		// The generator writes the related label of every relation, and it
+		// names a model of the metadata (asserted by the invariant test).
+		return nil, mcpTarget{}, errMCPRelationMetadata
 	}
 	id := field.model.Label + "." + field.Name
 	// joinName is the field the relation starts from (join_field's
@@ -256,7 +271,9 @@ func mcpRelationHops(field *mcpField) ([]mcpHop, mcpTarget, error) {
 	case "foreign_key", "one_to_one":
 		targetField := related.fieldByColumn(field.TargetColumn)
 		if targetField == nil {
-			return nil, mcpTarget{}, mcpNotPorted("relation target")
+			// A forward relation's target_column is the column of a field of the
+			// related model (asserted by the invariant test).
+			return nil, mcpTarget{}, errMCPRelationTarget
 		}
 		local := mcpTarget{column: field.Column, field: targetField, valueType: field.TargetInternal, null: field.Null}
 		return []mcpHop{{table: related.Table, identity: related.Table + "\x00" + id + ">", lhs: field.Column, rhs: field.TargetColumn,
@@ -275,7 +292,9 @@ func mcpRelationHops(field *mcpField) ([]mcpHop, mcpTarget, error) {
 				joinName: pk.Name},
 		}, mcpFieldTarget(pk), nil
 	}
-	return nil, mcpTarget{}, mcpNotPorted("relation kind " + field.Kind)
+	// The generator writes one of the six relation kinds (asserted by the
+	// invariant test).
+	return nil, mcpTarget{}, errMCPRelationKind
 }
 
 // mcpMultiJoinError is names_to_path's MultiJoin: the path crosses a
@@ -306,7 +325,9 @@ func mcpNamesToPath(model *mcpModel, names []string, allowMany, failOnMissing bo
 			break
 		}
 		if field.Kind == "unsupported" {
-			return path, mcpNotPorted("field kind of " + name)
+			// The generator marks a field it cannot describe; the invariant test
+			// asserts no such field exists.
+			return path, errMCPFieldKind
 		}
 		consumed = pos + 1
 		if field.Relation {
@@ -355,7 +376,9 @@ func (q *mcpQuery) setupJoins(names []string, reuse map[string]bool, allowMany, 
 		for pivot := len(names); pivot >= 1; pivot-- {
 			path, err := mcpNamesToPath(q.model, names[:pivot], allowMany, true)
 			if err != nil {
-				if pivot == 1 || errors.Is(err, ErrReportNotPorted) {
+				// An AppState (a metadata invariant the port relies on) is not a
+				// names_to_path failure to retry at a shorter pivot.
+				if pivot == 1 || errors.Is(err, refusal.ErrAppState) {
 					return nil, err
 				}
 				info.lastErr = err
@@ -484,7 +507,10 @@ func mcpIntRange(internal string) (int64, int64) {
 func (q *mcpQuery) targetExpr(info *mcpJoinInfo, target mcpTarget, alias string) (mcpExpr, error) {
 	kind := mcpKind(target.valueType)
 	if kind == "" {
-		return mcpExpr{}, mcpNotPorted("field type " + target.valueType)
+		// Only auditlog.LogEntry.remote_addr (GenericIPAddressField) has an
+		// internal type mcpKind does not know, and no model lists it in
+		// report_fields (asserted by the invariant test).
+		return mcpExpr{}, errMCPFieldType
 	}
 	column := mcpColumn(alias, target.column)
 	expr := mcpExpr{sql: column, kind: kind, field: target.field, relation: info.path.final.Relation,
@@ -1076,11 +1102,14 @@ func (q *mcpQuery) splitExclude(leaf mcpLeaf, used map[string]bool, multi *mcpMu
 		trimmedPaths = i + 1
 	}
 	if trimmedPaths+1 >= len(inner.joins) {
-		return "", nil, mcpResultValue, mcpNotPorted("exclude across a many-valued relation")
+		// The inner query of a MultiJoin always holds the many-valued join.
+		return "", nil, mcpResultValue, errMCPManyValuedExclude
 	}
 	many := inner.joins[trimmedPaths+1]
 	if multi.hop.joinName == "" {
-		return "", nil, mcpResultValue, mcpNotPorted("exclude across a many-valued relation")
+		// Every many-valued relation's local column maps to a field of its
+		// model (asserted by the invariant test), so the hop names its start.
+		return "", nil, mcpResultValue, errMCPManyValuedExclude
 	}
 	prefix := append(append([]string(nil), multi.prefix...), multi.hop.joinName)
 	outerTarget, outerAlias, err := q.outerColumn(prefix)
@@ -1367,7 +1396,7 @@ func (q *mcpQuery) lookupSQL(lhs mcpExpr, name string, value any) (mcpLookup, er
 		}
 		return mcpLookup{name: name, sql: lhs.sql + " BETWEEN " + placeholders[0] + " AND " + placeholders[1]}, nil
 	case "regex", "iregex":
-		argument, err := mcpRawArgument(value)
+		placeholder, err := q.rawArgument(value)
 		if err != nil {
 			return mcpLookup{}, err
 		}
@@ -1375,13 +1404,13 @@ func (q *mcpQuery) lookupSQL(lhs mcpExpr, name string, value any) (mcpLookup, er
 		if name == "iregex" {
 			operator = "~*"
 		}
-		return mcpLookup{name: name, sql: lhs.sql + "::text " + operator + " " + q.args.add(argument)}, nil
+		return mcpLookup{name: name, sql: lhs.sql + "::text " + operator + " " + placeholder}, nil
 	case "iexact":
-		argument, err := mcpRawArgument(value)
+		placeholder, err := q.rawArgument(value)
 		if err != nil {
 			return mcpLookup{}, err
 		}
-		return mcpLookup{name: name, sql: "UPPER(" + lhs.sql + "::text) = UPPER(" + q.args.add(argument) + ")"}, nil
+		return mcpLookup{name: name, sql: "UPPER(" + lhs.sql + "::text) = UPPER(" + placeholder + ")"}, nil
 	case "contains", "icontains", "startswith", "istartswith", "endswith", "iendswith":
 		text, err := mcpPatternText(value)
 		if err != nil {
@@ -1411,7 +1440,11 @@ func (q *mcpQuery) lookupSQL(lhs mcpExpr, name string, value any) (mcpLookup, er
 	if lhs.kind == "int" && (name == "gte" || name == "lt") {
 		// IntegerGreaterThanOrEqual/IntegerLessThan round a float up before
 		// IntegerField.get_prep_value truncates it.
-		value = mcpCeilIntegerValue(value)
+		rounded, err := mcpCeilIntegerValue(value)
+		if err != nil {
+			return mcpLookup{}, err
+		}
+		value = rounded
 	}
 	prepared, err := q.prepare(lhs, value, true)
 	if err != nil {
@@ -1447,10 +1480,10 @@ func (q *mcpQuery) lookupSQL(lhs mcpExpr, name string, value any) (mcpLookup, er
 // mcpJSONValue is JSONField.get_db_prep_value's json.dumps(value) text.
 func mcpJSONValue(value any) (string, error) {
 	switch value.(type) {
-	case nil, string, bool, json.Number, []any, domain.RequestObject:
+	case nil, string, bool, json.Number, float64, []any, domain.RequestObject:
 		return string(PythonJSONDumps(value)), nil
 	}
-	return "", mcpNotPorted("JSON value")
+	return "", errMCPJSONCoerced
 }
 
 // mcpJSONKeyArgument is a has_key value: Django passes it through untouched,
@@ -1467,16 +1500,20 @@ func (q *mcpQuery) mcpJSONKeyArgument(value any) (string, error) {
 		return "", mcpRaise("can't adapt type 'dict'")
 	case json.Number:
 		if strings.ContainsAny(string(typed), ".eE") {
-			number, err := strconv.ParseFloat(string(typed), 64)
-			if err != nil || math.IsNaN(number) || math.IsInf(number, 0) {
-				return "", mcpNotPorted("has_key number")
+			number, err := mcpNumberFloat(string(typed))
+			if err != nil {
+				return "", err
+			}
+			if math.IsNaN(number) || math.IsInf(number, 0) {
+				// psycopg2 writes the non-finite float as 'Infinity'::float.
+				return q.args.add(number) + "::double precision", nil
 			}
 			// psycopg2's float adapter sends a numeric parameter.
 			return q.args.add(number) + "::numeric", nil
 		}
 		number, ok := new(big.Int).SetString(string(typed), 10)
 		if !ok {
-			return "", mcpNotPorted("has_key number")
+			return "", errMCPInvalidNumberToken
 		}
 		if !number.IsInt64() {
 			// An int outside int64 reaches PostgreSQL as numeric.
@@ -1487,10 +1524,13 @@ func (q *mcpQuery) mcpJSONKeyArgument(value any) (string, error) {
 			cast = "::bigint"
 		}
 		return q.args.add(number.Int64()) + cast, nil
+	case float64:
+		// psycopg2 writes NaN and the infinities as 'NaN'::float etc.
+		return q.args.add(typed) + "::double precision", nil
 	case []any:
 		return q.mcpJSONKeyArray(typed)
 	}
-	return "", mcpNotPorted("has_key value")
+	return "", errMCPJSONCoerced
 }
 
 // mcpJSONKeyArray adapts a has_key list the way psycopg2 sends an array: an
@@ -1535,15 +1575,19 @@ func (q *mcpQuery) mcpJSONKeyArray(items []any) (string, error) {
 			}
 			number, ok := new(big.Int).SetString(string(typed), 10)
 			if !ok {
-				return "", mcpNotPorted("has_key number")
+				return "", errMCPInvalidNumberToken
 			}
 			if !number.IsInt64() {
 				anyWide = true
 			}
+		case float64:
+			// The Python parser's NaN/Infinity tokens stay float64 values; the
+			// array element is the float itself, printed by PythonStr below.
+			allText, allBool, allInt, anyFloat = false, false, false, true
 		case []any:
 			allBool, allInt, nested = false, false, true
 		default:
-			return "", mcpNotPorted("has_key list")
+			return "", errMCPUnexpectedValue
 		}
 	}
 	if nested {
@@ -1774,10 +1818,14 @@ func mcpIntegerInternal(lhs mcpExpr) string {
 }
 
 // mcpPreparedCast widens an integer parameter the column's type cannot hold,
-// so the driver sends a value PostgreSQL can bind (Django adapts it as int8).
+// so the driver sends a value PostgreSQL can bind (Django's literal is typed
+// by its magnitude: int8 for int64, numeric beyond).
 func mcpPreparedCast(lhs mcpExpr, prepared mcpPrepared) string {
 	if prepared.integer == nil {
 		return prepared.cast
+	}
+	if !prepared.integer.IsInt64() {
+		return "::numeric"
 	}
 	low, high := mcpIntRange(mcpIntegerInternal(lhs))
 	if prepared.integer.Cmp(big.NewInt(low)) < 0 || prepared.integer.Cmp(big.NewInt(high)) > 0 {
@@ -1818,19 +1866,33 @@ func mcpLookupItems(value any) ([]any, error) {
 }
 
 // mcpCeilIntegerValue is IntegerFieldFloatRounding: only a Python float is
-// rounded, strings are left for get_prep_value to reject.
-func mcpCeilIntegerValue(value any) any {
+// rounded, strings are left for get_prep_value to reject. math.ceil raises for
+// NaN and the infinities and Django does not wrap those exceptions.
+func mcpCeilIntegerValue(value any) (any, error) {
+	ceil := func(number float64) (any, error) {
+		if math.IsNaN(number) {
+			return nil, mcpRaise("cannot convert float NaN to integer")
+		}
+		if math.IsInf(number, 0) {
+			return nil, mcpRaise("cannot convert float infinity to integer")
+		}
+		return mcpCoercedFloat{math.Ceil(number)}, nil
+	}
 	switch typed := value.(type) {
 	case json.Number:
 		if strings.ContainsAny(string(typed), ".eE") {
-			if number, err := strconv.ParseFloat(string(typed), 64); err == nil && !math.IsInf(number, 0) && !math.IsNaN(number) {
-				return mcpCoercedFloat{math.Ceil(number)}
+			number, err := mcpNumberFloat(string(typed))
+			if err != nil {
+				return nil, err
 			}
+			return ceil(number)
 		}
 	case mcpCoercedFloat:
-		return mcpCoercedFloat{math.Ceil(typed.v)}
+		return ceil(typed.v)
+	case float64:
+		return ceil(typed)
 	}
-	return value
+	return value, nil
 }
 
 // mcpIntegerComparison is IntegerFieldOverflow: out-of-range direct values
@@ -1873,7 +1935,7 @@ func mcpISOYearStart(year int) time.Time {
 func (q *mcpQuery) yearLookup(lhs mcpExpr, name string, prepared mcpPrepared) (mcpLookup, error) {
 	number := prepared.integer
 	if number == nil {
-		return mcpLookup{}, mcpNotPorted("year value")
+		return mcpLookup{}, errMCPYearValue
 	}
 	iso := lhs.extract == "iso_year"
 	year := number.Int64()
