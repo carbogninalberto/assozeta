@@ -278,7 +278,13 @@ func TestMebibyteText(t *testing.T) {
 		raised.Class != ClassOverflowError || raised.Message != "Python int too large to convert to C int" {
 		t.Fatalf("1,000,001 digits: %v", err)
 	}
-	if elapsed := time.Since(started); elapsed > 3*time.Second {
+	// A linear parse takes about 0.3 s (1.5 s under -race locally); the budget
+	// only has to catch a quadratic scan, so the race shards get more room.
+	budget := 3 * time.Second
+	if raceDetector {
+		budget = 15 * time.Second
+	}
+	if elapsed := time.Since(started); elapsed > budget {
 		t.Fatalf("3 MiB of text took %v", elapsed)
 	}
 }
