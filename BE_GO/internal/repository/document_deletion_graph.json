@@ -1,0 +1,616 @@
+{
+ "models": {
+  "application.CourseLocation_documents": {
+   "additional_data": null,
+   "app_label": "application",
+   "audit": null,
+   "auto_created": true,
+   "fast_root": true,
+   "model_name": "courselocation_documents",
+   "object_name": "CourseLocation_documents",
+   "pk": "id",
+   "pk_type": "AutoField",
+   "post_delete": [],
+   "pre_delete": [],
+   "relations": [],
+   "str": null,
+   "table": "application_courselocation_documents"
+  },
+  "application.Instructor_documents": {
+   "additional_data": null,
+   "app_label": "application",
+   "audit": null,
+   "auto_created": true,
+   "fast_root": true,
+   "model_name": "instructor_documents",
+   "object_name": "Instructor_documents",
+   "pk": "id",
+   "pk_type": "AutoField",
+   "post_delete": [],
+   "pre_delete": [],
+   "relations": [],
+   "str": null,
+   "table": "application_instructor_documents"
+  },
+  "application.Invoice_attached_documents": {
+   "additional_data": null,
+   "app_label": "application",
+   "audit": null,
+   "auto_created": true,
+   "fast_root": true,
+   "model_name": "invoice_attached_documents",
+   "object_name": "Invoice_attached_documents",
+   "pk": "id",
+   "pk_type": "AutoField",
+   "post_delete": [],
+   "pre_delete": [],
+   "relations": [],
+   "str": null,
+   "table": "application_invoice_attached_documents"
+  },
+  "application.MedicalAppointments": {
+   "additional_data": null,
+   "app_label": "application",
+   "audit": {
+    "exclude": [],
+    "fields": [
+     {
+      "column": "address",
+      "kind": "value",
+      "name": "address",
+      "null": true,
+      "type": "CharField"
+     },
+     {
+      "column": "creation_date",
+      "kind": "datetime",
+      "name": "creation_date",
+      "null": false
+     },
+     {
+      "column": "date",
+      "kind": "value",
+      "name": "date",
+      "null": true,
+      "type": "DateField"
+     },
+     {
+      "column": "document_id",
+      "kind": "fk",
+      "name": "document",
+      "null": true
+     },
+     {
+      "column": "medical_appointments_id",
+      "kind": "value",
+      "name": "medical_appointments_id",
+      "null": false,
+      "type": "UUIDField"
+     },
+     {
+      "column": "meta",
+      "kind": "json",
+      "name": "meta",
+      "null": true
+     },
+     {
+      "column": "notes",
+      "kind": "value",
+      "name": "notes",
+      "null": true,
+      "type": "TextField"
+     },
+     {
+      "column": "region",
+      "kind": "value",
+      "name": "region",
+      "null": false,
+      "type": "CharField"
+     },
+     {
+      "column": "sport",
+      "kind": "value",
+      "name": "sport",
+      "null": true,
+      "type": "CharField"
+     },
+     {
+      "column": "subscription_id",
+      "kind": "fk",
+      "name": "subscription",
+      "null": false
+     }
+    ],
+    "include": [],
+    "mask": [],
+    "serialize_data": false
+   },
+   "auto_created": false,
+   "fast_root": false,
+   "model_name": "medicalappointments",
+   "object_name": "MedicalAppointments",
+   "pk": "medical_appointments_id",
+   "pk_type": "UUIDField",
+   "post_delete": [
+    "auditlog.receivers.log_delete"
+   ],
+   "pre_delete": [],
+   "relations": [],
+   "str": null,
+   "table": "application_medicalappointments"
+  },
+  "application.MedicalCertificate": {
+   "additional_data": null,
+   "app_label": "application",
+   "audit": {
+    "exclude": [],
+    "fields": [
+     {
+      "column": "competitive_medical_certificate",
+      "kind": "value",
+      "name": "competitive_medical_certificate",
+      "null": false,
+      "type": "BooleanField"
+     },
+     {
+      "column": "creation_date",
+      "kind": "datetime",
+      "name": "creation_date",
+      "null": false
+     },
+     {
+      "column": "document_id",
+      "kind": "fk",
+      "name": "document",
+      "null": true
+     },
+     {
+      "column": "expiration_date",
+      "kind": "value",
+      "name": "expiration_date",
+      "null": true,
+      "type": "DateField"
+     },
+     {
+      "column": "medical_id",
+      "kind": "value",
+      "name": "medical_id",
+      "null": false,
+      "type": "UUIDField"
+     },
+     {
+      "column": "notes",
+      "kind": "value",
+      "name": "notes",
+      "null": true,
+      "type": "TextField"
+     },
+     {
+      "column": "user_id",
+      "kind": "fk",
+      "name": "user",
+      "null": true
+     }
+    ],
+    "include": [],
+    "mask": [],
+    "serialize_data": false
+   },
+   "auto_created": false,
+   "fast_root": false,
+   "model_name": "medicalcertificate",
+   "object_name": "MedicalCertificate",
+   "pk": "medical_id",
+   "pk_type": "UUIDField",
+   "post_delete": [
+    "auditlog.receivers.log_delete"
+   ],
+   "pre_delete": [],
+   "relations": [
+    {
+     "column": "medical_id",
+     "fast": false,
+     "field": "medical",
+     "model": "application.Subscription",
+     "null": true,
+     "on_delete": "SET_NULL",
+     "table": "application_subscription",
+     "target_column": "medical_id"
+    }
+   ],
+   "str": null,
+   "table": "application_medicalcertificate"
+  },
+  "application.ModuleResponses_attachments": {
+   "additional_data": null,
+   "app_label": "application",
+   "audit": null,
+   "auto_created": true,
+   "fast_root": true,
+   "model_name": "moduleresponses_attachments",
+   "object_name": "ModuleResponses_attachments",
+   "pk": "id",
+   "pk_type": "AutoField",
+   "post_delete": [],
+   "pre_delete": [],
+   "relations": [],
+   "str": null,
+   "table": "application_moduleresponses_attachments"
+  },
+  "application.Payment_attachments": {
+   "additional_data": null,
+   "app_label": "application",
+   "audit": null,
+   "auto_created": true,
+   "fast_root": true,
+   "model_name": "payment_attachments",
+   "object_name": "Payment_attachments",
+   "pk": "id",
+   "pk_type": "AutoField",
+   "post_delete": [],
+   "pre_delete": [],
+   "relations": [],
+   "str": null,
+   "table": "application_payment_attachments"
+  },
+  "application.SportAssociationDocumentsArchive": {
+   "additional_data": null,
+   "app_label": "application",
+   "audit": {
+    "exclude": [],
+    "fields": [
+     {
+      "column": "date",
+      "kind": "value",
+      "name": "date",
+      "null": false,
+      "type": "DateField"
+     },
+     {
+      "column": "document_id",
+      "kind": "fk",
+      "name": "document",
+      "null": false
+     },
+     {
+      "column": "folder_id",
+      "kind": "fk",
+      "name": "folder",
+      "null": true
+     },
+     {
+      "column": "sport_association_id",
+      "kind": "fk",
+      "name": "sport_association",
+      "null": false
+     },
+     {
+      "column": "sport_association_documents_archive_id",
+      "kind": "value",
+      "name": "sport_association_documents_archive_id",
+      "null": false,
+      "type": "UUIDField"
+     }
+    ],
+    "include": [],
+    "mask": [],
+    "serialize_data": false
+   },
+   "auto_created": false,
+   "fast_root": false,
+   "model_name": "sportassociationdocumentsarchive",
+   "object_name": "SportAssociationDocumentsArchive",
+   "pk": "sport_association_documents_archive_id",
+   "pk_type": "UUIDField",
+   "post_delete": [
+    "auditlog.receivers.log_delete"
+   ],
+   "pre_delete": [],
+   "relations": [],
+   "str": null,
+   "table": "application_sportassociationdocumentsarchive"
+  },
+  "application.SubscriptionFile": {
+   "additional_data": null,
+   "app_label": "application",
+   "audit": {
+    "exclude": [],
+    "fields": [
+     {
+      "column": "creation_date",
+      "kind": "datetime",
+      "name": "creation_date",
+      "null": false
+     },
+     {
+      "column": "document_id",
+      "kind": "fk",
+      "name": "document",
+      "null": false
+     },
+     {
+      "column": "subscription_id",
+      "kind": "fk",
+      "name": "subscription",
+      "null": false
+     },
+     {
+      "column": "subscription_file_id",
+      "kind": "value",
+      "name": "subscription_file_id",
+      "null": false,
+      "type": "UUIDField"
+     }
+    ],
+    "include": [],
+    "mask": [],
+    "serialize_data": false
+   },
+   "auto_created": false,
+   "fast_root": false,
+   "model_name": "subscriptionfile",
+   "object_name": "SubscriptionFile",
+   "pk": "subscription_file_id",
+   "pk_type": "UUIDField",
+   "post_delete": [
+    "auditlog.receivers.log_delete"
+   ],
+   "pre_delete": [],
+   "relations": [],
+   "str": null,
+   "table": "application_subscriptionfile"
+  },
+  "application.SubscriptionMembership_attached_membership_documents": {
+   "additional_data": null,
+   "app_label": "application",
+   "audit": null,
+   "auto_created": true,
+   "fast_root": true,
+   "model_name": "subscriptionmembership_attached_membership_documents",
+   "object_name": "SubscriptionMembership_attached_membership_documents",
+   "pk": "id",
+   "pk_type": "AutoField",
+   "post_delete": [],
+   "pre_delete": [],
+   "relations": [],
+   "str": null,
+   "table": "application_subscriptionmembership_attached_membership_docu749f"
+  },
+  "docmanager.Document": {
+   "additional_data": null,
+   "app_label": "docmanager",
+   "audit": {
+    "exclude": [],
+    "fields": [
+     {
+      "column": "creation_date",
+      "kind": "datetime",
+      "name": "creation_date",
+      "null": false
+     },
+     {
+      "kind": "manager",
+      "name": "customer_invoice_pdf",
+      "text": "application.CustomerInvoice.None"
+     },
+     {
+      "column": "document_id",
+      "kind": "value",
+      "name": "document_id",
+      "null": false,
+      "type": "UUIDField"
+     },
+     {
+      "column": "file_size_bytes",
+      "kind": "value",
+      "name": "file_size_bytes",
+      "null": true,
+      "type": "PositiveBigIntegerField"
+     },
+     {
+      "column": "filename",
+      "kind": "value",
+      "name": "filename",
+      "null": false,
+      "type": "CharField"
+     },
+     {
+      "column": "filepath",
+      "kind": "value",
+      "name": "filepath",
+      "null": true,
+      "type": "CharField"
+     },
+     {
+      "column": "token",
+      "kind": "value",
+      "name": "token",
+      "null": false,
+      "type": "UUIDField"
+     }
+    ],
+    "include": [],
+    "mask": [],
+    "serialize_data": false
+   },
+   "auto_created": false,
+   "fast_root": false,
+   "model_name": "document",
+   "object_name": "Document",
+   "pk": "document_id",
+   "pk_type": "UUIDField",
+   "post_delete": [
+    "auditlog.receivers.log_delete"
+   ],
+   "pre_delete": [],
+   "relations": [
+    {
+     "column": "document_id",
+     "fast": true,
+     "field": "document",
+     "model": "application.Instructor_documents",
+     "null": false,
+     "on_delete": "CASCADE",
+     "table": "application_instructor_documents",
+     "target_column": "document_id"
+    },
+    {
+     "column": "document_id",
+     "fast": false,
+     "field": "document",
+     "model": "application.InstructorHours",
+     "null": true,
+     "on_delete": "SET_NULL",
+     "table": "application_instructorhours",
+     "target_column": "document_id"
+    },
+    {
+     "column": "document_id",
+     "fast": false,
+     "field": "document",
+     "model": "application.SportAssociationDocumentsArchive",
+     "null": false,
+     "on_delete": "CASCADE",
+     "table": "application_sportassociationdocumentsarchive",
+     "target_column": "document_id"
+    },
+    {
+     "column": "document_id",
+     "fast": true,
+     "field": "document",
+     "model": "application.Invoice_attached_documents",
+     "null": false,
+     "on_delete": "CASCADE",
+     "table": "application_invoice_attached_documents",
+     "target_column": "document_id"
+    },
+    {
+     "column": "document_pdf_id",
+     "fast": false,
+     "field": "document_pdf",
+     "model": "application.Invoice",
+     "null": true,
+     "on_delete": "SET_NULL",
+     "table": "application_invoice",
+     "target_column": "document_id"
+    },
+    {
+     "column": "document_pdf_id",
+     "fast": false,
+     "field": "document_pdf",
+     "model": "application.InvoiceSuppliers",
+     "null": true,
+     "on_delete": "SET_NULL",
+     "table": "application_invoicesuppliers",
+     "target_column": "document_id"
+    },
+    {
+     "column": "pdf_id",
+     "fast": false,
+     "field": "pdf",
+     "model": "application.CustomerInvoice",
+     "null": true,
+     "on_delete": "SET_NULL",
+     "table": "application_customerinvoice",
+     "target_column": "document_id"
+    },
+    {
+     "column": "document_id",
+     "fast": true,
+     "field": "document",
+     "model": "application.Payment_attachments",
+     "null": false,
+     "on_delete": "CASCADE",
+     "table": "application_payment_attachments",
+     "target_column": "document_id"
+    },
+    {
+     "column": "document_id",
+     "fast": false,
+     "field": "document",
+     "model": "application.MedicalCertificate",
+     "null": true,
+     "on_delete": "CASCADE",
+     "table": "application_medicalcertificate",
+     "target_column": "document_id"
+    },
+    {
+     "column": "document_id",
+     "fast": false,
+     "field": "document",
+     "model": "application.MedicalAppointments",
+     "null": true,
+     "on_delete": "CASCADE",
+     "table": "application_medicalappointments",
+     "target_column": "document_id"
+    },
+    {
+     "column": "document_pdf_id",
+     "fast": false,
+     "field": "document_pdf",
+     "model": "application.Subscription",
+     "null": true,
+     "on_delete": "SET_NULL",
+     "table": "application_subscription",
+     "target_column": "document_id"
+    },
+    {
+     "column": "document_id",
+     "fast": true,
+     "field": "document",
+     "model": "application.SubscriptionMembership_attached_membership_documents",
+     "null": false,
+     "on_delete": "CASCADE",
+     "table": "application_subscriptionmembership_attached_membership_docu749f",
+     "target_column": "document_id"
+    },
+    {
+     "column": "document_id",
+     "fast": false,
+     "field": "document",
+     "model": "application.SubscriptionFile",
+     "null": false,
+     "on_delete": "CASCADE",
+     "table": "application_subscriptionfile",
+     "target_column": "document_id"
+    },
+    {
+     "column": "document_id",
+     "fast": true,
+     "field": "document",
+     "model": "application.CourseLocation_documents",
+     "null": false,
+     "on_delete": "CASCADE",
+     "table": "application_courselocation_documents",
+     "target_column": "document_id"
+    },
+    {
+     "column": "document_id",
+     "fast": true,
+     "field": "document",
+     "model": "application.ModuleResponses_attachments",
+     "null": false,
+     "on_delete": "CASCADE",
+     "table": "application_moduleresponses_attachments",
+     "target_column": "document_id"
+    }
+   ],
+   "str": null,
+   "table": "docmanager_document"
+  }
+ },
+ "order": [
+  "docmanager.Document",
+  "application.Instructor_documents",
+  "application.SportAssociationDocumentsArchive",
+  "application.Invoice_attached_documents",
+  "application.Payment_attachments",
+  "application.MedicalCertificate",
+  "application.MedicalAppointments",
+  "application.SubscriptionMembership_attached_membership_documents",
+  "application.SubscriptionFile",
+  "application.CourseLocation_documents",
+  "application.ModuleResponses_attachments"
+ ],
+ "scope": "Collector graph from docmanager.Document (CASCADE closure)"
+}

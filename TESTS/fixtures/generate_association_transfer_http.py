@@ -92,6 +92,83 @@ for n, (filepath, size) in enumerate((('exports/own/export_old_a.zip', 10), (Non
     DOCUMENTS[key]['token'] = uid(700 + n)
     ARCHIVES[key]['date'] = f'2025-06-0{n}'
 
+# Export documents that another row also references, deleted by the cascade cases below. Older than
+# every listed export, so the list cases are unaffected; fixed tokens make their delete entries exact.
+for n, key in enumerate(('ref_mc', 'ref_sf', 'ref_pdf', 'ref_inv', 'ref_all'), 1):
+    document(key, 'own_association', f'export_ref_{key}.zip', day=n, created=f'2025-05-0{n}T09:00:00+00:00',
+             filepath=f'exports/own/export_ref_{key}.zip', size=2000 + n)
+    DOCUMENTS[key]['token'] = uid(730 + n)
+    ARCHIVES[key]['date'] = f'2025-05-0{n}'
+
+MED_ONE, MED_ALL = uid(6201), uid(6202)
+SF_ONE, SF_ALL = uid(6211), uid(6213)
+SUB_MED_ONE, SUB_PDF, SUB_SF_ONE, SUB_SF_ALL, SUB_ALL = uid(6221), uid(6222), uid(6223), uid(6224), uid(6225)
+INV_ONE, INV_ALL = uid(6231), uid(6232)
+
+
+def naive(text):
+    return text.replace('T', ' ').removesuffix('+00:00')
+
+
+# Rows the seeded export documents are referenced by. The export/delete cases remove one document,
+# so every other seeded row of the cascade must survive (or lose its SET_NULL column).
+DELETE_REFERENCES = {
+    'medical_certificates': [
+        {'id': MED_ONE, 'document': DOCUMENTS['ref_mc']['id'], 'user': None, 'created': '2025-05-01T10:00:00+00:00',
+         'expiration': '2026-05-01', 'competitive': False, 'notes': None},
+        {'id': MED_ALL, 'document': DOCUMENTS['ref_all']['id'], 'user': None, 'created': '2025-05-01T10:00:00+00:00',
+         'expiration': '2026-05-01', 'competitive': True, 'notes': None},
+    ],
+    'subscriptions': [
+        {'id': SUB_MED_ONE, 'medical': MED_ONE, 'document_pdf': None, 'created': '2025-05-01T10:00:00+00:00'},
+        {'id': SUB_PDF, 'medical': None, 'document_pdf': DOCUMENTS['ref_pdf']['id'], 'created': '2025-05-02T10:00:00+00:00'},
+        {'id': SUB_SF_ONE, 'medical': None, 'document_pdf': None, 'created': '2025-05-02T10:00:00+00:00'},
+        {'id': SUB_SF_ALL, 'medical': None, 'document_pdf': None, 'created': '2025-05-03T10:00:00+00:00'},
+        {'id': SUB_ALL, 'medical': MED_ALL, 'document_pdf': DOCUMENTS['ref_all']['id'], 'created': '2025-05-01T10:00:00+00:00'},
+    ],
+    'subscription_files': [
+        {'id': SF_ONE, 'subscription': SUB_SF_ONE, 'document': DOCUMENTS['ref_sf']['id'], 'created': '2025-05-02T10:00:00+00:00'},
+        {'id': SF_ALL, 'subscription': SUB_SF_ALL, 'document': DOCUMENTS['ref_all']['id'], 'created': '2025-05-03T10:00:00+00:00'},
+    ],
+    'invoices': [{'id': INV_ONE}, {'id': INV_ALL}],
+    'invoice_attachments': [
+        {'invoice': INV_ONE, 'document': DOCUMENTS['ref_inv']['id']},
+        {'invoice': INV_ALL, 'document': DOCUMENTS['ref_all']['id']},
+    ],
+}
+
+
+def medical_changes(row):
+    """auditlog's delete diff of a MedicalCertificate row (model_instance_diff(row, None))."""
+    changes = {
+        'medical_id': [row['id'], 'None'], 'document': [row['document'], 'None'],
+        'user': ['None' if row['user'] is None else row['user'], 'None'],
+        'creation_date': [naive(row['created']), 'None'], 'expiration_date': [row['expiration'], 'None'],
+        'competitive_medical_certificate': ['True' if row['competitive'] else 'False', 'None'],
+    }
+    if row['notes'] is not None:
+        changes['notes'] = [row['notes'], 'None']
+    return changes
+
+
+def subscription_file_changes(row):
+    """auditlog's delete diff of a SubscriptionFile row (model_instance_diff(row, None))."""
+    return {'subscription_file_id': [row['id'], 'None'], 'subscription': [row['subscription'], 'None'],
+            'document': [row['document'], 'None'], 'creation_date': [naive(row['created']), 'None']}
+
+
+def cascade_deleted(model, key, key_field, changes):
+    return {'model': model, 'key': key, 'key_field': key_field, 'changes': changes}
+
+
+def set_null(model, key_field, row, fields):
+    return {'model': model, 'key_field': key_field, 'rows': {row: fields}}
+
+
+def through_deleted(model, left, right, pair):
+    return {'model': model, 'left': left, 'right': right, 'pair': pair}
+
+
 TASKS = {
     'export_running': {'task_id': uid(810), 'status': 'PROGRESS', 'result': '{"percent": 40}'},
     'export_done': {'task_id': uid(811), 'status': 'SUCCESS', 'result': '{"success": true}'},
@@ -502,7 +579,7 @@ add('active-owner-foreign-snapshot-ignored', 'owner', ACTIVE, 200, {'active': Fa
 # === export/delete of an existing export ========================================================
 
 
-def deleted(*keys, actor_association='own_association', additional=None):
+def deleted(*keys, actor_association='own_association', additional=None, cascades=(), nulled=(), through=()):
     return {'archives': [ARCHIVES[k]['id'] for k in keys], 'documents': [DOCUMENTS[k]['id'] for k in keys],
             'archive_changes': {ARCHIVES[k]['id']: {'sport_association_documents_archive_id': [ARCHIVES[k]['id'], 'None'],
                                                     'sport_association': [OWN, 'None'], 'document': [DOCUMENTS[k]['id'], 'None'],
@@ -513,6 +590,7 @@ def deleted(*keys, actor_association='own_association', additional=None):
                 ('file_size_bytes', None if DOCUMENTS[k]['size'] is None else str(DOCUMENTS[k]['size'])),
                 ('token', DOCUMENTS[k]['token'])) if value is not None}
                 | {'customer_invoice_pdf': ['application.CustomerInvoice.None', 'None']} for k in keys},
+            'cascade_deletes': list(cascades), 'nullable_updates': list(nulled), 'through_deletes': list(through),
             'actor_association': actor_association, 'additional_data': additional, 'celery': []}
 
 
@@ -534,6 +612,37 @@ add('delete-owner-form-existing-export', 'owner', DELETE, 200, SUCCESS_DELETE, m
     raw_body='document_id=' + DOCUMENTS['olde']['id'].replace('-', ''), content_type='application/x-www-form-urlencoded',
     setup={'objects': {DOCUMENTS['olde']['filepath']: OBJECT}}, objects_after={}, effect=deleted('olde'))
 add('delete-owner-already-deleted', 'owner', DELETE, 404, NOT_FOUND, method='DELETE', body=d(DOCUMENTS['olda']['id']))
+
+# The export document is also referenced by another row: Document.delete() cascades it, clears its
+# SET_NULL columns or removes its many-to-many through row, exactly as Django's Collector does.
+MED_ONE_ROW, MED_ALL_ROW = DELETE_REFERENCES['medical_certificates']
+SF_ONE_ROW, SF_ALL_ROW = DELETE_REFERENCES['subscription_files']
+add('delete-owner-referenced-medical-certificate', 'owner', DELETE, 200, SUCCESS_DELETE, method='DELETE',
+    body=d(DOCUMENTS['ref_mc']['id']), setup={'objects': {DOCUMENTS['ref_mc']['filepath']: OBJECT}}, objects_after={},
+    effect=deleted('ref_mc',
+                   cascades=[cascade_deleted('application.MedicalCertificate', MED_ONE, 'medical_id', medical_changes(MED_ONE_ROW))],
+                   nulled=[set_null('application.Subscription', 'subscription_id', SUB_MED_ONE, {'medical_id': None})]))
+add('delete-owner-referenced-subscription-file', 'owner', DELETE, 200, SUCCESS_DELETE, method='DELETE',
+    body=d(DOCUMENTS['ref_sf']['id']),
+    effect=deleted('ref_sf', cascades=[cascade_deleted('application.SubscriptionFile', SF_ONE, 'subscription_file_id',
+                                                       subscription_file_changes(SF_ONE_ROW))]))
+add('delete-owner-referenced-subscription-pdf', 'owner', DELETE, 200, SUCCESS_DELETE, method='DELETE',
+    body=d(DOCUMENTS['ref_pdf']['id']),
+    effect=deleted('ref_pdf', nulled=[set_null('application.Subscription', 'subscription_id', SUB_PDF, {'document_pdf_id': None})]))
+add('delete-owner-referenced-invoice-attachment', 'owner', DELETE, 200, SUCCESS_DELETE, method='DELETE',
+    body=d(DOCUMENTS['ref_inv']['id']),
+    effect=deleted('ref_inv', through=[through_deleted('application.Invoice_attached_documents', 'invoice_id', 'document_id',
+                                                       [INV_ONE, DOCUMENTS['ref_inv']['id']])]))
+add('delete-owner-referenced-by-every-row', 'owner', DELETE, 200, SUCCESS_DELETE, method='DELETE',
+    body=d(DOCUMENTS['ref_all']['id']),
+    effect=deleted('ref_all',
+                   cascades=[cascade_deleted('application.MedicalCertificate', MED_ALL, 'medical_id', medical_changes(MED_ALL_ROW)),
+                             cascade_deleted('application.SubscriptionFile', SF_ALL, 'subscription_file_id',
+                                             subscription_file_changes(SF_ALL_ROW))],
+                   nulled=[set_null('application.Subscription', 'subscription_id', SUB_ALL,
+                                    {'medical_id': None, 'document_pdf_id': None})],
+                   through=[through_deleted('application.Invoice_attached_documents', 'invoice_id', 'document_id',
+                                            [INV_ALL, DOCUMENTS['ref_all']['id']])]))
 
 # === export/start dispatch =======================================================================
 QUEUED = {'percent': 0, 'phase': 'queued', 'label': 'Export in attesa', 'completed': None, 'total': None}
@@ -766,6 +875,43 @@ add('import-start-password-file', 'owner', IMPORT_START, 500,
     {'error': 'Errore durante avvio import: Object of type InMemoryUploadedFile is not JSON serializable'},
     method='POST', raw_b64=raw, content_type=content)
 
+
+# MultiPartParser's own header handling: each part header line goes through parse_header_parameters (RFC 2231
+# names decoded with their codec, a line whose decoded value holds a lone surrogate skipped), base64
+# Content-Transfer-Encoding decodes files and fields, and field text is decoded with errors='replace'.
+def raw_upload(*parts):
+    lines = b''
+    for headers, value in parts:
+        lines += f'--{BOUNDARY}\r\n'.encode() + b''.join(header.encode('latin-1') + b'\r\n' for header in headers)
+        lines += b'\r\n' + value + b'\r\n'
+    return base64.b64encode(lines + f'--{BOUNDARY}--\r\n'.encode()).decode(), f'multipart/form-data; boundary={BOUNDARY}'
+
+
+def start_raw(name, raw_and_kind, password, stored):
+    raw, content = raw_and_kind
+    add('import-start-' + name, 'owner', IMPORT_START, 202, IMPORT_STARTED, method='POST', raw_b64=raw, content_type=content,
+        cache_after={IMPORT_KEY('$task'): {'value': IMPORT_TASK, 'ttl': 86400}},
+        objects_after={'$upload': {'body_b64': base64.b64encode(valid).decode(), 'content_type': stored}},
+        effect={'celery': [{'task': 'import_association_data', 'args': [],
+                            'kwargs': [['zip_file_path', '$upload'], ['owner_password', password]], 'id': '$task'}]})
+
+
+ZIP_PART = (['Content-Disposition: form-data; name="file"; filename="export.zip"', 'Content-Type: application/zip'], valid)
+start_raw('base64-file-latin1-filename', raw_upload(
+    (["Content-Disposition: form-data; name=\"file\"; filename*=iso-8859-1''esportazion%E9.zip", 'Content-Type: Application/ZIP',
+      'Content-Transfer-Encoding: base64'], base64.b64encode(valid))), '', 'application/zip')
+start_raw('base64-password-field', raw_upload(
+    ZIP_PART, (['Content-Disposition: form-data; name="owner_password"', 'Content-Transfer-Encoding: base64'],
+               base64.b64encode('pässword'.encode()))), 'pässword', 'application/zip')
+start_raw('invalid-utf8-password-field', raw_upload(
+    ZIP_PART, (['Content-Disposition: form-data; name="owner_password"'], b'se\xffcret\xed\xa0\x80')),
+    'se�cret���', 'application/zip')
+start_raw('cp932-filename', raw_upload(
+    (["Content-Disposition: form-data; name=\"file\"; filename*=cp932''%93%FA%96%7B.zip"], valid)), '', 'application/zip')
+raw, content = raw_upload((["Content-Disposition: form-data; name=\"file\"; filename*=utf-7''%2B2AA-.zip"], valid))
+add('import-start-utf7-surrogate-filename-skipped', 'owner', IMPORT_START, 400, FILE_REQUIRED, method='POST', raw_b64=raw,
+    content_type=content)
+
 # === export/list of an export without a stored size ============================================
 # default_storage.size(filepath) is saved on the document (an update entry); a missing object leaves it null.
 LEGACY_BODY = 'PK legacy export archive'
@@ -853,5 +999,5 @@ assert len({c['name'] for c in cases}) == len(cases), [k for k, v in collections
 OUTPUT.write_text(json.dumps({
     'matrix_version': 1, 'scope': 'association export/import routes: reads, refusals and pre-dispatch checks',
     'ids': IDS, 'documents': DOCUMENTS, 'archives': ARCHIVES, 'tasks': TASKS, 'setup_token': SETUP_TOKEN,
-    'instance': INSTANCE, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
+    'instance': INSTANCE, 'delete_references': DELETE_REFERENCES, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

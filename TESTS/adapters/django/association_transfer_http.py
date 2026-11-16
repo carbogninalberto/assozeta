@@ -32,7 +32,10 @@ with one auditlog update entry indexed through the actor's association; a
 delete removes exactly the authored archive and
 document rows, each with one auditlog delete entry and its index row
 (archives through changes_json.sport_association, documents through the
-actor's association). Every case checks the Celery messages it published
+actor's association). A delete whose document another row references also
+removes the authored CASCADE rows (with their auditlog delete entries), clears
+the authored SET_NULL columns and removes the authored many-to-many through
+rows; every other seeded row is unchanged. Every case checks the Celery messages it published
 (none, or the authored task with its id equal to the response's task_id).
 """
 from contextlib import contextmanager
@@ -121,6 +124,8 @@ def empty_bucket():
 
 def seed_rows(source, created):
     from django_celery_results.models import TaskResult
+    from application.models.invoices_models import Invoice
+    from application.models.subscriptions_models import MedicalCertificate, Subscription, SubscriptionFile
     from application.models.user_models import SportAssociationDocumentsArchive
     from docmanager.models import Document
     from instance.models import InstanceConfiguration
@@ -142,6 +147,26 @@ def seed_rows(source, created):
         insert(SportAssociationDocumentsArchive, SportAssociationDocumentsArchive(
             sport_association_documents_archive_id=archive['id'], sport_association_id=ids[archive['association']],
             document_id=row['id'], date=date.fromisoformat(archive['date'])))
+    references = source['delete_references']
+    for row in references['medical_certificates']:
+        insert(MedicalCertificate, MedicalCertificate(
+            medical_id=row['id'], document_id=row['document'], user_id=row['user'],
+            creation_date=datetime.fromisoformat(row['created']), expiration_date=date.fromisoformat(row['expiration']),
+            competitive_medical_certificate=row['competitive'], notes=row['notes']))
+    for row in references['subscriptions']:
+        insert(Subscription, Subscription(
+            subscription_id=row['id'], sport_association_id=ids['own_association'], user_id=ids['owner'],
+            medical_id=row['medical'], document_pdf_id=row['document_pdf'], creation_date=datetime.fromisoformat(row['created'])))
+    for row in references['subscription_files']:
+        insert(SubscriptionFile, SubscriptionFile(
+            subscription_file_id=row['id'], subscription_id=row['subscription'], document_id=row['document'],
+            creation_date=datetime.fromisoformat(row['created'])))
+    for row in references['invoices']:
+        insert(Invoice, Invoice(invoice_id=row['id'], sport_association_id=ids['own_association'], membership_fee=0,
+                               activity_fee=0, creation_date=datetime.fromisoformat('2025-05-01T10:00:00+00:00')))
+    attachments = Invoice.attached_documents.through
+    for row in references['invoice_attachments']:
+        insert(attachments, attachments(invoice_id=row['invoice'], document_id=row['document']))
     for row in source['tasks'].values():
         insert(TaskResult, TaskResult(task_id=row['task_id'], status=row['status'], result=row['result'],
                                       content_type='application/json', content_encoding='utf-8', meta='{"children": []}',
@@ -318,7 +343,11 @@ def assert_effect(case, before, after, source, context):
     elif not effect or not effect.get('archives'):
         require(before == after, 'state.unchanged')
     else:
-        managed = (ARCHIVE, DOCUMENT, AUDIT, INDEX)
+        cascades = effect.get('cascade_deletes') or []
+        nulled = effect.get('nullable_updates') or []
+        through = effect.get('through_deletes') or []
+        managed = (ARCHIVE, DOCUMENT, AUDIT, INDEX,
+                   *sorted({spec['model'] for spec in (*cascades, *nulled, *through)}))
         harness.require_unmanaged_unchanged(base_contract, before, after, managed)
         old_r, new_r = keyed(before[ARCHIVE], 'sport_association_documents_archive_id'), keyed(after[ARCHIVE], 'sport_association_documents_archive_id')
         old_d, new_d = keyed(before[DOCUMENT], 'document_id'), keyed(after[DOCUMENT], 'document_id')
@@ -326,11 +355,37 @@ def assert_effect(case, before, after, source, context):
                 and all(new_r[k] == old_r[k] for k in new_r), 'state.archives')
         require({str(k) for k in old_d} - {str(k) for k in new_d} == set(effect['documents'])
                 and all(new_d[k] == old_d[k] for k in new_d), 'state.documents')
+        for model in sorted({spec['model'] for spec in cascades}):
+            specs = [spec for spec in cascades if spec['model'] == model]
+            old_m, new_m = keyed(before[model], specs[0]['key_field']), keyed(after[model], specs[0]['key_field'])
+            require({str(k) for k in old_m} - {str(k) for k in new_m} == {str(spec['key']) for spec in specs},
+                    'state.cascade-keys')
+            require(all(new_m[k] == old_m[k] for k in new_m), 'state.cascade-rows')
+        for spec in nulled:
+            old_m = keyed(before[spec['model']], spec['key_field'])
+            new_m = keyed(after[spec['model']], spec['key_field'])
+            require(set(old_m) == set(new_m), 'state.null-keys')
+            for key, row in new_m.items():
+                if key not in spec['rows']:
+                    require(row == old_m[key], 'state.null-other')
+                    continue
+                fields = spec['rows'][key]
+                require(all(row[name] == value for name, value in fields.items())
+                        and {k: v for k, v in row.items() if k not in fields}
+                        == {k: v for k, v in old_m[key].items() if k not in fields}, 'state.null-fields')
+        for spec in through:
+            before_pairs = harness.pairs(before[spec['model']], spec['left'], spec['right'])
+            after_pairs = harness.pairs(after[spec['model']], spec['left'], spec['right'])
+            pair = tuple(str(item) for item in spec['pair'])
+            require(pair in before_pairs and after_pairs == before_pairs - {pair}, 'state.through')
         added, indexes = harness.audit_delta(base_contract, before, after)
         expected = [('application', 'sportassociationdocumentsarchive', key, 'SportAssociationDocumentsArchive', changes,
                      ids['own_association'], 'changes_json.sport_association') for key, changes in effect['archive_changes'].items()]
         expected += [('docmanager', 'document', key, 'Document', changes, ids[effect['actor_association']], 'actor.sport_association')
                      for key, changes in effect['document_changes'].items()]
+        expected += [(app, name.lower(), spec['key'], name, spec['changes'], ids[effect['actor_association']],
+                      'actor.sport_association')
+                     for spec in cascades for app, name in (spec['model'].split('.', 1),)]
         require(len(added) == len(expected) and len(indexes) == len(expected), 'audit.entries')
         types_ = {(ct['app_label'], ct['model']): ct['id'] for ct in before['contenttypes.ContentType']}
         users = keyed(before['application.User'], 'user_id')

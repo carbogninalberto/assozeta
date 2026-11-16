@@ -28,10 +28,9 @@ import (
 // change: the export rows, Django's cache and the validator's lookups.
 type AssociationTransferWrites interface {
 	ExportFiles(ctx context.Context, association, document string) ([]repository.AssociationExportFile, error)
-	DocumentReferences(ctx context.Context, id string) (int64, error)
 	ActorAssociation(ctx context.Context, actor string) (*string, error)
 	DeleteArchive(ctx context.Context, id, association string, audit domain.LoginAuditContext, at time.Time) error
-	DeleteDocument(ctx context.Context, id string, actorAssociation *string, audit domain.LoginAuditContext, at time.Time) error
+	DeleteDocument(ctx context.Context, id string, audit domain.LoginAuditContext, at time.Time) error
 	SetExportSize(ctx context.Context, id string, size int64, actorAssociation *string, audit domain.LoginAuditContext, at time.Time) error
 	CacheValue(ctx context.Context, key string) (any, bool, error)
 	CacheAdd(ctx context.Context, key string, value associationexport.Dict, timeout time.Duration) (bool, error)
@@ -269,24 +268,10 @@ func (s *AssociationTransfer) deleteExport(ctx context.Context, association, doc
 		return nil, errors.New("export delete matched several archives") // MultipleObjectsReturned
 	}
 	row := rows[0]
-	// Document.delete()'s collector over other references is not ported.
-	references, err := s.options.Writes.DocumentReferences(ctx, row.DocumentID)
-	if err != nil {
-		return nil, err
-	}
-	if references > 0 {
-		return nil, domain.ErrAssociationTransferNotPorted
-	}
 	var key string
 	if row.Filepath != nil && *row.Filepath != "" {
 		if key, err = documentkey.S3Key(*row.Filepath, s.options.Objects.Location()); err != nil {
 			return nil, domain.ErrAssociationTransferUnexpected
-		}
-	}
-	var actorAssociation *string
-	if audit.ActorID != nil {
-		if actorAssociation, err = s.options.Writes.ActorAssociation(ctx, *audit.ActorID); err != nil {
-			return nil, err
 		}
 	}
 	if key != "" {
@@ -297,7 +282,7 @@ func (s *AssociationTransfer) deleteExport(ctx context.Context, association, doc
 	if err = s.options.Writes.DeleteArchive(ctx, row.ArchiveID, association, audit, s.now()); err != nil {
 		return nil, err
 	}
-	if err = s.options.Writes.DeleteDocument(ctx, row.DocumentID, actorAssociation, audit, s.now()); err != nil {
+	if err = s.options.Writes.DeleteDocument(ctx, row.DocumentID, audit, s.now()); err != nil {
 		return nil, err
 	}
 	return &AssociationTransferReply{Status: 200, Body: map[string]any{"success": true, "message": "Export eliminato"}}, nil
