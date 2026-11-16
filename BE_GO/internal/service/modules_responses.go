@@ -605,17 +605,20 @@ func (s *ModulesResponses) attach(ctx context.Context, tx domain.ModulesResponse
 			return "", &PublicUploadTooLargeError{Limit: s.settings.PublicUploadLimit}
 		}
 	}
-	if _, upload := name.(domain.RequestUpload); upload {
-		// str(UploadedFile) is the name the multipart parser sanitized (not ported).
-		return "", domain.ErrModuleResponsesNotPorted
-	}
 	if name == nil {
 		// The NOT NULL filename column rejects the create.
 		return "", errors.New("module attachment filename is null")
 	}
 	// CharField stores str() of the value; the instance keeps the value itself.
+	// str(UploadedFile) is the name the multipart parser sanitized, while the
+	// instance keeps the upload: joining the path below raises (not a str).
+	filename := ""
 	_, named := name.(string)
-	filename := dto.PythonStr(name)
+	if upload, isUpload := name.(domain.RequestUpload); isUpload {
+		filename = upload.Name
+	} else {
+		filename = dto.PythonStr(name)
+	}
 	if !utf8.ValidString(filename) {
 		return "", domain.ErrModuleResponsesNotPorted
 	}

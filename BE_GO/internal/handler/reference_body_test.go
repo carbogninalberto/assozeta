@@ -91,6 +91,73 @@ func TestReferenceBodyMultipartInvalidDispositionSkipped(t *testing.T) {
 	}
 }
 
+// Django's MultiPartParser names an uploaded file sanitize_file_name's name
+// (entities unescaped, the text after the last separator, non-printables
+// dropped, 255 characters keeping the extension); Go's filepath.Base keeps
+// what Django rewrites or skips.
+func TestReferenceBodyMultipartUploadName(t *testing.T) {
+	for _, tc := range []struct{ name, disposition, want string }{
+		{"backslash path", `form-data; name="f"; filename="..\a.txt"`, "a.txt"},
+		{"slash path", `form-data; name="f"; filename="dir/sub/a.txt"`, "a.txt"},
+		{"html entity", `form-data; name="f"; filename="&amp;b.txt"`, "&b.txt"},
+		// The Go reader refuses a raw control byte in a header line; the
+		// RFC 2231 form decodes to the same name Django sanitizes.
+		{"control character", `form-data; name="f"; filename*=UTF-8''x%01y.txt`, "xy.txt"},
+		{"300 characters", `form-data; name="f"; filename="` + strings.Repeat("y", 296) + `.txt"`,
+			strings.Repeat("y", 251) + ".txt"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			header := textproto.MIMEHeader{"Content-Disposition": {tc.disposition}}
+			object := readReferenceMultipart(t, referenceMultipartBody(t,
+				[]textproto.MIMEHeader{header}, []string{"z"}))
+			value, present := object.Lookup("f")
+			upload, isUpload := value.(domain.RequestUpload)
+			if !present || !isUpload || upload.Name != tc.want {
+				t.Fatalf("got (%#v, %v), want an upload named %q", value, present, tc.want)
+			}
+		})
+	}
+}
+
+// djangoUploadName is sanitize_file_name followed by UploadedFile's name
+// handling, on the names the parser hands it.
+func TestDjangoUploadName(t *testing.T) {
+	long := strings.Repeat("y", 296) + ".txt"
+	for _, tc := range []struct{ name, filename, want string }{
+		{"backslash path", `..\a.txt`, "a.txt"},
+		{"html entity", "&amp;b.txt", "&b.txt"},
+		{"control character", "x\x01y.txt", "xy.txt"},
+		{"current directory", ".", ""},
+		{"parent directory", "..", ""},
+		{"empty", "", ""},
+		{"300 characters", long, strings.Repeat("y", 251) + ".txt"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			got, ok := djangoUploadName(tc.filename)
+			if !ok || got != tc.want {
+				t.Fatalf("got (%q, %v), want %q", got, ok, tc.want)
+			}
+		})
+	}
+}
+
+// A filename Django sanitizes away is no part at all: it is not a field,
+// and it does not replace a field of the same name.
+func TestReferenceBodyMultipartUploadNameSkipped(t *testing.T) {
+	for _, filename := range []string{"..", ".", "../", "dir/.."} {
+		t.Run(filename, func(t *testing.T) {
+			file := textproto.MIMEHeader{"Content-Disposition": {`form-data; name="f"; filename="` + filename + `"`}}
+			text := textproto.MIMEHeader{"Content-Disposition": {`form-data; name="f"`}}
+			object := readReferenceMultipart(t, referenceMultipartBody(t,
+				[]textproto.MIMEHeader{text, file}, []string{"keep", "z"}))
+			value, present := object.Lookup("f")
+			if !present || value != "keep" {
+				t.Fatalf("got (%#v, %v), want the text field only", value, present)
+			}
+		})
+	}
+}
+
 func TestReferenceBodyMultipartUploadContentType(t *testing.T) {
 	plain, params := "text/plain", "Image/PNG; charset=x"
 	for _, tc := range []struct {
@@ -138,6 +205,40 @@ func TestReferenceBodyURLEncodedReplacement(t *testing.T) {
 		got, present := object.Lookup(name)
 		if !present || got != want {
 			t.Fatalf("%s: got (%#v, %v), want %q", name, got, present, want)
+		}
+	}
+}
+
+// parseReferenceForm reads a query string as QueryDict does: a malformed escape
+// stays as written, each valid escape is decoded, and repeated keys keep every
+// value (getlist) with the last one as get().
+func TestParseReferenceFormMatchesQueryDict(t *testing.T) {
+	query := parseReferenceForm("a=%FF&b=x%zz&c=a%20b%zz&d=1+2&d=3")
+	want := []struct {
+		name  string
+		value string
+		all   []any
+	}{
+		{name: "a", value: "\ufffd"},
+		{name: "b", value: "x%zz"},
+		{name: "c", value: "a b%zz"},
+		{name: "d", value: "3", all: []any{"1 2", "3"}},
+	}
+	if len(query) != len(want) {
+		t.Fatalf("fields = %v, want %d fields", query, len(want))
+	}
+	for i, field := range want {
+		got := query[i]
+		if got.Name != field.name || got.Value != field.value {
+			t.Fatalf("field %d = %q=%v, want %q=%q", i, got.Name, got.Value, field.name, field.value)
+		}
+		if len(got.All) != len(field.all) {
+			t.Fatalf("field %q All = %v, want %v", field.name, got.All, field.all)
+		}
+		for j, value := range field.all {
+			if got.All[j] != value {
+				t.Fatalf("field %q All[%d] = %v, want %v", field.name, j, got.All[j], value)
+			}
 		}
 	}
 }

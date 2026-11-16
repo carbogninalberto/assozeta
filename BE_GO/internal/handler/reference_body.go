@@ -6,12 +6,12 @@ import (
 	"mime"
 	"mime/multipart"
 	"net/http"
-	"net/url"
 	"strings"
 	"unicode/utf8"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"golang.org/x/text/encoding/charmap"
 )
 
@@ -72,35 +72,12 @@ func acceptsJSON(accept string) bool {
 	return false
 }
 
+// parseReferenceForm is the QueryDict of a request's query string: '+' becomes
+// ' ', every valid percent escape is decoded, a malformed one stays as written,
+// the bytes are read as UTF-8 with errors='replace', and repeated keys keep
+// every value.
 func parseReferenceForm(raw string) domain.RequestObject {
-	result := domain.RequestObject{}
-	positions := map[string]int{}
-	decode := func(s string) string {
-		decoded, err := url.QueryUnescape(s)
-		if err != nil {
-			return strings.ReplaceAll(s, "+", " ")
-		}
-		return decoded
-	}
-	for _, pair := range strings.Split(raw, "&") {
-		if pair == "" {
-			continue
-		}
-		key, value, _ := strings.Cut(pair, "=")
-		key = decode(key)
-		value = decode(value)
-		if i, ok := positions[key]; ok {
-			if result[i].All == nil {
-				result[i].All = []any{result[i].Value}
-			}
-			result[i].Value = value
-			result[i].All = append(result[i].All, value)
-		} else {
-			positions[key] = len(result)
-			result = append(result, domain.RequestField{Name: key, Value: value})
-		}
-	}
-	return result
+	return parseQueryPairs(raw, true)
 }
 
 func readReferenceBody(r *http.Request) (any, error) {
@@ -159,8 +136,31 @@ func readReferenceBodyJSON(r *http.Request, parseJSON func([]byte) (any, error))
 			base64 := transferEncoding == "base64"
 			contentType, _ := djangoHeaderValue(part.Header, "Content-Type")
 			if part.FileName() != "" {
+				// Django only makes a part a file when the Content-Disposition
+				// carries a non-empty filename, and UploadedFile.name is
+				// MultiPartParser.sanitize_file_name's name. part.FileName()
+				// is Go's filepath.Base: it keeps what Django rewrites
+				// (entities, backslash paths) or skips (non-printables, "..").
+				uploadName := part.FileName()
+				if header, outcome := djangoPartHeaders(part.Header); outcome != headerNotPorted {
+					if raw := header.disposition["filename"]; raw != "" {
+						sanitized, valid := djangoUploadName(raw)
+						if !valid {
+							// djangoPartHeaders keeps only valid UTF-8 lines and every
+							// decoded parameter is valid UTF-8: no request reaches this.
+							return nil, refusal.AppState("multipart file name: unreachable state")
+						}
+						if sanitized == "" {
+							// Django skips the part entirely: it is neither a field nor a file.
+							part.Close()
+							continue
+						}
+						uploadName = sanitized
+					}
+				}
+				// An RFC 2231 charset without a Go decoder keeps the name Go read.
 				upload := domain.RequestUpload{
-					Name:        part.FileName(),
+					Name:        uploadName,
 					Temp:        r.ContentLength > domain.RequestUploadMemory,
 					ContentType: contentType,
 				}

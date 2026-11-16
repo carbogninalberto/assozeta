@@ -930,6 +930,60 @@
     }
    ],
    "id": "a1000000-0000-4000-8000-000000643804"
+  },
+  "export_big": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "link": "risposte-export-grande",
+   "created": "2026-09-01T08:00:00Z",
+   "title": "Modulo",
+   "require_approval": false,
+   "start": null,
+   "end": null,
+   "always_active": true,
+   "max_responses": null,
+   "queue_mode": false,
+   "only_users": false,
+   "payment_required": false,
+   "payment_data": {},
+   "response_message": null,
+   "allow_attachments": false,
+   "elements": [
+    {
+     "type": "number",
+     "props": {
+      "label": "Grande",
+      "name": "grande"
+     }
+    }
+   ],
+   "id": "a1000000-0000-4000-8000-000000644200"
+  },
+  "export_huge": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "link": "risposte-export-enorme",
+   "created": "2026-09-01T08:00:00Z",
+   "title": "Modulo",
+   "require_approval": false,
+   "start": null,
+   "end": null,
+   "always_active": true,
+   "max_responses": null,
+   "queue_mode": false,
+   "only_users": false,
+   "payment_required": false,
+   "payment_data": {},
+   "response_message": null,
+   "allow_attachments": false,
+   "elements": [
+    {
+     "type": "number",
+     "props": {
+      "label": "Enorme",
+      "name": "enorme"
+     }
+    }
+   ],
+   "id": "a1000000-0000-4000-8000-000000644201"
   }
  },
  "documents": {
@@ -1430,6 +1484,38 @@
    "attachments": [],
    "id": "a1000000-0000-4000-8000-000000643814",
    "module": "export_label_dict",
+   "number": 0,
+   "token": "",
+   "export_user": null,
+   "payment": null
+  },
+  "big_r": {
+   "created": "2026-09-02T10:00:00Z",
+   "queue": null,
+   "response": {
+    "grande": 123456789012345678901234567890
+   },
+   "approved": true,
+   "user": null,
+   "attachments": [],
+   "id": "a1000000-0000-4000-8000-000000644202",
+   "module": "export_big",
+   "number": 0,
+   "token": "",
+   "export_user": null,
+   "payment": null
+  },
+  "huge_r": {
+   "created": "2026-09-02T10:00:00Z",
+   "queue": null,
+   "response": {
+    "enorme": 10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+   },
+   "approved": true,
+   "user": null,
+   "attachments": [],
+   "id": "a1000000-0000-4000-8000-000000644203",
+   "module": "export_huge",
    "number": 0,
    "token": "",
    "export_user": null,
@@ -2826,6 +2912,74 @@
      "type": "xlsx"
     }
    },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-export-big-integer",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/modules/a1000000-0000-4000-8000-000000644200/export",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$xlsx": {
+       "engine": "xlsxwriter",
+       "sheet": "Risposte",
+       "columns": [
+        "Grande",
+        "Data creazione",
+        "Progressivo risposta",
+        "Posizione in coda",
+        "Utente",
+        "Pagamento",
+        "Approvato",
+        "Allegati"
+       ],
+       "rows": [
+        [
+         {
+          "int": "123456789012345678901234567890"
+         },
+         "02/09/2026 10:00",
+         {
+          "int": "0"
+         },
+         "-",
+         "-",
+         "-",
+         "Approvata",
+         ""
+        ]
+       ],
+       "index": false,
+       "widths": [
+        16,
+        24,
+        30,
+        27,
+        16,
+        19,
+        19,
+        18
+       ]
+      }
+     },
+     "filename": "[$today] Risposte al modulo (Modulo).xls",
+     "type": "xlsx"
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-export-integer-beyond-double-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/modules/a1000000-0000-4000-8000-000000644201/export",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
    "effect": null
   },
   {
@@ -7985,6 +8139,69 @@
     "object": null
    },
    "raw_body": "--moduli\r\nContent-Disposition: form-data; name=\"filename\"\r\n\r\ncaricato.txt\r\n--moduli\r\nContent-Disposition: form-data; name=\"attachment_token\"\r\n\r\nrespondent-token-a\r\n--moduli\r\nContent-Disposition: form-data; name=\"base64\"; filename=\"a.txt\"\r\nContent-Type: application/octet-stream\r\n\r\nY2lhbw==\r\n--moduli--\r\n",
+   "content_type": "multipart/form-data; boundary=moduli"
+  },
+  {
+   "name": "modules-responses-attach-filename-upload-keeps-document",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "document",
+    "actor": null,
+    "filename": "scan&1.pdf",
+    "link": null,
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "document_id": [
+        "None",
+        "$id"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "filename": [
+        "None",
+        "scan&1.pdf"
+       ],
+       "token": [
+        "None",
+        "$token"
+       ],
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      },
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ],
+    "object": null
+   },
+   "raw_body": "--moduli\r\nContent-Disposition: form-data; name=\"filename\"; filename=\"scan&amp;1.pdf\"\r\nContent-Type: application/octet-stream\r\n\r\nignorato\r\n--moduli\r\nContent-Disposition: form-data; name=\"attachment_token\"\r\n\r\nrespondent-token-a\r\n--moduli\r\nContent-Disposition: form-data; name=\"base64\"\r\n\r\nY2lhbw==\r\n--moduli--\r\n",
+   "content_type": "multipart/form-data; boundary=moduli"
+  },
+  {
+   "name": "modules-responses-attach-filename-upload-sanitized-away",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "attachment added"
+   },
+   "effect": null,
+   "raw_body": "--moduli\r\nContent-Disposition: form-data; name=\"filename\"; filename=\"..\"\r\nContent-Type: application/octet-stream\r\n\r\nignorato\r\n--moduli\r\nContent-Disposition: form-data; name=\"attachment_token\"\r\n\r\nrespondent-token-a\r\n--moduli\r\nContent-Disposition: form-data; name=\"base64\"\r\n\r\nY2lhbw==\r\n--moduli--\r\n",
    "content_type": "multipart/form-data; boundary=moduli"
   },
   {

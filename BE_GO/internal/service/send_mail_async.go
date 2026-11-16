@@ -18,6 +18,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/celery"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/celeryworker"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/smtpsend"
 	"github.com/google/uuid"
 )
@@ -275,10 +276,18 @@ func (s *SendMailAsync) plan(ctx context.Context, request *celeryworker.Request)
 		return err
 	}
 	if _, err = smtpsend.DjangoEnvelope(call.envelopeFrom()); err != nil {
+		if errors.Is(err, refusal.ErrAppState) {
+			// An application-state error is a failed task, not a handoff.
+			return err
+		}
 		return celeryworker.ErrHandoff
 	}
 	if err = smtpsend.CheckDjangoMessage(smtpsend.DjangoMessage{Subject: call.subject, Body: call.message, HTML: call.html,
 		From: call.envelopeFrom(), To: call.recipients, ReplyTo: call.replyTo}); err != nil {
+		if errors.Is(err, refusal.ErrAppState) {
+			// An application-state error is a failed task, not a handoff.
+			return err
+		}
 		return celeryworker.ErrHandoff
 	}
 	request.State = call

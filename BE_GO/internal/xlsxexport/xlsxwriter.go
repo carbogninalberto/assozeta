@@ -2,6 +2,7 @@ package xlsxexport
 
 import (
 	_ "embed"
+	"errors"
 	"math"
 	"regexp"
 	"sort"
@@ -311,6 +312,18 @@ func (sheet *xwSheet) writeValue(row, col int, value Value, format int) error {
 		sheet.store(row, col, xwCell{kind: 'n', number: percentG(value.Float, true), format: format})
 	case Int:
 		sheet.store(row, col, xwCell{kind: 'n', number: percentG(float64(value.Int), true), format: format})
+	case BigInt:
+		// pandas' _format_value keeps an int as int and xlsxwriter's
+		// write_number takes float(number) and formats it with '%.16G':
+		// an int beyond the double range raises OverflowError (the 500 page).
+		number, err := strconv.ParseFloat(value.Text, 64)
+		if err != nil {
+			if errors.Is(err, strconv.ErrRange) {
+				return errIntTooLarge()
+			}
+			return ErrUnexpectedInput // no decimal integer
+		}
+		sheet.store(row, col, xwCell{kind: 'n', number: percentG(number, true), format: format})
 	case Bool:
 		text := "0"
 		if value.Bool {

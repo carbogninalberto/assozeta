@@ -93,6 +93,8 @@ BASE = {'association': OWN, 'link': None, 'created': '2026-09-01T08:00:00Z', 'ti
         'start': None, 'end': None, 'always_active': True, 'max_responses': None, 'queue_mode': False, 'only_users': False,
         'payment_required': False, 'payment_data': {}, 'response_message': None, 'allow_attachments': False, 'elements': ELEMENTS}
 xids = iter(f'a1000000-0000-4000-8000-{643101 + n:012d}' for n in range(60))
+# Ids of the modules and responses added for the big integers (a range of their own: the earlier ids stay).
+zids = iter(f'a1000000-0000-4000-8000-{644200 + n:012d}' for n in range(10))
 EXPORT_ELEMENTS = [
     {'type': 'heading', 'props': {'label': 'Intestazione'}},
     {'type': 'text', 'props': {'label': 'Nome', 'name': 'nome'}},
@@ -144,6 +146,13 @@ MODULES = {
                           'elements': [{'type': 'text', 'props': {'label': ['a', 'b'], 'name': 'x'}}]},
     'export_label_dict': {**BASE, 'id': next(yids), 'link': 'risposte-export-etichetta-oggetto',
                           'elements': [{'type': 'text', 'props': {'label': {'a': 1}, 'name': 'x'}}]},
+    # An integer beyond int64 in a response: pandas reads it as a float (or keeps
+    # it an int) and xlsxwriter writes its float with '%.16G'.
+    'export_big': {**BASE, 'id': next(zids), 'link': 'risposte-export-grande',
+                   'elements': [{'type': 'number', 'props': {'label': 'Grande', 'name': 'grande'}}]},
+    # One beyond the double range: float() raises (the 500 page).
+    'export_huge': {**BASE, 'id': next(zids), 'link': 'risposte-export-enorme',
+                    'elements': [{'type': 'number', 'props': {'label': 'Enorme', 'name': 'enorme'}}]},
 }
 DOCUMENTS = {'d1': {'id': next(ids), 'filename': 'certificato è.pdf', 'token': next(ids)},
              'd2': {'id': next(ids), 'filename': 'foto.png', 'token': next(ids)},
@@ -201,6 +210,11 @@ RESPONSES = {
     'props_number_r': {**R, 'id': next(yids), 'module': 'export_props_number', 'number': 0},
     'label_list_r': {**R, 'id': next(yids), 'module': 'export_label_list', 'number': 0},
     'label_dict_r': {**R, 'id': next(yids), 'module': 'export_label_dict', 'number': 0},
+    # Integers beyond int64: the export writes their float, or answers the 500 page.
+    'big_r': {**R, 'id': next(zids), 'module': 'export_big', 'number': 0,
+              'response': {'grande': 123456789012345678901234567890}},
+    'huge_r': {**R, 'id': next(zids), 'module': 'export_huge', 'number': 0,
+               'response': {'enorme': int('1' + '0' * 400)}},
 }
 RESPONSES['full_r']['attachments'] = ['d8']
 # Payment.attachments links (payment label, document label).
@@ -499,6 +513,10 @@ add('export-props-number', 'owner', 'GET', export('export_props_number'), 500, S
 # A list or an object as column label: the header cell is its text, the column width its item count.
 add('export-label-list', 'owner', 'GET', export('export_label_list'), 200, exported('export_label_list'))
 add('export-label-dict', 'owner', 'GET', export('export_label_dict'), 200, exported('export_label_dict'))
+# An integer beyond int64 is float() then '%.16G' (xlsxwriter's write_number);
+# one beyond the double range makes float() raise.
+add('export-big-integer', 'owner', 'GET', export('export_big'), 200, exported('export_big'))
+add('export-integer-beyond-double-server-error', 'owner', 'GET', export('export_huge'), 500, SERVER)
 
 add('info-anonymous', 'anonymous', 'GET', info('risposte-aperto'), 200, INFO_OPEN)
 add('info-admin-without-session', 'admin', 'GET', info('risposte-aperto'), 403, NO_SESSION)
@@ -748,6 +766,17 @@ add('attach-multipart', 'owner', 'POST', attach('att_r'), 200, ATTACHED,
 add('attach-multipart-file-server-error', 'anonymous', 'POST', attach('att_r'), 500, SERVER,
     raw_body=multipart(('filename', 'caricato.txt'), ('attachment_token', TOKENS['att_r']), ('base64', 'a.txt', 'Y2lhbw==')), content_type=MULTIPART,
     effect=uploaded(None, 'caricato.txt', None, link=None, stored=False))
+# An uploaded file as filename: the Document row keeps str(UploadedFile), the
+# multipart parser's sanitized name ('&amp;' is an entity, so '&'), and the
+# path join raises because the instance still holds the upload.
+add('attach-filename-upload-keeps-document', 'anonymous', 'POST', attach('att_r'), 500, SERVER,
+    raw_body=multipart(('filename', 'scan&amp;1.pdf', 'ignorato'), ('attachment_token', TOKENS['att_r']), ('base64', 'Y2lhbw==')),
+    content_type=MULTIPART, effect=uploaded(None, 'scan&1.pdf', None, link=None, stored=False))
+# A filename that sanitizes away is no part at all: 'filename' is missing from
+# request.data, so the view answers 'attachment added' and writes nothing.
+add('attach-filename-upload-sanitized-away', 'anonymous', 'POST', attach('att_r'), 200, ATTACHED,
+    raw_body=multipart(('filename', '..', 'ignorato'), ('attachment_token', TOKENS['att_r']), ('base64', 'Y2lhbw==')),
+    content_type=MULTIPART)
 add('attach-delete-missing-key', 'anonymous', 'DELETE', attach('att_r'), 404, NO_DOCUMENT, body={})
 add('attach-delete-null-document', 'anonymous', 'DELETE', attach('att_r'), 404, NO_DOCUMENT, body={'document_id': None})
 add('attach-delete-unknown-document', 'owner', 'DELETE', attach('att_r'), 404, NO_DOCUMENT, body={'document_id': UNKNOWN})

@@ -267,10 +267,16 @@ func modulesExportValue(value any) (xlsxexport.Value, error) {
 		text := typed.String()
 		if !strings.ContainsAny(text, ".eE") {
 			number, err := strconv.ParseInt(text, 10, 64)
-			if err != nil {
-				return xlsxexport.Value{}, domain.ErrModuleResponsesNotPorted // beyond int64
+			if err == nil {
+				return xlsxexport.IntValue(number), nil
 			}
-			return xlsxexport.IntValue(number), nil
+			if !errors.Is(err, strconv.ErrRange) {
+				// the text comes from a JSON parser, always a valid integer
+				return xlsxexport.Value{}, domain.ErrModuleResponsesUnreachable
+			}
+			// A Python int beyond int64: pandas reads it as float64 (or keeps
+			// it an int) and xlsxwriter writes float(number) with '%.16G'.
+			return xlsxexport.BigIntValue(text), nil
 		}
 		number, err := strconv.ParseFloat(text, 64)
 		if err != nil && !errors.Is(err, strconv.ErrRange) {

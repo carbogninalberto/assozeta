@@ -9,6 +9,7 @@ import (
 	"os"
 	"runtime"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 )
@@ -295,6 +296,37 @@ func buildGolden(t *testing.T, item goldenCase, now time.Time) ([]byte, error) {
 	}
 	t.Fatalf("unknown kind %s", item.Kind)
 	return nil, nil
+}
+
+// A Python int beyond int64 in a frame is float(number) written with
+// '%.16G' (xlsxwriter's write_number); beyond the double range float()
+// raises OverflowError, Django's 500 page.
+func TestPandasXlsxwriterBigInt(t *testing.T) {
+	now := time.Date(2026, time.November, 16, 9, 0, 0, 0, time.UTC)
+	build := func(digits string) ([]byte, error) {
+		return PandasXlsxwriter(Frame{Sheet: "Risposte", Columns: []string{"Grande"},
+			Rows: [][]Value{{BigIntValue(digits)}}}, now)
+	}
+	workbook, err := build("123456789012345678901234567890")
+	if err != nil {
+		t.Fatal(err)
+	}
+	parts, err := Parts(workbook)
+	if err != nil {
+		t.Fatal(err)
+	}
+	sheet := ""
+	for _, part := range parts {
+		if part.Name == "xl/worksheets/sheet1.xml" {
+			sheet = string(part.Data)
+		}
+	}
+	if !strings.Contains(sheet, "<v>1.234567890123457E+29</v>") {
+		t.Fatalf("sheet has no float cell: %s", sheet)
+	}
+	if _, err := build("1" + strings.Repeat("0", 400)); !errors.Is(err, ErrDjango) {
+		t.Fatalf("got %v, want Django's OverflowError", err)
+	}
 }
 
 func TestGoldenWorkbooks(t *testing.T) {

@@ -390,7 +390,8 @@ func (s *InstanceSetup) importedAssociation(ctx context.Context, task string) (s
 			}
 			canonical, err := dto.AssociationExportDocument(text)
 			if err != nil {
-				return "", "", domain.ErrInstanceSetupRefused // ValidationError text in Django's answer
+				// The writers store str() of a UUID (BE/application/tasks.py:2186,2193).
+				return "", "", domain.ErrInstanceSetupUnexpected
 			}
 			found, err := s.store.ImportedAssociation(ctx, canonical)
 			if err != nil {

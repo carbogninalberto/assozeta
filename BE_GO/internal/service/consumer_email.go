@@ -14,6 +14,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/celeryworker"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/emailrender"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/smtpsend"
 	"github.com/google/uuid"
 )
@@ -271,6 +272,10 @@ func (s *SendMailAsync) planConfigSend(ctx context.Context, configuration domain
 	if smtpConfigured(configuration) {
 		if message, ok := call.smtpMessage(); ok {
 			if _, err := smtpsend.Render(message, smtpsend.NewBoundary()); err != nil && !errors.Is(err, smtpsend.ErrRaises) {
+				if errors.Is(err, refusal.ErrAppState) {
+					// An application-state error is Django's 500 page, not a handoff.
+					return nil, err
+				}
 				return nil, celeryworker.ErrHandoff
 			}
 		}

@@ -100,7 +100,7 @@ Go answers the server error page before any write:
 - `configure` with `type: import` whose task row is `FAILURE` or `REVOKED` (Celery rebuilds the
   exception and Django answers its text), whose row Celery would decode differently (non-`utf-8`
   encoding, metadata with `status` or children, `__type__` values) or not at all, whose association id
-  is not a string UUID, or whose error value is not a string, integer, boolean or null.
+  is not a string, or whose error value is not a string, integer, boolean or null.
 - (Ported in t3plat) Values the model columns reject inside Django's transaction answer the database text
   `value too long for type character varying(N)` with the 500 body: an owner or support email over 254
   characters, a domain over 255 characters once Python has lower-cased it. Domains and e-mail domains are
@@ -108,9 +108,15 @@ Go answers the server error page before any write:
   `internal/idna2003` (Python's 'idna' codec).
 - Other exceptions inside the setup transaction (Django answers 500 with the exception text).
 
+A stored association id that is not a UUID is application state rather than a refusal: every writer
+stores `str()` of one (`import_association_data` in `BE/application/tasks.py:2186,2193`, and the Go
+import worker at `BE_GO/internal/service/consumer_import_association.go:370`), so the Django
+`UUIDField` lookup can only raise for a row the application did not write. Go answers its server
+error page (`domain.ErrInstanceSetupUnexpected`) and never hands the request off.
+
 Since long-tail PR 3 (agent B) the IDNA URL fallback flags are dead code and are deleted: `DjangoURL` already ports
 URLValidator's fallback (always `ported`), so the guards and their fields are gone. The import-task row shapes, the logo
-name collision, the non-UUID stored association id and the other exceptions in the setup transaction stay refusals.
+name collision and the other exceptions in the setup transaction stay refusals.
 
 ## Evidence
 
