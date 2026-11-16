@@ -60,7 +60,7 @@ func TestAutomationWorkflowPatchFormTreeDepth(t *testing.T) {
 
 // TestCourseEnrolmentFormJSONBands pins course-subscriptions/add (X15):
 // multiple_quote D >= 9929 and events D >= 9943 are the plain 500 page with
-// nothing written; the stock create keeps its unmeasured past-500 refusal.
+// nothing written; the stock create's own bands are the test below.
 func TestCourseEnrolmentFormJSONBands(t *testing.T) {
 	for _, test := range []struct {
 		name    string
@@ -77,14 +77,76 @@ func TestCourseEnrolmentFormJSONBands(t *testing.T) {
 			t.Fatalf("%s depth %d: tooDeep=%v, want %v", test.name, test.depth, got, test.tooDeep)
 		}
 	}
-	if courseEnrolmentFormJSONUnmeasured(map[string]int{"multiple_quote": 500}) {
-		t.Fatal("500 levels are within the stock create's previous boundary")
-	}
-	if !courseEnrolmentFormJSONUnmeasured(map[string]int{"events": 501}) {
-		t.Fatal("501 levels are past the stock create's previous boundary")
-	}
 	if !errors.Is(errCourseEnrolmentFormJSONTooDeep, refusal.ErrAppState) {
 		t.Fatalf("%v is not an application-state error", errCourseEnrolmentFormJSONTooDeep)
+	}
+}
+
+// TestCourseEnrolmentStockFormJSONBands pins the stock router create (X15):
+// multiple_quote D <= 9928 today's answer, 9929..9933 the row and its audit
+// entries written then the quote payment's JSON dump raises, D >= 9934 the
+// validation raise with nothing written; events D <= 9942 today's answer,
+// D >= 9943 the validation raise.
+func TestCourseEnrolmentStockFormJSONBands(t *testing.T) {
+	for _, test := range []struct {
+		name            string
+		depth           int
+		payment, denied bool
+	}{
+		{"multiple_quote", 0, false, false},
+		{"multiple_quote", 600, false, false},
+		{"multiple_quote", 9928, false, false},
+		{"multiple_quote", 9929, true, false},
+		{"multiple_quote", 9931, true, false},
+		{"multiple_quote", 9933, true, false},
+		{"multiple_quote", 9934, false, true},
+		{"multiple_quote", 10000, false, true},
+		{"events", 600, false, false},
+		{"events", 9900, false, false},
+		{"events", 9942, false, false},
+		{"events", 9943, false, true},
+		{"events", 10000, false, true},
+	} {
+		payment, refused := courseEnrolmentStockFormJSONBand(map[string]int{test.name: test.depth})
+		if payment != test.payment || refused != test.denied {
+			t.Fatalf("%s depth %d: payment=%v refused=%v, want %v %v", test.name, test.depth, payment, refused,
+				test.payment, test.denied)
+		}
+	}
+}
+
+// TestCourseEnrolmentStockFormJSONDepth pins the reader's depth on the measured
+// bands: a form value past 500 levels parses and carries its depth, so the
+// stock create answers the band instead of refusing the input.
+func TestCourseEnrolmentStockFormJSONDepth(t *testing.T) {
+	for _, depth := range []int{501, 600, 9900, 9929, 9934, 9980} {
+		write, invalid := dto.ParseCourseSubscriptionWrite(
+			domain.RequestObject{{Name: "multiple_quote", Value: deepFormJSON(depth)}}, true)
+		if invalid != nil || write.FormJSONDepth["multiple_quote"] != depth || write.Quote == nil {
+			t.Fatalf("depth %d: depth=%v quote=%v invalid=%v", depth, write.FormJSONDepth["multiple_quote"], write.Quote, invalid)
+		}
+		write, invalid = dto.ParseCourseSubscriptionWrite(
+			domain.RequestObject{{Name: "events", Value: deepFormJSON(depth)}}, true)
+		if invalid != nil || write.FormJSONDepth["events"] != depth || write.Events == nil {
+			t.Fatalf("events depth %d: depth=%v events=%v invalid=%v", depth, write.FormJSONDepth["events"], write.Events, invalid)
+		}
+	}
+}
+
+// TestCourseEnrolmentDuplicateFormJSONKey pins the shape the parity cases use
+// for a deep quote text: json.loads keeps the last of two equal keys, so the
+// parsed quote is the shallow one at the text's own depth (the row, the
+// payment meta and the audit reprs stay shallow).
+func TestCourseEnrolmentDuplicateFormJSONKey(t *testing.T) {
+	text := `{"quote_id": "q1", "amount":` + deepFormJSON(9900) + `, "amount": "25,50"}`
+	depth := dto.AuditJSONDepth(text)
+	write, invalid := dto.ParseCourseSubscriptionWrite(domain.RequestObject{{Name: "multiple_quote", Value: text}}, true)
+	quote, isObject := write.Quote.(domain.RequestObject)
+	if invalid != nil || !isObject || write.FormJSONDepth["multiple_quote"] != depth || depth < 9000 {
+		t.Fatalf("depth=%v (text %v) invalid=%v quote=%T", write.FormJSONDepth["multiple_quote"], depth, invalid, write.Quote)
+	}
+	if amount, present := quote.Lookup("amount"); !present || amount != "25,50" || len(quote) != 2 {
+		t.Fatalf("parsed quote = %+v, want the shallow last duplicate", quote)
 	}
 }
 

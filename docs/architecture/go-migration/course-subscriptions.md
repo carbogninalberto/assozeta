@@ -164,11 +164,10 @@ Constants and the application-state error live in `service/course_subscription_u
 within the bands (including those past 500) are parsed by `dto/automationFormTree` up to its 20000-level limit, stored
 and echoed without a Go-side depth limit.
 
-Django's edge is not a fixed number: it moves with the value's shape (arrays or objects, where the deep part sits)
-and by a level or two with the live stack of the run. The bands above were measured with nested objects; an array of
-the same total depth can still load in Django where Go answers the band's 500 page (a top-level array quote of 9965
-levels updates on the course subscription update route). The parity cases use the measured shapes and sit past or
-inside the band with a margin; the exact edges are pinned by the Go tests (X15 is the accepted divergence there).
+Django's edge is not a fixed number: it moves by a few levels with the value's shape (arrays or objects, where the
+deep part sits) and with the live stack of the run (the same module elements loaded at 9934 levels in one run and
+not in another). The bands above were measured with nested objects; the parity cases sit inside or past each band
+with a margin, and the exact edges are pinned by the Go tests (X15 is the accepted divergence there).
 
 ## Primary key in the body and shared payment delete (t5pk)
 

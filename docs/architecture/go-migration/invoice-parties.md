@@ -215,8 +215,7 @@ gone. The fixture (regenerated from its generator) authors 144 cases, adding
 `supplier-update-*-ignored` cases and turning the add's unique error into
 `supplier-add-existing-invoice-id-ignored`.
 
-X15 edges: django's edge is not a fixed number: it moves with the value's shape (arrays or objects, where the deep part sits)
-and by a level or two with the live stack of the run. The bands above were measured with nested objects; an array of
-the same total depth can still load in Django where Go answers the band's 500 page (a top-level array quote of 9965
-levels updates on the course subscription update route). The parity cases use the measured shapes and sit past or
-inside the band with a margin; the exact edges are pinned by the Go tests (X15 is the accepted divergence there).
+X15 edges: django's edge is not a fixed number: it moves by a few levels with the value's shape (arrays or objects, where the
+deep part sits) and with the live stack of the run (the same module elements loaded at 9934 levels in one run and
+not in another). The bands above were measured with nested objects; the parity cases sit inside or past each band
+with a margin, and the exact edges are pinned by the Go tests (X15 is the accepted divergence there).

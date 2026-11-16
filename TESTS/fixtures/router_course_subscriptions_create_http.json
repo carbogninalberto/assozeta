@@ -6205,6 +6205,383 @@
     "course": "e0000000-0000-4000-8000-000000000015",
     "subscription_id": "e0000000-0000-4000-8000-000000000005"
    }
+  },
+  {
+   "name": "router-course-subscriptions-create-form-events-depth-9900-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-subscriptions/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "rows": {},
+    "created": {
+     "application.CourseSubscription": [
+      {
+       "$sym": "@cf5",
+       "course_subscription_id": "@cf5",
+       "course_id": "e0000000-0000-4000-8000-000000000012",
+       "paid": false,
+       "creation_date": "$now",
+       "subscription_id": "e0000000-0000-4000-8000-000000000005",
+       "payment_id": null,
+       "multi_payments": false,
+       "one_fee_payment": false,
+       "archived": false,
+       "type": 1,
+       "multiple_quote": null,
+       "billed_frequency": 1,
+       "billed_from": null,
+       "billed_until": null,
+       "billed_from_day_of_month": 1,
+       "membership_active": false,
+       "membership_fee": "0.00",
+       "auto_renewal": false,
+       "deleted": false
+      }
+     ],
+     "application.Payment": [
+      {
+       "$sym": "@cf5p",
+       "payment_id": "@cf5p",
+       "type": "default",
+       "subject": 2,
+       "amount": "12.00",
+       "creation_date": "2099-05-05T00:00:00Z",
+       "payment_date": null,
+       "paid": false,
+       "expense": false,
+       "description": "Rata n.4 del 05/05/99 (Libero)",
+       "payment_category_id": "$category",
+       "meta_payment_categories": null,
+       "invoice_id": null,
+       "user_id": "a1000000-0000-4000-8000-000000700001",
+       "associate_id": "e0000000-0000-4000-8000-000000000002",
+       "supplier_id": null,
+       "instructor_id": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "payment_intent_id": null,
+       "archived": false,
+       "invoice_fiscal_code": null,
+       "meta": {
+        "description": "Rata n.4 del 05/05/99 (Libero)",
+        "course_id": "e0000000-0000-4000-8000-000000000012",
+        "course_title": "Libero",
+        "course_subscription_id": "@cf5",
+        "payment_date": "2099-05-05"
+       },
+       "notes": null,
+       "custom_accounts_id": "00000000-0000-4000-8000-0000000e0001",
+       "signature_id": null,
+       "deleted": false,
+       "group_id": null,
+       "course": null
+      }
+     ],
+     "application.CourseSubscriptionInstallment": [
+      {
+       "$sym": "@cf5i",
+       "course_subscription_installment_id": "@cf5i",
+       "course_subscription_id": "@cf5",
+       "id": 3,
+       "amount": "12.00",
+       "paid": false,
+       "payment_date": "2099-05-05T00:00:00Z",
+       "payment_id": "@cf5p",
+       "archived": false,
+       "group_id": null,
+       "deleted": false
+      }
+     ]
+    },
+    "links": {},
+    "audit": [
+     {
+      "model": "coursesubscription",
+      "key": "@cf5",
+      "action": 0,
+      "changes": {
+       "$stored": "create",
+       "overrides": {
+        "membership_fee": [
+         "None",
+         "0.0"
+        ],
+        "payment": [
+         "None",
+         "None"
+        ]
+       }
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course.sport_association"
+      ],
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('@cf5'), 'course_id': UUID('e0000000-0000-4000-8000-000000000012'), 'paid': False, 'creation_date': {created:@cf5}, 'subscription_id': UUID('e0000000-0000-4000-8000-000000000005'), 'payment_id': None, 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': False, 'membership_fee': 0.0, 'auto_renewal': False, 'deleted': False}"
+     },
+     {
+      "model": "payment",
+      "key": "@cf5p",
+      "action": 0,
+      "changes": {
+       "$stored": "create",
+       "overrides": {}
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "repr": null
+     },
+     {
+      "model": "coursesubscriptioninstallment",
+      "key": "@cf5i",
+      "action": 0,
+      "changes": {
+       "$stored": "create",
+       "overrides": {}
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course_subscription.course.sport_association"
+      ],
+      "repr": null
+     }
+    ]
+   },
+   "raw_parts": [
+    "course=e0000000-0000-4000-8000-000000000012&subscription_id=e0000000-0000-4000-8000-000000000005&events=%5B%7B%22id%22%3A3%2C%22amount%22%3A%2212%22%2C%22payment_date%22%3A%2205/05/2099%22%2C%22deep%22%3A",
+    {
+     "repeat": "%5B",
+     "count": 9898
+    },
+    {
+     "repeat": "%5D",
+     "count": 9898
+    },
+    "%7D%5D"
+   ],
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "router-course-subscriptions-create-form-events-depth-9980-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-subscriptions/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "raw_parts": [
+    "course=e0000000-0000-4000-8000-000000000012&subscription_id=e0000000-0000-4000-8000-000000000005&events=%5B%7B%22id%22%3A3%2C%22amount%22%3A%2212%22%2C%22payment_date%22%3A%2205/05/2099%22%2C%22deep%22%3A",
+    {
+     "repeat": "%5B",
+     "count": 9978
+    },
+    {
+     "repeat": "%5D",
+     "count": 9978
+    },
+    "%7D%5D"
+   ],
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "router-course-subscriptions-create-form-multiple-quote-depth-9900-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-subscriptions/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "rows": {},
+    "created": {
+     "application.CourseSubscription": [
+      {
+       "$sym": "@cf4",
+       "course_subscription_id": "@cf4",
+       "course_id": "e0000000-0000-4000-8000-000000000014",
+       "paid": false,
+       "creation_date": "$now",
+       "subscription_id": "e0000000-0000-4000-8000-000000000005",
+       "payment_id": "@cf4p",
+       "multi_payments": false,
+       "one_fee_payment": false,
+       "archived": false,
+       "type": 2,
+       "multiple_quote": {
+        "quote_id": "q1",
+        "title": "Mensile",
+        "amount": "25,50",
+        "payment_category": {
+         "value": "e0000000-0000-4000-8000-000000000001"
+        }
+       },
+       "billed_frequency": 1,
+       "billed_from": null,
+       "billed_until": null,
+       "billed_from_day_of_month": 1,
+       "membership_active": false,
+       "membership_fee": "0.00",
+       "auto_renewal": false,
+       "deleted": false
+      }
+     ],
+     "application.Payment": [
+      {
+       "$sym": "@cf4p",
+       "payment_id": "@cf4p",
+       "type": "default",
+       "subject": 2,
+       "amount": "25.50",
+       "creation_date": "$now",
+       "payment_date": null,
+       "paid": false,
+       "expense": false,
+       "description": "Pilates, ",
+       "payment_category_id": "e0000000-0000-4000-8000-000000000001",
+       "meta_payment_categories": null,
+       "invoice_id": null,
+       "user_id": "a1000000-0000-4000-8000-000000700001",
+       "associate_id": "e0000000-0000-4000-8000-000000000002",
+       "supplier_id": null,
+       "instructor_id": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "payment_intent_id": null,
+       "archived": false,
+       "invoice_fiscal_code": null,
+       "meta": {
+        "multiple_quote": {
+         "quote_id": "q1",
+         "title": "Mensile",
+         "amount": "25,50",
+         "payment_category": {
+          "value": "e0000000-0000-4000-8000-000000000001"
+         }
+        },
+        "description": "Quota Mensile a Pilates",
+        "course_id": "e0000000-0000-4000-8000-000000000014",
+        "course_title": "Pilates",
+        "course_type": "2"
+       },
+       "notes": null,
+       "custom_accounts_id": "00000000-0000-4000-8000-0000000e0001",
+       "signature_id": null,
+       "deleted": false,
+       "group_id": null,
+       "course": {
+        "label": "Pilates",
+        "value": "e0000000-0000-4000-8000-000000000014"
+       }
+      }
+     ]
+    },
+    "links": {},
+    "audit": [
+     {
+      "model": "coursesubscription",
+      "key": "@cf4",
+      "action": 0,
+      "changes": {
+       "$stored": "create",
+       "overrides": {
+        "membership_fee": [
+         "None",
+         "0.0"
+        ],
+        "payment": [
+         "None",
+         "None"
+        ]
+       }
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course.sport_association"
+      ],
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('@cf4'), 'course_id': UUID('e0000000-0000-4000-8000-000000000014'), 'paid': False, 'creation_date': {created:@cf4}, 'subscription_id': UUID('e0000000-0000-4000-8000-000000000005'), 'payment_id': None, 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 2, 'multiple_quote': {'quote_id': 'q1', 'title': 'Mensile', 'amount': '25,50', 'payment_category': {'value': 'e0000000-0000-4000-8000-000000000001'}}, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': False, 'membership_fee': 0.0, 'auto_renewal': False, 'deleted': False}"
+     },
+     {
+      "model": "payment",
+      "key": "@cf4p",
+      "action": 0,
+      "changes": {
+       "$stored": "create",
+       "overrides": {
+        "amount": [
+         "None",
+         "25.5"
+        ]
+       }
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "repr": null
+     },
+     {
+      "model": "coursesubscription",
+      "key": "@cf4",
+      "action": 1,
+      "changes": {
+       "payment": [
+        "None",
+        "@cf4p"
+       ],
+       "membership_fee": [
+        "0.00",
+        "0.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course.sport_association"
+      ],
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('@cf4'), 'course_id': UUID('e0000000-0000-4000-8000-000000000014'), 'paid': False, 'creation_date': {created:@cf4}, 'subscription_id': UUID('e0000000-0000-4000-8000-000000000005'), 'payment_id': UUID('@cf4p'), 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 2, 'multiple_quote': {'quote_id': 'q1', 'title': 'Mensile', 'amount': '25,50', 'payment_category': {'value': 'e0000000-0000-4000-8000-000000000001'}}, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': False, 'membership_fee': 0.0, 'auto_renewal': False, 'deleted': False}"
+     }
+    ]
+   },
+   "raw_parts": [
+    "course=e0000000-0000-4000-8000-000000000014&subscription_id=e0000000-0000-4000-8000-000000000005&multiple_quote=%7B%22quote_id%22%3A%20%22q1%22%2C%20%22title%22%3A%20%22Mensile%22%2C%20%22amount%22%3A",
+    {
+     "repeat": "%5B",
+     "count": 9899
+    },
+    {
+     "repeat": "%5D",
+     "count": 9899
+    },
+    "%2C%20%22payment_category%22%3A%20%7B%22value%22%3A%20%22e0000000-0000-4000-8000-000000000001%22%7D%2C%20%22amount%22%3A%20%2225%2C50%22%7D"
+   ],
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "router-course-subscriptions-create-form-multiple-quote-depth-9980-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-subscriptions/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "raw_parts": [
+    "course=e0000000-0000-4000-8000-000000000014&subscription_id=e0000000-0000-4000-8000-000000000005&multiple_quote=%7B%22quote_id%22%3A%20%22q1%22%2C%20%22title%22%3A%20%22Mensile%22%2C%20%22amount%22%3A",
+    {
+     "repeat": "%5B",
+     "count": 9979
+    },
+    {
+     "repeat": "%5D",
+     "count": 9979
+    },
+    "%2C%20%22payment_category%22%3A%20%7B%22value%22%3A%20%22e0000000-0000-4000-8000-000000000001%22%7D%2C%20%22amount%22%3A%20%2225%2C50%22%7D"
+   ],
+   "content_type": "application/x-www-form-urlencoded"
   }
  ]
 }

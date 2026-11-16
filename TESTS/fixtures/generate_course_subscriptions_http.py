@@ -1131,9 +1131,8 @@ def events_depth_parts(depth):
             {'repeat': OBJECT_LEVEL, 'count': depth - 2}, '1', {'repeat': '%7D', 'count': depth - 2}, urllib.parse.quote('}]')]
 
 
-# A form update validates and saves the quote alone (other form fields do not stop it), and a stored deep quote is
-# a value the state snapshot cannot read: the normal side of the quote band is pinned by the Go tests, the events
-# band below covers it over HTTP.
+# Inside the band the update stores the deep quote, a value the state snapshot cannot read: that side is pinned by the
+# Go tests; past the band nothing is written.
 # On cs_ev2 (a default course, as measured); past the band nothing is written, so the row is unchanged.
 add('update-form-multiple-quote-depth-9966-server-error', 'owner', one('cs_ev2', 'update'), 500, SERVER, method='PATCH',
     raw_parts=quote_depth_parts(9965), content_type=FORM)

@@ -89,15 +89,30 @@ parity harness's Django) depends on its maximum nesting D:
 - `events`: D <= 9942 normal answer; D >= 9943 the same 500 page.
 
 Go answers these bands before any write (`errCourseEnrolmentFormJSONTooDeep`, constants in
-`service/course_enrolment.go`). The stock router create shares the serializer but was not measured: it keeps the previous
-handoff refusal past 500 levels (`ErrCourseEnrolmentNotPorted`). Values within the bands (including those past 500) are
-parsed by `dto/automationFormTree` up to its 20000-level limit and served.
+`service/course_enrolment.go`). Values within the bands (including those past 500) are parsed by
+`dto/automationFormTree` up to its 20000-level limit and served.
 
-Django's edge is not a fixed number: it moves with the value's shape (arrays or objects, where the deep part sits)
-and by a level or two with the live stack of the run. The bands above were measured with nested objects; an array of
-the same total depth can still load in Django where Go answers the band's 500 page (a top-level array quote of 9965
-levels updates on the course subscription update route). The parity cases use the measured shapes and sit past or
-inside the band with a margin; the exact edges are pinned by the Go tests (X15 is the accepted divergence there).
+The stock router create (`POST course-subscriptions/`, family `router-course-subscriptions-create`) shares the serializer
+but is not atomic and reads the field from a deeper call stack, so its bands were measured separately (the same harness
+Django):
+
+- `multiple_quote`: D <= 9928 today's answer (the row and its quote payment, then the 500 page from rendering, rows kept);
+  9929 <= D <= 9933 validation passes and the row and its audit entries are written, then the quote payment's meta (it
+  holds `multiple_quote`) is dumped for the INSERT and raises RecursionError: no payment and no later write, the rows
+  written before stay; D >= 9934 `json.loads` raises during validation, the 500 page with nothing written.
+- `events`: D <= 9942 today's answer (rows kept, 500 page); D >= 9943 the same 500 page with nothing written.
+
+Go answers these bands too (`courseEnrolmentStockFormJSONBand`): the validation band before any write, the quote
+payment's band after the row and its audit entries, which only a quote course reaches. The 9929..9933 band has no HTTP
+case (a row stored that deep is beyond the state snapshot) and is pinned by the Go unit tests; the cases
+`...-form-events-depth-9900-`/`-9980-` and `...-form-multiple-quote-depth-9900-`/`-9980-` cover both fields with a
+margin, keeping the stored values shallow (the event serializer drops an unknown key; the quote text repeats `amount`
+before the real one).
+
+Django's edge is not a fixed number: it moves by a few levels with the value's shape (arrays or objects, where the
+deep part sits) and with the live stack of the run (the same module elements loaded at 9934 levels in one run and
+not in another). The bands above were measured with nested objects; the parity cases sit inside or past each band
+with a margin, and the exact edges are pinned by the Go tests (X15 is the accepted divergence there).
 
 ## Not ported (refused with a 500 before any write)
 
