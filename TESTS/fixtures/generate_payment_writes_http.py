@@ -67,6 +67,7 @@ IDS = json.loads(Path(__file__).with_name('message_mutations.json').read_text())
 OWN, FOREIGN, OWNER = IDS['own_association'], IDS['foreign_association'], IDS['owner']
 ids = iter(f'a1000000-0000-4000-8000-{988001 + n:012d}' for n in range(300))
 SERVER = '<stable-server-error-page>'
+BAD_REQUEST = '<bad-request-page>'
 EMPTY = '<empty>'
 
 CATEGORIES = {
@@ -135,9 +136,14 @@ def row(**values):
 
 
 def payment(**values):
+    return keyed_payment(next(ids), **values)
+
+
+def keyed_payment(key, **values):
+    """A payment row with a chosen primary key (the id iterator is untouched)."""
     seeded = row(**{'user_id': OWNER, 'sport_association_id': OWN, 'creation_date': '2026-10-01T08:00:00Z', 'amount': '10.00',
                     'description': 'Quota', 'payment_category_id': CATEGORIES['own']['id'], **values})
-    return {'id': next(ids), **seeded}
+    return {'id': key, **seeded}
 
 
 # An invoice of two updated payments: the update prints it (print_document_invoice.apply) after the save.
@@ -184,6 +190,9 @@ PAYMENTS = {
     'up_attach_object': payment(),
     'up_attach_traversal': payment(),
     'up_attach_directory': payment(),
+    'up_form_body': keyed_payment('a1000000-0000-4000-8000-000000988460'),
+    'up_form_blank_creation': keyed_payment('a1000000-0000-4000-8000-000000988461'),
+    'up_form_invalid_boolean': keyed_payment('a1000000-0000-4000-8000-000000988462'),
 }
 STATE = copy.deepcopy(PAYMENTS)
 cases = []
@@ -1108,6 +1117,55 @@ add('bulk-add-overflow-server-error', 'owner', BULK, 500, SERVER, body={'associa
     effect=effect('owner'))
 add('bulk-add-invalid-payment-date-server-error', 'owner', BULK, 500, SERVER,
     body={'associate_ids': [A('mario')], 'amount': 1, 'payment_date': 'domani'}, effect=effect('owner'))
+
+# --- payment_id in the add body, storage-refused attachment names and update form bodies -------------
+# payment_id is the model's primary key: the serializer's UUIDField and its UniqueValidator on Payment.objects
+# (live, X-Group-Id aware) validate it, and the created payment keeps the key.
+add('add-payment-id-invalid', 'owner', ADD, 400, errors_repr([('payment_id', [('Must be a valid UUID.', 'invalid')])]),
+    body={'creation_date': '2026-06-01', 'payment_date': None, 'payment_id': 'not-a-uuid', 'complex_item': None},
+    effect=effect('owner'))
+add('add-payment-id-taken', 'owner', ADD, 400, errors_repr([('payment_id', [('payment con questo payment id esiste già.', 'unique')])]),
+    body={'creation_date': '2026-06-01', 'payment_date': None, 'payment_id': PAYMENTS['up_plain']['id'], 'complex_item': None},
+    effect=effect('owner'))
+NEW_PAYMENT_ID = 'a1000000-0000-4000-8000-000000988450'
+new_id_values = {**plain, 'creation_date': '2026-06-01T00:00:00Z', 'amount': '13.00', 'description': 'Chiave scelta'}
+added('add-payment-id-new', 'owner', {'creation_date': '2026-06-01', 'payment_date': None, 'amount': '13', 'description': 'Chiave scelta',
+                                      'payment_id': NEW_PAYMENT_ID, 'complex_item': None},
+      new_id_values, response=payment_item(row(**new_id_values), NEW_PAYMENT_ID))
+
+# A name Storage.save refuses: the Document row is created and audited, then default_storage.save raises
+# SuspiciousFileOperation, a SuspiciousOperation: Django answers its plain 400 page. The payment and the Document stay
+# (the request is not atomic) and nothing is linked or stored.
+added('add-attachment-traversal-name-keeps-rows', 'owner',
+      {'creation_date': '2026-03-20', 'payment_date': None, 'amount': '12', 'description': 'Traversal',
+       'complex_item': None, 'attachments_data': [{'document': b64(PDF), 'filename': '../ricevuta.pdf'}]},
+      {**plain, 'creation_date': '2026-03-20T00:00:00Z', 'amount': '12.00', 'description': 'Traversal'}, status=400,
+      response=BAD_REQUEST, finish=False, documents=[('../ricevuta.pdf', PDF, True)])
+
+
+# A form body is a QueryDict: partial=True validates the HTML input (a missing field is skipped, an empty one follows
+# allow_null/allow_blank), the view's del of a blank creation_date or payment_date or of a payment_id raises
+# AttributeError on the immutable QueryDict (the 500 page), and complex_item/subscription_id are read as text.
+def updated_form(name, actor, label, raw, changes, *, status=200, response=None):
+    """A urlencoded PATCH: Payment.save() of the in-memory payment."""
+    old = STATE[label]
+    new = {**old, **changes}
+    columns = {column: value for column, value in new.items() if column != 'id' and old[column] != value}
+    STATE[label] = new
+    audit_changes = updated_changes(old, new)
+    audit = [event(label, 1, audit_changes, DIRECT)] if audit_changes else []
+    if response is None:
+        response = {'data': {'payment': payment_item(new, old['id'])}}
+    add(name, actor, UPDATE(label), status, response, method='PATCH', raw_body=raw,
+        content_type='application/x-www-form-urlencoded', effect={**effect(actor, changed={label: columns}, audit=audit), 'documents': []})
+
+
+updated_form('update-form-body', 'owner', 'up_form_body', 'description=Nuova+descrizione&amount=12.5',
+             {'amount': '12.50', 'description': 'Nuova descrizione'})
+add('update-form-blank-creation-date-server-error', 'owner', UPDATE('up_form_blank_creation'), 500, SERVER, method='PATCH',
+    raw_body='creation_date=&amount=3', content_type='application/x-www-form-urlencoded', effect=effect('owner'))
+add('update-form-invalid-boolean', 'owner', UPDATE('up_form_invalid_boolean'), 400, {'paid': ['Must be a valid boolean.']}, method='PATCH',
+    raw_body='paid=maybe', content_type='application/x-www-form-urlencoded', effect=effect('owner'))
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Payment add, update and bulk add authored sequence with payment and audit effects',

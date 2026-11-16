@@ -232,8 +232,11 @@ type paymentAttachment struct {
 	// invalid is b64decode's binascii.Error / ValueError (the 500 page).
 	invalid bool
 	// unlinked is a Document that is created (filename str() of the value) and then
-	// fails: os.path.join or default_storage.save raises before attachments.add.
+	// fails: os.path.join raises before attachments.add.
 	unlinked bool
+	// suspicious is a Document that is created (audited) and then fails
+	// default_storage.save's name validation: SuspiciousFileOperation, the 400 page.
+	suspicious error
 }
 
 // paymentAttachmentPlan is _handle_documents' loop: the items stored in
@@ -248,9 +251,10 @@ type paymentAttachmentPlan struct {
 // attachmentsStored plans attachments_data before any write. A document that is
 // not base64 text, or a filename the INSERT rejects (null, NUL, over 255
 // characters), is a 500 after the items before it. Items outside the ported
-// subset are refused: a filename that is not text (str() stored, then
-// os.path.join raises), a storage name Storage.save rejects (the Document
-// stays), or no storage configured.
+// subset are refused: no storage configured. A filename that is not text is
+// stored as str() and then os.path.join raises (the 500 page); a storage name
+// Storage.save rejects creates its Document and then raises
+// SuspiciousFileOperation (the 400 page).
 func (s *PaymentWrites) attachmentsStored(input dto.PaymentEntryInput) (paymentAttachmentPlan, error) {
 	plan := paymentAttachmentPlan{}
 	for _, item := range input.Attachments {
@@ -301,8 +305,15 @@ func (s *PaymentWrites) attachmentsStored(input dto.PaymentEntryInput) (paymentA
 			return plan, nil
 		}
 		if _, err := documentkey.UploadName(time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC), uuid.New(), name); err != nil {
-			// Storage.save raises SuspiciousFileOperation (a 400 page, the Document stays): not ported.
-			return plan, domain.ErrPaymentWritesNotPorted
+			// default_storage.save raises SuspiciousFileOperation after the Document row (the 400 page).
+			var suspicious *documentkey.SuspiciousFileError
+			if errors.As(err, &suspicious) {
+				plan.stored = append(plan.stored, paymentAttachment{filename: name, suspicious: err})
+				return plan, nil
+			}
+			// Any other failure of the storage name: the 500 page, the row stays.
+			plan.stored = append(plan.stored, paymentAttachment{filename: name, unlinked: true})
+			return plan, nil
 		}
 		plan.stored = append(plan.stored, paymentAttachment{content: content, filename: name})
 	}
@@ -327,8 +338,13 @@ func (s *PaymentWrites) storeAttachments(ctx context.Context, tx domain.PaymentW
 			}
 			at := s.at()
 			document := domain.NewDocument{ID: s.newID(), Token: s.newID(), Filename: item.filename, Created: at}
-			if err := tx.AttachPaymentDocument(ctx, payment, document, !item.unlinked, actorAssociation, auditContext, at); err != nil {
+			if err := tx.AttachPaymentDocument(ctx, payment, document, item.suspicious == nil && !item.unlinked, actorAssociation,
+				auditContext, at); err != nil {
 				return err
+			}
+			if item.suspicious != nil {
+				// default_storage.save's name validation: the Document row stays, nothing is stored or linked.
+				return item.suspicious
 			}
 			if item.unlinked {
 				return domain.ErrPaymentWritesServer
@@ -342,6 +358,18 @@ func (s *PaymentWrites) storeAttachments(ctx context.Context, tx domain.PaymentW
 		return domain.ErrPaymentWritesAttachment
 	}
 	return nil
+}
+
+// paymentWritesKeptAfter is a failure raised after the payment's save (and
+// after the documents stored before it): the request is not atomic, so the
+// payment and its rows stay.
+func paymentWritesKeptAfter(err error) bool {
+	if err == nil {
+		return false
+	}
+	var suspicious *documentkey.SuspiciousFileError
+	return errors.Is(err, domain.ErrPaymentWritesAttachment) || errors.Is(err, domain.ErrPaymentWritesServer) ||
+		errors.As(err, &suspicious)
 }
 
 // paymentMemory is the in-memory payment: the row to write plus the
@@ -642,16 +670,35 @@ func (s *PaymentWrites) render(ctx context.Context, tx domain.PaymentWritesTrans
 	return item, nil
 }
 
-// entry validates the serializer input: the related lookups and tenant scope, then the field errors.
+// entry validates the serializer input: the payment_id UniqueValidator, the
+// related lookups and tenant scope, then the field errors. header is the raw
+// X-Group-Id, which the validator's manager filters by.
 func (s *PaymentWrites) entry(ctx context.Context, tx domain.PaymentWritesTransaction, identity domain.ResolvedIdentity, object domain.RequestObject,
-	partial bool) (dto.PaymentEntryInput, error) {
-	for _, name := range []string{"payment_id"} {
-		// A primary key in the body is not ported.
-		if _, present := object.Lookup(name); present {
-			return dto.PaymentEntryInput{}, domain.ErrPaymentWritesNotPorted
+	partial bool, header string) (dto.PaymentEntryInput, error) {
+	input, invalid := dto.ParsePaymentEntry(object, partial)
+	if input.PaymentID != nil {
+		// UniqueValidator: Payment.objects.filter(payment_id=id) (live,
+		// group-aware). An X-Group-Id the UUIDField rejects makes the manager's
+		// own group filter raise instead.
+		group := supplierGroup(header)
+		if header != "" && group == nil {
+			if invalid == nil {
+				invalid = &dto.PaymentEntryValidationError{}
+			}
+			invalid.Insert("payment_id", "unique-group-invalid:"+header)
+		} else {
+			visible, err := tx.PaymentIDVisible(ctx, *input.PaymentID, group)
+			if err != nil {
+				return input, err
+			}
+			if visible {
+				if invalid == nil {
+					invalid = &dto.PaymentEntryValidationError{}
+				}
+				invalid.Insert("payment_id", "unique:payment:payment id")
+			}
 		}
 	}
-	input, invalid := dto.ParsePaymentEntry(object, partial)
 	invalid, err := s.related(ctx, tx, identity, input, invalid)
 	if err != nil {
 		return input, err
@@ -859,7 +906,7 @@ func (s *PaymentWrites) Add(ctx context.Context, identity domain.ResolvedIdentit
 		}
 	}
 	object = replaceField(object, "payment_date", paymentDate)
-	input, err := s.entry(ctx, tx, identity, object, false)
+	input, err := s.entry(ctx, tx, identity, object, false, request.GroupHeader)
 	if err != nil {
 		return nil, err
 	}
@@ -879,7 +926,12 @@ func (s *PaymentWrites) Add(ctx context.Context, identity domain.ResolvedIdentit
 	if err != nil {
 		return nil, err
 	}
-	m := &paymentMemory{row: domain.PaymentWriteRow{ID: s.newID(), Type: "default", GroupID: group}, jsonAudit: map[string]string{},
+	id := s.newID()
+	if input.PaymentID != nil {
+		// A primary key in the body is the row's key (Payment.objects.create(payment_id=...)).
+		id = *input.PaymentID
+	}
+	m := &paymentMemory{row: domain.PaymentWriteRow{ID: id, Type: "default", GroupID: group}, jsonAudit: map[string]string{},
 		groupSent: sentGroup}
 	// The model default amount is the float 0.00.
 	m.setFloat(0)
@@ -904,8 +956,7 @@ func (s *PaymentWrites) Add(ctx context.Context, identity domain.ResolvedIdentit
 		}
 		return nil, failure
 	}
-	if err := s.storeAttachments(ctx, tx, identity, request.Audit, m.row.ID, attachments); errors.Is(err, domain.ErrPaymentWritesAttachment) ||
-		errors.Is(err, domain.ErrPaymentWritesServer) {
+	if err := s.storeAttachments(ctx, tx, identity, request.Audit, m.row.ID, attachments); paymentWritesKeptAfter(err) {
 		return fail(err)
 	} else if err != nil {
 		return nil, err
@@ -1002,8 +1053,12 @@ func (s *PaymentWrites) Add(ctx context.Context, identity domain.ResolvedIdentit
 // Update follows payment_update: is_valid_uuid, the association, the
 // payment (none or without association: 500; another association: 403),
 // the partial serializer, the parties, the save hook and the audited
-// full-row save, then attachments_data. Invoiced payments (PDF task) and
-// form bodies are refused before any write.
+// full-row save, then attachments_data. A form body is a QueryDict: the
+// view's del of a blank date or of the body's payment_id raises for an
+// immutable one (the 500 page) and works for a mutable copy (a multipart
+// body with files), whose HTML values the serializer validates. A form
+// JSON field past the ported depth or a lone surrogate escape is refused
+// before any write (ErrPaymentWritesNotPorted, handed off to Django).
 func (s *PaymentWrites) Update(ctx context.Context, identity domain.ResolvedIdentity, request PaymentWritesRequest, body any) (map[string]any, error) {
 	id, err := messageReadsParseUUID(request.ID)
 	if err != nil {
@@ -1030,16 +1085,42 @@ func (s *PaymentWrites) Update(ctx context.Context, identity domain.ResolvedIden
 		return nil, domain.ErrPaymentWritesServer
 	}
 	if request.Form {
-		return nil, domain.ErrPaymentWritesNotPorted
-	}
-	for _, name := range []string{"creation_date", "payment_date"} {
-		if value, present := object.Lookup(name); present && value == "" {
-			object = dropField(object, name)
+		if object.HasUpload() {
+			// request.data is a mutable copy of the form: the view's del statements work.
+			for _, name := range []string{"creation_date", "payment_date"} {
+				if value, present := object.Lookup(name); present && value == "" {
+					object = dropField(object, name)
+				}
+			}
+			object = dropField(object, "payment_id")
+		} else {
+			// An immutable QueryDict: the first del raises AttributeError.
+			for _, name := range []string{"creation_date", "payment_date"} {
+				if value, present := object.Lookup(name); present && value == "" {
+					return nil, domain.ErrPaymentWritesServer
+				}
+			}
+			if _, present := object.Lookup("payment_id"); present {
+				return nil, domain.ErrPaymentWritesServer
+			}
 		}
+		converted, refused := dto.PaymentEntryFormObject(object, true)
+		if refused {
+			// A JSON field past the ported depth or with a lone surrogate:
+			// handed off to Django before any write.
+			return nil, domain.ErrPaymentWritesNotPorted
+		}
+		object = converted
+	} else {
+		for _, name := range []string{"creation_date", "payment_date"} {
+			if value, present := object.Lookup(name); present && value == "" {
+				object = dropField(object, name)
+			}
+		}
+		// The row is the one named by the path: a payment_id in the body is dropped.
+		object = dropField(object, "payment_id")
 	}
-	// The row is the one named by the path: a payment_id in the body is dropped.
-	object = dropField(object, "payment_id")
-	input, err := s.entry(ctx, tx, identity, object, true)
+	input, err := s.entry(ctx, tx, identity, object, true, request.GroupHeader)
 	if err != nil {
 		return nil, err
 	}
@@ -1104,8 +1185,7 @@ func (s *PaymentWrites) Update(ctx context.Context, identity domain.ResolvedIden
 			return nil, err
 		}
 	}
-	if err := s.storeAttachments(ctx, tx, identity, request.Audit, id, attachments); errors.Is(err, domain.ErrPaymentWritesAttachment) ||
-		errors.Is(err, domain.ErrPaymentWritesServer) {
+	if err := s.storeAttachments(ctx, tx, identity, request.Audit, id, attachments); paymentWritesKeptAfter(err) {
 		if err := tx.Commit(); err != nil {
 			return nil, err
 		}

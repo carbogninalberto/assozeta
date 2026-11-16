@@ -11,9 +11,11 @@ import (
 var (
 	// ErrPaymentWritesServer is an unhandled exception in the Django view (the 500 page).
 	ErrPaymentWritesServer = errors.New("payment writes server error")
-	// ErrPaymentWritesNotPorted refuses, before any write, an input whose
-	// Django behaviour is not ported (invoice creation, PDF tasks, document
-	// storage, nested user writes, primary key changes, form bodies).
+	// ErrPaymentWritesNotPorted refuses, before any write, an HTML form body
+	// whose JSON field (course, meta_payment_categories) nests past the ported
+	// depth, where Python's answer depends on the live recursion depth, or
+	// holds a lone surrogate escape, which reaches the save: Django writes
+	// auditlog's pre_save entry and then the jsonb column refuses the value.
 	ErrPaymentWritesNotPorted = refusal.New("payment writes behaviour not ported")
 	// ErrPaymentWritesAthlete is the views' Response(status=403) for athletes.
 	ErrPaymentWritesAthlete = errors.New("payment writes athlete")
@@ -98,6 +100,10 @@ type PaymentWritesTransaction interface {
 	AutoPaid(ctx context.Context, user string) (bool, error)
 	// LockPayment is scoped_queryset(request, Payment.objects).filter(payment_id=id).first() (locked).
 	LockPayment(ctx context.Context, id string, group, scope *string) (*PaymentWriteRow, error)
+	// PaymentIDVisible is the payment_id UniqueValidator's lookup:
+	// Payment.objects.filter(payment_id=id).exists() (live, group-aware; group
+	// is the X-Group-Id header as its uuid, nil when absent).
+	PaymentIDVisible(ctx context.Context, id string, group *string) (bool, error)
 	// RelatedOwner is a related row's existence and association (table: payment category, custom account).
 	RelatedOwner(ctx context.Context, table, id string) (bool, *string, error)
 	// AssociationExists is SportAssociation._default_manager (deleted included).

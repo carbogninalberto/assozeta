@@ -5,6 +5,7 @@ import (
 	"math"
 	"math/big"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -79,9 +80,15 @@ func PaymentEntryDRFCode(code string) string {
 		return "not_a_list"
 	case strings.HasPrefix(code, "not-a-dict:"):
 		return "not_a_dict"
+	case strings.HasPrefix(code, "unique:"):
+		return "unique"
 	}
 	return "invalid"
 }
+
+// PaymentEntryJSONText is a JSONField value of a form body: DRF marks an HTML
+// value as JSON text (JSONField.get_value) and json.loads parses it.
+type PaymentEntryJSONText struct{ Text string }
 
 // PaymentEntryDate is a date value the add view already replaced with a
 // datetime (now, or a strptime('%Y-%m-%d') match): DRF only makes it aware.
@@ -102,6 +109,9 @@ type PaymentEntryJSON struct {
 // PaymentEntryInput is serializer.validated_data before the related-field
 // lookups (the service checks existence and the tenant scope).
 type PaymentEntryInput struct {
+	// PaymentID is a body primary key: the serializer's UUIDField and its
+	// UniqueValidator (the service) validate it.
+	PaymentID                      *string
 	Type                           *string
 	Subject                        *int
 	Amount                         *string // quantized text
@@ -140,8 +150,8 @@ func paymentEntryDate(value any, null bool) (*time.Time, string) {
 }
 
 // ParsePaymentEntry ports PaymentEntrySerializer field validation (partial
-// for the update view). payment_id and the nested user are refused by the
-// service before parsing.
+// for the update view). The nested user is validated here; the payment_id
+// UniqueValidator is the service's (it reads the manager).
 func ParsePaymentEntry(object domain.RequestObject, partial bool) (PaymentEntryInput, *PaymentEntryValidationError) {
 	input := PaymentEntryInput{}
 	invalid := &PaymentEntryValidationError{}
@@ -155,6 +165,14 @@ func ParsePaymentEntry(object domain.RequestObject, partial bool) (PaymentEntryI
 		}
 		fail := func(codes ...string) { invalid.add(PaymentEntryFieldError{Name: name, Codes: codes}) }
 		switch name {
+		case "payment_id":
+			if value == nil {
+				fail(PaymentCategoryValidationNull)
+			} else if id, ok := drfUUID(value); ok {
+				input.PaymentID = &id
+			} else {
+				fail(PaymentCategoryValidationUUID)
+			}
 		case "type":
 			if choice, code := paymentEntryChoice(value, PaymentTypes); code != "" {
 				fail(code)
@@ -227,10 +245,22 @@ func ParsePaymentEntry(object domain.RequestObject, partial bool) (PaymentEntryI
 			} else {
 				input.UserPresent = true
 			}
-		case "course":
-			input.Course = PaymentEntryJSON{Present: true, Value: value}
-		case "meta_payment_categories":
-			input.Meta = PaymentEntryJSON{Present: true, Value: value}
+		case "course", "meta_payment_categories":
+			parsed := value
+			if text, ok := value.(PaymentEntryJSONText); ok {
+				// JSONField.get_value marked an HTML form value as JSON text.
+				tree, valid, _, _ := automationFormTree(text.Text)
+				if !valid {
+					fail(CourseSubscriptionJSONInvalid)
+					continue
+				}
+				parsed = tree
+			}
+			if name == "course" {
+				input.Course = PaymentEntryJSON{Present: true, Value: parsed}
+			} else {
+				input.Meta = PaymentEntryJSON{Present: true, Value: parsed}
+			}
 		case "attachments_data":
 			if value == nil {
 				fail(PaymentCategoryValidationNull)
@@ -262,6 +292,243 @@ func ParsePaymentEntry(object domain.RequestObject, partial bool) (PaymentEntryI
 		return input, invalid
 	}
 	return input, nil
+}
+
+// --- HTML form bodies ---------------------------------------------------------
+
+// paymentEntryFormOption is one field's HTML extraction options: the model's
+// null and blank (allow_null/allow_blank) and the serializer field's required.
+type paymentEntryFormOption struct{ null, blank, required bool }
+
+// paymentEntryFormOptions are the PaymentEntrySerializer fields whose HTML
+// value Field.get_value extracts without an override. A nested serializer
+// (<name>.<field> keys), a ListField (getlist) and a JSONField (JSON text) are
+// handled separately.
+var paymentEntryFormOptions = map[string]paymentEntryFormOption{
+	"payment_id": {}, "type": {}, "subject": {}, "amount": {}, "expense": {}, "paid": {},
+	"description": {null: true}, "payment_date": {null: true},
+	"payment_category": {null: true}, "sport_association": {null: true}, "custom_accounts": {null: true},
+	"notes": {null: true, blank: true}, "creation_date": {required: true},
+}
+
+// PaymentEntryFormObject converts a form body (urlencoded or multipart) into
+// the object ParsePaymentEntry validates: DRF's HTML form extraction field by
+// field (Field.get_value, with the overrides a nested serializer, a ListField
+// and a JSONField carry). Fields the extraction skips are left out.
+//
+// refused is true when a JSON field's text (course, meta_payment_categories)
+// nests past the ported depth or holds a lone surrogate escape. Django still
+// validates every field first (another field's error is a 400); the depth at
+// which Python's JSON codec raises depends on the live recursion depth, and a
+// lone surrogate reaches the save, where auditlog's pre_save entry is written
+// before the jsonb column refuses the value. Both stay a handoff refusal
+// before any write.
+func PaymentEntryFormObject(object domain.RequestObject, partial bool) (converted domain.RequestObject, refused bool) {
+	converted = domain.RequestObject{}
+	for _, name := range paymentEntryOrder {
+		switch name {
+		case "attachments":
+			// A read-only declared field: never validated.
+			continue
+		case "user":
+			// Serializer.get_value: html.parse_html_dict(<name>.<field>).
+			if child, found := paymentEntryFormChild(object, name); found {
+				converted = append(converted, domain.RequestField{Name: name, Value: paymentEntryUserFormObject(child)})
+			}
+			continue
+		case "course", "meta_payment_categories":
+			// JSONField.get_value marks a present HTML value as JSON text.
+			if value, present := object.Lookup(name); present {
+				text, ok := value.(string)
+				if !ok {
+					if upload, isUpload := value.(domain.RequestUpload); isUpload {
+						text = upload.Name
+					} else {
+						text = PythonStr(value)
+					}
+				}
+				if _, _, rejected, deep := automationFormTree(text); rejected || deep {
+					refused = true
+				}
+				converted = append(converted, domain.RequestField{Name: name, Value: PaymentEntryJSONText{Text: text}})
+			}
+			continue
+		case "attachments_data":
+			// ListField.get_value: QueryDict.getlist, else parse_html_list.
+			if values, present := object.List(name); present && len(values) > 0 {
+				converted = append(converted, domain.RequestField{Name: name, Value: values})
+				continue
+			}
+			indexed := false
+			for _, field := range object {
+				if strings.HasPrefix(field.Name, name+"[") {
+					indexed = true
+					break
+				}
+			}
+			if partial && !indexed {
+				continue
+			}
+			if list := paymentEntryFormList(object, name); list != nil {
+				converted = append(converted, domain.RequestField{Name: name, Value: list})
+			}
+			continue
+		}
+		option, known := paymentEntryFormOptions[name]
+		if !known {
+			continue
+		}
+		value, present := object.Lookup(name)
+		if !present {
+			continue
+		}
+		if kept, keep := paymentEntryFormValue(value, option); keep {
+			converted = append(converted, domain.RequestField{Name: name, Value: kept})
+		}
+	}
+	return converted, refused
+}
+
+// paymentEntryFormValue is Field.get_value of a present HTML value: an empty
+// input is None when the field allows null (the empty string when it also
+// allows blank), the empty string for any other optional blank field, skipped
+// for any other optional field, and validated as sent by a required one.
+func paymentEntryFormValue(value any, option paymentEntryFormOption) (any, bool) {
+	text, isText := value.(string)
+	if !isText || text != "" {
+		return value, true
+	}
+	switch {
+	case option.null:
+		if option.blank {
+			return "", true
+		}
+		return nil, true
+	case !option.required:
+		if option.blank {
+			return "", true
+		}
+		return nil, false
+	}
+	return value, true
+}
+
+// paymentEntryFormChild is html.parse_html_dict(dictionary, prefix=<name>): the
+// "<name>.<field>" keys with the prefix removed (at least one character must
+// follow the dot).
+func paymentEntryFormChild(object domain.RequestObject, name string) (domain.RequestObject, bool) {
+	prefix := name + "."
+	child := domain.RequestObject{}
+	for _, field := range object {
+		if len(field.Name) > len(prefix) && strings.HasPrefix(field.Name, prefix) {
+			child = append(child, domain.RequestField{Name: strings.TrimPrefix(field.Name, prefix),
+				Value: field.Value, All: field.All})
+		}
+	}
+	return child, len(child) > 0
+}
+
+// paymentEntryUserFormObject applies Field.get_value to the nested user's own
+// fields, so ParsePaymentEntry's JSON path validates the same values.
+func paymentEntryUserFormObject(child domain.RequestObject) domain.RequestObject {
+	out := domain.RequestObject{}
+	for _, field := range paymentEntryUserFields {
+		value, present := child.Lookup(field.Name)
+		if !present {
+			continue
+		}
+		// Every UserSerializer field is optional.
+		if converted, keep := paymentEntryFormValue(value, paymentEntryFormOption{null: field.Null, blank: field.Blank}); keep {
+			out = append(out, domain.RequestField{Name: field.Name, Value: converted})
+		}
+	}
+	if value, present := child.Lookup("role"); present {
+		if converted, keep := paymentEntryFormValue(value, paymentEntryFormOption{}); keep {
+			out = append(out, domain.RequestField{Name: "role", Value: converted})
+		}
+	}
+	return out
+}
+
+// paymentEntryFormList is html.parse_html_list(dictionary, prefix=<name>): the
+// "<name>[<index>]" values and "<name>[<index>][<key>]" dictionaries, in index
+// order. A dictionary of one index holds its keys' last values.
+func paymentEntryFormList(object domain.RequestObject, name string) []any {
+	type item struct {
+		value any
+		keys  []string
+		dict  map[string]any
+	}
+	items := map[int]*item{}
+	var order []int
+	prefix := name + "["
+	for _, field := range object {
+		if !strings.HasPrefix(field.Name, prefix) {
+			continue
+		}
+		rest := strings.TrimPrefix(field.Name, prefix)
+		end := strings.IndexByte(rest, ']')
+		if end < 0 {
+			continue
+		}
+		index, err := strconv.Atoi(rest[:end])
+		if err != nil || index < 0 || !allASCIIDigits(rest[:end]) {
+			continue
+		}
+		key := rest[end+1:]
+		current, known := items[index]
+		if !known {
+			current = &item{}
+			items[index] = current
+			order = append(order, index)
+		}
+		switch {
+		case key == "":
+			// A scalar replaces any dictionary built for the index.
+			current.value, current.keys, current.dict = field.Value, nil, nil
+		case current.dict == nil:
+			current.value = nil
+			current.dict = map[string]any{key: field.Value}
+			current.keys = []string{key}
+		default:
+			if _, seen := current.dict[key]; !seen {
+				current.keys = append(current.keys, key)
+			}
+			current.dict[key] = field.Value
+		}
+	}
+	if len(items) == 0 {
+		return nil
+	}
+	sort.Ints(order)
+	list := make([]any, 0, len(order))
+	for _, index := range order {
+		current := items[index]
+		if current.dict == nil {
+			list = append(list, current.value)
+			continue
+		}
+		entry := make(domain.RequestObject, 0, len(current.keys))
+		for _, key := range current.keys {
+			entry = append(entry, domain.RequestField{Name: key, Value: current.dict[key]})
+		}
+		list = append(list, entry)
+	}
+	return list
+}
+
+// allASCIIDigits is strconv.Atoi's decimal grammar in Python's re [0-9]+ (the
+// list index of an HTML form key).
+func allASCIIDigits(text string) bool {
+	if text == "" {
+		return false
+	}
+	for _, r := range text {
+		if r < '0' || r > '9' {
+			return false
+		}
+	}
+	return true
 }
 
 // paymentEntryUserFields is UserSerializer's Meta.fields with the model

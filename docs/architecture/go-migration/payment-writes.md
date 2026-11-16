@@ -20,7 +20,8 @@ collaborator gets the registry's no-mapping denial. Django remains the execution
 
 ## PaymentEntrySerializer
 
-Fields in `Meta.fields` order (errors keep it): `type` and `subject` are choices matched by `str(value)`; `amount` a
+Fields in `Meta.fields` order (errors keep it): `payment_id` the model's primary key (writable, optional, unique — see
+"Add: `payment_id` in the body"); `type` and `subject` are choices matched by `str(value)`; `amount` a
 DecimalField(9, 2); `description` (not blank) and `notes` (blank allowed) CharFields of 5120; `expense`/`paid`
 BooleanFields; `payment_date` (nullable) and `creation_date` (required, not null) ISO 8601 DateTimeFields;
 `payment_category`, `sport_association` and `custom_accounts` primary key fields whose objects of another association
@@ -61,7 +62,8 @@ association: `403 {'detail': 'User not allowed.'}`), `data.keys()` (non-dict: 50
 serializer with `raise_exception` (400 JSON errors). Instructor and supplier are always cleared; a truthy `complex_item`
 also clears the associate before setting its party, and a truthy `subscription_id` sets the subscription's associate
 last; a party or subscription of another association is `403 {'detail': 'User not allowed.'}` before the save. `payment_intent_id` is cleared, the save hook runs, and the full-row save is audited with the changed fields
-(indexed directly). Response `{'data': {'payment': PaymentSerializer}}`.
+(indexed directly). Response `{'data': {'payment': PaymentSerializer}}`. A form body is validated with DRF's HTML rules
+(see "Update: form bodies" below).
 
 ## Bulk add
 
@@ -81,21 +83,81 @@ payment dates are a 500 with nothing written. Response `201`.
 
 - Add for a user with `auto_paid_payment` and a party when the print is deferred by a pending restore. (Fees on an
   exact half cent and `X-Group-Id` in another spelling are ported, v2-rest-a below.)
-- `attachments_data` items outside the ported subset: a non-string `filename` (Django stores `str()` of the filename, then
-  `os.path.join` raises, the Document stays), a filename not valid UTF-8, a storage name `Storage.save` rejects (path traversal,
-  empty base name; the Document stays), and an existing key without `AWS_S3_FILE_OVERWRITE` (`get_available_name` picks a random
-  name). Ported in tailpay: a `document` that is not base64 text (`b64decode` raises before any Document exists) and a filename
-  that is null, holds NUL or has more than 255 characters (the INSERT fails) answer the 500 page after the save and the documents
-  stored before the item (four update cases, 160 in all).
-- `user` in the add or update body (nested user write) and `payment_id` on add. On update a `payment_id` in the body is
-  dropped: the row is always the one named by the path (the edit form's own key, another row's key, a value that is not a
-  UUID and `null` all give the same answer).
-- Update form bodies and add multipart bodies carrying files (mutable QueryDict).
+- The unwired document storage and printer are application state (`ErrServerComposition`, the 500 page, never handed
+  off), and `createGroup` with its fee-tie pre-check was dead code and is deleted.
+- Add with a form body answers the 500 page (`ErrPaymentWritesServer`, never handed off). An immutable QueryDict makes
+  the view's `data['paid'] = ...` raise, which is Django's answer too; a multipart body that carries files is a mutable
+  copy (`request.data` is then `POST.copy()` updated with the files), so Django proceeds: it can reach the serializer (a
+  `complex_item` key is still required, and read as text) and answer 201. Go answers 500 for every form add, so a
+  multipart add with files is a known gap (the update view's form bodies are ported below).
+- Update with a form body whose `course` or `meta_payment_categories` JSON text nests past the ported depth or holds a
+  lone surrogate escape (`ErrPaymentWritesNotPorted`, a handoff refusal before any write; the 500 page with the handoff
+  off). Django validates every field first, so another field's error is a 400; the depth at which Python's JSON codec
+  raises depends on the live recursion depth, and a lone surrogate passes validation and reaches the save, where
+  auditlog's pre_save entry is written before the jsonb column refuses the value (the view is not atomic, so that audit
+  row stays).
 
-Since long-tail PR 3 (agent B) none of the listed refusals is ported: the attachment filename shapes, `payment_id`
-in the add body and form bodies on update stay refusals. The unwired document storage and printer are application
-state (`ErrServerComposition`, the 500 page, never handed off), and `createGroup` with its fee-tie pre-check was
-dead code and is deleted.
+Long-tail PR 4 ports the three inputs that were previously refused here: the `payment_id` add key, a storage-refused
+attachments filename and update form bodies (the sections below).
+
+## Add: `payment_id` in the body
+
+`Payment.payment_id` is `models.UUIDField(primary_key=True, default=uuid.uuid4)` and editable, so DRF's
+`ModelSerializer` builds a writable `UUIDField(required=False)` with the model field's `UniqueValidator`
+(`rest_framework.utils.field_mapping.get_unique_validators`, message `'%(model_name)s with this %(field_label)s
+already exists.'` formatted from `Payment._meta.verbose_name` (`payment`) and the field's verbose name (`payment id`)).
+`UUIDField.to_internal_value` accepts `uuid.UUID(hex=...)` forms (32 hex digits, hyphens optional, braces, `urn:uuid:`
+prefix), an int (a bool included) through `UUID(int=...)`, and answers `Must be a valid UUID.` for anything else;
+`null` is `This field may not be null.`. The error is a field error and keeps the serializer's order (`payment_id`
+leads `Meta.fields`). The UniqueValidator's queryset is `Payment.objects` (the model's default manager), so its
+`filter(payment_id=...)` applies `PaymentManager`'s `deleted=False` and the request's thread-local `X-Group-Id` group
+(any group without the header). An `X-Group-Id` the UUIDField rejects makes that filter raise, so the error lands on
+`payment_id` instead (`"<text>" non è uno UUID valido.`).
+
+A key the validator accepts is passed to `Payment.objects.create`: the row keeps it. A key that exists but the manager
+does not see (soft-deleted, another group) is not a validation error: the INSERT raises `IntegrityError`, the plain 500
+page with nothing written. On update a `payment_id` in the body is dropped (the row is the one named by the path).
+
+## Attachments: a name `Storage.save` rejects
+
+`_handle_documents` creates the `Document` row (and its auditlog create, indexed to the actor's association) and then
+`default_storage.save` validates the name `os.path.join(STORAGE_DIR, str(creation_date.timestamp()), str(document_id),
+filename)`: a path traversal (a `..` part, an absolute name) or an empty/`.`/`..` base name raises
+`SuspiciousFileOperation`, a `SuspiciousOperation`. Django answers its plain 400 page
+(`<!doctype html>…<title>Bad Request (400)</title>…`), and because the request is not atomic the payment (created and
+audited), the `Document` row and every earlier stored attachment stay; nothing is linked and no object is stored. Go's
+`attachmentsStored` plans that item as "row only", `storeAttachments` writes the row and its audit entry and returns the
+`*documentkey.SuspiciousFileError`, the add/update flow commits and stops there (no later attachments, no invoice, no
+final save), and the handler maps it to the 400 page (as course locations do).
+
+## Update: form bodies
+
+A urlencoded or multipart body is a `QueryDict`: `data = request.data`, `del data['<blank date>']` and
+`del data['payment_id']` raise `AttributeError: This QueryDict instance is immutable` when the body carries no file part
+(the plain 500 page, nothing changed), because `request.data` is the immutable `request.POST`. A multipart body with a
+file part is a mutable copy (`_full_data = POST.copy()` updated with `FILES`), so the deletes work: the blank dates and
+the body's `payment_id` are dropped and the partial serializer validates the form.
+
+DRF's HTML rules are ported field by field (`dto.PaymentEntryFormObject`): a missing field is skipped in partial mode;
+an empty input is `None` for a nullable field (the empty string when it also allows blank), the empty string for any
+other optional blank field, skipped for any other optional field, and validated as sent by a required one. `type` and
+`subject` are choices matched by `str(value)`; `amount` a decimal; `description=` is `None` and `notes=` `''`;
+`expense`/`paid` accept DRF's booleans (`paid=` is skipped, `paid=maybe` is `Must be a valid boolean.`); `payment_date`
+and the related fields (`payment_category`, `sport_association`, `custom_accounts`) are nullable. `course` and
+`meta_payment_categories` are JSON text (`JSONField.get_value` marks the value, so `course=` is
+`Value must be valid JSON.` and `course={"a": 1}` is the parsed tree); a repeated key reads its last value. The nested
+`user` is read from its `user.<field>` keys (a plain `user=...` key is ignored) and a valid object still reaches
+`serializer.save()`, the 500 page. `attachments_data` is `QueryDict.getlist` when the key is present (a plain
+`attachments_data=` is a one-item list, a string item: `Expected a dictionary of items but got type "str".`), otherwise
+`html.parse_html_list`, whose `attachments_data[0][document]` items keep the bracketed key names, so `_handle_documents`
+raises `{'exception': 'document key not present'}` after the save. `attachments` is read-only and ignored. The view's
+`data['complex_item']` / `data['subscription_id']` read the last value as text: a non-empty `complex_item` is a string
+`_payment_party` indexes (`TypeError`, the 500 page before the save), a `subscription_id` a uuid lookup.
+
+A JSON text that nests past the ported depth or holds a lone surrogate escape refuses the whole request before any
+write (`ErrPaymentWritesNotPorted`, handed off to Django when configured): Django validates every field and answers
+another field's error with a 400, while the depth band and the save's audit entry are Django's (see the not-ported
+list).
 
 ## Attachments (`attachments_data`)
 
@@ -107,9 +169,9 @@ view's own save) and on update (after the full save). For each item with `docume
 under `<str(creation_date.timestamp())>/<document_id>/<filename>` (S3Storage: `clean_name`, `AWS_LOCATION`, the guessed
 ContentType and encoding, `AWS_S3_OBJECT_PARAMETERS`, `AWS_DEFAULT_ACL`) and `payment.attachments.add(document)` (no audit
 entry: Payment is registered without M2M fields). An item without the keys raises `{'exception': 'document key not
-present'}` (400) after the earlier items are stored. The response renders the new attachments (`DocumentSerializer`). Go
-writes each object inside the request transaction before the commit (a storage error is the 500 page with nothing kept,
-where Django would keep the payment and the Document row).
+`present'}` (400) after the earlier items are stored. The response renders the new attachments (`DocumentSerializer`). Go
+writes each object inside the request transaction before the commit (a storage error other than a name
+`Storage.save` refuses is the 500 page with nothing kept, where Django would keep the payment and the Document row).
 
 ## Update of an invoiced payment
 
@@ -213,7 +275,31 @@ digits) fails `payment-writes-add-other-script-dates` (CAUGHT).
   with nothing stored (update: after the parties and the subscription are resolved).
 - `attachments_data` with a filename that is not text: the Document is created with `str(value)` and audited, then
   `os.path.join` raises: the 500 page after the payment's own changes (the adapter's `unlinked` document specs). A name the
-  storage refuses (`../x`, a trailing `/`) is Django's 400 SuspiciousOperation page and stays refused.
+  storage refuses (`../x`, a trailing `/`) is Django's 400 SuspiciousOperation page: ported below, the Document stays.
 Cases: 180 (add and update variants). Form bodies of an update and a `payment_id` key on add stay refused.
 
 GREEN `t3pay-5` (run 43084300494) 180/180; mutation (nested user field dropped) CAUGHT, run 43084305252.
+
+## Long-tail PR 4: the add key, refused storage names and update form bodies
+
+Seven cases (187 in all), authored from Django and DRF 3.18:
+
+- `add-payment-id-new` (`201`, the row keeps the body's key), `add-payment-id-taken` (the UniqueValidator's
+  `payment con questo payment id esiste già.` in the add repr, code `unique`), `add-payment-id-invalid`
+  (`Must be a valid UUID.`).
+- `add-attachment-traversal-name-keeps-rows`: the traversal filename answers the plain 400 page and the adapter checks the
+  created payment, its audit entry, the `Document` row (`../ricevuta.pdf`) and its audit entry, with no link and no stored
+  object.
+- `update-form-body` (urlencoded `description`/`amount`: the audited update and the rendered payment),
+  `update-form-blank-creation-date-server-error` (`creation_date=`: the 500 page, nothing changed) and
+  `update-form-invalid-boolean` (`paid=maybe`: `{'paid': ['Must be a valid boolean.']}`).
+
+Go: `PaymentEntryInput.PaymentID` and the service's `PaymentIDVisible` (`Payment.objects.filter(payment_id=...)`: live,
+group-aware), the `suspicious` attachment plan (`storeAttachments` returns the `*documentkey.SuspiciousFileError`, the
+handler answers the 400 page, `paymentWritesKeptAfter` commits), and `dto.PaymentEntryFormObject` (the HTML form
+rules, `PaymentEntryJSONText` for the JSONFields, `paymentEntryFormList` for `attachments_data`). Unit tests:
+`internal/dto/payment_writes_form_test.go`, `internal/service/payment_writes_test.go`,
+`internal/handler/payment_writes_test.go`. RED and GREEN: the `payment-writes` family run by the orchestrator under the
+shared lock (187 cases on Django, native Go, Caddy `/api/v1` and `/api/v2`). Mutation controls: creating the payment with
+a generated key instead of the body's (fails `add-payment-id-new`) and rolling back instead of committing after the
+traversal 400 page (fails `add-attachment-traversal-name-keeps-rows` and its Document row).
