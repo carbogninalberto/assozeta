@@ -81,9 +81,11 @@ class EvaluateParallelTests(unittest.TestCase):
         return [thread for thread in threading.enumerate() if thread.name == THREAD]
 
     def run_evaluate(self, *, parallel=True, extra_patches=()):
-        environment = {'MANUALE_PARALLEL_EVALUATION': '1' if parallel else '0'}
+        environment = {key: value for key, value in os.environ.items() if key != 'MANUALE_PARALLEL_EVALUATION'}
+        if parallel is not None:
+            environment['MANUALE_PARALLEL_EVALUATION'] = '1' if parallel else '0'
         patches = [
-            patch.dict(os.environ, environment),
+            patch.dict(os.environ, environment, clear=True),
             patch.object(runner, 'execute', self.fake_execute),
             patch.object(runner, 'management', self.fake_management),
             *extra_patches,
@@ -95,6 +97,12 @@ class EvaluateParallelTests(unittest.TestCase):
             with contextlib.redirect_stdout(output):
                 runner.evaluate(self.state)
         return output.getvalue()
+
+    def test_default_is_serial(self):
+        self.run_evaluate(parallel=None)
+        self.assertEqual(self.labels(), [EVALUATION, EMBEDDED])
+        self.assertEqual(self.evaluation_threads(), [])
+        self.assertEqual(self.status(), 'evaluated')
 
     def test_serial_mode_keeps_the_historical_command_order(self):
         self.run_evaluate(parallel=False)

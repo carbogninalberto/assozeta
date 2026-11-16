@@ -1506,8 +1506,10 @@ def evaluate(state):
     embedded_command = ['node', str(Path(state['application']) / 'selfhost/tests/browser/manuale/embedded.mjs')]
     embedded_label = 'Verify sidebar, header, embedded steps and screenshots against the real backend'
     embedded_environment = {**os.environ, 'ASSOZETA_MANUAL_RUN': str(run)}
-    # MANUALE_PARALLEL_EVALUATION=0 keeps the historical serial order for diagnosis.
-    if os.environ.get('MANUALE_PARALLEL_EVALUATION') == '0':
+    # Serial by default: overlapping the evaluation with the four reader pages
+    # starved a 4-vCPU runner (run 43863941734: reader image timeout, evaluation
+    # 71 s -> 125 s). MANUALE_PARALLEL_EVALUATION=1 opts into the overlap.
+    if os.environ.get('MANUALE_PARALLEL_EVALUATION') != '1':
         execute(evaluation_command, run, evaluation_label)
         execute(embedded_command, run, embedded_label, env=embedded_environment, cwd=state['application'])
     else:
