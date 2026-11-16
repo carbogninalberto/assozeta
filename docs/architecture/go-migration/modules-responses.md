@@ -97,6 +97,10 @@ those three shapes as Django does.
   through the base manager), `Approvata`/`Non approvata` and the attachment filenames joined by `,`. The workbook is pandas'
   xlsxwriter one ([xlsx-exports](xlsx-exports.md)): sheet `Risposte`, `index=False`, `set_column(i, i, len(label) + 10)`.
   `200 {'data': {'file': base64, 'filename': '[<today>] Risposte al modulo (<title>).xls', 'type': 'xlsx'}}`.
+  `module.elements` is a jsonb column loaded by psycopg2's `json.loads`: the measured band is 9933 levels of total JSON
+  nesting (`'[]'` is 1), and 9934 raises `RecursionError`, which the view does not catch (the plain 500 page; owner decision
+  X15, CPython 3.13.16 on the parity harness's Django). Go reads the stored text with that band
+  (`modulesExportElementsJSONDepth`); the response column keeps its own reader.
 
 ## Not ported (refused with the 500 page before any write)
 
@@ -116,7 +120,15 @@ of malformed JSON bodies.
 
 Since long-tail PR 3 (agent B) an invalid UTF-8 attachment name, the `uuid4` key collision and the JSON types the
 request parser never hands over are application state (`ErrModuleResponsesUnreachable`, the 500 page, never handed
-off). The body depth band stays a refusal.
+off). A body depth band stays a refusal (it is the request parser's, not a stored column's).
+
+Module `elements` nested past the interpreter's recursion band is no longer a refusal (owner decision X15): 9933 levels of
+total nesting answer as today and 9934 is the export's 500 page, see the export behaviour above. Cases
+`export-elements-json-at-depth-band` (200, the workbook over a module whose heading props hold the 9933-level list) and
+`export-elements-json-past-depth-band-server-error` (the plain 500 page). The adapter inserts the module and its response
+for the case only (`setup: {'module': ...}`, the harness's `case_scope`) and removes them afterwards, because the state
+snapshot decodes every JSON column and walks it in Python, which cannot hold a value this deep. `go test ./internal/service
+-run DepthBand` pins both edges.
 
 An attachment `filename` sent as an uploaded file and a response integer beyond int64 are ported. The multipart reader
 (`internal/handler/reference_body.go`) names an upload as Django does (`djangoUploadName`: `sanitize_file_name` then

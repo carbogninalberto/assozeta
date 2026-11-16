@@ -35,6 +35,8 @@ def seed_rows(source, created):
                                                      creation_date=moment('2026-08-01T00:00:00Z'))])
         created.append((Document, row['id']))
     for row in source['modules'].values():
+        if row.get('elements_raw'):
+            continue  # inserted for its own case (X15 band): the state snapshot cannot decode it
         Module._base_manager.bulk_create([Module(module_id=row['id'], custom_link=row['link'], sport_association_id=row['association'],
             creation_date=moment(row['created']), title=row['title'], require_approval=row['require_approval'],
             start_date=day(row['start']), end_date=day(row['end']), always_active=row['always_active'],

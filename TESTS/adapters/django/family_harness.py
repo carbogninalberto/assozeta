@@ -127,7 +127,7 @@ def fixture_context_for(contract, seed, *, purge=()):
     return fixture_context
 
 
-def run_workload_for(contract, effect=None, *, prepare=None, handoff=None, throttle=None):
+def run_workload_for(contract, effect=None, *, prepare=None, handoff=None, throttle=None, case_scope=None):
     """The driver's run_workload.
 
     effect(case, before, after, source, context) checks a write family's case;
@@ -136,11 +136,15 @@ def run_workload_for(contract, effect=None, *, prepare=None, handoff=None, throt
     rows captured before a delete). context['remote'] is shared across cases.
     throttle: the public_flow_throttle module when the family has routes open without an account: the address's
     request history is prepared before and checked after every case.
+    case_scope(case) -> context manager around the case's request: per-case rows that no
+    state snapshot can read (a stored JSON value past the interpreter's recursion limit)
+    are inserted and removed inside it.
     handoff(case, backend) -> whether Go hands the case off to Django (handoff.md):
     such a case is attributed to one Django request, and the contract's
     assert_case also receives backend=.
     """
     def run_workload(label, backend, base_url, fixture, apps, raw, observer):
+        from contextlib import nullcontext
         from TESTS.adapters.django.historical_read_cache import snapshot_historical_read_cache
         source = contract.load_source()
         carnets.state_unchanged(fixture['baseline_state'], scopes.snapshot_state(apps))
@@ -155,12 +159,13 @@ def run_workload_for(contract, effect=None, *, prepare=None, handoff=None, throt
             token = None if case['actor'] == 'anonymous' else fixture['tokens'][case['actor']]
             served = 'django' if handoff is not None and handoff(case, backend) else backend
             try:
-                if handoff is None:
-                    status = contract.assert_case(case, base_url, token=token, sessions=fixture['sessions'])
-                else:
-                    status = contract.assert_case(case, base_url, token=token, sessions=fixture['sessions'], backend=backend)
-                if throttle:
-                    throttle.finish(case, status, ident, contract.require)
+                with (case_scope(case) if case_scope else nullcontext()):
+                    if handoff is None:
+                        status = contract.assert_case(case, base_url, token=token, sessions=fixture['sessions'])
+                    else:
+                        status = contract.assert_case(case, base_url, token=token, sessions=fixture['sessions'], backend=backend)
+                    if throttle:
+                        throttle.finish(case, status, ident, contract.require)
                 if effect:
                     after = scopes.snapshot_state(apps)
                     shared.assert_attribution(served, case['method'], case['path'], status, observer.delta(cursor), case['name'])

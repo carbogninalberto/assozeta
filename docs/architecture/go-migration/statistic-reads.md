@@ -92,7 +92,12 @@ empty) `404 ["error: widget not found."]`.
   `(payment_date or creation_date).date()`. Matched payments render
   `get_course_carnet_name()` (course subscription, installment, carnet
   subscription, `course.label`, `Iscrizione`, category name; account transfers
-  raise), sorted by `expired_days`.
+  raise), sorted by `expired_days`. `Payment.course` and `Payment.meta` are
+  loaded by psycopg2's `json.loads`: the measured band is 9936 levels of total
+  JSON nesting (`'[]'` is 1), and 9937 raises `RecursionError`, which the view
+  does not catch (the plain 500 page; owner decision X15, CPython 3.13.16 on
+  the parity harness's Django). Go parses the stored text with that band
+  (`statisticExpiredPaymentJSONDepth`).
 
 ## statistic/athlete-dashboard
 
@@ -144,8 +149,6 @@ is a 500.
 - `todaylessons` refuses what the CourseAttendance helper refuses: an
   unlinked day whose event has a non-string or non-UUID `event_id`, and
   instructor entries that are neither dicts nor lists of dicts.
-- `expiredPayments`: a stored `meta`/`course` JSON the reference parser does not accept is application state
-  (`ErrStatisticUnreachable`, the 500 page): jsonb always holds valid JSON.
 - Ordering left unspecified by Django (ties in `bestcourses`, carnets with equal
   `lessons_left`, medical certificates with equal `days_left`, lessons on the
   same day, several course titles in the report) is not pinned.
@@ -159,8 +162,11 @@ as Django does (cases `statistic-reads-owner-expiring-carnet-registry-unicode-di
 with a fraction is a state jsonb holds: `json.loads` reads it as inf and DRF's strict renderer raises while rendering,
 after the view returned, so it is application state (`errStatisticRenderNonFinite`, the 500 page; case
 `statistic-reads-owner-expiring-carnet-meta-float-overflow-server-error`). A fraction that underflows is rendered as
-Python's float `0.0` (`-0.0` with a negative sign). Payment `course`/`meta` JSON nested deeper than the reference parser
-reads (Django stores and reads it) stays a refusal (`ErrStatisticNotPorted`). A report year below 1000 is ported and
+Python's float `0.0` (`-0.0` with a negative sign). Payment `course`/`meta` JSON is loaded by psycopg2's `json.loads`
+up to the measured band: 9936 levels of total nesting answer as today and 9937 is the view's uncaught exception (the
+500 page; owner decision X15, see the `expiredPayments` behaviour above; cases
+`statistic-reads-expiredpayments-course-json-at-depth-band` and
+`statistic-reads-expiredpayments-course-json-past-depth-band-server-error`). A report year below 1000 is ported and
 follows the platform (X16, see statistic/report above): 500 on Linux, a normal report on macOS; the case
 `statistic-reads-report-current-date-before-1000-server-error` states the glibc answer.
 
@@ -204,3 +210,15 @@ member has a blank tax code and a removed member with a blank tax code): RED
 GREEN (`secaw-green`) 87/87 on native Django, native Go, Caddy `/api/v1` and
 `/api/v2`. Mutation (`secaw-mutation`): the dashboard codes without
 `familyTaxCodeFilled`'s blank filter fail `athlete-blank-tax-code` (CAUGHT).
+
+Deep stored JSON (owner decision X15; 95 cases in the fixture): two
+more associations carry an unpaid course payment
+whose `course` is jsonb text built by repetition, at 9936 and 9937 levels of total
+nesting. The adapter inserts each payment for its case only (`setup: {'payment': ...}`)
+and removes it afterwards, because the harness's state snapshot decodes every JSON
+column and walks it in Python, which cannot hold a value this deep. Cases
+`statistic-reads-expiredpayments-course-json-at-depth-band` (200, the payment listed
+with its `course.label` and description) and
+`statistic-reads-expiredpayments-course-json-past-depth-band-server-error` (the plain
+500 page); they sit just before the glibc `report-current-date-before-1000-server-error`
+case, which stays last. `go test ./internal/service -run DepthBand` pins both edges.

@@ -5,8 +5,9 @@ balance-sheet year, associates, medical certificates, subscriptions, payments, i
 course subscriptions, attendance registries and days, messages and deliveries, carnets and carnet
 subscriptions, and the instance configuration whose primary association is the own association.
 Relative time specs are resolved against a whole-second UTC anchor taken at seed time and handed
-to the contract. A case may carry a 'setup' (the instance's primary association) that is applied
-before the request and undone after it. The routes are reads: every case must leave the complete
+to the contract. A case may carry a 'setup' (the instance's primary association, and a
+payment whose stored JSON the state snapshot cannot decode) that is applied before the
+request and undone after it. The routes are reads: every case must leave the complete
 model state unchanged, except the todaylessons case marked 'link', whose day save and auditlog entry are checked
 exactly; its state is the baseline of the later cases.
 """
@@ -109,6 +110,8 @@ def seed_rows(source, created):
             type=row['type'], start_date=at(row['start']), end_date=at(row['end']), creation_date=at(row['created']),
             medical_id=_ref(source, row['medical']), archived=row['archived'], group_id=row['group'])
     for label, row in source['payments'].items():
+        if row.get('setup_only'):
+            continue  # inserted for its own case (case_setup): the state snapshot cannot decode it
         put(Payment, payment_id=R[label], sport_association_id=_ref(source, row['association']), amount=Decimal(row['amount']),
             paid=row['paid'], expense=row['expense'], archived=row['archived'], deleted=row['deleted'], subject=row['subject'],
             creation_date=at(row['created']), payment_date=at(row['payment_date']), group_id=row['group'],
@@ -172,23 +175,56 @@ def fixture_context(apps, private_work, raw, *, cleanup_receipt=None):
         yield fixture
 
 
+def setup_payment(source, label, anchor):
+    """Insert a payment whose stored JSON the state snapshot cannot decode (X15 band)."""
+    from application.models import Payment
+    from django.db import connection
+    row, ids = source['payments'][label], source['R']
+
+    def raw(value):
+        return value if isinstance(value, dict) and set(value) == {'$raw_json'} else None
+
+    course, meta = raw(row.get('course')), raw(row.get('meta'))
+    Payment._base_manager.bulk_create([Payment(
+        payment_id=ids[label], sport_association_id=_ref(source, row['association']), amount=Decimal(row['amount']),
+        paid=row['paid'], expense=row['expense'], archived=row['archived'], deleted=row['deleted'], subject=row['subject'],
+        creation_date=contract.resolve(row['created'], anchor),
+        payment_date=None if row['payment_date'] is None else contract.resolve(row['payment_date'], anchor),
+        group_id=row['group'], associate_id=_ref(source, row.get('associate')), meta=None if meta else row.get('meta'),
+        course=None if course else row.get('course'), description=row.get('description'),
+        payment_category_id=_ref(source, row.get('category')))])
+    with connection.cursor() as cursor:
+        for column, value in (('meta', meta), ('course', course)):
+            if value:
+                cursor.execute(f'UPDATE application_payment SET {column}=%s::jsonb WHERE payment_id=%s',
+                               [value['$raw_json'], ids[label]])
+
+
 @contextmanager
 def case_setup(case, fixture):
     from auditlog.context import disable_auditlog
+    from django.db import connection
     from instance.models import InstanceConfiguration
     setup = case.get('setup') or {}
-    if 'primary_association' not in setup:
-        yield
-        return
+    source = contract.load_source() if 'payment' in setup else None
     rows = InstanceConfiguration._base_manager.filter(pk=fixture['config'])
-    original = rows.values_list('primary_association_id', flat=True).get()
+    original = None
+    restore = 'primary_association' in setup
     with disable_auditlog():
-        rows.update(primary_association_id=setup['primary_association'])
+        if restore:
+            original = rows.values_list('primary_association_id', flat=True).get()
+            rows.update(primary_association_id=setup['primary_association'])
+        if 'payment' in setup:
+            setup_payment(source, setup['payment'], fixture['anchor'])
     try:
         yield
     finally:
         with disable_auditlog():
-            rows.update(primary_association_id=original)
+            if restore:
+                rows.update(primary_association_id=original)
+            if 'payment' in setup:
+                with connection.cursor() as cursor:
+                    cursor.execute('DELETE FROM application_payment WHERE payment_id=%s', [source['R'][setup['payment']]])
 
 
 DAY = 'application.AttendanceDay'

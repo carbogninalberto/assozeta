@@ -1,12 +1,50 @@
 package service
 
 import (
+	"errors"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 )
+
+// The expiredPayments band (owner decision X15): psycopg2 loads Payment.course
+// and Payment.meta with json.loads, so 9936 levels load and 9937 are the view's
+// unhandled exception (the 500 page). The band is the harness's measured one,
+// not a number this test derives.
+func TestStatisticExpiredPaymentJSONDepthBand(t *testing.T) {
+	const measured = 9936
+	if statisticExpiredPaymentJSONDepth != measured {
+		t.Fatalf("band: %d, want %d", statisticExpiredPaymentJSONDepth, measured)
+	}
+	value := func(levels int) string {
+		return `{"label": "Corso", "unused": ` + strings.Repeat("[", levels) + strings.Repeat("]", levels) + `}`
+	}
+	atBand := value(measured - 1) // the object is the last level
+	overBand := value(measured)
+	if dto.AuditJSONDepth(atBand) != measured || dto.AuditJSONDepth(overBand) != measured+1 {
+		t.Fatalf("authored depths: %d %d", dto.AuditJSONDepth(atBand), dto.AuditJSONDepth(overBand))
+	}
+	loaded, err := statisticStoredJSON(&atBand)
+	if err != nil {
+		t.Fatalf("at the band: %v", err)
+	}
+	object, ok := loaded.(domain.RequestObject)
+	if !ok || len(object) != 2 {
+		t.Fatalf("at the band: %#v", loaded)
+	}
+	if label, found := object.Lookup("label"); !found || label != "Corso" {
+		t.Fatalf("at the band: label %#v %v", label, found)
+	}
+	if _, err := statisticStoredJSON(&overBand); !errors.Is(err, ErrStatisticPythonError) {
+		t.Fatalf("past the band: %v", err)
+	}
+	if loaded, err := statisticStoredJSON(nil); loaded != nil || err != nil {
+		t.Fatalf("absent column: %#v %v", loaded, err)
+	}
+}
 
 func TestBalanceSheetRange(t *testing.T) {
 	at := func(text string) time.Time {

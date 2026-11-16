@@ -563,6 +563,56 @@ for label in ('owner_five', FIVE, 'a5_1', 's5_1', 'k5', 'ck5_digits_recent', 'ck
               'owner_six', SIX, 'a6_1', 's6_1', 'k6', 'ck6_overflow'):
     rid(label)
 
+# ---------------------------------------------------------------------------
+# Deep stored JSON (owner decision X15). Payment.course and Payment.meta are
+# jsonb columns psycopg2 loads with json.loads: the parity harness's Django
+# (CPython 3.13.16) reads 9936 levels of total nesting and raises RecursionError
+# at 9937, which the view does not handle (its plain 500 page). Each deep payment
+# exists only around its own case (the harness's state snapshot decodes every
+# JSON column and walks it in Python, which cannot hold a value this deep).
+# ---------------------------------------------------------------------------
+
+
+def json_depth(text):
+    """The total nesting of a JSON text ('[]' is 1)."""
+    depth = deepest = 0
+    for char in text:
+        if char in '[{':
+            depth += 1
+            deepest = max(deepest, depth)
+        elif char in ']}':
+            depth -= 1
+    return deepest
+
+
+DEEP_COURSE_LOADED = '{"label": "Corso profondo", "unused": ' + '[' * 9935 + ']' * 9935 + '}'
+DEEP_COURSE_REFUSED = '{"label": "Corso profondo", "unused": ' + '[' * 9936 + ']' * 9936 + '}'
+assert json_depth(DEEP_COURSE_LOADED) == 9936 and json_depth(DEEP_COURSE_REFUSED) == 9937
+
+SEVEN, EIGHT = 'association_seven', 'association_eight'
+USERS['owner_seven'] = {'role': 'association'}
+USERS['owner_eight'] = {'role': 'association'}
+EXTRA_ASSOCIATIONS[SEVEN] = {'owner': 'owner_seven', 'denomination': 'Statistiche settima', 'tax_code': '93000000007'}
+EXTRA_ASSOCIATIONS[EIGHT] = {'owner': 'owner_eight', 'denomination': 'Statistiche ottava', 'tax_code': '93000000008'}
+ASSOCIATES['a7_1'] = {'association': SEVEN, 'first': 'Profonda', 'last': 'Sette', 'sex': 'F', 'born': None, 'age': 0}
+ASSOCIATES['a8_1'] = {'association': EIGHT, 'first': 'Profonda', 'last': 'Otto', 'sex': 'M', 'born': None, 'age': 0}
+SUBSCRIPTIONS['s7_1'] = sub(SEVEN, status=4, start=day(-10), end=day(10), created=OLD, associate='a7_1', user='owner_seven')
+SUBSCRIPTIONS['s8_1'] = sub(EIGHT, status=4, start=day(-10), end=day(10), created=OLD, associate='a8_1', user='owner_eight')
+
+
+def deep_payment(association, associate, course):
+    """A payment whose course is jsonb text (a Python structure cannot hold this depth)."""
+    row = pay('10.00', association=association, paid=False, subject=2, created=day(-4, '10:00:00'), paid_on=day(-4, '10:00:00'))
+    row.update({'associate': associate, 'course': {'$raw_json': course}, 'description': 'autunno', 'setup_only': True,
+                'title': 'Corso profondo, autunno'})
+    return row
+
+
+PAYMENTS['e7_deep'] = deep_payment(SEVEN, 'a7_1', DEEP_COURSE_LOADED)
+PAYMENTS['e8_deep'] = deep_payment(EIGHT, 'a8_1', DEEP_COURSE_REFUSED)
+for label in ('owner_seven', 'owner_eight', SEVEN, EIGHT, 'a7_1', 'a8_1', 's7_1', 's8_1', 'e7_deep', 'e8_deep'):
+    rid(label)
+
 # ===========================================================================
 # Oracle (statistic_views.py read line by line).
 # ===========================================================================
@@ -914,6 +964,10 @@ TODAY_LINK = {'day': R['d4b'], 'associated_event': R['ev4b'], 'attendees': None,
 
 def payment_title(label):
     row = PAYMENTS[label]
+    if 'title' in row:
+        # Authored: a course stored past the interpreter's recursion limit cannot be
+        # json.loads'd here; it is an object whose label is 'Corso profondo'.
+        return row['title']
     if row['subject'] == 2:
         for cs_label, cs_row in COURSE_SUBSCRIPTIONS.items():
             if cs_row.get('payment') == label:
@@ -1179,6 +1233,15 @@ add('report-anonymous', 'anonymous', P, 401, {'detail': 'Authentication credenti
 add('report-wrong-method', 'owner', P, 405, {'detail': 'Method "POST" not allowed.'}, method='POST')
 add('report-options', 'owner', P, 200, {'name': 'Statistic Report', 'description': '', 'renders': ['application/json'],
                                         'parses': OPTIONS_PARSES}, method='OPTIONS')
+
+# Deep stored JSON (owner decision X15): the harness's Django (CPython 3.13.16) loads
+# Payment.course up to 9936 levels of total nesting, so the widget lists the payment as
+# any other; one level deeper is the plain 500 page. Each payment exists only around its
+# request (the setup in the adapter), the state snapshot cannot hold such a value.
+add('expiredpayments-course-json-at-depth-band', 'owner_seven', w('expiredPayments'), 200, expired_payments(SEVEN),
+    setup={'payment': 'e7_deep'})
+add('expiredpayments-course-json-past-depth-band-server-error', 'owner_eight', w('expiredPayments'), 500, SERVER,
+    setup={'payment': 'e8_deep'})
 
 # Years before 1000. The view removes the time from the parsed currentDate by
 # round-tripping it: datetime.strptime(current_date.strftime('%Y-%m-%d'), '%Y-%m-%d')

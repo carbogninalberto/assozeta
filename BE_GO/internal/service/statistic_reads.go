@@ -707,7 +707,7 @@ func (s *StatisticReads) Athlete(ctx context.Context, identity domain.ResolvedId
 	result, err := s.athlete(ctx, identity, group)
 	// An application-state error is a value the strict renderer refuses after
 	// the view returned (outside its try): the 500 page, not the view's JSON 500.
-	if err != nil && !errors.Is(err, domain.ErrStatisticNotPorted) && !errors.Is(err, refusal.ErrAppState) {
+	if err != nil && !errors.Is(err, refusal.ErrAppState) {
 		return StatisticResult{}, errors.Join(ErrStatisticAthleteFailure, err)
 	}
 	return result, err
@@ -978,6 +978,15 @@ func (s *StatisticReads) expiredPayments(ctx context.Context, scope domain.Stati
 	if err != nil {
 		return StatisticResult{}, err
 	}
+	// Iterating the queryset loads every fetched row's course and meta, so a
+	// value past the band fails before the subscription match (X15).
+	for _, payment := range payments {
+		for _, text := range []*string{payment.Course, payment.Meta} {
+			if text != nil && dto.AuditJSONDepth(*text) > statisticExpiredPaymentJSONDepth {
+				return StatisticResult{}, ErrStatisticPythonError
+			}
+		}
+	}
 	associates, seen := []string{}, map[string]bool{}
 	for _, payment := range payments {
 		if !seen[payment.AssociateID] {
@@ -1050,20 +1059,31 @@ func (s *StatisticReads) expiredPayments(ctx context.Context, scope domain.Stati
 	return statisticData(map[string]any{"expired_payments": sorted}), nil
 }
 
+// statisticExpiredPaymentJSONDepth is the deepest total JSON nesting (as
+// dto.AuditJSONDepth counts it: '[]' is 1) the expiredPayments widget loads
+// from Payment.course and Payment.meta. Measured on the parity harness's
+// Django (CPython 3.13.16): 9936 levels load and 9937 raise RecursionError in
+// json.loads, which the view does not handle (the 500 page). Owner decision
+// X15: the band, not a refusal.
+const statisticExpiredPaymentJSONDepth = 9936
+
+// statisticStoredJSON is json.loads of a stored Payment jsonb column: psycopg2
+// loads every JSON column of a fetched row, so a value past the interpreter's
+// recursion band is the view's unhandled exception.
+func statisticStoredJSON(text *string) (any, error) {
+	if text == nil {
+		return nil, nil
+	}
+	value, err := dto.ParseStoredJSONDepth(*text, statisticExpiredPaymentJSONDepth)
+	if err != nil {
+		return nil, ErrStatisticPythonError
+	}
+	return value, nil
+}
+
 // paymentTitle is Payment.get_course_carnet_name() as a JSON value.
 func (s *StatisticReads) paymentTitle(ctx context.Context, payment domain.StatisticExpiredPayment, group *string) (any, error) {
-	parse := func(text *string) (any, error) {
-		if text == nil {
-			return nil, nil
-		}
-		value, err := dto.ParseReferenceJSON([]byte(*text))
-		if err != nil {
-			// Payment.course and meta are writable JSON fields: Django stores (and json.loads reads) values nested deeper
-			// than this parser reads. Not ported.
-			return nil, domain.ErrStatisticNotPorted
-		}
-		return value, nil
-	}
+	parse := statisticStoredJSON
 	// `key in container` then container[key], with Python's errors as the 500 page.
 	lookup := func(container any, key string) (any, bool, error) {
 		if !dto.PythonTruthy(container) {

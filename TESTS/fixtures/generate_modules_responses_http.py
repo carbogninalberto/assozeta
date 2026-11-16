@@ -242,11 +242,14 @@ def with_response_token(actor, method, path, body, *, enabled=True):
 
 
 def add(name, actor, method, path, status, response, *, body=None, raw_body=None, content_type=None, headers=None, effect=None,
-        throttle=None, retry_after=None, token=True):
+        throttle=None, retry_after=None, token=True, setup=None):
     """token=False: an anonymous request keeps the body as authored (no response secret).
-    throttle: {'preload': n, 'age': seconds}: the address's request history for the route holds n entries of that age."""
+    throttle: {'preload': n, 'age': seconds}: the address's request history for the route holds n entries of that age.
+    setup: {'module': label}: rows inserted for the case's request only."""
     case = {'name': f'modules-responses-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
             'status': status, 'response': response, 'effect': effect}
+    if setup is not None:
+        case['setup'] = setup
     if throttle is not None:
         case['throttle'] = throttle
     if retry_after is not None:
@@ -893,6 +896,50 @@ add('attach-anonymous-at-the-limit', 'anonymous', 'POST', attach('att_r'), 200, 
 # Text that does not decode keeps the answer it had: the create, then the error.
 add('attach-anonymous-undecodable-keeps-its-answer', 'anonymous', 'POST', attach('att_r'), 500, SERVER,
     body={'filename': 'rotto.bin', 'base64': 'abcde'}, effect=uploaded(None, 'rotto.bin', None, link=None, stored=False))
+
+# ---------------------------------------------------------------------------
+# module.elements nested up to the interpreter's recursion band (owner decision
+# X15). The export loads the column with json.loads: the parity harness's Django
+# (CPython 3.13.16) reads 9933 levels of total nesting and raises RecursionError
+# at 9934, which the view does not handle (its plain 500 page). The deep value
+# sits in a props key the export never reads, so only the band decides the
+# answer; each module exists only around its own case (the state snapshot walks
+# JSON values in Python, which cannot hold a value this deep).
+# ---------------------------------------------------------------------------
+def json_depth(text):
+    """The total nesting of a JSON text ('[]' is 1)."""
+    depth = deepest = 0
+    for char in text:
+        if char in '[{':
+            depth += 1
+            deepest = max(deepest, depth)
+        elif char in ']}':
+            depth -= 1
+    return deepest
+
+
+def deep_elements(levels):
+    """Elements whose heading props carry a list nested `levels` deep."""
+    return ('[{"type": "heading", "props": {"label": "Intestazione", "unused": ' + '[' * levels + ']' * levels + '}},'
+            ' {"type": "text", "props": {"label": "Nome", "name": "nome"}}]')
+
+
+DEEP_ELEMENTS_LOADED, DEEP_ELEMENTS_REFUSED = deep_elements(9930), deep_elements(9931)
+assert json_depth(DEEP_ELEMENTS_LOADED) == 9933 and json_depth(DEEP_ELEMENTS_REFUSED) == 9934
+MODULES['export_deep'] = {**EXPORT_BASE, 'id': next(zids), 'link': 'risposte-export-profonde', 'title': 'Profondo',
+                          'elements': [{'type': 'heading', 'props': {'label': 'Intestazione'}},
+                                       {'type': 'text', 'props': {'label': 'Nome', 'name': 'nome'}}],
+                          'elements_raw': DEEP_ELEMENTS_LOADED}
+MODULES['export_deep_over'] = {**MODULES['export_deep'], 'id': next(zids), 'link': 'risposte-export-troppo-profonde',
+                               'elements_raw': DEEP_ELEMENTS_REFUSED}
+RESPONSES['deep_r'] = {**R, 'id': next(zids), 'module': 'export_deep', 'number': 0, 'response': {'nome': 'Anna è'},
+                       'token': '', 'export_user': None, 'payment': None}
+RESPONSES['deep_over_r'] = {**R, 'id': next(zids), 'module': 'export_deep_over', 'number': 0, 'response': {'nome': 'Anna è'},
+                            'token': '', 'export_user': None, 'payment': None}
+add('export-elements-json-at-depth-band', 'owner', 'GET', export('export_deep'), 200, exported('export_deep'),
+    setup={'module': 'export_deep'})
+add('export-elements-json-past-depth-band-server-error', 'owner', 'GET', export('export_deep_over'), 500, SERVER,
+    setup={'module': 'export_deep_over'})
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Module responses info/add/approve/delete/add-attachment/export authored sequence',

@@ -296,6 +296,8 @@ def seed_rows(source, created):
     for label, row in source['responses'].items():
         if label in own:
             continue
+        if source['modules'][row['module']].get('elements_raw'):
+            continue  # its module is inserted for its own case (X15 band), with this response
         ModuleResponses._base_manager.bulk_create([ModuleResponses(module_response_id=row['id'],
             module_id=source['modules'][row['module']]['id'], creation_date=moment(row['created']),
             progressive_response_number=row['number'], queue_position=row['queue'], response=row['response'], approved=row['approved'],
@@ -321,7 +323,51 @@ def fixture_context(apps, private_work, raw, *, cleanup_receipt=None):
         cursor.execute('VACUUM application_moduleresponses')
     with _base_fixture_context(apps, private_work, raw, cleanup_receipt=cleanup_receipt) as fixture:
         yield fixture
-_run_workload = harness.run_workload_for(contract, assert_effect, prepare=prepared_diffs, throttle=throttle)
+
+
+@contextmanager
+def case_rows(case):
+    """Insert the module whose stored elements the state snapshot cannot decode (X15 band).
+
+    module.elements is a jsonb column the harness snapshots decode and walk in Python;
+    a value 9933 levels deep is past the interpreter's recursion limit, so the module
+    (and its responses) exist only around the case's request.
+    """
+    label = (case.get('setup') or {}).get('module')
+    if not label:
+        yield
+        return
+    from auditlog.context import disable_auditlog
+    from application.models import Module, ModuleResponses
+    from django.db import connection
+    from TESTS.adapters.django.modules_reads_http import day, moment
+    source = contract.load_source()
+    row = source['modules'][label]
+    with disable_auditlog():
+        Module._base_manager.bulk_create([Module(
+            module_id=row['id'], custom_link=row['link'], sport_association_id=row['association'], creation_date=moment(row['created']),
+            title=row['title'], require_approval=row['require_approval'], start_date=day(row['start']),
+            end_date=day(row['end']), always_active=row['always_active'], max_responses=row['max_responses'],
+            queue_mode=row['queue_mode'], only_users=row['only_users'], payment_required=row['payment_required'],
+            payment_data=row['payment_data'], response_message=row['response_message'],
+            allow_attachments=row['allow_attachments'], elements={})])
+        with connection.cursor() as cursor:
+            cursor.execute('UPDATE application_module SET elements=%s::jsonb WHERE module_id=%s', [row['elements_raw'], row['id']])
+        for response in (r for r in source['responses'].values() if r['module'] == label):
+            ModuleResponses._base_manager.bulk_create([ModuleResponses(
+                module_response_id=response['id'], module_id=row['id'], creation_date=moment(response['created']),
+                progressive_response_number=response['number'], queue_position=response['queue'], response=response['response'],
+                approved=response['approved'], user_id=None, payment_id=None, attachment_token_hash='')])
+    try:
+        yield
+    finally:
+        with disable_auditlog():
+            with connection.cursor() as cursor:
+                cursor.execute('DELETE FROM application_moduleresponses WHERE module_id=%s', [row['id']])
+                cursor.execute('DELETE FROM application_module WHERE module_id=%s', [row['id']])
+
+
+_run_workload = harness.run_workload_for(contract, assert_effect, prepare=prepared_diffs, throttle=throttle, case_scope=case_rows)
 
 
 def run_workload(label, backend, base_url, fixture, apps, raw, observer):
