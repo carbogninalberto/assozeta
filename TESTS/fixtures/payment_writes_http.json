@@ -28365,6 +28365,43 @@
    "prints": [],
    "raw_body": "paid=maybe",
    "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "payment-writes-update-form-meta-lone-surrogate-keeps-audit",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/payment/a1000000-0000-4000-8000-000000988018/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "created": [],
+    "changed": {},
+    "audit": [
+     {
+      "key": "up_meta",
+      "action": 1,
+      "changes": {
+       "amount": [
+        "20.30",
+        "20.1"
+       ],
+       "meta_payment_categories": [
+        "[{\"amount\": 0.1}, {\"amount\": \"0.2\"}]",
+        "[{\"amount\": \"0.1\", \"title\": \"\\ud800\"}]"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "prints": [],
+   "raw_body": "amount=20&meta_payment_categories=%5B%7B%22amount%22%3A%20%220.1%22%2C%20%22title%22%3A%20%22%5Cud800%22%7D%5D",
+   "content_type": "application/x-www-form-urlencoded"
   }
  ]
 }

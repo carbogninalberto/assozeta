@@ -319,12 +319,14 @@ var paymentEntryFormOptions = map[string]paymentEntryFormOption{
 // refused is true when a JSON field's text (course, meta_payment_categories)
 // nests past the ported depth or holds a lone surrogate escape. Django still
 // validates every field first (another field's error is a 400); the depth at
-// which Python's JSON codec raises depends on the live recursion depth, and a
-// lone surrogate reaches the save, where auditlog's pre_save entry is written
-// before the jsonb column refuses the value. Both stay a handoff refusal
-// before any write.
-func PaymentEntryFormObject(object domain.RequestObject, partial bool) (converted domain.RequestObject, refused bool) {
+// which Python's JSON codec raises depends on the live recursion depth, so that
+// band stays a handoff refusal before any write. surrogate reports the other
+// case alone: the text parses and the value reaches the save, where auditlog's
+// pre_save entry is written before the jsonb column refuses the value (a depth
+// past the ported band wins over a surrogate, as json.loads raises first).
+func PaymentEntryFormObject(object domain.RequestObject, partial bool) (converted domain.RequestObject, refused, surrogate bool) {
 	converted = domain.RequestObject{}
+	deep := false
 	for _, name := range paymentEntryOrder {
 		switch name {
 		case "attachments":
@@ -347,8 +349,10 @@ func PaymentEntryFormObject(object domain.RequestObject, partial bool) (converte
 						text = PythonStr(value)
 					}
 				}
-				if _, _, rejected, deep := automationFormTree(text); rejected || deep {
+				if _, _, rejected, tooDeep := automationFormTree(text); rejected || tooDeep {
 					refused = true
+					surrogate = surrogate || rejected
+					deep = deep || tooDeep
 				}
 				converted = append(converted, domain.RequestField{Name: name, Value: PaymentEntryJSONText{Text: text}})
 			}
@@ -386,7 +390,7 @@ func PaymentEntryFormObject(object domain.RequestObject, partial bool) (converte
 			converted = append(converted, domain.RequestField{Name: name, Value: kept})
 		}
 	}
-	return converted, refused
+	return converted, refused, surrogate && !deep
 }
 
 // paymentEntryFormValue is Field.get_value of a present HTML value: an empty

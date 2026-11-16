@@ -61,6 +61,7 @@ import copy
 import json
 from decimal import Context, Decimal, ROUND_HALF_EVEN, ROUND_HALF_UP
 from pathlib import Path
+from urllib.parse import quote
 
 OUTPUT = Path(__file__).with_name('payment_writes_http.json')
 IDS = json.loads(Path(__file__).with_name('message_mutations.json').read_text())['ids']
@@ -1166,6 +1167,18 @@ add('update-form-blank-creation-date-server-error', 'owner', UPDATE('up_form_bla
     raw_body='creation_date=&amount=3', content_type='application/x-www-form-urlencoded', effect=effect('owner'))
 add('update-form-invalid-boolean', 'owner', UPDATE('up_form_invalid_boolean'), 400, {'paid': ['Must be a valid boolean.']}, method='PATCH',
     raw_body='paid=maybe', content_type='application/x-www-form-urlencoded', effect=effect('owner'))
+# A form JSON field whose text parses but keeps a lone surrogate escape: the
+# serializer validates and saves, auditlog's pre_save update entry is written,
+# then jsonb refuses the value (Django's DataError, the plain 500 page). The
+# entry stays and the payment is unchanged (the view is not atomic).
+SURROGATE_META = [{'amount': '0.1', 'title': '\ud800'}]
+surrogate_total = float('20') + float('0.1')
+surrogate_old = STATE['up_meta']
+surrogate_new = {**surrogate_old, 'amount': '20.10', 'meta_payment_categories': SURROGATE_META}
+add('update-form-meta-lone-surrogate-keeps-audit', 'owner', UPDATE('up_meta'), 500, SERVER, method='PATCH',
+    raw_body='amount=20&meta_payment_categories=' + quote(json.dumps(SURROGATE_META)),
+    content_type='application/x-www-form-urlencoded',
+    effect=effect('owner', audit=[event('up_meta', 1, updated_changes(surrogate_old, surrogate_new, repr(surrogate_total)), DIRECT)]))
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Payment add, update and bulk add authored sequence with payment and audit effects',

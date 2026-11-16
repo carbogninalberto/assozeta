@@ -9,6 +9,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/documentkey"
 )
 
@@ -199,12 +200,16 @@ func (s *paymentWritesUpdateStore) BeginPaymentWrites(context.Context) (domain.P
 	return s.tx, nil
 }
 
-// paymentWritesUpdateTx is all Update reads before the form body is converted:
-// the association and the locked row. Anything else would panic.
+// paymentWritesUpdateTx is the transaction Update opens and walks. The fields
+// the tests set answer the reads the ported path makes; the audit values are
+// the stored row.
 type paymentWritesUpdateTx struct {
 	domain.PaymentWritesTransaction
 	association string
 	row         *domain.PaymentWriteRow
+	before      map[string]string
+	audits      []domain.PaymentWritesAuditEntry
+	commits     int
 	rollbacks   int
 }
 
@@ -216,36 +221,109 @@ func (t *paymentWritesUpdateTx) LockPayment(context.Context, string, *string, *s
 	return t.row, nil
 }
 
+func (t *paymentWritesUpdateTx) TenantAssociation(context.Context, string) (*string, error) {
+	return nil, nil
+}
+
+func (t *paymentWritesUpdateTx) DefaultPaymentCategory(context.Context, *string) (*string, *string, error) {
+	return nil, nil, nil
+}
+
+func (t *paymentWritesUpdateTx) PaymentAuditValues(context.Context, string) (map[string]string, error) {
+	values := map[string]string{}
+	for field, value := range t.before {
+		values[field] = value
+	}
+	return values, nil
+}
+
+func (t *paymentWritesUpdateTx) AppendPaymentWritesAudit(_ context.Context, entry domain.PaymentWritesAuditEntry) error {
+	t.audits = append(t.audits, entry)
+	return nil
+}
+
+func (t *paymentWritesUpdateTx) Commit() error {
+	t.commits++
+	return nil
+}
+
 func (t *paymentWritesUpdateTx) Rollback() error {
 	t.rollbacks++
 	return nil
 }
 
 // A form body whose course or meta_payment_categories JSON text nests past the
-// ported depth or holds a lone surrogate escape is the handoff refusal before
-// validation and before any write, never the 500 page: Django validates every
-// field (another field's error is a 400), and the depth band and the lone
-// surrogate's audit entry are Django's.
-func TestPaymentWritesUpdateRefusesFormJSONText(t *testing.T) {
+// ported depth stays the handoff refusal before validation and before any
+// write: the depth at which Python's JSON codec raises depends on the live call
+// stack.
+func TestPaymentWritesUpdateRefusesFormJSONTooDeep(t *testing.T) {
 	association := "a1000000-0000-4000-8000-000000988777"
 	row := &domain.PaymentWriteRow{ID: "a1000000-0000-4000-8000-000000988450", AssociationID: &association}
-	for name, text := range map[string]string{
-		"nested past the ported depth": strings.Repeat("[", 502) + strings.Repeat("]", 502),
-		"lone surrogate":               `"\ud800"`,
-	} {
-		tx := &paymentWritesUpdateTx{association: association, row: row}
-		writes := paymentWritesWithStore(&paymentWritesUpdateStore{tx: tx})
-		_, err := writes.Update(context.Background(), paymentWritesEntryIdentity(),
-			PaymentWritesRequest{ID: row.ID, Form: true},
-			domain.RequestObject{{Name: "paid", Value: "maybe"}, {Name: "course", Value: text}})
-		if !errors.Is(err, domain.ErrPaymentWritesNotPorted) {
-			t.Fatalf("%s: err=%v", name, err)
-		}
-		if errors.Is(err, domain.ErrPaymentWritesServer) {
-			t.Fatalf("%s: refusal answered as the 500 page", name)
-		}
-		if tx.rollbacks != 1 {
-			t.Fatalf("%s: rollbacks=%d", name, tx.rollbacks)
-		}
+	tx := &paymentWritesUpdateTx{association: association, row: row}
+	writes := paymentWritesWithStore(&paymentWritesUpdateStore{tx: tx})
+	_, err := writes.Update(context.Background(), paymentWritesEntryIdentity(),
+		PaymentWritesRequest{ID: row.ID, Form: true},
+		domain.RequestObject{{Name: "paid", Value: "maybe"}, {Name: "course", Value: strings.Repeat("[", 502) + strings.Repeat("]", 502)}})
+	if !errors.Is(err, domain.ErrPaymentWritesNotPorted) {
+		t.Fatalf("depth: err=%v", err)
+	}
+	if errors.Is(err, refusal.ErrAppState) || tx.rollbacks != 1 {
+		t.Fatalf("depth: err=%v rollbacks=%d", err, tx.rollbacks)
+	}
+}
+
+// A lone surrogate escape is not refused: Django validates every field first,
+// so another field's error is the usual 400.
+func TestPaymentWritesUpdateFormJSONSurrogateValidatesFirst(t *testing.T) {
+	association := "a1000000-0000-4000-8000-000000988777"
+	row := &domain.PaymentWriteRow{ID: "a1000000-0000-4000-8000-000000988450", AssociationID: &association}
+	tx := &paymentWritesUpdateTx{association: association, row: row}
+	writes := paymentWritesWithStore(&paymentWritesUpdateStore{tx: tx})
+	_, err := writes.Update(context.Background(), paymentWritesEntryIdentity(),
+		PaymentWritesRequest{ID: row.ID, Form: true},
+		domain.RequestObject{{Name: "paid", Value: "maybe"}, {Name: "course", Value: `"\ud800"`}})
+	if _, invalid := err.(*dto.PaymentEntryValidationError); !invalid {
+		t.Fatalf("err=%v, want the field validation", err)
+	}
+	if errors.Is(err, domain.ErrPaymentWritesNotPorted) || tx.audits != nil || tx.commits != 0 || tx.rollbacks != 1 {
+		t.Fatalf("err=%v audits=%d commits=%d rollbacks=%d", err, len(tx.audits), tx.commits, tx.rollbacks)
+	}
+}
+
+// A form JSON value the parser keeps with a lone surrogate escape parses and
+// validates, so auditlog's pre_save update entry is written; the jsonb column
+// then refuses the value: the row UPDATE is skipped, the entry stays (the view
+// is not atomic) and the answer is the 500 page.
+func TestPaymentWritesUpdateFormJSONSurrogateKeepsAudit(t *testing.T) {
+	association := "a1000000-0000-4000-8000-000000988777"
+	subject, amount := 0, "20.00"
+	row := &domain.PaymentWriteRow{ID: "a1000000-0000-4000-8000-000000988450", AssociationID: &association,
+		Subject: subject, Amount: amount, CreationDate: time.Date(2026, 3, 1, 0, 0, 0, 0, time.UTC)}
+	tx := &paymentWritesUpdateTx{association: association, row: row, before: map[string]string{
+		"subject": "0", "amount": "20.00", "meta_payment_categories": "null", "course": "null"}}
+	writes := paymentWritesWithStore(&paymentWritesUpdateStore{tx: tx})
+	_, err := writes.Update(context.Background(), paymentWritesEntryIdentity(),
+		PaymentWritesRequest{ID: row.ID, Form: true},
+		domain.RequestObject{{Name: "amount", Value: "20"},
+			{Name: "meta_payment_categories", Value: `[{"amount": 0.1, "title": "\ud800"}]`}})
+	if !errors.Is(err, refusal.ErrAppState) {
+		t.Fatalf("err=%v, want the application-state error", err)
+	}
+	if errors.Is(err, domain.ErrPaymentWritesNotPorted) {
+		t.Fatal("the jsonb refusal must never be handed off")
+	}
+	if tx.commits != 1 || tx.rollbacks != 1 {
+		t.Fatalf("commits=%d rollbacks=%d", tx.commits, tx.rollbacks)
+	}
+	if len(tx.audits) != 1 || tx.audits[0].Action != 1 || tx.audits[0].PaymentID != row.ID {
+		t.Fatalf("audits=%+v", tx.audits)
+	}
+	changes := tx.audits[0].Changes
+	if len(changes) != 2 || changes["amount"] != [2]string{"20.00", "20.1"} ||
+		changes["meta_payment_categories"] != [2]string{"null", `[{"amount": 0.1, "title": "\ud800"}]`} {
+		t.Fatalf("changes=%v", changes)
+	}
+	if row.MetaCategories != nil {
+		t.Fatalf("the UPDATE ran: meta=%v", row.MetaCategories)
 	}
 }

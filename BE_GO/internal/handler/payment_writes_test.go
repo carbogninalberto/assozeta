@@ -11,6 +11,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/handoff"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/documentkey"
 	"github.com/labstack/echo/v4"
 )
@@ -67,9 +68,10 @@ func TestPaymentWritesPaymentIDErrorRepr(t *testing.T) {
 	}
 }
 
-// A refusal (the update form body's JSON text past the ported depth or with a
-// lone surrogate) reaches the shared handoff path, so Django's answer is
-// returned; any other unhandled failure stays Go's 500 page.
+// A refusal (the update form body's JSON text past the ported depth) reaches
+// the shared handoff path, so Django's answer is returned; an application-state
+// error (the jsonb column refusing a lone surrogate, after the audit entry) is
+// never handed off and stays Go's 500 page, as does any other unhandled failure.
 func TestPaymentWritesRefusalIsHandedOff(t *testing.T) {
 	var upstreamCalls atomic.Int32
 	django := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
@@ -87,8 +89,9 @@ func TestPaymentWritesRefusalIsHandedOff(t *testing.T) {
 		status  int
 		calls   int32
 	}{
-		"refusal":       {domain.ErrPaymentWritesNotPorted, 400, 1},
-		"other failure": {domain.ErrPaymentWritesServer, 500, 0},
+		"refusal":           {domain.ErrPaymentWritesNotPorted, 400, 1},
+		"other failure":     {domain.ErrPaymentWritesServer, 500, 0},
+		"application state": {refusal.AppState("payment write: jsonb rejects a lone surrogate"), 500, 0},
 	} {
 		upstreamCalls.Store(0)
 		e := echo.New()

@@ -12,6 +12,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/documentkey"
 	"github.com/google/uuid"
 )
@@ -183,6 +184,16 @@ func metaAmount(object domain.RequestObject) (*float64, error) {
 	meta, present := object.Lookup("meta_payment_categories")
 	if !present || meta == nil {
 		return nil, nil
+	}
+	if text, isText := meta.(dto.PaymentEntryJSONText); isText {
+		// Field.get_value marked the form's HTML value as JSON text, and the
+		// serializer validated it: the hook reads the parsed value (a deep or
+		// surrogate text already passed through the form conversion).
+		parsed, err := dto.ParseProfileTablesJSON([]byte(text.Text))
+		if err != nil {
+			return nil, domain.ErrPaymentWritesServer
+		}
+		meta = parsed
 	}
 	initial, _ := object.Lookup("amount")
 	base, ok := dto.PythonFloatOf(initial)
@@ -498,6 +509,88 @@ func (s *PaymentWrites) values(ctx context.Context, tx domain.PaymentWritesTrans
 	return values, nil
 }
 
+// paymentAfterSaveValues is auditlog's after-values of the full-row save the
+// jsonb column refuses: the stored values with the in-memory payment's changes,
+// rendered as get_field_value does. values() reads the saved row; here the row
+// is not written, so the changed fields come from the in-memory row instead.
+func paymentAfterSaveValues(before map[string]string, stored domain.PaymentWriteRow, m *paymentMemory) map[string]string {
+	after := make(map[string]string, len(before))
+	for field, value := range before {
+		after[field] = value
+	}
+	row := m.row
+	text := func(value *string) string {
+		if value == nil {
+			return "None"
+		}
+		return *value
+	}
+	flag := func(value bool) string {
+		if value {
+			return "True"
+		}
+		return "False"
+	}
+	setText := func(field string, previous, current *string) {
+		if !samePointer(previous, current) {
+			after[field] = text(current)
+		}
+	}
+	setFlag := func(field string, previous, current bool) {
+		if previous != current {
+			after[field] = flag(current)
+		}
+	}
+	if row.Type != stored.Type {
+		after["type"] = row.Type
+	}
+	if row.Subject != stored.Subject {
+		after["subject"] = strconv.Itoa(row.Subject)
+	}
+	if row.Amount != stored.Amount {
+		after["amount"] = row.Amount
+	}
+	if !row.CreationDate.Equal(stored.CreationDate) {
+		after["creation_date"] = paymentCategoryAuditTime(row.CreationDate)
+	}
+	if row.PaymentDate == nil && stored.PaymentDate != nil {
+		after["payment_date"] = "None"
+	} else if row.PaymentDate != nil && (stored.PaymentDate == nil || !row.PaymentDate.Equal(*stored.PaymentDate)) {
+		after["payment_date"] = paymentCategoryAuditTime(*row.PaymentDate)
+	}
+	setFlag("paid", stored.Paid, row.Paid)
+	setFlag("expense", stored.Expense, row.Expense)
+	setFlag("archived", stored.Archived, row.Archived)
+	setFlag("deleted", stored.Deleted, row.Deleted)
+	setText("description", stored.Description, row.Description)
+	setText("payment_category", stored.CategoryID, row.CategoryID)
+	setText("invoice", stored.InvoiceID, row.InvoiceID)
+	setText("user", stored.UserID, row.UserID)
+	setText("associate", stored.AssociateID, row.AssociateID)
+	setText("supplier", stored.SupplierID, row.SupplierID)
+	setText("instructor", stored.InstructorID, row.InstructorID)
+	setText("sport_association", stored.AssociationID, row.AssociationID)
+	setText("payment_intent_id", stored.PaymentIntentID, row.PaymentIntentID)
+	setText("invoice_fiscal_code", stored.InvoiceFiscalCode, row.InvoiceFiscalCode)
+	setText("notes", stored.Notes, row.Notes)
+	setText("custom_accounts", stored.AccountID, row.AccountID)
+	setText("signature", stored.SignatureID, row.SignatureID)
+	setText("group", stored.GroupID, row.GroupID)
+	// The in-memory renderings that differ from the stored text (a float
+	// amount, json.dumps of the request's JSON) come from the memory itself,
+	// as values() takes them after the save.
+	if m.amountAudit != nil {
+		after["amount"] = *m.amountAudit
+	}
+	for field, value := range m.jsonAudit {
+		after[field] = value
+	}
+	if m.groupSent != nil {
+		after["group"] = *m.groupSent
+	}
+	return after
+}
+
 var paymentAuditNullable = map[string]bool{"creation_date": true, "payment_date": true, "payment_category": true, "invoice": true, "user": true,
 	"associate": true, "supplier": true, "instructor": true, "sport_association": true, "custom_accounts": true, "signature": true,
 	"group": true}
@@ -567,6 +660,12 @@ type paymentParty struct {
 
 // errPaymentWritesForeignParty is the views' PermissionDenied for a party of another association.
 var errPaymentWritesForeignParty = &domain.PermissionDenied{Detail: "User not allowed."}
+
+// errPaymentWritesJSONColumn is PostgreSQL's jsonb input refusing a form JSON
+// value the parser kept (a lone surrogate escape): Django's DataError at the
+// full-row UPDATE, after auditlog's pre_save entry, and the update view is not
+// atomic, so the entry stays and the answer is the plain 500 page.
+var errPaymentWritesJSONColumn = refusal.AppState("payment write: jsonb rejects a lone surrogate")
 
 // paymentWritesOwned is a party's owning key compared with the caller's.
 func paymentWritesOwned(found bool, owning *string, err error, caller string) error {
@@ -1056,9 +1155,10 @@ func (s *PaymentWrites) Add(ctx context.Context, identity domain.ResolvedIdentit
 // full-row save, then attachments_data. A form body is a QueryDict: the
 // view's del of a blank date or of the body's payment_id raises for an
 // immutable one (the 500 page) and works for a mutable copy (a multipart
-// body with files), whose HTML values the serializer validates. A form
-// JSON field past the ported depth or a lone surrogate escape is refused
-// before any write (ErrPaymentWritesNotPorted, handed off to Django).
+// body with files), whose HTML values the serializer validates. A form JSON
+// field past the ported depth stays a handoff refusal before any write; one
+// that keeps a lone surrogate escape reaches the save, where the pre_save audit
+// entry is written and the jsonb column refuses the value (the 500 page).
 func (s *PaymentWrites) Update(ctx context.Context, identity domain.ResolvedIdentity, request PaymentWritesRequest, body any) (map[string]any, error) {
 	id, err := messageReadsParseUUID(request.ID)
 	if err != nil {
@@ -1084,6 +1184,7 @@ func (s *PaymentWrites) Update(ctx context.Context, identity domain.ResolvedIden
 	if !ok {
 		return nil, domain.ErrPaymentWritesServer
 	}
+	jsonSurrogate := false
 	if request.Form {
 		if object.HasUpload() {
 			// request.data is a mutable copy of the form: the view's del statements work.
@@ -1104,10 +1205,11 @@ func (s *PaymentWrites) Update(ctx context.Context, identity domain.ResolvedIden
 				return nil, domain.ErrPaymentWritesServer
 			}
 		}
-		converted, refused := dto.PaymentEntryFormObject(object, true)
-		if refused {
-			// A JSON field past the ported depth or with a lone surrogate:
-			// handed off to Django before any write.
+		converted, refused, surrogate := dto.PaymentEntryFormObject(object, true)
+		jsonSurrogate = surrogate
+		if refused && !surrogate {
+			// The recursion band: Python's JSON codec limit depends on the live
+			// call stack (owner decision X15 pending in this file's flow).
 			return nil, domain.ErrPaymentWritesNotPorted
 		}
 		object = converted
@@ -1172,6 +1274,21 @@ func (s *PaymentWrites) Update(ctx context.Context, identity domain.ResolvedIden
 	before, err := tx.PaymentAuditValues(ctx, id)
 	if err != nil {
 		return nil, err
+	}
+	if jsonSurrogate {
+		// auditlog's pre_save entry of the full-row save is written, then
+		// PostgreSQL's jsonb input refuses the lone surrogate: the UPDATE is
+		// skipped, the entry stays (the view is not atomic) and the answer is
+		// the 500 page.
+		if changes := updatedPaymentChanges(before, paymentAfterSaveValues(before, *row, m)); len(changes) > 0 {
+			if err = s.audit(ctx, tx, identity, request.Audit, id, 1, changes, row.AssociationID); err != nil {
+				return nil, err
+			}
+		}
+		if err = tx.Commit(); err != nil {
+			return nil, err
+		}
+		return nil, errPaymentWritesJSONColumn
 	}
 	if err = tx.SavePaymentRow(ctx, m.row); err != nil {
 		return nil, err
