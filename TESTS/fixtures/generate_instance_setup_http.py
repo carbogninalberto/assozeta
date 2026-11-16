@@ -310,6 +310,55 @@ add('configure-import-progress-task', 'anonymous', CONFIGURE, 500,
 add('configure-import-owner-token', 'owner', CONFIGURE, 200, LINKED, body=import_body(own_task), headers=TOKEN,
     effect={'kind': 'import', 'config': IMPORTED, 'association': IDS['own_association']})
 
+# A FAILURE row answers 500 with the text Celery's django-db backend prints for
+# the row's stored exception (the same except Exception branch, still inside the
+# setup transaction, so nothing is stored). The row's "result" is the exception
+# dict prepare_exception wrote; any value a row holds is reachable.
+def failure_task(key, stored, message):
+    task = import_task(key, 'FAILURE', None if stored is None else json.dumps(stored))
+    add(f'configure-import-failure-{key}', 'anonymous', CONFIGURE, 500, failed(message), body=import_body(task), headers=TOKEN)
+
+
+failure_task('worker-lost', {'exc_type': 'WorkerLostError',
+                             'exc_message': ['Worker exited prematurely: signal 9 (SIGKILL) Job: 0.'],
+                             'exc_module': 'billiard.exceptions'},
+             'Import task failed: Worker exited prematurely: signal 9 (SIGKILL) Job: 0.')
+failure_task('time-limit', {'exc_type': 'TimeLimitExceeded', 'exc_message': [3600.0],
+                            'exc_module': 'billiard.exceptions'},
+             'Import task failed: TimeLimitExceeded(3600.0,)')
+failure_task('key-error', {'exc_type': 'KeyError', 'exc_message': ['x'], 'exc_module': 'builtins'},
+             "Import task failed: 'x'")
+failure_task('unknown-module', {'exc_type': 'Wat', 'exc_message': 'boom', 'exc_module': 'nomod'},
+             'Import task failed: boom')
+failure_task('non-exception-attribute', {'exc_type': 'system', 'exc_message': {'cmd': 'noop'},
+                                         'exc_module': 'os'},
+             "Expected an exception class, got os.system with payload {'cmd': 'noop'}")
+failure_task('non-dict-result', 5,
+             "If the stored exception isn't an instance of BaseException, it must be a dictionary.\nInstead got: 5")
+failure_task('empty-result', None, 'Import task failed: None')
+failure_task('no-module', {'exc_type': 'Wat', 'exc_message': ['x', 1], 'exc_module': None},
+             "Import task failed: ('x', 1)")
+failure_task('unicode-encode', {'exc_type': 'UnicodeEncodeError',
+                                'exc_message': ['ascii', 'é', 0, 1, 'ordinal not in range(128)'],
+                                'exc_module': 'builtins'},
+             "Import task failed: 'ascii' codec can't encode character '\\xe9' in position 0: "
+             'ordinal not in range(128)')
+
+# A REVOKED row is ready but not failed (AsyncResult.failed() is the FAILURE
+# state alone), so the view goes on: the stored exception is rebuilt, is not a
+# dict, and the setup links the last association. A rebuild that raises answers
+# its own text, still inside the setup transaction, so nothing is stored.
+revoked_exception = import_task('revoked_exception', 'REVOKED',
+                                json.dumps({'exc_type': 'TaskRevokedError', 'exc_message': ['Revoked'],
+                                            'exc_module': 'celery.exceptions'}))
+add('configure-import-revoked-exception', 'anonymous', CONFIGURE, 200, LINKED, body=import_body(revoked_exception), headers=TOKEN,
+    effect={'kind': 'import', 'config': IMPORTED, 'association': '$latest'})
+revoked_non_exception = import_task('revoked_non_exception', 'REVOKED',
+                                    json.dumps({'exc_type': 'system', 'exc_message': {'cmd': 'noop'}, 'exc_module': 'os'}))
+add('configure-import-revoked-non-exception', 'anonymous', CONFIGURE, 500,
+    failed("Expected an exception class, got os.system with payload {'cmd': 'noop'}"),
+    body=import_body(revoked_non_exception), headers=TOKEN)
+
 # EmailField columns hold 254 characters: the insert inside the setup transaction fails and the view answers the database text
 # (everything rolls back, so the instance stays unconfigured).
 TOO_LONG = 'value too long for type character varying(254)\n'

@@ -100,6 +100,61 @@
    "task_id": "b3000000-0000-4000-8000-000000000111",
    "status": "PROGRESS",
    "result": "{\"percent\": 50}"
+  },
+  "worker-lost": {
+   "task_id": "b3000000-0000-4000-8000-000000000112",
+   "status": "FAILURE",
+   "result": "{\"exc_type\": \"WorkerLostError\", \"exc_message\": [\"Worker exited prematurely: signal 9 (SIGKILL) Job: 0.\"], \"exc_module\": \"billiard.exceptions\"}"
+  },
+  "time-limit": {
+   "task_id": "b3000000-0000-4000-8000-000000000113",
+   "status": "FAILURE",
+   "result": "{\"exc_type\": \"TimeLimitExceeded\", \"exc_message\": [3600.0], \"exc_module\": \"billiard.exceptions\"}"
+  },
+  "key-error": {
+   "task_id": "b3000000-0000-4000-8000-000000000114",
+   "status": "FAILURE",
+   "result": "{\"exc_type\": \"KeyError\", \"exc_message\": [\"x\"], \"exc_module\": \"builtins\"}"
+  },
+  "unknown-module": {
+   "task_id": "b3000000-0000-4000-8000-000000000115",
+   "status": "FAILURE",
+   "result": "{\"exc_type\": \"Wat\", \"exc_message\": \"boom\", \"exc_module\": \"nomod\"}"
+  },
+  "non-exception-attribute": {
+   "task_id": "b3000000-0000-4000-8000-000000000116",
+   "status": "FAILURE",
+   "result": "{\"exc_type\": \"system\", \"exc_message\": {\"cmd\": \"noop\"}, \"exc_module\": \"os\"}"
+  },
+  "non-dict-result": {
+   "task_id": "b3000000-0000-4000-8000-000000000117",
+   "status": "FAILURE",
+   "result": "5"
+  },
+  "empty-result": {
+   "task_id": "b3000000-0000-4000-8000-000000000118",
+   "status": "FAILURE",
+   "result": null
+  },
+  "no-module": {
+   "task_id": "b3000000-0000-4000-8000-000000000119",
+   "status": "FAILURE",
+   "result": "{\"exc_type\": \"Wat\", \"exc_message\": [\"x\", 1], \"exc_module\": null}"
+  },
+  "unicode-encode": {
+   "task_id": "b3000000-0000-4000-8000-000000000120",
+   "status": "FAILURE",
+   "result": "{\"exc_type\": \"UnicodeEncodeError\", \"exc_message\": [\"ascii\", \"\\u00e9\", 0, 1, \"ordinal not in range(128)\"], \"exc_module\": \"builtins\"}"
+  },
+  "revoked_exception": {
+   "task_id": "b3000000-0000-4000-8000-000000000121",
+   "status": "REVOKED",
+   "result": "{\"exc_type\": \"TaskRevokedError\", \"exc_message\": [\"Revoked\"], \"exc_module\": \"celery.exceptions\"}"
+  },
+  "revoked_non_exception": {
+   "task_id": "b3000000-0000-4000-8000-000000000122",
+   "status": "REVOKED",
+   "result": "{\"exc_type\": \"system\", \"exc_message\": {\"cmd\": \"noop\"}, \"exc_module\": \"os\"}"
   }
  },
  "cases": [
@@ -2424,6 +2479,452 @@
     "initialization": {
      "type": "import",
      "importTaskId": "b3000000-0000-4000-8000-000000000100",
+     "associationName": "ignored"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-import-failure-worker-lost",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 500,
+   "response": {
+    "success": false,
+    "error": "Import task failed: Worker exited prematurely: signal 9 (SIGKILL) Job: 0."
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": " Istanza Importata ",
+     "primaryColor": "#123ABC"
+    },
+    "initialization": {
+     "type": "import",
+     "importTaskId": "b3000000-0000-4000-8000-000000000112",
+     "associationName": "ignored"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-import-failure-time-limit",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 500,
+   "response": {
+    "success": false,
+    "error": "Import task failed: TimeLimitExceeded(3600.0,)"
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": " Istanza Importata ",
+     "primaryColor": "#123ABC"
+    },
+    "initialization": {
+     "type": "import",
+     "importTaskId": "b3000000-0000-4000-8000-000000000113",
+     "associationName": "ignored"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-import-failure-key-error",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 500,
+   "response": {
+    "success": false,
+    "error": "Import task failed: 'x'"
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": " Istanza Importata ",
+     "primaryColor": "#123ABC"
+    },
+    "initialization": {
+     "type": "import",
+     "importTaskId": "b3000000-0000-4000-8000-000000000114",
+     "associationName": "ignored"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-import-failure-unknown-module",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 500,
+   "response": {
+    "success": false,
+    "error": "Import task failed: boom"
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": " Istanza Importata ",
+     "primaryColor": "#123ABC"
+    },
+    "initialization": {
+     "type": "import",
+     "importTaskId": "b3000000-0000-4000-8000-000000000115",
+     "associationName": "ignored"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-import-failure-non-exception-attribute",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 500,
+   "response": {
+    "success": false,
+    "error": "Expected an exception class, got os.system with payload {'cmd': 'noop'}"
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": " Istanza Importata ",
+     "primaryColor": "#123ABC"
+    },
+    "initialization": {
+     "type": "import",
+     "importTaskId": "b3000000-0000-4000-8000-000000000116",
+     "associationName": "ignored"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-import-failure-non-dict-result",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 500,
+   "response": {
+    "success": false,
+    "error": "If the stored exception isn't an instance of BaseException, it must be a dictionary.\nInstead got: 5"
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": " Istanza Importata ",
+     "primaryColor": "#123ABC"
+    },
+    "initialization": {
+     "type": "import",
+     "importTaskId": "b3000000-0000-4000-8000-000000000117",
+     "associationName": "ignored"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-import-failure-empty-result",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 500,
+   "response": {
+    "success": false,
+    "error": "Import task failed: None"
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": " Istanza Importata ",
+     "primaryColor": "#123ABC"
+    },
+    "initialization": {
+     "type": "import",
+     "importTaskId": "b3000000-0000-4000-8000-000000000118",
+     "associationName": "ignored"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-import-failure-no-module",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 500,
+   "response": {
+    "success": false,
+    "error": "Import task failed: ('x', 1)"
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": " Istanza Importata ",
+     "primaryColor": "#123ABC"
+    },
+    "initialization": {
+     "type": "import",
+     "importTaskId": "b3000000-0000-4000-8000-000000000119",
+     "associationName": "ignored"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-import-failure-unicode-encode",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 500,
+   "response": {
+    "success": false,
+    "error": "Import task failed: 'ascii' codec can't encode character '\\xe9' in position 0: ordinal not in range(128)"
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": " Istanza Importata ",
+     "primaryColor": "#123ABC"
+    },
+    "initialization": {
+     "type": "import",
+     "importTaskId": "b3000000-0000-4000-8000-000000000120",
+     "associationName": "ignored"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-import-revoked-exception",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 200,
+   "response": {
+    "success": true,
+    "message": "Istanza configurata con successo",
+    "association_id": "$new",
+    "redirect": "/login"
+   },
+   "effect": {
+    "kind": "import",
+    "config": {
+     "domain": "setup.example.test",
+     "name": "Istanza Importata",
+     "abbreviation": "",
+     "primary_color": "#123ABC",
+     "support_email": "",
+     "logo_path": "",
+     "setup_provenance": "import",
+     "onboarding_completed": true,
+     "display_settings": {
+      "general": {
+       "searchBar": true,
+       "cookieConsent": true,
+       "showDemoButton": false
+      },
+      "login": {
+       "showSportAssociationCreation": false,
+       "allowOauthLogin": true,
+       "showFooterInfo": true,
+       "allowOnlyAthletes": false,
+       "showTestimonials": false,
+       "termsAndConditionsUrl": ""
+      },
+      "navbar": {
+       "showAffiliateLink": false,
+       "showReview": false,
+       "showNotifications": true
+      },
+      "sidebar": {
+       "showPlanUpgrades": false,
+       "showPrivacyPolicy": true,
+       "showTermsOfService": true,
+       "showPreferences": true
+      }
+     },
+     "google_client_id": "",
+     "apple_client_id": "",
+     "stripe_public_key": "",
+     "stripe_secret_key": "",
+     "stripe_webhook_secret": "",
+     "stripe_pricing_table": "",
+     "stripe_client_portal": "",
+     "self_hosted": true,
+     "support_multiple_associations": false,
+     "is_reseller": false,
+     "show_course_athletes": true,
+     "show_minor_exemption": true,
+     "show_tutorial": true,
+     "meta_title": "",
+     "meta_description": "",
+     "email_settings": {},
+     "email_password_encrypted": "",
+     "email_revision": 0,
+     "diagnostic_results": {},
+     "integration_settings": {}
+    },
+    "association": "$latest"
+   },
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": " Istanza Importata ",
+     "primaryColor": "#123ABC"
+    },
+    "initialization": {
+     "type": "import",
+     "importTaskId": "b3000000-0000-4000-8000-000000000121",
+     "associationName": "ignored"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-import-revoked-non-exception",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 500,
+   "response": {
+    "success": false,
+    "error": "Expected an exception class, got os.system with payload {'cmd': 'noop'}"
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": " Istanza Importata ",
+     "primaryColor": "#123ABC"
+    },
+    "initialization": {
+     "type": "import",
+     "importTaskId": "b3000000-0000-4000-8000-000000000122",
      "associationName": "ignored"
     }
    }

@@ -112,9 +112,10 @@ def normalize(case, expected, actual):
 
 def assert_case(case, base_url, *, token, sessions, bindings=None):
     BINDINGS.clear()
-    response = expectation(case['response'])
-    if bindings:
-        response = bind(response, bindings)
+    # Bind the raw authored value first: expectation() builds matcher objects
+    # (str subclasses among them) that a later str.replace would turn back into
+    # plain text.
+    response = expectation(bind(case['response'], bindings) if bindings else case['response'])
     return family.assert_case({**case, 'response': response}, base_url, token=token, sessions=sessions,
                               allowed=lambda case: ALLOWED[case['path'].split('/')[-1]], normalize=normalize)
 
