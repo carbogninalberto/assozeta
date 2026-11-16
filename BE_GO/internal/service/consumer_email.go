@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log/slog"
 	"math/rand/v2"
 	"regexp"
@@ -276,7 +277,10 @@ func (s *SendMailAsync) planConfigSend(ctx context.Context, configuration domain
 					// An application-state error is Django's 500 page, not a handoff.
 					return nil, err
 				}
-				return nil, celeryworker.ErrHandoff
+				// The handoff keeps the refusal that caused it: callers that
+				// only hand the task over still match ErrHandoff, and a web
+				// view can answer the smtpsend refusal itself.
+				return nil, fmt.Errorf("%w: %w", celeryworker.ErrHandoff, err)
 			}
 		}
 	}

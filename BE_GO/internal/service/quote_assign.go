@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"log/slog"
+	"math/big"
 	"strconv"
 	"strings"
 	"time"
@@ -82,10 +83,11 @@ func (s *QuoteAssign) Run(ctx context.Context, job domain.Job) error {
 }
 
 // plan reads the associations (the iterator's cursor) and, for each one the
-// run reaches, its balance year and active plans; it then checks every
-// conversion, render and SMTP message the run could need and refuses the run
-// (ErrPaymentMiscNotPorted, and the messages smtpsend refuses) before any
-// effect.
+// run reaches, its balance year and active plans; it then checks the e-mail
+// render and SMTP message of every subscription the run could need and refuses
+// the run (the messages smtpsend refuses) before any effect. A Python exception
+// of the task (a None previous plan) stops the run at that association, as
+// Django's outer except does.
 func (s *QuoteAssign) plan(ctx context.Context, job domain.Job, now time.Time) ([]quoteAssignAssociation, error) {
 	tx, err := s.store.BeginQuoteAssign(ctx, job)
 	if err != nil {
@@ -119,13 +121,11 @@ func (s *QuoteAssign) plan(ctx context.Context, job domain.Job, now time.Time) (
 		}
 		for _, plan := range item.plans {
 			pattern, err := paymentMiscPattern(plan.previous)
+			if errors.Is(err, errPaymentMiscStop) {
+				item.stop = true
+				break
+			}
 			if err != nil {
-				return nil, err
-			}
-			if _, err = paymentMiscPattern(plan.id); err != nil {
-				return nil, err
-			}
-			if _, _, _, err = paymentMiscAmount(plan.fee); err != nil {
 				return nil, err
 			}
 			subscriptions, err := tx.QuoteAssignSubscriptions(ctx, row.ID, item.from, item.to, pattern)
@@ -146,6 +146,9 @@ func (s *QuoteAssign) plan(ctx context.Context, job domain.Job, now time.Time) (
 			}
 		}
 		out = append(out, item)
+		if item.stop {
+			break
+		}
 	}
 	return out, tx.Rollback()
 }
@@ -218,9 +221,14 @@ func (s *QuoteAssign) quote(ctx context.Context, job domain.Job, row domain.Quot
 	if err != nil {
 		return false, err
 	}
-	stored, audit, float, err := paymentMiscAmount(plan.fee)
+	fee, err := paymentMiscFeeValue(plan.fee)
 	if err != nil {
 		return false, err
+	}
+	if fee.PostgresOverflow {
+		// The lookup's own numeric parameter raises: the exception ends the
+		// run before this quote is read.
+		return false, errPaymentMiscStop
 	}
 	tx, err := s.store.BeginQuoteAssign(ctx, job)
 	if err != nil {
@@ -228,9 +236,15 @@ func (s *QuoteAssign) quote(ctx context.Context, job domain.Job, row domain.Quot
 	}
 	defer tx.Rollback()
 	exists, err := tx.QuoteExists(ctx, domain.PaymentQuoteCheck{User: subscription.UserID, Associate: subscription.AssociateID,
-		Pattern: idPattern, Amount: stored})
+		Pattern: idPattern, Amount: fee.Value})
 	if err != nil || exists {
 		return false, err
+	}
+	// Payment.objects.create raises before the row exists: a null amount
+	// violates NOT NULL, a value numeric(9, 2) cannot hold fails
+	// format_number's quantize. Earlier creates stay committed.
+	if fee.Null || fee.OutOfRange {
+		return false, errPaymentMiscStop
 	}
 	account, err := tx.DefaultBankAccount(ctx, row.ID)
 	if err != nil {
@@ -239,11 +253,10 @@ func (s *QuoteAssign) quote(ctx context.Context, job domain.Job, row domain.Quot
 	user, association := subscription.UserID, row.ID
 	m := &paymentMemory{row: domain.PaymentWriteRow{ID: s.writes.newID(), Type: "default", Subject: 1, CreationDate: s.writes.at(),
 		UserID: &user, AssociateID: subscription.AssociateID, AssociationID: &association, AccountID: account}, jsonAudit: map[string]string{}}
-	if float != nil {
-		m.setFloat(*float)
-	} else {
-		m.row.Amount, m.amountAudit, m.amountShown = stored, &audit, &stored
-	}
+	// The column and the instance keep to_python's value; auditlog str() of the
+	// assigned one.
+	m.row.Amount, m.amountAudit, m.amountShown = fee.Value, &fee.Audit, &fee.Value
+	m.amountFloat = fee.Float
 	m.setJSON("meta", paymentQuoteMeta(plan), &m.row.Meta)
 	if err = s.writes.defaults(ctx, tx, m); err != nil {
 		return false, err
@@ -269,7 +282,7 @@ func (s *QuoteAssign) subject(row domain.QuoteAssignAssociation, plan paymentQuo
 }
 
 // message renders email/payment/fee_assigned.html with the plan's stored
-// name and fee (JSON values the renderer does not take are not ported).
+// name and fee (every JSON value renders as its Python str()).
 func (s *QuoteAssign) message(ctx context.Context, job domain.Job, row domain.QuoteAssignAssociation, plan paymentQuotePlan,
 	subscription domain.QuoteAssignSubscription) (string, error) {
 	name, err := quoteAssignTemplateValue(plan.name)
@@ -289,23 +302,36 @@ func (s *QuoteAssign) message(ctx context.Context, job domain.Job, row domain.Qu
 		"fee_name":       name, "amount": amount, "application_name": s.whitelabel, "association_name": association})
 }
 
-// quoteAssignTemplateValue is a json.loads value as a template context value.
+// quoteAssignTemplateValue is a json.loads value as the fee e-mail's context:
+// render_value_in_context prints localize(value) and escapes it. None, str and
+// bool are taken as they are; an int is its digits (mark_safe(str(int)); a
+// 30-digit bound prints in full); a float goes through number_format
+// (emailrender keeps Python's repr and the language's decimal separator); a
+// list or an object is str() of it escaped, which is what `{{ fee_name }}`
+// renders (the context value is not a lookup path).
 func quoteAssignTemplateValue(value any) (any, error) {
 	switch v := value.(type) {
 	case nil, string, bool:
 		return v, nil
 	case json.Number:
-		if !strings.ContainsAny(string(v), ".eE") {
-			if integer, err := strconv.ParseInt(string(v), 10, 64); err == nil {
-				return integer, nil
+		if strings.ContainsAny(string(v), ".eE") {
+			number, err := strconv.ParseFloat(string(v), 64)
+			if err != nil && !errors.Is(err, strconv.ErrRange) {
+				return nil, domain.ErrPaymentMiscUnreachable
 			}
-			return nil, domain.ErrPaymentMiscNotPorted
+			// A huge literal is the infinity json.loads reads it as.
+			return number, nil
 		}
-		number, err := strconv.ParseFloat(string(v), 64)
-		if err != nil {
-			return nil, domain.ErrPaymentMiscNotPorted
+		integer, ok := new(big.Int).SetString(string(v), 10)
+		if !ok {
+			return nil, domain.ErrPaymentMiscUnreachable
 		}
-		return number, nil
+		if integer.IsInt64() {
+			return integer.Int64(), nil
+		}
+		return emailrender.Safe(integer.String()), nil
+	case []any, domain.RequestObject:
+		return emailrender.Safe(emailrender.Escape(dto.PythonStr(v))), nil
 	}
-	return nil, domain.ErrPaymentMiscNotPorted
+	return nil, domain.ErrPaymentMiscUnreachable
 }

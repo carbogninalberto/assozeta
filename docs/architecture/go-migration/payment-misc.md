@@ -28,14 +28,19 @@ so far and answers 200:
 - Plans: `subscription_fee_plans` iterated (a non-empty dict or string, or a scalar, raises). A plan is skipped when its
   previous plan is `''`, or `auto_assign`, `advanced_options` or the previous plan are falsy (Python truthiness, missing
   keys default to False); otherwise `int(from_day)` / `int(from_month)` (Python `int()`: bools, truncated floats,
-  stripped strings with underscores) must equal the date. Matching plans render `from_day`, `from_month`, `to_day`,
-  `to_month` (ints), `previous_subscription_fee_plan`, `name`, `subscription_fee`, `id`. Any exception here (missing
-  key, `int()` failure) leaves both lists empty.
+  stripped strings with single underscores, decimal digits of any script, and unbounded integers: a 30-digit bound
+  converts and compares like any other) must equal the date. Matching plans render `from_day`, `from_month`, `to_day`,
+  `to_month` (ints, in full), `previous_subscription_fee_plan`, `name`, `subscription_fee`, `id`. Any exception here
+  (missing key, `int()` failure) leaves both lists empty.
 - Subscriptions of the association in the balance year with a payment whose `meta` is not null, a non-null `meta`, not
   deleted or archived, `X-Group-Id`-aware (a malformed header is ignored), filtered per plan by
   `UPPER(payment.meta::text) LIKE UPPER('%<previous>%')`. No ORDER BY (the contract compares quotes as a multiset).
 - A subscription is skipped when a live, group-aware payment of the same user, subject 1, associate (NULL matches NULL),
-  amount (`DecimalField.to_python` of the fee) and `meta` icontains the plan id exists.
+  amount (`DecimalField.to_python` of the fee) and `meta` icontains the plan id exists. A null fee is `amount IS NULL`
+  (never a stored row: the column is NOT NULL). A fee `numeric(9, 2)` cannot hold matches no row either, and a fee
+  beyond PostgreSQL's numeric (its exponent limits, measured: `1e131071` and `1e-16383` are values, the next power in
+  either direction raises "value overflows numeric format") makes the lookup's own parameter raise, which ends the run
+  before that quote is read.
 - Simulation quote: `{user: full name, associate: {first_name, last_name}, amount, subject: 1, meta:
   {subscription_data: {subscription_fee, name, id}}, message}`; `message` is the rendered e-mail text (with
   `WHITELABEL_NAME` and the denomination) when the subscription's user is not the association owner, else null. A
@@ -90,25 +95,59 @@ document ids). A paid invoiced payment with a falsy `generate_invoice` (JSON fal
 message; unpaid expenses and payments without associate, supplier and instructor return before the invoice task, so
 their invoice is rendered whatever `generate_invoice` says.
 
+## Plan values of any JSON shape (t4pay)
+
+The association import writes the archive's `subscription_fee_plans` as it is
+(`BE/application/services/import_service.py`), so every JSON value is reachable. The port reads them as Python does:
+
+- `int()` (`BE/application/utils/payments_utils.py:173-187`, `BE/application/tasks.py:1470-1479`): bools are 1/0, a float
+  truncates, a string is stripped and its decimal digits of any script read with single underscores between digits
+  (`\uff11`, ` ٨ `, `٣١`); the result is unbounded, so a 30-digit `from_day` converts and compares like any other (it
+  equals no day) and `to_day` renders in full. `int(inf)`/`int(nan)` and non-integer text raise and end the run
+  (`big.Int` + `dto.PythonASCIIDigits`).
+- `icontains` of the previous plan and the plan id (`payment_utils.py:226-228`, `tasks.py:1532-1534`, `1545`) takes
+  `str(value)`: numbers as written, booleans, lists and objects as their Python repr, escaped for `%` and `_`
+  (`dto.PythonStr`). A null raises `Cannot use None as a query value` and ends the run before that plan's quotes.
+- The fee is `models.DecimalField(max_digits=9, decimal_places=2)` (`BE/application/models/payment_models.py:99`).
+  `DecimalField.to_python` converts a string or integer with `Decimal()` (every underscore removed, decimal digits of any
+  script mapped, `str.strip()` whitespace) and a float with `Context(prec=9).create_decimal_from_float`; a non-finite
+  value, an invalid literal, a list and an object raise (`ValidationError`), which ends the run where Django's
+  `try` does. Django 5 hands the Decimal to the driver as its own text (`django/db/backends/base/operations.py:583`
+  returns it unchanged; `format_number` is unused), so PostgreSQL rounds it to the column's scale 2 **half away from
+  zero** (`'0.005'` → `0.01`, `'2.665'` → `2.67`) and raises `DataError` when the rounded absolute value reaches `10^7`
+  (`'9999999.995'`, `'10000000'`) — at the statement, after the earlier creates, which stay committed. The lookup
+  compares `to_python`'s exact value; a value outside PostgreSQL's numeric raises its parameter, and a value past
+  `decimal.MAX_EMAX` never converts. A null fee is `to_python(None) is None`: the lookup is `amount IS NULL` and the
+  INSERT violates NOT NULL.
+- auditlog records `str(value)` as assigned (`'1_000'` stays `1_000`, a float `12.5`, a boolean `True`), not `to_python`'s
+  value; Go keeps both (`paymentMiscFee.Audit`/`Value`).
+- The fee e-mail renders `{{ fee_name }}` and `{{ amount }}` (`BE/templates/email/payment/fee_assigned.html`,
+  `tasks.py:1579-1594`): `render_value_in_context` prints `localize(str(value))` escaped, so a list or an object is its
+  Python repr escaped (`[&#x27;Quota&#x27;, 1]`), a 30-digit int its digits, a float `str(float)` with the language's
+  decimal separator, and `None`/`True`/`False` as written. The subject is the f-string, so `str(value)` unescaped.
+  `association_quote_assign` renders the same template (`tasks.py:1579`).
+- A fee json.loads reads as an infinity needs a plan number whose text keeps a fractional part beyond `1e308`; the column
+  is `jsonb`, so PostgreSQL writes every number in its own spelling (a `1e400` literal is stored and read back as the
+  401-digit integer it equals — an out-of-range fee, not a float). Should such a value exist anyway, `to_python` raises
+  (`ValidationError`) and ends the run, and a plan already considered with it makes DRF refuse the simulation's answer
+  (`STRICT_JSON` passes `allow_nan=False`): that route answers the 500 page. `paymentMiscFeeValue` reads the json value
+  as Django does in either case.
+- A subscription's user e-mail is never NULL (`bakney_user.email` is `AbstractUser`'s `EmailField`, `null=False`, and
+  the task's query inner-joins the user), so `recipient_list=[None]` is unreachable (`ErrPaymentMiscUnreachable`).
+  A configured SMTP send whose message is outside `smtpsend`'s subset keeps that package's own refusal (the planner
+  wraps it with `celeryworker.ErrHandoff`), instead of a payment-misc sentinel.
+
 ## Not ported (refused with a 500 before any write)
 
-- Apply quotes that e-mail a member with template values the renderer does not take (plan name/fee that are lists or
-  dicts), or, with a `CommunicationConfiguration`, send values the consumer's planner hands off: the whole request is
-  rolled back.
 - Approve of unpaid income payments with a party is now ported by payment-state's paid flow
   ([payment-state](payment-state.md)). A paid invoiced payment with a truthy `generate_invoice` is now ported (the
   `print_document_invoice` dispatch, see [invoice-generate](invoice-generate.md)); every JSON value of
   `send_receipt_email` is passed on (rest-b1); only an uploaded file is refused.
-- Plan values outside the ported conversions: `int()` beyond int64, fees that are not a JSON number or a plain decimal
-  string (or exceed numeric(9, 2)), previous plan / plan id values that are not strings or numbers. The plan editor
-  writes strings and numbers, so these need hand-edited plan JSON; each type has its own lookup and insert failure in
-  Django and they stay refused. (Digits of other scripts and `X-Group-Id` in another spelling are ported, v2-rest-a
-  below.)
 
-Since long-tail PR 3 (agent B) the regex-built decimal and the dead date branch are not refusals: the first is
-application state (`ErrPaymentMiscUnreachable`, the 500 page, since the regex admits only well-formed text) and the
-second is deleted. The unwired mail sender is `ErrServerComposition`. A null plan id and a list or object fee stay
-refusals, as do the big integers and the Decimal texts.
+The `ErrPaymentMiscNotPorted` sentinel is gone: every plan value above is ported, and a refusal on the e-mail paths
+keeps the sentinel of the package that produced it (`emailrender`, `smtpsend`, `celeryworker.ErrHandoff`). A state Django
+cannot produce stays application state (`ErrPaymentMiscUnreachable`, the 500 page), and the unwired mail sender is
+`ErrServerComposition`.
 
 ## Routes left out of this family
 
@@ -190,6 +229,28 @@ id raises ("Cannot use None as a query value") and ends the run with what was co
 fee raises in `DecimalField.to_python` and does the same; a null fee matches `amount IS NULL`, is listed by the simulation
 and makes the apply's insert fail (nothing is created); a boolean fee converts to 1 or 0 (the audit keeps `True`). A fee
 beyond numeric(9, 2) matches no row (simulation lists it) and fails the apply's insert. The worker-run apply
-(`association_quote_assign`) keeps refusing null and out-of-range fees. GREEN `t3pay-1`: 120/120 on the four transports.
+(`association_quote_assign`) stopped refusing null and out-of-range fees in t4pay, below. GREEN `t3pay-1`: 120/120 on
+the four transports.
 
 GREEN `t3pay-5` (run 43084300494) 120/120; mutation (booleans refused) CAUGHT, run 43082154506.
+
+## Every fee and name shape (t4pay)
+
+Eighteen more cases (138 in all): a 30-digit `from_day` (nothing considered), fees `'1_000'`, `'١٢.٥٠'` (other-script
+digits), `'١٢٫٥٠'` (the other decimal separator: `InvalidOperation`, nothing), `'2.665'` (stored as `2.67`: PostgreSQL
+rounds half away from zero, where a client-side half-to-even quantize would store `2.66`), `'1e400'` (an exponent text,
+listed but never inserted), `10000000` (beyond numeric(9, 2)), and a list and an object plan name (rendered in the
+simulation message and in the apply's e-mail and subject). The stored payments keep PostgreSQL's column text
+(`1000.00`, `12.50`, `2.67`) while the create entry keeps `str()` of the raw value (`'1_000'`, `'١٢.٥٠'`, `'2.665'`);
+the out-of-range fee is listed by the simulation and makes the apply's insert raise after that quote, keeping the
+earlier ones.
+
+The worker harness (`TESTS/adapters/go/quote_assign_worker_process.py`) replaces its "unported fee" refusal case with two
+Django comparisons on a seventh association: `odd` (30-digit day bound, exponent, underscored, other-script and
+three-decimal fees, a list and an object plan name, e-mailed members) and `overflow` (a plan created, then a `10000000`
+fee stops the run with the earlier payment kept). Its fee checks (`paymentMiscFeeValue`) are the apply route's, so the null, list, object and
+out-of-range fees no longer fail the job.
+
+Go unit tests: `BE_GO/internal/service/payment_misc_test.go` (`TestPaymentMiscInt*`, `TestPaymentMiscActivePlans*`,
+`TestPaymentMiscPattern*`, `TestPaymentMiscFee*`, `TestQuoteAssignTemplateValue*`,
+`TestPaymentMiscFeeMailRendersEveryValueKind`).

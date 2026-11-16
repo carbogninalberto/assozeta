@@ -11,10 +11,6 @@ import (
 var (
 	// ErrPaymentMiscServer is an unhandled exception in the Django view (the 500 page).
 	ErrPaymentMiscServer = errors.New("payment misc server error")
-	// ErrPaymentMiscNotPorted refuses, before any write, an input whose Django
-	// behaviour is not ported (e-mails, signature storage with its PDF, plan
-	// values outside the ported Python conversions).
-	ErrPaymentMiscNotPorted = refusal.New("payment misc behaviour not ported")
 	// ErrPaymentMiscUnreachable is a state no request or stored row produces
 	// (each site names the decoder or constraint that rules it out).
 	ErrPaymentMiscUnreachable = refusal.AppState("payment misc: unreachable state")

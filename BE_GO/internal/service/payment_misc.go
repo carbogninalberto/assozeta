@@ -76,13 +76,18 @@ type PaymentMiscRequest struct {
 var errPaymentMiscStop = errors.New("payment misc python exception")
 
 type paymentQuotePlan struct {
-	fromDay, fromMonth, toDay, toMonth int64
+	// The day and month bounds are Python int() results: unbounded integers.
+	fromDay, fromMonth, toDay, toMonth *big.Int
 	previous, name, fee, id            any
 }
 
+// paymentMiscNumber is a Python int as the JSON renderer writes it: its digits.
+func paymentMiscNumber(value *big.Int) json.Number { return json.Number(value.String()) }
+
 func (p paymentQuotePlan) render() domain.RequestObject {
-	return domain.RequestObject{{Name: "from_day", Value: p.fromDay}, {Name: "from_month", Value: p.fromMonth}, {Name: "to_day", Value: p.toDay},
-		{Name: "to_month", Value: p.toMonth}, {Name: "previous_subscription_fee_plan", Value: dto.PaymentMiscJSON(p.previous)},
+	return domain.RequestObject{{Name: "from_day", Value: paymentMiscNumber(p.fromDay)},
+		{Name: "from_month", Value: paymentMiscNumber(p.fromMonth)}, {Name: "to_day", Value: paymentMiscNumber(p.toDay)},
+		{Name: "to_month", Value: paymentMiscNumber(p.toMonth)}, {Name: "previous_subscription_fee_plan", Value: dto.PaymentMiscJSON(p.previous)},
 		{Name: "name", Value: dto.PaymentMiscJSON(p.name)}, {Name: "subscription_fee", Value: dto.PaymentMiscJSON(p.fee)},
 		{Name: "id", Value: dto.PaymentMiscJSON(p.id)}}
 }
@@ -110,40 +115,47 @@ func paymentMiscTruthy(value any) bool {
 var paymentMiscIntLiteral = regexp.MustCompile(`^[+-]?[0-9]+(_[0-9]+)*$`)
 
 // paymentMiscInt is Python's int(value): errPaymentMiscStop for the
-// exceptions it raises; values Go cannot hold (or non-ASCII digits, which
-// int() accepts) are not ported.
-func paymentMiscInt(value any) (int64, error) {
-	var integer *big.Int
+// exceptions it raises, the value itself for every integer (Python ints are
+// unbounded: a 30-digit day bound converts and compares like any other).
+func paymentMiscInt(value any) (*big.Int, error) {
 	switch v := value.(type) {
 	case bool:
 		if v {
-			return 1, nil
+			return big.NewInt(1), nil
 		}
-		return 0, nil
+		return big.NewInt(0), nil
 	case json.Number:
 		if strings.ContainsAny(string(v), ".eE") {
 			number, err := strconv.ParseFloat(string(v), 64)
-			if (err != nil && !errors.Is(err, strconv.ErrRange)) || math.IsInf(number, 0) || math.IsNaN(number) {
-				return 0, errPaymentMiscStop
+			if err != nil && !errors.Is(err, strconv.ErrRange) {
+				return nil, errPaymentMiscStop
 			}
-			integer, _ = new(big.Float).SetFloat64(math.Trunc(number)).Int(nil)
-		} else {
-			integer, _ = new(big.Int).SetString(string(v), 10)
+			if math.IsInf(number, 0) || math.IsNaN(number) {
+				// int(inf) raises OverflowError, int(nan) ValueError.
+				return nil, errPaymentMiscStop
+			}
+			// int(float) is the exact integer part of the double.
+			integer, _ := new(big.Float).SetFloat64(math.Trunc(number)).Int(nil)
+			return integer, nil
 		}
+		integer, ok := new(big.Int).SetString(string(v), 10)
+		if !ok {
+			return nil, errPaymentMiscStop
+		}
+		return integer, nil
 	case string:
 		// int() reads the decimal digits of any script.
 		text := dto.PythonASCIIDigits(strings.TrimFunc(v, unicode.IsSpace))
 		if !paymentMiscIntLiteral.MatchString(text) {
-			return 0, errPaymentMiscStop
+			return nil, errPaymentMiscStop
 		}
-		integer, _ = new(big.Int).SetString(strings.ReplaceAll(text, "_", ""), 10)
-	default:
-		return 0, errPaymentMiscStop
+		integer, ok := new(big.Int).SetString(strings.ReplaceAll(text, "_", ""), 10)
+		if !ok {
+			return nil, errPaymentMiscStop
+		}
+		return integer, nil
 	}
-	if integer == nil || !integer.IsInt64() {
-		return 0, domain.ErrPaymentMiscNotPorted
-	}
-	return integer.Int64(), nil
+	return nil, errPaymentMiscStop
 }
 
 // paymentMiscItems is iterating subscription_fee_plans: a dictionary yields
@@ -231,10 +243,10 @@ func paymentMiscActivePlans(plans *string, day, month int) ([]paymentQuotePlan, 
 			}
 			return nil, errPaymentMiscStop
 		}
-		number := func(name string) (int64, error) {
+		number := func(name string) (*big.Int, error) {
 			value, err := index(name)
 			if err != nil {
-				return 0, err
+				return nil, err
 			}
 			return paymentMiscInt(value)
 		}
@@ -246,7 +258,7 @@ func paymentMiscActivePlans(plans *string, day, month int) ([]paymentQuotePlan, 
 		if err != nil {
 			return nil, err
 		}
-		if fromDay != int64(day) || fromMonth != int64(month) {
+		if fromDay.Cmp(big.NewInt(int64(day))) != 0 || fromMonth.Cmp(big.NewInt(int64(month))) != 0 {
 			continue
 		}
 		entry := paymentQuotePlan{fromDay: fromDay, fromMonth: fromMonth, previous: previous}
@@ -270,102 +282,199 @@ func paymentMiscActivePlans(plans *string, day, month int) ([]paymentQuotePlan, 
 }
 
 // paymentMiscPattern is icontains' pattern of str(value): strings and numbers
-// as written, booleans, lists and objects as their Python repr. A null value
-// (ValueError: Cannot use None as a query value) is for the callers to stop on.
+// as written, booleans, lists and objects as their Python repr. Those are
+// every value json.loads produces but None, whose lookup raises ValueError
+// (Cannot use None as a query value): a Python exception of the caller's try.
 func paymentMiscPattern(value any) (string, error) {
 	switch value.(type) {
 	case string, json.Number, bool, []any, domain.RequestObject:
 		return "%" + strings.NewReplacer(`\`, `\\`, `%`, `\%`, `_`, `\_`).Replace(dto.PythonStr(value)) + "%", nil
+	case nil:
+		return "", errPaymentMiscStop
 	}
-	return "", domain.ErrPaymentMiscNotPorted
+	return "", domain.ErrPaymentMiscUnreachable
 }
 
-var paymentMiscDecimal = regexp.MustCompile(`^[+-]?([0-9]+(\.[0-9]*)?|\.[0-9]+)$`)
-
-// paymentMiscDecimalGrammar is the text Python's Decimal() accepts (ASCII
-// digits): anything else raises in DecimalField.to_python.
-var paymentMiscDecimalGrammar = regexp.MustCompile(`^[+-]?(([0-9]+(_[0-9]+)*(\.([0-9]+(_[0-9]+)*)?)?|\.[0-9]+(_[0-9]+)*)([eE][+-]?[0-9]+(_[0-9]+)*)?|(?i:inf|infinity|nan[0-9]*|snan[0-9]*))$`)
-
-// paymentMiscAmountStops reports a fee DecimalField.to_python raises on: the
-// exception ends the run inside the views' try (an object, a list or text
-// that is no decimal literal).
-func paymentMiscAmountStops(fee any) bool {
-	switch v := fee.(type) {
-	case []any, domain.RequestObject:
-		return true
-	case string:
-		text := strings.TrimFunc(v, unicode.IsSpace)
-		for _, r := range text {
-			if r > unicode.MaxASCII {
-				return false
-			}
-		}
-		return !paymentMiscDecimalGrammar.MatchString(text)
-	}
-	return false
+// paymentMiscFee is models.DecimalField of a plan fee as both callers read it:
+// to_python's value, the INSERT parameter and what auditlog records of the
+// instance.
+type paymentMiscFee struct {
+	// Value is str() of to_python's value: the parameter the lookup and the
+	// INSERT send (psycopg adapts a Decimal by its text; Django 5 no longer
+	// quantizes it client side). "" for None, which the repository reads as
+	// amount IS NULL.
+	Value string
+	// Audit is auditlog's smart_str of the value as assigned to the instance
+	// (str(value): a string keeps its spelling, a float its repr).
+	Audit string
+	// Float is the assigned value when it is a Python float.
+	Float *float64
+	// Null is a null fee: the lookup matches NULL and the INSERT violates NOT NULL.
+	Null bool
+	// OutOfRange is a value the numeric(9, 2) column refuses: PostgreSQL rounds
+	// it half away from zero to an absolute value of 10^7 or more and raises
+	// DataError at the statement, after every earlier create.
+	OutOfRange bool
+	// PostgresOverflow is a value PostgreSQL's numeric cannot represent at all
+	// (a stored exponent beyond its digit limits): the amount lookup's own
+	// parameter raises DataError, so the exception ends the run before that
+	// quote is read.
+	PostgresOverflow bool
 }
 
-// paymentMiscAmountRange is DecimalField.to_python of the plan fee: the stored
-// text (empty for a null fee), auditlog's str() of the raw value and the float
-// when it is one. A value beyond numeric(9, 2) converts but matches no row and
-// fails the insert (outOfRange).
-func paymentMiscAmountRange(fee any) (stored, audit string, float *float64, outOfRange bool, err error) {
+// paymentMiscFeeValue is models.DecimalField.to_python: Decimal() of a string
+// or integer, Context(prec=9).create_decimal_from_float of a float. The
+// exceptions to_python raises (a non-finite value, an invalid literal, a list
+// or an object) are errPaymentMiscStop: they end the run where Django's try
+// does, before that quote's INSERT.
+func paymentMiscFeeValue(fee any) (paymentMiscFee, error) {
 	switch v := fee.(type) {
 	case nil:
-		return "", "None", nil, false, nil
+		// to_python(None) is None: the lookup matches NULL and the insert fails.
+		return paymentMiscFee{Null: true, Audit: "None"}, nil
 	case bool:
+		// Decimal(True) is Decimal(1).
 		if v {
-			return "1", "True", nil, false, nil
+			return paymentMiscFee{Value: "1", Audit: "True"}, nil
 		}
-		return "0", "False", nil, false, nil
+		return paymentMiscFee{Value: "0", Audit: "False"}, nil
 	case json.Number:
 		if strings.ContainsAny(string(v), ".eE") {
-			number, perr := strconv.ParseFloat(string(v), 64)
-			if perr != nil || math.IsInf(number, 0) {
-				return "", "", nil, false, domain.ErrPaymentMiscNotPorted
+			number, err := strconv.ParseFloat(string(v), 64)
+			if err != nil && !errors.Is(err, strconv.ErrRange) {
+				return paymentMiscFee{}, errPaymentMiscStop
 			}
-			float = &number
-			stored, audit = dto.DecimalFromFloat9(number), dto.PythonFloatStr(number)
-		} else {
-			stored, audit = string(v), string(v)
+			if math.IsInf(number, 0) || math.IsNaN(number) {
+				// create_decimal_from_float gives a non-finite value: to_python's ValidationError.
+				return paymentMiscFee{}, errPaymentMiscStop
+			}
+			return paymentMiscFeeText(dto.DecimalFromFloat9(number), dto.PythonFloatStr(number), &number)
 		}
+		// str(int) is its digits ("-0" is 0).
+		integer, ok := new(big.Int).SetString(string(v), 10)
+		if !ok {
+			return paymentMiscFee{}, errPaymentMiscStop
+		}
+		return paymentMiscFeeText(integer.String(), integer.String(), nil)
 	case string:
-		text := strings.TrimFunc(v, unicode.IsSpace)
-		if !paymentMiscDecimal.MatchString(text) {
-			return "", "", nil, false, domain.ErrPaymentMiscNotPorted
+		return paymentMiscFeeText(v, v, nil)
+	}
+	// decimal.Decimal(list) is a malformed tuple and Decimal(dict) a TypeError.
+	return paymentMiscFee{}, errPaymentMiscStop
+}
+
+// paymentMiscFeeText converts Decimal's str() of the assigned value (structured
+// by dto.ParsePythonDecimal, or dto.DecimalFromFloat9's nine digits) and the
+// audit text.
+func paymentMiscFeeText(decimal, audit string, float *float64) (paymentMiscFee, error) {
+	if paymentMiscDecimalExponentRefused(decimal) {
+		// Decimal() is InvalidOperation past MAX_EMAX; a value this far outside
+		// the column is outside PostgreSQL's numeric too, where Django's lookup
+		// raises DataError and the run stops the same way. The bound also keeps
+		// str() of the value from being written out.
+		return paymentMiscFee{}, errPaymentMiscStop
+	}
+	value := dto.ParsePythonDecimal(decimal)
+	if value.Kind != "finite" {
+		// "" is InvalidOperation; "inf" and "nan" are the non-finite values
+		// to_python refuses (ValidationError).
+		return paymentMiscFee{}, errPaymentMiscStop
+	}
+	return paymentMiscFee{Value: value.Text, Audit: audit, Float: float, OutOfRange: paymentMiscFeeOutOfRange(value.Text),
+		PostgresOverflow: paymentMiscFeePostgresOverflow(value.Text)}, nil
+}
+
+// paymentMiscFeePostgresOverflow reports a value PostgreSQL's numeric cannot
+// represent: at most 131072 digits before the decimal point and a scale of
+// 16383 ("value overflows numeric format"; measured on PostgreSQL 16:
+// '1e131071' and '1e-16383' are accepted, '1e131072' and '1e-16384' are not).
+func paymentMiscFeePostgresOverflow(text string) bool {
+	digits, exponent, ok := paymentMiscNumeral(text)
+	if !ok || digits == "0" {
+		return false
+	}
+	return exponent+int64(len(digits))-1 > 131071 || exponent < -16383
+}
+
+// paymentMiscNumeral splits Decimal's str() into its significant digits (no
+// leading zeros, "0" for zero) and the exponent of the last digit.
+func paymentMiscNumeral(text string) (digits string, exponent int64, ok bool) {
+	unsigned := strings.TrimLeft(text, "+-")
+	if index := strings.IndexAny(unsigned, "eE"); index >= 0 {
+		parsed, err := strconv.ParseInt(unsigned[index+1:], 10, 64)
+		if err != nil {
+			return "", 0, false
 		}
-		stored, audit = text, v
-	default:
-		return "", "", nil, false, domain.ErrPaymentMiscNotPorted
+		exponent, unsigned = parsed, unsigned[:index]
 	}
-	// numeric(9, 2): larger values match no row and fail the insert.
-	number, ok := new(big.Float).SetString(stored)
-	if !ok {
-		// SetString of a text built by the decimal regex
-		return "", "", nil, false, domain.ErrPaymentMiscUnreachable
+	whole, fraction, _ := strings.Cut(unsigned, ".")
+	digits = strings.TrimLeft(whole+fraction, "0")
+	if digits == "" {
+		return "0", 0, true
 	}
-	return stored, audit, float, new(big.Float).Abs(number).Cmp(big.NewFloat(9999999.995)) >= 0, nil
+	return digits, exponent - int64(len(fraction)), true
 }
 
-func paymentMiscOutOfRange(stored string) bool {
-	number, ok := new(big.Float).SetString(stored)
-	return ok && new(big.Float).Abs(number).Cmp(big.NewFloat(9999999.995)) >= 0
+// paymentMiscFeeOutOfRange reports a value the numeric(9, 2) column refuses:
+// PostgreSQL rounds it half away from zero and raises when the absolute value
+// reaches 10^7, so 9999999.995 overflows and 9999999.9949 does not. The
+// comparison is exact.
+func paymentMiscFeeOutOfRange(text string) bool {
+	digits, exponent, ok := paymentMiscNumeral(text)
+	if !ok || digits == "0" {
+		return false
+	}
+	if top := exponent + int64(len(digits)) - 1; top != 6 {
+		return top > 6
+	}
+	// |value| = digits * 10^exponent and 9999999.995 = 9999999995 * 10^-3;
+	// top == 6 fixes exponent = 7 - len(digits), so the scaling stays small.
+	scaled, threshold := new(big.Int), new(big.Int).SetInt64(9999999995)
+	scaled.SetString(digits, 10)
+	if shift := exponent + 3; shift >= 0 {
+		scaled.Mul(scaled, paymentMiscPow10(shift))
+	} else {
+		threshold.Mul(threshold, paymentMiscPow10(-shift))
+	}
+	return scaled.Cmp(threshold) >= 0
 }
 
-// paymentMiscAmount is paymentMiscAmountRange for the callers that port only
-// stored amounts: a null, out of range or unconverted fee is not ported.
-func paymentMiscAmount(fee any) (string, string, *float64, error) {
-	if fee == nil {
-		return "", "", nil, domain.ErrPaymentMiscNotPorted
+// paymentMiscPow10 is 10^n as an integer.
+func paymentMiscPow10(n int64) *big.Int {
+	if n <= 0 {
+		return big.NewInt(1)
 	}
-	stored, audit, float, outOfRange, err := paymentMiscAmountRange(fee)
-	if err == nil && outOfRange {
-		err = domain.ErrPaymentMiscNotPorted
+	return new(big.Int).Exp(big.NewInt(10), big.NewInt(n), nil)
+}
+
+// paymentMiscDecimalExponent is the exponent a Decimal literal writes ("" when
+// it has none), without its sign, underscores or leading zeros.
+func paymentMiscDecimalExponent(text string) string {
+	index := strings.LastIndexAny(text, "eE")
+	if index < 0 {
+		return ""
 	}
-	if err != nil {
-		return "", "", nil, err
+	exponent := strings.TrimLeft(strings.ReplaceAll(text[index+1:], "_", ""), "+-")
+	return strings.TrimLeft(exponent, "0")
+}
+
+// paymentMiscDecimalExponentRefused reports a Decimal text whose exponent this
+// port refuses before building the value: beyond decimal.MAX_EMAX (Python's
+// InvalidOperation) or far outside PostgreSQL's numeric (where Django's lookup
+// raises DataError and nothing is listed either).
+func paymentMiscDecimalExponentRefused(text string) bool {
+	const limit = "999999999999999999"
+	exponent := paymentMiscDecimalExponent(text)
+	switch {
+	case exponent == "":
+		return false
+	case len(exponent) > len(limit):
+		return true
+	case len(exponent) == len(limit):
+		return exponent > limit
 	}
-	return stored, audit, float, nil
+	value, err := strconv.ParseInt(exponent, 10, 64)
+	return err == nil && value > 1000000
 }
 
 func paymentMiscText(value *string) string {
@@ -431,10 +540,7 @@ func (s *PaymentMisc) prepare(ctx context.Context, identity domain.ResolvedIdent
 		return run, err
 	}
 	run.plans, err = paymentMiscActivePlans(run.association.Plans, day.Day(), int(day.Month()))
-	if err != nil && !errors.Is(err, errPaymentMiscStop) && !errors.Is(err, domain.ErrPaymentMiscNotPorted) {
-		return fail(err)
-	}
-	if errors.Is(err, domain.ErrPaymentMiscNotPorted) {
+	if err != nil && !errors.Is(err, errPaymentMiscStop) {
 		return fail(err)
 	}
 	return run, err
@@ -442,8 +548,7 @@ func (s *PaymentMisc) prepare(ctx context.Context, identity domain.ResolvedIdent
 
 // quotes visits every plan's subscriptions without an existing quote, in
 // the views' order; visit returning errPaymentMiscStop ends the loop.
-func (r *paymentMiscRun) quotes(ctx context.Context, visit func(paymentQuotePlan, domain.PaymentSimulationSubscription, string, string,
-	*float64) error) error {
+func (r *paymentMiscRun) quotes(ctx context.Context, visit func(paymentQuotePlan, domain.PaymentSimulationSubscription, paymentMiscFee) error) error {
 	for _, plan := range r.plans {
 		pattern, err := paymentMiscPattern(plan.previous)
 		if err != nil {
@@ -455,32 +560,30 @@ func (r *paymentMiscRun) quotes(ctx context.Context, visit func(paymentQuotePlan
 			return err
 		}
 		for _, subscription := range subscriptions {
-			if plan.id == nil {
-				return errPaymentMiscStop // ValueError: Cannot use None as a query value
-			}
 			idPattern, err := paymentMiscPattern(plan.id)
 			if err != nil {
 				return err
 			}
-			if paymentMiscAmountStops(plan.fee) {
-				return errPaymentMiscStop
-			}
-			stored, audit, float, outOfRange, err := paymentMiscAmountRange(plan.fee)
+			fee, err := paymentMiscFeeValue(plan.fee)
 			if err != nil {
 				return err
 			}
-			exists := false
-			if !outOfRange {
-				exists, err = r.tx.QuoteExists(ctx, domain.PaymentQuoteCheck{User: subscription.UserID, Associate: subscription.AssociateID,
-					Pattern: idPattern, Amount: stored, Group: r.group})
-				if err != nil {
-					return err
-				}
+			if fee.PostgresOverflow {
+				// The lookup's own numeric parameter raises: the exception ends
+				// the run before this quote is read.
+				return errPaymentMiscStop
+			}
+			// A value numeric(9, 2) cannot hold matches no stored amount; the
+			// quote is still listed and the apply's INSERT raises.
+			exists, err := r.tx.QuoteExists(ctx, domain.PaymentQuoteCheck{User: subscription.UserID, Associate: subscription.AssociateID,
+				Pattern: idPattern, Amount: fee.Value, Group: r.group})
+			if err != nil {
+				return err
 			}
 			if exists {
 				continue
 			}
-			if err := visit(plan, subscription, stored, audit, float); err != nil {
+			if err := visit(plan, subscription, fee); err != nil {
 				return err
 			}
 		}
@@ -510,7 +613,7 @@ func (s *PaymentMisc) Simulation(ctx context.Context, identity domain.ResolvedId
 	for _, plan := range run.plans {
 		considered = append(considered, plan.render())
 	}
-	err = run.quotes(ctx, func(plan paymentQuotePlan, subscription domain.PaymentSimulationSubscription, _, _ string, _ *float64) error {
+	err = run.quotes(ctx, func(plan paymentQuotePlan, subscription domain.PaymentSimulationSubscription, _ paymentMiscFee) error {
 		if subscription.AssociateID == nil {
 			// subscription.associate.first_name on None.
 			return errPaymentMiscStop
@@ -545,7 +648,9 @@ func (s *PaymentMisc) message(association *domain.PaymentSimulationAssociation, 
 
 // paymentMiscMail is one send_email_html call of the apply, published after the commit.
 type paymentMiscMail struct {
-	subject, message, recipient string
+	subject, message string
+	// recipient is the user's e-mail (bakney_user.email is NOT NULL).
+	recipient string
 	// start runs the configured send_email after the Timer delay; nil publishes send_mail_async.
 	start func()
 }
@@ -571,10 +676,9 @@ func (s *PaymentMisc) Apply(ctx context.Context, identity domain.ResolvedIdentit
 	tx := run.tx
 	mails := []paymentMiscMail{}
 	configured := false
-	err = run.quotes(ctx, func(plan paymentQuotePlan, subscription domain.PaymentSimulationSubscription, stored, audit string,
-		float *float64) error {
+	err = run.quotes(ctx, func(plan paymentQuotePlan, subscription domain.PaymentSimulationSubscription, fee paymentMiscFee) error {
 		// A null fee violates NOT NULL and a fee beyond numeric(9, 2) overflows: the insert raises.
-		if plan.fee == nil || paymentMiscOutOfRange(stored) {
+		if fee.Null || fee.OutOfRange {
 			return errPaymentMiscStop
 		}
 		other := subscription.UserID != run.association.OwnerID
@@ -608,11 +712,10 @@ func (s *PaymentMisc) Apply(ctx context.Context, identity domain.ResolvedIdentit
 		m := &paymentMemory{row: domain.PaymentWriteRow{ID: s.writes.newID(), Type: "default", Subject: 1, CreationDate: s.writes.at(),
 			UserID: &user, AssociateID: subscription.AssociateID, AssociationID: &association, AccountID: account, GroupID: group},
 			jsonAudit: map[string]string{}, groupSent: sentGroup}
-		if float != nil {
-			m.setFloat(*float)
-		} else {
-			m.row.Amount, m.amountAudit, m.amountShown = stored, &audit, &stored
-		}
+		// The column and the instance keep to_python's value; auditlog str() of
+		// the assigned one.
+		m.row.Amount, m.amountAudit, m.amountShown = fee.Value, &fee.Audit, &fee.Value
+		m.amountFloat = fee.Float
 		m.setJSON("meta", paymentQuoteMeta(plan), &m.row.Meta)
 		if err := s.writes.defaults(ctx, tx, m); err != nil {
 			return err
@@ -646,7 +749,9 @@ func (s *PaymentMisc) Apply(ctx context.Context, identity domain.ResolvedIdentit
 			mail.start, err = s.configured.PlanEmailHTMLInProcess(ctx, association, mail.message, mail.subject, []any{mail.recipient},
 				[]any{optionalValue(run.association.OwnerEmail)})
 			if errors.Is(err, celeryworker.ErrHandoff) {
-				return domain.ErrPaymentMiscNotPorted
+				// The planner hands off a message outside smtpsend's subset; it
+				// wraps that refusal, which is what this request answers.
+				return err
 			}
 			if err != nil {
 				return err
@@ -674,27 +779,31 @@ func (s *PaymentMisc) Apply(ctx context.Context, identity domain.ResolvedIdentit
 }
 
 // feeMail renders association_quote_assign's e-mail: the template with the
-// plan's stored name and fee, the subject with the denomination. Template
-// values the renderer does not take are not ported.
+// plan's stored name and fee, the subject with the denomination. Every JSON
+// value renders as Django's str() of it; a renderer refusal is returned
+// unchanged (counted under emailrender).
 func (s *PaymentMisc) feeMail(ctx context.Context, association *domain.PaymentSimulationAssociation, plan paymentQuotePlan,
 	subscription domain.PaymentSimulationSubscription, language string) (paymentMiscMail, error) {
 	name, err := quoteAssignTemplateValue(plan.name)
 	if err != nil {
-		return paymentMiscMail{}, domain.ErrPaymentMiscNotPorted
+		return paymentMiscMail{}, err
 	}
 	amount, err := quoteAssignTemplateValue(plan.fee)
 	if err != nil {
-		return paymentMiscMail{}, domain.ErrPaymentMiscNotPorted
+		return paymentMiscMail{}, err
 	}
 	if subscription.UserEmail == nil {
-		return paymentMiscMail{}, domain.ErrPaymentMiscNotPorted
+		// bakney_user.email is NOT NULL (AbstractUser's EmailField) and the
+		// subscription query joins the user: no row yields a null e-mail, so
+		// recipient_list is never [None].
+		return paymentMiscMail{}, domain.ErrPaymentMiscUnreachable
 	}
 	message, err := s.mails.render(ctx, emailrender.FeeAssigned, map[string]any{
 		"recipient_name": paymentMiscText(subscription.AssociateFirst) + " " + paymentMiscText(subscription.AssociateLast),
 		"fee_name":       name, "amount": amount, "application_name": s.whitelabel, "association_name": optionalValue(association.Denomination)},
 		language)
 	if err != nil {
-		return paymentMiscMail{}, errors.Join(domain.ErrPaymentMiscNotPorted, err)
+		return paymentMiscMail{}, err
 	}
 	subject := paymentMiscText(association.Denomination) + " | Nuova quota associativa '" + dto.PythonStr(plan.name) + "' assegnata"
 	return paymentMiscMail{subject: subject, message: message, recipient: *subscription.UserEmail}, nil

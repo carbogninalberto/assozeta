@@ -124,11 +124,11 @@ as Go's session does.
 
 Refused before any effect (job fails with `task_failed`):
 
-- `association_quote_assign`: a run whose active plans need a conversion the apply route does not
-  port (fee not a JSON number or plain decimal string, or beyond numeric(9, 2); previous plan or
-  plan id not a string or number; `int()` of non-ASCII digits), a plan name or fee the template
-  renderer does not take (lists, dicts) (since long tail PR 3 every SMTP message renders). The
-  check covers every subscription the run could e-mail (an over-approximation).
+- `association_quote_assign`: a run whose SMTP message is outside `smtpsend`'s subset, or whose template
+  renderer refuses an input (the check covers every subscription the run could e-mail, an over-approximation). Plan
+  values of any JSON shape are ported (see [payment-misc](payment-misc.md#plan-values-of-any-json-shape-t4pay)): a
+  null, list, object, non-finite or out-of-range fee, a 30-digit day bound and a list or object plan name stop or
+  convert exactly where Django does.
 - `mark_as_paid_payments_checking_stripe`: a run in which any listed payment's mark flow, run as
   if its intent had succeeded in a rolled-back transaction with a publisher that sends nothing,
   reaches a path Go does not port (for example a membership fee whose two-place rounding is an
@@ -166,12 +166,15 @@ the unordered queries identically.
   configuration, single fee, basic plans only, deleted, publish path), plans that start today with
   int, float (string day) and string fees, a plan for tomorrow, manual and empty-previous plans,
   eighteen subscriptions covering every filter, an existing quote, the owner's own subscription and
-  duplicates. Django runs first; Go must match the state (payment keys, audit ids and times
-  normalized), the `send_mail_async` bodies and the SMTP transcript after the delayed send. Seven
-  groups: default owner, native parity (10 payments, 7 messages, 1 SMTP delivery with the balance
-  save), a later run that creates nothing, the stop on a subscription without associate, invalid
-  version/payload/tenant, an unported fee and an SMTP subject with a line break refused. RED: the
-  job stays pending after the Django oracles pass. GREEN 7/7 (`quote-green-r2`).
+  duplicates — plus, for the fee-shape variants, a seventh association whose plans carry a 30-digit
+  day bound, an exponent, underscored and other-script fees, a three-decimal fee (PostgreSQL
+  rounds it half away from zero), a list and an object plan name, and a fee beyond numeric(9, 2). Django runs first; Go must match the state (payment keys, audit ids and
+  times normalized), the `send_mail_async` bodies and the SMTP transcript after the delayed send.
+  Nine groups: default owner, native parity (10 payments, 7 messages, 1 SMTP delivery with the
+  balance save), a later run that creates nothing, the stop on a subscription without associate,
+  invalid version/payload/tenant, the fee shapes, the out-of-range stop, and an SMTP subject with a
+  line break. RED: the job stays pending after the Django oracles pass. GREEN 7/7
+  (`quote-green-r2`).
 - **Stripe check** (`TESTS/adapters/go/stripe_paid_check_worker_process.py`): private PostgreSQL,
   Redis and the Stripe stub of tasks-db-d. Fourteen payments: succeeded subscription, other-income
   (already `stripe`) and meta-category payments, processing, 404, empty id, card error, empty

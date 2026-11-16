@@ -146,7 +146,21 @@ PLAN_NULL_FEE = odd_plan('plan-null-fee', 'Senza importo', None, 'prev-null-fee'
 PLAN_LIST_FEE = odd_plan('plan-list-fee', 'Importo lista', [1], 'prev-list-fee', 7)
 PLAN_TEXT_FEE = odd_plan('plan-text-fee', 'Importo testo', 'abc', 'prev-text-fee', 8)
 PLAN_MESSAGE = odd_plan('plan-message', ['a', 1], 6.5, 'prev-message', 9)
-ODD_PLANS = [PLAN_NUM, PLAN_BOOL, PLAN_LIST, PLAN_DICT, PLAN_NULL_ID, PLAN_NULL_FEE, PLAN_LIST_FEE, PLAN_TEXT_FEE, PLAN_MESSAGE]
+# Fees the port converts as DecimalField.to_python does: underscores, digits of
+# another script, an exponent; and fees it stops on: the other decimal separator,
+# an exponent numeric(9, 2) cannot hold, a value beyond the column.
+PLAN_BIG_DAY = odd_plan('plan-big-day', 'Giorno enorme', '6', 'prev-big-day', 123456789012345678901234567890)
+PLAN_UNDERSCORE = odd_plan('plan-underscore', 'Importo underscore', '1_000', 'prev-underscore', 11)
+PLAN_SCRIPT = odd_plan('plan-script', 'Importo altra scrittura', '\u0661\u0662.\u0665\u0660', 'prev-script', 12)
+PLAN_SCRIPT_SEP = odd_plan('plan-script-sep', 'Importo separatore', '\u0661\u0662\u066b\u0665\u0660', 'prev-script-sep', 13)
+PLAN_EXP_BIG = odd_plan('plan-exp-big', 'Importo esponente', '1e400', 'prev-exp-big', 14)
+PLAN_OVER = odd_plan('plan-over', 'Importo enorme', 10000000, 'prev-over', 15)
+PLAN_ROUNDING = odd_plan('plan-rounding', 'Importo arrotondato', '2.665', 'prev-rounding', 16)
+PLAN_LIST_NAME = odd_plan('plan-list-name', ['Quota', 1], 6.5, 'prev-list-name', 17)
+PLAN_DICT_NAME = odd_plan('plan-dict-name', {'label': 'Quota'}, '7', 'prev-dict-name', 18)
+ODD_PLANS = [PLAN_NUM, PLAN_BOOL, PLAN_LIST, PLAN_DICT, PLAN_NULL_ID, PLAN_NULL_FEE, PLAN_LIST_FEE, PLAN_TEXT_FEE, PLAN_MESSAGE,
+             PLAN_BIG_DAY, PLAN_UNDERSCORE, PLAN_SCRIPT, PLAN_SCRIPT_SEP, PLAN_EXP_BIG, PLAN_OVER, PLAN_ROUNDING, PLAN_LIST_NAME,
+             PLAN_DICT_NAME]
 OWN_PLANS.extend(ODD_PLANS)
 
 
@@ -155,10 +169,20 @@ def previous(plan_id):
 
 
 def subscription(associate, plan, *, association=OWN, user=OWNER, created='in_year', deleted=False, archived=False, meta=True,
-                 payment_meta=True, payment=True, group=None):
-    return {'id': next(ids), 'payment': next(ids) if payment else None, 'association': association, 'user': user,
-            'associate': ASSOCIATES[associate]['id'] if associate else None, 'created': created, 'deleted': deleted, 'archived': archived,
-            'meta': {'plan_id': plan} if meta else None, 'payment_meta': previous(plan) if payment_meta else None, 'group': group}
+                 payment_meta=True, payment=True, group=None, subscription_id=None, payment_id=None):
+    return {'id': subscription_id or next(ids), 'payment': (payment_id or next(ids)) if payment else None, 'association': association,
+            'user': user, 'associate': ASSOCIATES[associate]['id'] if associate else None, 'created': created, 'deleted': deleted,
+            'archived': archived, 'meta': {'plan_id': plan} if meta else None, 'payment_meta': previous(plan) if payment_meta else None,
+            'group': group}
+
+
+# The fee-shape subscriptions take ids of their own so the authored sequence keeps the ids it already had.
+FIXED = iter(f'a1000000-0000-4000-8000-{994001 + n:012d}' for n in range(60))
+
+
+def odd_subscription(associate, previous):
+    """A member's own account with the previous plan, on a fixture-local id."""
+    return subscription(associate, previous, user=ATHLETE, subscription_id=next(FIXED), payment_id=next(FIXED))
 
 
 SUBSCRIPTIONS = {
@@ -192,6 +216,15 @@ SUBSCRIPTIONS = {
     's_list_fee': subscription('giulia', 'prev-list-fee'),
     's_text_fee': subscription('mario', 'prev-text-fee'),
     's_message': subscription('luca', 'prev-message', user=ATHLETE),
+    's_big_day': odd_subscription('mario', 'prev-big-day'),
+    's_underscore': odd_subscription('luca', 'prev-underscore'),
+    's_script': odd_subscription('giulia', 'prev-script'),
+    's_script_sep': odd_subscription('mario', 'prev-script-sep'),
+    's_exp_big': odd_subscription('sara', 'prev-exp-big'),
+    's_over': odd_subscription('luca', 'prev-over'),
+    's_rounding': odd_subscription('paolo', 'prev-rounding'),
+    's_list_name': odd_subscription('giulia', 'prev-list-name'),
+    's_dict_name': odd_subscription('sara', 'prev-dict-name'),
 }
 
 # Payments: the subscriptions' previous-plan payments are seeded by the runner from SUBSCRIPTIONS.
@@ -358,6 +391,23 @@ add('simulation-null-fee', 'owner', SIMULATE + '?date=2026-09-06', 200, simulati
 add('simulation-list-fee-stops', 'owner', SIMULATE + '?date=2026-09-07', 200, simulation([PLAN_LIST_FEE]))
 add('simulation-text-fee-stops', 'owner', SIMULATE + '?date=2026-09-08', 200, simulation([PLAN_TEXT_FEE]))
 add('simulation-list-name-message', 'owner', SIMULATE + '?date=2026-09-09', 200, simulation([PLAN_MESSAGE], [quote('s_message', PLAN_MESSAGE)]))
+# A 30-digit day bound converts and compares like any other int: it equals no
+# date, so nothing is considered. The fee readings follow Decimal() and the
+# numeric(9, 2) column: underscores and other-script digits convert (the quote
+# shows the raw value), the other decimal separator raises before any quote, and a
+# fee the column cannot hold is still listed (the insert stops on it). The column
+# is jsonb, so a huge JSON number comes back as the integer its digits spell
+# (Python's json reads it as one int, never as the infinity it would from text).
+add('simulation-big-day-plan', 'owner', SIMULATE + '?date=2026-09-10', 200, EMPTY)
+add('simulation-underscore-fee', 'owner', SIMULATE + '?date=2026-09-11', 200,
+    simulation([PLAN_UNDERSCORE], [quote('s_underscore', PLAN_UNDERSCORE)]))
+add('simulation-script-fee', 'owner', SIMULATE + '?date=2026-09-12', 200, simulation([PLAN_SCRIPT], [quote('s_script', PLAN_SCRIPT)]))
+add('simulation-script-separator-fee-stops', 'owner', SIMULATE + '?date=2026-09-13', 200, simulation([PLAN_SCRIPT_SEP]))
+add('simulation-big-exponent-fee', 'owner', SIMULATE + '?date=2026-09-14', 200, simulation([PLAN_EXP_BIG], [quote('s_exp_big', PLAN_EXP_BIG)]))
+add('simulation-over-range-fee', 'owner', SIMULATE + '?date=2026-09-15', 200, simulation([PLAN_OVER], [quote('s_over', PLAN_OVER)]))
+add('simulation-rounding-fee', 'owner', SIMULATE + '?date=2026-09-16', 200, simulation([PLAN_ROUNDING], [quote('s_rounding', PLAN_ROUNDING)]))
+add('simulation-list-name-mail', 'owner', SIMULATE + '?date=2026-09-17', 200, simulation([PLAN_LIST_NAME], [quote('s_list_name', PLAN_LIST_NAME)]))
+add('simulation-dict-name-mail', 'owner', SIMULATE + '?date=2026-09-18', 200, simulation([PLAN_DICT_NAME], [quote('s_dict_name', PLAN_DICT_NAME)]))
 
 # --- apply -----------------------------------------------------------------------
 
@@ -471,6 +521,31 @@ add('apply-june-member-account-mail', 'full_collaborator', APPLY + '?date=2026-0
     effect={**created('full_collaborator', quote_row('luca', PLAN_G, '15.00', user=ATHLETE), '15'),
             'celery': [fee_mail('luca', PLAN_G, '$email:athlete')]})
 add('apply-june-again-nothing', 'owner', APPLY + '?date=2026-06-01', 200, APPLIED, effect=effect())
+
+# Fees Decimal() reads (underscores, other-script digits) reach the column as
+# PostgreSQL rounds them (a three-decimal fee rounds half away from zero) and the
+# member is e-mailed (the audit keeps str() of the raw value); the other decimal
+# separator, an exponent and a value beyond numeric(9, 2) make the run stop
+# before that quote's insert (nothing created, the earlier quotes of the run stay).
+add('apply-underscore-fee-mail', 'owner', APPLY + '?date=2026-09-11', 200, APPLIED,
+    effect={**created('owner', quote_row('luca', PLAN_UNDERSCORE, '1000.00', user=ATHLETE), '1_000'),
+            'celery': [fee_mail('luca', PLAN_UNDERSCORE, '$email:athlete')]})
+add('simulation-underscore-after-apply', 'owner', SIMULATE + '?date=2026-09-11', 200, simulation([PLAN_UNDERSCORE]))
+add('apply-script-fee-mail', 'owner', APPLY + '?date=2026-09-12', 200, APPLIED,
+    effect={**created('owner', quote_row('giulia', PLAN_SCRIPT, '12.50', user=ATHLETE), '\u0661\u0662.\u0665\u0660'),
+            'celery': [fee_mail('giulia', PLAN_SCRIPT, '$email:athlete')]})
+add('apply-script-separator-fee-nothing', 'owner', APPLY + '?date=2026-09-13', 200, APPLIED, effect=effect())
+add('apply-big-exponent-fee-nothing', 'owner', APPLY + '?date=2026-09-14', 200, APPLIED, effect=effect())
+add('apply-over-range-fee-nothing', 'owner', APPLY + '?date=2026-09-15', 200, APPLIED, effect=effect())
+add('apply-rounding-fee-mail', 'owner', APPLY + '?date=2026-09-16', 200, APPLIED,
+    effect={**created('owner', quote_row('paolo', PLAN_ROUNDING, '2.67', user=ATHLETE), '2.665'),
+            'celery': [fee_mail('paolo', PLAN_ROUNDING, '$email:athlete')]})
+add('apply-list-name-mail', 'owner', APPLY + '?date=2026-09-17', 200, APPLIED,
+    effect={**created('owner', quote_row('giulia', PLAN_LIST_NAME, '6.50', user=ATHLETE), '6.5'),
+            'celery': [fee_mail('giulia', PLAN_LIST_NAME, '$email:athlete')]})
+add('apply-dict-name-mail', 'owner', APPLY + '?date=2026-09-18', 200, APPLIED,
+    effect={**created('owner', quote_row('sara', PLAN_DICT_NAME, '7.00', user=ATHLETE), '7'),
+            'celery': [fee_mail('sara', PLAN_DICT_NAME, '$email:athlete')]})
 
 # With a CommunicationConfiguration (SMTP, no encryption) of the association, send_email_html loads it and sends from a
 # Timer thread after random.randint(1, 30) seconds (patched to 1 for the run; Go's delay is pinned to 1 s):

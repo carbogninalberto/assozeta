@@ -53,7 +53,7 @@ func stripePaidCheckPython(err error) bool {
 }
 
 func stripePaidCheckNotPorted(err error) bool {
-	for _, target := range []error{domain.ErrInvoicePartyNotPorted, domain.ErrPaymentMiscNotPorted} {
+	for _, target := range []error{domain.ErrInvoicePartyNotPorted} {
 		if errors.Is(err, target) {
 			return true
 		}

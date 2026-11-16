@@ -231,6 +231,9 @@ def seed_rows(source, created):
     insert(User, User(user_id=member['id'], username=member['username'], email=member['email'], password='!synthetic', role=User.ATHLETE,
                       first_name=member['first'], last_name=member['last']))
     for association, plans in source['plans'].items():
+        # Written as the archive carries them: no plan value is normalised. The
+        # column is jsonb, so a number comes back in PostgreSQL's own spelling
+        # (a huge literal is the integer its digits spell).
         SportAssociation._base_manager.filter(pk=association).update(subscription_fee_plans=plans)
     insert(PaymentCategory, PaymentCategory(payment_category_id=source['category']['id'], name=source['category']['name'],
                                             sport_association_id=own, creation_date=moment('2026-01-01T00:00:00Z')))
