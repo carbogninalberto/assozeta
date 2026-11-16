@@ -1124,7 +1124,7 @@ add('bulk-add-invalid-payment-date-server-error', 'owner', BULK, 500, SERVER,
 add('add-payment-id-invalid', 'owner', ADD, 400, errors_repr([('payment_id', [('Must be a valid UUID.', 'invalid')])]),
     body={'creation_date': '2026-06-01', 'payment_date': None, 'payment_id': 'not-a-uuid', 'complex_item': None},
     effect=effect('owner'))
-add('add-payment-id-taken', 'owner', ADD, 400, errors_repr([('payment_id', [('payment con questo payment id esiste già.', 'unique')])]),
+add('add-payment-id-taken', 'owner', ADD, 400, errors_repr([('payment_id', [('payment with this payment id already exists.', 'unique')])]),
     body={'creation_date': '2026-06-01', 'payment_date': None, 'payment_id': PAYMENTS['up_plain']['id'], 'complex_item': None},
     effect=effect('owner'))
 NEW_PAYMENT_ID = 'a1000000-0000-4000-8000-000000988450'

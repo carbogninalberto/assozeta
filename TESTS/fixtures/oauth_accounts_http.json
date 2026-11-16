@@ -6268,10 +6268,10 @@
     "kind": "signup",
     "social": true,
     "user": {
-     "first_name": "Ana",
+     "first_name": "Bea",
      "last_name": "Bücher",
      "username": "PERSONA-46",
-     "email": "Ana@bücher.example",
+     "email": "Bea@bücher.example",
      "phone": null,
      "role": 2,
      "connected_user_id": null,
@@ -6299,7 +6299,7 @@
          "$render": "email/account/email_welcome_message.html",
          "language": "en",
          "context": {
-          "first_name": "Ana",
+          "first_name": "Bea",
           "last_name": "Bücher",
           "app_host": "$app_url",
           "settings": {
@@ -6316,7 +6316,7 @@
        [
         "recipient_list",
         [
-         "ana@bücher.example"
+         "bea@bücher.example"
         ]
        ],
        [
@@ -6325,7 +6325,7 @@
          "$render": "email/account/email_welcome_message.html",
          "language": "en",
          "context": {
-          "first_name": "Ana",
+          "first_name": "Bea",
           "last_name": "Bücher",
           "app_host": "$app_url",
           "settings": {
@@ -6356,9 +6356,9 @@
      "$social": {
       "provider": "google",
       "claims": {
-       "email": "Ana@Bücher.EXAMPLE",
+       "email": "Bea@Bücher.EXAMPLE",
        "email_verified": true,
-       "given_name": "Ana",
+       "given_name": "Bea",
        "family_name": "Bücher"
       }
      }

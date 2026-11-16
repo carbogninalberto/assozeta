@@ -667,10 +667,11 @@ sadd('names-float-from-claims', 200, '$signup',
      effect=created(first='2.0', last='-2.5e-07', mail_first=2.0, mail_last=-2.5e-07, username='PERSONA-43',
                     email='persona43@example.test', password=None, social=True))
 # The identity's e-mail is not run through the serializer here: normalize_email lower-cases its domain, the
-# welcome mail lower-cases the whole address.
+# welcome mail lower-cases the whole address. (Not Ana@...: signup-unicode-email-domain already created that
+# account, and the social branch signs an existing e-mail in, matched with UPPER() by PostgreSQL.)
 sadd('google-unicode-email-domain', 200, '$signup',
-     social(46, identity('google', 'Ana@Bücher.EXAMPLE', claims={'given_name': 'Ana', 'family_name': 'Bücher'})), GOOGLE,
-     effect=created(first='Ana', last='Bücher', username='PERSONA-46', email='Ana@bücher.example', password=None, social=True))
+     social(46, identity('google', 'Bea@Bücher.EXAMPLE', claims={'given_name': 'Bea', 'family_name': 'Bücher'})), GOOGLE,
+     effect=created(first='Bea', last='Bücher', username='PERSONA-46', email='Bea@bücher.example', password=None, social=True))
 sadd('google-athlete', 200, '$signup',
      social(22, identity('google', 'Social.New@Example.TEST', claims={'given_name': 'Zoë', 'family_name': "D'Arco <it>"}),
             email='Social.Partial@example.test', username='social-nuovo', first_name='ignored', last_name='ignored', unknown=1),

@@ -27797,7 +27797,7 @@
    "headers": {},
    "status": 400,
    "response": {
-    "msg": "validation errors: {'payment_id': [ErrorDetail(string='payment con questo payment id esiste già.', code='unique')]}"
+    "msg": "validation errors: {'payment_id': [ErrorDetail(string='payment with this payment id already exists.', code='unique')]}"
    },
    "effect": {
     "actor": "owner",
