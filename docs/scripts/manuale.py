@@ -20,6 +20,7 @@ import socket
 import subprocess
 import sys
 import tempfile
+import threading
 import time
 from contextlib import contextmanager
 from pathlib import Path
@@ -1068,20 +1069,35 @@ def node_dependencies(state):
     destination.symlink_to(browser_modules, target_is_directory=True)
 
 
+def execute_buffered(command, run, label, *, cwd=None, env=None, input=None):
+    """Run one command without touching the shared run logs from its thread.
+
+    The output goes to a private mode-0600 log inside the run and only the
+    elapsed time is measured here. The caller joins the thread and then appends
+    that log to execution.log and records the timing event, so a background
+    command can never interleave those read-modify-writes with `execute`/`timed`.
+    """
+    descriptor, name = tempfile.mkstemp(prefix='.buffered-', suffix='.log', dir=str(run))
+    log = Path(name)
+    started = time.monotonic()
+    try:
+        with os.fdopen(descriptor, 'wb') as stream:
+            result = subprocess.run(command, cwd=cwd, env=env, stdout=stream, stderr=stream, input=input)
+    except BaseException:
+        log.unlink(missing_ok=True)
+        raise
+    log.chmod(0o600)
+    return {'label': label, 'log': log, 'returncode': result.returncode,
+            'elapsed_seconds': round(time.monotonic() - started, 3)}
+
+
 def start(state):
     configure_runtime(state)
     run = Path(state['run'])
     execute(compose(state, 'config', '--quiet'), run, 'Validate isolated service configuration')
     execute(compose(state, 'build', 'api', 'ui', 'renderer'), run, 'Build run-specific application images')
-    execute(compose(state, 'up', '-d', '--wait', 'postgres', 'redis', 'minio', 'renderer'), run, 'Start run-owned dependencies')
-    execute(compose(state, '--profile', 'tools', 'run', '--rm', 'minio-init'), run, 'Initialize isolated object storage')
-    execute(compose(state, '--profile', 'tools', 'run', '--rm', 'migrate'), run, 'Migrate isolated database')
-    execute(management(state, 'seed_manuale',
-                    '--reference-date', state['reference_date'], '--origin', state['origin'], '--output', '/manual-run/browser-input.json'),
-            run, 'Seed fictional association and private browser session')
-    if 'docs/scripts/manuale-repeatability.py' in state['tooling_hashes']:
-        execute([sys.executable, str(Path(state['application']) / 'docs/scripts/manuale-repeatability.py'),
-                 'fixture', '--run', str(run)], run, 'Retain the public fixture fingerprint before credential cleanup')
+    # Reuse reads files/run.json and copies UI/dist/public; it needs no started
+    # service, so the decision can precede the dependency/migrate/seed sequence.
     frontend = None
     if state.get('reuse_frontend'):
         print('Reuse the verified compiled frontend after validating every UI/build input', flush=True)
@@ -1095,9 +1111,72 @@ def start(state):
             else:
                 state['cache']['decisions'].append({'run': candidate, 'kind': 'frontend', 'result': 'reused'})
                 break
+    compile_command = compose(state, 'run', '--rm', '--no-deps', 'ui', 'npm', 'exec', 'vite', 'build')
+    compile_label = 'Compile the real frontend before browser verification'
+    # MANUALE_PARALLEL_FRONTEND=0 keeps the historical serial order for diagnosis.
+    parallel = os.environ.get('MANUALE_PARALLEL_FRONTEND') != '0'
+    outcome = {}
+    thread = None
+
+    def publish_compile(result):
+        log = run / 'execution.log'
+        with log.open('ab') as stream:
+            log.chmod(0o600)
+            stream.write(f'\n{compile_label}\n'.encode())
+            stream.write(result['log'].read_bytes())
+        result['log'].unlink(missing_ok=True)
+        path = run / 'timings.json'
+        report = json.loads(path.read_text()) if path.exists() else {'format': 1, 'events': []}
+        report['events'].append({'kind': 'command', 'name': compile_label,
+                                 'status': 'failed' if result['returncode'] else 'passed',
+                                 'elapsed_seconds': result['elapsed_seconds']})
+        temporary = path.with_suffix('.tmp')
+        write_json(temporary, report)
+        temporary.replace(path)
+
+    def compile_frontend():
+        try:
+            outcome['result'] = execute_buffered(compile_command, run, compile_label)
+        except BaseException as exc:
+            outcome['error'] = exc
+
+    main_error = None
+    try:
+        execute(compose(state, 'up', '-d', '--wait', 'postgres', 'redis', 'minio', 'renderer'), run, 'Start run-owned dependencies')
+        if frontend is None and parallel:
+            # The compile needs only the built ui image and the application
+            # sources, so it overlaps the storage/migrate/seed/fixture steps.
+            # It starts after the dependencies so that compose has already
+            # created the project network: concurrent creation could race.
+            print(compile_label, flush=True)
+            thread = threading.Thread(target=compile_frontend, name='manuale-frontend-compile')
+            thread.start()
+        execute(compose(state, '--profile', 'tools', 'run', '--rm', 'minio-init'), run, 'Initialize isolated object storage')
+        execute(compose(state, '--profile', 'tools', 'run', '--rm', 'migrate'), run, 'Migrate isolated database')
+        execute(management(state, 'seed_manuale',
+                        '--reference-date', state['reference_date'], '--origin', state['origin'], '--output', '/manual-run/browser-input.json'),
+                run, 'Seed fictional association and private browser session')
+        if 'docs/scripts/manuale-repeatability.py' in state['tooling_hashes']:
+            execute([sys.executable, str(Path(state['application']) / 'docs/scripts/manuale-repeatability.py'),
+                     'fixture', '--run', str(run)], run, 'Retain the public fixture fingerprint before credential cleanup')
+    except BaseException as exc:
+        main_error = exc
+    finally:
+        if thread is not None:
+            # Join even after a failure: no compile subprocess may outlive start,
+            # and its published log/timing must still be recorded once.
+            thread.join()
+            if 'result' in outcome:
+                publish_compile(outcome['result'])
+    if main_error is not None:
+        raise main_error
     if frontend is None:
-        execute(compose(state, 'run', '--rm', '--no-deps', 'ui', 'npm', 'exec', 'vite', 'build'),
-                run, 'Compile the real frontend before browser verification')
+        if thread is None:
+            execute(compile_command, run, compile_label)
+        elif 'error' in outcome:
+            raise outcome['error']
+        elif outcome['result']['returncode']:
+            raise RuntimeError(f"{compile_label} failed ({outcome['result']['returncode']}); inspect {run / 'execution.log'}")
         source = Path(state['application']) / 'UI/dist/public'
         frontend = {'sources': ui_sources(Path(state['application'])),
             'artifacts': {str(file.relative_to(source)): sha(file) for file in sorted(source.rglob('*')) if file.is_file()}}
