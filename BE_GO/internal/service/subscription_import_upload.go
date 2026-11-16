@@ -25,12 +25,15 @@ var (
 	ErrSubscriptionImportUnauthorized = errors.New("subscription import: no association")
 	// ErrSubscriptionImportServerError is an exception the view does not handle: the 500 page.
 	ErrSubscriptionImportServerError = errors.New("subscription_import_upload raised")
-	// ErrSubscriptionImportNotPorted refuses, before any write, what Go does
-	// not reproduce: workbooks outside pandasxlsx's subset, CSV input outside
-	// pandascsv's subset, columns whose str.lower() differs from Go's, the
-	// import of a stored CSV document, import values outside the ported
-	// dateutil and codicefiscale subsets and a file given as document_id.
-	ErrSubscriptionImportNotPorted = refusal.New("subscription import path not ported")
+	// errSubscriptionImportStoredDocument is a stored Document the import cannot
+	// name: a creation date outside Python's datetime range (an archive the
+	// association import wrote as it is), which Django cannot even load
+	// (ValueError reading the row, the 500 page, before any write), or a
+	// filename PostgreSQL text cannot hold. Never handed off.
+	errSubscriptionImportStoredDocument = refusal.AppState("subscription import: stored document outside the modelled range")
+	// errSubscriptionImportTaxCodeData is codicefiscale's embedded reference data
+	// that could not be read: the module Django imports would not load either.
+	errSubscriptionImportTaxCodeData = refusal.AppState("subscription import: tax code reference data unreadable")
 	// ErrSubscriptionImportFailed is the import whose rows raised: 400
 	// {'msg': FAILED_MESSAGE}, nothing of the rows kept.
 	ErrSubscriptionImportFailed = errors.New("subscription import: rows failed")
@@ -82,6 +85,26 @@ func subscriptionImportName(association string, created time.Time, id, filename 
 		return "", err
 	}
 	return subscriptionImportFolder(association) + name, nil
+}
+
+// subscriptionImportStoredName is import_file_path of a document the import
+// reads: os.path.join of the association's import folder, the creation stamp,
+// the id and the document's own filename (an absolute filename replaces the
+// path, as Python's join does). Unlike the upload's save, the view validates no
+// name here: default_storage.exists/open clean it and, outside the storage's
+// location, raise SuspiciousOperation (documentkey.OutsideLocationError); a
+// name inside the location is looked up as it is.
+func subscriptionImportStoredName(association string, created time.Time, id, filename string) (string, error) {
+	// The stamp and the id are the application's own values: only a creation
+	// date outside Python's range fails here.
+	probe, err := documentkey.UploadName(created, uuid.MustParse(id), "x")
+	if err != nil {
+		return "", err
+	}
+	if strings.HasPrefix(filename, "/") {
+		return filename, nil
+	}
+	return subscriptionImportFolder(association) + strings.TrimSuffix(probe, "x") + filename, nil
 }
 
 // subscriptionImportDistance is editdistance.eval over code points.
@@ -383,13 +406,17 @@ func (s *SubscriptionImportUpload) importDocument(ctx context.Context, identity 
 	if !csv && !subscriptionImportExcel(lower) {
 		return nil, ErrSubscriptionImportServerError // TypeError: file extension not recognized
 	}
-	name, err := subscriptionImportName(association, document.Created, id, document.Filename)
+	name, err := subscriptionImportStoredName(association, document.Created, id, document.Filename)
 	if err != nil {
-		return nil, errors.Join(ErrSubscriptionImportNotPorted, err)
+		return nil, errors.Join(errSubscriptionImportStoredDocument, err)
 	}
 	key, err := documentkey.S3Key(name, s.uploads.objects.Location())
-	if err != nil {
-		return nil, errors.Join(ErrSubscriptionImportNotPorted, err)
+	var outside *documentkey.OutsideLocationError
+	switch {
+	case errors.As(err, &outside):
+		return nil, err // default_storage.exists/open's SuspiciousOperation: the 400 page
+	case err != nil:
+		return nil, errors.Join(errSubscriptionImportStoredDocument, err)
 	}
 	content, err := s.objects.Read(ctx, key)
 	if err != nil {
@@ -403,7 +430,10 @@ func (s *SubscriptionImportUpload) importDocument(ctx context.Context, identity 
 	var lookup func(column any) (int, bool, bool, error)
 	if csv {
 		frame, err := pandascsv.ReadText(content, textual)
-		if err != nil {
+		switch {
+		case errors.Is(err, refusal.ErrAppState):
+			return nil, err // the parser's own 500 page, with its reason
+		case err != nil:
 			return nil, errors.Join(ErrSubscriptionImportServerError, err) // EmptyDataError, ParserError, UnicodeDecodeError
 		}
 		// read_csv's labels are text: any other key is no column.
@@ -430,7 +460,7 @@ func (s *SubscriptionImportUpload) importDocument(ctx context.Context, identity 
 		case errors.Is(err, pandasxlsx.ErrInvalid):
 			return nil, ErrSubscriptionImportServerError
 		case err != nil:
-			return nil, errors.Join(ErrSubscriptionImportNotPorted, err)
+			return nil, err // ErrWorkbookNotPorted is handed off, the package's AppState is the 500 page
 		}
 		names, lookup = subscriptionImportLabels(frame.Labels), frame.Lookup
 		for _, cells := range frame.Rows {
@@ -490,8 +520,8 @@ func (s *SubscriptionImportUpload) upload(ctx context.Context, identity domain.R
 		// xlrd fallback's ImportError) is the 500 page after the writes.
 		var frame *pandasxlsx.Frame
 		frame, parseErr = pandasxlsx.ReadAll(file.Content, nil)
-		if errors.Is(parseErr, pandasxlsx.ErrWorkbookNotPorted) {
-			return nil, errors.Join(ErrSubscriptionImportNotPorted, parseErr)
+		if errors.Is(parseErr, refusal.ErrNotPorted) {
+			return nil, parseErr // the package's own refusal, before any write
 		}
 		if parseErr == nil {
 			// auto_map_columns maps str() of each label.
@@ -505,6 +535,9 @@ func (s *SubscriptionImportUpload) upload(ctx context.Context, identity domain.R
 	// The view logs a failed cleanup and goes on.
 	_ = s.removeExpired(ctx, identity, association, audit)
 	if !csv && !excel || parseErr != nil || labels == nil {
+		if errors.Is(parseErr, refusal.ErrAppState) {
+			return nil, parseErr // the 500 page, with the state's reason
+		}
 		// TypeError, EmptyDataError or ParserError after the writes, or a label the renderer cannot write.
 		return nil, ErrSubscriptionImportServerError
 	}

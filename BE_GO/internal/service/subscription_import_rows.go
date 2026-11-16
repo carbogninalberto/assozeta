@@ -4,11 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"math"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
-	"unicode"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/codicefiscale"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
@@ -16,7 +14,6 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/pandascsv"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/pandasxlsx"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/pydateutil"
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // subscriptionImportFields is SubscriptionMaps.KEY_TO_FIELD_ASSOCIATE.
@@ -31,9 +28,58 @@ var subscriptionImportFields = map[string]string{"nome": "first_name", "cognome"
 var subscriptionImportMandatory = []string{"first_name", "last_name", "sex", "tax_code", "born_date", "born_city", "address", "address_cap",
 	"address_city"}
 
-// subscriptionImportTaxCode is process_import_rows' pattern for ASCII text
-// ('$' also matches before a final line feed).
-var subscriptionImportTaxCode = regexp.MustCompile(`^[a-zA-Z]{6}[0-9]{2}[abcdehlmprstABCDEHLMPRST][0-9]{2}[a-zA-Z][0-9]{3}[a-zA-Z]\n?$`)
+// subscriptionImportTaxCode is validate_row_data's
+// re.search(tax_code_regex, code, re.IGNORECASE): six [a-zA-Z], two [0-9], one
+// of [abcdehlmprstABCDEHLMPRST], two [0-9], one [a-zA-Z], three [0-9] and one
+// [a-zA-Z], matched at the start of the code with the whole code matched ('$'
+// also before a final line feed).
+//
+// IGNORECASE on a str pattern lowercases the character with Python's simple
+// lowercase and matches the class when that lowercase is in the class, whose
+// letters sre extends with its equivalences (re/_casefix.py): 'i' also holds
+// 'ı' (U+0131) and 's' also holds 'ſ' (U+017F). A character whose simple
+// lowercase is a class letter matches as well: 'İ' (U+0130) lowercases to 'i'
+// and the KELVIN sign (U+212A) to 'k', so both match [a-zA-Z], and 'ſ' matches
+// the month class (which holds 's'); no other code point was found to match
+// either class, and [0-9] matches only ASCII digits.
+func subscriptionImportTaxCode(code string) bool {
+	characters := []rune(code)
+	if len(characters) > 0 && characters[len(characters)-1] == '\n' {
+		characters = characters[:len(characters)-1]
+	}
+	if len(characters) != 16 {
+		return false
+	}
+	for _, index := range []int{0, 1, 2, 3, 4, 5, 11, 15} {
+		if !subscriptionImportTaxLetter(characters[index]) {
+			return false
+		}
+	}
+	if !strings.ContainsRune("abcdehlmprstABCDEHLMPRST", characters[8]) && characters[8] != 'ſ' {
+		return false
+	}
+	for _, index := range []int{6, 7, 9, 10, 12, 13, 14} {
+		if characters[index] < '0' || characters[index] > '9' {
+			return false
+		}
+	}
+	return true
+}
+
+// subscriptionImportTaxLetter is [a-zA-Z] with re.IGNORECASE: the ASCII
+// letters, the sre equivalence of 'i' ('ı'), the equivalence of 's' ('ſ', also
+// a letter of the month class) and the two characters whose simple lowercase is
+// an ASCII letter ('İ' and the KELVIN sign).
+func subscriptionImportTaxLetter(character rune) bool {
+	if 'a' <= character && character <= 'z' || 'A' <= character && character <= 'Z' {
+		return true
+	}
+	switch character {
+	case 'İ', '\u212a', 'ı', 'ſ':
+		return true
+	}
+	return false
+}
 
 // subscriptionImportMoment is a date cell: a Timestamp or a datetime, with
 // its str().
@@ -159,8 +205,11 @@ func subscriptionImportCSVCell(value pandascsv.Value) any {
 	return nil // NaN
 }
 
-// subscriptionImportTruthy is bool(value); text is str(value) for dateutil,
-// refused for numbers (their reading depends on the current date).
+// subscriptionImportTruthy is bool(value) and str(value) as Python gives them
+// for the values a cell of a frame can hold (a text, a number, a boolean, a
+// date cell, a NaN/infinity marker); text is str(value) for dateutil. A list or
+// an object is bool()'s non-emptiness and str()'s repr: no frame cell is one,
+// but a request value that ever reaches here is answered as Python does.
 func subscriptionImportTruthy(value any) (truthy bool, text string, err error) {
 	switch typed := value.(type) {
 	case nil:
@@ -182,7 +231,8 @@ func subscriptionImportTruthy(value any) (truthy bool, text string, err error) {
 	case float64:
 		return typed != 0, dto.PythonFloatText(typed), nil
 	}
-	return true, "", ErrSubscriptionImportNotPorted
+	// bool() of a list or an object is its non-emptiness, str() its repr.
+	return dto.PythonTruthy(value), dto.PythonStr(value), nil
 }
 
 type subscriptionImportRow struct {
@@ -208,6 +258,27 @@ func subscriptionImportUnique(object domain.RequestObject) domain.RequestObject 
 		subscriptionImportSet(&unique, field.Name, field.Value)
 	}
 	return unique
+}
+
+// subscriptionImportDefault is `key in data['default']` and, when present, the
+// data['default'][key] process_import_rows stores. An object gives its value; a
+// str tests a substring and a list a membership (Python equality: only a text
+// of the same code points is equal to a key), and both then index with a text
+// key (TypeError); None, a number and a boolean are not iterable (TypeError).
+// raises rolls the rows back (the view answers FAILED_MESSAGE).
+func subscriptionImportDefault(defaults any, key string) (value any, present, raises bool) {
+	present, err := dto.PythonContains(defaults, key)
+	if err != nil {
+		return nil, false, true
+	}
+	if !present {
+		return nil, false, false
+	}
+	value, err = dto.PythonIndex(defaults, key)
+	if err != nil {
+		return nil, true, true
+	}
+	return value, true, false
 }
 
 // subscriptionImportPlan is process_import_rows over the frame: the
@@ -248,7 +319,9 @@ func (s *SubscriptionImportUpload) subscriptionImportPlan(lookup func(column any
 				index, found, raises, err := lookup(column)
 				switch {
 				case err != nil:
-					return effects, errors.Join(ErrSubscriptionImportNotPorted, err)
+					// The frame's own refusal (a text looked up in a header of
+					// dates or durations): handed off.
+					return effects, err
 				case raises:
 					return failed() // a position past the row's end
 				case found:
@@ -308,11 +381,11 @@ func (s *SubscriptionImportUpload) subscriptionImportPlan(lookup func(column any
 			if value != nil {
 				subscriptionImportSet(target, field, value)
 			} else if hasDefaults {
-				object, isObject := defaults.(domain.RequestObject)
-				if !isObject {
-					return effects, ErrSubscriptionImportNotPorted // key in a str, a list or None
+				fallback, present, raises := subscriptionImportDefault(defaults, entry.Name)
+				if raises {
+					return failed() // key in a str, a list or None; data['default'][key] on a non-object
 				}
-				if fallback, present := subscriptionImportUnique(object).Lookup(entry.Name); present {
+				if present {
 					subscriptionImportSet(target, field, fallback)
 				}
 			}
@@ -327,11 +400,11 @@ func (s *SubscriptionImportUpload) subscriptionImportPlan(lookup func(column any
 				continue // decode raises on anything but text
 			}
 			name, found, err := codicefiscale.DecodedBirthplaceName(text, now)
-			if errors.Is(err, refusal.ErrAppState) {
-				return effects, err
-			}
 			if err != nil {
-				return effects, ErrSubscriptionImportNotPorted
+				// Only the embedded reference data could not be read: every
+				// decode failure is found=false, as the helper's except returns
+				// None, and a module that did not load fails in Django too.
+				return effects, errors.Join(errSubscriptionImportTaxCodeData, err)
 			}
 			if found {
 				subscriptionImportSet(person, "born_city", name)
@@ -369,13 +442,7 @@ func (s *SubscriptionImportUpload) subscriptionImportPlan(lookup func(column any
 			if !isText {
 				return failed() // re.search on a value that is not text
 			}
-			for _, r := range text {
-				if r > unicode.MaxASCII {
-					// IGNORECASE folds a few letters beyond ASCII into the classes.
-					return effects, ErrSubscriptionImportNotPorted
-				}
-			}
-			valid = subscriptionImportTaxCode.MatchString(text)
+			valid = subscriptionImportTaxCode(text)
 		}
 		stored := domain.RequestObject{{Name: "associate", Value: row.associate}, {Name: "associate_tutor", Value: row.tutor}}
 		if row.medical != nil {
