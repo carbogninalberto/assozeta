@@ -84,30 +84,22 @@ the course). Response `{'data': PaymentSerializer}`.
 An HTML form `multiple_quote` or `events` text is read with `json.loads`; the measured answer (CPython 3.13.16 on the
 parity harness's Django) depends on its maximum nesting D:
 
-- `multiple_quote`: D <= 9928 normal answer; D >= 9929 `json.loads` raises RecursionError during validation, the plain
-  500 page with nothing written (the view is atomic).
-- `events`: D <= 9942 normal answer; D >= 9943 the same 500 page.
+- both fields: D >= 9943 `json.loads` raises RecursionError while DRF reads the field, the plain 500 page with nothing
+  written (the add view is atomic; the stock create validates before its first write).
+- `events`: D <= 9942 normal answer.
+- `multiple_quote`: D <= 9928 normal answer. Between 9929 and 9942 validation passes and a later `json.dumps` raises
+  instead: the quote payment's meta (only for a multiple-quote course, from about 9929) or the row's INSERT (from about
+  9934), while a request with another invalid field still answers its 400. Long tail PR 4's review handed this band
+  off (`errCourseEnrolmentFormJSONBand`, before any write) instead of answering the 500 page, because Django's answer
+  depends on the course and the other fields.
 
-Go answers these bands before any write (`errCourseEnrolmentFormJSONTooDeep`, constants in
+Go answers the 9943 band before any write (`errCourseEnrolmentFormJSONTooDeep`, `courseEnrolmentFormJSONBand` in
 `service/course_enrolment.go`). Values within the bands (including those past 500) are parsed by
-`dto/automationFormTree` up to its 20000-level limit and served.
-
-The stock router create (`POST course-subscriptions/`, family `router-course-subscriptions-create`) shares the serializer
-but is not atomic and reads the field from a deeper call stack, so its bands were measured separately (the same harness
-Django):
-
-- `multiple_quote`: D <= 9928 today's answer (the row and its quote payment, then the 500 page from rendering, rows kept);
-  9929 <= D <= 9933 validation passes and the row and its audit entries are written, then the quote payment's meta (it
-  holds `multiple_quote`) is dumped for the INSERT and raises RecursionError: no payment and no later write, the rows
-  written before stay; D >= 9934 `json.loads` raises during validation, the 500 page with nothing written.
-- `events`: D <= 9942 today's answer (rows kept, 500 page); D >= 9943 the same 500 page with nothing written.
-
-Go answers these bands too (`courseEnrolmentStockFormJSONBand`): the validation band before any write, the quote
-payment's band after the row and its audit entries, which only a quote course reaches. The 9929..9933 band has no HTTP
-case (a row stored that deep is beyond the state snapshot) and is pinned by the Go unit tests; the cases
+`dto/automationFormTree` up to its 20000-level limit and served. The stock router create (`POST course-subscriptions/`,
+family `router-course-subscriptions-create`) shares the serializer and the same check. The cases
 `...-form-events-depth-9900-`/`-9980-` and `...-form-multiple-quote-depth-9900-`/`-9980-` cover both fields with a
 margin, keeping the stored values shallow (the event serializer drops an unknown key; the quote text repeats `amount`
-before the real one).
+before the real one); the handed-off band is pinned by `TestCourseEnrolmentFormJSONBands`.
 
 Django's edge is not a fixed number: it moves by a few levels with the value's shape (arrays or objects, where the
 deep part sits) and with the live stack of the run (the same module elements loaded at 9934 levels in one run and

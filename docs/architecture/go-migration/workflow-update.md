@@ -68,8 +68,10 @@ A form-encoded `automation_tree` is read like DRF's JSONField reads an HTML valu
 measured answer (CPython 3.13.16 on the parity harness's Django) depends on the maximum nesting D of the text:
 
 - D <= 9937: the workflow is saved and audited as usual (200).
-- D = 9938: the row is updated and audited, then Django answers its plain 500 page (a failure after the save). Go commits
-  the save and its entry, then answers the same page (`errAutomationWorkflowFormTreeSavedThenFailed`).
+- D = 9938: the row is updated and audited, then Django answers its plain 500 page: the view's `logger.info` of
+  `serializer.data` raises right after the save, before the enable block, so a cron reset save and `trigger()` never
+  run. Go commits the save and its entry, then answers the same page (`errAutomationWorkflowFormTreeSavedThenFailed`),
+  skipping the reset and the trigger (long tail PR 4 review).
 - 9939 <= D <= 9941: auditlog's pre_save update entry is kept and the row is not updated, then the plain 500 page. Go
   reuses the lone-surrogate path (`TreeRejected`): the entry is committed, the row is not, and the answer is the page.
 - D >= 9942: `json.loads` raises RecursionError during validation: the plain 500 page with nothing written

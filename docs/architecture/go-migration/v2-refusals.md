@@ -1785,9 +1785,9 @@ both answer the closest text.)
 | Sentinel | HTTP/WS before -> after | other before -> after | What changed |
 |---|---|---|---|
 | `dto.ErrReportNotPorted` (deleted) | 7 -> 0 | 3 -> 0 | **ported**: non-finite floats (agent `NaN`/`Infinity`, numbers beyond the float range), raw `regex`/`iexact` values with psycopg2's literal types, `Decimal(str)` spellings, `time.fromisoformat` + `time_re`, Unicode digits in strptime, aware datetimes past the year range, integers beyond 64 bits in `in`/`range`, `?` ordering, choice labels of lists/dicts, environment `max_results`/`query_timeout` of 0 (`''`) or negative; app state: metadata guards (asserted by `TestMCPModelsInvariants`), PostgreSQL output forms, parsed-JSON type defaults |
-| `service.ErrBusinessMCPNotPorted` | 7 -> 0 | 3 -> 1 | **ported**: `sanitize_text`'s `re.sub` template and argument types, `user_id` texts through `repr()`, `save_report` values, the exporters' TypeError/AttributeError texts (`At least one sheet must be visible` when ExcelWriter closes without a sheet), attendance `course_id`/`course_name`/attendees/`str.lower()`/`save_info`, big integers in XLSX cells; untexted exceptions are `ErrBusinessToolRaised`; the run calls the file tools directly. The sentinel stays only in `handler/businessmcp` (MCP command) |
+| `service.ErrBusinessMCPNotPorted` | 7 -> 0 | 3 -> 1 | **ported**: `sanitize_text`'s `re.sub` template and argument types, `user_id` texts through `repr()`, `save_report` values, the exporters' TypeError/AttributeError texts (`At least one sheet must be visible` when ExcelWriter closes without a sheet), attendance `course_id`/`course_name`/attendees/`str.lower()`/`save_info`, big integers in XLSX cells; untexted exceptions are `ErrBusinessToolRaised`; the run calls the file tools directly. The sentinel stayed only in `handler/businessmcp` (MCP command); the extension below deleted it |
 | `service.ErrAgentNotPorted` (deleted) | 1 -> 0 | 2 -> 0 | **ported**: collaborator without owner (4003), non-UTF-8 base URL (as InvalidURL), environment 0/negative integers (`range('')`, `count <= ''`, `wait_for` with `''` and <= 0), numeric/boolean tool call indexes, the failed forced loop answer; X11: business refusals answer the generic tool result, other stream shapes are a failed stream; app state: configuration keys/types both writers never produce, manual tool result shapes |
-| `repository.ErrAgentCacheShape` | 1 -> 1 | 2 -> 0 | **ported**: save_info pickles with lone surrogates, integers of any size, infinities (the shared unpickler takes options; data restore keeps its subset); app state: counter values only the app writes. **Left**: `GuardAcquire`'s `cache.decr` after the key expired between `incr` and `decr` (timing) |
+| `repository.ErrAgentCacheShape` | 1 -> 1 | 2 -> 0 | **ported**: save_info pickles with lone surrogates, integers of any size, infinities (the shared unpickler takes options; data restore keeps its subset); app state: counter values only the app writes. `GuardAcquire`'s `cache.decr` after the key expired between `incr` and `decr` (timing) was left here and answered by the extension below (X17, sentinel deleted) |
 
 `refusal_reach.py`: whole report 176 -> 152 rows (HTTP/WebSocket 148 -> 133, other 28 -> 19; 50 -> 48 sentinels);
 these four points 26 -> 2 (`/ws/agent/` decr race; the `mcp-server` command). `/ws/agent/` and the saved-report
@@ -1819,7 +1819,7 @@ X11 extension, X12, X13, X14, X17, X18; the X lines are added by the combiner). 
 | cached release catalog | `repository.ErrReleaseCacheShape` (deleted) | a catalog Go cannot read is a cache miss (fetched and stored again) | X14 |
 | smtpsend raw environment bytes | `smtpsend: text not representable as a Python str` (deleted) | surrogateescape decoding, then the lone-surrogate path | X14 |
 | subscription archive/delete rows deleted concurrently | `domain.ErrSubscriptionLifecycleNotPorted` (deleted) | the vanished row is skipped | X17 |
-| e-mail configuration deleted before the balance save | `domain.ErrEmailTaskUnsupported` (deleted) | `save()`'s UPDATE→INSERT fallback with an auditlog create entry | X17 |
+| e-mail configuration deleted before the balance save | `domain.ErrEmailTaskUnsupported` (deleted) | `save()`'s UPDATE→INSERT fallback; auditlog's pre_save update entry (every field from None, added by the combined branch's review) then its create entry | X17 |
 | instance logo name taken again | `domain.ErrInstanceSetupRefused` (1 site) | `get_available_name`'s alternative name | X17 |
 
 `refusal_reach.py`: whole report 152 -> 124 rows; every row of these sites is gone (28 rows). Remaining rows of the
@@ -1870,7 +1870,7 @@ association import can write from an archive counts as reachable. Per-site evide
 | `domain.ErrCalendarNotPorted` | collaborator scope user (imported chain) | **ported** (sentinel deleted): the effective user's flag | course-calendar `calendar-collaborator-chain-effective-sync` |
 | `service/statistic_reads.go` | registry dates with other digits; meta float beyond the double range | **ported** / application state (DRF's strict renderer raises after the view) | statistic-reads `owner-expiring-carnet-*` |
 | `service/statistic_reads.go` report year, `invoice_sync_print_customer.go` dates | a year before 1000 | **X16**: `dto.PythonStrftimeYear` follows the platform's `strftime('%Y')` (glibc unpadded: the report's 500 page, the invoice's DateField 400) | statistic-reads, invoice-sync-print `*-before-1000-*` (glibc, last cases); subscription-create `preregistration-renewal-year-999-born-date` |
-| `domain.ErrPaymentReadsNotPorted` | `?` with a search, `full_name` with a search, imported athlete owner, export floats | **ported**; only the Stripe balance payloads stay (agent A) | payment-reads, payment-export new cases |
+| `domain.ErrPaymentReadsNotPorted` | `?` with a search, `full_name` with a search, imported athlete owner, export floats | **ported**; the Stripe balance payloads are agent A's X13 answer, so the combined branch deleted the sentinel | payment-reads, payment-export new cases |
 | `service.ErrOAuthNotPorted` | non-ASCII e-mail/username, provider names, the queued welcome mail | **ported** (sentinel deleted) | oauth-accounts new cases |
 | course enrolment / course subscriptions | form JSON lone surrogate; shared installment payment | **ported** / application state at the jsonb write (atomic views) | course-enrolment, course-subscriptions new cases |
 | `domain.ErrPaymentWritesNotPorted` | rejected attachment name, `payment_id` in the add body, form update, form JSON lone surrogate | **ported** (the surrogate keeps auditlog's pre_save entry, row unchanged, 500 page) | payment-writes new cases |
@@ -1883,8 +1883,71 @@ association import can write from an archive counts as reachable. Per-site evide
 | subscription create / import / medical | fee plans, Python `==`, names, ids, dates, placeholders, import tax codes; non-text names at the existence check (`IExact` does not prepare its value: the 500 page) | **ported**; sentinels of import and medical deleted | subscription-create, subscription-import-upload, subscription-medical new cases |
 | `smtpsend` encoded words | 8-bit charmap, UTF-16/32, utf-8-sig charsets | **ported** | `TestCharsetDecode` |
 | X15 recursion-depth bands | JSON nested past 500 levels: workflow `automation_tree`, course add/update/router create `multiple_quote`/`events`, invoice party forms, payment update form JSON, stored payment course/meta (statistic), module elements and responses (export), audit-logs columns and enrichment | **native band** measured on the harness's Django (CPython 3.13.16, default recursion limit; the C limit is the same on Linux): inside the band the normal answer, past it Django's own outcome (the 500 page, with the pre_save audit entry or the save where Django keeps them). Bands: workflow tree <= 9937 / 9938 saved then 500 / 9939-9941 pre_save entry kept / >= 9942 nothing; course add quote <= 9928, events <= 9942; router create quote <= 9928 / 9929-9933 row kept without its payment / >= 9934 nothing, events <= 9942; course update quote <= 9934, events <= 9941; supplier update `payment.course` <= 9941; customer add form `lines` <= 9942; payment update form JSON <= 9934 / 9935-9937 pre_save entry kept / >= 9938 nothing; statistic payment JSON <= 9936; module elements <= 9933, responses <= 9935; audit enrichment frames detail <= 954, list <= 953; audit columns detail <= 9935, list <= 9934. Measured with nested objects; the edge moves by a few levels with the value's shape and the live stack, so the parity cases keep a margin and the exact edges are Go tests | family docs; X15 cases in each family; `dto/audit_recursion_band_test.go` |
-| `smtpsend/python_charset.go:182` (`ErrEncodedWordCharset`), `domain/communications_send_email.go:23` | an encoded word in an address whose charset is a CJK multibyte, iso2022/hz, utf-7, idna, punycode or unicode-escape codec | **left** (rule 1): Django decodes them; porting CPython's multibyte and stateful decoders exactly is a table port of its own | `python_charset.go` comment |
+| `smtpsend/python_charset.go` (`ErrEncodedWordCharset`), `domain/communications_send_email.go:23` | an encoded word in an address whose charset is a CJK multibyte, iso2022/hz, utf-7, idna, punycode or unicode-escape codec | **ported when combined** through agent B's `internal/pycodecs` (strict decode, then the surrogateescape retry); only `idna` is left (rule 1: its strict decode needs nameprep) | `TestCharsetCoverage`, `TestCharsetAddress` |
 | `service/subscription_create*.go`, `subscription_renew.go` | a non-canonical `associate_id` spelling, the unique tax-code `get_or_create` retries, a tutor naming the minor's own row, a collaborator-owned renewal, the renew view's 400 text of unmodelled exceptions | **left** (rule 1): Django answers; each needs its own audit/text port | subscription-create.md "Left" |
 
-The django-handoff sequence lost its only hand-off example (the deep workflow tree, now answered by Go): its contract
-needs one refused input from a source family again.
+The django-handoff sequence lost its only hand-off example (the deep workflow tree, now answered by Go); the combined
+branch gives it a new one from api-schema (below).
+
+## Long tail PR 4, combined
+
+The three branches were combined on `go-v2only/longtail-pr4` (base `6779988b`). Combine changes:
+
+- smtpsend decodes encoded-word charsets through agent B's `internal/pycodecs` (strict decode, then
+  `_encoded_words.decode`'s surrogateescape retry), so the CJK, iso2022/hz, utf-7, punycode and escape charsets are
+  decoded; only `idna` stays `ErrEncodedWordCharset` (its strict decode needs nameprep).
+- Sentinels no root reaches any more are deleted: `domain.ErrDocumentWritesNotPorted`, `ErrInstanceSetupRefused`,
+  `ErrInvoicePartyNotPorted`, `ErrPaymentReadsNotPorted`, `ErrSubscriptionReadsNotPorted`.
+- `cmd/refusal-reach` now follows a sentinel through `append([]any{sentinel}, args...)` before `fmt.Errorf("%w", ...)`.
+  It had missed `errInvoiceViewsNotPorted` (2 HTTP rows: the invoice views' stored meta/course/description values)
+  and an `importeffects.ErrUnsupported` return on the data restore upload (1 HTTP row).
+- django-handoff takes its refused input from api-schema (`GET schema/?lang=xx/yy`, `handoff.md`).
+
+Review of the AppState and native-answer sites (import-reachability rule): 49 sites sampled across the three agents
+(A 21, B 12, C 16), 9 wrong, one comment corrected. Changes:
+
+| Site | Finding | Now |
+|---|---|---|
+| saved reports environment integer beyond int64 | `int()` keeps it, Django answers | handoff (`errReportEnvironmentNotPorted`); text `int()` rejects stays app state |
+| business MCP export label `1e400` | pandas writes the header `inf`, Django answers 200 | handoff (`errReportLabelNonFinite`) |
+| business MCP JSON lookup / `has_key` of a coerced value | the coercion walk keeps resolving names after a JSONField; Django sends the value | handoff (`errMCPJSONCoerced`) |
+| payment save hook, stored meta/course nested past 1000 levels | a payment update form or the import writes one; Django loads it | handoff (`errPaymentStoredJSONNested`) |
+| course enrolment and stock create, `multiple_quote` 9929..9942 | Django's answer depends on the course and the other fields (201, 400 or 500) | handoff (`errCourseEnrolmentFormJSONBand`); 9943 and deeper stays the validation 500 |
+| workflow update, D = 9938 with an enable reset | the log repr raises before the enable block | Go skips the reset save and the trigger (X15) |
+| e-mail configuration saved after it vanished | auditlog's pre_save logs an update entry from no row | update entry, then the create entry (X17) |
+| pdfexport `<seq template>` | CPython looks a key up as soon as it is parsed and skips one h/l/L modifier | ported (cases recorded with reportlab 4.2.5) |
+| pdfexport image source with no bytes | PIL's `cannot identify image file` text | handoff |
+
+Refusal reach (`refusal_reach.py`):
+
+| | points | HTTP/WS rows | other rows |
+|---|---|---|---|
+| before (`6779988b`) | 50 | 148 | 28 |
+| after PR 4 | 22 | 90 | 19 |
+
+Four of the HTTP/WebSocket rows are business refusals on `/ws/agent/`, which the agent answers as X11's generic tool
+result (`accepted-divergences.md`). The other 86 are the ceiling of the `--http` ratchet
+(`tools/go-migration/refusal_ceiling.json`, `docs/ci.md`).
+
+| Sentinel | HTTP/WS | other | What is left |
+|---|---|---|---|
+| `pdfexport.ErrNotPorted` | 16 | 3 | the reportlab paragraph surface: bullets, anchors and named links, non-JPEG images, `ftp:` image URLs, `<unichar>`, CMYK/alpha/expression colours, inf/nan numbers, `<para>` layout options |
+| `service.errPaymentStoredJSONNested` | 15 | 2 | stored payment meta/course nested past 1000 levels (load it with the measured stored-JSON band) |
+| `service.ErrDocumentRenderNotPorted` | 7 | 0 | header bytes uvicorn refuses, a generated name storage rejects after the Document, the X8 overlay, a filled form with a line break |
+| `mentions.ErrUnsupported` | 7 | 0 | model attributes the resolvers do not carry, the `str` type's layout fields |
+| `dto.errMCPJSONCoerced` | 7 | 3 | coerced values in JSON lookups |
+| `service.errReportEnvironmentNotPorted` | 7 | 3 | environment integers beyond int64 |
+| `service.errReportLabelNonFinite` | 7 | 3 | export labels float() reads as inf |
+| `service.errCourseEnrolmentFormJSONBand` | 4 | 0 | `multiple_quote` 9929..9942 |
+| `dto.ErrJSONRecursionBand` | 3 | 1 | stored JSON 9800..9998 deep (instructor report, import validation, restore members): X15 needs the measured edge per path |
+| `service.ErrPersonaNotPorted` | 3 | 0 | router create: HTML form body, picture branch |
+| `domain.ErrSubscriptionCreateNotPorted` | 3 | 0 | non-canonical `associate_id`, tax-code `get_or_create` retries, a tutor naming the minor, a collaborator-owned renewal, the renew 400 text of unmodelled exceptions |
+| `service.errInvoiceViewsNotPorted` | 2 | 0 | invoice views: stored meta/course/description that is not a dict or str |
+| `dto.ErrAuditNotPorted` | 2 | 0 | instructor hours form JSON nested past 500 (X15 band not measured) |
+| `domain.ErrSendEmailNotPorted`, `smtpsend.ErrEncodedWordCharset` | 2 | 1 | an `idna` encoded word in an address |
+| `importeffects.ErrUnsupported` | 1 | 1 | archive values outside the ORM conversions (`str()` of a JSON container) |
+| `domain.ErrInstructorWritesNotPorted` | 1 | 0 | compensation notes: NaN payload, exponent overflow |
+| `domain.ErrPaymentStateNotPorted` | 1 | 0 | paid flow for an athlete owning an imported association |
+| `handler.errAPISchemaUnsupported` | 1 | 0 | `lang` with a path separator (the django-handoff example) |
+| `pandasxlsx.ErrWorkbookNotPorted` | 1 | 0 | parts over 256 MiB, sheets past 1,048,576 rows, a duration column label, dateutil default-date text |
+| `domain.ErrOrphanMedicalUnsupported`, `domain.ErrExportCleanupUnsupported` | 0 | 2 | Document collector cascade in the cleanup jobs |
