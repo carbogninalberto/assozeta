@@ -1178,7 +1178,7 @@ func TestAgentAnswersTheReportQueryText(t *testing.T) {
 		Detail:   `Token "NaN" is invalid.`,
 		Hint:     "No operator matches the given name and argument types. You might need to add explicit type casts.",
 		Position: 105,
-		Where:    "JSON data, line 1: NaN",
+		Where:    "JSON data, line 1: NaN\nunnamed portal parameter $3 = '...'",
 	}
 	store := &portedStore{runErr: &domain.ReportQueryError{Err: pg}}
 	agent := &service.AgentTools{BusinessTools: portedTools(store)}

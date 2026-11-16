@@ -85,8 +85,8 @@ func postgresErrorText(pg *pgconn.PgError) string {
 	if pg.Hint != "" {
 		text.WriteString("HINT:  " + pg.Hint + "\n")
 	}
-	if pg.Where != "" {
-		text.WriteString("CONTEXT:  " + pg.Where + "\n")
+	if where := postgresClientContext(pg.Where); where != "" {
+		text.WriteString("CONTEXT:  " + where + "\n")
 	}
 	return text.String()
 }
@@ -109,4 +109,19 @@ func markMCPRaised(ctx context.Context) {
 	if raised, ok := ctx.Value(mcpRaisedKey{}).(*bool); ok && raised != nil {
 		*raised = true
 	}
+}
+
+// postgresClientContext drops the context lines PostgreSQL adds for a bound
+// parameter ("unnamed portal parameter $N = '...'"): Go binds its values,
+// psycopg2 sends them as literals, so Django's text never has them.
+func postgresClientContext(where string) string {
+	lines := strings.Split(where, "\n")
+	kept := lines[:0]
+	for _, line := range lines {
+		if strings.HasPrefix(line, "unnamed portal parameter $") {
+			continue
+		}
+		kept = append(kept, line)
+	}
+	return strings.Join(kept, "\n")
 }
