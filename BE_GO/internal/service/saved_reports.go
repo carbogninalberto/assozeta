@@ -6,11 +6,11 @@ import (
 	"errors"
 	"os"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/google/uuid"
 )
 
@@ -265,6 +265,20 @@ type reportIntegrationStore interface {
 	ReportIntegration(ctx context.Context) (bool, *string, error)
 }
 
+// errReportIntegrationSetting is a stored AI setting that is missing or not a
+// positive int: BE/instance/integrations.py writes it through
+// AISettingsSerializer (IntegerField min_value 1, every field required).
+var errReportIntegrationSetting = refusal.AppState("saved reports: stored AI setting of another shape")
+
+// errReportIntegrationShape is a stored integration record of another shape:
+// the instance view writes {"ai": {"revision": ..., "settings": {...}}}.
+var errReportIntegrationShape = refusal.AppState("saved reports: stored integration record of another shape")
+
+// errReportEnvironmentSetting is an environment value Python's int() rejects
+// or Go's int64 does not hold: Django's settings module raises on env.int and
+// the server does not start.
+var errReportEnvironmentSetting = refusal.AppState("saved reports: environment setting outside the int64 range")
+
 func loadReportSettings(ctx context.Context, store reportIntegrationStore) (dto.ReportSettings, error) {
 	selfHosted, text, err := store.ReportIntegration(ctx)
 	if err != nil {
@@ -277,27 +291,30 @@ func loadReportSettings(ctx context.Context, store reportIntegrationStore) (dto.
 		}
 		root, ok := parsed.(domain.RequestObject)
 		if !ok {
-			return dto.ReportSettings{}, domain.ErrInstanceAdminUnexpected
+			return dto.ReportSettings{}, errReportIntegrationShape
 		}
 		if record, present := root.Lookup("ai"); present {
 			object, ok := record.(domain.RequestObject)
 			if !ok {
-				return dto.ReportSettings{}, domain.ErrInstanceAdminUnexpected
+				return dto.ReportSettings{}, errReportIntegrationShape
 			}
 			if value, _ := object.Lookup("settings"); value != nil {
 				settings, ok := value.(domain.RequestObject)
 				if !ok {
-					return dto.ReportSettings{}, domain.ErrInstanceAdminUnexpected
+					return dto.ReportSettings{}, errReportIntegrationShape
 				}
 				number := func(key string) (int64, error) {
 					value, present := settings.Lookup(key)
 					if !present {
-						return 0, dto.ErrReportFailed // KeyError
+						return 0, errReportIntegrationSetting
 					}
 					parsed, ok := value.(json.Number)
+					if !ok {
+						return 0, errReportIntegrationSetting
+					}
 					count, err := strconv.ParseInt(string(parsed), 10, 64)
-					if !ok || err != nil || count <= 0 {
-						return 0, dto.ErrReportNotPorted
+					if err != nil || count <= 0 {
+						return 0, errReportIntegrationSetting
 					}
 					return count, nil
 				}
@@ -315,11 +332,13 @@ func loadReportSettings(ctx context.Context, store reportIntegrationStore) (dto.
 		if !present {
 			return fallback, nil
 		}
-		value, err := strconv.ParseInt(strings.TrimSpace(text), 10, 64)
-		if err != nil || value <= 0 {
-			return 0, dto.ErrReportNotPorted
+		number, ok := dto.PythonIntText(text)
+		if !ok || !number.IsInt64() {
+			return 0, errReportEnvironmentSetting
 		}
-		return value, nil
+		// env.int keeps 0 and negatives; Django's `or ''` turns 0 into '' and
+		// ReportSettings documents that.
+		return number.Int64(), nil
 	}
 	maximum, err := environment("MCP_AGENT_MAX_RESULTS", 5000)
 	if err != nil {

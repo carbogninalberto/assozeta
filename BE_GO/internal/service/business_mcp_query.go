@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"regexp"
 	"sort"
 	"strconv"
@@ -15,6 +16,8 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pystr"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // The QueryBuilder tools of BE/application/mcp_server/server.py
@@ -39,7 +42,8 @@ func mcpObj(pairs ...any) domain.RequestObject {
 func mcpErrorResult(message string) domain.RequestObject { return mcpObj("error", message) }
 
 // mcpToolOutcome maps a planning/execution error to the call_tool result:
-// exceptions are {'error': str(e)}, not-ported inputs are refused.
+// exceptions are {'error': str(e)}, not-ported inputs are refused, an
+// exception whose text Go does not reproduce is ErrBusinessToolRaised.
 func mcpToolOutcome(ctx context.Context, err error) (any, error) {
 	var raised *dto.MCPToolException
 	if errors.As(err, &raised) {
@@ -52,22 +56,19 @@ func mcpToolOutcome(ctx context.Context, err error) (any, error) {
 		*raised = true // a saved-report run answers every exception alike
 		return mcpErrorResult(""), nil
 	}
-	if errors.Is(err, dto.ErrReportNotPorted) || errors.Is(err, dto.ErrReportFailed) {
-		return nil, ErrBusinessMCPNotPorted
-	}
-	if errors.As(err, &query) {
-		return nil, ErrBusinessMCPNotPorted // database error text (SQL in the message)
+	if errors.Is(err, dto.ErrReportFailed) || errors.As(err, &query) {
+		return nil, fmt.Errorf("%w: %w", ErrBusinessToolRaised, err)
 	}
 	return nil, err
 }
 
 // mcpRaisedResult is an exception raised inside a tool function. A
 // saved-report run answers every exception alike; the MCP transport returns
-// str(e), so an exception whose text is not given (message "") stays refused
-// there.
+// str(e), so an exception whose text is not given (message "") is
+// ErrBusinessToolRaised there.
 func mcpRaisedResult(ctx context.Context, message string) (any, error) {
 	if message == "" && ctx.Value(reportRunKey{}) == nil {
-		return nil, ErrBusinessMCPNotPorted
+		return nil, ErrBusinessToolRaised
 	}
 	markMCPRaised(ctx)
 	return mcpErrorResult(message), nil
@@ -182,25 +183,37 @@ func mcpFormatExportValue(value any) (any, error) {
 	return value, nil
 }
 
-// csvField is csv.writer's str() of a field (None is the empty text).
+// mcpCSVField is csv.writer's str() of a field (None is the empty text).
 func mcpCSVField(value any) (string, error) {
 	switch typed := value.(type) {
 	case string:
 		return typed, nil
 	case nil:
 		return "", nil
-	case json.Number, bool, domain.RequestObject, []any:
+	case json.Number, bool, domain.RequestObject, []any, float64:
 		return dto.PythonStr(typed), nil
 	}
-	return "", ErrBusinessMCPNotPorted
+	return "", mcpCSVValueType
 }
 
-// csvRow is csv.writer(dialect='excel').writerow.
+// mcpCSVValueType is a CSV cell of a type the result serializer never
+// produces: query results hold strings, numbers, booleans, None, lists and
+// dicts.
+var mcpCSVValueType = refusal.AppState("business MCP CSV cell of an unexpected type")
+
+// mcpExportFilterCount is the count of a filters value QueryBuilder already
+// raised on: Django's exporter runs only after the query, so the count of a
+// number is unreachable.
+var mcpExportFilterCount = refusal.AppState("business MCP export filters of a type the query already rejects")
+
+// errBusinessMCPSheets is a sheets value outside the JSON types: the argument
+// decoder produces only null, booleans, numbers, strings, lists and objects,
+// all of which the falsy check or the iteration errors above answer.
+var errBusinessMCPSheets = refusal.AppState("business MCP sheets value outside the JSON types")
+
+// csvRow is csv.writer(dialect='excel').writerow; a NUL stays in the cell.
 func mcpCSVRow(out *bytes.Buffer, fields []string) error {
 	for i, field := range fields {
-		if strings.ContainsRune(field, 0) {
-			return ErrBusinessMCPNotPorted
-		}
 		if i > 0 {
 			out.WriteByte(',')
 		}
@@ -309,19 +322,17 @@ func (t *BusinessMCPTools) exportData(ctx context.Context, arguments domain.Requ
 	}
 	titleText, ok := titleOrModel.(string)
 	if !ok {
-		return mcpRaisedResult(ctx, "") // sanitize_text: re.sub on a value that is not a str
+		// sanitize_text: re.sub on a value that is not a str.
+		return mcpRaisedResult(ctx, "expected string or bytes-like object, got '"+mcpValueTypeName(titleOrModel)+"'")
 	}
-	filename, err := SanitizeText(titleText, "-")
-	if err != nil {
-		return nil, ErrBusinessMCPNotPorted
-	}
+	filename := sanitizeFilename(titleText)
 	labels := domain.RequestObject{}
 	if value := mcpLookupOr(arguments, "column_labels", nil); mcpTruthy(value) {
 		object, ok := value.(domain.RequestObject)
 		if !ok {
 			// .get on a value that is not a dict, once per kept column.
 			if columns, _, _ := mcpExportColumns(data, nil); len(columns) > 0 {
-				return mcpRaisedResult(ctx, "")
+				return mcpRaisedResult(ctx, "'"+mcpValueTypeName(value)+"' object has no attribute 'get'")
 			}
 		}
 		labels = dto.PythonDict(object)
@@ -364,7 +375,8 @@ func (t *BusinessMCPTools) exportData(ctx context.Context, arguments domain.Requ
 		case string:
 			count = utf8.RuneCountInString(typed)
 		default:
-			return nil, ErrBusinessMCPNotPorted
+			// QueryBuilder rejects such filters before Django's exporter runs.
+			return nil, mcpExportFilterCount
 		}
 		// f'{n} filtro{"i" if n > 1 else ""} applicato{"i" if n > 1 else ""}'
 		plural := ""
@@ -406,14 +418,29 @@ func (t *BusinessMCPTools) exportMultiSheet(ctx context.Context, arguments domai
 	}
 	items, ok := sheets.([]any)
 	if !ok {
-		return mcpRaisedResult(ctx, "") // enumerate() of a number, or .get on a character or key
+		// enumerate() over a number raises; a string's characters and a dict's
+		// keys are strs without .get.
+		switch typed := sheets.(type) {
+		case json.Number:
+			if strings.ContainsAny(string(typed), ".eE") {
+				return mcpRaisedResult(ctx, "'float' object is not iterable")
+			}
+			return mcpRaisedResult(ctx, "'int' object is not iterable")
+		case float64:
+			return mcpRaisedResult(ctx, "'float' object is not iterable")
+		case bool:
+			return mcpRaisedResult(ctx, "'bool' object is not iterable")
+		case string, domain.RequestObject:
+			return mcpRaisedResult(ctx, "'str' object has no attribute 'get'")
+		}
+		return nil, errBusinessMCPSheets
 	}
 	var prepared []reportSheetData
 	var specs []any
 	for i, item := range items {
 		spec, ok := item.(domain.RequestObject)
 		if !ok {
-			return mcpRaisedResult(ctx, "") // .get on a value that is not a dict
+			return mcpRaisedResult(ctx, "'"+mcpValueTypeName(item)+"' object has no attribute 'get'")
 		}
 		spec = dto.PythonDict(spec)
 		specs = append(specs, spec)
@@ -481,10 +508,7 @@ func mcpAttendanceDate(value any) (string, bool, error) {
 	if !ok {
 		return "", false, nil // strptime raises TypeError: no date
 	}
-	parsed, ok, uncertain := dto.MCPStrptimeDate(text)
-	if uncertain {
-		return "", false, ErrBusinessMCPNotPorted
-	}
+	parsed, ok, _ := dto.MCPStrptimeDate(text)
 	return parsed, ok, nil
 }
 
@@ -499,14 +523,11 @@ func (t *BusinessMCPTools) attendanceCourses(ctx context.Context, arguments doma
 		return courses
 	}
 	if value, _ := arguments.Lookup("course_id"); mcpTruthy(value) {
-		text, ok := value.(string)
-		if !ok {
-			return nil, nil, ErrBusinessMCPNotPorted
-		}
-		// Q(pk=..., sport_association_id=...) prepares pk first.
-		id, err := dto.MCPUUIDArgument(text)
-		if err != nil {
-			return nil, nil, err
+		// Q(pk=..., sport_association_id=...): UUIDField.to_python prepares pk
+		// first.
+		id, message := uuidArgument(value)
+		if message != "" {
+			return nil, nil, &dto.MCPToolException{Message: message}
 		}
 		association, err := dto.MCPUUIDArgument(t.association)
 		if err != nil {
@@ -519,7 +540,7 @@ func (t *BusinessMCPTools) attendanceCourses(ctx context.Context, arguments doma
 			return nil, nil, err
 		}
 		if len(rows) == 0 {
-			return nil, mcpErrorResult("Corso non trovato con ID: " + text), nil
+			return nil, mcpErrorResult("Corso non trovato con ID: " + dto.PythonStr(value)), nil
 		}
 		return scan(rows), nil, nil
 	}
@@ -528,10 +549,8 @@ func (t *BusinessMCPTools) attendanceCourses(ctx context.Context, arguments doma
 		return nil, nil, err
 	}
 	if value, _ := arguments.Lookup("course_name"); mcpTruthy(value) {
-		text, ok := value.(string)
-		if !ok {
-			return nil, nil, ErrBusinessMCPNotPorted
-		}
+		// title__icontains=str(value)
+		text := dto.PythonStr(value)
 		escaped := "%" + strings.NewReplacer(`\`, `\\`, "%", `\%`, "_", `\_`).Replace(text) + "%"
 		where := ` FROM "application_course" WHERE (NOT "application_course"."deleted" AND "application_course"."sport_association_id" = $1::uuid` +
 			` AND UPPER("application_course"."title"::text) LIKE UPPER($2) AND NOT "application_course"."deleted"` + t.courseGroup() + `)`
@@ -580,7 +599,9 @@ func mcpOptional(text *string) any {
 	return *text
 }
 
-// attendanceIDs is the presence set of one day's attendees.
+// mcpAttendanceIDs is the presence set of one day's attendees: `attendees =
+// day.get('attendees') or []`, iterating a list's items, a dict's keys or a
+// string's characters.
 func mcpAttendanceIDs(text *string) (map[string]bool, error) {
 	present := map[string]bool{}
 	if text == nil {
@@ -605,39 +626,32 @@ func mcpAttendanceIDs(text *string) (map[string]bool, error) {
 		for _, r := range typed {
 			items = append(items, string(r))
 		}
+	case json.Number, bool, float64:
+		// A JSON column can hold any value: the association import keeps the
+		// archives as they are.
+		return nil, &dto.MCPToolException{Message: "'" + mcpValueTypeName(parsed) + "' object is not iterable"}
 	default:
-		return nil, ErrBusinessMCPNotPorted
+		return nil, mcpAttendanceIterable
 	}
 	for _, item := range items {
 		value := item
 		if object, ok := item.(domain.RequestObject); ok {
 			value = ""
-			if id, present := dto.PythonDict(object).Lookup("course_subscription_id"); present {
+			if id, found := dto.PythonDict(object).Lookup("course_subscription_id"); found {
 				value = id
 			}
 		}
-		var id string
-		switch typed := value.(type) {
-		case string:
-			id = typed
-		case nil:
-			id = "None"
-		case bool, json.Number:
-			id = dto.PythonStr(typed)
-		default:
-			return nil, ErrBusinessMCPNotPorted
-		}
-		if id != "" {
+		if id := dto.PythonStr(value); id != "" {
 			present[id] = true
 		}
 	}
 	return present, nil
 }
 
-// pythonLowerSafe reports names whose str.lower() Go reproduces.
-func mcpLowerSafe(text string) bool {
-	return !strings.ContainsAny(text, "İΣ")
-}
+// mcpAttendanceIterable is an attendees value outside the JSON types: the
+// JSON column parser produces only null, booleans, numbers, strings, lists
+// and objects.
+var mcpAttendanceIterable = refusal.AppState("business MCP attendance attendees outside the JSON types")
 
 func (t *BusinessMCPTools) attendanceCourseMatrix(ctx context.Context, course attendanceCourse, from, to string) (*attendanceMatrix, error) {
 	exists, err := t.rows(ctx, `SELECT 1::text FROM "application_attendanceregistry" WHERE "application_attendanceregistry"."course_id" = $1::uuid LIMIT 1`,
@@ -685,9 +699,6 @@ func (t *BusinessMCPTools) attendanceCourseMatrix(ctx context.Context, course at
 		if name == "" {
 			name = id
 		}
-		if !mcpLowerSafe(name) {
-			return nil, ErrBusinessMCPNotPorted
-		}
 		if _, seen := names[id]; !seen {
 			order = append(order, id)
 		}
@@ -707,7 +718,7 @@ func (t *BusinessMCPTools) attendanceCourseMatrix(ctx context.Context, course at
 		}
 		present = append(present, ids)
 	}
-	sort.SliceStable(order, func(i, j int) bool { return strings.ToLower(names[order[i]]) < strings.ToLower(names[order[j]]) })
+	sort.SliceStable(order, func(i, j int) bool { return pystr.Lower(names[order[i]]) < pystr.Lower(names[order[j]]) })
 	for _, id := range order {
 		row := attendanceRow{name: names[id], id: id, total: len(days)}
 		for _, ids := range present {

@@ -6,6 +6,7 @@ import (
 	"io"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // AgentRestoreLock is the restore OS lock (repository.RestoreFileLock).
@@ -64,11 +65,16 @@ func (t *AgentTools) Coordinate(ctx context.Context) (func(), string, error) {
 	return t.Coordinator.Acquire(ctx)
 }
 
+// agentToolNotReproduced is the tool result for a business tool call whose
+// Django answer Go does not reproduce (accepted divergence X11): the
+// conversation continues, where Django would answer the exception's own text.
+const agentToolNotReproduced = "Errore durante l'esecuzione dello strumento."
+
 func (t *AgentTools) Business(ctx context.Context, name string, arguments domain.RequestObject) (any, bool, error) {
 	raised := false
 	value, err := t.BusinessTools.Execute(WithMCPRaised(ctx, &raised), name, arguments)
-	if errors.Is(err, ErrBusinessMCPNotPorted) {
-		return nil, false, ErrAgentNotPorted
+	if errors.Is(err, ErrBusinessToolRaised) || errors.Is(err, refusal.ErrNotPorted) {
+		return mcpErrorResult(agentToolNotReproduced), true, nil
 	}
 	return value, raised, err
 }
@@ -112,6 +118,6 @@ func agentPlain(value any) any {
 // AgentUUID is UUIDField.to_python for a string: the canonical text, or
 // false where Django raises ValidationError.
 func AgentUUID(value string) (string, bool) {
-	id, message, err := userUUID(value)
-	return id, err == nil && message == ""
+	id, message := userUUID(value)
+	return id, message == ""
 }

@@ -103,6 +103,10 @@ func (c *Calls) Execute(ctx context.Context, name string, raw json.RawMessage, k
 	}
 	result, err := c.business.Execute(ctx, name, arguments)
 	if err != nil {
+		if errors.Is(err, service.ErrBusinessToolRaised) {
+			// The MCP command answers Django's exception text itself: refuse.
+			return "", service.ErrBusinessMCPNotPorted
+		}
 		return "", err
 	}
 	return dumps(result), nil

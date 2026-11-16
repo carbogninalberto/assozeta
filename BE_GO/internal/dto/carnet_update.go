@@ -33,6 +33,9 @@ func pythonTypeName(value any) string {
 			return "float"
 		}
 		return "int"
+	case float64:
+		// The non-finite tokens the JSON parser produces (NaN/Infinity).
+		return "float"
 	case nil:
 		return "NoneType"
 	case domain.RequestUpload:

@@ -1,6 +1,16 @@
 package service
 
-import "context"
+import (
+	"context"
+	"errors"
+)
+
+// ErrBusinessToolRaised is an exception raised inside a business tool whose
+// str(e) Go does not reproduce (a PostgreSQL error text carries the statement;
+// some exporter texts carry object addresses). A saved-report run answers every
+// exception with its JSON 500, the MCP command refuses the call, the agent
+// answers X11's generic tool error.
+var ErrBusinessToolRaised = errors.New("business tool raised an exception whose text is not reproduced")
 
 // The agent (application.agent.core._execute_tool) renders a tool's result
 // and an exception the tool raised differently: json.dumps(result,
