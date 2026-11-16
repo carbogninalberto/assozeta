@@ -24,10 +24,11 @@ func NewSubscriptionImportUploadHandler(imports *service.SubscriptionImportUploa
 }
 
 func (h *SubscriptionImportUploadHandler) Upload(c echo.Context) error {
-	raw, err := bufferMultipart(c)
+	raw, cleanup, err := bufferMultipart(c)
 	if err != nil {
 		return restError(c, err)
 	}
+	defer cleanup()
 	identity, err := messageMutationsIdentity(c, h.uploads.actors, h.uploads.identities, http.MethodPost, "subscription_import_upload")
 	if identity == nil {
 		return err

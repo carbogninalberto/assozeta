@@ -7,11 +7,6 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
-// ErrDocmanagerNotPorted refuses a docmanager path that renders a PDF (Puppeteer
-// and the Celery storage task), deletes a document, or depends on behaviour this
-// port does not reproduce. It is answered with the 500 page before any write.
-var ErrDocmanagerNotPorted = refusal.New("docmanager path not ported")
-
 // ErrDocmanagerUnreachable is a state no request or stored row produces (each
 // site names the decoder or constraint that rules it out).
 var ErrDocmanagerUnreachable = refusal.AppState("docmanager: unreachable state")

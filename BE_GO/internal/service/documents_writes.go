@@ -152,7 +152,7 @@ func (s *DocumentUploads) saveNamed(ctx context.Context, name string, content []
 	if !s.overwrite {
 		exists, err := s.objects.Exists(ctx, key)
 		if err != nil {
-			return err
+			return &documentExistsError{err: err}
 		}
 		if exists {
 			// get_available_name would pick a random alternative name; the key embeds
@@ -413,17 +413,17 @@ func (s *DocumentUploads) Add(ctx context.Context, identity domain.ResolvedIdent
 			if errors.As(err, &suspicious) {
 				return nil, fail(suspicious.Message)
 			}
-			// A client error botocore raises at once: Django deletes the Document and answers its text.
+			// A storage failure botocore answers (a client error at once, a
+			// retried answer, a transport error, a multipart-size body): Django
+			// deletes the Document and answers its final text.
 			if text, ok := documentSaveFailureText(err, len(step.content)); ok {
 				return nil, fail(text)
 			}
-			// Other storage failures (transport errors, retried provider answers,
-			// multipart-size bodies): Django's text names retries and endpoints; they
-			// stay with Django (external, not replayable after the Document row).
+			// Not a storage answer (a cancelled request context).
 			if failed := unwind(); failed != nil {
 				return nil, failed
 			}
-			return nil, errors.Join(domain.ErrDocumentWritesNotPorted, err)
+			return nil, err
 		}
 		created := s.at()
 		archive := domain.ArchiveRecord{ID: s.ids(), Association: association, Document: document.ID, Folder: folder}
@@ -846,9 +846,8 @@ func (s *DocumentUploads) MedicalUpload(ctx context.Context, identity domain.Res
 		if text, ok := documentSaveFailureText(saveErr.Err, saveErr.Size); ok {
 			return nil, &MedicalUploadError{Status: 500, Message: text}
 		}
-		// Transport errors, retried provider answers and multipart-size bodies
-		// (external; Django's text names retries and endpoints) stay with Django.
-		return nil, errors.Join(domain.ErrDocumentWritesNotPorted, saveErr.Err)
+		// Not a storage answer (a cancelled request context).
+		return nil, saveErr.Err
 	}
 	fail := func(message string) error {
 		if err := tx.Commit(); err != nil {

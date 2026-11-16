@@ -8,6 +8,7 @@ import (
 	"mime"
 	"mime/multipart"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 	"unicode"
@@ -241,10 +242,11 @@ func (h *DocumentUploadsHandler) Update(c echo.Context) error {
 // UploadDocument follows subscription_upload_document: is_valid_uuid, the
 // lookup (500 when missing), then request.data.
 func (h *DocumentUploadsHandler) UploadDocument(c echo.Context) error {
-	raw, err := bufferMultipart(c)
+	raw, cleanup, err := bufferMultipart(c)
 	if err != nil {
 		return restError(c, err)
 	}
+	defer cleanup()
 	identity, err := messageMutationsIdentity(c, h.actors, h.identities, http.MethodPost, "subscription_upload_document")
 	if identity == nil {
 		return err
@@ -279,10 +281,11 @@ func (h *DocumentUploadsHandler) UploadDocument(c echo.Context) error {
 
 // CertificateDocument follows medical_certificate_document (AllowAny).
 func (h *DocumentUploadsHandler) CertificateDocument(c echo.Context) error {
-	raw, err := bufferMultipart(c)
+	raw, cleanup, err := bufferMultipart(c)
 	if err != nil {
 		return restError(c, err)
 	}
+	defer cleanup()
 	identity, err := messageMutationsIdentityFor(c, h.actors, h.identities, http.MethodPost, "medical_certificate_document", true)
 	if identity == nil {
 		return err
@@ -314,10 +317,11 @@ func (h *DocumentUploadsHandler) CertificateDocument(c echo.Context) error {
 // MedicalUpload follows subscription_medical_certificate_upload: is_valid_uuid,
 // the target lookup (404), then the try block around request.data.
 func (h *DocumentUploadsHandler) MedicalUpload(c echo.Context) error {
-	raw, err := bufferMultipart(c)
+	raw, cleanup, err := bufferMultipart(c)
 	if err != nil {
 		return restError(c, err)
 	}
+	defer cleanup()
 	identity, err := messageMutationsIdentity(c, h.actors, h.identities, http.MethodPost, "subscription_medical_certificate_upload")
 	if identity == nil {
 		return err
@@ -350,26 +354,82 @@ func (h *DocumentUploadsHandler) MedicalUpload(c echo.Context) error {
 	return c.Blob(http.StatusOK, echo.MIMEApplicationJSON, dto.PythonJSONDumpsCompact(response))
 }
 
-const uploadBodyLimit = 262144000
+// uploadBodyLimit is the largest multipart body Go keeps in memory (250 MiB,
+// the value of DATA_UPLOAD_MAX_MEMORY_SIZE). A larger body is spooled to a
+// temporary file and parsed through a read-only mapping, as MultiPartParser
+// spools uploaded files to disk. The handoff recorder keeps its own copy of
+// the body (and gives up past its limit), so nothing reads the mapping after
+// the cleanup. It is a variable so tests can lower it.
+var uploadBodyLimit = 262144000
 
-// bufferMultipart keeps a multipart body in memory so identity resolution
-// and the view's own parse read the same bytes; other bodies stay unread.
-func bufferMultipart(c echo.Context) ([]byte, error) {
+// bufferMultipart keeps a multipart body's bytes so identity resolution and
+// the view's own parse read the same ones; other bodies stay unread. Bodies
+// over uploadBodyLimit are written to a temporary file and mapped read-only:
+// the cleanup returned with them releases the mapping and deletes the file,
+// and every caller defers it.
+func bufferMultipart(c echo.Context) ([]byte, func(), error) {
+	none := func() {}
 	request := c.Request()
 	media, _, _ := mime.ParseMediaType(request.Header.Get("Content-Type"))
 	if media != "multipart/form-data" || request.Body == nil || request.ContentLength == 0 {
-		return nil, nil
+		return nil, none, nil
 	}
-	raw, err := io.ReadAll(io.LimitReader(request.Body, uploadBodyLimit+1))
+	if request.ContentLength > int64(uploadBodyLimit) {
+		raw, cleanup, err := spoolMultipart(request.Body)
+		if err != nil {
+			return nil, none, err
+		}
+		request.Body = io.NopCloser(bytes.NewReader(raw))
+		return raw, cleanup, nil
+	}
+	raw, err := io.ReadAll(io.LimitReader(request.Body, int64(uploadBodyLimit)+1))
 	if err != nil {
-		return nil, err
+		return nil, none, err
 	}
 	if len(raw) > uploadBodyLimit {
-		// Django spools such a body to disk and answers normally: handed off.
-		return nil, domain.ErrDocumentWritesNotPorted
+		// The length understated the body (a chunked request): its head is in
+		// memory, the rest goes to the file.
+		mapped, cleanup, err := spoolMultipart(io.MultiReader(bytes.NewReader(raw), request.Body))
+		if err != nil {
+			return nil, none, err
+		}
+		request.Body = io.NopCloser(bytes.NewReader(mapped))
+		return mapped, cleanup, nil
 	}
 	request.Body = io.NopCloser(bytes.NewReader(raw))
-	return raw, nil
+	return raw, none, nil
+}
+
+// spoolMultipart writes body to a temporary file, maps it read-only and
+// returns the mapped bytes with the cleanup that releases the mapping and
+// deletes the file.
+func spoolMultipart(body io.Reader) ([]byte, func(), error) {
+	file, err := os.CreateTemp("", "assozeta-multipart-*")
+	if err != nil {
+		return nil, nil, err
+	}
+	name := file.Name()
+	fail := func(err error) ([]byte, func(), error) {
+		_ = file.Close()
+		_ = os.Remove(name)
+		return nil, nil, err
+	}
+	if _, err := io.Copy(file, body); err != nil {
+		return fail(err)
+	}
+	mapped, unmap, err := mapFileReadOnly(file)
+	if err != nil {
+		return fail(err)
+	}
+	if err := file.Close(); err != nil {
+		unmap()
+		_ = os.Remove(name)
+		return nil, nil, err
+	}
+	return mapped, func() {
+		unmap()
+		_ = os.Remove(name)
+	}, nil
 }
 
 // uploadBody is request.data for the default parsers, with multipart files

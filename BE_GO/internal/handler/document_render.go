@@ -56,11 +56,12 @@ func (h *DocumentRenderHandler) MedicalAppointment(c echo.Context) error {
 func (h *DocumentRenderHandler) serve(c echo.Context, route, operation, name string) error {
 	request := c.Request()
 	c.Response().Header().Set("Allow", "POST, GET, OPTIONS")
-	// Kept in memory so identity resolution and the view read the same bytes.
-	multipart, err := bufferMultipart(c)
+	// Kept readable for identity resolution and the view read.
+	multipart, cleanup, err := bufferMultipart(c)
 	if err != nil {
 		return messageReadsError(c, err)
 	}
+	defer cleanup()
 	identity, err := messageMutationsIdentityFor(c, h.actors, h.identities, request.Method, operation, true)
 	if identity == nil {
 		return err

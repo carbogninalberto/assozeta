@@ -243,9 +243,9 @@ func (s *DocmanagerReads) relatedDocument(ctx context.Context, uid string, group
 }
 
 // stream is PrintingService.download_file (download) or view_file. Their
-// exceptions become 500 {'exception': str(e)}: a missing key and a client
-// error botocore raises once (botocoreClientErrorText) included. Transport
-// errors and retried answers are refused instead. A missing
+// exceptions become 500 {'exception': str(e)}: a missing key, a client error
+// botocore raises at once, a retried answer and a transport error, each with
+// botocore's final text (botocoreFinalErrorText). A missing
 // object that one subscription or invoice has as its PDF is printed again
 // (the renderer, then the save_to_storage task) and the stream is still
 // attempted: until the worker has stored the file the answer is the missing
@@ -272,13 +272,13 @@ func (s *DocmanagerReads) stream(ctx context.Context, document *domain.StoredDoc
 		return nil, domain.ErrDocmanagerUnreachable
 	}
 	exists, err := s.objects.Exists(ctx, key)
-	var head *documentobjects.HeadStatusError
-	if errors.As(err, &head) {
-		// default_storage.exists re-raises a client error other than 404.
-		return exception(head.Error()), nil
-	}
 	if err != nil {
-		return nil, domain.ErrDocmanagerNotPorted
+		// default_storage.exists re-raises every error other than 404: a client
+		// error, a retried answer or a transport error, with botocore's text.
+		if text, ok := botocoreFinalErrorText(err, "HeadObject"); ok {
+			return exception(text), nil
+		}
+		return nil, err
 	}
 	reprint := ""
 	if !exists {
@@ -331,11 +331,12 @@ func (s *DocmanagerReads) stream(ctx context.Context, document *domain.StoredDoc
 		return exception(missing.Error()), nil
 	}
 	if err != nil {
-		if text, ok := botocoreClientErrorText(err); ok {
+		// _stream_file_response re-raises the failed GetObject: a client error,
+		// a retried answer or a transport error, with botocore's text.
+		if text, ok := botocoreFinalErrorText(err, "GetObject"); ok {
 			return exception(text), nil
 		}
-		// transport errors and retried answers: botocore's text names retries and endpoints (external).
-		return nil, domain.ErrDocmanagerNotPorted
+		return nil, err
 	}
 	if refusedName != nil {
 		_ = object.Body.Close()
