@@ -71,7 +71,10 @@ stored markup is answered (`internal/mentions/testdata/filter_python.json`, 55 d
 Mentions resolve these keys (the editor's list): `sport_association.{denomination, tax_code, iban, website, abbreviated, vat_number,
 whatsapp, address, address_city, address_cap, logo, user.email, federation, sport, enroll_number}`,
 `associate.*`/`main_tutor.*` (the editor's associate fields and `sex`), and `other.<key>`. A key for an object the view does not pass
-is `''`, as in Django.
+is `''`, as in Django. Since long tail PR 4, `other.<key>.<attr...>` walks the str object graph as `get_nested_attr` does
+(methods, method-wrappers, the `str` type and their metadata; golden `service/testdata/mentions_other.json` from CPython
+3.13.16), with `pystr.ObjectAddress` for object addresses (approved divergence X18); the `str` type's layout fields and the
+dunders of a method object stay with Django.
 
 ## Main tutor promotion (`v2doc4`, `tutorpromo`)
 
