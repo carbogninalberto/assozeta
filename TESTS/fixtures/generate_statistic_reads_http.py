@@ -518,6 +518,51 @@ DAYS['d_ud'] = {'registry': 'rg_ud', 'date': UNICODE_LESSON_DAY, 'attendees': ['
 for label in ('as_ud', 'as_um', 'c_ud', 'c_um', 'sub_ud', 'sub_um', 'rg_ud', 'rg_um', 'd_ud', 'athlete_digits', 'athlete_month'):
     rid(label)
 
+# ---------------------------------------------------------------------------
+# Fifth and sixth associations for the expiring carnets widget's stored values.
+# The fifth's registry dates carry another script's decimal digits where CPython's _strptime accepts
+# them (\d for %Y, for the second digit of %d/%H/%M/%S and for int()); %m, the first digit of
+# %d/%H/%M and the minute's first digit are ASCII classes. strftime cannot emit another script's
+# digits, so the year's century ('٢٠', valid until 2099) and 10:00:00 ('1٠:0٠:0٠') are literals and
+# %y/%m/%d stay strftime fields. The date 5 days ago is listed, the one 40 days ago is skipped.
+# The sixth's meta stores a fraction beyond the double range as PostgreSQL jsonb text: json.loads
+# reads it as inf and DRF's strict renderer raises while rendering, after the view returned.
+# ---------------------------------------------------------------------------
+REG_STRPTIME = '%Y-%m-%d %H:%M:%S%z'
+UNICODE_REG_FMT = '٢٠%y-%m-%d 1٠:0٠:0٠+0000'  # year century, hour, minute and second digits: \d
+_probe = datetime(2026, 11, 10, 10, 0)
+assert datetime.strptime(_probe.strftime(UNICODE_REG_FMT), REG_STRPTIME) == datetime.strptime(
+    '2026-11-10 10:00:00+0000', REG_STRPTIME), 'the accepted registry form must parse'
+FIVE = 'association_five'
+USERS['owner_five'] = {'role': 'association'}
+EXTRA_ASSOCIATIONS[FIVE] = {'owner': 'owner_five', 'denomination': 'Statistiche quinta', 'tax_code': '93000000005'}
+ASSOCIATES['a5_1'] = {'association': FIVE, 'first': 'Nadia', 'last': 'Viola', 'sex': 'F', 'born': None, 'age': 0}
+SUBSCRIPTIONS['s5_1'] = sub(FIVE, status=4, created=OLD, associate='a5_1', user='owner_five')
+CARNETS['k5'] = {'association': FIVE, 'title': 'Carnet quinto', 'description': None, 'lessons': 10, 'fee': '55.00',
+                 'public': True}
+CARNET_SUBSCRIPTIONS['ck5_digits_recent'] = {
+    'subscription': 's5_1', 'carnet': 'k5', 'created': '2026-09-01T10:00:00.123456Z',
+    'meta': {'lessons_left': 0, 'lessons_registry': [{'date': {'$fmt': [{'now': -5 * 86400}, UNICODE_REG_FMT]}}]}}
+CARNET_SUBSCRIPTIONS['ck5_digits_old'] = {
+    'subscription': 's5_1', 'carnet': 'k5', 'created': '2026-09-01T10:00:00.123456Z',
+    'meta': {'lessons_left': 0, 'lessons_registry': [{'date': {'$fmt': [{'now': -40 * 86400}, UNICODE_REG_FMT]}}]}}
+
+SIX = 'association_six'
+USERS['owner_six'] = {'role': 'association'}
+EXTRA_ASSOCIATIONS[SIX] = {'owner': 'owner_six', 'denomination': 'Statistiche sesta', 'tax_code': '93000000006'}
+ASSOCIATES['a6_1'] = {'association': SIX, 'first': 'Oscar', 'last': 'Grigi', 'sex': 'M', 'born': None, 'age': 0}
+SUBSCRIPTIONS['s6_1'] = sub(SIX, status=4, created=OLD, associate='a6_1', user='owner_six')
+CARNETS['k6'] = {'association': SIX, 'title': 'Carnet sesto', 'description': None, 'lessons': 10, 'fee': '60.00',
+                 'public': True}
+# SQL seeds the jsonb text: a Python float fixture value would round or refuse the fraction.
+RAW_OVERFLOW_META = '{"lessons_left": 1, "big": ' + '1' + '0' * 400 + '.5}'
+CARNET_SUBSCRIPTIONS['ck6_overflow'] = {
+    'subscription': 's6_1', 'carnet': 'k6', 'created': '2026-09-01T10:00:00.123456Z',
+    'meta': {'$raw_json': RAW_OVERFLOW_META}}
+for label in ('owner_five', FIVE, 'a5_1', 's5_1', 'k5', 'ck5_digits_recent', 'ck5_digits_old',
+              'owner_six', SIX, 'a6_1', 's6_1', 'k6', 'ck6_overflow'):
+    rid(label)
+
 # ===========================================================================
 # Oracle (statistic_views.py read line by line).
 # ===========================================================================
@@ -1023,6 +1068,13 @@ add('bestcourses-owner', 'owner', w('bestcourses'), 200, widget_bestcourses(OWN)
 add('bestcourses-foreign-owner', 'foreign_owner', w('bestcourses'), 200, widget_bestcourses(FOREIGN))
 add('expiringcarnets-owner', 'owner', w('expiringcarnets'), 200, widget_carnets(OWN))
 add('expiringcarnets-missing-associate', 'owner_three', w('expiringcarnets'), 500, SERVER)
+# The fifth association's registry dates carry another script's decimal digits: the 5-day-old one is
+# listed (its meta rendered as stored), the 40-day-old one is skipped.
+add('owner-expiring-carnet-registry-unicode-digits-recent', 'owner_five', w('expiringcarnets'), 200, widget_carnets(FIVE))
+add('owner-expiring-carnet-registry-unicode-digits-skipped', 'owner_five', w('expiringcarnets'), 200, widget_carnets(FIVE))
+# The sixth's stored fraction is beyond the double range: json.loads makes it inf and the renderer
+# raises while rendering, so Django answers its plain 500 page.
+add('owner-expiring-carnet-meta-float-overflow-server-error', 'owner_six', w('expiringcarnets'), 500, SERVER)
 add('expiringmedical-owner', 'owner', w('expiringmedicalcertificates'), 200, widget_medical(OWN, True))
 add('expiredmedical-owner', 'owner', w('expiredmedicalcertificates'), 200, widget_medical(OWN, False))
 add('expiringmedical-foreign-owner', 'foreign_owner', w('expiringmedicalcertificates'), 200, {'data': {'expiring_medical_certificates': []}})

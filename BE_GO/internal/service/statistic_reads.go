@@ -30,6 +30,11 @@ var ErrStatisticPythonError = errors.New("statistic view raised")
 // try block: Django answers 500 with its JSON error body.
 var ErrStatisticAthleteFailure = errors.New("athlete dashboard failed")
 
+// errStatisticRenderNonFinite is a stored float beyond the double range:
+// json.loads reads it as inf and DRF's strict JSONRenderer raises ValueError
+// when it renders the response, after the view returned.
+var errStatisticRenderNonFinite = refusal.AppState("statistic: rendered float beyond the double range")
+
 type statisticStore interface {
 	domain.StatisticDashboardStore
 	domain.StatisticReportStore
@@ -332,7 +337,7 @@ func (s *StatisticReads) expiringCarnets(ctx context.Context, scope domain.Stati
 			return StatisticResult{}, ErrStatisticPythonError
 		}
 		if !dto.PythonJSONFinite(meta) {
-			return StatisticResult{}, domain.ErrStatisticNotPorted // DRF's strict renderer refuses inf
+			return StatisticResult{}, errStatisticRenderNonFinite
 		}
 		item := statisticCarnetItem{ID: row.CarnetSubscriptionID, left: left}
 		item.Subscription.ID = row.SubscriptionID
@@ -375,10 +380,6 @@ func statisticRecentLesson(meta domain.RequestObject, since time.Time) (bool, er
 		text, ok := date.(string)
 		if !ok {
 			return false, nil // strptime TypeError, caught
-		}
-		if dto.StrptimeUnicodeDigits(text) {
-			// The association import stores registry meta as the archive has it; strptime reads other digits. Not ported.
-			return false, domain.ErrStatisticNotPorted
 		}
 		moment, ok := dto.StrptimeLessonDate(text)
 		if !ok {

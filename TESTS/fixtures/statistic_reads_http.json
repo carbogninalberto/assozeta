@@ -306,7 +306,20 @@
   "rg_um": "a1000000-0000-4000-8000-000000930259",
   "d_ud": "a1000000-0000-4000-8000-000000930260",
   "athlete_digits": "a1000000-0000-4000-8000-000000930261",
-  "athlete_month": "a1000000-0000-4000-8000-000000930262"
+  "athlete_month": "a1000000-0000-4000-8000-000000930262",
+  "owner_five": "a1000000-0000-4000-8000-000000930263",
+  "association_five": "a1000000-0000-4000-8000-000000930264",
+  "a5_1": "a1000000-0000-4000-8000-000000930265",
+  "s5_1": "a1000000-0000-4000-8000-000000930266",
+  "k5": "a1000000-0000-4000-8000-000000930267",
+  "ck5_digits_recent": "a1000000-0000-4000-8000-000000930268",
+  "ck5_digits_old": "a1000000-0000-4000-8000-000000930269",
+  "owner_six": "a1000000-0000-4000-8000-000000930270",
+  "association_six": "a1000000-0000-4000-8000-000000930271",
+  "a6_1": "a1000000-0000-4000-8000-000000930272",
+  "s6_1": "a1000000-0000-4000-8000-000000930273",
+  "k6": "a1000000-0000-4000-8000-000000930274",
+  "ck6_overflow": "a1000000-0000-4000-8000-000000930275"
  },
  "users": {
   "athlete_two": {
@@ -333,6 +346,12 @@
   },
   "athlete_month": {
    "role": "athlete"
+  },
+  "owner_five": {
+   "role": "association"
+  },
+  "owner_six": {
+   "role": "association"
   }
  },
  "owner_balance": {
@@ -484,6 +503,22 @@
    "born": null,
    "age": 0,
    "user": "athlete_month"
+  },
+  "a5_1": {
+   "association": "association_five",
+   "first": "Nadia",
+   "last": "Viola",
+   "sex": "F",
+   "born": null,
+   "age": 0
+  },
+  "a6_1": {
+   "association": "association_six",
+   "first": "Oscar",
+   "last": "Grigi",
+   "sex": "M",
+   "born": null,
+   "age": 0
   }
  },
  "medicals": {
@@ -1218,6 +1253,32 @@
    "archived": false,
    "group": null,
    "user": "athlete_month"
+  },
+  "s5_1": {
+   "association": "association_five",
+   "status": 4,
+   "type": 2,
+   "start": null,
+   "end": null,
+   "created": "2023-01-01T10:00:00Z",
+   "associate": "a5_1",
+   "medical": null,
+   "archived": false,
+   "group": null,
+   "user": "owner_five"
+  },
+  "s6_1": {
+   "association": "association_six",
+   "status": 4,
+   "type": 2,
+   "start": null,
+   "end": null,
+   "created": "2023-01-01T10:00:00Z",
+   "associate": "a6_1",
+   "medical": null,
+   "archived": false,
+   "group": null,
+   "user": "owner_six"
   }
  },
  "payments": {
@@ -3160,6 +3221,22 @@
    "lessons": 8,
    "fee": "40.00",
    "public": true
+  },
+  "k5": {
+   "association": "association_five",
+   "title": "Carnet quinto",
+   "description": null,
+   "lessons": 10,
+   "fee": "55.00",
+   "public": true
+  },
+  "k6": {
+   "association": "association_six",
+   "title": "Carnet sesto",
+   "description": null,
+   "lessons": 10,
+   "fee": "60.00",
+   "public": true
   }
  },
  "carnet_subscriptions": {
@@ -3326,6 +3403,54 @@
    },
    "payment": "e6",
    "created": "2026-09-01T10:00:00.123456Z"
+  },
+  "ck5_digits_recent": {
+   "subscription": "s5_1",
+   "carnet": "k5",
+   "created": "2026-09-01T10:00:00.123456Z",
+   "meta": {
+    "lessons_left": 0,
+    "lessons_registry": [
+     {
+      "date": {
+       "$fmt": [
+        {
+         "now": -432000
+        },
+        "٢٠%y-%m-%d 1٠:0٠:0٠+0000"
+       ]
+      }
+     }
+    ]
+   }
+  },
+  "ck5_digits_old": {
+   "subscription": "s5_1",
+   "carnet": "k5",
+   "created": "2026-09-01T10:00:00.123456Z",
+   "meta": {
+    "lessons_left": 0,
+    "lessons_registry": [
+     {
+      "date": {
+       "$fmt": [
+        {
+         "now": -3456000
+        },
+        "٢٠%y-%m-%d 1٠:0٠:0٠+0000"
+       ]
+      }
+     }
+    ]
+   }
+  },
+  "ck6_overflow": {
+   "subscription": "s6_1",
+   "carnet": "k6",
+   "created": "2026-09-01T10:00:00.123456Z",
+   "meta": {
+    "$raw_json": "{\"lessons_left\": 1, \"big\": 10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.5}"
+   }
   }
  },
  "association_three": {
@@ -3337,6 +3462,16 @@
    "owner": "owner_four",
    "denomination": "Statistiche quarta",
    "tax_code": "93000000004"
+  },
+  "association_five": {
+   "owner": "owner_five",
+   "denomination": "Statistiche quinta",
+   "tax_code": "93000000005"
+  },
+  "association_six": {
+   "owner": "owner_six",
+   "denomination": "Statistiche sesta",
+   "tax_code": "93000000006"
   }
  },
  "payment_categories": {
@@ -3942,6 +4077,113 @@
   {
    "name": "statistic-reads-expiringcarnets-missing-associate",
    "actor": "owner_three",
+   "method": "GET",
+   "path": "/statistic/dashboard?widget=expiringcarnets",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>"
+  },
+  {
+   "name": "statistic-reads-owner-expiring-carnet-registry-unicode-digits-recent",
+   "actor": "owner_five",
+   "method": "GET",
+   "path": "/statistic/dashboard?widget=expiringcarnets",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "expiring_carnets": [
+      {
+       "carnet_subscription_id": "a1000000-0000-4000-8000-000000930268",
+       "subscription": {
+        "subscription_id": "a1000000-0000-4000-8000-000000930266",
+        "associate": {
+         "associate_id": "a1000000-0000-4000-8000-000000930265",
+         "first_name": "Nadia",
+         "last_name": "Viola"
+        }
+       },
+       "carnet": {
+        "carnet_id": "a1000000-0000-4000-8000-000000930267",
+        "title": "Carnet quinto",
+        "description": null,
+        "lessons_number": 10,
+        "fee": 55.0,
+        "creation_date": "2026-09-01T10:00:00.123456Z",
+        "public": true,
+        "meta": {
+         "lessons_left": 0,
+         "lessons_registry": [
+          {
+           "date": {
+            "$fmt": [
+             {
+              "now": -432000
+             },
+             "٢٠%y-%m-%d 1٠:0٠:0٠+0000"
+            ]
+           }
+          }
+         ]
+        }
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "statistic-reads-owner-expiring-carnet-registry-unicode-digits-skipped",
+   "actor": "owner_five",
+   "method": "GET",
+   "path": "/statistic/dashboard?widget=expiringcarnets",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "expiring_carnets": [
+      {
+       "carnet_subscription_id": "a1000000-0000-4000-8000-000000930268",
+       "subscription": {
+        "subscription_id": "a1000000-0000-4000-8000-000000930266",
+        "associate": {
+         "associate_id": "a1000000-0000-4000-8000-000000930265",
+         "first_name": "Nadia",
+         "last_name": "Viola"
+        }
+       },
+       "carnet": {
+        "carnet_id": "a1000000-0000-4000-8000-000000930267",
+        "title": "Carnet quinto",
+        "description": null,
+        "lessons_number": 10,
+        "fee": 55.0,
+        "creation_date": "2026-09-01T10:00:00.123456Z",
+        "public": true,
+        "meta": {
+         "lessons_left": 0,
+         "lessons_registry": [
+          {
+           "date": {
+            "$fmt": [
+             {
+              "now": -432000
+             },
+             "٢٠%y-%m-%d 1٠:0٠:0٠+0000"
+            ]
+           }
+          }
+         ]
+        }
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "statistic-reads-owner-expiring-carnet-meta-float-overflow-server-error",
+   "actor": "owner_six",
    "method": "GET",
    "path": "/statistic/dashboard?widget=expiringcarnets",
    "headers": {},

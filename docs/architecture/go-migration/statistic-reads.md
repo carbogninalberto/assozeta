@@ -145,13 +145,16 @@ without an associate is a 500.
   same day, several course titles in the report) is not pinned.
 
 Since long-tail PR 3 (agent B) the non-finite `lessons_left` and the non-finite event ids are application state
-(`ErrStatisticUnreachable`): jsonb refuses infinities. Registry dates with non-ASCII digits (the association import
-stores registry meta as the archive has it) and payment `course`/`meta` JSON nested deeper than the reference parser
-reads (Django stores and reads it) stay refusals (`ErrStatisticNotPorted`). An athlete-dashboard event start with
-Unicode decimal digits is parsed as CPython's `_strptime` does (`\d` for the year and the second digit of the day, hour,
-minute and second; cases `statistic-reads-athlete-unicode-digit-start-listed`,
-`statistic-reads-athlete-unicode-digit-month-skipped`). A meta float outside the float range and a report year below
-1000 stay refusals.
+(`ErrStatisticUnreachable`): jsonb refuses infinities. Registry dates with decimal digits of another script are parsed
+as CPython's `_strptime` does (`\d` for `%Y`, the second digit of `%d`/`%H`/`%M`/`%S` and the digits of `%z`; `%m`, the
+first digit of `%d`/`%H`/`%M` and the second digit of `%z`'s minute stay ASCII), so a carnet's meta is listed or skipped
+as Django does (cases `statistic-reads-owner-expiring-carnet-registry-unicode-digits-recent` and
+`statistic-reads-owner-expiring-carnet-registry-unicode-digits-skipped`). A stored meta number beyond the double range
+with a fraction is a state jsonb holds: `json.loads` reads it as inf and DRF's strict renderer raises while rendering,
+after the view returned, so it is application state (`errStatisticRenderNonFinite`, the 500 page; case
+`statistic-reads-owner-expiring-carnet-meta-float-overflow-server-error`). A fraction that underflows is rendered as
+Python's float `0.0` (`-0.0` with a negative sign). Payment `course`/`meta` JSON nested deeper than the reference parser
+reads (Django stores and reads it) and a report year below 1000 stay refusals (`ErrStatisticNotPorted`).
 
 ## Evidence (TDD)
 

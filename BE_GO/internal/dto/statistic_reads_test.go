@@ -2,6 +2,7 @@ package dto
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 	"time"
 )
@@ -71,6 +72,88 @@ func TestStrptimeLessonDate(t *testing.T) {
 		if (want == "") == ok || (ok && got.UTC().Format(time.RFC3339Nano) != want) {
 			t.Errorf("%q: got %v %v, want %q", input, got, ok, want)
 		}
+	}
+}
+
+// Expected values were produced by CPython 3.13:
+// datetime.strptime(text, '%Y-%m-%d %H:%M:%S%z').astimezone(timezone.utc).
+// CPython's _strptime builds %Y, %H, %M, %S and the digits of %z with \d, but
+// %m, the first digit of %d/%H/%M and the second digit of %z's minute with
+// ASCII classes: a month of another script is a ValueError.
+func TestStrptimeLessonDateMatchesCPython(t *testing.T) {
+	cases := map[string]string{
+		"2026-11-10 10:00:00+0000": "2026-11-10T10:00:00Z",
+		// Unicode digits where CPython's \d alternatives allow them.
+		"٢٠٢٦-11-10 10:00:00+0000":  "2026-11-10T10:00:00Z",
+		"٢٠26-11-10 10:00:00+0000":  "2026-11-10T10:00:00Z",
+		"٢٠26-11-11 1٠:0٠:0٠+0000":  "2026-11-11T10:00:00Z", // the fixture's registry form
+		"2026-11-10 1٠:0٠:0٠+0000":  "2026-11-10T10:00:00Z",
+		"2026-11-1٠ 10:00:00+0000":  "2026-11-10T10:00:00Z",
+		"2026-11-10 10:00:00+0٠:0٠": "2026-11-10T10:00:00Z",
+		"2026-11-10 10:00:00+٠1:00": "2026-11-10T09:00:00Z",
+		"2026-11-10 10:00:00+0١:00": "2026-11-10T09:00:00Z",
+		"2026-11-10 10:00:00+٠١:٠٠": "",
+		"2026-11-10 10:٠٠:00+0000":  "",
+		"2026-11-10 ١0:00:00+0000":  "",
+		"٢٠٢٦-١١-١٠ ١٠:٠٠:٠٠+0000":  "",
+		"２０２６-１１-１０ １０:００:００+００００":  "",
+		// %z forms and their bounds.
+		"2026-11-10 10:00:00Z":                "2026-11-10T10:00:00Z",
+		"2026-11-10 10:00:00z":                "",
+		"2026-11-10 10:00:00+01:00":           "2026-11-10T09:00:00Z",
+		"2026-11-10 10:00:00+0100":            "2026-11-10T09:00:00Z",
+		"2026-11-10 10:00:00-01:00":           "2026-11-10T11:00:00Z",
+		"2026-11-10 10:00:00+01:00:30":        "2026-11-10T08:59:30Z",
+		"2026-11-10 10:00:00+01:00:30.5":      "2026-11-10T08:59:29.5Z",
+		"2026-11-10 10:00:00+010030.25":       "2026-11-10T08:59:29.75Z",
+		"2026-11-10 10:00:00+01:00:30.123456": "2026-11-10T08:59:29.876544Z",
+		"2026-11-10 10:00:00+23:59:59.999999": "2026-11-09T10:00:00.000001Z",
+		"2026-11-10 10:00:00+24:00":           "",
+		"2026-11-10 10:00:00+01:0":            "",
+		"2026-11-10 10:00:00+0160":            "",
+		"2026-11-10 10:00:00+01:00:60":        "",
+		"2026-11-10 10:00:00+01:0030":         "",
+		"2026-11-10 10:00:00+0100:30":         "",
+		"2026-11-10 10:00:00+01:00:3":         "",
+		// Field ranges and the whitespace separator (\s+ in the format).
+		"2026-11-10 10:00:00":           "",
+		"2026-02-29 10:00:00+0000":      "",
+		"2024-02-29 10:00:00+0000":      "2024-02-29T10:00:00Z",
+		"2026-11-10 10:00:60+0000":      "",
+		"2026-11-10 24:00:00+0000":      "",
+		"2026-11-10  5:00:00+0000":      "2026-11-10T05:00:00Z",
+		"2026-11-10 5:00:00+0000":       "2026-11-10T05:00:00Z",
+		"2026-11-10\t05:00:00+0000":     "2026-11-10T05:00:00Z",
+		"2026-11-10\u00a005:00:00+0000": "2026-11-10T05:00:00Z",
+	}
+	for input, want := range cases {
+		got, ok := StrptimeLessonDate(input)
+		if (want == "") == ok || (ok && got.UTC().Format(time.RFC3339Nano) != want) {
+			t.Errorf("%q: got %v %v, want %q", input, got, ok, want)
+		}
+	}
+}
+
+// jsonb stores numbers without an exponent, and json.loads reads a fraction as
+// a float: json.dumps then writes its repr, so an underflow becomes 0.0 (and
+// -0.0 with a negative token), not the stored digits.
+func TestPythonJSONDumpsUnderflow(t *testing.T) {
+	zeros := strings.Repeat("0", 400)
+	if got := string(PythonJSONDumpsCompact(json.Number("0." + zeros + "1"))); got != "0.0" {
+		t.Errorf("positive underflow: %s", got)
+	}
+	if got := string(PythonJSONDumpsCompact(json.Number("-0." + zeros + "1"))); got != "-0.0" {
+		t.Errorf("negative underflow: %s", got)
+	}
+	// The opposite side of the range: the same fraction with 400 integer zeros
+	// is inf for json.loads, which the widget refuses before rendering.
+	raw := `{"lessons_left": 1, "big": 1` + zeros + `.5}`
+	value, err := ParseReferenceJSON([]byte(raw))
+	if err != nil {
+		t.Fatalf("overflow fraction: %v", err)
+	}
+	if PythonJSONFinite(value) {
+		t.Fatal("a fraction beyond the double range must not be finite")
 	}
 }
 

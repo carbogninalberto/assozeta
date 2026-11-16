@@ -142,8 +142,16 @@ def seed_rows(source, created):
         put(Carnet, carnet_id=R[label], sport_association_id=_ref(source, row['association']), title=row['title'],
             description=row['description'], lessons_number=row['lessons'], fee=Decimal(row['fee']), public=row['public'])
     for label, row in source['carnet_subscriptions'].items():
+        raw = row['meta'] if isinstance(row['meta'], dict) and set(row['meta']) == {'$raw_json'} else None
         put(CarnetSubscription, carnet_subscription_id=R[label], subscription_id=R[row['subscription']], carnet_id_id=R[row['carnet']],
-            meta=_resolve_json(row['meta'], anchor), payment_id=_ref(source, row.get('payment')))
+            meta=None if raw else _resolve_json(row['meta'], anchor), payment_id=_ref(source, row.get('payment')))
+        if raw:
+            # A value beyond the double range with a fraction must reach jsonb as text: a Python float
+            # would round or refuse it before storage.
+            from django.db import connection
+            with connection.cursor() as cursor:
+                cursor.execute('UPDATE application_carnetsubscription SET meta=%s::jsonb WHERE carnet_subscription_id=%s',
+                               [raw['$raw_json'], R[label]])
         CarnetSubscription._base_manager.filter(pk=R[label]).update(creation_date=at(row['created']))
 
 
