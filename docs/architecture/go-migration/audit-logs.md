@@ -16,16 +16,56 @@
 ## Not ported (the 500 page, never a guessed body)
 
 Since long-tail PR 2 the `title()` item is an application-state error (`refusal.AppState`: the 500 page, never handed
-off). JSON nested deeper than 500 stays `ErrAuditNotPorted` and is handed off to Django.
+off); the recursion-depth answers are the measured bands below (X15), no longer handed off.
 
-- `json.loads` input nested deeper than 500 (X: the recursion limit depends on the live call stack; PostgreSQL does store a jsonb value nested that deep, so a form field carrying 501..~900 levels of JSON is handed off; listed for PR 3). `NaN`/`Infinity` literals and lone surrogate escapes are ported (t3plat): they load, and only a value that reaches `enriched_changes` makes the strict renderer answer the 500.
-- `str.title()` of non-ASCII text (C: the only inputs are content-type model names and `changes` keys, which are Python identifiers the application writes; ASCII labels are ported). `str.capitalize()` of a permission segment is ported (go-v2only-auditser), since a request stores `collaborator_permissions` as sent.
+- `NaN`/`Infinity` literals and lone surrogate escapes are ported: they load, and only a value that reaches
+  `enriched_changes` makes the strict renderer answer the 500.
+- `str.title()` of non-ASCII text (C: the only inputs are content-type model names and `changes` keys, which are
+  Python identifiers the application writes; ASCII labels are ported). `str.capitalize()` of a permission segment is
+  ported (go-v2only-auditser), since a request stores `collaborator_permissions` as sent.
+
+## Recursion depth (X15, owner decision)
+
+The serializer's depth answers are Python's recursion limit, so they are bands measured on the parity harness's Django
+(CPython 3.13.16, default limit) rather than a property of the application; the audit-logs reads answer them instead of
+handing the request off. A value past a band is Django's `RecursionError` — the plain 500 page
+(`dto.ErrAuditUnhandled`). Constants are in `BE_GO/internal/dto/audit_logs.go` (`AuditDetailFrames`,
+`AuditListFrames`, `AuditDetailJSONDepth`, `AuditListJSONDepth`), carried as a `dto.AuditBand` by the service.
+
+- **Enrichment frames** (`enrich_value`, counted from its first frame: 1 per nested list item, dict value, field
+  formatter or `format_boolean`, 3 more for the `json.loads` of a string value, 1 for `is_uuid`/`resolve_uuid`):
+  the detail answers up to frame 954 and the full list up to 953 (its serializer already runs one frame deeper, so
+  one frame less is left); one frame more is the 500 page. Measured edges: a `changes`
+  value that is a JSON string of nested lists answers up to 953 levels on the detail and 952 on the list, a raw list
+  up to 954/953, a string leaf inside nested lists up to 951/950. `minimal=true` does not enrich, so it has no frame
+  band. `get_display_changes` calls `enrich_value` one frame shallower and never binds.
+- **Column loads** (`changes`, `additional_data`, `serialized_data` through psycopg2's `json.loads`, C recursion):
+  the detail reads a column nested up to 9935 levels, the list (minimal and full) up to 9934; one level more is the
+  500 page. The parser reads to the same limit (`dto.parseReferenceJSONLimit`).
+- **`json.loads` inside the serializer** (string values, field formatters, the resolver's stored event lists) is
+  banded by the endpoint's column-load depth: an approximation inside the X15 measurement (the C scanner's own
+  limit, not separately measured), deeper text being the 500 page.
+- A `resolve_uuid` through the ORM near a frame edge needs more frames in Django than the one frame counted for it:
+  the frame bands are the edge of the measurement there.
+
+The 500-level readers of the other families (`dto.AuditJSONLoads`, `dto.AuditStoredJSON` in instructor hours and
+report, modules export) are unchanged and keep handing off (`dto.ErrAuditNotPorted`).
 
 Known unchecked divergences: >4300-digit integers in JSON columns of *resolved* rows (Django swallows the load error; Go formats the row); a database error inside a resolver (Django swallows it; Go answers 500). Tie order of equal sort keys is PostgreSQL's in both.
 
 ## Evidence (TDD)
 
-`TESTS/fixtures/audit_logs_http.json` (generator alongside; contract `TESTS/contracts/test_audit_logs_http.py`, adapter `TESTS/adapters/django/audit_logs_http.py`) authors 147 cases over 62 seeded log entries and the rows every resolver reads. RED: Django 147/147 and Go 500 on `audit-logs-list-owner-full` (`s3auditser-red-r1`, the four new cases failing on Go while Django passes all 147). GREEN: 147/147 on native Django, native Go, Caddy `/api/v1` and `/api/v2` with the model state unchanged (`s3auditser-green-r1`). Mutation `s3auditser-mutation-r1` (the ISO year formatted with `strconv.Itoa` instead of the platform `dto.LibcYear`) CAUGHT by `audit-logs-list-owner-full` (`enriched_changes.events[1]`). Dropping the `changes IS NOT NULL` guard of the noise filter fails `audit-logs-list-owner-full`. `go test ./internal/dto` covers the Python-semantics helpers and every refusal, including `str.capitalize()` over `dto/testdata/python_capitalize.json` (every code point, CPython 3.13.16).
+`TESTS/fixtures/audit_logs_http.json` (generator alongside; contract `TESTS/contracts/test_audit_logs_http.py`, adapter `TESTS/adapters/django/audit_logs_http.py`) authors 151 cases over 65 seeded log entries and the rows every resolver reads. The original 147-case sequence was RED with Django 147/147 and Go 500 on `audit-logs-list-owner-full` (`s3auditser-red-r1`, the four then-new cases failing on Go while Django passed all 147), then GREEN 147/147 on native Django, native Go, Caddy `/api/v1` and `/api/v2` with the model state unchanged (`s3auditser-green-r1`). Mutation `s3auditser-mutation-r1` (the ISO year formatted with `strconv.Itoa` instead of the platform `dto.LibcYear`) CAUGHT by `audit-logs-list-owner-full` (`enriched_changes.events[1]`). Dropping the `changes IS NOT NULL` guard of the noise filter fails `audit-logs-list-owner-full`. `go test ./internal/dto` covers the Python-semantics helpers and every refusal, including `str.capitalize()` over `dto/testdata/python_capitalize.json` (every code point, CPython 3.13.16).
+
+X15 cases (added after the others so earlier ids do not shift): `audit-logs-detail-deep-string-954` and
+`audit-logs-detail-deep-leaf-952` (frame 955 is the 500 page), `audit-logs-list-deep-string-refused` (one level
+below the detail's edge, refused by the full list's 953) and `audit-logs-list-deep-string-minimal` (the same row,
+minimal, answers). `BE_GO/internal/dto/audit_recursion_band_test.go` pins both frame bands at their measured edges
+(string-encoded, raw and string-leaf values) and the serializer's `json.loads` band; the column-load edges are in
+`BE_GO/internal/dto` and `BE_GO/internal/service/audit_logs_test.go`. The *answered* neighbours of the deep cases
+(a 953-level string on the detail, a 954-level raw list, the 9935-level column) would need expected bodies nested as
+deep as the value; the fixture walk that reads the file is Python recursion itself, so those rows are covered by the
+Go tests and not by a parity case.
 
 ## Date forms and query decoding
 

@@ -9,20 +9,22 @@ import (
 )
 
 // auditResolver holds one request's resolver context: the X-Group-Id the
-// group-aware managers read (a malformed header is ignored) and the events
-// JSON the event resolver scans (identical within a read-only request).
+// group-aware managers read (a malformed header is ignored), the endpoint's
+// recursion band (X15) and the events JSON the event resolver scans (identical
+// within a read-only request).
 type auditResolver struct {
 	ctx   context.Context
 	store domain.AuditLogStore
 	group *string
+	band  dto.AuditBand
 	// events[0] are the AttendanceRegistry lists, events[1] the
 	// GlobalCalendarEvents lists, each loaded on first use.
 	events [2][]any
 	loaded [2]bool
 }
 
-func (s *AuditLogs) resolver(ctx context.Context, groupHeader string) *auditResolver {
-	return &auditResolver{ctx: ctx, store: s.store, group: supplierGroup(groupHeader)}
+func (s *AuditLogs) resolver(ctx context.Context, groupHeader string, band dto.AuditBand) *auditResolver {
+	return &auditResolver{ctx: ctx, store: s.store, group: supplierGroup(groupHeader), band: band}
 }
 
 // auditFailed is a resolver formatter's swallowed exception (AttributeError on
@@ -278,7 +280,7 @@ func (r *auditResolver) event(id string) (any, error) {
 				return nil, err
 			}
 			for _, text := range append(registries, calendars...) {
-				value, err := dto.AuditStoredJSON(&text)
+				value, err := dto.AuditStoredJSONAt(&text, r.band.Depth)
 				if err != nil {
 					return nil, err
 				}

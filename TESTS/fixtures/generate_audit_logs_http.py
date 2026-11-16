@@ -376,8 +376,28 @@ entry('user-permissions-unicode', 'user', R['user_named'],
       enriched={'collaborator_permissions': ['Nessun permesso', PERMISSION_LABELS]},
       display=[show('Permessi collaboratore', 'collaborator_permissions', 'Nessun permesso', PERMISSION_LABELS)])
 ENTRIES['events-crash']['timestamp'] = '2026-09-20T09:00:00Z'
+# X15 recursion bands (CPython 3.13.16 on the parity harness): the enrichment of
+# this serializer answers up to frame 954 on the detail and 953 on the full list
+# (frame 1 = the first enrich_value; three more per json.loads of a string value,
+# one per nested list, dict value, formatter or format_boolean, one for is_uuid).
+# A changes value holding a JSON string of n nested lists reaches frame n+1 and
+# its json.loads frame 4, so on the detail n = 953 is the last answered level and
+# n = 954 the first refused one; on the full list the edges are one level lower.
+# The bodies of the answered neighbours are nested as deep as the value, and the
+# walk that reads this file is Python recursion too, so the fixture carries the
+# refused rows only (the minimal case below answers without enriching). The seed
+# texts are bracket runs, so the rows stay small.
+entry('deep-string-954', 'associatetutorrelation', R['missing'], repr_='Deep object', at='2026-09-19T10:00:00Z',
+      changes={'deep': '[' * 954 + ']' * 954}, description='Deep object')
+entry('deep-leaf-952', 'associatetutorrelation', R['missing'], repr_='Deep object', at='2026-09-19T11:00:00Z',
+      changes={'deep': '[' * 952 + '"x"' + ']' * 952}, description='Deep object')
+entry('deep-string-953', 'associatetutorrelation', R['missing'], repr_='Deep object', at='2026-09-18T10:00:00Z',
+      changes={'deep': '[' * 953 + ']' * 953}, description='Deep object')
 CRASHES = ('events-crash', 'props-crash', 'permissions-crash', 'events-title-crash', 'nan-meta-crash', 'infinity-meta-crash',
-           'surrogate-meta-crash')
+           'surrogate-meta-crash', 'deep-string-954', 'deep-leaf-952')
+# Answers on the detail but not in the full list, whose body would be an
+# authored 953-level nest.
+NO_DETAIL_CASE = ('deep-string-953',)
 
 for e in ENTRIES.values():
     if e['changes'] is not None and isinstance(e['changes'], dict):
@@ -578,7 +598,7 @@ add('list-combined', 'owner', LIST + f"?query[model]=course&query[action]=1&quer
 
 # --- detail: every resolver and formatter path ---
 for name in ENTRIES:
-    if name in ('foreign', 'unindexed') + CRASHES:
+    if name in ('foreign', 'unindexed') + CRASHES + NO_DETAIL_CASE:
         continue
     add(f'detail-{name}', 'owner', detail(name), 200, {'data': full(name)})
 for name in CRASHES:
@@ -611,6 +631,10 @@ add('detail-group-ungrouped-course-hidden', 'owner', detail('course-create'), 20
     'course_id': [N, missing8('course')]}, 'display_changes': [show('Titolo', 'title', 'N/D', 'Nuoto è'),
     show('Eliminato', 'deleted', 'N/D', 'No'), show('Course Id', 'course_id', 'N/D', missing8('course'))]}},
     headers={'X-Group-Id': IDS['own_group']})
+
+# --- X15: the list's frame band (953) refuses one level before the detail's (954); minimal does not enrich ---
+add('list-deep-string-refused', 'owner', LIST + '?query[date_to]=2026-09-18', 500, SERVER)
+add('list-deep-string-minimal', 'owner', LIST + '?minimal=true&query[date_to]=2026-09-18', 200, page(['deep-string-953']))
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Audit log list and detail authored sequence', 'ids': IDS, 'rows': ROWS,
