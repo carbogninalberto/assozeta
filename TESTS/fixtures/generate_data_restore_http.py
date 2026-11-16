@@ -695,21 +695,27 @@ def document(**fields):
     return {'document_id': ARCHIVE_DOCUMENT, 'filename': 'scheda.pdf', 'filepath': '', 'file_size_bytes': 1, **fields}
 
 
-upload('upload-archive-text-containers', 'owner', 201, new_public(summary(records=3, missing_media=1)),
-       archive(rows={'Document': [document(filename=['scheda'], filepath={'archived': True})]}))
-upload('upload-archive-text-nan', 'owner', 201, new_public(summary(records=3)),
-       archive(rows={'Document': [document(filename=float('nan'))]}))
-upload('upload-archive-text-huge-int', 'owner', 201, new_public(summary(records=3)),
-       archive(rows={'Document': [document(filename=10 ** 400)]}))
-upload('upload-archive-text-lone-surrogate', 'owner', 201, new_public(summary(records=3)),
-       archive(rows={'Document': [document(filename='\ud800')]}))
+def accepted(name, preview, spec):
+    """An upload Django accepts: the archive stored under the new receipt, which holds the preview."""
+    upload(name, 'owner', 201, new_public(preview), spec, objects_after=['restores/$new/upload/archive.zip'],
+           created=created_receipt(preview))
+
+
+accepted('upload-archive-text-containers', summary(records=3, missing_media=1),
+         archive(rows={'Document': [document(filename=['scheda'], filepath={'archived': True})]}))
+accepted('upload-archive-text-nan', summary(records=3),
+         archive(rows={'Document': [document(filename=float('nan'))]}))
+accepted('upload-archive-text-huge-int', summary(records=3),
+         archive(rows={'Document': [document(filename=10 ** 400)]}))
+accepted('upload-archive-text-lone-surrogate', summary(records=3),
+         archive(rows={'Document': [document(filename='\ud800')]}))
 upload('upload-archive-int-nan', 'owner', 400, error(DAMAGED),
        archive(rows={'Document': [document(file_size_bytes=float('nan'))]}))
 upload('upload-archive-int-infinity', 'owner', 500, SERVER,
        archive(rows={'Document': [document(file_size_bytes=float('inf'))]}))
 upload('upload-archive-uuid-float', 'owner', 400, error(DAMAGED), archive(rows={'Document': [document(token=1.5)]}))
-upload('upload-archive-date-basic', 'owner', 201, new_public(summary(records=3)),
-       archive(rows={'Document': [document(creation_date='20260102')]}))
+accepted('upload-archive-date-basic', summary(records=3),
+         archive(rows={'Document': [document(creation_date='20260102')]}))
 upload('upload-archive-version-int', 'owner', 400,
        error('Formato non supportato. Carica un export ZIP Bakney versione 1.0.0.'), archive(manifest={'version': 7}))
 upload('upload-archive-errors-nan', 'owner', 400,
@@ -724,8 +730,8 @@ upload('upload-archive-spec-name-nan', 'owner', 400, error('Modello o percorso n
 upload('upload-archive-spec-name-list', 'owner', 400, error(DAMAGED),
        archive(manifest={'models_exported': [{'name': ['x'], 'file': 'x', 'count': 0}]}))
 upload('upload-archive-specs-null', 'owner', 400, error(DAMAGED), archive(manifest={'models_exported': None}))
-upload('upload-archive-denomination-list', 'owner', 201, new_public(summary(association=['x'])),
-       archive(denomination=['x']))
+accepted('upload-archive-denomination-list', summary(association=['x']),
+         archive(denomination=['x']))
 upload('upload-archive-folder-infinity', 'owner', 500, SERVER,
        archive(rows={'Folder': [{'id': float('inf'), 'name': 'cartella', 'sport_association_id': ARCHIVE_ASSOCIATION}]}))
 upload('upload-archive-folder-parent-float', 'owner', 400, error('Relazione mancante: Folder.parent.'),
@@ -733,16 +739,14 @@ upload('upload-archive-folder-parent-float', 'owner', 400, error('Relazione manc
 TUTOR_REASSIGNMENT = {'associate_id': ARCHIVE_UUID_2, 'source_association_id': ARCHIVE_FOREIGN, 'name': ''}
 TUTOR_CONFLICT = {'associate_id': ARCHIVE_UUID_2, 'source_association_id': None, 'name': 'Vecchio Tutore',
                   'original_tax_code': 'aaa', 'conflicting_associate_id': ARCHIVE_UUID_1}
-upload('upload-archive-tutor-reassign', 'owner', 201,
-       new_public(summary(records=5, reassigned=1, reassignments=[TUTOR_REASSIGNMENT])),
-       archive(rows={'Associate': [{'associate_id': ARCHIVE_UUID_1, 'sport_association_id': ARCHIVE_ASSOCIATION, 'tax_code': 'aaa'},
-                                    {'associate_id': ARCHIVE_UUID_2, 'sport_association_id': ARCHIVE_FOREIGN, 'tax_code': 'bbb'}],
-                     'AssociateTutorRelation': [{'id': 1, 'associate_id': ARCHIVE_UUID_1, 'tutor_id': ARCHIVE_UUID_2}]}))
-upload('upload-archive-tutor-tax-conflict', 'owner', 201,
-       new_public(summary(records=4, conflicts=1, reassignments=[TUTOR_CONFLICT])),
-       archive(rows={'Associate': [{'associate_id': ARCHIVE_UUID_1, 'sport_association_id': ARCHIVE_ASSOCIATION, 'tax_code': 'aaa'},
-                                    {'associate_id': ARCHIVE_UUID_2, 'tax_code': 'aaa',
-                                     'first_name': 'Vecchio', 'last_name': 'Tutore'}]}))
+accepted('upload-archive-tutor-reassign', summary(records=5, reassigned=1, reassignments=[TUTOR_REASSIGNMENT]),
+         archive(rows={'Associate': [{'associate_id': ARCHIVE_UUID_1, 'sport_association_id': ARCHIVE_ASSOCIATION, 'tax_code': 'aaa'},
+                                      {'associate_id': ARCHIVE_UUID_2, 'sport_association_id': ARCHIVE_FOREIGN, 'tax_code': 'bbb'}],
+                       'AssociateTutorRelation': [{'id': 1, 'associate_id': ARCHIVE_UUID_1, 'tutor_id': ARCHIVE_UUID_2}]}))
+accepted('upload-archive-tutor-tax-conflict', summary(records=4, conflicts=1, reassignments=[TUTOR_CONFLICT]),
+         archive(rows={'Associate': [{'associate_id': ARCHIVE_UUID_1, 'sport_association_id': ARCHIVE_ASSOCIATION, 'tax_code': 'aaa'},
+                                      {'associate_id': ARCHIVE_UUID_2, 'tax_code': 'aaa',
+                                       'first_name': 'Vecchio', 'last_name': 'Tutore'}]}))
 upload('upload-archive-tutor-duplicate', 'owner', 400,
        error(f'Codice fiscale duplicato tra le anagrafiche attive: {ARCHIVE_UUID_2}.'),
        archive(rows={'Associate': [{'associate_id': ARCHIVE_UUID_1, 'sport_association_id': ARCHIVE_ASSOCIATION, 'tax_code': 'aaa'},

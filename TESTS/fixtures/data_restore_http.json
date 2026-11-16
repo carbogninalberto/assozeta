@@ -141685,7 +141685,9 @@
    "setup": null,
    "cache": null,
    "objects": {},
-   "objects_after": [],
+   "objects_after": [
+    "restores/$new/upload/archive.zip"
+   ],
    "effect": {
     "receipts": {
      "review": {
@@ -142478,6 +142480,39 @@
       "error": "Errore di prova.",
       "allow_missing_media": false,
       "attempts": 1
+     },
+     "$new": {
+      "id": "$new",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "review",
+      "stage": "validated",
+      "created_at": "$now",
+      "updated_at": "$now",
+      "completed_at": null,
+      "upload_path": "restores/$new/upload/archive.zip",
+      "sha256": "$archive-sha256",
+      "version": "$version",
+      "preview": {
+       "association": "Associazione archiviata",
+       "export_date": "2026-03-30T10:00:00+00:00",
+       "skipped_records": {},
+       "records": 3,
+       "files": 0,
+       "missing_media": 1,
+       "legacy_invoices": 0,
+       "reassigned_tutors": 0,
+       "tutor_tax_code_conflicts": 0,
+       "tutor_reassignment_details": [],
+       "missing_relations": 0,
+       "missing_relation_details": []
+      },
+      "backup_path": "",
+      "backup_sha256": "",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 0
      }
     },
     "celery": []
@@ -142547,7 +142582,9 @@
    "setup": null,
    "cache": null,
    "objects": {},
-   "objects_after": [],
+   "objects_after": [
+    "restores/$new/upload/archive.zip"
+   ],
    "effect": {
     "receipts": {
      "review": {
@@ -143340,6 +143377,39 @@
       "error": "Errore di prova.",
       "allow_missing_media": false,
       "attempts": 1
+     },
+     "$new": {
+      "id": "$new",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "review",
+      "stage": "validated",
+      "created_at": "$now",
+      "updated_at": "$now",
+      "completed_at": null,
+      "upload_path": "restores/$new/upload/archive.zip",
+      "sha256": "$archive-sha256",
+      "version": "$version",
+      "preview": {
+       "association": "Associazione archiviata",
+       "export_date": "2026-03-30T10:00:00+00:00",
+       "skipped_records": {},
+       "records": 3,
+       "files": 0,
+       "missing_media": 0,
+       "legacy_invoices": 0,
+       "reassigned_tutors": 0,
+       "tutor_tax_code_conflicts": 0,
+       "tutor_reassignment_details": [],
+       "missing_relations": 0,
+       "missing_relation_details": []
+      },
+      "backup_path": "",
+      "backup_sha256": "",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 0
      }
     },
     "celery": []
@@ -143405,7 +143475,9 @@
    "setup": null,
    "cache": null,
    "objects": {},
-   "objects_after": [],
+   "objects_after": [
+    "restores/$new/upload/archive.zip"
+   ],
    "effect": {
     "receipts": {
      "review": {
@@ -144198,6 +144270,39 @@
       "error": "Errore di prova.",
       "allow_missing_media": false,
       "attempts": 1
+     },
+     "$new": {
+      "id": "$new",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "review",
+      "stage": "validated",
+      "created_at": "$now",
+      "updated_at": "$now",
+      "completed_at": null,
+      "upload_path": "restores/$new/upload/archive.zip",
+      "sha256": "$archive-sha256",
+      "version": "$version",
+      "preview": {
+       "association": "Associazione archiviata",
+       "export_date": "2026-03-30T10:00:00+00:00",
+       "skipped_records": {},
+       "records": 3,
+       "files": 0,
+       "missing_media": 0,
+       "legacy_invoices": 0,
+       "reassigned_tutors": 0,
+       "tutor_tax_code_conflicts": 0,
+       "tutor_reassignment_details": [],
+       "missing_relations": 0,
+       "missing_relation_details": []
+      },
+      "backup_path": "",
+      "backup_sha256": "",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 0
      }
     },
     "celery": []
@@ -144263,7 +144368,9 @@
    "setup": null,
    "cache": null,
    "objects": {},
-   "objects_after": [],
+   "objects_after": [
+    "restores/$new/upload/archive.zip"
+   ],
    "effect": {
     "receipts": {
      "review": {
@@ -145056,6 +145163,39 @@
       "error": "Errore di prova.",
       "allow_missing_media": false,
       "attempts": 1
+     },
+     "$new": {
+      "id": "$new",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "review",
+      "stage": "validated",
+      "created_at": "$now",
+      "updated_at": "$now",
+      "completed_at": null,
+      "upload_path": "restores/$new/upload/archive.zip",
+      "sha256": "$archive-sha256",
+      "version": "$version",
+      "preview": {
+       "association": "Associazione archiviata",
+       "export_date": "2026-03-30T10:00:00+00:00",
+       "skipped_records": {},
+       "records": 3,
+       "files": 0,
+       "missing_media": 0,
+       "legacy_invoices": 0,
+       "reassigned_tutors": 0,
+       "tutor_tax_code_conflicts": 0,
+       "tutor_reassignment_details": [],
+       "missing_relations": 0,
+       "missing_relation_details": []
+      },
+      "backup_path": "",
+      "backup_sha256": "",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 0
      }
     },
     "celery": []
@@ -147631,7 +147771,9 @@
    "setup": null,
    "cache": null,
    "objects": {},
-   "objects_after": [],
+   "objects_after": [
+    "restores/$new/upload/archive.zip"
+   ],
    "effect": {
     "receipts": {
      "review": {
@@ -148424,6 +148566,39 @@
       "error": "Errore di prova.",
       "allow_missing_media": false,
       "attempts": 1
+     },
+     "$new": {
+      "id": "$new",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "review",
+      "stage": "validated",
+      "created_at": "$now",
+      "updated_at": "$now",
+      "completed_at": null,
+      "upload_path": "restores/$new/upload/archive.zip",
+      "sha256": "$archive-sha256",
+      "version": "$version",
+      "preview": {
+       "association": "Associazione archiviata",
+       "export_date": "2026-03-30T10:00:00+00:00",
+       "skipped_records": {},
+       "records": 3,
+       "files": 0,
+       "missing_media": 0,
+       "legacy_invoices": 0,
+       "reassigned_tutors": 0,
+       "tutor_tax_code_conflicts": 0,
+       "tutor_reassignment_details": [],
+       "missing_relations": 0,
+       "missing_relation_details": []
+      },
+      "backup_path": "",
+      "backup_sha256": "",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 0
      }
     },
     "celery": []
@@ -154325,7 +154500,9 @@
    "setup": null,
    "cache": null,
    "objects": {},
-   "objects_after": [],
+   "objects_after": [
+    "restores/$new/upload/archive.zip"
+   ],
    "effect": {
     "receipts": {
      "review": {
@@ -155118,6 +155295,41 @@
       "error": "Errore di prova.",
       "allow_missing_media": false,
       "attempts": 1
+     },
+     "$new": {
+      "id": "$new",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "review",
+      "stage": "validated",
+      "created_at": "$now",
+      "updated_at": "$now",
+      "completed_at": null,
+      "upload_path": "restores/$new/upload/archive.zip",
+      "sha256": "$archive-sha256",
+      "version": "$version",
+      "preview": {
+       "association": [
+        "x"
+       ],
+       "export_date": "2026-03-30T10:00:00+00:00",
+       "skipped_records": {},
+       "records": 2,
+       "files": 0,
+       "missing_media": 0,
+       "legacy_invoices": 0,
+       "reassigned_tutors": 0,
+       "tutor_tax_code_conflicts": 0,
+       "tutor_reassignment_details": [],
+       "missing_relations": 0,
+       "missing_relation_details": []
+      },
+      "backup_path": "",
+      "backup_sha256": "",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 0
      }
     },
     "celery": []
@@ -156847,7 +157059,9 @@
    "setup": null,
    "cache": null,
    "objects": {},
-   "objects_after": [],
+   "objects_after": [
+    "restores/$new/upload/archive.zip"
+   ],
    "effect": {
     "receipts": {
      "review": {
@@ -157640,6 +157854,45 @@
       "error": "Errore di prova.",
       "allow_missing_media": false,
       "attempts": 1
+     },
+     "$new": {
+      "id": "$new",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "review",
+      "stage": "validated",
+      "created_at": "$now",
+      "updated_at": "$now",
+      "completed_at": null,
+      "upload_path": "restores/$new/upload/archive.zip",
+      "sha256": "$archive-sha256",
+      "version": "$version",
+      "preview": {
+       "association": "Associazione archiviata",
+       "export_date": "2026-03-30T10:00:00+00:00",
+       "skipped_records": {},
+       "records": 5,
+       "files": 0,
+       "missing_media": 0,
+       "legacy_invoices": 0,
+       "reassigned_tutors": 1,
+       "tutor_tax_code_conflicts": 0,
+       "tutor_reassignment_details": [
+        {
+         "associate_id": "d7000000-0000-4000-8000-00000000f002",
+         "source_association_id": "d7000000-0000-4000-8000-00000000f0ff",
+         "name": ""
+        }
+       ],
+       "missing_relations": 0,
+       "missing_relation_details": []
+      },
+      "backup_path": "",
+      "backup_sha256": "",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 0
      }
     },
     "celery": []
@@ -157716,7 +157969,9 @@
    "setup": null,
    "cache": null,
    "objects": {},
-   "objects_after": [],
+   "objects_after": [
+    "restores/$new/upload/archive.zip"
+   ],
    "effect": {
     "receipts": {
      "review": {
@@ -158509,6 +158764,47 @@
       "error": "Errore di prova.",
       "allow_missing_media": false,
       "attempts": 1
+     },
+     "$new": {
+      "id": "$new",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "review",
+      "stage": "validated",
+      "created_at": "$now",
+      "updated_at": "$now",
+      "completed_at": null,
+      "upload_path": "restores/$new/upload/archive.zip",
+      "sha256": "$archive-sha256",
+      "version": "$version",
+      "preview": {
+       "association": "Associazione archiviata",
+       "export_date": "2026-03-30T10:00:00+00:00",
+       "skipped_records": {},
+       "records": 4,
+       "files": 0,
+       "missing_media": 0,
+       "legacy_invoices": 0,
+       "reassigned_tutors": 0,
+       "tutor_tax_code_conflicts": 1,
+       "tutor_reassignment_details": [
+        {
+         "associate_id": "d7000000-0000-4000-8000-00000000f002",
+         "source_association_id": null,
+         "name": "Vecchio Tutore",
+         "original_tax_code": "aaa",
+         "conflicting_associate_id": "d7000000-0000-4000-8000-00000000f001"
+        }
+       ],
+       "missing_relations": 0,
+       "missing_relation_details": []
+      },
+      "backup_path": "",
+      "backup_sha256": "",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 0
      }
     },
     "celery": []
