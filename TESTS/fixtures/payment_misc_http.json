@@ -427,7 +427,7 @@
     "subscription_fee": "١٢٫٥٠",
     "auto_assign": true,
     "advanced_options": true,
-    "previous_subscription_fee_plan": "prev-script-sep",
+    "previous_subscription_fee_plan": "prev-sep-script",
     "from_day": 13,
     "from_month": 9,
     "to_day": 30,
@@ -439,7 +439,7 @@
     "subscription_fee": "1e400",
     "auto_assign": true,
     "advanced_options": true,
-    "previous_subscription_fee_plan": "prev-exp-big",
+    "previous_subscription_fee_plan": "prev-xp-big",
     "from_day": 14,
     "from_month": 9,
     "to_day": 30,
@@ -1212,11 +1212,11 @@
    "deleted": false,
    "archived": false,
    "meta": {
-    "plan_id": "prev-script-sep"
+    "plan_id": "prev-sep-script"
    },
    "payment_meta": {
     "subscription_data": {
-     "id": "prev-script-sep",
+     "id": "prev-sep-script",
      "name": "Quota precedente"
     }
    },
@@ -1232,11 +1232,11 @@
    "deleted": false,
    "archived": false,
    "meta": {
-    "plan_id": "prev-exp-big"
+    "plan_id": "prev-xp-big"
    },
    "payment_meta": {
     "subscription_data": {
-     "id": "prev-exp-big",
+     "id": "prev-xp-big",
      "name": "Quota precedente"
     }
    },
@@ -3341,7 +3341,7 @@
       "from_month": 9,
       "to_day": 30,
       "to_month": 9,
-      "previous_subscription_fee_plan": "prev-script-sep",
+      "previous_subscription_fee_plan": "prev-sep-script",
       "name": "Importo separatore",
       "subscription_fee": "١٢٫٥٠",
       "id": "plan-script-sep"
@@ -3366,7 +3366,7 @@
       "from_month": 9,
       "to_day": 30,
       "to_month": 9,
-      "previous_subscription_fee_plan": "prev-exp-big",
+      "previous_subscription_fee_plan": "prev-xp-big",
       "name": "Importo esponente",
       "subscription_fee": "1e400",
       "id": "plan-exp-big"

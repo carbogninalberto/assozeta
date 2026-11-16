@@ -152,8 +152,8 @@ PLAN_MESSAGE = odd_plan('plan-message', ['a', 1], 6.5, 'prev-message', 9)
 PLAN_BIG_DAY = odd_plan('plan-big-day', 'Giorno enorme', '6', 'prev-big-day', 123456789012345678901234567890)
 PLAN_UNDERSCORE = odd_plan('plan-underscore', 'Importo underscore', '1_000', 'prev-underscore', 11)
 PLAN_SCRIPT = odd_plan('plan-script', 'Importo altra scrittura', '\u0661\u0662.\u0665\u0660', 'prev-script', 12)
-PLAN_SCRIPT_SEP = odd_plan('plan-script-sep', 'Importo separatore', '\u0661\u0662\u066b\u0665\u0660', 'prev-script-sep', 13)
-PLAN_EXP_BIG = odd_plan('plan-exp-big', 'Importo esponente', '1e400', 'prev-exp-big', 14)
+PLAN_SCRIPT_SEP = odd_plan('plan-script-sep', 'Importo separatore', '\u0661\u0662\u066b\u0665\u0660', 'prev-sep-script', 13)
+PLAN_EXP_BIG = odd_plan('plan-exp-big', 'Importo esponente', '1e400', 'prev-xp-big', 14)
 PLAN_OVER = odd_plan('plan-over', 'Importo enorme', 10000000, 'prev-over', 15)
 PLAN_ROUNDING = odd_plan('plan-rounding', 'Importo arrotondato', '2.665', 'prev-rounding', 16)
 PLAN_LIST_NAME = odd_plan('plan-list-name', ['Quota', 1], 6.5, 'prev-list-name', 17)
@@ -219,8 +219,8 @@ SUBSCRIPTIONS = {
     's_big_day': odd_subscription('mario', 'prev-big-day'),
     's_underscore': odd_subscription('luca', 'prev-underscore'),
     's_script': odd_subscription('giulia', 'prev-script'),
-    's_script_sep': odd_subscription('mario', 'prev-script-sep'),
-    's_exp_big': odd_subscription('sara', 'prev-exp-big'),
+    's_script_sep': odd_subscription('mario', 'prev-sep-script'),
+    's_exp_big': odd_subscription('sara', 'prev-xp-big'),
     's_over': odd_subscription('luca', 'prev-over'),
     's_rounding': odd_subscription('paolo', 'prev-rounding'),
     's_list_name': odd_subscription('giulia', 'prev-list-name'),

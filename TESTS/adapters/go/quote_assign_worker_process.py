@@ -98,6 +98,8 @@ class QuoteFixture:
                  (4, 'owner4@example.test', 1), (5, 'owner5@example.test', 1), (6, 'owner6@example.test', 1),
                  (21, 'Athlete.One@Example.TEST', 2), (22, 'athlete2@example.test', 2), (23, 'athlete3@example.test', 2),
                  (24, 'athlete4@example.test', 2)]
+        if variant in ('odd', 'overflow'):
+            users.append((7, 'owner7@example.test', 1))  # owner of the seventh association below
         User.original_objects.bulk_create([User(user_id=U(n), username=f'quote-{n}', role=role, email=email, password='!private-fixture',
             first_name=f'Nome{n}', last_name='Fixture', date_joined=self.base) for n, email, role in users])
         day, month = today.day, today.month
