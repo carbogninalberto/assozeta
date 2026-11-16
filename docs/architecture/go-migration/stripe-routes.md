@@ -116,8 +116,8 @@ Stripe settings are `effective_integration('stripe')`: the self-hosted instance 
 - (Ported in v2-rest-a, see the end of this page: `X-Group-Id` in another spelling, float fee ties and
   `meta.subscription_data.name` values of any JSON type.)
 - Amounts outside int64 cents are application state (`ErrStripeUnreachable`, the 500 page: the column is
-  `numeric(9,2)`). A created PaymentIntent whose `id` is a list or object (a reply shape the API never sends) stays
-  refused.
+  `numeric(9,2)`). (Long tail PR 4: a created PaymentIntent whose `id` is a list or object is stored as its `str()`,
+  below.)
 - A webhook body over `DATA_UPLOAD_MAX_MEMORY_SIZE` (Django's 413 handling).
 
 Since long-tail PR 3 (agent B) cents outside int64 are application state (`ErrStripeUnreachable`): the amount column
@@ -216,4 +216,7 @@ The fixture has 127 cases (17 new) and Go reproduces these inputs instead of ref
 - the created PaymentIntent's `id` (`payment_intent.stripe_id` is `getattr(self, 'id')`): no `id` key is the
   AttributeError (500 before the save, in pay and multiple-pay); `null` sets the column to None (an audit entry only when
   the stored value changes); a number or bool is saved as its `str()` (`5` -> `'5'`, `true` -> `'True'`, `1.5` ->
-  `'1.5'`). A list or object `id` stays refused.
+  `'1.5'`). Since long tail PR 4 (accepted divergences X13, X18) an object `id` is saved as StripeObject's `str()`
+  (sorted JSON, indent 2) and a list as its `repr()`, each object as StripeObject.__repr__ writes it (the class
+  stripe-python 11.6.0 picks for its `object` string, that string, `id=<id>`) with the placeholder address
+  `0x0000000000000000`; `ErrStripeNotPorted` is gone (`stripe_routes_id_test.go`).

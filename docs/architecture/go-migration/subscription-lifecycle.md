@@ -104,7 +104,9 @@ Django is not atomic: work saved before a failure stays, and the Go port commits
 
 Since long-tail PR 3 (agent B) a related unpaid payment whose row does not exist, and a payment the range lookup returns
 without an association, are application state (`ErrSubscriptionLifecycleUnreachable`): the foreign key is `SET NULL` and
-the lookup filters the association. A payment row deleted between two reads stays a refusal (timing).
+the lookup filters the association. Since long-tail PR 4 (agent A, accepted divergence X17) a payment, installment,
+invoice or collector row that a concurrent request deleted between two reads is skipped, as if Django's query had
+not selected it (`ErrSubscriptionLifecycleNotPorted` is gone).
 
 ## Evidence
 

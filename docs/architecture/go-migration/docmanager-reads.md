@@ -74,10 +74,6 @@ active `SportAssociation`, gets `404 {"error": "Document not found."}`. The owne
 
 ## Not ported (refused with the 500 page before any write)
 
-- **Retrieve** provider errors that are not a client error: a HEAD failing with 429 or a 5xx status or without an
-  answer, and a `GetObject` transport error or exhausted retry. Django answers `500 {"exception": "<botocore text>"}`;
-  the text carries botocore's retry count or the storage endpoint. A client-error `GetObject` is ported (the same
-  text, 500 JSON).
 - **Retrieve** names outside the modelled grammar: none left (t2docs ported the bracketed and non-ASCII network locations and the `data:` types).
 - Rows Django cannot read either (both sides answer the 500 page): creation dates outside Python's range. Invalid UTF-8
   and NUL cannot be stored in the database.
@@ -200,3 +196,8 @@ address in brackets and any other host are `ValueError`s with their texts, and a
 `guess_type` raises: `500 {"exception": "<text>"}`. Valid bracketed hosts and non-ASCII locations are plain URLs; a `data:` type
 of any text is the guessed type (never inline, so an octet-stream download). Unit test: 63 CPython answers
 (`pkg/pymime/testdata/url_vectors.json`). Cases added to `docmanager-reads`.
+
+Long tail PR 4 (agent A, accepted divergence X12): a HEAD failing with 429 or a 5xx status or without an answer, and
+a `GetObject` transport error or exhausted retry, answer `500 {"exception": "<botocore text>"}` with botocore's final
+text (`(reached max retries: 4)`, or the endpoint connection errors; see documents-writes.md).
+`ErrDocmanagerNotPorted` is gone.

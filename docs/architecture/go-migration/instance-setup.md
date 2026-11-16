@@ -106,8 +106,6 @@ Go answers the server error page before any write:
   characters, a domain over 255 characters once Python has lower-cased it. Domains and e-mail domains are
   lower-cased with `str.lower()`; a `clientPortal` that needs URLValidator's IDNA retry runs through
   `internal/idna2003` (Python's 'idna' codec).
-- A logo name that exists again after the deletes when `AWS_S3_FILE_OVERWRITE` is false (Django
-  would save under a generated alternative name).
 - Other exceptions inside the setup transaction (Django answers 500 with the exception text).
 
 Since long-tail PR 3 (agent B) the IDNA URL fallback flags are dead code and are deleted: `DjangoURL` already ports
@@ -141,3 +139,8 @@ configuration checked field by field and removed by the runner. RED (`v2-admin-r
 Go 500 on `instance-setup-configure-import-linked`. GREEN (`v2-admin-green`): 99/99 on the four
 transports. Mutation (`v2-admin-mutation-association-key`): ignoring the `association_id` key fails
 `instance-setup-configure-import-association-id-key` on `import.primary-association`.
+
+Long tail PR 4 (agent A, accepted divergence X17): a logo name taken again after the deletes when
+`AWS_S3_FILE_OVERWRITE` is false is saved under `get_available_name`'s alternative (`_<7 random characters>` before the
+extension, `documentkey.AvailableName`), as Django's `default_storage.save` does; the configuration keeps the canonical
+logo URL, as the view stores it (unit test `TestUploadLogoSavesUnderAvailableName`).

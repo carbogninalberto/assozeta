@@ -249,3 +249,10 @@ cases (280 in all); RED is the documented refusal (v2-refusals.md, payment-reads
 280/280 on the four transports. Mutation `v2restb-mutation-r1` (infinity searched as an amount) CAUGHT. Still refused: random
 ordering with the text search (the rows repeat in random order, nothing to compare) and an athlete receipt whose filename
 is not a valid header value.
+
+Long tail PR 4 (agent A, accepted divergence X13): the Stripe fee sum follows Python's arithmetic for every amount the
+balance API can send (ints of any size, booleans, floats; once a float joins the sum is a float, and `float()` of an int
+beyond the float range is the OverflowError the view's `except` answers with zero charges), and a pagination id that is not
+a string is sent as stripe-python encodes it; the request's outcome decides (`payment_stats_stripe_test.go`). A sum that
+reaches an infinity or NaN (`1e400`, `NaN` in the reply) is cached and then answered with the 500 page, as DRF's strict
+JSON renderer fails on it.

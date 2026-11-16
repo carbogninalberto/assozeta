@@ -119,7 +119,7 @@ rebuilt per message, `CLICallback`'s ANSI output (tool arguments
 
 ## Not ported or not reproduced
 
-Long tail PR 4: the agent refuses nothing any more except one timing race (below).
+Long tail PR 4: the agent refuses nothing any more.
 - Accepted divergence X11 (owner, 2026-11-15): a business tool call whose Django answer Go does not reproduce (an
   exception whose text carries SQL or an object address, an input another package still refuses, such as pdfexport's
   paragraph subset) answers the tool result `{"error": "Errore durante l'esecuzione dello strumento."}` and the
@@ -136,7 +136,9 @@ Long tail PR 4: the agent refuses nothing any more except one timing race (below
 - Application state (Go's own error, never handed off): configuration keys and value types both writers
   (`AISettingsSerializer`, the environment form) never produce, manual tool result shapes the manual builders never
   produce, counter values only the app writes.
-- Still a refusal: the concurrency slot's `cache.decr` after the key expired between `incr` and `decr` (timing).
+- Long tail PR 4, extension (2026-11-16): an exception whose text Go does not reproduce exactly answers its closest
+  text (mcp-server.md) instead of the generic one, which stays for other refusals; the concurrency slot's `cache.decr`
+  after the key expired between `incr` and `decr` resolves as a decr that worked (close 4002, X17). Nothing is refused.
 
 Ported refusals (the agent answers what Django answers; a saved-report run
 keeps its own 500/400 answers, and the stdio transport answers the same

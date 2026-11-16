@@ -1779,7 +1779,8 @@ A tool exception has three hosts: the saved-report run answers every exception w
 answers `{"error": str(e)}`, the agent sends `json.dumps({'error': str(e)})` to the model. An exception whose text Go
 does not reproduce (a PostgreSQL error, whose text carries the statement with psycopg2's literals; a reportlab text
 with an object address) is now `service.ErrBusinessToolRaised`, a plain error: the run answers its 500, the MCP command
-keeps refusing (command root only), the agent answers X11's generic tool result.
+keeps refusing (command root only), the agent answers X11's generic tool result. (Superseded by the extension below:
+both answer the closest text.)
 
 | Sentinel | HTTP/WS before -> after | other before -> after | What changed |
 |---|---|---|---|
@@ -1800,3 +1801,28 @@ answers); families `--versioned` on four transports: templates-reports 262 (16 n
 Caddy; new `loop-python-values`), saved-reports 32, data-restore 157 (the shared unpickler). Mutation (`lt4A-mut`):
 leaving `RANDOM()` out of the `DISTINCT` select list fails `run-query-categories-random-order` (CAUGHT, restored).
 `go test ./...` green.
+
+### Extension (owner decision 2026-11-16): native answers for the remaining rule-4 groups
+
+Every remaining group of this agent's assignment answers natively with the closest Django text (accepted divergences
+X11 extension, X12, X13, X14, X17, X18; the X lines are added by the combiner). Per-site table with the Django evidence:
+`tmp/long-tail/pr4-A.md` (worktree notes).
+
+| Site | Sentinel | Native answer | X |
+|---|---|---|---|
+| MCP command `Calls.Execute`, agent `AgentTools.Business` | `service.ErrBusinessMCPNotPorted` (deleted) | `{"error": <closest text>}`: PostgreSQL message with `DETAIL:`/`HINT:`/`CONTEXT:` (no `LINE`/caret, no bound-parameter context), reportlab text with address `0x0000000000000000`, else the generic text | X11, X18 |
+| `GuardAcquire` decr race | `repository.ErrAgentCacheShape` (deleted) | the decr worked: concurrent session, close 4002 | X17 |
+| document add / medical upload / persona picture / docmanager stream storage failures | `ErrDocumentWritesNotPorted` (2 sites), `ErrPersonaNotPorted` (3 sites), `domain.ErrDocmanagerNotPorted` (deleted) | botocore's final text (`(reached max retries: 4)`, endpoint connection errors, `CreateMultipartUpload` from 8 MiB) | X12 |
+| `bufferMultipart` bodies over 250 MiB | `ErrDocumentWritesNotPorted` | spooled to a temporary file and read through a read-only mapping | X12 |
+| `stripeID` list/object ids | `domain.ErrStripeNotPorted` (deleted) | StripeObject `str()`/`repr()` with the placeholder address | X13, X18 |
+| payment stats Stripe fees | `ErrPaymentReadsNotPorted` (2 sites) | Python int/float arithmetic, non-string pagination ids sent as encoded; a non-finite sum is cached, then the 500 page | X13 |
+| cached release catalog | `repository.ErrReleaseCacheShape` (deleted) | a catalog Go cannot read is a cache miss (fetched and stored again) | X14 |
+| smtpsend raw environment bytes | `smtpsend: text not representable as a Python str` (deleted) | surrogateescape decoding, then the lone-surrogate path | X14 |
+| subscription archive/delete rows deleted concurrently | `domain.ErrSubscriptionLifecycleNotPorted` (deleted) | the vanished row is skipped | X17 |
+| e-mail configuration deleted before the balance save | `domain.ErrEmailTaskUnsupported` (deleted) | `save()`'s UPDATE→INSERT fallback with an auditlog create entry | X17 |
+| instance logo name taken again | `domain.ErrInstanceSetupRefused` (1 site) | `get_available_name`'s alternative name | X17 |
+
+`refusal_reach.py`: whole report 152 -> 124 rows; every row of these sites is gone (28 rows). Remaining rows of the
+shared sentinels belong to other sites: `parseDjangoMultipart` (RFC 2231 codecs), `StockCreate`, the payment list/export
+reads and `importedAssociation`.
+
