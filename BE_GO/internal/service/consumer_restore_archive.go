@@ -198,22 +198,28 @@ func (a *restoreArchive) json(name string) (any, error) {
 }
 
 // restoreJSON is json.loads(zf.read(name)) for the bytes of a member: the
-// same BOM/UTF-8/16/32 detection and surrogatepass decoding, and the same
-// NaN/Infinity constants. Every ValueError/UnicodeError it raises is caught by
-// validate(), so a parse failure is errRestoreDamaged.
+// same BOM/UTF-8/16/32 detection and surrogatepass decoding, then
+// dto.PythonJSONLoads. Every ValueError, UnicodeError and RecursionError it
+// raises is caught by validate(), so a failure is errRestoreDamaged; nesting in
+// CPython's C recursion band stays dto.ErrJSONRecursionBand.
 func restoreJSON(data []byte) (any, error) {
 	name := restoreJSONEncoding(data)
 	runes, err, ok := pycodecs.Decode(name, data, pycodecs.SurrogatePass)
 	if !ok || err != nil {
 		return nil, errRestoreDamaged
 	}
-	text := restoreJSONText(runes)
-	text, floats := restoreJSONConstants(text)
-	value, err := dto.ParseProfileTablesJSON([]byte(text))
+	text, ok := restoreJSONText(runes)
+	if !ok {
+		return nil, errRestoreDamaged
+	}
+	value, err := dto.PythonJSONLoads([]byte(text))
+	if errors.Is(err, dto.ErrJSONRecursionBand) {
+		return nil, err
+	}
 	if err != nil {
 		return nil, errRestoreDamaged
 	}
-	return restoreJSONFloats(value, floats), nil
+	return restoreJSONFloats(value), nil
 }
 
 // restoreJSONEncoding is json.detect_encoding.
@@ -252,8 +258,10 @@ func restoreJSONEncoding(data []byte) string {
 
 // restoreJSONText is the decoded str as UTF-8 JSON text. A lone surrogate
 // (which a Python str keeps) becomes its \uXXXX escape so the JSON scanner can
-// carry it through; the value it produces is the same lone surrogate.
-func restoreJSONText(runes []rune) string {
+// carry it through; the value it produces is the same lone surrogate. A
+// surrogate right after an escaping backslash is json.loads' invalid escape
+// (ok false): written as an escape it would read as an escaped backslash.
+func restoreJSONText(runes []rune) (string, bool) {
 	surrogate := false
 	for _, r := range runes {
 		if r >= 0xd800 && r <= 0xdfff {
@@ -262,87 +270,35 @@ func restoreJSONText(runes []rune) string {
 		}
 	}
 	if !surrogate {
-		return string(runes)
+		return string(runes), true
 	}
 	var out strings.Builder
+	backslashes := 0
 	for _, r := range runes {
 		if r >= 0xd800 && r <= 0xdfff {
+			if backslashes%2 == 1 {
+				return "", false
+			}
 			fmt.Fprintf(&out, `\u%04x`, r)
+			backslashes = 0
 			continue
+		}
+		if r == '\\' {
+			backslashes++
+		} else {
+			backslashes = 0
 		}
 		out.WriteRune(r)
 	}
-	return out.String()
+	return out.String(), true
 }
 
-// restoreJSONConstants replaces the bare NaN, Infinity and -Infinity tokens
-// json.loads accepts (outside strings) with number sentinels that no token in
-// text contains. The sentinels come back as float64 values in restoreJSONFloats.
-func restoreJSONConstants(text string) (string, map[string]float64) {
-	nan := restoreJSONSentinel(text, "1")
-	inf := restoreJSONSentinel(text, "2")
-	negative := restoreJSONSentinel(text, "3")
-	var out strings.Builder
-	out.Grow(len(text))
-	inString, escaped := false, false
-	for i := 0; i < len(text); {
-		c := text[i]
-		if inString {
-			out.WriteByte(c)
-			switch {
-			case escaped:
-				escaped = false
-			case c == '\\':
-				escaped = true
-			case c == '"':
-				inString = false
-			}
-			i++
-			continue
-		}
-		if c == '"' {
-			inString = true
-			out.WriteByte(c)
-			i++
-			continue
-		}
-		switch {
-		case strings.HasPrefix(text[i:], "-Infinity"):
-			out.WriteString("-" + negative)
-			i += len("-Infinity")
-		case strings.HasPrefix(text[i:], "Infinity"):
-			out.WriteString(inf)
-			i += len("Infinity")
-		case strings.HasPrefix(text[i:], "NaN"):
-			out.WriteString(nan)
-			i += len("NaN")
-		default:
-			out.WriteByte(c)
-			i++
-		}
-	}
-	return out.String(), map[string]float64{nan: math.NaN(), inf: math.Inf(1), "-" + negative: math.Inf(-1)}
-}
-
-// restoreJSONSentinel is a decimal integer absent from text.
-func restoreJSONSentinel(text, mark string) string {
-	base := strings.Repeat("9", 6000)
-	for extra := 0; ; extra++ {
-		candidate := base + strings.Repeat("7", extra) + mark
-		if !strings.Contains(text, candidate) {
-			return candidate
-		}
-	}
-}
-
-// restoreJSONFloats replaces the sentinels with float64 and normalizes a float
-// literal Python turns into an infinity (json.loads("1e999")) the same way.
-func restoreJSONFloats(value any, floats map[string]float64) any {
+// restoreJSONFloats turns a float literal Python reads as an infinity
+// (json.loads("1e999")) into that float64, as the NaN and Infinity constants
+// already are.
+func restoreJSONFloats(value any) any {
 	switch v := value.(type) {
 	case json.Number:
-		if f, ok := floats[string(v)]; ok {
-			return f
-		}
 		if strings.ContainsAny(string(v), ".eE") {
 			if f, _ := strconv.ParseFloat(string(v), 64); math.IsInf(f, 0) {
 				return f
@@ -351,12 +307,12 @@ func restoreJSONFloats(value any, floats map[string]float64) any {
 		return v
 	case domain.RequestObject:
 		for i := range v {
-			v[i].Value = restoreJSONFloats(v[i].Value, floats)
+			v[i].Value = restoreJSONFloats(v[i].Value)
 		}
 		return v
 	case []any:
 		for i := range v {
-			v[i] = restoreJSONFloats(v[i], floats)
+			v[i] = restoreJSONFloats(v[i])
 		}
 		return v
 	}
@@ -885,7 +841,7 @@ func (a *restoreArchive) skippedRecords(plan *importeffects.Plan) (celery.Dict, 
 		}
 		decoded, err := restoreJSON(data)
 		if err != nil {
-			return nil, errRestoreDamaged
+			return nil, err
 		}
 		rows, ok := decoded.([]any)
 		if !ok {

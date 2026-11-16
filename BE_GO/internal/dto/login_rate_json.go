@@ -13,6 +13,17 @@ var ErrLoginRateJSONValue = errors.New("JSON value exceeds Python integer limit"
 // unquoted literal tokens, retaining offsets and restoring their typed values.
 // ParseReferenceJSON remains strict for the later authentication/view pipeline.
 func ParseLoginRateJSON(data []byte) (any, error) {
+	data, constants := pythonJSONLiteralTokens(data)
+	return parseReferenceJSON(data, constants, true)
+}
+
+// pythonJSONLiteralTokens rewrites each complete unquoted NaN, Infinity and
+// -Infinity token (delimited by white space, a structural character or a
+// quote) as "0.0" padded with spaces, keeping every offset, and returns the
+// float each one stands for keyed by the end offset of its "0.0". A literal
+// glued to other characters (1NaN, NaN.5, -NaN) stays and fails to parse, as
+// in json.loads. data is not modified.
+func pythonJSONLiteralTokens(data []byte) ([]byte, map[int64]any) {
 	var rewritten []byte
 	constants := map[int64]any{}
 	for i := 0; i < len(data); {
@@ -62,5 +73,5 @@ func ParseLoginRateJSON(data []byte) (any, error) {
 	if rewritten != nil {
 		data = rewritten
 	}
-	return parseReferenceJSON(data, constants, true)
+	return data, constants
 }

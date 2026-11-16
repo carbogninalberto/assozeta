@@ -86,7 +86,33 @@ func StoredJSON(text *string) (any, error) {
 // parseStoredJSON is json.loads for the text of a jsonb column: container
 // nesting is bounded by StoredJSONRecursionBand before the call, so the
 // recursion here stays under Go's own JSON nesting limit.
-func parseStoredJSON(data []byte) (any, error) {
+func parseStoredJSON(data []byte) (any, error) { return parseStoredJSONConstants(data, nil) }
+
+// PythonJSONLoads is json.loads of a str for JSON text in UTF-8 whose lone
+// surrogates are written as \uXXXX escapes: NaN, Infinity and -Infinity
+// become float64, a string holding a lone surrogate keeps it (WTF-8), a
+// duplicate key keeps its last value at its first position, and an integer
+// literal past 4300 digits is ErrStoredJSONInteger (ValueError). Nesting from
+// StoredJSONRecursionFloor is ErrStoredJSONRecursion (RecursionError) and from
+// StoredJSONRecursionBand ErrJSONRecursionBand. Any other error is
+// JSONDecodeError.
+func PythonJSONLoads(data []byte) (any, error) {
+	switch depth := auditJSONDepth(string(data)); {
+	case depth >= StoredJSONRecursionFloor:
+		return nil, ErrStoredJSONRecursion
+	case depth >= StoredJSONRecursionBand:
+		return nil, ErrJSONRecursionBand
+	}
+	data, constants := pythonJSONLiteralTokens(data)
+	if err := jsonLoneSurrogateStrings(data, constants); err != nil {
+		return nil, err
+	}
+	return parseStoredJSONConstants(data, constants)
+}
+
+// parseStoredJSONConstants parses with the values in constants (keyed by the
+// end offset of the token they replace) standing for their tokens.
+func parseStoredJSONConstants(data []byte, constants map[int64]any) (any, error) {
 	decoder := json.NewDecoder(bytes.NewReader(data))
 	decoder.UseNumber()
 	var read func() (any, error)
@@ -97,6 +123,9 @@ func parseStoredJSON(data []byte) (any, error) {
 		}
 		delim, container := token.(json.Delim)
 		if !container {
+			if value, ok := constants[decoder.InputOffset()]; ok {
+				return value, nil
+			}
 			if number, ok := token.(json.Number); ok {
 				if err := storedJSONNumber(number); err != nil {
 					return nil, err
@@ -113,6 +142,9 @@ func parseStoredJSON(data []byte) (any, error) {
 				key, err := decoder.Token()
 				if err != nil {
 					return nil, err
+				}
+				if original, exists := constants[decoder.InputOffset()]; exists {
+					key = original
 				}
 				name, ok := key.(string)
 				if !ok {
