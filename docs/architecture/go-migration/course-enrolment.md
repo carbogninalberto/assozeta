@@ -81,10 +81,23 @@ the course). Response `{'data': PaymentSerializer}`.
 
 ## Not ported (refused with a 500 before any write)
 
-- An HTML form `multiple_quote` or `events` document the jsonb column rejects (lone surrogates, nesting past the parser
-  limit): the answer is the database's error text.
+- An HTML form `multiple_quote` or `events` document nested past the ported depth (the 500-level limit): the answer
+  depends on Python's live recursion depth, so it is not a fixed number (owner decision pending).
 - Payments rendered with an instructor or invoice (make-payment): the view renders the payment it has just created, so
   no request reaches this.
+
+## Form JSON with a lone surrogate
+
+`json.loads` keeps an escape of a lone surrogate as a code unit, so the field validates like any other JSON text; the
+`multiple_quote` column then refuses the INSERT: `JSONField.get_prep_value`'s `json.dumps(ensure_ascii)` writes the
+`\udXXX` escape and jsonb rejects it, which the view does not catch. `course-subscriptions/add` is atomic, so the answer
+is the 500 page with nothing written, and the other field errors (a 400) still come first. Go keeps the parsed value
+through validation and answers that state at the row's INSERT (`service/course_subscriptionJSONValue`,
+`errCourseSubscriptionJSONColumn`). Cases `add-form-multiple-quote-lone-surrogate-server-error` and
+`add-form-multiple-quote-lone-surrogate-other-field-invalid`.
+
+`events` is never stored, so a lone surrogate there is just parsed: an ignored key changes nothing and a string element
+raises the events loop (see [course-subscriptions](course-subscriptions.md)).
 
 ## Form bodies, loose quote values and the athlete prefill (t4l3)
 

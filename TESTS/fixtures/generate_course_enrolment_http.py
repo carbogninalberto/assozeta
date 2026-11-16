@@ -934,6 +934,14 @@ fee_row('add-form-multipart', 'cf2', 'x_form_empty', 'mario',
 add('add-form-empty-body', 'owner', CA, 400, {'course': REQUIRED, 'subscription_id': REQUIRED}, raw_body='', content_type=FORM)
 add('add-form-invalid-json', 'owner', CA, 400, {'multiple_quote': ['Value must be valid JSON.']},
     raw_body=form(course=cid('quotes'), subscription_id=sid('luisa'), multiple_quote='nope'), content_type=FORM)
+# A lone surrogate escape parses (json.loads keeps the code unit) and the field keeps it: the jsonb column refuses
+# the INSERT, which the atomic add does not catch (500, nothing written). Other field errors still answer first.
+LONE = json.dumps(['\ud800'])
+add('add-form-multiple-quote-lone-surrogate-server-error', 'owner', CA, 500, SERVER, result=effect('owner'),
+    raw_body=form(course=cid('quotes'), subscription_id=sid('luisa'), multiple_quote=LONE), content_type=FORM)
+add('add-form-multiple-quote-lone-surrogate-other-field-invalid', 'owner', CA, 400,
+    {'billed_frequency': ['Ensure this value is greater than or equal to 0.']},
+    raw_body=form(course=cid('quotes'), subscription_id=sid('luisa'), multiple_quote=LONE, billed_frequency='-1'), content_type=FORM)
 # one_fee_payment=false as text still marks the row; the payment follows the course's one-fee flag.
 row = new_cs('@cf3', 'one', 'luisa', payment='@cf3p', one_fee=True, active=False)
 text = "Pagamento in un'unica soluzione per Tennis"

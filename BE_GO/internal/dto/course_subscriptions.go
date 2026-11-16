@@ -323,8 +323,15 @@ type CourseSubscriptionWrite struct {
 	FeeSet         bool
 	Fee            *string
 	Events         any
-	// FormJSON marks a form JSON text the jsonb column rejects at save time (not ported).
-	FormJSON bool
+	// FormJSONDeep marks a form JSON text nested past the ported depth: the
+	// answer depends on Python's live recursion depth, so the callers still
+	// refuse it before any write.
+	FormJSONDeep bool
+	// FormJSONSurrogate marks a form JSON text that parses but holds a lone
+	// surrogate escape (json.loads keeps the code unit): the value is valid, so
+	// validation runs as for any other value, and the jsonb column rejects it at
+	// the row's save (the callers answer it there).
+	FormJSONSurrogate bool
 }
 
 // CourseSubscriptionBooleans are the serializer's BooleanFields.
@@ -422,15 +429,15 @@ func ParseCourseSubscriptionWrite(body any, form bool) (CourseSubscriptionWrite,
 				text = upload.Name
 			}
 			tree, valid, rejectedColumn, deep := automationFormTree(text)
-			rejected := rejectedColumn || deep
 			switch {
-			case rejected:
-				write.FormJSON = true
+			case deep:
+				write.FormJSONDeep = true
 				continue
 			case !valid:
 				errs[name] = []string{CourseSubscriptionJSONInvalid}
 				continue
 			}
+			write.FormJSONSurrogate = write.FormJSONSurrogate || rejectedColumn
 			value = tree
 		}
 		if name == "events" {

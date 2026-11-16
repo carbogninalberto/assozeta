@@ -364,7 +364,9 @@ func (s *CourseSubscriptions) Update(ctx context.Context, identity domain.Resolv
 	}
 	group := supplierGroup(request.GroupHeader)
 	write, invalid := dto.ParseCourseSubscriptionWrite(body, form)
-	if write.FormJSON {
+	if write.FormJSONDeep {
+		// A JSON document nested past the ported depth: the answer depends on
+		// Python's live recursion depth (owner decision pending).
 		return nil, ErrCourseSubscriptionNotPorted
 	}
 	if invalid == nil {
@@ -425,6 +427,11 @@ func (s *CourseSubscriptions) Update(ctx context.Context, identity domain.Resolv
 	}
 	save := domain.CourseSubscriptionSave{Row: row, Changes: changes, Representation: dto.CourseSubscriptionRepr(row, memory),
 		AssociationID: instance.CourseAssociationID, ResolutionPath: "course.sport_association"}
+	// Model.save(): the UPDATE is where the jsonb column meets multiple_quote
+	// (after the events edit, which the atomic update rolls back with it).
+	if err = courseSubscriptionJSONValue(write, save.Row.MultipleQuote); err != nil {
+		return nil, err
+	}
 	if err = tx.SaveCourseSubscription(ctx, save, context); err != nil {
 		return nil, err
 	}

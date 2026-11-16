@@ -480,7 +480,7 @@ func (s *SubscriptionRenewals) courses(ctx context.Context, tx domain.Subscripti
 		switch {
 		case errors.As(err, &invalid):
 			return err
-		case errors.Is(err, courseEnrolmentServer), errors.Is(err, ErrCourseEnrolmentNotPorted):
+		case errors.Is(err, courseEnrolmentServer):
 			// A Python exception whose text is not reproduced.
 			return domain.ErrSubscriptionCreateNotPorted
 		case err != nil:

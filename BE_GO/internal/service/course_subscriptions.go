@@ -23,10 +23,29 @@ func NewCourseSubscriptions(store domain.CourseSubscriptionStore, now func() tim
 
 var (
 	// ErrCourseSubscriptionNotPorted refuses inputs this port does not
-	// reproduce, before any write: events given as an object or a string,
-	// unmatched installments sharing a payment and HTML-form JSON fields.
+	// reproduce, before any write: an HTML-form JSON document nested past the
+	// ported depth (Python's answer depends on the live recursion depth).
 	ErrCourseSubscriptionNotPorted = refusal.New("course subscription input is not ported")
+
+	// errCourseSubscriptionJSONColumn is PostgreSQL's jsonb input refusing a
+	// lone surrogate escape (JSONField.get_prep_value's json.dumps keeps it as
+	// \udXXX): Django's DataError at the course subscription INSERT/UPDATE,
+	// which it does not catch. Both views are atomic, so the answer is the 500
+	// page with nothing written.
+	errCourseSubscriptionJSONColumn = refusal.AppState("course subscription: jsonb rejects a lone surrogate")
 )
+
+// courseSubscriptionJSONValue is the jsonb write of multiple_quote: a form JSON
+// text that parsed but kept a lone surrogate reaches the column with its \udXXX
+// escape, which jsonb refuses (the other form JSON field, events, is never
+// stored). FormJSONSurrogate is only set for such bodies, so ordinary values
+// are not scanned.
+func courseSubscriptionJSONValue(write dto.CourseSubscriptionWrite, text *string) error {
+	if !write.FormJSONSurrogate || text == nil || !dto.AuditLoneSurrogate(*text) {
+		return nil
+	}
+	return errCourseSubscriptionJSONColumn
+}
 
 // CourseSubscriptionValidationError is a 400 field map: lists of codes from
 // the serializer, plain texts from the view's ValidationError.

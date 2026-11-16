@@ -131,6 +131,11 @@ the instance save, inside the atomic update:
   compare by value, booleans as 0/1) goes: a paid payment is relabelled first (`Rata n.<id+1> del <dd/mm/yy> (<course>)`, its
   meta replaced, `Payment.save()` filling a missing category), then `installment.delete()`, whose `pre_delete` deletes an
   unpaid payment (the Payment `pre_delete` nests the installment delete: P, I, P, then the outer I);
+- two installments of the row can share a payment (a stored state the schema allows): each iteration reads
+  `installment.payment` afresh through the base manager, so a paid shared payment is relabelled and saved twice (the second
+  save's diff starts from the first) and stays, while an unpaid one goes with the first installment and the second read
+  raises (500, rolled back). Case `update-events-shared-payment-dropped`; Go answers the sequence in
+  `service.dropInstallments` (unit tests `TestCourseSubscriptionEventDropsShared*`);
 - each event without `course_subscription_installment_id` is validated by `CourseEventsSerializer` (400 with its field errors)
   and becomes a payment of the course's association (its owner, the default bank account and category, the raw `X-Group-Id`)
   and an installment.
@@ -138,10 +143,17 @@ the instance save, inside the atomic update:
 
 Membership payments render PaymentSerializer's nested `instructor` and `invoice`.
 
+A form `multiple_quote` text that keeps a lone surrogate is not a validation error: `json.loads` keeps the code unit, and the
+instance save (after the events edit, inside the atomic update) is where jsonb refuses it, so the 500 page leaves nothing and
+the view's membership-payment checks (400) still come first. Go answers it at the row's UPDATE
+(`service/course_subscriptionJSONValue`, `errCourseSubscriptionJSONColumn`). The form `events` text is write-only: it is
+parsed and the events loop decides (a lone surrogate in an ignored key changes nothing; a string element makes the id
+comparison raise, case `update-form-events-lone-surrogate-server-error`).
+
 ## Not ported (refused before any write)
 
-- Update: unmatched installments sharing one payment, and an HTML-form `multiple_quote` or `events` document the jsonb
-  column rejects: 500.
+- Update: an HTML-form `multiple_quote` or `events` document nested past the ported depth (the 500-level limit): the answer
+  depends on Python's live recursion depth, so it is not a fixed number (owner decision pending).
 
 ## Primary key in the body and shared payment delete (t5pk)
 

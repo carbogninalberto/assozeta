@@ -87,7 +87,6 @@ func (s *CourseSubscriptions) planEvents(ctx context.Context, tx domain.CourseSu
 	if err != nil {
 		return plan, err
 	}
-	shared := map[string]bool{}
 	for _, installment := range installments {
 		matched := false
 		for _, event := range items {
@@ -108,14 +107,6 @@ func (s *CourseSubscriptions) planEvents(ctx context.Context, tx domain.CourseSu
 		}
 		if matched {
 			continue
-		}
-		if installment.PaymentID != nil {
-			if shared[*installment.PaymentID] {
-				// A payment deleted with one installment and read again
-				// through another (its cached instance) is not ported.
-				return plan, ErrCourseSubscriptionNotPorted
-			}
-			shared[*installment.PaymentID] = true
 		}
 		plan.drop = append(plan.drop, installment)
 	}
@@ -166,24 +157,45 @@ func (s *CourseSubscriptions) planEvents(ctx context.Context, tx domain.CourseSu
 	return plan, nil
 }
 
-// applyEvents writes the planned events edit: each dropped installment's paid
-// payment is relabelled and saved, the installment is deleted (its pre_delete
-// deletes an unpaid payment), then each new event becomes a payment of the
-// course's association and an installment.
-func (s *CourseSubscriptions) applyEvents(ctx context.Context, tx domain.CourseSubscriptionTransaction, instance domain.CourseSubscriptionRow,
-	plan courseSubscriptionEventPlan, group *string, audit domain.CourseSubscriptionAudit) error {
+// courseSubscriptionEventLabel is the label of an installment's payment:
+// Rata n.<id+1> del <dd/mm/yy> (<course>).
+func courseSubscriptionEventLabel(title string, number int, day time.Time) string {
+	return "Rata n." + strconv.Itoa(number+1) + " del " + day.UTC().Format("02/01/06") + " (" + title + ")"
+}
+
+// courseSubscriptionEventMeta is the meta an installment's payment keeps (and
+// a new event's payment is created with).
+func courseSubscriptionEventMeta(instance domain.CourseSubscriptionRow, title, description, date string) domain.RequestObject {
+	return domain.RequestObject{{Name: "description", Value: description}, {Name: "course_id", Value: instance.CourseID},
+		{Name: "course_title", Value: title}, {Name: "course_subscription_id", Value: instance.ID}, {Name: "payment_date", Value: date}}
+}
+
+// courseSubscriptionEventDrops is the write side of the dropped installments:
+// installment.payment (a fresh read through the base manager, once per
+// installment), Payment.save() and installment.delete() with its pre_delete.
+type courseSubscriptionEventDrops interface {
+	PaymentPaid(ctx context.Context, payment string) (bool, error)
+	PaymentState(ctx context.Context, payment string) (domain.CourseSubscriptionPaymentState, error)
+	DefaultPaymentCategory(ctx context.Context, association *string) (*string, error)
+	SavePayment(ctx context.Context, save domain.CourseSubscriptionPaymentSave, audit domain.CourseSubscriptionAudit) error
+	DeleteInstallment(ctx context.Context, id string, audit domain.CourseSubscriptionAudit) error
+}
+
+// dropInstallments writes the planned drops in the queryset's order: each
+// installment's payment is read fresh (so two installments sharing a paid
+// payment relabel and save it twice), a paid one is relabelled and saved, then
+// the installment is deleted (its pre_delete deletes an unpaid payment).
+func (s *CourseSubscriptions) dropInstallments(ctx context.Context, tx courseSubscriptionEventDrops, instance domain.CourseSubscriptionRow,
+	drop []domain.CourseSubscriptionEventInstallment, audit domain.CourseSubscriptionAudit) error {
 	title := "None"
 	if instance.CourseTitle != nil {
 		title = *instance.CourseTitle
 	}
-	label := func(number int, day time.Time) string {
-		return "Rata n." + strconv.Itoa(number+1) + " del " + day.UTC().Format("02/01/06") + " (" + title + ")"
-	}
+	label := func(number int, day time.Time) string { return courseSubscriptionEventLabel(title, number, day) }
 	meta := func(description, date string) domain.RequestObject {
-		return domain.RequestObject{{Name: "description", Value: description}, {Name: "course_id", Value: instance.CourseID},
-			{Name: "course_title", Value: title}, {Name: "course_subscription_id", Value: instance.ID}, {Name: "payment_date", Value: date}}
+		return courseSubscriptionEventMeta(instance, title, description, date)
 	}
-	for _, installment := range plan.drop {
+	for _, installment := range drop {
 		if installment.PaymentID != nil {
 			paid, err := tx.PaymentPaid(ctx, *installment.PaymentID)
 			if err != nil {
@@ -200,6 +212,18 @@ func (s *CourseSubscriptions) applyEvents(ctx context.Context, tx domain.CourseS
 			return err
 		}
 	}
+	return nil
+}
+
+// applyEvents writes the planned events edit: each dropped installment's paid
+// payment is relabelled and saved, the installment is deleted (its pre_delete
+// deletes an unpaid payment), then each new event becomes a payment of the
+// course's association and an installment.
+func (s *CourseSubscriptions) applyEvents(ctx context.Context, tx domain.CourseSubscriptionTransaction, instance domain.CourseSubscriptionRow,
+	plan courseSubscriptionEventPlan, group *string, audit domain.CourseSubscriptionAudit) error {
+	if err := s.dropInstallments(ctx, tx, instance, plan.drop, audit); err != nil {
+		return err
+	}
 	if len(plan.created) == 0 {
 		return nil
 	}
@@ -214,9 +238,13 @@ func (s *CourseSubscriptions) applyEvents(ctx context.Context, tx domain.CourseS
 	if err != nil {
 		return err
 	}
+	title := "None"
+	if instance.CourseTitle != nil {
+		title = *instance.CourseTitle
+	}
 	for _, event := range plan.created {
-		description := label(event.ID, event.Date)
-		metaText := string(dto.PythonJSONDumps(meta(description, event.Date.Format("2006-01-02"))))
+		description := courseSubscriptionEventLabel(title, event.ID, event.Date)
+		metaText := string(dto.PythonJSONDumps(courseSubscriptionEventMeta(instance, title, description, event.Date.Format("2006-01-02"))))
 		payment := domain.CourseWritePayment{ID: s.newID(), Amount: event.Amount, MemoryAmount: event.Amount, CreationDate: event.Date,
 			Description: description, CategoryID: context.CategoryID, UserID: context.UserID, AssociateID: associate, AssociationID: &association,
 			Meta: &metaText, GroupID: group}
@@ -237,7 +265,7 @@ func (s *CourseSubscriptions) applyEvents(ctx context.Context, tx domain.CourseS
 
 // relabelPaidPayment is installment.payment.save() with the new description
 // and meta (Payment.save() fills a missing category with the default one).
-func (s *CourseSubscriptions) relabelPaidPayment(ctx context.Context, tx domain.CourseSubscriptionTransaction, id, description string,
+func (s *CourseSubscriptions) relabelPaidPayment(ctx context.Context, tx courseSubscriptionEventDrops, id, description string,
 	meta func(string, string) domain.RequestObject, date string, audit domain.CourseSubscriptionAudit) error {
 	state, err := tx.PaymentState(ctx, id)
 	if err != nil {

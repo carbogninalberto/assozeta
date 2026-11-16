@@ -44,6 +44,7 @@ import datetime as dt
 import decimal
 import json
 from pathlib import Path
+import urllib.parse
 import uuid
 import zoneinfo
 
@@ -270,6 +271,19 @@ for number, (label, gone) in enumerate((('shared', False), ('shared_gone', True)
                                      'payment': 'sh_pay_' + label, 'group': None, 'deleted': False, 'payment_date': '2026-10-01T22:30:00Z',
                                      'paid': False}
 INSTALLMENTS['sh_i_plain'] = {**INSTALLMENTS['sh_i_shared'], 'id': 'a1000000-0000-4000-8000-000000669949', 'number': 1, 'payment': None}
+
+# Two installments of one row sharing a paid payment: the events edit that keeps neither relabels and saves the
+# payment once per installment (the second save sees the first), then deletes both.
+PAYMENTS['ev_shared_pay'] = {**copy.deepcopy(PAYMENTS['inst_b']), 'id': 'a1000000-0000-4000-8000-000000669951',
+                             'amount': '40.00', 'description': 'Rata condivisa'}
+CS['cs_ev_shared'] = {**copy.deepcopy(CS['cs_ev']), 'id': 'a1000000-0000-4000-8000-000000669952', 'subscription': 'sub_luisa',
+                      'payment': None}
+INSTALLMENTS['evs_a'] = {'id': 'a1000000-0000-4000-8000-000000669953', 'cs': 'cs_ev_shared', 'number': 0, 'amount': '20.00',
+                         'payment': 'ev_shared_pay', 'group': None, 'deleted': False, 'payment_date': '2026-10-01T22:30:00Z',
+                         'paid': False}
+INSTALLMENTS['evs_b'] = {'id': 'a1000000-0000-4000-8000-000000669954', 'cs': 'cs_ev_shared', 'number': 1, 'amount': '20.00',
+                         'payment': 'ev_shared_pay', 'group': None, 'deleted': False, 'payment_date': '2026-11-01T00:00:00Z',
+                         'paid': False}
 
 STATE = {'cs': copy.deepcopy(CS), 'payments': copy.deepcopy(PAYMENTS), 'installments': copy.deepcopy(INSTALLMENTS)}
 for row in STATE['installments'].values():
@@ -1042,6 +1056,29 @@ del STATE['installments']['ev2_only']
 add('update-events-empty', 'full_collaborator', one('cs_ev2', 'update'), 200, item('cs_ev2'), method='PATCH', body={'events': []},
     effect={'kind': 'update', 'actor': 'full_collaborator', 'cs_changed': {}, 'cs_deleted': [], 'installments_deleted': ['ev2_only'],
             'payments_deleted': [], 'payments_changed': {}, 'audit': audit})
+# Two installments of one row share a paid payment: the drop loop reads the payment afresh for each installment,
+# relabels and saves it (the second save's diff starts from the first), then deletes the installment; the paid
+# payment stays, with the second label.
+actor = 'owner'
+shared_a, shared_b = 'Rata n.1 del 01/10/26 (Corsa)', 'Rata n.2 del 01/11/26 (Corsa)'
+shared_meta_a = ev_meta(shared_a, '2026-10-01 22:30:00+00:00', 'cs_ev_shared')
+shared_meta_b = ev_meta(shared_b, '2026-11-01 00:00:00+00:00', 'cs_ev_shared')
+audit = [
+    changed_entry('payment', 'ev_shared_pay', [OWN, 'direct'],
+                  {'description': ['Rata condivisa', shared_a], 'meta': ['null', json.dumps(shared_meta_a, sort_keys=True)]}),
+    deleted('coursesubscriptioninstallment', 'evs_a', actor_index(actor)),
+    changed_entry('payment', 'ev_shared_pay', [OWN, 'direct'],
+                  {'description': [shared_a, shared_b],
+                   'meta': [json.dumps(shared_meta_a, sort_keys=True), json.dumps(shared_meta_b, sort_keys=True)]}),
+    deleted('coursesubscriptioninstallment', 'evs_b', actor_index(actor))]
+STATE['payments']['ev_shared_pay'].update({'description': shared_b, 'meta': shared_meta_b})
+for key in ('evs_a', 'evs_b'):
+    del STATE['installments'][key]
+add('update-events-shared-payment-dropped', actor, one('cs_ev_shared', 'update'), 200, item('cs_ev_shared'), method='PATCH',
+    body={'events': []},
+    effect={'kind': 'update', 'actor': actor, 'cs_changed': {}, 'cs_deleted': [], 'installments_deleted': ['evs_a', 'evs_b'],
+            'payments_deleted': [], 'payments_changed': {'ev_shared_pay': {'description': shared_b, 'meta': shared_meta_b}},
+            'audit': audit})
 # `events` sent as an object or as text: the loops walk its keys or its characters. With installments the id
 # comparison fails (500); without, a key or character is validated as an event (400) unless it holds the
 # installment id key's name, which leaves it out.
@@ -1061,6 +1098,10 @@ add('update-form-events-empty-list', 'owner', one('cs_ev2', 'update'), 200, item
     content_type=FORM, effect=copy.deepcopy(UNCHANGED))
 add('update-form-events-object-key-invalid', 'owner', one('cs_ev2', 'update'), 400, NOT_A_DICT, method='PATCH',
     raw_body='events=%7B%22rata%22%3A+1%7D', content_type=FORM)
+# A lone surrogate in the `events` text parses (json.loads keeps the code unit): the event is a string, so reading
+# its id against the row's installment raises (500, nothing written).
+add('update-form-events-lone-surrogate-server-error', 'owner', one('cs_ev', 'update'), 500, SERVER, method='PATCH',
+    raw_body='events=' + urllib.parse.quote(json.dumps(['\ud800'])), content_type=FORM)
 QUOTE = {'title': 'Da modulo', 'amount': '7,50', 'dettagli': [1, {'a': None}]}
 effect = updated('owner', 'cs_ev2', {'multiple_quote': QUOTE}, {'multiple_quote': ['null', json.dumps(QUOTE, sort_keys=True)]},
                  sent=('multiple_quote',))

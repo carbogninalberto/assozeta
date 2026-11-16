@@ -271,8 +271,9 @@ func (s *CourseEnrolment) associationOf(ctx context.Context, tx domain.CourseEnr
 func (s *CourseEnrolment) validateItem(ctx context.Context, tx domain.CourseEnrolmentTransaction, identity domain.ResolvedIdentity, item any,
 	group *string, form bool) (*enrolmentItem, map[string]any, error) {
 	write, invalid := dto.ParseCourseSubscriptionWrite(item, form)
-	if write.FormJSON {
-		// A JSON document the jsonb column rejects: a database error text.
+	if write.FormJSONDeep {
+		// A JSON document nested past the ported depth: the answer depends on
+		// Python's live recursion depth (owner decision pending).
 		return nil, nil, ErrCourseEnrolmentNotPorted
 	}
 	object, isObject := item.(domain.RequestObject)
@@ -438,6 +439,11 @@ func (s *CourseEnrolment) serializerCreate(ctx context.Context, tx domain.Course
 	overrides := map[string][2]string{}
 	if created.floatFee {
 		overrides["membership_fee"] = [2]string{"None", "0.0"}
+	}
+	// CourseSubscription.objects.create(): the INSERT is where the jsonb column
+	// meets multiple_quote (the add is atomic, so nothing written stays).
+	if err = courseSubscriptionJSONValue(write, created.row.MultipleQuote); err != nil {
+		return nil, err
 	}
 	if err = tx.CreateRow(ctx, created.row, overrides, enrolmentRepr(created.row, created.memory, created.floatFee), audit); err != nil {
 		return nil, err
