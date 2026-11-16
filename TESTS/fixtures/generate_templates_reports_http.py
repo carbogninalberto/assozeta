@@ -274,11 +274,18 @@ add('run-override-model-not-whitelisted-error', 'owner', 'POST', RUN('count'), 5
 add('run-override-model-number-error', 'owner', 'POST', RUN('count'), 500, FAILED, body={'overrides': {'model_name': 5}})
 
 
-def run(name, tool, params, status, response, *, overrides=None, actor='owner', group=None):
+def run(name, tool, params, status, response, *, overrides=None, actor='owner', group=None, raw_body=None):
     label = name.replace('-', '_')
     report(label, tool, params)
-    add(f'run-{name}', actor, 'POST', RUN(label), status, response, body={} if overrides is None else {'overrides': overrides},
-        headers=None if group is None else {'X-Group-Id': group})
+    headers = None if group is None else {'X-Group-Id': group}
+    if raw_body is None:
+        add(f'run-{name}', actor, 'POST', RUN(label), status, response, body={} if overrides is None else {'overrides': overrides},
+            headers=headers)
+    else:
+        # A body json.dumps cannot write faithfully: the 1e400 literal (json.dumps writes Infinity,
+        # which DRF's strict parser rejects).
+        add(f'run-{name}', actor, 'POST', RUN(label), status, response, raw_body=raw_body,
+            content_type='application/json', headers=headers)
 
 
 # query_data
@@ -953,6 +960,16 @@ run('query-carnets-meta-key-float', 'query_data', {'model_name': 'Carnet', 'fiel
 # creation_date is a DateTimeField: the date value cannot be dumped as JSON, so the run answers its 500.
 run('query-carnets-meta-key-date-error', 'query_data', {'model_name': 'Carnet', 'fields': ['title'],
     'filters': {'meta__creation_date': '2026-05-01'}}, 500, FAILED)
+# A column label json.loads reads as an infinity (1e400 is past the double range): pandas formats the header with
+# inf_rep ('inf'/'-inf') as a str. The body carries the literal 1e400: json.dumps would write Infinity, which DRF rejects.
+run('export-xlsx-label-infinity', 'export_data', {**NUOTO, 'format': 'xlsx'}, 200,
+    download('Tags.xlsx', XLSX, xlsx={'engine': 'report_sheets', 'sheets': [
+        {'title': 'Tags', 'columns': [F(float('inf')), 'creation_date'], 'rows': [['Nuoto', '15/09/2026 08:30']]}]}),
+    raw_body='{"overrides": {"column_labels": {"tag_name": 1e400}}}')
+run('export-xlsx-label-negative-infinity', 'export_data', {**NUOTO, 'format': 'xlsx'}, 200,
+    download('Tags.xlsx', XLSX, xlsx={'engine': 'report_sheets', 'sheets': [
+        {'title': 'Tags', 'columns': [F(float('-inf')), 'creation_date'], 'rows': [['Nuoto', '15/09/2026 08:30']]}]}),
+    raw_body='{"overrides": {"column_labels": {"tag_name": -1e400}}}')
 
 # Long tail PR 5: reportlab paragraph features the Go writer draws now (appended so the earlier ids stay).
 # <unichar name>: a character by its Unicode name (unicodedata.lookup), in labels and texts; an unknown name fails the export.

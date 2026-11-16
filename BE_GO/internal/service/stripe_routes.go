@@ -12,6 +12,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/celery"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pystr"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/stripeapi"
 )
 
@@ -364,7 +365,7 @@ func stripeObjectRepr(object domain.RequestObject) string {
 	if id, ok := lookupString(object, "id"); ok {
 		parts = append(parts, "id="+id)
 	}
-	return "<" + strings.Join(parts, " ") + " at 0x0000000000000000> JSON: " + string(dto.PythonJSONDumpsSortedIndent(object, 2))
+	return "<" + strings.Join(parts, " ") + " at " + pystr.ObjectAddress + "> JSON: " + string(dto.PythonJSONDumpsSortedIndent(object, 2))
 }
 
 // lookupString is self.get(key) when it is a str.

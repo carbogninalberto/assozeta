@@ -218,5 +218,5 @@ The fixture has 127 cases (17 new) and Go reproduces these inputs instead of ref
   the stored value changes); a number or bool is saved as its `str()` (`5` -> `'5'`, `true` -> `'True'`, `1.5` ->
   `'1.5'`). Since long tail PR 4 (accepted divergences X13, X18) an object `id` is saved as StripeObject's `str()`
   (sorted JSON, indent 2) and a list as its `repr()`, each object as StripeObject.__repr__ writes it (the class
-  stripe-python 11.6.0 picks for its `object` string, that string, `id=<id>`) with the placeholder address
-  `0x0000000000000000`; `ErrStripeNotPorted` is gone (`stripe_routes_id_test.go`).
+  stripe-python 11.6.0 picks for its `object` string, that string, `id=<id>`) with `pystr.ObjectAddress`
+  (`0x7f0000000000`); `ErrStripeNotPorted` is gone (`stripe_routes_id_test.go`).

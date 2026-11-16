@@ -131,6 +131,11 @@ func labelKeys(labels []Value, columns []string) []string {
 		switch label := labels[i]; label.Kind {
 		case None:
 			keys[i] = "None"
+			if dtype == labelFloat {
+				// A float index reads None as NaN: get_loc(nan) matches it as
+				// it matches a NaN label.
+				keys[i] = "f:nan"
+			}
 		case Bool:
 			keys[i] = "n:0"
 			if label.Bool {
@@ -190,10 +195,23 @@ func typedLabels(sheet *opSheet, labels []Value) error {
 			}
 			cell.kind, cell.text = 'n', percentG(number, false)
 		case Float:
-			if math.IsNaN(label.Float) || math.IsInf(label.Float, 0) {
-				return ErrUnexpectedInput
+			switch {
+			case math.IsNaN(label.Float):
+				// pandas formats a NaN header with na_rep (''): the empty
+				// inline string the None label writes.
+				cell.kind = 's'
+			case math.IsInf(label.Float, 0):
+				// pandas formats an infinity with inf_rep ('inf', '-inf') as
+				// a str, written as a str label of that text is.
+				text, err := openpyxlString(i+1, pythonFloatRepr(label.Float), true)
+				if err != nil {
+					return err
+				}
+				sheet.rows[0].cells[i] = text
+				continue
+			default:
+				cell.kind, cell.text = 'n', percentG(label.Float, false)
 			}
-			cell.kind, cell.text = 'n', percentG(label.Float, false)
 		case Bool:
 			cell.kind, cell.text = 'b', "0"
 			if label.Bool {

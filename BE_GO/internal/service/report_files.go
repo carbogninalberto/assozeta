@@ -211,12 +211,8 @@ func mcpExportXLSXValue(value any) (xlsxexport.Value, error) {
 // cannot hold one.
 var mcpXLSXNonFinite = refusal.AppState("business MCP query result with a non-finite float")
 
-// errReportLabelNonFinite is a column label float() reads as an infinity: a
-// label comes from the request (the run's overrides) or the tool arguments,
-// and Django writes the header pandas formats ('inf'), so it is handed off.
-var errReportLabelNonFinite = refusal.New("business MCP non-finite export label not ported")
-
-// mcpNonFiniteNumber reports a JSON float literal float() reads as an infinity.
+// mcpNonFiniteNumber reports a JSON float literal float() reads as an infinity
+// (1e400 in the run's overrides).
 func mcpNonFiniteNumber(number json.Number) bool {
 	text := string(number)
 	if !strings.ContainsAny(text, ".eE") {
@@ -261,12 +257,16 @@ func mcpReportSheet(title string, data []any, labels domain.RequestObject) (xlsx
 				if whole, ok := new(big.Int).SetString(string(typed), 10); ok && !whole.IsInt64() {
 					label = xlsxexport.BigIntValue(whole.String()) // an int label of any size names the column
 				} else if mcpNonFiniteNumber(typed) {
-					// A label float() makes inf (1e400 in the run's overrides):
-					// pandas writes the header 'inf' and Django answers 200.
-					return xlsxexport.ReportSheet{}, errReportLabelNonFinite
+					// A label float() makes ±inf: pandas writes the header
+					// 'inf'/'-inf' and Django answers 200.
+					number, _ := strconv.ParseFloat(string(typed), 64)
+					label = xlsxexport.FloatValue(number)
 				} else if label, err = mcpExportXLSXValue(typed); err != nil {
 					return xlsxexport.ReportSheet{}, err
 				}
+			case float64:
+				// The tool arguments of the agent (NaN, Infinity, -Infinity).
+				label = xlsxexport.FloatValue(typed)
 			default:
 				return xlsxexport.ReportSheet{}, xlsxexport.DjangoFailure(labelFailureText(value))
 			}

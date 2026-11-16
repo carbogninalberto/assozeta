@@ -29,8 +29,8 @@ func TestStripeIDPythonStr(t *testing.T) {
 		json.Number("2"), "x", nil, true, json.Number("1.5"),
 		[]any{domain.RequestObject{{Name: "k", Value: "v"}}, []any{json.Number("1"), json.Number("2")}},
 	}
-	wantList := "[<StripeObject at 0x0000000000000000> JSON: {\n  \"a\": 1,\n  \"z\": true\n}, 2, 'x', None, True, 1.5, " +
-		"[<StripeObject at 0x0000000000000000> JSON: {\n  \"k\": \"v\"\n}, [1, 2]]]"
+	wantList := "[<StripeObject at 0x7f0000000000> JSON: {\n  \"a\": 1,\n  \"z\": true\n}, 2, 'x', None, True, 1.5, " +
+		"[<StripeObject at 0x7f0000000000> JSON: {\n  \"k\": \"v\"\n}, [1, 2]]]"
 	for name, tc := range map[string]struct {
 		value any
 		want  string
@@ -61,9 +61,9 @@ func TestStripeIDListReprIdentParts(t *testing.T) {
 		domain.RequestObject{{Name: "id", Value: json.Number("5")}, {Name: "object", Value: json.Number("7")}},
 		domain.RequestObject{{Name: "object", Value: "nope"}, {Name: "id", Value: "y"}},
 	}
-	want := "[<Charge charge id=x1 at 0x0000000000000000> JSON: {\n  \"id\": \"x1\",\n  \"object\": \"charge\"\n}, " +
-		"<StripeObject at 0x0000000000000000> JSON: {\n  \"id\": 5,\n  \"object\": 7\n}, " +
-		"<StripeObject nope id=y at 0x0000000000000000> JSON: {\n  \"id\": \"y\",\n  \"object\": \"nope\"\n}]"
+	want := "[<Charge charge id=x1 at 0x7f0000000000> JSON: {\n  \"id\": \"x1\",\n  \"object\": \"charge\"\n}, " +
+		"<StripeObject at 0x7f0000000000> JSON: {\n  \"id\": 5,\n  \"object\": 7\n}, " +
+		"<StripeObject nope id=y at 0x7f0000000000> JSON: {\n  \"id\": \"y\",\n  \"object\": \"nope\"\n}]"
 	got, err := stripeID(stripeapi.Object{{Name: "id", Value: id}})
 	if err != nil || got == nil || *got != want {
 		t.Fatalf("stripeID = %v, %v\nwant %q", got, err, want)
