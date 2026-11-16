@@ -508,9 +508,15 @@ func (s *StatisticReads) Report(ctx context.Context, identity domain.ResolvedIde
 		if !ok {
 			return StatisticResult{}, ErrStatisticPythonError
 		}
-		if parsed.Year() < 1000 {
-			// strftime('%Y') of a year below 1000 is platform dependent: not characterized.
-			return StatisticResult{}, domain.ErrStatisticNotPorted
+		// The view removes the time by round-tripping the datetime:
+		// datetime.strptime(current_date.strftime('%Y-%m-%d'), '%Y-%m-%d')
+		// (statistic_views.py:1215). strftime('%Y') is the platform C
+		// library's, but strptime needs exactly four digits, so a date
+		// before 1000 raises ValueError on glibc (the 500 page) and survives
+		// on macOS (the report goes on for that year).
+		roundTrip := fmt.Sprintf("%s-%02d-%02d", dto.PythonStrftimeYear(parsed.Year()), parsed.Month(), parsed.Day())
+		if _, ok = dto.PythonStrptimeDate(roundTrip); !ok {
+			return StatisticResult{}, ErrStatisticPythonError
 		}
 		current = parsed
 	}

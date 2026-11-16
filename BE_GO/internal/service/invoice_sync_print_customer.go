@@ -106,17 +106,16 @@ func invoiceSyncFattura(c domain.NewCustomerInvoice) fatturapa.Invoice {
 	}
 }
 
-// invoiceSyncDate is the view's default (today) or strptime('%Y-%m-%d') of the value.
+// invoiceSyncDate is the view's default (today) or strptime('%Y-%m-%d') of the
+// value. A date before 1000 is already accepted or rejected by CustomerAdd's
+// DateField re-read of strftime('%d/%m/%Y') (invoice_parties.go), which follows
+// the platform's C library like the XML's own strftime in internal/fatturapa.
 func invoiceSyncDate(object domain.RequestObject, name string, today time.Time) (time.Time, error) {
 	value, present := object.Lookup(name)
 	if !present || value == nil {
 		return today, nil
 	}
 	parsed, _ := dto.PythonStrptimeDate(value.(string))
-	if parsed.Year() < 1000 {
-		// strftime('%Y') of a year below 1000 is platform dependent (unpadded on glibc).
-		return time.Time{}, domain.ErrInvoicePartyNotPorted
-	}
 	return parsed, nil
 }
 

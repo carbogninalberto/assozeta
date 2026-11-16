@@ -7969,6 +7969,15 @@
      "multipart/form-data"
     ]
    }
+  },
+  {
+   "name": "statistic-reads-report-current-date-before-1000-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/statistic/report?currentDate=0999-03-05",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>"
   }
  ]
 }

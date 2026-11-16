@@ -118,19 +118,26 @@ are sorted by day.
 `IsAssociationUser` (association owners and collaborators) runs with the other
 permissions, so athletes get DRF's generic 403 even for OPTIONS. `currentDate`
 (`'%Y-%m-%d'`, unpadded fields accepted, empty means today) selects the
-balance-sheet year; an invalid date is a 500. `available_years` are the previous
-and current year starts from today. Per month (rotated from the owner's start
-month): non-archived subscriptions created in the year (`TruncMonth`; when two
-groups share a month number the first returned wins) and accepted ones; course
-groups by title over live course subscriptions of active courses created in the
-year (sized by the course count, padded with `''`/`0`); all-time status counts
-(index `status - 1`); paid, non-expense payments in range (payment date, or
-creation date when unpaid-dated) grouped by creation month (a later year
-overwrites the same month number); `Decimal or 0` paid/unpaid totals (a zero sum
-is the integer 0); subscription/course paid sums (`null` when none); payment and
-invoice counts; mean accepted per month and mean age (`int(days / 365.25)`, born
-date missing is 0) formatted `{:.2f}`, sex counts. An accepted subscription
-without an associate is a 500.
+balance-sheet year; an invalid date is a 500. The view then removes the time by
+round-tripping the parsed datetime through `strftime('%Y-%m-%d')` and
+`strptime` (`statistic_views.py:1215`); that follows the platform (X16): below
+year 1000 strftime is the C library's (glibc writes `'999-03-05'`, the BSD
+library on macOS `'0999-03-05'`) while strptime needs exactly four digits, so a
+pre-1000 `currentDate` is a 500 on Linux and a normal report on macOS. Go asks
+`dto.PythonStrftimeYear` and answers the same on the platform it runs on.
+`available_years` are the previous and current year starts from today. Per
+month (rotated from the owner's start month): non-archived subscriptions created
+in the year (`TruncMonth`; when two groups share a month number the first
+returned wins) and accepted ones; course groups by title over live course
+subscriptions of active courses created in the year (sized by the course count,
+padded with `''`/`0`); all-time status counts (index `status - 1`); paid,
+non-expense payments in range (payment date, or creation date when unpaid-dated)
+grouped by creation month (a later year overwrites the same month number);
+`Decimal or 0` paid/unpaid totals (a zero sum is the integer 0);
+subscription/course paid sums (`null` when none); payment and invoice counts;
+mean accepted per month and mean age (`int(days / 365.25)`, born date missing is
+0) formatted `{:.2f}`, sex counts. An accepted subscription without an associate
+is a 500.
 
 ## Not ported (refused before any work)
 
@@ -139,7 +146,6 @@ without an associate is a 500.
   instructor entries that are neither dicts nor lists of dicts.
 - `expiredPayments`: a stored `meta`/`course` JSON the reference parser does not accept is application state
   (`ErrStatisticUnreachable`, the 500 page): jsonb always holds valid JSON.
-- `currentDate` years below 1000 are refused with the stable 500 page.
 - Ordering left unspecified by Django (ties in `bestcourses`, carnets with equal
   `lessons_left`, medical certificates with equal `days_left`, lessons on the
   same day, several course titles in the report) is not pinned.
@@ -154,7 +160,9 @@ with a fraction is a state jsonb holds: `json.loads` reads it as inf and DRF's s
 after the view returned, so it is application state (`errStatisticRenderNonFinite`, the 500 page; case
 `statistic-reads-owner-expiring-carnet-meta-float-overflow-server-error`). A fraction that underflows is rendered as
 Python's float `0.0` (`-0.0` with a negative sign). Payment `course`/`meta` JSON nested deeper than the reference parser
-reads (Django stores and reads it) and a report year below 1000 stay refusals (`ErrStatisticNotPorted`).
+reads (Django stores and reads it) stays a refusal (`ErrStatisticNotPorted`). A report year below 1000 is ported and
+follows the platform (X16, see statistic/report above): 500 on Linux, a normal report on macOS; the case
+`statistic-reads-report-current-date-before-1000-server-error` states the glibc answer.
 
 ## Evidence (TDD)
 

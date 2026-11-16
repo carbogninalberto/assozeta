@@ -1180,6 +1180,16 @@ add('report-wrong-method', 'owner', P, 405, {'detail': 'Method "POST" not allowe
 add('report-options', 'owner', P, 200, {'name': 'Statistic Report', 'description': '', 'renders': ['application/json'],
                                         'parses': OPTIONS_PARSES}, method='OPTIONS')
 
+# Years before 1000. The view removes the time from the parsed currentDate by
+# round-tripping it: datetime.strptime(current_date.strftime('%Y-%m-%d'), '%Y-%m-%d')
+# (statistic_views.py:1215). CPython's strptime needs exactly four year digits, and
+# strftime('%Y') is the platform C library's: on glibc (the Linux production image
+# and CI) the year of 999 is written unpadded ('999-03-05') and the second strptime
+# raises, so the view answers its 500 page. On macOS the BSD library pads
+# ('0999-03-05') and the report goes on for that year. This case states the glibc
+# answer (owner decision X16: the server follows its platform).
+add('report-current-date-before-1000-server-error', 'owner', P + '?currentDate=0999-03-05', 500, SERVER)
+
 # Sanity of the authored oracle itself.
 naive = 0.0
 for value in widget_payments(OWN)['data']['current_month_payments']:

@@ -617,6 +617,30 @@ added('add-admin-impersonating-print-error', {**BASE, 'number': 505, 'payment_to
 add('add-number-taken', 'owner', ADD, 400, {'non_field_errors': ['Invoice already exists!']}, method='POST',
     body={**BASE, 'number': 501, 'prefix': 'FX'}, effect=nothing())
 
+# The same date with the year the server writes below 1000 ('999-03-05') does not
+# parse on either platform: the view's own strptime(value, '%Y-%m-%d') raises
+# ValueError before the serializer, so the answer is the 500 page with no write.
+add('add-transmitting-date-three-digit-year-server-error', 'owner', ADD, 500, SERVER, method='POST',
+    body={**BASE, 'number': 702, 'transmitting_date': '999-03-05'}, effect=nothing())
+
+# Dates before 1000. The view rewrites each date through
+# datetime.strptime(value, '%Y-%m-%d').strftime('%d/%m/%Y') and
+# CustomerInvoiceSerializer's DateField (input_formats ['%d/%m/%Y']) re-reads that
+# text with strptime, which needs exactly four year digits (invoice_views.py:878-881).
+# strftime('%Y') is the platform C library's: on glibc (the Linux production image
+# and CI) the year of 999 is written unpadded ('05/03/999'), the DateField rejects
+# it, and the add is a 400 before any write. On macOS the BSD library pads it
+# ('05/03/0999') and the add succeeds. These cases state the glibc answer (owner
+# decision X16: the server follows its platform).
+BEFORE_1000 = {'transmitting_date': ['Date has wrong format. Use one of these formats instead: DD/MM/YYYY.']}
+add('add-dates-before-1000-field-errors', 'owner', ADD, 400,
+    {**BEFORE_1000, 'payment_expiry_date': ['Date has wrong format. Use one of these formats instead: DD/MM/YYYY.']},
+    method='POST', body={**BASE, 'number': 700, 'transmitting_date': '0999-03-05', 'payment_expiry_date': '0999-06-15'},
+    effect=nothing())
+add('add-transmitting-date-before-1000-field-error', 'owner', ADD, 400, BEFORE_1000, method='POST',
+    body={**BASE, 'number': 701, 'transmitting_date': '0999-03-05', 'payment_expiry_date': '2031-06-15'},
+    effect=nothing())
+
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'invoice/<uid>/update and invoice-customers/add with their eager print tasks '
                                                             '(outbound GET to CURRENT_HOST, restore gate), payment, invoice, customer '
