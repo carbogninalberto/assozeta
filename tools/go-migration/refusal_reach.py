@@ -10,6 +10,11 @@ accepted in ``docs/architecture/go-migration/accepted-divergences.md``.
 Accepted divergence lines have the form::
 
     - <reason string> | <route or *> | <why>
+
+``--ceiling PATH`` turns the gate into a ratchet: the file holds
+``{"http": <int>}``, the accepted number of unaccepted HTTP/WebSocket rows, and
+the gate also fails when fewer rows remain so the ceiling is lowered in the same
+change that removes them.
 """
 import argparse
 import json
@@ -68,6 +73,27 @@ def read_accepted(path=ACCEPTED):
     return parse_accepted(path.read_text())
 
 
+def read_ceiling(path):
+    """Read the committed refusal ceiling: {"http": <int>}."""
+    path = Path(path)
+    try:
+        text = path.read_text()
+    except FileNotFoundError:
+        raise ValueError(f'{path}: no refusal ceiling file (expected {{"http": <int>}})')
+    except OSError as error:
+        raise ValueError(f'{path}: {error.strerror or error}')
+    try:
+        data = json.loads(text)
+    except ValueError as error:
+        raise ValueError(f'{path}: invalid JSON ({error})')
+    if not isinstance(data, dict):
+        raise ValueError(f'{path}: expected an object like {{"http": 0}}')
+    value = data.get('http')
+    if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+        raise ValueError(f'{path}: "http" must be a non-negative integer')
+    return value
+
+
 def violations(rows, accepted):
     """Return HTTP/WebSocket rows whose reason is not accepted for their route."""
     allowed = {(reason, None) for reason, route, _ in accepted if route is None}
@@ -88,6 +114,9 @@ def main(argv=None):
     parser.add_argument('--json', metavar='PATH', help='write the full report as JSON')
     parser.add_argument('--http', action='store_true',
                         help='exit 1 when an HTTP/WebSocket refusal is not accepted')
+    parser.add_argument('--ceiling', metavar='PATH',
+                        help='with --http, ratchet the unaccepted-row count against a '
+                             'ceiling file such as {"http": 0}')
     parser.add_argument('--accepted', metavar='PATH', default=str(ACCEPTED),
                         help='accepted-divergences file (default: %(default)s)')
     parser.add_argument('--input', metavar='PATH',
@@ -95,6 +124,10 @@ def main(argv=None):
     parser.add_argument('--be-go', metavar='PATH', default=str(BE_GO),
                         help='BE_GO module directory (default: %(default)s)')
     args = parser.parse_args(argv)
+
+    if args.ceiling and not args.http:
+        print('refusal_reach: --ceiling requires --http', file=sys.stderr)
+        return 2
 
     try:
         report = load_report(args.input) if args.input else run_tool(Path(args.be_go))
@@ -112,7 +145,30 @@ def main(argv=None):
         except (OSError, ValueError) as error:
             print(f'refusal_reach: {error}', file=sys.stderr)
             return 2
+        ceiling = None
+        if args.ceiling:
+            try:
+                ceiling = read_ceiling(args.ceiling)
+            except (OSError, ValueError) as error:
+                print(f'refusal_reach: {error}', file=sys.stderr)
+                return 2
         failing = violations(rows, accepted)
+        if ceiling is not None:
+            count = len(failing)
+            if count > ceiling:
+                for row in failing:
+                    print(f"{row.get('route')} | {row.get('reason')} | {row.get('site')}")
+                print(f'refusal_reach: {count} HTTP/WebSocket refusal(s) not accepted, '
+                      f'ceiling {ceiling}: a change added refusal rows', file=sys.stderr)
+                return 1
+            if count < ceiling:
+                print(f'refusal_reach: {count} HTTP/WebSocket refusal(s) not accepted, '
+                      f'below the ceiling {ceiling}: lower "http" in {args.ceiling} to {count}',
+                      file=sys.stderr)
+                return 1
+            print(f'refusal_reach: {count} HTTP/WebSocket refusal(s) not accepted '
+                  f'(ceiling {ceiling})')
+            return 0
         if failing:
             for row in failing:
                 print(f"{row.get('route')} | {row.get('reason')} | {row.get('site')}")

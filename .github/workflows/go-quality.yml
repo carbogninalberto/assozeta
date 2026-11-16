@@ -76,6 +76,8 @@ jobs:
           test -z "$(gofmt -l BE_GO)"
           go -C BE_GO vet ./...
           go -C BE_GO test -race -tags=redisdeadlineintegration ./internal/redisclient -count=1 -timeout=90s
+      - name: Refusal ratchet (HTTP and WebSocket)
+        run: python3 tools/go-migration/refusal_reach.py --http --ceiling tools/go-migration/refusal_ceiling.json
       - name: Assert the race shards cover every Go package exactly once
         run: |
           go -C BE_GO list ./... | sort > "$RUNNER_TEMP/race-all.txt"

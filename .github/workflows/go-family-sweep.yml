@@ -18,6 +18,10 @@ on:
         description: Sweep label; empty uses ci-<short sha>
         required: false
         default: ''
+      handoff:
+        description: Django handoff for the django-handoff family, on or off
+        required: false
+        default: 'on'
   # Manual dispatch needs this file on the default branch. Until then these branches run it on push:
   # three small families on two shards, or the whole suite when the head commit message holds [full-sweep].
   push:
@@ -39,6 +43,7 @@ jobs:
       label: ${{ steps.plan.outputs.label }}
       families: ${{ steps.plan.outputs.families }}
       shards: ${{ steps.plan.outputs.shards }}
+      handoff: ${{ steps.plan.outputs.handoff }}
       matrix: ${{ steps.plan.outputs.matrix }}
     steps:
       - uses: actions/checkout@v4
@@ -51,11 +56,13 @@ jobs:
           INPUT_FAMILIES: ${{ inputs.families }}
           INPUT_SHARDS: ${{ inputs.shards }}
           INPUT_LABEL: ${{ inputs.label }}
+          INPUT_HANDOFF: ${{ inputs.handoff }}
           HEAD_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
           families="$(printf '%s' "$INPUT_FAMILIES" | tr -d '[:space:]')"
           shards="${INPUT_SHARDS:-16}"
           label="${INPUT_LABEL:-ci-${GITHUB_SHA::7}}"
+          handoff="${INPUT_HANDOFF:-on}"
           if [ "$EVENT" = push ]; then
             case "$HEAD_MESSAGE" in
               *'[full-sweep]'*) ;;
@@ -64,6 +71,7 @@ jobs:
           fi
           printf '%s' "$label" | grep -Eqx '[A-Za-z0-9][A-Za-z0-9._-]*' || { echo "Invalid label: $label" >&2; exit 1; }
           printf '%s' "$shards" | grep -Eqx '[1-9][0-9]?' || { echo "Shards must be 1..99: $shards" >&2; exit 1; }
+          printf '%s' "$handoff" | grep -Eqx 'on|off' || { echo "Handoff must be on or off: $handoff" >&2; exit 1; }
           if [ -n "$families" ]; then
             printf '%s' "$families" | grep -Eqx '[a-z0-9_-]+(,[a-z0-9_-]+)*' || { echo "Invalid family list: $families" >&2; exit 1; }
             plan="$(python3 tools/go-migration/sweep.py --plan "$shards" --families "$families")"
@@ -74,6 +82,7 @@ jobs:
           {
             echo "label=$label"
             echo "families=$families"
+            echo "handoff=$handoff"
             echo "shards=$(printf '%s' "$plan" | python3 -c 'import json, sys; print(json.load(sys.stdin)["shards"])')"
             echo "matrix=$(printf '%s' "$plan" | python3 -c 'import json, sys; print(json.dumps(json.load(sys.stdin)["matrix"]))')"
           } >> "$GITHUB_OUTPUT"
@@ -174,6 +183,7 @@ jobs:
           SWEEP_LABEL: ${{ needs.plan.outputs.label }}
           SWEEP_FAMILIES: ${{ needs.plan.outputs.families }}
           SWEEP_SHARD: ${{ matrix.shard }}/${{ needs.plan.outputs.shards }}
+          HANDOFF_FAMILY: ${{ needs.plan.outputs.handoff }}
         # model_hooks_process runs fifteen families in a row, so a job gets 90 minutes.
         run: |
           set -- --label "$SWEEP_LABEL" --shard "$SWEEP_SHARD" --jobs 2 --timeout 5400

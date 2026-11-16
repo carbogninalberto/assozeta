@@ -1,5 +1,6 @@
 // Package cases has one refusal shape per analyzer case: a direct return, a
-// wrapped %w, an interface dispatch, and a sentinel used only with errors.Is.
+// wrapped %w, a wrap through append, an interface dispatch, and a sentinel used
+// only with errors.Is.
 package cases
 
 import (
@@ -12,6 +13,7 @@ import (
 var (
 	ErrDirect    = refusal.New("direct sentinel")
 	ErrWrapped   = refusal.New("wrapped sentinel")
+	ErrAppended  = refusal.New("appended sentinel")
 	ErrInterface = refusal.New("interface sentinel")
 	ErrOnlyCheck = refusal.New("only errors.Is")
 )
@@ -21,6 +23,12 @@ func Direct() error { return ErrDirect }
 
 // Wrapped returns a sentinel through fmt.Errorf %w.
 func Wrapped() error { return fmt.Errorf("wrapped: %w", ErrWrapped) }
+
+// Appended returns a sentinel wrapped through fmt.Errorf after the variadic
+// arguments were built with append.
+func Appended(format string, args ...any) error {
+	return fmt.Errorf("%w: "+format, append([]any{ErrAppended}, args...)...)
+}
 
 // Runner is the interface dispatched through.
 type Runner interface {
