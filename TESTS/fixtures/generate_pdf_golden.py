@@ -545,6 +545,18 @@ CASES += [
 ]
 
 
+# <unichar name="..."/>: the character, name alias or named sequence unicodedata.lookup returns, in a header, a cell and
+# the text before the table; an unknown name is a syntax error of the paragraph.
+UNICHAR_NAMES = ('<unichar name="EURO SIGN"/> <unichar name="LATIN CAPITAL LETTER A WITH MACRON AND GRAVE"/> '
+                 '<unichar name="LATIN SMALL LETTER E WITH GRAVE"/>')
+CASES += [
+    report('rt-unichar-names', ['<unichar name="EURO SIGN"/> Importo', 'Nome'],
+           [['<unichar name="LATIN CAPITAL LETTER A WITH MACRON AND GRAVE"/>', '<unichar name="LATIN SMALL LETTER E WITH GRAVE"/>']],
+           '<unichar name="EURO SIGN"/> Titolo', text_before=UNICHAR_NAMES),
+    report('rt-unichar-name-error', ['A'], [['<unichar name="zzz"/>']], 'Errore'),
+]
+
+
 # /balance-sheet: an income/expense description is any json.loads value; reportlab draws str(value), a list taken for a
 # list of flowables (which raises unless it flattens to nothing), in the sheet's portrait A3 layout with its header.
 DESCRIBED = [['A) ENTRATE', '', '', ''], ['Entrate Generali', '', '', ''],

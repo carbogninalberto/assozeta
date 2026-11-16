@@ -127,6 +127,10 @@ TEXTS = [
     '<unichar code=" 65 "/>', '<unichar code="0x1F600"/>', '<unichar code="233"/>', '<unichar code="0o101"/>', '<unichar code="-1"/>',
     '<unichar code="1_0"/>', '<unichar code="0x_41"/>', '<unichar code=""/>', '<unichar code>', '<unichar foo="1"/>',
     '<unichar name="LATIN SMALL LETTER A"/>', '<unichar name="zzz"/>', '<unichar name="LATIN SMALL LETTER A" code="65"/>',
+    '<unichar name="latin small letter a"/>', '<unichar name="LATIN CAPITAL LETTER A WITH MACRON AND GRAVE"/>',
+    '<unichar name="BYTE ORDER MARK"/>', '<unichar name="HANGUL SYLLABLE GAG"/>', '<unichar name="CJK UNIFIED IDEOGRAPH-4E00"/>',
+    '<unichar name="LATIN SMALL LETTER A" foo="1"/>', '<unichar name=""/>',
+    '<unichar name="EURO SIGN"/> e <unichar name="BLACK HEART SUIT"/>',
     'a<unichar code="65"/>b', '<b><unichar code="65"/></b>', '<greek><unichar code="65"/></greek>',
     '<font name="Courier">a</font>', '<font face="Times-Italic">a b</font>', '<b><font name="Times">x</font></b>',
     '<para font="Times-Bold">a</para>', '<font name="Courier-BoldOblique">a</font>', '<font name="Times-BoldItalic">a</font>',
@@ -164,8 +168,6 @@ PARA_REFUSED = ('indent', 'lindent', 'rindent', 'findent', 'justify', 'border', 
 def refusable(text):
     lowered = text.lower()
     if '<img' in lowered and not ('src="%s"' % IMAGE) in text:
-        return True
-    if '<unichar' in lowered and 'name' in lowered:
         return True
     digits = any(char.isdigit() and not char.isascii() for char in text)
     return (any('<' + tag in lowered or '</' + tag in lowered for tag in REFUSED) or ('<para' in lowered and any(word in lowered for word in PARA_REFUSED))

@@ -29,7 +29,6 @@ func TestInputsNotPorted(t *testing.T) {
 		"bullet":         {Header: header("None", "A <bullet>b</bullet> B")},
 		"para attribute": {Header: header("None", `<para align="justify" lindent="12">A</para>`)},
 		"text transform": {Header: header("None", `<para texttransform="uppercase">a</para>`)},
-		"unichar name":   {Header: header("None", `A <unichar name="LATIN SMALL LETTER A"/> B`)},
 		"png as jpeg":    {Header: header("data:image/jpeg;base64,iVBORw0KGgo=", "ASD")},
 		"cut jpeg":       {Header: header("data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBD", "ASD")},
 	} {
@@ -62,7 +61,8 @@ func TestInputsNotPorted(t *testing.T) {
 		t.Fatal(err)
 	}
 	ported := base
-	ported.Header = header("None", `<greek>abg</greek> <unichar code="0x263A"/> <font name="Times-Italic">a</font> <font name="Courier">b</font>`)
+	ported.Header = header("None", `<greek>abg</greek> <unichar code="0x263A"/> <unichar name="LATIN SMALL LETTER A"/> `+
+		`<unichar name="EURO SIGN"/> <font name="Times-Italic">a</font> <font name="Courier">b</font>`)
 	if _, err := ported.Build(time.Unix(946684800, 0)); err != nil {
 		t.Fatal(err)
 	}

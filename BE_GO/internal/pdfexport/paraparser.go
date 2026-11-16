@@ -10,6 +10,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/pystr"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pyunicodedata"
 )
 
 // _FK_TEXT, _FK_IMG, _FK_APPEND and _FK_BREAK of paragraph.py.
@@ -1065,25 +1066,26 @@ func (p *paraParser) startAnchor(attrs []htmlAttr) bool {
 	return p.unsupported()
 }
 
-// startUnichar is start_unichar: the character of the code attribute is data
-// of the paragraph, then the tag has to close empty. A name attribute needs
-// Python's unicodedata table and stays refused.
+// startUnichar is start_unichar: the character of the name or code attribute
+// is data of the paragraph, then the tag has to close empty.
 func (p *paraParser) startUnichar(attrs []htmlAttr) bool {
 	if len(p.stack) == 0 {
 		return p.fail("tag outside the paragraph")
 	}
 	order, values := dedupeAttrs(attrs)
 	code, hasCode := values["code"]
-	if _, hasName := values["name"]; hasName {
-		for _, name := range order {
-			if name != "name" && name != "code" {
-				return p.fail("invalid attribute name %s", name)
-			}
-		}
+	if name, hasName := values["name"]; hasName {
 		if hasCode {
 			return p.syntaxError("<unichar/> invalid with both name and code attributes")
 		}
-		return p.unsupported() // unicodedata.lookup
+		value, ok := pyunicodedata.Lookup(name.value)
+		if !ok {
+			return p.syntaxError("<unichar/> invalid name attribute\n\"%s\"", pythonAscii(name.value))
+		}
+		if !p.data(value) {
+			return false
+		}
+		return p.push("unichar", func(t *paraTag) { t.selfClosing = "unichar" })
 	}
 	if !hasCode {
 		for _, name := range order {
