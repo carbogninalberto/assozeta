@@ -352,14 +352,15 @@ func (s *CourseCalendars) Calendar(ctx context.Context, identity domain.Resolved
 	}
 	sync := false
 	if identity.ScopeUser != nil {
-		// The scope user is never a collaborator; the view's collaborator
-		// branch (re-resolving identity) is not ported.
+		user := identity.ScopeUser.ID
 		if identity.ScopeUser.Role == domain.RoleCollaborator {
-			// The identity resolver rewrites a collaborator target to its connected user, which is a collaborator only
-			// when the association import (import_service.py) kept such a chain from an archive.
-			return nil, domain.ErrCalendarNotPorted
+			// The scope user is a collaborator only when its own connected user is
+			// one (a chain the association import keeps from an archive). The view
+			// then re-resolves the identity, which changes nothing, and reads the
+			// credentials flag of the person before the tenant swap.
+			user = calendarActingUser(identity)
 		}
-		if sync, err = w.tx.GoogleSyncEnabled(ctx, identity.ScopeUser.ID); err != nil {
+		if sync, err = w.tx.GoogleSyncEnabled(ctx, user); err != nil {
 			return nil, err
 		}
 	}
@@ -388,6 +389,19 @@ func (s *CourseCalendars) Calendar(ctx context.Context, identity domain.Resolved
 		"course", calendarObject("title", calendarText(course.Title)),
 		"sport_association", calendarObject("denomination", calendarText(card.Denomination), "logo", calendarText(card.Logo)),
 		"google_calendar_id", calendarText(course.GoogleCalendarID), "google_sync_enabled", sync)), nil
+}
+
+// calendarActingUser is acting_user(request): the effective user, else the
+// original user (the actor), else the scope user.
+func calendarActingUser(identity domain.ResolvedIdentity) string {
+	switch {
+	case identity.Effective != nil:
+		return identity.Effective.ID
+	case identity.Actor != nil:
+		return identity.Actor.ID
+	default:
+		return identity.ScopeUser.ID
+	}
 }
 
 // calendarDescribe adds "<course title> - <event title>" to events whose

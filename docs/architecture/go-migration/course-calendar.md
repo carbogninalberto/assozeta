@@ -20,7 +20,14 @@ receivers or save/delete overrides: the effects are rows, auditlog entries and i
 - The first registry's `status` and `events` (draft and `[]` without a registry); events that have
   `extendedProps` without `description` gain `"<course title> - <event title>"` (a non-dict event or
   `extendedProps` is a 500). `sport_association` is the course association's denomination and logo;
-  `google_sync_enabled` is the scope user's stored Google credentials (false when anonymous).
+  `google_sync_enabled` is the stored Google credentials of the scope user (false when anonymous).
+- A collaborator's scope user is its connected user, which is read directly. When that user is itself
+  a collaborator (a chain the association import keeps from an archive), the view takes its
+  collaborator branch: it re-resolves the identity, which returns at once because the request is
+  already resolved, and reads `acting_user(request)` — the person before the tenant swap, i.e. the
+  effective user, else the original user (the actor), else the scope user. So
+  `google_sync_enabled` is that person's own credentials flag, not the connected user's. The
+  registry gate ran earlier on the same person's role and stored permissions.
 
 ## calendar_update (POST): not atomic
 
@@ -120,13 +127,12 @@ and the scope user's instructors, and the calendar is saved: `{'message': 'Event
   starts.
 - Stored DELETE events that are not a list, or integer event ids in stored events.
 - Datetimes whose UTC instant falls outside years 1..9999 (Python accepts some with an offset).
-- The `calendar` collaborator branch (`ErrCalendarNotPorted`): the identity resolver rewrites a collaborator target to
-  its connected user, which is itself a collaborator only when the association import kept such a chain from an archive.
 - `calendar/events/export` (iCalendar rendering with a request-time `dtstamp`): Go has no route.
 
-Since long-tail PR 3 (agent B) the `calendar` collaborator branch is application state (`ErrCalendarUnreachable`): the
-identity resolver swaps a collaborator for its owner. `domain.ErrCalendarNotPorted` has no site left and is deleted. The
-stored event shapes, the datetimes outside years 1..9999 and the missing export route stay refusals.
+The `calendar` collaborator branch is ported rather than refused: a scope user that is a collaborator
+answers the acting person's `google_sync_enabled` (see `calendar (GET)` above), and
+`domain.ErrCalendarNotPorted` has no site left and is deleted. The stored event shapes, the datetimes
+outside years 1..9999 and the missing export route stay refusals.
 
 ## Evidence (TDD)
 
@@ -160,4 +166,14 @@ Lesson details (`get_lesson`, 164 cases):
 
 ## Round t3courses
 
-Integer/boolean event ids, list/text extended properties, non-text and list starts (Python sort order), stored events that are an empty object or text, and instants outside years 1..9999 (row kept, no audit entry, reads fail; the family harness now reads and cleans such rows). 202 cases GREEN on four transports (run 43085954222). Mutation (range check disabled) CAUGHT by `update-reminder-outside-year-range-is-stored`.
+Integer/boolean event ids, list/text extended properties, non-text and list starts (Python sort order), stored events that are an empty object or text, and instants outside years 1..9999 (row kept, no audit entry, reads fail; the family harness now reads and cleans such rows). The family then had 202 cases, GREEN on four transports (run 43085954222). Mutation (range check disabled) CAUGHT by `update-reminder-outside-year-range-is-stored`.
+
+## Round lt4c
+
+The `calendar` collaborator branch (203 cases). The family seeds `chain_collaborator`: a custom-role
+collaborator with `association.courses.read` whose connected user is the full collaborator, and whose
+own Google credentials differ from that user's. `calendar-collaborator-chain-effective-sync` reads the
+calendar of `alpha` as that person: 200 with `google_sync_enabled` true (the acting person's flag; the
+connected user has none) and the same body as `calendar-full-collaborator`. Go reads
+`identity.Effective` (else the actor) for a collaborator scope user; the previous
+`domain.ErrCalendarNotPorted` refusal is gone.
