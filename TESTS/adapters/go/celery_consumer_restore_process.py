@@ -136,6 +136,8 @@ SCENARIOS = [
              expect={'state': 'failed', 'error': 'Conferma esplicitamente l’assenza degli allegati indicati.'}),
     Scenario('confirmed missing attachments are restored without them', 'missing-media', op={'allow_missing_media': True},
              expect={'state': 'completed'}),
+    Scenario('a backslash in an attachment name is staged as an underscore', 'backslash-media',
+             expect={'state': 'completed'}),
     Scenario('circular folders roll the replacement back', 'circular-folders', expect={'state': 'failed', 'error': GENERIC}),
     Scenario('a value the database rejects is handed off', 'db-reject', handoff=True,
              expect={'state': 'failed', 'error': GENERIC}),
@@ -303,6 +305,16 @@ def export_archive():
         return stream.read()
 
 
+def renamed(data, old, new):
+    """A copy of the archive with member ``old`` stored as ``new``."""
+    source = zipfile.ZipFile(io.BytesIO(data))
+    out = io.BytesIO()
+    with zipfile.ZipFile(out, 'w', zipfile.ZIP_DEFLATED) as target:
+        for info in source.infolist():
+            target.writestr(new if info.filename == old else info.filename, source.read(info))
+    return out.getvalue()
+
+
 def build_archives():
     truncate()
     seed_association(current=False)
@@ -334,6 +346,10 @@ def build_archives():
             return json.dumps(data, indent=2, ensure_ascii=False).encode()
         return body
     archives['missing-media'] = rewrite(good, missing)
+
+    attachment = [m for m in media if m.endswith('/allegato.txt')]
+    assert len(attachment) == 1, media
+    archives['backslash-media'] = renamed(good, attachment[0], attachment[0].replace('allegato.txt', 'alle\\gato.txt'))
 
     def circular(records):
         by_name = {r['name']: r for r in records}

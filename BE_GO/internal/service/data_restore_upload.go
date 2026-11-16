@@ -67,10 +67,12 @@ func (s *DataRestore) acceptUpload(ctx context.Context, user string, config *dom
 		return dataRestoreError(400, failure.message), nil
 	}
 	if err != nil {
-		return nil, domain.ErrDataRestoreNotPorted
+		// errRestoreReaderRaised is Django's 500 page; a remaining refusal is
+		// handed off as is.
+		return nil, err
 	}
 	defer archive.Close()
-	preview, err := archive.summary(run)
+	preview, err := archive.summary()
 	if err != nil {
 		// validation already ran skipped_records on the same archive; every count is an int.
 		return nil, domain.ErrDataRestoreUnreachable
@@ -147,10 +149,9 @@ func (s *DataRestore) storeUpload(ctx context.Context, name string, content []by
 	return s.archives.Uploads.Put(ctx, key, content, kind, encoding)
 }
 
-// summary is Archive.summary() for the archives the port validates: legacy
-// invoices and tutor reassignments are refused during validation, so their
-// counts are zero.
-func (a *restoreArchive) summary(run *consumerImportRun) (domain.RequestObject, error) {
+// summary is Archive.summary() after validate(): the manifest's skipped
+// sections, the record and media counts, and the normalizers' reports.
+func (a *restoreArchive) summary() (domain.RequestObject, error) {
 	denomination := any("")
 	if associations := a.records["SportAssociation"]; len(associations) == 1 {
 		if value, ok := importGet(associations[0], "denomination"); ok {
@@ -158,15 +159,11 @@ func (a *restoreArchive) summary(run *consumerImportRun) (domain.RequestObject, 
 		}
 	}
 	exportDate, _ := importGet(a.manifest, "export_date")
-	skipped, err := run.skippedRecords(a.manifest)
-	if err != nil {
-		return nil, err
-	}
 	skippedObject := domain.RequestObject{}
-	for _, item := range skipped {
+	for _, item := range a.skipped {
 		count, ok := item.Value.(int64)
 		if !ok {
-			return nil, errConsumerImportUnsupported
+			return nil, domain.ErrDataRestoreUnreachable
 		}
 		skippedObject = append(skippedObject, domain.RequestField{Name: item.Key, Value: int64ToNumber(int(count))})
 	}
@@ -182,11 +179,19 @@ func (a *restoreArchive) summary(run *consumerImportRun) (domain.RequestObject, 
 			{Name: "field", Value: relation.field}, {Name: "target_model", Value: relation.targetModel},
 			{Name: "target_id", Value: relation.target}})
 	}
+	reassignments := make([]any, 0, len(a.tutorReassignments))
+	conflicts := 0
+	for _, detail := range a.tutorReassignments {
+		if _, present := importGet(detail, "original_tax_code"); present {
+			conflicts++
+		}
+		reassignments = append(reassignments, detail)
+	}
 	return domain.RequestObject{{Name: "association", Value: denomination}, {Name: "export_date", Value: exportDate},
 		{Name: "skipped_records", Value: skippedObject}, {Name: "records", Value: int64ToNumber(records)},
 		{Name: "files", Value: int64ToNumber(len(a.media))}, {Name: "missing_media", Value: int64ToNumber(a.missingMedia)},
-		{Name: "legacy_invoices", Value: int64ToNumber(0)}, {Name: "reassigned_tutors", Value: int64ToNumber(0)},
-		{Name: "tutor_tax_code_conflicts", Value: int64ToNumber(0)}, {Name: "tutor_reassignment_details", Value: []any{}},
+		{Name: "legacy_invoices", Value: int64ToNumber(a.legacyInvoices)}, {Name: "reassigned_tutors", Value: int64ToNumber(len(a.reassignedTutors))},
+		{Name: "tutor_tax_code_conflicts", Value: int64ToNumber(conflicts)}, {Name: "tutor_reassignment_details", Value: reassignments},
 		{Name: "missing_relations", Value: int64ToNumber(len(a.missingRelations))},
 		{Name: "missing_relation_details", Value: details}}, nil
 }

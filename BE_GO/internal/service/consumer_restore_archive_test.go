@@ -37,9 +37,9 @@ func TestRestoreUUIDText(t *testing.T) {
 			t.Errorf("UUID(%q) error = %v, want damaged", text, err)
 		}
 	}
-	// int(hex, 16) accepts a 0x prefix, signs and underscores: handed off.
-	if _, err := restoreUUIDText("0x345678123456781234567812345678"); !errors.Is(err, errConsumerImportUnsupported) {
-		t.Errorf("0x prefix error = %v", err)
+	// int(hex, 16) accepts a 0x prefix, signs and underscores, as uuid.UUID does.
+	if got, err := restoreUUIDText("0x345678123456781234567812345678"); err != nil || got != "00345678-1234-5678-1234-567812345678" {
+		t.Errorf("0x prefix = %q, %v", got, err)
 	}
 }
 
@@ -62,7 +62,7 @@ func TestRestoreToPython(t *testing.T) {
 		{"date", false, "2026-02-29", errRestoreDamaged}, {"date", false, "2024-02-29", nil}, {"date", false, number("1"), errRestoreDamaged},
 		{"datetime", false, "2026-01-02T03:04:05.123456+00:00", nil}, {"datetime", false, "2026-13-02T03:04:05", errRestoreDamaged},
 		{"datetime", false, "2026-01-02", nil}, {"time", false, "09:30:15", nil}, {"time", false, "25:00", errRestoreDamaged},
-		{"decimal", false, "10.50", nil}, {"decimal", false, "abc", errRestoreDamaged}, {"decimal", false, "NaN", nil},
+		{"decimal", false, "10.50", nil}, {"decimal", false, "abc", errRestoreDamaged}, {"decimal", false, "NaN", errRestoreDamaged},
 		{"decimal", false, number("1.5"), nil}, {"decimal", false, []any{}, errRestoreDamaged},
 		{"text", false, []any{}, nil}, {"json", false, "x", nil},
 	}

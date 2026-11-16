@@ -30,7 +30,10 @@ Run with ``python3 -I``.
 """
 import base64
 import copy
+import io
 import json
+import struct
+import zipfile
 from pathlib import Path
 
 OUTPUT = Path(__file__).with_name('data_restore_http.json')
@@ -565,18 +568,21 @@ ARCHIVE_LINK = 'd7000000-0000-4000-8000-00000000e005'
 DAMAGED = 'Il backup ZIP è danneggiato o non rispetta il formato Bakney.'
 
 
-def archive(*, rows=None, members=None, manifest=None, drop=(), associations=None, raw=None):
+def archive(*, rows=None, members=None, manifest=None, drop=(), associations=None, raw=None,
+            denomination='Associazione archiviata'):
     if raw is not None:
         return {'raw_b64': base64.b64encode(raw).decode()}
-    return {'association': ARCHIVE_ASSOCIATION, 'denomination': 'Associazione archiviata', 'owner': ARCHIVE_OWNER,
+    return {'association': ARCHIVE_ASSOCIATION, 'denomination': denomination, 'owner': ARCHIVE_OWNER,
             'export_date': '2026-03-30T10:00:00+00:00', 'rows': rows or {}, 'members': members or {},
             'manifest': manifest or {}, 'drop': list(drop), 'associations': associations}
 
 
-def summary(*, records=2, files=0, missing_media=0, relations=()):
-    return {'association': 'Associazione archiviata', 'export_date': '2026-03-30T10:00:00+00:00', 'skipped_records': {},
-            'records': records, 'files': files, 'missing_media': missing_media, 'legacy_invoices': 0, 'reassigned_tutors': 0,
-            'tutor_tax_code_conflicts': 0, 'tutor_reassignment_details': [], 'missing_relations': len(relations),
+def summary(*, records=2, files=0, missing_media=0, relations=(), association='Associazione archiviata', reassigned=0,
+            conflicts=0, reassignments=(), legacy=0):
+    return {'association': association, 'export_date': '2026-03-30T10:00:00+00:00', 'skipped_records': {},
+            'records': records, 'files': files, 'missing_media': missing_media, 'legacy_invoices': legacy,
+            'reassigned_tutors': reassigned, 'tutor_tax_code_conflicts': conflicts,
+            'tutor_reassignment_details': list(reassignments), 'missing_relations': len(relations),
             'missing_relation_details': list(relations)}
 
 
@@ -656,6 +662,16 @@ MEDIA = summary(records=4, files=1, missing_media=1)
 upload('upload-archive-with-media', 'owner', 201, new_public(MEDIA),
        archive(rows={'Document': DOCUMENTS}, members={f'files/documents/{ARCHIVE_MEDIA_DOCUMENT}/foto.jpg': 'jpeg'}),
        objects_after=['restores/$new/upload/archive.zip'], created=created_receipt(MEDIA))
+upload('upload-archive-backslash-media', 'owner', 201, new_public(MEDIA),
+       archive(rows={'Document': DOCUMENTS}, members={f'files/documents/{ARCHIVE_MEDIA_DOCUMENT}/foto\\bis.jpg': 'jpeg'}),
+       objects_after=['restores/$new/upload/archive.zip'], created=created_receipt(MEDIA))
+for case_name, member in (('backslash-folder', 'data\\extra.json'),
+                          ('backslash-parent', f'files/documents/{ARCHIVE_MEDIA_DOCUMENT}/..\\foto.jpg'),
+                          ('backslash-root', f'files/documents/{ARCHIVE_MEDIA_DOCUMENT}/\\foto.jpg'),
+                          ('backslash-drive', f'files/documents/{ARCHIVE_MEDIA_DOCUMENT}/c:\\foto.jpg'),
+                          ('drive-digit', '1:foto.jpg')):
+    upload(f'upload-archive-{case_name}', 'owner', 400, error(f'Percorso non consentito nel backup: {member}.'),
+           archive(rows={'Document': DOCUMENTS}, members={member: 'jpeg'}))
 RELATION = {'model': 'SportAssociationDocumentsArchive', 'record_id': ARCHIVE_LINK, 'field': 'folder_id', 'target_model': 'Folder',
             'target_id': '4242'}
 LINKED = summary(records=4, missing_media=1, relations=[RELATION])
@@ -665,9 +681,172 @@ upload('upload-archive-missing-relation', 'admin', 201, new_public(LINKED),
             'document_id': ARCHIVE_DOCUMENT, 'date': '2026-03-01', 'folder_id': 4242}]}),
        objects_after=['restores/$new/upload/archive.zip'], created=created_receipt(LINKED, owner='admin'))
 
+# ---------------------------------------------------------------------------
+# Archive values outside the exported subset. Django's outcomes are the
+# reference: str() accepts every JSON scalar and container, an IntegerField's
+# int() raises OverflowError for an infinity (Django's 500 page), and a UUID
+# or date field rejects the rest with the damaged-archive RestoreError.
+# ---------------------------------------------------------------------------
+ARCHIVE_UUID_1, ARCHIVE_UUID_2 = 'd7000000-0000-4000-8000-00000000f001', 'd7000000-0000-4000-8000-00000000f002'
+ARCHIVE_FOREIGN = 'd7000000-0000-4000-8000-00000000f0ff'
+
+
+def document(**fields):
+    return {'document_id': ARCHIVE_DOCUMENT, 'filename': 'scheda.pdf', 'filepath': '', 'file_size_bytes': 1, **fields}
+
+
+upload('upload-archive-text-containers', 'owner', 201, new_public(summary(records=3, missing_media=1)),
+       archive(rows={'Document': [document(filename=['scheda'], filepath={'archived': True})]}))
+upload('upload-archive-text-nan', 'owner', 201, new_public(summary(records=3)),
+       archive(rows={'Document': [document(filename=float('nan'))]}))
+upload('upload-archive-text-huge-int', 'owner', 201, new_public(summary(records=3)),
+       archive(rows={'Document': [document(filename=10 ** 400)]}))
+upload('upload-archive-text-lone-surrogate', 'owner', 201, new_public(summary(records=3)),
+       archive(rows={'Document': [document(filename='\ud800')]}))
+upload('upload-archive-int-nan', 'owner', 400, error(DAMAGED),
+       archive(rows={'Document': [document(file_size_bytes=float('nan'))]}))
+upload('upload-archive-int-infinity', 'owner', 500, SERVER,
+       archive(rows={'Document': [document(file_size_bytes=float('inf'))]}))
+upload('upload-archive-uuid-float', 'owner', 400, error(DAMAGED), archive(rows={'Document': [document(token=1.5)]}))
+upload('upload-archive-date-basic', 'owner', 201, new_public(summary(records=3)),
+       archive(rows={'Document': [document(creation_date='20260102')]}))
+upload('upload-archive-version-int', 'owner', 400,
+       error('Formato non supportato. Carica un export ZIP Bakney versione 1.0.0.'), archive(manifest={'version': 7}))
+upload('upload-archive-errors-nan', 'owner', 400,
+       error('Il backup segnala errori di esportazione. Genera un export completo.'), archive(manifest={'errors': float('nan')}))
+upload('upload-archive-errors-short-circuit', 'owner', 400,
+       error('Il backup segnala errori di esportazione. Genera un export completo.'),
+       archive(manifest={'errors': ['Documento mancante'], 'statistics': []}))
+upload('upload-archive-spec-name-int', 'owner', 400, error('Modello o percorso non supportato nel backup: 7.'),
+       archive(manifest={'models_exported': [{'name': 7, 'file': 'x', 'count': 0}]}))
+upload('upload-archive-spec-name-nan', 'owner', 400, error('Modello o percorso non supportato nel backup: nan.'),
+       archive(manifest={'models_exported': [{'name': float('nan'), 'file': 'x', 'count': 0}]}))
+upload('upload-archive-spec-name-list', 'owner', 400, error(DAMAGED),
+       archive(manifest={'models_exported': [{'name': ['x'], 'file': 'x', 'count': 0}]}))
+upload('upload-archive-specs-null', 'owner', 400, error(DAMAGED), archive(manifest={'models_exported': None}))
+upload('upload-archive-denomination-list', 'owner', 201, new_public(summary(association=['x'])),
+       archive(denomination=['x']))
+upload('upload-archive-folder-infinity', 'owner', 500, SERVER,
+       archive(rows={'Folder': [{'id': float('inf'), 'name': 'cartella', 'sport_association_id': ARCHIVE_ASSOCIATION}]}))
+upload('upload-archive-folder-parent-float', 'owner', 400, error('Relazione mancante: Folder.parent.'),
+       archive(rows={'Folder': [{'id': 7, 'name': 'cartella', 'sport_association_id': ARCHIVE_ASSOCIATION, 'parent_id': 1.9}]}))
+TUTOR_REASSIGNMENT = {'associate_id': ARCHIVE_UUID_2, 'source_association_id': ARCHIVE_FOREIGN, 'name': ''}
+TUTOR_CONFLICT = {'associate_id': ARCHIVE_UUID_2, 'source_association_id': None, 'name': 'Vecchio Tutore',
+                  'original_tax_code': 'aaa', 'conflicting_associate_id': ARCHIVE_UUID_1}
+upload('upload-archive-tutor-reassign', 'owner', 201,
+       new_public(summary(records=5, reassigned=1, reassignments=[TUTOR_REASSIGNMENT])),
+       archive(rows={'Associate': [{'associate_id': ARCHIVE_UUID_1, 'sport_association_id': ARCHIVE_ASSOCIATION, 'tax_code': 'aaa'},
+                                    {'associate_id': ARCHIVE_UUID_2, 'sport_association_id': ARCHIVE_FOREIGN, 'tax_code': 'bbb'}],
+                     'AssociateTutorRelation': [{'id': 1, 'associate_id': ARCHIVE_UUID_1, 'tutor_id': ARCHIVE_UUID_2}]}))
+upload('upload-archive-tutor-tax-conflict', 'owner', 201,
+       new_public(summary(records=4, conflicts=1, reassignments=[TUTOR_CONFLICT])),
+       archive(rows={'Associate': [{'associate_id': ARCHIVE_UUID_1, 'sport_association_id': ARCHIVE_ASSOCIATION, 'tax_code': 'aaa'},
+                                    {'associate_id': ARCHIVE_UUID_2, 'tax_code': 'aaa',
+                                     'first_name': 'Vecchio', 'last_name': 'Tutore'}]}))
+upload('upload-archive-tutor-duplicate', 'owner', 400,
+       error(f'Codice fiscale duplicato tra le anagrafiche attive: {ARCHIVE_UUID_2}.'),
+       archive(rows={'Associate': [{'associate_id': ARCHIVE_UUID_1, 'sport_association_id': ARCHIVE_ASSOCIATION, 'tax_code': 'aaa'},
+                                    {'associate_id': ARCHIVE_UUID_2, 'sport_association_id': ARCHIVE_ASSOCIATION, 'tax_code': 'AAA'}]}))
+
+# ---------------------------------------------------------------------------
+# ZIP reader exceptions. Each raw archive holds only manifest.json: every
+# error below happens before a record file is read.
+# ---------------------------------------------------------------------------
+
+
+def minimal_zip(compression=zipfile.ZIP_DEFLATED, members=(('manifest.json', b'{}'),)):
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, 'w', compression) as archive:
+        for name, content in members:
+            info = zipfile.ZipInfo(name, date_time=(2026, 3, 30, 10, 0, 0))
+            info.compress_type = compression
+            archive.writestr(info, content)
+    return buffer.getvalue()
+
+
+def member_offset(data, name):
+    with zipfile.ZipFile(io.BytesIO(data)) as archive:
+        info = archive.getinfo(name)
+    return info, info.header_offset + 30 + len(info.filename.encode()) + len(info.extra)
+
+
+def corrupt_member(data, name):
+    out = bytearray(data)
+    _, start = member_offset(data, name)
+    for index in range(start + 2, start + 8):
+        out[index] ^= 0xFF
+    return bytes(out)
+
+
+def central_entries(data):
+    with zipfile.ZipFile(io.BytesIO(data)) as archive:
+        start = archive.start_dir
+    out, index = [], start
+    while index + 46 <= len(data) and data[index:index + 4] == b'PK\x01\x02':
+        name_length = struct.unpack('<H', data[index + 28:index + 30])[0]
+        extra_length = struct.unpack('<H', data[index + 30:index + 32])[0]
+        comment_length = struct.unpack('<H', data[index + 32:index + 34])[0]
+        out.append((index, bytes(data[index + 46:index + 46 + name_length]).decode()))
+        index += 46 + name_length + extra_length + comment_length
+    return out
+
+
+def encrypted_member(data, name):
+    out = bytearray(data)
+    info, _ = member_offset(data, name)
+    struct.pack_into('<H', out, info.header_offset + 6, struct.unpack('<H', out[info.header_offset + 6:info.header_offset + 8])[0] | 1)
+    for index, entry in central_entries(data):
+        if entry == name:
+            struct.pack_into('<H', out, index + 8, struct.unpack('<H', out[index + 8:index + 10])[0] | 1)
+    return bytes(out)
+
+
+def huge_declared_size(data, name):
+    out = bytearray(data)
+    for index, entry in central_entries(data):
+        if entry == name:
+            struct.pack_into('<I', out, index + 24, 0xFFFFFFFF)
+    return bytes(out)
+
+
+def central_header(name, offset, size):
+    encoded = name.encode()
+    return struct.pack('<4s4B4HL2L5H2L', b'PK\x01\x02', 20, 0, 20, 0, 0, 0, 0, 0x21, 0, size, size,
+                       len(encoded), 0, 0, 0, 0, 0, offset) + encoded
+
+
+def truncated_member():
+    """manifest.json declares more stored bytes than the file holds: ZipExtFile._read2 raises EOFError."""
+    local = struct.pack('<4s2B4HL2L2H', b'PK\x03\x04', 20, 0, 0, 0, 0, 0x21, 0, 1000, 1000,
+                        len(b'manifest.json'), 0) + b'manifest.json'
+    central = central_header('manifest.json', 0, 1000) + central_header('aaa.txt', 0, 1000)
+    start = len(local) + 1
+    end = struct.pack('<4s4H2LH', b'PK\x05\x06', 0, 0, 2, 2, len(central), start, 0)
+    return local + b'{' + central + end
+
+
+upload('upload-archive-corrupt-deflate', 'owner', 400, error(DAMAGED), archive(raw=corrupt_member(minimal_zip(), 'manifest.json')))
+upload('upload-archive-bzip2-corrupt', 'owner', 500, SERVER,
+       archive(raw=corrupt_member(minimal_zip(zipfile.ZIP_BZIP2), 'manifest.json')))
+upload('upload-archive-encrypted-member', 'owner', 400,
+       error('Il backup contiene un file cifrato non supportato: manifest.json.'),
+       archive(raw=encrypted_member(minimal_zip(), 'manifest.json')))
+upload('upload-archive-truncated-member', 'owner', 500, SERVER, archive(raw=truncated_member()))
+upload('upload-archive-huge-declared-size', 'owner', 400,
+       error('Il file manifest.json è troppo grande: 4.00 GiB non compressi; limite 512.00 MiB (DATA_RESTORE_MAX_JSON_BYTES).'),
+       archive(raw=huge_declared_size(minimal_zip(), 'manifest.json')))
+upload('upload-archive-duplicate-member', 'owner', 400, error('File duplicato nel backup: manifest.json.'),
+       archive(raw=minimal_zip(members=(('manifest.json', b'{}'), ('manifest.json', b'{}')))))
+
 assert len({c['name'] for c in cases}) == len(cases)
-OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'data restore administration (overview, upload admission, '
-                              'recovery backups, receipts, actions, downloads)', 'ids': IDS, 'instance': INSTANCE,
-                              'other_association': OTHER_ASSOCIATION, 'max_upload_bytes': MAX_UPLOAD, 'receipts': SEED,
-                              'cases': cases}, ensure_ascii=False, indent=1) + '\n')
+def json_text(value):
+    """JSON with lone surrogates escaped: Python json.dumps would write them raw and fail UTF-8 encoding."""
+    text = json.dumps(value, ensure_ascii=False, indent=1)
+    return ''.join(f'\\u{ord(character):04x}' if 0xd800 <= ord(character) <= 0xdfff else character for character in text)
+
+
+OUTPUT.write_text(json_text({'matrix_version': 1, 'scope': 'data restore administration (overview, upload admission, '
+                             'recovery backups, receipts, actions, downloads)', 'ids': IDS, 'instance': INSTANCE,
+                             'other_association': OTHER_ASSOCIATION, 'max_upload_bytes': MAX_UPLOAD, 'receipts': SEED,
+                             'cases': cases}) + '\n')
 print(len(cases), 'cases')
