@@ -370,7 +370,8 @@ func (s *SubscriptionCreates) saveAssociateByID(ctx context.Context, tx domain.S
 		}
 		// The default manager hides the previous state: every field against None.
 		created := map[string][2]string{"sport_association": {"None", subscriptionEditValue(row.AssociationID)}}
-		index, path, err := s.associateUpdateIndex(ctx, tx, audit, row, created)
+		// Indexed from the stored row, which the default manager still hides.
+		index, path, err := s.associateUpdateIndex(ctx, tx, audit, old, created)
 		if err != nil {
 			return nil, err
 		}
