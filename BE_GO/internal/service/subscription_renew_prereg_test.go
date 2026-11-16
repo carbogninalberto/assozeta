@@ -11,15 +11,16 @@ import (
 
 // A preregistration that names the subscription it renews (preregistration true
 // with a subscription_id) replaces the person, certificate and data from that
-// subscription: subscription/renew and the associates-draft approve run the
-// input refusal after the fill, as subscription/add does. These tests pin that
-// the pre-fill refusal no longer answers it, and that the fill's own 400 does.
+// subscription before create_subscription reads them, as subscription/add
+// does. This test pins that the fill runs first, and that the fill's own 400
+// answers a missing source.
 
 const preregRenewAssociation = "a1000000-0000-4000-8000-000000958001"
 const preregRenewSource = "a1000000-0000-4000-8000-000000958002"
 
-// nonASCIIExpiration is a certificate date strptime accepts beyond ASCII: the
-// input refusal refuses it before anything is read.
+// nonASCIIExpiration is a certificate date whose month strptime does not read
+// (its %m is ASCII only): create_subscription swallows it and writes no
+// certificate.
 const nonASCIIExpiration = "٢٠٢٧-٠٣-٣١"
 
 // preregRenewTransaction is the transaction of a renewal preregistration: only
@@ -111,20 +112,6 @@ func TestRenewPreregistrationRenewalReachesTheFill(t *testing.T) {
 	}
 	if tx.rollbacks != 1 {
 		t.Fatalf("transaction rolled back %d times", tx.rollbacks)
-	}
-}
-
-func TestRenewPreregistrationWithoutSubscriptionStillRefusesItsInputs(t *testing.T) {
-	// Without a subscription_id the body is a plain preregistration: the
-	// certificate date is refused before anything is read.
-	tx := &preregRenewTransaction{associationCount: 1}
-	_, err := newPreregRenewals(tx).Renew(context.Background(), preregRenewIdentity(),
-		SubscriptionCreateRequest{Body: preregRenewBody(nil)})
-	if !errors.Is(err, domain.ErrSubscriptionCreateNotPorted) {
-		t.Fatalf("want the pre-fill refusal, got %v", err)
-	}
-	if tx.settings != 0 || tx.sources != 0 {
-		t.Fatalf("the fill ran: settings %d, sources %d", tx.settings, tx.sources)
 	}
 }
 

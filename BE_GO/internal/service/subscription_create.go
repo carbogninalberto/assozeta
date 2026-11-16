@@ -199,48 +199,28 @@ func (s *SubscriptionCreates) Add(ctx context.Context, identity domain.ResolvedI
 
 // subscriptionMedicalDate is create_subscription's expiration parse:
 // strptime '%d/%m/%Y' when the text has a '/', else '%Y-%m-%d'. ok is false
-// for every value the view's try blocks swallow (non-strings, bad dates);
-// refused marks digits strptime accepts beyond ASCII.
-func subscriptionMedicalDate(value any) (date time.Time, ok, refused bool) {
+// for every value the view's try block swallows: non-strings, dates the
+// calendar does not have, and text the format does not match (its literals and
+// %m are ASCII, while %Y and %d's second character accept Unicode digits).
+func subscriptionMedicalDate(value any) (date time.Time, ok bool) {
 	text, isText := value.(string)
 	if !isText {
-		return time.Time{}, false, false
-	}
-	if dto.StrptimeUnicodeDigits(text) {
-		return time.Time{}, false, true
+		return time.Time{}, false
 	}
 	if strings.Contains(text, "/") {
 		iso, parsed := dto.PythonStrptimeDMY(text)
 		if !parsed {
-			return time.Time{}, false, false
+			return time.Time{}, false
 		}
 		date, err := time.Parse("2006-01-02", iso)
-		return date, err == nil, false
+		return date, err == nil
 	}
-	date, parsed := dto.PythonStrptimeDate(text)
-	return date, parsed, false
+	return dto.PythonStrptimeDate(text)
 }
 
 // subscriptionCreateToday is datetime.now().strftime('%Y-%m-%d') (naive, process clock).
 func subscriptionCreateToday(now time.Time) string {
 	return DjangoNaiveNow(now, time.Local).Format("2006-01-02")
-}
-
-// subscriptionCreateRefuseInputs refuses the inputs whose create_subscription
-// paths are not ported, before anything is read or written. today is the naive
-// current date.
-func subscriptionCreateRefuseInputs(data domain.RequestObject, today string) error {
-	if medical, ok := data.Lookup("medical_certificate"); ok {
-		if object, isObject := medical.(domain.RequestObject); isObject {
-			// Digits strptime accepts beyond ASCII are not ported.
-			if expiration, present := object.Lookup("certificate_expring_date"); present {
-				if _, _, refused := subscriptionMedicalDate(expiration); refused {
-					return domain.ErrSubscriptionCreateNotPorted
-				}
-			}
-		}
-	}
-	return nil
 }
 
 // subscriptionCustomKind is custom_data['type_of_associate'] as the icontains text of subscription_exists, nil when custom_data is not
@@ -434,12 +414,6 @@ type subscriptionCreated struct {
 
 func (s *SubscriptionCreates) create(ctx context.Context, identity domain.ResolvedIdentity, data domain.RequestObject,
 	request SubscriptionCreateRequest, group *string) (*SubscriptionCreateResult, error) {
-	// A preregistration that renews a subscription replaces these inputs: they are checked after the fill.
-	if !subscriptionRenewalRequested(data) {
-		if err := subscriptionCreateRefuseInputs(data, subscriptionCreateToday(s.now())); err != nil {
-			return nil, err
-		}
-	}
 	tx, err := s.store.BeginSubscriptionCreate(ctx)
 	if err != nil {
 		return nil, err
@@ -477,10 +451,6 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 		if subscriptionRenewalRequested(data) {
 			filled, owner, err := s.fillPreregistration(ctx, tx, identity, data, request)
 			if err != nil {
-				return nil, err
-			}
-			// The inputs refused for a registration, now on the renewed subscription's data.
-			if err = subscriptionCreateRefuseInputs(filled, subscriptionCreateToday(s.now())); err != nil {
 				return nil, err
 			}
 			data, renewedUser, renewal = filled, owner, true
@@ -788,7 +758,7 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 			var expiration *time.Time
 			if object, isObject := data.Lookup("medical_certificate"); isObject {
 				if value, present := object.(domain.RequestObject).Lookup("certificate_expring_date"); present {
-					if date, parsed, _ := subscriptionMedicalDate(value); parsed {
+					if date, parsed := subscriptionMedicalDate(value); parsed {
 						expiration = &date
 						stored, err := tx.CertificateExpiration(ctx, id)
 						if err != nil {

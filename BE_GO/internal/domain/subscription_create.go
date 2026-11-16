@@ -212,6 +212,9 @@ type SubscriptionCreateTransaction interface {
 	QuickCertificates(ctx context.Context, associate string) ([]SubscriptionQuickCertificate, error)
 	// CreatePlaceholderDocument is Document.objects.create(filename=...) with its create entry.
 	CreatePlaceholderDocument(ctx context.Context, document NewDocument, actorAssociation *string, audit LoginAuditContext, at time.Time) error
+	// DeletePlaceholderDocument is document.delete() of a placeholder Document the view abandons
+	// (its storage write failed): the row and auditlog's delete entry.
+	DeletePlaceholderDocument(ctx context.Context, document NewDocument, actorAssociation *string, audit LoginAuditContext, at time.Time) error
 	// InsertPlaceholderCertificate is MedicalCertificate.objects.create(expiration_date=..., user=..., document=...).
 	InsertPlaceholderCertificate(ctx context.Context, id, user, document string, expiration, created time.Time) error
 	// InsertSignature is Signature.objects.create(signature=data, user=user) with its create entry.

@@ -107,10 +107,17 @@ failure (non-strings included) is swallowed. With an existing `medical_id` the p
 the placeholder branch raises (no effect) for today's date and unparseable values; for any other date it draws the placeholder
 image (`generate_image_with_text`, saved as PNG), creates its `Document`, stores the PNG as
 `<timestamp>/<document id>/medical_certificate_<first>_<last>.png` (the names as sent), creates the association account's
-`MedicalCertificate` with the date and links it to the subscription. Go draws the same bytes with `internal/pilplaceholder`
+`MedicalCertificate` with the date and links it to the subscription. A file name `Storage.save` rejects (a `..` path
+segment or an absolute name) raises `SuspiciousFileOperation` inside the view's try block: its except block deletes the
+`Document` the view created (the create and delete entries are each other's inverse) and the registration continues
+without a certificate (`wizard-certificate-placeholder-traversal-name`); `../x` is one file-name component, not a path
+segment, so its certificate is created (`wizard-certificate-placeholder-dotdot-component`). The f-string takes `str()` of
+each name: a NULL name draws and names `None`, and a number is its digits (`7` names
+`medical_certificate_7_<last>.png`, `wizard-certificate-placeholder-numeric-name`, while the serializer stores the same
+`str()`). Go draws the same bytes with `internal/pilplaceholder`
 (Pillow's embedded font and PNG encoder; `PIL_PLACEHOLDER_ZLIB` names the zlib of the Django side's Pillow: classic `zlib` by
-default, as in the Django image, or `zlib-ng`). The same parse is shared by renewals and the draft approval
-(`subscription-renew`), which still refuse the placeholder.
+default, as in the Django image, or `zlib-ng`). The same parse and placeholder branch are shared by renewals and the draft approval
+(`subscription-renew`).
 
 ## The quick re-subscription and the wizard in a modal
 
@@ -198,7 +205,7 @@ association: another association's username is DRF's 403 `User not allowed.`, be
   back) and role; the associate and the payment belong to `create_subscription`'s user, who also receives the notification.
 
 Go: `fillPreregistration` and `renewalSource` (`subscription_create_renewal.go`) build the same request object before anything is
-written; the inputs refused for a registration are checked on the filled data, not on the request's.
+written; `create_subscription` reads the filled person, certificate and data, not the request's.
 
 ## The family wizard
 
@@ -267,13 +274,16 @@ Refused with the 500 page before anything is committed:
   associations (application state: `User.username` is unique), a renewed subscription without an associate;
 - new member info with a non-string e-mail, a numeric
   `new_member` flag;
-- the placeholder certificate when the names sent are not strings, when the file name is not storable (over 255 characters,
-  control characters, a path the storage rejects), when the text is outside `pilplaceholder`'s subset, or when
-  `PIL_PLACEHOLDER_ZLIB` names an unknown zlib; 
+- a placeholder file name over 255 characters: `Document.objects.create` raises the database error inside the transaction,
+  which the view's except block cannot clean up, so the 500 page is answered and the whole registration rolls back;
 - an unknown non-canonical `associate_id` spelling or one whose save would hit the unique tax-code index (the `associate_id` branch
   itself is ported, see [subscription-renew](subscription-renew.md)), a year before 1000 or a text
   `internal/pydateutil` refuses (over 64 KiB), an associate that already has tutors when a tutor is added, a tutor sent with an
   `associate_id` naming the minor's own row.
+
+The placeholder text outside `pilplaceholder`'s subset is refused while drawing (an unknown `PIL_PLACEHOLDER_ZLIB` leaves
+the placeholder unwired): `create_subscription` swallows the drawing error inside its try block and creates no
+certificate, while set-certificate-expiration answers the 500 page with the certificate kept.
 
 Routes (not routed in Go): `subscription/<uid>/transfer`, `subscription/sign` (signature upload) and `subscription/import/upload` (spreadsheet
 parsing). The workers' tasks (`print_document_subscription`, `check_workflows_trigger`) stay in Django.
@@ -440,3 +450,11 @@ Re-run green natively (`famwiz-rerun-r1`): `subscription-renew` 75/75, `subscrip
 
 Long tail PR 3 (agent C): a signature upload whose generated key is already taken gets
 `get_available_name`'s alternative name instead of a refusal.
+
+Long tail PR 4: the placeholder branch ports the view's whole try block. The file name and the drawn text take `str()` of
+the request's names; a name `Storage.save` rejects (`SuspiciousFileOperation`) deletes the placeholder `Document` and the
+registration goes on without a certificate; a database error on the `Document` insert is the 500 page and rolls the whole
+registration back. Cases `wizard-certificate-placeholder-dotdot-component`,
+`wizard-certificate-placeholder-traversal-name`, `wizard-certificate-placeholder-numeric-name` and
+`wizard-certificate-placeholder-name-over-255-server-error`; `subscription/renew` and the draft approval run the same
+branch.

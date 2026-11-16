@@ -41,6 +41,7 @@ OWN, FOREIGN = IDS['own_association'], IDS['foreign_association']
 ids = iter(f'a1000000-0000-4000-8000-{593001 + n:012d}' for n in range(200))
 UNKNOWN = 'a1000000-0000-4000-8000-000000599998'
 SERVER = '<stable-server-error-page>'
+BAD_REQUEST = '<bad-request-page>'
 
 
 def document(label, created='2026-02-01T08:00:00Z'):
@@ -555,6 +556,29 @@ add('expire-without-certificate-null-date-keeps-certificate', 'owner', EXPIRE('b
     body={'certificate_expiring_date': None}, effect=effect('owner', [cert_create()], created={'user': 'owner', 'expiration': None}))
 add('expire-without-certificate-without-member-keeps-certificate', 'owner', EXPIRE('empty'), 500, SERVER,
     body={'certificate_expiring_date': '30/06/2027'}, effect=effect('owner', [cert_create()], created={'user': 'owner', 'expiration': None}))
+
+# A file name default_storage.save rejects: Storage.save's validate_file_name sees the
+# '..' segment of medical_certificate_/../.._Rossi.png and raises SuspiciousFileOperation,
+# which the view does not catch: the certificate and the Document it created stay, the
+# subscription is not linked and nothing is stored. The answer is Django's 400 page.
+ASSOCIATES['traversal'] = {'id': next(ids), 'association': OWN, 'first': '/../..', 'last': 'Rossi'}
+ASSOCIATES['control'] = {'id': next(ids), 'association': OWN, 'first': '\x01 Controllo', 'last': 'Rossi'}
+SUBSCRIPTIONS['bare_traversal'] = subscription(OWN, associate='traversal')
+SUBSCRIPTIONS['bare_control'] = subscription(OWN, associate='control')
+
+
+def placeholder_rejected(actor, label):
+    member = ASSOCIATES[SUBSCRIPTIONS[label]['associate']]
+    return {'kind': 'placeholder-rejected', 'actor': actor, 'user': 'owner',
+            'filename': f"medical_certificate_{member['first']}_{member['last']}.png"}
+
+
+add('expire-without-certificate-placeholder-traversal-name', 'owner', EXPIRE('bare_traversal'), 400, BAD_REQUEST,
+    body={'certificate_expiring_date': '30/06/2027'}, effect=placeholder_rejected('owner', 'bare_traversal'))
+# validate_file_name does not reject other control characters: the name is stored and the
+# placeholder is linked. Pillow draws '\x01' as the font's missing-glyph box.
+add('expire-without-certificate-placeholder-control-name', 'owner', EXPIRE('bare_control'), 200, updated_with('2027-06-30'),
+    body={'certificate_expiring_date': '30/06/2027'}, effect=placeholder('owner', 'bare_control', '2027-06-30'))
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Subscription medical appointments and certificates authored sequence with effects',

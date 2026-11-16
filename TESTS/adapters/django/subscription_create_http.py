@@ -714,22 +714,50 @@ def check_audit(case, effect, before, after, fixture, ids, context, binding):
         ref = spec['ref']
         if ref in STATE['source']['certificates']:
             pk = STATE['source']['certificates'][ref]['id']
-        else:
+        elif '$' + ref in binding:
             pk = binding['$' + ref]
+        else:
+            # A row this request created and deleted (the abandoned placeholder
+            # Document): only its audit entries carry its id.
+            contract.require(spec['model'] == 'document', 'audit.unbound-ref' + where)
+            pk = event['object_pk']
+            binding['$' + ref] = pk
+            contract.require(pk not in rows(after, DOCUMENT), 'audit.unbound-live-row' + where)
         model = user_model() if spec['model'] == 'user' else models()[classes[spec['model']]]
-        instance = model._base_manager.get(pk=pk)
+        instance = model._base_manager.filter(pk=pk).first()
         if spec['model'] == 'user' and spec['action'] == 0:
             # create_user saved the token_hex(10) username first.
             import re
             token = (event['changes'].get('username') or [None, ''])[1]
             contract.require(re.fullmatch(r'[0-9a-f]{20}', token) is not None, 'audit.token-username')
             binding['$token_username'] = token
-        representation = str(instance)
+        # A Document created and deleted in this request has no row left; its
+        # representation is the model's str() either way.
+        representation = str(instance) if instance is not None else f'Document object ({pk})'
         contract.require(event['content_type_id'] == types[(app, spec['model'])] and event['action'] == spec['action']
                          and event['object_pk'] == str(pk) and event['object_repr'] == representation, 'audit.identity' + where + json.dumps(
                              [event['content_type_id'], types[(app, spec['model'])], event['action'], event['object_pk'], str(pk),
                               event['object_repr'], str(instance)]))
-        if spec['action'] == 0:
+        if instance is None:
+            # The two entries of a row that is gone record the stored values, so
+            # each is the other's inverse; the filename is the authored one.
+            paired = [item for item in added if item['object_pk'] == str(pk) and item['action'] != spec['action']]
+            contract.require(len(paired) == 1, 'audit.deleted-document-pair' + where)
+            expected = {name: [pair[1], pair[0]] for name, pair in paired[0]['changes'].items()}
+            contract.require(set(expected) == {'document_id', 'token', 'filename', 'creation_date', 'customer_invoice_pdf'},
+                             'audit.deleted-document-columns' + where)
+            created_entry = spec['action'] == 0
+            contract.require(expected['document_id'] == (['None', str(pk)] if created_entry else [str(pk), 'None'])
+                             and expected['filename'] == (['None', spec['filename']] if created_entry
+                                                          else [spec['filename'], 'None'])
+                             and expected['customer_invoice_pdf'] == (
+                                 ['None', 'application.CustomerInvoice.None'] if created_entry
+                                 else ['application.CustomerInvoice.None', 'None']),
+                             'audit.deleted-document-values' + where + json.dumps(expected))
+            token = expected['token'][1] if created_entry else expected['token'][0]
+            contract.require(re.fullmatch(r'[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}', token) is not None,
+                             'audit.deleted-document-token' + where)
+        elif spec['action'] == 0:
             overrides = resolve(spec['changes'], binding)
             if spec['model'] == 'user':
                 overrides = {**overrides, 'username': ['None', binding['$token_username']]}

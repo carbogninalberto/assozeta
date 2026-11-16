@@ -65,7 +65,6 @@ func (s *SubscriptionCreates) family(ctx context.Context, identity domain.Resolv
 	if err = tx.InsertFamily(ctx, familyID, kind, request.Audit, s.now().UTC()); err != nil {
 		return nil, err
 	}
-	today := subscriptionCreateToday(s.now())
 	request.GroupID = group
 	created := []*subscriptionCreated{}
 	for _, item := range entries {
@@ -101,11 +100,6 @@ func (s *SubscriptionCreates) family(ctx context.Context, identity domain.Resolv
 			merged = objectSet(merged, field.Name, field.Value)
 		}
 		entry = objectSet(entry, "custom_data", merged)
-		if !subscriptionRenewalRequested(entry) {
-			if err = subscriptionCreateRefuseInputs(entry, today); err != nil {
-				return nil, err
-			}
-		}
 		subscription, err := s.createSubscription(ctx, tx, identity, entry, request)
 		if err != nil {
 			return nil, err

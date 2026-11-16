@@ -542,7 +542,7 @@ def placeholder_text(first, last, moment):
                         '''
 
 
-def placeholder(name, data, full_name, medical_certificate, iso, *, first=None, last=None):
+def placeholder(name, data, full_name, medical_certificate, iso, *, first=None, last=None, stored=None):
     first, last = first or data['first_name'], last or data['last_name']
     # auditlog also renders the Document's reverse accessor that declares a related_name.
     extra = [{'model': 'document', 'action': 0, 'ref': 'placeholder_document',
@@ -550,7 +550,7 @@ def placeholder(name, data, full_name, medical_certificate, iso, *, first=None, 
               'index': [OWN, 'actor.sport_association']},
              {'model': 'medicalcertificate', 'action': 0, 'ref': 'placeholder_medical',
               'changes': {'expiration_date': ['None', iso + ' 00:00:00']}, 'index': [OWN, 'actor.sport_association']}]
-    effect = success('owner', full_name, associate=created_associate(data), payment=new_payment('25.00', audit_amount='25.0'),
+    effect = success('owner', full_name, associate=created_associate(data, **(stored or {})), payment=new_payment('25.00', audit_amount='25.0'),
                      subscription={**PLAIN, 'medical_id': '$placeholder_medical'}, membership=dict(MEMBER), extra_audit=extra)
     effect['placeholder'] = {'filename': f'medical_certificate_{first}_{last}.png', 'expiration': iso,
                              'text': placeholder_text(first, last, iso + ' 00:00:00+00:00')}
@@ -570,6 +570,25 @@ placeholder('wizard-certificate-placeholder-past-date', person('Remo', 'Scaduto'
 # A value that is not text fails inside the view's try block: no certificate.
 wizard('wizard-certificate-number-date-skipped', person('Nino', 'Numero', 'NMRNNI90C01H501K'), 'Nino Numero',
        {'medical_id': None, 'filename': '', 'certificate_expring_date': 20270331})
+
+
+# A placeholder file name the storage rejects: default_storage.save's validate_file_name raises SuspiciousFileOperation
+# inside the view's try block, whose except block deletes the Document the view created (its create entry and the
+# delete entry are each other's inverse) and the registration goes on without a certificate.
+def placeholder_rejected(name, data, full_name, medical_certificate, *, first=None, last=None):
+    first, last = first or data['first_name'], last or data['last_name']
+    filename = f'medical_certificate_{first}_{last}.png'
+    extra = [{'model': 'document', 'action': 0, 'ref': 'placeholder_document', 'changes': {}, 'app': 'docmanager',
+              'filename': filename, 'index': [OWN, 'actor.sport_association']},
+             {'model': 'document', 'action': 2, 'ref': 'placeholder_document', 'changes': {}, 'app': 'docmanager',
+              'filename': filename, 'index': [OWN, 'actor.sport_association']}]
+    effect = success('owner', full_name, associate=created_associate(data), payment=new_payment('25.00', audit_amount='25.0'),
+                     subscription=dict(PLAIN), membership=dict(MEMBER), extra_audit=extra)
+    add(name, 'owner', 200, SUCCESS(25.0), body=request(data, medical_certificate=medical_certificate), effect=effect)
+
+
+# The placeholder cases whose effects change the stored number sequence are authored after every existing case (end
+# of this file), so their insertion does not renumber the earlier fixtures.
 
 
 # --- The wizard in a modal: sport_association names an association by its owner's username ----------------
@@ -1696,6 +1715,26 @@ add('anonymous-options-over-the-rate', 'anonymous', 429, THROTTLED, method='OPTI
 add('owner-full-history', 'owner', 400, VALIDATION, body=without_signature, throttle=FULL)
 add('anonymous-body-above-the-limit', 'anonymous', 413, LIMITED, body={**without_signature, 'nota': 'x' * (UPLOAD_LIMIT + 100)})
 add('owner-body-above-the-limit', 'owner', 400, VALIDATION, body={**without_signature, 'nota': 'x' * (UPLOAD_LIMIT + 100)})
+
+# --- Placeholder file names (authored last: a created subscription moves the stored number sequence) ------------------
+# '../x' is one file-name component ("medical_certificate_../x_..."), not a '..' path segment: the name is accepted and
+# the certificate is created, '..' only naming part of a directory of the stored key.
+placeholder('wizard-certificate-placeholder-dotdot-component', person('../x', 'Traversa', 'TRVRSS90C41H501J'), '../x Traversa',
+            {'medical_id': None, 'filename': '', 'certificate_expring_date': '2027-03-31'}, '2027-03-31')
+# A name whose directory part holds a '..' path segment: the storage name is rejected, no certificate.
+placeholder_rejected('wizard-certificate-placeholder-traversal-name', person('x/../y', 'Traversa', 'TRVRSS91C41H501K'),
+                     'x/../y Traversa', {'medical_id': None, 'filename': '', 'certificate_expring_date': '2027-03-31'})
+# Two names at the associate column's 150 characters make a file name over the Document column's 255:
+# Document.objects.create raises DataError, the transaction is broken and the view's next query answers the 500 page;
+# the registration rolls back with it.
+add('wizard-certificate-placeholder-name-over-255-server-error', 'owner', 500, SERVER,
+    body=request(person('A' * 150, 'B' * 150, 'LNGNME90C41H501K'),
+                 medical_certificate={'medical_id': None, 'filename': '', 'certificate_expring_date': '2027-03-31'}))
+# A numeric first name: DRF's CharField stores its str() ('7'), while the view's f-string reads initial_data's number and
+# names the placeholder medical_certificate_7_Numerico.png (str(7), not the stored text).
+placeholder('wizard-certificate-placeholder-numeric-name', person(7, 'Numerico', 'NMRCNT90C41H501K'), '7 Numerico',
+            {'medical_id': None, 'filename': '', 'certificate_expring_date': '2027-03-31'}, '2027-03-31',
+            stored={'first_name': '7'})
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({

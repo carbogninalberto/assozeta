@@ -474,6 +474,18 @@ func (t *subscriptionCreateTransaction) CreatePlaceholderDocument(ctx context.Co
 	return insertPlaceholderDocument(ctx, t.tx, document, actorAssociation, audit, at)
 }
 
+// DeletePlaceholderDocument is document.delete() of a placeholder Document
+// whose storage write failed: the row and auditlog's delete entry. No other row
+// can reference a Document created in the same request.
+func (t *subscriptionCreateTransaction) DeletePlaceholderDocument(ctx context.Context, document domain.NewDocument, actorAssociation *string,
+	audit domain.LoginAuditContext, at time.Time) error {
+	changes, _, err := deleteModelWithAuditReverse(ctx, t.tx, "docmanager_document", "document_id", document.ID, documentReverse)
+	if err != nil {
+		return err
+	}
+	return appendModelAuditForApp(ctx, t.tx, "docmanager", documentAudit(document.ID, 2, changes, actorAssociation, audit, at))
+}
+
 func (t *subscriptionCreateTransaction) InsertPlaceholderCertificate(ctx context.Context, id, user, document string, expiration,
 	created time.Time) error {
 	_, err := t.tx.ExecContext(ctx, `INSERT INTO application_medicalcertificate (medical_id, document_id, user_id, creation_date,

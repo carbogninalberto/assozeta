@@ -9,6 +9,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/paymentcategorylifecycle"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
+	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/documentkey"
 	"github.com/labstack/echo/v4"
 )
 
@@ -36,9 +37,14 @@ func NewSubscriptionMedicalHandler(medical SubscriptionMedicalService, actors *s
 
 // failure maps the views' responses; anything else is the 500 page.
 func (h *SubscriptionMedicalHandler) failure(c echo.Context, err error) error {
+	var suspicious *documentkey.SuspiciousFileError
 	var invalid *service.PaymentInfoUUIDError
 	var denied *domain.PermissionDenied
 	switch {
+	case errors.As(err, &suspicious):
+		// Storage.save's name validation is Django's SuspiciousOperation.
+		c.Response().Header().Del("Allow")
+		return c.Blob(400, "text/html; charset=utf-8", djangoBadRequestPage)
 	case errors.As(err, &invalid):
 		return c.JSON(400, []string{invalid.Detail}) // is_valid_uuid
 	case errors.As(err, &denied):

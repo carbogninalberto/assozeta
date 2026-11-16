@@ -57,6 +57,18 @@
    "association": "a1000000-0000-4000-8000-000000701001",
    "first": "Dario",
    "last": "Datato"
+  },
+  "traversal": {
+   "id": "a1000000-0000-4000-8000-000000593103",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "/../..",
+   "last": "Rossi"
+  },
+  "control": {
+   "id": "a1000000-0000-4000-8000-000000593104",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "\u0001 Controllo",
+   "last": "Rossi"
   }
  },
  "documents": {
@@ -657,6 +669,30 @@
    "end": "2026-12-31",
    "created": "2026-02-01T09:00:00Z",
    "associate": null
+  },
+  "bare_traversal": {
+   "id": "a1000000-0000-4000-8000-000000593105",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "medical": null,
+   "deleted": false,
+   "group": null,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-02-01T09:00:00Z",
+   "associate": "traversal"
+  },
+  "bare_control": {
+   "id": "a1000000-0000-4000-8000-000000593106",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "medical": null,
+   "deleted": false,
+   "group": null,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-02-01T09:00:00Z",
+   "associate": "control"
   }
  },
  "appointments": {
@@ -4653,6 +4689,47 @@
     "documents_removed": [],
     "drafts": {},
     "detached": []
+   },
+   "body": {
+    "certificate_expiring_date": "30/06/2027"
+   }
+  },
+  {
+   "name": "subscription-medical-expire-without-certificate-placeholder-traversal-name",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593105/medical-certificate/set-certificate-expiration",
+   "headers": {},
+   "status": 400,
+   "response": "<bad-request-page>",
+   "effect": {
+    "kind": "placeholder-rejected",
+    "actor": "owner",
+    "user": "owner",
+    "filename": "medical_certificate_/../.._Rossi.png"
+   },
+   "body": {
+    "certificate_expiring_date": "30/06/2027"
+   }
+  },
+  {
+   "name": "subscription-medical-expire-without-certificate-placeholder-control-name",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593106/medical-certificate/set-certificate-expiration",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Medical certificate update with date 2027-06-30 00:00:00+00:00"
+   },
+   "effect": {
+    "kind": "placeholder",
+    "actor": "owner",
+    "subscription": "bare_control",
+    "user": "owner",
+    "expiration": "2027-06-30",
+    "filename": "medical_certificate_\u0001 Controllo_Rossi.png",
+    "text": "\n\u0001 Controllo Rossi\n\n\n\nQuesta certificazione è valida fino al 2027-06-30 00:00:00+00:00\n\n\n\n\n\nAttenzione: questo è un placeholder, il certificato medico deve essere caricato in seguito.\n            "
    },
    "body": {
     "certificate_expiring_date": "30/06/2027"

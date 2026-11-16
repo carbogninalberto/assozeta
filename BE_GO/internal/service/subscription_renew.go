@@ -139,13 +139,7 @@ func (s *SubscriptionRenewals) Renew(ctx context.Context, identity domain.Resolv
 		}
 	}
 	// A preregistration that renews a subscription replaces these inputs: they
-	// are checked after the fill, inside create_subscription (which fills the
-	// person, certificate and data from the renewed subscription).
-	if !subscriptionRenewalRequested(data) {
-		if err = subscriptionCreateRefuseInputs(data, subscriptionCreateToday(s.creates.now())); err != nil {
-			return nil, err
-		}
-	}
+	// are filled, inside create_subscription, from the renewed subscription.
 	keys := []string{}
 	request.StorageKeys = &keys
 	defer func() {
@@ -659,13 +653,8 @@ func (s *SubscriptionDraftApprovals) Approve(ctx context.Context, identity domai
 			crashed = true
 			break
 		}
-		// A draft whose data renews a subscription replaces these inputs; they
-		// are checked after the fill, inside create_subscription.
-		if !subscriptionRenewalRequested(draft) {
-			if err = subscriptionCreateRefuseInputs(draft, subscriptionCreateToday(s.creates.now())); err != nil {
-				return nil, err
-			}
-		}
+		// A draft whose data renews a subscription is filled, inside
+		// create_subscription, from the renewed subscription.
 		if err = tx.Savepoint(ctx); err != nil {
 			return nil, err
 		}
