@@ -51,7 +51,7 @@ func TestStoredJSONNestingIsReproduced(t *testing.T) {
 		text := strings.Repeat(`[`, depth) + strings.Repeat(`]`, depth)
 		value, err := StoredJSON(storedText(text))
 		if depth == StoredJSONRecursionBand {
-			if !errors.Is(err, ErrStoredJSONRecursionBand) || errors.Is(err, refusal.ErrNotPorted) {
+			if !errors.Is(err, ErrJSONRecursionBand) || !errors.Is(err, refusal.ErrNotPorted) {
 				t.Fatalf("depth %d: %v", depth, err)
 			}
 			continue
@@ -81,7 +81,7 @@ func TestStoredJSONNestingIsReproduced(t *testing.T) {
 // 9800..9998 band depends on the C calls already on the request thread's stack.
 func TestStoredJSONRecursion(t *testing.T) {
 	band := strings.Repeat(`[`, StoredJSONRecursionFloor-1) + strings.Repeat(`]`, StoredJSONRecursionFloor-1)
-	if _, err := StoredJSON(storedText(band)); !errors.Is(err, ErrStoredJSONRecursionBand) {
+	if _, err := StoredJSON(storedText(band)); !errors.Is(err, ErrJSONRecursionBand) {
 		t.Fatalf("9998: %v", err)
 	}
 	floor := strings.Repeat(`[`, StoredJSONRecursionFloor) + strings.Repeat(`]`, StoredJSONRecursionFloor)

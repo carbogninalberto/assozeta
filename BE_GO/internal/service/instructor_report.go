@@ -34,11 +34,6 @@ func NewInstructorReport(store domain.InstructorReportStore, now func() time.Tim
 // ErrInstructorReportServer is an exception the view does not handle (the 500 page).
 var ErrInstructorReportServer = errors.New("instructor report unhandled error")
 
-// ErrInstructorReportNotPorted refuses stored JSON nested in json.loads' C
-// recursion band: the depth the request thread's stack still parses depends on
-// the C calls already on it (long-tail rule 4).
-var ErrInstructorReportNotPorted = refusal.New("instructor report: stored JSON nesting in json.loads' recursion band")
-
 // instructorReportStoredJSONError maps dto.StoredJSON's errors: json.loads'
 // RecursionError and its 4300-digit ValueError are uncaught in the view (the
 // 500 page) and only the recursion band stays refused; text jsonb cannot store
@@ -47,8 +42,8 @@ func instructorReportStoredJSONError(err error) error {
 	switch {
 	case errors.Is(err, dto.ErrStoredJSONRecursion), errors.Is(err, dto.ErrStoredJSONInteger):
 		return ErrInstructorReportServer
-	case errors.Is(err, dto.ErrStoredJSONRecursionBand):
-		return ErrInstructorReportNotPorted
+	case errors.Is(err, dto.ErrJSONRecursionBand):
+		return err // the C recursion band: dto's refusal, handed to Django
 	}
 	return err
 }

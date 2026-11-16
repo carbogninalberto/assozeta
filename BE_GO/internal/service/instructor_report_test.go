@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
@@ -234,7 +235,7 @@ func TestInstructorReportStoredJSONNesting(t *testing.T) {
 	}
 	_, err := NewInstructorReport(reportStore{events: deep(9800)}, time.Now).Report(context.Background(), reportIdentity(),
 		reportPtr("15/09/2026"), reportPtr("15/09/2026"))
-	if !errors.Is(err, ErrInstructorReportNotPorted) || !errors.Is(err, refusal.ErrNotPorted) {
+	if !errors.Is(err, dto.ErrJSONRecursionBand) || !errors.Is(err, refusal.ErrNotPorted) {
 		t.Fatalf("band: %v", err)
 	}
 	for _, depth := range []int{9999, 12000} {

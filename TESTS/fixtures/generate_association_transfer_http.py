@@ -714,13 +714,20 @@ NEW_ASSOCIATION, NEW_OWNER, NEW_MEMBER = uid(950), uid(951), uid(952)
 PBKDF2 = 'pbkdf2_sha256$600000$AbCdEfGhIjKlMnOpQrStUv$' + base64.b64encode(bytes(range(32))).decode()
 
 
-def make_zip(members):
+def make_zip(members, *, raw=()):
+    """ZIP the members; ``raw`` names members written as given bytes instead
+    of as json.dumps of a value (JSON text Python cannot author, e.g. a lone
+    surrogate escape, or undecodable bytes)."""
     buffer = io.BytesIO()
     with zipfile.ZipFile(buffer, 'w', zipfile.ZIP_DEFLATED) as archive:
         for name, value in members.items():
+            if name in raw:
+                data = value.encode() if isinstance(value, str) else value
+            else:
+                data = value if isinstance(value, bytes) else json.dumps(value, ensure_ascii=False).encode()
             info = zipfile.ZipInfo(name, date_time=(2026, 1, 15, 10, 0, 0))
             info.compress_type = zipfile.ZIP_DEFLATED
-            archive.writestr(info, value if isinstance(value, bytes) else json.dumps(value, ensure_ascii=False).encode())
+            archive.writestr(info, data)
     return buffer.getvalue()
 
 
@@ -834,6 +841,17 @@ no_users = make_zip({key: value for key, value in export_members().items() if ke
 validate_case('missing-users-file', no_users, validation(no_users, valid=False, errors=['Missing required data file: 02_users.json'],
               warnings=['Missing data file: data/02_users.json', 'Missing data file: data/10_courses.json'],
               info={**FILES_INFO, 'missing_files': 2, 'association': MANIFEST['association']}))
+# The owner is matched through str(): an owner id "None" matches a user whose user_id is null. validate_uuid_conflicts
+# then skips the owner block (`if owner_id:`): only the association lookup runs.
+null_owner = make_zip(export_members(
+    associations=[{'sport_association_id': NEW_ASSOCIATION, 'user_id': 'None', 'denomination': 'Società importata',
+                   'tax_code': '01234567890'}],
+    users=[{'user_id': None, 'username': 'imported-owner', 'email': 'owner@imported.example.test', 'password': PBKDF2}]))
+validate_case('owner-null-user-id-matches-none', null_owner, validation(
+    null_owner, warnings=['Missing data file: data/10_courses.json'],
+    info={**FILES_INFO, 'association': IMPORTED, 'owner_user': {'user_id': None, 'username': 'imported-owner',
+                                                                'email': 'owner@imported.example.test',
+                                                                'requires_recovery_password': False}}))
 # The name is under 255 characters but over the file system's name limit (255 bytes on Linux,
 # 255 UTF-16 units on macOS): open() fails with ENAMETOOLONG and the view answers the OSError text.
 LONG_ZIP = '\U0001F4E6' * 130 + '.zip'
@@ -844,6 +862,122 @@ add('import-validate-admin-impersonating-owner-archive', 'admin', VALIDATE, 200,
     validation(valid, warnings=['Missing data file: data/10_courses.json'],
                info={**FILES_INFO, 'association': IMPORTED, 'owner_user': OWNER_INFO(False)}),
     method='POST', raw_b64=raw, content_type=kind, headers=ADMIN_OWNER)
+
+# --- what validate_all does with an archive anyone allowed to import can craft -------------------------------------
+# A manifest that is not an object raises outside validate_manifest's own
+# except: `field not in manifest` is a TypeError for a scalar, and manifest.get
+# an AttributeError for a str/list. validate_import answers its 500 with str().
+def shape_error(message):
+    return {'error': 'Errore durante la validazione: ' + message}
+
+
+MISSING = ['Missing data file: data/10_courses.json']
+
+for label, manifest, message in (
+        ('manifest-list', [1], "'list' object has no attribute 'get'"),
+        ('manifest-int', 5, "argument of type 'int' is not iterable"),
+        ('manifest-null', None, "argument of type 'NoneType' is not iterable"),
+        ('manifest-bool', True, "argument of type 'bool' is not iterable")):
+    archive = make_zip({**export_members(), 'manifest.json': manifest})
+    validate_case('shape-' + label, archive, shape_error(message), status=500)
+
+# export_format is any JSON value: str() of it is the message and the info
+# keeps the raw value (no data-file or identity step runs).
+for label, value, message in (('object', {'format': 'x'}, "Unsupported export format: {'format': 'x'}"),
+                              ('number', 5, 'Unsupported export format: 5')):
+    manifest = {**MANIFEST, 'export_format': value}
+    archive = make_zip({**export_members(), 'manifest.json': manifest})
+    validate_case('export-format-' + label, archive, validation(archive, valid=False, errors=[message],
+                  info={'export_format': value, 'export_date': MANIFEST['export_date'],
+                        'association': MANIFEST['association']}))
+
+# models_exported: iteration of a dict yields its keys (strings, so .get is an
+# AttributeError), of a str its characters; a number is not iterable.
+for label, models, message in (
+        ('object', {'file': 'x'}, "'str' object has no attribute 'get'"),
+        ('string', 'ab', "'str' object has no attribute 'get'"),
+        ('number', 5, "'int' object is not iterable")):
+    archive = make_zip({**export_members(), 'manifest.json': {**MANIFEST, 'models_exported': models}})
+    validate_case('models-' + label, archive, shape_error(message), status=500)
+
+# Items without a file expect nothing; a list file is kept as the expected
+# member, so str() of the list is the warning.
+no_file = make_zip(export_members(manifest={**MANIFEST, 'models_exported': [{'name': 'NoFile'}]}))
+validate_case('models-without-file', no_file, validation(no_file, info={
+    **FILES_INFO, 'expected_files': 0, 'missing_files': 0, 'association': IMPORTED, 'owner_user': OWNER_INFO(False)}))
+list_file = make_zip(export_members(manifest={**MANIFEST, 'models_exported': [
+    {'name': 'Course', 'file': ['data/10_courses.json']}]}))
+validate_case('models-list-file', list_file, validation(list_file, warnings=["Missing data file: data/['data/10_courses.json']"],
+    info={**FILES_INFO, 'expected_files': 1, 'association': IMPORTED, 'owner_user': OWNER_INFO(False)}))
+
+# associations[0] must be an object: `.get` on a list is the outer except.
+record_list = make_zip(export_members(associations=[[{'sport_association_id': NEW_ASSOCIATION}]]))
+validate_case('association-record-list', record_list, validation(record_list, valid=False, errors=[
+    "Error reading owner identity: 'list' object has no attribute 'get'"], warnings=MISSING,
+    info={**FILES_INFO, 'association': MANIFEST['association']}))
+
+# data/02_users.json goes through iter_json_array: a non-array, a truncated
+# array and non-object items each raise before any owner is selected.
+users_object = make_zip({**export_members(), 'data/02_users.json': {'user_id': NEW_OWNER}})
+validate_case('users-object', users_object, validation(users_object, valid=False, errors=[
+    'Error reading owner identity: Expected a JSON array'], warnings=MISSING,
+    info={**FILES_INFO, 'association': MANIFEST['association']}))
+users_truncated = make_zip({**export_members(), 'data/02_users.json': b'[{"user_id": "a"}, {"use'},
+                           raw=('data/02_users.json',))
+validate_case('users-truncated', users_truncated, validation(users_truncated, valid=False, errors=[
+    'Invalid JSON in data files: Unterminated string starting at: line 1 column 21 (char 20)'], warnings=MISSING,
+    info={**FILES_INFO, 'association': MANIFEST['association']}))
+users_non_dict = make_zip({**export_members(), 'data/02_users.json': [1]})
+validate_case('users-non-dict-item', users_non_dict, validation(users_non_dict, valid=False, errors=[
+    "Error reading owner identity: 'int' object has no attribute 'get'"], warnings=MISSING,
+    info={**FILES_INFO, 'association': MANIFEST['association']}))
+# str() of the ids is compared, so an int user_id matches an int owner id and
+# the owner info keeps the raw int.
+INT_ASSOCIATION = {'sport_association_id': NEW_ASSOCIATION, 'user_id': 5, 'denomination': 'Società importata',
+                   'tax_code': '01234567890'}
+integer_ids = make_zip(export_members(associations=[INT_ASSOCIATION],
+                                      users=[{'user_id': 5, 'username': 'imported-owner', 'email': 'owner@imported.example.test'}]))
+validate_case('users-integer-id', integer_ids, validation(integer_ids, warnings=MISSING, info={
+    **FILES_INFO, 'association': {**IMPORTED, 'sport_association_id': NEW_ASSOCIATION},
+    'owner_user': {'user_id': 5, 'username': 'imported-owner', 'email': 'owner@imported.example.test',
+                   'requires_recovery_password': True}}))
+
+# json.loads(bytes): a UTF-16 manifest with a BOM reads, invalid UTF-8 is a
+# UnicodeDecodeError (the generic manifest text), and a lone surrogate makes
+# DRF's UTF-8 encode raise: Django's 500 page.
+manifest_text = json.dumps(MANIFEST, ensure_ascii=False)
+utf16 = make_zip({**export_members(), 'manifest.json': b'\xff\xfe' + manifest_text.encode('utf-16-le')},
+                 raw=('manifest.json',))
+validate_case('manifest-utf16', utf16, validation(utf16, warnings=MISSING, info={
+    **FILES_INFO, 'association': IMPORTED, 'owner_user': OWNER_INFO(False)}))
+invalid_utf8 = make_zip({**export_members(), 'manifest.json': b'{"a": "\xff"}'}, raw=('manifest.json',))
+validate_case('manifest-invalid-utf8', invalid_utf8, validation(invalid_utf8, valid=False, errors=[
+    "Error reading manifest: 'utf-8' codec can't decode byte 0xff in position 7: invalid start byte"],
+    info={'file_size_bytes': len(invalid_utf8), 'file_size_mb': round(len(invalid_utf8) / (1024 * 1024), 2)}))
+surrogate = make_zip({**export_members(), 'manifest.json':
+                      manifest_text.replace('"bakney_sport_export_v1"', '"bakney_sport_export_v1\\ud800"')},
+                     raw=('manifest.json',))
+validate_case('manifest-lone-surrogate', surrogate, SERVER, status=500)
+
+# validate_uuid_conflicts runs UUIDField.to_python on the association id: a
+# string that is not a UUID is the ValidationError the view's except renders.
+not_uuid = make_zip(export_members(associations=[{'sport_association_id': 'abc', 'user_id': NEW_OWNER,
+                                                  'denomination': 'Società importata'}],
+                                   users=[{'user_id': NEW_OWNER, 'username': 'imported-owner',
+                                           'email': 'owner@imported.example.test', 'password': '!'}]))
+validate_case('association-not-uuid', not_uuid, shape_error("['“abc” is not a valid UUID.']"), status=500)
+
+# Every hasher settings.PASSWORD_HASHERS configures decodes to a restorable
+# hash (Django's defaults; fixed salts keep the archive stable).
+for algorithm, encoded in (
+        ('pbkdf2-sha256', 'pbkdf2_sha256$1000000$abcdefghijklmnopqrstuv$tW94pSigUM2AlIkWSQO4yVeVgz1Hy8/tw6HFhR010Gk='),
+        ('pbkdf2-sha1', 'pbkdf2_sha1$1000000$abcdefghijklmnopqrstuv$sFm5hQjQKip5kpM2m+9tpSNirH8='),
+        ('argon2', 'argon2$argon2id$v=19$m=102400,t=2,p=8$YWJjZGVmZ2hpamtsbW5vcHFyc3R1dg$A9DAPQnz27exXaIEX/gYEkGY9RGfCEFQQ/I38bD2xuM'),
+        ('bcrypt-sha256', 'bcrypt_sha256$$2b$12$aEUW1bUZP8SXpoiwC.Z5s.0XhWu9QyrdHKaP1s1qq7U0BeMjP2DZy'),
+        ('scrypt', 'scrypt$16384$abcdefghijklmnopqrstuv$8$5$7+fVdWAoYF5tiOFUhWAk9HPmdFw5yyZqSz8ThhvgSnI4xqXq4vnGiy+ngEpPYnpZTfLd3D4CXVjanFjRQ/qFrg==')):
+    archive = make_zip(export_members(password=encoded))
+    validate_case('owner-password-' + algorithm, archive, validation(archive, warnings=MISSING, info={
+        **FILES_INFO, 'association': IMPORTED, 'owner_user': OWNER_INFO(False)}))
 
 # === import/start with an archive ================================================================
 IMPORT_STARTED = {'task_id': '$task', 'status': 'started', 'message': 'Import avviato. Controlla lo stato con task_id.'}

@@ -32,9 +32,12 @@ const (
 // raises on every call stack (the view does not catch it: the 500 page).
 var ErrStoredJSONRecursion = errors.New("stored JSON nests past json.loads")
 
-// ErrStoredJSONRecursionBand is the nesting band whose RecursionError depth
-// depends on the C calls already on the request thread's stack.
-var ErrStoredJSONRecursionBand = errors.New("stored JSON nesting in json.loads' recursion band")
+// ErrJSONRecursionBand is json.loads nesting in the band whose RecursionError
+// depth depends on the C calls already on the request thread's stack: the
+// same document parses or raises depending on the caller (long-tail rule 4,
+// platform), so the request is handed to Django. Every json.loads port that
+// reads nesting this deep returns it.
+var ErrJSONRecursionBand = refusal.New("json.loads nesting in CPython's C recursion band")
 
 // ErrStoredJSONInteger is json.loads' ValueError on an integer literal past
 // sys.int_max_str_digits (the view does not catch it: the 500 page).
@@ -51,7 +54,7 @@ var ErrStoredJSONUnreachable = refusal.AppState("stored JSON text jsonb does not
 // and float literals, RequestObject for objects, []any for arrays).
 //
 // Depths at or past StoredJSONRecursionFloor answer ErrStoredJSONRecursion and
-// depths in [StoredJSONRecursionBand, floor) answer ErrStoredJSONRecursionBand,
+// depths in [StoredJSONRecursionBand, floor) answer ErrJSONRecursionBand,
 // as json.loads' C recursion is bounded by the live stack. Text jsonb never
 // stores (a lone surrogate escape, NaN or Infinity) is ErrStoredJSONUnreachable.
 func StoredJSON(text *string) (any, error) {
@@ -63,7 +66,7 @@ func StoredJSON(text *string) (any, error) {
 	case depth >= StoredJSONRecursionFloor:
 		return nil, ErrStoredJSONRecursion
 	case depth >= StoredJSONRecursionBand:
-		return nil, ErrStoredJSONRecursionBand
+		return nil, ErrJSONRecursionBand
 	case auditLoneSurrogate(*text):
 		// jsonb accepts no lone surrogate: PostgreSQL's own parser rejects it.
 		return nil, ErrStoredJSONUnreachable

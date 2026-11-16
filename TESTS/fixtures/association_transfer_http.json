@@ -9201,6 +9201,50 @@
    "content_type": "multipart/form-data; boundary=association-transfer-boundary"
   },
   {
+   "name": "association-transfer-import-validate-owner-null-user-id-matches-none",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "is_valid": true,
+    "errors": [],
+    "warnings": [
+     "Missing data file: data/10_courses.json"
+    ],
+    "info": {
+     "file_size_bytes": 900,
+     "file_size_mb": 0.0,
+     "export_format": "bakney_sport_export_v1",
+     "export_date": "2026-01-15T10:00:00+00:00",
+     "expected_files": 3,
+     "missing_files": 1,
+     "association": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000976950",
+      "denomination": "Società importata",
+      "tax_code": "01234567890"
+     },
+     "owner_user": {
+      "user_id": null,
+      "username": "imported-owner",
+      "email": "owner@imported.example.test",
+      "requires_recovery_password": false
+     }
+    }
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "raw_b64": "LS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImV4cG9ydC56aXAiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3ppcA0KDQpQSwMEFAAAAAgAAFAvXNb2Exz0AAAA4gEAAA0AAABtYW5pZmVzdC5qc29uZU/BSsQwEP2Vkqu2Toq7unsTwaOX1ZNIGNtZiG4SSdJFKf0X/8UfM5N2sUtDGJj35r1504sj+aCdFdtCyAoqEJeFoK9P56PaO28wMvOGH5a+VcjwxB7lbLTFSDxYQ70uQZZy9SRhC/wvcuVZDME1GuO4rhej3QxVumUTlJBfmcs1l9tTC7C5WW9W2a8l64y2J0OxSz4Uf38KbdgZI44Jo8dEyyE1xrV0CNMJxNteemHR5PA7Bu9mIZNgrw+ZSwfiFUi1yFy9h3GycZ2N055/z+dAfu4DteoSFBay+kx27zofaBFAgmoys9TDmf7RPbBueB3+AFBLAwQUAAAACAAAUC9cB7l8tHYAAACWAAAAHgAAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvbouuViouyC8qiU8sLs5PzkwsyczPi89MUbJSUEo0NAADXTBhAiIsYFwDA0tzM0tTAyUdBaXS4tQiqBa//LxUkFBKal5+bmYe2DSQeDDQ6NSSwwsUMnNBliWWJIJUlSRWxCfnp6SCVBgYGhmbmJqZW1gaKNXGAgBQSwMEFAAAAAgAAFAvXPy2SHCmAAAAwQAAABIAAABkYXRhLzAyX3VzZXJzLmpzb241jN0KgjAARl9FhpclIiQRBC3/khLREIoImW2mOXVs2oTo3VOh7/Kcw3f7gF4QnpYYbJSmp3ShzKBBNRkJKGvW8o7gZSsbwsFoSY1KOqmZ7P6BRgZUM0q0johu6hgSQrZ8+gUsq3BupKJAxspUTX2aCjMLO7lX+K8jDZqQRfzcJW8VQseCMnL3z4dvRe3JhnpoDzB2iiBx4+vF21fIGyQ+FOst+N5/UEsBAhQDFAAAAAgAAFAvXNb2Exz0AAAA4gEAAA0AAAAAAAAAAAAAAIABAAAAAG1hbmlmZXN0Lmpzb25QSwECFAMUAAAACAAAUC9cB7l8tHYAAACWAAAAHgAAAAAAAAAAAAAAgAEfAQAAZGF0YS8wMV9zcG9ydF9hc3NvY2lhdGlvbi5qc29uUEsBAhQDFAAAAAgAAFAvXPy2SHCmAAAAwQAAABIAAAAAAAAAAAAAAIAB0QEAAGRhdGEvMDJfdXNlcnMuanNvblBLBQYAAAAAAwADAMcAAACnAgAAAAANCi0tYXNzb2NpYXRpb24tdHJhbnNmZXItYm91bmRhcnktLQ0K",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
    "name": "association-transfer-import-validate-name-over-255-bytes",
    "actor": "owner",
    "method": "POST",
@@ -9266,6 +9310,850 @@
    "cache_after": null,
    "objects_after": null,
    "raw_b64": "LS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9IkVYUE9SVC5aSVAiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3ppcA0KDQpQSwMEFAAAAAgAAFAvXNb2Exz0AAAA4gEAAA0AAABtYW5pZmVzdC5qc29uZU/BSsQwEP2Vkqu2Toq7unsTwaOX1ZNIGNtZiG4SSdJFKf0X/8UfM5N2sUtDGJj35r1504sj+aCdFdtCyAoqEJeFoK9P56PaO28wMvOGH5a+VcjwxB7lbLTFSDxYQ70uQZZy9SRhC/wvcuVZDME1GuO4rhej3QxVumUTlJBfmcs1l9tTC7C5WW9W2a8l64y2J0OxSz4Uf38KbdgZI44Jo8dEyyE1xrV0CNMJxNteemHR5PA7Bu9mIZNgrw+ZSwfiFUi1yFy9h3GycZ2N055/z+dAfu4DteoSFBay+kx27zofaBFAgmoys9TDmf7RPbBueB3+AFBLAwQUAAAACAAAUC9cYWmhmHMAAAC2AAAAHgAAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvbouuViouyC8qiU8sLs5PzkwsyczPi89MUbJSUEo0NAADXTBhAiIsYFwDA0tzM0tTAyUdBaXS4tQi4rUYgrSkpObl52bmgW0D6QsGWp1acniBQmYuyDGJJYkgVSWJFfHJ+SmpIBUGhkbGJqZm5haWBkq1sQBQSwMEFAAAAAgAAFAvXD3y643RAAAAcQEAABIAAABkYXRhLzAyX3VzZXJzLmpzb26LrlYqLU4tis9MUbJSUEo0NAADXTBhAiIsYFwDA0tzM0tTQyUdBbCWvMTcVJCezNyC/KKS1BTd/PK81CKQbGpuYmYOSAos4gBToJdakZhbkJOqV5JaXAJSV5BYXFyeXwS2uSApOyXNKL44I9HI1EzFDGyfimOSc4prmnuGZ5Z3jm+ef0FgUXBJaJmKo6Ors2N5oJtTerKnc2C+j4ujgb9LhWOQa4ZvqFtQZIS7U3aie0V5ikeGha1SrY4CqV40wunF3NTcJDQ/QoSI86SiUm0sAFBLAQIUAxQAAAAIAABQL1zW9hMc9AAAAOIBAAANAAAAAAAAAAAAAACAAQAAAABtYW5pZmVzdC5qc29uUEsBAhQDFAAAAAgAAFAvXGFpoZhzAAAAtgAAAB4AAAAAAAAAAAAAAIABHwEAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvblBLAQIUAxQAAAAIAABQL1w98uuN0QAAAHEBAAASAAAAAAAAAAAAAACAAc4BAABkYXRhLzAyX3VzZXJzLmpzb25QSwUGAAAAAAMAAwDHAAAAzwIAAAAADQotLWFzc29jaWF0aW9uLXRyYW5zZmVyLWJvdW5kYXJ5LS0NCg==",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-import-validate-shape-manifest-list",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante la validazione: 'list' object has no attribute 'get'"
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "raw_b64": "LS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImV4cG9ydC56aXAiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3ppcA0KDQpQSwMEFAAAAAgAAFAvXLgyL0wFAAAAAwAAAA0AAABtYW5pZmVzdC5qc29uizaMBQBQSwMEFAAAAAgAAFAvXGFpoZhzAAAAtgAAAB4AAABkYXRhLzAxX3Nwb3J0X2Fzc29jaWF0aW9uLmpzb26LrlYqLsgvKolPLC7OT85MLMnMz4vPTFGyUlBKNDQAA10wYQIiLGBcAwNLczNLUwMlHQWl0uLUIuK1GIK0pKTm5edm5oFtA+kLBlqdWnJ4gUJmLsgxiSWJIFUliRXxyfkpqSAVBoZGxiamZuYWlgZKtbEAUEsDBBQAAAAIAABQL1w98uuN0QAAAHEBAAASAAAAZGF0YS8wMl91c2Vycy5qc29ui65WKi1OLYrPTFGyUlBKNDQAA10wYQIiLGBcAwNLczNLU0MlHQWwlrzE3FSQnszcgvyiktQU3fzyvNQikGxqbmJmDkgKLOIAU6CXWpGYW5CTqleSWlwCUleQWFxcnl8EtrkgKTslzSi+OCPRyNRMxQxsn4pjknOKa5p7hmeWd45vnn9BYFFwSWiZiqOjq7NjeaCbU3qyp3Ngvo+Lo4G/S4VjkGuGb6hbUGSEu1N2ontFeYpHhoWtUq2OAqleNMLpxdzU3CQ0P0KEiPOkolJtLABQSwECFAMUAAAACAAAUC9cuDIvTAUAAAADAAAADQAAAAAAAAAAAAAAgAEAAAAAbWFuaWZlc3QuanNvblBLAQIUAxQAAAAIAABQL1xhaaGYcwAAALYAAAAeAAAAAAAAAAAAAACAATAAAABkYXRhLzAxX3Nwb3J0X2Fzc29jaWF0aW9uLmpzb25QSwECFAMUAAAACAAAUC9cPfLrjdEAAABxAQAAEgAAAAAAAAAAAAAAgAHfAAAAZGF0YS8wMl91c2Vycy5qc29uUEsFBgAAAAADAAMAxwAAAOABAAAAAA0KLS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeS0tDQo=",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-import-validate-shape-manifest-int",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante la validazione: argument of type 'int' is not iterable"
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "raw_b64": "LS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImV4cG9ydC56aXAiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3ppcA0KDQpQSwMEFAAAAAgAAFAvXK4rsYQDAAAAAQAAAA0AAABtYW5pZmVzdC5qc29uMwUAUEsDBBQAAAAIAABQL1xhaaGYcwAAALYAAAAeAAAAZGF0YS8wMV9zcG9ydF9hc3NvY2lhdGlvbi5qc29ui65WKi7ILyqJTywuzk/OTCzJzM+Lz0xRslJQSjQ0AANdMGECIixgXAMDS3MzS1MDJR0FpdLi1CLitRiCtKSk5uXnZuaBbQPpCwZanVpyeIFCZi7IMYkliSBVJYkV8cn5KakgFQaGRsYmpmbmFpYGSrWxAFBLAwQUAAAACAAAUC9cPfLrjdEAAABxAQAAEgAAAGRhdGEvMDJfdXNlcnMuanNvbouuViotTi2Kz0xRslJQSjQ0AANdMGECIixgXAMDS3MzS1NDJR0FsJa8xNxUkJ7M3IL8opLUFN388rzUIpBsam5iZg5ICiziAFOgl1qRmFuQk6pXklpcAlJXkFhcXJ5fBLa5ICk7Jc0ovjgj0cjUTMUMbJ+KY5Jzimuae4ZnlneOb55/QWBRcElomYqjo6uzY3mgm1N6sqdzYL6Pi6OBv0uFY5Brhm+oW1BkhLtTdqJ7RXmKR4aFrVKtjgKpXjTC6cXc1NwkND9ChIjzpKJSbSwAUEsBAhQDFAAAAAgAAFAvXK4rsYQDAAAAAQAAAA0AAAAAAAAAAAAAAIABAAAAAG1hbmlmZXN0Lmpzb25QSwECFAMUAAAACAAAUC9cYWmhmHMAAAC2AAAAHgAAAAAAAAAAAAAAgAEuAAAAZGF0YS8wMV9zcG9ydF9hc3NvY2lhdGlvbi5qc29uUEsBAhQDFAAAAAgAAFAvXD3y643RAAAAcQEAABIAAAAAAAAAAAAAAIAB3QAAAGRhdGEvMDJfdXNlcnMuanNvblBLBQYAAAAAAwADAMcAAADeAQAAAAANCi0tYXNzb2NpYXRpb24tdHJhbnNmZXItYm91bmRhcnktLQ0K",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-import-validate-shape-manifest-null",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante la validazione: argument of type 'NoneType' is not iterable"
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "raw_b64": "LS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImV4cG9ydC56aXAiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3ppcA0KDQpQSwMEFAAAAAgAAFAvXE/8yyUGAAAABAAAAA0AAABtYW5pZmVzdC5qc29uyyvNyQEAUEsDBBQAAAAIAABQL1xhaaGYcwAAALYAAAAeAAAAZGF0YS8wMV9zcG9ydF9hc3NvY2lhdGlvbi5qc29ui65WKi7ILyqJTywuzk/OTCzJzM+Lz0xRslJQSjQ0AANdMGECIixgXAMDS3MzS1MDJR0FpdLi1CLitRiCtKSk5uXnZuaBbQPpCwZanVpyeIFCZi7IMYkliSBVJYkV8cn5KakgFQaGRsYmpmbmFpYGSrWxAFBLAwQUAAAACAAAUC9cPfLrjdEAAABxAQAAEgAAAGRhdGEvMDJfdXNlcnMuanNvbouuViotTi2Kz0xRslJQSjQ0AANdMGECIixgXAMDS3MzS1NDJR0FsJa8xNxUkJ7M3IL8opLUFN388rzUIpBsam5iZg5ICiziAFOgl1qRmFuQk6pXklpcAlJXkFhcXJ5fBLa5ICk7Jc0ovjgj0cjUTMUMbJ+KY5Jzimuae4ZnlneOb55/QWBRcElomYqjo6uzY3mgm1N6sqdzYL6Pi6OBv0uFY5Brhm+oW1BkhLtTdqJ7RXmKR4aFrVKtjgKpXjTC6cXc1NwkND9ChIjzpKJSbSwAUEsBAhQDFAAAAAgAAFAvXE/8yyUGAAAABAAAAA0AAAAAAAAAAAAAAIABAAAAAG1hbmlmZXN0Lmpzb25QSwECFAMUAAAACAAAUC9cYWmhmHMAAAC2AAAAHgAAAAAAAAAAAAAAgAExAAAAZGF0YS8wMV9zcG9ydF9hc3NvY2lhdGlvbi5qc29uUEsBAhQDFAAAAAgAAFAvXD3y643RAAAAcQEAABIAAAAAAAAAAAAAAIAB4AAAAGRhdGEvMDJfdXNlcnMuanNvblBLBQYAAAAAAwADAMcAAADhAQAAAAANCi0tYXNzb2NpYXRpb24tdHJhbnNmZXItYm91bmRhcnktLQ0K",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-import-validate-shape-manifest-bool",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante la validazione: argument of type 'bool' is not iterable"
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "raw_b64": "LS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImV4cG9ydC56aXAiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3ppcA0KDQpQSwMEFAAAAAgAAFAvXI1M/P0GAAAABAAAAA0AAABtYW5pZmVzdC5qc29uKykqTQUAUEsDBBQAAAAIAABQL1xhaaGYcwAAALYAAAAeAAAAZGF0YS8wMV9zcG9ydF9hc3NvY2lhdGlvbi5qc29ui65WKi7ILyqJTywuzk/OTCzJzM+Lz0xRslJQSjQ0AANdMGECIixgXAMDS3MzS1MDJR0FpdLi1CLitRiCtKSk5uXnZuaBbQPpCwZanVpyeIFCZi7IMYkliSBVJYkV8cn5KakgFQaGRsYmpmbmFpYGSrWxAFBLAwQUAAAACAAAUC9cPfLrjdEAAABxAQAAEgAAAGRhdGEvMDJfdXNlcnMuanNvbouuViotTi2Kz0xRslJQSjQ0AANdMGECIixgXAMDS3MzS1NDJR0FsJa8xNxUkJ7M3IL8opLUFN388rzUIpBsam5iZg5ICiziAFOgl1qRmFuQk6pXklpcAlJXkFhcXJ5fBLa5ICk7Jc0ovjgj0cjUTMUMbJ+KY5Jzimuae4ZnlneOb55/QWBRcElomYqjo6uzY3mgm1N6sqdzYL6Pi6OBv0uFY5Brhm+oW1BkhLtTdqJ7RXmKR4aFrVKtjgKpXjTC6cXc1NwkND9ChIjzpKJSbSwAUEsBAhQDFAAAAAgAAFAvXI1M/P0GAAAABAAAAA0AAAAAAAAAAAAAAIABAAAAAG1hbmlmZXN0Lmpzb25QSwECFAMUAAAACAAAUC9cYWmhmHMAAAC2AAAAHgAAAAAAAAAAAAAAgAExAAAAZGF0YS8wMV9zcG9ydF9hc3NvY2lhdGlvbi5qc29uUEsBAhQDFAAAAAgAAFAvXD3y643RAAAAcQEAABIAAAAAAAAAAAAAAIAB4AAAAGRhdGEvMDJfdXNlcnMuanNvblBLBQYAAAAAAwADAMcAAADhAQAAAAANCi0tYXNzb2NpYXRpb24tdHJhbnNmZXItYm91bmRhcnktLQ0K",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-import-validate-export-format-object",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "is_valid": false,
+    "errors": [
+     "Unsupported export format: {'format': 'x'}"
+    ],
+    "warnings": [],
+    "info": {
+     "file_size_bytes": 936,
+     "file_size_mb": 0.0,
+     "export_format": {
+      "format": "x"
+     },
+     "export_date": "2026-01-15T10:00:00+00:00",
+     "association": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000976950",
+      "denomination": "Società importata",
+      "extra": 1
+     }
+    }
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "raw_b64": "LS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImV4cG9ydC56aXAiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3ppcA0KDQpQSwMEFAAAAAgAAFAvXNQuVvjwAAAA2QEAAA0AAABtYW5pZmVzdC5qc29uZU9BasMwEPyK2Wtjd2WStMmtFHLsJempFLHYCqhEUpHkEjD+S//Sj1UrN42DhVikmZ3Z2R6+lA/aWdgWICqsEBYFqPOn81EenTcUE9PD/xPOMFw7WoqKwRrrdYmiFKuDwC3yvcuV3SgE12iK45QeQpZOUKlbNiGB+ZS5LLk8Xr6Im4f1ZpX9WmWd0fZiCPvko+LPd6ENO1OkcYfoKdGC4xrXqlOQY2rF0956sGRy+D2DT5OQSXDUp8ylBekehZxlrj7C2Nm4zsa/OVfP16D81Adr2SUozGT1jezZdT6oWQCBssnMXI83+he3Y93wPvwCUEsDBBQAAAAIAABQL1xhaaGYcwAAALYAAAAeAAAAZGF0YS8wMV9zcG9ydF9hc3NvY2lhdGlvbi5qc29ui65WKi7ILyqJTywuzk/OTCzJzM+Lz0xRslJQSjQ0AANdMGECIixgXAMDS3MzS1MDJR0FpdLi1CLitRiCtKSk5uXnZuaBbQPpCwZanVpyeIFCZi7IMYkliSBVJYkV8cn5KakgFQaGRsYmpmbmFpYGSrWxAFBLAwQUAAAACAAAUC9cPfLrjdEAAABxAQAAEgAAAGRhdGEvMDJfdXNlcnMuanNvbouuViotTi2Kz0xRslJQSjQ0AANdMGECIixgXAMDS3MzS1NDJR0FsJa8xNxUkJ7M3IL8opLUFN388rzUIpBsam5iZg5ICiziAFOgl1qRmFuQk6pXklpcAlJXkFhcXJ5fBLa5ICk7Jc0ovjgj0cjUTMUMbJ+KY5Jzimuae4ZnlneOb55/QWBRcElomYqjo6uzY3mgm1N6sqdzYL6Pi6OBv0uFY5Brhm+oW1BkhLtTdqJ7RXmKR4aFrVKtjgKpXjTC6cXc1NwkND9ChIjzpKJSbSwAUEsBAhQDFAAAAAgAAFAvXNQuVvjwAAAA2QEAAA0AAAAAAAAAAAAAAIABAAAAAG1hbmlmZXN0Lmpzb25QSwECFAMUAAAACAAAUC9cYWmhmHMAAAC2AAAAHgAAAAAAAAAAAAAAgAEbAQAAZGF0YS8wMV9zcG9ydF9hc3NvY2lhdGlvbi5qc29uUEsBAhQDFAAAAAgAAFAvXD3y643RAAAAcQEAABIAAAAAAAAAAAAAAIABygEAAGRhdGEvMDJfdXNlcnMuanNvblBLBQYAAAAAAwADAMcAAADLAgAAAAANCi0tYXNzb2NpYXRpb24tdHJhbnNmZXItYm91bmRhcnktLQ0K",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-import-validate-export-format-number",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "is_valid": false,
+    "errors": [
+     "Unsupported export format: 5"
+    ],
+    "warnings": [],
+    "info": {
+     "file_size_bytes": 931,
+     "file_size_mb": 0.0,
+     "export_format": 5,
+     "export_date": "2026-01-15T10:00:00+00:00",
+     "association": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000976950",
+      "denomination": "Società importata",
+      "extra": 1
+     }
+    }
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "raw_b64": "LS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImV4cG9ydC56aXAiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3ppcA0KDQpQSwMEFAAAAAgAAFAvXFH5xpbrAAAAywEAAA0AAABtYW5pZmVzdC5qc29uZY9BasMwEEWvYrRt7Y5MnDbZlUKX3aRdlSAGWwGVSFM0cikY3yV36cUqyQlxsBAD80f/zdcgfrRnQ05sCyErqEDcF0L/fpMP6kDeYoiT5qp1GHR6W0O9LkGWsnmXsIV073JNfmSm1mCYuIPgbJ2pynQJghLyKXNZpfJ0aQE2j+tNk3mddmSNuwDFLnJ0+DsVxiYyBpxSB49xLMfYWOr0kdWUWqdtn4NwaHP4XRKfZyGj4WCOeRY/iA8g1SJz9cXTy5Z6F857rswP1n7OgVr1UeKFrb6xvVDvWS8CSFBtniz9cON/o9fkG/fjP1BLAwQUAAAACAAAUC9cYWmhmHMAAAC2AAAAHgAAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvbouuViouyC8qiU8sLs5PzkwsyczPi89MUbJSUEo0NAADXTBhAiIsYFwDA0tzM0tTAyUdBaXS4tQi4rUYgrSkpObl52bmgW0D6QsGWp1acniBQmYuyDGJJYkgVSWJFfHJ+SmpIBUGhkbGJqZm5haWBkq1sQBQSwMEFAAAAAgAAFAvXD3y643RAAAAcQEAABIAAABkYXRhLzAyX3VzZXJzLmpzb26LrlYqLU4tis9MUbJSUEo0NAADXTBhAiIsYFwDA0tzM0tTQyUdBbCWvMTcVJCezNyC/KKS1BTd/PK81CKQbGpuYmYOSAos4gBToJdakZhbkJOqV5JaXAJSV5BYXFyeXwS2uSApOyXNKL44I9HI1EzFDGyfimOSc4prmnuGZ5Z3jm+ef0FgUXBJaJmKo6Ors2N5oJtTerKnc2C+j4ujgb9LhWOQa4ZvqFtQZIS7U3aie0V5ikeGha1SrY4CqV40wunF3NTcJDQ/QoSI86SiUm0sAFBLAQIUAxQAAAAIAABQL1xR+caW6wAAAMsBAAANAAAAAAAAAAAAAACAAQAAAABtYW5pZmVzdC5qc29uUEsBAhQDFAAAAAgAAFAvXGFpoZhzAAAAtgAAAB4AAAAAAAAAAAAAAIABFgEAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvblBLAQIUAxQAAAAIAABQL1w98uuN0QAAAHEBAAASAAAAAAAAAAAAAACAAcUBAABkYXRhLzAyX3VzZXJzLmpzb25QSwUGAAAAAAMAAwDHAAAAxgIAAAAADQotLWFzc29jaWF0aW9uLXRyYW5zZmVyLWJvdW5kYXJ5LS0NCg==",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-import-validate-models-object",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante la validazione: 'str' object has no attribute 'get'"
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "raw_b64": "LS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImV4cG9ydC56aXAiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3ppcA0KDQpQSwMEFAAAAAgAAFAvXD8JBYerAAAAEAEAAA0AAABtYW5pZmVzdC5qc29uTY9RCoMwEESvIvvbKhuptvUa7b9smxVCjSlJEIt4l96lF6uJCoYwsDvDy2SEnq1TpoMqAZFhhnBMgIe3sb5ujNXkg/OgV8ef2sX16vZiF5XkOQRzzMsURSqKu8AKwz1EDVlyzjwV+eW5ERbcblsrGSAkMJ40yinIZRsRr+fyWkSe5M5o1W1AuM0c9r9vonQgk6elobc022KaB20kt279AstYo1Ft7D7ANP0BUEsDBBQAAAAIAABQL1xhaaGYcwAAALYAAAAeAAAAZGF0YS8wMV9zcG9ydF9hc3NvY2lhdGlvbi5qc29ui65WKi7ILyqJTywuzk/OTCzJzM+Lz0xRslJQSjQ0AANdMGECIixgXAMDS3MzS1MDJR0FpdLi1CLitRiCtKSk5uXnZuaBbQPpCwZanVpyeIFCZi7IMYkliSBVJYkV8cn5KakgFQaGRsYmpmbmFpYGSrWxAFBLAwQUAAAACAAAUC9cPfLrjdEAAABxAQAAEgAAAGRhdGEvMDJfdXNlcnMuanNvbouuViotTi2Kz0xRslJQSjQ0AANdMGECIixgXAMDS3MzS1NDJR0FsJa8xNxUkJ7M3IL8opLUFN388rzUIpBsam5iZg5ICiziAFOgl1qRmFuQk6pXklpcAlJXkFhcXJ5fBLa5ICk7Jc0ovjgj0cjUTMUMbJ+KY5Jzimuae4ZnlneOb55/QWBRcElomYqjo6uzY3mgm1N6sqdzYL6Pi6OBv0uFY5Brhm+oW1BkhLtTdqJ7RXmKR4aFrVKtjgKpXjTC6cXc1NwkND9ChIjzpKJSbSwAUEsBAhQDFAAAAAgAAFAvXD8JBYerAAAAEAEAAA0AAAAAAAAAAAAAAIABAAAAAG1hbmlmZXN0Lmpzb25QSwECFAMUAAAACAAAUC9cYWmhmHMAAAC2AAAAHgAAAAAAAAAAAAAAgAHWAAAAZGF0YS8wMV9zcG9ydF9hc3NvY2lhdGlvbi5qc29uUEsBAhQDFAAAAAgAAFAvXD3y643RAAAAcQEAABIAAAAAAAAAAAAAAIABhQEAAGRhdGEvMDJfdXNlcnMuanNvblBLBQYAAAAAAwADAMcAAACGAgAAAAANCi0tYXNzb2NpYXRpb24tdHJhbnNmZXItYm91bmRhcnktLQ0K",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-import-validate-models-string",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante la validazione: 'str' object has no attribute 'get'"
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "raw_b64": "LS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImV4cG9ydC56aXAiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3ppcA0KDQpQSwMEFAAAAAgAAFAvXFVKFxGlAAAABwEAAA0AAABtYW5pZmVzdC5qc29uTY9hCsIwDIWvMvJXN9Lhpts19P/IbISiXaUtQxm7i3fxYq6tg5XyIHmPL8kEI1unzABtBqLAAmGfAb+exvruZqwmH5ye7gO/Oxfbf3cUm6gkzyFYYlnnKHJRXQS2GP4uasiSc+aqyKdxEyTcptspGSAkML48yiHIaS0Rm2PdVJEneTBaDSsQzguH/feTKR3I5Clt6C0ttpiXQhvJD/c/gdO0HuYfUEsDBBQAAAAIAABQL1xhaaGYcwAAALYAAAAeAAAAZGF0YS8wMV9zcG9ydF9hc3NvY2lhdGlvbi5qc29ui65WKi7ILyqJTywuzk/OTCzJzM+Lz0xRslJQSjQ0AANdMGECIixgXAMDS3MzS1MDJR0FpdLi1CLitRiCtKSk5uXnZuaBbQPpCwZanVpyeIFCZi7IMYkliSBVJYkV8cn5KakgFQaGRsYmpmbmFpYGSrWxAFBLAwQUAAAACAAAUC9cPfLrjdEAAABxAQAAEgAAAGRhdGEvMDJfdXNlcnMuanNvbouuViotTi2Kz0xRslJQSjQ0AANdMGECIixgXAMDS3MzS1NDJR0FsJa8xNxUkJ7M3IL8opLUFN388rzUIpBsam5iZg5ICiziAFOgl1qRmFuQk6pXklpcAlJXkFhcXJ5fBLa5ICk7Jc0ovjgj0cjUTMUMbJ+KY5Jzimuae4ZnlneOb55/QWBRcElomYqjo6uzY3mgm1N6sqdzYL6Pi6OBv0uFY5Brhm+oW1BkhLtTdqJ7RXmKR4aFrVKtjgKpXjTC6cXc1NwkND9ChIjzpKJSbSwAUEsBAhQDFAAAAAgAAFAvXFVKFxGlAAAABwEAAA0AAAAAAAAAAAAAAIABAAAAAG1hbmlmZXN0Lmpzb25QSwECFAMUAAAACAAAUC9cYWmhmHMAAAC2AAAAHgAAAAAAAAAAAAAAgAHQAAAAZGF0YS8wMV9zcG9ydF9hc3NvY2lhdGlvbi5qc29uUEsBAhQDFAAAAAgAAFAvXD3y643RAAAAcQEAABIAAAAAAAAAAAAAAIABfwEAAGRhdGEvMDJfdXNlcnMuanNvblBLBQYAAAAAAwADAMcAAACAAgAAAAANCi0tYXNzb2NpYXRpb24tdHJhbnNmZXItYm91bmRhcnktLQ0K",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-import-validate-models-number",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante la validazione: 'int' object is not iterable"
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "raw_b64": "LS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImV4cG9ydC56aXAiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3ppcA0KDQpQSwMEFAAAAAgAAFAvXDpxX4mkAAAABAEAAA0AAABtYW5pZmVzdC5qc29uTY9hCsIwDIWvMvpXN9Lhpts19P+INkLRttKWoYzdxbt4MZdug5XyIHmPL8kgevJBOyvaTMgCChD7TND75Xzs7s4bjOxc8WHp04XUXtxebqIKI3GwhLLOQeayukhogf8uKWcxBHfTGOdxg5hxm26nFUNQQnp5kgPLaS0BmmPdVImnyDqj7QoU54lD8ffNtGEyRpw3jB4nW45TYZyiZ1hOIJ5WjX9QSwMEFAAAAAgAAFAvXGFpoZhzAAAAtgAAAB4AAABkYXRhLzAxX3Nwb3J0X2Fzc29jaWF0aW9uLmpzb26LrlYqLsgvKolPLC7OT85MLMnMz4vPTFGyUlBKNDQAA10wYQIiLGBcAwNLczNLUwMlHQWl0uLUIuK1GIK0pKTm5edm5oFtA+kLBlqdWnJ4gUJmLsgxiSWJIFUliRXxyfkpqSAVBoZGxiamZuYWlgZKtbEAUEsDBBQAAAAIAABQL1w98uuN0QAAAHEBAAASAAAAZGF0YS8wMl91c2Vycy5qc29ui65WKi1OLYrPTFGyUlBKNDQAA10wYQIiLGBcAwNLczNLU0MlHQWwlrzE3FSQnszcgvyiktQU3fzyvNQikGxqbmJmDkgKLOIAU6CXWpGYW5CTqleSWlwCUleQWFxcnl8EtrkgKTslzSi+OCPRyNRMxQxsn4pjknOKa5p7hmeWd45vnn9BYFFwSWiZiqOjq7NjeaCbU3qyp3Ngvo+Lo4G/S4VjkGuGb6hbUGSEu1N2ontFeYpHhoWtUq2OAqleNMLpxdzU3CQ0P0KEiPOkolJtLABQSwECFAMUAAAACAAAUC9cOnFfiaQAAAAEAQAADQAAAAAAAAAAAAAAgAEAAAAAbWFuaWZlc3QuanNvblBLAQIUAxQAAAAIAABQL1xhaaGYcwAAALYAAAAeAAAAAAAAAAAAAACAAc8AAABkYXRhLzAxX3Nwb3J0X2Fzc29jaWF0aW9uLmpzb25QSwECFAMUAAAACAAAUC9cPfLrjdEAAABxAQAAEgAAAAAAAAAAAAAAgAF+AQAAZGF0YS8wMl91c2Vycy5qc29uUEsFBgAAAAADAAMAxwAAAH8CAAAAAA0KLS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeS0tDQo=",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-import-validate-models-without-file",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "is_valid": true,
+    "errors": [],
+    "warnings": [],
+    "info": {
+     "file_size_bytes": 877,
+     "file_size_mb": 0.0,
+     "export_format": "bakney_sport_export_v1",
+     "export_date": "2026-01-15T10:00:00+00:00",
+     "expected_files": 0,
+     "missing_files": 0,
+     "association": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000976950",
+      "denomination": "Società importata",
+      "tax_code": "01234567890"
+     },
+     "owner_user": {
+      "user_id": "a1000000-0000-4000-8000-000000976951",
+      "username": "imported-owner",
+      "email": "owner@imported.example.test",
+      "requires_recovery_password": false
+     }
+    }
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "raw_b64": "LS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImV4cG9ydC56aXAiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3ppcA0KDQpQSwMEFAAAAAgAAFAvXMuO3+i1AAAAFwEAAA0AAABtYW5pZmVzdC5qc29uTY9RCsIwDIavMvKqG+lwU3cAH33RN5ERXYTi2spahjJ2F+/ixVy7DVbKD8n/8yXpoOXGSqOhiEAkmCCsI+D3yzSufJhGkfPOjZ6aP6UN7cltxSJakWMfTDHNYxSxyM4CC/R/FdRnyVpzl+TGcR2MuEW3lJWHkMDw4iAbL7u5RNxv830WeBVro6SegXAaOOx+30gqTyZH44auocEW/VAoU3FtpxPYT7t0oEmF5Y/mIGuG/tr/AVBLAwQUAAAACAAAUC9cYWmhmHMAAAC2AAAAHgAAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvbouuViouyC8qiU8sLs5PzkwsyczPi89MUbJSUEo0NAADXTBhAiIsYFwDA0tzM0tTAyUdBaXS4tQi4rUYgrSkpObl52bmgW0D6QsGWp1acniBQmYuyDGJJYkgVSWJFfHJ+SmpIBUGhkbGJqZm5haWBkq1sQBQSwMEFAAAAAgAAFAvXD3y643RAAAAcQEAABIAAABkYXRhLzAyX3VzZXJzLmpzb26LrlYqLU4tis9MUbJSUEo0NAADXTBhAiIsYFwDA0tzM0tTQyUdBbCWvMTcVJCezNyC/KKS1BTd/PK81CKQbGpuYmYOSAos4gBToJdakZhbkJOqV5JaXAJSV5BYXFyeXwS2uSApOyXNKL44I9HI1EzFDGyfimOSc4prmnuGZ5Z3jm+ef0FgUXBJaJmKo6Ors2N5oJtTerKnc2C+j4ujgb9LhWOQa4ZvqFtQZIS7U3aie0V5ikeGha1SrY4CqV40wunF3NTcJDQ/QoSI86SiUm0sAFBLAQIUAxQAAAAIAABQL1zLjt/otQAAABcBAAANAAAAAAAAAAAAAACAAQAAAABtYW5pZmVzdC5qc29uUEsBAhQDFAAAAAgAAFAvXGFpoZhzAAAAtgAAAB4AAAAAAAAAAAAAAIAB4AAAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvblBLAQIUAxQAAAAIAABQL1w98uuN0QAAAHEBAAASAAAAAAAAAAAAAACAAY8BAABkYXRhLzAyX3VzZXJzLmpzb25QSwUGAAAAAAMAAwDHAAAAkAIAAAAADQotLWFzc29jaWF0aW9uLXRyYW5zZmVyLWJvdW5kYXJ5LS0NCg==",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-import-validate-models-list-file",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "is_valid": true,
+    "errors": [],
+    "warnings": [
+     "Missing data file: data/['data/10_courses.json']"
+    ],
+    "info": {
+     "file_size_bytes": 897,
+     "file_size_mb": 0.0,
+     "export_format": "bakney_sport_export_v1",
+     "export_date": "2026-01-15T10:00:00+00:00",
+     "expected_files": 1,
+     "missing_files": 1,
+     "association": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000976950",
+      "denomination": "Società importata",
+      "tax_code": "01234567890"
+     },
+     "owner_user": {
+      "user_id": "a1000000-0000-4000-8000-000000976951",
+      "username": "imported-owner",
+      "email": "owner@imported.example.test",
+      "requires_recovery_password": false
+     }
+    }
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "raw_b64": "LS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImV4cG9ydC56aXAiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3ppcA0KDQpQSwMEFAAAAAgAAFAvXHS+tpbJAAAAOQEAAA0AAABtYW5pZmVzdC5qc29uTU9BjsIwDPxK5Su0OGhht1z3CXCrUOWlRspCklUSKlDVv+xf+BhxChJRNJI94xl7gJ590M7CpgBVYYUwL4Cvf87H9ui8oSjMD50s39qQ20+2V2/SjiKLcInLdYmqVKudwg3Kn2UULYXgDpriFDfAZPfWbXUnJqQwvzLDh8DXq0SsP9f1Kvt1bJ3R9mUI2+TD8f5faCPOFGnaMHpKtBpTYVzH5/A8gSWtGcCSyct/u4sPLDNHfZZOA+kuWihsD5kK1W9IUftxPz4AUEsDBBQAAAAIAABQL1xhaaGYcwAAALYAAAAeAAAAZGF0YS8wMV9zcG9ydF9hc3NvY2lhdGlvbi5qc29ui65WKi7ILyqJTywuzk/OTCzJzM+Lz0xRslJQSjQ0AANdMGECIixgXAMDS3MzS1MDJR0FpdLi1CLitRiCtKSk5uXnZuaBbQPpCwZanVpyeIFCZi7IMYkliSBVJYkV8cn5KakgFQaGRsYmpmbmFpYGSrWxAFBLAwQUAAAACAAAUC9cPfLrjdEAAABxAQAAEgAAAGRhdGEvMDJfdXNlcnMuanNvbouuViotTi2Kz0xRslJQSjQ0AANdMGECIixgXAMDS3MzS1NDJR0FsJa8xNxUkJ7M3IL8opLUFN388rzUIpBsam5iZg5ICiziAFOgl1qRmFuQk6pXklpcAlJXkFhcXJ5fBLa5ICk7Jc0ovjgj0cjUTMUMbJ+KY5Jzimuae4ZnlneOb55/QWBRcElomYqjo6uzY3mgm1N6sqdzYL6Pi6OBv0uFY5Brhm+oW1BkhLtTdqJ7RXmKR4aFrVKtjgKpXjTC6cXc1NwkND9ChIjzpKJSbSwAUEsBAhQDFAAAAAgAAFAvXHS+tpbJAAAAOQEAAA0AAAAAAAAAAAAAAIABAAAAAG1hbmlmZXN0Lmpzb25QSwECFAMUAAAACAAAUC9cYWmhmHMAAAC2AAAAHgAAAAAAAAAAAAAAgAH0AAAAZGF0YS8wMV9zcG9ydF9hc3NvY2lhdGlvbi5qc29uUEsBAhQDFAAAAAgAAFAvXD3y643RAAAAcQEAABIAAAAAAAAAAAAAAIABowEAAGRhdGEvMDJfdXNlcnMuanNvblBLBQYAAAAAAwADAMcAAACkAgAAAAANCi0tYXNzb2NpYXRpb24tdHJhbnNmZXItYm91bmRhcnktLQ0K",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-import-validate-association-record-list",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "is_valid": false,
+    "errors": [
+     "Error reading owner identity: 'list' object has no attribute 'get'"
+    ],
+    "warnings": [
+     "Missing data file: data/10_courses.json"
+    ],
+    "info": {
+     "file_size_bytes": 879,
+     "file_size_mb": 0.0,
+     "export_format": "bakney_sport_export_v1",
+     "export_date": "2026-01-15T10:00:00+00:00",
+     "expected_files": 3,
+     "missing_files": 1,
+     "association": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000976950",
+      "denomination": "Società importata",
+      "extra": 1
+     }
+    }
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "raw_b64": "LS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImV4cG9ydC56aXAiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3ppcA0KDQpQSwMEFAAAAAgAAFAvXNb2Exz0AAAA4gEAAA0AAABtYW5pZmVzdC5qc29uZU/BSsQwEP2Vkqu2Toq7unsTwaOX1ZNIGNtZiG4SSdJFKf0X/8UfM5N2sUtDGJj35r1504sj+aCdFdtCyAoqEJeFoK9P56PaO28wMvOGH5a+VcjwxB7lbLTFSDxYQ70uQZZy9SRhC/wvcuVZDME1GuO4rhej3QxVumUTlJBfmcs1l9tTC7C5WW9W2a8l64y2J0OxSz4Uf38KbdgZI44Jo8dEyyE1xrV0CNMJxNteemHR5PA7Bu9mIZNgrw+ZSwfiFUi1yFy9h3GycZ2N055/z+dAfu4DteoSFBay+kx27zofaBFAgmoys9TDmf7RPbBueB3+AFBLAwQUAAAACAAAUC9cqTukMDYAAABEAAAAHgAAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvbouOrlYqLsgvKolPLC7OT85MLMnMz4vPTFGyUlBKNDQAA10wYQIiLGBcAwNLczNLUwOl2thYAFBLAwQUAAAACAAAUC9cPfLrjdEAAABxAQAAEgAAAGRhdGEvMDJfdXNlcnMuanNvbouuViotTi2Kz0xRslJQSjQ0AANdMGECIixgXAMDS3MzS1NDJR0FsJa8xNxUkJ7M3IL8opLUFN388rzUIpBsam5iZg5ICiziAFOgl1qRmFuQk6pXklpcAlJXkFhcXJ5fBLa5ICk7Jc0ovjgj0cjUTMUMbJ+KY5Jzimuae4ZnlneOb55/QWBRcElomYqjo6uzY3mgm1N6sqdzYL6Pi6OBv0uFY5Brhm+oW1BkhLtTdqJ7RXmKR4aFrVKtjgKpXjTC6cXc1NwkND9ChIjzpKJSbSwAUEsBAhQDFAAAAAgAAFAvXNb2Exz0AAAA4gEAAA0AAAAAAAAAAAAAAIABAAAAAG1hbmlmZXN0Lmpzb25QSwECFAMUAAAACAAAUC9cqTukMDYAAABEAAAAHgAAAAAAAAAAAAAAgAEfAQAAZGF0YS8wMV9zcG9ydF9hc3NvY2lhdGlvbi5qc29uUEsBAhQDFAAAAAgAAFAvXD3y643RAAAAcQEAABIAAAAAAAAAAAAAAIABkQEAAGRhdGEvMDJfdXNlcnMuanNvblBLBQYAAAAAAwADAMcAAACSAgAAAAANCi0tYXNzb2NpYXRpb24tdHJhbnNmZXItYm91bmRhcnktLQ0K",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-import-validate-users-object",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "is_valid": false,
+    "errors": [
+     "Error reading owner identity: Expected a JSON array"
+    ],
+    "warnings": [
+     "Missing data file: data/10_courses.json"
+    ],
+    "info": {
+     "file_size_bytes": 768,
+     "file_size_mb": 0.0,
+     "export_format": "bakney_sport_export_v1",
+     "export_date": "2026-01-15T10:00:00+00:00",
+     "expected_files": 3,
+     "missing_files": 1,
+     "association": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000976950",
+      "denomination": "Società importata",
+      "extra": 1
+     }
+    }
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "raw_b64": "LS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImV4cG9ydC56aXAiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3ppcA0KDQpQSwMEFAAAAAgAAFAvXNb2Exz0AAAA4gEAAA0AAABtYW5pZmVzdC5qc29uZU/BSsQwEP2Vkqu2Toq7unsTwaOX1ZNIGNtZiG4SSdJFKf0X/8UfM5N2sUtDGJj35r1504sj+aCdFdtCyAoqEJeFoK9P56PaO28wMvOGH5a+VcjwxB7lbLTFSDxYQ70uQZZy9SRhC/wvcuVZDME1GuO4rhej3QxVumUTlJBfmcs1l9tTC7C5WW9W2a8l64y2J0OxSz4Uf38KbdgZI44Jo8dEyyE1xrV0CNMJxNteemHR5PA7Bu9mIZNgrw+ZSwfiFUi1yFy9h3GycZ2N055/z+dAfu4DteoSFBay+kx27zofaBFAgmoys9TDmf7RPbBueB3+AFBLAwQUAAAACAAAUC9cYWmhmHMAAAC2AAAAHgAAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvbouuViouyC8qiU8sLs5PzkwsyczPi89MUbJSUEo0NAADXTBhAiIsYFwDA0tzM0tTAyUdBaXS4tQi4rUYgrSkpObl52bmgW0D6QsGWp1acniBQmYuyDGJJYkgVSWJFfHJ+SmpIBUGhkbGJqZm5haWBkq1sQBQSwMEFAAAAAgAAFAvXJUMHjYlAAAAMwAAABIAAABkYXRhLzAyX3VzZXJzLmpzb26rViotTi2Kz0xRslJQSjQ0AANdMGECIixgXAMDS3MzS1NDpVoAUEsBAhQDFAAAAAgAAFAvXNb2Exz0AAAA4gEAAA0AAAAAAAAAAAAAAIABAAAAAG1hbmlmZXN0Lmpzb25QSwECFAMUAAAACAAAUC9cYWmhmHMAAAC2AAAAHgAAAAAAAAAAAAAAgAEfAQAAZGF0YS8wMV9zcG9ydF9hc3NvY2lhdGlvbi5qc29uUEsBAhQDFAAAAAgAAFAvXJUMHjYlAAAAMwAAABIAAAAAAAAAAAAAAIABzgEAAGRhdGEvMDJfdXNlcnMuanNvblBLBQYAAAAAAwADAMcAAAAjAgAAAAANCi0tYXNzb2NpYXRpb24tdHJhbnNmZXItYm91bmRhcnktLQ0K",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-import-validate-users-truncated",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "is_valid": false,
+    "errors": [
+     "Invalid JSON in data files: Unterminated string starting at: line 1 column 21 (char 20)"
+    ],
+    "warnings": [
+     "Missing data file: data/10_courses.json"
+    ],
+    "info": {
+     "file_size_bytes": 754,
+     "file_size_mb": 0.0,
+     "export_format": "bakney_sport_export_v1",
+     "export_date": "2026-01-15T10:00:00+00:00",
+     "expected_files": 3,
+     "missing_files": 1,
+     "association": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000976950",
+      "denomination": "Società importata",
+      "extra": 1
+     }
+    }
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "raw_b64": "LS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImV4cG9ydC56aXAiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3ppcA0KDQpQSwMEFAAAAAgAAFAvXNb2Exz0AAAA4gEAAA0AAABtYW5pZmVzdC5qc29uZU/BSsQwEP2Vkqu2Toq7unsTwaOX1ZNIGNtZiG4SSdJFKf0X/8UfM5N2sUtDGJj35r1504sj+aCdFdtCyAoqEJeFoK9P56PaO28wMvOGH5a+VcjwxB7lbLTFSDxYQ70uQZZy9SRhC/wvcuVZDME1GuO4rhej3QxVumUTlJBfmcs1l9tTC7C5WW9W2a8l64y2J0OxSz4Uf38KbdgZI44Jo8dEyyE1xrV0CNMJxNteemHR5PA7Bu9mIZNgrw+ZSwfiFUi1yFy9h3GycZ2N055/z+dAfu4DteoSFBay+kx27zofaBFAgmoys9TDmf7RPbBueB3+AFBLAwQUAAAACAAAUC9cYWmhmHMAAAC2AAAAHgAAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvbouuViouyC8qiU8sLs5PzkwsyczPi89MUbJSUEo0NAADXTBhAiIsYFwDA0tzM0tTAyUdBaXS4tQi4rUYgrSkpObl52bmgW0D6QsGWp1acniBQmYuyDGJJYkgVSWJFfHJ+SmpIBUGhkbGJqZm5haWBkq1sQBQSwMEFAAAAAgAAFAvXAxpm8gXAAAAGAAAABIAAABkYXRhLzAyX3VzZXJzLmpzb26LrlYqLU4tis9MUbJSUEpUqtVRAIsAAFBLAQIUAxQAAAAIAABQL1zW9hMc9AAAAOIBAAANAAAAAAAAAAAAAACAAQAAAABtYW5pZmVzdC5qc29uUEsBAhQDFAAAAAgAAFAvXGFpoZhzAAAAtgAAAB4AAAAAAAAAAAAAAIABHwEAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvblBLAQIUAxQAAAAIAABQL1wMaZvIFwAAABgAAAASAAAAAAAAAAAAAACAAc4BAABkYXRhLzAyX3VzZXJzLmpzb25QSwUGAAAAAAMAAwDHAAAAFQIAAAAADQotLWFzc29jaWF0aW9uLXRyYW5zZmVyLWJvdW5kYXJ5LS0NCg==",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-import-validate-users-non-dict-item",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "is_valid": false,
+    "errors": [
+     "Error reading owner identity: 'int' object has no attribute 'get'"
+    ],
+    "warnings": [
+     "Missing data file: data/10_courses.json"
+    ],
+    "info": {
+     "file_size_bytes": 736,
+     "file_size_mb": 0.0,
+     "export_format": "bakney_sport_export_v1",
+     "export_date": "2026-01-15T10:00:00+00:00",
+     "expected_files": 3,
+     "missing_files": 1,
+     "association": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000976950",
+      "denomination": "Società importata",
+      "extra": 1
+     }
+    }
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "raw_b64": "LS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImV4cG9ydC56aXAiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3ppcA0KDQpQSwMEFAAAAAgAAFAvXNb2Exz0AAAA4gEAAA0AAABtYW5pZmVzdC5qc29uZU/BSsQwEP2Vkqu2Toq7unsTwaOX1ZNIGNtZiG4SSdJFKf0X/8UfM5N2sUtDGJj35r1504sj+aCdFdtCyAoqEJeFoK9P56PaO28wMvOGH5a+VcjwxB7lbLTFSDxYQ70uQZZy9SRhC/wvcuVZDME1GuO4rhej3QxVumUTlJBfmcs1l9tTC7C5WW9W2a8l64y2J0OxSz4Uf38KbdgZI44Jo8dEyyE1xrV0CNMJxNteemHR5PA7Bu9mIZNgrw+ZSwfiFUi1yFy9h3GycZ2N055/z+dAfu4DteoSFBay+kx27zofaBFAgmoys9TDmf7RPbBueB3+AFBLAwQUAAAACAAAUC9cYWmhmHMAAAC2AAAAHgAAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvbouuViouyC8qiU8sLs5PzkwsyczPi89MUbJSUEo0NAADXTBhAiIsYFwDA0tzM0tTAyUdBaXS4tQi4rUYgrSkpObl52bmgW0D6QsGWp1acniBQmYuyDGJJYkgVSWJFfHJ+SmpIBUGhkbGJqZm5haWBkq1sQBQSwMEFAAAAAgAAFAvXLgyL0wFAAAAAwAAABIAAABkYXRhLzAyX3VzZXJzLmpzb26LNowFAFBLAQIUAxQAAAAIAABQL1zW9hMc9AAAAOIBAAANAAAAAAAAAAAAAACAAQAAAABtYW5pZmVzdC5qc29uUEsBAhQDFAAAAAgAAFAvXGFpoZhzAAAAtgAAAB4AAAAAAAAAAAAAAIABHwEAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvblBLAQIUAxQAAAAIAABQL1y4Mi9MBQAAAAMAAAASAAAAAAAAAAAAAACAAc4BAABkYXRhLzAyX3VzZXJzLmpzb25QSwUGAAAAAAMAAwDHAAAAAwIAAAAADQotLWFzc29jaWF0aW9uLXRyYW5zZmVyLWJvdW5kYXJ5LS0NCg==",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-import-validate-users-integer-id",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "is_valid": true,
+    "errors": [],
+    "warnings": [
+     "Missing data file: data/10_courses.json"
+    ],
+    "info": {
+     "file_size_bytes": 802,
+     "file_size_mb": 0.0,
+     "export_format": "bakney_sport_export_v1",
+     "export_date": "2026-01-15T10:00:00+00:00",
+     "expected_files": 3,
+     "missing_files": 1,
+     "association": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000976950",
+      "denomination": "Società importata",
+      "tax_code": "01234567890"
+     },
+     "owner_user": {
+      "user_id": 5,
+      "username": "imported-owner",
+      "email": "owner@imported.example.test",
+      "requires_recovery_password": true
+     }
+    }
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "raw_b64": "LS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImV4cG9ydC56aXAiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3ppcA0KDQpQSwMEFAAAAAgAAFAvXNb2Exz0AAAA4gEAAA0AAABtYW5pZmVzdC5qc29uZU/BSsQwEP2Vkqu2Toq7unsTwaOX1ZNIGNtZiG4SSdJFKf0X/8UfM5N2sUtDGJj35r1504sj+aCdFdtCyAoqEJeFoK9P56PaO28wMvOGH5a+VcjwxB7lbLTFSDxYQ70uQZZy9SRhC/wvcuVZDME1GuO4rhej3QxVumUTlJBfmcs1l9tTC7C5WW9W2a8l64y2J0OxSz4Uf38KbdgZI44Jo8dEyyE1xrV0CNMJxNteemHR5PA7Bu9mIZNgrw+ZSwfiFUi1yFy9h3GycZ2N055/z+dAfu4DteoSFBay+kx27zofaBFAgmoys9TDmf7RPbBueB3+AFBLAwQUAAAACAAAUC9cBFznPHMAAACRAAAAHgAAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvbouuViouyC8qiU8sLs5PzkwsyczPi89MUbJSUEo0NAADXTBhAiIsYFwDA0tzM0tTAyUdBaXS4tQiiBZTIC8lNS8/NzMPbBDIlGCgqaklhxcoZOaC7EksSQTpKUmsiE/OT0kFqTAwNDI2MTUzt7A0UKqNBQBQSwMEFAAAAAgAAFAvXJ/XKCtHAAAAVgAAABIAAABkYXRhLzAyX3VzZXJzLmpzb26LrlYqLU4tis9MUbJSMNVRAPPyEnNTgVylzNyC/KKS1BTd/PK81CIloGxqbmJmDkgKLOIAU6CXWpGYW5CTqleSWlyiVBsLAFBLAQIUAxQAAAAIAABQL1zW9hMc9AAAAOIBAAANAAAAAAAAAAAAAACAAQAAAABtYW5pZmVzdC5qc29uUEsBAhQDFAAAAAgAAFAvXARc5zxzAAAAkQAAAB4AAAAAAAAAAAAAAIABHwEAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvblBLAQIUAxQAAAAIAABQL1yf1ygrRwAAAFYAAAASAAAAAAAAAAAAAACAAc4BAABkYXRhLzAyX3VzZXJzLmpzb25QSwUGAAAAAAMAAwDHAAAARQIAAAAADQotLWFzc29jaWF0aW9uLXRyYW5zZmVyLWJvdW5kYXJ5LS0NCg==",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-import-validate-manifest-utf16",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "is_valid": true,
+    "errors": [],
+    "warnings": [
+     "Missing data file: data/10_courses.json"
+    ],
+    "info": {
+     "file_size_bytes": 1008,
+     "file_size_mb": 0.0,
+     "export_format": "bakney_sport_export_v1",
+     "export_date": "2026-01-15T10:00:00+00:00",
+     "expected_files": 3,
+     "missing_files": 1,
+     "association": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000976950",
+      "denomination": "Società importata",
+      "tax_code": "01234567890"
+     },
+     "owner_user": {
+      "user_id": "a1000000-0000-4000-8000-000000976951",
+      "username": "imported-owner",
+      "email": "owner@imported.example.test",
+      "requires_recovery_password": false
+     }
+    }
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "raw_b64": "LS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImV4cG9ydC56aXAiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3ppcA0KDQpQSwMEFAAAAAgAAFAvXH+jWdA4AQAAxAMAAA0AAABtYW5pZmVzdC5qc29ujVLLTsMwEJxPQblCSxLxam8IiSOXwgkhyzSuVNoElIQKhPqvfAkw3jqOS9OHIjtee3Zmdu3fny9EWMCgRIUpXlEwHuKIc4I+YhkRTmTH4ANvxJSooTCRVQ7NqMl5ZjQjh8EnEVWAXs9dkL2bNRM+4xlT6qe4QI//hHOCc9xzjnke+/k4WDe8mvoVecesy3KG1dmqQ3fdWMV/5p1oUW2/XrA686urjVP7DXDJGgb03vrLWGVBnZwqxYbDCCPnx/DkmztTIhvHWkbYwZr72uUmWLqTnHirM2d163dgfGWP0g3rIA/6PvLI6y19XClMGM+DvMx5O5X7Ugd0uY8X2W05x4zeGdf/6uny+cBc+3q3+bGvR5Gtcm98v1q6Q+1GsKWw7e+AfS/K8a9yDtGPd+jfEXvr9ZZ44vgDUEsDBBQAAAAIAABQL1xhaaGYcwAAALYAAAAeAAAAZGF0YS8wMV9zcG9ydF9hc3NvY2lhdGlvbi5qc29ui65WKi7ILyqJTywuzk/OTCzJzM+Lz0xRslJQSjQ0AANdMGECIixgXAMDS3MzS1MDJR0FpdLi1CLitRiCtKSk5uXnZuaBbQPpCwZanVpyeIFCZi7IMYkliSBVJYkV8cn5KakgFQaGRsYmpmbmFpYGSrWxAFBLAwQUAAAACAAAUC9cPfLrjdEAAABxAQAAEgAAAGRhdGEvMDJfdXNlcnMuanNvbouuViotTi2Kz0xRslJQSjQ0AANdMGECIixgXAMDS3MzS1NDJR0FsJa8xNxUkJ7M3IL8opLUFN388rzUIpBsam5iZg5ICiziAFOgl1qRmFuQk6pXklpcAlJXkFhcXJ5fBLa5ICk7Jc0ovjgj0cjUTMUMbJ+KY5Jzimuae4ZnlneOb55/QWBRcElomYqjo6uzY3mgm1N6sqdzYL6Pi6OBv0uFY5Brhm+oW1BkhLtTdqJ7RXmKR4aFrVKtjgKpXjTC6cXc1NwkND9ChIjzpKJSbSwAUEsBAhQDFAAAAAgAAFAvXH+jWdA4AQAAxAMAAA0AAAAAAAAAAAAAAIABAAAAAG1hbmlmZXN0Lmpzb25QSwECFAMUAAAACAAAUC9cYWmhmHMAAAC2AAAAHgAAAAAAAAAAAAAAgAFjAQAAZGF0YS8wMV9zcG9ydF9hc3NvY2lhdGlvbi5qc29uUEsBAhQDFAAAAAgAAFAvXD3y643RAAAAcQEAABIAAAAAAAAAAAAAAIABEgIAAGRhdGEvMDJfdXNlcnMuanNvblBLBQYAAAAAAwADAMcAAAATAwAAAAANCi0tYXNzb2NpYXRpb24tdHJhbnNmZXItYm91bmRhcnktLQ0K",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-import-validate-manifest-invalid-utf8",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "is_valid": false,
+    "errors": [
+     "Error reading manifest: 'utf-8' codec can't decode byte 0xff in position 7: invalid start byte"
+    ],
+    "warnings": [],
+    "info": {
+     "file_size_bytes": 708,
+     "file_size_mb": 0.0
+    }
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "raw_b64": "LS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImV4cG9ydC56aXAiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3ppcA0KDQpQSwMEFAAAAAgAAFAvXJonwlwMAAAACgAAAA0AAABtYW5pZmVzdC5qc29uq1ZKVLJSUPqvVAsAUEsDBBQAAAAIAABQL1xhaaGYcwAAALYAAAAeAAAAZGF0YS8wMV9zcG9ydF9hc3NvY2lhdGlvbi5qc29ui65WKi7ILyqJTywuzk/OTCzJzM+Lz0xRslJQSjQ0AANdMGECIixgXAMDS3MzS1MDJR0FpdLi1CLitRiCtKSk5uXnZuaBbQPpCwZanVpyeIFCZi7IMYkliSBVJYkV8cn5KakgFQaGRsYmpmbmFpYGSrWxAFBLAwQUAAAACAAAUC9cPfLrjdEAAABxAQAAEgAAAGRhdGEvMDJfdXNlcnMuanNvbouuViotTi2Kz0xRslJQSjQ0AANdMGECIixgXAMDS3MzS1NDJR0FsJa8xNxUkJ7M3IL8opLUFN388rzUIpBsam5iZg5ICiziAFOgl1qRmFuQk6pXklpcAlJXkFhcXJ5fBLa5ICk7Jc0ovjgj0cjUTMUMbJ+KY5Jzimuae4ZnlneOb55/QWBRcElomYqjo6uzY3mgm1N6sqdzYL6Pi6OBv0uFY5Brhm+oW1BkhLtTdqJ7RXmKR4aFrVKtjgKpXjTC6cXc1NwkND9ChIjzpKJSbSwAUEsBAhQDFAAAAAgAAFAvXJonwlwMAAAACgAAAA0AAAAAAAAAAAAAAIABAAAAAG1hbmlmZXN0Lmpzb25QSwECFAMUAAAACAAAUC9cYWmhmHMAAAC2AAAAHgAAAAAAAAAAAAAAgAE3AAAAZGF0YS8wMV9zcG9ydF9hc3NvY2lhdGlvbi5qc29uUEsBAhQDFAAAAAgAAFAvXD3y643RAAAAcQEAABIAAAAAAAAAAAAAAIAB5gAAAGRhdGEvMDJfdXNlcnMuanNvblBLBQYAAAAAAwADAMcAAADnAQAAAAANCi0tYXNzb2NpYXRpb24tdHJhbnNmZXItYm91bmRhcnktLQ0K",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-import-validate-manifest-lone-surrogate",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "raw_b64": "LS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImV4cG9ydC56aXAiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3ppcA0KDQpQSwMEFAAAAAgAAFAvXHX9wJT4AAAA6AEAAA0AAABtYW5pZmVzdC5qc29uZU9BTsMwEPxK5CskrCNa2t4QEsdeCidA1hK7kqG2K9upQFH+wl/4GF4nFaliWSvtzM7sbMdOygftLNsUjFdQAbsumPo6Oh/F3nmDkZh3/LTqW4QMj+yJv7ZyBVOBxKhovIZ6WQIv+eKJwwboX+VKsxiCazTGYWnHBtMJKrQkE+SQX5nLLZXVuQVY3y3Xi+wnlXVG27Mh2yUfFX9/Cm3IGSMOCaPHRPM+NcZJdQjjIYq2vXTMosnhdwTeT0ImwV4fMpcOxBvgYpa5+gjDZONaG8c9/57PQfmpD9SiTVCYyeoL2YNrfVCzABxEk5m5Hi70W/dIuv6t/wNQSwMEFAAAAAgAAFAvXGFpoZhzAAAAtgAAAB4AAABkYXRhLzAxX3Nwb3J0X2Fzc29jaWF0aW9uLmpzb26LrlYqLsgvKolPLC7OT85MLMnMz4vPTFGyUlBKNDQAA10wYQIiLGBcAwNLczNLUwMlHQWl0uLUIuK1GIK0pKTm5edm5oFtA+kLBlqdWnJ4gUJmLsgxiSWJIFUliRXxyfkpqSAVBoZGxiamZuYWlgZKtbEAUEsDBBQAAAAIAABQL1w98uuN0QAAAHEBAAASAAAAZGF0YS8wMl91c2Vycy5qc29ui65WKi1OLYrPTFGyUlBKNDQAA10wYQIiLGBcAwNLczNLU0MlHQWwlrzE3FSQnszcgvyiktQU3fzyvNQikGxqbmJmDkgKLOIAU6CXWpGYW5CTqleSWlwCUleQWFxcnl8EtrkgKTslzSi+OCPRyNRMxQxsn4pjknOKa5p7hmeWd45vnn9BYFFwSWiZiqOjq7NjeaCbU3qyp3Ngvo+Lo4G/S4VjkGuGb6hbUGSEu1N2ontFeYpHhoWtUq2OAqleNMLpxdzU3CQ0P0KEiPOkolJtLABQSwECFAMUAAAACAAAUC9cdf3AlPgAAADoAQAADQAAAAAAAAAAAAAAgAEAAAAAbWFuaWZlc3QuanNvblBLAQIUAxQAAAAIAABQL1xhaaGYcwAAALYAAAAeAAAAAAAAAAAAAACAASMBAABkYXRhLzAxX3Nwb3J0X2Fzc29jaWF0aW9uLmpzb25QSwECFAMUAAAACAAAUC9cPfLrjdEAAABxAQAAEgAAAAAAAAAAAAAAgAHSAQAAZGF0YS8wMl91c2Vycy5qc29uUEsFBgAAAAADAAMAxwAAANMCAAAAAA0KLS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeS0tDQo=",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-import-validate-association-not-uuid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante la validazione: ['“abc” is not a valid UUID.']"
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "raw_b64": "LS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImV4cG9ydC56aXAiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3ppcA0KDQpQSwMEFAAAAAgAAFAvXNb2Exz0AAAA4gEAAA0AAABtYW5pZmVzdC5qc29uZU/BSsQwEP2Vkqu2Toq7unsTwaOX1ZNIGNtZiG4SSdJFKf0X/8UfM5N2sUtDGJj35r1504sj+aCdFdtCyAoqEJeFoK9P56PaO28wMvOGH5a+VcjwxB7lbLTFSDxYQ70uQZZy9SRhC/wvcuVZDME1GuO4rhej3QxVumUTlJBfmcs1l9tTC7C5WW9W2a8l64y2J0OxSz4Uf38KbdgZI44Jo8dEyyE1xrV0CNMJxNteemHR5PA7Bu9mIZNgrw+ZSwfiFUi1yFy9h3GycZ2N055/z+dAfu4DteoSFBay+kx27zofaBFAgmoys9TDmf7RPbBueB3+AFBLAwQUAAAACAAAUC9c4BIivV0AAAB6AAAAHgAAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvbouuViouyC8qiU8sLs5PzkwsyczPi89MUbJSUEpMSlbSUVAqLU4tgokYGoCBLpgwAREWMK6BgaW5maWpIUhLSmpefm5mHtgwkL5goMmpJYcXKGTmguxKLElUqo0FAFBLAwQUAAAACAAAUC9cCw8pzmYAAACMAAAAEgAAAGRhdGEvMDJfdXNlcnMuanNvbjVNSQqAMAz8iuasUsH95D9EJGAOBWtLW6kg/l0ScA4DszHLA1cgv+kdpgywVoJSqGEafqnU2HdjW0ORyeREQ7zRxlkfaS9tOslzSgb1wZE481+o6EbjDqoihcg9hyEk6+U5h3f9AFBLAQIUAxQAAAAIAABQL1zW9hMc9AAAAOIBAAANAAAAAAAAAAAAAACAAQAAAABtYW5pZmVzdC5qc29uUEsBAhQDFAAAAAgAAFAvXOASIr1dAAAAegAAAB4AAAAAAAAAAAAAAIABHwEAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvblBLAQIUAxQAAAAIAABQL1wLDynOZgAAAIwAAAASAAAAAAAAAAAAAACAAbgBAABkYXRhLzAyX3VzZXJzLmpzb25QSwUGAAAAAAMAAwDHAAAATgIAAAAADQotLWFzc29jaWF0aW9uLXRyYW5zZmVyLWJvdW5kYXJ5LS0NCg==",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-import-validate-owner-password-pbkdf2-sha256",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "is_valid": true,
+    "errors": [],
+    "warnings": [
+     "Missing data file: data/10_courses.json"
+    ],
+    "info": {
+     "file_size_bytes": 938,
+     "file_size_mb": 0.0,
+     "export_format": "bakney_sport_export_v1",
+     "export_date": "2026-01-15T10:00:00+00:00",
+     "expected_files": 3,
+     "missing_files": 1,
+     "association": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000976950",
+      "denomination": "Società importata",
+      "tax_code": "01234567890"
+     },
+     "owner_user": {
+      "user_id": "a1000000-0000-4000-8000-000000976951",
+      "username": "imported-owner",
+      "email": "owner@imported.example.test",
+      "requires_recovery_password": false
+     }
+    }
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "raw_b64": "LS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImV4cG9ydC56aXAiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3ppcA0KDQpQSwMEFAAAAAgAAFAvXNb2Exz0AAAA4gEAAA0AAABtYW5pZmVzdC5qc29uZU/BSsQwEP2Vkqu2Toq7unsTwaOX1ZNIGNtZiG4SSdJFKf0X/8UfM5N2sUtDGJj35r1504sj+aCdFdtCyAoqEJeFoK9P56PaO28wMvOGH5a+VcjwxB7lbLTFSDxYQ70uQZZy9SRhC/wvcuVZDME1GuO4rhej3QxVumUTlJBfmcs1l9tTC7C5WW9W2a8l64y2J0OxSz4Uf38KbdgZI44Jo8dEyyE1xrV0CNMJxNteemHR5PA7Bu9mIZNgrw+ZSwfiFUi1yFy9h3GycZ2N055/z+dAfu4DteoSFBay+kx27zofaBFAgmoys9TDmf7RPbBueB3+AFBLAwQUAAAACAAAUC9cYWmhmHMAAAC2AAAAHgAAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvbouuViouyC8qiU8sLs5PzkwsyczPi89MUbJSUEo0NAADXTBhAiIsYFwDA0tzM0tTAyUdBaXS4tQi4rUYgrSkpObl52bmgW0D6QsGWp1acniBQmYuyDGJJYkgVSWJFfHJ+SmpIBUGhkbGJqZm5haWBkq1sQBQSwMEFAAAAAgAAFAvXDmiosrPAAAAcgEAABIAAABkYXRhLzAyX3VzZXJzLmpzb26VT02LwjAQ/Ss19Fg1LbVaYWH3supBllWsh0UktWMb27QxidYP/O+SqJcFQefwYN4HM+/vjHYSxJImqG8h4mIzTQO+ht5jxTjsBmHHRY5lIiVhoDOU8UooSJpVXYLQKjBCCy0Z5vNhaMGBMF5AS4FU2seJlHUlzGUe58naW8qMeJ3Avr9hk3iVwDrN6CYvWFnxrZBqt7fVPPT5lKazsfdVjPL59PfHP0YQpSd3eOy1VR0Mv7MJdvEg/0AXx3q3o/e0IwMW/yt5o15r2UCXxRVQSwECFAMUAAAACAAAUC9c1vYTHPQAAADiAQAADQAAAAAAAAAAAAAAgAEAAAAAbWFuaWZlc3QuanNvblBLAQIUAxQAAAAIAABQL1xhaaGYcwAAALYAAAAeAAAAAAAAAAAAAACAAR8BAABkYXRhLzAxX3Nwb3J0X2Fzc29jaWF0aW9uLmpzb25QSwECFAMUAAAACAAAUC9cOaKiys8AAAByAQAAEgAAAAAAAAAAAAAAgAHOAQAAZGF0YS8wMl91c2Vycy5qc29uUEsFBgAAAAADAAMAxwAAAM0CAAAAAA0KLS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeS0tDQo=",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-import-validate-owner-password-pbkdf2-sha1",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "is_valid": true,
+    "errors": [],
+    "warnings": [
+     "Missing data file: data/10_courses.json"
+    ],
+    "info": {
+     "file_size_bytes": 916,
+     "file_size_mb": 0.0,
+     "export_format": "bakney_sport_export_v1",
+     "export_date": "2026-01-15T10:00:00+00:00",
+     "expected_files": 3,
+     "missing_files": 1,
+     "association": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000976950",
+      "denomination": "Società importata",
+      "tax_code": "01234567890"
+     },
+     "owner_user": {
+      "user_id": "a1000000-0000-4000-8000-000000976951",
+      "username": "imported-owner",
+      "email": "owner@imported.example.test",
+      "requires_recovery_password": false
+     }
+    }
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "raw_b64": "LS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImV4cG9ydC56aXAiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3ppcA0KDQpQSwMEFAAAAAgAAFAvXNb2Exz0AAAA4gEAAA0AAABtYW5pZmVzdC5qc29uZU/BSsQwEP2Vkqu2Toq7unsTwaOX1ZNIGNtZiG4SSdJFKf0X/8UfM5N2sUtDGJj35r1504sj+aCdFdtCyAoqEJeFoK9P56PaO28wMvOGH5a+VcjwxB7lbLTFSDxYQ70uQZZy9SRhC/wvcuVZDME1GuO4rhej3QxVumUTlJBfmcs1l9tTC7C5WW9W2a8l64y2J0OxSz4Uf38KbdgZI44Jo8dEyyE1xrV0CNMJxNteemHR5PA7Bu9mIZNgrw+ZSwfiFUi1yFy9h3GycZ2N055/z+dAfu4DteoSFBay+kx27zofaBFAgmoys9TDmf7RPbBueB3+AFBLAwQUAAAACAAAUC9cYWmhmHMAAAC2AAAAHgAAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvbouuViouyC8qiU8sLs5PzkwsyczPi89MUbJSUEo0NAADXTBhAiIsYFwDA0tzM0tTAyUdBaXS4tQi4rUYgrSkpObl52bmgW0D6QsGWp1acniBQmYuyDGJJYkgVSWJFfHJ+SmpIBUGhkbGJqZm5haWBkq1sQBQSwMEFAAAAAgAAFAvXAHUYCe5AAAAYAEAABIAAABkYXRhLzAyX3VzZXJzLmpzb26VT00LgkAQ/Su2eEtFJSuDoFMEUSAdI2LNKTcd3XbXDKL/HrvlJQhqDg/mfTDztnfSSBB7lpGJRWjgm3ENDDSMu9X349EwjgLiWCZSUQSdYchroSBz67YCoVVAykotGWbWGTy4UeQleAqk0j5OpWxrYS7ztMiO4V7mNLDfT9g0PWRwPOXsXJRY1fwipGqutpxjlCfnZMl4VPBViP1Y8c2aicV4Sh6O9W+j8GsjBEw/Kr2o3zr1yGP3BFBLAQIUAxQAAAAIAABQL1zW9hMc9AAAAOIBAAANAAAAAAAAAAAAAACAAQAAAABtYW5pZmVzdC5qc29uUEsBAhQDFAAAAAgAAFAvXGFpoZhzAAAAtgAAAB4AAAAAAAAAAAAAAIABHwEAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvblBLAQIUAxQAAAAIAABQL1wB1GAnuQAAAGABAAASAAAAAAAAAAAAAACAAc4BAABkYXRhLzAyX3VzZXJzLmpzb25QSwUGAAAAAAMAAwDHAAAAtwIAAAAADQotLWFzc29jaWF0aW9uLXRyYW5zZmVyLWJvdW5kYXJ5LS0NCg==",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-import-validate-owner-password-argon2",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "is_valid": true,
+    "errors": [],
+    "warnings": [
+     "Missing data file: data/10_courses.json"
+    ],
+    "info": {
+     "file_size_bytes": 960,
+     "file_size_mb": 0.0,
+     "export_format": "bakney_sport_export_v1",
+     "export_date": "2026-01-15T10:00:00+00:00",
+     "expected_files": 3,
+     "missing_files": 1,
+     "association": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000976950",
+      "denomination": "Società importata",
+      "tax_code": "01234567890"
+     },
+     "owner_user": {
+      "user_id": "a1000000-0000-4000-8000-000000976951",
+      "username": "imported-owner",
+      "email": "owner@imported.example.test",
+      "requires_recovery_password": false
+     }
+    }
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "raw_b64": "LS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImV4cG9ydC56aXAiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3ppcA0KDQpQSwMEFAAAAAgAAFAvXNb2Exz0AAAA4gEAAA0AAABtYW5pZmVzdC5qc29uZU/BSsQwEP2Vkqu2Toq7unsTwaOX1ZNIGNtZiG4SSdJFKf0X/8UfM5N2sUtDGJj35r1504sj+aCdFdtCyAoqEJeFoK9P56PaO28wMvOGH5a+VcjwxB7lbLTFSDxYQ70uQZZy9SRhC/wvcuVZDME1GuO4rhej3QxVumUTlJBfmcs1l9tTC7C5WW9W2a8l64y2J0OxSz4Uf38KbdgZI44Jo8dEyyE1xrV0CNMJxNteemHR5PA7Bu9mIZNgrw+ZSwfiFUi1yFy9h3GycZ2N055/z+dAfu4DteoSFBay+kx27zofaBFAgmoys9TDmf7RPbBueB3+AFBLAwQUAAAACAAAUC9cYWmhmHMAAAC2AAAAHgAAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvbouuViouyC8qiU8sLs5PzkwsyczPi89MUbJSUEo0NAADXTBhAiIsYFwDA0tzM0tTAyUdBaXS4tQi4rUYgrSkpObl52bmgW0D6QsGWp1acniBQmYuyDGJJYkgVSWJFfHJ+SmpIBUGhkbGJqZm5haWBkq1sQBQSwMEFAAAAAgAAFAvXLW8osPlAAAAiQEAABIAAABkYXRhLzAyX3VzZXJzLmpzb26VT2FPwjAQ/Suz6ccBaxFZTZZIZExMTBgfhGGM6dg5p3Rr2gJTwn/HbuGLiYneh3e59+7l7j0d0FaDeikydO0gTrymOg1cWvDPo+ex4RUbEOQ6jaXkAqynELJSBrJOtS9BWRUELzZWapib80IXai7kBroGtLF7kmu9r1R7WeVVSXHbigzvAsKwCIhHv79wTUBdGfg4Wdy/r6JHsaJvkguj08Vgt76bfK77c5LleMTGo1lcftEh1Es+DZe9PAk/ooTNo9fbcBLHvWnfT8e03j6go+v8Nzr9NboAkf7I3lJ/C3+Bjs8nUEsBAhQDFAAAAAgAAFAvXNb2Exz0AAAA4gEAAA0AAAAAAAAAAAAAAIABAAAAAG1hbmlmZXN0Lmpzb25QSwECFAMUAAAACAAAUC9cYWmhmHMAAAC2AAAAHgAAAAAAAAAAAAAAgAEfAQAAZGF0YS8wMV9zcG9ydF9hc3NvY2lhdGlvbi5qc29uUEsBAhQDFAAAAAgAAFAvXLW8osPlAAAAiQEAABIAAAAAAAAAAAAAAIABzgEAAGRhdGEvMDJfdXNlcnMuanNvblBLBQYAAAAAAwADAMcAAADjAgAAAAANCi0tYXNzb2NpYXRpb24tdHJhbnNmZXItYm91bmRhcnktLQ0K",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-import-validate-owner-password-bcrypt-sha256",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "is_valid": true,
+    "errors": [],
+    "warnings": [
+     "Missing data file: data/10_courses.json"
+    ],
+    "info": {
+     "file_size_bytes": 925,
+     "file_size_mb": 0.0,
+     "export_format": "bakney_sport_export_v1",
+     "export_date": "2026-01-15T10:00:00+00:00",
+     "expected_files": 3,
+     "missing_files": 1,
+     "association": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000976950",
+      "denomination": "Società importata",
+      "tax_code": "01234567890"
+     },
+     "owner_user": {
+      "user_id": "a1000000-0000-4000-8000-000000976951",
+      "username": "imported-owner",
+      "email": "owner@imported.example.test",
+      "requires_recovery_password": false
+     }
+    }
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "raw_b64": "LS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImV4cG9ydC56aXAiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3ppcA0KDQpQSwMEFAAAAAgAAFAvXNb2Exz0AAAA4gEAAA0AAABtYW5pZmVzdC5qc29uZU/BSsQwEP2Vkqu2Toq7unsTwaOX1ZNIGNtZiG4SSdJFKf0X/8UfM5N2sUtDGJj35r1504sj+aCdFdtCyAoqEJeFoK9P56PaO28wMvOGH5a+VcjwxB7lbLTFSDxYQ70uQZZy9SRhC/wvcuVZDME1GuO4rhej3QxVumUTlJBfmcs1l9tTC7C5WW9W2a8l64y2J0OxSz4Uf38KbdgZI44Jo8dEyyE1xrV0CNMJxNteemHR5PA7Bu9mIZNgrw+ZSwfiFUi1yFy9h3GycZ2N055/z+dAfu4DteoSFBay+kx27zofaBFAgmoys9TDmf7RPbBueB3+AFBLAwQUAAAACAAAUC9cYWmhmHMAAAC2AAAAHgAAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvbouuViouyC8qiU8sLs5PzkwsyczPi89MUbJSUEo0NAADXTBhAiIsYFwDA0tzM0tTAyUdBaXS4tQi4rUYgrSkpObl52bmgW0D6QsGWp1acniBQmYuyDGJJYkgVSWJFfHJ+SmpIBUGhkbGJqZm5haWBkq1sQBQSwMEFAAAAAgAAFAvXJLDQybCAAAAYwEAABIAAABkYXRhLzAyX3VzZXJzLmpzb26Vj18LgjAUxb+KDR9LtpGWPUV/IIjACCmMkJkXNJyuTTGJvnts0UsQ1H04cO85h8vveEeNAhnnKZpYiBFsZmBkqGX8XjH2R57vEtS3TKVkHHQn56KSNaSDqi1Bahc4ywttmcv0HXDgxrgowKlB1TonmFJtJc3n5Cw7UccqY9T1bJsmNqE2W4Z7koRRMN4dRJW3cydylYMP2b7xt51MV2sWEEWu11GIZ7C5BHQRdejRt/6Fol+hOPDkg+p1+g2rhx6nJ1BLAQIUAxQAAAAIAABQL1zW9hMc9AAAAOIBAAANAAAAAAAAAAAAAACAAQAAAABtYW5pZmVzdC5qc29uUEsBAhQDFAAAAAgAAFAvXGFpoZhzAAAAtgAAAB4AAAAAAAAAAAAAAIABHwEAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvblBLAQIUAxQAAAAIAABQL1ySw0MmwgAAAGMBAAASAAAAAAAAAAAAAACAAc4BAABkYXRhLzAyX3VzZXJzLmpzb25QSwUGAAAAAAMAAwDHAAAAwAIAAAAADQotLWFzc29jaWF0aW9uLXRyYW5zZmVyLWJvdW5kYXJ5LS0NCg==",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-import-validate-owner-password-scrypt",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "is_valid": true,
+    "errors": [],
+    "warnings": [
+     "Missing data file: data/10_courses.json"
+    ],
+    "info": {
+     "file_size_bytes": 978,
+     "file_size_mb": 0.0,
+     "export_format": "bakney_sport_export_v1",
+     "export_date": "2026-01-15T10:00:00+00:00",
+     "expected_files": 3,
+     "missing_files": 1,
+     "association": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000976950",
+      "denomination": "Società importata",
+      "tax_code": "01234567890"
+     },
+     "owner_user": {
+      "user_id": "a1000000-0000-4000-8000-000000976951",
+      "username": "imported-owner",
+      "email": "owner@imported.example.test",
+      "requires_recovery_password": false
+     }
+    }
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "raw_b64": "LS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImV4cG9ydC56aXAiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3ppcA0KDQpQSwMEFAAAAAgAAFAvXNb2Exz0AAAA4gEAAA0AAABtYW5pZmVzdC5qc29uZU/BSsQwEP2Vkqu2Toq7unsTwaOX1ZNIGNtZiG4SSdJFKf0X/8UfM5N2sUtDGJj35r1504sj+aCdFdtCyAoqEJeFoK9P56PaO28wMvOGH5a+VcjwxB7lbLTFSDxYQ70uQZZy9SRhC/wvcuVZDME1GuO4rhej3QxVumUTlJBfmcs1l9tTC7C5WW9W2a8l64y2J0OxSz4Uf38KbdgZI44Jo8dEyyE1xrV0CNMJxNteemHR5PA7Bu9mIZNgrw+ZSwfiFUi1yFy9h3GycZ2N055/z+dAfu4DteoSFBay+kx27zofaBFAgmoys9TDmf7RPbBueB3+AFBLAwQUAAAACAAAUC9cYWmhmHMAAAC2AAAAHgAAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvbouuViouyC8qiU8sLs5PzkwsyczPi89MUbJSUEo0NAADXTBhAiIsYFwDA0tzM0tTAyUdBaXS4tQi4rUYgrSkpObl52bmgW0D6QsGWp1acniBQmYuyDGJJYkgVSWJFfHJ+SmpIBUGhkbGJqZm5haWBkq1sQBQSwMEFAAAAAgAAFAvXOVtHej3AAAAmQEAABIAAABkYXRhLzAyX3VzZXJzLmpzb26VkG1LwzAUhf9KDfm2F1vXbq0wcKhVQdh0c28iki1pm65J0yRrV2X/XVLZF0HQ++HAveccLjyvn2CviHynGFxaADl2M51GXCP+abXtYNAPPAe0rabCESOmQ5nIpSa4k1ecSOMShmhmrOZydQp0yQExkZGuJkqbnEBKVblsPqutrIWGTr/nuxBttphEcULTXcZ4Lgqp9L6EPvTgoBXN8WKUr0JP03H4kixGu+B+wnBYeXW9LqYf/ixJynjKH9xDsSzckt/RusXjWzFZcbGeRY+4d+NeL+cp4mH6/HRehDIeDsGxbf0XxcWvKBhhmx8svk9/g3EGjm9fUEsBAhQDFAAAAAgAAFAvXNb2Exz0AAAA4gEAAA0AAAAAAAAAAAAAAIABAAAAAG1hbmlmZXN0Lmpzb25QSwECFAMUAAAACAAAUC9cYWmhmHMAAAC2AAAAHgAAAAAAAAAAAAAAgAEfAQAAZGF0YS8wMV9zcG9ydF9hc3NvY2lhdGlvbi5qc29uUEsBAhQDFAAAAAgAAFAvXOVtHej3AAAAmQEAABIAAAAAAAAAAAAAAIABzgEAAGRhdGEvMDJfdXNlcnMuanNvblBLBQYAAAAAAwADAMcAAAD1AgAAAAANCi0tYXNzb2NpYXRpb24tdHJhbnNmZXItYm91bmRhcnktLQ0K",
    "content_type": "multipart/form-data; boundary=association-transfer-boundary"
   },
   {
