@@ -190,3 +190,9 @@ Long-tail PR 4: an uploaded attachment `filename` and response integers beyond i
 'TestReferenceBodyMultipartUploadName|TestDjangoUploadName'`, `go test ./internal/service -run
 TestModuleAttachmentFilenameValues` and `go test ./internal/xlsxexport -run TestPandasXlsxwriterBigInt` pin the parts
 without a database.
+
+X15 edges: django's edge is not a fixed number: it moves with the value's shape (arrays or objects, where the deep part sits)
+and by a level or two with the live stack of the run. The bands above were measured with nested objects; an array of
+the same total depth can still load in Django where Go answers the band's 500 page (a top-level array quote of 9965
+levels updates on the course subscription update route). The parity cases use the measured shapes and sit past or
+inside the band with a margin; the exact edges are pinned by the Go tests (X15 is the accepted divergence there).

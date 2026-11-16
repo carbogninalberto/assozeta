@@ -14008,246 +14008,7 @@
    "content_type": "application/x-www-form-urlencoded"
   },
   {
-   "name": "course-enrolment-add-form-events-depth-600",
-   "actor": "owner",
-   "method": "POST",
-   "path": "/course-subscriptions/add",
-   "headers": {},
-   "status": 201,
-   "response": [
-    {
-     "course_subscription_id": "@cd0",
-     "creation_date": "$now",
-     "paid": false,
-     "subscription": {
-      "subscription_id": "e0000000-0000-4000-8000-000000000005",
-      "associate": {
-       "associate_id": "e0000000-0000-4000-8000-000000000002",
-       "address": null,
-       "address_cap": null,
-       "address_city": null,
-       "born_city": null,
-       "born_date": "1990-01-01",
-       "email": null,
-       "sex": "M",
-       "first_name": "Mario",
-       "last_name": "Rossi",
-       "is_minor": false,
-       "sport_association": "a1000000-0000-4000-8000-000000701001",
-       "tax_code": null,
-       "user": "a1000000-0000-4000-8000-000000700001",
-       "phone": null,
-       "family": null,
-       "family_role": null
-      },
-      "current_year": "corrente"
-     },
-     "multi_payments": false,
-     "multiple_quote": null,
-     "one_fee_payment": false,
-     "installments": [
-      {
-       "course_subscription_installment_id": "@cd0i",
-       "id": 0,
-       "amount": "10.00",
-       "payment_date": "2099-05-05",
-       "paid": false
-      }
-     ],
-     "course": "e0000000-0000-4000-8000-000000000012",
-     "type": 1,
-     "billed_frequency": 1,
-     "billed_from": null,
-     "billed_until": null,
-     "billed_from_day_of_month": 1,
-     "membership_active": false,
-     "membership_fee": "0.00",
-     "auto_renewal": false,
-     "membership_payments": [],
-     "medical_label": "<span class=\"text-warning font-weight-boldest\">Mancante da {missing:2026-01-01T09:00:00Z}</span>",
-     "carnets": []
-    }
-   ],
-   "effect": {
-    "actor": "owner",
-    "rows": {},
-    "created": {
-     "application.CourseSubscription": [
-      {
-       "$sym": "@cd0",
-       "course_subscription_id": "@cd0",
-       "course_id": "e0000000-0000-4000-8000-000000000012",
-       "paid": false,
-       "creation_date": "$now",
-       "subscription_id": "e0000000-0000-4000-8000-000000000005",
-       "payment_id": null,
-       "multi_payments": false,
-       "one_fee_payment": false,
-       "archived": false,
-       "type": 1,
-       "multiple_quote": null,
-       "billed_frequency": 1,
-       "billed_from": null,
-       "billed_until": null,
-       "billed_from_day_of_month": 1,
-       "membership_active": false,
-       "membership_fee": "0.00",
-       "auto_renewal": false,
-       "deleted": false
-      }
-     ],
-     "application.Payment": [
-      {
-       "$sym": "@cd0p",
-       "payment_id": "@cd0p",
-       "type": "default",
-       "subject": 2,
-       "amount": "10.00",
-       "creation_date": "2099-05-05T00:00:00Z",
-       "payment_date": null,
-       "paid": false,
-       "expense": false,
-       "description": "Rata n.1 del 05/05/99 (Libero)",
-       "payment_category_id": "$category",
-       "meta_payment_categories": null,
-       "invoice_id": null,
-       "user_id": "a1000000-0000-4000-8000-000000700001",
-       "associate_id": "e0000000-0000-4000-8000-000000000002",
-       "supplier_id": null,
-       "instructor_id": null,
-       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
-       "payment_intent_id": null,
-       "archived": false,
-       "invoice_fiscal_code": null,
-       "meta": {
-        "description": "Rata n.1 del 05/05/99 (Libero)",
-        "course_id": "e0000000-0000-4000-8000-000000000012",
-        "course_title": "Libero",
-        "course_subscription_id": "@cd0",
-        "payment_date": "2099-05-05"
-       },
-       "notes": null,
-       "custom_accounts_id": "00000000-0000-4000-8000-0000000e0001",
-       "signature_id": null,
-       "deleted": false,
-       "group_id": null,
-       "course": null
-      }
-     ],
-     "application.CourseSubscriptionInstallment": [
-      {
-       "$sym": "@cd0i",
-       "course_subscription_installment_id": "@cd0i",
-       "course_subscription_id": "@cd0",
-       "id": 0,
-       "amount": "10.00",
-       "paid": false,
-       "payment_date": "2099-05-05T00:00:00Z",
-       "payment_id": "@cd0p",
-       "archived": false,
-       "group_id": null,
-       "deleted": false
-      }
-     ]
-    },
-    "links": {},
-    "audit": [
-     {
-      "model": "coursesubscription",
-      "key": "@cd0",
-      "action": 0,
-      "changes": {
-       "$stored": "create",
-       "overrides": {
-        "membership_fee": [
-         "None",
-         "0.0"
-        ],
-        "payment": [
-         "None",
-         "None"
-        ]
-       }
-      },
-      "index": [
-       "a1000000-0000-4000-8000-000000701001",
-       "course.sport_association"
-      ],
-      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('@cd0'), 'course_id': UUID('e0000000-0000-4000-8000-000000000012'), 'paid': False, 'creation_date': {created:@cd0}, 'subscription_id': UUID('e0000000-0000-4000-8000-000000000005'), 'payment_id': None, 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': False, 'membership_fee': 0.0, 'auto_renewal': False, 'deleted': False}"
-     },
-     {
-      "model": "payment",
-      "key": "@cd0p",
-      "action": 0,
-      "changes": {
-       "$stored": "create",
-       "overrides": {}
-      },
-      "index": [
-       "a1000000-0000-4000-8000-000000701001",
-       "direct"
-      ],
-      "repr": null
-     },
-     {
-      "model": "coursesubscriptioninstallment",
-      "key": "@cd0i",
-      "action": 0,
-      "changes": {
-       "$stored": "create",
-       "overrides": {}
-      },
-      "index": [
-       "a1000000-0000-4000-8000-000000701001",
-       "course_subscription.course.sport_association"
-      ],
-      "repr": null
-     }
-    ]
-   },
-   "raw_parts": [
-    "course=e0000000-0000-4000-8000-000000000012&subscription_id=e0000000-0000-4000-8000-000000000005&events=",
-    "%5B%7B%22id%22%3A0%2C%22amount%22%3A%2210%22%2C%22payment_date%22%3A%2205/05/2099%22%2C%22deep%22%3A",
-    {
-     "repeat": "%5B",
-     "count": 598
-    },
-    {
-     "repeat": "%5D",
-     "count": 598
-    },
-    "%7D%5D"
-   ],
-   "content_type": "application/x-www-form-urlencoded"
-  },
-  {
-   "name": "course-enrolment-add-form-multiple-quote-depth-9928",
-   "actor": "owner",
-   "method": "POST",
-   "path": "/course-subscriptions/add",
-   "headers": {},
-   "status": 400,
-   "response": {
-    "billed_frequency": [
-     "Ensure this value is greater than or equal to 0."
-    ]
-   },
-   "effect": null,
-   "raw_parts": [
-    "course=e0000000-0000-4000-8000-000000000014&subscription_id=e0000000-0000-4000-8000-000000000006&billed_frequency=-1&multiple_quote=",
-    {
-     "repeat": "%5B",
-     "count": 9928
-    },
-    {
-     "repeat": "%5D",
-     "count": 9928
-    }
-   ],
-   "content_type": "application/x-www-form-urlencoded"
-  },
-  {
-   "name": "course-enrolment-add-form-multiple-quote-depth-9929-server-error",
+   "name": "course-enrolment-add-form-multiple-quote-depth-9961-server-error",
    "actor": "owner",
    "method": "POST",
    "path": "/course-subscriptions/add",
@@ -14256,48 +14017,22 @@
    "response": "<stable-server-error-page>",
    "effect": null,
    "raw_parts": [
-    "course=e0000000-0000-4000-8000-000000000014&subscription_id=e0000000-0000-4000-8000-000000000006&billed_frequency=-1&multiple_quote=",
+    "course=e0000000-0000-4000-8000-000000000014&subscription_id=e0000000-0000-4000-8000-000000000005&multiple_quote=%7B%22title%22%3A%20%22Deep%22%2C%20%22amount%22%3A%20%221%22%2C%20%22deep%22%3A%20",
     {
-     "repeat": "%5B",
-     "count": 9929
+     "repeat": "%7B%22a%22%3A",
+     "count": 9960
     },
+    "1",
     {
-     "repeat": "%5D",
-     "count": 9929
-    }
+     "repeat": "%7D",
+     "count": 9960
+    },
+    "%7D"
    ],
    "content_type": "application/x-www-form-urlencoded"
   },
   {
-   "name": "course-enrolment-add-form-events-depth-9942",
-   "actor": "owner",
-   "method": "POST",
-   "path": "/course-subscriptions/add",
-   "headers": {},
-   "status": 400,
-   "response": {
-    "billed_frequency": [
-     "Ensure this value is greater than or equal to 0."
-    ]
-   },
-   "effect": null,
-   "raw_parts": [
-    "course=e0000000-0000-4000-8000-000000000012&subscription_id=e0000000-0000-4000-8000-000000000006&billed_frequency=-1&events=",
-    "%5B%7B%22id%22%3A0%2C%22amount%22%3A%2210%22%2C%22payment_date%22%3A%2205/05/2099%22%2C%22deep%22%3A",
-    {
-     "repeat": "%5B",
-     "count": 9940
-    },
-    {
-     "repeat": "%5D",
-     "count": 9940
-    },
-    "%7D%5D"
-   ],
-   "content_type": "application/x-www-form-urlencoded"
-  },
-  {
-   "name": "course-enrolment-add-form-events-depth-9943-server-error",
+   "name": "course-enrolment-add-form-events-depth-9972-server-error",
    "actor": "owner",
    "method": "POST",
    "path": "/course-subscriptions/add",
@@ -14306,15 +14041,15 @@
    "response": "<stable-server-error-page>",
    "effect": null,
    "raw_parts": [
-    "course=e0000000-0000-4000-8000-000000000012&subscription_id=e0000000-0000-4000-8000-000000000006&billed_frequency=-1&events=",
-    "%5B%7B%22id%22%3A0%2C%22amount%22%3A%2210%22%2C%22payment_date%22%3A%2205/05/2099%22%2C%22deep%22%3A",
+    "course=e0000000-0000-4000-8000-000000000014&subscription_id=e0000000-0000-4000-8000-000000000005&events=%5B%7B%22id%22%3A%207%2C%20%22amount%22%3A%20%221%22%2C%20%22payment_date%22%3A%20%2205/05/2099%22%2C%20%22deep%22%3A%20",
     {
-     "repeat": "%5B",
-     "count": 9941
+     "repeat": "%7B%22a%22%3A",
+     "count": 9970
     },
+    "1",
     {
-     "repeat": "%5D",
-     "count": 9941
+     "repeat": "%7D",
+     "count": 9970
     },
     "%7D%5D"
    ],

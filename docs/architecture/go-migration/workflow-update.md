@@ -78,6 +78,12 @@ measured answer (CPython 3.13.16 on the parity harness's Django) depends on the 
 The bands are constants in `service/automation_workflow_update.go`; the reader (`dto/automationFormTree`) parses every
 form JSON up to its own 20000-level limit and returns D.
 
+Django's edge is not a fixed number: it moves with the value's shape (arrays or objects, where the deep part sits)
+and by a level or two with the live stack of the run. The bands above were measured with nested objects; an array of
+the same total depth can still load in Django where Go answers the band's 500 page (a top-level array quote of 9965
+levels updates on the course subscription update route). The parity cases use the measured shapes and sit past or
+inside the band with a margin; the exact edges are pinned by the Go tests (X15 is the accepted divergence there).
+
 These are covered by `TestAutomationWorkflowEnablePlan`, `TestAutomationWorkflowRomeLocalize` and
 `TestAutomationWorkflowPatchFormTreeRefused`, not by the HTTP sequence.
 

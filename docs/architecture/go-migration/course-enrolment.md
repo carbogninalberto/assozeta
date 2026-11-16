@@ -93,6 +93,12 @@ Go answers these bands before any write (`errCourseEnrolmentFormJSONTooDeep`, co
 handoff refusal past 500 levels (`ErrCourseEnrolmentNotPorted`). Values within the bands (including those past 500) are
 parsed by `dto/automationFormTree` up to its 20000-level limit and served.
 
+Django's edge is not a fixed number: it moves with the value's shape (arrays or objects, where the deep part sits)
+and by a level or two with the live stack of the run. The bands above were measured with nested objects; an array of
+the same total depth can still load in Django where Go answers the band's 500 page (a top-level array quote of 9965
+levels updates on the course subscription update route). The parity cases use the measured shapes and sit past or
+inside the band with a margin; the exact edges are pinned by the Go tests (X15 is the accepted divergence there).
+
 ## Not ported (refused with a 500 before any write)
 
 - Payments rendered with an instructor or invoice (make-payment): the view renders the payment it has just created, so

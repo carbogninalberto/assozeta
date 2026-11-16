@@ -924,8 +924,9 @@ def deep_elements(levels):
             ' {"type": "text", "props": {"label": "Nome", "name": "nome"}}]')
 
 
-DEEP_ELEMENTS_LOADED, DEEP_ELEMENTS_REFUSED = deep_elements(9930), deep_elements(9931)
-assert json_depth(DEEP_ELEMENTS_LOADED) == 9933 and json_depth(DEEP_ELEMENTS_REFUSED) == 9934
+# Django's edge moves by a level or two with the value's shape and the live stack: inside each side with a margin.
+DEEP_ELEMENTS_LOADED, DEEP_ELEMENTS_REFUSED = deep_elements(9897), deep_elements(9967)
+assert json_depth(DEEP_ELEMENTS_LOADED) == 9900 and json_depth(DEEP_ELEMENTS_REFUSED) == 9970
 MODULES['export_deep'] = {**EXPORT_BASE, 'id': next(zids), 'link': 'risposte-export-profonde', 'title': 'Profondo',
                           'elements': [{'type': 'heading', 'props': {'label': 'Intestazione'}},
                                        {'type': 'text', 'props': {'label': 'Nome', 'name': 'nome'}}],

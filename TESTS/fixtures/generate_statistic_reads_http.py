@@ -585,9 +585,10 @@ def json_depth(text):
     return deepest
 
 
-DEEP_COURSE_LOADED = '{"label": "Corso profondo", "unused": ' + '[' * 9935 + ']' * 9935 + '}'
-DEEP_COURSE_REFUSED = '{"label": "Corso profondo", "unused": ' + '[' * 9936 + ']' * 9936 + '}'
-assert json_depth(DEEP_COURSE_LOADED) == 9936 and json_depth(DEEP_COURSE_REFUSED) == 9937
+DEEP_COURSE_LOADED = '{"label": "Corso profondo", "unused": ' + '[' * 9899 + ']' * 9899 + '}'
+DEEP_COURSE_REFUSED = '{"label": "Corso profondo", "unused": ' + '[' * 9969 + ']' * 9969 + '}'
+# Django's edge moves by a level or two with the value's shape and the live stack: inside each side with a margin.
+assert json_depth(DEEP_COURSE_LOADED) == 9900 and json_depth(DEEP_COURSE_REFUSED) == 9970
 
 SEVEN, EIGHT = 'association_seven', 'association_eight'
 USERS['owner_seven'] = {'role': 'association'}

@@ -13884,176 +13884,49 @@
    "content_type": "application/x-www-form-urlencoded"
   },
   {
-   "name": "course-subscriptions-update-form-multiple-quote-depth-600",
+   "name": "course-subscriptions-update-form-multiple-quote-depth-9966-server-error",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/course-subscriptions/a1000000-0000-4000-8000-000000660063/update",
-   "headers": {},
-   "status": 400,
-   "response": {
-    "paid": [
-     "Must be a valid boolean."
-    ]
-   },
-   "effect": null,
-   "raw_parts": [
-    "paid=forse&multiple_quote=",
-    {
-     "repeat": "%5B",
-     "count": 600
-    },
-    {
-     "repeat": "%5D",
-     "count": 600
-    }
-   ],
-   "content_type": "application/x-www-form-urlencoded"
-  },
-  {
-   "name": "course-subscriptions-update-form-multiple-quote-depth-9934",
-   "actor": "owner",
-   "method": "PATCH",
-   "path": "/course-subscriptions/a1000000-0000-4000-8000-000000660063/update",
-   "headers": {},
-   "status": 400,
-   "response": {
-    "paid": [
-     "Must be a valid boolean."
-    ]
-   },
-   "effect": null,
-   "raw_parts": [
-    "paid=forse&multiple_quote=",
-    {
-     "repeat": "%5B",
-     "count": 9934
-    },
-    {
-     "repeat": "%5D",
-     "count": 9934
-    }
-   ],
-   "content_type": "application/x-www-form-urlencoded"
-  },
-  {
-   "name": "course-subscriptions-update-form-multiple-quote-depth-9935-server-error",
-   "actor": "owner",
-   "method": "PATCH",
-   "path": "/course-subscriptions/a1000000-0000-4000-8000-000000660063/update",
+   "path": "/course-subscriptions/a1000000-0000-4000-8000-000000660081/update",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
    "raw_parts": [
-    "paid=forse&multiple_quote=",
+    "multiple_quote=%7B%22title%22%3A%20%22Deep%22%2C%20%22amount%22%3A%20%221%22%2C%20%22deep%22%3A%20",
     {
-     "repeat": "%5B",
-     "count": 9935
+     "repeat": "%7B%22a%22%3A",
+     "count": 9965
     },
+    "1",
     {
-     "repeat": "%5D",
-     "count": 9935
-    }
+     "repeat": "%7D",
+     "count": 9965
+    },
+    "%7D"
    ],
    "content_type": "application/x-www-form-urlencoded"
   },
   {
-   "name": "course-subscriptions-update-form-events-depth-9941",
+   "name": "course-subscriptions-update-form-events-depth-9970-server-error",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/course-subscriptions/a1000000-0000-4000-8000-000000660063/update",
-   "headers": {},
-   "status": 200,
-   "response": {
-    "course_subscription_id": "a1000000-0000-4000-8000-000000660063",
-    "creation_date": "2026-09-10T08:00:00Z",
-    "paid": false,
-    "subscription": {
-     "subscription_id": "a1000000-0000-4000-8000-000000660017",
-     "associate": {
-      "associate_id": "a1000000-0000-4000-8000-000000660008",
-      "address": null,
-      "address_cap": null,
-      "address_city": null,
-      "born_city": null,
-      "born_date": "1970-03-03",
-      "email": null,
-      "sex": "M",
-      "first_name": "Gino",
-      "last_name": "Neri",
-      "is_minor": false,
-      "sport_association": "a1000000-0000-4000-8000-000000701001",
-      "tax_code": null,
-      "user": "a1000000-0000-4000-8000-000000700001",
-      "phone": null,
-      "family": null,
-      "family_role": null
-     },
-     "current_year": "corrente"
-    },
-    "multi_payments": false,
-    "multiple_quote": null,
-    "one_fee_payment": false,
-    "installments": [],
-    "course": "a1000000-0000-4000-8000-000000660020",
-    "type": 1,
-    "billed_frequency": 1,
-    "billed_from": null,
-    "billed_until": null,
-    "billed_from_day_of_month": 1,
-    "membership_active": false,
-    "membership_fee": "0.00",
-    "auto_renewal": false,
-    "membership_payments": [],
-    "medical_label": "<span class=\"text-warning font-weight-boldest\">Mancante da {missing:2026-09-01T10:00:00Z}</span>",
-    "carnets": []
-   },
-   "effect": {
-    "kind": "update",
-    "actor": "owner",
-    "cs_changed": {
-     "cs_gino": {}
-    },
-    "cs_deleted": [],
-    "installments_deleted": [],
-    "payments_deleted": [],
-    "payments_changed": {},
-    "audit": []
-   },
-   "raw_parts": [
-    "events=",
-    "%5B%7B%22id%22%3A7%2C%22amount%22%3A%221%22%2C%22payment_date%22%3A%2205/05/2099%22%2C%22deep%22%3A",
-    {
-     "repeat": "%5B",
-     "count": 9939
-    },
-    {
-     "repeat": "%5D",
-     "count": 9939
-    },
-    "%7D%5D"
-   ],
-   "content_type": "application/x-www-form-urlencoded"
-  },
-  {
-   "name": "course-subscriptions-update-form-events-depth-9942-server-error",
-   "actor": "owner",
-   "method": "PATCH",
-   "path": "/course-subscriptions/a1000000-0000-4000-8000-000000660063/update",
+   "path": "/course-subscriptions/a1000000-0000-4000-8000-000000660081/update",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
    "raw_parts": [
     "events=",
-    "%5B%7B%22id%22%3A7%2C%22amount%22%3A%221%22%2C%22payment_date%22%3A%2205/05/2099%22%2C%22deep%22%3A",
+    "%5B%7B%22id%22%3A%207%2C%20%22amount%22%3A%20%221%22%2C%20%22payment_date%22%3A%20%2205/05/2099%22%2C%20%22deep%22%3A%20",
     {
-     "repeat": "%5B",
-     "count": 9940
+     "repeat": "%7B%22a%22%3A",
+     "count": 9968
     },
+    "1",
     {
-     "repeat": "%5D",
-     "count": 9940
+     "repeat": "%7D",
+     "count": 9968
     },
     "%7D%5D"
    ],

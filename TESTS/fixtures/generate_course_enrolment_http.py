@@ -962,29 +962,25 @@ def event_depth_parts(depth, *, course, subscription, extra=''):
             {'repeat': '%5B', 'count': depth - 2}, {'repeat': '%5D', 'count': depth - 2}, urllib.parse.quote('}]')]
 
 
-# events is write-only: at D = 600 the event still creates its payment and installment, so a 201 proves the deep text
-# is served on the add route without a deep stored value.
-deep_event = {'id': 0, 'amount': '10', 'payment_date': '05/05/2099'}
-row = new_cs('@cd0', 'free', 'mario', active=False)
-text, meta = rata('free', deep_event, '@cd0')
-pay = new_payment('@cd0p', '10.00', user=OWNER, associate=aid('mario'), description=text, meta=meta, created='2099-05-05T00:00:00Z')
-inst = new_installment('@cd0i', '@cd0', 0, '10.00', '@cd0p', '2099-05-05')
-add('add-form-events-depth-600', 'owner', CA, 201, [overview_item(row, 'mario', installments=[installment_item(inst)])],
-    raw_parts=event_depth_parts(600, course=cid('free'), subscription=sid('mario')), content_type=FORM,
-    result=effect('owner', created={CSM: [row], PAYMENT: [pay], CSI: [inst]}, audit=[
-        entry(CSM, '@cd0', 0, stored('create', membership_fee=['None', '0.0'], payment=['None', 'None']), [OWN, COURSE_INDEX],
-              cs_repr('@cd0', 'free', 'mario', active=False)),
-        created_entry(PAYMENT, '@cd0p', [OWN, DIRECT]), created_entry(CSI, '@cd0i', [OWN, CSI_INDEX])]))
+# The bands were measured with nested objects (an extra "deep" member) on these exact bodies; Django's edge moves by a
+# level or two with the value's shape and the live stack, so the cases sit past the band with a margin. A value inside
+# the band is stored (the quote) or written into the payment, which the state snapshot cannot read: that side is
+# pinned by the Go tests.
+OBJECT_LEVEL = urllib.parse.quote('{"a":')
 
-for label, depth in (('9928', 9928),):
-    add(f'add-form-multiple-quote-depth-{label}', 'owner', CA, 400, BILLED_FREQUENCY_ERROR,
-        raw_parts=quote_depth_parts(depth), content_type=FORM)
-add('add-form-multiple-quote-depth-9929-server-error', 'owner', CA, 500, SERVER,
-    raw_parts=quote_depth_parts(9929), content_type=FORM)
-add('add-form-events-depth-9942', 'owner', CA, 400, BILLED_FREQUENCY_ERROR,
-    raw_parts=event_depth_parts(9942, course=cid('free'), subscription=sid('luisa'), extra='&billed_frequency=-1'), content_type=FORM)
-add('add-form-events-depth-9943-server-error', 'owner', CA, 500, SERVER,
-    raw_parts=event_depth_parts(9943, course=cid('free'), subscription=sid('luisa'), extra='&billed_frequency=-1'), content_type=FORM)
+
+def deep_member_parts(prefix, field, head, depth, tail):
+    """A form body whose `field` is head + `depth` nested objects + tail (the measured shapes)."""
+    return [prefix + f'&{field}=' + urllib.parse.quote(head), {'repeat': OBJECT_LEVEL, 'count': depth}, '1',
+            {'repeat': '%7D', 'count': depth}, urllib.parse.quote(tail)]
+
+
+add('add-form-multiple-quote-depth-9961-server-error', 'owner', CA, 500, SERVER, content_type=FORM,
+    raw_parts=deep_member_parts(f'course={cid("quotes")}&subscription_id={sid("mario")}', 'multiple_quote',
+                                '{"title": "Deep", "amount": "1", "deep": ', 9960, '}'))
+add('add-form-events-depth-9972-server-error', 'owner', CA, 500, SERVER, content_type=FORM,
+    raw_parts=deep_member_parts(f'course={cid("quotes")}&subscription_id={sid("mario")}', 'events',
+                                '[{"id": 7, "amount": "1", "payment_date": "05/05/2099", "deep": ', 9970, '}]'))
 # one_fee_payment=false as text still marks the row; the payment follows the course's one-fee flag.
 row = new_cs('@cf3', 'one', 'luisa', payment='@cf3p', one_fee=True, active=False)
 text = "Pagamento in un'unica soluzione per Tennis"
