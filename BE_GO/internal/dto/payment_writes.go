@@ -126,6 +126,15 @@ type PaymentEntryInput struct {
 	Attachments                    []domain.RequestObject
 	// UserPresent is a valid nested `user` object: the serializer's save() cannot write it.
 	UserPresent bool
+	// FormJSONDepth is the maximum nesting (auditJSONDepth's D) of the form JSON
+	// texts course and meta_payment_categories (0 when absent or sent as JSON):
+	// the update view answers its measured recursion bands (owner decision X15).
+	FormJSONDepth int
+	// FormJSONRejected marks a form JSON value Python parses but the jsonb column
+	// refuses at save time (a lone surrogate escape): the value validates, so
+	// auditlog's pre_save entry is written and the row UPDATE is skipped (the 500
+	// page). The measured audit band of the depth above takes the same path.
+	FormJSONRejected bool
 }
 
 func paymentEntryChoice(value any, choices []string) (string, string) {
@@ -248,8 +257,17 @@ func ParsePaymentEntry(object domain.RequestObject, partial bool) (PaymentEntryI
 		case "course", "meta_payment_categories":
 			parsed := value
 			if text, ok := value.(PaymentEntryJSONText); ok {
-				// JSONField.get_value marked an HTML form value as JSON text.
-				tree, valid, _, _ := automationFormTree(text.Text)
+				// JSONField.get_value marked an HTML form value as JSON text and
+				// to_internal_value's json.loads parses it. A RecursionError is not a
+				// ValidationError: the depth is reported for the update view's
+				// measured bands (owner decision X15).
+				tree, valid, rejected, depth := automationFormTree(text.Text)
+				if depth > input.FormJSONDepth {
+					input.FormJSONDepth = depth
+				}
+				if rejected {
+					input.FormJSONRejected = true
+				}
 				if !valid {
 					fail(CourseSubscriptionJSONInvalid)
 					continue
@@ -316,17 +334,11 @@ var paymentEntryFormOptions = map[string]paymentEntryFormOption{
 // field (Field.get_value, with the overrides a nested serializer, a ListField
 // and a JSONField carry). Fields the extraction skips are left out.
 //
-// refused is true when a JSON field's text (course, meta_payment_categories)
-// nests past the ported depth or holds a lone surrogate escape. Django still
-// validates every field first (another field's error is a 400); the depth at
-// which Python's JSON codec raises depends on the live recursion depth, so that
-// band stays a handoff refusal before any write. surrogate reports the other
-// case alone: the text parses and the value reaches the save, where auditlog's
-// pre_save entry is written before the jsonb column refuses the value (a depth
-// past the ported band wins over a surrogate, as json.loads raises first).
-func PaymentEntryFormObject(object domain.RequestObject, partial bool) (converted domain.RequestObject, refused, surrogate bool) {
-	converted = domain.RequestObject{}
-	deep := false
+// A JSON field's present value becomes PaymentEntryJSONText, so the serializer's
+// JSONField parses it and reports its nesting: the update view answers the
+// measured recursion bands (owner decision X15).
+func PaymentEntryFormObject(object domain.RequestObject, partial bool) domain.RequestObject {
+	converted := domain.RequestObject{}
 	for _, name := range paymentEntryOrder {
 		switch name {
 		case "attachments":
@@ -348,11 +360,6 @@ func PaymentEntryFormObject(object domain.RequestObject, partial bool) (converte
 					} else {
 						text = PythonStr(value)
 					}
-				}
-				if _, _, rejected, depth := automationFormTree(text); rejected || depth > 500 {
-					refused = true
-					surrogate = surrogate || rejected
-					deep = deep || depth > 500
 				}
 				converted = append(converted, domain.RequestField{Name: name, Value: PaymentEntryJSONText{Text: text}})
 			}
@@ -390,7 +397,7 @@ func PaymentEntryFormObject(object domain.RequestObject, partial bool) (converte
 			converted = append(converted, domain.RequestField{Name: name, Value: kept})
 		}
 	}
-	return converted, refused, surrogate && !deep
+	return converted
 }
 
 // paymentEntryFormValue is Field.get_value of a present HTML value: an empty

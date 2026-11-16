@@ -327,11 +327,14 @@ def fixture_context(apps, private_work, raw, *, cleanup_receipt=None):
 
 @contextmanager
 def case_rows(case):
-    """Insert the module whose stored elements the state snapshot cannot decode (X15 band).
+    """Insert the module whose stored JSON the state snapshot cannot decode (X15 bands).
 
-    module.elements is a jsonb column the harness snapshots decode and walk in Python;
-    a value 9933 levels deep is past the interpreter's recursion limit, so the module
-    (and its responses) exist only around the case's request.
+    module.elements and ModuleResponses.response are jsonb columns the harness
+    snapshots decode and walk in Python; a value this deep is past the
+    interpreter's recursion limit, so the module (and its response) exist only
+    around the case's request. A deep response is written from its authored text
+    ('response_raw') with raw SQL, because psycopg2's json.dumps of a Python
+    structure at that depth raises.
     """
     label = (case.get('setup') or {}).get('module')
     if not label:
@@ -350,14 +353,19 @@ def case_rows(case):
             end_date=day(row['end']), always_active=row['always_active'], max_responses=row['max_responses'],
             queue_mode=row['queue_mode'], only_users=row['only_users'], payment_required=row['payment_required'],
             payment_data=row['payment_data'], response_message=row['response_message'],
-            allow_attachments=row['allow_attachments'], elements={})])
+            allow_attachments=row['allow_attachments'], elements=row['elements'])])
         with connection.cursor() as cursor:
-            cursor.execute('UPDATE application_module SET elements=%s::jsonb WHERE module_id=%s', [row['elements_raw'], row['id']])
-        for response in (r for r in source['responses'].values() if r['module'] == label):
-            ModuleResponses._base_manager.bulk_create([ModuleResponses(
-                module_response_id=response['id'], module_id=row['id'], creation_date=moment(response['created']),
-                progressive_response_number=response['number'], queue_position=response['queue'], response=response['response'],
-                approved=response['approved'], user_id=None, payment_id=None, attachment_token_hash='')])
+            if row.get('elements_raw'):
+                cursor.execute('UPDATE application_module SET elements=%s::jsonb WHERE module_id=%s', [row['elements_raw'], row['id']])
+            for response in (r for r in source['responses'].values() if r['module'] == label):
+                ModuleResponses._base_manager.bulk_create([ModuleResponses(
+                    module_response_id=response['id'], module_id=row['id'], creation_date=moment(response['created']),
+                    progressive_response_number=response['number'], queue_position=response['queue'],
+                    response=response.get('response', {}), approved=response['approved'], user_id=None, payment_id=None,
+                    attachment_token_hash='')])
+                if response.get('response_raw'):
+                    cursor.execute('UPDATE application_moduleresponses SET response=%s::jsonb WHERE module_response_id=%s',
+                                   [response['response_raw'], response['id']])
     try:
         yield
     finally:

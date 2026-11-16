@@ -100,7 +100,9 @@ those three shapes as Django does.
   `module.elements` is a jsonb column loaded by psycopg2's `json.loads`: the measured band is 9933 levels of total JSON
   nesting (`'[]'` is 1), and 9934 raises `RecursionError`, which the view does not catch (the plain 500 page; owner decision
   X15, CPython 3.13.16 on the parity harness's Django). Go reads the stored text with that band
-  (`modulesExportElementsJSONDepth`); the response column keeps its own reader.
+  (`modulesExportElementsJSONDepth`). Each `ModuleResponses.response` is loaded the same way, with its own band: 9935
+  levels of total nesting answer as today and 9936 is the plain 500 page, measured on
+  `{"nome": "Anna", "deep": <nested objects>}` (`modulesExportResponseJSONDepth`).
 
 ## Not ported (refused with the 500 page before any write)
 
@@ -129,6 +131,13 @@ total nesting answer as today and 9934 is the export's 500 page, see the export 
 for the case only (`setup: {'module': ...}`, the harness's `case_scope`) and removes them afterwards, because the state
 snapshot decodes every JSON column and walks it in Python, which cannot hold a value this deep. `go test ./internal/service
 -run DepthBand` pins both edges.
+
+The response column follows the same decision (X15) with its own band: a `ModuleResponses.response` of 9935 levels
+answers as today and 9936 is the plain 500 page. Cases `export-response-json-at-depth-band` (200, the workbook over a
+module whose response is `{"nome": "Anna", "deep": <9933 nested objects>}`) and
+`export-response-json-past-depth-band-server-error`. The fixture carries the response as text (`response_raw`) and the
+adapter inserts it with raw SQL, because psycopg2's `json.dumps` of a Python structure at that depth raises too;
+`go test ./internal/service -run ModulesExportResponseJSONDepthBand` pins the band.
 
 An attachment `filename` sent as an uploaded file and a response integer beyond int64 are ported. The multipart reader
 (`internal/handler/reference_body.go`) names an upload as Django does (`djangoUploadName`: `sanitize_file_name` then
@@ -191,8 +200,7 @@ Long-tail PR 4: an uploaded attachment `filename` and response integers beyond i
 TestModuleAttachmentFilenameValues` and `go test ./internal/xlsxexport -run TestPandasXlsxwriterBigInt` pin the parts
 without a database.
 
-X15 edges: django's edge is not a fixed number: it moves with the value's shape (arrays or objects, where the deep part sits)
-and by a level or two with the live stack of the run. The bands above were measured with nested objects; an array of
-the same total depth can still load in Django where Go answers the band's 500 page (a top-level array quote of 9965
-levels updates on the course subscription update route). The parity cases use the measured shapes and sit past or
-inside the band with a margin; the exact edges are pinned by the Go tests (X15 is the accepted divergence there).
+X15 edges: django's edge is not a fixed number: it moves by a few levels with the value's shape (arrays or objects, where the
+deep part sits) and with the live stack of the run (the same module elements loaded at 9934 levels in one run and
+not in another). The bands above were measured with nested objects; the parity cases sit inside or past each band
+with a margin, and the exact edges are pinned by the Go tests (X15 is the accepted divergence there).

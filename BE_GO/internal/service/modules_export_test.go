@@ -44,6 +44,45 @@ func TestModulesExportElementsJSONDepthBand(t *testing.T) {
 	}
 }
 
+// The module responses band (owner decision X15): the export loads every
+// response column with psycopg2's json.loads, so a response of 9935 levels
+// answers as today and 9936 are the export's unhandled exception (the 500
+// page). Measured on {"nome": "Anna", "deep": <nested objects>} on the parity
+// harness's Django; the band is that measured one, not a number this test
+// derives.
+func TestModulesExportResponseJSONDepthBand(t *testing.T) {
+	const measured = 9935
+	if modulesExportResponseJSONDepth != measured {
+		t.Fatalf("band: %d, want %d", modulesExportResponseJSONDepth, measured)
+	}
+	response := func(depth int) string {
+		// The outer object is one level; each "deep" object adds one.
+		return `{"nome": "Anna", "deep": ` + strings.Repeat(`{"a": `, depth-2) + "{}" + strings.Repeat("}", depth-2) + "}"
+	}
+	atBand, overBand := response(measured), response(measured+1)
+	if dto.AuditJSONDepth(atBand) != measured || dto.AuditJSONDepth(overBand) != measured+1 {
+		t.Fatalf("authored depths: %d %d", dto.AuditJSONDepth(atBand), dto.AuditJSONDepth(overBand))
+	}
+	value, err := modulesExportResponse(&atBand)
+	if err != nil {
+		t.Fatalf("at the band: %v", err)
+	}
+	object, isObject := value.(domain.RequestObject)
+	if !isObject {
+		t.Fatalf("at the band: %#v", value)
+	}
+	if name, _ := object.Lookup("nome"); name != "Anna" {
+		t.Fatalf("at the band: nome=%v", name)
+	}
+	if _, err := modulesExportResponse(&overBand); !errors.Is(err, domain.ErrModulesExportServer) {
+		t.Fatalf("past the band: %v", err)
+	}
+	// A nil column is a nil value, as Django's JSONField reads SQL NULL.
+	if value, err := modulesExportResponse(nil); err != nil || value != nil {
+		t.Fatalf("absent column: %#v %v", value, err)
+	}
+}
+
 // A response value that is a JSON integer: json.loads gives an int of any
 // size, and the frame keeps one beyond int64 for xlsxwriter's float(number).
 func TestModulesExportValueIntegers(t *testing.T) {

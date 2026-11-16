@@ -44,10 +44,7 @@ func paymentEntryFormCodes(invalid *PaymentEntryValidationError) map[string][]st
 
 func paymentEntryFormParse(t *testing.T, partial bool, pairs ...any) (PaymentEntryInput, map[string][]string) {
 	t.Helper()
-	converted, refused, _ := PaymentEntryFormObject(paymentEntryFormBody(pairs...), partial)
-	if refused {
-		t.Fatalf("unexpected refusal for %v", pairs)
-	}
+	converted := PaymentEntryFormObject(paymentEntryFormBody(pairs...), partial)
 	input, invalid := ParsePaymentEntry(converted, partial)
 	return input, paymentEntryFormCodes(invalid)
 }
@@ -117,7 +114,7 @@ func TestPaymentEntryFormNestedUser(t *testing.T) {
 		t.Fatalf("codes=%v user=%v", codes, input.UserPresent)
 	}
 	// A top-level field error is reported beside the nested object's.
-	converted, _, _ := PaymentEntryFormObject(paymentEntryFormBody("user.role", "9"), true)
+	converted := PaymentEntryFormObject(paymentEntryFormBody("user.role", "9"), true)
 	_, invalid := ParsePaymentEntry(converted, true)
 	if invalid == nil || len(invalid.Fields) != 1 || invalid.Fields[0].Name != "user" || len(invalid.Fields[0].Nested) == 0 ||
 		invalid.Fields[0].Nested[0].Codes[0] != "choice:9" {
@@ -173,29 +170,48 @@ func TestPaymentEntryFormRelatedAndChoices(t *testing.T) {
 	}
 }
 
-// A JSON field nested past the ported depth is a handoff refusal, not a field
-// error: the conversion reports it and ParsePaymentEntry still sees the text.
-// A lone surrogate escape splits off: the text parses and the value reaches the
-// save, so it is reported separately (surrogate).
-func TestPaymentEntryFormJSONTooDeep(t *testing.T) {
-	converted, refused, surrogate := PaymentEntryFormObject(paymentEntryFormBody("course", strings.Repeat("[", 502)+strings.Repeat("]", 502)), true)
-	if !refused || surrogate {
-		t.Fatalf("deep text: refused=%v surrogate=%v", refused, surrogate)
+// A JSON form field's text is parsed by the serializer's JSONField, which
+// reports its nesting for the update view's measured bands (owner decision X15)
+// and the lone surrogate escape a value can keep (the jsonb write then refuses
+// it at save time). The conversion only marks the text as JSON.
+func TestPaymentEntryFormJSONDepth(t *testing.T) {
+	parsed := func(pairs ...any) (PaymentEntryInput, *PaymentEntryValidationError) {
+		return ParsePaymentEntry(PaymentEntryFormObject(paymentEntryFormBody(pairs...), true), true)
 	}
-	if _, present := converted.Lookup("course"); !present {
-		t.Fatal("deep text: course dropped")
+	for _, depth := range []int{1, 501, 600, 9934, 9935, 9937, 9938, 10000, formJSONNesting + 2} {
+		input, invalid := parsed("course", deepArrays(depth))
+		if invalid != nil || input.FormJSONDepth != depth || input.FormJSONRejected {
+			t.Fatalf("course depth %d: invalid=%v depth=%d rejected=%v", depth, invalid, input.FormJSONDepth, input.FormJSONRejected)
+		}
+		course, isList := input.Course.Value.([]any)
+		if !input.Course.Present || !isList {
+			t.Fatalf("course depth %d: %#v", depth, input.Course.Value)
+		}
+		if depth > formJSONNesting && len(course) != 0 {
+			t.Fatalf("course depth %d: %d items", depth, len(course))
+		}
 	}
-	converted, refused, surrogate = PaymentEntryFormObject(paymentEntryFormBody("course", `"\ud800"`), true)
-	if !refused || !surrogate {
-		t.Fatalf("surrogate text: refused=%v surrogate=%v", refused, surrogate)
+	// The depth is the deepest of the JSON fields present, and a JSON body is
+	// never measured (its text is already parsed).
+	input, invalid := parsed("course", deepArrays(9937), "meta_payment_categories", deepArrays(3))
+	if invalid != nil || input.FormJSONDepth != 9937 {
+		t.Fatalf("two fields: invalid=%v depth=%d", invalid, input.FormJSONDepth)
 	}
-	if _, present := converted.Lookup("course"); !present {
-		t.Fatal("surrogate text: course dropped")
+	if input, invalid = ParsePaymentEntry(domain.RequestObject{{Name: "course", Value: []any{}}}, true); invalid != nil ||
+		input.FormJSONDepth != 0 {
+		t.Fatalf("json body: invalid=%v depth=%d", invalid, input.FormJSONDepth)
 	}
-	// A depth the ported parser accepts is not refused (Django's band depends
-	// on the live recursion depth and stays the handoff's concern).
-	if _, refused, surrogate := PaymentEntryFormObject(paymentEntryFormBody("course", `{"a": 1}`), true); refused || surrogate {
-		t.Fatal("shallow JSON text refused")
+	// A lone surrogate escape parses and validates; the value is reported so the
+	// service takes the save's pre_save-audit path.
+	if input, invalid = parsed("course", `["\ud800"]`); invalid != nil || !input.FormJSONRejected || input.FormJSONDepth != 1 {
+		t.Fatalf("surrogate: invalid=%v rejected=%v depth=%d", invalid, input.FormJSONRejected, input.FormJSONDepth)
+	}
+	// A text Python cannot parse is the field's "Value must be valid JSON.".
+	if _, invalid = parsed("course", "nope"); invalid == nil || invalid.Fields[0].Name != "course" {
+		t.Fatalf("invalid text: %v", invalid)
+	}
+	if _, invalid = parsed("course", `{"a": 1}`); invalid != nil {
+		t.Fatalf("shallow JSON text: %v", invalid)
 	}
 }
 

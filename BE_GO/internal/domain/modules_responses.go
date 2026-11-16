@@ -21,9 +21,6 @@ var (
 	ErrModuleResponseNotFound = errors.New("response not found")
 	// ErrModuleDocumentNotFound is 404 {'error': 'document not found'}.
 	ErrModuleDocumentNotFound = errors.New("document not found")
-	// ErrModuleResponsesNotPorted refuses an input whose Django path is not
-	// ported, before any write (the 500 page).
-	ErrModuleResponsesNotPorted = refusal.New("module responses input not ported")
 	// ErrModuleResponsesUnreachable is a state no request or stored row
 	// produces (each site names the decoder or constraint that rules it out).
 	ErrModuleResponsesUnreachable = refusal.AppState("module responses: unreachable state")

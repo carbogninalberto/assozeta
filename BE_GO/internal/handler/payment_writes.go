@@ -132,8 +132,9 @@ func (h *PaymentWritesHandler) failure(c echo.Context, err error, repr bool) err
 		return messageReadsError(c, err)
 	}
 	// A refused (not ported) input is answered by Django when the handoff is
-	// configured (the form JSON text past the ported depth); every other
-	// unhandled failure is the 500 page.
+	// configured; every other unhandled failure is the 500 page (the measured
+	// form JSON bands and the jsonb refusal are application state, never handed
+	// off).
 	return restError(c, err)
 }
 

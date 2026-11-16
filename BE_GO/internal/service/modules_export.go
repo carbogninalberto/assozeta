@@ -200,12 +200,30 @@ func modulesExportColumns(text *string) ([]modulesExportColumn, error) {
 	return columns, nil
 }
 
+// modulesExportResponseJSONDepth is the deepest total JSON nesting (as
+// dto.AuditJSONDepth counts it: '[]' is 1) the export loads from a response
+// column. Measured on {"nome": "Anna", "deep": <nested objects>} with the parity
+// harness's Django (CPython 3.13.16): 9935 levels load and 9936 raise
+// RecursionError in psycopg2's json.loads, which the view does not handle (the
+// 500 page). Owner decision X15: the band, not a refusal.
+const modulesExportResponseJSONDepth = 9935
+
+// modulesExportResponse is json.loads of the stored response text: a value past
+// the interpreter's recursion band is the export's unhandled exception.
+func modulesExportResponse(text *string) (any, error) {
+	value, err := dto.AuditStoredJSONAt(text, modulesExportResponseJSONDepth)
+	if err != nil {
+		return nil, domain.ErrModulesExportServer
+	}
+	return value, nil
+}
+
 func (s *ModulesExport) row(ctx context.Context, columns []modulesExportColumn, response domain.ModuleExportResponse) ([]xlsxexport.Value, error) {
 	row := []xlsxexport.Value{}
 	if len(columns) > 0 {
-		value, err := dto.AuditStoredJSON(&response.Response)
+		value, err := modulesExportResponse(&response.Response)
 		if err != nil {
-			return nil, domain.ErrModuleResponsesNotPorted
+			return nil, err
 		}
 		object, ok := value.(domain.RequestObject)
 		if !ok {

@@ -4,19 +4,11 @@ import (
 	"context"
 	"errors"
 	"time"
-
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 var (
 	// ErrPaymentWritesServer is an unhandled exception in the Django view (the 500 page).
 	ErrPaymentWritesServer = errors.New("payment writes server error")
-	// ErrPaymentWritesNotPorted refuses, before any write, an HTML form body
-	// whose JSON field (course, meta_payment_categories) nests past the ported
-	// depth, where Python's answer depends on the live recursion depth, or
-	// holds a lone surrogate escape, which reaches the save: Django writes
-	// auditlog's pre_save entry and then the jsonb column refuses the value.
-	ErrPaymentWritesNotPorted = refusal.New("payment writes behaviour not ported")
 	// ErrPaymentWritesAthlete is the views' Response(status=403) for athletes.
 	ErrPaymentWritesAthlete = errors.New("payment writes athlete")
 	// ErrPaymentWritesForeignReference is the tenant-scope PermissionDenied

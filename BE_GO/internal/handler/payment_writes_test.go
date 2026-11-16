@@ -68,11 +68,10 @@ func TestPaymentWritesPaymentIDErrorRepr(t *testing.T) {
 	}
 }
 
-// A refusal (the update form body's JSON text past the ported depth) reaches
-// the shared handoff path, so Django's answer is returned; an application-state
-// error (the jsonb column refusing a lone surrogate, after the audit entry) is
-// never handed off and stays Go's 500 page, as does any other unhandled failure.
-func TestPaymentWritesRefusalIsHandedOff(t *testing.T) {
+// An application-state error (the jsonb column refusing a value after the audit
+// entry, or a form JSON text past its measured band) is never handed off and
+// stays Go's 500 page, as does any other unhandled failure.
+func TestPaymentWritesFailuresAreNotHandedOff(t *testing.T) {
 	var upstreamCalls atomic.Int32
 	django := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		upstreamCalls.Add(1)
@@ -89,7 +88,6 @@ func TestPaymentWritesRefusalIsHandedOff(t *testing.T) {
 		status  int
 		calls   int32
 	}{
-		"refusal":           {domain.ErrPaymentWritesNotPorted, 400, 1},
 		"other failure":     {domain.ErrPaymentWritesServer, 500, 0},
 		"application state": {refusal.AppState("payment write: jsonb rejects a lone surrogate"), 500, 0},
 	} {
@@ -108,7 +106,7 @@ func TestPaymentWritesRefusalIsHandedOff(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		body, err := io.ReadAll(response.Body)
+		_, err = io.ReadAll(response.Body)
 		response.Body.Close()
 		server.Close()
 		if err != nil {
@@ -117,9 +115,6 @@ func TestPaymentWritesRefusalIsHandedOff(t *testing.T) {
 		if response.StatusCode != test.status || upstreamCalls.Load() != test.calls {
 			t.Errorf("%s: status %d with %d upstream calls, want %d with %d", name, response.StatusCode, upstreamCalls.Load(),
 				test.status, test.calls)
-		}
-		if test.calls == 1 && string(body) != "django" {
-			t.Errorf("%s: body=%q", name, body)
 		}
 	}
 }

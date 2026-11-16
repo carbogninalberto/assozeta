@@ -118,6 +118,13 @@ func automationFormTree(value any) (tree any, ok, rejected bool, depth int) {
 	return nil, false, false, depth
 }
 
+// ParseFormJSON is json.loads for an HTML form JSON value the serializer
+// accepted: the same reader as automationFormTree (lone surrogate escapes kept
+// as code units) at the parser limit that covers the measured bands (X15).
+func ParseFormJSON(text string) (any, error) {
+	return parseProfileTablesJSONConstantsLimit([]byte(text), map[int64]any{}, true, formJSONNesting)
+}
+
 // AutomationWorkflowPatch holds the present fields of a partial
 // AutomationWorkflowSerializer; nil pointers are absent (the read-only
 // automation_workflow_id is ignored).

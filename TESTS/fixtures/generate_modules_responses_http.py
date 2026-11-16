@@ -453,6 +453,13 @@ def typed(value):
     return value
 
 
+def stored_response(row):
+    """The response value the row holds ('response_raw' text when a Python
+    structure cannot hold it: the harness's state snapshot walks every JSON
+    value)."""
+    return json.loads(row['response_raw']) if 'response_raw' in row else row['response']
+
+
 def exported(module):
     """The export body over the module's seeded responses (insertion order)."""
     columns = [(e['props']['label'], e['props']['name']) for e in MODULES[module]['elements']
@@ -461,7 +468,8 @@ def exported(module):
     for row in RESPONSES.values():
         if row['module'] != module:
             continue
-        values = [typed(row['response'][name]) if name in row['response'] else '-' for _, name in columns]
+        response = stored_response(row)
+        values = [typed(response[name]) if name in response else '-' for _, name in columns]
         created = row['created'].replace('Z', '')
         stamp = f'{created[8:10]}/{created[5:7]}/{created[:4]} {created[11:16]}'
         user = full_name(row['export_user']) if row['export_user'] else ('-' if not row['user'] else '$base-user')
@@ -941,6 +949,39 @@ add('export-elements-json-at-depth-band', 'owner', 'GET', export('export_deep'),
     setup={'module': 'export_deep'})
 add('export-elements-json-past-depth-band-server-error', 'owner', 'GET', export('export_deep_over'), 500, SERVER,
     setup={'module': 'export_deep_over'})
+
+# ---------------------------------------------------------------------------
+# ModuleResponses.response nested up to the interpreter's recursion band (owner
+# decision X15). The export loads each response with psycopg2's json.loads: the
+# parity harness's Django (CPython 3.13.16) reads 9935 levels of {"nome": "Anna",
+# "deep": <nested objects>} and raises RecursionError at 9936, which the view
+# does not handle (its plain 500 page). Each module and its response exist only
+# around their own case (the state snapshot walks JSON values in Python, which
+# cannot hold a value this deep), so the response is authored as text and
+# inserted with raw SQL ('response_raw').
+# ---------------------------------------------------------------------------
+def deep_response(depth):
+    """{"nome": "Anna", "deep": <nested objects>} whose total nesting is depth."""
+    return '{"nome": "Anna", "deep": ' + '{"a": ' * (depth - 2) + '{}' + '}' * (depth - 2) + '}'
+
+
+# Inside each side of the band with a margin: the edge moves by a level or two with the live stack.
+DEEP_RESPONSE_LOADED, DEEP_RESPONSE_REFUSED = deep_response(9900), deep_response(9970)
+assert json_depth(DEEP_RESPONSE_LOADED) == 9900 and json_depth(DEEP_RESPONSE_REFUSED) == 9970
+# A range of their own (the earlier id iterators are not touched).
+DEEP_RESPONSE_IDS = iter(f'a1000000-0000-4000-8000-{648201 + n:012d}' for n in range(4))
+MODULES['export_deep_response'] = {**EXPORT_BASE, 'id': next(DEEP_RESPONSE_IDS), 'link': 'risposte-export-risposta-profonda',
+                                   'title': 'Risposta profonda', 'elements_raw': json.dumps(EXPORT_ELEMENTS)}
+MODULES['export_deep_response_over'] = {**MODULES['export_deep_response'], 'id': next(DEEP_RESPONSE_IDS),
+                                        'link': 'risposte-export-risposta-troppo-profonda'}
+RESPONSES['deep_response_r'] = {**R, 'id': next(DEEP_RESPONSE_IDS), 'module': 'export_deep_response', 'number': 0,
+                                'response_raw': DEEP_RESPONSE_LOADED, 'token': '', 'export_user': None, 'payment': None}
+RESPONSES['deep_response_over_r'] = {**R, 'id': next(DEEP_RESPONSE_IDS), 'module': 'export_deep_response_over', 'number': 0,
+                                     'response_raw': DEEP_RESPONSE_REFUSED, 'token': '', 'export_user': None, 'payment': None}
+add('export-response-json-at-depth-band', 'owner', 'GET', export('export_deep_response'), 200, exported('export_deep_response'),
+    setup={'module': 'export_deep_response'})
+add('export-response-json-past-depth-band-server-error', 'owner', 'GET', export('export_deep_response_over'), 500, SERVER,
+    setup={'module': 'export_deep_response_over'})
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Module responses info/add/approve/delete/add-attachment/export authored sequence',

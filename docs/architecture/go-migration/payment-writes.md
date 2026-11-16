@@ -90,12 +90,8 @@ payment dates are a 500 with nothing written. Response `201`.
   copy (`request.data` is then `POST.copy()` updated with the files), so Django proceeds: it can reach the serializer (a
   `complex_item` key is still required, and read as text) and answer 201. Go answers 500 for every form add, so a
   multipart add with files is a known gap (the update view's form bodies are ported below).
-- Update with a form body whose `course` or `meta_payment_categories` JSON text nests past the ported depth or holds a
-  lone surrogate escape (`ErrPaymentWritesNotPorted`, a handoff refusal before any write; the 500 page with the handoff
-  off). Django validates every field first, so another field's error is a 400; the depth at which Python's JSON codec
-  raises depends on the live recursion depth, and a lone surrogate passes validation and reaches the save, where
-  auditlog's pre_save entry is written before the jsonb column refuses the value (the view is not atomic, so that audit
-  row stays).
+- Update with a form body whose `course` or `meta_payment_categories` JSON text is deeper than the measured band, or
+  holds a lone surrogate escape, is described under "Update: form bodies" (owner decision X15).
 
 Long-tail PR 4 ports the three inputs that were previously refused here: the `payment_id` add key, a storage-refused
 attachments filename and update form bodies (the sections below).
@@ -154,10 +150,27 @@ raises `{'exception': 'document key not present'}` after the save. `attachments`
 `data['complex_item']` / `data['subscription_id']` read the last value as text: a non-empty `complex_item` is a string
 `_payment_party` indexes (`TypeError`, the 500 page before the save), a `subscription_id` a uuid lookup.
 
-A JSON text that nests past the ported depth or holds a lone surrogate escape refuses the whole request before any
-write (`ErrPaymentWritesNotPorted`, handed off to Django when configured): Django validates every field and answers
-another field's error with a 400, while the depth band and the save's audit entry are Django's (see the not-ported
-list).
+Deep form JSON (owner decision X15). `course` and `meta_payment_categories` are parsed by the serializer's
+`json.loads`, and the answer is the band measured on the parity harness's Django (CPython 3.13.16), for the field
+text's total nesting D (`auditJSONDepth`: `'[]'` is 1):
+
+- D <= 9934: the serializer validates and the save completes as for any shallow value.
+- 9935 <= D <= 9937: `json.loads` succeeds while validating, `auditlog`'s `pre_save` update entry is written and
+  psycopg2's `json.dumps` of the value then raises `RecursionError`: the entry stays, the row is not updated (the view
+  is not atomic) and the answer is the plain 500 page. Go takes exactly the lone-surrogate path: the value validates,
+  the audit entry is written with the stored row's other fields and the deep value as the change, and the UPDATE is
+  skipped (`ErrPaymentWritesJSONColumn`, an application-state error, never handed off).
+- D >= 9938: `json.loads` raises `RecursionError` while DRF validates the field. A `RecursionError` is not a
+  `ValidationError`, so it escapes the field errors collected before it (another field's error would be a 400) and the
+  tenant-scope `403` of an earlier related field escapes first: Go checks the depth after the related-field lookups and
+  before answering the collected errors (`ErrPaymentWritesFormJSONTooDeep`, the plain 500 page, nothing written).
+
+The constants are `paymentWritesFormJSONAuditDepth` (9935) and `paymentWritesFormJSONRefusedDepth` (9938) in
+`paymentWritesFormJSONBand` (`BE_GO/internal/service/payment_writes.go`). The form conversion marks the text
+(`dto.PaymentEntryJSONText`) and the serializer reports the deepest field's D (`PaymentEntryInput.FormJSONDepth`) and
+the lone surrogate escape (`FormJSONRejected`); the reader is the form JSON reader
+(`dto.ParseFormJSON`/`automationFormTree`, limit 20000), so a document past the band is answered by the band, never by
+the parser. A text with a syntax error before the deep part stays `Value must be valid JSON.`.
 
 ## Attachments (`attachments_data`)
 

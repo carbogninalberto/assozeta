@@ -1180,6 +1180,55 @@ add('update-form-meta-lone-surrogate-keeps-audit', 'owner', UPDATE('up_meta'), 5
     content_type='application/x-www-form-urlencoded',
     effect=effect('owner', audit=[event('up_meta', 1, updated_changes(surrogate_old, surrogate_new, repr(surrogate_total)), DIRECT)]))
 
+# --- form JSON fields at the interpreter's recursion band (owner decision X15) -----------------------
+# PaymentEntrySerializer validates course and meta_payment_categories with json.loads. On the parity
+# harness's Django (CPython 3.13.16) a text of 9934 levels validates and saves as any shallow value,
+# 9935..9937 parse and reach the save, where auditlog's pre_save entry is written and psycopg2's
+# json.dumps raises RecursionError (the entry stays, the payment is unchanged, the plain 500 page),
+# and 9938 raises inside validation (the plain 500 page, nothing written). The 9934 body repeats its
+# key, so the stored value stays shallow: the harness's state snapshot walks every JSON value in
+# Python, which cannot hold a value this deep.
+
+
+def json_depth(text):
+    """The total nesting of a JSON text ('[]' is 1)."""
+    depth = deepest = 0
+    for char in text:
+        if char in '[{':
+            depth += 1
+            deepest = max(deepest, depth)
+        elif char in ']}':
+            depth -= 1
+    return deepest
+
+
+def deep_objects(levels):
+    """`levels` nested objects in json.dumps' own spelling (the measured shape)."""
+    return '{"a": ' * levels + '1' + '}' * levels
+
+
+# Django's edge moves with the value's shape and by a level or two with the live stack: the cases use the measured
+# shape ({"deep": <nested objects>}) and sit inside each band with a margin, the audit-only band in its middle.
+DEEP_COURSE_NORMAL = '{"label": ' + deep_objects(9899) + ', "label": "Corso"}'
+DEEP_COURSE_AUDIT = '{"deep": ' + deep_objects(9935) + '}'
+DEEP_COURSE_REFUSED = '{"deep": ' + deep_objects(9969) + '}'
+assert [json_depth(text) for text in (DEEP_COURSE_NORMAL, DEEP_COURSE_AUDIT, DEEP_COURSE_REFUSED)] == [9900, 9936, 9970]
+# A key range of their own (the earlier id iterators are not touched).
+PAYMENTS['up_deep_course'] = keyed_payment('a1000000-0000-4000-8000-000000988463')
+PAYMENTS['up_deep_course_audit'] = keyed_payment('a1000000-0000-4000-8000-000000988464')
+PAYMENTS['up_deep_course_refused'] = keyed_payment('a1000000-0000-4000-8000-000000988465')
+for label in ('up_deep_course', 'up_deep_course_audit', 'up_deep_course_refused'):
+    STATE[label] = copy.deepcopy(PAYMENTS[label])
+
+updated_form('update-form-course-json-at-depth-band', 'owner', 'up_deep_course', 'course=' + quote(DEEP_COURSE_NORMAL),
+             {'course': {'label': 'Corso'}})
+for suffix, text in (('audit-band', DEEP_COURSE_AUDIT),):
+    add(f'update-form-course-json-{suffix}-keeps-audit', 'owner', UPDATE('up_deep_course_audit'), 500, SERVER, method='PATCH',
+        raw_body='course=' + quote(text), content_type='application/x-www-form-urlencoded',
+        effect=effect('owner', audit=[event('up_deep_course_audit', 1, {'course': ['null', text]}, DIRECT)]))
+add('update-form-course-json-past-depth-band-server-error', 'owner', UPDATE('up_deep_course_refused'), 500, SERVER, method='PATCH',
+    raw_body='course=' + quote(DEEP_COURSE_REFUSED), content_type='application/x-www-form-urlencoded', effect=effect('owner'))
+
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Payment add, update and bulk add authored sequence with payment and audit effects',
                               'ids': IDS, 'categories': CATEGORIES, 'accounts': ACCOUNTS, 'associates': ASSOCIATES,

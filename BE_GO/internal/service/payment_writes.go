@@ -187,9 +187,10 @@ func metaAmount(object domain.RequestObject) (*float64, error) {
 	}
 	if text, isText := meta.(dto.PaymentEntryJSONText); isText {
 		// Field.get_value marked the form's HTML value as JSON text, and the
-		// serializer validated it: the hook reads the parsed value (a deep or
-		// surrogate text already passed through the form conversion).
-		parsed, err := dto.ParseProfileTablesJSON([]byte(text.Text))
+		// serializer validated it: the hook reads the parsed value at the form
+		// reader's limit, so a value in the measured bands reaches the save
+		// (owner decision X15).
+		parsed, err := dto.ParseFormJSON(text.Text)
 		if err != nil {
 			return nil, domain.ErrPaymentWritesServer
 		}
@@ -393,6 +394,10 @@ type paymentMemory struct {
 	// amountFloat is the in-memory amount when it is a Python float.
 	amountFloat *float64
 	jsonAudit   map[string]string
+	// rowJSONSkipped keeps the row's JSON columns at their stored values: the
+	// measured audit band never writes the row, and the deep value must not reach
+	// the save defaults' reader (the audit takes it from jsonAudit).
+	rowJSONSkipped bool
 	// groupSent is the X-Group-Id text the in-memory payment keeps when the
 	// column stores another spelling of the same uuid.
 	groupSent *string
@@ -407,7 +412,9 @@ func jsonText(value any) *string {
 }
 
 func (m *paymentMemory) setJSON(field string, value any, target **string) {
-	*target = jsonText(value)
+	if !m.rowJSONSkipped {
+		*target = jsonText(value)
+	}
 	m.jsonAudit[field] = string(dto.PythonJSONDumpsSorted(value))
 }
 
@@ -662,10 +669,46 @@ type paymentParty struct {
 var errPaymentWritesForeignParty = &domain.PermissionDenied{Detail: "User not allowed."}
 
 // errPaymentWritesJSONColumn is PostgreSQL's jsonb input refusing a form JSON
-// value the parser kept (a lone surrogate escape): Django's DataError at the
-// full-row UPDATE, after auditlog's pre_save entry, and the update view is not
-// atomic, so the entry stays and the answer is the plain 500 page.
-var errPaymentWritesJSONColumn = refusal.AppState("payment write: jsonb rejects a lone surrogate")
+// value the parser kept (a lone surrogate escape, or a document in the measured
+// audit band where the driver's json.dumps raises RecursionError): Django's
+// DataError at the full-row UPDATE, after auditlog's pre_save entry, and the
+// update view is not atomic, so the entry stays and the answer is the plain 500
+// page.
+var errPaymentWritesJSONColumn = refusal.AppState("payment write: jsonb rejects a form JSON value")
+
+// payment_update's measured form JSON bands (owner decision X15), measured with
+// CPython 3.13.16 on the parity harness's Django, for the course and
+// meta_payment_categories JSON texts (D is auditJSONDepth's maximum nesting of
+// the field's text):
+//   - D <= 9934: the serializer validates and the save completes normally;
+//   - 9935 <= D <= 9937: json.loads succeeds while validating, auditlog's
+//     pre_save update entry is written and psycopg2's json.dumps of the value
+//     then raises RecursionError: the entry stays, the row is not updated (the
+//     500 page);
+//   - D >= 9938: json.loads raises RecursionError while DRF validates the
+//     field: the 500 page with nothing written.
+const (
+	paymentWritesFormJSONAuditDepth   = 9935
+	paymentWritesFormJSONRefusedDepth = 9938
+)
+
+// errPaymentWritesFormJSONTooDeep is the validation-time RecursionError: it
+// escapes the serializer's collected field errors (an application-state error,
+// never a handoff) and nothing is written.
+var errPaymentWritesFormJSONTooDeep = refusal.AppState("payment write: form JSON nested past the measured depth")
+
+// paymentWritesFormJSONBand maps the deepest form JSON text (D) to its measured
+// outcome: the audit band (the jsonb write raises after the pre_save entry) or
+// the validation-time refusal (nothing written).
+func paymentWritesFormJSONBand(depth int) (auditOnly, refused bool) {
+	switch {
+	case depth >= paymentWritesFormJSONRefusedDepth:
+		return false, true
+	case depth >= paymentWritesFormJSONAuditDepth:
+		return true, false
+	}
+	return false, false
+}
 
 // paymentWritesOwned is a party's owning key compared with the caller's.
 func paymentWritesOwned(found bool, owning *string, err error, caller string) error {
@@ -801,6 +844,13 @@ func (s *PaymentWrites) entry(ctx context.Context, tx domain.PaymentWritesTransa
 	invalid, err := s.related(ctx, tx, identity, input, invalid)
 	if err != nil {
 		return input, err
+	}
+	if _, refused := paymentWritesFormJSONBand(input.FormJSONDepth); refused {
+		// json.loads raises RecursionError while DRF validates the JSON field,
+		// after the related fields' tenant-scope denial (which escapes first) and
+		// before the collected field errors are answered: the 500 page wins and
+		// nothing is written.
+		return input, errPaymentWritesFormJSONTooDeep
 	}
 	if invalid != nil {
 		return input, invalid
@@ -1155,10 +1205,11 @@ func (s *PaymentWrites) Add(ctx context.Context, identity domain.ResolvedIdentit
 // full-row save, then attachments_data. A form body is a QueryDict: the
 // view's del of a blank date or of the body's payment_id raises for an
 // immutable one (the 500 page) and works for a mutable copy (a multipart
-// body with files), whose HTML values the serializer validates. A form JSON
-// field past the ported depth stays a handoff refusal before any write; one
-// that keeps a lone surrogate escape reaches the save, where the pre_save audit
-// entry is written and the jsonb column refuses the value (the 500 page).
+// body with files), whose HTML values the serializer validates. The form JSON
+// fields answer the measured recursion bands (owner decision X15): a depth that
+// keeps a lone surrogate escape or lands in the audit band reaches the save,
+// where the pre_save audit entry is written and the jsonb column refuses the
+// value (the 500 page); one past the band is the 500 page before any write.
 func (s *PaymentWrites) Update(ctx context.Context, identity domain.ResolvedIdentity, request PaymentWritesRequest, body any) (map[string]any, error) {
 	id, err := messageReadsParseUUID(request.ID)
 	if err != nil {
@@ -1184,7 +1235,6 @@ func (s *PaymentWrites) Update(ctx context.Context, identity domain.ResolvedIden
 	if !ok {
 		return nil, domain.ErrPaymentWritesServer
 	}
-	jsonSurrogate := false
 	if request.Form {
 		if object.HasUpload() {
 			// request.data is a mutable copy of the form: the view's del statements work.
@@ -1205,14 +1255,7 @@ func (s *PaymentWrites) Update(ctx context.Context, identity domain.ResolvedIden
 				return nil, domain.ErrPaymentWritesServer
 			}
 		}
-		converted, refused, surrogate := dto.PaymentEntryFormObject(object, true)
-		jsonSurrogate = surrogate
-		if refused && !surrogate {
-			// The recursion band: Python's JSON codec limit depends on the live
-			// call stack (owner decision X15 pending in this file's flow).
-			return nil, domain.ErrPaymentWritesNotPorted
-		}
-		object = converted
+		object = dto.PaymentEntryFormObject(object, true)
 	} else {
 		for _, name := range []string{"creation_date", "payment_date"} {
 			if value, present := object.Lookup(name); present && value == "" {
@@ -1226,7 +1269,12 @@ func (s *PaymentWrites) Update(ctx context.Context, identity domain.ResolvedIden
 	if err != nil {
 		return nil, err
 	}
-	m := &paymentMemory{row: *row, jsonAudit: map[string]string{}}
+	// The measured audit band takes exactly the lone-surrogate path: the value
+	// validates, auditlog's pre_save entry is written and the jsonb write then
+	// raises (owner decision X15).
+	auditOnly, _ := paymentWritesFormJSONBand(input.FormJSONDepth)
+	jsonRejected := input.FormJSONRejected || auditOnly
+	m := &paymentMemory{row: *row, jsonAudit: map[string]string{}, rowJSONSkipped: auditOnly}
 	m.row.InstructorID, m.row.SupplierID = nil, nil
 	if item, present := object.Lookup("complex_item"); present && dto.PythonTruthy(item) {
 		m.row.AssociateID = nil
@@ -1275,11 +1323,12 @@ func (s *PaymentWrites) Update(ctx context.Context, identity domain.ResolvedIden
 	if err != nil {
 		return nil, err
 	}
-	if jsonSurrogate {
-		// auditlog's pre_save entry of the full-row save is written, then
-		// PostgreSQL's jsonb input refuses the lone surrogate: the UPDATE is
-		// skipped, the entry stays (the view is not atomic) and the answer is
-		// the 500 page.
+	if jsonRejected {
+		// auditlog's pre_save entry of the full-row save is written, then the
+		// jsonb write refuses the value (a lone surrogate escape, or a document in
+		// the measured audit band where psycopg2's json.dumps raises
+		// RecursionError): the UPDATE is skipped, the entry stays (the view is not
+		// atomic) and the answer is the 500 page.
 		if changes := updatedPaymentChanges(before, paymentAfterSaveValues(before, *row, m)); len(changes) > 0 {
 			if err = s.audit(ctx, tx, identity, request.Audit, id, 1, changes, row.AssociationID); err != nil {
 				return nil, err
