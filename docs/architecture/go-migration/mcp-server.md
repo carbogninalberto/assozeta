@@ -113,19 +113,21 @@ execution owner; nothing here switches traffic.
 
 ## Not ported (refused explicitly, after reads only)
 
-Refusal: the Go tool returns `ErrBusinessMCPNotPorted`; over stdio the call
-answers `isError: true` "Tool execution failed". Nothing is written before.
+Refusal: the Go command answers `isError: true` "Tool execution failed" for `ErrBusinessMCPNotPorted`. Nothing is
+written before. Since long tail PR 4 the tools refuse nothing themselves:
 
-- Building XLSX or PDF files is ported (v2-reports-3, below). Still refused: a file whose
-  exporter raises with text Go does not reproduce (a title or `sheets` of another type, a
-  sheet without columns and the other exceptions of the exporters), and a `format`,
-  `export`, `multi_sheet`, `filename` or course/date argument of a type the save_info
-  would write back differently.
-- ORM inputs whose Django text includes SQL or parts Go does not reproduce:
-  `?` ordering, ordering by a relation whose model has Meta.ordering, integer
-  list items outside the 64-bit parameter range, CSV cells holding JSON
-  containers or ISO-looking text other than the engine's own datetimes,
-  attendance names whose `str.lower()` differs from Go's.
+- An exception whose `str(e)` Go does not reproduce is `service.ErrBusinessToolRaised`: a PostgreSQL error (its text
+  carries the statement with psycopg2's literals, for example `title__regex: 5` → "operator does not exist: text ~
+  integer…"), a reportlab table without columns (the text carries an object address), a NOT NULL or JSON error of
+  `save_report`. The command refuses those calls (`handler/businessmcp`); the saved-report run answers its JSON 500 and
+  the agent the X11 tool result (ws-agent.md).
+- Every other input is ported: non-finite floats (`NaN`/`Infinity` tokens, numbers beyond the float range), integers
+  beyond 64 bits in `in`/`range`, raw `regex`/`iexact` values with psycopg2's literal types, `Decimal(str)` spellings,
+  `time.fromisoformat` and `time_re`, aware datetimes past the year range, `?` ordering, `str.lower()` attendance
+  names, the `sanitize_text` template (`re._parser.parse_template`, its error texts and positions), `user_id` texts
+  through `repr()`, `save_report` values stored with `str()`, the exporters' TypeError/AttributeError texts and the
+  attendance `save_info` written back as given. The defensive branches no input reaches are `refusal.AppState`
+  (metadata invariants asserted by `TestMCPModelsInvariants`).
 - Manual tools in the Go command run `service.ManualTools` (parity is the
   manual family's, semantic); their text keeps Go key order.
 - argparse usage/errors and Django's global command options.
@@ -175,3 +177,12 @@ by the code the saved-report run uses, with the whole result dict: `row_count`, 
 (workbook parts with the two core.xml times set aside, PDF objects decoded with dates and
 trailer ID set aside; the helpers of `TESTS/contracts`): 147 cases, 146 identical and 1
 refused (`title` that is not a string), 4/4 sessions identical.
+
+Long tail PR 4 (`lt4A-*` receipts): 134 more tool calls (inputs that were refused: non-finite numbers from the agent's
+`json.loads`, raw lookup values, decimal and time spellings, `?` ordering, sanitize templates, user ids, export and
+attendance argument types), every authored expectation checked on Django first, and three more stdio calls (`save_report`
+with a 201-character name and with a NUL, `sanitize_text` with `\g<0>`). The Go driver reads `NaN`/`Infinity` with the
+Python-compatible parser, like the command. Run `lt4A-mcp-server-tools-2`: Django 543/543, Go 538 identical and 5
+refused (PostgreSQL error texts and a PDF table without columns), 4/4 sessions identical; `business_mcp_tools.py` 25/25
+(its three refusals, a lone backslash replacement, a list `user_id` and a 201-character name, now answer Django's texts).
+

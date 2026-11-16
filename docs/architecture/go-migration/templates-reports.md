@@ -134,9 +134,8 @@ with the files switched on (`service/report_files.go`):
   page per course.
 
 The documents are compared by the decoded-document and part-by-part standards
-(pdf-exports.md, xlsx-exports.md). The MCP server and the assistant keep
-refusing the XLSX and PDF results (their result dictionaries are not covered
-by this route). An enrolment without a subscription is now listed in the
+(pdf-exports.md, xlsx-exports.md). The MCP server and the assistant build the same files with the whole result
+dictionary (mcp-server.md, ws-agent.md). An enrolment without a subscription is now listed in the
 matrix for the MCP server as well.
 
 ## Not ported (refused with the HTML 500 page before any query)
@@ -151,10 +150,7 @@ matrix for the MCP server as well.
   its parser raises on (`A<B` opens a tag) fails the export like any other
   exception (`v2rep3-*` receipts).
 - The report tools use the query engine described in `mcp-server.md` (every
-  whitelisted model, `get_schema`, relation paths). Still refused: `?` ordering
-  (not deterministic), and ordering by a relation name whose related model
-  declares `Meta.ordering` (Django expands its default ordering columns; no
-  readable related model has one today). A list argument that is not iterable
+  whitelisted model, `get_schema`, relation paths). A list argument that is not iterable
   (`fields: 5`) raises Django's `'int' object is not iterable`, a string one is
   iterated character by character and a dict one by its keys; an aggregation
   `field` that is not a string is written with `str()` into the default alias
@@ -162,14 +158,17 @@ matrix for the MCP server as well.
   a list or a dict raises the `+` operand text; and a slice whose stop is below
   its start (a negative `limit` with an offset that keeps the stop
   non-negative, or a float limit that truncates to the start) answers the empty
-  listing with Django's `count` and `has_more`. The remaining refusals are
-  defensive: a relation, relation target, relation kind or field kind the
-  generated metadata does not describe, a column value type or an
-  aggregation/output type without an expression,
-  JSON and `has_key` values outside the parsed JSON types, grouped or
-  unhashable choice maps, a method call on a value outside the parsed JSON
-  types, integers beyond 64 bits and non-finite floats as parameters, a
-  non-finite `limit`/`offset`, and a `__year` comparison without an integer.
+  listing with Django's `count` and `has_more`.
+- Long tail PR 4: nothing in the report tools hands the request to Django any more. `?` ordering is `ORDER BY
+  RANDOM() ASC` with `RANDOM()` in the `DISTINCT` select list (equal rows stay, `run-query-categories-random-order`);
+  values the ORM converts follow Python (`Decimal(str)` spellings, integers beyond 64 bits as numeric literals, raw
+  `regex`/`iexact` values with psycopg2's literal types, `time.fromisoformat`, non-finite floats from a body number
+  beyond the float range: `run-query-carnets-decimal-*`, `run-query-carnets-in-huge-integer`,
+  `run-query-tags-regex-*`, `run-query-tags-time-*`, `run-query-tags-*-overflow*`); the file tools' argument types
+  (`run-attendance-course-*`, `run-export-*-error`). An environment `MCP_AGENT_MAX_RESULTS` or
+  `MCP_AGENT_QUERY_TIMEOUT` of 0 is Django's `''` and raises where QueryBuilder uses it, a negative value is used as
+  Python uses it. The branches no input reaches (generated metadata, PostgreSQL output forms, the parsed JSON types)
+  are `refusal.AppState`: Go's 500 page, never handed off.
 
 The XLSX workbooks of the file tools answer every stored label and cell ([xlsx-exports](xlsx-exports.md)); openpyxl's
 sheet-title comparison is `str.lower()` (avoid_duplicate_name), so two titles that differ only by their lower-case form (a
@@ -315,3 +314,9 @@ cases match (the malformed pattern is the database error that fails the
 statement in both engines, so the route answers its 500 page); the engine
 calls themselves are the R1-R5 groups of CASES in
 TESTS/adapters/go/mcp_server_tools.py.
+
+Long tail PR 4 (`templates-reports-http-lt4A-2`): 16 run cases for the inputs that were handed to Django (listed in
+"Not ported" above), 262/262 on native Django, native Go, Caddy `/api/v1` and `/api/v2`; the first local run corrected
+one authored expectation on Django (a `course_name` of 5 finds `Calcio a 5`). Mutation (`lt4A-mut`): leaving `RANDOM()`
+out of the `DISTINCT` select list fails `run-query-categories-random-order`.
+

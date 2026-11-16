@@ -1769,3 +1769,34 @@ read, statistic infinities, docmanager stored names, data restore progress and p
 persona picture key, the print deferral during a restore (eager `Task.apply` recursion), supplier ordering, NUL text on
 subscription update, the supplier foreign keys, runner reply depth, the release feed's short body (Django raises
 `IncompleteRead`), the mentions alias `KeyError`, the Stripe encoder's Go types and the subscription export table.
+
+## Long tail PR 4, agent A
+
+Business MCP tools, saved-report runs and the AI agent. Same rule per return site (owner decision 2026-11-15);
+approved divergence used: X11. Per-site table: `tmp/long-tail/pr4-A.md` (worktree notes).
+
+A tool exception has three hosts: the saved-report run answers every exception with one JSON 500, the MCP command
+answers `{"error": str(e)}`, the agent sends `json.dumps({'error': str(e)})` to the model. An exception whose text Go
+does not reproduce (a PostgreSQL error, whose text carries the statement with psycopg2's literals; a reportlab text
+with an object address) is now `service.ErrBusinessToolRaised`, a plain error: the run answers its 500, the MCP command
+keeps refusing (command root only), the agent answers X11's generic tool result.
+
+| Sentinel | HTTP/WS before -> after | other before -> after | What changed |
+|---|---|---|---|
+| `dto.ErrReportNotPorted` (deleted) | 7 -> 0 | 3 -> 0 | **ported**: non-finite floats (agent `NaN`/`Infinity`, numbers beyond the float range), raw `regex`/`iexact` values with psycopg2's literal types, `Decimal(str)` spellings, `time.fromisoformat` + `time_re`, Unicode digits in strptime, aware datetimes past the year range, integers beyond 64 bits in `in`/`range`, `?` ordering, choice labels of lists/dicts, environment `max_results`/`query_timeout` of 0 (`''`) or negative; app state: metadata guards (asserted by `TestMCPModelsInvariants`), PostgreSQL output forms, parsed-JSON type defaults |
+| `service.ErrBusinessMCPNotPorted` | 7 -> 0 | 3 -> 1 | **ported**: `sanitize_text`'s `re.sub` template and argument types, `user_id` texts through `repr()`, `save_report` values, the exporters' TypeError/AttributeError texts (`At least one sheet must be visible` when ExcelWriter closes without a sheet), attendance `course_id`/`course_name`/attendees/`str.lower()`/`save_info`, big integers in XLSX cells; untexted exceptions are `ErrBusinessToolRaised`; the run calls the file tools directly. The sentinel stays only in `handler/businessmcp` (MCP command) |
+| `service.ErrAgentNotPorted` (deleted) | 1 -> 0 | 2 -> 0 | **ported**: collaborator without owner (4003), non-UTF-8 base URL (as InvalidURL), environment 0/negative integers (`range('')`, `count <= ''`, `wait_for` with `''` and <= 0), numeric/boolean tool call indexes, the failed forced loop answer; X11: business refusals answer the generic tool result, other stream shapes are a failed stream; app state: configuration keys/types both writers never produce, manual tool result shapes |
+| `repository.ErrAgentCacheShape` | 1 -> 1 | 2 -> 0 | **ported**: save_info pickles with lone surrogates, integers of any size, infinities (the shared unpickler takes options; data restore keeps its subset); app state: counter values only the app writes. **Left**: `GuardAcquire`'s `cache.decr` after the key expired between `incr` and `decr` (timing) |
+
+`refusal_reach.py`: whole report 176 -> 152 rows (HTTP/WebSocket 148 -> 133, other 28 -> 19; 50 -> 48 sentinels);
+these four points 26 -> 2 (`/ws/agent/` decr race; the `mcp-server` command). `/ws/agent/` and the saved-report
+routes still reach `pdfexport: document input not ported` (agent B's point): the agent converts it to the X11 tool
+result, the run hands it off.
+
+Evidence (local, one run at a time under the shared lock): `TESTS/adapters/go/mcp_server_tools.py` 543/543 on Django,
+538 identical and 5 refused on Go (PostgreSQL error texts and a reportlab table without columns, the untexted
+exceptions above), 4/4 stdio sessions identical; `business_mcp_tools.py` 25/25 (its three refusals are now Django's
+answers); families `--versioned` on four transports: templates-reports 262 (16 new run cases), ws-agent 63 (57 through
+Caddy; new `loop-python-values`), saved-reports 32, data-restore 157 (the shared unpickler). Mutation (`lt4A-mut`):
+leaving `RANDOM()` out of the `DISTINCT` select list fails `run-query-categories-random-order` (CAUGHT, restored).
+`go test ./...` green.
