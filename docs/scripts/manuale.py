@@ -1091,6 +1091,30 @@ def execute_buffered(command, run, label, *, cwd=None, env=None, input=None):
             'elapsed_seconds': round(time.monotonic() - started, 3)}
 
 
+def publish_buffered(run, result):
+    """Publish one joined buffered command into the shared run logs, exactly once.
+
+    Only the main sequence writes execution.log and timings.json, so a buffered
+    result is appended here after its thread joined, then its private log removed.
+    """
+    run = Path(run)
+    label = result['label']
+    log = run / 'execution.log'
+    with log.open('ab') as stream:
+        log.chmod(0o600)
+        stream.write(f'\n{label}\n'.encode())
+        stream.write(result['log'].read_bytes())
+    result['log'].unlink(missing_ok=True)
+    path = run / 'timings.json'
+    report = json.loads(path.read_text()) if path.exists() else {'format': 1, 'events': []}
+    report['events'].append({'kind': 'command', 'name': label,
+                             'status': 'failed' if result['returncode'] else 'passed',
+                             'elapsed_seconds': result['elapsed_seconds']})
+    temporary = path.with_suffix('.tmp')
+    write_json(temporary, report)
+    temporary.replace(path)
+
+
 def start(state):
     configure_runtime(state)
     run = Path(state['run'])
@@ -1117,22 +1141,6 @@ def start(state):
     parallel = os.environ.get('MANUALE_PARALLEL_FRONTEND') != '0'
     outcome = {}
     thread = None
-
-    def publish_compile(result):
-        log = run / 'execution.log'
-        with log.open('ab') as stream:
-            log.chmod(0o600)
-            stream.write(f'\n{compile_label}\n'.encode())
-            stream.write(result['log'].read_bytes())
-        result['log'].unlink(missing_ok=True)
-        path = run / 'timings.json'
-        report = json.loads(path.read_text()) if path.exists() else {'format': 1, 'events': []}
-        report['events'].append({'kind': 'command', 'name': compile_label,
-                                 'status': 'failed' if result['returncode'] else 'passed',
-                                 'elapsed_seconds': result['elapsed_seconds']})
-        temporary = path.with_suffix('.tmp')
-        write_json(temporary, report)
-        temporary.replace(path)
 
     def compile_frontend():
         try:
@@ -1167,7 +1175,7 @@ def start(state):
             # and its published log/timing must still be recorded once.
             thread.join()
             if 'result' in outcome:
-                publish_compile(outcome['result'])
+                publish_buffered(run, outcome['result'])
     if main_error is not None:
         raise main_error
     if frontend is None:
@@ -1492,12 +1500,50 @@ def evaluate(state):
     # remote caller's override. The evaluation report contains no session token.
     run = Path(state['run'])
     fixture = json.loads((run / 'browser-input.json').read_text())
-    execute(management(state, 'evaluate_manuale',
-                    '--association-id', fixture['association_id'], '--output', '/manual-run/evaluation.json'),
-            run, 'Exercise manual retrieval and cited answers through existing MCP and agent')
-    execute(['node', str(Path(state['application']) / 'selfhost/tests/browser/manuale/embedded.mjs')],
-            run, 'Verify sidebar, header, embedded steps and screenshots against the real backend',
-            env={**os.environ, 'ASSOZETA_MANUAL_RUN': str(run)}, cwd=state['application'])
+    evaluation_command = management(state, 'evaluate_manuale',
+                                    '--association-id', fixture['association_id'], '--output', '/manual-run/evaluation.json')
+    evaluation_label = 'Exercise manual retrieval and cited answers through existing MCP and agent'
+    embedded_command = ['node', str(Path(state['application']) / 'selfhost/tests/browser/manuale/embedded.mjs')]
+    embedded_label = 'Verify sidebar, header, embedded steps and screenshots against the real backend'
+    embedded_environment = {**os.environ, 'ASSOZETA_MANUAL_RUN': str(run)}
+    # MANUALE_PARALLEL_EVALUATION=0 keeps the historical serial order for diagnosis.
+    if os.environ.get('MANUALE_PARALLEL_EVALUATION') == '0':
+        execute(evaluation_command, run, evaluation_label)
+        execute(embedded_command, run, embedded_label, env=embedded_environment, cwd=state['application'])
+    else:
+        # The MCP/agent evaluation and the embedded reader checks are
+        # independent, so the one-off evaluation container overlaps the browser
+        # run. Both start only after the stack is up: no compose network race.
+        outcome = {}
+        thread = None
+        main_error = None
+
+        def exercise_manual():
+            try:
+                outcome['result'] = execute_buffered(evaluation_command, run, evaluation_label)
+            except BaseException as exc:
+                outcome['error'] = exc
+
+        try:
+            print(evaluation_label, flush=True)
+            thread = threading.Thread(target=exercise_manual, name='manuale-mcp-evaluation')
+            thread.start()
+            execute(embedded_command, run, embedded_label, env=embedded_environment, cwd=state['application'])
+        except BaseException as exc:
+            main_error = exc
+        finally:
+            if thread is not None:
+                # Join even after a failure: no evaluation container may outlive
+                # evaluate, and its published log/timing must still be recorded once.
+                thread.join()
+                if 'result' in outcome:
+                    publish_buffered(run, outcome['result'])
+        if main_error is not None:
+            raise main_error
+        if 'error' in outcome:
+            raise outcome['error']
+        if outcome['result']['returncode']:
+            raise RuntimeError(f"{evaluation_label} failed ({outcome['result']['returncode']}); inspect {run / 'execution.log'}")
     state['status'] = 'evaluated'
     write_json(run / 'run.json', state)
 
