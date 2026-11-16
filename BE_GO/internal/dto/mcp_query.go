@@ -16,9 +16,11 @@ import (
 )
 
 var (
-	// errMCPJSONValue: a JSONField lookup value is a parsed JSON value or the
-	// NaN/Infinity token the agent's parser keeps as a float64.
-	errMCPJSONValue = refusal.AppState("mcp: JSON lookup value of an unexpected type")
+	// errMCPJSONCoerced: a JSONField lookup or has_key value the coercion walk
+	// turned into a float, int, date or datetime (it keeps resolving the names
+	// after a JSONField on the same model). Django sends it (Jsonb(12.0), or
+	// the operator error PostgreSQL raises), so it is handed off.
+	errMCPJSONCoerced = refusal.New("mcp: coerced value in a JSON lookup not ported")
 	// errMCPYearValue: prepare always returns an integer for an int-kind
 	// expression; a None value is handled before yearLookup.
 	errMCPYearValue = refusal.AppState("mcp: year lookup without an integer value")
@@ -1481,7 +1483,7 @@ func mcpJSONValue(value any) (string, error) {
 	case nil, string, bool, json.Number, float64, []any, domain.RequestObject:
 		return string(PythonJSONDumps(value)), nil
 	}
-	return "", errMCPJSONValue
+	return "", errMCPJSONCoerced
 }
 
 // mcpJSONKeyArgument is a has_key value: Django passes it through untouched,
@@ -1528,7 +1530,7 @@ func (q *mcpQuery) mcpJSONKeyArgument(value any) (string, error) {
 	case []any:
 		return q.mcpJSONKeyArray(typed)
 	}
-	return "", errMCPUnexpectedValue
+	return "", errMCPJSONCoerced
 }
 
 // mcpJSONKeyArray adapts a has_key list the way psycopg2 sends an array: an

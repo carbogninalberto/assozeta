@@ -84,7 +84,6 @@ func TestLoadReportSettingsEnvironment(t *testing.T) {
 
 	for _, item := range []struct{ name, value string }{
 		{"empty", ""}, {"text", "abc"}, {"float", "1.5"}, {"plus-sign-only", "+"},
-		{"beyond-int64", "99999999999999999999999999"},
 	} {
 		t.Run(item.name, func(t *testing.T) {
 			clearReportEnvironment(t)
@@ -94,6 +93,14 @@ func TestLoadReportSettingsEnvironment(t *testing.T) {
 				t.Fatalf("expected an application-state error, got %v", err)
 			}
 		})
+	}
+
+	// Python's int() keeps an integer beyond int64 and Django answers with it:
+	// handed off.
+	clearReportEnvironment(t)
+	t.Setenv("MCP_AGENT_MAX_RESULTS", "99999999999999999999999999")
+	if _, err := loadReportSettings(context.Background(), settingsStore{}); !errors.Is(err, refusal.ErrNotPorted) {
+		t.Fatalf("beyond int64: expected the refusal, got %v", err)
 	}
 
 	// Django's env.int keeps 0 ('' after `or ''`) and negatives; the tool

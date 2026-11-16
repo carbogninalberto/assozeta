@@ -230,8 +230,9 @@ func (t *emailTaskTransaction) AssociationDenomination(ctx context.Context, asso
 // instance: auditlog compares every field but the password with the stored
 // row, then every column is written. Model.save() updates the row, or (when
 // the UPDATE matched none, because the configuration was deleted after it was
-// read) inserts it under the same primary key; auditlog then finds no old row
-// and logs a create entry instead of an update.
+// read) inserts it under the same primary key; auditlog's pre_save then finds
+// no old row and logs an update entry with every field from None, and its
+// post_save logs the create entry.
 func (t *emailTaskTransaction) SaveCommunicationConfiguration(ctx context.Context, configuration domain.CommunicationConfiguration, at time.Time) error {
 	var stored communicationConfigurationRow
 	err := t.tx.GetContext(ctx, &stored, `SELECT `+emailTaskConfigurationColumns+` FROM communications_communicationconfiguration
@@ -293,6 +294,15 @@ func (t *emailTaskTransaction) SaveCommunicationConfiguration(ctx context.Contex
 	}
 	// auditlog.register(CommunicationConfiguration, exclude_fields=['email_smtp_password']).
 	delete(created, "email_smtp_password")
+	// auditlog's pre_save log_update ran before _save_table: it found no row
+	// (the read above locks an existing one, so only a row already gone gets
+	// here) and diffed every field from None, the same changes as the create
+	// entry post_save logs next.
+	if len(created) != 0 {
+		if err := t.appendConfigurationAudit(ctx, configuration, 1, created, at); err != nil {
+			return err
+		}
+	}
 	return t.appendConfigurationAudit(ctx, configuration, 0, created, at)
 }
 

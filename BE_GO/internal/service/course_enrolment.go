@@ -30,51 +30,40 @@ func NewCourseEnrolment(store domain.CourseEnrolmentStore, now func() time.Time,
 	return &CourseEnrolment{store: store, now: now, newID: newID, renderer: &CourseSubscriptions{now: now}}
 }
 
-// Course-subscriptions/add measured form JSON bands (owner decision X15),
-// measured with CPython 3.13.16 on the parity harness's Django:
-//   - multiple_quote: D <= 9928 normal answer, D >= 9929 the plain 500 page with
-//     nothing written (the view is atomic);
-//   - events: D <= 9942 normal answer, D >= 9943 the same 500 page.
+// The measured form JSON bands of course-subscriptions/add and the stock
+// router create (owner decision X15), measured with CPython 3.13.16 on the
+// parity harness's Django. D is auditJSONDepth's maximum nesting of the form
+// text. multiple_quote and events are the same serializers.JSONField read at
+// the same point, so DRF's json.loads raises RecursionError for either from
+// D >= 9943: the plain 500 page before any write (add is atomic; the stock
+// create validates first).
 //
-// D is auditJSONDepth's maximum nesting of the form text.
+// Below that, multiple_quote fails later and only on some paths: from about
+// 9929 the quote payment's meta dump raises (multiple-quote courses only) and
+// from about 9934 the row INSERT dump does, while another invalid field still
+// answers its 400. Those depths are handed off before any write.
 const (
-	courseEnrolmentQuoteJSONDepth  = 9929
-	courseEnrolmentEventsJSONDepth = 9943
-)
-
-// The stock router create's measured form JSON bands (owner decision X15, the
-// same harness Django). Its events edge is the add route's; its quote edge
-// moves with the create's deeper call stack, and below it the quote payment
-// fails after the row:
-//   - multiple_quote: D <= 9928 today's answer; 9929 <= D <= 9933 validation
-//     passes, the row and its audit entries are written, then the quote
-//     payment's meta (it holds multiple_quote) is dumped for the INSERT and
-//     raises RecursionError: no payment and no later write, the rows written
-//     before stay (the create is not atomic); D >= 9934 RecursionError while
-//     DRF reads the field, nothing written;
-//   - events: D <= 9942 today's answer; D >= 9943 the same 500 page with
-//     nothing written.
-const (
-	courseEnrolmentStockQuoteJSONDepth        = 9934
-	courseEnrolmentStockQuotePaymentJSONDepth = 9929
+	courseEnrolmentFieldJSONDepth = 9943
+	courseEnrolmentQuoteJSONDepth = 9929
 )
 
 var errCourseEnrolmentFormJSONTooDeep = refusal.AppState("course enrolment: form JSON nested past the measured depth")
 
-// courseEnrolmentFormJSONTooDeep is the measured add band: a RecursionError
-// while DRF reads the field, before any field error is returned.
-func courseEnrolmentFormJSONTooDeep(depths map[string]int) bool {
-	return depths["multiple_quote"] >= courseEnrolmentQuoteJSONDepth || depths["events"] >= courseEnrolmentEventsJSONDepth
-}
+// errCourseEnrolmentFormJSONBand is multiple_quote nested in the band where
+// Django's answer depends on the course and the other fields: handed off.
+var errCourseEnrolmentFormJSONBand = refusal.New("course enrolment: multiple_quote nested in the dump band not ported")
 
-// courseEnrolmentStockFormJSONBand is the stock create's measured band:
-// refused answers before any write (the validation RecursionError), payment
-// after the row and its audit entries (the quote payment's JSON dump).
-func courseEnrolmentStockFormJSONBand(depths map[string]int) (payment, refused bool) {
-	if depths["events"] >= courseEnrolmentEventsJSONDepth || depths["multiple_quote"] >= courseEnrolmentStockQuoteJSONDepth {
-		return false, true
+// courseEnrolmentFormJSONBand is the add and stock create check before any
+// write: the validation RecursionError (application state, the 500 page) or
+// the multiple_quote dump band (handed off); nil below both.
+func courseEnrolmentFormJSONBand(depths map[string]int) error {
+	switch {
+	case depths["events"] >= courseEnrolmentFieldJSONDepth || depths["multiple_quote"] >= courseEnrolmentFieldJSONDepth:
+		return errCourseEnrolmentFormJSONTooDeep
+	case depths["multiple_quote"] >= courseEnrolmentQuoteJSONDepth:
+		return errCourseEnrolmentFormJSONBand
 	}
-	return depths["multiple_quote"] >= courseEnrolmentStockQuotePaymentJSONDepth, false
+	return nil
 }
 
 // errCourseEnrolmentRenderedPayment is make-payment's new payment read back
@@ -314,12 +303,8 @@ func (s *CourseEnrolment) associationOf(ctx context.Context, tx domain.CourseEnr
 func (s *CourseEnrolment) validateItem(ctx context.Context, tx domain.CourseEnrolmentTransaction, identity domain.ResolvedIdentity, item any,
 	group *string, form, add bool) (*enrolmentItem, map[string]any, error) {
 	write, invalid := dto.ParseCourseSubscriptionWrite(item, form)
-	if add {
-		if courseEnrolmentFormJSONTooDeep(write.FormJSONDepth) {
-			return nil, nil, errCourseEnrolmentFormJSONTooDeep
-		}
-	} else if _, refused := courseEnrolmentStockFormJSONBand(write.FormJSONDepth); refused {
-		return nil, nil, errCourseEnrolmentFormJSONTooDeep
+	if err := courseEnrolmentFormJSONBand(write.FormJSONDepth); err != nil {
+		return nil, nil, err
 	}
 	object, isObject := item.(domain.RequestObject)
 	if !isObject {
@@ -719,13 +704,6 @@ func (s *CourseEnrolment) addCourseSubscription(ctx context.Context, tx domain.C
 				return err
 			}
 		}
-		if paymentOnly, _ := courseEnrolmentStockFormJSONBand(write.FormJSONDepth); paymentOnly {
-			// Payment.objects.create() dumps meta (it holds multiple_quote) for
-			// the INSERT: at these depths the dump raises RecursionError. The
-			// row and its audit entries written before stay (the stock create
-			// is not atomic); the add route refuses these depths at validation.
-			return errCourseEnrolmentFormJSONTooDeep
-		}
 		if err = build(stored, memory, titleValue(course.Title), meta, chosen); err != nil {
 			return err
 		}
@@ -879,9 +857,8 @@ func (s *CourseEnrolment) Add(ctx context.Context, identity domain.ResolvedIdent
 // serializer.data), which renders the validated dict: the installments method
 // field filters by the dict and raises (500) after every write is kept. A
 // failure after the first write keeps what was written before it. A form JSON
-// field past its measured depth answers the validation band before any write,
-// or the quote payment's band after the row and its audit entries
-// (courseEnrolmentStockFormJSONBand, owner decision X15).
+// field past its measured depth answers before any write
+// (courseEnrolmentFormJSONBand, owner decision X15).
 func (s *CourseEnrolment) StockCreate(ctx context.Context, identity domain.ResolvedIdentity, request CourseEnrolmentRequest) error {
 	tx, err := s.begin(ctx)
 	if err != nil {

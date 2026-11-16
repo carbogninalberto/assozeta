@@ -122,8 +122,9 @@ func TestSaveCommunicationConfigurationUpdatesStoredRow(t *testing.T) {
 
 // TestSaveCommunicationConfigurationInsertsDeletedRow: Model.save() matched no
 // row because a concurrent request deleted the configuration after it was
-// read; Django inserts it again under the same primary key and auditlog logs a
-// create entry (every audited field from None), not an update.
+// read; Django inserts it again under the same primary key. auditlog's
+// pre_save logs an update entry diffed from no row (every audited field from
+// None), then its post_save logs the create entry with the same changes.
 func TestSaveCommunicationConfigurationInsertsDeletedRow(t *testing.T) {
 	d := &rowRaceDriver{
 		queryFn: func(query string, _ []driver.NamedValue) ([]string, [][]driver.Value, error) {
@@ -157,7 +158,8 @@ func TestSaveCommunicationConfigurationInsertsDeletedRow(t *testing.T) {
 		t.Fatal(err)
 	}
 	queries, execs := d.statements()
-	if len(execs) != 3 || !strings.HasPrefix(execs[1].query, "INSERT INTO communications_communicationconfiguration") {
+	// The update, the insert and the index rows of the two audit entries.
+	if len(execs) != 4 || !strings.HasPrefix(execs[1].query, "INSERT INTO communications_communicationconfiguration") {
 		t.Fatalf("expected the row insert, got %#v", execs)
 	}
 	for _, column := range []string{"communication_configuration_id", "sport_association_id", "email_smtp_host", "email_smtp_port",
@@ -166,15 +168,12 @@ func TestSaveCommunicationConfigurationInsertsDeletedRow(t *testing.T) {
 			t.Fatalf("insert must write every column, missing %s: %s", column, execs[1].query)
 		}
 	}
-	entries := 0
+	var actions []int64
 	for _, call := range queries {
 		if !strings.Contains(call.query, "INSERT INTO auditlog_logentry") {
 			continue
 		}
-		entries++
-		if action := call.args[9].Value.(int64); action != 0 {
-			t.Fatalf("a create entry, not an update: action %d", action)
-		}
+		actions = append(actions, call.args[9].Value.(int64))
 		var changes map[string][2]string
 		if err := json.Unmarshal([]byte(call.args[2].Value.(string)), &changes); err != nil {
 			t.Fatal(err)
@@ -192,8 +191,8 @@ func TestSaveCommunicationConfigurationInsertsDeletedRow(t *testing.T) {
 			t.Fatalf("create changes count %d: %#v", len(changes), changes)
 		}
 	}
-	if entries != 1 {
-		t.Fatalf("one create entry, got %d", entries)
+	if len(actions) != 2 || actions[0] != 1 || actions[1] != 0 {
+		t.Fatalf("an update entry then a create entry, got actions %v", actions)
 	}
 }
 

@@ -274,10 +274,14 @@ var errReportIntegrationSetting = refusal.AppState("saved reports: stored AI set
 // the instance view writes {"ai": {"revision": ..., "settings": {...}}}.
 var errReportIntegrationShape = refusal.AppState("saved reports: stored integration record of another shape")
 
-// errReportEnvironmentSetting is an environment value Python's int() rejects
-// or Go's int64 does not hold: Django's settings module raises on env.int and
-// the server does not start.
-var errReportEnvironmentSetting = refusal.AppState("saved reports: environment setting outside the int64 range")
+// errReportEnvironmentSetting is an environment value Python's int() rejects:
+// Django's settings module raises on env.int and the server does not start.
+var errReportEnvironmentSetting = refusal.AppState("saved reports: environment setting int() rejects")
+
+// errReportEnvironmentNotPorted is an environment integer beyond int64:
+// Python's int() keeps it and Django answers (a capped limit, or the run's
+// JSON 500 where a statement fails), so the request is handed off.
+var errReportEnvironmentNotPorted = refusal.New("saved reports: environment setting beyond int64 not ported")
 
 func loadReportSettings(ctx context.Context, store reportIntegrationStore) (dto.ReportSettings, error) {
 	selfHosted, text, err := store.ReportIntegration(ctx)
@@ -333,8 +337,11 @@ func loadReportSettings(ctx context.Context, store reportIntegrationStore) (dto.
 			return fallback, nil
 		}
 		number, ok := dto.PythonIntText(text)
-		if !ok || !number.IsInt64() {
+		if !ok {
 			return 0, errReportEnvironmentSetting
+		}
+		if !number.IsInt64() {
+			return 0, errReportEnvironmentNotPorted
 		}
 		// env.int keeps 0 and negatives; Django's `or ''` turns 0 into '' and
 		// ReportSettings documents that.

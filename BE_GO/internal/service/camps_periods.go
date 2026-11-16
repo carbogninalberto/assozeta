@@ -34,9 +34,11 @@ var (
 	// amount check constraint whose statement the database accepted.
 	errCampsRejectedAccepted = refusal.AppState("camps payment save the amount check constraint accepts")
 	// errCampsUnknownSaveFailure is a Payment.save() exception without a known
-	// text (a stored value Python's str() cannot render): only the application
-	// writes the values the description hook reads, so this is application
-	// state rather than a request the port refuses.
+	// text. The description hook's renderer fails only on an integer past
+	// Python's 4300 digits, which no writer can store (json.loads refuses it,
+	// in requests and in the association import), and on nesting past the
+	// reference parser, which paymentSaveDefaults hands off first
+	// (errPaymentStoredJSONNested), so this is application state.
 	errCampsUnknownSaveFailure = refusal.AppState("camps payment save failure without an exception message")
 )
 

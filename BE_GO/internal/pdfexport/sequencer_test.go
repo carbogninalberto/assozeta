@@ -296,3 +296,70 @@ func TestSequencerExceptionTexts(t *testing.T) {
 		}
 	}
 }
+
+// TestSequenceTemplateCPythonOrder replays `template % Sequencer()` as
+// CPython 3.13.16 runs it with reportlab 4.2.5 (the object address replaced
+// by pystr.ObjectAddress, X18): a (key) is looked up as soon as it is parsed, so
+// its counter advances even when the conversion then raises, and one h, l
+// or L length modifier is skipped. x is the value of counter x afterwards
+// (-1: never made).
+func TestSequenceTemplateCPythonOrder(t *testing.T) {
+	cases := []struct {
+		template, text, err string
+		x                   int64
+	}{
+		{"%s", "<reportlab.lib.sequencer.Sequencer object at 0x7f0000000000>", "", -1},
+		{"%(x)s %s", "", "not enough arguments for format string", 0},
+		{"%s %(x)s", "<reportlab.lib.sequencer.Sequencer object at 0x7f0000000000> 0", "", 0},
+		{"%(x+)*s", "", "* wants int", 1},
+		{"%(x+)5*s", "", "unsupported format character '*' (0x2a) at index 6", 1},
+		{"%(x+).*s", "", "* wants int", 1},
+		{"%(x+)5", "", "incomplete format", 1},
+		{"%(y+)s%(y)s", "11", "", -1},
+		{"%(x)5.2s|", "    0|", "", 0},
+		{"%(x+)-4s|", "1   |", "", 1},
+		{"%(x)r", "'0'", "", 0},
+		{"%(x)a", "'0'", "", 0},
+		{"%(x+)c", "1", "", 1},
+		{"%(x)", "", "incomplete format", 0},
+		{"%(x)5", "", "incomplete format", 0},
+		{"%s%", "", "incomplete format", -1},
+		{"%(x)0s", "0", "", 0},
+		{"%.s", "", "", -1},
+		{"%(x).s|", "|", "", 0},
+		{"%(x)10.0s|", "          |", "", 0},
+		{"%c", "", "%c requires int or char", -1},
+		{"%(x)ld", "", "%d format: a real number is required, not str", 0},
+		{"%ls", "<reportlab.lib.sequencer.Sequencer object at 0x7f0000000000>", "", -1},
+		{"%(x)ls", "0", "", 0},
+		{"%hs", "<reportlab.lib.sequencer.Sequencer object at 0x7f0000000000>", "", -1},
+		{"%Ls", "<reportlab.lib.sequencer.Sequencer object at 0x7f0000000000>", "", -1},
+		{"%(x)hd", "", "%d format: a real number is required, not str", 0},
+		{"%(x)%s", "", "unsupported format character '%' (0x25) at index 4", 0},
+		{"abc", "abc", "", -1},
+		{"%(x)s%(x+)s%(x)s", "011", "", 1},
+		{"%(x+)d", "", "%d format: a real number is required, not str", 1},
+		{"%*s", "", "* wants int", -1},
+		{"%(x+)ls|%(x+)Ls|%(x+)hs", "1|2|3", "", 3},
+		{"%(x+)l", "", "incomplete format", 1},
+		{"%(x+)5.3l", "", "incomplete format", 1},
+		{"%lls", "", "unsupported format character 'l' (0x6c) at index 2", -1},
+		{"%(x+)s %*s", "", "not enough arguments for format string", 1},
+		{"%5%", "", "unsupported format character '%' (0x25) at index 2", -1},
+	}
+	for _, item := range cases {
+		s := newSeqSequencer()
+		got, err := s.format(item.template)
+		x := int64(-1)
+		if counter, ok := s.counters[seqKey{name: "x"}]; ok {
+			x = counter.value
+		}
+		gotErr := ""
+		if err != nil {
+			gotErr = err.Error()
+		}
+		if got != item.text || gotErr != item.err || x != item.x {
+			t.Errorf("%q: got (%q, %q, x=%d), want (%q, %q, x=%d)", item.template, got, gotErr, x, item.text, item.err, item.x)
+		}
+	}
+}

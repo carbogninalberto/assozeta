@@ -228,9 +228,28 @@ func formatSeq(format byte, value int64) (string, error) {
 // object: a second one is "not enough arguments for format string", and a
 // conversion after a mapping key is too (`'%(x)s %s' % seq`). A `*` also
 // takes a positional argument, so `'%*s' % seq` is int(seq)'s TypeError.
+//
+// The order is CPython's (unicode_format_arg_parse): a (key) is looked up
+// with __getitem__ as soon as it is parsed, so a counter advances even when
+// the rest of the conversion then raises, and the looked-up value becomes
+// the one positional argument a `*` or the conversion consumes. One length
+// modifier (h, l or L) is skipped before the conversion character.
 func (s *seqSequencer) format(template string) (string, error) {
+	if seqTemplateTooWide(template) {
+		return "", errSeqTemplateHandoff // refused before any counter moves
+	}
 	var out strings.Builder
-	argUsed, keyUsed := false, false
+	// The positional argument a `*` or a conversion takes: the Sequencer
+	// itself, or the text of the last (key). consumed is CPython's argidx
+	// past it.
+	currentText, currentIsSeq, consumed := "", true, false
+	take := func() error {
+		if consumed {
+			return errors.New("not enough arguments for format string")
+		}
+		consumed = true
+		return nil
+	}
 	for pos := 0; pos < len(template); {
 		if template[pos] != '%' {
 			out.WriteByte(template[pos])
@@ -246,13 +265,10 @@ func (s *seqSequencer) format(template string) (string, error) {
 			pos++
 			continue
 		}
-		arg, hasArg := "", false
-		keyStart, keyEnd, hasKey := 0, 0, false
 		if template[pos] == '(' {
-			// Skip over balanced parentheses: the key of the conversion.
-			// The value is read with __getitem__ once the flags, width and
-			// precision are parsed, as CPython does.
-			keyStart = pos + 1
+			// Skip over balanced parentheses: the key of the conversion,
+			// read with __getitem__ right away.
+			keyStart := pos + 1
 			depth := 1
 			for pos++; depth > 0; pos++ {
 				if pos >= len(template) {
@@ -265,7 +281,11 @@ func (s *seqSequencer) format(template string) (string, error) {
 					depth--
 				}
 			}
-			keyEnd, hasKey = pos-1, true
+			value, err := s.getitem(template[keyStart : pos-1])
+			if err != nil {
+				return "", err
+			}
+			currentText, currentIsSeq, consumed = value, false, false
 		}
 		left := false
 	flags:
@@ -283,57 +303,44 @@ func (s *seqSequencer) format(template string) (string, error) {
 		}
 		width := 0
 		if pos < len(template) && template[pos] == '*' {
-			// `*` takes the next positional argument. Here that is the
-			// Sequencer itself, which int() refuses, or nothing after it.
-			if argUsed || keyUsed {
-				return "", errors.New("not enough arguments for format string")
+			// `*` takes the next positional argument: the Sequencer or a
+			// counter's text, which int() refuses, or nothing after it.
+			if err := take(); err != nil {
+				return "", err
 			}
-			argUsed = true
 			return "", errors.New("* wants int")
 		}
 		for pos < len(template) && template[pos] >= '0' && template[pos] <= '9' {
 			width = width*10 + int(template[pos]-'0')
 			pos++
-			if width > seqMaxWidth {
-				return "", errSeqTemplateHandoff
-			}
 		}
 		precision := -1
 		if pos < len(template) && template[pos] == '.' {
 			precision, pos = 0, pos+1
 			if pos < len(template) && template[pos] == '*' {
-				if argUsed || keyUsed {
-					return "", errors.New("not enough arguments for format string")
+				if err := take(); err != nil {
+					return "", err
 				}
-				argUsed = true
 				return "", errors.New("* wants int")
 			}
 			for pos < len(template) && template[pos] >= '0' && template[pos] <= '9' {
 				precision = precision*10 + int(template[pos]-'0')
 				pos++
-				if precision > seqMaxWidth {
-					return "", errSeqTemplateHandoff
-				}
 			}
+		}
+		if pos < len(template) && (template[pos] == 'h' || template[pos] == 'l' || template[pos] == 'L') {
+			pos++
 		}
 		if pos >= len(template) {
 			return "", errors.New("incomplete format")
 		}
 		conversion := pos
 		pos++
-		if hasKey {
-			value, err := s.getitem(template[keyStart:keyEnd])
-			if err != nil {
-				return "", err
-			}
-			arg, hasArg, keyUsed = value, true, true
+		if err := take(); err != nil {
+			return "", err
 		}
 		text := ""
-		if !hasArg {
-			if argUsed || keyUsed {
-				return "", errors.New("not enough arguments for format string")
-			}
-			argUsed = true
+		if currentIsSeq {
 			switch template[conversion] {
 			case 's', 'r', 'a':
 				text = seqObjectText
@@ -346,25 +353,19 @@ func (s *seqSequencer) format(template string) (string, error) {
 			case 'e', 'E', 'f', 'F', 'g', 'G':
 				return "", errors.New("must be real number, not Sequencer")
 			default:
-				char, _ := utf8.DecodeRuneInString(template[conversion:])
-				name := string(char)
-				if char >= 0x80 {
-					name = "?" // Python prints %c of a code point above ASCII as '?'
-				}
-				return "", fmt.Errorf("unsupported format character '%s' (0x%x) at index %d", name, char,
-					utf8.RuneCountInString(template[:conversion]))
+				return "", seqUnsupportedCharacter(template, conversion)
 			}
 		} else {
 			switch template[conversion] {
 			case 's':
-				text = arg
+				text = currentText
 			case 'r', 'a':
-				text = pythonAscii(arg) // repr() and ascii() of the text a counter makes
+				text = pythonAscii(currentText) // repr() and ascii() of the text a counter makes
 			case 'c':
-				if utf8.RuneCountInString(arg) != 1 {
+				if utf8.RuneCountInString(currentText) != 1 {
 					return "", errors.New("%c requires int or char")
 				}
-				text = arg
+				text = currentText
 			case 'd', 'i', 'u':
 				return "", fmt.Errorf("%%%c format: a real number is required, not str", template[conversion])
 			case 'o', 'x', 'X':
@@ -372,13 +373,7 @@ func (s *seqSequencer) format(template string) (string, error) {
 			case 'e', 'E', 'f', 'F', 'g', 'G':
 				return "", errors.New("must be real number, not str")
 			default:
-				char, _ := utf8.DecodeRuneInString(template[conversion:])
-				name := string(char)
-				if char >= 0x80 {
-					name = "?" // Python prints %c of a code point above ASCII as '?'
-				}
-				return "", fmt.Errorf("unsupported format character '%s' (0x%x) at index %d", name, char,
-					utf8.RuneCountInString(template[:conversion]))
+				return "", seqUnsupportedCharacter(template, conversion)
 			}
 		}
 		runes := []rune(text)
@@ -396,6 +391,44 @@ func (s *seqSequencer) format(template string) (string, error) {
 		out.WriteString(string(runes))
 	}
 	return out.String(), nil
+}
+
+// seqUnsupportedCharacter is CPython's ValueError for an unknown conversion.
+func seqUnsupportedCharacter(template string, conversion int) error {
+	char, _ := utf8.DecodeRuneInString(template[conversion:])
+	name := string(char)
+	if char >= 0x80 {
+		name = "?" // Python prints %c of a code point above ASCII as '?'
+	}
+	return fmt.Errorf("unsupported format character '%s' (0x%x) at index %d", name, char,
+		utf8.RuneCountInString(template[:conversion]))
+}
+
+// seqTemplateTooWide reports a run of digits past seqMaxWidth after a '%'
+// (a width or precision, or digits inside a key, which only makes the check
+// stricter): the whole template is refused before any (key) is looked up, so
+// no counter moves for a request that is handed off.
+func seqTemplateTooWide(template string) bool {
+	number, inSpec := 0, false
+	for pos := 0; pos < len(template); pos++ {
+		c := template[pos]
+		switch {
+		case c == '%':
+			inSpec, number = !inSpec || template[pos-1] != '%', 0
+		case !inSpec:
+		case c >= '0' && c <= '9':
+			number = number*10 + int(c-'0')
+			if number > seqMaxWidth {
+				return true
+			}
+		case c == '.' || c == '(' || c == ')' || c == '-' || c == '+' || c == ' ' || c == '#' || c == '*' ||
+			c == 'h' || c == 'l' || c == 'L':
+			number = 0
+		default:
+			inSpec, number = false, 0
+		}
+	}
+	return false
 }
 
 // paraSeqMu guards paraSeq: the one Sequencer of the process.

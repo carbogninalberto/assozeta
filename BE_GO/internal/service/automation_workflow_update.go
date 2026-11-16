@@ -283,6 +283,16 @@ func (s *AutomationWorkflowWrites) Update(ctx context.Context, identity domain.R
 	if err = save(automationWorkflowUpdateValues(old, oldTree)); err != nil {
 		return err
 	}
+	if treeSavedThenFailed {
+		// The view logs serializer.data right after the save, before its
+		// enable block: that repr is what raises, so the reset save and the
+		// trigger never run. The row and its audit entry are committed and
+		// the answer is the plain 500 page.
+		if err = tx.Commit(); err != nil {
+			return err
+		}
+		return errAutomationWorkflowFormTreeSavedThenFailed
+	}
 	if reset {
 		before := automationWorkflowUpdateValues(row, tree)
 		tree = automationWorkflowResetTriggered(tree)
@@ -295,11 +305,6 @@ func (s *AutomationWorkflowWrites) Update(ctx context.Context, identity domain.R
 	}
 	if err = tx.Commit(); err != nil {
 		return err
-	}
-	if treeSavedThenFailed {
-		// The row and its audit entry are committed; Python then fails (the
-		// plain 500 page), so the response cannot report success.
-		return errAutomationWorkflowFormTreeSavedThenFailed
 	}
 	if outcome == automationWorkflowTriggerError {
 		return domain.ErrAutomationWorkflowTrigger

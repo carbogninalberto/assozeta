@@ -58,60 +58,36 @@ func TestAutomationWorkflowPatchFormTreeDepth(t *testing.T) {
 	}
 }
 
-// TestCourseEnrolmentFormJSONBands pins course-subscriptions/add (X15):
-// multiple_quote D >= 9929 and events D >= 9943 are the plain 500 page with
-// nothing written; the stock create's own bands are the test below.
+// TestCourseEnrolmentFormJSONBands pins course-subscriptions/add and the stock
+// router create (X15): multiple_quote or events D >= 9943 is DRF's validation
+// RecursionError (the plain 500 page, nothing written); multiple_quote
+// 9929..9942, where Django's answer depends on the course and the other
+// fields, is handed off before any write.
 func TestCourseEnrolmentFormJSONBands(t *testing.T) {
 	for _, test := range []struct {
-		name    string
-		depth   int
-		tooDeep bool
+		name  string
+		depth int
+		want  error
 	}{
-		{"multiple_quote", 600, false},
-		{"multiple_quote", 9928, false},
-		{"multiple_quote", 9929, true},
-		{"events", 9942, false},
-		{"events", 9943, true},
+		{"multiple_quote", 0, nil},
+		{"multiple_quote", 600, nil},
+		{"multiple_quote", 9928, nil},
+		{"multiple_quote", 9929, refusal.ErrNotPorted},
+		{"multiple_quote", 9934, refusal.ErrNotPorted},
+		{"multiple_quote", 9942, refusal.ErrNotPorted},
+		{"multiple_quote", 9943, refusal.ErrAppState},
+		{"multiple_quote", 10000, refusal.ErrAppState},
+		{"events", 600, nil},
+		{"events", 9942, nil},
+		{"events", 9943, refusal.ErrAppState},
 	} {
-		if got := courseEnrolmentFormJSONTooDeep(map[string]int{test.name: test.depth}); got != test.tooDeep {
-			t.Fatalf("%s depth %d: tooDeep=%v, want %v", test.name, test.depth, got, test.tooDeep)
+		err := courseEnrolmentFormJSONBand(map[string]int{test.name: test.depth})
+		if test.want == nil && err != nil || test.want != nil && !errors.Is(err, test.want) {
+			t.Fatalf("%s depth %d: %v, want %v", test.name, test.depth, err, test.want)
 		}
 	}
-	if !errors.Is(errCourseEnrolmentFormJSONTooDeep, refusal.ErrAppState) {
-		t.Fatalf("%v is not an application-state error", errCourseEnrolmentFormJSONTooDeep)
-	}
-}
-
-// TestCourseEnrolmentStockFormJSONBands pins the stock router create (X15):
-// multiple_quote D <= 9928 today's answer, 9929..9933 the row and its audit
-// entries written then the quote payment's JSON dump raises, D >= 9934 the
-// validation raise with nothing written; events D <= 9942 today's answer,
-// D >= 9943 the validation raise.
-func TestCourseEnrolmentStockFormJSONBands(t *testing.T) {
-	for _, test := range []struct {
-		name            string
-		depth           int
-		payment, denied bool
-	}{
-		{"multiple_quote", 0, false, false},
-		{"multiple_quote", 600, false, false},
-		{"multiple_quote", 9928, false, false},
-		{"multiple_quote", 9929, true, false},
-		{"multiple_quote", 9931, true, false},
-		{"multiple_quote", 9933, true, false},
-		{"multiple_quote", 9934, false, true},
-		{"multiple_quote", 10000, false, true},
-		{"events", 600, false, false},
-		{"events", 9900, false, false},
-		{"events", 9942, false, false},
-		{"events", 9943, false, true},
-		{"events", 10000, false, true},
-	} {
-		payment, refused := courseEnrolmentStockFormJSONBand(map[string]int{test.name: test.depth})
-		if payment != test.payment || refused != test.denied {
-			t.Fatalf("%s depth %d: payment=%v refused=%v, want %v %v", test.name, test.depth, payment, refused,
-				test.payment, test.denied)
-		}
+	if errors.Is(errCourseEnrolmentFormJSONBand, refusal.ErrAppState) || errors.Is(errCourseEnrolmentFormJSONTooDeep, refusal.ErrNotPorted) {
+		t.Fatal("the dump band is a handoff and the validation band application state")
 	}
 }
 

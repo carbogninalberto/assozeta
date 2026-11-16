@@ -1492,7 +1492,10 @@ func loadImageSource(src string) (image *jpegImage, st attrStatus) {
 		}
 		return nil, attrInvalid
 	case len(data) == 0:
-		return nil, attrInvalid // PIL: cannot identify image file
+		// The source opens and PIL raises UnidentifiedImageError, whose text
+		// names the BytesIO object, not "Cannot open resource": handed off
+		// like the other bytes that are not a JPEG.
+		return nil, attrUnsupported
 	case len(data) < 3 || data[0] != 0xFF || data[1] != 0xD8 || data[2] != 0xFF:
 		return nil, attrUnsupported
 	}
