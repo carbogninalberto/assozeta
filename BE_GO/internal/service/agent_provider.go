@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"math"
 	"math/big"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/agentllm"
@@ -14,10 +16,6 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
-
-// ErrAgentNotPorted refuses an agent input whose Django behaviour is not
-// reproduced (see ws-agent.md); the caller ends the session.
-var ErrAgentNotPorted = refusal.New("agent input not ported")
 
 // AgentEnvironment are the core.settings values AIProvider falls back to.
 type AgentEnvironment struct {
@@ -51,6 +49,11 @@ type AgentAIProvider struct {
 	model  any
 }
 
+// errAgentProviderValue is a provider argument outside the two writers: the
+// instance CharFields (AISettingsSerializer) and environmentIntegration's
+// strings.
+var errAgentProviderValue = refusal.AppState("AI provider argument is not a string")
+
 // NewAgentAIProvider is AIProvider(api_key=..., model=..., base_url=...):
 // errAgentProviderKey is the ValueError for a missing key.
 func NewAgentAIProvider(env AgentEnvironment, apiKey, model, baseURL any, transport func(*agentllm.Config)) (*AgentAIProvider, error) {
@@ -73,7 +76,7 @@ func NewAgentAIProvider(env AgentEnvironment, apiKey, model, baseURL any, transp
 	keyText, okKey := key.(string)
 	baseText, okBase := baseURL.(string)
 	if _, okModel := model.(string); !okKey || !okBase || !okModel {
-		return nil, ErrAgentNotPorted
+		return nil, errAgentProviderValue
 	}
 	config := agentllm.Config{APIKey: keyText, BaseURL: baseText}
 	if transport != nil {
@@ -88,7 +91,10 @@ func NewAgentAIProvider(env AgentEnvironment, apiKey, model, baseURL any, transp
 		return nil, err
 	}
 	if err != nil {
-		return nil, ErrAgentNotPorted // a base URL that is not UTF-8 text
+		// A base URL that is not UTF-8 text raises while httpx builds the URL
+		// (Invalid IDNA hostname or UnicodeEncodeError); the callers answer it
+		// exactly like InvalidURL.
+		return nil, err
 	}
 	return &AgentAIProvider{client: client, model: model}, nil
 }
@@ -154,7 +160,7 @@ func (p *AgentAIProvider) attempt(ctx context.Context, body []byte, onChunk func
 }
 
 type agentAccumulated struct {
-	key       any
+	key       agentCallKey
 	id, name  any
 	arguments string
 }
@@ -244,7 +250,10 @@ func agentConsume(ctx context.Context, stream *agentllm.Stream, onChunk func(str
 			if content := lookupValue(deltaObject, "content"); dto.PythonTruthy(content) {
 				text, ok := content.(string)
 				if !ok {
-					return AgentLLMResponse{}, ErrAgentNotPorted
+					// Django forwards the non-string chunk first and then
+					// ''.join(content_parts) raises; X11's native answer is a
+					// failed stream.
+					return AgentLLMResponse{}, raise("sequence item: expected str instance")
 				}
 				parts = append(parts, text)
 				if onChunk != nil {
@@ -295,17 +304,85 @@ func lookupValue(object domain.RequestObject, name string) any {
 	return value
 }
 
+// agentCallKey is one tool_calls_acc key. Numeric keys (including bool) compare
+// by value like Python dict keys (1 == 1.0 == True); the first inserted key is
+// kept because equal keys find the same entry. A float token outside float64's
+// range is the ±Inf json.loads yields: it stays a number, equals only the same
+// infinity and sorts outside every finite number.
+type agentCallKey struct {
+	kind     int // 0 None, 1 str, 2 number
+	text     string
+	number   *big.Rat // nil for an infinite number
+	infinite int      // 0 finite, +1 +Inf, -1 -Inf
+}
+
+func agentCallKeyOf(value any) (agentCallKey, error) {
+	switch typed := value.(type) {
+	case nil:
+		return agentCallKey{}, nil
+	case string:
+		return agentCallKey{kind: 1, text: typed}, nil
+	case bool:
+		number := big.NewRat(0, 1)
+		if typed {
+			number = big.NewRat(1, 1)
+		}
+		return agentCallKey{kind: 2, number: number}, nil
+	case json.Number:
+		return agentNumberCallKey(string(typed))
+	case float64:
+		// The Python-compatible parser yields float64 only for NaN and ±Inf.
+		if math.IsInf(typed, 0) {
+			if typed > 0 {
+				return agentCallKey{kind: 2, infinite: 1}, nil
+			}
+			return agentCallKey{kind: 2, infinite: -1}, nil
+		}
+		return agentCallKey{}, &agentllm.APIError{Text: "float tool call index"}
+	case []any:
+		// TypeError: unhashable type: 'list' at tool_calls_acc[idx].
+		return agentCallKey{}, &agentllm.APIError{Text: "unhashable type: 'list'"}
+	case domain.RequestObject:
+		// TypeError: unhashable type: 'dict' at tool_calls_acc[idx].
+		return agentCallKey{}, &agentllm.APIError{Text: "unhashable type: 'dict'"}
+	default:
+		return agentCallKey{}, &agentllm.APIError{Text: "unhashable tool call index"}
+	}
+}
+
+// agentNumberCallKey is one json.Number index with Python's value: an integer
+// token is an exact int (the parser already bounds it to 4300 digits), a float
+// token is a float64, and a token beyond float64's range is the ±Inf json.loads
+// keeps instead of building an unbounded big.Rat.
+func agentNumberCallKey(token string) (agentCallKey, error) {
+	if !strings.ContainsAny(token, ".eE") {
+		integer, ok := new(big.Int).SetString(token, 10)
+		if !ok {
+			return agentCallKey{}, &agentllm.APIError{Text: "invalid tool call index"}
+		}
+		return agentCallKey{kind: 2, number: new(big.Rat).SetInt(integer)}, nil
+	}
+	value, err := strconv.ParseFloat(token, 64)
+	if err != nil && !errors.Is(err, strconv.ErrRange) {
+		return agentCallKey{}, &agentllm.APIError{Text: "invalid tool call index"}
+	}
+	switch {
+	case math.IsInf(value, 1):
+		return agentCallKey{kind: 2, infinite: 1}, nil
+	case math.IsInf(value, -1):
+		return agentCallKey{kind: 2, infinite: -1}, nil
+	case math.IsNaN(value):
+		return agentCallKey{}, &agentllm.APIError{Text: "float tool call index"}
+	}
+	// An exact float, as Python compares int and float values.
+	return agentCallKey{kind: 2, number: new(big.Rat).SetFloat64(value)}, nil
+}
+
 // agentAccumulate merges one ChoiceDeltaToolCall into tool_calls_acc.
 func agentAccumulate(calls *[]*agentAccumulated, delta domain.RequestObject) error {
-	key := lookupValue(delta, "index")
-	switch key.(type) {
-	case nil, string:
-	case json.Number:
-		if strings.ContainsAny(string(key.(json.Number)), ".eE") {
-			return ErrAgentNotPorted
-		}
-	default:
-		return ErrAgentNotPorted // unhashable, float or bool keys (dict key equality) are not ported
+	key, err := agentCallKeyOf(lookupValue(delta, "index"))
+	if err != nil {
+		return err
 	}
 	id, function := lookupValue(delta, "id"), lookupValue(delta, "function")
 	fn, fnModel := function.(domain.RequestObject)
@@ -349,24 +426,40 @@ func agentAccumulate(calls *[]*agentAccumulated, delta domain.RequestObject) err
 	}
 	for _, value := range []any{current.id, current.name} {
 		if _, ok := value.(string); !ok {
-			return ErrAgentNotPorted
+			// X11: Django would stream the non-string chunk first; the native
+			// answer is a failed stream.
+			return &agentllm.APIError{Text: "tool call id and name are strings"}
 		}
 	}
 	return nil
 }
 
-func agentSameKey(left, right any) bool {
-	switch l := left.(type) {
-	case nil:
-		return right == nil
-	case string:
-		r, ok := right.(string)
-		return ok && l == r
-	case json.Number:
-		r, ok := right.(json.Number)
-		return ok && dto.PythonEqual(l, r)
+func agentSameKey(left, right agentCallKey) bool {
+	if left.kind != right.kind {
+		return false
 	}
-	return false
+	switch left.kind {
+	case 0:
+		return true
+	case 1:
+		return left.text == right.text
+	}
+	return agentCallKeyCompare(left, right) == 0
+}
+
+// agentCallKeyCompare orders two numeric keys: ±Inf sits after (or before)
+// every finite number and equals only its own infinity.
+func agentCallKeyCompare(left, right agentCallKey) int {
+	if left.infinite != right.infinite {
+		if left.infinite > right.infinite {
+			return 1
+		}
+		return -1
+	}
+	if left.infinite != 0 {
+		return 0
+	}
+	return left.number.Cmp(right.number)
 }
 
 // agentSortCalls is sorted(tool_calls_acc): mixed key types raise TypeError.
@@ -374,37 +467,22 @@ func agentSortCalls(calls []*agentAccumulated) ([]*agentAccumulated, error) {
 	if len(calls) <= 1 {
 		return calls, nil
 	}
-	kind := func(value any) int {
-		switch value.(type) {
-		case nil:
-			return 0
-		case string:
-			return 1
-		}
-		return 2
-	}
-	first := kind(calls[0].key)
+	kind := calls[0].key.kind
 	for _, call := range calls {
-		if kind(call.key) != first || first == 0 {
+		if call.key.kind != kind {
 			return nil, &agentllm.APIError{Text: "'<' not supported"}
 		}
 	}
-	sorted := append([]*agentAccumulated(nil), calls...)
-	var failed bool
-	sort.SliceStable(sorted, func(i, j int) bool {
-		if first == 1 {
-			return sorted[i].key.(string) < sorted[j].key.(string)
-		}
-		a, okA := new(big.Int).SetString(string(sorted[i].key.(json.Number)), 10)
-		b, okB := new(big.Int).SetString(string(sorted[j].key.(json.Number)), 10)
-		if !okA || !okB {
-			failed = true
-			return false
-		}
-		return a.Cmp(b) < 0
-	})
-	if failed {
-		return nil, ErrAgentNotPorted
+	if kind == 0 {
+		// NoneType has no ordering.
+		return nil, &agentllm.APIError{Text: "'<' not supported"}
 	}
+	sorted := append([]*agentAccumulated(nil), calls...)
+	sort.SliceStable(sorted, func(i, j int) bool {
+		if kind == 1 {
+			return sorted[i].key.text < sorted[j].key.text
+		}
+		return agentCallKeyCompare(sorted[i].key, sorted[j].key) < 0
+	})
 	return sorted, nil
 }

@@ -491,9 +491,6 @@ func (r *evaluateRun) agent(ctx context.Context, provider service.AgentProvider,
 	agent := r.runtime.NewAgent(provider, callback, repository.AgentAssociation{ID: r.association.ID, Denomination: r.association.Denomination},
 		r.association.UserID, nil, r.manual)
 	if err := agent.ProcessMessage(ctx, message); err != nil {
-		if errors.Is(err, service.ErrAgentNotPorted) {
-			return nil, evaluateRefuse("an agent input the Go agent refuses")
-		}
 		return nil, err
 	}
 	return callback, nil

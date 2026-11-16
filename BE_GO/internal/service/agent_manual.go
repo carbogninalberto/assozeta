@@ -10,8 +10,16 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/manual"
 )
+
+// errManualToolShape is a manual tool result outside the shapes the builders
+// return: pkg/manual/tools.go (search_manual, get_manual_gaps and their
+// gaps/pages/summary) and pkg/manual/projection.go publicSection (hits and
+// their reader/screenshots). The index values they copy are validated bundle
+// JSON; a nil score or section is passed through and makes Django raise.
+var errManualToolShape = refusal.AppState("manual tool result outside the ported shape")
 
 // The answer half of BE/application/manuale/answers.py over the manual tool
 // results (parsed back from their JSON text, as the agent does), and the
@@ -66,11 +74,11 @@ func agentHits(result domain.RequestObject) ([]any, error) {
 	hits := agentGetDefault(result, "results", []any{})
 	list, ok := hits.([]any)
 	if !ok {
-		return nil, ErrAgentNotPorted
+		return nil, errManualToolShape
 	}
 	for _, hit := range list {
 		if _, ok := hit.(domain.RequestObject); !ok {
-			return nil, ErrAgentNotPorted
+			return nil, errManualToolShape
 		}
 	}
 	return list, nil
@@ -108,7 +116,7 @@ func agentEvidenceProblem(result domain.RequestObject) (string, error) {
 		hit := item.(domain.RequestObject)
 		identifier, _ := lookupValue(hit, "id").(string)
 		if raw := lookupValue(hit, "id"); raw != nil && identifier == "" && dto.PythonTruthy(raw) {
-			return "", ErrAgentNotPorted
+			return "", errManualToolShape
 		}
 		if previous, ok := seen[identifier]; ok && identifier != "" {
 			if !dto.PythonEqual(lookupValue(previous, "text"), lookupValue(hit, "text")) ||
@@ -127,7 +135,7 @@ func agentEvidenceProblem(result domain.RequestObject) (string, error) {
 			value := agentGetDefault(hit, key, "")
 			text, ok := value.(string)
 			if !ok {
-				return "", ErrAgentNotPorted
+				return "", errManualToolShape
 			}
 			prose = append(prose, text)
 		}
@@ -171,7 +179,7 @@ func agentSelectedSection(result domain.RequestObject) (domain.RequestObject, er
 			left, okLeft := agentFloat(agentGetDefault(first, "score", json.Number("0")))
 			right, okRight := agentFloat(agentGetDefault(second, "score", json.Number("0")))
 			if !okLeft || !okRight {
-				return nil, ErrAgentNotPorted
+				return nil, errManualToolShape
 			}
 			if left-right < .025 {
 				return nil, nil
@@ -197,7 +205,7 @@ func agentManualAttachment(result domain.RequestObject) (any, error) {
 	for _, key := range []string{"id", "page", "title", "page_title", "reader", "screenshots", "embedded_url"} {
 		value, present := section.Lookup(key)
 		if !present {
-			return nil, ErrAgentNotPorted // KeyError
+			return nil, errManualToolShape // KeyError
 		}
 		attachment = append(attachment, domain.RequestField{Name: key, Value: value})
 	}
@@ -222,7 +230,7 @@ func agentGroundedAnswer(result domain.RequestObject) (string, error) {
 		if message := lookupValue(result, "message"); dto.PythonTruthy(message) {
 			text, ok := message.(string)
 			if !ok {
-				return "", ErrAgentNotPorted
+				return "", errManualToolShape
 			}
 			return text, nil
 		}
@@ -243,12 +251,12 @@ func agentGroundedAnswer(result domain.RequestObject) (string, error) {
 			if !dto.PythonTruthy(link) {
 				var present bool
 				if link, present = hit.Lookup("url"); !present {
-					return "", ErrAgentNotPorted
+					return "", errManualToolShape
 				}
 			}
 			title, present := hit.Lookup("title")
 			if !present {
-				return "", ErrAgentNotPorted
+				return "", errManualToolShape
 			}
 			options = append(options, "- ["+dto.PythonStr(title)+"]("+dto.PythonStr(link)+")")
 		}
@@ -257,7 +265,7 @@ func agentGroundedAnswer(result domain.RequestObject) (string, error) {
 	text, okText := first.Lookup("text")
 	link, okURL := first.Lookup("url")
 	if !okText || !okURL {
-		return "", ErrAgentNotPorted
+		return "", errManualToolShape
 	}
 	return dto.PythonStr(text) + "\n\n[Leggi nel manuale](" + dto.PythonStr(link) + ")", nil
 }
@@ -268,7 +276,7 @@ func agentManualDiagnosticAnswer(result domain.RequestObject) (string, error) {
 		if message := lookupValue(result, "message"); dto.PythonTruthy(message) {
 			text, ok := message.(string)
 			if !ok {
-				return "", ErrAgentNotPorted
+				return "", errManualToolShape
 			}
 			return text, nil
 		}
@@ -276,12 +284,12 @@ func agentManualDiagnosticAnswer(result domain.RequestObject) (string, error) {
 	}
 	summary, ok := lookupValue(result, "summary").(domain.RequestObject)
 	if !ok {
-		return "", ErrAgentNotPorted
+		return "", errManualToolShape
 	}
 	need := func(object domain.RequestObject, key string) (string, error) {
 		value, present := object.Lookup(key)
 		if !present {
-			return "", ErrAgentNotPorted
+			return "", errManualToolShape
 		}
 		return dto.PythonStr(value), nil
 	}
@@ -308,21 +316,21 @@ func agentManualDiagnosticAnswer(result domain.RequestObject) (string, error) {
 	}
 	gaps, ok := lookupValue(result, "gaps").([]any)
 	if !ok {
-		return "", ErrAgentNotPorted
+		return "", errManualToolShape
 	}
 	if len(gaps) > 0 {
 		labels := map[string]string{"pending": "da verificare", "stale": "da aggiornare", "unsupported": "non supportata",
 			"conflicting": "indicazioni in conflitto", "needs_external_verification": "richiede verifiche esterne"}
 		pages, ok := lookupValue(result, "pages").([]any)
 		if !ok {
-			return "", ErrAgentNotPorted
+			return "", errManualToolShape
 		}
 		byPath := map[string]domain.RequestObject{}
 		for _, item := range pages {
 			page, ok := item.(domain.RequestObject)
 			path, okPath := lookupValue(page, "path").(string)
 			if !ok || !okPath {
-				return "", ErrAgentNotPorted
+				return "", errManualToolShape
 			}
 			byPath[path] = page
 		}
@@ -336,7 +344,7 @@ func agentManualDiagnosticAnswer(result domain.RequestObject) (string, error) {
 			sectionKey, okSection := lookupValue(gap, "section").(string)
 			status, okStatus := lookupValue(gap, "status").(string)
 			if !ok || !okPage || !okSection || !okStatus {
-				return "", ErrAgentNotPorted
+				return "", errManualToolShape
 			}
 			page := byPath[pageKey]
 			var section domain.RequestObject
@@ -428,7 +436,7 @@ func agentSortedValue(value any) (any, error) {
 	case *big.Int:
 		return json.Number(typed.String()), nil
 	}
-	return nil, ErrAgentNotPorted
+	return nil, errManualToolShape
 }
 
 func agentOrdered(object map[string]any, order []string, nested func(string, any) (any, error)) (domain.RequestObject, error) {
@@ -454,7 +462,7 @@ func agentOrdered(object map[string]any, order []string, nested func(string, any
 	}
 	for key := range object {
 		if !used[key] {
-			return nil, ErrAgentNotPorted
+			return nil, errManualToolShape
 		}
 	}
 	return result, nil
@@ -467,7 +475,7 @@ func agentPublicSection(value any) (any, error) {
 	}
 	section, ok := value.(map[string]any)
 	if !ok {
-		return nil, ErrAgentNotPorted
+		return nil, errManualToolShape
 	}
 	text := section["text"]
 	return agentOrdered(section, agentPublicOrder, func(key string, item any) (any, error) {
@@ -532,7 +540,7 @@ func agentManualOrdered(name string, result map[string]any) (any, error) {
 			}
 			hits, ok := value.([]any)
 			if !ok {
-				return nil, ErrAgentNotPorted
+				return nil, errManualToolShape
 			}
 			ordered := make([]any, len(hits))
 			for i, hit := range hits {

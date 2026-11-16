@@ -21,6 +21,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/handler/businessmcp"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/manual"
@@ -33,6 +34,10 @@ func main() {
 }
 
 const disabled = "Il bot AI è disattivato per questa istanza."
+
+// errAgentConfigKey is a missing key: AISettingsSerializer and
+// environmentIntegration always write max_iterations and history_cap.
+var errAgentConfigKey = refusal.AppState("AI configuration without a required key")
 
 // run parses --association-id (argparse usage and error texts, and Django's
 // global command options, are not reproduced: invalid invocations exit 2).
@@ -142,7 +147,7 @@ func chat(associationID, envFile string, stdin io.Reader, stdout, stderr io.Writ
 		}
 		for _, key := range []string{"max_iterations", "history_cap"} {
 			if _, present := settings[key]; !present {
-				return service.ErrAgentNotPorted
+				return errAgentConfigKey
 			}
 		}
 		agent.Provider, agent.MaxIterations, agent.HistoryCap = provider, settings["max_iterations"], settings["history_cap"]
