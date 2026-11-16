@@ -93,7 +93,7 @@ colours. `go test ./internal/emailrender` reproduces all of it and checks that u
 ## Not ported (refused with the 500 page before any write)
 
 - `collaborators/add` e-mail strings with NUL characters or lone surrogates are answered as Django does (see below).
-  Its e-mail values from form bodies and uploads stay refused.
+  Its e-mail values from form bodies and uploads are answered since long tail PR 4 (below).
 - Inputs the renderer still refuses are class C/X: template syntax and the embedded template set, a name outside that set,
   a language outside Django's `LANGUAGES` (the request resolvers only return supported variants and the workers use `it`),
   context value types the services build, `instance_email_brand` without a brand, `updated_at` before year 1000 (`auto_now`),
@@ -157,3 +157,12 @@ read back unchanged and log nothing more.
 Long tail PR 3 (agent C): a payment year before 1000 in the invoice e-mail uses glibc's unpadded
 `%Y` (`04/03/999`), as on the production image; macOS pads it, so a unit test covers it and no parity
 case runs it. `collaborators/add` e-mail values from form bodies and uploads stay refused.
+
+Long tail PR 4 (agent B): `collaborators/add` answers every e-mail value. `check_email` runs `validate_email` on the
+Python str (`pystr.RunesReplace`: JSON keeps lone surrogates, form bodies are decoded with `errors='replace'`); Python's
+IGNORECASE folds U+0130, U+0131, U+017F and U+212A onto `[A-Z]`, so those are folded for the check and kept in the
+stored value. A lone surrogate in the local part is "Email is not valid." (400); in the domain part it passes the
+validator and the INSERT cannot encode it: the 500 page with nothing written. An uploaded file is invalid (`"@" in file`
+compares byte lines). The sentinel is deleted. Cases `email-render-routes-add-surrogate-tld-email-server-error`,
+`-add-surrogate-local-email`, `-add-surrogate-quoted-local-email`, `-add-replacement-domain-email`,
+`-add-multipart-file-email` (96/96 on the four transports).

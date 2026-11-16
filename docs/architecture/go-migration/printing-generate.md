@@ -55,6 +55,13 @@ Since long-tail PR 3 (agent B) a `ParseFloat` error other than a range error is 
 (`ErrPrintingGenerateUnreachable`, the 500 page): the value comes from the JSON parser, which produces no other
 shape. The `xlsxexport` inputs and integers beyond int64 stay refusals.
 
+Long tail PR 4 (agent B): an integer beyond int64 in a stored JSON value is the Python int pandas receives
+(`xlsxexport.BigIntValue`): get_excel_base64's numeric coercion, `astype('Int64')` (which saturates 2**63 to int64 max
+on arm64 only, numpy's float to int64 cast) and the width of its digits, or the 500 page when the int is past the double
+range; in the PDF it is `str()` of the int. A PDF input pdfexport does not reproduce is pdfexport's own refusal, so the
+printing sentinel is deleted. Cases `printing-generate-{not-paid-courses,expired-payments}-big-int-description` and their
+`-pdf-` variants; xlsx goldens `eu-big-int-data-*`; 117/117 on native Django, native Go, Caddy v1 and v2.
+
 ## Evidence
 
 `TESTS/fixtures/generate_printing_generate_http.py` authors 91 cases (dates relative to the day of the run; the adapter

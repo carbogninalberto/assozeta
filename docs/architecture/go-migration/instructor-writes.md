@@ -128,3 +128,13 @@ The report workbook writes dynamic array formulas (`cm="1"`, expanded `_xlfn.` n
 
 Long tail PR 3: `internal/pydateutil` reads every Python str (agent A), so no report date text is refused here any more; the
 only other result is pydateutil's unexpected local zone, application state (every caller passes UTC).
+
+Long tail PR 4 (agent B): `instructor/report` reads the registry events and the days' attendees as psycopg's `json.loads`
+does (`dto.StoredJSON`; the association import can store any JSON jsonb accepts): CPython 3.13's C scanner parses up to
+9998 levels at the top of a thread, so 9999 and deeper (and an integer literal past 4300 digits) is the uncaught 500
+page, shallower JSON is read, and only the band 9800..9998, where the RecursionError depth depends on the C calls on the
+request thread's stack, stays refused (long-tail rule 4). A description int beyond int64 is measured by its digits
+(`astype(str)`) and written as `float(number)` by XlsxWriter; past the double range `generate_report_from_data` logs the
+OverflowError and the answer has `report_file: null`. Cases `instructor-writes-report-deep-{events,attendees}-{600,900}`,
+`-report-description-int-beyond-int64`, `-report-description-int-past-double` (186/186 on the four transports); the
+family loader walks fixture values with one Python frame per level, so deeper JSON is covered by Go tests (2000, 9799).
