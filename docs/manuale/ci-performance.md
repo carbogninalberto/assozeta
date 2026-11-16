@@ -531,6 +531,34 @@ fixture it used to inherit. `appliance-merge` combines both into the
 On run 43764477224 the appliance stretch took 11.5 min instead of 21 (current
 10 min, historical 11.5 min, merge 20 s), and the whole run 41.7 min.
 
+### Shard balance and setup overlap
+
+- Shards are weighted by measured seconds per workflow
+  (`docs/manuale/capture-costs.json`, from run 43764477224) instead of
+  checkpoint counts. Unmeasured workflows get checkpoint weights scaled to the
+  measured average. Blocks stay contiguous. Expected workflow time per shard
+  went from 9.1/7.4/6.1/6.9/5.5 min to 5.4/7.3/7.4/7.5/7.3 min. Refresh the
+  file from a later run's shard logs when workflows change a lot.
+- `start()` compiles the frontend (vite build, ~80 s) in a background thread
+  once the dependencies are up, overlapping storage init, migrate, seed and
+  the fixture fingerprint. Shard setup went from ~250 s to ~155 s, and the
+  same saving applies to `verify`. `MANUALE_PARALLEL_FRONTEND=0` restores the
+  serial order.
+- Tried and reverted to opt-in: running the MCP/agent evaluation alongside
+  the reader check. On a 4-vCPU runner the evaluation slowed from 71 s to
+  125 s and the reader timed out waiting for a step image (run
+  43863941734). `MANUALE_PARALLEL_EVALUATION=1` still enables it.
+- The doctor's Docker probes now get 60 s instead of 5 s. Right after the
+  dependency installs Docker answered slowly, and three attempts of run
+  43870309500 each lost a shard to a false "Install Docker Compose v2".
+
+Run 43935306729 on main (force_full, compatibility appliance scope): 35.0 min
+end to end. Shards 9.8 to 13 min, `verify` 11.5 min (was 12.7), start to end
+of `verify` about 26 min (was 29.5). The appliance stage is unchanged, so a
+run with the full historical rehearsal should take about 38 min against
+41.7. Hosted-runner variance is still large: one slow runner added 4 min to
+one shard on run 43858336977.
+
 ## After
 
 Measured on GitHub Actions (`ubuntu-24.04`), wall time from `run_started_at`
