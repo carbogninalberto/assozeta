@@ -7,7 +7,8 @@ json.dumps(default=str)), records the result and every managed table, resets,
 runs the Go BusinessMCPTools.Execute on the same arguments and requires the
 identical result and state. New saved report ids and timestamps are checked
 against the run window and normalized. Calls whose Django behaviour Go does
-not port must be refused by Go before any write (state unchanged). This is
+not port must be refused by Go before any write (state unchanged; none is left
+since long tail PR 4). This is
 function-level parity: MCP transport, schema validation and the remaining
 business tools are not exercised here.
 """
@@ -43,7 +44,7 @@ CASES = [
     ('sanitize_text', {'text': 'a/b', 'replacement': 'ab'}, {'result': ''}),
     ('sanitize_text', {'text': 'tab\there\x01', 'replacement': '.'}, {'result': 'tab.here'}),
     ('sanitize_text', {'text': '　 é<>ü 　', 'replacement': '*'}, {'result': 'é*ü'}),
-    ('sanitize_text', {'text': 'a/b', 'replacement': '\\'}, 'refused'),
+    ('sanitize_text', {'text': 'a/b', 'replacement': '\\'}, {'error': 'bad escape (end of pattern) at position 0'}),
     ('list_reports', {}, {'error': 'user_id is required to list reports'}),
     ('list_reports', {'user_id': ''}, {'error': 'user_id is required to list reports'}),
     ('list_reports', {'user_id': str(OWNER)}, 'owner reports'),
@@ -51,7 +52,7 @@ CASES = [
     ('list_reports', {'user_id': 'abc'}, {'error': '[\'"abc" non è uno UUID valido.\']'}),
     ('list_reports', {'user_id': 95001}, 'owner reports'),
     ('list_reports', {'user_id': True}, {'reports': [], 'count': 0}),
-    ('list_reports', {'user_id': [1]}, 'refused'),
+    ('list_reports', {'user_id': [1]}, {'error': '[\'"[1]" non è uno UUID valido.\']'}),
     ('save_report', {'name': 'Presenze 2025/26', 'tool_name': 'query_data', 'params': {'model_name': 'Tags', 'limit': 10},
                      'description': 'Tutte le presenze', 'ui_config': {'fields': [{'key': 'limit', 'type': 'number'}]},
                      'user_id': str(OWNER)}, 'saved'),
@@ -65,7 +66,8 @@ CASES = [
     ('save_report', {'name': 'x', 'tool_name': 'query_data', 'params': {}}, {'error': 'user_id is required to save a report'}),
     ('save_report', {'name': 'x', 'tool_name': 'query_data', 'params': {}, 'user_id': 'nope'},
      {'error': '[\'"nope" non è uno UUID valido.\']'}),
-    ('save_report', {'name': 'n' * 201, 'tool_name': 'query_data', 'params': {}, 'user_id': str(OWNER)}, 'refused'),
+    ('save_report', {'name': 'n' * 201, 'tool_name': 'query_data', 'params': {}, 'user_id': str(OWNER)},
+     {'error': 'value too long for type character varying(200)\n'}),
 ]
 
 
