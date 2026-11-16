@@ -475,9 +475,12 @@ func paymentExportPythonStr(value any) (string, error) {
 		if !strings.ContainsAny(text, ".eE") {
 			return text, nil
 		}
+		// json.loads reads a number with a fraction as float: beyond the double
+		// range it is ±inf (ParseFloat also returns it with ErrRange), below the
+		// smallest subnormal ±0 without an error.
 		number, err := strconv.ParseFloat(text, 64)
-		if err != nil || math.IsInf(number, 0) {
-			return "", domain.ErrPaymentReadsNotPorted
+		if err != nil && !errors.Is(err, strconv.ErrRange) {
+			return "", domain.ErrPaymentReadsServer
 		}
 		return dto.PythonFloatStr(number), nil
 	}

@@ -86,6 +86,13 @@ def seed_rows(source, created):
             invoice_fiscal_code=row['invoice_fiscal_code'], meta=row['meta'], notes=row['notes'],
             custom_accounts_id=accounts[row['account']]['id'] if row['account'] else None, deleted=row['deleted'],
             group_id=row['group'], course=row['course']))
+        if row.get('course_raw'):
+            # jsonb keeps a number as numeric text (no exponent): the label is written as a raw numeric literal so
+            # json.loads reads a fraction as float (inf beyond the double range, 0.0 below the smallest subnormal).
+            from django.db import connection
+            with connection.cursor() as cursor:
+                cursor.execute('UPDATE application_payment SET course = jsonb_build_object(%s, %s::numeric) WHERE payment_id = %s',
+                               ['label', row['course_raw'], row['id']])
     course_subscriptions = source['course_subscriptions']
     for row in course_subscriptions.values():
         insert(CourseSubscription, CourseSubscription(

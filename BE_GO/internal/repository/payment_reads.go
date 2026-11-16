@@ -107,13 +107,16 @@ var paymentReadsSearchFields = func() []paymentReadsField {
 	return fields
 }()
 
-// paymentReadsSearchJoins are the search's LEFT JOINs (one row per tutor relation).
-const paymentReadsSearchJoins = ` FROM (SELECT 1) d
+// paymentReadsSearchJoinList are the search's LEFT JOINs (one row per tutor
+// relation), appended to the payment FROM in the DISTINCT page query.
+const paymentReadsSearchJoinList = `
  LEFT JOIN application_associate sa ON sa.associate_id=p.associate_id
  LEFT JOIN application_associatetutorrelation sr ON sr.associate_id=sa.associate_id
  LEFT JOIN application_associate st ON st.associate_id=sr.tutor_id
  LEFT JOIN application_supplierandcustomers ss ON ss.supplier_id=p.supplier_id
  LEFT JOIN application_instructor si ON si.instructor_id=p.instructor_id`
+
+const paymentReadsSearchJoins = ` FROM (SELECT 1) d` + paymentReadsSearchJoinList
 
 func paymentReadsSmartCondition(search *domain.PaymentReadsSmartSearch, args *personaArgs) string {
 	words := make([]string, len(search.Words))
@@ -169,8 +172,16 @@ var paymentReadsMemberFields = []string{"p.payment_id::text", "p.notes::text", "
 	"ma.first_name::text", "ma.last_name::text", "ma.tax_code::text", paymentReadsText("p.payment_date", true), "p.type::text",
 	"p.subject::text", paymentReadsText("p.creation_date", true), "mca.name::text", "mco.title::text", "mco2.title::text"}
 
-// paymentReadsQuery is FROM ... WHERE ... of the filter.
+// paymentReadsQuery is FROM ... WHERE ... of the filter, with the text search
+// tested by EXISTS (one row per payment).
 func paymentReadsQuery(filter domain.PaymentReadsFilter, args *personaArgs) string {
+	return paymentReadsSearchQuery(filter, args, false)
+}
+
+// paymentReadsSearchQuery is paymentReadsQuery with the option to inline the
+// search joins: the distinct page query of a random ordering, where Django adds
+// RANDOM() to the DISTINCT select list so the join rows the search repeats stay.
+func paymentReadsSearchQuery(filter domain.PaymentReadsFilter, args *personaArgs, inlineSearch bool) string {
 	from := ` FROM application_payment p`
 	where := []string{"NOT p.deleted", "p.sport_association_id=" + args.add(filter.AssociationID) + "::uuid"}
 	group := args.add(filter.Group)
@@ -228,7 +239,14 @@ func paymentReadsQuery(filter domain.PaymentReadsFilter, args *personaArgs) stri
 		where = append(where, "("+personaLike("p.amount::text", args.add(paymentReadsContains(*filter.AmountText)))+" OR p.amount="+args.add(*filter.AmountExact)+"::numeric)")
 	}
 	if filter.Smart != nil && len(filter.Smart.Words) > 0 {
-		where = append(where, "EXISTS(SELECT 1"+paymentReadsSearchJoins+" WHERE "+paymentReadsSmartCondition(filter.Smart, args)+")")
+		// smart_search's Q() adds no join when the term has no word: no rows repeat.
+		condition := paymentReadsSmartCondition(filter.Smart, args)
+		if inlineSearch {
+			from += paymentReadsSearchJoinList
+			where = append(where, condition)
+		} else {
+			where = append(where, "EXISTS(SELECT 1"+paymentReadsSearchJoins+" WHERE "+condition+")")
+		}
 	}
 	if filter.MemberText != nil {
 		from += paymentReadsMemberJoins
@@ -278,20 +296,36 @@ func (r *PaymentReads) CountPayments(ctx context.Context, filter domain.PaymentR
 	return count, err
 }
 
-func (r *PaymentReads) Payments(ctx context.Context, filter domain.PaymentReadsFilter, limit, offset int64) ([]string, error) {
-	args := personaArgs{}
-	statement := "SELECT p.payment_id" + paymentReadsQuery(filter, &args)
+// paymentReadsPaymentStatement is the id page query of Payments. smart_search
+// returns queryset.distinct(), and Django's compiler adds the ordering
+// expression to a DISTINCT select list (get_extra_select), so order_by('?')
+// selects RANDOM() and DISTINCT keeps one row per search join row: a payment
+// matched through two tutors occupies two rows of the page window (the
+// Paginator window itself is capped at the distinct count). The count keeps
+// the distinct payments (its subquery has no ordering).
+func paymentReadsPaymentStatement(filter domain.PaymentReadsFilter, args *personaArgs, limit, offset int64) (string, error) {
+	statement := "SELECT p.payment_id" + paymentReadsSearchQuery(filter, args, filter.Random && filter.Smart != nil)
 	switch {
 	case filter.Random:
 		statement += " ORDER BY RANDOM()"
 	case len(filter.Order) > 0:
 		terms := make([]string, len(filter.Order))
 		for i, order := range filter.Order {
-			if !paymentReadsColumns[order.Column] {
-				// paymentReadsOrder only emits columns of paymentReadsFields, all in paymentReadsColumns.
-				return nil, domain.ErrPaymentReadsUnreachable
+			switch {
+			case order.Column == "full_name":
+				// subscription_payments' Concat('associate__first_name', V(' '), 'associate__last_name')
+				// on PostgreSQL; the member joins carry the ma alias.
+				if filter.MemberText == nil {
+					return "", domain.ErrPaymentReadsUnreachable
+				}
+				terms[i] = "(COALESCE(ma.first_name, '') || ' ' || COALESCE(ma.last_name, ''))"
+			case paymentReadsColumns[order.Column]:
+				terms[i] = "p." + order.Column
+			default:
+				// paymentReadsOrder only emits columns of paymentReadsFields, all in paymentReadsColumns, and
+				// full_name only when the view annotated it.
+				return "", domain.ErrPaymentReadsUnreachable
 			}
-			terms[i] = "p." + order.Column
 			if order.Descending {
 				terms[i] += " DESC"
 			}
@@ -299,8 +333,17 @@ func (r *PaymentReads) Payments(ctx context.Context, filter domain.PaymentReadsF
 		statement += " ORDER BY " + strings.Join(terms, ", ")
 	}
 	statement += " LIMIT " + args.add(limit) + " OFFSET " + args.add(offset)
+	return statement, nil
+}
+
+func (r *PaymentReads) Payments(ctx context.Context, filter domain.PaymentReadsFilter, limit, offset int64) ([]string, error) {
+	args := personaArgs{}
+	statement, err := paymentReadsPaymentStatement(filter, &args, limit, offset)
+	if err != nil {
+		return nil, err
+	}
 	ids := []string{}
-	err := r.db.SelectContext(ctx, &ids, statement, args...)
+	err = r.db.SelectContext(ctx, &ids, statement, args...)
 	return ids, err
 }
 

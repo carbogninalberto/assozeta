@@ -47,9 +47,6 @@ func TestLongTailAppStateErrors(t *testing.T) {
 			t.Errorf("%s no longer matches itself through errors.Is", name)
 		}
 	}
-	if errors.Is(errPaymentReadsLazyOrder, refusal.ErrNotPorted) {
-		t.Error("errPaymentReadsLazyOrder is an internal marker, not a refusal")
-	}
 }
 
 // A runner reply nested past the decoder's limit is a state only a runner

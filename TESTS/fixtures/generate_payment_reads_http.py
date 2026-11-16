@@ -15,7 +15,9 @@ payment_list:
   scoped ``SportAssociation.objects.get`` raises, 500), then the live,
   group-aware payments of it with ``archived=query[archived]`` (BooleanField
   to_python: 't', 'True', '1', 'f', 'False', '0'; anything else a 500) as
-  ``values(...)`` ordered by ``-creation_date``; Decimals render as floats.
+  ``values(...)`` ordered by ``-creation_date``; Decimals render as floats. An
+  athlete whom the association import made the association's user lists it; a
+  session's association still applies too.
 - athletes take their own branch (authored at the end of the sequence, with its
   own rows in two further associations).
 - everyone else: the association as above, the same archived filter, then one
@@ -37,7 +39,9 @@ payment_list:
   several words also match the reversed/original sequence on name, address,
   city and notes fields; the joins are per row and the result is distinct;
   Payment gets no relevance ordering); ``sort[field]`` orders ascending unless
-  ``sort[sort] == 'desc'``. KTDatatablePagination and PaymentOptimizedSerializer
+  ``sort[sort] == 'desc'`` (``?`` is random; with a text search Django's
+  DISTINCT select gains RANDOM(), so the page SQL keeps the matching join
+  rows). KTDatatablePagination and PaymentOptimizedSerializer
   (associate with its tutor relations, instructor, supplier, invoice,
   attachments, the course and subscription lookups through the group-aware
   managers) plus ``instructor_document`` / ``instructor_document_token`` from
@@ -60,8 +64,9 @@ association's live group-aware payments of the associate or of any associate
 with the same tax code (iexact), any archived state, by ``-creation_date``;
 filters present (not only truthy); the general search is the amount or one
 icontains OR over the listed fields and relations without distinct (a payment
-joined to two installments is listed twice); sort, pagination and
-PaymentOptimizedSerializer plus ``is_carnet`` and the course subscription or
+joined to two installments is listed twice); a text search also annotates
+full_name, so ``sort[field]=full_name`` orders by the concatenated names; sort,
+pagination and PaymentOptimizedSerializer plus ``is_carnet`` and the course subscription or
 carnet of each course payment.
 
 The search, ordering and serializer expectations below are computed by an
@@ -87,6 +92,27 @@ _letters = iter(f'{a}{b}{c}' for a in 'abcdef' for b in 'abcdef' for c in 'abcde
 
 def uid(kind):
     return f'{kind}-eeee-4eee-8eee-eeeeeeeee{next(_letters)}'
+
+
+# The rows added for the ported sites use their own id namespace, so the
+# authored ids of the existing rows (and their expectations) do not move.
+_extra_letters = iter(f'{a}{b}{c}' for a in 'abcdef' for b in 'abcdef' for c in 'abcdef')
+
+
+def extra_uid(kind):
+    return f'{kind}-dddd-4ddd-8ddd-ddddddddd{next(_extra_letters)}'
+
+
+# Two further associations: the association import can leave an athlete as an
+# association's user (case list-compressed-athlete-owner-imported), and the
+# random-search and full-name-order cases stay off the own association so no
+# other expectation changes.
+EXTRA_ASSOCIATION = extra_uid('a5e7a000')
+IMPORTED_ASSOCIATION = extra_uid('a5e7b000')
+EXTRA_OWNER = {'id': extra_uid('0b0e0000'), 'username': 'payment-reads-extra', 'email': 'payment-reads-extra@example.test',
+               'association': EXTRA_ASSOCIATION, 'denomination': 'Polisportiva Extra', 'tax_code': '77410000003'}
+# An athlete (User.ATHLETE) that owns IMPORTED_ASSOCIATION: the association import reuses an existing user by UUID.
+IMPORTED_ATHLETE = {'id': extra_uid('a7b1e7e0'), 'username': 'payment-reads-imported', 'email': 'payment-reads-imported@example.test'}
 
 
 # --- rows --------------------------------------------------------------------------------------------
@@ -115,6 +141,10 @@ def person(created, **values):
     return {**ASSOCIATE_DEFAULTS, **values, 'id': uid('decafbad'), 'created': created}
 
 
+def extra_person(created, **values):
+    return {**ASSOCIATE_DEFAULTS, **values, 'id': extra_uid('decafbad'), 'created': created}
+
+
 ASSOCIATES = {
     'mario': person('2023-11-01T08:00:00Z', first_name='Mario', last_name='Rossi', sex='M', tax_code='RSSMRA90E10H501Z',
                     born_date='1990-05-10', born_city='Verona', address_city='Verona', address='Via Mazzini 3', email='mario@example.test',
@@ -125,8 +155,20 @@ ASSOCIATES = {
                     born_date='1965-02-14', born_city='Padova', email='lucia@example.test'),
     'paolo': person('2023-11-04T08:00:00Z', first_name='Paolo', last_name='Neri', sex='M', born_date='1963-09-30', group=OWN_GROUP),
     'abroad': person('2023-11-05T08:00:00Z', first_name='Hugo', last_name='Esterno', association=FOREIGN),
+    # EXTRA association: the repeat case's payment and its two matching tutors, and three associates whose full
+    # names (first || ' ' || last) sort differently from their first or last names alone.
+    'rep': extra_person('2023-11-06T08:00:00Z', first_name='Tutor', last_name='Base', association=EXTRA_ASSOCIATION),
+    'rep_t1': extra_person('2023-11-07T08:00:00Z', first_name='Primo', last_name='Duevolte', association=EXTRA_ASSOCIATION),
+    'rep_t2': extra_person('2023-11-08T08:00:00Z', first_name='Secondo', last_name='Duevolte', association=EXTRA_ASSOCIATION),
+    'ord_one': extra_person('2023-11-09T08:00:00Z', last_name='Beta', tax_code='ORDA00000000000001', association=EXTRA_ASSOCIATION),
+    'ord_two': extra_person('2023-11-10T08:00:00Z', first_name='Alfa', last_name='Zeta', tax_code='ORDA00000000000001',
+                            association=EXTRA_ASSOCIATION),
+    'ord_three': extra_person('2023-11-11T08:00:00Z', first_name='Mario', last_name='Alfa', tax_code='ORDA00000000000001',
+                              association=EXTRA_ASSOCIATION),
 }
-TUTORS = {'mario': [('lucia', True), ('paolo', False)]}
+TUTORS = {'mario': [('lucia', True), ('paolo', False)],
+          # Both tutor rows match the search word: DISTINCT with RANDOM() keeps both.
+          'rep': [('rep_t1', False), ('rep_t2', False)]}
 INSTRUCTOR = {'id': uid('1eac0e00'), 'first_name': 'Giulia', 'last_name': 'Bianchi', 'email': 'giulia@example.test',
               'tax_code': 'BNCGLI85A41H501X', 'phone': '3405556666', 'address': 'Via Garibaldi 9', 'hourly': '18.50'}
 SUPPLIER = {'id': uid('5abb0ace'), 'name': 'Palestre Riunite', 'vat_number': '01234567890', 'email': 'fornitore@example.test',
@@ -147,6 +189,9 @@ SUBSCRIPTIONS = {
     'nobody': {'id': uid('5ab5c0de'), 'associate': None, 'association': OWN, 'payment': None, 'created': '2000-01-01T08:00:00Z'},
     'abroad': {'id': uid('5ab5c0de'), 'associate': 'abroad', 'association': FOREIGN, 'payment': None,
                'created': '2023-12-04T08:00:00Z'},
+    # subscription_payments' full-name order case: the extra association's subscription.
+    'order': {'id': extra_uid('5ab5c0de'), 'associate': 'ord_one', 'association': EXTRA_ASSOCIATION, 'payment': None,
+              'created': '2023-12-05T08:00:00Z'},
 }
 for row in SUBSCRIPTIONS.values():
     row.setdefault('deleted', False)
@@ -160,6 +205,10 @@ PAYMENT_DEFAULTS = {'subject': 0, 'type': 'default', 'amount': '0.00', 'paid': F
 
 def payment(created, **values):
     return {**PAYMENT_DEFAULTS, **values, 'id': uid('ba1dface'), 'created': created}
+
+
+def extra_payment(created, **values):
+    return {**PAYMENT_DEFAULTS, **values, 'id': extra_uid('ba1dface'), 'created': created}
 
 
 PAYMENTS = {
@@ -190,6 +239,20 @@ PAYMENTS = {
                         paid_on='2024-01-15T09:00:00Z'),
     'removed': payment('2024-01-20T09:00:00Z', subject=0, amount='7.00', associate='mario', deleted=True),
     'abroad': payment('2024-03-01T09:00:00Z', subject=0, amount='99.00', association=FOREIGN, paid_on='2024-03-02T09:00:00Z'),
+    # The EXTRA association's rows (no other case lists or searches them).
+    'repeat': extra_payment('2024-05-10T09:00:00Z', subject=0, amount='11.00', associate='rep', association=EXTRA_ASSOCIATION,
+                            paid=True, paid_on='2024-05-11T09:00:00Z'),
+    'ord_a': extra_payment('2024-05-01T09:00:00Z', subject=0, amount='10.00', associate='ord_one', association=EXTRA_ASSOCIATION,
+                           notes='ordina questo', paid=True, paid_on='2024-05-02T09:00:00Z'),
+    'ord_b': extra_payment('2024-05-03T09:00:00Z', subject=0, amount='12.00', associate='ord_two', association=EXTRA_ASSOCIATION,
+                           notes='ordina questo', paid=True, paid_on='2024-05-04T09:00:00Z'),
+    'ord_c': extra_payment('2024-05-05T09:00:00Z', subject=0, amount='13.00', associate='ord_three', association=EXTRA_ASSOCIATION,
+                           notes='ordina questo', paid=True, paid_on='2024-05-06T09:00:00Z'),
+    # The imported association's payments: an athlete is its user (association import). newest_first lists them.
+    'imported_old': extra_payment('2024-05-20T09:00:00Z', subject=0, amount='21.00', association=IMPORTED_ASSOCIATION, paid=True,
+                                  paid_on='2024-05-21T09:00:00Z'),
+    'imported_new': extra_payment('2024-05-22T09:00:00Z', subject=0, amount='22.00', association=IMPORTED_ASSOCIATION,
+                                  paid_on='2024-05-23T09:00:00Z'),
 }
 COURSE_SUBSCRIPTIONS = {
     'swim': {'id': uid('c5c5c5c5'), 'course': 'swim', 'subscription': 'mario', 'payment': 'course', 'deleted': False},
@@ -673,6 +736,15 @@ add('list-compressed-group-malformed-ignored', 'owner', C, 200, compressed_body(
 add('list-compressed-foreign-owner', 'foreign_owner', C, 200, compressed_body(['abroad']))
 add('list-compressed-deleted-association-owner', 'deleted_association_owner', C, 200, {'data': []})
 add('list-compressed-collaborator', 'full_collaborator', C, 200, compressed_body(VISIBLE))
+# An athlete who is the user of a SportAssociation (the association import reuses an existing user by UUID): the
+# reverse one-to-one finds it and the association's payments list. In an association-scoped session scoped_queryset
+# also keeps the session's association, so an athlete owning another association lists nothing.
+IMPORTED = [k for k, row in PAYMENTS.items() if row['association'] == IMPORTED_ASSOCIATION]
+assert len(IMPORTED) == 2
+add('list-compressed-athlete-owner-imported', 'imported', C, 200, {'data': [compressed(k) for k in newest_first(IMPORTED)]})
+add('list-compressed-athlete-without-association-server-error', 'athlete', C, 500, SERVER)
+add('list-compressed-athlete-owner-imported-scoped', 'north_owner', C, 200, {'data': []},
+    headers={'X-Impersonation-Id': '$session:imported_scoped', 'User-Id': IMPORTED_ATHLETE['id']})
 
 # --- payment/list: archived, groups and filters ---
 add('list-archived-true', 'owner', LIST + '?query[archived]=True', 200, list_page(['archived']))
@@ -829,6 +901,13 @@ add('list-sort-user-desc-last-page', 'owner', S_ + f'user&sort[sort]=desc&pagina
     200, list_page(VISIBLE, size=len(VISIBLE) - 1, number=2, ordered=[k for k in VISIBLE if k not in USERED] + USERED))
 add('list-sort-with-search', 'owner', SEARCH + 'rossi&sort[field]=amount&sort[sort]=desc', 200,
     list_page(searched('rossi'), ordered=column_order(searched('rossi'), amount_key, True)))
+# smart_search returns queryset.distinct() and order_by('?') adds RANDOM() to the DISTINCT select list, so the page
+# SQL keeps one row per matching join row. The Paginator's page window is capped at the distinct count (1), so this
+# page holds the payment once; the SQL still carries the two joined rows (a page of two distinct payments can repeat
+# one of them instead of showing the other, which is the database's random choice).
+assert len(join_rows(PAYMENTS['repeat'])) == 2
+add('list-sort-random-search-repeats-join-rows', 'extra_owner', SEARCH + 'duevolte&sort[field]=?', 200,
+    page([listed('repeat')], [P['repeat']], total=1))
 
 # --- payment/list: pagination ---
 ORDER = list_order(VISIBLE)
@@ -1094,6 +1173,15 @@ add('subscription-page-two', 'owner', SUB + '?pagination[perpage]=3&pagination[p
 add('subscription-page-beyond', 'owner', SUB + '?pagination[perpage]=3&pagination[page]=4', 404, INVALID_PAGE)
 add('subscription-search-duplicates-paginated', 'owner', SS + 'corso&pagination[perpage]=1&pagination[page]=2', 200,
     sub_page(sub_search('corso'), ordered=sub_search('corso'), number=2, size=1))
+# The text search annotates full_name = Concat(associate__first_name, V(' '), associate__last_name), so
+# checked_ordering accepts it: ' Beta' (a null first name coalesced), 'Alfa Zeta', 'Mario Alfa'.
+ORDER_SUB = sub_path('order')
+ORDER_NAMES = ['ord_a', 'ord_b', 'ord_c']
+add('payments-search-order-full-name', 'extra_owner', ORDER_SUB + '?query[generalSearch]=ordina&sort[field]=full_name', 200,
+    sub_page(ORDER_NAMES, ordered=ORDER_NAMES))
+add('payments-search-order-full-name-desc', 'extra_owner',
+    ORDER_SUB + '?query[generalSearch]=ordina&sort[field]=full_name&sort[sort]=desc', 200,
+    sub_page(list(reversed(ORDER_NAMES)), ordered=list(reversed(ORDER_NAMES))))
 
 # --- payment/list: athletes ----------------------------------------------------------------------------
 # An athlete (no mode=compressed) takes its own branch:
@@ -1130,9 +1218,13 @@ ATH_OWNERS = {
 ASSOCIATION_OWNER = {row['association']: row for row in ATH_OWNERS.values()}
 EXTRA_USERS = {label: {'id': uid('a7b1e7e0'), 'username': f'payment-reads-{label}', 'email': f'payment-reads-{label}@example.test'}
                for label in ('runner', 'scoped', 'faulty', 'partner')}
+EXTRA_USERS['imported'] = IMPORTED_ATHLETE
 U = {label: row['id'] for label, row in EXTRA_USERS.items()}
 ATH_GROUP = {'id': uid('6a0bbbbb'), 'name': 'Agonisti', 'association': NORTH}
 ATH_SESSION = {'label': 'north_scoped', 'actor': 'north_owner', 'target': 'scoped', 'association': NORTH}
+# An athlete whom the association import made the user of an association; the owner of another association can
+# impersonate it, and the compressed list then filters on both associations.
+IMPORTED_SESSION = {'label': 'imported_scoped', 'actor': 'north_owner', 'target': 'imported', 'association': NORTH}
 
 
 def ath_person(association, first, last, **values):
@@ -1167,6 +1259,10 @@ ATH_SUBSCRIPTIONS = {
     'f_sub': ath_subscription(NORTH, 'faulty', None),
     # Another user's subscription of an associate the runner also subscribed.
     'n_kid_partner': ath_subscription(NORTH, 'partner', 'r_kid'),
+    # The imported athlete's membership of NORTH: impersonation.resolve_target revalidates the target as the
+    # actor's athlete (a subscriber of the actor's association).
+    'imp_join': {'id': extra_uid('5ab5c0de'), 'association': NORTH, 'user': 'imported', 'associate': 'r_kid',
+                 'payment': None, 'deleted': False, 'start': None, 'end': None},
 }
 ATH_COURSES = {
     'c_single': {'id': uid('c0a5ec0a'), 'association': NORTH, 'title': 'Atletica', 'multi': False, 'one_fee': False, 'events': []},
@@ -1554,6 +1650,8 @@ OUTPUT.write_text(json.dumps({
     'athlete': {'owners': ATH_OWNERS, 'group': ATH_GROUP, 'session': ATH_SESSION, 'associates': ATH_ASSOCIATES,
                 'subscriptions': ATH_SUBSCRIPTIONS, 'courses': ATH_COURSES, 'course_subscriptions': ATH_COURSE_SUBSCRIPTIONS,
                 'installments': ATH_INSTALLMENTS, 'carnet': ATH_CARNET, 'holdings': ATH_HOLDINGS, 'camp': ATH_CAMP,
-                'documents': ATH_DOCUMENTS, 'invoices': ATH_INVOICES, 'payments': ATH_PAYMENTS},
+                'documents': ATH_DOCUMENTS, 'invoices': ATH_INVOICES, 'payments': ATH_PAYMENTS,
+                'extra_owner': EXTRA_OWNER, 'extra_association': EXTRA_ASSOCIATION, 'imported_association': IMPORTED_ASSOCIATION,
+                'imported_session': IMPORTED_SESSION},
     'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

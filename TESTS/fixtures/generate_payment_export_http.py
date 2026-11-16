@@ -45,7 +45,9 @@ payment_list_export (BE/application/views/payment_views.py) is an
   'Causale' value (the header has it) and read the account name directly;
 - the course column: the payment's course subscriptions (any state, first by
   key) course title, else its installments (any state, group-aware, first by
-  key) course subscription's course title, else the course JSON's 'label';
+  key) course subscription's course title, else the course JSON's 'label'
+  (csv writes str(); a number with a fraction beyond the double range is
+  'inf', below the smallest subnormal '0.0');
 - ``{'data': {'file': base64, 'type': 'csv', 'filename': '[<today>] PAGAMENTI a
   <denomination>.csv'}}``;
 - ``m=xlsx`` hands get_excel_base64 the column lists (zip truncates them to the
@@ -84,6 +86,15 @@ _letters = iter(f'{a}{b}{c}' for a in 'abcdef' for b in 'abcdef' for c in 'abcde
 
 def uid(kind):
     return f'{kind}-ffff-4fff-8fff-fffffffff{next(_letters)}'
+
+
+# The rows added for the ported label site use their own id namespace, so the
+# authored ids of the existing rows (and their expectations) do not move.
+_extra_letters = iter(f'{a}{b}{c}' for a in 'abcdef' for b in 'abcdef' for c in 'abcdef')
+
+
+def extra_uid(kind):
+    return f'{kind}-cccc-4ccc-8ccc-ccccccccc{next(_extra_letters)}'
 
 
 # --- rows --------------------------------------------------------------------------------------------
@@ -126,6 +137,10 @@ PAYMENT_DEFAULTS = {'subject': 0, 'type': 'default', 'amount': '0.00', 'paid': F
 
 def payment(created, **values):
     return {**PAYMENT_DEFAULTS, **values, 'id': uid('ba1dface'), 'created': created}
+
+
+def extra_payment(created, **values):
+    return {**PAYMENT_DEFAULTS, **values, 'id': extra_uid('ba1dface'), 'created': created}
 
 
 C = CATEGORIES
@@ -202,6 +217,15 @@ PAYMENTS = {
                          course={'label': 2 ** 65}, paid_on='2024-02-09T10:00:00Z'),
     'label_f64b': payment('2024-02-10T09:00:00Z', association=FOREIGN, archived=True, amount='2.00', description='et-f64 due',
                           course={'label': 123456789012345678901234567890}, paid_on='2024-02-10T10:00:00Z'),
+    # Numeric jsonb labels written as raw numeric text (jsonb keeps no exponent): json.loads reads a number with a
+    # fraction as float, so beyond the double range it is inf and below the smallest subnormal 0.0. The CSV writes
+    # str(float) ('inf', '0.0'). The dates stay outside the foreign petty-cash windows.
+    'label_float_overflow': extra_payment('2023-12-02T09:00:00Z', association=FOREIGN, archived=True, amount='1.00',
+                                          description='et-float-overflow', paid=True, paid_on='2023-12-02T10:00:00Z',
+                                          course_raw='1' + '0' * 400 + '.5'),
+    'label_float_underflow': extra_payment('2023-12-03T09:00:00Z', association=FOREIGN, archived=True, amount='1.00',
+                                           description='et-float-underflow', paid=True, paid_on='2023-12-03T10:00:00Z',
+                                           course_raw='0.' + '0' * 400 + '1'),
 }
 COURSE_SUBSCRIPTIONS = {
     'swim': {'id': uid('c5c5c5c5'), 'course': 'swim', 'payment': 'course', 'deleted': False},
@@ -409,6 +433,10 @@ def course_title(label, group):
     rates = sorted((i for i in INSTALLMENTS.values() if i['payment'] == label and group is None), key=lambda i: i['id'])
     if rates:
         return COURSES[COURSE_SUBSCRIPTIONS[rates[0]['cs']]['course']]['title']
+    raw = PAYMENTS[label].get('course_raw')
+    if raw is not None:
+        # json.loads reads the numeric text as float (inf or 0.0 beyond the double range).
+        return float(raw)
     course = PAYMENTS[label]['course']
     if course is not None and course != '' and 'label' in course:
         return course['label']
@@ -725,6 +753,14 @@ for token in ('u64', 'f64'):
     assert rows == [f'label_{token}b', f'label_{token}'], rows
     add(f'label-{token}-csv', 'foreign_owner', path, 200, body(export_csv(rows, association=FOREIGN), FOREIGN))
     add(f'label-{token}-xlsx', 'foreign_owner', path + '&m=xlsx', 200, xbody(export_xlsx(rows, association=FOREIGN), FOREIGN))
+
+# A numeric label with a fraction beyond the double range is float('inf'), below the smallest subnormal 0.0:
+# json.loads reads the jsonb numeric text as float and csv writes str(float).
+for token in ('float-overflow', 'float-underflow'):
+    path = EXPORT + f'?archived=1&query[generalSearch]=et-{token}'
+    rows = listed(association=FOREIGN, archived=True, search=f'et-{token}')
+    assert rows == ['label_' + token.replace('-', '_')], rows
+    add(f'export-label-{token}', 'foreign_owner', path, 200, body(export_csv(rows, association=FOREIGN), FOREIGN))
 
 # The fallback window starts a year ago: no authored transfer or payment is in it, the header only.
 TEN_YEARS = (datetime.now(timezone.utc) - timedelta(days=3650), datetime.now(timezone.utc) + timedelta(days=1))

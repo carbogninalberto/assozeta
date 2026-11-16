@@ -758,8 +758,19 @@ func PythonFloatParse(text string) (float64, bool) {
 	return value, true
 }
 
-// PythonFloatStr is str(float) for a finite value.
-func PythonFloatStr(value float64) string { return pythonFloatRepr(value) }
+// PythonFloatStr is str(float): 'inf', '-inf' and 'nan' for the non-finite
+// values, the shortest round-trip repr otherwise.
+func PythonFloatStr(value float64) string {
+	switch {
+	case math.IsInf(value, 1):
+		return "inf"
+	case math.IsInf(value, -1):
+		return "-inf"
+	case math.IsNaN(value):
+		return "nan"
+	}
+	return pythonFloatRepr(value)
+}
 
 // DecimalFromFloat9 is Context(prec=9).create_decimal_from_float(value) text.
 func DecimalFromFloat9(value float64) string {
