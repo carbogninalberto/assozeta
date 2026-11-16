@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/binary"
 	"errors"
+	"math"
 	"math/big"
 	"strconv"
 	"time"
@@ -22,12 +23,9 @@ const (
 	ReleaseRefreshKey = ":1:instance:stable-releases:v1:refresh"
 )
 
-// ErrReleaseCacheShape is a cached catalog value this port does not read: a
-// pickle or a release dict outside what Go decodes. Django writes the catalog
-// from GitHub's payload (normalize_release copies its values as they are,
-// BE/instance/release_catalog.py:57-64) and renders it, so such an entry stays
-// with Django.
-var ErrReleaseCacheShape = refusal.New("cached release catalog not ported")
+// errCatalogNotReadable is a cached catalog outside the pickle data subset the
+// port decodes; Catalog answers it as a miss and fetches the feed again.
+var errCatalogNotReadable = errors.New("cached release catalog is not in the decoded subset")
 
 // errReleaseCacheNotList is a cached catalog that is not a list: fetch_releases
 // always returns one (BE/instance/administration.py:124 is the only Django
@@ -44,7 +42,9 @@ func NewReleaseCache(client *redis.Client) (*ReleaseCache, error) {
 	return &ReleaseCache{client: client}, nil
 }
 
-// Catalog is cache.get(CATALOG_KEY): nil, false on a miss.
+// Catalog is cache.get(CATALOG_KEY): nil, false on a miss. A cached value this
+// port cannot read is a miss too: the caller fetches the feed again, as Django
+// does for a missing key, and stores the Go-built catalog.
 func (c *ReleaseCache) Catalog(ctx context.Context) ([]instanceprobe.Release, bool, error) {
 	raw, err := c.client.Get(ctx, ReleaseCatalogKey).Bytes()
 	if errors.Is(err, redis.Nil) {
@@ -53,9 +53,17 @@ func (c *ReleaseCache) Catalog(ctx context.Context) ([]instanceprobe.Release, bo
 	if err != nil {
 		return nil, false, err
 	}
+	return decodeCatalog(raw)
+}
+
+// decodeCatalog reads cache.get's pickle (CPython protocol 2 to 5).
+func decodeCatalog(raw []byte) ([]instanceprobe.Release, bool, error) {
 	value, err := unpickleCatalog(raw)
 	if err != nil {
-		return nil, false, ErrReleaseCacheShape
+		// A pickle outside the data subset this port reads is a cache miss: the
+		// view fetches the feed again, as Django does for a missing key, and
+		// stores the Go-built catalog.
+		return nil, false, nil
 	}
 	items, ok := value.([]any)
 	if !ok {
@@ -65,7 +73,9 @@ func (c *ReleaseCache) Catalog(ctx context.Context) ([]instanceprobe.Release, bo
 	for _, item := range items {
 		release, ok := cachedRelease(item)
 		if !ok {
-			return nil, false, ErrReleaseCacheShape
+			// A release entry whose fields have other types (Django serves any
+			// value normalize_release copied) is a miss as well.
+			return nil, false, nil
 		}
 		releases = append(releases, release)
 	}
@@ -112,13 +122,15 @@ const maxCatalogBytes = 64 << 20
 
 type catalogMark struct{}
 
-// unpickleCatalog reads the opcodes CPython's protocol 4 pickler writes for a
-// list of release dicts (frames anywhere between opcodes, memo references,
-// str, int, bool, None, list and dict); anything else is an error. It is a
-// data decoder only: no global, reduce or object construction exists.
+// unpickleCatalog reads the opcodes CPython's protocol 2 to 5 picklers write
+// for a list of release dicts (frames anywhere between opcodes, memo
+// references, str, int, float, bool, None, list and dict); anything else is an
+// error. It is a data decoder only: no global, reduce or object construction
+// exists. Protocol 5 only adds opcodes for buffers (BYTEARRAY8, NEXT_BUFFER),
+// which a list of dicts of str/int/bool/None never uses.
 func unpickleCatalog(data []byte) (any, error) {
-	bad := ErrReleaseCacheShape
-	if len(data) < 3 || len(data) > maxCatalogBytes || data[0] != 0x80 || data[1] != 4 {
+	bad := errCatalogNotReadable
+	if len(data) < 3 || len(data) > maxCatalogBytes || data[0] != 0x80 || data[1] < 2 || data[1] > 5 {
 		return nil, bad
 	}
 	pos := 2
@@ -173,6 +185,25 @@ func unpickleCatalog(data []byte) (any, error) {
 				return nil, bad
 			}
 			memo = append(memo, stack[len(stack)-1])
+		case 'q', 'r':
+			// Protocol 2 and 3 memoize: BINPUT / LONG_BINPUT keep the top of
+			// the stack, as MEMOIZE does.
+			width := 1
+			if op == 'r' {
+				width = 4
+			}
+			raw, ok := take(width)
+			if !ok || len(stack) == 0 {
+				return nil, bad
+			}
+			index := int(raw[0])
+			if width == 4 {
+				index = int(binary.LittleEndian.Uint32(raw))
+			}
+			if index != len(memo) {
+				return nil, bad
+			}
+			memo = append(memo, stack[len(stack)-1])
 		case 'h', 'j':
 			width := 1
 			if op == 'j' {
@@ -190,18 +221,27 @@ func unpickleCatalog(data []byte) (any, error) {
 				return nil, bad
 			}
 			stack = append(stack, memo[index])
-		case 0x8c, 'X':
+		case 0x8c, 'X', 0x8d:
 			width := 1
-			if op == 'X' {
+			switch op {
+			case 'X':
 				width = 4
+			case 0x8d: // BINUNICODE8
+				width = 8
 			}
 			raw, ok := take(width)
 			if !ok {
 				return nil, bad
 			}
 			size := int(raw[0])
-			if width == 4 {
+			switch width {
+			case 4:
 				size = int(binary.LittleEndian.Uint32(raw))
+			case 8:
+				if binary.LittleEndian.Uint64(raw) > uint64(len(data)-pos) {
+					return nil, bad
+				}
+				size = int(binary.LittleEndian.Uint64(raw))
 			}
 			text, ok := take(size)
 			if !ok || !utf8.Valid(text) {
@@ -222,12 +262,20 @@ func unpickleCatalog(data []byte) (any, error) {
 			default:
 				stack = append(stack, int64(int32(binary.LittleEndian.Uint32(raw))))
 			}
-		case 0x8a: // LONG1
-			raw, ok := take(1)
+		case 0x8a, 0x8b: // LONG1, LONG4
+			width := 1
+			if op == 0x8b {
+				width = 4
+			}
+			raw, ok := take(width)
 			if !ok {
 				return nil, bad
 			}
-			body, ok := take(int(raw[0]))
+			length := int(raw[0])
+			if width == 4 {
+				length = int(binary.LittleEndian.Uint32(raw))
+			}
+			body, ok := take(length)
 			if !ok || len(body) > 8 {
 				return nil, bad
 			}
@@ -239,6 +287,12 @@ func unpickleCatalog(data []byte) (any, error) {
 				value -= 1 << (8 * len(body))
 			}
 			stack = append(stack, value)
+		case 'G': // BINFLOAT
+			raw, ok := take(8)
+			if !ok {
+				return nil, bad
+			}
+			stack = append(stack, math.Float64frombits(binary.BigEndian.Uint64(raw)))
 		case 0x88, 0x89:
 			stack = append(stack, op == 0x88)
 		case 'N':
@@ -291,16 +345,10 @@ func unpickleCatalog(data []byte) (any, error) {
 			if !ok || len(stack) != 0 || pos != len(data) {
 				return nil, bad
 			}
-			list, isList := value.(*[]any)
-			if !isList {
-				return nil, bad
+			if list, isList := value.(*[]any); isList {
+				return *list, nil
 			}
-			for _, item := range *list {
-				if _, nested := item.(*[]any); nested {
-					return nil, bad
-				}
-			}
-			return *list, nil
+			return value, nil
 		default:
 			return nil, bad
 		}

@@ -46,10 +46,7 @@ func render(m Message, boundary string) (string, error) {
 	// body.encode('utf-8', 'surrogateescape'), so a lone surrogate
 	// U+DC80..U+DCFF becomes the byte it escapes and any other one raises
 	// UnicodeEncodeError ("surrogates not allowed", models.py:154-156).
-	bodyRunes, ok := pythonRunes(body)
-	if !ok {
-		return "", errNotPythonStr
-	}
+	bodyRunes := pythonRunes(body)
 	raw, err := bodyTextBytes(bodyRunes)
 	if err != nil {
 		return "", err

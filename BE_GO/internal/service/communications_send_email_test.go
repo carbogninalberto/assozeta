@@ -8,12 +8,12 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/smtpsend"
 )
 
 // The text/plain multipart send_email builds; a subject Python raises on is
-// ErrHeader, text a Python str cannot hold is an application-state error.
+// ErrHeader, and raw environment bytes are decoded with surrogateescape and
+// sent.
 func TestCommunicationSendEmailRenderSubset(t *testing.T) {
 	user, name := "mittente@example.test", "Associazione"
 	row := domain.CommunicationConfigurationRecord{User: &user, SenderName: &name}
@@ -38,7 +38,7 @@ func TestCommunicationSendEmailRenderSubset(t *testing.T) {
 		"subject longer than a line": {strings.Repeat("Riga ", 300000), []string{"socio@example.test"}, nil},
 		"quoted recipient":           {"Avviso", []string{`"a b"@example.test`}, nil},
 		"ip literal":                 {"Avviso", []string{"socio@[127.0.0.1]"}, nil},
-		"invalid text":               {"Avviso\xff", []string{"socio@example.test"}, refusal.ErrNotPorted},
+		"invalid text":               {"Avviso\xff", []string{"socio@example.test"}, nil},
 	} {
 		if _, err := s.render(row, dto.SendEmailInput{Subject: input.subject, Message: "Ciao"}, input.to); !errors.Is(err, input.want) {
 			t.Errorf("%s: err = %v, want %v", name, err, input.want)

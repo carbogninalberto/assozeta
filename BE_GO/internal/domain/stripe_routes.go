@@ -11,10 +11,6 @@ import (
 var (
 	// ErrStripeServer is an unhandled exception in a stripe view (the 500 page).
 	ErrStripeServer = errors.New("stripe view server error")
-	// ErrStripeNotPorted refuses, before any write, a path whose Django
-	// behaviour is not ported: mark_payment_as_paid for an unpaid payment
-	// without an invoice (invoice creation, PDF task and notification).
-	ErrStripeNotPorted = refusal.New("stripe view behaviour not ported")
 	// ErrStripeUnreachable is a state no request or stored row reaches.
 	ErrStripeUnreachable = refusal.AppState("stripe view: unreachable state")
 )

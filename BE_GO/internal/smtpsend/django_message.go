@@ -222,22 +222,14 @@ func djangoTextPart(text, subtype string) (djangoPart, error) {
 // of the text, with a lone surrogate U+DC80..U+DCFF carrying the byte it
 // escapes. Any other surrogate raises UnicodeEncodeError.
 func djangoTextBytes(text string) ([]byte, error) {
-	runes, ok := pythonRunes(text)
-	if !ok {
-		return nil, errNotPythonStr
-	}
-	return bodyTextBytes(runes)
+	return bodyTextBytes(pythonRunes(text))
 }
 
 // djangoHasLongLines is SafeMIMEText.set_payload's has_long_lines: a line of
 // the text (str.splitlines) whose UTF-8 bytes exceed the RFC 5322 limit.
 func djangoHasLongLines(text string) (bool, error) {
 	for _, line := range pySplitlines(text) {
-		runes, ok := pythonRunes(line)
-		if !ok {
-			return false, errNotPythonStr
-		}
-		raw, err := bodyTextBytes(runes)
+		raw, err := bodyTextBytes(pythonRunes(line))
 		if err != nil {
 			return false, err
 		}

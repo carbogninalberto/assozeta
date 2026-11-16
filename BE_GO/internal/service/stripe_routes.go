@@ -6,6 +6,7 @@ import (
 	"errors"
 	"log/slog"
 	"math/big"
+	"strings"
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/celery"
@@ -278,7 +279,10 @@ func clientSecret(object stripeapi.Object) (any, error) {
 
 // stripeID is payment_intent.stripe_id (getattr(self, 'id')) as the nullable
 // text the CharField stores: a missing key is the AttributeError (the 500
-// page), null is saved as None, a number or bool as its str().
+// page), null is saved as None, and every other value as its str(). A reply's
+// nested objects are StripeObjects, so an object id is StripeObject.__str__
+// (json.dumps(sort_keys=True, indent=2)) and a list id is Python's list repr
+// with each object's StripeObject.__repr__.
 func stripeID(object stripeapi.Object) (*string, error) {
 	value, present := object.Lookup("id")
 	if !present {
@@ -292,9 +296,43 @@ func stripeID(object stripeapi.Object) (*string, error) {
 	case bool, json.Number:
 		text := dto.PythonStr(v)
 		return &text, nil
+	case domain.RequestObject:
+		// StripeObject.__str__: json.dumps(sort_keys=True, indent=2).
+		text := string(dto.PythonJSONDumpsSortedIndent(v, 2))
+		return &text, nil
+	case []any:
+		// repr(list): nested objects use StripeObject.__repr__.
+		text := stripeRepr(v)
+		return &text, nil
 	}
-	// A list or object id is a reply shape the API never sends.
-	return nil, domain.ErrStripeNotPorted
+	return nil, domain.ErrStripeServer
+}
+
+// stripeRepr is repr() of an id value: a dict is a StripeObject (the class
+// stripe-python builds for a nested object) and a list keeps its items' reprs.
+func stripeRepr(value any) string {
+	switch v := value.(type) {
+	case domain.RequestObject:
+		return stripeObjectRepr(v)
+	case []any:
+		var out strings.Builder
+		out.WriteByte('[')
+		for i, item := range v {
+			if i > 0 {
+				out.WriteString(", ")
+			}
+			out.WriteString(stripeRepr(item))
+		}
+		out.WriteByte(']')
+		return out.String()
+	}
+	return dto.PythonRepr(value)
+}
+
+// stripeObjectRepr is StripeObject.__repr__ with the fixed placeholder address
+// (owner decision X18): the class name and StripeObject.__str__'s JSON.
+func stripeObjectRepr(object domain.RequestObject) string {
+	return "<StripeObject at 0x0000000000000000> JSON: " + string(dto.PythonJSONDumpsSortedIndent(object, 2))
 }
 
 // pythonText is f'{value}' for a nullable text column.
@@ -974,9 +1012,6 @@ func (s *StripeRoutes) Webhook(ctx context.Context, identity domain.ResolvedIden
 			continue
 		}
 		err = s.mark(ctx, identity, request, &payments[index], false)
-		if errors.Is(err, domain.ErrStripeNotPorted) {
-			return err
-		}
 		if err != nil {
 			// The view's except Exception: logged, the loop stops, 200.
 			s.log.Error("stripe webhook: charge.succeeded", "error", err)
