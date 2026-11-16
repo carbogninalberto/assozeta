@@ -8291,6 +8291,111 @@
    "content_type": "application/x-www-form-urlencoded"
   },
   {
+   "name": "instance-admin-integration-ai-put-multipart-list-nested-upload",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin/integrations/ai",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "clear_secrets": {
+     "0": [
+      "\"<MultiValueDict: {'x': ['api_key'], 'y': [<InMemoryUploadedFile: a.txt (text/plain)>]}>\" is not a valid choice."
+     ]
+    }
+   },
+   "effect": null,
+   "cache_control": "no-store",
+   "retry_after": null,
+   "audit": null,
+   "raw_body": "--fixture\r\nContent-Disposition: form-data; name=\"revision\"\r\n\r\n2\r\n--fixture\r\nContent-Disposition: form-data; name=\"model\"\r\n\r\nfixture-model\r\n--fixture\r\nContent-Disposition: form-data; name=\"cheap_model\"\r\n\r\nfixture-cheap\r\n--fixture\r\nContent-Disposition: form-data; name=\"base_url\"\r\n\r\n\r\n--fixture\r\nContent-Disposition: form-data; name=\"max_iterations\"\r\n\r\n5\r\n--fixture\r\nContent-Disposition: form-data; name=\"max_results\"\r\n\r\n10\r\n--fixture\r\nContent-Disposition: form-data; name=\"query_timeout\"\r\n\r\n5\r\n--fixture\r\nContent-Disposition: form-data; name=\"ws_rate_limit\"\r\n\r\n5\r\n--fixture\r\nContent-Disposition: form-data; name=\"ws_timeout\"\r\n\r\n5\r\n--fixture\r\nContent-Disposition: form-data; name=\"history_cap\"\r\n\r\n5\r\n--fixture\r\nContent-Disposition: form-data; name=\"enabled\"\r\n\r\ntrue\r\n--fixture\r\nContent-Disposition: form-data; name=\"clear_secrets[0]x\"\r\n\r\napi_key\r\n--fixture\r\nContent-Disposition: form-data; name=\"clear_secrets[0]y\"; filename=\"a.txt\"\r\nContent-Type: text/plain\r\n\r\nz\r\n--fixture--\r\n",
+   "content_type": "multipart/form-data; boundary=fixture"
+  },
+  {
+   "name": "instance-admin-integration-ai-put-multipart-list-nested-upload-parameters",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin/integrations/ai",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "clear_secrets": {
+     "0": [
+      "\"<MultiValueDict: {'x': ['api_key'], 'y': [<InMemoryUploadedFile: a.txt (image/png)>]}>\" is not a valid choice."
+     ]
+    }
+   },
+   "effect": null,
+   "cache_control": "no-store",
+   "retry_after": null,
+   "audit": null,
+   "raw_body": "--fixture\r\nContent-Disposition: form-data; name=\"revision\"\r\n\r\n2\r\n--fixture\r\nContent-Disposition: form-data; name=\"model\"\r\n\r\nfixture-model\r\n--fixture\r\nContent-Disposition: form-data; name=\"cheap_model\"\r\n\r\nfixture-cheap\r\n--fixture\r\nContent-Disposition: form-data; name=\"base_url\"\r\n\r\n\r\n--fixture\r\nContent-Disposition: form-data; name=\"max_iterations\"\r\n\r\n5\r\n--fixture\r\nContent-Disposition: form-data; name=\"max_results\"\r\n\r\n10\r\n--fixture\r\nContent-Disposition: form-data; name=\"query_timeout\"\r\n\r\n5\r\n--fixture\r\nContent-Disposition: form-data; name=\"ws_rate_limit\"\r\n\r\n5\r\n--fixture\r\nContent-Disposition: form-data; name=\"ws_timeout\"\r\n\r\n5\r\n--fixture\r\nContent-Disposition: form-data; name=\"history_cap\"\r\n\r\n5\r\n--fixture\r\nContent-Disposition: form-data; name=\"enabled\"\r\n\r\ntrue\r\n--fixture\r\nContent-Disposition: form-data; name=\"clear_secrets[0]x\"\r\n\r\napi_key\r\n--fixture\r\nContent-Disposition: form-data; name=\"clear_secrets[0]y\"; filename=\"a.txt\"\r\nContent-Type: Image/PNG; charset=x\r\n\r\nz\r\n--fixture--\r\n",
+   "content_type": "multipart/form-data; boundary=fixture"
+  },
+  {
+   "name": "instance-admin-integration-ai-put-multipart-list-nested-upload-no-content-type",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin/integrations/ai",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "clear_secrets": {
+     "0": [
+      "\"<MultiValueDict: {'x': ['api_key'], 'y': [<InMemoryUploadedFile: a.txt ()>]}>\" is not a valid choice."
+     ]
+    }
+   },
+   "effect": null,
+   "cache_control": "no-store",
+   "retry_after": null,
+   "audit": null,
+   "raw_body": "--fixture\r\nContent-Disposition: form-data; name=\"revision\"\r\n\r\n2\r\n--fixture\r\nContent-Disposition: form-data; name=\"model\"\r\n\r\nfixture-model\r\n--fixture\r\nContent-Disposition: form-data; name=\"cheap_model\"\r\n\r\nfixture-cheap\r\n--fixture\r\nContent-Disposition: form-data; name=\"base_url\"\r\n\r\n\r\n--fixture\r\nContent-Disposition: form-data; name=\"max_iterations\"\r\n\r\n5\r\n--fixture\r\nContent-Disposition: form-data; name=\"max_results\"\r\n\r\n10\r\n--fixture\r\nContent-Disposition: form-data; name=\"query_timeout\"\r\n\r\n5\r\n--fixture\r\nContent-Disposition: form-data; name=\"ws_rate_limit\"\r\n\r\n5\r\n--fixture\r\nContent-Disposition: form-data; name=\"ws_timeout\"\r\n\r\n5\r\n--fixture\r\nContent-Disposition: form-data; name=\"history_cap\"\r\n\r\n5\r\n--fixture\r\nContent-Disposition: form-data; name=\"enabled\"\r\n\r\ntrue\r\n--fixture\r\nContent-Disposition: form-data; name=\"clear_secrets[0]x\"\r\n\r\napi_key\r\n--fixture\r\nContent-Disposition: form-data; name=\"clear_secrets[0]y\"; filename=\"a.txt\"\r\n\r\nz\r\n--fixture--\r\n",
+   "content_type": "multipart/form-data; boundary=fixture"
+  },
+  {
+   "name": "instance-admin-integration-ai-put-multipart-invalid-utf8-choice",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin/integrations/ai",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "clear_secrets": {
+     "0": [
+      "\"x�y\" is not a valid choice."
+     ]
+    }
+   },
+   "effect": null,
+   "cache_control": "no-store",
+   "retry_after": null,
+   "audit": null,
+   "raw_b64": "LS1maXh0dXJlDQpDb250ZW50LURpc3Bvc2l0aW9uOiBmb3JtLWRhdGE7IG5hbWU9InJldmlzaW9uIg0KDQoyDQotLWZpeHR1cmUNCkNvbnRlbnQtRGlzcG9zaXRpb246IGZvcm0tZGF0YTsgbmFtZT0ibW9kZWwiDQoNCmZpeHR1cmUtbW9kZWwNCi0tZml4dHVyZQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJjaGVhcF9tb2RlbCINCg0KZml4dHVyZS1jaGVhcA0KLS1maXh0dXJlDQpDb250ZW50LURpc3Bvc2l0aW9uOiBmb3JtLWRhdGE7IG5hbWU9ImJhc2VfdXJsIg0KDQoNCi0tZml4dHVyZQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJtYXhfaXRlcmF0aW9ucyINCg0KNQ0KLS1maXh0dXJlDQpDb250ZW50LURpc3Bvc2l0aW9uOiBmb3JtLWRhdGE7IG5hbWU9Im1heF9yZXN1bHRzIg0KDQoxMA0KLS1maXh0dXJlDQpDb250ZW50LURpc3Bvc2l0aW9uOiBmb3JtLWRhdGE7IG5hbWU9InF1ZXJ5X3RpbWVvdXQiDQoNCjUNCi0tZml4dHVyZQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJ3c19yYXRlX2xpbWl0Ig0KDQo1DQotLWZpeHR1cmUNCkNvbnRlbnQtRGlzcG9zaXRpb246IGZvcm0tZGF0YTsgbmFtZT0id3NfdGltZW91dCINCg0KNQ0KLS1maXh0dXJlDQpDb250ZW50LURpc3Bvc2l0aW9uOiBmb3JtLWRhdGE7IG5hbWU9Imhpc3RvcnlfY2FwIg0KDQo1DQotLWZpeHR1cmUNCkNvbnRlbnQtRGlzcG9zaXRpb246IGZvcm0tZGF0YTsgbmFtZT0iZW5hYmxlZCINCg0KdHJ1ZQ0KLS1maXh0dXJlDQpDb250ZW50LURpc3Bvc2l0aW9uOiBmb3JtLWRhdGE7IG5hbWU9ImNsZWFyX3NlY3JldHMiDQoNCnj/eQ0KLS1maXh0dXJlLS0NCg==",
+   "content_type": "multipart/form-data; boundary=fixture"
+  },
+  {
+   "name": "instance-admin-integration-ai-put-multipart-base64-choice",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin/integrations/ai",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "clear_secrets": {
+     "0": [
+      "\"zz\" is not a valid choice."
+     ]
+    }
+   },
+   "effect": null,
+   "cache_control": "no-store",
+   "retry_after": null,
+   "audit": null,
+   "raw_body": "--fixture\r\nContent-Disposition: form-data; name=\"revision\"\r\n\r\n2\r\n--fixture\r\nContent-Disposition: form-data; name=\"model\"\r\n\r\nfixture-model\r\n--fixture\r\nContent-Disposition: form-data; name=\"cheap_model\"\r\n\r\nfixture-cheap\r\n--fixture\r\nContent-Disposition: form-data; name=\"base_url\"\r\n\r\n\r\n--fixture\r\nContent-Disposition: form-data; name=\"max_iterations\"\r\n\r\n5\r\n--fixture\r\nContent-Disposition: form-data; name=\"max_results\"\r\n\r\n10\r\n--fixture\r\nContent-Disposition: form-data; name=\"query_timeout\"\r\n\r\n5\r\n--fixture\r\nContent-Disposition: form-data; name=\"ws_rate_limit\"\r\n\r\n5\r\n--fixture\r\nContent-Disposition: form-data; name=\"ws_timeout\"\r\n\r\n5\r\n--fixture\r\nContent-Disposition: form-data; name=\"history_cap\"\r\n\r\n5\r\n--fixture\r\nContent-Disposition: form-data; name=\"enabled\"\r\n\r\ntrue\r\n--fixture\r\nContent-Disposition: form-data; name=\"clear_secrets\"\r\nContent-Transfer-Encoding: base64\r\n\r\neno=\r\n--fixture--\r\n",
+   "content_type": "multipart/form-data; boundary=fixture"
+  },
+  {
    "name": "instance-admin-integration-ai-put-form-enabled-file",
    "actor": "owner",
    "method": "PUT",

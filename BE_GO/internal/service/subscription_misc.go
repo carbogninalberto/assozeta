@@ -127,7 +127,8 @@ func (s *SubscriptionMisc) TaxCode(body any) (any, error) {
 	case errors.Is(err, refusal.ErrAppState):
 		return nil, err
 	case err != nil:
-		return nil, domain.ErrSubscriptionMiscNotPorted
+		// embedded codicefiscale data failed to load: the binary is broken
+		return nil, errors.Join(domain.ErrServerComposition, err)
 	}
 	return domain.RequestObject{{Name: "tax_code", Value: code}}, nil
 }
@@ -265,12 +266,11 @@ func (s *SubscriptionMisc) GenerateLink(ctx context.Context, identity domain.Res
 	if upload, isUpload := gym.(domain.RequestUpload); !isUpload {
 		stored = dto.PythonStr(gym)
 	} else {
-		if !upload.Whole && upload.Size > 0 {
-			return nil, domain.ErrSubscriptionMiscNotPorted // the lines of a file over one chunk are not retained
-		}
 		stored = upload.Name
-		// The response carries the in-memory file: DRF's encoder iterates it
-		// (File.__iter__ is bytes.splitlines(True) per chunk) and decodes each line.
+		// The response carries the in-memory file: DRF's encoder iterates the
+		// whole file (File.__iter__ yields its lines, joining a line split across
+		// two chunks) and decodes each line. The handler asks the body reader for
+		// every byte (withWholeUploads), so Content is the whole file here.
 		echoed = subscriptionMiscFileLines(upload.Content)
 	}
 	if !utf8.ValidString(stored) || strings.ContainsRune(stored, 0) || utf8.RuneCountInString(stored) > 255 {
@@ -654,9 +654,9 @@ func sequenceMatches(a, b []rune) int {
 	return total
 }
 
-// subscriptionMiscFileLines is tuple(file) for a one-chunk file: the lines
-// with their endings (\n, \r or \r\n); a line that is no UTF-8 stays a
-// byte string the renderer cannot encode (AssociateDraftRenderable fails).
+// subscriptionMiscFileLines is tuple(file): the lines with their endings (\n,
+// \r or \r\n); a line that is no UTF-8 stays a byte string the renderer cannot
+// encode (AssociateDraftRenderable fails).
 func subscriptionMiscFileLines(content string) []any {
 	lines := []any{}
 	start := 0

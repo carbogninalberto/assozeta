@@ -1,8 +1,10 @@
 package service
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"strings"
 	"testing"
 	"time"
@@ -69,4 +71,91 @@ func TestSubscriptionMiscTaxCodeInputs(t *testing.T) {
 			t.Errorf("TaxCode(%v) error = %v, want %v", item.body, err, item.want)
 		}
 	}
+}
+
+// subscriptionMiscLargeFile is the gym_name upload of the over-one-chunk case:
+// 'riga\n' lines, then a line whose '\r\n' straddles byte 65,536, then 'coda'.
+const (
+	subscriptionMiscBeforeStraddle = 13000
+	subscriptionMiscAfterStraddle  = 1000
+)
+
+func subscriptionMiscLargeFileContent() string {
+	return strings.Repeat("riga\n", subscriptionMiscBeforeStraddle) + strings.Repeat("x", 535) + "\r\n" +
+		strings.Repeat("riga\n", subscriptionMiscAfterStraddle) + "coda"
+}
+
+// generateLinkStore is GenerateLink's link insert: the association lookup, the
+// stored name and the commit.
+type generateLinkStore struct{ gymName string }
+
+func (s *generateLinkStore) BeginSubscriptionMisc(context.Context) (domain.SubscriptionMiscTransaction, error) {
+	return &generateLinkTransaction{store: s}, nil
+}
+
+type generateLinkTransaction struct {
+	domain.SubscriptionMiscTransaction
+	store *generateLinkStore
+}
+
+func (t *generateLinkTransaction) Association(context.Context, string) (string, error) {
+	return "a1000000-0000-4000-8000-000000000001", nil
+}
+
+func (t *generateLinkTransaction) CreateLink(_ context.Context, _, _, _, gymName string, _, _ time.Time, _ domain.LoginAuditContext,
+	_ time.Time) error {
+	t.store.gymName = gymName
+	return nil
+}
+
+func (t *generateLinkTransaction) Commit() error { return nil }
+
+func (t *generateLinkTransaction) Rollback() error { return nil }
+
+func TestSubscriptionMiscGenerateLinkWholeLargeFile(t *testing.T) {
+	store := &generateLinkStore{}
+	counter := 0
+	misc := NewSubscriptionMisc(store, nil, func() time.Time { return time.Date(2026, 11, 9, 0, 0, 0, 0, time.UTC) },
+		func() string {
+			counter++
+			return fmt.Sprintf("a1000000-0000-4000-8000-0000014%04d", counter)
+		})
+	identity := domain.ResolvedIdentity{Actor: &domain.Account{ID: "owner", Email: "owner@example.test"},
+		ScopeUser: &domain.Account{ID: "owner", Role: 1}}
+	content := subscriptionMiscLargeFileContent()
+	if len(content) <= domain.RequestUploadHead {
+		t.Fatalf("content is %d bytes, not over one chunk", len(content))
+	}
+	body := domain.RequestObject{{Name: "gym_name", Value: domain.RequestUpload{Name: "palestra.txt", Size: int64(len(content)),
+		Content: content, Whole: true}}}
+	result, err := misc.GenerateLink(context.Background(), identity, body, domain.LoginAuditContext{})
+	if err != nil {
+		t.Fatal("GenerateLink:", err)
+	}
+	if store.gymName != "palestra.txt" {
+		t.Errorf("stored gym_name = %q, want the uploaded file name", store.gymName)
+	}
+	lines, ok := result.(domain.RequestObject)[1].Value.([]any)
+	if result.(domain.RequestObject)[1].Name != "gym_name" || !ok {
+		t.Fatalf("gym_name = %v, want the file's lines", result.(domain.RequestObject)[1].Value)
+	}
+	want := 1 + subscriptionMiscBeforeStraddle + subscriptionMiscAfterStraddle + 1
+	if len(lines) != want {
+		t.Fatalf("%d lines echoed, want %d", len(lines), want)
+	}
+	if lines[subscriptionMiscBeforeStraddle] != strings.Repeat("x", 535)+"\r\n" {
+		t.Errorf("straddling line = %q", lines[subscriptionMiscBeforeStraddle])
+	}
+	if lines[0] != "riga\n" || lines[len(lines)-1] != "coda" ||
+		strings.Join(toStrings(lines), "") != content {
+		t.Errorf("the echoed lines do not rebuild the whole file")
+	}
+}
+
+func toStrings(values []any) []string {
+	result := make([]string, len(values))
+	for i, value := range values {
+		result[i], _ = value.(string)
+	}
+	return result
 }

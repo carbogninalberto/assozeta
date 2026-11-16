@@ -6,6 +6,7 @@ Cache-Control on every email/integration response and on diagnostics reads,
 Retry-After on a leased diagnostics run. '$isonow' accepts a request-time
 datetime.isoformat() in UTC (diagnostics integration checks and run results).
 """
+import base64
 import json
 import re
 from pathlib import Path
@@ -51,6 +52,9 @@ def assert_case(case, base_url, *, token, sessions):
     body = case.get('body')
     if 'raw_body' in case:
         body = case['raw_body'].encode()
+        headers['Content-Type'] = case['content_type']
+    elif 'raw_b64' in case:
+        body = base64.b64decode(case['raw_b64'], validate=True)
         headers['Content-Type'] = case['content_type']
     # A diagnostics run waits for its probes (10 s deadline each).
     status, raw, received = Client(base_url, token, timeout=60).request(case['method'], case['path'], body, headers, raw=True, include_headers=True)

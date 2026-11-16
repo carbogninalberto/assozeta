@@ -7,12 +7,6 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
-// ErrInstanceAdminRefused marks an instance administration request the Go
-// port does not serve: a multipart upload inside a nested form list key
-// (its repr needs the content type, which the form parser does not keep).
-// Handlers answer with the server error page before any write.
-var ErrInstanceAdminRefused = refusal.New("instance administration request not ported")
-
 // ErrInstanceAdminUnexpected is a state only the application writes (stored
 // settings, results, leases and credentials written by the instance views,
 // the configuration row the permission check requires, the composed runner

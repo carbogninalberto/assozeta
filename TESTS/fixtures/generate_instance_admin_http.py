@@ -95,8 +95,8 @@ plain = {'email': None, 'stripe': {'secret_key': None, 'webhook_secret': 'legacy
 cases = []
 
 
-def add(name, actor, path, status, response, *, method='GET', body=None, raw_body=None, content_type=None, headers=None,
-        effect=None, cache=None, retry=None, audit=None, **probes):
+def add(name, actor, path, status, response, *, method='GET', body=None, raw_body=None, raw_b64=None, content_type=None,
+        headers=None, effect=None, cache=None, retry=None, audit=None, **probes):
     if cache is None:
         cache = 'no-store' if path.startswith(NO_STORE) and response != SERVER else None
     case = {'name': f'instance-admin-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
@@ -106,6 +106,8 @@ def add(name, actor, path, status, response, *, method='GET', body=None, raw_bod
         case['body'] = body
     if raw_body is not None:
         case['raw_body'], case['content_type'] = raw_body, content_type
+    if raw_b64 is not None:
+        case['raw_b64'], case['content_type'] = raw_b64, content_type
     case.update(probes)
     cases.append(case)
 
@@ -658,15 +660,35 @@ FORM = 'application/x-www-form-urlencoded'
 MULTIPART = 'multipart/form-data; boundary=fixture'
 
 
-def parts(*fields):
-    """fields: (name, value) for a plain field, (name, file name, content) for a file."""
-    body = ''
+def parts_bytes(*fields):
+    """parts() as bytes, so a field value may carry a body that is not UTF-8."""
+    body = b''
     for field in fields:
-        head = f'--fixture\r\nContent-Disposition: form-data; name="{field[0]}"'
-        if len(field) == 3:
-            head += f'; filename="{field[1]}"\r\nContent-Type: text/plain'
-        body += head + '\r\n\r\n' + field[-1] + '\r\n'
-    return body + '--fixture--\r\n'
+        extra = field[-1] if isinstance(field[-1], dict) else {}
+        values = field[:-1] if extra else field
+        head = f'--fixture\r\nContent-Disposition: form-data; name="{values[0]}"'
+        if len(values) == 3:
+            head += f'; filename="{values[1]}"'
+        head = head.encode() + b'\r\n'
+        if len(values) == 3:
+            content_type = extra.get('Content-Type', 'text/plain')
+            if content_type is not None:
+                head += b'Content-Type: ' + content_type.encode() + b'\r\n'
+        for header, value in extra.items():
+            if header != 'Content-Type':
+                head += f'{header}: {value}\r\n'.encode()
+        content = values[-1]
+        if isinstance(content, str):
+            content = content.encode()
+        body += head + b'\r\n' + content + b'\r\n'
+    return body + b'--fixture--\r\n'
+
+
+def parts(*fields):
+    """fields: (name, value) for a plain field, (name, file name, content) for a file.
+    A {header: value} in the last position sets that part's headers: a Content-Type
+    of None omits the file header, any other name adds it."""
+    return parts_bytes(*fields).decode()
 
 
 add('branding-form-empty', 'owner', ADMIN, 400, ONLY_BRANDING, method='PUT', raw_body='', content_type=FORM)
@@ -739,6 +761,37 @@ add('integration-ai-put-form-list-nested', 'owner', integration('ai'), 400,
 add('integration-ai-put-form-blank-list', 'owner', integration('ai'), 400,
     {'clear_secrets': {'0': ['"" is not a valid choice.']}}, method='PUT', raw_body=AI_FORM + '&clear_secrets=',
     content_type=FORM)
+# A multipart upload inside a nested list key keeps UploadedFile's repr in the
+# MultiValueDict str(): the handler's class name and the part's Content-Type
+# main value (lower-cased, parameters dropped, empty when the header is absent).
+AI_MULTIPART = (('revision', '2'), ('model', 'fixture-model'), ('cheap_model', 'fixture-cheap'), ('base_url', ''),
+                ('max_iterations', '5'), ('max_results', '10'), ('query_timeout', '5'), ('ws_rate_limit', '5'),
+                ('ws_timeout', '5'), ('history_cap', '5'), ('enabled', 'true'))
+NESTED_UPLOAD = '"<MultiValueDict: {\'x\': [\'api_key\'], \'y\': [%s]}>" is not a valid choice.'
+add('integration-ai-put-multipart-list-nested-upload', 'owner', integration('ai'), 400,
+    {'clear_secrets': {'0': [NESTED_UPLOAD % '<InMemoryUploadedFile: a.txt (text/plain)>']}}, method='PUT',
+    content_type=MULTIPART, raw_body=parts(
+        *AI_MULTIPART, ('clear_secrets[0]x', 'api_key'),
+        ('clear_secrets[0]y', 'a.txt', 'z', {'Content-Type': 'text/plain'})))
+add('integration-ai-put-multipart-list-nested-upload-parameters', 'owner', integration('ai'), 400,
+    {'clear_secrets': {'0': [NESTED_UPLOAD % '<InMemoryUploadedFile: a.txt (image/png)>']}}, method='PUT',
+    content_type=MULTIPART, raw_body=parts(
+        *AI_MULTIPART, ('clear_secrets[0]x', 'api_key'),
+        ('clear_secrets[0]y', 'a.txt', 'z', {'Content-Type': 'Image/PNG; charset=x'})))
+add('integration-ai-put-multipart-list-nested-upload-no-content-type', 'owner', integration('ai'), 400,
+    {'clear_secrets': {'0': [NESTED_UPLOAD % '<InMemoryUploadedFile: a.txt ()>']}}, method='PUT',
+    content_type=MULTIPART, raw_body=parts(
+        *AI_MULTIPART, ('clear_secrets[0]x', 'api_key'),
+        ('clear_secrets[0]y', 'a.txt', 'z', {'Content-Type': None})))
+# A text part decoded with replacement, and a base64 text part, reach the
+# ChoiceField as the quoted value.
+add('integration-ai-put-multipart-invalid-utf8-choice', 'owner', integration('ai'), 400,
+    {'clear_secrets': {'0': ['"x\ufffdy" is not a valid choice.']}}, method='PUT', content_type=MULTIPART,
+    raw_b64=base64.b64encode(parts_bytes(*AI_MULTIPART, ('clear_secrets', b'x\xffy'))).decode())
+add('integration-ai-put-multipart-base64-choice', 'owner', integration('ai'), 400,
+    {'clear_secrets': {'0': ['"zz" is not a valid choice.']}}, method='PUT', content_type=MULTIPART,
+    raw_body=parts(*AI_MULTIPART, ('clear_secrets', base64.b64encode(b'zz').decode(),
+                                   {'Content-Transfer-Encoding': 'base64'})))
 add('integration-ai-put-form-enabled-file', 'owner', integration('ai'), 400, {'enabled': ['Must be a valid boolean.']},
     method='PUT', content_type=MULTIPART, raw_body=parts(
         ('revision', '2'), ('model', 'fixture-model'), ('cheap_model', 'fixture-cheap'), ('base_url', ''),

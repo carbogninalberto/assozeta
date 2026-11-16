@@ -89,6 +89,31 @@ func headerParamsHoldSurrogate(params map[string]string) bool {
 	return false
 }
 
+// djangoHeaderValue is the main value of the last line of a request header that
+// parse_header_parameters accepts (parse_boundary_stream's outdict[name][0]):
+// every line is decoded as UTF-8, a line whose parse raises a ValueError is
+// skipped, and the main value is the text after its first ':'. ok is false when
+// no line parses.
+func djangoHeaderValue(header textproto.MIMEHeader, name string) (string, bool) {
+	value, found := "", false
+	for _, item := range header.Values(name) {
+		line := name + ": " + item
+		if !utf8.ValidString(line) {
+			continue
+		}
+		main, _, outcome := djangoParseHeader(line)
+		if outcome == headerInvalid {
+			continue
+		}
+		_, rest, hasValue := strings.Cut(main, ":")
+		if !hasValue {
+			continue
+		}
+		value, found = strings.TrimFunc(rest, pyIsSpace), true
+	}
+	return value, found
+}
+
 func stripASCIISpace(data []byte) []byte {
 	out := make([]byte, 0, len(data))
 	for _, b := range data {

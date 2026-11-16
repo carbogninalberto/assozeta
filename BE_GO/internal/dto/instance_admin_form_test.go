@@ -291,12 +291,46 @@ func TestInstanceAdminFormListNested(t *testing.T) {
 	}
 }
 
-// A nested item holding a multipart upload keeps the refusal: its repr needs
-// the content type, which the form parser does not keep.
-func TestInstanceAdminFormListNestedUploadRefused(t *testing.T) {
-	body := instanceAdminFormBody(t, "clear_secrets%5B0%5Dx=api_key", instanceAdminUpload("clear_secrets[0]y", "p.txt"))
-	if _, _, err := instanceAdminHTMLList(body, "clear_secrets"); !errors.Is(err, domain.ErrInstanceAdminRefused) {
-		t.Fatalf("got %v, want the refusal", err)
+// A nested item holding a multipart upload renders UploadedFile's repr, whose
+// class name and content type the request reader keeps.
+func TestInstanceAdminFormListNestedUpload(t *testing.T) {
+	body := instanceAdminFormBody(t, "clear_secrets%5B0%5Dx=api_key", domain.RequestField{
+		Name: "clear_secrets[0]y", Value: domain.RequestUpload{Name: "p.txt", Whole: true, ContentType: "text/plain"}})
+	items, present, err := instanceAdminHTMLList(body, "clear_secrets")
+	if err != nil {
+		t.Fatalf("list: %v", err)
+	}
+	want := []any{"<MultiValueDict: {'x': ['api_key'], 'y': [<InMemoryUploadedFile: p.txt (text/plain)>]}>"}
+	if !present || !reflect.DeepEqual(items, want) {
+		t.Fatalf("got (%#v, %v), want %#v", items, present, want)
+	}
+	for _, tc := range []struct {
+		name   string
+		upload domain.RequestUpload
+		want   string
+	}{
+		{"temporary", domain.RequestUpload{Name: "p.txt", Temp: true, ContentType: "image/png"},
+			"<MultiValueDict: {'x': ['api_key'], 'y': [<TemporaryUploadedFile: p.txt (image/png)>]}>"},
+		{"empty content type", domain.RequestUpload{Name: "p.txt", Whole: true},
+			"<MultiValueDict: {'x': ['api_key'], 'y': [<InMemoryUploadedFile: p.txt ()>]}>"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			body := instanceAdminFormBody(t, "clear_secrets%5B0%5Dx=api_key",
+				domain.RequestField{Name: "clear_secrets[0]y", Value: tc.upload})
+			items, _, err := instanceAdminHTMLList(body, "clear_secrets")
+			if err != nil {
+				t.Fatalf("list: %v", err)
+			}
+			if want := []any{tc.want}; !reflect.DeepEqual(items, want) {
+				t.Fatalf("got %#v, want %#v", items, want)
+			}
+		})
+	}
+	// Only strings and uploads occur in a form body.
+	body = instanceAdminFormBody(t, "clear_secrets%5B0%5Dx=api_key")
+	body[0].Value = 7
+	if _, _, err := instanceAdminHTMLList(body, "clear_secrets"); !errors.Is(err, domain.ErrInstanceAdminUnexpected) {
+		t.Fatalf("got %v, want an unexpected-state error", err)
 	}
 }
 
@@ -310,6 +344,20 @@ func TestInstanceAdminFormIntegrationNestedList(t *testing.T) {
 	_, err = InstanceAdminIntegration("ai", normalised)
 	want := map[string]any{"clear_secrets": map[string]any{"0": []string{
 		"choice:<MultiValueDict: {'x': ['api_key'], 'y': ['b']}>"}}}
+	if got := instanceAdminFailure(t, err); !reflect.DeepEqual(got, want) {
+		t.Fatalf("got %#v, want %#v", got, want)
+	}
+	// A multipart file keeps its content type in the repr.
+	body = instanceAdminFormBody(t, instanceAdminAIBase+"&clear_secrets%5B0%5Dx=api_key",
+		domain.RequestField{Name: "clear_secrets[0]y", Value: domain.RequestUpload{
+			Name: "a.txt", Whole: true, ContentType: "text/plain"}})
+	normalised, err = InstanceAdminIntegrationForm("ai", body)
+	if err != nil {
+		t.Fatalf("normalise: %v", err)
+	}
+	_, err = InstanceAdminIntegration("ai", normalised)
+	want = map[string]any{"clear_secrets": map[string]any{"0": []string{
+		"choice:<MultiValueDict: {'x': ['api_key'], 'y': [<InMemoryUploadedFile: a.txt (text/plain)>]}>"}}}
 	if got := instanceAdminFailure(t, err); !reflect.DeepEqual(got, want) {
 		t.Fatalf("got %#v, want %#v", got, want)
 	}
