@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"sort"
 	"strings"
 	"testing"
@@ -598,5 +599,25 @@ func TestImportBase64Len(t *testing.T) {
 		if got != c.want || ok != c.ok {
 			t.Errorf("importBase64Len(%q) = (%d, %v), want (%d, %v)", c.text, got, ok, c.want, c.ok)
 		}
+	}
+}
+
+// TestImportValidateOwnerMatchedThroughStr: the owner record is found with
+// str(user_id) == str(owner_user_id), so an owner id "None" matches a user
+// whose user_id is null; validate_uuid_conflicts then reads that record's
+// user_id (None) and skips the owner checks (`if owner_id:`).
+func TestImportValidateOwnerMatchedThroughStr(t *testing.T) {
+	members := importTestMembers(t, map[string]any{
+		"data/01_sport_association.json": []any{map[string]any{"sport_association_id": importTestAssociation, "user_id": "None",
+			"denomination": "x", "tax_code": "y"}},
+		"data/02_users.json": []any{map[string]any{"user_id": nil, "username": "o", "email": "e", "password": "!"}},
+	})
+	body := importTestBody(t, members)
+	if got := fmt.Sprint(body["errors"]); got != "[]" {
+		t.Fatalf("errors %s", got)
+	}
+	owner, _ := body["info"].(map[string]any)["owner_user"].(map[string]any)
+	if owner == nil || owner["user_id"] != nil {
+		t.Fatalf("owner_user %#v", owner)
 	}
 }

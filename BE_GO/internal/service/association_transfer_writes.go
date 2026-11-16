@@ -904,7 +904,10 @@ func (s *AssociationTransfer) validateOwnerIdentity(archive *consumerImportArchi
 		ownerInfo[key] = value
 	}
 	result.info["owner_user"] = ownerInfo
-	return result, &importOwnerIdentity{association: associationID, owner: ownerValue, users: userIDs}, nil
+	// validate_uuid_conflicts reads the matched owner record's own user_id
+	// (self.source_owner.get('user_id')), which str() matched to the
+	// association's user_id but can be another value (null for "None").
+	return result, &importOwnerIdentity{association: associationID, owner: importLookup(owner, "user_id"), users: userIDs}, nil
 }
 
 // importUUIDField is UUIDField.to_python for a lookup value: ints and bools
