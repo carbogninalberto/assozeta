@@ -70,19 +70,25 @@ func pythonB64Decode(text string) ([]byte, bool) {
 	return out, position == 0
 }
 
-// loadJPEG reads the logo reportlab embeds as it is (DCTDecode). reportlab
-// names the image object after a digest of the pixels PIL decodes, which
-// another decoder does not reproduce bit for bit: the name here is a digest
-// of the file, and the parity standard compares image names by position.
-// A nil image is data Django's view answers with the '[LOGO]' paragraph
-// (base64 Python refuses, or no data at all). Data that is not a baseline or
-// progressive 8-bit JPEG this decoder reads is not ported: whether PIL reads
-// it, and as what, is not reproduced.
+// loadJPEG is the header logo: the base64 data URL the view's own pattern
+// captured. A nil image is data Django's view answers with the '[LOGO]'
+// paragraph (base64 Python refuses, or no data at all).
 func loadJPEG(encoded string) (*jpegImage, error) {
 	data, ok := pythonB64Decode(encoded)
 	if !ok || len(data) == 0 {
 		return nil, nil
 	}
+	return jpegFromBytes(data)
+}
+
+// jpegFromBytes is a JPEG reportlab embeds as it is (DCTDecode), from the
+// header logo or from an image source. reportlab names the image object after a
+// digest of the pixels PIL decodes, which another decoder does not reproduce
+// bit for bit: the name here is a digest of the file, and the parity standard
+// compares image names by position. Data that is not a baseline or progressive
+// 8-bit JPEG this decoder reads is not ported: whether PIL reads it, and as
+// what, is not reproduced.
+func jpegFromBytes(data []byte) (*jpegImage, error) {
 	config, err := jpeg.DecodeConfig(bytes.NewReader(data))
 	if err != nil {
 		return nil, ErrNotPorted

@@ -1,11 +1,15 @@
 package pdfexport
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strconv"
 	"strings"
 	"unicode"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pystr"
 )
 
 // _FK_TEXT, _FK_IMG, _FK_APPEND and _FK_BREAK of paragraph.py.
@@ -1473,39 +1477,40 @@ func (p *paraParser) startImg(attrs []htmlAttr) bool {
 	return p.push("img", func(t *paraTag) { t.imgAttrs, t.selfClosing = img, "img" })
 }
 
-// loadDataImage is ImageReader(src) for a data: URL with base64 data: the
-// image, an exception of reportlab (ok false), or a refusal (files, URLs,
-// other encodings and formats).
-func loadDataImage(src string) (image *jpegImage, st attrStatus) {
-	if len(src) < 5 || !strings.EqualFold(src[:5], "data:") {
+// loadImageSource is ImageReader(src): reportlab opens the path or fetches the
+// URL, and reads the image with PIL. The image, an exception of reportlab (ok
+// false), or a refusal: an image this package does not embed as it is (a PNG
+// or another format PIL decodes) keeps its refusal.
+func loadImageSource(src string) (image *jpegImage, st attrStatus) {
+	// A document is built without a request context (Build takes none), so the
+	// fetch of a URL has none: reportlab's urlopen has no deadline either.
+	data, err := Resource.Open(context.Background(), src)
+	switch {
+	case err != nil:
+		if errors.Is(err, ErrNotPorted) {
+			return nil, attrUnsupported
+		}
+		return nil, attrInvalid
+	case len(data) == 0:
+		return nil, attrInvalid // PIL: cannot identify image file
+	case len(data) < 3 || data[0] != 0xFF || data[1] != 0xD8 || data[2] != 0xFF:
 		return nil, attrUnsupported
 	}
-	typ, data, found := strings.Cut(src, ",")
-	if !found {
-		return nil, attrInvalid
-	}
-	encoding := ""
-	if semi := strings.LastIndex(typ, ";"); semi >= 0 && !strings.Contains(typ[semi:], "=") {
-		encoding = typ[semi+1:]
-	}
-	if encoding != "base64" {
-		return nil, attrUnsupported
-	}
-	if !asciiOnly(data) {
-		return nil, attrInvalid
-	}
-	raw, ok := pythonB64Decode(data)
-	if !ok || len(raw) == 0 {
-		return nil, attrInvalid
-	}
-	if len(raw) < 3 || raw[0] != 0xFF || raw[1] != 0xD8 || raw[2] != 0xFF {
-		return nil, attrUnsupported
-	}
-	image, err := loadJPEG(data)
+	image, err = jpegFromBytes(data)
 	if err != nil || image == nil {
 		return nil, attrUnsupported
 	}
 	return image, attrOK
+}
+
+// resourceFailure is the text of reportlab's failure to read an image source:
+// ImageReader raises IOError('Cannot open resource "%s"') and annotateException
+// puts '\nfileName=%r identity=%s' before it. identity() names the reader with
+// hex(id(self)), which this port writes as pystr.ObjectAddress (approved
+// divergence X18).
+func resourceFailure(src string) string {
+	name := dto.PythonStringRepr(src)
+	return "\nfileName=" + name + " identity=[ImageReader@" + pystr.ObjectAddress + " filename=" + name + `] Cannot open resource "` + src + `"`
 }
 
 // endImg is end_img.
@@ -1514,9 +1519,9 @@ func (p *paraParser) endImg() bool {
 		return p.fail("Parser failure in <img/>")
 	}
 	top := &p.stack[len(p.stack)-1]
-	image, st := loadDataImage(top.imgAttrs.src)
+	image, st := loadImageSource(top.imgAttrs.src)
 	if st != attrOK {
-		return p.attrFailure(st, "Cannot open resource")
+		return p.attrFailure(st, resourceFailure(top.imgAttrs.src))
 	}
 	defn := &imgDefn{src: top.imgAttrs.src, image: image, width: dim{v: float64(image.width)}, height: dim{v: float64(image.height)},
 		valign: valign{name: "bottom"}}
