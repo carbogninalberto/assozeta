@@ -56,12 +56,27 @@ last table transition (2037-10-25), where the system zone would apply summer
 time. A past time publishes nothing.
 - t5pk: any `automation_workflow_id` in the body (new, another row's, malformed) is ignored and the named workflow is
   saved in place (cases `new-id-ignored`, `new-id-ignored-enable`, `id-of-other-row-ignored`, `id-malformed-ignored`).
-- A form-encoded `automation_tree` nested past 500 levels (DRF parses the HTML value with Python's
-  `json.loads`, up to the interpreter's limit).
+- A form-encoded `automation_tree` follows the measured recursion bands (owner decision X15; see below).
 
 Since long-tail PR 3 (agent B) the tasks the update publishes are always wired: a missing task service is
-application state (`ErrServerComposition`, the 500 page, never handed off). An `automation_tree` read from a form is
-ported except past 500 levels, and the time texts Python rejects stay the 500 after the saves.
+application state (`ErrServerComposition`, the 500 page, never handed off). Form-encoded `automation_tree` values are
+served up to their measured depth band, and the time texts Python rejects stay the 500 after the saves.
+
+## Form tree recursion bands (X15)
+
+A form-encoded `automation_tree` is read like DRF's JSONField reads an HTML value: `json.loads` of the text. The
+measured answer (CPython 3.13.16 on the parity harness's Django) depends on the maximum nesting D of the text:
+
+- D <= 9937: the workflow is saved and audited as usual (200).
+- D = 9938: the row is updated and audited, then Django answers its plain 500 page (a failure after the save). Go commits
+  the save and its entry, then answers the same page (`errAutomationWorkflowFormTreeSavedThenFailed`).
+- 9939 <= D <= 9941: auditlog's pre_save update entry is kept and the row is not updated, then the plain 500 page. Go
+  reuses the lone-surrogate path (`TreeRejected`): the entry is committed, the row is not, and the answer is the page.
+- D >= 9942: `json.loads` raises RecursionError during validation: the plain 500 page with nothing written
+  (`errAutomationWorkflowFormTreeTooDeep`).
+
+The bands are constants in `service/automation_workflow_update.go`; the reader (`dto/automationFormTree`) parses every
+form JSON up to its own 20000-level limit and returns D.
 
 These are covered by `TestAutomationWorkflowEnablePlan`, `TestAutomationWorkflowRomeLocalize` and
 `TestAutomationWorkflowPatchFormTreeRefused`, not by the HTTP sequence.
@@ -100,5 +115,6 @@ workflow-writes 27/27 and communications-send-email 55/55 re-run green natively.
 
 A form body's `automation_tree` is read like DRF's JSONField reads an HTML value: `json.loads` of the text. A list tree
 updates the workflow; invalid JSON, a non-list value, NaN/Infinity literals and integers over 4300 digits are the generic
-400 (`workflow not valid.`). Documents with lone surrogate escapes or nesting past 500 levels still answer the stable 500
-page, without the pre-save audit entry Django keeps. Cases: `workflow-update-form-tree-*`.
+400 (`workflow not valid.`). Documents with lone surrogate escapes answer the stable 500 page without the pre-save audit
+entry Django keeps; a document nested past 500 levels is served up to its measured band (above, X15). Cases:
+`workflow-update-form-tree-*`.

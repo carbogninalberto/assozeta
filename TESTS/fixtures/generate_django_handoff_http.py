@@ -14,12 +14,12 @@ response Django gives (and, for writes, Django's effect):
 - course-list: ported control only (an ordering by a foreign-key column). Go keeps no
   refusal on a course list that this sequence can rely on, so the family carries no
   hand-off case.
-- workflow-update: `PATCH communications/workflows/<id>/update` with a form
-  `automation_tree` nested past 500 levels (ErrAutomationWorkflowFormTreeNotPorted;
-  Python's json.loads raises RecursionError, an unhandled 500, before anything is
-  written). Form and multipart trees of ordinary depth are ported controls: a
-  valid tree is saved (200, audited; the entry carries the correlation id the
-  client sent to Go), an invalid one is 400 `workflow not valid.`.
+- workflow-update: form and multipart trees are ported controls: a valid tree is
+  saved (200, audited; the entry carries the correlation id the client sent to
+  Go), an invalid one is 400 `workflow not valid.`, and a tree nested past
+  Python's recursion band is the 500 page Go now answers itself (X15). Go keeps no
+  refusal on a workflow update either, so this sequence currently has no hand-off
+  case: the contract needs one refused input from a source family.
 
 Each family also has one ported control case that Go serves itself. Cases marked
 `handoff` must be attributed to Django on the Go transports and carry
@@ -133,13 +133,12 @@ add('workflow-update', 'workflow-multipart-tree-ported', handoff=False, method='
     raw_body=BODY, content_type=CONTENT_TYPE, effect=saved('owner', {'description': 'Da parti', 'automation_tree': PART_TREE}))
 
 # Past the C recursion limit (10000 levels in the pinned interpreter) json.loads raises RecursionError, which the
-# serializer does not catch: the stable 500 page, nothing written.
+# serializer does not catch: the stable 500 page, nothing written. Go answers the measured band itself (X15).
 DEEP = '[' * 30000 + ']' * 30000
-add('workflow-update', 'workflow-form-tree-too-deep', handoff=True, method='PATCH', path=PATH, status=500, response='<stable-server-error-page>',
+add('workflow-update', 'workflow-form-tree-too-deep', handoff=False, method='PATCH', path=PATH, status=500, response='<stable-server-error-page>',
     raw_body=urlencode({'automation_tree': DEEP}), content_type='application/x-www-form-urlencoded', effect=None)
 
 assert len({c['name'] for c in cases}) == len(cases)
-assert {c['family'] for c in cases if c['handoff']} == {'workflow-update'}
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'API v2 handoff of refused inputs to Django', 'ids': IDS,
                               'sources': sorted(SOURCES), 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

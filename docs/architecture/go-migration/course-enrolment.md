@@ -79,10 +79,22 @@ the course). Response `{'data': PaymentSerializer}`.
   `payment_amount_positive` check constraint) raise: a rollback on course-subscriptions/add, the created row kept on
   course-overview add (not atomic).
 
+## Form JSON recursion bands (X15)
+
+An HTML form `multiple_quote` or `events` text is read with `json.loads`; the measured answer (CPython 3.13.16 on the
+parity harness's Django) depends on its maximum nesting D:
+
+- `multiple_quote`: D <= 9928 normal answer; D >= 9929 `json.loads` raises RecursionError during validation, the plain
+  500 page with nothing written (the view is atomic).
+- `events`: D <= 9942 normal answer; D >= 9943 the same 500 page.
+
+Go answers these bands before any write (`errCourseEnrolmentFormJSONTooDeep`, constants in
+`service/course_enrolment.go`). The stock router create shares the serializer but was not measured: it keeps the previous
+handoff refusal past 500 levels (`ErrCourseEnrolmentNotPorted`). Values within the bands (including those past 500) are
+parsed by `dto/automationFormTree` up to its 20000-level limit and served.
+
 ## Not ported (refused with a 500 before any write)
 
-- An HTML form `multiple_quote` or `events` document nested past the ported depth (the 500-level limit): the answer
-  depends on Python's live recursion depth, so it is not a fixed number (owner decision pending).
 - Payments rendered with an instructor or invoice (make-payment): the view renders the payment it has just created, so
   no request reaches this.
 

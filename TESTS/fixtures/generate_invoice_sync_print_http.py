@@ -623,11 +623,17 @@ add('add-number-taken', 'owner', ADD, 400, {'non_field_errors': ['Invoice alread
 add('add-transmitting-date-three-digit-year-server-error', 'owner', ADD, 500, SERVER, method='POST',
     body={**BASE, 'number': 702, 'transmitting_date': '999-03-05'}, effect=nothing())
 
-# A line quantity beyond the double range: json.loads makes 1e400 float('inf') and the serializer's JSONField keeps it;
-# the INSERT dumps it as Infinity, which jsonb rejects (DataError) before any row or audit entry: the 500 page.
-add('add-line-infinite-quantity-server-error', 'owner', ADD, 500, SERVER, method='POST',
+# A line quantity beyond the double range: json.loads makes 1e400 float('inf'). In a JSON body the serializer's
+# JSONField re-dumps it with allow_nan=False: the field error. A form's JSON text is only json.loads'd, so the
+# value is kept and the INSERT dumps it as Infinity, which jsonb rejects (DataError) before any row or audit entry:
+# the 500 page (a multipart body with a file, whose request.data the view can write).
+INFINITE_LINES = json.dumps(BASE['lines']).replace('"quantity": 1,', '"quantity": 1e400,', 1)
+add('add-line-infinite-quantity-field-error', 'owner', ADD, 400, {'lines': ['Value must be valid JSON.']}, method='POST',
     raw_body=json.dumps({**BASE, 'number': 703}).replace('"quantity": 1,', '"quantity": 1e400,', 1),
     content_type='application/json', effect=nothing())
+mp, ct = multipart_body({**BASE, 'number': 704, 'lines': INFINITE_LINES}, [MULTIPART_FILE])
+add('add-form-line-infinite-quantity-server-error', 'owner', ADD, 500, SERVER, method='POST', raw_body=mp, content_type=ct,
+    effect=nothing())
 
 # Dates before 1000. The view rewrites each date through
 # datetime.strptime(value, '%Y-%m-%d').strftime('%d/%m/%Y') and

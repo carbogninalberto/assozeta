@@ -154,7 +154,9 @@ request with the case's method, path, status and correlation id.
 |---|---|---|
 | personas-reads | none: Cyrillic search terms are ported and served by Go (controls, no marker) | 200, empty page (control) |
 | course-list | none: the orderings are the course's own columns, served by Go (control, no marker) | 200, the listed course (control) |
-| workflow-update | `PATCH communications/workflows/<id>/update` with a form `automation_tree` nested past 500 levels (`ErrAutomationWorkflowFormTreeNotPorted`) | the stable 500 page |
+| workflow-update | none since long-tail PR 4: a form `automation_tree` nested past Python's recursion band is answered by Go (X15, control, no marker) | the stable 500 page (control) |
+
+The sequence needs a refused input again (its contract checks the mix): pick one from a source family that keeps a refusal.
 
 Receipts (`quality-reports/go-migration/django-handoff-http-<label>`):
 

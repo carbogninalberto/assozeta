@@ -150,10 +150,19 @@ the view's membership-payment checks (400) still come first. Go answers it at th
 parsed and the events loop decides (a lone surrogate in an ignored key changes nothing; a string element makes the id
 comparison raise, case `update-form-events-lone-surrogate-server-error`).
 
-## Not ported (refused before any write)
+## Form JSON recursion bands (X15)
 
-- Update: an HTML-form `multiple_quote` or `events` document nested past the ported depth (the 500-level limit): the answer
-  depends on Python's live recursion depth, so it is not a fixed number (owner decision pending).
+An HTML-form `multiple_quote` or `events` text is read with `json.loads`; the measured answer (CPython 3.13.16 on the
+parity harness's Django) depends on its maximum nesting D:
+
+- `multiple_quote`: D <= 9934 normal answer; D >= 9935 `json.loads` raises RecursionError during validation, the plain
+  500 page with nothing written (the update is atomic).
+- `events`: D <= 9941 normal answer; D >= 9942 the same 500 page.
+
+Constants and the application-state error live in `service/course_subscription_update.go`
+(`errCourseSubscriptionFormJSONTooDeep`); the add route's bands are in [course-enrolment](course-enrolment.md). Values
+within the bands (including those past 500) are parsed by `dto/automationFormTree` up to its 20000-level limit, stored
+and echoed without a Go-side depth limit.
 
 ## Primary key in the body and shared payment delete (t5pk)
 

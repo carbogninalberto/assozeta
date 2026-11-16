@@ -31,8 +31,41 @@ func NewCourseEnrolment(store domain.CourseEnrolmentStore, now func() time.Time,
 }
 
 // ErrCourseEnrolmentNotPorted refuses inputs this port does not reproduce,
-// before any write (see course-enrolment.md).
+// before any write (see course-enrolment.md). The stock create route keeps it
+// for form JSON nested past 500 levels: its recursion band was not measured
+// (the add route's is, below).
 var ErrCourseEnrolmentNotPorted = refusal.New("course enrolment input is not ported")
+
+// Course-subscriptions/add measured form JSON bands (owner decision X15),
+// measured with CPython 3.13.16 on the parity harness's Django:
+//   - multiple_quote: D <= 9928 normal answer, D >= 9929 the plain 500 page with
+//     nothing written (the view is atomic);
+//   - events: D <= 9942 normal answer, D >= 9943 the same 500 page.
+//
+// D is auditJSONDepth's maximum nesting of the form text.
+const (
+	courseEnrolmentQuoteJSONDepth  = 9929
+	courseEnrolmentEventsJSONDepth = 9943
+)
+
+var errCourseEnrolmentFormJSONTooDeep = refusal.AppState("course enrolment: form JSON nested past the measured depth")
+
+// courseEnrolmentFormJSONTooDeep is the measured add band: a RecursionError
+// while DRF reads the field, before any field error is returned.
+func courseEnrolmentFormJSONTooDeep(depths map[string]int) bool {
+	return depths["multiple_quote"] >= courseEnrolmentQuoteJSONDepth || depths["events"] >= courseEnrolmentEventsJSONDepth
+}
+
+// courseEnrolmentFormJSONUnmeasured is the stock create's previous boundary:
+// form JSON nested past 500 levels stays a handoff.
+func courseEnrolmentFormJSONUnmeasured(depths map[string]int) bool {
+	for _, depth := range depths {
+		if depth > 500 {
+			return true
+		}
+	}
+	return false
+}
 
 // errCourseEnrolmentRenderedPayment is make-payment's new payment read back
 // with an instructor or an invoice, which its own insert never sets. An
@@ -269,11 +302,13 @@ func (s *CourseEnrolment) associationOf(ctx context.Context, tx domain.CourseEnr
 // validateItem is one serializer child: the fields, the course lookup, then
 // validate() for memberships.
 func (s *CourseEnrolment) validateItem(ctx context.Context, tx domain.CourseEnrolmentTransaction, identity domain.ResolvedIdentity, item any,
-	group *string, form bool) (*enrolmentItem, map[string]any, error) {
+	group *string, form, add bool) (*enrolmentItem, map[string]any, error) {
 	write, invalid := dto.ParseCourseSubscriptionWrite(item, form)
-	if write.FormJSONDeep {
-		// A JSON document nested past the ported depth: the answer depends on
-		// Python's live recursion depth (owner decision pending).
+	if add {
+		if courseEnrolmentFormJSONTooDeep(write.FormJSONDepth) {
+			return nil, nil, errCourseEnrolmentFormJSONTooDeep
+		}
+	} else if courseEnrolmentFormJSONUnmeasured(write.FormJSONDepth) {
 		return nil, nil, ErrCourseEnrolmentNotPorted
 	}
 	object, isObject := item.(domain.RequestObject)
@@ -756,7 +791,7 @@ func (s *CourseEnrolment) Add(ctx context.Context, identity domain.ResolvedIdent
 	errs := make([]map[string]any, len(items))
 	failed := false
 	for index, item := range items {
-		plan, invalid, err := s.validateItem(ctx, tx, identity, item, group, request.Form)
+		plan, invalid, err := s.validateItem(ctx, tx, identity, item, group, request.Form, true)
 		if err != nil {
 			return nil, err
 		}
@@ -837,7 +872,7 @@ func (s *CourseEnrolment) StockCreate(ctx context.Context, identity domain.Resol
 	if body == nil {
 		body = domain.RequestObject{}
 	}
-	plan, invalid, err := s.validateItem(ctx, tx, identity, body, supplierGroup(request.GroupHeader), request.Form)
+	plan, invalid, err := s.validateItem(ctx, tx, identity, body, supplierGroup(request.GroupHeader), request.Form, false)
 	if err != nil {
 		return err
 	}

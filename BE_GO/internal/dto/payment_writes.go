@@ -349,10 +349,10 @@ func PaymentEntryFormObject(object domain.RequestObject, partial bool) (converte
 						text = PythonStr(value)
 					}
 				}
-				if _, _, rejected, tooDeep := automationFormTree(text); rejected || tooDeep {
+				if _, _, rejected, depth := automationFormTree(text); rejected || depth > 500 {
 					refused = true
 					surrogate = surrogate || rejected
-					deep = deep || tooDeep
+					deep = deep || depth > 500
 				}
 				converted = append(converted, domain.RequestField{Name: name, Value: PaymentEntryJSONText{Text: text}})
 			}

@@ -291,13 +291,16 @@ for row in STATE['installments'].values():
 cases = []
 
 
-def add(name, actor, path, status, response, *, method='GET', body=None, raw_body=None, content_type=None, headers=None, effect=None):
+def add(name, actor, path, status, response, *, method='GET', body=None, raw_body=None, raw_parts=None, content_type=None, headers=None,
+        effect=None):
     case = {'name': f'course-subscriptions-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
             'status': status, 'response': response, 'effect': effect}
     if body is not None:
         case['body'] = body
     if raw_body is not None:
         case['raw_body'], case['content_type'] = raw_body, content_type
+    if raw_parts is not None:
+        case['raw_parts'], case['content_type'] = raw_parts, content_type
     cases.append(case)
 
 
@@ -1107,6 +1110,30 @@ effect = updated('owner', 'cs_ev2', {'multiple_quote': QUOTE}, {'multiple_quote'
                  sent=('multiple_quote',))
 add('update-form-multiple-quote', 'owner', one('cs_ev2', 'update'), 200, item('cs_ev2'), method='PATCH',
     raw_body='multiple_quote=' + __import__('urllib.parse', fromlist=['quote']).quote(json.dumps(QUOTE)), content_type=FORM, effect=effect)
+# The measured form JSON recursion bands (owner decision X15, see course-subscriptions.md). D is the maximum nesting
+# of the text. The invalid `paid` keeps the normal answer a 400 with nothing written, so no deep value is stored.
+PAID_INVALID = {'paid': ['Must be a valid boolean.']}
+
+
+def quote_depth_parts(depth):
+    return ['paid=forse&multiple_quote=', {'repeat': '%5B', 'count': depth}, {'repeat': '%5D', 'count': depth}]
+
+
+def events_depth_parts(depth):
+    return ['events=', urllib.parse.quote('[{"id":7,"amount":"1","payment_date":"05/05/2099","deep":'),
+            {'repeat': '%5B', 'count': depth - 2}, {'repeat': '%5D', 'count': depth - 2}, urllib.parse.quote('}]')]
+
+
+for label, depth in (('600', 600), ('9934', 9934)):
+    add(f'update-form-multiple-quote-depth-{label}', 'owner', one('cs_gino', 'update'), 400, PAID_INVALID, method='PATCH',
+        raw_parts=quote_depth_parts(depth), content_type=FORM)
+add('update-form-multiple-quote-depth-9935-server-error', 'owner', one('cs_gino', 'update'), 500, SERVER, method='PATCH',
+    raw_parts=quote_depth_parts(9935), content_type=FORM)
+# events is write-only: the event's id 7 matches no installment of the row, so the normal answer changes nothing.
+add('update-form-events-depth-9941', 'owner', one('cs_gino', 'update'), 200, item('cs_gino'), method='PATCH',
+    raw_parts=events_depth_parts(9941), content_type=FORM, effect=updated('owner', 'cs_gino', {}, {}))
+add('update-form-events-depth-9942-server-error', 'owner', one('cs_gino', 'update'), 500, SERVER, method='PATCH',
+    raw_parts=events_depth_parts(9942), content_type=FORM)
 BOUNDARY = 'testboundary4f2a'
 FILE_PART = (f'--{BOUNDARY}\r\nContent-Disposition: form-data; name="multiple_quote"; filename="q.json"\r\n\r\n{{"a": 1}}\r\n--{BOUNDARY}--\r\n')
 add('update-multipart-multiple-quote-file-invalid-json', 'owner', one('cs_ev2', 'update'), 400, {'multiple_quote': ['Value must be valid JSON.']},

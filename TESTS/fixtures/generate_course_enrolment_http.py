@@ -305,13 +305,16 @@ def effect(actor, *, rows=None, created=None, links=None, audit=()):
     return {'actor': actor, 'rows': rows or {}, 'created': created or {}, 'links': links or {}, 'audit': list(audit)}
 
 
-def add(name, actor, path, status, response, *, method='POST', body=None, headers=None, result=None, raw_body=None, content_type=None):
+def add(name, actor, path, status, response, *, method='POST', body=None, headers=None, result=None, raw_body=None, raw_parts=None,
+        content_type=None):
     case = {'name': f'course-enrolment-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
             'status': status, 'response': response, 'effect': result}
     if body is not None:
         case['body'] = body
     if raw_body is not None:
         case['raw_body'], case['content_type'] = raw_body, content_type
+    if raw_parts is not None:
+        case['raw_parts'], case['content_type'] = raw_parts, content_type
     cases.append(case)
 
 
@@ -942,6 +945,46 @@ add('add-form-multiple-quote-lone-surrogate-server-error', 'owner', CA, 500, SER
 add('add-form-multiple-quote-lone-surrogate-other-field-invalid', 'owner', CA, 400,
     {'billed_frequency': ['Ensure this value is greater than or equal to 0.']},
     raw_body=form(course=cid('quotes'), subscription_id=sid('luisa'), multiple_quote=LONE, billed_frequency='-1'), content_type=FORM)
+# The measured form JSON recursion bands (owner decision X15, see course-enrolment.md). D is the maximum nesting of
+# the text; billed_frequency='-1' keeps the normal answer a 400 with nothing written, so the fixture carries no deep
+# stored value.
+BILLED_FREQUENCY_ERROR = {'billed_frequency': ['Ensure this value is greater than or equal to 0.']}
+
+
+def quote_depth_parts(depth):
+    return [f'course={cid("quotes")}&subscription_id={sid("luisa")}&billed_frequency=-1&multiple_quote=',
+            {'repeat': '%5B', 'count': depth}, {'repeat': '%5D', 'count': depth}]
+
+
+def event_depth_parts(depth, *, course, subscription, extra=''):
+    return [f'course={course}&subscription_id={subscription}{extra}&events=',
+            urllib.parse.quote('[{"id":0,"amount":"10","payment_date":"05/05/2099","deep":'),
+            {'repeat': '%5B', 'count': depth - 2}, {'repeat': '%5D', 'count': depth - 2}, urllib.parse.quote('}]')]
+
+
+# events is write-only: at D = 600 the event still creates its payment and installment, so a 201 proves the deep text
+# is served on the add route without a deep stored value.
+deep_event = {'id': 0, 'amount': '10', 'payment_date': '05/05/2099'}
+row = new_cs('@cd0', 'free', 'mario', active=False)
+text, meta = rata('free', deep_event, '@cd0')
+pay = new_payment('@cd0p', '10.00', user=OWNER, associate=aid('mario'), description=text, meta=meta, created='2099-05-05T00:00:00Z')
+inst = new_installment('@cd0i', '@cd0', 0, '10.00', '@cd0p', '2099-05-05')
+add('add-form-events-depth-600', 'owner', CA, 201, [overview_item(row, 'mario', installments=[installment_item(inst)])],
+    raw_parts=event_depth_parts(600, course=cid('free'), subscription=sid('mario')), content_type=FORM,
+    result=effect('owner', created={CSM: [row], PAYMENT: [pay], CSI: [inst]}, audit=[
+        entry(CSM, '@cd0', 0, stored('create', membership_fee=['None', '0.0'], payment=['None', 'None']), [OWN, COURSE_INDEX],
+              cs_repr('@cd0', 'free', 'mario', active=False)),
+        created_entry(PAYMENT, '@cd0p', [OWN, DIRECT]), created_entry(CSI, '@cd0i', [OWN, CSI_INDEX])]))
+
+for label, depth in (('9928', 9928),):
+    add(f'add-form-multiple-quote-depth-{label}', 'owner', CA, 400, BILLED_FREQUENCY_ERROR,
+        raw_parts=quote_depth_parts(depth), content_type=FORM)
+add('add-form-multiple-quote-depth-9929-server-error', 'owner', CA, 500, SERVER,
+    raw_parts=quote_depth_parts(9929), content_type=FORM)
+add('add-form-events-depth-9942', 'owner', CA, 400, BILLED_FREQUENCY_ERROR,
+    raw_parts=event_depth_parts(9942, course=cid('free'), subscription=sid('luisa'), extra='&billed_frequency=-1'), content_type=FORM)
+add('add-form-events-depth-9943-server-error', 'owner', CA, 500, SERVER,
+    raw_parts=event_depth_parts(9943, course=cid('free'), subscription=sid('luisa'), extra='&billed_frequency=-1'), content_type=FORM)
 # one_fee_payment=false as text still marks the row; the payment follows the course's one-fee flag.
 row = new_cs('@cf3', 'one', 'luisa', payment='@cf3p', one_fee=True, active=False)
 text = "Pagamento in un'unica soluzione per Tennis"

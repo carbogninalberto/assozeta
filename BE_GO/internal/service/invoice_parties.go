@@ -10,7 +10,34 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
+
+// Invoice-parties measured form JSON bands (owner decision X15), measured with
+// CPython 3.13.16 on the parity harness's Django:
+//   - invoice-suppliers/<uid>/update, the nested payment's form JSON fields
+//     (payment.course, payment.meta, payment.meta_payment_categories): D <= 9941
+//     json.loads succeeds and validation goes on as usual, D >= 9942 the plain
+//     500 page whatever the other fields hold (RecursionError), nothing written;
+//   - invoice-customers/add, the lines/json form fields of a multipart body that
+//     carries a file: D <= 9942 as for a shallow value, D >= 9943 the plain 500
+//     page, nothing written. The url-encoded 500 (the immutable QueryDict) is
+//     answered before this check.
+//
+// D is auditJSONDepth's maximum nesting of the form text.
+const (
+	invoiceSupplierNestedJSONDepth = 9942
+	invoiceCustomerAddJSONDepth    = 9943
+)
+
+var (
+	errInvoiceSupplierFormJSONTooDeep = refusal.AppState("invoice supplier: nested form JSON nested past the measured depth")
+	errInvoiceCustomerFormJSONTooDeep = refusal.AppState("invoice customer: form JSON nested past the measured depth")
+)
+
+// invoiceCustomerFormJSONTooDeep is the customer add's measured band: D >= 9943
+// is the RecursionError, nothing written.
+func invoiceCustomerFormJSONTooDeep(depth int) bool { return depth >= invoiceCustomerAddJSONDepth }
 
 // InvoiceParties ports invoice_customers_{list,add,update} and
 // invoice_suppliers_{list,add,update}.
@@ -204,9 +231,9 @@ func (s *InvoiceParties) CustomerAdd(ctx context.Context, request InvoicePartyRe
 	var input dto.CustomerInvoiceAdd
 	var errors dto.InvoicePartyErrors
 	if request.Form {
-		converted, formErrors, notPorted := dto.CustomerInvoiceFormData(object)
-		if notPorted {
-			return domain.ErrInvoicePartyNotPorted
+		converted, formErrors, depth := dto.CustomerInvoiceFormData(object)
+		if invoiceCustomerFormJSONTooDeep(depth) {
+			return errInvoiceCustomerFormJSONTooDeep
 		}
 		object = converted
 		input, errors = dto.ParseCustomerInvoiceAdd(converted)
@@ -219,6 +246,15 @@ func (s *InvoiceParties) CustomerAdd(ctx context.Context, request InvoicePartyRe
 		}
 	} else {
 		input, errors = dto.ParseCustomerInvoiceAdd(object)
+		// JSONField.to_internal_value re-dumps a parsed body's value with
+		// allow_nan=False: a number beyond the double range (json.loads makes
+		// 1e400 infinite) is "Value must be valid JSON.".
+		for _, name := range []string{"lines", "json"} {
+			if value, present := object.Lookup(name); present && !dto.AuditFiniteJSON(value) {
+				existing, _ := errors[name].([]string)
+				errors[name] = append(existing, dto.CourseSubscriptionJSONInvalid)
+			}
+		}
 	}
 	group := invoicePartyGroup(request.Group)
 	if err = s.unique(ctx, errors, "customer_invoice_id", "application_customerinvoice", "customer_invoice_id",
@@ -519,6 +555,7 @@ func (s *InvoiceParties) nestedPayment(ctx context.Context, input dto.SupplierIn
 		return nil
 	}
 	errs, notPorted, err := dto.ValidateNestedPayment(input.NestedPayment, partial, input.NestedPaymentForm, dto.NestedPaymentLookups{
+		FormJSONDepth: invoiceSupplierNestedJSONDepth,
 		Related: func(model, id string) (bool, error) {
 			found, owner, err := s.store.NestedPaymentRelated(ctx, model, id, group)
 			if err != nil {
@@ -542,7 +579,7 @@ func (s *InvoiceParties) nestedPayment(ctx context.Context, input dto.SupplierIn
 		return err
 	}
 	if notPorted {
-		return domain.ErrInvoicePartyNotPorted
+		return errInvoiceSupplierFormJSONTooDeep
 	}
 	if errs != nil {
 		fieldErrors["payment"] = errs

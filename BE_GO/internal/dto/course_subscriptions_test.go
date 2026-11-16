@@ -7,47 +7,65 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 )
 
-// TestParseCourseSubscriptionWriteSplitsFormJSON pins the split of the form
-// JSON refusal: a text Python parses but that keeps a lone surrogate is a valid
-// value (its jsonb write fails at the row save), while nesting past the ported
-// depth stays a refusal.
+// TestParseCourseSubscriptionWriteSplitsFormJSON pins the form JSON reading: a
+// text Python parses but that keeps a lone surrogate is a valid value (its jsonb
+// write fails at the row save), while the maximum nesting is recorded per field
+// for the callers' measured recursion bands (X15).
 func TestParseCourseSubscriptionWriteSplitsFormJSON(t *testing.T) {
 	form := func(fields ...domain.RequestField) domain.RequestObject { return domain.RequestObject(fields) }
-	deep := strings.Repeat("[", 501) + strings.Repeat("]", 501)
+	deep := func(depth int) string { return strings.Repeat("[", depth) + strings.Repeat("]", depth) }
 	for _, test := range []struct {
 		name      string
 		body      domain.RequestObject
-		deep      bool
+		depth     int
 		surrogate bool
 		invalid   string // the field answering "Value must be valid JSON."
 		stored    string // PythonJSONDumps of the parsed value
 	}{
 		{
 			name: "quote-lone-surrogate", body: form(domain.RequestField{Name: "multiple_quote", Value: `["\ud800"]`}),
-			surrogate: true, stored: `["\ud800"]`,
+			depth: 1, surrogate: true, stored: `["\ud800"]`,
 		},
 		{
 			name: "events-lone-surrogate", body: form(domain.RequestField{Name: "events", Value: `[{"id": 0, "note": "\ud800"}]`}),
-			surrogate: true, stored: `[{"id": 0, "note": "\ud800"}]`,
+			depth: 2, surrogate: true, stored: `[{"id": 0, "note": "\ud800"}]`,
 		},
 		{
 			name: "quote-surrogate-pair", body: form(domain.RequestField{Name: "multiple_quote", Value: `["\ud83d\ude00"]`}),
-			stored: `["\ud83d\ude00"]`,
+			depth: 1, stored: `["\ud83d\ude00"]`,
 		},
 		{
-			name: "quote-deep", body: form(domain.RequestField{Name: "multiple_quote", Value: deep}), deep: true,
+			name: "quote-nested-501-served", body: form(domain.RequestField{Name: "multiple_quote", Value: deep(501)}),
+			depth: 501, stored: deep(501),
 		},
 		{
-			name: "events-deep", body: form(domain.RequestField{Name: "events", Value: deep}), deep: true,
+			name: "quote-nested-600-served", body: form(domain.RequestField{Name: "multiple_quote", Value: deep(600)}),
+			depth: 600,
+		},
+		{
+			name: "quote-nested-9934-update-band", body: form(domain.RequestField{Name: "multiple_quote", Value: deep(9934)}),
+			depth: 9934,
+		},
+		{
+			name: "events-nested-9941-update-band", body: form(domain.RequestField{Name: "events", Value: deep(9941)}),
+			depth: 9941,
+		},
+		{
+			name: "quote-nested-10000-served", body: form(domain.RequestField{Name: "multiple_quote", Value: deep(10000)}),
+			depth: 10000,
 		},
 		{
 			name: "quote-invalid", body: form(domain.RequestField{Name: "multiple_quote", Value: "nope"}), invalid: "multiple_quote",
 		},
 	} {
 		write, errs := ParseCourseSubscriptionWrite(test.body, true)
-		if write.FormJSONDeep != test.deep || write.FormJSONSurrogate != test.surrogate {
-			t.Errorf("%s: deep=%v surrogate=%v, want deep=%v surrogate=%v", test.name, write.FormJSONDeep,
-				write.FormJSONSurrogate, test.deep, test.surrogate)
+		field := "multiple_quote"
+		if _, present := test.body.Lookup("events"); present {
+			field = "events"
+		}
+		if write.FormJSONDepth[field] != test.depth || write.FormJSONSurrogate != test.surrogate {
+			t.Errorf("%s: depth=%v surrogate=%v, want depth=%v surrogate=%v", test.name, write.FormJSONDepth[field],
+				write.FormJSONSurrogate, test.depth, test.surrogate)
 		}
 		if test.invalid != "" {
 			codes, ok := errs[test.invalid].([]string)
@@ -59,9 +77,9 @@ func TestParseCourseSubscriptionWriteSplitsFormJSON(t *testing.T) {
 		if len(errs) > 0 {
 			t.Errorf("%s: unexpected field errors %v", test.name, errs)
 		}
-		if !test.deep && test.stored != "" {
+		if test.stored != "" {
 			value := write.Quote
-			if _, present := test.body.Lookup("events"); present {
+			if field == "events" {
 				value = write.Events
 			}
 			if got := string(PythonJSONDumps(value)); got != test.stored {

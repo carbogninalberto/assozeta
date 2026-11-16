@@ -22,11 +22,6 @@ func NewCourseSubscriptions(store domain.CourseSubscriptionStore, now func() tim
 }
 
 var (
-	// ErrCourseSubscriptionNotPorted refuses inputs this port does not
-	// reproduce, before any write: an HTML-form JSON document nested past the
-	// ported depth (Python's answer depends on the live recursion depth).
-	ErrCourseSubscriptionNotPorted = refusal.New("course subscription input is not ported")
-
 	// errCourseSubscriptionJSONColumn is PostgreSQL's jsonb input refusing a
 	// lone surrogate escape (JSONField.get_prep_value's json.dumps keeps it as
 	// \udXXX): Django's DataError at the course subscription INSERT/UPDATE,

@@ -324,8 +324,8 @@ def render_customer_invoice(label):
 cases = []
 
 
-def add(name, actor, method, path, status, response, *, body=None, raw_body=None, content_type=None, headers=None, effect=None,
-        prints=()):
+def add(name, actor, method, path, status, response, *, body=None, raw_body=None, raw_parts=None, content_type=None, headers=None,
+        effect=None, prints=()):
     """prints: the customer invoices whose eager print_document_customer_invoice request the case makes, in order."""
     case = {'name': f'invoice-parties-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
             'status': status, 'response': response, 'effect': effect,
@@ -335,6 +335,8 @@ def add(name, actor, method, path, status, response, *, body=None, raw_body=None
         case['body'] = body
     if raw_body is not None:
         case['raw_body'], case['content_type'] = raw_body, content_type
+    if raw_parts is not None:
+        case['raw_parts'], case['content_type'] = raw_parts, content_type
     cases.append(case)
 
 
@@ -556,6 +558,18 @@ add('customer-add-multipart-field-errors', 'owner', 'POST', CA, 400, {
     'payment_total_amount': ['A valid number is required.'], 'json': ['Value must be valid JSON.'],
     'creation_date': ['Datetime has wrong format. Use one of these formats instead: YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z].']},
     raw_body=mp, content_type=ct)
+# The measured form JSON recursion bands (owner decision X15, see invoice-parties.md): a multipart body with a file
+# part keeps today's shallow answer up to D = 9942 and answers the plain 500 page from D = 9943. The invalid `number`
+# keeps the normal answer a 400 with nothing written, so the fixture carries no deep stored value.
+NO_LINES = {key: value for key, value in BASE.items() if key != 'lines'}
+NO_LINES['number'] = 'x'
+for label, depth in (('9942', 9942), ('9943', 9943)):
+    mp, ct = multipart(*form_parts(NO_LINES), ('lines', None, None, '[' * depth + ']' * depth), MULTIPART_FILE)
+    add(f'customer-add-multipart-lines-depth-{label}', 'owner', 'POST', CA, 400 if depth == 9942 else 500,
+        {'number': ['A valid integer is required.']} if depth == 9942 else SERVER, raw_body=mp, content_type=ct)
+# A url-encoded customer add writes into the immutable QueryDict: its 500 page comes before any depth check.
+add('customer-add-form-lines-depth-9943-server-error', 'owner', 'POST', CA, 500, SERVER,
+    raw_parts=['lines=', {'repeat': '%5B', 'count': 9943}, {'repeat': '%5D', 'count': 9943}], content_type=FORM)
 # The view's strptime runs on the raw last value before the serializer.
 mp, ct = multipart(*form_parts({**BASE, 'number': 604, 'transmitting_date': ''}), MULTIPART_FILE)
 add('customer-add-multipart-blank-transmitting-date-server-error', 'owner', 'POST', CA, 500, SERVER, raw_body=mp, content_type=ct)
@@ -1192,6 +1206,20 @@ add('supplier-update-nested-payment-field-errors', 'owner', 'PATCH', SU('c'), 40
 add('supplier-update-nested-payment-id-taken', 'owner', 'PATCH', SU('c'), 400,
     {'payment': {'payment_id': ['payment with this payment id already exists.']}},
     body={'payment': {'payment_id': PAYMENTS['a']['payment_id']}})
+# The measured form JSON recursion bands of the nested payment (owner decision X15, see invoice-parties.md): the
+# invalid payment.paid is the ordinary 400 up to D = 9941; from D = 9942 json.loads raises during validation and the
+# answer is the plain 500 page whatever the other fields hold. Nothing is written in either case.
+NESTED_PAID_INVALID = {'payment': {'paid': ['Must be a valid boolean.']}}
+
+
+def nested_course_parts(depth):
+    return ['payment.paid=no&payment.course=', {'repeat': '%5B', 'count': depth}, {'repeat': '%5D', 'count': depth}]
+
+
+add('supplier-update-nested-course-depth-9941', 'owner', 'PATCH', SU('c'), 400, NESTED_PAID_INVALID,
+    raw_parts=nested_course_parts(9941), content_type=FORM)
+add('supplier-update-nested-course-depth-9942-server-error', 'owner', 'PATCH', SU('c'), 500, SERVER,
+    raw_parts=nested_course_parts(9942), content_type=FORM)
 add('supplier-update-nested-payment-user-field-errors', 'owner', 'PATCH', SU('c'), 400, {'payment': {'user': {
     'first_name': ['Ensure this field has no more than 150 characters.'],
     'last_name': ['This field may not be null.'], 'email': ['Enter a valid email address.'],

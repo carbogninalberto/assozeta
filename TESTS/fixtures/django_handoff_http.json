@@ -430,7 +430,7 @@
   {
    "name": "django-handoff-workflow-form-tree-too-deep",
    "family": "workflow-update",
-   "handoff": true,
+   "handoff": false,
    "actor": "owner",
    "method": "PATCH",
    "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",

@@ -9266,7 +9266,31 @@
    }
   },
   {
-   "name": "invoice-sync-print-add-line-infinite-quantity-server-error",
+   "name": "invoice-sync-print-add-line-infinite-quantity-field-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice-customers/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "lines": [
+     "Value must be valid JSON."
+    ]
+   },
+   "effect": {
+    "actor": "owner",
+    "invoices": {},
+    "payments": {},
+    "customer": null,
+    "audit": []
+   },
+   "prints": [],
+   "restore": null,
+   "raw_body": "{\"fiscal_year\": 2031, \"assignor_vat_number\": \"01234567890\", \"assignor_tax_code\": \"01234567890\", \"assignor_denomination\": \"ASD Alfa & Figli\", \"assignor_address\": \"Via Roma 1\", \"assignor_postal_code\": \"10100\", \"assignor_city\": \"Torino\", \"assignor_province\": \"TO\", \"assignor_contact_email\": \"alfa@example.test\", \"assignor_contact_phone\": \"0111234567\", \"transferor_tax_code\": \"RSSMRA80A01L219X\", \"transferor_denomination\": \"Mario Rossi <Ditta>\", \"transferor_address\": \"Via Po 2\", \"transferor_postal_code\": \"10123\", \"transferor_city\": \"Torino\", \"transferor_province\": \"TO\", \"transferor_contact_email\": \"mario.pec@example.test\", \"causal\": \"Quota & servizi\", \"lines\": [{\"description\": \"Quota annuale\", \"quantity\": 1e400, \"unit_of_measure\": \"unita\", \"unit_price\": 100.0, \"vat\": 22.0}], \"payment_condition\": \"TP02\", \"payment_modality\": \"MP05\", \"number\": 703}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "invoice-sync-print-add-form-line-infinite-quantity-server-error",
    "actor": "owner",
    "method": "POST",
    "path": "/invoice-customers/add",
@@ -9282,8 +9306,8 @@
    },
    "prints": [],
    "restore": null,
-   "raw_body": "{\"fiscal_year\": 2031, \"assignor_vat_number\": \"01234567890\", \"assignor_tax_code\": \"01234567890\", \"assignor_denomination\": \"ASD Alfa & Figli\", \"assignor_address\": \"Via Roma 1\", \"assignor_postal_code\": \"10100\", \"assignor_city\": \"Torino\", \"assignor_province\": \"TO\", \"assignor_contact_email\": \"alfa@example.test\", \"assignor_contact_phone\": \"0111234567\", \"transferor_tax_code\": \"RSSMRA80A01L219X\", \"transferor_denomination\": \"Mario Rossi <Ditta>\", \"transferor_address\": \"Via Po 2\", \"transferor_postal_code\": \"10123\", \"transferor_city\": \"Torino\", \"transferor_province\": \"TO\", \"transferor_contact_email\": \"mario.pec@example.test\", \"causal\": \"Quota & servizi\", \"lines\": [{\"description\": \"Quota annuale\", \"quantity\": 1e400, \"unit_of_measure\": \"unita\", \"unit_price\": 100.0, \"vat\": 22.0}], \"payment_condition\": \"TP02\", \"payment_modality\": \"MP05\", \"number\": 703}",
-   "content_type": "application/json"
+   "raw_body": "--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"fiscal_year\"\r\n\r\n2031\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_vat_number\"\r\n\r\n01234567890\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_tax_code\"\r\n\r\n01234567890\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_denomination\"\r\n\r\nASD Alfa & Figli\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_address\"\r\n\r\nVia Roma 1\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_postal_code\"\r\n\r\n10100\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_city\"\r\n\r\nTorino\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_province\"\r\n\r\nTO\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_contact_email\"\r\n\r\nalfa@example.test\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_contact_phone\"\r\n\r\n0111234567\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"transferor_tax_code\"\r\n\r\nRSSMRA80A01L219X\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"transferor_denomination\"\r\n\r\nMario Rossi <Ditta>\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"transferor_address\"\r\n\r\nVia Po 2\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"transferor_postal_code\"\r\n\r\n10123\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"transferor_city\"\r\n\r\nTorino\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"transferor_province\"\r\n\r\nTO\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"transferor_contact_email\"\r\n\r\nmario.pec@example.test\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"causal\"\r\n\r\nQuota & servizi\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"lines\"\r\n\r\n[{\"description\": \"Quota annuale\", \"quantity\": 1e400, \"unit_of_measure\": \"unita\", \"unit_price\": 100.0, \"vat\": 22.0}]\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"payment_condition\"\r\n\r\nTP02\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"payment_modality\"\r\n\r\nMP05\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"number\"\r\n\r\n704\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"allegato\"; filename=\"fattura.txt\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--invoicesyncboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=invoicesyncboundary"
   },
   {
    "name": "invoice-sync-print-add-dates-before-1000-field-errors",

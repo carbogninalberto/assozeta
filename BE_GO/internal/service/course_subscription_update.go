@@ -6,7 +6,29 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
+
+// course-subscriptions/<pk>/update measured form JSON bands (owner decision
+// X15), measured with CPython 3.13.16 on the parity harness's Django:
+//   - multiple_quote: D <= 9934 normal answer, D >= 9935 the plain 500 page with
+//     nothing written (the view is atomic);
+//   - events: D <= 9941 normal answer, D >= 9942 the same 500 page.
+//
+// D is auditJSONDepth's maximum nesting of the form text.
+const (
+	courseSubscriptionUpdateQuoteJSONDepth  = 9935
+	courseSubscriptionUpdateEventsJSONDepth = 9942
+)
+
+var errCourseSubscriptionFormJSONTooDeep = refusal.AppState("course subscription update: form JSON nested past the measured depth")
+
+// courseSubscriptionFormJSONTooDeep is the update's measured band: a
+// RecursionError while DRF reads the field, before any field error is returned.
+func courseSubscriptionFormJSONTooDeep(depths map[string]int) bool {
+	return depths["multiple_quote"] >= courseSubscriptionUpdateQuoteJSONDepth ||
+		depths["events"] >= courseSubscriptionUpdateEventsJSONDepth
+}
 
 // Membership validation and payment period messages (validate() and update()).
 const (
@@ -364,10 +386,8 @@ func (s *CourseSubscriptions) Update(ctx context.Context, identity domain.Resolv
 	}
 	group := supplierGroup(request.GroupHeader)
 	write, invalid := dto.ParseCourseSubscriptionWrite(body, form)
-	if write.FormJSONDeep {
-		// A JSON document nested past the ported depth: the answer depends on
-		// Python's live recursion depth (owner decision pending).
-		return nil, ErrCourseSubscriptionNotPorted
+	if courseSubscriptionFormJSONTooDeep(write.FormJSONDepth) {
+		return nil, errCourseSubscriptionFormJSONTooDeep
 	}
 	if invalid == nil {
 		invalid = map[string]any{}
