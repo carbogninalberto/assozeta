@@ -17,9 +17,11 @@ var (
 	ErrBalanceSheetInvalid = errors.New("invalid balance sheet data")
 	// ErrBalanceSheetMissing is the POST's {'msg': 'No balance sheet found.'} (404).
 	ErrBalanceSheetMissing = errors.New("balance sheet not found")
-	// ErrBalanceSheetExportNotPorted refuses, before the generation writes,
-	// the export inputs Go does not reproduce (xlsxexport's and pdfexport's).
-	ErrBalanceSheetExportNotPorted = refusal.New("balance sheet export is not ported")
+	// errBalanceSheetExportUnreachable is a description of the sheet's data
+	// that json.loads cannot produce: pyFromJSON turns every float token into
+	// a float64 and the JSON parser validates the integer tokens big.Int
+	// parses, so an export never sees one.
+	errBalanceSheetExportUnreachable = refusal.AppState("balance sheet export: unreachable cell value")
 	// ErrBalanceAccountNotDeletable is {'msg': 'This account is not deletable.'} (403).
 	ErrBalanceAccountNotDeletable = errors.New("custom account is not deletable")
 	// ErrBalanceAccountInUse is {'msg': 'An account with transfers or payments cannot be deleted.'} (403).

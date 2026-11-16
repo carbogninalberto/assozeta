@@ -350,6 +350,13 @@ var xstrtodFMA = map[string]string{
 	"linux/arm64":  "plain",
 }[runtime.GOOS+"/"+runtime.GOARCH]
 
+// float64ToInt64Saturates is whether numpy's C cast of an out-of-range
+// float64 to int64 saturates (arm64's fcvtzs gives int64 max for 2**63)
+// rather than giving int64 min (amd64's cvttsd2si). astype('Int64') checks
+// the cast round-trips, so only arm64 accepts 2**63. Images are built for
+// linux/amd64 and linux/arm64 only.
+var float64ToInt64Saturates = runtime.GOARCH == "arm64"
+
 func preciseXstrtodWith(text string, fma bool) (float64, int, bool, bool) {
 	accumulate := func(number float64, digit byte) float64 {
 		if fma {

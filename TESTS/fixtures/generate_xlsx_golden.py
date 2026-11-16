@@ -301,6 +301,15 @@ for n in range(40):
     excel_utils(f'eu-random-{n:02d}', [f'col {c}' for c in range(width)],
                 *[[random_value() for _ in range(RANDOM.randint(1, 6))] for _ in range(width)])
 
+# /printing/generate and /balance-sheet: a stored JSONField/jsonb value is a Python int of any size. pandas' column is
+# objects (the big int keeps it so), the cell "%.16g" of its float; a value whose float is out of range fails the workbook.
+excel_utils('eu-big-int-data-mixed', ['corso/carnet'], [I(2 ** 63), None, 'Iscrizione', F(1.5)])
+excel_utils('eu-big-int-data-float', ['Descrizione'], [I(2 ** 63), F(1.5)])
+excel_utils('eu-big-int-data-uint64-max', ['Descrizione'], [I(2 ** 64 - 1)])
+excel_utils('eu-big-int-data-2-64', ['Descrizione'], [I(2 ** 64)])
+excel_utils('eu-big-int-data-negative', ['Descrizione'], [I(-2 ** 63 - 1), F(1.5)])
+excel_utils('eu-big-int-data-too-large', ['Descrizione'], [I(10 ** 400), 'x'])
+
 # ---------------------------------------------------------------- instructor/report (xlsxwriter)
 SCHEMA = {'first_name': 'Nome', 'last_name': 'Cognome', 'course': 'Corso', 'title': 'Titolo', 'description': 'Descrizione',
           'date': 'Data', 'attendees_count': 'Numero di partecipanti', 'attendees': 'Partecipanti',
@@ -344,6 +353,16 @@ subscription('sub-urls', SIMPLE, [['http://a.b/c#frag', 'internal:Sheet2!B2', 'e
 subscription('sub-url-header', ['http://x.y/z#h', 'internal:A1', 'Nome', '=A1', '<r>h</r>'], [['a', 'b', 'c', 'd', 'e']])
 subscription('sub-url-same-text', ['a', 'b'], [['http://x.y', 'http://x.y'], ['http://x.y', 'mailto:x@y']])
 instructor('ir-urls', SCHEMA, [['internal:A1', 'external:x', '{=A1}', '=SUM(1)', 'http://u/v#w', 'd', I(1), '<r>x</r>', 'e']])
+
+# instructor/report: a description int beyond int64 stays a Python int in the DataFrame (astype(str) measures
+# its digits) and xlsxwriter's write_number writes float(number); the view hands the writer that float, so this
+# frame — a longer sibling keeps the column width — is the workbook of the same rows holding the ints
+# (2**63 and -2**63-1, whose cells are 9.223372036854776E+18 and -9.223372036854776E+18).
+instructor('ir-description-int-beyond-int64', SCHEMA, [
+    ['Luca', 'Bianchi', 'Nuoto', 'Lezione 1', F(2 ** 63), '02/01/2024 18:00', I(1), 'Anna Verdi',
+     'una descrizione molto più lunga della cella numerica'],
+    ['Luca', 'Bianchi', 'Nuoto', 'Lezione 2', F(-2 ** 63 - 1), '03/01/2024 18:00', I(2), '', ''],
+])
 
 # ---------------------------------------------------------------- modules/<id>/export (xlsxwriter, 'Risposte')
 STANDARD = ['Data creazione', 'Progressivo risposta', 'Posizione in coda', 'Utente', 'Pagamento', 'Approvato', 'Allegati']

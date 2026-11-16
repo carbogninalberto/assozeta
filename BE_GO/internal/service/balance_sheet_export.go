@@ -3,9 +3,11 @@ package service
 import (
 	"context"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"math"
+	"math/big"
 	"strconv"
 	"strings"
 	"time"
@@ -20,6 +22,36 @@ import (
 type balanceSheetExport struct {
 	body   map[string]any
 	failed bool
+}
+
+// balanceSheetCell is a Python value of the sheet's data (a json.loads output)
+// handed to pandas, as printingCell maps a stored payment value: an int64 as
+// pandas' int, a larger int (jsonb keeps Python ints of any size) as its
+// float, a float as itself, a bool, and a list or dict as str(value) (its
+// repr). ok is false for a value json.loads cannot produce.
+func balanceSheetCell(value any) (xlsxexport.Value, bool) {
+	switch v := value.(type) {
+	case nil:
+		return xlsxexport.NoneValue(), true
+	case string:
+		return xlsxexport.StrValue(v), true
+	case bool:
+		return xlsxexport.BoolValue(v), true
+	case float64:
+		return xlsxexport.FloatValue(v), true
+	case json.Number:
+		// pyFromJSON keeps an integer token as json.Number and has already
+		// turned a float token into float64.
+		number, ok := new(big.Int).SetString(string(v), 10)
+		if !ok {
+			return xlsxexport.Value{}, false
+		}
+		if number.IsInt64() {
+			return xlsxexport.IntValue(number.Int64()), true
+		}
+		return xlsxexport.BigIntValue(number.String()), true
+	}
+	return xlsxexport.ObjectValue(pyStr(value)), true
 }
 
 // balanceSheetHeader is export_balance_sheet's custom_header: logo,
@@ -102,13 +134,9 @@ func (r *sheetRun) export(ctx context.Context, data *pyDict, year int, format st
 			if err != nil {
 				return failed, nil
 			}
-			description := xlsxexport.NoneValue()
-			switch value := raw.(type) {
-			case nil:
-			case string:
-				description = xlsxexport.StrValue(value)
-			default:
-				return nil, ErrBalanceSheetExportNotPorted // a number, list or dict cell
+			description, ok := balanceSheetCell(raw)
+			if !ok {
+				return nil, errBalanceSheetExportUnreachable
 			}
 			add(description, balanceSheetComma(amounts[0]), balanceSheetComma(amounts[1]), balanceSheetComma(amounts[0]+amounts[1]))
 			sums[index][0] += amounts[0]

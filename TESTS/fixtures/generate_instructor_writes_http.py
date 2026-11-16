@@ -245,6 +245,40 @@ DAYS = {
     'err_dict': attendance('reg_dict', 'missing', '2026-10-14T06:00:00Z'),
     'foreign': attendance('reg_foreign', 'missing', '2026-09-25T06:00:00Z'),
 }
+# instructor/report: stored JSON nested past the audit serializer's 500 levels (jsonb keeps it; json.loads reads it
+# in the view) and description ints beyond int64 (the DataFrame keeps the Python int and xlsxwriter writes
+# float(number); past the double range the workbook raises and report_file is null). December keeps the cases
+# above unchanged. Depths stop at 900: the family loader walks every fixture value with one Python frame per
+# level (test_instructor_writes_http -> http_family._resolve_dates), so a deeper value cannot be authored here;
+# the Go tests read 2000 and the 9800..9998 band directly.
+_deep = iter(f'a1000000-0000-4000-8000-{967801 + n:012d}' for n in range(7))
+DEEP = {name: next(_deep) for name in ('registry', 'events600', 'events900', 'attendees600', 'attendees900',
+                                       'int63', 'int400')}
+
+
+def nested(depth):
+    value = []
+    for _ in range(depth):
+        value = [value]
+    return value
+REGISTRIES['reg_report_json'] = {'id': DEEP['registry'], 'course': 'ca', 'status': 2, 'events': [
+    told(one('full'), 'Annidato 600', event_id=DEEP['events600'], props={'extra': nested(600)}),
+    told(one('full'), 'Annidato 900', event_id=DEEP['events900'], props={'extra': nested(900)}),
+    told(one('full'), 'Annidato 600', event_id=DEEP['attendees600']),
+    told(one('full'), 'Annidato 900', event_id=DEEP['attendees900']),
+    told(one('full'), 'Intero oltre', event_id=DEEP['int63'], props={'description': 2 ** 63}),
+    told(one('full'), 'Intero enorme', event_id=DEEP['int400'], props={'description': 10 ** 400}),
+]}
+DAYS.update({
+    'deep_events600': attendance('reg_report_json', DEEP['events600'], '2026-12-01T06:00:00Z', 'Annidato 600', [CS('cs_mario')], []),
+    'deep_events900': attendance('reg_report_json', DEEP['events900'], '2026-12-02T06:00:00Z', 'Annidato 900'),
+    'deep_attendees600': attendance('reg_report_json', DEEP['attendees600'], '2026-12-03T06:00:00Z', 'Annidato 600',
+                                    [{'course_subscription_id': COURSE_SUBSCRIPTIONS['cs_mario']['id'], 'extra': nested(600)}], []),
+    'deep_attendees900': attendance('reg_report_json', DEEP['attendees900'], '2026-12-04T06:00:00Z', 'Annidato 900',
+                                    [{'course_subscription_id': COURSE_SUBSCRIPTIONS['cs_luisa']['id'], 'extra': nested(900)}], []),
+    'deep_int63': attendance('reg_report_json', DEEP['int63'], '2026-12-05T06:00:00Z', 'Intero oltre'),
+    'deep_int400': attendance('reg_report_json', DEEP['int400'], '2026-12-06T06:00:00Z', 'Intero enorme'),
+})
 NEW_ADD, UNUSED_KEY = next(ids), next(ids)
 cases = []
 
@@ -517,6 +551,16 @@ add('report-early-year', 'owner', RQ('01/01/0900', '30/09/2026'), 200, report(OW
 add('report-year-one-second-day', 'owner', RQ('02/01/0001', '30/09/2026'), 200, report(OWN, '02/01/0001', '30/09/2026'))
 add('report-year-one-first-day-server-error', 'owner', RQ('01/01/0001', '30/09/2026'), 500, SERVER)
 add('report-empty-date', 'owner', RQ('', '30/09/2026'), 500, SERVER)
+# Stored JSON nested 600 and 900 levels inside the registry's events and the day's attendees (jsonb keeps it and
+# the view's json.loads reads it), and a description int beyond int64 in the workbook.
+for name, day in (('deep-events-600', '01/12/2026'), ('deep-events-900', '02/12/2026'), ('deep-attendees-600', '03/12/2026'),
+                  ('deep-attendees-900', '04/12/2026'), ('description-int-beyond-int64', '05/12/2026')):
+    add(f'report-{name}', 'owner', RQ(day, day), 200, report(OWN, day, day))
+# 10**400 is past the double range: xlsxwriter raises OverflowError while writing the description cell,
+# generate_report_from_data logs it and the response keeps report_file null.
+ENORMOUS = report(OWN, '06/12/2026', '06/12/2026')
+ENORMOUS['data']['report_file'] = None
+add('report-description-int-past-double', 'owner', RQ('06/12/2026', '06/12/2026'), 200, ENORMOUS)
 add('report-athlete-denied', 'athlete', REPORT, 403, {'detail': 'User is not a sport association'})
 add('report-owner-without-association', 'owner_without_association', RQ('14/09/2026', '30/09/2026'), 500, SERVER)
 authorization('report', REPORT, 'GET', 'read', 'Instructor Report', 'POST')

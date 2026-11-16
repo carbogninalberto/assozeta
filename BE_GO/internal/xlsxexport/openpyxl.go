@@ -410,6 +410,14 @@ func excelUtilsCoerce(column frameColumn) (frameColumn, error) {
 			out.values[i] = value
 		case math.IsNaN(value.Float):
 			out.values[i] = NoneValue()
+		case value.Float == -(1 << 63):
+			// -2**63 is an int64: the cast is exact and pandas' equality
+			// check holds on every platform.
+			out.values[i] = IntValue(math.MinInt64)
+		case value.Float == 1<<63 && float64ToInt64Saturates:
+			// numpy's float64 -> int64 cast of 2**63 saturates to int64 max
+			// on arm64, and float(max) == 2**63, so the check holds.
+			out.values[i] = IntValue(math.MaxInt64)
 		case math.Abs(value.Float) >= 1<<63:
 			// astype('Int64') raises (caught): the column stays float64.
 			return frameColumn{dtype: dtFloat64, values: converted.values}, nil

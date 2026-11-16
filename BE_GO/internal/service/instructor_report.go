@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"math"
 	"math/big"
 	"sort"
 	"strconv"
@@ -33,8 +34,24 @@ func NewInstructorReport(store domain.InstructorReportStore, now func() time.Tim
 // ErrInstructorReportServer is an exception the view does not handle (the 500 page).
 var ErrInstructorReportServer = errors.New("instructor report unhandled error")
 
-// ErrInstructorReportNotPorted refuses input whose Django result is not reproduced (the 500 page).
-var ErrInstructorReportNotPorted = refusal.New("instructor report input not ported")
+// ErrInstructorReportNotPorted refuses stored JSON nested in json.loads' C
+// recursion band: the depth the request thread's stack still parses depends on
+// the C calls already on it (long-tail rule 4).
+var ErrInstructorReportNotPorted = refusal.New("instructor report: stored JSON nesting in json.loads' recursion band")
+
+// instructorReportStoredJSONError maps dto.StoredJSON's errors: json.loads'
+// RecursionError and its 4300-digit ValueError are uncaught in the view (the
+// 500 page) and only the recursion band stays refused; text jsonb cannot store
+// is an application state.
+func instructorReportStoredJSONError(err error) error {
+	switch {
+	case errors.Is(err, dto.ErrStoredJSONRecursion), errors.Is(err, dto.ErrStoredJSONInteger):
+		return ErrInstructorReportServer
+	case errors.Is(err, dto.ErrStoredJSONRecursionBand):
+		return ErrInstructorReportNotPorted
+	}
+	return err
+}
 
 // InstructorReportMissingDates is the view's 400 {'msg': 'Entrambe le date sono richieste.'}.
 var InstructorReportMissingDates = errors.New("Entrambe le date sono richieste.")
@@ -42,6 +59,9 @@ var InstructorReportMissingDates = errors.New("Entrambe le date sono richieste."
 var instructorReportSchema = []struct{ key, label string }{{"first_name", "Nome"}, {"last_name", "Cognome"}, {"course", "Corso"},
 	{"title", "Titolo"}, {"description", "Descrizione"}, {"date", "Data"}, {"attendees_count", "Numero di partecipanti"},
 	{"attendees", "Partecipanti"}, {"expected_absences", "Assenti previsti"}}
+
+// instructorReportDescriptionColumn is the schema index of Descrizione.
+const instructorReportDescriptionColumn = 4
 
 // instructorReportParse is dateutil's parser.parse(text, dayfirst=True): the date of the parsed value. A value that raises is
 // the 500 page, as is a zone-aware value. internal/pydateutil reads every Python str: its only other error is the
@@ -128,9 +148,9 @@ func (s *InstructorReport) Report(ctx context.Context, identity domain.ResolvedI
 		if len(days) == 0 {
 			continue
 		}
-		events, err := dto.AuditStoredJSON(registry.Events)
+		events, err := dto.StoredJSON(registry.Events)
 		if err != nil {
-			return nil, ErrInstructorReportNotPorted
+			return nil, instructorReportStoredJSONError(err)
 		}
 		for _, day := range days {
 			event, err := instructorReportEvent(events, day.AssociatedEvent)
@@ -234,6 +254,13 @@ func (s *InstructorReport) Report(ctx context.Context, identity domain.ResolvedI
 			frame.Columns = append(frame.Columns, column.label)
 		}
 	}
+	// The DataFrame keeps an int beyond int64 as a Python int: its digits are what
+	// astype(str) measures for the column width. xlsxwriter's write_number then
+	// takes float(number) and raises OverflowError past the double range, which
+	// generate_report_from_data logs and turns into report_file null, so the
+	// writer's column is built alongside.
+	writerCells := make([]xlsxexport.Value, len(rows))
+	overflow := false
 	for i, row := range rows {
 		description := row.description
 		if !dto.PythonTruthy(description) {
@@ -255,6 +282,9 @@ func (s *InstructorReport) Report(ctx context.Context, identity domain.ResolvedI
 		if err != nil {
 			return nil, err
 		}
+		writerCell, fits := instructorReportWriterCell(cell)
+		overflow = overflow || !fits
+		writerCells[i] = writerCell
 		frame.Rows = append(frame.Rows, []xlsxexport.Value{xlsxexport.StrValue(row.first), xlsxexport.StrValue(row.last),
 			xlsxexport.OptionalStr(row.course), xlsxexport.OptionalStr(row.title), cell, xlsxexport.StrValue(stamp),
 			xlsxexport.IntValue(row.count), xlsxexport.StrValue(attendees), xlsxexport.StrValue(absences)})
@@ -264,18 +294,33 @@ func (s *InstructorReport) Report(ctx context.Context, identity domain.ResolvedI
 		for r, row := range frame.Rows {
 			column[r] = row[c]
 		}
+		if c == instructorReportDescriptionColumn {
+			column = instructorReportWidthColumn(column)
+		}
 		longest, err := xlsxexport.StrLength(column)
 		if err != nil {
-			return nil, ErrInstructorReportNotPorted
+			// inferColumn has no failing input: no frame the exports build reaches it.
+			return nil, refusal.AppState("instructor report: StrLength cannot fail")
 		}
 		frame.Widths = append(frame.Widths, float64(max(longest, len([]rune(label)))+2))
 	}
-	workbook, err := xlsxexport.PandasXlsxwriter(frame, s.now())
+	var workbook []byte
+	var writeErr error
+	if overflow {
+		// xlsxwriter's write_number raises OverflowError; generate_report_from_data
+		// logs it and returns None (the response keeps report_file null).
+		writeErr = xlsxexport.ErrDjango
+	} else {
+		for i := range frame.Rows {
+			frame.Rows[i][instructorReportDescriptionColumn] = writerCells[i]
+		}
+		workbook, writeErr = xlsxexport.PandasXlsxwriter(frame, s.now())
+	}
 	var report any
 	switch {
-	case errors.Is(err, refusal.ErrAppState):
-		return nil, err // an input no view builds (xlsxexport.ErrUnexpectedInput)
-	case err != nil:
+	case errors.Is(writeErr, refusal.ErrAppState):
+		return nil, writeErr // an input no view builds (xlsxexport.ErrUnexpectedInput)
+	case writeErr != nil:
 		report = nil // generate_report_from_data logs and returns None
 	default:
 		report = base64.StdEncoding.EncodeToString(workbook)
@@ -338,9 +383,9 @@ func instructorReportPath(event domain.RequestObject, key string) any {
 // instructorReportSubscriptions is the loop over attendees (or expected
 // absences): each item's 'course_subscription_id', also added to ids.
 func instructorReportSubscriptions(text *string, ids map[string]bool) ([]any, error) {
-	value, err := dto.AuditStoredJSON(text)
+	value, err := dto.StoredJSON(text)
 	if err != nil {
-		return nil, ErrInstructorReportNotPorted
+		return nil, instructorReportStoredJSONError(err)
 	}
 	if value == nil {
 		return []any{}, nil
@@ -410,9 +455,9 @@ func instructorReportUUID(text string) (string, error) {
 
 // instructorReportCount is len(attendees) if attendees else 0.
 func instructorReportCount(text *string) (int64, error) {
-	value, err := dto.AuditStoredJSON(text)
+	value, err := dto.StoredJSON(text)
 	if err != nil {
-		return 0, ErrInstructorReportNotPorted
+		return 0, instructorReportStoredJSONError(err)
 	}
 	switch typed := value.(type) {
 	case []any:
@@ -427,7 +472,9 @@ func instructorReportCount(text *string) (int64, error) {
 	return 0, ErrInstructorReportServer
 }
 
-// instructorReportCell is the description as the DataFrame holds it.
+// instructorReportCell is the description as the DataFrame holds it: a str,
+// bool, float, the list/dict repr, or an int (an int beyond int64 keeps its
+// Python int with its digits).
 func instructorReportCell(value any) (xlsxexport.Value, error) {
 	switch typed := value.(type) {
 	case string:
@@ -439,17 +486,89 @@ func instructorReportCell(value any) (xlsxexport.Value, error) {
 		if !strings.ContainsAny(text, ".eE") {
 			number, err := strconv.ParseInt(text, 10, 64)
 			if err != nil {
-				return xlsxexport.Value{}, ErrInstructorReportNotPorted
+				if !errors.Is(err, strconv.ErrRange) {
+					// jsonb stores JSON numbers only, and ParseInt of an integer
+					// literal beyond int64 is a range error: no syntax error occurs.
+					return xlsxexport.Value{}, refusal.AppState("instructor report: integer literal is not a decimal int")
+				}
+				return xlsxexport.BigIntValue(text), nil
 			}
 			return xlsxexport.IntValue(number), nil
 		}
 		number, err := strconv.ParseFloat(text, 64)
 		if err != nil && !errors.Is(err, strconv.ErrRange) {
-			return xlsxexport.Value{}, ErrInstructorReportNotPorted
+			// A JSON number literal always parses; only a magnitude above the
+			// double range is a range error (Python reads it as inf).
+			return xlsxexport.Value{}, refusal.AppState("instructor report: float literal is not a JSON number")
 		}
 		return xlsxexport.FloatValue(number), nil
 	case []any, domain.RequestObject:
 		return xlsxexport.ObjectValue(dto.PythonStr(typed)), nil
 	}
-	return xlsxexport.Value{}, ErrInstructorReportNotPorted
+	// The caller replaces every falsy description (None included) with '', so no
+	// JSON value type reaches this branch.
+	return xlsxexport.Value{}, refusal.AppState("instructor report: unhandled description type")
+}
+
+// instructorReportWriterCell is the cell xlsxwriter receives for the DataFrame
+// value: write_number takes float(number) of a Python int and raises
+// OverflowError when the double range cannot hold it (fits=false).
+func instructorReportWriterCell(cell xlsxexport.Value) (writer xlsxexport.Value, fits bool) {
+	if cell.Kind != xlsxexport.BigInt {
+		return cell, true
+	}
+	// BigInt holds a decimal integer literal, which ParseFloat rounds to the
+	// nearest double exactly as Python's float(int) does; past the range it
+	// answers ±Inf with ErrRange.
+	number, err := strconv.ParseFloat(cell.Text, 64)
+	return xlsxexport.FloatValue(number), err == nil
+}
+
+var (
+	instructorReportMinInt64  = big.NewInt(math.MinInt64)
+	instructorReportMaxInt64  = big.NewInt(math.MaxInt64)
+	instructorReportMaxUint64 = new(big.Int).SetUint64(math.MaxUint64)
+)
+
+// instructorReportWidthColumn is the description column as pandas holds it for
+// astype(str): with a float present and no bool, text or list/dict value, an
+// all-int-and-float column becomes float64 (every int then shows its float)
+// unless an int needs uint64 and another is negative or beyond 2**64-1. Any
+// other column keeps each value's str(), an int beyond int64 as its digits.
+func instructorReportWidthColumn(cells []xlsxexport.Value) []xlsxexport.Value {
+	floats, negative, unsigned := false, false, false
+	for _, cell := range cells {
+		switch cell.Kind {
+		case xlsxexport.Float:
+			floats = true
+		case xlsxexport.Int:
+			negative = negative || cell.Int < 0
+		case xlsxexport.BigInt:
+			number, ok := new(big.Int).SetString(cell.Text, 10)
+			if !ok || number.Cmp(instructorReportMinInt64) < 0 || number.Cmp(instructorReportMaxUint64) > 0 {
+				return cells
+			}
+			negative = negative || number.Sign() < 0
+			unsigned = unsigned || number.Cmp(instructorReportMaxInt64) > 0
+		default:
+			return cells
+		}
+	}
+	if !floats || negative && unsigned {
+		return cells
+	}
+	widths := make([]xlsxexport.Value, len(cells))
+	for i, cell := range cells {
+		switch cell.Kind {
+		case xlsxexport.Float:
+			widths[i] = cell
+		case xlsxexport.Int:
+			widths[i] = xlsxexport.FloatValue(float64(cell.Int))
+		default:
+			// A BigInt inside the int64/uint64 ranges: float(int) rounds it.
+			number, _ := strconv.ParseFloat(cell.Text, 64)
+			widths[i] = xlsxexport.FloatValue(number)
+		}
+	}
+	return widths
 }

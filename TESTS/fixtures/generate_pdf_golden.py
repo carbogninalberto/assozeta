@@ -538,6 +538,19 @@ CASES += [
 ]
 
 
+# /balance-sheet: an income/expense description is any json.loads value; reportlab draws str(value), a list taken for a
+# list of flowables (which raises unless it flattens to nothing), in the sheet's portrait A3 layout with its header.
+DESCRIBED = [['A) ENTRATE', '', '', ''], ['Entrate Generali', '', '', ''],
+             [{'int': '5'}, '1,00', '0,00', '1,00'], [{'float': '1.5'}, '2,00', '0,00', '2,00'],
+             [{'bool': True}, '3,00', '0,00', '3,00'], [{'dict': [['k', {'int': '1'}], ['s', 'v']]}, '4,00', '0,00', '4,00'],
+             [{'int': '9223372036854775808'}, '5,00', '0,00', '5,00'], ['Totale entrate', '15,00', '0,00', '15,00']]
+CASES += [
+    balance('bs-description-values', header(None, 'ASD Aurora'), rows=DESCRIBED),
+    balance('bs-description-list', header(None, 'ASD Aurora'), rows=DESCRIBED + [[{'list': ['a', {'int': '1'}]}, '', '', '']]),
+    balance('bs-description-empty-list', header(None, 'ASD Aurora'), rows=DESCRIBED + [[{'list': []}, '', '', '']]),
+]
+
+
 def main():
     cases = []
     for case in CASES:
