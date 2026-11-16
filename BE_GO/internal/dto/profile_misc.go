@@ -301,16 +301,45 @@ func FreshMembershipErrors(value any) map[string]string {
 	return errors
 }
 
+// pythonFloatLiteral is float()'s finite decimal grammar after the reader
+// mapped Unicode decimal digits to ASCII and removed the underscores float()
+// accepts only between two digits.
+var pythonFloatLiteral = regexp.MustCompile(`^[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?$`)
+
+// pythonFloatUnderscores reports whether every '_' sits between two digits,
+// which is the only place float() accepts one (PEP 515).
+func pythonFloatUnderscores(text string) bool {
+	for i := 0; i < len(text); i++ {
+		if text[i] != '_' {
+			continue
+		}
+		if i == 0 || i+1 >= len(text) || text[i-1] < '0' || text[i-1] > '9' || text[i+1] < '0' || text[i+1] > '9' {
+			return false
+		}
+	}
+	return true
+}
+
 // PythonFloatRepr is repr(float(value)) for a value DecimalField already
-// accepted (a string or a JSON number); ok is false otherwise.
+// accepted (a string or a JSON number); ok is false otherwise. float() strips
+// ASCII/Unicode spaces (not U+001C..U+001F), maps Unicode decimal digits to
+// ASCII, accepts '_' only between digits and rejects hexadecimal forms.
 func PythonFloatRepr(value any) (string, bool) {
 	var text string
 	switch v := value.(type) {
 	case string:
-		text = strings.ReplaceAll(strings.TrimFunc(v, unicode.IsSpace), "_", "")
+		text = strings.TrimFunc(v, unicode.IsSpace)
 	case json.Number:
 		text = string(v)
 	default:
+		return "", false
+	}
+	text = PythonASCIIDigits(text)
+	if !pythonFloatUnderscores(text) {
+		return "", false
+	}
+	text = strings.ReplaceAll(text, "_", "")
+	if !pythonFloatLiteral.MatchString(text) {
 		return "", false
 	}
 	number, err := strconv.ParseFloat(text, 64)

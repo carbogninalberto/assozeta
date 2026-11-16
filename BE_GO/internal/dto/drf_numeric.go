@@ -36,25 +36,31 @@ func DRFInteger(value any) (*big.Int, string) {
 }
 
 // pythonDecimalLiteral is decimal.Decimal()'s finite grammar (digits may be
-// grouped by single underscores).
+// grouped by single underscores). DRFDecimal removes every underscore and maps
+// Unicode decimal digits to ASCII before matching it.
 var pythonDecimalLiteral = regexp.MustCompile(`^([+-])?((?:\d(?:_?\d)*)?)(?:\.((?:\d(?:_?\d)*)?))?(?:[eE]([+-]?\d(?:_?\d)*))?$`)
 
 // DRFDecimal is DecimalField.to_internal_value plus validate_precision and
-// quantize: it returns the quantized decimal text or an error code.
+// quantize: it returns the quantized decimal text or an error code. DRF strips
+// with str.strip() (U+001C..U+001F included), checks 1000 code points, then
+// Decimal(data) removes every underscore and maps any decimal digit (category
+// Nd) to ASCII before its grammar. NaN and the infinities are validation
+// errors like any syntax error DRF reports as 'invalid'.
 func DRFDecimal(value any, maxDigits, places int) (string, string) {
-	text := strings.TrimFunc(PythonStr(value), unicode.IsSpace)
+	text := PythonStrip(PythonStr(value))
 	if len([]rune(text)) > 1000 {
 		return "", DRFValidationMaxStringLength
 	}
+	text = PythonASCIIDigits(strings.ReplaceAll(text, "_", ""))
 	match := pythonDecimalLiteral.FindStringSubmatch(text)
 	if match == nil || match[2] == "" && match[3] == "" {
 		return "", DRFValidationNumber
 	}
 	sign := match[1]
-	whole, fraction := strings.ReplaceAll(match[2], "_", ""), strings.ReplaceAll(match[3], "_", "")
+	whole, fraction := match[2], match[3]
 	exponent := 0
 	if match[4] != "" {
-		parsed, err := strconv.Atoi(strings.ReplaceAll(match[4], "_", ""))
+		parsed, err := strconv.Atoi(match[4])
 		if err != nil {
 			return "", DRFValidationNumber
 		}

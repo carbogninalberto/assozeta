@@ -651,6 +651,9 @@ add('membership-fee-blank-float-error', 'owner', ONBOARD, 500, FIXED_ERROR, meth
     body={'membership_data': {'membership_fee': ''}}, effect=effect())
 add('membership-fee-spaces-float-error', 'owner', ONBOARD, 500, FIXED_ERROR, method='PATCH',
     body={'membership_data': {'membership_fee': '  ', 'subscription_fee': '9'}}, effect=effect())
+# Decimal('_1') is 1, so the serializer accepts the fee, but float('_1') raises: same fixed 500.
+add('membership-fee-underscore-float-error', 'owner', ONBOARD, 500, FIXED_ERROR, method='PATCH',
+    body={'membership_data': {'membership_fee': '_1'}}, effect=effect())
 
 # --- season/fiscal values the column cannot take roll everything back; the ones int() reads are stored ----
 def season_body(day, month=2, section='season'):
