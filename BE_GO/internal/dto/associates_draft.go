@@ -141,6 +141,13 @@ func PersonDateText(text string, now time.Time) (date time.Time, result Dateutil
 	return DateutilText(text, !personDateYearFirst(text), now)
 }
 
+// PersonDateTextAnyYear is PersonDateText for callers that never render the
+// date through strftime: a year before 1000 is an ordinary date (the views that
+// round-trip the text through '%d/%m/%Y' keep the refusal above).
+func PersonDateTextAnyYear(text string, now time.Time) (date time.Time, result DateutilResult, message string) {
+	return dateutilText(text, !personDateYearFirst(text), now, true)
+}
+
 // personDateYearFirst is YEAR_FIRST.match(text) is not None for
 // re.compile(r'\s*\d{4}\D'): leading whitespace, four decimal digits (any
 // script), then a character that is no decimal digit.

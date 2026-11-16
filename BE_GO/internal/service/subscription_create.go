@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log/slog"
 	"math/big"
+	"strconv"
 	"strings"
 	"time"
 
@@ -258,6 +259,18 @@ func dtoBoolean(value any) (bool, string) {
 		if v == "0" {
 			return false, ""
 		}
+		if containsAny(string(v), ".eE") {
+			// BooleanField.TRUE_VALUES holds the int 1 and FALSE_VALUES the int 0:
+			// `1.0 in {1, ...}` is true (equal hashes), any other float is invalid.
+			number, err := strconv.ParseFloat(string(v), 64)
+			switch {
+			case err != nil:
+			case number == 1:
+				return true, ""
+			case number == 0:
+				return false, ""
+			}
+		}
 	case string:
 		switch v {
 		case "t", "T", "y", "Y", "yes", "Yes", "YES", "true", "True", "TRUE", "on", "On", "ON", "1":
@@ -475,11 +488,14 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 		return nil, pythonKeyError("born_date")
 	}
 	// person_date(str(born_date)): Python str() of any JSON value (None, a
-	// boolean, an integer, a float or a container), then dateutil's reading.
+	// boolean, an integer, a float or a container), then dateutil's reading. The
+	// date is only used for the age: the serializer validates the text as sent,
+	// so a year before 1000 is no refusal here.
 	bornText := dto.PythonStr(bornValue)
-	born, result, failure := dto.PersonDateText(bornText, now)
+	born, result, failure := dto.PersonDateTextAnyYear(bornText, now)
 	if result == dto.DateutilUnsupported {
-		return nil, domain.ErrSubscriptionCreateNotPorted
+		// pydateutil's unexpected local zone: every caller passes time.UTC.
+		return nil, domain.ErrSubscriptionCreateUnreachable
 	}
 	if result != dto.DateutilParsed {
 		// str() of dateutil's exception.
@@ -529,11 +545,9 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 	// member is create_subscription's user: request.user, until a new member account replaces it.
 	var member domain.SubscriptionCreateMember
 	if request.AthleteRequest {
-		// The association of User.objects.get(username=data['sport_association']);
-		// accounts other than athletes are not ported.
-		if user.Role != domain.RoleAthlete {
-			return nil, domain.ErrSubscriptionCreateNotPorted
-		}
+		// The association of User.objects.get(username=data['sport_association']):
+		// any account that is not an association follows this branch (the import
+		// may have written another role), and keeps its own season settings.
 		named, _ := data.Lookup("sport_association")
 		owner, err := subscriptionNamedMember(ctx, tx, named)
 		if err != nil {
@@ -593,15 +607,12 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 	if err != nil {
 		return nil, subscriptionCreateCalendar(err)
 	}
-	// check_if_subscription_exists on the raw names and tax code.
+	// check_if_subscription_exists on the raw names and tax code (a CharField
+	// lookup compares str() of any other JSON value).
 	names := make([]*string, 3)
 	for i, name := range []string{"first_name", "last_name", "tax_code"} {
 		value, _ := associate.Lookup(name)
-		text, supported := dto.SubscriptionCreateText(value)
-		if !supported {
-			return nil, domain.ErrSubscriptionCreateNotPorted
-		}
-		names[i] = text
+		names[i] = dto.SubscriptionCreateText(value)
 	}
 	if custom, present := data.Lookup("custom_data"); present && custom != nil {
 		if _, isObject := custom.(domain.RequestObject); !isObject {
@@ -673,7 +684,7 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 				// associate_tutor in associate.tutors.all(): nothing to add.
 			case len(relations) > 0:
 				// get_main_tutor(), then tutors.add(primary_tutor) adds nothing: the new tutor is not linked.
-				if _, err = s.mainTutor(ctx, tx, saved.ID); err != nil {
+				if _, err = s.mainTutor(ctx, tx, saved.ID, request.Audit, ownAssociation); err != nil {
 					return nil, err
 				}
 			default:
@@ -723,15 +734,20 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 	}
 	var medical *string
 	if medicalID != nil {
-		text, isText := medicalID.(string)
-		if !isText {
-			return nil, domain.ErrSubscriptionCreateNotPorted
+		id := ""
+		if text, isText := medicalID.(string); isText {
+			parsed, err := paymentInfoParseUUID(text)
+			if err != nil {
+				return nil, djangoInvalidUUID(text)
+			}
+			id = parsed.String()
+		} else if parsed, valid := dto.UUIDFieldValue(medicalID); valid {
+			// UUIDField.to_python: an int (a bool included) is uuid.UUID(int=...).
+			id = parsed
+		} else {
+			// A float or a container: ValidationError('“<value>” is not a valid UUID.').
+			return nil, djangoInvalidUUID(dto.PythonStr(medicalID))
 		}
-		parsed, err := paymentInfoParseUUID(text)
-		if err != nil {
-			return nil, djangoInvalidUUID(text)
-		}
-		id := parsed.String()
 		// The association account's and the requester's certificates, those of the
 		// association's subscriptions and uploads without an account; any other id is
 		// treated like an unknown one.
@@ -926,7 +942,7 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 		}
 		if plan != nil {
 			if planName, ok = plan.Lookup("name"); !ok {
-				return nil, server
+				return nil, pythonKeyError("name")
 			}
 		}
 	}
@@ -937,7 +953,7 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 		}
 		if plan != nil {
 			if membershipPlanName, ok = plan.Lookup("name"); !ok {
-				return nil, server
+				return nil, pythonKeyError("name")
 			}
 		}
 	}
@@ -1315,32 +1331,35 @@ func (s *SubscriptionCreates) saveAssociate(ctx context.Context, tx domain.Subsc
 	return &row, nil
 }
 
-// subscriptionCreatePlan is extract_the_*_plan: the first plan whose
-// str(plan['id']) equals str(id); a plan without 'id' raises.
+// subscriptionCreatePlan is extract_the_subscription_plan: the first plan whose
+// str(plan['id']) equals str(id); a plans value that is not a list of objects
+// (the import stores the archive's jsonb as it is) or a plan without 'id' is
+// the exception Django lets out.
 func subscriptionCreatePlan(raw []byte, id any) (domain.RequestObject, error) {
 	parsed, err := dto.ParsePythonJSON(string(raw))
 	if err != nil {
 		// jsonb text is valid JSON, within the digit and nesting limits of the Python writers.
 		return nil, domain.ErrSubscriptionCreateUnreachable
 	}
-	plans, ok := parsed.([]any)
-	if !ok {
-		// The association import stores the archive's plans as they are (import_service.py), so any jsonb value can be here.
-		return nil, domain.ErrSubscriptionCreateNotPorted
+	var plans []any
+	switch value := parsed.(type) {
+	case []any:
+		plans = value
+	case string, domain.RequestObject:
+		// `for plan in value` yields the characters or the keys: plan['id'] is a TypeError.
+		return nil, pythonSubscriptError("")
+	default:
+		return nil, pythonFailure(fmt.Sprintf("'%s' object is not iterable", pythonTypeLabel(parsed)))
 	}
 	wanted := dto.PythonStr(id)
 	for _, item := range plans {
-		plan, ok := item.(domain.RequestObject)
-		if !ok {
-			return nil, domain.ErrSubscriptionCreateServer
-		}
-		value, present := plan.Lookup("id")
-		if !present {
-			return nil, domain.ErrSubscriptionCreateServer
+		id, err := quickPlanItem(item, "id")
+		if err != nil {
+			return nil, err
 		}
 		// str() renders a JSON float id the way Python does ('1.0', '1e+16').
-		if dto.PythonStr(value) == wanted {
-			return plan, nil
+		if dto.PythonStr(id) == wanted {
+			return item.(domain.RequestObject), nil
 		}
 	}
 	return nil, nil
@@ -1378,11 +1397,12 @@ func (s *SubscriptionCreates) fees(ctx context.Context, tx domain.SubscriptionCr
 	if kind == 1 || kind == 2 {
 		fee = json.Number(settings.SubscriptionFee)
 		if settings.MultipleSubscriptionFee {
-			// Any exception in the plan lookup falls back to the association's fee.
+			// get_subscription_fee wraps the whole lookup in try/except Exception:
+			// any exception falls back to the association's fee without a meta.
 			planID, present := data.Lookup("plan_id")
 			if present {
 				plan, err := subscriptionCreatePlan(settings.SubscriptionPlans, planID)
-				if errors.Is(err, domain.ErrSubscriptionCreateNotPorted) || errors.Is(err, domain.ErrSubscriptionCreateUnreachable) {
+				if errors.Is(err, domain.ErrSubscriptionCreateUnreachable) {
 					return fees, err
 				}
 				if err == nil && plan != nil {
@@ -1470,10 +1490,8 @@ func (s *SubscriptionCreates) membershipFee(ctx context.Context, tx domain.Subsc
 			return nil, nil, &domain.SubscriptionCreateInvalid{Detail: map[string]string{"msg": "Membership plan not found.", "code": "400"}}
 		}
 		value, hasFee := plan.Lookup("membership_fee")
-		name, hasName := plan.Lookup("name")
-		id, _ := plan.Lookup("id")
-		if !hasFee || !hasName {
-			return nil, nil, domain.ErrSubscriptionCreateServer
+		if !hasFee {
+			return nil, nil, pythonKeyError("membership_fee")
 		}
 		fee, err := subscriptionCreateFloat(value)
 		if err != nil {
@@ -1481,6 +1499,15 @@ func (s *SubscriptionCreates) membershipFee(ctx context.Context, tx domain.Subsc
 		}
 		switch kind {
 		case 2:
+			// The meta_payment_categories dict reads the name and the id after the fee.
+			name, hasName := plan.Lookup("name")
+			if !hasName {
+				return nil, nil, pythonKeyError("name")
+			}
+			id, hasID := plan.Lookup("id")
+			if !hasID {
+				return nil, nil, pythonKeyError("id")
+			}
 			category, err := s.membershipCategory(ctx, tx, settings)
 			if err != nil {
 				return nil, nil, err
@@ -1488,6 +1515,7 @@ func (s *SubscriptionCreates) membershipFee(ctx context.Context, tx domain.Subsc
 			return &fee, []any{domain.RequestObject{{Name: "payment_category_id", Value: category}, {Name: "amount", Value: fee},
 				{Name: "subject", Value: json.Number("0")}, {Name: "title", Value: name}, {Name: "id", Value: dto.PythonStr(id)}}}, nil
 		case 3:
+			// MEMBER_ONLY returns float(membership_plan['membership_fee']) and nothing else.
 			return &fee, nil, nil
 		}
 		return nil, nil, nil

@@ -70,10 +70,14 @@ func (h *SubscriptionRenewHandler) serve(c echo.Context, operation, name string,
 // createFailure renders create_subscription's APIExceptions as subscription/add does.
 func createFailure(c echo.Context, err error) error {
 	var invalid *domain.SubscriptionCreateInvalid
+	var rejected *domain.SubscriptionCreateRejected
 	var denied *domain.PermissionDenied
 	var invalidEvent *service.CourseWritesEventInvalid
 	request := c.Request()
 	switch {
+	case errors.As(err, &rejected):
+		// DRF's ValidationError(<text>): the message list is the body.
+		return c.JSON(400, rejected.Messages)
 	case errors.As(err, &invalidEvent):
 		// CourseEventsSerializer.is_valid(raise_exception=True) in the renewal's course loop.
 		return c.JSON(400, courseWritesMessages(request, invalidEvent.Fields))

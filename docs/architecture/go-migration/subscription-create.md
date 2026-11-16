@@ -264,22 +264,22 @@ A request without an account that declares a body above `PUBLIC_UPLOAD_MAX_BYTES
 ## Not ported
 
 Refused with the 500 page before anything is committed:
-- an athlete request from an account that
-  is neither an athlete nor an association; a `sport_association` that is a list or an object;
 - in the family wizard's entries every input refused for a single registration; in the quick subscription an
-  owner with several associations (`ErrSubscriptionCreateServer`, the 500 page, Django's own `AttributeError`), plan ids
-  of other shapes (booleans, containers) and a
-  certificate choice that depends on the unordered subscriptions;
+  owner with several associations (`ErrSubscriptionCreateServer`, the 500 page, Django's own `AttributeError`);
 - in a preregistration that renews a subscription: an account name matching several
   associations (application state: `User.username` is unique), a renewed subscription without an associate;
 - new member info with a non-string e-mail, a numeric
   `new_member` flag;
 - a placeholder file name over 255 characters: `Document.objects.create` raises the database error inside the transaction,
   which the view's except block cannot clean up, so the 500 page is answered and the whole registration rolls back;
+  associations (application state: `User.username` is unique), a subscription whose association account is a
+  collaborator (see below);
+- the placeholder certificate when the names sent are not strings, when the file name is not storable (over 255 characters,
+  control characters, a path the storage rejects), when the text is outside `pilplaceholder`'s subset, or when
+  `PIL_PLACEHOLDER_ZLIB` names an unknown zlib; 
 - an unknown non-canonical `associate_id` spelling or one whose save would hit the unique tax-code index (the `associate_id` branch
-  itself is ported, see [subscription-renew](subscription-renew.md)), a year before 1000 or a text
-  `internal/pydateutil` refuses (over 64 KiB), an associate that already has tutors when a tutor is added, a tutor sent with an
-  `associate_id` naming the minor's own row.
+  itself is ported, see [subscription-renew](subscription-renew.md)), a text `internal/pydateutil` refuses (over 64 KiB),
+  an associate that already has tutors when a tutor is added, a tutor sent with an `associate_id` naming the minor's own row.
 
 The placeholder text outside `pilplaceholder`'s subset is refused while drawing (an unknown `PIL_PLACEHOLDER_ZLIB` leaves
 the placeholder unwired): `create_subscription` swallows the drawing error inside its try block and creates no
@@ -458,3 +458,125 @@ registration back. Cases `wizard-certificate-placeholder-dotdot-component`,
 `wizard-certificate-placeholder-traversal-name`, `wizard-certificate-placeholder-numeric-name` and
 `wizard-certificate-placeholder-name-over-255-server-error`; `subscription/renew` and the draft approval run the same
 branch.
+## Long tail PR 4 (agent C): the create sites of the not-ported list
+
+- `get_main_tutor` (`user_models.py:526-537`) is ported: `tutor_relations.filter(is_primary=True).first()`, else
+  `tutor_relations.first()` (by key) with `is_primary = True` and its `save()`. The update entry is
+  `associatetutorrelation`, changes `{'is_primary': ['False', 'True']}`, indexed `associate.sport_association`
+  (the resolver reads `obj.associate.sport_association`); it comes before every other entry of the request. Go:
+  `mainTutor` + `MarkRelationPrimary` (`subscription_create_renewal.go`, `repository/subscription_create.go`).
+  A renewal of a minor whose only relation is not primary (case
+  `preregistration-renewal-main-tutor-made-primary`). The adapter now compares the seeded relation rows exactly.
+- `AssociateSerializer(None).data` (`subscriptions_utils.py:655-656`) builds a dict of empty fields (every field is
+  optional), and the next line, `subscription.associate.get_main_tutor()`, is `AttributeError: 'NoneType' object has
+  no attribute 'get_main_tutor'`: the 500 page on subscription/add and `{"status": "error", "msg": "'NoneType' object
+  has no attribute 'get_main_tutor'"}` on subscription/renew. Go: `pythonAttributeError(nil, "get_main_tutor")`;
+  case `preregistration-renewal-without-associate-server-error` (`Subscription.associate` is `SET_NULL`, so the row is
+  reachable).
+- A tutor without an account stored in another association: `AssociateSerializer(tutor).data` reads
+  `tutor.sport_association.user.user_id`, then `create_subscription` overwrites `sport_association` and `user` with the
+  registration's, and `AssociateSerializer.create`'s `associate_id` branch moves the row (or takes an existing row of
+  the target association with the same tax code). Go now does the same (`renewalPerson` + `saveAssociateByID`); case
+  `preregistration-renewal-tutor-of-another-association`. An update that moves a row indexes through its **new**
+  association (`associateUpdateIndex` reads the saved row, which is what the auditlog resolver loads).
+- Quick re-subscription plan ids: `plan['id'] == data['plan_id']` is Python's `==` for every JSON pair (`1 == 1.0`,
+  `True == 1`, exact big integers, NaN unequal to everything, lists and objects elementwise). Go: `pythonJSONEqual`
+  (`subscription_create_python.go`); cases `quick-quick-typed` (a stored `true` id matches `1`) and the existing
+  `quick-quick-fallback` family.
+- The quick fee is `Payment(amount=fee)` on `DecimalField(max_digits=9, decimal_places=2)`. A text fee is
+  `Decimal(value)` (surrounding whitespace and every underscore removed, any script's decimal digit), which keeps
+  every digit: the column is what rounds (halves away from zero, an overflow is the 500 page). An int is exact; a
+  float goes through `Context(prec=9).create_decimal_from_float` (nine significant digits, halves even); a
+  non-finite value and an exponent outside `Decimal()`'s own limits raise `to_python`'s `ValidationError`, which the
+  quick view does not catch (the 500 page). auditlog's create entry renders the **in-memory** value as it was passed
+  (`str('1_0.50')`, `'30'` for the int 30, the full `'0.0049999999999'`), the column the rounded one. Go:
+  `quickDecimal`/`quickDecimalText`/`numericText`; cases `quick-quick-underscore` (10.50 from `1_0.50`),
+  `quick-quick-digits` (`٢٥`), `quick-quick-third` (25.005 stored 25.01, audited 25.005), `quick-quick-exact`
+  (`0.0049999999999` stored 0.00), `quick-plan-fee-not-a-number-server-error`,
+  `quick-plan-fee-overflow-server-error`.
+- `subscription_fee_plans` of another shape (reachable: the import writes the archive's jsonb as it is):
+  `available[0]` on an object is `KeyError(0)`, `len()` of a number/boolean/null a `TypeError`, a text's characters
+  make `plan['id']` a `TypeError`, and a plan that is not an object or has no `id` raises too: all uncaught, the 500
+  page. The fallback branch (`if not found_plan and plan`) is inside `try/except Exception`:
+  `ValidationError(str(e))` (`'subscription_fee'`, `'name'`, `'int' object is not subscriptable`, ...) answers DRF's
+  400 with a **message list** (`["'subscription_fee'"]`). Go: `SubscriptionCreateRejected`, `quickPlanItem`,
+  `quickPlanMeta`; cases `quick-plans-object-server-error`, `quick-plans-number-server-error`,
+  `quick-plans-text-plan-id-server-error`, `quick-plans-item-server-error`, `quick-plan-without-fee-server-error`,
+  `quick-plan-without-name-server-error`, `quick-plans-text-fallback-validation`,
+  `quick-plans-item-fallback-validation`, `quick-plan-fallback-missing-fee-validation`.
+- The quick certificate (`get_latest_medical_certificate`) keeps the subscriptions' order and replaces the pick only
+  for a later (or the first) expiration date: ties keep the first row, which the two queries return in the same order.
+  The refusal is gone.
+- `extract_the_subscription_plan`/`extract_the_membership_plan` with plans that are no list: the exception text
+  (`'NoneType' object is not iterable`, `string indices must be integers, not 'str'`, `'id'`, `'name'`,
+  `'membership_fee'`) is what subscription/renew answers (`{"status": "error", "msg": ...}`); `get_subscription_fee`
+  swallows every exception of the lookup and falls back to the association's fee, while the plan-name lookup in
+  `create_subscription` does not (the 500 page on add). Go: `subscriptionCreatePlan`; case
+  `plan-not-a-list-server-error`.
+- `new_user_account.new_member` of 1.0/0.0 is true/false (`1.0 in {1, '1', True, ...}`), any other number is invalid
+  and creates no account; `initial_data['email']` is looked up with `str()` of the value (the column is NOT NULL, so
+  `None` matches nothing) and the serializer then validates it (`Enter a valid email address.` for a number,
+  `Not a valid string.` for a container); cases `new-member-float-true`, `new-member-float-false`,
+  `new-member-email-number`, `new-member-email-list`.
+- `User.objects.get(username=data['sport_association'])` compares `str()` of a container (no account: the 500 page);
+  case `anonymous-association-list-server-error`.
+- An athlete request names an account and reads *its* association: `SportAssociation.objects.get(user=...)` is the
+  500 page for an account without one (`athlete-form-athlete-username-server-error`). The port no longer requires the
+  named account to be an athlete: an imported collaborator that owns an association runs the registration in it.
+- `subscription_exists` compares `str()` of the names/tax code sent (CharField), while the serializer takes an int as
+  its text and rejects a container; cases `associate-first-name-number`, `associate-first-name-list-invalid`.
+- `MedicalCertificate.objects.filter(medical_id=...)` reads an int (a bool included) as `uuid.UUID(int=...)` (no
+  certificate) and a float/container as its `ValidationError` (the 500 page); cases
+  `medical-id-number-no-certificate`, `medical-id-float-server-error`.
+- The wizard's certificate date is `strptime`, whose `\d` reads the decimal digits of other scripts
+  (`dto.PythonStrptimeDMY`/`dto.PythonStrptimeDate`); the refusal is gone: case
+  `wizard-certificate-other-script-digits` (`1٥/03/2027` is 15 March 2027).
+- Birth dates: `person_date(str(value))` is read for the **age** only, so a year before 1000 is no refusal
+  (`dto.PersonDateTextAnyYear`); the serializer takes the request's text (`%d/%m/%Y` wants four year digits): case
+  `born-date-year-999` (`05/03/0999`). `pydateutil.ErrUnexpectedZone` is application state
+  (`ErrSubscriptionCreateUnreachable`: every caller passes `time.UTC`).
+  Where the fill renders a stored date (`fill_data_preregisration`'s born date and the certificate's expiration) the
+  text is `dto.PythonStrftimeYear`: on glibc a year below 1000 is unpadded (`05/03/999`) and the re-parse's four-digit
+  `%Y` rejects it (the born-date format error; the certificate date keeps its stored value), on macOS it is zero padded
+  and parses. Case `born-date-year-999` sends four digits and answers the same on either platform; the renewal case
+  `preregistration-renewal-year-999-born-date` is authored for glibc and appended at the very end, so a local macOS
+  run fails there (Django answers 200).
+- subscription/renew's course value: `UUIDField.to_python` of an int (a bool included) is `uuid.UUID(int=...)`; a
+  float or a container raises `ValidationError("“<value>” is not a valid UUID.")`, which is the view's 400 body
+  (`{"status": "error", "msg": "['“1.5” is not a valid UUID.']"}`). A subscription whose `subscription_duration` is
+  outside 1..3 keeps `start_date`/`end_date` NULL, and the renewal's payment query then raises
+  `ValueError("Cannot use None as a query value")` (the same 400 body). Both are renew-only sites (their cases belong
+  to the `subscription-renew` fixture).
+
+Left:
+- A renewed subscription whose association account is a collaborator (`User.sport_association` reads the connected
+  account's association, so the whole renewal runs in *that* association). The association import can make a
+  collaborator the owner of a second association, but the family's account fixture seeds only the owner's user and
+  association and cannot add the collaborator account (role, `connected_user`), so Go keeps refusing it before any
+  write.
+- A non-canonical `associate_id` spelling. Django stores `instance.pk` exactly as sent, so auditlog's create entry's
+  `object_pk`, its `object_repr` (`Associate object (<sent text>)`) and its `associate_id` change all hold the sent
+  text, while the column and every later lookup keep the canonical uuid — and the following
+  `associate.user = user; save()` logs the raw/canonical difference as an update entry. Porting needs per-field
+  create-diff overrides and that second entry, and the audit model compares the create diff against the stored row.
+- A tutor whose `associate_id` is the minor's own key (two serializer saves of one row and the stale-instance
+  write-back): the structural support exists, the case was not authored.
+- The unique tax-code index fallbacks (`get_or_create`'s `IntegrityError` retries).
+- The two renew sites below.
+
+Two renew sites stay refused because their Django answer is the 400 body
+`{"status": "error", "msg": str(e)}` of an exception the port does not reproduce, or a path the family cannot seed:
+
+- `subscription_renew.go`'s `renewError` maps `ErrSubscriptionCreateServer` to the refusal. The renew view answers
+  `except Exception as e: Response({"status": "error", "msg": str(e)}, 400)` (subscriptions_views.py:286-292), so
+  Django's 400 text is the message of the unmodelled exception (`float(membership_plan['membership_fee'])`'s
+  `ValueError`, `str(None.payment_category_id)`'s `AttributeError`, the season helpers' errors). Those sites are
+  outside this assignment's list; refusing keeps Django's 500 page rather than a wrong 400 body. The sites outside the
+  view's `try` (e.g. `renewRequesterOwner`'s DoesNotExist) answer the 500 page either way.
+- `subscription_renew.go`'s course loop maps `courseEnrolmentServer` to the refusal: the exception rises inside the
+  shared course-enrolment port (`course_enrolment_overview.go`, outside this assignment's files), and the
+  subscription-create family seeds no `Course` rows at all, so the only reachable course outcome in it is the missing
+  course (`pythonAttributeError(nil, "course_type")`, already ported and covered by the existing courses cases).
+
+Evidence this round: 32 new cases (248 in all) in `TESTS/fixtures/subscription_create_http.json`. RED/GREEN and the
+mutation control are the orchestrator's runs (this worker does not run the family).

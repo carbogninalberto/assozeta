@@ -90,8 +90,12 @@ func (h *SubscriptionCreateHandler) Add(c echo.Context) error {
 	}
 	result, err := h.creates.Add(write.Context, *identity, input)
 	var invalid *domain.SubscriptionCreateInvalid
+	var rejected *domain.SubscriptionCreateRejected
 	var denied *domain.PermissionDenied
 	switch {
+	case errors.As(err, &rejected):
+		// DRF's ValidationError(<text>): the message list is the body.
+		return c.JSON(400, rejected.Messages)
 	case errors.As(err, &invalid):
 		if invalid.Detail != nil {
 			return c.JSON(400, invalid.Detail)

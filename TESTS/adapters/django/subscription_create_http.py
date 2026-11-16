@@ -196,9 +196,12 @@ def seed_rows(source, created):
                                     user_id=ids[row['user']] if row['user'] else None, email=row['email'],
                                     is_minor=row.get('is_minor', False)))
     from application.models.user_models import AssociateTutorRelation
-    for row in source.get('relations', {}).values():
-        insert(AssociateTutorRelation, AssociateTutorRelation(associate_id=source['associates'][row['associate']]['id'],
-                                                              tutor_id=source['associates'][row['tutor']]['id'], is_primary=row['primary']))
+    STATE['relations'] = {}
+    for label, row in source.get('relations', {}).items():
+        relation = insert(AssociateTutorRelation, AssociateTutorRelation(associate_id=source['associates'][row['associate']]['id'],
+                                                                        tutor_id=source['associates'][row['tutor']]['id'],
+                                                                        is_primary=row['primary']))
+        STATE['relations'][label] = relation.pk
     for row in source['certificates'].values():
         insert(MedicalCertificate, MedicalCertificate(medical_id=row['id'], user_id=ids[row['user']] if row['user'] else None,
                                                       expiration_date=date.fromisoformat(row['expiration']) if row.get('expiration') else None))
@@ -213,7 +216,8 @@ def seed_rows(source, created):
             extra['creation_date'] = datetime.fromisoformat(row['created'].replace('Z', '+00:00'))
         insert(Subscription, Subscription(
             subscription_id=row['id'], sport_association_id=association, user_id=ids[row['user']] if 'user' in row else owner,
-            associate_id=source['associates'][row['associate']]['id'], start_date=resolve_date(row['start']),
+            associate_id=source['associates'][row['associate']]['id'] if row.get('associate') else None,
+            start_date=resolve_date(row['start']),
             end_date=resolve_date(row['end']), archived=row['archived'], subscription_number=row['number'], status_flag=4,
             medical_id=source['certificates'][row['medical']]['id'] if row.get('medical') else None, **extra))
     for row in source['payments'].values():
@@ -505,6 +509,13 @@ def check_rows(case, effect, before, after, ids, since, until, binding):
     for identifier, row in associates_old.items():
         expected = {**row, **resolve(changed.get(identifier, {}), binding)}
         contract.require(associates[identifier] == expected, 'state.associate-changed')
+    # Tutor relations: the seeded rows stay, except the one get_main_tutor made primary.
+    primary = effect.get('relation_primary')
+    for identifier, row in rows(before, LABELS['relation']).items():
+        expected = {**row, 'is_primary': True} if primary and identifier == str(STATE['relations'][primary]) else row
+        contract.require(rows(after, LABELS['relation']).get(identifier) == expected, 'state.relation-changed:' + str(identifier))
+    if primary:
+        binding['$relation'] = str(STATE['relations'][primary])
     # Tutor relation.
     relations = new[LABELS['relation']]
     contract.require(len(relations) == (1 if effect.get('relation') else 0), 'state.relation-count')

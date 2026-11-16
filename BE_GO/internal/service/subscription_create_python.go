@@ -4,6 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math"
+	"math/big"
+	"strconv"
+	"strings"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
@@ -45,6 +49,113 @@ func containsAny(text, chars string) bool {
 				return true
 			}
 		}
+	}
+	return false
+}
+
+// pythonNumberValue is a Python number (an int, a float or a bool, which is an
+// int) as Python compares it: an exact rational, an infinity, or NaN.
+type pythonNumberValue struct {
+	rational *big.Rat
+	// infinite is -1 or 1 for the infinities; nan marks NaN.
+	infinite int
+	nan      bool
+}
+
+func pythonFloatNumber(value float64) pythonNumberValue {
+	switch {
+	case math.IsNaN(value):
+		return pythonNumberValue{nan: true}
+	case math.IsInf(value, 1):
+		return pythonNumberValue{infinite: 1}
+	case math.IsInf(value, -1):
+		return pythonNumberValue{infinite: -1}
+	}
+	rational := new(big.Rat)
+	rational.SetFloat64(value) // exact: a finite float is a binary fraction
+	return pythonNumberValue{rational: rational}
+}
+
+// pythonNumericValue is value as a Python number; ok is false for the values
+// number equality does not apply to (texts, containers, None).
+func pythonNumericValue(value any) (pythonNumberValue, bool) {
+	switch v := value.(type) {
+	case bool:
+		if v {
+			return pythonNumberValue{rational: big.NewRat(1, 1)}, true
+		}
+		return pythonNumberValue{rational: big.NewRat(0, 1)}, true
+	case float64:
+		return pythonFloatNumber(v), true
+	case json.Number:
+		text := string(v)
+		if !strings.ContainsAny(text, ".eE") {
+			integer, ok := new(big.Int).SetString(text, 10)
+			if !ok {
+				return pythonNumberValue{}, false
+			}
+			return pythonNumberValue{rational: new(big.Rat).SetInt(integer)}, true
+		}
+		number, err := strconv.ParseFloat(text, 64)
+		if err != nil {
+			if failure, ok := err.(*strconv.NumError); !ok || failure.Err != strconv.ErrRange {
+				return pythonNumberValue{}, false
+			}
+		}
+		return pythonFloatNumber(number), true
+	}
+	return pythonNumberValue{}, false
+}
+
+func (n pythonNumberValue) equal(other pythonNumberValue) bool {
+	if n.nan || other.nan {
+		return false
+	}
+	if n.infinite != 0 || other.infinite != 0 {
+		return n.infinite == other.infinite
+	}
+	return n.rational.Cmp(other.rational) == 0
+}
+
+// pythonJSONEqual is Python's == between two parsed JSON values (the request
+// reader's model: domain.RequestObject objects): numbers compare by
+// value across int, float and bool (an int exactly, a float as its binary
+// value, NaN unequal to everything), texts and containers structurally (dict
+// keys are unique in JSON, so same length and every key holds an equal value).
+func pythonJSONEqual(left, right any) bool {
+	if number, ok := pythonNumericValue(left); ok {
+		other, ok := pythonNumericValue(right)
+		return ok && number.equal(other)
+	}
+	switch l := left.(type) {
+	case nil:
+		return right == nil
+	case string:
+		r, ok := right.(string)
+		return ok && l == r
+	case []any:
+		r, ok := right.([]any)
+		if !ok || len(l) != len(r) {
+			return false
+		}
+		for index := range l {
+			if !pythonJSONEqual(l[index], r[index]) {
+				return false
+			}
+		}
+		return true
+	case domain.RequestObject:
+		r, ok := right.(domain.RequestObject)
+		if !ok || len(l) != len(r) {
+			return false
+		}
+		for _, field := range l {
+			value, present := r.Lookup(field.Name)
+			if !present || !pythonJSONEqual(field.Value, value) {
+				return false
+			}
+		}
+		return true
 	}
 	return false
 }
@@ -118,16 +229,12 @@ func (s *SubscriptionCreates) namedAssociation(ctx context.Context, tx domain.Su
 }
 
 // subscriptionNamedMember is User.objects.get(username=...) for
-// data['sport_association'] (str() of the value; no live user: the 500 page).
+// data['sport_association'] (str() of the value, as the CharField lookup
+// compares it; no live user: the 500 page).
 func subscriptionNamedMember(ctx context.Context, tx domain.SubscriptionCreateTransaction, value any) (*domain.SubscriptionCreateMember, error) {
-	switch value.(type) {
-	case nil:
+	if value == nil {
+		// username=None is `username IS NULL`: no account.
 		return nil, domain.ErrSubscriptionCreateServer
-	case string, json.Number, bool, domain.RequestUpload:
-		// A multipart file part is compared by its name (str() of the upload).
-	default:
-		// Containers as a lookup value are not ported.
-		return nil, domain.ErrSubscriptionCreateNotPorted
 	}
 	member, err := tx.MemberByUsername(ctx, dto.PythonStr(value))
 	if err != nil {
@@ -159,13 +266,14 @@ func (s *SubscriptionCreates) namedUser(ctx context.Context, data domain.Request
 	return &domain.Account{ID: member.ID, Role: member.Role}, nil
 }
 
-// associateUpdateIndex is the audit index of an Associate update entry, which
-// auditlog writes before the UPDATE: the resolver reads the row through
-// the default manager (live rows), then changes_json, then the actor.
+// associateUpdateIndex is the audit index of an Associate update entry: the
+// resolver reads the saved row through the default manager (live, group-aware
+// rows, so an update that moves the row indexes through its new association),
+// then changes_json, then the actor.
 func (s *SubscriptionCreates) associateUpdateIndex(ctx context.Context, tx domain.SubscriptionCreateTransaction, audit subscriptionAudit,
-	old domain.SubscriptionEditAssociate, changes map[string][2]string) (*string, string, error) {
-	if !old.Deleted && old.AssociationID != nil {
-		association := *old.AssociationID
+	updated domain.SubscriptionEditAssociate, changes map[string][2]string) (*string, string, error) {
+	if !updated.Deleted && updated.AssociationID != nil && audit.visible(&updated) {
+		association := *updated.AssociationID
 		return &association, "direct", nil
 	}
 	if pair, ok := changes["sport_association"]; ok {
@@ -262,7 +370,7 @@ func (s *SubscriptionCreates) saveAssociateByID(ctx context.Context, tx domain.S
 		}
 		// The default manager hides the previous state: every field against None.
 		created := map[string][2]string{"sport_association": {"None", subscriptionEditValue(row.AssociationID)}}
-		index, path, err := s.associateUpdateIndex(ctx, tx, audit, old, created)
+		index, path, err := s.associateUpdateIndex(ctx, tx, audit, row, created)
 		if err != nil {
 			return nil, err
 		}
@@ -272,7 +380,7 @@ func (s *SubscriptionCreates) saveAssociateByID(ctx context.Context, tx domain.S
 		return &row, nil
 	}
 	changes := associateChanges(old, row)
-	index, path, err := s.associateUpdateIndex(ctx, tx, audit, old, changes)
+	index, path, err := s.associateUpdateIndex(ctx, tx, audit, row, changes)
 	if err != nil {
 		return nil, err
 	}

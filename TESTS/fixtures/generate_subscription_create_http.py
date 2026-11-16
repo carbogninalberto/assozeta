@@ -542,7 +542,7 @@ def placeholder_text(first, last, moment):
                         '''
 
 
-def placeholder(name, data, full_name, medical_certificate, iso, *, first=None, last=None, stored=None):
+def placeholder(name, data, full_name, medical_certificate, iso, *, first=None, last=None, stored=None, setup=None):
     first, last = first or data['first_name'], last or data['last_name']
     # auditlog also renders the Document's reverse accessor that declares a related_name.
     extra = [{'model': 'document', 'action': 0, 'ref': 'placeholder_document',
@@ -554,7 +554,8 @@ def placeholder(name, data, full_name, medical_certificate, iso, *, first=None, 
                      subscription={**PLAIN, 'medical_id': '$placeholder_medical'}, membership=dict(MEMBER), extra_audit=extra)
     effect['placeholder'] = {'filename': f'medical_certificate_{first}_{last}.png', 'expiration': iso,
                              'text': placeholder_text(first, last, iso + ' 00:00:00+00:00')}
-    add(name, 'owner', 200, SUCCESS(25.0), body=request(data, medical_certificate=medical_certificate), effect=effect)
+    add(name, 'owner', 200, SUCCESS(25.0), body=request(data, medical_certificate=medical_certificate), effect=effect,
+        **({'setup': setup} if setup else {}))
 
 
 placeholder('wizard-certificate-placeholder', person('Pia', 'Segnaposto', 'SGNPIA90C41H501K'), 'Pia Segnaposto',
@@ -1719,8 +1720,9 @@ add('owner-body-above-the-limit', 'owner', 400, VALIDATION, body={**without_sign
 # --- Placeholder file names (authored last: a created subscription moves the stored number sequence) ------------------
 # '../x' is one file-name component ("medical_certificate_../x_..."), not a '..' path segment: the name is accepted and
 # the certificate is created, '..' only naming part of a directory of the stored key.
+# The quick cases above leave quote management off: the base settings come back first.
 placeholder('wizard-certificate-placeholder-dotdot-component', person('../x', 'Traversa', 'TRVRSS90C41H501J'), '../x Traversa',
-            {'medical_id': None, 'filename': '', 'certificate_expring_date': '2027-03-31'}, '2027-03-31')
+            {'medical_id': None, 'filename': '', 'certificate_expring_date': '2027-03-31'}, '2027-03-31', setup=BASE_SETTINGS)
 # A name whose directory part holds a '..' path segment: the storage name is rejected, no certificate.
 placeholder_rejected('wizard-certificate-placeholder-traversal-name', person('x/../y', 'Traversa', 'TRVRSS91C41H501K'),
                      'x/../y Traversa', {'medical_id': None, 'filename': '', 'certificate_expring_date': '2027-03-31'})
@@ -1735,6 +1737,226 @@ add('wizard-certificate-placeholder-name-over-255-server-error', 'owner', 500, S
 placeholder('wizard-certificate-placeholder-numeric-name', person(7, 'Numerico', 'NMRCNT90C41H501K'), '7 Numerico',
             {'medical_id': None, 'filename': '', 'certificate_expring_date': '2027-03-31'}, '2027-03-31',
             stored={'first_name': '7'})
+
+# --- The sites this round ports --------------------------------------------------------------------------------
+# The association import writes the archive's values as they are: fee plans and
+# their ids of any JSON type. resolve_subscription_fee_and_meta compares
+# plan['id'] == data['plan_id'] with Python's == (1 == 1.0 == True) and Payment's
+# DecimalField(9, 2) takes Decimal() of the fee (underscores, other-script digits,
+# exponents) then stores two decimals; get_main_tutor makes the first relation
+# primary; an account named by a non-association request keeps its own season.
+site_ids = iter(f'a1000000-0000-4000-8000-{980001 + n:012d}' for n in range(70))
+# Ids of the cases appended below the first block do not shift the ones authored before them.
+late_ids = iter(f'a1000000-0000-4000-8000-{981001 + n:012d}' for n in range(10))
+for label, first, tax in (('quick_typed', 'Tina', 'TPQNTA80A41H501Z'), ('quick_underscore', 'Ugo', 'NDRQGO80A01H501C'),
+                          ('quick_digits', 'Dina', 'DGTDNI80A01H501D'), ('quick_third', 'Tito', 'TRDQTO80A01H501E'),
+                          ('quick_invalid', 'Ivo', 'NFDQVO80A01H501F'), ('quick_overflow', 'Otto', 'VRFQTO80A01H501G')):
+    ASSOCIATES[label] = {'id': next(site_ids), 'association': OWN, 'first': first, 'last': 'Piano', 'tax_code': tax,
+                         'born': '1980-01-01', 'user': 'owner', 'email': None}
+QUICK_ANY_PLAN = {'association': {'multiple_subscription_fee': True, 'subscription_fee': '25.00', 'enable_quotes_management': False},
+                  'owner': {'subscription_duration': 2}}
+RENEW_SETUP = {'association': dict(BASE_SETTINGS['association']), 'owner': dict(BASE_SETTINGS['owner'])}
+
+
+def any_plans(plans, **association):
+    return {'association': {**QUICK_ANY_PLAN['association'], 'subscription_fee_plans': plans, **association},
+            'owner': dict(QUICK_ANY_PLAN['owner'])}
+
+
+# Python's == across JSON types: true == 1, so the stored boolean id matches the number sent.
+quick('owner', 'quick_typed', 'Tina Piano', plan=1,
+      setup=any_plans([{'id': True, 'name': 'Booleano', 'subscription_fee': 30},
+                       {'id': '1', 'name': 'Testo', 'subscription_fee': 40}]),
+      payment={'amount': '30.00', '$audit': '30',
+               'meta': {'subscription_data': {'subscription_fee': 30, 'name': 'Booleano', 'id': True}}}, subscription={})
+# Decimal() removes every underscore and maps the decimal digits of other scripts; the column keeps two decimals.
+quick('owner', 'quick_underscore', 'Ugo Piano', plan='u',
+      setup=any_plans([{'id': 'u', 'name': 'Trattino', 'subscription_fee': '1_0.50'}]),
+      payment={'amount': '10.50', '$audit': '1_0.50',
+               'meta': {'subscription_data': {'subscription_fee': '1_0.50', 'name': 'Trattino', 'id': 'u'}}}, subscription={})
+quick('owner', 'quick_digits', 'Dina Piano', plan='d',
+      setup=any_plans([{'id': 'd', 'name': 'Cifre', 'subscription_fee': '\u0662\u0665'}]),
+      payment={'amount': '25.00', '$audit': '\u0662\u0665',
+               'meta': {'subscription_data': {'subscription_fee': '\u0662\u0665', 'name': 'Cifre', 'id': 'd'}}}, subscription={})
+# PostgreSQL rounds the decimal it receives to numeric(9, 2), halves away from zero.
+quick('owner', 'quick_third', 'Tito Piano', plan='t',
+      setup=any_plans([{'id': 't', 'name': 'Terzo', 'subscription_fee': 25.005}]),
+      payment={'amount': '25.01', '$audit': '25.005',
+               'meta': {'subscription_data': {'subscription_fee': 25.005, 'name': 'Terzo', 'id': 't'}}}, subscription={})
+# A text fee is Decimal(text), which keeps every digit: the column is what rounds
+# (0.0049999999999 is below half a cent), while auditlog renders the text as sent.
+ASSOCIATES['quick_exact'] = {'id': next(late_ids), 'association': OWN, 'first': 'Ettore', 'last': 'Esatto', 'tax_code': 'SSTTTR80A01H501H',
+                             'born': '1980-01-01', 'user': 'owner', 'email': None}
+quick('owner', 'quick_exact', 'Ettore Esatto', plan='e',
+      setup=any_plans([{'id': 'e', 'name': 'Esatto', 'subscription_fee': '0.0049999999999'}]),
+      payment={'amount': '0.00', '$audit': '0.0049999999999',
+               'meta': {'subscription_data': {'subscription_fee': '0.0049999999999', 'name': 'Esatto', 'id': 'e'}}}, subscription={})
+# Decimal() raises (ValueError): Payment.save does not handle it, the 500 page.
+add('quick-plan-fee-not-a-number-server-error', 'owner', 500, SERVER, query='?m=only_associate',
+    setup=any_plans([{'id': 'x', 'name': 'Rotto', 'subscription_fee': 'non-un-numero'}]),
+    body={'associate': ASSOCIATES['quick_invalid']['id'], 'plan_id': 'x'})
+add('quick-plan-fee-overflow-server-error', 'owner', 500, SERVER, query='?m=only_associate',
+    setup=any_plans([{'id': 'x', 'name': 'Grande', 'subscription_fee': 10000000}]),
+    body={'associate': ASSOCIATES['quick_overflow']['id'], 'plan_id': 'x'})
+
+# subscription_fee_plans of another shape (the import writes the archive's jsonb as it
+# is): available[0] on an object, len() of a number and plan['id'] of a character raise
+# in the view (the 500 page); the fallback's own errors are ValidationError(str(e))
+# (a 400 body whose message list is the exception's text).
+add('quick-plans-object-server-error', 'owner', 500, SERVER, query='?m=only_associate',
+    setup=any_plans({'a': 1}), body={'associate': ASSOCIATES['quick_typed']['id']})
+add('quick-plans-number-server-error', 'owner', 500, SERVER, query='?m=only_associate',
+    setup=any_plans(5), body={'associate': ASSOCIATES['quick_typed']['id']})
+add('quick-plans-text-plan-id-server-error', 'owner', 500, SERVER, query='?m=only_associate',
+    setup=any_plans('ab'), body={'associate': ASSOCIATES['quick_typed']['id'], 'plan_id': 'a'})
+add('quick-plans-item-server-error', 'owner', 500, SERVER, query='?m=only_associate',
+    setup=any_plans([5]), body={'associate': ASSOCIATES['quick_typed']['id'], 'plan_id': 'a'})
+add('quick-plan-without-fee-server-error', 'owner', 500, SERVER, query='?m=only_associate',
+    setup=any_plans([{'id': 'a', 'name': 'Senza quota'}]), body={'associate': ASSOCIATES['quick_typed']['id'], 'plan_id': 'a'})
+add('quick-plan-without-name-server-error', 'owner', 500, SERVER, query='?m=only_associate',
+    setup=any_plans([{'id': 'a', 'subscription_fee': 1}]), body={'associate': ASSOCIATES['quick_typed']['id'], 'plan_id': 'a'})
+add('quick-plans-text-fallback-validation', 'owner', 400, ["string indices must be integers, not 'str'"], query='?m=only_associate',
+    setup=any_plans('ab'), body={'associate': ASSOCIATES['quick_typed']['id']})
+add('quick-plans-item-fallback-validation', 'owner', 400, ["'int' object is not subscriptable"], query='?m=only_associate',
+    setup=any_plans([5]), body={'associate': ASSOCIATES['quick_typed']['id']})
+add('quick-plan-fallback-missing-fee-validation', 'owner', 400, ["'subscription_fee'"], query='?m=only_associate',
+    setup=any_plans([{'id': 'a', 'name': 'Primo', 'subscription_fee': 1}, {'id': 'b'}]),
+    body={'associate': ASSOCIATES['quick_typed']['id'], 'plan_id': 'nessuno'})
+
+# extract_the_subscription_plan iterates subscription_fee_plans outside get_subscription_fee's
+# try: an object's keys make plan['id'] a TypeError, and the view answers the 500 page.
+PLAN_OBJECT_SETUP = {'association': {**BASE_SETTINGS['association'], 'multiple_subscription_fee': True,
+                                     'subscription_fee_plans': {'a': 1}},
+                     'owner': dict(BASE_SETTINGS['owner'])}
+number_person = person('Nino', 'Numerato', 'NMRNNI90C01H501K')
+add('plan-not-a-list-server-error', 'owner', 500, SERVER, setup=PLAN_OBJECT_SETUP, body=request(number_person, plan_id='a'))
+
+# BooleanField's TRUE_VALUES hold the int 1: `1.0 in {1, '1', True, ...}` is true and
+# `0.0 in {0, ...}` false. An e-mail that already has an account links nothing, so both
+# values are a plain registration.
+float_true = person('Frida', 'Virgola', 'VRGFRD90C41H501L')
+add('new-member-float-true', 'owner', 200, SUCCESS(25.0), setup=RENEW_SETUP,
+    body=request(float_true, account={'new_member': 1.0, 'new_member_info': {'first_name': 'Frida', 'last_name': 'Virgola',
+                                                                           'email': ATHLETE_EMAIL}}),
+    effect=success('owner', 'Frida Virgola', associate=created_associate(float_true), payment=new_payment('25.00', audit_amount='25.0'),
+                   subscription=dict(PLAIN), membership=dict(MEMBER)))
+float_false = person('Franco', 'Virgola', 'VRGFRN90C41H501M')
+add('new-member-float-false', 'owner', 200, SUCCESS(25.0), setup=RENEW_SETUP,
+    body=request(float_false, account={'new_member': 0.0, 'new_member_info': {'first_name': 'Franco', 'last_name': 'Virgola',
+                                                                            'email': ATHLETE_EMAIL}}),
+    effect=success('owner', 'Franco Virgola', associate=created_associate(float_false), payment=new_payment('25.00', audit_amount='25.0'),
+                   subscription=dict(PLAIN), membership=dict(MEMBER)))
+# The e-mail lookup compares str() of the value (CharField), then UserSerializer validates it:
+# a number becomes its text and fails the e-mail rule, a container is not a string.
+add('new-member-email-number', 'owner', 400, {'email': ['Enter a valid email address.']}, setup=RENEW_SETUP,
+    body=request(person('Nino', 'Email', 'EMLNMR90C01H501N'),
+                 account={'new_member': True, 'new_member_info': {'first_name': 'Nino', 'last_name': 'Email', 'email': 5}}))
+add('new-member-email-list', 'owner', 400, {'email': ['Not a valid string.']}, setup=RENEW_SETUP,
+    body=request(person('Nino', 'Email', 'EMLNMR90C01H501N'),
+                 account={'new_member': True, 'new_member_info': {'first_name': 'Nino', 'last_name': 'Email', 'email': ['a@example.test']}}))
+
+# User.objects.get(username=data['sport_association']) compares str() of the value: a list is no account.
+add('anonymous-association-list-server-error', 'anonymous', 500, SERVER,
+    body=request(person('Anna', 'Lista', 'LSTNNA90C41H501P'), sport_association=[OWNER_NAME]))
+
+# check_if_subscription_exists compares str() of the raw names (CharField); the serializer then
+# takes an int as its text and rejects a container.
+named_number = person('Quaranta', 'Due', 'DRQNTA90C41H501Q', first_name=42)
+add('associate-first-name-number', 'owner', 200, SUCCESS(25.0), setup=RENEW_SETUP,
+    body=request(named_number),
+    effect=success('owner', '42 Due', associate=created_associate({**named_number, 'first_name': '42'}),
+                   payment=new_payment('25.00', audit_amount='25.0'), subscription=dict(PLAIN), membership=dict(MEMBER)))
+add('associate-first-name-list-invalid', 'owner', 400, {'first_name': ['Not a valid string.']}, setup=RENEW_SETUP,
+    body=request(person('Rita', 'Lista', 'LSTRTI90C41H501R', first_name=['x'])))
+
+# MedicalCertificate.objects.filter(medical_id=<value>): UUIDField.to_python reads an int (a bool
+# included) as uuid.UUID(int=...), which names no certificate; a float is its ValidationError.
+medical_number = person('Nadia', 'Numero', 'NMRNDA90C41H501S')
+add('medical-id-number-no-certificate', 'owner', 200, SUCCESS(25.0), setup=RENEW_SETUP,
+    body=request(medical_number, medical_certificate={'medical_id': 5}),
+    effect=success('owner', 'Nadia Numero', associate=created_associate(medical_number), payment=new_payment('25.00', audit_amount='25.0'),
+                   subscription=dict(PLAIN), membership=dict(MEMBER)))
+add('medical-id-float-server-error', 'owner', 500, SERVER, setup=RENEW_SETUP,
+    body=request(person('Nadia', 'Numero', 'NMRNDA90C41H501S'), medical_certificate={'medical_id': 1.5}))
+
+# The wizard's certificate date: strptime's \d reads the decimal digits of other scripts.
+CERTIFICATES['unicode_digits'] = {'id': next(site_ids), 'user': 'owner'}
+wizard('wizard-certificate-other-script-digits', person('Ugo', 'Cifrato', 'CFRUGO90C41H501T'), 'Ugo Cifrato',
+       {'medical_id': CERTIFICATES['unicode_digits']['id'], 'filename': 'c.pdf',
+        'certificate_expring_date': '1\u0665/03/2027'},
+       medical={'label': 'unicode_digits', 'columns': {'expiration_date': '2027-03-15'},
+                'audit': {'expiration_date': ['None', '2027-03-15 00:00:00']}, 'index': [OWN, 'actor.sport_association']},
+       medical_id=CERTIFICATES['unicode_digits']['id'])
+
+# A birth date before year 1000: person_date reads it for the age, the serializer takes the
+# request's text ('%d/%m/%Y' wants exactly four year digits).
+ancient = person('Nove', 'Antico', 'NTCNVS99C15H501U', born='05/03/0999')
+add('born-date-year-999', 'owner', 200, SUCCESS(25.0), setup=RENEW_SETUP, body=request(ancient),
+    effect=success('owner', 'Nove Antico', associate=created_associate({**ancient, 'born_date': '05/03/0999'}),
+                   payment=new_payment('25.00', audit_amount='25.0'), subscription=dict(PLAIN), membership=dict(MEMBER)))
+
+# get_main_tutor: the first relation (by key) becomes primary, saved with its update entry.
+ASSOCIATES['not_primary_minor'] = {'id': next(site_ids), 'association': OWN, 'first': 'Nino', 'last': 'Nonprimario',
+                                   'tax_code': 'NNPNPR15A01H501V', 'born': '2015-01-01', 'user': 'owner', 'email': None,
+                                   'is_minor': True}
+ASSOCIATES['not_primary_tutor'] = {'id': next(site_ids), 'association': OWN, 'first': 'Tino', 'last': 'Nonprimario',
+                                   'tax_code': 'NNPTNO80A01H501W', 'born': '1980-01-01', 'user': 'owner', 'email': None}
+RELATIONS['not_primary'] = {'associate': 'not_primary_minor', 'tutor': 'not_primary_tutor', 'primary': False}
+SUBSCRIPTIONS['renewable_not_primary'] = {'id': next(site_ids), 'associate': 'not_primary_minor', 'start': '$season_start',
+                                          'end': '$season_end', 'archived': False, 'number': '31'}
+effect = success('owner', 'Nino Nonprimario', associate={'match': 'not_primary_minor', 'columns': {}}, associate_audit=[],
+                 payment=new_payment('25.00', audit_amount='25.0'),
+                 subscription={'type': 1, 'role': 1, 'status_flag': 1, 'meta': NO_PLANS, 'subscription_type': '', '$explicit_number': '31',
+                               **NEXT})
+NUMBER[0] -= 1
+effect['tutor'] = {'match': 'not_primary_tutor', 'columns': {}}
+effect['relation_primary'] = 'not_primary'
+effect['audit'].insert(0, {'model': 'associatetutorrelation', 'action': 1, 'ref': 'relation', 'changes': {'is_primary': ['False', 'True']},
+                           'index': [OWN, 'associate.sport_association']})
+add('preregistration-renewal-main-tutor-made-primary', 'owner', 200, SUCCESS(25.0), setup=RENEW_SETUP,
+    body=renewal('renewable_not_primary'), effect=next_season(effect))
+
+# a subscription whose associate is NULL (SET_NULL): AssociateSerializer(None).data is a dict of
+# empty fields and the next line reads get_main_tutor on None (the 500 page).
+SUBSCRIPTIONS['renewable_no_associate'] = {'id': next(site_ids), 'associate': None, 'start': '$season_start', 'end': '$season_end',
+                                           'archived': False, 'number': '32'}
+add('preregistration-renewal-without-associate-server-error', 'owner', 500, SERVER, setup=RENEW_SETUP,
+    body=renewal('renewable_no_associate'))
+
+# A tutor without an account stored in another association: the renewal serializes it, then
+# create_subscription saves it into the registration's association with the request's account.
+ASSOCIATES['abroad_minor'] = {'id': next(site_ids), 'association': OWN, 'first': 'Mina', 'last': 'Estera', 'tax_code': 'ESTMNA15A01H501X',
+                              'born': '2015-01-01', 'user': 'owner', 'email': None, 'is_minor': True}
+ASSOCIATES['abroad_tutor'] = {'id': next(site_ids), 'association': FOREIGN, 'first': 'Tullio', 'last': 'Estero',
+                              'tax_code': 'ESTTLL80A01H501Y', 'born': '1980-01-01', 'user': None, 'email': None}
+RELATIONS['abroad_minor_tutor'] = {'associate': 'abroad_minor', 'tutor': 'abroad_tutor', 'primary': True}
+SUBSCRIPTIONS['renewable_abroad_minor'] = {'id': next(site_ids), 'associate': 'abroad_minor', 'start': '$season_start',
+                                           'end': '$season_end', 'archived': False, 'number': '33'}
+effect = success('owner', 'Mina Estera', associate={'match': 'abroad_minor', 'columns': {}}, associate_audit=[],
+                 payment=new_payment('25.00', audit_amount='25.0'),
+                 subscription={'type': 1, 'role': 1, 'status_flag': 1, 'meta': NO_PLANS, 'subscription_type': '', '$explicit_number': '33',
+                               **NEXT})
+NUMBER[0] -= 1
+effect['tutor'] = {'match': 'abroad_tutor', 'columns': {'sport_association_id': OWN, 'user_id': OWNER}}
+effect['audit'].insert(0, {'model': 'associate', 'action': 1, 'ref': 'tutor',
+                           'changes': {'sport_association': [FOREIGN, OWN], 'user': ['None', OWNER]}, 'index': [OWN, 'direct']})
+add('preregistration-renewal-tutor-of-another-association', 'owner', 200, SUCCESS(25.0), setup=RENEW_SETUP,
+    body=renewal('renewable_abroad_minor'), effect=next_season(effect))
+
+# --- Years before 1000 on glibc ----------------------------------------------------------------------------------
+# Python's strftime('%Y') is the C library's: on glibc (the production Linux image) a year
+# below 1000 is unpadded, so the renewal's strftime('%d/%m/%Y') writes '05/03/999', which
+# strptime's four-digit %Y rejects: the associate serializer answers the format error and
+# nothing is written. On macOS the year is zero padded ('05/03/0999'), the re-parse succeeds
+# and the registration is created; these cases are authored for glibc, so a local run on
+# macOS fails here (the harness stops at the first failure).
+ASSOCIATES['renewed_year_999'] = {'id': next(site_ids), 'association': OWN, 'first': 'Nove', 'last': 'Nove', 'tax_code': 'NNVNNV99A01H501Z',
+                                  'born': '0999-03-05', 'user': 'owner', 'email': None}
+SUBSCRIPTIONS['renewable_year_999'] = {'id': next(site_ids), 'associate': 'renewed_year_999', 'start': '$season_start',
+                                       'end': '$season_end', 'archived': False, 'number': '34'}
+add('preregistration-renewal-year-999-born-date', 'owner', 400,
+    {'born_date': ['Date has wrong format. Use one of these formats instead: DD/MM/YYYY.']}, setup=RENEW_SETUP,
+    body=renewal('renewable_year_999'))
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({

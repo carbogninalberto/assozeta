@@ -342,6 +342,12 @@ func (t *subscriptionCreateTransaction) InsertRelation(ctx context.Context, asso
 	return id, err
 }
 
+// MarkRelationPrimary is AssociateTutorRelation.save() of get_main_tutor.
+func (t *subscriptionCreateTransaction) MarkRelationPrimary(ctx context.Context, id int64) error {
+	_, err := t.tx.ExecContext(ctx, `UPDATE application_associatetutorrelation SET is_primary=true WHERE id=$1`, id)
+	return err
+}
+
 func (t *subscriptionCreateTransaction) AuditEntry(ctx context.Context, entry domain.SubscriptionCreateAudit) error {
 	return appendSubscriptionCreateAudit(ctx, t.tx, entry)
 }

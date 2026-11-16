@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
-	"encoding/json"
 	"errors"
 	"strings"
 	"time"
@@ -78,10 +77,8 @@ func (s *SubscriptionCreates) newMember(ctx context.Context, tx domain.Subscript
 	}
 	flag, code := dtoBoolean(flagValue)
 	if code != "" {
-		if _, isNumber := flagValue.(json.Number); isNumber {
-			// Python's 1.0 == 1 in BooleanField.TRUE_VALUES is not ported.
-			return nil, domain.ErrSubscriptionCreateNotPorted
-		}
+		// BooleanField rejects the value: is_valid() is False and no account is
+		// created (the registration continues with request.user).
 		return nil, nil
 	}
 	if !flag {
@@ -99,16 +96,16 @@ func (s *SubscriptionCreates) newMember(ctx context.Context, tx domain.Subscript
 	if !present {
 		return nil, pythonKeyError("email")
 	}
-	email, ok := emailValue.(string)
-	if !ok {
-		return nil, domain.ErrSubscriptionCreateNotPorted
-	}
-	existing, err := tx.MemberByEmail(ctx, email)
-	if err != nil {
-		return nil, err
-	}
-	if existing != nil {
-		return nil, nil
+	if emailValue != nil {
+		// User.objects.filter(email=value).exists(): the field compares str() of
+		// a non-string value (the column is NOT NULL, so None matches nothing).
+		existing, err := tx.MemberByEmail(ctx, dto.PythonStr(emailValue))
+		if err != nil {
+			return nil, err
+		}
+		if existing != nil {
+			return nil, nil
+		}
 	}
 	if s.accounts == nil {
 		return nil, domain.ErrServerComposition

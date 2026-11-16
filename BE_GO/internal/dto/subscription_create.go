@@ -123,25 +123,15 @@ func ParseSignatureRequest(value any) (SignatureRequest, map[string][]string) {
 	return request, nil
 }
 
-// SubscriptionCreateText is the text a CharField lookup compares (str() of a
-// scalar); ok is false for values whose lookup is not ported.
-func SubscriptionCreateText(value any) (*string, bool) {
-	switch v := value.(type) {
-	case nil:
-		return nil, true
-	case string:
-		return &v, true
-	case json.Number:
-		text := PythonStr(v)
-		return &text, true
-	case bool:
-		text := "False"
-		if v {
-			text = "True"
-		}
-		return &text, true
+// SubscriptionCreateText is the text a CharField lookup compares: str() of the
+// value (the model field's to_python of anything that is not a str), which is
+// what subscription_exists filters with; nil stays None (IS NULL).
+func SubscriptionCreateText(value any) *string {
+	if value == nil {
+		return nil
 	}
-	return nil, false
+	text := PythonStr(value)
+	return &text
 }
 
 // SubscriptionCreateFloat is float(value) for a parsed JSON value: bool, a
