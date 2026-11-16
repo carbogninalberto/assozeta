@@ -37,8 +37,8 @@ GENERIC = re.compile(r'(INSERT\s+INTO|UPDATE|DELETE\s+FROM)\s+`\s*\+\s*(\w+(?:\.
 
 # file:function:op:table -> (what Django does there, the harnesses exercising it)
 WRITERS = {
-    'camps_periods.go:SavePayment:UPDATE:payment': ('save', ['http:camps-periods']),
-    'camps_subscriptions.go:CreatePayment:INSERT:payment': ('save', ['http:camps-subscriptions']),
+    'camps_periods.go:savePayment:UPDATE:payment': ('save', ['http:camps-periods']),
+    'camps_subscriptions.go:createPayment:INSERT:payment': ('save', ['http:camps-subscriptions']),
     'carnet_writes.go:CreateTopup:INSERT:payment': ('save', ['http:carnet-subscription-topup', 'http:carnet-assign', 'http:carnet-add', 'http:carnet-replace']),
     'carnet_writes.go:deleteReplacePayment:DELETE:payment': ('collector', ['http:carnet-replace']),
     'course_enrolment.go:CreatePayment:INSERT:payment': ('save', ['http:course-enrolment', 'http:router-course-subscriptions']),
