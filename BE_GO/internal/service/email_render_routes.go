@@ -11,12 +11,12 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"unicode/utf8"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/celery"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/emailrender"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pystr"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/google/uuid"
 )
@@ -26,8 +26,6 @@ const sendMailTask = "core.tasks.send_mail_async"
 var (
 	// ErrEmailRenderServer stands for the views' uncaught exceptions (500).
 	ErrEmailRenderServer = errors.New("email render route raised")
-	// ErrEmailRenderNotPorted refuses inputs outside the port (500 before any write).
-	ErrEmailRenderNotPorted = refusal.New("email render route input not ported")
 	// ErrEmailAlreadyPaid is payment_request's 412.
 	ErrEmailAlreadyPaid = errors.New("email not sent, payment already paid.")
 	// ErrEmailNoRecipient is invoice_send's 412.
@@ -121,26 +119,27 @@ func (s *EmailRenderRoutes) requestAssociation(ctx context.Context, identity dom
 // --- collaborators/add ------------------------------------------------------------------------
 
 // collaboratorEmail is check_email(data['email']) after the 'email' in data
-// test: Django's validate_email on the raw value.
+// test: Django's validate_email on the raw value, then the insert's encoding.
 func collaboratorEmail(value any) (string, error) {
 	invalid := &EmailInputError{Detail: "Email is not valid."}
 	switch v := value.(type) {
 	case string:
-		if !utf8.ValidString(v) {
-			return "", ErrEmailRenderNotPorted
-		}
-		if wtf8Surrogate(v) {
-			return "", ErrEmailRenderServer // the request fails on the surrogate (500 page)
-		}
-		if strings.ContainsRune(v, 0) {
-			return "", invalid // validate_email: NUL matches neither the user part, the quoted string nor the domain
-		}
-		if !dto.SupplierEmail(v) {
+		// The body holds a Python str: a JSON body keeps lone surrogates as
+		// their three-byte form and Django decodes the other bodies with
+		// errors='replace', which is what RunesReplace reproduces.
+		runes := pystr.RunesReplace(v)
+		if !collaboratorEmailValid(runes) {
 			return "", invalid
 		}
-		return v, nil
+		if collaboratorEmailSurrogate(runes) {
+			// validate_email accepts a surrogate in the domain part (U+00A1..U+FFFF),
+			// then psycopg cannot encode the INSERT: the request fails, nothing written.
+			return "", ErrEmailRenderServer
+		}
+		// The Python str as UTF-8 (a replacement character stays one).
+		return string(runes), nil
 	case nil:
-		return "", invalid
+		return "", invalid // not value
 	case bool:
 		if !v {
 			return "", invalid
@@ -170,10 +169,51 @@ func collaboratorEmail(value any) (string, error) {
 			return "", ErrEmailRenderServer // dict.rsplit
 		}
 		return "", invalid
+	case domain.RequestUpload:
+		// validate_email(UploadedFile): "@" in the file tests its byte lines for
+		// equality with "@" (never true), so every upload is invalid.
+		return "", invalid
 	}
-	return "", ErrEmailRenderNotPorted
+	// The body reader yields nil, bool, string, json.Number, RequestObject,
+	// []any or an upload only: no other value type reaches a field.
+	return "", refusal.AppState("collaborators/add: unexpected email value type")
 }
 
+// collaboratorEmailValid is Django 5.2's EmailValidator (validate_email) over
+// the Python str's code points. dto.SupplierEmail is the same validator, but
+// Go's (?i) misses the four code points Python's re.IGNORECASE folds onto
+// [A-Z] (U+0130, U+0131, U+017F, U+212A), so they are folded onto their ASCII
+// letters for the check; the stored value keeps them.
+func collaboratorEmailValid(runes []rune) bool {
+	folded := make([]rune, len(runes))
+	for i, r := range runes {
+		switch r {
+		case 0x130, 0x131:
+			folded[i] = 'i'
+		case 0x17f:
+			folded[i] = 's'
+		case 0x212a:
+			folded[i] = 'k'
+		default:
+			folded[i] = r
+		}
+	}
+	return dto.SupplierEmail(string(folded))
+}
+
+// collaboratorEmailSurrogate reports a code point psycopg cannot encode.
+func collaboratorEmailSurrogate(runes []rune) bool {
+	for _, r := range runes {
+		if r >= 0xd800 && r <= 0xdfff {
+			return true
+		}
+	}
+	return false
+}
+
+// wtf8Surrogate reports the bytes a JSON lone surrogate escape becomes
+// (0xED 0xA0..0xBF 0x80..0xBF); internal/service/oauth_accounts.go matches the
+// Python str they stand for.
 func wtf8Surrogate(text string) bool {
 	for i := 0; i+2 < len(text); i++ {
 		if text[i] == 0xed && text[i+1] >= 0xa0 && text[i+1] <= 0xbf {

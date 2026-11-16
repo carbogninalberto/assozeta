@@ -74,7 +74,6 @@ func TestLongTailHandoffRefusals(t *testing.T) {
 	for name, err := range map[string]error{
 		"ErrPersonaNotPorted":      ErrPersonaNotPorted,
 		"ErrCampsPaymentNotPorted": ErrCampsPaymentNotPorted,
-		"ErrEmailRenderNotPorted":  ErrEmailRenderNotPorted,
 	} {
 		wrapped := fmt.Errorf("wrapped: %w", err)
 		if !errors.Is(wrapped, refusal.ErrNotPorted) || errors.Is(wrapped, refusal.ErrAppState) {

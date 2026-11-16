@@ -1789,6 +1789,155 @@
    "content_type": "application/json"
   },
   {
+   "name": "email-render-routes-add-surrogate-tld-email-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/collaborators/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "raw_body": "{\"email\": \"a@b.\\ud800\\ud800\"}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "email-render-routes-add-surrogate-local-email",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/collaborators/add",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "Email is not valid."
+   ],
+   "effect": null,
+   "raw_body": "{\"email\": \"\\ud800@b.it\"}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "email-render-routes-add-surrogate-quoted-local-email",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/collaborators/add",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "Email is not valid."
+   ],
+   "effect": null,
+   "raw_body": "{\"email\": \"\\\"\\ud800\\\"@b.it\"}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "email-render-routes-add-replacement-domain-email",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/collaborators/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "User invited"
+   },
+   "effect": {
+    "kind": "invite",
+    "actor": "owner",
+    "email": "a@b�.it",
+    "role": 3,
+    "permissions": null,
+    "index": [
+     "a1000000-0000-4000-8000-000000701001",
+     "actor.sport_association"
+    ],
+    "reading": null,
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "$whitelabel | Invito a collaborare"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/account/email_welcome_collaborator_message.html",
+         "language": "en",
+         "context": {
+          "email": "a@b�.it",
+          "token": "$token",
+          "sport_association": {
+           "denomination": "$denomination:own"
+          },
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$from_email"
+       ],
+       [
+        "recipient_list",
+        [
+         "a@b�.it"
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/account/email_welcome_collaborator_message.html",
+         "language": "en",
+         "context": {
+          "email": "a@b�.it",
+          "token": "$token",
+          "sport_association": {
+           "denomination": "$denomination:own"
+          },
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ]
+      ]
+     }
+    ]
+   },
+   "raw_body": "{\"email\": \"a@b\\ufffd.it\"}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "email-render-routes-add-multipart-file-email",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/collaborators/add",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "Email is not valid."
+   ],
+   "effect": null,
+   "raw_body": "--testboundary69a1\r\nContent-Disposition: form-data; name=\"email\"; filename=\"email.txt\"\r\n\r\na@b.c\r\n--testboundary69a1--\r\n",
+   "content_type": "multipart/form-data; boundary=testboundary69a1"
+  },
+  {
    "name": "email-render-routes-add-list-email-without-at",
    "actor": "owner",
    "method": "POST",
