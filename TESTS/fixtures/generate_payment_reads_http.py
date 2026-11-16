@@ -161,10 +161,12 @@ ASSOCIATES = {
     'rep_t1': extra_person('2023-11-07T08:00:00Z', first_name='Primo', last_name='Duevolte', association=EXTRA_ASSOCIATION),
     'rep_t2': extra_person('2023-11-08T08:00:00Z', first_name='Secondo', last_name='Duevolte', association=EXTRA_ASSOCIATION),
     'ord_one': extra_person('2023-11-09T08:00:00Z', last_name='Beta', tax_code='ORDA00000000000001', association=EXTRA_ASSOCIATION),
+    # Soft-deleted: the active unique index (UPPER(tax_code), association) admits one live row per tax code,
+    # and subscription_payments' tax code filter joins associates without the deleted filter.
     'ord_two': extra_person('2023-11-10T08:00:00Z', first_name='Alfa', last_name='Zeta', tax_code='ORDA00000000000001',
-                            association=EXTRA_ASSOCIATION),
+                            association=EXTRA_ASSOCIATION, deleted=True),
     'ord_three': extra_person('2023-11-11T08:00:00Z', first_name='Mario', last_name='Alfa', tax_code='ORDA00000000000001',
-                              association=EXTRA_ASSOCIATION),
+                              association=EXTRA_ASSOCIATION, deleted=True),
 }
 TUTORS = {'mario': [('lucia', True), ('paolo', False)],
           # Both tutor rows match the search word: DISTINCT with RANDOM() keeps both.
