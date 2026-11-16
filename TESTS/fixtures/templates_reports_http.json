@@ -224,7 +224,9 @@
     "fee": "0.00",
     "lessons": 0,
     "public": true,
-    "meta": null,
+    "meta": {
+     "fee": 0.0
+    },
     "created": "2026-07-01T10:00:00+00:00"
    },
    "foreign": {
@@ -4800,8 +4802,51 @@
     "created": "2026-10-01T08:00:00+00:00",
     "updated": "2026-10-02T08:00:00+00:00"
    },
-   "export_pdf_unichar_names": {
+   "query_carnets_meta_key_float": {
     "id": "a1000000-0000-4000-8000-000000930299",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_carnets_meta_key_float",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Carnet",
+     "fields": [
+      "title"
+     ],
+     "filters": {
+      "meta__fee": "0.00"
+     },
+     "order_by": [
+      "title"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_carnets_meta_key_date_error": {
+    "id": "a1000000-0000-4000-8000-000000930300",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_carnets_meta_key_date_error",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Carnet",
+     "fields": [
+      "title"
+     ],
+     "filters": {
+      "meta__creation_date": "2026-05-01"
+     }
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "export_pdf_unichar_names": {
+    "id": "a1000000-0000-4000-8000-000000930301",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report export_pdf_unichar_names",
@@ -4829,7 +4874,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "export_pdf_unichar_name_error": {
-    "id": "a1000000-0000-4000-8000-000000930300",
+    "id": "a1000000-0000-4000-8000-000000930302",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report export_pdf_unichar_name_error",
@@ -4852,7 +4897,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "export_pdf_anchor_links": {
-    "id": "a1000000-0000-4000-8000-000000930301",
+    "id": "a1000000-0000-4000-8000-000000930303",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report export_pdf_anchor_links",
@@ -4876,7 +4921,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "export_pdf_anchor_links_over_pages": {
-    "id": "a1000000-0000-4000-8000-000000930302",
+    "id": "a1000000-0000-4000-8000-000000930304",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report export_pdf_anchor_links_over_pages",
@@ -4900,7 +4945,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "export_pdf_link_undefined_error": {
-    "id": "a1000000-0000-4000-8000-000000930303",
+    "id": "a1000000-0000-4000-8000-000000930305",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report export_pdf_link_undefined_error",
@@ -4923,7 +4968,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "export_pdf_anchor_blank_error": {
-    "id": "a1000000-0000-4000-8000-000000930304",
+    "id": "a1000000-0000-4000-8000-000000930306",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report export_pdf_anchor_blank_error",
@@ -4946,7 +4991,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "export_pdf_number_forms": {
-    "id": "a1000000-0000-4000-8000-000000930305",
+    "id": "a1000000-0000-4000-8000-000000930307",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report export_pdf_number_forms",
@@ -4972,7 +5017,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "export_pdf_number_hex_error": {
-    "id": "a1000000-0000-4000-8000-000000930306",
+    "id": "a1000000-0000-4000-8000-000000930308",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report export_pdf_number_hex_error",
@@ -4997,7 +5042,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "export_pdf_number_nan_error": {
-    "id": "a1000000-0000-4000-8000-000000930307",
+    "id": "a1000000-0000-4000-8000-000000930309",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report export_pdf_number_nan_error",
@@ -5020,7 +5065,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "export_pdf_number_inf_error": {
-    "id": "a1000000-0000-4000-8000-000000930308",
+    "id": "a1000000-0000-4000-8000-000000930310",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report export_pdf_number_inf_error",
@@ -5043,7 +5088,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "export_pdf_ftp_image_error": {
-    "id": "a1000000-0000-4000-8000-000000930309",
+    "id": "a1000000-0000-4000-8000-000000930311",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report export_pdf_ftp_image_error",
@@ -5066,7 +5111,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "export_pdf_empty_image_error": {
-    "id": "a1000000-0000-4000-8000-000000930310",
+    "id": "a1000000-0000-4000-8000-000000930312",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report export_pdf_empty_image_error",
@@ -5089,7 +5134,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "export_pdf_para_justify_indent": {
-    "id": "a1000000-0000-4000-8000-000000930311",
+    "id": "a1000000-0000-4000-8000-000000930313",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report export_pdf_para_justify_indent",
@@ -5113,7 +5158,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "export_pdf_para_bullets": {
-    "id": "a1000000-0000-4000-8000-000000930312",
+    "id": "a1000000-0000-4000-8000-000000930314",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report export_pdf_para_bullets",
@@ -5137,7 +5182,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "export_pdf_para_border_transform": {
-    "id": "a1000000-0000-4000-8000-000000930313",
+    "id": "a1000000-0000-4000-8000-000000930315",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report export_pdf_para_border_transform",
@@ -5165,7 +5210,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "export_pdf_para_autoleading": {
-    "id": "a1000000-0000-4000-8000-000000930314",
+    "id": "a1000000-0000-4000-8000-000000930316",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report export_pdf_para_autoleading",
@@ -5189,7 +5234,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "export_pdf_para_bullet_twice_error": {
-    "id": "a1000000-0000-4000-8000-000000930315",
+    "id": "a1000000-0000-4000-8000-000000930317",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report export_pdf_para_bullet_twice_error",
@@ -5212,7 +5257,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "export_pdf_colours_cmyk_alpha": {
-    "id": "a1000000-0000-4000-8000-000000930316",
+    "id": "a1000000-0000-4000-8000-000000930318",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report export_pdf_colours_cmyk_alpha",
@@ -5236,7 +5281,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "export_pdf_colours_expression_error": {
-    "id": "a1000000-0000-4000-8000-000000930317",
+    "id": "a1000000-0000-4000-8000-000000930319",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report export_pdf_colours_expression_error",
@@ -5259,7 +5304,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "export_pdf_inline_png": {
-    "id": "a1000000-0000-4000-8000-000000930318",
+    "id": "a1000000-0000-4000-8000-000000930320",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report export_pdf_inline_png",
@@ -5283,7 +5328,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "export_pdf_inline_image_junk_error": {
-    "id": "a1000000-0000-4000-8000-000000930319",
+    "id": "a1000000-0000-4000-8000-000000930321",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report export_pdf_inline_image_junk_error",
@@ -5306,7 +5351,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "export_pdf_inline_truncated_jpeg_error": {
-    "id": "a1000000-0000-4000-8000-000000930320",
+    "id": "a1000000-0000-4000-8000-000000930322",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report export_pdf_inline_truncated_jpeg_error",
@@ -5329,7 +5374,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "export_pdf_wordwrap_cjk": {
-    "id": "a1000000-0000-4000-8000-000000930321",
+    "id": "a1000000-0000-4000-8000-000000930323",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report export_pdf_wordwrap_cjk",
@@ -5353,7 +5398,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "export_pdf_wordwrap_rtl": {
-    "id": "a1000000-0000-4000-8000-000000930322",
+    "id": "a1000000-0000-4000-8000-000000930324",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report export_pdf_wordwrap_rtl",
@@ -5377,7 +5422,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "export_pdf_wordwrap_ltr_hyphenation_lang": {
-    "id": "a1000000-0000-4000-8000-000000930323",
+    "id": "a1000000-0000-4000-8000-000000930325",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report export_pdf_wordwrap_ltr_hyphenation_lang",
@@ -5400,7 +5445,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "export_pdf_uri_waste_reduce": {
-    "id": "a1000000-0000-4000-8000-000000930324",
+    "id": "a1000000-0000-4000-8000-000000930326",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report export_pdf_uri_waste_reduce",
@@ -5427,7 +5472,7 @@
     "updated": "2026-10-02T08:00:00+00:00"
    },
    "export_pdf_embedded_hyphenation_two_error": {
-    "id": "a1000000-0000-4000-8000-000000930325",
+    "id": "a1000000-0000-4000-8000-000000930327",
     "association": "a1000000-0000-4000-8000-000000701001",
     "creator": "owner",
     "name": "Report export_pdf_embedded_hyphenation_two_error",
@@ -12392,10 +12437,48 @@
    "body": {}
   },
   {
-   "name": "templates-reports-run-export-pdf-unichar-names",
+   "name": "templates-reports-run-query-carnets-meta-key-float",
    "actor": "owner",
    "method": "POST",
    "path": "/saved-reports/a1000000-0000-4000-8000-000000930299/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 1,
+     "has_more": false,
+     "data": [
+      {
+       "title": null
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-carnets-meta-key-date-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930300/run",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante l'esecuzione del report."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-export-pdf-unichar-names",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930301/run",
    "headers": {},
    "status": 200,
    "response": {
@@ -12429,7 +12512,7 @@
    "name": "templates-reports-run-export-pdf-unichar-name-error",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930300/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930302/run",
    "headers": {},
    "status": 500,
    "response": {
@@ -12444,7 +12527,7 @@
    "name": "templates-reports-run-export-pdf-anchor-links",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930301/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930303/run",
    "headers": {},
    "status": 200,
    "response": {
@@ -12478,7 +12561,7 @@
    "name": "templates-reports-run-export-pdf-anchor-links-over-pages",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930302/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930304/run",
    "headers": {},
    "status": 200,
    "response": {
@@ -12512,7 +12595,7 @@
    "name": "templates-reports-run-export-pdf-link-undefined-error",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930303/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930305/run",
    "headers": {},
    "status": 500,
    "response": {
@@ -12527,7 +12610,7 @@
    "name": "templates-reports-run-export-pdf-anchor-blank-error",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930304/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930306/run",
    "headers": {},
    "status": 500,
    "response": {
@@ -12542,7 +12625,7 @@
    "name": "templates-reports-run-export-pdf-number-forms",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930305/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930307/run",
    "headers": {},
    "status": 200,
    "response": {
@@ -12575,7 +12658,7 @@
    "name": "templates-reports-run-export-pdf-number-hex-error",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930306/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930308/run",
    "headers": {},
    "status": 500,
    "response": {
@@ -12590,7 +12673,7 @@
    "name": "templates-reports-run-export-pdf-number-nan-error",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930307/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930309/run",
    "headers": {},
    "status": 500,
    "response": {
@@ -12605,7 +12688,7 @@
    "name": "templates-reports-run-export-pdf-number-inf-error",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930308/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930310/run",
    "headers": {},
    "status": 500,
    "response": {
@@ -12620,7 +12703,7 @@
    "name": "templates-reports-run-export-pdf-ftp-image-error",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930309/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930311/run",
    "headers": {},
    "status": 500,
    "response": {
@@ -12635,7 +12718,7 @@
    "name": "templates-reports-run-export-pdf-empty-image-error",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930310/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930312/run",
    "headers": {},
    "status": 500,
    "response": {
@@ -12650,7 +12733,7 @@
    "name": "templates-reports-run-export-pdf-para-justify-indent",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930311/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930313/run",
    "headers": {},
    "status": 200,
    "response": {
@@ -12684,7 +12767,7 @@
    "name": "templates-reports-run-export-pdf-para-bullets",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930312/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930314/run",
    "headers": {},
    "status": 200,
    "response": {
@@ -12718,7 +12801,7 @@
    "name": "templates-reports-run-export-pdf-para-border-transform",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930313/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930315/run",
    "headers": {},
    "status": 200,
    "response": {
@@ -12752,7 +12835,7 @@
    "name": "templates-reports-run-export-pdf-para-autoleading",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930314/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930316/run",
    "headers": {},
    "status": 200,
    "response": {
@@ -12786,7 +12869,7 @@
    "name": "templates-reports-run-export-pdf-para-bullet-twice-error",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930315/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930317/run",
    "headers": {},
    "status": 500,
    "response": {
@@ -12801,7 +12884,7 @@
    "name": "templates-reports-run-export-pdf-colours-cmyk-alpha",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930316/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930318/run",
    "headers": {},
    "status": 200,
    "response": {
@@ -12835,7 +12918,7 @@
    "name": "templates-reports-run-export-pdf-colours-expression-error",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930317/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930319/run",
    "headers": {},
    "status": 500,
    "response": {
@@ -12850,7 +12933,7 @@
    "name": "templates-reports-run-export-pdf-inline-png",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930318/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930320/run",
    "headers": {},
    "status": 200,
    "response": {
@@ -12884,7 +12967,7 @@
    "name": "templates-reports-run-export-pdf-inline-image-junk-error",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930319/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930321/run",
    "headers": {},
    "status": 500,
    "response": {
@@ -12899,7 +12982,7 @@
    "name": "templates-reports-run-export-pdf-inline-truncated-jpeg-error",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930320/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930322/run",
    "headers": {},
    "status": 500,
    "response": {
@@ -12914,7 +12997,7 @@
    "name": "templates-reports-run-export-pdf-wordwrap-cjk",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930321/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930323/run",
    "headers": {},
    "status": 200,
    "response": {
@@ -12948,7 +13031,7 @@
    "name": "templates-reports-run-export-pdf-wordwrap-rtl",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930322/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930324/run",
    "headers": {},
    "status": 200,
    "response": {
@@ -12982,7 +13065,7 @@
    "name": "templates-reports-run-export-pdf-wordwrap-ltr-hyphenation-lang",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930323/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930325/run",
    "headers": {},
    "status": 200,
    "response": {
@@ -13015,7 +13098,7 @@
    "name": "templates-reports-run-export-pdf-uri-waste-reduce",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930324/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930326/run",
    "headers": {},
    "status": 200,
    "response": {
@@ -13048,7 +13131,7 @@
    "name": "templates-reports-run-export-pdf-embedded-hyphenation-two-error",
    "actor": "owner",
    "method": "POST",
-   "path": "/saved-reports/a1000000-0000-4000-8000-000000930325/run",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930327/run",
    "headers": {},
    "status": 500,
    "response": {

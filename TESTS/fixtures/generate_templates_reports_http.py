@@ -74,7 +74,7 @@ def carnet(association, title, fee, lessons, *, description=None, public=True, m
 CARNETS = {
     'dieci': carnet(OWN, 'Dieci ingressi', '80.00', 10, description='Pacchetto', meta={'colore': 'blu'}, created='2026-05-01T10:00:00+00:00'),
     'cinque': carnet(OWN, 'Cinque', '45.50', 5, public=False, created='2026-06-01T10:00:00+00:00'),
-    'vuoto': carnet(OWN, None, '0.00', 0, created='2026-07-01T10:00:00+00:00'),
+    'vuoto': carnet(OWN, None, '0.00', 0, meta={'fee': 0.0}, created='2026-07-01T10:00:00+00:00'),
     'foreign': carnet(FOREIGN, 'Estero', '99.00', 3, created='2026-06-15T10:00:00+00:00'),
 }
 
@@ -946,6 +946,13 @@ run('attendance-course-id-float-error', 'get_attendance_matrix', {'course_id': 1
 run('attendance-course-name-number', 'get_attendance_matrix', {'course_name': 7}, 400, {'error': 'Nessun corso trovato con nome: 7'})
 # Exporter exceptions: the run answers every one with its 500.
 run('export-multi-sheet-number-error', 'export_multi_sheet', {'sheets': 5}, 500, FAILED)
+# Coerced values after a JSONField: the walk resolves a field name on the same model. fee is a
+# DecimalField, so "0.00" becomes the float 0.0 and is sent as json.dumps(0.0) = "0.0".
+run('query-carnets-meta-key-float', 'query_data', {'model_name': 'Carnet', 'fields': ['title'],
+    'filters': {'meta__fee': '0.00'}, 'order_by': ['title']}, 200, listing(1, [{'title': None}]))
+# creation_date is a DateTimeField: the date value cannot be dumped as JSON, so the run answers its 500.
+run('query-carnets-meta-key-date-error', 'query_data', {'model_name': 'Carnet', 'fields': ['title'],
+    'filters': {'meta__creation_date': '2026-05-01'}}, 500, FAILED)
 
 # Long tail PR 5: reportlab paragraph features the Go writer draws now (appended so the earlier ids stay).
 # <unichar name>: a character by its Unicode name (unicodedata.lookup), in labels and texts; an unknown name fails the export.

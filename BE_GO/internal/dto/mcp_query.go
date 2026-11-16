@@ -16,11 +16,6 @@ import (
 )
 
 var (
-	// errMCPJSONCoerced: a JSONField lookup or has_key value the coercion walk
-	// turned into a float, int, date or datetime (it keeps resolving the names
-	// after a JSONField on the same model). Django sends it (Jsonb(12.0), or
-	// the operator error PostgreSQL raises), so it is handed off.
-	errMCPJSONCoerced = refusal.New("mcp: coerced value in a JSON lookup not ported")
 	// errMCPYearValue: prepare always returns an integer for an int-kind
 	// expression; a None value is handled before yearLookup.
 	errMCPYearValue = refusal.AppState("mcp: year lookup without an integer value")
@@ -74,6 +69,9 @@ type mcpQuery struct {
 	args  *reportArgs
 	// compileErr is raised when the SQL is compiled (IsNull.as_sql).
 	compileErr error
+	// adaptErr is raised when the statement executes (psycopg2 adapts the
+	// parameters after compiling).
+	adaptErr error
 }
 
 func newMCPQuery(model *mcpModel) *mcpQuery {
@@ -82,7 +80,7 @@ func newMCPQuery(model *mcpModel) *mcpQuery {
 
 func (q *mcpQuery) clone() *mcpQuery {
 	copyQuery := &mcpQuery{model: q.model, where: append([]string(nil), q.where...), compileErr: q.compileErr,
-		args: &reportArgs{values: append([]any(nil), q.args.values...)}}
+		adaptErr: q.adaptErr, args: &reportArgs{values: append([]any(nil), q.args.values...)}}
 	for _, join := range q.joins {
 		duplicate := *join
 		copyQuery.joins = append(copyQuery.joins, &duplicate)
@@ -1078,6 +1076,10 @@ func (q *mcpQuery) splitExclude(leaf mcpLeaf, used map[string]bool, multi *mcpMu
 		// IsNull.as_sql raises while the subquery compiles.
 		q.compileErr = inner.compileErr
 	}
+	if inner.adaptErr != nil && q.adaptErr == nil {
+		// The parameters of the subquery are adapted when it executes.
+		q.adaptErr = inner.adaptErr
+	}
 	if result == mcpResultEmpty {
 		// The condition matches nothing on the inner side: the EXISTS is false
 		// and its negation keeps every row.
@@ -1477,13 +1479,33 @@ func (q *mcpQuery) lookupSQL(lhs mcpExpr, name string, value any) (mcpLookup, er
 	return mcpLookup{name: name, sql: lhs.sql + " " + operator + " " + q.args.add(prepared.param) + prepared.cast}, nil
 }
 
-// mcpJSONValue is JSONField.get_db_prep_value's json.dumps(value) text.
-func mcpJSONValue(value any) (string, error) {
-	switch value.(type) {
+// mcpJSONValue is JSONField.get_db_prep_value's json.dumps(value) text. The
+// second result is the error psycopg2 raises when it adapts the parameter
+// (json.dumps has no default for a date or datetime); the caller records it for
+// the execution and keeps the statement well formed.
+func mcpJSONValue(value any) (string, error, error) {
+	switch typed := value.(type) {
 	case nil, string, bool, json.Number, float64, []any, domain.RequestObject:
-		return string(PythonJSONDumps(value)), nil
+		return string(PythonJSONDumps(value)), nil, nil
+	case mcpCoercedInt:
+		return typed.v.String(), nil, nil
+	case mcpCoercedFloat:
+		return string(PythonJSONDumps(typed.v)), nil, nil
+	case mcpCoercedDate:
+		return "", mcpRaise("Object of type date is not JSON serializable"), nil
+	case mcpCoercedDateTime:
+		return "", mcpRaise("Object of type datetime is not JSON serializable"), nil
 	}
-	return "", errMCPJSONCoerced
+	return "", nil, errMCPUnexpectedValue
+}
+
+// recordAdaptErr keeps the first error psycopg2 raises while adapting the
+// parameters of the statement (the compiler already ran, so it is not a
+// compileErr).
+func (q *mcpQuery) recordAdaptErr(err error) {
+	if q.adaptErr == nil {
+		q.adaptErr = err
+	}
 }
 
 // mcpJSONKeyArgument is a has_key value: Django passes it through untouched,
@@ -1527,10 +1549,31 @@ func (q *mcpQuery) mcpJSONKeyArgument(value any) (string, error) {
 	case float64:
 		// psycopg2 writes NaN and the infinities as 'NaN'::float etc.
 		return q.args.add(typed) + "::double precision", nil
+	case mcpCoercedInt:
+		// psycopg2 writes the Python int literal: int4, int8 or numeric.
+		if !typed.v.IsInt64() {
+			return q.args.add(typed.v.String()) + "::numeric", nil
+		}
+		cast := "::int"
+		if value := typed.v.Int64(); value < math.MinInt32 || value > math.MaxInt32 {
+			cast = "::bigint"
+		}
+		return q.args.add(typed.v.Int64()) + cast, nil
+	case mcpCoercedFloat:
+		if math.IsNaN(typed.v) || math.IsInf(typed.v, 0) {
+			// psycopg2 writes the non-finite float as 'Infinity'::float.
+			return q.args.add(typed.v) + "::double precision", nil
+		}
+		// psycopg2's float adapter sends a numeric parameter.
+		return q.args.add(typed.v) + "::numeric", nil
+	case mcpCoercedDate:
+		return q.rawArgument(typed)
+	case mcpCoercedDateTime:
+		return q.rawArgument(typed)
 	case []any:
 		return q.mcpJSONKeyArray(typed)
 	}
-	return "", errMCPJSONCoerced
+	return "", errMCPUnexpectedValue
 }
 
 // mcpJSONKeyArray adapts a has_key list the way psycopg2 sends an array: an
@@ -1720,9 +1763,13 @@ func (q *mcpQuery) jsonLookup(lhs mcpExpr, name string, value any) (mcpLookup, e
 		if value == nil {
 			return mcpLookup{}, mcpRaise("Cannot use None as a query value")
 		}
-		encoded, err := mcpJSONValue(value)
+		encoded, adaptErr, err := mcpJSONValue(value)
 		if err != nil {
 			return mcpLookup{}, err
+		}
+		if adaptErr != nil {
+			q.recordAdaptErr(adaptErr)
+			encoded = "null"
 		}
 		operator := "@>"
 		if name == "contained_by" {
@@ -1730,6 +1777,11 @@ func (q *mcpQuery) jsonLookup(lhs mcpExpr, name string, value any) (mcpLookup, e
 		}
 		return mcpLookup{name: name, sql: lhs.sql + " " + operator + " " + q.args.add(encoded) + "::jsonb"}, nil
 	case "iexact", "icontains", "startswith", "istartswith", "endswith", "iendswith", "regex", "iregex":
+		if name == "iexact" && value == nil {
+			// Query.build_lookup turns iexact=None into the isnull lookup on
+			// the KeyTransform itself, not on its ->> text.
+			return mcpLookup{name: "isnull", sql: lhs.sql + " IS NULL", isnullTrue: true}, nil
+		}
 		// KeyTransformTextLookupMixin reads the key through ->> / #>>.
 		text, err := q.jsonTextExpr(lhs)
 		if err != nil {
@@ -1757,9 +1809,13 @@ func (q *mcpQuery) jsonLookup(lhs mcpExpr, name string, value any) (mcpLookup, e
 			if item == nil {
 				continue
 			}
-			encoded, err := mcpJSONValue(item)
+			encoded, adaptErr, err := mcpJSONValue(item)
 			if err != nil {
 				return mcpLookup{}, err
+			}
+			if adaptErr != nil {
+				q.recordAdaptErr(adaptErr)
+				encoded = "null"
 			}
 			if deduplicate {
 				if seen[encoded] {
@@ -1786,9 +1842,13 @@ func (q *mcpQuery) jsonLookup(lhs mcpExpr, name string, value any) (mcpLookup, e
 		}
 		var placeholders []string
 		for _, item := range items {
-			encoded, err := mcpJSONValue(item)
+			encoded, adaptErr, err := mcpJSONValue(item)
 			if err != nil {
 				return mcpLookup{}, err
+			}
+			if adaptErr != nil {
+				q.recordAdaptErr(adaptErr)
+				encoded = "null"
 			}
 			placeholders = append(placeholders, q.args.add(encoded)+"::jsonb")
 		}
@@ -1800,9 +1860,13 @@ func (q *mcpQuery) jsonLookup(lhs mcpExpr, name string, value any) (mcpLookup, e
 	if value == nil && name != "exact" {
 		return mcpLookup{}, mcpRaise("Cannot use None as a query value")
 	}
-	encoded, err := mcpJSONValue(value)
+	encoded, adaptErr, err := mcpJSONValue(value)
 	if err != nil {
 		return mcpLookup{}, err
+	}
+	if adaptErr != nil {
+		q.recordAdaptErr(adaptErr)
+		encoded = "null"
 	}
 	operators := map[string]string{"exact": "=", "gt": ">", "gte": ">=", "lt": "<", "lte": "<="}
 	return mcpLookup{name: name, sql: lhs.sql + " " + operators[name] + " " + q.args.add(encoded) + "::jsonb"}, nil

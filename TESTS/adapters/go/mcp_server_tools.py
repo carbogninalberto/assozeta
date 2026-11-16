@@ -386,6 +386,23 @@ CASES = [
     ('query_data', {'model_name': 'Payment', 'fields': ['amount', 'meta'], 'filters': {'meta__a\\b': 1}, 'order_by': ['amount']}, None),
     ('query_data', {'model_name': 'Payment', 'fields': ['amount', 'meta'], 'filters': {'meta__-1': 1}, 'order_by': ['amount']}, None),
     ('query_data', {'model_name': 'Payment', 'fields': ['amount', 'meta'], 'filters': {'meta__note__len': 2}, 'order_by': ['amount']}, None),
+    # Coerced values after a JSONField: the walk resolves the next names on
+    # the same model (DecimalField -> float, PositiveSmallIntegerField -> int,
+    # DateTimeField -> date/datetime). JSON lookups send json.dumps(value);
+    # has_key passes the adapted literal to PostgreSQL.
+    ('count_data', {'model_name': 'Payment', 'filters': {'meta__amount': '12'}}, None),
+    ('count_data', {'model_name': 'Payment', 'filters': {'meta__amount__gt': '5'}}, None),
+    ('count_data', {'model_name': 'Payment', 'filters': {'meta__subject': '2'}}, None),
+    ('count_data', {'model_name': 'Payment', 'filters': {'meta__payment_date': '2025-03-04'}},
+     {'error': 'Object of type date is not JSON serializable'}),
+    ('query_data', {'model_name': 'Payment', 'fields': ['amount'], 'filters': {'meta__payment_date': '2025-03-04'}},
+     {'error': 'Object of type date is not JSON serializable'}),
+    ('count_data', {'model_name': 'Payment', 'filters': {'meta__creation_date': '2025-03-04T10:00:00'}},
+     {'error': 'Object of type datetime is not JSON serializable'}),
+    ('count_data', {'model_name': 'Payment', 'filters': {'meta__amount__has_key': '12'}}, 'native'),
+    ('count_data', {'model_name': 'Payment', 'filters': {'meta__amount': 'inf'}}, 'native'),
+    # iexact=None is the isnull lookup on the KeyTransform, not on its text.
+    ('query_data', {'model_name': 'Payment', 'fields': ['amount'], 'filters': {'meta__b__iexact': None}, 'order_by': ['amount']}, None),
     ('query_data', {'model_name': 'Payment', 'fields': ['amount', 'meta__a__0', 'meta__a__1', 'meta__note', 'meta__0', 'meta__b'], 'order_by': ['amount']}, None),
     ('query_data', {'model_name': 'Payment', 'fields': ['amount'], 'order_by': ['meta__a__0', 'amount']}, None),
 

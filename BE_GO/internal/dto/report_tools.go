@@ -156,6 +156,9 @@ func PlanMCPToolGroup(tool string, params domain.RequestObject, association stri
 		if q.compileErr != nil {
 			return ReportPlan{}, q.compileErr
 		}
+		if q.adaptErr != nil {
+			return ReportPlan{}, q.adaptErr
+		}
 		// QueryBuilder.count logs the compiled query, then sets the timeout.
 		if err := mcpSetQueryTimeout(config); err != nil {
 			return ReportPlan{}, err
@@ -802,6 +805,9 @@ func (q *mcpQuery) planQuery(params domain.RequestObject, config ReportSettings)
 	if q.compileErr != nil {
 		return ReportPlan{}, q.compileErr
 	}
+	if q.adaptErr != nil {
+		return ReportPlan{}, q.adaptErr
+	}
 	count := q.countStatement()
 	orderValue, _ := params.Lookup("order_by")
 	orders, err := q.validateOrder(orderValue)
@@ -945,6 +951,9 @@ func (q *mcpQuery) planFieldValues(name string, params domain.RequestObject, con
 	}
 	if counted.compileErr != nil {
 		return ReportPlan{}, counted.compileErr
+	}
+	if counted.adaptErr != nil {
+		return ReportPlan{}, counted.adaptErr
 	}
 	total := domain.ReportStatement{SQL: `SELECT COUNT(*)::text FROM (SELECT DISTINCT ` + expr.sql + ` AS "c0" FROM ` + counted.from() +
 		counted.whereSQL() + `) subquery`, Args: counted.args.values, Text: 1}
@@ -1197,6 +1206,9 @@ func (q *mcpQuery) planAggregate(params domain.RequestObject, config ReportSetti
 	if q.compileErr != nil {
 		return ReportPlan{}, q.compileErr
 	}
+	if q.adaptErr != nil {
+		return ReportPlan{}, q.adaptErr
+	}
 	inner := `SELECT DISTINCT ` + strings.Join(selects, ", ") + ` FROM ` + q.from() + q.whereSQL() + ` GROUP BY ` +
 		strings.Join(groupBy, ", ") + ` ORDER BY ` + strings.Join(keys, ", ")
 	return ReportPlan{Statements: []domain.ReportStatement{mcpWrap(inner, columns, q.args.values)},
@@ -1255,6 +1267,9 @@ func (q *mcpQuery) planFlatAggregate(aggregates []mcpAggregate) (ReportPlan, err
 	}
 	if q.compileErr != nil {
 		return ReportPlan{}, q.compileErr
+	}
+	if q.adaptErr != nil {
+		return ReportPlan{}, q.adaptErr
 	}
 	inner := `SELECT ` + strings.Join(outer, ", ") + ` FROM (SELECT DISTINCT ` + strings.Join(selects, ", ") + ` FROM ` + q.from() +
 		q.whereSQL() + `) subquery`
