@@ -114,10 +114,14 @@ def run_family(report, tools, private, log, shared):
                 # at this native Django (handoff.md); every other family keeps it unset.
                 handoff = bool(getattr(runner, 'GO_DJANGO_HANDOFF', False))
                 report['go_django_handoff'] = handoff
+                # A family that sets GO_BUILD_TAGS builds Go with those tags (the
+                # api-schema hand-off probe exists only in a test build).
+                go_build_tags = tuple(getattr(runner, 'GO_BUILD_TAGS', ()))
+                report['go_build_tags'] = list(go_build_tags)
                 go_environment = {**json.loads(os.environ.get('GO_FIXTURE_ENVIRONMENT', '{}')), 'DJANGO_HANDOFF_URL': url}
                 with (patch.dict(os.environ, {'GO_FIXTURE_ENVIRONMENT': json.dumps(go_environment)}) if handoff
                       else contextlib.nullcontext()), \
-                        _owned(go_service(reuse, report, work, log, tools, port, versioned)) as native:
+                        _owned(go_service(reuse, report, work, log, tools, port, versioned, tags=go_build_tags)) as native:
                     endpoints = [('django-native', 'django', url, guards[0]),
                                  ('go-native', 'go', native['base_url'], native[LIFECYCLE_GUARD])]
 

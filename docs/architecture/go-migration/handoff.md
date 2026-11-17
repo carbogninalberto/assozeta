@@ -143,7 +143,7 @@ Go unit tests (`go test ./internal/handoff ./internal/refusal`):
 | `TestNewRejectsInvalidURLs`, `TestBasePathPrefixesTheRequestTarget` | configuration |
 | `TestRefusalSentinels`, `TestNotPortedSentinelsAreRefusals` | every sentinel matches `refusal.ErrNotPorted` |
 
-Harness family `django-handoff` (`TESTS/fixtures/django_handoff_http.json`, 12 cases): refused inputs of one
+Harness family `django-handoff` (`TESTS/fixtures/django_handoff_http.json`, 13 cases): refused inputs of one
 family (api-schema) plus ported controls for it, for workflow-update, course-list and personas-reads. The harness starts Go with `DJANGO_HANDOFF_URL` pointing at the run's
 Django. Each case is checked by its source family's contract (exact status, headers, body; for the workflow writes the
 saved row and the audit entry with the client's correlation id), then for the marker: `X-Assozeta-Handoff: django`
@@ -155,16 +155,20 @@ request with the case's method, path, status and correlation id.
 | personas-reads | none: Cyrillic search terms are ported and served by Go (controls, no marker) | 200, empty page (control) |
 | course-list | none: the orderings are the course's own columns, served by Go (control, no marker) | 200, the listed course (control) |
 | workflow-update | none since long-tail PR 4: a form `automation_tree` nested past Python's recursion band is answered by Go (X15, control, no marker) | the stable 500 page (control) |
-| api-schema | `GET schema/?lang=xx/yy` (a `lang` with a path separator, `errAPISchemaUnsupported`) | 200, the document of the unknown `lang=xx`: no catalog exists at `<localedir>/xx/yy` (`lang=xx` is the control) |
+| api-schema | `GET schema/?lang=handoff-probe`, a refusal compiled only into the `handoffprobe` test build (long-tail PR 5) | 200, the document of the unknown `lang=xx`: no catalog exists at `<localedir>/handoff-probe` (`lang=xx` is the control, and `?lang=xx/yy` is a ported control too) |
 
-The contract checks the mix, so when Go ports the api-schema input too, the sequence needs another refused input. The
+The contract checks the mix (at least one handed-off and one ported case). The production build refuses no `lang` any
+more (api-schema.md), so the runner sets `GO_BUILD_TAGS = ('handoffprobe',)`: the harness passes the tags to
+`go_service` → `native_server` → `build_server`, which adds `-tags handoffprobe` to `go build` and to the binary
+cache key, and records them in the report (`go_build_tags`). The
 request counter of the contract wraps `urllib`'s opener, which both `TESTS.http_client.Client` and the api-schema
 contract use.
 
 Receipts (`quality-reports/go-migration/django-handoff-http-<label>`):
 
-- RED `red-f3`, handoff off (`HANDOFF_FAMILY=off`): Django 10/10; Go answers the first refused case with 500.
-- GREEN `versioned-f3`, handoff on: django-native, go-native, caddy-v1 and caddy-v2 10/10 each.
+- RED `red-f3`, handoff off (`HANDOFF_FAMILY=off`): Django 10/10; Go answers the first refused case with 500 (the
+  sequence then had 10 cases).
+- GREEN `versioned-f3`, handoff on: django-native, go-native, caddy-v1 and caddy-v2 10/10 each (10 cases).
 - Mutation `mutation-f3` (the replay forwards only `Authorization` and `X-Correlation-Id`): CAUGHT at
   `response.headers` of the first handed-off case.
 

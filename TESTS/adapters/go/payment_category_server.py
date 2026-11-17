@@ -47,11 +47,11 @@ def log_since(log, offset):
 
 
 @contextmanager
-def native_server(work, log, tool_env, address, *, versioned=False, process_observer=None, query_observation=False):
+def native_server(work, log, tool_env, address, *, versioned=False, process_observer=None, query_observation=False, tags=()):
     from django.conf import settings
 
     executable = work / 'payment-categories-server'
-    build_server(executable, log, tool_env)
+    build_server(executable, log, tool_env, tags)
     host, port = address.rsplit(':', 1)
     database = settings.DATABASES['default']
     environment = {

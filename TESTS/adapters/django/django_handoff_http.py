@@ -7,6 +7,10 @@ complete state unchanged; workflow cases are checked by workflow-update's effect
 check (the authored row and audit entries, actor, correlation id and no
 published task), so a handed-off write must have exactly Django's effect.
 
+Go is built with GO_BUILD_TAGS (`handoffprobe`): the api-schema hand-off case
+refuses `GET schema/?lang=handoff-probe` only in that test build, because the
+production build answers every `lang` natively.
+
 HANDOFF_FAMILY=off runs the same sequence with the handoff disabled: Go then
 answers the refused cases with its 500 page (the RED receipt of handoff.md).
 """
@@ -20,11 +24,16 @@ from TESTS.adapters.django import personas_reads_http as personas_reads
 from TESTS.adapters.django import workflow_update_http as workflow_update
 
 SOURCES = ('TESTS/fixtures/django_handoff_http.json', 'TESTS/contracts/test_django_handoff_http.py', 'TESTS/adapters/django/django_handoff_http.py',
-           'BE_GO/internal/handoff/handoff.go', 'BE_GO/internal/handoff/effects.go', 'BE_GO/internal/refusal/refusal.go') \
+           'BE_GO/internal/handoff/handoff.go', 'BE_GO/internal/handoff/effects.go', 'BE_GO/internal/refusal/refusal.go',
+           'BE_GO/internal/handler/api_schema_handoff_probe.go', 'BE_GO/internal/handler/api_schema_handoff_noprobe.go') \
     + tuple(dict.fromkeys(personas_reads.SOURCES + course_list.SOURCES + workflow_update.SOURCES + api_schema.SOURCES))
 FAMILIES = {'personas-reads': personas_reads, 'course-list': course_list, 'workflow-update': workflow_update,
             'api-schema': api_schema}
 GO_DJANGO_HANDOFF = os.environ.get('HANDOFF_FAMILY', 'on') != 'off'
+# The api-schema refusal this sequence hands off exists only in the handoffprobe
+# test build (api_schema_handoff_probe.go); the production build has no refused
+# `lang` left.
+GO_BUILD_TAGS = ('handoffprobe',)
 
 
 def seed_rows(source, created):

@@ -10,18 +10,24 @@ import (
 // CatalogKey mirrors DjangoTranslation(language) for the "django" domain: for
 // every catalog directory, the catalogs gettext.find(..., all=True) selects for
 // to_locale(language), and whether the default language is chained as the
-// fallback. Documents are generated per key. ok is false for a language
-// containing a path separator. ("", "." and ".." expansions select nothing:
-// the generator asserts no catalog sits directly in or above a directory.)
+// fallback. Documents are generated per key. The language string decides the
+// fallback flag, the resolved catalogs the per-directory lists.
+//
+// gettext joins every expansion to each catalog directory as a path
+// (os.path.join(localedir, language, "LC_MESSAGES", "django.mo")), so a
+// language with a path separator walks the file system. The port models the
+// directories that exist in a catalog directory (see catalogPath): the
+// directory itself, <dir>/<name> and <dir>/<name>/LC_MESSAGES for every catalog
+// name. A path that leaves that model or ends anywhere else selects nothing
+// (the generator asserts no catalog sits directly in or above a directory).
 //
 // No catalog directory name carries a codeset or a modifier (the generator
 // asserts it), so those parts only have to be split off at the right place;
-// their exact spelling never selects a catalog.
+// their exact spelling never selects a catalog. A rewritten encoding never
+// contains a path separator (locale._replace_encoding normalizes it to
+// alphanumerics), so the placeholder in normalizeLocale keeps the walk intact.
 func CatalogKey(language string) (string, bool) {
 	d := loaded()
-	if strings.Contains(language, "/") {
-		return "", false
-	}
 	var expansions []string
 	seen := map[string]bool{}
 	for _, expansion := range expandLanguage(normalizeLocale(toLocale(language), d.LocaleAlias)) {
@@ -43,16 +49,128 @@ func CatalogKey(language string) (string, bool) {
 			if expansion == "C" {
 				break
 			}
-			if _, ok := directory[expansion]; ok {
-				if !first {
-					key.WriteString(",")
-				}
-				key.WriteString(expansion)
-				first = false
+			name, ok := catalogPath(expansion, directory)
+			if !ok {
+				continue
 			}
+			if !first {
+				key.WriteString(",")
+			}
+			key.WriteString(name)
+			first = false
 		}
 	}
 	return key.String(), true
+}
+
+// catalogPath resolves one gettext expansion against the directories that exist
+// in a catalog directory, as the kernel resolves a path. Empty and "." components
+// stay where they are, ".." goes up one level and leaves the model above the
+// directory, and any other component must be a directory at that point. The
+// expansion selects a catalog exactly when the walk ends at <dir>/<name>, where
+// <name>/LC_MESSAGES/django.mo exists. An absolute expansion (starting with "/")
+// replaces the directory in os.path.join: nothing outside the model exists.
+func catalogPath(expansion string, names map[string]struct{}) (string, bool) {
+	if strings.HasPrefix(expansion, "/") {
+		return "", false
+	}
+	const (
+		atDirectory = iota // <dir>
+		atCatalog          // <dir>/<name>
+		atMessages         // <dir>/<name>/LC_MESSAGES
+	)
+	depth, name := atDirectory, ""
+	for _, component := range strings.Split(expansion, "/") {
+		switch component {
+		case "", ".":
+			// The kernel keeps empty and "." components where they are.
+		case "..":
+			if depth == atDirectory {
+				return "", false
+			}
+			depth--
+			if depth == atDirectory {
+				name = ""
+			}
+		default:
+			switch depth {
+			case atDirectory:
+				if _, ok := names[component]; !ok {
+					return "", false
+				}
+				depth, name = atCatalog, component
+			case atCatalog:
+				if component != "LC_MESSAGES" {
+					return "", false
+				}
+				depth = atMessages
+			default:
+				// <dir>/<name>/LC_MESSAGES has no entries in the model.
+				return "", false
+			}
+		}
+	}
+	if depth != atCatalog {
+		return "", false
+	}
+	return name, true
+}
+
+// DocumentKey returns the key of the generated document closest to the one
+// Django renders for a resolved catalog key: key itself when the generator
+// rendered that key, else the key of the catalog the resolution selects first.
+//
+// A language behind a path separator can select catalogs of different
+// languages in one directory ("en/../it" selects en and it), combinations the
+// generator never rendered; Django loads the first catalog of each directory
+// and chains the rest as fallbacks, so the first selection is the closest
+// generated document. A key without a selection ("en/xx" and "xx/yy" select
+// nothing at all) is answered by the same fallback flag without a catalog
+// ("0|||||||||" or "1|||||||||"), the bare document gettext's chain renders.
+// Should a future table omit that key, the chain alone still names a generated
+// document: the default language for a fallback flag, and, without one, the
+// English (msgid) document the generator renders for "en", whose catalogs are
+// empty. ok is false only when neither exists, which the generator rules out.
+func DocumentKey(key string) (string, bool) {
+	d := loaded()
+	if _, ok := d.VariantOf[key]; ok {
+		return key, true
+	}
+	flag, lists, _ := strings.Cut(key, "|")
+	for _, list := range strings.Split(lists, "|") {
+		name, _, _ := strings.Cut(list, ",")
+		if name == "" {
+			continue
+		}
+		first, ok := CatalogKey(name)
+		if !ok {
+			continue
+		}
+		if _, ok := d.VariantOf[first]; ok {
+			return first, true
+		}
+	}
+	empty := flag + strings.Repeat("|", len(d.directories))
+	if _, ok := d.VariantOf[empty]; ok {
+		return empty, true
+	}
+	var name string
+	switch flag {
+	case "0":
+		name = "en"
+	case "1":
+		name = d.LanguageCode
+	default:
+		return "", false
+	}
+	candidate, ok := CatalogKey(name)
+	if !ok {
+		return "", false
+	}
+	if _, ok := d.VariantOf[candidate]; !ok {
+		return "", false
+	}
+	return candidate, true
 }
 
 // toLocale is django.utils.translation.to_locale.

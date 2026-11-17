@@ -118,6 +118,19 @@ schema('lang-unknown', 200, document('json', 'xx'), content_type=JSON2, query='?
        disposition=json_disposition())
 schema('lang-upper-english', 200, document('json', 'EN'), content_type=JSON2, query='?lang=EN', headers={'Accept': JSON2},
        disposition=json_disposition())
+# A "/" walks the catalog directories gettext joins to the language: "it/../it", "it/" and "en/../it" (which
+# selects the Italian catalog first) load the Italian document, while "xx/../it" (no xx directory) and the
+# absolute "/tmp" select nothing, the unknown-language document.
+schema('lang-path-relative-parent', 200, document('json', 'it'), content_type=JSON2, query='?lang=it/../it',
+       headers={'Accept': JSON2}, disposition=json_disposition())
+schema('lang-path-trailing-slash', 200, document('json', 'it'), content_type=JSON2, query='?lang=it/',
+       headers={'Accept': JSON2}, disposition=json_disposition())
+schema('lang-path-encoded-slashes', 200, document('json', 'xx'), content_type=JSON2, query='?lang=xx%2F..%2Fit',
+       headers={'Accept': JSON2}, disposition=json_disposition())
+schema('lang-path-absolute', 200, document('json', 'xx'), content_type=JSON2, query='?lang=/tmp', headers={'Accept': JSON2},
+       disposition=json_disposition())
+schema('lang-path-overrides-english', 200, document('json', 'it'), content_type=JSON2, query='?lang=en/../it',
+       headers={'Accept': JSON2}, disposition=json_disposition())
 # The last value wins; an empty lang keeps LocaleMiddleware's language.
 schema('lang-last-value', 200, document('json', 'fr'), content_type=JSON2, query='?lang=de&lang=fr', headers={'Accept': JSON2},
        disposition=json_disposition())

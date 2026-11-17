@@ -48,10 +48,6 @@ var (
 	apiSchemaDocumentView = apiSchemaView{"SpectacularAPIView", apischema.SchemaRenderers}
 	apiSchemaSwaggerView  = apiSchemaView{"SpectacularSwaggerView", apischema.PageRenderers}
 	apiSchemaRedocView    = apiSchemaView{"SpectacularRedocView", apischema.PageRenderers}
-	// A `lang` with a path separator makes gettext look outside the locale
-	// directories: the answer depends on the Django host's file layout
-	// (long-tail rule 4, platform).
-	errAPISchemaUnsupported = refusal.New("api schema: request outside the ported input range")
 	// errAPISchemaUnreachable is a catalog lookup the generated tables cover.
 	errAPISchemaUnreachable = refusal.AppState("api schema: catalog entry outside the generated tables")
 )
@@ -70,18 +66,24 @@ func (h *APISchemaHandler) Schema(c echo.Context) error {
 			}
 			return request.respond(http.StatusOK, request.reindent(body), "")
 		}
-		key, ok := apischema.CatalogKey(request.language)
+		if err := apiSchemaHandoffProbe(request.query("lang")); err != nil {
+			// Only the handoffprobe test build answers a refused input, so the
+			// django-handoff family keeps one case to replay (handoff.md).
+			return apiSchemaHandoffRefuse(c, err)
+		}
+		key, _ := apischema.CatalogKey(request.language)
 		if lang := request.query("lang"); lang != "" {
-			key, ok = apischema.CatalogKey(lang)
+			key, _ = apischema.CatalogKey(lang)
 		}
 		version := request.query("version")
-		if !ok {
-			return apiSchemaRefuse(c)
-		}
-		document, ok := apischema.Document(request.format(), key, version)
+		documentKey, ok := apischema.DocumentKey(key)
 		if !ok {
 			// The generator renders every catalog key a language can select
 			// (candidate_languages in TESTS/adapters/django/api_schema.py).
+			return apiSchemaUnreachable(c)
+		}
+		document, ok := apischema.Document(request.format(), documentKey, version)
+		if !ok {
 			return apiSchemaUnreachable(c)
 		}
 		suffix := ""
@@ -333,16 +335,17 @@ func apiSchemaBadRequest(c echo.Context) error {
 	return c.Blob(http.StatusBadRequest, "text/html; charset=utf-8", djangoBadRequestPage)
 }
 
-// apiSchemaRefuse answers requests outside the ported input range with the
-// server error page instead of an approximated document.
-func apiSchemaRefuse(c echo.Context) error {
-	c.Logger().Warn(errAPISchemaUnsupported.Error())
+// apiSchemaHandoffRefuse answers a refused input with the server error page
+// instead of an approximated document, after dropping the view's headers; the
+// sentinel goes on to the hand-off. Only apiSchemaHandoffProbe returns one.
+func apiSchemaHandoffRefuse(c echo.Context, err error) error {
+	c.Logger().Warn(err.Error())
 	header := c.Response().Header()
 	header.Del("Allow")
 	header.Del("Vary")
 	header.Del("Content-Disposition")
 	header.Del("Cross-Origin-Opener-Policy")
-	return restError(c, errAPISchemaUnsupported)
+	return restError(c, err)
 }
 
 // apiSchemaURL is the views' _get_schema_url: DRF's reverse('schema') keeps

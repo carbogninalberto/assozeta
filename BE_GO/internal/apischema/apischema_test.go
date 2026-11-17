@@ -35,9 +35,9 @@ func TestCatalogKeyMatchesGettext(t *testing.T) {
 			t.Errorf("CatalogKey(%q) = %q, %v; Django selects %q", language, got, ok, want)
 		}
 	}
-	for _, refused := range []string{"../it", "it/x", "/"} {
-		if _, ok := CatalogKey(refused); ok {
-			t.Errorf("CatalogKey(%q) is accepted", refused)
+	for _, language := range []string{"../it", "it/x", "/"} {
+		if _, ok := CatalogKey(language); !ok {
+			t.Errorf("CatalogKey(%q) is refused", language)
 		}
 	}
 }
