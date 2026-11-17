@@ -227,7 +227,9 @@ class Deployment(ImageFixture):
             networks={'fixture': {}}, extra_hosts=['host.docker.internal:host-gateway'],
             labels={LABEL: self.identifier})
         service.pop('container_name', None)
-        manual = [v for v in service['volumes'] if v['target'] == '/app/manuale'][0]
+        # The update runner socket is installation wiring this fixture does not own.
+        service['volumes'] = [v for v in service['volumes'] if v.get('source') != 'updater_api']
+        manual =[v for v in service['volumes'] if v['target'] == '/app/manuale'][0]
         manual['source'] = 'manual'
         self.compose_file = self.work / 'compose.json'
         self.compose_file.write_text(json.dumps({'services': {'api-go': service},
