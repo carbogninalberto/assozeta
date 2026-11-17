@@ -6374,7 +6374,9 @@
     "mail": null,
     "stored": false,
     "promoted": []
-   }
+   },
+   "raw_body": "-",
+   "content_type": "text/plain"
   },
   {
    "name": "document-render-subscription-name-with-mime-break",
@@ -6409,7 +6411,9 @@
     "mail": null,
     "stored": false,
     "promoted": []
-   }
+   },
+   "raw_body": "-",
+   "content_type": "text/plain"
   },
   {
    "name": "document-render-compensation-instructor-owner-without-association",
@@ -7463,6 +7467,8 @@
     "stored": true,
     "promoted": []
    },
+   "raw_body": "-",
+   "content_type": "text/plain",
    "form": {
     "sport_association.denomination": "  POLISPORTIVA\u0002BIELLA",
     "sport_association.user.email": "  DOCUMENT-RENDER-FORMREFUSED@EXAMPLE.TEST",

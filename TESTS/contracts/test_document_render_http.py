@@ -170,7 +170,8 @@ def assert_case(case, base_url, *, token, sessions):
 
     if closed:
         # The server refuses the answer after the view ran: a direct client reads no status line, and Caddy
-        # answers its 502 for the upstream that closed (Caddy 2.11 reverse_proxy: an empty body).
+        # answers its 502 for the upstream that closed (Caddy 2.11 reverse_proxy: an empty body). The cases carry
+        # a body so Caddy's transport does not replay the GET on a fresh upstream connection.
         check(case['status'] == 'closed', 'fixture.status')
         if any(prefix in base_url for prefix in PROXY_PREFIXES):
             check(status == 502, 'response.status')

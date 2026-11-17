@@ -912,11 +912,16 @@ for key in ('nel', 'control'):
 
 # A header value uvicorn refuses: Django answers 200 and the view links the row, the storage task is queued, then
 # the server closes the connection with no response (a direct client reads none; Caddy answers 502).
+# Through Caddy, a GET without a body whose pooled upstream connection closes before an answer is sent again once
+# (Go net/http's transport replays a replayable request on a reused connection), so the view would run twice for
+# Django and Go alike, depending on the pool. These cases carry a one-byte body (ignored by the views) so the proxy
+# does not replay them.
+NO_REPLAY = {'raw_body': '-', 'content_type': 'text/plain'}
 add('subscription-name-with-refused-byte', 'owner', f"/document/subscription/{S('ctl')}", 'closed', '<connection-closed>',
-    renders=[render('subscription', S('ctl'))],
+    **NO_REPLAY, renders=[render('subscription', S('ctl'))],
     effect=effect(subscription_name('ctl'), actor='owner', links=[('subscription', 'ctl')]))
 add('subscription-name-with-mime-break', 'owner', f"/document/subscription/{S('mimebreak')}", 'closed', '<connection-closed>',
-    renders=[render('subscription', S('mimebreak'))],
+    **NO_REPLAY, renders=[render('subscription', S('mimebreak'))],
     effect=effect(subscription_name('mimebreak'), actor='owner', links=[('subscription', 'mimebreak')]))
 
 # Hours of an instructor whose owner has no association: the audit index of each link is the actor's association
@@ -1018,7 +1023,7 @@ def form_bare(denomination, email, first, last):
 
 
 add('medical-form-refused-header', 'owner', f"/document/medical-appointment/{M('biella_refused')}", 'closed', '<connection-closed>',
-    effect=effect(medical_name('biella_refused'), actor='owner', celery=False, links=[('medicalappointments', 'biella_refused')],
+    **NO_REPLAY, effect=effect(medical_name('biella_refused'), actor='owner', celery=False, links=[('medicalappointments', 'biella_refused')],
                   stored=True))
 cases[-1]['form'] = form_bare('Polisportiva\x02Biella', 'document-render-formrefused@example.test', 'Nadia', 'Fuga')
 add('medical-form-line-break', 'owner', f"/document/medical-appointment/{M('biella_line')}", 500,

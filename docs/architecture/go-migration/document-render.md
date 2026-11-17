@@ -223,7 +223,10 @@ decision of 2026-11-16 (rule 4: the closest Django answer). Go runs every write 
 then closes the client connection without writing a response: `DocumentRenderReply.CloseConnection` and
 `http.NewResponseController(...).Hijack()` in the handler, whose response-writer wrappers (the CORS, security-header and
 session writers, the handoff writer and the unmatched-page writer) all reach `net/http`'s hijack. Behind Caddy both
-servers answer 502. Django keeps its own CR/LF answer: `BadHeaderError` inside the view's `try` is the 500 JSON, not a
+servers answer 502. Caddy's transport (Go `net/http`) sends a GET without a body once more when its pooled upstream
+connection closes before any answer, so behind Caddy the view runs twice for Django and Go alike whenever the pool
+reused a connection, and Caddy answers what the second run answers. The parity cases send a one-byte body, which the
+views ignore and which makes the request not replayable, so every workload runs the view once. Django keeps its own CR/LF answer: `BadHeaderError` inside the view's `try` is the 500 JSON, not a
 closed connection.
 
 Cases: `subscription-name-with-refused-byte` (an ISO-8859-1 name with `\x01`), `subscription-name-with-mime-break` (a
@@ -233,7 +236,7 @@ form, 500 `BadHeaderError`) and `medical-form-rejected-storage-name` (a Biella d
 500 `Detected path traversal attempt in '<timestamp>/<document id>/<filename>'`, nothing stored or linked).
 `TESTS/contracts/test_document_render_http.py` reads the closed connection as the pseudo-status `closed` (Caddy: 502 with
 an empty body) and `$document-directory` stands for the generated storage directory in that exception text. The
-fixture has 248 cases; `go test ./internal/service` and `./internal/handler` cover the two 500 texts, the stored form,
+fixture has 253 cases; `go test ./internal/service` and `./internal/handler` cover the two 500 texts, the stored form,
 the links and the closed connection.
 
 ## Routes not in this family
