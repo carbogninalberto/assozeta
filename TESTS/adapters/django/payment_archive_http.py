@@ -46,6 +46,8 @@ def seed_fixture(apps, private_work, raw):
                                                  sport_association_id=ids['own_association'], fee=Decimal('1.00'))])
         fixture['created'].append((Carnet, source['carnet']['id']))
         for row in source['payments'].values():
+            if row.get('deep'):
+                continue  # inserted for its own case (deep_rows): the state snapshot cannot decode it
             Payment._base_manager.bulk_create([Payment(payment_id=row['id'], sport_association_id=row['association'], amount=Decimal('10.00'),
                 subject=row['subject'], description=row['description'], meta=row['meta'], course=row['course'], archived=row['archived'],
                 deleted=row['deleted'], payment_category_id=source['category'] if row['category'] else None,
@@ -112,6 +114,41 @@ def fixture_context(apps, private_work, raw, *, cleanup_receipt=None):
         contract.require(receipt['verified'], 'cleanup.fixture-incomplete')
 
 
+@contextmanager
+def deep_rows(case):
+    """Insert the payment whose stored JSON no state snapshot can decode (X15 bands).
+
+    The row exists only around the case's request: the harness's state snapshot
+    walks every JSON value in Python and cannot hold a value this deep. Its course
+    is written from the authored text with raw SQL, because psycopg2's json.dumps
+    of a Python structure at that depth raises, and it is removed by primary key
+    without loading it for the same reason.
+    """
+    label = (case.get('setup') or {}).get('deep_payment')
+    if not label:
+        yield
+        return
+    from auditlog.context import disable_auditlog
+    from application.models import Payment
+    from django.db import connection
+    source = contract.load_source()
+    row = source['payments'][label]
+    with disable_auditlog():
+        Payment._base_manager.bulk_create([Payment(
+            payment_id=row['id'], sport_association_id=row['association'], amount=Decimal('10.00'), subject=row['subject'],
+            description=row['description'], archived=row['archived'], deleted=False,
+            payment_category_id=source['category'] if row['category'] else None)])
+        with connection.cursor() as cursor:
+            cursor.execute('UPDATE application_payment SET course=%s::jsonb WHERE payment_id=%s',
+                           [row['course']['$raw_json'], row['id']])
+    try:
+        yield
+    finally:
+        with disable_auditlog():
+            with connection.cursor() as cursor:
+                cursor.execute('DELETE FROM application_payment WHERE payment_id=%s', [row['id']])
+
+
 def assert_effect(case, before, after, source, remote, fixture):
     managed = (PAYMENT, AUDIT, INDEX)
     contract.require({k: v for k, v in before.items() if k not in managed} == {k: v for k, v in after.items() if k not in managed}, 'state.other-models')
@@ -125,13 +162,18 @@ def assert_effect(case, before, after, source, remote, fixture):
     target = source['payments'][effect['payment']]['id']
     bound = {'$default_category': fixture['default_category'], '$default_category_name': fixture['default_category_name']}
     changes = {k: [bound.get(v, v) for v in pair] for k, pair in effect['changes'].items()}
-    expected_row = dict(old_p[target], archived=effect['archived'])
-    if 'payment_category' in changes:
-        expected_row['payment_category_id'] = fixture['default_category']
-    if 'description' in changes:
-        expected_row['description'] = changes['description'][1]
-    contract.require(set(new_p) == set(old_p) and all(new_p[k] == old_p[k] for k in old_p if k != target) and new_p[target] == expected_row,
-                     'state.payment')
+    if effect.get('inserted'):
+        # The payment was inserted for this case and removed after it: only its
+        # audit entry and index row can be compared.
+        contract.require(old_p == new_p, 'state.inserted-payment-removed')
+    else:
+        expected_row = dict(old_p[target], archived=effect['archived'])
+        if 'payment_category' in changes:
+            expected_row['payment_category_id'] = fixture['default_category']
+        if 'description' in changes:
+            expected_row['description'] = changes['description'][1]
+        contract.require(set(new_p) == set(old_p) and all(new_p[k] == old_p[k] for k in old_p if k != target) and new_p[target] == expected_row,
+                         'state.payment')
     added = [new_a[k] for k in set(new_a) - set(old_a)]
     contract.require(len(added) == 1 and all(new_a[k] == old_a[k] for k in old_a), 'audit.one-entry')
     event, ids = added[0], source['ids']
@@ -152,9 +194,13 @@ def assert_effect(case, before, after, source, remote, fixture):
     ipaddress.ip_address(event['remote_addr'])
     contract.require(remote.setdefault('addr', event['remote_addr']) == event['remote_addr'], 'audit.remote-consistent')
     added_i = [new_i[k] for k in set(new_i) - set(old_i)]
+    if effect.get('index') == 'none':
+        contract.require(added_i == [], 'index.absent')
+        return
+    association, resolution = (effect.get('index') or [source['payments'][effect['payment']]['association'], 'direct'])
     contract.require(len(added_i) == 1 and added_i[0]['log_entry_id'] == event['id']
-                     and added_i[0]['sport_association_id'] == source['payments'][effect['payment']]['association']
-                     and added_i[0]['resolution_path'] == 'direct', 'index.fields')
+                     and added_i[0]['sport_association_id'] == association
+                     and added_i[0]['resolution_path'] == resolution, 'index.fields')
 
 
 def run_workload(label, backend, base_url, fixture, apps, raw, observer):
@@ -167,7 +213,8 @@ def run_workload(label, backend, base_url, fixture, apps, raw, observer):
         cursor = observer.cursor()
         token = None if case['actor'] == 'anonymous' else fixture['tokens'][case['actor']]
         try:
-            status = contract.assert_case(case, base_url, token=token, sessions=fixture['sessions'])
+            with deep_rows(case):
+                status = contract.assert_case(case, base_url, token=token, sessions=fixture['sessions'])
             after = scopes.snapshot_state(apps)
             shared.assert_attribution(backend, case['method'], case['path'], status, observer.delta(cursor), case['name'])
             assert_effect(case, before, after, source, remote, fixture)

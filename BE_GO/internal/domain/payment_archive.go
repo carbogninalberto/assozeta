@@ -49,10 +49,11 @@ type PaymentArchiveEvent struct {
 	AssociationID string
 	Changes       map[string][2]string
 	Context       LoginAuditContext
-	At            time.Time
-	// IndexFallback resolves the entry's audit index through the resolver's
-	// fallbacks (the resolver cannot reload the saved row at its nesting).
+	// IndexFallback is whether the audit index resolver could not reload this
+	// payment row (its JSON is nested past the resolver's measured edge): the
+	// index row then resolves from the log entry instead.
 	IndexFallback bool
+	At            time.Time
 }
 
 type PaymentArchiveStore interface {

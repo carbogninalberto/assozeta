@@ -154,6 +154,28 @@ PAYMENTS = {
                             meta={'subscription_data': {'name': ['Agonisti', {'anno': None, 'ok': True}, 2]}}),
     'pf_name_dict': payment(subject=1, amount='28.00', associate=True, meta={'subscription_data': {'name': {'it': "l'anno \"2026\""}}}),
 }
+# Deep stored JSON (owner decision X15): approve and cancel load the payment's JSON
+# columns with json.loads. On the parity harness's Django (CPython 3.13.16) a stored
+# course of 9937 levels of total nesting still parses, 9938 raises inside the view's
+# own load (the plain 500 page, nothing written). Each row exists only around its own
+# case: the harness's state snapshot walks JSON values in Python, which cannot hold a
+# value this deep. The success bands (the index resolver's fallback, and a value below
+# every edge) cannot be exported here: the 2xx body carries the payment, so the deep
+# value reaches the response, which the harness cannot decode; the Go unit tests cover
+# those bands for both views.
+DEEP_IDS = iter(f'a1000000-0000-4000-8000-{985901 + n:012d}' for n in range(4))
+
+
+def deep_payment(depth, *, paid=False, paid_on=None):
+    return {'invoice': None, 'id': next(DEEP_IDS), 'association': OWN, 'subject': 0, 'amount': '10.00', 'paid': paid,
+            'expense': False, 'associate': False, 'user': False, 'supplier': False, 'instructor': False, 'group': None,
+            'deleted': False, 'archived': False, 'category': CATEGORY, 'created': '2026-10-01T08:00:00Z',
+            'payment_date': paid_on, 'description': 'Quota', 'meta': None, 'attachment': False, 'meta_categories': None,
+            'linked': False, 'course': {'$raw_json': '[' * depth + ']' * depth}, 'deep': True}
+
+
+PAYMENTS['deep_approve'] = deep_payment(9967)
+PAYMENTS['deep_cancel'] = deep_payment(9967, paid=True, paid_on='2026-03-09T09:00:00Z')
 SUPPLIER_INVOICES = {
     'si_approve': {'id': next(ids), 'payment': 'ap_supplier', 'identifier': 'FT-1', 'amount': '30.00'},
     'si_linked': {'id': next(ids), 'payment': 'de_plain', 'identifier': 'FT-2', 'amount': '10.00'},
@@ -206,9 +228,11 @@ cases = []
 
 
 def add(name, actor, path, status, response, *, method='POST', body=None, raw_body=None, content_type=None, headers=None, effect=None,
-        prints=()):
+        prints=(), setup=None):
     case = {'name': f'payment-state-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
             'status': status, 'response': response, 'effect': effect, 'prints': list(prints)}
+    if setup is not None:
+        case['setup'] = setup
     if body is not None:
         case['body'] = body
     if raw_body is not None:
@@ -848,6 +872,14 @@ marked('admin-impersonating-owner', 'admin', ['bd_admin'], [P('bd_admin')], ADMI
 add('bulk-delete-again-ignored', 'owner', BULK_DELETE, 200, {'message': 'All payments deleted'}, body={'payment_ids': [P('bd_a')]},
     effect=nothing())
 add('approve-bulk-deleted-server-error', 'owner', APPROVE('bd_a'), 500, SERVER)
+
+# Deep stored JSON (owner decision X15): past the view's own load (9937) the request is
+# the plain 500 page and nothing is written. The earlier bands are the Go unit tests'
+# (see the deep payment comment above).
+add('approve-course-json-past-depth-band-server-error', 'owner', APPROVE('deep_approve'), 500, SERVER,
+    setup={'deep_payment': 'deep_approve'})
+add('cancel-course-json-past-depth-band-server-error', 'owner', CANCEL('deep_cancel'), 500, SERVER,
+    setup={'deep_payment': 'deep_cancel'})
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Payment approve, cancel, delete and bulk archive/delete authored sequence with '

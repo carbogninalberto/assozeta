@@ -82,6 +82,41 @@ def moment(text):
     return datetime.fromisoformat(text.replace('Z', '+00:00')) if text else None
 
 
+@contextmanager
+def deep_rows(case):
+    """Insert the payment whose stored JSON no state snapshot can decode (X15 bands).
+
+    The row exists only around the case's request: the harness's state snapshot
+    walks every JSON value in Python and cannot hold a value this deep. Its course
+    is written from the authored text with raw SQL, because psycopg2's json.dumps
+    of a Python structure at that depth raises, and it is removed by primary key
+    without loading it for the same reason.
+    """
+    label = (case.get('setup') or {}).get('deep_payment')
+    if not label:
+        yield
+        return
+    from auditlog.context import disable_auditlog
+    from application.models import Payment
+    from django.db import connection
+    source = contract.load_source()
+    row = source['payments'][label]
+    with disable_auditlog():
+        Payment._base_manager.bulk_create([Payment(
+            payment_id=row['id'], sport_association_id=row['association'], subject=row['subject'], amount=Decimal(row['amount']),
+            paid=row['paid'], expense=row['expense'], description=row['description'], deleted=False, archived=row['archived'],
+            payment_category_id=row['category'], creation_date=moment(row['created']), payment_date=moment(row['payment_date']))])
+        with connection.cursor() as cursor:
+            cursor.execute('UPDATE application_payment SET course=%s::jsonb WHERE payment_id=%s',
+                           [row['course']['$raw_json'], row['id']])
+    try:
+        yield
+    finally:
+        with disable_auditlog():
+            with connection.cursor() as cursor:
+                cursor.execute('DELETE FROM application_payment WHERE payment_id=%s', [row['id']])
+
+
 def default_category():
     from application.models import PaymentCategory
     row = PaymentCategory.objects.filter(name__iexact='entrate e proventi da attività tipiche').order_by('pk').first()
@@ -138,6 +173,8 @@ def seed_rows(source, created):
                                 membership_fee=Decimal(row['membership_fee']), activity_fee=Decimal(row['activity_fee']),
                                 description=row['description'], number=row['number'], archived=True))
     for row in payments.values():
+        if row.get('deep'):
+            continue  # inserted for its own case (deep_rows): the state snapshot cannot decode it
         insert(Payment, Payment(
             invoice_id=bills[row['invoice']]['id'] if row['invoice'] else None,
             payment_id=row['id'], sport_association_id=row['association'], subject=row['subject'], amount=Decimal(row['amount']),
@@ -454,4 +491,4 @@ def check_state(case, effect, before, after, source, context, binding):
         contract.require(created_now[0] == invoice_now, 'audit.now-stored')
 
 
-run_workload = harness.run_workload_for(contract, assert_effect, prepare=captured)
+run_workload = harness.run_workload_for(contract, assert_effect, prepare=captured, case_scope=deep_rows)

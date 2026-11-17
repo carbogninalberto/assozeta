@@ -52,19 +52,47 @@ for label, values in LINKED.items():
     PAYMENTS[label] = {'id': next(ids), 'association': OWN, 'archived': False, 'category': True, 'deleted': False, 'group': None,
                        'subject': 0, 'description': 'Quota', 'meta': None, 'course': None, 'carnet': None, **values}
     PAYMENTS[label]['link_id'] = next(ids)
+# Deep stored JSON (owner decision X15). The view loads the payment's course with
+# json.loads: the parity harness's Django (CPython 3.13.16) reads 9935 levels of
+# total nesting, auditlog's refetch of the stored row before the UPDATE reads 9933,
+# and the audit index resolver's reload reads 9925 and is caught (the index row then
+# comes from the log entry). The deep values sit inside each band with a margin. Each
+# row exists only around its own case: the harness's state snapshot walks JSON values
+# in Python, which cannot hold a value this deep, so the adapter inserts it from the
+# authored depth and removes it by primary key.
+DEEP_IDS = iter(f'a1000000-0000-4000-8000-{944001 + n:012d}' for n in range(4))
+
+
+def deep_payment(depth):
+    return {'id': next(DEEP_IDS), 'association': OWN, 'archived': False, 'category': True, 'deleted': False, 'group': None,
+            'subject': 0, 'description': 'Quota', 'meta': None, 'course': {'$raw_json': '[' * depth + ']' * depth},
+            'carnet': None, 'deep': True}
+
+
+PAYMENTS['deep_index'] = deep_payment(9929)
+PAYMENTS['deep_load'] = deep_payment(9965)
+PAYMENTS['deep_below'] = deep_payment(9000)
 path = lambda key: f'/payment/{PAYMENTS[key]["id"] if key in PAYMENTS else key}/archive'
 SERVER = '<stable-server-error-page>'
 ARCHIVED, UNARCHIVED = {'msg': 'Payment archived.'}, {'msg': 'Payment unarchived.'}
 cases = []
 
 
-def add(name, actor, target, status, response, *, method='POST', headers=None, effect=None):
-    cases.append({'name': f'payment-archive-{name}', 'actor': actor, 'method': method, 'path': path(target), 'headers': headers or {},
-                  'status': status, 'response': response, 'effect': effect})
+def add(name, actor, target, status, response, *, method='POST', headers=None, effect=None, setup=None):
+    case = {'name': f'payment-archive-{name}', 'actor': actor, 'method': method, 'path': path(target), 'headers': headers or {},
+            'status': status, 'response': response, 'effect': effect}
+    if setup is not None:
+        case['setup'] = setup
+    cases.append(case)
 
 
-def toggled(label, archived, changes, actor='owner', impersonation=None):
-    return {'payment': label, 'archived': archived, 'changes': changes, 'actor': actor, 'impersonation': impersonation}
+def toggled(label, archived, changes, actor='owner', impersonation=None, *, index=None, inserted=False):
+    effect = {'payment': label, 'archived': archived, 'changes': changes, 'actor': actor, 'impersonation': impersonation}
+    if index is not None:
+        effect['index'] = index
+    if inserted:
+        effect['inserted'] = True
+    return effect
 
 
 flip = lambda old, new: {'archived': [str(old), str(new)]}
@@ -94,6 +122,15 @@ add('course-subscription-title-name', 'owner', 'course_subscription_title', 200,
     effect=toggled('course_subscription_title', True, {**flip(False, True), 'description': ['None', 'Corso nuoto']}))
 add('course-installment-meta-name', 'owner', 'course_installment_meta', 200, ARCHIVED,
     effect=toggled('course_installment_meta', True, {**flip(False, True), 'description': ['None', 'Rata dal meta']}))
+# Deep stored JSON: at 9929 the save and auditlog's refetch parse, the index resolver
+# does not (its fallback is the actor's association); at 9000 every load parses and the
+# index is direct; at 9965 the view's own load raises before anything is written (500).
+add('course-json-at-depth-band-falls-back', 'owner', 'deep_index', 200, ARCHIVED,
+    setup={'deep_payment': 'deep_index'}, effect=toggled('deep_index', True, flip(False, True),
+                                                          index=[OWN, 'actor.sport_association'], inserted=True))
+add('course-json-below-depth-band', 'owner', 'deep_below', 200, ARCHIVED, setup={'deep_payment': 'deep_below'},
+    effect=toggled('deep_below', True, flip(False, True), inserted=True))
+add('course-json-past-depth-band-server-error', 'owner', 'deep_load', 500, SERVER, setup={'deep_payment': 'deep_load'})
 # The account-transfer description dereferences custom_accounts (None here).
 add('transfer-blank-server-error', 'owner', 'transfer_blank', 500, SERVER)
 add('other-group-server-error', 'owner', 'grouped', 500, SERVER, headers={'X-Group-Id': IDS['foreign_group']})

@@ -823,10 +823,16 @@ func paymentSignUUID(value any) (string, error) {
 // PaymentSignRequired is SignatureRequestSerializer.validate's error code.
 const PaymentSignRequired = "signature-required"
 
+// paymentSignJSONEdges are payment_sign's measured edges: the view's own load,
+// auditlog's refetch of the stored row before the payment UPDATE, and the audit
+// index resolver's reload after the log entry.
+var paymentSignJSONEdges = paymentJSONEdges{Load: 9936, Save: 9934, Index: 9926}
+
 // Sign follows payment_sign. Storing a signature creates the Signature (the
 // scope user, or the selected person for collaborators), sets it on the
 // payment and runs Payment.save(), commits, then print_document_compensation.apply.
 func (s *PaymentMisc) Sign(ctx context.Context, identity domain.ResolvedIdentity, request PaymentMiscRequest) (map[string]any, error) {
+	ctx = withPaymentJSONEdges(ctx, paymentSignJSONEdges)
 	object, ok := request.Body.(domain.RequestObject)
 	if !ok {
 		// data.keys() on a value without keys().
@@ -852,6 +858,19 @@ func (s *PaymentMisc) Sign(ctx context.Context, identity domain.ResolvedIdentity
 	}
 	if !found {
 		return nil, &dto.MessageReadUUIDError{Detail: "payment not found"}
+	}
+	// The view's own load of the payment row: its JSON columns are decoded
+	// before the association check and the signature payload.
+	row, err := tx.PaymentState(ctx, domain.PaymentStateQuery{ID: key, Scope: paymentStateScope(identity),
+		Group: supplierGroup(request.GroupHeader)})
+	if err != nil {
+		return nil, err
+	}
+	if row == nil {
+		return nil, domain.ErrPaymentMiscServer
+	}
+	if err = paymentJSONLoadFailure(ctx, &row.PaymentSaveRow); err != nil {
+		return nil, err
 	}
 	// Payment signing only applies to the caller's association (request.user.sport_association).
 	if identity.ScopeUser.Role == domain.RoleAthlete {
@@ -908,7 +927,7 @@ func (s *PaymentMisc) Sign(ctx context.Context, identity domain.ResolvedIdentity
 		if s.printer == nil {
 			return nil, domain.ErrServerComposition
 		}
-		if err := s.storeSignature(ctx, tx, identity, request, key, data); err != nil {
+		if err := s.storeSignature(ctx, tx, identity, request, row, data); err != nil {
 			return nil, err
 		}
 		if err := tx.Commit(); err != nil {
@@ -922,16 +941,12 @@ func (s *PaymentMisc) Sign(ctx context.Context, identity domain.ResolvedIdentity
 }
 
 // storeSignature is Signature.objects.create, payment.signature = it and
-// payment.save(): Payment.save() defaults plus the audited update.
+// payment.save(): Payment.save() defaults plus the audited update. The
+// signature rows are written before the payment save, as the view does: a
+// stored value past the save's edge leaves them committed (the view is not in
+// a transaction) and the payment untouched.
 func (s *PaymentMisc) storeSignature(ctx context.Context, tx domain.PaymentMiscTransaction, identity domain.ResolvedIdentity,
-	request PaymentMiscRequest, key, data string) error {
-	row, err := tx.PaymentState(ctx, domain.PaymentStateQuery{ID: key, Scope: paymentStateScope(identity), Group: supplierGroup(request.GroupHeader)})
-	if err != nil {
-		return err
-	}
-	if row == nil {
-		return domain.ErrPaymentMiscServer
-	}
+	request PaymentMiscRequest, row *domain.PaymentStateRow, data string) error {
 	user := identity.ScopeUser
 	if identity.Collaborator && identity.Effective != nil {
 		user = identity.Effective
@@ -947,6 +962,12 @@ func (s *PaymentMisc) storeSignature(ctx context.Context, tx domain.PaymentMiscT
 		AssociationID: actorAssociation, At: at}); err != nil {
 		return err
 	}
+	changes := map[string][2]string{}
+	if err = paymentSaveDefaults(ctx, tx, &row.PaymentSaveRow, changes); err != nil {
+		// Payment.save() raising after the Signature.objects.create writes: the
+		// request is not atomic, so they stay.
+		return paymentJSONCommitAfterWrites(tx, err)
+	}
 	previous, err := tx.SetPaymentSignature(ctx, row.ID, signature)
 	if err != nil {
 		return err
@@ -955,14 +976,11 @@ func (s *PaymentMisc) storeSignature(ctx context.Context, tx domain.PaymentMiscT
 	if previous != nil {
 		before = *previous
 	}
-	changes := map[string][2]string{"signature": {before, signature}}
-	if err := paymentSaveDefaults(ctx, tx, &row.PaymentSaveRow, changes); err != nil {
-		return err
-	}
+	changes["signature"] = [2]string{before, signature}
 	if err := tx.SavePaymentState(ctx, domain.PaymentStateSave{ID: row.ID, Paid: row.Paid, PaymentDate: row.PaymentDate,
 		CategoryID: row.CategoryID, Description: row.Description}); err != nil {
 		return err
 	}
 	return tx.AppendPaymentAudit(ctx, domain.PaymentArchiveEvent{PaymentID: row.ID, AssociationID: row.AssociationID, Changes: changes,
-		Context: audit, At: at})
+		IndexFallback: row.IndexFallback, Context: audit, At: at})
 }

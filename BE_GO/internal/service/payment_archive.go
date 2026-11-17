@@ -169,10 +169,16 @@ func pythonOptional(value *string) string {
 	return *value
 }
 
+// paymentArchiveJSONEdges are payment_archive's measured edges: the view's own
+// load, the smallest load before the UPDATE (get_course_carnet_name, else
+// auditlog's refetch of the stored row) and the audit index resolver's reload.
+var paymentArchiveJSONEdges = paymentJSONEdges{Load: 9935, Save: 9933, Index: 9925}
+
 // Archive follows payment_archive: is_valid_uuid, is_sport_association,
 // the payment of request.user.sport_association (a miss is a 500), toggle
 // archived, Payment.save() defaults and the audited save.
 func (s *PaymentArchives) Archive(ctx context.Context, identity domain.ResolvedIdentity, raw, groupHeader string, audit domain.LoginAuditContext) (string, error) {
+	ctx = withPaymentJSONEdges(ctx, paymentArchiveJSONEdges)
 	id, err := messageReadsParseUUID(raw)
 	if err != nil {
 		return "", err
@@ -208,7 +214,8 @@ func (s *PaymentArchives) Archive(ctx context.Context, identity domain.ResolvedI
 		return "", err
 	}
 	event := domain.PaymentArchiveEvent{PaymentID: row.ID, AssociationID: row.AssociationID, Changes: changes,
-		Context: paymentCategoryAuditContext(identity, audit), At: s.now().UTC().Truncate(time.Microsecond)}
+		IndexFallback: row.IndexFallback,
+		Context:       paymentCategoryAuditContext(identity, audit), At: s.now().UTC().Truncate(time.Microsecond)}
 	if err = tx.AppendPaymentAudit(ctx, event); err != nil {
 		return "", err
 	}

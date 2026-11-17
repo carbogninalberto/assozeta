@@ -155,6 +155,12 @@ func (s *PaymentStates) payment(ctx context.Context, tx domain.PaymentStateTrans
 	if row == nil || row.AssociationID == "" {
 		return nil, domain.ErrPaymentStateServer
 	}
+	// Django decodes every column of the fetched row before the view reads the
+	// association: a stored value past the view's own load raises here, before the
+	// association check and before anything is written.
+	if err = paymentJSONLoadFailure(ctx, &row.PaymentSaveRow); err != nil {
+		return nil, err
+	}
 	if row.AssociationID != association {
 		return nil, &domain.PermissionDenied{Detail: "User not allowed."}
 	}
@@ -205,6 +211,54 @@ func paymentStateDateAny(value any) (*time.Time, error) {
 
 func (s *PaymentStates) at() time.Time { return s.now().UTC().Truncate(time.Microsecond) }
 
+// paymentStateJSONEdges are payment_approve's and payment_cancel's measured
+// edges: the view's own load (payment_views.py:payment_approve/cancel),
+// auditlog's refetch of the stored row before the UPDATE, and the audit index
+// resolver's reload after the log entry.
+var paymentStateJSONEdges = paymentJSONEdges{Load: 9937, Save: 9935, Index: 9927}
+
+// paymentJSONLoadFailure is the RecursionError Django raises while a view
+// loads a payment row: every column is decoded before the view reads anything,
+// so nothing of the request is written.
+func paymentJSONLoadFailure(ctx context.Context, row *domain.PaymentSaveRow) error {
+	edges, measured := paymentJSONEdgesOf(ctx)
+	if !measured {
+		return nil
+	}
+	return paymentJSONLoadFailureAt(row, edges.Load)
+}
+
+// paymentJSONLoadFailureAt is paymentJSONLoadFailure at one load's own edge:
+// a view that loads a payment row through several queries (stripe_multiple_pay
+// renders the rows, fetches them again, then locks them) fails at the first
+// query whose edge the stored nesting passes.
+func paymentJSONLoadFailureAt(row *domain.PaymentSaveRow, edge int) error {
+	if paymentJSONColumnsDepth(row) <= edge {
+		return nil
+	}
+	return &PaymentStoredJSONRecursionError{AfterWrites: false, Text: paymentJSONRecursionTextAt(row, edge)}
+}
+
+// paymentJSONTextsFailureAt is paymentJSONLoadFailureAt for a row read into a
+// struct that carries the three JSON texts without a PaymentSaveRow.
+func paymentJSONTextsFailureAt(categories, meta, course *string, edge int) error {
+	return paymentJSONLoadFailureAt(&domain.PaymentSaveRow{MetaPaymentCategories: categories, Meta: meta, Course: course}, edge)
+}
+
+// paymentJSONCommitAfterWrites answers a recursion error raised inside
+// payment.save() the way a view that is not in a transaction left the
+// database: its earlier writes stay committed. A view wrapped in
+// transaction.atomic() discards them, so it must not call this.
+func paymentJSONCommitAfterWrites(tx interface{ Commit() error }, err error) error {
+	var recursion *PaymentStoredJSONRecursionError
+	if errors.As(err, &recursion) && recursion.AfterWrites {
+		if commitErr := tx.Commit(); commitErr != nil {
+			return commitErr
+		}
+	}
+	return err
+}
+
 // saveChanges is Payment.save()'s defaults plus auditlog's diff of the view's
 // own changes (paid, payment_date).
 func (s *PaymentStates) save(ctx context.Context, tx domain.PaymentStateTransaction, identity domain.ResolvedIdentity, row *domain.PaymentStateRow,
@@ -228,7 +282,7 @@ func (s *PaymentStates) save(ctx context.Context, tx domain.PaymentStateTransact
 		return nil
 	}
 	return tx.AppendPaymentAudit(ctx, domain.PaymentArchiveEvent{PaymentID: row.ID, AssociationID: row.AssociationID, Changes: changes,
-		Context: paymentCategoryAuditContext(identity, audit), At: s.at()})
+		IndexFallback: row.IndexFallback, Context: paymentCategoryAuditContext(identity, audit), At: s.at()})
 }
 
 // Approve follows payment_approve: is_valid_uuid, the body's payment_date,
@@ -237,6 +291,7 @@ func (s *PaymentStates) save(ctx context.Context, tx domain.PaymentStateTransact
 // supplier invoice). Unpaid income payments with an associate, supplier or
 // instructor run the paid flow (approvePaid) when it is configured.
 func (s *PaymentStates) Approve(ctx context.Context, identity domain.ResolvedIdentity, request PaymentStateRequest, body any) (map[string]any, error) {
+	ctx = withPaymentJSONEdges(ctx, paymentStateJSONEdges)
 	id, err := messageReadsParseUUID(request.ID)
 	if err != nil {
 		return nil, err
@@ -362,6 +417,7 @@ func (s *PaymentStates) Approve(ctx context.Context, identity domain.ResolvedIde
 // stored meta unchanged), then its invoice is saved cancelled with the
 // payment_obj meta and print_document_invoice is published (apply_async).
 func (s *PaymentStates) Cancel(ctx context.Context, identity domain.ResolvedIdentity, request PaymentStateRequest) (map[string]any, error) {
+	ctx = withPaymentJSONEdges(ctx, paymentStateJSONEdges)
 	tx, err := s.store.BeginPaymentState(ctx)
 	if err != nil {
 		return nil, err
@@ -380,6 +436,8 @@ func (s *PaymentStates) Cancel(ctx context.Context, identity domain.ResolvedIden
 	if err != nil {
 		return nil, err
 	}
+	// The view serializes the payment before its unpaid save; s.payment already
+	// checked the load's recursion edge.
 	if row.InvoiceID != nil {
 		if !row.Paid {
 			return nil, domain.ErrPaymentStateNotPaid

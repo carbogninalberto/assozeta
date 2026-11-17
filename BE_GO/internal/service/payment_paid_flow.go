@@ -67,7 +67,7 @@ func stripeMarkPaid(ctx context.Context, tx domain.PaymentPaidFlowTransaction, r
 		changes["type"] = [2]string{previous, "stripe"}
 	}
 	return tx.AppendPaymentAudit(ctx, domain.PaymentArchiveEvent{PaymentID: row.ID, AssociationID: row.AssociationID, Changes: changes,
-		Context: audit, At: now})
+		IndexFallback: row.IndexFallback, Context: audit, At: now})
 }
 
 // paymentPaidFlowSentGroup is the group Invoice.objects.create is given: the
@@ -114,19 +114,34 @@ func paymentPaidFlowFloat(value any) (float64, error) {
 	return invoiceFloatOfStr(value)
 }
 
+// paymentPaidFlowStoredJSON is a paid-flow view's parse of a stored payment JSON
+// column. The view fetches the row before it computes anything, so with the
+// view's measured edges the document already parsed at that load (Django decodes
+// every column of the fetched row): only the 1000-level reference parser's limit
+// is lifted. A context without edges keeps the reference parser.
+func paymentPaidFlowStoredJSON(ctx context.Context, text *string) (any, error) {
+	if text == nil {
+		return nil, nil
+	}
+	if edges, measured := paymentJSONEdgesOf(ctx); measured {
+		return dto.ParseStoredJSONDepth(*text, edges.Load)
+	}
+	return dto.ParseReferenceJSON([]byte(*text))
+}
+
 // paymentPaidFlowStripeFees is mark_payment_as_paid's fee arithmetic: like
 // the approve view's, except that float() reads the amounts directly and the
 // membership fee is only recomputed when there are meta payment categories.
-func paymentPaidFlowStripeFees(subject int, payment domain.InvoiceGeneratePayment) (invoiceFeePair, error) {
+func paymentPaidFlowStripeFees(ctx context.Context, subject int, payment domain.InvoiceGeneratePayment) (invoiceFeePair, error) {
 	if subject != 1 {
-		return invoiceFeesAny(subject, payment)
+		return invoiceFeesAtDepth(subject, payment, paymentJSONLoadEdge(ctx))
 	}
 	zero, _ := floatFeeAny(0)
 	pair := invoiceFeePair{membership: decimalFee(payment.Amount), activity: zero}
 	if payment.MetaPaymentCategories == nil {
 		return pair, nil
 	}
-	parsed, err := dto.ParseReferenceJSON([]byte(*payment.MetaPaymentCategories))
+	parsed, err := paymentPaidFlowStoredJSON(ctx, payment.MetaPaymentCategories)
 	if err != nil {
 		return pair, err
 	}
@@ -306,7 +321,7 @@ func (s *PaymentStates) approvePaid(ctx context.Context, tx domain.PaymentPaidFl
 	if err != nil {
 		return nil, err
 	}
-	fees, err := invoiceFeesAny(row.Subject, payment)
+	fees, err := invoiceFeesAtDepth(row.Subject, payment, paymentJSONLoadEdge(ctx))
 	if err != nil {
 		return nil, err
 	}
@@ -392,7 +407,7 @@ func (s *PaymentStates) approvePaid(ctx context.Context, tx domain.PaymentPaidFl
 		return nil, err
 	}
 	if err = tx.AppendPaymentAudit(ctx, domain.PaymentArchiveEvent{PaymentID: row.ID, AssociationID: row.AssociationID, Changes: changes,
-		Context: audit, At: at}); err != nil {
+		IndexFallback: row.IndexFallback, Context: audit, At: at}); err != nil {
 		return nil, err
 	}
 	row.Paid, row.PaymentDate, row.InvoiceID = true, paymentDate, invoice
@@ -505,7 +520,7 @@ func (s *StripeRoutes) stripePaidFlow(ctx context.Context, tx domain.PaymentPaid
 	if err != nil {
 		return nil, err
 	}
-	fees, err := paymentPaidFlowStripeFees(row.Subject, payment)
+	fees, err := paymentPaidFlowStripeFees(ctx, row.Subject, payment)
 	if err != nil {
 		return nil, err
 	}
@@ -553,7 +568,7 @@ func (s *StripeRoutes) stripePaidFlow(ctx context.Context, tx domain.PaymentPaid
 		return nil, err
 	}
 	if err = tx.AppendPaymentAudit(ctx, domain.PaymentArchiveEvent{PaymentID: row.ID, AssociationID: row.AssociationID, Changes: changes,
-		Context: audit, At: now}); err != nil {
+		IndexFallback: row.IndexFallback, Context: audit, At: now}); err != nil {
 		return nil, err
 	}
 	notified := ""

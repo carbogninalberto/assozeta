@@ -36,6 +36,15 @@ func withPaymentJSONEdges(ctx context.Context, edges paymentJSONEdges) context.C
 	return context.WithValue(ctx, paymentJSONEdgesKey{}, edges)
 }
 
+// paymentJSONLoadEdge is the view's measured load edge, 0 without edges (the
+// callers then keep the 1000-level reference parser).
+func paymentJSONLoadEdge(ctx context.Context) int {
+	if edges, measured := paymentJSONEdgesOf(ctx); measured {
+		return edges.Load
+	}
+	return 0
+}
+
 func paymentJSONEdgesOf(ctx context.Context) (paymentJSONEdges, bool) {
 	edges, ok := ctx.Value(paymentJSONEdgesKey{}).(paymentJSONEdges)
 	return edges, ok

@@ -202,6 +202,15 @@ func (s *StripePaidCheck) check(ctx context.Context, job domain.Job, id string, 
 // print_document_invoice).
 func (s *StripePaidCheck) mark(ctx context.Context, tx domain.StripePaidCheckTransaction, stripe *StripeRoutes,
 	row domain.StripePaidCheckPayment) (*paymentPaidFlowNotification, error) {
+	// The job runs on a Celery worker whose stack has not been measured: a
+	// stored value in the band where the recursion edge moves with the caller's
+	// stack keeps its handoff, and below it every measured stack parses, so the
+	// save parses without the reference parser's limit.
+	if paymentJSONTextsFailureAt(row.MetaPaymentCategories, row.Meta, row.Course, paymentJSONWorkerBand-1) != nil {
+		return nil, errPaymentStoredJSONWorkerBand
+	}
+	ctx = withPaymentJSONEdges(ctx, paymentJSONEdges{Load: paymentJSONWorkerBand - 1, Save: paymentJSONWorkerBand - 1,
+		Index: paymentJSONWorkerBand - 1})
 	now := stripe.at()
 	if row.Type != "stripe" {
 		if err := tx.SaveStripePaidCheckType(ctx, row, now); err != nil {

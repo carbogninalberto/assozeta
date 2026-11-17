@@ -32,7 +32,7 @@ func (t *paymentArchiveTransaction) OwnerAssociation(ctx context.Context, owner 
 func (t *paymentArchiveTransaction) PaymentForArchive(ctx context.Context, id, association string, group *string) (domain.PaymentSaveRow, error) {
 	var row domain.PaymentSaveRow
 	err := t.tx.GetContext(ctx, &row, `SELECT p.payment_id, p.sport_association_id, p.subject, p.archived, p.payment_category_id,
- c.name AS payment_category_name, p.description, p.meta::text AS meta, p.course::text AS course
+ c.name AS payment_category_name, p.description, p.meta::text AS meta, p.course::text AS course, p.meta_payment_categories::text AS meta_payment_categories
  FROM application_payment p LEFT JOIN application_paymentcategory c ON c.payment_category_id=p.payment_category_id
  WHERE p.payment_id=$1 AND p.sport_association_id=$2 AND NOT p.deleted AND ($3::uuid IS NULL OR p.group_id=$3::uuid)
  FOR UPDATE OF p`, id, association, group)
