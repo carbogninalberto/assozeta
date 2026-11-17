@@ -804,7 +804,7 @@ add('apply-stored-payment-json-past-load-band', 'owner', APPLY + '?date=2026-10-
 add('apply-stored-payment-json-past-load-band-deeper', 'owner', APPLY + '?date=2026-10-20', 200, APPLIED,
     setup={'subscription': 'over'}, effect=effect())
 add('apply-stored-payment-json-below-bands', 'owner', APPLY + '?date=2026-10-20', 200, APPLIED,
-    setup={'subscription': 'normal'}, effect=created('owner', quote_row('mario', PLAN_DEEP, '18.00'), '18.00'))
+    setup={'subscription': 'normal'}, effect=created('owner', quote_row('mario', PLAN_DEEP, '18.00'), '18'))
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'smtp_config': SMTP_CONFIG, 'matrix_version': 1, 'scope': 'Payment partial quotes simulation and apply, payment sign and invoiced approve '
