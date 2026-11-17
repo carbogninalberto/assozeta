@@ -152,6 +152,25 @@ func (e *Effects) Save(ctx context.Context, instance *Instance) error {
 			instance.set(field.Attname, DateTimeValue(now))
 		}
 	}
+	var pkField *Field
+	for _, field := range model.Fields {
+		if field.PrimaryKey && isAutoField(field) {
+			pkField = field
+		}
+	}
+	if pkField != nil && !instance.Get(pkField.Attname).IsNone() {
+		// Model.save tries the UPDATE first when the pk is set (and has no
+		// default): an existing row is updated in place, so post_save has
+		// created=False and no audit create entry is written.
+		updated, err := e.updateExisting(ctx, instance, pkField)
+		if err != nil {
+			return err
+		}
+		if updated {
+			instance.Adding = false
+			return nil
+		}
+	}
 	if err := e.insert(ctx, instance); err != nil {
 		return err
 	}
@@ -179,9 +198,14 @@ func (e *Effects) insert(ctx context.Context, instance *Instance) error {
 	var returning *Field
 	for _, field := range model.Fields {
 		value := instance.Get(field.Attname)
-		if field.PrimaryKey && isAutoField(field) && value.IsNone() {
+		if field.PrimaryKey && isAutoField(field) {
+			// Model._save_table reads the pk back with RETURNING, even when
+			// the instance already carries a value (the column is inserted
+			// too); only a value of None leaves the column out.
 			returning = field
-			continue
+			if value.IsNone() {
+				continue
+			}
 		}
 		bound, err := dbValue(field, value)
 		if err != nil {
@@ -202,6 +226,41 @@ func (e *Effects) insert(ctx context.Context, instance *Instance) error {
 	}
 	instance.set(returning.Attname, IntValue(id))
 	return nil
+}
+
+// updateExisting is the UPDATE Model._save_table issues before the INSERT
+// when the instance carries a pk value (the pk has no default): every
+// non-pk column is set. It reports whether a row was updated; no row
+// matched means the save falls through to the INSERT.
+func (e *Effects) updateExisting(ctx context.Context, instance *Instance, pkField *Field) (bool, error) {
+	model := instance.Model
+	sets, args := []string{}, []any{}
+	for _, field := range model.Fields {
+		if field == pkField {
+			continue
+		}
+		bound, err := dbValue(field, instance.Get(field.Attname))
+		if err != nil {
+			return false, err
+		}
+		args = append(args, bound)
+		sets = append(sets, quote(field.Column)+" = "+placeholder(len(args))+cast(field))
+	}
+	pk, err := dbValue(pkField, instance.Get(pkField.Attname))
+	if err != nil {
+		return false, err
+	}
+	args = append(args, pk)
+	result, err := e.tx().ExecContext(ctx, `UPDATE `+quote(model.Table)+` SET `+strings.Join(sets, ", ")+` WHERE `+
+		quote(pkField.Column)+` = `+placeholder(len(args))+cast(pkField), args...)
+	if err != nil {
+		return false, err
+	}
+	affected, err := result.RowsAffected()
+	if err != nil {
+		return false, err
+	}
+	return affected > 0, nil
 }
 
 // Repr is str(instance).

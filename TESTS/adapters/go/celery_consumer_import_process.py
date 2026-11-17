@@ -119,6 +119,18 @@ SCENARIOS = [
     Scenario('an existing tag key rolls the import back', 'rich', target='tag-exists',
              expect={'success': False, 'error': f'Tags UUID collision: {TAG_A} already exists. Only User rows may be '
                                                 'reused by exact UUID during import.'}),
+    # AutoField keys from the archive: Django reads the key back from INSERT ... RETURNING (object_pk is str(int)),
+    # and an explicit key that already exists is an UPDATE of that row (no audit entry), not an insert.
+    Scenario('a tutor relation key written as a float is read back as an integer', 'tutor-id-float',
+             expect={'success': True, 'files': 5}),
+    Scenario('a tutor relation key written as true is read back as an integer', 'tutor-id-true',
+             expect={'success': True, 'files': 5}),
+    Scenario('a tutor relation key with spaces is read back as an integer', 'tutor-id-space',
+             expect={'success': True, 'files': 5}),
+    Scenario('a zero-padded tutor relation key is read back as an integer', 'tutor-id-padded',
+             expect={'success': True, 'files': 5}),
+    Scenario('a tutor relation key that already exists updates that row', 'rich', target='tutor-relation-exists',
+             expect={'success': True, 'files': 5}),
     Scenario('an undecodable data file is handed off', 'bad-json', handoff=True, expect={'success': False}),
     Scenario('a course subscription is imported (str(self.__dict__) in the audit repr)', 'course-subscription',
              expect={'success': True, 'files': 5}),
@@ -332,6 +344,12 @@ def build_archives():
     fk = rewrite(rich, lambda name, body: None if name == 'data/14_folders.json' else body)
     archives['fk-violation'] = edit_records(fk, 'data/43_payments.json', violation)
     archives['bad-crc'] = corrupt_crc(rich, media[-1])
+    for name, key in (('tutor-id-float', 7.0), ('tutor-id-true', True), ('tutor-id-space', ' 7 '), ('tutor-id-padded', '07')):
+        def tutor_key(records, key=key):
+            assert records, 'the fixture archive has a tutor relation'
+            for record in records:
+                record['id'] = key
+        archives[name] = edit_records(rich, 'data/08_associate_tutor_relations.json', tutor_key)
     seed_source(owner_hash=False)
     archives['no-owner-hash'] = export_archive()
     assert '"password"' not in [json.dumps(u) for u in json.loads(zipfile.ZipFile(
@@ -390,6 +408,16 @@ class Stack:
         if scenario.target == 'tag-exists':
             Tags.objects.bulk_create([Tags(tag_id=TAG_A, tag_name='altro', sport_association_id=OTHER,
                                            creation_date=SOURCE_CREATED)])
+        if scenario.target == 'tutor-relation-exists':
+            # Two associates of another association, related under the key the archive's relation carries (7).
+            from application.models import Associate, AssociateTutorRelation
+            Associate.objects.bulk_create([
+                Associate(associate_id=U(271), sport_association_id=OTHER, first_name='Altro', last_name='Socio',
+                          creation_date=SOURCE_CREATED),
+                Associate(associate_id=U(272), sport_association_id=OTHER, first_name='Altro', last_name='Tutore',
+                          creation_date=SOURCE_CREATED)])
+            AssociateTutorRelation.objects.bulk_create([AssociateTutorRelation(id=7, associate_id=U(271),
+                                                                               tutor_id=U(272), is_primary=False)])
         if scenario.target == 'restore-pending':
             from instance.models import DataRestore
             DataRestore._base_manager.bulk_create([DataRestore(id=U(301), owner_id=OTHER_OWNER, association_id=OTHER,
