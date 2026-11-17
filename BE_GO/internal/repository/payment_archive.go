@@ -94,5 +94,5 @@ func (t *paymentArchiveTransaction) AppendPaymentAudit(ctx context.Context, even
 	path := "direct"
 	return appendModelAudit(ctx, t.tx, modelAuditEntry{Model: "payment", Key: event.PaymentID,
 		Representation: "Payment object (" + event.PaymentID + ")", Action: 1, Changes: event.Changes, Context: event.Context,
-		AssociationID: &event.AssociationID, ResolutionPath: &path, At: event.At})
+		AssociationID: &event.AssociationID, ResolutionPath: &path, At: event.At, IndexFallback: event.IndexFallback})
 }

@@ -764,6 +764,27 @@ func (r *campsRequest) campsWalk(ctx context.Context, row domain.CampsService, g
 	return all, nil
 }
 
+// campsPaymentJSONEdges are camps_and_retreats_periods_services_update's
+// measured edges (CPython 3.13.16 on the parity harness, total nesting as
+// dto.AuditJSONDepth counts it): the view's lazy load of period.payment and
+// auditlog's log_update refetch of the old row both read 9933 levels, and the
+// index resolver's reload 9925. The walk's first save happens after the
+// serializer saved the service, and the request is not atomic: the earlier
+// writes stay. The value moves by a level or two between requests, so parity
+// cases sit four levels away from each edge.
+var campsPaymentJSONEdges = paymentJSONEdges{Load: 9933, Save: 9933, Index: 9925}
+
+// campsPaymentMetas is the view's iteration over period.payment.
+// meta_payment_categories (json.loads of the loaded row): below the view's
+// measured edge the document parses whatever its nesting, deeper values were
+// refused at the load.
+func campsPaymentMetas(text *string, maxDepth int) (any, error) {
+	if value, err := dto.ParseReferenceJSON([]byte(*text)); err == nil {
+		return value, nil
+	}
+	return paymentStoredJSONAtDepth(text, maxDepth)
+}
+
 // campsWalkRow plans one subscription period's saves. It returns the saves made
 // before the row's failure (nil when the row completes) and whether a save the
 // database refuses stops the whole walk immediately.
@@ -778,10 +799,23 @@ func (r *campsRequest) campsWalkRow(ctx context.Context, walkRow domain.CampsWal
 	// saved all the same and each save is audited as an update of every
 	// field against None, indexed through the entry's own association.
 	hidden := payment.Deleted || (group != nil && (payment.GroupID == nil || *payment.GroupID != *group))
+	// The query fills the payment struct's own Metas field; Payment.save() reads
+	// the row's meta_payment_categories column, which the embedded row carries.
+	payment.MetaPaymentCategories = payment.Metas
+	ctx = withPaymentJSONEdges(ctx, campsPaymentJSONEdges)
+	// The view's lazy load reads the row's three JSON columns; past its measured
+	// edge Django raises before this row's first save (the earlier ones stay).
+	if err := paymentJSONLoadRefusal(&payment.PaymentSaveRow, campsPaymentJSONEdges); err != nil {
+		var recursion *PaymentStoredJSONRecursionError
+		if !errors.As(err, &recursion) {
+			return nil, nil, false, err
+		}
+		return nil, &dto.CampsPythonError{Message: recursion.Text}, false, nil
+	}
 	var metas any
 	var err error
 	if payment.Metas != nil {
-		if metas, err = dto.ParseReferenceJSON([]byte(*payment.Metas)); err != nil {
+		if metas, err = campsPaymentMetas(payment.Metas, campsPaymentJSONEdges.Load); err != nil {
 			return nil, nil, false, err
 		}
 	}
@@ -833,14 +867,14 @@ func (r *campsRequest) campsWalkRow(ctx context.Context, walkRow domain.CampsWal
 		} else {
 			var old any
 			if payment.Metas != nil {
-				old, _ = dto.ParseReferenceJSON([]byte(*payment.Metas))
+				old, _ = campsPaymentMetas(payment.Metas, campsPaymentJSONEdges.Load)
 			}
 			before, after := dto.CampsJSONAudit(old), dto.CampsJSONAudit(step.Meta)
 			if before != after {
 				changes["meta_payment_categories"] = [2]string{before, after}
 			}
 			text := dto.CampsJSONText(step.Meta)
-			payment.Metas = &text
+			payment.Metas, payment.MetaPaymentCategories = &text, &text
 		}
 		save := campsPaymentSave{row: payment, rejected: rejected, refused: refused}
 		if hidden {
@@ -852,7 +886,8 @@ func (r *campsRequest) campsWalkRow(ctx context.Context, walkRow domain.CampsWal
 			save.event = &domain.CampsAudit{Model: "Payment", Key: payment.ID, Action: 1, Changes: full, AssociationID: association,
 				Path: "changes_json.sport_association", Full: true}
 		} else if len(changes) > 0 {
-			event := domain.CampsAudit{Model: "Payment", Key: payment.ID, Action: 1, Changes: changes, AssociationID: association, Path: "direct"}
+			event := domain.CampsAudit{Model: "Payment", Key: payment.ID, Action: 1, Changes: changes, AssociationID: association, Path: "direct",
+				IndexFallback: payment.IndexFallback}
 			save.event = &event
 		}
 		saves = append(saves, save)

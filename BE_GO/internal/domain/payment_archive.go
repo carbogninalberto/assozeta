@@ -50,6 +50,9 @@ type PaymentArchiveEvent struct {
 	Changes       map[string][2]string
 	Context       LoginAuditContext
 	At            time.Time
+	// IndexFallback resolves the entry's audit index through the resolver's
+	// fallbacks (the resolver cannot reload the saved row at its nesting).
+	IndexFallback bool
 }
 
 type PaymentArchiveStore interface {

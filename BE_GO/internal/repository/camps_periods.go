@@ -357,6 +357,7 @@ func (t *campsTransaction) AppendAudit(ctx context.Context, event domain.CampsAu
 		path := event.Path
 		entry.AssociationID, entry.ResolutionPath = event.AssociationID, &path
 	}
+	entry.IndexFallback = event.IndexFallback
 	return appendModelAudit(ctx, t.tx, entry)
 }
 

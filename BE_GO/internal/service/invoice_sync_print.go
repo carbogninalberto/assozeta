@@ -169,6 +169,12 @@ func invoiceSyncNumberStr(value *int64) string {
 	return big.NewInt(*value).String()
 }
 
+// invoiceSyncUpdateJSONEdges are invoice_update's measured edges (CPython
+// 3.13.16 on the parity harness, total nesting as dto.AuditJSONDepth counts
+// it): the view's own payment lookup reads 9935 levels, auditlog's log_update
+// refetch of the old row 9933, and the index resolver's reload 9925.
+var invoiceSyncUpdateJSONEdges = paymentJSONEdges{Load: 9935, Save: 9933, Index: 9925}
+
 // Update follows invoice_update: nothing is atomic, so the payment save is
 // committed before the description (a KeyError there is a 500 with the payment
 // saved) and the invoice's audit entry before its UPDATE (a value the column
@@ -244,6 +250,14 @@ func (s *InvoiceSyncUpdates) Update(ctx context.Context, identity domain.Resolve
 	if err != nil {
 		return nil, err
 	}
+	ctx = withPaymentJSONEdges(ctx, invoiceSyncUpdateJSONEdges)
+	if payment != nil {
+		// The view's own payment lookup reads the row's three JSON columns;
+		// past its measured edge Django raises before this request writes.
+		if err = paymentJSONLoadRefusal(&payment.PaymentSaveRow, invoiceSyncUpdateJSONEdges); err != nil {
+			return nil, err
+		}
+	}
 	var describeErr error
 	if payment != nil {
 		changes := map[string][2]string{}
@@ -277,7 +291,7 @@ func (s *InvoiceSyncUpdates) Update(ctx context.Context, identity domain.Resolve
 		}
 		if len(changes) > 0 {
 			if err = tx.AppendPaymentAudit(ctx, domain.PaymentArchiveEvent{PaymentID: payment.ID, AssociationID: payment.AssociationID,
-				Changes: changes, Context: audit, At: at}); err != nil {
+				Changes: changes, Context: audit, At: at, IndexFallback: payment.IndexFallback}); err != nil {
 				return nil, err
 			}
 		}

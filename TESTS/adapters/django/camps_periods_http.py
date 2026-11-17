@@ -9,6 +9,8 @@ authored pairs, and every new auditlog entry matches an authored event with
 its index row (or none when the actor has no association). Rows the run
 creates are removed before the fixture cleanup compares the model state.
 """
+from contextlib import contextmanager
+
 from TESTS.contracts import test_camps_periods_http as contract
 from TESTS.adapters.django import carnet_replace_http as replace
 from TESTS.adapters.django import family_harness as harness
@@ -226,5 +228,35 @@ def assert_effect(case, before, after, source, context):
     contract.require(len(indexes) == sum(1 for spec in effect['audit'] if spec['association'] is not None), 'index.count')
 
 
+@contextmanager
+def deep_payment_rows(case):
+    """Open the case's stored Payment JSON (owner decision X15 band).
+
+    The harness's state snapshot decodes every jsonb column and walks it in
+    Python, which cannot hold a value this deep: the value exists only around
+    the case's request, and the column is restored afterwards.
+    """
+    setup = case.get('setup') or {}
+    payments = setup.get('deep_payments') or []
+    if not payments:
+        yield
+        return
+    from django.db import connection
+    source = contract.load_source()
+    restored = []
+    with connection.cursor() as cursor:
+        for item in payments:
+            payment = source['payments'][item['payment']]['id']
+            cursor.execute('SELECT course::text FROM application_payment WHERE payment_id=%s', [payment])
+            restored.append((payment, cursor.fetchone()[0]))
+            cursor.execute('UPDATE application_payment SET course=%s::jsonb WHERE payment_id=%s', [item['course'], payment])
+    try:
+        yield
+    finally:
+        with connection.cursor() as cursor:
+            for payment, stored in restored:
+                cursor.execute('UPDATE application_payment SET course=%s::jsonb WHERE payment_id=%s', [stored, payment])
+
+
 fixture_context = harness.fixture_context_for(contract, seed_rows, purge=(lambda: models()[PERIOD], lambda: models()[SERVICE]))
-run_workload = harness.run_workload_for(contract, assert_effect, prepare=deleted_rows)
+run_workload = harness.run_workload_for(contract, assert_effect, prepare=deleted_rows, case_scope=deep_payment_rows)

@@ -267,6 +267,28 @@ func lifecycleKept(request *subscriptionLifecycleRequest, failure error) error {
 	return failure
 }
 
+// lifecycleRecursion is the RecursionError of a stored payment JSON column past
+// the view's measured edge: Django's except Exception catches it and keeps the
+// saves already committed.
+func lifecycleRecursion(err error) bool {
+	var recursion *PaymentStoredJSONRecursionError
+	return errors.As(err, &recursion)
+}
+
+// subscriptionLifecycleJSONEdges are subscription_archive's measured edges for
+// the payments it loads lazily from the subscription, its course subscriptions
+// and their installments (CPython 3.13.16 on the parity harness, total nesting
+// as dto.AuditJSONDepth counts it): the view's own load and auditlog's
+// log_update refetch of the old row both read 9935 levels, and the index
+// resolver's reload 9927. The request is not atomic: each save is committed
+// before the next load, so a later RecursionError keeps the work before it.
+var subscriptionLifecycleJSONEdges = paymentJSONEdges{Load: 9935, Save: 9935, Index: 9927}
+
+// rangePaymentJSONEdges are the same edges for the unpaid payments of the
+// subscription period, whose iterator loads each row at 9941 levels (the
+// iterator's stack parses two levels deeper than the lazy loads).
+var rangePaymentJSONEdges = paymentJSONEdges{Load: 9941, Save: 9935, Index: 9927}
+
 // archivePayment is payment.archived = True; payment.save() for an unpaid
 // payment. invoiceFirst is the course-subscription and subscription order
 // (payment.invoice.delete() before the save, which then raises ValueError);
@@ -282,6 +304,12 @@ func (s *SubscriptionLifecycles) archivePayment(ctx context.Context, request *su
 	if payment == nil {
 		// payment_id is a foreign key (SET_NULL, subscriptions_models.py:300, 791, 878): a row cannot name a missing payment.
 		return domain.ErrSubscriptionLifecycleUnreachable
+	}
+	// The view's lazy load reads the row's three JSON columns; past its measured
+	// edge Django raises before this payment's save (the earlier ones stay).
+	ctx = withPaymentJSONEdges(ctx, subscriptionLifecycleJSONEdges)
+	if err = paymentJSONLoadRefusal(&payment.PaymentSaveRow, subscriptionLifecycleJSONEdges); err != nil {
+		return err
 	}
 	if payment.Paid {
 		return nil
@@ -309,7 +337,7 @@ func (s *SubscriptionLifecycles) archivePayment(ctx context.Context, request *su
 		if err = request.tx.AppendHiddenPaymentUpdate(ctx, row.ID, row.AssociationID, request.audit); err != nil {
 			return err
 		}
-	} else if err = s.savePaymentArchived(ctx, request, payment.PaymentSaveRow); err != nil {
+	} else if err = s.savePaymentArchived(ctx, request, payment.PaymentSaveRow, subscriptionLifecycleJSONEdges.Load); err != nil {
 		return err
 	}
 	if payment.InvoiceID != nil {
@@ -318,8 +346,17 @@ func (s *SubscriptionLifecycles) archivePayment(ctx context.Context, request *su
 	return nil
 }
 
-func (s *SubscriptionLifecycles) savePaymentArchived(ctx context.Context, request *subscriptionLifecycleRequest, row domain.PaymentSaveRow) error {
+// savePaymentArchived saves payment.archived = True with Payment.save()'s
+// defaults and audit entry; loadEdge is the view's own load edge for this row
+// (the lazy loads parse 9935 levels, the period iterator 9941).
+func (s *SubscriptionLifecycles) savePaymentArchived(ctx context.Context, request *subscriptionLifecycleRequest, row domain.PaymentSaveRow,
+	loadEdge int) error {
 	saves := request.tx.PaymentSaves()
+	edges := paymentJSONEdges{Load: loadEdge, Save: subscriptionLifecycleJSONEdges.Save, Index: subscriptionLifecycleJSONEdges.Index}
+	ctx = withPaymentJSONEdges(ctx, edges)
+	if err := paymentJSONLoadRefusal(&row, edges); err != nil {
+		return err
+	}
 	changes := map[string][2]string{}
 	if !row.Archived {
 		changes["archived"] = [2]string{"False", "True"}
@@ -337,7 +374,7 @@ func (s *SubscriptionLifecycles) savePaymentArchived(ctx context.Context, reques
 		return request.tx.AppendUnownedPaymentUpdate(ctx, row.ID, changes, request.audit)
 	}
 	return saves.AppendPaymentAudit(ctx, domain.PaymentArchiveEvent{PaymentID: row.ID, AssociationID: row.AssociationID, Changes: changes,
-		Context: request.audit.Context, At: request.audit.At})
+		Context: request.audit.Context, At: request.audit.At, IndexFallback: row.IndexFallback})
 }
 
 // Archive follows subscription_archive (toggle; archiving cascades to the
@@ -390,9 +427,9 @@ func (s *SubscriptionLifecycles) Archive(ctx context.Context, identity domain.Re
 		return err
 	}
 	// Payment.save() raising (ErrPaymentSaveFailed) is a 500 that keeps the
-	// saves made before it.
+	// saves made before it; the stored JSON recursion edge is the same 500.
 	kept := func(err error) error {
-		if errors.Is(err, ErrPaymentSaveFailed) {
+		if errors.Is(err, ErrPaymentSaveFailed) || lifecycleRecursion(err) {
 			return lifecycleKept(request, err)
 		}
 		return err
@@ -449,7 +486,7 @@ func (s *SubscriptionLifecycles) Archive(ctx context.Context, identity domain.Re
 			// RangePayments selects the association's own payments (sport_association filter).
 			return domain.ErrSubscriptionLifecycleUnreachable
 		}
-		if err = s.savePaymentArchived(ctx, request, payment.PaymentSaveRow); err != nil {
+		if err = s.savePaymentArchived(ctx, request, payment.PaymentSaveRow, rangePaymentJSONEdges.Load); err != nil {
 			return kept(err)
 		}
 	}

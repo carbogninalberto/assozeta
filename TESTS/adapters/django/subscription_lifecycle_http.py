@@ -314,23 +314,52 @@ def _owner_settings(ids, values):
         User._base_manager.filter(pk=ids['owner']).update(**values)
 
 
+def _open_deep_payments(setup):
+    """Write the case's stored Payment JSON (owner decision X15 band) and return the stored texts.
+
+    The harness's state snapshot decodes every jsonb column and walks it in
+    Python, which cannot hold a value this deep: the value exists only around
+    the case's request, and the column is restored afterwards.
+    """
+    from django.db import connection
+    source = contract.load_source()
+    restored = []
+    with connection.cursor() as cursor:
+        for item in setup.get('deep_payments') or []:
+            payment = source['payments'][item['payment']]['id']
+            cursor.execute('SELECT course::text FROM application_payment WHERE payment_id=%s', [payment])
+            restored.append((payment, cursor.fetchone()[0]))
+            cursor.execute('UPDATE application_payment SET course=%s::jsonb WHERE payment_id=%s', [item['course'], payment])
+    return restored
+
+
+def _restore_deep_payments(restored):
+    from django.db import connection
+    with connection.cursor() as cursor:
+        for payment, stored in restored:
+            cursor.execute('UPDATE application_payment SET course=%s::jsonb WHERE payment_id=%s', [stored, payment])
+
+
 def run_workload(label, backend, base_url, fixture, apps, raw, observer):
-    """run_workload_for; a case's `setup` owner settings hold only while its request runs (the state snapshots
-    before and after see the fixture's settings)."""
+    """run_workload_for; a case's `setup` owner settings and stored Payment JSON hold only while its request runs
+    (the state snapshots before and after see the fixture's values)."""
     from application.models import User
     ids = contract.load_source()['ids']
 
     def assert_case(case, base_url, **options):
-        setup = (case.get('setup') or {}).get('owner')
-        if not setup:
-            return _assert_case(case, base_url, **options)
-        saved = User._base_manager.filter(pk=ids['owner']).values(*setup).get()
-        contract.require(saved != setup, 'fixture.setup-changes-settings')
-        _owner_settings(ids, setup)
+        setup = case.get('setup') or {}
+        owner = setup.get('owner')
+        saved = User._base_manager.filter(pk=ids['owner']).values(*owner).get() if owner else None
+        if saved is not None:
+            contract.require(saved != owner, 'fixture.setup-changes-settings')
+            _owner_settings(ids, owner)
+        restored = _open_deep_payments(setup)
         try:
             return _assert_case(case, base_url, **options)
         finally:
-            _owner_settings(ids, saved)
+            _restore_deep_payments(restored)
+            if saved is not None:
+                _owner_settings(ids, saved)
 
     contract.assert_case = assert_case
     try:

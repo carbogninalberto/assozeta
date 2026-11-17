@@ -15,6 +15,10 @@ import (
 type invoiceGenerateFake struct {
 	domain.InvoiceGenerateTransaction
 	events *[]string
+	// payment overrides the locked row (nil: the plain shallow one).
+	payment *domain.PaymentStateRow
+	// audits records the payment's audit events.
+	audits *[]domain.PaymentArchiveEvent
 }
 
 func (f invoiceGenerateFake) log(event string) { *f.events = append(*f.events, event) }
@@ -23,6 +27,9 @@ func (f invoiceGenerateFake) ScopedAssociation(context.Context, string, *string)
 	return "a1000000-0000-4000-8000-000000701001", nil
 }
 func (f invoiceGenerateFake) PaymentState(context.Context, domain.PaymentStateQuery) (*domain.PaymentStateRow, error) {
+	if f.payment != nil {
+		return f.payment, nil
+	}
 	category, name, description := "c1", "Quote", "Quota"
 	return &domain.PaymentStateRow{PaymentSaveRow: domain.PaymentSaveRow{ID: "p1", AssociationID: "a1000000-0000-4000-8000-000000701001",
 		CategoryID: &category, CategoryName: &name, Description: &description}}, nil
@@ -63,7 +70,10 @@ func (f invoiceGenerateFake) SaveGeneratedPayment(context.Context, domain.Invoic
 	f.log("save")
 	return nil
 }
-func (f invoiceGenerateFake) AppendPaymentAudit(context.Context, domain.PaymentArchiveEvent) error {
+func (f invoiceGenerateFake) AppendPaymentAudit(_ context.Context, event domain.PaymentArchiveEvent) error {
+	if f.audits != nil {
+		*f.audits = append(*f.audits, event)
+	}
 	return nil
 }
 func (f invoiceGenerateFake) RenderPayment(context.Context, string, *string) (domain.PaymentStateRender, error) {

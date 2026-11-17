@@ -12,6 +12,7 @@ the request. Every other model and row must be unchanged. Every case also
 declares the Celery messages it publishes (print_document_invoice for listed
 rows without a PDF), checked on the run's private broker.
 """
+from contextlib import contextmanager
 from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
 import ipaddress
@@ -182,5 +183,31 @@ def assert_effect(case, before, after, source, context):
                              and index['resolution_path'] == entry['index'][1], 'index.fields' + where)
 
 
+@contextmanager
+def deep_payment_rows(case):
+    """Open the case's stored Payment JSON (owner decision X15 band).
+
+    The harness's state snapshot decodes every jsonb column and walks it in
+    Python, which cannot hold a value this deep: the value exists only around
+    the case's request, and the column is restored afterwards.
+    """
+    setup = case.get('setup') or {}
+    label = setup.get('payment')
+    if not label:
+        yield
+        return
+    from django.db import connection
+    payment = contract.load_source()['payments'][label]['payment_id']
+    with connection.cursor() as cursor:
+        cursor.execute('SELECT course::text FROM application_payment WHERE payment_id=%s', [payment])
+        stored = cursor.fetchone()[0]
+        cursor.execute('UPDATE application_payment SET course=%s::jsonb WHERE payment_id=%s', [setup['course'], payment])
+    try:
+        yield
+    finally:
+        with connection.cursor() as cursor:
+            cursor.execute('UPDATE application_payment SET course=%s::jsonb WHERE payment_id=%s', [stored, payment])
+
+
 fixture_context = harness.with_celery_broker(harness.fixture_context_for(contract, seed_rows))
-run_workload = harness.run_workload_for(contract, assert_effect, prepare=captured)
+run_workload = harness.run_workload_for(contract, assert_effect, prepare=captured, case_scope=deep_payment_rows)

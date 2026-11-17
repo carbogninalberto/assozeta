@@ -173,9 +173,9 @@ cases = []
 
 
 def add(name, actor, path, status, response, *, method='PATCH', body=None, raw_body=None, content_type=None, headers=None, effect=None,
-        prints=(), restore=None):
+        prints=(), restore=None, setup=None):
     case = {'name': f'invoice-sync-print-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
-            'status': status, 'response': response, 'effect': effect, 'prints': list(prints), 'restore': restore}
+            'status': status, 'response': response, 'effect': effect, 'prints': list(prints), 'restore': restore, 'setup': setup}
     if body is not None:
         case['body'] = body
     if raw_body is not None:
@@ -253,14 +253,15 @@ def naive(text):
 
 
 def updated(label, body, *, actor='owner', payment=None, payment_changes=None, description=None, failure=None, tutor='absent',
-            headers=None, prints=None, restore=None, name=None, raw_body=None, content_type=None, parsed=None):
+            headers=None, prints=None, restore=None, name=None, raw_body=None, content_type=None, parsed=None, index=None, setup=None):
     """One invoice/<uid>/update reaching the invoice: mutates the state and adds the case.
 
     payment: the label of the payment the view saves; payment_changes: its audited
     column changes ({column: new value}); description: the generated description (None:
     unchanged); failure: 'payment' (500 after the payment save) or 'invoice' (500 after
     the invoice entry); tutor: the associate label the invoice ends with ('absent': None,
-    'kept': unchanged).
+    'kept': unchanged); index: the payment entry's index (None: the payment's own
+    association, resolved directly); setup: rows the adapter opens only around this case.
     """
     inv = INVOICE_STATE[label]
     audit, payments, invoices = [], {}, {}
@@ -277,12 +278,12 @@ def updated(label, body, *, actor='owner', payment=None, payment_changes=None, d
             changed[column] = new
         if changes:
             audit.append({'model': 'payment', 'key': values['id'], 'action': 1, 'changes': changes,
-                          'index': [values['sport_association_id'], DIRECT]})
+                          'index': index or [values['sport_association_id'], DIRECT]})
         values.update(changed)
         payments[payment] = changed
     if failure == 'payment':
-        add(name, actor, UPDATE(label), 500, SERVER, body=body, raw_body=raw_body, content_type=content_type or (FORM if raw_body else None), headers=headers,
-            effect={**nothing(actor), 'payments': payments, 'audit': audit}, restore=restore)
+        add(name, actor, UPDATE(label), 500, SERVER, body=body, raw_body=raw_body, content_type=content_type or (FORM if raw_body else None),
+            headers=headers, effect={**nothing(actor), 'payments': payments, 'audit': audit}, restore=restore, setup=setup)
         return
     number, cancelled = parsed or (body_number(body, raw_body), body_cancelled(body, raw_body))
     new = {'number': number, 'cancelled': cancelled}
@@ -313,7 +314,7 @@ def updated(label, body, *, actor='owner', payment=None, payment_changes=None, d
     add(name, actor, UPDATE(label), 200, {'message': 'Invoice updated', 'invoice': invoice_item(label)}, body=body, raw_body=raw_body,
         content_type=content_type or (FORM if raw_body else None), headers=headers,
         effect={**nothing(actor), 'invoices': invoices, 'payments': payments, 'audit': audit},
-        prints=[print_invoice(label)] if prints is None else prints, restore=restore)
+        prints=[print_invoice(label)] if prints is None else prints, restore=restore, setup=setup)
 
 
 def body_number(body, raw_body):
@@ -652,6 +653,46 @@ add('add-dates-before-1000-field-errors', 'owner', ADD, 400,
 add('add-transmitting-date-before-1000-field-error', 'owner', ADD, 400, BEFORE_1000, method='POST',
     body={**BASE, 'number': 701, 'transmitting_date': '0999-03-05', 'payment_expiry_date': '2031-06-15'},
     effect=nothing())
+
+# Stored Payment JSON at the interpreter's recursion bands (owner decision X15).
+# Payment.course is a jsonb column psycopg2 loads with json.loads: the parity
+# harness's Django (CPython 3.13.16) reads 9935 levels in invoice_update and
+# raises RecursionError at 9936, which the view does not handle (its plain 500
+# page, nothing written). Deeper than the index resolver's reload (9925) the
+# payment's audit entry falls back to the actor's association. The value sits in
+# a column the invoice response never renders; each one exists only around its
+# own case (the adapter's case scope), because the state snapshot walks JSON
+# values in Python and cannot hold a value this deep.
+
+
+def deep_course(depth):
+    """A course JSON text whose total nesting is depth."""
+    assert depth >= 2
+    return '{"label": "Corso profondo", "unused": ' + '[' * (depth - 1) + ']' * (depth - 1) + '}'
+
+
+def json_depth(text):
+    depth = deepest = 0
+    for char in text:
+        if char in '[{':
+            depth += 1
+            deepest = max(deepest, depth)
+        elif char in ']}':
+            depth -= 1
+    return deepest
+
+
+DEEP_INDEX_PAST, DEEP_LOAD_PAST, DEEP_LOADED = deep_course(9929), deep_course(9965), deep_course(9000)
+assert (json_depth(DEEP_INDEX_PAST), json_depth(DEEP_LOAD_PAST), json_depth(DEEP_LOADED)) == (9929, 9965, 9000)
+ACTOR_PATH = [OWN, 'actor.sport_association']
+updated('i_other', {'number': 26, 'payment_date': '2026-09-01'}, payment='p_other',
+        payment_changes={'payment_date': '2026-09-01T00:00:00Z'}, description=other(CATEGORY['name']), index=ACTOR_PATH,
+        name='update-stored-json-index-past', setup={'payment': 'p_other', 'course': DEEP_INDEX_PAST})
+add('update-stored-json-past-load-band-server-error', 'owner', UPDATE('i_other'), 500, SERVER,
+    body={'number': 27, 'payment_date': '2026-09-02'}, effect=nothing(), setup={'payment': 'p_other', 'course': DEEP_LOAD_PAST})
+updated('i_carnet', {'number': 62, 'payment_date': '2026-09-03'}, payment='p_carnet',
+        payment_changes={'payment_date': '2026-09-03T00:00:00Z'}, description=course(full_name('bruno'), CARNETS['carnet']['title']),
+        name='update-stored-json-loaded', setup={'payment': 'p_carnet', 'course': DEEP_LOADED})
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'invoice/<uid>/update and invoice-customers/add with their eager print tasks '
