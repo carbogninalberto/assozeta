@@ -133,9 +133,10 @@ func TestAuditJSONLoadsAtDepthBand(t *testing.T) {
 	_, _, err = AuditJSONLoadsAt(auditDeepText(9935), 9934)
 	auditBandOutOfRange(t, "list depth band +1", err)
 
-	// The 500-level readers of the other families are unchanged.
-	if _, _, err := AuditJSONLoads(auditDeepText(501)); !errors.Is(err, ErrAuditNotPorted) {
-		t.Fatalf("AuditJSONLoads must keep the handoff: %v", err)
+	// The 500-level readers of the other families have no production caller any
+	// more: their deeper input is an application state, not a handoff (X15).
+	if _, _, err := AuditJSONLoads(auditDeepText(501)); !errors.Is(err, ErrAuditUnreachable) || errors.Is(err, refusal.ErrNotPorted) {
+		t.Fatalf("AuditJSONLoads must answer the application state: %v", err)
 	}
 }
 

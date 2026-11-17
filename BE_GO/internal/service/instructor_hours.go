@@ -11,6 +11,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 var (
@@ -19,7 +20,37 @@ var (
 	ErrInstructorHoursForbidden = errors.New("instructor hours related payment denied")
 	// errInstructorHoursServer is an exception Django answers with the 500 page.
 	errInstructorHoursServer = errors.New("instructor hours server error")
+	// errInstructorHoursUpdateJSONTooDeep is instructor_hours_update's save-time
+	// json.dumps on a JSON value nested past instructorHoursUpdateJSONDepth: the
+	// 500 page. Application state (Django answers its own 500 page), never a
+	// handoff.
+	errInstructorHoursUpdateJSONTooDeep = refusal.AppState("instructor hours: update JSON nested past the row dump")
 )
+
+// instructorHoursUpdateJSONDepth is the measured save-time band of
+// instructor_hours_update's JSON fields (owner decision X15), measured on the
+// parity harness's Django (CPython 3.13.16) with an HTML form PATCH whose
+// courses (or calculation_data) is {"deep": <n nested objects>} or
+// [<n nested objects>], the value's container nesting D = n + 1: D <= 9938
+// answers 200, one audit update entry and the row updated; D 9939..9941 is the
+// 500 page with the auditlog pre_save entry kept and the row unchanged (the
+// UPDATE's json.dumps raises after pre_save; the view is not atomic). The dump
+// walks the parsed value (dto.JSONValueDepth), so a duplicate key that
+// overwrites a deep text keeps the value shallow, while the text depth past
+// dto.InstructorHoursFormJSONDepth is answered by the parse before any write.
+const instructorHoursUpdateJSONDepth = 9939
+
+// instructorHoursUpdateJSONBand reports an hour whose written JSON field the
+// save would dump past the measured band. The caller keeps auditlog's pre_save
+// entry and skips the UPDATE.
+func instructorHoursUpdateJSONBand(write dto.InstructorHoursWrite) error {
+	for _, name := range []string{"courses", "calculation_data"} {
+		if write.JSONValueDepth[name] >= instructorHoursUpdateJSONDepth {
+			return errInstructorHoursUpdateJSONTooDeep
+		}
+	}
+	return nil
+}
 
 type InstructorHoursValidationError struct{ Fields map[string]any }
 
@@ -507,8 +538,15 @@ func (s *InstructorHoursService) Update(ctx context.Context, identity domain.Res
 	if err != nil {
 		return err
 	}
-	if err := tx.UpdateHour(ctx, row); err != nil {
-		return err
+	// Django's auditlog pre_save entry is written before the UPDATE's
+	// json.dumps, which raises past the measured dump band: the entry is kept
+	// (the view is not atomic), the row stays unchanged and the answer is the
+	// 500 page. Both writes stay in this request's transaction.
+	bandErr := instructorHoursUpdateJSONBand(write)
+	if bandErr == nil {
+		if err := tx.UpdateHour(ctx, row); err != nil {
+			return err
+		}
 	}
 	if len(changes) > 0 {
 		// auditlog's pre_save entry resolves the stored row: the previous instructor.
@@ -517,7 +555,10 @@ func (s *InstructorHoursService) Update(ctx context.Context, identity domain.Res
 			return err
 		}
 	}
-	return tx.Commit()
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+	return bandErr
 }
 
 // instructorHoursChanges is auditlog's update diff: str() of each field before

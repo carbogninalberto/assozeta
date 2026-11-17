@@ -3665,6 +3665,112 @@
    "content_type": "application/x-www-form-urlencoded"
   },
   {
+   "name": "instructor-hours-update-form-courses-depth-9960-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/a1000000-0000-4000-8000-000000966029/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": [],
+   "raw_parts": [
+    "notes=probe&courses=%7B%22deep%22%3A%20",
+    {
+     "repeat": "%7B%22a%22%3A",
+     "count": 9959
+    },
+    "1",
+    {
+     "repeat": "%7D",
+     "count": 9959
+    },
+    "%7D"
+   ],
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instructor-hours-update-form-courses-depth-9960-other-field-invalid",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/a1000000-0000-4000-8000-000000966029/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": [],
+   "raw_parts": [
+    "hours=abc&notes=probe&courses=%7B%22deep%22%3A%20",
+    {
+     "repeat": "%7B%22a%22%3A",
+     "count": 9959
+    },
+    "1",
+    {
+     "repeat": "%7D",
+     "count": 9959
+    },
+    "%7D"
+   ],
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instructor-hours-update-form-courses-depth-9900-repeated-key",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/a1000000-0000-4000-8000-000000966029/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "success": true
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "draft_row": {
+      "courses": {
+       "a": 1
+      },
+      "notes": "probe"
+     }
+    },
+    "documents": {},
+    "audit": [
+     {
+      "model": "InstructorHours",
+      "key": "a1000000-0000-4000-8000-000000966029",
+      "action": 1,
+      "changes": {
+       "courses": [
+        "{\"a\": [1, \"\\u00e8\"]}",
+        "{\"a\": 1}"
+       ],
+       "notes": [
+        "Modulo",
+        "probe"
+       ]
+      }
+     }
+    ],
+    "links": []
+   },
+   "prints": [],
+   "raw_parts": [
+    "notes=probe&courses=%7B%22a%22%3A%20",
+    {
+     "repeat": "%7B%22a%22%3A",
+     "count": 9900
+    },
+    "1",
+    {
+     "repeat": "%7D",
+     "count": 9900
+    },
+    "%2C%20%22a%22%3A%201%7D"
+   ],
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
    "name": "instructor-hours-update-validation-errors",
    "actor": "owner",
    "method": "PATCH",
