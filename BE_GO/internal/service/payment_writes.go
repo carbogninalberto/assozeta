@@ -406,6 +406,11 @@ type paymentMemory struct {
 	// groupSent is the X-Group-Id text the in-memory payment keeps when the
 	// column stores another spelling of the same uuid.
 	groupSent *string
+	// descriptionValue is the Python value Payment.save()'s hook left on the
+	// instance when the stored meta replacement is not a string: the view's
+	// next save of the same payment starts from it (a truthy non-string fails
+	// on .lower() before writing).
+	descriptionValue any
 }
 
 func jsonText(value any) *string {
@@ -488,10 +493,12 @@ func (m *paymentMemory) apply(input dto.PaymentEntryInput, total *float64) {
 // A request JSON value the serializer already parsed only meets auditlog's dumps
 // and the jsonb adapter, so the hook re-reads it up to the serializer's own edge.
 // The returned flag is the resolver's finding for the entry audited for this
-// save (the row it reloads is the one the edges measured).
+// save (the row it reloads is the one the edges measured). Each save of the same
+// in-memory payment starts from the value the previous one left on its
+// description attribute.
 func (s *PaymentWrites) defaults(ctx context.Context, tx domain.PaymentWritesTransaction, m *paymentMemory) (bool, error) {
 	save := domain.PaymentSaveRow{ID: m.row.ID, Subject: m.row.Subject, CategoryID: m.row.CategoryID, Description: m.row.Description,
-		MetaPaymentCategories: m.row.MetaCategories, Meta: m.row.Meta, Course: m.row.Course}
+		MetaPaymentCategories: m.row.MetaCategories, Meta: m.row.Meta, Course: m.row.Course, DescriptionValue: m.descriptionValue}
 	if save.CategoryID != nil {
 		name, err := tx.CategoryName(ctx, *save.CategoryID)
 		if err != nil {
@@ -521,6 +528,7 @@ func (s *PaymentWrites) defaults(ctx context.Context, tx domain.PaymentWritesTra
 		return false, err
 	}
 	m.row.CategoryID, m.row.Description = save.CategoryID, save.Description
+	m.descriptionValue = save.DescriptionValue
 	return fallback, nil
 }
 

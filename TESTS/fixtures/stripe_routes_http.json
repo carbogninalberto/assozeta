@@ -1606,6 +1606,31 @@
    },
    "type": "default"
   },
+  "pf_wh_quota_meta_list": {
+   "id": "a1000000-0000-4000-8000-000001521001",
+   "association": "a1000000-0000-4000-8000-000001520008",
+   "subject": 0,
+   "amount": "23.00",
+   "paid": false,
+   "associate": true,
+   "user": true,
+   "intent": "pi_stub_pf_quota_list",
+   "invoice": false,
+   "supplier_invoice": false,
+   "group": null,
+   "deleted": false,
+   "category": "a1000000-0000-4000-8000-000001520001",
+   "description": "Quota Corso",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "meta_categories": null,
+   "meta": {
+    "description": [
+     "a"
+    ]
+   },
+   "type": "default"
+  },
   "deep_pay": {
    "id": "a1000000-0000-4000-8000-000001529901",
    "association": "a1000000-0000-4000-8000-000000701001",
@@ -7977,6 +8002,28 @@
    },
    "stripe": [],
    "raw_body": "{\"id\": \"evt_stub\", \"object\": \"event\", \"type\": \"charge.succeeded\", \"data\": {\"object\": {\"id\": \"ch_stub\", \"object\": \"charge\", \"payment_intent\": \"pi_stub_pf_nouser\"}}}",
+   "content_type": "application/json",
+   "signature": "t={t},v1={v1}"
+  },
+  {
+   "name": "stripe-routes-webhook-charge-quota-corso-meta-list-rolls-back",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/stripe/webhook",
+   "headers": {},
+   "status": 200,
+   "response": "<empty>",
+   "effect": {
+    "payments_changed": {},
+    "supplier_invoices_changed": {},
+    "audit": [],
+    "celery": [],
+    "invoice": null,
+    "notification": null,
+    "rolled_back": true
+   },
+   "stripe": [],
+   "raw_body": "{\"id\": \"evt_stub\", \"object\": \"event\", \"type\": \"charge.succeeded\", \"data\": {\"object\": {\"id\": \"ch_stub\", \"object\": \"charge\", \"payment_intent\": \"pi_stub_pf_quota_list\"}}}",
    "content_type": "application/json",
    "signature": "t={t},v1={v1}"
   },

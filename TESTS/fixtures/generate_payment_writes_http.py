@@ -577,6 +577,15 @@ added('add-course-label-description', 'owner', {'creation_date': '2026-03-07', '
 added('add-quota-corso-kept', 'owner', {'creation_date': '2026-03-08', 'payment_date': None, 'subject': 2, 'description': 'QUOTA CORSO',
                                         'amount': '1.00', 'complex_item': 0},
       {**plain, 'creation_date': '2026-03-08T00:00:00Z', 'subject': 2, 'amount': '1.00', 'description': 'QUOTA CORSO'})
+# Payment.save() replaces a 'Quota Corso' description with meta['description']
+# only when the payment's meta column holds that key. PaymentEntrySerializer
+# declares no `meta` field (its Meta.fields list), so DRF's to_internal_value
+# never reads the body's meta key: the created payment's meta stays NULL, the
+# hook keeps the request's text, and both saves of the instance complete.
+added('add-quota-corso-meta-not-a-field', 'owner',
+      {'creation_date': '2026-03-26', 'payment_date': None, 'subject': 2, 'amount': '20', 'description': 'Quota Corso',
+       'meta': {'description': ['a']}, 'complex_item': None},
+      {**plain, 'creation_date': '2026-03-26T00:00:00Z', 'subject': 2, 'amount': '20.00', 'description': 'Quota Corso'})
 total = float('10.10') + (0 + float('0.2') + float(5))
 added('add-meta-float-amount', 'owner', {'creation_date': '2026-03-09', 'payment_date': None, 'amount': '10.10', 'description': 'Meta',
                                          'meta_payment_categories': [{'amount': '0.2', 'title': 'è'}, {'amount': 5, 'title': 'b'}],

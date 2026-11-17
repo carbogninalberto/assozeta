@@ -243,12 +243,13 @@ func (s *StripePaidCheck) mark(ctx context.Context, tx domain.StripePaidCheckTra
 	if locked == nil {
 		return nil, errStripePaidCheckException
 	}
-	if err = stripeMarkPaid(ctx, tx, locked.PaymentSaveRow, locked.PaymentDate, domain.LoginAuditContext{}, now); err != nil {
+	if err = stripeMarkPaid(ctx, tx, &locked.PaymentSaveRow, locked.PaymentDate, domain.LoginAuditContext{}, now); err != nil {
 		return nil, err
 	}
 	var notification *paymentPaidFlowNotification
 	if row.InvoiceID == nil {
-		if notification, err = stripe.stripePaidFlow(ctx, tx, domain.ResolvedIdentity{}, StripeRequest{}, row.ID, now, true); err != nil {
+		if notification, err = stripe.stripePaidFlow(ctx, tx, domain.ResolvedIdentity{}, StripeRequest{}, row.ID, now, true,
+			&locked.PaymentSaveRow); err != nil {
 			return nil, err
 		}
 	}

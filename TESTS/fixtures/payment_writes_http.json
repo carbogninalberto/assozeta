@@ -3588,6 +3588,232 @@
    }
   },
   {
+   "name": "payment-writes-add-quota-corso-meta-not-a-field",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "payment_id": "$bind:payment",
+    "user": {
+     "first_name": "Message",
+     "last_name": "Fixture",
+     "email": "message-reads-700001@example.test",
+     "phone": null,
+     "username": "message-reads-700001",
+     "role": 1
+    },
+    "associate": null,
+    "subscription_id": null,
+    "instructor_id": null,
+    "instructor": null,
+    "supplier": null,
+    "supplier_id": null,
+    "custom_account_type": null,
+    "custom_account_name": null,
+    "invoice": null,
+    "attachments": [],
+    "payment_category_name": "$default_category_name",
+    "type": "default",
+    "subject": 2,
+    "amount": "20.00",
+    "creation_date": "2026-03-26T00:00:00Z",
+    "payment_date": null,
+    "paid": false,
+    "expense": false,
+    "description": "Quota Corso",
+    "meta_payment_categories": null,
+    "payment_intent_id": null,
+    "archived": false,
+    "invoice_fiscal_code": null,
+    "meta": null,
+    "notes": null,
+    "deleted": false,
+    "course": null,
+    "payment_category": "$default_category",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "custom_accounts": null,
+    "signature": null,
+    "group": null
+   },
+   "effect": {
+    "actor": "owner",
+    "created": [
+     {
+      "type": "default",
+      "subject": 2,
+      "amount": "20.00",
+      "creation_date": "2026-03-26T00:00:00Z",
+      "payment_date": null,
+      "paid": false,
+      "expense": false,
+      "description": "Quota Corso",
+      "payment_category_id": "$default_category",
+      "meta_payment_categories": null,
+      "invoice_id": null,
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "associate_id": null,
+      "supplier_id": null,
+      "instructor_id": null,
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "custom_accounts_id": null,
+      "signature_id": null,
+      "deleted": false,
+      "group_id": null,
+      "course": null
+     }
+    ],
+    "changed": {},
+    "audit": [
+     {
+      "key": "$id",
+      "action": 0,
+      "changes": {
+       "payment_id": [
+        "None",
+        "$id"
+       ],
+       "type": [
+        "None",
+        "default"
+       ],
+       "subject": [
+        "None",
+        "2"
+       ],
+       "amount": [
+        "None",
+        "20.00"
+       ],
+       "creation_date": [
+        "None",
+        "2026-03-26 00:00:00"
+       ],
+       "payment_date": [
+        "None",
+        "None"
+       ],
+       "paid": [
+        "None",
+        "False"
+       ],
+       "expense": [
+        "None",
+        "False"
+       ],
+       "description": [
+        "None",
+        "Quota Corso"
+       ],
+       "payment_category": [
+        "None",
+        "$default_category"
+       ],
+       "meta_payment_categories": [
+        "None",
+        "null"
+       ],
+       "invoice": [
+        "None",
+        "None"
+       ],
+       "user": [
+        "None",
+        "None"
+       ],
+       "associate": [
+        "None",
+        "None"
+       ],
+       "supplier": [
+        "None",
+        "None"
+       ],
+       "instructor": [
+        "None",
+        "None"
+       ],
+       "sport_association": [
+        "None",
+        "None"
+       ],
+       "archived": [
+        "None",
+        "False"
+       ],
+       "meta": [
+        "None",
+        "null"
+       ],
+       "custom_accounts": [
+        "None",
+        "None"
+       ],
+       "signature": [
+        "None",
+        "None"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "course": [
+        "None",
+        "null"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ]
+     },
+     {
+      "key": "$id",
+      "action": 1,
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "changes_json.sport_association"
+      ]
+     }
+    ],
+    "documents": []
+   },
+   "prints": [],
+   "body": {
+    "creation_date": "2026-03-26",
+    "payment_date": null,
+    "subject": 2,
+    "amount": "20",
+    "description": "Quota Corso",
+    "meta": {
+     "description": [
+      "a"
+     ]
+    },
+    "complex_item": null
+   }
+  },
+  {
    "name": "payment-writes-add-meta-float-amount",
    "actor": "owner",
    "method": "POST",

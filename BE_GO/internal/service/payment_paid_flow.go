@@ -52,11 +52,12 @@ func (n *paymentPaidFlowNotification) deliver(ctx context.Context, notifier *Sub
 // stripeMarkPaid is mark_payment_as_paid's first save of an unpaid payment:
 // payment.paid = True, payment.payment_date = now, payment.type = 'stripe' and
 // payment.save(update_fields=['paid', 'payment_date', 'type']). Payment.save()
-// computes its defaults (a failure raises inside the block) but only the
-// update fields are written; auditlog records the changed update fields.
-func stripeMarkPaid(ctx context.Context, tx domain.PaymentPaidFlowTransaction, row domain.PaymentSaveRow, before *time.Time,
+// computes its defaults on the instance (a failure raises inside the block) but
+// only the update fields are written, so the instance keeps them for the later
+// full save; auditlog records the changed update fields.
+func stripeMarkPaid(ctx context.Context, tx domain.PaymentPaidFlowTransaction, row *domain.PaymentSaveRow, before *time.Time,
 	audit domain.LoginAuditContext, now time.Time) error {
-	if err := paymentSaveDefaults(ctx, tx, &row, map[string][2]string{}); err != nil {
+	if err := paymentSaveDefaults(ctx, tx, row, map[string][2]string{}); err != nil {
 		return err
 	}
 	previous, err := tx.MarkStripePaymentPaid(ctx, row.ID, now)
@@ -72,6 +73,18 @@ func stripeMarkPaid(ctx context.Context, tx domain.PaymentPaidFlowTransaction, r
 	}
 	return tx.AppendPaymentAudit(ctx, domain.PaymentArchiveEvent{PaymentID: row.ID, AssociationID: row.AssociationID, Changes: changes,
 		IndexFallback: row.IndexFallback, Context: audit, At: now})
+}
+
+// paymentPaidFlowInstance carries Payment.save()'s in-memory defaults from
+// mark_payment_as_paid's update_fields save to its later full save: both save
+// the same instance, whose category and description the first hook already
+// set (the column kept the stored text). DescriptionValue is the value the
+// hook left on the description attribute when the meta replacement is not a
+// string; the full save starts from it and a truthy non-string raises before
+// writing.
+func paymentPaidFlowInstance(row *domain.PaymentStateRow, instance *domain.PaymentSaveRow) {
+	row.CategoryID, row.CategoryName = instance.CategoryID, instance.CategoryName
+	row.Description, row.DescriptionValue = instance.Description, instance.DescriptionValue
 }
 
 // paymentPaidFlowSentGroup is the group Invoice.objects.create is given: the
@@ -500,9 +513,11 @@ func (s *PaymentStates) paySupplierInvoice(ctx context.Context, tx domain.Paymen
 // year, no lock), the description, the invoice, the payment save recording it,
 // the course subscription or installment paid flag, validate_broadcast for
 // payment.user and the on-commit print_document_invoice.delay (returned with
-// the notification, published after the commit).
+// the notification, published after the commit). memory is the instance the
+// first save ran the hook on: the full save starts from its category and
+// description.
 func (s *StripeRoutes) stripePaidFlow(ctx context.Context, tx domain.PaymentPaidFlowTransaction, identity domain.ResolvedIdentity,
-	request StripeRequest, id string, now time.Time, withRequest bool) (*paymentPaidFlowNotification, error) {
+	request StripeRequest, id string, now time.Time, withRequest bool, memory *domain.PaymentSaveRow) (*paymentPaidFlowNotification, error) {
 	group := supplierGroup(request.GroupHeader)
 	row, err := tx.PaymentState(ctx, domain.PaymentStateQuery{ID: id, Group: group})
 	if err != nil {
@@ -511,12 +526,27 @@ func (s *StripeRoutes) stripePaidFlow(ctx context.Context, tx domain.PaymentPaid
 	if row == nil || row.AssociationID == "" {
 		return nil, domain.ErrStripeServer
 	}
+	// auditlog's entry of this save compares the instance with the stored row:
+	// the update_fields save wrote paid, payment_date and type only, so the
+	// hook's category and description are still unwritten here.
+	stored := row.PaymentSaveRow
+	if memory != nil {
+		// mark_payment_as_paid saves one instance twice: the update_fields save
+		// left the hook's defaults on it, and the full save starts from them.
+		paymentPaidFlowInstance(row, memory)
+	}
 	// The update_fields save already ran Payment.save()'s defaults on the
 	// in-memory payment: the invoice description reads them, and the later
 	// full save records them with the invoice.
 	changes := map[string][2]string{}
 	if err = paymentSaveDefaults(ctx, tx, &row.PaymentSaveRow, changes); err != nil {
 		return nil, err
+	}
+	if !samePointer(stored.CategoryID, row.CategoryID) {
+		changes["payment_category"] = [2]string{pythonOptional(stored.CategoryID), pythonOptional(row.CategoryID)}
+	}
+	if !samePointer(stored.Description, row.Description) {
+		changes["description"] = [2]string{pythonOptional(stored.Description), pythonOptional(row.Description)}
 	}
 	payment, err := tx.InvoiceGeneratePayment(ctx, row.ID)
 	if err != nil {

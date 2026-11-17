@@ -477,11 +477,11 @@ func (s *StripeRoutes) mark(ctx context.Context, identity domain.ResolvedIdentit
 		if !ok {
 			return domain.ErrServerComposition
 		}
-		if err := stripeMarkPaid(ctx, flow, row.PaymentSaveRow, row.PaymentDate, stripeAuditContext(identity, request.Audit), now); err != nil {
+		if err := stripeMarkPaid(ctx, flow, &row.PaymentSaveRow, row.PaymentDate, stripeAuditContext(identity, request.Audit), now); err != nil {
 			return err
 		}
 		if row.InvoiceID == nil {
-			if notification, err = s.stripePaidFlow(ctx, flow, identity, request, row.ID, now, withRequest); err != nil {
+			if notification, err = s.stripePaidFlow(ctx, flow, identity, request, row.ID, now, withRequest, &row.PaymentSaveRow); err != nil {
 				return err
 			}
 		}

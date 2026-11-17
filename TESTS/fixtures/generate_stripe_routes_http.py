@@ -175,6 +175,13 @@ PAYMENTS = {
                                 meta={'subscription_data': {'name': 1.5}}),
     'pf_wh_name_list': payment(amount='27.00', association=PLAIN['association'], subject=1, intent='pi_stub_pf_name_list',
                                meta={'subscription_data': {'name': ['Agonisti', {'anno': None, 'ok': True}, 2]}}),
+    # A stored 'Quota Corso' description and a meta replacement that is not text:
+    # the update_fields save leaves the list on the instance, the full save after
+    # the invoice calls .lower() on it and the block rolls back. The id is fixed
+    # (not from the sequence) so the authored rows above keep their ids.
+    'pf_wh_quota_meta_list': payment(amount='23.00', association=PLAIN['association'], intent='pi_stub_pf_quota_list',
+                                     description='Quota Corso', meta={'description': ['a']},
+                                     identifier='a1000000-0000-4000-8000-000001521001'),
 }
 # The t6x1 rows that also need invoice and supplier-invoice rows, whose ids come from `more`.
 T6X1_INVOICE_LABELS = ('wh_float_intent', 'wh_json_intent')
@@ -891,6 +898,14 @@ add('webhook-charge-course-without-link', 'anonymous', WEBHOOK, 200, EMPTY, raw_
 # send_notification(None, ...) raises inside the block: it rolls back, its on_commit task is discarded, the view swallows it.
 add('webhook-charge-without-user-rolls-back', 'anonymous', WEBHOOK, 200, EMPTY, raw_body=charge('pi_stub_pf_nouser'), content_type=JSON,
     signature=VALID, effect=paid_flow('pf_wh_no_user', 'anonymous', description=None, notified=None, token='$bypass', rolled_back=True))
+# Payment.save() replaced the stored 'Quota Corso' description with the stored
+# meta['description'] on the instance during the update_fields save (the column
+# kept the text); the full save after the invoice calls .lower() on the list and
+# raises before writing, so the whole block rolls back: unpaid, no invoice, no
+# audit entry, no notification and no on-commit print task.
+add('webhook-charge-quota-corso-meta-list-rolls-back', 'anonymous', WEBHOOK, 200, EMPTY, raw_body=charge('pi_stub_pf_quota_list'),
+    content_type=JSON, signature=VALID,
+    effect=paid_flow('pf_wh_quota_meta_list', 'anonymous', description=None, notified=None, token='$bypass', rolled_back=True))
 add('pay-succeeded-anonymous-creates-invoice', 'anonymous', PAY('pf_pay_anonymous'), 200, MARKED,
     stripe=[retrieve('pi_stub_pf_anon', intent('pi_stub_pf_anon', 1600, status='succeeded'))],
     effect=paid_flow('pf_pay_anonymous', 'anonymous', description=other_text(CATEGORY_NAME), notified='Quota', token=None))
