@@ -10,9 +10,9 @@ import (
 )
 
 // This file ports the accept tests and the header checks of the Pillow plugins
-// this package identifies but does not decode. Their _open methods are tried in
-// Pillow's plugin order; a check that fails raises an exception Pillow skips,
-// and data whose header parses is reported with ErrFormatNotPorted.
+// whose decoders live here (SPIDER, MCIDAS, PIXAR, IM, IPTC, PCD, TGA, WMF and
+// the stub formats). Their _open methods are tried in Pillow's plugin order; a
+// check that fails raises an exception Pillow skips.
 
 // shortError is the struct.error Pillow's _binary helpers raise for a short
 // buffer; ImageFile.__init__ turns it into SyntaxError, so Open skips the

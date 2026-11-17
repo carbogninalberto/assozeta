@@ -407,16 +407,3 @@ func noParamJPEGMarker(marker byte) bool {
 	}
 	return false
 }
-
-// zeroSizeStub reports the formats Pillow's stub plugins identify at size 0x0:
-// Django's logo code divides by that height and answers the '[LOGO]'
-// paragraph, so no decoder is needed for the same outcome.
-func zeroSizeStub(data []byte) bool {
-	switch {
-	case bytes.HasPrefix(data, []byte("BUFR")), bytes.HasPrefix(data, []byte("ZCZC")):
-		return true
-	case len(data) >= 8 && bytes.HasPrefix(data, []byte("GRIB")) && data[7] == 1:
-		return true
-	}
-	return bytes.HasPrefix(data, []byte("\x89HDF\r\n\x1a\n"))
-}

@@ -8,7 +8,6 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/pilimage"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/pyunicodedata"
 )
 
@@ -1731,9 +1730,7 @@ func (p *paraParser) startImg(attrs []htmlAttr) bool {
 
 // loadImageSource is ImageReader(src): reportlab opens the path or fetches the
 // URL, and reads the image with PIL. It returns the reader, its status and the
-// text of the exception (the caller fails the paragraph with it). An image this
-// package does not decode (a format pilimage only identifies) keeps its
-// refusal.
+// text of the exception (the caller fails the paragraph with it).
 func loadImageSource(src string) (image *imageReader, st attrStatus, failure string) {
 	// A document is built without a request context (Build takes none), so the
 	// fetch of a URL has none: reportlab's urlopen has no deadline either.
@@ -1746,9 +1743,6 @@ func loadImageSource(src string) (image *imageReader, st attrStatus, failure str
 	}
 	image, err = newImageReader(data, inlineIdentity(src))
 	if err != nil {
-		if errors.Is(err, pilimage.ErrFormatNotPorted) {
-			return nil, attrUnsupported, ""
-		}
 		return nil, attrInvalid, imageSourceFailure(src, pillowText(err))
 	}
 	return image, attrOK, ""

@@ -62,8 +62,12 @@ def sha(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-def rgb_answer(im) -> dict:
-    """reportlab ImageReader.getRGBData(), reproduced without reportlab."""
+def rgb_answer(im, x19=False) -> dict:
+    """reportlab ImageReader.getRGBData(), reproduced without reportlab.
+
+    x19 records only the resulting mode and byte count: the pixels come from a
+    bundled codec library (divergence X19), so they are not compared.
+    """
     try:
         mode = im.mode
         alpha_image = None
@@ -84,6 +88,11 @@ def rgb_answer(im) -> dict:
         else:
             out_mode = mode
         data = im.tobytes()
+        if x19:
+            ans = {"mode": out_mode, "x19": True, "size": len(data)}
+            if alpha_image is not None:
+                ans["alpha_size"] = len(alpha_image.tobytes())
+            return ans
         ans = {
             "mode": out_mode,
             "data": sha(data),
@@ -92,6 +101,37 @@ def rgb_answer(im) -> dict:
         return ans
     except BaseException as exc:  # noqa: BLE001 - the corpus records exceptions
         return {"error": error_of(exc)}
+
+
+def iptc_getint(value: bytes) -> int:
+    """IptcImagePlugin.getint: the last four bytes big-endian."""
+    return int.from_bytes(value[-4:].rjust(4, b"\x00"), "big")
+
+
+def ojpeg_abbreviated(data: bytes, im) -> bool:
+    """Old-style JPEG without an interchange stream in JPEGInterchangeFormat."""
+    if 513 in im.tag_v2:
+        return False
+    offsets = im.tag_v2.get(273) or im.tag_v2.get(324) or ()
+    if not isinstance(offsets, tuple):
+        offsets = (offsets,)
+    if not offsets:
+        return True
+    off = offsets[0]
+    return data[off : off + 2] != b"\xff\xd8"
+
+
+def jpeg_container_x19(data: bytes, im) -> bool:
+    """Whether the pixels come from a JPEG stream in another container."""
+    if im.format == "IPTC":
+        comp = im.info.get((3, 120))
+        return comp is not None and iptc_getint(comp) == 5
+    if im.format == "BLP" and data[:4] == b"BLP1":
+        return struct.unpack("<i", data[4:8])[0] == 0
+    if im.format == "TIFF":
+        return im.tag_v2.get(259) in (6, 7)
+    return False
+
 
 
 def transparent_answer(im) -> dict:
@@ -152,10 +192,6 @@ def case(data: bytes) -> dict:
         "width": im.size[0],
         "height": im.size[1],
     }
-    if im.format == "JPEG":
-        # The writer embeds the JPEG bytes and RGBData returns
-        # ErrFormatNotPorted, so there is no decoder answer to record.
-        return entry
     if im.format == "EPS":
         # No Ghostscript on the production platform.
         entry["rgb"] = {"error": {"class": "OSError", "text": "Unable to locate Ghostscript on paths"}}
@@ -165,18 +201,46 @@ def case(data: bytes) -> dict:
         entry["rgb"] = {"error": {"class": "OSError", "text": "decoder JPEG2000 not available"}}
         entry["transparent"] = {"value": None}
         return entry
-    if im.format == "TIFF":
-        compression = im.tag_v2.get(259)
-        if compression == 7:
-            # JPEG-in-TIFF: reported as ErrFormatNotPorted (the PDF writer's
-            # JPEG rule), so no decoded answer is recorded.
-            return entry
     if im.format == "ICNS" and b"jP  \x0d\x0a\x87\x0a" in data:
         # Divergence X19: ICNS JPEG 2000 entries answer as a Pillow built
         # without the codec (IcnsImagePlugin.enable_jpeg2k is False).
         entry["rgb"] = {"error": {"class": "ValueError",
                                   "text": "Unsupported icon subimage format (rebuild PIL with JPEG 2000 support to fix this)"}}
         entry["transparent"] = {"value": None}
+        return entry
+    if im.format == "TIFF" and im.tag_v2.get(259) in (34925, 50000, 50001):
+        # Divergence X19: LZMA, ZSTD and WebP are optional libtiff codecs.
+        # This records the answer of a build without them, which is the same
+        # failure an unconfigured codec produces ("decoder error -2").
+        entry["rgb"] = {"error": {"class": "OSError", "text": "decoder error -2"}}
+        entry["transparent"] = {"value": None}
+        return entry
+    if im.mode == "LAB":
+        # Divergence X19: Pillow converts LAB through ImageCms (lcms2), an
+        # optional bundled library. This records the answer of a build whose
+        # C conversion machinery is reached instead, which is the closest
+        # result for this port.
+        entry["rgb"] = {"error": {"class": "ValueError",
+                                  "text": "conversion from LAB to RGB not supported"}}
+        entry["transparent"] = {"value": None}
+        return entry
+    if im.format == "TIFF" and im.tag_v2.get(259) == 6 and ojpeg_abbreviated(data, im):
+        # Divergence X19: an old-style JPEG stream whose tables live inside
+        # the strip needs libjpeg's header assembly; this port answers
+        # libtiff's decode failure, as a build without OJPEG reassembly does.
+        entry["rgb"] = {"error": {"class": "OSError", "text": "decoder error -2"}}
+        entry["transparent"] = {"value": None}
+        return entry
+    x19 = im.format == "JPEG" or jpeg_container_x19(data, im)
+    if x19:
+        # Divergence X19: the pixels come from a bundled lossy codec; only
+        # the format, mode and size are compared. A stream libjpeg refuses
+        # (or libjpeg decodes while Go's decoder does not) is not recorded:
+        # which streams a codec accepts is part of the divergence.
+        answer = rgb_answer(im, x19=True)
+        if "error" not in answer:
+            entry["rgb"] = answer
+        entry["transparent"] = transparent_answer(im)
         return entry
     entry["rgb"] = rgb_answer(im)
     entry["transparent"] = transparent_answer(im)
@@ -1863,7 +1927,9 @@ def tiff_lzw_encode(data: bytes) -> bytes:
         if next_code < 4096:
             table[wk] = next_code
             next_code += 1
-            if next_code == (1 << width) - 1 and width < 12:
+            # libtiff's encoder starts the next code one entry later than the
+            # TIFF 6.0 "early change" text; its decoder reads that stream.
+            if next_code == (1 << width) and width < 12:
                 width += 1
         w = bytes([ch])
     if w:
@@ -1886,9 +1952,22 @@ def tiff_predict(data: bytes, w: int, h: int, spp: int, bps: int) -> bytes:
     return bytes(out)
 
 
+def _tiff_encode(chunks, compression):
+    if compression == 1:
+        return [bytes(c) for c in chunks]
+    if compression == 32773:
+        return [packbits(c) for c in chunks]
+    if compression == 5:
+        return [tiff_lzw_encode(c) for c in chunks]
+    if compression in (8, 32946):
+        return [zlib.compress(c) for c in chunks]
+    return [bytes(c) for c in chunks]
+
+
 def build_tiff(order, w, h, photo, bps, spp, pixels, compression=1, rows_per_strip=None,
                planar=1, colormap=None, extras=None, sampleformat=None, fillorder=1,
-               predictor=None, orientation=None, tile=None, planes=None):
+               predictor=None, orientation=None, tile=None, planes=None, strips=None,
+               extra_tags=None):
     bo = "<" if order == b"II" else ">"
     compression = {"raw": 1, "packbits": 32773, "tiff_lzw": 5, "lzw": 5,
                    "tiff_adobe_deflate": 8, "deflate": 32946, "jpeg": 7}.get(compression, compression)
@@ -1898,7 +1977,9 @@ def build_tiff(order, w, h, photo, bps, spp, pixels, compression=1, rows_per_str
     if planes is None:
         planes = [pixels]
     chunks = []
-    if planar == 1:
+    if strips is not None:
+        chunks = list(strips)
+    elif planar == 1:
         for y0 in range(0, h, rps):
             nrows = min(rps, h - y0)
             chunks.append(pixels[y0 * w * step : (y0 + nrows) * w * step])
@@ -1907,22 +1988,20 @@ def build_tiff(order, w, h, photo, bps, spp, pixels, compression=1, rows_per_str
             for y0 in range(0, h, rps):
                 nrows = min(rps, h - y0)
                 chunks.append(plane[y0 * w * bytes_per_sample : (y0 + nrows) * w * bytes_per_sample])
-    if predictor == 2:
+    if strips is not None:
+        encoded = list(strips)
+    elif predictor == 2:
         chunks = [tiff_predict(c, w, len(c) // (w * step), spp, bps) for c in chunks]
-    if compression == 1:
-        encoded = [bytes(c) for c in chunks]
-    elif compression == 32773:
-        encoded = [packbits(c) for c in chunks]
-    elif compression == 5:
-        encoded = [tiff_lzw_encode(c) for c in chunks]
-    elif compression in (8, 32946):
-        encoded = [zlib.compress(c) for c in chunks]
+        encoded = _tiff_encode(chunks, compression)
     else:
-        encoded = [bytes(c) for c in chunks]
+        encoded = _tiff_encode(chunks, compression)
 
     tags = {256: (4, [w]), 257: (4, [h]), 258: (3, [bps] * max(1, spp)),
             259: (3, [compression]), 262: (3, [photo]), 277: (3, [spp]),
             278: (4, [rps]), 284: (3, [planar]), 266: (3, [fillorder])}
+    if extra_tags:
+        for tag, (typ, values) in extra_tags.items():
+            tags[tag] = (typ, values)
     if colormap is not None:
         tags[320] = (3, colormap)
     if extras is not None:
@@ -2113,13 +2192,282 @@ def base_tiff():
                 except Exception:
                     continue
                 add(b.getvalue())
-    # JPEG-in-TIFF (the PDF writer's JPEG rule) and CCITT/group4.
+    # JPEG-in-TIFF.
     im = Image.new("RGB", (4, 3), (10, 20, 30))
     b = io.BytesIO()
     im.save(b, "TIFF", compression="jpeg")
     add(b.getvalue())
-    # CCITT group3/group4 (compressions 2, 3, 4) are not decoded by this
-    # package; see the report.
+
+
+def tiff_file_strips(data):
+    """The strip payloads of a TIFF Pillow can open."""
+    t = Image.open(io.BytesIO(data))
+    offs = t.tag_v2.get(273) or ()
+    counts = t.tag_v2.get(279) or ()
+    return [data[o : o + c] for o, c in zip(offs, counts)]
+
+
+def bits_to_bytes(bits):
+    bits += "0" * ((-len(bits)) % 8)
+    return bytes(int(bits[i : i + 8], 2) for i in range(0, len(bits), 8))
+
+
+def reverse_bits(data):
+    return bytes(int(format(b, "08b")[::-1], 2) for b in data)
+
+
+WHITE_TERM = {0: "00110101", 1: "000111", 2: "0111", 3: "1000", 4: "1011", 5: "1100",
+              6: "1110", 7: "1111", 8: "10011", 9: "10100", 10: "00111", 11: "01000",
+              12: "001000", 13: "000011", 14: "110100", 15: "110101", 16: "101010",
+              17: "101011"}
+BLACK_TERM = {0: "0000110111", 1: "010", 2: "11", 3: "10", 4: "011", 5: "0011",
+              6: "0010", 7: "00011", 8: "000101", 9: "000100", 10: "0000100",
+              11: "0000101", 12: "0000111", 13: "00000100", 14: "00000111",
+              15: "000011000", 16: "0000010111", 17: "0000011000"}
+
+
+def g3_2d(w, h, first_black=0, later_black=None):
+    """A Group 3 stream with 2D rows: EOL plus the 1D/2D tag bit per row."""
+    eol = "000000000001"
+    bits = ""
+    for y in range(h):
+        bits += eol
+        if y == 0 and later_black is None:
+            bits += "1"  # 1D line
+            bits += WHITE_TERM[first_black] + BLACK_TERM[1] + WHITE_TERM[w - first_black - 1]
+        elif later_black is not None and y == 1:
+            bits += "0"  # 2D line, horizontal mode
+            x = later_black
+            bits += "001"  # H
+            bits += WHITE_TERM[x] + BLACK_TERM[w - x]
+        else:
+            bits += "0"  # 2D line
+            bits += "1"  # V0 copies the reference line
+    return bits_to_bytes(bits)
+
+
+def ycbcr_packed(w, h, y0, hsub, vsub):
+    """Packed 8-bit YCbCr clumps for rows y0..y0+h-1."""
+    out = bytearray()
+    blocks = (w + hsub - 1) // hsub
+    for gy in range((h + vsub - 1) // vsub):
+        for bx in range(blocks):
+            for j in range(vsub):
+                for i in range(hsub):
+                    x = min(bx * hsub + i, w - 1)
+                    y = min(y0 + gy * vsub + j, y0 + h - 1)
+                    out.append(((x * 23 + y * 47) % 256))
+            out.append((128 + bx * 7 + gy * 3) % 256)
+            out.append((90 + bx * 5 + gy * 11) % 256)
+    return bytes(out)
+
+
+def base_tiff_remaining():
+    # CCITT fax: the Pillow writer encodes valid streams for mode 1, and the
+    # same bytes are rebuilt with min-is-white, FillOrder 2 and 2-D options.
+    for comp_name in ("tiff_ccitt", "group3", "group4", "tiff_raw_16"):
+        for w, h in ((1, 1), (3, 2), (8, 2), (9, 3), (17, 5), (32, 4)):
+            im = Image.new("1", (w, h))
+            im.putdata([(x * 3 + y) % 2 for y in range(h) for x in range(w)])
+            b = io.BytesIO()
+            try:
+                im.save(b, "TIFF", compression=comp_name)
+            except Exception:
+                continue
+            saved = b.getvalue()
+            streams = tiff_file_strips(saved)
+            comp = Image.open(io.BytesIO(saved)).tag_v2[259]
+            for photo in (0, 1):
+                for fill in (1, 2):
+                    strips = [reverse_bits(s) if fill == 2 else s for s in streams]
+                    add(build_tiff(b"II", w, h, photo, 1, 1, b"", compression=comp,
+                                   strips=strips, fillorder=fill))
+    # Group 3 with T4Options 2-D coding, hand-built.
+    for w, h in ((4, 3), (8, 4), (9, 5)):
+        for later in (None, 1, 2):
+            stream = g3_2d(w, h, 0, later)
+            add(build_tiff(b"II", w, h, 1, 1, 1, b"", compression=3, strips=[stream],
+                           extra_tags={292: (4, [1])}))
+            add(build_tiff(b"II", w, h, 0, 1, 1, b"", compression=3, strips=[reverse_bits(stream)],
+                           fillorder=2, extra_tags={292: (4, [1])}))
+    # Compressed YCbCr: every subsampling libtiff's put routines accept.
+    for hsub, vsub in ((1, 1), (2, 1), (2, 2), (1, 2), (4, 1), (4, 2), (4, 4)):
+        for w, h in ((1, 1), (3, 2), (4, 4), (5, 3), (9, 5), (16, 9)):
+            if w < hsub or h < vsub:
+                continue
+            for comp in (32773, 5, 8):
+                for rps in (None, 1, 2, 3, h):
+                    rows_per_strip = rps or h
+                    strips = []
+                    for y0 in range(0, h, rows_per_strip):
+                        nrows = min(rows_per_strip, h - y0)
+                        packed = ycbcr_packed(w, nrows, y0, hsub, vsub)
+                        strips.append(_tiff_encode([packed], comp)[0])
+                    add(build_tiff(b"II", w, h, 6, 8, 3, b"", compression=comp,
+                                   strips=strips, rows_per_strip=rows_per_strip,
+                                   extra_tags={530: (3, [hsub, vsub])}))
+    # Compressed strips with PlanarConfiguration 2: libtiff's separate-plane
+    # unpackers read one band per plane.
+    def pix8(w, h, spp):
+        return bytes(((x * 37 + y * 53 + c * 61) % 256 for y in range(h) for x in range(w) for c in range(spp)))
+
+    for comp in (32773, 5, 8):
+        for w, h in ((1, 1), (4, 3), (9, 5)):
+            planes = [pix8(w, h, 4)[c::4] for c in range(3)]
+            for rps in (None, 1, 2):
+                add(build_tiff(b"II", w, h, 2, 8, 3, b"", compression=comp, planar=2,
+                               planes=planes, rows_per_strip=rps))
+            planes4 = [pix8(w, h, 4)[c::4] for c in range(4)]
+            add(build_tiff(b"II", w, h, 2, 8, 4, b"", compression=comp, planar=2,
+                           planes=planes4, extras=[2]))
+            add(build_tiff(b"II", w, h, 5, 8, 4, b"", compression=comp, planar=2, planes=planes4))
+            planes16 = [b"".join(struct.pack("<H", (x * 257 + y * 1234 + c * 5000) % 65536)
+                                 for y in range(h) for x in range(w)) for c in range(3)]
+            add(build_tiff(b"II", w, h, 2, 16, 3, b"", compression=comp, planar=2, planes=planes16))
+            # A 16x16 tile per plane.
+            add(build_tiff(b"II", 16, 16, 2, 8, 3, pix8(16, 16, 3), compression=comp,
+                           planar=2, planes=[pix8(16, 16, 3)[c::3] for c in range(3)], tile=(16, 16)))
+
+    # ThunderScan (compression 32809) decodes 4-bit samples.
+    def thunder_rows(width, rows, mode, seed=0):
+        out = bytearray()
+        for y in range(rows):
+            n = 0
+            while n < width:
+                if mode == "raw":
+                    out.append(0xC0 | ((n + y + seed) & 0xF))
+                    n += 1
+                elif mode == "delta2":
+                    out.append(0x40 | 0x24 | ((seed + y) & 3))
+                    n += 3
+                elif mode == "delta3":
+                    out.append(0x80 | 0x08 | ((seed + y) & 7))
+                    n += 2
+                elif mode == "run":
+                    left = width - n
+                    out.append(min(left, 60))
+                    n = width
+                else:  # mixed codes
+                    out.append(0xC0 | ((n * 3 + y) & 0xF))
+                    n += 1
+                    if n < width:
+                        out.append(0x40 | 0x24)
+                        n += 3
+                    if n < width:
+                        out.append(0x80 | 0x08)
+                        n += 2
+        return bytes(out)
+
+    for w, h in ((1, 1), (2, 2), (3, 2), (4, 3), (5, 3), (9, 5)):
+        for mode in ("raw", "delta2", "delta3", "run", "mixed"):
+            strips = [thunder_rows(w, h, mode)]
+            add(build_tiff(b"II", w, h, 1, 4, 1, b"", compression=32809, strips=strips))
+            add(build_tiff(b"II", w, h, 1, 4, 1, b"", compression=32809,
+                           strips=[thunder_rows(w, 1, mode) for _ in range(h)], rows_per_strip=1))
+        # Truncated and short strips.
+        add(build_tiff(b"II", w, h, 1, 4, 1, b"", compression=32809, strips=[b"\xC1\xC2"]))
+        add(build_tiff(b"II", w, h, 1, 4, 1, b"", compression=32809, strips=[bytes(range(64))]))
+    # The libtiff codecs Pillow cannot decode through its plugin, and the
+    # optional codecs this build lacks (X19).
+    for comp in (34676, 34677, 34925, 50000, 50001):
+        for photo, bps in ((1, 8), (1, 4), (2, 8), (32844, 16), (32845, 16)):
+            add(build_tiff(b"II", 4, 3, photo, bps, 1 if photo in (1, 32844) else 3,
+                           bytes(range(48)), compression=comp))
+    # LAB pixel data: Pillow has no LAB-to-RGB conversion.
+    for order in (b"II", b"MM"):
+        for w, h in ((1, 1), (3, 2), (5, 4)):
+            raw = bytes(((x * 37 + y * 53 + c * 61) % 256 for y in range(h) for x in range(w) for c in range(3)))
+            add(build_tiff(order, w, h, 8, 8, 3, raw))
+    for w, h in ((2, 2), (4, 3)):
+        planes = [bytes(((x * 37 + y * 53 + c * 61) % 256 for y in range(h) for x in range(w))) for c in range(3)]
+        add(build_psd(w, h, 9, 8, 3, planes, 0))
+        add(build_psd(w, h, 9, 8, 4, planes + [bytes(w * h)], 0))
+
+    # JPEG-compressed data in other containers: all compared by shape only.
+    im = Image.new("RGB", (16, 9))
+    im.putdata([((x * 37) % 256, (y * 53) % 256, (x * y) % 256) for y in range(9) for x in range(16)])
+    for kw in ({}, {"quality": 50}, {"quality": 95}):
+        b = io.BytesIO()
+        im.save(b, "TIFF", compression="jpeg", **kw)
+        add(b.getvalue())
+    # New-style JPEG with several strips.
+    b = io.BytesIO()
+    im.save(b, "TIFF", compression="jpeg", strip_size=64)
+    add(b.getvalue())
+    # Old-style JPEG (libtiff's sample files).
+    for name in ("ojpeg_single_strip_no_rowsperstrip.tiff", "ojpeg_zackthecat_subsamp22_single_strip.tiff"):
+        path = os.path.join(ROOT, "tmp", "tiffsamples", name)
+        try:
+            with open(path, "rb") as fh:
+                add(fh.read())
+        except FileNotFoundError:
+            continue
+    # IPTC with JPEG data: grayscale decodes, colour data fails the merge.
+    def iptc(jpg, layers, component, band=None, w=4, h=3):
+        out = bytearray()
+
+        def field(tag, payload):
+            out.extend(bytes([0x1C, tag[0], tag[1]]) + struct.pack(">H", len(payload)) + payload)
+
+        field((3, 60), bytes([layers, component]))
+        field((3, 20), struct.pack(">H", w))
+        field((3, 30), struct.pack(">H", h))
+        if band is not None:
+            field((3, 65), struct.pack(">H", band))
+        field((3, 120), struct.pack(">H", 5))
+        field((8, 10), jpg)
+        return bytes(out)
+
+    for mode, layers, component in (("L", 1, 0), ("RGB", 3, 1), ("CMYK", 4, 1)):
+        jm = Image.new(mode, (4, 3))
+        if mode == "L":
+            jm.putdata([(x * 37 + y * 53) % 256 for y in range(3) for x in range(4)])
+        elif mode == "RGB":
+            jm.putdata([((x * 37) % 256, (y * 53) % 256, (x * y) % 256) for y in range(3) for x in range(4)])
+        else:
+            jm.putdata([((x * 37) % 256, (y * 53) % 256, (x * y) % 256, (x + y) % 256) for y in range(3) for x in range(4)])
+        b = io.BytesIO()
+        jm.save(b, "JPEG")
+        for band in (None, 0, 1):
+            add(iptc(b.getvalue(), layers, component, band))
+    # BLP1 with a JPEG stream as the first mip level.
+    def blp1_jpeg(stream, alpha):
+        offsets = [4 + len(stream)]
+        out = bytearray(b"BLP1")
+        out += struct.pack("<iI", 0, 1 if alpha else 0)
+        out += struct.pack("<II", 4, 3)
+        out += struct.pack("<ii", 0, 1)
+        out += struct.pack("<16I", *offsets, *([0] * 15))
+        out += struct.pack("<16I", 0, *([0] * 15))
+        out += struct.pack("<I", len(stream)) + stream
+        return bytes(out)
+
+    for mode in ("L", "RGB", "CMYK"):
+        jm = Image.new(mode, (4, 3))
+        if mode == "L":
+            jm.putdata([(x * 37 + y * 53) % 256 for y in range(3) for x in range(4)])
+        elif mode == "RGB":
+            jm.putdata([((x * 37) % 256, (y * 53) % 256, (x * y) % 256) for y in range(3) for x in range(4)])
+        else:
+            jm.putdata([((x * 37) % 256, (y * 53) % 256, (x * y) % 256, (x + y) % 256) for y in range(3) for x in range(4)])
+        b = io.BytesIO()
+        jm.save(b, "JPEG")
+        for alpha in (0, 1):
+            add(blp1_jpeg(b.getvalue(), alpha))
+
+    # DDS BC6H (unsigned and signed) and BC7: Pillow's bcn decoder.
+    def blocks(seed, n):
+        rnd = random.Random(seed)
+        return bytes(rnd.randrange(256) for _ in range(n))
+
+    for dxgi in (95, 96, 98, 99):
+        for w, h in ((4, 4), (8, 4), (7, 5), (1, 1), (3, 2)):
+            n = ((w + 3) // 4) * ((h + 3) // 4) * 16
+            add(dds_header(w, h, 0x4, b"DX10", 0, (0, 0, 0, 0), dx10=dxgi) + blocks(dxgi * 31 + w * 7 + h, n))
+    # A few edge encodings: zero block, all-ones block, mode 0 BC7.
+    for dxgi in (95, 96, 98):
+        for pattern in (bytes(16), b"\xff" * 16, bytes([0x80]) + bytes(15), bytes([0x40]) + bytes(15)):
+            add(dds_header(4, 4, 0x4, b"DX10", 0, (0, 0, 0, 0), dx10=dxgi) + pattern)
 
 
 def base_undecoded_valid():
@@ -2311,6 +2659,7 @@ def build_corpus() -> list[dict]:
     base_psd_blp_dds()
     base_rest_formats()
     base_tiff()
+    base_tiff_remaining()
     base_other_signatures()
     base_undecoded_valid()
     base_more_cases()
@@ -2320,18 +2669,14 @@ def build_corpus() -> list[dict]:
     rnd = random.Random(4242)
     base_count = len(INPUTS)
 
-    def tiff_like(data: bytes) -> bool:
-        return data[:4] in (b"II*\x00", b"MM\x00*", b"MM*\x00", b"II\x00*", b"II+\x00", b"MM\x00+")
-
     for i in range(0, base_count, max(1, base_count // 90)):
-        # Mutated TIFF directories exercise libtiff's own recovery behaviour;
-        # the port covers well-formed files only (see the report).
-        if tiff_like(INPUTS[i]):
-            continue
+        # Mutated directories exercise Pillow's and libtiff's own recovery
+        # behaviour, which the port follows for the tags and strip data it can
+        # read.
         add_mutations(INPUTS[i])
     for _ in range(30):
         data = INPUTS[rnd.randrange(base_count)]
-        if len(data) > 4 and not tiff_like(data):
+        if len(data) > 4:
             cut = rnd.randrange(1, len(data))
             add(data[:cut])
     return [case(data) for data in INPUTS]

@@ -1,6 +1,10 @@
 package pilimage
 
-import "strconv"
+import (
+	"fmt"
+	"strconv"
+	"strings"
+)
 
 // This file ports ImImagePlugin.
 
@@ -58,17 +62,72 @@ var imTags = map[string]bool{
 	"Scale (x,y)": true, "Image size (x*y)": true, "Image type": true,
 }
 
-// imNumber is ImImagePlugin.number: int() first, then float().
-func imNumber(s string) float64 {
-	if n, err := strconv.Atoi(s); err == nil {
-		return float64(n)
+// imNumber is ImImagePlugin.number: int() first, then float(). ok is false
+// when Python's float() raises ValueError.
+func imNumber(s string) (float64, bool) {
+	t := strings.TrimSpace(s)
+	// Python's int() and float() accept underscores between digits.
+	if !strings.ContainsAny(t, "xXbBoO") {
+		t = stripDigitUnderscores(t)
 	}
-	f, err := strconv.ParseFloat(s, 64)
+	if n, err := strconv.ParseInt(t, 10, 64); err == nil {
+		return float64(n), true
+	}
+	f, err := strconv.ParseFloat(t, 64)
 	if err != nil {
-		_ = err
-		return 0
+		return 0, false
 	}
-	return f
+	return f, true
+}
+
+// stripDigitUnderscores removes '_' between digits, which Python's numeric
+// literals allow.
+func stripDigitUnderscores(s string) string {
+	if !strings.Contains(s, "_") {
+		return s
+	}
+	var b strings.Builder
+	for i := 0; i < len(s); i++ {
+		if s[i] == '_' && i > 0 && i+1 < len(s) && s[i-1] >= '0' && s[i-1] <= '9' && s[i+1] >= '0' && s[i+1] <= '9' {
+			continue
+		}
+		b.WriteByte(s[i])
+	}
+	return b.String()
+}
+
+// pyFloatRepr is Python's repr() for the ASCII strings an IM header holds.
+func pyFloatRepr(s string) string {
+	quote := byte('\'')
+	if strings.ContainsRune(s, '\'') && !strings.ContainsRune(s, '"') {
+		quote = '"'
+	}
+	var b strings.Builder
+	b.WriteByte(quote)
+	for i := 0; i < len(s); i++ {
+		c := s[i]
+		switch c {
+		case '\\':
+			b.WriteString("\\\\")
+		case quote:
+			b.WriteByte('\\')
+			b.WriteByte(quote)
+		case '\n':
+			b.WriteString("\\n")
+		case '\r':
+			b.WriteString("\\r")
+		case '\t':
+			b.WriteString("\\t")
+		default:
+			if c < 0x20 || c == 0x7f {
+				b.WriteString(fmt.Sprintf("\\x%02x", c))
+			} else {
+				b.WriteByte(c)
+			}
+		}
+	}
+	b.WriteByte(quote)
+	return b.String()
 }
 
 // loadIM is the raw/"bit" tiles ImImageFile._open sets.
@@ -226,13 +285,17 @@ func openIM(data []byte) (*Image, error) {
 		switch k {
 		case "File size (no of images)", "Scale (x,y)", "Image size (x*y)":
 			parts := splitCommaOrStar(raw)
-			if k == "Image size (x*y)" {
-				if len(parts) >= 2 {
-					width = int(imNumber(parts[0]))
-					height = int(imNumber(parts[1]))
-				} else {
-					return nil, valueError("not enough values to unpack (expected 2, got " + itoa(len(parts)) + ")")
+			values := make([]float64, len(parts))
+			for i, part := range parts {
+				v, ok := imNumber(part)
+				if !ok {
+					return nil, valueError("could not convert string to float: " + pyFloatRepr(part))
 				}
+				values[i] = v
+			}
+			if k == "Image size (x*y)" && len(values) >= 2 {
+				width = int(values[0])
+				height = int(values[1])
 			}
 		case "Image type":
 			if m, ok := imOpen[raw]; ok {
@@ -319,9 +382,9 @@ func splitCommaOrStar(s string) []string {
 		}
 		cur += string(s[i])
 	}
-	if cur != "" || len(out) > 0 {
-		out = append(out, cur)
-	}
+	// Python's "".split(",") is [""], and the IM tag reader maps number()
+	// over every part, so the empty value reaches float().
+	out = append(out, cur)
 	return out
 }
 

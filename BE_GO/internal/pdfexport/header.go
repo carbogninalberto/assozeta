@@ -87,12 +87,6 @@ func loadLogo(encoded string) (*imageReader, error) {
 		if errors.As(err, &pillow) {
 			return nil, nil // Django's try: PIL's exception answers '[LOGO]'
 		}
-		if errors.Is(err, pilimage.ErrFormatNotPorted) {
-			if zeroSizeStub(data) {
-				return nil, nil // ZeroDivisionError on the 0x0 size
-			}
-			return nil, ErrNotPorted
-		}
 		return nil, err
 	}
 	if image.image.Height == 0 {

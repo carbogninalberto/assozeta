@@ -67,6 +67,14 @@ func (im *Image) convertRGB() ([]byte, error) {
 			b := y + int(yccB_Cb[cb])>>6
 			out[3*i], out[3*i+1], out[3*i+2] = clipByte(r), clipByte(g), clipByte(b)
 		}
+	case "CMYK":
+		// cmyk2rgb: each channel is inverted through the black channel.
+		for i := 0; i < n; i++ {
+			nk := 255 - int(im.pix[4*i+3])
+			for s := 0; s < 3; s++ {
+				out[3*i+s] = clipByte(nk - mulDiv255(int(im.pix[4*i+s]), nk))
+			}
+		}
 	case "F":
 		// Image.convert falls back to the mode base ("L") for F -> RGB.
 		for i := 0; i < n; i++ {
@@ -176,4 +184,10 @@ func clipByte(v int) byte {
 		return 255
 	}
 	return byte(v)
+}
+
+// mulDiv255 is MULDIV255 from Pillow's ImagingUtils.h.
+func mulDiv255(a, b int) int {
+	t := a*b + 128
+	return ((t >> 8) + t) >> 8
 }

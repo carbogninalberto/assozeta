@@ -182,8 +182,35 @@ func (im *Image) loadIPTC(offset int, jpeg bool, band int, plainL bool) error {
 		}
 	}
 	if jpeg {
-		// JPEG-in-IPTC follows the PDF writer's JPEG rule.
-		return ErrFormatNotPorted
+		// IptcImageFile.load: the extracted bytes are opened again and merged
+		// into the band the (3, 65) field names (or replace the image).
+		sub, err := Open(payload)
+		if err != nil {
+			return err
+		}
+		if err := sub.load(); err != nil {
+			return err
+		}
+		if plainL {
+			im.Width, im.Height = sub.Width, sub.Height
+			im.pix = append([]byte{}, sub.pix...)
+			return nil
+		}
+		// Image.merge checks every band but the first against the mode's
+		// band type; the placeholder bands are "L", so a decoded image that
+		// is not L fails there (core.merge reports the same mismatch when
+		// the first band is replaced).
+		if sub.Mode != "L" {
+			return valueError("mode mismatch")
+		}
+		bands := len(im.Mode)
+		if band < 0 || band >= bands {
+			return &Error{Class: "IndexError", Text: "list index out of range"}
+		}
+		im.Width, im.Height = sub.Width, sub.Height
+		im.pix = make([]byte, sub.Width*sub.Height*bands)
+		copy(im.pix[band:], sub.pix[:sub.Width*sub.Height])
+		return nil
 	}
 	sub, err := openPPM(payload)
 	if err != nil {

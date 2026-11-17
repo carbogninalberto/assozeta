@@ -9,20 +9,27 @@
 // tRNS chunk. Both are needed because reportlab embeds a non-JPEG image as
 // exactly those bytes (zlib-compressed) in a PDF.
 //
-// The package decodes the deterministic formats Pillow does: PNG, GIF,
-// BMP/DIB, the PPM family, ICO/CUR, TGA, PCX/DCX, SGI, QOI, XBM, XPM, MSP,
-// SUN, IM/IMT, PSD, ICNS, DDS (BC1-BC5), TIFF (uncompressed, PackBits, LZW and
-// Deflate), GBR, FTEX, BLP, FLI/FLC, PCD, PIXAR, SPIDER, MCIDAS, FITS, IPTC,
-// XVThumb and WebP lossless (VP8L). Stub and handler formats (BUFR, GRIB,
-// HDF5, MPEG, WMF and EPS without Ghostscript) reproduce Pillow's exceptions.
+// The package decodes the formats Pillow does: PNG, GIF, BMP/DIB, the PPM
+// family, JPEG, ICO/CUR, TGA, PCX/DCX, SGI, QOI, XBM, XPM, MSP, SUN, IM/IMT,
+// PSD, ICNS, DDS (BC1-BC7), TIFF (raw, PackBits, LZW, Deflate, JPEG, CCITT
+// fax, the RLEW and ThunderScan codecs and YCbCr), GBR, FTEX, BLP (including
+// BLP1's JPEG mip level), FLI/FLC, PCD, PIXAR, SPIDER, MCIDAS, FITS, IPTC
+// (including its embedded JPEG), XVThumb and WebP lossless (VP8L). Stub and
+// handler formats (BUFR, GRIB, HDF5, MPEG, WMF and EPS without Ghostscript)
+// reproduce Pillow's exceptions.
 //
-// Approved divergence X19 covers formats decoded by bundled lossy codec
-// libraries whose output depends on that library's build: lossy WebP, JPEG
-// 2000 and AVIF answer as a Pillow built without the codec. JPEG data itself
-// is not decoded (the PDF writer embeds it); RGBData reports
-// ErrFormatNotPorted for it, and that rule also covers JPEG-in-TIFF and
-// JPEG-in-IPTC. TIFF's CCITT group 3/4 compressions are not ported and report
-// ErrFormatNotPorted as well.
+// Approved divergence X19 covers formats decoded by bundled codec libraries
+// whose output depends on that library's build:
+//
+//   - lossy WebP, JPEG 2000 and AVIF answer as a Pillow built without the
+//     codec;
+//   - JPEG pixels (a JPEG file, JPEG-in-TIFF, JPEG-in-IPTC, BLP1 JPEG) come
+//     from Go's image/jpeg, so their samples differ from libjpeg-turbo's;
+//   - TIFF's LZMA, ZSTD and WebP compressions are optional libtiff codecs and
+//     answer libtiff's decode failure, as a build without them does;
+//   - LAB pixel data is converted through lcms2 by Pillow (ImageCms), so the
+//     port answers the C conversion error a build without that transform
+//     reports.
 //
 // It depends only on the Go standard library.
 package pilimage
@@ -94,11 +101,6 @@ type Error struct{ Class, Text string }
 
 func (e *Error) Error() string { return e.Class + ": " + e.Text }
 
-// ErrFormatNotPorted is returned for data Pillow identifies as a format this
-// package does not decode (the caller decides what to do); it is never
-// returned for data Pillow cannot identify.
-var ErrFormatNotPorted = errors.New("pilimage: image format not ported")
-
 // maxImagePixels is Image.MAX_IMAGE_PIXELS.
 const maxImagePixels = 1024 * 1024 * 1024 / 4 / 3
 
@@ -131,60 +133,59 @@ type plugin struct {
 	format string
 	accept func(prefix []byte) bool
 	// open parses the header. A returned *Error whose class is skipped makes
-	// Open try the next plugin. Formats this package does not decode return a
-	// marker Image (Format and, where the plugin sets them, mode and size) and
-	// Open reports ErrFormatNotPorted.
+	// Open try the next plugin.
 	open func(data []byte) (*Image, error)
-	// decoded marks the formats whose pixels load and convert.
-	decoded bool
 	// allowZero is for Pillow's stub plugins, whose success check accepts a
 	// zero size.
 	allowZero bool
 }
 
-var plugins = []plugin{
-	{"BMP", acceptBMP, openBMP, true, false},
-	{"DIB", acceptDIB, openDIB, true, false},
-	{"GIF", acceptGIF, openGIF, true, false},
-	{"JPEG", acceptJPEG, openJPEG, true, false},
-	{"PPM", acceptPPM, openPPM, true, false},
-	{"PNG", acceptPNG, openPNG, true, false},
-	{"BLP", acceptBLP, openBLP, true, false},
-	{"BUFR", acceptBUFR, openStub("BUFR"), true, true},
-	{"CUR", acceptCUR, openCUR, true, false},
-	{"PCX", acceptPCX, openPCX, true, false},
-	{"DCX", acceptDCX, openDCX, true, false},
-	{"DDS", acceptDDS, openDDS, true, false},
-	{"EPS", acceptEPS, openEPS, true, false},
-	{"FITS", acceptFITS, openFITS, true, false},
-	{"FLI", acceptFLI, openFLI, true, false},
-	{"FTEX", acceptFTEX, openFTEX, true, false},
-	{"GBR", acceptGBR, openGBR, true, false},
-	{"GRIB", acceptGRIB, openStub("GRIB"), true, true},
-	{"HDF5", acceptHDF5, openStub("HDF5"), true, true},
-	{"JPEG2000", acceptJPEG2000, openJPEG2000, true, false},
-	{"ICNS", acceptICNS, openICNS, true, false},
-	{"ICO", acceptICO, openICO, true, false},
-	{"IM", nil, openIM, true, false},
-	{"IMT", nil, openIMT, true, false},
-	{"IPTC", nil, openIPTC, true, false},
-	{"MCIDAS", acceptMCIDAS, openMCIDAS, true, false},
-	{"MPEG", acceptMPEG, openMPEG, true, false},
-	{"TIFF", acceptTIFF, openTIFF, true, false},
-	{"MSP", acceptMSP, openMSP, true, false},
-	{"PCD", nil, openPCD, true, false},
-	{"PIXAR", acceptPIXAR, openPIXAR, true, false},
-	{"PSD", acceptPSD, openPSD, true, false},
-	{"QOI", acceptQOI, openQOI, true, false},
-	{"SGI", acceptSGI, openSGI, true, false},
-	{"SPIDER", nil, openSPIDER, true, false},
-	{"SUN", acceptSUN, openSUN, true, false},
-	{"TGA", nil, openTGA, true, false},
-	{"WEBP", acceptWEBPLossless, openWEBPLossless, true, false},
-	{"WMF", acceptWMF, openWMF, true, false},
-	{"XBM", acceptXBM, openXBM, true, false},
-	{"XPM", acceptXPM, openXPM, true, false},
-	{"XVThumb", acceptXVTHUMB, openXVTHUMB, true, false},
+// pluginList is Pillow's Image.OPEN registry in the order Image.open tries it.
+func pluginList() []plugin {
+	return []plugin{
+		{"BMP", acceptBMP, openBMP, false},
+		{"DIB", acceptDIB, openDIB, false},
+		{"GIF", acceptGIF, openGIF, false},
+		{"JPEG", acceptJPEG, openJPEG, false},
+		{"PPM", acceptPPM, openPPM, false},
+		{"PNG", acceptPNG, openPNG, false},
+		{"BLP", acceptBLP, openBLP, false},
+		{"BUFR", acceptBUFR, openStub("BUFR"), true},
+		{"CUR", acceptCUR, openCUR, false},
+		{"PCX", acceptPCX, openPCX, false},
+		{"DCX", acceptDCX, openDCX, false},
+		{"DDS", acceptDDS, openDDS, false},
+		{"EPS", acceptEPS, openEPS, false},
+		{"FITS", acceptFITS, openFITS, false},
+		{"FLI", acceptFLI, openFLI, false},
+		{"FTEX", acceptFTEX, openFTEX, false},
+		{"GBR", acceptGBR, openGBR, false},
+		{"GRIB", acceptGRIB, openStub("GRIB"), true},
+		{"HDF5", acceptHDF5, openStub("HDF5"), true},
+		{"JPEG2000", acceptJPEG2000, openJPEG2000, false},
+		{"ICNS", acceptICNS, openICNS, false},
+		{"ICO", acceptICO, openICO, false},
+		{"IM", nil, openIM, false},
+		{"IMT", nil, openIMT, false},
+		{"IPTC", nil, openIPTC, false},
+		{"MCIDAS", acceptMCIDAS, openMCIDAS, false},
+		{"MPEG", acceptMPEG, openMPEG, false},
+		{"TIFF", acceptTIFF, openTIFF, false},
+		{"MSP", acceptMSP, openMSP, false},
+		{"PCD", nil, openPCD, false},
+		{"PIXAR", acceptPIXAR, openPIXAR, false},
+		{"PSD", acceptPSD, openPSD, false},
+		{"QOI", acceptQOI, openQOI, false},
+		{"SGI", acceptSGI, openSGI, false},
+		{"SPIDER", nil, openSPIDER, false},
+		{"SUN", acceptSUN, openSUN, false},
+		{"TGA", nil, openTGA, false},
+		{"WEBP", acceptWEBPLossless, openWEBPLossless, false},
+		{"WMF", acceptWMF, openWMF, false},
+		{"XBM", acceptXBM, openXBM, false},
+		{"XPM", acceptXPM, openXPM, false},
+		{"XVThumb", acceptXVTHUMB, openXVTHUMB, false},
+	}
 }
 
 // openStub is the _open of Pillow's stub plugins: it only checks the signature
@@ -207,7 +208,7 @@ func Open(data []byte) (*Image, error) {
 	if len(prefix) > 16 {
 		prefix = prefix[:16]
 	}
-	for _, p := range plugins {
+	for _, p := range pluginList() {
 		if p.accept != nil && !p.accept(prefix) {
 			continue
 		}
@@ -226,9 +227,6 @@ func Open(data []byte) (*Image, error) {
 		}
 		if err := checkDecompressionBomb(im.Width, im.Height); err != nil {
 			return nil, err
-		}
-		if !p.decoded {
-			return nil, ErrFormatNotPorted
 		}
 		return im, nil
 	}
@@ -475,10 +473,12 @@ func (im *Image) load() error {
 		err = im.loadGIF()
 	case "BMP", "DIB":
 		err = im.loadBMP()
+	case "JPEG":
+		err = im.loadJPEG()
 	case "PPM":
 		err = im.loadPPM()
 	default:
-		return ErrFormatNotPorted
+		return osError("cannot load this image")
 	}
 	return err
 }

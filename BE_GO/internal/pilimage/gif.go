@@ -270,6 +270,16 @@ func (im *Image) loadGIF() error {
 		return decoderError(-8)
 	}
 	im.pix = make([]byte, im.Width*im.Height)
+	// GifImagePlugin.load_prepare fills the first frame with the
+	// transparency index when it has one; the decoder leaves those pixels
+	// and any area the frame does not cover at that value.
+	fill := byte(0)
+	if im.transparency.present && im.transparency.isInt {
+		fill = byte(im.transparency.index)
+		for i := range im.pix {
+			im.pix[i] = fill
+		}
+	}
 	d := &gifDecoder{bits: g.minCodeSize, transparency: -1}
 	if g.interlace {
 		d.interlace = 1

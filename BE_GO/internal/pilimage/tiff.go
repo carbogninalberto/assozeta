@@ -2,8 +2,10 @@ package pilimage
 
 import (
 	"bytes"
+	"compress/flate"
 	"compress/zlib"
 	"encoding/binary"
+	"errors"
 	"io"
 	"strconv"
 )
@@ -349,14 +351,25 @@ func openTIFF(data []byte) (*Image, error) {
 		if photo == 6 {
 			mode = "RGB"
 			im := newImage(data, "TIFF", mode, w, h)
-			if compression == 7 || compression == 6 {
-				// JPEG-in-TIFF: the PDF writer's JPEG rule.
-				im.loadFn = func() error { return ErrFormatNotPorted }
+			if ifd.truncated || !hasPhoto || !tiffDirectoryReadable(ifd, data) {
+				// libtiff re-reads the directory itself and fails on the
+				// truncated entry list Pillow's Python reader tolerated.
+				im.loadFn = func() error { return osError("decoder error -2") }
 				return im, nil
 			}
-			// Pillow's libtiff strip decoder rejects the 24-to-32-bit row
-			// mismatch for YCbCr data.
-			im.loadFn = func() error { return osError("decoder error -2") }
+			im.loadFn = func() error {
+				scratch := &Image{Format: "TIFF", Mode: im.Mode, Width: xsize, Height: ysize}
+				var err error
+				if compression == 6 || compression == 7 {
+					err = scratch.loadTIFFJPEG(ifd, data, xsize, ysize, compression)
+				} else {
+					err = scratch.tiffYCbCrDecoded(ifd, data, xsize, ysize, int64(compression), ifd.get1(292, 0), fill)
+				}
+				if err != nil {
+					return err
+				}
+				return im.adoptTransposed(scratch, int(orientation))
+			}
 			return im, nil
 		}
 		if rawmode == "I;16" {
@@ -367,7 +380,12 @@ func openTIFF(data []byte) (*Image, error) {
 	}
 	im := newImage(data, "TIFF", mode, w, h)
 	if mode == "P" || mode == "PA" {
-		colormap, _ := ifd.get(320)
+		colormap, hasMap := ifd.get(320)
+		if !hasMap {
+			// _setup indexes COLORMAP, so a missing palette is a KeyError
+			// that makes Image.open try the next plugin.
+			return nil, &Error{Class: "KeyError", Text: itoa(320)}
+		}
 		bits := int64(1)
 		if len(bps) > 0 {
 			bits = bps[0]
@@ -379,12 +397,22 @@ func openTIFF(data []byte) (*Image, error) {
 		im.setPaletteRGB(raw, realizePalette("RGB;L", raw))
 	}
 	if compression == 6 || compression == 7 {
-		// JPEG-in-TIFF: the PDF writer's JPEG rule.
-		im.loadFn = func() error { return ErrFormatNotPorted }
+		// libtiff's JPEG codec; the samples are Go's decoder's (X19).
+		if ifd.truncated || !tiffDirectoryReadable(ifd, data) {
+			im.loadFn = func() error { return osError("decoder error -2") }
+			return im, nil
+		}
+		im.loadFn = func() error {
+			scratch := &Image{Format: "TIFF", Mode: im.Mode, Width: xsize, Height: ysize}
+			if err := scratch.loadTIFFJPEG(ifd, data, xsize, ysize, compression); err != nil {
+				return err
+			}
+			return im.adoptTransposed(scratch, int(orientation))
+		}
 		return im, nil
 	}
 	if useLibtiff {
-		if ifd.truncated {
+		if ifd.truncated || !tiffDirectoryReadable(ifd, data) {
 			im.loadFn = func() error { return osError("decoder error -2") }
 			return im, nil
 		}
@@ -392,7 +420,17 @@ func openTIFF(data []byte) (*Image, error) {
 			im.loadFn = func() error { return osError("decoder error -2") }
 			return im, nil
 		}
-		dec, err := tiffDecodedData(ifd, data, compression, xsize, ysize, photo, bps, planar, spp)
+		if planar == 2 && im.samplesPerPixel() > 1 {
+			im.loadFn = func() error {
+				scratch := &Image{Format: "TIFF", Mode: im.Mode, Width: xsize, Height: ysize}
+				if err := scratch.tiffPlanarDecoded(ifd, data, xsize, ysize, int64(compression), ifd.get1(292, 0), fill); err != nil {
+					return err
+				}
+				return im.adoptTransposed(scratch, int(orientation))
+			}
+			return im, nil
+		}
+		dec, err := tiffDecodedData(ifd, data, compression, xsize, ysize, photo, bps, planar, spp, ifd.get1(292, 0), fill)
 		if err != nil {
 			im.loadFn = func() error { return err }
 			return im, nil
@@ -423,6 +461,33 @@ func openTIFF(data []byte) (*Image, error) {
 		return im.adoptTransposed(scratch, int(orientation))
 	}
 	return im, nil
+}
+
+// tiffDirectoryReadable reports whether libtiff can read the first IFD the
+// way Pillow's Python reader did: libtiff requires the whole entry list and
+// the next-directory pointer, while the Python reader only warns and keeps
+// the tags it managed to read.
+func tiffDirectoryReadable(d *tiffIFD, data []byte) bool {
+	off := d.offset
+	entrySize := int64(12)
+	var countSize int64 = 2
+	if d.big {
+		entrySize, countSize = 20, 8
+	}
+	if off <= 0 || int64(len(data)) < int64(off)+countSize {
+		return false
+	}
+	var count int64
+	if d.big {
+		count = int64(d.order.Uint64(data[off:]))
+	} else {
+		count = int64(d.order.Uint16(data[off:]))
+	}
+	end := int64(off) + countSize + count*entrySize + 4
+	if d.big {
+		end += 4
+	}
+	return count >= 0 && end <= int64(len(data))
 }
 
 func maxInt64(v []int64) int64 {
@@ -508,16 +573,29 @@ func intsOf(v []int64) []int {
 
 // tiffDecodedData decodes the strips/tiles of an image whose compression is
 // not "raw", producing the sample bytes in row order.
-func tiffDecodedData(d *tiffIFD, data []byte, compression, xsize, ysize int, photo int64, bps []int64, planar int, spp int64) ([]byte, error) {
-	if compression == 2 || compression == 3 || compression == 4 {
-		return nil, ErrFormatNotPorted
-	}
-	if compression == 32771 || compression == 32809 || compression == 34676 || compression == 34677 ||
-		compression == 34925 || compression == 50000 || compression == 50001 {
-		return nil, ErrFormatNotPorted
+func tiffDecodedData(d *tiffIFD, data []byte, compression, xsize, ysize int, photo int64, bps []int64, planar int, spp int64, t4options int64, fillorder int64) ([]byte, error) {
+	if compression == 2 || compression == 3 || compression == 4 || compression == 32771 {
+		// Decoded by the fax decoder below; only the bits/sample check is
+		// libtiff's.
+		if len(bps) == 0 || bps[0] != 1 {
+			return nil, osError("decoder error -2")
+		}
+	} else if compression == 32809 {
+		// ThunderScan decodes only 4-bit samples.
+		if len(bps) == 0 || bps[0] != 4 {
+			return nil, osError("decoder error -2")
+		}
+	} else if compression == 34676 || compression == 34677 {
+		// SGILog needs a photometric interpretation Pillow's plugin rejects
+		// before decoding, so the libtiff setup always fails here.
+		return nil, osError("decoder error -2")
+	} else if compression == 34925 || compression == 50000 || compression == 50001 {
+		// Divergence X19: LZMA, ZSTD and WebP codecs are optional in
+		// libtiff; this build has none, as a Pillow built without them.
+		return nil, osError("decoder error -2")
 	}
 	if planar == 2 {
-		return nil, ErrFormatNotPorted
+		return nil, osError("decoder error -2")
 	}
 	bitsSum := int64(0)
 	for _, b := range bps {
@@ -560,11 +638,8 @@ func tiffDecodedData(d *tiffIFD, data []byte, compression, xsize, ysize int, pho
 			count = counts[i]
 		}
 		if count <= 0 || off < 0 || off+count > int64(len(data)) {
-			continue
-		}
-		chunk, err := tiffDecompress(compression, data[off:off+count])
-		if err != nil {
-			return nil, err
+			// libtiff's strip read fails; Pillow reports the decoder status.
+			return nil, osError("decoder error -2")
 		}
 		tx := (i % max(1, (xsize+tw-1)/tw)) * tw
 		ty := (i / max(1, (xsize+tw-1)/tw)) * th
@@ -573,6 +648,10 @@ func tiffDecodedData(d *tiffIFD, data []byte, compression, xsize, ysize int, pho
 			bytesPerLine = (int(int64(tw)*bitsSum) + 7) / 8
 		}
 		rows := min(th, ysize-ty)
+		chunk, _, err := tiffDecompressStrip(compression, data[off:off+count], tw, rows, rows*bytesPerLine, t4options, fillorder)
+		if err != nil {
+			return nil, err
+		}
 		if len(chunk) < rows*bytesPerLine {
 			return nil, osError("decoder error -2")
 		}
@@ -598,60 +677,124 @@ func tiffDecodedData(d *tiffIFD, data []byte, compression, xsize, ysize int, pho
 	return out, nil
 }
 
-// tiffDecompress decodes one strip/tile for the supported compressions.
-func tiffDecompress(compression int, src []byte) ([]byte, error) {
+// tiffDecompressStrip decodes one strip or tile. written is the number of
+// leading bytes of out the codec left in libtiff's strip buffer when it
+// failed: LZW keeps only the strings it decoded, PackBits and zlib zero the
+// rest, and the buffer's other bytes keep their previous contents.
+func tiffDecompressStrip(compression int, src []byte, width, rows, need int, t4options, fillorder int64) ([]byte, int, error) {
 	switch compression {
-	case 32773:
-		return packbitsDecodeAll(src), nil
-	case 5:
-		out, ok := tiffLZWDecode(src)
+	case 2, 3, 4, 32771:
+		out, ok := faxDecode(src, width, rows, compression, t4options, fillorder)
 		if !ok {
-			return nil, osError("decoder error -2")
+			return nil, 0, osError("decoder error -2")
 		}
-		return out, nil
+		return out, len(out), nil
+	case 32809:
+		out, ok := thunderDecode(src, width, rows)
+		if !ok {
+			return nil, 0, osError("decoder error -2")
+		}
+		return out, len(out), nil
+	case 32773:
+		out, ok := packbitsDecode(src, need)
+		if !ok {
+			return out, len(out), osError("decoder error -2")
+		}
+		return out, len(out), nil
+	case 5:
+		out, ok := tiffLZWDecode(src, need)
+		if !ok {
+			// LZWDecode's error path zeroes the rest of the strip buffer.
+			if len(out) < need {
+				out = append(out, make([]byte, need-len(out))...)
+			}
+			return out[:need], need, osError("decoder error -2")
+		}
+		return out, len(out), nil
 	case 8, 32946:
 		zr, err := zlib.NewReader(bytes.NewReader(src))
 		if err != nil {
-			return nil, osError("decoder error 0 when reading image file")
+			// ZIPDecode zeroes the strip it cannot start.
+			return make([]byte, need), need, osError("decoder error -2")
 		}
-		out, err := io.ReadAll(zr)
-		if err != nil {
-			return nil, osError("decoder error 0 when reading image file")
+		// libtiff stops once the strip buffer is full; a corrupt tail past
+		// that point is not an error.
+		out := make([]byte, need)
+		// libtiff's ZIPDecode zeroes only the bytes inflate did not fill, so
+		// a checksum failure after the data still leaves the output.
+		if _, err := io.ReadFull(zr, out); err != nil {
+			return out, len(out), osError("decoder error -2")
 		}
-		return out, nil
+		// inflate reports a checksum error in the call that also produced the
+		// last byte libtiff needs; Go's reader may only return it on the next
+		// Read, so probe once. Extra decompressed data is ignored, as
+		// libtiff stops when its buffer is full.
+		var probe [1]byte
+		if _, err := zr.Read(probe[:]); err != nil && err != io.EOF {
+			// Only a data/checksum error is reported by the inflate call that
+			// produced the last byte libtiff needs; a stream that simply ends
+			// there is not an error once the buffer is full.
+			var corrupt flate.CorruptInputError
+			if errors.Is(err, zlib.ErrChecksum) || errors.As(err, &corrupt) {
+				return out, len(out), osError("decoder error -2")
+			}
+		}
+		return out, len(out), nil
 	}
-	return nil, ErrFormatNotPorted
+	return nil, 0, osError("decoder error -2")
 }
 
-func packbitsDecodeAll(src []byte) []byte {
-	var out []byte
+// packbitsDecode is libtiff's PackBitsDecode: runs and literals are clamped
+// to the requested size, and a stream that ends first is a decode failure
+// (the caller's buffer is zero filled).
+func packbitsDecode(src []byte, need int) ([]byte, bool) {
+	out := make([]byte, 0, need)
+	occ := need
 	i := 0
-	for i < len(src) {
-		b := int(int8(src[i]))
+	for i < len(src) && occ > 0 {
+		n := int(int8(src[i]))
 		i++
-		if b >= 0 {
-			n := b + 1
-			end := min(i+n, len(src))
-			out = append(out, src[i:end]...)
-			i = end
-		} else if b != -128 {
-			n := 1 - b
+		if n < 0 {
+			if n == -128 { // nop
+				continue
+			}
+			n = -n + 1
+			if occ < n {
+				n = occ
+			}
 			if i >= len(src) {
 				break
 			}
-			for j := 0; j < n; j++ {
-				out = append(out, src[i])
-			}
+			b := src[i]
 			i++
+			for j := 0; j < n; j++ {
+				out = append(out, b)
+			}
+			occ -= n
+		} else {
+			if occ < n+1 {
+				n = occ - 1
+			}
+			if len(src)-i < n+1 {
+				break
+			}
+			out = append(out, src[i:i+n+1]...)
+			i += n + 1
+			occ -= n + 1
 		}
 	}
-	return out
+	if occ > 0 {
+		out = append(out, make([]byte, occ)...)
+		return out, false
+	}
+	return out, true
 }
 
-// tiffLZWDecode is libtiff's LZW (MSB-first codes, early change). ok is false
-// when the stream ends without an EOI code, which libtiff reports as a
-// decoding failure.
-func tiffLZWDecode(src []byte) ([]byte, bool) {
+// tiffLZWDecode is libtiff's LZW (MSB-first codes, early change). It stops
+// once need bytes are produced (libtiff decodes into a strip-sized buffer and
+// does not require the EOI code then); ok is false when the stream ends first,
+// which libtiff reports as a decoding failure.
+func tiffLZWDecode(src []byte, need int) ([]byte, bool) {
 	var out []byte
 	table := make([][]byte, 4096)
 	for i := 0; i < 256; i++ {
@@ -660,6 +803,9 @@ func tiffLZWDecode(src []byte) ([]byte, bool) {
 	next := 258
 	width := 9
 	var prev []byte
+	// libtiff's decoder starts with no table entries at all: before the first
+	// CLEAR code, free_entp is before the table, so any other code fails.
+	started := false
 	bitpos := 0
 	readCode := func() (int, bool) {
 		if bitpos+width > len(src)*8 {
@@ -686,20 +832,28 @@ func tiffLZWDecode(src []byte) ([]byte, bool) {
 			next = 258
 			width = 9
 			prev = nil
+			started = true
 			continue
 		}
+		if !started {
+			return out, len(out) >= need
+		}
 		if code == 257 {
-			return out, true
+			// libtiff only accepts EOI once the strip buffer is full.
+			return out, len(out) >= need
 		}
 		var entry []byte
 		if code < next && code < len(table) && table[code] != nil {
 			entry = table[code]
-		} else if prev != nil {
+		} else if code == next && prev != nil {
 			entry = append(append([]byte{}, prev...), prev[0])
 		} else {
 			return out, false
 		}
 		out = append(out, entry...)
+		if len(out) >= need {
+			return out, true
+		}
 		if prev != nil && next < 4096 {
 			table[next] = append(append([]byte{}, prev...), entry[0])
 			next++

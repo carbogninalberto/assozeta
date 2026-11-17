@@ -74,7 +74,7 @@ func (im *Image) loadDDSRaw(rawmode string) error {
 
 // loadDDSBCN is DdsImageFile's "bcn" tile.
 func (im *Image) loadDDSBCN(offset, n int, pixelFormat string) error {
-	return im.loadBCNDataSign(im.data, offset, n, im.Width, im.Height, pixelFormat == "BC5S")
+	return im.loadBCNDataSign(im.data, offset, n, im.Width, im.Height, pixelFormat == "BC5S" || pixelFormat == "BC6HS")
 }
 
 // --- BLP DXT helpers (BlpImagePlugin.decode_dxt*) -------------------------
@@ -282,7 +282,7 @@ func (im *Image) loadBLP(blp1 bool, offset, compression, encoding, alphaEncoding
 	width, height := im.Width, im.Height
 	if blp1 {
 		if compression == 0 {
-			return ErrFormatNotPorted
+			return im.blpJPEG(offset, offsets[0], lengths[0], alpha)
 		}
 		if compression != 1 {
 			return &Error{Class: "BLPFormatError", Text: "Unsupported BLP compression " + itoa(encoding)}
@@ -346,6 +346,74 @@ func (im *Image) loadBLP(blp1 bool, offset, compression, encoding, alphaEncoding
 	default:
 		return &Error{Class: "BLPFormatError", Text: "Unknown BLP encoding " + itoa(encoding)}
 	}
+}
+
+// blpJPEG is BLP1Decoder._decode_jpeg_stream: the JPEG header and the first
+// mip level are joined, decoded, and set as a BGR raw image (so the red and
+// blue channels swap) with Pillow's RGBA unpacker writing an opaque alpha.
+// The JPEG pixels come from Go's decoder (X19).
+func (im *Image) blpJPEG(offset, mipOffset, mipLength int, alpha bool) error {
+	data := im.data
+	pos := offset + 128
+	read := func(n int) ([]byte, bool) {
+		if n < 0 || pos+n > len(data) {
+			return nil, false
+		}
+		out := data[pos : pos+n]
+		pos += n
+		return out, true
+	}
+	hdrSizeRaw, ok := read(4)
+	if !ok {
+		return osError("Truncated File Read")
+	}
+	hdrSize := int(binary.LittleEndian.Uint32(hdrSizeRaw))
+	header, ok := read(hdrSize)
+	if !ok {
+		return osError("Truncated File Read")
+	}
+	// Pillow's _safe_read with a negative count reads to the end of the
+	// stream (and the bytes are discarded), which its format allows.
+	skip := mipOffset - (pos - offset)
+	if skip < 0 {
+		skip = len(data) - pos
+	}
+	if _, ok := read(skip); !ok {
+		return osError("Truncated File Read")
+	}
+	body, ok := read(mipLength)
+	if !ok {
+		return osError("Truncated File Read")
+	}
+	stream := make([]byte, 0, len(header)+len(body))
+	stream = append(stream, header...)
+	stream = append(stream, body...)
+	w, h, rgb, err := jpegRGB(stream)
+	if err != nil {
+		return err
+	}
+	// _decode_jpeg_stream checks the decoded JPEG's size, not the header's.
+	if err := checkDecompressionBomb(w, h); err != nil {
+		return err
+	}
+	bands := 3
+	if alpha {
+		bands = 4
+	}
+	n := im.Width * im.Height
+	if len(rgb) < n*3 {
+		return valueError("not enough image data")
+	}
+	im.pix = make([]byte, n*bands)
+	for i := 0; i < n; i++ {
+		im.pix[bands*i] = rgb[3*i+2]
+		im.pix[bands*i+1] = rgb[3*i+1]
+		im.pix[bands*i+2] = rgb[3*i]
+		if alpha {
+			im.pix[bands*i+3] = 255
+		}
+	}
+	return nil
 }
 
 // blpIndices is _read_bgra: palette lookups over the first mip level.

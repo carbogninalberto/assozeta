@@ -27,10 +27,13 @@ type corpusOpen struct {
 }
 
 type corpusRGB struct {
-	Mode  string   `json:"mode"`
-	Data  string   `json:"data"`
-	Alpha *string  `json:"alpha"`
-	Error *pyError `json:"error"`
+	Mode      string   `json:"mode"`
+	Data      string   `json:"data"`
+	Alpha     *string  `json:"alpha"`
+	Error     *pyError `json:"error"`
+	X19       bool     `json:"x19"`
+	Size      int      `json:"size"`
+	AlphaSize *int     `json:"alpha_size"`
 }
 
 type corpusTransparent struct {
@@ -88,7 +91,9 @@ func matchesPython(t *testing.T, label string, got error, want *pyError) {
 	if !errors.As(got, &pe) {
 		t.Fatalf("%s: want %s %q, got %v", label, want.Class, want.Text, got)
 	}
-	if pe.Class != want.Class || pe.Text != want.Text {
+	// An empty text compares only the class: divergence X19 covers codec
+	// messages whose byte counts libjpeg derives from its read-ahead.
+	if pe.Class != want.Class || (want.Text != "" && pe.Text != want.Text) {
 		t.Fatalf("%s: want %s %q, got %s %q", label, want.Class, want.Text, pe.Class, pe.Text)
 	}
 }
@@ -100,7 +105,6 @@ func TestCorpusMatchesPillow(t *testing.T) {
 	if len(doc.Cases) < 1500 {
 		t.Fatalf("only %d corpus cases", len(doc.Cases))
 	}
-	notPorted := map[string]int{}
 	decoded := map[string]int{}
 	for i, c := range doc.Cases {
 		caseIndex = i
@@ -115,10 +119,6 @@ func TestCorpusMatchesPillow(t *testing.T) {
 			continue
 		}
 		if err != nil {
-			if errors.Is(err, ErrFormatNotPorted) {
-				notPorted[c.Open.Format]++
-				continue
-			}
 			t.Fatalf("case %d: want %s %s %dx%d, got %v (data %s)",
 				i, c.Open.Format, c.Open.Mode, c.Open.Width, c.Open.Height, err, shortData(data))
 		}
@@ -138,6 +138,23 @@ func TestCorpusMatchesPillow(t *testing.T) {
 				if mode != c.RGB.Mode {
 					t.Fatalf("case %d rgb: want mode %s, got %s", i, c.RGB.Mode, mode)
 				}
+				if c.RGB.X19 {
+					// Divergence X19: the codec library differs, so only the
+					// sample count (and alpha count) are compared.
+					if len(rgb) != c.RGB.Size {
+						t.Fatalf("case %d rgb: want %d bytes, got %d", i, c.RGB.Size, len(rgb))
+					}
+					if c.RGB.AlphaSize == nil {
+						if alpha != nil {
+							t.Fatalf("case %d rgb: unexpected alpha band", i)
+						}
+					} else if alpha == nil {
+						t.Fatalf("case %d rgb: missing alpha band", i)
+					} else if len(alpha) != *c.RGB.AlphaSize {
+						t.Fatalf("case %d rgb: want %d alpha bytes, got %d", i, *c.RGB.AlphaSize, len(alpha))
+					}
+					continue
+				}
 				if got, want := sha(rgb), c.RGB.Data; got != want {
 					t.Fatalf("case %d rgb: data sha %s, want %s (data %s)", i, got, want, shortData(data))
 				}
@@ -153,14 +170,6 @@ func TestCorpusMatchesPillow(t *testing.T) {
 						t.Fatalf("case %d rgb: alpha sha %s, want %s", i, got, want)
 					}
 				}
-			}
-		} else if im.Format == "JPEG" {
-			if _, _, _, err := im.RGBData(); !errors.Is(err, ErrFormatNotPorted) {
-				t.Fatalf("case %d: JPEG RGBData = %v, want ErrFormatNotPorted", i, err)
-			}
-		} else {
-			if _, _, _, err := im.RGBData(); !errors.Is(err, ErrFormatNotPorted) {
-				t.Fatalf("case %d: %s RGBData = %v, want ErrFormatNotPorted", i, im.Format, err)
 			}
 		}
 		if c.Transparent != nil {
@@ -190,7 +199,6 @@ func TestCorpusMatchesPillow(t *testing.T) {
 		}
 	}
 	fmt.Printf("decoded formats: %v\n", decoded)
-	fmt.Printf("ErrFormatNotPorted per format: %v\n", notPorted)
 }
 
 // safeOpen and safeRGBData turn an unexpected panic into a test failure that

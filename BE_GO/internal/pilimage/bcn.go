@@ -55,8 +55,16 @@ func (im *Image) loadBCNDataSign(src []byte, offset, n, width, height int, sign 
 				decodeBC4(block, &rgba)
 			case 5:
 				decodeBC5(block, &rgba, sign)
+			case 6:
+				bc6sign := 0
+				if sign {
+					bc6sign = 1
+				}
+				decodeBC6Block(&rgba, block, bc6sign)
+			case 7:
+				decodeBC7Block(&rgba, block)
 			default:
-				return ErrFormatNotPorted
+				return decoderError(-2)
 			}
 			for j := 0; j < 4; j++ {
 				for i := 0; i < 4; i++ {
