@@ -1951,3 +1951,23 @@ result (`accepted-divergences.md`). The other 86 are the ceiling of the `--http`
 | `handler.errAPISchemaUnsupported` | 1 | 0 | `lang` with a path separator (the django-handoff example) |
 | `pandasxlsx.ErrWorkbookNotPorted` | 1 | 0 | parts over 256 MiB, sheets past 1,048,576 rows, a duration column label, dateutil default-date text |
 | `domain.ErrOrphanMedicalUnsupported`, `domain.ErrExportCleanupUnsupported` | 0 | 2 | Document collector cascade in the cleanup jobs |
+
+## Long tail PR 5, agent A: the reportlab paragraph surface (pdfexport)
+
+`pdfexport.ErrNotPorted` is deleted (16 HTTP/WebSocket rows and 3 command rows before). Every input is drawn as reportlab
+4.2.5 draws it, or fails the export where reportlab raises (`ErrLayout`, which each caller answers as Django answers an
+exception of the export). Details and evidence: `pdf-exports.md`, "Long tail PR 5".
+
+| Site | Condition | Django | Rule | Go |
+|---|---|---|---|---|
+| `paraparser.go` startUnichar | `<unichar name>` | `unicodedata.lookup` | 1 | `internal/pyunicodedata` |
+| `paraparser.go` startAnchor, linkTarget | `<a name>`, `#name`/`document:name`, targets outside printable ASCII | bookmarks, `/Dest` annotations resolved at save, `PDFString` | 1 | ported |
+| `paraattr.go`, `paraparser.go` valignPct | Unicode digits/spaces, `0x`, big ints, inf/nan, `1e400` | CPython `int()`/`float()`; values flow into the layout | 1 | `pyNum`, ported |
+| `paraattr.go` paraColor | CMYK, alpha, separations, `Blacker`/`Whiter`, literal and safe-call expressions | `toColor` | 1 | ported |
+| `paraparser.go` applyParaAttrs, `<bullet>` | indents, justify, bullets, borders, autoLeading, endDots, textTransform, wordWrap, uriWasteReduce, embeddedHyphenation, hyphenationLang | `Paragraph` | 1 | ported |
+| `header.go` loadJPEG, `paraparser.go` loadImageSource | logos and `<img>` that are not JPEG, JPEG Go cannot decode, empty or unknown data | Pillow + `PDFImageXObject`; `cannot identify image file <_io.BytesIO object at 0x...>` | 1; X18 (address); X19 (codec libraries) | `internal/pilimage`, `image.go` |
+| `resource.go` readURL | `ftp:` image source | `urlopen` FTP | 4 (closest answer: the same transfer) | `resource_ftp.go` |
+| `sequencer.go` | template width > 2**20, counters beyond int64 | `%` padding, Python ints | 1; 4 (host memory) | padded to 2**20 spaces (same layout), exact counters |
+
+X18: the reportlab `Table` repr of `service/report_files.go` now uses `pystr.ObjectAddress` (`0x7f0000000000`) like the
+other placeholders. X19 is new (image codec libraries, `accepted-divergences.md`).

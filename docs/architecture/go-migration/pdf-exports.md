@@ -71,18 +71,14 @@ paragraphs:
   digest and the standard numbers image names by first appearance on both sides. Everything else about the image (bytes,
   dictionary, placement) is compared exactly.
 
-Refused (`ErrNotPorted`, the callers answer the 500 page before any write): the paragraph tags whose drawing is not ported
-(see "Paragraph markup"), and logo data that is neither refused by Python's base64 nor a JPEG Go's decoder reads (whether PIL
-reads it, and as what, is not reproduced).
+Nothing is refused since long tail PR 5 (`ErrNotPorted` is deleted): every paragraph input and every logo or inline image is
+drawn as reportlab draws it, or fails the export where reportlab raises (see "Long tail PR 5" below).
 
-The refusal sites, and why the ones left stay (s3pdfcanvas):
+The application-state sites (s3pdfcanvas; the `header.go` and `paraparser.go` rows were refusals until long tail PR 5):
 
 | Site | Condition | Class | Why |
 | --- | --- | --- | --- |
 | `widths.go` `preliminaryWidths` (2 returns) | a table without column widths holding a string cell, or a cell whose flowables are not paragraphs | C | no builder of this package makes one: the data table, the header table and the attendance table pass every width, and the saved-report table is Paragraph cells only; a split keeps `colWidths` |
-| `header.go` `loadJPEG` (2 returns) | the base64 logo is not a JPEG `image/jpeg` reads | C | the logo rows are written by `compress_base64`, which re-encodes to JPEG and prefixes `data:image/jpeg`; the header pattern only looks at that prefix |
-| `header.go` (2 returns) | a decoded JPEG with another colour model, or a zero dimension | C | `image/jpeg` yields only grey, YCbCr, RGBA and CMYK, always with positive dimensions |
-| `paraparser.go` `unsupported` | `bullet`, (`seq*` ported in long tail PR 3), `<a name>`/`#`/`document:` links, `img` of a file/URL/PNG, `<unichar name>`, CMYK/alpha/expression colours, `inf`/`nan`, `<para>` indents, justification, borders, text transforms, `autoLeading`, `wordWrap`, end dots, hyphenation | B (X for `seq*`, file/URL `img`, expressions, hyphenation) | Django draws them (or, for `seq*`, numbers from a process-global sequencer); each needs a layout, a font, a destination tree or an image format this package does not carry yet |
 
 A document reportlab fails to build is `ErrLayout`, which each caller answers as Django answers an exception of the export:
 a row taller than a page (`LayoutError`), a list value in a cell (reportlab takes it for a list of flowables), rows of
@@ -112,11 +108,7 @@ itself stays refused). Long tail PR 4 (agent B): an `img` `src` is read as repor
 (`open_for_read`: the name as a path relative to the working directory, else a `data:` URL, else `urlopen`; any failure
 is its `Cannot open resource` OSError with the reader's identity), through `ResourceOpener` (`resource.go`), and a
 template that prints the sequencer object answers its repr; both object addresses are `pystr.ObjectAddress` (approved
-divergence X18). Still refused: `bullet`, `<a name="..."/>` anchors and `#name` or `document:name` links (named destinations
-  are not ported), `img` whose image is not a JPEG (a PNG or other format is re-encoded by PIL) or whose `src` is an `ftp:`
-  URL, `<unichar name="...">` (Python's `unicodedata` names), a colour that is CMYK, has an alpha,
-  or is written as a Python expression, `inf` or `nan` as numbers, and in `<para>` the indents, justified lines, borders,
-  text transforms, `autoLeading`, `wordWrap`, end dots and hyphenation.
+divergence X18). Everything the PR 4 text listed as still refused is ported in long tail PR 5 (below).
 
 ### Fragments with their own style (t3pdf)
 
@@ -224,3 +216,31 @@ printing-generate 113/113, course-list 175/175, course-subscriptions 168/168, su
 Contract engines `report_table` and `attendance` (`TESTS/contracts/pdf.py`); 31 more golden documents (one, many and
 squeezed columns, wrapped cells, several pages, A3, A2, a row taller than the page, the texts, texts cut over two and over
 many pages, one and several courses, more dates than the page holds).
+
+## Long tail PR 5: the rest of the paragraph surface and every image format
+
+`ErrNotPorted` is deleted. The evidence is reportlab 4.2.5, Pillow 13.0.0 and CPython 3.13.16 themselves: the golden
+documents (`generate_pdf_golden.py`, decoded-PDF byte parity, now about 860 documents), the paragraph corpus
+(`generate_pdf_paragraphs.py`, about 4700 texts with their fragments and styles), and the templates-reports family
+(`run-export-pdf-*`, 27 cases added, Django first, then native Go and Caddy `/api/v1` and `/api/v2`).
+
+| Input | reportlab | Go |
+| --- | --- | --- |
+| `<unichar name>` | `unicodedata.lookup` (Unicode 15.1.0: names, aliases, named sequences, CJK/Tangut/Hangul names); other attributes are ignored when `name` is given | `internal/pyunicodedata`, generated from the interpreter and the 15.1.0 UCD aliases and sequences (6227 probes) |
+| `<a name>`, `#name`, `document:name` | a bookmark bound to the page at `cur_y + leading`; `linkRect` writes `/Dest [page /XYZ left top 0]`, resolved at save (an undefined name raises) | `bookmarkHorizontal`, `linkRect`, destinations resolved in `save` |
+| link targets of any characters | `PDFString`: pdfdoc encoding, else UTF-16BE with a BOM | `pdfString` |
+| numbers in attributes | CPython `int()`/`float()` (Unicode digits and spaces, `0x` in base 16, exact ints, `inf`/`nan`, `1e400` = inf); ints stay exact until mixed with a float; `fp_str` raises on non-finite values | `pyNum` (exact ints), Python's `max`/`min` NaN order, `fpStr` and `int()` raise |
+| `<para>` indents, justify (`justifyLastLine`, `justifyBreaks`), `<bullet>` and the bullet attributes, borders (`roundRect` too), `autoLeading`, `endDots`, `textTransform` | `Paragraph.wrap`/`breakLines`/`split`/`drawPara` | ported; CPython 3.13 full case mappings (`textcase.go`, checked on every code point) |
+| `wordWrap` CJK/RTL/LTR, `uriWasteReduce`, `embeddedHyphenation`, `hyphenationLang` | pyphen and pyfribidi are not installed: `hyphenationLang` finds no hyphenator and RTL text is not reordered; the hyphen and URI splits still run | ported (`breakLinesCJK`, `_hyGenPair`, `_uri_split_pairs`, the RTL drawing rules) |
+| colours | `toColor`: css forms (cmyk/pcmyk/alpha), every named colour, the `Blacker`/`Whiter` form, `ast.literal_eval`, `rl_extended_literal_eval` (results kept as they are); CMYK `k`/`K`, separations, alpha through ExtGState | `tocolor.go`, `pyexpr.go` (Python expression parser for the literal and safe-call subsets), `coloreval.go`, canvas colour setters and object numbering |
+| images (logo and `<img>`) | Pillow `Image.open`/`ImageReader.getRGBData`, `PDFImageXObject` (raw Flate images, soft masks, colour-key masks, JPEG bytes with `readJPEGInfo` and its canned image) | `internal/pilimage` (every Pillow format) and `image.go` |
+| empty or unknown image data | `cannot identify image file <_io.BytesIO object at 0x...>` | the same text with `pystr.ObjectAddress` (X18) |
+| `ftp:` image sources | `urlopen` through `FTPHandler`/`ftplib` | `resource_ftp.go` (transcripts recorded from urllib) |
+| `<seq template>` wider than 2**20 | `%` formatting pads (the host's memory decides) | padded to 2**20 spaces: a run of spaces lays out as one space |
+
+Approved divergence X19 (image codec libraries, platform): whether Pillow's bundled libjpeg-turbo decodes a JPEG, and the
+pixels lossy or optional codecs produce, depend on the codec builds. Go decides a JPEG's outcome with its own decoder (an
+unsupported feature or corrupt data after a complete scan is drawn, data cut before the end of the scan is Pillow's
+`image file is truncated`), decodes JPEG data inside other containers with its own decoder, and answers lossy WebP,
+AVIF, JPEG 2000 and the optional TIFF codecs as a Pillow built without them. A JPEG is embedded as its own bytes in both,
+so only the outcome can differ, never the drawing.
