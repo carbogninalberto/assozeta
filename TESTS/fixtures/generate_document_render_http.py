@@ -65,6 +65,15 @@ ASSOCIATIONS = {
              'form': {'federation': 'fidal', 'address': 'Via Roma 1', 'address_cap': '13900', 'address_city': 'Biella',
                       'whatsapp': '+39 333 1234567', 'president_first_name': 'Élise', 'president_last_name': 'Łukasz',
                       'stamp': 'data:image/png;base64,AAAA'}},
+    # Regional-form associations whose filename the response or the storage refuses: a control byte uvicorn
+    # refuses, a line break Django's own header setter refuses, and a '..' path component default_storage rejects.
+    # (The seed's default tax code is 10 characters plus the label's length, too long for these labels.)
+    'formrefused': {'user': uid(145), 'association': uid(146), 'denomination': 'Polisportiva\x02Biella',
+                    'form': {'tax_code': '71530000145'}},
+    'formline': {'user': uid(150), 'association': uid(151), 'denomination': 'Polisportiva\nBiella',
+                 'form': {'tax_code': '71530000150'}},
+    'formescape': {'user': uid(140), 'association': uid(141), 'denomination': 'Polisportiva/../Città',
+                   'form': {'tax_code': '71530000140'}},
 }
 ASSOCIATION_IDS = {'own': OWN, 'foreign': FOREIGN, **{k: v['association'] for k, v in ASSOCIATIONS.items()}}
 DENOMINATIONS = {'own': 'Message reads own', 'foreign': 'Message reads foreign',
@@ -91,6 +100,16 @@ ASSOCIATES = {
     # control character that is no line boundary goes inside the MIME word of a value that is not ISO-8859-1.
     'nel': {'id': uid(135), 'association': 'own', 'first': 'Lia', 'last': 'Bian\x85chi', 'email': None, 'user': None},
     'control': {'id': uid(136), 'association': 'own', 'first': 'Ωmega', 'last': 'Ne\x01ri', 'email': None, 'user': None},
+    # A Latin-1 name (the header is written as its ISO-8859-1 bytes) with a control byte uvicorn refuses, and a
+    # name that is not ISO-8859-1 (the header is an email.header MIME word) with a splitlines() boundary.
+    'ctl': {'id': uid(155), 'association': 'own', 'first': 'Lia', 'last': 'Ne\x01ri', 'email': None, 'user': None},
+    'mimebreak': {'id': uid(157), 'association': 'wide', 'first': 'Δημήτρης', 'last': 'Πα\x0bπας', 'email': None, 'user': None},
+    # Members of the regional-form associations above.
+    'formrefused': {'id': uid(147), 'association': 'formrefused', 'first': 'Nadia', 'last': 'Fuga', 'email': None,
+                    'user': None},
+    'formline': {'id': uid(152), 'association': 'formline', 'first': 'Nadia', 'last': 'Riga', 'email': None, 'user': None},
+    'formescape': {'id': uid(142), 'association': 'formescape', 'first': 'Nadia', 'last': 'Fuga', 'email': None,
+                   'user': None},
 }
 # Tutor relations (associate, tutor, primary).
 TUTORS = [{'associate': 'formfull', 'tutor': 'formtutor', 'primary': True},
@@ -98,7 +117,9 @@ TUTORS = [{'associate': 'formfull', 'tutor': 'formtutor', 'primary': True},
           {'associate': 'formminor', 'tutor': 'formbare', 'primary': False}]
 FULL_NAMES = {'formminor': 'Leo Piccolo', 'formfull': "Maria Chiara D'Angelò", 'formtutor': 'Paola Tutrice', 'formbare': 'Zoe None', 'mario': 'Mario Rossi', 'noemail': 'Anna Verdi', 'greek': 'Δημήτρης Παπαδόπουλος', 'odd': 'None  Neri',
               'athlete': 'Athlete Fixture', 'newline': 'Lia Bian\nchi', 'separators': 'Ωmega Ne\r\nri\u2028x',
-              'nel': 'Lia Bian\x85chi', 'control': 'Ωmega Ne\x01ri'}
+              'nel': 'Lia Bian\x85chi', 'control': 'Ωmega Ne\x01ri', 'ctl': 'Lia Ne\x01ri',
+              'mimebreak': 'Δημήτρης Πα\x0bπας',
+              'formrefused': 'Nadia Fuga', 'formline': 'Nadia Riga', 'formescape': 'Nadia Fuga'}
 ASSOCIATE_IDS = {**{k: v['id'] for k, v in ASSOCIATES.items()}, 'athlete': BASE_ATHLETE_ASSOCIATE}
 
 DOCUMENTS = {
@@ -139,6 +160,15 @@ SUBSCRIPTIONS = {
     'separators': {'id': uid(97), 'association': 'own', 'associate': 'separators', 'user': 'owner', 'group': None, 'document': None},
     'nel': {'id': uid(137), 'association': 'own', 'associate': 'nel', 'user': 'owner', 'group': None, 'document': None},
     'control': {'id': uid(138), 'association': 'own', 'associate': 'control', 'user': 'owner', 'group': None, 'document': None},
+    'ctl': {'id': uid(156), 'association': 'own', 'associate': 'ctl', 'user': 'owner', 'group': None, 'document': None},
+    'mimebreak': {'id': uid(158), 'association': 'wide', 'associate': 'mimebreak', 'user': 'owner', 'group': None,
+                  'document': None},
+    'formrefused': {'id': uid(148), 'association': 'formrefused', 'associate': 'formrefused', 'user': 'owner', 'group': None,
+                    'document': None},
+    'formline': {'id': uid(153), 'association': 'formline', 'associate': 'formline', 'user': 'owner', 'group': None,
+                 'document': None},
+    'formescape': {'id': uid(143), 'association': 'formescape', 'associate': 'formescape', 'user': 'owner', 'group': None,
+                   'document': None},
 }
 # Another member of the association (an athlete account without records).
 EXTRA_USERS = {'member': {'id': uid(27), 'username': 'document-render-member', 'email': 'document-render-member@example.test'},
@@ -250,6 +280,13 @@ MEDICAL = {
     'biella_minor': {'id': uid(121), 'subscription': 'formminor', 'region': 'agonistica-piemonte-biella', 'date': '2026-05-15',
                      'document': None},
     'lombardia': {'id': uid(109), 'subscription': 'plain', 'region': 'agonistica-lombardia', 'date': '2026-05-14', 'document': None},
+    # Regional forms whose filename the response or the storage refuses.
+    'biella_refused': {'id': uid(149), 'subscription': 'formrefused', 'region': 'agonistica-piemonte-biella',
+                       'date': '2026-05-17', 'document': None},
+    'biella_line': {'id': uid(154), 'subscription': 'formline', 'region': 'agonistica-piemonte-biella', 'date': '2026-05-18',
+                    'document': None},
+    'biella_escape': {'id': uid(144), 'subscription': 'formescape', 'region': 'agonistica-piemonte-biella',
+                      'date': '2026-05-16', 'document': None},
 }
 
 cases = []
@@ -766,6 +803,15 @@ for key in ('nel', 'control'):
         renders=[render('subscription', S(key))], effect=effect(subscription_name(key), actor='owner', links=[('subscription', key)]),
         disposition='inline; filename=' + subscription_name(key))
 
+# A header value uvicorn refuses: Django answers 200 and the view links the row, the storage task is queued, then
+# the server closes the connection with no response (a direct client reads none; Caddy answers 502).
+add('subscription-name-with-refused-byte', 'owner', f"/document/subscription/{S('ctl')}", 'closed', '<connection-closed>',
+    renders=[render('subscription', S('ctl'))],
+    effect=effect(subscription_name('ctl'), actor='owner', links=[('subscription', 'ctl')]))
+add('subscription-name-with-mime-break', 'owner', f"/document/subscription/{S('mimebreak')}", 'closed', '<connection-closed>',
+    renders=[render('subscription', S('mimebreak'))],
+    effect=effect(subscription_name('mimebreak'), actor='owner', links=[('subscription', 'mimebreak')]))
+
 # Hours of an instructor whose owner has no association: the audit index of each link is the actor's association
 # ('actor.sport_association'), or absent when the actor has none.
 add('compensation-instructor-owner-without-association', 'owner', f"/document/compensation/{C('comp_orphan')}", 200, PDF,
@@ -851,6 +897,30 @@ add('invoice-plain-text-body', 'owner', f"/document/invoice/{I('plain')}", 415,
 add('invoice-multipart-without-boundary', 'owner', f"/document/invoice/{I('plain')}?send_receipt_email=", 400,
     {'detail': 'Multipart form parse error - Invalid boundary in multipart: None'}, method='POST',
     raw_body=multipart(('send_receipt_email', 'true')), content_type='multipart/form-data')
+
+# A filled form whose filename the response or the storage refuses. fill_pdf_and_store saves the form before it
+# builds the response: a server-refused header leaves the Document, the stored form and the appointment link, a
+# line break leaves the Document and the stored form (Django's own BadHeaderError, nothing linked), and a storage
+# name default_storage.save rejects leaves the Document alone. '$document-directory' is the Document's
+# '<creation timestamp>/<id>' directory, which the view names.
+def form_bare(denomination, email, first, last):
+    """extract_values over an association with no further form columns."""
+    return {'sport_association.denomination': '  ' + denomination.upper(), 'sport_association.user.email': '  ' + email.upper(),
+            'associate.first_name': '  ' + first.upper(), 'associate.last_name': '  ' + last.upper(),
+            'other.today_datetime': '  02/01/2026 03:04'}
+
+
+add('medical-form-refused-header', 'owner', f"/document/medical-appointment/{M('biella_refused')}", 'closed', '<connection-closed>',
+    effect=effect(medical_name('biella_refused'), actor='owner', celery=False, links=[('medicalappointments', 'biella_refused')],
+                  stored=True))
+cases[-1]['form'] = form_bare('Polisportiva\x02Biella', 'document-render-formrefused@example.test', 'Nadia', 'Fuga')
+add('medical-form-line-break', 'owner', f"/document/medical-appointment/{M('biella_line')}", 500,
+    bad_header('inline; filename=' + medical_name('biella_line')),
+    effect=effect(medical_name('biella_line'), actor='owner', celery=False, stored=True))
+cases[-1]['form'] = form_bare('Polisportiva\nBiella', 'document-render-formline@example.test', 'Nadia', 'Riga')
+add('medical-form-rejected-storage-name', 'owner', f"/document/medical-appointment/{M('biella_escape')}", 500,
+    exception("Detected path traversal attempt in '$document-directory/" + medical_name('biella_escape') + "'"),
+    effect=effect(medical_name('biella_escape'), actor='owner', celery=False))
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({

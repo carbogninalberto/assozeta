@@ -71,6 +71,30 @@
     "president_last_name": "Łukasz",
     "stamp": "data:image/png;base64,AAAA"
    }
+  },
+  "formrefused": {
+   "user": "a1000000-0000-4000-8000-000000984145",
+   "association": "a1000000-0000-4000-8000-000000984146",
+   "denomination": "Polisportiva\u0002Biella",
+   "form": {
+    "tax_code": "71530000145"
+   }
+  },
+  "formline": {
+   "user": "a1000000-0000-4000-8000-000000984150",
+   "association": "a1000000-0000-4000-8000-000000984151",
+   "denomination": "Polisportiva\nBiella",
+   "form": {
+    "tax_code": "71530000150"
+   }
+  },
+  "formescape": {
+   "user": "a1000000-0000-4000-8000-000000984140",
+   "association": "a1000000-0000-4000-8000-000000984141",
+   "denomination": "Polisportiva/../Città",
+   "form": {
+    "tax_code": "71530000140"
+   }
   }
  },
  "association_ids": {
@@ -79,7 +103,10 @@
   "latin": "a1000000-0000-4000-8000-000000984002",
   "wide": "a1000000-0000-4000-8000-000000984004",
   "season": "a1000000-0000-4000-8000-000000984006",
-  "form": "a1000000-0000-4000-8000-000000984008"
+  "form": "a1000000-0000-4000-8000-000000984008",
+  "formrefused": "a1000000-0000-4000-8000-000000984146",
+  "formline": "a1000000-0000-4000-8000-000000984151",
+  "formescape": "a1000000-0000-4000-8000-000000984141"
  },
  "associates": {
   "mario": {
@@ -186,6 +213,46 @@
    "association": "own",
    "first": "Ωmega",
    "last": "Ne\u0001ri",
+   "email": null,
+   "user": null
+  },
+  "ctl": {
+   "id": "a1000000-0000-4000-8000-000000984155",
+   "association": "own",
+   "first": "Lia",
+   "last": "Ne\u0001ri",
+   "email": null,
+   "user": null
+  },
+  "mimebreak": {
+   "id": "a1000000-0000-4000-8000-000000984157",
+   "association": "wide",
+   "first": "Δημήτρης",
+   "last": "Πα\u000bπας",
+   "email": null,
+   "user": null
+  },
+  "formrefused": {
+   "id": "a1000000-0000-4000-8000-000000984147",
+   "association": "formrefused",
+   "first": "Nadia",
+   "last": "Fuga",
+   "email": null,
+   "user": null
+  },
+  "formline": {
+   "id": "a1000000-0000-4000-8000-000000984152",
+   "association": "formline",
+   "first": "Nadia",
+   "last": "Riga",
+   "email": null,
+   "user": null
+  },
+  "formescape": {
+   "id": "a1000000-0000-4000-8000-000000984142",
+   "association": "formescape",
+   "first": "Nadia",
+   "last": "Fuga",
    "email": null,
    "user": null
   }
@@ -409,6 +476,46 @@
    "id": "a1000000-0000-4000-8000-000000984138",
    "association": "own",
    "associate": "control",
+   "user": "owner",
+   "group": null,
+   "document": null
+  },
+  "ctl": {
+   "id": "a1000000-0000-4000-8000-000000984156",
+   "association": "own",
+   "associate": "ctl",
+   "user": "owner",
+   "group": null,
+   "document": null
+  },
+  "mimebreak": {
+   "id": "a1000000-0000-4000-8000-000000984158",
+   "association": "wide",
+   "associate": "mimebreak",
+   "user": "owner",
+   "group": null,
+   "document": null
+  },
+  "formrefused": {
+   "id": "a1000000-0000-4000-8000-000000984148",
+   "association": "formrefused",
+   "associate": "formrefused",
+   "user": "owner",
+   "group": null,
+   "document": null
+  },
+  "formline": {
+   "id": "a1000000-0000-4000-8000-000000984153",
+   "association": "formline",
+   "associate": "formline",
+   "user": "owner",
+   "group": null,
+   "document": null
+  },
+  "formescape": {
+   "id": "a1000000-0000-4000-8000-000000984143",
+   "association": "formescape",
+   "associate": "formescape",
    "user": "owner",
    "group": null,
    "document": null
@@ -970,6 +1077,27 @@
    "subscription": "plain",
    "region": "agonistica-lombardia",
    "date": "2026-05-14",
+   "document": null
+  },
+  "biella_refused": {
+   "id": "a1000000-0000-4000-8000-000000984149",
+   "subscription": "formrefused",
+   "region": "agonistica-piemonte-biella",
+   "date": "2026-05-17",
+   "document": null
+  },
+  "biella_line": {
+   "id": "a1000000-0000-4000-8000-000000984154",
+   "subscription": "formline",
+   "region": "agonistica-piemonte-biella",
+   "date": "2026-05-18",
+   "document": null
+  },
+  "biella_escape": {
+   "id": "a1000000-0000-4000-8000-000000984144",
+   "subscription": "formescape",
+   "region": "agonistica-piemonte-biella",
+   "date": "2026-05-16",
    "document": null
   }
  },
@@ -5847,6 +5975,76 @@
    "disposition": "inline; filename=[Message reads own] Modulo di Iscrizione Ωmega Ne\u0001ri.pdf"
   },
   {
+   "name": "document-render-subscription-name-with-refused-byte",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984156",
+   "headers": {},
+   "status": "closed",
+   "response": "<connection-closed>",
+   "renders": [
+    {
+     "url": "document/subscription/a1000000-0000-4000-8000-000000984156/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo di Iscrizione Lia Ne\u0001ri.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [
+     [
+      "subscription",
+      "ctl"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   }
+  },
+  {
+   "name": "document-render-subscription-name-with-mime-break",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984158",
+   "headers": {},
+   "status": "closed",
+   "response": "<connection-closed>",
+   "renders": [
+    {
+     "url": "document/subscription/a1000000-0000-4000-8000-000000984158/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Club – Roma] Modulo di Iscrizione Δημήτρης Πα\u000bπας.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [
+     [
+      "subscription",
+      "mimebreak"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   }
+  },
+  {
    "name": "document-render-compensation-instructor-owner-without-association",
    "actor": "owner",
    "method": "GET",
@@ -6873,6 +7071,89 @@
    "effect": null,
    "raw_body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"send_receipt_email\"\r\n\r\ntrue\r\n--fixture-boundary--\r\n",
    "content_type": "multipart/form-data"
+  },
+  {
+   "name": "document-render-medical-form-refused-header",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984149",
+   "headers": {},
+   "status": "closed",
+   "response": "<connection-closed>",
+   "renders": [],
+   "effect": {
+    "document": "[Polisportiva\u0002Biella] Visita Agonistica Piemonte Biella del 2026-05-17.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [
+     [
+      "medicalappointments",
+      "biella_refused"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": true,
+    "promoted": []
+   },
+   "form": {
+    "sport_association.denomination": "  POLISPORTIVA\u0002BIELLA",
+    "sport_association.user.email": "  DOCUMENT-RENDER-FORMREFUSED@EXAMPLE.TEST",
+    "associate.first_name": "  NADIA",
+    "associate.last_name": "  FUGA",
+    "other.today_datetime": "  02/01/2026 03:04"
+   }
+  },
+  {
+   "name": "document-render-medical-form-line-break",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984154",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "Header values can't contain newlines (got 'inline; filename=[Polisportiva\\nBiella] Visita Agonistica Piemonte Biella del 2026-05-18.pdf')"
+   },
+   "renders": [],
+   "effect": {
+    "document": "[Polisportiva\nBiella] Visita Agonistica Piemonte Biella del 2026-05-18.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": true,
+    "promoted": []
+   },
+   "form": {
+    "sport_association.denomination": "  POLISPORTIVA\nBIELLA",
+    "sport_association.user.email": "  DOCUMENT-RENDER-FORMLINE@EXAMPLE.TEST",
+    "associate.first_name": "  NADIA",
+    "associate.last_name": "  RIGA",
+    "other.today_datetime": "  02/01/2026 03:04"
+   }
+  },
+  {
+   "name": "document-render-medical-form-rejected-storage-name",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984144",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "Detected path traversal attempt in '$document-directory/[Polisportiva/../Città] Visita Agonistica Piemonte Biella del 2026-05-16.pdf'"
+   },
+   "renders": [],
+   "effect": {
+    "document": "[Polisportiva/../Città] Visita Agonistica Piemonte Biella del 2026-05-16.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   }
   }
  ]
 }

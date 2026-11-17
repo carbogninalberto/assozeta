@@ -114,15 +114,15 @@ class _RendererHandler(BaseHTTPRequestHandler):
 
 
 def form_bytes(source):
-    """fill_pdf_fields over the authored values of every '<form-pdf>' case (Django's own form filling)."""
+    """fill_pdf_fields over the authored values of every case that fills a form (Django's own form filling)."""
     from docmanager.views.utils import fill_pdf_fields
     template = Path(__file__).resolve().parents[3] / FORM_TEMPLATE
     contract.require(template.is_file() and template.stat().st_size > 0, 'fixture.form-template')
     filled = {}
     for case in source['cases']:
-        if case['response'] != '<form-pdf>':
+        if not case.get('form'):
             continue
-        contract.require(case['form'] and 'sport_association.president_signature' not in case['form'], 'fixture.form-values')
+        contract.require('sport_association.president_signature' not in case['form'], 'fixture.form-values')
         with contextlib.redirect_stdout(io.StringIO()):
             filled[case['name']] = fill_pdf_fields(pdf_path=str(template), replace_dict=dict(case['form']))
         contract.require(filled[case['name']].startswith(b'%PDF-') and len(filled[case['name']]) > 100000, 'fixture.form-bytes')

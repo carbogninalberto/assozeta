@@ -121,6 +121,12 @@ its form fields with pypdf. Nothing is sent to the renderer or to the broker.
 - **Storage and answer**: `default_storage.save('<creation timestamp>/<document id>/<filename>', bytes)`, then the saved
   file is the body: `application/pdf`, `Content-Disposition: inline; filename=<filename>` (`attachment` with a truthy
   `?download`), `Content-Length`. Then `appointment.document = document; appointment.save()`.
+- **Refused answers**: the save runs inside the view's `try`, so a name `validate_file_name`/`_normalize_name` rejects is
+  `500 {"exception": str(e)}` after the Document (a `..` path component: `Detected path traversal attempt in
+  '<timestamp>/<document id>/<filename>'`; a name outside `AWS_LOCATION`: `Attempted access to '<name>' denied.`), with no
+  stored object and nothing linked. Setting the header afterwards raises Django's `BadHeaderError` for a filename with CR
+  or LF: the form file is stored and the answer is `500 {"exception": "Header values can't contain newlines (got
+  '<header>')"}`, nothing linked. A header value uvicorn refuses closes the connection (see "Closed connections").
 
 Go (`internal/medicalform`): the output of pypdf for this template depends on the values only through the `/V` strings, so
 the package embeds that output with a marker in each field (`piemonte_biella.skeleton`), the field keys and pypdf's
@@ -146,22 +152,41 @@ Document is created, so nothing is written; the promotion itself runs only on th
   and not `None`): `fill_pdf_fields` first draws the signature, and then the stamp, on the first page with PyMuPDF
   (`insert_image`, then a full `save`). That is image decoding and recompression inside MuPDF; the rules of this migration
   keep image processing out of Go. Without a signature the stamp is never drawn (its text only fills the field).
-- **medical-appointment**, Piemonte Biella, for a filename `default_storage.save` rejects.
 - A storage failure while saving a filled form is the 500 page (Django answers the provider's text); the Document stays.
-- Filenames whose Content-Disposition bytes uvicorn refuses (`HEADER_VALUE_RE`, `[\x00-\x08\x0a-\x1f\x7f]`): it closes
-  the connection after the view ran, which Go does not reproduce (long-tail rule 4, platform). Django writes an
-  ISO-8859-1 value as its bytes (a C0 control other than tab, or DEL, is refused; U+0085 is sent) and any other value as
-  `email.header` MIME words, folded with `"\n "` at a `str.splitlines()` boundary (`\x0b`, `\x0c`, `\x1c`-`\x1e`,
-  `\x85`, `\u2028`, `\u2029`: refused); other control characters are encoded inside the word and sent. Since long
-  tail PR 4 the served ones are answered (`pdfrender.ServerRefusesHeader`, cases `subscription-name-with-nel-header`,
-  `subscription-name-with-control-header`). A filename with CR or LF is served (see the evidence); for a filled form
-  it stays refused.
 - **template** and **invoice** bodies the parsers refuse for reasons the port does not model (a multipart body over the
   upload limit or with the encodings `documents-writes.md` lists).
 - A collaborator account as `request.user` in the template route (identity resolution maps collaborators to the owner).
 - Not byte-identical, and not authored: renderer connection errors and timeouts (requests' text names urllib3 objects by
   address), broker failures (the 500 JSON carries the Go error text) and redirects from the renderer. A non-UTF-8 error body
   without a charset is decoded as UTF-8; requests would guess with charset_normalizer.
+
+## Closed connections (long-tail rule 4, platform)
+
+Django writes an ISO-8859-1 `Content-Disposition` value as its bytes and any other value as `email.header` MIME words.
+uvicorn 0.35's `httptools_impl.send` sets `response_started` and then refuses a value matching `HEADER_VALUE_RE`
+(`[\x00-\x08\x0a-\x1f\x7f]`), which covers a C0 control other than tab and DEL in the ISO-8859-1 bytes and, in MIME
+words, the `str.splitlines()` boundaries `\x0b`, `\x0c`, `\x1c`-`\x1e`, `\x85`, `\u2028`, `\u2029` that fold the value
+with `"\n "`. `run_asgi` catches the `RuntimeError` after `response_started` and closes the transport: the client reads
+the connection closed with no status line, and Caddy answers its 502 for that upstream.
+
+Since long-tail PR 4 the values uvicorn serves are answered (`pdfrender.ServerRefusesHeader`, cases
+`subscription-name-with-nel-header`, `subscription-name-with-control-header`); the refused ones follow the owner
+decision of 2026-11-16 (rule 4: the closest Django answer). Go runs every write the view makes before its answer and
+then closes the client connection without writing a response: `DocumentRenderReply.CloseConnection` and
+`http.NewResponseController(...).Hijack()` in the handler, whose response-writer wrappers (the CORS, security-header and
+session writers, the handoff writer and the unmatched-page writer) all reach `net/http`'s hijack. Behind Caddy both
+servers answer 502. Django keeps its own CR/LF answer: `BadHeaderError` inside the view's `try` is the 500 JSON, not a
+closed connection.
+
+Cases: `subscription-name-with-refused-byte` (an ISO-8859-1 name with `\x01`), `subscription-name-with-mime-break` (a
+name that is not ISO-8859-1 with `\x0b`), `medical-form-refused-header` (a filled form with `\x02`; the Document, the
+stored form and the appointment link), `medical-form-line-break` (a filled form with `\n`: the Document and the stored
+form, 500 `BadHeaderError`) and `medical-form-rejected-storage-name` (a Biella denomination with `/../`: the Document and
+500 `Detected path traversal attempt in '<timestamp>/<document id>/<filename>'`, nothing stored or linked).
+`TESTS/contracts/test_document_render_http.py` reads the closed connection as the pseudo-status `closed` (Caddy: 502 with
+an empty body) and `$document-directory` stands for the generated storage directory in that exception text. The
+fixture has 248 cases; `go test ./internal/service` and `./internal/handler` cover the two 500 texts, the stored form,
+the links and the closed connection.
 
 ## Routes not in this family
 

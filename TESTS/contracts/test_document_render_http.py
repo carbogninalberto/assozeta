@@ -8,20 +8,29 @@ headers carry it: latin-1 text as is (http.client reads headers as
 ISO-8859-1), anything else MIME-encoded by email.header.Header('utf-8').
 A '<form-pdf>' case must return the bytes RUNTIME['forms'] holds for it (the
 regional form filled with the case's authored values), with the same headers.
-Other cases are JSON bodies or the stable server error page; every 401 is
-DRF's (NotAuthenticated or AuthenticationFailed) with the Bearer challenge.
+A '<connection-closed>' case is an answer the server refuses to send: a direct
+client reads the connection closed with no status line ('closed') and Caddy
+answers its 502 with an empty body; its authored status is 'closed'. Other
+cases are JSON bodies or the stable server error page; every 401 is DRF's
+(NotAuthenticated or AuthenticationFailed) with the Bearer challenge.
 
 '$bypass' (the DOCUMENT_BYPASS_TOKEN), '$folder:<label>' (a folder id) and
 '$folder-text:<label>' (its str()) are filled from RUNTIME, installed by
-TESTS/adapters/django/document_render_http.py.
+TESTS/adapters/django/document_render_http.py. In an exception text,
+'$document-directory' stands for the new Document's '<creation timestamp>/<
+document id>' storage directory: the view builds the storage name, so the
+fixture cannot author it.
 
 renderer_payload is FastRender.get_pdf's payload for an authored view path,
 serialized as json.dumps does (requests' data=json.dumps(payload)).
 """
 from email.header import Header
+import http.client
 import json
 from pathlib import Path
+import re
 import sys
+import urllib.error
 
 from TESTS.http_client import Client
 from TESTS.contracts import http_family as family
@@ -31,6 +40,9 @@ from TESTS.contracts.test_email_logs_http import SERVER_ERROR_DOCUMENT, Response
 SOURCE = Path(__file__).resolve().parents[1] / 'fixtures/document_render_http.json'
 RUNTIME = {}
 ALLOWED = {'GET', 'POST', 'OPTIONS'}
+STORAGE_DIRECTORY = '$document-directory'
+DOCUMENT_DIRECTORY = re.compile(r'[0-9]+(?:\.[0-9]+)?/[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}')
+PROXY_PREFIXES = ('/api/v1', '/api/v2')
 
 
 def load_source(path=SOURCE):
@@ -79,6 +91,30 @@ def renderer_payload(current_host, url, authorization):
     return json.dumps(payload).encode()
 
 
+def connection_closed(error):
+    """Whether error is the client seeing the server close the connection with no response."""
+    reason = error.reason if isinstance(error, urllib.error.URLError) else error
+    return isinstance(reason, (http.client.RemoteDisconnected, ConnectionResetError, http.client.IncompleteRead,
+                               http.client.BadStatusLine))
+
+
+def storage_exception(case, actual):
+    """The authored exception body, or None when the case has no '$document-directory' placeholder.
+
+    Only the directory the view generates varies: everything around it is exact.
+    """
+    expected = case['response']
+    if not isinstance(expected, dict) or STORAGE_DIRECTORY not in str(expected.get('exception', '')):
+        return None
+    if not (isinstance(actual, dict) and set(actual) == {'exception'} and isinstance(actual['exception'], str)):
+        return False
+    before, after = expected['exception'].split(STORAGE_DIRECTORY, 1)
+    text = actual['exception']
+    if not (text.startswith(before) and text.endswith(after)):
+        return False
+    return DOCUMENT_DIRECTORY.fullmatch(text[len(before):len(text) - len(after)]) is not None
+
+
 def assert_case(case, base_url, *, token, sessions):
     headers = {'Accept-Language': 'en', 'Accept': 'application/json', 'X-Correlation-ID': case['name']}
     headers.update({key: fill(value) for key, value in substitute(case['headers'], sessions).items()})
@@ -86,12 +122,29 @@ def assert_case(case, base_url, *, token, sessions):
     if 'raw_body' in case:
         body = case['raw_body'].encode()
         headers['Content-Type'] = case['content_type']
-    status, raw, received = Client(base_url, token).request(case['method'], case['path'], body, headers, raw=True, include_headers=True)
+    closed = case['response'] == '<connection-closed>'
+    try:
+        status, raw, received = Client(base_url, token).request(case['method'], case['path'], body, headers, raw=True,
+                                                                include_headers=True)
+    except (OSError, http.client.HTTPException) as error:
+        if not (closed and connection_closed(error)):
+            raise
+        status, raw, received = 'closed', b'', {}
 
     def check(condition, code):
         if not condition:
             raise ResponseFailure(code, status)
 
+    if closed:
+        # The server refuses the answer after the view ran: a direct client reads no status line, and Caddy
+        # answers its 502 for the upstream that closed (Caddy 2.11 reverse_proxy: an empty body).
+        check(case['status'] == 'closed', 'fixture.status')
+        if any(prefix in base_url for prefix in PROXY_PREFIXES):
+            check(status == 502, 'response.status')
+            check(raw == b'' and received.get('Content-Length') == '0', 'response.proxy')
+        else:
+            check(status == 'closed', 'response.status')
+        return status
     check(type(status) is int and status == case['status'], 'response.status')
     if case['response'] == '<stable-server-error-page>':
         check(raw == SERVER_ERROR_DOCUMENT, 'response.error-document')
@@ -112,7 +165,11 @@ def assert_case(case, base_url, *, token, sessions):
     except (ValueError, UnicodeDecodeError):
         raise ResponseFailure('response.json', status) from None
     expected = case['response']
-    check(actual == expected, 'response.body' + difference(expected, actual))
+    stored = storage_exception(case, actual)
+    if stored is None:
+        check(actual == expected, 'response.body' + difference(expected, actual))
+    else:
+        check(stored, 'response.body' + difference(expected, actual))
     check(received.get('Content-Type', '').split(';')[0] == 'application/json', 'response.type')
     check(received.get('Content-Disposition') is None, 'response.no-disposition')
     return status

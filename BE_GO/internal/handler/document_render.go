@@ -106,6 +106,15 @@ func (h *DocumentRenderHandler) serve(c echo.Context, route, operation, name str
 		}
 		return messageReadsError(c, err)
 	}
+	return h.respond(c, reply)
+}
+
+// respond writes the view's answer: a closed connection when the server refuses
+// the answer's header value, otherwise the PDF or the JSON body.
+func (h *DocumentRenderHandler) respond(c echo.Context, reply *service.DocumentRenderReply) error {
+	if reply.CloseConnection {
+		return closeDocumentRenderConnection(c)
+	}
 	if reply.PDF != nil {
 		c.Response().Header().Set("Content-Disposition", reply.Disposition)
 		// CommonMiddleware's Content-Length: a filled form is larger than the buffer net/http measures by itself.
@@ -113,6 +122,22 @@ func (h *DocumentRenderHandler) serve(c echo.Context, route, operation, name str
 		return c.Blob(reply.Status, "application/pdf", reply.PDF)
 	}
 	return c.JSON(reply.Status, reply.JSON)
+}
+
+// closeDocumentRenderConnection closes the client connection without writing a
+// response, as uvicorn does when it refuses a header value: it sets
+// response_started, raises while writing the headers and closes the transport,
+// so the client sees the connection closed with no status line (Caddy answers
+// its 502). Everything the view wrote is already written.
+func closeDocumentRenderConnection(c echo.Context) error {
+	connection, _, err := http.NewResponseController(c.Response().Writer).Hijack()
+	if err != nil {
+		// No hijack (an HTTP/2 stream): Django's answer cannot be sent either way.
+		return messageReadsError(c, err)
+	}
+	// Nothing was written on the connection: closing it is the whole answer.
+	_ = connection.Close()
+	return nil
 }
 
 // documentRenderBody is request.data for the default parsers (whether it is a

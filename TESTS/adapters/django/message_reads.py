@@ -621,18 +621,25 @@ class AsgiObserver:
                 self.queries.end(query_token)
 
 
-def assert_attribution(backend, method, path, status, observed, cid):
-    """Assert the complete ASGI delta for native Django, Go, v1 and v2."""
+def assert_attribution(backend, method, path, status, observed, cid, *, connection_closed=None):
+    """Assert the complete ASGI delta for native Django, Go, v1 and v2.
+
+    connection_closed: for an answer the server refused to send, the
+    (status, error_type) the observer recorded. It sets the status from
+    http.response.start before the send raises, so the client's status (a closed
+    connection, or Caddy's 502) is not the one the observer records.
+    """
     assert backend in {"django", "go"}
     upstream_path = path.split("?", 1)[0]
     if backend == "django":
+        recorded, error_type = connection_closed if connection_closed else (status, None)
         expected = [{
             "seq": observed[0]["seq"] if observed else 0,
             "method": method,
             "path": upstream_path,
             "cid": cid,
-            "status": status,
-            "error_type": None,
+            "status": recorded,
+            "error_type": error_type,
         }]
     else:
         expected = []
