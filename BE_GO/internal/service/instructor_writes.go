@@ -405,11 +405,8 @@ func compensationDetails(notes *strings.Builder, hour domain.InstructorHour) (bo
 			return true, nil
 		}
 		amount, outcome := dto.ParseInstructorDecimal(dto.PythonStr(raw))
-		switch outcome {
-		case dto.DecimalInvalid:
-			return true, nil
-		case dto.DecimalNotPorted:
-			return false, domain.ErrInstructorWritesNotPorted
+		if outcome != dto.DecimalFinite {
+			return true, nil // Decimal() raises (InvalidOperation)
 		}
 		result := amount
 		if percentage != nil {
@@ -417,8 +414,6 @@ func compensationDetails(notes *strings.Builder, hour domain.InstructorHour) (bo
 			switch result, outcome = amount.Times(*percentage); outcome {
 			case dto.TimesInvalid, dto.TimesOverflow:
 				return true, nil // the trapped signal raises
-			case dto.TimesNotPorted:
-				return false, domain.ErrInstructorWritesNotPorted
 			}
 		}
 		athlete, present := object.Lookup("full_athlete_name")

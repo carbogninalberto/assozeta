@@ -79,9 +79,9 @@ I = lambda label: INSTRUCTORS[label]['id']
 
 
 def hour(instructor, day, hours, amount, **values):
-    row = {'id': next(ids), 'instructor': instructor, 'date': day, 'hours': hours, 'amount': amount, 'created': '2026-09-01T08:00:00Z',
-           'compensation_type': 'hourly', 'hourly_billing': '10.00', 'percentage_billing': '0.00', 'paid': False, 'payment': None,
-           'notes': None, 'calculation_data': []}
+    row = {'id': values.pop('id') if 'id' in values else next(ids), 'instructor': instructor, 'date': day, 'hours': hours,
+           'amount': amount, 'created': '2026-09-01T08:00:00Z', 'compensation_type': 'hourly', 'hourly_billing': '10.00',
+           'percentage_billing': '0.00', 'paid': False, 'payment': None, 'notes': None, 'calculation_data': []}
     row.update(values)
     return row
 
@@ -123,6 +123,29 @@ HOURS = {
     'r_b': hour('removable', '2026-09-02', '2.00', '2.00', notes='due'),
     'abroad_h': hour('abroad', '2026-09-03', '1.00', '1.00'),
 }
+# Decimal edge cases for the notes, appended with explicit ids so the ids of
+# the rows above (and every authored expectation) stay put. The amount is read
+# as Decimal(str(...)), multiplied by percentage_billing / 100 when it is
+# non-zero, and both are written with str().
+special_ids = iter(f'a1000000-0000-4000-8000-{967901 + n:012d}' for n in range(4))
+HOURS.update({
+    # A 35-digit NaN payload: unchanged for the amount, cut to 28 digits in the product.
+    'c_nan_payload': hour('comp', '2026-09-22', '1.00', '8.00', id=next(special_ids), compensation_type='percentage',
+                          percentage_billing='50.00',
+                          calculation_data=[{'amount': 'NaN' + '12345678901234567890123456789012345',
+                                             'full_athlete_name': 'N', 'course': 'C'}]),
+    # Adjusted exponent above Emax: the product overflows.
+    'c_huge_exponent': hour('comp', '2026-09-23', '1.00', '5.00', id=next(special_ids), compensation_type='percentage',
+                            percentage_billing='50.00',
+                            calculation_data=[{'amount': '1E1000000000', 'full_athlete_name': 'A', 'course': 'C'}]),
+    # Subnormal products round at exponent Etiny: to zero and to 2.
+    'c_subnormal_zero': hour('comp', '2026-09-24', '1.00', '2.00', id=next(special_ids), compensation_type='percentage',
+                             percentage_billing='50.00',
+                             calculation_data=[{'amount': '1E-1000030', 'full_athlete_name': 'S', 'course': 'C'}]),
+    'c_subnormal_round': hour('comp', '2026-09-25', '1.00', '3.00', id=next(special_ids), compensation_type='percentage',
+                              percentage_billing='50.00',
+                              calculation_data=[{'amount': '5E-1000026', 'full_athlete_name': 'T', 'course': 'C'}]),
+})
 REMINDERS = {
     'm_a': {'id': next(ids), 'instructor': 'removable', 'title': 'Promemoria', 'send_at': '2026-09-20T08:00:00Z', 'association': OWN},
     'm_b': {'id': next(ids), 'instructor': 'removable', 'title': 'Secondo', 'send_at': '2026-09-21T08:00:00Z', 'association': None},
@@ -823,8 +846,17 @@ add('comp-special-decimals', 'owner', COMP(), 200, CREATED_COMP, method='POST', 
     effect=effect('owner', rows={'Payment': {'$new': payment_columns('10.00', '$now', notes_for(SPECIAL))},
                                  'InstructorHours': {label: {'payment_id': '$new'} for label in SPECIAL}},
                   audit=[payment_created(), linked('c_special'), linked('c_nan_plain'), payment_notes({'notes': ['None', notes_for(SPECIAL)]})]))
+# A NaN payload longer than the context's 28 digits and subnormal products: the notes show the
+# constructor's payload for the amount and the rounded product.
+SUBNORMAL = ['c_nan_payload', 'c_subnormal_zero', 'c_subnormal_round']
+add('comp-nan-payload-and-subnormal-decimals', 'owner', COMP(), 200, CREATED_COMP, method='POST',
+    body={'hours': [H(label) for label in SUBNORMAL]},
+    effect=effect('owner', rows={'Payment': {'$new': payment_columns('13.00', '$now', notes_for(SUBNORMAL))},
+                                 'InstructorHours': {label: {'payment_id': '$new'} for label in SUBNORMAL}},
+                  audit=[payment_created()] + [linked(label) for label in SUBNORMAL] +
+                        [payment_notes({'notes': ['None', notes_for(SUBNORMAL)]})]))
 # A signalling NaN or an exponent above the limit raises while the notes are composed: the saved work stays.
-for label, name in (('c_snan', 'signalling-nan'), ('c_overflow', 'overflow')):
+for label, name in (('c_snan', 'signalling-nan'), ('c_overflow', 'overflow'), ('c_huge_exponent', 'huge-exponent')):
     add(f'comp-{name}-keeps-saved-work', 'owner', COMP(), 500, SERVER, method='POST', body={'hours': [H(label)]},
         effect=effect('owner', rows={'Payment': {'$new': payment_columns('5.00', '$now', None)}, 'InstructorHours': {label: {'payment_id': '$new'}}},
                       audit=[payment_created(), linked(label)]))

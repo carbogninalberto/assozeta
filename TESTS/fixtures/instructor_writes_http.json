@@ -616,6 +616,90 @@
    "payment": null,
    "notes": null,
    "calculation_data": []
+  },
+  "c_nan_payload": {
+   "id": "a1000000-0000-4000-8000-000000967901",
+   "instructor": "comp",
+   "date": "2026-09-22",
+   "hours": "1.00",
+   "amount": "8.00",
+   "created": "2026-09-01T08:00:00Z",
+   "compensation_type": "percentage",
+   "hourly_billing": "10.00",
+   "percentage_billing": "50.00",
+   "paid": false,
+   "payment": null,
+   "notes": null,
+   "calculation_data": [
+    {
+     "amount": "NaN12345678901234567890123456789012345",
+     "full_athlete_name": "N",
+     "course": "C"
+    }
+   ]
+  },
+  "c_huge_exponent": {
+   "id": "a1000000-0000-4000-8000-000000967902",
+   "instructor": "comp",
+   "date": "2026-09-23",
+   "hours": "1.00",
+   "amount": "5.00",
+   "created": "2026-09-01T08:00:00Z",
+   "compensation_type": "percentage",
+   "hourly_billing": "10.00",
+   "percentage_billing": "50.00",
+   "paid": false,
+   "payment": null,
+   "notes": null,
+   "calculation_data": [
+    {
+     "amount": "1E1000000000",
+     "full_athlete_name": "A",
+     "course": "C"
+    }
+   ]
+  },
+  "c_subnormal_zero": {
+   "id": "a1000000-0000-4000-8000-000000967903",
+   "instructor": "comp",
+   "date": "2026-09-24",
+   "hours": "1.00",
+   "amount": "2.00",
+   "created": "2026-09-01T08:00:00Z",
+   "compensation_type": "percentage",
+   "hourly_billing": "10.00",
+   "percentage_billing": "50.00",
+   "paid": false,
+   "payment": null,
+   "notes": null,
+   "calculation_data": [
+    {
+     "amount": "1E-1000030",
+     "full_athlete_name": "S",
+     "course": "C"
+    }
+   ]
+  },
+  "c_subnormal_round": {
+   "id": "a1000000-0000-4000-8000-000000967904",
+   "instructor": "comp",
+   "date": "2026-09-25",
+   "hours": "1.00",
+   "amount": "3.00",
+   "created": "2026-09-01T08:00:00Z",
+   "compensation_type": "percentage",
+   "hourly_billing": "10.00",
+   "percentage_billing": "50.00",
+   "paid": false,
+   "payment": null,
+   "notes": null,
+   "calculation_data": [
+    {
+     "amount": "5E-1000026",
+     "full_athlete_name": "T",
+     "course": "C"
+    }
+   ]
   }
  },
  "payments": {
@@ -16098,6 +16182,145 @@
    }
   },
   {
+   "name": "instructor-writes-comp-nan-payload-and-subnormal-decimals",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967009/hours/add/compensation",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "compensation created."
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "Payment": {
+      "$new": {
+       "type": "default",
+       "subject": 0,
+       "amount": "13.00",
+       "payment_date": "$now",
+       "paid": false,
+       "expense": true,
+       "description": "Compensi e Rimborsi Spese per Carlo Verdi",
+       "payment_category_id": "$compensation-category",
+       "meta_payment_categories": null,
+       "invoice_id": null,
+       "user_id": "a1000000-0000-4000-8000-000000700001",
+       "associate_id": null,
+       "supplier_id": null,
+       "instructor_id": "a1000000-0000-4000-8000-000000967009",
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "payment_intent_id": null,
+       "archived": false,
+       "invoice_fiscal_code": null,
+       "meta": null,
+       "notes": "Compenso per il giorno 2026-09-22, importo di 8.00€\nNote: -\nNel dettaglio:\n\n1° Pagamento\nAtleta: N \nCorso: C\nImporto: NaN12345678901234567890123456789012345 € * 50.00 % = NaN8901234567890123456789012345 €\n\n\n ---------------- \n\nCompenso per il giorno 2026-09-24, importo di 2.00€\nNote: -\nNel dettaglio:\n\n1° Pagamento\nAtleta: S \nCorso: C\nImporto: 1E-1000030 € * 50.00 % = 0E-1000026 €\n\n\n ---------------- \n\nCompenso per il giorno 2026-09-25, importo di 3.00€\nNote: -\nNel dettaglio:\n\n1° Pagamento\nAtleta: T \nCorso: C\nImporto: 5E-1000026 € * 50.00 % = 2E-1000026 €\n\n",
+       "custom_accounts_id": "$default-bank-account",
+       "signature_id": null,
+       "deleted": false,
+       "group_id": null,
+       "course": null
+      }
+     },
+     "InstructorHours": {
+      "c_nan_payload": {
+       "payment_id": "$new"
+      },
+      "c_subnormal_zero": {
+       "payment_id": "$new"
+      },
+      "c_subnormal_round": {
+       "payment_id": "$new"
+      }
+     }
+    },
+    "documents": {},
+    "audit": [
+     {
+      "model": "Payment",
+      "key": "$new",
+      "action": 0,
+      "changes": "$created",
+      "index": {
+       "association": "a1000000-0000-4000-8000-000000701001",
+       "path": "direct"
+      },
+      "overrides": {
+       "notes": null
+      }
+     },
+     {
+      "model": "InstructorHours",
+      "key": "a1000000-0000-4000-8000-000000967901",
+      "action": 1,
+      "changes": {
+       "payment": [
+        "None",
+        "$new"
+       ]
+      },
+      "index": {
+       "association": "a1000000-0000-4000-8000-000000701001",
+       "path": "instructor.user.sport_association"
+      }
+     },
+     {
+      "model": "InstructorHours",
+      "key": "a1000000-0000-4000-8000-000000967903",
+      "action": 1,
+      "changes": {
+       "payment": [
+        "None",
+        "$new"
+       ]
+      },
+      "index": {
+       "association": "a1000000-0000-4000-8000-000000701001",
+       "path": "instructor.user.sport_association"
+      }
+     },
+     {
+      "model": "InstructorHours",
+      "key": "a1000000-0000-4000-8000-000000967904",
+      "action": 1,
+      "changes": {
+       "payment": [
+        "None",
+        "$new"
+       ]
+      },
+      "index": {
+       "association": "a1000000-0000-4000-8000-000000701001",
+       "path": "instructor.user.sport_association"
+      }
+     },
+     {
+      "model": "Payment",
+      "key": "$new",
+      "action": 1,
+      "changes": {
+       "notes": [
+        "None",
+        "Compenso per il giorno 2026-09-22, importo di 8.00€\nNote: -\nNel dettaglio:\n\n1° Pagamento\nAtleta: N \nCorso: C\nImporto: NaN12345678901234567890123456789012345 € * 50.00 % = NaN8901234567890123456789012345 €\n\n\n ---------------- \n\nCompenso per il giorno 2026-09-24, importo di 2.00€\nNote: -\nNel dettaglio:\n\n1° Pagamento\nAtleta: S \nCorso: C\nImporto: 1E-1000030 € * 50.00 % = 0E-1000026 €\n\n\n ---------------- \n\nCompenso per il giorno 2026-09-25, importo di 3.00€\nNote: -\nNel dettaglio:\n\n1° Pagamento\nAtleta: T \nCorso: C\nImporto: 5E-1000026 € * 50.00 % = 2E-1000026 €\n\n"
+       ]
+      },
+      "index": {
+       "association": "a1000000-0000-4000-8000-000000701001",
+       "path": "direct"
+      }
+     }
+    ]
+   },
+   "body": {
+    "hours": [
+     "a1000000-0000-4000-8000-000000967901",
+     "a1000000-0000-4000-8000-000000967903",
+     "a1000000-0000-4000-8000-000000967904"
+    ]
+   }
+  },
+  {
    "name": "instructor-writes-comp-signalling-nan-keeps-saved-work",
    "actor": "owner",
    "method": "POST",
@@ -16262,6 +16485,90 @@
    "body": {
     "hours": [
      "a1000000-0000-4000-8000-000000967024"
+    ]
+   }
+  },
+  {
+   "name": "instructor-writes-comp-huge-exponent-keeps-saved-work",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967009/hours/add/compensation",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "Payment": {
+      "$new": {
+       "type": "default",
+       "subject": 0,
+       "amount": "5.00",
+       "payment_date": "$now",
+       "paid": false,
+       "expense": true,
+       "description": "Compensi e Rimborsi Spese per Carlo Verdi",
+       "payment_category_id": "$compensation-category",
+       "meta_payment_categories": null,
+       "invoice_id": null,
+       "user_id": "a1000000-0000-4000-8000-000000700001",
+       "associate_id": null,
+       "supplier_id": null,
+       "instructor_id": "a1000000-0000-4000-8000-000000967009",
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "payment_intent_id": null,
+       "archived": false,
+       "invoice_fiscal_code": null,
+       "meta": null,
+       "notes": null,
+       "custom_accounts_id": "$default-bank-account",
+       "signature_id": null,
+       "deleted": false,
+       "group_id": null,
+       "course": null
+      }
+     },
+     "InstructorHours": {
+      "c_huge_exponent": {
+       "payment_id": "$new"
+      }
+     }
+    },
+    "documents": {},
+    "audit": [
+     {
+      "model": "Payment",
+      "key": "$new",
+      "action": 0,
+      "changes": "$created",
+      "index": {
+       "association": "a1000000-0000-4000-8000-000000701001",
+       "path": "direct"
+      },
+      "overrides": {
+       "notes": null
+      }
+     },
+     {
+      "model": "InstructorHours",
+      "key": "a1000000-0000-4000-8000-000000967902",
+      "action": 1,
+      "changes": {
+       "payment": [
+        "None",
+        "$new"
+       ]
+      },
+      "index": {
+       "association": "a1000000-0000-4000-8000-000000701001",
+       "path": "instructor.user.sport_association"
+      }
+     }
+    ]
+   },
+   "body": {
+    "hours": [
+     "a1000000-0000-4000-8000-000000967902"
     ]
    }
   },

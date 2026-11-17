@@ -1,6 +1,11 @@
 package dto
 
-import "testing"
+import (
+	"encoding/json"
+	"os"
+	"path/filepath"
+	"testing"
+)
 
 // Expected values are Python 3.13's decimal and datetime.strptime results.
 func TestInstructorDecimalMatchesPython(t *testing.T) {
@@ -38,7 +43,8 @@ func TestInstructorDecimalMatchesPython(t *testing.T) {
 		}
 	}
 	for text, want := range map[string]DecimalOutcome{"10,5": DecimalInvalid, "True": DecimalInvalid, "None": DecimalInvalid, "NaN": DecimalFinite,
-		"-Infinity": DecimalFinite, "NaN" + "1234567890123456789012345678": DecimalNotPorted} {
+		"-Infinity": DecimalFinite, "NaN" + "1234567890123456789012345678": DecimalFinite,
+		"1E1000000000000000000": DecimalInvalid, "1E-1999999999999999998": DecimalInvalid} {
 		if _, outcome := ParseInstructorDecimal(text); outcome != want {
 			t.Fatalf("%q: %v, want %v", text, outcome, want)
 		}
@@ -69,5 +75,101 @@ func TestCompensationPaymentDateMatchesStrptime(t *testing.T) {
 	}
 	if _, ok := CompensationPaymentDate(123); ok {
 		t.Fatal("a non-string payment_date parses")
+	}
+}
+
+// instructorDecimalGolden is testdata/instructor_decimal.json, generated from
+// CPython 3.13's decimal by testdata/gen_instructor_decimal.py.
+type instructorDecimalGolden struct {
+	Percentages []struct {
+		Text     string `json:"text"`
+		Quotient string `json:"quotient"`
+	} `json:"percentages"`
+	Parse []struct {
+		Text    string  `json:"text"`
+		Outcome string  `json:"outcome"`
+		Str     *string `json:"str"`
+	} `json:"parse"`
+	Multiply []struct {
+		Amount     string  `json:"amount"`
+		Percentage string  `json:"percentage"`
+		Outcome    string  `json:"outcome"`
+		Str        *string `json:"str"`
+	} `json:"multiply"`
+}
+
+func loadInstructorDecimalGolden(t *testing.T) instructorDecimalGolden {
+	t.Helper()
+	raw, err := os.ReadFile(filepath.Join("testdata", "instructor_decimal.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var golden instructorDecimalGolden
+	if err := json.Unmarshal(raw, &golden); err != nil {
+		t.Fatal(err)
+	}
+	if len(golden.Parse) < 2000 || len(golden.Multiply) < 2000 {
+		t.Fatalf("corpus too small: %d parse, %d multiply", len(golden.Parse), len(golden.Multiply))
+	}
+	return golden
+}
+
+// TestInstructorDecimalGolden is CPython's Decimal(text), str(Decimal(p) / 100)
+// and str(Decimal(a) * (Decimal(p) / 100)) for the compensation notes.
+func TestInstructorDecimalGolden(t *testing.T) {
+	golden := loadInstructorDecimalGolden(t)
+	for _, c := range golden.Percentages {
+		percentage, outcome := ParseInstructorDecimal(c.Text)
+		if outcome != DecimalFinite || percentage.Special != "" {
+			t.Fatalf("percentage %q: outcome %v", c.Text, outcome)
+		}
+		if got := percentage.PercentOf().String(); got != c.Quotient {
+			t.Fatalf("%q / 100: %s, want %s", c.Text, got, c.Quotient)
+		}
+	}
+	for _, c := range golden.Parse {
+		value, outcome := ParseInstructorDecimal(c.Text)
+		if c.Outcome == "invalid" {
+			if outcome != DecimalInvalid {
+				t.Fatalf("Decimal(%q): %v, want InvalidOperation", c.Text, outcome)
+			}
+			continue
+		}
+		if outcome != DecimalFinite {
+			t.Fatalf("Decimal(%q): %v, want a value", c.Text, outcome)
+		}
+		if c.Str != nil && value.String() != *c.Str {
+			t.Fatalf("str(Decimal(%q)): %s, want %s", c.Text, value.String(), *c.Str)
+		}
+	}
+	for _, c := range golden.Multiply {
+		amount, outcome := ParseInstructorDecimal(c.Amount)
+		if outcome != DecimalFinite {
+			t.Fatalf("Decimal(%q): %v", c.Amount, outcome)
+		}
+		percentage, percentageOutcome := ParseInstructorDecimal(c.Percentage)
+		if percentageOutcome != DecimalFinite || percentage.Special != "" {
+			t.Fatalf("percentage %q: outcome %v", c.Percentage, percentageOutcome)
+		}
+		product, result := amount.Times(percentage.PercentOf())
+		switch c.Outcome {
+		case "ok":
+			if result != TimesOK {
+				t.Fatalf("%q * %q/100: result %v, want TimesOK", c.Amount, c.Percentage, result)
+			}
+			if c.Str != nil && product.String() != *c.Str {
+				t.Fatalf("%q * %q/100: %s, want %s", c.Amount, c.Percentage, product.String(), *c.Str)
+			}
+		case "invalid":
+			if result != TimesInvalid {
+				t.Fatalf("%q * %q/100: result %v, want TimesInvalid", c.Amount, c.Percentage, result)
+			}
+		case "overflow":
+			if result != TimesOverflow {
+				t.Fatalf("%q * %q/100: result %v, want TimesOverflow", c.Amount, c.Percentage, result)
+			}
+		default:
+			t.Fatalf("%q * %q/100: unknown outcome %q", c.Amount, c.Percentage, c.Outcome)
+		}
 	}
 }

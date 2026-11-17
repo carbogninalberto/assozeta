@@ -303,21 +303,24 @@ func CompensationPaymentDate(value any) (time.Time, bool) {
 	return moment, true
 }
 
-// InstructorDecimal is a finite decimal.Decimal: sign, coefficient and exponent.
+// InstructorDecimal is a decimal.Decimal: sign, coefficient and exponent.
 type InstructorDecimal struct {
 	Negative    bool
 	Coefficient *big.Int
-	Exponent    int
+	Exponent    int64
 	// Special is "inf", "nan" or "snan" (Coefficient is then nil); Payload is a NaN's diagnostic digits.
 	Special string
 	Payload string
 }
 
-// Python's default decimal context: 28 digits, exponents from Emin to Emax.
+// Python's default decimal context: 28 digits, exponents from Emin to Emax;
+// the constructor's limits are decimal.MAX_EMAX and decimal.MIN_ETINY.
 const (
 	instructorDecimalPrecision = 28
 	instructorDecimalEmax      = 999999
 	instructorDecimalEtiny     = -1000026
+	instructorDecimalMaxEmax   = 999999999999999999
+	instructorDecimalMinEtiny  = -1999999999999999997
 )
 
 // DecimalOutcome classifies Decimal(text).
@@ -327,9 +330,6 @@ const (
 	DecimalFinite DecimalOutcome = iota
 	// DecimalInvalid is decimal.InvalidOperation.
 	DecimalInvalid
-	// DecimalNotPorted is a value Python accepts that Go does not reproduce
-	// (infinities, NaNs, extreme exponents).
-	DecimalNotPorted
 )
 
 // ParseInstructorDecimal is decimal.Decimal(text), read back from str() of
@@ -343,9 +343,6 @@ func ParseInstructorDecimal(text string) (InstructorDecimal, DecimalOutcome) {
 	case "inf":
 		return InstructorDecimal{Negative: parsed.Negative, Special: "inf"}, DecimalFinite
 	default:
-		if len(parsed.Payload) > instructorDecimalPrecision-1 {
-			return InstructorDecimal{}, DecimalNotPorted
-		}
 		special := "nan"
 		if parsed.Signaling {
 			special = "snan"
@@ -354,20 +351,39 @@ func ParseInstructorDecimal(text string) (InstructorDecimal, DecimalOutcome) {
 	}
 	value := strings.TrimPrefix(parsed.Text, "-")
 	mantissa, exponentText, scientific := strings.Cut(value, "E")
-	exponent := 0
+	exponent := int64(0)
 	if scientific {
-		number, err := strconv.Atoi(exponentText)
-		if err != nil || number > 999999999 || number < -999999999 {
-			return InstructorDecimal{}, DecimalNotPorted
+		number, err := strconv.ParseInt(exponentText, 10, 64)
+		if err != nil {
+			return InstructorDecimal{}, DecimalInvalid
 		}
 		exponent = number
 	}
 	whole, fraction, _ := strings.Cut(mantissa, ".")
-	coefficient, ok := new(big.Int).SetString(whole+fraction, 10)
-	if !ok {
-		return InstructorDecimal{}, DecimalNotPorted
+	digits := strings.TrimLeft(whole+fraction, "0")
+	if digits == "" {
+		digits = "0"
 	}
-	return InstructorDecimal{Negative: parsed.Negative, Coefficient: coefficient, Exponent: exponent - len(fraction)}, DecimalFinite
+	coefficient, ok := new(big.Int).SetString(digits, 10)
+	if !ok {
+		return InstructorDecimal{}, DecimalInvalid
+	}
+	if int64(len(fraction)) > 0 {
+		var ok bool
+		if exponent, ok = instructorDecimalAdd(exponent, -int64(len(fraction))); !ok {
+			return InstructorDecimal{}, DecimalInvalid
+		}
+	}
+	// Decimal(text) accepts an exponent at or above MIN_ETINY and an
+	// adjusted exponent at or below MAX_EMAX.
+	if exponent < instructorDecimalMinEtiny {
+		return InstructorDecimal{}, DecimalInvalid
+	}
+	adjusted, ok := instructorDecimalAdd(exponent, int64(len(digits))-1)
+	if !ok || adjusted > instructorDecimalMaxEmax {
+		return InstructorDecimal{}, DecimalInvalid
+	}
+	return InstructorDecimal{Negative: parsed.Negative, Coefficient: coefficient, Exponent: exponent}, DecimalFinite
 }
 
 // String is Decimal.__str__ (to-scientific-string).
@@ -383,16 +399,16 @@ func (d InstructorDecimal) String() string {
 		return out
 	}
 	digits := d.Coefficient.String()
-	adjusted := d.Exponent + len(digits) - 1
+	adjusted := d.Exponent + int64(len(digits)) - 1
 	var out string
 	switch {
 	case d.Exponent <= 0 && adjusted >= -6:
 		if d.Exponent == 0 {
 			out = digits
-		} else if point := len(digits) + d.Exponent; point > 0 {
+		} else if point := int64(len(digits)) + d.Exponent; point > 0 {
 			out = digits[:point] + "." + digits[point:]
 		} else {
-			out = "0." + strings.Repeat("0", -point) + digits
+			out = "0." + strings.Repeat("0", int(-point)) + digits
 		}
 	default:
 		out = digits[:1]
@@ -403,7 +419,7 @@ func (d InstructorDecimal) String() string {
 		if adjusted < 0 {
 			sign = "-"
 		}
-		out += "E" + sign + strconv.Itoa(abs(adjusted))
+		out += "E" + sign + strconv.FormatInt(abs64(adjusted), 10)
 	}
 	if d.Negative {
 		out = "-" + out
@@ -411,7 +427,7 @@ func (d InstructorDecimal) String() string {
 	return out
 }
 
-func abs(value int) int {
+func abs64(value int64) int64 {
 	if value < 0 {
 		return -value
 	}
@@ -448,56 +464,128 @@ const (
 	TimesInvalid
 	// TimesOverflow is decimal.Overflow (trapped: an exception).
 	TimesOverflow
-	// TimesNotPorted is a result in the subnormal range, which the port does not reproduce.
-	TimesNotPorted
 )
 
-// Times is d * other rounded to 28 digits half even. other is a finite non-zero value (the percentage scaled by 1/100).
+// Times is d * other in Python's default context: rounded to 28 digits half
+// even, a subnormal result rounded at exponent Etiny, a zero's exponent
+// clamped to [Etiny, Emax]. other is the percentage scaled by 1/100, a finite
+// value.
 func (d InstructorDecimal) Times(other InstructorDecimal) (InstructorDecimal, TimesResult) {
-	switch d.Special {
-	case "snan":
+	switch {
+	case d.Special == "snan" || other.Special == "snan":
 		return InstructorDecimal{}, TimesInvalid
-	case "nan":
-		return d, TimesOK
-	case "inf":
+	case d.Special == "nan":
+		return d.quietNaN(), TimesOK
+	case other.Special == "nan":
+		return other.quietNaN(), TimesOK
+	case d.Special == "inf" || other.Special == "inf":
+		if d.Special == "" && d.Coefficient.Sign() == 0 {
+			return InstructorDecimal{}, TimesInvalid
+		}
 		if other.Special == "" && other.Coefficient.Sign() == 0 {
 			return InstructorDecimal{}, TimesInvalid
 		}
 		return InstructorDecimal{Negative: d.Negative != other.Negative, Special: "inf"}, TimesOK
 	}
 	coefficient := new(big.Int).Mul(d.Coefficient, other.Coefficient)
-	exponent := d.Exponent + other.Exponent
-	if digits := len(coefficient.String()); digits > instructorDecimalPrecision {
-		drop := digits - instructorDecimalPrecision
-		unit := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(drop)), nil)
-		quotient, rest := new(big.Int).QuoRem(coefficient, unit, new(big.Int))
-		half := new(big.Int).Quo(unit, big.NewInt(2))
-		switch rest.Cmp(half) {
-		case 1:
-			quotient.Add(quotient, big.NewInt(1))
-		case 0:
-			if quotient.Bit(0) == 1 {
-				quotient.Add(quotient, big.NewInt(1))
-			}
-		}
-		coefficient, exponent = quotient, exponent+drop
-		if len(coefficient.String()) > instructorDecimalPrecision {
-			coefficient.Quo(coefficient, big.NewInt(10))
-			exponent++
-		}
-	}
-	if coefficient.Sign() == 0 {
-		if exponent > instructorDecimalEmax || exponent < instructorDecimalEtiny {
-			return InstructorDecimal{}, TimesNotPorted
-		}
-	} else {
-		adjusted := exponent + len(coefficient.String()) - 1
-		if adjusted > instructorDecimalEmax {
+	negative := d.Negative != other.Negative
+	exponent, ok := instructorDecimalAdd(d.Exponent, other.Exponent)
+	if !ok {
+		// The parsed operands cannot reach this; keep the context's answer.
+		if other.Exponent > 0 {
 			return InstructorDecimal{}, TimesOverflow
 		}
-		if exponent < instructorDecimalEtiny {
-			return InstructorDecimal{}, TimesNotPorted
+		return InstructorDecimal{Negative: negative, Coefficient: new(big.Int), Exponent: instructorDecimalEtiny}, TimesOK
+	}
+	if coefficient.Sign() == 0 {
+		return InstructorDecimal{Negative: negative, Coefficient: coefficient, Exponent: instructorDecimalClamp(exponent)}, TimesOK
+	}
+	digits := int64(len(coefficient.String()))
+	drop := int64(0)
+	if exponent < instructorDecimalEtiny {
+		drop = instructorDecimalEtiny - exponent
+	}
+	if digits-drop > instructorDecimalPrecision {
+		drop = digits - instructorDecimalPrecision
+	}
+	if drop > 0 {
+		coefficient, exponent = instructorDecimalRound(coefficient, exponent, drop)
+		digits = int64(len(coefficient.String()))
+		if digits > instructorDecimalPrecision {
+			// The rounding carried into a new digit.
+			coefficient.Quo(coefficient, big.NewInt(10))
+			exponent++
+			digits--
+		}
+		if coefficient.Sign() == 0 {
+			return InstructorDecimal{Negative: negative, Coefficient: coefficient, Exponent: instructorDecimalClamp(exponent)}, TimesOK
 		}
 	}
-	return InstructorDecimal{Negative: d.Negative != other.Negative, Coefficient: coefficient, Exponent: exponent}, TimesOK
+	if exponent > instructorDecimalEmax {
+		return InstructorDecimal{}, TimesOverflow
+	}
+	if adjusted := exponent + digits - 1; adjusted > instructorDecimalEmax {
+		return InstructorDecimal{}, TimesOverflow
+	}
+	return InstructorDecimal{Negative: negative, Coefficient: coefficient, Exponent: exponent}, TimesOK
+}
+
+// quietNaN is the NaN a multiplication returns: the payload cut to the
+// context's 28 digits, then without leading zeros.
+func (d InstructorDecimal) quietNaN() InstructorDecimal {
+	payload := d.Payload
+	if len(payload) > instructorDecimalPrecision {
+		payload = strings.TrimLeft(payload[len(payload)-instructorDecimalPrecision:], "0")
+	}
+	return InstructorDecimal{Negative: d.Negative, Special: d.Special, Payload: payload}
+}
+
+// instructorDecimalRound divides coefficient by 10^drop, rounding the
+// remainder half even, and adds drop to the exponent. A drop wider than the
+// coefficient rounds to zero without building the divisor.
+func instructorDecimalRound(coefficient *big.Int, exponent, drop int64) (*big.Int, int64) {
+	digits := int64(len(coefficient.String()))
+	if drop > digits {
+		return new(big.Int), exponent + drop
+	}
+	if drop == digits {
+		// The quotient is zero; half of 10^drop is 5*10^(drop-1), so the
+		// coefficient rounds up above that and stays even on the tie.
+		rendered := coefficient.String()
+		if rendered > "5"+strings.Repeat("0", len(rendered)-1) {
+			return big.NewInt(1), exponent + drop
+		}
+		return new(big.Int), exponent + drop
+	}
+	unit := new(big.Int).Exp(big.NewInt(10), big.NewInt(drop), nil)
+	quotient, rest := new(big.Int).QuoRem(coefficient, unit, new(big.Int))
+	half := new(big.Int).Quo(unit, big.NewInt(2))
+	switch rest.Cmp(half) {
+	case 1:
+		quotient.Add(quotient, big.NewInt(1))
+	case 0:
+		if quotient.Bit(0) == 1 {
+			quotient.Add(quotient, big.NewInt(1))
+		}
+	}
+	return quotient, exponent + drop
+}
+
+// instructorDecimalAdd adds two exponents, reporting an int64 overflow.
+func instructorDecimalAdd(left, right int64) (int64, bool) {
+	sum := left + right
+	if (right > 0 && sum < left) || (right < 0 && sum > left) {
+		return 0, false
+	}
+	return sum, true
+}
+
+func instructorDecimalClamp(exponent int64) int64 {
+	if exponent < instructorDecimalEtiny {
+		return instructorDecimalEtiny
+	}
+	if exponent > instructorDecimalEmax {
+		return instructorDecimalEmax
+	}
+	return exponent
 }
