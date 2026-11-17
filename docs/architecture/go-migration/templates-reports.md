@@ -140,15 +140,17 @@ matrix for the MCP server as well.
 
 ## Not ported (refused with the HTML 500 page before any query)
 
-- In the file tools: the paragraph markup `pdfexport` still refuses (pdf-exports.md,
-  "Paragraph markup": anchors, internal links, images that are not base64 JPEG data URLs, `<unichar name="…">`, CMYK and
-  transparent colours, `<para>` indents, justification and borders, bullets and sequences). `u`, `strike`, `font`, `span`, `nobr`,
-  `sup`, `sub`, `a`, `link`, base64 JPEG `img`, `<para>` with attributes, `<greek>`, `<unichar code="…"/>`, the Courier and
-  Times faces and digits of other scripts are drawn (cases `export-pdf-rich-markup`, `export-pdf-rich-markup-over-pages`,
-  `export-pdf-inline-image`, `export-pdf-greek-unichar-fonts`, `export-pdf-digit-size` and the `export-pdf-rich-*-error` ones). Labels, cells and texts with `&`, `<`, entities, `<b>`,
-  `<i>`, `<br/>` or soft hyphens are drawn as reportlab draws them, and markup
-  its parser raises on (`A<B` opens a tag) fails the export like any other
-  exception (`v2rep3-*` receipts).
+- In the file tools: since long tail PR 5 `pdfexport` refuses no paragraph input (pdf-exports.md, "Long tail PR 5"):
+  `<unichar name>`, anchors and internal links, every image format Pillow reads, CMYK, alpha and expression colours,
+  numbers as CPython reads them, `<para>` indents, justification, bullets, borders, autoLeading, endDots, textTransform,
+  wordWrap and the hyphenation options are drawn (cases `export-pdf-unichar-*`, `-anchor-*`, `-link-undefined-error`,
+  `-number-*`, `-ftp-image-error`, `-empty-image-error`, `-para-*`, `-colours-*`, `-inline-png`, `-inline-*-error`,
+  `-wordwrap-*`, `-uri-waste-reduce`, `-embedded-hyphenation-two-error`), as were `u`, `strike`, `font`, `span`, `nobr`,
+  `sup`, `sub`, `a`, `link`, `img`, `<greek>`, `<unichar code="…"/>`, the Courier and Times faces and digits of other
+  scripts before (cases `export-pdf-rich-markup`, `export-pdf-rich-markup-over-pages`, `export-pdf-inline-image`,
+  `export-pdf-greek-unichar-fonts`, `export-pdf-digit-size` and the `export-pdf-rich-*-error` ones). Labels, cells and
+  texts with `&`, `<`, entities, `<b>`, `<i>`, `<br/>` or soft hyphens are drawn as reportlab draws them, and markup
+  its parser raises on (`A<B` opens a tag) fails the export like any other exception (`v2rep3-*` receipts).
 - The report tools use the query engine described in `mcp-server.md` (every
   whitelisted model, `get_schema`, relation paths). A list argument that is not iterable
   (`fields: 5`) raises Django's `'int' object is not iterable`, a string one is
