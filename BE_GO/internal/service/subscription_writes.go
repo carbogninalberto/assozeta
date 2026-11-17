@@ -141,7 +141,9 @@ func applyAssociateTutorWrite(row *domain.SubscriptionEditAssociate, write dto.A
 	}
 }
 
-// associateChanges is auditlog's update diff of the serializer's columns.
+// associateChanges is auditlog's update diff of the serializer's columns: the
+// stored row against the in-memory instance (whose associate_id keeps the text
+// a client sent when that differs from the stored key).
 func associateChanges(old, row domain.SubscriptionEditAssociate) map[string][2]string {
 	changes := map[string][2]string{}
 	diff := func(name, before, after string) {
@@ -149,6 +151,7 @@ func associateChanges(old, row domain.SubscriptionEditAssociate) map[string][2]s
 			changes[name] = [2]string{before, after}
 		}
 	}
+	diff("associate_id", old.ID, row.AuditKey())
 	diff("user", subscriptionEditValue(old.UserID), subscriptionEditValue(row.UserID))
 	diff("sport_association", subscriptionEditValue(old.AssociationID), subscriptionEditValue(row.AssociationID))
 	diff("first_name", subscriptionEditValue(old.FirstName), subscriptionEditValue(row.FirstName))

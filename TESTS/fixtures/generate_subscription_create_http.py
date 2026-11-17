@@ -1962,6 +1962,102 @@ add('preregistration-renewal-year-999-born-date', 'owner', 400,
     {'born_date': ['Date has wrong format. Use one of these formats instead: DD/MM/YYYY.']}, setup=RENEW_SETUP,
     body=renewal('renewable_year_999'))
 
+# --- AssociateSerializer.create with an associate_id: the unique tax code index -----------------------------
+# The serializer saves the row a create's fallback names, or lets the IntegrityError of save() out of
+# create_subscription's atomic block: /subscription/add answers the 500 page and nothing is left behind
+# (index unique_tax_code_sport_assoc_upper_active: UPPER(tax_code), sport_association where deleted = false).
+ASSOCIATES['tax_live'] = {'id': next(late_ids), 'association': OWN, 'first': 'Vecchio', 'last': 'Titolare', 'tax_code': 'TXLIVE12345',
+                          'born': '1980-01-01', 'user': None, 'email': None}
+# A deleted row keyed below a live row holding the same tax code: a create's tax code fallback picks the
+# deleted one (first by key, any deleted state) and its save breaks the index.
+ASSOCIATES['tax_deleted'] = {'id': next(late_ids), 'association': OWN, 'first': 'Eliminato', 'last': 'Doppione', 'tax_code': 'TXDUP12345',
+                             'born': '1980-01-01', 'user': None, 'email': None, 'deleted': True}
+ASSOCIATES['tax_taken'] = {'id': next(late_ids), 'association': OWN, 'first': 'Attivo', 'last': 'Doppione', 'tax_code': 'TXDUP12345',
+                           'born': '1980-01-01', 'user': None, 'email': None}
+
+# An unknown key whose create breaks the index: the savepoint's INSERT leaves nothing (no create entry), the
+# association's first row with the tax code is updated with every field but the key, and the registration goes on.
+fallback = {**person('Nuovo', 'Titolare', 'txlive12345', born='01/01/1985'), 'associate_id': next(late_ids)}
+add('associate-id-unknown-key-tax-code-taken', 'owner', 200, SUCCESS(25.0), body=request(fallback),
+    effect=success('owner', 'Nuovo Titolare',
+                   associate={'match': 'tax_live', 'columns': {'first_name': 'Nuovo', 'sex': 'M', 'tax_code': 'txlive12345',
+                                                               'born_date': '1985-01-01', 'user_id': OWNER}},
+                   associate_audit=[(1, {'first_name': ['Vecchio', 'Nuovo'], 'sex': ['A', 'M'],
+                                         'tax_code': ['TXLIVE12345', 'txlive12345'], 'born_date': ['1980-01-01', '1985-01-01']}),
+                                    (1, {'user': ['None', OWNER]})],
+                   payment=new_payment('25.00', audit_amount='25.0'),
+                   subscription={'type': 2, 'role': 1, 'status_flag': 1, 'meta': NO_PLANS, 'subscription_type': '', **SEASON},
+                   membership={'membership_type': '$default_membership_type', 'start_date': '$season_start', 'end_date': '$season_end',
+                               'price': None}))
+
+# The same fallback when the row it names is the deleted one: its save breaks the index, so the
+# IntegrityError reaches create_subscription and the whole registration rolls back.
+unknown_deleted = {**person('Nuovo', 'Doppione', 'TXDUP12345', born='01/01/1985'), 'associate_id': next(late_ids)}
+add('associate-id-unknown-key-deleted-row-taken', 'owner', 500, SERVER, body=request(unknown_deleted))
+# The target association's row (the first by key with the tax code) is the deleted one, named through
+# another associate's key: the same save and the same rollback.
+target_key = {**person('Nuovo', 'Doppione', 'TXDUP12345', born='01/01/1985'), 'associate_id': ASSOCIATES['tax_live']['id']}
+add('associate-id-other-key-deleted-row-taken', 'owner', 500, SERVER, body=request(target_key))
+# The row the key names itself breaks the index when it is restored (deleted=false) while a live row holds the code.
+deleted_key = {**person('Nuovo', 'Doppione', 'TXDUP12345', born='01/01/1985'), 'associate_id': ASSOCIATES['tax_deleted']['id']}
+add('associate-id-deleted-row-tax-code-taken', 'owner', 500, SERVER, body=request(deleted_key))
+
+# A key spelled in upper case without dashes: the column takes the canonical uuid, the instance keeps the
+# text as sent, and auditlog writes it as object_pk and renders it for associate_id and every foreign key
+# assigned from the instance (the payment, subscription and membership create entries, and the membership's
+# own save, which compares the stored key with the spelling).
+canonical_key = next(late_ids)
+spelled_key = canonical_key.replace('-', '').upper()
+spelled = {**person('Vera', 'Compitata', 'SPLVRV90A41H501G', born='01/01/1990'), 'associate_id': spelled_key}
+spelled_effect = success('owner', 'Vera Compitata', associate=created_associate(spelled), payment=new_payment('25.00', audit_amount='25.0'),
+                         subscription={'type': 2, 'role': 1, 'status_flag': 1, 'meta': NO_PLANS, 'subscription_type': '', **SEASON},
+                         membership={'membership_type': '$default_membership_type', 'start_date': '$season_start',
+                                     'end_date': '$season_end', 'price': None})
+for spelled_entry in spelled_effect['audit']:
+    if spelled_entry['model'] == 'associate' and spelled_entry.get('ref') == 'associate':
+        spelled_entry['object_pk'], spelled_entry['object_repr'] = spelled_key, f'Associate object ({spelled_key})'
+        spelled_entry['changes'] = {**spelled_entry['changes'],
+                                    'associate_id': ['None', spelled_key] if spelled_entry['action'] == 0
+                                    else [canonical_key, spelled_key]}
+    elif spelled_entry['action'] == 0 and spelled_entry['model'] in ('payment', 'subscription', 'subscriptionmembership'):
+        spelled_entry['changes'] = {**spelled_entry['changes'], 'associate': ['None', spelled_key]}
+# subscription_membership.save(): the stored key against the in-memory spelling (the price is None here).
+membership_position = next(position for position, spelled_entry in enumerate(spelled_effect['audit'])
+                           if spelled_entry['model'] == 'subscriptionmembership' and spelled_entry['action'] == 0)
+spelled_effect['audit'].insert(membership_position + 1, {'model': 'subscriptionmembership', 'action': 1, 'ref': 'membership',
+                                                          'changes': {'associate': [canonical_key, spelled_key]},
+                                                          'index': [OWN, 'direct']})
+add('associate-id-non-canonical-spelling', 'owner', 200, SUCCESS(25.0), body=request(spelled), effect=spelled_effect)
+
+# A tutor whose associate_id is the minor's own key: the two serializer saves of one row (the minor's, then
+# the tutor's data through its own instance), the tutor's user save, the relation, and the stale minor
+# instance writing the minor's values back over the tutor's.
+self_key = next(late_ids)
+self_minor = {**person('Sara', 'Riflessa', 'RFLSRA15A41H501E', born='01/01/2015', is_minor=True, sex='F'), 'associate_id': self_key}
+self_tutor = {**person('Sergio', 'Riflesso', 'RFLSRG80A01H501F', born='01/01/1980', sex='M'), 'associate_id': self_key}
+self_effect = success('owner', 'Sara Riflessa', associate=created_associate({**self_minor, 'is_minor': True}, is_minor=True),
+                      associate_audit=[], payment=new_payment('25.00', audit_amount='25.0'),
+                      subscription={'type': 2, 'role': 1, 'status_flag': 1, 'meta': NO_PLANS, 'subscription_type': '', **SEASON},
+                      membership={'membership_type': '$default_membership_type', 'start_date': '$season_start',
+                                  'end_date': '$season_end', 'price': None})
+self_effect['relation'] = 'self'
+self_effect['audit'] = [
+    {'model': 'associate', 'action': 0, 'ref': 'associate', 'changes': {'user': ['None', 'None']}, 'index': [OWN, 'direct']},
+    # The tutor's serializer save writes its fields into the minor's row.
+    {'model': 'associate', 'action': 1, 'ref': 'associate',
+     'changes': {'first_name': ['Sara', 'Sergio'], 'last_name': ['Riflessa', 'Riflesso'], 'sex': ['F', 'M'],
+                 'tax_code': ['RFLSRA15A41H501E', 'RFLSRG80A01H501F'], 'born_date': ['2015-01-01', '1980-01-01']},
+     'index': [OWN, 'direct']},
+    {'model': 'associate', 'action': 1, 'ref': 'associate', 'changes': {'user': ['None', OWNER]}, 'index': [OWN, 'direct']},
+    {'model': 'associatetutorrelation', 'action': 0, 'ref': 'relation', 'changes': {}, 'index': [OWN, 'associate.sport_association']},
+    # associate.user = user; associate.save() of the stale minor instance.
+    {'model': 'associate', 'action': 1, 'ref': 'associate',
+     'changes': {'first_name': ['Sergio', 'Sara'], 'last_name': ['Riflesso', 'Riflessa'], 'sex': ['M', 'F'],
+                 'tax_code': ['RFLSRG80A01H501F', 'RFLSRA15A41H501E'], 'born_date': ['1980-01-01', '2015-01-01']},
+     'index': [OWN, 'direct']},
+] + self_effect['audit']
+add('associate-tutor-with-the-minors-key', 'owner', 200, SUCCESS(25.0), body=request(self_minor, tutor=self_tutor), effect=self_effect)
+
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({
     'matrix_version': 1, 'scope': 'subscription/add authored sequence with row, audit, Celery and notification effects',

@@ -5,10 +5,12 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -30,6 +32,34 @@ func (r *SubscriptionCreates) BeginSubscriptionCreate(ctx context.Context) (doma
 }
 
 func (t *subscriptionCreateTransaction) SetGroup(group *string) { t.group = group }
+
+// InsertAssociate, SaveAssociate and SetAssociateDeleted render the database's
+// integrity answers as the psycopg2 IntegrityError the serializer handles: the
+// create's savepoint retries on its text and save() (which also restores a
+// soft-deleted row) lets it out of create_subscription. (Other flows keep the
+// driver's error.)
+func (t *subscriptionCreateTransaction) InsertAssociate(ctx context.Context, row domain.SubscriptionEditAssociate) error {
+	return associateWriteError(t.subscriptionEditTransaction.InsertAssociate(ctx, row))
+}
+
+func (t *subscriptionCreateTransaction) SaveAssociate(ctx context.Context, row domain.SubscriptionEditAssociate) error {
+	return associateWriteError(t.subscriptionEditTransaction.SaveAssociate(ctx, row))
+}
+
+func (t *subscriptionCreateTransaction) SetAssociateDeleted(ctx context.Context, id string, deleted bool) error {
+	return associateWriteError(t.subscriptionEditTransaction.SetAssociateDeleted(ctx, id, deleted))
+}
+
+// associateWriteError is psycopg2's IntegrityError text for an Associate write
+// the database refuses (the unique tax code index, a duplicated key, a missing
+// foreign key): the server's message, then each field on its own line.
+func associateWriteError(err error) error {
+	var serverError *pgconn.PgError
+	if errors.As(err, &serverError) && strings.HasPrefix(serverError.Code, "23") {
+		return &domain.AssociateIntegrityError{Text: psycopg2ErrorText(serverError)}
+	}
+	return err
+}
 
 // groupFilter is Django's GroupAwareManager.get_queryset filter on alias.
 func groupFilter(alias, column string, position int) string {
@@ -342,6 +372,28 @@ func (t *subscriptionCreateTransaction) InsertRelation(ctx context.Context, asso
 	return id, err
 }
 
+// InsertAssociateAttempt is the serializer's transaction.atomic() around
+// Associate.objects.create: a refused INSERT rolls the savepoint back and
+// leaves the request's earlier writes, as Django's does.
+func (t *subscriptionCreateTransaction) InsertAssociateAttempt(ctx context.Context, row domain.SubscriptionEditAssociate) error {
+	const savepoint = "associate_serializer_create"
+	if _, err := t.tx.ExecContext(ctx, `SAVEPOINT `+savepoint); err != nil {
+		return err
+	}
+	err := t.InsertAssociate(ctx, row)
+	if err == nil {
+		_, err = t.tx.ExecContext(ctx, `RELEASE SAVEPOINT `+savepoint)
+		return err
+	}
+	if _, rollback := t.tx.ExecContext(ctx, `ROLLBACK TO SAVEPOINT `+savepoint); rollback != nil {
+		return rollback
+	}
+	if _, release := t.tx.ExecContext(ctx, `RELEASE SAVEPOINT `+savepoint); release != nil {
+		return release
+	}
+	return err
+}
+
 // MarkRelationPrimary is AssociateTutorRelation.save() of get_main_tutor.
 func (t *subscriptionCreateTransaction) MarkRelationPrimary(ctx context.Context, id int64) error {
 	_, err := t.tx.ExecContext(ctx, `UPDATE application_associatetutorrelation SET is_primary=true WHERE id=$1`, id)
@@ -356,7 +408,11 @@ func appendSubscriptionCreateAudit(ctx context.Context, tx *sqlx.Tx, entry domai
 	changes := entry.Changes
 	if entry.Created {
 		var err error
-		if changes, err = createdModelChanges(ctx, tx, entry.Table, entry.Column, entry.Key); err != nil {
+		row := entry.Key
+		if entry.Row != "" {
+			row = entry.Row
+		}
+		if changes, err = createdModelChanges(ctx, tx, entry.Table, entry.Column, row); err != nil {
 			return err
 		}
 		for name, pair := range entry.Overrides {

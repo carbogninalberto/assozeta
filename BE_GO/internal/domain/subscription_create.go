@@ -159,16 +159,18 @@ type SubscriptionCreateMembership struct {
 }
 
 // SubscriptionCreateAudit is one auditlog entry. Created entries render the
-// stored row (Table/Column) with Overrides; others use Changes.
+// stored row (Table/Column) with Overrides; others use Changes. Row is the
+// stored key when Key is a spelling of it (the text a client sent for a new
+// associate): the entry keeps Key, the row is read with Row.
 type SubscriptionCreateAudit struct {
-	App, Model, Representation, Table, Column, Key string
-	Action                                         int
-	Created                                        bool
-	Overrides, Changes                             map[string][2]string
-	Association                                    *string
-	Path                                           string
-	Context                                        LoginAuditContext
-	At                                             time.Time
+	App, Model, Representation, Table, Column, Key, Row string
+	Action                                              int
+	Created                                             bool
+	Overrides, Changes                                  map[string][2]string
+	Association                                         *string
+	Path                                                string
+	Context                                             LoginAuditContext
+	At                                                  time.Time
 }
 
 type SubscriptionCreateTransaction interface {
@@ -213,6 +215,11 @@ type SubscriptionCreateTransaction interface {
 	QuickAssociate(ctx context.Context, id string) (*SubscriptionEditAssociate, error)
 	// InsertFamily is Family.objects.create(type=kind) with its create entry.
 	InsertFamily(ctx context.Context, id, kind string, audit LoginAuditContext, at time.Time) error
+	// InsertAssociateAttempt is Associate.objects.create(associate_id=..., ...)
+	// inside transaction.atomic(): the INSERT runs in a savepoint, so a row the
+	// database refuses leaves nothing behind and the psycopg2 IntegrityError text
+	// (*AssociateIntegrityError) is reported for the serializer's fallbacks.
+	InsertAssociateAttempt(ctx context.Context, row SubscriptionEditAssociate) error
 	// RenderPayment is what PaymentSerializer reads for a stored payment.
 	RenderPayment(ctx context.Context, id string) (PaymentStateRender, error)
 	// QuickAssociationExists is SportAssociation.objects.get(sport_association_id=id) finding a row.

@@ -25,7 +25,8 @@ type SubscriptionRenewAssociateStore interface {
 	// AssociateByTaxCode is all_objects().filter(tax_code__iexact, sport_association).first() (by key).
 	AssociateByTaxCode(ctx context.Context, taxCode, association string) (*SubscriptionEditAssociate, error)
 	// LiveTaxCodeTaken reports a live associate of the association, other than
-	// except, whose UPPER(tax_code) matches (the partial unique index).
+	// except, whose UPPER(tax_code) matches (the partial unique index); the edit
+	// view refuses before its write, the serializer's branch lets the save fail.
 	LiveTaxCodeTaken(ctx context.Context, taxCode, association, except string) (bool, error)
 	// SetAssociateDeleted writes the deleted column.
 	SetAssociateDeleted(ctx context.Context, id string, deleted bool) error

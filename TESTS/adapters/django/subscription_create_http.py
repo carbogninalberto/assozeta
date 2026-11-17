@@ -195,7 +195,7 @@ def seed_rows(source, created):
         insert(Associate, Associate(associate_id=row['id'], sport_association_id=row['association'], first_name=row['first'],
                                     last_name=row['last'], tax_code=row['tax_code'], born_date=date.fromisoformat(row['born']),
                                     user_id=ids[row['user']] if row['user'] else None, email=row['email'],
-                                    is_minor=row.get('is_minor', False)))
+                                    is_minor=row.get('is_minor', False), deleted=row.get('deleted', False)))
     from application.models.user_models import AssociateTutorRelation
     STATE['relations'] = {}
     for label, row in source.get('relations', {}).items():
@@ -745,10 +745,16 @@ def check_audit(case, effect, before, after, fixture, ids, context, binding):
         # A Document created and deleted in this request has no row left; its
         # representation is the model's str() either way.
         representation = str(instance) if instance is not None else f'Document object ({pk})'
+        # auditlog writes the instance's in-memory key: a create whose associate_id was sent in another
+        # spelling keeps that text as object_pk (and in the model's default str()) while the row holds the
+        # canonical uuid, which is what the entry's fields are read from.
+        expected_pk = str(spec['object_pk']) if 'object_pk' in spec else str(pk)
+        if 'object_repr' in spec:
+            representation = spec['object_repr']
         contract.require(event['content_type_id'] == types[(app, spec['model'])] and event['action'] == spec['action']
-                         and event['object_pk'] == str(pk) and event['object_repr'] == representation, 'audit.identity' + where + json.dumps(
-                             [event['content_type_id'], types[(app, spec['model'])], event['action'], event['object_pk'], str(pk),
-                              event['object_repr'], str(instance)]))
+                         and event['object_pk'] == expected_pk and event['object_repr'] == representation, 'audit.identity' + where + json.dumps(
+                             [event['content_type_id'], types[(app, spec['model'])], event['action'], event['object_pk'], expected_pk,
+                              event['object_repr'], representation]))
         if instance is None:
             # The two entries of a row that is gone record the stored values, so
             # each is the other's inverse; the filename is the authored one.

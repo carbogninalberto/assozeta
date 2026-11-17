@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math"
 	"math/big"
@@ -298,10 +299,16 @@ func (s *SubscriptionCreates) associateUpdateIndex(ctx context.Context, tx domai
 // saveAssociateByID is AssociateSerializer.create with an associate_id: the
 // row with that key (all_objects()) is saved with the validated data
 // and deleted=False, unless the association has a row (any state) with the
-// same tax code (iexact, the first by key), which is saved instead; an
-// unknown key is created with it.
+// same tax code (iexact, the first by key), which is saved instead (the
+// serializer compares instance.sport_association_id, a UUID, with the
+// association instance, so that test never skips the lookup); an
+// unknown key is created with it. A create the unique tax code index refuses
+// keeps nothing (its savepoint is rolled back) and the serializer then updates
+// the key's row or, failing that, the association's first row with the tax
+// code (three attempts); a save that breaks the index is the IntegrityError
+// create_subscription lets out.
 func (s *SubscriptionCreates) saveAssociateByID(ctx context.Context, tx domain.SubscriptionCreateTransaction, audit subscriptionAudit,
-	write dto.AssociateTutorWrite, association string, minorOf *string, group *string) (*domain.SubscriptionEditAssociate, error) {
+	write dto.AssociateTutorWrite, association string, group *string) (*domain.SubscriptionEditAssociate, error) {
 	text := *write.AssociateID
 	parsed, err := paymentInfoParseUUID(text)
 	if err != nil {
@@ -314,59 +321,86 @@ func (s *SubscriptionCreates) saveAssociateByID(ctx context.Context, tx domain.S
 	}
 	tax := write.Text["tax_code"]
 	if instance == nil {
-		if id != text {
-			// The key would be stored and audited as sent.
-			return nil, domain.ErrSubscriptionCreateNotPorted
-		}
-		if tax != nil {
-			// The IntegrityError fallbacks of the unique tax code index are not ported.
-			if taken, err := tx.LiveTaxCodeTaken(ctx, *tax, association, id); err != nil || taken {
-				return nil, notPortedOr(err)
+		row := domain.SubscriptionEditAssociate{ID: id, Sex: "A", CreationDate: s.now().UTC(), GroupID: group, Spelling: associateSpelling(id, text)}
+		applyAssociateTutorWrite(&row, write)
+		// max_retries = 3: each attempt is Associate.objects.create inside its own
+		// atomic block; the except block takes the fallbacks and re-raises on the last.
+		for attempt := 0; ; attempt++ {
+			err = tx.InsertAssociateAttempt(ctx, row)
+			if err == nil {
+				if row.GroupID != nil {
+					audit.inserted[row.AuditKey()] = true
+				}
+				own := association
+				if err = audit.associate(ctx, row.AuditKey(), 0, true, &row, nil, &own, "direct"); err != nil {
+					return nil, err
+				}
+				return &row, nil
+			}
+			var integrity *domain.AssociateIntegrityError
+			if !errors.As(err, &integrity) {
+				return nil, err
+			}
+			// except IntegrityError: the row another request made (the key), then the
+			// association's first row with that tax code (any deleted state, the tax
+			// code not upper-cased here).
+			instance, err = tx.AssociateAny(ctx, id)
+			if err != nil {
+				return nil, err
+			}
+			if instance != nil {
+				return s.saveAssociateRow(ctx, tx, audit, write, association, *instance, true)
+			}
+			if tax != nil && *tax != "" {
+				other, err := tx.AssociateByTaxCode(ctx, *tax, association)
+				if err != nil {
+					return nil, err
+				}
+				if other != nil {
+					return s.saveAssociateRow(ctx, tx, audit, write, association, *other, false)
+				}
+			}
+			if attempt == 2 {
+				return nil, &domain.SubscriptionCreateFailure{Text: integrity.Text}
 			}
 		}
-		row := domain.SubscriptionEditAssociate{ID: id, Sex: "A", CreationDate: s.now().UTC(), GroupID: group}
-		applyAssociateTutorWrite(&row, write)
-		if err = tx.InsertAssociate(ctx, row); err != nil {
-			return nil, err
-		}
-		if row.GroupID != nil {
-			audit.inserted[row.ID] = true
-		}
-		own := association
-		if err = audit.associate(ctx, row.ID, 0, true, &row, nil, &own, "direct"); err != nil {
-			return nil, err
-		}
-		return &row, nil
 	}
-	target := instance
+	target, keepsID := *instance, false
 	if tax != nil && *tax != "" {
 		other, err := tx.AssociateByTaxCode(ctx, *tax, association)
 		if err != nil {
 			return nil, err
 		}
 		if other != nil {
-			target = other
+			// The target association's row is saved instead and keeps its key.
+			target, keepsID = *other, true
 		}
 	}
-	if minorOf != nil && target.ID == *minorOf {
-		return nil, domain.ErrSubscriptionCreateNotPorted
-	}
-	old := *target
-	row := *target
+	return s.saveAssociateRow(ctx, tx, audit, write, association, target, !keepsID)
+}
+
+// saveAssociateRow is the serializer's setattr loop and save(): every validated
+// field (associate_id included, unless the row is the target association's) and
+// deleted=False. A save the unique tax code index refuses is the IntegrityError
+// the whole registration rolls back on.
+func (s *SubscriptionCreates) saveAssociateRow(ctx context.Context, tx domain.SubscriptionCreateTransaction, audit subscriptionAudit,
+	write dto.AssociateTutorWrite, association string, target domain.SubscriptionEditAssociate,
+	takesID bool) (*domain.SubscriptionEditAssociate, error) {
+	old := target
+	row := target
 	applyAssociateTutorWrite(&row, write)
-	row.Deleted = false
-	if row.TaxCode != nil && row.AssociationID != nil {
-		// A save that breaks the unique tax code index (IntegrityError) is not ported.
-		if taken, err := tx.LiveTaxCodeTaken(ctx, *row.TaxCode, *row.AssociationID, row.ID); err != nil || taken {
-			return nil, notPortedOr(err)
-		}
+	if takesID {
+		row.Spelling = associateSpelling(row.ID, *write.AssociateID)
 	}
-	if err = tx.SaveAssociate(ctx, row); err != nil {
-		return nil, err
+	row.Deleted = false
+	if err := tx.SaveAssociate(ctx, row); err != nil {
+		return nil, associateSaveError(err)
 	}
 	if old.Deleted {
-		if err = tx.SetAssociateDeleted(ctx, row.ID, false); err != nil {
-			return nil, err
+		// deleted=False is the statement that restores the row, and the partial
+		// index checks the code at that point (a live row may hold it).
+		if err := tx.SetAssociateDeleted(ctx, row.ID, false); err != nil {
+			return nil, associateSaveError(err)
 		}
 		// The default manager hides the previous state: every field against None.
 		created := map[string][2]string{"sport_association": {"None", subscriptionEditValue(row.AssociationID)}}
@@ -375,7 +409,7 @@ func (s *SubscriptionCreates) saveAssociateByID(ctx context.Context, tx domain.S
 		if err != nil {
 			return nil, err
 		}
-		if err = audit.associate(ctx, row.ID, 1, true, &row, nil, index, path); err != nil {
+		if err = audit.associate(ctx, row.AuditKey(), 1, true, &row, nil, index, path); err != nil {
 			return nil, err
 		}
 		return &row, nil
@@ -387,15 +421,27 @@ func (s *SubscriptionCreates) saveAssociateByID(ctx context.Context, tx domain.S
 	if err != nil {
 		return nil, err
 	}
-	if err = audit.associate(ctx, row.ID, 1, false, &old, changes, index, path); err != nil {
+	if err = audit.associate(ctx, row.AuditKey(), 1, false, &old, changes, index, path); err != nil {
 		return nil, err
 	}
 	return &row, nil
 }
 
-func notPortedOr(err error) error {
-	if err != nil {
-		return err
+// associateSpelling is the key the Django instance keeps: the text a client
+// sent when it names another spelling of the stored (canonical) uuid.
+func associateSpelling(id, text string) string {
+	if text == id {
+		return ""
 	}
-	return domain.ErrSubscriptionCreateNotPorted
+	return text
+}
+
+// associateSaveError is the IntegrityError of save() as create_subscription
+// raises it: renew answers {"status": "error", "msg": str(e)}, add the 500 page.
+func associateSaveError(err error) error {
+	var integrity *domain.AssociateIntegrityError
+	if errors.As(err, &integrity) {
+		return &domain.SubscriptionCreateFailure{Text: integrity.Text}
+	}
+	return err
 }

@@ -360,14 +360,34 @@ func (a subscriptionAudit) associate(ctx context.Context, key string, action int
 		if a.group != nil && a.inserted[key] {
 			overrides = map[string][2]string{"group": {"None", a.sentGroup}}
 		}
-		return a.tx.Audit(ctx, domain.SubscriptionEditAudit{Model: "associate", Key: key, Action: action, Created: true, Changes: changes,
+		// AssociateSerializer.create assigns the text a client sent to the in-memory
+		// instance: auditlog writes it as object_pk and renders it for associate_id,
+		// while the column holds the canonical uuid (read through Row).
+		row := ""
+		if stored != nil && stored.Spelling != "" && stored.Spelling != stored.ID {
+			if overrides == nil {
+				overrides = map[string][2]string{}
+			}
+			overrides["associate_id"] = [2]string{"None", stored.Spelling}
+			row = stored.ID
+		}
+		return a.tx.Audit(ctx, domain.SubscriptionEditAudit{Model: "associate", Key: key, Row: row, Action: action, Created: true, Changes: changes,
 			Overrides: overrides, Association: indexAssociation, Path: indexPath, Context: a.context, At: a.now().UTC()})
 	}
 	if !a.visible(stored) {
 		// auditlog's old row lookup goes through the group-aware manager and
 		// finds nothing: it renders every field against None, like a create.
-		return a.tx.Audit(ctx, domain.SubscriptionEditAudit{Model: "associate", Key: key, Action: action, Created: true, Changes: nil,
-			Association: indexAssociation, Path: indexPath, Context: a.context, At: a.now().UTC()})
+		// The in-memory key is still the instance's, spelling included.
+		var overrides map[string][2]string
+		row := ""
+		if pair, ok := changes["associate_id"]; ok {
+			overrides = map[string][2]string{"associate_id": {"None", pair[1]}}
+			if stored != nil {
+				row = stored.ID
+			}
+		}
+		return a.tx.Audit(ctx, domain.SubscriptionEditAudit{Model: "associate", Key: key, Row: row, Action: action, Created: true, Changes: nil,
+			Overrides: overrides, Association: indexAssociation, Path: indexPath, Context: a.context, At: a.now().UTC()})
 	}
 	if a.inserted[key] && a.group != nil && a.sentGroup != *a.group {
 		if changes == nil {
@@ -676,9 +696,9 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 			old := *savedTutor
 			savedTutor.UserID = &memberID
 			if err = tx.SaveAssociate(ctx, *savedTutor); err != nil {
-				return nil, err
+				return nil, associateSaveError(err)
 			}
-			if err = audit.associate(ctx, savedTutor.ID, 1, false, &old, associateChanges(old, *savedTutor), ownAssociation, "direct"); err != nil {
+			if err = audit.associate(ctx, savedTutor.AuditKey(), 1, false, &old, associateChanges(old, *savedTutor), ownAssociation, "direct"); err != nil {
 				return nil, err
 			}
 			relations, err := tx.Relations(ctx, saved.ID)
@@ -703,9 +723,21 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 					return nil, err
 				}
 				key := fmt.Sprint(relation)
+				// The relation's foreign keys are the instances' keys as auditlog reads them.
+				var overrides map[string][2]string
+				if saved.AuditKey() != saved.ID {
+					overrides = map[string][2]string{"associate": {"None", saved.AuditKey()}}
+				}
+				if savedTutor.AuditKey() != savedTutor.ID {
+					if overrides == nil {
+						overrides = map[string][2]string{}
+					}
+					overrides["tutor"] = [2]string{"None", savedTutor.AuditKey()}
+				}
 				if err = tx.AuditEntry(ctx, domain.SubscriptionCreateAudit{App: "application", Model: "associatetutorrelation",
 					Representation: "AssociateTutorRelation", Table: "application_associatetutorrelation", Column: "id", Key: key, Created: true,
-					Association: ownAssociation, Path: "associate.sport_association", Context: request.Audit, At: s.now().UTC()}); err != nil {
+					Overrides: overrides, Association: ownAssociation, Path: "associate.sport_association", Context: request.Audit,
+					At: s.now().UTC()}); err != nil {
 					return nil, err
 				}
 			}
@@ -721,9 +753,9 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 	}
 	saved.UserID = &memberID
 	if err = tx.SaveAssociate(ctx, *saved); err != nil {
-		return nil, err
+		return nil, associateSaveError(err)
 	}
-	if err = audit.associate(ctx, saved.ID, 1, false, &old, associateChanges(old, *saved), ownAssociation, "direct"); err != nil {
+	if err = audit.associate(ctx, saved.AuditKey(), 1, false, &old, associateChanges(old, *saved), ownAssociation, "direct"); err != nil {
 		return nil, err
 	}
 	signatureValue, _ := data.Lookup("signature")
@@ -890,8 +922,13 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 			if err = tx.InsertPayment(ctx, row); err != nil {
 				return nil, err
 			}
-			if err = audit.created(ctx, "payment", "Payment", "application_payment", "payment_id", id,
-				map[string][2]string{"amount": {"None", dto.PythonFloatText(fees.amount)}}, ownAssociation, "direct"); err != nil {
+			overrides := map[string][2]string{"amount": {"None", dto.PythonFloatText(fees.amount)}}
+			// Payment.objects.create(associate=associate) keeps the instance's key.
+			if saved.AuditKey() != saved.ID {
+				overrides["associate"] = [2]string{"None", saved.AuditKey()}
+			}
+			if err = audit.created(ctx, "payment", "Payment", "application_payment", "payment_id", id, overrides, ownAssociation,
+				"direct"); err != nil {
 				return nil, err
 			}
 			paymentID = &id
@@ -1027,6 +1064,13 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 		}
 		subscriptionChanges = map[string][2]string{"start_date": aware(memberSeason.Start), "end_date": aware(memberSeason.End)}
 	}
+	if saved.AuditKey() != saved.ID {
+		// Subscription.objects.create(associate=associate) keeps the instance's key.
+		if subscriptionChanges == nil {
+			subscriptionChanges = map[string][2]string{}
+		}
+		subscriptionChanges["associate"] = [2]string{"None", saved.AuditKey()}
+	}
 	if err = audit.created(ctx, "subscription", "Subscription", "application_subscription", "subscription_id", subscriptionID, subscriptionChanges,
 		ownAssociation, "direct"); err != nil {
 		return nil, err
@@ -1090,14 +1134,29 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 		if price != nil {
 			overrides = map[string][2]string{"price": {"None", rendered}}
 		}
+		if saved.AuditKey() != saved.ID {
+			// SubscriptionMembership.objects.create(associate=subscription.associate).
+			if overrides == nil {
+				overrides = map[string][2]string{}
+			}
+			overrides["associate"] = [2]string{"None", saved.AuditKey()}
+		}
 		if err = audit.created(ctx, "subscriptionmembership", "SubscriptionMembership", "application_subscriptionmembership",
 			"subscription_membership_id", membershipID, overrides, ownAssociation, "direct"); err != nil {
 			return nil, err
 		}
-		// subscription_membership.save(): the stored price against the in-memory number.
+		// subscription_membership.save(): the stored price against the in-memory number,
+		// and the associate's spelling against the stored key.
+		update := map[string][2]string{}
 		if price != nil {
-			if err = audit.updated(ctx, "subscriptionmembership", "SubscriptionMembership", membershipID,
-				map[string][2]string{"price": {*price, rendered}}, ownAssociation, "direct"); err != nil {
+			update["price"] = [2]string{*price, rendered}
+		}
+		if saved.AuditKey() != saved.ID {
+			update["associate"] = [2]string{saved.ID, saved.AuditKey()}
+		}
+		if len(update) > 0 {
+			if err = audit.updated(ctx, "subscriptionmembership", "SubscriptionMembership", membershipID, update, ownAssociation,
+				"direct"); err != nil {
 				return nil, err
 			}
 		}
@@ -1279,7 +1338,7 @@ func (s *SubscriptionCreates) saveAssociate(ctx context.Context, tx domain.Subsc
 				}
 			}
 		}
-		return s.saveAssociateByID(ctx, tx, audit, write, association, minorOf, group)
+		return s.saveAssociateByID(ctx, tx, audit, write, association, group)
 	}
 	ownAssociation := &association
 	tax := write.Text["tax_code"]
