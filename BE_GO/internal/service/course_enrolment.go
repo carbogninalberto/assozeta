@@ -118,6 +118,10 @@ const courseMembershipType = 3
 
 var courseEnrolmentServer = domain.ErrCourseSubscriptionServer
 
+// courseRaised is a Python exception add_course_to_subscription raises whose
+// str() the port reconstructs (subscription/renew's 400 body).
+func courseRaised(text string) error { return &domain.CourseSubscriptionRaised{Text: text} }
+
 func (s *CourseEnrolment) begin(ctx context.Context) (domain.CourseEnrolmentTransaction, error) {
 	return s.store.BeginCourseEnrolment(ctx)
 }
@@ -619,7 +623,8 @@ func (s *CourseEnrolment) payment(ctx context.Context, tx domain.CourseEnrolment
 func courseLabel(label any, course string) (domain.RequestObject, string, error) {
 	text, ok := label.(string)
 	if !ok {
-		return nil, "", courseEnrolmentServer
+		// Payment.save()'s ", ".join([course.title, '']).
+		return nil, "", courseRaised("sequence item 0: expected str instance, " + pythonTypeLabel(label) + " found")
 	}
 	return domain.RequestObject{{Name: "label", Value: label}, {Name: "value", Value: course}}, text + ", ", nil
 }

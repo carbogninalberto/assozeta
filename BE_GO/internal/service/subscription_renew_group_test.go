@@ -75,6 +75,10 @@ func (t *groupRenewTransaction) AssociationCount(context.Context, string) (int, 
 	return t.associationCount, nil
 }
 
+func (t *groupRenewTransaction) RenewalAssociationUser(_ context.Context, user string, _ int) (string, int, error) {
+	return user, t.associationCount, nil
+}
+
 func (t *groupRenewTransaction) Rollback() error {
 	t.rollbacks++
 	return nil

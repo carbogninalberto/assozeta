@@ -218,11 +218,12 @@ func TestSubscriptionQuickFee(t *testing.T) {
 			if err == nil || fee != nil || meta != nil {
 				t.Fatalf("got (%v, %v, %v), want an error", fee, meta, err)
 			}
-			if errors.Is(err, domain.ErrSubscriptionCreateServer) || errors.Is(err, domain.ErrSubscriptionCreateNotPorted) {
+			if errors.Is(err, domain.ErrSubscriptionCreateServer) {
 				return // the 500 page
 			}
 			var failure *domain.SubscriptionCreateFailure
-			if !errors.As(err, &failure) {
+			var raised *domain.SubscriptionCreateRaised
+			if !errors.As(err, &failure) && !errors.As(err, &raised) {
 				t.Fatalf("got %v, want the 500 page or a Python exception", err)
 			}
 		})

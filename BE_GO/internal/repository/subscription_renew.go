@@ -74,13 +74,28 @@ func (t *subscriptionRenewTransaction) RenewAssociationOwner(ctx context.Context
 	return &owner, nil
 }
 
-// ConnectedAssociationCount is SportAssociation.objects.filter(user=connected_user).count()
-// of the account: a missing connected account matches no row.
-func (t *subscriptionRenewTransaction) ConnectedAssociationCount(ctx context.Context, user string) (int, error) {
-	var count int
-	err := t.tx.GetContext(ctx, &count, `SELECT COUNT(*) FROM application_sportassociation a
- WHERE NOT a.deleted AND a.user_id=(SELECT connected_user_id FROM bakney_user WHERE user_id=$1)`, user)
-	return count, err
+// RenewalAssociationUser is User.sport_association's account: an association
+// account or athlete reads its own row; a collaborator reads connected_user,
+// and the count is that account's live associations (0 for no connected
+// account, which Django's SportAssociation.objects.get(user=None) also misses).
+func (t *subscriptionRenewTransaction) RenewalAssociationUser(ctx context.Context, user string, role int) (string, int, error) {
+	account := user
+	if role == domain.RoleCollaborator {
+		var connected *string
+		err := t.tx.GetContext(ctx, &connected, `SELECT connected_user_id::text FROM bakney_user WHERE user_id=$1`, user)
+		if errors.Is(err, sql.ErrNoRows) {
+			return "", 0, nil
+		}
+		if err != nil {
+			return "", 0, err
+		}
+		if connected == nil {
+			return "", 0, nil
+		}
+		account = *connected
+	}
+	count, err := t.AssociationCount(ctx, account)
+	return account, count, err
 }
 
 func (t *subscriptionRenewTransaction) MemberRenewable(ctx context.Context, requester, association string, associate, taxCode *string) (bool, error) {

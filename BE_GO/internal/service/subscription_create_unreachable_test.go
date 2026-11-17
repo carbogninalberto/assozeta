@@ -24,9 +24,6 @@ func TestSubscriptionCreateUnreachableIsAppState(t *testing.T) {
 	if errors.Is(wrapped, refusal.ErrNotPorted) {
 		t.Fatalf("%v is still a refusal: it would be handed off", err)
 	}
-	if errors.Is(wrapped, domain.ErrSubscriptionCreateNotPorted) {
-		t.Fatalf("%v matches the not-ported sentinel", err)
-	}
 	if !errors.Is(wrapped, domain.ErrSubscriptionCreateUnreachable) {
 		t.Fatalf("%v no longer matches itself", err)
 	}

@@ -55,6 +55,9 @@ type SubscriptionCreateRequest struct {
 	// RequesterID is create_subscription's requester when it is not request.user (a member
 	// account's renewal runs as the association's owner).
 	RequesterID string
+	// AssociationUserID is the account whose association create_subscription reads
+	// (User.sport_association): a collaborator's connected account. Empty: ScopeUser.
+	AssociationUserID string
 }
 
 // SubscriptionCreates ports subscription_add and create_subscription
@@ -526,7 +529,7 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 	var tutor domain.RequestObject
 	if tutorValue != nil {
 		if tutor, ok = tutorValue.(domain.RequestObject); !ok {
-			return nil, server
+			return nil, nonObjectTutorError(associate, tutorValue, age)
 		}
 		if tutor, associate, err := subscriptionCreateNormalize(tutor, associate, age); err != nil {
 			return nil, err
@@ -591,7 +594,12 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 		if user.Role == domain.RoleAthlete {
 			return nil, &domain.PermissionDenied{Detail: "User is not a sport association"}
 		}
-		if settings, count, err = tx.Settings(ctx, user.ID); err != nil {
+		// user.sport_association: a collaborator reads its connected account's.
+		settingsUser := user.ID
+		if request.AssociationUserID != "" {
+			settingsUser = request.AssociationUserID
+		}
+		if settings, count, err = tx.Settings(ctx, settingsUser); err != nil {
 			return nil, err
 		}
 		if count != 1 {
@@ -603,16 +611,30 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 				return nil, err
 			}
 		}
-		member = domain.SubscriptionCreateMember{ID: user.ID, Role: user.Role, StartDay: settings.StartDay, StartMonth: settings.StartMonth,
-			CustomEnd: settings.CustomEnd, EndDay: settings.EndDay, EndMonth: settings.EndMonth}
+		// date_from/date_to read the association owner's start, current_date_from/to
+		// the registration's own user: a collaborator's season settings are its own.
+		own, err := tx.Member(ctx, user.ID)
+		if err != nil {
+			return nil, err
+		}
+		if own == nil {
+			return nil, domain.ErrSubscriptionCreateUnreachable
+		}
+		member = *own
 	}
 	association := settings.AssociationID
+	// associate_data.initial_data['user'] is the registration's user, except for an
+	// athlete request naming an association (that association's account).
+	account := user.ID
+	if request.AthleteRequest {
+		account = settings.OwnerID
+	}
 	associate = objectSet(associate, "sport_association", association)
-	associate = objectSet(associate, "user", settings.OwnerID)
+	associate = objectSet(associate, "user", account)
 	data = objectSet(data, "associate_data", associate)
 	if tutor != nil {
 		tutor = objectSet(tutor, "sport_association", association)
-		tutor = objectSet(tutor, "user", settings.OwnerID)
+		tutor = objectSet(tutor, "user", account)
 		data = objectSet(data, "associate_tutor_data", tutor)
 	}
 	rule := domain.CalendarRule{StartDay: settings.StartDay, StartMonth: settings.StartMonth, CustomEnd: settings.CustomEnd,
@@ -1181,7 +1203,8 @@ func subscriptionCreateValue(value *string) string {
 
 func subscriptionCreateCalendar(err error) error {
 	if errors.Is(err, domain.ErrInvalidCalendar) {
-		return domain.ErrSubscriptionCreateServer
+		// get_range_from_year_and_starting_date's ValueError: the view's 400 body.
+		return raisedFailure(err.Error())
 	}
 	return err
 }
@@ -1191,6 +1214,33 @@ func (s *SubscriptionCreates) actorAssociation(ctx context.Context, tx domain.Su
 		return nil, nil
 	}
 	return tx.ActiveAssociationOf(ctx, *audit.ActorID)
+}
+
+// nonObjectTutorError is create_subscription's tutor block on
+// data['associate_tutor_data'] that is not a dict: the address copies read its
+// .keys() (an AttributeError), and when the associate has both address keys
+// the `'address_cap' in tutor` membership test or its subscript raises first.
+func nonObjectTutorError(associate domain.RequestObject, tutor any, age int) error {
+	for _, name := range []string{"address_city", "address_cap"} {
+		if !objectHas(associate, name) || age < 18 {
+			return pythonAttributeError(tutor, "keys")
+		}
+	}
+	switch v := tutor.(type) {
+	case string:
+		if strings.Contains(v, "address_cap") {
+			return pythonSubscriptError(v)
+		}
+	case []any:
+		for _, item := range v {
+			if text, ok := item.(string); ok && text == "address_cap" {
+				return pythonSubscriptError(v)
+			}
+		}
+	default:
+		return raisedFailure("argument of type '" + pythonTypeLabel(tutor) + "' is not iterable")
+	}
+	return pythonAttributeError(tutor, "keys")
 }
 
 // subscriptionCreateNormalize is create_subscription's tutor block: address
@@ -1448,7 +1498,7 @@ func subscriptionCreateFloat(value any) (float64, error) {
 	number, ok, server := dto.SubscriptionCreateFloat(value)
 	if server || !ok {
 		// float() raises (ValueError, TypeError or OverflowError): the view does not handle it.
-		return 0, domain.ErrSubscriptionCreateServer
+		return 0, raisedFailure(pythonFloatError(value))
 	}
 	return number, nil
 }
@@ -1525,7 +1575,7 @@ func (s *SubscriptionCreates) membershipCategory(ctx context.Context, tx domain.
 	}
 	if category == nil {
 		// str(None.payment_category_id)
-		return "", domain.ErrSubscriptionCreateServer
+		return "", pythonAttributeError(nil, "payment_category_id")
 	}
 	return *category, nil
 }

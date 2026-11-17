@@ -665,6 +665,28 @@
    "course_type": 1,
    "multiple_quotes": null,
    "deleted": false
+  },
+  "no_events": {
+   "id": "a1000000-0000-4000-8000-000000951016",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Senza eventi",
+   "fee": "0.00",
+   "multi_payments": true,
+   "events": null,
+   "course_type": 1,
+   "multiple_quotes": null,
+   "deleted": false
+  },
+  "no_title": {
+   "id": "a1000000-0000-4000-8000-000000951017",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": null,
+   "fee": "12.00",
+   "multi_payments": false,
+   "events": null,
+   "course_type": 1,
+   "multiple_quotes": null,
+   "deleted": false
   }
  },
  "certificates": {
@@ -2483,6 +2505,57 @@
     "courses": null
    },
    "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-membership-plan-fee-not-a-number",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "status": "error",
+    "msg": "could not convert string to float: 'non-un-numero'"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": 1,
+    "associate_data": {
+     "first_name": "Rita",
+     "last_name": "Rossa",
+     "tax_code": "RSSRTI90C41H501K",
+     "born_date": "15/03/1990",
+     "sex": "M",
+     "type": 2
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": []
+   },
+   "setup": {
+    "association": {
+     "multiple_membership_fee": true,
+     "membership_fee": "0",
+     "membership_fee_plans": [
+      {
+       "id": 1,
+       "name": "Piano",
+       "membership_fee": "non-un-numero"
+      }
+     ]
+    }
+   }
   },
   {
    "name": "subscription-renew-renew-basic",
@@ -7914,6 +7987,92 @@
    "setup": null
   },
   {
+   "name": "subscription-renew-renew-course-events-none",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "status": "error",
+    "msg": "'NoneType' object is not iterable"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "first_name": "Rita",
+     "last_name": "Rossa",
+     "tax_code": "RSSRTI90C41H501K",
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [
+     {
+      "label": "Senza eventi",
+      "value": "a1000000-0000-4000-8000-000000951016"
+     }
+    ]
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-course-title-none",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "status": "error",
+    "msg": "sequence item 0: expected str instance, NoneType found"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "first_name": "Rita",
+     "last_name": "Rossa",
+     "tax_code": "RSSRTI90C41H501K",
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [
+     {
+      "label": null,
+      "value": "a1000000-0000-4000-8000-000000951017"
+     }
+    ]
+   },
+   "setup": null
+  },
+  {
    "name": "subscription-renew-renew-owner-scoped-session-with-course",
    "actor": "owner",
    "method": "POST",
@@ -11022,6 +11181,48 @@
      "prereg"
     ],
     "approving_cleared": true
+   }
+  },
+  {
+   "name": "subscription-renew-renew-calendar-invalid-start-month",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "status": "error",
+    "msg": "Month must be between 1 and 12"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "first_name": "Rita",
+     "last_name": "Rossa",
+     "tax_code": "RSSRTI90C41H501K",
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": []
+   },
+   "setup": {
+    "owner": {
+     "subscription_start_month": 0
+    }
    }
   }
  ]

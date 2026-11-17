@@ -167,6 +167,11 @@ PAYMENTS['session_stale'] = {'id': next(course_ids), 'associate': 'session_membe
                              'date': '$today'}
 PAYMENTS['session_namesake_stale'] = {'id': next(course_ids), 'associate': 'session_namesake', 'amount': '31.00', 'paid': False, 'subject': 1,
                                       'date': '$today'}
+# Stored course rows the renewal's add_course_to_subscription reads: a multi-payment
+# course without events (the for loop's TypeError) and one without a title (Payment.save's
+# ', '.join). Their ids come last so the earlier courses' ids stay stable.
+COURSES['no_events'] = course('Senza eventi', fee='0.00', multi=True, events=None)
+COURSES['no_title'] = {**course('Senza titolo', fee='12.00'), 'title': None}
 TARGET_USER = {'id': next(ids), 'username': 'renew-target-user', 'email': 'renew-target@example.test'}
 ACCOUNT = next(ids)
 
@@ -282,9 +287,9 @@ def subscription_rows(bind, associate_ref, *, kind, payment, user='$owner', medi
     return rows
 
 
-def new_payment(bind, associate_ref, amount='25.00', *, group=None):
+def new_payment(bind, associate_ref, amount='25.00', *, group=None, user='$owner'):
     return {'label': 'payment', 'bind': bind, 'match': {'associate_id': associate_ref, 'amount': amount},
-            'columns': {'subject': 1, 'description': 'Iscrizione', 'payment_category_id': '$category', 'user_id': '$owner',
+            'columns': {'subject': 1, 'description': 'Iscrizione', 'payment_category_id': '$category', 'user_id': user,
                         'sport_association_id': OWN, 'custom_accounts_id': ACCOUNT, 'amount': amount, 'payment_date': '$today_midnight',
                         'meta_payment_categories': None, 'meta': None, **({'group_id': group} if group else {})}}
 
@@ -468,6 +473,13 @@ add('renew-user-email-dict', 'renew', 'owner', 400, error("['“x” is not a va
     body=renewal(basic, user={'email': {'a': 1}}, tags=['x']))
 add('renew-tag-without-id', 'renew', 'owner', 400, error("'tag_id'"), body=renewal(basic, tags=[{'id': TAGS['tag_a']['id']}]))
 add('renew-courses-none', 'renew', 'owner', 400, error("object of type 'NoneType' has no len()"), body=renewal(basic, courses=None))
+# create_subscription's own Python exceptions inside the view's try: the membership
+# plan's fee float() rejects, and the association's season start month is invalid.
+add('renew-membership-plan-fee-not-a-number', 'renew', 'owner', 400,
+    error("could not convert string to float: 'non-un-numero'"),
+    setup={'association': {'multiple_membership_fee': True, 'membership_fee': '0',
+                           'membership_fee_plans': [{'id': 1, 'name': 'Piano', 'membership_fee': 'non-un-numero'}]}},
+    body=renewal({**basic, 'type': 2}, membership_plan_id=1))
 
 # --- subscription/renew: success paths -------------------------------------------------------------------
 # The renewal form's body: the previous associate (associate_id), its association as a dict (no username matches str(dict)),
@@ -887,6 +899,13 @@ add('renew-course-without-fee', 'renew', 'owner', 400, error("'>' not supported 
     body=renewal(basic, courses=[course_item('no_fee')]))
 add('renew-course-stored-event-invalid', 'renew', 'owner', 400, {'amount': ['A valid number is required.']},
     body=renewal(basic, courses=[course_item('fee'), course_item('broken_plan')]))
+# Stored course values: a multi-payment course whose events column is NULL, and a
+# course without a title. Both raise inside add_course_to_subscription; the view's
+# atomic block rolls the renewal back.
+add('renew-course-events-none', 'renew', 'owner', 400, error("'NoneType' object is not iterable"),
+    body=renewal(basic, courses=[course_item('no_events')]))
+add('renew-course-title-none', 'renew', 'owner', 400, error('sequence item 0: expected str instance, NoneType found'),
+    body=renewal(basic, courses=[course_item('no_title')]))
 
 # --- subscription/renew in an association-scoped session ---------------------------------------------------
 # The owner viewing as a collaborator: scoped_queryset keeps to the session's association; the course is enrolled.
@@ -1249,6 +1268,12 @@ add('approve-draft-preregistration-renews-subscription', 'approve', 'owner', 200
                          *status_entries(create=False)],
                   celery=tasks('$prereg_draft_subscription'),
                   notifications=[{'msg': 'Nuova Iscrizione aggiunta per Pia Prenotata.', 'association': OWN}]))
+
+# The association's season start month is invalid: get_range_from_year_and_
+# starting_date raises its ValueError inside the view's try. Last, because the
+# setup changes the owner's settings for the remaining cases.
+add('renew-calendar-invalid-start-month', 'renew', 'owner', 400, error('Month must be between 1 and 12'),
+    setup={'owner': {'subscription_start_month': 0}}, body=renewal(basic))
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({

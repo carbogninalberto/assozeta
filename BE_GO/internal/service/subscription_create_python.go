@@ -19,6 +19,9 @@ import (
 
 func pythonFailure(text string) error { return &domain.SubscriptionCreateFailure{Text: text} }
 
+// raisedFailure is a Python exception whose str() the port reconstructs.
+func raisedFailure(text string) error { return &domain.SubscriptionCreateRaised{Text: text} }
+
 func pythonKeyError(key string) error { return pythonFailure(dto.PythonStringRepr(key)) }
 
 // pythonTypeLabel is type(value).__name__ for a parsed JSON value.
@@ -186,9 +189,24 @@ func pythonIntError(value any) error {
 	case json.Number, bool:
 		text = dto.PythonStrip(dto.PythonStr(v))
 	default:
-		return domain.ErrSubscriptionCreateServer
+		// str() of a container (or None) then int(): the ValueError still names it.
+		text = dto.PythonStrip(dto.PythonStr(v))
 	}
 	return pythonFailure("invalid literal for int() with base 10: " + dto.PythonStringRepr(text))
+}
+
+// pythonFloatError is str() of float(value) raising: a ValueError for a text,
+// an OverflowError for an integer past the float range, a TypeError otherwise.
+func pythonFloatError(value any) string {
+	switch v := value.(type) {
+	case string:
+		return "could not convert string to float: " + dto.PythonStringRepr(v)
+	case json.Number:
+		if !strings.ContainsAny(string(v), ".eE") {
+			return "int too large to convert to float"
+		}
+	}
+	return "float() argument must be a string or a real number, not '" + pythonTypeLabel(value) + "'"
 }
 
 // djangoInvalidUUID is str() of UUIDField.to_python's ValidationError.

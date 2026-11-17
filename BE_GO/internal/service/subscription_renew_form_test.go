@@ -33,8 +33,11 @@ func (t *formRenewTransaction) MemberRenewable(context.Context, string, string, 
 	return t.allowed, nil
 }
 
-func (t *formRenewTransaction) ConnectedAssociationCount(context.Context, string) (int, error) {
-	return t.connectedCount, nil
+func (t *formRenewTransaction) RenewalAssociationUser(_ context.Context, user string, role int) (string, int, error) {
+	if role == domain.RoleCollaborator {
+		return "10000000-0000-4000-8000-000000000002", t.connectedCount, nil
+	}
+	return user, t.associationCount, nil
 }
 
 func (t *formRenewTransaction) SetGroup(*string) {}
@@ -193,10 +196,14 @@ func TestRenewAssociationOwnedByCollaborator(t *testing.T) {
 	}
 	t.Run("one", func(t *testing.T) {
 		tx := &formRenewTransaction{associationCount: 1, allowed: true, owner: owner, connectedCount: 1}
+		body := memberRenewalBody(t)
+		associate, _ := body.Lookup("associate_data")
+		associate = objectSet(associate.(domain.RequestObject), "born_date", "")
+		body = objectSet(body, "associate_data", associate)
 		_, err := newFormRenewals(tx).Renew(context.Background(), formRenewIdentity(domain.RoleAthlete),
-			SubscriptionCreateRequest{Body: memberRenewalBody(t), Form: true})
-		if !errors.Is(err, domain.ErrSubscriptionCreateNotPorted) {
-			t.Fatalf("want the not-ported refusal (an imported owner), got %v", err)
+			SubscriptionCreateRequest{Body: body, Form: true})
+		if text := renewFailureText(t, err); text != "String does not contain a date: " {
+			t.Fatalf("unexpected text: %q", text)
 		}
 	})
 }

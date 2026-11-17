@@ -11,9 +11,6 @@ import (
 var (
 	// ErrSubscriptionCreateServer is an exception Django raises (the 500 page).
 	ErrSubscriptionCreateServer = errors.New("subscription create server error")
-	// ErrSubscriptionCreateNotPorted refuses input this port does not handle (the
-	// 500 page, nothing committed).
-	ErrSubscriptionCreateNotPorted = refusal.New("subscription create input not ported")
 	// ErrSubscriptionCreateUnreachable is a state no request or stored row
 	// produces (each site names the decoder or constraint that rules it out).
 	ErrSubscriptionCreateUnreachable = refusal.AppState("subscription create: unreachable state")
@@ -29,6 +26,18 @@ type SubscriptionCreateInvalid struct {
 }
 
 func (e *SubscriptionCreateInvalid) Error() string { return "invalid subscription data" }
+
+// SubscriptionCreateRaised is a Python exception create_subscription raises
+// whose str() the port reconstructs. It still matches
+// ErrSubscriptionCreateServer, so subscription/add keeps answering the 500
+// page while subscription/renew answers 400 {"status": "error", "msg": Text}.
+type SubscriptionCreateRaised struct{ Text string }
+
+func (e *SubscriptionCreateRaised) Error() string { return "subscription create raised: " + e.Text }
+
+func (e *SubscriptionCreateRaised) Is(target error) bool {
+	return target == ErrSubscriptionCreateServer
+}
 
 // SubscriptionCreateRejected is DRF's ValidationError(<text>): the body is the
 // JSON array of the messages the exception carries (list(ValidationError)).

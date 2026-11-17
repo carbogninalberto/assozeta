@@ -38,6 +38,10 @@ func (t *preregRenewTransaction) AssociationCount(context.Context, string) (int,
 	return t.associationCount, nil
 }
 
+func (t *preregRenewTransaction) RenewalAssociationUser(_ context.Context, user string, _ int) (string, int, error) {
+	return user, t.associationCount, nil
+}
+
 func (t *preregRenewTransaction) SetGroup(*string) {}
 
 func (t *preregRenewTransaction) Rollback() error {

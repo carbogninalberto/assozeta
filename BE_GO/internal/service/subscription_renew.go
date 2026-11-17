@@ -42,14 +42,19 @@ func NewSubscriptionRenewals(store domain.SubscriptionRenewStore, creates *Subsc
 
 // renewError maps create_subscription and post-processing errors: APIExceptions
 // propagate, Python exceptions with a known str() are the 400 body, other
-// exceptions are not ported.
+// exceptions keep their answer.
 func renewError(err error) error {
+	var raised *domain.SubscriptionCreateRaised
+	if errors.As(err, &raised) {
+		return &SubscriptionRenewFailure{Text: raised.Text}
+	}
 	var failure *domain.SubscriptionCreateFailure
 	if errors.As(err, &failure) {
 		return &SubscriptionRenewFailure{Text: failure.Text}
 	}
-	if errors.Is(err, domain.ErrSubscriptionCreateServer) {
-		return domain.ErrSubscriptionCreateNotPorted
+	var course *domain.CourseSubscriptionRaised
+	if errors.As(err, &course) {
+		return &SubscriptionRenewFailure{Text: course.Text}
 	}
 	return err
 }
@@ -117,13 +122,17 @@ func (s *SubscriptionRenewals) Renew(ctx context.Context, identity domain.Resolv
 		identity.ScopeUser = owner
 		user = owner
 	}
-	// The log line reads request.user.sport_association first.
-	count, err := tx.AssociationCount(ctx, user.ID)
+	// The log line reads request.user.sport_association first: its account is the
+	// user itself, or a collaborator's connected account.
+	settingsUser, count, err := tx.RenewalAssociationUser(ctx, user.ID, user.Role)
 	if err != nil {
 		return nil, err
 	}
 	if count != 1 {
 		return nil, renewError(subscriptionAssociationGet(count))
+	}
+	if settingsUser != user.ID {
+		request.AssociationUserID = settingsUser
 	}
 	data, ok := request.Body.(domain.RequestObject)
 	if !ok {
@@ -241,22 +250,9 @@ func (s *SubscriptionRenewals) renewRequesterOwner(ctx context.Context, tx domai
 		// association'); the view's except APIException re-raises it (403).
 		return nil, &domain.PermissionDenied{Detail: "User is not a sport association"}
 	}
-	if owner.Role == domain.RoleCollaborator {
-		// A collaborator account's association is its connected account's:
-		// SportAssociation.objects.get(user=self.connected_user), so no connected
-		// account (or none owning a live association) is DoesNotExist. A single
-		// association is not ported yet.
-		count, err := tx.ConnectedAssociationCount(ctx, owner.ID)
-		if err != nil {
-			return nil, err
-		}
-		if count != 1 {
-			return nil, renewError(subscriptionAssociationGet(count))
-		}
-		// Setup creates associations for association accounts, but the association import (import_service.py) can
-		// make an existing collaborator the owner; Django then reads the connected owner's association. Not ported.
-		return nil, domain.ErrSubscriptionCreateNotPorted
-	}
+	// A collaborator's association is its connected account's
+	// (SportAssociation.objects.get(user=self.connected_user)); the renewal's
+	// log-line check in Renew resolves it, as Django does inside the try.
 	return owner, nil
 }
 
@@ -479,14 +475,9 @@ func (s *SubscriptionRenewals) courses(ctx context.Context, tx domain.Subscripti
 		}
 		_, err = s.enrolment.addCourseToSubscription(ctx, enrolment, *course, *subscription, created.association, domain.RequestObject{}, false,
 			CourseEnrolmentRequest{Audit: request.Audit}, audit, true)
-		var invalid *CourseWritesEventInvalid
-		switch {
-		case errors.As(err, &invalid):
-			return err
-		case errors.Is(err, courseEnrolmentServer):
-			// A Python exception whose text is not reproduced.
-			return domain.ErrSubscriptionCreateNotPorted
-		case err != nil:
+		if err != nil {
+			// A texted Python exception (CourseSubscriptionRaised) is the view's 400
+			// body; a serializer error is its APIException.
 			return err
 		}
 	}

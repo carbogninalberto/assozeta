@@ -67,7 +67,11 @@ func (s *SubscriptionCreates) renewalSource(ctx context.Context, tx domain.Subsc
 		if user.Role == domain.RoleAthlete {
 			return nil, &domain.PermissionDenied{Detail: "User is not a sport association"}
 		}
-		settings, count, err := tx.Settings(ctx, user.ID)
+		settingsUser := user.ID
+		if request.AssociationUserID != "" {
+			settingsUser = request.AssociationUserID
+		}
+		settings, count, err := tx.Settings(ctx, settingsUser)
 		if err != nil {
 			return nil, err
 		}
