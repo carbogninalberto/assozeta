@@ -19,7 +19,7 @@ func resetParaSequencer() {
 // paragraphText is the text of the paragraphs of a parse.
 func paragraphText(t *testing.T, text string) (string, error) {
 	t.Helper()
-	frags, _, err := parseParagraph(text, paraStyle{fontName: "Helvetica", fontSize: numInt(9), leading: numInt(12)})
+	frags, _, _, err := parseParagraph(text, paraStyle{fontName: "Helvetica", fontSize: numInt(9), leading: numInt(12)})
 	if err != nil {
 		return "", err
 	}
@@ -360,7 +360,7 @@ func layoutWords(t *testing.T, text string) string {
 	}
 	var out strings.Builder
 	if p.simpleKind() {
-		p.breakSimple(200)
+		p.breakSimple([]float64{200, 200})
 		for _, line := range p.lines {
 			for _, word := range line.words {
 				out.WriteString(string(word.text))

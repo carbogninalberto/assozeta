@@ -27,6 +27,36 @@ type paraStyle struct {
 	// false for a style built by a document, which has reportlab's.
 	lines    [2]lineDefaults
 	linesSet bool
+	// leftIndent, rightIndent and firstLineIndent are the indents of the
+	// style.
+	leftIndent, rightIndent, firstLineIndent pyNum
+	// autoLeading is 'min', 'max', 'off' or '' (the style's value).
+	autoLeading string
+	// textTransform is 'uppercase', 'lowercase', 'capitalize', 'none' or ''
+	// (the style's value).
+	textTransform string
+	// endDots is the text of the style's endDots ('' when it has none).
+	endDots         string
+	justifyBreaks   bool
+	justifyLastLine pyNum
+	// borderWidth, borderPadding, borderColor and borderRadius are the
+	// border attributes; borderRadius 0 is the style's None (a square corner
+	// and the 0 a radius draws).
+	borderWidth, borderPadding pyNum
+	borderColor                *color
+	borderRadius               pyNum
+	// borderRadiusSet is false while borderRadius is the style's None: a
+	// relative value added to it raises, as Python's None + number does.
+	borderRadiusSet bool
+	// bulletFontName, bulletFontSize, bulletIndent, bulletAnchor,
+	// bulletOffsetY and bulletColor are the bullet attributes; bulletColor is
+	// nil unless the markup sets one.
+	bulletFontName string
+	bulletFontSize pyNum
+	bulletIndent   pyNum
+	bulletAnchor   string
+	bulletOffsetY  pyNum
+	bulletColor    *color
 }
 
 // lineDefaults are underlineWidth, underlineOffset, underlineGap and
@@ -43,6 +73,9 @@ const (
 	alignRight
 )
 
+// alignJustify is TA_JUSTIFY, the alignment reportlab numbers 4.
+const alignJustify = 4
+
 // alignment is the alignment of the style: centred for the documents'
 // centred styles, else align.
 func (s paraStyle) alignment() int {
@@ -52,7 +85,22 @@ func (s paraStyle) alignment() int {
 	return s.align
 }
 
-// shrinkage is spaceShrinkage, as the layout's float64.
+// withDefaults fills the ParagraphStyle defaults a style literal of this
+// package leaves zero: the bullet font, its size and its anchor.
+func (s paraStyle) withDefaults() paraStyle {
+	if s.bulletFontName == "" {
+		s.bulletFontName = "Helvetica"
+	}
+	if !s.bulletFontSize.truthy() {
+		s.bulletFontSize = numInt(10)
+	}
+	if s.bulletAnchor == "" {
+		s.bulletAnchor = "start"
+	}
+	return s
+}
+
+// shrinkage is spaceShrinkage, as the layout's number.
 func (s paraStyle) shrinkage() pyNum {
 	if s.shrinkSet {
 		return s.shrink
@@ -86,6 +134,41 @@ const (
 	softHyphen = '­'
 	fsNever    = float64(0x7fffffff)
 )
+
+// numFail is a pyNum operation that failed: reportlab's OverflowError for an
+// int beyond the range of float64.
+func numFail[T any](value T, ok bool) T {
+	if !ok {
+		panic(paraFailure{"int too large to convert to float"})
+	}
+	return value
+}
+
+// numAddOrErr is a+b for an int too large for a float.
+func numAddOrErr(a, b pyNum) pyNum { return numFail(numAdd(a, b)) }
+
+// numSubOrErr is a-b for an int too large for a float.
+func numSubOrErr(a, b pyNum) pyNum { return numFail(numSub(a, b)) }
+
+// numMulOrErr is a*b for an int too large for a float.
+func numMulOrErr(a, b pyNum) pyNum { return numFail(numMul(a, b)) }
+
+// pyNumberType is type(v).__name__ of a converted attribute value.
+func pyNumberType(n pyNum) string {
+	if n.isInt() {
+		return "int"
+	}
+	return "float"
+}
+
+// maxFloatNum is Python's max(f, n), a float against a number: the float stays
+// unless n compares greater, so a NaN float is the result.
+func maxFloatNum(f float64, n pyNum) pyNum {
+	if numLess(numFloat(f), n) {
+		return n
+	}
+	return numFloat(f)
+}
 
 // simpleWord is a word of a one-font paragraph: a str, a _SplitWord piece of
 // a long word (the last one a _SplitWordEnd) or a _SHYStr with the places of
@@ -232,13 +315,30 @@ type fragLine struct {
 	words     []*frag
 	fontSize  pyNum
 	sFW       int
+	// ascent, descent and maxWidth are the bounds of breakLines and the width
+	// the line was broken to (the last two are the endDots ones).
+	ascent, descent, maxWidth float64
+	// lineBreak is FragLine.lineBreak: the line ended at a <br/> that
+	// justifyBreaks leaves unjustified.
+	lineBreak bool
 }
+
+// paraBullet is Paragraph.bulletText: a str, or the fragments a <bullet> tag
+// makes (one fragment per run of markup text).
+type paraBullet struct {
+	text  string
+	frags []*frag
+}
+
+// isText is Python's truth of the bulletText: a str, or a non-empty list.
+func (b *paraBullet) isText() bool { return b.frags == nil }
 
 // paragraph is platypus.Paragraph: the fragments of the parser, laid out as
 // lines of one font (kind 0) or of several fragments (kind 1).
 type paragraph struct {
 	style     paraStyle
 	frags     []*frag
+	bullet    *paraBullet
 	processed []*fragWord // self.frags once it is a frag word list
 	isWords   bool
 	wrapped   bool
@@ -251,14 +351,26 @@ type paragraph struct {
 	// heightNum is self.height as reportlab keeps it: the line count times the
 	// leading, exact while both are ints.
 	heightNum pyNum
+	// ascent and descent are blPara.ascent and blPara.descent of the
+	// one-font layout.
+	ascent, descent pyNum
+	// wrapWidths are the first and the later line widths of wrap.
+	wrapWidths [2]float64
+	// justifyLast is _JustifyLast: the last line of a part a split made is
+	// justified (the paragraph goes on).
+	justifyLast bool
+	// splitPara is _splitpara.
+	splitPara bool
+	// offsets is _offsets: the x offset of each line (none for these
+	// documents).
+	offsets []float64
 }
 
 // Python's str.isspace() characters and reportlab's _wsc (which has U+200B
 // and leaves the no-break space alone).
 const (
-	pySpaces = "\t\n\v\f\r\x1c\x1d\x1e\x1f \u0085                 　"
-	rlSpaces = "\t\n\v\f\r\x1c\x1d\x1e\x1f \u0085            ​    　"
-	// string.whitespace
+	pySpaces    = "\t\n\v\f\r\x1c\x1d\x1e\x1f \u0085\u00a0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u2028\u2029\u202f\u205f\u3000"
+	rlSpaces    = "\t\n\v\f\r\x1c\x1d\x1e\x1f \u0085\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u200b\u2028\u2029\u202f\u205f\u3000"
 	asciiSpaces = " \t\n\r\v\f"
 )
 
@@ -266,7 +378,7 @@ const (
 // own whitespace when the text has a no-break space (re.split keeps the empty
 // strings at the ends).
 func paraSplit(text string) []string {
-	if !strings.ContainsRune(text, ' ') {
+	if !strings.ContainsRune(text, '\u00a0') {
 		return strings.FieldsFunc(text, func(r rune) bool { return strings.ContainsRune(pySpaces, r) })
 	}
 	var out []string
@@ -305,13 +417,15 @@ func paraClean(text string) string {
 	return strings.Join(lines, " ")
 }
 
-// newParagraph is Paragraph(text, style): the text cleaned and parsed.
+// newParagraph is Paragraph(text, style): the text cleaned, parsed and case
+// transformed.
 func newParagraph(text string, style paraStyle) (*paragraph, error) {
-	frags, style, err := parseParagraph(paraClean(text), style)
+	style = style.withDefaults()
+	frags, bullet, style, err := parseParagraph(paraClean(text), style)
 	if err != nil {
 		return nil, err
 	}
-	return &paragraph{style: style, frags: frags}, nil
+	return &paragraph{style: style, frags: frags, bullet: bullet}, nil
 }
 
 func (p *paragraph) spaceBefore() float64 { return p.style.spaceBefore.float() }
@@ -325,15 +439,25 @@ func (p *paragraph) count() int {
 	return len(p.frags)
 }
 
+// metrics is getAscentDescent(fontName, fontSize).
+func metrics(f *font, size float64) (ascent, descent float64) {
+	norm := size / 1000
+	return float64(f.ascent) * norm, float64(f.descent) * norm
+}
+
 // splitWord is paragraph._splitWord.
-func splitWord(word []rune, lineWidth, maxWidth float64, f *font, size float64) []*simpleWord {
+func splitWord(word []rune, lineWidth float64, maxWidths []float64, lineno int, f *font, size float64) []*simpleWord {
 	var out []*simpleWord
 	var current []rune
+	maxlineno := len(maxWidths) - 1
+	maxWidth := maxWidths[min(maxlineno, lineno)]
 	for _, r := range word {
 		cw := stringWidth(string(r), f, size)
 		newWidth := lineWidth + cw
 		if newWidth > maxWidth {
 			out = append(out, &simpleWord{text: current, split: true})
+			lineno++
+			maxWidth = maxWidths[min(maxlineno, lineno)]
 			newWidth = cw
 			current = nil
 		}
@@ -352,11 +476,13 @@ func hasSoftHyphen(text []rune) bool {
 	return false
 }
 
-// breakSimple is Paragraph.breakLines for one fragment (both line widths are
-// the available width: the styles have no indents).
-func (p *paragraph) breakSimple(maxWidth float64) {
+// breakSimple is Paragraph.breakLines for one fragment: the line widths, the
+// words of each line, and the ascent and descent of the font.
+func (p *paragraph) breakSimple(maxWidths []float64) {
 	f := p.frags[0]
 	p.kind, p.lines, p.lineFrag = 0, nil, f
+	ascent, descent := metrics(f.font, f.size.float())
+	p.ascent, p.descent = numFloat(ascent), numFloat(descent)
 	var words []*simpleWord
 	if f.hasWords {
 		blank := true
@@ -379,8 +505,11 @@ func (p *paragraph) breakSimple(maxWidth float64) {
 	}
 	size := f.size.float()
 	spaceWidth := stringWidth(" ", f.font, size)
-	shrink := p.style.shrinkValue() * spaceWidth
+	dSpaceShrink := p.style.shrinkValue() * spaceWidth
 	hyphenWidth := stringWidth("-", f.font, size)
+	maxlineno := len(maxWidths) - 1
+	lineno := 0
+	maxWidth := maxWidths[0]
 	var line []*simpleWord
 	currentWidth := -spaceWidth
 	forced := false
@@ -394,7 +523,7 @@ func (p *paragraph) breakSimple(maxWidth float64) {
 		}
 		wordWidth := stringWidth(string(word.text), f.font, size)
 		newWidth := currentWidth + spaceWidth + wordWidth
-		limWidth := maxWidth + shrink*float64(len(line))
+		limWidth := maxWidth + dSpaceShrink*float64(len(line))
 		dropped := false
 		if newWidth > limWidth && !forced {
 			if word.shy {
@@ -402,16 +531,19 @@ func (p *paragraph) breakSimple(maxWidth float64) {
 					words = append(parts, words...)
 					forced = true
 					continue
-				} else if len(line) > 0 && word.fsww+hyphenWidth+1e-8 <= maxWidth {
-					if word.shySplit(f.font, size, hyphenWidth-1e-8, maxWidth) != nil {
-						words = append([]*simpleWord{word}, words...)
-						forced, dropped = true, true
-						newWidth = currentWidth
+				} else if len(line) > 0 {
+					nMW := maxWidths[min(maxlineno, lineno)]
+					if word.fsww+hyphenWidth+1e-8 <= nMW {
+						if word.shySplit(f.font, size, hyphenWidth-1e-8, nMW) != nil {
+							words = append([]*simpleWord{word}, words...)
+							forced, dropped = true, true
+							newWidth = currentWidth
+						}
 					}
 				}
 			}
 			if !p.style.noSplit && !word.split && !forced && wordWidth > maxWidth {
-				words = append(splitWord(word.text, currentWidth+spaceWidth, maxWidth, f.font, size), words...)
+				words = append(splitWord(word.text, currentWidth+spaceWidth, maxWidths, lineno, f.font, size), words...)
 				forced = true
 				continue
 			}
@@ -425,6 +557,8 @@ func (p *paragraph) breakSimple(maxWidth float64) {
 				p.lines = append(p.lines, simpleLine{maxWidth - newWidth, line})
 				line = nil
 				currentWidth = -spaceWidth
+				lineno++
+				maxWidth = maxWidths[min(maxlineno, lineno)]
 			} else {
 				currentWidth = newWidth
 			}
@@ -432,6 +566,8 @@ func (p *paragraph) breakSimple(maxWidth float64) {
 			p.lines = append(p.lines, simpleLine{maxWidth - currentWidth, line})
 			line = []*simpleWord{word}
 			currentWidth = wordWidth
+			lineno++
+			maxWidth = maxWidths[min(maxlineno, lineno)]
 		}
 	}
 	if len(line) > 0 {
@@ -439,7 +575,6 @@ func (p *paragraph) breakSimple(maxWidth float64) {
 	}
 }
 
-// fragWidth is the width of a run of text in its fragment's font and size.
 func fragWidth(text []rune, f *frag) float64 {
 	return stringWidth(string(text), f.font, f.size.float())
 }
@@ -699,12 +834,13 @@ func (w *fragWord) shyphenate(newWidth, maxWidth float64) []*fragWord {
 
 // splitFragWord is _splitFragWord: a frag word too long for a line cut
 // character by character.
-func splitFragWord(w *fragWord, maxWidth, lineWidthMax float64) []*fragWord {
+func splitFragWord(w *fragWord, maxWidth float64, maxWidths []float64, lineno int) []*fragWord {
 	var out []*fragWord
 	var parts []fragPart
 	lineWidth, wordWidth := 0.0, 0.0
 	var text []rune
 	f := w.parts[0].f
+	maxlineno := len(maxWidths) - 1
 	step := func(g *frag, cw float64, c []rune) {
 		newLineWidth := lineWidth + cw
 		tooLong := newLineWidth > maxWidth
@@ -714,7 +850,8 @@ func splitFragWord(w *fragWord, maxWidth, lineWidthMax float64) []*fragWord {
 			parts = append(parts, fragPart{f, shyText{s: text}})
 			if tooLong {
 				out = append(out, &fragWord{width: wordWidth, parts: parts, split: true})
-				maxWidth = lineWidthMax
+				lineno++
+				maxWidth = maxWidths[min(maxlineno, lineno)]
 				parts = nil
 				newLineWidth = cw
 				wordWidth = 0
@@ -747,8 +884,11 @@ func splitFragWord(w *fragWord, maxWidth, lineWidthMax float64) []*fragWord {
 
 // breakFrags is Paragraph.breakLines for several fragments or a frag word
 // list.
-func (p *paragraph) breakFrags(maxWidth float64) {
+func (p *paragraph) breakFrags(maxWidths []float64) {
 	p.kind, p.fragLines = 1, nil
+	maxlineno := len(maxWidths) - 1
+	lineno := 0
+	maxWidth := maxWidths[0]
 	pending := p.fragWords(maxWidth, true)
 	var words []*frag
 	var done []*fragWord
@@ -756,10 +896,52 @@ func (p *paragraph) breakFrags(maxWidth float64) {
 	sFW, n := 0, 0
 	spaceWidth, currentWidth := 0.0, 0.0
 	maxSize := pyNum{}
+	maxAscent, minDescent := 0.0, 0.0
+	calcBounds := p.style.autoLeading != "" && p.style.autoLeading != "off"
 	injected := func(f *frag) *fragWord {
 		broken := f.clone()
 		broken.kind, broken.text = fragBreak, ""
 		return &fragWord{injected: true, parts: []fragPart{{broken, shyText{}}}}
+	}
+	// bounds adds the ascent and descent of a fragment to the line's.
+	bounds := func(f *frag, size float64) {
+		var ascent, descent float64
+		if f.kind == fragImage && f.img != nil {
+			descent, ascent = imgVRange(f.img.height.norm(numFloat(size)), f.img.valign, numFloat(size))
+		} else {
+			ascent, descent = metrics(f.font, size)
+		}
+		maxAscent = pyMax(maxAscent, ascent)
+		minDescent = pyMin(minDescent, descent)
+	}
+	// restart is the line a word too long to fit starts.
+	restart := func(w *fragWord, f *frag, wordWidth float64) {
+		spaceWidth = 0
+		if w.hs {
+			spaceWidth = stringWidth(" ", f.font, f.size.float())
+		}
+		currentWidth = wordWidth
+		n = 1
+		g = f.clone()
+		maxSize = g.size
+		if calcBounds {
+			if g.kind == fragImage && g.img != nil {
+				minDescent, maxAscent = imgVRange(g.img.height.norm(maxSize), g.img.valign, maxSize)
+			} else {
+				maxAscent, minDescent = metrics(g.font, maxSize.float())
+			}
+		} else {
+			maxAscent, minDescent = metrics(g.font, maxSize.float())
+		}
+		words = []*frag{g}
+		g.text = string(w.parts[0].text.s)
+		for _, part := range w.parts[1:] {
+			g = part.f.clone()
+			g.text = string(part.text.s)
+			words = append(words, g)
+			maxSize = numMax(maxSize, g.size)
+			bounds(g, g.size.float())
+		}
 	}
 	for len(pending) > 0 {
 		w := pending[0]
@@ -773,6 +955,7 @@ func (p *paragraph) breakFrags(maxWidth float64) {
 		if len(words) == 0 {
 			n, spaceWidth, currentWidth = 0, 0, 0
 			maxSize = lastSize
+			maxAscent, minDescent = metrics(lastFont, lastSize.float())
 		}
 		wordWidth := w.width
 		f := w.parts[0].f
@@ -805,7 +988,7 @@ func (p *paragraph) breakFrags(maxWidth float64) {
 				}
 			}
 			if !p.style.noSplit && !w.split && wordWidth > maxWidth {
-				cut := splitFragWord(w, maxWidth-spaceWidth-currentWidth, maxWidth)
+				cut := splitFragWord(w, maxWidth-spaceWidth-currentWidth, maxWidths, lineno)
 				pending = append(append([]*fragWord{cut[0], injected(f)}, cut[1:]...), pending...)
 				done = done[:len(done)-1]
 				continue
@@ -826,6 +1009,7 @@ func (p *paragraph) breakFrags(maxWidth float64) {
 				n++
 			}
 			maxSize = numMax(maxSize, f.size)
+			bounds(f, f.size.float())
 			switch {
 			case len(words) == 0:
 				g = f.clone()
@@ -864,6 +1048,7 @@ func (p *paragraph) breakFrags(maxWidth float64) {
 				}
 				words = append(words, g)
 				maxSize = numMax(maxSize, g.size)
+				bounds(g, g.size.float())
 			}
 			if text == "" && more {
 				n++
@@ -871,40 +1056,36 @@ func (p *paragraph) breakFrags(maxWidth float64) {
 			currentWidth = newWidth
 			continue
 		}
+		llb := false
 		if lineBreak {
 			g = f.clone()
 			words = append(words, g)
+			llb = !p.style.justifyBreaks && !w.injected
 		}
-		p.fragLines = append(p.fragLines, &fragLine{extra: maxWidth - currentWidth, wordCount: n, words: words, fontSize: maxSize, sFW: sFW})
+		p.fragLines = append(p.fragLines, &fragLine{extra: maxWidth - currentWidth, wordCount: n, words: words, fontSize: maxSize,
+			sFW: sFW, ascent: maxAscent, descent: minDescent, maxWidth: maxWidth, lineBreak: llb})
 		sFW = len(done) - 1
+		lineno++
+		maxWidth = maxWidths[min(maxlineno, lineno)]
 		if lineBreak {
 			words = nil
 			continue
 		}
-		spaceWidth = follow(lastSize.float())
-		currentWidth = wordWidth
-		n = 1
-		g = f.clone()
-		maxSize = g.size
-		words = []*frag{g}
-		g.text = string(w.parts[0].text.s)
-		for _, part := range w.parts[1:] {
-			g = part.f.clone()
-			g.text = string(part.text.s)
-			words = append(words, g)
-			maxSize = numMax(maxSize, g.size)
-		}
+		restart(w, f, wordWidth)
 	}
 	if len(words) > 0 {
-		p.fragLines = append(p.fragLines, &fragLine{extra: maxWidth - currentWidth, wordCount: n, words: words, fontSize: maxSize, sFW: sFW})
+		p.fragLines = append(p.fragLines, &fragLine{extra: maxWidth - currentWidth, wordCount: n, words: words, fontSize: maxSize,
+			sFW: sFW, ascent: maxAscent, descent: minDescent, maxWidth: maxWidth})
 	}
 	p.processed = done
 }
 
 // simpleKind is the test of Paragraph.breakLines for the one-font layout: a
-// single fragment that is no image or anchor and has no background.
+// single fragment that is no image or anchor, has no background and no
+// endDots.
 func (p *paragraph) simpleKind() bool {
-	return len(p.frags) == 1 && p.frags[0].img == nil && p.frags[0].anchor == nil && p.frags[0].back == nil
+	return len(p.frags) == 1 && p.frags[0].img == nil && p.frags[0].anchor == nil && p.frags[0].back == nil &&
+		p.style.endDots == ""
 }
 
 func (p *paragraph) lineCount() int {
@@ -914,23 +1095,84 @@ func (p *paragraph) lineCount() int {
 	return len(p.lines)
 }
 
+// handleBulletWidth is _handleBulletWidth: a bullet wider than the first
+// line's indent shortens the first line.
+func (p *paragraph) handleBulletWidth(maxWidths []float64) {
+	b := p.bullet
+	if b == nil {
+		return
+	}
+	style := p.style
+	var bulletWidth float64
+	if b.isText() {
+		bulletWidth = stringWidth(b.text, bulletFont(style.bulletFontName), style.bulletFontSize.float())
+	} else {
+		for _, f := range b.frags {
+			bulletWidth += stringWidth(f.text, f.font, f.size.float())
+		}
+	}
+	bulletLen := numAddOrErr(numAddOrErr(style.bulletIndent, numFloat(bulletWidth)),
+		numMulOrErr(numFloat(0.6), style.bulletFontSize))
+	indent := numAddOrErr(style.leftIndent, style.firstLineIndent)
+	if numLess(indent, bulletLen) {
+		//..then it overruns, and we have less space available on line 1
+		maxWidths[0] = numSubOrErr(numFloat(maxWidths[0]), numSubOrErr(bulletLen, indent)).float()
+	}
+}
+
 func (p *paragraph) wrap(c *canvas, availWidth, availHeight float64) (float64, float64) {
 	if availWidth < fuzz {
 		return 0, 0x7fffffff
 	}
 	p.width = availWidth
+	style := p.style
+	leftIndent := style.leftIndent
+	first := numSubOrErr(numSubOrErr(numFloat(availWidth), numAddOrErr(leftIndent, style.firstLineIndent)), style.rightIndent).float()
+	later := numSubOrErr(numSubOrErr(numFloat(availWidth), leftIndent), style.rightIndent).float()
+	p.wrapWidths = [2]float64{first, later}
 	p.wrapped = true
+	widths := []float64{first, later}
+	p.handleBulletWidth(widths)
 	switch {
 	case p.count() == 0:
-		p.kind, p.lines, p.fragLines, p.lineFrag = 0, nil, nil, &frag{font: fontsByName[p.style.fontName], size: p.style.fontSize, color: p.style.textColor}
+		p.kind, p.lines, p.fragLines, p.lineFrag = 0, nil, nil, &frag{font: fontsByName[style.fontName], size: style.fontSize,
+			color: style.textColor}
+		p.ascent, p.descent = style.fontSize, numMulOrErr(numFloat(-0.2), style.fontSize)
 	case p.processed == nil && p.simpleKind():
-		p.breakSimple(availWidth)
+		p.breakSimple(widths)
 	default:
-		p.breakFrags(availWidth)
+		p.breakFrags(widths)
 	}
-	height, ok := numMul(numInt(int64(p.lineCount())), p.style.leading)
-	if !ok {
-		panic(paraFailure{"int too large to convert to float"})
+	autoLeading := style.autoLeading
+	var height pyNum
+	switch {
+	case p.kind == 1:
+		if autoLeading != "" && autoLeading != "off" {
+			height = pyNum{}
+			switch autoLeading {
+			case "max":
+				for _, l := range p.fragLines {
+					height = numAddOrErr(height, maxFloatNum(l.ascent-l.descent, style.leading))
+				}
+			case "min":
+				for _, l := range p.fragLines {
+					height = numAddOrErr(height, numFloat(l.ascent-l.descent))
+				}
+			default:
+				panic(paraFailure{"invalid autoLeading value"})
+			}
+		} else {
+			height = numMulOrErr(numInt(int64(p.lineCount())), style.leading)
+		}
+	default:
+		leading := style.leading
+		switch autoLeading {
+		case "max":
+			leading = numMax(leading, numSubOrErr(p.ascent, p.descent))
+		case "min":
+			leading = numSubOrErr(p.ascent, p.descent)
+		}
+		height = numMulOrErr(numInt(int64(p.lineCount())), leading)
 	}
 	p.heightNum = height
 	p.height = height.float()
@@ -994,7 +1236,9 @@ func (p *paragraph) processedPart(start, stop int) *paragraph {
 
 // split is Paragraph.split: nothing when fewer than two lines fit, the whole
 // paragraph when all do, else the lines that fit and the rest as two
-// paragraphs (no orphan line; a last line alone is allowed).
+// paragraphs (no orphan line; a last line alone is allowed). The first part
+// keeps the bullet, the second drops it, and only the second keeps the
+// endDots of the style.
 func (p *paragraph) split(c *canvas, availWidth, availHeight float64) []flowable {
 	if p.count() == 0 || availWidth < fuzz || availHeight < fuzz {
 		return nil
@@ -1002,7 +1246,45 @@ func (p *paragraph) split(c *canvas, availWidth, availHeight float64) []flowable
 	if !p.wrapped {
 		p.wrap(c, availWidth, availHeight)
 	}
-	s := lineCountOf(availHeight / p.style.leadingValue())
+	style := p.style
+	autoLeading := style.autoLeading
+	s := 0
+	height := pyNum{}
+	if p.kind == 1 && autoLeading != "" && autoLeading != "off" {
+		limit := numFloat(availHeight + 1e-8)
+		switch autoLeading {
+		case "max":
+			for i, l := range p.fragLines {
+				n := numAddOrErr(height, maxFloatNum(l.ascent-l.descent, style.leading))
+				if numLess(limit, n) {
+					break
+				}
+				height = n
+				s = i + 1
+			}
+		case "min":
+			for i, l := range p.fragLines {
+				n := numAddOrErr(height, numFloat(l.ascent-l.descent))
+				if numLess(limit, n) {
+					break
+				}
+				height = n
+				s = i + 1
+			}
+		default:
+			panic(paraFailure{"invalid autoLeading value"})
+		}
+	} else {
+		l := style.leading
+		switch autoLeading {
+		case "max":
+			l = numMax(l, numMulOrErr(numFloat(1.2), style.fontSize))
+		case "min":
+			l = numMulOrErr(numFloat(1.2), style.fontSize)
+		}
+		s = lineCountOf(availHeight / l.float())
+		height = numMulOrErr(numInt(int64(s)), l)
+	}
 	if !p.style.allowOrphans && s <= 1 || s == 0 {
 		p.wrapped = false
 		return nil
@@ -1019,10 +1301,27 @@ func (p *paragraph) split(c *canvas, availWidth, availHeight float64) []flowable
 			return nil
 		}
 	}
-	if p.kind == 1 {
-		return []flowable{p.processedPart(0, s), p.processedPart(s, n)}
+	style1 := p.style
+	if style1.endDots != "" {
+		style1.endDots = ""
 	}
-	return []flowable{p.simplePart(p.lines[:s]), p.simplePart(p.lines[s:])}
+	var first, second *paragraph
+	if p.kind == 1 {
+		first, second = p.processedPart(0, s), p.processedPart(s, n)
+	} else {
+		first, second = p.simplePart(p.lines[:s]), p.simplePart(p.lines[s:])
+	}
+	first.style, first.bullet = style1, p.bullet
+	first.justifyLast = !(p.kind == 1 && p.fragLines[s-1].lineBreak)
+	first.splitPara = true
+	first.heightNum = height
+	first.height = height.float()
+	first.width = availWidth
+	if style.firstLineIndent.truthy() {
+		style.firstLineIndent = pyNum{}
+		second.style = style
+	}
+	return []flowable{first, second}
 }
 
 // lineCountOf is int(n) of a line count: a NaN or an infinity is int()'s
@@ -1074,3 +1373,23 @@ func (p *paragraph) minWidth() float64 {
 	}
 	return widest
 }
+
+// offsetsOf is drawPara's _offsets: the x offset of each line.
+func (p *paragraph) offsetsOf(nLines int) []float64 {
+	offsets := append([]float64{}, p.offsets...)
+	if len(offsets) == 0 {
+		offsets = []float64{0}
+	}
+	if n := nLines - len(offsets); n > 0 {
+		for i := 0; i < n; i++ {
+			offsets = append(offsets, offsets[len(offsets)-1])
+		}
+	}
+	return offsets
+}
+
+// _56 and _16 of _putFragLine's autoLeading 'max' bounds.
+const (
+	fiveSixths = 5.0 / 6.0
+	oneSixth   = 1.0 / 6.0
+)

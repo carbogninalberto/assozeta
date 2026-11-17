@@ -146,6 +146,30 @@ TEXTS = [
     '<sup rise="١">a</sup>', '<img src="%s" width="١٠"/>' % IMAGE,
     '<para alloworphans="π">a</para>', '<font color="città">a</font>', '<font color="π">a</font>', '<u color="rosso">a</u>',
     '<img src="%s" valign="١"/>' % IMAGE,
+    # The attributes of <para> that place, justify, bullet, frame and case the paragraph, the <bullet> tag, and the
+    # values reportlab raises on.
+    '<para lindent="12">a b c</para>', '<para rindent="12">a</para>', '<para findent="12">a b</para>',
+    '<para lindent="12" rindent="8" findent="-4">a</para>', '<para lindent="+3">a</para>', '<para lindent="-3">a</para>',
+    '<para lindent="1cm">a</para>', '<para lindent="x">a</para>', '<para lindent>a</para>', '<para justifylastline="3">a</para>',
+    '<para justifylastline="x">a</para>', '<para justifybreaks="yes">a</para>', '<para justifybreaks="maybe">a</para>',
+    '<para align="justify">a b c</para>', '<para align="JUSTIFY">a</para>', '<para align="centre">a</para>',
+    '<bullet>b</bullet>a', '<bullet>1.</bullet>a b', '<para bindent="12">a<bullet>x</bullet></para>',
+    '<bullet><b>b</b> c</bullet>a', '<bullet>b</bullet>a<bullet>c</bullet>', '<bullet/>a', '<bullet></bullet>a',
+    '<bullet>b</bullet>', '<bullet><br/>b</bullet>a', '<bullet font="Times-Bold">b</bullet>a', '<bullet> </bullet>a',
+    '<bullet color="red" size="8" anchor="end">b</bullet>a', '<bullet foo="1">b</bullet>a', '<bullet anchor="bogus">b</bullet>a',
+    '<bullet anchor="NUMERIC">1.</bullet>a', '<para banchor="middle" bfontsize="8" bindent="3" bcolor="blue" boffsety="1" '
+    'bfont="Times-Italic"><bullet>b</bullet>a</para>', '<para bfont="Foo"><bullet>b</bullet>a</para>',
+    '<para bfont="Times"><bullet>b</bullet>a</para>', '<para bcolor="nope"><bullet>b</bullet>a</para>',
+    '<para borderwidth="1">a</para>', '<para bordercolor="red">a</para>', '<para borderwidth="1" bordercolor="red">a</para>',
+    '<para borderwidth="1" borderpadding="4" borderradius="3" bordercolor="blue">a</para>', '<para borderradius="x">a</para>',
+    '<para borderpadding="+2">a</para>', '<para autoleading="min">a</para>', '<para autoleading="MAX">a</para>',
+    '<para autoleading="x">a</para>', '<para enddots=".">a</para>', '<para enddots="">a</para>',
+    '<para texttransform="uppercase">a ß ﬁ İ</para>', '<para texttransform="lowercase">A Σ İ</para>',
+    '<para texttransform="capitalize">hello world ΣΟΣΟΣ</para>', '<para texttransform="none">a</para>',
+    '<para texttransform="UPPERCASE ">a</para>', '<para texttransform="x">a</para>',
+    '<para texttransform="uppercase">a <b>b</b> <i>c</i></para>', '<para texttransform="capitalize">a<b>b c</b>d e</para>',
+    '<para texttransform="uppercase">a<br/>b</para>', '<para texttransform="capitalize">a <b>b</b> c</para>',
+    '<para texttransform="lowercase">ΑΣ ΣΟΣΟΣ İ</para>', '<para texttransform="capitalize">ΑΣ ΣΟΣΟΣ</para>',
     # Anchors (<a name="..."/>) and internal links (#name, document:name): the fragments they make and the targets the
     # paragraph accepts, printable or not.
     'A <a name="top"/> B', '<a name="top"/>', '<a name=" top "/>text', 'before<a name="x"/>after',
@@ -310,6 +334,19 @@ NUMBER_ATTRIBUTES = [
     ('para spaceb', '<para spaceb="%s">x</para>'),
     ('para spacea', '<para spacea="%s">x</para>'),
     ('para spaceshrinkage', '<para spaceshrinkage="%s">x</para>'),
+    ('para lindent', '<para lindent="%s">x</para>'),
+    ('para rindent', '<para rindent="%s">x</para>'),
+    ('para findent', '<para findent="%s">x</para>'),
+    ('para borderwidth', '<para borderwidth="%s">x</para>'),
+    ('para borderpadding', '<para borderpadding="%s">x</para>'),
+    ('para borderradius', '<para borderradius="%s">x</para>'),
+    ('para bfontsize', '<para bfontsize="%s"><bullet>*</bullet>x</para>'),
+    ('para bindent', '<para bindent="%s"><bullet>*</bullet>x</para>'),
+    ('para boffsety', '<para boffsety="%s"><bullet>*</bullet>x</para>'),
+    ('bullet size', '<bullet size="%s">*</bullet>x'),
+    ('bullet indent', '<bullet indent="%s">*</bullet>x'),
+    ('bullet offsety', '<bullet offsety="%s">*</bullet>x'),
+    ('para justifylastline', '<para justifylastline="%s">x</para>'),
 ]
 for _name, _template in NUMBER_ATTRIBUTES:
     for _value in NUMBER_VALUES:
@@ -326,11 +363,12 @@ TOKENS = [
     '<plaintext>', '<textarea>', '</textarea>', '<b', '</b', '<x "a">', "<x 'a>", '\n', '\t', '\xa0', '<br />', '<BR/>', '&AMP;',
     '&Alpha;', '&#0;', '&#55296;', '&#1114112;', '&#955;', 'x= "y', '<x y= "z', '<x/y>', '<x//>', '<!>', '<!->', '-->', ']]>',
     '<greek>', '</greek>', '<unichar code="65"/>', '<font name="Courier">', '</font>', '<font name="Times-Roman">',
+    '<bullet>b</bullet>', '</bullet>', '<para lindent="5">', '<para align="justify">', '<para borderwidth="1">',
+    '<para texttransform="uppercase">', '<para autoleading="max">', '<para enddots=".">', '<para bindent="2">',
 ]
 
 
-PARA_REFUSED = ('indent', 'lindent', 'rindent', 'findent', 'justify', 'border', 'texttransform', 'enddots', 'wordwrap', 'hyphenation', 'uriwastereduce',
-                'embeddedhyphenation', 'autoleading')
+PARA_REFUSED = ('wordwrap', 'hyphenation', 'uriwastereduce', 'embeddedhyphenation')
 
 
 def refusable(text):
@@ -442,15 +480,18 @@ def style_info(style):
     lines = [[us_value(getattr(style, name + 'Width')), us_value(getattr(style, name + 'Offset')), us_value(getattr(style, name + 'Gap')),
               colour_info(getattr(style, name + 'Color'))] for name in ('underline', 'strike')]
     return [style.fontName, number(style.fontSize), number(style.leading), style.alignment, number(style.spaceBefore), number(style.spaceAfter),
-            colour_info(style.textColor), colour_info(style.backColor), lines, number(style.spaceShrinkage), bool(style.splitLongWords),
-            bool(style.allowWidows), bool(style.allowOrphans)]
+            colour_info(style.textColor), colour_info(style.backColor), lines, number(style.spaceShrinkage),
+            bool(style.splitLongWords), bool(style.allowWidows), bool(style.allowOrphans), number(style.leftIndent),
+            number(style.rightIndent), number(style.firstLineIndent), getattr(style, 'autoLeading', ''), style.textTransform or '',
+            style.endDots or '', bool(style.justifyBreaks), number(style.justifyLastLine), number(style.borderWidth),
+            number(style.borderPadding), colour_info(style.borderColor),
+            number(style.borderRadius) if style.borderRadius is not None else 0, style.bulletFontName, number(style.bulletFontSize),
+            number(style.bulletIndent), style.bulletAnchor, number(getattr(style, 'bulletOffsetY', 0)),
+            colour_info(getattr(style, 'bulletColor', None))]
 
 
 def style_unported(style):
-    return (style.leftIndent or style.rightIndent or style.firstLineIndent or style.alignment not in (0, 1, 2) or style.borderWidth
-            or style.borderPadding or style.borderRadius or style.textTransform or style.endDots or style.wordWrap
-            or getattr(style, 'autoLeading', '') not in ('', 'off') or style.hyphenationLang or style.uriWasteReduce
-            or style.embeddedHyphenation or style.borderColor)
+    return bool(style.wordWrap or style.hyphenationLang or style.uriWasteReduce or style.embeddedHyphenation)
 
 
 def outcome(text, font):
@@ -464,8 +505,9 @@ def outcome(text, font):
     except Exception:
         entry['error'] = True
         return entry
-    other = bool(paragraph.bulletText) or bool(style_unported(paragraph.style))
+    other = bool(style_unported(paragraph.style))
     frags = []
+    bullet = None
     for frag in paragraph.frags:
         if frag.fontName not in FONTS + ('Symbol', 'ZapfDingbats'):
             other = True
@@ -479,6 +521,13 @@ def outcome(text, font):
             frags.append(describe(frag))
         except TypeError:
             other = True
+    if paragraph.bulletText is not None:
+        try:
+            if not isinstance(paragraph.bulletText, list):
+                raise TypeError('bullet')
+            bullet = [describe(frag) for frag in paragraph.bulletText]
+        except TypeError:
+            other = True
     if other:
         entry['other'] = True
     else:
@@ -488,6 +537,7 @@ def outcome(text, font):
             entry['other'] = True
             return entry
         entry['frags'] = frags
+        entry['bullet'] = bullet
     return entry
 
 
@@ -596,6 +646,47 @@ def standard_fonts():
     return subprocess.run([gofmt], input='\n'.join(lines), capture_output=True, text=True, check=True).stdout
 
 
+def case_tables():
+    """The code points whose str.upper/lower/title mapping is more than one character: the one-character mappings are
+    the ones Go's unicode tables give, which the fixture of case_mappings() checks for every code point."""
+    lines = ['// Code generated from CPython 3.13 (str.upper, str.lower and str.title of every code point); DO NOT EDIT.',
+             '', 'package pdfexport', '']
+    for op in ('upper', 'lower', 'title'):
+        name = 'case' + op.capitalize() + 'Extra'
+        lines.append('// %s is str.%s() of the code points whose mapping is more than one character.' % (name, op))
+        lines.append('var %s = map[rune]string{' % name)
+        for code in range(0x110000):
+            mapped = getattr(chr(code), op)()
+            if len(mapped) > 1:
+                lines.append('\t0x%X: %s,' % (code, go_string(mapped)))
+        lines += ['}', '']
+    gofmt = shutil.which('gofmt')
+    if not gofmt:
+        raise SystemExit('gofmt is needed to write textcase_gen.go')
+    return subprocess.run([gofmt], input='\n'.join(lines), capture_output=True, text=True, check=True).stdout
+
+
+def case_mappings():
+    """Every code point whose str.upper, str.lower or str.title differs from the character, with the three mappings,
+    as the proof of the case tables of the package; and strings that mix the scripts whose casing is contextual."""
+    mappings = {}
+    for code in range(0x110000):
+        char = chr(code)
+        mapped = [char.upper(), char.lower(), char.title()]
+        if mapped != [char, char, char]:
+            mappings[str(code)] = '|'.join(mapped)
+    specials = ['Σ', 'σ', 'ς', 'İ', 'A', 'a', ' ', '.', "'", 'ß', 'Ǆ', 'ﬁ']
+    strings = list(specials)
+    strings += [first + second for first in specials for second in specials]
+    strings += ['ΣΟΣΟΣ', 'ΑΣ.', 'ΑΣ ΑΣ', 'ΣΣΣ', 'aΣ', 'Σ\u0301a', "ΑΣ'Α", "Σ'Σ", 'ΑΣ \u00ad ΑΣ', 'ΣΣ.', 'Σ A', 'AΣB',
+                'İstanbul', 'İİ', 'Aİ', 'ßß', 'ẞ', 'fi', 'ﬁﬁ', 'ﬂ', 'ﬅ', 'ﬆ', 'ﬀ', 'ﬃ', 'ﬄ', 'Ǆǅǆx', 'xǄ', 'a1b',
+                "don't", 'hello world', 'a-b c', '  a', 'ÉCOLE', 'école', 'ǰ', 'ΐ', 'ŉ', 'ᾈ', 'ᾀ', 'Ὰ', 'ΐΐ',
+                'Straße İstanbul ΣΟΦΟΣ ǅ ﬁx', 'Ωmega ΑΣ', 'ﬁ ﬀ ß Ǆ', 'ÀÉÎÕÜ àéîõü', 'Σ sigma Σ', 'İIıi', 'ǅungla',
+                'ﬁne Straße', 'aΣ İß Ǆﬁ', 'MiXeD CaSe', 'ÀÉ ÀÉ', 'াΑΣ', 'ΑΣা']
+    corpus = [[text, text.upper(), text.lower(), text.title()] for text in strings]
+    return json.dumps({'mappings': mappings, 'corpus': corpus}, ensure_ascii=False, separators=(',', ':')) + '\n'
+
+
 def html5_entities():
     from html.entities import html5
     lines = ['// Code generated from html.entities.html5 of the pinned interpreter; DO NOT EDIT.', '', 'package pdfexport', '',
@@ -619,7 +710,8 @@ def corpus():
 
 def main():
     outputs = {PACKAGE / 'entities_gen.go': entities(), PACKAGE / 'colors_gen.go': colours(), PACKAGE / 'html5_gen.go': html5_entities(),
-               PACKAGE / 'fonts_std_gen.go': standard_fonts(), PACKAGE / 'testdata/paragraphs.json': corpus()}
+               PACKAGE / 'fonts_std_gen.go': standard_fonts(), PACKAGE / 'textcase_gen.go': case_tables(),
+               PACKAGE / 'testdata/paragraphs.json': corpus(), PACKAGE / 'testdata/casemapping.json': case_mappings()}
     if '--check' in sys.argv[1:]:
         stale = [str(path) for path, text in outputs.items() if not path.is_file() or path.read_text() != text]
         if stale:

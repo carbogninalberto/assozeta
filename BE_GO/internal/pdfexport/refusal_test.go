@@ -8,9 +8,8 @@ import (
 	"time"
 )
 
-// Paragraph tags whose drawing is not ported (bullets), paragraph attributes, and image sources of a format this package
-// does not embed as it is (a PNG, or a JPEG this decoder does not read), are refused instead of drawn differently from
-// reportlab.
+// Image sources of a format this package does not embed as it is (a PNG, or a JPEG this decoder does not read) are
+// refused instead of drawn differently from reportlab.
 func TestInputsNotPorted(t *testing.T) {
 	header := func(logo, name string) *string {
 		text := `<img src="` + logo + `" style="height: 1000px;"/><h1 style="font-size: 20px;">` + name + `</h1><h2>x</h2><h3>y</h3>`
@@ -24,9 +23,6 @@ func TestInputsNotPorted(t *testing.T) {
 	for name, input := range map[string]DataTable{
 		"image file png": {Header: header("None", `A <img src="`+png+`"/> B`)},
 		"image png":      {Header: header("None", `A <img src="data:image/png;base64,iVBORw0KGgo="/> B`)},
-		"bullet":         {Header: header("None", "A <bullet>b</bullet> B")},
-		"para attribute": {Header: header("None", `<para align="justify" lindent="12">A</para>`)},
-		"text transform": {Header: header("None", `<para texttransform="uppercase">a</para>`)},
 		"png as jpeg":    {Header: header("data:image/jpeg;base64,iVBORw0KGgo=", "ASD")},
 		"cut jpeg":       {Header: header("data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBD", "ASD")},
 	} {
@@ -88,6 +84,20 @@ func TestInputsNotPorted(t *testing.T) {
 	ported.Header = header("None", `<greek>abg</greek> <unichar code="0x263A"/> <unichar name="LATIN SMALL LETTER A"/> `+
 		`<unichar name="EURO SIGN"/> <font name="Times-Italic">a</font> <font name="Courier">b</font>`)
 	if _, err := ported.Build(time.Unix(946684800, 0)); err != nil {
+		t.Fatal(err)
+	}
+	// Indents, justified lines, bullets, borders, autoLeading, endDots and the case transform of a paragraph are drawn
+	// as reportlab draws them.
+	placed := base
+	placed.Header = header("None", `<para align="justify" lindent="12" rindent="6" findent="-4" borderwidth="1" bordercolor="red" `+
+		`borderpadding="2" borderradius="3" autoleading="max" enddots="." texttransform="uppercase">`+
+		`<bullet>*</bullet>un testo lungo che va a capo e si giustifica</para>`)
+	if _, err := placed.Build(time.Unix(946684800, 0)); err != nil {
+		t.Fatal(err)
+	}
+	transformed := base
+	transformed.Header = header("None", `<para texttransform="capitalize">a <b>b</b> c</para>`)
+	if _, err := transformed.Build(time.Unix(946684800, 0)); err != nil {
 		t.Fatal(err)
 	}
 	// A sequence counts in a cell; the numbers of the process-wide Sequencer are the ones reportlab gives.

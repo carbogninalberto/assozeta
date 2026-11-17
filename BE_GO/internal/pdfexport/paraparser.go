@@ -248,7 +248,118 @@ var paraPorted = map[string]bool{"para": true, "b": true, "strong": true, "i": t
 	"seqformat": true, "seqreset": true}
 
 // paraNotPortedTags are the tags of ParaParser that are still refused.
-var paraNotPortedTags = map[string]bool{"bullet": true, "link": true}
+var paraNotPortedTags = map[string]bool{"link": true}
+
+// bulletAttrNames is _bulletAttrMap: the attributes of <bullet>.
+var bulletAttrNames = func() map[string]paraAttrSpec {
+	table := []struct {
+		keys []string
+		attr string
+		kind paraAttrKind
+	}{
+		{[]string{"font", "face"}, "bulletFontName", pkStr},
+		{[]string{"size", "fontsize"}, "bulletFontSize", pkNum},
+		{[]string{"offsety"}, "bulletOffsetY", pkNum},
+		{[]string{"indent"}, "bulletIndent", pkNum},
+		{[]string{"color", "fg"}, "bulletColor", pkColor},
+		{[]string{"anchor"}, "bulletAnchor", pkAnchor},
+	}
+	names := map[string]paraAttrSpec{}
+	for _, entry := range table {
+		spec := paraAttrSpec{entry.attr, entry.kind}
+		for _, key := range entry.keys {
+			names[key] = spec
+		}
+		names[entry.attr] = spec
+		names[strings.ToLower(entry.attr)] = spec
+	}
+	return names
+}()
+
+// startBullet is start_bullet: the text of the <bullet> tag is kept apart
+// from the paragraph, in the bullet style the tag's attributes set.
+func (p *paraParser) startBullet(attrs []htmlAttr) bool {
+	if len(p.stack) == 0 {
+		return p.fail("tag outside the paragraph")
+	}
+	if p.hasBullet {
+		return p.syntaxError("only one <bullet> tag allowed")
+	}
+	p.hasBullet = true
+	style := p.style
+	order, values := dedupeAttrs(attrs)
+	for _, name := range order {
+		attr := values[name]
+		spec, ok := bulletAttrNames[name]
+		if !ok {
+			return p.fail("invalid attribute name %s", name)
+		}
+		if !attr.has {
+			return p.fail("invalid value for %s", name)
+		}
+		value := attr.value
+		switch spec.kind {
+		case pkNum:
+			n, st := paraNum(value, true)
+			if st != attrOK {
+				return p.attrFailure(st, "invalid number")
+			}
+			failed := false
+			apply := func(current *pyNum) {
+				if n.rel {
+					sum, ok := numAdd(*current, n.v)
+					if !ok {
+						failed = true
+						return
+					}
+					*current = sum
+				} else {
+					*current = n.v
+				}
+			}
+			switch spec.attr {
+			case "bulletFontSize":
+				apply(&style.bulletFontSize)
+			case "bulletOffsetY":
+				apply(&style.bulletOffsetY)
+			default:
+				apply(&style.bulletIndent)
+			}
+			if failed {
+				return p.fail("int too large to convert to float")
+			}
+		case pkColor:
+			c, st := paraColor(value)
+			if st != attrOK {
+				return p.attrFailure(st, "invalid color")
+			}
+			style.bulletColor = &c
+		case pkAnchor:
+			lower := pythonLower(value)
+			switch lower {
+			case "start", "middle", "end", "numeric":
+				style.bulletAnchor = lower
+			default:
+				return p.fail("illegal bullet anchor %s", pythonAscii(value))
+			}
+		default:
+			style.bulletFontName = value
+		}
+	}
+	p.style = style
+	family, bold, italic, st := ps2tt(style.bulletFontName)
+	if st != attrOK {
+		return p.attrFailure(st, "error with style name")
+	}
+	col := style.textColor
+	if style.bulletColor != nil {
+		col = *style.bulletColor
+	}
+	p.stack = append(p.stack, paraTag{tag: "bullet", family: family, bold: bold, italic: italic, size: style.bulletFontSize,
+		color: col, isBullet: true})
+	p.nlines, p.nlinks = 0, 0
+	return true
+}
 
 // lineAttr is what <u> and <strike> (and <link underline>) set on a frag.
 type lineAttr struct {
@@ -284,6 +395,7 @@ type paraTag struct {
 	anchorName   string
 	lineBreak    bool
 	img          *imgDefn
+	isBullet     bool // a <bullet> tag: its text goes to the bullet, not the paragraph
 }
 
 // paraParser is reportlab's ParaParser.
@@ -292,9 +404,12 @@ type paraParser struct {
 	started bool
 	stack   []paraTag
 	frags   []*frag
-	err     error
-	nlines  int
-	nlinks  int
+	// bulletFrags is bFragList: the fragments of the <bullet> tag.
+	bulletFrags []*frag
+	hasBullet   bool
+	err         error
+	nlines      int
+	nlinks      int
 }
 
 func (p *paraParser) fail(format string, args ...any) bool {
@@ -601,6 +716,8 @@ func (p *paraParser) startTag(tag string, attrs []htmlAttr) bool {
 		return p.startSeqFormat(attrs)
 	case "img":
 		return p.startImg(attrs)
+	case "bullet":
+		return p.startBullet(attrs)
 	case "link":
 		return p.startLink(tag, attrs)
 	case "a":
@@ -780,6 +897,9 @@ func (p *paraParser) endTag(tag string) bool {
 		return ok
 	case "img":
 		return p.endImg()
+	case "bullet":
+		_, ok := p.pop("bullet")
+		return ok
 	case "link":
 		_, ok := p.pop("link")
 		return ok
@@ -989,8 +1109,14 @@ func (p *paraParser) data(text string) bool {
 		text = converted
 	}
 	back := top.back
-	p.frags = append(p.frags, &frag{font: fontsByName[fontName], size: top.size, color: top.color, rise: top.rise, text: text,
-		lineBreak: top.lineBreak, us: top.us, links: top.links, back: back, nobr: top.nobr, img: top.img})
+	f := &frag{font: fontsByName[fontName], size: top.size, color: top.color, rise: top.rise, text: text,
+		lineBreak: top.lineBreak, us: top.us, links: top.links, back: back, nobr: top.nobr, img: top.img}
+	if top.isBullet {
+		// handle_data keeps the text of a <bullet> in bFragList.
+		p.bulletFrags = append(p.bulletFrags, f)
+		return true
+	}
+	p.frags = append(p.frags, f)
 	return true
 }
 
@@ -1085,15 +1211,16 @@ func paraIsPara(text []rune) bool {
 }
 
 // parseParagraph is ParaParser.parse of cleaned text in a Helvetica style:
-// the fragments, ErrLayout where reportlab raises, ErrNotPorted for the tags
-// above.
-func parseParagraph(text string, style paraStyle) ([]*frag, paraStyle, error) {
+// the fragments, the bullet fragments of a <bullet> tag, ErrLayout where
+// reportlab raises, ErrNotPorted for the tags above.
+func parseParagraph(text string, style paraStyle) ([]*frag, *paraBullet, paraStyle, error) {
+	style = style.withDefaults()
 	base := fontsByName[style.fontName]
 	if !strings.ContainsAny(text, "<&") {
 		if text == "" {
-			return nil, style, nil
+			return nil, nil, style, nil
 		}
-		return []*frag{{font: base, size: style.fontSize, color: style.textColor, text: text}}, style, nil
+		return []*frag{{font: base, size: style.fontSize, color: style.textColor, text: text}}, nil, style, nil
 	}
 	if !style.linesSet {
 		style.lines, style.linesSet = defaultLines(), true
@@ -1105,25 +1232,31 @@ func parseParagraph(text string, style paraStyle) ([]*frag, paraStyle, error) {
 	}
 	ok := (&htmlParser{raw: raw, events: parser}).feed()
 	if errors.Is(parser.err, ErrNotPorted) {
-		return nil, style, parser.err
+		return nil, nil, style, parser.err
 	}
 	if parser.err != nil {
 		// ParaParser.parse: annotateException wraps a failure of feed() with the
 		// paragraph text; _complete_parse reports the tags left open.
-		return nil, style, layoutFailure("\nparagraph text " + pythonAscii(string(raw)) + " caused exception " + parser.err.Error())
+		return nil, nil, style, layoutFailure("\nparagraph text " + pythonAscii(string(raw)) + " caused exception " + parser.err.Error())
 	}
 	if len(parser.stack) > 0 {
 		tags := make([]string, 0, len(parser.stack))
 		for i := len(parser.stack) - 1; i >= 0; i-- {
 			tags = append(tags, parser.stack[i].tag)
 		}
-		return nil, style, layoutFailure(fmt.Sprintf("paraparser: syntax error: parse ended with %d unclosed tags\n %s",
+		return nil, nil, style, layoutFailure(fmt.Sprintf("paraparser: syntax error: parse ended with %d unclosed tags\n %s",
 			len(tags), strings.Join(tags, "\n ")))
 	}
 	if !ok || !parser.started {
-		return nil, style, fmt.Errorf("%w: paragraph markup", ErrLayout)
+		return nil, nil, style, fmt.Errorf("%w: paragraph markup", ErrLayout)
 	}
-	return parser.frags, parser.style, nil
+	// _setup: textTransformFrags(frags, style) and the bullet of the markup.
+	transformFrags(parser.frags, parser.style)
+	var bullet *paraBullet
+	if len(parser.bulletFrags) > 0 {
+		bullet = &paraBullet{frags: parser.bulletFrags}
+	}
+	return parser.frags, bullet, parser.style, nil
 }
 
 // pythonAscii is ascii() of a str: repr() with every non-ASCII character
@@ -1733,9 +1866,8 @@ var paraAttrNames = func() map[string]paraAttrSpec {
 
 // applyParaAttrs is _initial_frag's style change: the style is copied and
 // the attributes of <para> applied. The ones that change the layout in ways
-// this package does not draw (indents, justified lines, borders, bullets,
-// text transforms, hyphenation) are refused once their values are known to
-// be valid.
+// this package does not draw (wordWrap, hyphenation, uriWasteReduce and the
+// embedded hyphenation) are refused once their values are known to be valid.
 func (p *paraParser) applyParaAttrs(attrs []htmlAttr) bool {
 	style := p.style
 	if !style.linesSet {
@@ -1762,25 +1894,31 @@ func (p *paraParser) applyParaAttrs(attrs []htmlAttr) bool {
 			}
 			number = n
 		case pkInt:
-			if _, st := pyInt(value, 10); st != attrOK {
+			n, st := pyInt(value, 10)
+			if st != attrOK {
 				return p.attrFailure(st, "invalid integer")
+			}
+			if spec.attr == "justifyLastLine" {
+				style.justifyLastLine = numWide(n)
 			}
 		case pkBool:
 			b, st := paraBool(value)
 			if st != attrOK {
 				return p.attrFailure(st, "invalid boolean")
 			}
-			if spec.attr == "allowWidows" {
+			switch spec.attr {
+			case "allowWidows":
 				style.denyWidows = !b
-			}
-			if spec.attr == "allowOrphans" {
+			case "allowOrphans":
 				style.allowOrphans = b
-			}
-			if spec.attr == "splitLongWords" {
+			case "splitLongWords":
 				style.noSplit = !b
-			}
-			if spec.attr == "embeddedHyphenation" && b {
-				refused = true
+			case "justifyBreaks":
+				style.justifyBreaks = b
+			case "embeddedHyphenation":
+				if b {
+					refused = true
+				}
 			}
 		case pkColor:
 			c, st := paraColor(value)
@@ -1797,14 +1935,12 @@ func (p *paraParser) applyParaAttrs(attrs []htmlAttr) bool {
 			case "strikeColor":
 				style.lines[lineStrike].hasColor, style.lines[lineStrike].color = true, c
 			case "bulletColor":
-			default:
-				refused = true
+				style.bulletColor = &c
+			case "borderColor":
+				style.borderColor = &c
 			}
 		case pkAlign:
-			if !asciiOnly(value) {
-				return p.unsupported()
-			}
-			switch strings.ToLower(value) {
+			switch pythonLower(value) {
 			case "left":
 				style.align, style.centred = alignLeft, false
 			case "right":
@@ -1812,9 +1948,9 @@ func (p *paraParser) applyParaAttrs(attrs []htmlAttr) bool {
 			case "center", "centre":
 				style.align, style.centred = alignCenter, false
 			case "justify":
-				refused = true
+				style.align, style.centred = alignJustify, false
 			default:
-				return p.fail("illegal alignment %q", value)
+				return p.fail("illegal alignment %s", pythonAscii(value))
 			}
 		case pkFont:
 			if _, _, _, st := ps2tt(value); st != attrOK {
@@ -1822,10 +1958,9 @@ func (p *paraParser) applyParaAttrs(attrs []htmlAttr) bool {
 			}
 			style.fontName = canonicalFontName(value)
 		case pkAutoLeading:
-			switch strings.ToLower(value) {
-			case "", "off":
-			case "min", "max":
-				refused = true
+			switch lower := strings.ToLower(value); lower {
+			case "", "off", "min", "max":
+				style.autoLeading = lower
 			default:
 				return p.fail("Invalid autoLeading")
 			}
@@ -1838,25 +1973,33 @@ func (p *paraParser) applyParaAttrs(attrs []htmlAttr) bool {
 				return p.fail("cannot convert wordWrap")
 			}
 		case pkTransform:
-			if !asciiOnly(value) {
-				return p.unsupported()
-			}
-			switch strings.ToLower(pyTrimASCII(value)) {
+			lower := pyTrimUnicode(pythonLower(value))
+			switch lower {
 			case "":
+				style.textTransform = ""
 			case "uppercase", "lowercase", "capitalize", "none":
-				refused = true
+				style.textTransform = lower
 			default:
 				return p.fail("cannot convert textTransform")
 			}
 		case pkAnchor:
-			switch strings.ToLower(value) {
+			lower := pythonLower(value)
+			switch lower {
 			case "start", "middle", "end", "numeric":
+				style.bulletAnchor = lower
 			default:
-				return p.fail("illegal bullet anchor")
+				return p.fail("illegal bullet anchor %s", pythonAscii(value))
 			}
 		case pkStr:
-			if spec.attr == "endDots" && value != "" || spec.attr == "hyphenationLang" && pyTrimUnicode(value) != "" {
-				refused = true
+			switch spec.attr {
+			case "endDots":
+				style.endDots = value
+			case "bulletFontName":
+				style.bulletFontName = value
+			case "hyphenationLang":
+				if pyTrimUnicode(value) != "" {
+					refused = true
+				}
 			}
 		case pkUS:
 			v, ok := p.usValue(value, true)
@@ -1914,7 +2057,29 @@ func (p *paraParser) applyParaAttrs(attrs []htmlAttr) bool {
 				shrink = number.v
 			}
 			style.shrink, style.shrinkSet = shrink, true
-		case "leftIndent", "rightIndent", "firstLineIndent", "borderWidth", "borderPadding", "borderRadius", "uriWasteReduce":
+		case "leftIndent":
+			applyTo(&style.leftIndent)
+		case "rightIndent":
+			applyTo(&style.rightIndent)
+		case "firstLineIndent":
+			applyTo(&style.firstLineIndent)
+		case "borderWidth":
+			applyTo(&style.borderWidth)
+		case "borderPadding":
+			applyTo(&style.borderPadding)
+		case "borderRadius":
+			if number.rel && !style.borderRadiusSet {
+				return p.fail("unsupported operand type(s) for +: %s and 'NoneType'", pyNumberType(number.v))
+			}
+			applyTo(&style.borderRadius)
+			style.borderRadiusSet = true
+		case "bulletFontSize":
+			applyTo(&style.bulletFontSize)
+		case "bulletIndent":
+			applyTo(&style.bulletIndent)
+		case "bulletOffsetY":
+			applyTo(&style.bulletOffsetY)
+		case "uriWasteReduce":
 			current := numInt(0)
 			applyTo(&current)
 			if current.truthy() {

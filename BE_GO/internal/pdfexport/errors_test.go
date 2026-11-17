@@ -17,7 +17,7 @@ func TestParagraphExceptionTexts(t *testing.T) {
 		{"a <br> b", "\nparagraph text '<para>a <br> b</para>' caused exception paraparser: syntax error: No content allowed in br tag"},
 	}
 	for _, item := range cases {
-		_, _, err := parseParagraph(item.text, style)
+		_, _, _, err := parseParagraph(item.text, style)
 		if !errors.Is(err, ErrLayout) {
 			t.Fatalf("%q: expected ErrLayout, got %v", item.text, err)
 		}

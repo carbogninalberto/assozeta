@@ -122,7 +122,11 @@ func describeStyle(s paraStyle) []any {
 		lines = append(lines, []any{usValue(l.width), usValue(l.offset), usValue(l.gap), colourInfo(col)})
 	}
 	return []any{s.fontName, s.fontSize.corpus(), s.leading.corpus(), s.alignment(), s.spaceBefore.corpus(), s.spaceAfter.corpus(),
-		colourInfo(&s.textColor), colourInfo(s.backColor), lines, s.shrinkage().corpus(), !s.noSplit, !s.denyWidows, s.allowOrphans}
+		colourInfo(&s.textColor), colourInfo(s.backColor), lines, s.shrinkage().corpus(), !s.noSplit, !s.denyWidows, s.allowOrphans,
+		s.leftIndent.corpus(), s.rightIndent.corpus(), s.firstLineIndent.corpus(), s.autoLeading, s.textTransform, s.endDots,
+		s.justifyBreaks, s.justifyLastLine.corpus(), s.borderWidth.corpus(), s.borderPadding.corpus(), colourInfo(s.borderColor),
+		s.borderRadius.corpus(), s.bulletFontName, s.bulletFontSize.corpus(), s.bulletIndent.corpus(), s.bulletAnchor,
+		s.bulletOffsetY.corpus(), colourInfo(s.bulletColor)}
 }
 
 // describeFrag is the form generate_pdf_paragraphs.py writes for a fragment.
@@ -286,6 +290,14 @@ func TestPythonNumbers(t *testing.T) {
 	}
 }
 
+// bulletFrags are the fragments of a bullet, which has none when it is nil.
+func bulletFrags(b *paraBullet) []*frag {
+	if b == nil {
+		return nil
+	}
+	return b.frags
+}
+
 // The corpus comes from reportlab's own Paragraph
 // (TESTS/fixtures/generate_pdf_paragraphs.py): the fragments of a text, an
 // exception, or fragments this package refuses.
@@ -312,7 +324,7 @@ func TestParagraphParserCorpus(t *testing.T) {
 		font, _ := item["font"].(string)
 		refusable := item["refusable"] == true
 		other := item["other"] == true
-		frags, style, err := parseParagraph(paraClean(text), paraStyle{fontName: font, fontSize: numInt(9), leading: numInt(12)})
+		frags, bullet, style, err := parseParagraph(paraClean(text), paraStyle{fontName: font, fontSize: numInt(9), leading: numInt(12)})
 		if errors.Is(err, ErrNotPorted) {
 			if !refusable && !other {
 				t.Errorf("%q: refused", text)
@@ -351,6 +363,19 @@ func TestParagraphParserCorpus(t *testing.T) {
 				want, _ := json.Marshal(item["frags"])
 				have, _ := json.Marshal(corpusValue(got))
 				t.Errorf("%q:\nwant %s\n got %s", text, want, have)
+			}
+			var gotBullet []any
+			for _, f := range bulletFrags(bullet) {
+				gotBullet = append(gotBullet, describeFrag(f))
+			}
+			haveBullet := corpusJSON(t, gotBullet)
+			if gotBullet == nil {
+				haveBullet = nil
+			}
+			if !sameCorpus(item["bullet"], haveBullet) {
+				want, _ := json.Marshal(item["bullet"])
+				have, _ := json.Marshal(corpusValue(gotBullet))
+				t.Errorf("%q: bullet\nwant %s\n got %s", text, want, have)
 			}
 			exact++
 		}

@@ -151,7 +151,7 @@ func setResource(t *testing.T, opener ResourceOpener) {
 // message; an opener that answers the source serves the image.
 func TestImageSourceFailureAndSeam(t *testing.T) {
 	setResource(t, openResource(func(string) ([]byte, error) { return nil, errors.New("no such file") }))
-	_, _, err := parseParagraph(`a <img src="logo.jpg"/> b`, paraStyle{fontName: "Helvetica", fontSize: numInt(9), leading: numInt(12)})
+	_, _, _, err := parseParagraph(`a <img src="logo.jpg"/> b`, paraStyle{fontName: "Helvetica", fontSize: numInt(9), leading: numInt(12)})
 	var failure *LayoutError
 	if !errors.As(err, &failure) {
 		t.Fatalf("a source reportlab cannot open: %v", err)
@@ -168,7 +168,7 @@ func TestImageSourceFailureAndSeam(t *testing.T) {
 		}
 		return jpegSource, nil
 	}))
-	frags, _, err := parseParagraph(`a <img src="served.jpg"/> b`, paraStyle{fontName: "Helvetica", fontSize: numInt(9), leading: numInt(12)})
+	frags, _, _, err := parseParagraph(`a <img src="served.jpg"/> b`, paraStyle{fontName: "Helvetica", fontSize: numInt(9), leading: numInt(12)})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -185,7 +185,7 @@ func TestImageSourceFailureAndSeam(t *testing.T) {
 	setResource(t, openResource(func(string) ([]byte, error) {
 		return []byte("\x89PNG\r\n\x1a\n"), nil
 	}))
-	if _, _, err := parseParagraph(`a <img src="logo.png"/> b`, paraStyle{fontName: "Helvetica", fontSize: numInt(9)}); !errors.Is(err, ErrNotPorted) {
+	if _, _, _, err := parseParagraph(`a <img src="logo.png"/> b`, paraStyle{fontName: "Helvetica", fontSize: numInt(9)}); !errors.Is(err, ErrNotPorted) {
 		t.Fatalf("a PNG source: %v", err)
 	}
 }
