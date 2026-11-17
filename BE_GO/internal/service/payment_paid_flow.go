@@ -20,9 +20,13 @@ import (
 // transaction.on_commit runs once the block committed (after the
 // notification, which Django sends inside the block).
 type paymentPaidFlowNotification struct {
-	user, message, association string
-	subscribed                 bool
-	print                      *paymentPaidFlowPrint
+	user, message string
+	// association is the notification's association_id: the association for an
+	// association or collaborator account, nil (stored and pushed as JSON null)
+	// for any other request user, as send_notification fills it by role.
+	association *string
+	subscribed  bool
+	print       *paymentPaidFlowPrint
 }
 
 // paymentPaidFlowPrint is the on-commit print_document_invoice.delay(invoice, token).
@@ -36,7 +40,7 @@ func (n *paymentPaidFlowNotification) deliver(ctx context.Context, notifier *Sub
 	if n == nil {
 		return nil
 	}
-	if err := notifier.DeliverValidated(ctx, n.user, "payment", n.message, n.association, n.subscribed); err != nil {
+	if err := notifier.DeliverValidatedAssociation(ctx, n.user, "payment", n.message, n.association, n.subscribed); err != nil {
 		return err
 	}
 	if n.print == nil {
@@ -311,11 +315,8 @@ func (s *PaymentStates) approvePaid(ctx context.Context, tx domain.PaymentPaidFl
 		}
 	}
 	user := identity.ScopeUser
-	if user == nil || (user.Role != domain.RoleAssociation && user.Role != domain.RoleCollaborator) {
-		// Setup makes the owner an association account (BE/instance/views.py:198-211), but the association import
-		// (import_service.py) can make an existing athlete the owner of an imported association; Django then
-		// answers as for the owner. Not ported.
-		return nil, domain.ErrPaymentStateNotPorted
+	if user == nil {
+		return nil, domain.ErrPaymentStateServer
 	}
 	payment, err := tx.InvoiceGeneratePayment(ctx, row.ID)
 	if err != nil {
@@ -456,7 +457,8 @@ func (s *PaymentStates) approvePaid(ctx context.Context, tx domain.PaymentPaidFl
 	if err = tx.Commit(); err != nil {
 		return nil, err
 	}
-	notification := &paymentPaidFlowNotification{user: user.ID, message: message, association: association, subscribed: subscribed}
+	notification := &paymentPaidFlowNotification{user: user.ID, message: message, association: paymentPaidFlowAssociation(user, association),
+		subscribed: subscribed}
 	if err = notification.deliver(ctx, s.notifier); err != nil {
 		return nil, err
 	}
@@ -605,6 +607,22 @@ func (s *StripeRoutes) stripePaidFlow(ctx context.Context, tx domain.PaymentPaid
 	if err != nil {
 		return nil, err
 	}
-	return &paymentPaidFlowNotification{user: *people.UserID, message: message, association: row.AssociationID, subscribed: subscribed,
+	// mark_payment_as_paid passes association_id=payment.sport_association_id
+	// explicitly, so send_notification keeps it whatever the user's role.
+	stripeAssociation := row.AssociationID
+	return &paymentPaidFlowNotification{user: *people.UserID, message: message, association: &stripeAssociation, subscribed: subscribed,
 		print: &paymentPaidFlowPrint{publisher: s.publisher, invoice: create.ID, token: token}}, nil
+}
+
+// paymentPaidFlowAssociation is send_notification's association_id for
+// payment_approve, called without one: it is request.user.sport_association for
+// an association or collaborator account and None for any other role, so the
+// stored item and the push keep JSON null. An athlete can own an association
+// (the association import reuses an existing user by UUID), and then the view
+// runs as for the owner while the notification has no association id.
+func paymentPaidFlowAssociation(user *domain.Account, association string) *string {
+	if user == nil || (user.Role != domain.RoleAssociation && user.Role != domain.RoleCollaborator) {
+		return nil
+	}
+	return &association
 }

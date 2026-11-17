@@ -17,7 +17,8 @@ with payment_paid_flow: the created invoice, the authored course subscriptions
 marked paid, the broadcast rows, the owner's notification (Redis list, cache,
 Channels push, mirror) and the print_document_invoice messages on the run's
 private Celery broker. A second association owner whose invoice date follows
-the payment date (with a token) is seeded for it.
+the payment date (with a token) is seeded for it, and an athlete account that
+owns a second association (the association import) with an unpaid payment.
 
 Seeded invoices (linked to their payments) change only as authored
 ('invoices_changed': cancelled and meta). A CURRENT_HOST print stub
@@ -156,6 +157,16 @@ def seed_rows(source, created):
     other = source['flag_associate']
     insert(Associate, Associate(associate_id=other['id'], sport_association_id=flag['association'], first_name=other['first'],
                                 last_name=other['last'], sex='F', born_date=datetime(1991, 2, 3).date(), is_minor=False))
+    # The athlete (extra_users, inserted with a token before this seed) owns a second association: the association
+    # import reuses an existing user by UUID, so its role stays User.ATHLETE.
+    insert(SportAssociation, SportAssociation(sport_association_id=source['imported_association'],
+                                              user_id=source['extra_users']['imported']['id'],
+                                              denomination=source['imported_denomination'], tax_code='79900000004'))
+    imported = source['imported_associate']
+    insert(Associate, Associate(associate_id=imported['id'], sport_association_id=source['imported_association'],
+                                first_name=imported['first'], last_name=imported['last'], sex=imported['sex'],
+                                tax_code=imported['tax'], born_date=datetime.fromisoformat(imported['born']).date(),
+                                email=imported['email'], is_minor=False))
     teacher = source['instructor']
     insert(Instructor, Instructor(instructor_id=teacher['id'], user_id=owner, first_name=teacher['first_name'], last_name=teacher['last_name'],
                                   email=teacher['email'], tax_code=teacher['tax_code'],
@@ -175,11 +186,14 @@ def seed_rows(source, created):
     for row in payments.values():
         if row.get('deep'):
             continue  # inserted for its own case (deep_rows): the state snapshot cannot decode it
+        associate = None
+        if row['associate']:
+            associate = other['id'] if row['associate'] == 'flag' else imported['id'] if row['associate'] == 'imported' else person['id']
         insert(Payment, Payment(
             invoice_id=bills[row['invoice']]['id'] if row['invoice'] else None,
             payment_id=row['id'], sport_association_id=row['association'], subject=row['subject'], amount=Decimal(row['amount']),
             paid=row['paid'], expense=row['expense'], meta=row['meta'],
-            associate_id=(other['id'] if row['associate'] == 'flag' else person['id']) if row['associate'] else None,
+            associate_id=associate,
             meta_payment_categories=row.get('meta_categories'),
             user_id=owner if row['user'] else None, supplier_id=vendor['id'] if row['supplier'] else None,
             instructor_id=teacher['id'] if row['instructor'] else None, group_id=ids[row['group']] if row['group'] else None,
@@ -228,7 +242,8 @@ def user_broadcasts():
 
 def recipients(fixture):
     source = contract.load_source()
-    return {'owner': source['ids']['owner'], 'flag_owner': source['flag_owner']['id']}
+    return {'owner': source['ids']['owner'], 'flag_owner': source['flag_owner']['id'],
+            **{label: row['id'] for label, row in source.get('extra_users', {}).items()}}
 
 
 base_fixture_context = paid.with_notifications(harness.with_celery_broker(harness.fixture_context_for(
@@ -355,7 +370,7 @@ def check_state(case, effect, before, after, source, context, binding):
         contract.require(all(before[k] == after[k] for k in MANAGED), 'state.no-effect')
         return
     fixture, ids = context['fixture'], source['ids']
-    ids = {**ids, 'flag_owner': source['flag_owner']['id']}
+    ids = {**ids, 'flag_owner': source['flag_owner']['id'], **{label: row['id'] for label, row in source.get('extra_users', {}).items()}}
     notification = effect.get('notification')
     if notification is not None:
         notification = {**notification, 'user_id': ids[notification['user']]}

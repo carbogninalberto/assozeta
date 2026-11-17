@@ -135,7 +135,8 @@ func paymentStateScope(identity domain.ResolvedIdentity) *string {
 }
 
 // association is scoped_queryset(request, SportAssociation.objects).get(user=request.user):
-// athletes and owners without a live association are a 500.
+// the association whose user is the request user (an athlete can own one: the
+// association import reuses an existing user by UUID), a 500 when there is none.
 func (s *PaymentStates) association(ctx context.Context, tx domain.PaymentStateTransaction, identity domain.ResolvedIdentity) (string, error) {
 	association, err := tx.ScopedAssociation(ctx, identity.ScopeUser.ID, paymentStateScope(identity))
 	if errors.Is(err, domain.ErrAssociationNotFound) {

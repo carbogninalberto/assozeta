@@ -1912,6 +1912,78 @@
    "attachment": false,
    "meta_categories": null,
    "linked": false
+  },
+  "pf_imported": {
+   "invoice": null,
+   "id": "a1000000-0000-4000-8000-000000985114",
+   "association": "a1000000-0000-4000-8000-000000985112",
+   "subject": 0,
+   "amount": "31.00",
+   "paid": false,
+   "expense": false,
+   "associate": "imported",
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota importata",
+   "meta": null,
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
+  },
+  "pf_imported_second": {
+   "invoice": null,
+   "id": "a1000000-0000-4000-8000-000000985115",
+   "association": "a1000000-0000-4000-8000-000000985112",
+   "subject": 0,
+   "amount": "33.00",
+   "paid": false,
+   "expense": false,
+   "associate": "imported",
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota importata due",
+   "meta": null,
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
+  },
+  "pf_imported_other": {
+   "invoice": null,
+   "id": "a1000000-0000-4000-8000-000000985116",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 0,
+   "amount": "32.00",
+   "paid": false,
+   "expense": false,
+   "associate": true,
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota",
+   "meta": null,
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
   }
  },
  "invoices": {
@@ -2124,6 +2196,24 @@
   "first": "Giulia",
   "last": "Verdi"
  },
+ "extra_users": {
+  "imported": {
+   "id": "a1000000-0000-4000-8000-000000985111",
+   "username": "payment-state-imported",
+   "email": "payment-state-imported@example.test"
+  }
+ },
+ "imported_association": "a1000000-0000-4000-8000-000000985112",
+ "imported_associate": {
+  "id": "a1000000-0000-4000-8000-000000985113",
+  "first": "Elena",
+  "last": "Importata",
+  "sex": "F",
+  "tax": "MPTLNE90A41H501Y",
+  "born": "1990-01-04",
+  "email": "elena@example.test"
+ },
+ "imported_denomination": "Importata atleta",
  "cases": [
   {
    "name": "payment-state-approve-anonymous",
@@ -8877,6 +8967,521 @@
    "prints": [],
    "raw_body": "--receipt-file-boundary\r\nContent-Disposition: form-data; name=\"send_receipt_email\"; filename=\"ricevuta.txt\"\r\nContent-Type: text/plain\r\n\r\nsi\r\n--receipt-file-boundary--\r\n",
    "content_type": "multipart/form-data; boundary=receipt-file-boundary"
+  },
+  {
+   "name": "payment-state-approve-paid-flow-athlete-owner-imported",
+   "actor": "imported",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985114/approve",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "payment mark as payed.",
+     "payment": {
+      "payment_id": "a1000000-0000-4000-8000-000000985114",
+      "user": null,
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000000985113",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "1990-01-04",
+       "email": "elena@example.test",
+       "sex": "F",
+       "first_name": "Elena",
+       "last_name": "Importata",
+       "is_minor": false,
+       "sport_association": "a1000000-0000-4000-8000-000000985112",
+       "tax_code": "MPTLNE90A41H501Y",
+       "user": "a1000000-0000-4000-8000-000000985111",
+       "phone": null,
+       "family": null,
+       "family_role": null
+      },
+      "subscription_id": null,
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": {
+       "invoice_id": "$invoice",
+       "document_token": null,
+       "creation_date": "$now",
+       "membership_fee": "0.00",
+       "activity_fee": "31.00",
+       "meta_payment_categories": null,
+       "description": "Ricevuta di pagamento con causale <b>Pagamenti fixture</b> per l'associazione <b>Importata atleta</b>.",
+       "number": 1,
+       "archived": false,
+       "cancelled": false,
+       "meta": null,
+       "imported_from_associami": false,
+       "deleted": false,
+       "document_pdf": null,
+       "sport_association": "a1000000-0000-4000-8000-000000985112",
+       "selected_tutor": null,
+       "group": null,
+       "attached_documents": []
+      },
+      "attachments": [],
+      "payment_category_name": "Pagamenti fixture",
+      "type": "default",
+      "subject": 0,
+      "amount": "31.00",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": "$now",
+      "paid": true,
+      "expense": false,
+      "description": "Quota importata",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": "a1000000-0000-4000-8000-000000985001",
+      "sport_association": "a1000000-0000-4000-8000-000000985112",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null,
+      "invoice_generating": true
+     }
+    }
+   },
+   "effect": {
+    "actor": "imported",
+    "payments_changed": {
+     "pf_imported": {
+      "paid": true,
+      "payment_date": "$now",
+      "invoice": "$invoice"
+     }
+    },
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "invoices_changed": {},
+    "audit": [
+     {
+      "model": "invoice",
+      "label": "$invoice",
+      "action": 0,
+      "changes": {
+       "invoice_id": [
+        "None",
+        "$invoice"
+       ],
+       "document_pdf": [
+        "None",
+        "None"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000985112"
+       ],
+       "creation_date": [
+        "None",
+        "$now"
+       ],
+       "membership_fee": [
+        "None",
+        "0.0"
+       ],
+       "activity_fee": [
+        "None",
+        "31.00"
+       ],
+       "meta_payment_categories": [
+        "None",
+        "null"
+       ],
+       "description": [
+        "None",
+        "Ricevuta di pagamento con causale <b>Pagamenti fixture</b> per l'associazione <b>Importata atleta</b>."
+       ],
+       "number": [
+        "None",
+        "1"
+       ],
+       "archived": [
+        "None",
+        "False"
+       ],
+       "cancelled": [
+        "None",
+        "False"
+       ],
+       "selected_tutor": [
+        "None",
+        "None"
+       ],
+       "meta": [
+        "None",
+        "null"
+       ],
+       "imported_from_associami": [
+        "None",
+        "False"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000985112",
+       "direct"
+      ]
+     },
+     {
+      "model": "invoice",
+      "label": "$invoice",
+      "action": 1,
+      "changes": {
+       "membership_fee": [
+        "0.00",
+        "0.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000985112",
+       "direct"
+      ]
+     },
+     {
+      "model": "payment",
+      "label": "pf_imported",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "False",
+        "True"
+       ],
+       "payment_date": [
+        "None",
+        "$now"
+       ],
+       "invoice": [
+        "None",
+        "$invoice"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000985112",
+       "direct"
+      ]
+     },
+     {
+      "model": "notificationsbroadcast",
+      "label": "$notificationsbroadcast",
+      "action": 0,
+      "changes": "$created",
+      "index": [
+       "a1000000-0000-4000-8000-000000985112",
+       "actor.sport_association"
+      ]
+     },
+     {
+      "model": "usernotificationsbroadcast",
+      "label": "$usernotificationsbroadcast",
+      "action": 0,
+      "changes": "$created",
+      "index": [
+       "a1000000-0000-4000-8000-000000985112",
+       "actor.sport_association"
+      ]
+     }
+    ],
+    "invoice": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000985112",
+     "creation_date": "$now",
+     "membership_fee": "0.00",
+     "activity_fee": "31.00",
+     "meta_payment_categories": null,
+     "description": "Ricevuta di pagamento con causale <b>Pagamenti fixture</b> per l'associazione <b>Importata atleta</b>.",
+     "number": 1,
+     "group_id": null
+    },
+    "course_subscriptions_paid": [],
+    "celery": [
+     {
+      "task": "print_document_invoice",
+      "args": [
+       "$invoice",
+       "$authorization",
+       false
+      ],
+      "kwargs": [],
+      "args_list": true
+     }
+    ],
+    "notification": {
+     "user": "imported",
+     "msg": "Pagamento di € 31,00per Quota importata. Pagamento dell'associato Elena Importata.",
+     "association": null
+    }
+   },
+   "prints": []
+  },
+  {
+   "name": "payment-state-approve-paid-flow-athlete-owner-imported-no-generate",
+   "actor": "imported",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985115/approve",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "payment mark as payed.",
+     "payment": {
+      "payment_id": "a1000000-0000-4000-8000-000000985115",
+      "user": null,
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000000985113",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "1990-01-04",
+       "email": "elena@example.test",
+       "sex": "F",
+       "first_name": "Elena",
+       "last_name": "Importata",
+       "is_minor": false,
+       "sport_association": "a1000000-0000-4000-8000-000000985112",
+       "tax_code": "MPTLNE90A41H501Y",
+       "user": "a1000000-0000-4000-8000-000000985111",
+       "phone": null,
+       "family": null,
+       "family_role": null
+      },
+      "subscription_id": null,
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": {
+       "invoice_id": "$invoice",
+       "document_token": null,
+       "creation_date": "$now",
+       "membership_fee": "0.00",
+       "activity_fee": "33.00",
+       "meta_payment_categories": null,
+       "description": "Ricevuta di pagamento con causale <b>Pagamenti fixture</b> per l'associazione <b>Importata atleta</b>.",
+       "number": 1,
+       "archived": false,
+       "cancelled": false,
+       "meta": null,
+       "imported_from_associami": false,
+       "deleted": false,
+       "document_pdf": null,
+       "sport_association": "a1000000-0000-4000-8000-000000985112",
+       "selected_tutor": null,
+       "group": null,
+       "attached_documents": []
+      },
+      "attachments": [],
+      "payment_category_name": "Pagamenti fixture",
+      "type": "default",
+      "subject": 0,
+      "amount": "33.00",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": "2021-03-04T00:00:00Z",
+      "paid": true,
+      "expense": false,
+      "description": "Quota importata due",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": "a1000000-0000-4000-8000-000000985001",
+      "sport_association": "a1000000-0000-4000-8000-000000985112",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null
+     }
+    }
+   },
+   "effect": {
+    "actor": "imported",
+    "payments_changed": {
+     "pf_imported_second": {
+      "paid": true,
+      "payment_date": "2021-03-04T00:00:00Z",
+      "invoice": "$invoice"
+     }
+    },
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "invoices_changed": {},
+    "audit": [
+     {
+      "model": "invoice",
+      "label": "$invoice",
+      "action": 0,
+      "changes": {
+       "invoice_id": [
+        "None",
+        "$invoice"
+       ],
+       "document_pdf": [
+        "None",
+        "None"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000985112"
+       ],
+       "creation_date": [
+        "None",
+        "$now"
+       ],
+       "membership_fee": [
+        "None",
+        "0.0"
+       ],
+       "activity_fee": [
+        "None",
+        "33.00"
+       ],
+       "meta_payment_categories": [
+        "None",
+        "null"
+       ],
+       "description": [
+        "None",
+        "Ricevuta di pagamento con causale <b>Pagamenti fixture</b> per l'associazione <b>Importata atleta</b>."
+       ],
+       "number": [
+        "None",
+        "1"
+       ],
+       "archived": [
+        "None",
+        "False"
+       ],
+       "cancelled": [
+        "None",
+        "False"
+       ],
+       "selected_tutor": [
+        "None",
+        "None"
+       ],
+       "meta": [
+        "None",
+        "null"
+       ],
+       "imported_from_associami": [
+        "None",
+        "False"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000985112",
+       "direct"
+      ]
+     },
+     {
+      "model": "invoice",
+      "label": "$invoice",
+      "action": 1,
+      "changes": {
+       "membership_fee": [
+        "0.00",
+        "0.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000985112",
+       "direct"
+      ]
+     },
+     {
+      "model": "payment",
+      "label": "pf_imported_second",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "False",
+        "True"
+       ],
+       "payment_date": [
+        "None",
+        "2021-03-04 00:00:00"
+       ],
+       "invoice": [
+        "None",
+        "$invoice"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000985112",
+       "direct"
+      ]
+     }
+    ],
+    "invoice": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000985112",
+     "creation_date": "$now",
+     "membership_fee": "0.00",
+     "activity_fee": "33.00",
+     "meta_payment_categories": null,
+     "description": "Ricevuta di pagamento con causale <b>Pagamenti fixture</b> per l'associazione <b>Importata atleta</b>.",
+     "number": 1,
+     "group_id": null
+    },
+    "course_subscriptions_paid": [],
+    "celery": [],
+    "notification": {
+     "user": "imported",
+     "msg": "Pagamento di € 33,00per Quota importata due. Pagamento dell'associato Elena Importata.",
+     "association": null
+    }
+   },
+   "prints": [],
+   "body": {
+    "payment_date": "2021-03-04",
+    "generate_invoice": false
+   }
+  },
+  {
+   "name": "payment-state-approve-paid-flow-athlete-owner-foreign-payment-denied",
+   "actor": "imported",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985116/approve",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
+   "effect": null,
+   "prints": []
   },
   {
    "name": "payment-state-approve-paid-flow-bad-meta-amount-server-error",

@@ -223,6 +223,20 @@ INVOICES = {key: invoice_row(label, number) for number, (key, label) in enumerat
     ((row['invoice'], label) for label, row in PAYMENTS.items() if row['invoice']), start=901)}
 # Added after every other id so the earlier rows keep theirs.
 PAYMENTS['pf_receipt_file'] = payment(subject=0, amount='16.00', associate=True, user=True)
+# An athlete (User.ATHLETE) whom the association import made the user of a second association. The athlete signs in
+# with that account, so the approve view finds the imported association through get(user=request.user); the notification
+# send_notification builds has no association id (its role is neither association nor collaborator).
+IMPORTED_ATHLETE = {'id': next(ids), 'username': 'payment-state-imported', 'email': 'payment-state-imported@example.test'}
+IMPORTED_ASSOCIATION = next(ids)
+IMPORTED_DENOMINATION = 'Importata atleta'
+IMPORTED_ASSOCIATE = {'id': next(ids), 'first': 'Elena', 'last': 'Importata', 'sex': 'F', 'tax': 'MPTLNE90A41H501Y',
+                      'born': '1990-01-04', 'email': 'elena@example.test'}
+PAYMENTS['pf_imported'] = payment(subject=0, amount='31.00', associate='imported', association=IMPORTED_ASSOCIATION,
+                                  description='Quota importata')
+PAYMENTS['pf_imported_second'] = payment(subject=0, amount='33.00', associate='imported', association=IMPORTED_ASSOCIATION,
+                                         description='Quota importata due')
+# A payment of the own association: the athlete's association check refuses it.
+PAYMENTS['pf_imported_other'] = payment(subject=0, amount='32.00', associate=True)
 STATE = copy.deepcopy(PAYMENTS)
 cases = []
 
@@ -272,6 +286,15 @@ def flag_associate():
             'sport_association': FLAG['association'], 'tax_code': None, 'user': FLAG['id'], 'phone': None, 'family': None, 'family_role': None}
 
 
+def imported_associate():
+    """The imported association's associate: its user is the association's (AssociateSerializer.get_user)."""
+    row = IMPORTED_ASSOCIATE
+    return {'associate_id': row['id'], 'address': None, 'address_cap': None, 'address_city': None, 'born_city': None, 'born_date': row['born'],
+            'email': row['email'], 'sex': row['sex'], 'first_name': row['first'], 'last_name': row['last'], 'is_minor': False,
+            'sport_association': IMPORTED_ASSOCIATION, 'tax_code': row['tax'], 'user': IMPORTED_ATHLETE['id'], 'phone': None,
+            'family': None, 'family_role': None}
+
+
 def payment_item(label, invoice=None):
     """PaymentSerializer of the payment's current authored state."""
     row = STATE[label]
@@ -282,7 +305,8 @@ def payment_item(label, invoice=None):
     # get_subscription_id: subject 0 looks the associate's oldest live subscription up; the authored
     # subject 1 and 2 payments have no linked subscription, installment, course subscription or carnet.
     subscription = SUBSCRIPTION['id'] if (row['subject'] == 0 and row['associate'] is True) or row['linked'] else None
-    person = (flag_associate() if row['associate'] == 'flag' else associate()) if row['associate'] else None
+    person = (flag_associate() if row['associate'] == 'flag' else
+              imported_associate() if row['associate'] == 'imported' else associate()) if row['associate'] else None
     return {'payment_id': row['id'], 'user': OWNER_USER if row['user'] else None, 'associate': person,
             'subscription_id': subscription, 'instructor_id': INSTRUCTOR['id'] if row['instructor'] else None,
             'instructor': instructor() if row['instructor'] else None, 'supplier': supplier() if row['supplier'] else None,
@@ -533,9 +557,10 @@ add('approve-form-body', 'owner', APPROVE('ap_form'), 200, {'data': {'payment': 
 # payment has an invoice and generate_invoice is truthy.
 
 DENOMINATION = 'Message reads own'
-NUMBERS = {'year': 0, 'old': 0, 'group': 0, 'flag': FLAG['starting_number']}
+NUMBERS = {'year': 0, 'old': 0, 'group': 0, 'flag': FLAG['starting_number'], 'imported': 0, 'imported_old': 0}
 ACTOR_INDEX = {'owner': [OWN, 'actor.sport_association'], 'admin': [IDS['admin_association'], 'actor.sport_association'],
-               'flag_owner': [FLAG['association'], 'actor.sport_association'], 'full_collaborator': None}
+               'flag_owner': [FLAG['association'], 'actor.sport_association'], 'full_collaborator': None,
+               'imported': [IMPORTED_ASSOCIATION, 'actor.sport_association']}
 
 
 def escape(text):
@@ -581,6 +606,8 @@ def paid_fees(row):
 def person_name(row):
     if row['associate'] == 'flag':
         return f"{FLAG_ASSOCIATE['first']} {FLAG_ASSOCIATE['last']}"
+    if row['associate'] == 'imported':
+        return f"{IMPORTED_ASSOCIATE['first']} {IMPORTED_ASSOCIATE['last']}"
     return f"{ASSOCIATE['first']} {ASSOCIATE['last']}"
 
 
@@ -656,7 +683,7 @@ def paid_flow(name, label, *, description, notified, actor='owner', body=None, r
         msg += f" Pagamento dell'associato {person_name(row)}."
     elif row['user']:
         msg += f" Pagamento dell'utente {OWNER_USER['first_name']} {OWNER_USER['last_name']}."
-    recipient = 'flag_owner' if flag else 'owner'
+    recipient = 'imported' if association == IMPORTED_ASSOCIATION else ('flag_owner' if flag else 'owner')
     item = payment_item(label, invoice)
     row['invoice'] = '$invoice' if creates else None
     dispatch = creates and generate
@@ -664,8 +691,11 @@ def paid_flow(name, label, *, description, notified, actor='owner', body=None, r
         item['invoice_generating'] = True
     celery = [{'task': 'print_document_invoice', 'args': ['$invoice', '$authorization', receipt], 'kwargs': [], 'args_list': True}] if dispatch else []
     result = effect(actor, changed={label: columns}, invoices=invoices, audit=audit)
+    # send_notification fills association_id only for association and collaborator roles: an athlete account's
+    # notification keeps None (stored and pushed as null).
+    notified_association = None if association == IMPORTED_ASSOCIATION else association
     result.update(invoice=stored, course_subscriptions_paid=list(courses), celery=celery,
-                  notification={'user': recipient, 'msg': msg, 'association': association})
+                  notification={'user': recipient, 'msg': msg, 'association': notified_association})
     add(name, actor if actor != 'flag_owner' else 'flag_owner', APPROVE(label), 200, {'data': {'msg': 'payment mark as payed.', 'payment': item}},
         body=body, raw_body=raw_body, content_type=content_type, headers=headers, effect=result)
 
@@ -735,6 +765,17 @@ paid_flow('approve-paid-flow-receipt-file-not-published', 'pf_receipt_file', des
           raw_body=(f'--{RECEIPT_BOUNDARY}\r\nContent-Disposition: form-data; name="send_receipt_email"; filename="ricevuta.txt"\r\n'
                     f'Content-Type: text/plain\r\n\r\nsi\r\n--{RECEIPT_BOUNDARY}--\r\n'))
 cases[-1]['effect']['celery'] = []
+# An athlete whom the association import made the owner of a second association (import_service reuses the user by
+# UUID): approve finds that association through get(user=request.user) and runs the same paid flow with the athlete's
+# invoice settings. send_notification fills association_id only for association and collaborator roles, so the stored
+# item and the push carry JSON null. The second approve sends a payment date (payment_date_equal_invoice_date is False,
+# so the invoice keeps the creation date) without the invoice task; the third is another association's payment (403).
+paid_flow('approve-paid-flow-athlete-owner-imported', 'pf_imported', actor='imported', broadcast=True, number_key='imported',
+          description=other_text(CATEGORY_NAME, IMPORTED_DENOMINATION), notified='Quota importata')
+paid_flow('approve-paid-flow-athlete-owner-imported-no-generate', 'pf_imported_second', actor='imported', number_key='imported_old',
+          description=other_text(CATEGORY_NAME, IMPORTED_DENOMINATION), notified='Quota importata due', sent='2021-03-04T00:00:00Z',
+          generate=False, body={'payment_date': '2021-03-04', 'generate_invoice': False})
+add('approve-paid-flow-athlete-owner-foreign-payment-denied', 'imported', APPROVE('pf_imported_other'), 403, DENIED)
 # float(str('abc')) raises before any write; a carnet subscription without a carnet fails in the description: rolled back.
 add('approve-paid-flow-bad-meta-amount-server-error', 'owner', APPROVE('pf_bad_meta'), 500, SERVER)
 add('approve-paid-flow-carnet-without-carnet-server-error', 'owner', APPROVE('pf_carnet_null'), 500, SERVER)
@@ -890,6 +931,8 @@ OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Payment approve, ca
                               'invoices': {k: {f: v for f, v in row.items() if f not in ('cancelled', 'meta')} for k, row in INVOICES.items()},
                               'supplier_invoices': SUPPLIER_INVOICES, 'course_subscriptions': COURSE_SUBSCRIPTIONS,
                               'installments': {k: {key: v for key, v in row.items() if key != 'gone'} for k, row in INSTALLMENTS.items()},
-                              'holdings': HOLDINGS, 'flag_owner': FLAG, 'flag_associate': FLAG_ASSOCIATE, 'cases': cases},
+                              'holdings': HOLDINGS, 'flag_owner': FLAG, 'flag_associate': FLAG_ASSOCIATE,
+                              'extra_users': {'imported': IMPORTED_ATHLETE}, 'imported_association': IMPORTED_ASSOCIATION,
+                              'imported_associate': IMPORTED_ASSOCIATE, 'imported_denomination': IMPORTED_DENOMINATION, 'cases': cases},
                              ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

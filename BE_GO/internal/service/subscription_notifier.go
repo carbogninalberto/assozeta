@@ -25,7 +25,8 @@ type GroupSender interface {
 }
 
 // SubscriptionNotifier ports NotificationService.send_notification for one
-// user and one message with an association id.
+// user and one message; the association id is nullable, as send_notification
+// fills it only for association and collaborator accounts.
 type SubscriptionNotifier struct {
 	rows  domain.SubscriptionNotificationStore
 	redis SubscriptionNotificationRedis
@@ -44,24 +45,33 @@ var errNotificationPush = errors.New("notification push value not supported")
 // and pushes it to notifications_user_<id>; push failures are swallowed as in
 // _push_to_websocket and returned only for logging.
 func (n *SubscriptionNotifier) Send(ctx context.Context, user, kind, message, association string, audit domain.LoginAuditContext) error {
-	if err := n.store(ctx, user, kind, message, association, audit); err != nil {
+	if err := n.store(ctx, user, kind, message, &association, audit); err != nil {
 		return err
 	}
-	return n.push(ctx, user, message, association)
+	return n.push(ctx, user, message, &association)
 }
 
 // SendValidated is Send once validate_broadcast's rows were written by the
 // caller's transaction (subscribed: it created the user's subscription).
 func (n *SubscriptionNotifier) SendValidated(ctx context.Context, user, kind, message, association string, subscribed bool) error {
-	if err := n.append(ctx, user, kind, message, association, subscribed); err != nil {
+	if err := n.append(ctx, user, kind, message, &association, subscribed); err != nil {
 		return err
 	}
-	return n.push(ctx, user, message, association)
+	return n.push(ctx, user, message, &association)
 }
 
 // DeliverValidated is Deliver once validate_broadcast's rows were written by
 // the caller's transaction: storing errors propagate, push errors are logged.
 func (n *SubscriptionNotifier) DeliverValidated(ctx context.Context, user, kind, message, association string, subscribed bool) error {
+	return n.DeliverValidatedAssociation(ctx, user, kind, message, &association, subscribed)
+}
+
+// DeliverValidatedAssociation is DeliverValidated with send_notification's
+// association_id, which is None for a request user whose role is neither
+// association nor collaborator: the stored item then holds JSON null and the
+// push matches on it. A non-nil value writes the id as before.
+func (n *SubscriptionNotifier) DeliverValidatedAssociation(ctx context.Context, user, kind, message string, association *string,
+	subscribed bool) error {
 	if err := n.append(ctx, user, kind, message, association, subscribed); err != nil {
 		return err
 	}
@@ -74,17 +84,17 @@ func (n *SubscriptionNotifier) DeliverValidated(ctx context.Context, user, kind,
 // Deliver is send_notification called inline by a view: storing errors
 // propagate, _push_to_websocket's are logged and swallowed.
 func (n *SubscriptionNotifier) Deliver(ctx context.Context, user, kind, message, association string, audit domain.LoginAuditContext) error {
-	if err := n.store(ctx, user, kind, message, association, audit); err != nil {
+	if err := n.store(ctx, user, kind, message, &association, audit); err != nil {
 		return err
 	}
-	if err := n.push(ctx, user, message, association); err != nil {
+	if err := n.push(ctx, user, message, &association); err != nil {
 		slog.WarnContext(ctx, "notification push failed", "error", err)
 	}
 	return nil
 }
 
 // store is validate_broadcast and add_notification_role_broadcast.
-func (n *SubscriptionNotifier) store(ctx context.Context, user, kind, message, association string, audit domain.LoginAuditContext) error {
+func (n *SubscriptionNotifier) store(ctx context.Context, user, kind, message string, association *string, audit domain.LoginAuditContext) error {
 	subscribed, err := n.rows.ValidateBroadcast(ctx, user, "broadcast_"+user, audit, n.now().UTC())
 	if err != nil {
 		return err
@@ -93,7 +103,7 @@ func (n *SubscriptionNotifier) store(ctx context.Context, user, kind, message, a
 }
 
 // append is add_notification_role_broadcast (the store reset first for a new subscription).
-func (n *SubscriptionNotifier) append(ctx context.Context, user, kind, message, association string, subscribed bool) error {
+func (n *SubscriptionNotifier) append(ctx context.Context, user, kind, message string, association *string, subscribed bool) error {
 	broadcast := "broadcast_" + user
 	if subscribed {
 		if err := n.redis.ResetNotifications(ctx, broadcast); err != nil {
@@ -110,13 +120,22 @@ func (n *SubscriptionNotifier) append(ctx context.Context, user, kind, message, 
 	}
 	expires := n.now().Unix() + notificationTTL
 	items = append(items, domain.RequestObject{{Name: "id", Value: id.String()}, {Name: "type", Value: kind}, {Name: "msg", Value: message},
-		{Name: "association_id", Value: association}, {Name: "users", Value: []any{}},
+		{Name: "association_id", Value: notificationAssociation(association)}, {Name: "users", Value: []any{}},
 		{Name: "expires", Value: json.Number(jsonInt(expires))}})
 	return n.redis.SaveNotifications(ctx, broadcast, items)
 }
 
+// notificationAssociation is the stored association_id: the id, or nil (JSON
+// null) for send_notification without one.
+func notificationAssociation(association *string) any {
+	if association == nil {
+		return nil
+	}
+	return *association
+}
+
 // push is _push_to_websocket.
-func (n *SubscriptionNotifier) push(ctx context.Context, user, message, association string) error {
+func (n *SubscriptionNotifier) push(ctx context.Context, user, message string, association *string) error {
 	broadcasts, err := n.redis.Broadcasts(ctx, user)
 	if err != nil {
 		return err
@@ -128,7 +147,7 @@ func (n *SubscriptionNotifier) push(ctx context.Context, user, message, associat
 	for _, item := range listed {
 		text, _ := field(item.Value, "msg")
 		owner, _ := field(item.Value, "association_id")
-		if text != message || owner != association {
+		if text != message || !notificationAssociationMatches(owner, association) {
 			continue
 		}
 		push, err := channelsValue(item.Value)
@@ -139,6 +158,17 @@ func (n *SubscriptionNotifier) push(ctx context.Context, user, message, associat
 			{Key: "notification", Value: push}})
 	}
 	return nil
+}
+
+// notificationAssociationMatches is notif.get('association_id') == msg.get('association_id'):
+// a stored null matches only a null association (an athlete owner's notification
+// carries none), a stored string only the same string.
+func notificationAssociationMatches(stored any, association *string) bool {
+	if association == nil {
+		return stored == nil
+	}
+	text, ok := stored.(string)
+	return ok && text == *association
 }
 
 func jsonInt(value int64) string {
