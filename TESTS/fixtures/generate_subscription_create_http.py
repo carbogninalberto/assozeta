@@ -1947,21 +1947,6 @@ effect['audit'][0:0] = [{'model': 'associate', 'action': 1, 'ref': 'tutor', 'cha
 add('preregistration-renewal-tutor-of-another-association', 'owner', 200, SUCCESS(25.0), setup=RENEW_SETUP,
     body=renewal('renewable_abroad_minor'), effect=next_season(effect))
 
-# --- Years before 1000 on glibc ----------------------------------------------------------------------------------
-# Python's strftime('%Y') is the C library's: on glibc (the production Linux image) a year
-# below 1000 is unpadded, so the renewal's strftime('%d/%m/%Y') writes '05/03/999', which
-# strptime's four-digit %Y rejects: the associate serializer answers the format error and
-# nothing is written. On macOS the year is zero padded ('05/03/0999'), the re-parse succeeds
-# and the registration is created; these cases are authored for glibc, so a local run on
-# macOS fails here (the harness stops at the first failure).
-ASSOCIATES['renewed_year_999'] = {'id': next(site_ids), 'association': OWN, 'first': 'Nove', 'last': 'Nove', 'tax_code': 'NNVNNV99A01H501Z',
-                                  'born': '0999-03-05', 'user': 'owner', 'email': None}
-SUBSCRIPTIONS['renewable_year_999'] = {'id': next(site_ids), 'associate': 'renewed_year_999', 'start': '$season_start',
-                                       'end': '$season_end', 'archived': False, 'number': '34'}
-add('preregistration-renewal-year-999-born-date', 'owner', 400,
-    {'born_date': ['Date has wrong format. Use one of these formats instead: DD/MM/YYYY.']}, setup=RENEW_SETUP,
-    body=renewal('renewable_year_999'))
-
 # --- AssociateSerializer.create with an associate_id: the unique tax code index -----------------------------
 # The serializer saves the row a create's fallback names, or lets the IntegrityError of save() out of
 # create_subscription's atomic block: /subscription/add answers the 500 page and nothing is left behind
@@ -2057,6 +2042,21 @@ self_effect['audit'] = [
      'index': [OWN, 'direct']},
 ] + self_effect['audit']
 add('associate-tutor-with-the-minors-key', 'owner', 200, SUCCESS(25.0), body=request(self_minor, tutor=self_tutor), effect=self_effect)
+
+# --- Years before 1000 on glibc ----------------------------------------------------------------------------------
+# Python's strftime('%Y') is the C library's: on glibc (the production Linux image) a year
+# below 1000 is unpadded, so the renewal's strftime('%d/%m/%Y') writes '05/03/999', which
+# strptime's four-digit %Y rejects: the associate serializer answers the format error and
+# nothing is written. On macOS the year is zero padded ('05/03/0999'), the re-parse succeeds
+# and the registration is created; these cases are authored for glibc, so a local run on
+# macOS fails here (the harness stops at the first failure).
+ASSOCIATES['renewed_year_999'] = {'id': next(site_ids), 'association': OWN, 'first': 'Nove', 'last': 'Nove', 'tax_code': 'NNVNNV99A01H501Z',
+                                  'born': '0999-03-05', 'user': 'owner', 'email': None}
+SUBSCRIPTIONS['renewable_year_999'] = {'id': next(site_ids), 'associate': 'renewed_year_999', 'start': '$season_start',
+                                       'end': '$season_end', 'archived': False, 'number': '34'}
+add('preregistration-renewal-year-999-born-date', 'owner', 400,
+    {'born_date': ['Date has wrong format. Use one of these formats instead: DD/MM/YYYY.']}, setup=RENEW_SETUP,
+    body=renewal('renewable_year_999'))
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({

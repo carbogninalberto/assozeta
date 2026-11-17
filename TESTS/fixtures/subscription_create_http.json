@@ -434,16 +434,6 @@
    "user": null,
    "email": null
   },
-  "renewed_year_999": {
-   "id": "a1000000-0000-4000-8000-000000980015",
-   "association": "a1000000-0000-4000-8000-000000701001",
-   "first": "Nove",
-   "last": "Nove",
-   "tax_code": "NNVNNV99A01H501Z",
-   "born": "0999-03-05",
-   "user": "owner",
-   "email": null
-  },
   "tax_live": {
    "id": "a1000000-0000-4000-8000-000000981002",
    "association": "a1000000-0000-4000-8000-000000701001",
@@ -473,6 +463,16 @@
    "tax_code": "TXDUP12345",
    "born": "1980-01-01",
    "user": null,
+   "email": null
+  },
+  "renewed_year_999": {
+   "id": "a1000000-0000-4000-8000-000000980015",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Nove",
+   "last": "Nove",
+   "tax_code": "NNVNNV99A01H501Z",
+   "born": "0999-03-05",
+   "user": "owner",
    "email": null
   }
  },
@@ -27115,72 +27115,6 @@
    }
   },
   {
-   "name": "subscription-create-preregistration-renewal-year-999-born-date",
-   "actor": "owner",
-   "method": "POST",
-   "path": "/subscription/add",
-   "headers": {},
-   "status": 400,
-   "response": {
-    "born_date": [
-     "Date has wrong format. Use one of these formats instead: DD/MM/YYYY."
-    ]
-   },
-   "effect": null,
-   "body": {
-    "new_user_account": {
-     "new_member": false
-    },
-    "associate_data": {
-     "first_name": "Altro",
-     "last_name": "Nome",
-     "tax_code": "LTRNMO90C01H501K",
-     "born_date": "15/03/1990",
-     "sex": "M",
-     "type": 1
-    },
-    "associate_tutor_data": null,
-    "signature": {
-     "there_is_signature": false,
-     "data": ""
-    },
-    "preregistration": true,
-    "subscription_id": "a1000000-0000-4000-8000-000000980016"
-   },
-   "setup": {
-    "association": {
-     "enable_quotes_management": true,
-     "subscription_fee": "25.00",
-     "membership_fee": null,
-     "multiple_subscription_fee": false,
-     "multiple_membership_fee": false,
-     "subscription_fee_plans": [
-      {
-       "id": "plan-base",
-       "name": "Piano base",
-       "subscription_fee": 40
-      }
-     ],
-     "membership_fee_plans": [
-      {
-       "id": 7,
-       "name": "Tessera gold",
-       "membership_fee": "12.5"
-      }
-     ]
-    },
-    "owner": {
-     "subscription_start_day": 1,
-     "subscription_start_month": 1,
-     "subscription_duration": 2,
-     "membership_duration": 2,
-     "membership_starting_number": 0,
-     "default_membership_type": "",
-     "show_zero_payments": false
-    }
-   }
-  },
-  {
    "name": "subscription-create-associate-id-unknown-key-tax-code-taken",
    "actor": "owner",
    "method": "POST",
@@ -27962,6 +27896,72 @@
     }
    },
    "setup": null
+  },
+  {
+   "name": "subscription-create-preregistration-renewal-year-999-born-date",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "born_date": [
+     "Date has wrong format. Use one of these formats instead: DD/MM/YYYY."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Altro",
+     "last_name": "Nome",
+     "tax_code": "LTRNMO90C01H501K",
+     "born_date": "15/03/1990",
+     "sex": "M",
+     "type": 1
+    },
+    "associate_tutor_data": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "preregistration": true,
+    "subscription_id": "a1000000-0000-4000-8000-000000980016"
+   },
+   "setup": {
+    "association": {
+     "enable_quotes_management": true,
+     "subscription_fee": "25.00",
+     "membership_fee": null,
+     "multiple_subscription_fee": false,
+     "multiple_membership_fee": false,
+     "subscription_fee_plans": [
+      {
+       "id": "plan-base",
+       "name": "Piano base",
+       "subscription_fee": 40
+      }
+     ],
+     "membership_fee_plans": [
+      {
+       "id": 7,
+       "name": "Tessera gold",
+       "membership_fee": "12.5"
+      }
+     ]
+    },
+    "owner": {
+     "subscription_start_day": 1,
+     "subscription_start_month": 1,
+     "subscription_duration": 2,
+     "membership_duration": 2,
+     "membership_starting_number": 0,
+     "default_membership_type": "",
+     "show_zero_payments": false
+    }
+   }
   }
  ]
 }
