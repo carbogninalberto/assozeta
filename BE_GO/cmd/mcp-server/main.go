@@ -88,6 +88,9 @@ func serve(opts options, stdin io.ReadCloser, stdout, stderr io.Writer) error {
 	if err != nil {
 		return errors.New("invalid MCP server environment configuration")
 	}
+	// MCP_AGENT_MAX_RESULTS and MCP_AGENT_QUERY_TIMEOUT come from the same
+	// resolved environment Django's env.int reads.
+	service.SetReportEnvironment(cfg.InstanceAdmin.AIIntegerTexts[1], cfg.InstanceAdmin.AIIntegerTexts[2])
 	database, err := pgx.ParseConfig(cfg.DatabaseURL())
 	if err != nil {
 		return errors.New("invalid MCP server database configuration")

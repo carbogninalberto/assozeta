@@ -47,6 +47,6 @@ func (r *BusinessMCPTools) ReportIntegration(ctx context.Context) (bool, *string
 	return r.reports.ReportIntegration(ctx)
 }
 
-func (r *BusinessMCPTools) RunReportStatements(ctx context.Context, timeoutMS int64, statements []domain.ReportStatement) ([][][]*string, error) {
-	return r.reports.RunReportStatements(ctx, timeoutMS, statements)
+func (r *BusinessMCPTools) RunReportStatements(ctx context.Context, timeoutText string, statements []domain.ReportStatement) ([][][]*string, error) {
+	return r.reports.RunReportStatements(ctx, timeoutText, statements)
 }

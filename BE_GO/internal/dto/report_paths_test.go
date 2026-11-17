@@ -2,6 +2,7 @@ package dto
 
 import (
 	"errors"
+	"math/big"
 	"strings"
 	"testing"
 
@@ -14,7 +15,7 @@ import (
 const reportTestAssociation = "a1000000-0000-4000-8000-000000701001"
 
 func reportTestSettings() (ReportSettings, error) {
-	return ReportSettings{MaxResults: 5000, QueryTimeout: 10}, nil
+	return ReportSettings{MaxResults: big.NewInt(5000), QueryTimeout: big.NewInt(10)}, nil
 }
 
 func reportTestModel(name string) *mcpModel { return mcpModelByLabel("application." + name) }

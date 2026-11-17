@@ -38,29 +38,31 @@ func (e *ReportToolError) Error() string { return e.Message }
 // ReportSettings are QueryBuilder's effective_integration('ai') values.
 // The environment form of both fields is Django's `getattr(settings, NAME, "")
 // or ""`: 0 stands for the empty string (the instance-stored settings are
-// always >= 1, and a negative environment value stays negative).
+// always >= 1, and a negative environment value stays negative). Both are
+// Python ints, which keep every digit env.int's int() accepts, so they are
+// big.Int values (never nil).
 type ReportSettings struct {
-	MaxResults   int64
-	QueryTimeout int64
+	MaxResults   *big.Int
+	QueryTimeout *big.Int
+}
+
+// QueryTimeoutText is str(query_timeout * 1000), the text Django writes into
+// SET statement_timeout: the empty text when the setting is the empty string
+// (the 0 stand-in), the exact decimal product otherwise.
+func (s ReportSettings) QueryTimeoutText() string {
+	if s.QueryTimeout == nil || s.QueryTimeout.Sign() == 0 {
+		return ""
+	}
+	return new(big.Int).Mul(s.QueryTimeout, big.NewInt(1000)).String()
 }
 
 // mcpEffectiveMaxResults is the effective_limit arithmetic: `min(limit or
 // self.max_results, self.max_results)` with self.max_results the empty string
 // (0) raises a TypeError in Python (at min(), or at the following
 // offset + limit), whose text is not reproduced.
-func mcpEffectiveMaxResults(maximum int64) error {
-	if maximum == 0 {
+func mcpEffectiveMaxResults(maximum *big.Int) error {
+	if maximum == nil || maximum.Sign() == 0 {
 		return fmt.Errorf("%w: effective limit against an empty max_results", ErrReportFailed)
-	}
-	return nil
-}
-
-// mcpSetQueryTimeout is QueryBuilder._set_query_timeout: PostgreSQL rejects
-// the empty string (0) and every value <= 0 in SET statement_timeout, so the
-// tool raises there with a database error whose text is not reproduced.
-func mcpSetQueryTimeout(config ReportSettings) error {
-	if config.QueryTimeout <= 0 {
-		return fmt.Errorf("%w: query timeout %d cannot set statement_timeout", ErrReportFailed, config.QueryTimeout)
 	}
 	return nil
 }
@@ -159,10 +161,7 @@ func PlanMCPToolGroup(tool string, params domain.RequestObject, association stri
 		if q.adaptErr != nil {
 			return ReportPlan{}, q.adaptErr
 		}
-		// QueryBuilder.count logs the compiled query, then sets the timeout.
-		if err := mcpSetQueryTimeout(config); err != nil {
-			return ReportPlan{}, err
-		}
+		// _set_query_timeout runs when the statement runs (RunReportStatements).
 		return ReportPlan{Statements: []domain.ReportStatement{q.countStatement()},
 			Render: func(results [][][]*string) (any, error) {
 				return domain.RequestObject{{Name: "count", Value: json.Number(*results[0][0][0])}}, nil
@@ -171,9 +170,9 @@ func PlanMCPToolGroup(tool string, params domain.RequestObject, association stri
 		return q.planQuery(params, config)
 	case "get_field_values":
 		value, _ := params.Lookup("field_name")
-		return q.planFieldValues(value.(string), params, config)
+		return q.planFieldValues(value.(string), params)
 	}
-	return q.planAggregate(params, config)
+	return q.planAggregate(params)
 }
 
 // PythonDict is json.loads' dict for an object with repeated keys: the first
@@ -504,6 +503,9 @@ type mcpPyNumber struct {
 
 func mcpPyInt(number int64) mcpPyNumber { return mcpPyNumber{integer: big.NewInt(number)} }
 
+// mcpPyBigInt is an arbitrary-size Python int (the effective max_results).
+func mcpPyBigInt(number *big.Int) mcpPyNumber { return mcpPyNumber{integer: new(big.Int).Set(number)} }
+
 func (n mcpPyNumber) typeName() string {
 	switch {
 	case n.isFloat:
@@ -577,12 +579,28 @@ func mcpPyNumberValue(value any) (mcpPyNumber, bool) {
 	return mcpPyNumber{}, false
 }
 
+// mcpMaxLessFloat is Python's `maximum < value` for an int and a float: an
+// exact comparison (the int is not rounded to a float first), NaN comparing
+// False and the infinities comparing as themselves.
+func mcpMaxLessFloat(maximum *big.Int, value float64) bool {
+	switch {
+	case math.IsNaN(value):
+		return false
+	case math.IsInf(value, 1):
+		return true
+	case math.IsInf(value, -1):
+		return false
+	}
+	rational := new(big.Rat).SetFloat64(value)
+	return rational != nil && new(big.Rat).SetInt(maximum).Cmp(rational) < 0
+}
+
 // mcpEffectiveLimit is min(limit or MAX, MAX).
-func mcpEffectiveLimit(value any, maximum int64) (mcpPyNumber, error) {
+func mcpEffectiveLimit(value any, maximum *big.Int) (mcpPyNumber, error) {
 	if err := mcpEffectiveMaxResults(maximum); err != nil {
 		return mcpPyNumber{}, err
 	}
-	limit := mcpPyInt(maximum)
+	limit := mcpPyBigInt(maximum)
 	if !PythonTruthy(value) {
 		return limit, nil
 	}
@@ -594,12 +612,12 @@ func mcpEffectiveLimit(value any, maximum int64) (mcpPyNumber, error) {
 	if number.isFloat {
 		// min(limit, MAX) keeps limit unless MAX < limit; NaN compares false,
 		// so Python keeps it too.
-		if float64(maximum) < number.float {
+		if mcpMaxLessFloat(maximum, number.float) {
 			return limit, nil
 		}
 		return number, nil
 	}
-	if number.integer.Cmp(limit.integer) < 0 {
+	if number.integer.Cmp(maximum) < 0 {
 		return number, nil
 	}
 	return limit, nil
@@ -653,11 +671,11 @@ type mcpSliceBounds struct {
 // mcpSlice is effective_limit = min(limit or MAX, MAX) and
 // qs[offset:offset+effective_limit] (Django's QuerySet.__getitem__ calls
 // int() on both bounds).
-func mcpSlice(params domain.RequestObject, maximum int64) (mcpSliceBounds, error) {
+func mcpSlice(params domain.RequestObject, maximum *big.Int) (mcpSliceBounds, error) {
 	if err := mcpEffectiveMaxResults(maximum); err != nil {
 		return mcpSliceBounds{}, err
 	}
-	effective := mcpPyInt(maximum)
+	effective := mcpPyBigInt(maximum)
 	if value, _ := params.Lookup("limit"); PythonTruthy(value) {
 		number, err := mcpEffectiveLimit(value, maximum)
 		if err != nil {
@@ -827,10 +845,8 @@ func (q *mcpQuery) planQuery(params domain.RequestObject, config ReportSettings)
 	if err != nil {
 		return ReportPlan{}, err
 	}
-	// QueryBuilder.execute_query sets the timeout after the slice.
-	if err := mcpSetQueryTimeout(config); err != nil {
-		return ReportPlan{}, err
-	}
+	// QueryBuilder.execute_query sets the timeout after the slice; the
+	// statement run applies it (RunReportStatements).
 	var columns []mcpColumnOut
 	var selects []string
 	for i, name := range names {
@@ -937,13 +953,10 @@ func (q *mcpQuery) planQuery(params domain.RequestObject, config ReportSettings)
 // get_field_values
 // ---------------------------------------------------------------------------
 
-func (q *mcpQuery) planFieldValues(name string, params domain.RequestObject, config ReportSettings) (ReportPlan, error) {
+func (q *mcpQuery) planFieldValues(name string, params domain.RequestObject) (ReportPlan, error) {
 	labels := mcpChoiceMap(q.model, []string{name})
 	// QueryBuilder.get_field_values sets the timeout after the field and filter
-	// checks, before both queries.
-	if err := mcpSetQueryTimeout(config); err != nil {
-		return ReportPlan{}, err
-	}
+	// checks, before both queries (the statement run applies it).
 	counted := q.clone()
 	expr, err := counted.resolveField(name)
 	if err != nil {
@@ -1059,7 +1072,7 @@ var mcpForbiddenAlias = func(alias string) bool {
 
 const mcpAliasError = "Column aliases cannot contain whitespace characters, hashes, control characters, quotation marks, semicolons, or SQL comments."
 
-func (q *mcpQuery) planAggregate(params domain.RequestObject, config ReportSettings) (ReportPlan, error) {
+func (q *mcpQuery) planAggregate(params domain.RequestObject) (ReportPlan, error) {
 	value, _ := params.Lookup("aggregations")
 	if !PythonTruthy(value) {
 		return ReportPlan{Immediate: &ReportToolError{Message: "No aggregations specified"}}, nil
@@ -1126,10 +1139,7 @@ func (q *mcpQuery) planAggregate(params domain.RequestObject, config ReportSetti
 		return ReportPlan{Immediate: &ReportToolError{Message: "No valid aggregations"}}, nil
 	}
 	// QueryBuilder.execute_aggregation sets the timeout after those two
-	// answers and before it validates group_by.
-	if err := mcpSetQueryTimeout(config); err != nil {
-		return ReportPlan{}, err
-	}
+	// answers and before it validates group_by (the statement run applies it).
 	groupValue, _ := params.Lookup("group_by")
 	if !PythonTruthy(groupValue) {
 		return q.planFlatAggregate(aggregates)

@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"strconv"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/jmoiron/sqlx"
@@ -70,13 +69,13 @@ func (r *SavedReports) ReportIntegration(ctx context.Context) (bool, *string, er
 
 // RunReportStatements mirrors QueryBuilder's SET statement_timeout around
 // the queries; database errors are ReportQueryError (the tool's exception).
-func (r *SavedReports) RunReportStatements(ctx context.Context, timeoutMS int64, statements []domain.ReportStatement) ([][][]*string, error) {
+func (r *SavedReports) RunReportStatements(ctx context.Context, timeoutText string, statements []domain.ReportStatement) ([][][]*string, error) {
 	tx, err := r.db.BeginTxx(ctx, &sql.TxOptions{ReadOnly: true})
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
-	if _, err = tx.ExecContext(ctx, `SELECT set_config('statement_timeout', $1, true)`, strconv.FormatInt(timeoutMS, 10)); err != nil {
+	if err = setReportStatementTimeout(ctx, tx, timeoutText); err != nil {
 		return nil, err
 	}
 	results := make([][][]*string, 0, len(statements))
@@ -116,6 +115,23 @@ func (r *SavedReports) RunReportStatements(ctx context.Context, timeoutMS int64,
 		results = append(results, records)
 	}
 	return results, nil
+}
+
+// reportStatementExecutor sets the statement timeout of the transaction.
+type reportStatementExecutor interface {
+	ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error)
+}
+
+// setReportStatementTimeout is QueryBuilder._set_query_timeout: the text is
+// SET statement_timeout's literal (the empty text for the empty stand-in,
+// negatives and values beyond PostgreSQL's range included), so PostgreSQL
+// rejects an unusable value with its own message. That message is the tool's
+// exception, like a statement error.
+func setReportStatementTimeout(ctx context.Context, exec reportStatementExecutor, timeoutText string) error {
+	if _, err := exec.ExecContext(ctx, `SELECT set_config('statement_timeout', $1, true)`, timeoutText); err != nil {
+		return reportQueryError(ctx, err)
+	}
+	return nil
 }
 
 func reportQueryError(ctx context.Context, err error) error {

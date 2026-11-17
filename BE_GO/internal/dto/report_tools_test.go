@@ -3,6 +3,7 @@ package dto
 import (
 	"errors"
 	"fmt"
+	"math/big"
 	"strconv"
 	"strings"
 	"testing"
@@ -57,7 +58,9 @@ func reportBindings(t *testing.T, label, sql string, args []any) {
 }
 
 func TestReportToolOutcomes(t *testing.T) {
-	settings := func() (ReportSettings, error) { return ReportSettings{MaxResults: 5000, QueryTimeout: 10}, nil }
+	settings := func() (ReportSettings, error) {
+		return ReportSettings{MaxResults: big.NewInt(5000), QueryTimeout: big.NewInt(10)}, nil
+	}
 	for _, tc := range []struct {
 		tool, params string
 		want         error
@@ -87,7 +90,9 @@ func TestReportToolOutcomes(t *testing.T) {
 }
 
 func TestReportToolPlans(t *testing.T) {
-	settings := func() (ReportSettings, error) { return ReportSettings{MaxResults: 50, QueryTimeout: 10}, nil }
+	settings := func() (ReportSettings, error) {
+		return ReportSettings{MaxResults: big.NewInt(50), QueryTimeout: big.NewInt(10)}, nil
+	}
 	plan, err := PlanReportTool("query_data", reportParams(t, `{"model_name": "Carnet", "fields": ["title"],
 		"exclude": {"title": "Cinque"}, "order_by": ["-fee"], "limit": 80}`), "a1000000-0000-4000-8000-000000701001", settings)
 	if err != nil {
@@ -111,7 +116,9 @@ func TestReportToolPlans(t *testing.T) {
 }
 
 func TestReportToolIntegerOverflowOrigins(t *testing.T) {
-	settings := func() (ReportSettings, error) { return ReportSettings{MaxResults: 5000, QueryTimeout: 10}, nil }
+	settings := func() (ReportSettings, error) {
+		return ReportSettings{MaxResults: big.NewInt(5000), QueryTimeout: big.NewInt(10)}, nil
+	}
 	plan := func(t *testing.T, params string) error {
 		t.Helper()
 		_, err := PlanMCPTool("query_data", reportParams(t, params), "a1000000-0000-4000-8000-000000701001", settings)
@@ -167,7 +174,9 @@ func TestReportToolIntegerOverflowOrigins(t *testing.T) {
 }
 
 func TestReportToolEmptyInList(t *testing.T) {
-	settings := func() (ReportSettings, error) { return ReportSettings{MaxResults: 5000, QueryTimeout: 10}, nil }
+	settings := func() (ReportSettings, error) {
+		return ReportSettings{MaxResults: big.NewInt(5000), QueryTimeout: big.NewInt(10)}, nil
+	}
 	// An empty __in list folds to FALSE: the query runs normally and matches no
 	// row, exactly like Django (no exception with an empty message).
 	for _, tool := range []string{"query_data", "count_data", "get_field_values"} {
@@ -192,7 +201,9 @@ func TestReportToolEmptyInList(t *testing.T) {
 }
 
 func TestReportToolJSONLookups(t *testing.T) {
-	settings := func() (ReportSettings, error) { return ReportSettings{MaxResults: 5000, QueryTimeout: 10}, nil }
+	settings := func() (ReportSettings, error) {
+		return ReportSettings{MaxResults: big.NewInt(5000), QueryTimeout: big.NewInt(10)}, nil
+	}
 	plan := func(t *testing.T, params string) ReportPlan {
 		t.Helper()
 		planned, err := PlanReportTool("query_data", reportParams(t, params), "a1000000-0000-4000-8000-000000701001", settings)
@@ -374,7 +385,9 @@ func TestReportToolJSONLookups(t *testing.T) {
 // has_any_keys, has_key values of other types, key indexes outside int64 and
 // every JSON value type in exact/contains/in.
 func TestReportToolJSONLookupsR3b(t *testing.T) {
-	settings := func() (ReportSettings, error) { return ReportSettings{MaxResults: 5000, QueryTimeout: 10}, nil }
+	settings := func() (ReportSettings, error) {
+		return ReportSettings{MaxResults: big.NewInt(5000), QueryTimeout: big.NewInt(10)}, nil
+	}
 	meta := `"application_payment"."meta"`
 	for _, tc := range []struct {
 		params string
@@ -474,7 +487,9 @@ func TestReportToolJSONLookupsR3b(t *testing.T) {
 }
 
 func TestReportToolValuePreparation(t *testing.T) {
-	settings := func() (ReportSettings, error) { return ReportSettings{MaxResults: 5000, QueryTimeout: 10}, nil }
+	settings := func() (ReportSettings, error) {
+		return ReportSettings{MaxResults: big.NewInt(5000), QueryTimeout: big.NewInt(10)}, nil
+	}
 	plan := func(t *testing.T, params string) (ReportPlan, error) {
 		t.Helper()
 		return PlanReportTool("query_data", reportParams(t, params), "a1000000-0000-4000-8000-000000701001", settings)
@@ -561,7 +576,9 @@ func TestReportToolValuePreparation(t *testing.T) {
 }
 
 func TestReportToolLookupFamilies(t *testing.T) {
-	settings := func() (ReportSettings, error) { return ReportSettings{MaxResults: 5000, QueryTimeout: 10}, nil }
+	settings := func() (ReportSettings, error) {
+		return ReportSettings{MaxResults: big.NewInt(5000), QueryTimeout: big.NewInt(10)}, nil
+	}
 	plan := func(t *testing.T, params string) ReportPlan {
 		t.Helper()
 		planned, err := PlanReportTool("query_data", reportParams(t, params), "a1000000-0000-4000-8000-000000701001", settings)
@@ -666,7 +683,9 @@ func TestReportToolLookupFamilies(t *testing.T) {
 }
 
 func TestReportToolLimitsAndOffsets(t *testing.T) {
-	settings := func() (ReportSettings, error) { return ReportSettings{MaxResults: 5000, QueryTimeout: 10}, nil }
+	settings := func() (ReportSettings, error) {
+		return ReportSettings{MaxResults: big.NewInt(5000), QueryTimeout: big.NewInt(10)}, nil
+	}
 	plan := func(t *testing.T, params string) ReportPlan {
 		t.Helper()
 		planned, err := PlanReportTool("query_data", reportParams(t, params), "a1000000-0000-4000-8000-000000701001", settings)
@@ -720,7 +739,9 @@ func TestReportToolLimitsAndOffsets(t *testing.T) {
 }
 
 func TestReportToolRepeatedFields(t *testing.T) {
-	settings := func() (ReportSettings, error) { return ReportSettings{MaxResults: 5000, QueryTimeout: 10}, nil }
+	settings := func() (ReportSettings, error) {
+		return ReportSettings{MaxResults: big.NewInt(5000), QueryTimeout: big.NewInt(10)}, nil
+	}
 	plan, err := PlanReportTool("query_data", reportParams(t,
 		`{"model_name":"Course","fields":["title","fee","title"],"order_by":["title"]}`),
 		"a1000000-0000-4000-8000-000000701001", settings)
@@ -747,7 +768,9 @@ func TestReportToolRepeatedFields(t *testing.T) {
 }
 
 func TestReportToolFieldNameTypes(t *testing.T) {
-	settings := func() (ReportSettings, error) { return ReportSettings{MaxResults: 5000, QueryTimeout: 10}, nil }
+	settings := func() (ReportSettings, error) {
+		return ReportSettings{MaxResults: big.NewInt(5000), QueryTimeout: big.NewInt(10)}, nil
+	}
 	for params, want := range map[string]string{
 		`{"model_name":"Course","field_name":5}`:         "'int' object has no attribute 'split'",
 		`{"model_name":"Course","field_name":null}`:      "'NoneType' object has no attribute 'split'",
@@ -761,7 +784,9 @@ func TestReportToolFieldNameTypes(t *testing.T) {
 }
 
 func TestReportToolSplitExclude(t *testing.T) {
-	settings := func() (ReportSettings, error) { return ReportSettings{MaxResults: 5000, QueryTimeout: 10}, nil }
+	settings := func() (ReportSettings, error) {
+		return ReportSettings{MaxResults: big.NewInt(5000), QueryTimeout: big.NewInt(10)}, nil
+	}
 	plan := func(t *testing.T, tool, params string) ReportPlan {
 		t.Helper()
 		planned, err := PlanReportTool(tool, reportParams(t, params), "a1000000-0000-4000-8000-000000701001", settings)
@@ -869,7 +894,9 @@ func TestReportToolSplitExclude(t *testing.T) {
 }
 
 func TestReportToolJoins(t *testing.T) {
-	settings := func() (ReportSettings, error) { return ReportSettings{MaxResults: 5000, QueryTimeout: 10}, nil }
+	settings := func() (ReportSettings, error) {
+		return ReportSettings{MaxResults: big.NewInt(5000), QueryTimeout: big.NewInt(10)}, nil
+	}
 	for params, want := range map[string]string{
 		`{"model_name":"Course","fields":["title"],"joins":[5]}`:           "'int' object has no attribute 'split'",
 		`{"model_name":"Course","fields":["title"],"joins":[[1]]}`:         "'list' object has no attribute 'split'",
@@ -923,7 +950,9 @@ func TestReportUnescape(t *testing.T) {
 }
 
 func TestReportToolArgumentShapes(t *testing.T) {
-	settings := func() (ReportSettings, error) { return ReportSettings{MaxResults: 5000, QueryTimeout: 10}, nil }
+	settings := func() (ReportSettings, error) {
+		return ReportSettings{MaxResults: big.NewInt(5000), QueryTimeout: big.NewInt(10)}, nil
+	}
 	plan := func(t *testing.T, tool, params string) ReportPlan {
 		t.Helper()
 		planned, err := PlanReportTool(tool, reportParams(t, params), "a1000000-0000-4000-8000-000000701001", settings)

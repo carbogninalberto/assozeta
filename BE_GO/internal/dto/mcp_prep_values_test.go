@@ -15,7 +15,7 @@ import (
 )
 
 func mcpValueSettings() (ReportSettings, error) {
-	return ReportSettings{MaxResults: 5000, QueryTimeout: 10}, nil
+	return ReportSettings{MaxResults: big.NewInt(5000), QueryTimeout: big.NewInt(10)}, nil
 }
 
 // mcpCountPlan plans count_data for a filter object built by the test.

@@ -56,7 +56,7 @@ func (s *portedStore) ReportIntegration(context.Context) (bool, *string, error) 
 	return s.integration != nil, s.integration, nil
 }
 
-func (s *portedStore) RunReportStatements(_ context.Context, _ int64, statements []domain.ReportStatement) ([][][]*string, error) {
+func (s *portedStore) RunReportStatements(_ context.Context, _ string, statements []domain.ReportStatement) ([][][]*string, error) {
 	results := make([][][]*string, 0, len(statements))
 	if s.runErr != nil {
 		return nil, s.runErr
@@ -954,7 +954,7 @@ type runStore struct {
 
 func (runStore) ReportIntegration(context.Context) (bool, *string, error) { return false, nil, nil }
 
-func (s runStore) RunReportStatements(_ context.Context, _ int64, statements []domain.ReportStatement) ([][][]*string, error) {
+func (s runStore) RunReportStatements(_ context.Context, _ string, statements []domain.ReportStatement) ([][][]*string, error) {
 	if s.runErr != nil {
 		return nil, s.runErr
 	}
