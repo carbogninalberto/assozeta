@@ -1587,6 +1587,13 @@ add('plan-fee-infinite-server-error', 'owner', 500, SERVER,
                      subscription_fee_plans=[{'id': 'inf', 'name': 'Piano infinito', 'subscription_fee': 'inf'}]),
     body=request(person('Ivan', 'Infinito', 'NFNIVN90A41H501W', born='01/01/1990'), plan_id='inf'))
 
+# subscription/add has no try around create_subscription: the existence check's ProgrammingError (a non-text
+# name reaching UPPER()) and the subscription INSERT's smallint DataError are the 500 page.
+add('existence-tax-code-number-server-error', 'owner', 500, SERVER,
+    body=request(person('Nico', 'Numero', 5, born='01/01/1990')))
+add('type-beyond-smallint-server-error', 'owner', 500, SERVER,
+    body=request(person('Tito', 'Tipo', 'TPITTI90A01H501T', born='01/01/1990', type=70000)))
+
 # nan is not > 0, so no payment is due (as with a negative fee): neither the amount filter nor the Payment
 # insert reaches the DecimalField, and the subscription is created without one.
 not_a_number = person('Nina', 'Nonumero', 'NNINNA90A41H501X', born='01/01/1990')

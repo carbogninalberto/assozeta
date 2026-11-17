@@ -674,6 +674,10 @@ func (s *CourseEnrolment) addCourseSubscription(ctx context.Context, tx domain.C
 	if course.CourseType == 1 {
 		oneFee, _ := decimalPositive(&course.OneFee)
 		fee, feeValid := decimalPositive(course.Fee)
+		if write.Bools["one_fee_payment"] && course.OneFee == "NaN" {
+			// course.one_fee > 0 on Decimal('NaN'): decimal.InvalidOperation.
+			return courseRaised("[<class 'decimal.InvalidOperation'>]")
+		}
 		switch {
 		case write.Bools["one_fee_payment"] && oneFee:
 			text := "Pagamento in un'unica soluzione per " + title
@@ -687,6 +691,9 @@ func (s *CourseEnrolment) addCourseSubscription(ctx context.Context, tx domain.C
 			if err = tx.SaveRow(ctx, created.save(), audit); err != nil {
 				return err
 			}
+		case !feeValid && course.Fee != nil && *course.Fee == "NaN":
+			// course.fee > 0 on Decimal('NaN'): decimal.InvalidOperation.
+			return courseRaised("[<class 'decimal.InvalidOperation'>]")
 		case !feeValid:
 			// None > 0: TypeError.
 			return courseEnrolmentServer

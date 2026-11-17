@@ -130,9 +130,19 @@ account renews in its connected account's association; the create and course enr
 reaches carry their CPython texts (`float()`, `int()`, the season calendar, a non-dict tutor or new member, a missing
 default category, a course without events or title), answered as `{"status": "error", "msg": str(e)}` (cases
 `renew-membership-plan-fee-not-a-number`, `renew-calendar-invalid-start-month`, `renew-course-events-none`,
-`renew-course-title-none`). Left as the 500 page where Django answers that 400 with a psycopg2 or decimal text the port
-does not rebuild: non-text names at the existence check (a ProgrammingError quoting the statement), `type`/`role`
-outside the smallint range, non-finite stored amounts or membership prices.
+`renew-course-title-none`). The psycopg2 and decimal texts are rebuilt as well (long tail PR 5, R):
+- Non-text names at the existence check: IExact passes the raw `initial_data` value, psycopg2 writes it as its own literal
+  (` -5`, `true`, `ARRAY[...]`, `'{NULL}'`, `'Infinity'::float`). Go builds Django's exact statement
+  (`subscriptionExistsStatement`) and runs it in a savepoint: a server error is libpq's text (message, `LINE n:` window
+  and caret, `DETAIL`/`HINT`; `dto.Psycopg2ServerErrorText`), a dict or a NUL character is psycopg2's own error, and an
+  all-NULL list runs and reaches the serializer. Cases `renew-existence-*`.
+- `type`/`role` outside smallint: `smallint out of range` at the subscription's INSERT (`renew-type-*`, `renew-role-*`).
+- Non-finite membership plan fees: DecimalField's `['“inf” value must be a decimal number.']` at the payment's amount
+  filter or the membership's price (`renew-membership-plan-fee-*`). A stored `NaN` association fee follows the same path
+  (Go tests only: the fixture cannot store NaN through the ORM), and a stored `NaN` course fee is
+  `[<class 'decimal.InvalidOperation'>]` from `course.fee > 0`.
+- Draft approval swallows these like any exception (`approve-draft-database-errors-swallowed`); `subscription/add`
+  answers its 500 page.
 
 Refused with the 500 page before anything is committed:
 - the inputs `subscription-create.md` refuses: new member accounts, signature uploads, `type_of_associate`, and the

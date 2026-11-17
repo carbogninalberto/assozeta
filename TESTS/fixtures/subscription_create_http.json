@@ -22293,6 +22293,63 @@
    }
   },
   {
+   "name": "subscription-create-existence-tax-code-number-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Nico",
+     "last_name": "Numero",
+     "tax_code": 5,
+     "born_date": "01/01/1990",
+     "sex": "M"
+    },
+    "associate_tutor_data": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-create-type-beyond-smallint-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Tito",
+     "last_name": "Tipo",
+     "tax_code": "TPITTI90A01H501T",
+     "born_date": "01/01/1990",
+     "sex": "M",
+     "type": 70000
+    },
+    "associate_tutor_data": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    }
+   },
+   "setup": null
+  },
+  {
    "name": "subscription-create-plan-fee-nan-no-payment",
    "actor": "owner",
    "method": "POST",

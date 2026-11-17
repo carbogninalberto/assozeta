@@ -394,6 +394,37 @@ func (t *subscriptionCreateTransaction) InsertAssociateAttempt(ctx context.Conte
 	return err
 }
 
+// ExistsStatement runs check_if_subscription_exists' statement with every
+// parameter inlined, as psycopg2 sends it: the savepoint rolls a refused
+// statement back (the exception leaves the request's earlier writes alone) and
+// the server's answer is reported as it is (the caller renders its text).
+func (t *subscriptionCreateTransaction) ExistsStatement(ctx context.Context, statement string) (bool, error) {
+	const savepoint = "subscription_exists_literal"
+	if _, err := t.tx.ExecContext(ctx, `SAVEPOINT `+savepoint); err != nil {
+		return false, err
+	}
+	var one int
+	found := true
+	err := t.tx.GetContext(ctx, &one, statement)
+	if errors.Is(err, sql.ErrNoRows) {
+		found, err = false, nil
+	}
+	if err != nil {
+		var rollback error
+		if _, rollback = t.tx.ExecContext(ctx, `ROLLBACK TO SAVEPOINT `+savepoint); rollback != nil {
+			return false, rollback
+		}
+		if _, release := t.tx.ExecContext(ctx, `RELEASE SAVEPOINT `+savepoint); release != nil {
+			return false, release
+		}
+		return false, err
+	}
+	if _, err = t.tx.ExecContext(ctx, `RELEASE SAVEPOINT `+savepoint); err != nil {
+		return false, err
+	}
+	return found, nil
+}
+
 // MarkRelationPrimary is AssociateTutorRelation.save() of get_main_tutor.
 func (t *subscriptionCreateTransaction) MarkRelationPrimary(ctx context.Context, id int64) error {
 	_, err := t.tx.ExecContext(ctx, `UPDATE application_associatetutorrelation SET is_primary=true WHERE id=$1`, id)

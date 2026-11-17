@@ -1,0 +1,432 @@
+[
+ {
+  "sql": "SELECT UPPER(5)",
+  "message": "function upper(integer) does not exist",
+  "position": "8",
+  "detail": null,
+  "hint": "No function matches the given name and argument types. You might need to add explicit type casts.",
+  "context": null,
+  "internal_query": null,
+  "text": "function upper(integer) does not exist\nLINE 1: SELECT UPPER(5)\n               ^\nHINT:  No function matches the given name and argument types. You might need to add explicit type casts.\n"
+ },
+ {
+  "sql": "SELECT\n UPPER(5)",
+  "message": "function upper(integer) does not exist",
+  "position": "9",
+  "detail": null,
+  "hint": "No function matches the given name and argument types. You might need to add explicit type casts.",
+  "context": null,
+  "internal_query": null,
+  "text": "function upper(integer) does not exist\nLINE 2:  UPPER(5)\n         ^\nHINT:  No function matches the given name and argument types. You might need to add explicit type casts.\n"
+ },
+ {
+  "sql": "SELECT\r\n UPPER(5)",
+  "message": "function upper(integer) does not exist",
+  "position": "10",
+  "detail": null,
+  "hint": "No function matches the given name and argument types. You might need to add explicit type casts.",
+  "context": null,
+  "internal_query": null,
+  "text": "function upper(integer) does not exist\nLINE 2:  UPPER(5)\n         ^\nHINT:  No function matches the given name and argument types. You might need to add explicit type casts.\n"
+ },
+ {
+  "sql": "SELECT\r UPPER(5)",
+  "message": "function upper(integer) does not exist",
+  "position": "9",
+  "detail": null,
+  "hint": "No function matches the given name and argument types. You might need to add explicit type casts.",
+  "context": null,
+  "internal_query": null,
+  "text": "function upper(integer) does not exist\nLINE 2:  UPPER(5)\n         ^\nHINT:  No function matches the given name and argument types. You might need to add explicit type casts.\n"
+ },
+ {
+  "sql": "SELECT\n\r UPPER(5)",
+  "message": "function upper(integer) does not exist",
+  "position": "10",
+  "detail": null,
+  "hint": "No function matches the given name and argument types. You might need to add explicit type casts.",
+  "context": null,
+  "internal_query": null,
+  "text": "function upper(integer) does not exist\nLINE 3:  UPPER(5)\n         ^\nHINT:  No function matches the given name and argument types. You might need to add explicit type casts.\n"
+ },
+ {
+  "sql": "SELECT 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' AS a, UPPER(5)",
+  "message": "function upper(integer) does not exist",
+  "position": "97",
+  "detail": null,
+  "hint": "No function matches the given name and argument types. You might need to add explicit type casts.",
+  "context": null,
+  "internal_query": null,
+  "text": "function upper(integer) does not exist\nLINE 1: ...xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' AS a, UPPER(5)\n                                                               ^\nHINT:  No function matches the given name and argument types. You might need to add explicit type casts.\n"
+ },
+ {
+  "sql": "SELECT UPPER(5), 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' AS a",
+  "message": "function upper(integer) does not exist",
+  "position": "8",
+  "detail": null,
+  "hint": "No function matches the given name and argument types. You might need to add explicit type casts.",
+  "context": null,
+  "internal_query": null,
+  "text": "function upper(integer) does not exist\nLINE 1: SELECT UPPER(5), 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx...\n               ^\nHINT:  No function matches the given name and argument types. You might need to add explicit type casts.\n"
+ },
+ {
+  "sql": "SELECT '日本語日本語日本語日本語日本語日本語日本語日本語日本語日本語日本語日本語日本語日本語日本語日本語日本語日本語日本語日本語' AS a, UPPER(5)",
+  "message": "function upper(integer) does not exist",
+  "position": "77",
+  "detail": null,
+  "hint": "No function matches the given name and argument types. You might need to add explicit type casts.",
+  "context": null,
+  "internal_query": null,
+  "text": "function upper(integer) does not exist\nLINE 1: ...語日本語日本語日本語日本語日本語日本語日本語' AS a, UPPER(5)\n                                                               ^\nHINT:  No function matches the given name and argument types. You might need to add explicit type casts.\n"
+ },
+ {
+  "sql": "SELECT UPPER(5), '日本語日本語日本語日本語日本語日本語日本語日本語日本語日本語日本語日本語日本語日本語日本語日本語日本語日本語日本語日本語' AS a",
+  "message": "function upper(integer) does not exist",
+  "position": "8",
+  "detail": null,
+  "hint": "No function matches the given name and argument types. You might need to add explicit type casts.",
+  "context": null,
+  "internal_query": null,
+  "text": "function upper(integer) does not exist\nLINE 1: SELECT UPPER(5), '日本語日本語日本語日本語日本語日本語日本語...\n               ^\nHINT:  No function matches the given name and argument types. You might need to add explicit type casts.\n"
+ },
+ {
+  "sql": "SELECT 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' AS a, UPPER(5), '日本語日本語日本語' AS b",
+  "message": "function upper(integer) does not exist",
+  "position": "57",
+  "detail": null,
+  "hint": "No function matches the given name and argument types. You might need to add explicit type casts.",
+  "context": null,
+  "internal_query": null,
+  "text": "function upper(integer) does not exist\nLINE 1: ... 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' AS a, UPPER(5), ...\n                                                             ^\nHINT:  No function matches the given name and argument types. You might need to add explicit type casts.\n"
+ },
+ {
+  "sql": "SELECT 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' AS a, UPPER(ARRAY['日本語日本語日本語']) AS b, 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'",
+  "message": "function upper(text[]) does not exist",
+  "position": "57",
+  "detail": null,
+  "hint": "No function matches the given name and argument types. You might need to add explicit type casts.",
+  "context": null,
+  "internal_query": null,
+  "text": "function upper(text[]) does not exist\nLINE 1: ... 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' AS a, UPPER(ARRA...\n                                                             ^\nHINT:  No function matches the given name and argument types. You might need to add explicit type casts.\n"
+ },
+ {
+  "sql": "SELECT\t'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'\t AS a,\tUPPER(5)\t, 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'",
+  "message": "function upper(integer) does not exist",
+  "position": "58",
+  "detail": null,
+  "hint": "No function matches the given name and argument types. You might need to add explicit type casts.",
+  "context": null,
+  "internal_query": null,
+  "text": "function upper(integer) does not exist\nLINE 1: ...'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'  AS a, UPPER(5) ,...\n                                                             ^\nHINT:  No function matches the given name and argument types. You might need to add explicit type casts.\n"
+ },
+ {
+  "sql": "SELECT 'éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé' AS a, UPPER(5) , 'é́́́́́́́́́́́́́́́́́́́́́́́́́́́́́'",
+  "message": "function upper(integer) does not exist",
+  "position": "87",
+  "detail": null,
+  "hint": "No function matches the given name and argument types. You might need to add explicit type casts.",
+  "context": null,
+  "internal_query": null,
+  "text": "function upper(integer) does not exist\nLINE 1: ...éééééééééééééééééééééééééééééééééééééééééé' AS a, UPPER(5) ,...\n                                                             ^\nHINT:  No function matches the given name and argument types. You might need to add explicit type casts.\n"
+ },
+ {
+  "sql": "SELECT 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', UPPER(5) ",
+  "message": "function upper(integer) does not exist",
+  "position": "67",
+  "detail": null,
+  "hint": "No function matches the given name and argument types. You might need to add explicit type casts.",
+  "context": null,
+  "internal_query": null,
+  "text": "function upper(integer) does not exist\nLINE 1: ...xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', UPPER(5) \n                                                              ^\nHINT:  No function matches the given name and argument types. You might need to add explicit type casts.\n"
+ },
+ {
+  "sql": "SELECT 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', UPPER(5)",
+  "message": "function upper(integer) does not exist",
+  "position": "61",
+  "detail": null,
+  "hint": "No function matches the given name and argument types. You might need to add explicit type casts.",
+  "context": null,
+  "internal_query": null,
+  "text": "function upper(integer) does not exist\nLINE 1: ...xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', UPPER(5)\n                                                               ^\nHINT:  No function matches the given name and argument types. You might need to add explicit type casts.\n"
+ },
+ {
+  "sql": "SELECT 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', UPPER(5)",
+  "message": "function upper(integer) does not exist",
+  "position": "62",
+  "detail": null,
+  "hint": "No function matches the given name and argument types. You might need to add explicit type casts.",
+  "context": null,
+  "internal_query": null,
+  "text": "function upper(integer) does not exist\nLINE 1: ...xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', UPPER(5)\n                                                               ^\nHINT:  No function matches the given name and argument types. You might need to add explicit type casts.\n"
+ },
+ {
+  "sql": "SELECT 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', UPPER(5)",
+  "message": "function upper(integer) does not exist",
+  "position": "63",
+  "detail": null,
+  "hint": "No function matches the given name and argument types. You might need to add explicit type casts.",
+  "context": null,
+  "internal_query": null,
+  "text": "function upper(integer) does not exist\nLINE 1: ...xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', UPPER(5)\n                                                               ^\nHINT:  No function matches the given name and argument types. You might need to add explicit type casts.\n"
+ },
+ {
+  "sql": "SELECT 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', UPPER(5)",
+  "message": "function upper(integer) does not exist",
+  "position": "59",
+  "detail": null,
+  "hint": "No function matches the given name and argument types. You might need to add explicit type casts.",
+  "context": null,
+  "internal_query": null,
+  "text": "function upper(integer) does not exist\nLINE 1: ... 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', UPPER(5)\n                                                               ^\nHINT:  No function matches the given name and argument types. You might need to add explicit type casts.\n"
+ },
+ {
+  "sql": "SELECT 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', UPPER(5)",
+  "message": "function upper(integer) does not exist",
+  "position": "60",
+  "detail": null,
+  "hint": "No function matches the given name and argument types. You might need to add explicit type casts.",
+  "context": null,
+  "internal_query": null,
+  "text": "function upper(integer) does not exist\nLINE 1: ...'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', UPPER(5)\n                                                               ^\nHINT:  No function matches the given name and argument types. You might need to add explicit type casts.\n"
+ },
+ {
+  "sql": "SELECT 1\nSELECT 1\nSELECT 1\nSELECT 1\nSELECT 1\nSELECT 1\nSELECT 1\nSELECT 1\nSELECT 1\nSELECT 1\nSELECT 1\nSELECT 1\nSELECT UPPER(5)",
+  "message": "syntax error at or near \"1\"",
+  "position": "17",
+  "detail": null,
+  "hint": null,
+  "context": null,
+  "internal_query": null,
+  "text": "syntax error at or near \"1\"\nLINE 2: SELECT 1\n               ^\n"
+ },
+ {
+  "sql": "SELECT 'a\nba\nba\nba\nba\nb', UPPER(5)xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "message": "function upper(integer) does not exist",
+  "position": "27",
+  "detail": null,
+  "hint": "No function matches the given name and argument types. You might need to add explicit type casts.",
+  "context": null,
+  "internal_query": null,
+  "text": "function upper(integer) does not exist\nLINE 6: b', UPPER(5)xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx...\n            ^\nHINT:  No function matches the given name and argument types. You might need to add explicit type casts.\n"
+ },
+ {
+  "sql": "SELECT 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n', UPPER(ARRAY[1,'a'])",
+  "message": "invalid input syntax for type integer: \"a\"",
+  "position": "107",
+  "detail": null,
+  "hint": null,
+  "context": null,
+  "internal_query": null,
+  "text": "invalid input syntax for type integer: \"a\"\nLINE 2: ', UPPER(ARRAY[1,'a'])\n                         ^\n"
+ },
+ {
+  "sql": "SELECT ARRAY[1,'a']",
+  "message": "invalid input syntax for type integer: \"a\"",
+  "position": "16",
+  "detail": null,
+  "hint": null,
+  "context": null,
+  "internal_query": null,
+  "text": "invalid input syntax for type integer: \"a\"\nLINE 1: SELECT ARRAY[1,'a']\n                       ^\n"
+ },
+ {
+  "sql": "SELECT UPPER(ARRAY[true, 1])",
+  "message": "ARRAY types boolean and integer cannot be matched",
+  "position": "26",
+  "detail": null,
+  "hint": null,
+  "context": null,
+  "internal_query": null,
+  "text": "ARRAY types boolean and integer cannot be matched\nLINE 1: SELECT UPPER(ARRAY[true, 1])\n                                 ^\n"
+ },
+ {
+  "sql": "SELECT UPPER(ARRAY[ARRAY[]])",
+  "message": "cannot determine type of empty array",
+  "position": "20",
+  "detail": null,
+  "hint": "Explicitly cast to the desired type, for example ARRAY[]::integer[].",
+  "context": null,
+  "internal_query": null,
+  "text": "cannot determine type of empty array\nLINE 1: SELECT UPPER(ARRAY[ARRAY[]])\n                           ^\nHINT:  Explicitly cast to the desired type, for example ARRAY[]::integer[].\n"
+ },
+ {
+  "sql": "SELECT '日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日', UPPER(5)",
+  "message": "function upper(integer) does not exist",
+  "position": "82",
+  "detail": null,
+  "hint": "No function matches the given name and argument types. You might need to add explicit type casts.",
+  "context": null,
+  "internal_query": null,
+  "text": "function upper(integer) does not exist\nLINE 1: ...日日日日日日日日日日日日日日日日日日日日日日日日', UPPER(5)\n                                                              ^\nHINT:  No function matches the given name and argument types. You might need to add explicit type casts.\n"
+ },
+ {
+  "sql": "SELECT UPPER(5) 日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日日",
+  "message": "function upper(integer) does not exist",
+  "position": "8",
+  "detail": null,
+  "hint": "No function matches the given name and argument types. You might need to add explicit type casts.",
+  "context": null,
+  "internal_query": null,
+  "text": "function upper(integer) does not exist\nLINE 1: SELECT UPPER(5) 日日日日日日日日日日日日日日日日日日日日日日...\n               ^\nHINT:  No function matches the given name and argument types. You might need to add explicit type casts.\n"
+ },
+ {
+  "sql": "SELECT 1 AS \"a\" FROM \"application_subscription\" INNER JOIN \"application_associate\" ON (\"application_subscription\".\"associate_id\" = \"application_associate\".\"associate_id\") WHERE (NOT \"application_subscription\".\"archived\" AND UPPER(\"application_associate\".\"first_name\"::text) = UPPER(5) AND UPPER(\"application_associate\".\"last_name\"::text) = UPPER('Rossi') AND UPPER(\"application_associate\".\"tax_code\"::text) = UPPER('RSSMRA') AND \"application_subscription\".\"end_date\" >= '2025-09-01'::date AND \"application_subscription\".\"sport_association_id\" = 'a1000000-0000-4000-8000-000000000001'::uuid AND \"application_subscription\".\"start_date\" <= '2026-08-31'::date) LIMIT 1",
+  "message": "function upper(integer) does not exist",
+  "position": "277",
+  "detail": null,
+  "hint": "No function matches the given name and argument types. You might need to add explicit type casts.",
+  "context": null,
+  "internal_query": null,
+  "text": "function upper(integer) does not exist\nLINE 1: ...PER(\"application_associate\".\"first_name\"::text) = UPPER(5) A...\n                                                             ^\nHINT:  No function matches the given name and argument types. You might need to add explicit type casts.\n"
+ },
+ {
+  "sql": "SELECT 1 AS \"a\" FROM \"application_subscription\" INNER JOIN \"application_associate\" ON (\"application_subscription\".\"associate_id\" = \"application_associate\".\"associate_id\") WHERE (NOT \"application_subscription\".\"archived\" AND UPPER(\"application_associate\".\"first_name\"::text) = UPPER('Mario') AND UPPER(\"application_associate\".\"last_name\"::text) = UPPER(5) AND UPPER(\"application_associate\".\"tax_code\"::text) = UPPER('RSSMRA') AND \"application_subscription\".\"end_date\" >= '2025-09-01'::date AND \"application_subscription\".\"sport_association_id\" = 'a1000000-0000-4000-8000-000000000001'::uuid AND \"application_subscription\".\"start_date\" <= '2026-08-31'::date) LIMIT 1",
+  "message": "function upper(integer) does not exist",
+  "position": "347",
+  "detail": null,
+  "hint": "No function matches the given name and argument types. You might need to add explicit type casts.",
+  "context": null,
+  "internal_query": null,
+  "text": "function upper(integer) does not exist\nLINE 1: ...PPER(\"application_associate\".\"last_name\"::text) = UPPER(5) A...\n                                                             ^\nHINT:  No function matches the given name and argument types. You might need to add explicit type casts.\n"
+ },
+ {
+  "sql": "SELECT 1 AS \"a\" FROM \"application_subscription\" INNER JOIN \"application_associate\" ON (\"application_subscription\".\"associate_id\" = \"application_associate\".\"associate_id\") WHERE (NOT \"application_subscription\".\"archived\" AND UPPER(\"application_associate\".\"first_name\"::text) = UPPER('Mario') AND UPPER(\"application_associate\".\"last_name\"::text) = UPPER('Rossi') AND UPPER(\"application_associate\".\"tax_code\"::text) = UPPER(5) AND \"application_subscription\".\"end_date\" >= '2025-09-01'::date AND \"application_subscription\".\"sport_association_id\" = 'a1000000-0000-4000-8000-000000000001'::uuid AND \"application_subscription\".\"start_date\" <= '2026-08-31'::date) LIMIT 1",
+  "message": "function upper(integer) does not exist",
+  "position": "416",
+  "detail": null,
+  "hint": "No function matches the given name and argument types. You might need to add explicit type casts.",
+  "context": null,
+  "internal_query": null,
+  "text": "function upper(integer) does not exist\nLINE 1: ...UPPER(\"application_associate\".\"tax_code\"::text) = UPPER(5) A...\n                                                             ^\nHINT:  No function matches the given name and argument types. You might need to add explicit type casts.\n"
+ },
+ {
+  "sql": "SELECT 1 AS \"a\" FROM \"application_subscription\" INNER JOIN \"application_associate\" ON (\"application_subscription\".\"associate_id\" = \"application_associate\".\"associate_id\") WHERE (NOT \"application_subscription\".\"archived\" AND UPPER(\"application_associate\".\"first_name\"::text) = UPPER('Mario') AND UPPER(\"application_associate\".\"last_name\"::text) = UPPER('Rossi') AND UPPER(\"application_associate\".\"tax_code\"::text) = UPPER( -5) AND \"application_subscription\".\"end_date\" >= '2025-09-01'::date AND \"application_subscription\".\"sport_association_id\" = 'a1000000-0000-4000-8000-000000000001'::uuid AND \"application_subscription\".\"start_date\" <= '2026-08-31'::date) LIMIT 1",
+  "message": "function upper(integer) does not exist",
+  "position": "416",
+  "detail": null,
+  "hint": "No function matches the given name and argument types. You might need to add explicit type casts.",
+  "context": null,
+  "internal_query": null,
+  "text": "function upper(integer) does not exist\nLINE 1: ...UPPER(\"application_associate\".\"tax_code\"::text) = UPPER( -5)...\n                                                             ^\nHINT:  No function matches the given name and argument types. You might need to add explicit type casts.\n"
+ },
+ {
+  "sql": "SELECT 1 AS \"a\" FROM \"application_subscription\" INNER JOIN \"application_associate\" ON (\"application_subscription\".\"associate_id\" = \"application_associate\".\"associate_id\") WHERE (NOT \"application_subscription\".\"archived\" AND UPPER(\"application_associate\".\"first_name\"::text) = UPPER('Mario') AND UPPER(\"application_associate\".\"last_name\"::text) = UPPER('Rossi') AND UPPER(\"application_associate\".\"tax_code\"::text) = UPPER(1.5) AND \"application_subscription\".\"end_date\" >= '2025-09-01'::date AND \"application_subscription\".\"sport_association_id\" = 'a1000000-0000-4000-8000-000000000001'::uuid AND \"application_subscription\".\"start_date\" <= '2026-08-31'::date) LIMIT 1",
+  "message": "function upper(numeric) does not exist",
+  "position": "416",
+  "detail": null,
+  "hint": "No function matches the given name and argument types. You might need to add explicit type casts.",
+  "context": null,
+  "internal_query": null,
+  "text": "function upper(numeric) does not exist\nLINE 1: ...UPPER(\"application_associate\".\"tax_code\"::text) = UPPER(1.5)...\n                                                             ^\nHINT:  No function matches the given name and argument types. You might need to add explicit type casts.\n"
+ },
+ {
+  "sql": "SELECT 1 AS \"a\" FROM \"application_subscription\" INNER JOIN \"application_associate\" ON (\"application_subscription\".\"associate_id\" = \"application_associate\".\"associate_id\") WHERE (NOT \"application_subscription\".\"archived\" AND UPPER(\"application_associate\".\"first_name\"::text) = UPPER('Mario') AND UPPER(\"application_associate\".\"last_name\"::text) = UPPER('Rossi') AND UPPER(\"application_associate\".\"tax_code\"::text) = UPPER(true) AND \"application_subscription\".\"end_date\" >= '2025-09-01'::date AND \"application_subscription\".\"sport_association_id\" = 'a1000000-0000-4000-8000-000000000001'::uuid AND \"application_subscription\".\"start_date\" <= '2026-08-31'::date) LIMIT 1",
+  "message": "function upper(boolean) does not exist",
+  "position": "416",
+  "detail": null,
+  "hint": "No function matches the given name and argument types. You might need to add explicit type casts.",
+  "context": null,
+  "internal_query": null,
+  "text": "function upper(boolean) does not exist\nLINE 1: ...UPPER(\"application_associate\".\"tax_code\"::text) = UPPER(true...\n                                                             ^\nHINT:  No function matches the given name and argument types. You might need to add explicit type casts.\n"
+ },
+ {
+  "sql": "SELECT 1 AS \"a\" FROM \"application_subscription\" INNER JOIN \"application_associate\" ON (\"application_subscription\".\"associate_id\" = \"application_associate\".\"associate_id\") WHERE (NOT \"application_subscription\".\"archived\" AND UPPER(\"application_associate\".\"first_name\"::text) = UPPER('Mario') AND UPPER(\"application_associate\".\"last_name\"::text) = UPPER('Rossi') AND UPPER(\"application_associate\".\"tax_code\"::text) = UPPER(ARRAY[1,2]) AND \"application_subscription\".\"end_date\" >= '2025-09-01'::date AND \"application_subscription\".\"sport_association_id\" = 'a1000000-0000-4000-8000-000000000001'::uuid AND \"application_subscription\".\"start_date\" <= '2026-08-31'::date) LIMIT 1",
+  "message": "function upper(integer[]) does not exist",
+  "position": "416",
+  "detail": null,
+  "hint": "No function matches the given name and argument types. You might need to add explicit type casts.",
+  "context": null,
+  "internal_query": null,
+  "text": "function upper(integer[]) does not exist\nLINE 1: ...UPPER(\"application_associate\".\"tax_code\"::text) = UPPER(ARRA...\n                                                             ^\nHINT:  No function matches the given name and argument types. You might need to add explicit type casts.\n"
+ },
+ {
+  "sql": "SELECT 1 AS \"a\" FROM \"application_subscription\" INNER JOIN \"application_associate\" ON (\"application_subscription\".\"associate_id\" = \"application_associate\".\"associate_id\") WHERE (NOT \"application_subscription\".\"archived\" AND UPPER(\"application_associate\".\"first_name\"::text) = UPPER('Mario') AND UPPER(\"application_associate\".\"last_name\"::text) = UPPER('Rossi') AND UPPER(\"application_associate\".\"tax_code\"::text) = UPPER(ARRAY['a','b']) AND \"application_subscription\".\"end_date\" >= '2025-09-01'::date AND \"application_subscription\".\"sport_association_id\" = 'a1000000-0000-4000-8000-000000000001'::uuid AND \"application_subscription\".\"start_date\" <= '2026-08-31'::date) LIMIT 1",
+  "message": "function upper(text[]) does not exist",
+  "position": "416",
+  "detail": null,
+  "hint": "No function matches the given name and argument types. You might need to add explicit type casts.",
+  "context": null,
+  "internal_query": null,
+  "text": "function upper(text[]) does not exist\nLINE 1: ...UPPER(\"application_associate\".\"tax_code\"::text) = UPPER(ARRA...\n                                                             ^\nHINT:  No function matches the given name and argument types. You might need to add explicit type casts.\n"
+ },
+ {
+  "sql": "SELECT 1 AS \"a\" FROM \"application_subscription\" INNER JOIN \"application_associate\" ON (\"application_subscription\".\"associate_id\" = \"application_associate\".\"associate_id\") WHERE (NOT \"application_subscription\".\"archived\" AND UPPER(\"application_associate\".\"first_name\"::text) = UPPER('Mario') AND UPPER(\"application_associate\".\"last_name\"::text) = UPPER('Rossi') AND UPPER(\"application_associate\".\"tax_code\"::text) = UPPER(ARRAY[ARRAY[]]) AND \"application_subscription\".\"end_date\" >= '2025-09-01'::date AND \"application_subscription\".\"sport_association_id\" = 'a1000000-0000-4000-8000-000000000001'::uuid AND \"application_subscription\".\"start_date\" <= '2026-08-31'::date) LIMIT 1",
+  "message": "cannot determine type of empty array",
+  "position": "428",
+  "detail": null,
+  "hint": "Explicitly cast to the desired type, for example ARRAY[]::integer[].",
+  "context": null,
+  "internal_query": null,
+  "text": "cannot determine type of empty array\nLINE 1: ...cation_associate\".\"tax_code\"::text) = UPPER(ARRAY[ARRAY[]]) ...\n                                                             ^\nHINT:  Explicitly cast to the desired type, for example ARRAY[]::integer[].\n"
+ },
+ {
+  "sql": "SELECT 1 AS \"a\" FROM \"application_subscription\" INNER JOIN \"application_associate\" ON (\"application_subscription\".\"associate_id\" = \"application_associate\".\"associate_id\") WHERE (NOT \"application_subscription\".\"archived\" AND \"application_associate\".\"first_name\" IS NULL AND \"application_associate\".\"last_name\" IS NULL AND UPPER(\"application_associate\".\"tax_code\"::text) = UPPER(5) AND \"application_subscription\".\"end_date\" >= '2025-09-01'::date AND \"application_subscription\".\"sport_association_id\" = 'a1000000-0000-4000-8000-000000000001'::uuid AND \"application_subscription\".\"start_date\" <= '2026-08-31'::date) LIMIT 1",
+  "message": "function upper(integer) does not exist",
+  "position": "372",
+  "detail": null,
+  "hint": "No function matches the given name and argument types. You might need to add explicit type casts.",
+  "context": null,
+  "internal_query": null,
+  "text": "function upper(integer) does not exist\nLINE 1: ...UPPER(\"application_associate\".\"tax_code\"::text) = UPPER(5) A...\n                                                             ^\nHINT:  No function matches the given name and argument types. You might need to add explicit type casts.\n"
+ },
+ {
+  "sql": "SELECT 1 AS \"a\" FROM \"application_subscription\" INNER JOIN \"application_associate\" ON (\"application_subscription\".\"associate_id\" = \"application_associate\".\"associate_id\") WHERE (\"application_subscription\".\"group_id\" = 'a1000000-0000-4000-8000-000000000002'::uuid AND NOT \"application_subscription\".\"archived\" AND UPPER(\"application_associate\".\"first_name\"::text) = UPPER('Mario') AND UPPER(\"application_associate\".\"last_name\"::text) = UPPER('Rossi') AND UPPER(\"application_associate\".\"tax_code\"::text) = UPPER(5) AND \"application_subscription\".\"end_date\" >= '2025-09-01'::date AND \"application_subscription\".\"sport_association_id\" = 'a1000000-0000-4000-8000-000000000001'::uuid AND \"application_subscription\".\"start_date\" <= '2026-08-31'::date) LIMIT 1",
+  "message": "function upper(integer) does not exist",
+  "position": "505",
+  "detail": null,
+  "hint": "No function matches the given name and argument types. You might need to add explicit type casts.",
+  "context": null,
+  "internal_query": null,
+  "text": "function upper(integer) does not exist\nLINE 1: ...UPPER(\"application_associate\".\"tax_code\"::text) = UPPER(5) A...\n                                                             ^\nHINT:  No function matches the given name and argument types. You might need to add explicit type casts.\n"
+ },
+ {
+  "sql": "SELECT 1 AS \"a\" FROM \"application_subscription\" INNER JOIN \"application_associate\" ON (\"application_subscription\".\"associate_id\" = \"application_associate\".\"associate_id\") WHERE (NOT \"application_subscription\".\"archived\" AND UPPER(\"application_associate\".\"first_name\"::text) = UPPER('Mario') AND UPPER(\"application_associate\".\"last_name\"::text) = UPPER('Rossi') AND UPPER(\"application_associate\".\"tax_code\"::text) = UPPER(5) AND \"application_subscription\".\"end_date\" >= '2025-09-01'::date AND \"application_subscription\".\"sport_association_id\" = 'a1000000-0000-4000-8000-000000000001'::uuid AND \"application_subscription\".\"start_date\" <= '2026-08-31'::date) LIMIT 1",
+  "message": "function upper(integer) does not exist",
+  "position": "416",
+  "detail": null,
+  "hint": "No function matches the given name and argument types. You might need to add explicit type casts.",
+  "context": null,
+  "internal_query": null,
+  "text": "function upper(integer) does not exist\nLINE 1: ...UPPER(\"application_associate\".\"tax_code\"::text) = UPPER(5) A...\n                                                             ^\nHINT:  No function matches the given name and argument types. You might need to add explicit type casts.\n"
+ },
+ {
+  "sql": "SELECT 1 AS \"a\" FROM \"application_subscription\" INNER JOIN \"application_associate\" ON (\"application_subscription\".\"associate_id\" = \"application_associate\".\"associate_id\") WHERE (NOT \"application_subscription\".\"archived\" AND UPPER(\"application_associate\".\"first_name\"::text) = UPPER('Mario') AND UPPER(\"application_associate\".\"last_name\"::text) = UPPER('Rossi') AND UPPER(\"application_associate\".\"tax_code\"::text) = UPPER(5) AND \"application_subscription\".\"end_date\" >= '2025-09-01'::date AND \"application_subscription\".\"sport_association_id\" = 'a1000000-0000-4000-8000-000000000001'::uuid AND \"application_subscription\".\"start_date\" <= '2026-08-31'::date AND UPPER(\"application_subscription\".\"custom_data\"::text) LIKE UPPER('%x''y%')) LIMIT 1",
+  "message": "function upper(integer) does not exist",
+  "position": "416",
+  "detail": null,
+  "hint": "No function matches the given name and argument types. You might need to add explicit type casts.",
+  "context": null,
+  "internal_query": null,
+  "text": "function upper(integer) does not exist\nLINE 1: ...UPPER(\"application_associate\".\"tax_code\"::text) = UPPER(5) A...\n                                                             ^\nHINT:  No function matches the given name and argument types. You might need to add explicit type casts.\n"
+ },
+ {
+  "sql": "SELECT 1 AS \"a\" FROM \"application_subscription\" INNER JOIN \"application_associate\" ON (\"application_subscription\".\"associate_id\" = \"application_associate\".\"associate_id\") WHERE (NOT \"application_subscription\".\"archived\" AND UPPER(\"application_associate\".\"first_name\"::text) = UPPER('Mar''io\\x') AND UPPER(\"application_associate\".\"last_name\"::text) = UPPER('Rossi') AND UPPER(\"application_associate\".\"tax_code\"::text) = UPPER(5) AND \"application_subscription\".\"end_date\" >= '2025-09-01'::date AND \"application_subscription\".\"sport_association_id\" = 'a1000000-0000-4000-8000-000000000001'::uuid AND \"application_subscription\".\"start_date\" <= '2026-08-31'::date) LIMIT 1",
+  "message": "function upper(integer) does not exist",
+  "position": "420",
+  "detail": null,
+  "hint": "No function matches the given name and argument types. You might need to add explicit type casts.",
+  "context": null,
+  "internal_query": null,
+  "text": "function upper(integer) does not exist\nLINE 1: ...UPPER(\"application_associate\".\"tax_code\"::text) = UPPER(5) A...\n                                                             ^\nHINT:  No function matches the given name and argument types. You might need to add explicit type casts.\n"
+ },
+ {
+  "sql": "SELECT 1 AS \"a\" FROM \"application_subscription\" INNER JOIN \"application_associate\" ON (\"application_subscription\".\"associate_id\" = \"application_associate\".\"associate_id\") WHERE (NOT \"application_subscription\".\"archived\" AND UPPER(\"application_associate\".\"first_name\"::text) = UPPER('日本語日本語日本語日本語') AND UPPER(\"application_associate\".\"last_name\"::text) = UPPER('Rossi') AND UPPER(\"application_associate\".\"tax_code\"::text) = UPPER(5) AND \"application_subscription\".\"end_date\" >= '2025-09-01'::date AND \"application_subscription\".\"sport_association_id\" = 'a1000000-0000-4000-8000-000000000001'::uuid AND \"application_subscription\".\"start_date\" <= '2026-08-31'::date) LIMIT 1",
+  "message": "function upper(integer) does not exist",
+  "position": "423",
+  "detail": null,
+  "hint": "No function matches the given name and argument types. You might need to add explicit type casts.",
+  "context": null,
+  "internal_query": null,
+  "text": "function upper(integer) does not exist\nLINE 1: ...UPPER(\"application_associate\".\"tax_code\"::text) = UPPER(5) A...\n                                                             ^\nHINT:  No function matches the given name and argument types. You might need to add explicit type casts.\n"
+ },
+ {
+  "sql": "SELECT 1 AS \"a\" FROM \"application_subscription\" INNER JOIN \"application_associate\" ON (\"application_subscription\".\"associate_id\" = \"application_associate\".\"associate_id\") WHERE (NOT \"application_subscription\".\"archived\" AND UPPER(\"application_associate\".\"first_name\"::text) = UPPER('Mario') AND UPPER(\"application_associate\".\"last_name\"::text) = UPPER('a\nb') AND UPPER(\"application_associate\".\"tax_code\"::text) = UPPER(5) AND \"application_subscription\".\"end_date\" >= '2025-09-01'::date AND \"application_subscription\".\"sport_association_id\" = 'a1000000-0000-4000-8000-000000000001'::uuid AND \"application_subscription\".\"start_date\" <= '2026-08-31'::date) LIMIT 1",
+  "message": "function upper(integer) does not exist",
+  "position": "414",
+  "detail": null,
+  "hint": "No function matches the given name and argument types. You might need to add explicit type casts.",
+  "context": null,
+  "internal_query": null,
+  "text": "function upper(integer) does not exist\nLINE 2: ...UPPER(\"application_associate\".\"tax_code\"::text) = UPPER(5) A...\n                                                             ^\nHINT:  No function matches the given name and argument types. You might need to add explicit type casts.\n"
+ }
+]

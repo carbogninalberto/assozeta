@@ -32,5 +32,11 @@ def _challenged(case, status):
 
 def assert_case(case, base_url, *, token, sessions):
     LAST.clear()
-    return family.assert_case(case, base_url, token=token, sessions=sessions, allowed=lambda case: {'POST', 'OPTIONS'},
-                              new=('payment_id',), normalize=_keep, challenged=_challenged)
+    try:
+        return family.assert_case(case, base_url, token=token, sessions=sessions, allowed=lambda case: {'POST', 'OPTIONS'},
+                                  new=('payment_id',), normalize=_keep, challenged=_challenged)
+    except BaseException:  # LT5R-DUMP (temporary)
+        import json as _j
+        with open('/Users/alberto/Desktop/Bakney/Workdir/assozeta/tmp/long-tail/lt5-R/actual.jsonl', 'a') as _f:
+            _f.write(_j.dumps({'case': case['name'], 'actual': LAST.get('body')}, ensure_ascii=False, default=str) + '\n')
+        raise

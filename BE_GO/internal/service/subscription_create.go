@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"math"
 	"math/big"
 	"strconv"
 	"strings"
@@ -651,13 +652,17 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 	}
 	// check_if_subscription_exists on the raw names and tax code of
 	// initial_data. IExact does not prepare its value (prepare_rhs = False), so
-	// anything but a text or None reaches UPPER(%s) as it is: PostgreSQL has no
-	// upper() for a number, a boolean or an array, and psycopg2 cannot adapt a
-	// dict. The ProgrammingError rolls the atomic block back: the 500 page.
+	// psycopg2 writes it as its literal: PostgreSQL rejects upper() of a number,
+	// a boolean or an array (ProgrammingError), and a dict or a NUL character
+	// fails in psycopg2 before the statement is sent. The view's except turns
+	// that exception into its 400 body; a value UPPER() accepts (the SQL text of
+	// a list of NULLs) is compared as that text afterwards.
 	names := make([]*string, 3)
+	raw := make([]any, 3)
 	rawNonText := false
 	for i, name := range []string{"first_name", "last_name", "tax_code"} {
 		value, _ := associate.Lookup(name)
+		raw[i] = value
 		if _, isText := value.(string); value != nil && !isText {
 			rawNonText = true
 		}
@@ -669,11 +674,14 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 			return nil, pythonAttributeError(custom, "get")
 		}
 	}
-	if rawNonText {
-		return nil, domain.ErrSubscriptionCreateServer
-	}
 	// Q(custom_data__icontains=custom_data['type_of_associate']) with str(value).
 	customKind := subscriptionCustomKind(data)
+	if rawNonText || subscriptionCreateHasNUL(raw, customKind) {
+		if names, err = s.existsLiteral(ctx, tx, association, raw, subscriptionCreateDay(season.Start),
+			subscriptionCreateDay(season.End), customKind, group); err != nil {
+			return nil, err
+		}
+	}
 	existing, err := tx.Existing(ctx, association, names[0], names[1], names[2], subscriptionCreateDay(season.Start), subscriptionCreateDay(season.End), customKind)
 	if err != nil {
 		return nil, err
@@ -873,16 +881,17 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 		}
 	}
 	subscriptionType := int64(2)
+	var typeValue *big.Int
 	if value, present := associate.Lookup("type"); present && value != nil {
 		if value != "" {
 			parsed, ok := dto.SubscriptionCreateInt(value)
 			if !ok {
 				return nil, pythonIntError(value)
 			}
-			if !parsed.IsInt64() {
-				return nil, server
-			}
-			subscriptionType = parsed.Int64()
+			// Django keeps Python's int of any size: the fee rules below only compare
+			// it against 1 and 2 (any other value, the sentinel included, matches none),
+			// and the INSERT then reports the smallint column.
+			subscriptionType, typeValue = subscriptionInt64(parsed), parsed
 		}
 	}
 	fees, err := s.fees(ctx, tx, data, settings, subscriptionType)
@@ -896,7 +905,7 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 		// raises for an infinite or NaN value.
 		amount, ok := dto.SubscriptionCreateDecimalValue(fees.amount)
 		if !ok {
-			return nil, server
+			return nil, raisedFailure(subscriptionDecimalInvalid(fees.amount))
 		}
 		day := calendarTime(today)
 		reusable, tied, err := tx.ReusablePayments(ctx, saved.ID, association, amount, day)
@@ -973,16 +982,16 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 	}
 	number = new(big.Int).Add(number, big.NewInt(1))
 	role := int64(1)
+	var roleValue *big.Int
 	if value, present := associate.Lookup("role"); present && value != nil {
 		if value != "" {
 			parsed, ok := dto.SubscriptionCreateInt(value)
 			if !ok {
 				return nil, pythonIntError(value)
 			}
-			if !parsed.IsInt64() {
-				return nil, server
-			}
-			role = parsed.Int64()
+			// Django keeps Python's int of any size (see the type above): the role only
+			// reaches the INSERT's smallint column.
+			role, roleValue = subscriptionInt64(parsed), parsed
 		}
 	}
 	if value, present := associate.Lookup("subscription_number"); present && value != nil {
@@ -1075,6 +1084,11 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 		// Subscription.objects.create through the manager fails on the raw header.
 		return nil, server
 	}
+	if (typeValue != nil && !subscriptionSmallint(typeValue)) || (roleValue != nil && !subscriptionSmallint(roleValue)) {
+		// The columns are smallint: Subscription.objects.create's INSERT raises psycopg2's
+		// DataError for a type or role Python's int held until here.
+		return nil, raisedFailure("smallint out of range\n")
+	}
 	if err = tx.InsertSubscription(ctx, row); err != nil {
 		return nil, err
 	}
@@ -1137,7 +1151,7 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 				// that stored value back against the in-memory float.
 				text, ok := dto.SubscriptionCreateDecimalStored(fees.membershipFee)
 				if !ok {
-					return nil, server
+					return nil, raisedFailure(subscriptionDecimalInvalid(fees.membershipFee))
 				}
 				price, rendered = &text, dto.PythonFloatText(fees.membershipFee)
 			} else {
@@ -1495,6 +1509,18 @@ type subscriptionFees struct {
 }
 
 func subscriptionCreateFloat(value any) (float64, error) {
+	if number, ok := value.(json.Number); ok {
+		// A stored numeric column: float(Decimal(...)) reads PostgreSQL's NaN and infinities, which the int
+		// reader below (json.Number without a '.' or an exponent) refuses.
+		switch string(number) {
+		case "NaN":
+			return math.NaN(), nil
+		case "Infinity":
+			return math.Inf(1), nil
+		case "-Infinity":
+			return math.Inf(-1), nil
+		}
+	}
 	number, ok, server := dto.SubscriptionCreateFloat(value)
 	if server || !ok {
 		// float() raises (ValueError, TypeError or OverflowError): the view does not handle it.
@@ -1591,11 +1617,7 @@ func (s *SubscriptionCreates) membershipFee(ctx context.Context, tx domain.Subsc
 	if settings.MultipleMembershipFee && !present {
 		return nil, nil, &domain.SubscriptionCreateInvalid{Detail: map[string]string{"msg": "Membership plan id is required.", "code": "400"}}
 	}
-	feeZero := settings.MembershipFee == nil
-	if !feeZero {
-		value, _ := new(big.Float).SetString(*settings.MembershipFee)
-		feeZero = value == nil || value.Sign() == 0
-	}
+	feeZero := subscriptionFeeIsZero(settings.MembershipFee)
 	if present && planID == nil && feeZero {
 		return nil, nil, nil
 	}

@@ -1269,6 +1269,80 @@ add('approve-draft-preregistration-renews-subscription', 'approve', 'owner', 200
                   celery=tasks('$prereg_draft_subscription'),
                   notifications=[{'msg': 'Nuova Iscrizione aggiunta per Pia Prenotata.', 'association': OWN}]))
 
+# --- create_subscription's database and DecimalField exceptions inside the view's try ---------------------
+# check_if_subscription_exists passes the raw initial_data names to IExact, which does not prepare them:
+# psycopg2 writes each value as its own SQL literal. PostgreSQL has no upper() for a number, a boolean or
+# an array (ProgrammingError; str(e) carries libpq's LINE/caret window of the statement and the HINT); a
+# dict or a NUL character fails in psycopg2 before anything is sent. An all-NULL list is the quoted text
+# '{NULL}', which runs: the serializer then rejects it. Everything rolls back.
+UPPER_HINT = 'HINT:  No function matches the given name and argument types. You might need to add explicit type casts.\n'
+CARET = ' ' * 61 + '^\n'
+
+
+def upper_error(kind, window, line=1):
+    return error(f'function upper({kind}) does not exist\nLINE {line}: {window}\n{CARET}{UPPER_HINT}')
+
+
+for name, overrides, message in (
+        ('renew-existence-first-name-number', {'first_name': 5},
+         upper_error('integer', '...PER("application_associate"."first_name"::text) = UPPER(5) A...')),
+        ('renew-existence-last-name-boolean', {'last_name': True},
+         upper_error('boolean', '...PPER("application_associate"."last_name"::text) = UPPER(true...')),
+        ('renew-existence-tax-code-negative-float', {'tax_code': -1.5},
+         upper_error('numeric', '...UPPER("application_associate"."tax_code"::text) = UPPER( -1....')),
+        ('renew-existence-tax-code-text-list', {'tax_code': ['a', 'b']},
+         upper_error('text[]', '...UPPER("application_associate"."tax_code"::text) = UPPER(ARRA...')),
+        ('renew-existence-tax-code-nested-empty-list', {'tax_code': [[]]},
+         error('cannot determine type of empty array\nLINE 1: ...cation_associate"."tax_code"::text) = UPPER(ARRAY[ARRAY[]]) ...\n'
+               f'{CARET}HINT:  Explicitly cast to the desired type, for example ARRAY[]::integer[].\n')),
+        ('renew-existence-tax-code-mixed-list', {'tax_code': [1, 'a']},
+         error('invalid input syntax for type integer: "a"\nLINE 1: ...tion_associate"."tax_code"::text) = UPPER(ARRAY[1,\'a\']) AND ...\n'
+               f'{CARET}')),
+        ('renew-existence-tax-code-dict', {'tax_code': {'a': 1}}, error("can't adapt type 'dict'")),
+        ('renew-existence-first-name-nul', {'first_name': 'Ri\x00ta'}, error('A string literal cannot contain NUL (0x00) characters.')),
+        ('renew-existence-last-name-newline', {'last_name': 'Ros\nsa', 'tax_code': 7},
+         upper_error('integer', '...UPPER("application_associate"."tax_code"::text) = UPPER(7) A...', line=2)),
+        ('renew-existence-tax-code-big-integer', {'tax_code': 12345678901234567890123},
+         upper_error('numeric', '...UPPER("application_associate"."tax_code"::text) = UPPER(1234...'))):
+    add(name, 'renew', 'owner', 400, message, body=renewal({**basic, **overrides}))
+# json.loads reads 1e400 as inf: psycopg2's 'Infinity'::float.
+add('renew-existence-tax-code-infinite', 'renew', 'owner', 400,
+    upper_error('double precision', '...UPPER("application_associate"."tax_code"::text) = UPPER(\'Inf...'),
+    raw_body=json.dumps(renewal({**basic, 'tax_code': '@INF@'})).replace('"@INF@"', '1e400'), content_type='application/json')
+add('renew-existence-first-name-number-group', 'renew', 'owner', 400,
+    upper_error('integer', '...PER("application_associate"."first_name"::text) = UPPER(5) A...'), headers={'X-Group-Id': GROUP},
+    body=renewal({**basic, 'first_name': 5}))
+add('renew-existence-tax-code-null-list', 'renew', 'owner', 400, {'tax_code': ['Not a valid string.']},
+    body=renewal({**basic, 'tax_code': [None]}))
+
+# The type and the role are Python ints of any size; the INSERT of the subscription fails for the smallint columns.
+for name, overrides in (('renew-type-beyond-smallint', {'type': 70000}), ('renew-type-below-smallint', {'type': -40000}),
+                        ('renew-role-beyond-int64', {'role': '99999999999999999999'})):
+    add(name, 'renew', 'owner', 400, error('smallint out of range\n'), body=renewal({**basic, **overrides}))
+
+# A membership plan fee float() reads as inf or nan reaches the DecimalField: the payment's amount filter
+# when a payment is due (inf > 0, or show_zero_payments), else the membership's price. These setups stay.
+for name, fee, kind, message in (('renew-membership-plan-fee-infinite', 'inf', 2, 'inf'),
+                                 ('renew-membership-plan-fee-nan-price', 'nan', 2, 'nan'),
+                                 ('renew-membership-plan-fee-negative-infinite-member-only', '-inf', 3, '-inf')):
+    add(name, 'renew', 'owner', 400, error(f"['“{message}” value must be a decimal number.']"),
+        setup={'association': {'multiple_membership_fee': True, 'membership_fee': '0',
+                               'membership_fee_plans': [{'id': 1, 'name': 'Piano', 'membership_fee': fee}]}},
+        body=renewal({**basic, 'type': kind}, membership_plan_id=1))
+add('renew-membership-plan-fee-nan-zero-payments', 'renew', 'owner', 400, error("['“nan” value must be a decimal number.']"),
+    setup={'owner': {'show_zero_payments': True}}, body=renewal({**basic, 'type': 2}, membership_plan_id=1))
+
+# Draft approval swallows the same exceptions: both drafts stay.
+odd_ids = iter(f'a1000000-0000-4000-8000-{958001 + n:012d}' for n in range(10))
+DRAFTS['odd_name'] = {'id': next(odd_ids), 'association': OWN, 'valid': True, 'late': True,
+                      'data': draft_data(draft_person(5, 'Numero', 'NMRCNQ90A41H501N'))}
+DRAFTS['odd_type'] = {'id': next(odd_ids), 'association': OWN, 'valid': True, 'late': True,
+                      'data': draft_data(draft_person('Tea', 'Tipo', 'TPITEA90A41H501T'))}
+add('approve-draft-database-errors-swallowed', 'approve', 'owner', 200, {'msg': '0 su 2 atleti approvati.', 'approved': 0},
+    setup={'drafts_insert': ['odd_name', 'odd_type'], 'approving_cleared': True},
+    body={'associate_import_draft_ids': [DRAFTS['odd_name']['id'], DRAFTS['odd_type']['id']], 'subscription_details': {'type': 70000}},
+    effect=effect('owner', audit=status_entries()))
+
 # The association's season start month is invalid: get_range_from_year_and_
 # starting_date raises its ValueError inside the view's try. Last, because the
 # setup changes the owner's settings for the remaining cases.

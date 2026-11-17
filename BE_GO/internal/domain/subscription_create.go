@@ -229,6 +229,9 @@ type SubscriptionCreateTransaction interface {
 	// database refuses leaves nothing behind and the psycopg2 IntegrityError text
 	// (*AssociateIntegrityError) is reported for the serializer's fallbacks.
 	InsertAssociateAttempt(ctx context.Context, row SubscriptionEditAssociate) error
+	// ExistsStatement runs a complete statement (literals inlined) inside a savepoint and reports whether it
+	// returned a row. A server error rolls the savepoint back and is returned as it is (*pgconn.PgError).
+	ExistsStatement(ctx context.Context, statement string) (bool, error)
 	// RenderPayment is what PaymentSerializer reads for a stored payment.
 	RenderPayment(ctx context.Context, id string) (PaymentStateRender, error)
 	// QuickAssociationExists is SportAssociation.objects.get(sport_association_id=id) finding a row.
