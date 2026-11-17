@@ -59,9 +59,15 @@ func (a SubscriptionEditAssociate) AuditKey() string {
 // raises: Text is psycopg2's str() of the server's answer. The serializer's
 // associate_id branch catches it around the create's savepoint and lets it out
 // of save() (the whole registration rolls back).
-type AssociateIntegrityError struct{ Text string }
+// Err is the driver's error, so callers that treat any database error as the
+// exception their try block catches (the draft approval loop) still see it.
+type AssociateIntegrityError struct {
+	Text string
+	Err  error
+}
 
 func (e *AssociateIntegrityError) Error() string { return "associate integrity error: " + e.Text }
+func (e *AssociateIntegrityError) Unwrap() error { return e.Err }
 
 // SubscriptionEditRelation is an AssociateTutorRelation row.
 type SubscriptionEditRelation struct {

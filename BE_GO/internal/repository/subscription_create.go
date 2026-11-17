@@ -56,7 +56,7 @@ func (t *subscriptionCreateTransaction) SetAssociateDeleted(ctx context.Context,
 func associateWriteError(err error) error {
 	var serverError *pgconn.PgError
 	if errors.As(err, &serverError) && strings.HasPrefix(serverError.Code, "23") {
-		return &domain.AssociateIntegrityError{Text: psycopg2ErrorText(serverError)}
+		return &domain.AssociateIntegrityError{Text: psycopg2ErrorText(serverError), Err: err}
 	}
 	return err
 }
