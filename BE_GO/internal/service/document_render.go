@@ -42,8 +42,6 @@ const (
 var (
 	// ErrDocumentRenderServer is an exception the view does not catch (the 500 page).
 	ErrDocumentRenderServer = errors.New("document render: unhandled exception")
-	// ErrDocumentRenderNotPorted refuses an input before any write (the 500 page).
-	ErrDocumentRenderNotPorted = refusal.New("document render: input not ported")
 	// ErrDocumentRenderAppState is a state no request or stored row produces:
 	// a renderer built without its form storage (cmd/server/main.go always
 	// calls WithFormStorage), a multipart body net/http did not hand over, or
@@ -898,10 +896,6 @@ func (s *DocumentRender) medicalJob(ctx context.Context, identity domain.Resolve
 		job.failed = renderException(500, "'NoneType' object has no attribute 'main_tutor'")
 		return job, nil, nil
 	}
-	if _, signed := medicalFormValues(form, nil)[medicalform.SignatureKey]; signed {
-		// fill_pdf_fields draws the stored signature (and stamp) on the first page with PyMuPDF: image processing, not ported.
-		return nil, nil, ErrDocumentRenderNotPorted
-	}
 	tutor, err := s.store.AppointmentFormTutor(ctx, *form.Associate)
 	if errors.Is(err, domain.ErrTutorPromotionNeeded) {
 		// get_main_tutor() promotes the first tutor relation while the view maps the form's fields, after
@@ -911,14 +905,14 @@ func (s *DocumentRender) medicalJob(ctx context.Context, identity domain.Resolve
 			tutor, err = s.store.PromoteAppointmentFormTutor(ctx, associate, audit, s.now())
 			return err
 		}
-		job.fill = func() []byte { return medicalform.FillBiella(medicalFormValues(form, tutor)) }
+		job.fill = func() []byte { return medicalFormPDF(medicalFormValues(form, tutor)) }
 		return job, nil, nil
 	}
 	if err != nil {
 		return nil, nil, err
 	}
 	values := medicalFormValues(form, tutor)
-	job.fill = func() []byte { return medicalform.FillBiella(values) }
+	job.fill = func() []byte { return medicalFormPDF(values) }
 	return job, nil, nil
 }
 
@@ -971,4 +965,11 @@ func medicalFormValues(form *domain.RenderAppointmentForm, tutor *domain.RenderF
 		values[key] = text
 	}
 	return values
+}
+
+// medicalFormPDF is fill_pdf_fields for the regional form: the values filled as
+// pypdf writes them, with the president signature (and stamp) added to the
+// first page when their values hold an image PyMuPDF opens.
+func medicalFormPDF(values map[string]string) []byte {
+	return medicalform.FillBiellaWithImages(values, medicalform.FillImages(values))
 }

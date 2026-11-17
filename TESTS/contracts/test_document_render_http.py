@@ -10,8 +10,10 @@ A '<form-pdf>' case must return the bytes RUNTIME['forms'] holds for it (the
 regional form filled with the case's authored values), with the same headers.
 A '<connection-closed>' case is an answer the server refuses to send: a direct
 client reads the connection closed with no status line ('closed') and Caddy
-answers its 502 with an empty body; its authored status is 'closed'. Other
-cases are JSON bodies or the stable server error page; every 401 is DRF's
+answers its 502 with an empty body; its authored status is 'closed'. A '<form-pdf-visual>' case is a form filled over a president signature (or
+stamp) drawn with PyMuPDF: it must return a PDF whose every page, rendered at
+100 dpi, has the expected page's size and samples within PIXEL_TOLERANCE.
+Other cases are JSON bodies or the stable server error page; every 401 is DRF's
 (NotAuthenticated or AuthenticationFailed) with the Bearer challenge.
 
 '$bypass' (the DOCUMENT_BYPASS_TOKEN), '$folder:<label>' (a folder id) and
@@ -43,6 +45,37 @@ ALLOWED = {'GET', 'POST', 'OPTIONS'}
 STORAGE_DIRECTORY = '$document-directory'
 DOCUMENT_DIRECTORY = re.compile(r'[0-9]+(?:\.[0-9]+)?/[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}')
 PROXY_PREFIXES = ('/api/v1', '/api/v2')
+
+# Per-channel tolerance of the rendered pages of a '<form-pdf-visual>' case. The authored cases measure 0 on every
+# channel of every page (the same image samples, mask and matrix reach the same renderer), so a difference above 1 means
+# a drawn image, a matrix or a page that the two backends do not share; 1 only leaves room for a renderer that rounds
+# an edge sample differently.
+PIXEL_TOLERANCE = 1
+
+
+def visual_difference(received, expected):
+    """None when every page of the two PDFs renders alike at 100 dpi, else what differs."""
+    import contextlib
+    import pymupdf
+    with contextlib.ExitStack() as stack:
+        try:
+            actual = stack.enter_context(pymupdf.open(stream=received, filetype='pdf'))
+            wanted = stack.enter_context(pymupdf.open(stream=expected, filetype='pdf'))
+        except Exception as error:  # noqa: BLE001 - any reader failure is a different document
+            return f'not a PDF ({error})'
+        if actual.page_count != wanted.page_count:
+            return f'{actual.page_count} pages, expected {wanted.page_count}'
+        for index in range(actual.page_count):
+            left = actual[index].get_pixmap(dpi=100)
+            right = wanted[index].get_pixmap(dpi=100)
+            if (left.width, left.height, left.n) != (right.width, right.height, right.n):
+                return f'page {index}: {left.width}x{left.height}x{left.n}, expected {right.width}x{right.height}x{right.n}'
+            if left.samples == right.samples:
+                continue
+            for position, (one, two) in enumerate(zip(left.samples, right.samples)):
+                if abs(one - two) > PIXEL_TOLERANCE:
+                    return f'page {index}: sample {position} differs by {abs(one - two)}'
+    return None
 
 
 def load_source(path=SOURCE):
@@ -153,9 +186,13 @@ def assert_case(case, base_url, *, token, sessions):
     check(set(received.get('Allow', '').replace(' ', '').split(',')) == ALLOWED, 'response.allow')
     check(received.get('Content-Language') == 'en' and received.get('Set-Cookie') is None, 'response.headers')
     check(received.get('WWW-Authenticate') == ('Bearer realm="api"' if status == 401 else None), 'response.authentication')
-    if case['response'] in ('<pdf>', '<form-pdf>'):
+    if case['response'] in ('<pdf>', '<form-pdf>', '<form-pdf-visual>'):
         expected = RUNTIME['pdf'] if case['response'] == '<pdf>' else RUNTIME['forms'][case['name']]
-        check(len(expected) > 0 and raw == expected, 'pdf.body')
+        if case['response'] == '<form-pdf-visual>':
+            difference = visual_difference(raw, expected)
+            check(difference is None, 'pdf.body:' + str(difference))
+        else:
+            check(len(expected) > 0 and raw == expected, 'pdf.body')
         check(received.get('Content-Type') == 'application/pdf', 'pdf.content-type')
         check(received.get('Content-Length') == str(len(raw)), 'pdf.content-length')
         check(received.get_all('Content-Disposition') == [header_value(case['disposition'])], 'pdf.content-disposition')

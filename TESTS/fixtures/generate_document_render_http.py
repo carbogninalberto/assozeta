@@ -38,8 +38,11 @@ names the requests it must receive and the replies it gives.
 
 Run with ``python3 -I``.
 """
+import base64
 import json
 from pathlib import Path
+import struct
+import zlib
 
 OUTPUT = Path(__file__).with_name('document_render_http.json')
 IDS = json.loads(Path(__file__).with_name('message_mutations.json').read_text())['ids']
@@ -50,6 +53,44 @@ PDF = '<pdf>'
 
 def uid(n):
     return f'a1000000-0000-4000-8000-{984000 + n:012d}'
+
+
+def png_rgba(width, height, pixel):
+    """An 8-bit RGBA PNG (colour type 6) with filter 0 on every row."""
+    def chunk(kind, data):
+        return struct.pack('>I', len(data)) + kind + data + struct.pack('>I', zlib.crc32(kind + data))
+    rows = b''.join(b'\x00' + b''.join(bytes(pixel(x, y)) for x in range(width)) for y in range(height))
+    return (b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', struct.pack('>IIBBBBB', width, height, 8, 6, 0, 0, 0))
+            + chunk(b'IDAT', zlib.compress(rows, 9)) + chunk(b'IEND', b''))
+
+
+def signature_image():
+    """The president signature the form is filled with: two translucent blue strokes, nothing else."""
+    def pixel(x, y):
+        distance = min(abs(y - (10 + x // 3)), abs(y - (50 - x // 4)))
+        if distance < 3:
+            return 20, 45, 150, 255 - distance * 70
+        return 0, 0, 0, 0
+    return 'data:image/png;base64,' + base64.b64encode(png_rgba(120, 60, pixel)).decode('ascii')
+
+
+# A 32 x 16 baseline JPEG (quality 40): a red frame with a blue line, encoded once so that the fixture carries no binary
+# files and the stamp case exercises a DCTDecode image.
+STAMP_JPEG = (
+    '/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABQODxIPDRQSEBIXFRQYHjIhHhwcHj0sLiQySUBMS0dARkVQWnNiUFVtVkVGZIhlbXd7gYKBTmCNl4x9'
+    'lnN+gXz/2wBDARUXFx4aHjshITt8U0ZTfHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHz/wAARCAAQACADASIAAhEBAxEB'
+    '/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAk'
+    'M2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5'
+    'usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQA'
+    'AQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6'
+    'goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDoLCxtHsLZ'
+    'mtYGYxKSTGCScCnLBpzTeWLSDqQG8obWI6gH1H+PocQ2t3bNptrEb2GIiNA48wBsY5HXg/54PInkudPeAQi7t0UY27ZFG0g5GPoQKlcttTWXtOZ7iTQadCwV7SDp'
+    'liIhhB6n0H/1+wJDb+xtEsLlltYFYRMQRGAQcGnw3dlHlmvbd5X+8/mKM+w54A7D+pJqvc3FolhdxxXkDIYmEcYcEqcHgc9PQdvpgAfLYI+05luf/9k=')
+STAMP_IMAGE = 'data:image/jpeg;base64,' + STAMP_JPEG
+SIGNATURE_IMAGE = signature_image()
+# The SportAssociation columns of every association of the regional PDF form.
+FORM_COLUMNS = {'federation': 'fidal', 'address': 'Via Roma 1', 'address_cap': '13900', 'address_city': 'Biella',
+                'whatsapp': '+39 333 1234567', 'president_first_name': 'Élise', 'president_last_name': 'Łukasz'}
 
 
 BASE_ATHLETE_ASSOCIATE = 'a1000000-0000-4000-8000-000000700101'
@@ -74,6 +115,16 @@ ASSOCIATIONS = {
                  'form': {'tax_code': '71530000150'}},
     'formescape': {'user': uid(140), 'association': uid(141), 'denomination': 'Polisportiva/../Città',
                    'form': {'tax_code': '71530000140'}},
+    # Associations whose regional form holds a president signature (and stamp) the view draws with PyMuPDF: a PNG with
+    # transparency, a JPEG stamp, a signature MuPDF cannot open and a stamp MuPDF cannot open.
+    'formsig': {'user': uid(240), 'association': uid(241), 'denomination': 'Polisportiva Firma',
+                'form': {**FORM_COLUMNS, 'president_signature': SIGNATURE_IMAGE}},
+    'formstamp': {'user': uid(242), 'association': uid(243), 'denomination': 'Polisportiva Firma Timbro',
+                  'form': {**FORM_COLUMNS, 'president_signature': SIGNATURE_IMAGE, 'stamp': STAMP_IMAGE}},
+    'formbadsig': {'user': uid(244), 'association': uid(245), 'denomination': 'Polisportiva Firma Illeggibile',
+                   'form': {**FORM_COLUMNS, 'tax_code': '71530000244', 'president_signature': 'data:image/png;base64,AAAA'}},
+    'formbadstamp': {'user': uid(246), 'association': uid(247), 'denomination': 'Polisportiva Firma Timbro Illeggibile',
+                     'form': {**FORM_COLUMNS, 'tax_code': '71530000246', 'president_signature': SIGNATURE_IMAGE, 'stamp': 'data:image/png;base64,AAAA'}},
 }
 ASSOCIATION_IDS = {'own': OWN, 'foreign': FOREIGN, **{k: v['association'] for k, v in ASSOCIATIONS.items()}}
 DENOMINATIONS = {'own': 'Message reads own', 'foreign': 'Message reads foreign',
@@ -93,6 +144,11 @@ ASSOCIATES = {
     'formbare': {'id': uid(55), 'association': 'form', 'first': 'Zoe', 'last': 'None', 'email': None, 'user': None},
     # A minor whose tutor relations have no primary one: get_main_tutor() promotes the first while the form is filled.
     'formminor': {'id': uid(59), 'association': 'form', 'first': 'Leo', 'last': 'Piccolo', 'email': None, 'user': None},
+    # Members of the associations whose form carries a signature and a stamp.
+    'formsig': {'id': uid(248), 'association': 'formsig', 'first': 'Firma', 'last': 'Chiara', 'email': None, 'user': None},
+    'formstamp': {'id': uid(249), 'association': 'formstamp', 'first': 'Timbro', 'last': 'Luca', 'email': None, 'user': None},
+    'formbadsig': {'id': uid(250), 'association': 'formbadsig', 'first': 'Firma', 'last': 'Marta', 'email': None, 'user': None},
+    'formbadstamp': {'id': uid(251), 'association': 'formbadstamp', 'first': 'Timbro', 'last': 'Nino', 'email': None, 'user': None},
     # Names with line breaks (pasted or imported data).
     'newline': {'id': uid(94), 'association': 'own', 'first': 'Lia', 'last': 'Bian\nchi', 'email': None, 'user': None},
     'separators': {'id': uid(95), 'association': 'own', 'first': 'Ωmega', 'last': 'Ne\r\nri\u2028x', 'email': None, 'user': None},
@@ -156,6 +212,11 @@ SUBSCRIPTIONS = {
     'formbare': {'id': uid(57), 'association': 'form', 'associate': 'formbare', 'user': 'owner', 'group': None, 'document': None},
     'formnone': {'id': uid(58), 'association': 'form', 'associate': None, 'user': 'owner', 'group': None, 'document': None},
     'formminor': {'id': uid(120), 'association': 'form', 'associate': 'formminor', 'user': 'owner', 'group': None, 'document': None},
+    'formsig': {'id': uid(252), 'association': 'formsig', 'associate': 'formsig', 'user': 'owner', 'group': None, 'document': None},
+    'formstamp': {'id': uid(253), 'association': 'formstamp', 'associate': 'formstamp', 'user': 'owner', 'group': None, 'document': None},
+    'formbadsig': {'id': uid(254), 'association': 'formbadsig', 'associate': 'formbadsig', 'user': 'owner', 'group': None, 'document': None},
+    'formbadstamp': {'id': uid(255), 'association': 'formbadstamp', 'associate': 'formbadstamp', 'user': 'owner', 'group': None,
+                     'document': None},
     'newline': {'id': uid(96), 'association': 'own', 'associate': 'newline', 'user': 'owner', 'group': None, 'document': None},
     'separators': {'id': uid(97), 'association': 'own', 'associate': 'separators', 'user': 'owner', 'group': None, 'document': None},
     'nel': {'id': uid(137), 'association': 'own', 'associate': 'nel', 'user': 'owner', 'group': None, 'document': None},
@@ -279,6 +340,14 @@ MEDICAL = {
                            'document': None},
     'biella_minor': {'id': uid(121), 'subscription': 'formminor', 'region': 'agonistica-piemonte-biella', 'date': '2026-05-15',
                      'document': None},
+    'biella_signature': {'id': uid(256), 'subscription': 'formsig', 'region': 'agonistica-piemonte-biella', 'date': '2026-05-16',
+                         'document': None},
+    'biella_signature_stamp': {'id': uid(257), 'subscription': 'formstamp', 'region': 'agonistica-piemonte-biella',
+                               'date': '2026-05-17', 'document': None},
+    'biella_bad_signature': {'id': uid(258), 'subscription': 'formbadsig', 'region': 'agonistica-piemonte-biella',
+                             'date': '2026-05-18', 'document': None},
+    'biella_bad_stamp': {'id': uid(259), 'subscription': 'formbadstamp', 'region': 'agonistica-piemonte-biella',
+                         'date': '2026-05-19', 'document': None},
     'lombardia': {'id': uid(109), 'subscription': 'plain', 'region': 'agonistica-lombardia', 'date': '2026-05-14', 'document': None},
     # Regional forms whose filename the response or the storage refuses.
     'biella_refused': {'id': uid(149), 'subscription': 'formrefused', 'region': 'agonistica-piemonte-biella',
@@ -738,6 +807,9 @@ add('medical-renderer-error', 'owner', f"/document/medical-appointment/{M('agoni
 # The values are the stored texts with two leading spaces, upper-cased unless they contain 'base64'; a value
 # that strips to YYYY-MM-DD reads DD/MM/YYYY; empty values and the text 'None' are left out.
 FORM_PDF = '<form-pdf>'
+# fill_pdf_fields draws the president signature (and stamp) on the first page with PyMuPDF before pypdf fills the form:
+# the answer is visually equal to Django's, not byte-equal, and is compared page by page at 100 dpi.
+FORM_PDF_VISUAL = '<form-pdf-visual>'
 FORM_ASSOCIATION = {
     'sport_association.denomination': '  POLISPORTIVA CITTÀ (BIELLA)', 'sport_association.federation': '  FIDAL',
     'sport_association.address': '  VIA ROMA 1', 'sport_association.address_cap': '  13900',
@@ -754,12 +826,31 @@ FORM_FULL = {**FORM_ASSOCIATION, 'associate.last_name': "  D'ANGELÒ", 'associat
 FORM_BARE = {**FORM_ASSOCIATION, 'associate.first_name': '  ZOE'}
 
 
-def form(name, key, values, query='', disposition='inline', promoted=()):
-    add(name, 'owner', f"/document/medical-appointment/{M(key)}{query}", 200, FORM_PDF,
+def form(name, key, values, query='', disposition='inline', promoted=(), visual=False):
+    add(name, 'owner', f"/document/medical-appointment/{M(key)}{query}", 200, FORM_PDF_VISUAL if visual else FORM_PDF,
         effect=effect(medical_name(key), actor='owner', celery=False, links=[('medicalappointments', key)], stored=True,
                       promoted=promoted),
         disposition=f'{disposition}; filename=' + medical_name(key))
     cases[-1]['form'] = values
+
+
+def drawn_form(label, denomination, *, signature=None, stamp=None, first=None, last=None):
+    """The form values of an association whose SportAssociation holds a signature and a stamp."""
+    values = {'sport_association.denomination': '  ' + denomination.upper(), 'sport_association.federation': '  FIDAL',
+              'sport_association.address': '  VIA ROMA 1', 'sport_association.address_cap': '  13900',
+              'sport_association.address_city': '  BIELLA', 'sport_association.whatsapp': '  +39 333 1234567',
+              'sport_association.user.email': f'  DOCUMENT-RENDER-{label.upper()}@EXAMPLE.TEST',
+              'sport_association.president_first_name': '  ÉLISE', 'sport_association.president_last_name': '  ŁUKASZ',
+              'other.today_datetime': '  02/01/2026 03:04'}
+    if signature:
+        values['sport_association.president_signature'] = '  ' + signature
+    if stamp:
+        values['sport_association.stamp'] = '  ' + stamp
+    if first:
+        values['associate.first_name'] = '  ' + first.upper()
+    if last:
+        values['associate.last_name'] = '  ' + last.upper()
+    return values
 
 
 form('medical-form-biella', 'biella', FORM_FULL)
@@ -769,6 +860,22 @@ FORM_MINOR = {**FORM_ASSOCIATION, 'associate.first_name': '  LEO', 'associate.la
               'main_tutor.phone': '  +39 0151234567', 'main_tutor.email': '  TUTOR@EXAMPLE.TEST'}
 form('medical-form-biella-promotes-tutor', 'biella_minor', FORM_MINOR, promoted=[('formminor', 'formtutor')])
 form('medical-form-biella-promoted-tutor-again', 'biella_minor', FORM_MINOR)
+# The president signature (PNG with transparency) and the stamp (JPEG) are drawn on the first page: visually equal.
+form('medical-form-biella-signature', 'biella_signature',
+     drawn_form('formsig', 'Polisportiva Firma', signature=SIGNATURE_IMAGE, first='Firma', last='Chiara'), visual=True)
+form('medical-form-biella-signature-download', 'biella_signature',
+     drawn_form('formsig', 'Polisportiva Firma', signature=SIGNATURE_IMAGE, first='Firma', last='Chiara'), '?download=1',
+     'attachment', visual=True)
+form('medical-form-biella-signature-and-stamp', 'biella_signature_stamp',
+     drawn_form('formstamp', 'Polisportiva Firma Timbro', signature=SIGNATURE_IMAGE, stamp=STAMP_IMAGE, first='Timbro', last='Luca'),
+     visual=True)
+# A signature MuPDF cannot open: fill_pdf_fields' block is skipped and the answer is the plain fill, byte for byte.
+form('medical-form-biella-signature-unreadable', 'biella_bad_signature',
+     drawn_form('formbadsig', 'Polisportiva Firma Illeggibile', signature='data:image/png;base64,AAAA', first='Firma', last='Marta'))
+# A stamp MuPDF cannot open: only the stamp is skipped, the signature is drawn.
+form('medical-form-biella-stamp-unreadable', 'biella_bad_stamp',
+     drawn_form('formbadstamp', 'Polisportiva Firma Timbro Illeggibile', signature=SIGNATURE_IMAGE,
+                stamp='data:image/png;base64,AAAA', first='Timbro', last='Nino'), visual=True)
 add('medical-form-without-associate', 'owner', f"/document/medical-appointment/{M('biella_noassociate')}", 500,
     exception("'NoneType' object has no attribute 'main_tutor'"),
     effect=effect(medical_name('biella_noassociate'), actor='owner', celery=False))

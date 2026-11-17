@@ -137,21 +137,51 @@ PDFDocEncoding table. `FillBiella` writes the values as `TextStringObject.write_
 rows (`AppointmentForm`, `AppointmentFormTutor`), creates the Document, saves the bytes through `service.DocumentUploads`
 (`SaveGenerated`: the upload views' `default_storage.save`) and links the appointment. Go does not read the object back.
 
+## Divergence X8: the signature overlay is visually equal, not byte-equal
+
+When the association has a president signature, `fill_pdf_fields` first opens the template with PyMuPDF 1.25.5, decodes
+`sport_association.president_signature` (the text after the first `;base64,` when the value has one, then
+`base64.b64decode` without validation) and draws it with `Page.insert_image(Rect(400, 20, 520, 1300))` on the first page;
+the stamp, in its own `try`, is drawn in `Rect(100, 20, 260, 1300)`. A missing signature key, a value base64 refuses or a
+file MuPDF cannot open raises in the outer block and no image is drawn at all (the plain fill stands); a stamp that fails is
+skipped alone. pypdf then fills the form from the saved file. Go reproduces that flow (`medicalform.FillImages`) and adds
+the images to its own filled form as an incremental update (`medicalform.FillBiellaWithImages`): the answer is a different
+document with the same pixels, the owner-approved divergence X8 ("visually equal PDF, not byte-equal").
+
+- **Images MuPDF opens**: PNG (every colour type and bit depth, interlaced, tRNS), JPEG (baseline, progressive, grayscale,
+  CMYK, and a file cut after its scan header), GIF, BMP, TIFF, PNM, PSD and others. Go decodes PNG, JPEG and GIF with the
+  standard library; BMP, TIFF, PNM and PSD files are refused, so for those (never a signature or stamp so far) Go answers
+  the plain fill where Django draws one.
+- **Samples**: MuPDF embeds a JPEG as its own `/DCTDecode` stream and every other image as 8-bit DeviceGray or DeviceRGB
+  samples with the alpha channel as an `/SMask` (1 bit per component when every alpha sample is 0 or 255, else 8), with the
+  colour samples premultiplied and divided by alpha again (`fz_mul255`, `fz_div255`) and 16-bit samples reduced to their
+  high byte. Go writes the same samples, mask and filters, so the renderer sees the same image data.
+- **Placement**: `calc_image_matrix` keeps the image's aspect ratio inside the rectangle and centres it
+  (`keep_proportion=True`, no rotation, no DPI scaling); the rectangle is mapped through `~page.transformation_matrix` (a
+  y-flip at the MediaBox height on the unrotated page) and the content stream `q <matrix> cm /fzImgN Do Q` is appended
+  after the page's content, after `wrap_contents` balances the graphics state. Go computes the same matrix
+  (`imageMatrix`) and appends the same operators.
+- **Comparison**: the authored `<form-pdf-visual>` cases (signature only, signature and JPEG stamp, a stamp MuPDF cannot
+  open, and one download variant) are compared by rendering every page of the received and the expected PDF with PyMuPDF
+  at 100 dpi: equal page count, equal page size, and every channel within `PIXEL_TOLERANCE` (1). The authored cases
+  measure a difference of 0 on all three pages (827x1170x3), as do the 36 PNG/JPEG/GIF files of the authoring corpus
+  (29 of them with an overlay: RGBA, gray, gray+alpha, palette, palette+tRNS, 1/2/4/16-bit grey, 16-bit RGB(A), RGB+tRNS,
+  GIF opaque and transparent, odd widths, 1x1, JPEG RGB/gray/CMYK/progressive/trailing bytes and a JPEG cut after its scan
+  header). The same
+  comparison checks the object the view stored. A signature MuPDF cannot open keeps the exact `<form-pdf>` comparison: its
+  block is skipped, so the bytes are Django's plain fill.
+
 ## Biella without a primary tutor (v2-rest-docs)
 
 `get_main_tutor()` runs while the view maps the form's fields, after the Document exists. Go does the same: the Document is
 created first and the first tutor relation is then saved as primary (its audit entry indexed to the associate's association) in
-the same transaction, before the fields are filled. A refusal after that point (for example a signature) is decided before the
-Document is created, so nothing is written; the promotion itself runs only on the admitted path. Cases
-`medical-form-biella-promotes-tutor` and `medical-form-biella-promoted-tutor-again`: 241 cases, receipt
+the same transaction, before the fields are filled. A refusal after that point is decided before the Document is created, so
+nothing is written; the promotion itself runs only on the admitted path. The signature overlay is no longer a refusal (see
+divergence X8). Cases `medical-form-biella-promotes-tutor` and `medical-form-biella-promoted-tutor-again`: 241 cases, receipt
 `document-render-http-sweep-restdocs-3` (GitHub run 42910943209), 4 transports. Mutation (the promotion read instead of saved) CAUGHT.
 
 ## Not ported (refused with the 500 page before any write)
 
-- **medical-appointment**, Piemonte Biella, when the association has a stored president signature (any text that is not empty
-  and not `None`): `fill_pdf_fields` first draws the signature, and then the stamp, on the first page with PyMuPDF
-  (`insert_image`, then a full `save`). That is image decoding and recompression inside MuPDF; the rules of this migration
-  keep image processing out of Go. Without a signature the stamp is never drawn (its text only fills the field).
 - A storage failure while saving a filled form is the 500 page (Django answers the provider's text); the Document stays.
 - **template** and **invoice** bodies the parsers refuse for reasons the port does not model (a multipart body over the
   upload limit or with the encodings `documents-writes.md` lists).

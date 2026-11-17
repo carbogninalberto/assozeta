@@ -95,6 +95,70 @@
    "form": {
     "tax_code": "71530000140"
    }
+  },
+  "formsig": {
+   "user": "a1000000-0000-4000-8000-000000984240",
+   "association": "a1000000-0000-4000-8000-000000984241",
+   "denomination": "Polisportiva Firma",
+   "form": {
+    "federation": "fidal",
+    "address": "Via Roma 1",
+    "address_cap": "13900",
+    "address_city": "Biella",
+    "whatsapp": "+39 333 1234567",
+    "president_first_name": "Élise",
+    "president_last_name": "Łukasz",
+    "president_signature": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHgAAAA8CAYAAACtrX6oAAAA2klEQVR42u3Yyw3CMBQAQRdBG1SXXugl1SUnpCh3QOybldyAR/6uJUmSJEnSoB7P1/YeZqMJvF8G7CDwcRmw4ysYdvkMhg0bNmzYsAVbsAVbsNtzv8GOgd7mcreyY6C3uTxs4zHQn65g2J8H/foZDHs46DTs0aBFbKAxbKAxbKAxbKAxbKBxbKB9bKA+FvTPoP7GyysUdnzLhT3oDIU96FIEe9AtF/agZ8t47Env0BHYPhZi2EBj2EBj2EBj2EBj2EBj2EDb2AtoG3sBbWMvoG3sBVSSJEmSNKgTq6/VG5mgsE4AAAAASUVORK5CYII="
+   }
+  },
+  "formstamp": {
+   "user": "a1000000-0000-4000-8000-000000984242",
+   "association": "a1000000-0000-4000-8000-000000984243",
+   "denomination": "Polisportiva Firma Timbro",
+   "form": {
+    "federation": "fidal",
+    "address": "Via Roma 1",
+    "address_cap": "13900",
+    "address_city": "Biella",
+    "whatsapp": "+39 333 1234567",
+    "president_first_name": "Élise",
+    "president_last_name": "Łukasz",
+    "president_signature": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHgAAAA8CAYAAACtrX6oAAAA2klEQVR42u3Yyw3CMBQAQRdBG1SXXugl1SUnpCh3QOybldyAR/6uJUmSJEnSoB7P1/YeZqMJvF8G7CDwcRmw4ysYdvkMhg0bNmzYsAVbsAVbsNtzv8GOgd7mcreyY6C3uTxs4zHQn65g2J8H/foZDHs46DTs0aBFbKAxbKAxbKAxbKAxbKBxbKB9bKA+FvTPoP7GyysUdnzLhT3oDIU96FIEe9AtF/agZ8t47Env0BHYPhZi2EBj2EBj2EBj2EBj2EBj2EDb2AtoG3sBbWMvoG3sBVSSJEmSNKgTq6/VG5mgsE4AAAAASUVORK5CYII=",
+    "stamp": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABQODxIPDRQSEBIXFRQYHjIhHhwcHj0sLiQySUBMS0dARkVQWnNiUFVtVkVGZIhlbXd7gYKBTmCNl4x9lnN+gXz/2wBDARUXFx4aHjshITt8U0ZTfHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHz/wAARCAAQACADASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDoLCxtHsLZmtYGYxKSTGCScCnLBpzTeWLSDqQG8obWI6gH1H+PocQ2t3bNptrEb2GIiNA48wBsY5HXg/54PInkudPeAQi7t0UY27ZFG0g5GPoQKlcttTWXtOZ7iTQadCwV7SDpliIhhB6n0H/1+wJDb+xtEsLlltYFYRMQRGAQcGnw3dlHlmvbd5X+8/mKM+w54A7D+pJqvc3FolhdxxXkDIYmEcYcEqcHgc9PQdvpgAfLYI+05luf/9k="
+   }
+  },
+  "formbadsig": {
+   "user": "a1000000-0000-4000-8000-000000984244",
+   "association": "a1000000-0000-4000-8000-000000984245",
+   "denomination": "Polisportiva Firma Illeggibile",
+   "form": {
+    "federation": "fidal",
+    "address": "Via Roma 1",
+    "address_cap": "13900",
+    "address_city": "Biella",
+    "whatsapp": "+39 333 1234567",
+    "president_first_name": "Élise",
+    "president_last_name": "Łukasz",
+    "tax_code": "71530000244",
+    "president_signature": "data:image/png;base64,AAAA"
+   }
+  },
+  "formbadstamp": {
+   "user": "a1000000-0000-4000-8000-000000984246",
+   "association": "a1000000-0000-4000-8000-000000984247",
+   "denomination": "Polisportiva Firma Timbro Illeggibile",
+   "form": {
+    "federation": "fidal",
+    "address": "Via Roma 1",
+    "address_cap": "13900",
+    "address_city": "Biella",
+    "whatsapp": "+39 333 1234567",
+    "president_first_name": "Élise",
+    "president_last_name": "Łukasz",
+    "tax_code": "71530000246",
+    "president_signature": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHgAAAA8CAYAAACtrX6oAAAA2klEQVR42u3Yyw3CMBQAQRdBG1SXXugl1SUnpCh3QOybldyAR/6uJUmSJEnSoB7P1/YeZqMJvF8G7CDwcRmw4ysYdvkMhg0bNmzYsAVbsAVbsNtzv8GOgd7mcreyY6C3uTxs4zHQn65g2J8H/foZDHs46DTs0aBFbKAxbKAxbKAxbKAxbKBxbKB9bKA+FvTPoP7GyysUdnzLhT3oDIU96FIEe9AtF/agZ8t47Env0BHYPhZi2EBj2EBj2EBj2EBj2EBj2EDb2AtoG3sBbWMvoG3sBVSSJEmSNKgTq6/VG5mgsE4AAAAASUVORK5CYII=",
+    "stamp": "data:image/png;base64,AAAA"
+   }
   }
  },
  "association_ids": {
@@ -106,7 +170,11 @@
   "form": "a1000000-0000-4000-8000-000000984008",
   "formrefused": "a1000000-0000-4000-8000-000000984146",
   "formline": "a1000000-0000-4000-8000-000000984151",
-  "formescape": "a1000000-0000-4000-8000-000000984141"
+  "formescape": "a1000000-0000-4000-8000-000000984141",
+  "formsig": "a1000000-0000-4000-8000-000000984241",
+  "formstamp": "a1000000-0000-4000-8000-000000984243",
+  "formbadsig": "a1000000-0000-4000-8000-000000984245",
+  "formbadstamp": "a1000000-0000-4000-8000-000000984247"
  },
  "associates": {
   "mario": {
@@ -181,6 +249,38 @@
    "association": "form",
    "first": "Leo",
    "last": "Piccolo",
+   "email": null,
+   "user": null
+  },
+  "formsig": {
+   "id": "a1000000-0000-4000-8000-000000984248",
+   "association": "formsig",
+   "first": "Firma",
+   "last": "Chiara",
+   "email": null,
+   "user": null
+  },
+  "formstamp": {
+   "id": "a1000000-0000-4000-8000-000000984249",
+   "association": "formstamp",
+   "first": "Timbro",
+   "last": "Luca",
+   "email": null,
+   "user": null
+  },
+  "formbadsig": {
+   "id": "a1000000-0000-4000-8000-000000984250",
+   "association": "formbadsig",
+   "first": "Firma",
+   "last": "Marta",
+   "email": null,
+   "user": null
+  },
+  "formbadstamp": {
+   "id": "a1000000-0000-4000-8000-000000984251",
+   "association": "formbadstamp",
+   "first": "Timbro",
+   "last": "Nino",
    "email": null,
    "user": null
   },
@@ -444,6 +544,38 @@
    "id": "a1000000-0000-4000-8000-000000984120",
    "association": "form",
    "associate": "formminor",
+   "user": "owner",
+   "group": null,
+   "document": null
+  },
+  "formsig": {
+   "id": "a1000000-0000-4000-8000-000000984252",
+   "association": "formsig",
+   "associate": "formsig",
+   "user": "owner",
+   "group": null,
+   "document": null
+  },
+  "formstamp": {
+   "id": "a1000000-0000-4000-8000-000000984253",
+   "association": "formstamp",
+   "associate": "formstamp",
+   "user": "owner",
+   "group": null,
+   "document": null
+  },
+  "formbadsig": {
+   "id": "a1000000-0000-4000-8000-000000984254",
+   "association": "formbadsig",
+   "associate": "formbadsig",
+   "user": "owner",
+   "group": null,
+   "document": null
+  },
+  "formbadstamp": {
+   "id": "a1000000-0000-4000-8000-000000984255",
+   "association": "formbadstamp",
+   "associate": "formbadstamp",
    "user": "owner",
    "group": null,
    "document": null
@@ -1070,6 +1202,34 @@
    "subscription": "formminor",
    "region": "agonistica-piemonte-biella",
    "date": "2026-05-15",
+   "document": null
+  },
+  "biella_signature": {
+   "id": "a1000000-0000-4000-8000-000000984256",
+   "subscription": "formsig",
+   "region": "agonistica-piemonte-biella",
+   "date": "2026-05-16",
+   "document": null
+  },
+  "biella_signature_stamp": {
+   "id": "a1000000-0000-4000-8000-000000984257",
+   "subscription": "formstamp",
+   "region": "agonistica-piemonte-biella",
+   "date": "2026-05-17",
+   "document": null
+  },
+  "biella_bad_signature": {
+   "id": "a1000000-0000-4000-8000-000000984258",
+   "subscription": "formbadsig",
+   "region": "agonistica-piemonte-biella",
+   "date": "2026-05-18",
+   "document": null
+  },
+  "biella_bad_stamp": {
+   "id": "a1000000-0000-4000-8000-000000984259",
+   "subscription": "formbadstamp",
+   "region": "agonistica-piemonte-biella",
+   "date": "2026-05-19",
    "document": null
   },
   "lombardia": {
@@ -5715,6 +5875,213 @@
     "associate.last_name": "  PICCOLO",
     "main_tutor.phone": "  +39 0151234567",
     "main_tutor.email": "  TUTOR@EXAMPLE.TEST"
+   }
+  },
+  {
+   "name": "document-render-medical-form-biella-signature",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984256",
+   "headers": {},
+   "status": 200,
+   "response": "<form-pdf-visual>",
+   "renders": [],
+   "effect": {
+    "document": "[Polisportiva Firma] Visita Agonistica Piemonte Biella del 2026-05-16.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [
+     [
+      "medicalappointments",
+      "biella_signature"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": true,
+    "promoted": []
+   },
+   "disposition": "inline; filename=[Polisportiva Firma] Visita Agonistica Piemonte Biella del 2026-05-16.pdf",
+   "form": {
+    "sport_association.denomination": "  POLISPORTIVA FIRMA",
+    "sport_association.federation": "  FIDAL",
+    "sport_association.address": "  VIA ROMA 1",
+    "sport_association.address_cap": "  13900",
+    "sport_association.address_city": "  BIELLA",
+    "sport_association.whatsapp": "  +39 333 1234567",
+    "sport_association.user.email": "  DOCUMENT-RENDER-FORMSIG@EXAMPLE.TEST",
+    "sport_association.president_first_name": "  ÉLISE",
+    "sport_association.president_last_name": "  ŁUKASZ",
+    "other.today_datetime": "  02/01/2026 03:04",
+    "sport_association.president_signature": "  data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHgAAAA8CAYAAACtrX6oAAAA2klEQVR42u3Yyw3CMBQAQRdBG1SXXugl1SUnpCh3QOybldyAR/6uJUmSJEnSoB7P1/YeZqMJvF8G7CDwcRmw4ysYdvkMhg0bNmzYsAVbsAVbsNtzv8GOgd7mcreyY6C3uTxs4zHQn65g2J8H/foZDHs46DTs0aBFbKAxbKAxbKAxbKAxbKBxbKB9bKA+FvTPoP7GyysUdnzLhT3oDIU96FIEe9AtF/agZ8t47Env0BHYPhZi2EBj2EBj2EBj2EBj2EBj2EDb2AtoG3sBbWMvoG3sBVSSJEmSNKgTq6/VG5mgsE4AAAAASUVORK5CYII=",
+    "associate.first_name": "  FIRMA",
+    "associate.last_name": "  CHIARA"
+   }
+  },
+  {
+   "name": "document-render-medical-form-biella-signature-download",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984256?download=1",
+   "headers": {},
+   "status": 200,
+   "response": "<form-pdf-visual>",
+   "renders": [],
+   "effect": {
+    "document": "[Polisportiva Firma] Visita Agonistica Piemonte Biella del 2026-05-16.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [
+     [
+      "medicalappointments",
+      "biella_signature"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": true,
+    "promoted": []
+   },
+   "disposition": "attachment; filename=[Polisportiva Firma] Visita Agonistica Piemonte Biella del 2026-05-16.pdf",
+   "form": {
+    "sport_association.denomination": "  POLISPORTIVA FIRMA",
+    "sport_association.federation": "  FIDAL",
+    "sport_association.address": "  VIA ROMA 1",
+    "sport_association.address_cap": "  13900",
+    "sport_association.address_city": "  BIELLA",
+    "sport_association.whatsapp": "  +39 333 1234567",
+    "sport_association.user.email": "  DOCUMENT-RENDER-FORMSIG@EXAMPLE.TEST",
+    "sport_association.president_first_name": "  ÉLISE",
+    "sport_association.president_last_name": "  ŁUKASZ",
+    "other.today_datetime": "  02/01/2026 03:04",
+    "sport_association.president_signature": "  data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHgAAAA8CAYAAACtrX6oAAAA2klEQVR42u3Yyw3CMBQAQRdBG1SXXugl1SUnpCh3QOybldyAR/6uJUmSJEnSoB7P1/YeZqMJvF8G7CDwcRmw4ysYdvkMhg0bNmzYsAVbsAVbsNtzv8GOgd7mcreyY6C3uTxs4zHQn65g2J8H/foZDHs46DTs0aBFbKAxbKAxbKAxbKAxbKBxbKB9bKA+FvTPoP7GyysUdnzLhT3oDIU96FIEe9AtF/agZ8t47Env0BHYPhZi2EBj2EBj2EBj2EBj2EBj2EDb2AtoG3sBbWMvoG3sBVSSJEmSNKgTq6/VG5mgsE4AAAAASUVORK5CYII=",
+    "associate.first_name": "  FIRMA",
+    "associate.last_name": "  CHIARA"
+   }
+  },
+  {
+   "name": "document-render-medical-form-biella-signature-and-stamp",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984257",
+   "headers": {},
+   "status": 200,
+   "response": "<form-pdf-visual>",
+   "renders": [],
+   "effect": {
+    "document": "[Polisportiva Firma Timbro] Visita Agonistica Piemonte Biella del 2026-05-17.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [
+     [
+      "medicalappointments",
+      "biella_signature_stamp"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": true,
+    "promoted": []
+   },
+   "disposition": "inline; filename=[Polisportiva Firma Timbro] Visita Agonistica Piemonte Biella del 2026-05-17.pdf",
+   "form": {
+    "sport_association.denomination": "  POLISPORTIVA FIRMA TIMBRO",
+    "sport_association.federation": "  FIDAL",
+    "sport_association.address": "  VIA ROMA 1",
+    "sport_association.address_cap": "  13900",
+    "sport_association.address_city": "  BIELLA",
+    "sport_association.whatsapp": "  +39 333 1234567",
+    "sport_association.user.email": "  DOCUMENT-RENDER-FORMSTAMP@EXAMPLE.TEST",
+    "sport_association.president_first_name": "  ÉLISE",
+    "sport_association.president_last_name": "  ŁUKASZ",
+    "other.today_datetime": "  02/01/2026 03:04",
+    "sport_association.president_signature": "  data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHgAAAA8CAYAAACtrX6oAAAA2klEQVR42u3Yyw3CMBQAQRdBG1SXXugl1SUnpCh3QOybldyAR/6uJUmSJEnSoB7P1/YeZqMJvF8G7CDwcRmw4ysYdvkMhg0bNmzYsAVbsAVbsNtzv8GOgd7mcreyY6C3uTxs4zHQn65g2J8H/foZDHs46DTs0aBFbKAxbKAxbKAxbKAxbKBxbKB9bKA+FvTPoP7GyysUdnzLhT3oDIU96FIEe9AtF/agZ8t47Env0BHYPhZi2EBj2EBj2EBj2EBj2EBj2EDb2AtoG3sBbWMvoG3sBVSSJEmSNKgTq6/VG5mgsE4AAAAASUVORK5CYII=",
+    "sport_association.stamp": "  data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABQODxIPDRQSEBIXFRQYHjIhHhwcHj0sLiQySUBMS0dARkVQWnNiUFVtVkVGZIhlbXd7gYKBTmCNl4x9lnN+gXz/2wBDARUXFx4aHjshITt8U0ZTfHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHz/wAARCAAQACADASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDoLCxtHsLZmtYGYxKSTGCScCnLBpzTeWLSDqQG8obWI6gH1H+PocQ2t3bNptrEb2GIiNA48wBsY5HXg/54PInkudPeAQi7t0UY27ZFG0g5GPoQKlcttTWXtOZ7iTQadCwV7SDpliIhhB6n0H/1+wJDb+xtEsLlltYFYRMQRGAQcGnw3dlHlmvbd5X+8/mKM+w54A7D+pJqvc3FolhdxxXkDIYmEcYcEqcHgc9PQdvpgAfLYI+05luf/9k=",
+    "associate.first_name": "  TIMBRO",
+    "associate.last_name": "  LUCA"
+   }
+  },
+  {
+   "name": "document-render-medical-form-biella-signature-unreadable",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984258",
+   "headers": {},
+   "status": 200,
+   "response": "<form-pdf>",
+   "renders": [],
+   "effect": {
+    "document": "[Polisportiva Firma Illeggibile] Visita Agonistica Piemonte Biella del 2026-05-18.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [
+     [
+      "medicalappointments",
+      "biella_bad_signature"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": true,
+    "promoted": []
+   },
+   "disposition": "inline; filename=[Polisportiva Firma Illeggibile] Visita Agonistica Piemonte Biella del 2026-05-18.pdf",
+   "form": {
+    "sport_association.denomination": "  POLISPORTIVA FIRMA ILLEGGIBILE",
+    "sport_association.federation": "  FIDAL",
+    "sport_association.address": "  VIA ROMA 1",
+    "sport_association.address_cap": "  13900",
+    "sport_association.address_city": "  BIELLA",
+    "sport_association.whatsapp": "  +39 333 1234567",
+    "sport_association.user.email": "  DOCUMENT-RENDER-FORMBADSIG@EXAMPLE.TEST",
+    "sport_association.president_first_name": "  ÉLISE",
+    "sport_association.president_last_name": "  ŁUKASZ",
+    "other.today_datetime": "  02/01/2026 03:04",
+    "sport_association.president_signature": "  data:image/png;base64,AAAA",
+    "associate.first_name": "  FIRMA",
+    "associate.last_name": "  MARTA"
+   }
+  },
+  {
+   "name": "document-render-medical-form-biella-stamp-unreadable",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984259",
+   "headers": {},
+   "status": 200,
+   "response": "<form-pdf-visual>",
+   "renders": [],
+   "effect": {
+    "document": "[Polisportiva Firma Timbro Illeggibile] Visita Agonistica Piemonte Biella del 2026-05-19.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [
+     [
+      "medicalappointments",
+      "biella_bad_stamp"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": true,
+    "promoted": []
+   },
+   "disposition": "inline; filename=[Polisportiva Firma Timbro Illeggibile] Visita Agonistica Piemonte Biella del 2026-05-19.pdf",
+   "form": {
+    "sport_association.denomination": "  POLISPORTIVA FIRMA TIMBRO ILLEGGIBILE",
+    "sport_association.federation": "  FIDAL",
+    "sport_association.address": "  VIA ROMA 1",
+    "sport_association.address_cap": "  13900",
+    "sport_association.address_city": "  BIELLA",
+    "sport_association.whatsapp": "  +39 333 1234567",
+    "sport_association.user.email": "  DOCUMENT-RENDER-FORMBADSTAMP@EXAMPLE.TEST",
+    "sport_association.president_first_name": "  ÉLISE",
+    "sport_association.president_last_name": "  ŁUKASZ",
+    "other.today_datetime": "  02/01/2026 03:04",
+    "sport_association.president_signature": "  data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHgAAAA8CAYAAACtrX6oAAAA2klEQVR42u3Yyw3CMBQAQRdBG1SXXugl1SUnpCh3QOybldyAR/6uJUmSJEnSoB7P1/YeZqMJvF8G7CDwcRmw4ysYdvkMhg0bNmzYsAVbsAVbsNtzv8GOgd7mcreyY6C3uTxs4zHQn65g2J8H/foZDHs46DTs0aBFbKAxbKAxbKAxbKAxbKBxbKB9bKA+FvTPoP7GyysUdnzLhT3oDIU96FIEe9AtF/agZ8t47Env0BHYPhZi2EBj2EBj2EBj2EBj2EBj2EDb2AtoG3sBbWMvoG3sBVSSJEmSNKgTq6/VG5mgsE4AAAAASUVORK5CYII=",
+    "sport_association.stamp": "  data:image/png;base64,AAAA",
+    "associate.first_name": "  TIMBRO",
+    "associate.last_name": "  NINO"
    }
   },
   {

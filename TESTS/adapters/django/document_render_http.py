@@ -15,14 +15,16 @@ service_context also owns a private MinIO (the instance-logo image and
 lifetime) with an empty bucket that Django's default storage and the Go server
 both use: the regional PDF form of a medical appointment is filled and saved
 by the view itself. The expected bytes of such a case are
-docmanager.views.utils.fill_pdf_fields over the case's authored values; the
-bucket must hold exactly that object under '<location>/<creation
+docmanager.views.utils.fill_pdf_fields over the case's authored values; when
+that fill draws a signature or stamp with PyMuPDF the answer and the stored
+object are compared page by page at 100 dpi instead of byte for byte. The
+bucket must hold that object under '<location>/<creation
 timestamp>/<id>/<filename>' after the case (it is then removed) and nothing
 after any other case (a failed case leaves the private bucket as it is). renderer_context is the renderer stub alone, for the
 runners that bring their own storage.
 
-seed_rows inserts (audit disabled) two extra associations with their owners,
-associates, documents, subscriptions, invoices with their payments,
+seed_rows inserts (audit disabled) the fixture's associations with their
+owners, associates, documents, subscriptions, invoices with their payments,
 compensation payments with instructors and hours, customer invoices, module
 templates, folders and medical appointments. Each case is checked against the
 complete model state: at most one new Document (the authored filename, a
@@ -114,7 +116,8 @@ class _RendererHandler(BaseHTTPRequestHandler):
 
 
 def form_bytes(source):
-    """fill_pdf_fields over the authored values of every case that fills a form (Django's own form filling)."""
+    """fill_pdf_fields over the authored values of every '<form-pdf>' and '<form-pdf-visual>' case (Django's own form
+    filling). A case whose signature PyMuPDF draws is compared visually, the others byte for byte."""
     from docmanager.views.utils import fill_pdf_fields
     template = Path(__file__).resolve().parents[3] / FORM_TEMPLATE
     contract.require(template.is_file() and template.stat().st_size > 0, 'fixture.form-template')
@@ -122,7 +125,10 @@ def form_bytes(source):
     for case in source['cases']:
         if not case.get('form'):
             continue
-        contract.require('sport_association.president_signature' not in case['form'], 'fixture.form-values')
+        signed = 'sport_association.president_signature' in case['form']
+        # A visually compared case must carry the signature PyMuPDF draws; another case may carry a signature MuPDF
+        # refuses, whose block leaves Django's plain fill in place.
+        contract.require(signed or case['response'] != '<form-pdf-visual>', 'fixture.form-values')
         with contextlib.redirect_stdout(io.StringIO()):
             filled[case['name']] = fill_pdf_fields(pdf_path=str(template), replace_dict=dict(case['form']))
         contract.require(filled[case['name']].startswith(b'%PDF-') and len(filled[case['name']]) > 100000, 'fixture.form-bytes')
@@ -265,8 +271,8 @@ def seed_rows(source, created):
                           password='!synthetic', role=User.ASSOCIATION, first_name='Render', last_name=label,
                           subscription_start_day=spec.get('start_day', 1), subscription_start_month=spec.get('start_month', 1)))
         insert(SportAssociation, SportAssociation(sport_association_id=spec['association'], user_id=spec['user'],
-                                                  denomination=spec['denomination'], tax_code='7153000000' + str(len(label)),
-                                                  **spec.get('form', {})))
+                                                  denomination=spec['denomination'],
+                                                  **{'tax_code': '7153000000' + str(len(label)), **spec.get('form', {})}))
     for label, row in source['associates'].items():
         extra = dict(row.get('form', {}))
         if 'born_date' in extra:
@@ -397,8 +403,14 @@ def assert_effect(case, before, after, source, context):
         key = f"{STORAGE['location']}/{created.timestamp()}/{doc_id}/{filename}"
         require(list(objects) == [key], 'storage.form-object')
         saved = STORAGE['client'].get_object(Bucket=BUCKET, Key=key)
-        require(saved['Body'].read() == STORAGE['forms'][case['name']] and saved['ContentType'] == 'application/pdf'
-                and not saved.get('ContentEncoding'), 'storage.form-bytes')
+        body = saved['Body'].read()
+        if case['response'] == '<form-pdf-visual>':
+            # fill_pdf_fields drew the signature (or stamp) with PyMuPDF: the same visual comparison the answer gets.
+            difference = base_contract.visual_difference(body, STORAGE['forms'][case['name']])
+            require(difference is None, 'storage.form-bytes:' + str(difference))
+        else:
+            require(body == STORAGE['forms'][case['name']], 'storage.form-bytes')
+        require(saved['ContentType'] == 'application/pdf' and not saved.get('ContentEncoding'), 'storage.form-type')
         STORAGE['client'].delete_object(Bucket=BUCKET, Key=key)
 
     # Tutor relations: the authored ones become primary; every other row is unchanged.
