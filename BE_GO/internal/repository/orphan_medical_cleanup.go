@@ -107,10 +107,11 @@ func (t *orphanMedicalTransaction) OrphanMedicalCertificates(ctx context.Context
 }
 
 // pythonDatetimeYear reports whether psycopg2 can build a Python datetime
-// from the stored timestamp: its year must be 1..9999.
+// from the stored timestamp: its year, in the UTC session Django opens, must
+// be 1..9999.
 func pythonDatetimeYear(value any) bool {
 	moment, ok := value.(time.Time)
-	return !ok || (moment.Year() >= 1 && moment.Year() <= 9999)
+	return !ok || (moment.UTC().Year() >= 1 && moment.UTC().Year() <= 9999)
 }
 
 // tasksDBFText renders a scanned uuid or text column.
