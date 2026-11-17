@@ -161,6 +161,14 @@ TEXTS = [
     '<a href="#a&#127;b">a</a>', '<a href="#a&#128;b">a</a>', '<a href="#日本">a</a>', '<a href="#top" color="red">a</a>',
     '<b><a href="#top">a</a></b>', '<a href="#top"><b>a</b> b</a>', '<a href="x y">a</a>', "<a href='a\"b'>a</a>",
     '<a href="città/日本">a</a>', '<a href="pdf:città.pdf">a</a>', '<a href="pdf:a&#1;b.pdf">a</a>',
+    # <seq template> padding: reportlab's line breaking splits on whitespace, so a run of spaces
+    # between words lays out as one space; these pairs record the text of a width of 5 and one of
+    # 50 at the start, the end and next to other fragments.
+    '<seq template="A%(w)5sB"/>', '<seq template="A%(w)50sB"/>',
+    'A<seq template="%(w)5s"/>B', 'A<seq template="%(w)50s"/>B',
+    '<b>A</b><seq template="%(w)5s"/>', '<b>A</b><seq template="%(w)50s"/>',
+    'A<seq template="%(w)-5s"/>Z', 'A<seq template="%(w)-50s"/>Z',
+    '<b>A</b><seq template="%(w)5.0s"/><i>B</i>', '<b>A</b><seq template="%(w)50.0s"/><i>B</i>',
 ]
 TOKENS = [
     'a', 'b c', ' ', 'Città', '&', '&amp;', '&lt;', '&gt;', '&nbsp;', '&#65;', '&#x41;', '&#X41;', '&#;', '&#12a', '&foo;', '&alpha;',

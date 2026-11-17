@@ -2,6 +2,7 @@ package pdfexport
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 	"testing"
 )
@@ -256,6 +257,151 @@ func TestSequenceTemplateSequenceObject(t *testing.T) {
 	}
 }
 
+// TestSequenceTemplateWidthLimits compares a width and a precision field with
+// CPython 3.13.16 (`template % Sequencer()`): a width is a Py_ssize_t, so more
+// digits than 9223372036854775807 raise ValueError('width too big'), while a
+// precision is an int, so more than 2147483647 raise
+// ValueError('precision too big'). A width beyond seqMaxWidth pads to
+// seqMaxWidth: reportlab writes the spaces, which change no layout (the corpus
+// compares widths of 5 and 50), and its own allocation is bounded by the host's
+// memory (approved divergence, group "platform").
+func TestSequenceTemplateWidthLimits(t *testing.T) {
+	cases := []struct {
+		template string
+		want     string // when err is empty and length is 0
+		length   int    // when want is empty: the padded field ends in "0"
+		err      string
+	}{
+		{"%(w)5s", "    0", 0, ""},
+		{"%(w)-5s", "0    ", 0, ""},
+		{"%(w)50s", strings.Repeat(" ", 49) + "0", 0, ""},
+		{"%(w)1048575s", "", 1048575, ""},
+		{"%(w)1048576s", "", seqMaxWidth, ""},
+		{"%(w)1048577s", "", seqMaxWidth, ""},
+		{"%(w)1000000000000s", "", seqMaxWidth, ""},
+		{"%(w)9223372036854775807s", "", seqMaxWidth, ""},
+		{"%(w)9223372036854775808s", "", 0, "width too big"},
+		{"%(w)18446744073709551616s", "", 0, "width too big"},
+		{"%(w)9999999999999999999999999999s", "", 0, "width too big"},
+		{"%(w).5s", "0", 0, ""},
+		{"%(w).0s", "", 0, ""},
+		{"%(w)5.0s", "     ", 0, ""},
+		{"%(w)-5.0s", "     ", 0, ""},
+		{"%(w).2147483647s", "0", 0, ""},
+		{"%(w).2147483648s", "", 0, "precision too big"},
+		{"%(w).9223372036854775807s", "", 0, "precision too big"},
+		{"%(w)3.9223372036854775808s", "", 0, "precision too big"},
+		{"%(w)9223372036854775808.1s", "", 0, "width too big"},
+		{"%(w)9223372036854775808d", "", 0, "width too big"},
+	}
+	for _, item := range cases {
+		s := newSeqSequencer()
+		got, err := s.format(item.template)
+		if item.err != "" {
+			if err == nil || err.Error() != item.err {
+				t.Errorf("%q: err %v, want %q", item.template, err, item.err)
+			}
+			continue
+		}
+		if err != nil {
+			t.Errorf("%q: %v", item.template, err)
+			continue
+		}
+		if item.length == 0 {
+			if got != item.want {
+				t.Errorf("%q: %q, want %q", item.template, got, item.want)
+			}
+			continue
+		}
+		body := strings.TrimSuffix(got, "0")
+		if len(got) != item.length || body == got || strings.Trim(body, " ") != "" {
+			t.Errorf("%q: %d bytes ending %q", item.template, len(got), got[max(0, len(got)-5):])
+		}
+	}
+
+	// The (key) is read before the digits of the width, so the counter moves
+	// even when the width then raises.
+	s := newSeqSequencer()
+	if _, err := s.format("%(w+)9223372036854775808s"); err == nil || err.Error() != "width too big" {
+		t.Fatalf("width overflow: %v", err)
+	}
+	if value := s.counters[seqKey{name: "w"}].value; value != 1 {
+		t.Fatalf("counter w = %d, want the lookup to have moved it to 1", value)
+	}
+}
+
+// A width beyond seqMaxWidth no longer refuses the paragraph: reportlab pads
+// with that many spaces, this port with seqMaxWidth (its lines break between
+// the same words).
+func TestSequenceTemplateWiderThanSeqMaxWidth(t *testing.T) {
+	resetParaSequencer()
+	text, err := paragraphText(t, `A<seq template="%(w)1048577s"/>B`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if want := "A" + strings.Repeat(" ", seqMaxWidth-1) + "0B"; text != want {
+		t.Fatalf("%d bytes, %d spaces before the value %q", len(text), len(text)-2, text[max(0, len(text)-3):])
+	}
+}
+
+// layoutWords is the word list a paragraph's line breaking works from: the
+// single-fragment path trims and splits the text, the several-fragment path
+// _getFragWords splits each fragment on whitespace. The dump keeps the fonts,
+// the words and the space flags, so two texts with the same words after a run
+// of spaces lay out the same lines.
+func layoutWords(t *testing.T, text string) string {
+	t.Helper()
+	p, err := newParagraph(text, paraStyle{fontName: "Helvetica", fontSize: 9, leading: 12})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var out strings.Builder
+	if p.simpleKind() {
+		p.breakSimple(200)
+		for _, line := range p.lines {
+			for _, word := range line.words {
+				out.WriteString(string(word.text))
+				out.WriteString("|")
+			}
+			out.WriteString("\n")
+		}
+		return out.String()
+	}
+	for _, word := range p.fragWords(200, true) {
+		for _, part := range word.parts {
+			fmt.Fprintf(&out, "%s:%s|", part.f.font.name, string(part.text.s))
+		}
+		fmt.Fprintf(&out, "hs=%t\n", word.hs)
+	}
+	return out.String()
+}
+
+// TestSequenceTemplatePaddingWords checks that the padding of a template only
+// separates words: reportlab's breakLines splits a text on whitespace, so a run
+// of N >= 1 spaces lays out like one space in the one-fragment path (the text
+// is stripped and split) and in the several-fragment path (_getFragWords
+// collapses a run at the start or end of a fragment into one empty word). The
+// corpus records the fragments of the 5 and 50 pairs.
+func TestSequenceTemplatePaddingWords(t *testing.T) {
+	cases := []struct{ name, five, fifty string }{
+		{"one fragment", `<seq template="%(w)5s"/>`, `<seq template="%(w)50s"/>`},
+		{"between fragments", `A<seq template="%(w)5s"/>B`, `A<seq template="%(w)50s"/>B`},
+		{"after a fragment", `<b>A</b><seq template="%(w)5s"/>`, `<b>A</b><seq template="%(w)50s"/>`},
+		{"before a fragment", `A<seq template="%(w)5s"/><i>B</i>`, `A<seq template="%(w)50s"/><i>B</i>`},
+		{"all spaces", `<b>A</b><seq template="%(w)5.0s"/><i>B</i>`, `<b>A</b><seq template="%(w)50.0s"/><i>B</i>`},
+		{"left padded", `A<seq template="%(w)-5s"/>Z`, `A<seq template="%(w)-50s"/>Z`},
+	}
+	for _, item := range cases {
+		resetParaSequencer()
+		five := layoutWords(t, item.five)
+		resetParaSequencer()
+		fifty := layoutWords(t, item.fifty)
+		if five != fifty {
+			t.Errorf("%s:\n 5: %q\n50: %q", item.name, five, fifty)
+		}
+	}
+}
+
 // The numbers continue across paragraphs, documents and requests: one
 // Sequencer serves the process, as reportlab's getSequencer does.
 func TestSequencerContinuesAcrossParagraphs(t *testing.T) {
@@ -282,6 +428,8 @@ func TestSequencerExceptionTexts(t *testing.T) {
 		{"A<seq template=\"%(x)\"/>B", "\nparagraph text '<para>A<seq template=\"%(x)\"/>B</para>' caused exception incomplete format"},
 		{"A<seq template=\"%(x\"/>B", "\nparagraph text '<para>A<seq template=\"%(x\"/>B</para>' caused exception incomplete format key"},
 		{"A<seqreset id=\"x\" base=\"10\"/><seq template=\"%(x)c\"/>B", "\nparagraph text '<para>A<seqreset id=\"x\" base=\"10\"/><seq template=\"%(x)c\"/>B</para>' caused exception %c requires int or char"},
+		{"A<seq template=\"%(w)9223372036854775808s\"/>B", "\nparagraph text '<para>A<seq template=\"%(w)9223372036854775808s\"/>B</para>' caused exception width too big"},
+		{"A<seq template=\"%(w).2147483648s\"/>B", "\nparagraph text '<para>A<seq template=\"%(w).2147483648s\"/>B</para>' caused exception precision too big"},
 	}
 	for _, item := range cases {
 		resetParaSequencer()

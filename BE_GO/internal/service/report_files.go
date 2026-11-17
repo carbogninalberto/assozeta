@@ -15,6 +15,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/pdfexport"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/pdfrender"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pystr"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/xlsxexport"
 )
@@ -166,10 +167,10 @@ func mcpExportColumns(data []any, labels domain.RequestObject) ([]string, []stri
 var errReportExportLabel = refusal.AppState("business MCP export label that is not a string")
 
 // reportlabTableText is reportlab's ValueError for a table without a column:
-// Table.identity() with a placeholder object address. rows counts the header
-// row the exporter prepends.
+// Table.identity() with pystr.ObjectAddress for the object's address (approved
+// divergence X18). rows counts the header row the exporter prepends.
 func reportlabTableText(rows int) string {
-	return fmt.Sprintf("<Table@0x0000000000000000 %d rows x 0 cols>... must have at least a row and column", rows)
+	return fmt.Sprintf("<Table@%s %d rows x 0 cols>... must have at least a row and column", pystr.ObjectAddress, rows)
 }
 
 // mcpExportXLSXValue is format_export_data's value in a workbook cell. A JSON

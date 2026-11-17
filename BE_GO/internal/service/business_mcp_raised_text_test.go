@@ -8,8 +8,8 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 )
 
-// A reportlab table without a column raises its identity text; Go answers a
-// fixed placeholder address and the real row count (the header row included).
+// A reportlab table without a column raises its identity text; Go answers
+// pystr.ObjectAddress (X18) and the real row count (the header row included).
 func TestExportPDFWithoutColumnsAnswersTheTableText(t *testing.T) {
 	data := []any{
 		domain.RequestObject{{Name: "sport_association_id", Value: "a"}},
@@ -20,7 +20,7 @@ func TestExportPDFWithoutColumnsAnswersTheTableText(t *testing.T) {
 	if !errors.Is(err, ErrBusinessToolRaised) {
 		t.Fatalf("expected ErrBusinessToolRaised, got %v", err)
 	}
-	const want = "<Table@0x0000000000000000 3 rows x 0 cols>... must have at least a row and column"
+	const want = "<Table@0x7f0000000000 3 rows x 0 cols>... must have at least a row and column"
 	if got := BusinessToolRaisedText(err); got != want {
 		t.Fatalf("text %q, want %q", got, want)
 	}

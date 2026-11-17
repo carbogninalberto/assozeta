@@ -3,6 +3,7 @@ package pdfexport
 import (
 	"errors"
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 	"sync"
@@ -152,14 +153,14 @@ func (s *seqSequencer) getitem(key string) (string, error) {
 	return s.thisf(seqKey{name: key})
 }
 
-// seqMaxWidth is the widest column a template pads a value to. A wider width
-// is refused: reportlab writes the padding, which is of no use in a table
-// cell.
+// seqMaxWidth is the widest field a template pads a value to. reportlab writes
+// the width-len(text) spaces of the field, bounded only by the memory of the
+// host (a width of 9223372036854775807 asks for that many bytes); a paragraph
+// draws a run of spaces between words as one space (reportlab's line breaking
+// splits on whitespace, this package's paraSplit does the same), so a wider
+// field pads to seqMaxWidth without changing the document. Approved divergence,
+// X-group "platform": the host's memory is the limit.
 const seqMaxWidth = 1 << 20
-
-// errSeqTemplateHandoff marks a template this package does not format (the
-// parse answers ErrNotPorted): one that pads a value beyond seqMaxWidth.
-var errSeqTemplateHandoff = errors.New("pdfexport: sequence template outside the formatted subset")
 
 // seqObjectText is str(Sequencer()): Sequencer has no __repr__ of its own, so
 // CPython prints the default repr with the object's address, which this port
@@ -234,10 +235,11 @@ func formatSeq(format byte, value int64) (string, error) {
 // the rest of the conversion then raises, and the looked-up value becomes
 // the one positional argument a `*` or the conversion consumes. One length
 // modifier (h, l or L) is skipped before the conversion character.
+//
+// A width is a Py_ssize_t and a precision an int: more digits than fit raise
+// ValueError('width too big') or ValueError('precision too big'), as CPython
+// checks while reading them. A width beyond seqMaxWidth pads to seqMaxWidth.
 func (s *seqSequencer) format(template string) (string, error) {
-	if seqTemplateTooWide(template) {
-		return "", errSeqTemplateHandoff // refused before any counter moves
-	}
 	var out strings.Builder
 	// The positional argument a `*` or a conversion takes: the Sequencer
 	// itself, or the text of the last (key). consumed is CPython's argidx
@@ -301,7 +303,7 @@ func (s *seqSequencer) format(template string) (string, error) {
 			}
 			pos++
 		}
-		width := 0
+		width := int64(0)
 		if pos < len(template) && template[pos] == '*' {
 			// `*` takes the next positional argument: the Sequencer or a
 			// counter's text, which int() refuses, or nothing after it.
@@ -311,10 +313,14 @@ func (s *seqSequencer) format(template string) (string, error) {
 			return "", errors.New("* wants int")
 		}
 		for pos < len(template) && template[pos] >= '0' && template[pos] <= '9' {
-			width = width*10 + int(template[pos]-'0')
+			digit := int64(template[pos] - '0')
+			if width > (math.MaxInt64-digit)/10 {
+				return "", errors.New("width too big")
+			}
+			width = width*10 + digit
 			pos++
 		}
-		precision := -1
+		precision := int64(-1)
 		if pos < len(template) && template[pos] == '.' {
 			precision, pos = 0, pos+1
 			if pos < len(template) && template[pos] == '*' {
@@ -324,7 +330,11 @@ func (s *seqSequencer) format(template string) (string, error) {
 				return "", errors.New("* wants int")
 			}
 			for pos < len(template) && template[pos] >= '0' && template[pos] <= '9' {
-				precision = precision*10 + int(template[pos]-'0')
+				digit := int64(template[pos] - '0')
+				if precision > (math.MaxInt32-digit)/10 {
+					return "", errors.New("precision too big")
+				}
+				precision = precision*10 + digit
 				pos++
 			}
 		}
@@ -377,11 +387,15 @@ func (s *seqSequencer) format(template string) (string, error) {
 			}
 		}
 		runes := []rune(text)
-		if precision >= 0 && len(runes) > precision {
+		if precision >= 0 && int64(len(runes)) > precision {
 			runes = runes[:precision]
 		}
-		if width > len(runes) {
-			pad := strings.Repeat(" ", width-len(runes))
+		limit := width
+		if limit > seqMaxWidth {
+			limit = seqMaxWidth
+		}
+		if limit > int64(len(runes)) {
+			pad := strings.Repeat(" ", int(limit)-len(runes))
 			if left {
 				runes = append(runes, []rune(pad)...)
 			} else {
@@ -404,33 +418,6 @@ func seqUnsupportedCharacter(template string, conversion int) error {
 		utf8.RuneCountInString(template[:conversion]))
 }
 
-// seqTemplateTooWide reports a run of digits past seqMaxWidth after a '%'
-// (a width or precision, or digits inside a key, which only makes the check
-// stricter): the whole template is refused before any (key) is looked up, so
-// no counter moves for a request that is handed off.
-func seqTemplateTooWide(template string) bool {
-	number, inSpec := 0, false
-	for pos := 0; pos < len(template); pos++ {
-		c := template[pos]
-		switch {
-		case c == '%':
-			inSpec, number = !inSpec || template[pos-1] != '%', 0
-		case !inSpec:
-		case c >= '0' && c <= '9':
-			number = number*10 + int(c-'0')
-			if number > seqMaxWidth {
-				return true
-			}
-		case c == '.' || c == '(' || c == ')' || c == '-' || c == '+' || c == ' ' || c == '#' || c == '*' ||
-			c == 'h' || c == 'l' || c == 'L':
-			number = 0
-		default:
-			inSpec, number = false, 0
-		}
-	}
-	return false
-}
-
 // paraSeqMu guards paraSeq: the one Sequencer of the process.
 var (
 	paraSeqMu sync.Mutex
@@ -438,8 +425,7 @@ var (
 )
 
 // seqCall runs fn on the process-wide Sequencer. An error of a formatter or a
-// format fails the parse the way reportlab's exception does; a text this
-// package does not write is refused.
+// format fails the parse the way reportlab's exception does.
 //
 // None of the five handlers pushes a fragment or changes the stack: their end
 // handlers are pass (end_seq and the aliases of paraparser), so a self-closing
@@ -449,15 +435,11 @@ func (p *paraParser) seqCall(fn func(*seqSequencer) (string, error)) (string, bo
 	paraSeqMu.Lock()
 	defer paraSeqMu.Unlock()
 	text, err := fn(paraSeq)
-	if err == nil {
-		return text, true
-	}
-	if errors.Is(err, errSeqTemplateHandoff) {
-		p.unsupported()
-	} else {
+	if err != nil {
 		p.fail("%s", err.Error())
+		return "", false
 	}
-	return "", false
+	return text, true
 }
 
 // startSeq is start_seq: the value of a counter, or the text of a template.

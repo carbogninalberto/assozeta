@@ -118,7 +118,7 @@ Since long tail PR 4 nothing is refused (`ErrBusinessMCPNotPorted` is gone):
 - An exception whose `str(e)` Go does not reproduce exactly is `service.ErrBusinessToolRaised` carrying its closest
   text (accepted divergence X11, extended 2026-11-16): a PostgreSQL error is psycopg2's text without the `LINE`/caret
   lines that quote Django's own statement (message, then `DETAIL:`, `HINT:`, `CONTEXT:` lines), a reportlab table
-  without columns uses the placeholder address `0x0000000000000000` (X18), other exceptions a generic text. The command
+  without columns uses `pystr.ObjectAddress` (`0x7f0000000000`, X18), other exceptions a generic text. The command
   and the agent answer `{"error": <text>}`; the saved-report run answers its JSON 500.
 - Every other input is ported: non-finite floats (`NaN`/`Infinity` tokens, numbers beyond the float range), integers
   beyond 64 bits in `in`/`range`, raw `regex`/`iexact` values with psycopg2's literal types, `Decimal(str)` spellings,

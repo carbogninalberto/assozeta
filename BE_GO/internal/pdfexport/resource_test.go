@@ -127,9 +127,10 @@ func TestDefaultResourceSources(t *testing.T) {
 		}
 	}
 
-	// reportlab downloads an ftp: URL; that download is not ported.
-	if _, err := (DefaultResourceOpener{}).Open(context.Background(), "ftp://127.0.0.1/logo.jpg"); !errors.Is(err, ErrNotPorted) {
-		t.Errorf("ftp: %v", err)
+	// reportlab downloads an ftp: URL with urlopen; with nothing listening the
+	// fetch fails, and TestFTPImageSourceTranscripts proves the successful reads.
+	if _, err := (DefaultResourceOpener{}).Open(context.Background(), "ftp://127.0.0.1:1/logo.jpg"); err == nil {
+		t.Errorf("ftp: want a failure")
 	}
 }
 

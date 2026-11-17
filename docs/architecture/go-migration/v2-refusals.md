@@ -1810,7 +1810,7 @@ X11 extension, X12, X13, X14, X17, X18; the X lines are added by the combiner). 
 
 | Site | Sentinel | Native answer | X |
 |---|---|---|---|
-| MCP command `Calls.Execute`, agent `AgentTools.Business` | `service.ErrBusinessMCPNotPorted` (deleted) | `{"error": <closest text>}`: PostgreSQL message with `DETAIL:`/`HINT:`/`CONTEXT:` (no `LINE`/caret, no bound-parameter context), reportlab text with address `0x0000000000000000`, else the generic text | X11, X18 |
+| MCP command `Calls.Execute`, agent `AgentTools.Business` | `service.ErrBusinessMCPNotPorted` (deleted) | `{"error": <closest text>}`: PostgreSQL message with `DETAIL:`/`HINT:`/`CONTEXT:` (no `LINE`/caret, no bound-parameter context), reportlab text with address `pystr.ObjectAddress` (`0x7f0000000000`), else the generic text | X11, X18 |
 | `GuardAcquire` decr race | `repository.ErrAgentCacheShape` (deleted) | the decr worked: concurrent session, close 4002 | X17 |
 | document add / medical upload / persona picture / docmanager stream storage failures | `ErrDocumentWritesNotPorted` (2 sites), `ErrPersonaNotPorted` (3 sites), `domain.ErrDocmanagerNotPorted` (deleted) | botocore's final text (`(reached max retries: 4)`, endpoint connection errors, `CreateMultipartUpload` from 8 MiB) | X12 |
 | `bufferMultipart` bodies over 250 MiB | `ErrDocumentWritesNotPorted` | spooled to a temporary file and read through a read-only mapping | X12 |
