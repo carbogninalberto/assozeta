@@ -205,7 +205,7 @@ def seed_rows(source, created):
     from application.models import Course
     for row in source['courses'].values():
         insert(Course, Course(course_id=row['id'], sport_association_id=row['association'], title=row['title'],
-                              description='Descrizione ' + row['title'], fee=row['fee'], multi_payments=row['multi_payments'],
+                              description='Descrizione ' + (row['title'] or ''), fee=row['fee'], multi_payments=row['multi_payments'],
                               events=row['events'], course_type=row['course_type'], multiple_quotes=row['multiple_quotes'],
                               deleted=row['deleted'], status_flag=2))
     for row in source['tags'].values():
