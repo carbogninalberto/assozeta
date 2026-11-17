@@ -1330,7 +1330,10 @@ for name, fee, kind, message in (('renew-membership-plan-fee-infinite', 'inf', 2
                                'membership_fee_plans': [{'id': 1, 'name': 'Piano', 'membership_fee': fee}]}},
         body=renewal({**basic, 'type': kind}, membership_plan_id=1))
 add('renew-membership-plan-fee-nan-zero-payments', 'renew', 'owner', 400, error("['“nan” value must be a decimal number.']"),
-    setup={'owner': {'show_zero_payments': True}}, body=renewal({**basic, 'type': 2}, membership_plan_id=1))
+    setup={'owner': {'show_zero_payments': True},
+           'association': {'multiple_membership_fee': True, 'membership_fee': '0',
+                           'membership_fee_plans': [{'id': 1, 'name': 'Piano', 'membership_fee': 'nan'}]}},
+    body=renewal({**basic, 'type': 2}, membership_plan_id=1))
 
 # Draft approval swallows the same exceptions: both drafts stay.
 odd_ids = iter(f'a1000000-0000-4000-8000-{958001 + n:012d}' for n in range(10))

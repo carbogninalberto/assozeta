@@ -12035,6 +12035,17 @@
    "setup": {
     "owner": {
      "show_zero_payments": true
+    },
+    "association": {
+     "multiple_membership_fee": true,
+     "membership_fee": "0",
+     "membership_fee_plans": [
+      {
+       "id": 1,
+       "name": "Piano",
+       "membership_fee": "nan"
+      }
+     ]
     }
    }
   },
