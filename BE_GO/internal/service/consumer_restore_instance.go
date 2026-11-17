@@ -285,7 +285,7 @@ func (s *ConsumerRestoreInstance) prepare(ctx context.Context, call *restoreCall
 		return err
 	}
 	if account == nil || !config.PrimaryOwner.Valid || !config.PrimaryOwnerExists {
-		return errConsumerImportUnsupported
+		return errImportArchive
 	}
 	administrator := account.Active && !account.Deleted && config.SelfHosted &&
 		(account.Superuser || config.PrimaryOwner.String == account.ID)
@@ -296,15 +296,15 @@ func (s *ConsumerRestoreInstance) prepare(ctx context.Context, call *restoreCall
 		return restoreStop(&call.precheck, "La versione dell’applicazione è cambiata. Valida nuovamente il backup.")
 	}
 	if config.PrimaryDeleted.Valid && config.PrimaryDeleted.Bool {
-		return errConsumerImportUnsupported // auditlog's default manager would not see the association
+		return errImportArchive // auditlog's default manager would not see the association
 	}
 	// local_copy(op.upload_path) and digest.
 	if limits := s.settings.Limits; op.UploadPath == "" || limits.Expanded <= 0 || limits.JSON <= 0 || limits.File <= 0 {
-		return errConsumerImportUnsupported
+		return errImportArchive
 	}
 	key, err := documentkey.S3Key(op.UploadPath, s.objects.Location())
 	if err != nil {
-		return errConsumerImportUnsupported
+		return errImportArchive
 	}
 	dir, err := filepath.Abs(s.settings.TempDir)
 	if err != nil {
@@ -345,7 +345,7 @@ func (s *ConsumerRestoreInstance) prepare(ctx context.Context, call *restoreCall
 	if archive.normalized() {
 		// The replacement streams the ZIP as exported and does not apply
 		// validate()'s legacy invoice links or tutor overrides: Django restores it.
-		return errConsumerImportUnsupported
+		return errImportArchive
 	}
 	if archive.missingMedia > 0 && !op.AllowMissingMedia {
 		return restoreStop(&call.validation, "Conferma esplicitamente l’assenza degli allegati indicati.")
@@ -417,7 +417,7 @@ func (s *ConsumerRestoreInstance) prepareRecovery(ctx context.Context, call *res
 		return nil, err
 	}
 	if !row.Found {
-		return nil, errConsumerImportUnsupported
+		return nil, errImportArchive
 	}
 	exportCall := &consumerRestoreExportCall{association: op.AssociationID, associationValid: true, associationRow: row}
 	if exportCall.credentials, exportCall.passwords, err = export.credentialPasswords(ctx, op.AssociationID, row.Owner); err != nil {
@@ -461,21 +461,21 @@ func (s *ConsumerRestoreInstance) prepareRecovery(ctx context.Context, call *res
 func (s *ConsumerRestoreInstance) saveName(path string) (string, string, string, string, error) {
 	cleaned, err := documentkey.SaveName(path)
 	if err != nil {
-		return "", "", "", "", errConsumerImportUnsupported
+		return "", "", "", "", errImportArchive
 	}
 	key, err := documentkey.S3Key(cleaned, s.objects.Location())
 	if err != nil {
-		return "", "", "", "", errConsumerImportUnsupported
+		return "", "", "", "", errImportArchive
 	}
 	if !s.imports.settings.Overwrite {
 		exists, err := s.objects.Exists(context.Background(), key)
 		if err != nil || exists {
-			return "", "", "", "", errConsumerImportUnsupported
+			return "", "", "", "", errImportArchive
 		}
 	}
 	kind, known, encoding, err := pymime.GuessType(key)
 	if err != nil {
-		return "", "", "", "", errConsumerImportUnsupported
+		return "", "", "", "", errImportArchive
 	}
 	if !known {
 		kind = "application/octet-stream"
@@ -495,7 +495,7 @@ func (s *ConsumerRestoreInstance) prepareMedia(ctx context.Context, call *restor
 			return err
 		}
 		if seen[key] {
-			return errConsumerImportUnsupported
+			return errImportArchive
 		}
 		seen[key] = true
 		entry := archive.zip.byName[member]
@@ -568,11 +568,16 @@ func (s *ConsumerRestoreInstance) prepareReplacement(ctx context.Context, call *
 		err = &restoreError{message: "Non è stato possibile ricostruire tutte le relazioni. I dati precedenti sono stati conservati."}
 	}
 	var python *consumerImportPyError
+	var django *importeffects.DjangoError
 	var failure *restoreError
 	switch {
 	case errors.As(err, &failure):
 		return s.replaceFailed(call, failure.message)
 	case errors.As(err, &python):
+		return s.replaceFailed(call, restoreGeneric)
+	case errors.As(err, &django), errors.Is(err, importeffects.ErrPlanUnreachable):
+		// Django's replace() lets any non-RestoreError exception through to the
+		// generic failure message.
 		return s.replaceFailed(call, restoreGeneric)
 	case err != nil:
 		return err
@@ -1038,7 +1043,7 @@ func (rep *restoreReplacement) restoreUserLinks(r *consumerImportRun, oldUsers [
 			}
 			return v.Text()
 		}
-		return nil, errConsumerImportUnsupported
+		return nil, errImportArchive
 	}
 	for _, raw := range rows {
 		row, err := rep.normalizeOptionalLinks(userModel, raw)
@@ -1092,7 +1097,7 @@ func (rep *restoreReplacement) restoreUserLinks(r *consumerImportRun, oldUsers [
 			}
 			flag := object.Get("is_active")
 			if flag.Kind != importeffects.Bool {
-				return errConsumerImportUnsupported
+				return errImportArchive
 			}
 			active = flag.B
 		}
@@ -1120,7 +1125,7 @@ func (rep *restoreReplacement) restoreUserLinks(r *consumerImportRun, oldUsers [
 			}
 			flag, ok := activeValue.(bool)
 			if !ok {
-				return errConsumerImportUnsupported
+				return errImportArchive
 			}
 			columns, casts, values = append(columns, "is_active"), append(casts, "::boolean"), append(values, flag)
 		}

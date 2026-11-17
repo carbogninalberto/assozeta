@@ -108,7 +108,7 @@ func TestConsumerImportArchiveNotAZip(t *testing.T) {
 		t.Fatalf("is_zipfile = %v, %v", isZip, err)
 	}
 	_, err = consumerImportOpenArchive(path)
-	if !errors.Is(err, errConsumerImportUnsupported) {
+	if !errors.Is(err, errImportArchive) {
 		t.Fatalf("error %v does not match the refusal sentinel", err)
 	}
 	var exc *pyzipfile.Exception
@@ -132,7 +132,7 @@ func TestConsumerImportArchiveMissingMember(t *testing.T) {
 	if exc.Text != `"There is no item named 'nope' in the archive"` {
 		t.Fatalf("text = %q", exc.Text)
 	}
-	if !errors.Is(err, errConsumerImportUnsupported) {
+	if !errors.Is(err, errImportArchive) {
 		t.Fatal("missing member must still match the refusal sentinel")
 	}
 }

@@ -4,7 +4,8 @@ Private PostgreSQL (actual Django current schema), a private Redis (broker DB 0,
 (the production S3Boto3Storage). The fixture archives are made by Django itself: a source association is seeded and
 AssociationExportService.export() writes the archive; the variants (truncated, without manifest or association file,
 circular folders, an undecodable data file, a foreign-key value the database rejects, a media member with a wrong
-CRC, an owner without an archived password hash, course subscriptions) are rewritten from it with zipfile.
+CRC, an owner without an archived password hash) are rewritten from it with zipfile; a course subscription is
+seeded into the source for one scenario.
 
 Each scenario seeds the target database and bucket (the archive uploaded where the API stores it), builds one message
 with Django's own producer, routed by GO_TASK_QUEUE_TASKS to ``assozeta-go``, and runs the identical bytes once on a
@@ -119,7 +120,8 @@ SCENARIOS = [
              expect={'success': False, 'error': f'Tags UUID collision: {TAG_A} already exists. Only User rows may be '
                                                 'reused by exact UUID during import.'}),
     Scenario('an undecodable data file is handed off', 'bad-json', handoff=True, expect={'success': False}),
-    Scenario('course subscriptions are handed off', 'course-subscription', handoff=True, expect={'success': True, 'files': 5}),
+    Scenario('a course subscription is imported (str(self.__dict__) in the audit repr)', 'course-subscription',
+             expect={'success': True, 'files': 5}),
     Scenario('a key the database rejects at the constraint check is handed off', 'fk-violation', handoff=True,
              expect={'success': False}),
     Scenario('a media member with a wrong CRC is handed off', 'bad-crc', handoff=True, expect={'success': False}),

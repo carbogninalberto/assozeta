@@ -20,12 +20,14 @@ import (
 // the default manager against the in-memory instance, every concrete field
 // auditlog tracks, a field recorded when get_field_value differs). Then
 // auto_now fields take timezone.now() and one UPDATE writes every concrete
-// non-key field. A row the UPDATE misses is unsupported (Django raises
-// DatabaseError "Forced update did not affect any rows.").
+// non-key field. An UPDATE that misses its row raises Django's DatabaseError
+// "Forced update did not affect any rows.".
 func (e *Effects) SaveForceUpdate(ctx context.Context, instance *Instance) error {
 	model := instance.Model
 	if model.Save != "default" {
-		return unsupported("force update with save override %s", model.Save)
+		// plan.json: SaveForceUpdate is called for SportAssociation only, whose
+		// save is the default one (consumer_restore_instance.go).
+		return planUnreachable("force update with save override %s", model.Save)
 	}
 	pk, err := dbValue(model.PKField(), instance.PK())
 	if err != nil {
@@ -33,13 +35,19 @@ func (e *Effects) SaveForceUpdate(ctx context.Context, instance *Instance) error
 	}
 	if model.audited() && !instance.Adding {
 		if len(model.Audit.Include) > 0 {
-			return unsupported("auditlog include_fields")
+			// plan.json: no imported model registers include_fields.
+			return planUnreachable("auditlog include_fields on %s", model.Name)
 		}
 		var raw sql.NullString
 		err := e.tx().GetContext(ctx, &raw, `SELECT to_jsonb(t)::text FROM `+quote(model.Table)+` t WHERE `+quote(model.PK.Column)+
 			` = $1`+cast(model.PKField()), pk)
-		if errors.Is(err, sql.ErrNoRows) || (err == nil && !raw.Valid) {
-			return unsupported("update audit of a row the default manager hides")
+		if errors.Is(err, sql.ErrNoRows) {
+			// The row is gone: Django's UPDATE would affect no row and raise.
+			return databaseError("Forced update did not affect any rows.")
+		}
+		if err == nil && !raw.Valid {
+			// to_jsonb(row) of an existing row is never NULL.
+			return planUnreachable("stored row of %s", model.Name)
 		}
 		if err != nil {
 			return err
@@ -102,8 +110,13 @@ func (e *Effects) SaveForceUpdate(ctx context.Context, instance *Instance) error
 	if err != nil {
 		return err
 	}
-	if affected, err := result.RowsAffected(); err != nil || affected != 1 {
-		return unsupported("forced update affected no row")
+	if affected, err := result.RowsAffected(); err != nil {
+		return err
+	} else if affected == 0 {
+		// Django's save_base(force_update=True) raises DatabaseError.
+		return databaseError("Forced update did not affect any rows.")
+	} else if affected != 1 {
+		return planUnreachable("forced update matched %d rows", affected)
 	}
 	instance.Adding = false
 	return nil
@@ -140,19 +153,52 @@ func storedAuditText(field *Field, value any) (string, error) {
 		}
 	case "datetime":
 		if text, ok := value.(string); ok {
+			// plan.json: the column type is timestamp with time zone, whose
+			// to_jsonb text is always an ISO timestamp.
 			moment, err := time.Parse(time.RFC3339Nano, text)
 			if err != nil {
-				return "", unsupported("stored datetime %s", field.Name)
+				return "", planUnreachable("stored datetime %s", field.Name)
 			}
 			return pythonNaive(moment.UTC()), nil
 		}
+	case "time":
+		if text, ok := value.(string); ok {
+			// str() of the time psycopg loads: to_jsonb trims trailing zeros.
+			return storedTimeText(text)
+		}
 	case "json":
-		if err := checkJSONNumbers(jsonFromStored(value)); err != nil {
+		if err := checkJSONInts(jsonFromStored(value)); err != nil {
 			return "", err
 		}
 		return string(dto.PythonJSONDumpsSorted(jsonFromStored(value))), nil
 	}
-	return "", unsupported("stored audit value of %s", field.Name)
+	// The switch covers every column type in plan.json; a mismatch would need
+	// a column whose type differs from its field's kind.
+	return "", planUnreachable("stored audit value of %s", field.Name)
+}
+
+// storedTimeText is str(datetime.time) of a PostgreSQL time's text.
+func storedTimeText(text string) (string, error) {
+	parts := strings.SplitN(text, ":", 3)
+	if len(parts) != 3 {
+		return "", planUnreachable("stored time %q", text)
+	}
+	second := parts[2]
+	fraction := ""
+	if index := strings.IndexByte(second, '.'); index >= 0 {
+		fraction, second = second[index+1:], second[:index]
+	}
+	if fraction != "" {
+		fraction = fraction + strings.Repeat("0", 6-len(fraction))
+		if len(fraction) > 6 {
+			fraction = fraction[:6]
+		}
+	}
+	text = parts[0] + ":" + parts[1] + ":" + second
+	if strings.Trim(fraction, "0") != "" {
+		text += "." + fraction
+	}
+	return text, nil
 }
 
 // jsonFromStored converts a decoded map to the ordered object the Python
@@ -181,19 +227,10 @@ func memoryAuditText(field *Field, v Value) (string, error) {
 	switch {
 	case field.Kind == "json":
 		if field.Encoder != nil {
-			return "", unsupported("json encoder")
+			// plan.json: no imported JSON field has an encoder.
+			return "", planUnreachable("json encoder on %s", field.Name)
 		}
-		return jsonDumps(v, true)
-	case field.Type == "DateTimeField":
-		if v.IsNone() {
-			return "None", nil
-		}
-		if v.Kind != DateTime {
-			return "", unsupported("datetime attribute")
-		}
-		return pythonNaive(v.T.UTC()), nil
-	case field.Kind == "time":
-		return "", unsupported("time audit of %s", field.Name)
+		return jsonDumpsValue(v, true)
 	}
-	return v.Text()
+	return auditFieldText(field, v)
 }

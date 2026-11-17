@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 	"unicode/utf8"
@@ -12,22 +13,24 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/importeffects"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/pyzipfile"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
-// errConsumerImportUnsupported marks archive content outside the reproduced
-// subset (the message is handed to Django).
-var errConsumerImportUnsupported = importeffects.ErrUnsupported
+// errImportArchive marks archive content this port does not reproduce (ZIP
+// shapes, undecodable JSON text, a member that is not an array): the whole
+// message is handed to Django. It is not importeffects' refusal: the ORM
+// effects package handles every JSON value and returns Django's exceptions.
+var errImportArchive = refusal.New("consumer import: archive content not reproduced")
 
-// archiveError is a Python exception from reading the archive. It still
-// matches errConsumerImportUnsupported for callers that do not reproduce
-// Django's handling of it yet; callers that do read the exception with
-// errors.As.
+// archiveError is a Python exception from reading the archive. It matches
+// errImportArchive for callers that do not reproduce Django's handling of it
+// yet; callers that do read the exception with errors.As.
 type archiveError struct{ exc *pyzipfile.Exception }
 
 func (e *archiveError) Error() string { return e.exc.Text }
 
 // Is makes every Python exception match the old refusal sentinel.
-func (e *archiveError) Is(target error) bool { return target == errConsumerImportUnsupported }
+func (e *archiveError) Is(target error) bool { return target == errImportArchive }
 
 // As exposes the Python exception to callers that reproduce Django's
 // handling of a particular class or message.
@@ -132,16 +135,72 @@ func archiveBadCRC(err error) bool {
 }
 
 // consumerImportJSON is json.loads(data) (and iter_json_array for an array)
-// for UTF-8 input without a byte order mark; other input is unsupported.
+// for UTF-8 input without a byte order mark: the same Python JSON the restore
+// reads (NaN/Infinity literals, duplicate keys, JSON nesting, CPython's
+// 4300-digit integer limit). Undecodable input is handed off.
 func consumerImportJSON(data []byte) (any, error) {
-	if bytes.HasPrefix(data, []byte("\xef\xbb\xbf")) || !utf8.Valid(data) || !json.Valid(data) {
-		return nil, errConsumerImportUnsupported
+	if bytes.HasPrefix(data, []byte("\xef\xbb\xbf")) || !utf8.Valid(data) {
+		return nil, errImportArchive
 	}
-	value, err := dto.ParseProfileTablesJSON(data)
-	if err != nil {
-		return nil, errConsumerImportUnsupported
+	value, err := dto.PythonJSONLoads(data)
+	switch {
+	case errors.Is(err, dto.ErrStoredJSONInteger):
+		// json.loads' ValueError, with the offending token's digit count.
+		return nil, &importeffects.DjangoError{Class: "ValueError", Message: importIntegerDigitsMessage(data)}
+	case err != nil:
+		return nil, errImportArchive
 	}
 	return value, nil
+}
+
+// importIntegerDigitsMessage is json.loads' ValueError for the first integer
+// token past CPython's 4300-digit limit.
+func importIntegerDigitsMessage(data []byte) string {
+	inString := false
+	for i := 0; i < len(data); {
+		if inString {
+			if data[i] == '\\' {
+				i += 2
+				continue
+			}
+			if data[i] == '"' {
+				inString = false
+			}
+			i++
+			continue
+		}
+		if data[i] == '"' {
+			inString = true
+			i++
+			continue
+		}
+		if data[i] != '-' && (data[i] < '0' || data[i] > '9') {
+			i++
+			continue
+		}
+		start := i
+		if data[i] == '-' {
+			i++
+		}
+		for i < len(data) && data[i] >= '0' && data[i] <= '9' {
+			i++
+		}
+		digits := i - start
+		if start < len(data) && data[start] == '-' {
+			digits--
+		}
+		// A fraction or an exponent makes it a float, which has no limit.
+		if i < len(data) && (data[i] == '.' || data[i] == 'e' || data[i] == 'E') {
+			for i < len(data) && strings.IndexByte("+-.eE0123456789", data[i]) >= 0 {
+				i++
+			}
+			continue
+		}
+		if digits > dto.StoredJSONIntegerDigits {
+			return fmt.Sprintf("Exceeds the limit (4300 digits) for integer string conversion: value has %d digits; use sys.set_int_max_str_digits() to increase the limit", digits)
+		}
+	}
+	return "Exceeds the limit (4300 digits) for integer string conversion; use sys.set_int_max_str_digits() to increase the limit"
 }
 
 // importGet is dict.get(key) on a decoded JSON object.
@@ -187,6 +246,8 @@ func importTypeName(value any) string {
 			return "float"
 		}
 		return "int"
+	case float64:
+		return "float"
 	case domain.RequestObject:
 		return "dict"
 	case []any:
@@ -207,36 +268,26 @@ func importTruthy(value any) bool {
 	case json.Number:
 		f, err := strconv.ParseFloat(string(v), 64)
 		return err != nil || f != 0
+	case float64:
+		return v != 0
 	case domain.RequestObject:
 		return len(v) > 0
 	case []any:
 		return len(v) > 0
 	case importeffects.Value:
-		return !v.IsNone()
+		return importeffects.Truthy(v)
 	}
 	return true
 }
 
-// importStr is str(value) for decoded JSON scalars (containers are unsupported).
+// importStr is str(value) for a decoded JSON value.
 func importStr(value any) (string, error) {
-	switch v := value.(type) {
-	case nil:
-		return "None", nil
-	case string:
-		return v, nil
-	case bool:
-		if v {
-			return "True", nil
-		}
-		return "False", nil
-	case json.Number:
-		parsed, err := importeffects.FromJSON(v)
-		if err != nil {
-			return "", err
-		}
-		return parsed.S, nil
-	case importeffects.Value:
+	if v, ok := value.(importeffects.Value); ok {
 		return v.Text()
 	}
-	return "", errConsumerImportUnsupported
+	parsed, err := importeffects.FromJSON(value)
+	if err != nil {
+		return "", err
+	}
+	return parsed.Text()
 }

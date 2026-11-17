@@ -1667,7 +1667,7 @@ HTTP/WebSocket 53 -> 28, other roots 12 -> 5; whole report 297 -> 263 (HTTP/WebS
 | `agentllm.ErrNotPorted` | 1 -> 0 | **ported**: the base URL as httpx parses and sends it. An `xn--` host is decoded before each request like httpx's `URL.host` (`idna2008.Decode`, idna's own message texts) and a port past int's range is kept as Python keeps it |
 | `pandascsv.ErrUnsupported` | 1 -> 1 | **ported**: platform-built floats (macOS arm64 fused, Linux plain, as xlsxexport), int32 exponents, the bare-CR re-read; narrowed to `ErrBareCRBacktrack` for the re-read cases pandas answers |
 | `pandasxlsx.ErrUnsupported` | 1 -> 1 | every site checked against pandas with a hand-built workbook: raises -> the same 500 (`ErrInvalid`), answers -> **ported**; narrowed to `ErrWorkbookNotPorted` (non-UTF-8 XML, durations past `Timedelta.max`, size bounds, date-index text lookup) |
-| `importeffects.ErrUnsupported` | 2 -> 2 | unchanged (crafted archive values and ZIP shapes) |
+| `importeffects.ErrUnsupported` | 2 -> 0 | **deleted**: the ORM effects handle every JSON value the archive can carry (dict/list, any int, float with NaN/Infinity, bool, null, non-canonical UUID/date/datetime/Decimal texts) and return the Python exception Django raises (`*DjangoError`, stored as the task's `{"success": false, "error": str(e)}`); conditions only plan.json rules out are `ErrPlanUnreachable` (app state). ZIP shapes stay in the service's own `errImportArchive` hand-off. |
 
 Family runs (local, `--versioned`, 4 transports): profile-template 86, stripe-routes 127, payment-reads 293, instance-updates 40, subscription-create 212, instructor-writes 180, subscription-renew 131, subscription-misc 178, document-views 172, balance-sheet 97, course-list 175, saved-reports 32, subscription-reads 364, printing-generate 113, course-subscriptions 168 (cases per transport, all green); associates-draft stops on django-native at `associates-draft-edit-year-below-1000-born-date-server-error` (the fixture is Linux's `strftime`; macOS pads the year), so it is left to CI; on the final code communications-send-email 61, invoice-parties 277, invoice-sync-print 82, invoice-views 93, payment-misc 120, subscription-import-upload 98 and ws-agent 60 (54 through Caddy) are green. instance-outbound passed 130 on four transports before the Django e-mail path change; on the final code three local reruns stopped on a different django-native diagnostics-probe case each (deadline under load 20-50), so it is left to CI.
 
@@ -1900,7 +1900,8 @@ The three branches were combined on `go-v2only/longtail-pr4` (base `6779988b`). 
   `ErrInvoicePartyNotPorted`, `ErrPaymentReadsNotPorted`, `ErrSubscriptionReadsNotPorted`.
 - `cmd/refusal-reach` now follows a sentinel through `append([]any{sentinel}, args...)` before `fmt.Errorf("%w", ...)`.
   It had missed `errInvoiceViewsNotPorted` (2 HTTP rows: the invoice views' stored meta/course/description values)
-  and an `importeffects.ErrUnsupported` return on the data restore upload (1 HTTP row).
+  and an `importeffects.ErrUnsupported` return on the data restore upload (1 HTTP row). `importeffects.ErrUnsupported`
+  was deleted later (Long tail PR 5): every JSON value is ported and plan-only states are app state.
 - django-handoff takes its refused input from api-schema (`GET schema/?lang=xx/yy`, `handoff.md`).
 
 Review of the AppState and native-answer sites (import-reachability rule): 49 sites sampled across the three agents
@@ -1945,7 +1946,7 @@ result (`accepted-divergences.md`). The other 86 are the ceiling of the `--http`
 | `service.errInvoiceViewsNotPorted` | 2 | 0 | invoice views: stored meta/course/description that is not a dict or str |
 | `dto.ErrAuditNotPorted` | 2 | 0 | instructor hours form JSON nested past 500 (X15 band not measured) |
 | `domain.ErrSendEmailNotPorted`, `smtpsend.ErrEncodedWordCharset` | 2 | 1 | an `idna` encoded word in an address |
-| `importeffects.ErrUnsupported` | 1 | 1 | archive values outside the ORM conversions (`str()` of a JSON container) |
+| `importeffects.ErrUnsupported` | 1 | 0 | **deleted**: archive values reach Django's conversions and exceptions (`str()`/repr of JSON containers included); plan-only branches are `ErrPlanUnreachable`, app state |
 | `domain.ErrInstructorWritesNotPorted` | 1 | 0 | compensation notes: NaN payload, exponent overflow |
 | `domain.ErrPaymentStateNotPorted` | 1 | 0 | paid flow for an athlete owning an imported association |
 | `handler.errAPISchemaUnsupported` | 1 | 0 | `lang` with a path separator (the django-handoff example) |

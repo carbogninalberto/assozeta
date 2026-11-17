@@ -4,10 +4,14 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pystr"
+	"math/rand"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -36,6 +40,23 @@ type Instance struct {
 // Get returns the attribute named attname (None when absent).
 func (i *Instance) Get(attname string) Value { return i.Values[attname] }
 
+// dictRepr is str(self.__dict__) (CourseSubscription.__str__): ModelState's
+// object repr first (Model.__init__ sets _state before the fields), with the
+// stable placeholder address (approved divergence X18), then the concrete
+// attributes in meta.concrete_fields order.
+func (i *Instance) dictRepr() (string, error) {
+	// Model.__init__ sets _state before the concrete fields.
+	parts := []string{"'_state': <django.db.models.base.ModelState object at " + pystr.ObjectAddress + ">"}
+	for _, field := range i.Model.Fields {
+		repr, err := i.Get(field.Attname).Repr()
+		if err != nil {
+			return "", err
+		}
+		parts = append(parts, dto.PythonStringRepr(field.Attname)+": "+repr)
+	}
+	return "{" + strings.Join(parts, ", ") + "}", nil
+}
+
 // PK is the primary key attribute.
 func (i *Instance) PK() Value { return i.Values[i.Model.PK.Attname] }
 
@@ -47,9 +68,19 @@ type Effects struct {
 	// Now is timezone.now(); NewUUID is str(uuid.uuid4()).
 	Now     func() time.Time
 	NewUUID func() string
+	// Random supplies random_color's random.randint(0, 0xFFFFFF) (nil:
+	// math/rand); a test can pin it.
+	Random func() uint32
 }
 
-func (e *Effects) now() time.Time         { return e.Now() }
+func (e *Effects) now() time.Time { return e.Now() }
+func (e *Effects) randomColor() string {
+	n := rand.Uint32()
+	if e.Random != nil {
+		n = e.Random()
+	}
+	return fmt.Sprintf("#%06x", n&0xFFFFFF)
+}
 func (e *Effects) newUUID() string        { return e.NewUUID() }
 func quote(name string) string            { return `"` + strings.ReplaceAll(name, `"`, `""`) + `"` }
 func cast(field *Field) string            { return "::" + field.DBType }
@@ -77,7 +108,9 @@ func (e *Effects) NewInstance(model *Model, kwargs map[string]Value) (*Instance,
 	}
 	for key := range kwargs {
 		if model.FieldByAttname(key) == nil {
-			return nil, unsupported("keyword %s for %s", key, model.Name)
+			// plan.json: buildInstance passes only the model's own attnames
+			// (consumer_import_association.go buildInstance).
+			return nil, planUnreachable("keyword %s for %s", key, model.Name)
 		}
 	}
 	return instance, nil
@@ -88,7 +121,9 @@ func (e *Effects) NewInstance(model *Model, kwargs map[string]Value) (*Instance,
 // log_create with its index.
 func (e *Effects) Save(ctx context.Context, instance *Instance) error {
 	if !instance.Adding {
-		return unsupported("save of an existing %s", instance.Model.Name)
+		// plan.json: Save is called only for new instances (the import creates
+		// rows; updates go through SaveFields/SaveForceUpdate).
+		return planUnreachable("save of an existing %s", instance.Model.Name)
 	}
 	model := instance.Model
 	switch model.Save {
@@ -103,13 +138,16 @@ func (e *Effects) Save(ctx context.Context, instance *Instance) error {
 	case "course", "default":
 		// Course.save reads Course.objects.get(pk) and finds nothing for a new row.
 	default:
-		return unsupported("save override %s", model.Save)
+		// plan.json: save is default, payment, subscription or course; mptt
+		// (Folder) goes through SaveTreeNode.
+		return planUnreachable("save override %s", model.Save)
 	}
 	now := e.now().UTC()
 	for _, field := range model.Fields {
 		if field.AutoNow || field.AutoNowAdd {
 			if field.Type != "DateTimeField" {
-				return unsupported("auto date on %s", field.Type)
+				// plan.json: every auto_now/auto_now_add field is a DateTimeField.
+				return planUnreachable("auto date on %s", field.Type)
 			}
 			instance.set(field.Attname, DateTimeValue(now))
 		}
@@ -180,8 +218,11 @@ func (e *Effects) Repr(instance *Instance) (string, error) {
 		}
 		last, err := instance.Get("last_name").Text()
 		return "name: " + first + " " + last, err
+	case "dict":
+		return instance.dictRepr()
 	}
-	return "", unsupported("__str__ of %s", model.Name)
+	// plan.json: str is default, user or dict.
+	return "", planUnreachable("__str__ of %s", model.Name)
 }
 
 func (e *Effects) entry(instance *Instance, action int, changes map[string][2]string) (LogEntry, error) {
@@ -199,7 +240,8 @@ func (e *Effects) entry(instance *Instance, action int, changes map[string][2]st
 	if model.pkIsInt() {
 		id, err := strconv.ParseInt(pk, 10, 64)
 		if err != nil {
-			return LogEntry{}, unsupported("integer key")
+			// plan.json: no audited model has an int primary key.
+			return LogEntry{}, planUnreachable("integer key %s", model.Name)
 		}
 		entry.ObjectID = &id
 	}
@@ -216,7 +258,8 @@ func (e *Effects) logCreate(ctx context.Context, instance *Instance) error {
 		excluded[name] = true
 	}
 	if len(model.Audit.Include) > 0 {
-		return unsupported("auditlog include_fields")
+		// plan.json: no imported model registers include_fields.
+		return planUnreachable("auditlog include_fields on %s", model.Name)
 	}
 	changes := map[string][2]string{}
 	for _, field := range model.Fields {
@@ -249,7 +292,9 @@ func (e *Effects) logCreate(ctx context.Context, instance *Instance) error {
 func (e *Effects) SaveFields(ctx context.Context, instance *Instance, names ...string) error {
 	model := instance.Model
 	if instance.Adding {
-		return unsupported("update of an unsaved %s", model.Name)
+		// plan.json/callers: SaveFields is called on rows created in this run
+		// (Document filepath, Subscription signature keys).
+		return planUnreachable("update of an unsaved %s", model.Name)
 	}
 	switch model.Save {
 	case "subscription":
@@ -258,13 +303,17 @@ func (e *Effects) SaveFields(ctx context.Context, instance *Instance, names ...s
 		}
 	case "default", "course":
 	default:
-		return unsupported("save override %s on update", model.Save)
+		// plan.json: Payment is never updated through SaveFields; mptt is not
+		// reached here.
+		return planUnreachable("save override %s on update", model.Save)
 	}
 	fields := make([]*Field, 0, len(names))
 	for _, name := range names {
 		field := model.Field(name)
 		if field == nil || field.IsFK() || field.AutoNow {
-			return unsupported("update field %s", name)
+			// Callers update text fields only (Document.filepath, Subscription
+			// signature_storage_key/signature_url).
+			return planUnreachable("update field %s of %s", name, model.Name)
 		}
 		fields = append(fields, field)
 	}
@@ -285,14 +334,10 @@ func (e *Effects) SaveFields(ctx context.Context, instance *Instance, names ...s
 		for i := range old {
 			targets[i] = &old[i]
 		}
-		found := true
-		if err := row.Scan(targets...); errors.Is(err, sql.ErrNoRows) {
-			found = false
-		} else if err != nil {
+		// log_update's `old = manager.filter(pk).first()`: a row that is gone
+		// leaves every scanned value NULL, so the diff is against None.
+		if err := row.Scan(targets...); err != nil && !errors.Is(err, sql.ErrNoRows) {
 			return err
-		}
-		if !found {
-			return unsupported("update audit of a row the default manager hides")
 		}
 		for i, field := range fields {
 			before := NoneValue
@@ -336,8 +381,13 @@ func (e *Effects) SaveFields(ctx context.Context, instance *Instance, names ...s
 	if err != nil {
 		return err
 	}
-	if affected, err := result.RowsAffected(); err != nil || affected != 1 {
-		return unsupported("update_fields affected no row")
+	if affected, err := result.RowsAffected(); err != nil {
+		return err
+	} else if affected == 0 {
+		// Django raises DatabaseError from the UPDATE save_base issues.
+		return databaseError("Save with update_fields did not affect any rows.")
+	} else if affected != 1 {
+		return planUnreachable("update_fields matched %d rows", affected)
 	}
 	return nil
 }
@@ -346,15 +396,21 @@ func (e *Effects) SaveFields(ctx context.Context, instance *Instance, names ...s
 // excludes the field, so the diff is empty and no entry is written.
 func (e *Effects) UpdatePassword(ctx context.Context, model *Model, pk, password string) error {
 	if model.Name != "User" || model.Audit == nil || !contains(model.Audit.Exclude, "password") {
-		return unsupported("password update of %s", model.Name)
+		// plan.json: User is the only model with update_fields=['password']
+		// (consumer_import_association.go) and its audit excludes password.
+		return planUnreachable("password update of %s", model.Name)
 	}
 	result, err := e.tx().ExecContext(ctx, `UPDATE `+quote(model.Table)+` SET "password" = $1 WHERE `+quote(model.PK.Column)+
 		` = $2::uuid`, password, pk)
 	if err != nil {
 		return err
 	}
-	if affected, err := result.RowsAffected(); err != nil || affected != 1 {
-		return unsupported("password update affected no row")
+	if affected, err := result.RowsAffected(); err != nil {
+		return err
+	} else if affected == 0 {
+		return databaseError("Save with update_fields did not affect any rows.")
+	} else if affected != 1 {
+		return planUnreachable("password update matched %d rows", affected)
 	}
 	return nil
 }
@@ -385,7 +441,9 @@ func (e *Effects) Exists(ctx context.Context, model *Model, key Value) (bool, er
 func (e *Effects) QuerysetUpdate(ctx context.Context, model *Model, key Value, attname string, value Value) (int64, error) {
 	field := model.FieldByAttname(attname)
 	if field == nil {
-		return 0, unsupported("update of %s.%s", model.Name, attname)
+		// consumer_import_association.go resolves the attname in the plan
+		// before calling.
+		return 0, planUnreachable("update of %s.%s", model.Name, attname)
 	}
 	bound, err := dbValue(field, value)
 	if err != nil {
@@ -407,13 +465,30 @@ func (e *Effects) QuerysetUpdate(ctx context.Context, model *Model, key Value, a
 // related rows: the through rows of the distinct keys, in the order of the
 // CPython set _add_items builds, in one INSERT ... ON CONFLICT DO NOTHING.
 func (e *Effects) SetM2M(ctx context.Context, model *Model, field *M2M, key Value, targets []string) error {
-	if !field.AutoCreated || field.TargetKind != "uuid" || model.PK.Kind != "uuid" {
-		return unsupported("m2m %s.%s", model.Name, field.Name)
+	if (field.TargetKind != "uuid" && field.TargetKind != "int") || model.PK.Kind != "uuid" {
+		// plan.json: through targets are uuid (the imported models' keys) or
+		// int (auth Group/Permission); every model with an m2m has a uuid pk.
+		return planUnreachable("m2m %s.%s (%s -> %s)", model.Name, field.Name, model.PK.Kind, field.TargetKind)
 	}
+	prepped := make([]string, 0, len(targets))
 	for _, target := range targets {
-		if !CanonicalUUID(target) {
-			return unsupported("m2m key")
+		value, err := rawValue(target)
+		if err != nil {
+			return err
 		}
+		if field.TargetKind == "uuid" {
+			text, err := uuidText(value)
+			if err != nil {
+				return err
+			}
+			prepped = append(prepped, text)
+			continue
+		}
+		digits, err := intFieldPrep(field.Target, value)
+		if err != nil {
+			return err
+		}
+		prepped = append(prepped, digits)
 	}
 	var existing int
 	if err := e.tx().GetContext(ctx, &existing, `SELECT count(*) FROM `+quote(field.Table)+` WHERE `+quote(field.Source)+` = $1::uuid`,
@@ -421,16 +496,25 @@ func (e *Effects) SetM2M(ctx context.Context, model *Model, field *M2M, key Valu
 		return err
 	}
 	if existing != 0 {
-		return unsupported("m2m set over existing rows")
+		// The row was created in this transaction, so Django's slow path
+		// (remove then add) cannot see through rows here.
+		return planUnreachable("m2m %s.%s over existing rows", model.Name, field.Name)
 	}
-	ordered := pySetOrder(targets)
+	ordered := pySetOrder(prepped)
+	if field.TargetKind == "int" {
+		ordered = pySetOrderInts(prepped)
+	}
 	if len(ordered) == 0 {
 		return nil
 	}
 	values, args := []string{}, []any{key.S}
+	targetCast := ""
+	if field.TargetKind == "uuid" {
+		targetCast = "::uuid"
+	}
 	for _, target := range ordered {
 		args = append(args, target)
-		values = append(values, "($1::uuid, "+placeholder(len(args))+"::uuid)")
+		values = append(values, "($1::uuid, "+placeholder(len(args))+targetCast+")")
 	}
 	_, err := e.tx().ExecContext(ctx, `INSERT INTO `+quote(field.Table)+` (`+quote(field.Source)+`, `+quote(field.Target)+`) VALUES `+
 		strings.Join(values, ", ")+` ON CONFLICT DO NOTHING`, args...)
@@ -453,7 +537,9 @@ func (e *Effects) CheckConstraints(ctx context.Context) error {
 func (e *Effects) SaveTreeNode(ctx context.Context, instance *Instance) error {
 	model := instance.Model
 	if !model.IsMPTT || model.audited() {
-		return unsupported("tree save of %s", model.Name)
+		// plan.json: Folder is the only MPTT model and it is not audited;
+		// SaveTreeNode is called for Folder records only.
+		return planUnreachable("tree save of %s", model.Name)
 	}
 	parent := instance.Get("parent_id")
 	table := quote(model.Table)
