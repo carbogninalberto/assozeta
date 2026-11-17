@@ -1758,7 +1758,7 @@ can reuse an existing user as the owner by UUID without checking the role (`impo
 | `service/course_calendar.go` collaborator scope user | app state | refusal (`ErrCalendarNotPorted`) | the import keeps collaborator chains |
 | `service/subscription_create.go`, `subscription_create_quick.go` fee plans that are not a list of objects | app state | refusal (`ErrSubscriptionCreateNotPorted`) | imported plans; `get_subscription_fee`'s `except` falls back to the default fee |
 | `service/subscription_renew.go` collaborator owner with one association | app state | refusal (`ErrSubscriptionCreateNotPorted`) | the import can reuse a collaborator as the owner |
-| `service/orphan_medical_cleanup.go` creation date outside Python's years | app state | refusal (`ErrOrphanMedicalUnsupported`) | the import stores the archived `creation_date` |
+| `service/orphan_medical_cleanup.go` creation date outside Python's years | app state | **ported** | the import stores the archived `creation_date`; psycopg2 raises while fetching its chunk, so the earlier chunks are processed |
 | `repository/instance_release_cache.go` pickles and release dicts Go does not decode | app state | refusal (`ErrReleaseCacheShape`); a value that is not a list stays app state | Django caches GitHub's payload as it is |
 | `smtpsend` text that is no Python str | app state | refusal | raw process environment bytes, which Python decodes with surrogateescape |
 
@@ -1950,7 +1950,6 @@ result (`accepted-divergences.md`). The other 86 are the ceiling of the `--http`
 | `domain.ErrPaymentStateNotPorted` | 1 | 0 | paid flow for an athlete owning an imported association |
 | `handler.errAPISchemaUnsupported` | 1 | 0 | `lang` with a path separator (the django-handoff example) |
 | `pandasxlsx.ErrWorkbookNotPorted` | 1 | 0 | parts over 256 MiB, sheets past 1,048,576 rows, a duration column label, dateutil default-date text |
-| `domain.ErrOrphanMedicalUnsupported`, `domain.ErrExportCleanupUnsupported` | 0 | 2 | Document collector cascade in the cleanup jobs |
 
 ## Long tail PR 5, agent A: the reportlab paragraph surface (pdfexport)
 

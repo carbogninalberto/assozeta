@@ -102,7 +102,6 @@ WRITERS = {
     'collaborator_delete_collector.go:delete:DELETE:fast.model.Table': ('collector', ['http:documents-bulk-delete', 'http:documents-delete',
                                                                                       'http:subscription-lifecycle']),
     'instructor_hours.go:DeleteDocument:UPDATE:ref.Table': ('collector', ['http:instructor-hours']),
-    'orphan_medical_cleanup.go:DeleteOrphanMedicalDocument:UPDATE:table': ('collector', ['process:orphan_medical_worker_process']),
     'supplier_writes.go:DeleteSupplier:UPDATE:pq': ('collector', ['http:supplier-deletes']),
 }
 # The shared deletion collector (Django's Collector.delete(): SET_NULL updates and cascade deletes by model graph)

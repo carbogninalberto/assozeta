@@ -97,10 +97,7 @@ func (s *ExportCleanup) Run(ctx context.Context, job domain.Job) error {
 	return nil
 }
 
-// plan reads the associations and refuses the run before any effect when an
-// export document of any of them has a reference the collector would cascade.
-// Every export row in scope is checked: which rows the count pass deletes
-// depends on the outcome of the age pass.
+// plan reads the associations that own an export archive row.
 func (s *ExportCleanup) plan(ctx context.Context, job domain.Job) ([]string, error) {
 	tx, err := s.store.BeginExportCleanup(ctx, job)
 	if err != nil {
@@ -110,24 +107,6 @@ func (s *ExportCleanup) plan(ctx context.Context, job domain.Job) ([]string, err
 	associations, err := tx.ExportAssociations(ctx)
 	if err != nil {
 		return nil, err
-	}
-	documents := []string{}
-	for _, association := range associations {
-		exports, err := tx.AssociationExports(ctx, association, 0)
-		if err != nil {
-			return nil, err
-		}
-		for _, export := range exports {
-			documents = append(documents, export.DocumentID)
-		}
-	}
-	conflict, err := tx.ExportReferenceConflict(ctx, documents)
-	if err != nil {
-		return nil, err
-	}
-	if conflict {
-		s.logger.WarnContext(ctx, "export cleanup refused", "code", "export_cleanup_cascade")
-		return nil, domain.ErrExportCleanupUnsupported
 	}
 	return associations, tx.Rollback()
 }
@@ -147,7 +126,11 @@ func (s *ExportCleanup) read(ctx context.Context, job domain.Job, association st
 
 // delete mirrors one guarded iteration: default_storage.delete(filepath) when
 // it is set, export.delete(), document.delete(), each autocommitted. A storage
-// error is logged and skips the item, as the task's except clause does.
+// error is logged and skips the item, as the task's except clause does. The
+// document Collector runs in its own transaction: when it fails (a PROTECT
+// reference raises ProtectedError), its rollback leaves the document and its
+// cascade untouched, the archive row stays deleted, and the task's per-item
+// except logs the failure and continues with the next export.
 func (s *ExportCleanup) delete(ctx context.Context, job domain.Job, association string, export domain.ExportArchive, reason string) (bool, error) {
 	tx, err := s.store.BeginExportCleanup(ctx, job)
 	if err != nil {
@@ -179,8 +162,16 @@ func (s *ExportCleanup) delete(ctx context.Context, job domain.Job, association 
 		return false, err
 	}
 	defer document.Rollback()
-	if err = document.DeleteExportDocument(ctx, export.DocumentID, s.now().UTC()); err != nil {
-		return false, err
+	err = document.DeleteExportDocument(ctx, export.DocumentID, s.now().UTC())
+	if err == nil {
+		err = document.Commit()
 	}
-	return true, document.Commit()
+	if err != nil {
+		if ctx.Err() != nil {
+			return false, ctx.Err()
+		}
+		s.logger.WarnContext(ctx, "export document delete failed", "code", "export_document_delete", "reason", reason)
+		return false, nil
+	}
+	return true, nil
 }

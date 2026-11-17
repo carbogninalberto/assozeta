@@ -13,11 +13,6 @@ import (
 // auto_delete_orphan_medical_certificate, as persisted Beat rows name it.
 const JobAutoDeleteOrphanMedicalCertificate = "auto_delete_orphan_medical_certificate"
 
-// ErrOrphanMedicalUnsupported refuses a run before any effect: a document in
-// scope is referenced by a row Django's collector would cascade to (other
-// than its one certificate).
-var ErrOrphanMedicalUnsupported = refusal.New("orphan medical cleanup needs behaviour Go does not reproduce")
-
 // ErrOrphanMedicalUnreachable is a document name no stored row can produce
 // (creation_date is written only by the app, filename is UTF-8 text without
 // NUL): an application-state error (the 500 page).
@@ -33,6 +28,15 @@ type OrphanMedicalCertificate struct {
 	Filename   *string
 }
 
+// OrphanMedicalBatch is what one iteration of the queryset yields. Truncated
+// is true when a later chunk holds a timestamp outside the years a Python
+// datetime can hold: psycopg2 raises while fetching that chunk, so the task
+// processes the chunks before it and then its exception handler ends the run.
+type OrphanMedicalBatch struct {
+	Certificates []OrphanMedicalCertificate
+	Truncated    bool
+}
+
 type OrphanMedicalStore interface {
 	// BeginOrphanMedical opens a READ COMMITTED transaction fenced by the job
 	// lease. Each Django autocommit step is one such transaction.
@@ -41,15 +45,14 @@ type OrphanMedicalStore interface {
 
 type OrphanMedicalTransaction interface {
 	// OrphanMedicalCertificates is MedicalCertificate.objects.exclude(
-	// medical_id__in=<every Subscription.medical>).select_related('document'),
-	// unordered as in Django.
-	OrphanMedicalCertificates(context.Context) ([]OrphanMedicalCertificate, error)
-	// OrphanMedicalReferenceConflict reports whether a document is referenced,
-	// outside the SET_NULL foreign keys, by anything but exactly one certificate.
-	OrphanMedicalReferenceConflict(ctx context.Context, documents []string) (bool, error)
-	// DeleteOrphanMedicalDocument is document.delete(): the cascaded
-	// certificate rows deleted and audited, the SET_NULL references cleared,
-	// the document deleted and audited. It returns the certificate's delete changes.
+	// medical_id__in=<every Subscription.medical>).select_related('document')
+	// through Django's server-side cursor, in chunks of 50 and unordered as in
+	// Django.
+	OrphanMedicalCertificates(context.Context) (OrphanMedicalBatch, error)
+	// DeleteOrphanMedicalDocument is document.delete(): Django's Collector
+	// over the document (the cascaded certificate and any other referencing
+	// rows, SET_NULL updates and audit entries). It returns the certificate's
+	// delete changes for the second, in-memory certificate delete.
 	DeleteOrphanMedicalDocument(ctx context.Context, medical, document string, at time.Time) (map[string][2]string, error)
 	// AuditOrphanMedicalDelete is medical_certificate.delete() on the already
 	// deleted instance: no row left, a second audited delete entry.

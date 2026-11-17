@@ -34,10 +34,14 @@ type orphanMedicalTransaction struct{ *ownedTransaction }
 
 // The queryset Django's .iterator(chunk_size=50) declares as a server-side
 // cursor (select_related on the nullable document is a LEFT OUTER JOIN), with
-// the same column list and no ORDER BY. A cursor is planned for a fast start
-// (cursor_tuple_fraction), so the row order follows that plan, not the plain
-// SELECT's: Go declares the same cursor and fetches it in chunks of 50.
-func (t *orphanMedicalTransaction) OrphanMedicalCertificates(ctx context.Context) ([]domain.OrphanMedicalCertificate, error) {
+// the same column list and no ORDER BY. MedicalCertificate.Meta declares no
+// ordering, so the row order is PostgreSQL's plan order, as for Django's
+// cursor. psycopg2 converts every row of a fetched chunk before Django yields
+// any of them: a timestamp outside Python's years (1..9999) raises while the
+// chunk is fetched, so nothing in that chunk or a later one is processed.
+// Go fetches the same chunks and returns the complete chunks before the one
+// that holds such a timestamp, with Truncated set.
+func (t *orphanMedicalTransaction) OrphanMedicalCertificates(ctx context.Context) (domain.OrphanMedicalBatch, error) {
 	if _, err := t.tx.ExecContext(ctx, `DECLARE "tasks_db_f_orphan_medical" NO SCROLL CURSOR FOR SELECT
  "application_medicalcertificate"."medical_id", "application_medicalcertificate"."document_id", "application_medicalcertificate"."user_id",
  "application_medicalcertificate"."creation_date", "application_medicalcertificate"."expiration_date",
@@ -48,46 +52,65 @@ func (t *orphanMedicalTransaction) OrphanMedicalCertificates(ctx context.Context
  ON ("application_medicalcertificate"."document_id" = "docmanager_document"."document_id")
  WHERE NOT ("application_medicalcertificate"."medical_id" IN (SELECT U0."medical_id" AS "medical"
  FROM "application_subscription" U0 WHERE U0."medical_id" IS NOT NULL))`); err != nil {
-		return nil, err
+		return domain.OrphanMedicalBatch{}, err
 	}
-	out := []domain.OrphanMedicalCertificate{}
+	batch := domain.OrphanMedicalBatch{Certificates: []domain.OrphanMedicalCertificate{}}
 	for {
 		rows, err := t.tx.QueryxContext(ctx, `FETCH FORWARD 50 FROM "tasks_db_f_orphan_medical"`)
 		if err != nil {
-			return nil, err
+			return domain.OrphanMedicalBatch{}, err
 		}
-		fetched := 0
+		chunk := []domain.OrphanMedicalCertificate{}
+		fetched, truncated := 0, false
 		for rows.Next() {
 			values, err := rows.SliceScan()
 			if err != nil {
 				_ = rows.Close()
-				return nil, err
+				return domain.OrphanMedicalBatch{}, err
 			}
 			fetched++
+			// psycopg2 builds a Python datetime for every timestamp of the
+			// chunk, including columns the task does not use.
+			if !pythonDatetimeYear(values[3]) || (values[8] != nil && !pythonDatetimeYear(values[8])) {
+				truncated = true
+				break
+			}
 			item := domain.OrphanMedicalCertificate{MedicalID: tasksDBFText(values[0])}
 			if values[7] != nil {
 				document, filename := tasksDBFText(values[7]), tasksDBFText(values[10])
 				created, ok := values[8].(time.Time)
 				if !ok {
 					_ = rows.Close()
-					return nil, errors.New("orphan medical: unexpected document creation date")
+					return domain.OrphanMedicalBatch{}, errors.New("orphan medical: unexpected document creation date")
 				}
 				item.DocumentID, item.Created, item.Filename = &document, &created, &filename
 			}
-			out = append(out, item)
+			chunk = append(chunk, item)
 		}
 		if err = rows.Close(); err != nil {
-			return nil, err
+			return domain.OrphanMedicalBatch{}, err
 		}
 		if err = rows.Err(); err != nil {
-			return nil, err
+			return domain.OrphanMedicalBatch{}, err
 		}
+		if truncated {
+			batch.Truncated = true
+			break
+		}
+		batch.Certificates = append(batch.Certificates, chunk...)
 		if fetched < 50 {
 			break
 		}
 	}
 	_, err := t.tx.ExecContext(ctx, `CLOSE "tasks_db_f_orphan_medical"`)
-	return out, err
+	return batch, err
+}
+
+// pythonDatetimeYear reports whether psycopg2 can build a Python datetime
+// from the stored timestamp: its year must be 1..9999.
+func pythonDatetimeYear(value any) bool {
+	moment, ok := value.(time.Time)
+	return !ok || (moment.Year() >= 1 && moment.Year() <= 9999)
 }
 
 // tasksDBFText renders a scanned uuid or text column.
@@ -105,64 +128,21 @@ func tasksDBFText(value any) string {
 	return fmt.Sprint(value)
 }
 
-func (t *orphanMedicalTransaction) OrphanMedicalReferenceConflict(ctx context.Context, documents []string) (bool, error) {
-	if len(documents) == 0 {
-		return false, nil
-	}
-	references := []struct {
-		Table  string `db:"table_name"`
-		Column string `db:"column_name"`
-	}{}
-	if err := t.tx.SelectContext(ctx, &references, `SELECT c.conrelid::regclass::text AS table_name, a.attname AS column_name
- FROM pg_constraint c JOIN pg_attribute a ON a.attrelid=c.conrelid AND a.attnum=c.conkey[1]
- WHERE c.contype='f' AND c.confrelid='docmanager_document'::regclass AND array_length(c.conkey, 1)=1`); err != nil {
-		return false, err
-	}
-	for _, ref := range references {
-		if documentSetNull[ref.Table+"."+ref.Column] {
-			continue
-		}
-		// The certificate being deleted is the one reference the task expects.
-		allowed := 0
-		if ref.Table == "application_medicalcertificate" && ref.Column == "document_id" {
-			allowed = 1
-		}
-		var conflict bool
-		if err := t.tx.GetContext(ctx, &conflict, `SELECT EXISTS(SELECT 1 FROM `+ref.Table+` WHERE `+ref.Column+`=ANY($1::uuid[])
- GROUP BY `+ref.Column+` HAVING count(*)>$2)`, documents, allowed); err != nil {
-			return false, err
-		}
-		if conflict {
-			return true, nil
-		}
-	}
-	return false, nil
-}
-
-// The collector deletes the cascaded certificate, clears the SET_NULL
-// references with an update and deletes the document; both deletes are
-// audited without index (no association field, no actor).
+// The collector deletes the document and the rows that cascade from it (the
+// certificate among them), clears the SET_NULL references with an update and
+// audits each deleted row without index (no actor, no association field). The
+// certificate's delete diff is rendered before the collector runs: Django's
+// second medical_certificate.delete() is a new Collector on the in-memory
+// instance, which logs the same values again.
 func (t *orphanMedicalTransaction) DeleteOrphanMedicalDocument(ctx context.Context, medical, document string, at time.Time) (map[string][2]string, error) {
-	changes, _, err := deleteModelWithAudit(ctx, t.tx, "application_medicalcertificate", "medical_id", medical)
+	changes, _, err := storedModelChanges(ctx, t.tx, "application_medicalcertificate", "medical_id", medical, false, false)
 	if err != nil {
 		return nil, err
 	}
-	if err = appendModelAudit(ctx, t.tx, orphanMedicalEntry(medical, changes, at)); err != nil {
+	if err = deleteDocumentCascade(ctx, t.tx, document, domain.LoginAuditContext{}, at); err != nil {
 		return nil, err
 	}
-	for column := range documentSetNull {
-		table, field := splitExportCleanupColumn(column)
-		if _, err := t.tx.ExecContext(ctx, `UPDATE `+table+` SET `+field+`=NULL WHERE `+field+`=$1::uuid`, document); err != nil {
-			return nil, err
-		}
-	}
-	reverse := map[string]string{"customer_invoice_pdf": "application.CustomerInvoice.None"}
-	documentChanges, _, err := deleteModelWithAuditReverse(ctx, t.tx, "docmanager_document", "document_id", document, reverse)
-	if err != nil {
-		return nil, err
-	}
-	return changes, appendModelAuditForApp(ctx, t.tx, "docmanager", modelAuditEntry{Model: "document", Key: document,
-		Representation: "Document object (" + document + ")", Action: 2, Changes: documentChanges, At: at})
+	return changes, nil
 }
 
 func (t *orphanMedicalTransaction) AuditOrphanMedicalDelete(ctx context.Context, medical string, changes map[string][2]string, at time.Time) error {

@@ -119,6 +119,10 @@ as Go's session does.
 - A certificate without document, or a name django-storages rejects as outside `AWS_LOCATION`
   (`SuspiciousOperation`), raises and ends the task; the deletions before it stay. The task returns
   `None`; Go completes the job with NULL.
+- A stored timestamp outside Python's years (year > 9999 or < 1, which PostgreSQL stores and the
+  association import can write) makes psycopg2 raise while fetching the chunk that holds it. Django
+  processes the earlier chunks, then the outer handler ends the run. Go fetches the same chunks and
+  processes the complete chunks before the failing one.
 
 ## Not ported or refused
 
@@ -133,15 +137,9 @@ Refused before any effect (job fails with `task_failed`):
   if its intent had succeeded in a rolled-back transaction with a publisher that sends nothing,
   reaches a path Go does not port (for example a membership fee whose two-place rounding is an
   exact tie).
-- `auto_delete_orphan_medical_certificate`: a run in which any document of an orphan certificate is
-  referenced, outside the SET_NULL foreign keys, by anything but its one certificate (a second
-  certificate, an archive row, an appointment, a subscription file or a many-to-many link): the
-  collector would delete those rows with their own audit entries, which Go does not reproduce (the
-  `cleanup_old_exports` boundary).
 
 Since long-tail PR 3 (agent B) a name that is not valid UTF-8 or holds a NUL is application state
-(`ErrOrphanMedicalUnreachable`, the job fails from Go): PostgreSQL refuses the text. A creation date outside Python's
-range stays refused: the association import stores the archived value. A run whose orphan document other rows reference stays refused.
+(`ErrOrphanMedicalUnreachable`, the job fails from Go): PostgreSQL refuses the text.
 
 Differences:
 
@@ -150,7 +148,9 @@ Differences:
 - Infrastructure failures: database errors inside a step go back to the executor (the job fails)
   where Django's handlers log and continue; a COMMIT failure after a publish or a storage delete
   does not undo it. A Python exception from a paid-flow path not modelled as one fails the job
-  instead of continuing with the next payment.
+  instead of continuing with the next payment. The orphan-certificate task is the exception: its
+  storage, document-collector and second-delete failures end the run and complete the job with
+  NULL, keeping the earlier certificates, as Django does.
 
 ## Evidence
 
@@ -192,11 +192,12 @@ the unordered queries identically.
 - **Orphan certificates** (`TESTS/adapters/go/orphan_medical_worker_process.py`): private PostgreSQL
   and pinned MinIO. Seed: orphans with stored, missing, `..`-normalized, filepath-ignored and
   whole-second timestamp keys, certificates kept by a live and by a deleted subscription, SET_NULL
-  references from instructor hours and a subscription PDF. Three Django oracles (main: 5 deleted,
+  references from instructor hours and a subscription PDF. Five Django oracles (main: 5 deleted,
   15 entries; a certificate without document and a name outside the location: each stops after the
-  first deletion). Seven groups: default owner, the three variants, invalid envelopes, a later run
-  deleting nothing, and the cascade refusal (an archive row on an orphan's document). RED: pending
-  job after the oracles. GREEN 7/7 (`orphan-green-r2`).
+  first deletion; a cascading archive row on an orphan's document: 16 entries and its index; a
+  document whose creation date is year 10000: nothing is deleted). Eight groups: default owner, the
+  five variants, invalid envelopes and a later run deleting nothing. RED: pending job after the
+  oracles. GREEN 8/8.
 - **Mutation** (`paid-mutation-r1.txt`, caught): processing the payments in descending
   `payment_id` order swaps the invoice numbers and the Go state differs from the one-thread Django
   task.
