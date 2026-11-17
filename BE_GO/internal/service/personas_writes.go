@@ -791,6 +791,28 @@ func (s *PersonaWrites) Update(ctx context.Context, identity domain.ResolvedIden
 	return run.finish(err)
 }
 
+// personaFormHasSpooledUpload reports a spooled file part: Django's
+// to_internal_value starts with data.copy(), and QueryDict.copy() deep-copies
+// the form's values; deepcopy of a TemporaryUploadedFile raises TypeError (the
+// 500 page) while an in-memory file copies fine.
+func personaFormHasSpooledUpload(object domain.RequestObject) bool {
+	spooled := func(value any) bool {
+		upload, ok := value.(domain.RequestUpload)
+		return ok && upload.Temp
+	}
+	for _, field := range object {
+		if spooled(field.Value) {
+			return true
+		}
+		for _, value := range field.All {
+			if spooled(value) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 // StockCreate is the router list route's CreateModelMixin.create on
 // AssociateViewSet: request.data is not popped, so AssociateSerializer
 // validates tutors_data as its ListField and a non-dict body is the 400;
@@ -833,6 +855,9 @@ func (s *PersonaWrites) StockCreate(ctx context.Context, identity domain.Resolve
 			}
 			return "", &dto.PersonaInvalid{Fields: map[string][]string{"non_field_errors": {"dictionary:list"}}}
 		}
+		return "", ErrPersonaUnhandled
+	}
+	if form && personaFormHasSpooledUpload(object) {
 		return "", ErrPersonaUnhandled
 	}
 	// to_internal_value: a decoded picture is not one of the validated fields.
