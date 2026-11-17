@@ -172,20 +172,28 @@ func TestImageSourceFailureAndSeam(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	var carried *jpegImage
+	var carried *imageReader
 	for _, frag := range frags {
 		if frag.img != nil {
 			carried = frag.img.image
 		}
 	}
-	if carried == nil || carried.width != 24 || carried.height != 16 || len(carried.data) == 0 {
+	if carried == nil || carried.image.Width != 24 || carried.image.Height != 16 || len(carried.data) == 0 {
 		t.Fatalf("image %+v", carried)
 	}
-	// A format this package does not embed as it is stays a refusal.
+	// A format pilimage decodes is carried with Pillow's size; a source Pillow
+	// cannot identify is the paragraph's exception, not a refusal.
 	setResource(t, openResource(func(string) ([]byte, error) {
 		return []byte("\x89PNG\r\n\x1a\n"), nil
 	}))
-	if _, _, _, err := parseParagraph(`a <img src="logo.png"/> b`, paraStyle{fontName: "Helvetica", fontSize: numInt(9)}); !errors.Is(err, ErrNotPorted) {
-		t.Fatalf("a PNG source: %v", err)
+	if _, _, _, err := parseParagraph(`a <img src="logo.png"/> b`, paraStyle{fontName: "Helvetica", fontSize: numInt(9)}); !errors.Is(err, ErrLayout) || errors.Is(err, ErrNotPorted) {
+		t.Fatalf("a truncated PNG source: %v", err)
+	}
+	// A format pilimage only identifies stays a refusal.
+	setResource(t, openResource(func(string) ([]byte, error) {
+		return []byte("II*\x00\x08\x00\x00\x00\x0a\x00\x00\x01\x04\x00\x01\x00\x00\x00\x02\x00\x00\x00\x01\x01\x04\x00\x01\x00\x00\x00\x02\x00\x00\x00\x02\x01\x03\x00\x03\x00\x00\x00\x86\x00\x00\x00\x03\x01\x03\x00\x01\x00\x00\x00\x01\x00\x00\x00\x06\x01\x03\x00\x01\x00\x00\x00\x02\x00\x00\x00\x11\x01\x04\x00\x01\x00\x00\x00\x8c\x00\x00\x00\x15\x01\x03\x00\x01\x00\x00\x00\x03\x00\x00\x00\x16\x01\x04\x00\x01\x00\x00\x00\x02\x00\x00\x00\x17\x01\x04\x00\x01\x00\x00\x00\x0c\x00\x00\x00\x1c\x01\x03\x00\x01\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x08\x00\x08\x00\x08\x00\x01\x02\x03\x01\x02\x03\x01\x02\x03\x01\x02\x03"), nil
+	}))
+	if _, _, _, err := parseParagraph(`a <img src="logo.tif"/> b`, paraStyle{fontName: "Helvetica", fontSize: numInt(9)}); !errors.Is(err, ErrNotPorted) {
+		t.Fatalf("a TIFF source: %v", err)
 	}
 }

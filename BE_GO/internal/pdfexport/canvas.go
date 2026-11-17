@@ -48,9 +48,8 @@ var ErrNotPorted = refusal.New("pdfexport: document input not ported")
 
 // ErrUnexpectedLayout is a document structure the builders never make: an
 // auto-width table cell that is not a list of paragraphs (the one auto-width
-// table, ReportTable, holds paragraph cells only), and a JPEG whose colour
-// model or size image/jpeg never reports once it has decoded the data. It is
-// an application-state error (Django's 500 page), never handed off.
+// table, ReportTable, holds paragraph cells only). It is an application-state
+// error (Django's 500 page), never handed off.
 var ErrUnexpectedLayout = refusal.AppState("pdfexport: unexpected document layout")
 
 const fuzz = 1e-6 // rl_config._FUZZ
@@ -537,16 +536,8 @@ func hexColor(value uint32) color {
 
 type resource struct {
 	font       *font
-	image      *jpegImage
+	image      *pdfImage
 	separation *separation
-}
-
-type jpegImage struct {
-	name          string
-	data          []byte
-	width, height int
-	colorSpace    string
-	inverted      bool // DeviceCMYK with /Decode [ 1 0 1 0 1 0 1 0 ]
 }
 
 type canvasState struct {
@@ -712,24 +703,47 @@ func (c *canvas) transform(a, b, cc, d, e, f float64) {
 	c.add(fpStrs(a, b, cc, d, e, f) + " cm")
 }
 
-// drawImage is canvas.drawImage(image, 0, 0, width, height) of a JPEG.
-func (c *canvas) drawImage(image *jpegImage, width, height float64) {
+// drawImage is canvas.drawImage(image, 0, 0, width, height, mask='auto').
+func (c *canvas) drawImage(image *imageReader, width, height float64) {
 	c.drawImageAt(image, 0, 0, width, height)
 }
 
-// drawImageAt is canvas.drawImage(image, x, y, width, height) of a JPEG.
-func (c *canvas) drawImageAt(image *jpegImage, x, y, width, height float64) {
-	if !c.imageNames[image.name] {
-		c.imageNames[image.name] = true
-		c.sequence = append(c.sequence, -len(c.resources)-1)
-		c.resources = append(c.resources, resource{image: image})
+// drawImageAt is canvas.drawImage(image, x, y, width, height, mask='auto'):
+// getRGBData names the image (reportlab calls it for every image, so a decode
+// failure fails the document), the object is registered on first use, with its
+// soft mask right after it, and the image is drawn through it.
+func (c *canvas) drawImageAt(reader *imageReader, x, y, width, height float64) {
+	image, err := reader.pdfObject()
+	if err != nil {
+		// The exception of drawImage: reportlab raises it while it lays the
+		// flowable out, so the document fails.
+		if c.err == nil {
+			c.err = err
+		}
+		return
 	}
+	c.registerImage(image)
 	c.pageImages = append(c.pageImages, image.name)
 	c.saveState()
 	c.translate(x, y)
 	c.scale(width, height)
 	c.add("/" + image.name + " Do")
 	c.restoreState()
+}
+
+// registerImage is drawImage's first-use registration of the image object and,
+// through _setXObjects/Reference, of its soft mask right after it.
+func (c *canvas) registerImage(image *pdfImage) {
+	if !c.imageNames[image.name] {
+		c.imageNames[image.name] = true
+		c.sequence = append(c.sequence, -len(c.resources)-1)
+		c.resources = append(c.resources, resource{image: image})
+	}
+	if image.smask != nil && !c.imageNames[image.smask.name] {
+		c.imageNames[image.smask.name] = true
+		c.sequence = append(c.sequence, -len(c.resources)-1)
+		c.resources = append(c.resources, resource{image: image.smask})
+	}
 }
 
 func (c *canvas) setFont(name string, size, leading float64) {
@@ -977,12 +991,14 @@ func (c *canvas) save(now time.Time) ([]byte, error) {
 
 	fonts := map[string]string{}
 	xobjects := map[string]string{}
+	imageNumbers := map[string]int{}
 	for i, res := range c.resources {
 		switch {
 		case res.font != nil:
 			fonts["F"+strconv.Itoa(c.fontNumbers[res.font.name])] = ref(resourceNumber[i])
 		case res.image != nil:
 			xobjects[res.image.name] = ref(resourceNumber[i])
+			imageNumbers[res.image.name] = resourceNumber[i]
 		}
 	}
 	kids := make([]string, len(c.pages))
@@ -1000,13 +1016,30 @@ func (c *canvas) save(now time.Time) ([]byte, error) {
 			object(entry.number, pdfDict(entries))
 		case objImage:
 			res := c.resources[entry.index]
-			encoded := ascii85Encode(res.image.data)
+			encoded := res.image.content
+			filters := make([]string, len(res.image.filters))
+			for j, name := range res.image.filters {
+				filters[j] = "/" + name
+			}
 			entries := map[string]string{
-				"BitsPerComponent": "8", "ColorSpace": "/" + res.image.colorSpace, "Filter": "[ /ASCII85Decode /DCTDecode ]",
-				"Height": strconv.Itoa(res.image.height), "Length": strconv.Itoa(len(encoded)), "Subtype": "/Image", "Type": "/XObject",
+				"BitsPerComponent": strconv.Itoa(res.image.bitsPerComponent), "ColorSpace": "/" + res.image.colorSpace,
+				"Filter": "[ " + strings.Join(filters, " ") + " ]", "Height": strconv.Itoa(res.image.height),
+				"Length": strconv.Itoa(len(encoded)), "Subtype": "/Image", "Type": "/XObject",
 				"Width": strconv.Itoa(res.image.width)}
-			if res.image.inverted {
-				entries["Decode"] = "[ 1 0 1 0 1 0 1 0 ]"
+			if res.image.mask != "" {
+				entries["Mask"] = res.image.mask
+			}
+			if res.image.decode != nil {
+				items := make([]string, len(res.image.decode))
+				for j, value := range res.image.decode {
+					items[j] = strconv.Itoa(value)
+				}
+				entries["Decode"] = pdfArray(items)
+			}
+			if res.image.smask != nil {
+				// PDFImageXObject.format: /SMask is the reference of the alpha
+				// object registered right after this one.
+				entries["SMask"] = ref(imageNumbers[res.image.smask.name])
 			}
 			object(entry.number, pdfDict(entries)+"\nstream\n"+string(encoded)+"endstream\n")
 		case objSeparation:

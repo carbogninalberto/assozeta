@@ -8,8 +8,7 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/pystr"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pilimage"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/pyunicodedata"
 )
 
@@ -224,7 +223,7 @@ func imgVRange(h float64, va valign, fontSize pyNum) (float64, float64) {
 // imgDefn is the cbDefn of an <img> fragment.
 type imgDefn struct {
 	src           string
-	image         *jpegImage
+	image         *imageReader
 	width, height dim
 	valign        valign
 }
@@ -1731,32 +1730,28 @@ func (p *paraParser) startImg(attrs []htmlAttr) bool {
 }
 
 // loadImageSource is ImageReader(src): reportlab opens the path or fetches the
-// URL, and reads the image with PIL. The image, an exception of reportlab (ok
-// false), or a refusal: an image this package does not embed as it is (a PNG
-// or another format PIL decodes) keeps its refusal.
-func loadImageSource(src string) (image *jpegImage, st attrStatus) {
+// URL, and reads the image with PIL. It returns the reader, its status and the
+// text of the exception (the caller fails the paragraph with it). An image this
+// package does not decode (a format pilimage only identifies) keeps its
+// refusal.
+func loadImageSource(src string) (image *imageReader, st attrStatus, failure string) {
 	// A document is built without a request context (Build takes none), so the
 	// fetch of a URL has none: reportlab's urlopen has no deadline either.
 	data, err := Resource.Open(context.Background(), src)
-	switch {
-	case err != nil:
+	if err != nil {
 		if errors.Is(err, ErrNotPorted) {
-			return nil, attrUnsupported
+			return nil, attrUnsupported, ""
 		}
-		return nil, attrInvalid
-	case len(data) == 0:
-		// The source opens and PIL raises UnidentifiedImageError, whose text
-		// names the BytesIO object, not "Cannot open resource": handed off
-		// like the other bytes that are not a JPEG.
-		return nil, attrUnsupported
-	case len(data) < 3 || data[0] != 0xFF || data[1] != 0xD8 || data[2] != 0xFF:
-		return nil, attrUnsupported
+		return nil, attrInvalid, resourceFailure(src)
 	}
-	image, err = jpegFromBytes(data)
-	if err != nil || image == nil {
-		return nil, attrUnsupported
+	image, err = newImageReader(data, inlineIdentity(src))
+	if err != nil {
+		if errors.Is(err, pilimage.ErrFormatNotPorted) {
+			return nil, attrUnsupported, ""
+		}
+		return nil, attrInvalid, imageSourceFailure(src, pillowText(err))
 	}
-	return image, attrOK
+	return image, attrOK, ""
 }
 
 // resourceFailure is the text of reportlab's failure to read an image source:
@@ -1765,8 +1760,7 @@ func loadImageSource(src string) (image *jpegImage, st attrStatus) {
 // hex(id(self)), which this port writes as pystr.ObjectAddress (approved
 // divergence X18).
 func resourceFailure(src string) string {
-	name := dto.PythonStringRepr(src)
-	return "\nfileName=" + name + " identity=[ImageReader@" + pystr.ObjectAddress + " filename=" + name + `] Cannot open resource "` + src + `"`
+	return imageSourceFailure(src, `Cannot open resource "`+src+`"`)
 }
 
 // endImg is end_img.
@@ -1775,12 +1769,12 @@ func (p *paraParser) endImg() bool {
 		return p.fail("Parser failure in <img/>")
 	}
 	top := &p.stack[len(p.stack)-1]
-	image, st := loadImageSource(top.imgAttrs.src)
+	image, st, failure := loadImageSource(top.imgAttrs.src)
 	if st != attrOK {
-		return p.attrFailure(st, resourceFailure(top.imgAttrs.src))
+		return p.attrFailure(st, failure)
 	}
-	defn := &imgDefn{src: top.imgAttrs.src, image: image, width: dim{v: numInt(int64(image.width))},
-		height: dim{v: numInt(int64(image.height))}, valign: valign{name: "bottom"}}
+	defn := &imgDefn{src: top.imgAttrs.src, image: image, width: dim{v: numInt(int64(image.image.Width))},
+		height: dim{v: numInt(int64(image.image.Height))}, valign: valign{name: "bottom"}}
 	if a := top.imgAttrs; a != nil {
 		if a.width != nil {
 			defn.width = *a.width

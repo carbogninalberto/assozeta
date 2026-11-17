@@ -1,6 +1,7 @@
 package pdfexport
 
 import (
+	"encoding/base64"
 	"errors"
 	"os"
 	"path/filepath"
@@ -8,8 +9,9 @@ import (
 	"time"
 )
 
-// Image sources of a format this package does not embed as it is (a PNG, or a JPEG this decoder does not read) are
-// refused instead of drawn differently from reportlab.
+// Image data of a format pilimage only identifies (a TIFF, whose decoder and whose Pillow drawing are not ported yet)
+// is refused instead of drawn differently from reportlab. Image data Pillow refuses is an exception of the export, and
+// a logo Django's try around Image() catches builds as the '[LOGO]' paragraph; both are drawn as reportlab draws them.
 func TestInputsNotPorted(t *testing.T) {
 	header := func(logo, name string) *string {
 		text := `<img src="` + logo + `" style="height: 1000px;"/><h1 style="font-size: 20px;">` + name + `</h1><h2>x</h2><h3>y</h3>`
@@ -20,14 +22,40 @@ func TestInputsNotPorted(t *testing.T) {
 		t.Fatal(err)
 	}
 	base := DataTable{Columns: []string{"A"}, Rows: [][]Cell{{{Text: "a"}}}, Title: "T", Portrait: true, IsA3: true}
+	tiff := base64.StdEncoding.EncodeToString([]byte("II*\x00\x08\x00\x00\x00\x0a\x00\x00\x01\x04\x00\x01\x00\x00\x00\x02\x00\x00\x00" +
+		"\x01\x01\x04\x00\x01\x00\x00\x00\x02\x00\x00\x00\x02\x01\x03\x00\x03\x00\x00\x00\x86\x00\x00\x00" +
+		"\x03\x01\x03\x00\x01\x00\x00\x00\x01\x00\x00\x00\x06\x01\x03\x00\x01\x00\x00\x00\x02\x00\x00\x00" +
+		"\x11\x01\x04\x00\x01\x00\x00\x00\x8c\x00\x00\x00\x15\x01\x03\x00\x01\x00\x00\x00\x03\x00\x00\x00" +
+		"\x16\x01\x04\x00\x01\x00\x00\x00\x02\x00\x00\x00\x17\x01\x04\x00\x01\x00\x00\x00\x0c\x00\x00\x00" +
+		"\x1c\x01\x03\x00\x01\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x08\x00\x08\x00\x08\x00" +
+		"\x01\x02\x03\x01\x02\x03\x01\x02\x03\x01\x02\x03"))
 	for name, input := range map[string]DataTable{
-		"image file png": {Header: header("None", `A <img src="`+png+`"/> B`)},
-		"image png":      {Header: header("None", `A <img src="data:image/png;base64,iVBORw0KGgo="/> B`)},
-		"png as jpeg":    {Header: header("data:image/jpeg;base64,iVBORw0KGgo=", "ASD")},
-		"cut jpeg":       {Header: header("data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBD", "ASD")},
+		"logo tiff":   {Header: header("data:image/jpeg;base64,"+tiff, "ASD")},
+		"inline tiff": {Header: header("None", `A <img src="data:image/tiff;base64,`+tiff+`"/> B`)},
 	} {
 		input.Columns, input.Rows, input.Title, input.Portrait, input.IsA3 = base.Columns, base.Rows, base.Title, true, true
 		if _, err := input.Build(time.Unix(946684800, 0)); !errors.Is(err, ErrNotPorted) {
+			t.Errorf("%s: %v", name, err)
+		}
+	}
+	// Image data Pillow refuses at the paragraph's ImageReader is the export's
+	// exception (Pillow's text), and a logo Django's try around Image() catches
+	// is the '[LOGO]' paragraph: both documents build as reportlab builds them.
+	for name, input := range map[string]DataTable{
+		"image file png": {Header: header("None", `A <img src="`+png+`"/> B`)},
+		"image png":      {Header: header("None", `A <img src="data:image/png;base64,iVBORw0KGgo="/> B`)},
+	} {
+		input.Columns, input.Rows, input.Title, input.Portrait, input.IsA3 = base.Columns, base.Rows, base.Title, true, true
+		if _, err := input.Build(time.Unix(946684800, 0)); !errors.Is(err, ErrLayout) || errors.Is(err, ErrNotPorted) {
+			t.Errorf("%s: %v", name, err)
+		}
+	}
+	for name, input := range map[string]DataTable{
+		"png as jpeg": {Header: header("data:image/jpeg;base64,iVBORw0KGgo=", "ASD")},
+		"cut jpeg":    {Header: header("data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBD", "ASD")},
+	} {
+		input.Columns, input.Rows, input.Title, input.Portrait, input.IsA3 = base.Columns, base.Rows, base.Title, true, true
+		if _, err := input.Build(time.Unix(946684800, 0)); err != nil {
 			t.Errorf("%s: %v", name, err)
 		}
 	}

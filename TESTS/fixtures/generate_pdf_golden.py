@@ -856,6 +856,201 @@ CASES += [
 ]
 
 
+# Images: every format Pillow writes reaches the two paths a document draws one with — the balance-sheet logo, which
+# the view's own `src="data:image/jpeg;base64,…"` pattern hands to Image(BytesIO(...)), and an inline <img> of a report's
+# text before the table. Also the failures: a source Pillow cannot open (the paragraph's exception), a JPEG whose scan
+# data is cut (the draw raises), a logo Django's try around Image() catches (the '[LOGO]' paragraph), a logo that opens
+# and fails at draw, the same image twice (one object), a JPEG reportlab cannot read the dimensions of (its canned
+# image, proved in image_test.go: its stream has no ASCII85 terminator), and a PNG with a bad CRC, which Pillow logs
+# and decodes.
+import struct  # noqa: E402
+import zlib  # noqa: E402
+
+from PIL import Image as PILImage  # noqa: E402
+
+PALETTE = [(200, 30, 30), (10, 200, 30), (30, 30, 200), (255, 255, 0)]
+
+
+def image_bytes(image, fmt, **options):
+    out = io.BytesIO()
+    image.save(out, fmt, **options)
+    return out.getvalue()
+
+
+def palette_image(size=(4, 3)):
+    image = PILImage.new('P', size)
+    image.putpalette([channel for colour in PALETTE for channel in colour])
+    return image
+
+
+def indexed_bmp(bits, size, indexes, palette):
+    """A BITMAPINFOHEADER BMP at bits per pixel (Pillow writes 1, 8, 24 and 32 only)."""
+    width, height = size
+    stride = ((width * bits + 31) // 32) * 4
+    rows = []
+    for y in range(height - 1, -1, -1):
+        row = bytearray(stride)
+        for x in range(width):
+            index = indexes[y * width + x]
+            if bits == 8:
+                row[x] = index
+            elif bits == 4:
+                row[x // 2] |= index << (4 if x % 2 == 0 else 0)
+            else:
+                row[x // 8] |= (index & 1) << (7 - x % 8)
+        rows.append(bytes(row))
+    entries = 2 ** bits
+    table = b''.join(bytes((b, g, r, 0)) for r, g, b in (palette + [(0, 0, 0)] * entries)[:entries])
+    pixels = b''.join(rows)
+    header = struct.pack('<2sIHHI', b'BM', 14 + 40 + len(table) + len(pixels), 0, 0, 14 + 40 + len(table))
+    info = struct.pack('<IiiHHIIiiII', 40, width, height, 1, bits, 0, len(pixels), 0, 0, entries, 0)
+    return header + info + table + pixels
+
+
+def interlaced_png(width, height, pixels):
+    """An 8-bit RGB Adam7-interlaced PNG (Pillow decodes them but cannot write them)."""
+    def chunk(kind, payload):
+        return struct.pack('>I', len(payload)) + kind + payload + struct.pack('>I', zlib.crc32(kind + payload) & 0xffffffff)
+
+    passes = [(0, 0, 8, 8), (4, 0, 8, 8), (0, 4, 4, 8), (2, 0, 4, 4), (0, 2, 2, 4), (1, 0, 2, 2), (0, 1, 1, 2)]
+    raw = b''
+    for x0, y0, dx, dy in passes:
+        for y in range(y0, height, dy):
+            raw += b'\x00' + b''.join(bytes(pixels[y * width + x]) for x in range(x0, width, dx))
+    ihdr = struct.pack('>IIBBBBB', width, height, 8, 2, 0, 0, 1)
+    return b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', ihdr) + chunk(b'IDAT', zlib.compress(raw)) + chunk(b'IEND', b'')
+
+
+def bad_crc_png():
+    """A valid 4x3 RGB PNG whose IDAT CRC is wrong: Pillow logs a warning and decodes it."""
+    def chunk(kind, payload):
+        return struct.pack('>I', len(payload)) + kind + payload + struct.pack('>I', zlib.crc32(kind + payload) & 0xffffffff)
+
+    raw = b''.join(b'\x00' + bytes((200, 30, 30)) * 4 for _ in range(3))
+    good = chunk(b'IDAT', zlib.compress(raw))
+    damaged = good[:-1] + bytes((good[-1] ^ 0xff,))
+    return (b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', struct.pack('>IIBBBBB', 4, 3, 8, 2, 0, 0, 0)) + damaged
+            + chunk(b'IEND', b''))
+
+
+def jpeg_entropy_start(data):
+    """The offset of the entropy-coded data after the first SOS marker."""
+    position = data.find(b'\xff\xda')
+    length = (data[position + 2] << 8) | data[position + 3]
+    return position + 2 + length
+
+
+def corrupt_jpeg(data):
+    """A complete JPEG (EOI present) with one entropy-coded byte changed: Pillow decodes it with a warning."""
+    damaged = bytearray(data)
+    damaged[jpeg_entropy_start(data) + 3] ^= 0xff
+    return bytes(damaged)
+
+
+def data_url(data, media):
+    return 'data:%s;base64,%s' % (media, base64.b64encode(data).decode())
+
+
+IMAGES = [
+    ('png-l', image_bytes(PILImage.new('L', (4, 3), 90), 'PNG'), 'image/png'),
+    ('png-rgb', image_bytes(PILImage.new('RGB', (4, 3), (200, 30, 30)), 'PNG'), 'image/png'),
+    ('png-palette', image_bytes(palette_image(), 'PNG'), 'image/png'),
+    ('png-palette-trns', image_bytes(palette_image(), 'PNG', transparency=1), 'image/png'),
+    ('png-la', image_bytes(PILImage.new('LA', (4, 3), (90, 128)), 'PNG'), 'image/png'),
+    ('png-rgba', image_bytes(PILImage.new('RGBA', (4, 3), (200, 30, 30, 128)), 'PNG'), 'image/png'),
+    ('png-16bit', image_bytes(PILImage.new('I;16', (4, 3), 1000), 'PNG'), 'image/png'),
+    ('png-interlaced', interlaced_png(8, 8, [((x * 31) % 256, (y * 47) % 256, (x * y * 13) % 256)
+                                             for y in range(8) for x in range(8)]), 'image/png'),
+    ('png-bad-crc', bad_crc_png(), 'image/png'),
+    ('gif', image_bytes(palette_image(), 'GIF', optimize=False), 'image/gif'),
+    ('gif-transparency', image_bytes(palette_image(), 'GIF', optimize=False, transparency=1), 'image/gif'),
+    ('bmp-1bit', image_bytes(PILImage.new('1', (8, 3), 1), 'BMP'), 'image/bmp'),
+    ('bmp-4bit', indexed_bmp(4, (4, 3), [0, 1, 2, 3, 3, 2, 1, 0, 1, 1, 2, 2], PALETTE), 'image/bmp'),
+    ('bmp-8bit', image_bytes(palette_image(), 'BMP'), 'image/bmp'),
+    ('bmp-24bit', image_bytes(PILImage.new('RGB', (4, 3), (200, 30, 30)), 'BMP'), 'image/bmp'),
+    ('bmp-32bit', image_bytes(PILImage.new('RGBA', (4, 3), (200, 30, 30, 128)), 'BMP'), 'image/bmp'),
+    ('pbm', image_bytes(PILImage.new('1', (4, 3), 1), 'PPM'), 'image/x-portable-bitmap'),
+    ('pgm', image_bytes(PILImage.new('L', (4, 3), 90), 'PPM'), 'image/x-portable-graymap'),
+    ('ppm', image_bytes(PILImage.new('RGB', (4, 3), (200, 30, 30)), 'PPM'), 'image/x-portable-pixmap'),
+    ('jpeg-rgb', image_bytes(PILImage.new('RGB', (8, 6), (200, 30, 30)), 'JPEG'), 'image/jpeg'),
+    ('jpeg-grey', image_bytes(PILImage.new('L', (8, 6), 90), 'JPEG'), 'image/jpeg'),
+    ('jpeg-cmyk', image_bytes(PILImage.new('CMYK', (8, 6), (10, 200, 30, 5)), 'JPEG'), 'image/jpeg'),
+    ('jpeg-progressive', image_bytes(PILImage.new('RGB', (8, 6), (200, 30, 30)), 'JPEG', progressive=True), 'image/jpeg'),
+]
+
+IMAGE_BYTES = {name: data for name, data, _ in IMAGES}
+JPEG_RGB = IMAGE_BYTES['jpeg-rgb']
+
+
+def inline_image(name, data, media='image/png', extra=''):
+    return report(name, ['Immagine', 'Testo'], [['a <img src="%s"/>%s b' % (data_url(data, media), extra), 'x']], 'Immagine')
+
+
+def logo_image(name, data, media='image/jpeg'):
+    return balance(name, header(data_url(data, media), 'ASD Aurora'))
+
+
+CASES += [inline_image('img-%s' % name, data, media) for name, data, media in IMAGES]
+CASES += [logo_image('logo-%s' % name, IMAGE_BYTES[name], media) for name, media in (
+    ('png-rgb', 'image/jpeg'),
+    ('png-palette-trns', 'image/jpeg'),
+    ('png-rgba', 'image/jpeg'),
+    ('gif-transparency', 'image/jpeg'),
+    ('bmp-24bit', 'image/jpeg'),
+    ('ppm', 'image/jpeg'),
+    ('jpeg-rgb', 'image/jpeg'),
+    ('jpeg-grey', 'image/jpeg'),
+    ('jpeg-cmyk', 'image/jpeg'),
+    ('jpeg-progressive', 'image/jpeg'),
+)]
+
+CASES += [
+    # The same image twice: reportlab names an object after its pixels, so both
+    # drawings share object and content-stream /FormXob name.
+    inline_image('img-same-twice', IMAGE_BYTES['png-rgba'],
+                 extra='<img src="%s"/>' % data_url(IMAGE_BYTES['png-rgba'], 'image/png')),
+    balance('logo-same-image-inline', header(data_url(IMAGE_BYTES['png-rgb'], 'image/jpeg'),
+                                             'ASD <img src="%s"/> Aurora' % data_url(IMAGE_BYTES['png-rgb'], 'image/png'))),
+    # A JPEG whose scan data is cut before the EOI marker: Pillow opens it and its
+    # load raises OSError("image file is truncated ..."), so the draw fails.
+    inline_image('img-jpeg-truncated', JPEG_RGB[:jpeg_entropy_start(JPEG_RGB)], 'image/jpeg'),
+    logo_image('logo-jpeg-truncated', JPEG_RGB[:jpeg_entropy_start(JPEG_RGB)]),
+    # A complete JPEG with damaged entropy data: Pillow continues with a warning.
+    inline_image('img-jpeg-corrupt', corrupt_jpeg(JPEG_RGB), 'image/jpeg'),
+    # A source Pillow cannot identify: ImageReader raises UnidentifiedImageError and
+    # the paragraph is the export's exception.
+    inline_image('img-empty', b''),
+    inline_image('img-junk', b'this is not an image'),
+    # Logos the view answers with the '[LOGO]' paragraph: Python's base64 refuses
+    # the text, or Pillow cannot identify the bytes, or Pillow's stub formats open
+    # at 0x0 and the drawWidth division raises.
+    balance('logo-base64-junk', header('data:image/jpeg;base64,!!!', 'ASD Aurora')),
+    balance('logo-base64-padding', header('data:image/jpeg;base64,QUJDR', 'ASD Aurora')),
+    balance('logo-base64-no-data', header('data:image/jpeg;base64,=', 'ASD Aurora')),
+    balance('logo-unidentified', header(data_url(b'hello', 'image/jpeg'), 'ASD Aurora')),
+    balance('logo-zero-size', header(data_url(b'BUFR', 'image/jpeg'), 'ASD Aurora')),
+    balance('logo-png-in-jpeg-url', header(data_url(IMAGE_BYTES['png-rgb'], 'image/jpeg'), 'ASD Aurora')),
+    # A logo that opens (its size is known) and fails when it is drawn: its
+    # image data is cut, so Pillow's load raises while Django has already built
+    # the flowable.
+    balance('logo-draw-failure', header(data_url(image_bytes(palette_image(), 'PNG')[:-24], 'image/jpeg'), 'ASD Aurora')),
+    # Images and alpha colours on one page: the image objects (with the RGBA
+    # soft mask) and the ExtGState entries of the alpha colours are registered
+    # as reportlab registers them.
+    report('img-colour-alpha', ['Immagine'], [['x']], 'Alpha',
+           text_before='<font color="rgba(255,0,0,0.5)">alfa</font> <img src="%s"/> '
+                       '<font color="cmyk(0,1,0,0)">ciano</font> <font color="cmyka(1,0,0,0,0.5)">alfa cmyk</font>'
+                       % data_url(IMAGE_BYTES['png-rgba'], 'image/png')),
+    balance('img-colour-alpha-logo', header(data_url(IMAGE_BYTES['png-rgba'], 'image/jpeg'),
+                                            '<font color="rgba(0,0,255,0.5)">ASD</font> Aurora '
+                                            '<img src="%s"/> <font color="cmyk(1,0,0,0)">ciano</font>'
+                                            % data_url(IMAGE_BYTES['png-palette-trns'], 'image/png'))),
+    report('img-colour-alpha-same', ['Immagine'], [['x']], 'Alpha',
+           text_before='<img src="%s"/> <font backcolor="rgba(0,128,0,0.3)">sfondo</font> '
+                       '<img src="%s"/> <font color="pcmyk(0,0,0,100)">nero</font>'
+                       % (data_url(IMAGE_BYTES['png-rgba'], 'image/png'), data_url(IMAGE_BYTES['png-rgba'], 'image/png'))),
+]
+
 # Colours beyond plain RGB: the CMYK and PCMYK forms, transparency, the CMYK
 # separation colour space, Blacker/Whiter and a literal tuple in text,
 # backgrounds, underlines and strikes, and the colours that make reportlab raise

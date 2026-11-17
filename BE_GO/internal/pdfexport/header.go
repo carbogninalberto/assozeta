@@ -1,13 +1,11 @@
 package pdfexport
 
 import (
-	"bytes"
-	"crypto/md5"
-	"encoding/hex"
-	imagecolor "image/color"
-	"image/jpeg"
+	"errors"
 	"regexp"
 	"strings"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pilimage"
 )
 
 var (
@@ -17,9 +15,9 @@ var (
 	headerApprove  = regexp.MustCompile(`<h3[^>]*>(.*?)</h3>`)
 )
 
-// imageFlowable is platypus.Image of a JPEG drawn at a fixed size.
+// imageFlowable is platypus.Image of a logo drawn at a fixed size.
 type imageFlowable struct {
-	image         *jpegImage
+	image         *imageReader
 	width, height float64
 }
 
@@ -70,50 +68,37 @@ func pythonB64Decode(text string) ([]byte, bool) {
 	return out, position == 0
 }
 
-// loadJPEG is the header logo: the base64 data URL the view's own pattern
-// captured. A nil image is data Django's view answers with the '[LOGO]'
-// paragraph (base64 Python refuses, or no data at all).
-func loadJPEG(encoded string) (*jpegImage, error) {
+// loadLogo is Django's logo block: base64.b64decode of the data URL, then
+// platypus.Image(BytesIO(...)). A nil image is what Django answers with the
+// '[LOGO]' paragraph: Python's base64 refuses the text, no data is left,
+// Pillow refuses to open the image (its exception is caught there), the
+// announced height is zero (the drawWidth division raises), or the image is one
+// of Pillow's stub formats, which open at 0x0. A format pilimage only
+// identifies but Pillow opens at a real size is a refusal: its decoder, and
+// so the logo Pillow would draw, is not ported yet.
+func loadLogo(encoded string) (*imageReader, error) {
 	data, ok := pythonB64Decode(encoded)
 	if !ok || len(data) == 0 {
 		return nil, nil
 	}
-	return jpegFromBytes(data)
-}
-
-// jpegFromBytes is a JPEG reportlab embeds as it is (DCTDecode), from the
-// header logo or from an image source. reportlab names the image object after a
-// digest of the pixels PIL decodes, which another decoder does not reproduce
-// bit for bit: the name here is a digest of the file, and the parity standard
-// compares image names by position. Data that is not a baseline or progressive
-// 8-bit JPEG this decoder reads is not ported: whether PIL reads it, and as
-// what, is not reproduced.
-func jpegFromBytes(data []byte) (*jpegImage, error) {
-	config, err := jpeg.DecodeConfig(bytes.NewReader(data))
+	image, err := newImageReader(data, bytesIdentity)
 	if err != nil {
-		return nil, ErrNotPorted
+		var pillow *pilimage.Error
+		if errors.As(err, &pillow) {
+			return nil, nil // Django's try: PIL's exception answers '[LOGO]'
+		}
+		if errors.Is(err, pilimage.ErrFormatNotPorted) {
+			if zeroSizeStub(data) {
+				return nil, nil // ZeroDivisionError on the 0x0 size
+			}
+			return nil, ErrNotPorted
+		}
+		return nil, err
 	}
-	if _, err := jpeg.Decode(bytes.NewReader(data)); err != nil {
-		return nil, ErrNotPorted
+	if image.image.Height == 0 {
+		return nil, nil // ZeroDivisionError
 	}
-	space, inverted := "", false
-	switch config.ColorModel {
-	case imagecolor.GrayModel:
-		space = "DeviceGray"
-	case imagecolor.YCbCrModel, imagecolor.RGBAModel:
-		space = "DeviceRGB"
-	case imagecolor.CMYKModel:
-		// Four components: reportlab adds the inverting /Decode array.
-		space, inverted = "DeviceCMYK", true
-	default:
-		return nil, ErrUnexpectedLayout // image/jpeg reports gray, YCbCr, RGBA or CMYK only
-	}
-	if config.Width <= 0 || config.Height <= 0 {
-		return nil, ErrUnexpectedLayout // jpeg.Decode above refuses an empty image
-	}
-	digest := md5.Sum(data)
-	return &jpegImage{name: "FormXob." + hex.EncodeToString(digest[:]), data: data, width: config.Width, height: config.Height,
-		colorSpace: space, inverted: inverted}, nil
+	return image, nil
 }
 
 func headerText(pattern *regexp.Regexp, header, fallback string) string {
@@ -128,12 +113,15 @@ func headerText(pattern *regexp.Regexp, header, fallback string) string {
 func balanceHeader(header string) (flowable, error) {
 	var logo flowable
 	if match := headerImage.FindStringSubmatch(header); match != nil {
-		image, err := loadJPEG(match[1])
+		image, err := loadLogo(match[1])
 		if err != nil {
 			return nil, err
 		}
 		if image != nil {
-			logo = &imageFlowable{image: image, height: 100, width: 100 * (float64(image.width) / float64(image.height))}
+			// img.drawHeight = 100; img.drawWidth = img.drawHeight *
+			// (img.imageWidth / img.imageHeight), a Python float division.
+			logo = &imageFlowable{image: image, height: 100,
+				width: 100 * (float64(image.image.Width) / float64(image.image.Height))}
 		}
 	}
 	if logo == nil {
