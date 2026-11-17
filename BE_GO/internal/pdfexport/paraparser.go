@@ -320,7 +320,7 @@ func (p *paraParser) startBullet(attrs []htmlAttr) bool {
 		case pkColor:
 			c, st := paraColor(value)
 			if st != attrOK {
-				return p.attrFailure("invalid color")
+				return p.attrFailure("Invalid color value " + pyReprStr(value))
 			}
 			style.bulletColor = &c
 		case pkAnchor:
@@ -544,7 +544,7 @@ func (p *paraParser) lineAttributes(attrs []htmlAttr, specs map[string]attrSpec,
 			}
 			c, st := paraColor(attr.value)
 			if st != attrOK {
-				return p.attrFailure("invalid color")
+				return p.attrFailure("Invalid color value " + pyReprStr(attr.value))
 			}
 			into.hasColor, into.color = true, c
 		case attrUSWidth, attrUSOffset, attrUSGap:
@@ -747,7 +747,7 @@ func (p *paraParser) startFont(tag string, attrs []htmlAttr) bool {
 			}
 			c, st := paraColor(attr.value)
 			if st != attrOK {
-				return p.attrFailure("invalid color")
+				return p.attrFailure("Invalid color value " + pyReprStr(attr.value))
 			}
 			if name == "backcolor" || name == "bgcolor" {
 				backColor = &c
@@ -1514,7 +1514,7 @@ func (p *paraParser) startLink(tag string, attrs []htmlAttr) bool {
 			}
 			c, st := paraColor(attr.value)
 			if st != attrOK {
-				return p.attrFailure("invalid color")
+				return p.attrFailure("Invalid color value " + pyReprStr(attr.value))
 			}
 			switch name {
 			case "backcolor", "bgcolor":
@@ -1883,7 +1883,7 @@ func (p *paraParser) applyParaAttrs(attrs []htmlAttr) bool {
 		case pkColor:
 			c, st := paraColor(value)
 			if st != attrOK {
-				return p.attrFailure("invalid color")
+				return p.attrFailure("Invalid color value " + pyReprStr(value))
 			}
 			switch spec.attr {
 			case "textColor":
