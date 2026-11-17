@@ -61,6 +61,34 @@ func paymentStoredJSON(text *string) (any, error) {
 	return value, nil
 }
 
+// paymentStoredJSONAtDepth is the save hook's parse once the view's measured
+// edges are known: the load's own recursion edge bounds the parse (the 1000
+// level reference limit no longer applies), and anything else it raises is a
+// stored jsonb text the decoder refuses, as before.
+func paymentStoredJSONAtDepth(text *string, maxDepth int) (any, error) {
+	if text == nil {
+		return nil, nil
+	}
+	value, err := dto.ParseStoredJSONDepth(*text, maxDepth)
+	if err != nil {
+		return nil, errPaymentStoredJSON
+	}
+	return value, nil
+}
+
+// paymentJSONRecursionFailure maps the measured edges to the RecursionError the
+// view meets: past Load the view fails before writing anything, deeper than
+// Save but within Load it fails after the writes it made before the save.
+func paymentJSONRecursionFailure(row *domain.PaymentSaveRow, edges paymentJSONEdges) error {
+	switch {
+	case row.JSONDepth > edges.Load:
+		return &PaymentStoredJSONRecursionError{AfterWrites: false, Text: paymentJSONRecursionTextAt(row, edges.Load)}
+	case row.JSONDepth > edges.Save:
+		return &PaymentStoredJSONRecursionError{AfterWrites: true, Text: paymentJSONRecursionTextAt(row, edges.Save)}
+	}
+	return nil
+}
+
 func paymentSaveDefaults(ctx context.Context, tx domain.PaymentArchiveTransaction, row *domain.PaymentSaveRow, changes map[string][2]string) error {
 	if row.CategoryID == nil && row.AssociationID == "" {
 		// The row's association must be loaded: the default is taken from it.
@@ -73,6 +101,14 @@ func paymentSaveDefaults(ctx context.Context, tx domain.PaymentArchiveTransactio
 // may be NULL (nil: only the global categories).
 func secCategorySaveDefaults(ctx context.Context, tx domain.PaymentArchiveTransaction, row *domain.PaymentSaveRow, association *string,
 	changes map[string][2]string) error {
+	row.JSONDepth = paymentJSONColumnsDepth(row)
+	edges, measured := paymentJSONEdgesOf(ctx)
+	if measured {
+		if err := paymentJSONRecursionFailure(row, edges); err != nil {
+			return err
+		}
+		row.IndexFallback = row.JSONDepth > edges.Index
+	}
 	if row.CategoryID == nil {
 		id, name, err := tx.DefaultPaymentCategory(ctx, association)
 		if err != nil {
@@ -83,11 +119,17 @@ func secCategorySaveDefaults(ctx context.Context, tx domain.PaymentArchiveTransa
 			row.CategoryID, row.CategoryName = id, name
 		}
 	}
-	meta, err := paymentStoredJSON(row.Meta)
-	if err != nil {
-		return err
+	var meta, course any
+	var err error
+	if measured {
+		if meta, err = paymentStoredJSONAtDepth(row.Meta, edges.Save); err == nil {
+			course, err = paymentStoredJSONAtDepth(row.Course, edges.Save)
+		}
+	} else {
+		if meta, err = paymentStoredJSON(row.Meta); err == nil {
+			course, err = paymentStoredJSON(row.Course)
+		}
 	}
-	course, err := paymentStoredJSON(row.Course)
 	if err != nil {
 		return err
 	}

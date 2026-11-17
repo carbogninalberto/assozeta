@@ -5,9 +5,11 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 )
@@ -20,7 +22,11 @@ type modelAuditEntry struct {
 	Changes                       map[string][2]string
 	Context                       domain.LoginAuditContext
 	AssociationID, ResolutionPath *string
-	At                            time.Time
+	// IndexFallback resolves the index association like the audit index
+	// resolver's fallbacks instead of using AssociationID/ResolutionPath: the
+	// resolver could not reload the row.
+	IndexFallback bool
+	At            time.Time
 	// ObjectID is auditlog's object_id: the key of an integer primary key, else NULL.
 	ObjectID *int64
 }
@@ -65,10 +71,89 @@ func appendModelAuditForApp(ctx context.Context, tx *sqlx.Tx, appLabel string, e
 	if err != nil {
 		return err
 	}
-	if event.AssociationID != nil {
+	association, resolutionPath := event.AssociationID, event.ResolutionPath
+	if event.IndexFallback {
+		resolution, err := auditIndexFallback(ctx, tx, event.Changes, event.Context.ActorID)
+		if err != nil {
+			return err
+		}
+		if resolution == nil {
+			return nil
+		}
+		association, resolutionPath = &resolution.AssociationID, &resolution.Path
+	}
+	if association != nil {
 		_, err = tx.ExecContext(ctx, `INSERT INTO application_auditlogindex
   (audit_log_index_id,log_entry_id,sport_association_id,resolution_path,created_at)
-  VALUES($1,$2,$3,$4,$5)`, uuid.NewString(), id, event.AssociationID, event.ResolutionPath, event.At)
+  VALUES($1,$2,$3,$4,$5)`, uuid.NewString(), id, association, resolutionPath, event.At)
 	}
 	return err
+}
+
+// sportAssociationActive is SportAssociation.objects' filter (ActiveManager:
+// deleted=False). The model has no Meta.ordering, so .first() orders by the
+// primary key.
+const sportAssociationActive = ` AND NOT deleted`
+
+// auditIndexFallback is the index resolver's fallbacks for a log entry whose
+// row the resolver cannot reload: changes['sport_association'] (old value then
+// new value, skipping empty and 'None' values), else the actor's association.
+// Both are SportAssociation.objects lookups, so soft-deleted rows never match.
+func auditIndexFallback(ctx context.Context, q sqlx.QueryerContext, changes map[string][2]string, actor *string) (*AuditLogIndexResolution, error) {
+	candidates, resolvable := auditIndexChangesCandidates(changes)
+	if resolvable {
+		for _, id := range candidates {
+			var association string
+			err := sqlx.GetContext(ctx, q, &association, `SELECT sport_association_id::text FROM application_sportassociation
+ WHERE sport_association_id=$1::uuid`+sportAssociationActive+` ORDER BY sport_association_id LIMIT 1`, id)
+			if err == nil {
+				return &AuditLogIndexResolution{AssociationID: association, Path: "changes_json.sport_association"}, nil
+			}
+			if !errors.Is(err, sql.ErrNoRows) {
+				return nil, err
+			}
+		}
+	}
+	if actor == nil || *actor == "" {
+		return nil, nil
+	}
+	id, valid := dto.AuditIndexUUIDText(*actor)
+	if !valid {
+		// The field lookup raises, which the Django handler catches: no row.
+		return nil, nil
+	}
+	var association string
+	err := sqlx.GetContext(ctx, q, &association, `SELECT sport_association_id::text FROM application_sportassociation
+ WHERE user_id=$1::uuid`+sportAssociationActive+` ORDER BY sport_association_id LIMIT 1`, id)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &AuditLogIndexResolution{AssociationID: association, Path: "actor.sport_association"}, nil
+}
+
+// auditIndexChangesCandidates is the sport_association values the changes
+// fallback tries, in order, as UUID text: empty and 'none' values are skipped
+// (changes values are the strings auditlog writes, 'None' for None). A value
+// the UUID field rejects raises inside the changes block, whose except clause
+// ends it: the values before it are still tried, the ones after it are not,
+// and the actor fallback follows.
+func auditIndexChangesCandidates(changes map[string][2]string) (candidates []string, resolvable bool) {
+	pair, ok := changes["sport_association"]
+	if !ok {
+		return nil, true
+	}
+	for _, value := range pair {
+		if value == "" || strings.ToLower(value) == "none" {
+			continue
+		}
+		id, valid := dto.AuditIndexUUIDText(value)
+		if !valid {
+			break
+		}
+		candidates = append(candidates, id)
+	}
+	return candidates, true
 }
