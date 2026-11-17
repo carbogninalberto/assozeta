@@ -78,12 +78,52 @@ func (f *frag) clone() *frag {
 	return &copied
 }
 
+// usLineEq is == of two us_lines tuples: the numbers, the kind, the colour,
+// the width, offset and gap values and the repeats.
+func usLineEq(a, b usLine) bool {
+	return a.n == b.n && a.kind == b.kind && a.hasColor == b.hasColor && colorEq(a.color, b.color) &&
+		usValEq(a.width, b.width) && usValEq(a.offset, b.offset) && a.rise == b.rise && a.mult == b.mult &&
+		usValEq(a.gap, b.gap)
+}
+
+// usValEq is == of two underline width, offset or gap values.
+func usValEq(a, b usVal) bool {
+	return a.str == b.str && a.num == b.num && a.isNum == b.isNum
+}
+
+// usLineKey is a key that separates the us_lines tuples usLineEq tells apart.
+func usLineKey(l usLine) string {
+	var out strings.Builder
+	out.WriteString(strconv.Itoa(l.n))
+	out.WriteByte('|')
+	out.WriteString(strconv.Itoa(l.kind))
+	out.WriteByte('|')
+	if l.hasColor {
+		out.WriteString(colorKey(l.color))
+	}
+	out.WriteByte('|')
+	out.WriteString(usValKey(l.width))
+	out.WriteString(usValKey(l.offset))
+	out.WriteString(fpStr(l.rise.float()))
+	out.WriteByte('|')
+	out.WriteString(strconv.Itoa(l.mult))
+	out.WriteString(usValKey(l.gap))
+	return out.String()
+}
+
+func usValKey(v usVal) string {
+	if v.isNum {
+		return "n" + fpStr(v.num) + ";"
+	}
+	return "s" + v.str + ";"
+}
+
 func sameUS(a, b []usLine) bool {
 	if len(a) != len(b) {
 		return false
 	}
 	for i := range a {
-		if a[i] != b[i] {
+		if !usLineEq(a[i], b[i]) {
 			return false
 		}
 	}
@@ -106,7 +146,7 @@ func sameBack(a, b *color) bool {
 	if a == nil || b == nil {
 		return a == b
 	}
-	return *a == *b
+	return colorEq(*a, *b)
 }
 
 // sameFrag is rl_accel.sameFrag.
@@ -114,7 +154,7 @@ func sameFrag(f, g *frag) bool {
 	if f.img != nil || g.img != nil || f.anchor != nil || g.anchor != nil || f.lineBreak || g.lineBreak {
 		return false
 	}
-	return f.font == g.font && numEqual(f.size, g.size) && f.color == g.color && numEqual(f.rise, g.rise) && sameUS(f.us, g.us) &&
+	return f.font == g.font && numEqual(f.size, g.size) && colorEq(f.color, g.color) && numEqual(f.rise, g.rise) && sameUS(f.us, g.us) &&
 		sameLinks(f.links, g.links) && sameBack(f.back, g.back) && f.nobr == g.nobr
 }
 

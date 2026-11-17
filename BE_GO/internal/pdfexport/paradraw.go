@@ -51,6 +51,12 @@ func (t *textObject) textOut(text string, newLine bool) {
 	t.code = append(t.code, out)
 }
 
+// setFillColor is PDFTextObject.setFillColor: the fill colour operators, then
+// the fill alpha of the colour through the canvas's ExtGState.
+func (t *textObject) setFillColor(col color) {
+	t.c.setColorOperators(col, false, &t.code)
+}
+
 func (t *textObject) setWordSpace(ws float64) {
 	t.wordSpace = ws
 	t.code = append(t.code, fpStr(ws)+" Tw")
@@ -115,7 +121,7 @@ func doLine(c *canvas, x1, y1, x2, y2, width float64, stroke color) {
 	if width != c.state.lineWidth {
 		c.setLineWidth(width)
 	}
-	if stroke != c.state.strokeColor {
+	if !colorEq(stroke, c.state.strokeColor) {
 		c.setStrokeColor(stroke)
 	}
 	c.line(x1, y1, x2, y2)
@@ -194,7 +200,7 @@ type fragState struct {
 	curY       pyNum
 	textColor  *color
 	rise       float64
-	us         map[usLine]*usState
+	us         map[string]*usState
 	links      map[linkRef]*linkState
 	backColor  *color
 	backX      float64
@@ -212,7 +218,7 @@ type backRect struct {
 
 func containsUS(list []usLine, l usLine) bool {
 	for _, item := range list {
-		if item == l {
+		if usLineEq(item, l) {
 			return true
 		}
 	}
@@ -280,10 +286,10 @@ func (p *paragraph) putFragLine(tx *textObject, xs *fragState, curX float64, lin
 			tx.font, tx.fontSize = f.font, size
 			tx.code = append(tx.code, c.fontRef(f.font)+" "+fpStr(size)+" Tf")
 		}
-		if xs.textColor == nil || *xs.textColor != f.color {
+		if xs.textColor == nil || !colorEq(*xs.textColor, f.color) {
 			col := f.color
 			xs.textColor = &col
-			tx.code = append(tx.code, fpStrs(col.r, col.g, col.b)+" rg")
+			tx.setFillColor(col)
 		}
 		rise := f.rise.float()
 		if xs.rise != rise {
@@ -294,7 +300,7 @@ func (p *paragraph) putFragLine(tx *textObject, xs *fragState, curX float64, lin
 		if changed {
 			for _, l := range live {
 				if !containsUS(f.us, l) {
-					xs.us[l].x2 = endX
+					xs.us[usLineKey(l)].x2 = endX
 				}
 			}
 		}
@@ -310,13 +316,13 @@ func (p *paragraph) putFragLine(tx *textObject, xs *fragState, curX float64, lin
 		if changed {
 			for _, l := range f.us {
 				if !containsUS(live, l) {
-					xs.us[l] = &usState{line: l, size: size, color: f.color, x1: curXS, max: size}
+					xs.us[usLineKey(l)] = &usState{line: l, size: size, color: f.color, x1: curXS, max: size}
 				}
 			}
 			live = f.us
 		}
 		for _, l := range live {
-			if state := xs.us[l]; size > state.max {
+			if state := xs.us[usLineKey(l)]; size > state.max {
 				state.max = size
 			}
 		}
@@ -335,14 +341,17 @@ func (p *paragraph) putFragLine(tx *textObject, xs *fragState, curX float64, lin
 			}
 		}
 		bg := f.back
+		// The Python test is truthiness: a colour value that is an empty
+		// sequence or a zero is no background.
+		hasBg := bg != nil && colorTruthy(*bg)
 		switch {
-		case bg != nil && xs.backColor == nil:
+		case hasBg && xs.backColor == nil:
 			xs.backColor, xs.backX = bg, curXS
 		case xs.backColor != nil:
-			if bg == nil {
+			if !hasBg {
 				xs.backColors = append(xs.backColors, backRect{xs.backX, endX, *xs.backColor})
 				xs.backColor = nil
-			} else if *f.back != *xs.backColor || *xs.textColor != *xs.backColor {
+			} else if !colorEq(*f.back, *xs.backColor) || !colorEq(*xs.textColor, *xs.backColor) {
 				xs.backColors = append(xs.backColors, backRect{xs.backX, endX, *xs.backColor})
 				xs.backColor, xs.backX = bg, curXS
 			}
@@ -352,7 +361,7 @@ func (p *paragraph) putFragLine(tx *textObject, xs *fragState, curX float64, lin
 	}
 	curXS := curX + float64(nSpaces-1)*ws
 	for _, l := range live {
-		xs.us[l].x2 = curXS
+		xs.us[usLineKey(l)].x2 = curXS
 	}
 	for _, l := range liveLinks {
 		xs.links[l].x2 = curXS
@@ -409,7 +418,7 @@ func (p *paragraph) postText(tx *textObject, xs *fragState) {
 			values := map[byte]float64{'L': size.float(), 'f': state.size, 'F': state.max}
 			drawUS(c, state.line, state.x1, state.x2, y0.float(), xs.defaultWidth, values, state.color)
 		}
-		xs.us = map[usLine]*usState{}
+		xs.us = map[string]*usState{}
 	}
 	curY, ok := numSub(xs.curY, p.style.leading)
 	if !ok {
@@ -420,7 +429,7 @@ func (p *paragraph) postText(tx *textObject, xs *fragState) {
 
 // draw is Paragraph.drawPara for left-aligned and centred lines.
 func (p *paragraph) draw(c *canvas) {
-	if bg := p.style.backColor; bg != nil {
+	if bg := p.style.backColor; bg != nil && colorTruthy(*bg) {
 		c.saveState()
 		c.setFillColor(*bg)
 		c.fillRect(0, 0, p.width, p.height)
@@ -497,7 +506,7 @@ func (p *paragraph) draw(c *canvas) {
 			}
 		}
 	} else {
-		xs := &fragState{us: map[usLine]*usState{}, links: map[linkRef]*linkState{}, first: p.fragLines[0], defaultWidth: defaultWidth}
+		xs := &fragState{us: map[string]*usState{}, links: map[linkRef]*linkState{}, first: p.fragLines[0], defaultWidth: defaultWidth}
 		curY, ok := numSub(p.heightNum, xs.first.fontSize)
 		if !ok {
 			panic(paraFailure{"int too large to convert to float"})

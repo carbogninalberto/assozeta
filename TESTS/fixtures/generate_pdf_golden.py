@@ -651,6 +651,78 @@ CASES += [
 ]
 
 
+# Colours beyond plain RGB: the CMYK and PCMYK forms, transparency, the CMYK
+# separation colour space, Blacker/Whiter and a literal tuple in text,
+# backgrounds, underlines and strikes, and the colours that make reportlab raise
+# while it draws.
+COLOURED = [
+    '<font color="cmyk(1,0,0,0)">ciano</font> e <font color="cmyk(0,0,0,1)">nero</font>',
+    '<font color="pcmyk(100,65,0,30)">pcmyk</font> e <font color="pcmyk(0,0,0,100)">pcmyk nero</font>',
+    '<font color="rgba(255,0,0,0.5)">alfa</font> e <font color="rgba(0,0,255,0)">chiaro</font>',
+    '<font color="cmyka(1,0,0,0,0.5)">alfa cmyk</font> <font color="pcmyka(0,100,0,0,50)">alfa pcmyk</font>',
+    '<font backcolor="cmyk(0,0,0,0.2)">sfondo cmyk</font> <font backcolor="rgba(0,128,0,0.3)">sfondo alfa</font>',
+    '<u color="rgba(0,0,255,0.5)">sotto alfa</u> <strike color="pcmyk(0,0,0,100)">barrato pcmyk</strike>',
+    '<u color="cmyk(0.2,0.3,0.4,0.5)">sotto cmyk</u>',
+    '<font color="Blacker(red,0.5)">blacker</font> <font color="Whiter(blue,0.25)">whiter</font>',
+    '<font color="Blacker(_CMYK_black,0.4)">blacker cmyk</font> <font color="Whiter(transparent,0.5)">whiter alfa</font>',
+    '<font color="(0.2,0.4,0.6)">tupla</font> e <font color="(0.1,0.2,0.3,0.4)">tupla cmyk</font>',
+    '<font color="_CMYK_black">nero cmyk</font> <font color="transparent">trasparente</font>',
+    '<font color="cmyk(1,0,0,0)" backcolor="rgba(0,0,0,0.2)">combo</font>',
+    '<font color="hsl(120,100%,50%)">verde hsl</font> <font color="rgb(10%,20%,30%)">percento</font>',
+    '<font color="#123456">esadecimale</font> <font color="Blacker(red,0.5)">b</font>',
+]
+COLOUR_ROWS = [[COLOURED[i % len(COLOURED)], COLOURED[(i + 7) % len(COLOURED)]] for i in range(len(COLOURED))]
+CASES += [
+    report('rt-colour-cells', ['<font color="cmyk(1,0,0,0)">Colore</font>', '<font color="rgba(255,0,0,0.5)">Nota</font>'],
+           COLOUR_ROWS, 'Colori'),
+    report('rt-colour-text', ['Nome'], [['x']], 'Colori',
+           text_before=' '.join(COLOURED), text_after='<font color="cmyk(1,0,0,0)">fine</font> e <u color="rgba(0,0,0,0.5)">sotto</u>'),
+    report('rt-colour-pages', ['N', 'Testo'], [[str(i), COLOURED[i % len(COLOURED)]] for i in range(120)], 'Colori su pagine',
+           text_before=' '.join(COLOURED * 4), text_after='<font color="pcmyk(100,0,0,0)">coda</font>'),
+    report('rt-colour-header', ['<font color="cmyk(0,0,1,0)">A</font>'], [['x']], '<font color="rgba(0,0,0,0.5)">Titolo</font>',
+           footer_text='<font color="cmyk(1,0,0,0)">piede</font>'),
+    report('rt-colour-para', ['A'], [['<para color="cmyk(0,1,0,0)" backcolor="rgba(255,255,0,0.4)" underlinecolor="pcmyk(0,0,100,0)"'
+                                    ' strikecolor="cmyk(0,0,0,0.5)">paragrafo <u>sotto</u> <strike>barrato</strike></para>']], 'Paragrafo'),
+    # Colours that make reportlab raise while it draws the document.
+    report('rt-colour-alpha-error', ['A'], [['<font color="Color(1,0,0,2)">x</font>']], 'Errore'),
+    report('rt-colour-list-error', ['A'], [['<font color="fade(CMYKColor(1,0,0,0),[50])">x</font>']], 'Errore'),
+    report('rt-colour-dict-error', ['A'], [['<font color="getAllNamedColors()">x</font>']], 'Errore'),
+    report('rt-colour-none-error', ['A'], [['<font color="None">x</font>']], 'Errore'),
+    report('rt-colour-float-error', ['A'], [['<font color="1.5">x</font>']], 'Errore'),
+    report('rt-colour-background-error', ['A'], [['<font backcolor="getAllNamedColors()">x</font>']], 'Errore'),
+    report('rt-colour-text-error', ['Nome'], [['x']], 'Errore', text_before='<font color="Color(1,0,0,-1)">x</font>'),
+    report('rt-colour-string-background', ['A'], [['<font backcolor="asNative(&quot;red&quot;)">x</font>']], 'Stringa'),
+    # A colour value that is false draws no background at all.
+    report('rt-colour-empty-background', ['A'], [['<font backcolor="{}">x</font> <font backcolor="--0">y</font>']], 'Vuoto'),
+    report('rt-colour-density', ['A'], [['<font color="CMYKColor(0,0,1,0,density=0.5)">densita</font> <font color="pcmyk(0,0,100,0)">pieno</font>']], 'Densita'),
+    report('rt-colour-values', ['A'], [['<font color="hsl2rgb(0.5,1,2)">fuori</font> <font color="obj_R_G_B((0.2,0.4,0.6,1))">rgb</font>']], 'Valori'),
+    report('rt-colour-string-text-name', ['A'], [['<font color="asNative(&quot;red&quot;)">rosso</font> <u color="Color(0,0,0,0.5)">alfa</u>']], 'Nomi'),
+    report('rt-colour-string-text', ['A'], [['<font color="fp_str(1)">x</font>']], 'Stringa'),
+    # A separation colour space has a stream without a filter, which TESTS.contracts.pdf
+    # cannot record: only the case that raises before it writes one is here.
+    report('rt-colour-separation-error', ['A'], [['<font color="CMYKColorSep(1,1,1,0)">x</font>']], 'Errore'),
+    # Colour components of every number kind drawn through fp_str, a spotName of
+    # another type (ignored by a plain CMYK colour), the \N{...} escapes and the
+    # values reportlab raises on while drawing.
+    report('rt-colour-numbers', ['A'], [['<font color="Color(100000000000000000000, 0, 0)">grande</font> '
+                                        '<font color="Color(100000000000000000001, 0, 0)">arrotondato</font> '
+                                        '<font color="Color(True, 0, 0)">vero</font> '
+                                        '<font color="CMYKColor(1180591620717411303424,0,0,0)">cmyk grande</font> '
+                                        '<font color="Color(0x10,0,0)">sedici</font>']], 'Numeri'),
+    report('rt-colour-names-escape', ['A'], [[r"""<font color="'\N{LATIN SMALL LETTER R}ED'">rosso</font> """
+                                             r"""<font color="'\N{latin small letter b}lue'">blu</font> """
+                                             r"""<font color="'\N{LATIN SMALL LETTER G}REEN'">verde</font>"""]], 'Nomi'),
+    report('rt-colour-escape-value-error', ['A'], [[r"""<font color="'\N{VULGAR FRACTION ONE HALF}'">x</font>"""]], 'Errore'),
+    report('rt-colour-escape-nul-error', ['A'], [[r"""<font color="'\N{NUL}x'">x</font>"""]], 'Errore'),
+    report('rt-colour-spotname', ['A'], [['<font color="CMYKColor(1,0,0,0,spotName=0)">a</font> '
+                                          '<font color="PCMYKColor(0,65,100,30,spotName=())">b</font>']], 'Spot'),
+    report('rt-colour-escape-error', ['A'], [[r"""<font color="'\N{KEYCAP NUMBER SIGN}'">x</font>"""]], 'Errore'),
+    report('rt-colour-spotname-error', ['A'], [['<font color="CMYKColorSep(1,0,0,0,spotName=7)">x</font>']], 'Errore'),
+    report('rt-colour-component-error', ['A'], [['<font color="Color(red,0,0)">x</font>']], 'Errore'),
+    report('rt-colour-infinite-error', ['A'], [['<font color="Color(1e400,0,0)">x</font>']], 'Errore'),
+]
+
+
 # Inline images whose src names a file, a data: URL or a URL. reportlab's ImageReader reads such a source with
 # open_for_read (lib/utils.py): it opens the name as a path (a relative path in the working directory), and when that
 # fails it reads a data: URL or fetches the name as a URL. These cases therefore name resources: main() writes the files

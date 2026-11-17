@@ -98,6 +98,46 @@ func TestInputsNotPorted(t *testing.T) {
 	}
 }
 
+// Colour attributes are read for every string: the css forms, the colour
+// names (plain, CMYK and transparent), Blacker/Whiter, the literals, the
+// expressions and the HexColor values. None of them is an input the port
+// refuses; the ones reportlab fails on are exceptions of the export.
+func TestColoursAreNotRefused(t *testing.T) {
+	header := func(logo, name string) *string {
+		text := `<img src="` + logo + `" style="height: 1000px;"/><h1 style="font-size: 20px;">` + name + `</h1><h2>x</h2><h3>y</h3>`
+		return &text
+	}
+	base := DataTable{Columns: []string{"A"}, Rows: [][]Cell{{{Text: "a"}}}, Title: "T", Portrait: true, IsA3: true}
+	for name, markup := range map[string]string{
+		"cmyk":           `<font color="cmyk(1,0,0,0)">a</font>`,
+		"pcmyk alpha":    `<font color="pcmyka(100,0,0,0,50)">a</font>`,
+		"rgba":           `<font color="rgba(255,0,0,0.5)">a</font>`,
+		"hsl":            `<font color="hsla(0,100%,50%,0.5)">a</font>`,
+		"transparent":    `<font color="transparent">a</font>`,
+		"cmyk name":      `<font color="_CMYK_black">a</font>`,
+		"reportlab name": `<font color="ReportLabBluePCMYK">a</font>`,
+		"blacker":        `<font color="Blacker(red,0.5)">a</font>`,
+		"whiter":         `<font color="Whiter(blue,0.25)">a</font>`,
+		"tuple":          `<font color="(0.2,0.4,0.6)">a</font>`,
+		"call":           `<font color="Color(0,1,0)">a</font>`,
+		"string value":   `<font color="asNative(&quot;red&quot;)">a</font>`,
+		"complex value":  `<font color="2j">a</font>`,
+		"background":     `<font backcolor="rgb(1,2,3)">a</font>`,
+		"underline":      `<u color="cmyk(1,0,0,0)">a</u>`,
+		"strike":         `<strike color="hsl(0,100%,50%)">a</strike>`,
+		"para":           `<para color="cmyk(0,1,0,0)" backcolor="rgba(0,0,0,0.5)" underlinecolor="hsl(0,100%,50%)" strikecolor="pcmyk(0,0,0,100)">a</para>`,
+		"separation":     `<font color="CMYKColorSep(1,0,0,0,spotName='S')">a</font>`,
+		"bad expression": `<font color="1+2j">a</font>`,
+		"unknown name":   `<font color="rosso">a</font>`,
+	} {
+		input := base
+		input.Header = header("None", "A "+markup+" B")
+		if _, err := input.Build(time.Unix(946684800, 0)); errors.Is(err, ErrNotPorted) {
+			t.Errorf("%s: refused: %v", name, err)
+		}
+	}
+}
+
 // PDFTextObject.moveCursor replaces a move that directly follows another.
 func TestMoveCursorMerges(t *testing.T) {
 	tx := &textObject{}

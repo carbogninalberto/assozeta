@@ -170,6 +170,119 @@ TEXTS = [
     'A<seq template="%(w)-5s"/>Z', 'A<seq template="%(w)-50s"/>Z',
     '<b>A</b><seq template="%(w)5.0s"/><i>B</i>', '<b>A</b><seq template="%(w)50.0s"/><i>B</i>',
 ]
+# Colour attributes: every css colour form (valid, invalid, percentages, alpha and
+# wrong arity), the CMYK and transparent named colours, Blacker/Whiter, hex and
+# decimal values, the literals, the strings and bytes, complex numbers, the colour
+# functions with good and bad arguments, colour names inside expressions, junk,
+# keywords and unbalanced brackets.
+COLOUR_VALUES = [
+    # rgb / rgba
+    'rgb(0,0,0)', 'rgb(255,255,255)', 'rgb(128,0,0)', 'rgb(50%,0%,0%)', 'rgb(100%,100%,100%)', 'rgb(0%,0%,0%)',
+    'rgb( 255 , 0 , 0 )', 'rgb (1,0,0)', ' rgb(1,0,0)', 'rgb(1,0,0) ', 'rgb(1,0,0)\n', 'rgb(1,0,0', 'rgb(1,0,0)x',
+    'rgb(1,0)', 'rgb(1,0,0,0)', 'rgb()', 'rgb(,,)', 'rgb(256,0,0)', 'rgb(-1,0,0)', 'rgb(1.5,0,0)', 'rgb(0.5,0.5,0.5)',
+    'rgb(1e2,0,0)', 'rgb(50%,0,0)', 'rgb(50 %,0%,0%)', 'rgb(1_0,0,0)', 'rgb(١٢,0,0)', 'rgb(1٢,0,0)', 'rgb(+1,0,0)',
+    'rgb(inf,0,0)', 'rgb(0x10,0,0)', 'RGB(1,0,0)', 'rgb(1,(0),0)', 'rgba(255,0,0,0.5)', 'rgba(255,0,0,0)',
+    'rgba(255,0,0,1)', 'rgba(255,0,0,1.5)', 'rgba(255,0,0,-1)', 'rgba(255,0,0)', 'rgba(255,0,0,0.5,1)',
+    'rgba(1,0,0,1e-3)', 'rgba(255,0,0, 0.5 )', 'rgba(50%,0%,0%,0.5)', 'rgba(255,0,0,x)',
+    # hsl / hsla
+    'hsl(0,100%,50%)', 'hsl(120,100%,50%)', 'hsl(-120,100%,50%)', 'hsl(360,100%,50%)', 'hsl(0,0%,0%)',
+    'hsl(0,100,50)', 'hsl(0,100%,50%,0.5)', 'hsla(0,100%,50%,0.5)', 'hsl(0,101%,50%)', 'hsl(1e3,50%,50%)',
+    'hsl(0,50 %,50 %)', 'hsl(0,-10%,50%)', 'hsl(0,100%)', 'hsl(0,100%,50%,1.5)', 'hsl(720,100%,25%)',
+    # cmyk / cmyka / pcmyk / pcmyka
+    'cmyk(1,0,0,0)', 'cmyk(0,0,0,1)', 'cmyk(0.5,0.5,0,0)', 'cmyk(1,0,0,0,0.5)', 'cmyka(1,0,0,0,0.5)',
+    'cmyk(2,-1,0,0)', 'cmyk(1,0,0)', 'cmyka(1,0,0,0)', 'cmyk(0,0,0,0)', 'cmyka(0,0,0,1,1)',
+    'pcmyk(100,0,0,0)', 'pcmyk(0,65,100,30)', 'pcmyka(100,0,0,0,50)', 'pcmyka(100,0,0,0,1.5)',
+    'pcmyk(101,-5,0,0)', 'pcmyk(100,0,0)', 'pcmyka(100,0,0,0)', 'pcmyk(0,0,0,0)', 'pcmyk( 100 , 0 , 0 , 0 )',
+    # named colours, including the CMYK and transparent ones
+    'transparent', 'Transparent', '_CMYK_black', '_cmyk_black', '_CMYK_white', '_PCMYK_white', '_PCMYK_black',
+    'ReportLabBlue', 'reportlabblue', 'ReportLabBlueOLD', 'ReportLabBluePCMYK', 'ReportLabFidRed', 'ReportLabGreen',
+    'red', 'RED', 'Rosso', 'black', 'white', 'grey', 'gray', 'fidblue', 'aqua', 'Cornflower',
+    # Blacker / Whiter
+    'Blacker(red,0.5)', 'Blacker(red, 0.5)', 'Whiter(blue,0.25)', 'Blacker(red,0.5)junk', 'Whiter(red,.5)',
+    'Blacker(red,1.)', 'Blacker(red,1.2.3)', 'Blacker(red,)', 'Blacker(red)', 'Blacker(bogus,0.5)',
+    'Blacker(rosso,0.5)', 'Whiter(_CMYK_white,0.5)', 'Blacker(_CMYK_black,0)', 'Whiter(transparent,0.5)',
+    'Blacker(red ,0.5)', 'Blacker(red, 0.5 )', 'blacker(red,0.5)', 'Blacker(é,0.5)', 'Blacker(red,0.5))',
+    'Whiter(red,0)', 'Whiter(red,1)', 'Blacker(red,0)', 'Blacker(red,1)',
+    # hex and decimal values
+    '#ff0000', '#FF0000', '#f00', '#abcdef', '#ABCDEF', '#000000', '#ffffff', '#ff000000', '0xffffff', '0XFFFFFF',
+    '0xf00', '16777215', '0', '1', '-1', '+1', ' 12 ', '1_0', '0b101', '0o17', '0xFF', '#', '#zz', '16777216',
+    '999999999999999',
+    # literals
+    '(1,0,0)', '(1,0,0,1)', '(0.5,0.5,0.5)', '(0,0,0)', '(1,1,1,1)', '(1,0,0,0.5)', '[1,0,0]', '[0,1,0,1]',
+    '(1,2)', '()', '(1,0)', '(1,0,0,0,0)', '(2,0,0)', '(-1,0,0)', '(1,"a",0)', '(1,None,0)', '((1),0,0)',
+    '((1,0,0),0,0)', '((1,0,0),)', '(1,0,(0,0))', '(True,0,0)', '(False,0,0)', '(1+0j,0,0)', '(0,0,1.0)',
+    '(1,0,0),', '[1,0,0,]', '(((1,0,0)))', '(1, 0, 0)', '[1, 1, 1, 1]',
+    # dicts, sets and strings
+    '{}', '{1:2}', '{1,2}', 'set()', '{"a":1}', '{[1]:2}', '"red"', "'red'", '"rosso"', "'rgb(1,0,0)'",
+    "b'red'", 'b"blue"', "b'\\x41'", '""', "''", "'red' 'blue'", '"Blacker(red,0.5)"', "'#ff0000'",
+    "r'red'", "'rgb(0,0,0)'", "'transparent'",
+    # numbers and complex values
+    '1+2j', '1j+2j', '2j', '1.5', '-1.5', '1.', '.5', '1e2', '-(-1)', '--1', '0x10', 'True', 'False', 'None',
+    '...', '1+2', '1 + -2', '7', '16777215.0', '--0', '-(-0)', '--1.5',
+    # the colour functions
+    'Color(1,0,0)', 'Color(1,0,0,0.5)', 'Color()', 'Color(red=1,green=0,blue=0)', 'Color(1,2,3)', 'Color(1,0)',
+    'Color(foo=1)', 'Color(0,1,0, alpha=0.25)', 'ColorType(0,1,0)',
+    'CMYKColor(1,0,0,0)', 'CMYKColor(0,0,0,1)', 'CMYKColor(0.5,0.5,0,0,alpha=0.5)',
+    'CMYKColor(1,0,0,0,spotName="X")', 'CMYKColor(0,0,0,0,density=0.5)', 'PCMYKColor(100,0,0,0)',
+    'PCMYKColor(100,65,0,30)', 'PCMYKColor(100)', 'CMYKColorSep(1,0,0,0,spotName="S")',
+    'PCMYKColorSep(100,0,0,0,spotName="S")', 'CMYKColorSep(1,0,0,0)', 'CMYKColorSep()',
+    'HexColor("#abcdef")', 'HexColor(11259375)', 'HexColor("rosso")', 'HexColor()', 'HexColor("#ffffff", True)',
+    'HexColor("#ffffff", htmlOnly=True)', 'HexColor(1.5)', 'HexColor(b"#abcdef")',
+    'Blacker((1,0,0),0.5)', 'Blacker(CMYKColor(1,0,0,0),0.5)', 'Blacker("red",0.5)',
+    'Blacker(transparent,0.5)', 'Whiter(CMYKColorSep(0,0,0,0,spotName="A"),0.5)',
+    'Blacker(CMYKColorSep(1,0,0,0,spotName="A"),0.5)', 'Blacker(PCMYKColorSep(100,0,0,0,spotName="A"),0.5)',
+    'fade(CMYKColor(1,0,0,0),[50])', 'fade(CMYKColor(1,0,0,0),[])', 'fade("x",[50])',
+    'linearlyInterpolatedColor(Color(0,0,0),Color(1,1,1),0,1,0.5)',
+    'linearlyInterpolatedColor(Color(0,0,0),CMYKColor(0,0,0,0),0,1,0.5)',
+    'linearlyInterpolatedColor((1,0,0),(0,0,0),0,1,0)',
+    'hsl2rgb(0.5,1,1)', 'hue2rgb(0,1,0)', 'cmyk2rgb((1,0,0,0))', 'cmyk2rgb((1,0,0))', 'rgb2cmyk(1,0,0)',
+    'color2bw(Color(1,0,0))', 'colorDistance(Color(1,0,0),Color(0,0,0))',
+    'cmykDistance(CMYKColor(1,0,0,0),CMYKColor(1,0,0,0))', 'obj_R_G_B(Color(1,0,0))', 'obj_R_G_B((1,0,0))',
+    'obj_R_G_B((1,0,0,1))', 'obj_R_G_B((1,2))', 'opaqueColor(Color(1,0,0))', 'opaqueColor(transparent)',
+    'opaqueColor(CMYKColor(0,0,0,0))', 'cssParse("red")', 'cssParse("rgb(1,0,0)")', 'cssParse("nope")',
+    'fp_str(1)', 'fp_str(1,0,0)', 'fp_str((1,0,0))', 'asNative("red")', 'asNative("rosso")', 'asNative(b"red")',
+    'toColor("red")', 'toColor("rosso")', 'toColorOrNone(None)', 'toColorOrNone("rosso",Color(1,0,0))',
+    'setColors()', '_enforceCMYK(red)', '_enforceCMYK(black)', '_enforceCMYK(Color(0,0,0))',
+    '_enforceRGB(CMYKColor(0,0,0,1))', '_enforceRGB(CMYKColor(1,0,0,0))',
+    '_enforceSEP(CMYKColorSep(1,0,0,0,spotName="A"))', '_enforceSEP(Color(1,0,0))',
+    '_enforceSEP_BLACK(black)', '_enforceSEP_CMYK(grey)', '_enforceCMYK(grey)',
+    '_chooseEnforceColorSpace(None)', '_enforceError("x",1,2)',
+    'describe(Color(1,0,0),1)', 'describe(Color(1,0,0),2)', 'describe(CMYKColor(1,0,0,0),1)',
+    # colour names inside expressions
+    '(red,0,0)', '[red,0,0]', '(red, green, blue)', 'toColor(red)',
+    # junk, keywords and unbalanced brackets
+    'rosso', 'π', 'città', 'π₂', 'NoneType', 'Truexx', 'and', 'or', 'not', 'lambda', 'class', 'def', 'if',
+    'else', 'for', 'while', 'import', 'return', '=', '==', '+', '-', '*', '(', ')', '[', ']', '{', '}', '((((1',
+    '1+(', 'f(', 'x)', 'a b', 'red blue', '\tred', 'red\t', ' red ', 'red # comment', '#0f0 # green',
+    '(((((((((1,0,0)))))))))', '[[[[1]]]]', '(((1,0,0),(0,0,0)))',
+    # \N{NAME}: names, aliases and the named sequences CPython refuses.
+    r"'\N{LATIN SMALL LETTER R}ED'", r"'\N{latin small letter b}lue'", r"'\N{BULLET}'", r"'\N{NUL}x'",
+    r"'\N{VULGAR FRACTION ONE HALF}'", r"'\N{KEYCAP NUMBER SIGN}'", r"'\N{NO SUCH NAME}'", r"'\N{BULLET'",
+    r"b'\N{BULLET}'", r"'\N{LATIN SMALL LETTER A WITH ACUTE}bba'",
+    # Components of every number kind: bools, exact ints beyond 2**53, ints
+    # beyond int64, infinities, and a spotName of another type.
+    'Color(100000000000000000000, 0, 0)', 'Color(1180591620717411303424, 0, 0)', 'Color(True, 0, 0)', 'Color(False, 0, 0)',
+    'Color(0x10,0,0)', 'Color(1e400,0,0)', 'Color(-1e400,0,0)', 'Color(100000000000000000001, 0, 0)',
+    'CMYKColor(1180591620717411303424,0,0,0)', 'CMYKColor(100000000000000000000,0,0,0)', 'CMYKColor(True,0,0,0)',
+    'CMYKColor(1,0,0,0,spotName=0)', 'CMYKColor(1,0,0,0,spotName=7)', 'CMYKColor(1,0,0,0,spotName=())',
+    'CMYKColor(1,0,0,0,spotName=b"x")', 'PCMYKColor(0,65,100,30,spotName=False)',
+    'CMYKColorSep(1,0,0,0,spotName=0)', 'PCMYKColorSep(100,0,0,0,spotName=False)',
+    'Color(red,0,0)', 'Color(Color(1,0,0),0,0)', 'Color("a",0,0)', 'Color(None,0,0)',
+]
+# The tags the colour attributes belong to: <font color/fg/backcolor/bgcolor>, <u color>,
+# <strike color>, <para color/fg/bgcolor/underlinecolor/strikecolor> and <span color>.
+COLOUR_SHAPES = ['<font color=@>a</font>', '<font fg=@>a</font>', '<font backcolor=@>a b</font>',
+                 '<font bgcolor=@>a b</font>', '<u color=@>a</u>', '<strike color=@>a</strike>',
+                 '<para color=@>a b</para>', '<para fg=@ bgcolor=@>a b</para>',
+                 '<para underlinecolor=@ strikecolor=@>a <u>b</u> <strike>c</strike></para>',
+                 '<span color=@>a</span>',
+                 '<a href="https://example.test/x" ucolor=@>a</a>']
+for _index, _value in enumerate(COLOUR_VALUES):
+    _quote = "'" if '"' in _value else '"'
+    _attr = _quote + _value + _quote
+    for _shape in (COLOUR_SHAPES[_index % len(COLOUR_SHAPES)], COLOUR_SHAPES[(_index * 5 + 3) % len(COLOUR_SHAPES)]):
+        TEXTS.append(_shape.replace('@', _attr))
+
 
 
 # The numbers of every attribute that takes one, written the ways Python's int() and float() read them: the infinities
@@ -225,18 +338,63 @@ def refusable(text):
     if '<img' in lowered and not ('src="%s"' % IMAGE) in text:
         return True
     return (any('<' + tag in lowered or '</' + tag in lowered for tag in REFUSED) or ('<para' in lowered and any(word in lowered for word in PARA_REFUSED))
-            or 'blacker(' in lowered
-            or 'whiter(' in lowered
             or ('<' in text and not text.isascii()))
 
 
-def rgb(colour):
-    """[r, g, b] of a plain RGB colour, or None for no colour; anything else makes the paragraph ``other``."""
-    if colour is None or colour == '':
+def float_repr(value):
+    """repr() of float(value): how the port prints a colour component."""
+    return repr(float(value))
+
+
+def colour_info(value):
+    """The tagged JSON form of a colour attribute value, or None for no colour.
+
+    A value toColor answers is a Color or CMYKColor instance; rl_extended_literal_eval
+    returns every other value it reads as it is (a tuple or list of components, a
+    string, a number, None, a dict...), and those are tagged by type. A number is its
+    repr() (the digits of an int, the shortest form of a float), a colour component
+    the repr() of its float, which is what fp_str draws. Anything this port could not
+    compare makes the paragraph ``other``."""
+    from reportlab.lib.colors import CMYKColor, CMYKColorSep, PCMYKColor, PCMYKColorSep
+    if value is None:
         return None
-    if type(colour) is not Color or colour.alpha != 1:
-        raise TypeError('colour')
-    return [colour.red, colour.green, colour.blue]
+    if isinstance(value, CMYKColor):
+        if not all(isinstance(v, (int, float)) for v in
+                   (value.cyan, value.magenta, value.yellow, value.black, value.density)):
+            raise TypeError('colour')
+        if not isinstance(value.alpha, (int, float)):
+            return {'t': 'opaque'}
+        classes = {CMYKColor: 'CMYKColor', PCMYKColor: 'PCMYKColor', CMYKColorSep: 'CMYKColorSep', PCMYKColorSep: 'PCMYKColorSep'}
+        return {'t': 'cmyk', 'v': [float_repr(value.red), float_repr(value.green), float_repr(value.blue)],
+                'c': [float_repr(value.cyan), float_repr(value.magenta), float_repr(value.yellow), float_repr(value.black)],
+                'd': float_repr(value.density), 'a': float_repr(value.alpha), 's': colour_info(value.spotName),
+                'cl': classes[type(value)]}
+    if isinstance(value, Color):
+        if not all(isinstance(v, (int, float)) for v in (value.red, value.green, value.blue, value.alpha)):
+            return {'t': 'opaque'}
+        return {'t': 'rgb', 'v': [float_repr(value.red), float_repr(value.green), float_repr(value.blue)],
+                'a': float_repr(value.alpha)}
+    if isinstance(value, tuple):
+        return {'t': 'tuple', 'v': [colour_info(item) for item in value]}
+    if isinstance(value, list):
+        return {'t': 'list', 'v': [colour_info(item) for item in value]}
+    if isinstance(value, str):
+        return {'t': 'str', 'v': value}
+    if isinstance(value, bytes):
+        return {'t': 'bytes', 'v': value.decode('latin1')}
+    if isinstance(value, bool):
+        return {'t': 'bool', 'v': value}
+    if isinstance(value, (int, float)):
+        return {'t': 'num', 'v': float_repr(value)}
+    if isinstance(value, complex):
+        return {'t': 'complex', 'v': [repr(float(value.real)), repr(float(value.imag))]}
+    if isinstance(value, dict):
+        return {'t': 'dict', 'v': [[colour_info(key), colour_info(item)] for key, item in value.items()]}
+    if isinstance(value, set):
+        return {'t': 'set', 'v': [colour_info(item) for item in value]}
+    if value is Ellipsis:
+        return {'t': 'ellipsis'}
+    raise TypeError('colour')
 
 
 def number(value):
@@ -263,9 +421,9 @@ def describe(frag):
     """What the Go writer compares: font, text, line break, size, colour, rise, lines, links, background and nobr."""
     lines = []
     for n, kind, colour, width, offset, rise, repeats, gap in frag.us_lines:
-        lines.append([n, kind, rgb(colour), us_value(width), us_value(offset), number(rise), repeats, us_value(gap)])
-    return [frag.fontName, frag.text, bool(getattr(frag, 'lineBreak', False)), number(frag.fontSize), rgb(frag.textColor), number(frag.rise),
-            lines, [list(link) for link in frag.link], rgb(getattr(frag, 'backColor', None)), bool(getattr(frag, 'nobr', False)),
+        lines.append([n, kind, colour_info(colour), us_value(width), us_value(offset), number(rise), repeats, us_value(gap)])
+    return [frag.fontName, frag.text, bool(getattr(frag, 'lineBreak', False)), number(frag.fontSize), colour_info(frag.textColor), number(frag.rise),
+            lines, [list(link) for link in frag.link], colour_info(getattr(frag, 'backColor', None)), bool(getattr(frag, 'nobr', False)),
             describe_image(frag)]
 
 
@@ -282,10 +440,10 @@ def describe_image(frag):
 
 def style_info(style):
     lines = [[us_value(getattr(style, name + 'Width')), us_value(getattr(style, name + 'Offset')), us_value(getattr(style, name + 'Gap')),
-              rgb(getattr(style, name + 'Color'))] for name in ('underline', 'strike')]
+              colour_info(getattr(style, name + 'Color'))] for name in ('underline', 'strike')]
     return [style.fontName, number(style.fontSize), number(style.leading), style.alignment, number(style.spaceBefore), number(style.spaceAfter),
-            rgb(style.textColor), rgb(style.backColor), lines, number(style.spaceShrinkage), bool(style.splitLongWords), bool(style.allowWidows),
-            bool(style.allowOrphans)]
+            colour_info(style.textColor), colour_info(style.backColor), lines, number(style.spaceShrinkage), bool(style.splitLongWords),
+            bool(style.allowWidows), bool(style.allowOrphans)]
 
 
 def style_unported(style):
@@ -359,20 +517,43 @@ def entities():
     return subprocess.run([gofmt], input='\n'.join(lines + ['}', '']), capture_output=True, text=True, check=True).stdout
 
 
+def go_color(value):
+    """The Go literal of a reportlab colour value, with the fields the port keeps."""
+    from reportlab.lib.colors import CMYKColor, CMYKColorSep, PCMYKColor, PCMYKColorSep
+    classes = {CMYKColor: 'cmykPlain', PCMYKColor: 'cmykP', CMYKColorSep: 'cmykSep', PCMYKColorSep: 'cmykPSep'}
+    if isinstance(value, CMYKColor):
+        fields = ['kind: colorCMYK', 'r: %r' % value.red, 'g: %r' % value.green, 'b: %r' % value.blue,
+                  'c: %r' % value.cyan, 'm: %r' % value.magenta, 'y: %r' % value.yellow, 'k: %r' % value.black,
+                  'dens: %r' % value.density, 'alpha: %r' % value.alpha, 'hasAlpha: true', 'class: ' + classes[type(value)]]
+        if value.spotName is not None:
+            fields += ['spot: &color{kind: colorStr, text: %s}' % go_string(value.spotName)]
+        return '{' + ', '.join(fields) + '}'
+    fields = ['r: %r' % value.red, 'g: %r' % value.green, 'b: %r' % value.blue]
+    if value.alpha != 1:
+        fields += ['alpha: %r' % value.alpha, 'hasAlpha: true']
+    return '{' + ', '.join(fields) + '}'
+
+
 def colours():
-    from reportlab.lib.colors import CMYKColor, getAllNamedColors
+    from reportlab.lib.colors import getAllNamedColors
+    named = getAllNamedColors()
     lines = ['// Code generated from reportlab 4.2.5 (colors.getAllNamedColors); DO NOT EDIT.', '', 'package pdfexport', '',
-             '// paraNamedColors are the plain RGB colour names toColor knows (lower case).',
+             '// paraNamedColors are the colour names toColor looks up by lower case: the names',
+             '// getAllNamedColors keeps as they are.',
              'var paraNamedColors = map[string]color{']
-    other = []
-    for name, value in sorted(getAllNamedColors().items()):
-        if isinstance(value, CMYKColor) or value.alpha != 1 or name != name.lower():
-            other.append(name.lower())
-        else:
-            lines.append('\t%s: {r: %r, g: %r, b: %r},' % (go_string(name), value.red, value.green, value.blue))
-    lines += ['}', '', '// paraUnportedColors are the names of colours that are CMYK or transparent.',
-              'var paraUnportedColors = map[string]bool{']
-    lines += ['\t%s: true,' % go_string(name) for name in sorted(set(other))]
+    for name, value in sorted(named.items()):
+        if name == name.lower():
+            lines.append('\t%s: %s,' % (go_string(name), go_color(value)))
+    lines += ['}', '', '// paraColorNames are every name getAllNamedColors returns, as the safe names of',
+              '// rl_extended_literal_eval match them.',
+              'var paraColorNames = map[string]color{']
+    for name, value in sorted(named.items()):
+        lines.append('\t%s: %s,' % (go_string(name), go_color(value)))
+    lines += ['}', '', '// paraNamedColorOrder is the order getAllNamedColors returns the names in, which',
+              '// describe walks.',
+              'var paraNamedColorOrder = []string{']
+    for name in named:
+        lines.append('\t%s,' % go_string(name))
     gofmt = shutil.which('gofmt')
     return subprocess.run([gofmt], input='\n'.join(lines + ['}', '']), capture_output=True, text=True, check=True).stdout
 

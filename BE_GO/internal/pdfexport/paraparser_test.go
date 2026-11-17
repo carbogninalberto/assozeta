@@ -12,11 +12,57 @@ import (
 	"testing"
 )
 
-func rgbOf(c *color) any {
+// colourInfo is the tagged form generate_pdf_paragraphs.py writes for a colour
+// attribute value: a number as its Python repr, a colour component as the repr
+// of its float (what fp_str draws), a spotName nested.
+func colourInfo(c *color) any {
 	if c == nil {
 		return nil
 	}
-	return []float64{c.r, c.g, c.b}
+	switch c.kind {
+	case colorRGB:
+		return map[string]any{"t": "rgb", "v": []any{pyFloatRepr(c.r), pyFloatRepr(c.g), pyFloatRepr(c.b)},
+			"a": pyFloatRepr(c.alphaValue())}
+	case colorCMYK:
+		className := map[cmykClass]string{cmykPlain: "CMYKColor", cmykP: "PCMYKColor",
+			cmykSep: "CMYKColorSep", cmykPSep: "PCMYKColorSep"}[c.class]
+		return map[string]any{"t": "cmyk", "v": []any{pyFloatRepr(c.r), pyFloatRepr(c.g), pyFloatRepr(c.b)},
+			"c": []any{pyFloatRepr(c.c), pyFloatRepr(c.m), pyFloatRepr(c.y), pyFloatRepr(c.k)},
+			"d": pyFloatRepr(c.dens), "a": pyFloatRepr(c.alphaValue()), "s": colourInfo(c.spot), "cl": className}
+	case colorTuple, colorList:
+		items := make([]any, len(c.items))
+		for i := range c.items {
+			items[i] = colourInfo(&c.items[i])
+		}
+		kind := "tuple"
+		if c.kind == colorList {
+			kind = "list"
+		}
+		return map[string]any{"t": kind, "v": items}
+	case colorStr:
+		return map[string]any{"t": "str", "v": c.text}
+	case colorBytes:
+		return map[string]any{"t": "bytes", "v": c.text}
+	case colorNone:
+		return nil
+	case colorInt:
+		return map[string]any{"t": "num", "v": pyFloatRepr(colorNumber(*c))}
+	case colorBool:
+		return map[string]any{"t": "bool", "v": c.f != 0}
+	case colorFloat:
+		return map[string]any{"t": "num", "v": pyFloatRepr(colorNumber(*c))}
+	case colorComplex:
+		return map[string]any{"t": "complex", "v": []any{pyFloatRepr(c.f), pyFloatRepr(c.im)}}
+	case colorDict:
+		pairs := make([]any, len(c.pairs))
+		for i := range c.pairs {
+			pairs[i] = []any{colourInfo(&c.pairs[i].key), colourInfo(&c.pairs[i].value)}
+		}
+		return map[string]any{"t": "dict", "v": pairs}
+	case colorEllipsis:
+		return map[string]any{"t": "ellipsis"}
+	}
+	return map[string]any{"t": "opaque"}
 }
 
 func usValue(v usVal) any {
@@ -73,10 +119,10 @@ func describeStyle(s paraStyle) []any {
 		if l.hasColor {
 			col = &l.color
 		}
-		lines = append(lines, []any{usValue(l.width), usValue(l.offset), usValue(l.gap), rgbOf(col)})
+		lines = append(lines, []any{usValue(l.width), usValue(l.offset), usValue(l.gap), colourInfo(col)})
 	}
 	return []any{s.fontName, s.fontSize.corpus(), s.leading.corpus(), s.alignment(), s.spaceBefore.corpus(), s.spaceAfter.corpus(),
-		rgbOf(&s.textColor), rgbOf(s.backColor), lines, s.shrinkage().corpus(), !s.noSplit, !s.denyWidows, s.allowOrphans}
+		colourInfo(&s.textColor), colourInfo(s.backColor), lines, s.shrinkage().corpus(), !s.noSplit, !s.denyWidows, s.allowOrphans}
 }
 
 // describeFrag is the form generate_pdf_paragraphs.py writes for a fragment.
@@ -91,7 +137,7 @@ func describeFrag(f *frag) []any {
 		if l.hasColor {
 			col = &l.color
 		}
-		lines = append(lines, []any{l.n, kind, rgbOf(col), usValue(l.width), usValue(l.offset), l.rise.corpus(), l.mult, usValue(l.gap)})
+		lines = append(lines, []any{l.n, kind, colourInfo(col), usValue(l.width), usValue(l.offset), l.rise.corpus(), l.mult, usValue(l.gap)})
 	}
 	links := []any{}
 	for _, l := range f.links {
@@ -117,8 +163,8 @@ func describeFrag(f *frag) []any {
 		}
 		img = []any{"img", f.img.src, dimOf(f.img.width), dimOf(f.img.height), vaValue}
 	}
-	return []any{f.font.name, f.text, f.lineBreak, f.size.corpus(), rgbOf(&f.color), f.rise.corpus(), lines, links, rgbOf(f.back),
-		f.nobr, img}
+	return []any{f.font.name, f.text, f.lineBreak, f.size.corpus(), colourInfo(&f.color), f.rise.corpus(), lines, links,
+		colourInfo(f.back), f.nobr, img}
 }
 
 // corpusJSON is the JSON of a described value as the corpus reads it: every

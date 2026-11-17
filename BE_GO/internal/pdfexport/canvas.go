@@ -522,29 +522,23 @@ func stringWidth(text string, f *font, size float64) float64 {
 
 // --- colours ---------------------------------------------------------------------------------------------------
 
-// color is a reportlab colour value; named marks the string 'black' default
-// of a table cell, which never compares equal to a Color instance.
-type color struct {
-	r, g, b float64
-	named   bool
-	none    bool
-}
-
 var (
-	colorBlack = color{}
-	colorWhite = color{r: 1, g: 1, b: 1}
-	colorGrey  = color{r: 128.0 / 255, g: 128.0 / 255, b: 128.0 / 255}
+	colorBlack = rgbColor(0, 0, 0)
+	colorWhite = rgbColor(1, 1, 1)
+	colorGrey  = rgbColor(128.0/255, 128.0/255, 128.0/255)
 )
 
+// hexColor is HexColor of an integer constant.
 func hexColor(value uint32) color {
-	return color{r: float64(value>>16&0xFF) / 255, g: float64(value>>8&0xFF) / 255, b: float64(value&0xFF) / 255}
+	return rgbColor(float64(value>>16&0xFF)/255, float64(value>>8&0xFF)/255, float64(value&0xFF)/255)
 }
 
 // --- canvas and document ---------------------------------------------------------------------------------------
 
 type resource struct {
-	font  *font
-	image *jpegImage
+	font       *font
+	image      *jpegImage
+	separation *separation
 }
 
 type jpegImage struct {
@@ -560,8 +554,19 @@ type canvasState struct {
 	fontSize    float64
 	leading     float64
 	lineWidth   float64
-	strokeColor color // color{named: true} is the initial (0,0,0) tuple, which no Color equals
+	strokeColor color // the initial (0, 0, 0) tuple, which no Color equals
 	matrix      [6]float64
+	// gsCa and gsCA are the fill and stroke alpha of the graphics state, which
+	// reportlab keeps in its ExtGState; gsCaSet and gsCASet mark the ones set.
+	gsCa, gsCA       float64
+	gsCaSet, gsCASet bool
+}
+
+// extGStateUse is one /gRLs<n> of a page's /ExtGState resource.
+type extGStateUse struct {
+	name  string
+	op    string
+	value float64
 }
 
 type pageRecord struct {
@@ -569,6 +574,8 @@ type pageRecord struct {
 	content       []byte
 	images        []string
 	annotations   []int
+	gstates       []extGStateUse
+	colors        []string
 }
 
 // annotation is a link annotation: its rectangle in page space and either its
@@ -597,17 +604,25 @@ type canvas struct {
 	resources    []resource // in order of first use
 	// sequence is the order in which reportlab numbers the objects: a resource (-index-1) when it is first used, a page
 	// (index) when it is shown.
-	sequence     []int
-	fontNumbers  map[string]int
-	imageNames   map[string]bool
-	code         []string
-	state        canvasState
-	stack        []canvasState
-	pages        []pageRecord
-	pageImages   []string
-	annotations  []annotation
-	pageAnnots   []int
-	destinations map[string]*destination
+	sequence    []int
+	fontNumbers map[string]int
+	imageNames  map[string]bool
+	code        []string
+	state       canvasState
+	stack       []canvasState
+	pages       []pageRecord
+	pageImages  []string
+	annotations []annotation
+	pageAnnots  []int
+	// gsNames numbers the ExtGState entries of the page, which reportlab names
+	// gRLs0, gRLs1... in order of first use; pageGStates are the entries of the
+	// page, for its /ExtGState resource.
+	gsNames         map[string]string
+	pageGStates     []extGStateUse
+	separationIndex map[string]int
+	colorsUsed      map[string]bool
+	pageColors      []string
+	destinations    map[string]*destination
 	// err is set by a flowable that meets an input this package does not
 	// reproduce while it is laid out.
 	err error
@@ -615,6 +630,7 @@ type canvas struct {
 
 func newCanvas(width, height float64) *canvas {
 	c := &canvas{pageW: width, pageH: height, fontNumbers: map[string]int{}, imageNames: map[string]bool{},
+		gsNames: map[string]string{}, separationIndex: map[string]int{}, colorsUsed: map[string]bool{},
 		destinations: map[string]*destination{}}
 	c.initState()
 	c.fontRef(fontHelvetica)
@@ -622,7 +638,30 @@ func newCanvas(width, height float64) *canvas {
 }
 
 func (c *canvas) initState() {
-	c.state = canvasState{fontName: "Helvetica", fontSize: 12, leading: 14.4, lineWidth: 1, strokeColor: color{named: true}, matrix: [6]float64{1, 0, 0, 1, 0, 0}}
+	c.state = canvasState{fontName: "Helvetica", fontSize: 12, leading: 14.4, lineWidth: 1,
+		strokeColor: tupleColor(0, 0, 0), matrix: [6]float64{1, 0, 0, 1, 0, 0}}
+}
+
+// gsValue is ExtGState.getValue of the alpha an operation names.
+func (c *canvas) gsValue(op string) float64 {
+	if op == "CA" {
+		if c.state.gsCASet {
+			return c.state.gsCA
+		}
+		return 1
+	}
+	if c.state.gsCaSet {
+		return c.state.gsCa
+	}
+	return 1
+}
+
+func (c *canvas) setGsValue(op string, value float64) {
+	if op == "CA" {
+		c.state.gsCA, c.state.gsCASet = value, true
+		return
+	}
+	c.state.gsCa, c.state.gsCaSet = value, true
 }
 
 // fontRef is doc.getInternalFontName: /F<n>, registering the font on first use.
@@ -701,10 +740,14 @@ func (c *canvas) setFont(name string, size, leading float64) {
 // setFontDefault is canvas.setFont(name, size): the leading is size * 1.2.
 func (c *canvas) setFontDefault(name string, size float64) { c.setFont(name, size, size*1.2) }
 
-func (c *canvas) setFillColor(col color) { c.add(fpStrs(col.r, col.g, col.b) + " rg") }
+// setFillColor is canvas.setFillColor(aColor): the fill colour operators,
+// the spot colour space of a separation and the fill alpha.
+func (c *canvas) setFillColor(col color) { c.setColorOperators(col, false, &c.code) }
+
+// setStrokeColor is canvas.setStrokeColor(aColor).
 func (c *canvas) setStrokeColor(col color) {
 	c.state.strokeColor = col
-	c.add(fpStrs(col.r, col.g, col.b) + " RG")
+	c.setColorOperators(col, true, &c.code)
 }
 
 func (c *canvas) setLineWidth(w float64) {
@@ -763,10 +806,15 @@ func (c *canvas) showPage() {
 		body = "1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET\n \n"
 	}
 	c.sequence = append(c.sequence, len(c.pages))
-	c.pages = append(c.pages, pageRecord{width: c.pageW, height: c.pageH, content: []byte(body), images: c.pageImages, annotations: c.pageAnnots})
+	c.pages = append(c.pages, pageRecord{width: c.pageW, height: c.pageH, content: []byte(body), images: c.pageImages,
+		annotations: c.pageAnnots, gstates: c.pageGStates, colors: c.pageColors})
 	c.code = nil
 	c.pageImages = nil
 	c.pageAnnots = nil
+	c.pageGStates = nil
+	c.pageColors = nil
+	c.gsNames = map[string]string{}
+	c.colorsUsed = map[string]bool{}
 	c.stack = nil
 	c.initState()
 }
@@ -824,39 +872,100 @@ func pythonTimeRepr(moment time.Time) string {
 	return text
 }
 
-// save is canvas.save(): the whole file. now is the creation time, written
-// in UTC (Django's TIME_ZONE); an internal link whose destination no anchor
-// bound is an exception of the export.
+// objectKind is what an object of the file holds; reportlab numbers them as
+// they are referenced, and a separation's tint function and a page's content
+// stream when the object that needs them is formatted.
+type objectKind uint8
+
+const (
+	objFontDict objectKind = iota
+	objFont
+	objImage
+	objSeparation
+	objSeparationStream
+	objPage
+	objPageStream
+	objAnnotation
+	objCatalog
+	objInfo
+	objTree
+)
+
+type plannedObject struct {
+	kind   objectKind
+	index  int // the resource, page or annotation index
+	number int
+}
+
+// save is canvas.save(): the whole file. now is the creation time, written in
+// UTC (Django's TIME_ZONE).
 func (c *canvas) save(now time.Time) ([]byte, error) {
 	now = now.UTC()
-	const fontDict = 1
-	number := fontDict
+	// LinkAnnotation.Dict: a destination whose anchor no page bound is an
+	// exception of the export, raised when the annotation is formatted.
+	for _, a := range c.annotations {
+		if a.dest != nil && !a.dest.bound {
+			return nil, layoutFailure(fmt.Sprintf("format not resolved, probably missing URL scheme or undefined destination target for '%s'", a.dest.name))
+		}
+	}
+	plan := []plannedObject{{kind: objFontDict, number: 1}}
 	resourceNumber := make([]int, len(c.resources))
 	pageNumber := make([]int, len(c.pages))
 	annotationNumber := make([]int, len(c.annotations))
 	for _, item := range c.sequence {
-		number++
+		entry := plannedObject{number: len(plan) + 1}
 		switch {
 		case item < 0:
-			resourceNumber[-item-1] = number
+			index := -item - 1
+			resourceNumber[index] = entry.number
+			entry.index = index
+			switch {
+			case c.resources[index].font != nil:
+				entry.kind = objFont
+			case c.resources[index].image != nil:
+				entry.kind = objImage
+			default:
+				entry.kind = objSeparation
+			}
 		case item >= annotationBase:
-			annotationNumber[item-annotationBase] = number
+			entry.kind, entry.index = objAnnotation, item-annotationBase
+			annotationNumber[item-annotationBase] = entry.number
 		default:
-			pageNumber[item] = number
+			entry.kind, entry.index = objPage, item
+			pageNumber[item] = entry.number
 		}
+		plan = append(plan, entry)
 	}
-	catalog, info, tree := number+1, number+2, number+3
-	number += 3
-	streamNumber := make([]int, len(c.pages))
-	for i := range c.pages {
-		number++
-		streamNumber[i] = number
+	catalog, info := len(plan)+1, len(plan)+2
+	plan = append(plan, plannedObject{kind: objCatalog, number: catalog}, plannedObject{kind: objInfo, number: info})
+
+	// The format pass: formatting a page first references the page tree, then
+	// its content stream; a separation references its tint function.
+	sepStreamNumber := make([]int, len(c.resources))
+	pageStreamNumber := make([]int, len(c.pages))
+	tree := 0
+	for i := 0; i < len(plan); i++ {
+		entry := plan[i]
+		switch entry.kind {
+		case objSeparation:
+			number := len(plan) + 1
+			plan = append(plan, plannedObject{kind: objSeparationStream, index: entry.index, number: number})
+			sepStreamNumber[entry.index] = number
+		case objPage:
+			if tree == 0 {
+				tree = len(plan) + 1
+				plan = append(plan, plannedObject{kind: objTree, number: tree})
+			}
+			number := len(plan) + 1
+			plan = append(plan, plannedObject{kind: objPageStream, index: entry.index, number: number})
+			pageStreamNumber[entry.index] = number
+		}
 	}
 	ref := func(n int) string { return strconv.Itoa(n) + " 0 R" }
 
 	var out bytes.Buffer
 	out.WriteString("%PDF-1.4\n%\x93\x8c\x8b\x9e ReportLab Generated PDF document http://www.reportlab.com\n")
-	offsets := make([]int, 0, number)
+	offsets := make([]int, 0, len(plan))
 	object := func(n int, body string) {
 		offsets = append(offsets, out.Len())
 		out.WriteString(strconv.Itoa(n) + " 0 obj\n" + body)
@@ -869,101 +978,125 @@ func (c *canvas) save(now time.Time) ([]byte, error) {
 	fonts := map[string]string{}
 	xobjects := map[string]string{}
 	for i, res := range c.resources {
-		if res.font != nil {
+		switch {
+		case res.font != nil:
 			fonts["F"+strconv.Itoa(c.fontNumbers[res.font.name])] = ref(resourceNumber[i])
-		} else {
+		case res.image != nil:
 			xobjects[res.image.name] = ref(resourceNumber[i])
 		}
 	}
-	object(fontDict, pdfDict(fonts))
 	kids := make([]string, len(c.pages))
-	writeResource := func(i int, res resource) {
-		if res.font != nil {
+	writeObject := func(entry plannedObject) {
+		switch entry.kind {
+		case objFontDict:
+			object(entry.number, pdfDict(fonts))
+		case objFont:
+			res := c.resources[entry.index]
 			entries := map[string]string{"BaseFont": "/" + res.font.name, "Name": "/F" + strconv.Itoa(c.fontNumbers[res.font.name]),
 				"Subtype": "/Type1", "Type": "/Font"}
 			if res.font.encoding != nil && res.font != fontSymbol && res.font != fontZapfDingbats {
 				entries["Encoding"] = "/WinAnsiEncoding"
 			}
-			object(resourceNumber[i], pdfDict(entries))
-			return
-		}
-		encoded := ascii85Encode(res.image.data)
-		entries := map[string]string{
-			"BitsPerComponent": "8", "ColorSpace": "/" + res.image.colorSpace, "Filter": "[ /ASCII85Decode /DCTDecode ]",
-			"Height": strconv.Itoa(res.image.height), "Length": strconv.Itoa(len(encoded)), "Subtype": "/Image", "Type": "/XObject",
-			"Width": strconv.Itoa(res.image.width)}
-		if res.image.inverted {
-			entries["Decode"] = "[ 1 0 1 0 1 0 1 0 ]"
-		}
-		object(resourceNumber[i], pdfDict(entries)+"\nstream\n"+string(encoded)+"endstream\n")
-	}
-	writePage := func(i int, page pageRecord) {
-		resources := map[string]string{"Font": ref(fontDict), "ProcSet": "[ /PDF /Text /ImageB /ImageC /ImageI ]"}
-		if len(page.images) > 0 {
-			used := map[string]string{}
-			for _, name := range page.images {
-				used[name] = xobjects[name]
+			object(entry.number, pdfDict(entries))
+		case objImage:
+			res := c.resources[entry.index]
+			encoded := ascii85Encode(res.image.data)
+			entries := map[string]string{
+				"BitsPerComponent": "8", "ColorSpace": "/" + res.image.colorSpace, "Filter": "[ /ASCII85Decode /DCTDecode ]",
+				"Height": strconv.Itoa(res.image.height), "Length": strconv.Itoa(len(encoded)), "Subtype": "/Image", "Type": "/XObject",
+				"Width": strconv.Itoa(res.image.width)}
+			if res.image.inverted {
+				entries["Decode"] = "[ 1 0 1 0 1 0 1 0 ]"
 			}
-			resources["XObject"] = pdfDict(used)
-		}
-		entries := map[string]string{
-			"Contents": ref(streamNumber[i]), "MediaBox": pdfArray([]string{"0", "0", fpStr(page.width), fpStr(page.height)}),
-			"Parent": ref(tree), "Resources": pdfDict(resources), "Rotate": "0", "Trans": pdfDict(nil), "Type": "/Page"}
-		if len(page.annotations) > 0 {
-			refs := make([]string, len(page.annotations))
-			for j, index := range page.annotations {
-				refs[j] = ref(annotationNumber[index])
+			object(entry.number, pdfDict(entries)+"\nstream\n"+string(encoded)+"endstream\n")
+		case objSeparation:
+			space := c.resources[entry.index].separation
+			object(entry.number, "[ "+pdfName("Separation")+" "+pdfName(space.spot)+" "+pdfName("DeviceCMYK")+" "+
+				ref(sepStreamNumber[entry.index])+" ]")
+		case objSeparationStream:
+			space := c.resources[entry.index].separation
+			content := separationFunction(space.cmyk)
+			entries := map[string]string{"Domain": "[ 0 1 ]", "FunctionType": "4", "Length": strconv.Itoa(len(content)),
+				"Range": "[ 0 1 0 1 0 1 0 1 ]"}
+			object(entry.number, pdfDict(entries)+"\nstream\n"+content+"endstream\n")
+		case objPage:
+			page := c.pages[entry.index]
+			resources := map[string]string{"Font": ref(1), "ProcSet": "[ /PDF /Text /ImageB /ImageC /ImageI ]"}
+			if len(page.images) > 0 {
+				used := map[string]string{}
+				for _, name := range page.images {
+					used[name] = xobjects[name]
+				}
+				resources["XObject"] = pdfDict(used)
 			}
-			entries["Annots"] = pdfArray(refs)
-		}
-		object(pageNumber[i], pdfDict(entries))
-		kids[i] = ref(pageNumber[i])
-	}
-	for _, item := range c.sequence {
-		switch {
-		case item < 0:
-			writeResource(-item-1, c.resources[-item-1])
-		case item >= annotationBase:
-			a := c.annotations[item-annotationBase]
+			if len(page.gstates) > 0 {
+				used := map[string]string{}
+				for _, state := range page.gstates {
+					used[state.name] = pdfDict(map[string]string{state.op: fpStr(state.value)})
+				}
+				resources["ExtGState"] = pdfDict(used)
+			}
+			if len(page.colors) > 0 {
+				used := map[string]string{}
+				for _, name := range page.colors {
+					used[name] = ref(resourceNumber[c.separationIndex[name]])
+				}
+				resources["ColorSpace"] = pdfDict(used)
+			}
+			entries := map[string]string{
+				"Contents": ref(pageStreamNumber[entry.index]), "MediaBox": pdfArray([]string{"0", "0", fpStr(page.width), fpStr(page.height)}),
+				"Parent": ref(tree), "Resources": pdfDict(resources), "Rotate": "0", "Trans": pdfDict(nil), "Type": "/Page"}
+			if len(page.annotations) > 0 {
+				refs := make([]string, len(page.annotations))
+				for j, index := range page.annotations {
+					refs[j] = ref(annotationNumber[index])
+				}
+				entries["Annots"] = pdfArray(refs)
+			}
+			object(entry.number, pdfDict(entries))
+			kids[entry.index] = ref(pageNumber[entry.index])
+		case objPageStream:
+			page := c.pages[entry.index]
+			encoded := ascii85Encode(deflate(page.content))
+			object(entry.number, pdfDict(map[string]string{"Filter": "[ /ASCII85Decode /FlateDecode ]", "Length": strconv.Itoa(len(encoded))})+
+				"\nstream\n"+string(encoded)+"endstream\n")
+		case objAnnotation:
+			a := c.annotations[entry.index]
 			entries := map[string]string{"Border": "[ 0 0 0 ]",
 				"Rect": pdfArray([]string{fpStr(a.rect[0]), fpStr(a.rect[1]), fpStr(a.rect[2]), fpStr(a.rect[3])}), "Subtype": "/Link",
 				"Type": "/Annot"}
 			if a.dest != nil {
 				// LinkAnnotation.Dict: an empty Contents and the destination, whose page binds at save.
-				if !a.dest.bound {
-					return nil, layoutFailure(fmt.Sprintf("format not resolved, probably missing URL scheme or undefined destination target for '%s'", a.dest.name))
-				}
 				entries["Contents"] = "()"
 				entries["Dest"] = pdfArray([]string{ref(pageNumber[a.dest.page]), "/XYZ", fpStr(a.dest.left), fpStr(a.dest.top), "0"})
 			} else {
 				entries["A"] = pdfDict(a.action)
 			}
-			object(annotationNumber[item-annotationBase], pdfDict(entries))
-		default:
-			writePage(item, c.pages[item])
+			object(entry.number, pdfDict(entries))
+		case objCatalog:
+			object(entry.number, pdfDict(map[string]string{"PageMode": "/UseNone", "Pages": ref(tree), "Type": "/Catalog"}))
+		case objInfo:
+			date := fmt.Sprintf("(D:%04d%02d%02d%02d%02d%02d+00'00')", now.Year(), int(now.Month()), now.Day(), now.Hour(), now.Minute(), now.Second())
+			object(entry.number, pdfDict(map[string]string{
+				"Author": `(\(anonymous\))`, "CreationDate": date, "Creator": `(\(unspecified\))`, "Keywords": "()", "ModDate": date,
+				"Producer": "(ReportLab PDF Library - www.reportlab.com)", "Subject": `(\(unspecified\))`, "Title": `(\(anonymous\))`,
+				"Trapped": "/False"}))
+		case objTree:
+			object(entry.number, pdfDict(map[string]string{"Count": strconv.Itoa(len(c.pages)), "Kids": pdfArray(kids), "Type": "/Pages"}))
 		}
 	}
-	object(catalog, pdfDict(map[string]string{"PageMode": "/UseNone", "Pages": ref(tree), "Type": "/Catalog"}))
-	date := fmt.Sprintf("(D:%04d%02d%02d%02d%02d%02d+00'00')", now.Year(), int(now.Month()), now.Day(), now.Hour(), now.Minute(), now.Second())
-	object(info, pdfDict(map[string]string{
-		"Author": `(\(anonymous\))`, "CreationDate": date, "Creator": `(\(unspecified\))`, "Keywords": "()", "ModDate": date,
-		"Producer": "(ReportLab PDF Library - www.reportlab.com)", "Subject": `(\(unspecified\))`, "Title": `(\(anonymous\))`,
-		"Trapped": "/False"}))
-	object(tree, pdfDict(map[string]string{"Count": strconv.Itoa(len(c.pages)), "Kids": pdfArray(kids), "Type": "/Pages"}))
-	for i, page := range c.pages {
-		encoded := ascii85Encode(deflate(page.content))
-		object(streamNumber[i], pdfDict(map[string]string{"Filter": "[ /ASCII85Decode /FlateDecode ]", "Length": strconv.Itoa(len(encoded))})+
-			"\nstream\n"+string(encoded)+"endstream\n")
+	for _, entry := range plan {
+		writeObject(entry)
 	}
 	start := out.Len()
-	fmt.Fprintf(&out, "xref\n0 %d\n0000000000 65535 f \n", number+1)
+	fmt.Fprintf(&out, "xref\n0 %d\n0000000000 65535 f \n", len(plan)+1)
 	for _, offset := range offsets {
 		fmt.Fprintf(&out, "%010d 00000 n \n", offset)
 	}
 	digest := md5.Sum([]byte("a reportlab document" + pythonTimeRepr(now) + "(anonymous)(anonymous)(unspecified)"))
 	id := hex.EncodeToString(digest[:])
 	fmt.Fprintf(&out, "trailer\n<<\n/ID \n[<%s><%s>]\n%% ReportLab generated PDF document -- digest (http://www.reportlab.com)\n\n/Info %d 0 R\n/Root %d 0 R\n/Size %d\n>>\nstartxref\n%d\n%%%%EOF\n",
-		id, id, info, catalog, number+1, start)
+		id, id, info, catalog, len(plan)+1, start)
 	return out.Bytes(), nil
 }
 
