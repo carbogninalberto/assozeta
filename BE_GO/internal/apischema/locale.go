@@ -10,7 +10,7 @@ import (
 // CatalogKey mirrors DjangoTranslation(language) for the "django" domain: for
 // every catalog directory, the catalogs gettext.find(..., all=True) selects for
 // to_locale(language), and whether the default language is chained as the
-// fallback. Documents are generated per key. The language string decides the
+// fallback. Documents are rendered per key. The language string decides the
 // fallback flag, the resolved catalogs the per-directory lists.
 //
 // gettext joins every expansion to each catalog directory as a path
@@ -114,63 +114,6 @@ func catalogPath(expansion string, names map[string]struct{}) (string, bool) {
 		return "", false
 	}
 	return name, true
-}
-
-// DocumentKey returns the key of the generated document closest to the one
-// Django renders for a resolved catalog key: key itself when the generator
-// rendered that key, else the key of the catalog the resolution selects first.
-//
-// A language behind a path separator can select catalogs of different
-// languages in one directory ("en/../it" selects en and it), combinations the
-// generator never rendered; Django loads the first catalog of each directory
-// and chains the rest as fallbacks, so the first selection is the closest
-// generated document. A key without a selection ("en/xx" and "xx/yy" select
-// nothing at all) is answered by the same fallback flag without a catalog
-// ("0|||||||||" or "1|||||||||"), the bare document gettext's chain renders.
-// Should a future table omit that key, the chain alone still names a generated
-// document: the default language for a fallback flag, and, without one, the
-// English (msgid) document the generator renders for "en", whose catalogs are
-// empty. ok is false only when neither exists, which the generator rules out.
-func DocumentKey(key string) (string, bool) {
-	d := loaded()
-	if _, ok := d.VariantOf[key]; ok {
-		return key, true
-	}
-	flag, lists, _ := strings.Cut(key, "|")
-	for _, list := range strings.Split(lists, "|") {
-		name, _, _ := strings.Cut(list, ",")
-		if name == "" {
-			continue
-		}
-		first, ok := CatalogKey(name)
-		if !ok {
-			continue
-		}
-		if _, ok := d.VariantOf[first]; ok {
-			return first, true
-		}
-	}
-	empty := flag + strings.Repeat("|", len(d.directories))
-	if _, ok := d.VariantOf[empty]; ok {
-		return empty, true
-	}
-	var name string
-	switch flag {
-	case "0":
-		name = "en"
-	case "1":
-		name = d.LanguageCode
-	default:
-		return "", false
-	}
-	candidate, ok := CatalogKey(name)
-	if !ok {
-		return "", false
-	}
-	if _, ok := d.VariantOf[candidate]; !ok {
-		return "", false
-	}
-	return candidate, true
 }
 
 // toLocale is django.utils.translation.to_locale.

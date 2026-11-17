@@ -76,13 +76,7 @@ func (h *APISchemaHandler) Schema(c echo.Context) error {
 			key, _ = apischema.CatalogKey(lang)
 		}
 		version := request.query("version")
-		documentKey, ok := apischema.DocumentKey(key)
-		if !ok {
-			// The generator renders every catalog key a language can select
-			// (candidate_languages in TESTS/adapters/django/api_schema.py).
-			return apiSchemaUnreachable(c)
-		}
-		document, ok := apischema.Document(request.format(), documentKey, version)
+		document, ok := apischema.Document(request.format(), key, version)
 		if !ok {
 			return apiSchemaUnreachable(c)
 		}

@@ -79,24 +79,15 @@ sidecar under `/static/`. DRF handles each request in this order:
   `catalog_key()` names a selection that ends in `..` by that component
   (`it/LC_MESSAGES/..`), where the port names the resolved catalog (`it`); the
   document is the same in both.
-- A resolved key that combines catalogs of different languages in one directory
-  (`en/../it` selects `it` and `en`) is not one the generator renders. Go
-  answers it with the document of the first selected catalog, using that
-  catalog's own generated key (and so its own fallback flag): Django loads the
-  first catalog of each directory and chains the rest as fallbacks, which can
-  fill messages the first lacks, so the bytes can differ. A key without any
-  selection (`en/xx`, `xx/yy`) keeps its own fallback flag and drops the
-  catalogs: Django then renders the chain alone, the generated
-  `0|||||||||`/`1|||||||||` document. `DocumentKey` is therefore total for
-  every language a request can send; only a key that names neither a catalog
-  nor a generated fallback flag is still the 500 page. Measured over the
-  9,723-language cross-check (21 path components, one to three joined by `/`),
-  9,648 documents match Django's bytes and 75 differ: 43 first-catalog answers
-  (`de/../it`, `de/../sr`, `./en`) and 32 case-insensitive volume answers
-  (`de/../IT`, `./dE`); measured samples outside that set (`de/../ja`,
-  `en_GB/../pt_BR`) differ in the same first-catalog way. Both classes are the
-  owner's "closest Django answer" under long-tail rule 4 (host layout) and are
-  not fixed.
+- Go uses generated document patches for standard keys and composes other keys
+  message by message. The embedded catalog stores the schema's msgid
+  translations by directory and the exact YAML and JSON line replacements for
+  each field's message values, including interpolated descriptions. Lookup
+  checks the first catalog of each directory in reverse merge order, then
+  checks the remaining catalogs in directory and selection order, then the
+  default language if the key enables it. A missing translation uses the
+  msgid. The generator verifies both formats against Django for standard keys
+  and path chains such as `de/../sr` and `en_GB/../pt_BR`.
 - **Drift check**: `python TESTS/adapters/django/api_schema.py --check` runs in
   the `golang` job of `.github/workflows/go-quality.yml` and fails when the
   embedded data differs from what the current Django code and pinned packages

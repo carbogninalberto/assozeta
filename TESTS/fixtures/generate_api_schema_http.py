@@ -131,6 +131,14 @@ schema('lang-path-absolute', 200, document('json', 'xx'), content_type=JSON2, qu
        disposition=json_disposition())
 schema('lang-path-overrides-english', 200, document('json', 'it'), content_type=JSON2, query='?lang=en/../it',
        headers={'Accept': JSON2}, disposition=json_disposition())
+# A path can select catalogs of different languages in one directory. Django loads the first catalog of each
+# directory and chains the others (and the default language) as fallbacks, message by message: the document is
+# the chained translation, not the first catalog's own document.
+for name, lang in (('lang-path-chain-german-italian', 'de/../it'), ('lang-path-chain-german-serbian', 'de/../sr'),
+                   ('lang-path-chain-dot-english', './en'), ('lang-path-chain-german-japanese', 'de/../ja'),
+                   ('lang-path-chain-british-brazilian', 'en_GB/../pt_BR')):
+    schema(name, 200, document('json', lang), content_type=JSON2, query='?lang=' + lang, headers={'Accept': JSON2},
+           disposition=json_disposition())
 # The last value wins; an empty lang keeps LocaleMiddleware's language.
 schema('lang-last-value', 200, document('json', 'fr'), content_type=JSON2, query='?lang=de&lang=fr', headers={'Accept': JSON2},
        disposition=json_disposition())

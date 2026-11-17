@@ -77,6 +77,34 @@ func TestDefaultDocumentIsTheEmbeddedOne(t *testing.T) {
 	}
 }
 
+func TestComposedDocumentsMatchRenderedVariants(t *testing.T) {
+	d := loaded()
+	for key := range d.VariantOf {
+		lists := strings.Split(key, "|")
+		for i, list := range lists[1:] {
+			if list != "" {
+				// A second copy of the primary adds no translations to the chain.
+				first, _, _ := strings.Cut(list, ",")
+				lists[i+1] += "," + first
+			}
+		}
+		composedKey := strings.Join(lists, "|")
+		if composedKey == key {
+			continue
+		}
+		if _, rendered := d.VariantOf[composedKey]; rendered {
+			t.Fatalf("key %q must use composition", composedKey)
+		}
+		for _, format := range []Format{FormatYAML, FormatJSON} {
+			want, _ := Document(format, key, "v2")
+			got, ok := Document(format, composedKey, "v2")
+			if !ok || got != want {
+				t.Errorf("%s composition of %q differs from rendered key %q", format, composedKey, key)
+			}
+		}
+	}
+}
+
 func TestRenderersMatchDRF(t *testing.T) {
 	var corpus []struct {
 		Text  string `json:"text"`
