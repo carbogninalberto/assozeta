@@ -48,8 +48,9 @@ handing the request off. A value past a band is Django's `RecursionError` — th
 - A `resolve_uuid` through the ORM near a frame edge needs more frames in Django than the one frame counted for it:
   the frame bands are the edge of the measurement there.
 
-The 500-level readers of the other families (`dto.AuditJSONLoads`, `dto.AuditStoredJSON` in instructor hours and
-report, modules export) are unchanged and keep handing off (`dto.ErrAuditNotPorted`).
+The 500-level readers of the other families (`dto.AuditJSONLoads`, `dto.AuditStoredJSON`) have no production caller since
+long tail PR 5 (the instructor hours form reads deep text with its own measured bands, see
+[instructor-hours](instructor-hours.md)); `dto.ErrAuditNotPorted` is deleted.
 
 Known unchecked divergences: >4300-digit integers in JSON columns of *resolved* rows (Django swallows the load error; Go formats the row); a database error inside a resolver (Django swallows it; Go answers 500). Tie order of equal sort keys is PostgreSQL's in both.
 

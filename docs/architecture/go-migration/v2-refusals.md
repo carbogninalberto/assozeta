@@ -1952,6 +1952,26 @@ result (`accepted-divergences.md`). The other 86 are the ceiling of the `--http`
 | `handler.errAPISchemaUnsupported` | 1 | 0 | `lang` with a path separator (the django-handoff example) |
 | `pandasxlsx.ErrWorkbookNotPorted` (deleted) | 1 -> 0 | 0 | **ported** in long tail 5B: a part over 256 MiB is `pandasxlsx.ErrInvalid` (the host cannot parse it, the xlrd retry raises: the 500 page); a sheet past 1,048,576 rows answers the upload's columns (`ReadColumns`, streamed) or the import's 400 `FAILED_MESSAGE` between the status changes; a duration column label past `Timedelta` renders `str(total_seconds())`; a header text is read once with dateutil's raw fields and pandas' `_DEFAULT_DATETIME` |
 
+## Long tail PR 5, agent A: the reportlab paragraph surface (pdfexport)
+
+`pdfexport.ErrNotPorted` is deleted (16 HTTP/WebSocket rows and 3 command rows before). Every input is drawn as reportlab
+4.2.5 draws it, or fails the export where reportlab raises (`ErrLayout`, which each caller answers as Django answers an
+exception of the export). Details and evidence: `pdf-exports.md`, "Long tail PR 5".
+
+| Site | Condition | Django | Rule | Go |
+|---|---|---|---|---|
+| `paraparser.go` startUnichar | `<unichar name>` | `unicodedata.lookup` | 1 | `internal/pyunicodedata` |
+| `paraparser.go` startAnchor, linkTarget | `<a name>`, `#name`/`document:name`, targets outside printable ASCII | bookmarks, `/Dest` annotations resolved at save, `PDFString` | 1 | ported |
+| `paraattr.go`, `paraparser.go` valignPct | Unicode digits/spaces, `0x`, big ints, inf/nan, `1e400` | CPython `int()`/`float()`; values flow into the layout | 1 | `pyNum`, ported |
+| `paraattr.go` paraColor | CMYK, alpha, separations, `Blacker`/`Whiter`, literal and safe-call expressions | `toColor` | 1 | ported |
+| `paraparser.go` applyParaAttrs, `<bullet>` | indents, justify, bullets, borders, autoLeading, endDots, textTransform, wordWrap, uriWasteReduce, embeddedHyphenation, hyphenationLang | `Paragraph` | 1 | ported |
+| `header.go` loadJPEG, `paraparser.go` loadImageSource | logos and `<img>` that are not JPEG, JPEG Go cannot decode, empty or unknown data | Pillow + `PDFImageXObject`; `cannot identify image file <_io.BytesIO object at 0x...>` | 1; X18 (address); X19 (codec libraries) | `internal/pilimage`, `image.go` |
+| `resource.go` readURL | `ftp:` image source | `urlopen` FTP | 4 (closest answer: the same transfer) | `resource_ftp.go` |
+| `sequencer.go` | template width > 2**20, counters beyond int64 | `%` padding, Python ints | 1; 4 (host memory) | padded to 2**20 spaces (same layout), exact counters |
+
+X18: the reportlab `Table` repr of `service/report_files.go` now uses `pystr.ObjectAddress` (`0x7f0000000000`) like the
+other placeholders. X19 is new (image codec libraries, `accepted-divergences.md`).
+
 ## Long tail PR 5, agent B
 
 Rendering, reads and archives: the cleanup jobs' document cascade, the invoice view's stored values, the API schema's
@@ -1996,28 +2016,6 @@ text, or the 500 page), which would bring the rows to 0.
 
 ### Long tail PR 5, agent B: the pandas readers' last refusals
 
-## Long tail PR 5, agent A: the reportlab paragraph surface (pdfexport)
-
-`pdfexport.ErrNotPorted` is deleted (16 HTTP/WebSocket rows and 3 command rows before). Every input is drawn as reportlab
-4.2.5 draws it, or fails the export where reportlab raises (`ErrLayout`, which each caller answers as Django answers an
-exception of the export). Details and evidence: `pdf-exports.md`, "Long tail PR 5".
-
-| Site | Condition | Django | Rule | Go |
-|---|---|---|---|---|
-| `paraparser.go` startUnichar | `<unichar name>` | `unicodedata.lookup` | 1 | `internal/pyunicodedata` |
-| `paraparser.go` startAnchor, linkTarget | `<a name>`, `#name`/`document:name`, targets outside printable ASCII | bookmarks, `/Dest` annotations resolved at save, `PDFString` | 1 | ported |
-| `paraattr.go`, `paraparser.go` valignPct | Unicode digits/spaces, `0x`, big ints, inf/nan, `1e400` | CPython `int()`/`float()`; values flow into the layout | 1 | `pyNum`, ported |
-| `paraattr.go` paraColor | CMYK, alpha, separations, `Blacker`/`Whiter`, literal and safe-call expressions | `toColor` | 1 | ported |
-| `paraparser.go` applyParaAttrs, `<bullet>` | indents, justify, bullets, borders, autoLeading, endDots, textTransform, wordWrap, uriWasteReduce, embeddedHyphenation, hyphenationLang | `Paragraph` | 1 | ported |
-| `header.go` loadJPEG, `paraparser.go` loadImageSource | logos and `<img>` that are not JPEG, JPEG Go cannot decode, empty or unknown data | Pillow + `PDFImageXObject`; `cannot identify image file <_io.BytesIO object at 0x...>` | 1; X18 (address); X19 (codec libraries) | `internal/pilimage`, `image.go` |
-| `resource.go` readURL | `ftp:` image source | `urlopen` FTP | 4 (closest answer: the same transfer) | `resource_ftp.go` |
-| `sequencer.go` | template width > 2**20, counters beyond int64 | `%` padding, Python ints | 1; 4 (host memory) | padded to 2**20 spaces (same layout), exact counters |
-
-X18: the reportlab `Table` repr of `service/report_files.go` now uses `pystr.ObjectAddress` (`0x7f0000000000`) like the
-other placeholders. X19 is new (image codec libraries, `accepted-divergences.md`).
-
-## Long tail 5B, agent B: the pandas readers' last refusals
-
 `pandasxlsx.ErrWorkbookNotPorted` is deleted; each of its four sites answers natively with its closest Django answer
 (owner decision of 2026-11-16, long-tail rule 4). Evidence: pandas 2.2.3 with openpyxl 3.1.5 on the reference
 interpreter.
@@ -2033,3 +2031,38 @@ interpreter.
 Goldens: `go test ./internal/pandasxlsx` accepts every reading pandas makes (6,273 of 6,273 without converters, 11,110
 of 11,110 with the text converter). Parity: `subscription-import-upload-xlsx-duration-label-past-timedelta` and
 `-xlsx-row-past-the-frame-bound` (upload step, columns answer).
+
+## Long tail PR 5, agent C
+
+Request values and MCP: the PR 4 review's handoffs, the subscription, persona, audit, smtpsend, instructor and paid-flow
+points, and the review's findings outside the refusal sites. A state the association import can write is reachable.
+Recursion bands (X15) were measured on the harness's Django (CPython 3.13.16) with probe requests at every depth around
+the edges; D is the nesting `auditJSONDepth` counts. Per-site evidence: the commits of `go-v2only/lt5-C`.
+
+| Site | Condition | Now | Evidence |
+|---|---|---|---|
+| `dto.errMCPJSONCoerced` (deleted) | a JSON key lookup or `has_key` with a value `_coerce_filter_values` coerced (a key named like a field of the same model) | **ported**: `json.dumps` of the int/float; a date/datetime raises `Object of type ... is not JSON serializable` when the statement would run (after a compile error); `has_key` sends the adapted literal | mcp-server-tools new cases; templates-reports `run-query-carnets-meta-key-*` |
+| `dto/mcp_query.go` (finding) | `key__iexact=None` | **fixed**: the isnull lookup on the key transform (`->`) | mcp-server-tools `meta__b__iexact: None` |
+| `service.errReportEnvironmentNotPorted` (deleted) | `MCP_AGENT_MAX_RESULTS`/`QUERY_TIMEOUT` beyond int64, and read through django-environ | **ported** (X14 for the environment): configured texts (proxies, env file), Python ints, exact limit compare, `LIMIT` and `SET statement_timeout` texts as Django sends them; PostgreSQL's rejection of an unusable timeout is the tool's exception | `TestLoadReportSettings*`, `instance_ai_texts_test.go` |
+| `service.errReportLabelNonFinite` (deleted) | an XLSX label float() reads as ±inf; NaN/Infinity labels from agent arguments | **ported**: pandas `na_rep`/`inf_rep` headers | templates-reports `run-export-xlsx-label-*infinity` |
+| `report_files.go`, `stripe_routes.go` (finding) | object address placeholder | `pystr.ObjectAddress` everywhere (X18) | unit tests |
+| `smtpsend.ErrEncodedWordCharset`, `domain.ErrSendEmailNotPorted` (deleted) | an `idna` encoded word in an address | **ported**: CPython's strict idna decode in `pycodecs` (nameprep tables and the Unicode 3.2.0 NFKC CPython runs, generated from CPython, corpora 100%); other render errors are the 500 page | `TestIDNA*`, smtpsend idna tests |
+| `domain.ErrInstructorWritesNotPorted` (deleted) | compensation notes: long NaN payloads, exponents past ±999999999, subnormal products | **ported**: the exact Decimal constructor and the default context's product | instructor-writes `comp-nan-payload-and-subnormal-decimals` |
+| `domain.ErrPaymentStateNotPorted` (deleted) | paid flow of an athlete who owns an imported association | **ported**: runs as for the owner; the notification's `association_id` is null for that role | payment-state new cases |
+| `service.errCourseEnrolmentFormJSONBand` (deleted) | form `multiple_quote` 9929..9942 | **X15 per path**: below 9943 another invalid field answers its 400; the stored value's depth >= 9934 fails the row INSERT (every course type), >= 9929 the quote payment (multiple-quote courses); add rolls back, the router create keeps what ran before | course-enrolment, router-course-subscriptions-create new cases |
+| camps service update (finding) | 'Quota Corso' with a non-text `meta.description` saved twice | **fixed**: the second save of the same instance raises `'<type>' object has no attribute 'lower'` (JSON 500, first save kept) | camps-periods new cases |
+| `dto.ErrAuditNotPorted` (deleted) | instructor hours update form `courses`/`calculation_data` nested past 500 | **X15**: read deep; D >= 9942 the validation 500 (nothing written, whatever the other fields); a stored value of depth 9939..9941 keeps the pre_save entry with the row unchanged (500); a digit-limit integer is the field's 400 | instructor-hours new cases |
+| `service.ErrPersonaNotPorted` (deleted) | router `POST /personas/`: base64 picture, HTML form body | **ported**: picture before the field validation, stored before the row (with `tutors_data` the TypeError follows the upload); DRF's form rules | router-personas, personas-writes new cases |
+| `domain.ErrSubscriptionCreateNotPorted` (deleted) | `saveAssociateByID`: non-canonical `associate_id`, the tax-code `IntegrityError` fallbacks, a tutor naming the minor's own key; renew: the 400 text of Python exceptions, a collaborator association account, the course loop | **ported**: the sent key spelling kept on the instance and in auditlog's entries, the savepoint fallbacks, psycopg2's IntegrityError text; renew answers `str(e)` of the raise sites it reaches and runs a collaborator's renewal in its connected account's association. Left as the 500 page where renew's 400 would quote a psycopg2/decimal text (non-text names at the existence check, smallint overflow, non-finite stored amounts) | subscription-create, subscription-renew new cases |
+| Stripe paid flow, payment add (finding, as camps) | one instance saved twice | the in-memory description carried | stripe-routes webhook case |
+| release cache (finding, X14) | values Django caches from the feed | **read and served** (generic values, pickled back, DRF rendering) | instance-outbound `releases-*-values` |
+| saved reports / MCP timeout (follow-up) | an unusable statement timeout with an answer Django gives after its SET | the SET is sent at QueryBuilder's own points | `report_timeout_check_test.go` |
+
+Refusal reach (`refusal_reach.py`, base `82e1bde7`): this agent's eleven points are gone (47 rows: 34 HTTP/WebSocket not
+accepted, 4 `/ws/agent/` rows accepted under X11, 9 other). `--http`: 86 -> 52 on this branch alone; the three
+`/ws/agent/` accepted lines of the removed reasons are dropped from `accepted-divergences.md`.
+
+Measurement note (X15): the probes sent the same form bodies to native Django at every depth around each edge (coarse
+points, then bisection), recording status, body shape, created rows and audit entries. The bands depend on the stored
+value's depth for the dumps and on the text's depth for DRF's validation (a repeated key's overwritten deep text
+validates deep and stores shallow); the parity cases keep a margin and the edges are Go tests.
