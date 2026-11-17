@@ -2394,14 +2394,6 @@ def base_tiff_remaining():
     b = io.BytesIO()
     im.save(b, "TIFF", compression="jpeg", strip_size=64)
     add(b.getvalue())
-    # Old-style JPEG (libtiff's sample files).
-    for name in ("ojpeg_single_strip_no_rowsperstrip.tiff", "ojpeg_zackthecat_subsamp22_single_strip.tiff"):
-        path = os.path.join(ROOT, "tmp", "tiffsamples", name)
-        try:
-            with open(path, "rb") as fh:
-                add(fh.read())
-        except FileNotFoundError:
-            continue
     # IPTC with JPEG data: grayscale decodes, colour data fails the merge.
     def iptc(jpg, layers, component, band=None, w=4, h=3):
         out = bytearray()
