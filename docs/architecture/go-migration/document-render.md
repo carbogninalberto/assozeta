@@ -148,14 +148,26 @@ skipped alone. pypdf then fills the form from the saved file. Go reproduces that
 the images to its own filled form as an incremental update (`medicalform.FillBiellaWithImages`): the answer is a different
 document with the same pixels, the owner-approved divergence X8 ("visually equal PDF, not byte-equal").
 
-- **Images MuPDF opens**: PNG (every colour type and bit depth, interlaced, tRNS), JPEG (baseline, progressive, grayscale,
-  CMYK, and a file cut after its scan header), GIF, BMP, TIFF, PNM, PSD and others. Go decodes PNG, JPEG and GIF with the
-  standard library; BMP, TIFF, PNM and PSD files are refused, so for those (never a signature or stamp so far) Go answers
-  the plain fill where Django draws one.
-- **Samples**: MuPDF embeds a JPEG as its own `/DCTDecode` stream and every other image as 8-bit DeviceGray or DeviceRGB
-  samples with the alpha channel as an `/SMask` (1 bit per component when every alpha sample is 0 or 255, else 8), with the
-  colour samples premultiplied and divided by alpha again (`fz_mul255`, `fz_div255`) and 16-bit samples reduced to their
-  high byte. Go writes the same samples, mask and filters, so the renderer sees the same image data.
+- **Images MuPDF opens**: PNG, JPEG, GIF, BMP, TIFF, PNM (P1-P6, PAM P7 and PFM), PSD, JPEG 2000, JBIG2 and JPEG XR.
+  Go decides with its own loaders modelled on MuPDF 1.25.5's `load-*.c`, matching `fz_recognize_image_format`'s order:
+  PNG (every colour type and bit depth, Adam7, tRNS, and MuPDF's leniency: chunk CRCs and unknown chunks are ignored, a
+  missing IEND and bytes after IEND are tolerated, a zero-length IDAT or bytes the zlib stream leaves unconsumed are
+  refused, an IHDR with no image data opens with 0xff samples, and a zlib stream cut in the middle of a symbol opens with
+  the samples zlib decodes: `inflateZlib` mirrors zlib's answer, where `compress/flate` stops one symbol short of it on
+  truncated input because it raises the literal table's minimum code length to the end-of-block code's length), JPEG (the
+  marker segments up to a complete start of scan are validated as libjpeg does; the file itself is embedded as one
+  `/DCTDecode` stream, so scan data is never re-encoded), GIF (every image block is painted on one canvas, so an animation
+  draws its frames composited; a short LZW stream is zero-padded and an out-of-range code abandons that frame without
+  refusing the file), BMP (Windows v3/v4/v5 and OS/2 headers, 1/2/4/8/16/24/32/64-bit pixels, RLE4/RLE8/RLE24, bit fields
+  and alpha masks, top-down rows, the default palettes and the zero rows of a truncated bitmap), TIFF (strips and tiles;
+  none, LZW, PackBits, Deflate with predictor 2 and JPEG compression; WhiteIsZero, palettes, CMYK, extra samples as alpha
+  and 1/2/4/8/16-bit samples) and PSD (RGB, gray and CMYK at 8 or 16 bits, raw or PackBits, planes in channel order).
+  JPEG 2000 and JBIG2 (and JPEG XR where MuPDF is built with it) are the formats MuPDF recognises that Go still refuses.
+- **Samples**: MuPDF embeds a JPEG as its own `/DCTDecode` stream (CMYK with the `/Decode` inversion) and every other image
+  as 8-bit DeviceGray, DeviceRGB or DeviceCMYK samples with the alpha channel as an `/SMask` (1 bit per component when
+  every alpha sample is 0 or 255, else 8), with the colour samples premultiplied and divided by alpha again (`fz_mul255`,
+  `fz_div255`) and 16-bit samples reduced to their high byte. Go writes the same samples, mask and filters, so the renderer
+  sees the same image data.
 - **Placement**: `calc_image_matrix` keeps the image's aspect ratio inside the rectangle and centres it
   (`keep_proportion=True`, no rotation, no DPI scaling); the rectangle is mapped through `~page.transformation_matrix` (a
   y-flip at the MediaBox height on the unrotated page) and the content stream `q <matrix> cm /fzImgN Do Q` is appended
@@ -164,12 +176,18 @@ document with the same pixels, the owner-approved divergence X8 ("visually equal
 - **Comparison**: the authored `<form-pdf-visual>` cases (signature only, signature and JPEG stamp, a stamp MuPDF cannot
   open, and one download variant) are compared by rendering every page of the received and the expected PDF with PyMuPDF
   at 100 dpi: equal page count, equal page size, and every channel within `PIXEL_TOLERANCE` (1). The authored cases
-  measure a difference of 0 on all three pages (827x1170x3), as do the 36 PNG/JPEG/GIF files of the authoring corpus
-  (29 of them with an overlay: RGBA, gray, gray+alpha, palette, palette+tRNS, 1/2/4/16-bit grey, 16-bit RGB(A), RGB+tRNS,
-  GIF opaque and transparent, odd widths, 1x1, JPEG RGB/gray/CMYK/progressive/trailing bytes and a JPEG cut after its scan
-  header). The same
+  measure a difference of 0 on all three pages (827x1170x3). A 284-file authoring corpus also pins the open decision and
+  the samples against PyMuPDF 1.25.5 (`insert_image` plus the pixmap of the image object); 282 files are comparable (one is
+  the corpus manifest, one an empty stream PyMuPDF refuses before MuPDF sees it). The decision matches on all 282: 39 are
+  refused by both and 243 open, of which 241 decode to byte-identical samples. Two differ: the strips of the two TIFF files
+  compressed with JPEG differ by at most 1 in 755 of 17751 samples, because MuPDF decodes them with libjpeg's integer IDCT
+  and colour conversion while Go uses `image/jpeg` (a JPEG in a `.jpg` file is embedded as `/DCTDecode` instead, byte for
+  byte). The end-to-end comparison (Django's fill against Go's filled form, signature and stamp rectangles, 100 dpi) is 0
+  on every one of the 284 files: the widest channel difference of any rendered page is 1, on those two TIFF files. The same
   comparison checks the object the view stored. A signature MuPDF cannot open keeps the exact `<form-pdf>` comparison: its
-  block is skipped, so the bytes are Django's plain fill.
+  block is skipped, so the bytes are Django's plain fill. The decisions are table tests over files generated in the test
+  (`overlay_formats_test.go`, `TestImageFormatDecisions`), and `image_inflate_test.go` pins the truncated zlib stream to
+  zlib's samples.
 
 ## Biella without a primary tutor (v2-rest-docs)
 

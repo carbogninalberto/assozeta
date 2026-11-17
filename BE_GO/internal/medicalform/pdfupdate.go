@@ -842,8 +842,11 @@ func (d *pdfDocument) imageBody(asset imageAsset, write func(int, []byte) int) [
 		return body.Bytes()
 	}
 	colour := "/DeviceRGB"
-	if asset.gray {
+	switch {
+	case asset.gray:
 		colour = "/DeviceGray"
+	case asset.cmyk:
+		colour = "/DeviceCMYK"
 	}
 	fmt.Fprintf(&body, "<< /Type /XObject /Subtype /Image /Width %d /Height %d /BitsPerComponent 8 /ColorSpace %s /Filter /FlateDecode /Length %d",
 		asset.width, asset.height, colour, len(flate(asset.color)))
