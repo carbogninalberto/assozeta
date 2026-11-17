@@ -104,7 +104,8 @@ four or more levels away from an edge. DRF's response rendering reads 9946 level
 | `stripe/pay/<id>` | 9935 | 9933 | 9925 | |
 | `stripe/multiple-pay` | 9932 | 9932 | 9926 | the serializer's load is the first |
 | `stripe/webhook` | 9936 | 9934 | 9926 | its `except Exception` answers 200 |
-| Celery `association_quote_assign`, `mark_as_paid_payments_checking_stripe` | not measured | | | from 9800 levels the job keeps handing the work to Django (`errPaymentStoredJSONWorkerBand`) |
+| Celery `association_quote_assign` | 9935 | 9933 | 9925 | worker stack not measured: the HTTP payment load edges (X15, long tail PR 5 combine); past the load the plan's queryset raises and the run ends, keeping earlier creates |
+| Celery `mark_as_paid_payments_checking_stripe` | 9936 | 9934 | 9926 | worker stack not measured: the webhook's edges (same `mark_payment_as_paid`); a candidate past the load ends the task before any payment (the main thread's `list()`), a save or index failure is one failed payment and the loop goes on |
 
 ## Not ported
 

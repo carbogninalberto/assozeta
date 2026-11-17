@@ -468,11 +468,11 @@ func TestRestoreUploadJSONEdge(t *testing.T) {
 // TestMeasuredStoredJSONEdges pins the per-call edges of owner decision X15.
 func TestMeasuredStoredJSONEdges(t *testing.T) {
 	for name, edge := range map[string]struct{ got, want int }{
-		"instructor report":      {instructorReportJSONEdge, 9940},
-		"import validation":      {importValidationJSONEdge, 9942},
-		"data restore upload":    {dataRestoreUploadJSONEdge, 9942},
-		"Celery restore":         {restoreInstanceJSONEdge, 9975},
-		"Celery import hand-off": {consumerImportJSONRefuseDepth, 9800},
+		"instructor report":   {instructorReportJSONEdge, 9940},
+		"import validation":   {importValidationJSONEdge, 9942},
+		"data restore upload": {dataRestoreUploadJSONEdge, 9942},
+		"Celery restore":      {restoreInstanceJSONEdge, 9975},
+		"Celery import":       {consumerImportJSONEdge, 9975},
 	} {
 		if edge.got != edge.want {
 			t.Errorf("%s edge = %d, want %d", name, edge.got, edge.want)

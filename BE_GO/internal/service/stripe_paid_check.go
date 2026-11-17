@@ -40,12 +40,20 @@ func NewStripePaidCheck(store domain.StripePaidCheckStore, stripe *StripeRoutes,
 // re-raises: the block is rolled back and the loop goes on.
 var errStripePaidCheckException = errors.New("stripe paid check: python exception")
 
+// stripePaidCheckJSONEdges are the paid check's edges for the stored payment
+// JSON its mark flow loads. The Celery worker's stack is not measured: owner
+// decision X15 answers with the band measured for the HTTP site that runs the
+// same mark_payment_as_paid (the Stripe webhook).
+var stripePaidCheckJSONEdges = stripeWebhookJSONEdges
+
 // stripePaidCheckPython reports the domain errors that stand for a Python
-// exception inside the paid flow.
+// exception inside the paid flow. A stored payment past the mark's load edge is
+// a RecursionError inside the thread-pool future: it is a counted failure and
+// the loop goes on.
 func stripePaidCheckPython(err error) bool {
 	for _, target := range []error{domain.ErrStripeServer, domain.ErrPaymentStateServer, domain.ErrInvoiceCoreServer, domain.ErrInvoicePartyServer,
 		domain.ErrInvoicePartyMissing, domain.ErrPaymentDescription, domain.ErrPaymentSaveScope, ErrPaymentSaveFailed,
-		errStripePaidCheckException} {
+		errStripePaidCheckException, errPaymentStoredJSONRecursion} {
 		if errors.Is(err, target) {
 			return true
 		}
@@ -98,10 +106,27 @@ func (s *StripePaidCheck) plan(ctx context.Context, job domain.Job) ([]string, e
 		return nil, err
 	}
 	ids, err := tx.StripePaidCheckPayments(ctx)
-	_ = tx.Rollback()
 	if err != nil {
+		_ = tx.Rollback()
 		return nil, err
 	}
+	// Django's list() loads every candidate before the pool starts: a
+	// RecursionError there ends the task with nothing written. The candidates
+	// are all locked in this planning transaction first, so the order of ids
+	// does not decide whether the run stops.
+	for _, id := range ids {
+		row, err := tx.LockStripePaidCheck(ctx, id)
+		if err != nil {
+			_ = tx.Rollback()
+			return nil, err
+		}
+		if row != nil && paymentJSONTextsDepth(row.MetaPaymentCategories, row.Meta, row.Course) > stripePaidCheckJSONEdges.Load {
+			_ = tx.Rollback()
+			s.logger.WarnContext(ctx, "stripe paid check stopped", "code", "stripe_paid_check_json_recursion")
+			return nil, nil
+		}
+	}
+	_ = tx.Rollback()
 	dry := *s.stripe
 	dry.publisher = stripePaidCheckDiscard{}
 	for _, id := range ids {
@@ -202,15 +227,10 @@ func (s *StripePaidCheck) check(ctx context.Context, job domain.Job, id string, 
 // print_document_invoice).
 func (s *StripePaidCheck) mark(ctx context.Context, tx domain.StripePaidCheckTransaction, stripe *StripeRoutes,
 	row domain.StripePaidCheckPayment) (*paymentPaidFlowNotification, error) {
-	// The job runs on a Celery worker whose stack has not been measured: a
-	// stored value in the band where the recursion edge moves with the caller's
-	// stack keeps its handoff, and below it every measured stack parses, so the
-	// save parses without the reference parser's limit.
-	if paymentJSONTextsFailureAt(row.MetaPaymentCategories, row.Meta, row.Course, paymentJSONWorkerBand-1) != nil {
-		return nil, errPaymentStoredJSONWorkerBand
-	}
-	ctx = withPaymentJSONEdges(ctx, paymentJSONEdges{Load: paymentJSONWorkerBand - 1, Save: paymentJSONWorkerBand - 1,
-		Index: paymentJSONWorkerBand - 1})
+	// The job runs on a Celery worker whose stack has not been measured: X15
+	// answers with the band measured for the webhook, the HTTP site that runs
+	// the same mark_payment_as_paid (owner decision).
+	ctx = withPaymentJSONEdges(ctx, stripePaidCheckJSONEdges)
 	now := stripe.at()
 	if row.Type != "stripe" {
 		if err := tx.SaveStripePaidCheckType(ctx, row, now); err != nil {

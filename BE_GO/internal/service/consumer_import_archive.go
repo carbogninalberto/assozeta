@@ -134,27 +134,33 @@ func archiveBadCRC(err error) bool {
 		strings.HasPrefix(exc.Text, "Bad CRC-32 for file ")
 }
 
-// consumerImportJSONRefuseDepth is where the Celery import_association_data
-// worker hands a JSON document to Django instead of parsing it. This call site
-// was not measured (owner decision X15): the prefork worker's C stack is not
-// the request thread's, so from 9800 levels the message stays with Django; a
-// shallower document is parsed below.
-const consumerImportJSONRefuseDepth = 9800
+// consumerImportJSONEdge is the deepest container nesting (AuditJSONDepth:
+// "[]" counts 1) that json.loads and iter_json_array items parse in the Celery
+// import_association_data prefork worker. It was measured for the same worker
+// and parsers in the restore_instance_data task (owner decision X15); the
+// request thread's edge is 9942. An item of a data file Django streams with
+// iter_json_array sits one level inside the file's array, so those callers pass
+// consumerImportJSONEdge+1.
+const consumerImportJSONEdge = restoreInstanceJSONEdge
 
 // consumerImportJSON is json.loads(data) (and iter_json_array for an array)
 // for UTF-8 input without a byte order mark: the same Python JSON the restore
 // reads (NaN/Infinity literals, duplicate keys, JSON nesting, CPython's
-// 4300-digit integer limit). Undecodable input, and nesting the unmeasured
-// worker site hands off, is errImportArchive.
-func consumerImportJSON(data []byte) (any, error) {
+// 4300-digit integer limit). Undecodable input is errImportArchive; nesting
+// deeper than edge is Django's RecursionError.
+func consumerImportJSON(data []byte, edge int) (any, error) {
 	if bytes.HasPrefix(data, []byte("\xef\xbb\xbf")) || !utf8.Valid(data) {
 		return nil, errImportArchive
 	}
-	value, err := dto.PythonJSONLoadsEdge(data, consumerImportJSONRefuseDepth-1)
+	value, err := dto.PythonJSONLoadsEdge(data, edge)
+	var recursion *dto.StoredJSONRecursionError
 	switch {
 	case errors.Is(err, dto.ErrStoredJSONInteger):
 		// json.loads' ValueError, with the offending token's digit count.
 		return nil, &importeffects.DjangoError{Class: "ValueError", Message: importIntegerDigitsMessage(data)}
+	case errors.As(err, &recursion):
+		// json.loads' RecursionError, reported by the task's except.
+		return nil, &importeffects.DjangoError{Class: "RecursionError", Message: recursion.Error()}
 	case err != nil:
 		return nil, errImportArchive
 	}

@@ -133,7 +133,15 @@ func (s *QuoteAssign) plan(ctx context.Context, job domain.Job, now time.Time) (
 				return nil, err
 			}
 			if err = quoteAssignStoredJSON(subscriptions); err != nil {
-				return nil, err
+				if !errors.Is(err, errPaymentMiscStop) {
+					return nil, err
+				}
+				// The queryset materializes here and raises RecursionError, so
+				// the real pass stops at this plan: the earlier plans of this
+				// association still run, then association() meets the same
+				// error and ends the task.
+				out = append(out, item)
+				return out, tx.Rollback()
 			}
 			for _, subscription := range subscriptions {
 				if subscription.UserID == row.OwnerID || subscription.AssociateID == nil {
@@ -215,14 +223,19 @@ func (s *QuoteAssign) subscriptions(ctx context.Context, job domain.Job, associa
 	return rows, quoteAssignStoredJSON(rows)
 }
 
+// quoteAssignJSONEdges are the job's edges for the stored payment JSON of the
+// subscriptions it materializes. The Celery worker's stack is not measured:
+// owner decision X15 uses the band measured for the HTTP payment loads.
+var quoteAssignJSONEdges = paymentArchiveJSONEdges
+
 // quoteAssignStoredJSON is the task's json.loads of the subscriptions' payment
-// rows (select_related): below the worker band every measured stack parses, and
-// a value in the unmeasured band is handed to Django like any other refusal of
-// this job.
+// rows (select_related): a payment nested past the load edge raises
+// RecursionError while the queryset materializes, which Django's outer except
+// turns into the end of the run (the payments created before stay committed).
 func quoteAssignStoredJSON(rows []domain.QuoteAssignSubscription) error {
 	for _, row := range rows {
-		if paymentJSONTextsDepth(row.PaymentMetaPaymentCategories, row.PaymentMeta, row.PaymentCourse) >= paymentJSONWorkerBand {
-			return errPaymentStoredJSONWorkerBand
+		if paymentJSONTextsDepth(row.PaymentMetaPaymentCategories, row.PaymentMeta, row.PaymentCourse) > quoteAssignJSONEdges.Load {
+			return errPaymentMiscStop
 		}
 	}
 	return nil
@@ -274,14 +287,9 @@ func (s *QuoteAssign) quote(ctx context.Context, job domain.Job, row domain.Quot
 	m.row.Amount, m.amountAudit, m.amountShown = fee.Value, &fee.Audit, &fee.Value
 	m.amountFloat = fee.Float
 	m.setJSON("meta", paymentQuoteMeta(plan), &m.row.Meta)
-	// The created row's JSON is the task's own meta, far below the worker band;
-	// the band itself is a handoff (the worker's stack is not measured), and
-	// below it every measured stack parses the row.
-	if paymentJSONTextsDepth(m.row.MetaCategories, m.row.Meta, m.row.Course) >= paymentJSONWorkerBand {
-		return false, errPaymentStoredJSONWorkerBand
-	}
-	ctx = withPaymentJSONEdges(ctx, paymentJSONEdges{Load: paymentJSONWorkerBand - 1, Save: paymentJSONWorkerBand - 1,
-		Index: paymentJSONWorkerBand - 1})
+	// The task runs on a Celery worker whose stack was not measured: X15 uses
+	// the band measured for the HTTP payment loads (owner decision).
+	ctx = withPaymentJSONEdges(ctx, quoteAssignJSONEdges)
 	if _, err = s.writes.defaults(ctx, tx, m); err != nil {
 		return false, err
 	}

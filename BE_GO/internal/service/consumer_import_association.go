@@ -479,7 +479,7 @@ func (r *consumerImportRun) validate() ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	decoded, err := consumerImportJSON(data)
+	decoded, err := consumerImportJSON(data, consumerImportJSONEdge)
 	if err != nil {
 		return nil, err
 	}
@@ -666,7 +666,9 @@ func (r *consumerImportRun) skippedRecords(manifest domain.RequestObject) (celer
 		if err != nil {
 			return nil, err
 		}
-		decoded, err := consumerImportJSON(data)
+		// skipped_records streams the retired section with iter_json_array: an
+		// item is one level inside the file's array.
+		decoded, err := consumerImportJSON(data, consumerImportJSONEdge+1)
 		if err != nil {
 			return nil, err
 		}
@@ -705,7 +707,7 @@ func (r *consumerImportRun) loadIdentity() (domain.RequestObject, domain.Request
 	if err != nil {
 		return nil, nil, err
 	}
-	decoded, err := consumerImportJSON(data)
+	decoded, err := consumerImportJSON(data, consumerImportJSONEdge)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -779,7 +781,7 @@ func (r *consumerImportRun) preflight() error {
 		files[entry.Model] = append(files[entry.Model], "data/"+entry.File)
 	}
 	if data, err := r.archive.read("manifest.json"); err == nil {
-		if decoded, err := consumerImportJSON(data); err == nil {
+		if decoded, err := consumerImportJSON(data, consumerImportJSONEdge); err == nil {
 			if manifest, ok := decoded.(domain.RequestObject); ok {
 				specs, _ := importGet(manifest, "models_exported")
 				list, _ := specs.([]any)
@@ -822,7 +824,9 @@ func (r *consumerImportRun) records(name string) ([]any, error) {
 	if err != nil {
 		return nil, err
 	}
-	decoded, err := consumerImportJSON(data)
+	// Django streams a data file with iter_json_array: an item is one level
+	// inside the file's array, so the item's edge is one deeper.
+	decoded, err := consumerImportJSON(data, consumerImportJSONEdge+1)
 	if err != nil {
 		return nil, err
 	}
@@ -884,7 +888,7 @@ func (r *consumerImportRun) importAll() error {
 	if err != nil {
 		return err
 	}
-	decoded, err := consumerImportJSON(data)
+	decoded, err := consumerImportJSON(data, consumerImportJSONEdge)
 	if err != nil {
 		return err
 	}

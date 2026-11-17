@@ -55,16 +55,6 @@ func paymentJSONEdgesOf(ctx context.Context) (paymentJSONEdges, bool) {
 // answers with the 500 page, so Go answers the same page itself.
 var errPaymentStoredJSONRecursion = refusal.AppState("payment save: stored JSON nested past the view's measured recursion edge")
 
-// errPaymentStoredJSONWorkerBand is a stored payment JSON column nested in the
-// band where the recursion edge depends on the caller's stack, met by a Celery
-// job whose Django worker stack has not been measured: the job keeps handing
-// such a payment to Django. Below the band every measured stack parses.
-var errPaymentStoredJSONWorkerBand = refusal.New("payment save: stored JSON in the unmeasured recursion band of a worker")
-
-// paymentJSONWorkerBand is the first nesting of that band: every view measured
-// parses deeper than this, and so does a worker's shallower stack.
-const paymentJSONWorkerBand = 9800
-
 // PaymentStoredJSONRecursionError is the RecursionError Django raises while
 // loading a payment's stored JSON at the view's measured depth. AfterWrites is
 // whether the view's writes made before payment.save() stay committed. Text is

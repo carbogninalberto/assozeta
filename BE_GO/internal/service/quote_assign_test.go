@@ -5,51 +5,48 @@ import (
 	"testing"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
-// association_quote_assign's stack as a Celery worker has not been measured
-// (owner decision X15): a stored payment of one of its subscriptions past the
-// worker band is handed to Django like the job's other refusals, and below it
-// every measured stack parses the row.
-func TestQuoteAssignStoredPaymentJSONWorkerBand(t *testing.T) {
-	if paymentJSONWorkerBand != 9800 {
-		t.Fatalf("band=%d, want 9800", paymentJSONWorkerBand)
-	}
+// association_quote_assign materializes each plan's subscriptions (and their
+// select_related payments) before the loop body: a payment nested past the load
+// edge raises RecursionError there, which the task's outer except turns into
+// the end of the run. The worker's stack was not measured, so X15 uses the band
+// measured for the HTTP payment loads (owner decision).
+func TestQuoteAssignStoredPaymentJSONEdge(t *testing.T) {
 	for _, test := range []struct {
 		name    string
 		text    *string
-		refusal bool
+		stopped bool
 	}{
 		{name: "no columns", text: nil},
 		{name: "shallow", text: jsonEdgesArray(12)},
-		{name: "below the band", text: jsonEdgesArray(paymentJSONWorkerBand - 1)},
-		{name: "at the band", text: jsonEdgesArray(paymentJSONWorkerBand), refusal: true},
-		{name: "past the band", text: jsonEdgesArray(paymentJSONWorkerBand + 1), refusal: true},
+		{name: "below the edge", text: jsonEdgesArray(quoteAssignJSONEdges.Load - 1)},
+		{name: "at the edge", text: jsonEdgesArray(quoteAssignJSONEdges.Load)},
+		{name: "past the edge", text: jsonEdgesArray(quoteAssignJSONEdges.Load + 1), stopped: true},
 	} {
 		rows := []domain.QuoteAssignSubscription{{ID: "subscription", PaymentMetaPaymentCategories: test.text}}
 		err := quoteAssignStoredJSON(rows)
-		if !test.refusal {
+		if !test.stopped {
 			if err != nil {
 				t.Fatalf("%s: err=%v", test.name, err)
 			}
 			continue
 		}
-		if !errors.Is(err, errPaymentStoredJSONWorkerBand) || !errors.Is(err, refusal.ErrNotPorted) {
-			t.Fatalf("%s: err=%v, want the worker handoff", test.name, err)
-		}
-		if errors.Is(err, refusal.ErrAppState) {
-			t.Fatalf("%s: the worker band must stay a handoff", test.name)
+		if !errors.Is(err, errPaymentMiscStop) {
+			t.Fatalf("%s: err=%v, want the task's stop", test.name, err)
 		}
 	}
 
-	// The job's own creates keep the worker band as their load, save and index
-	// edge: a row deeper than the band is the handoff, one at it is parsed.
-	edges := paymentJSONEdges{Load: paymentJSONWorkerBand - 1, Save: paymentJSONWorkerBand - 1, Index: paymentJSONWorkerBand - 1}
-	if _, err := paymentJSONStoredEdges(nil, jsonEdgesArray(paymentJSONWorkerBand-1), nil, edges); err != nil {
-		t.Fatalf("below the band: %v", err)
+	// The run's own creates keep those edges: a row up to the save edge parses
+	// (the index entry falls back past Index), one past it raises the save's
+	// RecursionError.
+	if fallback, err := paymentJSONStoredEdges(nil, jsonEdgesArray(quoteAssignJSONEdges.Index+1), nil, quoteAssignJSONEdges); err != nil || !fallback {
+		t.Fatalf("index past: fallback=%v err=%v", fallback, err)
 	}
-	if _, err := paymentJSONStoredEdges(nil, jsonEdgesArray(paymentJSONWorkerBand), nil, edges); !errors.As(err, new(*PaymentStoredJSONRecursionError)) {
-		t.Fatalf("at the band: %v, want the recursion error", err)
+	if _, err := paymentJSONStoredEdges(nil, jsonEdgesArray(quoteAssignJSONEdges.Save), nil, quoteAssignJSONEdges); err != nil {
+		t.Fatalf("save at: %v", err)
+	}
+	if _, err := paymentJSONStoredEdges(nil, jsonEdgesArray(quoteAssignJSONEdges.Save+1), nil, quoteAssignJSONEdges); !errors.As(err, new(*PaymentStoredJSONRecursionError)) {
+		t.Fatalf("save past: %v, want the recursion error", err)
 	}
 }
