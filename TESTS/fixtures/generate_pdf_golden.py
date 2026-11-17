@@ -843,6 +843,178 @@ CASES += [
 ]
 
 
+# Hyphenation (no pyphen is installed: a language leaves the line breaking alone), embedded hyphens and URI
+# splitting, in text and in narrow table cells.
+HYPHENATED = 'poli-sportiva contro-mano sotto-passo fuori-programma porta-tessera '
+LONG_URL = 'https://example.test/uno/due/tre/quattro/cinque/sei/sette/otto/nove/dieci?chiave=valore'
+WIDE_URL = LONG_URL + '&altra=cosa&terza=altra&quarta=quattro&quinta=cinque&sesta=sei'
+BEFORE_URL = 'parola ' * 6
+PATH_LIKE = 'prima/dopo/ancora/avanti/indietro/sopra/sotto/dentro/fuori'
+EMBEDDED = '<para embeddedhyphenation="1">' + HYPHENATED * 5 + '</para>'
+CASES += [
+    report('rt-hy-lang', ['A'], [['x']], 'Lingua', text_before='<para hyphenationlang="en_GB">' + HYPHENATED * 5 + '</para>'),
+    report('rt-hy-lang-off', ['A'], [['x']], 'Lingua', text_before=HYPHENATED * 5),
+    report('rt-hy-lang-blank', ['A'], [['x']], 'Lingua', text_before='<para hyphenationlang="">' + HYPHENATED * 3 + '</para>'),
+    report('rt-hy-embedded', ['A'], [['x']], 'Trattini', text_before=EMBEDDED),
+    report('rt-hy-embedded-off', ['A'], [['x']], 'Trattini', text_before=HYPHENATED * 5),
+    report('rt-hy-embedded-two', ['A'], [['x']], 'Trattini', text_before='<para embeddedhyphenation="2">' + HYPHENATED + '</para>'),
+    report('rt-hy-embedded-frags', ['A'], [['x']], 'Trattini',
+           text_before='<para embeddedhyphenation="1">' + ('poli-<b>sportiva</b> contro-<i>mano</i> fuori-<b><i>programma</i></b> ' * 10) + '</para>'),
+    report('rt-hy-uri-frag-parts', ['A'], [['x']], 'URI',
+           text_before='<para uriwastereduce="0.3">' + BEFORE_URL + 'https://example.test/<b>uno</b>/due/tre/quattro/cinque/sei?x=1' +
+                       ' <i>https://</i>example.test/uno/due/tre/quattro/cinque</para>'),
+    report('rt-hy-minword', ['A'], [['x']], 'Minimo',
+           text_before='<para embeddedhyphenation="1" hyphenationminwordlength="40">' + HYPHENATED * 5 + '</para>'),
+    report('rt-hy-minword-small', ['A'], [['x']], 'Minimo',
+           text_before='<para embeddedhyphenation="1" hyphenationminwordlength="3">' + HYPHENATED * 5 + '</para>'),
+    report('rt-hy-minword-zero', ['A'], [['x']], 'Minimo',
+           text_before='<para embeddedhyphenation="1" hyphenationminwordlength="0">' + HYPHENATED * 3 + '</para>'),
+    report('rt-hy-uri', ['A'], [['x']], 'URI',
+           text_before='<para uriwastereduce="0.3">' + BEFORE_URL + WIDE_URL + ' e ' + PATH_LIKE + '</para>'),
+    report('rt-hy-uri-off', ['A'], [['x']], 'URI', text_before=BEFORE_URL + WIDE_URL + ' e ' + PATH_LIKE),
+    report('rt-hy-uri-zero', ['A'], [['x']], 'URI',
+           text_before='<para uriwastereduce="0">' + BEFORE_URL + WIDE_URL + '</para>'),
+    report('rt-hy-uri-one', ['A'], [['x']], 'URI', text_before='<para uriwastereduce="1">' + BEFORE_URL + WIDE_URL + '</para>'),
+    report('rt-hy-uri-two', ['A'], [['x']], 'URI', text_before='<para uriwastereduce="2">' + BEFORE_URL + WIDE_URL + '</para>'),
+    report('rt-hy-uri-frags', ['A'], [['x']], 'URI',
+           text_before='<para uriwastereduce="0.3">' + 'scarica <b>' + WIDE_URL + '</b> e <i>' + PATH_LIKE + '</i> ' * 6 + '</para>'),
+    report('rt-hy-cells', ['A', 'B', 'C', 'D', 'E', 'F'],
+           [[HYPHENATED * 2, LONG_URL, PATH_LIKE, EMBEDDED, '<para uriwastereduce="0.3">' + LONG_URL + '</para>',
+             '<para embeddedhyphenation="1" hyphenationminwordlength="3">' + HYPHENATED + '</para>'] for _ in range(4)],
+           'Sillabe'),
+    report('rt-hy-cells-uri', ['URI %d' % i for i in range(8)],
+           [[LONG_URL, PATH_LIKE, '<para uriwastereduce="0.3">' + LONG_URL + '</para>',
+             '<para uriwastereduce="0.1">' + PATH_LIKE + '</para>', HYPHENATED, EMBEDDED,
+             '<para embeddedhyphenation="1">' + PATH_LIKE + '</para>', LONG_URL] for _ in range(3)], 'URI celle'),
+    report('rt-hy-text-cut', ['Nome'], [['x']], 'Tagliato',
+           text_before='<para embeddedhyphenation="1">' + HYPHENATED * 90 + '</para>',
+           text_after='<para uriwastereduce="0.3">' + (BEFORE_URL + WIDE_URL + ' ') * 20 + '</para>'),
+    report('rt-hy-uri-nan', ['A'], [['x']], 'URI', text_before='<para uriwastereduce="nan">' + BEFORE_URL + WIDE_URL + '</para>'),
+    report('rt-hy-uri-inf', ['A'], [['x']], 'URI', text_before='<para uriwastereduce="inf">' + BEFORE_URL + WIDE_URL + '</para>'),
+    report('rt-hy-uri-ninf', ['A'], [['x']], 'URI',
+           text_before='<para uriwastereduce="-inf">' + BEFORE_URL + WIDE_URL + '</para>'),
+    report('rt-hy-nobr', ['A'], [['x']], 'nobr',
+           text_before='<para embeddedhyphenation="1">' + '<nobr>poli-sportiva</nobr> ' * 12 + '</para>'),
+    report('rt-hy-nobr-uri', ['A'], [['x']], 'nobr',
+           text_before='<para uriwastereduce="0.3">' + BEFORE_URL + '<nobr>' + WIDE_URL + '</nobr></para>'),
+    report('rt-hy-nobr-frags', ['A'], [['x']], 'nobr',
+           text_before='<para embeddedhyphenation="1">x <nobr>poli-sportiva</nobr> y poli-sportiva poli-sportiva</para>'),
+    report('rt-hy-frags-minword', ['A'], [['x']], 'Minimo',
+           text_before='<para embeddedhyphenation="1" hyphenationminwordlength="3">' +
+                       ('poli-<b>sportiva</b> a-b contro-<i>mano</i> ' * 8) + '</para>'),
+    report('rt-hy-all', ['A'], [['x']], 'Insieme',
+           text_before='<para uriwastereduce="0.3" embeddedhyphenation="1" hyphenationlang="en_GB" ' +
+                       'hyphenationminwordlength="4">' + BEFORE_URL + WIDE_URL + ' ' + HYPHENATED * 4 + '</para>'),
+    report('rt-hy-nosplit', ['A'], [['x']], 'Intero',
+           text_before='<para embeddedhyphenation="1" splitlongwords="0">' + HYPHENATED * 4 + '</para>'),
+    report('rt-hy-nosplit-uri', ['A'], [['x']], 'Intero',
+           text_before='<para uriwastereduce="0.3" splitlongwords="0">' + BEFORE_URL + WIDE_URL + '</para>'),
+    report('rt-hy-email', ['A'], [['x']], 'Email',
+           text_before='<para uriwastereduce="0.3">' + BEFORE_URL + 'mario.rossi@example.test e ' +
+                       'info@associazione-sportiva.example.test e ' + PATH_LIKE + '</para>'),
+    report('rt-hy-cells-embedded', ['C%d' % i for i in range(12)],
+           [[EMBEDDED if j % 2 else HYPHENATED for j in range(12)] for _ in range(3)], 'Trattini stretti'),
+    report('rt-hy-pages', ['N', 'Testo'], [[str(i), EMBEDDED if i % 2 else '<para uriwastereduce="0.3">' + LONG_URL + '</para>']
+                                          for i in range(60)], 'Sillabe su pagine'),
+]
+
+
+# wordWrap 'RTL': the reversed words of the several-fragment layout, the last line of a justified paragraph, the
+# bullet placed from the right indent and the end dots before the line; and 'LTR', which changes nothing.
+RTL_TEXT = 'il corso di nuoto agonistico per adulti si tiene ogni settimana nella piscina comunale'
+RTL_FRAGS = 'il <b>corso</b> di <i>nuoto</i> &amp; <u>pallanuoto</u> agonistico per adulti'
+CASES += [
+    report('rt-rtl-left', ['A'], [['x']], 'RTL', text_before='<para wordwrap="RTL" align="left">' + RTL_TEXT * 3 + '</para>'),
+    report('rt-rtl-right', ['A'], [['x']], 'RTL', text_before='<para wordwrap="RTL" align="right">' + RTL_TEXT * 3 + '</para>'),
+    report('rt-rtl-center', ['A'], [['x']], 'RTL', text_before='<para wordwrap="RTL" align="center">' + RTL_TEXT * 3 + '</para>'),
+    report('rt-rtl-justify', ['A'], [['x']], 'RTL', text_before='<para wordwrap="RTL" align="justify">' + RTL_TEXT * 3 + '</para>'),
+    report('rt-rtl-frags', ['A'], [['x']], 'RTL', text_before='<para wordwrap="RTL">' + RTL_FRAGS * 4 + '</para>'),
+    report('rt-rtl-frags-justify', ['A'], [['x']], 'RTL',
+           text_before='<para wordwrap="RTL" align="justify">' + RTL_FRAGS * 4 + '</para>'),
+    report('rt-rtl-bullet', ['A'], [['x']], 'RTL',
+           text_before='<para wordwrap="RTL" lindent="18" findent="-9"><bullet>*</bullet>' + RTL_TEXT * 3 + '</para>'),
+    report('rt-rtl-bullet-end', ['A'], [['x']], 'RTL',
+           text_before='<para wordwrap="RTL" align="right" lindent="12" findent="-6"><bullet anchor="end">1.</bullet>' +
+                       RTL_TEXT * 3 + '</para>'),
+    report('rt-rtl-enddots', ['A'], [['x']], 'RTL',
+           text_before='<para wordwrap="RTL" enddots=".">' + RTL_TEXT * 2 + '</para>'),
+    report('rt-rtl-enddots-justify', ['A'], [['x']], 'RTL',
+           text_before='<para wordwrap="RTL" enddots=" ." align="justify">' + RTL_TEXT * 2 + '</para>'),
+    report('rt-rtl-enddots-right', ['A'], [['x']], 'RTL',
+           text_before='<para wordwrap="RTL" enddots="." align="right">' + RTL_TEXT * 2 + '</para>'),
+    report('rt-rtl-enddots-center', ['A'], [['x']], 'RTL',
+           text_before='<para wordwrap="RTL" enddots="." align="center">' + RTL_TEXT * 2 + '</para>'),
+    report('rt-rtl-cells', ['Nome', 'Nota', 'Testo'],
+           [['<para wordwrap="RTL">' + RTL_TEXT + '</para>', RTL_TEXT, '<para wordwrap="RTL" align="justify">' + RTL_TEXT + '</para>']
+            for _ in range(4)], 'RTL celle'),
+    report('rt-rtl-pages', ['N', 'Testo'],
+           [[str(i), '<para wordwrap="RTL" align="%s">%s</para>' % (('left', 'right', 'center', 'justify')[i % 4], RTL_TEXT * 2)]
+            for i in range(40)], 'RTL su pagine'),
+    report('rt-rtl-text-cut', ['Nome'], [['x']], 'Tagliato',
+           text_before='<para wordwrap="RTL" align="justify" enddots=".">' + RTL_TEXT * 60 + '</para>',
+           text_after='<para wordwrap="RTL" lindent="12" findent="-6"><bullet>*</bullet>' + RTL_TEXT * 40 + '</para>'),
+    report('rt-rtl-justifylastline', ['A'], [['x']], 'RTL',
+           text_before='<para wordwrap="RTL" align="justify" justifylastline="0">' + RTL_TEXT * 2 + '</para>'),
+    report('rt-rtl-justifylastline-words', ['A'], [['x']], 'RTL',
+           text_before='<para wordwrap="RTL" align="justify" justifylastline="40">' + RTL_TEXT * 2 + '</para>'),
+    report('rt-rtl-indents', ['A'], [['x']], 'RTL',
+           text_before='<para wordwrap="RTL" lindent="24" rindent="30" findent="-12"><bullet anchor="middle">**</bullet>' +
+                       RTL_TEXT * 3 + '</para>'),
+    report('rt-rtl-autoleading', ['A'], [['x']], 'RTL',
+           text_before='<para wordwrap="RTL" autoleading="max" enddots="." align="justify">' + RTL_TEXT * 2 + '</para>'),
+    report('rt-rtl-frags-split', ['A'], [['x']], 'RTL',
+           text_before='<para wordwrap="RTL" align="justify">' + ('il <b>corso</b> di <i>nuoto</i> &amp; <u>pallanuoto</u> ' * 80) + '</para>'),
+    report('rt-ltr-text', ['A'], [['x']], 'LTR', text_before='<para wordwrap="LTR" align="justify">' + RTL_TEXT * 3 + '</para>'),
+    report('rt-ltr-cells', ['Nome', 'Testo'], [['<para wordwrap="LTR">' + RTL_TEXT + '</para>', RTL_TEXT] for _ in range(3)], 'LTR'),
+    attendance('at-rtl', ('<para wordwrap="RTL">Yoga</para>', ['01/01/2026', '<para wordwrap="RTL" align="right">x</para>'],
+                           [('<para wordwrap="RTL">Rossi</para>', ['P', 'A'])]), ('Nuoto', ['02/01/2026'], [('Neri', ['P'])])),
+]
+
+
+# wordWrap 'CJK': the characters of the line breaking of textsplit, the characters that cannot start a line, the
+# fragments of a line and the table cells of a report.
+JAPANESE = '日本語のテキストを改行するテストです。'
+CHINESE = '中文文本换行测试。'
+KINSOKU = 'あ、い。う！え？お「か」き（く）け、こ。さ'
+CASES += [
+    report('rt-cjk-japanese', ['A'], [['x']], 'CJK', text_before='<para wordwrap="CJK">' + JAPANESE * 6 + '</para>'),
+    report('rt-cjk-chinese', ['A'], [['x']], 'CJK', text_before='<para wordwrap="CJK">' + CHINESE * 8 + '</para>'),
+    report('rt-cjk-mixed', ['A'], [['x']], 'CJK',
+           text_before='<para wordwrap="CJK">' + ('abc def 日本語 ghi jkl 中文 mno ' * 6) + '</para>'),
+    report('rt-cjk-kinsoku', ['A'], [['x']], 'CJK', text_before='<para wordwrap="CJK">' + KINSOKU * 5 + '</para>'),
+    report('rt-cjk-frags', ['A'], [['x']], 'CJK',
+           text_before='<para wordwrap="CJK">' + ('il <b>corso</b> 日本語 <i>nuoto</i> ' * 30) + '</para>'),
+    report('rt-cjk-enddots', ['A'], [['x']], 'CJK', text_before='<para wordwrap="CJK" enddots=".">' + JAPANESE * 8 + '</para>'),
+    report('rt-cjk-justify', ['A'], [['x']], 'CJK',
+           text_before='<para wordwrap="CJK" align="justify">' + (JAPANESE + ' ' + CHINESE) * 6 + '</para>'),
+    report('rt-cjk-autoleading', ['A'], [['x']], 'CJK',
+           text_before='<para wordwrap="CJK" autoleading="max">' + ('日本 <b>語のテキスト</b> です。' * 20) + '</para>'),
+    report('rt-cjk-breaks', ['A'], [['x']], 'CJK',
+           text_before='<para wordwrap="CJK">' + ('日本語<br/>テキスト<br/>' * 20) + '</para>'),
+    report('rt-cjk-pages', ['A'], [['x']], 'CJK', text_before='<para wordwrap="CJK">' + JAPANESE * 260 + '</para>'),
+    report('rt-cjk-pages-frags', ['A'], [['x']], 'CJK',
+           text_before='<para wordwrap="CJK">' + ('日本語 <b>のテキスト</b> を改行するテストです。' * 120) + '</para>'),
+    report('rt-cjk-anchor', ['A'], [['x']], 'CJK',
+           text_before='<para wordwrap="CJK">日本<a name="cjk"/>語のテキストを改行するテストです。</para>'),
+    report('rt-cjk-image', ['A'], [['x']], 'CJK',
+           text_before='<para wordwrap="CJK">日本語の<img src="data:image/jpeg;base64,' + jpeg(20, 12, (30, 90, 200)) + '" width="12" height="8" valign="middle"/>テキストです。</para>'),
+    report('rt-cjk-image-pct', ['A'], [['x']], 'CJK',
+           text_before='<para wordwrap="CJK">日本語<img src="data:image/jpeg;base64,' + jpeg(20, 12, (200, 40, 40)) +
+                       '" width="20%" valign="middle"/>テキスト</para>'),
+    report('rt-cjk-image-nbsp', ['A'], [['x']], 'CJK',
+           text_before='<para wordwrap="CJK" align="justify">日本語&nbsp;日本語<img src="data:image/jpeg;base64,' +
+                       jpeg(20, 12, (40, 40, 200)) + '" width="20%" valign="middle"/>テキストです。</para>'),
+    report('rt-cjk-cells', ['日本語', '中文', 'Testo'],
+           [[JAPANESE * 2, CHINESE * 2, '<para wordwrap="CJK">' + JAPANESE * 2 + '</para>'] for _ in range(4)], 'CJK celle'),
+    report('rt-cjk-cells-squeezed', ['列 %d' % i for i in range(8)],
+           [[JAPANESE, CHINESE, '<para wordwrap="CJK">' + JAPANESE + '</para>',
+             'あ、い。う！え？', '<para wordwrap="CJK">' + KINSOKU + '</para>', 'abc 日本語 def', CHINESE, JAPANESE]
+            for _ in range(3)], 'CJK strette'),
+    attendance('at-cjk', ('<para wordwrap="CJK">日本語</para>', ['01/01/2026', '中文'],
+                          [('<para wordwrap="CJK">日本 語</para>', ['P', 'A'])]), ('Nuoto', ['02/01/2026'], [('Neri', ['P'])])),
+]
+
+
 # /balance-sheet: an income/expense description is any json.loads value; reportlab draws str(value), a list taken for a
 # list of flowables (which raises unless it flattens to nothing), in the sheet's portrait A3 layout with its header.
 DESCRIBED = [['A) ENTRATE', '', '', ''], ['Entrate Generali', '', '', ''],

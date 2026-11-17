@@ -1833,7 +1833,7 @@ var paraAttrNames = func() map[string]paraAttrSpec {
 		{[]string{"boffsety"}, "bulletOffsetY", pkNum}, {[]string{"bindent"}, "bulletIndent", pkNum}, {[]string{"bcolor"}, "bulletColor", pkColor},
 		{[]string{"banchor"}, "bulletAnchor", pkAnchor}, {[]string{"color", "fg"}, "textColor", pkColor},
 		{[]string{"backcolor", "bgcolor", "bg"}, "backColor", pkColor}, {[]string{"justifybreaks"}, "justifyBreaks", pkBool},
-		{[]string{"justifylastline"}, "justifyLastLine", pkInt}, {[]string{"wordwrap"}, "wordWrap", pkWordWrap},
+		{[]string{"justifylastline"}, "justifyLastLine", pkInt}, {[]string{"wordwrap", "wordWrap"}, "wordWrap", pkWordWrap},
 		{[]string{"allowwidows"}, "allowWidows", pkBool}, {[]string{"alloworphans"}, "allowOrphans", pkBool},
 		{[]string{"splitlongwords"}, "splitLongWords", pkBool}, {[]string{"borderwidth"}, "borderWidth", pkNum},
 		{[]string{"borderpadding"}, "borderPadding", pkNum}, {[]string{"bordercolor"}, "borderColor", pkColor},
@@ -1843,9 +1843,11 @@ var paraAttrNames = func() map[string]paraAttrSpec {
 		{[]string{"underlinegap"}, "underlineGap", pkUS}, {[]string{"strikewidth"}, "strikeWidth", pkUS},
 		{[]string{"strikecolor"}, "strikeColor", pkColor}, {[]string{"strikeoffset"}, "strikeOffset", pkUS},
 		{[]string{"strikegap"}, "strikeGap", pkUS}, {[]string{"spaceshrinkage"}, "spaceShrinkage", pkNum},
-		{[]string{"hyphenationlang"}, "hyphenationLang", pkStr}, {[]string{"hyphenationoverflow"}, "hyphenationOverflow", pkBool},
-		{[]string{"hyphenationminwordlength"}, "hyphenationMinWordLength", pkInt}, {[]string{"uriwastereduce"}, "uriWasteReduce", pkNum},
-		{[]string{"embeddedhyphenation"}, "embeddedHyphenation", pkBool},
+		{[]string{"hyphenationLanguage", "hyphenationLang", "hyphenationlang"}, "hyphenationLang", pkStr},
+		{[]string{"hyphenationOverflow", "hyphenationoverflow"}, "hyphenationOverflow", pkBool},
+		{[]string{"hyphenationMinWordLength", "hyphenationminwordlength"}, "hyphenationMinWordLength", pkInt},
+		{[]string{"uriWasteReduce", "uriwastereduce"}, "uriWasteReduce", pkNum},
+		{[]string{"embeddedHyphenation", "embeddedhyphenation"}, "embeddedHyphenation", pkBool},
 	}
 	names := map[string]paraAttrSpec{}
 	for _, entry := range table {
@@ -1859,23 +1861,22 @@ var paraAttrNames = func() map[string]paraAttrSpec {
 }()
 
 // applyParaAttrs is _initial_frag's style change: the style is copied and
-// the attributes of <para> applied. The ones that change the layout in ways
-// this package does not draw (wordWrap, hyphenation, uriWasteReduce and the
-// embedded hyphenation) are refused once their values are known to be valid.
+// the attributes of <para> applied.
 func (p *paraParser) applyParaAttrs(attrs []htmlAttr) bool {
 	style := p.style
 	if !style.linesSet {
 		style.lines, style.linesSet = defaultLines(), true
 	}
 	order, values := dedupeAttrs(attrs)
-	refused := false
 	for _, name := range order {
 		attr := values[name]
 		spec, ok := paraAttrNames[name]
 		if !ok {
 			return p.fail("invalid attribute name %s", name)
 		}
-		if !attr.has {
+		if !attr.has && spec.kind != pkStr {
+			// A value reportlab reads without a converter is None; every other
+			// one fails its converter.
 			return p.fail("invalid value for %s", name)
 		}
 		value := attr.value
@@ -1895,6 +1896,9 @@ func (p *paraParser) applyParaAttrs(attrs []htmlAttr) bool {
 			if spec.attr == "justifyLastLine" {
 				style.justifyLastLine = numWide(n)
 			}
+			if spec.attr == "hyphenationMinWordLength" {
+				style.minWordLength, style.minWordLengthSet = numWide(n), true
+			}
 		case pkBool:
 			b, st := paraBool(value)
 			if st != attrOK {
@@ -1910,9 +1914,9 @@ func (p *paraParser) applyParaAttrs(attrs []htmlAttr) bool {
 			case "justifyBreaks":
 				style.justifyBreaks = b
 			case "embeddedHyphenation":
-				if b {
-					refused = true
-				}
+				style.embeddedHyphenation = b
+			case "hyphenationOverflow":
+				style.hyphenationOverflow = b
 			}
 		case pkColor:
 			c, st := paraColor(value)
@@ -1959,10 +1963,11 @@ func (p *paraParser) applyParaAttrs(attrs []htmlAttr) bool {
 				return p.fail("Invalid autoLeading")
 			}
 		case pkWordWrap:
-			switch strings.ToUpper(pyTrimASCII(value)) {
+			switch upper := pythonUpper(pyTrimUnicode(value)); upper {
 			case "":
+				style.wordWrap = ""
 			case "CJK", "RTL", "LTR":
-				refused = true
+				style.wordWrap = upper
 			default:
 				return p.fail("cannot convert wordWrap")
 			}
@@ -1991,9 +1996,7 @@ func (p *paraParser) applyParaAttrs(attrs []htmlAttr) bool {
 			case "bulletFontName":
 				style.bulletFontName = value
 			case "hyphenationLang":
-				if pyTrimUnicode(value) != "" {
-					refused = true
-				}
+				style.hyphenationLang = value
 			}
 		case pkUS:
 			v, ok := p.usValue(value, true)
@@ -2074,20 +2077,13 @@ func (p *paraParser) applyParaAttrs(attrs []htmlAttr) bool {
 		case "bulletOffsetY":
 			applyTo(&style.bulletOffsetY)
 		case "uriWasteReduce":
-			current := numInt(0)
-			applyTo(&current)
-			if current.truthy() {
-				refused = true
-			}
+			applyTo(&style.uriWasteReduce)
 		}
 		if failed {
 			return p.fail("int too large to convert to float")
 		}
 	}
 	p.style = style
-	if refused {
-		return p.unsupported()
-	}
 	return true
 }
 

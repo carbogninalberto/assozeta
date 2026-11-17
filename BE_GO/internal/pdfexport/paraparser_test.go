@@ -126,7 +126,8 @@ func describeStyle(s paraStyle) []any {
 		s.leftIndent.corpus(), s.rightIndent.corpus(), s.firstLineIndent.corpus(), s.autoLeading, s.textTransform, s.endDots,
 		s.justifyBreaks, s.justifyLastLine.corpus(), s.borderWidth.corpus(), s.borderPadding.corpus(), colourInfo(s.borderColor),
 		s.borderRadius.corpus(), s.bulletFontName, s.bulletFontSize.corpus(), s.bulletIndent.corpus(), s.bulletAnchor,
-		s.bulletOffsetY.corpus(), colourInfo(s.bulletColor)}
+		s.bulletOffsetY.corpus(), colourInfo(s.bulletColor), s.wordWrap, s.hyphenationLang, s.uriWasteReduce.corpus(),
+		s.embeddedHyphenation, s.hyphenationOverflow, s.hyphenationMinWordLength().corpus()}
 }
 
 // describeFrag is the form generate_pdf_paragraphs.py writes for a fragment.

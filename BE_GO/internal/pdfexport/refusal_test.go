@@ -176,6 +176,52 @@ func TestColoursAreNotRefused(t *testing.T) {
 	}
 }
 
+// The wordWrap values, the hyphenation and URI splitting of <para> are laid out
+// as reportlab lays them out: none of them is an input the port refuses.
+func TestHyphenationAndWordWrapAreNotRefused(t *testing.T) {
+	header := func(logo, name string) *string {
+		text := `<img src="` + logo + `" style="height: 1000px;"/><h1 style="font-size: 20px;">` + name + `</h1><h2>x</h2><h3>y</h3>`
+		return &text
+	}
+	base := DataTable{Columns: []string{"A"}, Rows: [][]Cell{{{Text: "a"}}}, Title: "T", Portrait: true, IsA3: true}
+	words := `il corso di nuoto agonistico per adulti si tiene nella piscina comunale`
+	url := `https://example.test/uno/due/tre/quattro/cinque/sei/sette/otto/nove/dieci?chiave=valore`
+	for name, markup := range map[string]string{
+		"wordwrap CJK":            `<para wordwrap="CJK">日本語のテキストを改行するテストです。</para>`,
+		"wordwrap CJK fragments":  `<para wordwrap="CJK">il <b>corso</b> 日本語 <i>nuoto</i> ogni settimana</para>`,
+		"wordwrap RTL":            `<para wordwrap="RTL">` + words + words + `</para>`,
+		"wordwrap RTL justify":    `<para wordwrap="RTL" align="justify">` + words + words + `</para>`,
+		"wordwrap RTL bullet":     `<para wordwrap="RTL" lindent="18" findent="-9"><bullet>*</bullet>` + words + `</para>`,
+		"wordwrap RTL enddots":    `<para wordwrap="RTL" enddots="." align="justify">` + words + `</para>`,
+		"wordwrap LTR":            `<para wordwrap="LTR">` + words + words + `</para>`,
+		"hyphenationlang":         `<para hyphenationlang="en_GB">poli-sportiva contro-mano</para>`,
+		"hyphenationlang blank":   `<para hyphenationlang="">poli-sportiva</para>`,
+		"hyphenationminwordlen":   `<para embeddedhyphenation="1" hyphenationminwordlength="3">` + words + `</para>`,
+		"hyphenationoverflow":     `<para hyphenationoverflow="1">poli-sportiva</para>`,
+		"embeddedhyphenation":     `<para embeddedhyphenation="1">poli-sportiva contro-mano fuori-programma</para>`,
+		"embeddedhyphenation off": `<para embeddedhyphenation="0">poli-sportiva</para>`,
+		"uriwastereduce":          `<para uriwastereduce="0.3">parola ` + url + `</para>`,
+		"uriwastereduce one":      `<para uriwastereduce="1">` + url + `</para>`,
+		"uriwastereduce zero":     `<para uriwastereduce="0">` + url + `</para>`,
+	} {
+		input := base
+		input.Header = header("None", markup)
+		if _, err := input.Build(time.Unix(946684800, 0)); err != nil {
+			t.Errorf("%s: %v", name, err)
+		}
+	}
+	// The same attributes in the text before and after a report table and in
+	// its cells.
+	report := ReportTable{Headers: []string{`<para wordwrap="RTL">Nome</para>`, "Nota"},
+		Rows:       [][]string{{`<para wordwrap="CJK">日本語のテキスト</para>`, `<para embeddedhyphenation="1">` + words + `</para>`}},
+		Title:      "Titolo",
+		TextBefore: `<para uriwastereduce="0.3">parola ` + url + `</para>`,
+		TextAfter:  `<para wordwrap="CJK">日本語のテキストを改行するテストです。</para>`}
+	if _, err := report.Build(time.Unix(946684800, 0)); err != nil {
+		t.Errorf("report: %v", err)
+	}
+}
+
 // PDFTextObject.moveCursor replaces a move that directly follows another.
 func TestMoveCursorMerges(t *testing.T) {
 	tx := &textObject{}

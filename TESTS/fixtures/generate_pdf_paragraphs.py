@@ -193,6 +193,41 @@ TEXTS = [
     '<b>A</b><seq template="%(w)5s"/>', '<b>A</b><seq template="%(w)50s"/>',
     'A<seq template="%(w)-5s"/>Z', 'A<seq template="%(w)-50s"/>Z',
     '<b>A</b><seq template="%(w)5.0s"/><i>B</i>', '<b>A</b><seq template="%(w)50.0s"/><i>B</i>',
+    # wordWrap, hyphenation and URI splitting: the values reportlab accepts (case and
+    # space variants included), the blank ones and the ones it raises on.
+    '<para wordwrap="CJK">a b</para>', '<para wordwrap="cjk">a</para>', '<para wordwrap=" CJK ">a</para>',
+    '<para wordWrap="RTL">a b</para>', '<para wordwrap="rtl">a</para>', '<para wordwrap="Rtl ">a</para>',
+    '<para wordwrap="LTR">a b</para>', '<para wordwrap="ltr">a</para>', '<para wordwrap="">a</para>',
+    '<para wordwrap="  ">a</para>', '<para wordwrap="bogus">a</para>', '<para wordwrap>b</para>',
+    '<para wordwrap="CJK" align="justify">あ い</para>', '<para wordwrap="RTL" align="justify">a b</para>',
+    '<para hyphenationlang="en_GB">a b</para>', '<para hyphenationlang="it">a</para>', '<para hyphenationlang="">a</para>',
+    '<para hyphenationlang="  ">a</para>', '<para hyphenationlanguage="en">a</para>',
+    '<para hyphenationLang="en">a</para>', '<para hyphenationlang>b</para>',
+    '<para embeddedhyphenation="1">a b</para>', '<para embeddedhyphenation="0">a</para>',
+    '<para embeddedhyphenation="true">a</para>', '<para embeddedhyphenation="yes">a</para>',
+    '<para embeddedhyphenation="no">a</para>', '<para embeddedhyphenation="false">a</para>',
+    '<para embeddedhyphenation="2">a</para>', '<para embeddedhyphenation="x">a</para>',
+    '<para embeddedHyphenation="1">a</para>', '<para embeddedhyphenation>b</para>',
+    '<para uriwastereduce="0.3">https://example.test/a</para>', '<para uriwastereduce="0">a</para>',
+    '<para uriwastereduce="1">a</para>', '<para uriwastereduce="+0.2">a</para>', '<para uriwastereduce="-0.1">a</para>',
+    '<para uriwastereduce="nan">a</para>', '<para uriwastereduce="inf">a</para>', '<para uriwastereduce="x">a</para>',
+    '<para uriwastereduce=" 0.5 ">a</para>', '<para uriWasteReduce="0.3">a</para>', '<para uriwastereduce>b</para>',
+    '<para hyphenationoverflow="1">a</para>', '<para hyphenationoverflow="0">a</para>',
+    '<para hyphenationoverflow="yes">a</para>', '<para hyphenationoverflow="x">a</para>',
+    '<para hyphenationOverflow="1">a</para>',
+    '<para hyphenationminwordlength="3">a</para>', '<para hyphenationminwordlength="1_0">a</para>',
+    '<para hyphenationminwordlength="-1">a</para>', '<para hyphenationminwordlength="0">a</para>',
+    '<para hyphenationminwordlength="x">a</para>', '<para hyphenationminwordlength="１２">a</para>',
+    '<para hyphenationMinWordLength="4">a</para>', '<para hyphenationminwordlength>b</para>',
+    '<para hyphenationminwordlength="05">a</para>', '<para hyphenationminwordlength=" 4 ">a</para>',
+    '<para hyphenationminwordlength="٤">a</para>',
+    '<para uriwastereduce="+0.5">a</para>', '<para uriwastereduce="--1">a</para>', '<para uriwastereduce="1_0">a</para>',
+    '<para wordwrap="ｃｊｋ">a</para>', '<para wordwrap="Cjk">a</para>',
+    # A hyphenation, URI and embedded-hyphen set together, and the attributes without a
+    # value: reportlab reads the ones without a converter as None.
+    '<para uriwastereduce="0.3" embeddedhyphenation="1" hyphenationlang="en_GB" hyphenationminwordlength="4">a-b</para>',
+    '<para enddots>a</para>', '<para enddots=" ">a</para>', '<para font>b</para>', '<para face>b</para>',
+    '<para bfont>b</para>', '<para bfont>b<bullet>*</bullet></para>',
 ]
 # Colour attributes: every css colour form (valid, invalid, percentages, alpha and
 # wrong arity), the CMYK and transparent named colours, Blacker/Whiter, hex and
@@ -368,15 +403,11 @@ TOKENS = [
 ]
 
 
-PARA_REFUSED = ('wordwrap', 'hyphenation', 'uriwastereduce', 'embeddedhyphenation')
-
-
 def refusable(text):
     lowered = text.lower()
     if '<img' in lowered and not ('src="%s"' % IMAGE) in text:
         return True
-    return (any('<' + tag in lowered or '</' + tag in lowered for tag in REFUSED) or ('<para' in lowered and any(word in lowered for word in PARA_REFUSED))
-            or ('<' in text and not text.isascii()))
+    return (any('<' + tag in lowered or '</' + tag in lowered for tag in REFUSED) or ('<' in text and not text.isascii()))
 
 
 def float_repr(value):
@@ -485,13 +516,11 @@ def style_info(style):
             number(style.rightIndent), number(style.firstLineIndent), getattr(style, 'autoLeading', ''), style.textTransform or '',
             style.endDots or '', bool(style.justifyBreaks), number(style.justifyLastLine), number(style.borderWidth),
             number(style.borderPadding), colour_info(style.borderColor),
-            number(style.borderRadius) if style.borderRadius is not None else 0, style.bulletFontName, number(style.bulletFontSize),
+            number(style.borderRadius) if style.borderRadius is not None else 0, style.bulletFontName or '', number(style.bulletFontSize),
             number(style.bulletIndent), style.bulletAnchor, number(getattr(style, 'bulletOffsetY', 0)),
-            colour_info(getattr(style, 'bulletColor', None))]
-
-
-def style_unported(style):
-    return bool(style.wordWrap or style.hyphenationLang or style.uriWasteReduce or style.embeddedHyphenation)
+            colour_info(getattr(style, 'bulletColor', None)),
+            style.wordWrap or '', style.hyphenationLang or '', number(style.uriWasteReduce), bool(style.embeddedHyphenation),
+            bool(getattr(style, 'hyphenationOverflow', 0)), number(getattr(style, 'hyphenationMinWordLength', 5))]
 
 
 def outcome(text, font):
@@ -505,7 +534,7 @@ def outcome(text, font):
     except Exception:
         entry['error'] = True
         return entry
-    other = bool(style_unported(paragraph.style))
+    other = False
     frags = []
     bullet = None
     for frag in paragraph.frags:

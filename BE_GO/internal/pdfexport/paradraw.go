@@ -24,6 +24,9 @@ type textObject struct {
 	// dotsOffsetX is _dotsOffsetX, set while a centred line draws its
 	// endDots.
 	dotsOffsetX *float64
+	// xOffset is _x_offset: the offset of the line a _xxxDrawParaLineX draws,
+	// which the endDots of a right-to-left line start from.
+	xOffset float64
 }
 
 // moveCursor is PDFTextObject.moveCursor(dx, 0): a move right after another
@@ -430,8 +433,16 @@ func (p *paragraph) putFragLine(tx *textObject, xs *fragState, curX float64, lin
 		nSpaces += strings.Count(f.text, " ") + nbspCount(f.text)
 	}
 	curXS := curX + float64(nSpaces-1)*ws
-	if last && xs.style.endDots != "" && pKind != "right" {
-		p.doDotsFrag(curX, curXS, line.maxWidth, xs, tx)
+	if last && xs.style.endDots != "" {
+		if xs.style.wordWrap != "RTL" {
+			// Dots run left to right.
+			if pKind != "right" {
+				p.doDotsFrag(curX, curXS, line.maxWidth, xs, tx, true)
+			}
+		} else if pKind != "left" {
+			start := tx.xOffset
+			p.doDotsFrag(start, start, tx.x0-start, xs, tx, false)
+		}
 	}
 	for _, l := range live {
 		xs.us[usLineKey(l)].x2 = curXS
@@ -447,8 +458,9 @@ func (p *paragraph) putFragLine(tx *textObject, xs *fragState, curX float64, lin
 	}
 }
 
-// doDotsFrag is _do_dots_frag: the endDots that fill the rest of the line.
-func (p *paragraph) doDotsFrag(curX, curXS, maxWidth float64, xs *fragState, tx *textObject) {
+// doDotsFrag is _do_dots_frag: the endDots that fill the rest of the line. A
+// right-to-left line fills the space before the text (left false).
+func (p *paragraph) doDotsFrag(curX, curXS, maxWidth float64, xs *fragState, tx *textObject, left bool) {
 	style := xs.style
 	text := style.endDots
 	f := fontsByName[style.fontName]
@@ -460,10 +472,12 @@ func (p *paragraph) doDotsFrag(curX, curXS, maxWidth float64, xs *fragState, tx 
 	if tx.font != f || tx.fontSize != fontSize {
 		tx.setFont(style.fontName, fontSize)
 	}
-	if tx.dotsOffsetX != nil {
-		maxWidth += *tx.dotsOffsetX
-	} else {
-		maxWidth += tx.x0
+	if left {
+		if tx.dotsOffsetX != nil {
+			maxWidth += *tx.dotsOffsetX
+		} else {
+			maxWidth += tx.x0
+		}
 	}
 	tx.setTextOrigin(0, xs.curY.float())
 	tx.setXPos(curXS - curX)
@@ -537,16 +551,17 @@ func bulletFont(name string) *font {
 	return f
 }
 
-// drawBullet is _drawBullet: draws the bullet at the left indent (the
-// documents are left to right) and answers the offset the first line starts
-// at, which a wide bullet moves right.
-func (p *paragraph) drawBullet(c *canvas, offset, curY float64) float64 {
+// drawBullet is _drawBullet: draws the bullet at the left indent and answers
+// the offset the first line starts at, which a wide bullet moves right. A
+// right-to-left paragraph places the bullet from the right indent instead and
+// keeps the offset.
+func (p *paragraph) drawBullet(c *canvas, offset, curY float64, rtl bool) float64 {
 	style := p.style
 	b := p.bullet
 	anchor := style.bulletAnchor
 	bulletSize := style.bulletFontSize.float()
 	bulletWidth := 0.0
-	if anchor != "start" {
+	if rtl || anchor != "start" {
 		numeric := anchor == "numeric"
 		if b.isText() {
 			t := b.text
@@ -579,7 +594,14 @@ func (p *paragraph) drawBullet(c *canvas, offset, curY float64) float64 {
 	}
 	curY += style.bulletOffsetY.float()
 	bf := bulletFont(style.bulletFontName)
-	startX := numSubOrErr(style.bulletIndent, numFloat(bulletWidth)).float()
+	var startX float64
+	if !rtl {
+		startX = numSubOrErr(style.bulletIndent, numFloat(bulletWidth)).float()
+	} else {
+		width := p.wrapWidths[0]
+		startX = numAddOrErr(numFloat(width), style.rightIndent).float() -
+			numAddOrErr(style.bulletIndent, numFloat(bulletWidth)).float()
+	}
 	tx := &textObject{c: c}
 	tx.code = []string{"BT"}
 	tx.setTextOrigin(startX, curY)
@@ -603,6 +625,9 @@ func (p *paragraph) drawBullet(c *canvas, offset, curY float64) float64 {
 		}
 	}
 	c.add(strings.Join(append(tx.code, "ET"), " "))
+	if rtl {
+		return offset
+	}
 	bulletEnd := numAddOrErr(numFloat(endX), numMulOrErr(numFloat(0.6), style.bulletFontSize))
 	return numMax(numFloat(offset), numSubOrErr(bulletEnd, style.leftIndent)).float()
 }
@@ -749,6 +774,15 @@ func justifyDrawParaLine(tx *textObject, offset, extraspace float64, text string
 	return offset
 }
 
+// justifyDrawParaLineRTL is _justifyDrawParaLineRTL: a last line is right
+// aligned, the others justified.
+func justifyDrawParaLineRTL(tx *textObject, offset, extraspace float64, text string, words int, last bool) float64 {
+	if last {
+		return rightDrawParaLine(tx, offset, extraspace, text, words, last)
+	}
+	return justifyDrawParaLine(tx, offset, extraspace, text, words, last)
+}
+
 // drawParaLine is the _xxxDrawParaLine of the alignment.
 func (p *paragraph) drawParaLine(tx *textObject, offset, extraspace float64, line simpleLine, last bool) float64 {
 	text := simpleText(line.words)
@@ -758,6 +792,9 @@ func (p *paragraph) drawParaLine(tx *textObject, offset, extraspace float64, lin
 	case alignRight:
 		return rightDrawParaLine(tx, offset, extraspace, text, len(line.words), last)
 	case alignJustify:
+		if p.style.wordWrap == "RTL" {
+			return justifyDrawParaLineRTL(tx, offset, extraspace, text, len(line.words), last)
+		}
 		return justifyDrawParaLine(tx, offset, extraspace, text, len(line.words), last)
 	}
 	return leftDrawParaLine(tx, offset, extraspace, text, len(line.words), last)
@@ -792,6 +829,7 @@ func (p *paragraph) doLinkLine(c *canvas, curY float64, i int, tOff float64, f *
 
 // leftDrawParaLineX is _leftDrawParaLineX.
 func (p *paragraph) leftDrawParaLineX(tx *textObject, xs *fragState, offset float64, line *fragLine, last bool) {
+	tx.xOffset = offset
 	tx.setXPos(offset)
 	extraSpace := line.extra
 	simple := extraSpace > -1e-8
@@ -812,6 +850,7 @@ func (p *paragraph) leftDrawParaLineX(tx *textObject, xs *fragState, offset floa
 
 // centerDrawParaLineX is _centerDrawParaLineX.
 func (p *paragraph) centerDrawParaLineX(tx *textObject, xs *fragState, offset float64, line *fragLine, last bool) {
+	tx.xOffset = offset
 	dots := offset + tx.x0
 	tx.dotsOffsetX = &dots
 	defer func() { tx.dotsOffsetX = nil }()
@@ -838,6 +877,7 @@ func (p *paragraph) centerDrawParaLineX(tx *textObject, xs *fragState, offset fl
 
 // rightDrawParaLineX is _rightDrawParaLineX.
 func (p *paragraph) rightDrawParaLineX(tx *textObject, xs *fragState, offset float64, line *fragLine, last bool) {
+	tx.xOffset = offset
 	extraSpace := line.extra
 	simple := extraSpace > -1e-8
 	nSpaces := 0
@@ -861,6 +901,7 @@ func (p *paragraph) rightDrawParaLineX(tx *textObject, xs *fragState, offset flo
 
 // justifyDrawParaLineX is _justifyDrawParaLineX.
 func (p *paragraph) justifyDrawParaLineX(tx *textObject, xs *fragState, offset float64, line *fragLine, last bool) {
+	tx.xOffset = offset
 	tx.setXPos(offset)
 	extraSpace := line.extra
 	simple := line.lineBreak || (-1e-8 < extraSpace && extraSpace <= 1e-8) || (last && extraSpace > -1e-8)
@@ -879,6 +920,16 @@ func (p *paragraph) justifyDrawParaLineX(tx *textObject, xs *fragState, offset f
 	tx.setXPos(-offset)
 }
 
+// justifyDrawParaLineXRTL is _justifyDrawParaLineXRTL: a last line is right
+// aligned, the others justified.
+func (p *paragraph) justifyDrawParaLineXRTL(tx *textObject, xs *fragState, offset float64, line *fragLine, last bool) {
+	if last {
+		p.rightDrawParaLineX(tx, xs, offset, line, last)
+		return
+	}
+	p.justifyDrawParaLineX(tx, xs, offset, line, last)
+}
+
 // drawParaLineX is the _xxxDrawParaLineX of the alignment.
 func (p *paragraph) drawParaLineX(tx *textObject, xs *fragState, offset float64, line *fragLine, last bool) {
 	switch p.style.alignment() {
@@ -887,6 +938,10 @@ func (p *paragraph) drawParaLineX(tx *textObject, xs *fragState, offset float64,
 	case alignRight:
 		p.rightDrawParaLineX(tx, xs, offset, line, last)
 	case alignJustify:
+		if p.style.wordWrap == "RTL" {
+			p.justifyDrawParaLineXRTL(tx, xs, offset, line, last)
+			return
+		}
 		p.justifyDrawParaLineX(tx, xs, offset, line, last)
 	default:
 		p.leftDrawParaLineX(tx, xs, offset, line, last)
@@ -939,13 +994,22 @@ func (p *paragraph) draw(c *canvas) {
 	noJustifyLast := !p.justifyLast
 	jllwc := style.justifyLastLine
 	defaultWidth := c.state.lineWidth
+	isRTL := style.wordWrap == "RTL"
 	var tx *textObject
+	if isRTL && p.kind == 1 {
+		// A right-to-left paragraph draws the words of each line reversed.
+		for _, line := range p.fragLines {
+			for i, j := 0, len(line.words)-1; i < j; i, j = i+1, j-1 {
+				line.words[i], line.words[j] = line.words[j], line.words[i]
+			}
+		}
+	}
 	if p.kind == 0 {
 		f := p.lineFrag
 		size := f.size.float()
 		curY := numSubOrErr(p.heightNum, f.size)
 		if p.bullet != nil {
-			offset = p.drawBullet(c, offset, curY.float())
+			offset = p.drawBullet(c, offset, curY.float(), isRTL)
 		}
 		c.setFillColor(f.color)
 		tx = &textObject{c: c}
@@ -1011,7 +1075,7 @@ func (p *paragraph) draw(c *canvas) {
 		first := p.fragLines[0]
 		curY := numSubOrErr(p.heightNum, first.fontSize)
 		if p.bullet != nil {
-			offset = p.drawBullet(c, offset, curY.float())
+			offset = p.drawBullet(c, offset, curY.float(), isRTL)
 		}
 		tx = &textObject{c: c}
 		tx.code = []string{"BT"}
