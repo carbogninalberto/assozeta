@@ -1046,6 +1046,36 @@ run('export-pdf-inline-image-junk-error', 'export_data', {**NUOTO_PDF,
 run('export-pdf-inline-truncated-jpeg-error', 'export_data', {**NUOTO_PDF,
     'text_before': f'a <img src="{truncated_jpeg_data_url(30, 20, (200, 30, 30))}"/> b'}, 500, FAILED)
 
+# Word wrapping: the CJK mode breaks between ideographs and keeps the Latin run together, the RTL mode lays the Hebrew,
+# Arabic and Latin ranges out from the right, and the LTR mode hyphenates the paragraph's hyphenationlang; a bullet and
+# enddots follow the RTL direction.
+CJK_BEFORE = '<para wordwrap="CJK">' + '日本語の文章と中文的句子、句読点。' * 12 + '</para>'
+CJK_AFTER = '<para wordwrap="CJK" align="center">Latin text 混在 mixed（括弧）</para>'
+run('export-pdf-wordwrap-cjk', 'export_data', {**NUOTO_PDF, 'text_before': CJK_BEFORE, 'text_after': CJK_AFTER}, 200,
+    download('Tags.pdf', 'application/pdf', pdf={**NUOTO_TABLE, 'text_before': CJK_BEFORE, 'text_after': CJK_AFTER}))
+RTL_BEFORE = ('<para wordwrap="RTL" align="justify" lindent="10" rindent="20">'
+              + 'testo da destra a sinistra con <b>parole</b> diverse ' * 8 + '</para>')
+RTL_AFTER = '<para wordwrap="RTL" enddots="."><bullet>*</bullet>voce</para>'
+run('export-pdf-wordwrap-rtl', 'export_data', {**NUOTO_PDF, 'text_before': RTL_BEFORE, 'text_after': RTL_AFTER}, 200,
+    download('Tags.pdf', 'application/pdf', pdf={**NUOTO_TABLE, 'text_before': RTL_BEFORE, 'text_after': RTL_AFTER}))
+LTR_BEFORE = '<para wordwrap="LTR" hyphenationlang="it_IT">' + 'precipitevolissimevolmente ' * 10 + '</para>'
+run('export-pdf-wordwrap-ltr-hyphenation-lang', 'export_data', {**NUOTO_PDF, 'text_before': LTR_BEFORE}, 200,
+    download('Tags.pdf', 'application/pdf', pdf={**NUOTO_TABLE, 'text_before': LTR_BEFORE}))
+
+# URI waste reduction in labels and text, with embedded hyphenation in a hyphenated label and text; a truthiness value
+# other than a boolean word is not one (embeddedhyphenation="2" fails the export).
+URI_LABELS = {'tag_name': '<para uriwastereduce="0.3">https://example.test/percorso/molto/lungo/della/risorsa'
+                          '?parametro=valore&amp;altro=1</para>',
+              'creation_date': '<para embeddedhyphenation="1">nuoto-pallanuoto-tuffi-salvamento</para>'}
+URI_BEFORE = ('<para uriwastereduce="0.2" embeddedhyphenation="1">vedi '
+              'https://example.test/a/b/c/d/e/f/g/h/i/l/m/n/o/p e mario.rossi@example.test e '
+              'anti-age-super-long-word-chain</para>')
+run('export-pdf-uri-waste-reduce', 'export_data', {**NUOTO_PDF, 'column_labels': URI_LABELS, 'text_before': URI_BEFORE}, 200,
+    download('Tags.pdf', 'application/pdf', pdf={**NUOTO_TABLE, 'headers': list(URI_LABELS.values()),
+                                                 'text_before': URI_BEFORE}))
+run('export-pdf-embedded-hyphenation-two-error', 'export_data',
+    {**NUOTO_PDF, 'text_before': '<para embeddedhyphenation="2">a-b</para>'}, 500, FAILED)
+
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Template update and saved report run authored sequence', 'ids': IDS,
                               'seed': {'templates': TEMPLATES, 'tags': TAGS, 'categories': CATEGORIES, 'carnets': CARNETS, 'reports': REPORTS,

@@ -5327,6 +5327,127 @@
     "ui": {},
     "created": "2026-10-01T08:00:00+00:00",
     "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "export_pdf_wordwrap_cjk": {
+    "id": "a1000000-0000-4000-8000-000000930321",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report export_pdf_wordwrap_cjk",
+    "description": "",
+    "tool": "export_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name",
+      "creation_date"
+     ],
+     "filters": {
+      "tag_name": "Nuoto"
+     },
+     "format": "pdf",
+     "text_before": "<para wordwrap=\"CJK\">日本語の文章と中文的句子、句読点。日本語の文章と中文的句子、句読点。日本語の文章と中文的句子、句読点。日本語の文章と中文的句子、句読点。日本語の文章と中文的句子、句読点。日本語の文章と中文的句子、句読点。日本語の文章と中文的句子、句読点。日本語の文章と中文的句子、句読点。日本語の文章と中文的句子、句読点。日本語の文章と中文的句子、句読点。日本語の文章と中文的句子、句読点。日本語の文章と中文的句子、句読点。</para>",
+     "text_after": "<para wordwrap=\"CJK\" align=\"center\">Latin text 混在 mixed（括弧）</para>"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "export_pdf_wordwrap_rtl": {
+    "id": "a1000000-0000-4000-8000-000000930322",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report export_pdf_wordwrap_rtl",
+    "description": "",
+    "tool": "export_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name",
+      "creation_date"
+     ],
+     "filters": {
+      "tag_name": "Nuoto"
+     },
+     "format": "pdf",
+     "text_before": "<para wordwrap=\"RTL\" align=\"justify\" lindent=\"10\" rindent=\"20\">testo da destra a sinistra con <b>parole</b> diverse testo da destra a sinistra con <b>parole</b> diverse testo da destra a sinistra con <b>parole</b> diverse testo da destra a sinistra con <b>parole</b> diverse testo da destra a sinistra con <b>parole</b> diverse testo da destra a sinistra con <b>parole</b> diverse testo da destra a sinistra con <b>parole</b> diverse testo da destra a sinistra con <b>parole</b> diverse </para>",
+     "text_after": "<para wordwrap=\"RTL\" enddots=\".\"><bullet>*</bullet>voce</para>"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "export_pdf_wordwrap_ltr_hyphenation_lang": {
+    "id": "a1000000-0000-4000-8000-000000930323",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report export_pdf_wordwrap_ltr_hyphenation_lang",
+    "description": "",
+    "tool": "export_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name",
+      "creation_date"
+     ],
+     "filters": {
+      "tag_name": "Nuoto"
+     },
+     "format": "pdf",
+     "text_before": "<para wordwrap=\"LTR\" hyphenationlang=\"it_IT\">precipitevolissimevolmente precipitevolissimevolmente precipitevolissimevolmente precipitevolissimevolmente precipitevolissimevolmente precipitevolissimevolmente precipitevolissimevolmente precipitevolissimevolmente precipitevolissimevolmente precipitevolissimevolmente </para>"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "export_pdf_uri_waste_reduce": {
+    "id": "a1000000-0000-4000-8000-000000930324",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report export_pdf_uri_waste_reduce",
+    "description": "",
+    "tool": "export_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name",
+      "creation_date"
+     ],
+     "filters": {
+      "tag_name": "Nuoto"
+     },
+     "format": "pdf",
+     "column_labels": {
+      "tag_name": "<para uriwastereduce=\"0.3\">https://example.test/percorso/molto/lungo/della/risorsa?parametro=valore&amp;altro=1</para>",
+      "creation_date": "<para embeddedhyphenation=\"1\">nuoto-pallanuoto-tuffi-salvamento</para>"
+     },
+     "text_before": "<para uriwastereduce=\"0.2\" embeddedhyphenation=\"1\">vedi https://example.test/a/b/c/d/e/f/g/h/i/l/m/n/o/p e mario.rossi@example.test e anti-age-super-long-word-chain</para>"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "export_pdf_embedded_hyphenation_two_error": {
+    "id": "a1000000-0000-4000-8000-000000930325",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report export_pdf_embedded_hyphenation_two_error",
+    "description": "",
+    "tool": "export_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name",
+      "creation_date"
+     ],
+     "filters": {
+      "tag_name": "Nuoto"
+     },
+     "format": "pdf",
+     "text_before": "<para embeddedhyphenation=\"2\">a-b</para>"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
    }
   },
   "people": {
@@ -12779,6 +12900,155 @@
    "actor": "owner",
    "method": "POST",
    "path": "/saved-reports/a1000000-0000-4000-8000-000000930320/run",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante l'esecuzione del report."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-export-pdf-wordwrap-cjk",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930321/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "$file": {
+     "type": "application/pdf",
+     "disposition": "attachment; filename=\"Tags.pdf\"",
+     "pdf": {
+      "engine": "report_table",
+      "headers": [
+       "tag_name",
+       "creation_date"
+      ],
+      "title": "Tags",
+      "rows": [
+       [
+        "Nuoto",
+        "15/09/2026 08:30"
+       ]
+      ],
+      "text_before": "<para wordwrap=\"CJK\">日本語の文章と中文的句子、句読点。日本語の文章と中文的句子、句読点。日本語の文章と中文的句子、句読点。日本語の文章と中文的句子、句読点。日本語の文章と中文的句子、句読点。日本語の文章と中文的句子、句読点。日本語の文章と中文的句子、句読点。日本語の文章と中文的句子、句読点。日本語の文章と中文的句子、句読点。日本語の文章と中文的句子、句読点。日本語の文章と中文的句子、句読点。日本語の文章と中文的句子、句読点。</para>",
+      "text_after": "<para wordwrap=\"CJK\" align=\"center\">Latin text 混在 mixed（括弧）</para>"
+     }
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-export-pdf-wordwrap-rtl",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930322/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "$file": {
+     "type": "application/pdf",
+     "disposition": "attachment; filename=\"Tags.pdf\"",
+     "pdf": {
+      "engine": "report_table",
+      "headers": [
+       "tag_name",
+       "creation_date"
+      ],
+      "title": "Tags",
+      "rows": [
+       [
+        "Nuoto",
+        "15/09/2026 08:30"
+       ]
+      ],
+      "text_before": "<para wordwrap=\"RTL\" align=\"justify\" lindent=\"10\" rindent=\"20\">testo da destra a sinistra con <b>parole</b> diverse testo da destra a sinistra con <b>parole</b> diverse testo da destra a sinistra con <b>parole</b> diverse testo da destra a sinistra con <b>parole</b> diverse testo da destra a sinistra con <b>parole</b> diverse testo da destra a sinistra con <b>parole</b> diverse testo da destra a sinistra con <b>parole</b> diverse testo da destra a sinistra con <b>parole</b> diverse </para>",
+      "text_after": "<para wordwrap=\"RTL\" enddots=\".\"><bullet>*</bullet>voce</para>"
+     }
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-export-pdf-wordwrap-ltr-hyphenation-lang",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930323/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "$file": {
+     "type": "application/pdf",
+     "disposition": "attachment; filename=\"Tags.pdf\"",
+     "pdf": {
+      "engine": "report_table",
+      "headers": [
+       "tag_name",
+       "creation_date"
+      ],
+      "title": "Tags",
+      "rows": [
+       [
+        "Nuoto",
+        "15/09/2026 08:30"
+       ]
+      ],
+      "text_before": "<para wordwrap=\"LTR\" hyphenationlang=\"it_IT\">precipitevolissimevolmente precipitevolissimevolmente precipitevolissimevolmente precipitevolissimevolmente precipitevolissimevolmente precipitevolissimevolmente precipitevolissimevolmente precipitevolissimevolmente precipitevolissimevolmente precipitevolissimevolmente </para>"
+     }
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-export-pdf-uri-waste-reduce",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930324/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "$file": {
+     "type": "application/pdf",
+     "disposition": "attachment; filename=\"Tags.pdf\"",
+     "pdf": {
+      "engine": "report_table",
+      "headers": [
+       "<para uriwastereduce=\"0.3\">https://example.test/percorso/molto/lungo/della/risorsa?parametro=valore&amp;altro=1</para>",
+       "<para embeddedhyphenation=\"1\">nuoto-pallanuoto-tuffi-salvamento</para>"
+      ],
+      "title": "Tags",
+      "rows": [
+       [
+        "Nuoto",
+        "15/09/2026 08:30"
+       ]
+      ],
+      "text_before": "<para uriwastereduce=\"0.2\" embeddedhyphenation=\"1\">vedi https://example.test/a/b/c/d/e/f/g/h/i/l/m/n/o/p e mario.rossi@example.test e anti-age-super-long-word-chain</para>"
+     }
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-export-pdf-embedded-hyphenation-two-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930325/run",
    "headers": {},
    "status": 500,
    "response": {
