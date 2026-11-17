@@ -21,9 +21,10 @@ import (
 // notification, which Django sends inside the block).
 type paymentPaidFlowNotification struct {
 	user, message string
-	// association is the notification's association_id: the association for an
-	// association or collaborator account, nil (stored and pushed as JSON null)
-	// for any other request user, as send_notification fills it by role.
+	// association is the notification's association_id: send_notification fills
+	// it by role when the view passes none, so an association account keeps the
+	// association the view found while a collaborator account gets its connected
+	// user's live association, and any other request user keeps JSON null.
 	association *string
 	subscribed  bool
 	print       *paymentPaidFlowPrint
@@ -448,6 +449,10 @@ func (s *PaymentStates) approvePaid(ctx context.Context, tx domain.PaymentPaidFl
 		return nil, err
 	}
 	message := paymentPaidFlowMessage(payment.Amount, notified, people)
+	notificationAssociation, err := paymentPaidFlowAssociation(ctx, tx, user, association)
+	if err != nil {
+		return nil, err
+	}
 	subscribed, err := tx.ValidateBroadcast(ctx, user.ID, "broadcast_"+user.ID, audit, at)
 	if err != nil {
 		return nil, err
@@ -470,7 +475,7 @@ func (s *PaymentStates) approvePaid(ctx context.Context, tx domain.PaymentPaidFl
 	if err = tx.Commit(); err != nil {
 		return nil, err
 	}
-	notification := &paymentPaidFlowNotification{user: user.ID, message: message, association: paymentPaidFlowAssociation(user, association),
+	notification := &paymentPaidFlowNotification{user: user.ID, message: message, association: notificationAssociation,
 		subscribed: subscribed}
 	if err = notification.deliver(ctx, s.notifier); err != nil {
 		return nil, err
@@ -645,14 +650,31 @@ func (s *StripeRoutes) stripePaidFlow(ctx context.Context, tx domain.PaymentPaid
 }
 
 // paymentPaidFlowAssociation is send_notification's association_id for
-// payment_approve, called without one: it is request.user.sport_association for
-// an association or collaborator account and None for any other role, so the
-// stored item and the push keep JSON null. An athlete can own an association
-// (the association import reuses an existing user by UUID), and then the view
-// runs as for the owner while the notification has no association id.
-func paymentPaidFlowAssociation(user *domain.Account, association string) *string {
-	if user == nil || (user.Role != domain.RoleAssociation && user.Role != domain.RoleCollaborator) {
-		return nil
+// payment_approve, called without one, read inside the transaction because a
+// failure there rolls the request back: request.user.sport_association. An
+// association account keeps the row the view found with get(user=request.user);
+// a collaborator account gets their connected user's live association, since the
+// association import can make that scope user a collaborator who owns the
+// imported association; any other role keeps None (JSON null). A collaborator
+// without a live connected association raises like Django's DoesNotExist: the
+// 500 page, the rollback and no notification.
+func paymentPaidFlowAssociation(ctx context.Context, tx domain.PaymentPaidFlowTransaction, user *domain.Account,
+	association string) (*string, error) {
+	if user == nil {
+		return nil, nil
 	}
-	return &association
+	switch user.Role {
+	case domain.RoleAssociation:
+		return &association, nil
+	case domain.RoleCollaborator:
+		connected, err := tx.PaidFlowUserAssociation(ctx, user.ConnectedUserID)
+		if err != nil {
+			return nil, err
+		}
+		if connected == nil {
+			return nil, domain.ErrPaymentStateServer
+		}
+		return connected, nil
+	}
+	return nil, nil
 }

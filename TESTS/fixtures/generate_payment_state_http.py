@@ -237,6 +237,21 @@ PAYMENTS['pf_imported_second'] = payment(subject=0, amount='33.00', associate='i
                                          description='Quota importata due')
 # A payment of the own association: the athlete's association check refuses it.
 PAYMENTS['pf_imported_other'] = payment(subject=0, amount='32.00', associate=True)
+# Collaborator chains (resolve_request_identity swaps a collaborator's request.user for its connected user). C1 and C2
+# are FULL collaborators; C1's connected user U1 is itself a collaborator whose connected user is the main owner and
+# owns COLLAB_ASSOCIATION, while C2's connected user U2 is a collaborator without one and owns ORPHAN_ASSOCIATION.
+COLLAB_OWNER = {'id': next(ids), 'username': 'payment-state-collab-owner', 'email': 'payment-state-collab-owner@example.test'}
+COLLAB_ACTOR = {'id': next(ids), 'username': 'payment-state-collab-actor', 'email': 'payment-state-collab-actor@example.test'}
+ORPHAN_OWNER = {'id': next(ids), 'username': 'payment-state-orphan-owner', 'email': 'payment-state-orphan-owner@example.test'}
+ORPHAN_ACTOR = {'id': next(ids), 'username': 'payment-state-orphan-actor', 'email': 'payment-state-orphan-actor@example.test'}
+COLLAB_ASSOCIATION = next(ids)
+ORPHAN_ASSOCIATION = next(ids)
+COLLAB_DENOMINATION = 'Importata collaboratore'
+ORPHAN_DENOMINATION = 'Importata senza titolare'
+PAYMENTS['pf_collab_owner'] = payment(subject=0, amount='34.00', associate='imported', association=COLLAB_ASSOCIATION,
+                                      description='Quota collaboratore')
+PAYMENTS['pf_orphan'] = payment(subject=0, amount='35.00', associate='imported', association=ORPHAN_ASSOCIATION,
+                                description='Quota senza titolare')
 STATE = copy.deepcopy(PAYMENTS)
 cases = []
 
@@ -557,10 +572,10 @@ add('approve-form-body', 'owner', APPROVE('ap_form'), 200, {'data': {'payment': 
 # payment has an invoice and generate_invoice is truthy.
 
 DENOMINATION = 'Message reads own'
-NUMBERS = {'year': 0, 'old': 0, 'group': 0, 'flag': FLAG['starting_number'], 'imported': 0, 'imported_old': 0}
+NUMBERS = {'year': 0, 'old': 0, 'group': 0, 'flag': FLAG['starting_number'], 'imported': 0, 'imported_old': 0, 'collab': 0}
 ACTOR_INDEX = {'owner': [OWN, 'actor.sport_association'], 'admin': [IDS['admin_association'], 'actor.sport_association'],
                'flag_owner': [FLAG['association'], 'actor.sport_association'], 'full_collaborator': None,
-               'imported': [IMPORTED_ASSOCIATION, 'actor.sport_association']}
+               'imported': [IMPORTED_ASSOCIATION, 'actor.sport_association'], 'collab_actor': None, 'orphan_actor': None}
 
 
 def escape(text):
@@ -683,7 +698,8 @@ def paid_flow(name, label, *, description, notified, actor='owner', body=None, r
         msg += f" Pagamento dell'associato {person_name(row)}."
     elif row['user']:
         msg += f" Pagamento dell'utente {OWNER_USER['first_name']} {OWNER_USER['last_name']}."
-    recipient = 'imported' if association == IMPORTED_ASSOCIATION else ('flag_owner' if flag else 'owner')
+    recipient = ('collab_owner' if association == COLLAB_ASSOCIATION else
+                 'imported' if association == IMPORTED_ASSOCIATION else ('flag_owner' if flag else 'owner'))
     item = payment_item(label, invoice)
     row['invoice'] = '$invoice' if creates else None
     dispatch = creates and generate
@@ -692,8 +708,10 @@ def paid_flow(name, label, *, description, notified, actor='owner', body=None, r
     celery = [{'task': 'print_document_invoice', 'args': ['$invoice', '$authorization', receipt], 'kwargs': [], 'args_list': True}] if dispatch else []
     result = effect(actor, changed={label: columns}, invoices=invoices, audit=audit)
     # send_notification fills association_id only for association and collaborator roles: an athlete account's
-    # notification keeps None (stored and pushed as null).
-    notified_association = None if association == IMPORTED_ASSOCIATION else association
+    # notification keeps None (stored and pushed as null). The collaborator chain's scope user is a collaborator whose
+    # connected user is the main owner, so its sport_association is the owner's association.
+    notified_association = (OWN if association == COLLAB_ASSOCIATION else
+                            None if association == IMPORTED_ASSOCIATION else association)
     result.update(invoice=stored, course_subscriptions_paid=list(courses), celery=celery,
                   notification={'user': recipient, 'msg': msg, 'association': notified_association})
     add(name, actor if actor != 'flag_owner' else 'flag_owner', APPROVE(label), 200, {'data': {'msg': 'payment mark as payed.', 'payment': item}},
@@ -776,6 +794,12 @@ paid_flow('approve-paid-flow-athlete-owner-imported-no-generate', 'pf_imported_s
           description=other_text(CATEGORY_NAME, IMPORTED_DENOMINATION), notified='Quota importata due', sent='2021-03-04T00:00:00Z',
           generate=False, body={'payment_date': '2021-03-04', 'generate_invoice': False})
 add('approve-paid-flow-athlete-owner-foreign-payment-denied', 'imported', APPROVE('pf_imported_other'), 403, DENIED)
+# A collaborator chain (C1 -> U1) approving the association U1 owns runs the same paid flow; the invoice belongs to
+# COLLAB_ASSOCIATION but the notification is U1's, whose sport_association is the main owner's association. The other
+# chain (C2 -> U2) owns an association without a connected user: send_notification raises inside the atomic block.
+paid_flow('approve-paid-flow-collaborator-owner-imported', 'pf_collab_owner', actor='collab_actor', broadcast=True, number_key='collab',
+          description=other_text(CATEGORY_NAME, COLLAB_DENOMINATION), notified='Quota collaboratore')
+add('approve-paid-flow-collaborator-owner-orphan-server-error', 'orphan_actor', APPROVE('pf_orphan'), 500, SERVER)
 # float(str('abc')) raises before any write; a carnet subscription without a carnet fails in the description: rolled back.
 add('approve-paid-flow-bad-meta-amount-server-error', 'owner', APPROVE('pf_bad_meta'), 500, SERVER)
 add('approve-paid-flow-carnet-without-carnet-server-error', 'owner', APPROVE('pf_carnet_null'), 500, SERVER)
@@ -932,7 +956,11 @@ OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Payment approve, ca
                               'supplier_invoices': SUPPLIER_INVOICES, 'course_subscriptions': COURSE_SUBSCRIPTIONS,
                               'installments': {k: {key: v for key, v in row.items() if key != 'gone'} for k, row in INSTALLMENTS.items()},
                               'holdings': HOLDINGS, 'flag_owner': FLAG, 'flag_associate': FLAG_ASSOCIATE,
-                              'extra_users': {'imported': IMPORTED_ATHLETE}, 'imported_association': IMPORTED_ASSOCIATION,
-                              'imported_associate': IMPORTED_ASSOCIATE, 'imported_denomination': IMPORTED_DENOMINATION, 'cases': cases},
+                              'extra_users': {'imported': IMPORTED_ATHLETE, 'collab_owner': COLLAB_OWNER, 'collab_actor': COLLAB_ACTOR,
+                                              'orphan_owner': ORPHAN_OWNER, 'orphan_actor': ORPHAN_ACTOR},
+                              'imported_association': IMPORTED_ASSOCIATION,
+                              'imported_associate': IMPORTED_ASSOCIATE, 'imported_denomination': IMPORTED_DENOMINATION,
+                              'collab_association': COLLAB_ASSOCIATION, 'orphan_association': ORPHAN_ASSOCIATION,
+                              'collab_denomination': COLLAB_DENOMINATION, 'orphan_denomination': ORPHAN_DENOMINATION, 'cases': cases},
                              ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

@@ -212,6 +212,25 @@ func (t *paymentPaidFlowTransaction) PaidFlowPeople(ctx context.Context, payment
 	return row, err
 }
 
+// PaidFlowUserAssociation is SportAssociation.objects.get(user=user) (the
+// active manager, so live rows only; the owner FK is not null, so a nil user
+// is DoesNotExist without a query).
+func (t *paymentPaidFlowTransaction) PaidFlowUserAssociation(ctx context.Context, user *string) (*string, error) {
+	if user == nil {
+		return nil, nil
+	}
+	var association string
+	err := t.tx.GetContext(ctx, &association, `SELECT sport_association_id::text FROM application_sportassociation
+ WHERE user_id=$1 AND NOT deleted`, user)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &association, nil
+}
+
 // ValidateBroadcast is NotificationManager.validate_broadcast in this transaction.
 func (t *paymentPaidFlowTransaction) ValidateBroadcast(ctx context.Context, user, name string, audit domain.LoginAuditContext,
 	at time.Time) (bool, error) {

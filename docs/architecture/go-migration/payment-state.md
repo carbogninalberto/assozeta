@@ -197,3 +197,10 @@ digit accept decimal digits of any script, as `strptime`'s `\d` does; a month wr
 other mismatch. Two more cases (160 in all). The old refusal is the RED (v2-refusals.md, payment-state row
 "approve/date"). GREEN `v2resta-green-r4`: 160/160 on the four transports. Mutation `v2resta-mutation-r3` (the year
 limited to ASCII digits) fails `payment-state-approve-other-script-date` (CAUGHT).
+
+Long tail PR 5 (second review): `send_notification(request.user, ...)` fills `association_id` from
+`request.user.sport_association`, which for a COLLABORATOR scope user is the connected user's live association. The
+association import can make the scope user a collaborator who owns an association, so Go reads the connected user's
+association inside the transaction, before `validate_broadcast`; with no connected user or no live association it is
+Django's DoesNotExist: the 500 page, everything rolled back, no notification. Cases
+`approve-paid-flow-collaborator-owner-imported` and `approve-paid-flow-collaborator-owner-orphan-server-error`.

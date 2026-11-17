@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"strings"
 	"testing"
 	"time"
@@ -137,17 +138,59 @@ func TestSubscriptionNotifierAssociationNone(t *testing.T) {
 	}
 }
 
-// TestPaymentPaidFlowAssociationRole is send_notification's role test.
+// TestPaymentPaidFlowAssociationRole is send_notification's role test: an
+// association account keeps the association the view found, a collaborator
+// account reads their connected user's live association (and fails like
+// Django's DoesNotExist when there is none), and any other role keeps null.
 func TestPaymentPaidFlowAssociationRole(t *testing.T) {
-	for role, want := range map[int]*string{domain.RoleAssociation: paymentPaidFlowText("assoc-1"),
-		domain.RoleCollaborator: paymentPaidFlowText("assoc-1"), domain.RoleAthlete: nil} {
-		got := paymentPaidFlowAssociation(&domain.Account{ID: "user-1", Role: role}, "assoc-1")
-		if (got == nil) != (want == nil) || (got != nil && *got != *want) {
-			t.Errorf("role %d: got %v, want %v", role, got, want)
-		}
+	connected := paymentPaidFlowText("connected-1")
+	cases := []struct {
+		name      string
+		user      *domain.Account
+		connected *string
+		want      *string
+		wantErr   bool
+	}{
+		{name: "association", user: &domain.Account{ID: "user-1", Role: domain.RoleAssociation},
+			want: paymentPaidFlowText("assoc-1")},
+		{name: "athlete", user: &domain.Account{ID: "user-1", Role: domain.RoleAthlete}},
+		{name: "collaborator", user: &domain.Account{ID: "user-1", Role: domain.RoleCollaborator, ConnectedUserID: connected},
+			connected: paymentPaidFlowText("assoc-connected"), want: paymentPaidFlowText("assoc-connected")},
+		{name: "collaborator without a connected user",
+			user: &domain.Account{ID: "user-1", Role: domain.RoleCollaborator}, wantErr: true},
+		{name: "collaborator without a live association",
+			user:    &domain.Account{ID: "user-1", Role: domain.RoleCollaborator, ConnectedUserID: paymentPaidFlowText("connected-2")},
+			wantErr: true},
+		{name: "no scope user"},
 	}
-	if got := paymentPaidFlowAssociation(nil, "assoc-1"); got != nil {
-		t.Errorf("no scope user: got %v, want null", *got)
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			tx := &paidFlowTx{userAssociation: tc.connected}
+			got, err := paymentPaidFlowAssociation(context.Background(), tx, tc.user, "assoc-1")
+			if tc.wantErr {
+				if !errors.Is(err, domain.ErrPaymentStateServer) {
+					t.Fatalf("got %v, want %v", err, domain.ErrPaymentStateServer)
+				}
+				if got != nil {
+					t.Errorf("association %q with the error", *got)
+				}
+			} else {
+				if err != nil {
+					t.Fatalf("association: %v", err)
+				}
+				if (got == nil) != (tc.want == nil) || (got != nil && *got != *tc.want) {
+					t.Errorf("got %v, want %v", got, tc.want)
+				}
+			}
+			// Only a collaborator asks for the connected user's association.
+			if tc.user != nil && tc.user.Role == domain.RoleCollaborator {
+				if len(tx.askedConnection) != 1 || tx.askedConnection[0] != tc.user.ConnectedUserID {
+					t.Errorf("connected user asked %v", tx.askedConnection)
+				}
+			} else if len(tx.askedConnection) != 0 {
+				t.Errorf("connected user asked %v", tx.askedConnection)
+			}
+		})
 	}
 }
 
@@ -182,6 +225,12 @@ type paidFlowTx struct {
 	audits      int
 	broadcastTo string
 	committed   bool
+	rolledBack  bool
+	// userAssociation is what PaidFlowUserAssociation resolves for the
+	// connected user asked (nil: no live association); askedConnection records
+	// the lookups the flow ran.
+	userAssociation *string
+	askedConnection []*string
 }
 
 func (tx *paidFlowTx) ScopedAssociation(ctx context.Context, owner string, scope *string) (string, error) {
@@ -255,6 +304,16 @@ func (tx *paidFlowTx) PaidFlowPeople(ctx context.Context, payment string) (domai
 		AssociateLast: paymentPaidFlowText("Rossi")}, nil
 }
 
+// PaidFlowUserAssociation is SportAssociation.objects.get(user=user): no user
+// is no row without a query, a connected user resolves what the test set.
+func (tx *paidFlowTx) PaidFlowUserAssociation(ctx context.Context, user *string) (*string, error) {
+	tx.askedConnection = append(tx.askedConnection, user)
+	if user == nil {
+		return nil, nil
+	}
+	return tx.userAssociation, nil
+}
+
 func (tx *paidFlowTx) ValidateBroadcast(ctx context.Context, user, name string, audit domain.LoginAuditContext,
 	at time.Time) (bool, error) {
 	tx.broadcastTo = user + " " + name
@@ -267,7 +326,7 @@ func (tx *paidFlowTx) RenderPayment(ctx context.Context, id string, group *strin
 }
 
 func (tx *paidFlowTx) Commit() error   { tx.committed = true; return nil }
-func (tx *paidFlowTx) Rollback() error { return nil }
+func (tx *paidFlowTx) Rollback() error { tx.rolledBack = true; return nil }
 
 // newAthleteApprove builds payment_approve's paid flow for an athlete who owns
 // an imported association: the athlete's own invoice settings and a
@@ -399,6 +458,80 @@ func TestPaymentPaidFlowAssociationOwnerNotification(t *testing.T) {
 	}
 	if tx.ownerUser != "owner-1" {
 		t.Errorf("owner %q", tx.ownerUser)
+	}
+}
+
+// TestPaymentPaidFlowCollaboratorNotification is send_notification for a
+// collaborator account: the association import makes the scope user a
+// collaborator who owns the imported association the view found, so the view
+// runs as for an owner, while the notification carries the connected user's
+// live association (stored and pushed).
+func TestPaymentPaidFlowCollaboratorNotification(t *testing.T) {
+	connected := paymentPaidFlowText("connected-1")
+	identity := domain.ResolvedIdentity{Actor: &domain.Account{ID: "collaborator-1", Email: "collaborator@example.test"},
+		ScopeUser: &domain.Account{ID: "collaborator-1", Role: domain.RoleCollaborator, ConnectedUserID: connected}}
+	states, tx, store, layer, _ := newAthleteApprove()
+	tx.userAssociation = paymentPaidFlowText("assoc-connected")
+	request := PaymentStateRequest{ID: tx.row.ID}
+	if _, err := states.Approve(context.Background(), identity, request, athleteApproveBody(false)); err != nil {
+		t.Fatal(err)
+	}
+	if tx.ownerUser != "collaborator-1" || tx.lockedFor != "imported-association" {
+		t.Errorf("owner %q locked %q", tx.ownerUser, tx.lockedFor)
+	}
+	if len(tx.askedConnection) != 1 || tx.askedConnection[0] != connected {
+		t.Errorf("connected user asked %v", tx.askedConnection)
+	}
+	if !tx.committed {
+		t.Error("not committed")
+	}
+	stored := store.lists["broadcast_collaborator-1"]
+	if !strings.Contains(stored, `"association_id": "assoc-connected"`) {
+		t.Errorf("stored notification %s", stored)
+	}
+	if len(layer.messages) != 1 {
+		t.Fatalf("pushes %d", len(layer.messages))
+	}
+	if pushed := paidFlowDict(paidFlowDict(layer.messages[0], "notification"), "association_id"); pushed != "assoc-connected" {
+		t.Errorf("pushed association_id %#v", pushed)
+	}
+}
+
+// TestPaymentPaidFlowCollaboratorWithoutAssociationRollsBack is the 500 page:
+// request.user.sport_association raises for a collaborator without a live
+// connected association, after the invoice and the payment save and before
+// validate_broadcast, so the block never commits and nothing is delivered.
+func TestPaymentPaidFlowCollaboratorWithoutAssociationRollsBack(t *testing.T) {
+	for name, connected := range map[string]*string{"no connected user": nil, "no live association": paymentPaidFlowText("connected-2")} {
+		identity := domain.ResolvedIdentity{Actor: &domain.Account{ID: "collaborator-1", Email: "collaborator@example.test"},
+			ScopeUser: &domain.Account{ID: "collaborator-1", Role: domain.RoleCollaborator, ConnectedUserID: connected}}
+		states, tx, store, layer, recorder := newAthleteApprove()
+		request := PaymentStateRequest{ID: tx.row.ID}
+		if _, err := states.Approve(context.Background(), identity, request, athleteApproveBody(true)); !errors.Is(err,
+			domain.ErrPaymentStateServer) {
+			t.Fatalf("%s: got %v, want %v", name, err, domain.ErrPaymentStateServer)
+		}
+		// The transaction never committed, so the caller's deferred Rollback
+		// discards the invoice, the payment save and the audit entries.
+		if tx.committed || !tx.rolledBack {
+			t.Errorf("%s: committed %v rolled back %v", name, tx.committed, tx.rolledBack)
+		}
+		if tx.broadcastTo != "" {
+			t.Errorf("%s: validate_broadcast called: %q", name, tx.broadcastTo)
+		}
+		if len(store.lists) != 0 || len(store.resets) != 0 {
+			t.Errorf("%s: notifications stored %v resets %v", name, store.lists, store.resets)
+		}
+		if len(layer.groups) != 0 || len(layer.messages) != 0 {
+			t.Errorf("%s: pushes %v", name, layer.groups)
+		}
+		if len(recorder.Tasks) != 0 {
+			t.Errorf("%s: tasks %+v", name, recorder.Tasks)
+		}
+		// The flow had already written inside the block.
+		if len(tx.created) != 1 || tx.saved == nil || tx.audits != 1 {
+			t.Errorf("%s: invoices %d saved %v audits %d", name, len(tx.created), tx.saved, tx.audits)
+		}
 	}
 }
 

@@ -231,6 +231,11 @@ Long tail PR 5 (review finding): Go reads and serves what Django serves. A relea
 JSON value, lists and dicts in order), both from the cached pickle and from a fetched feed (which no longer answers X2 for
 them); the catalog is pickled back the way Django's cache stores it, and the summary is rendered like DRF's JSONRenderer
 (a NaN/infinite float or a lone surrogate in a rendered entry is the 500 page). A list or dict `id` is the TypeError
-`fetch_releases` raises. Left: an object copied from the feed keeps sorted keys when Go writes the catalog (the feed
-reader does not keep insertion order); rendering does not depend on it. Cases `releases-cached-values`,
-`releases-fetched-values`.
+`fetch_releases` raises. Cases `releases-cached-values`, `releases-fetched-values`.
+
+Long tail PR 5 (second review): the feed reader (`ReadJSON`) decodes objects in source key order (a repeated key keeps
+its first position and its last value), so an object copied from the feed is rendered and pickled in the order
+`json.loads` gives; an earlier note here said Go sorted those keys and that rendering did not depend on it, which was
+wrong for both the body and the cached pickle. Every `NaN` id is one dict key: `json.load` answers each `NaN` literal
+with the single `json.decoder.NaN` object, so `releases[release['id']]` folds them (first position, last value) across
+pages. Cases `releases-fetched-nan-ids-fold` (13 releases, not 14) and `releases-fetched-object-order`.

@@ -264,6 +264,20 @@ add('releases-cached-refresh-bounded', 'owner', f'{RELEASES}?refresh=1', 200, su
     cache={'catalog': [FEED_A], 'refresh': True}, cache_after={'catalog': 'unchanged', 'refresh': True})
 FEED_B = [raw_release(200 + n, f'v2.{n}.0', name=f'Release 2.{n}', body=f'Note {n}') for n in range(12)]
 CATALOG_B = catalog(*FEED_B)
+# One shared NaN object: json.load answers every NaN literal with the same float,
+# so both ids fold into a single catalog key (first position, last value). Their
+# version is 0.0.0, not pending and last in the sort: page 1 never renders them.
+NAN = float('nan')
+FEED_NAN = FEED_B + [raw_release(NAN, 'v0.0.0', name='NaN uno'), raw_release(NAN, '0.0.0', name='NaN due')]
+add('releases-fetched-nan-ids-fold', 'owner', RELEASES, 200, summary(catalog(*FEED_NAN)),
+    outbound=[github(1, reply(200, FEED_NAN))], cache={'catalog': None}, cache_after={'catalog': [FEED_NAN]})
+assert summary(catalog(*FEED_NAN))['total'] == 13
+# json.loads keeps the feed's key order; the cached pickle (compared byte for
+# byte) and the rendered body keep it.
+ORDERED = [raw_release(8, 'v6.0.0', name={'b': 1, 'a': 2}, body=[{'z': 1, 'y': {'d': None, 'c': True}}],
+                       published='2026-01-11T10:00:00Z')]
+add('releases-fetched-object-order', 'owner', RELEASES, 200, summary(catalog(*ORDERED)),
+    outbound=[github(1, reply(200, ORDERED))], cache={'catalog': None}, cache_after={'catalog': [ORDERED]})
 add('releases-refresh-fetches', 'owner', f'{RELEASES}?refresh=1&page=2', 200, summary(CATALOG_B, 2),
     outbound=[github(1, reply(200, FEED_B))], cache={'catalog': [FEED_A]}, cache_after={'catalog': [FEED_B], 'refresh': True})
 add('releases-refresh-other-value', 'owner', f'{RELEASES}?refresh=true&page=2&page=1', 200, summary(CATALOG_A, 1),

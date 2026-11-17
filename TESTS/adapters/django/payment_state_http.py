@@ -17,8 +17,11 @@ with payment_paid_flow: the created invoice, the authored course subscriptions
 marked paid, the broadcast rows, the owner's notification (Redis list, cache,
 Channels push, mirror) and the print_document_invoice messages on the run's
 private Celery broker. A second association owner whose invoice date follows
-the payment date (with a token) is seeded for it, and an athlete account that
-owns a second association (the association import) with an unpaid payment.
+the payment date (with a token) is seeded for it, an athlete account that
+owns a second association (the association import) with an unpaid payment,
+and two collaborator chains: a FULL collaborator whose connected user owns an
+imported association, and one whose connected user owns an association
+without a connected user of its own.
 
 Seeded invoices (linked to their payments) change only as authored
 ('invoices_changed': cancelled and meta). A CURRENT_HOST print stub
@@ -167,6 +170,20 @@ def seed_rows(source, created):
                                 first_name=imported['first'], last_name=imported['last'], sex=imported['sex'],
                                 tax_code=imported['tax'], born_date=datetime.fromisoformat(imported['born']).date(),
                                 email=imported['email'], is_minor=False))
+    # The collaborator chains (extra_users, inserted as athletes with tokens before this seed, are updated in place):
+    # C1 and C2 are FULL collaborators whose connected users are U1 and U2; U1's own connected user is the main owner
+    # and U2 has none, so resolve_request_identity scopes their requests to U1 and U2. These own the two associations.
+    scope, collaborator, orphan_scope, orphan_collaborator = (source['extra_users'][label]['id'] for label in
+                                                             ('collab_owner', 'collab_actor', 'orphan_owner', 'orphan_actor'))
+    User._base_manager.filter(pk=scope).update(role=User.COLLABORATOR, connected_user_id=owner)
+    User._base_manager.filter(pk=collaborator).update(role=User.COLLABORATOR, collaborator_role=1, connected_user_id=scope)
+    User._base_manager.filter(pk=orphan_scope).update(role=User.COLLABORATOR, connected_user_id=None)
+    User._base_manager.filter(pk=orphan_collaborator).update(role=User.COLLABORATOR, collaborator_role=1,
+                                                            connected_user_id=orphan_scope)
+    insert(SportAssociation, SportAssociation(sport_association_id=source['collab_association'], user_id=scope,
+                                              denomination=source['collab_denomination'], tax_code='79900000005'))
+    insert(SportAssociation, SportAssociation(sport_association_id=source['orphan_association'], user_id=orphan_scope,
+                                              denomination=source['orphan_denomination'], tax_code='79900000006'))
     teacher = source['instructor']
     insert(Instructor, Instructor(instructor_id=teacher['id'], user_id=owner, first_name=teacher['first_name'], last_name=teacher['last_name'],
                                   email=teacher['email'], tax_code=teacher['tax_code'],

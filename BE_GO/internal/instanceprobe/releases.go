@@ -10,7 +10,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"sync/atomic"
 	"unicode"
 	"unicode/utf8"
 
@@ -184,8 +183,8 @@ func ReleaseNotReadable(err error) *ReleaseError {
 	return &ReleaseError{Message: "Release service is unavailable. Please try again later."}
 }
 
-// ErrReleaseUnread is a feed value outside LoadJSON's documented set (nil,
-// bool, Int, float64, string, []any, map[string]any), which the port cannot
+// ErrReleaseUnread is a feed value outside the documented set (nil, bool,
+// Int, float64, string, []any, Dict and map[string]any), which the port cannot
 // carry. json.loads never produces one, so no feed value is left here: every
 // JSON value normalize_release copies (a str or int of any size, a float, a
 // bool, None, a list or an object) is kept and rendered. The release views
@@ -209,44 +208,68 @@ var ErrReleaseRender = refusal.AppState("instanceprobe: release summary value DR
 // letters, digits and dots, which quote keeps).
 func quoteTag(tag string) string { return url.PathEscape(tag) }
 
+// feedObject is a JSON object of the feed: a Dict (source order) or a map
+// (sorted keys).
+func feedObject(value any) (Dict, bool) {
+	switch object := value.(type) {
+	case Dict:
+		return object, true
+	case map[string]any:
+		keys := make([]string, 0, len(object))
+		for key := range object {
+			keys = append(keys, key)
+		}
+		sort.Strings(keys)
+		fields := make(Dict, 0, len(keys))
+		for _, key := range keys {
+			fields = append(fields, DictField{Name: key, Value: object[key]})
+		}
+		return fields, true
+	}
+	return nil, false
+}
+
 // normalize is normalize_release(raw); nil, nil for a skipped release.
 func normalize(item any) (*Release, error) {
-	raw, ok := item.(map[string]any)
+	raw, ok := feedObject(item)
 	if !ok {
 		return nil, ErrReleaseRaises // raw.get: AttributeError
 	}
-	tagValue, present := raw["tag_name"]
-	if !present {
-		tagValue = ""
+	// at is raw[name]: a missing key reads as None, as an absent dict.get does.
+	at := func(name string) any {
+		value, _ := raw.Lookup(name)
+		return value
 	}
-	if Truthy(raw["draft"]) || Truthy(raw["prerelease"]) || !Truthy(raw["published_at"]) {
+	if Truthy(at("draft")) || Truthy(at("prerelease")) || !Truthy(at("published_at")) {
 		return nil, nil
 	}
 	// version_tuple(str(tag)): only a str can match.
-	tag, isString := tagValue.(string)
+	tag, isString := at("tag_name").(string)
 	if !isString {
 		return nil, nil
 	}
 	if _, ok := VersionTuple(tag); !ok {
 		return nil, nil
 	}
-	assets := map[string]map[string]any{}
-	if list, present := raw["assets"]; present {
+	assets := map[string]Dict{}
+	if list, present := raw.Lookup("assets"); present {
 		items, err := iterate(list)
 		if err != nil {
 			return nil, err
 		}
 		for _, entry := range items {
-			asset, ok := entry.(map[string]any)
+			asset, ok := feedObject(entry)
 			if !ok {
 				return nil, ErrReleaseRaises // item.get('name'): AttributeError
 			}
-			name, isString := asset["name"].(string)
+			nameValue, _ := asset.Lookup("name")
+			name, isString := nameValue.(string)
 			if !isString {
-				if _, unhashable := asset["name"].([]any); unhashable {
+				if _, unhashable := nameValue.([]any); unhashable {
 					return nil, ErrReleaseRaises // unhashable dict key: TypeError
 				}
-				if _, unhashable := asset["name"].(map[string]any); unhashable {
+				switch nameValue.(type) {
+				case map[string]any, Dict:
 					return nil, ErrReleaseRaises // unhashable dict key: TypeError
 				}
 				continue
@@ -257,11 +280,15 @@ func normalize(item any) (*Release, error) {
 	ready := true
 	for _, name := range []string{"assozeta-selfhost-" + tag + ".tar.gz", "assozeta-update.json"} {
 		asset, present := assets[name]
-		if !present || asset["state"] != "uploaded" {
+		if !present {
 			ready = false
 			break
 		}
-		size, present := asset["size"]
+		if state, _ := asset.Lookup("state"); state != "uploaded" {
+			ready = false
+			break
+		}
+		size, present := asset.Lookup("size")
 		if !present {
 			ready = false
 			break
@@ -275,7 +302,7 @@ func normalize(item any) (*Release, error) {
 			break
 		}
 	}
-	idValue, present := raw["id"]
+	idValue, present := raw.Lookup("id")
 	if !present {
 		return nil, ErrReleaseRaises // raw['id']: KeyError
 	}
@@ -286,7 +313,7 @@ func normalize(item any) (*Release, error) {
 	case Int:
 		number, ok := new(big.Int).SetString(string(id), 10)
 		if !ok {
-			return nil, ErrReleaseUnread // not a decimal integer: outside LoadJSON's values
+			return nil, ErrReleaseUnread // not a decimal integer: outside the JSON value set
 		}
 		if number.IsInt64() {
 			release.ID = number.Int64()
@@ -298,12 +325,12 @@ func normalize(item any) (*Release, error) {
 		release.IDValue, release.IDValueSet = idValue, true
 	case nil:
 		release.IDValueSet = true // Python None: a hashable id (the dict key None)
-	case []any, map[string]any:
+	case []any, map[string]any, Dict:
 		return nil, ErrReleaseRaises // releases[release['id']] = release: TypeError
 	default:
 		return nil, ErrReleaseUnread
 	}
-	if name := raw["name"]; Truthy(name) {
+	if name := at("name"); Truthy(name) {
 		if text, ok := name.(string); ok {
 			release.Name = text
 		} else {
@@ -312,12 +339,12 @@ func normalize(item any) (*Release, error) {
 	} else {
 		release.Name, release.NameIsTag = tag, true
 	}
-	if published, ok := raw["published_at"].(string); ok {
+	if published, ok := at("published_at").(string); ok {
 		release.PublishedAt = published
 	} else {
-		release.PublishedValue = pythonValue(raw["published_at"])
+		release.PublishedValue = pythonValue(at("published_at"))
 	}
-	if body := raw["body"]; Truthy(body) {
+	if body := at("body"); Truthy(body) {
 		if text, ok := body.(string); ok {
 			release.Notes = text
 		} else {
@@ -331,11 +358,12 @@ func normalize(item any) (*Release, error) {
 	return release, nil
 }
 
-// pythonValue converts a LoadJSON value to the representation a Release field
+// pythonValue converts a feed value to the representation a Release field
 // keeps (and the summary renders): any int as *big.Int, float64, bool, string,
-// nil (None), []any and Dict. A JSON object's keys are emitted in Go's sorted
-// order: json.loads keeps the source order, which LoadJSON's map does not (the
-// cache reader, whose pickles do keep it, builds the Dict in that order).
+// nil (None), []any and Dict. A Dict keeps its order (the feed reader's source
+// order). A map's keys are emitted in Go's sorted order: only callers that
+// pass maps reach it (the feed reader now keeps the source order, which
+// json.loads does).
 func pythonValue(value any) any {
 	switch v := value.(type) {
 	case Int:
@@ -348,6 +376,12 @@ func pythonValue(value any) any {
 		out := make([]any, len(v))
 		for i, item := range v {
 			out[i] = pythonValue(item)
+		}
+		return out
+	case Dict:
+		out := make(Dict, len(v))
+		for i, field := range v {
+			out[i] = DictField{Name: field.Name, Value: pythonValue(field.Value)}
 		}
 		return out
 	case map[string]any:
@@ -372,6 +406,10 @@ func iterate(value any) ([]any, error) {
 	case []any:
 		return v, nil
 	case map[string]any:
+		if len(v) == 0 {
+			return nil, nil
+		}
+	case Dict:
 		if len(v) == 0 {
 			return nil, nil
 		}
@@ -400,7 +438,8 @@ func greaterThanZero(value any) (bool, error) {
 // ReleaseSet is fetch_releases' dict of normalized releases by id (first
 // position, last value). The keys follow Python equality: ints of any size,
 // floats and bools compare by value (1 == 1.0 == True), strs only with strs,
-// None only with None and a NaN float with nothing.
+// None only with None, and every NaN id is one key (json.loads returns the
+// one json.decoder.NaN object for every NaN literal).
 type ReleaseSet struct {
 	keys  []string
 	byKey map[string]Release
@@ -438,11 +477,9 @@ func (r *ReleaseSet) Releases() []Release {
 	return releases
 }
 
-// nanSequence keys each NaN id apart: a Python dict never matches a NaN float
-// against another one (json.loads makes a new float object for each).
-var nanSequence uint64
-
-// releaseKey is the Python dict key of the normalized id.
+// releaseKey is the Python dict key of the normalized id. A NaN float is
+// json.decoder.NaN, the one object every NaN literal parses to, so all NaN
+// ids are that single key.
 func releaseKey(r Release) string {
 	if !r.IDValueSet {
 		return "num:" + strconv.FormatInt(r.ID, 10)
@@ -462,7 +499,7 @@ func releaseKey(r Release) string {
 	case float64:
 		switch {
 		case math.IsNaN(v):
-			return "nan:" + strconv.FormatUint(atomic.AddUint64(&nanSequence, 1), 10)
+			return "nan"
 		case math.IsInf(v, 1):
 			return "num:+inf"
 		case math.IsInf(v, -1):

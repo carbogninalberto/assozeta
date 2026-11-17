@@ -174,7 +174,8 @@ func TestNormalizeUnhashableIDIsAppState(t *testing.T) {
 }
 
 // The catalog dict follows Python equality: 1 == 1.0 == True is one key, a
-// str and None are their own keys, and a NaN float matches nothing.
+// str and None are their own keys, and every NaN id is one key (json.loads
+// returns the one json.decoder.NaN object for every NaN literal).
 func TestReleaseSetPythonKeys(t *testing.T) {
 	release := func(id any, tag string) map[string]any {
 		return map[string]any{"id": id, "tag_name": tag, "published_at": "2026-01-01T00:00:00Z", "name": tag}
@@ -192,8 +193,8 @@ func TestReleaseSetPythonKeys(t *testing.T) {
 		t.Fatal(err)
 	}
 	releases := set.Releases()
-	if len(releases) != 5 {
-		t.Fatalf("%d releases, want 5 (1/True/1.0 collapse; the two NaN differ)", len(releases))
+	if len(releases) != 4 {
+		t.Fatalf("%d releases, want 4 (1/True/1.0 collapse; the two NaN fold into one key)", len(releases))
 	}
 	byTag := map[string]Release{}
 	for _, release := range releases {
@@ -212,15 +213,15 @@ func TestReleaseSetPythonKeys(t *testing.T) {
 	if byTag["v1.0.3"].IDValue != "1" || byTag["v1.0.4"].IDValue != nil || !byTag["v1.0.4"].IDValueSet {
 		t.Fatalf("string and None ids = %+v, %+v", byTag["v1.0.3"], byTag["v1.0.4"])
 	}
-	for tag, release := range byTag {
-		if tag == "v1.0.5" || tag == "v1.0.6" {
-			if value, ok := release.IDValue.(float64); !ok || !math.IsNaN(value) {
-				t.Fatalf("%s id = %+v, want NaN", tag, release.IDValue)
-			}
-		}
+	nan, found := byTag["v1.0.6"]
+	if !found {
+		t.Fatalf("the NaN key is missing: %+v", releases)
 	}
-	if _, found := byTag["v1.0.5"]; !found {
-		t.Fatalf("a NaN id was dropped: %+v", releases)
+	if value, ok := nan.IDValue.(float64); !ok || !math.IsNaN(value) {
+		t.Fatalf("the NaN key kept %+v, want the last value NaN", nan.IDValue)
+	}
+	if _, found := byTag["v1.0.5"]; found {
+		t.Fatalf("the NaN key kept the first value: %+v", releases)
 	}
 }
 

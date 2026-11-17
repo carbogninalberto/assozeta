@@ -80,6 +80,8 @@ type PaymentPaidFlowTransaction interface {
 	// MarkInstallmentPaid is installment.paid = True; save() with its update entry when it changed.
 	MarkInstallmentPaid(ctx context.Context, installment PaymentPaidFlowInstallment, audit CourseSubscriptionAudit) error
 	PaidFlowPeople(ctx context.Context, payment string) (PaymentPaidFlowPeople, error)
+	// PaidFlowUserAssociation is SportAssociation.objects.get(user=user).pk (live rows): nil for a nil user or no row.
+	PaidFlowUserAssociation(ctx context.Context, user *string) (*string, error)
 	// ValidateBroadcast is NotificationManager.validate_broadcast in this transaction.
 	ValidateBroadcast(ctx context.Context, user, name string, audit LoginAuditContext, at time.Time) (bool, error)
 }

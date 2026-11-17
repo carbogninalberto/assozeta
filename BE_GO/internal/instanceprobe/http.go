@@ -131,7 +131,8 @@ var ErrUnreadResponse = errors.New("instanceprobe: outbound response answered as
 // a 15 s timeout: the GitHub headers plus urllib's Accept-Encoding: identity
 // and Connection: close, redirects followed like HTTPRedirectHandler (at
 // most 10, then the redirect's HTTPError), any other non-2xx status an
-// HTTPError, and json.load of the whole body.
+// HTTPError, and json.load of the whole body (objects are Dicts in source
+// key order).
 func (c *Client) ReadJSON(ctx context.Context, target string, headers map[string]string) (any, error) {
 	client := &http.Client{Transport: c.transport(15*time.Second, 15*time.Second, false),
 		CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}
@@ -188,7 +189,7 @@ func (c *Client) ReadJSON(ctx context.Context, target string, headers map[string
 			}
 			return nil, ErrUnavailable
 		}
-		value, err := LoadJSON(body)
+		value, err := loadOrderedJSON(body)
 		if err != nil {
 			return nil, ErrUnavailable
 		}

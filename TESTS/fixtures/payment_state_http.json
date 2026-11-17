@@ -1984,6 +1984,54 @@
    "attachment": false,
    "meta_categories": null,
    "linked": false
+  },
+  "pf_collab_owner": {
+   "invoice": null,
+   "id": "a1000000-0000-4000-8000-000000985123",
+   "association": "a1000000-0000-4000-8000-000000985121",
+   "subject": 0,
+   "amount": "34.00",
+   "paid": false,
+   "expense": false,
+   "associate": "imported",
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota collaboratore",
+   "meta": null,
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
+  },
+  "pf_orphan": {
+   "invoice": null,
+   "id": "a1000000-0000-4000-8000-000000985124",
+   "association": "a1000000-0000-4000-8000-000000985122",
+   "subject": 0,
+   "amount": "35.00",
+   "paid": false,
+   "expense": false,
+   "associate": "imported",
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota senza titolare",
+   "meta": null,
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
   }
  },
  "invoices": {
@@ -2201,6 +2249,26 @@
    "id": "a1000000-0000-4000-8000-000000985111",
    "username": "payment-state-imported",
    "email": "payment-state-imported@example.test"
+  },
+  "collab_owner": {
+   "id": "a1000000-0000-4000-8000-000000985117",
+   "username": "payment-state-collab-owner",
+   "email": "payment-state-collab-owner@example.test"
+  },
+  "collab_actor": {
+   "id": "a1000000-0000-4000-8000-000000985118",
+   "username": "payment-state-collab-actor",
+   "email": "payment-state-collab-actor@example.test"
+  },
+  "orphan_owner": {
+   "id": "a1000000-0000-4000-8000-000000985119",
+   "username": "payment-state-orphan-owner",
+   "email": "payment-state-orphan-owner@example.test"
+  },
+  "orphan_actor": {
+   "id": "a1000000-0000-4000-8000-000000985120",
+   "username": "payment-state-orphan-actor",
+   "email": "payment-state-orphan-actor@example.test"
   }
  },
  "imported_association": "a1000000-0000-4000-8000-000000985112",
@@ -2214,6 +2282,10 @@
   "email": "elena@example.test"
  },
  "imported_denomination": "Importata atleta",
+ "collab_association": "a1000000-0000-4000-8000-000000985121",
+ "orphan_association": "a1000000-0000-4000-8000-000000985122",
+ "collab_denomination": "Importata collaboratore",
+ "orphan_denomination": "Importata senza titolare",
  "cases": [
   {
    "name": "payment-state-approve-anonymous",
@@ -9480,6 +9552,276 @@
    "response": {
     "detail": "User not allowed."
    },
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "payment-state-approve-paid-flow-collaborator-owner-imported",
+   "actor": "collab_actor",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985123/approve",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "payment mark as payed.",
+     "payment": {
+      "payment_id": "a1000000-0000-4000-8000-000000985123",
+      "user": null,
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000000985113",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "1990-01-04",
+       "email": "elena@example.test",
+       "sex": "F",
+       "first_name": "Elena",
+       "last_name": "Importata",
+       "is_minor": false,
+       "sport_association": "a1000000-0000-4000-8000-000000985112",
+       "tax_code": "MPTLNE90A41H501Y",
+       "user": "a1000000-0000-4000-8000-000000985111",
+       "phone": null,
+       "family": null,
+       "family_role": null
+      },
+      "subscription_id": null,
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": {
+       "invoice_id": "$invoice",
+       "document_token": null,
+       "creation_date": "$now",
+       "membership_fee": "0.00",
+       "activity_fee": "34.00",
+       "meta_payment_categories": null,
+       "description": "Ricevuta di pagamento con causale <b>Pagamenti fixture</b> per l'associazione <b>Importata collaboratore</b>.",
+       "number": 1,
+       "archived": false,
+       "cancelled": false,
+       "meta": null,
+       "imported_from_associami": false,
+       "deleted": false,
+       "document_pdf": null,
+       "sport_association": "a1000000-0000-4000-8000-000000985121",
+       "selected_tutor": null,
+       "group": null,
+       "attached_documents": []
+      },
+      "attachments": [],
+      "payment_category_name": "Pagamenti fixture",
+      "type": "default",
+      "subject": 0,
+      "amount": "34.00",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": "$now",
+      "paid": true,
+      "expense": false,
+      "description": "Quota collaboratore",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": "a1000000-0000-4000-8000-000000985001",
+      "sport_association": "a1000000-0000-4000-8000-000000985121",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null,
+      "invoice_generating": true
+     }
+    }
+   },
+   "effect": {
+    "actor": "collab_actor",
+    "payments_changed": {
+     "pf_collab_owner": {
+      "paid": true,
+      "payment_date": "$now",
+      "invoice": "$invoice"
+     }
+    },
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "invoices_changed": {},
+    "audit": [
+     {
+      "model": "invoice",
+      "label": "$invoice",
+      "action": 0,
+      "changes": {
+       "invoice_id": [
+        "None",
+        "$invoice"
+       ],
+       "document_pdf": [
+        "None",
+        "None"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000985121"
+       ],
+       "creation_date": [
+        "None",
+        "$now"
+       ],
+       "membership_fee": [
+        "None",
+        "0.0"
+       ],
+       "activity_fee": [
+        "None",
+        "34.00"
+       ],
+       "meta_payment_categories": [
+        "None",
+        "null"
+       ],
+       "description": [
+        "None",
+        "Ricevuta di pagamento con causale <b>Pagamenti fixture</b> per l'associazione <b>Importata collaboratore</b>."
+       ],
+       "number": [
+        "None",
+        "1"
+       ],
+       "archived": [
+        "None",
+        "False"
+       ],
+       "cancelled": [
+        "None",
+        "False"
+       ],
+       "selected_tutor": [
+        "None",
+        "None"
+       ],
+       "meta": [
+        "None",
+        "null"
+       ],
+       "imported_from_associami": [
+        "None",
+        "False"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000985121",
+       "direct"
+      ]
+     },
+     {
+      "model": "invoice",
+      "label": "$invoice",
+      "action": 1,
+      "changes": {
+       "membership_fee": [
+        "0.00",
+        "0.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000985121",
+       "direct"
+      ]
+     },
+     {
+      "model": "payment",
+      "label": "pf_collab_owner",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "False",
+        "True"
+       ],
+       "payment_date": [
+        "None",
+        "$now"
+       ],
+       "invoice": [
+        "None",
+        "$invoice"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000985121",
+       "direct"
+      ]
+     },
+     {
+      "model": "notificationsbroadcast",
+      "label": "$notificationsbroadcast",
+      "action": 0,
+      "changes": "$created",
+      "index": null
+     },
+     {
+      "model": "usernotificationsbroadcast",
+      "label": "$usernotificationsbroadcast",
+      "action": 0,
+      "changes": "$created",
+      "index": null
+     }
+    ],
+    "invoice": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000985121",
+     "creation_date": "$now",
+     "membership_fee": "0.00",
+     "activity_fee": "34.00",
+     "meta_payment_categories": null,
+     "description": "Ricevuta di pagamento con causale <b>Pagamenti fixture</b> per l'associazione <b>Importata collaboratore</b>.",
+     "number": 1,
+     "group_id": null
+    },
+    "course_subscriptions_paid": [],
+    "celery": [
+     {
+      "task": "print_document_invoice",
+      "args": [
+       "$invoice",
+       "$authorization",
+       false
+      ],
+      "kwargs": [],
+      "args_list": true
+     }
+    ],
+    "notification": {
+     "user": "collab_owner",
+     "msg": "Pagamento di € 34,00per Quota collaboratore. Pagamento dell'associato Elena Importata.",
+     "association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "prints": []
+  },
+  {
+   "name": "payment-state-approve-paid-flow-collaborator-owner-orphan-server-error",
+   "actor": "orphan_actor",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985124/approve",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
    "effect": null,
    "prints": []
   },

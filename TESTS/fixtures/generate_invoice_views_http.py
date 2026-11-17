@@ -117,6 +117,13 @@ def uuid_int(text):
     return uuid.UUID(text).int
 
 
+# The Kit category's id: a str payment_category_id is uuid.UUID(hex=), 32 code points of int(text, 16).
+KIT_HEX = uid(11).replace('-', '')
+# int(text, 16) reads a Unicode decimal digit (Nd) as its ASCII digit: the Arabic-Indic one in place of the first '1'.
+CATID_ARABIC = uid(11).replace('1', '\u0661', 1)
+assert uuid_int(CATID_ARABIC) == uuid_int(uid(11)) and CATID_ARABIC != uid(11)
+
+
 NONE = {'t': 'none'}
 UNSET = object()
 
@@ -298,6 +305,9 @@ INVOICES = {
     'descfloat': invoice(52),
     'catidint': invoice(53),
     'catidbool': invoice(54),
+    'catidarabic': invoice(61),
+    'catidcontrol': invoice(62),
+    'catidfullwidth': invoice(63),
     'suminf': invoice(55),
     'sumnan': invoice(56),
     'sumoverflow': invoice(57),
@@ -361,6 +371,11 @@ PAYMENTS = [
     payment(58, 'categorysigma', meta_categories=[{'payment_category_id': uid(15), 'amount': 1}]),
     payment(59, 'categoryidot', meta_categories=[{'payment_category_id': uid(16), 'amount': 2}]),
     payment(60, 'sublist', subject=1, associate='giulia'),
+    # A str is uuid.UUID(hex=): the 32 code points then int(text, 16), which reads a Unicode decimal
+    # digit (Nd) as its ASCII digit but only strips ASCII whitespace.
+    payment(61, 'catidarabic', meta_categories=[{'payment_category_id': CATID_ARABIC, 'amount': 2}]),
+    payment(62, 'catidcontrol', meta_categories=[{'payment_category_id': '\x1c' + KIT_HEX[1:], 'amount': 2}]),
+    payment(63, 'catidfullwidth', meta_categories=[{'payment_category_id': '\uff21' + KIT_HEX[1:], 'amount': 2}]),
 ]
 # Subscriptions linked by payment (Subscription.payment), course subscriptions, installments, carnet subscriptions.
 SUBSCRIPTION_PAYMENTS = {'subplan': uid(105), 'listcustom': uid(123), 'untitled': uid(124), 'badplans': uid(125),
@@ -638,6 +653,15 @@ add('invoice-meta-category-id-int', 'owner', INV('catidint'), 200, HTML, html=in
     extra=alpha_extra()))
 # Python: uuid.UUID(int=True) is ...0001, which is no row: DoesNotExist.
 add('invoice-meta-category-id-bool', 'owner', INV('catidbool'), 500, SERVER)
+# Python: int('a١000000000040008000000000986011', 16) reads the Arabic-Indic digit 1: the Kit category.
+add('invoice-meta-category-id-arabic', 'owner', INV('catidarabic'), 200, HTML, html=invoice_html(
+    'catidarabic', description=s(f"Ricevuta di pagamento con causale <b>Pagamento</b> per l'associazione <b>{ALPHA}</b>."),
+    categories=dct(('kit & maglia', i(2))), membership_period=NULL_MEMBERSHIP, header=alpha_header(), footer=alpha_footer(),
+    extra=alpha_extra()))
+# Python: int(text, 16) strips only ASCII whitespace, so U+001C is no hex digit: ValueError.
+add('invoice-meta-category-id-control', 'owner', INV('catidcontrol'), 500, SERVER)
+# Python: a fullwidth 'A' is a letter, not a decimal digit: ValueError.
+add('invoice-meta-category-id-fullwidth', 'owner', INV('catidfullwidth'), 500, SERVER)
 # Python: the stored number is 1.9e308 + 0.5, which json.loads reads as inf; sum([inf]) is inf and
 # float(10.00) - inf is -inf.
 add('invoice-meta-sum-infinity', 'owner', INV('suminf'), 200, HTML, html=invoice_html(

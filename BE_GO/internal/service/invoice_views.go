@@ -625,8 +625,9 @@ func (s *InvoiceViews) paymentCategories(ctx context.Context, payment domain.Inv
 		if !present {
 			return nil, false, ErrDocumentViewServer
 		}
-		// PaymentCategory.objects.get(payment_category_id=value): UUIDField.to_python.
-		text, valid := dto.DjangoUUIDLookup(raw)
+		// PaymentCategory.objects.get(payment_category_id=value): UUIDField.to_python,
+		// uuid.UUID(int=) for an int or bool and uuid.UUID(hex=) with int(text, 16) for a str.
+		text, valid := dto.PythonUUIDLookup(raw)
 		if !valid {
 			return nil, false, ErrDocumentViewServer
 		}

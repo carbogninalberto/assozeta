@@ -213,6 +213,10 @@ func (f *paymentPaidFlowDescriptionFake) PaidFlowPeople(ctx context.Context, pay
 	return domain.PaymentPaidFlowPeople{UserFound: true, UserID: descriptionValueText("user")}, nil
 }
 
+func (f *paymentPaidFlowDescriptionFake) PaidFlowUserAssociation(ctx context.Context, user *string) (*string, error) {
+	return nil, nil
+}
+
 func (f *paymentPaidFlowDescriptionFake) ValidateBroadcast(ctx context.Context, user, name string, audit domain.LoginAuditContext,
 	at time.Time) (bool, error) {
 	return false, nil
