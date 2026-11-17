@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
@@ -31,8 +30,10 @@ const reportEvent = "a1000000-0000-4000-8000-000000000603"
 // reportStore seeds one registry with one all-day event of the association and
 // one attendance day naming its event id.
 type reportStore struct {
-	events    string
-	attendees *string
+	events               string
+	attendees            *string
+	courseEvents         *string
+	courseMultipleQuotes *string
 }
 
 func (s reportStore) OwnerAssociation(context.Context, string) (string, error) {
@@ -46,7 +47,8 @@ func (s reportStore) Instructors(context.Context, string) ([]domain.InstructorRe
 func (s reportStore) Registries(context.Context, string) ([]domain.InstructorReportRegistry, error) {
 	course := "Corso A"
 	events := s.events
-	return []domain.InstructorReportRegistry{{ID: reportRegistry, Events: &events, Course: &course}}, nil
+	return []domain.InstructorReportRegistry{{ID: reportRegistry, Events: &events, Course: &course,
+		CourseEvents: s.courseEvents, CourseMultipleQuotes: s.courseMultipleQuotes}}, nil
 }
 
 func (s reportStore) Days(context.Context, string, time.Time, time.Time) ([]domain.InstructorReportDay, error) {
@@ -226,23 +228,53 @@ func TestInstructorReportDeepStoredJSON(t *testing.T) {
 	}
 }
 
-// json.loads' RecursionError is the 500 page at 9999 levels; the 9800..9998
-// band depends on the C calls on the request thread's stack and stays refused.
+// json.loads' RecursionError is the 500 page past the measured edge (owner
+// decision X15); at the edge the report is answered. The Course JSON columns
+// select_related loads share the same edge.
 func TestInstructorReportStoredJSONNesting(t *testing.T) {
-	deep := func(depth int) string {
-		return `[{"event_id": "` + reportEvent + `", "title": "Lezione", "extendedProps": ` +
-			strings.Repeat(`[`, depth) + strings.Repeat(`]`, depth) + `}]`
+	deep := func(depth int) string { return strings.Repeat(`[`, depth) + strings.Repeat(`]`, depth) }
+	// The event's own container nesting is 3 above the extra list, and the
+	// attendee list's 2.
+	event := func(total int) string {
+		return `[{"event_id": "` + reportEvent + `", "title": "Lezione", "extendedProps": {"instructor": ` +
+			`{"instructor_id": "a1000000-0000-4000-8000-000000000604"}, "extra": ` + deep(total-3) + `}}]`
 	}
-	_, err := NewInstructorReport(reportStore{events: deep(9800)}, time.Now).Report(context.Background(), reportIdentity(),
-		reportPtr("15/09/2026"), reportPtr("15/09/2026"))
-	if !errors.Is(err, dto.ErrJSONRecursionBand) || !errors.Is(err, refusal.ErrNotPorted) {
-		t.Fatalf("band: %v", err)
+	attendees := func(total int) string {
+		return `[{"course_subscription_id": null, "extra": ` + deep(total-2) + `}]`
 	}
-	for _, depth := range []int{9999, 12000} {
-		_, err := NewInstructorReport(reportStore{events: deep(depth)}, time.Now).Report(context.Background(), reportIdentity(),
-			reportPtr("15/09/2026"), reportPtr("15/09/2026"))
-		if !errors.Is(err, ErrInstructorReportServer) || errors.Is(err, refusal.ErrNotPorted) {
-			t.Fatalf("depth %d: %v", depth, err)
+	for _, total := range []int{instructorReportJSONEdge - 4, instructorReportJSONEdge - 1, instructorReportJSONEdge} {
+		response := reportRun(t, reportStore{events: event(total)})
+		if reportField(t, response, "report_file") == nil {
+			t.Fatalf("events depth %d: no report", total)
+		}
+		response = reportRun(t, reportStore{events: reportEventJSON(`""`), attendees: reportText(attendees(total))})
+		if reportField(t, response, "report_file") == nil {
+			t.Fatalf("attendees depth %d: no report", total)
+		}
+		for _, column := range []string{"events", "multiple_quotes"} {
+			registry := reportStore{events: reportEventJSON(`""`)}
+			if column == "events" {
+				registry.courseEvents = reportText(deep(total))
+			} else {
+				registry.courseMultipleQuotes = reportText(deep(total))
+			}
+			if report := reportField(t, reportRun(t, registry), "report_file"); report == nil {
+				t.Fatalf("course %s depth %d: no report", column, total)
+			}
+		}
+	}
+	for _, total := range []int{instructorReportJSONEdge + 1, instructorReportJSONEdge + 30} {
+		for name, store := range map[string]reportStore{
+			"events":        {events: event(total)},
+			"attendees":     {events: reportEventJSON(`""`), attendees: reportText(attendees(total))},
+			"course-events": {events: reportEventJSON(`""`), courseEvents: reportText(deep(total))},
+			"course-quotes": {events: reportEventJSON(`""`), courseMultipleQuotes: reportText(deep(total))},
+		} {
+			_, err := NewInstructorReport(store, time.Now).Report(context.Background(), reportIdentity(),
+				reportPtr("15/09/2026"), reportPtr("15/09/2026"))
+			if !errors.Is(err, ErrInstructorReportServer) || errors.Is(err, refusal.ErrNotPorted) {
+				t.Fatalf("%s depth %d: %v", name, total, err)
+			}
 		}
 	}
 }
@@ -264,4 +296,5 @@ func TestInstructorReportDescriptionTypes(t *testing.T) {
 	}
 }
 
-func reportPtr(value string) *string { return &value }
+func reportPtr(value string) *string  { return &value }
+func reportText(value string) *string { return &value }

@@ -13,10 +13,14 @@ type InstructorReportInstructor struct {
 }
 
 // InstructorReportRegistry is an AttendanceRegistry with its course title.
+// CourseEvents and CourseMultipleQuotes are the select_related Course columns
+// Django's JSONField.from_db_value deserializes when the row is fetched.
 type InstructorReportRegistry struct {
-	ID     string  `db:"attendance_registry_id"`
-	Events *string `db:"events"`
-	Course *string `db:"course_title"`
+	ID                   string  `db:"attendance_registry_id"`
+	Events               *string `db:"events"`
+	Course               *string `db:"course_title"`
+	CourseEvents         *string `db:"course_events"`
+	CourseMultipleQuotes *string `db:"course_multiple_quotes"`
 }
 
 // InstructorReportDay is an AttendanceDay of the period.

@@ -26,9 +26,20 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
+// restoreInstanceJSONEdge is the deepest container nesting (AuditJSONDepth:
+// "[]" counts 1) that json.loads and JSONDecoder.raw_decode parse in the Celery
+// restore_instance_data prefork worker on the parity harness's Django 3.13,
+// measured with the live worker stack (owner decision X15). The measurement is
+// 9975 for Archive.validate's json.loads and for _import_records'
+// iter_json_array items. The upload request (POST instance/admin/data-restore)
+// runs validate() on a request thread and uses dataRestoreUploadJSONEdge.
+const restoreInstanceJSONEdge = 9975
+
 // restoreDamaged is the RestoreError Archive.validate() raises for the Python
 // exceptions it catches (ValueError, TypeError, KeyError, AttributeError,
 // BadZipFile, zlib.error, UnicodeError, RuntimeError, ValidationError).
+// RecursionError is a RuntimeError, so a member past the call site's edge is
+// the damaged archive too.
 const restoreDamaged = "Il backup ZIP è danneggiato o non rispetta il formato Bakney."
 
 // restoreError is a RestoreError: its message becomes the receipt's error.
@@ -83,8 +94,12 @@ type restoreMissingRelation struct{ model, record, field, targetModel, target st
 
 // restoreArchive is instance.restore.archive.Archive after validate().
 type restoreArchive struct {
-	path     string
-	zip      *consumerImportArchive
+	path string
+	zip  *consumerImportArchive
+	// edge is the measured json.loads nesting edge of the call site that
+	// validates this archive (owner decision X15): the upload request or the
+	// Celery restore worker.
+	edge     int
 	manifest domain.RequestObject
 	// records are the non-retired data files by model name.
 	records    map[string][]domain.RequestObject
@@ -160,8 +175,14 @@ func restorePosixParts(name string) []string {
 // validateRestoreArchive is Archive(path).validate(). It returns a
 // *restoreError for the RestoreErrors Django raises, errRestoreReaderRaised
 // where an uncaught exception reaches Django's 500 page, or another error.
-func validateRestoreArchive(run *consumerImportRun, path string, limits restoreLimits) (*restoreArchive, error) {
-	archive := &restoreArchive{path: path, records: map[string][]domain.RequestObject{}, media: map[string]string{}}
+// edge is the measured json.loads edge of the calling site; the Celery worker
+// is the default, and the upload request passes its own.
+func validateRestoreArchive(run *consumerImportRun, path string, limits restoreLimits, edge ...int) (*restoreArchive, error) {
+	archive := &restoreArchive{path: path, edge: restoreInstanceJSONEdge,
+		records: map[string][]domain.RequestObject{}, media: map[string]string{}}
+	if len(edge) > 0 {
+		archive.edge = edge[0]
+	}
 	isZip, err := consumerImportIsZipFile(path)
 	if err != nil {
 		return nil, err
@@ -194,19 +215,16 @@ func (a *restoreArchive) json(name string) (any, error) {
 	if err != nil {
 		return nil, restoreReaderError(err)
 	}
-	return restoreJSON(data)
+	return restoreJSON(data, a.edge)
 }
 
 // restoreStreamError classifies an iter_json_array failure: a ZIP reader
-// exception as restoreReaderError does, the C recursion band as itself, and
-// everything else (the array grammar's ValueError, JSONDecodeError,
-// UnicodeDecodeError, RecursionError) as the damaged archive validate() raises.
+// exception as restoreReaderError does, and everything else (the array
+// grammar's ValueError, JSONDecodeError, UnicodeDecodeError, RecursionError)
+// as the damaged archive validate() raises.
 func restoreStreamError(err error) error {
 	var exc *pyzipfile.Exception
-	switch {
-	case errors.Is(err, dto.ErrJSONRecursionBand):
-		return err
-	case errors.As(err, &exc):
+	if errors.As(err, &exc) {
 		return restoreReaderError(err)
 	}
 	return errRestoreDamaged
@@ -214,10 +232,10 @@ func restoreStreamError(err error) error {
 
 // restoreJSON is json.loads(zf.read(name)) for the bytes of a member: the
 // same BOM/UTF-8/16/32 detection and surrogatepass decoding, then
-// dto.PythonJSONLoads. Every ValueError, UnicodeError and RecursionError it
-// raises is caught by validate(), so a failure is errRestoreDamaged; nesting in
-// CPython's C recursion band stays dto.ErrJSONRecursionBand.
-func restoreJSON(data []byte) (any, error) {
+// dto.PythonJSONLoadsEdge. Every ValueError, UnicodeError and RecursionError
+// it raises is caught by validate(), so a failure is errRestoreDamaged; edge
+// is the calling site's measured json.loads nesting edge (owner decision X15).
+func restoreJSON(data []byte, edge int) (any, error) {
 	name := restoreJSONEncoding(data)
 	runes, err, ok := pycodecs.Decode(name, data, pycodecs.SurrogatePass)
 	if !ok || err != nil {
@@ -227,10 +245,7 @@ func restoreJSON(data []byte) (any, error) {
 	if !ok {
 		return nil, errRestoreDamaged
 	}
-	value, err := dto.PythonJSONLoads([]byte(text))
-	if errors.Is(err, dto.ErrJSONRecursionBand) {
-		return nil, err
-	}
+	value, err := dto.PythonJSONLoadsEdge([]byte(text), edge)
 	if err != nil {
 		return nil, errRestoreDamaged
 	}
@@ -858,7 +873,7 @@ func (a *restoreArchive) skippedRecords(plan *importeffects.Plan) (celery.Dict, 
 			return nil, restoreReaderError(err)
 		}
 		rows := 0
-		err = importIterJSONArray(source, importJSONChunkSize, func(row any) error {
+		err = importIterJSONArray(source, importJSONChunkSize, a.edge, func(row any) error {
 			if _, ok := row.(domain.RequestObject); !ok {
 				return errRestoreDamaged // ValueError: Invalid retired record
 			}

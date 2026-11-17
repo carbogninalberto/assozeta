@@ -12,11 +12,14 @@ import (
 
 func storedText(value string) *string { return &value }
 
+// testStoredJSONEdge is a nesting bound the tests can author quickly.
+const testStoredJSONEdge = 5000
+
 func TestStoredJSONValues(t *testing.T) {
-	if value, err := StoredJSON(nil); value != nil || err != nil {
+	if value, err := StoredJSONEdge(nil, testStoredJSONEdge); value != nil || err != nil {
 		t.Fatalf("NULL: %v %v", value, err)
 	}
-	value, err := StoredJSON(storedText(`{"a": [1, -2, 1.5, true, null], "b": {"c": "d"}}`))
+	value, err := StoredJSONEdge(storedText(`{"a": [1, -2, 1.5, true, null], "b": {"c": "d"}}`), testStoredJSONEdge)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -33,7 +36,7 @@ func TestStoredJSONValues(t *testing.T) {
 
 // Python keeps a duplicate key's last value at its first position.
 func TestStoredJSONDuplicateKeys(t *testing.T) {
-	value, err := StoredJSON(storedText(`{"a": 1, "b": 2, "a": 3}`))
+	value, err := StoredJSONEdge(storedText(`{"a": 1, "b": 2, "a": 3}`), testStoredJSONEdge)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -45,17 +48,12 @@ func TestStoredJSONDuplicateKeys(t *testing.T) {
 
 // Shallow stored JSON is what the association import writes and every Django
 // read parses: 600 and 2000 levels are reproduced (the old 500-level audit
-// limit is the audit serializer's own, not this view's).
+// limit is the audit serializer's own, not this view's). At the call site's
+// measured edge it still parses.
 func TestStoredJSONNestingIsReproduced(t *testing.T) {
-	for _, depth := range []int{1, 600, 2000, StoredJSONRecursionBand - 1, StoredJSONRecursionBand} {
+	for _, depth := range []int{1, 600, 2000, testStoredJSONEdge - 1, testStoredJSONEdge} {
 		text := strings.Repeat(`[`, depth) + strings.Repeat(`]`, depth)
-		value, err := StoredJSON(storedText(text))
-		if depth == StoredJSONRecursionBand {
-			if !errors.Is(err, ErrJSONRecursionBand) || !errors.Is(err, refusal.ErrNotPorted) {
-				t.Fatalf("depth %d: %v", depth, err)
-			}
-			continue
-		}
+		value, err := StoredJSONEdge(storedText(text), testStoredJSONEdge)
 		if err != nil {
 			t.Fatalf("depth %d: %v", depth, err)
 		}
@@ -77,32 +75,73 @@ func TestStoredJSONNestingIsReproduced(t *testing.T) {
 	}
 }
 
-// json.loads raises RecursionError at 9999 levels on every call stack; the
-// 9800..9998 band depends on the C calls already on the request thread's stack.
-func TestStoredJSONRecursion(t *testing.T) {
-	band := strings.Repeat(`[`, StoredJSONRecursionFloor-1) + strings.Repeat(`]`, StoredJSONRecursionFloor-1)
-	if _, err := StoredJSON(storedText(band)); !errors.Is(err, ErrJSONRecursionBand) {
-		t.Fatalf("9998: %v", err)
+// json.loads raises RecursionError one level past the call site's measured
+// edge (owner decision X15). The text names the first container entered past
+// the edge, in document order.
+func TestStoredJSONRecursionEdge(t *testing.T) {
+	nested := func(open, close string, depth int) *string {
+		return storedText(strings.Repeat(open, depth) + strings.Repeat(close, depth))
 	}
-	floor := strings.Repeat(`[`, StoredJSONRecursionFloor) + strings.Repeat(`]`, StoredJSONRecursionFloor)
-	if _, err := StoredJSON(storedText(floor)); !errors.Is(err, ErrStoredJSONRecursion) {
-		t.Fatalf("9999: %v", err)
+	for _, c := range []struct {
+		text   *string
+		object bool
+	}{
+		{nested("[", "]", testStoredJSONEdge+1), false},
+		{nested("{", "}", testStoredJSONEdge+1), true},
+		{storedText(`{"a": ` + strings.Repeat("[", testStoredJSONEdge) + strings.Repeat("]", testStoredJSONEdge) + `}`), false},
+		{storedText(`[` + strings.Repeat(`{"a":`, testStoredJSONEdge) + `1` + strings.Repeat("}", testStoredJSONEdge) + `]`), true},
+	} {
+		_, err := StoredJSONEdge(c.text, testStoredJSONEdge)
+		var recursion *StoredJSONRecursionError
+		if !errors.As(err, &recursion) || !errors.Is(err, ErrStoredJSONRecursion) || recursion.Object != c.object {
+			t.Fatalf("past the edge: %v", err)
+		}
+		kind := "array"
+		if c.object {
+			kind = "object"
+		}
+		want := "maximum recursion depth exceeded while decoding a JSON " + kind + " from a unicode string"
+		if err.Error() != want {
+			t.Fatalf("text %q, want %q", err.Error(), want)
+		}
+	}
+}
+
+// PythonJSONLoadsEdge is the same bound for JSON text from a request or a ZIP
+// member.
+func TestPythonJSONLoadsEdge(t *testing.T) {
+	for _, depth := range []int{1, 600, testStoredJSONEdge - 1, testStoredJSONEdge} {
+		text := strings.Repeat(`[`, depth) + strings.Repeat(`]`, depth)
+		if _, err := PythonJSONLoadsEdge([]byte(text), testStoredJSONEdge); err != nil {
+			t.Fatalf("depth %d: %v", depth, err)
+		}
+	}
+	_, err := PythonJSONLoadsEdge([]byte(`{"a": `+strings.Repeat("[", testStoredJSONEdge)+strings.Repeat("]", testStoredJSONEdge)+`}`),
+		testStoredJSONEdge)
+	var recursion *StoredJSONRecursionError
+	if !errors.As(err, &recursion) || recursion.Object || !errors.Is(err, ErrStoredJSONRecursion) {
+		t.Fatalf("past the edge: %v", err)
+	}
+	_, err = PythonJSONLoadsEdge([]byte(strings.Repeat(`{"a":`, testStoredJSONEdge+1)+`1`+strings.Repeat("}", testStoredJSONEdge+1)),
+		testStoredJSONEdge)
+	if !errors.As(err, &recursion) || !recursion.Object {
+		t.Fatalf("object past the edge: %v", err)
 	}
 }
 
 // CPython converts an integer literal through int(str), which raises ValueError
 // past sys.int_max_str_digits (4300); float literals go through strtod.
 func TestStoredJSONIntegerDigits(t *testing.T) {
-	if _, err := StoredJSON(storedText(`[` + strings.Repeat(`1`, StoredJSONIntegerDigits) + `]`)); err != nil {
+	if _, err := StoredJSONEdge(storedText(`[`+strings.Repeat(`1`, StoredJSONIntegerDigits)+`]`), testStoredJSONEdge); err != nil {
 		t.Fatalf("4300 digits: %v", err)
 	}
-	if _, err := StoredJSON(storedText(`[` + strings.Repeat(`1`, StoredJSONIntegerDigits+1) + `]`)); !errors.Is(err, ErrStoredJSONInteger) {
+	if _, err := StoredJSONEdge(storedText(`[`+strings.Repeat(`1`, StoredJSONIntegerDigits+1)+`]`), testStoredJSONEdge); !errors.Is(err, ErrStoredJSONInteger) {
 		t.Fatalf("4301 digits: %v", err)
 	}
-	if _, err := StoredJSON(storedText(`[` + strings.Repeat(`9`, StoredJSONIntegerDigits+1) + `.0]`)); err != nil {
+	if _, err := StoredJSONEdge(storedText(`[`+strings.Repeat(`9`, StoredJSONIntegerDigits+1)+`.0]`), testStoredJSONEdge); err != nil {
 		t.Fatalf("float digits: %v", err)
 	}
-	if _, err := StoredJSON(storedText(`[1e400]`)); err != nil {
+	if _, err := StoredJSONEdge(storedText(`[1e400]`), testStoredJSONEdge); err != nil {
 		t.Fatalf("exponent: %v", err)
 	}
 }
@@ -110,12 +149,12 @@ func TestStoredJSONIntegerDigits(t *testing.T) {
 // jsonb stores neither a lone surrogate escape nor the NaN/Infinity literals.
 func TestStoredJSONRejectsWhatJSONBCannotStore(t *testing.T) {
 	for _, text := range []string{`["\ud800"]`, `["\udc00"]`, `[NaN]`, `[Infinity]`, `[-Infinity]`} {
-		_, err := StoredJSON(storedText(text))
+		_, err := StoredJSONEdge(storedText(text), testStoredJSONEdge)
 		if !errors.Is(err, refusal.ErrAppState) || errors.Is(err, refusal.ErrNotPorted) || !errors.Is(err, ErrStoredJSONUnreachable) {
 			t.Fatalf("%s: %v", text, err)
 		}
 	}
-	if value, err := StoredJSON(storedText(`["\ud83d\ude00"]`)); err != nil || value.([]any)[0] != "😀" {
+	if value, err := StoredJSONEdge(storedText(`["\ud83d\ude00"]`), testStoredJSONEdge); err != nil || value.([]any)[0] != "😀" {
 		t.Fatalf("surrogate pair: %v %v", value, err)
 	}
 }

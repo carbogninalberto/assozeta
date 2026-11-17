@@ -134,15 +134,23 @@ func archiveBadCRC(err error) bool {
 		strings.HasPrefix(exc.Text, "Bad CRC-32 for file ")
 }
 
+// consumerImportJSONRefuseDepth is where the Celery import_association_data
+// worker hands a JSON document to Django instead of parsing it. This call site
+// was not measured (owner decision X15): the prefork worker's C stack is not
+// the request thread's, so from 9800 levels the message stays with Django; a
+// shallower document is parsed below.
+const consumerImportJSONRefuseDepth = 9800
+
 // consumerImportJSON is json.loads(data) (and iter_json_array for an array)
 // for UTF-8 input without a byte order mark: the same Python JSON the restore
 // reads (NaN/Infinity literals, duplicate keys, JSON nesting, CPython's
-// 4300-digit integer limit). Undecodable input is handed off.
+// 4300-digit integer limit). Undecodable input, and nesting the unmeasured
+// worker site hands off, is errImportArchive.
 func consumerImportJSON(data []byte) (any, error) {
 	if bytes.HasPrefix(data, []byte("\xef\xbb\xbf")) || !utf8.Valid(data) {
 		return nil, errImportArchive
 	}
-	value, err := dto.PythonJSONLoads(data)
+	value, err := dto.PythonJSONLoadsEdge(data, consumerImportJSONRefuseDepth-1)
 	switch {
 	case errors.Is(err, dto.ErrStoredJSONInteger):
 		// json.loads' ValueError, with the offending token's digit count.

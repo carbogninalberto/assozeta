@@ -569,12 +569,15 @@ DAMAGED = 'Il backup ZIP è danneggiato o non rispetta il formato Bakney.'
 
 
 def archive(*, rows=None, members=None, manifest=None, drop=(), associations=None, raw=None,
-            denomination='Associazione archiviata'):
+            denomination='Associazione archiviata', deep=None):
     if raw is not None:
         return {'raw_b64': base64.b64encode(raw).decode()}
-    return {'association': ARCHIVE_ASSOCIATION, 'denomination': denomination, 'owner': ARCHIVE_OWNER,
+    spec = {'association': ARCHIVE_ASSOCIATION, 'denomination': denomination, 'owner': ARCHIVE_OWNER,
             'export_date': '2026-03-30T10:00:00+00:00', 'rows': rows or {}, 'members': members or {},
             'manifest': manifest or {}, 'drop': list(drop), 'associations': associations}
+    if deep is not None:
+        spec['deep'] = deep
+    return spec
 
 
 def summary(*, records=2, files=0, missing_media=0, relations=(), association='Associazione archiviata', reassigned=0,
@@ -841,6 +844,16 @@ upload('upload-archive-huge-declared-size', 'owner', 400,
        archive(raw=huge_declared_size(minimal_zip(), 'manifest.json')))
 upload('upload-archive-duplicate-member', 'owner', 400, error('File duplicato nel backup: manifest.json.'),
        archive(raw=minimal_zip(members=(('manifest.json', b'{}'), ('manifest.json', b'{}')))))
+
+# Archive.validate reads manifest.json with json.loads on the upload request
+# thread up to the edge measured on the harness's Django (owner decision X15):
+# 9942 levels. Below it the upload is accepted; past it RecursionError is a
+# RuntimeError validate() catches, so the archive is damaged. The deep value
+# lives in the manifest's unused "extra" key and the adapter writes it as raw
+# text (json.dumps cannot author it).
+RESTORE_EDGE = 9942
+accepted('upload-archive-manifest-depth-9938', MINIMAL, archive(deep=RESTORE_EDGE - 4))
+upload('upload-archive-manifest-depth-9972', 'owner', 400, error(DAMAGED), archive(deep=RESTORE_EDGE + 30))
 
 assert len({c['name'] for c in cases}) == len(cases)
 def json_text(value):

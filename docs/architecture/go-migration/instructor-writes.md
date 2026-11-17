@@ -130,11 +130,16 @@ Long tail PR 3: `internal/pydateutil` reads every Python str (agent A), so no re
 only other result is pydateutil's unexpected local zone, application state (every caller passes UTC).
 
 Long tail PR 4 (agent B): `instructor/report` reads the registry events and the days' attendees as psycopg's `json.loads`
-does (`dto.StoredJSON`; the association import can store any JSON jsonb accepts): CPython 3.13's C scanner parses up to
-9998 levels at the top of a thread, so 9999 and deeper (and an integer literal past 4300 digits) is the uncaught 500
-page, shallower JSON is read, and only the band 9800..9998, where the RecursionError depth depends on the C calls on the
-request thread's stack, stays refused (long-tail rule 4). A description int beyond int64 is measured by its digits
-(`astype(str)`) and written as `float(number)` by XlsxWriter; past the double range `generate_report_from_data` logs the
-OverflowError and the answer has `report_file: null`. Cases `instructor-writes-report-deep-{events,attendees}-{600,900}`,
-`-report-description-int-beyond-int64`, `-report-description-int-past-double` (186/186 on the four transports); the
-family loader walks fixture values with one Python frame per level, so deeper JSON is covered by Go tests (2000, 9799).
+does (`dto.StoredJSONEdge`; the association import can store any JSON jsonb accepts). CPython 3.13's C scanner reaches a
+depth that depends on the C calls already on the request thread's stack, so the Go port answers what Django answers at
+the depth measured on the parity harness per call site (owner decision X15): 9940 levels (one cold request showed 9938).
+At or below that edge the value parses; one level past it `json.loads` raises RecursionError, which the view does not
+catch (the 500 page), and an integer literal past 4300 digits is the same 500 page. The report's `select_related('course')`
+also deserializes `Course.events` and `Course.multiple_quotes`, so those columns share the edge even though the view reads
+only the title. A description int beyond int64 is measured by its digits (`astype(str)`) and written as `float(number)` by
+XlsxWriter; past the double range `generate_report_from_data` logs the OverflowError and the answer has `report_file:
+null`. Cases `instructor-writes-report-deep-{events,attendees}-{600,900}`, the measured-edge cases
+`-report-deep-{registry-events,attendees,course-events,course-multiple-quotes}-{9936,9970}`,
+`-report-description-int-beyond-int64`, `-report-description-int-past-double` (the deep stored values exist only around
+their own case: the harness snapshot walks every jsonb value in Python); the family loader walks fixture values with one
+Python frame per level, so the 600/900 fixtures stay shallow and the deeper values are authored as raw text.

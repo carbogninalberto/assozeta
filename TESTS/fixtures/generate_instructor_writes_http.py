@@ -283,13 +283,16 @@ NEW_ADD, UNUSED_KEY = next(ids), next(ids)
 cases = []
 
 
-def add(name, actor, path, status, response, *, method='GET', body=None, raw_body=None, content_type=None, headers=None, effect=None):
+def add(name, actor, path, status, response, *, method='GET', body=None, raw_body=None, content_type=None, headers=None, effect=None,
+        setup=None):
     case = {'name': f'instructor-writes-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
             'status': status, 'response': response, 'effect': effect}
     if body is not None:
         case['body'] = body
     if raw_body is not None:
         case['raw_body'], case['content_type'] = raw_body, content_type
+    if setup is not None:
+        case['setup'] = setup
     cases.append(case)
 
 
@@ -561,6 +564,50 @@ for name, day in (('deep-events-600', '01/12/2026'), ('deep-events-900', '02/12/
 ENORMOUS = report(OWN, '06/12/2026', '06/12/2026')
 ENORMOUS['data']['report_file'] = None
 add('report-description-int-past-double', 'owner', RQ('06/12/2026', '06/12/2026'), 200, ENORMOUS)
+# GET instructor/report parses the stored JSON with json.loads at the edge
+# measured on the harness's Django request thread (owner decision X15): 9940
+# levels (one cold request showed 9938). The value exists only around its own
+# case (the adapter's case scope), because the state snapshot walks every jsonb
+# column in Python and cannot hold one this deep. Below the edge the report is
+# answered; past it json.loads raises RecursionError in
+# JSONField.from_db_value, which the view does not catch.
+REPORT_EDGE = 9940
+
+
+def report_deep_event(total, event_id):
+    """A registry events list whose total nesting is total."""
+    depth = total - 3
+    return ('[{"event_id": "%s", "title": "Annidato", "extendedProps": {"instructor": {"instructor_id": "%s"}, '
+            '"extra": %s}}]' % (event_id, INSTRUCTORS['full']['id'], '[' * depth + ']' * depth))
+
+
+def report_deep_attendees(total):
+    """An attendance day's attendees list whose total nesting is total."""
+    depth = total - 2
+    return ('[{"course_subscription_id": "%s", "extra": %s}]'
+            % (COURSE_SUBSCRIPTIONS['cs_mario']['id'], '[' * depth + ']' * depth))
+
+
+def report_deep_json(total):
+    return '[' * total + ']' * total
+
+
+for label, total in (('9936', REPORT_EDGE - 4), ('9970', REPORT_EDGE + 30)):
+    status, response = (200, report(OWN, '01/12/2026', '01/12/2026')) if total <= REPORT_EDGE else (500, SERVER)
+    add(f'report-deep-registry-events-{label}', 'owner', RQ('01/12/2026', '01/12/2026'), status, response,
+        setup={'deep': [{'target': 'registry', 'label': 'reg_report_json', 'column': 'events',
+                         'value': report_deep_event(total, DEEP['events600'])}]})
+    status, response = (200, report(OWN, '03/12/2026', '03/12/2026')) if total <= REPORT_EDGE else (500, SERVER)
+    add(f'report-deep-attendees-{label}', 'owner', RQ('03/12/2026', '03/12/2026'), status, response,
+        setup={'deep': [{'target': 'day', 'label': 'deep_attendees600', 'column': 'attendees',
+                         'value': report_deep_attendees(total)}]})
+    # select_related('course') also deserializes Course.events and
+    # Course.multiple_quotes, though the view reads only the title.
+    for column in ('events', 'multiple_quotes'):
+        status, response = (200, report(OWN, '01/12/2026', '01/12/2026')) if total <= REPORT_EDGE else (500, SERVER)
+        add(f'report-deep-course-{column.replace("_", "-")}-{label}', 'owner', RQ('01/12/2026', '01/12/2026'), status,
+            response, setup={'deep': [{'target': 'course', 'label': 'ca', 'column': column,
+                                       'value': report_deep_json(total)}]})
 add('report-athlete-denied', 'athlete', REPORT, 403, {'detail': 'User is not a sport association'})
 add('report-owner-without-association', 'owner_without_association', RQ('14/09/2026', '30/09/2026'), 500, SERVER)
 authorization('report', REPORT, 'GET', 'read', 'Instructor Report', 'POST')

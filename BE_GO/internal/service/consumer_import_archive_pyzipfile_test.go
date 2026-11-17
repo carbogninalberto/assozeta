@@ -6,10 +6,30 @@ import (
 	"hash/crc32"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/pyzipfile"
 )
+
+// TestConsumerImportJSONRecursionBand: this Celery call site was not measured
+// (owner decision X15), so from 9800 levels the message stays with Django; a
+// shallower document is parsed.
+func TestConsumerImportJSONRecursionBand(t *testing.T) {
+	nested := func(depth int) []byte {
+		return []byte(strings.Repeat("[", depth) + strings.Repeat("]", depth))
+	}
+	for _, depth := range []int{consumerImportJSONRefuseDepth - 1, 2000} {
+		if _, err := consumerImportJSON(nested(depth)); err != nil {
+			t.Fatalf("depth %d: %v", depth, err)
+		}
+	}
+	for _, depth := range []int{consumerImportJSONRefuseDepth, consumerImportJSONRefuseDepth + 30} {
+		if _, err := consumerImportJSON(nested(depth)); !errors.Is(err, errImportArchive) {
+			t.Fatalf("depth %d: %v, want the Django hand-off", depth, err)
+		}
+	}
+}
 
 // storedZip builds one stored member with the given central/local flags and
 // CRC, so the service tests can exercise crafted archives without depending

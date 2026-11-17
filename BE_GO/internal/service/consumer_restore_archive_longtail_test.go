@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"io"
 	"math"
 	"os"
 	"path/filepath"
@@ -53,7 +54,7 @@ func TestRestoreJSONDecoding(t *testing.T) {
 		{"lone-surrogate", `"\ud800"`, "\xed\xa0\x80"}, // U+D800 in Python's code-unit form
 	}
 	for _, c := range cases {
-		value, err := restoreJSON([]byte(c.data))
+		value, err := restoreJSON([]byte(c.data), restoreInstanceJSONEdge)
 		if err != nil {
 			t.Errorf("%s: %v", c.name, err)
 			continue
@@ -62,28 +63,28 @@ func TestRestoreJSONDecoding(t *testing.T) {
 			t.Errorf("%s decoded as %#v, want %#v", c.name, value, c.want)
 		}
 	}
-	value, err := restoreJSON([]byte(`NaN`))
+	value, err := restoreJSON([]byte(`NaN`), restoreInstanceJSONEdge)
 	if err != nil || !math.IsNaN(value.(float64)) {
 		t.Errorf("NaN decoded as %#v, %v", value, err)
 	}
-	value, err = restoreJSON([]byte(`{"n": Infinity, "m": -Infinity}`))
+	value, err = restoreJSON([]byte(`{"n": Infinity, "m": -Infinity}`), restoreInstanceJSONEdge)
 	object := value.(domain.RequestObject)
 	n, _ := importGet(object, "n")
 	m, _ := importGet(object, "m")
 	if err != nil || !math.IsInf(n.(float64), 1) || !math.IsInf(m.(float64), -1) {
 		t.Errorf("infinities decoded as %#v, %v", value, err)
 	}
-	value, err = restoreJSON([]byte(`1e999`))
+	value, err = restoreJSON([]byte(`1e999`), restoreInstanceJSONEdge)
 	if err != nil || !math.IsInf(value.(float64), 1) {
 		t.Errorf("1e999 decoded as %#v, %v", value, err)
 	}
 	// UTF-16LE with a BOM, as json.loads accepts it.
 	utf16 := []byte{0xff, 0xfe, '{', 0, '}', 0}
-	if value, err := restoreJSON(utf16); err != nil || len(value.(domain.RequestObject)) != 0 {
+	if value, err := restoreJSON(utf16, restoreInstanceJSONEdge); err != nil || len(value.(domain.RequestObject)) != 0 {
 		t.Errorf("UTF-16 manifest decoded as %#v, %v", value, err)
 	}
 	for _, invalid := range [][]byte{[]byte(`{`), []byte(`"\ud800`), {0xff, 0xfe, 0xff}} {
-		if _, err := restoreJSON(invalid); !errors.Is(err, errRestoreDamaged) {
+		if _, err := restoreJSON(invalid, restoreInstanceJSONEdge); !errors.Is(err, errRestoreDamaged) {
 			t.Errorf("invalid JSON %q = %v, want damaged", invalid, err)
 		}
 	}
@@ -136,7 +137,7 @@ func TestRestoreSkippedRecordsShapes(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	archive := &restoreArchive{zip: restoreTestOpenZip(t, map[string]string{
+	archive := &restoreArchive{edge: restoreInstanceJSONEdge, zip: restoreTestOpenZip(t, map[string]string{
 		"system/00_billing_plans.json": `[{"a": 1}]`,
 	})}
 	defer archive.Close()
@@ -388,5 +389,93 @@ func TestRestoreNormalizedArchives(t *testing.T) {
 	if ignored.ignoredTutors != 1 || !ignored.normalized() || len(ignored.records["Associate"]) != 1 {
 		t.Errorf("ignored tutors = %d, normalized = %v, associates = %d", ignored.ignoredTutors, ignored.normalized(),
 			len(ignored.records["Associate"]))
+	}
+}
+
+// restoreTestManifestExtra copies a valid archive with an extra JSON value
+// appended to manifest.json.
+func restoreTestManifestExtra(t *testing.T, path, extra string) string {
+	t.Helper()
+	reader, err := zip.OpenReader(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer reader.Close()
+	file, err := os.Create(filepath.Join(t.TempDir(), "deep.zip"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	writer := zip.NewWriter(file)
+	for _, entry := range reader.File {
+		part, err := entry.Open()
+		if err != nil {
+			t.Fatal(err)
+		}
+		data, err := io.ReadAll(part)
+		part.Close()
+		if err != nil {
+			t.Fatal(err)
+		}
+		if entry.Name == "manifest.json" {
+			data = append(append([]byte{}, data[:len(data)-1]...), []byte(`, "extra": `+extra+`}`)...)
+		}
+		member, err := writer.Create(entry.Name)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err := member.Write(data); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := writer.Close(); err != nil {
+		t.Fatal(err)
+	}
+	if err := file.Close(); err != nil {
+		t.Fatal(err)
+	}
+	return file.Name()
+}
+
+// TestRestoreUploadJSONEdge: Archive.validate's json.loads on the upload
+// request thread parses up to dataRestoreUploadJSONEdge and answers the
+// damaged archive one level past it (owner decision X15).
+func TestRestoreUploadJSONEdge(t *testing.T) {
+	base, _ := restoreTestArchive(t, restoreTestRows(), nil)
+	defer base.Close()
+	plan, err := importeffects.LoadPlan()
+	if err != nil {
+		t.Fatal(err)
+	}
+	limits := restoreLimits{Expanded: 20 << 30, JSON: 512 << 20, File: 5 << 30}
+	for _, total := range []int{dataRestoreUploadJSONEdge - 4, dataRestoreUploadJSONEdge} {
+		path := restoreTestManifestExtra(t, base.path, strings.Repeat("[", total-1)+strings.Repeat("]", total-1))
+		run := &consumerImportRun{s: &ConsumerImportAssociation{plan: plan}, ctx: context.Background(), path: path}
+		archive, err := validateRestoreArchive(run, path, limits, dataRestoreUploadJSONEdge)
+		if err != nil {
+			t.Fatalf("manifest depth %d: %v", total, err)
+		}
+		archive.Close()
+	}
+	for _, total := range []int{dataRestoreUploadJSONEdge + 1, dataRestoreUploadJSONEdge + 30} {
+		path := restoreTestManifestExtra(t, base.path, strings.Repeat("[", total-1)+strings.Repeat("]", total-1))
+		run := &consumerImportRun{s: &ConsumerImportAssociation{plan: plan}, ctx: context.Background(), path: path}
+		if _, err := validateRestoreArchive(run, path, limits, dataRestoreUploadJSONEdge); !errors.Is(err, errRestoreDamaged) {
+			t.Fatalf("manifest depth %d: %v, want the damaged archive", total, err)
+		}
+	}
+}
+
+// TestMeasuredStoredJSONEdges pins the per-call edges of owner decision X15.
+func TestMeasuredStoredJSONEdges(t *testing.T) {
+	for name, edge := range map[string]struct{ got, want int }{
+		"instructor report":      {instructorReportJSONEdge, 9940},
+		"import validation":      {importValidationJSONEdge, 9942},
+		"data restore upload":    {dataRestoreUploadJSONEdge, 9942},
+		"Celery restore":         {restoreInstanceJSONEdge, 9975},
+		"Celery import hand-off": {consumerImportJSONRefuseDepth, 9800},
+	} {
+		if edge.got != edge.want {
+			t.Errorf("%s edge = %d, want %d", name, edge.got, edge.want)
+		}
 	}
 }

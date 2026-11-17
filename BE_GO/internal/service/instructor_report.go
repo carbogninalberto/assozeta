@@ -34,16 +34,22 @@ func NewInstructorReport(store domain.InstructorReportStore, now func() time.Tim
 // ErrInstructorReportServer is an exception the view does not handle (the 500 page).
 var ErrInstructorReportServer = errors.New("instructor report unhandled error")
 
-// instructorReportStoredJSONError maps dto.StoredJSON's errors: json.loads'
+// instructorReportJSONEdge is the deepest container nesting (AuditJSONDepth:
+// "[]" counts 1) that json.loads parses at GET instructor/report on the parity
+// harness's Django 3.13, measured with the live request stack (owner decision
+// X15). The measurement is 9940 and one cold request showed 9938; a deeper
+// document raises RecursionError inside JSONField.from_db_value, which the view
+// does not catch (the 500 page). The report's select_related('course') loads
+// the Course JSON columns too, so they share this edge.
+const instructorReportJSONEdge = 9940
+
+// instructorReportStoredJSONError maps dto.StoredJSONEdge's errors: json.loads'
 // RecursionError and its 4300-digit ValueError are uncaught in the view (the
-// 500 page) and only the recursion band stays refused; text jsonb cannot store
-// is an application state.
+// 500 page); text jsonb cannot store is an application state.
 func instructorReportStoredJSONError(err error) error {
 	switch {
 	case errors.Is(err, dto.ErrStoredJSONRecursion), errors.Is(err, dto.ErrStoredJSONInteger):
 		return ErrInstructorReportServer
-	case errors.Is(err, dto.ErrJSONRecursionBand):
-		return err // the C recursion band: dto's refusal, handed to Django
 	}
 	return err
 }
@@ -136,16 +142,25 @@ func (s *InstructorReport) Report(ctx context.Context, identity domain.ResolvedI
 	rows := []instructorReportRow{}
 	ids := map[string]bool{}
 	for _, registry := range registries {
+		// select_related('course') deserializes AttendanceRegistry.events and
+		// the Course JSON columns as the rows are fetched, before the view
+		// looks at a day: a deep value is the 500 page even when the period has
+		// no attendance day.
+		events, err := dto.StoredJSONEdge(registry.Events, instructorReportJSONEdge)
+		if err != nil {
+			return nil, instructorReportStoredJSONError(err)
+		}
+		for _, text := range []*string{registry.CourseEvents, registry.CourseMultipleQuotes} {
+			if _, err := dto.StoredJSONEdge(text, instructorReportJSONEdge); err != nil {
+				return nil, instructorReportStoredJSONError(err)
+			}
+		}
 		days, err := s.store.Days(ctx, registry.ID, from, to)
 		if err != nil {
 			return nil, err
 		}
 		if len(days) == 0 {
 			continue
-		}
-		events, err := dto.StoredJSON(registry.Events)
-		if err != nil {
-			return nil, instructorReportStoredJSONError(err)
 		}
 		for _, day := range days {
 			event, err := instructorReportEvent(events, day.AssociatedEvent)
@@ -378,7 +393,7 @@ func instructorReportPath(event domain.RequestObject, key string) any {
 // instructorReportSubscriptions is the loop over attendees (or expected
 // absences): each item's 'course_subscription_id', also added to ids.
 func instructorReportSubscriptions(text *string, ids map[string]bool) ([]any, error) {
-	value, err := dto.StoredJSON(text)
+	value, err := dto.StoredJSONEdge(text, instructorReportJSONEdge)
 	if err != nil {
 		return nil, instructorReportStoredJSONError(err)
 	}
@@ -450,7 +465,7 @@ func instructorReportUUID(text string) (string, error) {
 
 // instructorReportCount is len(attendees) if attendees else 0.
 func instructorReportCount(text *string) (int64, error) {
-	value, err := dto.StoredJSON(text)
+	value, err := dto.StoredJSONEdge(text, instructorReportJSONEdge)
 	if err != nil {
 		return 0, instructorReportStoredJSONError(err)
 	}

@@ -11,33 +11,30 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
-// The bounds of CPython 3.13's json.loads reading a jsonb column, measured
-// with json.loads('['*n + ']'*n): n=9998 parses at the top of a thread and
-// n=9999 raises RecursionError. The C scanner enters one recursive call per
-// container and the depth it reaches falls with the C calls already on the
-// caller's stack (a Django request thread keeps well under 200), so only the
-// band below the floor depends on the caller.
-const (
-	// StoredJSONRecursionFloor is a depth every call stack raises on.
-	StoredJSONRecursionFloor = 9999
-	// StoredJSONRecursionBand is the depth from which the outcome depends on
-	// the C calls already on the request thread's stack.
-	StoredJSONRecursionBand = 9800
-	// StoredJSONIntegerDigits is sys.int_max_str_digits: json.loads raises
-	// ValueError on an integer literal with more digits.
-	StoredJSONIntegerDigits = 4300
-)
+// StoredJSONIntegerDigits is sys.int_max_str_digits: json.loads raises
+// ValueError on an integer literal with more digits.
+const StoredJSONIntegerDigits = 4300
 
-// ErrStoredJSONRecursion is json.loads' RecursionError on a nesting depth that
-// raises on every call stack (the view does not catch it: the 500 page).
+// ErrStoredJSONRecursion is json.loads' RecursionError on nesting deeper than
+// the call site's measured edge (owner decision X15): the depth CPython 3.13's
+// C scanner reaches depends on the C calls already on the caller's stack, so
+// each caller passes the edge measured at its own call site.
 var ErrStoredJSONRecursion = errors.New("stored JSON nests past json.loads")
 
-// ErrJSONRecursionBand is json.loads nesting in the band whose RecursionError
-// depth depends on the C calls already on the request thread's stack: the
-// same document parses or raises depending on the caller (long-tail rule 4,
-// platform), so the request is handed to Django. Every json.loads port that
-// reads nesting this deep returns it.
-var ErrJSONRecursionBand = refusal.New("json.loads nesting in CPython's C recursion band")
+// StoredJSONRecursionError is that RecursionError. Object selects Python's
+// text for the first container the scanner enters past the edge: a JSON
+// object or a JSON array.
+type StoredJSONRecursionError struct{ Object bool }
+
+func (e *StoredJSONRecursionError) Error() string {
+	kind := "array"
+	if e.Object {
+		kind = "object"
+	}
+	return "maximum recursion depth exceeded while decoding a JSON " + kind + " from a unicode string"
+}
+
+func (e *StoredJSONRecursionError) Is(target error) bool { return target == ErrStoredJSONRecursion }
 
 // ErrStoredJSONInteger is json.loads' ValueError on an integer literal past
 // sys.int_max_str_digits (the view does not catch it: the 500 page).
@@ -48,26 +45,24 @@ var ErrStoredJSONInteger = errors.New("stored JSON integer past CPython's digit 
 // Django write path can put it in a JSONField, so it is app state.
 var ErrStoredJSONUnreachable = refusal.AppState("stored JSON text jsonb does not store")
 
-// StoredJSON parses a jsonb column the way the view's Django process reads it:
-// psycopg decodes the column text with json.loads, so nil is SQL NULL and every
-// other value is the parsed one (nil, bool, string, json.Number for both int
-// and float literals, RequestObject for objects, []any for arrays).
+// StoredJSONEdge parses a jsonb column the way the view's Django process reads
+// it: psycopg decodes the column text with json.loads, so nil is SQL NULL and
+// every other value is the parsed one (nil, bool, string, json.Number for both
+// int and float literals, RequestObject for objects, []any for arrays).
 //
-// Depths at or past StoredJSONRecursionFloor answer ErrStoredJSONRecursion and
-// depths in [StoredJSONRecursionBand, floor) answer ErrJSONRecursionBand,
-// as json.loads' C recursion is bounded by the live stack. Text jsonb never
-// stores (a lone surrogate escape, NaN or Infinity) is ErrStoredJSONUnreachable.
-func StoredJSON(text *string) (any, error) {
+// edge is the deepest container nesting (AuditJSONDepth: "[]" counts 1) that
+// json.loads parses at the caller's Django call site (owner decision X15).
+// Deeper text answers ErrStoredJSONRecursion, a *StoredJSONRecursionError that
+// names the first container entered past the edge. Text jsonb never stores (a
+// lone surrogate escape, NaN or Infinity) is ErrStoredJSONUnreachable.
+func StoredJSONEdge(text *string, edge int) (any, error) {
 	if text == nil {
 		return nil, nil
 	}
-	depth := auditJSONDepth(*text)
-	switch {
-	case depth >= StoredJSONRecursionFloor:
-		return nil, ErrStoredJSONRecursion
-	case depth >= StoredJSONRecursionBand:
-		return nil, ErrJSONRecursionBand
-	case auditLoneSurrogate(*text):
+	if object, past := storedJSONRecursionKind(*text, edge); past {
+		return nil, &StoredJSONRecursionError{Object: object}
+	}
+	if auditLoneSurrogate(*text) {
 		// jsonb accepts no lone surrogate: PostgreSQL's own parser rejects it.
 		return nil, ErrStoredJSONUnreachable
 	}
@@ -83,25 +78,49 @@ func StoredJSON(text *string) (any, error) {
 	return value, nil
 }
 
+// storedJSONRecursionKind reports whether text nests deeper than edge and, if
+// so, whether the first container entered past the edge (document order) is an
+// object. The C scanner enters containers depth first, so that is the container
+// whose kind Python's RecursionError names.
+func storedJSONRecursionKind(text string, edge int) (object, past bool) {
+	depth, quoted, escaped := 0, false, false
+	for i := 0; i < len(text); i++ {
+		c := text[i]
+		switch {
+		case escaped:
+			escaped = false
+		case quoted && c == '\\':
+			escaped = true
+		case c == '"':
+			quoted = !quoted
+		case !quoted && (c == '[' || c == '{'):
+			depth++
+			if depth > edge {
+				return c == '{', true
+			}
+		case !quoted && (c == ']' || c == '}'):
+			depth--
+		}
+	}
+	return false, false
+}
+
 // parseStoredJSON is json.loads for the text of a jsonb column: container
-// nesting is bounded by StoredJSONRecursionBand before the call, so the
+// nesting is bounded by the caller's measured edge before the call, so the
 // recursion here stays under Go's own JSON nesting limit.
 func parseStoredJSON(data []byte) (any, error) { return parseStoredJSONConstants(data, nil) }
 
-// PythonJSONLoads is json.loads of a str for JSON text in UTF-8 whose lone
+// PythonJSONLoadsEdge is json.loads of a str for JSON text in UTF-8 whose lone
 // surrogates are written as \uXXXX escapes: NaN, Infinity and -Infinity
 // become float64, a string holding a lone surrogate keeps it (WTF-8), a
 // duplicate key keeps its last value at its first position, and an integer
-// literal past 4300 digits is ErrStoredJSONInteger (ValueError). Nesting from
-// StoredJSONRecursionFloor is ErrStoredJSONRecursion (RecursionError) and from
-// StoredJSONRecursionBand ErrJSONRecursionBand. Any other error is
+// literal past 4300 digits is ErrStoredJSONInteger (ValueError). Nesting
+// deeper than the caller's measured edge (owner decision X15) is
+// ErrStoredJSONRecursion, a *StoredJSONRecursionError. Any other error is
 // JSONDecodeError.
-func PythonJSONLoads(data []byte) (any, error) {
-	switch depth := auditJSONDepth(string(data)); {
-	case depth >= StoredJSONRecursionFloor:
-		return nil, ErrStoredJSONRecursion
-	case depth >= StoredJSONRecursionBand:
-		return nil, ErrJSONRecursionBand
+func PythonJSONLoadsEdge(data []byte, edge int) (any, error) {
+	if object, past := storedJSONRecursionKind(string(data), edge); past {
+		return nil, &StoredJSONRecursionError{Object: object}
 	}
 	data, constants := pythonJSONLiteralTokens(data)
 	if err := jsonLoneSurrogateStrings(data, constants); err != nil {

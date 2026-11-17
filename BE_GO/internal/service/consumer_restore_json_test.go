@@ -7,26 +7,25 @@ import (
 	"testing"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/pyzipfile"
 )
 
 // TestRestoreJSONLiteralsAndLimits pins json.loads outcomes measured under
 // CPython 3.13.16: literals glued to other characters fail, an escaped
 // backslash before a lone surrogate is an invalid escape, integers past 4300
-// digits raise ValueError, and nesting below the C band parses.
+// digits raise ValueError, and nesting below the call site's edge parses.
 func TestRestoreJSONLiteralsAndLimits(t *testing.T) {
 	for _, text := range []string{"[1NaN]", "[NaN.5]", "[-NaN]", "[NaNx]", "[Infinity0]", "[" + strings.Repeat("1", 4301) + "]",
-		"[" + strings.Repeat("[", 9998) + strings.Repeat("]", 9998) + "]"} {
-		if _, err := restoreJSON([]byte(text)); err != errRestoreDamaged {
+		"[" + strings.Repeat("[", restoreInstanceJSONEdge) + strings.Repeat("]", restoreInstanceJSONEdge) + "]"} {
+		if _, err := restoreJSON([]byte(text), restoreInstanceJSONEdge); err != errRestoreDamaged {
 			t.Errorf("%.20q error = %v, want damaged", text, err)
 		}
 	}
 	// "\" followed by U+D800 (surrogatepass UTF-8 bytes).
-	if _, err := restoreJSON([]byte("[\"\\\xed\xa0\x80\"]")); err != errRestoreDamaged {
+	if _, err := restoreJSON([]byte("[\"\\\xed\xa0\x80\"]"), restoreInstanceJSONEdge); err != errRestoreDamaged {
 		t.Errorf("escaped surrogate error = %v, want damaged", err)
 	}
-	value, err := restoreJSON([]byte(`{"a": [NaN, Infinity, -Infinity, 1e999], "b": "` + "\xed\xa0\x80" + `"}`))
+	value, err := restoreJSON([]byte(`{"a": [NaN, Infinity, -Infinity, 1e999], "b": "`+"\xed\xa0\x80"+`"}`), restoreInstanceJSONEdge)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -38,30 +37,40 @@ func TestRestoreJSONLiteralsAndLimits(t *testing.T) {
 	if object[1].Value != "\xed\xa0\x80" {
 		t.Errorf("lone surrogate = %q", object[1].Value)
 	}
-	if _, err := restoreJSON([]byte("[" + strings.Repeat("1", 4300) + "]")); err != nil {
+	if _, err := restoreJSON([]byte("["+strings.Repeat("1", 4300)+"]"), restoreInstanceJSONEdge); err != nil {
 		t.Errorf("4300 digits: %v", err)
 	}
-	if _, err := restoreJSON([]byte(strings.Repeat("[", 2000) + strings.Repeat("]", 2000))); err != nil {
+	if _, err := restoreJSON([]byte(strings.Repeat("[", 2000)+strings.Repeat("]", 2000)), restoreInstanceJSONEdge); err != nil {
 		t.Errorf("2000 levels: %v", err)
 	}
-	band := strings.Repeat("[", 9900) + strings.Repeat("]", 9900)
-	if _, err := restoreJSON([]byte(band)); !errors.Is(err, dto.ErrJSONRecursionBand) {
-		t.Errorf("9900 levels: %v", err)
+	// The Celery restore edge (owner decision X15): at it the member parses,
+	// one level past it is the damaged archive.
+	for _, depth := range []int{restoreInstanceJSONEdge - 1, restoreInstanceJSONEdge} {
+		if _, err := restoreJSON([]byte(strings.Repeat("[", depth)+strings.Repeat("]", depth)), restoreInstanceJSONEdge); err != nil {
+			t.Errorf("depth %d: %v", depth, err)
+		}
+	}
+	for _, depth := range []int{restoreInstanceJSONEdge + 1, restoreInstanceJSONEdge + 30} {
+		if _, err := restoreJSON([]byte(strings.Repeat("[", depth)+strings.Repeat("]", depth)), restoreInstanceJSONEdge); !errors.Is(err, errRestoreDamaged) {
+			t.Errorf("depth %d: %v, want damaged", depth, err)
+		}
 	}
 	// Each literal keeps its length: a member of NaNs does not grow.
 	many := []byte("[" + strings.Repeat("NaN,", 1<<16) + "NaN]")
-	if value, err := restoreJSON(many); err != nil || len(value.([]any)) != 1<<16+1 {
+	if value, err := restoreJSON(many, restoreInstanceJSONEdge); err != nil || len(value.([]any)) != 1<<16+1 {
 		t.Errorf("NaN list: %v", err)
 	}
 }
 
-// TestRestoreStreamError: iter_json_array's failures in skipped_records.
+// TestRestoreStreamError: iter_json_array's failures in skipped_records. A
+// RecursionError is a RuntimeError Archive.validate() catches, so it is the
+// damaged archive; the measured edge is applied to each item.
 func TestRestoreStreamError(t *testing.T) {
 	cases := []struct {
 		err  error
 		want error
 	}{
-		{dto.ErrJSONRecursionBand, dto.ErrJSONRecursionBand},
+		{&importJSONRecursionError{}, errRestoreDamaged},
 		{&pyzipfile.Exception{Type: "EOFError", Text: "Compressed file ended before the end-of-stream marker was reached"}, errRestoreReaderRaised},
 		{&pyzipfile.Exception{Type: "BadZipFile", Text: "Bad CRC-32 for file 'x'"}, errRestoreDamaged},
 		{errors.New("Expecting value"), errRestoreDamaged},

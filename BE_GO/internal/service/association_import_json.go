@@ -25,6 +25,16 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/pystr"
 )
 
+// importValidationJSONEdge is the deepest container nesting (AuditJSONDepth:
+// "[]" counts 1) that json.loads and JSONDecoder.raw_decode parse at POST
+// association/import/validate on the parity harness's Django 3.13, measured
+// with the live request stack (owner decision X15). The measurement is 9942
+// and one request showed 9940. json.loads reads the whole members below and
+// iter_json_array's raw_decode reads each item's own nesting; a deeper
+// document raises RecursionError, which validators.py reports as a validation
+// error (its generic except clause), not a 500 page.
+const importValidationJSONEdge = 9942
+
 // importJSONIntegerDigits is sys.int_max_str_digits: json.loads raises
 // ValueError on a longer integer literal (Django's except json.JSONDecodeError
 // does not catch it, so it is the generic exception text).
@@ -108,7 +118,8 @@ func importJSONEncoding(b []byte) string {
 // importJSONParse is json.loads(data) for bytes: detect_encoding, then
 // bytes.decode(encoding, 'surrogatepass'), then the scanner. Errors are the
 // UnicodeDecodeError (*pycodecs.DecodeError), the JSONDecodeError
-// (*importJSONDecodeError) or the int() ValueError (*importJSONValueError).
+// (*importJSONDecodeError), the int() ValueError (*importJSONValueError) or the
+// RecursionError (*importJSONRecursionError) past the call site's edge.
 func importJSONParse(data []byte) (any, error) {
 	encoding := importJSONEncoding(data)
 	runes, err, ok := pycodecs.Decode(encoding, data, pycodecs.SurrogatePass)
@@ -118,7 +129,7 @@ func importJSONParse(data []byte) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	p := &importJSONParser{text: runes}
+	p := &importJSONParser{text: runes, edge: importValidationJSONEdge}
 	p.space()
 	value, err := p.value(0)
 	if err == nil {
@@ -130,7 +141,7 @@ func importJSONParse(data []byte) (any, error) {
 	if err != nil {
 		value = nil
 	}
-	return p.bandOutcome(value, err)
+	return value, err
 }
 
 // importJSONParser is the strict scanner (JSONDecoder.scan_once, idx at the
@@ -138,28 +149,10 @@ func importJSONParse(data []byte) (any, error) {
 type importJSONParser struct {
 	text []rune
 	pos  int
-	// deep is set once a container is entered at the band's first level:
-	// from there the outcome depends on the request stack (see value),
-	// unless it ends in the RecursionError every stack raises.
-	deep     bool
-	deepKind rune
-}
-
-// bandOutcome is the result of a parse that went past the recursion band's
-// first level: CPython's limit is 9998 minus the C calls already on the
-// request's stack, so such a document parses or fails depending on the
-// caller, except when it reaches the floor (every stack raises) and every
-// container entered from the band on is of one kind (RecursionError names
-// it). The other outcomes are dto.ErrJSONRecursionBand.
-func (p *importJSONParser) bandOutcome(value any, err error) (any, error) {
-	if !p.deep {
-		return value, err
-	}
-	var recursion *importJSONRecursionError
-	if errors.As(err, &recursion) {
-		return nil, err
-	}
-	return nil, dto.ErrJSONRecursionBand
+	// edge is the deepest container nesting (the value passed to value is its
+	// enclosing containers) the call site's json.loads parses (owner decision
+	// X15): entering a container past it raises RecursionError.
+	edge int
 }
 
 func (p *importJSONParser) space() {
@@ -205,17 +198,11 @@ func (p *importJSONParser) value(depth int) (any, error) {
 	}
 	if c := p.text[p.pos]; c == '{' || c == '[' {
 		// scan_once enters one recursive call per container (depth is the
-		// enclosing containers): CPython 3.13 parses 9998 levels at the top of
-		// a thread and fewer under C calls already on the request's stack.
-		if level := depth + 1; level >= dto.StoredJSONRecursionBand {
-			if !p.deep {
-				p.deep, p.deepKind = true, c
-			} else if c != p.deepKind {
-				return nil, dto.ErrJSONRecursionBand // the RecursionError text depends on the stack
-			}
-			if level >= dto.StoredJSONRecursionFloor {
-				return nil, &importJSONRecursionError{object: c == '{'}
-			}
+		// enclosing containers): the caller's measured edge is the deepest
+		// level CPython 3.13 parses there, and the RecursionError names the
+		// first container entered past it.
+		if level := depth + 1; level > p.edge {
+			return nil, &importJSONRecursionError{object: c == '{'}
 		}
 	}
 	switch p.text[p.pos] {
@@ -692,6 +679,9 @@ type importJSONBuffer struct {
 	reader *importChunkedText
 	data   []rune
 	pos    int
+	// edge is the call site's measured json.loads nesting edge; an item's own
+	// nesting counts from zero (raw_decode does not parse the enclosing array).
+	edge int
 }
 
 func (b *importJSONBuffer) fill() (bool, error) {
@@ -754,16 +744,15 @@ func (b *importJSONBuffer) expectEnd() error {
 	}
 }
 
-// rawDecode is decoder.raw_decode(buffer.data, buffer.pos); deep reports a
-// value that reached the recursion band (the caller decides its outcome once
-// no more data can change it).
-func (b *importJSONBuffer) rawDecode() (value any, end int, deep bool, err error) {
-	p := &importJSONParser{text: b.data, pos: b.pos}
+// rawDecode is decoder.raw_decode(buffer.data, buffer.pos). A RecursionError
+// is not a ValueError, so the caller never retries it after a fill.
+func (b *importJSONBuffer) rawDecode() (value any, end int, err error) {
+	p := &importJSONParser{text: b.data, pos: b.pos, edge: b.edge}
 	value, err = p.value(0)
 	if err != nil {
-		return nil, 0, p.deep, err
+		return nil, 0, err
 	}
-	return value, p.pos, p.deep, nil
+	return value, p.pos, nil
 }
 
 func importJSONValueTerminator(c rune) bool {
@@ -778,8 +767,8 @@ func importJSONValueTerminator(c rune) bool {
 // top-level JSON array one at a time, with the same ValueError texts for the
 // array's own grammar and raw_decode's JSONDecodeError for an item. The
 // callback is the loop body, so an error it returns stops the iteration.
-func importIterJSONArray(reader importJSONReader, chunkSize int, yield func(any) error) error {
-	buffer := &importJSONBuffer{reader: &importChunkedText{stream: reader, chunkSize: chunkSize}}
+func importIterJSONArray(reader importJSONReader, chunkSize, edge int, yield func(any) error) error {
+	buffer := &importJSONBuffer{reader: &importChunkedText{stream: reader, chunkSize: chunkSize}, edge: edge}
 	// first -> '['; value_or_end -> first item or ']'; separator -> ',' or ']';
 	// value -> item required after a comma.
 	state := "first"
@@ -822,9 +811,9 @@ func importIterJSONArray(reader importJSONReader, chunkSize int, yield func(any)
 		}
 		var item any
 		for {
-			value, end, deep, err := buffer.rawDecode()
+			value, end, err := buffer.rawDecode()
 			var recursion *importJSONRecursionError
-			if errors.As(err, &recursion) || errors.Is(err, dto.ErrJSONRecursionBand) {
+			if errors.As(err, &recursion) {
 				// RecursionError is no ValueError: the loop does not retry it.
 				return err
 			}
@@ -834,15 +823,9 @@ func importIterJSONArray(reader importJSONReader, chunkSize int, yield func(any)
 					return fillErr
 				}
 				if !filled {
-					if deep {
-						return dto.ErrJSONRecursionBand // see bandOutcome
-					}
 					return err
 				}
 				continue
-			}
-			if deep {
-				return dto.ErrJSONRecursionBand // parsed here, a RecursionError on a deeper stack
 			}
 			// A chunk boundary can truncate a number or literal into a shorter
 			// valid value ("1.5e3" as 1): accept it only after a terminator or
