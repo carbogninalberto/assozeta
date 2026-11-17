@@ -117,6 +117,20 @@ func (r *SavedReports) RunReportStatements(ctx context.Context, timeoutText stri
 	return results, nil
 }
 
+// CheckReportTimeout is QueryBuilder._set_query_timeout at its call point:
+// PostgreSQL validates the text in the same way as RunReportStatements, so an
+// unusable value raises the tool's exception there. The transaction is short
+// and read-only, and the timeout is rolled back with it; the statement run
+// sets it again.
+func (r *SavedReports) CheckReportTimeout(ctx context.Context, timeoutText string) error {
+	tx, err := r.db.BeginTxx(ctx, &sql.TxOptions{ReadOnly: true})
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	return setReportStatementTimeout(ctx, tx, timeoutText)
+}
+
 // reportStatementExecutor sets the statement timeout of the transaction.
 type reportStatementExecutor interface {
 	ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error)

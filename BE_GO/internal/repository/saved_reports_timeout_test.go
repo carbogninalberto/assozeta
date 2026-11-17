@@ -44,4 +44,12 @@ func TestSetReportStatementTimeout(t *testing.T) {
 	if err := setReportStatementTimeout(context.Background(), ok, "10000"); err != nil || ok.text != "10000" {
 		t.Fatalf("accepted text: %v, %q", err, ok.text)
 	}
+	// A negative or out-of-range product reaches PostgreSQL as its exact text,
+	// and its rejection keeps the same mapping.
+	for _, text := range []string{"-5000", "3000000000"} {
+		exec := &statementTimeoutExec{err: server}
+		if err := setReportStatementTimeout(context.Background(), exec, text); !errors.As(err, &query) || exec.text != text {
+			t.Fatalf("text %q: err %v, executed %q", text, err, exec.text)
+		}
+	}
 }

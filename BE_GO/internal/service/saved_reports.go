@@ -234,10 +234,18 @@ func (s *SavedReports) RunGroup(ctx context.Context, identity domain.ResolvedIde
 		settings, err := s.reportSettings(ctx)
 		if err == nil {
 			timeout = settings.QueryTimeoutText()
+			text := timeout
+			settings.SetTimeout = func() error { return s.store.CheckReportTimeout(ctx, text) }
 		}
 		return settings, err
 	})
 	if err != nil {
+		// A rejected statement_timeout is the tool's exception, as in
+		// RunReportStatements.
+		var failed *domain.ReportQueryError
+		if errors.As(err, &failed) {
+			return nil, dto.ErrReportFailed
+		}
 		return nil, err
 	}
 	if plan.Immediate != nil {

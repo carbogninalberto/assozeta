@@ -28,6 +28,7 @@ import (
 type BusinessMCPQueryStore interface {
 	ReportIntegration(ctx context.Context) (bool, *string, error)
 	RunReportStatements(ctx context.Context, timeoutText string, statements []domain.ReportStatement) ([][][]*string, error)
+	CheckReportTimeout(ctx context.Context, timeoutText string) error
 }
 
 func mcpObj(pairs ...any) domain.RequestObject {
@@ -100,6 +101,8 @@ func (t *BusinessMCPTools) query(ctx context.Context, tool string, kwargs domain
 		settings, err := loadReportSettings(ctx, t.store)
 		if err == nil {
 			timeout = settings.QueryTimeoutText()
+			text := timeout
+			settings.SetTimeout = func() error { return t.store.CheckReportTimeout(ctx, text) }
 		}
 		return settings, err
 	})

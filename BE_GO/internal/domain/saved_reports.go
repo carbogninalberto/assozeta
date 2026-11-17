@@ -53,6 +53,10 @@ type SavedReportStore interface {
 	// '' for the 0 stand-in or "0" for no timeout), returning each statement's
 	// text rows.
 	RunReportStatements(ctx context.Context, timeoutText string, statements []ReportStatement) ([][][]*string, error)
+	// CheckReportTimeout sends the same timeout text to PostgreSQL in a short
+	// read-only transaction (QueryBuilder._set_query_timeout at its call point),
+	// answering the tool's exception when PostgreSQL rejects it.
+	CheckReportTimeout(ctx context.Context, timeoutText string) error
 	ActiveAssociationForUser(ctx context.Context, user string) (string, error)
 	SavedReports(ctx context.Context, association, creator string) ([]SavedReport, error)
 	SavedReport(ctx context.Context, id, association, creator string) (SavedReport, error)

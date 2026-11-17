@@ -44,6 +44,19 @@ func (e *ReportToolError) Error() string { return e.Message }
 type ReportSettings struct {
 	MaxResults   *big.Int
 	QueryTimeout *big.Int
+	// SetTimeout is QueryBuilder._set_query_timeout at its call point: it
+	// sends the timeout text to PostgreSQL and answers the database error an
+	// unusable value raises (the tool's exception). nil means nothing to
+	// check.
+	SetTimeout func() error
+}
+
+// setTimeout is the callback with its nil case.
+func (s ReportSettings) setTimeout() error {
+	if s.SetTimeout == nil {
+		return nil
+	}
+	return s.SetTimeout()
 }
 
 // QueryTimeoutText is str(query_timeout * 1000), the text Django writes into
@@ -155,13 +168,18 @@ func PlanMCPToolGroup(tool string, params domain.RequestObject, association stri
 	}
 	switch tool {
 	case "count_data":
+		// QueryBuilder.count sets the timeout (query_builder.py:478) before
+		// qs.count() compiles and runs the statement; the log line before it
+		// formats the query lazily and logging swallows what that raises.
+		if err := config.setTimeout(); err != nil {
+			return ReportPlan{}, err
+		}
 		if q.compileErr != nil {
 			return ReportPlan{}, q.compileErr
 		}
 		if q.adaptErr != nil {
 			return ReportPlan{}, q.adaptErr
 		}
-		// _set_query_timeout runs when the statement runs (RunReportStatements).
 		return ReportPlan{Statements: []domain.ReportStatement{q.countStatement()},
 			Render: func(results [][][]*string) (any, error) {
 				return domain.RequestObject{{Name: "count", Value: json.Number(*results[0][0][0])}}, nil
@@ -170,9 +188,9 @@ func PlanMCPToolGroup(tool string, params domain.RequestObject, association stri
 		return q.planQuery(params, config)
 	case "get_field_values":
 		value, _ := params.Lookup("field_name")
-		return q.planFieldValues(value.(string), params)
+		return q.planFieldValues(value.(string), params, config)
 	}
-	return q.planAggregate(params)
+	return q.planAggregate(params, config)
 }
 
 // PythonDict is json.loads' dict for an object with repeated keys: the first
@@ -845,8 +863,11 @@ func (q *mcpQuery) planQuery(params domain.RequestObject, config ReportSettings)
 	if err != nil {
 		return ReportPlan{}, err
 	}
-	// QueryBuilder.execute_query sets the timeout after the slice; the
-	// statement run applies it (RunReportStatements).
+	// QueryBuilder.execute_query sets the timeout after the slice and before
+	// it runs the statements (query_builder.py:446).
+	if err := config.setTimeout(); err != nil {
+		return ReportPlan{}, err
+	}
 	var columns []mcpColumnOut
 	var selects []string
 	for i, name := range names {
@@ -953,10 +974,13 @@ func (q *mcpQuery) planQuery(params domain.RequestObject, config ReportSettings)
 // get_field_values
 // ---------------------------------------------------------------------------
 
-func (q *mcpQuery) planFieldValues(name string, params domain.RequestObject) (ReportPlan, error) {
+func (q *mcpQuery) planFieldValues(name string, params domain.RequestObject, config ReportSettings) (ReportPlan, error) {
 	labels := mcpChoiceMap(q.model, []string{name})
-	// QueryBuilder.get_field_values sets the timeout after the field and filter
-	// checks, before both queries (the statement run applies it).
+	// QueryBuilder.get_field_values sets the timeout after the choice map and
+	// before both queries (query_builder.py:507).
+	if err := config.setTimeout(); err != nil {
+		return ReportPlan{}, err
+	}
 	counted := q.clone()
 	expr, err := counted.resolveField(name)
 	if err != nil {
@@ -1072,7 +1096,7 @@ var mcpForbiddenAlias = func(alias string) bool {
 
 const mcpAliasError = "Column aliases cannot contain whitespace characters, hashes, control characters, quotation marks, semicolons, or SQL comments."
 
-func (q *mcpQuery) planAggregate(params domain.RequestObject) (ReportPlan, error) {
+func (q *mcpQuery) planAggregate(params domain.RequestObject, config ReportSettings) (ReportPlan, error) {
 	value, _ := params.Lookup("aggregations")
 	if !PythonTruthy(value) {
 		return ReportPlan{Immediate: &ReportToolError{Message: "No aggregations specified"}}, nil
@@ -1139,7 +1163,10 @@ func (q *mcpQuery) planAggregate(params domain.RequestObject) (ReportPlan, error
 		return ReportPlan{Immediate: &ReportToolError{Message: "No valid aggregations"}}, nil
 	}
 	// QueryBuilder.execute_aggregation sets the timeout after those two
-	// answers and before it validates group_by (the statement run applies it).
+	// answers and before it validates group_by (query_builder.py:565).
+	if err := config.setTimeout(); err != nil {
+		return ReportPlan{}, err
+	}
 	groupValue, _ := params.Lookup("group_by")
 	if !PythonTruthy(groupValue) {
 		return q.planFlatAggregate(aggregates)

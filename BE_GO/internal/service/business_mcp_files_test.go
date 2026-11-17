@@ -28,6 +28,7 @@ func (fileStore) AssociationExists(context.Context, string) (bool, error) { retu
 func (fileStore) ReportIntegration(context.Context) (bool, *string, error) {
 	return false, nil, nil
 }
+func (fileStore) CheckReportTimeout(context.Context, string) error { return nil }
 func (fileStore) RunReportStatements(_ context.Context, _ string, statements []domain.ReportStatement) ([][][]*string, error) {
 	rows := [][][]*string{}
 	for _, statement := range statements {

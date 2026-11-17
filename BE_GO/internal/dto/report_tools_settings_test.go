@@ -43,8 +43,9 @@ func TestReportToolNegativeMaxResults(t *testing.T) {
 }
 
 // TestReportToolQueryTimeout is _set_query_timeout's input: the empty string
-// (0) and negative ints are ordinary Python values, and PostgreSQL rejects
-// them when the statement run sets the timeout, not at plan time.
+// (0) and negative ints are ordinary Python values. The service's
+// ReportSettings.SetTimeout is what sends them to PostgreSQL (nil here means
+// nothing to check), so planning alone answers no database error.
 func TestReportToolQueryTimeout(t *testing.T) {
 	for _, timeout := range []int64{0, -1} {
 		for _, tool := range []string{"count_data", "query_data"} {
@@ -167,4 +168,84 @@ func TestReportSettingsQueryTimeoutText(t *testing.T) {
 			t.Errorf("QueryTimeoutText(%s) = %q, want %q", tc.timeout, text, tc.want)
 		}
 	}
+}
+
+// reportTimeoutSettings is QueryBuilder.__init__ with a _set_query_timeout
+// callback that counts its calls and answers err.
+func reportTimeoutSettings(calls *int, err error) func() (ReportSettings, error) {
+	return func() (ReportSettings, error) {
+		return ReportSettings{MaxResults: big.NewInt(5000), QueryTimeout: big.NewInt(10),
+			SetTimeout: func() error { *calls++; return err }}, nil
+	}
+}
+
+// TestReportToolSetTimeoutCallPoints checks that every method QueryBuilder
+// runs _set_query_timeout in calls the callback exactly once: count() first
+// (query_builder.py:478), execute_query after the slice (:446),
+// get_field_values after the choice map (:507), execute_aggregation after the
+// two aggregation answers and before group_by (:565).
+func TestReportToolSetTimeoutCallPoints(t *testing.T) {
+	cases := []struct{ name, tool, params string }{
+		{"count", "count_data", `{"model_name":"Tags"}`},
+		{"query", "query_data", `{"model_name":"Tags"}`},
+		{"field-values", "get_field_values", `{"model_name":"Tags","field_name":"tag_name"}`},
+		{"aggregate", "aggregate_data", `{"model_name":"Tags","aggregations":[{"function":"count","field":"*"}]}`},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			calls := 0
+			plan, err := PlanReportTool(tc.tool, reportParams(t, tc.params), portedAssociation, reportTimeoutSettings(&calls, nil))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if calls != 1 {
+				t.Fatalf("callback called %d times, want 1", calls)
+			}
+			if plan.Immediate != nil || len(plan.Statements) == 0 {
+				t.Fatalf("plan %+v after the callback", plan)
+			}
+		})
+	}
+}
+
+// TestReportToolSetTimeoutErrorWins checks execute_aggregation's order: the
+// callback is not called before either aggregation answer, and its error wins
+// over 'No valid group_by fields' and over a planning raise after the SET.
+func TestReportToolSetTimeoutErrorWins(t *testing.T) {
+	timeoutErr := errors.New("statement_timeout rejected")
+	for _, tc := range []struct{ name, params string }{
+		{"no-aggregations", `{"model_name":"Tags"}`},
+		{"no-valid-aggregations", `{"model_name":"Tags","aggregations":[{"function":"nope","field":"tag_name"}]}`},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			calls := 0
+			plan, err := PlanReportTool("aggregate_data", reportParams(t, tc.params), portedAssociation,
+				reportTimeoutSettings(&calls, timeoutErr))
+			if err != nil || calls != 0 || plan.Immediate == nil {
+				t.Fatalf("plan %+v calls %d err %v, want the answer before the callback", plan, calls, err)
+			}
+		})
+	}
+
+	t.Run("before-no-valid-group-by", func(t *testing.T) {
+		calls := 0
+		_, err := PlanReportTool("aggregate_data", reportParams(t,
+			`{"model_name":"Tags","aggregations":[{"function":"count","field":"*"}],"group_by":["nope"]}`),
+			portedAssociation, reportTimeoutSettings(&calls, timeoutErr))
+		if !errors.Is(err, timeoutErr) || calls != 1 {
+			t.Fatalf("calls %d err %v, want the callback error over the group_by answer", calls, err)
+		}
+	})
+
+	t.Run("before-planning-raise", func(t *testing.T) {
+		// The annotation alias conflicts with a group_by column: Django raises
+		// that planning error after the SET, so the callback's error wins.
+		calls := 0
+		_, err := PlanReportTool("aggregate_data", reportParams(t,
+			`{"model_name":"Tags","aggregations":[{"function":"count","field":"*","alias":"tag_name"}],"group_by":["tag_name"]}`),
+			portedAssociation, reportTimeoutSettings(&calls, timeoutErr))
+		if !errors.Is(err, timeoutErr) || calls != 1 {
+			t.Fatalf("calls %d err %v, want the callback error over the planning raise", calls, err)
+		}
+	})
 }
