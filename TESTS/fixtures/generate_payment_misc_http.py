@@ -279,9 +279,13 @@ cases = []
 
 
 def add(name, actor, path, status, response, *, method='GET', body=None, raw_body=None, content_type=None, headers=None, effect=None,
-        prints=()):
+        prints=(), setup=None):
+    """setup: {'subscription': label}: the deep stored subscription the runner inserts
+    only around the case (its payment JSON is past what a state snapshot can read)."""
     case = {'name': f'payment-misc-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
             'status': status, 'response': response, 'effect': effect, 'prints': list(prints)}
+    if setup is not None:
+        case['setup'] = setup
     if body is not None:
         case['body'] = body
     if raw_body is not None:
@@ -752,11 +756,62 @@ add('approve-invoice-without-party', 'full_collaborator', APPROVE('ai_plain'), 2
     effect=effect('full_collaborator', changed={'ai_plain': {'paid': True, 'payment_date': '$now'}},
                   audit=[{'key': 'ai_plain', 'action': 1, 'changes': changes, 'index': [OWN, DIRECT]}]))
 
+# --- apply: a subscription's stored payment JSON at the interpreter's recursion band (owner decision X15) --
+# association_quote_assign's queryset selects the subscriptions' payments
+# (select_related), so psycopg2 decodes each payment's JSON columns on the plan
+# loop's first evaluation (loads 9928): a deeper stored value raises before that
+# plan's first write and the task's except Exception answers the view's 200 body
+# with nothing written for the request. The quote it creates runs its own INSERT
+# (adapt~9921) and the create entry's resolver reloads the new row (9912), but the
+# task generates that row's meta, so only the loaded rows can carry a deeper value.
+# Each deep subscription and its payment exist only around their own case (the
+# state snapshot walks JSON values in Python, which cannot hold a value this deep).
+def json_depth(text):
+    """The total nesting of a JSON text ('[]' is 1)."""
+    depth = deepest = 0
+    for char in text:
+        if char in '[{':
+            depth += 1
+            deepest = max(deepest, depth)
+        elif char in ']}':
+            depth -= 1
+    return deepest
+
+
+def deep_previous(depth):
+    """The previous-plan payment's meta, with an unused list nested to `depth` total nesting."""
+    levels = depth - 2
+    return '{"subscription_data": {"id": "prev-deep", "name": "Quota precedente", "deep": ' + '[' * levels + ']' * levels + '}}'
+
+
+DEEP_APPLY = {'index': 9932, 'over': 9958, 'normal': 9000}
+PLAN_DEEP = {'id': 'plan-deep', 'name': 'Quota profonda', 'subscription_fee': '18', 'auto_assign': True, 'advanced_options': True,
+             'previous_subscription_fee_plan': 'prev-deep', 'from_day': 20, 'from_month': 10, 'to_day': 20, 'to_month': 11}
+OWN_PLANS.append(PLAN_DEEP)
+DEEP_SUBSCRIPTIONS = {}
+for suffix, depth in DEEP_APPLY.items():
+    text = deep_previous(depth)
+    assert json_depth(text) == depth
+    subscription_id, payment_id = next(ids), next(ids)
+    DEEP_SUBSCRIPTIONS[suffix] = {'id': subscription_id, 'payment': payment_id, 'association': OWN, 'user': OWNER,
+                                  'associate': ASSOCIATES['mario']['id'], 'created': 'in_year',
+                                  'meta': {'plan_id': 'prev-deep'}, 'payment_meta_raw': text, 'group': None}
+
+# Past the load edge the request answers its 200 body with nothing written; a text
+# the request reads leaves the quote to the create path.
+add('apply-stored-payment-json-past-load-band', 'owner', APPLY + '?date=2026-10-20', 200, APPLIED,
+    setup={'subscription': 'index'}, effect=effect())
+add('apply-stored-payment-json-past-load-band-deeper', 'owner', APPLY + '?date=2026-10-20', 200, APPLIED,
+    setup={'subscription': 'over'}, effect=effect())
+add('apply-stored-payment-json-below-bands', 'owner', APPLY + '?date=2026-10-20', 200, APPLIED,
+    setup={'subscription': 'normal'}, effect=created('owner', quote_row('mario', PLAN_DEEP, '18.00'), '18.00'))
+
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'smtp_config': SMTP_CONFIG, 'matrix_version': 1, 'scope': 'Payment partial quotes simulation and apply, payment sign and invoiced approve '
                                                             'authored sequence with payment and audit effects',
                               'ids': IDS, 'plans_owner': PLANS_OWNER, 'plans_member': PLANS_MEMBER, 'category': CATEGORY, 'bank': BANK, 'document': DOCUMENT,
                               'attached': ATTACHED, 'supplier': SUPPLIER, 'associates': ASSOCIATES,
-                              'plans': {key: value for key, value in PLANS.items()}, 'subscriptions': SUBSCRIPTIONS, 'invoices': INVOICES,
+                              'plans': {key: value for key, value in PLANS.items()}, 'subscriptions': SUBSCRIPTIONS,
+                              'deep_subscriptions': DEEP_SUBSCRIPTIONS, 'invoices': INVOICES,
                               'payments': PAYMENTS, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

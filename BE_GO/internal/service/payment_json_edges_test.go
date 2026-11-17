@@ -188,11 +188,12 @@ func TestPaymentArchiveJSONEdgesParsesAtMeasuredDepth(t *testing.T) {
 	}
 }
 
-// Without measured edges the save hook keeps the reference parser's handoff.
-func TestPaymentArchiveJSONEdgesUnmeasuredKeepsHandoff(t *testing.T) {
+// Without measured edges (a programming error: every view sets them) the save
+// hook answers application state past the reference parser, never a handoff.
+func TestPaymentArchiveJSONEdgesUnmeasuredIsAppState(t *testing.T) {
 	row := paymentJSONEdgesRow(jsonEdgesArray(1002))
 	err := paymentJSONEdgesSave(context.Background(), row)
-	if !errors.Is(err, errPaymentStoredJSONNested) || errors.Is(err, refusal.ErrAppState) {
-		t.Fatalf("err=%v, want the nested handoff", err)
+	if !errors.Is(err, errPaymentStoredJSONUnmeasured) || !errors.Is(err, refusal.ErrAppState) || errors.Is(err, refusal.ErrNotPorted) {
+		t.Fatalf("err=%v, want application state", err)
 	}
 }

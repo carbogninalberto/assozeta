@@ -132,6 +132,9 @@ func (s *QuoteAssign) plan(ctx context.Context, job domain.Job, now time.Time) (
 			if err != nil {
 				return nil, err
 			}
+			if err = quoteAssignStoredJSON(subscriptions); err != nil {
+				return nil, err
+			}
 			for _, subscription := range subscriptions {
 				if subscription.UserID == row.OwnerID || subscription.AssociateID == nil {
 					continue
@@ -209,7 +212,20 @@ func (s *QuoteAssign) subscriptions(ctx context.Context, job domain.Job, associa
 	if err != nil {
 		return nil, err
 	}
-	return rows, tx.Rollback()
+	return rows, quoteAssignStoredJSON(rows)
+}
+
+// quoteAssignStoredJSON is the task's json.loads of the subscriptions' payment
+// rows (select_related): below the worker band every measured stack parses, and
+// a value in the unmeasured band is handed to Django like any other refusal of
+// this job.
+func quoteAssignStoredJSON(rows []domain.QuoteAssignSubscription) error {
+	for _, row := range rows {
+		if paymentJSONTextsDepth(row.PaymentMetaPaymentCategories, row.PaymentMeta, row.PaymentCourse) >= paymentJSONWorkerBand {
+			return errPaymentStoredJSONWorkerBand
+		}
+	}
+	return nil
 }
 
 // quote is the existing-payment check and Payment.objects.create (the
@@ -258,7 +274,15 @@ func (s *QuoteAssign) quote(ctx context.Context, job domain.Job, row domain.Quot
 	m.row.Amount, m.amountAudit, m.amountShown = fee.Value, &fee.Audit, &fee.Value
 	m.amountFloat = fee.Float
 	m.setJSON("meta", paymentQuoteMeta(plan), &m.row.Meta)
-	if err = s.writes.defaults(ctx, tx, m); err != nil {
+	// The created row's JSON is the task's own meta, far below the worker band;
+	// the band itself is a handoff (the worker's stack is not measured), and
+	// below it every measured stack parses the row.
+	if paymentJSONTextsDepth(m.row.MetaCategories, m.row.Meta, m.row.Course) >= paymentJSONWorkerBand {
+		return false, errPaymentStoredJSONWorkerBand
+	}
+	ctx = withPaymentJSONEdges(ctx, paymentJSONEdges{Load: paymentJSONWorkerBand - 1, Save: paymentJSONWorkerBand - 1,
+		Index: paymentJSONWorkerBand - 1})
+	if _, err = s.writes.defaults(ctx, tx, m); err != nil {
 		return false, err
 	}
 	if err = tx.InsertPaymentRow(ctx, m.row); err != nil {

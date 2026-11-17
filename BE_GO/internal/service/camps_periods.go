@@ -37,8 +37,8 @@ var (
 	// text. The description hook's renderer fails only on an integer past
 	// Python's 4300 digits, which no writer can store (json.loads refuses it,
 	// in requests and in the association import), and on nesting past the
-	// reference parser, which paymentSaveDefaults hands off first
-	// (errPaymentStoredJSONNested), so this is application state.
+	// view's measured edges, which the save hook answers first
+	// (PaymentStoredJSONRecursionError), so this is application state.
 	errCampsUnknownSaveFailure = refusal.AppState("camps payment save failure without an exception message")
 )
 

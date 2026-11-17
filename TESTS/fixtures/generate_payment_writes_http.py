@@ -200,10 +200,16 @@ cases = []
 
 
 def add(name, actor, path, status, response, *, method='POST', body=None, raw_body=None, content_type=None, headers=None, effect=None,
-        prints=()):
-    """prints: the CURRENT_HOST requests the case makes, each with the stub's reply."""
+        prints=(), setup=None):
+    """prints: the CURRENT_HOST requests the case makes, each with the stub's reply.
+
+    setup: {'payment': label}: the stored payment the runner inserts only around the
+    case (a JSON column no state snapshot can read).
+    """
     case = {'name': f'payment-writes-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
             'status': status, 'response': response, 'effect': effect, 'prints': list(prints)}
+    if setup is not None:
+        case['setup'] = setup
     if body is not None:
         case['body'] = body
     if raw_body is not None:
@@ -1228,6 +1234,71 @@ for suffix, text in (('audit-band', DEEP_COURSE_AUDIT),):
         effect=effect('owner', audit=[event('up_deep_course_audit', 1, {'course': ['null', text]}, DIRECT)]))
 add('update-form-course-json-past-depth-band-server-error', 'owner', UPDATE('up_deep_course_refused'), 500, SERVER, method='PATCH',
     raw_body='course=' + quote(DEEP_COURSE_REFUSED), content_type='application/x-www-form-urlencoded', effect=effect('owner'))
+
+
+# --- stored payment JSON at the interpreter's recursion band (owner decision X15) --------------------
+# payment/<uid>/update loads the stored row with json.loads on the view's own load
+# (9937), on auditlog's pre_save refetch of the old row (9933) and, after the
+# entry's INSERT, on the index resolver's reload (9925, inside except Exception:
+# the index row then comes from changes_json.sport_association, then from the
+# actor's association). A stored row deeper than the request can read raises on
+# the first of them: Django's 500 page, with nothing written (the view writes
+# nothing before payment.save()). Each row exists only around its own case (the
+# state snapshot walks JSON values in Python, which cannot hold a value this
+# deep), and the case replaces the deep column with null, so the answer stays a
+# shallow payment body.
+
+
+def json_depth(text):
+    """The total nesting of a JSON text ('[]' is 1)."""
+    depth = deepest = 0
+    for char in text:
+        if char in '[{':
+            depth += 1
+            deepest = max(deepest, depth)
+        elif char in ']}':
+            depth -= 1
+    return deepest
+
+
+def deep_list(levels):
+    """A list nested `levels` deep: json.dumps of the value is the same text."""
+    return '[' * levels + ']' * levels
+
+
+# Inside each side of the band with a margin; the index band sits four levels past the
+# resolver's measured edge, the refused cases well past the view's own load.
+STORED_DEEP = {'index': 9929, 'normal': 9000, 'over': 9967}
+STORED_DEEP_IDS = iter(f'a1000000-0000-4000-8000-{988470 + n:012d}' for n in range(3))
+for label, depth in STORED_DEEP.items():
+    text = deep_list(depth)
+    assert json_depth(text) == depth
+    PAYMENTS[f'up_stored_{label}'] = keyed_payment(next(STORED_DEEP_IDS), course={'$raw_json': text})
+
+
+def stored_update(name, label, depth, index, *, status=200):
+    """A PATCH that clears the deep stored course: the body answers a shallow payment."""
+    old = {**PAYMENTS[label], 'course': None}
+    response = {'data': {'payment': payment_item(old, PAYMENTS[label]['id'])}} if status == 200 else SERVER
+    audit = [event(label, 1, {'course': [deep_list(depth), 'null']}, index)] if status == 200 else []
+    add(name, 'owner', UPDATE(label), status, response, method='PATCH', body={'course': None}, setup={'payment': label},
+        effect=effect('owner', audit=audit))
+
+
+# Past the resolver's reload the entry falls back: no sport_association change, so the
+# actor's own association. Below it the resolver reads the row and the index is direct.
+stored_update('update-stored-course-json-at-index-band', 'up_stored_index', STORED_DEEP['index'], [OWN, 'actor.sport_association'])
+stored_update('update-stored-course-json-below-bands', 'up_stored_normal', STORED_DEEP['normal'], [OWN, 'direct'])
+# Past the view's own load: the 500 page, nothing written.
+stored_update('update-stored-course-json-past-load-band-server-error', 'up_stored_over', STORED_DEEP['over'], None, status=500)
+
+# payment/add creates the row, so its JSON is the request's: the INSERT's json.dumps
+# (adapt~9925) raises past 9925 before any row exists (the 500 page, nothing written),
+# and the create entry's index resolver reloads the new row (9916, caught). Those bands
+# are not authored here: payment_add reads request.data, so the JSON field arrives in a
+# body, and a body nested past the reference parser's 1000 levels is answered by the
+# request reader rather than by the save path (a form body is the view's own 500 for the
+# immutable QueryDict). The Go unit tests pin the INSERT and create-resolver edges.
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Payment add, update and bulk add authored sequence with payment and audit effects',

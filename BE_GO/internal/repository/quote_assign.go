@@ -208,9 +208,11 @@ func (t *quoteAssignTransaction) QuoteAssignSubscriptions(ctx context.Context, a
 	for _, id := range ids {
 		var row domain.QuoteAssignSubscription
 		if err := t.tx.GetContext(ctx, &row, `SELECT s.subscription_id, s.user_id, u.email AS user_email, s.associate_id,
- a.first_name AS associate_first_name, a.last_name AS associate_last_name
+ a.first_name AS associate_first_name, a.last_name AS associate_last_name,
+ p.meta_payment_categories::text AS payment_meta_payment_categories, p.meta::text AS payment_meta, p.course::text AS payment_course
  FROM application_subscription s JOIN bakney_user u ON u.user_id=s.user_id
- LEFT JOIN application_associate a ON a.associate_id=s.associate_id WHERE s.subscription_id=$1::uuid`, id); err != nil {
+ LEFT JOIN application_associate a ON a.associate_id=s.associate_id
+ JOIN application_payment p ON p.payment_id=s.payment_id WHERE s.subscription_id=$1::uuid`, id); err != nil {
 			return nil, err
 		}
 		rows = append(rows, row)

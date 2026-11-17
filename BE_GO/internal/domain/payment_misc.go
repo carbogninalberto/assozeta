@@ -45,6 +45,12 @@ type PaymentSimulationSubscription struct {
 	AssociateID    *string `db:"associate_id"`
 	AssociateFirst *string `db:"associate_first_name"`
 	AssociateLast  *string `db:"associate_last_name"`
+	// The subscription's payment JSON columns as text: select_related loads the
+	// payment row, so Django decodes them with json.loads (the apply route's
+	// measured recursion edge) even though the view only reads the association.
+	PaymentMetaPaymentCategories *string `db:"payment_meta_payment_categories"`
+	PaymentMeta                  *string `db:"payment_meta"`
+	PaymentCourse                *string `db:"payment_course"`
 }
 
 // PaymentSimulationQuery selects the subscriptions whose payment meta icontains Pattern.

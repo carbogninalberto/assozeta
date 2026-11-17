@@ -61,6 +61,16 @@ var auditExcludedColumns = map[string]map[string]bool{
 // both sides (get_field_value keeps None, the absent side is smart_str()),
 // null JSON fields 'null'; other nulls are omitted.
 func storedModelChanges(ctx context.Context, tx *sqlx.Tx, table, key, id string, created, lock bool) (map[string][2]string, map[string]any, error) {
+	return storedModelChangesAt(ctx, tx, table, key, id, created, lock, 0)
+}
+
+// storedModelChangesAt is storedModelChanges with the total nesting a JSON
+// column is parsed at: auditlog renders a JSONField value with json.dumps, which
+// on a route that measured its budget raises only past that edge (owner decision
+// X15), so the caller that measured it passes it. 0 keeps the reference parser's
+// limit.
+func storedModelChangesAt(ctx context.Context, tx *sqlx.Tx, table, key, id string, created, lock bool,
+	jsonDepth int) (map[string][2]string, map[string]any, error) {
 	columns := []modelColumn{}
 	if err := tx.SelectContext(ctx, &columns, `SELECT a.attname AS name, format_type(a.atttypid, a.atttypmod) AS type,
  EXISTS(SELECT 1 FROM pg_constraint c WHERE c.conrelid=a.attrelid AND c.contype='f' AND c.conkey=ARRAY[a.attnum]) AS foreign_key
@@ -106,7 +116,7 @@ func storedModelChanges(ctx context.Context, tx *sqlx.Tx, table, key, id string,
 			}
 			continue
 		}
-		rendered, err := renderAuditValue(column.Type, value, raw, column.Name)
+		rendered, err := renderAuditValue(column.Type, value, raw, column.Name, jsonDepth)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -115,7 +125,9 @@ func storedModelChanges(ctx context.Context, tx *sqlx.Tx, table, key, id string,
 	return changes, stored, nil
 }
 
-func renderAuditValue(kind string, value any, row []byte, column string) (string, error) {
+// renderAuditValue is get_field_value of one stored column. jsonDepth is the
+// measured nesting a JSON column parses at (0: the reference limit).
+func renderAuditValue(kind string, value any, row []byte, column string, jsonDepth int) (string, error) {
 	switch {
 	case kind == "boolean":
 		if value == true {
@@ -128,7 +140,13 @@ func renderAuditValue(kind string, value any, row []byte, column string) (string
 		if err := json.Unmarshal(row, &fields); err != nil {
 			return "", err
 		}
-		parsed, err := dto.ParseProfileTablesJSON(fields[column])
+		var parsed any
+		var err error
+		if jsonDepth > 0 {
+			parsed, err = dto.ParseStoredProfileTablesJSON(fields[column], jsonDepth)
+		} else {
+			parsed, err = dto.ParseProfileTablesJSON(fields[column])
+		}
 		if err != nil {
 			return "", err
 		}

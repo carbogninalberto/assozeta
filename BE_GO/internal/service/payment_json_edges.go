@@ -88,8 +88,14 @@ func (e *PaymentStoredJSONRecursionError) Unwrap() error { return errPaymentStor
 // paymentJSONColumnsDepth is the deepest nesting of the payment's three JSON
 // columns, in the order the columns are loaded, 0 when all are NULL.
 func paymentJSONColumnsDepth(row *domain.PaymentSaveRow) int {
+	return paymentJSONTextsDepth(row.MetaPaymentCategories, row.Meta, row.Course)
+}
+
+// paymentJSONTextsDepth is paymentJSONColumnsDepth for callers that hold the
+// three texts without a save row (a payment another query loaded).
+func paymentJSONTextsDepth(metaPaymentCategories, meta, course *string) int {
 	depth := 0
-	for _, text := range paymentJSONColumns(row) {
+	for _, text := range [3]*string{metaPaymentCategories, meta, course} {
 		if text == nil {
 			continue
 		}

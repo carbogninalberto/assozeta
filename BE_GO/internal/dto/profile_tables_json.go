@@ -18,6 +18,17 @@ func ParseProfileTablesJSON(data []byte) (any, error) {
 	return parseProfileTablesJSONConstants(data, map[int64]any{}, false)
 }
 
+// ParseStoredProfileTablesJSON is ParseProfileTablesJSON with the total nesting
+// band a stored jsonb text is read at: a view that measured the depth its
+// auditlog json.dumps of the value parses at (owner decision X15) renders the
+// stored value up to it instead of the reference parser's 1000 levels.
+func ParseStoredProfileTablesJSON(data []byte, maxDepth int) (any, error) {
+	if auditJSONDepth(string(data)) > maxDepth {
+		return nil, ErrReferenceNesting
+	}
+	return parseProfileTablesJSONConstantsLimit(data, map[int64]any{}, false, maxDepth)
+}
+
 // parseProfileTablesJSONConstants adds the lone surrogate strings to constants
 // (already holding other substituted tokens, keyed by end offset) and parses.
 func parseProfileTablesJSONConstants(data []byte, constants map[int64]any, rateLimit bool) (any, error) {

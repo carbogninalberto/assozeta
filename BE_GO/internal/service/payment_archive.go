@@ -42,19 +42,21 @@ var errSecCategoryAssociation = errors.New("payment save defaults: payment assoc
 // so this is application state rather than a value a request can send.
 var errPaymentStoredJSON = refusal.AppState("payment save: stored meta or course is not JSON")
 
-// errPaymentStoredJSONNested is a stored meta/course nested past the reference
-// parser's 1000 levels: a request (the form JSON of a payment update) or the
-// association import can write one, and Django loads it (psycopg2's json.loads
-// reads about 9900 levels), so it is handed off.
-var errPaymentStoredJSONNested = refusal.New("payment save: stored meta or course nested past the reference parser not ported")
+// errPaymentStoredJSONUnmeasured is a save hook reached without the view's
+// measured JSON edges reading a stored meta/course nested past the reference
+// parser's 1000 levels. Every view that saves a Payment sets its edges
+// (withPaymentJSONEdges, owner decision X15), so this is a programming error:
+// application state, the 500 page.
+var errPaymentStoredJSONUnmeasured = refusal.AppState("payment save: stored JSON past 1000 levels on a view without measured edges")
 
-// paymentStoredJSON is paymentJSON for the save hook: nesting past the
-// reference parser is the handoff, any other failure application state.
+// paymentStoredJSON is paymentJSON for a save hook without measured edges:
+// nesting past the reference parser and any other failure are application
+// state.
 func paymentStoredJSON(text *string) (any, error) {
 	value, err := paymentJSON(text)
 	switch {
 	case errors.Is(err, dto.ErrReferenceNesting):
-		return nil, errPaymentStoredJSONNested
+		return nil, errPaymentStoredJSONUnmeasured
 	case err != nil:
 		return nil, errPaymentStoredJSON
 	}
@@ -87,6 +89,20 @@ func paymentJSONRecursionFailure(row *domain.PaymentSaveRow, edges paymentJSONEd
 		return &PaymentStoredJSONRecursionError{AfterWrites: true, Text: paymentJSONRecursionTextAt(row, edges.Save)}
 	}
 	return nil
+}
+
+// paymentJSONStoredEdges applies the measured edges to a payment row another
+// query loaded (the store keeps the columns as text, so the view's own load and
+// the audit's refetch of the stored row are not decoded by the save hook): the
+// RecursionError they raise, and whether the index resolver's reload of the same
+// row fails so the entry takes the resolver's fallbacks.
+func paymentJSONStoredEdges(metaPaymentCategories, meta, course *string, edges paymentJSONEdges) (bool, error) {
+	row := domain.PaymentSaveRow{MetaPaymentCategories: metaPaymentCategories, Meta: meta, Course: course}
+	row.JSONDepth = paymentJSONColumnsDepth(&row)
+	if err := paymentJSONRecursionFailure(&row, edges); err != nil {
+		return false, err
+	}
+	return row.JSONDepth > edges.Index, nil
 }
 
 func paymentSaveDefaults(ctx context.Context, tx domain.PaymentArchiveTransaction, row *domain.PaymentSaveRow, changes map[string][2]string) error {

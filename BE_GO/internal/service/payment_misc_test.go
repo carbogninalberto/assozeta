@@ -1,11 +1,14 @@
 package service
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"math"
+	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/emailrender"
@@ -309,5 +312,140 @@ func TestPaymentMiscFeeMailRendersEveryValueKind(t *testing.T) {
 		if !strings.Contains(html, fragment) {
 			t.Fatalf("the fee e-mail renders %q:\n%s", fragment, html)
 		}
+	}
+}
+
+// paymentMiscApplyStore is the transaction payment_simulation_partial_quotes_apply
+// opens: the association's plans, one subscription and the quote's writes.
+type paymentMiscApplyStore struct {
+	domain.PaymentMiscStore
+	tx *paymentMiscApplyTx
+}
+
+func (s *paymentMiscApplyStore) BeginPaymentMisc(context.Context) (domain.PaymentMiscTransaction, error) {
+	return s.tx, nil
+}
+
+type paymentMiscApplyTx struct {
+	domain.PaymentMiscTransaction
+	association   *domain.PaymentSimulationAssociation
+	subscriptions []domain.PaymentSimulationSubscription
+	existing      bool
+	rows          []domain.PaymentWriteRow
+	audits        []domain.PaymentWritesAuditEntry
+	commits       int
+	rollbacks     int
+}
+
+func (t *paymentMiscApplyTx) ScopedAssociation(context.Context, string, *string) (string, error) {
+	return t.association.ID, nil
+}
+
+func (t *paymentMiscApplyTx) SimulationAssociation(context.Context, string) (*domain.PaymentSimulationAssociation, error) {
+	return t.association, nil
+}
+
+func (t *paymentMiscApplyTx) SimulationSubscriptions(context.Context, domain.PaymentSimulationQuery) (
+	[]domain.PaymentSimulationSubscription, error) {
+	return t.subscriptions, nil
+}
+
+func (t *paymentMiscApplyTx) QuoteExists(context.Context, domain.PaymentQuoteCheck) (bool, error) {
+	return t.existing, nil
+}
+
+func (t *paymentMiscApplyTx) DefaultBankAccount(context.Context, string) (*string, error) {
+	return nil, nil
+}
+
+func (t *paymentMiscApplyTx) DefaultPaymentCategory(context.Context, *string) (*string, *string, error) {
+	return nil, nil, nil
+}
+
+func (t *paymentMiscApplyTx) InsertPaymentRow(_ context.Context, row domain.PaymentWriteRow) error {
+	t.rows = append(t.rows, row)
+	return nil
+}
+
+func (t *paymentMiscApplyTx) PaymentAuditValues(context.Context, string) (map[string]string, error) {
+	values := map[string]string{"type": "default", "subject": "1", "amount": "10.00", "sport_association": t.association.ID,
+		"meta": "null"}
+	if len(t.rows) > 0 && t.rows[len(t.rows)-1].Meta != nil {
+		values["meta"] = *t.rows[len(t.rows)-1].Meta
+	}
+	return values, nil
+}
+
+func (t *paymentMiscApplyTx) AppendPaymentWritesAudit(_ context.Context, entry domain.PaymentWritesAuditEntry) error {
+	t.audits = append(t.audits, entry)
+	return nil
+}
+
+func (t *paymentMiscApplyTx) Commit() error {
+	t.commits++
+	return nil
+}
+
+func (t *paymentMiscApplyTx) Rollback() error {
+	t.rollbacks++
+	return nil
+}
+
+// paymentMiscApplyEdgeDay is the plan's start day and month at the test's now.
+func paymentMiscApplyFixture(depth int) *paymentMiscApplyTx {
+	now := time.Date(2026, 11, 10, 19, 45, 3, 0, time.UTC)
+	plans := `[{"id": "plan-a", "name": "Quota", "subscription_fee": "10", "auto_assign": true, "advanced_options": true,
+		"previous_subscription_fee_plan": "plan-0", "from_day": ` + strconv.Itoa(now.Day()) + `, "from_month": ` + strconv.Itoa(int(now.Month())) + `,
+		"to_day": 30, "to_month": 9}]`
+	owner, email := "owner", "owner@example.test"
+	course := jsonEdgesArray(depth)
+	return &paymentMiscApplyTx{
+		association: &domain.PaymentSimulationAssociation{ID: "a1000000-0000-4000-8000-000000988880", OwnerID: owner,
+			Plans: &plans, StartDay: 1, StartMonth: int(time.January), OwnerEmail: &email},
+		subscriptions: []domain.PaymentSimulationSubscription{{ID: "a1000000-0000-4000-8000-000000988881", UserID: owner,
+			AssociateID: &email, PaymentCourse: course}},
+	}
+}
+
+// payment_simulation_partial_quotes_apply's measured JSON edges (owner decision
+// X15): Django loads the subscriptions' payments with select_related (loads
+// 9928), so a deeper stored value raises before the plan's first write and the
+// task's except Exception answers the view's 200 body; a value it parses leaves
+// the quote's own INSERT (adapt~9921) to the create edges.
+func TestPaymentMiscApplyStoredPaymentJSONDepth(t *testing.T) {
+	for _, test := range []struct {
+		name  string
+		depth int
+		quote bool
+	}{
+		{name: "below the load edge", depth: paymentMiscApplyLoadJSONDepth - 1, quote: true},
+		{name: "at the load edge", depth: paymentMiscApplyLoadJSONDepth, quote: true},
+		{name: "past the load edge", depth: paymentMiscApplyLoadJSONDepth + 1},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			tx := paymentMiscApplyFixture(test.depth)
+			writes := NewPaymentMisc(&paymentMiscApplyStore{tx: tx}, func() time.Time {
+				return time.Date(2026, 11, 10, 19, 45, 3, 0, time.UTC)
+			}, func() string { return "a1000000-0000-4000-8000-000000988882" }, "Bakney")
+			identity := domain.ResolvedIdentity{ScopeUser: &domain.Account{ID: tx.association.OwnerID, Role: domain.RoleAssociation},
+				Actor: &domain.Account{ID: tx.association.OwnerID}}
+			if err := writes.Apply(context.Background(), identity, PaymentMiscRequest{}); err != nil {
+				t.Fatalf("err=%v", err)
+			}
+			if !test.quote {
+				// The load ended the run before this plan's first write.
+				if len(tx.rows) != 0 || tx.audits != nil || tx.commits != 1 || tx.rollbacks != 1 {
+					t.Fatalf("rows=%d audits=%d commits=%d rollbacks=%d", len(tx.rows), len(tx.audits), tx.commits, tx.rollbacks)
+				}
+				return
+			}
+			if len(tx.rows) != 1 || len(tx.audits) != 1 || tx.commits != 1 || tx.rollbacks != 1 {
+				t.Fatalf("rows=%d audits=%d commits=%d rollbacks=%d", len(tx.rows), len(tx.audits), tx.commits, tx.rollbacks)
+			}
+			if tx.audits[0].IndexFallback {
+				// The quote's own meta is the task's, far below the resolver's edge.
+				t.Fatalf("the created entry fell back: %+v", tx.audits[0])
+			}
+		})
 	}
 }

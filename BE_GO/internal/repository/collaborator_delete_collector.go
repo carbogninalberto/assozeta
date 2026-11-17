@@ -625,13 +625,13 @@ func (r *collaboratorDeleteRun) logDelete(ctx context.Context, model *collaborat
 		var rendered string
 		switch {
 		case field.Kind == "json":
-			text, err := renderAuditValue("jsonb", value, row.raw, field.Column)
+			text, err := renderAuditValue("jsonb", value, row.raw, field.Column, 0)
 			if err != nil {
 				return err
 			}
 			rendered = text
 		case field.Kind == "datetime":
-			text, err := renderAuditValue("timestamp", value, row.raw, field.Column)
+			text, err := renderAuditValue("timestamp", value, row.raw, field.Column, 0)
 			if err != nil {
 				return err
 			}

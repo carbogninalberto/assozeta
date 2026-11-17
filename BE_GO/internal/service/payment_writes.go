@@ -394,6 +394,11 @@ type paymentMemory struct {
 	// amountFloat is the in-memory amount when it is a Python float.
 	amountFloat *float64
 	jsonAudit   map[string]string
+	// storedJSON is the row's JSON columns as the database holds them, when the
+	// request only overrides some of them (payment/<uid>/update): Django's loads
+	// read the stored row, so the measured edges belong to these values, not to
+	// the form's.
+	storedJSON *domain.PaymentSaveRow
 	// rowJSONSkipped keeps the row's JSON columns at their stored values: the
 	// measured audit band never writes the row, and the deep value must not reach
 	// the save defaults' reader (the audit takes it from jsonAudit).
@@ -477,25 +482,60 @@ func (m *paymentMemory) apply(input dto.PaymentEntryInput, total *float64) {
 	}
 }
 
-// defaults is Payment.save()'s category and description hooks.
-func (s *PaymentWrites) defaults(ctx context.Context, tx domain.PaymentWritesTransaction, m *paymentMemory) error {
+// defaults is Payment.save()'s category and description hooks. The measured
+// edges belong to the values Django's loads read: the stored row (m.storedJSON)
+// when the request only overrides some columns, else the row the request writes.
+// A request JSON value the serializer already parsed only meets auditlog's dumps
+// and the jsonb adapter, so the hook re-reads it up to the serializer's own edge.
+// The returned flag is the resolver's finding for the entry audited for this
+// save (the row it reloads is the one the edges measured).
+func (s *PaymentWrites) defaults(ctx context.Context, tx domain.PaymentWritesTransaction, m *paymentMemory) (bool, error) {
 	save := domain.PaymentSaveRow{ID: m.row.ID, Subject: m.row.Subject, CategoryID: m.row.CategoryID, Description: m.row.Description,
-		Meta: m.row.Meta, Course: m.row.Course}
+		MetaPaymentCategories: m.row.MetaCategories, Meta: m.row.Meta, Course: m.row.Course}
 	if save.CategoryID != nil {
 		name, err := tx.CategoryName(ctx, *save.CategoryID)
 		if err != nil {
-			return err
+			return false, err
 		}
 		save.CategoryName = name
 	}
-	if err := secCategorySaveDefaults(ctx, tx, &save, m.row.AssociationID, map[string][2]string{}); err != nil {
-		if errors.Is(err, ErrPaymentSaveFailed) {
-			return domain.ErrPaymentWritesServer
+	hook, fallback := ctx, false
+	if edges, measured := paymentJSONEdgesOf(ctx); measured {
+		loads := m.storedJSON
+		if loads == nil {
+			loads = &domain.PaymentSaveRow{ID: m.row.ID}
+			loads.MetaPaymentCategories, loads.Meta, loads.Course = save.MetaPaymentCategories, save.Meta, save.Course
 		}
-		return err
+		loads.JSONDepth = paymentJSONColumnsDepth(loads)
+		if err := paymentJSONRecursionFailure(loads, edges); err != nil {
+			return false, err
+		}
+		fallback = loads.JSONDepth > edges.Index
+		parse := paymentWritesFormJSONParseDepth
+		hook = withPaymentJSONEdges(ctx, paymentJSONEdges{Load: parse, Save: parse, Index: parse})
+	}
+	if err := secCategorySaveDefaults(hook, tx, &save, m.row.AssociationID, map[string][2]string{}); err != nil {
+		if errors.Is(err, ErrPaymentSaveFailed) {
+			return false, domain.ErrPaymentWritesServer
+		}
+		return false, err
 	}
 	m.row.CategoryID, m.row.Description = save.CategoryID, save.Description
-	return nil
+	return fallback, nil
+}
+
+// paymentStoredJSONLoadFailure is the RecursionError the view's own load of the
+// stored payment raises: it comes before the view's permission checks and the
+// serializer, and nothing of the view is written, so the failure is the load's
+// even when the save edge is lower.
+func paymentStoredJSONLoadFailure(ctx context.Context, row *domain.PaymentWriteRow) error {
+	edges, measured := paymentJSONEdgesOf(ctx)
+	if !measured {
+		return nil
+	}
+	_, err := paymentJSONStoredEdges(row.MetaCategories, row.Meta, row.Course,
+		paymentJSONEdges{Load: edges.Load, Save: edges.Load, Index: edges.Index})
+	return err
 }
 
 // values is the stored rendering with the in-memory overrides.
@@ -625,11 +665,13 @@ func updatedPaymentChanges(old, new map[string]string) map[string][2]string {
 
 // audit appends one Payment entry; the index resolver reads the stored row
 // (before an update: auditlog writes it in pre_save), then the changes'
-// sport_association, then the actor's own association.
+// sport_association, then the actor's own association. fallback is the save
+// hook's finding that the resolver cannot reload the row: the entry then takes
+// its association from those fallbacks.
 func (s *PaymentWrites) audit(ctx context.Context, tx domain.PaymentWritesTransaction, identity domain.ResolvedIdentity, audit domain.LoginAuditContext,
-	id string, action int, changes map[string][2]string, stored *string) error {
+	id string, action int, changes map[string][2]string, stored *string, fallback bool) error {
 	entry := domain.PaymentWritesAuditEntry{PaymentID: id, Action: action, Changes: changes, Context: paymentCategoryAuditContext(identity, audit),
-		At: s.at()}
+		At: s.at(), IndexFallback: fallback}
 	if stored != nil {
 		entry.Association, entry.Path = stored, "direct"
 	} else {
@@ -696,6 +738,47 @@ const (
 // escapes the serializer's collected field errors (an application-state error,
 // never a handoff) and nothing is written.
 var errPaymentWritesFormJSONTooDeep = refusal.AppState("payment write: form JSON nested past the measured depth")
+
+// payment_add and payment_update's measured stored-JSON recursion edges (owner
+// decision X15), measured with CPython 3.13.16 on the parity harness's Django,
+// for the payment's three JSON columns (the deepest one counts):
+//
+// payment/add creates the row, so the sequence starts at its INSERT:
+//   - psycopg2's json.dumps of the INSERT (adapt~9925) raises past 9925, before
+//     any row exists: nothing of the request is written;
+//   - the create entry's index resolver reloads the new row (loads 9916, inside
+//     except Exception): past 9916 the resolver falls back to
+//     changes['sport_association'], then the actor's association;
+//   - every later load of the request is above the INSERT's edge (log_update
+//     9934 before the update entry, the UPDATE's json.dumps 9937, the update
+//     entry's resolver 9926), so a value that the INSERT accepted reaches none
+//     of its own edges.
+//
+// payment/<uid>/update loads the row once before saving it:
+//   - the view's own load (loads 9937) is the first edge;
+//   - auditlog's pre_save refetch of the old row (loads 9933) comes before the
+//     view writes anything: a deeper value raises with no write of this view
+//     kept (writes-before-save is empty);
+//   - the index resolver's reload after the entry's INSERT (loads 9925, caught)
+//     is the row's index edge.
+//
+// The row being saved also meets auditlog's rendering of its values (audit-dumps
+// 9937) and the UPDATE's json.dumps (adapt~9934); a value the serializer
+// validated is bounded by its own measured edge below.
+const (
+	paymentAddInsertJSONDepth      = 9925
+	paymentAddCreateIndexJSONDepth = 9916
+	paymentAddUpdateIndexJSONDepth = 9926
+	paymentUpdateLoadJSONDepth     = 9937
+	paymentUpdateSaveJSONDepth     = 9933
+	paymentUpdateIndexJSONDepth    = 9925
+)
+
+// paymentWritesFormJSONParseDepth is the deepest request JSON text the save hook
+// re-reads for Payment.save()'s description: the serializer's measured
+// validation edge, so every value the request could send is parsed here (the
+// measured bands above answer the deeper ones before the save).
+const paymentWritesFormJSONParseDepth = paymentWritesFormJSONRefusedDepth - 1
 
 // paymentWritesFormJSONBand maps the deepest form JSON text (D) to its measured
 // outcome: the audit band (the jsonb write raises after the pre_save entry) or
@@ -1085,7 +1168,15 @@ func (s *PaymentWrites) Add(ctx context.Context, identity domain.ResolvedIdentit
 	// The model default amount is the float 0.00.
 	m.setFloat(0)
 	m.apply(input, total)
-	if err = s.defaults(ctx, tx, m); err != nil {
+	// The row's INSERT is the request's first JSON write: its json.dumps bounds
+	// the columns (nothing is written past it), and the create entry's resolver
+	// reloads the new row one level later.
+	createCtx := withPaymentJSONEdges(ctx, paymentJSONEdges{Load: paymentAddInsertJSONDepth, Save: paymentAddInsertJSONDepth,
+		Index: paymentAddCreateIndexJSONDepth})
+	createFallback, err := s.defaults(createCtx, tx, m)
+	if err != nil {
+		// The created row is not written yet: a value past the INSERT's edge is
+		// the 500 page with nothing of the request written.
 		return nil, err
 	}
 	if err = tx.InsertPaymentRow(ctx, m.row); err != nil {
@@ -1095,9 +1186,14 @@ func (s *PaymentWrites) Add(ctx context.Context, identity domain.ResolvedIdentit
 	if err != nil {
 		return nil, err
 	}
-	if err = s.audit(ctx, tx, identity, request.Audit, m.row.ID, 0, createdPaymentChanges(created), m.row.AssociationID); err != nil {
+	if err = s.audit(ctx, tx, identity, request.Audit, m.row.ID, 0, createdPaymentChanges(created), m.row.AssociationID,
+		createFallback); err != nil {
 		return nil, err
 	}
+	// The request's later loads are all above the INSERT's edge, so the row keeps
+	// it; the update entry's resolver reloads the row deeper.
+	savedCtx := withPaymentJSONEdges(ctx, paymentJSONEdges{Load: paymentAddInsertJSONDepth, Save: paymentAddInsertJSONDepth,
+		Index: paymentAddUpdateIndexJSONDepth})
 	// From here on Django has committed the created payment.
 	fail := func(failure error) (map[string]any, error) {
 		if err := tx.Commit(); err != nil {
@@ -1140,7 +1236,8 @@ func (s *PaymentWrites) Add(ctx context.Context, identity domain.ResolvedIdentit
 		}
 	}
 	m.row.UserID, m.row.AssociationID = &owner, &association
-	if err = s.defaults(ctx, tx, m); err != nil {
+	savedFallback, err := s.defaults(savedCtx, tx, m)
+	if err != nil {
 		return fail(err)
 	}
 	if err = tx.SavePaymentRow(ctx, m.row); err != nil {
@@ -1151,7 +1248,7 @@ func (s *PaymentWrites) Add(ctx context.Context, identity domain.ResolvedIdentit
 		return nil, err
 	}
 	if changes := updatedPaymentChanges(before, after); len(changes) > 0 {
-		if err = s.audit(ctx, tx, identity, request.Audit, m.row.ID, 1, changes, stored); err != nil {
+		if err = s.audit(ctx, tx, identity, request.Audit, m.row.ID, 1, changes, stored, savedFallback); err != nil {
 			return nil, err
 		}
 	}
@@ -1170,7 +1267,7 @@ func (s *PaymentWrites) Add(ctx context.Context, identity domain.ResolvedIdentit
 		if before, err = tx.PaymentAuditValues(ctx, m.row.ID); err != nil {
 			return nil, err
 		}
-		if err = s.defaults(ctx, tx, m); err != nil {
+		if savedFallback, err = s.defaults(savedCtx, tx, m); err != nil {
 			return nil, err
 		}
 		if err = tx.SavePaymentRow(ctx, m.row); err != nil {
@@ -1180,7 +1277,7 @@ func (s *PaymentWrites) Add(ctx context.Context, identity domain.ResolvedIdentit
 			return nil, err
 		}
 		if changes := updatedPaymentChanges(before, after); len(changes) > 0 {
-			if err = s.audit(ctx, tx, identity, request.Audit, m.row.ID, 1, changes, &association); err != nil {
+			if err = s.audit(ctx, tx, identity, request.Audit, m.row.ID, 1, changes, &association, savedFallback); err != nil {
 				return nil, err
 			}
 		}
@@ -1220,6 +1317,15 @@ func (s *PaymentWrites) Update(ctx context.Context, identity domain.ResolvedIden
 		return nil, err
 	}
 	defer tx.Rollback()
+	// The stored row's measured edges: the view's own load (loads 9937),
+	// auditlog's pre_save refetch of the old row (loads 9933, before which the view
+	// writes nothing) and the index resolver's reload after the entry's INSERT
+	// (loads 9925, caught). A request JSON value only meets auditlog's dumps and
+	// the UPDATE's json.dumps, answered by paymentWritesFormJSONBand; a value the
+	// view saves is then audited at the same dumps edge, which the audit render
+	// covers (paymentAuditJSONDepth).
+	ctx = withPaymentJSONEdges(ctx, paymentJSONEdges{Load: paymentUpdateLoadJSONDepth, Save: paymentUpdateSaveJSONDepth,
+		Index: paymentUpdateIndexJSONDepth})
 	group, scope := supplierGroup(request.GroupHeader), paymentStateScope(identity)
 	row, err := tx.LockPayment(ctx, id, group, scope)
 	if err != nil {
@@ -1227,6 +1333,11 @@ func (s *PaymentWrites) Update(ctx context.Context, identity domain.ResolvedIden
 	}
 	if row == nil || row.AssociationID == nil {
 		return nil, domain.ErrPaymentWritesServer
+	}
+	// The view's load decodes the stored row before its permission check and the
+	// serializer: Django raises there, writing nothing.
+	if err := paymentStoredJSONLoadFailure(ctx, row); err != nil {
+		return nil, err
 	}
 	if *row.AssociationID != association {
 		return nil, &domain.PermissionDenied{Detail: "User not allowed."}
@@ -1274,7 +1385,8 @@ func (s *PaymentWrites) Update(ctx context.Context, identity domain.ResolvedIden
 	// raises (owner decision X15).
 	auditOnly, _ := paymentWritesFormJSONBand(input.FormJSONDepth)
 	jsonRejected := input.FormJSONRejected || auditOnly
-	m := &paymentMemory{row: *row, jsonAudit: map[string]string{}, rowJSONSkipped: auditOnly}
+	m := &paymentMemory{row: *row, jsonAudit: map[string]string{}, rowJSONSkipped: auditOnly,
+		storedJSON: &domain.PaymentSaveRow{ID: row.ID, MetaPaymentCategories: row.MetaCategories, Meta: row.Meta, Course: row.Course}}
 	m.row.InstructorID, m.row.SupplierID = nil, nil
 	if item, present := object.Lookup("complex_item"); present && dto.PythonTruthy(item) {
 		m.row.AssociateID = nil
@@ -1316,7 +1428,10 @@ func (s *PaymentWrites) Update(ctx context.Context, identity domain.ResolvedIden
 		return nil, err
 	}
 	m.apply(input, total)
-	if err = s.defaults(ctx, tx, m); err != nil {
+	// The measured edges belong to the stored row (the resolver reloads it before
+	// the UPDATE): a deeper value raises with nothing of this view written.
+	storedFallback, err := s.defaults(ctx, tx, m)
+	if err != nil {
 		return nil, err
 	}
 	before, err := tx.PaymentAuditValues(ctx, id)
@@ -1330,7 +1445,7 @@ func (s *PaymentWrites) Update(ctx context.Context, identity domain.ResolvedIden
 		// RecursionError): the UPDATE is skipped, the entry stays (the view is not
 		// atomic) and the answer is the 500 page.
 		if changes := updatedPaymentChanges(before, paymentAfterSaveValues(before, *row, m)); len(changes) > 0 {
-			if err = s.audit(ctx, tx, identity, request.Audit, id, 1, changes, row.AssociationID); err != nil {
+			if err = s.audit(ctx, tx, identity, request.Audit, id, 1, changes, row.AssociationID, storedFallback); err != nil {
 				return nil, err
 			}
 		}
@@ -1347,7 +1462,7 @@ func (s *PaymentWrites) Update(ctx context.Context, identity domain.ResolvedIden
 		return nil, err
 	}
 	if changes := updatedPaymentChanges(before, after); len(changes) > 0 {
-		if err = s.audit(ctx, tx, identity, request.Audit, id, 1, changes, row.AssociationID); err != nil {
+		if err = s.audit(ctx, tx, identity, request.Audit, id, 1, changes, row.AssociationID, storedFallback); err != nil {
 			return nil, err
 		}
 	}

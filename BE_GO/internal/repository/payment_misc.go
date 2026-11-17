@@ -49,7 +49,8 @@ func (t *paymentMiscTransaction) SimulationSubscriptions(ctx context.Context, qu
 	[]domain.PaymentSimulationSubscription, error) {
 	rows := []domain.PaymentSimulationSubscription{}
 	err := t.tx.SelectContext(ctx, &rows, `SELECT s.subscription_id, s.user_id, u.first_name AS user_first_name, u.last_name AS user_last_name,
- u.email AS user_email, s.associate_id, a.first_name AS associate_first_name, a.last_name AS associate_last_name
+ u.email AS user_email, s.associate_id, a.first_name AS associate_first_name, a.last_name AS associate_last_name,
+ p.meta_payment_categories::text AS payment_meta_payment_categories, p.meta::text AS payment_meta, p.course::text AS payment_course
  FROM application_subscription s
  JOIN application_payment p ON p.payment_id=s.payment_id
  JOIN bakney_user u ON u.user_id=s.user_id
