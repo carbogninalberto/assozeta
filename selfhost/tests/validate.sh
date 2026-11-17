@@ -79,6 +79,9 @@ for service in ("api", "worker", "beat", "realtime-relay", "migrate"):
 web = config["services"]["web"]["volumes"]
 assert any(mount["source"] == "updater_status" and mount["read_only"] for mount in web)
 assert not any(mount["source"] == "updater_api" for mount in web)
+for service in ("api", "api-go"):
+    assert any(mount["source"] == "updater_api" and mount["target"] == "/run/assozeta-updater"
+               and mount["read_only"] for mount in config["services"][service]["volumes"])
 '
 
 printf 'Self-host validation and updater regression tests passed.\n'

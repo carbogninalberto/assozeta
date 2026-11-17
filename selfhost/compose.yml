@@ -204,6 +204,9 @@ services:
     volumes:
       - ${ASSOZETA_SELFHOST_DIR:-.}/.operations:/run/assozeta-operations
       - manuale_data:/app/manuale
+      # The update runner's socket and token, as on the Django API: the Go
+      # instance administration routes call the runner directly.
+      - updater_api:/run/assozeta-updater:ro
       # Anonymous disk-backed preparation space, never authoritative logo data.
       - /var/cache/assozeta-logo
       # Private anonymous disk staging for message LIST; no authoritative data.

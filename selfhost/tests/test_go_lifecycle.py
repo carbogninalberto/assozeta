@@ -88,8 +88,12 @@ class GoComposeTests(unittest.TestCase):
             self.assertEqual(migration['environment'], {
                 name: value for name, value in api['environment'].items()
                 if name not in http_spools and name != 'DJANGO_HANDOFF_URL'})
+            # Only the HTTP API calls the update runner.
+            self.assertIn({'type': 'volume', 'source': 'updater_api', 'target': '/run/assozeta-updater',
+                           'read_only': True, 'volume': {}}, api['volumes'])
             self.assertEqual(migration['volumes'], [
-                volume for volume in api['volumes'] if volume['target'] not in http_spools.values()])
+                volume for volume in api['volumes']
+                if volume['target'] not in http_spools.values() and volume['source'] != 'updater_api'])
             for variable, target in http_spools.items():
                 self.assertEqual(api['environment'][variable], target)
                 self.assertNotIn(variable, migration['environment'])
