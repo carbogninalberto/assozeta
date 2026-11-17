@@ -124,6 +124,8 @@ class ExportFixture:
                 # declares no PROTECT relation reachable from Document, so
                 # there is no PROTECT seed).
                 MedicalCertificate.objects.create(medical_id=UUID(int=86600), document=documents[1])
+                # creation_date is auto_now_add: pin it, so the delete diff of both runs is the same text.
+                MedicalCertificate.objects.filter(medical_id=UUID(int=86600)).update(creation_date=now)
         return self.snapshot()
 
     def snapshot(self):
