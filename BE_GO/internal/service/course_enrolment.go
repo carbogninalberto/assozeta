@@ -36,32 +36,57 @@ func NewCourseEnrolment(store domain.CourseEnrolmentStore, now func() time.Time,
 // text. multiple_quote and events are the same serializers.JSONField read at
 // the same point, so DRF's json.loads raises RecursionError for either from
 // D >= 9943: the plain 500 page before any write (add is atomic; the stock
-// create validates first).
+// create validates first). Another invalid field still answers its 400 below
+// that, up to D 9942.
 //
-// Below that, multiple_quote fails later and only on some paths: from about
-// 9929 the quote payment's meta dump raises (multiple-quote courses only) and
-// from about 9934 the row INSERT dump does, while another invalid field still
-// answers its 400. Those depths are handed off before any write.
+// The two later dumps raise on the depth of the stored value (json.dumps), not
+// of the text: the quote value's container nesting, JSONValueDepth, equals D
+// for a value without duplicate keys. The quote payment's meta dump raises from
+// a quote depth of 9929 (multiple-quote courses only; the stock create keeps
+// the row and its audit entries there, the add rolls back) and the row INSERT's
+// dump from 9934 (nothing written on either route).
 const (
-	courseEnrolmentFieldJSONDepth = 9943
-	courseEnrolmentQuoteJSONDepth = 9929
+	courseEnrolmentFieldJSONDepth    = 9943
+	courseEnrolmentQuoteJSONDepth    = 9929
+	courseEnrolmentRowQuoteJSONDepth = 9934
 )
 
 var errCourseEnrolmentFormJSONTooDeep = refusal.AppState("course enrolment: form JSON nested past the measured depth")
 
-// errCourseEnrolmentFormJSONBand is multiple_quote nested in the band where
-// Django's answer depends on the course and the other fields: handed off.
-var errCourseEnrolmentFormJSONBand = refusal.New("course enrolment: multiple_quote nested in the dump band not ported")
+// errCourseEnrolmentRowQuoteJSONTooDeep is the row INSERT's json.dumps on a
+// multiple_quote value of depth >= 9934: the 500 page, and on the stock create
+// (autocommit) nothing written, since the check runs before CreateRow.
+var errCourseEnrolmentRowQuoteJSONTooDeep = refusal.AppState("course enrolment: multiple_quote nested past the row's JSON dump")
+
+// errCourseEnrolmentQuotePaymentJSONTooDeep is the quote payment's meta dump on
+// a multiple_quote value of depth >= 9929: the 500 page; the atomic add rolls
+// everything back, the stock create keeps the row and its audit entries.
+var errCourseEnrolmentQuotePaymentJSONTooDeep = refusal.AppState("course enrolment: multiple_quote nested past the quote payment's meta dump")
 
 // courseEnrolmentFormJSONBand is the add and stock create check before any
 // write: the validation RecursionError (application state, the 500 page) or
-// the multiple_quote dump band (handed off); nil below both.
+// nil below it. The dump bands are checked where the writes happen.
 func courseEnrolmentFormJSONBand(depths map[string]int) error {
-	switch {
-	case depths["events"] >= courseEnrolmentFieldJSONDepth || depths["multiple_quote"] >= courseEnrolmentFieldJSONDepth:
+	if depths["events"] >= courseEnrolmentFieldJSONDepth || depths["multiple_quote"] >= courseEnrolmentFieldJSONDepth {
 		return errCourseEnrolmentFormJSONTooDeep
-	case depths["multiple_quote"] >= courseEnrolmentQuoteJSONDepth:
-		return errCourseEnrolmentFormJSONBand
+	}
+	return nil
+}
+
+// courseEnrolmentRowQuoteBand is the row INSERT's dump check, before CreateRow:
+// every course type stores multiple_quote there.
+func courseEnrolmentRowQuoteBand(write dto.CourseSubscriptionWrite) error {
+	if write.QuoteSet && dto.JSONValueDepth(write.Quote) >= courseEnrolmentRowQuoteJSONDepth {
+		return errCourseEnrolmentRowQuoteJSONTooDeep
+	}
+	return nil
+}
+
+// courseEnrolmentQuotePaymentBand is the quote payment's meta dump check: only
+// a multiple-quote course (type 2) builds that payment with multiple_quote.
+func courseEnrolmentQuotePaymentBand(courseType int, write dto.CourseSubscriptionWrite) error {
+	if courseType == 2 && write.QuoteSet && dto.PythonTruthy(write.Quote) && dto.JSONValueDepth(write.Quote) >= courseEnrolmentQuoteJSONDepth {
+		return errCourseEnrolmentQuotePaymentJSONTooDeep
 	}
 	return nil
 }
@@ -471,7 +496,12 @@ func (s *CourseEnrolment) serializerCreate(ctx context.Context, tx domain.Course
 		overrides["membership_fee"] = [2]string{"None", "0.0"}
 	}
 	// CourseSubscription.objects.create(): the INSERT is where the jsonb column
-	// meets multiple_quote (the add is atomic, so nothing written stays).
+	// meets multiple_quote (the add is atomic, so nothing written stays). The
+	// dump raises on the stored value's nesting measured at 9934, before
+	// PostgreSQL sees the text (or the lone-surrogate check below).
+	if err = courseEnrolmentRowQuoteBand(write); err != nil {
+		return nil, err
+	}
 	if err = courseSubscriptionJSONValue(write, created.row.MultipleQuote); err != nil {
 		return nil, err
 	}
@@ -705,6 +735,11 @@ func (s *CourseEnrolment) addCourseSubscription(ctx context.Context, tx domain.C
 			}
 		}
 		if err = build(stored, memory, titleValue(course.Title), meta, chosen); err != nil {
+			return err
+		}
+		// Payment.objects.create() dumps this meta: the stored quote's nesting
+		// measured at 9929 already raises there, after the row is written.
+		if err = courseEnrolmentQuotePaymentBand(course.CourseType, write); err != nil {
 			return err
 		}
 	}

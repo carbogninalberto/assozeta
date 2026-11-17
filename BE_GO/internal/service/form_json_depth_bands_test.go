@@ -60,9 +60,8 @@ func TestAutomationWorkflowPatchFormTreeDepth(t *testing.T) {
 
 // TestCourseEnrolmentFormJSONBands pins course-subscriptions/add and the stock
 // router create (X15): multiple_quote or events D >= 9943 is DRF's validation
-// RecursionError (the plain 500 page, nothing written); multiple_quote
-// 9929..9942, where Django's answer depends on the course and the other
-// fields, is handed off before any write.
+// RecursionError (the plain 500 page, nothing written). Below it the field
+// validates, so another invalid field answers its 400 first (D 9942 here).
 func TestCourseEnrolmentFormJSONBands(t *testing.T) {
 	for _, test := range []struct {
 		name  string
@@ -72,9 +71,10 @@ func TestCourseEnrolmentFormJSONBands(t *testing.T) {
 		{"multiple_quote", 0, nil},
 		{"multiple_quote", 600, nil},
 		{"multiple_quote", 9928, nil},
-		{"multiple_quote", 9929, refusal.ErrNotPorted},
-		{"multiple_quote", 9934, refusal.ErrNotPorted},
-		{"multiple_quote", 9942, refusal.ErrNotPorted},
+		{"multiple_quote", 9929, nil},
+		{"multiple_quote", 9933, nil},
+		{"multiple_quote", 9934, nil},
+		{"multiple_quote", 9942, nil},
 		{"multiple_quote", 9943, refusal.ErrAppState},
 		{"multiple_quote", 10000, refusal.ErrAppState},
 		{"events", 600, nil},
@@ -86,8 +86,75 @@ func TestCourseEnrolmentFormJSONBands(t *testing.T) {
 			t.Fatalf("%s depth %d: %v, want %v", test.name, test.depth, err, test.want)
 		}
 	}
-	if errors.Is(errCourseEnrolmentFormJSONBand, refusal.ErrAppState) || errors.Is(errCourseEnrolmentFormJSONTooDeep, refusal.ErrNotPorted) {
-		t.Fatal("the dump band is a handoff and the validation band application state")
+	for _, err := range []error{errCourseEnrolmentFormJSONTooDeep, errCourseEnrolmentRowQuoteJSONTooDeep, errCourseEnrolmentQuotePaymentJSONTooDeep} {
+		if !errors.Is(err, refusal.ErrAppState) || errors.Is(err, refusal.ErrNotPorted) {
+			t.Fatalf("%v is not an application-state error", err)
+		}
+	}
+}
+
+// TestCourseEnrolmentDumpBands pins the two stored-value bands (X15): the row
+// INSERT's dump raises from a quote depth of 9934 on every course type (the
+// add rolls back, the stock create has written nothing yet), and the quote
+// payment's meta dump from 9929 on a multiple-quote course (the add rolls back,
+// the stock create keeps the row and its audit entries). A text whose deep part
+// a repeated key overwrites still validates deep but stores a shallow value.
+func TestCourseEnrolmentDumpBands(t *testing.T) {
+	write := func(text string) dto.CourseSubscriptionWrite {
+		parsed, invalid := dto.ParseCourseSubscriptionWrite(domain.RequestObject{{Name: "multiple_quote", Value: text}}, true)
+		if invalid != nil || !parsed.QuoteSet {
+			t.Fatalf("quote %d chars: invalid=%v quoteSet=%v", len(text), invalid, parsed.QuoteSet)
+		}
+		return parsed
+	}
+	for _, test := range []struct {
+		depth int
+		want  bool
+	}{
+		{600, false},
+		{9933, false},
+		{9934, true},
+		{9942, true},
+	} {
+		// The row INSERT stores multiple_quote for every course type.
+		if err := courseEnrolmentRowQuoteBand(write(deepFormJSON(test.depth))); (err != nil) != test.want {
+			t.Fatalf("row band depth %d: %v, want failure %v", test.depth, err, test.want)
+		}
+	}
+	for _, test := range []struct {
+		depth int
+		want  bool
+	}{
+		{600, false},
+		{9928, false},
+		{9929, true},
+		{9933, true},
+		{9934, true},
+	} {
+		for _, courseType := range []int{1, courseMembershipType} {
+			if err := courseEnrolmentQuotePaymentBand(courseType, write(deepFormJSON(test.depth))); err != nil {
+				t.Fatalf("quote payment band type %d depth %d: %v, want no failure", courseType, test.depth, err)
+			}
+		}
+		err := courseEnrolmentQuotePaymentBand(2, write(deepFormJSON(test.depth)))
+		if (err != nil) != test.want {
+			t.Fatalf("quote payment band type 2 depth %d: %v, want failure %v", test.depth, err, test.want)
+		}
+	}
+	// The repeated key keeps only the shallow last amount: the text depth is in
+	// the row band while the stored quote is not.
+	shallow := write(`{"amount":` + deepFormJSON(9938) + `, "amount": "1"}`)
+	if shallow.FormJSONDepth["multiple_quote"] < courseEnrolmentRowQuoteJSONDepth {
+		t.Fatalf("text depth %d, want a deep text", shallow.FormJSONDepth["multiple_quote"])
+	}
+	if err := courseEnrolmentFormJSONBand(shallow.FormJSONDepth); err != nil {
+		t.Fatalf("validation band on a deep but valid text: %v", err)
+	}
+	if err := courseEnrolmentRowQuoteBand(shallow); err != nil {
+		t.Fatalf("row band on the shallow stored value: %v", err)
+	}
+	if err := courseEnrolmentQuotePaymentBand(2, shallow); err != nil {
+		t.Fatalf("quote payment band on the shallow stored value: %v", err)
 	}
 }
 

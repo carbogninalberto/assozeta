@@ -978,6 +978,18 @@ def deep_member_parts(prefix, field, head, depth, tail):
 add('add-form-multiple-quote-depth-9961-server-error', 'owner', CA, 500, SERVER, content_type=FORM,
     raw_parts=deep_member_parts(f'course={cid("quotes")}&subscription_id={sid("mario")}', 'multiple_quote',
                                 '{"title": "Deep", "amount": "1", "deep": ', 9960, '}'))
+# Inside the dump bands: the fee course's row INSERT answers (D 9934..9942), the quotes course's
+# quote payment meta dump answers (D 9929..9942); the add rolls back, so nothing is written.
+add('add-form-multiple-quote-depth-9938-fee-server-error', 'owner', CA, 500, SERVER, result=effect('owner'), content_type=FORM,
+    raw_parts=deep_member_parts(f'course={cid("fee")}&subscription_id={sid("mario")}', 'multiple_quote',
+                                '{"title": "Deep", "amount": "1", "deep": ', 9937, '}'))
+add('add-form-multiple-quote-depth-9932-quotes-server-error', 'owner', CA, 500, SERVER, result=effect('owner'), content_type=FORM,
+    raw_parts=deep_member_parts(f'course={cid("quotes")}&subscription_id={sid("mario")}', 'multiple_quote',
+                                '{"title": "Deep", "amount": "1", "deep": ', 9931, '}'))
+# Below DRF's 9943 the field validates, so another invalid field answers its 400 first.
+add('add-form-multiple-quote-depth-9938-other-field-invalid', 'owner', CA, 400, BILLED_FREQUENCY_ERROR, content_type=FORM,
+    raw_parts=deep_member_parts(f'course={cid("fee")}&subscription_id={sid("mario")}&billed_frequency=-1', 'multiple_quote',
+                                '{"title": "Deep", "amount": "1", "deep": ', 9937, '}'))
 add('add-form-events-depth-9972-server-error', 'owner', CA, 500, SERVER, content_type=FORM,
     raw_parts=deep_member_parts(f'course={cid("quotes")}&subscription_id={sid("mario")}', 'events',
                                 '[{"id": 7, "amount": "1", "payment_date": "05/05/2099", "deep": ', 9970, '}]'))

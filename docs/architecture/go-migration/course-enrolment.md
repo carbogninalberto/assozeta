@@ -81,30 +81,51 @@ the course). Response `{'data': PaymentSerializer}`.
 
 ## Form JSON recursion bands (X15)
 
-An HTML form `multiple_quote` or `events` text is read with `json.loads`; the measured answer (CPython 3.13.16 on the
-parity harness's Django) depends on its maximum nesting D:
+An HTML form `multiple_quote` or `events` text is read with `json.loads`, whose answer depends on its maximum nesting
+D. The bands below were measured on native Django (CPython 3.13.16) with `multiple_quote` =
+`{"title": "Deep", "amount": "1", "deep": <n nested objects>}` (D = n + 1):
 
-- both fields: D >= 9943 `json.loads` raises RecursionError while DRF reads the field, the plain 500 page with nothing
-  written (the add view is atomic; the stock create validates before its first write).
+- both fields, both routes: D >= 9943 `json.loads` raises RecursionError while DRF reads the field: the plain 500
+  page with nothing written, whatever the other fields hold. Below 9943 the field validates, so another invalid
+  field answers its 400 first (up to D 9942; `billed_frequency=-1` was the probe).
 - `events`: D <= 9942 normal answer.
-- `multiple_quote`: D <= 9928 normal answer. Between 9929 and 9942 validation passes and a later `json.dumps` raises
-  instead: the quote payment's meta (only for a multiple-quote course, from about 9929) or the row's INSERT (from about
-  9934), while a request with another invalid field still answers its 400. Long tail PR 4's review handed this band
-  off (`errCourseEnrolmentFormJSONBand`, before any write) instead of answering the 500 page, because Django's answer
-  depends on the course and the other fields.
+- course-subscriptions/add (atomic), multiple-quote course: D <= 9928 normal 201; D 9929..9942 the 500 page with
+  nothing written (the quote payment's `Payment.objects.create(meta={'multiple_quote': quote, ...})` dump raises and
+  the transaction rolls back).
+- course-subscriptions/add, plain fee course (row + payment) and free course: D <= 9933 normal 201; D 9934..9942 the
+  500 page with nothing written (the row's INSERT dump raises).
+- stock router create (`POST course-subscriptions/`, autocommit), multiple-quote course: D <= 9928 today's answer
+  (the 500 page after every write); D 9929..9933 the 500 page with the row and its two audit entries kept and no
+  payment (the payment's dump raises after the row); D 9934..9942 the 500 page with nothing written (the row's dump
+  raises first).
+- stock router create, fee and free courses: D <= 9933 today's answer; D 9934..9942 the 500 page with nothing written.
 
-Go answers the 9943 band before any write (`errCourseEnrolmentFormJSONTooDeep`, `courseEnrolmentFormJSONBand` in
-`service/course_enrolment.go`). Values within the bands (including those past 500) are parsed by
-`dto/automationFormTree` up to its 20000-level limit and served. The stock router create (`POST course-subscriptions/`,
-family `router-course-subscriptions-create`) shares the serializer and the same check. The cases
-`...-form-events-depth-9900-`/`-9980-` and `...-form-multiple-quote-depth-9900-`/`-9980-` cover both fields with a
-margin, keeping the stored values shallow (the event serializer drops an unknown key; the quote text repeats `amount`
-before the real one); the handed-off band is pinned by `TestCourseEnrolmentFormJSONBands`.
+The two later dumps raise on the depth of the value that is stored (what `json.dumps` walks), not of the text: a text
+whose deep part a repeated key overwrites (`{"amount": [[...]], "amount": "1"}`) parses deep for validation but stores
+a shallow value and does not fail. The validation check therefore keeps the text depth (`FormJSONDepth`,
+`dto.AuditJSONDepth`), while the two dump checks use the parsed value's container nesting (`dto.JSONValueDepth`, the
+top-level container is 1; an iterative walk, no recursion). For a value without repeated keys the two depths are
+equal, which `TestJSONValueDepth` pins.
+
+Go answers all of these: the D >= 9943 band before any write (`errCourseEnrolmentFormJSONTooDeep`,
+`courseEnrolmentFormJSONBand` in `service/course_enrolment.go`); a stored quote of depth >= 9934 at the row INSERT's
+dump (`errCourseEnrolmentRowQuoteJSONTooDeep`, checked before `CreateRow`, so the add rolls back and the stock create
+has written nothing); a stored quote of depth >= 9929 at the quote payment's meta dump
+(`errCourseEnrolmentQuotePaymentJSONTooDeep` in `addCourseSubscription`, after the row and its audit entries, so the
+stock create keeps them and the add rolls back). The band is no longer handed off. Membership courses (type 3) do not
+dump `multiple_quote` anywhere after the row INSERT, so they only have the row band.
+
+Values within the bands (including those past 500) are parsed by `dto/automationFormTree` up to its 20000-level
+limit and served. The parity cases `...-form-events-depth-9900-`/`-9980-` and
+`...-form-multiple-quote-depth-9900-`/`-9938-`/`-9980-` (stock create) and
+`add-form-multiple-quote-depth-9932-quotes-`/`-9938-fee-`/`-9938-other-field-invalid-` (add) cover the bands with a
+margin; the stored-value cases keep nothing deep in the state snapshot (the add rolls back; the 9900/9980 texts repeat
+`amount` so the stored value is shallow; the 9938 quote is a real nested value and nothing is written). The exact
+edges are pinned by `TestCourseEnrolmentFormJSONBands` and `TestCourseEnrolmentDumpBands`.
 
 Django's edge is not a fixed number: it moves by a few levels with the value's shape (arrays or objects, where the
 deep part sits) and with the live stack of the run (the same module elements loaded at 9934 levels in one run and
-not in another). The bands above were measured with nested objects; the parity cases sit inside or past each band
-with a margin, and the exact edges are pinned by the Go tests (X15 is the accepted divergence there).
+not in another). The bands above were measured with nested objects; X15 is the accepted divergence at the exact edge.
 
 ## Not ported (refused with a 500 before any write)
 

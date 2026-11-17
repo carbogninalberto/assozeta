@@ -14032,6 +14032,94 @@
    "content_type": "application/x-www-form-urlencoded"
   },
   {
+   "name": "course-enrolment-add-form-multiple-quote-depth-9938-fee-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-subscriptions/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "rows": {},
+    "created": {},
+    "links": {},
+    "audit": []
+   },
+   "raw_parts": [
+    "course=e0000000-0000-4000-8000-000000000009&subscription_id=e0000000-0000-4000-8000-000000000005&multiple_quote=%7B%22title%22%3A%20%22Deep%22%2C%20%22amount%22%3A%20%221%22%2C%20%22deep%22%3A%20",
+    {
+     "repeat": "%7B%22a%22%3A",
+     "count": 9937
+    },
+    "1",
+    {
+     "repeat": "%7D",
+     "count": 9937
+    },
+    "%7D"
+   ],
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "course-enrolment-add-form-multiple-quote-depth-9932-quotes-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-subscriptions/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "rows": {},
+    "created": {},
+    "links": {},
+    "audit": []
+   },
+   "raw_parts": [
+    "course=e0000000-0000-4000-8000-000000000014&subscription_id=e0000000-0000-4000-8000-000000000005&multiple_quote=%7B%22title%22%3A%20%22Deep%22%2C%20%22amount%22%3A%20%221%22%2C%20%22deep%22%3A%20",
+    {
+     "repeat": "%7B%22a%22%3A",
+     "count": 9931
+    },
+    "1",
+    {
+     "repeat": "%7D",
+     "count": 9931
+    },
+    "%7D"
+   ],
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "course-enrolment-add-form-multiple-quote-depth-9938-other-field-invalid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-subscriptions/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "billed_frequency": [
+     "Ensure this value is greater than or equal to 0."
+    ]
+   },
+   "effect": null,
+   "raw_parts": [
+    "course=e0000000-0000-4000-8000-000000000009&subscription_id=e0000000-0000-4000-8000-000000000005&billed_frequency=-1&multiple_quote=%7B%22title%22%3A%20%22Deep%22%2C%20%22amount%22%3A%20%221%22%2C%20%22deep%22%3A%20",
+    {
+     "repeat": "%7B%22a%22%3A",
+     "count": 9937
+    },
+    "1",
+    {
+     "repeat": "%7D",
+     "count": 9937
+    },
+    "%7D"
+   ],
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
    "name": "course-enrolment-add-form-events-depth-9972-server-error",
    "actor": "owner",
    "method": "POST",

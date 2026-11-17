@@ -123,12 +123,13 @@ import urllib.parse
 
 # The stock create's form JSON recursion bands (owner decision X15, see course-enrolment.md). D is the maximum nesting
 # of the field's text. Its edge moves a level or two with the value's shape and the live stack, so the cases sit inside
-# each band with a margin instead of at the edges: 9900 for today's answer and 9980 past the measured edge (9943 for
-# events, 9934 for multiple_quote's validation). The narrow band where only the quote payment fails (9929..9933) is
-# pinned by the Go unit tests. The deep text is shaped so nothing deep is stored, which the shared state snapshot could
-# not traverse: events is write-only and the event serializer drops an unknown key, and the quote text repeats the
-# amount key before the real one, so json.loads (and Go's reader) keep the last value and the row, the payment meta and
-# the audit reprs stay the shallow ones the reused effects describe.
+# each band with a margin instead of at the edges: 9900 for today's answer, 9938 inside the row INSERT's dump band
+# (9943 is still inside it) and 9980 past the measured validation edge (9943 for both fields).
+# The narrow band where only the quote payment fails (9929..9933) is pinned by the Go unit tests. The 9900/9980 texts
+# are shaped so nothing deep is stored, which the shared state snapshot could not traverse: events is write-only and
+# the event serializer drops an unknown key, and the quote text repeats the amount key before the real one, so
+# json.loads (and Go's reader) keep the last value and the row, the payment meta and the audit reprs stay the shallow
+# ones the reused effects describe. The 9938 quote is a real nested value, so nothing is written at all.
 FORM = 'application/x-www-form-urlencoded'
 
 
@@ -159,10 +160,22 @@ def deep_quote_parts(depth):
             {'repeat': '%5B', 'count': depth - 1}, {'repeat': '%5D', 'count': depth - 1}, urllib.parse.quote(tail)]
 
 
+def deep_quote_value_parts(depth):
+    """A real nested quote (no repeated key): the row's INSERT dump answers at D 9934, nothing written."""
+    head = '{"quote_id": %s, "title": %s, "amount": %s, "deep": ' % (
+        json.dumps(QUOTE_FIELDS['quote_id']), json.dumps(QUOTE_FIELDS['title']), json.dumps(QUOTE_FIELDS['amount']))
+    return [f'course={QUOTE_REQUEST["course"][0]}&subscription_id={QUOTE_REQUEST["subscription_id"][0]}&multiple_quote='
+            + urllib.parse.quote(head),
+            {'repeat': urllib.parse.quote('{"a":'), 'count': depth - 1}, '1',
+            {'repeat': '%7D', 'count': depth - 1}, urllib.parse.quote('}')]
+
+
 # The event still creates its payment and installment before the 500, so its writes are the shallow form events' effect.
 add_parts('form-events-depth-9900-server-error', 'owner', LIST, deep_events_parts(9900), effect=copy.deepcopy(EVENTS))
 add_parts('form-events-depth-9980-server-error', 'owner', LIST, deep_events_parts(9980))
 add_parts('form-multiple-quote-depth-9900-server-error', 'owner', LIST, deep_quote_parts(9900), effect=copy.deepcopy(QUOTE['effect']))
+# Inside the row INSERT's dump band (D 9934..9942): the stock create wrote nothing before the check.
+add_parts('form-multiple-quote-depth-9938-server-error', 'owner', LIST, deep_quote_value_parts(9938))
 add_parts('form-multiple-quote-depth-9980-server-error', 'owner', LIST, deep_quote_parts(9980))
 
 assert len({c['name'] for c in cases}) == len(cases)

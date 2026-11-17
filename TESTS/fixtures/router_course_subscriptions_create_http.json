@@ -6561,6 +6561,30 @@
    "content_type": "application/x-www-form-urlencoded"
   },
   {
+   "name": "router-course-subscriptions-create-form-multiple-quote-depth-9938-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-subscriptions/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "raw_parts": [
+    "course=e0000000-0000-4000-8000-000000000014&subscription_id=e0000000-0000-4000-8000-000000000005&multiple_quote=%7B%22quote_id%22%3A%20%22q1%22%2C%20%22title%22%3A%20%22Mensile%22%2C%20%22amount%22%3A%20%2225%2C50%22%2C%20%22deep%22%3A%20",
+    {
+     "repeat": "%7B%22a%22%3A",
+     "count": 9937
+    },
+    "1",
+    {
+     "repeat": "%7D",
+     "count": 9937
+    },
+    "%7D"
+   ],
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
    "name": "router-course-subscriptions-create-form-multiple-quote-depth-9980-server-error",
    "actor": "owner",
    "method": "POST",
