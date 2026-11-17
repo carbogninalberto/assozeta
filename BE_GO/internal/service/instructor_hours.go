@@ -391,6 +391,28 @@ func instructorHoursApply(row *domain.InstructorHour, write dto.InstructorHoursW
 	}
 }
 
+// instructorHoursHasUpload reports a file part in a form body: only then does
+// DRF hand the view a mutable copy of the QueryDict, so data['instructor'] = uid
+// works. Value is the key's last value, but a file part can also be one of the
+// earlier values in All.
+func instructorHoursHasUpload(object domain.RequestObject) bool {
+	upload := func(value any) bool {
+		_, isUpload := value.(domain.RequestUpload)
+		return isUpload
+	}
+	for _, field := range object {
+		if upload(field.Value) {
+			return true
+		}
+		for _, value := range field.All {
+			if upload(value) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 // Add follows instructor_hours_add.
 func (s *InstructorHoursService) Add(ctx context.Context, identity domain.ResolvedIdentity, raw string, load InstructorHoursBody,
 	group string, audit domain.LoginAuditContext) error {
@@ -411,8 +433,13 @@ func (s *InstructorHoursService) Add(ctx context.Context, identity domain.Resolv
 		return ErrInstructorNotFound
 	}
 	object, ok := body.(domain.RequestObject)
-	if !ok || form {
-		// data['instructor'] = uid on a QueryDict, list, string or None raises.
+	if !ok || form && !instructorHoursHasUpload(object) {
+		// data['instructor'] = uid raises on a list, string or None body, and on
+		// a form without a file part: DRF answers the parser's immutable QueryDict
+		// there. A multipart body carrying at least one file part gets a mutable
+		// copy instead (self._data.copy() updated with the files), so the
+		// assignment works and the HTML form is validated and saved like
+		// instructor_hours_update's form path.
 		return errInstructorHoursServer
 	}
 	data := domain.RequestObject{}
@@ -422,7 +449,7 @@ func (s *InstructorHoursService) Add(ctx context.Context, identity domain.Resolv
 		}
 	}
 	data = append(data, domain.RequestField{Name: "instructor", Value: raw})
-	write, errs, err := dto.ParseInstructorHoursWrite(data, false, false)
+	write, errs, err := dto.ParseInstructorHoursWrite(data, form, false)
 	if err != nil {
 		return err
 	}

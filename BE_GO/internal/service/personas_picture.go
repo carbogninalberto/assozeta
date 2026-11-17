@@ -53,6 +53,12 @@ func (s *PersonaWrites) WithPictures(objects PersonaPictureObjects, settings Per
 // `value.split(',', 1)` (a ',' element or key) or in base64.b64decode(value),
 // and the handler answers that exception's text as the same 400.
 func personaPicturePlan(body domain.RequestObject) (decoded []byte, upload bool, err error) {
+	if personaSpooledUpload(body) {
+		// Python: AssociateSerializer.to_internal_value starts with
+		// data.copy(), a QueryDict deepcopy, and a TemporaryUploadedFile
+		// cannot be pickled (TypeError: the 500 page, nothing written).
+		return nil, false, ErrPersonaUnhandled
+	}
 	branch, err := pictureBranch(body)
 	if err != nil || !branch {
 		return nil, false, err
@@ -87,6 +93,27 @@ func personaPicturePlan(body domain.RequestObject) (decoded []byte, upload bool,
 		return nil, false, &PersonaPictureInvalid{Text: "Error processing image: {'picture_path': ErrorDetail(string='Invalid base64 string', code='invalid')}"}
 	}
 	return decoded, true, nil
+}
+
+// personaSpooledUpload reports a file part Django spooled to disk
+// (TemporaryUploadedFile): the QueryDict deepcopy of to_internal_value cannot
+// pickle it, so the serializer raises TypeError and the view answers 500.
+func personaSpooledUpload(body domain.RequestObject) bool {
+	spooled := func(value any) bool {
+		upload, ok := value.(domain.RequestUpload)
+		return ok && upload.Temp
+	}
+	for _, field := range body {
+		if spooled(field.Value) {
+			return true
+		}
+		for _, value := range field.All {
+			if spooled(value) {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // personaPictureTimestamp is str(timezone.now().timestamp()): the aware

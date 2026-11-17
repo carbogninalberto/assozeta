@@ -301,6 +301,11 @@ func pictureBranch(body domain.RequestObject) (bool, error) {
 	case domain.RequestObject:
 		_, found := v.Lookup("base64")
 		return found, nil
+	case domain.RequestUpload:
+		// Python: 'base64' in uploaded_file iterates the file's lines, which
+		// are bytes and never equal a str, so the branch is False. The file
+		// then reaches CharField validation ('Not a valid string.').
+		return false, nil
 	}
 	return false, ErrPersonaUnhandled
 }
@@ -332,6 +337,14 @@ func pythonIterate(value any) ([]any, bool) {
 			items = append(items, field.Name)
 		}
 		return items, true
+	case domain.RequestUpload:
+		// Python: iterating a file yields its lines, bytes without .get. An
+		// empty file yields nothing; a non-empty file yields at least one line,
+		// a value the caller's dict check rejects (AttributeError -> 500).
+		if v.Size == 0 {
+			return []any{}, true
+		}
+		return []any{[]byte{}}, true
 	}
 	return nil, false
 }

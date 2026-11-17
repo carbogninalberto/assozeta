@@ -107,6 +107,11 @@ a shallow value and does not fail. The validation check therefore keeps the text
 top-level container is 1; an iterative walk, no recursion). For a value without repeated keys the two depths are
 equal, which `TestJSONValueDepth` pins.
 
+D is the nesting `json.loads` reaches before it stops (`dto.pythonJSONLoadsDepth`, used by every `automationFormTree`
+caller): it stops at its first error (a bad escape, an integer past 4300 digits, a syntax error) or after the first
+value ("Extra data"), so a deep tail it never reads is `Value must be valid JSON.` (400), not the band
+(`add-form-multiple-quote-extra-data-deep-tail`, `-long-integer-deep-tail`, `-bad-escape-deep-tail`).
+
 Go answers all of these: the D >= 9943 band before any write (`errCourseEnrolmentFormJSONTooDeep`,
 `courseEnrolmentFormJSONBand` in `service/course_enrolment.go`); a stored quote of depth >= 9934 at the row INSERT's
 dump (`errCourseEnrolmentRowQuoteJSONTooDeep`, checked before `CreateRow`, so the add rolls back and the stock create

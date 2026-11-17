@@ -62,7 +62,10 @@ Hard deletes reuse the Collector port of `collaborator-delete-go.md`
   the base64 picture branch (decoded before the field validation, stored under the new associate's id before the
   row; with `tutors_data` the TypeError follows the upload) and HTML form bodies (non-partial form rules, `''` on a
   boolean skipped, `tutors_data` present through `getlist` or indexed keys); a JSON list holding `'picture_path'` is
-  the 500 page.
+  the 500 page. Multipart file parts: a file `picture_path` is the CharField's `Not a valid string.` (create and
+  update), a file `tutors_data` validates through `getlist` and reaches the TypeError (500), and a spooled upload
+  (request over 2.5 MiB) is the 500 page from `data.copy()`'s deepcopy, nothing written. An indexed key only counts
+  when it matches `^tutors_data\[([0-9]+)\](.*)$` (no line break after the index but one final `\n`).
 - course-subscriptions create: a database error in the middle of the non-atomic writes rolls
   back the earlier statements in Go (Django keeps them); Python-level failures keep them in both.
 

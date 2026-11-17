@@ -364,6 +364,28 @@ add('add-malformed', 'owner', ADD('abc'), 400, BAD_UUID, method='POST', raw_body
 add('add-malformed-json', 'owner', ADD(UNKNOWN), 400, {'detail': 'JSON parse error - Expecting value: line 1 column 1 (char 0)'},
     method='POST', raw_body='nope', content_type='application/json')
 add('add-form-body-server-error', 'owner', ADD(), 500, SERVER, method='POST', raw_body='hours=1', content_type=FORM)
+# request.data is the parser's immutable QueryDict unless the multipart body carries a file: DRF then answers a
+# mutable copy updated with the files, so data['instructor'] = uid works and the form is validated and saved.
+MULTIPART_BOUNDARY = 'hoursboundary7f3a'
+
+
+def multipart(*parts):
+    """A multipart body; a part is (name, value) or (name, value, filename)."""
+    body = ''
+    for name, value, *filename in parts:
+        disposition = f'form-data; name="{name}"' + (f'; filename="{filename[0]}"' if filename else '')
+        body += f'--{MULTIPART_BOUNDARY}\r\nContent-Disposition: {disposition}\r\n\r\n{value}\r\n'
+    return body + f'--{MULTIPART_BOUNDARY}--\r\n'
+
+
+MULTIPART = f'multipart/form-data; boundary={MULTIPART_BOUNDARY}'
+add('add-multipart-without-file-server-error', 'owner', ADD(), 500, SERVER, method='POST',
+    raw_body=multipart(('hours', '1')), content_type=MULTIPART)
+add('add-multipart-with-file', 'owner', ADD(), 200, ADDED, method='POST',
+    raw_body=multipart(('hours', '1.5'), ('notes', 'Allegato'), ('attachment', 'contenuto', 'a.txt')), content_type=MULTIPART,
+    effect=created('draft', 'owner', columns={'hours': '1.50', 'date': '$today', 'notes': 'Allegato'}))
+add('add-multipart-file-as-notes', 'owner', ADD(), 400, {'notes': ['Not a valid string.']}, method='POST',
+    raw_body=multipart(('hours', '1'), ('notes', 'contenuto', 'a.txt')), content_type=MULTIPART)
 add('add-list-body-server-error', 'owner', ADD(), 500, SERVER, method='POST', body=[])
 add('add-null-body-server-error', 'owner', ADD(), 500, SERVER, method='POST', raw_body='null', content_type='application/json')
 add('add-list-body-unknown-instructor', 'owner', ADD(UNKNOWN), 404, NOT_INSTRUCTOR, method='POST', body=[])
@@ -420,6 +442,16 @@ add('update-form-courses-depth-9960-server-error', 'owner', UPD('draft_row'), 50
     raw_parts=deep_courses_parts(9959), content_type=FORM)
 add('update-form-courses-depth-9960-other-field-invalid', 'owner', UPD('draft_row'), 500, SERVER, method='PATCH',
     raw_parts=deep_courses_parts(9959, extra='hours=abc&'), content_type=FORM)
+# json.loads stops at its first error, or after the first value (Extra data): a deep tail it never reads is
+# "Value must be valid JSON.", not the recursion band.
+DEEP_TAIL = [{'repeat': '%5B', 'count': 9960}, {'repeat': '%5D', 'count': 9960}]
+INVALID_COURSES = {'courses': ['Value must be valid JSON.']}
+add('update-form-courses-extra-data-deep-tail', 'owner', UPD('draft_row'), 400, INVALID_COURSES, method='PATCH',
+    raw_parts=['notes=probe&courses=' + quote('{} '), *DEEP_TAIL], content_type=FORM)
+add('update-form-courses-long-integer-deep-tail', 'owner', UPD('draft_row'), 400, INVALID_COURSES, method='PATCH',
+    raw_parts=['notes=probe&courses=' + quote('[') + '1' * 5000 + quote(', '), *DEEP_TAIL, quote(']')], content_type=FORM)
+add('update-form-courses-bad-escape-deep-tail', 'owner', UPD('draft_row'), 400, INVALID_COURSES, method='PATCH',
+    raw_parts=['notes=probe&courses=' + quote('["\\uZZZZ", '), *DEEP_TAIL, quote(']')], content_type=FORM)
 # A duplicate key overwrites the deep part: the row stores the shallow value the UPDATE's json.dumps walks.
 add('update-form-courses-depth-9900-repeated-key', 'owner', UPD('draft_row'), 200, SUCCESS, method='PATCH',
     raw_parts=repeated_key_courses_parts(9900), content_type=FORM,

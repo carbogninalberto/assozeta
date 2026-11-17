@@ -1,7 +1,6 @@
 package dto
 
 import (
-	"encoding/json"
 	"errors"
 	"time"
 
@@ -80,23 +79,14 @@ type InstructorHoursWrite struct {
 // nonFinite marks a value the jsonb write cannot store (a NaN or Infinity
 // literal, a lone surrogate escape, or a number beyond the double range);
 // tooDeep marks text nested past InstructorHoursFormJSONDepth. textDepth is
-// auditJSONDepth of the text the scanner reaches (a syntax error stops it) and
-// valueDepth is JSONValueDepth of the parsed value, an overwritten duplicate
-// key's deep text no longer counting.
+// the container nesting json.loads reaches before it stops
+// (pythonJSONLoadsDepth) and valueDepth is JSONValueDepth of the parsed value,
+// an overwritten duplicate key's deep text no longer counting.
 func instructorHoursFormJSON(text string) (tree any, ok, nonFinite, tooDeep bool, textDepth, valueDepth int) {
-	textDepth = auditJSONDepth(text)
+	textDepth = pythonJSONLoadsDepth(text)
 	data := []byte(text)
 	constants := pythonJSONConstants(data)
-	var err error
-	tree, err = parseProfileTablesJSONConstantsLimit(data, constants, true, formJSONNesting)
-	if err != nil {
-		// json.loads stops at the first syntax error: only the nesting reached
-		// before it can raise RecursionError.
-		var syntax *json.SyntaxError
-		if errors.As(err, &syntax) && syntax.Offset >= 0 && syntax.Offset <= int64(len(text)) {
-			textDepth = auditJSONDepth(text[:syntax.Offset])
-		}
-	}
+	tree, err := parseProfileTablesJSONConstantsLimit(data, constants, true, formJSONNesting)
 	if textDepth >= InstructorHoursFormJSONDepth {
 		return nil, false, false, true, textDepth, 0
 	}
@@ -211,7 +201,12 @@ func ParseInstructorHoursWrite(body any, form, partial bool) (InstructorHoursWri
 			continue
 		}
 		if form {
+			// JSONField.get_value wraps an HTML value with str(value), and str()
+			// of an uploaded file is its name.
 			text, _ := value.(string)
+			if upload, isUpload := value.(domain.RequestUpload); isUpload {
+				text = upload.Name
+			}
 			parsed, ok, nonFinite, tooDeep, textDepth, valueDepth := instructorHoursFormJSON(text)
 			if tooDeep {
 				return write, nil, errInstructorHoursFormJSONTooDeep

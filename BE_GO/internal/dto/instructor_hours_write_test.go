@@ -127,6 +127,36 @@ func TestInstructorHoursFormJSONInvalid(t *testing.T) {
 	}
 }
 
+// An HTML JSON field reads str(value): an uploaded file's str() is its name, so
+// a file part whose name is JSON text parses, and any other name is the field's
+// "Value must be valid JSON.".
+func TestInstructorHoursFormJSONUploadName(t *testing.T) {
+	write, errs, err := instructorHoursFormWrite(domain.RequestObject{{Name: "courses",
+		Value: domain.RequestUpload{Name: "[1]", Size: 3, ContentType: "text/plain"}}})
+	if err != nil || errs != nil {
+		t.Fatalf("errs=%v err=%v", errs, err)
+	}
+	value, ok := write.JSON["courses"].([]any)
+	if !ok || len(value) != 1 || value[0] != json.Number("1") {
+		t.Fatalf("value=%#v", write.JSON["courses"])
+	}
+	if write.JSONTextDepth["courses"] != 1 || write.JSONValueDepth["courses"] != 1 {
+		t.Fatalf("text=%d value=%d", write.JSONTextDepth["courses"], write.JSONValueDepth["courses"])
+	}
+	write, errs, err = instructorHoursFormWrite(domain.RequestObject{{Name: "calculation_data",
+		Value: domain.RequestUpload{Name: "a.txt", Size: 5, ContentType: "text/plain"}}})
+	if err != nil {
+		t.Fatalf("err = %v", err)
+	}
+	codes, _ := errs["calculation_data"].([]string)
+	if len(codes) != 1 || codes[0] != InstructorHoursJSON {
+		t.Fatalf("errs = %v, want calculation_data %q", errs, InstructorHoursJSON)
+	}
+	if _, set := write.JSON["calculation_data"]; set {
+		t.Fatalf("value = %#v, want absent", write.JSON["calculation_data"])
+	}
+}
+
 // A JSON body is already parsed: neither depth is measured.
 func TestInstructorHoursJSONBodyIsNotMeasured(t *testing.T) {
 	write, errs, err := ParseInstructorHoursWrite(domain.RequestObject{{Name: "courses", Value: []any{json.Number("1")}}}, false, true)

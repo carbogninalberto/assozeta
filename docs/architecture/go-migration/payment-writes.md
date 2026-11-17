@@ -170,7 +170,8 @@ The constants are `paymentWritesFormJSONAuditDepth` (9935) and `paymentWritesFor
 (`dto.PaymentEntryJSONText`) and the serializer reports the deepest field's D (`PaymentEntryInput.FormJSONDepth`) and
 the lone surrogate escape (`FormJSONRejected`); the reader is the form JSON reader
 (`dto.ParseFormJSON`/`automationFormTree`, limit 20000), so a document past the band is answered by the band, never by
-the parser. A text with a syntax error before the deep part stays `Value must be valid JSON.`.
+the parser. A text whose first error (or the end of its first value) comes before the deep part stays `Value must be
+valid JSON.` (`dto.pythonJSONLoadsDepth`).
 
 ## Attachments (`attachments_data`)
 

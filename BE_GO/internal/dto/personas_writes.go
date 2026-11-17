@@ -135,8 +135,13 @@ func PersonaListFieldPresent(body domain.RequestObject, name string, form bool) 
 		if !found {
 			continue
 		}
-		index, _, closed := strings.Cut(rest, "]")
-		if closed && index != "" && strings.TrimLeft(index, "0123456789") == "" {
+		index, trailing, closed := strings.Cut(rest, "]")
+		// Python's re: `(.*)$` — '.' does not match '\n' and '$' matches at the
+		// end or just before ONE final '\n', so the text after ']' has no
+		// newline, or is newline-free text followed by exactly one final '\n'.
+		matched := strings.Count(trailing, "\n") == 0 ||
+			strings.Count(trailing, "\n") == 1 && strings.HasSuffix(trailing, "\n")
+		if closed && matched && index != "" && strings.TrimLeft(index, "0123456789") == "" {
 			return true
 		}
 	}
@@ -189,6 +194,13 @@ func ParsePersonaFields(object domain.RequestObject, options PersonaFieldOptions
 			case string:
 				if !options.Form {
 					invalid.Fields["tutors_data"] = []string{"not-a-list:str"}
+				}
+			case domain.RequestUpload:
+				// Python: an HTML form's ListField reads getlist, so a file part
+				// named tutors_data is a list holding the file and validates like
+				// a string value. Outside a form it would be a non-list value.
+				if !options.Form {
+					invalid.Fields["tutors_data"] = []string{"not-a-list:" + pythonTypeName(value)}
 				}
 			default:
 				invalid.Fields["tutors_data"] = []string{"not-a-list:" + pythonTypeName(value)}

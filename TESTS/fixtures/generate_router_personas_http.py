@@ -40,7 +40,8 @@ LIST_ALLOW = ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'POST']
 DETAIL_ALLOW = ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'PATCH', 'PUT']
 
 
-def add(name, actor, method, path, status, response, *, body=None, raw_body=None, content_type=None, headers=None, effect=None):
+def add(name, actor, method, path, status, response, *, body=None, raw_body=None, raw_parts=None, content_type=None, headers=None,
+        effect=None):
     detail = path.split('?')[0].rstrip('/').count('/') > 1
     case = {'name': f'router-personas-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
             'status': status, 'response': response, 'allow': DETAIL_ALLOW if detail else LIST_ALLOW,
@@ -49,6 +50,8 @@ def add(name, actor, method, path, status, response, *, body=None, raw_body=None
         case['body'] = body
     if raw_body is not None:
         case['raw_body'], case['content_type'] = raw_body, content_type
+    if raw_parts is not None:
+        case['raw_parts'], case['content_type'] = raw_parts, content_type
     cases.append(case)
 
 
@@ -146,6 +149,35 @@ add('create-picture-invalid-base64', 'owner', 'POST', LIST, 400,
 # indexing the list by that name raises the TypeError (the 500 page). A list
 # without that element reaches the dict check (create-list-body above).
 add('create-list-body-picture-path-server-error', 'owner', 'POST', LIST, 500, SERVER, body=['picture_path'])
+# parse_html_list's key pattern is ^tutors_data\[([0-9]+)\](.*)$: '.' stops at a line break and '$' only allows one
+# final '\n', so this key is not an indexed tutors_data key and the create has no tutors.
+effect = Effect('owner')
+ref = effect.create(user=OWNER, first_name='Riga')
+add('create-form-tutors-data-key-line-break', 'owner', 'POST', LIST, 201, info(ref),
+    raw_body=urllib.parse.urlencode({'first_name': 'Riga', 'tutors_data[0]a\nb': 'x'}),
+    content_type='application/x-www-form-urlencoded', effect=effect)
+# Multipart file parts: request.data is the form updated with the files, and to_internal_value starts with its
+# data.copy() (a deepcopy).
+BOUNDARY = 'personasboundary5e1b'
+MULTIPART = f'multipart/form-data; boundary={BOUNDARY}'
+
+
+def part(name, value, filename=None):
+    disposition = f'form-data; name="{name}"' + (f'; filename="{filename}"' if filename else '')
+    return f'--{BOUNDARY}\r\nContent-Disposition: {disposition}\r\n\r\n{value}\r\n'
+
+
+# `'base64' in file` iterates the file's lines (bytes, never equal to a str): the file reaches the CharField.
+add('create-multipart-picture-file', 'owner', 'POST', LIST, 400, {'picture_path': ['Not a valid string.']},
+    raw_body=part('first_name', 'File') + part('picture_path', 'base64', 'a.jpg') + f'--{BOUNDARY}--\r\n', content_type=MULTIPART)
+# ListField.get_value reads getlist: the file is a one-item list, which validates and reaches Associate() (500).
+add('create-multipart-tutors-data-file-server-error', 'owner', 'POST', LIST, 500, SERVER,
+    raw_body=part('first_name', 'File') + part('tutors_data', 'x', 'a.txt') + f'--{BOUNDARY}--\r\n', content_type=MULTIPART)
+# Over FILE_UPLOAD_MAX_MEMORY_SIZE the file is spooled to a TemporaryUploadedFile, which data.copy() cannot
+# deep-copy (TypeError): the 500 page, nothing written.
+add('create-multipart-spooled-file-server-error', 'owner', 'POST', LIST, 500, SERVER, content_type=MULTIPART,
+    raw_parts=[part('first_name', 'File') + f'--{BOUNDARY}\r\nContent-Disposition: form-data; name="attachment"; '
+               'filename="a.txt"\r\n\r\n', {'repeat': 'x', 'count': 2700000}, f'\r\n--{BOUNDARY}--\r\n'])
 
 # The detail route.
 add('detail-anonymous', 'anonymous', 'GET', detail('enzo'), 401, {'detail': 'Authentication credentials were not provided.'})
@@ -168,6 +200,8 @@ add('update-format-json-server-error', 'owner', 'PUT', detail('collab_upd', '.js
 add('update-foreign-not-found', 'owner', 'PUT', detail('abroad'), 404, NO_MATCH, body={'notes': 'x'})
 add('update-tutors-data-dict', 'owner', 'PUT', detail('collab_upd'), 400, {'tutors_data': ['Expected a list of items but got type "dict".']},
     body={'tutors_data': {}})
+add('update-multipart-picture-file', 'owner', 'PUT', detail('collab_upd'), 400, {'picture_path': ['Not a valid string.']},
+    raw_body=part('notes', 'File') + part('picture_path', 'base64', 'a.jpg') + f'--{BOUNDARY}--\r\n', content_type=MULTIPART)
 effect = Effect('full_collaborator')
 effect.save('collab_upd', phone='3330002222', sex='M')
 add('update-full-collaborator-put-is-partial', 'full_collaborator', 'PUT', detail('collab_upd'), 200, info('collab_upd'),
