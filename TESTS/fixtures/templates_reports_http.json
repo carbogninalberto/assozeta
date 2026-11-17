@@ -4799,6 +4799,294 @@
     "ui": {},
     "created": "2026-10-01T08:00:00+00:00",
     "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "export_pdf_unichar_names": {
+    "id": "a1000000-0000-4000-8000-000000930299",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report export_pdf_unichar_names",
+    "description": "",
+    "tool": "export_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name",
+      "creation_date"
+     ],
+     "filters": {
+      "tag_name": "Nuoto"
+     },
+     "format": "pdf",
+     "column_labels": {
+      "tag_name": "Nome <unichar name=\"latin small letter e with grave\"/>",
+      "creation_date": "Data"
+     },
+     "text_before": "Prezzo <unichar name=\"EURO SIGN\"/> 10 e <unichar name=\"LATIN CAPITAL LETTER A WITH MACRON AND GRAVE\"/>",
+     "text_after": "<unichar name=\"BLACK HEART SUIT\"/> fine"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "export_pdf_unichar_name_error": {
+    "id": "a1000000-0000-4000-8000-000000930300",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report export_pdf_unichar_name_error",
+    "description": "",
+    "tool": "export_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name",
+      "creation_date"
+     ],
+     "filters": {
+      "tag_name": "Nuoto"
+     },
+     "format": "pdf",
+     "text_before": "a <unichar name=\"NOT A NAME\"/> b"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "export_pdf_anchor_links": {
+    "id": "a1000000-0000-4000-8000-000000930301",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report export_pdf_anchor_links",
+    "description": "",
+    "tool": "export_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name",
+      "creation_date"
+     ],
+     "filters": {
+      "tag_name": "Nuoto"
+     },
+     "format": "pdf",
+     "text_before": "<a name=\"inizio\"/>Inizio del documento, <a href=\"#fine\">vai alla fine</a> e <a href=\"https://example.test/città?a=1&amp;b=2\">sede</a>",
+     "text_after": "<a name=\"fine\"/>Fine. <a href=\"document:inizio\" color=\"blue\">Torna all'inizio</a> <a href=\"pdf:allegato.pdf\">allegato</a>"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "export_pdf_anchor_links_over_pages": {
+    "id": "a1000000-0000-4000-8000-000000930302",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report export_pdf_anchor_links_over_pages",
+    "description": "",
+    "tool": "export_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name",
+      "creation_date"
+     ],
+     "filters": {
+      "tag_name": "Nuoto"
+     },
+     "format": "pdf",
+     "text_before": "<a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo",
+     "text_after": "<a name=\"fondo\"/>Fondo <a href=\"#fondo\">qui</a>"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "export_pdf_link_undefined_error": {
+    "id": "a1000000-0000-4000-8000-000000930303",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report export_pdf_link_undefined_error",
+    "description": "",
+    "tool": "export_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name",
+      "creation_date"
+     ],
+     "filters": {
+      "tag_name": "Nuoto"
+     },
+     "format": "pdf",
+     "text_before": "a <a href=\"#manca\">b</a>"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "export_pdf_anchor_blank_error": {
+    "id": "a1000000-0000-4000-8000-000000930304",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report export_pdf_anchor_blank_error",
+    "description": "",
+    "tool": "export_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name",
+      "creation_date"
+     ],
+     "filters": {
+      "tag_name": "Nuoto"
+     },
+     "format": "pdf",
+     "text_before": "a <a name=\" \"/> b"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "export_pdf_number_forms": {
+    "id": "a1000000-0000-4000-8000-000000930305",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report export_pdf_number_forms",
+    "description": "",
+    "tool": "export_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name",
+      "creation_date"
+     ],
+     "filters": {
+      "tag_name": "Nuoto"
+     },
+     "format": "pdf",
+     "column_labels": {
+      "tag_name": "<font size=\" 14\">Nome</font>"
+     },
+     "text_before": "<font size=\"1_2\">a</font> <sup rise=\"٣\">b</sup> <font size=\"+9007199254740993\">c</font>"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "export_pdf_number_hex_error": {
+    "id": "a1000000-0000-4000-8000-000000930306",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report export_pdf_number_hex_error",
+    "description": "",
+    "tool": "export_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name",
+      "creation_date"
+     ],
+     "filters": {
+      "tag_name": "Nuoto"
+     },
+     "format": "pdf",
+     "column_labels": {
+      "creation_date": "<font size=\"0x0E\">Data</font>"
+     }
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "export_pdf_number_nan_error": {
+    "id": "a1000000-0000-4000-8000-000000930307",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report export_pdf_number_nan_error",
+    "description": "",
+    "tool": "export_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name",
+      "creation_date"
+     ],
+     "filters": {
+      "tag_name": "Nuoto"
+     },
+     "format": "pdf",
+     "text_before": "a <font size=\"nan\">b</font>"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "export_pdf_number_inf_error": {
+    "id": "a1000000-0000-4000-8000-000000930308",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report export_pdf_number_inf_error",
+    "description": "",
+    "tool": "export_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name",
+      "creation_date"
+     ],
+     "filters": {
+      "tag_name": "Nuoto"
+     },
+     "format": "pdf",
+     "text_before": "a <sup rise=\"-inf\">b</sup>"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "export_pdf_ftp_image_error": {
+    "id": "a1000000-0000-4000-8000-000000930309",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report export_pdf_ftp_image_error",
+    "description": "",
+    "tool": "export_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name",
+      "creation_date"
+     ],
+     "filters": {
+      "tag_name": "Nuoto"
+     },
+     "format": "pdf",
+     "text_before": "a <img src=\"ftp://127.0.0.1:9/logo.jpg\"/> b"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "export_pdf_empty_image_error": {
+    "id": "a1000000-0000-4000-8000-000000930310",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report export_pdf_empty_image_error",
+    "description": "",
+    "tool": "export_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name",
+      "creation_date"
+     ],
+     "filters": {
+      "tag_name": "Nuoto"
+     },
+     "format": "pdf",
+     "text_before": "a <img src=\"data:image/png;base64,\"/> b"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
    }
   },
   "people": {
@@ -11732,6 +12020,261 @@
    "actor": "owner",
    "method": "POST",
    "path": "/saved-reports/a1000000-0000-4000-8000-000000930298/run",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante l'esecuzione del report."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-export-pdf-unichar-names",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930299/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "$file": {
+     "type": "application/pdf",
+     "disposition": "attachment; filename=\"Tags.pdf\"",
+     "pdf": {
+      "engine": "report_table",
+      "headers": [
+       "Nome <unichar name=\"latin small letter e with grave\"/>",
+       "Data"
+      ],
+      "title": "Tags",
+      "rows": [
+       [
+        "Nuoto",
+        "15/09/2026 08:30"
+       ]
+      ],
+      "text_before": "Prezzo <unichar name=\"EURO SIGN\"/> 10 e <unichar name=\"LATIN CAPITAL LETTER A WITH MACRON AND GRAVE\"/>",
+      "text_after": "<unichar name=\"BLACK HEART SUIT\"/> fine"
+     }
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-export-pdf-unichar-name-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930300/run",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante l'esecuzione del report."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-export-pdf-anchor-links",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930301/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "$file": {
+     "type": "application/pdf",
+     "disposition": "attachment; filename=\"Tags.pdf\"",
+     "pdf": {
+      "engine": "report_table",
+      "headers": [
+       "tag_name",
+       "creation_date"
+      ],
+      "title": "Tags",
+      "rows": [
+       [
+        "Nuoto",
+        "15/09/2026 08:30"
+       ]
+      ],
+      "text_before": "<a name=\"inizio\"/>Inizio del documento, <a href=\"#fine\">vai alla fine</a> e <a href=\"https://example.test/città?a=1&amp;b=2\">sede</a>",
+      "text_after": "<a name=\"fine\"/>Fine. <a href=\"document:inizio\" color=\"blue\">Torna all'inizio</a> <a href=\"pdf:allegato.pdf\">allegato</a>"
+     }
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-export-pdf-anchor-links-over-pages",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930302/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "$file": {
+     "type": "application/pdf",
+     "disposition": "attachment; filename=\"Tags.pdf\"",
+     "pdf": {
+      "engine": "report_table",
+      "headers": [
+       "tag_name",
+       "creation_date"
+      ],
+      "title": "Tags",
+      "rows": [
+       [
+        "Nuoto",
+        "15/09/2026 08:30"
+       ]
+      ],
+      "text_before": "<a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo <a href=\"#fondo\">vai in fondo</a> testo di riempimento del paragrafo",
+      "text_after": "<a name=\"fondo\"/>Fondo <a href=\"#fondo\">qui</a>"
+     }
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-export-pdf-link-undefined-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930303/run",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante l'esecuzione del report."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-export-pdf-anchor-blank-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930304/run",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante l'esecuzione del report."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-export-pdf-number-forms",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930305/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "$file": {
+     "type": "application/pdf",
+     "disposition": "attachment; filename=\"Tags.pdf\"",
+     "pdf": {
+      "engine": "report_table",
+      "headers": [
+       "<font size=\" 14\">Nome</font>",
+       "creation_date"
+      ],
+      "title": "Tags",
+      "rows": [
+       [
+        "Nuoto",
+        "15/09/2026 08:30"
+       ]
+      ],
+      "text_before": "<font size=\"1_2\">a</font> <sup rise=\"٣\">b</sup> <font size=\"+9007199254740993\">c</font>"
+     }
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-export-pdf-number-hex-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930306/run",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante l'esecuzione del report."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-export-pdf-number-nan-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930307/run",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante l'esecuzione del report."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-export-pdf-number-inf-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930308/run",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante l'esecuzione del report."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-export-pdf-ftp-image-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930309/run",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante l'esecuzione del report."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-export-pdf-empty-image-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930310/run",
    "headers": {},
    "status": 500,
    "response": {

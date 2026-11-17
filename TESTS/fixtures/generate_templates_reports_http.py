@@ -901,6 +901,49 @@ run('attendance-course-name-number', 'get_attendance_matrix', {'course_name': 7}
 # Exporter exceptions: the run answers every one with its 500.
 run('export-multi-sheet-number-error', 'export_multi_sheet', {'sheets': 5}, 500, FAILED)
 
+# Long tail PR 5: reportlab paragraph features the Go writer draws now (appended so the earlier ids stay).
+# <unichar name>: a character by its Unicode name (unicodedata.lookup), in labels and texts; an unknown name fails the export.
+UNICHAR_LABELS = {'tag_name': 'Nome <unichar name="latin small letter e with grave"/>', 'creation_date': 'Data'}
+UNICHAR_BEFORE = 'Prezzo <unichar name="EURO SIGN"/> 10 e <unichar name="LATIN CAPITAL LETTER A WITH MACRON AND GRAVE"/>'
+UNICHAR_AFTER = '<unichar name="BLACK HEART SUIT"/> fine'
+run('export-pdf-unichar-names', 'export_data', {**NUOTO_PDF, 'column_labels': UNICHAR_LABELS, 'text_before': UNICHAR_BEFORE,
+    'text_after': UNICHAR_AFTER}, 200,
+    download('Tags.pdf', 'application/pdf', pdf={**NUOTO_TABLE, 'headers': list(UNICHAR_LABELS.values()), 'text_before': UNICHAR_BEFORE,
+                                                 'text_after': UNICHAR_AFTER}))
+run('export-pdf-unichar-name-error', 'export_data', {**NUOTO_PDF, 'text_before': 'a <unichar name="NOT A NAME"/> b'}, 500, FAILED)
+
+# Anchors and links: a named destination in the text, a link to it within the same page and across pages, an external URL
+# (with a non-ASCII path), a 'document:' reference and a 'pdf:' attachment; a destination no anchor defines fails the export.
+ANCHOR_BEFORE = ('<a name="inizio"/>Inizio del documento, <a href="#fine">vai alla fine</a> e '
+                 '<a href="https://example.test/città?a=1&amp;b=2">sede</a>')
+ANCHOR_AFTER = ('<a name="fine"/>Fine. <a href="document:inizio" color="blue">Torna all\'inizio</a> '
+                '<a href="pdf:allegato.pdf">allegato</a>')
+run('export-pdf-anchor-links', 'export_data', {**NUOTO_PDF, 'text_before': ANCHOR_BEFORE, 'text_after': ANCHOR_AFTER}, 200,
+    download('Tags.pdf', 'application/pdf', pdf={**NUOTO_TABLE, 'text_before': ANCHOR_BEFORE, 'text_after': ANCHOR_AFTER}))
+ANCHOR_LONG = ' '.join(['<a href="#fondo">vai in fondo</a> testo di riempimento del paragrafo'] * 150)
+ANCHOR_LONG_AFTER = '<a name="fondo"/>Fondo <a href="#fondo">qui</a>'
+run('export-pdf-anchor-links-over-pages', 'export_data', {**NUOTO_PDF, 'text_before': ANCHOR_LONG, 'text_after': ANCHOR_LONG_AFTER}, 200,
+    download('Tags.pdf', 'application/pdf', pdf={**NUOTO_TABLE, 'text_before': ANCHOR_LONG, 'text_after': ANCHOR_LONG_AFTER}))
+run('export-pdf-link-undefined-error', 'export_data', {**NUOTO_PDF, 'text_before': 'a <a href="#manca">b</a>'}, 500, FAILED)
+run('export-pdf-anchor-blank-error', 'export_data', {**NUOTO_PDF, 'text_before': 'a <a name=" "/> b'}, 500, FAILED)
+
+# Numbers in tag attributes follow CPython's float() and int(): a padded size, a size with underscores, the Arabic-Indic
+# digit three as a rise and an integer past 2**53 (a hexadecimal size is not a float, so that label is in the failure below).
+NUMBER_LABELS = {'tag_name': '<font size=" 14">Nome</font>'}
+NUMBER_BEFORE = '<font size="1_2">a</font> <sup rise="٣">b</sup> <font size="+9007199254740993">c</font>'
+run('export-pdf-number-forms', 'export_data', {**NUOTO_PDF, 'column_labels': NUMBER_LABELS, 'text_before': NUMBER_BEFORE}, 200,
+    download('Tags.pdf', 'application/pdf', pdf={**NUOTO_TABLE, 'headers': ['<font size=" 14">Nome</font>', 'creation_date'],
+                                                 'text_before': NUMBER_BEFORE}))
+# A hexadecimal size cannot be read as a float, and NaN and infinite values cannot be drawn as sizes or rises.
+run('export-pdf-number-hex-error', 'export_data', {**NUOTO_PDF, 'column_labels': {'creation_date': '<font size="0x0E">Data</font>'}},
+    500, FAILED)
+run('export-pdf-number-nan-error', 'export_data', {**NUOTO_PDF, 'text_before': 'a <font size="nan">b</font>'}, 500, FAILED)
+run('export-pdf-number-inf-error', 'export_data', {**NUOTO_PDF, 'text_before': 'a <sup rise="-inf">b</sup>'}, 500, FAILED)
+
+# An image source that refuses the connection and an empty base64 payload cannot be read as an image.
+run('export-pdf-ftp-image-error', 'export_data', {**NUOTO_PDF, 'text_before': 'a <img src="ftp://127.0.0.1:9/logo.jpg"/> b'}, 500, FAILED)
+run('export-pdf-empty-image-error', 'export_data', {**NUOTO_PDF, 'text_before': 'a <img src="data:image/png;base64,"/> b'}, 500, FAILED)
+
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Template update and saved report run authored sequence', 'ids': IDS,
                               'seed': {'templates': TEMPLATES, 'tags': TAGS, 'categories': CATEGORIES, 'carnets': CARNETS, 'reports': REPORTS,
