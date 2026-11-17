@@ -45,6 +45,10 @@
   length fold like `Header.encode` at as_string's 1,000,000-character line (`smtpsend/header_encode.go`,
   `testdata/python_header_fold.json`), and any recipient or sender text goes through `smtplib.quoteaddr`. Inputs Python
   raises on are `smtpsend.ErrRaises`: send_email's `(False, e)`, which DRF answers with the 500 page.)
+- (Long tail PR 5: an RFC 2047 word in an address whose charset is `idna` is decoded with CPython's strict idna codec
+  (`pycodecs`: nameprep with the stringprep tables and the Unicode 3.2.0 NFKC CPython runs, ToUnicode's round trip); a
+  name that does not decode makes the word invalid, as for the other strict-only failures. `ErrSendEmailNotPorted` is
+  gone: any other render error is the 500 page.)
 - Ported (restb2): subjects with line breaks (continuation lines are folded as Python writes them; a break not followed by
   a space or tab is the 500 page after the verify connection, as `as_string()` raises inside `send_email`), quoted local
   parts, address literals, and non-ASCII recipients (the commands before the failing one are sent, then the 500).

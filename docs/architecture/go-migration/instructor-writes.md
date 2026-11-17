@@ -80,12 +80,14 @@ workbook ([xlsx-exports](xlsx-exports.md)) with `max(len(str(value)), len(label)
 ## Not ported
 - report: workbook inputs the writer refuses (cells starting with `=`, links with `#`: the writer's formula and URL
   handling is not ported).
-- Refused with a 500 before any write: calculation amounts whose product falls in the subnormal range (below the context's
-  smallest exponent) and NaN diagnostics of 28 digits or more.
+- Long tail PR 5: the compensation notes no longer refuse. `Decimal(str(amount))` keeps a NaN payload of any length and
+  exponents up to the C decimal limits (adjusted exponent <= `MAX_EMAX`, exponent >= `MIN_ETINY`); the product with the
+  percentage cuts a NaN payload to its last 28 digits, rounds a subnormal result half even at Etiny and clamps a zero's
+  exponent, as the default context does (golden corpus `dto/testdata/instructor_decimal.json` from CPython; case
+  `comp-nan-payload-and-subnormal-decimals`).
 
 Since long-tail PR 3 (agent B) a non-finite percentage is application state (`ErrInstructorWritesUnreachable`, the
-500 page): the column is `numeric(4,2)` and its validator rejects the value. The subnormal amounts, the NaN payloads
-and the workbook inputs stay refusals.
+500 page): the column is `numeric(4,2)` and its validator rejects the value. The workbook inputs stay refusals.
 
 ## Rare inputs (v2-rest-docs)
 

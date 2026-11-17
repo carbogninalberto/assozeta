@@ -127,6 +127,11 @@ Since long tail PR 4 nothing is refused (`ErrBusinessMCPNotPorted` is gone):
   through `repr()`, `save_report` values stored with `str()`, the exporters' TypeError/AttributeError texts and the
   attendance `save_info` written back as given. The defensive branches no input reaches are `refusal.AppState`
   (metadata invariants asserted by `TestMCPModelsInvariants`).
+- Long tail PR 5: JSON key lookups with a value `_coerce_filter_values` coerced (a key named like a field of the same
+  model, e.g. `meta__amount: "12"` on Payment) send `json.dumps` of the int/float; a coerced date/datetime raises
+  Django's `Object of type ... is not JSON serializable` when the statement would run (after any compile error), and
+  `has_key` passes the adapted literal so PostgreSQL reports the operator error for its type. `key__iexact: None` is
+  the isnull lookup on the key transform (`->`), so a key holding JSON null does not match.
 - Manual tools in the Go command run `service.ManualTools` (parity is the
   manual family's, semantic); their text keeps Go key order.
 - argparse usage/errors and Django's global command options.

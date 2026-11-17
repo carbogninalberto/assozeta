@@ -70,6 +70,13 @@ Two walk outcomes are application state rather than refusals: a `Payment.save()`
 (`ErrPaymentSaveFailed` from a stored value Python's `str()` cannot render) and a walk failure that is not a
 `*dto.CampsPythonError` (the walk builder only raises those). Both answer the 500 page; no request reaches them.
 
+Long tail PR 5: `Payment.save()` replaces a 'Quota Corso' description with `meta['description']` and the instance keeps
+that Python object (the column gets its `str()`). The walk saves the same `period.payment` instance more than once, so
+a truthy non-text replacement (a list, dict, number or True, which the association import can store) makes the next
+save raise `'<type>' object has no attribute 'lower'` before writing: the JSON 500 with the first save kept. The walk
+carries the value between saves of one instance (`PaymentSaveRow.DescriptionValue`); a later period reads its payment
+again from the database.
+
 ## Primary key in the body (t5pk)
 
 `camps_and_retreats_period_id` and `camps_and_retreats_period_service_id` are read-only. A key in an update body (new,

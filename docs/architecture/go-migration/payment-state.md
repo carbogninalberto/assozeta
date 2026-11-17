@@ -120,9 +120,9 @@ untouched. Responses `{'message': 'All payments archived'}` / `{'message': 'All 
 
 ## Not ported (refused with a 500 before any write)
 
-- A paid flow whose request.user is not an owner or collaborator (`ErrPaymentStateNotPorted`): it needs an
-  association owned by an account with another role, which only the association import can leave (it reuses an
-  existing user as the archive's owner). An uploaded file as `send_receipt_email` (a multipart file part) is what
+- Long tail PR 5: a paid flow whose request.user is an athlete owning an association (the association import reuses an
+  existing user as the archive's owner) runs as for the owner; `send_notification` leaves `association_id` None for that
+  role, so the stored notification and its push carry JSON null (`ErrPaymentStateNotPorted` is gone). An uploaded file as `send_receipt_email` (a multipart file part) is what
   kombu cannot encode: the publish is skipped and the answer stays 200, as in Django. Every JSON value of `send_receipt_email`
   (floats, integers of any size, lists, objects) reaches the task as sent (rest-b1, see
   [invoice-generate](invoice-generate.md)); a lone surrogate (`"\ud800"`) too (go-v2only-celery, case

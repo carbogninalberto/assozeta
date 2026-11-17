@@ -20,9 +20,6 @@ byte-equal one. A line whose reason is a refusal reason removes those rows from
 the `--http` count; the other lines record the approval, because the sites
 answer natively and no longer return a refusal.
 
-- mcp: coerced value in a JSON lookup not ported | /ws/agent/ | X11 extended, as above: the agent answers the generic tool result; approved: owner, 2026-11-16
-- saved reports: environment setting beyond int64 not ported | /ws/agent/ | X11 extended, as above: the agent answers the generic tool result; approved: owner, 2026-11-16
-- business MCP non-finite export label not ported | /ws/agent/ | X11 extended, as above: the agent answers the generic tool result; approved: owner, 2026-11-16
 - X12 storage transport and retried errors, PutObject 8 MiB+, bodies over 250 MiB | documents, personas, docmanager | botocore's final error text (for example "reached max retries: 4"); bodies over 250 MiB are spooled to disk; approved: owner, 2026-11-16
 - X13 Stripe payloads outside the SDK port | stripe routes, payment stats | the closest stripe-python answer; approved: owner, 2026-11-16
 - X14 external caches and environment bytes | release cache, smtpsend environment | the closest Django answer (an unreadable cached catalog is a cache miss; environment bytes are decoded with surrogateescape); approved: owner, 2026-11-16

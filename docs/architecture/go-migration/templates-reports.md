@@ -171,14 +171,23 @@ matrix for the MCP server as well.
   `MCP_AGENT_QUERY_TIMEOUT` of 0 is Django's `''` and raises where QueryBuilder uses it, a negative value is used as
   Python uses it. The branches no input reaches (generated metadata, PostgreSQL output forms, the parsed JSON types)
   are `refusal.AppState`: Go's 500 page, never handed off.
+- Long tail PR 5: the review's three handoffs are ported. A JSON key lookup whose value the coercion walk turned into a
+  float or int sends `json.dumps` of it (`run-query-carnets-meta-key-float`); a date or datetime raises
+  `Object of type date is not JSON serializable` when the statement runs (`run-query-carnets-meta-key-date-error`).
+  `MCP_AGENT_MAX_RESULTS` and `MCP_AGENT_QUERY_TIMEOUT` are read from the configured environment (django-environ proxies,
+  the env file) as Python ints of any size: the limit compares exactly and reaches the SQL as Django writes it, and the
+  timeout is sent as `str(query_timeout * 1000)`, so PostgreSQL rejects `''`, negatives and values past its range with
+  its own message, the tool's exception (X14). An XLSX column label `1e400`/`-1e400` in the overrides is pandas'
+  `inf_rep` header (`run-export-xlsx-label-infinity`, `-negative-infinity`); NaN/Infinity labels from agent arguments get
+  `''`/`inf` the same way.
 
 The XLSX workbooks of the file tools answer every stored label and cell ([xlsx-exports](xlsx-exports.md)); openpyxl's
 sheet-title comparison is `str.lower()` (avoid_duplicate_name), so two titles that differ only by their lower-case form (a
 capital and a final sigma, `ΑΣ` and `Ας`) are the same title and pandas' lookup of the second raises `KeyError('<title>')`:
 the export fails as in Django (go-v2only-xlsxvalue, golden case `rs-title-final-sigma`). The remaining `ErrNotPorted` sites
 of the report writer need state the app cannot write: more than 702 columns (a model row with 703 kept fields), a frame
-without rows, a `None`, bool or non-finite cell (`format_export_data` writes `''`/`Vero`/`Falso` and the label reader refuses
-them), and a `None` or non-finite label.
+without rows, and a `None`, bool or non-finite cell (`format_export_data` writes `''`/`Vero`/`Falso`). Non-finite labels
+are written as pandas formats them (long tail PR 5).
 
 ## Group and unusual arguments (`v2rep2-*` receipts)
 
