@@ -66,26 +66,41 @@ func (c *ftpClient) putLine(line string) error {
 	return err
 }
 
-// getLine is FTP.getline: one reply line without its CRLF, with ftplib's
-// line-length limit; a closed connection is EOF.
+// getLine is FTP.getline: one reply line without its newline, with ftplib's
+// line-length limit; a closed connection is EOF. The line ends at LF, CRLF or a
+// lone CR, as makefile('r', encoding='utf-8') reads it, and the limit counts
+// characters, the newline included as one.
 func (c *ftpClient) getLine() (string, error) {
-	line, err := c.reader.ReadString('\n')
+	line := make([]rune, 0, 64)
+	for len(line) <= ftpMaxLine {
+		r, size, err := c.reader.ReadRune()
+		if err != nil {
+			if len(line) == 0 {
+				return "", err
+			}
+			break
+		}
+		if r == utf8.RuneError && size == 1 {
+			// makefile('r', encoding='utf-8') decodes strictly.
+			return "", errors.New("invalid utf-8 in the reply")
+		}
+		line = append(line, r)
+		if r == '\n' {
+			break
+		}
+		if r == '\r' {
+			// CRLF is one newline: Peek sees the LF without consuming it.
+			if next, err := c.reader.Peek(1); err == nil && next[0] == '\n' {
+				c.reader.Discard(1)
+			}
+			break
+		}
+	}
 	if len(line) > ftpMaxLine {
 		return "", fmt.Errorf("got more than %d bytes", ftpMaxLine)
 	}
-	if err != nil && line == "" {
-		return "", err
-	}
-	if !utf8.ValidString(line) {
-		// makefile('r', encoding='utf-8') decodes strictly.
-		return "", errors.New("invalid utf-8 in the reply")
-	}
-	if strings.HasSuffix(line, "\r\n") {
-		line = line[:len(line)-2]
-	} else if strings.HasSuffix(line, "\r") || strings.HasSuffix(line, "\n") {
-		line = line[:len(line)-1]
-	}
-	return line, nil
+	text := strings.TrimSuffix(string(line), "\r")
+	return strings.TrimSuffix(text, "\n"), nil
 }
 
 // getMultiline is FTP.getmultiline: a reply that continues while the first line
@@ -214,6 +229,9 @@ func (c *ftpClient) pwd() (string, error) {
 	if err != nil {
 		return "", err
 	}
+	if !strings.HasPrefix(resp, "257") {
+		return "", nil
+	}
 	return parse257(resp), nil
 }
 
@@ -302,15 +320,23 @@ func parse227(resp string) (int, bool) {
 	return 0, false
 }
 
+// ftpDialFunc is the connection of ftpDial, replaceable in tests.
+var ftpDialFunc = func(ctx context.Context, network, address string) (net.Conn, error) {
+	return (&net.Dialer{}).DialContext(ctx, network, address)
+}
+
 // ftpDial opens a connection to address, as ftplib's socket.create_connection
 // with no timeout does.
 func ftpDial(ctx context.Context, host string, port int) (net.Conn, error) {
-	dialer := &net.Dialer{}
-	return dialer.DialContext(ctx, "tcp4", net.JoinHostPort(host, strconv.Itoa(port)))
+	return ftpDialFunc(ctx, "tcp4", net.JoinHostPort(host, strconv.Itoa(port)))
 }
 
-// connectFTP is ftplib.FTP.connect: the control connection and its welcome.
+// connectFTP is ftplib.FTP.connect: the control connection and its welcome. A
+// port that is not positive keeps FTP.port, which is 21.
 func connectFTP(ctx context.Context, host string, port int) (*ftpClient, error) {
+	if port <= 0 {
+		port = 21
+	}
 	conn, err := ftpDial(ctx, host, port)
 	if err != nil {
 		return nil, err

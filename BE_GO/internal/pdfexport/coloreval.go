@@ -979,7 +979,7 @@ func callChooseEnforce(v color) (color, evalResult) {
 	if v.kind != colorStr {
 		return color{}, colorSoft
 	}
-	switch strings.ToUpper(v.text) {
+	switch pythonUpper(v.text) {
 	case "CMYK":
 		return colorObjectKey("func", "_enforceCMYK"), evalOK
 	case "RGB":

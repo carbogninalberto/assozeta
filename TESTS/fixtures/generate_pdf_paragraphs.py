@@ -327,6 +327,15 @@ COLOUR_VALUES = [
     'CMYKColor(1,0,0,0,spotName=b"x")', 'PCMYKColor(0,65,100,30,spotName=False)',
     'CMYKColorSep(1,0,0,0,spotName=0)', 'PCMYKColorSep(100,0,0,0,spotName=False)',
     'Color(red,0,0)', 'Color(Color(1,0,0),0,0)', 'Color("a",0,0)', 'Color(None,0,0)',
+    # Non-ASCII identifiers (NFKC, with the raw run checked by str.isidentifier), the tokenizer's 200-bracket
+    # limit and the 4300-digit limit of a decimal int literal. 'İvory' lowers to 'i' and a combining dot;
+    # 'Ｎｏｎｅ' normalises to a Name 'None', which ast.parse refuses (ValueError).
+    'İvory', 'IVORY', 'ｒｅｄ', 'ＲＥＤ', 'ʳed', 'Ｎｏｎｅ', 'Color(ｒｅｄ,0,0)', '(ｒｅｄ)', 'a²', '²', 'ｉｆ',
+    'Blacker(ｒｅｄ,0.5)', 'Color(1,0,0,ａｌｐｈａ=0.5)',
+    'Color(' + '(' * 198 + '1' + ')' * 198 + ',0,0)', 'Color(' + '(' * 199 + '1' + ')' * 199 + ',0,0)',
+    'Color(' + '(' * 200 + '1' + ')' * 200 + ',0,0)', '[' * 200 + ']' * 200,
+    '1' * 4300, '1' * 4301, '-' + '1' * 4301, '1_' * 2150 + '1', '0x' + '1' * 5000,
+    'Color(0,0,0,' + '1' * 4301 + ')',
 ]
 # The tags the colour attributes belong to: <font color/fg/backcolor/bgcolor>, <u color>,
 # <strike color>, <para color/fg/bgcolor/underlinecolor/strikecolor> and <span color>.
@@ -695,6 +704,38 @@ def case_tables():
     return subprocess.run([gofmt], input='\n'.join(lines), capture_output=True, text=True, check=True).stdout
 
 
+def ident_tables():
+    """The non-ASCII code points str.isidentifier accepts as the first character of a name and as a later one: the
+    XID_Start and XID_Continue properties of the Unicode 15.1 tables of CPython 3.13 (Go's tables are 15.0), as
+    compact inclusive ranges."""
+    start = [code for code in range(0x80, 0x110000) if chr(code).isidentifier()]
+    cont = [code for code in range(0x80, 0x110000) if ('a' + chr(code)).isidentifier()]
+
+    def ranges(codes):
+        out = []
+        for code in codes:
+            if out and out[-1][1] == code - 1:
+                out[-1][1] = code
+            else:
+                out.append([code, code])
+        return out
+
+    lines = ['// Code generated from CPython 3.13 (str.isidentifier of every code point, Unicode 15.1); DO NOT EDIT.',
+             '', 'package pdfexport', '']
+    for name, codes, comment in (
+            ('identStart', start, 'str.isidentifier() of the non-ASCII code points a name may start with'),
+            ('identContinue', cont, "('a' + chr(c)).isidentifier() of the non-ASCII code points a name may go on with")):
+        lines.append('// %s is %s.' % (name, comment))
+        lines.append('var %s = [][2]rune{' % name)
+        for low, high in ranges(codes):
+            lines.append('\t{0x%X, 0x%X},' % (low, high))
+        lines += ['}', '']
+    gofmt = shutil.which('gofmt')
+    if not gofmt:
+        raise SystemExit('gofmt is needed to write pyident_gen.go')
+    return subprocess.run([gofmt], input='\n'.join(lines), capture_output=True, text=True, check=True).stdout
+
+
 def case_mappings():
     """Every code point whose str.upper, str.lower or str.title differs from the character, with the three mappings,
     as the proof of the case tables of the package; and strings that mix the scripts whose casing is contextual."""
@@ -740,6 +781,7 @@ def corpus():
 def main():
     outputs = {PACKAGE / 'entities_gen.go': entities(), PACKAGE / 'colors_gen.go': colours(), PACKAGE / 'html5_gen.go': html5_entities(),
                PACKAGE / 'fonts_std_gen.go': standard_fonts(), PACKAGE / 'textcase_gen.go': case_tables(),
+               PACKAGE / 'pyident_gen.go': ident_tables(),
                PACKAGE / 'testdata/paragraphs.json': corpus(), PACKAGE / 'testdata/casemapping.json': case_mappings()}
     if '--check' in sys.argv[1:]:
         stale = [str(path) for path, text in outputs.items() if not path.is_file() or path.read_text() != text]

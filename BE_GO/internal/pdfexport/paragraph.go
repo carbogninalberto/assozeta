@@ -2002,6 +2002,17 @@ func cjkOrd(u cjkUnit) rune {
 // breakCJK is Paragraph.breakLinesCJK: the lines of a wordWrap 'CJK'
 // paragraph.
 func (p *paragraph) breakCJK(maxWidths []float64) {
+	// reportlab lays out each of the pad's spaces. Past seqExactWidth this
+	// port answers the MemoryError CPython raises when the host runs out of
+	// memory (str(MemoryError()) is ''). The default, RTL and LTR breaking
+	// collapse a run of spaces, so a wider pad lays out the same lines there.
+	// This host-memory bound is not an approved divergence yet (pending owner
+	// decision).
+	for _, f := range p.frags {
+		if f.seqOversized {
+			panic(paraFailure{""})
+		}
+	}
 	p.kind, p.lines, p.fragLines = 0, nil, nil
 	if len(p.frags) == 1 && p.frags[0].img == nil && p.frags[0].anchor == nil && p.style.endDots == "" {
 		f := p.frags[0]

@@ -68,6 +68,9 @@ type frag struct {
 	nobr      bool
 	img       *imgDefn
 	anchor    *anchorDefn
+	// seqOversized marks the pad of a <seq template> field wider than
+	// seqExactWidth: breakCJK refuses it.
+	seqOversized bool
 }
 
 func (f *frag) clone() *frag {

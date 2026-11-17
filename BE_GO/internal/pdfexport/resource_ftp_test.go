@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"net"
 	"os"
 	"strconv"
@@ -250,5 +251,30 @@ func TestFTPImageSourceTranscripts(t *testing.T) {
 				t.Fatalf("read %q, want %q", data, want)
 			}
 		})
+	}
+}
+
+// TestFTPPortZeroDialsPort21 proves ftp://127.0.0.1:0/logo.jpg connects to port
+// 21: ftplib.FTP.connect keeps FTP.port when the given port is not positive.
+func TestFTPPortZeroDialsPort21(t *testing.T) {
+	source, err := parseFTPSource("ftp://127.0.0.1:0/logo.jpg")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if source.port != 0 {
+		t.Fatalf("parsed port %d, want 0", source.port)
+	}
+	previous := ftpDialFunc
+	defer func() { ftpDialFunc = previous }()
+	dialed := ""
+	ftpDialFunc = func(ctx context.Context, network, address string) (net.Conn, error) {
+		dialed = network + " " + address
+		return nil, errors.New("dial refused")
+	}
+	if _, err := readFTPURL(context.Background(), "ftp://127.0.0.1:0/logo.jpg"); err == nil {
+		t.Fatal("read succeeded, want the refused dial")
+	}
+	if dialed != "tcp4 127.0.0.1:21" {
+		t.Fatalf("dialed %q, want %q", dialed, "tcp4 127.0.0.1:21")
 	}
 }

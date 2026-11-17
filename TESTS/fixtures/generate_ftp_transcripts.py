@@ -253,6 +253,66 @@ CASES = [
             rule('CWD missing', '550 No such directory'),
         ],
     },
+    {
+        'name': 'welcome lines separated by a lone cr',
+        'url': 'ftp://127.0.0.1:{port}/logo.jpg',
+        # makefile('r', encoding='utf-8') reads a lone CR as a newline, so getline
+        # gets both welcome lines although the server sends no LF between them.
+        'welcome': ['220-Welcome\r220 Ready'],
+        'rules': login() + [
+            rule('TYPE I', '200 Type set to I'),
+            {**rule('PASV', '227 Entering Passive Mode (10,9,8,7,{p1},{p2})'), 'pasv': pasv()},
+            retr('logo.jpg', LOGO),
+        ],
+    },
+    {
+        'name': 'command reply lines separated by lone crs',
+        'url': 'ftp://127.0.0.1:{port}/logo.jpg',
+        'welcome': ['220 Service ready'],
+        'rules': [
+            rule('USER anonymous', '331-Need\r331-more\r331 Password required'),
+            rule('PASS anonymous@', '230 Logged in'),
+            rule('CWD .', '250 Directory changed to /'),
+            rule('TYPE I', '200 Type set to I'),
+            {**rule('PASV', '227 Entering Passive Mode (10,9,8,7,{p1},{p2})'), 'pasv': pasv()},
+            retr('logo.jpg', LOGO),
+        ],
+    },
+    {
+        # 4 + 8187 + the translated CRLF is 8192 characters, so getline accepts the
+        # line: the limit counts characters, not the 16380 bytes of the reply.
+        'name': 'welcome line of two byte characters at the limit',
+        'url': 'ftp://127.0.0.1:{port}/logo.jpg',
+        'welcome': ['220 ' + 'é' * 8187],
+        'rules': login() + [
+            rule('TYPE I', '200 Type set to I'),
+            {**rule('PASV', '227 Entering Passive Mode (10,9,8,7,{p1},{p2})'), 'pasv': pasv()},
+            retr('logo.jpg', LOGO),
+        ],
+    },
+    {
+        'name': 'welcome line over the limit',
+        'url': 'ftp://127.0.0.1:{port}/logo.jpg',
+        'welcome': ['220 ' + 'a' * 8200],
+        'rules': [],
+    },
+    {
+        'name': 'pwd reply that is not 257 falls back to a listing',
+        'url': 'ftp://127.0.0.1:{port}/missing.jpg',
+        'welcome': ['220 Service ready'],
+        'rules': login() + [
+            rule('TYPE I', '200 Type set to I'),
+            {**rule('PASV', '227 Entering Passive Mode (10,9,8,7,{p1},{p2})'), 'pasv': pasv()},
+            rule('RETR missing.jpg', '550 No such file or directory'),
+            rule('TYPE A', '200 Type set to A'),
+            rule('PWD', '250 "/elsewhere" is it'),
+            rule('CWD missing.jpg', '250 Directory changed to /missing.jpg'),
+            # ftplib.FTP.pwd returns '' and cwd('') sends CWD .
+            rule('CWD .', '250 Directory changed to /'),
+            {**rule('PASV', '227 Entering Passive Mode (10,9,8,7,{p1},{p2})'), 'pasv': pasv()},
+            listing('missing.jpg', LISTING),
+        ],
+    },
 ]
 
 

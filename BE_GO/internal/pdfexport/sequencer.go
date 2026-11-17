@@ -60,6 +60,9 @@ type seqCounter struct {
 type seqSequencer struct {
 	counters map[seqKey]*seqCounter
 	def      seqKey
+	// oversized is set by format when one of the fields of the template was
+	// wider than seqExactWidth, and reset at the start of every format.
+	oversized bool
 }
 
 func newSeqSequencer() *seqSequencer {
@@ -159,14 +162,18 @@ func (s *seqSequencer) getitem(key string) (string, error) {
 	return s.thisf(seqKey{name: key})
 }
 
-// seqMaxWidth is the widest field a template pads a value to. reportlab writes
+// seqExactWidth is the widest field a template pads exactly. reportlab writes
 // the width-len(text) spaces of the field, bounded only by the memory of the
-// host (a width of 9223372036854775807 asks for that many bytes); a paragraph
-// draws a run of spaces between words as one space (reportlab's line breaking
-// splits on whitespace, this package's paraSplit does the same), so a wider
-// field pads to seqMaxWidth without changing the document. Approved divergence,
-// X-group "platform": the host's memory is the limit.
-const seqMaxWidth = 1 << 20
+// host (a width of 9223372036854775807 asks for that many bytes). This port
+// writes every field up to seqExactWidth exactly; a wider field pads to
+// seqExactWidth+1 characters and format records it as oversized
+// (seqSequencer.oversized), which the default, RTL and LTR line breaking
+// ignores: they draw a run of spaces between words as one space, so the pad
+// lays out the same lines at any width. wordWrap 'CJK' lays out every space of
+// the pad, so breakCJK answers an oversized field as the MemoryError CPython
+// raises when the host runs out of memory; that host-memory bound is not an
+// approved divergence yet (pending owner decision).
+const seqExactWidth = 1 << 21
 
 // seqObjectText is str(Sequencer()): Sequencer has no __repr__ of its own, so
 // CPython prints the default repr with the object's address, which this port
@@ -244,8 +251,11 @@ func formatSeq(format byte, value *big.Int) (string, error) {
 //
 // A width is a Py_ssize_t and a precision an int: more digits than fit raise
 // ValueError('width too big') or ValueError('precision too big'), as CPython
-// checks while reading them. A width beyond seqMaxWidth pads to seqMaxWidth.
+// checks while reading them. A width up to seqExactWidth pads exactly; a wider
+// one pads to seqExactWidth+1 characters and sets oversized, which the caller
+// reads after the call.
 func (s *seqSequencer) format(template string) (string, error) {
+	s.oversized = false
 	var out strings.Builder
 	// The positional argument a `*` or a conversion takes: the Sequencer
 	// itself, or the text of the last (key). consumed is CPython's argidx
@@ -392,23 +402,27 @@ func (s *seqSequencer) format(template string) (string, error) {
 				return "", seqUnsupportedCharacter(template, conversion)
 			}
 		}
-		runes := []rune(text)
-		if precision >= 0 && int64(len(runes)) > precision {
-			runes = runes[:precision]
-		}
-		limit := width
-		if limit > seqMaxWidth {
-			limit = seqMaxWidth
-		}
-		if limit > int64(len(runes)) {
-			pad := strings.Repeat(" ", int(limit)-len(runes))
-			if left {
-				runes = append(runes, []rune(pad)...)
-			} else {
-				runes = append([]rune(pad), runes...)
+		if precision >= 0 {
+			if runes := []rune(text); int64(len(runes)) > precision {
+				text = string(runes[:precision])
 			}
 		}
-		out.WriteString(string(runes))
+		limit := width
+		if limit > seqExactWidth {
+			// Past the exact bound every field pads the same way: one
+			// character more than the bound, marked for breakCJK.
+			limit = seqExactWidth + 1
+			s.oversized = true
+		}
+		if pad := int(limit) - utf8.RuneCountInString(text); pad > 0 {
+			spaces := strings.Repeat(" ", pad)
+			if left {
+				text += spaces
+			} else {
+				text = spaces + text
+			}
+		}
+		out.WriteString(text)
 	}
 	return out.String(), nil
 }
@@ -459,11 +473,30 @@ func (p *paraParser) startSeq(attrs []htmlAttr) bool {
 			// `None % Sequencer`
 			return p.fail("%s", "unsupported operand type(s) for %: 'NoneType' and 'Sequencer'")
 		}
-		text, ok := p.seqCall(func(s *seqSequencer) (string, error) { return s.format(template.value) })
+		oversized := false
+		text, ok := p.seqCall(func(s *seqSequencer) (string, error) {
+			value, err := s.format(template.value)
+			oversized = s.oversized
+			return value, err
+		})
 		if !ok {
 			return false
 		}
-		return p.data(text)
+		bullet := p.stack[len(p.stack)-1].isBullet
+		frags, bulletFrags := len(p.frags), len(p.bulletFrags)
+		if !p.data(text) {
+			return false
+		}
+		// A field wider than seqExactWidth: the fragment that holds the pad
+		// is the one breakCJK refuses (see seqExactWidth).
+		if oversized {
+			if bullet && len(p.bulletFrags) > bulletFrags {
+				p.bulletFrags[len(p.bulletFrags)-1].seqOversized = true
+			} else if !bullet && len(p.frags) > frags {
+				p.frags[len(p.frags)-1].seqOversized = true
+			}
+		}
+		return true
 	}
 	id := seqAttrKey(values, "id")
 	increment, hasIncrement := values["inc"]

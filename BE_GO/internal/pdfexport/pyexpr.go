@@ -5,10 +5,10 @@ import (
 	"math/big"
 	"strconv"
 	"strings"
-	"unicode"
 	"unicode/utf8"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/pyunicodedata"
+	"golang.org/x/text/unicode/norm"
 )
 
 // The expressions a colour attribute may hold. reportlab reads a string it
@@ -190,6 +190,11 @@ func (l *pyLexer) lex() bool {
 		case r == '\\' && l.pos+size < len(l.src) && l.src[l.pos+size] == '\n':
 			l.pos += size + 1
 		case r == '(' || r == '[' || r == '{':
+			// The tokenizer keeps at most MAXLEVEL (200) brackets open: the
+			// one that would make 201 is a SyntaxError.
+			if l.depth >= 200 {
+				return l.fail()
+			}
 			l.depth++
 			l.tokens = append(l.tokens, pyToken{kind: ptOp, text: string(r), pos: l.pos})
 			l.pos += size
@@ -209,11 +214,15 @@ func (l *pyLexer) lex() bool {
 			}
 		case isPyNameStart(r):
 			start := l.pos
+			nonASCII := r >= 0x80
 			l.pos += size
 			for l.pos < len(l.src) {
 				next, nextSize := utf8.DecodeRuneInString(l.src[l.pos:])
 				if !isPyNamePart(next) {
 					break
+				}
+				if next >= 0x80 {
+					nonASCII = true
 				}
 				l.pos += nextSize
 			}
@@ -224,7 +233,23 @@ func (l *pyLexer) lex() bool {
 				}
 				continue
 			}
-			l.tokens = append(l.tokens, pyToken{kind: ptName, text: word, pos: start})
+			name := word
+			if nonASCII {
+				// A run above U+007F must be an identifier (SyntaxError
+				// otherwise) and the parser reads it NFKC-normalised; a
+				// keyword is only the text it spells, so 'Ｎｏｎｅ' is a
+				// name whose id is "None", which ast.parse refuses with a
+				// ValueError.
+				if !pyIsIdentifier(word) {
+					return l.fail()
+				}
+				name = norm.NFKC.String(word)
+				switch name {
+				case "None", "True", "False":
+					return l.fail()
+				}
+			}
+			l.tokens = append(l.tokens, pyToken{kind: ptName, text: name, pos: start})
 		default:
 			op, ok := l.operator()
 			if !ok {
@@ -250,12 +275,59 @@ func (l *pyLexer) operator() (string, bool) {
 	return "", false
 }
 
+// isPyNameStart is is_potential_identifier_start of CPython's tokenizer: an
+// ASCII letter, an underscore or any character above U+007F (whether the run is
+// an identifier is checked afterwards).
 func isPyNameStart(r rune) bool {
-	return r == '_' || unicode.IsLetter(r) || r >= 0x80 && unicode.Is(unicode.Nl, r)
+	return r == '_' || r >= 'a' && r <= 'z' || r >= 'A' && r <= 'Z' || r >= 0x80
 }
 
+// isPyNamePart is is_potential_identifier_char.
 func isPyNamePart(r rune) bool {
-	return r == '_' || unicode.IsLetter(r) || unicode.IsDigit(r) || r >= 0x80 && unicode.Is(unicode.Mn, r)
+	return isPyNameStart(r) || r >= '0' && r <= '9'
+}
+
+// pyIsIdentifier is str.isidentifier() of CPython 3.13 (Unicode 15.1): the
+// first character is a letter, an underscore or XID_Start and every later one
+// is a letter, a digit, an underscore or XID_Continue. The non-ASCII properties
+// are the tables of pyident_gen.go, since Go's are Unicode 15.0.
+func pyIsIdentifier(text string) bool {
+	first := true
+	for _, r := range text {
+		switch {
+		case r < 0x80:
+			if !(r == '_' || r >= 'a' && r <= 'z' || r >= 'A' && r <= 'Z' || !first && r >= '0' && r <= '9') {
+				return false
+			}
+		case first:
+			if !inRuneRanges(identStart, r) {
+				return false
+			}
+		default:
+			if !inRuneRanges(identContinue, r) {
+				return false
+			}
+		}
+		first = false
+	}
+	return text != ""
+}
+
+// inRuneRanges reports whether r is in one of the sorted inclusive ranges.
+func inRuneRanges(ranges [][2]rune, r rune) bool {
+	low, high := 0, len(ranges)
+	for low < high {
+		middle := (low + high) / 2
+		switch {
+		case r < ranges[middle][0]:
+			high = middle
+		case r > ranges[middle][1]:
+			low = middle + 1
+		default:
+			return true
+		}
+	}
+	return false
 }
 
 // number reads a numeric literal: an integer in decimal, binary, octal or hex
@@ -342,6 +414,11 @@ func pyIntLiteralValue(digits string, base int) (*big.Int, bool) {
 		}
 	}
 	plain := out.String()
+	if base == 10 && len(plain) > 4300 {
+		// CPython's limit on the decimal conversion of an int (sys.int_max_str_digits,
+		// 4300) applies to a decimal literal too; the underscores do not count.
+		return nil, false
+	}
 	if base == 10 && len(plain) > 1 && plain[0] == '0' {
 		return nil, false
 	}

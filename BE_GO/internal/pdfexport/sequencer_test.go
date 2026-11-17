@@ -264,42 +264,47 @@ func TestSequenceTemplateSequenceObject(t *testing.T) {
 // CPython 3.13.16 (`template % Sequencer()`): a width is a Py_ssize_t, so more
 // digits than 9223372036854775807 raise ValueError('width too big'), while a
 // precision is an int, so more than 2147483647 raise
-// ValueError('precision too big'). A width beyond seqMaxWidth pads to
-// seqMaxWidth: reportlab writes the spaces, which change no layout (the corpus
-// compares widths of 5 and 50), and its own allocation is bounded by the host's
-// memory (approved divergence, group "platform").
+// ValueError('precision too big'). A width up to seqExactWidth pads exactly; a
+// wider one pads to seqExactWidth+1 characters and marks the field oversized,
+// which breakCJK refuses.
 func TestSequenceTemplateWidthLimits(t *testing.T) {
 	cases := []struct {
-		template string
-		want     string // when err is empty and length is 0
-		length   int    // when want is empty: the padded field ends in "0"
-		err      string
+		template  string
+		want      string // when err is empty and length is 0
+		length    int    // when want is empty: the padded field ends in "0"
+		oversized bool
+		err       string
 	}{
-		{"%(w)5s", "    0", 0, ""},
-		{"%(w)-5s", "0    ", 0, ""},
-		{"%(w)50s", strings.Repeat(" ", 49) + "0", 0, ""},
-		{"%(w)1048575s", "", 1048575, ""},
-		{"%(w)1048576s", "", seqMaxWidth, ""},
-		{"%(w)1048577s", "", seqMaxWidth, ""},
-		{"%(w)1000000000000s", "", seqMaxWidth, ""},
-		{"%(w)9223372036854775807s", "", seqMaxWidth, ""},
-		{"%(w)9223372036854775808s", "", 0, "width too big"},
-		{"%(w)18446744073709551616s", "", 0, "width too big"},
-		{"%(w)9999999999999999999999999999s", "", 0, "width too big"},
-		{"%(w).5s", "0", 0, ""},
-		{"%(w).0s", "", 0, ""},
-		{"%(w)5.0s", "     ", 0, ""},
-		{"%(w)-5.0s", "     ", 0, ""},
-		{"%(w).2147483647s", "0", 0, ""},
-		{"%(w).2147483648s", "", 0, "precision too big"},
-		{"%(w).9223372036854775807s", "", 0, "precision too big"},
-		{"%(w)3.9223372036854775808s", "", 0, "precision too big"},
-		{"%(w)9223372036854775808.1s", "", 0, "width too big"},
-		{"%(w)9223372036854775808d", "", 0, "width too big"},
+		{"%(w)5s", "    0", 0, false, ""},
+		{"%(w)-5s", "0    ", 0, false, ""},
+		{"%(w)50s", strings.Repeat(" ", 49) + "0", 0, false, ""},
+		{"%(w)1048575s", "", 1048575, false, ""},
+		{"%(w)1048576s", "", 1048576, false, ""},
+		{"%(w)1048577s", "", 1048577, false, ""},
+		{"%(w)2097152s", "", seqExactWidth, false, ""},
+		{"%(w)2097153s", "", seqExactWidth + 1, true, ""},
+		{"%(w)1000000000000s", "", seqExactWidth + 1, true, ""},
+		{"%(w)9223372036854775807s", "", seqExactWidth + 1, true, ""},
+		{"%(w)9223372036854775808s", "", 0, false, "width too big"},
+		{"%(w)18446744073709551616s", "", 0, false, "width too big"},
+		{"%(w)9999999999999999999999999999s", "", 0, false, "width too big"},
+		{"%(w).5s", "0", 0, false, ""},
+		{"%(w).0s", "", 0, false, ""},
+		{"%(w)5.0s", "     ", 0, false, ""},
+		{"%(w)-5.0s", "     ", 0, false, ""},
+		{"%(w).2147483647s", "0", 0, false, ""},
+		{"%(w).2147483648s", "", 0, false, "precision too big"},
+		{"%(w).9223372036854775807s", "", 0, false, "precision too big"},
+		{"%(w)3.9223372036854775808s", "", 0, false, "precision too big"},
+		{"%(w)9223372036854775808.1s", "", 0, false, "width too big"},
+		{"%(w)9223372036854775808d", "", 0, false, "width too big"},
 	}
 	for _, item := range cases {
 		s := newSeqSequencer()
 		got, err := s.format(item.template)
+		if s.oversized != item.oversized {
+			t.Errorf("%q: oversized %t, want %t", item.template, s.oversized, item.oversized)
+		}
 		if item.err != "" {
 			if err == nil || err.Error() != item.err {
 				t.Errorf("%q: err %v, want %q", item.template, err, item.err)
@@ -322,9 +327,21 @@ func TestSequenceTemplateWidthLimits(t *testing.T) {
 		}
 	}
 
+	// A template of several fields is oversized when any one of them is.
+	s := newSeqSequencer()
+	if _, err := s.format("%(w)1048577s%(w)5s"); err != nil || s.oversized {
+		t.Fatalf("exact fields: oversized %t, %v", s.oversized, err)
+	}
+	if _, err := s.format("%(w)5s%(w)2097153s"); err != nil || !s.oversized {
+		t.Fatalf("second field too wide: oversized %t, %v", s.oversized, err)
+	}
+	if _, err := s.format("%(w)5s"); err != nil || s.oversized {
+		t.Fatalf("the flag is reset at the start of format: oversized %t, %v", s.oversized, err)
+	}
+
 	// The (key) is read before the digits of the width, so the counter moves
 	// even when the width then raises.
-	s := newSeqSequencer()
+	s = newSeqSequencer()
 	if _, err := s.format("%(w+)9223372036854775808s"); err == nil || err.Error() != "width too big" {
 		t.Fatalf("width overflow: %v", err)
 	}
@@ -333,17 +350,91 @@ func TestSequenceTemplateWidthLimits(t *testing.T) {
 	}
 }
 
-// A width beyond seqMaxWidth does not fail the paragraph: reportlab pads
-// with that many spaces, this port with seqMaxWidth (its lines break between
-// the same words).
-func TestSequenceTemplateWiderThanSeqMaxWidth(t *testing.T) {
+// A width past seqExactWidth keeps the paragraph's text: the pad is
+// seqExactWidth+1 characters wide, and only its layout depends on wordWrap.
+func TestSequenceTemplateWidthPastSeqExactWidth(t *testing.T) {
 	resetParaSequencer()
 	text, err := paragraphText(t, `A<seq template="%(w)1048577s"/>B`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if want := "A" + strings.Repeat(" ", seqMaxWidth-1) + "0B"; text != want {
-		t.Fatalf("%d bytes, %d spaces before the value %q", len(text), len(text)-2, text[max(0, len(text)-3):])
+	if want := "A" + strings.Repeat(" ", 1048576) + "0B"; text != want {
+		t.Fatalf("%d bytes, want %d", len(text), len(want))
+	}
+	if len(text) != 1048577+2 {
+		t.Fatalf("%d bytes, want the field and the two letters", len(text))
+	}
+}
+
+// TestSequenceTemplateCJKExactPadding compares the layout of a template's pad
+// with reportlab 4.2.5: wordWrap 'CJK' breaks between characters, so every one
+// of the pad's spaces is laid out and the two widths differ (Normal style,
+// Helvetica 10, leading 12, wrap(400, 1e12)).
+func TestSequenceTemplateCJKExactPadding(t *testing.T) {
+	cases := []struct {
+		template string
+		lines    int
+		height   float64
+	}{
+		{"%(w)1048576s", 7333, 87996},
+		{"%(w)1053576s", 7368, 88416},
+	}
+	for _, item := range cases {
+		resetParaSequencer()
+		p, err := newParagraph(`<para wordwrap="CJK">a<seq template="`+item.template+`"/>b</para>`, styleNormal())
+		if err != nil {
+			t.Fatalf("%q: %v", item.template, err)
+		}
+		p.wrap(nil, 400, 1e12)
+		if p.lineCount() != item.lines || p.height != item.height {
+			t.Errorf("%q: %d lines, height %v; want %d lines, height %v",
+				item.template, p.lineCount(), p.height, item.lines, item.height)
+		}
+	}
+
+	// The default breaking draws a run of spaces as one space, so the same
+	// pad is one line.
+	resetParaSequencer()
+	p, err := newParagraph(`<para>a<seq template="%(w)1053576s"/>b</para>`, styleNormal())
+	if err != nil {
+		t.Fatal(err)
+	}
+	p.wrap(nil, 400, 1e12)
+	if p.lineCount() != 1 {
+		t.Fatalf("%d lines, want 1", p.lineCount())
+	}
+}
+
+// TestSequenceTemplateCJKOversized is the host-memory bound of breakCJK: a
+// field wider than seqExactWidth fails the layout as reportlab's MemoryError
+// does, while the default breaking lays the same paragraph out.
+func TestSequenceTemplateCJKOversized(t *testing.T) {
+	const text = `a<seq template="%(w)2097153s"/>b</para>`
+
+	resetParaSequencer()
+	p, err := newParagraph(`<para wordwrap="CJK">`+text, styleNormal())
+	if err != nil {
+		t.Fatal(err)
+	}
+	func() {
+		defer func() {
+			failure, ok := recover().(paraFailure)
+			if !ok || failure != (paraFailure{""}) {
+				t.Fatalf("layout panic %v, want paraFailure{\"\"}", failure)
+			}
+		}()
+		p.wrap(nil, 400, 1e12)
+		t.Fatal("the layout did not fail")
+	}()
+
+	resetParaSequencer()
+	p, err = newParagraph("<para>"+text, styleNormal())
+	if err != nil {
+		t.Fatal(err)
+	}
+	p.wrap(nil, 400, 1e12)
+	if p.lineCount() != 1 {
+		t.Fatalf("%d lines, want 1", p.lineCount())
 	}
 }
 

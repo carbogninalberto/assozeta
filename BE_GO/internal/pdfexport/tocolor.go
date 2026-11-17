@@ -38,7 +38,7 @@ func toColorString(s string, def *color) (color, toColorResult) {
 		}
 		return c, colorOK
 	}
-	if c, ok := paraNamedColors[strings.ToLower(s)]; ok {
+	if c, ok := paraNamedColors[pythonLower(s)]; ok {
 		return c, colorOK
 	}
 	if match, ok := blackerWhiterMatch(s); ok {
