@@ -13,6 +13,12 @@ package smtpsend
 // get_encoded_word raises _InvalidEwError, an email.errors.HeaderParseError:
 // the encoded word is invalid, not unported, and the callers fall back
 // exactly as they do for a malformed word.
+//
+// The strict-only codecs are idna and undefined. idna's strict decode
+// (nameprep, ToUnicode) is carried by pycodecs, so an idna encoded word is
+// decoded like any other charset; when the name in it is not a valid IDN the
+// strict DecodeError makes the surrogateescape retry raise, which is the
+// invalid-word fallback described above.
 
 import (
 	"errors"
@@ -29,13 +35,12 @@ func decodePythonCodec(raw []byte, name string) (string, error) {
 		// PyUnicode_Decode returns "" for empty bytes before any codec runs.
 		return "", nil
 	}
-	if name == "idna" {
-		// The strict idna decode (nameprep, ToUnicode) is not carried.
-		return "", ErrEncodedWordCharset
-	}
 	out, err, ok := pycodecs.Decode(name, raw, pycodecs.Strict)
 	if !ok {
-		return "", ErrEncodedWordCharset
+		// Every name decodeCharset passes comes from pythonTextCodecs, whose
+		// canonical names pycodecs registers (TestCharsetCodecs); a miss is
+		// this package's own registry going stale, not request data.
+		return "", errCodecNotRegistered
 	}
 	if err == nil {
 		return pystr.String(out), nil
@@ -51,8 +56,7 @@ func decodePythonCodec(raw []byte, name string) (string, error) {
 	return pystr.String(out), nil
 }
 
-// ErrEncodedWordCharset refuses an RFC 2047 encoded word in an address whose
-// charset is a text codec this package does not decode: only idna, whose
-// strict decode needs nameprep (stringprep tables and Unicode 3.2 NFKC).
-// Every other text codec of CPython's registry is decoded.
-var ErrEncodedWordCharset = refusal.New("smtpsend: encoded-word charset not ported")
+// errCodecNotRegistered is a codec name of pythonTextCodecs that pycodecs does
+// not register: the package's own tables disagree (TestCharsetCodecs), never
+// request data.
+var errCodecNotRegistered = refusal.AppState("smtpsend: text codec not registered in pycodecs")

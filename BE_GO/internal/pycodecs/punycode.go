@@ -1,7 +1,8 @@
 package pycodecs
 
-// This file ports CPython 3.13's 'punycode' decoder, a straight port of
-// Lib/encodings/punycode.py (RFC 3492).
+// This file ports CPython 3.13's 'punycode' codec, a straight port of
+// Lib/encodings/punycode.py (RFC 3492): the strict/replace/ignore decoder
+// below and the encoder (punycodeEncode) that the idna codec's ToASCII uses.
 //
 // The decoder only supports the strict, replace and ignore error handlers;
 // any other handler raises UnicodeError("Unsupported error handling: ...")
@@ -74,6 +75,143 @@ func punycodeT(j, bias int) int {
 		return 26
 	}
 	return res
+}
+
+// punycodeDigit is the base-36 digit alphabet of the encoder (lower case;
+// the decoder accepts both cases).
+const punycodeDigits = "abcdefghijklmnopqrstuvwxyz0123456789"
+
+// punycodeEncode is Lib/encodings/punycode.py's punycode_encode: segregate,
+// insertion_unsort, generate_integers, then the base part and a '-'.
+func punycodeEncode(text []rune) []byte {
+	// segregate: the basic code points in order and the sorted set of the
+	// others.
+	base := make([]byte, 0, len(text))
+	seen := make(map[rune]bool)
+	var extended []rune
+	for _, r := range text {
+		if r < 128 {
+			base = append(base, byte(r))
+			continue
+		}
+		if !seen[r] {
+			seen[r] = true
+			extended = append(extended, r)
+		}
+	}
+	sortRunes(extended)
+
+	// insertion_unsort: the deltas, in the order the encoder writes them.
+	deltas := make([]int, 0, len(extended))
+	oldChar := rune(0x80)
+	oldIndex := -1
+	for _, char := range extended {
+		index, position := -1, -1
+		currentLength := 0
+		for _, r := range text {
+			if r < char {
+				currentLength++
+			}
+		}
+		delta := (currentLength + 1) * int(char-oldChar)
+		for {
+			index, position = selectiveFind(text, char, index, position)
+			if index == -1 {
+				break
+			}
+			delta += index - oldIndex
+			deltas = append(deltas, delta-1)
+			oldIndex = index
+			delta = 0
+		}
+		oldChar = char
+	}
+
+	// generate_integers: the bias adaptation.
+	encoded := make([]byte, 0, len(deltas)+len(base))
+	bias := 72
+	for points, delta := range deltas {
+		encoded = append(encoded, punycodeGeneralizedInteger(delta, bias)...)
+		bias = punycodeAdaptInt(delta, points == 0, len(base)+points+1)
+	}
+	if len(base) > 0 {
+		return append(append(base, '-'), encoded...)
+	}
+	return encoded
+}
+
+// sortRunes sorts a short slice of code points (the extended set).
+func sortRunes(data []rune) {
+	for i := 1; i < len(data); i++ {
+		for j := i; j > 0 && data[j-1] > data[j]; j-- {
+			data[j-1], data[j] = data[j], data[j-1]
+		}
+	}
+}
+
+// selectiveFind is selective_find: the next occurrence of char at or after
+// position, with index counting the characters below char.
+func selectiveFind(text []rune, char rune, index, position int) (int, int) {
+	for {
+		position++
+		if position == len(text) {
+			return -1, -1
+		}
+		switch test := text[position]; {
+		case test == char:
+			return index + 1, position
+		case test < char:
+			index++
+		}
+	}
+}
+
+// punycodeGeneralizedInteger is generate_generalized_integer.
+func punycodeGeneralizedInteger(number, bias int) []byte {
+	out := make([]byte, 0, 4)
+	for j := 0; ; j++ {
+		t := punycodeT(j, bias)
+		if number < t {
+			return append(out, punycodeDigits[number])
+		}
+		out = append(out, punycodeDigits[t+(number-t)%(36-t)])
+		number = (number - t) / (36 - t)
+	}
+}
+
+// punycodeAdaptInt is adapt(delta, first, numchars) over machine ints (the
+// encoder's deltas are bounded by the label length and the code point range).
+func punycodeAdaptInt(delta int, first bool, numchars int) int {
+	if first {
+		delta /= 700
+	} else {
+		delta /= 2
+	}
+	delta += delta / numchars
+	divisions := 0
+	for delta > 455 {
+		delta /= 35
+		divisions += 36
+	}
+	return divisions + (36 * delta / (delta + 38))
+}
+
+// punycodeDecodeStrict is b"".decode("punycode", "strict"), as ToUnicode
+// decodes an ACE label: the text, or the error span relative to data.
+func punycodeDecodeStrict(data []byte) ([]rune, *idnaError) {
+	if len(data) == 0 {
+		// bytes.decode returns "" before any codec runs.
+		return nil, nil
+	}
+	sink := &Sink{codec: "punycode", handler: Strict, data: data}
+	if err := decodePunycode(data, sink); err != nil {
+		var decodeErr *DecodeError
+		if errors.As(err, &decodeErr) {
+			return nil, &idnaError{start: decodeErr.Start, end: decodeErr.End, reason: decodeErr.Reason}
+		}
+		return nil, &idnaError{start: 0, end: len(data), reason: err.Error()}
+	}
+	return sink.Out, nil
 }
 
 // punycodeAdapt is adapt(delta, first, numchars): bias adaptation.

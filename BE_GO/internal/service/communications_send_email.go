@@ -239,7 +239,8 @@ func (s *CommunicationSendEmail) sendEmail(ctx context.Context, row domain.Commu
 				return SendEmailResult{}, err
 			}
 			if err != nil {
-				return SendEmailResult{}, errors.Join(domain.ErrSendEmailNotPorted, err)
+				// Any other render error is Django's own exception: the 500 page.
+				return SendEmailResult{}, err
 			}
 			if err = s.smtp.Send(work, server, *row.User, recipients, message); err != nil {
 				// send_email returns (False, exception); DRF cannot render it.

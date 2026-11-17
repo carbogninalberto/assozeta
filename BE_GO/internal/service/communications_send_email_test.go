@@ -57,7 +57,7 @@ func (sendEmailTestSMTP) Send(context.Context, smtpsend.Server, string, []string
 }
 
 // A render that reports an application-state error is the 500 page, never a
-// handoff: it is returned as it is, not joined with the not-ported sentinel.
+// handoff: it is returned as it is, not joined with a not-ported sentinel.
 func TestCommunicationSendEmailKeepsAppStateRenderError(t *testing.T) {
 	host, user, password := "smtp.example.test", "mittente@example.test", "segreta"
 	port := int64(587)
@@ -72,7 +72,29 @@ func TestCommunicationSendEmailKeepsAppStateRenderError(t *testing.T) {
 	if !errors.Is(err, refusal.ErrAppState) {
 		t.Fatalf("err = %v, want an application-state error", err)
 	}
-	for _, sentinel := range []error{domain.ErrSendEmailNotPorted, refusal.ErrNotPorted} {
+	if errors.Is(err, refusal.ErrNotPorted) {
+		t.Fatalf("err = %v, want no match for %v", err, refusal.ErrNotPorted)
+	}
+}
+
+// A render that fails any other way is Django's own exception: the 500 page,
+// returned as a plain error, with no handoff sentinel.
+func TestCommunicationSendEmailPlainRenderError(t *testing.T) {
+	host, user, pw := "smtp.example.test", "mittente@example.test", "pw"
+	port := int64(587)
+	row := domain.CommunicationConfigurationRecord{Host: &host, Port: &port, User: &user, Password: &pw, DailyLimit: 10}
+	s := NewCommunicationSendEmail(nil, nil, CommunicationSendEmailSettings{}, time.Now)
+	s.smtp = sendEmailTestSMTP{}
+	failure := errors.New("render failed")
+	s.renderedMessage = func(domain.CommunicationConfigurationRecord, dto.SendEmailInput, []string) (string, error) {
+		return "", failure
+	}
+	_, err := s.sendEmail(context.Background(), row, dto.SendEmailInput{Subject: "Avviso", Message: "Ciao"},
+		[]string{"socio@example.test"}, domain.LoginAuditContext{})
+	if !errors.Is(err, failure) {
+		t.Fatalf("err = %v, want the render error", err)
+	}
+	for _, sentinel := range []error{refusal.ErrNotPorted, refusal.ErrAppState, domain.ErrSendEmailServerError} {
 		if errors.Is(err, sentinel) {
 			t.Fatalf("err = %v, want no match for %v", err, sentinel)
 		}

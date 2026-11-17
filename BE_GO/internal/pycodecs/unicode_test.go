@@ -164,8 +164,8 @@ func TestUnicodeCorpus(t *testing.T) {
 }
 
 // TestUnicodeCodecNames pins the registered names (codecs.lookup(...).name)
-// and the two inherent non-corpus behaviours: idna is strict-only and does
-// not carry strict decoding, and undefined always raises the same plain
+// and the two inherent non-corpus behaviours: idna is strict-only (it does
+// decode strict names) and undefined always raises the same plain
 // UnicodeError.
 func TestUnicodeCodecNames(t *testing.T) {
 	for _, name := range []string{
@@ -180,9 +180,9 @@ func TestUnicodeCodecNames(t *testing.T) {
 		}
 	}
 
-	if _, err, ok := Decode("idna", []byte("example.com"), Strict); !ok || err == nil ||
-		err.Error() != "pycodecs: idna strict decode is not carried" {
-		t.Errorf("idna strict decode: got %v, ok %v", err, ok)
+	if out, err, ok := Decode("idna", []byte("example.com"), Strict); !ok || err != nil ||
+		string(out) != "example.com" {
+		t.Errorf("idna strict decode: got %q, %v, ok %v", string(out), err, ok)
 	}
 	if _, err, _ := Decode("idna", nil, Replace); err == nil ||
 		err.Error() != "Unsupported error handling: replace" {

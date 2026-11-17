@@ -4,8 +4,6 @@ import (
 	"context"
 	"errors"
 	"time"
-
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // ErrSendEmailMessageNotFound is configuration_send_email's 404
@@ -17,10 +15,6 @@ var ErrSendEmailMessageNotFound = errors.New("message not found.")
 // message_id UUIDField rejects, an immutable QueryDict, a missing
 // configuration, an exception returned by send_email): the 500 page.
 var ErrSendEmailServerError = errors.New("configuration_send_email raised")
-
-// ErrSendEmailNotPorted refuses, before any write, an SMTP delivery whose
-// message or envelope is outside smtpsend's subset.
-var ErrSendEmailNotPorted = refusal.New("SMTP message outside the ported subset")
 
 // SendEmailMessage is one communications_message row.
 type SendEmailMessage struct {
