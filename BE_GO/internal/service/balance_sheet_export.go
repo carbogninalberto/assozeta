@@ -204,8 +204,6 @@ func (r *sheetRun) export(ctx context.Context, data *pyDict, year int, format st
 			Header: &header, IsA3: true, Portrait: true,
 			Additional: []string{"I saldi sono riportati al " + closing + "."}}.Build(today)
 		switch {
-		case errors.Is(err, pdfexport.ErrNotPorted):
-			return nil, err // the input pdfexport does not reproduce
 		case errors.Is(err, refusal.ErrAppState):
 			return nil, err // a layout no export builds (pdfexport.ErrUnexpectedLayout)
 		case err != nil:

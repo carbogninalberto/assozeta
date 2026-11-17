@@ -2,7 +2,6 @@ package pdfexport
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -237,17 +236,6 @@ type imgAttrs struct {
 	valign        *valign
 }
 
-// paraPorted are the tags whose effect on the layout is reproduced. Every
-// other tag ParaParser has a handler for is refused; tags it does not know
-// are ignored, as it does.
-var paraPorted = map[string]bool{"para": true, "b": true, "strong": true, "i": true, "em": true, "br": true, "u": true, "strike": true,
-	"font": true, "span": true, "nobr": true, "sup": true, "super": true, "sub": true, "link": true, "a": true, "img": true,
-	"greek": true, "unichar": true, "index": true, "ondraw": true, "seq": true, "seqchain": true, "seqdefault": true,
-	"seqformat": true, "seqreset": true}
-
-// paraNotPortedTags are the tags of ParaParser that are still refused.
-var paraNotPortedTags = map[string]bool{"link": true}
-
 // bulletAttrNames is _bulletAttrMap: the attributes of <bullet>.
 var bulletAttrNames = func() map[string]paraAttrSpec {
 	table := []struct {
@@ -300,7 +288,7 @@ func (p *paraParser) startBullet(attrs []htmlAttr) bool {
 		case pkNum:
 			n, st := paraNum(value, true)
 			if st != attrOK {
-				return p.attrFailure(st, "invalid number")
+				return p.attrFailure("invalid number")
 			}
 			failed := false
 			apply := func(current *pyNum) {
@@ -329,7 +317,7 @@ func (p *paraParser) startBullet(attrs []htmlAttr) bool {
 		case pkColor:
 			c, st := paraColor(value)
 			if st != attrOK {
-				return p.attrFailure(st, "invalid color")
+				return p.attrFailure("invalid color")
 			}
 			style.bulletColor = &c
 		case pkAnchor:
@@ -347,7 +335,7 @@ func (p *paraParser) startBullet(attrs []htmlAttr) bool {
 	p.style = style
 	family, bold, italic, st := ps2tt(style.bulletFontName)
 	if st != attrOK {
-		return p.attrFailure(st, "error with style name")
+		return p.attrFailure("error with style name")
 	}
 	col := style.textColor
 	if style.bulletColor != nil {
@@ -425,19 +413,8 @@ func (p *paraParser) syntaxError(format string, args ...any) bool {
 	return false
 }
 
-func (p *paraParser) unsupported() bool {
-	if p.err == nil {
-		p.err = ErrNotPorted
-	}
-	return false
-}
-
-// attrFailure answers the status of a conversion: an exception of reportlab
-// or an input that is not ported.
-func (p *paraParser) attrFailure(st attrStatus, what string) bool {
-	if st == attrUnsupported {
-		return p.unsupported()
-	}
+// attrFailure fails the paragraph with the text of a conversion's exception.
+func (p *paraParser) attrFailure(what string) bool {
 	return p.fail("%s", what)
 }
 
@@ -528,7 +505,7 @@ func (p *paraParser) usValue(raw string, has bool) (*usVal, bool) {
 			strings.Contains("PLfF", pyTrimASCII(s[idx+1:])) {
 			v, st := pyFloat(s[:idx])
 			if st != attrOK {
-				p.attrFailure(st, "invalid value for a line attribute")
+				p.attrFailure("invalid value for a line attribute")
 				return nil, false
 			}
 			if pyTrimASCII(s[idx+1:]) == "P" {
@@ -541,7 +518,7 @@ func (p *paraParser) usValue(raw string, has bool) (*usVal, bool) {
 				return &usVal{num: product.float(), isNum: true}, true
 			}
 		} else if _, st := paraNum(s, false); st != attrOK {
-			p.attrFailure(st, "invalid value for a line attribute")
+			p.attrFailure("invalid value for a line attribute")
 			return nil, false
 		}
 	}
@@ -564,7 +541,7 @@ func (p *paraParser) lineAttributes(attrs []htmlAttr, specs map[string]attrSpec,
 			}
 			c, st := paraColor(attr.value)
 			if st != attrOK {
-				return p.attrFailure(st, "invalid color")
+				return p.attrFailure("invalid color")
 			}
 			into.hasColor, into.color = true, c
 		case attrUSWidth, attrUSOffset, attrUSGap:
@@ -646,7 +623,7 @@ func (p *paraParser) startTag(tag string, attrs []htmlAttr) bool {
 		}
 		family, bold, italic, st := ps2tt(p.style.fontName)
 		if st != attrOK {
-			return p.attrFailure(st, "error with style name")
+			return p.attrFailure("error with style name")
 		}
 		p.started = true
 		p.stack = []paraTag{{tag: "para", family: family, bold: bold, italic: italic, size: p.style.fontSize, rise: numInt(0),
@@ -726,9 +703,6 @@ func (p *paraParser) startTag(tag string, attrs []htmlAttr) bool {
 		}
 		return p.startLink(tag, attrs)
 	}
-	if paraNotPortedTags[tag] && !paraPorted[tag] {
-		return p.unsupported()
-	}
 	return true
 }
 
@@ -752,7 +726,7 @@ func (p *paraParser) startFont(tag string, attrs []htmlAttr) bool {
 			}
 			n, st := paraNum(attr.value, true)
 			if st != attrOK {
-				return p.attrFailure(st, "invalid size")
+				return p.attrFailure("invalid size")
 			}
 			size = &n
 		case "face", "name", "fontname":
@@ -761,7 +735,7 @@ func (p *paraParser) startFont(tag string, attrs []htmlAttr) bool {
 			}
 			fam, b, i, st := ps2tt(attr.value)
 			if st != attrOK {
-				return p.attrFailure(st, "invalid font name")
+				return p.attrFailure("invalid font name")
 			}
 			family, bold, italic, hasFamily = fam, b, i, true
 		case "fg", "color", "textcolor", "backcolor", "bgcolor":
@@ -770,7 +744,7 @@ func (p *paraParser) startFont(tag string, attrs []htmlAttr) bool {
 			}
 			c, st := paraColor(attr.value)
 			if st != attrOK {
-				return p.attrFailure(st, "invalid color")
+				return p.attrFailure("invalid color")
 			}
 			if name == "backcolor" || name == "bgcolor" {
 				backColor = &c
@@ -827,7 +801,7 @@ func (p *paraParser) startSup(tag string, attrs []htmlAttr) bool {
 			return p.fail("invalid value for %s", name)
 		}
 		if _, st := fontSizeNormalize(supSpec{attr.value, true}, p.stack[len(p.stack)-1].size, numInt(0)); st != attrOK {
-			return p.attrFailure(st, "invalid value for "+name)
+			return p.attrFailure("invalid value for " + name)
 		}
 		if name == "rise" {
 			rise = supSpec{attr.value, true}
@@ -857,7 +831,7 @@ func (p *paraParser) startSup(tag string, attrs []htmlAttr) bool {
 	}
 	delta, st := fontSizeNormalize(top.supr, top.size, defRise)
 	if st != attrOK {
-		return p.attrFailure(st, "invalid rise")
+		return p.attrFailure("invalid rise")
 	}
 	if name == "sub" {
 		if top.rise, ok = numSub(top.rise, delta); !ok {
@@ -879,7 +853,7 @@ func (p *paraParser) startSup(tag string, attrs []htmlAttr) bool {
 	}
 	newSize, st := fontSizeNormalize(top.sups, top.size, defSize)
 	if st != attrOK {
-		return p.attrFailure(st, "invalid size")
+		return p.attrFailure("invalid size")
 	}
 	top.size = newSize
 	return true
@@ -911,7 +885,7 @@ func (p *paraParser) endTag(tag string) bool {
 			// tag's own style, with the cbDefn of an anchor.
 			fontName, st := top.fontName()
 			if st != attrOK {
-				return p.attrFailure(st, "Can't find font family "+top.family)
+				return p.attrFailure("Can't find font family " + top.family)
 			}
 			p.frags = append(p.frags, &frag{font: fontsByName[fontName], size: top.size, color: top.color, rise: top.rise, text: "",
 				lineBreak: top.lineBreak, us: top.us, links: top.links, back: top.back, nobr: top.nobr,
@@ -941,9 +915,6 @@ func (p *paraParser) endTag(tag string) bool {
 		}
 		_, ok := p.pop("br")
 		return ok
-	}
-	if paraNotPortedTags[tag] && !paraPorted[tag] {
-		return p.unsupported()
 	}
 	return true
 }
@@ -1093,7 +1064,7 @@ func (p *paraParser) data(text string) bool {
 	}
 	fontName, st := top.fontName()
 	if st != attrOK {
-		return p.attrFailure(st, "Can't find font family "+top.family)
+		return p.attrFailure("Can't find font family " + top.family)
 	}
 	if top.greek {
 		// _handle_data: <greek> draws in Symbol, its bytes standing for the Greek letters.
@@ -1209,8 +1180,8 @@ func paraIsPara(text []rune) bool {
 }
 
 // parseParagraph is ParaParser.parse of cleaned text in a Helvetica style:
-// the fragments, the bullet fragments of a <bullet> tag, ErrLayout where
-// reportlab raises, ErrNotPorted for the tags above.
+// the fragments, the bullet fragments of a <bullet> tag, and ErrLayout where
+// reportlab raises.
 func parseParagraph(text string, style paraStyle) ([]*frag, *paraBullet, paraStyle, error) {
 	style = style.withDefaults()
 	base := fontsByName[style.fontName]
@@ -1229,9 +1200,6 @@ func parseParagraph(text string, style paraStyle) ([]*frag, *paraBullet, paraSty
 		raw = []rune("<para>" + text + "</para>")
 	}
 	ok := (&htmlParser{raw: raw, events: parser}).feed()
-	if errors.Is(parser.err, ErrNotPorted) {
-		return nil, nil, style, parser.err
-	}
 	if parser.err != nil {
 		// ParaParser.parse: annotateException wraps a failure of feed() with the
 		// paragraph text; _complete_parse reports the tags left open.
@@ -1529,7 +1497,7 @@ func (p *paraParser) startLink(tag string, attrs []htmlAttr) bool {
 			}
 			n, st := paraNum(attr.value, true)
 			if st != attrOK {
-				return p.attrFailure(st, "invalid size")
+				return p.attrFailure("invalid size")
 			}
 			size = &n
 		case "face", "name", "fontname":
@@ -1543,7 +1511,7 @@ func (p *paraParser) startLink(tag string, attrs []htmlAttr) bool {
 			}
 			c, st := paraColor(attr.value)
 			if st != attrOK {
-				return p.attrFailure(st, "invalid color")
+				return p.attrFailure("invalid color")
 			}
 			switch name {
 			case "backcolor", "bgcolor":
@@ -1577,7 +1545,7 @@ func (p *paraParser) startLink(tag string, attrs []htmlAttr) bool {
 			}
 			b, st := paraBool(attr.value)
 			if st != attrOK {
-				return p.attrFailure(st, "invalid underline")
+				return p.attrFailure("invalid underline")
 			}
 			underline = b
 		case "ukind", "underlinekind":
@@ -1690,7 +1658,7 @@ func (p *paraParser) startImg(attrs []htmlAttr) bool {
 			}
 			d, st := numPct(attr.value)
 			if st != attrOK {
-				return p.attrFailure(st, "invalid "+name)
+				return p.attrFailure("invalid " + name)
 			}
 			if name == "width" {
 				img.width = &d
@@ -1703,7 +1671,7 @@ func (p *paraParser) startImg(attrs []htmlAttr) bool {
 			}
 			v, st := valignPct(attr.value)
 			if st != attrOK {
-				return p.attrFailure(st, "invalid valign")
+				return p.attrFailure("invalid valign")
 			}
 			img.valign = &v
 		default:
@@ -1736,9 +1704,6 @@ func loadImageSource(src string) (image *imageReader, st attrStatus, failure str
 	// fetch of a URL has none: reportlab's urlopen has no deadline either.
 	data, err := Resource.Open(context.Background(), src)
 	if err != nil {
-		if errors.Is(err, ErrNotPorted) {
-			return nil, attrUnsupported, ""
-		}
 		return nil, attrInvalid, resourceFailure(src)
 	}
 	image, err = newImageReader(data, inlineIdentity(src))
@@ -1765,7 +1730,7 @@ func (p *paraParser) endImg() bool {
 	top := &p.stack[len(p.stack)-1]
 	image, st, failure := loadImageSource(top.imgAttrs.src)
 	if st != attrOK {
-		return p.attrFailure(st, failure)
+		return p.attrFailure(failure)
 	}
 	defn := &imgDefn{src: top.imgAttrs.src, image: image, width: dim{v: numInt(int64(image.image.Width))},
 		height: dim{v: numInt(int64(image.image.Height))}, valign: valign{name: "bottom"}}
@@ -1879,13 +1844,13 @@ func (p *paraParser) applyParaAttrs(attrs []htmlAttr) bool {
 		case pkNum:
 			n, st := paraNum(value, true)
 			if st != attrOK {
-				return p.attrFailure(st, "invalid number")
+				return p.attrFailure("invalid number")
 			}
 			number = n
 		case pkInt:
 			n, st := pyInt(value, 10)
 			if st != attrOK {
-				return p.attrFailure(st, "invalid integer")
+				return p.attrFailure("invalid integer")
 			}
 			if spec.attr == "justifyLastLine" {
 				style.justifyLastLine = numWide(n)
@@ -1896,7 +1861,7 @@ func (p *paraParser) applyParaAttrs(attrs []htmlAttr) bool {
 		case pkBool:
 			b, st := paraBool(value)
 			if st != attrOK {
-				return p.attrFailure(st, "invalid boolean")
+				return p.attrFailure("invalid boolean")
 			}
 			switch spec.attr {
 			case "allowWidows":
@@ -1915,7 +1880,7 @@ func (p *paraParser) applyParaAttrs(attrs []htmlAttr) bool {
 		case pkColor:
 			c, st := paraColor(value)
 			if st != attrOK {
-				return p.attrFailure(st, "invalid color")
+				return p.attrFailure("invalid color")
 			}
 			switch spec.attr {
 			case "textColor":
@@ -1946,7 +1911,7 @@ func (p *paraParser) applyParaAttrs(attrs []htmlAttr) bool {
 			}
 		case pkFont:
 			if _, _, _, st := ps2tt(value); st != attrOK {
-				return p.attrFailure(st, "invalid font name")
+				return p.attrFailure("invalid font name")
 			}
 			style.fontName = canonicalFontName(value)
 		case pkAutoLeading:
@@ -2083,7 +2048,7 @@ func (p *paraParser) applyParaAttrs(attrs []htmlAttr) bool {
 
 // canonicalFontName is the style font name of a name ps2tt accepts: the
 // concrete Helvetica, Symbol or ZapfDingbats font (a name for another family
-// is refused before this).
+// is an exception before this).
 func canonicalFontName(name string) string {
 	switch strings.ToLower(name) {
 	case "helvetica":

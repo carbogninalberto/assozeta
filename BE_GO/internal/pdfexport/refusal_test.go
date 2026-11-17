@@ -11,8 +11,9 @@ import (
 
 // Image data of any format Pillow decodes (here a TIFF) is drawn, in the header logo and inline. Image data Pillow
 // refuses is an exception of the export, and a logo Django's try around Image() catches builds as the '[LOGO]'
-// paragraph; both are drawn as reportlab draws them.
-func TestInputsNotPorted(t *testing.T) {
+// paragraph; both are drawn as reportlab draws them. The other inputs this test lists were refused before they were
+// ported: each now builds, or fails where reportlab raises.
+func TestFormerRefusedInputsBuildOrFailAsReportlab(t *testing.T) {
 	header := func(logo, name string) *string {
 		text := `<img src="` + logo + `" style="height: 1000px;"/><h1 style="font-size: 20px;">` + name + `</h1><h2>x</h2><h3>y</h3>`
 		return &text
@@ -46,7 +47,7 @@ func TestInputsNotPorted(t *testing.T) {
 		"image png":      {Header: header("None", `A <img src="data:image/png;base64,iVBORw0KGgo="/> B`)},
 	} {
 		input.Columns, input.Rows, input.Title, input.Portrait, input.IsA3 = base.Columns, base.Rows, base.Title, true, true
-		if _, err := input.Build(time.Unix(946684800, 0)); !errors.Is(err, ErrLayout) || errors.Is(err, ErrNotPorted) {
+		if _, err := input.Build(time.Unix(946684800, 0)); !errors.Is(err, ErrLayout) {
 			t.Errorf("%s: %v", name, err)
 		}
 	}
@@ -60,8 +61,8 @@ func TestInputsNotPorted(t *testing.T) {
 		}
 	}
 	// Markup reportlab's parser raises on, and an image source reportlab cannot open (ImageReader raises IOError), are
-	// an exception of the export, not a refusal; the <index> and <onDraw> callbacks of its documents (they have no
-	// canvas hook) fail the build, as here.
+	// an exception of the export; the <index> and <onDraw> callbacks of its documents (they have no canvas hook) fail
+	// the build, as here.
 	for name, input := range map[string]DataTable{
 		"image file missing": {Header: header("None", `A <img src="`+filepath.Join(t.TempDir(), "absent.jpg")+`"/> B`)},
 		"image scheme":       {Header: header("None", `A <img src="gopher://127.0.0.1/logo.jpg"/> B`)},
@@ -72,7 +73,7 @@ func TestInputsNotPorted(t *testing.T) {
 		"greek non-latin1":   {Header: header("None", "A <greek>日</greek> B")},
 	} {
 		input.Columns, input.Rows, input.Title, input.Portrait, input.IsA3 = base.Columns, base.Rows, base.Title, true, true
-		if _, err := input.Build(time.Unix(946684800, 0)); !errors.Is(err, ErrLayout) || errors.Is(err, ErrNotPorted) {
+		if _, err := input.Build(time.Unix(946684800, 0)); !errors.Is(err, ErrLayout) {
 			t.Errorf("%s: %v", name, err)
 		}
 	}
@@ -83,17 +84,17 @@ func TestInputsNotPorted(t *testing.T) {
 		"additional number": {Additional: []string{`<font size="nan">x</font>`}},
 	} {
 		input.Columns, input.Rows, input.Title, input.Portrait, input.IsA3 = base.Columns, base.Rows, base.Title, true, true
-		if _, err := input.Build(time.Unix(946684800, 0)); !errors.Is(err, ErrLayout) || errors.Is(err, ErrNotPorted) {
+		if _, err := input.Build(time.Unix(946684800, 0)); !errors.Is(err, ErrLayout) {
 			t.Errorf("%s: %v", name, err)
 		}
 	}
 	if _, err := (ReportTable{Headers: []string{"A"}, Rows: [][]string{{`<font size="-inf">x</font>`}}, Title: "T"}).
-		Build(time.Unix(946684800, 0)); !errors.Is(err, ErrLayout) || errors.Is(err, ErrNotPorted) {
+		Build(time.Unix(946684800, 0)); !errors.Is(err, ErrLayout) {
 		t.Errorf("report cell number: %v", err)
 	}
 	attendance := Attendance{Courses: []AttendanceCourse{{Course: "C", Dates: []string{"d"},
 		Rows: []AttendanceRow{{Name: `<font size="nan">x</font>`, Attendance: []string{"P"}, Present: 1}}}}}
-	if _, err := attendance.Build(time.Unix(946684800, 0)); !errors.Is(err, ErrLayout) || errors.Is(err, ErrNotPorted) {
+	if _, err := attendance.Build(time.Unix(946684800, 0)); !errors.Is(err, ErrLayout) {
 		t.Errorf("attendance cell number: %v", err)
 	}
 	// Greek, unichar, the Courier and Times faces and plain markup are laid out as reportlab lays them out.
@@ -138,8 +139,8 @@ func TestInputsNotPorted(t *testing.T) {
 
 // Colour attributes are read for every string: the css forms, the colour
 // names (plain, CMYK and transparent), Blacker/Whiter, the literals, the
-// expressions and the HexColor values. None of them is an input the port
-// refuses; the ones reportlab fails on are exceptions of the export.
+// expressions and the HexColor values. The ones reportlab fails on are
+// exceptions of the export.
 func TestColoursAreNotRefused(t *testing.T) {
 	header := func(logo, name string) *string {
 		text := `<img src="` + logo + `" style="height: 1000px;"/><h1 style="font-size: 20px;">` + name + `</h1><h2>x</h2><h3>y</h3>`
@@ -170,14 +171,14 @@ func TestColoursAreNotRefused(t *testing.T) {
 	} {
 		input := base
 		input.Header = header("None", "A "+markup+" B")
-		if _, err := input.Build(time.Unix(946684800, 0)); errors.Is(err, ErrNotPorted) {
-			t.Errorf("%s: refused: %v", name, err)
+		if _, err := input.Build(time.Unix(946684800, 0)); err != nil && !errors.Is(err, ErrLayout) {
+			t.Errorf("%s: %v", name, err)
 		}
 	}
 }
 
 // The wordWrap values, the hyphenation and URI splitting of <para> are laid out
-// as reportlab lays them out: none of them is an input the port refuses.
+// as reportlab lays them out.
 func TestHyphenationAndWordWrapAreNotRefused(t *testing.T) {
 	header := func(logo, name string) *string {
 		text := `<img src="` + logo + `" style="height: 1000px;"/><h1 style="font-size: 20px;">` + name + `</h1><h2>x</h2><h3>y</h3>`

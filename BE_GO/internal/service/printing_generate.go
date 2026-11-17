@@ -106,9 +106,6 @@ func (s *PrintingGenerate) Generate(ctx context.Context, request PrintingGenerat
 	if err == nil {
 		report, err = run.finish(report)
 	}
-	if errors.Is(err, pdfexport.ErrNotPorted) {
-		return PrintingGenerateResponse{}, err // refused before the promotions are saved
-	}
 	if err != nil && !errors.Is(err, errPrintingFailure) {
 		return PrintingGenerateResponse{}, err
 	}
@@ -222,8 +219,6 @@ func (r *printingRun) finish(report *printingReport) (*printingReport, error) {
 		document, err := pdfexport.DataTable{Columns: report.columns, Rows: pdfexport.RowsOf(report.data),
 			Title: printingPDFTitle(report.title, r.today)}.Build(r.now)
 		switch {
-		case errors.Is(err, pdfexport.ErrNotPorted):
-			return nil, err
 		case errors.Is(err, refusal.ErrAppState):
 			return nil, err // a layout no export builds (pdfexport.ErrUnexpectedLayout)
 		case err != nil:

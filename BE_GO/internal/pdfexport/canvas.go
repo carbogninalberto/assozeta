@@ -42,10 +42,6 @@ func (e *LayoutError) Is(target error) bool { return target == ErrLayout }
 
 func layoutFailure(text string) error { return &LayoutError{Text: text} }
 
-// ErrNotPorted is an input whose document this package does not reproduce:
-// callers refuse it before any write.
-var ErrNotPorted = refusal.New("pdfexport: document input not ported")
-
 // ErrUnexpectedLayout is a document structure the builders never make: an
 // auto-width table cell that is not a list of paragraphs (the one auto-width
 // table, ReportTable, holds paragraph cells only). It is an application-state

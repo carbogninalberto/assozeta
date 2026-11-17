@@ -210,8 +210,6 @@ func (s *CourseSubscriptions) Export(ctx context.Context, export *CourseSubscrip
 		document, err := pdfexport.DataTable{Columns: columns, Rows: pdfexport.RowsOf(cells),
 			Title: title + " (giorno stampa " + printingDate(today) + ")"}.Build(today)
 		switch {
-		case errors.Is(err, pdfexport.ErrNotPorted):
-			return nil, err // the input pdfexport does not reproduce
 		case errors.Is(err, refusal.ErrAppState):
 			return nil, err // a layout no export builds (pdfexport.ErrUnexpectedLayout)
 		case err != nil:

@@ -182,11 +182,11 @@ func TestImageSourceFailureAndSeam(t *testing.T) {
 		t.Fatalf("image %+v", carried)
 	}
 	// A format pilimage decodes is carried with Pillow's size; a source Pillow
-	// cannot identify is the paragraph's exception, not a refusal.
+	// cannot identify is the paragraph's exception.
 	setResource(t, openResource(func(string) ([]byte, error) {
 		return []byte("\x89PNG\r\n\x1a\n"), nil
 	}))
-	if _, _, _, err := parseParagraph(`a <img src="logo.png"/> b`, paraStyle{fontName: "Helvetica", fontSize: numInt(9)}); !errors.Is(err, ErrLayout) || errors.Is(err, ErrNotPorted) {
+	if _, _, _, err := parseParagraph(`a <img src="logo.png"/> b`, paraStyle{fontName: "Helvetica", fontSize: numInt(9)}); !errors.Is(err, ErrLayout) {
 		t.Fatalf("a truncated PNG source: %v", err)
 	}
 	// A TIFF source is decoded and carried like the other formats.

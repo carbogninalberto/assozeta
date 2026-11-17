@@ -300,8 +300,8 @@ func bulletFrags(b *paraBullet) []*frag {
 }
 
 // The corpus comes from reportlab's own Paragraph
-// (TESTS/fixtures/generate_pdf_paragraphs.py): the fragments of a text, an
-// exception, or fragments this package refuses.
+// (TESTS/fixtures/generate_pdf_paragraphs.py): the fragments of a text, or an
+// exception.
 func TestParagraphParserCorpus(t *testing.T) {
 	raw, err := os.ReadFile("testdata/paragraphs.json")
 	if err != nil {
@@ -323,15 +323,8 @@ func TestParagraphParserCorpus(t *testing.T) {
 		item := entry.(map[string]any)
 		text, _ := item["text"].(string)
 		font, _ := item["font"].(string)
-		refusable := item["refusable"] == true
 		other := item["other"] == true
 		frags, bullet, style, err := parseParagraph(paraClean(text), paraStyle{fontName: font, fontSize: numInt(9), leading: numInt(12)})
-		if errors.Is(err, ErrNotPorted) {
-			if !refusable && !other {
-				t.Errorf("%q: refused", text)
-			}
-			continue
-		}
 		switch {
 		case item["build_error"] == true:
 			// reportlab parses these (an <index> or onDraw callback); drawing fails the document, as here.

@@ -8,11 +8,9 @@ import (
 	"unicode"
 )
 
-// The attribute values of paraparser.py. Every conversion answers one of
-// three things: a value, an exception reportlab raises (the export fails:
-// ErrLayout) or an input whose Python semantics this package does not
-// reproduce (ErrNotPorted: nan and infinity, and non-digit non-ASCII text in a
-// number). The colours are in color.go and tocolor.go.
+// The attribute values of paraparser.py. Every conversion answers one of two
+// things: a value, or an exception reportlab raises (the export fails:
+// ErrLayout). The colours are in color.go and tocolor.go.
 
 // pyNum is a number of the paragraph markup: a Python int (its exact decimal
 // digits and their float64 value) or a Python float. Python keeps ints exact
@@ -245,7 +243,6 @@ type attrStatus int
 const (
 	attrOK attrStatus = iota
 	attrInvalid
-	attrUnsupported
 )
 
 func pySpaceByte(b byte) bool {

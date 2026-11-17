@@ -9,8 +9,7 @@ import (
 )
 
 // ErrPrintingGenerateServer is an exception printing_generate does not catch
-// (the 500 page); an output pdfexport refuses is its own refusal
-// (pdfexport.ErrNotPorted), answered 500 before any write.
+// (the 500 page).
 var (
 	ErrPrintingGenerateServer = errors.New("printing generate: unhandled exception")
 	// ErrPrintingGenerateUnreachable is a state no request or stored row

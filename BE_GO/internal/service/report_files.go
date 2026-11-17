@@ -317,9 +317,8 @@ func raisedText(err error) (string, bool) {
 }
 
 // mcpBuiltFile maps a document builder's outcome: an exception of the Django
-// exporter is a raisedFile with its text, an input pdfexport does not
-// reproduce keeps its own refusal, xlsxexport's unexpected input is app
-// state and passes through.
+// exporter is a raisedFile with its text, and xlsxexport's unexpected input is
+// app state and passes through.
 func mcpBuiltFile(ctx context.Context, file []byte, err error) ([]byte, error) {
 	if errors.Is(err, xlsxexport.ErrDjango) || errors.Is(err, pdfexport.ErrLayout) {
 		text, ok := djangoFailureText(err)
@@ -327,9 +326,6 @@ func mcpBuiltFile(ctx context.Context, file []byte, err error) ([]byte, error) {
 			return nil, mcpRunOnly(ctx, "")
 		}
 		return nil, &raisedFile{text: text}
-	}
-	if errors.Is(err, pdfexport.ErrNotPorted) {
-		return nil, fmt.Errorf("pdf exporter: %w", err)
 	}
 	return file, err
 }

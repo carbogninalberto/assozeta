@@ -106,7 +106,7 @@ func TestSequencerParagraphs(t *testing.T) {
 		resetParaSequencer()
 		text, err := paragraphText(t, item.text)
 		if item.raises {
-			if !errors.Is(err, ErrLayout) || errors.Is(err, ErrNotPorted) {
+			if !errors.Is(err, ErrLayout) {
 				t.Errorf("%s: %q: %v", item.name, item.text, err)
 			}
 			continue
@@ -333,7 +333,7 @@ func TestSequenceTemplateWidthLimits(t *testing.T) {
 	}
 }
 
-// A width beyond seqMaxWidth no longer refuses the paragraph: reportlab pads
+// A width beyond seqMaxWidth does not fail the paragraph: reportlab pads
 // with that many spaces, this port with seqMaxWidth (its lines break between
 // the same words).
 func TestSequenceTemplateWiderThanSeqMaxWidth(t *testing.T) {

@@ -7,7 +7,6 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/paymentcategorylifecycle"
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/pdfexport"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
 	"github.com/labstack/echo/v4"
 )
@@ -50,10 +49,10 @@ func (h *PrintingGenerateHandler) Generate(c echo.Context) error {
 	response, err := h.printing.Generate(write.Context, service.PrintingGenerateRequest{Identity: *identity, Body: write.Body,
 		GroupHeader: request.Header.Get("X-Group-Id"), Audit: write.Audit})
 	if err != nil {
-		if !errors.Is(err, domain.ErrPrintingGenerateServer) && !errors.Is(err, pdfexport.ErrNotPorted) {
+		if !errors.Is(err, domain.ErrPrintingGenerateServer) {
 			c.Logger().Error(err)
 		}
-		// Unhandled view exceptions and the refused outputs (reportlab PDF) are the 500 page.
+		// Unhandled view exceptions are the 500 page.
 		return messageReadsError(c, err)
 	}
 	if response.Empty {

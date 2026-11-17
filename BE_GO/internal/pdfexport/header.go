@@ -73,9 +73,7 @@ func pythonB64Decode(text string) ([]byte, bool) {
 // '[LOGO]' paragraph: Python's base64 refuses the text, no data is left,
 // Pillow refuses to open the image (its exception is caught there), the
 // announced height is zero (the drawWidth division raises), or the image is one
-// of Pillow's stub formats, which open at 0x0. A format pilimage only
-// identifies but Pillow opens at a real size is a refusal: its decoder, and
-// so the logo Pillow would draw, is not ported yet.
+// of Pillow's stub formats, which open at 0x0.
 func loadLogo(encoded string) (*imageReader, error) {
 	data, ok := pythonB64Decode(encoded)
 	if !ok || len(data) == 0 {
