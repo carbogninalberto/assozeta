@@ -520,9 +520,12 @@ func (e *Effects) QuerysetUpdate(ctx context.Context, model *Model, key Value, a
 	return result.RowsAffected()
 }
 
-// SetM2M is getattr(instance, field).set(keys) on a saved instance with no
-// related rows: the through rows of the distinct keys, in the order of the
-// CPython set _add_items builds, in one INSERT ... ON CONFLICT DO NOTHING.
+// SetM2M is getattr(instance, field).set(keys) on a saved instance: for an
+// auto-created through table the through rows of the distinct keys, in the
+// order of the CPython set _add_items builds, in one INSERT ... ON CONFLICT DO
+// NOTHING (the instance's rows cannot exist yet); for a custom (not
+// auto-created) through model the remove/add diff set() computes, see
+// setThrough.
 func (e *Effects) SetM2M(ctx context.Context, model *Model, field *M2M, key Value, targets []string) error {
 	if (field.TargetKind != "uuid" && field.TargetKind != "int") || model.PK.Kind != "uuid" {
 		// plan.json: through targets are uuid (the imported models' keys) or
@@ -548,6 +551,11 @@ func (e *Effects) SetM2M(ctx context.Context, model *Model, field *M2M, key Valu
 			return err
 		}
 		prepped = append(prepped, digits)
+	}
+	if !field.AutoCreated {
+		// ManyRelatedManager.set() over a custom through model compares the
+		// existing rows and removes/adds the difference.
+		return e.setThrough(ctx, field, key, prepped)
 	}
 	var existing int
 	if err := e.tx().GetContext(ctx, &existing, `SELECT count(*) FROM `+quote(field.Table)+` WHERE `+quote(field.Source)+` = $1::uuid`,
@@ -578,6 +586,271 @@ func (e *Effects) SetM2M(ctx context.Context, model *Model, field *M2M, key Valu
 	_, err := e.tx().ExecContext(ctx, `INSERT INTO `+quote(field.Table)+` (`+quote(field.Source)+`, `+quote(field.Target)+`) VALUES `+
 		strings.Join(values, ", ")+` ON CONFLICT DO NOTHING`, args...)
 	return err
+}
+
+// throughModel is the plan model whose table is field's through table (a custom
+// through model, the one a not auto-created m2m names).
+func (e *Effects) throughModel(field *M2M) (*Model, error) {
+	for _, model := range e.Plan.byName {
+		if model.Table == field.Table {
+			return model, nil
+		}
+	}
+	// plan.json: every m2m names the table of an imported model (an
+	// auto-created one or AssociateTutorRelation).
+	return nil, planUnreachable("through table %s", field.Table)
+}
+
+// throughField is the through model field stored in column.
+func throughField(through *Model, column string) (*Field, error) {
+	for _, field := range through.Fields {
+		if field.Column == column {
+			return field, nil
+		}
+	}
+	// plan.json: a through model has a field for each source/target column its
+	// m2m names.
+	return nil, planUnreachable("through column %s of %s", column, through.Name)
+}
+
+// throughRow is a through row loaded from the database: its instance (for the
+// audit entry and the primary key) and the canonical text of its target id.
+type throughRow struct {
+	instance *Instance
+	target   string
+}
+
+// setThrough is ManyRelatedManager.set() for a custom (not auto-created)
+// through model. set() collects old_ids from the existing through rows, takes
+// each prepared target out of old_ids (the ones left over are removed) and
+// adds the others: _remove_items deletes the leftovers with a queryset delete,
+// so every row's pre_delete writes auditlog's log_delete entry, while
+// _add_items bulk-creates the new rows from the through model (its field
+// defaults applied, no save(), no audit entry).
+func (e *Effects) setThrough(ctx context.Context, field *M2M, key Value, prepped []string) error {
+	through, err := e.throughModel(field)
+	if err != nil {
+		return err
+	}
+	source, err := throughField(through, field.Source)
+	if err != nil {
+		return err
+	}
+	target, err := throughField(through, field.Target)
+	if err != nil {
+		return err
+	}
+	sourceKey, err := uuidText(key)
+	if err != nil {
+		return err
+	}
+	rows, err := e.throughRows(ctx, field, through, sourceKey)
+	if err != nil {
+		return err
+	}
+	// old_ids is a set of the target ids the through rows hold.
+	old := map[string]bool{}
+	for _, row := range rows {
+		old[row.target] = true
+	}
+	added := []string{}
+	for _, text := range prepped {
+		if old[text] {
+			// set() drops the id from old_ids and keeps no new object for it.
+			delete(old, text)
+			continue
+		}
+		added = append(added, text)
+	}
+	// remove(old_ids): the queryset delete matches the through rows in the
+	// collector's pk order; each row's DELETE runs first, because auditlog
+	// connects log_delete to post_delete and so writes the one auditlog delete
+	// entry per row after that row is gone.
+	excluded := map[string]bool{}
+	if through.audited() {
+		if len(through.Audit.Include) > 0 {
+			// plan.json: no imported model registers include_fields.
+			return planUnreachable("auditlog include_fields on %s", through.Name)
+		}
+		for _, name := range through.Audit.Exclude {
+			excluded[name] = true
+		}
+	}
+	for _, row := range rows {
+		if !old[row.target] {
+			continue
+		}
+		pk, err := dbValue(through.PKField(), row.instance.PK())
+		if err != nil {
+			return err
+		}
+		if _, err := e.tx().ExecContext(ctx, `DELETE FROM `+quote(field.Table)+` WHERE `+quote(through.PK.Column)+
+			` = $1`+cast(through.PKField()), pk); err != nil {
+			return err
+		}
+		// log_delete runs on post_delete: the entry is written after the row's
+		// DELETE, from the instance the collector still holds.
+		if through.audited() {
+			changes := map[string][2]string{}
+			for _, column := range through.Fields {
+				if excluded[column.Name] {
+					continue
+				}
+				text, include, err := auditCreate(column, row.instance.Get(column.Attname))
+				if err != nil {
+					return err
+				}
+				if !include {
+					continue
+				}
+				// log_delete's diff: the old value against the absent side.
+				changes[column.Name] = [2]string{text, "None"}
+			}
+			entry, err := e.entry(row.instance, 2, changes)
+			if err != nil {
+				return err
+			}
+			if err := e.Audit(ctx, e.Tx, entry); err != nil {
+				return err
+			}
+		}
+	}
+	// add(new ids): one through row per missing target, in the CPython set
+	// _add_items builds, with the through model's defaults (bulk_create).
+	ordered := pySetOrder(added)
+	if field.TargetKind == "int" {
+		ordered = pySetOrderInts(added)
+	}
+	for _, text := range ordered {
+		value := UUIDValue(text)
+		if field.TargetKind == "int" {
+			value = Value{Kind: Int, S: text}
+		}
+		instance, err := e.NewInstance(through, map[string]Value{source.Attname: key, target.Attname: value})
+		if err != nil {
+			return err
+		}
+		// bulk_create: the AutoField key comes back from the INSERT, and
+		// neither save() nor auditlog runs.
+		if err := e.insert(ctx, instance); err != nil {
+			return err
+		}
+		instance.Adding = false
+	}
+	return nil
+}
+
+// throughRows is the through model's rows for one source key, ordered by
+// primary key (the order Django's delete collector sorts them in). The row set
+// is read before any instance is built, so the connection is free for the
+// deletes that follow.
+func (e *Effects) throughRows(ctx context.Context, field *M2M, through *Model, sourceKey string) ([]throughRow, error) {
+	rows, err := e.tx().QueryxContext(ctx, `SELECT * FROM `+quote(field.Table)+` WHERE `+quote(field.Source)+
+		` = $1::uuid ORDER BY `+quote(through.PK.Column), sourceKey)
+	if err != nil {
+		return nil, err
+	}
+	scanned := []map[string]any{}
+	for rows.Next() {
+		row := map[string]any{}
+		if err := rows.MapScan(row); err != nil {
+			_ = rows.Close()
+			return nil, err
+		}
+		scanned = append(scanned, row)
+	}
+	if err := rows.Err(); err != nil {
+		_ = rows.Close()
+		return nil, err
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	target, err := throughField(through, field.Target)
+	if err != nil {
+		return nil, err
+	}
+	loaded := make([]throughRow, 0, len(scanned))
+	for _, row := range scanned {
+		// model(**row): the instance log_delete renders its delete diff from.
+		instance, err := e.NewInstance(through, map[string]Value{})
+		if err != nil {
+			return nil, err
+		}
+		for _, column := range through.Fields {
+			value, err := dbFieldValue(column, row[column.Column])
+			if err != nil {
+				return nil, err
+			}
+			instance.set(column.Attname, value)
+		}
+		// old_ids holds the target ids as set() reads them: values_list's
+		// values, canonical uuid text or int digits.
+		targetValue := instance.Get(target.Attname)
+		var text string
+		if field.TargetKind == "int" {
+			text, err = intFieldPrep(target.Name, targetValue)
+		} else {
+			text, err = uuidText(targetValue)
+		}
+		if err != nil {
+			return nil, err
+		}
+		loaded = append(loaded, throughRow{instance: instance, target: text})
+	}
+	return loaded, nil
+}
+
+// dbFieldValue is the attribute psycopg2 loads for a scanned column.
+func dbFieldValue(field *Field, raw any) (Value, error) {
+	if raw == nil {
+		return NoneValue, nil
+	}
+	kind := field.Kind
+	if field.IsFK() {
+		kind = field.TargetKind
+	}
+	switch kind {
+	case "uuid":
+		switch value := raw.(type) {
+		case string:
+			return UUIDValue(value), nil
+		case []byte:
+			return UUIDValue(string(value)), nil
+		case [16]byte:
+			// pgx decodes a uuid column into its 16 bytes.
+			hex := fmt.Sprintf("%x", value[:])
+			return UUIDValue(hex[:8] + "-" + hex[8:12] + "-" + hex[12:16] + "-" + hex[16:20] + "-" + hex[20:]), nil
+		}
+	case "int":
+		switch value := raw.(type) {
+		case int64:
+			return IntValue(value), nil
+		case int32:
+			return IntValue(int64(value)), nil
+		case int:
+			return IntValue(int64(value)), nil
+		case string:
+			return Value{Kind: Int, S: value}, nil
+		case []byte:
+			return Value{Kind: Int, S: string(value)}, nil
+		}
+	case "bool":
+		if value, ok := raw.(bool); ok {
+			return BoolValue(value), nil
+		}
+	case "text":
+		switch value := raw.(type) {
+		case string:
+			return StrValue(value), nil
+		case []byte:
+			return StrValue(string(value)), nil
+		}
+	}
+	// plan.json: the only custom through model (AssociateTutorRelation) holds an
+	// AutoField, two uuid foreign keys and a boolean, and pgx decodes those into
+	// the types above.
+	return Value{}, fmt.Errorf("importeffects: scanned %T for %s.%s", raw, field.Name, kind)
 }
 
 // CheckConstraints is connection.check_constraints() on PostgreSQL.
