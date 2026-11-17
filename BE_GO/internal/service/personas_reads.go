@@ -23,8 +23,6 @@ var (
 	ErrPersonaInvalidPK = errors.New("associate pk rejected")
 	// ErrPersonaUnhandled is an exception Django does not handle (the 500 page).
 	ErrPersonaUnhandled = errors.New("unhandled persona queryset error")
-	// ErrPersonaNotPorted refuses inputs whose Django semantics are not ported (the 500 page, never a guessed body).
-	ErrPersonaNotPorted = refusal.New("persona input not ported")
 	// errPersonaDeleteUnwired is Delete with a pk on a handler without the
 	// writes: cmd/server/main.go always wires them (personasHandler.WithWrites),
 	// so the soft delete runs instead. An application-state error.

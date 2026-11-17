@@ -32472,6 +32472,417 @@
      }
     ]
    }
+  },
+  {
+   "name": "personas-writes-stock-create-picture",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/personas/",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "associate_id": "$a131",
+    "full_name": "Romina Router",
+    "is_minor_now": true,
+    "is_tutor": false,
+    "age": 0,
+    "family_members": [],
+    "tutors": [],
+    "picture_path": "$pic19",
+    "first_name": "Romina",
+    "last_name": "Router",
+    "sex": "A",
+    "tax_code": null,
+    "born_date": null,
+    "born_city": null,
+    "address_city": null,
+    "address": null,
+    "address_cap": null,
+    "nationality": "Italiana",
+    "nationality_residence": "Italia",
+    "email": null,
+    "phone": null,
+    "phone_2": null,
+    "phone_3": null,
+    "phone_4": null,
+    "phone_label": null,
+    "phone_2_label": null,
+    "phone_3_label": null,
+    "phone_4_label": null,
+    "is_minor": false,
+    "disabled": false,
+    "draft": false,
+    "deleted": false,
+    "family_role": null,
+    "id_number": null,
+    "migrated": false,
+    "notes": null,
+    "creation_date": "$now131",
+    "user": "a1000000-0000-4000-8000-000000700001",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "group": null,
+    "family": null
+   },
+   "allow": [
+    "DELETE",
+    "GET",
+    "HEAD",
+    "OPTIONS",
+    "POST"
+   ],
+   "effect": {
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "associate",
+      "ref": "$a131",
+      "action": 0,
+      "changes": {
+       "associate_id": [
+        "None",
+        "$a131"
+       ],
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "family": [
+        "None",
+        "None"
+       ],
+       "picture_path": [
+        "None",
+        "$pic19"
+       ],
+       "first_name": [
+        "None",
+        "Romina"
+       ],
+       "last_name": [
+        "None",
+        "Router"
+       ],
+       "sex": [
+        "None",
+        "A"
+       ],
+       "nationality": [
+        "None",
+        "Italiana"
+       ],
+       "nationality_residence": [
+        "None",
+        "Italia"
+       ],
+       "is_minor": [
+        "None",
+        "False"
+       ],
+       "disabled": [
+        "None",
+        "False"
+       ],
+       "draft": [
+        "None",
+        "False"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ],
+       "migrated": [
+        "None",
+        "False"
+       ],
+       "creation_date": [
+        "None",
+        "$now131"
+       ],
+       "tutor_relations": [
+        "None",
+        "application.AssociateTutorRelation.None"
+       ],
+       "tutored_relations": [
+        "None",
+        "application.AssociateTutorRelation.None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "created": [
+     {
+      "picture_path": "$pic19",
+      "first_name": "Romina",
+      "last_name": "Router",
+      "sex": "A",
+      "tax_code": null,
+      "born_date": null,
+      "born_city": null,
+      "address_city": null,
+      "address": null,
+      "address_cap": null,
+      "nationality": "Italiana",
+      "nationality_residence": "Italia",
+      "email": null,
+      "phone": null,
+      "phone_2": null,
+      "phone_3": null,
+      "phone_4": null,
+      "phone_label": null,
+      "phone_2_label": null,
+      "phone_3_label": null,
+      "phone_4_label": null,
+      "is_minor": false,
+      "disabled": false,
+      "draft": false,
+      "deleted": false,
+      "family_role": null,
+      "id_number": null,
+      "migrated": false,
+      "notes": null,
+      "user": "a1000000-0000-4000-8000-000000700001",
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "group": null,
+      "family": null,
+      "id": "$a131",
+      "created": "$now131"
+     }
+    ],
+    "changed": {},
+    "relations_created": [],
+    "relations_deleted": [],
+    "relations_changed": {}
+   },
+   "body": {
+    "first_name": "Romina",
+    "last_name": "Router",
+    "picture_path": "data:image/png;base64,iVBORw0KGgogcGVyc29uYXMgcGljdHVyZSBmaXh0dXJlIP/+"
+   },
+   "pictures": {
+    "$pic19": {
+     "folder": "$a131",
+     "body_b64": "iVBORw0KGgogcGVyc29uYXMgcGljdHVyZSBmaXh0dXJlIP/+"
+    }
+   },
+   "storage": [
+    "HEAD $pic19",
+    "PUT $pic19",
+    "ACL $pic19"
+   ]
+  },
+  {
+   "name": "personas-writes-stock-create-form-picture",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/personas/",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "associate_id": "$a132",
+    "full_name": "Rossana None",
+    "is_minor_now": true,
+    "is_tutor": false,
+    "age": 0,
+    "family_members": [],
+    "tutors": [],
+    "picture_path": "$pic20",
+    "first_name": "Rossana",
+    "last_name": null,
+    "sex": "A",
+    "tax_code": null,
+    "born_date": null,
+    "born_city": null,
+    "address_city": null,
+    "address": null,
+    "address_cap": null,
+    "nationality": "Italiana",
+    "nationality_residence": "Italia",
+    "email": null,
+    "phone": null,
+    "phone_2": null,
+    "phone_3": null,
+    "phone_4": null,
+    "phone_label": null,
+    "phone_2_label": null,
+    "phone_3_label": null,
+    "phone_4_label": null,
+    "is_minor": false,
+    "disabled": false,
+    "draft": false,
+    "deleted": false,
+    "family_role": null,
+    "id_number": null,
+    "migrated": false,
+    "notes": null,
+    "creation_date": "$now132",
+    "user": "a1000000-0000-4000-8000-000000700001",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "group": null,
+    "family": null
+   },
+   "allow": [
+    "DELETE",
+    "GET",
+    "HEAD",
+    "OPTIONS",
+    "POST"
+   ],
+   "effect": {
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "associate",
+      "ref": "$a132",
+      "action": 0,
+      "changes": {
+       "associate_id": [
+        "None",
+        "$a132"
+       ],
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "family": [
+        "None",
+        "None"
+       ],
+       "picture_path": [
+        "None",
+        "$pic20"
+       ],
+       "first_name": [
+        "None",
+        "Rossana"
+       ],
+       "sex": [
+        "None",
+        "A"
+       ],
+       "nationality": [
+        "None",
+        "Italiana"
+       ],
+       "nationality_residence": [
+        "None",
+        "Italia"
+       ],
+       "is_minor": [
+        "None",
+        "False"
+       ],
+       "disabled": [
+        "None",
+        "False"
+       ],
+       "draft": [
+        "None",
+        "False"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ],
+       "migrated": [
+        "None",
+        "False"
+       ],
+       "creation_date": [
+        "None",
+        "$now132"
+       ],
+       "tutor_relations": [
+        "None",
+        "application.AssociateTutorRelation.None"
+       ],
+       "tutored_relations": [
+        "None",
+        "application.AssociateTutorRelation.None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "created": [
+     {
+      "picture_path": "$pic20",
+      "first_name": "Rossana",
+      "last_name": null,
+      "sex": "A",
+      "tax_code": null,
+      "born_date": null,
+      "born_city": null,
+      "address_city": null,
+      "address": null,
+      "address_cap": null,
+      "nationality": "Italiana",
+      "nationality_residence": "Italia",
+      "email": null,
+      "phone": null,
+      "phone_2": null,
+      "phone_3": null,
+      "phone_4": null,
+      "phone_label": null,
+      "phone_2_label": null,
+      "phone_3_label": null,
+      "phone_4_label": null,
+      "is_minor": false,
+      "disabled": false,
+      "draft": false,
+      "deleted": false,
+      "family_role": null,
+      "id_number": null,
+      "migrated": false,
+      "notes": null,
+      "user": "a1000000-0000-4000-8000-000000700001",
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "group": null,
+      "family": null,
+      "id": "$a132",
+      "created": "$now132"
+     }
+    ],
+    "changed": {},
+    "relations_created": [],
+    "relations_deleted": [],
+    "relations_changed": {}
+   },
+   "raw_body": "first_name=Rossana&picture_path=data%3Aimage%2Fjpeg%3Bbase64%2C%2F9j%2F4CBzZWNvbmQgcGljdHVyZSA%2FPn4%3D",
+   "content_type": "application/x-www-form-urlencoded",
+   "pictures": {
+    "$pic20": {
+     "folder": "$a132",
+     "body_b64": "/9j/4CBzZWNvbmQgcGljdHVyZSA/Pn4="
+    }
+   },
+   "storage": [
+    "HEAD $pic20",
+    "PUT $pic20",
+    "ACL $pic20"
+   ]
   }
  ]
 }

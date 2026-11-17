@@ -38,6 +38,12 @@ association'; an owner whose association is missing or soft-deleted: 500).
   sport_association, group and family), save(user=request.user,
   sport_association=...) through Associate.objects.create (the manager stores
   the raw X-Group-Id), then _handle_tutors, then 201 with the serializer data.
+- The router's stock create (POST /personas/) is the same serializer without the
+  add view's pop; its picture uploads are authored here because this family
+  records the default storage (the router-personas family has none). Its
+  tutors_data 500 (create() stores the picture, then Associate() raises
+  TypeError) is not authored: the object's folder is a fresh uuid4 that no row
+  keeps.
 - update: get_object(), request.data.get('tutors_data', []) (validated by the
   ListField), partial validation, save() (Model.save writes every field;
   auditlog records only changed fields), _handle_tutors (a missing tutors_data
@@ -1415,6 +1421,28 @@ tutor_data = [{'tutor': {'associate_id': A['tutor_a'], 'phone': '3339998888'}, '
 handle_tutors(effect, 'gone_admin', tutor_data)
 add('update-tutor-same-association-updated', 'owner', 'PATCH', update_path('gone_admin'), 200, info('gone_admin'),
     body={'tutors_data': tutor_data}, allow=ALLOW_UPDATE, effect=effect)
+
+# The router's stock create (POST /personas/) runs the same AssociateSerializer without the
+# add view's tutors_data pop: to_internal_value decodes a picture_path containing 'base64' and
+# create() stores it under the new associate's id before Associate.objects.create, with
+# perform_create's user and association. The router-personas family runs without a storage
+# service, so the stock create's upload cases live here, where the storage is recorded. (The
+# stock create with tutors_data and a picture is not authored: create() stores the object under
+# a fresh uuid.uuid4() that no row keeps, so its folder cannot be bound to a created row.)
+STOCK = '/personas/'
+ALLOW_STOCK = {'POST', 'DELETE', 'GET', 'HEAD', 'OPTIONS'}
+effect = Effect('owner')
+ref, upload = created_picture(effect, PICTURE, user=OWNER, first_name='Romina', last_name='Router')
+add_picture('stock-create-picture', 'owner', 'POST', STOCK, 201, info(ref),
+            body={'first_name': 'Romina', 'last_name': 'Router', 'picture_path': 'data:image/png;base64,' + PICTURE},
+            allow=ALLOW_STOCK, effect=effect, upload=upload)
+# An HTML form body: Field.get_value reads the QueryDict, the picture branch pops the input
+# and the remaining fields are validated with the form rules.
+effect = Effect('owner')
+ref, upload = created_picture(effect, PICTURE_2, user=OWNER, first_name='Rossana')
+add_picture('stock-create-form-picture', 'owner', 'POST', STOCK, 201, info(ref),
+            raw_body=urllib.parse.urlencode({'first_name': 'Rossana', 'picture_path': 'data:image/jpeg;base64,' + PICTURE_2}),
+            content_type='application/x-www-form-urlencoded', allow=ALLOW_STOCK, effect=effect, upload=upload)
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({

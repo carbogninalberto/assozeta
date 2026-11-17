@@ -102,8 +102,8 @@ the production execution owner.
 
 ## Not ported (refused with the 500 page before any write)
 
-- Uploads on the router's stock create (its 400 shape and the upload) and the HTML form body: `ErrPersonaNotPorted`,
-  handed off to Django. (Since long tail PR 4, X12, errors botocore retries and connection failures are the
+- (Long tail PR 5: uploads on the router's stock create and its HTML form body are ported; `ErrPersonaNotPorted` is
+  gone, see [router-stock](router-stock.md).) (Since long tail PR 4, X12, errors botocore retries and connection failures are the
   serializer's 400 with botocore's final text, below.) A taken key gets
   `get_available_name`'s alternative name. A HeadObject, PutObject or PutObjectAcl error answer botocore raises
   without retrying is the serializer's 400 with botocore's text (`Error processing image: An error occurred (<code>)

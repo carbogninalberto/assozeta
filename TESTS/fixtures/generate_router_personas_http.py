@@ -15,10 +15,15 @@ group-aware, the query parameters; AssociateSerializer, as info), PUT to
 update() (partial), PATCH to partial_update() (500) and DELETE to the stock
 destroy(): Associate.delete(), a hard delete through Django's Collector (the
 tutor relations cascade), not the viewset's soft delete. Format twins:
-list() and update() reject format= (500). HTML form input on create is not
-ported (refused). Expectations reuse the personas-writes seed and authoring
-helpers (loaded from generate_personas_writes_http.py up to its first case).
-Run with ``python3 -I``.
+list() and update() reject format= (500). HTML form input on create follows
+the serializer's form rules (absent booleans are False, a present empty
+boolean input is skipped; tutors_data is read
+from the form's values, else its indexed keys, and still reaches Associate()
+as a keyword: the 500 page). A list body whose elements include the string
+'picture_path' fails to_internal_value's index lookup (500); any other list
+is the dict-check 400. Expectations reuse the personas-writes seed and
+authoring helpers (loaded from generate_personas_writes_http.py up to its
+first case). Run with ``python3 -I``.
 """
 import json
 from pathlib import Path
@@ -101,6 +106,46 @@ add('create-owner', 'owner', 'POST', LIST, 201, info(ref),
 effect = Effect('full_collaborator')
 ref = effect.create(user=OWNER, first_name='Formato')
 add('create-format-json', 'full_collaborator', 'POST', '/personas.json/', 201, info(ref), body={'first_name': 'Formato'}, effect=effect)
+
+# HTML form input: AssociateSerializer.to_internal_value copies the QueryDict and
+# the field values follow Field.get_value's html rules (an absent boolean is
+# default_empty_html False, an empty nullable text input the empty string).
+effect = Effect('owner')
+ref = effect.create(user=OWNER, first_name='Modulo', last_name='Html')
+add('create-form-body', 'owner', 'POST', LIST, 201, info(ref),
+    raw_body=urllib.parse.urlencode({'first_name': 'Modulo', 'last_name': 'Html'}),
+    content_type='application/x-www-form-urlencoded', effect=effect)
+# A present empty boolean input is empty (not required, not nullable): the field
+# is skipped and the model default (False) stays.
+effect = Effect('owner')
+ref = effect.create(user=OWNER, first_name='Modulo')
+add('create-form-empty-boolean', 'owner', 'POST', LIST, 201, info(ref),
+    raw_body=urllib.parse.urlencode({'first_name': 'Modulo', 'is_minor': ''}),
+    content_type='application/x-www-form-urlencoded', effect=effect)
+add('create-form-boolean-invalid', 'owner', 'POST', LIST, 400, {'is_minor': ['Must be a valid boolean.']},
+    raw_body=urllib.parse.urlencode({'first_name': 'Modulo', 'is_minor': 'maybe'}),
+    content_type='application/x-www-form-urlencoded')
+add('create-form-validation', 'owner', 'POST', LIST, 400, {'email': ['Enter a valid email address.']},
+    raw_body=urllib.parse.urlencode({'first_name': 'Modulo', 'email': 'nope'}),
+    content_type='application/x-www-form-urlencoded')
+# ListField.get_value on an html form: the field's own values (getlist), else the
+# indexed keys parse_html_list collects; the ListField's child is unvalidated, so
+# either form reaches Associate() as a keyword (the 500 page).
+add('create-form-tutors-data-server-error', 'owner', 'POST', LIST, 500, SERVER,
+    raw_body=urllib.parse.urlencode({'first_name': 'Con', 'tutors_data': 'x'}),
+    content_type='application/x-www-form-urlencoded')
+add('create-form-tutors-data-indexed-server-error', 'owner', 'POST', LIST, 500, SERVER,
+    raw_body=urllib.parse.urlencode({'first_name': 'Con', 'tutors_data[0]': 'x'}),
+    content_type='application/x-www-form-urlencoded')
+# to_internal_value decodes a picture_path containing 'base64' before the field
+# validation: its 400 is the answer, the invalid e-mail is not reported.
+add('create-picture-invalid-base64', 'owner', 'POST', LIST, 400,
+    {'picture_path': "Error processing image: {'picture_path': ErrorDetail(string='Invalid base64 string', code='invalid')}"},
+    body={'first_name': 'Fausto', 'email': 'nope', 'picture_path': 'data:image/png;base64,QUJDQQ'})
+# For a list body, `'picture_path' in` the copied body is an element test, and
+# indexing the list by that name raises the TypeError (the 500 page). A list
+# without that element reaches the dict check (create-list-body above).
+add('create-list-body-picture-path-server-error', 'owner', 'POST', LIST, 500, SERVER, body=['picture_path'])
 
 # The detail route.
 add('detail-anonymous', 'anonymous', 'GET', detail('enzo'), 401, {'detail': 'Authentication credentials were not provided.'})

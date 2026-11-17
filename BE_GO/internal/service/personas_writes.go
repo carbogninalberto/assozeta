@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"strconv"
 	"strings"
 	"time"
@@ -696,10 +695,9 @@ func (s *PersonaWrites) Add(ctx context.Context, identity domain.ResolvedIdentit
 	}
 	var group *string
 	if err == nil {
+		// A raw header the UUID field rejects (or a group that does not exist) is
+		// ErrPersonaUnhandled: the 500 page.
 		group, err = run.headerGroup(ctx)
-		if errors.Is(err, ErrPersonaNotPorted) && run.group == nil {
-			err = ErrPersonaUnhandled // the raw header is not a UUID
-		}
 	}
 	if err != nil {
 		run.tx.Rollback()
@@ -786,51 +784,104 @@ func (s *PersonaWrites) Update(ctx context.Context, identity domain.ResolvedIden
 // perform_create then reads request.user.sport_association (athletes 403,
 // owners without an association 500) and save() reaches ModelSerializer.create
 // with tutors_data among the model's keyword arguments (TypeError: 500,
-// nothing written). Without tutors_data it is add with no tutors. HTML form
-// input is not ported (refused before any write).
+// nothing written). Without tutors_data it is add with no tutors.
+//
+// An HTML form body follows the serializer's form rules: the fields are
+// validated like a non-partial form (absent booleans are False, a present empty
+// boolean input is skipped, an empty nullable input is None or the empty
+// string) and ListField.get_value reads the form's own values (getlist), else
+// its indexed keys (tutors_data[0]).
+//
+// A picture_path containing 'base64' is decoded by to_internal_value before
+// the field validation (its 400 comes first) and kept out of it; create()
+// then stores the picture under the new associate's id before
+// Associate.objects.create. When tutors_data was among the validated data the
+// TypeError follows the upload: the stored object stays and no row is written.
+//
+// to_internal_value copies a list body: `'picture_path' in` it is an element
+// test, and indexing the list by that name is the TypeError (the 500 page);
+// any other list fails its dict check (the 400).
 func (s *PersonaWrites) StockCreate(ctx context.Context, identity domain.ResolvedIdentity, body any, form bool, header string,
 	audit domain.LoginAuditContext) (string, error) {
-	if form {
-		return "", ErrPersonaNotPorted
-	}
 	if body == nil {
 		body = domain.RequestObject{}
 	}
 	object, ok := body.(domain.RequestObject)
 	if !ok {
-		// AssociateSerializer.to_internal_value starts with data.copy(): only a
-		// list (of the non-dict bodies) has one, and then fails the dict check.
-		if _, list := body.([]any); list {
+		// AssociateSerializer.to_internal_value starts with data.copy(): of the
+		// non-dict bodies only a list has one. `'picture_path' in` a list is an
+		// element test, and indexing it by that name raises the TypeError (the
+		// 500 page); any other list fails the dict check.
+		if list, listBody := body.([]any); listBody {
+			for _, item := range list {
+				if text, textItem := item.(string); textItem && text == "picture_path" {
+					return "", ErrPersonaUnhandled
+				}
+			}
 			return "", &dto.PersonaInvalid{Fields: map[string][]string{"non_field_errors": {"dictionary:list"}}}
 		}
 		return "", ErrPersonaUnhandled
 	}
-	// The picture branch of to_internal_value on the router's create (its
-	// 400 shape and the upload) is not ported.
-	if branch, err := pictureBranch(object); err != nil {
+	// to_internal_value: a decoded picture is not one of the validated fields.
+	picture, upload, err := personaPicturePlan(object)
+	if err != nil {
 		return "", err
-	} else if branch {
-		return "", ErrPersonaNotPorted
+	}
+	data := object
+	if upload {
+		data = personaWithoutPicture(object)
 	}
 	run, err := s.begin(ctx, identity, header, audit)
 	if err != nil {
 		return "", err
 	}
-	_, invalid, err := dto.ParsePersonaFields(object, dto.PersonaFieldOptions{TutorsData: true, Omit: []string{"associate_id", "creation_date"}},
-		run.related(ctx))
-	run.tx.Rollback()
+	fields, invalid, err := dto.ParsePersonaFields(data, dto.PersonaFieldOptions{Form: form, TutorsData: true,
+		Omit: []string{"associate_id", "creation_date"}}, run.related(ctx))
+	if err == nil && invalid != nil {
+		err = invalid
+	}
 	if err != nil {
+		run.tx.Rollback()
 		return "", err
 	}
-	if invalid != nil {
-		return "", invalid
-	}
+	// perform_create: request.user.sport_association, then save(user=...,
+	// sport_association=...).
 	association, err := s.Association(ctx, identity)
 	if err != nil {
+		run.tx.Rollback()
 		return "", err
 	}
-	if _, present := object.Lookup("tutors_data"); present {
-		return "", ErrPersonaUnhandled // Associate() got unexpected keyword arguments: 'tutors_data'
+	// create(): the decoded picture is stored under a new associate's id first
+	// (create() sets it before _store_picture), then the row is written by the
+	// manager, whose raw X-Group-Id becomes the row's group.
+	tutors := dto.PersonaListFieldPresent(data, "tutors_data", form)
+	row := personaNewRow(s.ids(), run.now)
+	dto.ApplyPersonaFields(&row, fields)
+	if upload {
+		url, err := s.uploadPicture(ctx, picture, row.ID)
+		if err != nil {
+			run.tx.Rollback()
+			return "", err
+		}
+		row.PicturePath = &url
 	}
-	return s.Add(ctx, identity, association, object, false, header, audit)
+	if tutors {
+		// Associate() got an unexpected keyword argument 'tutors_data': the 500
+		// page, after the picture was stored and before any row.
+		run.tx.Rollback()
+		return "", ErrPersonaUnhandled
+	}
+	user, own := identity.ScopeUser.ID, association
+	row.UserID, row.AssociationID = &user, &own
+	group, err := run.headerGroup(ctx)
+	if err == nil && group != nil {
+		row.GroupID = group
+	}
+	if err == nil {
+		err = run.create(ctx, row)
+	}
+	if err = run.finish(err); err != nil {
+		return row.ID, err
+	}
+	return row.ID, nil
 }
