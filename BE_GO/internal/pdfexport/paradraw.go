@@ -107,7 +107,7 @@ func usConv(v usVal, values map[byte]float64, def float64) float64 {
 	if st != attrOK {
 		panic(paraFailure{"bad underline value"})
 	}
-	return n.v
+	return n.v.float()
 }
 
 // doLine is _do_line.
@@ -138,7 +138,7 @@ func drawUS(c *canvas, l usLine, x1, x2, y0, defaultWidth float64, values map[by
 			offset = usVal{str: "-0.125*L"}
 		}
 	}
-	y := y0 + l.rise + usConv(offset, values, 0)
+	y := y0 + l.rise.float() + usConv(offset, values, 0)
 	stroke := textColor
 	if l.hasColor {
 		stroke = l.color
@@ -191,7 +191,7 @@ func doLink(c *canvas, target string, rect [4]float64) {
 
 // fragState is tx.XtraState of the several-fragment layout.
 type fragState struct {
-	curY       float64
+	curY       pyNum
 	textColor  *color
 	rise       float64
 	us         map[usLine]*usState
@@ -222,7 +222,7 @@ func containsUS(list []usLine, l usLine) bool {
 // putFragLine is _putFragLine for the lines without images or links.
 func (p *paragraph) putFragLine(tx *textObject, xs *fragState, curX float64, line *fragLine) {
 	c := tx.c
-	leading := p.style.leading
+	leading := p.style.leadingValue()
 	if !tx.hasLeading || tx.leading != leading {
 		tx.hasLeading, tx.leading = true, leading
 		tx.code = append(tx.code, fpStr(leading)+" TL")
@@ -237,10 +237,11 @@ func (p *paragraph) putFragLine(tx *textObject, xs *fragState, curX float64, lin
 		if f.anchor != nil {
 			// _putFragLine's kind == 'anchor': a bookmark at the line's own
 			// position, without moving the cursor.
-			c.bookmarkHorizontal(f.anchor.name, curX, xs.curY+leading)
+			c.bookmarkHorizontal(f.anchor.name, curX, xs.curY.float()+leading)
 			if i == len(words)-1 {
 				if tx.font == nil {
-					tx.font, tx.fontSize, tx.leading, tx.hasLeading = fontsByName[p.style.fontName], p.style.fontSize, p.style.fontSize*1.2, true
+					tx.font, tx.fontSize = fontsByName[p.style.fontName], p.style.fontSize.float()
+					tx.leading, tx.hasLeading = tx.fontSize*1.2, true
 					tx.code = append(tx.code, c.fontRef(tx.font)+" "+fpStr(tx.fontSize)+" Tf "+fpStr(tx.leading)+" TL")
 				}
 				tx.textOut("", true)
@@ -248,20 +249,21 @@ func (p *paragraph) putFragLine(tx *textObject, xs *fragState, curX float64, lin
 			continue
 		}
 		if f.img != nil {
-			size := tx.fontSize
+			sizeNum := numFloat(tx.fontSize)
 			if tx.font == nil {
-				size = p.style.fontSize
+				sizeNum = p.style.fontSize
 			}
-			w, h := f.img.width.norm(p.width), f.img.height.norm(size)
-			iy0, _ := imgVRange(h, f.img.valign, size)
+			w, h := f.img.width.norm(numFloat(p.width)), f.img.height.norm(sizeNum)
+			iy0, _ := imgVRange(h, f.img.valign, sizeNum)
 			curXS := curX + float64(nSpaces)*ws
-			c.drawImageAt(f.img.image, curXS, xs.curY+iy0, w, h)
+			c.drawImageAt(f.img.image, curXS, xs.curY.float()+iy0, w, h)
 			curX += w
 			curXS += w
 			tx.setXPos(curXS - tx.x0)
 			if i == len(words)-1 {
 				if tx.font == nil {
-					tx.font, tx.fontSize, tx.leading, tx.hasLeading = fontsByName[p.style.fontName], p.style.fontSize, p.style.fontSize*1.2, true
+					tx.font, tx.fontSize = fontsByName[p.style.fontName], p.style.fontSize.float()
+					tx.leading, tx.hasLeading = tx.fontSize*1.2, true
 					tx.code = append(tx.code, c.fontRef(tx.font)+" "+fpStr(tx.fontSize)+" Tf "+fpStr(tx.leading)+" TL")
 				}
 				tx.textOut("", true)
@@ -270,7 +272,7 @@ func (p *paragraph) putFragLine(tx *textObject, xs *fragState, curX float64, lin
 		}
 		curXS := curX + float64(nSpaces)*ws
 		endX := curXS
-		size := f.size
+		size := f.size.float()
 		if i > 0 {
 			endX = curXS - trailingSpaceLength(words[i-1].text, tx)
 		}
@@ -283,9 +285,10 @@ func (p *paragraph) putFragLine(tx *textObject, xs *fragState, curX float64, lin
 			xs.textColor = &col
 			tx.code = append(tx.code, fpStrs(col.r, col.g, col.b)+" rg")
 		}
-		if xs.rise != f.rise {
-			xs.rise = f.rise
-			tx.code = append(tx.code, fpStr(f.rise)+" Ts")
+		rise := f.rise.float()
+		if xs.rise != rise {
+			xs.rise = rise
+			tx.code = append(tx.code, fpStr(rise)+" Ts")
 		}
 		changed := !sameUS(live, f.us)
 		if changed {
@@ -317,7 +320,7 @@ func (p *paragraph) putFragLine(tx *textObject, xs *fragState, curX float64, lin
 				state.max = size
 			}
 		}
-		lo, hi := f.rise-0.2*size, f.rise+size
+		lo, hi := rise-0.2*size, rise+size
 		if linksChanged {
 			for _, l := range f.links {
 				if !containsLink(liveLinks, l) {
@@ -328,7 +331,7 @@ func (p *paragraph) putFragLine(tx *textObject, xs *fragState, curX float64, lin
 		}
 		for _, l := range liveLinks {
 			if state := xs.links[l]; lo < state.lo || hi > state.hi {
-				state.lo, state.hi = min(lo, state.lo), max(hi, state.hi)
+				state.lo, state.hi = pyMin(lo, state.lo), pyMax(hi, state.hi)
 			}
 		}
 		bg := f.back
@@ -368,12 +371,19 @@ func (p *paragraph) postText(tx *textObject, xs *fragState) {
 	c := tx.c
 	y0 := xs.curY
 	size := xs.first.fontSize
-	leading := p.style.leading
+	leading := p.style.leadingValue()
 	if len(xs.backColors) > 0 {
-		ydesc := y0 + size - leading
+		yl, ok := numAdd(y0, size)
+		if !ok {
+			panic(paraFailure{"int too large to convert to float"})
+		}
+		ydesc, ok := numSub(yl, p.style.leading)
+		if !ok {
+			panic(paraFailure{"int too large to convert to float"})
+		}
 		for _, r := range xs.backColors {
 			c.setFillColor(r.color)
-			c.fillRect(r.x1, ydesc, r.x2-r.x1, leading)
+			c.fillRect(r.x1, ydesc.float(), r.x2-r.x1, leading)
 		}
 		xs.backColors = nil
 		xs.backColor = nil
@@ -385,7 +395,7 @@ func (p *paragraph) postText(tx *textObject, xs *fragState) {
 		}
 		sort.Slice(states, func(i, j int) bool { return states[i].ref.n < states[j].ref.n })
 		for _, state := range states {
-			doLink(c, state.ref.target, [4]float64{state.x1, y0 + state.lo, state.x2, y0 + state.hi})
+			doLink(c, state.ref.target, [4]float64{state.x1, y0.float() + state.lo, state.x2, y0.float() + state.hi})
 		}
 		xs.links = map[linkRef]*linkState{}
 	}
@@ -396,12 +406,16 @@ func (p *paragraph) postText(tx *textObject, xs *fragState) {
 		}
 		sort.Slice(states, func(i, j int) bool { return states[i].line.n < states[j].line.n })
 		for _, state := range states {
-			values := map[byte]float64{'L': size, 'f': state.size, 'F': state.max}
-			drawUS(c, state.line, state.x1, state.x2, y0, xs.defaultWidth, values, state.color)
+			values := map[byte]float64{'L': size.float(), 'f': state.size, 'F': state.max}
+			drawUS(c, state.line, state.x1, state.x2, y0.float(), xs.defaultWidth, values, state.color)
 		}
 		xs.us = map[usLine]*usState{}
 	}
-	xs.curY -= leading
+	curY, ok := numSub(xs.curY, p.style.leading)
+	if !ok {
+		panic(paraFailure{"int too large to convert to float"})
+	}
+	xs.curY = curY
 }
 
 // draw is Paragraph.drawPara for left-aligned and centred lines.
@@ -416,15 +430,20 @@ func (p *paragraph) draw(c *canvas) {
 		return
 	}
 	c.saveState()
-	leading := p.style.leading
+	leading := p.style.leadingValue()
 	tx := &textObject{c: c}
 	defaultWidth := c.state.lineWidth
 	if p.kind == 0 {
 		f := p.lineFrag
-		curY := p.height - f.size
+		size := f.size.float()
+		curY, ok := numSub(p.heightNum, f.size)
+		if !ok {
+			panic(paraFailure{"int too large to convert to float"})
+		}
+		curYF := curY.float()
 		c.setFillColor(f.color)
-		tx.font, tx.fontSize, tx.leading = f.font, f.size, leading
-		tx.code = []string{"BT", "1 0 0 1 " + fpStrs(0, curY) + " Tm", c.fontRef(f.font) + " " + fpStr(f.size) + " Tf " + fpStr(leading) + " TL"}
+		tx.font, tx.fontSize, tx.leading = f.font, size, leading
+		tx.code = []string{"BT", "1 0 0 1 " + fpStrs(0, curYF) + " Tm", c.fontRef(f.font) + " " + fpStr(size) + " Tf " + fpStr(leading) + " TL"}
 		for i, line := range p.lines {
 			texts := make([]string, len(line.words))
 			for j, word := range line.words {
@@ -453,17 +472,25 @@ func (p *paragraph) draw(c *canvas) {
 				tx.textOut(text, true)
 				tx.code = append(tx.code, "0 Tw")
 			}
+			step, ok := numMul(numInt(int64(i)), p.style.leading)
+			if !ok {
+				panic(paraFailure{"int too large to convert to float"})
+			}
+			lineY, ok := numSub(curY, step)
+			if !ok {
+				panic(paraFailure{"int too large to convert to float"})
+			}
 			if len(f.us) > 0 {
-				values := map[byte]float64{'L': f.size, 'F': f.size, 'f': f.size}
+				values := map[byte]float64{'L': size, 'F': size, 'f': size}
 				x1 := offset
-				x2 := x1 + stringWidth(text, f.font, f.size)
+				x2 := x1 + stringWidth(text, f.font, size)
 				for _, l := range f.us {
-					drawUS(c, l, x1, x2, curY-float64(i)*leading, defaultWidth, values, f.color)
+					drawUS(c, l, x1, x2, lineY.float(), defaultWidth, values, f.color)
 				}
 			}
 			if len(f.links) > 0 {
-				y := curY - float64(i)*leading - f.size/8.0
-				width := stringWidth(text, f.font, f.size)
+				y := lineY.float() - size/8.0
+				width := stringWidth(text, f.font, size)
 				for _, l := range f.links {
 					doLink(c, l.target, [4]float64{offset, y, offset + width, y + leading})
 				}
@@ -471,8 +498,12 @@ func (p *paragraph) draw(c *canvas) {
 		}
 	} else {
 		xs := &fragState{us: map[usLine]*usState{}, links: map[linkRef]*linkState{}, first: p.fragLines[0], defaultWidth: defaultWidth}
-		xs.curY = p.height - xs.first.fontSize
-		tx.code = []string{"BT", "1 0 0 1 " + fpStrs(0, xs.curY) + " Tm"}
+		curY, ok := numSub(p.heightNum, xs.first.fontSize)
+		if !ok {
+			panic(paraFailure{"int too large to convert to float"})
+		}
+		xs.curY = curY
+		tx.code = []string{"BT", "1 0 0 1 " + fpStrs(0, xs.curY.float()) + " Tm"}
 		for _, line := range p.fragLines {
 			simple := line.extra > -1e-8
 			spaces := 0

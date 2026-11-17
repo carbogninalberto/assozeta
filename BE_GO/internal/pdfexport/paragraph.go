@@ -1,23 +1,24 @@
 package pdfexport
 
 import (
+	"math"
 	"strings"
 )
 
 // paraStyle is the part of ParagraphStyle the documents set.
 type paraStyle struct {
 	fontName    string
-	fontSize    float64
-	leading     float64
+	fontSize    pyNum
+	leading     pyNum
 	centred     bool
-	spaceBefore float64
-	spaceAfter  float64
+	spaceBefore pyNum
+	spaceAfter  pyNum
 	textColor   color
 	align       int
 	backColor   *color
 	// shrink is spaceShrinkage when shrinkSet; denyWidows, allowOrphans and
 	// noSplit are allowWidows=0, allowOrphans=1 and splitLongWords=0.
-	shrink       float64
+	shrink       pyNum
 	shrinkSet    bool
 	denyWidows   bool
 	allowOrphans bool
@@ -51,13 +52,19 @@ func (s paraStyle) alignment() int {
 	return s.align
 }
 
-// shrinkage is spaceShrinkage.
-func (s paraStyle) shrinkage() float64 {
+// shrinkage is spaceShrinkage, as the layout's float64.
+func (s paraStyle) shrinkage() pyNum {
 	if s.shrinkSet {
 		return s.shrink
 	}
-	return 0.05
+	return numFloat(0.05)
 }
+
+// shrinkValue is spaceShrinkage as reportlab multiplies by it.
+func (s paraStyle) shrinkValue() float64 { return s.shrinkage().float() }
+
+// leadingValue is the style's leading as the layout uses it.
+func (s paraStyle) leadingValue() float64 { return s.leading.float() }
 
 func defaultLines() [2]lineDefaults {
 	return [2]lineDefaults{
@@ -68,7 +75,7 @@ func defaultLines() [2]lineDefaults {
 
 // styleNormal is getSampleStyleSheet()['Normal'].
 func styleNormal() paraStyle {
-	return paraStyle{fontName: "Helvetica", fontSize: 10, leading: 12}
+	return paraStyle{fontName: "Helvetica", fontSize: numInt(10), leading: numInt(12)}
 }
 
 // paraFailure is an exception reportlab raises while it lays a paragraph
@@ -223,7 +230,7 @@ type fragLine struct {
 	extra     float64
 	wordCount int
 	words     []*frag
-	fontSize  float64
+	fontSize  pyNum
 	sFW       int
 }
 
@@ -241,6 +248,9 @@ type paragraph struct {
 	lineFrag  *frag
 	width     float64
 	height    float64
+	// heightNum is self.height as reportlab keeps it: the line count times the
+	// leading, exact while both are ints.
+	heightNum pyNum
 }
 
 // Python's str.isspace() characters and reportlab's _wsc (which has U+200B
@@ -304,8 +314,8 @@ func newParagraph(text string, style paraStyle) (*paragraph, error) {
 	return &paragraph{style: style, frags: frags}, nil
 }
 
-func (p *paragraph) spaceBefore() float64 { return p.style.spaceBefore }
-func (p *paragraph) spaceAfter() float64  { return p.style.spaceAfter }
+func (p *paragraph) spaceBefore() float64 { return p.style.spaceBefore.float() }
+func (p *paragraph) spaceAfter() float64  { return p.style.spaceAfter.float() }
 func (p *paragraph) hAlign() string       { return "LEFT" }
 
 func (p *paragraph) count() int {
@@ -367,9 +377,9 @@ func (p *paragraph) breakSimple(maxWidth float64) {
 		}
 		words = plainWords(paraSplit(text))
 	}
-	size := f.size
+	size := f.size.float()
 	spaceWidth := stringWidth(" ", f.font, size)
-	shrink := p.style.shrinkage() * spaceWidth
+	shrink := p.style.shrinkValue() * spaceWidth
 	hyphenWidth := stringWidth("-", f.font, size)
 	var line []*simpleWord
 	currentWidth := -spaceWidth
@@ -429,8 +439,9 @@ func (p *paragraph) breakSimple(maxWidth float64) {
 	}
 }
 
+// fragWidth is the width of a run of text in its fragment's font and size.
 func fragWidth(text []rune, f *frag) float64 {
-	return stringWidth(string(text), f.font, f.size)
+	return stringWidth(string(text), f.font, f.size.float())
 }
 
 // rejoinSplitFragWords is _rejoinSplitFragWords.
@@ -579,11 +590,11 @@ func (p *paragraph) fragWords(maxWidth float64, hasMax bool) []*fragWord {
 				word.parts = append(word.parts, fragPart{f, shyText{}})
 			}
 		case f.img != nil:
-			width := f.img.width.norm(maxWidth)
+			width := f.img.width.norm(numFloat(maxWidth))
 			if f.img.width.pct && !hasMax {
 				panic(paraFailure{"unsupported operand type(s) for *: 'NoneType' and 'float'"})
 			}
-			if f.img.width.v != 0 {
+			if f.img.width.truthy() {
 				if len(word.parts) > 0 {
 					flush(func(*fragWord) {})
 				}
@@ -744,7 +755,7 @@ func (p *paragraph) breakFrags(maxWidth float64) {
 	var g *frag
 	sFW, n := 0, 0
 	spaceWidth, currentWidth := 0.0, 0.0
-	maxSize := 0.0
+	maxSize := pyNum{}
 	injected := func(f *frag) *fragWord {
 		broken := f.clone()
 		broken.kind, broken.text = fragBreak, ""
@@ -774,11 +785,11 @@ func (p *paragraph) breakFrags(maxWidth float64) {
 		for _, wi := range words {
 			if wi.kind == fragText {
 				if ns := strings.Count(wi.text, " "); ns > 0 {
-					spaceShrink += float64(ns) * stringWidth(" ", wi.font, wi.size)
+					spaceShrink += float64(ns) * stringWidth(" ", wi.font, wi.size.float())
 				}
 			}
 		}
-		limWidth := maxWidth + spaceShrink*p.style.shrinkage()
+		limWidth := maxWidth + spaceShrink*p.style.shrinkValue()
 		if !lineBreak && newWidth > limWidth && !w.splitH && f.img == nil && f.anchor == nil {
 			if w.shy {
 				if cut := w.shyphenate(newWidth, limWidth); cut != nil {
@@ -814,7 +825,7 @@ func (p *paragraph) breakFrags(maxWidth float64) {
 			if text != "" {
 				n++
 			}
-			maxSize = max(maxSize, f.size)
+			maxSize = numMax(maxSize, f.size)
 			switch {
 			case len(words) == 0:
 				g = f.clone()
@@ -843,7 +854,7 @@ func (p *paragraph) breakFrags(maxWidth float64) {
 			default:
 				g.text += text
 			}
-			spaceWidth = follow(f.size)
+			spaceWidth = follow(f.size.float())
 			more := false
 			for _, part := range w.parts[1:] {
 				g = part.f.clone()
@@ -852,7 +863,7 @@ func (p *paragraph) breakFrags(maxWidth float64) {
 					more = true
 				}
 				words = append(words, g)
-				maxSize = max(maxSize, g.size)
+				maxSize = numMax(maxSize, g.size)
 			}
 			if text == "" && more {
 				n++
@@ -870,7 +881,7 @@ func (p *paragraph) breakFrags(maxWidth float64) {
 			words = nil
 			continue
 		}
-		spaceWidth = follow(lastSize)
+		spaceWidth = follow(lastSize.float())
 		currentWidth = wordWidth
 		n = 1
 		g = f.clone()
@@ -881,7 +892,7 @@ func (p *paragraph) breakFrags(maxWidth float64) {
 			g = part.f.clone()
 			g.text = string(part.text.s)
 			words = append(words, g)
-			maxSize = max(maxSize, g.size)
+			maxSize = numMax(maxSize, g.size)
 		}
 	}
 	if len(words) > 0 {
@@ -917,7 +928,12 @@ func (p *paragraph) wrap(c *canvas, availWidth, availHeight float64) (float64, f
 	default:
 		p.breakFrags(availWidth)
 	}
-	p.height = float64(p.lineCount()) * p.style.leading
+	height, ok := numMul(numInt(int64(p.lineCount())), p.style.leading)
+	if !ok {
+		panic(paraFailure{"int too large to convert to float"})
+	}
+	p.heightNum = height
+	p.height = height.float()
 	return p.width, p.height
 }
 
@@ -986,7 +1002,7 @@ func (p *paragraph) split(c *canvas, availWidth, availHeight float64) []flowable
 	if !p.wrapped {
 		p.wrap(c, availWidth, availHeight)
 	}
-	s := int(availHeight / p.style.leading)
+	s := lineCountOf(availHeight / p.style.leadingValue())
 	if !p.style.allowOrphans && s <= 1 || s == 0 {
 		p.wrapped = false
 		return nil
@@ -1009,6 +1025,25 @@ func (p *paragraph) split(c *canvas, availWidth, availHeight float64) []flowable
 	return []flowable{p.simplePart(p.lines[:s]), p.simplePart(p.lines[s:])}
 }
 
+// lineCountOf is int(n) of a line count: a NaN or an infinity is int()'s
+// ValueError or OverflowError (a failure of the build), and a count beyond int
+// saturates because it is larger than any paragraph's lines.
+func lineCountOf(n float64) int {
+	if math.IsNaN(n) {
+		panic(paraFailure{"cannot convert float NaN to integer"})
+	}
+	if math.IsInf(n, 0) {
+		panic(paraFailure{"cannot convert float infinity to integer"})
+	}
+	if n >= float64(math.MaxInt32) {
+		return math.MaxInt32
+	}
+	if n <= float64(math.MinInt32) {
+		return math.MinInt32
+	}
+	return int(n)
+}
+
 // minWidth is Paragraph.minWidth: the widest word.
 func (p *paragraph) minWidth() float64 {
 	if p.count() == 0 {
@@ -1026,7 +1061,7 @@ func (p *paragraph) minWidth() float64 {
 			words = strings.Split(f.text, " ")
 		}
 		for i, word := range words {
-			if w := stringWidth(word, f.font, f.size); i == 0 || w > widest {
+			if w := stringWidth(word, f.font, f.size.float()); i == 0 || w > widest {
 				widest = w
 			}
 		}

@@ -55,8 +55,16 @@ var ErrUnexpectedLayout = refusal.AppState("pdfexport: unexpected document layou
 
 const fuzz = 1e-6 // rl_config._FUZZ
 
-// fpStr is rl_accel.fp_str (the Python implementation) of one number.
+// fpStr is rl_accel.fp_str (the Python implementation) of one number. Python's
+// int(_log_10(sa)) raises for a NaN (ValueError) and an infinity
+// (OverflowError): the build fails with ErrLayout.
 func fpStr(value float64) string {
+	if math.IsNaN(value) {
+		panic(paraFailure{"cannot convert float NaN to integer"})
+	}
+	if math.IsInf(value, 0) {
+		panic(paraFailure{"cannot convert float infinity to integer"})
+	}
 	sa := math.Abs(value)
 	if sa <= 1e-7 {
 		return "0"
@@ -974,8 +982,8 @@ func (c *canvas) absRect(rect [4]float64) [4]float64 {
 	xlr, ylr := c.absolutePosition(rect[2], rect[1])
 	xs := []float64{xll, xur, xul, xlr}
 	ys := []float64{yll, yur, yul, ylr}
-	return [4]float64{min(xs[0], xs[1], xs[2], xs[3]), min(ys[0], ys[1], ys[2], ys[3]), max(xs[0], xs[1], xs[2], xs[3]),
-		max(ys[0], ys[1], ys[2], ys[3])}
+	return [4]float64{pyMinN(xs[0], xs[1], xs[2], xs[3]), pyMinN(ys[0], ys[1], ys[2], ys[3]),
+		pyMaxN(xs[0], xs[1], xs[2], xs[3]), pyMaxN(ys[0], ys[1], ys[2], ys[3])}
 }
 
 // bookmarkReference is canvas._bookmarkReference: the destination of a name,

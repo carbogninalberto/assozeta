@@ -2,6 +2,7 @@ package pdfexport
 
 import (
 	"math"
+	"math/big"
 	"strconv"
 	"strings"
 	"unicode"
@@ -10,8 +11,234 @@ import (
 // The attribute values of paraparser.py. Every conversion answers one of
 // three things: a value, an exception reportlab raises (the export fails:
 // ErrLayout) or an input whose Python semantics this package does not
-// reproduce (ErrNotPorted: nan and infinity, colour expressions beyond names
-// and the css functions, non-digit non-ASCII text in a number).
+// reproduce (ErrNotPorted: colour expressions beyond names and the css
+// functions).
+
+// pyNum is a number of the paragraph markup: a Python int (its exact decimal
+// digits and their float64 value) or a Python float. Python keeps ints exact
+// until an operation mixes them with a float, and the layout converts to
+// float64 where reportlab does. The zero value is the int 0, as the numbers a
+// ParagraphStyle leaves unset are.
+type pyNum struct {
+	f       float64
+	digits  string // non-empty: the non-zero exact int, f is float(int)
+	isFloat bool
+}
+
+// numWide is the pyNum of a Python int.
+func numWide(v *big.Int) pyNum {
+	if v.Sign() == 0 {
+		return pyNum{}
+	}
+	f, _ := new(big.Rat).SetInt(v).Float64()
+	return pyNum{f: f, digits: v.String()}
+}
+
+// numInt is the pyNum of an int of the documents.
+func numInt(v int64) pyNum { return numWide(big.NewInt(v)) }
+
+// numFloat is the pyNum of a float.
+func numFloat(v float64) pyNum { return pyNum{f: v, isFloat: true} }
+
+func (n pyNum) isInt() bool { return !n.isFloat }
+
+// big is the exact integer of the pyNum: nil for a float.
+func (n pyNum) big() *big.Int {
+	if n.isFloat {
+		return nil
+	}
+	if n.digits == "" {
+		return new(big.Int)
+	}
+	value, _ := new(big.Int).SetString(n.digits, 10)
+	return value
+}
+
+// toFloat is float(n): ok false where Python raises OverflowError, for an int
+// beyond the range of float64.
+func (n pyNum) toFloat() (float64, bool) {
+	if n.isInt() && math.IsInf(n.f, 0) {
+		return n.f, false
+	}
+	return n.f, true
+}
+
+// float is float(n) where the layout uses the number: an int too large for a
+// float fails the build as reportlab's OverflowError does.
+func (n pyNum) float() float64 {
+	value, ok := n.toFloat()
+	if !ok {
+		panic(paraFailure{"int too large to convert to float"})
+	}
+	return value
+}
+
+// truthy is bool(n): an int or float that is not zero (a NaN is true).
+func (n pyNum) truthy() bool {
+	if n.isInt() {
+		return n.digits != ""
+	}
+	return n.f != 0
+}
+
+// numAdd is a+b: ints stay exact, a float makes the sum a float.
+func numAdd(a, b pyNum) (pyNum, bool) {
+	if a.isInt() && b.isInt() {
+		return numWide(new(big.Int).Add(a.big(), b.big())), true
+	}
+	af, ok := a.toFloat()
+	if !ok {
+		return pyNum{}, false
+	}
+	bf, ok := b.toFloat()
+	if !ok {
+		return pyNum{}, false
+	}
+	return numFloat(af + bf), true
+}
+
+// numSub is a-b.
+func numSub(a, b pyNum) (pyNum, bool) {
+	if a.isInt() && b.isInt() {
+		return numWide(new(big.Int).Sub(a.big(), b.big())), true
+	}
+	af, ok := a.toFloat()
+	if !ok {
+		return pyNum{}, false
+	}
+	bf, ok := b.toFloat()
+	if !ok {
+		return pyNum{}, false
+	}
+	return numFloat(af - bf), true
+}
+
+// numMul is a*b.
+func numMul(a, b pyNum) (pyNum, bool) {
+	if a.isInt() && b.isInt() {
+		return numWide(new(big.Int).Mul(a.big(), b.big())), true
+	}
+	af, ok := a.toFloat()
+	if !ok {
+		return pyNum{}, false
+	}
+	bf, ok := b.toFloat()
+	if !ok {
+		return pyNum{}, false
+	}
+	return numFloat(af * bf), true
+}
+
+// floatRat is the exact value of a finite float, or nil for a NaN or an
+// infinity.
+func floatRat(f float64) *big.Rat {
+	if math.IsNaN(f) || math.IsInf(f, 0) {
+		return nil
+	}
+	return new(big.Rat).SetFloat64(f)
+}
+
+// numLess is a<b of Python: an int and a float compare by exact value, and a
+// NaN is less than nothing.
+func numLess(a, b pyNum) bool {
+	switch {
+	case a.isInt() && b.isInt():
+		return a.big().Cmp(b.big()) < 0
+	case !a.isInt() && !b.isInt():
+		return a.f < b.f
+	case a.isInt():
+		if math.IsNaN(b.f) {
+			return false
+		}
+		if math.IsInf(b.f, 0) {
+			return b.f > 0
+		}
+		return new(big.Rat).SetInt(a.big()).Cmp(floatRat(b.f)) < 0
+	default:
+		if math.IsNaN(a.f) {
+			return false
+		}
+		if math.IsInf(a.f, 0) {
+			return a.f < 0
+		}
+		return floatRat(a.f).Cmp(new(big.Rat).SetInt(b.big())) < 0
+	}
+}
+
+// numEqual is a==b of Python, exact between an int and a float.
+func numEqual(a, b pyNum) bool {
+	switch {
+	case a.isInt() && b.isInt():
+		return a.big().Cmp(b.big()) == 0
+	case !a.isInt() && !b.isInt():
+		return a.f == b.f
+	case a.isInt():
+		if math.IsNaN(b.f) || math.IsInf(b.f, 0) {
+			return false
+		}
+		return new(big.Rat).SetInt(a.big()).Cmp(floatRat(b.f)) == 0
+	default:
+		if math.IsNaN(a.f) || math.IsInf(a.f, 0) {
+			return false
+		}
+		return floatRat(a.f).Cmp(new(big.Rat).SetInt(b.big())) == 0
+	}
+}
+
+// numMin is Python's min(a, b): b replaces a only when it compares less.
+func numMin(a, b pyNum) pyNum {
+	if numLess(b, a) {
+		return b
+	}
+	return a
+}
+
+// numMax is Python's max(a, b): b replaces a only when it compares greater.
+func numMax(a, b pyNum) pyNum {
+	if numLess(a, b) {
+		return b
+	}
+	return a
+}
+
+// pyMin is Python's min(a, b) over floats: the first argument stays unless the
+// second compares less, so a NaN first argument is the result.
+func pyMin(a, b float64) float64 {
+	if b < a {
+		return b
+	}
+	return a
+}
+
+// pyMax is Python's max(a, b) over floats.
+func pyMax(a, b float64) float64 {
+	if b > a {
+		return b
+	}
+	return a
+}
+
+// pyMinN is Python's min(a, b, ...) over the values of a tuple.
+func pyMinN(values ...float64) float64 {
+	result := values[0]
+	for _, value := range values[1:] {
+		if value < result {
+			result = value
+		}
+	}
+	return result
+}
+
+// pyMaxN is Python's max(a, b, ...) over the values of a tuple.
+func pyMaxN(values ...float64) float64 {
+	result := values[0]
+	for _, value := range values[1:] {
+		if value > result {
+			result = value
+		}
+	}
+	return result
+}
 
 type attrStatus int
 
@@ -40,6 +267,20 @@ func pyTrimASCII(s string) string {
 	return s[start:end]
 }
 
+// pyTrimNumber is the trimming of int() and float(): the ASCII whitespace
+// CPython's parser skips. The non-ASCII spaces were turned into ' ' by
+// normalizeDigits, while \x1c-\x1f are not whitespace to int().
+func pyTrimNumber(s string) string {
+	start, end := 0, len(s)
+	for start < end && (s[start] == ' ' || s[start] == '\t' || s[start] == '\n' || s[start] == '\v' || s[start] == '\f' || s[start] == '\r') {
+		start++
+	}
+	for end > start && (s[end-1] == ' ' || s[end-1] == '\t' || s[end-1] == '\n' || s[end-1] == '\v' || s[end-1] == '\f' || s[end-1] == '\r') {
+		end--
+	}
+	return s[start:end]
+}
+
 func asciiOnly(s string) bool {
 	for i := 0; i < len(s); i++ {
 		if s[i] >= 0x80 {
@@ -49,9 +290,10 @@ func asciiOnly(s string) bool {
 	return true
 }
 
-// normalizeDigits is the ASCII form of a string Python's int() and float()
-// read: every decimal digit of another script (unicode.Nd) becomes its ASCII
-// digit, and a character that is not ASCII is refused (ok false).
+// normalizeDigits is the transform CPython applies to the string of int() and
+// float(): every decimal digit of another script (unicode.Nd) becomes its
+// ASCII digit and every Unicode space becomes ' '; a character that is neither
+// makes the conversion fail (ok false, a ValueError).
 func normalizeDigits(s string) (string, bool) {
 	ascii := true
 	for i := 0; i < len(s); i++ {
@@ -70,6 +312,8 @@ func normalizeDigits(s string) (string, bool) {
 			out.WriteRune(r)
 		case unicode.Is(unicode.Nd, r):
 			out.WriteByte(digitValue(r))
+		case strings.ContainsRune(pySpaces, r):
+			out.WriteByte(' ')
 		default:
 			return "", false
 		}
@@ -97,20 +341,21 @@ func digitValue(r rune) byte {
 // i: the digits without underscores and the end, or ok false for a malformed
 // run.
 func digitRun(s string, i, base int) (string, int, bool) {
+	digit := func(c byte) bool {
+		if c >= '0' && c <= '9' {
+			return int(c-'0') < base
+		}
+		return base == 16 && (c >= 'a' && c <= 'f' || c >= 'A' && c <= 'F')
+	}
 	var out []byte
 	for i < len(s) {
 		c := s[i]
-		isDigit := c >= '0' && c <= '9' || base == 16 && (c >= 'a' && c <= 'f' || c >= 'A' && c <= 'F')
 		switch {
-		case isDigit:
+		case digit(c):
 			out = append(out, c)
 			i++
 		case c == '_':
-			if len(out) == 0 || i+1 >= len(s) {
-				return "", i, false
-			}
-			n := s[i+1]
-			if !(n >= '0' && n <= '9' || base == 16 && (n >= 'a' && n <= 'f' || n >= 'A' && n <= 'F')) {
+			if len(out) == 0 || i+1 >= len(s) || !digit(s[i+1]) {
 				return "", i, false
 			}
 			i++
@@ -121,56 +366,65 @@ func digitRun(s string, i, base int) (string, int, bool) {
 	return string(out), i, true
 }
 
-// pyInt is int(s, base) for the values the markup meets.
-func pyInt(text string, base int) (int64, attrStatus) {
+// pyInt is int(s, base) of CPython for base 10 and 16: an exact integer, the
+// ValueError of int() as attrInvalid. A decimal string of more than 4300
+// digits is a ValueError too (the limit sys.set_int_max_str_digits sets),
+// while base 16 has none.
+func pyInt(text string, base int) (*big.Int, attrStatus) {
 	s, ok := normalizeDigits(text)
 	if !ok {
-		return 0, attrUnsupported
+		return nil, attrInvalid
 	}
-	s = pyTrimASCII(s)
+	s = pyTrimNumber(s)
 	neg := false
 	if s != "" && (s[0] == '+' || s[0] == '-') {
 		neg = s[0] == '-'
 		s = s[1:]
 	}
 	if base == 16 && len(s) >= 2 && s[0] == '0' && (s[1] == 'x' || s[1] == 'X') {
-		return 0, attrUnsupported
+		// int() reads the base prefix, and one underscore may follow it.
+		s = s[2:]
+		if strings.HasPrefix(s, "_") {
+			s = s[1:]
+		}
 	}
 	digits, end, ok := digitRun(s, 0, base)
 	if !ok || digits == "" || end != len(s) {
-		return 0, attrInvalid
+		return nil, attrInvalid
 	}
-	digits = strings.TrimLeft(digits, "0")
-	if len(digits) > 15 {
-		return 0, attrUnsupported
+	if base != 2 && base != 4 && base != 8 && base != 16 && base != 32 && len(digits) > 4300 {
+		return nil, attrInvalid
 	}
-	if digits == "" {
-		return 0, attrOK
-	}
-	n, err := strconv.ParseInt(digits, base, 64)
-	if err != nil {
-		return 0, attrUnsupported
+	value, ok := new(big.Int).SetString(digits, base)
+	if !ok {
+		return nil, attrInvalid
 	}
 	if neg {
-		n = -n
+		value.Neg(value)
 	}
-	return n, attrOK
+	return value, attrOK
 }
 
-// pyFloat is float(s).
+// pyFloat is float(s): a decimal literal with single underscores between its
+// digits, inf/infinity and nan in any case with a sign, and an infinity for a
+// literal beyond the range of float64 (float('1e400') is inf, no exception).
 func pyFloat(text string) (float64, attrStatus) {
 	s, ok := normalizeDigits(text)
 	if !ok {
-		return 0, attrUnsupported
+		return 0, attrInvalid
 	}
-	s = pyTrimASCII(s)
+	s = pyTrimNumber(s)
 	body := s
+	negative := false
 	if body != "" && (body[0] == '+' || body[0] == '-') {
+		negative = body[0] == '-'
 		body = body[1:]
 	}
 	switch strings.ToLower(body) {
-	case "inf", "infinity", "nan":
-		return 0, attrUnsupported
+	case "inf", "infinity":
+		return math.Inf(signOf(negative)), attrOK
+	case "nan":
+		return math.NaN(), attrOK
 	}
 	intPart, i, ok := digitRun(body, 0, 10)
 	if !ok {
@@ -211,71 +465,99 @@ func pyFloat(text string) (float64, attrStatus) {
 		fracPart = "0"
 	}
 	number := intPart + "." + fracPart + exponent
-	if s != "" && s[0] == '-' {
+	if negative {
 		number = "-" + number
 	}
 	value, err := strconv.ParseFloat(number, 64)
-	if err != nil || math.IsInf(value, 0) {
-		return 0, attrUnsupported
+	if err != nil {
+		// A literal beyond the range of float64 is an infinity: Python's
+		// float() answers it without an exception.
+		if rangeError, ok := err.(*strconv.NumError); !ok || rangeError.Err != strconv.ErrRange {
+			return 0, attrInvalid
+		}
 	}
 	return value, attrOK
 }
 
+// signOf is the sign of a number: 1 or -1.
+func signOf(negative bool) int {
+	if negative {
+		return -1
+	}
+	return 1
+}
+
 // numVal is a number of _num: a value in points, or a relative one.
 type numVal struct {
-	v   float64
+	v   pyNum
 	rel bool
 }
 
 // paraConvNum is _convnum(s, unit, allowRelative).
-func paraConvNum(s string, unit float64, allowRelative bool) (numVal, attrStatus) {
+func paraConvNum(s string, unit pyNum, allowRelative bool) (numVal, attrStatus) {
 	if s == "" {
 		return numVal{}, attrInvalid // IndexError
 	}
 	if (s[0] == '+' || s[0] == '-') && allowRelative {
 		if n, st := pyInt(s, 10); st != attrInvalid {
-			return numVal{float64(n) * unit, true}, st
+			v, ok := numMul(numWide(n), unit)
+			if !ok {
+				return numVal{}, attrInvalid
+			}
+			return numVal{v, true}, st
 		}
 		f, st := pyFloat(s)
-		return numVal{f * unit, true}, st
+		v, ok := numMul(numFloat(f), unit)
+		if !ok {
+			return numVal{}, attrInvalid
+		}
+		return numVal{v, true}, st
 	}
 	if n, st := pyInt(s, 10); st != attrInvalid {
-		return numVal{float64(n) * unit, false}, st
+		v, ok := numMul(numWide(n), unit)
+		if !ok {
+			return numVal{}, attrInvalid
+		}
+		return numVal{v, false}, st
 	}
 	f, st := pyFloat(s)
-	return numVal{f * unit, false}, st
+	v, ok := numMul(numFloat(f), unit)
+	if !ok {
+		return numVal{}, attrInvalid
+	}
+	return numVal{v, false}, st
 }
 
 // The units of reportlab.lib.units, computed with float64 operations (not
-// exact constants).
+// exact constants); 'pt' and the default unit are the int 1, so a value
+// without a unit that int() reads stays an int.
 var (
-	unitInch = 72.0
-	unitCM   = divide(unitInch, 2.54)
-	unitMM   = unitCM * 0.1
-	unitPica = 12.0
+	unitInch = numFloat(72.0)
+	unitCM   = numFloat(divide(72.0, 2.54))
+	unitMM   = numFloat(divide(72.0, 2.54) * 0.1)
+	unitPica = numFloat(12.0)
+	unitNone = numInt(1)
 )
 
 func divide(a, b float64) float64 { return a / b }
 
-// paraNum is _num(s, allowRelative=...): a number with an optional unit.
+// paraNum is _num(s, allowRelative=...): a number with an optional unit. The
+// unit is the last one the regex `^\s*(.*)(i|in|cm|mm|pt|pica)\s*$` finds,
+// whose leading and trailing spaces are Unicode ones and whose group cannot
+// cross a line break.
 func paraNum(text string, allowRelative bool) (numVal, attrStatus) {
-	s, ok := normalizeDigits(text)
-	if !ok {
-		return numVal{}, attrUnsupported
-	}
-	body := strings.TrimLeft(s, " \t\n\v\f\r\x1c\x1d\x1e\x1f")
-	body = strings.TrimRight(body, " \t\n\v\f\r\x1c\x1d\x1e\x1f")
+	body := pyTrimUnicode(text)
 	if !strings.Contains(body, "\n") {
 		for _, unit := range []struct {
 			suffix string
-			value  float64
-		}{{"i", unitInch}, {"in", unitInch}, {"cm", unitCM}, {"mm", unitMM}, {"pt", 1}, {"pica", unitPica}} {
+			value  pyNum
+		}{{"i", unitInch}, {"in", unitInch}, {"cm", unitCM}, {"mm", unitMM}, {"pt", unitNone}, {"pica", unitPica}} {
 			if strings.HasSuffix(body, unit.suffix) {
 				return paraConvNum(body[:len(body)-len(unit.suffix)], unit.value, allowRelative)
 			}
 		}
 	}
-	return paraConvNum(s, 1, allowRelative)
+	return paraConvNum(text, unitNone, allowRelative)
 }
 
 // paraBool is _bool: a value that is not one of its words is an exception.
@@ -357,6 +639,10 @@ func hueToRGB(m1, m2, h float64) float64 {
 	return m1
 }
 
+// finiteColor reports a colour component float() read: a NaN or an infinity in
+// a colour is refused (a colour expression is not a paragraph number).
+func finiteColor(value float64) bool { return !math.IsNaN(value) && !math.IsInf(value, 0) }
+
 // paraCSSColor is cssParse for rgb(...), rgba(...), hsl(...) and hsla(...);
 // the cmyk forms and any colour with an alpha other than 1 are not ported.
 func paraCSSColor(s string) (color, attrStatus, bool) {
@@ -389,6 +675,9 @@ func paraCSSColor(s string) (color, attrStatus, bool) {
 		if st != attrOK {
 			return color{}, st, true
 		}
+		if !finiteColor(a) {
+			return color{}, attrUnsupported, true
+		}
 		if clamp(a, 0, 1) != 1 {
 			return color{}, attrUnsupported, true
 		}
@@ -400,12 +689,21 @@ func paraCSSColor(s string) (color, attrStatus, bool) {
 			return 0, attrInvalid
 		}
 		f, st := pyFloat(v[:len(v)-1])
+		if st != attrOK {
+			return 0, st
+		}
+		if !finiteColor(f) {
+			return 0, attrUnsupported
+		}
 		return clamp(f, 0, 100) / 100, st
 	}
 	if name == "hsl" {
 		h, st := pyFloat(args[0])
 		if st != attrOK {
 			return color{}, st, true
+		}
+		if !finiteColor(h) {
+			return color{}, attrUnsupported, true
 		}
 		hue := math.Mod(math.Mod(h, 360)+360, 360) / 360
 		sat, st := pct(args[1])
@@ -440,6 +738,9 @@ func paraCSSColor(s string) (color, attrStatus, bool) {
 		if st != attrOK {
 			return color{}, st, true
 		}
+		if !finiteColor(f) {
+			return color{}, attrUnsupported, true
+		}
 		if 0 < f && f <= 1 {
 			f *= 255
 		}
@@ -471,7 +772,10 @@ func paraColor(s string) (color, attrStatus) {
 		if st != attrOK {
 			return color{}, st
 		}
-		return color{r: float64(n>>16&0xFF) / 255, g: float64(n>>8&0xFF) / 255, b: float64(n&0xFF) / 255}, attrOK
+		channel := func(shift uint) float64 {
+			return float64(new(big.Int).And(new(big.Int).Rsh(n, shift), big.NewInt(0xFF)).Int64()) / 255
+		}
+		return color{r: channel(16), g: channel(8), b: channel(0)}, attrOK
 	}
 	switch {
 	case strings.HasPrefix(s, "#"):

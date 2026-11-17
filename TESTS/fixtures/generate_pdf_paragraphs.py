@@ -170,6 +170,38 @@ TEXTS = [
     'A<seq template="%(w)-5s"/>Z', 'A<seq template="%(w)-50s"/>Z',
     '<b>A</b><seq template="%(w)5.0s"/><i>B</i>', '<b>A</b><seq template="%(w)50.0s"/><i>B</i>',
 ]
+
+
+# The numbers of every attribute that takes one, written the ways Python's int() and float() read them: the infinities
+# and NaNs, a literal beyond the float range, exact ints beyond 2**53 and int64, a hex literal, the spaces and decimal
+# digits of other scripts, underscores, a fraction, an invalid suffix and the 4300-digit limit of int().
+NUMBER_VALUES = ['inf', '-inf', 'nan', 'Infinity', '+NaN', '1e400', '-1e400', '1e308', '99999999999999999999', '+99999999999999999999',
+                 '9007199254740993', '+9007199254740993', '0x1F', ' 12', '1 ', '12 mm', '١٢', '1_000', '1__0', '12x', '½', '1' * 400,
+                 '1' * 4400]
+NUMBER_ATTRIBUTES = [
+    ('font size', '<font size="%s">x</font>'),
+    ('font size relative', '<font size="+%s">x</font>'),
+    ('link size', '<link href="y" size="%s">x</link>'),
+    ('sup rise', '<sup rise="%s">x</sup>'),
+    ('sup size', '<sup size="%s">x</sup>'),
+    ('sub rise', '<sub rise="%s">x</sub>'),
+    ('img width', '<img src="%s" width="%%s"/>' % IMAGE),
+    ('img height', '<img src="%s" height="%%s"/>' % IMAGE),
+    ('img valign', '<img src="%s" valign="%%s"/>' % IMAGE),
+    ('u width', '<u width="%s">x</u>'),
+    ('u offset', '<u offset="%s">x</u>'),
+    ('u gap', '<u gap="%s">x</u>'),
+    ('strike width', '<strike width="%s">x</strike>'),
+    ('para size', '<para size="%s">x</para>'),
+    ('para leading', '<para leading="%s">x</para>'),
+    ('para spaceb', '<para spaceb="%s">x</para>'),
+    ('para spacea', '<para spacea="%s">x</para>'),
+    ('para spaceshrinkage', '<para spaceshrinkage="%s">x</para>'),
+]
+for _name, _template in NUMBER_ATTRIBUTES:
+    for _value in NUMBER_VALUES:
+        TEXTS.append(_template % _value)
+
 TOKENS = [
     'a', 'b c', ' ', 'Città', '&', '&amp;', '&lt;', '&gt;', '&nbsp;', '&#65;', '&#x41;', '&#X41;', '&#;', '&#12a', '&foo;', '&alpha;',
     '&amp', '<', '>', '<b>', '</b>', '<i>', '</i>', '<br/>', '<br>', '</br>', '<strong>', '</strong>', '<em>', '</em>', '<x>', '</x>',
@@ -192,11 +224,10 @@ def refusable(text):
     lowered = text.lower()
     if '<img' in lowered and not ('src="%s"' % IMAGE) in text:
         return True
-    digits = any(char.isdigit() and not char.isascii() for char in text)
     return (any('<' + tag in lowered or '</' + tag in lowered for tag in REFUSED) or ('<para' in lowered and any(word in lowered for word in PARA_REFUSED))
             or 'blacker(' in lowered
             or 'whiter(' in lowered
-            or ('<' in text and (not text.isascii() or digits or 'inf' in lowered or 'nan' in lowered)))
+            or ('<' in text and not text.isascii()))
 
 
 def rgb(colour):
@@ -208,29 +239,33 @@ def rgb(colour):
     return [colour.red, colour.green, colour.blue]
 
 
-def finite(value):
+def number(value):
+    """A parsed attribute number as the corpus writes it: an int or float, or a marker string for a float that is not
+    finite (``inf``, ``-inf``, ``nan``), which JSON cannot hold."""
     if isinstance(value, float) and not math.isfinite(value):
-        raise TypeError('not finite')
+        if math.isnan(value):
+            return 'nan'
+        return 'inf' if value > 0 else '-inf'
     return value
 
 
 def us_value(value):
-    return finite(value) if isinstance(value, (str, int, float)) else repr(value)
+    return number(value) if isinstance(value, (str, int, float)) else repr(value)
 
 
 def dimension(value):
     if hasattr(value, 'normalizedValue'):
-        return ['pct', finite(value._value)]
-    return finite(value)
+        return ['pct', number(value._value)]
+    return number(value)
 
 
 def describe(frag):
     """What the Go writer compares: font, text, line break, size, colour, rise, lines, links, background and nobr."""
     lines = []
     for n, kind, colour, width, offset, rise, repeats, gap in frag.us_lines:
-        lines.append([n, kind, rgb(colour), us_value(width), us_value(offset), finite(rise), repeats, us_value(gap)])
-    return [frag.fontName, frag.text, bool(getattr(frag, 'lineBreak', False)), finite(frag.fontSize), rgb(frag.textColor), finite(frag.rise), lines,
-            [list(link) for link in frag.link], rgb(getattr(frag, 'backColor', None)), bool(getattr(frag, 'nobr', False)),
+        lines.append([n, kind, rgb(colour), us_value(width), us_value(offset), number(rise), repeats, us_value(gap)])
+    return [frag.fontName, frag.text, bool(getattr(frag, 'lineBreak', False)), number(frag.fontSize), rgb(frag.textColor), number(frag.rise),
+            lines, [list(link) for link in frag.link], rgb(getattr(frag, 'backColor', None)), bool(getattr(frag, 'nobr', False)),
             describe_image(frag)]
 
 
@@ -248,8 +283,8 @@ def describe_image(frag):
 def style_info(style):
     lines = [[us_value(getattr(style, name + 'Width')), us_value(getattr(style, name + 'Offset')), us_value(getattr(style, name + 'Gap')),
               rgb(getattr(style, name + 'Color'))] for name in ('underline', 'strike')]
-    return [style.fontName, finite(style.fontSize), finite(style.leading), style.alignment, finite(style.spaceBefore), finite(style.spaceAfter),
-            rgb(style.textColor), rgb(style.backColor), lines, finite(style.spaceShrinkage), bool(style.splitLongWords), bool(style.allowWidows),
+    return [style.fontName, number(style.fontSize), number(style.leading), style.alignment, number(style.spaceBefore), number(style.spaceAfter),
+            rgb(style.textColor), rgb(style.backColor), lines, number(style.spaceShrinkage), bool(style.splitLongWords), bool(style.allowWidows),
             bool(style.allowOrphans)]
 
 

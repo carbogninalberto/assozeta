@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
-	"strconv"
+	"math/big"
 	"strings"
 	"sync"
 	"unicode/utf8"
@@ -48,9 +48,10 @@ func seqSplit(text string) []string {
 }
 
 // seqCounter is sequencer._Counter. Its base is the zero every counter starts
-// at: nothing changes a base, so _Counter.reset() goes back to 0.
+// at: nothing changes a base, so _Counter.reset() goes back to 0. The value is
+// a Python int, exact at any size.
 type seqCounter struct {
-	value  int64
+	value  *big.Int
 	format byte // the key of one of the five formats: '1', 'A', 'a', 'I' or 'i'
 	resets []*seqCounter
 }
@@ -69,7 +70,7 @@ func newSeqSequencer() *seqSequencer {
 func (s *seqSequencer) counter(key seqKey) *seqCounter {
 	counter, ok := s.counters[key]
 	if !ok {
-		counter = &seqCounter{format: '1'}
+		counter = &seqCounter{format: '1', value: new(big.Int)}
 		s.counters[key] = counter
 	}
 	return counter
@@ -86,11 +87,11 @@ func (s *seqSequencer) key(counter seqKey) seqKey {
 
 // next is _Counter.next: the value goes up by one, then the counters chained
 // to this one start again.
-func (c *seqCounter) next() int64 {
-	c.value++
-	value := c.value
+func (c *seqCounter) next() *big.Int {
+	c.value = new(big.Int).Add(c.value, big.NewInt(1))
+	value := new(big.Int).Set(c.value)
 	for _, child := range c.resets {
-		child.value = 0 // _Counter.reset(): the base
+		child.value = new(big.Int) // _Counter.reset(): the base
 	}
 	return value
 }
@@ -108,14 +109,19 @@ func (s *seqSequencer) thisf(counter seqKey) (string, error) {
 }
 
 // this is Sequencer._this: a counter's value, not its text.
-func (s *seqSequencer) this(counter seqKey) int64 {
+func (s *seqSequencer) this(counter seqKey) *big.Int {
 	return s.counter(s.key(counter)).value
 }
 
 // reset is Sequencer.reset: it sets the value (the base stays zero, so a
 // chained reset of the counter goes back to 0 and not to this value).
 func (s *seqSequencer) reset(counter seqKey, base int64) {
-	s.counter(s.key(counter)).value = base
+	s.resetWide(counter, big.NewInt(base))
+}
+
+// resetWide is reset for a Python int of any size.
+func (s *seqSequencer) resetWide(counter seqKey, base *big.Int) {
+	s.counter(s.key(counter)).value = new(big.Int).Set(base)
 }
 
 // setDefaultCounter is Sequencer.setDefaultCounter.
@@ -172,12 +178,15 @@ var rnTemplates = [10]int{0, 1, 9, 73, 10, 2, 17, 137, 1097, 11} // _RN_TEMPLATE
 const rnLetters = "IVXLCDM" // _RN_LETTERS
 
 // formatRoman is _format_I: the letters of a value in 0..3999.
-func formatRoman(value int64) string {
+func formatRoman(value *big.Int) string {
 	var letters []byte
 	base := -1
-	for value > 0 {
-		digit := value % 10
-		value /= 10
+	ten := big.NewInt(10)
+	number := new(big.Int).Set(value)
+	for number.Sign() > 0 {
+		remainder := new(big.Int)
+		number.QuoRem(number, ten, remainder)
+		digit := int(remainder.Int64())
 		for template := rnTemplates[digit]; template > 0; {
 			letter := template % 8
 			template /= 8
@@ -193,30 +202,27 @@ func formatRoman(value int64) string {
 
 // formatSeq is one of Sequencer._formatters: registerFormat has no caller, so
 // a counter's format is one of the five.
-func formatSeq(format byte, value int64) (string, error) {
+func formatSeq(format byte, value *big.Int) (string, error) {
 	switch format {
 	case 'A', 'a':
-		index := (value - 1) % 26
-		if index < 0 {
-			index += 26
-		}
+		index := int(new(big.Int).Mod(new(big.Int).Sub(value, big.NewInt(1)), big.NewInt(26)).Int64())
 		if format == 'A' {
 			return string(rune('A' + index)), nil
 		}
 		return string(rune('a' + index)), nil
 	case 'I':
 		// _format_I raises ValueError outside 0..3999.
-		if value < 0 || value > 3999 {
+		if value.Sign() < 0 || value.Cmp(big.NewInt(3999)) > 0 {
 			return "", errors.New("illegal value")
 		}
 		return formatRoman(value), nil
 	case 'i':
-		if value < 0 || value > 3999 {
+		if value.Sign() < 0 || value.Cmp(big.NewInt(3999)) > 0 {
 			return "", errors.New("illegal value")
 		}
 		return strings.ToLower(formatRoman(value)), nil
 	}
-	return strconv.FormatInt(value, 10), nil
+	return value.String(), nil
 }
 
 // format is Sequencer.format: `template % self`, a mapping format of the
@@ -479,8 +485,6 @@ func (p *paraParser) startSeq(attrs []htmlAttr) bool {
 	step, st := pyInt(increment.value, 10)
 	switch st {
 	case attrOK:
-	case attrUnsupported:
-		return p.unsupported() // an integer beyond the ones this package reads
 	default:
 		return p.fail("invalid literal for int() with base 10: %s", pythonAscii(increment.value))
 	}
@@ -491,7 +495,7 @@ func (p *paraParser) startSeq(attrs []htmlAttr) bool {
 		}
 		// start_seq resets the counter to the value of the default counter plus
 		// the step, not to the value of id plus the step.
-		s.reset(id, s.this(seqNoKey)+step)
+		s.resetWide(id, new(big.Int).Add(s.this(seqNoKey), step))
 		return value, nil
 	})
 	if !ok {
@@ -508,17 +512,14 @@ func (p *paraParser) startSeqReset(attrs []htmlAttr) bool {
 	}
 	_, values := dedupeAttrs(attrs)
 	id := seqAttrKey(values, "id")
-	base := int64(0)
+	base := big.NewInt(0)
 	if attr, ok := values["base"]; ok {
-		switch value, st := pyInt(attr.value, 10); st {
-		case attrOK:
+		if value, st := pyInt(attr.value, 10); st == attrOK {
 			base = value
-		case attrUnsupported:
-			return p.unsupported() // an integer beyond the ones this package reads
 		}
 	}
 	_, ok := p.seqCall(func(s *seqSequencer) (string, error) {
-		s.reset(id, base)
+		s.resetWide(id, base)
 		return "", nil
 	})
 	return ok

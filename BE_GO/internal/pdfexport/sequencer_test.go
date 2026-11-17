@@ -3,6 +3,7 @@ package pdfexport
 import (
 	"errors"
 	"fmt"
+	"math/big"
 	"strings"
 	"testing"
 )
@@ -18,7 +19,7 @@ func resetParaSequencer() {
 // paragraphText is the text of the paragraphs of a parse.
 func paragraphText(t *testing.T, text string) (string, error) {
 	t.Helper()
-	frags, _, err := parseParagraph(text, paraStyle{fontName: "Helvetica", fontSize: 9, leading: 12})
+	frags, _, err := parseParagraph(text, paraStyle{fontName: "Helvetica", fontSize: numInt(9), leading: numInt(12)})
 	if err != nil {
 		return "", err
 	}
@@ -47,6 +48,8 @@ func TestSequencerParagraphs(t *testing.T) {
 		{"inc signed", "A<seq inc=\"+2\"/>B<seq/>C", "A0B3C", false},
 		{"inc underscore", "A<seq inc=\"1_0\"/>B<seq/>C", "A0B11C", false},
 		{"inc unicode digit", "A<seq inc=\"\u0665\"/>B<seq/>C", "A0B6C", false},
+		{"inc big int", "A<seq inc=\"99999999999999999999\"/>B<seq/>C", "A0B100000000000000000000C", false},
+		{"seqreset big base", "A<seq id=\"x\"/><seqreset id=\"x\" base=\"9007199254740993\"/><seq id=\"x\"/>B", "A19007199254740994B", false},
 		{"seqreset base", "A<seq id=\"x\"/><seq id=\"x\"/><seqreset id=\"x\" base=\"3\"/>B<seq id=\"x\"/>C", "A12B4C", false},
 		{"seqreset default base", "A<seq/><seq/><seqreset base=\"7\"/>B<seq/>C", "A12B8C", false},
 		{"seqreset bad base", "A<seq id=\"x\"/><seqreset id=\"x\" base=\"zz\"/>B<seq id=\"x\"/>C", "A1B1C", false},
@@ -150,7 +153,7 @@ func TestSequencerOperations(t *testing.T) {
 	if value, _ := s.nextf(seqNoKey); value != "1" {
 		t.Fatalf("default nextf = %q", value)
 	}
-	if value := s.this(seqNoKey); value != 1 {
+	if value := s.this(seqNoKey).Int64(); value != 1 {
 		t.Fatalf("default this = %d", value)
 	}
 	if value, _ := s.thisf(seqNoKey); value != "1" {
@@ -177,7 +180,7 @@ func TestSequencerOperations(t *testing.T) {
 	if value, _ := s.thisf(seqKey{name: "x"}); value != "10" {
 		t.Fatalf("x = %q", value)
 	}
-	if value := s.this(seqNoKey); value != 4 {
+	if value := s.this(seqNoKey).Int64(); value != 4 {
 		t.Fatalf("default d = %d", value)
 	}
 	if s.setFormat(seqNoKey, "z") {
@@ -325,7 +328,7 @@ func TestSequenceTemplateWidthLimits(t *testing.T) {
 	if _, err := s.format("%(w+)9223372036854775808s"); err == nil || err.Error() != "width too big" {
 		t.Fatalf("width overflow: %v", err)
 	}
-	if value := s.counters[seqKey{name: "w"}].value; value != 1 {
+	if value := s.counters[seqKey{name: "w"}].value; value.Cmp(big.NewInt(1)) != 0 {
 		t.Fatalf("counter w = %d, want the lookup to have moved it to 1", value)
 	}
 }
@@ -351,7 +354,7 @@ func TestSequenceTemplateWiderThanSeqMaxWidth(t *testing.T) {
 // of spaces lay out the same lines.
 func layoutWords(t *testing.T, text string) string {
 	t.Helper()
-	p, err := newParagraph(text, paraStyle{fontName: "Helvetica", fontSize: 9, leading: 12})
+	p, err := newParagraph(text, paraStyle{fontName: "Helvetica", fontSize: numInt(9), leading: numInt(12)})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -500,7 +503,7 @@ func TestSequenceTemplateCPythonOrder(t *testing.T) {
 		got, err := s.format(item.template)
 		x := int64(-1)
 		if counter, ok := s.counters[seqKey{name: "x"}]; ok {
-			x = counter.value
+			x = counter.value.Int64()
 		}
 		gotErr := ""
 		if err != nil {

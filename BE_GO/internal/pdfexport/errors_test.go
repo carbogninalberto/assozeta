@@ -8,7 +8,7 @@ import (
 // reportlab's paragraph failures carry str(exception): the agent's tool
 // result answers {"error": str(e)} (reportlab 4.2.5 without the accelerator).
 func TestParagraphExceptionTexts(t *testing.T) {
-	style := paraStyle{fontName: "Helvetica", fontSize: 8}
+	style := paraStyle{fontName: "Helvetica", fontSize: numInt(8)}
 	cases := []struct{ text, want string }{
 		// _complete_parse: the tags left open, no annotation.
 		{"A<B", "paraparser: syntax error: parse ended with 1 unclosed tags\n para"},

@@ -52,6 +52,26 @@ func TestInputsNotPorted(t *testing.T) {
 			t.Errorf("%s: %v", name, err)
 		}
 	}
+	// A paragraph number that fp_str cannot format is an exception of the build (reportlab's OverflowError and
+	// ValueError), and every paragraph the three documents build is laid out inside docTemplate.build.
+	for name, input := range map[string]DataTable{
+		"header number":     {Header: header("None", `A <font size="nan">B</font> C`)},
+		"additional number": {Additional: []string{`<font size="nan">x</font>`}},
+	} {
+		input.Columns, input.Rows, input.Title, input.Portrait, input.IsA3 = base.Columns, base.Rows, base.Title, true, true
+		if _, err := input.Build(time.Unix(946684800, 0)); !errors.Is(err, ErrLayout) || errors.Is(err, ErrNotPorted) {
+			t.Errorf("%s: %v", name, err)
+		}
+	}
+	if _, err := (ReportTable{Headers: []string{"A"}, Rows: [][]string{{`<font size="-inf">x</font>`}}, Title: "T"}).
+		Build(time.Unix(946684800, 0)); !errors.Is(err, ErrLayout) || errors.Is(err, ErrNotPorted) {
+		t.Errorf("report cell number: %v", err)
+	}
+	attendance := Attendance{Courses: []AttendanceCourse{{Course: "C", Dates: []string{"d"},
+		Rows: []AttendanceRow{{Name: `<font size="nan">x</font>`, Attendance: []string{"P"}, Present: 1}}}}}
+	if _, err := attendance.Build(time.Unix(946684800, 0)); !errors.Is(err, ErrLayout) || errors.Is(err, ErrNotPorted) {
+		t.Errorf("attendance cell number: %v", err)
+	}
 	// Greek, unichar, the Courier and Times faces and plain markup are laid out as reportlab lays them out.
 	plain := base
 	plain.Header = header("None", "ASD > Aurora \"1990\" & <b>C</b>")

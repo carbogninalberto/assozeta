@@ -266,6 +266,66 @@ CASES += [
 ]
 
 
+# The numbers of paragraph markup in a built document: the same values as generate_pdf_paragraphs.py reads, one per
+# case, in the text before the table. A value reportlab raises on is recorded as its exception class.
+GOLDEN_NUMBERS = ['inf', '-inf', 'nan', 'Infinity', '+NaN', '1e400', '-1e400', '1e308', '99999999999999999999', '+99999999999999999999',
+                  '9007199254740993', '+9007199254740993', '0x1F', ' 12', '1 ', '12 mm', '١٢', '1_000', '1__0', '12x', '½', '1' * 400,
+                  '1' * 4400]
+IMAGE_URL = 'data:image/jpeg;base64,' + jpeg(4, 3, (200, 30, 30))
+GOLDEN_NUMBER_ATTRIBUTES = [
+    ('font-size', '<font size="%s">x</font>'),
+    ('font-size-relative', '<font size="+%s">x</font>'),
+    ('link-size', '<link href="https://example.test/n" size="%s">x</link>'),
+    ('sup-rise', '<sup rise="%s">x</sup>'),
+    ('sup-size', '<sup size="%s">x</sup>'),
+    ('sub-rise', '<sub rise="%s">x</sub>'),
+    ('img-width', '<img src="' + IMAGE_URL + '" width="%s"/>'),
+    ('img-height', '<img src="' + IMAGE_URL + '" height="%s"/>'),
+    ('img-valign', '<img src="' + IMAGE_URL + '" valign="%s"/>'),
+    ('u-width', '<u width="%s">x</u>'),
+    ('u-offset', '<u offset="%s">x</u>'),
+    ('u-gap', '<u gap="%s">x</u>'),
+    ('strike-width', '<strike width="%s">x</strike>'),
+    ('para-size', '<para size="%s">x</para>'),
+    ('para-leading', '<para leading="%s">x</para>'),
+    ('para-spaceb', '<para spaceb="%s">x</para>'),
+    ('para-spacea', '<para spacea="%s">x</para>'),
+    ('para-spaceshrinkage', '<para spaceshrinkage="%s">x</para>'),
+]
+
+
+def number_slug(value):
+    """A case name for a number: its digits and the markers of a long or special value."""
+    if len(value) > 18:
+        return 'n%d' % len(value) + (value[:4].replace('+', 'p').replace('-', 'm'))
+    return ''.join(char if char.isascii() and (char.isalnum() or char in '._-') else '_' for char in value)
+
+
+CASES += [
+    report('num-%s-%s' % (name, number_slug(value)), ['N'], [['x']], 'Numeri', text_before=template % value)
+    for name, template in GOLDEN_NUMBER_ATTRIBUTES
+    for value in GOLDEN_NUMBERS
+]
+
+# The same exact ints combined with the layout of several fragments and lines: the font size and the rise of a run
+# reach the text operators, the position of a line and the drawing of an underline, a link and a background.
+BIG = '9007199254740993'
+CASES += [
+    report('num-combo-underline', ['N'], [['x']], 'Numeri', text_before='<para size="%s"><u>a</u></para>' % BIG),
+    report('num-combo-underline-lines', ['N'], [['x']], 'Numeri', text_before='<font size="%s">a<br/>b<br/>c</font>' % BIG),
+    report('num-combo-strike', ['N'], [['x']], 'Numeri', text_before='<font size="%s"><strike>a</strike></font>' % BIG),
+    report('num-combo-link', ['N'], [['x']], 'Numeri', text_before='<a href="https://example.test/x" size="%s">a</a>' % BIG),
+    report('num-combo-sup-underline', ['N'], [['x']], 'Numeri', text_before='<sup rise="%s"><u>a</u></sup>' % BIG),
+    report('num-combo-sub-underline', ['N'], [['x']], 'Numeri', text_before='<sub rise="%s">a<u>b</u></sub>' % BIG),
+    report('num-combo-background', ['N'], [['x']], 'Numeri', text_before='<font size="%s" backcolor="red">a</font>' % BIG),
+    report('num-combo-underline-width', ['N'], [['x']], 'Numeri', text_before='<u width="%s">a</u>' % BIG),
+    report('num-combo-u-p', ['N'], [['x']], 'Numeri', text_before='<para size="%s"><u width="2*P">a</u></para>' % BIG),
+    report('num-combo-link-lines', ['N'], [['x']], 'Numeri', text_before='<a href="https://example.test/x" size="%s">a b c</a>' % BIG),
+    report('num-combo-background-lines', ['N'], [['x']], 'Numeri', text_before='<font size="%s" backcolor="red">a b c</font>' % BIG),
+    report('num-combo-sup-multi', ['N'], [['x']], 'Numeri', text_before='a <sup rise="%s">b</sup> c' % BIG),
+]
+
+
 def with_additional(case, items):
     case['spec']['additional'] = items
     return case

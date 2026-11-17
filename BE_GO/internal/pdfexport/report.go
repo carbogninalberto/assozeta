@@ -79,8 +79,8 @@ func (r ReportTable) Build(now time.Time) ([]byte, error) {
 	if len(r.Headers) == 0 {
 		return nil, ErrLayout
 	}
-	header := paraStyle{fontName: "Helvetica-Bold", fontSize: 8, leading: 12}
-	cell := paraStyle{fontName: "Helvetica", fontSize: 7, leading: 12}
+	header := paraStyle{fontName: "Helvetica-Bold", fontSize: numInt(8), leading: numInt(12)}
+	cell := paraStyle{fontName: "Helvetica", fontSize: numInt(7), leading: numInt(12)}
 	cells := make([][]tableCell, 0, len(r.Rows)+1)
 	line := make([]tableCell, len(r.Headers))
 	for j, text := range r.Headers {
@@ -116,7 +116,7 @@ func (r ReportTable) Build(now time.Time) ([]byte, error) {
 	size := pageFor(len(r.Headers), 5, 10)
 	doc := &docTemplate{pageW: size[1], pageH: size[0], left: 30, right: 30, top: 40, bottom: 30, now: now,
 		onPage: headerFooter(r.Title, r.Footer)}
-	body := paraStyle{fontName: "Helvetica", fontSize: 9, leading: 12}
+	body := paraStyle{fontName: "Helvetica", fontSize: numInt(9), leading: numInt(12)}
 	var flowables []flowable
 	if r.TextBefore != "" {
 		p, err := newParagraph(r.TextBefore, body)
@@ -156,9 +156,9 @@ type AttendanceCourse struct {
 type Attendance struct{ Courses []AttendanceCourse }
 
 func (a Attendance) courseTable(course AttendanceCourse) (*table, error) {
-	header := paraStyle{fontName: "Helvetica-Bold", fontSize: 7, leading: 12, centred: true}
-	centre := paraStyle{fontName: "Helvetica", fontSize: 7, leading: 12, centred: true}
-	name := paraStyle{fontName: "Helvetica", fontSize: 7, leading: 12}
+	header := paraStyle{fontName: "Helvetica-Bold", fontSize: numInt(7), leading: numInt(12), centred: true}
+	centre := paraStyle{fontName: "Helvetica", fontSize: numInt(7), leading: numInt(12), centred: true}
+	name := paraStyle{fontName: "Helvetica", fontSize: numInt(7), leading: numInt(12)}
 	add := func(line []tableCell, text string, style paraStyle) ([]tableCell, error) {
 		cell, err := paragraphCell(text, style)
 		return append(line, cell), err
@@ -232,7 +232,7 @@ func (a Attendance) Build(now time.Time) ([]byte, error) {
 	size := pageFor(columns, 15, 25)
 	doc := &docTemplate{pageW: size[1], pageH: size[0], left: 30, right: 30, top: 40, bottom: 30, now: now,
 		onPage: headerFooter("Presenze", "")}
-	title := paraStyle{fontName: "Helvetica-Bold", fontSize: 12, leading: 18, spaceBefore: 12, spaceAfter: 8}
+	title := paraStyle{fontName: "Helvetica-Bold", fontSize: numInt(12), leading: numInt(18), spaceBefore: numInt(12), spaceAfter: numInt(8)}
 	var flowables []flowable
 	for i, course := range a.Courses {
 		if len(a.Courses) > 1 {

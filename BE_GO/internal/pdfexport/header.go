@@ -144,17 +144,17 @@ func balanceHeader(header string) (flowable, error) {
 		logo = paragraph
 	}
 	title, err := newParagraph(headerText(headerTitle, header, "Associazione Sportiva"),
-		paraStyle{fontName: "Helvetica-Bold", fontSize: 20, leading: 24, spaceBefore: 30, spaceAfter: 10})
+		paraStyle{fontName: "Helvetica-Bold", fontSize: numInt(20), leading: numInt(24), spaceBefore: numInt(30), spaceAfter: numInt(10)})
 	if err != nil {
 		return nil, err
 	}
 	subtitle, err := newParagraph(headerText(headerSubtitle, header, "Bilancio"),
-		paraStyle{fontName: "Helvetica", fontSize: 16, leading: 20, spaceAfter: 10})
+		paraStyle{fontName: "Helvetica", fontSize: numInt(16), leading: numInt(20), spaceAfter: numInt(10)})
 	if err != nil {
 		return nil, err
 	}
 	approve, err := newParagraph(headerText(headerApprove, header, "Approvato il __/__/____"),
-		paraStyle{fontName: "Helvetica", fontSize: 16, leading: 20})
+		paraStyle{fontName: "Helvetica", fontSize: numInt(16), leading: numInt(20)})
 	if err != nil {
 		return nil, err
 	}
@@ -174,5 +174,5 @@ func balanceHeader(header string) (flowable, error) {
 // additionalParagraph is one additional_data paragraph: Helvetica 11 on 11,
 // centred, 10 points above.
 func additionalParagraph(text string) (flowable, error) {
-	return newParagraph(text, paraStyle{fontName: "Helvetica", fontSize: 11, leading: 11, centred: true, spaceBefore: 10})
+	return newParagraph(text, paraStyle{fontName: "Helvetica", fontSize: numInt(11), leading: numInt(11), centred: true, spaceBefore: numInt(10)})
 }

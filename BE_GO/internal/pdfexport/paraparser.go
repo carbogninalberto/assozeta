@@ -42,7 +42,7 @@ type usLine struct {
 	hasColor           bool
 	color              color
 	width, offset, gap usVal
-	rise               float64
+	rise               pyNum
 	mult               int
 }
 
@@ -57,9 +57,9 @@ type linkRef struct {
 // words instead of text.
 type frag struct {
 	font      *font
-	size      float64
+	size      pyNum
 	color     color
-	rise      float64
+	rise      pyNum
 	text      string
 	words     []*simpleWord
 	hasWords  bool
@@ -114,23 +114,36 @@ func sameFrag(f, g *frag) bool {
 	if f.img != nil || g.img != nil || f.anchor != nil || g.anchor != nil || f.lineBreak || g.lineBreak {
 		return false
 	}
-	return f.font == g.font && f.size == g.size && f.color == g.color && f.rise == g.rise && sameUS(f.us, g.us) &&
+	return f.font == g.font && numEqual(f.size, g.size) && f.color == g.color && numEqual(f.rise, g.rise) && sameUS(f.us, g.us) &&
 		sameLinks(f.links, g.links) && sameBack(f.back, g.back) && f.nobr == g.nobr
 }
 
 // dim is the width or height of an image: points, or a percentage (of the
 // paragraph width for a width, of the font size for a height).
 type dim struct {
-	v   float64
+	v   pyNum
 	pct bool
 }
 
-// norm is imgNormV: a percentage of nv, computed as _PCT.normalizedValue.
-func (d dim) norm(nv float64) float64 {
+// truthy is bool(dim): a percentage is the float a _PCT is, otherwise the
+// number itself.
+func (d dim) truthy() bool {
 	if d.pct {
-		return (nv * d.v) * 0.01
+		return d.v.float()*0.01 != 0
 	}
-	return d.v
+	return d.v.truthy()
+}
+
+// norm is imgNormV: a percentage of nv, computed as _PCT.normalizedValue.
+func (d dim) norm(nv pyNum) float64 {
+	if d.pct {
+		product, ok := numMul(nv, d.v)
+		if !ok {
+			panic(paraFailure{"int too large to convert to float"})
+		}
+		return product.float() * 0.01
+	}
+	return d.v.float()
 }
 
 // valign is the vertical alignment of an image: a name, a percentage of the
@@ -138,28 +151,32 @@ func (d dim) norm(nv float64) float64 {
 type valign struct {
 	name string
 	pct  bool
-	v    float64
+	v    pyNum
 }
 
 // imgVRange is imgVRange: the bottom and top offsets from the baseline.
-func imgVRange(h float64, va valign, fontSize float64) (float64, float64) {
+func imgVRange(h float64, va valign, fontSize pyNum) (float64, float64) {
 	var iyo float64
 	switch {
 	case va.pct:
-		iyo = (fontSize * va.v) * 0.01
+		product, ok := numMul(fontSize, va.v)
+		if !ok {
+			panic(paraFailure{"int too large to convert to float"})
+		}
+		iyo = product.float() * 0.01
 	case va.name == "":
-		iyo = va.v
+		iyo = va.v.float()
 	case va.name == "baseline":
 	case va.name == "text-top" || va.name == "top":
-		iyo = fontSize - h
+		iyo = fontSize.float() - h
 	case va.name == "middle":
-		iyo = fontSize - (1.2*fontSize+h)*0.5
+		iyo = fontSize.float() - (1.2*fontSize.float()+h)*0.5
 	case va.name == "text-bottom" || va.name == "bottom":
-		iyo = fontSize - 1.2*fontSize
+		iyo = fontSize.float() - 1.2*fontSize.float()
 	case va.name == "super":
-		iyo = 0.5 * fontSize
+		iyo = 0.5 * fontSize.float()
 	case va.name == "sub":
-		iyo = -0.5 * fontSize
+		iyo = -0.5 * fontSize.float()
 	}
 	return iyo, iyo + h
 }
@@ -212,10 +229,10 @@ type paraTag struct {
 	tag          string
 	family       string
 	bold, italic bool
-	size         float64
+	size         pyNum
 	color        color
 	back         *color
-	rise         float64
+	rise         pyNum
 	us           []usLine
 	links        []linkRef
 	line         [2]lineAttr
@@ -362,7 +379,13 @@ func (p *paraParser) usValue(raw string, has bool) (*usVal, bool) {
 				return nil, false
 			}
 			if pyTrimASCII(s[idx+1:]) == "P" {
-				return &usVal{num: p.stack[0].size * v, isNum: true}, true
+				scale := p.stack[0].size
+				product, ok := numMul(scale, numFloat(v))
+				if !ok {
+					p.fail("invalid value for a line attribute")
+					return nil, false
+				}
+				return &usVal{num: product.float(), isNum: true}, true
 			}
 		} else if _, st := paraNum(s, false); st != attrOK {
 			p.attrFailure(st, "invalid value for a line attribute")
@@ -473,7 +496,8 @@ func (p *paraParser) startTag(tag string, attrs []htmlAttr) bool {
 			return p.attrFailure(st, "error with style name")
 		}
 		p.started = true
-		p.stack = []paraTag{{tag: "para", family: family, bold: bold, italic: italic, size: p.style.fontSize, color: p.style.textColor}}
+		p.stack = []paraTag{{tag: "para", family: family, bold: bold, italic: italic, size: p.style.fontSize, rise: numInt(0),
+			color: p.style.textColor}}
 		p.nlines, p.nlinks = 0, 0
 		return true
 	case "b", "strong":
@@ -606,14 +630,20 @@ func (p *paraParser) startFont(tag string, attrs []htmlAttr) bool {
 			return p.fail("invalid attribute name %s", name)
 		}
 	}
-	return p.push(tag, func(t *paraTag) {
-		if size != nil {
-			if size.rel {
-				t.size += size.v
-			} else {
-				t.size = size.v
+	newSize := p.stack[len(p.stack)-1].size
+	if size != nil {
+		if size.rel {
+			sum, ok := numAdd(newSize, size.v)
+			if !ok {
+				return p.fail("int too large to convert to float")
 			}
+			newSize = sum
+		} else {
+			newSize = size.v
 		}
+	}
+	return p.push(tag, func(t *paraTag) {
+		t.size = newSize
 		if hasFamily {
 			t.family, t.bold, t.italic = family, bold, italic
 		}
@@ -641,7 +671,7 @@ func (p *paraParser) startSup(tag string, attrs []htmlAttr) bool {
 		if !attr.has {
 			return p.fail("invalid value for %s", name)
 		}
-		if _, st := fontSizeNormalize(supSpec{attr.value, true}, p.stack[len(p.stack)-1].size, 0); st != attrOK {
+		if _, st := fontSizeNormalize(supSpec{attr.value, true}, p.stack[len(p.stack)-1].size, numInt(0)); st != attrOK {
 			return p.attrFailure(st, "invalid value for "+name)
 		}
 		if name == "rise" {
@@ -665,17 +695,34 @@ func (p *paraParser) startSup(tag string, attrs []htmlAttr) bool {
 		return false
 	}
 	top := &p.stack[len(p.stack)-1]
-	fraction := 0.5
-	delta, st := fontSizeNormalize(top.supr, top.size, top.size*fraction)
+	const fraction = 0.5
+	defRise, ok := numMul(top.size, numFloat(fraction))
+	if !ok {
+		return p.fail("int too large to convert to float")
+	}
+	delta, st := fontSizeNormalize(top.supr, top.size, defRise)
 	if st != attrOK {
 		return p.attrFailure(st, "invalid rise")
 	}
 	if name == "sub" {
-		top.rise -= delta
+		if top.rise, ok = numSub(top.rise, delta); !ok {
+			return p.fail("int too large to convert to float")
+		}
 	} else {
-		top.rise += delta
+		if top.rise, ok = numAdd(top.rise, delta); !ok {
+			return p.fail("int too large to convert to float")
+		}
 	}
-	newSize, st := fontSizeNormalize(top.sups, top.size, top.size-min(2, 0.2*top.size))
+	// min(sizeDelta, 0.2*frag.fontSize) of the default size.
+	shrink, mulOK := numMul(numFloat(0.2), top.size)
+	if !mulOK {
+		return p.fail("int too large to convert to float")
+	}
+	defSize, ok := numSub(top.size, numMin(numInt(2), shrink))
+	if !ok {
+		return p.fail("int too large to convert to float")
+	}
+	newSize, st := fontSizeNormalize(top.sups, top.size, defSize)
 	if st != attrOK {
 		return p.attrFailure(st, "invalid size")
 	}
@@ -833,27 +880,40 @@ func ps2tt(name string) (family string, bold, italic bool, st attrStatus) {
 
 // fontSizeNormalize is paraparser.fontSizeNormalize for a rise or size
 // string of <sup> and <sub>.
-func fontSizeNormalize(spec supSpec, size, def float64) (float64, attrStatus) {
+func fontSizeNormalize(spec supSpec, size, def pyNum) (pyNum, attrStatus) {
 	if !spec.set {
 		return def, attrOK
 	}
 	raw := spec.raw
 	if strings.HasSuffix(raw, "%") {
-		v, st := paraConvNum(raw[:len(raw)-1], 1, true)
+		v, st := paraConvNum(raw[:len(raw)-1], unitNone, true)
 		if st != attrOK {
-			return 0, st
+			return pyNum{}, st
 		}
 		if v.rel {
-			return 0, attrInvalid // a tuple times 0.01
+			return pyNum{}, attrInvalid // a tuple times 0.01
 		}
-		return (size * v.v) * 0.01, attrOK
+		// _PCT.normalizedValue(size): _PCT(size*_value) is (size*_value)*0.01.
+		product, ok := numMul(size, v.v)
+		if !ok {
+			return pyNum{}, attrInvalid
+		}
+		value, ok := product.toFloat()
+		if !ok {
+			return pyNum{}, attrInvalid
+		}
+		return numFloat(value * 0.01), attrOK
 	}
 	v, st := paraNum(raw, true)
 	if st != attrOK {
-		return 0, st
+		return pyNum{}, st
 	}
 	if v.rel {
-		return v.v + size, attrOK
+		sum, ok := numAdd(v.v, size)
+		if !ok {
+			return pyNum{}, attrInvalid
+		}
+		return sum, attrOK
 	}
 	return v.v, attrOK
 }
@@ -1378,16 +1438,22 @@ func (p *paraParser) startLink(tag string, attrs []htmlAttr) bool {
 	if line.kind != "" {
 		merged.kind = line.kind
 	}
+	newSize := top.size
+	if size != nil {
+		if size.rel {
+			sum, ok := numAdd(newSize, size.v)
+			if !ok {
+				return p.fail("int too large to convert to float")
+			}
+			newSize = sum
+		} else {
+			newSize = size.v
+		}
+	}
 	if !p.push(tag, func(t *paraTag) {
 		t.links = append(append([]linkRef{}, t.links...), linkRef{n: n, target: target})
 		t.line[lineUnderline] = merged
-		if size != nil {
-			if size.rel {
-				t.size += size.v
-			} else {
-				t.size = size.v
-			}
-		}
+		t.size = newSize
 		if hasFamily {
 			t.family = family
 		}
@@ -1409,7 +1475,7 @@ func (p *paraParser) startLink(tag string, attrs []htmlAttr) bool {
 // numPct is _numpct(s, allowRelative=False): points or a percentage.
 func numPct(s string) (dim, attrStatus) {
 	if strings.HasSuffix(s, "%") {
-		v, st := paraConvNum(s[:len(s)-1], 1, false)
+		v, st := paraConvNum(s[:len(s)-1], unitNone, false)
 		return dim{v: v.v, pct: true}, st
 	}
 	v, st := paraNum(s, false)
@@ -1418,20 +1484,16 @@ func numPct(s string) (dim, attrStatus) {
 
 // valignPct is _valignpc.
 func valignPct(text string) (valign, attrStatus) {
-	s, ok := normalizeDigits(text)
-	if !ok {
-		return valign{}, attrUnsupported
-	}
-	lower := strings.ToLower(s)
+	lower := strings.ToLower(text)
 	switch lower {
 	case "baseline", "sub", "super", "top", "text-top", "middle", "bottom", "text-bottom":
 		return valign{name: lower}, attrOK
 	}
 	if strings.HasSuffix(lower, "%") {
-		n, st := paraConvNum(lower[:len(lower)-1], 1, true)
+		n, st := paraConvNum(lower[:len(lower)-1], unitNone, true)
 		return valign{pct: true, v: n.v}, st
 	}
-	n, st := paraNum(s, true)
+	n, st := paraNum(lower, true)
 	return valign{v: n.v}, st
 }
 
@@ -1544,8 +1606,8 @@ func (p *paraParser) endImg() bool {
 	if st != attrOK {
 		return p.attrFailure(st, resourceFailure(top.imgAttrs.src))
 	}
-	defn := &imgDefn{src: top.imgAttrs.src, image: image, width: dim{v: float64(image.width)}, height: dim{v: float64(image.height)},
-		valign: valign{name: "bottom"}}
+	defn := &imgDefn{src: top.imgAttrs.src, image: image, width: dim{v: numInt(int64(image.width))},
+		height: dim{v: numInt(int64(image.height))}, valign: valign{name: "bottom"}}
 	if a := top.imgAttrs; a != nil {
 		if a.width != nil {
 			defn.width = *a.width
@@ -1777,32 +1839,50 @@ func (p *paraParser) applyParaAttrs(attrs []htmlAttr) bool {
 		if spec.kind != pkNum {
 			continue
 		}
-		apply := func(current *float64) {
+		failed := false
+		applyTo := func(current *pyNum) {
 			if number.rel {
-				*current += number.v
+				sum, ok := numAdd(*current, number.v)
+				if !ok {
+					failed = true
+					return
+				}
+				*current = sum
 			} else {
 				*current = number.v
 			}
 		}
 		switch spec.attr {
 		case "fontSize":
-			apply(&style.fontSize)
+			applyTo(&style.fontSize)
 		case "leading":
-			apply(&style.leading)
+			applyTo(&style.leading)
 		case "spaceBefore":
-			apply(&style.spaceBefore)
+			applyTo(&style.spaceBefore)
 		case "spaceAfter":
-			apply(&style.spaceAfter)
+			applyTo(&style.spaceAfter)
 		case "spaceShrinkage":
 			shrink := style.shrinkage()
-			apply(&shrink)
+			if number.rel {
+				sum, ok := numAdd(shrink, number.v)
+				if !ok {
+					failed = true
+				} else {
+					shrink = sum
+				}
+			} else {
+				shrink = number.v
+			}
 			style.shrink, style.shrinkSet = shrink, true
 		case "leftIndent", "rightIndent", "firstLineIndent", "borderWidth", "borderPadding", "borderRadius", "uriWasteReduce":
-			current := 0.0
-			apply(&current)
-			if current != 0 {
+			current := numInt(0)
+			applyTo(&current)
+			if current.truthy() {
 				refused = true
 			}
+		}
+		if failed {
+			return p.fail("int too large to convert to float")
 		}
 	}
 	p.style = style
