@@ -9396,123 +9396,6 @@
    "content_type": "multipart/form-data; boundary=invoicesyncboundary"
   },
   {
-   "name": "invoice-sync-print-add-dates-before-1000-field-errors",
-   "actor": "owner",
-   "method": "POST",
-   "path": "/invoice-customers/add",
-   "headers": {},
-   "status": 400,
-   "response": {
-    "transmitting_date": [
-     "Date has wrong format. Use one of these formats instead: DD/MM/YYYY."
-    ],
-    "payment_expiry_date": [
-     "Date has wrong format. Use one of these formats instead: DD/MM/YYYY."
-    ]
-   },
-   "effect": {
-    "actor": "owner",
-    "invoices": {},
-    "payments": {},
-    "customer": null,
-    "audit": []
-   },
-   "prints": [],
-   "restore": null,
-   "setup": null,
-   "body": {
-    "fiscal_year": 2031,
-    "assignor_vat_number": "01234567890",
-    "assignor_tax_code": "01234567890",
-    "assignor_denomination": "ASD Alfa & Figli",
-    "assignor_address": "Via Roma 1",
-    "assignor_postal_code": "10100",
-    "assignor_city": "Torino",
-    "assignor_province": "TO",
-    "assignor_contact_email": "alfa@example.test",
-    "assignor_contact_phone": "0111234567",
-    "transferor_tax_code": "RSSMRA80A01L219X",
-    "transferor_denomination": "Mario Rossi <Ditta>",
-    "transferor_address": "Via Po 2",
-    "transferor_postal_code": "10123",
-    "transferor_city": "Torino",
-    "transferor_province": "TO",
-    "transferor_contact_email": "mario.pec@example.test",
-    "causal": "Quota & servizi",
-    "lines": [
-     {
-      "description": "Quota annuale",
-      "quantity": 1,
-      "unit_of_measure": "unita",
-      "unit_price": 100.0,
-      "vat": 22.0
-     }
-    ],
-    "payment_condition": "TP02",
-    "payment_modality": "MP05",
-    "number": 700,
-    "transmitting_date": "0999-03-05",
-    "payment_expiry_date": "0999-06-15"
-   }
-  },
-  {
-   "name": "invoice-sync-print-add-transmitting-date-before-1000-field-error",
-   "actor": "owner",
-   "method": "POST",
-   "path": "/invoice-customers/add",
-   "headers": {},
-   "status": 400,
-   "response": {
-    "transmitting_date": [
-     "Date has wrong format. Use one of these formats instead: DD/MM/YYYY."
-    ]
-   },
-   "effect": {
-    "actor": "owner",
-    "invoices": {},
-    "payments": {},
-    "customer": null,
-    "audit": []
-   },
-   "prints": [],
-   "restore": null,
-   "setup": null,
-   "body": {
-    "fiscal_year": 2031,
-    "assignor_vat_number": "01234567890",
-    "assignor_tax_code": "01234567890",
-    "assignor_denomination": "ASD Alfa & Figli",
-    "assignor_address": "Via Roma 1",
-    "assignor_postal_code": "10100",
-    "assignor_city": "Torino",
-    "assignor_province": "TO",
-    "assignor_contact_email": "alfa@example.test",
-    "assignor_contact_phone": "0111234567",
-    "transferor_tax_code": "RSSMRA80A01L219X",
-    "transferor_denomination": "Mario Rossi <Ditta>",
-    "transferor_address": "Via Po 2",
-    "transferor_postal_code": "10123",
-    "transferor_city": "Torino",
-    "transferor_province": "TO",
-    "transferor_contact_email": "mario.pec@example.test",
-    "causal": "Quota & servizi",
-    "lines": [
-     {
-      "description": "Quota annuale",
-      "quantity": 1,
-      "unit_of_measure": "unita",
-      "unit_price": 100.0,
-      "vat": 22.0
-     }
-    ],
-    "payment_condition": "TP02",
-    "payment_modality": "MP05",
-    "number": 701,
-    "transmitting_date": "0999-03-05",
-    "payment_expiry_date": "2031-06-15"
-   }
-  },
-  {
    "name": "invoice-sync-print-update-stored-json-index-past",
    "actor": "owner",
    "method": "PATCH",
@@ -9736,6 +9619,123 @@
    "body": {
     "number": 62,
     "payment_date": "2026-09-03"
+   }
+  },
+  {
+   "name": "invoice-sync-print-add-dates-before-1000-field-errors",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice-customers/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "transmitting_date": [
+     "Date has wrong format. Use one of these formats instead: DD/MM/YYYY."
+    ],
+    "payment_expiry_date": [
+     "Date has wrong format. Use one of these formats instead: DD/MM/YYYY."
+    ]
+   },
+   "effect": {
+    "actor": "owner",
+    "invoices": {},
+    "payments": {},
+    "customer": null,
+    "audit": []
+   },
+   "prints": [],
+   "restore": null,
+   "setup": null,
+   "body": {
+    "fiscal_year": 2031,
+    "assignor_vat_number": "01234567890",
+    "assignor_tax_code": "01234567890",
+    "assignor_denomination": "ASD Alfa & Figli",
+    "assignor_address": "Via Roma 1",
+    "assignor_postal_code": "10100",
+    "assignor_city": "Torino",
+    "assignor_province": "TO",
+    "assignor_contact_email": "alfa@example.test",
+    "assignor_contact_phone": "0111234567",
+    "transferor_tax_code": "RSSMRA80A01L219X",
+    "transferor_denomination": "Mario Rossi <Ditta>",
+    "transferor_address": "Via Po 2",
+    "transferor_postal_code": "10123",
+    "transferor_city": "Torino",
+    "transferor_province": "TO",
+    "transferor_contact_email": "mario.pec@example.test",
+    "causal": "Quota & servizi",
+    "lines": [
+     {
+      "description": "Quota annuale",
+      "quantity": 1,
+      "unit_of_measure": "unita",
+      "unit_price": 100.0,
+      "vat": 22.0
+     }
+    ],
+    "payment_condition": "TP02",
+    "payment_modality": "MP05",
+    "number": 700,
+    "transmitting_date": "0999-03-05",
+    "payment_expiry_date": "0999-06-15"
+   }
+  },
+  {
+   "name": "invoice-sync-print-add-transmitting-date-before-1000-field-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice-customers/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "transmitting_date": [
+     "Date has wrong format. Use one of these formats instead: DD/MM/YYYY."
+    ]
+   },
+   "effect": {
+    "actor": "owner",
+    "invoices": {},
+    "payments": {},
+    "customer": null,
+    "audit": []
+   },
+   "prints": [],
+   "restore": null,
+   "setup": null,
+   "body": {
+    "fiscal_year": 2031,
+    "assignor_vat_number": "01234567890",
+    "assignor_tax_code": "01234567890",
+    "assignor_denomination": "ASD Alfa & Figli",
+    "assignor_address": "Via Roma 1",
+    "assignor_postal_code": "10100",
+    "assignor_city": "Torino",
+    "assignor_province": "TO",
+    "assignor_contact_email": "alfa@example.test",
+    "assignor_contact_phone": "0111234567",
+    "transferor_tax_code": "RSSMRA80A01L219X",
+    "transferor_denomination": "Mario Rossi <Ditta>",
+    "transferor_address": "Via Po 2",
+    "transferor_postal_code": "10123",
+    "transferor_city": "Torino",
+    "transferor_province": "TO",
+    "transferor_contact_email": "mario.pec@example.test",
+    "causal": "Quota & servizi",
+    "lines": [
+     {
+      "description": "Quota annuale",
+      "quantity": 1,
+      "unit_of_measure": "unita",
+      "unit_price": 100.0,
+      "vat": 22.0
+     }
+    ],
+    "payment_condition": "TP02",
+    "payment_modality": "MP05",
+    "number": 701,
+    "transmitting_date": "0999-03-05",
+    "payment_expiry_date": "2031-06-15"
    }
   }
  ]

@@ -636,24 +636,6 @@ mp, ct = multipart_body({**BASE, 'number': 704, 'lines': INFINITE_LINES}, [MULTI
 add('add-form-line-infinite-quantity-server-error', 'owner', ADD, 500, SERVER, method='POST', raw_body=mp, content_type=ct,
     effect=nothing())
 
-# Dates before 1000. The view rewrites each date through
-# datetime.strptime(value, '%Y-%m-%d').strftime('%d/%m/%Y') and
-# CustomerInvoiceSerializer's DateField (input_formats ['%d/%m/%Y']) re-reads that
-# text with strptime, which needs exactly four year digits (invoice_views.py:878-881).
-# strftime('%Y') is the platform C library's: on glibc (the Linux production image
-# and CI) the year of 999 is written unpadded ('05/03/999'), the DateField rejects
-# it, and the add is a 400 before any write. On macOS the BSD library pads it
-# ('05/03/0999') and the add succeeds. These cases state the glibc answer (owner
-# decision X16: the server follows its platform).
-BEFORE_1000 = {'transmitting_date': ['Date has wrong format. Use one of these formats instead: DD/MM/YYYY.']}
-add('add-dates-before-1000-field-errors', 'owner', ADD, 400,
-    {**BEFORE_1000, 'payment_expiry_date': ['Date has wrong format. Use one of these formats instead: DD/MM/YYYY.']},
-    method='POST', body={**BASE, 'number': 700, 'transmitting_date': '0999-03-05', 'payment_expiry_date': '0999-06-15'},
-    effect=nothing())
-add('add-transmitting-date-before-1000-field-error', 'owner', ADD, 400, BEFORE_1000, method='POST',
-    body={**BASE, 'number': 701, 'transmitting_date': '0999-03-05', 'payment_expiry_date': '2031-06-15'},
-    effect=nothing())
-
 # Stored Payment JSON at the interpreter's recursion bands (owner decision X15).
 # Payment.course is a jsonb column psycopg2 loads with json.loads: the parity
 # harness's Django (CPython 3.13.16) reads 9935 levels in invoice_update and
@@ -693,6 +675,24 @@ add('update-stored-json-past-load-band-server-error', 'owner', UPDATE('i_other')
 updated('i_carnet', {'number': 62, 'payment_date': '2026-09-03'}, payment='p_carnet',
         payment_changes={'payment_date': '2026-09-03T00:00:00Z'}, description=course(full_name('bruno'), CARNETS['carnet']['title']),
         name='update-stored-json-loaded', setup={'payment': 'p_carnet', 'course': DEEP_LOADED})
+
+# Dates before 1000. The view rewrites each date through
+# datetime.strptime(value, '%Y-%m-%d').strftime('%d/%m/%Y') and
+# CustomerInvoiceSerializer's DateField (input_formats ['%d/%m/%Y']) re-reads that
+# text with strptime, which needs exactly four year digits (invoice_views.py:878-881).
+# strftime('%Y') is the platform C library's: on glibc (the Linux production image
+# and CI) the year of 999 is written unpadded ('05/03/999'), the DateField rejects
+# it, and the add is a 400 before any write. On macOS the BSD library pads it
+# ('05/03/0999') and the add succeeds. These cases state the glibc answer (owner
+# decision X16: the server follows its platform).
+BEFORE_1000 = {'transmitting_date': ['Date has wrong format. Use one of these formats instead: DD/MM/YYYY.']}
+add('add-dates-before-1000-field-errors', 'owner', ADD, 400,
+    {**BEFORE_1000, 'payment_expiry_date': ['Date has wrong format. Use one of these formats instead: DD/MM/YYYY.']},
+    method='POST', body={**BASE, 'number': 700, 'transmitting_date': '0999-03-05', 'payment_expiry_date': '0999-06-15'},
+    effect=nothing())
+add('add-transmitting-date-before-1000-field-error', 'owner', ADD, 400, BEFORE_1000, method='POST',
+    body={**BASE, 'number': 701, 'transmitting_date': '0999-03-05', 'payment_expiry_date': '2031-06-15'},
+    effect=nothing())
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'invoice/<uid>/update and invoice-customers/add with their eager print tasks '
