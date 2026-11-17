@@ -6,8 +6,8 @@
 // and 1904 date systems, ISO 8601 date cells), the XML encodings expat decodes
 // (see encoding.go), pandas' row trimming, the python parser's column names
 // and per-column type inference, and the values DataFrame.iterrows() hands
-// out. Input read_excel raises on is ErrInvalid. The few workbook features not
-// modelled are ErrWorkbookNotPorted, never a guess. Golden cases:
+// out. Input read_excel raises on is ErrInvalid, and a worksheet whose rows
+// run past the frame bound is ErrRowsPastBound. Golden cases:
 // testdata/pandas_frames.json.gz, testdata/pandas_text_frames.json.gz,
 // testdata/numeric_texts.json.gz and testdata/pandas_date_lookups.json.gz,
 // written by TESTS/adapters/go/pandas_xlsx_golden.py from pandas itself;
@@ -21,26 +21,24 @@ import (
 	"math/big"
 	"strconv"
 	"time"
-
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // ErrInvalid is input read_excel raises on (not a ZIP archive, an archive
 // without '[Content_Types].xml', a part openpyxl cannot find or parse, a cell
 // whose text or reference it cannot convert, an encoding expat refuses, text
 // it cannot decode, a workbook without a worksheet, a chartsheet where
-// read_excel wants a sheet): the view answers its 500 page. The cases of
-// testdata/raise_cases.json name the exception pandas raises.
+// read_excel wants a sheet, a part openpyxl parses whole past maxPartBytes):
+// the view answers its 500 page. The cases of testdata/raise_cases.json name
+// the exception pandas raises.
 var ErrInvalid = errors.New("pandasxlsx: not a workbook")
 
-// ErrWorkbookNotPorted is a workbook pandas reads and this package does not
-// model: a part openpyxl parses whole past maxPartBytes (the answer then
-// depends on the production image's memory), a row numbered past what a frame
-// of one row per number fits the same way, and a header cell that is a
-// duration past Timedelta's range (the response renderer writes a duration
-// label from Value.D, which such a value does not fit). The caller hands these
-// to Django.
-var ErrWorkbookNotPorted = refusal.New("pandasxlsx: workbook feature not ported")
+// ErrRowsPastBound is a worksheet with a row numbered past maxRowNumber
+// (1,048,576): pandas pads a frame of one row per number, which needs memory
+// this process cannot spare for one request. ReadAll stops there; the caller
+// decides the answer the view gives when the read runs out of memory (the
+// upload answers the columns from ReadColumns, the import the 400 page). It
+// is not ErrInvalid: nothing about such a workbook is malformed.
+var ErrRowsPastBound = errors.New("pandasxlsx: rows past the frame bound")
 
 // Frame is the DataFrame: its column labels and the rows of iterrows().
 type Frame struct {
@@ -215,10 +213,7 @@ func build(rows [][]cell, text func(column string) bool) (*Frame, error) {
 		}
 		rows[index] = row
 	}
-	labels, class, err := columnLabels(rows[0])
-	if err != nil {
-		return nil, err
-	}
+	labels, class := columnLabels(rows[0])
 	frame := &Frame{Labels: labels, Index: class, Columns: make([]string, width), Rows: make([][]Value, len(rows)-1)}
 	for index, label := range labels {
 		frame.Columns[index] = label.Str()
@@ -231,9 +226,13 @@ func build(rows [][]cell, text func(column string) bool) (*Frame, error) {
 		// A converter is found by its name: a label that is a str.
 		if text != nil && labels[index].Kind == String && text(labels[index].S) {
 			columns[index] = textColumn(rows[1:], index)
-		} else if columns[index], err = inferColumn(rows[1:], index); err != nil {
+			continue
+		}
+		value, err := inferColumn(rows[1:], index)
+		if err != nil {
 			return nil, err
 		}
+		columns[index] = value
 	}
 	// DataFrame.values: one dtype for the frame. Equal dtypes keep theirs,
 	// int64, uint64 and float64 give float64, anything else object.
@@ -258,6 +257,24 @@ func build(rows [][]cell, text func(column string) bool) (*Frame, error) {
 		frame.Rows[index] = row
 	}
 	return frame, nil
+}
+
+// buildColumns is build for the columns alone (ReadColumns): the labels the
+// first row and the frame's width make, with no rows. width is the widest row
+// of the worksheet after the trailing blank cells are trimmed; the first row
+// is padded to it as build pads it.
+func buildColumns(header []cell, width int) *Frame {
+	if width == 0 {
+		return &Frame{Columns: []string{}, Labels: []Value{}}
+	}
+	cells := make([]cell, width)
+	copy(cells, header)
+	labels, class := columnLabels(cells)
+	frame := &Frame{Labels: labels, Index: class, Columns: make([]string, width)}
+	for index, label := range labels {
+		frame.Columns[index] = label.Str()
+	}
+	return frame
 }
 
 // scalar is the element of a column in the frame's array.
@@ -620,12 +637,12 @@ func labelKey(value cell) string {
 // objects otherwise), booleans only a bool one, datetimes (or timedeltas) and
 // nan only a DatetimeIndex (TimedeltaIndex) with NaT, anything else keeps its
 // objects.
-// ErrWorkbookNotPorted: a header cell that is a duration past Timedelta's
-// range. pandas keeps it as a datetime.timedelta label, which the response
-// renderer (internal/service, out of this package) writes as the float
-// total_seconds() of Value.D; that value does not fit Value.D, so the label
-// cannot be rendered.
-func columnLabels(header []cell) ([]Value, IndexClass, error) {
+//
+// A duration label past Timedelta's range stays the datetime.timedelta object
+// pandas keeps (Value.PyTimedelta), which keeps the labels an object Index;
+// its str() is the suffixing and the auto-mapping text, and the response
+// renderer writes total_seconds() of it (internal/service).
+func columnLabels(header []cell) ([]Value, IndexClass) {
 	columns := append([]cell(nil), header...)
 	unnamed := map[int]bool{}
 	for index, name := range columns {
@@ -675,9 +692,6 @@ func columnLabels(header []cell) ([]Value, IndexClass, error) {
 	datetimes, timedeltas, present, anyBoolean := true, true, 0, false
 	intsInt64, intsUint64 := true, true
 	for index, column := range columns {
-		if column.kind == cellDelta && column.micro != nil {
-			return nil, ObjectIndex, ErrWorkbookNotPorted // a duration label the renderer cannot write
-		}
 		anyBoolean = anyBoolean || column.kind == cellBool
 		labels[index] = column.value()
 		numbers = numbers && (column.kind == cellInt || column.kind == cellFloat || column.kind == cellBool || column.kind == cellNaN)
@@ -724,7 +738,7 @@ func columnLabels(header []cell) ([]Value, IndexClass, error) {
 			labels[index].Kind = Timedelta
 		}
 	}
-	return labels, class, nil
+	return labels, class
 }
 
 // numberIndex is the Index numbers only make: int64 when every whole number

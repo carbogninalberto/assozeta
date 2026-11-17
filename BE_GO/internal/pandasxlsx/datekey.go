@@ -3,9 +3,11 @@ package pandasxlsx
 import (
 	"math"
 	"math/big"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/pydateutil"
 )
@@ -44,18 +46,18 @@ type keyMoment struct {
 // parseDateKey is the string branch of DatetimeIndex._parse_with_reso and
 // datetime's get_loc: pandas' parse_datetime_string_with_reso, for the texts
 // every path models. ok is false where pandas raises (the key is no label: a
-// KeyError); the error is ErrWorkbookNotPorted where the text is one this
-// package cannot read (dateutil reads it under pandas' default but not under
-// another, which no text of a real workbook does).
+// KeyError).
 //
-// The text is read with dateutil (internal/pydateutil), which is pandas'
-// fallback, and the grain is the finest field the text itself sets: the same
-// datetime is read three times with three defaults that differ in every field,
-// and a date field the text sets keeps its value across all three. pydateutil
-// fills a time the text does not set from midnight whatever the default, so
-// the time grain is read from the text (timeGrain). dateutil's two-digit-year
-// pivot is the cutover year of the moment of the lookup; pandas' is the year
-// its dateutil was imported, which differ only across a New Year.
+// pandas reads the text once. dateutil's parser._parse records which fields
+// the text writes, and the resolution is the finest of them
+// (parse_datetime_string_with_reso), with default.replace(**fields) over
+// pandas' _DEFAULT_DATETIME, datetime(1, 1, 1), as the moment: a text with
+// no date is year 1, not today. A fraction dateutil keeps to microseconds is
+// read again from the text (_find_subsecond_reso), and a date-first ISO text
+// is read by numpy's string_to_dts before dateutil, which keeps nine digits.
+// dateutil's two-digit-year pivot is the cutover year of the moment of the
+// lookup; pandas' is the year its dateutil was imported, which differ only
+// across a New Year.
 func parseDateKey(text string) (keyMoment, bool, error) {
 	var moment keyMoment
 	if !looksLikeDatetime(text) {
@@ -70,114 +72,122 @@ func parseDateKey(text string) (keyMoment, bool, error) {
 	if moment, ok := basicDateKey(text); ok {
 		return moment, true, nil
 	}
-	defaults := []time.Time{
-		time.Date(1, 1, 1, 0, 0, 0, 0, time.UTC),
-		time.Date(2, 2, 2, 2, 2, 2, 2, time.UTC),
-		time.Date(3, 3, 3, 3, 3, 3, 3, time.UTC),
-	}
-	values := make([]pydateutil.Result, len(defaults))
-	for index, fallback := range defaults {
-		result, err := pydateutil.ParseWithPivot(text, fallback, time.Now().Year(), time.UTC)
-		if err != nil {
-			if _, read := err.(*pydateutil.Error); !read {
-				return moment, false, err
-			}
-			if index == 0 {
-				return moment, false, nil // dateutil does not read the text
-			}
-			return moment, false, ErrWorkbookNotPorted
+	fields, err := pydateutil.ParseFields(text, time.Now().Year(), time.UTC)
+	if err != nil {
+		if _, read := err.(*pydateutil.Error); !read {
+			return moment, false, err
 		}
-		values[index] = result
+		return moment, false, nil // pandas raises: the key is no label
 	}
-	at := values[0]
-	moment = keyMoment{at: time.Date(at.Year, time.Month(at.Month), at.Day, at.Hour, at.Minute, at.Second,
-		at.Microsecond*1000, time.UTC), hasTZ: at.HasTZ, reso: resoYear}
-	fields := []struct {
-		reso            resolution
-		one, two, three int
+	if fields.Weekday >= 0 && (fields.Day == nil || fields.Day.Sign() == 0) {
+		// pandas: 'Parsing datetimes with weekday but no day information is
+		// not supported' (a ValueError, answered as a KeyError).
+		return moment, false, nil
+	}
+	// reso is the finest field the text sets: pandas walks year..microsecond
+	// and keeps the last attribute dateutil filled in.
+	reso, read := resoYear, false
+	for _, field := range []struct {
+		reso resolution
+		set  bool
 	}{
-		{resoYear, values[0].Year, values[1].Year, values[2].Year},
-		{resoMonth, values[0].Month, values[1].Month, values[2].Month},
-		{resoDay, values[0].Day, values[1].Day, values[2].Day},
-	}
-	for _, field := range fields {
-		if field.one == field.two && field.two == field.three {
-			moment.reso = field.reso
+		{resoYear, fields.Year != nil}, {resoMonth, fields.Month != nil}, {resoDay, fields.Day != nil},
+		{resoHour, fields.Hour != nil}, {resoMinute, fields.Minute != nil}, {resoSecond, fields.Second != nil},
+		{resoMicro, fields.HasMicrosecond},
+	} {
+		if field.set {
+			reso, read = field.reso, true
 		}
 	}
-	grain, hasTime, nanos := timeGrain(text, moment.at)
-	if hasTime && grain < moment.reso {
-		moment.reso = grain
+	if !read {
+		return moment, false, nil // pandas: DateParseError, unable to parse
 	}
-	if moment.reso == resoNano {
-		// pandas keeps the nanoseconds dateutil drops: the digits past the
-		// sixth of a fraction of a second.
-		moment.at = moment.at.Add(time.Duration(nanos) * time.Nanosecond)
+	if fields.HasMicrosecond && fields.Microsecond%1000 == 0 {
+		reso = subsecondResolution(text)
 	}
+	var nanos time.Duration
+	if digits, fractionNanos := fractionDigits(text); isoDated(text) && digits > 6 {
+		// numpy's ISO parser keeps the nanoseconds dateutil drops: the digits
+		// past the sixth of a fraction of a second.
+		reso, nanos = resoNano, time.Duration(fractionNanos)*time.Nanosecond
+	}
+	at := fields.Result
+	moment = keyMoment{at: time.Date(at.Year, time.Month(at.Month), at.Day, at.Hour, at.Minute, at.Second,
+		at.Microsecond*1000, time.UTC).Add(nanos), hasTZ: at.HasTZ, reso: reso}
 	return moment, true, nil
 }
 
-// timeGrain is the grain of the time of day a text writes: the hour, the
-// minute ('H:MM'), the second ('H:MM:SS') or, with a fraction, the
-// millisecond, microsecond or nanosecond; nanos is the fraction's digits past
-// the sixth. A text without a time has none, and a time the text leaves
-// implicit is the hour. pydateutil fills a time it does not read from
-// midnight whatever the default, so the grain is read from the text.
-func timeGrain(text string, at time.Time) (grain resolution, hasTime bool, nanos int) {
-	if at.Hour() != 0 || at.Minute() != 0 || at.Second() != 0 || at.Nanosecond() != 0 {
-		hasTime = true
+// subsecondPattern is pandas' _reso_pattern, which finds a fraction of the
+// second in a time of day. Python's \d in a str pattern is any Unicode decimal
+// digit (Nd).
+var subsecondPattern = regexp.MustCompile(`\p{Nd}:\p{Nd}{2}:\p{Nd}{2}\.(\p{Nd}+)`)
+
+// subsecondResolution is pandas' _find_subsecond_reso for a microsecond that
+// is a whole number of milliseconds: the text's fraction says millisecond
+// (up to three digits), microsecond (four to six) or nanosecond (more, which
+// dateutil cut at the sixth digit).
+func subsecondResolution(text string) resolution {
+	match := subsecondPattern.FindStringSubmatch(text)
+	if match == nil {
+		return resoSecond
 	}
-	for index := 0; index+1 < len(text) && !hasTime; index++ {
-		if text[index] == ':' {
-			hasTime = true
-		}
-		if c := text[index] | 0x20; c == 'a' || c == 'p' {
-			if next := text[index+1] | 0x20; next == 'm' {
-				hasTime = true
-			}
-		}
+	switch fraction := utf8.RuneCountInString(match[1]); {
+	case fraction <= 3:
+		return resoMilli
+	case fraction > 6:
+		return resoNano
 	}
-	if !hasTime {
-		return resoDay, false, 0
-	}
-	colons, fraction := 0, 0
+	return resoMicro
+}
+
+// fractionDigits is the number of digits after the last '.' of the text and
+// their value past the sixth, as nanoseconds.
+func fractionDigits(text string) (count, nanos int) {
 	for index := 0; index < len(text); index++ {
-		switch text[index] {
-		case ':':
-			colons++
-		case '.':
-			fraction = 0
-			digits := make([]byte, 0, 9)
-			for at := index + 1; at < len(text) && text[at] >= '0' && text[at] <= '9'; at++ {
-				fraction++
-				if len(digits) < 9 {
-					digits = append(digits, text[at])
-				}
-			}
-			nanos = 0
-			if len(digits) > 6 {
-				for _, digit := range digits[6:] {
-					nanos = nanos*10 + int(digit-'0')
-				}
-				for pad := len(digits); pad < 9; pad++ {
-					nanos *= 10
-				}
+		if text[index] != '.' {
+			continue
+		}
+		count, nanos = 0, 0
+		digits := make([]byte, 0, 9)
+		for at := index + 1; at < len(text) && text[at] >= '0' && text[at] <= '9'; at++ {
+			count++
+			if len(digits) < 9 {
+				digits = append(digits, text[at])
 			}
 		}
+		if len(digits) > 6 {
+			for _, digit := range digits[6:] {
+				nanos = nanos*10 + int(digit-'0')
+			}
+			for pad := len(digits); pad < 9; pad++ {
+				nanos *= 10
+			}
+		}
+	}
+	return count, nanos
+}
+
+// isoDated reports whether the text begins with the date numpy's ISO 8601
+// parser (string_to_dts) reads before pandas tries dateutil: four digits and
+// a date separator, or the eight-digit basic form, with no letter but the 'T'
+// and 'Z' separators (a month name or a meridiem sends the text to dateutil).
+func isoDated(text string) bool {
+	digits := 0
+	for digits < len(text) && text[digits] >= '0' && text[digits] <= '9' {
+		digits++
 	}
 	switch {
-	case fraction > 6:
-		return resoNano, true, nanos
-	case fraction > 3:
-		return resoMicro, true, 0
-	case fraction > 0:
-		return resoMilli, true, 0
-	case colons >= 2:
-		return resoSecond, true, 0
-	case colons == 1:
-		return resoMinute, true, 0
+	case digits == 8:
+	case digits == 4 && digits < len(text) && (text[digits] == '-' || text[digits] == '/' || text[digits] == '.'):
+	default:
+		return false
 	}
-	return resoHour, true, 0
+	for index := 0; index < len(text); index++ {
+		if c := text[index] | 0x20; c >= 'a' && c <= 'z' && c != 't' && c != 'z' {
+			return false
+		}
+	}
+	return true
 }
 
 // looksLikeDatetime is pandas' _does_string_look_like_datetime: a text that
@@ -194,7 +204,7 @@ func looksLikeDatetime(text string) bool {
 	case "a", "A", "m", "M", "p", "P", "t", "T":
 		return false
 	}
-	if value, _, ok, _ := preciseStrtod(text); ok && value < 1000 {
+	if value, _, _, ok := preciseStrtod(text); ok && value < 1000 {
 		return false
 	}
 	return true

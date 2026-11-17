@@ -97,13 +97,10 @@ func sameValue(want, got []string) bool {
 	return len(want) == 3 && want[0] == got[0] && want[1] == got[1] && want[2] == got[2]
 }
 
-// refused reports a workbook pandas reads and the package does not model
-// (ErrWorkbookNotPorted).
-func refused(err error) bool { return errors.Is(err, ErrWorkbookNotPorted) }
-
-// compare requires pandas' outcome for every reading the package accepts,
-// and acceptance of the readings marked required. ReadText gives the same
-// frame as ReadAll.
+// compare requires pandas' outcome for every reading the package accepts: the
+// labels and every row's values as pandas gives them, and a refusal only for
+// the readings pandas itself raises on. ReadText gives the same frame as
+// ReadAll.
 func compare(t *testing.T, corpus goldenCorpus, readings []goldenCase) {
 	accepted, frames, failures := 0, 0, 0
 	for index, item := range readings {
@@ -127,14 +124,6 @@ func compare(t *testing.T, corpus goldenCorpus, readings []goldenCase) {
 		}
 		narrow, narrowErr := ReadText(data, textual)
 		switch {
-		case refused(err):
-			if item.Required {
-				fail("required workbook refused")
-			}
-			if !refused(narrowErr) {
-				fail("ReadText: %v", narrowErr)
-			}
-			continue
 		case errors.Is(err, ErrInvalid):
 			if item.Error == "" {
 				fail("invalid, pandas reads it")

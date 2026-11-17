@@ -97,10 +97,13 @@ func (a archive) open(name string) (io.ReadCloser, error) {
 // read is the part named as fromstring reads it: whole, and bound to
 // maxPartBytes. openpyxl parses the workbook, its relationships, the content
 // types, the shared strings and the stylesheet with fromstring, so a part past
-// the bound needs that much memory on top of the rest of the request; whether
-// pandas manages is a question for the production image's memory, and such a
-// part is left to Django (ErrWorkbookNotPorted). A part the archive does not
-// hold and a corrupt entry raise in pandas (ErrInvalid).
+// the bound needs that much memory on top of the rest of the request. The host
+// cannot parse such a part, which makes openpyxl raise MemoryError: the view
+// then answers what it answers for every read_excel failure, the 500 page of
+// its xlrd retry (ImportError, xlrd not being installed, or XLRDError for an
+// xlsx file where it is) (owner decision of 2026-11-16, "closest Django
+// answer": the read fails, so ErrInvalid). A part the archive does not hold and
+// a corrupt entry raise in pandas too (ErrInvalid).
 func (a archive) read(name string) ([]byte, error) {
 	reader, err := a.open(name)
 	if err != nil {
@@ -109,7 +112,7 @@ func (a archive) read(name string) ([]byte, error) {
 	file := a[name]
 	if file.UncompressedSize64 > uint64(maxPartBytes) {
 		reader.Close()
-		return nil, ErrWorkbookNotPorted
+		return nil, ErrInvalid
 	}
 	data, err := io.ReadAll(io.LimitReader(reader, int64(maxPartBytes)+1))
 	reader.Close()
@@ -117,7 +120,7 @@ func (a archive) read(name string) ([]byte, error) {
 		return nil, ErrInvalid
 	}
 	if len(data) > maxPartBytes {
-		return nil, ErrWorkbookNotPorted
+		return nil, ErrInvalid
 	}
 	return data, nil
 }
@@ -187,11 +190,50 @@ func partPath(name string) string {
 // ReadAll is pandas.read_excel(io.BytesIO(data), engine="openpyxl",
 // converters=...) with the view's text converter on the columns textual names
 // (nil: no converters): a number of such a column is its str(), every other
-// cell stays as it is, and the column gets no numeric or boolean reading.
+// cell stays as it is, and the column gets no numeric or boolean reading. A
+// worksheet with a row numbered past maxRowNumber stops the read with
+// ErrRowsPastBound before that row is held.
 func ReadAll(data []byte, textual func(column string) bool) (*Frame, error) {
+	sheet, context, err := openSheet(data)
+	if err != nil {
+		return nil, err
+	}
+	rows, err := sheetRows(sheet, context)
+	sheet.Close()
+	if err != nil {
+		return nil, err
+	}
+	return build(rows, textual)
+}
+
+// ReadColumns is ReadAll for the columns alone, which do not depend on the
+// rows: the labels the first row and the frame's width make (a wider row pads
+// the header with empty names), with no row held. It streams every row, so a
+// worksheet of any size answers, and a cell openpyxl raises on still raises:
+// the cell conversions and the row numbers are the same as ReadAll's, only the
+// per-column type inference of the values (which needs every row) is left out.
+func ReadColumns(data []byte) (*Frame, error) {
+	sheet, context, err := openSheet(data)
+	if err != nil {
+		return nil, err
+	}
+	header, width, err := sheetColumns(sheet, context)
+	sheet.Close()
+	if err != nil {
+		return nil, err
+	}
+	return buildColumns(header, width), nil
+}
+
+// openSheet is read_excel's walk to the first worksheet, left open for the
+// caller to read: the workbook part from the content types, its
+// relationships, the sheet openpyxl keeps, the shared strings and the
+// stylesheet.
+func openSheet(data []byte) (io.ReadCloser, sheetContext, error) {
+	var context sheetContext
 	reader, err := zip.NewReader(bytes.NewReader(data), int64(len(data)))
 	if err != nil {
-		return nil, ErrInvalid
+		return nil, context, ErrInvalid
 	}
 	files := archive{}
 	for _, file := range reader.File {
@@ -199,11 +241,11 @@ func ReadAll(data []byte, textual func(column string) bool) (*Frame, error) {
 		files[file.Name] = file
 	}
 	if _, ok := files["[Content_Types].xml"]; !ok {
-		return nil, ErrInvalid
+		return nil, context, ErrInvalid
 	}
 	raw, err := files.read("[Content_Types].xml")
 	if err != nil {
-		return nil, err
+		return nil, context, err
 	}
 	var types struct {
 		XMLName  xml.Name `xml:"http://schemas.openxmlformats.org/package/2006/content-types Types"`
@@ -216,7 +258,7 @@ func ReadAll(data []byte, textual func(column string) bool) (*Frame, error) {
 		} `xml:"http://schemas.openxmlformats.org/package/2006/content-types Override"`
 	}
 	if err = decode(raw, &types); err != nil {
-		return nil, err
+		return nil, context, err
 	}
 	// openpyxl looks for the workbook by content type (a macro-enabled one
 	// first, then a template one, then a plain one), and then for a Default of
@@ -255,10 +297,10 @@ func ReadAll(data []byte, textual func(column string) bool) (*Frame, error) {
 		}
 	}
 	if !found {
-		return nil, ErrInvalid // 'File contains no valid workbook part'
+		return nil, context, ErrInvalid // 'File contains no valid workbook part'
 	}
 	if raw, err = files.read(workbookPart); err != nil {
-		return nil, err
+		return nil, context, err
 	}
 	var workbook struct {
 		XMLName    xml.Name `xml:"http://schemas.openxmlformats.org/spreadsheetml/2006/main workbook"`
@@ -270,7 +312,7 @@ func ReadAll(data []byte, textual func(column string) bool) (*Frame, error) {
 		} `xml:"sheets>sheet"`
 	}
 	if err = decode(raw, &workbook); err != nil {
-		return nil, err
+		return nil, context, err
 	}
 	// openpyxl's Bool: every text but '', 'false', 'f' and '0' is true.
 	mac := false
@@ -280,11 +322,11 @@ func ReadAll(data []byte, textual func(column string) bool) (*Frame, error) {
 		mac = true
 	}
 	if raw, err = files.read(path.Join(path.Dir(workbookPart), "_rels", path.Base(workbookPart)+".rels")); err != nil {
-		return nil, err
+		return nil, context, err
 	}
 	var rels relationships
 	if err = decode(raw, &rels); err != nil {
-		return nil, err
+		return nil, context, err
 	}
 	targets := map[string]string{}
 	kinds := map[string]string{}
@@ -308,7 +350,7 @@ func ReadAll(data []byte, textual func(column string) bool) (*Frame, error) {
 		}
 		target, ok := targets[sheet.ID]
 		if !ok {
-			return nil, ErrInvalid
+			return nil, context, ErrInvalid
 		}
 		if _, present := files[target]; !present {
 			continue
@@ -316,7 +358,7 @@ func ReadAll(data []byte, textual func(column string) bool) (*Frame, error) {
 		if strings.Contains(kinds[sheet.ID], "chartsheet") {
 			// read_chartsheet wants the chartsheet's own relationships part.
 			if _, present := files[path.Join(path.Dir(target), "_rels", path.Base(target)+".rels")]; !present {
-				return nil, ErrInvalid
+				return nil, context, ErrInvalid
 			}
 			continue
 		}
@@ -324,19 +366,19 @@ func ReadAll(data []byte, textual func(column string) bool) (*Frame, error) {
 		break
 	}
 	if sheetPart == "" {
-		return nil, ErrInvalid // 'Worksheet index 0 is invalid, 0 worksheets found'
+		return nil, context, ErrInvalid // 'Worksheet index 0 is invalid, 0 worksheets found'
 	}
 	var shared []string
 	if hasStrings {
 		if raw, err = files.read(stringsPart); err != nil {
-			return nil, err
+			return nil, context, err
 		}
 		var table struct {
 			XMLName xml.Name `xml:"http://schemas.openxmlformats.org/spreadsheetml/2006/main sst"`
 			Items   []text   `xml:"http://schemas.openxmlformats.org/spreadsheetml/2006/main si"`
 		}
 		if err = decode(raw, &table); err != nil {
-			return nil, err
+			return nil, context, err
 		}
 		for _, item := range table.Items {
 			// read_string_table: the escape of an underscore is dropped; other
@@ -358,17 +400,17 @@ func ReadAll(data []byte, textual func(column string) bool) (*Frame, error) {
 	}
 	if _, present := files[stylesPart]; present {
 		if raw, err = files.read(stylesPart); err != nil {
-			return nil, err
+			return nil, context, err
 		}
 		if err = decode(raw, &styles); err != nil {
-			return nil, err
+			return nil, context, err
 		}
 	}
 	custom := map[int64]string{}
 	for _, format := range styles.Formats {
 		id, ok := pythonInt(format.ID)
 		if !ok || !id.IsInt64() {
-			return nil, ErrInvalid // openpyxl's Integer: int(text) raises
+			return nil, context, ErrInvalid // openpyxl's Integer: int(text) raises
 		}
 		custom[id.Int64()] = format.Code
 	}
@@ -380,7 +422,7 @@ func ReadAll(data []byte, textual func(column string) bool) (*Frame, error) {
 		if style.Format != nil {
 			index, ok := pythonInt(*style.Format)
 			if !ok || !index.IsInt64() {
-				return nil, ErrInvalid // openpyxl's Integer: int(text) raises
+				return nil, context, ErrInvalid // openpyxl's Integer: int(text) raises
 			}
 			id = index.Int64()
 		}
@@ -397,14 +439,10 @@ func ReadAll(data []byte, textual func(column string) bool) (*Frame, error) {
 	}
 	sheet, err := files.open(sheetPart)
 	if err != nil {
-		return nil, err
+		return nil, context, err
 	}
-	rows, err := sheetRows(sheet, sheetContext{shared: shared, styleKinds: styleKinds, mac: mac})
-	sheet.Close()
-	if err != nil {
-		return nil, err
-	}
-	return build(rows, textual)
+	context = sheetContext{shared: shared, styleKinds: styleKinds, mac: mac}
+	return sheet, context, nil
 }
 
 // sheetContext is what a cell's value depends on beyond the cell itself.
@@ -428,26 +466,29 @@ type sheetRow struct {
 	Cells  []sheetCell `xml:",any"`
 }
 
-// maxRowNumber is the last row a workbook may number: the rows before it are
-// held as empty ones. openpyxl's read-only reader pads every skipped row
-// (ReadOnlyWorksheet._cells_by_row yields an empty row per number between the
-// rows it has), so the DataFrame holds one row per number: measured with
-// pandas 2.2.3, a workbook whose only row is numbered 1048577 answers a frame
-// of 1048576 rows (322 MB resident), and 10000000 a frame of 9999999 rows
-// (1.66 GB). The answer is therefore a question of memory, and a larger number
-// is one this package does not answer: it holds the same rows in a process
-// that serves every request, so those workbooks are left to Django
-// (ErrWorkbookNotPorted). 1048576 is also the last row Excel writes.
+// maxRowNumber is the last row of a frame this package builds. openpyxl's
+// read-only reader pads every skipped row (ReadOnlyWorksheet._cells_by_row
+// yields an empty row per number between the rows it has), so the DataFrame
+// holds one row per number: measured with pandas 2.2.3, a workbook whose only
+// row is numbered 1048577 answers a frame of 1048576 rows (322 MB resident),
+// and 10000000 a frame of 9999999 rows (1.66 GB). ReadAll therefore stops at
+// ErrRowsPastBound, and the caller answers as the view answers when the read
+// runs out of memory (the owner's decision of 2026-11-16); ReadColumns streams
+// the rows, so the columns need no memory for them. 1048576 is also the last
+// row Excel writes.
 const maxRowNumber = 1048576
 
 // rowNumber is openpyxl's parse_row row number: int(text), or float(text) when
-// int raises and the float is whole. A number before row 1 leaves the row
-// where it is (the reader skips it); the rows a workbook may number are held
-// as empty ones, so a larger one is left to Django.
+// int raises and the float is whole; a number outside int64 saturates (it is
+// past the frame bound either way). A number before row 1 leaves the row where
+// it is (the reader skips it).
 func rowNumber(text string) (int64, error) {
 	if number, ok := pythonInt(text); ok {
-		if !number.IsInt64() || number.Int64() > maxRowNumber {
-			return 0, ErrWorkbookNotPorted
+		switch {
+		case !number.IsInt64() && number.Sign() > 0:
+			return math.MaxInt64, nil
+		case !number.IsInt64():
+			return math.MinInt64, nil
 		}
 		return number.Int64(), nil
 	}
@@ -455,23 +496,25 @@ func rowNumber(text string) (int64, error) {
 	if !ok || math.IsNaN(value) || math.IsInf(value, 0) || value != math.Trunc(value) {
 		return 0, ErrInvalid
 	}
-	if value > maxRowNumber || value < math.MinInt64 {
-		return 0, ErrWorkbookNotPorted
+	switch {
+	case value >= math.MaxInt64:
+		return math.MaxInt64, nil
+	case value <= math.MinInt64:
+		return math.MinInt64, nil
 	}
 	return int64(value), nil
 }
 
-// sheetRows is ReadOnlyWorksheet.rows after reset_dimensions(): the rows the
+// scanRows is ReadOnlyWorksheet.rows after reset_dimensions(): the rows the
 // worksheet's XML holds (a row is any element of the main namespace named
-// 'row', wherever it sits), from row 1 with the cells from column 1 to each
-// row's last cell.
-func sheetRows(part io.Reader, context sheetContext) ([][]cell, error) {
+// 'row', wherever it sits), in document order, from row 1, with the cells from
+// column 1 to each row's last cell. visit receives each row's number and cells.
+func scanRows(part io.Reader, context sheetContext, visit func(number int64, cells []cell) error) error {
 	content, err := xmlContent(part)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	decoder := xml.NewDecoder(content)
-	var rows [][]cell
 	rowCounter, root := int64(0), false
 	for {
 		token, err := decoder.Token()
@@ -479,7 +522,7 @@ func sheetRows(part io.Reader, context sheetContext) ([][]cell, error) {
 			break
 		}
 		if err != nil {
-			return nil, ErrInvalid
+			return ErrInvalid
 		}
 		element, ok := token.(xml.StartElement)
 		if !ok {
@@ -491,34 +534,80 @@ func sheetRows(part io.Reader, context sheetContext) ([][]cell, error) {
 		}
 		var row sheetRow
 		if err = decoder.DecodeElement(&row, &element); err != nil {
-			return nil, ErrInvalid
+			return ErrInvalid
 		}
 		if row.Number != nil {
 			number, err := rowNumber(*row.Number)
 			if err != nil {
-				return nil, err
+				return err
 			}
 			rowCounter = number
-		} else {
+		} else if rowCounter < math.MaxInt64 {
 			rowCounter++
-			if rowCounter > maxRowNumber {
-				return nil, ErrWorkbookNotPorted
-			}
 		}
 		cells, err := rowCells(row, context)
 		if err != nil {
-			return nil, err
+			return err
 		}
-		if rowCounter <= int64(len(rows)) {
-			continue // a row at or before the last one read is skipped
+		if err = visit(rowCounter, cells); err != nil {
+			return err
 		}
-		for int64(len(rows)) < rowCounter-1 {
+	}
+	if !root {
+		return ErrInvalid // no element at all: ElementTree's ParseError
+	}
+	return nil
+}
+
+// sheetRows is build's rows: one per row number from 1 to the last one read, a
+// row at or before an earlier one skipped. A row past maxRowNumber stops the
+// read with ErrRowsPastBound before the empty rows below it are held.
+func sheetRows(part io.Reader, context sheetContext) ([][]cell, error) {
+	var rows [][]cell
+	err := scanRows(part, context, func(number int64, cells []cell) error {
+		if number > maxRowNumber {
+			return ErrRowsPastBound
+		}
+		if number <= int64(len(rows)) {
+			return nil // a row at or before the last one read is skipped
+		}
+		for int64(len(rows)) < number-1 {
 			rows = append(rows, nil)
 		}
 		rows = append(rows, cells)
-	}
-	if !root {
-		return nil, ErrInvalid // no element at all: ElementTree's ParseError
+		return nil
+	})
+	if err != nil {
+		return nil, err
 	}
 	return rows, nil
+}
+
+// sheetColumns is ReadColumns' walk: the cells of row 1 and the width of the
+// widest row (after the trailing blank cells are trimmed), with no rows kept.
+// Every row is still parsed and converted, so a cell openpyxl raises on raises
+// here too.
+func sheetColumns(part io.Reader, context sheetContext) ([]cell, int, error) {
+	var header []cell
+	width, count := 0, int64(0)
+	err := scanRows(part, context, func(number int64, cells []cell) error {
+		if number <= count {
+			return nil // a row at or before the last one read is skipped
+		}
+		for len(cells) > 0 && cells[len(cells)-1].blank() {
+			cells = cells[:len(cells)-1]
+		}
+		if number == 1 {
+			header = cells
+		}
+		if len(cells) > width {
+			width = len(cells)
+		}
+		count = number
+		return nil
+	})
+	if err != nil {
+		return nil, 0, err
+	}
+	return header, width, nil
 }

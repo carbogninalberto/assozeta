@@ -1846,7 +1846,7 @@ output answer with a stable placeholder (`pystr.ObjectAddress`, approved diverge
 | mentions (`document-views.md`) | `other.<key>.<attr...>` over the str object graph (X18 for method reprs) | — | model attributes the resolvers do not carry, the `str` type's layout fields |
 | association transfer (`association-transfer.md`) | import multipart as MultiPartParser; validation for any archive content (`import-validate-*`); CPython's zipfile, zlib, bz2 and lzma reading (`internal/pyzipfile`); deleting a referenced export document with Django's Collector (`delete-owner-referenced-*`) | sentinel deleted | — |
 | data restore (`data-restore.md`, `consumer-restore.md`) | the whole `Archive.validate()`: legacy invoices, tutor normalization and preview counts, any JSON value, member name rules (`upload-archive-*`, 33 new cases); the Celery restore stages a backslash basename with `_` (`backslash-media`) | sentinel deleted; uncaught reader exceptions and `int(inf)` are Django's 500 page; plan kinds outside the converted set | a member nested in the C recursion band (`dto.ErrJSONRecursionBand`); the Celery restore hands off archives `validate()` rewrites |
-| pandas (`subscription-import-upload.md`) | the CSV tokenizer's re-read buffers after a bare CR; xlsx XML encodings, number text, out-of-range durations and datetimes, streamed sheets | `pandascsv.ErrBareCRBacktrack` deleted | xlsx parts over 256 MiB and sheets past 1,048,576 rows (host memory), a duration column label, dateutil default-date text |
+| pandas (`subscription-import-upload.md`) | the CSV tokenizer's re-read buffers after a bare CR; xlsx XML encodings, number text, out-of-range durations and datetimes, streamed sheets | `pandascsv.ErrBareCRBacktrack` deleted | — (long tail 5B answered the last four, see below) |
 
 `refusal_reach.py`, whole report: 50 points, 148 HTTP/WebSocket and 28 other rows before; 44 points, 135 and 29 after.
 Agent B's points: 14 → 7 (61 → 46 HTTP rows, 4 other), plus the shared `dto.ErrJSONRecursionBand` (3 HTTP rows and 1
@@ -1949,7 +1949,7 @@ result (`accepted-divergences.md`). The other 86 are the ceiling of the `--http`
 | `domain.ErrInstructorWritesNotPorted` | 1 | 0 | compensation notes: NaN payload, exponent overflow |
 | `domain.ErrPaymentStateNotPorted` | 1 | 0 | paid flow for an athlete owning an imported association |
 | `handler.errAPISchemaUnsupported` | 1 | 0 | `lang` with a path separator (the django-handoff example) |
-| `pandasxlsx.ErrWorkbookNotPorted` | 1 | 0 | parts over 256 MiB, sheets past 1,048,576 rows, a duration column label, dateutil default-date text |
+| `pandasxlsx.ErrWorkbookNotPorted` (deleted) | 1 -> 0 | 0 | **ported** in long tail 5B: a part over 256 MiB is `pandasxlsx.ErrInvalid` (the host cannot parse it, the xlrd retry raises: the 500 page); a sheet past 1,048,576 rows answers the upload's columns (`ReadColumns`, streamed) or the import's 400 `FAILED_MESSAGE` between the status changes; a duration column label past `Timedelta` renders `str(total_seconds())`; a header text is read once with dateutil's raw fields and pandas' `_DEFAULT_DATETIME` |
 
 ## Long tail PR 5, agent A: the reportlab paragraph surface (pdfexport)
 
@@ -1970,3 +1970,21 @@ exception of the export). Details and evidence: `pdf-exports.md`, "Long tail PR 
 
 X18: the reportlab `Table` repr of `service/report_files.go` now uses `pystr.ObjectAddress` (`0x7f0000000000`) like the
 other placeholders. X19 is new (image codec libraries, `accepted-divergences.md`).
+
+## Long tail 5B, agent B: the pandas readers' last refusals
+
+`pandasxlsx.ErrWorkbookNotPorted` is deleted; each of its four sites answers natively with its closest Django answer
+(owner decision of 2026-11-16, long-tail rule 4). Evidence: pandas 2.2.3 with openpyxl 3.1.5 on the reference
+interpreter.
+
+| Site | Before | Now |
+|---|---|---|
+| a part openpyxl parses whole above 256 MiB (`reader.go`) | handed off | `pandasxlsx.ErrInvalid`, the 500 page: the host cannot parse the part, and `get_pandas_df_from_file`'s `read_excel(engine="xlrd")` retry raises `ImportError` (xlrd is not installed; `XLRDError` for an xlsx file where it is) |
+| a header cell that is a duration past pandas' `Timedelta` range (106751 days 23:47:16.854775807) | handed off | the `datetime.timedelta` pandas keeps: an object Index, `str()` for the `.<n>` names and `auto_map_columns`, and DRF's `str(obj.total_seconds())` for the response (`'17280000000.0'` for 200000 days) |
+| a header cell past Python's timedelta range (±999999999 days) | handed off | openpyxl's `#VALUE!` error cell: the label is nan, the same 500 page every error-cell header answers |
+| a header text dateutil reads under one default date only | handed off | read once: dateutil's raw fields, pandas' `_DEFAULT_DATETIME` (`datetime(1, 1, 1)`), the finest field set as the resolution, `_find_subsecond_reso` and numpy's ISO nanoseconds (`'30th'`, `'Feb 29'`, `'29 febbraio'`, `'31/02'`, `'Mar 2023'`, `'10:30:00.1234567'` in `pandasxlsx.TestParseDateKey`) |
+| a worksheet with a row numbered past 1,048,576 | handed off | `pandasxlsx.ErrRowsPastBound`: the upload answers the columns by streaming the rows (`ReadColumns`, every cell still parsed), the import the 400 `FAILED_MESSAGE` with `manage_import_status` start and end and nothing written |
+
+Goldens: `go test ./internal/pandasxlsx` accepts every reading pandas makes (6,273 of 6,273 without converters, 11,110
+of 11,110 with the text converter). Parity: `subscription-import-upload-xlsx-duration-label-past-timedelta` and
+`-xlsx-row-past-the-frame-bound` (upload step, columns answer).

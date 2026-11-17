@@ -122,12 +122,13 @@ owner. There is no Celery dispatch on this route: the mapping branch imports syn
   stored field, like an infinite number of a CSV, cannot be stored: the import fails (400, nothing of the rows stays,
   the upload is kept) at `bulk_create`, after every row was read.
 
-## Not ported (refused with the 500 page before any write)
+## 500 pages (answers pandas' own exceptions give)
 
-- Workbooks outside `pandasxlsx`'s subset (`ReadAll`): a first sheet that is not a worksheet, text looked up in a header
-  made only of dates or only of durations, ISO date cells openpyxl raises on, an infinite number cell, numbers beyond a
-  float, number-like text whose reading depends on how pandas was compiled, XML that is not UTF-8, a part above 256 MiB,
-  a stored file above 64 MiB. In the golden corpus 6,133 of the 6,246 workbooks pandas reads are accepted.
+- Workbooks `read_excel` raises on (`pandasxlsx.ErrInvalid`): a first sheet that is not a worksheet, ISO date cells
+  openpyxl raises on, an infinite number cell, numbers beyond a float, number-like text whose reading depends on how
+  pandas was compiled, XML that is not UTF-8, a part above 256 MiB (the host cannot parse it and read_excel's xlrd
+  retry raises ImportError, xlrd not being installed), a stored file above 64 MiB. In the golden corpus every workbook
+  pandas reads (6,273 readings) is accepted.
 - CSV files outside `pandascsv`'s subset (`Read`, `ReadText`): a line that starts with whitespace after a bare carriage
   return, and decimal text whose value depends on how pandas was compiled (1,904 of 97,442 corpus outcomes).
 
@@ -139,9 +140,22 @@ caught' or the rows read up to the limit); its sentinel is deleted (`testdata/pa
 through pyexpat's handler, the same refusals for multi-byte ones), number-like text with the build's accumulation
 (linux plain, darwin/arm64 fused, the same measured rule as `pandascsv` and `xlsxexport`), durations and datetimes
 outside pandas' range as Python objects, text looked up in a date or duration header, and a streamed worksheet of any
-size. Still refused: parts openpyxl parses whole above 256 MiB and sheets past 1,048,576 rows (the answer depends on the
-host's memory, long-tail rule 4), a duration beyond Timedelta's range as a column label, and a header text dateutil reads
-only under some default dates.
+size.
+
+Long tail 5B (agent B): the reader's last refusals answer natively, each as its closest Django answer (owner decision of
+2026-11-16, long-tail rule 4). A part openpyxl parses whole above 256 MiB is `ErrInvalid`: the host cannot parse it, and
+`read_excel(engine="openpyxl")` raising sends the view to its `engine="xlrd"` retry, whose ImportError (xlrd is not
+installed) is the 500 page. A
+column label that is a duration past pandas' `Timedelta` range stays the `datetime.timedelta` pandas keeps: an object
+Index, `str()` of the label for the `.<n>` duplicate names and `auto_map_columns`, and `str(obj.total_seconds())` for the
+response (DRF's JSON encoder). A cell past Python's own timedelta range is openpyxl's `#VALUE!` error cell, so the label
+is nan (which the response writer refuses, the 500 page, as for every error-cell header). A header text is read the one
+way pandas reads it: dateutil's raw fields with pandas' `_DEFAULT_DATETIME`, `datetime(1, 1, 1)` (no second parse under
+another default date), the finest field the text sets as the resolution, `_find_subsecond_reso` for a fraction dateutil
+kept to microseconds, and numpy's nine digits for a date-first ISO text. A worksheet with a row numbered past 1,048,576
+answers `pandasxlsx.ErrRowsPastBound`; the upload step answers its columns by streaming the rows (`ReadColumns`, still
+parsing every cell) and the import step answers the 400 `FAILED_MESSAGE` with `manage_import_status` start and end and
+nothing written, as when the row loop runs out of memory. `pandasxlsx.ErrWorkbookNotPorted` is deleted.
 - Import values: a tax code beyond ASCII in a complete row or outside the transliteration subset; a `default` that is
   not an object when a value is missing. (Date text and numbers in a date column of any length are read by the whole
   dateutil parser, `internal/pydateutil`, day first unless the text starts with the year.)
