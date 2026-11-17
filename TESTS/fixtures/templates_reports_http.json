@@ -5087,6 +5087,246 @@
     "ui": {},
     "created": "2026-10-01T08:00:00+00:00",
     "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "export_pdf_para_justify_indent": {
+    "id": "a1000000-0000-4000-8000-000000930311",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report export_pdf_para_justify_indent",
+    "description": "",
+    "tool": "export_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name",
+      "creation_date"
+     ],
+     "filters": {
+      "tag_name": "Nuoto"
+     },
+     "format": "pdf",
+     "text_before": "<para align=\"justify\" lindent=\"18\" rindent=\"12\" findent=\"-9\">Il corso di nuoto per adulti si tiene il martedì e il giovedì, con <b>istruttori</b> qualificati e <u>vasca</u> riscaldata. Il corso di nuoto per adulti si tiene il martedì e il giovedì, con <b>istruttori</b> qualificati e <u>vasca</u> riscaldata. Il corso di nuoto per adulti si tiene il martedì e il giovedì, con <b>istruttori</b> qualificati e <u>vasca</u> riscaldata. Il corso di nuoto per adulti si tiene il martedì e il giovedì, con <b>istruttori</b> qualificati e <u>vasca</u> riscaldata. Il corso di nuoto per adulti si tiene il martedì e il giovedì, con <b>istruttori</b> qualificati e <u>vasca</u> riscaldata. Il corso di nuoto per adulti si tiene il martedì e il giovedì, con <b>istruttori</b> qualificati e <u>vasca</u> riscaldata. </para>",
+     "text_after": "<para align=\"justify\" justifylastline=\"1\">Ultima riga giustificata anche se corta.</para>"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "export_pdf_para_bullets": {
+    "id": "a1000000-0000-4000-8000-000000930312",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report export_pdf_para_bullets",
+    "description": "",
+    "tool": "export_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name",
+      "creation_date"
+     ],
+     "filters": {
+      "tag_name": "Nuoto"
+     },
+     "format": "pdf",
+     "text_before": "<para lindent=\"18\" findent=\"-10\" bfontsize=\"8\" bcolor=\"#aa0000\"><bullet>&bull;</bullet>Primo punto dell'elenco con testo che va a capo su più righe Primo punto dell'elenco con testo che va a capo su più righe Primo punto dell'elenco con testo che va a capo su più righe </para>",
+     "text_after": "<para banchor=\"end\" bindent=\"12\" lindent=\"20\"><bullet><b>1.</b></bullet>Punto numerato</para>"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "export_pdf_para_border_transform": {
+    "id": "a1000000-0000-4000-8000-000000930313",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report export_pdf_para_border_transform",
+    "description": "",
+    "tool": "export_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name",
+      "creation_date"
+     ],
+     "filters": {
+      "tag_name": "Nuoto"
+     },
+     "format": "pdf",
+     "column_labels": {
+      "tag_name": "<para texttransform=\"uppercase\">nome straße</para>",
+      "creation_date": "<para texttransform=\"capitalize\">data di creazione</para>"
+     },
+     "text_before": "<para borderwidth=\"1\" bordercolor=\"#005599\" borderpadding=\"4\" borderradius=\"3\" backcolor=\"#eeeeff\">Riquadro con bordo arrotondato</para>",
+     "text_after": "<para enddots=\".\" align=\"left\">Totale</para>"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "export_pdf_para_autoleading": {
+    "id": "a1000000-0000-4000-8000-000000930314",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report export_pdf_para_autoleading",
+    "description": "",
+    "tool": "export_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name",
+      "creation_date"
+     ],
+     "filters": {
+      "tag_name": "Nuoto"
+     },
+     "format": "pdf",
+     "text_before": "<para autoleading=\"max\">testo <font size=\"20\">grande</font> e piccolo <para autoleading=\"max\">testo <font size=\"20\">grande</font> e piccolo <para autoleading=\"max\">testo <font size=\"20\">grande</font> e piccolo <para autoleading=\"max\">testo <font size=\"20\">grande</font> e piccolo </para>",
+     "text_after": "<para autoleading=\"min\">riga <font size=\"18\">alta</font></para>"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "export_pdf_para_bullet_twice_error": {
+    "id": "a1000000-0000-4000-8000-000000930315",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report export_pdf_para_bullet_twice_error",
+    "description": "",
+    "tool": "export_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name",
+      "creation_date"
+     ],
+     "filters": {
+      "tag_name": "Nuoto"
+     },
+     "format": "pdf",
+     "text_before": "<bullet>a</bullet><bullet>b</bullet>testo"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "export_pdf_colours_cmyk_alpha": {
+    "id": "a1000000-0000-4000-8000-000000930316",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report export_pdf_colours_cmyk_alpha",
+    "description": "",
+    "tool": "export_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name",
+      "creation_date"
+     ],
+     "filters": {
+      "tag_name": "Nuoto"
+     },
+     "format": "pdf",
+     "text_before": "<font color=\"cmyk(0,1,0,0)\">magenta</font> <font color=\"rgba(255,0,0,0.5)\">semitrasparente</font> <font color=\"Blacker(red,0.5)\">scuro</font> <font backcolor=\"pcmyk(0,0,100,0)\">giallo</font> <u color=\"hsla(120,100%,50%,0.3)\">linea</u> <font color=\"(0.2,0.4,0.6)\">tupla</font> <font color=\"CMYKColor(0,0,0,1,alpha=0.4)\">nero</font>",
+     "text_after": "<para backcolor=\"transparent\">sfondo trasparente</para>"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "export_pdf_colours_expression_error": {
+    "id": "a1000000-0000-4000-8000-000000930317",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report export_pdf_colours_expression_error",
+    "description": "",
+    "tool": "export_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name",
+      "creation_date"
+     ],
+     "filters": {
+      "tag_name": "Nuoto"
+     },
+     "format": "pdf",
+     "text_before": "a <font color=\"(1,2,3,4,5)\">b</font>"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "export_pdf_inline_png": {
+    "id": "a1000000-0000-4000-8000-000000930318",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report export_pdf_inline_png",
+    "description": "",
+    "tool": "export_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name",
+      "creation_date"
+     ],
+     "filters": {
+      "tag_name": "Nuoto"
+     },
+     "format": "pdf",
+     "text_before": "logo <img src=\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAAECAYAAACtBE5DAAAAHUlEQVR4nGNkYDihocHAIIKOWRhsGLgYGDAx6RIA/cADkmOPycMAAAAASUVORK5CYII=\" width=\"20\" height=\"10\"/> fine",
+     "text_after": "<img src=\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAAECAYAAACtBE5DAAAAHUlEQVR4nGNkYDihocHAIIKOWRhsGLgYGDAx6RIA/cADkmOPycMAAAAASUVORK5CYII=\" width=\"12\" height=\"8\"/> <img src=\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAAECAYAAACtBE5DAAAAHUlEQVR4nGNkYDihocHAIIKOWRhsGLgYGDAx6RIA/cADkmOPycMAAAAASUVORK5CYII=\" width=\"8\" height=\"5\"/> <img src=\"data:image/gif;base64,R0lGODlhBAADAIEAAP8AAAD/AAAA/wAAACH5BAEAAAEALAAAAAAEAAMAAAgLAAEEECCQ4MCCAQEAOw==\" width=\"8\" height=\"6\"/> <img src=\"data:image/bmp;base64,Qk1OAAAAAAAAADYAAAAoAAAAAwAAAAIAAAABABgAAAAAABgAAADEDgAAxA4AAAAAAAAAAAAAeG5kloyCtKqgAAAAHhQKPDIoWlBGAAAA\" width=\"9\" height=\"6\"/>"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "export_pdf_inline_image_junk_error": {
+    "id": "a1000000-0000-4000-8000-000000930319",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report export_pdf_inline_image_junk_error",
+    "description": "",
+    "tool": "export_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name",
+      "creation_date"
+     ],
+     "filters": {
+      "tag_name": "Nuoto"
+     },
+     "format": "pdf",
+     "text_before": "a <img src=\"data:image/png;base64,AAAAAAAA\"/> b"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "export_pdf_inline_truncated_jpeg_error": {
+    "id": "a1000000-0000-4000-8000-000000930320",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report export_pdf_inline_truncated_jpeg_error",
+    "description": "",
+    "tool": "export_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name",
+      "creation_date"
+     ],
+     "filters": {
+      "tag_name": "Nuoto"
+     },
+     "format": "pdf",
+     "text_before": "a <img src=\"data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAAUAB4DASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVW\"/> b"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
    }
   },
   "people": {
@@ -12275,6 +12515,270 @@
    "actor": "owner",
    "method": "POST",
    "path": "/saved-reports/a1000000-0000-4000-8000-000000930310/run",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante l'esecuzione del report."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-export-pdf-para-justify-indent",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930311/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "$file": {
+     "type": "application/pdf",
+     "disposition": "attachment; filename=\"Tags.pdf\"",
+     "pdf": {
+      "engine": "report_table",
+      "headers": [
+       "tag_name",
+       "creation_date"
+      ],
+      "title": "Tags",
+      "rows": [
+       [
+        "Nuoto",
+        "15/09/2026 08:30"
+       ]
+      ],
+      "text_before": "<para align=\"justify\" lindent=\"18\" rindent=\"12\" findent=\"-9\">Il corso di nuoto per adulti si tiene il martedì e il giovedì, con <b>istruttori</b> qualificati e <u>vasca</u> riscaldata. Il corso di nuoto per adulti si tiene il martedì e il giovedì, con <b>istruttori</b> qualificati e <u>vasca</u> riscaldata. Il corso di nuoto per adulti si tiene il martedì e il giovedì, con <b>istruttori</b> qualificati e <u>vasca</u> riscaldata. Il corso di nuoto per adulti si tiene il martedì e il giovedì, con <b>istruttori</b> qualificati e <u>vasca</u> riscaldata. Il corso di nuoto per adulti si tiene il martedì e il giovedì, con <b>istruttori</b> qualificati e <u>vasca</u> riscaldata. Il corso di nuoto per adulti si tiene il martedì e il giovedì, con <b>istruttori</b> qualificati e <u>vasca</u> riscaldata. </para>",
+      "text_after": "<para align=\"justify\" justifylastline=\"1\">Ultima riga giustificata anche se corta.</para>"
+     }
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-export-pdf-para-bullets",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930312/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "$file": {
+     "type": "application/pdf",
+     "disposition": "attachment; filename=\"Tags.pdf\"",
+     "pdf": {
+      "engine": "report_table",
+      "headers": [
+       "tag_name",
+       "creation_date"
+      ],
+      "title": "Tags",
+      "rows": [
+       [
+        "Nuoto",
+        "15/09/2026 08:30"
+       ]
+      ],
+      "text_before": "<para lindent=\"18\" findent=\"-10\" bfontsize=\"8\" bcolor=\"#aa0000\"><bullet>&bull;</bullet>Primo punto dell'elenco con testo che va a capo su più righe Primo punto dell'elenco con testo che va a capo su più righe Primo punto dell'elenco con testo che va a capo su più righe </para>",
+      "text_after": "<para banchor=\"end\" bindent=\"12\" lindent=\"20\"><bullet><b>1.</b></bullet>Punto numerato</para>"
+     }
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-export-pdf-para-border-transform",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930313/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "$file": {
+     "type": "application/pdf",
+     "disposition": "attachment; filename=\"Tags.pdf\"",
+     "pdf": {
+      "engine": "report_table",
+      "headers": [
+       "<para texttransform=\"uppercase\">nome straße</para>",
+       "<para texttransform=\"capitalize\">data di creazione</para>"
+      ],
+      "title": "Tags",
+      "rows": [
+       [
+        "Nuoto",
+        "15/09/2026 08:30"
+       ]
+      ],
+      "text_before": "<para borderwidth=\"1\" bordercolor=\"#005599\" borderpadding=\"4\" borderradius=\"3\" backcolor=\"#eeeeff\">Riquadro con bordo arrotondato</para>",
+      "text_after": "<para enddots=\".\" align=\"left\">Totale</para>"
+     }
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-export-pdf-para-autoleading",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930314/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "$file": {
+     "type": "application/pdf",
+     "disposition": "attachment; filename=\"Tags.pdf\"",
+     "pdf": {
+      "engine": "report_table",
+      "headers": [
+       "tag_name",
+       "creation_date"
+      ],
+      "title": "Tags",
+      "rows": [
+       [
+        "Nuoto",
+        "15/09/2026 08:30"
+       ]
+      ],
+      "text_before": "<para autoleading=\"max\">testo <font size=\"20\">grande</font> e piccolo <para autoleading=\"max\">testo <font size=\"20\">grande</font> e piccolo <para autoleading=\"max\">testo <font size=\"20\">grande</font> e piccolo <para autoleading=\"max\">testo <font size=\"20\">grande</font> e piccolo </para>",
+      "text_after": "<para autoleading=\"min\">riga <font size=\"18\">alta</font></para>"
+     }
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-export-pdf-para-bullet-twice-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930315/run",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante l'esecuzione del report."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-export-pdf-colours-cmyk-alpha",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930316/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "$file": {
+     "type": "application/pdf",
+     "disposition": "attachment; filename=\"Tags.pdf\"",
+     "pdf": {
+      "engine": "report_table",
+      "headers": [
+       "tag_name",
+       "creation_date"
+      ],
+      "title": "Tags",
+      "rows": [
+       [
+        "Nuoto",
+        "15/09/2026 08:30"
+       ]
+      ],
+      "text_before": "<font color=\"cmyk(0,1,0,0)\">magenta</font> <font color=\"rgba(255,0,0,0.5)\">semitrasparente</font> <font color=\"Blacker(red,0.5)\">scuro</font> <font backcolor=\"pcmyk(0,0,100,0)\">giallo</font> <u color=\"hsla(120,100%,50%,0.3)\">linea</u> <font color=\"(0.2,0.4,0.6)\">tupla</font> <font color=\"CMYKColor(0,0,0,1,alpha=0.4)\">nero</font>",
+      "text_after": "<para backcolor=\"transparent\">sfondo trasparente</para>"
+     }
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-export-pdf-colours-expression-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930317/run",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante l'esecuzione del report."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-export-pdf-inline-png",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930318/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "$file": {
+     "type": "application/pdf",
+     "disposition": "attachment; filename=\"Tags.pdf\"",
+     "pdf": {
+      "engine": "report_table",
+      "headers": [
+       "tag_name",
+       "creation_date"
+      ],
+      "title": "Tags",
+      "rows": [
+       [
+        "Nuoto",
+        "15/09/2026 08:30"
+       ]
+      ],
+      "text_before": "logo <img src=\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAAECAYAAACtBE5DAAAAHUlEQVR4nGNkYDihocHAIIKOWRhsGLgYGDAx6RIA/cADkmOPycMAAAAASUVORK5CYII=\" width=\"20\" height=\"10\"/> fine",
+      "text_after": "<img src=\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAAECAYAAACtBE5DAAAAHUlEQVR4nGNkYDihocHAIIKOWRhsGLgYGDAx6RIA/cADkmOPycMAAAAASUVORK5CYII=\" width=\"12\" height=\"8\"/> <img src=\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAAECAYAAACtBE5DAAAAHUlEQVR4nGNkYDihocHAIIKOWRhsGLgYGDAx6RIA/cADkmOPycMAAAAASUVORK5CYII=\" width=\"8\" height=\"5\"/> <img src=\"data:image/gif;base64,R0lGODlhBAADAIEAAP8AAAD/AAAA/wAAACH5BAEAAAEALAAAAAAEAAMAAAgLAAEEECCQ4MCCAQEAOw==\" width=\"8\" height=\"6\"/> <img src=\"data:image/bmp;base64,Qk1OAAAAAAAAADYAAAAoAAAAAwAAAAIAAAABABgAAAAAABgAAADEDgAAxA4AAAAAAAAAAAAAeG5kloyCtKqgAAAAHhQKPDIoWlBGAAAA\" width=\"9\" height=\"6\"/>"
+     }
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-export-pdf-inline-image-junk-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930319/run",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante l'esecuzione del report."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-export-pdf-inline-truncated-jpeg-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930320/run",
    "headers": {},
    "status": 500,
    "response": {

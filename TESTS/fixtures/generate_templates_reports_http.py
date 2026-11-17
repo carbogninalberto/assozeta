@@ -537,6 +537,52 @@ def image_base64(width, height, colour):
     return base64.b64encode(out.getvalue()).decode()
 
 
+def png_data_url():
+    """A 6x4 RGBA PNG with an alpha value per pixel, as a data URL."""
+    import base64
+    import io
+    from PIL import Image
+    image = Image.new('RGBA', (6, 4))
+    for y in range(4):
+        for x in range(6):
+            image.putpixel((x, y), (x * 40, y * 60, 200, 40 + x * 20 + y * 10))
+    out = io.BytesIO()
+    image.save(out, 'PNG')
+    return 'data:image/png;base64,' + base64.b64encode(out.getvalue()).decode()
+
+
+def gif_data_url():
+    """A 4x3 palette GIF with palette entry 1 marked transparent, as a data URL."""
+    import base64
+    import io
+    from PIL import Image
+    image = Image.new('P', (4, 3))
+    image.putpalette([255, 0, 0, 0, 255, 0, 0, 0, 255] + [0] * 759)
+    image.putdata([0, 1, 2] * 4)
+    out = io.BytesIO()
+    image.save(out, 'GIF', transparency=1)
+    return 'data:image/gif;base64,' + base64.b64encode(out.getvalue()).decode()
+
+
+def bmp_data_url():
+    """A 3x2 24-bit BMP, as a data URL."""
+    import base64
+    import io
+    from PIL import Image
+    image = Image.new('RGB', (3, 2))
+    image.putdata([(10, 20, 30), (40, 50, 60), (70, 80, 90), (100, 110, 120), (130, 140, 150), (160, 170, 180)])
+    out = io.BytesIO()
+    image.save(out, 'BMP')
+    return 'data:image/bmp;base64,' + base64.b64encode(out.getvalue()).decode()
+
+
+def truncated_jpeg_data_url(width, height, colour, length=300):
+    """The first ``length`` bytes of a JPEG, as a data URL."""
+    import base64
+    return ('data:image/jpeg;base64,'
+            + base64.b64encode(base64.b64decode(image_base64(width, height, colour))[:length]).decode())
+
+
 MARKUP_LABELS = {'tag_name': 'Nome & <b>tag</b>', 'creation_date': 'A < B &lt;data&gt;'}
 MARKUP_TABLE = {**NUOTO_TABLE, 'headers': list(MARKUP_LABELS.values())}
 run('export-pdf-markup', 'export_data', {**NUOTO_PDF, 'column_labels': MARKUP_LABELS, 'text_before': 'Sport &amp; Fun<br/>R&D <i>club</i>',
@@ -943,6 +989,62 @@ run('export-pdf-number-inf-error', 'export_data', {**NUOTO_PDF, 'text_before': '
 # An image source that refuses the connection and an empty base64 payload cannot be read as an image.
 run('export-pdf-ftp-image-error', 'export_data', {**NUOTO_PDF, 'text_before': 'a <img src="ftp://127.0.0.1:9/logo.jpg"/> b'}, 500, FAILED)
 run('export-pdf-empty-image-error', 'export_data', {**NUOTO_PDF, 'text_before': 'a <img src="data:image/png;base64,"/> b'}, 500, FAILED)
+
+# Paragraph indents, justification, hanging bullets, borders, the case transform and automatic leading; colours in
+# their CMYK, alpha and tuple forms; and inline PNG, GIF and BMP sources.
+JUSTIFY_TEXT = ('Il corso di nuoto per adulti si tiene il martedì e il giovedì, con <b>istruttori</b> qualificati'
+                ' e <u>vasca</u> riscaldata. ')
+JUSTIFY_BEFORE = '<para align="justify" lindent="18" rindent="12" findent="-9">' + JUSTIFY_TEXT * 6 + '</para>'
+JUSTIFY_AFTER = '<para align="justify" justifylastline="1">Ultima riga giustificata anche se corta.</para>'
+run('export-pdf-para-justify-indent', 'export_data', {**NUOTO_PDF, 'text_before': JUSTIFY_BEFORE, 'text_after': JUSTIFY_AFTER}, 200,
+    download('Tags.pdf', 'application/pdf', pdf={**NUOTO_TABLE, 'text_before': JUSTIFY_BEFORE, 'text_after': JUSTIFY_AFTER}))
+BULLET_TEXT = "Primo punto dell'elenco con testo che va a capo su più righe "
+BULLET_BEFORE = ('<para lindent="18" findent="-10" bfontsize="8" bcolor="#aa0000"><bullet>&bull;</bullet>'
+                 + BULLET_TEXT * 3 + '</para>')
+BULLET_AFTER = '<para banchor="end" bindent="12" lindent="20"><bullet><b>1.</b></bullet>Punto numerato</para>'
+run('export-pdf-para-bullets', 'export_data', {**NUOTO_PDF, 'text_before': BULLET_BEFORE, 'text_after': BULLET_AFTER}, 200,
+    download('Tags.pdf', 'application/pdf', pdf={**NUOTO_TABLE, 'text_before': BULLET_BEFORE, 'text_after': BULLET_AFTER}))
+TRANSFORM_LABELS = {'tag_name': '<para texttransform="uppercase">nome straße</para>',
+                    'creation_date': '<para texttransform="capitalize">data di creazione</para>'}
+TRANSFORM_BEFORE = ('<para borderwidth="1" bordercolor="#005599" borderpadding="4" borderradius="3" backcolor="#eeeeff">'
+                    'Riquadro con bordo arrotondato</para>')
+TRANSFORM_AFTER = '<para enddots="." align="left">Totale</para>'
+run('export-pdf-para-border-transform', 'export_data', {**NUOTO_PDF, 'column_labels': TRANSFORM_LABELS,
+    'text_before': TRANSFORM_BEFORE, 'text_after': TRANSFORM_AFTER}, 200,
+    download('Tags.pdf', 'application/pdf', pdf={**NUOTO_TABLE, 'headers': list(TRANSFORM_LABELS.values()),
+                                                 'text_before': TRANSFORM_BEFORE, 'text_after': TRANSFORM_AFTER}))
+AUTOLEADING_BEFORE = '<para autoleading="max">testo <font size="20">grande</font> e piccolo ' * 4 + '</para>'
+AUTOLEADING_AFTER = '<para autoleading="min">riga <font size="18">alta</font></para>'
+run('export-pdf-para-autoleading', 'export_data', {**NUOTO_PDF, 'text_before': AUTOLEADING_BEFORE,
+    'text_after': AUTOLEADING_AFTER}, 200,
+    download('Tags.pdf', 'application/pdf', pdf={**NUOTO_TABLE, 'text_before': AUTOLEADING_BEFORE, 'text_after': AUTOLEADING_AFTER}))
+run('export-pdf-para-bullet-twice-error', 'export_data', {**NUOTO_PDF, 'text_before': '<bullet>a</bullet><bullet>b</bullet>testo'},
+    500, FAILED)
+
+# Colours: cmyk()/pcmyk(), rgba()/hsla() with alpha, a Blacker() expression, a Python tuple and CMYKColor(); the last
+# paragraph has a transparent background. A tuple of five numbers names no colour of any form.
+COLOUR_BEFORE = ('<font color="cmyk(0,1,0,0)">magenta</font> <font color="rgba(255,0,0,0.5)">semitrasparente</font> '
+                 '<font color="Blacker(red,0.5)">scuro</font> <font backcolor="pcmyk(0,0,100,0)">giallo</font> '
+                 '<u color="hsla(120,100%,50%,0.3)">linea</u> <font color="(0.2,0.4,0.6)">tupla</font> '
+                 '<font color="CMYKColor(0,0,0,1,alpha=0.4)">nero</font>')
+COLOUR_AFTER = '<para backcolor="transparent">sfondo trasparente</para>'
+run('export-pdf-colours-cmyk-alpha', 'export_data', {**NUOTO_PDF, 'text_before': COLOUR_BEFORE, 'text_after': COLOUR_AFTER}, 200,
+    download('Tags.pdf', 'application/pdf', pdf={**NUOTO_TABLE, 'text_before': COLOUR_BEFORE, 'text_after': COLOUR_AFTER}))
+run('export-pdf-colours-expression-error', 'export_data', {**NUOTO_PDF, 'text_before': 'a <font color="(1,2,3,4,5)">b</font>'},
+    500, FAILED)
+
+# Inline images: one PNG drawn twice at two sizes, a GIF with a transparent palette entry and a 24-bit BMP; a payload
+# that is not a PNG and a JPEG cut short are not images.
+INLINE_PNG = png_data_url()
+INLINE_BEFORE = f'logo <img src="{INLINE_PNG}" width="20" height="10"/> fine'
+INLINE_AFTER = (f'<img src="{INLINE_PNG}" width="12" height="8"/> <img src="{INLINE_PNG}" width="8" height="5"/> '
+                f'<img src="{gif_data_url()}" width="8" height="6"/> <img src="{bmp_data_url()}" width="9" height="6"/>')
+run('export-pdf-inline-png', 'export_data', {**NUOTO_PDF, 'text_before': INLINE_BEFORE, 'text_after': INLINE_AFTER}, 200,
+    download('Tags.pdf', 'application/pdf', pdf={**NUOTO_TABLE, 'text_before': INLINE_BEFORE, 'text_after': INLINE_AFTER}))
+run('export-pdf-inline-image-junk-error', 'export_data', {**NUOTO_PDF,
+    'text_before': 'a <img src="data:image/png;base64,AAAAAAAA"/> b'}, 500, FAILED)
+run('export-pdf-inline-truncated-jpeg-error', 'export_data', {**NUOTO_PDF,
+    'text_before': f'a <img src="{truncated_jpeg_data_url(30, 20, (200, 30, 30))}"/> b'}, 500, FAILED)
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Template update and saved report run authored sequence', 'ids': IDS,
