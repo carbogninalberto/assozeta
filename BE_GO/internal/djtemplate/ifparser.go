@@ -320,6 +320,12 @@ func nonFiniteFloat(value any) (float64, bool) {
 // pythonCompare is x < y (and the others): numbers with numbers, str with
 // str; any other pair is a TypeError.
 func pythonCompare(op string, left, right any) (bool, error) {
+	if a, ok := nonFiniteFloat(left); ok {
+		return compareNonFinite(op, a, right, false)
+	}
+	if b, ok := nonFiniteFloat(right); ok {
+		return compareNonFinite(op, b, left, true)
+	}
 	var cmp int
 	if a, ok := isText(left); ok {
 		b, ok := isText(right)
@@ -343,6 +349,45 @@ func pythonCompare(op string, left, right any) (bool, error) {
 			return false, errorTypeMismatch{}
 		}
 		cmp = a.Cmp(b)
+	}
+	switch op {
+	case "<":
+		return cmp < 0, nil
+	case ">":
+		return cmp > 0, nil
+	case "<=":
+		return cmp <= 0, nil
+	}
+	return cmp >= 0, nil
+}
+
+// compareNonFinite is <, >, <= or >= with one non-finite float: ±Inf orders
+// against every number as IEEE does and nan is false against everything
+// (Python's float comparisons). otherLeft restores the operand order.
+func compareNonFinite(op string, value float64, other any, otherLeft bool) (bool, error) {
+	var cmp int
+	if b, ok := nonFiniteFloat(other); ok {
+		if math.IsNaN(value) || math.IsNaN(b) {
+			return false, nil
+		}
+		if value < b {
+			cmp = -1
+		} else if value > b {
+			cmp = 1
+		}
+	} else if _, number, err := numeric(other); err != nil {
+		return false, err
+	} else if !number {
+		return false, errorTypeMismatch{}
+	} else if math.IsNaN(value) {
+		return false, nil
+	} else if math.IsInf(value, 1) {
+		cmp = 1
+	} else {
+		cmp = -1
+	}
+	if otherLeft {
+		cmp = -cmp
 	}
 	switch op {
 	case "<":

@@ -64,8 +64,17 @@ def flt(v):
     return {'t': 'float', 'v': v}
 
 
+def flt_text(v):
+    """A float by the text float() reads (inf, -inf, -0.0, 1e-320)."""
+    return {'t': 'float_text', 'v': v}
+
+
 def dec(v):
     return {'t': 'decimal', 'v': v}
+
+
+def lst(*items):
+    return {'t': 'list', 'v': list(items)}
 
 
 def d(v):
@@ -92,7 +101,24 @@ def opt(v):
     return NONE if v is None else s(v)
 
 
+def raw(text):
+    """A jsonb number written as raw text (PostgreSQL keeps the fraction; json.loads may read inf)."""
+    return {'$raw': text}
+
+
+# 1.9e308 + 0.5: beyond float64's range, but jsonb keeps the ".5" so json.loads
+# reads the number as a float and it overflows to inf.
+INF_NUMBER = '1' + '9' + '0' * 307 + '.5'
+NEG_INF_NUMBER = '-' + INF_NUMBER
+
+
+def uuid_int(text):
+    import uuid
+    return uuid.UUID(text).int
+
+
 NONE = {'t': 'none'}
+UNSET = object()
 
 # --- fixture rows ------------------------------------------------------------------------------
 M = lambda key: f'<span class="mention" data-type="mention" key="{key}">@x</span>'
@@ -152,6 +178,8 @@ CATEGORIES = {
     'kitdup': {'id': uid(12), 'name': 'KIT & maglia', 'tax_deductible': True, 'deleted': False},
     'corsi': {'id': uid(13), 'name': 'Corsi', 'tax_deductible': True, 'deleted': True},
     'empty': {'id': uid(14), 'name': '', 'tax_deductible': False, 'deleted': False},
+    'sigma': {'id': uid(15), 'name': 'ΟΔΟΣ', 'tax_deductible': False, 'deleted': False},
+    'idot': {'id': uid(16), 'name': 'İstanbul', 'tax_deductible': False, 'deleted': False},
 }
 ASSOCIATES = {
     'mario': {'id': uid(20), 'first': 'Mario', 'last': 'Rossi', 'tax_code': 'RSSMRA80A01L219X', 'sex': 'M', 'born': '1980-01-01',
@@ -204,6 +232,9 @@ SUBSCRIPTIONS = {
     'badplans': {'id': uid(46), 'associate': 'mario', 'type': 2, 'start': '2026-02-01', 'end': '2026-02-28',
                  'meta': {'plan_id': 'zz', 'membership_plan_id': 'm1'}, 'custom_data': {'is_multiple': False},
                  'association': 'fallback', 'group': None},
+    # 'plan_id' in a list meta is True, then list.get raises AttributeError: got_plan stays True.
+    'listmeta': {'id': uid(47), 'associate': 'giulia', 'type': 1, 'start': '2025-09-01', 'end': '2026-08-31',
+                 'meta': ['plan_id'], 'custom_data': None, 'association': 'alpha', 'group': None},
 }
 # (id, subscription or None, start, end): a membership without a subscription is what filter(subscription=None) finds.
 MEMBERSHIPS = [(uid(50), 'subplan', '2026-01-01', '2026-12-31'), (uid(51), None, '2024-01-01', '2024-12-31'),
@@ -252,6 +283,27 @@ INVOICES = {
     'badplans': invoice(24, association='fallback'),
     'promote': invoice(25, association='fallback', activity='0.00', membership='5.00'),
     'promotebypass': invoice(27, association='fallback', activity='0.00', membership='5.00'),
+    'metalist': invoice(40),
+    'metalistdesc': invoice(41),
+    'metastr': invoice(42),
+    'metastrdesc': invoice(43),
+    'metanumber': invoice(44),
+    'courselist': invoice(45),
+    'courselistlabel': invoice(46),
+    'coursestr': invoice(47),
+    'coursestrlabel': invoice(48),
+    'descint': invoice(49),
+    'desclist': invoice(50),
+    'descdict': invoice(51),
+    'descfloat': invoice(52),
+    'catidint': invoice(53),
+    'catidbool': invoice(54),
+    'suminf': invoice(55),
+    'sumnan': invoice(56),
+    'sumoverflow': invoice(57),
+    'categorysigma': invoice(58),
+    'categoryidot': invoice(59),
+    'sublist': invoice(60, activity='0.00', membership='0.00'),
 }
 PAYMENTS = [
     payment(1, 'supplier', supplier='acme', category='kit', notes='Nota 1\nNota <2>'),
@@ -283,13 +335,46 @@ PAYMENTS = [
     payment(25, 'badplans', association='fallback', subject=1, associate='mario'),
     payment(26, 'promote', association='fallback', associate='sara', description='X & Y'),
     payment(27, 'promotebypass', association='fallback', associate='bea', description='X & Y'),
+    # Stored JSON outside the ordinary shapes: the association import writes archive values as they are.
+    payment(40, 'metalist', subject=2, meta=[1, 2]),
+    payment(41, 'metalistdesc', subject=2, meta=[1, 'description']),
+    payment(42, 'metastr', subject=2, meta='altro'),
+    payment(43, 'metastrdesc', subject=2, meta='a description'),
+    payment(44, 'metanumber', subject=2, meta=5),
+    payment(45, 'courselist', subject=2, course=[1, 2]),
+    payment(46, 'courselistlabel', subject=2, course=['label', 'x']),
+    payment(47, 'coursestr', subject=2, course='altro'),
+    payment(48, 'coursestrlabel', subject=2, course='a label here'),
+    payment(49, 'descint', subject=2, meta={'description': 5}),
+    payment(50, 'desclist', subject=2, meta={'description': [1, 2]}),
+    payment(51, 'descdict', subject=2, meta={'description': {'a': 1}}),
+    payment(52, 'descfloat', subject=2, meta={'description': 1.5}),
+    # An int (and a bool) is UUIDField.to_python's uuid.UUID(int=value).
+    payment(53, 'catidint', meta_categories=[{'payment_category_id': uuid_int(uid(11)), 'amount': 2}]),
+    payment(54, 'catidbool', meta_categories=[{'payment_category_id': True, 'amount': 1}]),
+    # jsonb keeps the fraction, so json.loads reads inf; sum() then reaches inf or nan.
+    payment(55, 'suminf', category='kit', meta_categories=[{'payment_category_id': uid(11), 'amount': raw(INF_NUMBER)}]),
+    payment(56, 'sumnan', category='kit', meta_categories=[{'payment_category_id': uid(11), 'amount': raw(INF_NUMBER)},
+                                                           {'payment_category_id': uid(11), 'amount': raw(NEG_INF_NUMBER)}]),
+    payment(57, 'sumoverflow', category='kit', meta_categories=[{'payment_category_id': uid(11), 'amount': 10 ** 400}]),
+    # Python's str.lower() special mappings: final sigma and U+0130.
+    payment(58, 'categorysigma', meta_categories=[{'payment_category_id': uid(15), 'amount': 1}]),
+    payment(59, 'categoryidot', meta_categories=[{'payment_category_id': uid(16), 'amount': 2}]),
+    payment(60, 'sublist', subject=1, associate='giulia'),
 ]
 # Subscriptions linked by payment (Subscription.payment), course subscriptions, installments, carnet subscriptions.
-SUBSCRIPTION_PAYMENTS = {'subplan': uid(105), 'listcustom': uid(123), 'untitled': uid(124), 'badplans': uid(125)}
+SUBSCRIPTION_PAYMENTS = {'subplan': uid(105), 'listcustom': uid(123), 'untitled': uid(124), 'badplans': uid(125),
+                         'listmeta': uid(160)}
 COURSE_SUBSCRIPTIONS = [  # (id, course, subscription, payment, deleted)
     (uid(60), 'nuoto', 'coursesub', uid(106), False), (uid(61), 'yoga', None, uid(107), False),
     (uid(62), 'nuoto', 'subnamed', None, False), (uid(63), 'untitled', 'untitled', None, False),
-    (uid(64), 'yoga', 'untitled', None, False)]
+    (uid(64), 'yoga', 'untitled', None, False),
+    # The COURSE payments whose meta, course or description hold a non-ordinary JSON value.
+    (uid(70), 'nuoto', None, uid(140), False), (uid(71), 'nuoto', None, uid(141), False),
+    (uid(72), 'nuoto', None, uid(142), False), (uid(73), 'nuoto', None, uid(143), False),
+    (uid(74), 'nuoto', None, uid(144), False), (uid(75), 'nuoto', None, uid(149), False),
+    (uid(76), 'nuoto', None, uid(150), False), (uid(77), 'nuoto', None, uid(151), False),
+    (uid(78), 'nuoto', None, uid(152), False)]
 INSTALLMENTS = [(uid(65), uid(62), uid(109))]  # (id, course subscription, payment)
 CARNET_SUBSCRIPTIONS = [(uid(66), 'dieci', 'subnoplan', uid(110)), (uid(67), None, None, uid(112))]  # (id, carnet, subscription, payment)
 
@@ -352,7 +437,7 @@ def associate_value(label, tutor):
     return obj(**attrs)
 
 
-def invoice_html(key, *, description, category_name=None, associate=None, tutor=None, course_name=None, categories=None,
+def invoice_html(key, *, description, category_name=UNSET, associate=None, tutor=None, course_name=None, categories=None,
                  stamp_free=False, sub_type=None, sub_period='', membership_period='', plans=('-', '-', False, False), custom=None,
                  override=False, header='', footer='', extra=None, template='invoice.html', language='en', uid_value=None):
     inv = INVOICES[key]
@@ -361,8 +446,14 @@ def invoice_html(key, *, description, category_name=None, associate=None, tutor=
     pay = next(p for p in PAYMENTS if p['invoice'] == key and not p['deleted'])
     a = ASSOCIATIONS[inv['association']]
     supplier = SUPPLIERS[pay['supplier']] if pay['supplier'] else None
+    if category_name is UNSET:
+        category_value = NONE
+    elif isinstance(category_name, dict):
+        category_value = obj(name=category_name)
+    else:
+        category_value = obj(name=s(category_name))
     payment_value = obj(
-        payment_category=obj(name=s(category_name)) if category_name is not None else NONE,
+        payment_category=category_value,
         description=opt(pay['description']), associate=associate_value(associate, tutor) if associate else NONE,
         supplier=obj(name=s(supplier['name']), address=opt(supplier['address']), tax_code=opt(supplier['tax_code'])) if supplier else NONE,
         payment_date=dt(pay['date']), notes=opt(pay['notes']), subject=i(pay['subject']))
@@ -375,7 +466,8 @@ def invoice_html(key, *, description, category_name=None, associate=None, tutor=
     return {'template': 'document/application/' + template, 'language': language, 'context': {
         'uid': s(uid_value or inv['id']), 'extra_text_invoices': extra if isinstance(extra, dict) else opt(extra),
         'total_amount': dec(str(total)), 'body_style': s('opacity:0.7;text-decoration: line-through;' if inv['cancelled'] else ''),
-        'payment': payment_value, 'course_name': opt(course_name), 'enumerate_invoices': b(a['enumerate_invoices']),
+        'payment': payment_value, 'course_name': course_name if isinstance(course_name, dict) else opt(course_name),
+        'enumerate_invoices': b(a['enumerate_invoices']),
         'payment_categories': categories if categories is not None else NONE, 'custom_data': custom if custom is not None else NONE,
         'stamp_free': b(stamp_free), 'invoice': invoice_value,
         'payment_method': s({'cash': 'Contanti', 'transfer': 'Bonifico', 'online': 'Online', 'sepa-transfer': 'Bonifico SEPA',
@@ -508,6 +600,74 @@ add('invoice-course-without-title', 'owner', INV('untitled'), 500, SERVER)
 add('invoice-unknown', 'owner', f'/document/invoice/{UNKNOWN}/view/', 500, SERVER)
 add('invoice-invalid-uuid', 'owner', '/document/invoice/not-a-uuid/view/', 500, SERVER)
 add('invoice-scoped-athlete-hidden', 'owner', INV('supplier'), 403, SCOPED_HIDDEN, headers=SCOPED)
+
+
+# Stored JSON outside the ordinary shapes (the association import writes archive values as they are).
+def course_page(key, category_value, course_value):
+    return invoice_html(key, description=s('Salvata'), category_name=category_value, course_name=course_value, override=True,
+                        stamp_free=True, membership_period=NULL_MEMBERSHIP, header=alpha_header(), footer=alpha_footer(),
+                        extra=alpha_extra())
+
+
+# Python: 'description' in [1, 2] is False -> the course title; 'description' in 'altro' is False -> the title.
+for name, key in (('invoice-course-meta-list-without-description', 'metalist'),
+                  ('invoice-course-meta-string-without-description', 'metastr')):
+    add(name, 'owner', INV(key), 200, HTML, html=course_page(key, 'Nuoto & Acqua', 'Nuoto & Acqua'))
+# Python: ['description']['description'] and 'a description'['description'] are TypeErrors; 'description' in 5 is a TypeError.
+for name, key in (('invoice-course-meta-list-with-description', 'metalistdesc'),
+                  ('invoice-course-meta-string-with-description', 'metastrdesc'),
+                  ('invoice-course-meta-number', 'metanumber')):
+    add(name, 'owner', INV(key), 500, SERVER)
+# The meta 'description' is returned as it is: PaymentCategory(name=value) and course_name.
+for name, key, value in (('invoice-course-description-int', 'descint', i(5)),
+                         ('invoice-course-description-list', 'desclist', lst(i(1), i(2))),
+                         ('invoice-course-description-dict', 'descdict', dct(('a', i(1)))),
+                         ('invoice-course-description-float', 'descfloat', flt(1.5))):
+    add(name, 'owner', INV(key), 200, HTML, html=course_page(key, value, value))
+# Python: 'label' in [1, 2] and 'label' in 'altro' are False -> the description; a list/str subscript is a TypeError.
+for name, key in (('invoice-course-json-list-without-label', 'courselist'),
+                  ('invoice-course-json-string-without-label', 'coursestr')):
+    add(name, 'owner', INV(key), 200, HTML, html=course_page(key, NONE, NONE))
+for name, key in (('invoice-course-json-list-with-label', 'courselistlabel'),
+                  ('invoice-course-json-string-with-label', 'coursestrlabel')):
+    add(name, 'owner', INV(key), 500, SERVER)
+# Python: uuid.UUID(int=214005707321371757778191212399283929105) is the Kit category.
+add('invoice-meta-category-id-int', 'owner', INV('catidint'), 200, HTML, html=invoice_html(
+    'catidint', description=s(f"Ricevuta di pagamento con causale <b>Pagamento</b> per l'associazione <b>{ALPHA}</b>."),
+    categories=dct(('kit & maglia', i(2))), membership_period=NULL_MEMBERSHIP, header=alpha_header(), footer=alpha_footer(),
+    extra=alpha_extra()))
+# Python: uuid.UUID(int=True) is ...0001, which is no row: DoesNotExist.
+add('invoice-meta-category-id-bool', 'owner', INV('catidbool'), 500, SERVER)
+# Python: the stored number is 1.9e308 + 0.5, which json.loads reads as inf; sum([inf]) is inf and
+# float(10.00) - inf is -inf.
+add('invoice-meta-sum-infinity', 'owner', INV('suminf'), 200, HTML, html=invoice_html(
+    'suminf', description=s(f"Ricevuta di pagamento con causale <b>{ESC('Kit & Maglia')}</b> per l'associazione <b>{ALPHA}</b>."),
+    category_name='Kit & Maglia', course_name='Kit & Maglia', override=True,
+    categories=dct(('kit & maglia', flt_text('-inf')), ('kit & maglia (1)', flt_text('inf'))),
+    membership_period=NULL_MEMBERSHIP, header=alpha_header(), footer=alpha_footer(), extra=alpha_extra()))
+# Python: sum([inf, -inf]) is nan; float(10.00) - nan is nan (the row is skipped by "amount >= 0").
+add('invoice-meta-sum-nan', 'owner', INV('sumnan'), 200, HTML, html=invoice_html(
+    'sumnan', description=s(f"Ricevuta di pagamento con causale <b>{ESC('Kit & Maglia')}</b> per l'associazione <b>{ALPHA}</b>."),
+    category_name='Kit & Maglia', course_name='Kit & Maglia', override=True,
+    categories=dct(('kit & maglia', flt_text('nan')), ('kit & maglia (1)', flt_text('inf')),
+                   ('kit & maglia (2)', flt_text('-inf'))),
+    membership_period=NULL_MEMBERSHIP, header=alpha_header(), footer=alpha_footer(), extra=alpha_extra()))
+# Python: float(sum([10**400])) is OverflowError.
+add('invoice-meta-sum-overflow', 'owner', INV('sumoverflow'), 500, SERVER)
+# Python: 'ΟΔΟΣ'.lower() is 'οδος' (final sigma) and 'İstanbul'.lower() is 'i̇stanbul' (U+0130).
+add('invoice-meta-category-final-sigma', 'owner', INV('categorysigma'), 200, HTML, html=invoice_html(
+    'categorysigma', description=s(f"Ricevuta di pagamento con causale <b>Pagamento</b> per l'associazione <b>{ALPHA}</b>."),
+    categories=dct(('ΟΔΟΣ'.lower(), i(1))), membership_period=NULL_MEMBERSHIP, header=alpha_header(), footer=alpha_footer(),
+    extra=alpha_extra()))
+add('invoice-meta-category-u0130', 'owner', INV('categoryidot'), 200, HTML, html=invoice_html(
+    'categoryidot', description=s(f"Ricevuta di pagamento con causale <b>Pagamento</b> per l'associazione <b>{ALPHA}</b>."),
+    categories=dct(('İstanbul'.lower(), i(2))), membership_period=NULL_MEMBERSHIP, header=alpha_header(),
+    footer=alpha_footer(), extra=alpha_extra()))
+# Python: 'plan_id' in ['plan_id'] is True, then the list's .get raises AttributeError with got_plan already True.
+add('invoice-subscription-meta-list', 'owner', INV('sublist'), 200, HTML, html=invoice_html(
+    'sublist', description=s('Salvata'), associate='giulia', tutor='paolo', stamp_free=True, sub_type=1, sub_period='25/26',
+    plans=('-', '-', True, False), header=alpha_header('Giulia', 'Bianchi'), footer=alpha_footer(), extra=alpha_extra('Paolo')))
+
 
 # --- document/einvoice/<uid>/view/ -------------------------------------------------------------
 LINE = lambda description, quantity, unit, price, vat: {'description': description, 'quantity': quantity, 'unit_of_measure': unit,

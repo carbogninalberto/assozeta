@@ -9,12 +9,12 @@ import (
 	"math/big"
 	"strconv"
 	"strings"
-	"unicode"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/djtemplate"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/mentions"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pystr"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
@@ -54,19 +54,16 @@ func (s *InvoiceViews) Render(ctx context.Context, identity domain.ResolvedIdent
 		err = ErrDocumentViewServer
 	}
 	if err != nil {
-		// mentions.ErrUnsupported and errInvoiceViewsNotPorted are refusal
-		// sentinels themselves: they pass through for the handoff.
+		// mentions.ErrUnsupported is a refusal sentinel itself: it passes
+		// through for the handoff.
 		return nil, err
 	}
 	return reply, nil
 }
 
-// errInvoiceViewsNotPorted refuses a stored value outside the port.
-var errInvoiceViewsNotPorted = refusal.New("invoice view: value not ported")
-
-func invoiceViewsNotPorted(format string, args ...any) error {
-	return fmt.Errorf("%w: "+format, append([]any{errInvoiceViewsNotPorted}, args...)...)
-}
+// errInvoiceViewsUnreachable is a state only the application writes: a stored
+// value outside its column type.
+var errInvoiceViewsUnreachable = refusal.AppState("invoice view: stored value outside the column type")
 
 // invoiceViewsPaymentTypes is Payment.get_type_in_lang('it').
 var invoiceViewsPaymentTypes = map[string]string{"default": "Non specificato", "cash": "Contanti", "transfer": "Bonifico",
@@ -75,7 +72,7 @@ var invoiceViewsPaymentTypes = map[string]string{"default": "Non specificato", "
 // invoiceViewsCategory is payment.payment_category: the stored row or the
 // in-memory PaymentCategory(name=get_course_carnet_name()).
 type invoiceViewsCategory struct {
-	name          any // str, or None for the in-memory category
+	name          any // a stored str, or the course name's JSON value
 	taxDeductible bool
 	deleted       bool
 }
@@ -345,7 +342,10 @@ func invoiceViewsDecimalSum(a, b string) (djtemplate.Decimal, error) {
 	x, ok := new(big.Rat).SetString(a)
 	y, ok2 := new(big.Rat).SetString(b)
 	if !ok || !ok2 || !invoiceViewsTwoPlaces(a) || !invoiceViewsTwoPlaces(b) {
-		return "", invoiceViewsNotPorted("decimal %q + %q", a, b)
+		// Invoice.activity_fee and Invoice.membership_fee are
+		// DecimalField(max_digits=9, decimal_places=2), so PostgreSQL reads
+		// them back with two decimal places.
+		return "", errInvoiceViewsUnreachable
 	}
 	return djtemplate.Decimal(new(big.Rat).Add(x, y).FloatString(2)), nil
 }
@@ -394,11 +394,11 @@ func invoiceViewsTwoPlaces(text string) bool {
 // description is generate_invoice_description for an OTHER payment.
 func (s *InvoiceViews) description(ctx context.Context, payment domain.InvoiceViewPayment, category *invoiceViewsCategory,
 	denomination string) (any, error) {
-	reason := "Pagamento"
+	reason := any("Pagamento")
 	if payment.Description != nil && *payment.Description != "" {
 		reason = *payment.Description
-	} else if category != nil && category.name.(string) != "" {
-		reason = category.name.(string)
+	} else if category != nil && invoiceViewsTruthy(category.name) {
+		reason = category.name
 	}
 	if payment.AssociateID == nil {
 		recipient := ""
@@ -415,21 +415,29 @@ func (s *InvoiceViews) description(ctx context.Context, payment domain.InvoiceVi
 			}
 			recipient = dto.PythonStrip(instructor.FirstName + " " + instructor.LastName)
 		}
+		text, err := djtemplate.PythonStr(reason)
+		if err != nil {
+			return nil, err
+		}
 		if recipient != "" {
-			return formatHTML("Ricevuta di pagamento di <b>%s</b> con causale <b>%s</b> per l'associazione <b>%s</b>.", recipient, reason,
+			return formatHTML("Ricevuta di pagamento di <b>%s</b> con causale <b>%s</b> per l'associazione <b>%s</b>.", recipient, text,
 				denomination), nil
 		}
-		return formatHTML(invoiceDescriptionTemplates[0], reason, denomination), nil
+		return formatHTML(invoiceDescriptionTemplates[0], text, denomination), nil
 	}
 	name := reason
 	if category != nil {
-		name = category.name.(string)
+		name = category.name
 	}
-	return formatHTML(invoiceDescriptionTemplates[0], name, denomination), nil
+	text, err := djtemplate.PythonStr(name)
+	if err != nil {
+		return nil, err
+	}
+	return formatHTML(invoiceDescriptionTemplates[0], text, denomination), nil
 }
 
 // courseCarnetName is Payment.get_course_carnet_name() of a COURSE payment:
-// a str or None.
+// the meta's 'description' as it is, or a str title.
 func (s *InvoiceViews) courseCarnetName(ctx context.Context, payment domain.InvoiceViewPayment, group *string) (any, error) {
 	found, err := s.store.CourseName(ctx, payment.ID, group)
 	if err != nil {
@@ -441,12 +449,19 @@ func (s *InvoiceViews) courseCarnetName(ctx context.Context, payment domain.Invo
 		if err != nil {
 			return nil, err
 		}
-		if dto.PythonTruthy(meta) {
-			object, ok := meta.(domain.RequestObject)
-			if !ok {
-				return nil, invoiceViewsNotPorted("payment meta %T", meta)
+		if invoiceViewsTruthy(meta) {
+			present, iterable := invoiceViewsMembership(meta, "description")
+			if !iterable {
+				// 'description' in a number or bool: TypeError.
+				return nil, ErrDocumentViewServer
 			}
-			if value, present := object.Lookup("description"); present {
+			if present {
+				object, ok := meta.(domain.RequestObject)
+				if !ok {
+					// list['description'] / str['description']: TypeError.
+					return nil, ErrDocumentViewServer
+				}
+				value, _ := object.Lookup("description")
 				return invoiceViewsText(value)
 			}
 		}
@@ -459,12 +474,19 @@ func (s *InvoiceViews) courseCarnetName(ctx context.Context, payment domain.Invo
 	if err != nil {
 		return nil, err
 	}
-	if dto.PythonTruthy(course) {
-		object, ok := course.(domain.RequestObject)
-		if !ok {
-			return nil, invoiceViewsNotPorted("payment course %T", course)
+	if invoiceViewsTruthy(course) {
+		present, iterable := invoiceViewsMembership(course, "label")
+		if !iterable {
+			// 'label' in a number or bool: TypeError.
+			return nil, ErrDocumentViewServer
 		}
-		if label, present := object.Lookup("label"); present {
+		if present {
+			object, ok := course.(domain.RequestObject)
+			if !ok {
+				// list['label'] / str['label']: TypeError.
+				return nil, ErrDocumentViewServer
+			}
+			label, _ := object.Lookup("label")
 			text, ok := label.(string)
 			if !ok {
 				return nil, ErrDocumentViewServer // ", ".join of a non-str
@@ -475,15 +497,70 @@ func (s *InvoiceViews) courseCarnetName(ctx context.Context, payment domain.Invo
 	return optional(payment.Description), nil
 }
 
-// invoiceViewsText accepts a str or None (other JSON values are not ported).
-func invoiceViewsText(value any) (any, error) {
+// invoiceViewsMembership is `key in value` for a parsed JSON value: dict keys,
+// list items by Python equality and str substrings. iterable is false for a
+// number or a bool, whose `in` raises TypeError.
+func invoiceViewsMembership(value any, key string) (present, iterable bool) {
+	switch v := value.(type) {
+	case domain.RequestObject:
+		_, present = v.Lookup(key)
+		return present, true
+	case []any:
+		for _, item := range v {
+			if dto.PythonEqual(item, key) {
+				return true, true
+			}
+		}
+		return false, true
+	case string:
+		return strings.Contains(v, key), true
+	}
+	return false, false
+}
+
+// invoiceViewsTruthy is bool() of a parsed JSON value or of a converted template
+// value: a float underflow is 0 and -0.0 is false.
+func invoiceViewsTruthy(value any) bool {
 	switch v := value.(type) {
 	case nil:
-		return nil, nil
+		return false
+	case bool:
+		return v
 	case string:
-		return v, nil
+		return v != ""
+	case json.Number:
+		text := string(v)
+		if !strings.ContainsAny(text, ".eE") {
+			number, ok := new(big.Int).SetString(text, 10)
+			return !ok || number.Sign() != 0
+		}
+		number, ok := invoiceViewsFloatText(text)
+		return !ok || number != 0
+	case int64:
+		return v != 0
+	case *big.Int:
+		return v.Sign() != 0
+	case float64:
+		return v != 0
+	case djtemplate.List:
+		return len(v) > 0
+	case djtemplate.Tuple:
+		return len(v) > 0
+	case *djtemplate.Dict:
+		return v.Len() > 0
+	case []any:
+		return len(v) > 0
+	case domain.RequestObject:
+		return len(v) > 0
 	}
-	return nil, invoiceViewsNotPorted("description %T", value)
+	return true
+}
+
+// invoiceViewsText is a stored meta 'description' as the template sees it: a
+// PaymentCategory(name=value) and the course_name, exactly as Django returns
+// the JSON value (a str, or any other jsonb value).
+func invoiceViewsText(value any) (any, error) {
+	return invoiceViewsTemplateValue(value)
 }
 
 func invoiceViewsJSON(raw *string) (any, error) {
@@ -501,7 +578,7 @@ func (s *InvoiceViews) paymentCategories(ctx context.Context, payment domain.Inv
 	if err != nil {
 		return nil, false, err
 	}
-	if !dto.PythonTruthy(meta) {
+	if !invoiceViewsTruthy(meta) {
 		return nil, stampFree, nil
 	}
 	items, ok := meta.([]any)
@@ -513,19 +590,18 @@ func (s *InvoiceViews) paymentCategories(ctx context.Context, payment domain.Inv
 	if category != nil && payment.Subject != 1 {
 		text, ok := category.name.(string)
 		if !ok {
-			return nil, false, ErrDocumentViewServer // None.lower()
+			return nil, false, ErrDocumentViewServer // non-str .lower(): AttributeError
 		}
-		name, err := invoiceViewsLower(text)
-		if err != nil {
-			return nil, false, err
-		}
+		name := pystr.Lower(text)
 		subtract, err := invoiceViewsSum(items)
 		if err != nil {
 			return nil, false, err
 		}
 		fee, err := strconv.ParseFloat(invoice.ActivityFee, 64)
 		if err != nil {
-			return nil, false, invoiceViewsNotPorted("activity fee %q", invoice.ActivityFee)
+			// Invoice.activity_fee is DecimalField(max_digits=9, decimal_places=2):
+			// float() of it cannot fail.
+			return nil, false, errInvoiceViewsUnreachable
 		}
 		categories.Set(name, fee-subtract)
 	}
@@ -538,22 +614,16 @@ func (s *InvoiceViews) paymentCategories(ctx context.Context, payment domain.Inv
 		if !present {
 			return nil, false, ErrDocumentViewServer
 		}
-		text, ok := raw.(string)
-		if !ok {
-			return nil, false, invoiceViewsNotPorted("payment_category_id %T", raw)
-		}
-		id, valid := parseModelUUID(text)
+		// PaymentCategory.objects.get(payment_category_id=value): UUIDField.to_python.
+		text, valid := dto.DjangoUUIDLookup(raw)
 		if !valid {
 			return nil, false, ErrDocumentViewServer
 		}
-		row, err := s.store.Category(ctx, id)
+		row, err := s.store.Category(ctx, text)
 		if err != nil {
 			return nil, false, lookupError(err)
 		}
-		name, err := invoiceViewsLower(row.Name)
-		if err != nil {
-			return nil, false, err
-		}
+		name := pystr.Lower(row.Name)
 		amount, present := object.Lookup("amount")
 		if !present {
 			return nil, false, ErrDocumentViewServer
@@ -577,90 +647,221 @@ func (s *InvoiceViews) paymentCategories(ctx context.Context, payment domain.Inv
 	return categories, stampFree, nil
 }
 
-// invoiceViewsSum is float(sum(item['amount'] for item in items)) for the
-// numbers and bools sum() accepts; anything else raises TypeError.
+// invoiceViewsSumOperand is one 'amount' as sum() adds it: an exact int (a bool
+// is 0 or 1) or a float.
+type invoiceViewsSumOperand struct {
+	integer *big.Int // nil for a float
+	real    float64
+}
+
+// invoiceViewsSumOperandOf is the amount as sum() sees it. A str, None, list or
+// dict is not a sum() operand and is a TypeError.
+func invoiceViewsSumOperandOf(amount any) (invoiceViewsSumOperand, error) {
+	switch v := amount.(type) {
+	case bool:
+		if v {
+			return invoiceViewsSumOperand{integer: big.NewInt(1)}, nil
+		}
+		return invoiceViewsSumOperand{integer: big.NewInt(0)}, nil
+	case json.Number:
+		text := string(v)
+		if !strings.ContainsAny(text, ".eE") {
+			number, ok := new(big.Int).SetString(text, 10)
+			if !ok {
+				// The parser only emits valid integer text.
+				return invoiceViewsSumOperand{}, errInvoiceViewsUnreachable
+			}
+			return invoiceViewsSumOperand{integer: number}, nil
+		}
+		number, ok := invoiceViewsFloatText(text)
+		if !ok {
+			return invoiceViewsSumOperand{}, errInvoiceViewsUnreachable
+		}
+		return invoiceViewsSumOperand{real: number}, nil
+	}
+	return invoiceViewsSumOperand{}, ErrDocumentViewServer
+}
+
+// invoiceViewsSum is float(sum(item['amount'] for item in items)). CPython's
+// sum() (builtin_sum_impl) is not a plain float total:
+//
+//   - Its first loop adds exact ints (a bool is an int) in a C Py_ssize_t
+//     (int64 here) and leaves at the first item that is not an int or that
+//     would overflow it. A float item is added there with PyNumber_Add, so
+//     float(int total) + x (OverflowError past a double); the compensated
+//     float loop then continues with the rest. An int that does not fit is
+//     also added with PyNumber_Add, but the total stays an int, so the generic
+//     loop below runs instead.
+//   - A float total uses Neumaier compensation for float items:
+//     t = f + x; c += fabs(f) >= fabs(x) ? (f - t) + x : (x - t) + f; f = t.
+//     An int that fits a C long is added without compensation, as
+//     f += float64(value). An int that does not fit first adds c to f, then is
+//     added with PyNumber_Add, and the generic loop takes over.
+//   - The float loop ends with f += c, unless c is zero, infinite or nan.
+//   - The generic loop is a plain PyNumber_Add per item: an exact int total
+//     stays exact, and its float() at the end is an OverflowError past a
+//     double. Once that total is a float, every later item is a naive add.
 func invoiceViewsSum(items []any) (float64, error) {
-	exact := new(big.Int)
-	var total float64
-	floating := false
-	for _, item := range items {
+	// The generator's item['amount'] reads happen as sum() consumes the items;
+	// a non-dict item or a missing key is the generator's TypeError.
+	amounts := make([]any, len(items))
+	for i, item := range items {
 		object, ok := item.(domain.RequestObject)
 		if !ok {
-			return 0, ErrDocumentViewServer
+			return 0, ErrDocumentViewServer // subscript of a non-dict
 		}
 		amount, present := object.Lookup("amount")
 		if !present {
-			return 0, ErrDocumentViewServer
+			return 0, ErrDocumentViewServer // KeyError
 		}
-		switch v := amount.(type) {
-		case bool:
-			if v {
-				if floating {
-					total++
-				} else {
-					exact.Add(exact, big.NewInt(1))
-				}
-			}
-		case json.Number:
-			text := string(v)
-			if !strings.ContainsAny(text, ".eE") {
-				number, ok := new(big.Int).SetString(text, 10)
-				if !ok {
-					return 0, invoiceViewsNotPorted("amount %s", text)
-				}
-				if floating {
-					value, err := invoiceViewsIntFloat(number)
-					if err != nil {
-						return 0, err
-					}
-					total += value
-				} else {
-					exact.Add(exact, number)
-				}
+		amounts[i] = amount
+	}
+	// CPython's int fast loop, in a Py_ssize_t.
+	var total int64
+	for i, amount := range amounts {
+		operand, err := invoiceViewsSumOperandOf(amount)
+		if err != nil {
+			return 0, err
+		}
+		if operand.integer == nil {
+			return invoiceViewsSumFloat(amounts[i+1:], float64(total)+operand.real)
+		}
+		if operand.integer.IsInt64() {
+			value := operand.integer.Int64()
+			if invoiceViewsSumFitsInt64(total, value) {
+				total += value
 				continue
 			}
-			number, err := strconv.ParseFloat(text, 64)
-			if err != nil || math.IsInf(number, 0) {
-				return 0, invoiceViewsNotPorted("amount %s", text)
-			}
-			if !floating {
-				start, err := invoiceViewsIntFloat(exact)
-				if err != nil {
-					return 0, err
-				}
-				total, floating = start, true
-			}
-			total += number
-		default:
-			return 0, ErrDocumentViewServer
 		}
+		// Either the item or the total does not fit: PyNumber_Add on the exact
+		// total, which is an int, so the generic loop runs.
+		exact := new(big.Int).SetInt64(total)
+		return invoiceViewsSumInt(amounts[i+1:], exact.Add(exact, operand.integer))
 	}
-	if !floating {
-		return invoiceViewsIntFloat(exact)
-	}
-	if math.IsInf(total, 0) || math.IsNaN(total) {
-		return 0, invoiceViewsNotPorted("non-finite sum")
-	}
-	return total, nil
+	return float64(total), nil
 }
 
-// invoiceViewsIntFloat is float(int), correctly rounded.
-func invoiceViewsIntFloat(number *big.Int) (float64, error) {
-	value, _ := new(big.Float).SetInt(number).Float64()
-	if math.IsInf(value, 0) {
-		return 0, invoiceViewsNotPorted("int too large for float")
+// invoiceViewsSumFitsInt64 is CPython's Py_ssize_t overflow test before adding b
+// to a.
+func invoiceViewsSumFitsInt64(a, b int64) bool {
+	if a >= 0 {
+		return b <= math.MaxInt64-a
+	}
+	return b >= math.MinInt64-a
+}
+
+// invoiceViewsSumCompensated adds Neumaier's compensation to a float total,
+// unless it is zero, infinite or nan (an infinite or nan total keeps c out).
+func invoiceViewsSumCompensated(total, compensation float64) float64 {
+	if compensation != 0 && !math.IsInf(compensation, 0) && !math.IsNaN(compensation) {
+		return total + compensation
+	}
+	return total
+}
+
+// invoiceViewsSumFloat is CPython's compensated float loop. An int beyond a C
+// long adds c, then the int with PyNumber_Add, and leaves the rest of the
+// items to the generic loop.
+func invoiceViewsSumFloat(items []any, total float64) (float64, error) {
+	var compensation float64
+	for i, amount := range items {
+		operand, err := invoiceViewsSumOperandOf(amount)
+		if err != nil {
+			return 0, err
+		}
+		if operand.integer == nil {
+			sum := total + operand.real
+			if math.Abs(total) >= math.Abs(operand.real) {
+				compensation += (total - sum) + operand.real
+			} else {
+				compensation += (operand.real - sum) + total
+			}
+			total = sum
+			continue
+		}
+		if operand.integer.IsInt64() {
+			total += float64(operand.integer.Int64())
+			continue
+		}
+		total = invoiceViewsSumCompensated(total, compensation)
+		value, ok := invoiceViewsIntFloat(operand.integer)
+		if !ok {
+			return 0, ErrDocumentViewServer // float(int): OverflowError
+		}
+		return invoiceViewsSumNaive(items[i+1:], total+value)
+	}
+	return invoiceViewsSumCompensated(total, compensation), nil
+}
+
+// invoiceViewsSumInt is the generic loop entered with an exact int total: every
+// item is PyNumber_Add, so ints stay exact and the first float makes the total
+// float(int) + x (OverflowError when the int does not fit a double).
+func invoiceViewsSumInt(items []any, total *big.Int) (float64, error) {
+	for i, amount := range items {
+		operand, err := invoiceViewsSumOperandOf(amount)
+		if err != nil {
+			return 0, err
+		}
+		if operand.integer != nil {
+			total.Add(total, operand.integer)
+			continue
+		}
+		value, ok := invoiceViewsIntFloat(total)
+		if !ok {
+			return 0, ErrDocumentViewServer // float(int): OverflowError
+		}
+		return invoiceViewsSumNaive(items[i+1:], value+operand.real)
+	}
+	value, ok := invoiceViewsIntFloat(total)
+	if !ok {
+		return 0, ErrDocumentViewServer // float(int): OverflowError
 	}
 	return value, nil
 }
 
-// invoiceViewsLower is str.lower() (runes with special Python mappings refused).
-func invoiceViewsLower(text string) (string, error) {
-	for _, r := range text {
-		if r == 0x130 || r == 0x3A3 || (r >= 0x1F88 && r <= 0x1FFC) {
-			return "", invoiceViewsNotPorted("lower() of %U", r)
+// invoiceViewsSumNaive is the generic loop once the total is a float: every
+// later item is a PyNumber_Add, which is a plain float addition.
+func invoiceViewsSumNaive(items []any, total float64) (float64, error) {
+	for _, amount := range items {
+		operand, err := invoiceViewsSumOperandOf(amount)
+		if err != nil {
+			return 0, err
+		}
+		if operand.integer == nil {
+			total += operand.real
+			continue
+		}
+		value, ok := invoiceViewsIntFloat(operand.integer)
+		if !ok {
+			return 0, ErrDocumentViewServer // float(int): OverflowError
+		}
+		total += value
+	}
+	return total, nil
+}
+
+// invoiceViewsFloatText is float(text) of a JSON number: an overflowing
+// exponent is ±Inf (Python's float() reads it so) and an underflow is 0 or a
+// subnormal. ok false is text the parser cannot emit.
+func invoiceViewsFloatText(text string) (float64, bool) {
+	value, err := strconv.ParseFloat(text, 64)
+	if err != nil {
+		var number *strconv.NumError
+		if !errors.As(err, &number) || number.Err != strconv.ErrRange {
+			return 0, false
 		}
 	}
-	return strings.Map(unicode.ToLower, text), nil
+	return value, true
+}
+
+// invoiceViewsIntFloat is float(int), correctly rounded. ok false is Python's
+// OverflowError when the integer does not fit a float.
+func invoiceViewsIntFloat(number *big.Int) (float64, bool) {
+	value, _ := new(big.Float).SetInt(number).Float64()
+	if math.IsInf(value, 0) {
+		return 0, false
+	}
+	return value, true
 }
 
 // invoiceViewsTemplateValue converts a parsed JSON value to a template value.
@@ -672,14 +873,20 @@ func invoiceViewsTemplateValue(value any) (any, error) {
 		text := string(v)
 		if !strings.ContainsAny(text, ".eE") {
 			number, err := strconv.ParseInt(text, 10, 64)
-			if err != nil {
-				return nil, invoiceViewsNotPorted("integer %s", text)
+			if err == nil {
+				return number, nil
 			}
-			return number, nil
+			bigNumber, ok := new(big.Int).SetString(text, 10)
+			if !ok {
+				// The parser only emits valid integer text.
+				return nil, errInvoiceViewsUnreachable
+			}
+			return bigNumber, nil
 		}
-		number, err := strconv.ParseFloat(text, 64)
-		if err != nil || math.IsInf(number, 0) {
-			return nil, invoiceViewsNotPorted("float %s", text)
+		number, ok := invoiceViewsFloatText(text)
+		if !ok {
+			// The parser only emits JSON numbers.
+			return nil, errInvoiceViewsUnreachable
 		}
 		return number, nil
 	case []any:
@@ -703,12 +910,41 @@ func invoiceViewsTemplateValue(value any) (any, error) {
 		}
 		return dict, nil
 	}
-	return nil, invoiceViewsNotPorted("JSON %T", value)
+	// The parser emits only the JSON value types above.
+	return nil, errInvoiceViewsUnreachable
 }
 
 type invoiceViewsPlanResult struct {
 	plan, membership         bool
 	planName, membershipName any
+}
+
+// invoiceViewsPlansMembership is the plan block for a list or str meta:
+// `'key' in meta` is a list membership or a str substring, then meta.get raises
+// AttributeError, which the view's try/except turns into the end of the block.
+// A key that is absent everywhere leaves plan_id unbound (NameError).
+func invoiceViewsPlansMembership(meta any, result invoiceViewsPlanResult) invoiceViewsPlanResult {
+	for _, step := range []struct {
+		key  string
+		flag *bool
+	}{
+		{"plan_id", &result.plan},
+		{"membership_plan_id", &result.membership},
+		{"plan_name", nil},
+		{"membership_plan_name", nil},
+	} {
+		present, iterable := invoiceViewsMembership(meta, step.key)
+		if !iterable {
+			return result // TypeError from `in`
+		}
+		if present {
+			if step.flag != nil {
+				*step.flag = true
+			}
+			return result // .get raises AttributeError
+		}
+	}
+	return result // plan_id stays unbound: NameError
 }
 
 // invoiceViewsPlans is the view's plan block (its try/except stops at the
@@ -722,16 +958,20 @@ func invoiceViewsPlans(sub *domain.InvoiceViewSubscription) (invoiceViewsPlanRes
 	if err != nil {
 		return result, err
 	}
-	switch parsed.(type) {
+	var meta domain.RequestObject
+	switch v := parsed.(type) {
 	case nil:
 		return result, nil
 	case bool, json.Number:
 		return result, nil // 'plan_id' in <number>: TypeError
+	case []any, string:
+		return invoiceViewsPlansMembership(v, result), nil
 	case domain.RequestObject:
+		meta = v
 	default:
-		return result, invoiceViewsNotPorted("subscription meta %T", parsed)
+		// The parser emits only the JSON value types above.
+		return result, errInvoiceViewsUnreachable
 	}
-	meta := parsed.(domain.RequestObject)
 	planID, hasPlan := meta.Lookup("plan_id")
 	membershipID, hasMembership := meta.Lookup("membership_plan_id")
 	result.plan, result.membership = hasPlan, hasMembership
@@ -795,7 +1035,7 @@ func invoiceViewsPlans(sub *domain.InvoiceViewSubscription) (invoiceViewsPlanRes
 		if err != nil {
 			return result, err
 		}
-		if dto.PythonTruthy(plans) {
+		if invoiceViewsTruthy(plans) {
 			name, found, ok, err := search(sub.SubscriptionPlans, planID)
 			if err != nil {
 				return result, err
@@ -832,7 +1072,7 @@ func invoiceViewsCustomData(sub *domain.InvoiceViewSubscription) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	if !dto.PythonTruthy(parsed) {
+	if !invoiceViewsTruthy(parsed) {
 		return invoiceViewsTemplateValue(parsed)
 	}
 	object, ok := parsed.(domain.RequestObject)
@@ -846,6 +1086,6 @@ func invoiceViewsCustomData(sub *domain.InvoiceViewSubscription) (any, error) {
 	}
 	dict := value.(*djtemplate.Dict)
 	multiple, present := object.Lookup("is_multiple")
-	dict.Set("is_multiple", present && dto.PythonTruthy(multiple))
+	dict.Set("is_multiple", present && invoiceViewsTruthy(multiple))
 	return dict, nil
 }
