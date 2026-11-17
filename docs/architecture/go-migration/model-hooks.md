@@ -73,6 +73,39 @@ harnesses (Django runs those in other processes).
 
 Receipts: `quality-reports/go-migration/model-hooks-*` (see the final run's `results.json`).
 
+## Stored JSON nesting (owner decision X15)
+
+Django reads a Payment's `meta_payment_categories`, `meta` and `course` with `json.loads` on every fetch, and CPython
+3.13's C scanner raises RecursionError at a depth that depends on the C calls already on the stack. Each view that saves
+a Payment therefore carries its measured edges (`service/payment_json_edges.go`, total nesting as
+`dto.AuditJSONDepth` counts it, the deepest of the three columns): **Load**, the view's own load (deeper: the view's
+RecursionError before it writes anything), **Save**, the loads between it and the row's UPDATE (auditlog's pre_save
+refetch, `get_course_carnet_name`; deeper: the writes a non-atomic view made before `payment.save()` stay), and
+**Index**, the audit index resolver's reload after auditlog's LogEntry INSERT, which runs inside `except Exception`
+(deeper: the save completes and the index row comes from the resolver's fallbacks, `changes['sport_association']`, then
+the actor's association, else none). The edges were measured on the parity harness's Django by instrumenting the
+JSONField loads, auditlog's diff, psycopg2's Json adapter and the SQL writes while each family's own cases ran (one
+shallow request gives every edge of a route); a value moves by up to two levels between requests, so parity cases sit
+four or more levels away from an edge. DRF's response rendering reads 9946 levels on every view, above every Load edge.
+
+| view | Load | Save | Index | notes |
+|---|---|---|---|---|
+| `payment/<uid>/archive` | 9935 | 9933 | 9925 | |
+| `payment/<uid>/approve`, `/cancel` (and the paid flow) | 9937 | 9935 | 9927 | approve is atomic |
+| `payment/sign` | 9936 | 9934 | 9926 | the Signature rows stay past Save |
+| `payment/<uid>/update` (stored row) | 9937 | 9933 | 9925 | form JSON keeps its own bands (`paymentWritesFormJSONBand`) |
+| `payment/add` | 9925 | 9925 | 9916 (create entry), 9926 (second save) | the INSERT's json.dumps is the first edge |
+| `payment/simulation/partial-quotes-apply` | 9928 (loaded subscription payments) | | 9912 (created quotes) | the task's `except Exception` answers 200 |
+| `payment/<uid>/generate-invoice` | 9935 | 9933 | 9925 | atomic |
+| `invoice/<uid>/update` | 9935 | 9933 | 9925 | |
+| `invoice/<uid>/delete` | 9937 | 9935 | 9927 | |
+| `subscription/<uid>/archive` | 9935 (lazy), 9941 (period iterator) | 9935 | 9927 | not atomic: earlier saves stay |
+| `camps-and-retreats/periods/services/<uid>/update` | 9933 | 9933 | 9925 | `{"error": str(e)}` 500 after the service save |
+| `stripe/pay/<id>` | 9935 | 9933 | 9925 | |
+| `stripe/multiple-pay` | 9932 | 9932 | 9926 | the serializer's load is the first |
+| `stripe/webhook` | 9936 | 9934 | 9926 | its `except Exception` answers 200 |
+| Celery `association_quote_assign`, `mark_as_paid_payments_checking_stripe` | not measured | | | from 9800 levels the job keeps handing the work to Django (`errPaymentStoredJSONWorkerBand`) |
+
 ## Not ported
 
 - `invoice-suppliers/<uid>/update`: a linked payment with a NULL course description, a NULL other-subject description
