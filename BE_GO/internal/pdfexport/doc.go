@@ -183,5 +183,5 @@ func (d *docTemplate) build(flowables []flowable) (document []byte, err error) {
 			return nil, err
 		}
 	}
-	return d.c.save(d.now), nil
+	return d.c.save(d.now)
 }

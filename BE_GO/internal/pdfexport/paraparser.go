@@ -70,6 +70,7 @@ type frag struct {
 	back      *color
 	nobr      bool
 	img       *imgDefn
+	anchor    *anchorDefn
 }
 
 func (f *frag) clone() *frag {
@@ -110,7 +111,7 @@ func sameBack(a, b *color) bool {
 
 // sameFrag is rl_accel.sameFrag.
 func sameFrag(f, g *frag) bool {
-	if f.img != nil || g.img != nil || f.lineBreak || g.lineBreak {
+	if f.img != nil || g.img != nil || f.anchor != nil || g.anchor != nil || f.lineBreak || g.lineBreak {
 		return false
 	}
 	return f.font == g.font && f.size == g.size && f.color == g.color && f.rise == g.rise && sameUS(f.us, g.us) &&
@@ -171,6 +172,9 @@ type imgDefn struct {
 	valign        valign
 }
 
+// anchorDefn is the cbDefn of an <a name="..."/> fragment.
+type anchorDefn struct{ name string }
+
 // imgAttrs are the attributes of an <img> tag, inherited by the tags inside.
 type imgAttrs struct {
 	src           string
@@ -220,6 +224,7 @@ type paraTag struct {
 	greek        bool // <greek>: the fragment's text goes through the Symbol font
 	imgAttrs     *imgAttrs
 	selfClosing  string
+	anchorName   string
 	lineBreak    bool
 	img          *imgDefn
 }
@@ -693,7 +698,19 @@ func (p *paraParser) endTag(tag string) bool {
 		return ok
 	case "a":
 		if len(p.stack) > 0 && p.stack[len(p.stack)-1].selfClosing != "" {
-			return p.fail("Parser failure in <a/>")
+			top := p.stack[len(p.stack)-1]
+			if top.selfClosing != "anchor" || top.anchorName == "" {
+				return p.fail("Parser failure in <a/>")
+			}
+			// end_a makes the fragment of the bookmark: handle_data('') of the
+			// tag's own style, with the cbDefn of an anchor.
+			fontName, st := top.fontName()
+			if st != attrOK {
+				return p.attrFailure(st, "Can't find font family "+top.family)
+			}
+			p.frags = append(p.frags, &frag{font: fontsByName[fontName], size: top.size, color: top.color, rise: top.rise, text: "",
+				lineBreak: top.lineBreak, us: top.us, links: top.links, back: top.back, nobr: top.nobr,
+				anchor: &anchorDefn{name: top.anchorName}})
 		}
 		_, ok := p.pop("a")
 		return ok
@@ -1047,8 +1064,9 @@ func padHex(value, width int) string {
 	return text
 }
 
-// startAnchor is the <a name="..."/> variant of start_a: the attribute errors
-// of reportlab, then a refusal (the bookmark it makes is not ported).
+// startAnchor is start_a with a name attribute: the anchor variant of the tag,
+// which allows only the name attribute, requires it non-blank and closes the
+// tag empty (end_a makes its fragment).
 func (p *paraParser) startAnchor(attrs []htmlAttr) bool {
 	if len(p.stack) == 0 {
 		return p.fail("tag outside the paragraph")
@@ -1056,14 +1074,23 @@ func (p *paraParser) startAnchor(attrs []htmlAttr) bool {
 	order, values := dedupeAttrs(attrs)
 	for _, name := range order {
 		if name != "name" {
-			return p.fail("invalid attribute name %s", name)
+			// getAttributes(_anchorAttrMap) names the attributes it knows.
+			return p.syntaxError("invalid attribute name %s attrMap=%s", name, "['name']")
 		}
 	}
 	name := values["name"]
-	if !name.has || pyTrimUnicode(name.value) == "" {
+	if !name.has {
+		return p.fail("'NoneType' object has no attribute 'strip'")
+	}
+	if pyTrimUnicode(name.value) == "" {
 		return p.syntaxError("<a name=\"...\"/> anchor variant requires non-blank name")
 	}
-	return p.unsupported()
+	if len(values) > 1 {
+		return p.syntaxError("<a name=\"...\"/> anchor variant only allows name attribute")
+	}
+	return p.push("a", func(t *paraTag) {
+		t.selfClosing, t.anchorName = "anchor", name.value
+	})
 }
 
 // startUnichar is start_unichar: the character of the name or code attribute
@@ -1206,34 +1233,29 @@ func pyIntLiteral(text string) (int64, bool) {
 // pyTrimUnicode is str.strip().
 func pyTrimUnicode(s string) string { return strings.Trim(s, pySpaces) }
 
-// linkTarget is what _doLink does with a link: no annotation for an empty
-// one, a URI or GoToR annotation, or ok false for the destinations (#name,
-// document:name) and the targets this package does not write.
-func linkTarget(link string) (kind, target string, ok bool) {
+// linkTarget is _doLink's choice of annotation: none for an empty link, the
+// bookmark of a '#name' or 'document:name' link, a GoToR file action of a
+// 'pdf:' target, a URI action otherwise.
+func linkTarget(link string) (kind, target string) {
 	if link == "" {
-		return "", "", true
-	}
-	for i := 0; i < len(link); i++ {
-		if link[i] < 0x20 || link[i] >= 0x7f {
-			return "", "", false
-		}
+		return "", ""
 	}
 	if strings.HasPrefix(link, "#") {
-		return "", "", false
+		return "internal", link[1:]
 	}
 	scheme := ""
 	if idx := strings.Index(link, ":"); idx >= 0 {
 		scheme = strings.ToLower(link[:idx])
 	}
-	switch {
-	case scheme == "document":
-		return "", "", false
-	case len(scheme) >= 2 && schemeLetters(scheme):
+	if scheme == "document" {
+		return "internal", link[strings.Index(link, ":")+1:]
+	}
+	if len(scheme) >= 2 && schemeLetters(scheme) {
 		if scheme == "pdf" {
-			return "GoToR", link[strings.Index(link, ":")+1:], true
+			return "GoToR", link[strings.Index(link, ":")+1:]
 		}
 	}
-	return "URI", link, true
+	return "URI", link
 }
 
 // schemeLetters is _scheme_re: a letter, then letters, digits, '-' and '+'.
@@ -1259,7 +1281,6 @@ func (p *paraParser) startLink(tag string, attrs []htmlAttr) bool {
 	var hasFamily bool
 	var textColor, backColor *color
 	var href string
-	var hasHref bool
 	underline := false // platypus_link_underline
 	var line lineAttr
 	need := func(attr htmlAttr, what string) bool {
@@ -1305,7 +1326,7 @@ func (p *paraParser) startLink(tag string, attrs []htmlAttr) bool {
 			if !need(attr, "link") {
 				return false
 			}
-			href, hasHref = attr.value, true
+			href = attr.value
 		case "uoffset", "uwidth", "ugap", "underlineoffset", "underlinewidth", "underlinegap":
 			v, ok := p.usValue(attr.value, attr.has)
 			if !ok {
@@ -1338,11 +1359,6 @@ func (p *paraParser) startLink(tag string, attrs []htmlAttr) bool {
 		}
 	}
 	target := pyTrimUnicode(href)
-	if hasHref {
-		if _, _, ok := linkTarget(target); !ok {
-			return p.unsupported()
-		}
-	}
 	n := p.nlinks
 	p.nlinks++
 	top := p.stack[len(p.stack)-1]

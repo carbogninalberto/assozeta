@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-// Paragraph tags whose drawing is not ported (links), paragraph attributes, and image sources of a format this package
+// Paragraph tags whose drawing is not ported (bullets), paragraph attributes, and image sources of a format this package
 // does not embed as it is (a PNG, or a JPEG this decoder does not read), are refused instead of drawn differently from
 // reportlab.
 func TestInputsNotPorted(t *testing.T) {
@@ -24,8 +24,6 @@ func TestInputsNotPorted(t *testing.T) {
 	for name, input := range map[string]DataTable{
 		"image file png": {Header: header("None", `A <img src="`+png+`"/> B`)},
 		"image png":      {Header: header("None", `A <img src="data:image/png;base64,iVBORw0KGgo="/> B`)},
-		"anchor":         {Header: header("None", `A <a name="top"/> B`)},
-		"internal link":  {Header: header("None", `A <a href="#top">B</a> C`)},
 		"bullet":         {Header: header("None", "A <bullet>b</bullet> B")},
 		"para attribute": {Header: header("None", `<para align="justify" lindent="12">A</para>`)},
 		"text transform": {Header: header("None", `<para texttransform="uppercase">a</para>`)},
@@ -58,6 +56,12 @@ func TestInputsNotPorted(t *testing.T) {
 	plain := base
 	plain.Header = header("None", "ASD > Aurora \"1990\" & <b>C</b>")
 	if _, err := plain.Build(time.Unix(946684800, 0)); err != nil {
+		t.Fatal(err)
+	}
+	// An anchor and the internal link that names it: the bookmark and the annotation of the page.
+	anchored := base
+	anchored.Header = header("None", `A <a name="top"/> <a href="#top">B</a> C`)
+	if _, err := anchored.Build(time.Unix(946684800, 0)); err != nil {
 		t.Fatal(err)
 	}
 	ported := base

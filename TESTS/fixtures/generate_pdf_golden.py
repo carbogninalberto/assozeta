@@ -389,6 +389,27 @@ CASES += [
 ]
 
 
+# Anchors (a with a name) and internal links (#name, document:name): the destinations a document binds when it is saved.
+CASES += [
+    report('rt-anchor-link', ['Nome'], [['x']], 'Ancora', text_before='Apri <a name="inizio"/>qui.', text_after='Torna <a href="#inizio">su</a>.'),
+    report('rt-anchor-link-first', ['Nome'], [['x']], 'Ancora', text_before='Vai <a href="#fine">giù</a>.', text_after='<a name="fine"/>Fine.'),
+    report('rt-anchor-pages', ['Nome'], [['x']], 'Pagine', text_before='<a name="testata"/>' + ' '.join([WORDS] * 140),
+           text_after='<a href="#testata">testata</a> e <a href="document:testata">di nuovo</a>.'),
+    report('rt-anchor-document', ['Nome'], [['x']], 'Documento', text_before='<a name="dest"/>Testo.', text_after='Vai <a href="document:dest">qui</a>.'),
+    report('rt-anchor-undefined', ['Nome'], [['x']], 'Manca', text_before='Vai <a href="#manca">qui</a>.'),
+    report('rt-anchor-rebound', ['Nome'], [['x']], 'Rilegata', text_before='<a name="punto"/>Prima.', text_after='<a name="punto"/>Dopo e <a href="#punto">vai</a>.'),
+    report('rt-anchor-cells', ['Da', 'A'], [['<a name="riga1"/>uno', '<a href="#riga1">vai</a>'],
+                                            ['<a name="riga2"/>due', '<a href="document:riga2">vai</a>']], 'Celle'),
+    report('rt-anchor-cell-only', ['<a name="solo"/>'], [['y']], 'Solo'),
+    report('rt-anchor-row-only', ['A'], [['<a name="solo"/>']], 'Solo'),
+    report('rt-anchor-header', ['<a name="testata"/>Nome', 'Nota'], [['x', 'y']] * 60, 'Testata',
+           text_after='<a href="#testata">testata</a>'),
+    report('rt-anchor-targets', ['A'], [['<a href="città/日本">x</a>'], ['<a href="#a&#1;b">y</a>'], ['<a href="pdf:città.pdf">z</a>'],
+                                         ['<a href="pdf:a&#9;b.pdf">w</a>']], 'URL', text_before='<a name="a&#1;b"/>'),
+    report('rt-anchor-urls', ['A'], [['<a href="https://example.test/é?q=1&amp;r=2">x</a>'], ["<a href='a\"b(c)\\\\d'>y</a>"],
+                                     ['<a href="x y">z</a>'], ['<a href="😀/日本">w</a>']], 'URL'),
+]
+
 # Inline images (img with a JPEG data URL): in the line, sized and aligned, wrapped and cut between pages.
 PIX = 'data:image/jpeg;base64,' + jpeg(30, 20, (200, 30, 30))
 TALL = 'data:image/jpeg;base64,' + jpeg(8, 40, (20, 160, 60))

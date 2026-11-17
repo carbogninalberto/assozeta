@@ -176,13 +176,17 @@ func containsLink(list []linkRef, l linkRef) bool {
 	return false
 }
 
-// doLink is _doLink for a link whose target linkTarget accepts.
+// doLink is _doLink.
 func doLink(c *canvas, target string, rect [4]float64) {
-	kind, to, _ := linkTarget(target)
-	if kind == "" {
+	kind, to := linkTarget(target)
+	switch kind {
+	case "":
 		return
+	case "internal":
+		c.linkRect(to, rect)
+	default:
+		c.linkURL(to, rect, kind)
 	}
-	c.linkURL(to, rect, kind)
 }
 
 // fragState is tx.XtraState of the several-fragment layout.
@@ -230,6 +234,19 @@ func (p *paragraph) putFragLine(tx *textObject, xs *fragState, curX float64, lin
 	var liveLinks []linkRef
 	words := line.words
 	for i, f := range words {
+		if f.anchor != nil {
+			// _putFragLine's kind == 'anchor': a bookmark at the line's own
+			// position, without moving the cursor.
+			c.bookmarkHorizontal(f.anchor.name, curX, xs.curY+leading)
+			if i == len(words)-1 {
+				if tx.font == nil {
+					tx.font, tx.fontSize, tx.leading, tx.hasLeading = fontsByName[p.style.fontName], p.style.fontSize, p.style.fontSize*1.2, true
+					tx.code = append(tx.code, c.fontRef(tx.font)+" "+fpStr(tx.fontSize)+" Tf "+fpStr(tx.leading)+" TL")
+				}
+				tx.textOut("", true)
+			}
+			continue
+		}
 		if f.img != nil {
 			size := tx.fontSize
 			if tx.font == nil {

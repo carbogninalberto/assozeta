@@ -569,6 +569,15 @@ func (p *paragraph) fragWords(maxWidth float64, hasMax bool) []*fragWord {
 					}
 				})
 			}
+		case f.anchor != nil:
+			// _getFragWords: a cbDefn without width is appended to the word.
+			f.kind = fragAppend
+			if len(word.parts) == 0 && len(out) > 0 && out[len(out)-1].hs {
+				last := out[len(out)-1]
+				last.parts = append(last.parts, fragPart{f, shyText{}})
+			} else {
+				word.parts = append(word.parts, fragPart{f, shyText{}})
+			}
 		case f.img != nil:
 			width := f.img.width.norm(maxWidth)
 			if f.img.width.pct && !hasMax {
@@ -770,7 +779,7 @@ func (p *paragraph) breakFrags(maxWidth float64) {
 			}
 		}
 		limWidth := maxWidth + spaceShrink*p.style.shrinkage()
-		if !lineBreak && newWidth > limWidth && !w.splitH && f.img == nil {
+		if !lineBreak && newWidth > limWidth && !w.splitH && f.img == nil && f.anchor == nil {
 			if w.shy {
 				if cut := w.shyphenate(newWidth, limWidth); cut != nil {
 					pending = append([]*fragWord{cut[0], injected(f), cut[1]}, pending...)
@@ -882,9 +891,9 @@ func (p *paragraph) breakFrags(maxWidth float64) {
 }
 
 // simpleKind is the test of Paragraph.breakLines for the one-font layout: a
-// single fragment that is no image and has no background.
+// single fragment that is no image or anchor and has no background.
 func (p *paragraph) simpleKind() bool {
-	return len(p.frags) == 1 && p.frags[0].img == nil && p.frags[0].back == nil
+	return len(p.frags) == 1 && p.frags[0].img == nil && p.frags[0].anchor == nil && p.frags[0].back == nil
 }
 
 func (p *paragraph) lineCount() int {

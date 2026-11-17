@@ -57,7 +57,9 @@ func describeFrag(f *frag) []any {
 		links = append(links, []any{l.n, l.target})
 	}
 	var img any
-	if f.img != nil {
+	if f.anchor != nil {
+		img = []any{"anchor", f.anchor.name}
+	} else if f.img != nil {
 		dimOf := func(d dim) any {
 			if d.pct {
 				return []any{"pct", d.v}

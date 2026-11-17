@@ -146,6 +146,21 @@ TEXTS = [
     '<sup rise="١">a</sup>', '<img src="%s" width="١٠"/>' % IMAGE,
     '<para alloworphans="π">a</para>', '<font color="città">a</font>', '<font color="π">a</font>', '<u color="rosso">a</u>',
     '<img src="%s" valign="١"/>' % IMAGE,
+    # Anchors (<a name="..."/>) and internal links (#name, document:name): the fragments they make and the targets the
+    # paragraph accepts, printable or not.
+    'A <a name="top"/> B', '<a name="top"/>', '<a name=" top "/>text', 'before<a name="x"/>after',
+    'before<a name="x"/>after<a name="y"/>end', '<b><a name="x"/>bold</b>', '<i><a name="uno"/><a name="due"/>due</i>',
+    '<a name=""/>', '<a name="   "/>', '<a name/>', '<a name="x" href="y"/>', '<a name="x">text</a>', '<a name="x"></a>',
+    '<a name="x"> </a>', '<a name="città"/>ok', '<a name="日本語"/>ok', '<a name="a b"/>ok', '<a name="a\\b"/>ok',
+    '<a name="a(b)c"/>ok', '<a name="x"/><a name="x"/>', 'a <a name="x"/> b', '<a name="x"/><b><i>y</i></b>',
+    '<a href="#top">a</a>', '<a href="#top">a</a> <a name="top"/>', '<a name="top"/> <a href="#top">a</a>',
+    '<a href="document:top">a</a>', '<a name="top"/> <a href="document:top">a</a>', '<link href="#top">a</link>',
+    '<link dest="#top">a</link>', '<link target="#top">a</link>', '<link destination="document:top">a</link>',
+    '<a href="#">a</a>', '<a href="document:">a</a>', '<a href="#a b">a</a>', '<a href="#città">a</a>',
+    '<a href="#a(b)c">a</a>', '<a href="#a\\b">a</a>', '<a href="#a&#9;b">a</a>', '<a href="#a&#1;b">a</a>',
+    '<a href="#a&#127;b">a</a>', '<a href="#a&#128;b">a</a>', '<a href="#日本">a</a>', '<a href="#top" color="red">a</a>',
+    '<b><a href="#top">a</a></b>', '<a href="#top"><b>a</b> b</a>', '<a href="x y">a</a>', "<a href='a\"b'>a</a>",
+    '<a href="città/日本">a</a>', '<a href="pdf:città.pdf">a</a>', '<a href="pdf:a&#1;b.pdf">a</a>',
 ]
 TOKENS = [
     'a', 'b c', ' ', 'Città', '&', '&amp;', '&lt;', '&gt;', '&nbsp;', '&#65;', '&#x41;', '&#X41;', '&#;', '&#12a', '&foo;', '&alpha;',
@@ -172,7 +187,7 @@ def refusable(text):
     digits = any(char.isdigit() and not char.isascii() for char in text)
     return (any('<' + tag in lowered or '</' + tag in lowered for tag in REFUSED) or ('<para' in lowered and any(word in lowered for word in PARA_REFUSED))
             or 'blacker(' in lowered
-            or 'whiter(' in lowered or (('<a' in lowered or '<link' in lowered) and ('#' in text or 'document:' in lowered or 'name' in lowered))
+            or 'whiter(' in lowered
             or ('<' in text and (not text.isascii() or digits or 'inf' in lowered or 'nan' in lowered)))
 
 
@@ -215,6 +230,8 @@ def describe_image(frag):
     defn = getattr(frag, 'cbDefn', None)
     if defn is None:
         return None
+    if defn.kind == 'anchor':
+        return ['anchor', defn.name]
     if defn.kind != 'img':
         raise TypeError('callback')
     return ['img', defn.src, dimension(defn.width), dimension(defn.height), dimension(defn.valign)]
