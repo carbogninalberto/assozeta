@@ -200,6 +200,32 @@ SUBSCRIPTION_PERIODS['march'] = {'id': next(tail_ids), 'period': 'march', 'subsc
                                  'services': ['refund']}
 PERIOD_LINKS['march'] = ['refund']
 
+# Payment.save() keeps meta['description'] on the instance when it replaces the
+# 'Quota Corso' placeholder: the next save of the same instance calls .lower()
+# on it and fails before writing. Each period has one subscription period so
+# the walk has a single row. Ids come from a separate sequence.
+desc_ids = iter(f'a1000000-0000-4000-8000-{985601 + n:012d}' for n in range(20))
+PERIODS['january'] = {'id': next(desc_ids), 'camp': 'camp', 'start': '2027-01-01T08:00:00Z', 'end': '2027-01-05T18:00:00Z',
+                      'title': 'Gennaio', 'description': None, 'fee': '20.00', 'max': None, 'created': '2026-06-17T09:00:00Z'}
+SERVICES['snowshoes'] = {'id': next(desc_ids), 'period': 'january', 'title': 'Ciaspole', 'description': None, 'fee': '6.00',
+                         'category': 'own', 'created': '2026-06-17T10:00:00Z'}
+PAYMENTS['january'] = {'id': next(desc_ids), 'amount': '26.00', 'paid': False, 'subject': 1, 'description': 'Quota Corso',
+                       'category': 'own', 'notes': None, 'meta': [meta('snowshoes', 6.0, 'own')],
+                       'payment_meta': {'description': ['a', 'b']}, 'created': '2026-06-17T11:00:00Z'}
+SUBSCRIPTION_PERIODS['january'] = {'id': next(desc_ids), 'period': 'january', 'subscription': 'camp', 'payment': 'january',
+                                   'services': ['snowshoes']}
+PERIOD_LINKS['january'] = ['snowshoes']
+PERIODS['may'] = {'id': next(desc_ids), 'camp': 'camp', 'start': '2027-05-01T08:00:00Z', 'end': '2027-05-05T18:00:00Z',
+                  'title': 'Maggio', 'description': None, 'fee': '20.00', 'max': None, 'created': '2026-06-17T12:00:00Z'}
+SERVICES['bikes'] = {'id': next(desc_ids), 'period': 'may', 'title': 'Bici', 'description': None, 'fee': '7.00',
+                     'category': 'own', 'created': '2026-06-17T13:00:00Z'}
+PAYMENTS['may'] = {'id': next(desc_ids), 'amount': '27.00', 'paid': False, 'subject': 1, 'description': 'Quota Corso',
+                   'category': 'own', 'notes': None, 'meta': [meta('bikes', 7.0, 'own')],
+                   'payment_meta': {'description': 5}, 'created': '2026-06-17T14:00:00Z'}
+SUBSCRIPTION_PERIODS['may'] = {'id': next(desc_ids), 'period': 'may', 'subscription': 'camp', 'payment': 'may',
+                               'services': ['bikes']}
+PERIOD_LINKS['may'] = ['bikes']
+
 PERIOD, SERVICE, SUBPERIOD, PAYMENT = ('application.CampsAndRetreatsPeriod', 'application.CampsAndRetreatsPeriodsService',
                                        'application.CampsAndRetreatsSubscriptionPeriod', 'application.Payment')
 PERIOD_LINK = 'application.CampsAndRetreatsPeriod_camps_and_Retreats_period_services'
@@ -930,6 +956,43 @@ description_failure('services-update-description-failure-server-error', 'skates'
                     'list indices must be integers or slices, not str')
 description_failure('services-update-transfer-description-two-payments-server-error', 'boots', 'Scarponi nuovi',
                     "'NoneType' object has no attribute 'name'")
+
+
+# meta['description'] replaces the 'Quota Corso' placeholder with its Python
+# value: the first save inside the meta loop writes str(value), then the save
+# after the amount/notes update calls .lower() on the value and raises before
+# writing. The first save's row and audit entry stay; the later payment rows are
+# not walked.
+def description_value_failure(name, label, title, message):
+    row = STATE['services'][label]
+    before = service_audit_view(row)
+    row['title'] = title
+    events = [audit('CampsAndRetreatsPeriodsService', row['id'], 1,
+                    stored_changes(before, service_audit_view(row), SERVICE_FIELDS), OWN, SERVICE_PATH)]
+    rows = {SERVICE: {row['id']: service_row(row)}}
+    sp = next(sp for sp in SUBSCRIPTION_PERIODS.values() if sp['period'] == row['period'] and sp['payment'])
+    payment = STATE['payments'][sp['payment']]
+    old = dumps(payment['meta'])
+    for item in payment['meta']:
+        if item['camps_and_retreats_period_service_id'] == row['id']:
+            item['amount'] = float(row['fee'])
+            item['title'] = row['title']
+            item['payment_category_id'] = CATEGORIES[row['category']]['id'] if row['category'] else 'None'
+    text = str(payment['payment_meta']['description'])
+    changes = {'description': [payment['description'], text]}
+    if dumps(payment['meta']) != old:
+        changes['meta_payment_categories'] = [old, dumps(payment['meta'])]
+    events.append(audit('Payment', payment['id'], 1, changes, OWN, 'direct'))
+    payment['description'] = text
+    rows[PAYMENT] = {payment['id']: {'description': text, 'meta_payment_categories': copy.deepcopy(payment['meta'])}}
+    add(name, 'owner', service_path(label, 'update'), 500, {'error': message}, method='PATCH', body={'title': title},
+        effect={'actor': 'owner', 'rows': rows, 'audit': events})
+
+
+description_value_failure('services-update-description-list-value-server-error', 'snowshoes', 'Ciaspole nuove',
+                          "'list' object has no attribute 'lower'")
+description_value_failure('services-update-description-int-value-server-error', 'bikes', 'Bici nuove',
+                          "'int' object has no attribute 'lower'")
 
 
 # The walk reads the period's unpaid subscription periods in the database's order (the filter has no ORDER BY) and stops at

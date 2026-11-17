@@ -13,13 +13,28 @@ import (
 // transaction. Preserve the two distinct metadata reads: a relationship reads
 // stored payment metadata, then the placeholder override reads pending metadata.
 func ResolvePaymentDescription(ctx context.Context, input domain.PaymentDescriptionInput) (*string, error) {
+	text, _, err := resolvePaymentDescriptionValue(ctx, input, nil)
+	return text, err
+}
+
+// resolvePaymentDescriptionValue is ResolvePaymentDescription for one save of
+// a Payment instance: inMemory (when non-nil) is the Python value the previous
+// save left on the description attribute instead of Description's text. The
+// second result is the value the save leaves on the instance for its next save
+// (nil when the attribute holds the text).
+func resolvePaymentDescriptionValue(ctx context.Context, input domain.PaymentDescriptionInput, inMemory any) (*string, any, error) {
 	if err := ctx.Err(); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	var value any
-	if input.Description != nil {
+	switch {
+	case inMemory != nil:
+		// A later save of the same instance starts from its attribute, not the
+		// stored text: a truthy non-string fails on .lower() before any write.
+		value = inMemory
+	case input.Description != nil:
 		value = *input.Description
-	} else {
+	default:
 		switch input.Subject {
 		case 0:
 			if input.CategoryName != nil {
@@ -31,7 +46,7 @@ func ResolvePaymentDescription(ctx context.Context, input domain.PaymentDescript
 			var err error
 			value, err = paymentCourseDescription(ctx, input)
 			if err != nil {
-				return nil, err
+				return nil, nil, err
 			}
 			if value == nil {
 				value = "Quota Corso"
@@ -47,18 +62,18 @@ func ResolvePaymentDescription(ctx context.Context, input domain.PaymentDescript
 					message = "'NoneType' object has no attribute 'name'"
 				}
 			}
-			return nil, &domain.PaymentDescriptionError{Message: message}
+			return nil, nil, &domain.PaymentDescriptionError{Message: message}
 		}
 	}
 	if truthyReference(value) {
 		text, ok := value.(string)
 		if !ok {
-			return nil, &domain.PaymentDescriptionError{Message: "'" + dto.PaymentMiscTypeName(value) + "' object has no attribute 'lower'"}
+			return nil, nil, &domain.PaymentDescriptionError{Message: "'" + dto.PaymentMiscTypeName(value) + "' object has no attribute 'lower'"}
 		}
-		if strings.ToLower(text) == "quota corso" {
+		if dto.PythonLower(text) == "quota corso" {
 			replacement, exists, err := paymentJSONMember(ctx, input.Meta, "description")
 			if err != nil {
-				return nil, err
+				return nil, nil, err
 			}
 			if exists {
 				value = replacement
@@ -66,18 +81,23 @@ func ResolvePaymentDescription(ctx context.Context, input domain.PaymentDescript
 		}
 	}
 	if value == nil {
-		return nil, nil
+		return nil, nil, nil
 	}
 	// Django CharField prepares non-string values using str(). Reuse the tested
 	// Python representation machinery, including ordered JSON containers.
 	text, err := loginValueText(ctx, value)
 	if err != nil {
 		if ctx.Err() != nil {
-			return nil, ctx.Err()
+			return nil, nil, ctx.Err()
 		}
-		return nil, &domain.PaymentDescriptionError{}
+		return nil, nil, &domain.PaymentDescriptionError{}
 	}
-	return &text, nil
+	var memory any
+	if _, ok := value.(string); !ok {
+		// The attribute keeps the Python object; the column got str() of it.
+		memory = value
+	}
+	return &text, memory, nil
 }
 
 func paymentCourseDescription(ctx context.Context, input domain.PaymentDescriptionInput) (any, error) {

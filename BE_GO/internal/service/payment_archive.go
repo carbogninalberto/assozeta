@@ -160,7 +160,7 @@ func secCategorySaveDefaults(ctx context.Context, tx domain.PaymentArchiveTransa
 			input.Related[linked.Slot] = &domain.PaymentDescriptionRelation{Title: linked.Title, Meta: meta, MissingCarnet: linked.MissingCarnet}
 		}
 	}
-	description, err := ResolvePaymentDescription(ctx, input)
+	description, memory, err := resolvePaymentDescriptionValue(ctx, input, row.DescriptionValue)
 	if errors.Is(err, domain.ErrPaymentDescription) {
 		return errors.Join(ErrPaymentSaveFailed, err)
 	}
@@ -170,7 +170,7 @@ func secCategorySaveDefaults(ctx context.Context, tx domain.PaymentArchiveTransa
 	if !samePointer(row.Description, description) {
 		changes["description"] = [2]string{pythonOptional(row.Description), pythonOptional(description)}
 	}
-	row.Description = description
+	row.Description, row.DescriptionValue = description, memory
 	return nil
 }
 

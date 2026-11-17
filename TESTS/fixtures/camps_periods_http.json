@@ -206,6 +206,28 @@
    "max": null,
    "created": "2026-06-16T12:00:00Z"
   },
+  "january": {
+   "id": "a1000000-0000-4000-8000-000000985601",
+   "camp": "camp",
+   "start": "2027-01-01T08:00:00Z",
+   "end": "2027-01-05T18:00:00Z",
+   "title": "Gennaio",
+   "description": null,
+   "fee": "20.00",
+   "max": null,
+   "created": "2026-06-17T09:00:00Z"
+  },
+  "may": {
+   "id": "a1000000-0000-4000-8000-000000985605",
+   "camp": "camp",
+   "start": "2027-05-01T08:00:00Z",
+   "end": "2027-05-05T18:00:00Z",
+   "title": "Maggio",
+   "description": null,
+   "fee": "20.00",
+   "max": null,
+   "created": "2026-06-17T12:00:00Z"
+  },
   "deep_index": {
    "id": "a1000000-0000-4000-8000-000000985501",
    "camp": "camp",
@@ -366,6 +388,24 @@
    "fee": "5.00",
    "category": "own",
    "created": "2026-06-16T13:00:00Z"
+  },
+  "snowshoes": {
+   "id": "a1000000-0000-4000-8000-000000985602",
+   "period": "january",
+   "title": "Ciaspole",
+   "description": null,
+   "fee": "6.00",
+   "category": "own",
+   "created": "2026-06-17T10:00:00Z"
+  },
+  "bikes": {
+   "id": "a1000000-0000-4000-8000-000000985606",
+   "period": "may",
+   "title": "Bici",
+   "description": null,
+   "fee": "7.00",
+   "category": "own",
+   "created": "2026-06-17T13:00:00Z"
   },
   "deep_index": {
    "id": "a1000000-0000-4000-8000-000000985502",
@@ -641,6 +681,51 @@
    ],
    "created": "2026-06-16T14:00:00Z"
   },
+  "january": {
+   "id": "a1000000-0000-4000-8000-000000985603",
+   "amount": "26.00",
+   "paid": false,
+   "subject": 1,
+   "description": "Quota Corso",
+   "category": "own",
+   "notes": null,
+   "meta": [
+    {
+     "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985602",
+     "title": "Ciaspole",
+     "amount": 6.0,
+     "payment_category_id": "a1000000-0000-4000-8000-000000985004"
+    }
+   ],
+   "payment_meta": {
+    "description": [
+     "a",
+     "b"
+    ]
+   },
+   "created": "2026-06-17T11:00:00Z"
+  },
+  "may": {
+   "id": "a1000000-0000-4000-8000-000000985607",
+   "amount": "27.00",
+   "paid": false,
+   "subject": 1,
+   "description": "Quota Corso",
+   "category": "own",
+   "notes": null,
+   "meta": [
+    {
+     "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985606",
+     "title": "Bici",
+     "amount": 7.0,
+     "payment_category_id": "a1000000-0000-4000-8000-000000985004"
+    }
+   ],
+   "payment_meta": {
+    "description": 5
+   },
+   "created": "2026-06-17T14:00:00Z"
+  },
   "deep_index": {
    "id": "a1000000-0000-4000-8000-000000985503",
    "amount": "30.00",
@@ -829,6 +914,24 @@
     "refund"
    ]
   },
+  "january": {
+   "id": "a1000000-0000-4000-8000-000000985604",
+   "period": "january",
+   "subscription": "camp",
+   "payment": "january",
+   "services": [
+    "snowshoes"
+   ]
+  },
+  "may": {
+   "id": "a1000000-0000-4000-8000-000000985608",
+   "period": "may",
+   "subscription": "camp",
+   "payment": "may",
+   "services": [
+    "bikes"
+   ]
+  },
   "deep_index": {
    "id": "a1000000-0000-4000-8000-000000985505",
    "period": "deep_index",
@@ -885,6 +988,12 @@
   ],
   "march": [
    "refund"
+  ],
+  "january": [
+   "snowshoes"
+  ],
+  "may": [
+   "bikes"
   ]
  },
  "cases": [
@@ -5122,6 +5231,154 @@
    "setup": null,
    "body": {
     "title": "Scarponi nuovi"
+   }
+  },
+  {
+   "name": "camps-periods-services-update-description-list-value-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/services/a1000000-0000-4000-8000-000000985602/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "'list' object has no attribute 'lower'"
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreatsPeriodsService": {
+      "a1000000-0000-4000-8000-000000985602": {
+       "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985601",
+       "title": "Ciaspole nuove",
+       "description": null,
+       "fee": "6.00",
+       "payment_category_id": "a1000000-0000-4000-8000-000000985004"
+      }
+     },
+     "application.Payment": {
+      "a1000000-0000-4000-8000-000000985603": {
+       "description": "['a', 'b']",
+       "meta_payment_categories": [
+        {
+         "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985602",
+         "title": "Ciaspole nuove",
+         "amount": 6.0,
+         "payment_category_id": "a1000000-0000-4000-8000-000000985004"
+        }
+       ]
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreatsPeriodsService",
+      "key": "a1000000-0000-4000-8000-000000985602",
+      "action": 1,
+      "changes": {
+       "title": [
+        "Ciaspole",
+        "Ciaspole nuove"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "period.camps_and_retreats.sport_association"
+     },
+     {
+      "model": "Payment",
+      "key": "a1000000-0000-4000-8000-000000985603",
+      "action": 1,
+      "changes": {
+       "description": [
+        "Quota Corso",
+        "['a', 'b']"
+       ],
+       "meta_payment_categories": [
+        "[{\"amount\": 6.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985602\", \"payment_category_id\": \"a1000000-0000-4000-8000-000000985004\", \"title\": \"Ciaspole\"}]",
+        "[{\"amount\": 6.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985602\", \"payment_category_id\": \"a1000000-0000-4000-8000-000000985004\", \"title\": \"Ciaspole nuove\"}]"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "direct"
+     }
+    ]
+   },
+   "setup": null,
+   "body": {
+    "title": "Ciaspole nuove"
+   }
+  },
+  {
+   "name": "camps-periods-services-update-description-int-value-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/services/a1000000-0000-4000-8000-000000985606/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "'int' object has no attribute 'lower'"
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreatsPeriodsService": {
+      "a1000000-0000-4000-8000-000000985606": {
+       "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985605",
+       "title": "Bici nuove",
+       "description": null,
+       "fee": "7.00",
+       "payment_category_id": "a1000000-0000-4000-8000-000000985004"
+      }
+     },
+     "application.Payment": {
+      "a1000000-0000-4000-8000-000000985607": {
+       "description": "5",
+       "meta_payment_categories": [
+        {
+         "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985606",
+         "title": "Bici nuove",
+         "amount": 7.0,
+         "payment_category_id": "a1000000-0000-4000-8000-000000985004"
+        }
+       ]
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreatsPeriodsService",
+      "key": "a1000000-0000-4000-8000-000000985606",
+      "action": 1,
+      "changes": {
+       "title": [
+        "Bici",
+        "Bici nuove"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "period.camps_and_retreats.sport_association"
+     },
+     {
+      "model": "Payment",
+      "key": "a1000000-0000-4000-8000-000000985607",
+      "action": 1,
+      "changes": {
+       "description": [
+        "Quota Corso",
+        "5"
+       ],
+       "meta_payment_categories": [
+        "[{\"amount\": 7.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985606\", \"payment_category_id\": \"a1000000-0000-4000-8000-000000985004\", \"title\": \"Bici\"}]",
+        "[{\"amount\": 7.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985606\", \"payment_category_id\": \"a1000000-0000-4000-8000-000000985004\", \"title\": \"Bici nuove\"}]"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "direct"
+     }
+    ]
+   },
+   "setup": null,
+   "body": {
+    "title": "Bici nuove"
    }
   },
   {

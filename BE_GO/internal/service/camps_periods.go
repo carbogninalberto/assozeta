@@ -896,6 +896,9 @@ func (r *campsRequest) campsWalkRow(ctx context.Context, walkRow domain.CampsWal
 		}
 	}
 	copied := payment
+	// The next subscription period's payment is a new instance read from the
+	// database: its description attribute is the stored text.
+	copied.DescriptionValue = nil
 	state[payment.ID] = &copied
 	if walk.Failure != nil {
 		var python *dto.CampsPythonError

@@ -22,6 +22,11 @@ type PaymentSaveRow struct {
 	// MetaPaymentCategories is the third JSON column Payment.save() reads.
 	// Queries select it as text, like meta and course.
 	MetaPaymentCategories *string `db:"meta_payment_categories"`
+	// DescriptionValue is the in-memory description Payment.save()'s hook left
+	// on the instance when the stored meta replacement is not a string (nil:
+	// Description holds the text). Saving the same row again starts from it; a
+	// row read from the database starts nil.
+	DescriptionValue any
 	// CustomAccounts is whether custom_accounts is set; nil unless the query
 	// selects it.
 	CustomAccounts *bool `db:"custom_accounts_set"`
