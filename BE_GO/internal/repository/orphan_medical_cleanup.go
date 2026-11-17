@@ -44,10 +44,14 @@ type orphanMedicalTransaction struct{ *ownedTransaction }
 func (t *orphanMedicalTransaction) OrphanMedicalCertificates(ctx context.Context) (domain.OrphanMedicalBatch, error) {
 	if _, err := t.tx.ExecContext(ctx, `DECLARE "tasks_db_f_orphan_medical" NO SCROLL CURSOR FOR SELECT
  "application_medicalcertificate"."medical_id", "application_medicalcertificate"."document_id", "application_medicalcertificate"."user_id",
- "application_medicalcertificate"."creation_date", "application_medicalcertificate"."expiration_date",
+ CASE WHEN `+orphanMedicalPythonYear(`"application_medicalcertificate"."creation_date"`)+` THEN "application_medicalcertificate"."creation_date" END,
+ "application_medicalcertificate"."expiration_date",
  "application_medicalcertificate"."competitive_medical_certificate", "application_medicalcertificate"."notes",
- "docmanager_document"."document_id", "docmanager_document"."creation_date", "docmanager_document"."filepath",
- "docmanager_document"."filename", "docmanager_document"."file_size_bytes", "docmanager_document"."token"
+ "docmanager_document"."document_id",
+ CASE WHEN `+orphanMedicalPythonYear(`"docmanager_document"."creation_date"`)+` THEN "docmanager_document"."creation_date" END,
+ "docmanager_document"."filepath", "docmanager_document"."filename", "docmanager_document"."file_size_bytes", "docmanager_document"."token",
+ NOT COALESCE(`+orphanMedicalPythonYear(`"application_medicalcertificate"."creation_date"`)+`, true)
+  OR NOT COALESCE(`+orphanMedicalPythonYear(`"docmanager_document"."creation_date"`)+`, true)
  FROM "application_medicalcertificate" LEFT OUTER JOIN "docmanager_document"
  ON ("application_medicalcertificate"."document_id" = "docmanager_document"."document_id")
  WHERE NOT ("application_medicalcertificate"."medical_id" IN (SELECT U0."medical_id" AS "medical"
@@ -70,8 +74,10 @@ func (t *orphanMedicalTransaction) OrphanMedicalCertificates(ctx context.Context
 			}
 			fetched++
 			// psycopg2 builds a Python datetime for every timestamp of the
-			// chunk, including columns the task does not use.
-			if !pythonDatetimeYear(values[3]) || (values[8] != nil && !pythonDatetimeYear(values[8])) {
+			// chunk, including columns the task does not use: the query flags a
+			// timestamp whose UTC year is outside 1..9999 (and does not return
+			// it: the driver's text format cannot carry such a year either).
+			if outside, _ := values[13].(bool); outside {
 				truncated = true
 				break
 			}
@@ -106,12 +112,11 @@ func (t *orphanMedicalTransaction) OrphanMedicalCertificates(ctx context.Context
 	return batch, err
 }
 
-// pythonDatetimeYear reports whether psycopg2 can build a Python datetime
-// from the stored timestamp: its year, in the UTC session Django opens, must
-// be 1..9999.
-func pythonDatetimeYear(value any) bool {
-	moment, ok := value.(time.Time)
-	return !ok || (moment.UTC().Year() >= 1 && moment.UTC().Year() <= 9999)
+// orphanMedicalPythonYear is the SQL test that psycopg2 can build a Python
+// datetime from a stored timestamp: its year, in the UTC session Django opens,
+// is 1..9999 (NULL for a NULL timestamp).
+func orphanMedicalPythonYear(column string) string {
+	return `(date_part('year', ` + column + ` AT TIME ZONE 'UTC') BETWEEN 1 AND 9999)`
 }
 
 // tasksDBFText renders a scanned uuid or text column.
