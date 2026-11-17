@@ -9,10 +9,22 @@
 // tRNS chunk. Both are needed because reportlab embeds a non-JPEG image as
 // exactly those bytes (zlib-compressed) in a PDF.
 //
-// The package decodes PNG, GIF, BMP/DIB and the PPM family (PBM, PGM, PPM,
-// PAM-style extensions and Pf) and parses JPEG headers; data Pillow identifies
-// as any other format makes Open return ErrFormatNotPorted. It depends only on
-// the Go standard library.
+// The package decodes the deterministic formats Pillow does: PNG, GIF,
+// BMP/DIB, the PPM family, ICO/CUR, TGA, PCX/DCX, SGI, QOI, XBM, XPM, MSP,
+// SUN, IM/IMT, PSD, ICNS, DDS (BC1-BC5), TIFF (uncompressed, PackBits, LZW and
+// Deflate), GBR, FTEX, BLP, FLI/FLC, PCD, PIXAR, SPIDER, MCIDAS, FITS, IPTC,
+// XVThumb and WebP lossless (VP8L). Stub and handler formats (BUFR, GRIB,
+// HDF5, MPEG, WMF and EPS without Ghostscript) reproduce Pillow's exceptions.
+//
+// Approved divergence X19 covers formats decoded by bundled lossy codec
+// libraries whose output depends on that library's build: lossy WebP, JPEG
+// 2000 and AVIF answer as a Pillow built without the codec. JPEG data itself
+// is not decoded (the PDF writer embeds it); RGBData reports
+// ErrFormatNotPorted for it, and that rule also covers JPEG-in-TIFF and
+// JPEG-in-IPTC. TIFF's CCITT group 3/4 compressions are not ported and report
+// ErrFormatNotPorted as well.
+//
+// It depends only on the Go standard library.
 package pilimage
 
 import (
@@ -58,6 +70,13 @@ type Image struct {
 	gif *gifState
 	bmp *bmpState
 	ppm *ppmState
+
+	// ddsRawOffset is where DdsImageFile.load_seek leaves the stream.
+	ddsRawOffset int
+
+	// loadFn decodes the pixels for plugins newer than the original four; it
+	// is the plugin's load()/decoder chain.
+	loadFn func() error
 }
 
 type transparency struct {
@@ -130,58 +149,55 @@ var plugins = []plugin{
 	{"JPEG", acceptJPEG, openJPEG, true, false},
 	{"PPM", acceptPPM, openPPM, true, false},
 	{"PNG", acceptPNG, openPNG, true, false},
-	{"AVIF", acceptAVIF, openAVIF, false, false},
-	{"BLP", acceptBLP, openBLP, false, false},
-	{"BUFR", acceptBUFR, openStub("BUFR"), false, true},
-	{"CUR", acceptCUR, openCUR, false, false},
-	{"PCX", acceptPCX, openPCX, false, false},
-	{"DCX", acceptDCX, openDCX, false, false},
-	{"DDS", acceptDDS, openDDS, false, false},
-	{"EPS", acceptEPS, openEPS, false, false},
-	{"FITS", acceptFITS, openFITS, false, false},
-	{"FLI", acceptFLI, openFLI, false, false},
-	{"FTEX", acceptFTEX, openFTEX, false, false},
-	{"GBR", acceptGBR, openGBR, false, false},
-	{"GRIB", acceptGRIB, openStub("GRIB"), false, true},
-	{"HDF5", acceptHDF5, openStub("HDF5"), false, true},
-	{"JPEG2000", acceptJPEG2000, openJPEG2000, false, false},
-	{"ICNS", acceptICNS, openICNS, false, false},
-	{"ICO", acceptICO, openICO, false, false},
-	{"IM", nil, openIM, false, false},
-	{"IMT", nil, openIMT, false, false},
-	{"IPTC", nil, openIPTC, false, false},
-	{"MCIDAS", acceptMCIDAS, openMCIDAS, false, false},
-	{"MPEG", acceptMPEG, openMPEG, false, false},
-	{"TIFF", acceptTIFF, openTIFF, false, false},
-	{"MSP", acceptMSP, openMSP, false, false},
-	{"PCD", nil, openPCD, false, false},
-	{"PIXAR", acceptPIXAR, openPIXAR, false, false},
-	{"PSD", acceptPSD, openPSD, false, false},
-	{"QOI", acceptQOI, openQOI, false, false},
-	{"SGI", acceptSGI, openSGI, false, false},
-	{"SPIDER", nil, openSPIDER, false, false},
-	{"SUN", acceptSUN, openSUN, false, false},
-	{"TGA", nil, openTGA, false, false},
-	{"WEBP", acceptWEBP, openWEBP, false, false},
-	{"WMF", acceptWMF, openWMF, false, false},
-	{"XBM", acceptXBM, openXBM, false, false},
-	{"XPM", acceptXPM, openXPM, false, false},
-	{"XVTHUMB", acceptXVTHUMB, openXVTHUMB, false, false},
+	{"BLP", acceptBLP, openBLP, true, false},
+	{"BUFR", acceptBUFR, openStub("BUFR"), true, true},
+	{"CUR", acceptCUR, openCUR, true, false},
+	{"PCX", acceptPCX, openPCX, true, false},
+	{"DCX", acceptDCX, openDCX, true, false},
+	{"DDS", acceptDDS, openDDS, true, false},
+	{"EPS", acceptEPS, openEPS, true, false},
+	{"FITS", acceptFITS, openFITS, true, false},
+	{"FLI", acceptFLI, openFLI, true, false},
+	{"FTEX", acceptFTEX, openFTEX, true, false},
+	{"GBR", acceptGBR, openGBR, true, false},
+	{"GRIB", acceptGRIB, openStub("GRIB"), true, true},
+	{"HDF5", acceptHDF5, openStub("HDF5"), true, true},
+	{"JPEG2000", acceptJPEG2000, openJPEG2000, true, false},
+	{"ICNS", acceptICNS, openICNS, true, false},
+	{"ICO", acceptICO, openICO, true, false},
+	{"IM", nil, openIM, true, false},
+	{"IMT", nil, openIMT, true, false},
+	{"IPTC", nil, openIPTC, true, false},
+	{"MCIDAS", acceptMCIDAS, openMCIDAS, true, false},
+	{"MPEG", acceptMPEG, openMPEG, true, false},
+	{"TIFF", acceptTIFF, openTIFF, true, false},
+	{"MSP", acceptMSP, openMSP, true, false},
+	{"PCD", nil, openPCD, true, false},
+	{"PIXAR", acceptPIXAR, openPIXAR, true, false},
+	{"PSD", acceptPSD, openPSD, true, false},
+	{"QOI", acceptQOI, openQOI, true, false},
+	{"SGI", acceptSGI, openSGI, true, false},
+	{"SPIDER", nil, openSPIDER, true, false},
+	{"SUN", acceptSUN, openSUN, true, false},
+	{"TGA", nil, openTGA, true, false},
+	{"WEBP", acceptWEBPLossless, openWEBPLossless, true, false},
+	{"WMF", acceptWMF, openWMF, true, false},
+	{"XBM", acceptXBM, openXBM, true, false},
+	{"XPM", acceptXPM, openXPM, true, false},
+	{"XVThumb", acceptXVTHUMB, openXVTHUMB, true, false},
 }
 
 // openStub is the _open of Pillow's stub plugins: it only checks the signature
-// and reports mode F with the default zero size.
+// and reports mode F with the default zero size. Loading such an image raises
+// the StubImageFile error.
 func openStub(format string) func([]byte) (*Image, error) {
 	return func([]byte) (*Image, error) {
-		return &Image{Format: format, Mode: "F"}, nil
+		im := &Image{Format: format, Mode: "F"}
+		im.loadFn = func() error {
+			return osError("cannot find loader for this " + format + " file")
+		}
+		return im, nil
 	}
-}
-
-// identified is the answer for a format this package does not decode: the
-// marker's size and mode only participate in Pillow's "not identified by this
-// driver" check.
-func identified(format string) (*Image, error) {
-	return &Image{Format: format, Mode: "L", Width: 1, Height: 1}, nil
 }
 
 // Open is Image.open(BytesIO(data)): the format Pillow identifies, its mode
@@ -203,7 +219,8 @@ func Open(data []byte) (*Image, error) {
 			}
 			return nil, err
 		}
-		if im.Mode == "" || (!p.allowZero && (im.Width <= 0 || im.Height <= 0)) {
+		if im.Mode == "" || (p.allowZero && (im.Width < 0 || im.Height < 0)) ||
+			(!p.allowZero && (im.Width <= 0 || im.Height <= 0)) {
 			// ImageFile.__init__: "not identified by this driver".
 			continue
 		}
@@ -311,28 +328,61 @@ func (im *Image) Transparent() []byte {
 }
 
 // RGBData is ImageReader.getRGBData(): it loads the pixels and converts them
-// as reportlab does. mode is the resulting mode ("L", "RGB" or "CMYK"), data
-// im.tobytes(), alpha nil when none.
+// as reportlab does. reportlab reads im.mode before loading, so a format whose
+// load changes the mode (ICNS) can make split() see fewer bands than expected.
+// mode is the resulting mode, data im.tobytes(), alpha nil when none.
 func (im *Image) RGBData() (mode string, data, alpha []byte, err error) {
+	orig := im.Mode
+	if orig == "LA" || orig == "RGBA" {
+		if err := im.load(); err != nil {
+			return "", nil, nil, err
+		}
+		idx := 1
+		if orig == "RGBA" {
+			idx = 3
+		}
+		if idx >= im.samplesPerPixel() {
+			return "", nil, nil, &Error{Class: "IndexError", Text: "tuple index out of range"}
+		}
+		alpha = im.band(idx)
+		nm := orig[:len(orig)-1]
+		var out []byte
+		switch nm {
+		case "L":
+			if im.Mode == "L" {
+				out = append([]byte{}, im.pix[:im.Width*im.Height]...)
+			} else {
+				gray, err := im.convertGray()
+				if err != nil {
+					return "", nil, nil, err
+				}
+				out = gray
+			}
+		case "RGB":
+			if im.Mode == "RGB" {
+				out = append([]byte{}, im.pix[:3*im.Width*im.Height]...)
+			} else if im.Mode == "RGBA" {
+				out = im.rgbFromRGBA()
+			} else {
+				rgb, err := im.convertRGB()
+				if err != nil {
+					return "", nil, nil, err
+				}
+				out = rgb
+			}
+		}
+		return nm, out, alpha, nil
+	}
+	if orig == "L" || orig == "RGB" || orig == "CMYK" {
+		if err := im.load(); err != nil {
+			return "", nil, nil, err
+		}
+		return orig, im.tobytes(), nil, nil
+	}
 	if err := im.load(); err != nil {
 		return "", nil, nil, err
 	}
-	switch im.Mode {
-	case "LA", "RGBA":
-		var band []byte
-		if im.Mode == "RGBA" {
-			band = im.band(3)
-		} else {
-			band = im.band(1)
-		}
-		if im.Mode == "LA" {
-			return "L", im.band(0), band, nil
-		}
-		return "RGB", im.rgbFromRGBA(), band, nil
-	case "L", "RGB", "CMYK":
-		return im.Mode, im.tobytes(), nil, nil
-	}
-	if im.Format == "PNG" && im.Mode == "P" && im.transparency.present {
+	if im.Format == "PNG" && orig == "P" && im.transparency.present {
 		rgba := im.rgbaFromP()
 		a := make([]byte, im.Width*im.Height)
 		rgb := make([]byte, 3*im.Width*im.Height)
@@ -367,7 +417,7 @@ func (im *Image) samplesPerPixel() int {
 		return 2
 	case "RGBA", "CMYK":
 		return 4
-	case "RGB":
+	case "RGB", "YCbCr", "LAB", "HSV":
 		return 3
 	}
 	return 1
@@ -410,6 +460,12 @@ func (im *Image) load() error {
 	}
 	if im.Mode == "P" && im.palInvalid {
 		return valueError("invalid palette size")
+	}
+	if !knownMode(im.Mode) {
+		return valueError("unrecognized image mode")
+	}
+	if im.loadFn != nil {
+		return im.loadFn()
 	}
 	var err error
 	switch im.Format {

@@ -9,9 +9,9 @@ import (
 	"time"
 )
 
-// Image data of a format pilimage only identifies (a TIFF, whose decoder and whose Pillow drawing are not ported yet)
-// is refused instead of drawn differently from reportlab. Image data Pillow refuses is an exception of the export, and
-// a logo Django's try around Image() catches builds as the '[LOGO]' paragraph; both are drawn as reportlab draws them.
+// Image data of any format Pillow decodes (here a TIFF) is drawn, in the header logo and inline. Image data Pillow
+// refuses is an exception of the export, and a logo Django's try around Image() catches builds as the '[LOGO]'
+// paragraph; both are drawn as reportlab draws them.
 func TestInputsNotPorted(t *testing.T) {
 	header := func(logo, name string) *string {
 		text := `<img src="` + logo + `" style="height: 1000px;"/><h1 style="font-size: 20px;">` + name + `</h1><h2>x</h2><h3>y</h3>`
@@ -34,7 +34,7 @@ func TestInputsNotPorted(t *testing.T) {
 		"inline tiff": {Header: header("None", `A <img src="data:image/tiff;base64,`+tiff+`"/> B`)},
 	} {
 		input.Columns, input.Rows, input.Title, input.Portrait, input.IsA3 = base.Columns, base.Rows, base.Title, true, true
-		if _, err := input.Build(time.Unix(946684800, 0)); !errors.Is(err, ErrNotPorted) {
+		if _, err := input.Build(time.Unix(946684800, 0)); err != nil {
 			t.Errorf("%s: %v", name, err)
 		}
 	}

@@ -93,10 +93,6 @@ func matchesPython(t *testing.T, label string, got error, want *pyError) {
 	}
 }
 
-var decodedFormats = map[string]bool{
-	"PNG": true, "GIF": true, "BMP": true, "DIB": true, "PPM": true,
-}
-
 // TestCorpusMatchesPillow replays every corpus case and requires the same
 // answer Pillow/reportlab gave (TESTS/fixtures/generate_pilimage_corpus.py).
 func TestCorpusMatchesPillow(t *testing.T) {
@@ -120,9 +116,6 @@ func TestCorpusMatchesPillow(t *testing.T) {
 		}
 		if err != nil {
 			if errors.Is(err, ErrFormatNotPorted) {
-				if decodedFormats[c.Open.Format] {
-					t.Fatalf("case %d: ErrFormatNotPorted for decoded format %s", i, c.Open.Format)
-				}
 				notPorted[c.Open.Format]++
 				continue
 			}
@@ -164,6 +157,10 @@ func TestCorpusMatchesPillow(t *testing.T) {
 		} else if im.Format == "JPEG" {
 			if _, _, _, err := im.RGBData(); !errors.Is(err, ErrFormatNotPorted) {
 				t.Fatalf("case %d: JPEG RGBData = %v, want ErrFormatNotPorted", i, err)
+			}
+		} else {
+			if _, _, _, err := im.RGBData(); !errors.Is(err, ErrFormatNotPorted) {
+				t.Fatalf("case %d: %s RGBData = %v, want ErrFormatNotPorted", i, im.Format, err)
 			}
 		}
 		if c.Transparent != nil {

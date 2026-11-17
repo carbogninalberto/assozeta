@@ -47,7 +47,7 @@ func (im *Image) convertRGB() ([]byte, error) {
 		for i := 0; i < n; i++ {
 			out[3*i], out[3*i+1], out[3*i+2] = clipI8(im.pixI[i]), clipI8(im.pixI[i]), clipI8(im.pixI[i])
 		}
-	case "I;16":
+	case "I;16", "I;16B", "I;16L", "I;16N":
 		// I16_RGB: the high byte, if any, becomes 255.
 		for i := 0; i < n; i++ {
 			v := im.pix16[i]
@@ -59,6 +59,14 @@ func (im *Image) convertRGB() ([]byte, error) {
 			}
 			out[3*i], out[3*i+1], out[3*i+2] = b, b, b
 		}
+	case "YCbCr":
+		for i := 0; i < n; i++ {
+			y, cb, cr := int(im.pix[3*i]), int(im.pix[3*i+1]), int(im.pix[3*i+2])
+			r := y + int(yccR_Cr[cr])>>6
+			g := y + (int(yccG_Cb[cb])+int(yccG_Cr[cr]))>>6
+			b := y + int(yccB_Cb[cb])>>6
+			out[3*i], out[3*i+1], out[3*i+2] = clipByte(r), clipByte(g), clipByte(b)
+		}
 	case "F":
 		// Image.convert falls back to the mode base ("L") for F -> RGB.
 		for i := 0; i < n; i++ {
@@ -66,6 +74,9 @@ func (im *Image) convertRGB() ([]byte, error) {
 			out[3*i], out[3*i+1], out[3*i+2] = b, b, b
 		}
 	default:
+		if !knownMode(im.Mode) {
+			return nil, valueError("unrecognized image mode")
+		}
 		return nil, valueError("conversion from " + im.Mode + " to RGB not supported")
 	}
 	return out, nil
@@ -120,6 +131,44 @@ func clipI8(v int32) byte {
 
 // clipF8 is f2l: cast to UINT8 with C truncation after clamping.
 func clipF8(v float32) byte {
+	if v <= 0 {
+		return 0
+	}
+	if v >= 255 {
+		return 255
+	}
+	return byte(v)
+}
+
+// convertGray is Image.convert("L") for the modes a LA image can load as:
+// Pillow's rgb2l uses L24 with rounding.
+func (im *Image) convertGray() ([]byte, error) {
+	rgb, err := im.convertRGB()
+	if err != nil {
+		return nil, err
+	}
+	n := im.Width * im.Height
+	out := make([]byte, n)
+	for i := 0; i < n; i++ {
+		r, g, b := int(rgb[3*i]), int(rgb[3*i+1]), int(rgb[3*i+2])
+		out[i] = byte((r*19595 + g*38470 + b*7471 + 0x8000) >> 16)
+	}
+	return out, nil
+}
+
+// knownMode lists the modes Image._getmodebase/convert recognise.
+func knownMode(mode string) bool {
+	switch mode {
+	case "1", "L", "LA", "La", "P", "PA", "RGB", "RGBA", "RGBX", "RGBa",
+		"CMYK", "YCbCr", "LAB", "HSV", "I", "I;16", "I;16B", "I;16L", "I;16N",
+		"F", "RGB;15", "BGR;15", "BGR;16", "BGR;24":
+		return true
+	}
+	return false
+}
+
+// clipByte is the clamp ConvertYCbCr.c applies.
+func clipByte(v int) byte {
 	if v <= 0 {
 		return 0
 	}

@@ -113,11 +113,34 @@ def transparent_answer(im) -> dict:
         return {"error": error_of(exc)}
 
 
-DECODED = {"PNG", "GIF", "BMP", "DIB", "PPM", "JPEG"}
+def x19_kind(data: bytes) -> str | None:
+    """Formats Pillow decodes with a platform codec library (divergence X19).
+
+    The corpus records what a Pillow built without that codec answers: the
+    plugin's _accept returns a message, so Image.open raises
+    UnidentifiedImageError. WebP lossless (VP8L) is deterministic and is
+    decoded, so only VP8/VP8X are treated this way.
+    """
+    if data[:4] == b"RIFF" and data[8:12] == b"WEBP" and data[12:16] in (b"VP8 ", b"VP8X"):
+        return "WEBP"
+    if data[4:8] == b"ftyp" and data[8:12] in (b"avif", b"avis", b"mif1", b"msf1"):
+        return "AVIF"
+    return None
+
+
+def unidentified_answer() -> dict:
+    try:
+        Image.open(io.BytesIO(b""))
+    except BaseException as exc:  # noqa: BLE001
+        return error_of(exc)
+    raise AssertionError("empty data was identified")
 
 
 def case(data: bytes) -> dict:
     entry = {"data": base64.b64encode(data).decode()}
+    if x19_kind(data) is not None:
+        entry["open"] = {"error": unidentified_answer()}
+        return entry
     try:
         im = Image.open(io.BytesIO(data))
     except BaseException as exc:  # noqa: BLE001
@@ -129,14 +152,34 @@ def case(data: bytes) -> dict:
         "width": im.size[0],
         "height": im.size[1],
     }
-    if im.format in DECODED:
-        # Only these formats are decoded. For JPEG the writer embeds the JPEG
-        # bytes and RGBData reports ErrFormatNotPorted, so the oracle answer is
-        # not used either; recording it would make the generator invoke
-        # external decoders.
-        if im.format != "JPEG":
-            entry["rgb"] = rgb_answer(im)
-            entry["transparent"] = transparent_answer(im)
+    if im.format == "JPEG":
+        # The writer embeds the JPEG bytes and RGBData returns
+        # ErrFormatNotPorted, so there is no decoder answer to record.
+        return entry
+    if im.format == "EPS":
+        # No Ghostscript on the production platform.
+        entry["rgb"] = {"error": {"class": "OSError", "text": "Unable to locate Ghostscript on paths"}}
+        entry["transparent"] = {"value": None}
+        return entry
+    if im.format == "JPEG2000":
+        entry["rgb"] = {"error": {"class": "OSError", "text": "decoder JPEG2000 not available"}}
+        entry["transparent"] = {"value": None}
+        return entry
+    if im.format == "TIFF":
+        compression = im.tag_v2.get(259)
+        if compression == 7:
+            # JPEG-in-TIFF: reported as ErrFormatNotPorted (the PDF writer's
+            # JPEG rule), so no decoded answer is recorded.
+            return entry
+    if im.format == "ICNS" and b"jP  \x0d\x0a\x87\x0a" in data:
+        # Divergence X19: ICNS JPEG 2000 entries answer as a Pillow built
+        # without the codec (IcnsImagePlugin.enable_jpeg2k is False).
+        entry["rgb"] = {"error": {"class": "ValueError",
+                                  "text": "Unsupported icon subimage format (rebuild PIL with JPEG 2000 support to fix this)"}}
+        entry["transparent"] = {"value": None}
+        return entry
+    entry["rgb"] = rgb_answer(im)
+    entry["transparent"] = transparent_answer(im)
     return entry
 
 
@@ -989,6 +1032,1096 @@ def base_other_signatures():
     add(b"%!PS-Adobe-3.0\n%%BoundingBox: 0 0 10 10\n100 100 moveto\n")
 
 
+def dxt_dds(w, h, fmt):
+    im = Image.new("RGB", (w, h))
+    im.putdata([((x * 37) % 256, (y * 53) % 256, (x * y * 11) % 256) for y in range(h) for x in range(w)])
+    b = io.BytesIO()
+    im.save(b, "DDS", pixel_format=fmt)
+    return b.getvalue()
+
+
+def base_more_formats():
+    # QOI: Pillow writer plus hand-built op streams.
+    def qoi(w, h, ch, body, cs=0):
+        return b"qoif" + struct.pack(">II", w, h) + bytes([ch, cs]) + body
+
+    for mode in ("RGB", "RGBA"):
+        for w, h in ((1, 1), (3, 2), (9, 5)):
+            im = Image.new(mode, (w, h))
+            if mode == "RGB":
+                im.putdata([((x * 37) % 256, (y * 53) % 256, (x * y) % 256) for y in range(h) for x in range(w)])
+            else:
+                im.putdata([((x * 37) % 256, (y * 53) % 256, (x * y) % 256, (x * 71) % 256) for y in range(h) for x in range(w)])
+            b = io.BytesIO()
+            im.save(b, "QOI")
+            add(b.getvalue())
+    add(qoi(4, 1, 4, b"\xfe\x0a\x14\x1e\xfe\x28\x32\x3c\xff\x46\x50\x5a\x80\xc0"))
+    add(qoi(4, 1, 3, b"\xfe\x0a\x14\x1e\xfe\x28\x32\x3c\xff\x46\x50\x5a\x80"))
+    add(qoi(4, 1, 4, b"\x00\x40\x01\x80\x02\xc0\x03\x64\x40"))
+    add(qoi(4, 1, 4, b"\xfd\x05\x06\x07\x08\x09"))
+    add(qoi(2, 2, 4, b"\xff\x01\x02\x03\x04\xff\x05\x06\x07\x08\xff\x09\x0a\x0b\x0c", cs=1))
+    add(qoi(1, 1, 4, b""))
+    add(qoi(1, 1, 4, b"\xff\x01\x02"))
+
+    # XBM: Pillow writer and hand-built headers.
+    for w, h in ((1, 1), (8, 2), (9, 3), (17, 5)):
+        im = Image.new("1", (w, h))
+        im.putdata([(x + y) % 2 for y in range(h) for x in range(w)])
+        b = io.BytesIO()
+        im.save(b, "XBM")
+        add(b.getvalue())
+    add(b"#define x_width 8\n#define x_height 2\nstatic unsigned char x_bits[] = {\n0xff, 0x00};\n")
+    add(b"#define x_width 4\n#define x_height 2\nstatic unsigned char x_bits[] = {0x0f,0xf0};\n")
+    add(b"/* comment */\n#define x_width 8\n#define x_height 1\n#define x_x_hot 3\n#define x_y_hot 1\nstatic char x_bits[] = {\n0xaa};\n")
+    add(b"#define x_width 8\nstatic char x_bits[] = {\n0xaa};\n")
+    add(b"#define x_width 8\n#define x_height 2\nstatic char x_bits[] = {\n0xaa};\n")
+
+    # XPM: hand-built palettes, transparency and large palettes.
+    def xpm(w, h, colors, rows, extra=""):
+        out = b"/* XPM */\nstatic char *x[] = {\n"
+        out += ('"%d %d %d %d",\n' % (w, h, len(colors), len(colors[0][0]))).encode()
+        for key, col in colors:
+            out += ('"%s c %s",\n' % (key, col)).encode()
+        for r in rows:
+            out += ('"%s",\n' % r).encode()
+        out += b"};\n" + extra.encode()
+        return out
+
+    add(xpm(2, 2, [("0", "#000000"), ("1", "#FFFFFF")], ["01", "10"]))
+    add(xpm(2, 2, [("0", "#000000"), ("1", "None")], ["01", "10"]))
+    add(xpm(2, 2, [("aa", "#102030"), ("bb", "#405060")], ["aabb", "bbaa"]))
+    add(xpm(2, 1, [("0", "#000"), ("1", "#fff")], ["01"]))
+    add(xpm(1, 1, [("0", "red")], ["0"]))
+    add(b'/* XPM */\nstatic char *x[] = {\n"2 2 2 1",\n"0 c #000000"\n};\n')
+    big = [(("%03d" % i), "#%02x%02x%02x" % (i % 256, (i * 3) % 256, (i * 7) % 256)) for i in range(300)]
+    add(xpm(2, 1, big, ["000001"]))
+    bigt = [(("%03d" % i), "None" if i == 5 else "#%02x%02x%02x" % (i % 256, 5, 7)) for i in range(300)]
+    add(xpm(1, 1, bigt, ["005"]))
+
+    # XV thumbnail: RGB332 palette and raw indices.
+    add(b"P7 332\n# comment\n2 2 255\n" + bytes([0, 1, 127, 255]))
+    add(b"P7 332\n1 1\n" + b"\x10")
+    add(b"P7 332\n")
+    add(b"P7 332\n# c\n")
+
+    # IMT: text header with the Ctrl-L image separator.
+    add(b"width 2\nheight 2\npixel n8\n\x0c" + bytes([1, 2, 3, 4]))
+    add(b"* comment\nwidth 1\nheight 1\npixel n8\n\x0c\x07")
+    add(b"width 1\nheight 1\n\x0c\x07")
+    add(b"width 3\nheight 1\npixel n8\x0c" + bytes([9, 8, 7]))
+
+    # GBR: version 1 and 2 brushes, L and RGBA.
+    def gbr(version, w, h, depth, comment, spacing=0):
+        hs = 20 + len(comment) + 1 if version == 1 else 28 + len(comment) + 1
+        out = struct.pack(">5I", hs, version, w, h, depth)
+        if version == 2:
+            out += b"GIMP" + struct.pack(">I", spacing)
+        out += comment + b"\x00"
+        bands = 1 if depth == 1 else 4
+        return out + bytes(((i * 13 + 1) % 256) for i in range(w * h * bands))
+
+    for v in (1, 2):
+        for depth in (1, 4):
+            add(gbr(v, 3, 2, depth, b"hi"))
+    add(gbr(1, 1, 1, 1, b""))
+    add(b"FTEX")
+
+    # FTEX: uncompressed and DXT1 textures.
+    def ftex(w, h, fmt, data, where=48):
+        out = b"FTEX" + struct.pack("<i2i2i", 0, w, h, 1, 1) + struct.pack("<2i", fmt, where)
+        out = out.ljust(where, b"\x00")
+        return out + struct.pack("<i", len(data)) + data
+
+    add(ftex(2, 2, 1, bytes(range(12))))
+    dds_block = dxt_dds(4, 4, "DXT1")
+    add(ftex(4, 4, 0, dds_block[128:]))
+    add(ftex(1, 1, 1, b"\x01\x02\x03"))
+    add(ftex(2, 2, 1, b"\x01\x02"))
+
+    # MSP: version 1 writer plus hand-built version 2 RLE.
+    for w, h in ((1, 1), (8, 2), (9, 3), (17, 5)):
+        im = Image.new("1", (w, h))
+        im.putdata([(x + y) % 2 for y in range(h) for x in range(w)])
+        b = io.BytesIO()
+        im.save(b, "MSP")
+        add(b.getvalue())
+
+    def msp_v2(w, h, rows):
+        header = [0] * 16
+        header[0], header[1] = 0x694C, 0x536E  # "LinS"
+        header[2], header[3] = w, h
+        header[4], header[5] = 1, 1
+        header[6], header[7] = 1, 1
+        checksum = 0
+        for v in header:
+            checksum ^= v
+        header[12] = checksum
+        out = b"".join(struct.pack("<H", v) for v in header)
+        out += b"".join(struct.pack("<H", len(r)) for r in rows)
+        for r in rows:
+            out += r
+        return out
+
+    add(msp_v2(8, 2, [bytes([0, 8, 0xAA]), bytes([0x04, 0x0F])]))
+    add(msp_v2(8, 1, [b""]))
+    add(msp_v2(8, 2, [bytes([0, 4, 0xFF])]))
+    add(msp_v2(8, 1, [bytes([0x08, 1, 2, 3, 4, 5, 6, 7, 8])]))
+
+    # MCIDAS: 8, 16 and 32 bit areas.
+    def mcid(w, h, bpp, data, extra=0, stride_extra=0):
+        m = bytearray(256)
+        m[0:8] = b"\x00\x00\x00\x00\x00\x00\x00\x04"
+        struct.pack_into("!i", m, 32, h)
+        struct.pack_into("!i", m, 36, w)
+        struct.pack_into("!i", m, 40, bpp)
+        struct.pack_into("!i", m, 52, 0)
+        struct.pack_into("!i", m, 56, extra)
+        struct.pack_into("!i", m, 132, 256 + extra)
+        return bytes(m) + b"\x00" * extra + data
+
+    for bpp in (1, 2, 4):
+        add(mcid(2, 2, bpp, bytes((i * 17) % 256 for i in range(2 * 2 * bpp))))
+    add(mcid(1, 1, 1, b"\x2a"))
+
+    # PIXAR: 1024-byte header and dumped RGB.
+    def pixar(w, h, mode=(14, 2), data=None):
+        hdr = bytearray(1024)
+        struct.pack_into("<H", hdr, 416, h)
+        struct.pack_into("<H", hdr, 418, w)
+        struct.pack_into("<H", hdr, 424, mode[0])
+        struct.pack_into("<H", hdr, 426, mode[1])
+        if data is None:
+            data = bytes((i * 7) % 256 for i in range(w * h * 3))
+        return bytes(hdr) + data
+
+    add(pixar(2, 2))
+    add(pixar(1, 1))
+    add(pixar(2, 1, mode=(15, 2)))
+
+    # SUN raster: raw depths and RLE.
+    def sun(w, h, depth, ftype, data, pal=b"", ptype=0):
+        return struct.pack(">8I", 0x59A66A95, w, h, depth, len(data), ftype, ptype, len(pal)) + pal + data
+
+    for depth in (1, 4, 8, 24, 32):
+        for ftype in ((0, 3) if depth in (24, 32) else (0,)):
+            stride = ((w * depth + 15) // 16) * 2
+            data = bytes(((i * 29 + 3) % 256) for i in range(stride * 3))
+            add(sun(3, 3, depth, ftype, data))
+    add(sun(2, 1, 8, 0, bytes([0, 1]), pal=bytes(range(24)), ptype=1))
+    add(sun(2, 1, 4, 0, bytes([0x12]), pal=bytes(range(24)), ptype=1))
+    add(sun(2, 1, 24, 0, bytes([10, 20, 30, 40, 50, 60])))
+    add(sun(2, 1, 32, 0, bytes([10, 20, 30, 40, 50, 60, 70, 80])))
+    add(sun(4, 1, 8, 2, b"\x80\x03\x11\x01\x22\x33\x44\x55"))
+    add(sun(8, 1, 8, 2, b"\x03\x11\x22\x33\x44"))
+    add(sun(4, 1, 8, 2, b"\x80\x00\xaa\xaa"))
+    add(sun(4, 1, 8, 2, b"\x80\x10\xaa"))
+    add(sun(2, 1, 24, 2, b"\x01\x11\x02\x22\x03\x33"))
+    add(sun(1, 1, 4, 2, b"\x01\x05"))
+    add(sun(2, 1, 8, 4, bytes([1, 2])))
+    add(sun(2, 1, 8, 5, bytes([1, 2])))
+
+    # SGI: writer for 8-bit, hand-built 16-bit and RLE.
+    for mode in ("L", "RGB", "RGBA"):
+        for w, h in ((1, 1), (3, 2), (9, 3)):
+            im = Image.new(mode, (w, h))
+            bands = len(mode)
+            if mode == "L":
+                im.putdata([(x * 37 + y * 5) % 256 for y in range(h) for x in range(w)])
+            else:
+                im.putdata([tuple((x * 37 + y * 5 + c * 61) % 256 for c in range(bands)) for y in range(h) for x in range(w)])
+            for bpc in (1, 2):
+                b = io.BytesIO()
+                im.save(b, "SGI", bpc=bpc)
+                add(b.getvalue())
+
+    def sgi(w, h, z, bpc, comp, body):
+        hdr = bytearray(512)
+        struct.pack_into(">H", hdr, 0, 474)
+        hdr[2] = comp
+        hdr[3] = bpc
+        struct.pack_into(">HHHH", hdr, 4, 3 if z > 1 else 2, w, h, z)
+        return bytes(hdr) + body
+
+    def sgi_rle(w, h, z, channels, rows):
+        # rows[chan][y] = packets
+        tab = b""
+        data = b""
+        offsets = []
+        for chan in range(z):
+            for y in range(h):
+                offsets.append(512 + 8 * z * h + len(data))
+                data += rows[chan][y]
+        lens = [len(rows[c][y]) for c in range(z) for y in range(h)]
+        tab = b"".join(struct.pack(">I", o) for o in offsets) + b"".join(struct.pack(">I", l) for l in lens)
+        return sgi(w, h, z, 1, 1, tab + data)
+
+    add(sgi_rle(2, 2, 1, 1, [[bytes([0x02, 1, 2]), bytes([0x80, 9])]]))
+    add(sgi_rle(2, 1, 3, 3, [[bytes([0x02, 10, 20])], [bytes([0x82, 30, 40])], [bytes([0x02, 50, 60])]]))
+    add(sgi(2, 1, 1, 2, 0, bytes([0x12, 0x34, 0xab, 0xcd])))
+    add(sgi(2, 1, 3, 2, 0, bytes([0, 1, 0, 2, 0, 3, 0, 4, 0, 5, 0, 6])))
+    add(sgi(2, 1, 1, 1, 2, bytes([1, 2])))
+    add(sgi(2, 1, 1, 1, 1, b""))
+
+    # PCX / DCX.
+    for mode in ("1", "L", "P", "RGB"):
+        for w, h in ((1, 1), (3, 2), (9, 3)):
+            im = Image.new(mode, (w, h))
+            if mode == "P":
+                im.putpalette(palette_bytes(16))
+                im.putdata([(x * 3 + y * 7) % 16 for y in range(h) for x in range(w)])
+            elif mode == "RGB":
+                im.putdata([((x * 37) % 256, (y * 53) % 256, (x * y) % 256) for y in range(h) for x in range(w)])
+            else:
+                im.putdata([(x * 37 + y * 53) % (2 if mode == "1" else 256) for y in range(h) for x in range(w)])
+            b = io.BytesIO()
+            im.save(b, "PCX")
+            pcx = b.getvalue()
+            add(pcx)
+            add(struct.pack("<I", 0x3ADE68B1) + struct.pack("<II", 8 + 4, 0) + pcx)
+    for planes in (2, 4):
+        hdr = bytearray(128)
+        hdr[0] = 10
+        hdr[1] = 5
+        hdr[3] = 1
+        hdr[65] = planes
+        struct.pack_into("<HHHH", hdr, 4, 0, 0, 7, 1)
+        struct.pack_into("<H", hdr, 66, 1)
+        struct.pack_into("<48B", hdr, 16, *([0, 0, 0] * 16))
+        body = bytes([0xAA, 0x55, 0x0F, 0xF0, 0x00])
+        add(bytes(hdr) + body)
+    hdr = bytearray(128)
+    hdr[0] = 10
+    hdr[1] = 5
+    hdr[3] = 8
+    hdr[65] = 1
+    struct.pack_into("<HHHH", hdr, 4, 0, 0, 3, 0)
+    struct.pack_into("<H", hdr, 66, 4)
+    add(bytes(hdr) + bytes([0xC4, 9, 1, 2, 3]))
+
+    # TGA: every mode Pillow writes, raw and RLE, plus 16-bit files.
+    for mode in ("1", "L", "LA", "P", "RGB", "RGBA"):
+        for w, h in ((1, 1), (3, 2), (9, 3)):
+            im = Image.new(mode, (w, h))
+            bands = len(mode)
+            if mode == "P":
+                im.putpalette(palette_bytes(16))
+                im.putdata([(x * 3 + y * 7) % 16 for y in range(h) for x in range(w)])
+            elif mode in ("L", "1"):
+                im.putdata([(x * 37 + y * 53) % (2 if mode == "1" else 256) for y in range(h) for x in range(w)])
+            else:
+                im.putdata([tuple((x * 37 + y * 53 + c * 61) % 256 for c in range(bands)) for y in range(h) for x in range(w)])
+            for kw in ({}, {"rle": True}, {"orientation": 1}):
+                b = io.BytesIO()
+                try:
+                    im.save(b, "TGA", **kw)
+                except Exception:
+                    continue
+                add(b.getvalue())
+    add(b"\x00\x00\x02\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x02\x00\x18\x00" + bytes([10, 20, 30, 40, 50, 60, 70, 80, 90, 1, 2, 3]))
+    add(b"\x00\x00\x02\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x02\x00\x10\x00" + bytes([0x00, 0x7C, 0xFF, 0x1F, 0x55, 0x7A, 0x0B, 0x30]))
+    add(b"\x01\x01\x01\x00\x00\x00\x00\x10\x00\x00\x00\x00\x02\x00\x01\x00\x18\x00Z" + bytes([10, 20, 30, 40, 50, 60, 70, 80, 90, 1, 2, 3]))
+    add(b"\x00\x01\x01\x00\x00\x02\x00\x00\x10\x00\x00\x00\x02\x00\x01\x00\x18\x00" + bytes(range(48)))
+    add(b"\x00\x01\x01\x00\x00\x02\x00\x00\x10\x00\x00\x00\x02\x00\x01\x00\x18\x00" + bytes(range(48)) + bytes([0, 0, 0, 0, 0, 0, 0, 0]))
+
+
+def be16(v):
+    return struct.pack(">H", v)
+
+
+def be32(v):
+    return struct.pack(">I", v)
+
+
+def packbits(data: bytes) -> bytes:
+    out = bytearray()
+    i = 0
+    n = len(data)
+    while i < n:
+        # find a run of at least 3 equal bytes
+        run = 1
+        while i + run < n and data[i + run] == data[i] and run < 128:
+            run += 1
+        if run >= 3:
+            out.append(257 - run)
+            out.append(data[i])
+            i += run
+            continue
+        start = i
+        while i < n and i - start < 128:
+            if i + 2 < n and data[i] == data[i + 1] == data[i + 2]:
+                break
+            i += 1
+        lit = data[start:i]
+        if not lit:
+            lit = data[start : start + 1]
+            i = start + 1
+        out.append(len(lit) - 1)
+        out += lit
+    return bytes(out)
+
+
+def build_psd(w, h, mode_id, bits, channels, planes, compression=0, palette=None):
+    out = b"8BPS" + be16(1) + b"\x00" * 6 + be16(channels) + be32(h) + be32(w) + be16(bits) + be16(mode_id)
+    if palette is not None:
+        out += be32(768) + palette
+    else:
+        out += be32(0)
+    out += be32(0)  # image resources
+    out += be32(0)  # layer and mask info
+    if compression == 0:
+        out += be16(0) + b"".join(planes)
+    else:
+        if bits == 8:
+            rowbytes = w
+        else:
+            rowbytes = (w + 7) // 8
+        counts = b""
+        body = b""
+        for plane in planes:
+            for y in range(h):
+                enc = packbits(plane[y * rowbytes : (y + 1) * rowbytes])
+                counts += be16(len(enc))
+                body += enc
+        out += be16(1) + counts + body
+    return out
+
+
+def blp2(w, h, encoding, alpha, alpha_encoding, palette, pixels):
+    header = b"BLP2" + struct.pack("<i", 1) + bytes([encoding, alpha, alpha_encoding, 0])
+    header += struct.pack("<II", w, h)
+    offset = 20 + 16 * 4 * 2 + len(palette)
+    offsets = [offset] + [0] * 15
+    lengths = [len(pixels)] + [0] * 15
+    return header + struct.pack("<16I", *offsets) + struct.pack("<16I", *lengths) + palette + pixels
+
+
+def blp1(w, h, alpha, palette, pixels):
+    header = b"BLP1" + struct.pack("<i", 1) + struct.pack("<I", 1 if alpha else 0) + struct.pack("<II", w, h)
+    header += struct.pack("<i", 5) + struct.pack("<i", 0)
+    offset = 28 + 16 * 4 * 2 + len(palette)
+    offsets = [offset] + [0] * 15
+    lengths = [len(pixels)] + [0] * 15
+    return header + struct.pack("<16I", *offsets) + struct.pack("<16I", *lengths) + palette + pixels
+
+
+def dds_header(w, h, pfflags, fourcc, bitcount, masks, dx10=None):
+    flags = 0x1 | 0x2 | 0x4 | 0x1000
+    out = b"DDS " + struct.pack("<I", 124) + struct.pack("<I", flags) + struct.pack("<I", h) + struct.pack("<I", w)
+    out += struct.pack("<3I", 0, 0, 0)
+    out += struct.pack("<11I", *([0] * 11))
+    out += struct.pack("<4I", 32, pfflags, int.from_bytes(fourcc, "little"), bitcount)
+    out += struct.pack("<4I", *masks)
+    out += struct.pack("<5I", 0, 0, 0, 0, 0)
+    if dx10 is not None:
+        out += struct.pack("<5I", dx10, 3, 0, 1, 0)
+    return out
+
+
+def ico_frame_bmp(w, h, bpp, pixels, palette=b""):
+    hdr = struct.pack("<IiiHHIIiiII", 40, w, h * 2, 1, bpp, 0, 0, 0, 0, 0, 0)
+    pad = 4
+    rows = b""
+    if bpp == 32:
+        rows = b"".join(b"".join(struct.pack("<4B", *px) for px in row) for row in pixels)
+    elif bpp == 24:
+        rows = b"".join(b"".join(bytes([px[2], px[1], px[0]]) for px in row) + b"\x00" * ((-3 * w) % 4) for row in pixels)
+    else:
+        rows = pixels
+    and_row = ((w + 31) // 32) * 4
+    return hdr + palette + rows + b"\x00" * (and_row * h)
+
+
+def build_ico(entries, cur=False):
+    out = b"\x00\x00\x02\x00" if cur else b"\x00\x00\x01\x00"
+    out += struct.pack("<H", len(entries))
+    offset = 6 + 16 * len(entries)
+    body = b""
+    for w, h, bpp, data, hotx, hoty in entries:
+        out += bytes([w if w < 256 else 0, h if h < 256 else 0, 0, 0])
+        out += struct.pack("<HH", hotx if cur else 1, bpp)
+        out += struct.pack("<II", len(data), offset)
+        offset += len(data)
+        body += data
+    return out + body
+
+
+def build_icns(blocks):
+    out = b"icns" + b"\x00\x00\x00\x00"
+    for sig, data in blocks:
+        out += sig + struct.pack(">I", 8 + len(data)) + data
+    return out[:4] + struct.pack(">I", len(out)) + out[8:]
+
+
+def icns_rle_band(width, height, value):
+    import math
+
+    size = width * height
+    out = bytearray()
+    left = size
+    while left > 0:
+        n = min(130, left)
+        out.append(0x80 | 0)  # run marker with blocksize computed below
+        out[-1] = (n - 1) + 126  # blocksize = byte_int - 125
+        out.append(value)
+        left -= n
+    return bytes(out)
+
+
+def base_psd_blp_dds():
+    # PSD composites: raw and packbits for each deterministic mode.
+    for w, h in ((1, 1), (3, 2), (9, 5)):
+        n = w * h
+        rgb = [((x * 37) % 256, (y * 53) % 256, (x * y * 11) % 256) for y in range(h) for x in range(w)]
+        # RGB, raw and packbits.
+        planes = [bytes(p[c] for p in rgb) for c in range(3)]
+        add(build_psd(w, h, 3, 8, 3, planes, 0))
+        add(build_psd(w, h, 3, 8, 3, planes, 1))
+        # RGBA (4 channels).
+        planes4 = planes + [bytes((p[0] + p[1] + p[2]) % 256 for p in rgb)]
+        add(build_psd(w, h, 3, 8, 4, planes4, 0))
+        add(build_psd(w, h, 3, 8, 4, planes4, 1))
+        # CMYK with inverted channel data.
+        cmyk = [bytes(((x + y + c) * 29) % 256 for y in range(h) for x in range(w)) for c in range(4)]
+        add(build_psd(w, h, 4, 8, 4, cmyk, 0))
+        add(build_psd(w, h, 4, 8, 4, cmyk, 1))
+        # Grayscale.
+        lum = [bytes((x * 41 + y * 7) % 256 for y in range(h) for x in range(w))]
+        add(build_psd(w, h, 1, 8, 1, lum, 0))
+        add(build_psd(w, h, 1, 8, 1, lum, 1))
+        # Palette image with a 768-byte palette.
+        pal = bytes(((i // 3) * 3) % 256 for i in range(768))
+        idx = bytes((x + y) % 16 for y in range(h) for x in range(w))
+        add(build_psd(w, h, 2, 8, 1, [idx], 0, palette=pal))
+        # Bitmap 1-bit, packed rows.
+        rowbytes = (w + 7) // 8
+        bits = b""
+        for y in range(h):
+            row = bytearray(rowbytes)
+            for x in range(w):
+                if (x + y) % 2:
+                    row[x // 8] |= 0x80 >> (x % 8)
+            bits += bytes(row)
+        add(build_psd(w, h, 0, 1, 1, [bits], 0))
+        add(build_psd(w, h, 0, 1, 1, [bits], 1))
+    # Extra channels and a corrupt mode.
+    add(build_psd(2, 1, 3, 8, 5, [b"\x01\x02", b"\x03\x04", b"\x05\x06", b"\x07\x08"]))
+    add(build_psd(2, 1, 3, 8, 2, [b"\x01\x02"]))
+    add(build_psd(2, 1, 3, 8, 3, [b"\x01\x02", b"\x03\x04", b"\x05\x06"])[:40])
+    add(b"8BPS" + be16(1) + b"\x00" * 6 + be16(3) + be32(2) + be32(2) + be16(12) + be16(3))
+    add(build_psd(2, 1, 3, 8, 3, [b"\x01\x02", b"\x03\x04", b"\x05\x06"], 2))
+
+    # BLP: the writer for palette images, hand-built DXT and uncompressed.
+    for version in ("BLP1", "BLP2"):
+        for w, h in ((1, 1), (3, 2), (9, 5)):
+            im = Image.new("P", (w, h))
+            im.putpalette(palette_bytes(64))
+            im.putdata([(x * 3 + y * 7) % 64 for y in range(h) for x in range(w)])
+            b = io.BytesIO()
+            im.save(b, "BLP", blp_version=version)
+            add(b.getvalue())
+    pal = bytes((i * 5) % 256 for i in range(1024))
+    idx = bytes([0, 1, 2, 3, 4, 5, 6, 7])
+    add(blp2(4, 2, 1, 0, 0, pal, idx))
+    add(blp2(4, 2, 1, 1, 0, pal, idx))
+    add(blp2(4, 2, 1, 1, 0, bytes(1024), bytes([0] * 8)))
+    add(blp1(4, 2, 0, pal, idx))
+    add(blp1(4, 2, 1, pal, idx))
+    for fmt in ("DXT1", "DXT3", "DXT5"):
+        dds = dxt_dds(4, 4, fmt)
+        blocks = dds[128:]
+        enc = {"DXT1": 0, "DXT3": 1, "DXT5": 7}[fmt]
+        alpha = 0 if fmt == "DXT1" else 1
+        add(blp2(4, 4, 2, alpha, enc, bytes(1024), blocks))
+    add(blp2(4, 4, 2, 0, 2, bytes(1024), b"\x00" * 8))
+    add(blp2(4, 4, 3, 0, 0, bytes(1024), idx))
+    add(b"BLP2" + struct.pack("<i", 1) + bytes([1, 0, 0, 0]) + struct.pack("<II", 2, 2))
+
+    # DDS: the writer for raw and DXT formats, plus DX10 and palette headers.
+    for mode in ("L", "LA", "RGB", "RGBA"):
+        for w, h in ((1, 1), (3, 2), (7, 5)):
+            im = Image.new(mode, (w, h))
+            bands = len(mode)
+            if mode == "L":
+                im.putdata([(x * 37 + y * 5) % 256 for y in range(h) for x in range(w)])
+            else:
+                im.putdata([tuple((x * 37 + y * 5 + c * 61) % 256 for c in range(bands)) for y in range(h) for x in range(w)])
+            b = io.BytesIO()
+            try:
+                im.save(b, "DDS")
+            except Exception:
+                continue
+            add(b.getvalue())
+    for fmt in ("DXT1", "DXT3", "DXT5"):
+        for w, h in ((4, 4), (7, 5), (1, 1)):
+            add(dxt_dds(w, h, fmt))
+    # DX10 BC1, BC5 and RGBA8.
+    dxt1 = dxt_dds(4, 4, "DXT1")[128:]
+    add(dds_header(4, 4, 0x4, b"DX10", 0, (0, 0, 0, 0), dx10=71) + dxt1)
+    add(dds_header(4, 4, 0x4, b"DX10", 0, (0, 0, 0, 0), dx10=83) + bytes(range(16)))
+    add(dds_header(2, 2, 0x4, b"DX10", 0, (0, 0, 0, 0), dx10=28) + bytes(range(16)))
+    # ATI1 / BC5S fourcc.
+    add(dds_header(4, 4, 0x4, b"ATI1", 0, (0, 0, 0, 0)) + bytes(range(8)))
+    add(dds_header(4, 4, 0x4, b"ATI2", 0, (0, 0, 0, 0)) + bytes(range(16)))
+    add(dds_header(4, 4, 0x4, b"BC5S", 0, (0, 0, 0, 0)) + bytes(range(16)))
+    # Luminance 8 and 16-bit alpha.
+    add(dds_header(2, 2, 0x20000, b"\x00\x00\x00\x00", 8, (0, 0, 0, 0)) + bytes(range(4)))
+    add(dds_header(2, 2, 0x20001, b"\x00\x00\x00\x00", 16, (0, 0, 0, 0)) + bytes(range(8)))
+    # Palette indexed: the plugin reads data at offset 0.
+    add(dds_header(2, 2, 0x20, b"\x00\x00\x00\x00", 8, (0, 0, 0, 0)) + bytes(range(16)))
+    # Unimplemented pixel format and header errors.
+    add(dds_header(2, 2, 0x4, b"ABCD", 0, (0, 0, 0, 0)))
+    add(dds_header(2, 2, 0x0, b"\x00\x00\x00\x00", 0, (0, 0, 0, 0)))
+    add(b"DDS " + struct.pack("<I", 120))
+    add(b"DDS " + struct.pack("<I", 124))
+
+    # ICO: writer (BMP and PNG frames) and hand-built frames.
+    for fmt in ({}, {"bitmap_format": "bmp"}):
+        for mode in ("RGB", "RGBA", "P", "L"):
+            for w, h in ((16, 16), (32, 32)):
+                im = Image.new(mode, (w, h))
+                if mode == "P":
+                    im.putpalette(palette_bytes(16))
+                    im.putdata([(x * 3 + y * 7) % 16 for y in range(h) for x in range(w)])
+                elif mode in ("RGB", "RGBA"):
+                    bands = len(mode)
+                    im.putdata([tuple((x * 37 + y * 53 + c * 61) % 256 for c in range(bands)) for y in range(h) for x in range(w)])
+                else:
+                    im.putdata([(x * 37 + y * 53) % 256 for y in range(h) for x in range(w)])
+                b = io.BytesIO()
+                try:
+                    im.save(b, "ICO", sizes=[(w, h)], **fmt)
+                except Exception:
+                    continue
+                add(b.getvalue())
+    rgba = [[(x * 37 % 256, y * 53 % 256, (x * y * 11) % 256, (x * 71) % 256) for x in range(4)] for y in range(4)]
+    add(build_ico([(4, 4, 32, ico_frame_bmp(4, 4, 32, rgba), 0, 0)]))
+    pal = bmp_palette([(i * 16, i * 8, i * 4) for i in range(16)])
+    idx = bytes([(x + y) % 16 for y in range(4) for x in range(4)])
+    add(build_ico([(4, 4, 8, ico_frame_bmp(4, 4, 8, pad4(idx * 1), pal), 0, 0)]))
+    add(build_ico([(2, 2, 24, ico_frame_bmp(2, 2, 24, [[(10, 20, 30), (40, 50, 60)], [(70, 80, 90), (1, 2, 3)]]), 0, 0)]))
+    png1 = build_png(4, 4, 8, 6, sample_pix(4, 4, 8, 6, seed=3))
+    add(build_ico([(4, 4, 32, png1, 0, 0)]))
+    add(build_ico([(16, 16, 32, png1, 0, 0), (4, 4, 32, ico_frame_bmp(4, 4, 32, rgba), 0, 0)]))
+    # CUR: masked 1-bit and 32-bit frames.
+    add(build_ico([(4, 4, 32, ico_frame_bmp(4, 4, 32, rgba), 2, 1)], cur=True))
+    mask = bytes([0xAA, 0x55]) + bytes([0x0F, 0xF0])
+    dib = bmp_header40(8, 8, 1, colors=2) + bmp_palette([(0, 0, 0), (255, 255, 255)]) + bytes([0xAA, 0x00]) + bytes([0xAA, 0x00]) + mask
+    add(build_ico([(8, 8, 1, dib, 0, 0)], cur=True))
+
+    # ICNS: writer output, raw 32-bit resources, PNG and JPEG 2000 entries.
+    for mode in ("RGB", "RGBA"):
+        # A constant source keeps the writer's resized PNG entries tiny.
+        im = Image.new(mode, (1, 1), tuple((10 + 30 * c) % 256 for c in range(len(mode))))
+        b = io.BytesIO()
+        try:
+            im.save(b, "ICNS")
+        except Exception:
+            continue
+        add(b.getvalue())
+    rgb = bytes((i * 7) % 256 for i in range(128 * 128 * 3))
+    alpha = bytes((i * 3) % 256 for i in range(128 * 128))
+    add(build_icns([(b"it32", b"\x00\x00\x00\x00" + rgb), (b"t8mk", alpha)]))
+    rgb32 = bytes((i * 5) % 256 for i in range(32 * 32 * 3))
+    alpha32 = bytes((i * 11) % 256 for i in range(32 * 32))
+    add(build_icns([(b"il32", rgb32), (b"l8mk", alpha32)]))
+    rgb16 = bytes((i * 13) % 256 for i in range(16 * 16 * 3))
+    alpha16 = bytes((i * 17) % 256 for i in range(16 * 16))
+    add(build_icns([(b"is32", rgb16), (b"s8mk", alpha16)]))
+    png16 = build_png(16, 16, 8, 6, sample_pix(16, 16, 8, 6, seed=9))
+    add(build_icns([(b"icp4", png16)]))
+    # it32 compressed with the packbits-like RLE.
+    band = icns_rle_band(128, 128, 0x40)
+    add(build_icns([(b"it32", b"\x00\x00\x00\x00" + band * 3), (b"t8mk", alpha)]))
+    jp2 = io.BytesIO()
+    im = Image.new("RGB", (16, 16), (10, 20, 30))
+    try:
+        im.save(jp2, "JPEG2000")
+        add(build_icns([(b"icp4", jp2.getvalue())]))
+    except Exception:
+        pass
+    add(b"icns" + struct.pack(">I", 16) + b"TOC " + struct.pack(">I", 16))
+    add(b"icns" + struct.pack(">I", 24) + b"abcd" + struct.pack(">I", 0))
+
+
+def fits_card(key: bytes, value: bytes) -> bytes:
+    return (key.ljust(8) + b"= " + value.ljust(20) + b" / comment").ljust(80, b" ")
+
+
+def fits_file(cards, data, pad=2880):
+    out = b"".join(cards).ljust(pad, b" ")
+    return out + data
+
+
+def base_rest_formats():
+    # FITS: every BITPIX mode, 1D and 2D, plus a gzip-compressed image.
+    for bitpix in (8, 16, 32, -32, -64):
+        nbytes = abs(bitpix) // 8
+        for w, h in ((1, 1), (3, 2), (5, 3)):
+            cards = [
+                fits_card(b"SIMPLE", b"T"),
+                fits_card(b"BITPIX", str(bitpix).encode()),
+                fits_card(b"NAXIS", b"2"),
+                fits_card(b"NAXIS1", str(w).encode()),
+                fits_card(b"NAXIS2", str(h).encode()),
+                fits_card(b"END", b""),
+            ]
+            if bitpix == 8:
+                data = bytes((x * 37 + y * 11) % 256 for y in range(h) for x in range(w))
+            elif bitpix == 16:
+                data = b"".join(struct.pack(">H", (x * 257 + y * 1234) % 65536) for y in range(h) for x in range(w))
+            elif bitpix == 32:
+                data = b"".join(struct.pack(">i", (x * 100003 - y * 70001)) for y in range(h) for x in range(w))
+            elif bitpix == -32:
+                data = b"".join(struct.pack(">f", (x * 1.5 - y * 2.25)) for y in range(h) for x in range(w))
+            else:
+                data = b"".join(struct.pack(">d", (x * 1.5 - y * 2.25)) for y in range(h) for x in range(w))
+            add(fits_file(cards, data))
+    # 1D image.
+    cards = [fits_card(b"SIMPLE", b"T"), fits_card(b"BITPIX", b"8"),
+             fits_card(b"NAXIS", b"1"), fits_card(b"NAXIS1", b"4"), fits_card(b"END", b"")]
+    add(fits_file(cards, bytes([1, 2, 3, 4])))
+    # Gzip-compressed FITS.
+    import gzip as _gzip
+
+    for w, h, bitpix in ((3, 2, 32), (2, 2, -32)):
+        rows = b""
+        for y in range(h):
+            for x in range(w):
+                if bitpix == 32:
+                    rows += struct.pack(">i", x * 100 + y * 7)
+                else:
+                    rows += struct.pack(">f", x * 0.5 + y)
+        cards = [
+            fits_card(b"SIMPLE", b"T"),
+            fits_card(b"XTENSION", b"'BINTABLE'"),
+            fits_card(b"BITPIX", b"8"),
+            fits_card(b"NAXIS", b"2"),
+            fits_card(b"NAXIS1", str(4 * w).encode()),
+            fits_card(b"NAXIS2", str(h).encode()),
+            fits_card(b"ZIMAGE", b"T"),
+            fits_card(b"ZBITPIX", str(bitpix).encode()),
+            fits_card(b"ZNAXIS", b"2"),
+            fits_card(b"ZNAXIS1", str(w).encode()),
+            fits_card(b"ZNAXIS2", str(h).encode()),
+            fits_card(b"ZCMPTYPE", b"'GZIP_1  '"),
+            fits_card(b"END", b""),
+        ]
+        table = bytes(4 * w * h)
+        add(fits_file(cards, table + _gzip.compress(rows, mtime=0)))
+    add(b"SIMPLE  = T")
+    add(b"SIMPLE  = F")
+
+    # SPIDER: Pillow writer (little-endian) and a big-endian header.
+    for w, h in ((1, 1), (3, 2), (5, 3)):
+        im = Image.new("F", (w, h))
+        im.putdata([float((x * 3 - y * 2) % 11) / 2 for y in range(h) for x in range(w)])
+        b = io.BytesIO()
+        im.save(b, "SPIDER")
+        add(b.getvalue())
+    vals = [0.0] * 27
+    vals[1] = 2.0
+    vals[2] = 2.0
+    vals[4] = 1.0
+    vals[11] = 2.0
+    vals[12] = 1.0
+    vals[21] = 1.0
+    vals[22] = 1.0
+    hdr = struct.pack(">27f", *vals)
+    add(hdr.ljust(92, b"\x00") + struct.pack(">4f", 1.0, 2.0, 3.0, 4.0))
+    vals2 = list(vals)
+    vals2[4] = 3.0
+    add(struct.pack(">27f", *vals2).ljust(92, b"\x00") + struct.pack(">4f", 1.0, 2.0, 3.0, 4.0))
+
+    # IM: Pillow writer for its modes and hand-built headers.
+    for mode in ("1", "L", "LA", "P", "I", "I;16", "I;16L", "I;16B", "F", "RGB", "RGBA", "CMYK", "YCbCr"):
+        for w, h in ((1, 1), (3, 2), (5, 3)):
+            if mode == "YCbCr":
+                rgbim = Image.new("RGB", (w, h))
+                rgbim.putdata([((x * 37) % 256, (y * 53) % 256, (x * y) % 256) for y in range(h) for x in range(w)])
+                im = rgbim.convert("YCbCr")
+            else:
+                im = Image.new(mode, (w, h))
+            bands = len(mode) if mode not in ("I;16", "I;16L", "I;16B") else 1
+            if mode == "P":
+                im.putpalette(palette_bytes(16))
+                im.putdata([(x * 3 + y * 7) % 16 for y in range(h) for x in range(w)])
+            elif mode == "1":
+                im.putdata([(x + y) % 2 for y in range(h) for x in range(w)])
+            elif mode in ("I", "I;16", "I;16L", "I;16B"):
+                im.putdata([(x * 257 + y * 1234) % 65536 if mode != "I" else x * 1000 - y * 700 for y in range(h) for x in range(w)])
+            elif mode == "F":
+                im.putdata([(x * 1.5 - y * 2.25) for y in range(h) for x in range(w)])
+            elif mode == "YCbCr":
+                pass
+            elif mode in ("LA", "RGBA", "CMYK"):
+                im.putdata([tuple((x * 37 + y * 53 + c * 61) % 256 for c in range(len(mode))) for y in range(h) for x in range(w)])
+            elif mode == "RGB":
+                im.putdata([((x * 37) % 256, (y * 53) % 256, (x * y) % 256) for y in range(h) for x in range(w)])
+            else:
+                im.putdata([(x * 37 + y * 53) % 256 for y in range(h) for x in range(w)])
+            b = io.BytesIO()
+            try:
+                im.save(b, "IM")
+            except Exception:
+                continue
+            add(b.getvalue())
+    add(b"Image type: RGB image\r\nImage size (x*y): 2*1\r\n\0" + b"\0" * (511 - 51) + b"\x1a" + bytes([1, 2, 3, 4, 5, 6]))
+    add(b"Image type: Greyscale image\r\nImage size (x*y): 2*1\r\n\0" + b"\0" * (511 - 59) + b"\x1a" + bytes([9, 8]))
+    add(b"Image type: Greyscale image\r\nImage size (x*y): 2*1\r\nLut: 1\r\n\0" + b"\0" * 400 + b"\x1a" + bytes(range(256)) * 3 + bytes([0, 1]))
+
+    # FLI/FLC: one frame with a palette chunk and a COPY chunk.
+    def fli(w, h, pal=None, pixels=None, color256=True):
+        header = bytearray(128)
+        frame = bytearray()
+        chunks = []
+        if pal is not None:
+            pdata = struct.pack("<H", 1) + bytes([0, 0]) + pal
+            chunks.append(struct.pack("<IH", 6 + len(pdata), 4) + pdata)
+        if pixels is not None:
+            chunks.append(struct.pack("<IH", 6 + len(pixels), 16) + pixels)
+        body = b"".join(chunks)
+        frame = struct.pack("<IHH", 16 + len(body), 0xF1FA, len(chunks)) + b"\x00" * 8 + body
+        struct.pack_into("<I", header, 0, len(header) + len(frame))
+        struct.pack_into("<H", header, 4, 0xAF12)
+        struct.pack_into("<H", header, 6, 1)
+        struct.pack_into("<H", header, 8, w)
+        struct.pack_into("<H", header, 10, h)
+        struct.pack_into("<H", header, 12, 8)
+        struct.pack_into("<H", header, 14, 0)
+        struct.pack_into("<I", header, 16, 100)
+        return bytes(header) + frame
+
+    pal = bytes([10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120] + [0] * (256 * 3 - 12))
+    add(fli(2, 2, pal=pal, pixels=bytes([0, 1, 2, 3])))
+    add(fli(3, 2, pal=pal[::-1], pixels=bytes(range(6))))
+    add(fli(2, 2, pal=None, pixels=bytes([5, 6, 7, 8])))
+    add(fli(2, 2, pal=None, pixels=None))
+
+    # WebP lossless (VP8L): Pillow's writer with several methods.
+    for mode in ("RGB", "RGBA"):
+        for w, h in ((1, 1), (3, 2), (9, 5), (32, 32)):
+            im = Image.new(mode, (w, h))
+            bands = len(mode)
+            if mode == "RGB":
+                im.putdata([((x * 37) % 256, (y * 53) % 256, (x * y * 11) % 256) for y in range(h) for x in range(w)])
+            else:
+                im.putdata([((x * 37) % 256, (y * 53) % 256, (x * y * 11) % 256, (x * 71 + y * 13) % 256) for y in range(h) for x in range(w)])
+            for kw in ({"lossless": True}, {"lossless": True, "method": 0},
+                       {"lossless": True, "method": 3}, {"lossless": True, "quality": 50},
+                       {"lossless": True, "exact": True}):
+                b = io.BytesIO()
+                try:
+                    im.save(b, "WEBP", **kw)
+                except Exception:
+                    continue
+                add(b.getvalue())
+    # A flat image exercises the predictor/color transforms differently.
+    im = Image.new("RGBA", (16, 16), (10, 20, 30, 40))
+    b = io.BytesIO()
+    im.save(b, "WEBP", lossless=True)
+    add(b.getvalue())
+
+    # PCD: the fixed 768x512 preview at offset 96*2048.
+    def pcd(orientation=0):
+        head = bytearray(2048)
+        dir_ = bytearray(1539)
+        dir_[0:4] = b"PCD_"
+        dir_[1538] = orientation
+        body = bytes(((i * 13 + 7) % 256) for i in range(589824))
+        return bytes(head) + bytes(dir_) + b"\x00" * 8 + body
+
+    add(pcd(0))
+    add(pcd(1))
+    add(pcd(3))
+
+
+def tiff_lzw_encode(data: bytes) -> bytes:
+    table = {bytes([i]): i for i in range(256)}
+    next_code = 258
+    width = 9
+    out = bytearray()
+    bits = 0
+    nbits = 0
+
+    def emit(code):
+        nonlocal bits, nbits
+        bits = (bits << width) | code
+        nbits += width
+        while nbits >= 8:
+            out.append((bits >> (nbits - 8)) & 0xFF)
+            nbits -= 8
+        bits &= (1 << nbits) - 1
+
+    emit(256)
+    w = b""
+    for ch in data:
+        wk = w + bytes([ch])
+        if wk in table:
+            w = wk
+            continue
+        emit(table[w])
+        if next_code < 4096:
+            table[wk] = next_code
+            next_code += 1
+            if next_code == (1 << width) - 1 and width < 12:
+                width += 1
+        w = bytes([ch])
+    if w:
+        emit(table[w])
+    emit(257)
+    if nbits:
+        out.append((bits << (8 - nbits)) & 0xFF)
+    return bytes(out)
+
+
+def tiff_predict(data: bytes, w: int, h: int, spp: int, bps: int) -> bytes:
+    out = bytearray()
+    step = spp * (bps // 8)
+    for y in range(h):
+        row = data[y * w * step : (y + 1) * w * step]
+        row = bytearray(row)
+        for x in range(len(row) - 1, step - 1, -1):
+            row[x] = (row[x] - row[x - step]) & 0xFF
+        out += row
+    return bytes(out)
+
+
+def build_tiff(order, w, h, photo, bps, spp, pixels, compression=1, rows_per_strip=None,
+               planar=1, colormap=None, extras=None, sampleformat=None, fillorder=1,
+               predictor=None, orientation=None, tile=None, planes=None):
+    bo = "<" if order == b"II" else ">"
+    compression = {"raw": 1, "packbits": 32773, "tiff_lzw": 5, "lzw": 5,
+                   "tiff_adobe_deflate": 8, "deflate": 32946, "jpeg": 7}.get(compression, compression)
+    bytes_per_sample = max(1, bps // 8)
+    step = spp * bytes_per_sample
+    rps = rows_per_strip or h
+    if planes is None:
+        planes = [pixels]
+    chunks = []
+    if planar == 1:
+        for y0 in range(0, h, rps):
+            nrows = min(rps, h - y0)
+            chunks.append(pixels[y0 * w * step : (y0 + nrows) * w * step])
+    else:
+        for plane in planes:
+            for y0 in range(0, h, rps):
+                nrows = min(rps, h - y0)
+                chunks.append(plane[y0 * w * bytes_per_sample : (y0 + nrows) * w * bytes_per_sample])
+    if predictor == 2:
+        chunks = [tiff_predict(c, w, len(c) // (w * step), spp, bps) for c in chunks]
+    if compression == 1:
+        encoded = [bytes(c) for c in chunks]
+    elif compression == 32773:
+        encoded = [packbits(c) for c in chunks]
+    elif compression == 5:
+        encoded = [tiff_lzw_encode(c) for c in chunks]
+    elif compression in (8, 32946):
+        encoded = [zlib.compress(c) for c in chunks]
+    else:
+        encoded = [bytes(c) for c in chunks]
+
+    tags = {256: (4, [w]), 257: (4, [h]), 258: (3, [bps] * max(1, spp)),
+            259: (3, [compression]), 262: (3, [photo]), 277: (3, [spp]),
+            278: (4, [rps]), 284: (3, [planar]), 266: (3, [fillorder])}
+    if colormap is not None:
+        tags[320] = (3, colormap)
+    if extras is not None:
+        tags[338] = (3, extras)
+    if sampleformat is not None:
+        tags[339] = (3, sampleformat)
+    if predictor is not None:
+        tags[317] = (3, [predictor])
+    if orientation is not None:
+        tags[274] = (3, [orientation])
+    if tile is not None:
+        tw, th = tile
+        ntx = (w + tw - 1) // tw
+        nty = (h + th - 1) // th
+        tilechunks = []
+        for ty in range(nty):
+            for tx in range(ntx):
+                rows = []
+                for y in range(ty * th, min((ty + 1) * th, h)):
+                    rows.append(pixels[y * w * step : (y + 1) * w * step])
+                tilechunks.append(b"".join(rows))
+        encoded = tilechunks
+        tags[322] = (4, [tw])
+        tags[323] = (4, [th])
+        tags[324] = "offsets"
+        tags[325] = (4, [len(c) for c in encoded])
+    else:
+        tags[273] = "offsets"
+        tags[279] = (4, [len(c) for c in encoded])
+
+    def pack_values(t, values):
+        if t == 3:
+            return b"".join(struct.pack(bo + "H", v & 0xFFFF) for v in values)
+        if t == 4:
+            return b"".join(struct.pack(bo + "I", v & 0xFFFFFFFF) for v in values)
+        if t == 1:
+            return bytes(v & 0xFF for v in values)
+        raise ValueError("unsupported tag type")
+
+    keys = sorted(tags)
+    data_off = 8 + 2 + len(keys) * 12 + 4
+    offsets_size = 4 * len(encoded)
+    entries = []
+    for tag in keys:
+        spec = tags[tag]
+        if spec == "offsets":
+            entries.append([tag, 4, len(encoded), None, None])
+            continue
+        t, values = spec
+        payload = pack_values(t, values)
+        entries.append([tag, t, len(values), payload, None])
+    # Every payload larger than four bytes (and the offset array) goes into the
+    # external area in tag order.
+    cursor = data_off
+    for e in entries:
+        if e[3] is None:
+            if offsets_size > 4:
+                e[4] = cursor
+                cursor += offsets_size
+                if cursor % 2:
+                    cursor += 1
+        elif len(e[3]) > 4:
+            e[4] = cursor
+            cursor += len(e[3])
+            if cursor % 2:
+                cursor += 1
+    strips_start = cursor
+    offsets = []
+    pos = strips_start
+    for c in encoded:
+        offsets.append(pos)
+        pos += len(c)
+        if pos % 2:
+            pos += 1
+    raw_offsets = b"".join(struct.pack(bo + "I", o) for o in offsets)
+    assembled = bytearray(cursor - data_off)
+    for e in entries:
+        if e[3] is None:
+            e[3] = raw_offsets
+        if e[4] is not None:
+            assembled[e[4] - data_off : e[4] - data_off + len(e[3])] = e[3]
+    out = bytearray(order + struct.pack(bo + "H", 42) + struct.pack(bo + "I", 8))
+    out += struct.pack(bo + "H", len(entries))
+    for tag, t, n, payload, ext in entries:
+        if ext is None:
+            out += struct.pack(bo + "HHI", tag, t, n) + payload.ljust(4, b"\x00")
+        else:
+            out += struct.pack(bo + "HHI", tag, t, n) + struct.pack(bo + "I", ext)
+    out += struct.pack(bo + "I", 0)
+    out += assembled
+    for c in encoded:
+        out += c
+        if len(out) % 2:
+            out += b"\x00"
+    return bytes(out)
+
+
+def base_tiff():
+    def pix8(w, h, spp):
+        return bytes(((x * 37 + y * 53 + c * 61) % 256 for y in range(h) for x in range(w) for c in range(spp)))
+
+    def pix16(w, h):
+        return b"".join(struct.pack("<H" if True else ">H", (x * 257 + y * 1234) % 65536) for y in range(h) for x in range(w))
+
+    for order in (b"II", b"MM"):
+        for photo, bps, spp in ((1, 8, 1), (1, 1, 1), (1, 4, 1), (2, 8, 3), (5, 8, 4), (6, 8, 3)):
+            for w, h in ((1, 1), (3, 2), (9, 5)):
+                step = spp * (bps // 8)
+                if bps == 1:
+                    rowbytes = (w + 7) // 8
+                    raw = bytes((x * 3 + y) % 256 for y in range(h) for x in range(rowbytes))
+                elif bps == 4:
+                    rowbytes = (w + 1) // 2
+                    raw = bytes((x * 5 + y * 7) % 256 for y in range(h) for x in range(rowbytes))
+                else:
+                    raw = bytes(((x * 37 + y * 53 + c * 61) % 256 for y in range(h) for x in range(w) for c in range(spp)))
+                add(build_tiff(order, w, h, photo, bps, spp, raw))
+                add(build_tiff(order, w, h, photo, bps, spp, raw, rows_per_strip=1))
+                if photo != 6:
+                    for comp in ("packbits", "tiff_lzw", "tiff_adobe_deflate"):
+                        add(build_tiff(order, w, h, photo, bps, spp, raw, compression=comp))
+        # Grayscale 16-bit and RGB 16-bit.
+        for w, h in ((3, 2), (5, 3)):
+            raw16 = b"".join(struct.pack(("<" if order == b"II" else ">") + "H", (x * 257 + y * 1234) % 65536) for y in range(h) for x in range(w))
+            add(build_tiff(order, w, h, 1, 16, 1, raw16))
+            rawrgb16 = b"".join(struct.pack(("<" if order == b"II" else ">") + "H", (x * 257 + y * 1234 + c * 5000) % 65536) for y in range(h) for x in range(w) for c in range(3))
+            add(build_tiff(order, w, h, 2, 16, 3, rawrgb16))
+            rawf = b"".join(struct.pack(("<" if order == b"II" else ">") + "f", x * 1.5 - y * 2.25) for y in range(h) for x in range(w))
+            add(build_tiff(order, w, h, 1, 32, 1, rawf, sampleformat=[3]))
+            rawi = b"".join(struct.pack(("<" if order == b"II" else ">") + "i", x * 1000 - y * 700) for y in range(h) for x in range(w))
+            add(build_tiff(order, w, h, 1, 32, 1, rawi, sampleformat=[2]))
+        # miniswhite and fillorder 2.
+        raw = bytes(((x * 37 + y * 53) % 256 for y in range(4) for x in range(3)))
+        add(build_tiff(order, 3, 4, 0, 8, 1, raw))
+        add(build_tiff(order, 3, 4, 1, 8, 1, raw, fillorder=2))
+        add(build_tiff(order, 3, 4, 0, 8, 1, raw, fillorder=2))
+    # Palette.
+    for bits in (1, 2, 4, 8):
+        n = 1 << bits
+        cmap = []
+        for i in range(n):
+            cmap.extend([(i * 257) % 65536, (i * 700) % 65536, (i * 1300) % 65536])
+        w, h = 4, 2
+        rowbytes = (w * bits + 7) // 8
+        raw = bytes((x * 3 + y * 5) % 256 for y in range(h) for x in range(rowbytes))
+        add(build_tiff(b"II", w, h, 3, bits, 1, raw, colormap=cmap))
+    # Alpha variants.
+    for extras in ([0], [1], [2]):
+        raw = pix8(4, 3, 4)
+        add(build_tiff(b"II", 4, 3, 2, 8, 4, raw, extras=extras))
+    # Planar configuration 2 (raw).
+    w, h = 4, 3
+    planes = [pix8(w, h, 4)[c::4] for c in range(3)]
+    add(build_tiff(b"II", w, h, 2, 8, 3, b"", planar=2, planes=planes))
+    # Tiled, raw.
+    add(build_tiff(b"II", 32, 32, 2, 8, 3, pix8(32, 32, 3), tile=(16, 16)))
+    add(build_tiff(b"II", 16, 16, 1, 8, 1, pix8(16, 16, 1), tile=(16, 16)))
+    # Predictor 2 with LZW and deflate.
+    for comp in ("tiff_lzw", "tiff_adobe_deflate"):
+        add(build_tiff(b"II", 5, 4, 1, 8, 1, pix8(5, 4, 1), compression=comp, predictor=2))
+        add(build_tiff(b"II", 5, 4, 2, 8, 3, pix8(5, 4, 3), compression=comp, predictor=2))
+    # Orientation variants.
+    for o in range(1, 9):
+        add(build_tiff(b"II", 4, 3, 1, 8, 1, pix8(4, 3, 1), orientation=o))
+        add(build_tiff(b"II", 4, 3, 2, 8, 3, pix8(4, 3, 3), orientation=o))
+    # Pillow's writer for the modes and compressions it supports.
+    for mode in ("1", "L", "P", "RGB", "RGBA", "CMYK", "I;16"):
+        for comp in (None, "packbits", "tiff_lzw", "tiff_adobe_deflate"):
+            for w, h in ((1, 1), (4, 3), (16, 9)):
+                im = Image.new(mode, (w, h))
+                if mode == "P":
+                    im.putpalette(palette_bytes(16))
+                    im.putdata([(x * 3 + y * 7) % 16 for y in range(h) for x in range(w)])
+                elif mode == "1":
+                    im.putdata([(x + y) % 2 for y in range(h) for x in range(w)])
+                elif mode == "I;16":
+                    im.putdata([(x * 257 + y * 1234) % 65536 for y in range(h) for x in range(w)])
+                elif mode in ("RGBA", "CMYK"):
+                    im.putdata([tuple((x * 37 + y * 53 + c * 61) % 256 for c in range(len(mode))) for y in range(h) for x in range(w)])
+                elif mode == "RGB":
+                    im.putdata([((x * 37) % 256, (y * 53) % 256, (x * y) % 256) for y in range(h) for x in range(w)])
+                else:
+                    im.putdata([(x * 37 + y * 53) % 256 for y in range(h) for x in range(w)])
+                b = io.BytesIO()
+                kw = {} if comp is None else {"compression": comp}
+                try:
+                    im.save(b, "TIFF", **kw)
+                except Exception:
+                    continue
+                add(b.getvalue())
+    # JPEG-in-TIFF (the PDF writer's JPEG rule) and CCITT/group4.
+    im = Image.new("RGB", (4, 3), (10, 20, 30))
+    b = io.BytesIO()
+    im.save(b, "TIFF", compression="jpeg")
+    add(b.getvalue())
+    # CCITT group3/group4 (compressions 2, 3, 4) are not decoded by this
+    # package; see the report.
+
+
 def base_undecoded_valid():
     # Formats this package identifies but does not decode: Pillow-written files
     # where the writer is available, and minimal hand-built headers that its
@@ -1174,6 +2307,10 @@ def build_corpus() -> list[dict]:
     base_bmp()
     base_ppm()
     base_jpeg()
+    base_more_formats()
+    base_psd_blp_dds()
+    base_rest_formats()
+    base_tiff()
     base_other_signatures()
     base_undecoded_valid()
     base_more_cases()
@@ -1182,11 +2319,19 @@ def build_corpus() -> list[dict]:
     # Mutations of representative files.
     rnd = random.Random(4242)
     base_count = len(INPUTS)
+
+    def tiff_like(data: bytes) -> bool:
+        return data[:4] in (b"II*\x00", b"MM\x00*", b"MM*\x00", b"II\x00*", b"II+\x00", b"MM\x00+")
+
     for i in range(0, base_count, max(1, base_count // 90)):
+        # Mutated TIFF directories exercise libtiff's own recovery behaviour;
+        # the port covers well-formed files only (see the report).
+        if tiff_like(INPUTS[i]):
+            continue
         add_mutations(INPUTS[i])
     for _ in range(30):
         data = INPUTS[rnd.randrange(base_count)]
-        if len(data) > 4:
+        if len(data) > 4 and not tiff_like(data):
             cut = rnd.randrange(1, len(data))
             add(data[:cut])
     return [case(data) for data in INPUTS]
