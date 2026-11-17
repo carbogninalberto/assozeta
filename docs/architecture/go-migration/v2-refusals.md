@@ -1952,6 +1952,50 @@ result (`accepted-divergences.md`). The other 86 are the ceiling of the `--http`
 | `handler.errAPISchemaUnsupported` | 1 | 0 | `lang` with a path separator (the django-handoff example) |
 | `pandasxlsx.ErrWorkbookNotPorted` (deleted) | 1 -> 0 | 0 | **ported** in long tail 5B: a part over 256 MiB is `pandasxlsx.ErrInvalid` (the host cannot parse it, the xlrd retry raises: the 500 page); a sheet past 1,048,576 rows answers the upload's columns (`ReadColumns`, streamed) or the import's 400 `FAILED_MESSAGE` between the status changes; a duration column label past `Timedelta` renders `str(total_seconds())`; a header text is read once with dateutil's raw fields and pandas' `_DEFAULT_DATETIME` |
 
+## Long tail PR 5, agent B
+
+Rendering, reads and archives: the cleanup jobs' document cascade, the invoice view's stored values, the API schema's
+`lang` with a path separator (with a test-build-only refusal for the django-handoff family), the pandas xlsx reader, the
+document render inputs and the X8 signature overlay, the association import's ORM values (`importeffects`), the payment
+save's stored JSON nesting and the stored-JSON recursion bands (X15, measured per view). Same rules as PR 4; the owner's
+2026-11-16 decision approves the closest Django answer for every rule-4 group. Per-site table:
+`tmp/long-tail/pr5-B.md` (worktree notes).
+
+X15 measurement method (new in this PR): instead of bisecting each route with deep requests, the parity harness's Django
+ran each family's own cases with `JSONField.from_db_value`, psycopg2's `Json` adapter, auditlog's diff, `json.loads`
+and `JSONDecoder.raw_decode` instrumented: at each call the deepest list nesting the same call could parse (or encode)
+was measured in place by bisecting a probe document, together with the order of the SQL writes. One shallow request then
+gives every edge of a route. The numbers move by up to two levels between requests of the same view (interpreter
+specialization): Go uses the value most requests show, and parity cases sit at least four levels from an edge.
+
+| point | ported (cases) | now application state / deleted | left |
+|---|---|---|---|
+| cleanup jobs (`tasks-db-e.md`, `tasks-db-f.md`) | `Document.delete()` through the shared collector graph in `cleanup_old_exports` and `auto_delete_orphan_medical_certificate`; the orphan iterator stops at the chunk holding a timestamp psycopg2 cannot convert (`export_cleanup_worker_process`, `orphan_medical_worker_process` cascade and far-date variants) | `ErrExportCleanupUnsupported`, `ErrOrphanMedicalUnsupported` deleted | — |
+| invoice views (`invoice-views.md`) | non-dict meta/course membership tests, any JSON description, category ids through `UUIDField.to_python`, CPython's compensated `sum()`, `str.lower()`, non-finite floats (21 cases) | `errInvoiceViewsNotPorted` deleted; `numeric(9,2)` text and parser types are application state | — |
+| API schema (`api-schema.md`, `handoff.md`) | `lang` with `/`: gettext's path joins resolved against the catalog directories Django ships (rule 4, closest answer: several languages in one directory answer the first catalog's document) (`lang-path-*`) | `errAPISchemaUnsupported` deleted | the django-handoff family's refusal lives only in the `handoffprobe` test build |
+| pandas xlsx (`subscription-import-upload.md`) | see below | `ErrWorkbookNotPorted` deleted | — |
+| document render (`document-render.md`) | filled form with a line break or a storage name Django rejects (JSON 500 after the Document); a header uvicorn refuses closes the connection after the writes (rule 4, Caddy 502); the X8 overlay drawn as PyMuPDF does, pixel-equal at 100 dpi (`<connection-closed>`, `<form-pdf-visual>` cases) | `ErrDocumentRenderNotPorted` deleted | — |
+| import ORM values (`consumer-restore.md`) | every archive value: Python date/decimal/UUID/int parsing, `str()` of JSON containers, `str(self.__dict__)` (X18 address), save-hook membership tests and their exceptions, race outcomes (X17) | `importeffects.ErrUnsupported` deleted; plan-only branches are `ErrPlanUnreachable` pinned by `TestPlanFacts` | the Celery import's own archive-shape gaps keep `errImportArchive` (other rows) |
+| payment save stored JSON (`payment-writes.md` and the route docs) | every view that saves a Payment reads its stored JSON at its measured edges: Django's RecursionError past them (keeping a non-atomic view's earlier writes), the audit index resolver's fallbacks in the band where its reload raises (`model-hooks.md` "Stored JSON nesting"; payment-archive, payment-state, payment-writes, payment-misc, stripe-routes, invoice-generate, invoice-sync-print, invoice-core, subscription-lifecycle and camps-periods `*-stored-json-*` / `*-depth-band-*` cases) | `errPaymentStoredJSONNested` deleted | the quote-assign and stripe paid-check Celery jobs (other rows): their worker stack is not measured, so from 9800 levels they keep handing the work to Django (`errPaymentStoredJSONWorkerBand`) |
+| stored-JSON recursion band (`instructor-writes.md`, `association-transfer.md`, `data-restore.md`) | JSON-BANDS | JSON-BANDS-STATE | JSON-BANDS-LEFT |
+| mentions (`document-views.md`) | — | — | model attribute paths beyond the resolvers' fields: see "Mentions: decision needed" |
+
+### Long tail PR 5, agent B: mentions, decision needed
+
+`mentions.ErrUnsupported` (7 HTTP rows: the document and invoice views) is left. A mention key is `get_nested_attr`
+over a model instance: `getattr` along any dotted path, then `str()` of the result. The resolvers already answer every
+field the editor offers, `other.<key>` over the whole `str` object graph (X18 addresses) and every first name that is not
+an attribute (the empty text). What is left is the rest of Python's and Django's object model reachable from five model
+instances: every concrete field and relation of each model and of every related model (recursively), reverse managers
+(`application.Payment.None`), bound methods (`<bound method ... of <Model: ...>>`), class attributes, `__dict__`,
+`__class__` and its type attributes, `_meta` (Django's `Options`), `_state` and every attribute of each of those objects.
+The surface is unbounded, and only a hand-written HTML header, footer or template body reaches it (the editor's mention
+list matches the resolvers). Porting it whole is not feasible; a decision is needed between keeping these keys on the
+Django handoff (the 7 rows stay) and an approved native answer for keys past the modelled surface (for example the empty
+text, or the 500 page), which would bring the rows to 0.
+
+### Long tail PR 5, agent B: the pandas readers' last refusals
+
 ## Long tail PR 5, agent A: the reportlab paragraph surface (pdfexport)
 
 `pdfexport.ErrNotPorted` is deleted (16 HTTP/WebSocket rows and 3 command rows before). Every input is drawn as reportlab

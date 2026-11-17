@@ -189,8 +189,8 @@ def assert_case(case, base_url, *, token, sessions):
     if case['response'] in ('<pdf>', '<form-pdf>', '<form-pdf-visual>'):
         expected = RUNTIME['pdf'] if case['response'] == '<pdf>' else RUNTIME['forms'][case['name']]
         if case['response'] == '<form-pdf-visual>':
-            difference = visual_difference(raw, expected)
-            check(difference is None, 'pdf.body:' + str(difference))
+            visual = visual_difference(raw, expected)
+            check(visual is None, 'pdf.body:' + str(visual))
         else:
             check(len(expected) > 0 and raw == expected, 'pdf.body')
         check(received.get('Content-Type') == 'application/pdf', 'pdf.content-type')
