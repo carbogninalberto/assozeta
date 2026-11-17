@@ -173,3 +173,27 @@ test('reload action fits a mobile viewport', async ({page}, testInfo) => {
     await expect(page.getByRole('dialog')).toHaveCSS('opacity', '1');
     await page.screenshot({path: testInfo.outputPath('self-instance-reload-mobile.png'), animations: 'disabled'});
 });
+
+for (const enabled of [false, true]) {
+    test(`Go background tasks confirm the opposite of saved state ${enabled}`, async ({page}) => {
+        const changes = [];
+        await page.route('**/instance/admin', async route => {
+            if (route.request().method() === 'PUT') {
+                changes.push(route.request().postDataJSON().goTasksEnabled);
+                return route.fulfill({status: 400, json: {detail: 'Fixture stops before restart'}});
+            }
+            const response = await route.fetch();
+            await route.fulfill({response, json: {...await response.json(), go_tasks_enabled: enabled}});
+        });
+        await page.goto('/#/profile/self-instance');
+        await settings(page, 'API (beta)');
+        const toggle = page.locator(enabled ? 'label[for="instance-go-tasks"]' : 'input[name="instance-go-tasks"] + span');
+        await toggle.click();
+        const dialog = page.getByRole('dialog');
+        const confirm = dialog.getByRole('button', {name: enabled ? 'Disattiva e riavvia' : 'Attiva e riavvia', exact: true});
+        await expect(confirm).toBeVisible();
+        await dialog.getByLabel('Conferma la tua password').fill('fixture');
+        await confirm.click();
+        await expect.poll(() => changes).toEqual([!enabled]);
+    });
+}
