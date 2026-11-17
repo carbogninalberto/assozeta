@@ -49,6 +49,9 @@ def deletion_plan(backup):
 
 
 class ReplacementImporter(AssociationImportService):
+    # Archive._normalize_legacy_tutors already resolved tax code conflicts.
+    clears_legacy_tax_code_conflicts = False
+
     def __init__(self, archive, config, media, progress=None, replaced_user_ids=()):
         super().__init__(archive.path, ImportOptions())
         # Accounts of the association being replaced (its safety backup).

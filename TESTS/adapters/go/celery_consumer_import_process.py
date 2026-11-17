@@ -113,6 +113,10 @@ SCENARIOS = [
     Scenario('an archive without the association file fails validation', 'no-association',
              expect={'success': False, 'error': "Validazione fallita: ['Missing required data file: "
                                                 "01_sport_association.json']"}),
+    Scenario('an unassigned legacy copy of a member loses its tax code', 'legacy-tax-copy',
+             expect={'success': True, 'files': 5, 'tax_codes': {U(72): 'BNCGNN85M01H501Z', U(74): None}}),
+    Scenario('duplicate active member tax codes roll the import back', 'duplicate-member-tax',
+             expect={'success': False, 'error': f'Codice fiscale duplicato tra le anagrafiche attive: {U(72)}.'}),
     Scenario('circular folder parents roll the import back', 'circular-folders',
              expect={'success': False, 'error': 'Folder hierarchy has missing or circular parents: 1, 2, 3'}),
     Scenario('an existing tag key rolls the import back', 'rich', target='tag-exists',
@@ -321,6 +325,20 @@ def build_archives():
         by_name = {r['name']: r for r in records}
         by_name['Radice']['parent_id'] = by_name['Figlia']['id']
     archives['circular-folders'] = edit_records(rich, 'data/14_folders.json', circular)
+
+    def legacy_tax_copy(records):
+        # Legacy backups hold an unassigned anagrafica sharing a member's tax code.
+        member = next(r for r in records if r['associate_id'] == str(U(72)))
+        member['tax_code'] = 'BNCGNN85M01H501Z'
+        records.insert(0, {**member, 'associate_id': str(U(74)), 'sport_association_id': None,
+                           'family_id': None, 'tax_code': 'bncgnn85m01h501z'})
+    archives['legacy-tax-copy'] = edit_records(rich, 'data/07_associates.json', legacy_tax_copy)
+
+    def duplicate_member_tax(records):
+        for record in records:
+            if record['associate_id'] in (str(U(71)), str(U(72))):
+                record['tax_code'] = 'BNCGNN85M01H501Z'
+    archives['duplicate-member-tax'] = edit_records(rich, 'data/07_associates.json', duplicate_member_tax)
     archives['bad-json'] = rewrite(rich, lambda name, body: b'[{"tag_id": ' if name == 'data/12_tags.json' else body)
 
     def violation(records):
@@ -763,6 +781,11 @@ class Harness:
             from application.models import User
             stored = dict(User.original_objects.filter(user_id__in=list(expect['passwords'])).values_list('user_id', 'password'))
             assert stored == expect['passwords'], ('existing accounts keep their credentials', stored)
+        if expect.get('tax_codes'):
+            from application.models import Associate
+            stored = dict(Associate._base_manager.filter(associate_id__in=list(expect['tax_codes']))
+                          .values_list('associate_id', 'tax_code'))
+            assert stored == expect['tax_codes'], ('members keep their tax codes', stored)
         keys = [k for k in observed['bucket'] if k.startswith(f'{LOCATION}/imports/')]
         assert not keys, ('the staged archive is deleted', keys)
         if not expect['success']:

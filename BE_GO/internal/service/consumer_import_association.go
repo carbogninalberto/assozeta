@@ -286,6 +286,9 @@ type consumerImportRun struct {
 	objectOrder map[string][]string
 	// replace is set when the run is a data restore's ReplacementImporter.
 	replace *restoreReplacement
+	// taxConflicts is tax_code_conflicts: source Associate ids whose tax code
+	// the setup import clears (the data restore normalizes its own archive).
+	taxConflicts map[string]string
 }
 
 type consumerImportDeferred struct {
@@ -1167,6 +1170,11 @@ func (r *consumerImportRun) importModelData(filename string, model *importeffect
 		return err
 	}
 	pkField := r.s.plan.PKFields[model.Name]
+	if model.Name == "Associate" && r.replace == nil {
+		if r.taxConflicts, err = consumerImportTaxConflicts(records, r.associationID); err != nil {
+			return err
+		}
+	}
 	if model.Name != "Folder" && pkField != "" && r.sourcePKs[model.Name] == nil && model.SelfReference {
 		keys := map[string]bool{}
 		for _, raw := range records {
@@ -1411,6 +1419,9 @@ func (r *consumerImportRun) createModelInstance(model *importeffects.Model, data
 	}
 	if name == "Associate" {
 		data = importSet(data, "sport_association_id", r.association.PK().S)
+		if _, conflict := r.taxConflicts[oldText]; conflict && hasOld {
+			data = importSet(data, "tax_code", nil)
+		}
 	}
 	return r.buildInstance(model, data)
 }
