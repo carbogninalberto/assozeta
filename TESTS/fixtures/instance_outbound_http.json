@@ -2133,6 +2133,681 @@
    }
   },
   {
+   "name": "instance-outbound-releases-cached-values",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instance/admin/releases",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "repository": "carbogninalberto/assozeta",
+    "latest": {
+     "id": 7,
+     "tag": "v5.5.0",
+     "version": "5.5.0",
+     "name": 0.5,
+     "published_at": "2026-01-10T10:00:00Z",
+     "notes": "",
+     "url": "https://github.com/carbogninalberto/assozeta/releases/tag/v5.5.0",
+     "artifacts_ready": true,
+     "unavailable_reason": null
+    },
+    "relation": "behind",
+    "pending": [
+     {
+      "id": 7,
+      "tag": "v5.5.0",
+      "version": "5.5.0",
+      "name": 0.5,
+      "published_at": "2026-01-10T10:00:00Z",
+      "notes": "",
+      "url": "https://github.com/carbogninalberto/assozeta/releases/tag/v5.5.0",
+      "artifacts_ready": true,
+      "unavailable_reason": null
+     },
+     {
+      "id": 6,
+      "tag": "v5.4.0",
+      "version": "5.4.0",
+      "name": true,
+      "published_at": 1.5,
+      "notes": "",
+      "url": "https://github.com/carbogninalberto/assozeta/releases/tag/v5.4.0",
+      "artifacts_ready": true,
+      "unavailable_reason": null
+     },
+     {
+      "id": 5,
+      "tag": "v5.3.0",
+      "version": "5.3.0",
+      "name": [
+       1,
+       "x"
+      ],
+      "published_at": "2026-01-10T10:00:00Z",
+      "notes": [
+       "nota",
+       2,
+       true,
+       null
+      ],
+      "url": "https://github.com/carbogninalberto/assozeta/releases/tag/v5.3.0",
+      "artifacts_ready": true,
+      "unavailable_reason": null
+     },
+     {
+      "id": 1.5,
+      "tag": "v5.2.0",
+      "version": "5.2.0",
+      "name": "v5.2.0",
+      "published_at": "2026-01-10T10:00:00Z",
+      "notes": "",
+      "url": "https://github.com/carbogninalberto/assozeta/releases/tag/v5.2.0",
+      "artifacts_ready": true,
+      "unavailable_reason": null
+     },
+     {
+      "id": 1180591620717411303424,
+      "tag": "v5.1.0",
+      "version": "5.1.0",
+      "name": 42,
+      "published_at": "2026-01-10T10:00:00Z",
+      "notes": "",
+      "url": "https://github.com/carbogninalberto/assozeta/releases/tag/v5.1.0",
+      "artifacts_ready": true,
+      "unavailable_reason": null
+     },
+     {
+      "id": "release-string",
+      "tag": "v5.0.0",
+      "version": "5.0.0",
+      "name": "String id",
+      "published_at": "2026-01-10T10:00:00Z",
+      "notes": "",
+      "url": "https://github.com/carbogninalberto/assozeta/releases/tag/v5.0.0",
+      "artifacts_ready": true,
+      "unavailable_reason": null
+     }
+    ],
+    "history": [
+     {
+      "id": 7,
+      "tag": "v5.5.0",
+      "version": "5.5.0",
+      "name": 0.5,
+      "published_at": "2026-01-10T10:00:00Z",
+      "notes": "",
+      "url": "https://github.com/carbogninalberto/assozeta/releases/tag/v5.5.0",
+      "artifacts_ready": true,
+      "unavailable_reason": null
+     },
+     {
+      "id": 6,
+      "tag": "v5.4.0",
+      "version": "5.4.0",
+      "name": true,
+      "published_at": 1.5,
+      "notes": "",
+      "url": "https://github.com/carbogninalberto/assozeta/releases/tag/v5.4.0",
+      "artifacts_ready": true,
+      "unavailable_reason": null
+     },
+     {
+      "id": 5,
+      "tag": "v5.3.0",
+      "version": "5.3.0",
+      "name": [
+       1,
+       "x"
+      ],
+      "published_at": "2026-01-10T10:00:00Z",
+      "notes": [
+       "nota",
+       2,
+       true,
+       null
+      ],
+      "url": "https://github.com/carbogninalberto/assozeta/releases/tag/v5.3.0",
+      "artifacts_ready": true,
+      "unavailable_reason": null
+     },
+     {
+      "id": 1.5,
+      "tag": "v5.2.0",
+      "version": "5.2.0",
+      "name": "v5.2.0",
+      "published_at": "2026-01-10T10:00:00Z",
+      "notes": "",
+      "url": "https://github.com/carbogninalberto/assozeta/releases/tag/v5.2.0",
+      "artifacts_ready": true,
+      "unavailable_reason": null
+     },
+     {
+      "id": 1180591620717411303424,
+      "tag": "v5.1.0",
+      "version": "5.1.0",
+      "name": 42,
+      "published_at": "2026-01-10T10:00:00Z",
+      "notes": "",
+      "url": "https://github.com/carbogninalberto/assozeta/releases/tag/v5.1.0",
+      "artifacts_ready": true,
+      "unavailable_reason": null
+     },
+     {
+      "id": "release-string",
+      "tag": "v5.0.0",
+      "version": "5.0.0",
+      "name": "String id",
+      "published_at": "2026-01-10T10:00:00Z",
+      "notes": "",
+      "url": "https://github.com/carbogninalberto/assozeta/releases/tag/v5.0.0",
+      "artifacts_ready": true,
+      "unavailable_reason": null
+     }
+    ],
+    "page": 1,
+    "next_page": null,
+    "total": 6
+   },
+   "setup": null,
+   "effect": null,
+   "cache_control": null,
+   "retry_after": null,
+   "outbound": [],
+   "smtp": null,
+   "cache": {
+    "catalog": [
+     [
+      {
+       "id": "release-string",
+       "tag_name": "v5.0.0",
+       "name": "String id",
+       "body": "",
+       "draft": false,
+       "prerelease": false,
+       "published_at": "2026-01-10T10:00:00Z",
+       "assets": [
+        {
+         "name": "assozeta-selfhost-v5.0.0.tar.gz",
+         "state": "uploaded",
+         "size": 1024
+        },
+        {
+         "name": "assozeta-update.json",
+         "state": "uploaded",
+         "size": 12
+        }
+       ]
+      },
+      {
+       "id": 1180591620717411303424,
+       "tag_name": "v5.1.0",
+       "name": 42,
+       "body": "",
+       "draft": false,
+       "prerelease": false,
+       "published_at": "2026-01-10T10:00:00Z",
+       "assets": [
+        {
+         "name": "assozeta-selfhost-v5.1.0.tar.gz",
+         "state": "uploaded",
+         "size": 1024
+        },
+        {
+         "name": "assozeta-update.json",
+         "state": "uploaded",
+         "size": 12
+        }
+       ]
+      },
+      {
+       "id": 1.5,
+       "tag_name": "v5.2.0",
+       "name": null,
+       "body": "",
+       "draft": false,
+       "prerelease": false,
+       "published_at": "2026-01-10T10:00:00Z",
+       "assets": [
+        {
+         "name": "assozeta-selfhost-v5.2.0.tar.gz",
+         "state": "uploaded",
+         "size": 1024
+        },
+        {
+         "name": "assozeta-update.json",
+         "state": "uploaded",
+         "size": 12
+        }
+       ]
+      },
+      {
+       "id": 5,
+       "tag_name": "v5.3.0",
+       "name": [
+        1,
+        "x"
+       ],
+       "body": [
+        "nota",
+        2,
+        true,
+        null
+       ],
+       "draft": false,
+       "prerelease": false,
+       "published_at": "2026-01-10T10:00:00Z",
+       "assets": [
+        {
+         "name": "assozeta-selfhost-v5.3.0.tar.gz",
+         "state": "uploaded",
+         "size": 1024
+        },
+        {
+         "name": "assozeta-update.json",
+         "state": "uploaded",
+         "size": 12
+        }
+       ]
+      },
+      {
+       "id": 6,
+       "tag_name": "v5.4.0",
+       "name": true,
+       "body": false,
+       "draft": false,
+       "prerelease": false,
+       "published_at": 1.5,
+       "assets": [
+        {
+         "name": "assozeta-selfhost-v5.4.0.tar.gz",
+         "state": "uploaded",
+         "size": 1024
+        },
+        {
+         "name": "assozeta-update.json",
+         "state": "uploaded",
+         "size": 12
+        }
+       ]
+      },
+      {
+       "id": 7,
+       "tag_name": "v5.5.0",
+       "name": 0.5,
+       "body": "",
+       "draft": false,
+       "prerelease": false,
+       "published_at": "2026-01-10T10:00:00Z",
+       "assets": [
+        {
+         "name": "assozeta-selfhost-v5.5.0.tar.gz",
+         "state": "uploaded",
+         "size": 1024
+        },
+        {
+         "name": "assozeta-update.json",
+         "state": "uploaded",
+         "size": 12
+        }
+       ]
+      }
+     ]
+    ]
+   },
+   "cache_after": {
+    "catalog": "unchanged"
+   }
+  },
+  {
+   "name": "instance-outbound-releases-fetched-values",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instance/admin/releases",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "repository": "carbogninalberto/assozeta",
+    "latest": {
+     "id": 7,
+     "tag": "v5.5.0",
+     "version": "5.5.0",
+     "name": 0.5,
+     "published_at": "2026-01-10T10:00:00Z",
+     "notes": "",
+     "url": "https://github.com/carbogninalberto/assozeta/releases/tag/v5.5.0",
+     "artifacts_ready": true,
+     "unavailable_reason": null
+    },
+    "relation": "behind",
+    "pending": [
+     {
+      "id": 7,
+      "tag": "v5.5.0",
+      "version": "5.5.0",
+      "name": 0.5,
+      "published_at": "2026-01-10T10:00:00Z",
+      "notes": "",
+      "url": "https://github.com/carbogninalberto/assozeta/releases/tag/v5.5.0",
+      "artifacts_ready": true,
+      "unavailable_reason": null
+     },
+     {
+      "id": 6,
+      "tag": "v5.4.0",
+      "version": "5.4.0",
+      "name": true,
+      "published_at": 1.5,
+      "notes": "",
+      "url": "https://github.com/carbogninalberto/assozeta/releases/tag/v5.4.0",
+      "artifacts_ready": true,
+      "unavailable_reason": null
+     },
+     {
+      "id": 5,
+      "tag": "v5.3.0",
+      "version": "5.3.0",
+      "name": [
+       1,
+       "x"
+      ],
+      "published_at": "2026-01-10T10:00:00Z",
+      "notes": [
+       "nota",
+       2,
+       true,
+       null
+      ],
+      "url": "https://github.com/carbogninalberto/assozeta/releases/tag/v5.3.0",
+      "artifacts_ready": true,
+      "unavailable_reason": null
+     },
+     {
+      "id": 1.5,
+      "tag": "v5.2.0",
+      "version": "5.2.0",
+      "name": "v5.2.0",
+      "published_at": "2026-01-10T10:00:00Z",
+      "notes": "",
+      "url": "https://github.com/carbogninalberto/assozeta/releases/tag/v5.2.0",
+      "artifacts_ready": true,
+      "unavailable_reason": null
+     },
+     {
+      "id": 1180591620717411303424,
+      "tag": "v5.1.0",
+      "version": "5.1.0",
+      "name": 42,
+      "published_at": "2026-01-10T10:00:00Z",
+      "notes": "",
+      "url": "https://github.com/carbogninalberto/assozeta/releases/tag/v5.1.0",
+      "artifacts_ready": true,
+      "unavailable_reason": null
+     },
+     {
+      "id": "release-string",
+      "tag": "v5.0.0",
+      "version": "5.0.0",
+      "name": "String id",
+      "published_at": "2026-01-10T10:00:00Z",
+      "notes": "",
+      "url": "https://github.com/carbogninalberto/assozeta/releases/tag/v5.0.0",
+      "artifacts_ready": true,
+      "unavailable_reason": null
+     }
+    ],
+    "history": [
+     {
+      "id": 7,
+      "tag": "v5.5.0",
+      "version": "5.5.0",
+      "name": 0.5,
+      "published_at": "2026-01-10T10:00:00Z",
+      "notes": "",
+      "url": "https://github.com/carbogninalberto/assozeta/releases/tag/v5.5.0",
+      "artifacts_ready": true,
+      "unavailable_reason": null
+     },
+     {
+      "id": 6,
+      "tag": "v5.4.0",
+      "version": "5.4.0",
+      "name": true,
+      "published_at": 1.5,
+      "notes": "",
+      "url": "https://github.com/carbogninalberto/assozeta/releases/tag/v5.4.0",
+      "artifacts_ready": true,
+      "unavailable_reason": null
+     },
+     {
+      "id": 5,
+      "tag": "v5.3.0",
+      "version": "5.3.0",
+      "name": [
+       1,
+       "x"
+      ],
+      "published_at": "2026-01-10T10:00:00Z",
+      "notes": [
+       "nota",
+       2,
+       true,
+       null
+      ],
+      "url": "https://github.com/carbogninalberto/assozeta/releases/tag/v5.3.0",
+      "artifacts_ready": true,
+      "unavailable_reason": null
+     },
+     {
+      "id": 1.5,
+      "tag": "v5.2.0",
+      "version": "5.2.0",
+      "name": "v5.2.0",
+      "published_at": "2026-01-10T10:00:00Z",
+      "notes": "",
+      "url": "https://github.com/carbogninalberto/assozeta/releases/tag/v5.2.0",
+      "artifacts_ready": true,
+      "unavailable_reason": null
+     },
+     {
+      "id": 1180591620717411303424,
+      "tag": "v5.1.0",
+      "version": "5.1.0",
+      "name": 42,
+      "published_at": "2026-01-10T10:00:00Z",
+      "notes": "",
+      "url": "https://github.com/carbogninalberto/assozeta/releases/tag/v5.1.0",
+      "artifacts_ready": true,
+      "unavailable_reason": null
+     },
+     {
+      "id": "release-string",
+      "tag": "v5.0.0",
+      "version": "5.0.0",
+      "name": "String id",
+      "published_at": "2026-01-10T10:00:00Z",
+      "notes": "",
+      "url": "https://github.com/carbogninalberto/assozeta/releases/tag/v5.0.0",
+      "artifacts_ready": true,
+      "unavailable_reason": null
+     }
+    ],
+    "page": 1,
+    "next_page": null,
+    "total": 6
+   },
+   "setup": null,
+   "effect": null,
+   "cache_control": null,
+   "retry_after": null,
+   "outbound": [
+    {
+     "connect": "api.github.com:443",
+     "method": "GET",
+     "path": "/repos/carbogninalberto/assozeta/releases?per_page=100&page=1",
+     "headers": {
+      "host": "api.github.com",
+      "accept-encoding": "identity",
+      "user-agent": "Assozeta-Self-Instance",
+      "connection": "close",
+      "accept": "application/vnd.github+json",
+      "x-github-api-version": "2022-11-28"
+     },
+     "reply": {
+      "status": 200,
+      "headers": {
+       "Content-Type": "application/json"
+      },
+      "raw_b64": "W3siaWQiOiAicmVsZWFzZS1zdHJpbmciLCAidGFnX25hbWUiOiAidjUuMC4wIiwgIm5hbWUiOiAiU3RyaW5nIGlkIiwgImJvZHkiOiAiIiwgImRyYWZ0IjogZmFsc2UsICJwcmVyZWxlYXNlIjogZmFsc2UsICJwdWJsaXNoZWRfYXQiOiAiMjAyNi0wMS0xMFQxMDowMDowMFoiLCAiYXNzZXRzIjogW3sibmFtZSI6ICJhc3NvemV0YS1zZWxmaG9zdC12NS4wLjAudGFyLmd6IiwgInN0YXRlIjogInVwbG9hZGVkIiwgInNpemUiOiAxMDI0fSwgeyJuYW1lIjogImFzc296ZXRhLXVwZGF0ZS5qc29uIiwgInN0YXRlIjogInVwbG9hZGVkIiwgInNpemUiOiAxMn1dfSwgeyJpZCI6IDExODA1OTE2MjA3MTc0MTEzMDM0MjQsICJ0YWdfbmFtZSI6ICJ2NS4xLjAiLCAibmFtZSI6IDQyLCAiYm9keSI6ICIiLCAiZHJhZnQiOiBmYWxzZSwgInByZXJlbGVhc2UiOiBmYWxzZSwgInB1Ymxpc2hlZF9hdCI6ICIyMDI2LTAxLTEwVDEwOjAwOjAwWiIsICJhc3NldHMiOiBbeyJuYW1lIjogImFzc296ZXRhLXNlbGZob3N0LXY1LjEuMC50YXIuZ3oiLCAic3RhdGUiOiAidXBsb2FkZWQiLCAic2l6ZSI6IDEwMjR9LCB7Im5hbWUiOiAiYXNzb3pldGEtdXBkYXRlLmpzb24iLCAic3RhdGUiOiAidXBsb2FkZWQiLCAic2l6ZSI6IDEyfV19LCB7ImlkIjogMS41LCAidGFnX25hbWUiOiAidjUuMi4wIiwgIm5hbWUiOiBudWxsLCAiYm9keSI6ICIiLCAiZHJhZnQiOiBmYWxzZSwgInByZXJlbGVhc2UiOiBmYWxzZSwgInB1Ymxpc2hlZF9hdCI6ICIyMDI2LTAxLTEwVDEwOjAwOjAwWiIsICJhc3NldHMiOiBbeyJuYW1lIjogImFzc296ZXRhLXNlbGZob3N0LXY1LjIuMC50YXIuZ3oiLCAic3RhdGUiOiAidXBsb2FkZWQiLCAic2l6ZSI6IDEwMjR9LCB7Im5hbWUiOiAiYXNzb3pldGEtdXBkYXRlLmpzb24iLCAic3RhdGUiOiAidXBsb2FkZWQiLCAic2l6ZSI6IDEyfV19LCB7ImlkIjogNSwgInRhZ19uYW1lIjogInY1LjMuMCIsICJuYW1lIjogWzEsICJ4Il0sICJib2R5IjogWyJub3RhIiwgMiwgdHJ1ZSwgbnVsbF0sICJkcmFmdCI6IGZhbHNlLCAicHJlcmVsZWFzZSI6IGZhbHNlLCAicHVibGlzaGVkX2F0IjogIjIwMjYtMDEtMTBUMTA6MDA6MDBaIiwgImFzc2V0cyI6IFt7Im5hbWUiOiAiYXNzb3pldGEtc2VsZmhvc3QtdjUuMy4wLnRhci5neiIsICJzdGF0ZSI6ICJ1cGxvYWRlZCIsICJzaXplIjogMTAyNH0sIHsibmFtZSI6ICJhc3NvemV0YS11cGRhdGUuanNvbiIsICJzdGF0ZSI6ICJ1cGxvYWRlZCIsICJzaXplIjogMTJ9XX0sIHsiaWQiOiA2LCAidGFnX25hbWUiOiAidjUuNC4wIiwgIm5hbWUiOiB0cnVlLCAiYm9keSI6IGZhbHNlLCAiZHJhZnQiOiBmYWxzZSwgInByZXJlbGVhc2UiOiBmYWxzZSwgInB1Ymxpc2hlZF9hdCI6IDEuNSwgImFzc2V0cyI6IFt7Im5hbWUiOiAiYXNzb3pldGEtc2VsZmhvc3QtdjUuNC4wLnRhci5neiIsICJzdGF0ZSI6ICJ1cGxvYWRlZCIsICJzaXplIjogMTAyNH0sIHsibmFtZSI6ICJhc3NvemV0YS11cGRhdGUuanNvbiIsICJzdGF0ZSI6ICJ1cGxvYWRlZCIsICJzaXplIjogMTJ9XX0sIHsiaWQiOiA3LCAidGFnX25hbWUiOiAidjUuNS4wIiwgIm5hbWUiOiAwLjUsICJib2R5IjogIiIsICJkcmFmdCI6IGZhbHNlLCAicHJlcmVsZWFzZSI6IGZhbHNlLCAicHVibGlzaGVkX2F0IjogIjIwMjYtMDEtMTBUMTA6MDA6MDBaIiwgImFzc2V0cyI6IFt7Im5hbWUiOiAiYXNzb3pldGEtc2VsZmhvc3QtdjUuNS4wLnRhci5neiIsICJzdGF0ZSI6ICJ1cGxvYWRlZCIsICJzaXplIjogMTAyNH0sIHsibmFtZSI6ICJhc3NvemV0YS11cGRhdGUuanNvbiIsICJzdGF0ZSI6ICJ1cGxvYWRlZCIsICJzaXplIjogMTJ9XX1d"
+     }
+    }
+   ],
+   "smtp": null,
+   "cache": {
+    "catalog": null
+   },
+   "cache_after": {
+    "catalog": [
+     [
+      {
+       "id": "release-string",
+       "tag_name": "v5.0.0",
+       "name": "String id",
+       "body": "",
+       "draft": false,
+       "prerelease": false,
+       "published_at": "2026-01-10T10:00:00Z",
+       "assets": [
+        {
+         "name": "assozeta-selfhost-v5.0.0.tar.gz",
+         "state": "uploaded",
+         "size": 1024
+        },
+        {
+         "name": "assozeta-update.json",
+         "state": "uploaded",
+         "size": 12
+        }
+       ]
+      },
+      {
+       "id": 1180591620717411303424,
+       "tag_name": "v5.1.0",
+       "name": 42,
+       "body": "",
+       "draft": false,
+       "prerelease": false,
+       "published_at": "2026-01-10T10:00:00Z",
+       "assets": [
+        {
+         "name": "assozeta-selfhost-v5.1.0.tar.gz",
+         "state": "uploaded",
+         "size": 1024
+        },
+        {
+         "name": "assozeta-update.json",
+         "state": "uploaded",
+         "size": 12
+        }
+       ]
+      },
+      {
+       "id": 1.5,
+       "tag_name": "v5.2.0",
+       "name": null,
+       "body": "",
+       "draft": false,
+       "prerelease": false,
+       "published_at": "2026-01-10T10:00:00Z",
+       "assets": [
+        {
+         "name": "assozeta-selfhost-v5.2.0.tar.gz",
+         "state": "uploaded",
+         "size": 1024
+        },
+        {
+         "name": "assozeta-update.json",
+         "state": "uploaded",
+         "size": 12
+        }
+       ]
+      },
+      {
+       "id": 5,
+       "tag_name": "v5.3.0",
+       "name": [
+        1,
+        "x"
+       ],
+       "body": [
+        "nota",
+        2,
+        true,
+        null
+       ],
+       "draft": false,
+       "prerelease": false,
+       "published_at": "2026-01-10T10:00:00Z",
+       "assets": [
+        {
+         "name": "assozeta-selfhost-v5.3.0.tar.gz",
+         "state": "uploaded",
+         "size": 1024
+        },
+        {
+         "name": "assozeta-update.json",
+         "state": "uploaded",
+         "size": 12
+        }
+       ]
+      },
+      {
+       "id": 6,
+       "tag_name": "v5.4.0",
+       "name": true,
+       "body": false,
+       "draft": false,
+       "prerelease": false,
+       "published_at": 1.5,
+       "assets": [
+        {
+         "name": "assozeta-selfhost-v5.4.0.tar.gz",
+         "state": "uploaded",
+         "size": 1024
+        },
+        {
+         "name": "assozeta-update.json",
+         "state": "uploaded",
+         "size": 12
+        }
+       ]
+      },
+      {
+       "id": 7,
+       "tag_name": "v5.5.0",
+       "name": 0.5,
+       "body": "",
+       "draft": false,
+       "prerelease": false,
+       "published_at": "2026-01-10T10:00:00Z",
+       "assets": [
+        {
+         "name": "assozeta-selfhost-v5.5.0.tar.gz",
+         "state": "uploaded",
+         "size": 1024
+        },
+        {
+         "name": "assozeta-update.json",
+         "state": "uploaded",
+         "size": 12
+        }
+       ]
+      }
+     ]
+    ]
+   }
+  },
+  {
    "name": "instance-outbound-releases-cached-refresh-bounded",
    "actor": "owner",
    "method": "GET",

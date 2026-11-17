@@ -83,8 +83,8 @@ const probeDeadline = 10 * time.Second
 // ---------------------------------------------------------------------------
 
 // Releases is InstanceReleasesView.get. page and refresh are the last query
-// values (present reports page's presence).
-func (s *InstanceOutbound) Releases(ctx context.Context, page string, present bool, refresh string) (map[string]any, error) {
+// values (present reports page's presence). The answer is DRF's rendered body.
+func (s *InstanceOutbound) Releases(ctx context.Context, page string, present bool, refresh string) ([]byte, error) {
 	if !present {
 		page = "1"
 	}
@@ -121,7 +121,13 @@ func (s *InstanceOutbound) Releases(ctx context.Context, page string, present bo
 			return nil, err
 		}
 	}
-	return instanceprobe.Summary(releases, s.admin.env.Version, number), nil
+	// release_summary and DRF's JSONRenderer: a NaN or infinite float or a
+	// lone surrogate is the exception Django lets escape (its 500 page).
+	body, err := instanceprobe.Render(instanceprobe.Summary(releases, s.admin.env.Version, number))
+	if err != nil {
+		return nil, unexpectedErr("release summary", err)
+	}
+	return body, nil
 }
 
 // unexpectedErr is unexpected(reason) for an err that is not one already

@@ -225,3 +225,12 @@ Long tail PR 4 (agent A, accepted divergence X14): a cached catalog Go cannot re
 release entry whose values have other types, which Django would serve as `normalize_release` copied them) is answered as a
 cache miss: the catalog is fetched from the feed again and the Go-built catalog is stored. Pickle protocols 2 to 5 and
 floats are read (`instance_release_cache_pickle_test.go`); `ErrReleaseCacheShape` is gone.
+
+Long tail PR 5 (review finding): Go reads and serves what Django serves. A release keeps the Python value
+`normalize_release` copied for `id` (an int of any size, float, str, bool or None), `name`, `published_at` and `notes` (any
+JSON value, lists and dicts in order), both from the cached pickle and from a fetched feed (which no longer answers X2 for
+them); the catalog is pickled back the way Django's cache stores it, and the summary is rendered like DRF's JSONRenderer
+(a NaN/infinite float or a lone surrogate in a rendered entry is the 500 page). A list or dict `id` is the TypeError
+`fetch_releases` raises. Left: an object copied from the feed keeps sorted keys when Go writes the catalog (the feed
+reader does not keep insertion order); rendering does not depend on it. Cases `releases-cached-values`,
+`releases-fetched-values`.

@@ -242,6 +242,24 @@ add('releases-feed-utf16-truncated', 'owner', RELEASES, 503, {'error': 'Release 
     outbound=[github(1, reply(200, raw=json.dumps(FEED_A).encode('utf-16-be') + b'\x00'))],
     cache={'catalog': None}, cache_after={'catalog': None})
 add('releases-cached', 'owner', RELEASES, 200, summary(CATALOG_A), cache={'catalog': [FEED_A]}, cache_after={'catalog': 'unchanged'})
+# normalize_release copies these values as they are (except where Python's
+# falsy rule replaces them): a str, an int of any size, a float and a bool id, a
+# numeric name, a list body and a float published_at. Django serves and renders
+# them from the cached catalog (big ints as digits, floats as repr) and stores
+# them again after a fetch.
+UNUSUAL = [
+    raw_release('release-string', 'v5.0.0', name='String id'),
+    raw_release(2 ** 70, 'v5.1.0', name=42),
+    raw_release(1.5, 'v5.2.0'),
+    raw_release(5, 'v5.3.0', name=[1, 'x'], body=['nota', 2, True, None]),
+    raw_release(6, 'v5.4.0', name=True, published=1.5, body=False),
+    raw_release(7, 'v5.5.0', name=0.5),
+]
+UNUSUAL_CATALOG = catalog(*UNUSUAL)
+add('releases-cached-values', 'owner', RELEASES, 200, summary(UNUSUAL_CATALOG), cache={'catalog': [UNUSUAL]},
+    cache_after={'catalog': 'unchanged'})
+add('releases-fetched-values', 'owner', RELEASES, 200, summary(UNUSUAL_CATALOG),
+    outbound=[github(1, reply(200, UNUSUAL))], cache={'catalog': None}, cache_after={'catalog': [UNUSUAL]})
 add('releases-cached-refresh-bounded', 'owner', f'{RELEASES}?refresh=1', 200, summary(CATALOG_A),
     cache={'catalog': [FEED_A], 'refresh': True}, cache_after={'catalog': 'unchanged', 'refresh': True})
 FEED_B = [raw_release(200 + n, f'v2.{n}.0', name=f'Release 2.{n}', body=f'Note {n}') for n in range(12)]

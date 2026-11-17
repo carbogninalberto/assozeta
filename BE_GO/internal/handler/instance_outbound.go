@@ -76,7 +76,12 @@ func (h *InstanceOutboundHandler) Releases(c echo.Context) error {
 		pageText, _ := page.(string)
 		refreshText, _ := refresh.(string)
 		body, err := h.outbound.Releases(request.Context(), pageText, present, refreshText)
-		return h.answer(c, body, err)
+		if err != nil {
+			return h.fail(c, err)
+		}
+		// DRF's JSONRenderer body: application/json, insertion order,
+		// ensure_ascii=False and no spaces between items.
+		return c.Blob(http.StatusOK, echo.MIMEApplicationJSON, body)
 	}
 	return h.notAllowed(c)
 }
