@@ -2014,6 +2014,10 @@ list matches the resolvers). Porting it whole is not feasible; a decision is nee
 Django handoff (the 7 rows stay) and an approved native answer for keys past the modelled surface (for example the empty
 text, or the 500 page), which would bring the rows to 0.
 
+Decision (owner, delegated to the combine, 2026-11-17): X20. A path outside the modelled attributes renders as the empty
+text, `get_nested_attr`'s answer for a name `getattr` cannot resolve; `mentions.ErrUnsupported` is deleted (7 HTTP rows
+to 0). In the invoice views `associate.tutor.<field>` reads the view's tutor.
+
 ### Long tail PR 5, agent B: the pandas readers' last refusals
 
 `pandasxlsx.ErrWorkbookNotPorted` is deleted; each of its four sites answers natively with its closest Django answer

@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"math"
 	"math/big"
 	"strconv"
@@ -54,8 +53,6 @@ func (s *InvoiceViews) Render(ctx context.Context, identity domain.ResolvedIdent
 		err = ErrDocumentViewServer
 	}
 	if err != nil {
-		// mentions.ErrUnsupported is a refusal sentinel itself: it passes
-		// through for the handoff.
 		return nil, err
 	}
 	return reply, nil
@@ -224,7 +221,7 @@ func (s *InvoiceViews) invoice(ctx context.Context, identity domain.ResolvedIden
 	}
 	mentionContext := mentions.Context{
 		"sport_association": associationResolver(association), "invoice": invoiceMentions,
-		"payment": modelResolver(mentionPaymentAttributes), "associate": invoiceViewsAssociateResolver(associate),
+		"payment": modelResolver(mentionPaymentAttributes), "associate": invoiceViewsAssociateResolver(associate, tutor),
 		"main_tutor": associateResolver(tutor),
 		"other":      otherResolver(map[string]string{"today": s.views.todayText(), "courses_list": coursesList}),
 	}
@@ -372,15 +369,29 @@ func invoiceViewsInvoiceResolver(invoice *domain.InvoiceViewInvoice) (mentions.R
 }
 
 // invoiceViewsAssociateResolver: the payment's associate, to which the view
-// adds the tutor and is_minor attributes.
-func invoiceViewsAssociateResolver(associate *domain.ViewAssociate) mentions.Resolver {
+// adds the tutor and is_minor attributes
+// (BE/docmanager/views/printing_views.py:427-430): payment.associate.tutor is
+// invoice.selected_tutor or payment.associate.main_tutor, and is_minor is
+// True when that tutor is not None.
+func invoiceViewsAssociateResolver(associate, tutor *domain.ViewAssociate) mentions.Resolver {
 	resolve := associateResolver(associate)
 	if associate == nil {
 		return resolve
 	}
+	tutorResolver := associateResolver(tutor)
 	return func(path string) (string, error) {
-		if first, _, _ := strings.Cut(path, "."); first == "tutor" || first == "is_minor" {
-			return "", fmt.Errorf("%w: mention associate.%s", mentions.ErrUnsupported, path)
+		first, rest, nested := strings.Cut(path, ".")
+		if first == "tutor" {
+			if !nested {
+				// X20: str() of the Associate is not modelled.
+				return "", nil
+			}
+			// getattr on None answers "" for every path.
+			return tutorResolver(rest)
+		}
+		if first == "is_minor" {
+			// X20: the str() of a bool is not modelled.
+			return "", nil
 		}
 		return resolve(path)
 	}

@@ -21,12 +21,6 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
-// ErrUnsupported is a marker for the callers' Resolver implementations, which
-// return it for a mention attribute path they cannot resolve
-// (internal/service/document_views.go:309 and :353). filter_mentions itself
-// never returns it: any markup is parsed.
-var ErrUnsupported = refusal.New("mentions: unsupported input")
-
 // ErrAliasKeyError is LEGACY_MENTION_ALIASES[group.lower()] raising KeyError:
 // an alias matched case-insensitively through a character whose lower() is
 // not the alias itself (U+0130, U+0131 for 'i'; U+017F for 's'). Django does

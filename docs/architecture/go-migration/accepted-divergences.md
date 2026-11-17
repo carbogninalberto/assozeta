@@ -28,6 +28,7 @@ answer natively and no longer return a refusal.
 - X17 concurrent deletes and timing races | subscription lifecycle, e-mail task configuration, instance setup logo, agent cache decr | the answer Django gives when the race resolves the common way; approved: owner, 2026-11-16
 - X18 Python object addresses in output | pdfexport `<seq template>`, mentions str methods, Stripe object reprs, reportlab texts | the same text with a stable placeholder address; approved: owner, 2026-11-16
 - X19 image codec libraries | pdfexport header logos and inline `<img>` | whether Pillow's bundled libjpeg-turbo decodes a JPEG follows Go's decoder (a JPEG is embedded as its own bytes either way), JPEG data inside other containers is decoded by Go, and lossy WebP, AVIF, JPEG 2000 and the optional TIFF codecs answer as a Pillow built without them; approved: owner, 2026-11-16 (rule-4 blanket approval, platform)
+- X20 mention keys outside the modelled attributes | document views, invoice views (`filter_mentions` header, footer, template body, extra text) | the empty text, what `get_nested_attr` renders when `getattr(obj, name, None)` cannot resolve a name; Django renders `str()` of a model attribute, relation or method the resolvers do not model, and of the `str` type's layout fields; approved: owner (delegated to the long tail PR 5 combine), 2026-11-17
 
 PDF `<img>` sources (file paths and URLs) are ported with Django parity; they
 are not a divergence.

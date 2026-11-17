@@ -11,11 +11,14 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/handoff"
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/mentions"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/paymentcategorylifecycle"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
 )
+
+// errTestRefusal is a refusal error standing in for a view that failed.
+var errTestRefusal = refusal.New("test: refused template input")
 
 // A view that saved get_main_tutor's promotion and is then refused must not be
 // replayed to Django: the relation and its audit entry are already committed.
@@ -33,7 +36,7 @@ func TestRefusalAfterTutorPromotionIsNotHandedOff(t *testing.T) {
 		t.Fatal(err)
 	}
 	audit := func(*http.Request) (domain.LoginAuditContext, error) { return domain.LoginAuditContext{}, nil }
-	refused := fmt.Errorf("%w: template input", mentions.ErrUnsupported)
+	refused := fmt.Errorf("%w: template input", errTestRefusal)
 	for name, test := range map[string]struct {
 		promote bool
 		status  int
