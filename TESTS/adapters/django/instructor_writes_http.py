@@ -10,6 +10,7 @@ entry matches an authored event, in order, with its authored index row (or
 none). Rows the run creates are removed before the fixture cleanup compares the
 model state.
 """
+from contextlib import contextmanager
 import ipaddress
 import json
 from datetime import date, datetime, timedelta, timezone
@@ -286,6 +287,7 @@ def assert_effect(case, before, after, source, context):
         check_event(case, event, indexes, before=before, ids=source['ids'], spec=spec, key=key, changes=changes, context=context)
 
 
+@contextmanager
 def deep_report_rows(case):
     """Open the case's stored report JSON (owner decision X15 edge).
 
