@@ -198,18 +198,18 @@ func TestPlanFacts(t *testing.T) {
 func TestSeasonRange(t *testing.T) {
 	e := &Effects{}
 	moment := Value{Kind: DateTime, T: time.Date(2028, 3, 1, 0, 0, 0, 0, time.UTC)}
-	if _, _, err := e.seasonRange(moment, subscriptionOwner{startDay: 29, startMon: 2, duration: 2}); err == nil ||
+	if _, _, err := e.seasonRange(moment, subscriptionOwner{StartDay: 29, StartMon: 2, Duration: 2}); err == nil ||
 		err.Error() != "Invalid date combination: day is out of range for month" {
 		t.Fatalf("February 29 of the previous year: %v", err)
 	}
-	from, to, err := e.seasonRange(moment, subscriptionOwner{startDay: 1, startMon: 9, duration: 2})
+	from, to, err := e.seasonRange(moment, subscriptionOwner{StartDay: 1, StartMon: 9, Duration: 2})
 	if err != nil {
 		t.Fatal(err)
 	}
 	if from.Format("2006-01-02") != "2027-09-01" || to.Format("2006-01-02") != "2028-08-31" {
 		t.Fatalf("season %s .. %s", from, to)
 	}
-	custom := subscriptionOwner{startDay: 1, startMon: 9, customEnd: true, endMonth: 6, endDay: 30}
+	custom := subscriptionOwner{StartDay: 1, StartMon: 9, CustomEnd: true, EndMonth: 6, EndDay: 30}
 	if _, to, err := e.seasonRange(moment, custom); err != nil || to.Format("2006-01-02") != "2028-06-30" {
 		t.Fatalf("custom end %s %v", to, err)
 	}
@@ -225,7 +225,7 @@ func TestSubscriptionFill(t *testing.T) {
 	created := Value{Kind: DateTime, T: time.Date(2028, 3, 1, 10, 0, 0, 0, time.UTC)}
 	instance := &Instance{Model: model, Values: map[string]Value{
 		"creation_date": created, "start_date": NoneValue, "end_date": NoneValue}, Adding: true}
-	owner := subscriptionOwner{startDay: 1, startMon: 9, duration: 2}
+	owner := subscriptionOwner{StartDay: 1, StartMon: 9, Duration: 2}
 	from, to, err := (&Effects{}).seasonRange(created, owner)
 	if err != nil {
 		t.Fatal(err)

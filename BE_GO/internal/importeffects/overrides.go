@@ -324,7 +324,7 @@ func (e *Effects) subscriptionSave(ctx context.Context, instance *Instance) erro
 		return err
 	}
 	if !pyTruthy(instance.Get("start_date")) {
-		switch owner.duration {
+		switch owner.Duration {
 		case 1: // User.FULL_YEAR
 			instance.set("start_date", dateOf(created))
 		case 2: // User.LIKE_SEASON_YEAR
@@ -334,7 +334,7 @@ func (e *Effects) subscriptionSave(ctx context.Context, instance *Instance) erro
 		}
 	}
 	if !pyTruthy(instance.Get("end_date")) {
-		switch owner.duration {
+		switch owner.Duration {
 		case 1:
 			instance.set("end_date", addYears(dateOf(created), 1))
 		case 2, 3:
@@ -363,13 +363,15 @@ func addYears(date Value, years int) Value {
 }
 
 // subscriptionOwner is self.sport_association.user and the settings save() reads.
+// subscriptionOwner is the association owner's season settings (NOT NULL
+// columns of bakney_user). The fields are exported for sqlx's column mapping.
 type subscriptionOwner struct {
-	duration  int64
-	startDay  int64
-	startMon  int64
-	customEnd bool
-	endMonth  int64
-	endDay    int64
+	Duration  int64 `db:"subscription_duration"`
+	StartDay  int64 `db:"subscription_start_day"`
+	StartMon  int64 `db:"subscription_start_month"`
+	CustomEnd bool  `db:"custom_end_date"`
+	EndMonth  int64 `db:"subscription_end_month"`
+	EndDay    int64 `db:"subscription_end_day"`
 }
 
 func (e *Effects) subscriptionOwner(ctx context.Context, instance *Instance) (subscriptionOwner, error) {
@@ -410,21 +412,21 @@ func (e *Effects) subscriptionOwner(ctx context.Context, instance *Instance) (su
 func (e *Effects) seasonRange(date Value, owner subscriptionOwner) (time.Time, time.Time, error) {
 	// get_range_from_year_and_starting_date validates the settings before it
 	// reads date.year.
-	if owner.startMon < 1 || owner.startMon > 12 {
+	if owner.StartMon < 1 || owner.StartMon > 12 {
 		return time.Time{}, time.Time{}, djangoError("Month must be between 1 and 12")
 	}
-	if owner.startDay < 1 || owner.startDay > 31 {
+	if owner.StartDay < 1 || owner.StartDay > 31 {
 		return time.Time{}, time.Time{}, djangoError("Day must be between 1 and 31")
 	}
 	if date.Kind != DateTime {
 		return time.Time{}, time.Time{}, djangoError(fmt.Sprintf("'%s' object has no attribute 'year'", pyTypeName(date)))
 	}
 	year := date.T.Year()
-	current, err := newPyDate(year, int(owner.startMon), int(owner.startDay))
+	current, err := newPyDate(year, int(owner.StartMon), int(owner.StartDay))
 	if err != nil {
 		return time.Time{}, time.Time{}, djangoError("Invalid date combination: " + err.Error())
 	}
-	previous, err := newPyDate(year-1, int(owner.startMon), int(owner.startDay))
+	previous, err := newPyDate(year-1, int(owner.StartMon), int(owner.StartDay))
 	if err != nil {
 		return time.Time{}, time.Time{}, djangoError("Invalid date combination: " + err.Error())
 	}
@@ -438,14 +440,14 @@ func (e *Effects) seasonRange(date Value, owner subscriptionOwner) (time.Time, t
 	if !value.Before(currentStart) {
 		start = currentStart
 	}
-	if owner.customEnd && owner.endMonth != 0 && owner.endDay != 0 {
-		end, err := newPyDate(start.Year(), int(owner.endMonth), int(owner.endDay))
+	if owner.CustomEnd && owner.EndMonth != 0 && owner.EndDay != 0 {
+		end, err := newPyDate(start.Year(), int(owner.EndMonth), int(owner.EndDay))
 		if err != nil {
 			return time.Time{}, time.Time{}, err
 		}
 		endMoment := time.Date(end.year, time.Month(end.month), end.day, 0, 0, 0, 0, time.UTC)
 		if endMoment.Before(start) {
-			next, err := newPyDate(start.Year()+1, int(owner.endMonth), int(owner.endDay))
+			next, err := newPyDate(start.Year()+1, int(owner.EndMonth), int(owner.EndDay))
 			if err != nil {
 				return time.Time{}, time.Time{}, err
 			}
@@ -453,7 +455,7 @@ func (e *Effects) seasonRange(date Value, owner subscriptionOwner) (time.Time, t
 		}
 		return start, endMoment, nil
 	}
-	next, err := newPyDate(start.Year()+1, int(owner.startMon), int(owner.startDay))
+	next, err := newPyDate(start.Year()+1, int(owner.StartMon), int(owner.StartDay))
 	if err != nil {
 		return time.Time{}, time.Time{}, err
 	}
