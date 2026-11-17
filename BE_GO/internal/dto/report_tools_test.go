@@ -177,8 +177,9 @@ func TestReportToolEmptyInList(t *testing.T) {
 	settings := func() (ReportSettings, error) {
 		return ReportSettings{MaxResults: big.NewInt(5000), QueryTimeout: big.NewInt(10)}, nil
 	}
-	// An empty __in list folds to FALSE: the query runs normally and matches no
-	// row, exactly like Django (no exception with an empty message).
+	// An empty __in list makes the top-level WHERE raise EmptyResultSet:
+	// Django elides every statement and answers 0 rows, so the port runs
+	// constant statements without parameters.
 	for _, tool := range []string{"query_data", "count_data", "get_field_values"} {
 		params := map[string]string{
 			"query_data":       `{"model_name":"Tags","fields":["tag_name"],"filters":{"tag_id__in":[]}}`,
@@ -193,9 +194,12 @@ func TestReportToolEmptyInList(t *testing.T) {
 			t.Fatalf("%s: no statements", tool)
 		}
 		for _, statement := range planned.Statements {
-			if !strings.Contains(statement.SQL, "FALSE") {
-				t.Errorf("%s: statement SQL %q lacks FALSE", tool, statement.SQL)
+			if len(statement.Args) != 0 {
+				t.Errorf("%s: statement %q carries args %#v", tool, statement.SQL, statement.Args)
 			}
+		}
+		if tool == "count_data" && planned.Statements[0].SQL != `SELECT '0'::text` {
+			t.Errorf("count_data: statement SQL %q, want SELECT '0'::text", planned.Statements[0].SQL)
 		}
 	}
 }

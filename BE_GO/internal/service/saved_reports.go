@@ -7,7 +7,9 @@ import (
 	"math/big"
 	"os"
 	"strconv"
+	"strings"
 	"time"
+	"unicode"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
@@ -175,6 +177,24 @@ func (s *SavedReports) Update(ctx context.Context, identity domain.ResolvedIdent
 	return row.ID, echo, nil
 }
 
+// reportDeferredOutcome is a dto.ReportDeferred plan error: the statements
+// Django runs before the exception run first, and their own database error
+// is the answer; otherwise the deferred exception is.
+func reportDeferredOutcome(ctx context.Context, run func(context.Context, string, []domain.ReportStatement) ([][][]*string, error),
+	plan dto.ReportPlan, timeout string, err error) error {
+	var deferred *dto.ReportDeferred
+	if !errors.As(err, &deferred) {
+		return err
+	}
+	if deferred.Untimed {
+		timeout = "0"
+	}
+	if _, runErr := run(ctx, timeout, plan.Statements); runErr != nil {
+		return runErr
+	}
+	return deferred.Err
+}
+
 // Run follows SavedReportViewSet.run: the report lookup, the TOOL_FUNCTIONS
 // check, the merge of the stored params with request.data['overrides']
 // (outside the try: TypeError/AttributeError are uncaught) and the tool call.
@@ -239,6 +259,7 @@ func (s *SavedReports) RunGroup(ctx context.Context, identity domain.ResolvedIde
 		}
 		return settings, err
 	})
+	err = reportDeferredOutcome(ctx, s.store.RunReportStatements, plan, timeout, err)
 	if err != nil {
 		// A rejected statement_timeout is the tool's exception, as in
 		// RunReportStatements.
@@ -325,12 +346,30 @@ func processEnvironmentText(name string) *string {
 	return nil
 }
 
+// pythonIntMaxStrDigits is sys.int_info.default_max_str_digits: int() of a
+// text with more digits raises ValueError.
+const pythonIntMaxStrDigits = 4300
+
 // reportEnvironmentInteger is env.int(name, fallback): an unset text is the
 // default, otherwise Python's int() of the text (any size; 0 and negatives
-// stay).
+// stay). Two texts dto.PythonIntText accepts are int() ValueErrors: one with
+// a control byte str.strip removes but int() does not (\x1c-\x1f), and one
+// with more digits than sys.int_info.default_max_str_digits.
 func reportEnvironmentInteger(text *string, fallback int64) (*big.Int, error) {
 	if text == nil {
 		return big.NewInt(fallback), nil
+	}
+	if strings.ContainsAny(*text, "\x1c\x1d\x1e\x1f") {
+		return nil, errReportEnvironmentSetting
+	}
+	digits := 0
+	for _, r := range *text {
+		if unicode.IsDigit(r) {
+			digits++
+		}
+	}
+	if digits > pythonIntMaxStrDigits {
+		return nil, errReportEnvironmentSetting
 	}
 	number, ok := dto.PythonIntText(*text)
 	if !ok {

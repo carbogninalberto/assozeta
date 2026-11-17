@@ -132,6 +132,10 @@ Since long tail PR 4 nothing is refused (`ErrBusinessMCPNotPorted` is gone):
   Django's `Object of type ... is not JSON serializable` when the statement would run (after any compile error), and
   `has_key` passes the adapted literal so PostgreSQL reports the operator error for its type. `key__iexact: None` is
   the isnull lookup on the key transform (`->`), so a key holding JSON null does not match.
+- PR 5 review: a node `WhereNode.as_sql` drops (EmptyResultSet/FullResultSet) loses its parameters, so a coerced
+  value's adaptation error and PostgreSQL's errors on them do not happen; children after the deciding one are not
+  compiled. An empty top-level filter elides every statement. `execute_query` and `get_field_values` count before
+  the slice/field/timeout exceptions, so the count's database error wins (`dto.ReportDeferred`).
 - Manual tools in the Go command run `service.ManualTools` (parity is the
   manual family's, semantic); their text keeps Go key order.
 - argparse usage/errors and Django's global command options.

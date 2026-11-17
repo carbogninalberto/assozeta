@@ -72,6 +72,9 @@ type mcpQuery struct {
 	// adaptErr is raised when the statement executes (psycopg2 adapts the
 	// parameters after compiling).
 	adaptErr error
+	// empty marks a query whose top-level WHERE raised EmptyResultSet: Django
+	// elides every statement of the query.
+	empty bool
 }
 
 func newMCPQuery(model *mcpModel) *mcpQuery {
@@ -80,7 +83,7 @@ func newMCPQuery(model *mcpModel) *mcpQuery {
 
 func (q *mcpQuery) clone() *mcpQuery {
 	copyQuery := &mcpQuery{model: q.model, where: append([]string(nil), q.where...), compileErr: q.compileErr,
-		adaptErr: q.adaptErr, args: &reportArgs{values: append([]any(nil), q.args.values...)}}
+		adaptErr: q.adaptErr, empty: q.empty, args: &reportArgs{values: append([]any(nil), q.args.values...)}}
 	for _, join := range q.joins {
 		duplicate := *join
 		copyQuery.joins = append(copyQuery.joins, &duplicate)
@@ -198,6 +201,11 @@ func (q *mcpQuery) from() string {
 }
 
 func (q *mcpQuery) whereSQL() string {
+	if q.empty {
+		// The top-level WHERE raised EmptyResultSet: Django elides the
+		// statement, so the port runs the bare FALSE predicate instead.
+		return " WHERE FALSE"
+	}
 	switch len(q.where) {
 	case 0:
 		return ""
@@ -884,17 +892,34 @@ func (q *mcpQuery) addQ(node *mcpNode) error {
 			existingInner = append(existingInner, join.alias)
 		}
 	}
+	argsStart := len(q.args.values)
+	adaptStart, compileStart := q.adaptErr, q.compileErr
 	clause, _, result, err := q.addQInner(node, map[string]bool{}, false, false, false)
 	if err != nil {
 		return err
+	}
+	if q.empty {
+		// filter() builds this condition, but the WHERE already raises
+		// EmptyResultSet: Django never compiles it, so its parameters and
+		// its errors are dropped.
+		q.args.values = q.args.values[:argsStart]
+		q.adaptErr, q.compileErr = adaptStart, compileStart
+		q.demote(existingInner)
+		return nil
 	}
 	switch {
 	case clause != "":
 		q.where = append(q.where, clause)
 	case result == mcpResultEmpty:
-		// The whole filter matches nothing: keep the statement valid and
-		// rowless (an EmptyResultSet in Django skips the query entirely).
-		q.where = append(q.where, "FALSE")
+		// The top-level WHERE raises EmptyResultSet: Django's compiler
+		// elides every statement of the query (count() answers 0, a listing
+		// no rows, a flat aggregate its empty value). The base and the
+		// filter calls run before any select expression is resolved, so
+		// every parameter so far belongs to WHERE clauses; nothing executes,
+		// so the adaptation error is dropped too.
+		q.empty = true
+		q.args.values = q.args.values[:0]
+		q.adaptErr = nil
 	}
 	q.demote(existingInner)
 	return nil
@@ -902,6 +927,7 @@ func (q *mcpQuery) addQ(node *mcpNode) error {
 
 func (q *mcpQuery) addQInner(node *mcpNode, used map[string]bool, branchNegated, currentNegated, branchOR bool) (string, []string, mcpResultKind, error) {
 	argsStart := len(q.args.values)
+	adaptStart, compileStart := q.adaptErr, q.compileErr
 	currentNegated = currentNegated != node.negated
 	branchNegated = branchNegated || node.negated
 	branchOR = branchOR || node.or
@@ -913,11 +939,13 @@ func (q *mcpQuery) addQInner(node *mcpNode, used map[string]bool, branchNegated,
 	var order []string
 	var parts []string
 	var kinds []mcpResultKind
-	for _, child := range node.children {
+	compileSetBy := -1
+	for i, child := range node.children {
 		var clause string
 		var needed []string
 		var result mcpResultKind
 		var err error
+		before := q.compileErr
 		switch typed := child.(type) {
 		case mcpLeaf:
 			clause, needed, result, err = q.buildFilter(typed, used, branchNegated, currentNegated, branchOR)
@@ -926,6 +954,9 @@ func (q *mcpQuery) addQInner(node *mcpNode, used map[string]bool, branchNegated,
 		}
 		if err != nil {
 			return "", nil, mcpResultValue, err
+		}
+		if compileSetBy < 0 && before == nil && q.compileErr != nil {
+			compileSetBy = i
 		}
 		seen := map[string]bool{}
 		for _, alias := range needed {
@@ -963,6 +994,7 @@ func (q *mcpQuery) addQInner(node *mcpNode, used map[string]bool, branchNegated,
 	}
 	var sqlParts []string
 	result := mcpResultValue
+	decided := -1
 	for i, kind := range kinds {
 		switch kind {
 		case mcpResultEmpty:
@@ -982,6 +1014,7 @@ func (q *mcpQuery) addQInner(node *mcpNode, used map[string]bool, branchNegated,
 			} else {
 				result = mcpResultEmpty
 			}
+			decided = i
 			break
 		}
 		if fullNeeded == 0 {
@@ -990,17 +1023,25 @@ func (q *mcpQuery) addQInner(node *mcpNode, used map[string]bool, branchNegated,
 			} else {
 				result = mcpResultFull
 			}
+			decided = i
 			break
 		}
 	}
 	if result != mcpResultValue {
 		// Django drops the whole node's SQL (and its parameters) when it
-		// compiles to EmptyResultSet or FullResultSet.
+		// compiles to EmptyResultSet or FullResultSet; psycopg2 never adapts
+		// them. The children after the deciding one are never compiled, so a
+		// compile error they recorded is dropped too.
 		q.args.values = q.args.values[:argsStart]
+		q.adaptErr = adaptStart
+		if decided >= 0 && compileSetBy > decided {
+			q.compileErr = compileStart
+		}
 		return "", demote, result, nil
 	}
 	if len(sqlParts) == 0 {
 		q.args.values = q.args.values[:argsStart]
+		q.adaptErr = adaptStart
 		return "", demote, mcpResultFull, nil
 	}
 	connector := " AND "

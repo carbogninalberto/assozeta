@@ -5,6 +5,7 @@ import (
 	"errors"
 	"math/big"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
@@ -153,6 +154,7 @@ func TestLoadReportSettingsConfiguredTexts(t *testing.T) {
 		{"underscores", text("1_0"), text("1_0"), "10", "10"},
 		{"spaces", text(" 7 "), text(" 7 "), "7", "7"},
 		{"unicode-digits", text("٣"), text("٣"), "3", "3"},
+		{"max-digits", text(strings.Repeat("1", 4300)), text("1"), strings.Repeat("1", 4300), "1"},
 		{"unset", nil, nil, "5000", "10"},
 	} {
 		t.Run(item.name, func(t *testing.T) {
@@ -171,5 +173,24 @@ func TestLoadReportSettingsConfiguredTexts(t *testing.T) {
 	settings, err := loadReportSettings(context.Background(), settingsStore{})
 	if err != nil || settings.QueryTimeoutText() != "99999999999999999999000" {
 		t.Fatalf("timeout text: %q, %v", settings.QueryTimeoutText(), err)
+	}
+
+	// Two texts dto.PythonIntText accepts are int() ValueErrors: a control
+	// byte int() does not strip (\x1c-\x1f) and more than
+	// sys.int_info.default_max_str_digits digits.
+	for _, item := range []struct{ name, value string }{
+		{"leading-unit-separator", "\x1c12"},
+		{"trailing-unit-separator", "12\x1f"},
+		{"too-many-digits", strings.Repeat("1", 4301)},
+		{"leading-zeros", strings.Repeat("0", 4300) + "1"},
+	} {
+		t.Run(item.name, func(t *testing.T) {
+			clearReportEnvironment(t)
+			withReportEnvironment(t, text(item.value), text("1"))
+			_, err := loadReportSettings(context.Background(), settingsStore{})
+			if !errors.Is(err, refusal.ErrAppState) || errors.Is(err, refusal.ErrNotPorted) {
+				t.Fatalf("expected an application-state error, got %v", err)
+			}
+		})
 	}
 }

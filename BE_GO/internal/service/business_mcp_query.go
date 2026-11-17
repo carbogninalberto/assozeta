@@ -106,6 +106,7 @@ func (t *BusinessMCPTools) query(ctx context.Context, tool string, kwargs domain
 		}
 		return settings, err
 	})
+	err = reportDeferredOutcome(ctx, t.store.RunReportStatements, plan, timeout, err)
 	if err != nil {
 		return mcpToolOutcome(ctx, err)
 	}

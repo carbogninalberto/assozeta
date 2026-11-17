@@ -180,6 +180,12 @@ matrix for the MCP server as well.
   its own message, the tool's exception (X14). An XLSX column label `1e400`/`-1e400` in the overrides is pandas'
   `inf_rep` header (`run-export-xlsx-label-infinity`, `-negative-infinity`); NaN/Infinity labels from agent arguments get
   `''`/`inf` the same way.
+- PR 5 review: an environment text `int()` rejects although it looks numeric (more than 4300 digits, or the bytes
+  `\x1c`-`\x1f`, which `int()` does not strip) stops Django's settings from loading; Go answers the 500 page.
+  `query_data` runs the count before it checks the ordering, the fields, the slice and the timeout, so a database
+  error of the count wins over those exceptions (and the count runs before the timeout is set);
+  `get_field_values` counts before it slices. An empty top-level filter elides every statement (count 0, no rows,
+  `Count` 0 and `None` for the other aggregates) and drops the other filters' parameters and adaptation errors.
 
 The XLSX workbooks of the file tools answer every stored label and cell ([xlsx-exports](xlsx-exports.md)); openpyxl's
 sheet-title comparison is `str.lower()` (avoid_duplicate_name), so two titles that differ only by their lower-case form (a

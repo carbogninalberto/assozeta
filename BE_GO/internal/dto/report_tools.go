@@ -80,6 +80,20 @@ func mcpEffectiveMaxResults(maximum *big.Int) error {
 	return nil
 }
 
+// ReportDeferred is an exception Django raises only after the plan's
+// statements ran: execute_query counts before it validates the ordering, the
+// fields and the slice and before it sets the timeout; get_field_values
+// counts before it slices. A database error of those statements wins;
+// otherwise the call raises Err. Untimed statements run before Django sets
+// the timeout (statement_timeout '0').
+type ReportDeferred struct {
+	Err     error
+	Untimed bool
+}
+
+func (e *ReportDeferred) Error() string { return e.Err.Error() }
+func (e *ReportDeferred) Unwrap() error { return e.Err }
+
 // ReportPlan is one tool call: statements to run in order, then Render.
 type ReportPlan struct {
 	Statements []domain.ReportStatement
@@ -392,14 +406,37 @@ func (q *mcpQuery) concreteColumns() []string {
 	return columns
 }
 
+// mcpEmptyCount is QuerySet.count() of a query whose WHERE raised
+// EmptyResultSet: Django elides the statement and answers 0.
+func mcpEmptyCount() domain.ReportStatement {
+	return domain.ReportStatement{SQL: `SELECT '0'::text`, Text: 1}
+}
+
 // countStatement is QuerySet.count() of the distinct queryset.
 func (q *mcpQuery) countStatement() domain.ReportStatement {
+	if q.empty {
+		return mcpEmptyCount()
+	}
 	var selects []string
 	for i, column := range q.concreteColumns() {
 		selects = append(selects, column+` AS "col`+strconv.Itoa(i+1)+`"`)
 	}
 	sql := `SELECT COUNT(*)::text FROM (SELECT DISTINCT ` + strings.Join(selects, ", ") + ` FROM ` + q.from() + q.whereSQL() + `) subquery`
 	return domain.ReportStatement{SQL: sql, Args: q.args.values, Text: 1}
+}
+
+// mcpEmptyRows is the listing of a query whose WHERE raised EmptyResultSet:
+// Django elides the statement, so the port selects no row.
+func mcpEmptyRows(columns int) domain.ReportStatement {
+	sql := "SELECT WHERE FALSE"
+	if columns > 0 {
+		selects := make([]string, columns)
+		for i := range selects {
+			selects[i] = "NULL::text"
+		}
+		sql = "SELECT " + strings.Join(selects, ", ") + " WHERE FALSE"
+	}
+	return domain.ReportStatement{SQL: sql, Text: columns}
 }
 
 // mcpColumnOut is one rendered output column.
@@ -831,7 +868,9 @@ func (q *mcpQuery) validateJoins(joins any) error {
 	return nil
 }
 
-// planQuery is QueryBuilder.execute_query after the filters.
+// planQuery is QueryBuilder.execute_query after the filters: the count (which
+// Django runs first) and, when the rest of the method raises, the count
+// statement with that exception deferred.
 func (q *mcpQuery) planQuery(params domain.RequestObject, config ReportSettings) (ReportPlan, error) {
 	if joins, _ := params.Lookup("joins"); PythonTruthy(joins) {
 		if err := q.validateJoins(joins); err != nil {
@@ -845,6 +884,16 @@ func (q *mcpQuery) planQuery(params domain.RequestObject, config ReportSettings)
 		return ReportPlan{}, q.adaptErr
 	}
 	count := q.countStatement()
+	plan, err := q.planListing(count, params, config)
+	if err != nil {
+		return ReportPlan{Statements: []domain.ReportStatement{count}}, &ReportDeferred{Err: err, Untimed: true}
+	}
+	return plan, nil
+}
+
+// planListing is execute_query after total_count = qs.count(): the ordering,
+// the fields, the slice, the timeout and the listing.
+func (q *mcpQuery) planListing(count domain.ReportStatement, params domain.RequestObject, config ReportSettings) (ReportPlan, error) {
 	orderValue, _ := params.Lookup("order_by")
 	orders, err := q.validateOrder(orderValue)
 	if err != nil {
@@ -864,7 +913,8 @@ func (q *mcpQuery) planQuery(params domain.RequestObject, config ReportSettings)
 		return ReportPlan{}, err
 	}
 	// QueryBuilder.execute_query sets the timeout after the slice and before
-	// it runs the statements (query_builder.py:446).
+	// it runs the statements (query_builder.py:446): after the count, which
+	// Django ran before the SET.
 	if err := config.setTimeout(); err != nil {
 		return ReportPlan{}, err
 	}
@@ -947,6 +997,10 @@ func (q *mcpQuery) planQuery(params domain.RequestObject, config ReportSettings)
 		}
 	}
 	statement := mcpWrap(inner, columns, q.args.values)
+	if q.empty {
+		// The top-level WHERE raised EmptyResultSet: the listing is empty.
+		statement = mcpEmptyRows(len(columns))
+	}
 	return ReportPlan{Statements: []domain.ReportStatement{count, statement},
 		Render: func(results [][][]*string) (any, error) {
 			total, _ := strconv.ParseInt(*results[0][0][0], 10, 64)
@@ -992,10 +1046,23 @@ func (q *mcpQuery) planFieldValues(name string, params domain.RequestObject, con
 	if counted.adaptErr != nil {
 		return ReportPlan{}, counted.adaptErr
 	}
-	total := domain.ReportStatement{SQL: `SELECT COUNT(*)::text FROM (SELECT DISTINCT ` + expr.sql + ` AS "c0" FROM ` + counted.from() +
-		counted.whereSQL() + `) subquery`, Args: counted.args.values, Text: 1}
+	total := mcpEmptyCount()
+	if !counted.empty {
+		total = domain.ReportStatement{SQL: `SELECT COUNT(*)::text FROM (SELECT DISTINCT ` + expr.sql + ` AS "c0" FROM ` + counted.from() +
+			counted.whereSQL() + `) subquery`, Args: counted.args.values, Text: 1}
+	}
+	plan, err := q.planFieldListing(name, total, labels, params)
+	if err != nil {
+		return ReportPlan{Statements: []domain.ReportStatement{total}}, &ReportDeferred{Err: err}
+	}
+	return plan, nil
+}
+
+// planFieldListing is get_field_values after total_distinct: the listing whose
+// [:limit] slice raises after the count ran.
+func (q *mcpQuery) planFieldListing(name string, total domain.ReportStatement, labels mcpLabels, params domain.RequestObject) (ReportPlan, error) {
 	listed := q.clone()
-	expr, err = listed.resolveField(name)
+	expr, err := listed.resolveField(name)
 	if err != nil {
 		return ReportPlan{}, err
 	}
@@ -1031,7 +1098,12 @@ func (q *mcpQuery) planFieldValues(name string, params domain.RequestObject, con
 	}
 	inner := `SELECT DISTINCT ` + selects + ` FROM ` + listed.from() + listed.whereSQL() + ` ORDER BY ` + order.sql + ` ASC` + limit
 	column := mcpColumnOut{key: name, expr: expr, alias: "c0"}
-	return ReportPlan{Statements: []domain.ReportStatement{total, mcpWrap(inner, []mcpColumnOut{column}, listed.args.values)},
+	listing := mcpWrap(inner, []mcpColumnOut{column}, listed.args.values)
+	if listed.empty {
+		// The top-level WHERE raised EmptyResultSet: no value is listed.
+		listing = mcpEmptyRows(1)
+	}
+	return ReportPlan{Statements: []domain.ReportStatement{total, listing},
 		Render: func(results [][][]*string) (any, error) {
 			items := []any{}
 			mapping := labels[name]
@@ -1248,7 +1320,12 @@ func (q *mcpQuery) planAggregate(params domain.RequestObject, config ReportSetti
 	}
 	inner := `SELECT DISTINCT ` + strings.Join(selects, ", ") + ` FROM ` + q.from() + q.whereSQL() + ` GROUP BY ` +
 		strings.Join(groupBy, ", ") + ` ORDER BY ` + strings.Join(keys, ", ")
-	return ReportPlan{Statements: []domain.ReportStatement{mcpWrap(inner, columns, q.args.values)},
+	statement := mcpWrap(inner, columns, q.args.values)
+	if q.empty {
+		// The top-level WHERE raised EmptyResultSet: there is no group.
+		statement = mcpEmptyRows(len(columns))
+	}
+	return ReportPlan{Statements: []domain.ReportStatement{statement},
 		Render: func(results [][][]*string) (any, error) {
 			data := []any{}
 			for _, record := range results[0] {
@@ -1310,7 +1387,20 @@ func (q *mcpQuery) planFlatAggregate(aggregates []mcpAggregate) (ReportPlan, err
 	}
 	inner := `SELECT ` + strings.Join(outer, ", ") + ` FROM (SELECT DISTINCT ` + strings.Join(selects, ", ") + ` FROM ` + q.from() +
 		q.whereSQL() + `) subquery`
-	return ReportPlan{Statements: []domain.ReportStatement{mcpWrap(inner, columns, q.args.values)},
+	statement := mcpWrap(inner, columns, q.args.values)
+	if q.empty {
+		// The top-level WHERE raised EmptyResultSet: Django answers each
+		// aggregate's empty value (Count 0, the others None).
+		values := make([]string, len(aggregates))
+		for i, aggregate := range aggregates {
+			values[i] = "NULL::text"
+			if aggregate.out().kind == "int" && (aggregate.field == "" || aggregate.function == "count") {
+				values[i] = "'0'::text"
+			}
+		}
+		statement = domain.ReportStatement{SQL: "SELECT " + strings.Join(values, ", "), Text: len(columns)}
+	}
+	return ReportPlan{Statements: []domain.ReportStatement{statement},
 		Render: func(results [][][]*string) (any, error) {
 			row := domain.RequestObject{}
 			for i, column := range columns {

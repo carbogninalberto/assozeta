@@ -401,6 +401,24 @@ CASES = [
      {'error': 'Object of type datetime is not JSON serializable'}),
     ('count_data', {'model_name': 'Payment', 'filters': {'meta__amount__has_key': '12'}}, 'native'),
     ('count_data', {'model_name': 'Payment', 'filters': {'meta__amount': 'inf'}}, 'native'),
+    # An EmptyResultSet node drops its parameters (no adaptation error), and an empty top-level WHERE
+    # elides every statement: later filters are never compiled or sent.
+    ('count_data', {'model_name': 'Payment', 'filters': {'meta__payment_date': '2025-03-04', 'payment_id__in': []}}, {'count': 0}),
+    ('query_data', {'model_name': 'Payment', 'fields': ['amount'], 'filters': {'meta__payment_date': '2025-03-04', 'payment_id__in': []}},
+     {'count': 0, 'data': []}),
+    ('count_data', {'model_name': 'Payment', 'filters': {'payment_id__in': []}, 'exclude': {'meta__amount': 'inf'}}, {'count': 0}),
+    ('count_data', {'model_name': 'Payment', 'filters': {'payment_id__in': []}, 'exclude': {'meta__amount__has_key': '12'}}, {'count': 0}),
+    ('count_data', {'model_name': 'Payment', 'or_filters': [{'meta__payment_date': '2025-03-04', 'payment_id__in': []}, {'amount__gt': '0'}]}, None),
+    ('get_field_values', {'model_name': 'Payment', 'field_name': 'amount', 'filters': {'payment_id__in': []}, 'exclude': {'meta__amount': 'inf'}},
+     {'values': [], 'total_distinct': 0}),
+    ('aggregate_data', {'model_name': 'Payment', 'filters': {'payment_id__in': []}, 'exclude': {'meta__amount': 'inf'},
+                        'aggregations': [{'function': 'count'}, {'function': 'sum', 'field': 'amount'}]}, None),
+    ('aggregate_data', {'model_name': 'Payment', 'filters': {'payment_id__in': []}, 'group_by': ['type'],
+                        'aggregations': [{'function': 'count'}]}, {'data': [], 'count': 0}),
+    # execute_query counts before the slice and the field checks; get_field_values counts before it slices.
+    ('query_data', {'model_name': 'Payment', 'fields': ['amount'], 'filters': {'meta__has_key': 12}, 'limit': -1}, 'native'),
+    ('query_data', {'model_name': 'Payment', 'fields': ['amount'], 'limit': -1}, {'error': 'Negative indexing is not supported.'}),
+    ('get_field_values', {'model_name': 'Payment', 'field_name': 'amount', 'filters': {'meta__has_key': 12}, 'limit': -1}, 'native'),
     # iexact=None is the isnull lookup on the KeyTransform, not on its text.
     ('query_data', {'model_name': 'Payment', 'fields': ['amount'], 'filters': {'meta__b__iexact': None}, 'order_by': ['amount']}, None),
     ('query_data', {'model_name': 'Payment', 'fields': ['amount', 'meta__a__0', 'meta__a__1', 'meta__note', 'meta__0', 'meta__b'], 'order_by': ['amount']}, None),

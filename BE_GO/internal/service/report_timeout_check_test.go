@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"testing"
 	"time"
@@ -20,6 +21,10 @@ type timeoutCheckStore struct {
 	checks      []string
 	checkErr    error
 	ran         bool
+	// runErr is RunReportStatements' answer (its statements' database error).
+	runErr error
+	// runs is the timeout text of each RunReportStatements call.
+	runs []string
 }
 
 func (s *timeoutCheckStore) SavedReports(context.Context, string, string) ([]domain.SavedReport, error) {
@@ -45,8 +50,12 @@ func (s *timeoutCheckStore) CheckReportTimeout(_ context.Context, timeoutText st
 	return s.checkErr
 }
 
-func (s *timeoutCheckStore) RunReportStatements(_ context.Context, _ string, statements []domain.ReportStatement) ([][][]*string, error) {
+func (s *timeoutCheckStore) RunReportStatements(_ context.Context, timeoutText string, statements []domain.ReportStatement) ([][][]*string, error) {
 	s.ran = true
+	s.runs = append(s.runs, timeoutText)
+	if s.runErr != nil {
+		return nil, s.runErr
+	}
 	results := make([][][]*string, 0, len(statements))
 	for range statements {
 		text := "1"
@@ -68,6 +77,67 @@ func (s *timeoutCheckStore) UpdateSavedReport(context.Context, string, domain.Sa
 }
 
 func (s *timeoutCheckStore) DeleteSavedReport(context.Context, string) error { return nil }
+
+// jsonbOperatorError is PostgreSQL's answer to filters {"meta__has_key": 12}:
+// the count statement's ? operator does not accept an integer.
+func jsonbOperatorError() *pgconn.PgError {
+	return &pgconn.PgError{Severity: "ERROR", Code: "42883",
+		Message: "operator does not exist: jsonb ? integer"}
+}
+
+// countErrorArguments is query_data on Payment with a JSON-key filter the
+// count raises on and a negative limit (execute_query's deferred exception).
+func countErrorArguments() domain.RequestObject {
+	return mcpObj("model_name", "Payment", "filters", mcpObj("meta__has_key", json.Number("12")), "limit", json.Number("-1"))
+}
+
+// TestBusinessMCPCountErrorBeforeDeferred is execute_query's order: the count
+// runs first, with statement_timeout reset to '0' (Django's SET comes after
+// it), and its database error is the answer rather than the deferred
+// 'Negative indexing is not supported.'
+func TestBusinessMCPCountErrorBeforeDeferred(t *testing.T) {
+	server := jsonbOperatorError()
+	store := &timeoutCheckStore{runErr: &domain.ReportQueryError{Err: server}}
+	tools := NewBusinessMCPTools(store, "a1000000-0000-4000-8000-000000000001", time.Now)
+	raised := false
+	_, err := tools.Execute(WithMCPRaised(context.Background(), &raised), "query_data", countErrorArguments())
+	if !errors.Is(err, ErrBusinessToolRaised) {
+		t.Fatalf("err %v, want ErrBusinessToolRaised", err)
+	}
+	if got, want := BusinessToolRaisedText(err), postgresErrorText(server); got != want {
+		t.Fatalf("text %q, want %q", got, want)
+	}
+	if len(store.runs) != 1 || store.runs[0] != "0" {
+		t.Fatalf("ran with %v, want one untimed run", store.runs)
+	}
+}
+
+// TestBusinessMCPDeferredExceptionAfterCount is the same order without a
+// database error: the count succeeds and the deferred exception is the tool's
+// {'error': str(e)} result.
+func TestBusinessMCPDeferredExceptionAfterCount(t *testing.T) {
+	store := &timeoutCheckStore{}
+	tools := NewBusinessMCPTools(store, "a1000000-0000-4000-8000-000000000001", time.Now)
+	raised := false
+	result, err := tools.Execute(WithMCPRaised(context.Background(), &raised), "query_data", countErrorArguments())
+	if err != nil {
+		t.Fatalf("err %v, want the tool's error result", err)
+	}
+	object, ok := result.(domain.RequestObject)
+	if !ok {
+		t.Fatalf("result %#v, want the error object", result)
+	}
+	message, present := object.Lookup("error")
+	if !present || message != "Negative indexing is not supported." {
+		t.Fatalf("result %#v, want {'error': 'Negative indexing is not supported.'}", result)
+	}
+	if len(store.runs) != 1 || store.runs[0] != "0" {
+		t.Fatalf("ran with %v, want one untimed run", store.runs)
+	}
+	if !raised {
+		t.Fatal("the exception was not marked as raised")
+	}
+}
 
 // invalidTimeoutIntegration stores a query_timeout AISettingsSerializer
 // accepts (3000000 seconds) whose product exceeds PostgreSQL's int range.
@@ -142,5 +212,22 @@ func TestSavedReportChecksReportTimeout(t *testing.T) {
 	}
 	if store.ran {
 		t.Fatal("the statements ran after the rejected timeout")
+	}
+}
+
+// TestSavedReportRunsDeferredCount is RunGroup's side of the same order: the
+// deferred exception's statements run first (the count, untimed) and the
+// exception is then the tool's exception.
+func TestSavedReportRunsDeferredCount(t *testing.T) {
+	store := &timeoutCheckStore{report: domain.SavedReport{ID: "a1000000-0000-4000-8000-000000000011", Name: "Report",
+		ToolName: "query_data", UIConfig: "{}", Params: `{"model_name":"Tags","limit":-1}`}}
+	reports := NewSavedReports(store, time.Now)
+	identity := domain.ResolvedIdentity{ScopeUser: &domain.Account{ID: "a1000000-0000-4000-8000-000000000002"}}
+	_, err := reports.RunGroup(context.Background(), identity, "a1000000-0000-4000-8000-000000000011", nil, "")
+	if !errors.Is(err, dto.ErrReportFailed) || err.Error() != "Negative indexing is not supported." {
+		t.Fatalf("err %v, want the deferred exception", err)
+	}
+	if len(store.runs) != 1 || store.runs[0] != "0" {
+		t.Fatalf("ran with %v, want one untimed run", store.runs)
 	}
 }
