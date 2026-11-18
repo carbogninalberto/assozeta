@@ -82,6 +82,8 @@ Log lines (`api-go`, slog): `handoff to django` with `method`, `route` (the Echo
 `handoff to django: response body interrupted` when Django's body ends early (the client gets the truncated response).
 No header value, query or body is logged.
 
+The owner-only beta report at `GET /api/v2/instance/admin/handoff` counts refusals per Go process and is outside Django parity.
+
 ## Effects: when a refusal is not handed off
 
 Handlers refuse before any write, and the tracker enforces it at run time. An effect recorded for the request context

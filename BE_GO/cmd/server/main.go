@@ -270,6 +270,7 @@ func run() (runErr error) {
 	})
 	instanceHandler := handler.NewInstanceBootstrapHandler(instanceService, service.NewActorAuthentication(accounts, tokens), identities)
 	instanceAdminHandler, instanceAdminService := composeInstanceAdmin(cfg, db, instanceService, service.NewActorAuthentication(accounts, tokens), identities, paymentCategoryOperations)
+	instanceAdminHandler.SetHandoff(djangoHandoff)
 	instanceOutboundHandler, err := composeInstanceOutbound(cfg, db, cache, broker, instanceAdminHandler, instanceAdminService)
 	if err != nil {
 		return err
@@ -876,6 +877,8 @@ func run() (runErr error) {
 	e.Any("/chat/test", apiSchemaHandler.AppendSlash, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/access", instanceHandler.Access, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin", instanceAdminHandler.Admin, middleware.DjangoSessionAudit(sessionAuthentication))
+	// Go-only beta report, outside the Django route inventories, schema, and parity fixtures.
+	e.Any("/instance/admin/handoff", instanceAdminHandler.Handoff, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin/email", instanceAdminHandler.Email, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin/integrations/:provider", instanceAdminHandler.Integration, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin/integrations/:provider/test", instanceOutboundHandler.IntegrationTest, middleware.DjangoSessionAudit(sessionAuthentication))
