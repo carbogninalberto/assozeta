@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/handoff"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/paymentcategorylifecycle"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
 	"github.com/labstack/echo/v4"
@@ -25,6 +26,7 @@ type InstanceAdminHandler struct {
 	// backups serves the go-tasks switch InstanceAdminView.put shares with the
 	// owner's backup actions (set by composeInstanceBackupActions).
 	backups *service.InstanceBackupActions
+	handoff *handoff.Handoff
 }
 
 func NewInstanceAdminHandler(admin *service.InstanceAdmin, actors *service.ActorAuthentication, identities *service.IdentityResolver,
