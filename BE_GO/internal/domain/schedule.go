@@ -3,6 +3,8 @@ package domain
 import (
 	"encoding/json"
 	"errors"
+	"maps"
+	"slices"
 	"time"
 )
 
@@ -97,4 +99,9 @@ var periodicJobKinds = map[string]string{
 func PeriodicJobKind(task string) (string, bool) {
 	kind, ok := periodicJobKinds[task]
 	return kind, ok
+}
+
+// PeriodicTaskNames returns the supported persisted Django task names in order.
+func PeriodicTaskNames() []string {
+	return slices.Sorted(maps.Keys(periodicJobKinds))
 }

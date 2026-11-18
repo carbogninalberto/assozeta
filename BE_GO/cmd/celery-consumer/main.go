@@ -11,13 +11,16 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
 	"io"
 	"log/slog"
+	"maps"
 	"os"
 	"os/signal"
+	"slices"
 	"strconv"
 	"strings"
 	"syscall"
@@ -27,6 +30,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/celeryworker"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/config"
 	ownedpgx "github.com/carbogninalberto/assozeta/BE_GO/internal/database"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/redisclient"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
@@ -49,11 +53,12 @@ func run(arguments []string) error {
 	envFile := flags.String("env-file", "", "optional existing deployment .env")
 	concurrency := flags.Int("concurrency", 2, "execution slots, from 1 to 32")
 	drain := flags.Duration("drain-timeout", 30*time.Second, "grace for running tasks at shutdown")
+	listTasks := flags.Bool("list-tasks", false, "print the production task inventory as JSON and exit")
 	// Internal: one prefork job (see celeryworker/prefork.go), started by the consumer itself.
 	child := flags.Bool("prefork-child", false, "internal")
 	if err := flags.Parse(arguments); err != nil {
 		if errors.Is(err, flag.ErrHelp) {
-			fmt.Println("Go Celery consumer: --env-file PATH, --concurrency N, --drain-timeout D. Consumes the assozeta-go queue " +
+			fmt.Println("Go Celery consumer: --env-file PATH, --concurrency N, --drain-timeout D, --list-tasks. Consumes the assozeta-go queue " +
 				"(GO_TASK_QUEUE_TASKS routing); runs core.tasks.send_mail_async, send_email_text, send_email_template, send_email_html, the automation workflow tasks, the print tasks, save_to_storage, export_invoices_to_zip and instance.backups.notify_failures and hands every other message to the celery queue.")
 			return nil
 		}
@@ -62,11 +67,22 @@ func run(arguments []string) error {
 	if flags.NArg() != 0 {
 		return errors.New("unexpected celery consumer arguments")
 	}
-	cfg, err := config.Load(*envFile)
-	if err != nil {
-		return errors.New("invalid celery consumer environment configuration")
+	envPath := *envFile
+	var cfg config.Config
+	var databaseURL string
+	if *listTasks {
+		// Registration needs a lazy database handle, but inventory needs no deployment credentials.
+		databaseURL = "postgres://inventory@localhost/inventory?sslmode=disable"
+		envPath = ""
+	} else {
+		var err error
+		cfg, err = config.Load(envPath)
+		if err != nil {
+			return errors.New("invalid celery consumer environment configuration")
+		}
+		databaseURL = cfg.DatabaseURL()
 	}
-	database, err := pgx.ParseConfig(cfg.DatabaseURL())
+	database, err := pgx.ParseConfig(databaseURL)
 	if err != nil {
 		return errors.New("invalid celery consumer database configuration")
 	}
@@ -82,9 +98,13 @@ func run(arguments []string) error {
 	}
 	defer broker.Close()
 	admin := cfg.InstanceAdmin
+	var localHostname string
+	if !*listTasks {
+		localHostname = dnsName()
+	}
 	mail := service.NewSendMailAsync(repository.NewSendMailAsyncStore(db), service.SystemEmail{Host: admin.EmailHost,
 		Username: admin.EmailUsername, Password: admin.EmailPassword, Port: admin.EmailPort, PortInvalid: admin.EmailPortInvalid,
-		UseTLS: admin.EmailUseTLS, UseSSL: admin.EmailUseSSL, LocalHostname: dnsName()}, time.Now)
+		UseTLS: admin.EmailUseTLS, UseSSL: admin.EmailUseSSL, LocalHostname: localHostname}, time.Now)
 	// Messages the e-mail tasks publish (send_mail_async) follow GO_TASK_QUEUE_TASKS like Django's producer.
 	emailPublisher := celery.NewProducer(celery.RedisBroker{Client: broker}).WithRoutes(celery.ParseRoutes(cfg.GoTaskQueueTasks))
 	mail.WithEmailTasks(emailPublisher, service.ConsumerEmailSettings{AppURL: admin.AppURL, WhitelabelName: cfg.WhitelabelName,
@@ -106,7 +126,7 @@ func run(arguments []string) error {
 	for name, task := range service.NewWorkflowTasks(repository.NewWorkflowTaskStore(db), producer, time.Now).Tasks() {
 		tasks[name] = task
 	}
-	if err = consumerPrintRegister(tasks, cfg, db, *envFile); err != nil {
+	if err = consumerPrintRegister(tasks, cfg, db, envPath); err != nil {
 		return err
 	}
 	if err = consumerRestoreRegister(tasks, cfg, db, broker, producer); err != nil {
@@ -115,12 +135,18 @@ func run(arguments []string) error {
 	if err = consumerBackupFailuresRegister(tasks, cfg, db, broker, mail); err != nil {
 		return errors.New("celery consumer cannot prepare the backup failure notices")
 	}
+	if *listTasks {
+		return json.NewEncoder(os.Stdout).Encode(map[string][]string{
+			"consumer": slices.Sorted(maps.Keys(tasks)),
+			"job":      domain.PeriodicTaskNames(),
+		})
+	}
 	for _, register := range extraTasks {
 		register(tasks)
 	}
 	childArgs := []string{"--prefork-child"}
-	if *envFile != "" {
-		childArgs = append(childArgs, "--env-file", *envFile)
+	if envPath != "" {
+		childArgs = append(childArgs, "--env-file", envPath)
 	}
 	worker, err := celeryworker.New(transport, tasks,
 		repository.NewCeleryResults(db), admission, celeryworker.Options{Concurrency: *concurrency, HandoffQueue: celery.DefaultQueue,
