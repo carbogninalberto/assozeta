@@ -453,6 +453,24 @@ ensure_configuration_values() {
     file=$1
     [ -f "$file" ] || return
 
+    # ASSOZETA_REALTIME_RELAY_BACKEND selects the realtime relay. Keep the two
+    # replica counts Compose reads in step with it. Without the setting the
+    # file is left alone and Compose's defaults run the Django relay.
+    relay_backend=$(env_value ASSOZETA_REALTIME_RELAY_BACKEND "$file")
+    if [ -n "$relay_backend" ]; then
+        case "$relay_backend" in
+            django) django_relay_replicas=1; go_relay_replicas=0 ;;
+            go) django_relay_replicas=0; go_relay_replicas=1 ;;
+            *) die "invalid ASSOZETA_REALTIME_RELAY_BACKEND in $file: $relay_backend (use django or go)" ;;
+        esac
+        if [ "$(env_value ASSOZETA_DJANGO_RELAY_REPLICAS "$file")" != "$django_relay_replicas" ] \
+            || [ "$(env_value ASSOZETA_GO_RELAY_REPLICAS "$file")" != "$go_relay_replicas" ]; then
+            set_env_value ASSOZETA_DJANGO_RELAY_REPLICAS "$django_relay_replicas" "$file"
+            set_env_value ASSOZETA_GO_RELAY_REPLICAS "$go_relay_replicas" "$file"
+            log "realtime relay backend $relay_backend"
+        fi
+    fi
+
     if ! env_has_key STRIPE_PUBLIC_KEY "$file"; then
         set_env_value STRIPE_PUBLIC_KEY "" "$file"
         log "added STRIPE_PUBLIC_KEY to $file"
@@ -786,6 +804,12 @@ GO_TASK_QUEUE_TASKS=
 # upstream address below is derived from it and passed to Caddy.
 ASSOZETA_BAKNEY_PROTOCOL_BACKEND=django
 ASSOZETA_BAKNEY_PROTOCOL_UPSTREAM=api:8000
+# The realtime outbox relay uses Django by default. Set
+# ASSOZETA_REALTIME_RELAY_BACKEND=go to use the Go relay. Compose uses the
+# two replica counts below, which bin/assozeta derives from the setting.
+ASSOZETA_REALTIME_RELAY_BACKEND=django
+ASSOZETA_DJANGO_RELAY_REPLICAS=1
+ASSOZETA_GO_RELAY_REPLICAS=0
 TZ=Europe/Rome
 DEV_UI_PORT=5001
 DEV_API_PORT=8000
@@ -942,12 +966,9 @@ prod_optional_go_api() {
 }
 
 prod_optional_realtime_relay() {
-    # Releases before the Go realtime outbox have no relay service; recovery and
-    # backup of those distributions must not name it.
+    # Historical distributions may define only the Django relay or neither relay.
     configured_services=$(prod_compose config --services) || return $?
-    if printf '%s\n' "$configured_services" | awk '$0 == "realtime-relay" { found = 1 } END { exit !found }'; then
-        printf 'realtime-relay\n'
-    fi
+    printf '%s\n' "$configured_services" | awk '$0 == "realtime-relay" || $0 == "realtime-relay-go"'
 }
 
 prod_optional_go_migrator() {
@@ -1050,11 +1071,21 @@ require_public_readiness() {
 }
 
 require_background_services_running() {
-    relay_service=$(prod_optional_realtime_relay) || return 1
+    relay_services=$(prod_optional_realtime_relay) || return 1
+    # A historical Compose file with only the Django relay has a fixed replica.
+    case "$relay_services" in
+        *realtime-relay-go*)
+            if [ "$(env_value ASSOZETA_GO_RELAY_REPLICAS "$PROD_ENV")" = 1 ]; then
+                relay_services=realtime-relay-go
+            else
+                relay_services=realtime-relay
+            fi
+            ;;
+    esac
     go_consumer_service=$(prod_active_go_consumer) || return 1
-    running=$(prod_compose ps --status running --services worker beat $relay_service $go_consumer_service 2>/dev/null) || return 1
+    running=$(prod_compose ps --status running --services worker beat $relay_services $go_consumer_service 2>/dev/null) || return 1
 
-    for service in worker beat $relay_service $go_consumer_service; do
+    for service in worker beat $relay_services $go_consumer_service; do
         if printf '%s\n' "$running" | awk -v service="$service" '$0 == service { found=1 } END { exit !found }'; then
             continue
         fi
@@ -1074,10 +1105,9 @@ stop_prod_data_services() {
     fi
     # Keep Caddy serving the maintenance page while the data services stop.
     go_api_service=$(prod_optional_go_api) || return $?
-    relay_service=$(prod_optional_realtime_relay) || return $?
+    relay_services=$(prod_optional_realtime_relay) || return $?
     go_consumer_service=$(prod_optional_go_consumer) || return $?
-    set -- api worker beat
-    [ -z "$relay_service" ] || set -- "$@" "$relay_service"
+    set -- api worker beat $relay_services
     [ -z "$go_api_service" ] || set -- "$@" "$go_api_service"
     if [ -n "$go_consumer_service" ]; then
         # The Go consumer drains its running tasks within stop_grace_period.
@@ -1104,13 +1134,13 @@ start_prod_app_services() {
 
     set -- api web
     [ -z "$go_api_service" ] || set -- "$@" "$go_api_service"
-    relay_service=$(prod_optional_realtime_relay) || return $?
+    relay_services=$(prod_optional_realtime_relay) || return $?
     go_consumer_service=$(prod_active_go_consumer) || return $?
     if [ "$force_recreate" = true ]; then
-        prod_compose up -d --force-recreate worker beat $relay_service $go_consumer_service || return $?
+        prod_compose up -d --force-recreate worker beat $relay_services $go_consumer_service || return $?
         prod_compose up -d --wait --force-recreate "$@" || return $?
     else
-        prod_compose up -d worker beat $relay_service $go_consumer_service || return $?
+        prod_compose up -d worker beat $relay_services $go_consumer_service || return $?
         prod_compose up -d --wait "$@" || return $?
     fi
 
@@ -1240,10 +1270,9 @@ status_prod() {
 
 prod_app_services_running() {
     go_api_service=$(prod_optional_go_api) || return 2
-    relay_service=$(prod_optional_realtime_relay) || return 2
+    relay_services=$(prod_optional_realtime_relay) || return 2
     go_consumer_service=$(prod_active_go_consumer) || return 2
-    set -- web api worker beat
-    [ -z "$relay_service" ] || set -- "$@" "$relay_service"
+    set -- web api worker beat $relay_services
     [ -z "$go_consumer_service" ] || set -- "$@" "$go_consumer_service"
     [ -z "$go_api_service" ] || set -- "$@" "$go_api_service"
     running=$(prod_compose ps --status running --services "$@" 2>/dev/null) || return 2

@@ -79,7 +79,8 @@ def service_order(services):
     The opt-in Go task consumer is long-running; it is configured only when
     compose_command enabled its profile."""
     selected = {name: value for name, value in services.items()
-                if value.get('profiles', []) in ([], [GO_TASKS_PROFILE])}
+                if value.get('profiles', []) in ([], [GO_TASKS_PROFILE])
+                and value.get('deploy', {}).get('replicas', 1) != 0}
     ordered = []
     visiting = set()
 

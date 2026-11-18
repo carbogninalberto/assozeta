@@ -297,6 +297,13 @@ derives from them into `ASSOZETA_BAKNEY_PROTOCOL_UPSTREAM` (`api:8000` or
 the selected backend unchanged, and both keep `Cache-Control: no-store` and
 `Referrer-Policy: no-referrer`.
 
+## Realtime relay backend
+
+The realtime outbox relay defaults to Django. To switch it to Go, set
+`ASSOZETA_REALTIME_RELAY_BACKEND=go` in `.env`, run `./bin/assozeta configure`,
+then run `./bin/assozeta restart`. To switch back, set
+`ASSOZETA_REALTIME_RELAY_BACKEND=django` and repeat both commands.
+
 ## Requests the Go API passes to Django
 
 The Go API does not serve some rare inputs yet. With `DJANGO_HANDOFF_URL` set,
