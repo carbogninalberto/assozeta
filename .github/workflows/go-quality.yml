@@ -492,12 +492,50 @@ jobs:
           subprocess.run(['docker', 'pull', IMAGE], check=True)
           PY
       - name: Run ${{ matrix.harness }}
+        id: background-task
         env:
           HARNESS: ${{ matrix.harness }}
           MODEL_HOOKS_SHARD: ${{ matrix.harness == 'model_hooks_process' && format('{0}/4', matrix.part) || '' }}
         run: |
           umask 077
           python -m "TESTS.adapters.go.$HARNESS" > "$RUNNER_TEMP/go-background-task.log" 2>&1
+      - name: Report background task traceback locations
+        if: failure() && steps.background-task.outcome == 'failure'
+        run: |
+          python - <<'PY'
+          from collections import deque
+          import os
+          from pathlib import Path
+          import re
+          import subprocess
+
+          workspace = os.environ['GITHUB_WORKSPACE']
+          prefix = os.fsencode(workspace.rstrip('/')) + b'/'
+          log_path = Path(os.environ['RUNNER_TEMP']) / 'go-background-task.log'
+          frame = re.compile(rb'  File "([^"\r\n]+)", line ([1-9][0-9]{0,9})(?:, in [^\r\n]*)?\r?\n?')
+          locations = deque(maxlen=8)
+          in_traceback = False
+
+          try:
+              tracked = set(subprocess.check_output(
+                  ['git', 'ls-files', '-z', '--', '*.py'], cwd=workspace,
+                  stderr=subprocess.DEVNULL).split(b'\0'))
+              with log_path.open('rb') as log:
+                  for line in log:
+                      if line.rstrip(b'\r\n') == b'Traceback (most recent call last):':
+                          in_traceback = True
+                      elif not line.startswith(b'  '):
+                          in_traceback = False
+                      elif in_traceback and (match := frame.fullmatch(line)):
+                          path = match[1].removeprefix(prefix).removeprefix(b'./')
+                          if path in tracked and re.fullmatch(rb'[A-Za-z0-9_./-]+', path):
+                              locations.append(f'{path.decode("ascii")}:{match[2].decode("ascii")}')
+          except (OSError, subprocess.CalledProcessError):
+              raise SystemExit(0)
+
+          for location in locations:
+              print(location)
+          PY
       - name: Select the successful model hook shard receipt
         id: model-hook-receipt
         if: success() && matrix.harness == 'model_hooks_process'

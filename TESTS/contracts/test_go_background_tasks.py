@@ -4,6 +4,7 @@ import io
 import json
 import os
 from pathlib import Path
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -103,6 +104,28 @@ class GoBackgroundTasks(unittest.TestCase):
                 paths = [path for pattern in filters[area] if not pattern.startswith('!')
                          for path in pattern.strip('{}').split(',')]
                 self.assertIn(workflow, paths)
+
+    def test_ci_reports_the_failing_source_line_without_fixture_data(self):
+        jobs = yaml.safe_load((ROOT / '.github/workflows/go-quality.yml').read_text())['jobs']
+        steps = jobs['go-background-tasks']['steps']
+        run, = (s for s in steps if '-m "TESTS.adapters.go.$HARNESS"' in s.get('run', ''))
+        self.assertTrue(run.get('id'))
+        diagnostic, = (s for s in steps if 'failure()' in s.get('if', '')
+                       and f"steps.{run['id']}.outcome == 'failure'" in s['if'])
+        harness = 'TESTS/adapters/go/celery_consumer_import_process.py'
+        with tempfile.TemporaryDirectory() as work:
+            Path(work, 'go-background-task.log').write_text(
+                f'PASS: fixture-only-value\nTraceback (most recent call last):\n'
+                f'  File "{ROOT / harness}", line 811, in fixture_only_function\n'
+                f'  File "{ROOT}/quality-reports/fixture-only-file.py", line 8, in call\n'
+                f'  File "{work}/fixture-only-file.py", line 12, in call\n'
+                '    print("fixture-only-source")\nAssertionError: fixture-only-exception\n')
+            result = subprocess.run(['bash', '-euo', 'pipefail', '-c', diagnostic['run']],
+                                    cwd=ROOT, env={**os.environ, 'RUNNER_TEMP': work, 'GITHUB_WORKSPACE': str(ROOT)},
+                                    capture_output=True, text=True, check=True)
+        self.assertIn(f'{harness}:811', result.stdout)
+        self.assertNotIn('fixture', result.stdout + result.stderr)
+        self.assertNotIn(str(ROOT), result.stdout + result.stderr)
 
 
 if __name__ == '__main__':
