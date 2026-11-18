@@ -782,23 +782,27 @@ class AssociationImportService:
         """Existing accounts keep their own credentials on import."""
         return False
 
-    def _ensure_no_pk_collision(
+    def _available_import_pk(
         self,
         model_class: Type[models.Model],
         model_name: str,
         pk_field: Optional[str],
         new_pk: Optional[str]
     ):
-        """Fail explicitly on duplicate non-User primary keys."""
+        """Choose the primary key under this importer's collision policy."""
         if not pk_field or new_pk is None or model_name == 'User':
-            return
+            return new_pk
 
         manager = self._get_unfiltered_manager(model_class)
         if manager.filter(**{pk_field: new_pk}).exists():
-            raise ValueError(
-                f"{model_name} UUID collision: {new_pk} already exists. "
-                "Only User rows may be reused by exact UUID during import."
-            )
+            return self._resolve_pk_collision(model_name, new_pk)
+        return new_pk
+
+    def _resolve_pk_collision(self, model_name, new_pk):
+        raise ValueError(
+            f"{model_name} UUID collision: {new_pk} already exists. "
+            "Only User rows may be reused by exact UUID during import."
+        )
 
     def _register_imported_object(self, model_name: str, old_pk: Optional[Any], obj: Any):
         """Register a created/reused object for deferred FK/M2M resolution."""
@@ -1354,8 +1358,11 @@ class AssociationImportService:
                         existing_user.save(update_fields=['password'])
                 self.reused_user_pks.add(str(old_pk))
                 return existing_user
-        else:
-            self._ensure_no_pk_collision(model_class, model_name, pk_field, data.get(pk_field))
+        elif pk_field and data.get(pk_field) is not None:
+            requested_pk = data[pk_field]
+            data[pk_field] = self._available_import_pk(model_class, model_name, pk_field, requested_pk)
+            if model_class is Document and data[pk_field] != requested_pk:
+                data.pop('token', None)  # A separate document gets a fresh sharing token.
 
         # Extract and defer M2M fields (they start with _m2m_)
         m2m_data = {}
@@ -1496,7 +1503,7 @@ class AssociationImportService:
             new_doc_id = self._generate_uuid(old_doc_id, 'Document')
             doc = self.imported_objects.get('Document', {}).get(old_doc_id)
             if doc is None:
-                self._ensure_no_pk_collision(Document, 'Document', 'document_id', new_doc_id)
+                new_doc_id = self._available_import_pk(Document, 'Document', 'document_id', new_doc_id)
                 doc = Document(
                     document_id=uuid.UUID(new_doc_id),
                     filename=filename,

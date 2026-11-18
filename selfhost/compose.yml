@@ -191,6 +191,7 @@ services:
       DATA_RESTORE_LOCK_PATH: /run/assozeta-operations/lifecycle.lock
       ASSOZETA_DEPLOYMENT_MODE: production
       MANUAL_INDEX_PATH: /app/manuale/index.json
+      TMPDIR: /var/cache/assozeta-go-tasks
       GO_LOGO_SPOOL_DIR: /var/cache/assozeta-logo
       GO_MESSAGE_LIST_SPOOL_DIR: /var/cache/assozeta-message-list
       # Requests the Go API does not serve yet are replayed to the Django API
@@ -211,8 +212,11 @@ services:
       - /var/cache/assozeta-logo
       # Private anonymous disk staging for message LIST; no authoritative data.
       - /var/cache/assozeta-message-list
+      # Restore uploads can exceed the 64 MiB /tmp tmpfs.
+      - /var/cache/assozeta-go-tasks
     networks:
       - internal
+      - renderer_egress
     depends_on:
       postgres:
         condition: service_healthy
@@ -236,6 +240,8 @@ services:
   # lease. The service is also the capability boundary for historical recovery.
   migrate-go:
     <<: *backend-go
+    networks:
+      - internal
     environment:
       DATA_RESTORE_LOCK_PATH: /run/assozeta-operations/lifecycle.lock
       ASSOZETA_DEPLOYMENT_MODE: production
@@ -257,6 +263,8 @@ services:
   # hands every task it does not run back to the celery queue.
   worker-go:
     <<: *backend-go
+    networks:
+      - internal
     profiles: [go-tasks]
     entrypoint: ["/app/celery-consumer"]
     # Drain running tasks within the stop grace period; acks_late tasks that

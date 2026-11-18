@@ -516,7 +516,7 @@ func (s *ConsumerRestoreInstance) prepareReplacement(ctx context.Context, call *
 		staged[item.identity] = item.name
 	}
 	replacement := &restoreReplacement{target: config.Primary.String, owner: config.PrimaryOwner.String, missing: map[string]map[string]bool{},
-		media: staged, processed: map[string]bool{}, store: s.store}
+		media: staged, processed: map[string]bool{}, store: s.store, documentIDs: archive.identities["Document"]}
 	for _, relation := range archive.missingRelations {
 		key := relation.model + "\x00" + relation.record
 		if replacement.missing[key] == nil {
@@ -893,6 +893,7 @@ type restoreReplacement struct {
 	// replacedUsers are the accounts of the replaced association (the
 	// safety backup's User keys).
 	replacedUsers map[string]bool
+	documentIDs   map[string]bool
 	missing       map[string]map[string]bool
 	media         map[string]string
 	processed     map[string]bool
@@ -900,6 +901,20 @@ type restoreReplacement struct {
 	events        []restoreProgressEvent
 	store         *repository.ConsumerRestoreInstance
 	tx            *sqlx.Tx
+}
+
+// The existing document survived scoped deletion. Give the incoming copy its own ID.
+func (r *consumerImportRun) unusedRestoreDocumentID(model *importeffects.Model) (string, error) {
+	for {
+		id := r.s.ids()
+		if r.replace.documentIDs[id] {
+			continue
+		}
+		exists, err := r.effects.Exists(r.ctx, model, importeffects.UUIDValue(id))
+		if err != nil || !exists {
+			return id, err
+		}
+	}
 }
 
 func (rep *restoreReplacement) publish(event restoreProgressEvent) {

@@ -1,7 +1,10 @@
 """Replace an explicitly scoped export graph while preserving local root identities."""
+import uuid
+
 from django.db import transaction
 from django.db.models.deletion import Collector
 from application.models import SportAssociation, User
+from docmanager.models import Document
 from application.services.import_service import AssociationImportService, ImportOptions
 from .archive import Archive, RestoreError
 from instance.models import DataRestoreUserDetachment
@@ -111,6 +114,16 @@ class ReplacementImporter(AssociationImportService):
             value = str(self.local_owner.pk)
         self.uuid_mapping[str(old_uuid)] = value
         return value
+
+    def _resolve_pk_collision(self, model_name, new_pk):
+        if model_name != 'Document':
+            return super()._resolve_pk_collision(model_name, new_pk)
+        # Scoped deletion has finished. This document belongs outside the replacement.
+        while True:
+            candidate = str(uuid.uuid4())
+            if candidate not in self.archive.identities['Document'] and not Document.objects.filter(pk=candidate).exists():
+                self.uuid_mapping[str(new_pk)] = candidate
+                return candidate
 
     def _create_owner_user(self, zf):
         self._load_source_identity(zf)
