@@ -63,8 +63,8 @@ def restore_files(root, archive):
     rollback(root, keep_pending=True)
 
 
-# Target-only Go services: the API and the opt-in task consumer (worker-go).
-GO_RESTORE_SERVICES = ('api-go', 'worker-go')
+# Go services that may be absent from an older source distribution.
+GO_RESTORE_SERVICES = ('api-go', 'worker-go', 'realtime-relay-go')
 
 
 def stop_go_api_for_restore(root, env_file):

@@ -71,6 +71,11 @@ for service in ("web", "api"):
 relay = config["services"]["realtime-relay"]
 assert relay["command"] == ["python", "manage.py", "relay_go_realtime"] and relay["restart"] == "unless-stopped"
 assert all("docker.sock" not in mount["target"] for mount in relay["volumes"])
+assert relay["deploy"]["replicas"] == 1
+relay_go = config["services"]["realtime-relay-go"]
+assert relay_go["deploy"]["replicas"] == 0
+assert all("docker.sock" not in mount["target"] for mount in relay_go.get("volumes", []))
+assert all(not key.startswith("MANUAL_") for key in relay_go["environment"])
 for service in ("api", "worker", "beat", "realtime-relay", "migrate"):
     backend = config["services"][service]
     assert backend["environment"]["MANUAL_INDEX_PATH"] == "/app/manuale/index.json"

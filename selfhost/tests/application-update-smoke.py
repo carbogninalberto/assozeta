@@ -629,9 +629,8 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
             raise AssertionError('Replacement runner did not become ready')
 
         def assert_data_services_stopped():
-            # Labels also find an orphan target api-go after restoring an older
-            # source Compose file that does not know this service.
-            for service in ('api', 'api-go', 'worker', 'beat'):
+            # Labels also find target containers after restoring an older Compose file.
+            for service in ('api', 'api-go', 'worker', 'beat', 'realtime-relay', 'realtime-relay-go'):
                 running = capture(['docker', 'ps', '-q',
                     '--filter', f'label=com.docker.compose.project={project}',
                     '--filter', f'label=com.docker.compose.service={service}'])
@@ -660,6 +659,7 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
             assert capture(compose(*sql, 'SELECT version,dirty FROM public.assozeta_go_schema_migrations'), env=environment) == '4|f'
             # The managed relay forwards Go outbox events through Django Channels.
             assert len(capture(compose('ps', '-q', 'realtime-relay'), env=environment).splitlines()) == 1
+            assert not capture(compose('ps', '--all', '-q', 'realtime-relay-go'), env=environment)
             event = capture(compose(*sql, "INSERT INTO public.assozeta_go_realtime_events(envelope_version,kind,target_id) "
                                     f"VALUES (1,'staff_board_changed','{uuid4()}') RETURNING id"), env=environment).splitlines()[0]
             assert event.isdigit()

@@ -297,6 +297,13 @@ derives from them into `ASSOZETA_BAKNEY_PROTOCOL_UPSTREAM` (`api:8000` or
 the selected backend unchanged, and both keep `Cache-Control: no-store` and
 `Referrer-Policy: no-referrer`.
 
+## Realtime relay backend
+
+The realtime outbox relay defaults to Django. To switch it to Go, set
+`ASSOZETA_REALTIME_RELAY_BACKEND=go` in `.env`, run `./bin/assozeta configure`,
+then run `./bin/assozeta restart`. To switch back, set
+`ASSOZETA_REALTIME_RELAY_BACKEND=django` and repeat both commands.
+
 ## Requests the Go API passes to Django
 
 The Go API does not serve some rare inputs yet. With `DJANGO_HANDOFF_URL` set,
@@ -321,6 +328,17 @@ service on the internal network.
 The value must be an `http://` or `https://` URL without credentials or query.
 Keep it on the internal network: Go forwards the caller's headers, including
 the session token.
+
+### Beta handoff report
+
+The instance owner can use `GET /api/v2/instance/admin/handoff` during the
+two-week observation window. It counts refusals since the Go API process
+started. The counts reset on restart. The report uses route templates and
+contains no request data.
+
+Check `routes` when `handedOff`, `skipped` or `interrupted` is non-zero. Each
+matching row names a route that still needs fallback for some inputs. A skipped
+handoff returned a Go error. An interrupted handoff returned a partial response.
 
 # Run background tasks on Go
 

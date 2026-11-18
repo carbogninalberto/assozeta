@@ -168,9 +168,14 @@ class Engine:
             if expected_go and (values.get('ASSOZETA_BACKEND_GO_REF') != expected_go or 'api-go' not in configured):
                 raise RuntimeError('Verified Go delivery is missing or changed')
         services = [('api', 'BACKEND'), ('worker', 'BACKEND'), ('beat', 'BACKEND'), ('web', 'WEB'), ('renderer', 'RENDERER')]
-        # Releases before the realtime outbox have no relay; recovery to them must verify.
-        if 'realtime-relay' in configured:
-            services.append(('realtime-relay', 'BACKEND'))
+        # Historical releases may define only the Django relay or neither relay.
+        for service, image in (('realtime-relay', 'BACKEND'), ('realtime-relay-go', 'BACKEND_GO')):
+            if service not in configured:
+                continue
+            if configured[service].get('deploy', {}).get('replicas', 1) != 0:
+                services.append((service, image))
+            elif subprocess.check_output(command + ['ps', '--all', '-q', service], env=environment, text=True).strip():
+                raise RuntimeError(f'Unexpected container for disabled service: {service}')
         if 'api-go' in configured:
             services.append(('api-go', 'BACKEND_GO'))
         elif values.get('ASSOZETA_BACKEND_GO_REF') and not allow_configured_images:
