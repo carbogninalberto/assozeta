@@ -316,11 +316,55 @@ services:
     <<: *backend
     # Forwards Go realtime outbox events through Django Channels (Go migration 4).
     command: ["python", "manage.py", "relay_go_realtime"]
-    depends_on:
+    deploy:
+      replicas: ${ASSOZETA_DJANGO_RELAY_REPLICAS:-1}
+    depends_on: &relay-dependencies
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
+    restart: unless-stopped
+    stop_grace_period: 10s
+    healthcheck:
+      disable: true
+
+  # Opt-in Go relay for the same realtime outbox and Channels groups.
+  realtime-relay-go:
+    <<: *backend-go
+    entrypoint: ["/app/relay-go-realtime"]
+    env_file: []
+    environment:
+      DBTYPE: ${DBTYPE}
+      DBNAME: ${DBNAME}
+      DBUSER: ${DBUSER}
+      DBPASSWORD: ${DBPASSWORD}
+      DBHOST: ${DBHOST}
+      DBPORT: ${DBPORT-5432}
+      DBSSLMODE: ${DBSSLMODE:-}
+      DBSSLROOTCERT: ${DBSSLROOTCERT:-}
+      USE_PGBOUNCER: ${USE_PGBOUNCER:-False}
+      PGBOUNCER_HOST: ${PGBOUNCER_HOST-localhost}
+      PGBOUNCER_PORT: ${PGBOUNCER_PORT-6432}
+      REDIS_HOST: ${REDIS_HOST-redis}
+      REDIS_PORT: ${REDIS_PORT-6379}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      REDIS_SSLAUTH: ${REDIS_SSLAUTH:-}
+      REDIS_SSLCERT: ${REDIS_SSLCERT:-}
+      # The shared Go config loader requires these keys. The relay never uses them.
+      DEBUG: "False"
+      SECRET_KEY: ""
+      JWT_SECRET_KEY: ""
+      JWT_PUBLIC_KEY: ""
+      AWS_ACCESS_KEY_ID: ""
+      AWS_SECRET_ACCESS_KEY: ""
+      AWS_STORAGE_BUCKET_NAME: ""
+      AWS_S3_REGION_NAME: ""
+      AWS_S3_ENDPOINT_URL: http://localhost
+      AWS_LOCATION: ""
+    volumes: []
+    deploy:
+      replicas: ${ASSOZETA_GO_RELAY_REPLICAS:-0}
+    depends_on: *relay-dependencies
     restart: unless-stopped
     stop_grace_period: 10s
     healthcheck:

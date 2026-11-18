@@ -134,6 +134,7 @@ compose_with_env() {
             printf 'api\nworker\nbeat\nweb\nrealtime-relay\napi-go\n'
             case " $* " in *' --profile tools '*) printf 'migrate\nmigrate-go\n' ;; esac
             if [ "$TEST_DEFINED" = true ]; then
+                printf 'realtime-relay-go\n'
                 case " $* " in *' --profile go-tasks '*) printf 'worker-go\n' ;; esac
             fi
             return 0 ;;
@@ -166,9 +167,9 @@ class WorkerGoLifecycleTests(unittest.TestCase):
         result, lines, marker = self.run_shell('\nprod_operations_lock_held=true\ninitialise_prod\n'
                                                'start_prod_app_services true\n', flag='1', names=ROUTED)
         self.assertEqual(result.returncode, 0, result.stderr)
-        stop = lines.index('compose --profile go-tasks stop worker-go api worker beat realtime-relay api-go')
+        stop = lines.index('compose --profile go-tasks stop worker-go api worker beat realtime-relay realtime-relay-go api-go')
         migrate = lines.index('compose --profile go-tasks --profile tools run --rm --no-deps migrate')
-        start = lines.index('compose --profile go-tasks up -d --force-recreate worker beat realtime-relay worker-go')
+        start = lines.index('compose --profile go-tasks up -d --force-recreate worker beat realtime-relay realtime-relay-go worker-go')
         self.assertLess(stop, migrate)
         self.assertLess(migrate, start)
         self.assertLess(start, lines.index('compose --profile go-tasks up -d --wait --force-recreate api web api-go'))
@@ -180,24 +181,25 @@ class WorkerGoLifecycleTests(unittest.TestCase):
             with self.subTest(flag=flag):
                 result, lines, marker = self.run_shell('\nstop_prod_data_services\nstart_prod_app_services\n', flag=flag)
                 self.assertEqual(result.returncode, 0, result.stderr)
-                self.assertIn('compose --profile go-tasks stop worker-go api worker beat realtime-relay api-go', lines)
-                self.assertIn('compose up -d worker beat realtime-relay', lines)
+                self.assertIn('compose --profile go-tasks stop worker-go api worker beat realtime-relay realtime-relay-go api-go', lines)
+                self.assertIn('compose up -d worker beat realtime-relay realtime-relay-go', lines)
                 self.assertEqual(sum('worker-go' in line for line in lines), 1)
                 self.assertFalse(marker)
 
-    def test_historical_distribution_never_names_the_consumer(self):
+    def test_historical_distribution_never_names_the_consumer_or_go_relay(self):
         result, lines, marker = self.run_shell('\nstop_prod_data_services\nstart_prod_app_services\n', defined=False)
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn('compose stop api worker beat realtime-relay api-go', lines)
         self.assertNotIn('worker-go', result.stdout)
+        self.assertNotIn('realtime-relay-go', result.stdout)
         self.assertFalse(marker)
 
     def test_backup_stop_and_restart_drain_the_consumer(self):
         result, lines, _ = self.run_shell('\nstop_prod_data_services\nbackup_app_stopped=true\n'
                                           'backup_app_was_running=true\nbackup_cleanup 0\n', flag='1')
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertLess(lines.index('compose --profile go-tasks stop worker-go api worker beat realtime-relay api-go'),
-                        lines.index('compose --profile go-tasks up -d worker beat realtime-relay worker-go'))
+        self.assertLess(lines.index('compose --profile go-tasks stop worker-go api worker beat realtime-relay realtime-relay-go api-go'),
+                        lines.index('compose --profile go-tasks up -d worker beat realtime-relay realtime-relay-go worker-go'))
 
     def test_consumer_that_does_not_stay_running_fails_start_and_keeps_maintenance(self):
         result, lines, marker = self.run_shell('\nstop_prod_data_services\nstart_prod_app_services\n',
@@ -291,12 +293,16 @@ class WorkerGoUpdaterTests(unittest.TestCase):
                     self.assertEqual('go-tasks' in compose_command(root, env), expected)
                     self.assertNotIn('go-tasks', compose_command(root, env, updater=True))
 
-    def test_restart_includes_the_consumer_but_never_tools(self):
+    def test_restart_includes_the_consumer_and_active_relay(self):
         services = {'postgres': {}, 'redis': {}, 'api': {'depends_on': {'postgres': {}}},
                     'worker-go': {'profiles': ['go-tasks'], 'depends_on': {'postgres': {}, 'redis': {}}},
+                    'realtime-relay': {'deploy': {'replicas': 1}},
+                    'realtime-relay-go': {'deploy': {'replicas': 0}},
                     'migrate-go': {'profiles': ['tools'], 'depends_on': {'postgres': {}}}}
         order = service_order(services)
         self.assertIn('worker-go', order)
+        self.assertIn('realtime-relay', order)
+        self.assertNotIn('realtime-relay-go', order)
         self.assertNotIn('migrate-go', order)
         self.assertLess(order.index('postgres'), order.index('worker-go'))
 
@@ -340,11 +346,11 @@ class WorkerGoUpdaterTests(unittest.TestCase):
             with self.subTest(fault=fault), self.assertRaises(RuntimeError):
                 self.verify(fault)
 
-    def test_recovery_stops_and_removes_api_go_and_worker_go(self):
+    def test_recovery_stops_and_removes_target_go_services(self):
         with TemporaryDirectory() as directory:
             env = Path(directory) / '.env'
             env.write_text('COMPOSE_PROJECT_NAME=private-rehearsal\n')
-            listings = {'api-go': 'abc123\n', 'worker-go': 'fed987\n'}
+            listings = {'api-go': 'abc123\n', 'worker-go': 'fed987\n', 'realtime-relay-go': 'bcd234\n'}
             calls = []
 
             def listing(command, **kwargs):
@@ -355,8 +361,8 @@ class WorkerGoUpdaterTests(unittest.TestCase):
             with patch('recovery.subprocess.check_output', side_effect=listing), \
                  patch('recovery.subprocess.run', side_effect=lambda command, **kwargs: calls.append(command)):
                 recovery.stop_go_api_for_restore(directory, env)
-            self.assertEqual(calls, [['docker', 'stop', '--time', '30', 'abc123', 'fed987'],
-                                     ['docker', 'rm', 'abc123', 'fed987']])
+            self.assertEqual(calls, [['docker', 'stop', '--time', '30', 'abc123', 'fed987', 'bcd234'],
+                                     ['docker', 'rm', 'abc123', 'fed987', 'bcd234']])
 
 
 if __name__ == '__main__':
