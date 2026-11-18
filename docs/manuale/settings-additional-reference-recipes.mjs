@@ -33,7 +33,7 @@ export const settingsAdditionalReviewedSources = Object.freeze({
   "UI/src/routes/profile/sections/SelfInstance.svelte": "8b39187d4614b8ed73c00a301b552cf8217ba67a071ca26df5e27e15e1e6fff5",
   "UI/src/routes/profile/sections/InstanceApiVersion.svelte": "28a42cb508a214877d0237104702e75eedf472678c3df3f4c2968b3588ad8c17",
   "UI/src/utils/apiVersion.js": "1e57f66925758f499fd5b5ac9c1a0dc022ab5e2799b7576409981aee167709fa",
-  "UI/src/routes/profile/sections/InstanceGoTasks.svelte": "a0640aa83ca9799f1bcf2121291c524ed0285f50f3bbf3eff96f028568893637"
+  "UI/src/routes/profile/sections/InstanceGoTasks.svelte": "3cfe06b6580002bacf80368fb0d15a38e7f982452e382c19f387072697bbca99"
 });
 const contracts = {
   "atomic_audit_context": ["BE/application/audit_context.py", "_strict_audit_indexes = ContextVar(", 20],

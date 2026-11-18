@@ -27,8 +27,8 @@
     // replaces the switch unless a confirmation is being asked.
     $: if (enabled !== shown && !dialog && !busy) shown = enabled;
 
-    function toggle(event) {
-        const wanted = event.target.checked;
+    function toggle() {
+        const wanted = !saved;
         // Revert at once: nothing is saved until the password is confirmed.
         shown = saved;
         if (disabled || busy || !available) return;
@@ -61,10 +61,10 @@
     }
 </script>
 
-<section class="si-card" aria-labelledby="instance-go-tasks">
+<section class="si-card" aria-labelledby="instance-go-tasks-heading">
     <div class="si-card-head">
         <div>
-            <h2 id="instance-go-tasks" class="si-title">Attività in background su Go <span class="si-pill info beta">Beta</span></h2>
+            <h2 id="instance-go-tasks-heading" class="si-title">Attività in background su Go <span class="si-pill info beta">Beta</span></h2>
             <p class="si-muted si-small">Gli invii email in background passano al servizio Go (worker-go). Cambiare l’impostazione riavvia l’applicazione per circa un minuto.</p>
             <p class="si-muted si-small">Se il servizio Go non è attivo, le attività restano in attesa finché non lo riattivi o spegni l’interruttore.</p>
         </div>
