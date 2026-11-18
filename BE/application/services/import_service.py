@@ -638,6 +638,10 @@ class AssociationImportService:
         # Model name to class mapping (built during import)
         self._model_class_cache: Dict[str, Type[models.Model]] = {}
 
+        # Source associate ids whose tax code is cleared on import, mapped to
+        # the associate that keeps it (see _legacy_tax_code_conflicts).
+        self.tax_code_conflicts: Dict[str, str] = {}
+
     def _get_unfiltered_manager(self, model_class: Type[models.Model]):
         """Return a manager that does not hide soft-deleted rows."""
         if hasattr(model_class, 'original_objects'):
@@ -1115,6 +1119,10 @@ class AssociationImportService:
                     if isinstance(record, dict) and record.get(pk_field) is not None
                 }
 
+        if model_class is Associate and self.clears_legacy_tax_code_conflicts:
+            with zf.open(data_path) as stream:
+                self.tax_code_conflicts = self._legacy_tax_code_conflicts(iter_json_array(stream))
+
         logger.info(f"Processing {model_name} from {filename}")
         with zf.open(data_path) as stream:
             if model_class is Folder:
@@ -1126,6 +1134,50 @@ class AssociationImportService:
         self.imported_models.add(model_name)
         logger.info(f"Imported {count} {model_name} records")
         return count
+
+    # The data restore normalizes legacy tutors itself (instance.restore.archive).
+    clears_legacy_tax_code_conflicts = True
+
+    def _legacy_tax_code_conflicts(self, records) -> Dict[str, str]:
+        """Find legacy anagrafiche whose tax code an active member already uses.
+
+        Every Associate is imported into the new association, but legacy
+        backups hold unassigned (or foreign) anagrafiche that share a member's
+        tax code.  Like the data restore, members keep their codes; the other
+        rows, in (has association, UUID) order, keep a code only while it is
+        free.  Returns {source associate id: associate id keeping the code}.
+        """
+        deleted_field = Associate._meta.get_field('deleted')
+        tax_field = Associate._meta.get_field('tax_code')
+        active: Dict[str, str] = {}
+        others = []
+        for record in records:
+            if not isinstance(record, dict):
+                continue
+            association = record.get('sport_association_id')
+            identity = str(record.get('associate_id'))
+            if not association or str(association) != self.source_association_id:
+                others.append(record)
+                continue
+            if deleted_field.to_python(record.get('deleted', False)) or record.get('tax_code') is None:
+                continue
+            tax_code = tax_field.to_python(record['tax_code']).upper()
+            if tax_code in active:
+                raise ValueError(f'Codice fiscale duplicato tra le anagrafiche attive: {identity}.')
+            active[tax_code] = identity
+        conflicts: Dict[str, str] = {}
+        for record in sorted(others, key=lambda row: (bool(row.get('sport_association_id')),
+                                                      str(row.get('associate_id')))):
+            if deleted_field.to_python(record.get('deleted', False)) or record.get('tax_code') is None:
+                continue
+            identity = str(record.get('associate_id'))
+            tax_code = tax_field.to_python(record['tax_code']).upper()
+            if tax_code in active:
+                conflicts[identity] = active[tax_code]
+                logger.warning(f'Cleared tax code of associate {identity}: already used by {active[tax_code]}')
+            else:
+                active[tax_code] = identity
+        return conflicts
 
     @staticmethod
     def _has_self_reference(model_class: Type[models.Model]) -> bool:
@@ -1368,6 +1420,8 @@ class AssociationImportService:
         if model_name == 'Associate':
             # Resolve sport_association
             data['sport_association_id'] = str(self.association.sport_association_id)
+            if str(old_pk) in self.tax_code_conflicts:
+                data['tax_code'] = None
 
         # Build kwargs for model creation
         kwargs = self._build_model_kwargs(model_class, data)
