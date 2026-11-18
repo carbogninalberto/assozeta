@@ -322,6 +322,17 @@ The value must be an `http://` or `https://` URL without credentials or query.
 Keep it on the internal network: Go forwards the caller's headers, including
 the session token.
 
+### Beta handoff report
+
+The instance owner can use `GET /api/v2/instance/admin/handoff` during the
+two-week observation window. It counts refusals since the Go API process
+started. The counts reset on restart. The report uses route templates and
+contains no request data.
+
+Check `routes` when `handedOff`, `skipped` or `interrupted` is non-zero. Each
+matching row names a route that still needs fallback for some inputs. A skipped
+handoff returned a Go error. An interrupted handoff returned a partial response.
+
 # Run background tasks on Go
 
 The Go Celery consumer (`worker-go`, from the `assozeta-backend-go` image) is an

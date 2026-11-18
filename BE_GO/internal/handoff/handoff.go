@@ -183,8 +183,10 @@ func Serve(c echo.Context, err error) bool {
 	if !refused {
 		return false
 	}
+	route := c.Path()
 	s := fromContext(c.Request().Context())
 	if s == nil {
+		recordStats(c.Request().Method, route, reason, OutcomeDisabled, "")
 		return false
 	}
 	s.mu.Lock()
@@ -192,37 +194,37 @@ func Serve(c echo.Context, err error) bool {
 	s.consumed = true
 	s.mu.Unlock()
 	h := s.h
-	route := c.Path()
-	skip := func(cause string) bool {
+	skip := func(class, cause string) bool {
+		recordStats(s.method, route, reason, OutcomeSkipped, class)
 		h.logger.Warn("handoff skipped: Go answers the refusal with 500", "method", s.method, "route", route,
 			"reason", reason, "cause", cause)
 		return false
 	}
 	switch {
 	case consumed:
-		return skip("already handed off")
+		return skip("already handed off", "already handed off")
 	case s.writer.started || c.Response().Committed:
-		return skip("response already started")
+		return skip("response started", "response already started")
 	case forbid != "":
-		return skip("forbidden: " + forbid)
+		return skip("forbidden", "forbidden: "+forbid)
 	case effects > 0:
-		return skip(fmt.Sprintf("refusal after %d effect(s), first: %s", effects, effect))
+		return skip("effect", fmt.Sprintf("refusal after %d effect(s), first: %s", effects, effect))
 	case transactions > 0:
-		return skip("a database transaction of the request is still open")
+		return skip("open transaction", "a database transaction of the request is still open")
 	}
 	if strings.HasPrefix(s.uri, "//") {
-		return skip("request-target starts with //")
+		return skip("double slash target", "request-target starts with //")
 	}
 	var body []byte
 	if s.body != nil {
 		var ok bool
 		if body, ok = s.body.replayable(); !ok {
-			return skip("request body not replayable (over the limit or unreadable)")
+			return skip("body not replayable", "request body not replayable (over the limit or unreadable)")
 		}
 	}
 	response, err := h.forward(c.Request().Context(), s, body)
 	if err != nil {
-		return skip("upstream error: " + err.Error())
+		return skip("upstream error", "upstream error: "+err.Error())
 	}
 	defer response.Body.Close()
 	written, copyErr := s.write(response)
@@ -230,9 +232,11 @@ func Serve(c echo.Context, err error) bool {
 	attributes := []any{"method", s.method, "route", route, "status", response.StatusCode, "reason", reason,
 		"duration_ms", time.Since(s.started).Milliseconds()}
 	if copyErr != nil {
+		recordStats(s.method, route, reason, OutcomeInterrupted, "")
 		h.logger.Error("handoff to django: response body interrupted", append(attributes, "error", copyErr.Error())...)
 		return true
 	}
+	recordStats(s.method, route, reason, OutcomeHandedOff, "")
 	h.logger.Info("handoff to django", attributes...)
 	return true
 }
