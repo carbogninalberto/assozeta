@@ -790,3 +790,23 @@ func timePrep(v Value) (any, error) {
 	}
 	return parsed.String(), nil
 }
+
+// BoolToPython is BooleanField.to_python for a decoded archive value: None is
+// None on a nullable field, every other value is converted as on save.
+func BoolToPython(field *Field, raw any) (Value, error) {
+	v, err := rawValue(raw)
+	if err != nil {
+		return Value{}, err
+	}
+	if v.Kind == None {
+		if field.Null {
+			return v, nil
+		}
+		return Value{}, boolValidation(false, "None")
+	}
+	text, err := boolFieldPrep(field, v)
+	if err != nil {
+		return Value{}, err
+	}
+	return BoolValue(text == "true"), nil
+}
