@@ -1,8 +1,11 @@
 package service
 
 import (
+	"errors"
 	"reflect"
 	"testing"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/importeffects"
 )
 
 // Legacy backups can hold an unassigned anagrafica sharing a member's tax code;
@@ -41,17 +44,32 @@ func TestConsumerImportTaxConflicts(t *testing.T) {
 		rows: `[{"associate_id":"m1","sport_association_id":"` + association + `","tax_code":"RSSMRA80A01H501U"},
 			{"associate_id":"m2","sport_association_id":"` + association + `","tax_code":"rssmra80a01h501u"}]`,
 		err: "Codice fiscale duplicato tra le anagrafiche attive: m2.",
+	}, {
+		name: "an invalid deleted flag fails like BooleanField.to_python",
+		rows: `[{"associate_id":"m1","sport_association_id":"` + association + `","tax_code":"RSSMRA80A01H501U","deleted":"maybe"}]`,
+		err:  "['Il valore \"maybe\" deve essere True oppure False.']",
+	}, {
+		name: "a non-string tax code is compared as str(value)",
+		rows: `[{"associate_id":"m1","sport_association_id":"` + association + `","tax_code":12345},
+			{"associate_id":"l1","tax_code":"12345"}]`,
+		want: map[string]string{"l1": "m1"},
 	}}
+	plan, err := importeffects.LoadPlan()
+	if err != nil {
+		t.Fatal(err)
+	}
+	model := plan.Model("Associate")
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			decoded, err := consumerImportJSON([]byte(tc.rows))
+			decoded, err := consumerImportJSON([]byte(tc.rows), consumerImportJSONEdge)
 			if err != nil {
 				t.Fatal(err)
 			}
-			got, err := consumerImportTaxConflicts(decoded.([]any), association)
+			got, err := consumerImportTaxConflicts(model, decoded.([]any), association)
 			if tc.err != "" {
-				if err == nil || err.Error() != tc.err {
-					t.Fatalf("error = %v, want %q", err, tc.err)
+				var django *importeffects.DjangoError
+				if !errors.As(err, &django) || err.Error() != tc.err {
+					t.Fatalf("error = %#v, want the Django error %q", err, tc.err)
 				}
 				return
 			}

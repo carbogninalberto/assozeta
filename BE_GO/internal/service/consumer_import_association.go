@@ -1232,7 +1232,7 @@ func (r *consumerImportRun) importModelData(filename string, model *importeffect
 	}
 	pkField := r.s.plan.PKFields[model.Name]
 	if model.Name == "Associate" && r.replace == nil {
-		if r.taxConflicts, err = consumerImportTaxConflicts(records, r.associationID); err != nil {
+		if r.taxConflicts, err = consumerImportTaxConflicts(model, records, r.associationID); err != nil {
 			return err
 		}
 	}
