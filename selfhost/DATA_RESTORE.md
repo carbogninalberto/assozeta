@@ -53,8 +53,10 @@ elsewhere, is not reclaimed by recovery.
 Only rows in the recovery export's association graph are eligible for deletion.
 The restore checks inbound references and deletion cascades and refuses to alter
 unrelated data. Shared data with external dependencies, unsupported records,
-missing required relationships, UUID collisions outside the replaced graph and incomplete
-exports produce an error rather than a partial merge. Billing plans and global
+missing required relationships, non-document UUID collisions outside the replaced graph and incomplete
+exports stop the restore. If an incoming document UUID belongs to a document outside the
+replaced graph, the restore assigns the incoming document a fresh UUID and sharing token.
+Imported relationships point to that copy. The existing document keeps its file and links. Billing plans and global
 feature definitions are not replaced. Initial-setup imports retain their existing
 behavior.
 

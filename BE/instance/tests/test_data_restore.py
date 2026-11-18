@@ -499,17 +499,30 @@ class RestoreTests(TransactionTestCase):
         member.refresh_from_db()
         self.assertTrue(member.check_password('ArchivedMember'))
 
-    def test_unrelated_document_collision_fails_without_deleting_it(self):
+    def test_document_collision_preserves_external_document_and_restores_file_and_links(self):
         from docmanager.models import Document
-        unrelated = Document.objects.create(filename='unrelated.txt')
-        op = self.start(self.upload(self.archive({'Document': [{'document_id': str(unrelated.pk), 'filename': 'archive.txt'}]})))
+        from application.models.user_models import SportAssociationDocumentsArchive
+        key = default_storage.save('unrelated/original.txt', ContentFile(b'original'))
+        existing = Document.objects.create(filename='original.txt', filepath=key)
+        before = Document.objects.values().get(pk=existing.pk)
+        identity, link = str(existing.pk), str(uuid.uuid4())
+        archived = {field: str(before[field]) for field in ('document_id', 'token')}
+        op = self.start(self.upload(self.archive({
+            'Document': [{**archived, 'filename': 'incoming.txt'}],
+            'SportAssociationDocumentsArchive': [{'sport_association_documents_archive_id': link,
+                'sport_association_id': self.source_association, 'document_id': identity}],
+        }, {f'files/documents/{identity}/incoming.txt': b'incoming'})))
         execute(op.pk)
         op.refresh_from_db()
-        self.assertEqual(op.state, 'failed')
-        unrelated.refresh_from_db()
-        self.assertEqual(unrelated.filename, 'unrelated.txt')
-        self.association.refresh_from_db()
-        self.assertEqual(self.association.denomination, 'Current ASD')
+        self.assertEqual(op.state, 'completed', op.error)
+        self.assertEqual(Document.objects.values().get(pk=existing.pk), before)
+        incoming = SportAssociationDocumentsArchive.objects.get(pk=link).document
+        self.assertNotEqual(incoming.pk, existing.pk)
+        self.assertNotEqual(incoming.token, existing.token)
+        with default_storage.open(incoming.filepath) as source:
+            self.assertEqual(source.read(), b'incoming')
+        with default_storage.open(key) as source:
+            self.assertEqual(source.read(), b'original')
 
     def test_recovery_zip_can_restore_previous_data_and_billing_survives(self):
         from application.models.billing_models import BillingSubscription

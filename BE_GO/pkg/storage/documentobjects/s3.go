@@ -200,12 +200,17 @@ type Upload struct {
 // Put stores body under key in one PutObject (uploads below boto3's 8 MiB
 // multipart threshold; larger bodies are stored the same way, in one request).
 func (s *S3) Put(ctx context.Context, key string, body []byte, upload Upload) error {
+	return s.PutReader(ctx, key, bytes.NewReader(body), int64(len(body)), upload)
+}
+
+// PutReader streams a seekable body so the SDK can sign and retry disk-backed uploads.
+func (s *S3) PutReader(ctx context.Context, key string, body io.ReadSeeker, size int64, upload Upload) error {
 	client, err := s.client(ctx)
 	if err != nil {
 		return err
 	}
-	input := &s3.PutObjectInput{Bucket: aws.String(s.options.Bucket), Key: aws.String(key), Body: bytes.NewReader(body),
-		ContentLength: aws.Int64(int64(len(body))), ContentType: aws.String(upload.ContentType)}
+	input := &s3.PutObjectInput{Bucket: aws.String(s.options.Bucket), Key: aws.String(key), Body: body,
+		ContentLength: aws.Int64(size), ContentType: aws.String(upload.ContentType)}
 	if upload.ContentEncoding != "" {
 		input.ContentEncoding = aws.String(upload.ContentEncoding)
 	}

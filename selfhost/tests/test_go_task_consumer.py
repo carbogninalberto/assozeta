@@ -50,12 +50,16 @@ class WorkerGoComposeTests(unittest.TestCase):
     def test_profile_renders_hardened_consumer_with_api_go_configuration(self):
         services = compose_services(self.env, self.directory, 'go-tasks')
         consumer, api = services['worker-go'], services['api-go']
-        for field in ('image', 'user', 'read_only', 'security_opt', 'init', 'tmpfs', 'env_file', 'networks', 'restart'):
+        for field in ('image', 'user', 'read_only', 'security_opt', 'init', 'tmpfs', 'env_file', 'restart'):
             self.assertEqual(consumer.get(field), api.get(field), field)
         self.assertEqual(consumer['user'], '10001:10001')
         self.assertTrue(consumer['read_only'])
         self.assertIn('no-new-privileges:true', consumer['security_opt'])
         self.assertEqual(list(consumer['networks']), ['internal'])
+        self.assertEqual(set(api['networks']), {'internal', 'renderer_egress'})
+        spool = api['environment']['TMPDIR']
+        self.assertTrue(any(v['target'] == spool and v['type'] == 'volume' and 'source' not in v
+                            for v in api['volumes']))
         self.assertEqual(consumer['profiles'], ['go-tasks'])
         self.assertEqual(consumer['entrypoint'], ['/app/celery-consumer'])
         self.assertEqual(consumer['command'], ['--concurrency=2', '--drain-timeout=50s'])

@@ -81,6 +81,7 @@ class GoComposeTests(unittest.TestCase):
             http_spools = {
                 'GO_LOGO_SPOOL_DIR': '/var/cache/assozeta-logo',
                 'GO_MESSAGE_LIST_SPOOL_DIR': '/var/cache/assozeta-message-list',
+                'TMPDIR': '/var/cache/assozeta-go-tasks',
             }
             # Only the HTTP API hands refused requests off to Django.
             self.assertEqual(api['environment']['DJANGO_HANDOFF_URL'], 'http://api:8000')

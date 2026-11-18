@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"math"
+	"os"
 	"path"
 	"strconv"
 	"strings"
@@ -373,8 +374,8 @@ func (s *DataRestore) Backups(ctx context.Context, user, before string) (*DataRe
 }
 
 // DataRestoreUpload is request.FILES.get('file') after the upload handlers:
-// the bytes of the 'file' upload completed within the limit (nil: none).
-type DataRestoreUpload func(limit int64) ([]byte, error)
+// the path of the last complete 'file' part in dir (empty when absent).
+type DataRestoreUpload func(dir string, limit int64) (string, error)
 
 // Upload is DataRestoreView.post for request.user (user).
 func (s *DataRestore) Upload(ctx context.Context, user string, upload DataRestoreUpload) (*DataRestoreReply, error) {
@@ -401,17 +402,22 @@ func (s *DataRestore) Upload(ctx context.Context, user string, upload DataRestor
 	if !single {
 		return dataRestoreError(400, dataRestoreSingleText), nil
 	}
-	content, err := upload(s.settings.MaxUploadBytes)
+	dir, err := os.MkdirTemp("", "data-restore-")
 	if err != nil {
 		return nil, err
 	}
-	if content == nil {
+	defer os.RemoveAll(dir)
+	path, err := upload(dir, s.settings.MaxUploadBytes)
+	if err != nil {
+		return nil, err
+	}
+	if path == "" {
 		return dataRestoreError(400, dataRestoreUploadText), nil
 	}
 	if s.archives == nil {
 		return nil, domain.ErrServerComposition
 	}
-	return s.acceptUpload(ctx, user, config, content)
+	return s.acceptUpload(ctx, user, config, path)
 }
 
 // Read is DataRestoreActionView.get.

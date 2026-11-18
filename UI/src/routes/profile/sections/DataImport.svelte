@@ -90,10 +90,14 @@
         const timeout = setTimeout(() => controller.abort(), options.body instanceof FormData ? 3600000 : 30000);
         try {
             const result = await apiFetch(url, {method: 'GET', skipForbidden: true, ...options, signal: controller.signal});
-            if (result.error) throw new Error(result.response?.error || 'Impossibile contattare il server.');
+            if (result.error) {
+                const detail = result.response?.error || result.response?.detail || result.response?.message;
+                throw new Error(detail || `Richiesta non riuscita (HTTP ${result.status}).`);
+            }
             return result.response;
         } catch (e) {
-            if (e.name === 'AbortError') throw new Error('Il server non ha risposto in tempo.');
+            if (controller.signal.aborted) throw new Error('Il server non ha risposto in tempo.');
+            if (e instanceof TypeError) throw new Error('Impossibile contattare il server.');
             throw e;
         } finally { clearTimeout(timeout); }
     }
@@ -440,9 +444,9 @@
 <style>
     .data-import { display: grid; gap: .75rem; min-width: 0; }
     .data-import h3, .data-import p { margin: 0; }
-    .steps { display: flex; flex-wrap: wrap; gap: .25rem .875rem; margin: 0 0 .5rem; padding: 0; list-style: none; font-size: .925rem; color: var(--text-muted); }
-    .steps li { display: inline-flex; align-items: center; gap: .35rem; }
-    .num { display: inline-grid; place-items: center; width: 1.25rem; height: 1.25rem; border-radius: 50%; border: 1px solid currentColor; font-size: .925rem; font-weight: 600; }
+    .steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .5rem; margin: 0 0 .5rem; padding: 0; list-style: none; font-size: .925rem; color: var(--text-muted); }
+    .steps li { display: flex; flex-direction: column; align-items: center; gap: .25rem; text-align: center; }
+    .num { display: grid; place-items: center; flex: none; box-sizing: border-box; line-height: 1; font-variant-numeric: tabular-nums; width: 1.25rem; height: 1.25rem; border-radius: 50%; border: 1px solid currentColor; font-size: .925rem; font-weight: 600; }
     .steps .done { color: var(--text-secondary); }
     .steps .done .num { background: var(--light-success); border-color: transparent; color: #0f6b4f; }
     .steps .current { color: var(--primary-text, var(--primary)); font-weight: 600; }

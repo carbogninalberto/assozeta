@@ -1,12 +1,14 @@
 package handler
 
 import (
+	"bufio"
 	"bytes"
 	"errors"
 	"io"
 	"mime"
 	"mime/multipart"
 	"net/http"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -119,7 +121,7 @@ func (h *DataRestoreHandler) Root(c echo.Context) error {
 		return h.respond(c, reply, err)
 	case request.Method == http.MethodPost:
 		return h.write(c, func() error {
-			reply, err := h.restore.Upload(c.Request().Context(), user, func(limit int64) ([]byte, error) { return h.uploadedFile(c, limit) })
+			reply, err := h.restore.Upload(c.Request().Context(), user, func(dir string, limit int64) (string, error) { return h.uploadedFile(c, dir, limit) })
 			return h.respond(c, reply, err)
 		})
 	}
@@ -256,46 +258,43 @@ func (h *DataRestoreHandler) data(c echo.Context) (any, error) {
 // uploadedFile is request.FILES.get('file') with LimitedRestoreUploadHandler
 // first: file parts count towards one received total, and the part that
 // passes the limit and everything after it are dropped (StopUpload).
-func (h *DataRestoreHandler) uploadedFile(c echo.Context, limit int64) ([]byte, error) {
-	raw, err := h.rawBody(c)
-	if err != nil {
-		return nil, err
+func (h *DataRestoreHandler) uploadedFile(c echo.Context, dir string, limit int64) (string, error) {
+	request := c.Request()
+	if request.Body == nil || request.ContentLength == 0 {
+		return "", nil
 	}
-	if len(raw) == 0 {
-		return nil, nil
+	source := bufio.NewReader(request.Body)
+	if _, err := source.Peek(1); err != nil {
+		if err == io.EOF {
+			return "", nil
+		}
+		return "", err
 	}
-	media, params, _ := mime.ParseMediaType(c.Request().Header.Get("Content-Type"))
+	media, params, _ := mime.ParseMediaType(request.Header.Get("Content-Type"))
 	switch media {
 	case "application/json":
+		request.Body = io.NopCloser(source)
 		_, err := readMessageMutationsBody(c)
-		return nil, err
+		return "", err
 	case "multipart/form-data":
 	default:
-		return nil, &restInputError{Status: 415, Detail: restText(c.Request(), "media")}
+		return "", &restInputError{Status: 415, Detail: restText(request, "media")}
 	}
 	boundary := params["boundary"]
 	if boundary == "" {
-		return nil, &restInputError{Status: 400, Detail: "Multipart form parse error - Invalid boundary in multipart: None"}
+		return "", &restInputError{Status: 400, Detail: "Multipart form parse error - Invalid boundary in multipart: None"}
 	}
-	reader := multipart.NewReader(bytes.NewReader(raw), boundary)
-	var received int64
-	var found []byte
+	reader := multipart.NewReader(source, boundary)
+	var found string
 	for {
 		part, err := reader.NextRawPart()
 		if err == io.EOF {
 			return found, nil
 		}
 		if err != nil {
-			return nil, &restInputError{Status: 400, Detail: "Multipart form parse error - Invalid multipart data"}
-		}
-		content, err := io.ReadAll(part)
-		if err != nil {
-			return nil, &restInputError{Status: 400, Detail: "Multipart form parse error - Invalid multipart data"}
+			return "", restoreMultipartError(err)
 		}
 		header := djangoPartHeaders(part.Header)
-		if !header.hasDisposition {
-			continue
-		}
 		name, named := header.disposition["name"]
 		filename := header.disposition["filename"]
 		if !named || filename == "" {
@@ -303,29 +302,75 @@ func (h *DataRestoreHandler) uploadedFile(c echo.Context, limit int64) ([]byte, 
 		}
 		sanitized, ok := djangoUploadName(filename)
 		if !ok {
-			// djangoPartHeaders keeps only valid UTF-8 lines without lone surrogates.
-			return nil, domain.ErrDataRestoreUnreachable
+			return "", domain.ErrDataRestoreUnreachable
 		}
 		if sanitized == "" {
 			continue
 		}
-		if header.base64 && len(content) > 0 {
-			// The chunk is decoded after its white space is stripped; any failure ends the request.
-			decoded, err := pyBase64Decode(stripASCIISpace(content))
-			if err != nil {
-				return nil, &restInputError{Status: 400, Detail: "Multipart form parse error - Could not decode base64 data."}
-			}
-			content = decoded
+		var src io.Reader = part
+		if header.base64 {
+			src = &pyBase64Reader{source: part}
 		}
-		received += int64(len(content))
-		if received > limit {
+		keep := strings.TrimFunc(name, unicode.IsSpace) == "file"
+		path, written, tooLarge, err := stageRestorePart(dir, src, limit, keep)
+		if err != nil {
+			return "", restoreMultipartError(err)
+		}
+		if tooLarge {
 			return found, nil
 		}
-		if strings.TrimFunc(name, unicode.IsSpace) == "file" {
-			found = content
-			if found == nil {
-				found = []byte{}
+		limit -= written
+		if keep {
+			if found != "" {
+				if err := os.Remove(found); err != nil {
+					return "", err
+				}
 			}
+			found = path
 		}
 	}
+}
+
+// The service removes the request directory, including any partial part, on return.
+func stageRestorePart(dir string, src io.Reader, remaining int64, keep bool) (string, int64, bool, error) {
+	if remaining < 0 {
+		return "", 0, true, nil
+	}
+	var file *os.File
+	var path string
+	dst := io.Discard
+	if keep {
+		var err error
+		file, err = os.CreateTemp(dir, "archive-*.zip")
+		if err != nil {
+			return "", 0, false, err
+		}
+		path, dst = file.Name(), file
+	}
+	written, err := io.Copy(dst, io.LimitReader(src, remaining))
+	if file != nil {
+		closeErr := file.Close()
+		if err == nil {
+			err = closeErr
+		}
+	}
+	if err != nil || written < remaining {
+		return path, written, false, err
+	}
+	extra, err := io.CopyN(io.Discard, src, 1)
+	if err == io.EOF {
+		err = nil
+	}
+	return path, written, extra > 0, err
+}
+
+func restoreMultipartError(err error) error {
+	var fileError *os.PathError
+	if errors.As(err, &fileError) {
+		return err
+	}
+	if errors.Is(err, errPyBase64) {
+		return &restInputError{Status: 400, Detail: "Multipart form parse error - Could not decode base64 data."}
+	}
+	return &restInputError{Status: 400, Detail: "Multipart form parse error - Invalid multipart data"}
 }
