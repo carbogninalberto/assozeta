@@ -7,10 +7,6 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
-// ErrInstructorWritesNotPorted refuses, before any write, input whose Django
-// outcome Go does not reproduce.
-var ErrInstructorWritesNotPorted = refusal.New("instructor writes input not ported")
-
 // ErrInstructorWritesUnreachable is a state no request or stored row produces
 // (each site names the constraint that rules it out).
 var ErrInstructorWritesUnreachable = refusal.AppState("instructor writes: unreachable state")

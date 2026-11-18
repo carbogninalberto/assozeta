@@ -175,6 +175,13 @@ PAYMENTS = {
                                 meta={'subscription_data': {'name': 1.5}}),
     'pf_wh_name_list': payment(amount='27.00', association=PLAIN['association'], subject=1, intent='pi_stub_pf_name_list',
                                meta={'subscription_data': {'name': ['Agonisti', {'anno': None, 'ok': True}, 2]}}),
+    # A stored 'Quota Corso' description and a meta replacement that is not text:
+    # the update_fields save leaves the list on the instance, the full save after
+    # the invoice calls .lower() on it and the block rolls back. The id is fixed
+    # (not from the sequence) so the authored rows above keep their ids.
+    'pf_wh_quota_meta_list': payment(amount='23.00', association=PLAIN['association'], intent='pi_stub_pf_quota_list',
+                                     description='Quota Corso', meta={'description': ['a']},
+                                     identifier='a1000000-0000-4000-8000-000001521001'),
 }
 # The t6x1 rows that also need invoice and supplier-invoice rows, whose ids come from `more`.
 T6X1_INVOICE_LABELS = ('wh_float_intent', 'wh_json_intent')
@@ -183,6 +190,32 @@ CARNET = {'id': next(ids), 'title': 'Carnet Stripe'}
 COURSE_SUBSCRIPTIONS = {'cs_pf': {'id': next(ids), 'payment': 'pf_wh_course'}, 'cs_pf_parent': {'id': next(ids), 'payment': None}}
 INSTALLMENTS = {'i_pf': {'id': next(ids), 'payment': 'pf_wh_installment', 'cs': 'cs_pf_parent'}}
 HOLDINGS = {'h_pf': {'id': next(ids), 'payment': 'pf_wh_carnet'}}
+# Deep stored JSON (owner decision X15). The stripe views load a payment's JSON columns
+# with json.loads: on the parity harness's Django (CPython 3.13.16) stripe_pay and
+# stripe_webhook read 9935/9936 levels of total nesting, multiple-pay's serializer 9932,
+# auditlog's refetch of the stored row before the UPDATE reads 9933/9934, and the audit
+# index resolver's reload reads 9925/9926 and is caught (the index row then comes from the
+# log entry: the actor's association, or none for the anonymous webhook). Each row exists
+# only around its own case (the adapter inserts it and removes it): the harness's state
+# snapshot walks JSON values in Python, which cannot hold a value this deep. The success
+# bands are only exported where the 2xx body does not carry the payment (pay, webhook):
+# multiple-pay answers the serialized rows themselves.
+DEEP_IDS = iter(f'a1000000-0000-4000-8000-{1529901 + n:012d}' for n in range(8))
+
+
+def deep_payment(depth, *, intent=None, invoice=False):
+    row = payment(amount='10.00', intent=intent, invoice=invoice, identifier=next(DEEP_IDS))
+    row.update(course={'$raw_json': '[' * depth + ']' * depth}, deep=True)
+    return row
+
+
+PAYMENTS['deep_pay'] = deep_payment(9929)
+PAYMENTS['deep_pay_below'] = deep_payment(9000)
+PAYMENTS['deep_pay_over'] = deep_payment(9965)
+PAYMENTS['deep_wh'] = deep_payment(9930, intent='pi_stub_deep_wh', invoice=True)
+PAYMENTS['deep_wh_below'] = deep_payment(9000, intent='pi_stub_deep_wh_below', invoice=True)
+PAYMENTS['deep_wh_over'] = deep_payment(9966, intent='pi_stub_deep_wh_over', invoice=True)
+PAYMENTS['deep_mp_over'] = deep_payment(9962)
 INVOICES = {label: {'id': next(more) if label in T6X1_INVOICE_LABELS else next(ids), 'number': n}
             for n, label in enumerate((k for k, v in PAYMENTS.items() if v['invoice']), start=900)}
 SUPPLIER_INVOICES = {label: {'id': next(more) if label in T6X1_INVOICE_LABELS else next(ids), 'identifier': f'FT-S{n}',
@@ -193,9 +226,11 @@ cases = []
 
 
 def add(name, actor, path, status, response, *, method='POST', body=None, raw_body=None, content_type=None, headers=None, effect=None,
-        stripe=(), signature=None):
+        stripe=(), signature=None, setup=None):
     case = {'name': f'stripe-routes-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
             'status': status, 'response': response, 'effect': effect or nothing(), 'stripe': list(stripe)}
+    if setup is not None:
+        case['setup'] = setup
     if body is not None:
         case['body'] = body
     if raw_body is not None:
@@ -339,12 +374,13 @@ def nothing():
     return effect()
 
 
-def audited(model, label, changes, actor):
+def audited(model, label, changes, actor, *, index=None):
     association = PAYMENTS[label]['association']
-    return {'model': model, 'label': label, 'action': 1, 'changes': changes, 'actor': actor, 'index': [association, 'direct']}
+    return {'model': model, 'label': label, 'action': 1, 'changes': changes, 'actor': actor,
+            'index': [association, 'direct'] if index is None else index}
 
 
-def set_intent(label, value, actor, *, category=False):
+def set_intent(label, value, actor, *, category=False, index=None):
     """Payment.save() after payment.payment_intent_id = value (and the default category for a null one)."""
     row = STATE[label]
     changes = {'payment_intent_id': ['None' if row['intent'] is None else row['intent'], 'None' if value is None else value]}
@@ -352,14 +388,14 @@ def set_intent(label, value, actor, *, category=False):
         changes['payment_category'] = ['None', '$default_category']
         row['category'] = '$default_category'
     row['intent'] = value
-    return audited('payment', label, changes, actor)
+    return audited('payment', label, changes, actor, index=index)
 
 
 def supplier_paid(label, actor):
     return audited('invoicesuppliers', label, {'paid': ['False', 'True'], 'payment_date': ['None', '$now']}, actor)
 
 
-def stripe_marked(label, actor):
+def stripe_marked(label, actor, *, index=None, deep=False):
     """mark_payment_as_paid's payment.save(update_fields=['paid', 'payment_date', 'type']) of an unpaid payment
     (audited with the changed update fields only)."""
     row = STATE[label]
@@ -367,7 +403,11 @@ def stripe_marked(label, actor):
     if row['type'] != 'stripe':
         changes['type'] = [row['type'], 'stripe']
     row.update(paid=True, payment_date='$now', type='stripe')
-    return audited('payment', label, changes, actor)
+    entry = audited('payment', label, changes, actor, index=index)
+    if deep:
+        # The payment exists only around its case: its '$now' is read from the entry itself.
+        entry['deep'] = True
+    return entry
 
 
 def marked_state(label):
@@ -858,6 +898,14 @@ add('webhook-charge-course-without-link', 'anonymous', WEBHOOK, 200, EMPTY, raw_
 # send_notification(None, ...) raises inside the block: it rolls back, its on_commit task is discarded, the view swallows it.
 add('webhook-charge-without-user-rolls-back', 'anonymous', WEBHOOK, 200, EMPTY, raw_body=charge('pi_stub_pf_nouser'), content_type=JSON,
     signature=VALID, effect=paid_flow('pf_wh_no_user', 'anonymous', description=None, notified=None, token='$bypass', rolled_back=True))
+# Payment.save() replaced the stored 'Quota Corso' description with the stored
+# meta['description'] on the instance during the update_fields save (the column
+# kept the text); the full save after the invoice calls .lower() on the list and
+# raises before writing, so the whole block rolls back: unpaid, no invoice, no
+# audit entry, no notification and no on-commit print task.
+add('webhook-charge-quota-corso-meta-list-rolls-back', 'anonymous', WEBHOOK, 200, EMPTY, raw_body=charge('pi_stub_pf_quota_list'),
+    content_type=JSON, signature=VALID,
+    effect=paid_flow('pf_wh_quota_meta_list', 'anonymous', description=None, notified=None, token='$bypass', rolled_back=True))
 add('pay-succeeded-anonymous-creates-invoice', 'anonymous', PAY('pf_pay_anonymous'), 200, MARKED,
     stripe=[retrieve('pi_stub_pf_anon', intent('pi_stub_pf_anon', 1600, status='succeeded'))],
     effect=paid_flow('pf_pay_anonymous', 'anonymous', description=other_text(CATEGORY_NAME), notified='Quota', token=None))
@@ -905,6 +953,35 @@ add('webhook-charge-stripe-typed-payment', 'anonymous', WEBHOOK, 200, EMPTY, raw
     signature=VALID, effect=paid_flow('pf_wh_typed', 'anonymous', description=other_text(CATEGORY_NAME), notified='Quota', token='$bypass'))
 add('webhook-charge-cash-payment-becomes-stripe', 'anonymous', WEBHOOK, 200, EMPTY, raw_body=charge('pi_stub_pf_cash'), content_type=JSON,
     signature=VALID, effect=paid_flow('pf_wh_cash', 'anonymous', description=other_text(CATEGORY_NAME), notified='Quota', token='$bypass'))
+
+# --- deep stored JSON (owner decision X15; see the deep payment comment above) ---
+# Each course is nested inside the band the view's own load still parses and past the
+# index resolver's reload, so the entry's index row comes from the log entry: the
+# actor's association, or none for the anonymous webhook. The last case of each view
+# sits past the load: the 500 page (webhook: logged and answered 200), nothing written.
+add('pay-course-json-at-depth-band-falls-back', 'owner', PAY('deep_pay'), 200,
+    {'data': {'client_secret': 'pi_stub_deep_pay_secret_stub'}},
+    stripe=[create(pay_params('deep_pay'), intent('pi_stub_deep_pay', cents('deep_pay')))],
+    effect=effect(audit=[set_intent('deep_pay', 'pi_stub_deep_pay', 'owner', index=[OWN, 'actor.sport_association'])]),
+    setup={'deep_payment': 'deep_pay'})
+add('pay-course-json-below-depth-band', 'owner', PAY('deep_pay_below'), 200,
+    {'data': {'client_secret': 'pi_stub_deep_pay_below_secret_stub'}},
+    stripe=[create(pay_params('deep_pay_below'), intent('pi_stub_deep_pay_below', cents('deep_pay_below')))],
+    effect=effect(audit=[set_intent('deep_pay_below', 'pi_stub_deep_pay_below', 'owner')]),
+    setup={'deep_payment': 'deep_pay_below'})
+add('pay-course-json-past-depth-band-server-error', 'owner', PAY('deep_pay_over'), 500, SERVER,
+    setup={'deep_payment': 'deep_pay_over'})
+add('webhook-course-json-at-depth-band-falls-back', 'anonymous', WEBHOOK, 200, EMPTY, raw_body=charge('pi_stub_deep_wh'),
+    content_type=JSON, signature=VALID,
+    effect=effect(audit=[{**stripe_marked('deep_wh', 'anonymous', deep=True), 'index': None}]),
+    setup={'deep_payment': 'deep_wh'})
+add('webhook-course-json-below-depth-band', 'anonymous', WEBHOOK, 200, EMPTY, raw_body=charge('pi_stub_deep_wh_below'),
+    content_type=JSON, signature=VALID, effect=effect(audit=[stripe_marked('deep_wh_below', 'anonymous', deep=True)]),
+    setup={'deep_payment': 'deep_wh_below'})
+add('webhook-course-json-past-depth-band-swallowed', 'anonymous', WEBHOOK, 200, EMPTY, raw_body=charge('pi_stub_deep_wh_over'),
+    content_type=JSON, signature=VALID, setup={'deep_payment': 'deep_wh_over'})
+add('multiple-pay-course-json-past-depth-band-server-error', 'anonymous', MULTI, 500, SERVER,
+    body={'payments': [P('deep_mp_over')]}, setup={'deep_payment': 'deep_mp_over'})
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({

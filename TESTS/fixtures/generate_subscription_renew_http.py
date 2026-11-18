@@ -167,6 +167,11 @@ PAYMENTS['session_stale'] = {'id': next(course_ids), 'associate': 'session_membe
                              'date': '$today'}
 PAYMENTS['session_namesake_stale'] = {'id': next(course_ids), 'associate': 'session_namesake', 'amount': '31.00', 'paid': False, 'subject': 1,
                                       'date': '$today'}
+# Stored course rows the renewal's add_course_to_subscription reads: a multi-payment
+# course without events (the for loop's TypeError) and one without a title (Payment.save's
+# ', '.join). Their ids come last so the earlier courses' ids stay stable.
+COURSES['no_events'] = course('Senza eventi', fee='0.00', multi=True, events=None)
+COURSES['no_title'] = {**course('Senza titolo', fee='12.00'), 'title': None}
 TARGET_USER = {'id': next(ids), 'username': 'renew-target-user', 'email': 'renew-target@example.test'}
 ACCOUNT = next(ids)
 
@@ -282,9 +287,9 @@ def subscription_rows(bind, associate_ref, *, kind, payment, user='$owner', medi
     return rows
 
 
-def new_payment(bind, associate_ref, amount='25.00', *, group=None):
+def new_payment(bind, associate_ref, amount='25.00', *, group=None, user='$owner'):
     return {'label': 'payment', 'bind': bind, 'match': {'associate_id': associate_ref, 'amount': amount},
-            'columns': {'subject': 1, 'description': 'Iscrizione', 'payment_category_id': '$category', 'user_id': '$owner',
+            'columns': {'subject': 1, 'description': 'Iscrizione', 'payment_category_id': '$category', 'user_id': user,
                         'sport_association_id': OWN, 'custom_accounts_id': ACCOUNT, 'amount': amount, 'payment_date': '$today_midnight',
                         'meta_payment_categories': None, 'meta': None, **({'group_id': group} if group else {})}}
 
@@ -468,6 +473,13 @@ add('renew-user-email-dict', 'renew', 'owner', 400, error("['“x” is not a va
     body=renewal(basic, user={'email': {'a': 1}}, tags=['x']))
 add('renew-tag-without-id', 'renew', 'owner', 400, error("'tag_id'"), body=renewal(basic, tags=[{'id': TAGS['tag_a']['id']}]))
 add('renew-courses-none', 'renew', 'owner', 400, error("object of type 'NoneType' has no len()"), body=renewal(basic, courses=None))
+# create_subscription's own Python exceptions inside the view's try: the membership
+# plan's fee float() rejects, and the association's season start month is invalid.
+add('renew-membership-plan-fee-not-a-number', 'renew', 'owner', 400,
+    error("could not convert string to float: 'non-un-numero'"),
+    setup={'association': {'multiple_membership_fee': True, 'membership_fee': '0',
+                           'membership_fee_plans': [{'id': 1, 'name': 'Piano', 'membership_fee': 'non-un-numero'}]}},
+    body=renewal({**basic, 'type': 2}, membership_plan_id=1))
 
 # --- subscription/renew: success paths -------------------------------------------------------------------
 # The renewal form's body: the previous associate (associate_id), its association as a dict (no username matches str(dict)),
@@ -887,6 +899,13 @@ add('renew-course-without-fee', 'renew', 'owner', 400, error("'>' not supported 
     body=renewal(basic, courses=[course_item('no_fee')]))
 add('renew-course-stored-event-invalid', 'renew', 'owner', 400, {'amount': ['A valid number is required.']},
     body=renewal(basic, courses=[course_item('fee'), course_item('broken_plan')]))
+# Stored course values: a multi-payment course whose events column is NULL, and a
+# course without a title. Both raise inside add_course_to_subscription; the view's
+# atomic block rolls the renewal back.
+add('renew-course-events-none', 'renew', 'owner', 400, error("'NoneType' object is not iterable"),
+    body=renewal(basic, courses=[course_item('no_events')]))
+add('renew-course-title-none', 'renew', 'owner', 400, error('sequence item 0: expected str instance, NoneType found'),
+    body=renewal(basic, courses=[course_item('no_title')]))
 
 # --- subscription/renew in an association-scoped session ---------------------------------------------------
 # The owner viewing as a collaborator: scoped_queryset keeps to the session's association; the course is enrolled.
@@ -1249,6 +1268,89 @@ add('approve-draft-preregistration-renews-subscription', 'approve', 'owner', 200
                          *status_entries(create=False)],
                   celery=tasks('$prereg_draft_subscription'),
                   notifications=[{'msg': 'Nuova Iscrizione aggiunta per Pia Prenotata.', 'association': OWN}]))
+
+# --- create_subscription's database and DecimalField exceptions inside the view's try ---------------------
+# check_if_subscription_exists passes the raw initial_data names to IExact, which does not prepare them:
+# psycopg2 writes each value as its own SQL literal. PostgreSQL has no upper() for a number, a boolean or
+# an array (ProgrammingError; str(e) carries libpq's LINE/caret window of the statement and the HINT); a
+# dict or a NUL character fails in psycopg2 before anything is sent. An all-NULL list is the quoted text
+# '{NULL}', which runs: the serializer then rejects it. Everything rolls back.
+UPPER_HINT = 'HINT:  No function matches the given name and argument types. You might need to add explicit type casts.\n'
+CARET = ' ' * 61 + '^\n'
+
+
+def upper_error(kind, window, line=1):
+    return error(f'function upper({kind}) does not exist\nLINE {line}: {window}\n{CARET}{UPPER_HINT}')
+
+
+for name, overrides, message in (
+        ('renew-existence-first-name-number', {'first_name': 5},
+         upper_error('integer', '...PER("application_associate"."first_name"::text) = UPPER(5) A...')),
+        ('renew-existence-last-name-boolean', {'last_name': True},
+         upper_error('boolean', '...PPER("application_associate"."last_name"::text) = UPPER(true...')),
+        ('renew-existence-tax-code-negative-float', {'tax_code': -1.5},
+         upper_error('numeric', '...UPPER("application_associate"."tax_code"::text) = UPPER( -1....')),
+        ('renew-existence-tax-code-text-list', {'tax_code': ['a', 'b']},
+         upper_error('text[]', '...UPPER("application_associate"."tax_code"::text) = UPPER(ARRA...')),
+        ('renew-existence-tax-code-nested-empty-list', {'tax_code': [[]]},
+         error('cannot determine type of empty array\nLINE 1: ...cation_associate"."tax_code"::text) = UPPER(ARRAY[ARRAY[]]) ...\n'
+               f'{CARET}HINT:  Explicitly cast to the desired type, for example ARRAY[]::integer[].\n')),
+        ('renew-existence-tax-code-mixed-list', {'tax_code': [1, 'a']},
+         error('invalid input syntax for type integer: "a"\nLINE 1: ...tion_associate"."tax_code"::text) = UPPER(ARRAY[1,\'a\']) AND ...\n'
+               f'{CARET}')),
+        ('renew-existence-tax-code-dict', {'tax_code': {'a': 1}}, error("can't adapt type 'dict'")),
+        ('renew-existence-first-name-nul', {'first_name': 'Ri\x00ta'}, error('A string literal cannot contain NUL (0x00) characters.')),
+        ('renew-existence-last-name-newline', {'last_name': 'Ros\nsa', 'tax_code': 7},
+         upper_error('integer', '...UPPER("application_associate"."tax_code"::text) = UPPER(7) A...', line=2)),
+        ('renew-existence-tax-code-big-integer', {'tax_code': 12345678901234567890123},
+         upper_error('numeric', '...UPPER("application_associate"."tax_code"::text) = UPPER(1234...'))):
+    add(name, 'renew', 'owner', 400, message, body=renewal({**basic, **overrides}))
+# json.loads reads 1e400 as inf: psycopg2's 'Infinity'::float.
+add('renew-existence-tax-code-infinite', 'renew', 'owner', 400,
+    upper_error('double precision', '...UPPER("application_associate"."tax_code"::text) = UPPER(\'Inf...'),
+    raw_body=json.dumps(renewal({**basic, 'tax_code': '@INF@'})).replace('"@INF@"', '1e400'), content_type='application/json')
+add('renew-existence-first-name-number-group', 'renew', 'owner', 400,
+    upper_error('integer', '...PER("application_associate"."first_name"::text) = UPPER(5) A...'), headers={'X-Group-Id': GROUP},
+    body=renewal({**basic, 'first_name': 5}))
+add('renew-existence-tax-code-null-list', 'renew', 'owner', 400, {'tax_code': ['Not a valid string.']},
+    body=renewal({**basic, 'tax_code': [None]}))
+
+# The type and the role are Python ints of any size; the INSERT of the subscription fails for the smallint columns.
+for name, overrides in (('renew-type-beyond-smallint', {'type': 70000}), ('renew-type-below-smallint', {'type': -40000}),
+                        ('renew-role-beyond-int64', {'role': '99999999999999999999'})):
+    add(name, 'renew', 'owner', 400, error('smallint out of range\n'), body=renewal({**basic, **overrides}))
+
+# A membership plan fee float() reads as inf or nan reaches the DecimalField: the payment's amount filter
+# when a payment is due (inf > 0, or show_zero_payments), else the membership's price. These setups stay.
+for name, fee, kind, message in (('renew-membership-plan-fee-infinite', 'inf', 2, 'inf'),
+                                 ('renew-membership-plan-fee-nan-price', 'nan', 2, 'nan'),
+                                 ('renew-membership-plan-fee-negative-infinite-member-only', '-inf', 3, '-inf')):
+    add(name, 'renew', 'owner', 400, error(f"['“{message}” value must be a decimal number.']"),
+        setup={'association': {'multiple_membership_fee': True, 'membership_fee': '0',
+                               'membership_fee_plans': [{'id': 1, 'name': 'Piano', 'membership_fee': fee}]}},
+        body=renewal({**basic, 'type': kind}, membership_plan_id=1))
+add('renew-membership-plan-fee-nan-zero-payments', 'renew', 'owner', 400, error("['“nan” value must be a decimal number.']"),
+    setup={'owner': {'show_zero_payments': True},
+           'association': {'multiple_membership_fee': True, 'membership_fee': '0',
+                           'membership_fee_plans': [{'id': 1, 'name': 'Piano', 'membership_fee': 'nan'}]}},
+    body=renewal({**basic, 'type': 2}, membership_plan_id=1))
+
+# Draft approval swallows the same exceptions: both drafts stay.
+odd_ids = iter(f'a1000000-0000-4000-8000-{958001 + n:012d}' for n in range(10))
+DRAFTS['odd_name'] = {'id': next(odd_ids), 'association': OWN, 'valid': True, 'late': True,
+                      'data': draft_data(draft_person(5, 'Numero', 'NMRCNQ90A41H501N'))}
+DRAFTS['odd_type'] = {'id': next(odd_ids), 'association': OWN, 'valid': True, 'late': True,
+                      'data': draft_data(draft_person('Tea', 'Tipo', 'TPITEA90A41H501T'))}
+add('approve-draft-database-errors-swallowed', 'approve', 'owner', 200, {'msg': '0 su 2 atleti approvati.', 'approved': 0},
+    setup={'drafts_insert': ['odd_name', 'odd_type'], 'approving_cleared': True},
+    body={'associate_import_draft_ids': [DRAFTS['odd_name']['id'], DRAFTS['odd_type']['id']], 'subscription_details': {'type': 70000}},
+    effect=effect('owner', audit=status_entries()))
+
+# The association's season start month is invalid: get_range_from_year_and_
+# starting_date raises its ValueError inside the view's try. Last, because the
+# setup changes the owner's settings for the remaining cases.
+add('renew-calendar-invalid-start-month', 'renew', 'owner', 400, error('Month must be between 1 and 12'),
+    setup={'owner': {'subscription_start_month': 0}}, body=renewal(basic))
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({

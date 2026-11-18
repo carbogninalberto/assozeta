@@ -17,7 +17,11 @@ with payment_paid_flow: the created invoice, the authored course subscriptions
 marked paid, the broadcast rows, the owner's notification (Redis list, cache,
 Channels push, mirror) and the print_document_invoice messages on the run's
 private Celery broker. A second association owner whose invoice date follows
-the payment date (with a token) is seeded for it.
+the payment date (with a token) is seeded for it, an athlete account that
+owns a second association (the association import) with an unpaid payment,
+and two collaborator chains: a FULL collaborator whose connected user owns an
+imported association, and one whose connected user owns an association
+without a connected user of its own.
 
 Seeded invoices (linked to their payments) change only as authored
 ('invoices_changed': cancelled and meta). A CURRENT_HOST print stub
@@ -82,6 +86,41 @@ def moment(text):
     return datetime.fromisoformat(text.replace('Z', '+00:00')) if text else None
 
 
+@contextmanager
+def deep_rows(case):
+    """Insert the payment whose stored JSON no state snapshot can decode (X15 bands).
+
+    The row exists only around the case's request: the harness's state snapshot
+    walks every JSON value in Python and cannot hold a value this deep. Its course
+    is written from the authored text with raw SQL, because psycopg2's json.dumps
+    of a Python structure at that depth raises, and it is removed by primary key
+    without loading it for the same reason.
+    """
+    label = (case.get('setup') or {}).get('deep_payment')
+    if not label:
+        yield
+        return
+    from auditlog.context import disable_auditlog
+    from application.models import Payment
+    from django.db import connection
+    source = contract.load_source()
+    row = source['payments'][label]
+    with disable_auditlog():
+        Payment._base_manager.bulk_create([Payment(
+            payment_id=row['id'], sport_association_id=row['association'], subject=row['subject'], amount=Decimal(row['amount']),
+            paid=row['paid'], expense=row['expense'], description=row['description'], deleted=False, archived=row['archived'],
+            payment_category_id=row['category'], creation_date=moment(row['created']), payment_date=moment(row['payment_date']))])
+        with connection.cursor() as cursor:
+            cursor.execute('UPDATE application_payment SET course=%s::jsonb WHERE payment_id=%s',
+                           [row['course']['$raw_json'], row['id']])
+    try:
+        yield
+    finally:
+        with disable_auditlog():
+            with connection.cursor() as cursor:
+                cursor.execute('DELETE FROM application_payment WHERE payment_id=%s', [row['id']])
+
+
 def default_category():
     from application.models import PaymentCategory
     row = PaymentCategory.objects.filter(name__iexact='entrate e proventi da attività tipiche').order_by('pk').first()
@@ -121,6 +160,30 @@ def seed_rows(source, created):
     other = source['flag_associate']
     insert(Associate, Associate(associate_id=other['id'], sport_association_id=flag['association'], first_name=other['first'],
                                 last_name=other['last'], sex='F', born_date=datetime(1991, 2, 3).date(), is_minor=False))
+    # The athlete (extra_users, inserted with a token before this seed) owns a second association: the association
+    # import reuses an existing user by UUID, so its role stays User.ATHLETE.
+    insert(SportAssociation, SportAssociation(sport_association_id=source['imported_association'],
+                                              user_id=source['extra_users']['imported']['id'],
+                                              denomination=source['imported_denomination'], tax_code='79900000004'))
+    imported = source['imported_associate']
+    insert(Associate, Associate(associate_id=imported['id'], sport_association_id=source['imported_association'],
+                                first_name=imported['first'], last_name=imported['last'], sex=imported['sex'],
+                                tax_code=imported['tax'], born_date=datetime.fromisoformat(imported['born']).date(),
+                                email=imported['email'], is_minor=False))
+    # The collaborator chains (extra_users, inserted as athletes with tokens before this seed, are updated in place):
+    # C1 and C2 are FULL collaborators whose connected users are U1 and U2; U1's own connected user is the main owner
+    # and U2 has none, so resolve_request_identity scopes their requests to U1 and U2. These own the two associations.
+    scope, collaborator, orphan_scope, orphan_collaborator = (source['extra_users'][label]['id'] for label in
+                                                             ('collab_owner', 'collab_actor', 'orphan_owner', 'orphan_actor'))
+    User._base_manager.filter(pk=scope).update(role=User.COLLABORATOR, connected_user_id=owner)
+    User._base_manager.filter(pk=collaborator).update(role=User.COLLABORATOR, collaborator_role=1, connected_user_id=scope)
+    User._base_manager.filter(pk=orphan_scope).update(role=User.COLLABORATOR, connected_user_id=None)
+    User._base_manager.filter(pk=orphan_collaborator).update(role=User.COLLABORATOR, collaborator_role=1,
+                                                            connected_user_id=orphan_scope)
+    insert(SportAssociation, SportAssociation(sport_association_id=source['collab_association'], user_id=scope,
+                                              denomination=source['collab_denomination'], tax_code='79900000005'))
+    insert(SportAssociation, SportAssociation(sport_association_id=source['orphan_association'], user_id=orphan_scope,
+                                              denomination=source['orphan_denomination'], tax_code='79900000006'))
     teacher = source['instructor']
     insert(Instructor, Instructor(instructor_id=teacher['id'], user_id=owner, first_name=teacher['first_name'], last_name=teacher['last_name'],
                                   email=teacher['email'], tax_code=teacher['tax_code'],
@@ -138,11 +201,16 @@ def seed_rows(source, created):
                                 membership_fee=Decimal(row['membership_fee']), activity_fee=Decimal(row['activity_fee']),
                                 description=row['description'], number=row['number'], archived=True))
     for row in payments.values():
+        if row.get('deep'):
+            continue  # inserted for its own case (deep_rows): the state snapshot cannot decode it
+        associate = None
+        if row['associate']:
+            associate = other['id'] if row['associate'] == 'flag' else imported['id'] if row['associate'] == 'imported' else person['id']
         insert(Payment, Payment(
             invoice_id=bills[row['invoice']]['id'] if row['invoice'] else None,
             payment_id=row['id'], sport_association_id=row['association'], subject=row['subject'], amount=Decimal(row['amount']),
             paid=row['paid'], expense=row['expense'], meta=row['meta'],
-            associate_id=(other['id'] if row['associate'] == 'flag' else person['id']) if row['associate'] else None,
+            associate_id=associate,
             meta_payment_categories=row.get('meta_categories'),
             user_id=owner if row['user'] else None, supplier_id=vendor['id'] if row['supplier'] else None,
             instructor_id=teacher['id'] if row['instructor'] else None, group_id=ids[row['group']] if row['group'] else None,
@@ -191,7 +259,8 @@ def user_broadcasts():
 
 def recipients(fixture):
     source = contract.load_source()
-    return {'owner': source['ids']['owner'], 'flag_owner': source['flag_owner']['id']}
+    return {'owner': source['ids']['owner'], 'flag_owner': source['flag_owner']['id'],
+            **{label: row['id'] for label, row in source.get('extra_users', {}).items()}}
 
 
 base_fixture_context = paid.with_notifications(harness.with_celery_broker(harness.fixture_context_for(
@@ -318,7 +387,7 @@ def check_state(case, effect, before, after, source, context, binding):
         contract.require(all(before[k] == after[k] for k in MANAGED), 'state.no-effect')
         return
     fixture, ids = context['fixture'], source['ids']
-    ids = {**ids, 'flag_owner': source['flag_owner']['id']}
+    ids = {**ids, 'flag_owner': source['flag_owner']['id'], **{label: row['id'] for label, row in source.get('extra_users', {}).items()}}
     notification = effect.get('notification')
     if notification is not None:
         notification = {**notification, 'user_id': ids[notification['user']]}
@@ -454,4 +523,4 @@ def check_state(case, effect, before, after, source, context, binding):
         contract.require(created_now[0] == invoice_now, 'audit.now-stored')
 
 
-run_workload = harness.run_workload_for(contract, assert_effect, prepare=captured)
+run_workload = harness.run_workload_for(contract, assert_effect, prepare=captured, case_scope=deep_rows)

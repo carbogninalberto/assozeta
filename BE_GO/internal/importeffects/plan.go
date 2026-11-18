@@ -14,8 +14,10 @@
 // targets, the auditlog registration and what its create diff renders for
 // reverse accessors, the many-to-many through tables, the __str__ and save()
 // implementations in effect, and the importer's own tables (IMPORT_ORDER,
-// PK_FIELDS, FK_MAPPINGS). Inputs outside what this package reproduces return
-// ErrUnsupported before the statement that would need them.
+// PK_FIELDS, FK_MAPPINGS). Every value a JSON archive can carry is handled the
+// way Django handles it; a Python exception Django would raise is returned as
+// a *DjangoError. The only error left for a state input cannot reach is
+// ErrPlanUnreachable.
 package importeffects
 
 import (
@@ -30,12 +32,17 @@ import (
 //go:embed plan.json
 var planJSON []byte
 
-// ErrUnsupported marks a value or path outside the reproduced subset; callers
-// hand the work to Django (rolling back whatever they wrote).
-var ErrUnsupported = refusal.New("importeffects: outside the reproduced subset")
+// ErrPlanUnreachable marks a branch the generated plan never produces: a
+// condition fixed by plan.json (no imported model has a save override, an
+// auditlog include list, a JSON encoder, ...), so a value that would take it
+// can only come from a regenerated plan or a code change. It is application
+// state, never a hand-off: Django cannot produce it either.
+var ErrPlanUnreachable = refusal.AppState("importeffects: input the generated plan never produces")
 
-func unsupported(format string, args ...any) error {
-	return fmt.Errorf("%w: "+format, append([]any{ErrUnsupported}, args...)...)
+// planUnreachable names the plan fact that rules a branch out. Each call site
+// carries a one-line comment with that fact and TestPlanFacts pins it.
+func planUnreachable(format string, args ...any) error {
+	return fmt.Errorf("%w: "+format, append([]any{ErrPlanUnreachable}, args...)...)
 }
 
 // Default is a model field's default: none (Field.get_default's empty value),

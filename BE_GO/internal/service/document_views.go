@@ -177,9 +177,6 @@ func (s *DocumentViews) AuthorizeBypass(authorization *string) (bool, error) {
 func (s *DocumentViews) Render(ctx context.Context, identity domain.ResolvedIdentity, request DocumentViewRequest) (*DocumentViewReply, error) {
 	reply, err := s.render(withViewPromotion(ctx, identity, request.Promotion), identity, request)
 	if err != nil {
-		if errors.Is(err, mentions.ErrUnsupported) { // djtemplate.ErrUnsupported is app state: it passes through
-			return nil, err
-		}
 		if errors.Is(err, djtemplate.ErrPython) {
 			// An exception Django raises for a value the database can hold:
 			// the 500 page, not a request for Django.
@@ -302,18 +299,20 @@ func (s *DocumentViews) associateObject(ctx context.Context, associate *domain.V
 // --- mentions ----------------------------------------------------------------------------------
 
 // fieldResolver is get_nested_attr of a model instance. The listed paths
-// are the port's fields; another path whose first name is not an attribute
-// of the model is getattr's None (""); the model's other attributes are
-// outside the port.
+// are the port's fields; every other path renders as the empty text.
+//
+// A path outside the modelled fields renders as the empty text (accepted
+// divergence X20): get_nested_attr's answer when getattr(obj, name, None)
+// cannot resolve a name. Django renders str() of the attribute for a model
+// attribute the port does not model (a relation, a method); the editor's
+// mention list only offers modelled keys.
 func fieldResolver(attributes map[string]struct{}, fields map[string]*string) mentions.Resolver {
 	return func(path string) (string, error) {
 		value, ok := fields[path]
 		if !ok {
-			first, _, _ := strings.Cut(path, ".")
-			if _, known := attributes[first]; !known {
-				return "", nil
-			}
-			return "", fmt.Errorf("%w: mention %q", mentions.ErrUnsupported, path)
+			// Both an unknown first name and a modelled attribute the port
+			// does not render are X20: the empty text.
+			return "", nil
 		}
 		if value == nil {
 			return "", nil
@@ -368,8 +367,8 @@ func associateResolver(a *domain.ViewAssociate) mentions.Resolver {
 // pystr.ObjectAddress in place of the address of a live object (approved
 // divergence X18).
 //
-// A path outside the model is mentions.ErrUnsupported, so the request goes to
-// Django, which prints it: the str type's __dict__, __flags__, __basicsize__,
+// A path outside the model renders as the empty text (X20) rather than
+// going to Django: the str type's __dict__, __flags__, __basicsize__,
 // __itemsize__ and offsets (a mappingproxy of addresses and values that
 // depend on the build), and the dunder methods of a method object
 // (`other.today.upper.__call__` and the like: determined, but a second object
@@ -699,7 +698,10 @@ func otherResolver(values map[string]string) mentions.Resolver {
 		for _, attr := range strings.Split(rest, ".") {
 			next, err := mentionAttr(value, attr)
 			if err != nil {
-				return "", fmt.Errorf("%w: mention other.%s: %v", mentions.ErrUnsupported, path, err)
+				// the str type's layout fields and a method object's own
+				// dunders are outside the modelled str object graph: X20, the
+				// empty text.
+				return "", nil
 			}
 			if next == nil {
 				return "", nil

@@ -158,8 +158,8 @@ UNKNOWN, NEW_KEY, FULL_KEY = 'a1000000-0000-4000-8000-000000966998', next(ids), 
 cases = []
 
 
-def add(name, actor, path, status, response, *, method='GET', body=None, raw_body=None, content_type=None, headers=None, effect=None,
-        prints=()):
+def add(name, actor, path, status, response, *, method='GET', body=None, raw_body=None, raw_parts=None, content_type=None, headers=None,
+        effect=None, prints=()):
     """prints: the CURRENT_HOST requests of the eager print_document_compensation tasks, in loop order."""
     case = {'name': f'instructor-hours-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
             'status': status, 'response': response, 'effect': effect,
@@ -169,6 +169,8 @@ def add(name, actor, path, status, response, *, method='GET', body=None, raw_bod
         case['body'] = body
     if raw_body is not None:
         case['raw_body'], case['content_type'] = raw_body, content_type
+    if raw_parts is not None:
+        case['raw_parts'], case['content_type'] = raw_parts, content_type
     cases.append(case)
 
 
@@ -362,6 +364,28 @@ add('add-malformed', 'owner', ADD('abc'), 400, BAD_UUID, method='POST', raw_body
 add('add-malformed-json', 'owner', ADD(UNKNOWN), 400, {'detail': 'JSON parse error - Expecting value: line 1 column 1 (char 0)'},
     method='POST', raw_body='nope', content_type='application/json')
 add('add-form-body-server-error', 'owner', ADD(), 500, SERVER, method='POST', raw_body='hours=1', content_type=FORM)
+# request.data is the parser's immutable QueryDict unless the multipart body carries a file: DRF then answers a
+# mutable copy updated with the files, so data['instructor'] = uid works and the form is validated and saved.
+MULTIPART_BOUNDARY = 'hoursboundary7f3a'
+
+
+def multipart(*parts):
+    """A multipart body; a part is (name, value) or (name, value, filename)."""
+    body = ''
+    for name, value, *filename in parts:
+        disposition = f'form-data; name="{name}"' + (f'; filename="{filename[0]}"' if filename else '')
+        body += f'--{MULTIPART_BOUNDARY}\r\nContent-Disposition: {disposition}\r\n\r\n{value}\r\n'
+    return body + f'--{MULTIPART_BOUNDARY}--\r\n'
+
+
+MULTIPART = f'multipart/form-data; boundary={MULTIPART_BOUNDARY}'
+add('add-multipart-without-file-server-error', 'owner', ADD(), 500, SERVER, method='POST',
+    raw_body=multipart(('hours', '1')), content_type=MULTIPART)
+add('add-multipart-with-file', 'owner', ADD(), 200, ADDED, method='POST',
+    raw_body=multipart(('hours', '1.5'), ('notes', 'Allegato'), ('attachment', 'contenuto', 'a.txt')), content_type=MULTIPART,
+    effect=created('draft', 'owner', columns={'hours': '1.50', 'date': '$today', 'notes': 'Allegato'}))
+add('add-multipart-file-as-notes', 'owner', ADD(), 400, {'notes': ['Not a valid string.']}, method='POST',
+    raw_body=multipart(('hours', '1'), ('notes', 'contenuto', 'a.txt')), content_type=MULTIPART)
 add('add-list-body-server-error', 'owner', ADD(), 500, SERVER, method='POST', body=[])
 add('add-null-body-server-error', 'owner', ADD(), 500, SERVER, method='POST', raw_body='null', content_type='application/json')
 add('add-list-body-unknown-instructor', 'owner', ADD(UNKNOWN), 404, NOT_INSTRUCTOR, method='POST', body=[])
@@ -395,6 +419,45 @@ add('update-form', 'owner', UPD('draft_row'), 200, SUCCESS, method='PATCH',
                                                      'payment': [PAYMENTS['unpaid']['id'], 'None']})]))
 add('update-form-invalid-json', 'owner', UPD('draft_row'), 400, {'courses': ['Value must be valid JSON.'], 'instructor': ['This field may not be null.']},
     method='PATCH', raw_body='courses=nope&instructor=', content_type=FORM)
+# The measured form JSON recursion bands (owner decision X15, see instructor-hours.md). D is auditJSONDepth of the field's
+# text: courses={"deep": <depth nested objects>} has D = depth + 1. From D 9942 DRF's json.loads raises RecursionError,
+# before any write even with another field invalid. A value inside the save-time band (9939..9941) is stored by a Django
+# update, which the state snapshot cannot read back: that band is pinned by the Go tests.
+OBJECT_LEVEL = quote('{"a":')
+
+
+def deep_courses_parts(depth, *, extra=''):
+    """A form body (notes=probe, plus extra) whose courses is {"deep": <depth nested objects>} (D = depth + 1)."""
+    return [f'{extra}notes=probe&courses=' + quote('{"deep": '), {'repeat': OBJECT_LEVEL, 'count': depth}, '1',
+            {'repeat': '%7D', 'count': depth}, '%7D']
+
+
+def repeated_key_courses_parts(depth):
+    """courses={"a": <depth nested objects>, "a": 1}: the text is depth + 1 deep, the parsed value is {"a": 1}."""
+    return ['notes=probe&courses=' + quote('{"a": '), {'repeat': OBJECT_LEVEL, 'count': depth}, '1',
+            {'repeat': '%7D', 'count': depth}, quote(', "a": 1}')]
+
+
+add('update-form-courses-depth-9960-server-error', 'owner', UPD('draft_row'), 500, SERVER, method='PATCH',
+    raw_parts=deep_courses_parts(9959), content_type=FORM)
+add('update-form-courses-depth-9960-other-field-invalid', 'owner', UPD('draft_row'), 500, SERVER, method='PATCH',
+    raw_parts=deep_courses_parts(9959, extra='hours=abc&'), content_type=FORM)
+# json.loads stops at its first error, or after the first value (Extra data): a deep tail it never reads is
+# "Value must be valid JSON.", not the recursion band.
+DEEP_TAIL = [{'repeat': '%5B', 'count': 9960}, {'repeat': '%5D', 'count': 9960}]
+INVALID_COURSES = {'courses': ['Value must be valid JSON.']}
+add('update-form-courses-extra-data-deep-tail', 'owner', UPD('draft_row'), 400, INVALID_COURSES, method='PATCH',
+    raw_parts=['notes=probe&courses=' + quote('{} '), *DEEP_TAIL], content_type=FORM)
+add('update-form-courses-long-integer-deep-tail', 'owner', UPD('draft_row'), 400, INVALID_COURSES, method='PATCH',
+    raw_parts=['notes=probe&courses=' + quote('[') + '1' * 5000 + quote(', '), *DEEP_TAIL, quote(']')], content_type=FORM)
+add('update-form-courses-bad-escape-deep-tail', 'owner', UPD('draft_row'), 400, INVALID_COURSES, method='PATCH',
+    raw_parts=['notes=probe&courses=' + quote('["\\uZZZZ", '), *DEEP_TAIL, quote(']')], content_type=FORM)
+# A duplicate key overwrites the deep part: the row stores the shallow value the UPDATE's json.dumps walks.
+add('update-form-courses-depth-9900-repeated-key', 'owner', UPD('draft_row'), 200, SUCCESS, method='PATCH',
+    raw_parts=repeated_key_courses_parts(9900), content_type=FORM,
+    effect=hours_effect('owner', rows={'draft_row': {'courses': {'a': 1}, 'notes': 'probe'}},
+                        audit=[updated('draft_row', {'courses': ['{"a": [1, "\\u00e8"]}', '{"a": 1}'],
+                                                      'notes': ['Modulo', 'probe']})]))
 add('update-validation-errors', 'owner', UPD('draft_row'), 400, {
     'hours': ['This field may not be null.'], 'date': ['This field may not be null.'], 'paid': ['This field may not be null.'],
     'instructor': [f'Invalid pk "{UNKNOWN}" - object does not exist.'], 'compensation_type': ['Not a valid string.'],

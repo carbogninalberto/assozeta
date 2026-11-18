@@ -200,6 +200,32 @@ SUBSCRIPTION_PERIODS['march'] = {'id': next(tail_ids), 'period': 'march', 'subsc
                                  'services': ['refund']}
 PERIOD_LINKS['march'] = ['refund']
 
+# Payment.save() keeps meta['description'] on the instance when it replaces the
+# 'Quota Corso' placeholder: the next save of the same instance calls .lower()
+# on it and fails before writing. Each period has one subscription period so
+# the walk has a single row. Ids come from a separate sequence.
+desc_ids = iter(f'a1000000-0000-4000-8000-{985601 + n:012d}' for n in range(20))
+PERIODS['january'] = {'id': next(desc_ids), 'camp': 'camp', 'start': '2027-01-01T08:00:00Z', 'end': '2027-01-05T18:00:00Z',
+                      'title': 'Gennaio', 'description': None, 'fee': '20.00', 'max': None, 'created': '2026-06-17T09:00:00Z'}
+SERVICES['snowshoes'] = {'id': next(desc_ids), 'period': 'january', 'title': 'Ciaspole', 'description': None, 'fee': '6.00',
+                         'category': 'own', 'created': '2026-06-17T10:00:00Z'}
+PAYMENTS['january'] = {'id': next(desc_ids), 'amount': '26.00', 'paid': False, 'subject': 1, 'description': 'Quota Corso',
+                       'category': 'own', 'notes': None, 'meta': [meta('snowshoes', 6.0, 'own')],
+                       'payment_meta': {'description': ['a', 'b']}, 'created': '2026-06-17T11:00:00Z'}
+SUBSCRIPTION_PERIODS['january'] = {'id': next(desc_ids), 'period': 'january', 'subscription': 'camp', 'payment': 'january',
+                                   'services': ['snowshoes']}
+PERIOD_LINKS['january'] = ['snowshoes']
+PERIODS['may'] = {'id': next(desc_ids), 'camp': 'camp', 'start': '2027-05-01T08:00:00Z', 'end': '2027-05-05T18:00:00Z',
+                  'title': 'Maggio', 'description': None, 'fee': '20.00', 'max': None, 'created': '2026-06-17T12:00:00Z'}
+SERVICES['bikes'] = {'id': next(desc_ids), 'period': 'may', 'title': 'Bici', 'description': None, 'fee': '7.00',
+                     'category': 'own', 'created': '2026-06-17T13:00:00Z'}
+PAYMENTS['may'] = {'id': next(desc_ids), 'amount': '27.00', 'paid': False, 'subject': 1, 'description': 'Quota Corso',
+                   'category': 'own', 'notes': None, 'meta': [meta('bikes', 7.0, 'own')],
+                   'payment_meta': {'description': 5}, 'created': '2026-06-17T14:00:00Z'}
+SUBSCRIPTION_PERIODS['may'] = {'id': next(desc_ids), 'period': 'may', 'subscription': 'camp', 'payment': 'may',
+                               'services': ['bikes']}
+PERIOD_LINKS['may'] = ['bikes']
+
 PERIOD, SERVICE, SUBPERIOD, PAYMENT = ('application.CampsAndRetreatsPeriod', 'application.CampsAndRetreatsPeriodsService',
                                        'application.CampsAndRetreatsSubscriptionPeriod', 'application.Payment')
 PERIOD_LINK = 'application.CampsAndRetreatsPeriod_camps_and_Retreats_period_services'
@@ -212,9 +238,10 @@ STATE = {'periods': copy.deepcopy(PERIODS), 'services': copy.deepcopy(SERVICES),
 cases = []
 
 
-def add(name, actor, path, status, response, *, method='GET', body=None, raw_body=None, content_type=None, headers=None, effect=None):
+def add(name, actor, path, status, response, *, method='GET', body=None, raw_body=None, content_type=None, headers=None, effect=None,
+        setup=None):
     case = {'name': f'camps-periods-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
-            'status': status, 'response': response, 'effect': effect}
+            'status': status, 'response': response, 'effect': effect, 'setup': setup}
     if body is not None:
         case['body'] = body
     if raw_body is not None:
@@ -733,7 +760,7 @@ def check_constraint_text(columns):
             'DETAIL:  Failing row contains (' + ', '.join(pg_clip(pg_text(value)) for value in columns) + ').\n')
 
 
-def payment_walk_row(sp, service, rows, events, other_group=False):
+def payment_walk_row(sp, service, rows, events, other_group=False, path='direct'):
     """One subscription period of the view's walk: the meta saves, then the amount and notes recomputation."""
     payment = STATE['payments'][sp['payment']]
     association = OWN
@@ -747,7 +774,7 @@ def payment_walk_row(sp, service, rows, events, other_group=False):
                 events.append(hidden_payment(payment, payment['amount'], payment['notes']))
             elif dumps(payment['meta']) != old:
                 events.append(audit('Payment', payment['id'], 1, {'meta_payment_categories': [old, dumps(payment['meta'])]}, association,
-                                    'direct'))
+                                    path))
     period = STATE['periods'][sp['period']]
     camp = CAMPS[SUBSCRIPTIONS[sp['subscription']]['camp']]
     notes = f"Iscrizione al periodo {period['title']} del campo {camp['title']}"
@@ -766,22 +793,23 @@ def payment_walk_row(sp, service, rows, events, other_group=False):
     if payment.get('deleted') or other_group:
         events.append(hidden_payment(payment, repr(amount), notes))
     elif changes:
-        events.append(audit('Payment', payment['id'], 1, changes, association, 'direct'))
+        events.append(audit('Payment', payment['id'], 1, changes, association, path))
     payment['amount'], payment['notes'] = f'{amount:.2f}', notes
     rows.setdefault(PAYMENT, {})[payment['id']] = {'amount': payment['amount'], 'notes': notes,
                                                    'meta_payment_categories': copy.deepcopy(payment['meta'])}
 
 
-def payment_effects(label, rows, events, other_group=False):
+def payment_effects(label, rows, events, other_group=False, path='direct'):
     """The view's walk over the unpaid subscription periods of the service's period."""
     service = STATE['services'][label]
     for sp in SUBSCRIPTION_PERIODS.values():
         if sp['period'] != service['period'] or sp['payment'] is None or STATE['payments'][sp['payment']]['paid']:
             continue
-        payment_walk_row(sp, service, rows, events, other_group)
+        payment_walk_row(sp, service, rows, events, other_group, path)
 
 
-def updated_service(actor, name, label, body, values, *, form=None, walk=True, headers=None, form_type='application/x-www-form-urlencoded'):
+def updated_service(actor, name, label, body, values, *, form=None, walk=True, headers=None, form_type='application/x-www-form-urlencoded',
+                    setup=None, path='direct'):
     row = STATE['services'][label]
     before = service_audit_view(row)
     row.update(values)
@@ -792,14 +820,15 @@ def updated_service(actor, name, label, body, values, *, form=None, walk=True, h
                             SERVICE_PATH))
     rows = {SERVICE: {row['id']: service_row(row)}}
     if walk:
-        payment_effects(label, rows, events, other_group=bool(headers))
+        payment_effects(label, rows, events, other_group=bool(headers), path=path)
     effect = {'actor': actor, 'rows': rows, 'audit': events}
     response = {'message': 'Updated successfully', 'period': service_data(label)}
     if form:
         add(name, actor, service_path(label, 'update'), 200, response, method='PATCH', raw_body=form,
-            content_type=form_type, effect=effect)
+            content_type=form_type, effect=effect, setup=setup)
     else:
-        add(name, actor, service_path(label, 'update'), 200, response, method='PATCH', body=body, headers=headers, effect=effect)
+        add(name, actor, service_path(label, 'update'), 200, response, method='PATCH', body=body, headers=headers, effect=effect,
+            setup=setup)
 
 
 add('services-update-restricted-missing-permission', 'restricted_collaborator', service_path('kayak', 'update'), 403, missing('update'),
@@ -927,6 +956,43 @@ description_failure('services-update-description-failure-server-error', 'skates'
                     'list indices must be integers or slices, not str')
 description_failure('services-update-transfer-description-two-payments-server-error', 'boots', 'Scarponi nuovi',
                     "'NoneType' object has no attribute 'name'")
+
+
+# meta['description'] replaces the 'Quota Corso' placeholder with its Python
+# value: the first save inside the meta loop writes str(value), then the save
+# after the amount/notes update calls .lower() on the value and raises before
+# writing. The first save's row and audit entry stay; the later payment rows are
+# not walked.
+def description_value_failure(name, label, title, message):
+    row = STATE['services'][label]
+    before = service_audit_view(row)
+    row['title'] = title
+    events = [audit('CampsAndRetreatsPeriodsService', row['id'], 1,
+                    stored_changes(before, service_audit_view(row), SERVICE_FIELDS), OWN, SERVICE_PATH)]
+    rows = {SERVICE: {row['id']: service_row(row)}}
+    sp = next(sp for sp in SUBSCRIPTION_PERIODS.values() if sp['period'] == row['period'] and sp['payment'])
+    payment = STATE['payments'][sp['payment']]
+    old = dumps(payment['meta'])
+    for item in payment['meta']:
+        if item['camps_and_retreats_period_service_id'] == row['id']:
+            item['amount'] = float(row['fee'])
+            item['title'] = row['title']
+            item['payment_category_id'] = CATEGORIES[row['category']]['id'] if row['category'] else 'None'
+    text = str(payment['payment_meta']['description'])
+    changes = {'description': [payment['description'], text]}
+    if dumps(payment['meta']) != old:
+        changes['meta_payment_categories'] = [old, dumps(payment['meta'])]
+    events.append(audit('Payment', payment['id'], 1, changes, OWN, 'direct'))
+    payment['description'] = text
+    rows[PAYMENT] = {payment['id']: {'description': text, 'meta_payment_categories': copy.deepcopy(payment['meta'])}}
+    add(name, 'owner', service_path(label, 'update'), 500, {'error': message}, method='PATCH', body={'title': title},
+        effect={'actor': 'owner', 'rows': rows, 'audit': events})
+
+
+description_value_failure('services-update-description-list-value-server-error', 'snowshoes', 'Ciaspole nuove',
+                          "'list' object has no attribute 'lower'")
+description_value_failure('services-update-description-int-value-server-error', 'bikes', 'Bici nuove',
+                          "'int' object has no attribute 'lower'")
 
 
 # The walk reads the period's unpaid subscription periods in the database's order (the filter has no ORDER BY) and stops at
@@ -1105,6 +1171,81 @@ def negative_service(name, label, fee):
 
 
 negative_service('services-update-walk-negative-amount-check-constraint', 'refund', '-100.00')
+
+# ---------------------------------------------------------------------------
+# Stored Payment JSON at the interpreter's recursion bands (owner decision X15).
+# Payment.course is a jsonb column psycopg2 loads with json.loads: the parity
+# harness's Django (CPython 3.13.16) reads 9933 levels in this view and raises
+# RecursionError at 9934, which the view's except Exception answers as
+# 500 {'error': str(e)}. Deeper than the index resolver's reload (9925) a saved
+# payment's entry falls back to the actor's association. The value sits in a
+# column the view loads but never renders; each payment has a period, service
+# and subscription of its own, so no other case's walk reaches it, and it
+# exists only around its own case (the adapter's case scope), because the state
+# snapshot walks JSON values in Python and cannot hold a value this deep.
+# ---------------------------------------------------------------------------
+def deep_course(depth):
+    """A course JSON text whose total nesting is depth."""
+    assert depth >= 2
+    return '{"label": "Corso profondo", "unused": ' + '[' * (depth - 1) + ']' * (depth - 1) + '}'
+
+
+def json_depth(text):
+    depth = deepest = 0
+    for char in text:
+        if char in '[{':
+            depth += 1
+            deepest = max(deepest, depth)
+        elif char in ']}':
+            depth -= 1
+    return deepest
+
+
+RECURSION_ARRAY = 'maximum recursion depth exceeded while decoding a JSON array from a unicode string'
+deep_ids = iter(f'a1000000-0000-4000-8000-{985501 + n:012d}' for n in range(40))
+DEEP = {}
+for key, depth in (('index', 9929), ('past', 9963), ('loaded', 9000)):
+    PERIODS[f'deep_{key}'] = {'id': next(deep_ids), 'camp': 'camp', 'start': '2026-11-01T08:00:00Z', 'end': '2026-11-05T18:00:00Z',
+                              'title': 'Profondo ' + key, 'description': None, 'fee': '20.00', 'max': None,
+                              'created': '2026-07-01T08:00:00Z'}
+    SERVICES[f'deep_{key}'] = {'id': next(deep_ids), 'period': f'deep_{key}', 'title': 'Servizio profondo', 'description': None,
+                               'fee': '10.00', 'category': 'own', 'created': '2026-07-02T08:00:00Z'}
+    service = SERVICES[f'deep_{key}']
+    PAYMENTS[f'deep_{key}'] = {'id': next(deep_ids), 'amount': '30.00', 'paid': False, 'subject': 1, 'description': 'Profondo',
+                               'category': 'own', 'notes': None,
+                               'meta': [{'camps_and_retreats_period_service_id': service['id'], 'title': service['title'],
+                                         'amount': 10.0, 'payment_category_id': CATEGORIES['own']['id']}],
+                               'created': '2026-07-03T08:00:00Z'}
+    SUBSCRIPTIONS[f'deep_{key}'] = {'id': next(deep_ids), 'camp': 'camp', 'created': '2026-07-04T08:00:00Z'}
+    SUBSCRIPTION_PERIODS[f'deep_{key}'] = {'id': next(deep_ids), 'period': f'deep_{key}', 'subscription': f'deep_{key}',
+                                           'payment': f'deep_{key}', 'services': [f'deep_{key}']}
+    DEEP[key] = {'payment': f'deep_{key}', 'course': deep_course(depth)}
+    # The authored rows join the generator's running state (the adapter seeds the module dicts above).
+    STATE['periods'][f'deep_{key}'] = copy.deepcopy(PERIODS[f'deep_{key}'])
+    STATE['services'][f'deep_{key}'] = copy.deepcopy(SERVICES[f'deep_{key}'])
+    STATE['payments'][f'deep_{key}'] = copy.deepcopy(PAYMENTS[f'deep_{key}'])
+assert json_depth(DEEP['index']['course']) == 9929 and json_depth(DEEP['past']['course']) == 9963
+assert json_depth(DEEP['loaded']['course']) == 9000
+updated_service('owner', 'services-update-stored-json-index-past', 'deep_index', {'fee': '15'}, {'fee': '15.00'},
+                setup={'deep_payments': [DEEP['index']]}, path='actor.sport_association')
+
+
+def deep_walk_failure(name, key):
+    """The serializer's save stays; the walk's first payment load raises."""
+    row = STATE['services'][f'deep_{key}']
+    before = service_audit_view(row)
+    row.update({'fee': '15.00'})
+    events = [audit('CampsAndRetreatsPeriodsService', row['id'], 1, stored_changes(before, service_audit_view(row), SERVICE_FIELDS),
+                    CAMPS[PERIODS[row['period']]['camp']]['association'], SERVICE_PATH)]
+    rows = {SERVICE: {row['id']: service_row(row)}}
+    add(name, 'owner', service_path(f'deep_{key}', 'update'), 500, {'error': RECURSION_ARRAY},
+        method='PATCH', body={'fee': '15'}, effect={'actor': 'owner', 'rows': rows, 'audit': events},
+        setup={'deep_payments': [DEEP[key]]})
+
+
+deep_walk_failure('services-update-stored-json-past-load-band-server-error', 'past')
+updated_service('owner', 'services-update-stored-json-loaded', 'deep_loaded', {'fee': '15'}, {'fee': '15.00'},
+                setup={'deep_payments': [DEEP['loaded']]})
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Camps and retreats periods and period services authored sequence with audit effects',

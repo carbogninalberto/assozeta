@@ -68,16 +68,3 @@ func TestInstanceBackupsRunnerReplyDepthIsAppState(t *testing.T) {
 		t.Fatalf("deep runner reply is handed off: %v", err)
 	}
 }
-
-// The sites the owner sent back to the Django handoff (long tail PR 2):
-// Django answers them normally, so they stay refusal sentinels.
-func TestLongTailHandoffRefusals(t *testing.T) {
-	for name, err := range map[string]error{
-		"ErrPersonaNotPorted": ErrPersonaNotPorted,
-	} {
-		wrapped := fmt.Errorf("wrapped: %w", err)
-		if !errors.Is(wrapped, refusal.ErrNotPorted) || errors.Is(wrapped, refusal.ErrAppState) {
-			t.Errorf("%s must be a refusal sentinel (handed off)", name)
-		}
-	}
-}

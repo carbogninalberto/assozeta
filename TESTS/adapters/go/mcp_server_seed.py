@@ -131,7 +131,7 @@ def seed():
                     type='transfer', payment_date=datetime(2025, 7, 4, 23, 30, 0, 500000, tzinfo=timezone.utc),
                     payment_category_id=i['cat_quote']),
             Payment(payment_id=i['p3'], sport_association_id=ASSOCIATION, amount=Decimal('12.35'), type='pos', expense=True,
-                    payment_date=at('2024-12-31T23:59:59'), description='Piscina'),
+                    payment_date=at('2024-12-31T23:59:59'), description='Piscina', meta={'b': None}),
             Payment(payment_id=i['p_archived'], sport_association_id=ASSOCIATION, associate_id=i['anna'], amount=Decimal('5.00'),
                     archived=True, payment_date=at('2025-01-15T09:00:00')),
             Payment(payment_id=i['p_deleted'], sport_association_id=ASSOCIATION, amount=Decimal('7.00'), deleted=True,

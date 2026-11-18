@@ -132,6 +132,17 @@ func (s *QuoteAssign) plan(ctx context.Context, job domain.Job, now time.Time) (
 			if err != nil {
 				return nil, err
 			}
+			if err = quoteAssignStoredJSON(subscriptions); err != nil {
+				if !errors.Is(err, errPaymentMiscStop) {
+					return nil, err
+				}
+				// The queryset materializes here and raises RecursionError, so
+				// the real pass stops at this plan: the earlier plans of this
+				// association still run, then association() meets the same
+				// error and ends the task.
+				out = append(out, item)
+				return out, tx.Rollback()
+			}
 			for _, subscription := range subscriptions {
 				if subscription.UserID == row.OwnerID || subscription.AssociateID == nil {
 					continue
@@ -209,7 +220,25 @@ func (s *QuoteAssign) subscriptions(ctx context.Context, job domain.Job, associa
 	if err != nil {
 		return nil, err
 	}
-	return rows, tx.Rollback()
+	return rows, quoteAssignStoredJSON(rows)
+}
+
+// quoteAssignJSONEdges are the job's edges for the stored payment JSON of the
+// subscriptions it materializes. The Celery worker's stack is not measured:
+// owner decision X15 uses the band measured for the HTTP payment loads.
+var quoteAssignJSONEdges = paymentArchiveJSONEdges
+
+// quoteAssignStoredJSON is the task's json.loads of the subscriptions' payment
+// rows (select_related): a payment nested past the load edge raises
+// RecursionError while the queryset materializes, which Django's outer except
+// turns into the end of the run (the payments created before stay committed).
+func quoteAssignStoredJSON(rows []domain.QuoteAssignSubscription) error {
+	for _, row := range rows {
+		if paymentJSONTextsDepth(row.PaymentMetaPaymentCategories, row.PaymentMeta, row.PaymentCourse) > quoteAssignJSONEdges.Load {
+			return errPaymentMiscStop
+		}
+	}
+	return nil
 }
 
 // quote is the existing-payment check and Payment.objects.create (the
@@ -258,7 +287,10 @@ func (s *QuoteAssign) quote(ctx context.Context, job domain.Job, row domain.Quot
 	m.row.Amount, m.amountAudit, m.amountShown = fee.Value, &fee.Audit, &fee.Value
 	m.amountFloat = fee.Float
 	m.setJSON("meta", paymentQuoteMeta(plan), &m.row.Meta)
-	if err = s.writes.defaults(ctx, tx, m); err != nil {
+	// The task runs on a Celery worker whose stack was not measured: X15 uses
+	// the band measured for the HTTP payment loads (owner decision).
+	ctx = withPaymentJSONEdges(ctx, quoteAssignJSONEdges)
+	if _, err = s.writes.defaults(ctx, tx, m); err != nil {
 		return false, err
 	}
 	if err = tx.InsertPaymentRow(ctx, m.row); err != nil {

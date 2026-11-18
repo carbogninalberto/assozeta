@@ -11,6 +11,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 var (
@@ -19,7 +20,37 @@ var (
 	ErrInstructorHoursForbidden = errors.New("instructor hours related payment denied")
 	// errInstructorHoursServer is an exception Django answers with the 500 page.
 	errInstructorHoursServer = errors.New("instructor hours server error")
+	// errInstructorHoursUpdateJSONTooDeep is instructor_hours_update's save-time
+	// json.dumps on a JSON value nested past instructorHoursUpdateJSONDepth: the
+	// 500 page. Application state (Django answers its own 500 page), never a
+	// handoff.
+	errInstructorHoursUpdateJSONTooDeep = refusal.AppState("instructor hours: update JSON nested past the row dump")
 )
+
+// instructorHoursUpdateJSONDepth is the measured save-time band of
+// instructor_hours_update's JSON fields (owner decision X15), measured on the
+// parity harness's Django (CPython 3.13.16) with an HTML form PATCH whose
+// courses (or calculation_data) is {"deep": <n nested objects>} or
+// [<n nested objects>], the value's container nesting D = n + 1: D <= 9938
+// answers 200, one audit update entry and the row updated; D 9939..9941 is the
+// 500 page with the auditlog pre_save entry kept and the row unchanged (the
+// UPDATE's json.dumps raises after pre_save; the view is not atomic). The dump
+// walks the parsed value (dto.JSONValueDepth), so a duplicate key that
+// overwrites a deep text keeps the value shallow, while the text depth past
+// dto.InstructorHoursFormJSONDepth is answered by the parse before any write.
+const instructorHoursUpdateJSONDepth = 9939
+
+// instructorHoursUpdateJSONBand reports an hour whose written JSON field the
+// save would dump past the measured band. The caller keeps auditlog's pre_save
+// entry and skips the UPDATE.
+func instructorHoursUpdateJSONBand(write dto.InstructorHoursWrite) error {
+	for _, name := range []string{"courses", "calculation_data"} {
+		if write.JSONValueDepth[name] >= instructorHoursUpdateJSONDepth {
+			return errInstructorHoursUpdateJSONTooDeep
+		}
+	}
+	return nil
+}
 
 type InstructorHoursValidationError struct{ Fields map[string]any }
 
@@ -360,6 +391,28 @@ func instructorHoursApply(row *domain.InstructorHour, write dto.InstructorHoursW
 	}
 }
 
+// instructorHoursHasUpload reports a file part in a form body: only then does
+// DRF hand the view a mutable copy of the QueryDict, so data['instructor'] = uid
+// works. Value is the key's last value, but a file part can also be one of the
+// earlier values in All.
+func instructorHoursHasUpload(object domain.RequestObject) bool {
+	upload := func(value any) bool {
+		_, isUpload := value.(domain.RequestUpload)
+		return isUpload
+	}
+	for _, field := range object {
+		if upload(field.Value) {
+			return true
+		}
+		for _, value := range field.All {
+			if upload(value) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 // Add follows instructor_hours_add.
 func (s *InstructorHoursService) Add(ctx context.Context, identity domain.ResolvedIdentity, raw string, load InstructorHoursBody,
 	group string, audit domain.LoginAuditContext) error {
@@ -380,8 +433,13 @@ func (s *InstructorHoursService) Add(ctx context.Context, identity domain.Resolv
 		return ErrInstructorNotFound
 	}
 	object, ok := body.(domain.RequestObject)
-	if !ok || form {
-		// data['instructor'] = uid on a QueryDict, list, string or None raises.
+	if !ok || form && !instructorHoursHasUpload(object) {
+		// data['instructor'] = uid raises on a list, string or None body, and on
+		// a form without a file part: DRF answers the parser's immutable QueryDict
+		// there. A multipart body carrying at least one file part gets a mutable
+		// copy instead (self._data.copy() updated with the files), so the
+		// assignment works and the HTML form is validated and saved like
+		// instructor_hours_update's form path.
 		return errInstructorHoursServer
 	}
 	data := domain.RequestObject{}
@@ -391,7 +449,7 @@ func (s *InstructorHoursService) Add(ctx context.Context, identity domain.Resolv
 		}
 	}
 	data = append(data, domain.RequestField{Name: "instructor", Value: raw})
-	write, errs, err := dto.ParseInstructorHoursWrite(data, false, false)
+	write, errs, err := dto.ParseInstructorHoursWrite(data, form, false)
 	if err != nil {
 		return err
 	}
@@ -507,8 +565,15 @@ func (s *InstructorHoursService) Update(ctx context.Context, identity domain.Res
 	if err != nil {
 		return err
 	}
-	if err := tx.UpdateHour(ctx, row); err != nil {
-		return err
+	// Django's auditlog pre_save entry is written before the UPDATE's
+	// json.dumps, which raises past the measured dump band: the entry is kept
+	// (the view is not atomic), the row stays unchanged and the answer is the
+	// 500 page. Both writes stay in this request's transaction.
+	bandErr := instructorHoursUpdateJSONBand(write)
+	if bandErr == nil {
+		if err := tx.UpdateHour(ctx, row); err != nil {
+			return err
+		}
 	}
 	if len(changes) > 0 {
 		// auditlog's pre_save entry resolves the stored row: the previous instructor.
@@ -517,7 +582,10 @@ func (s *InstructorHoursService) Update(ctx context.Context, identity domain.Res
 			return err
 		}
 	}
-	return tx.Commit()
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+	return bandErr
 }
 
 // instructorHoursChanges is auditlog's update diff: str() of each field before

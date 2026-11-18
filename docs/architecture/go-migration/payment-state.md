@@ -120,9 +120,9 @@ untouched. Responses `{'message': 'All payments archived'}` / `{'message': 'All 
 
 ## Not ported (refused with a 500 before any write)
 
-- A paid flow whose request.user is not an owner or collaborator (`ErrPaymentStateNotPorted`): it needs an
-  association owned by an account with another role, which only the association import can leave (it reuses an
-  existing user as the archive's owner). An uploaded file as `send_receipt_email` (a multipart file part) is what
+- Long tail PR 5: a paid flow whose request.user is an athlete owning an association (the association import reuses an
+  existing user as the archive's owner) runs as for the owner; `send_notification` leaves `association_id` None for that
+  role, so the stored notification and its push carry JSON null (`ErrPaymentStateNotPorted` is gone). An uploaded file as `send_receipt_email` (a multipart file part) is what
   kombu cannot encode: the publish is skipped and the answer stays 200, as in Django. Every JSON value of `send_receipt_email`
   (floats, integers of any size, lists, objects) reaches the task as sent (rest-b1, see
   [invoice-generate](invoice-generate.md)); a lone surrogate (`"\ud800"`) too (go-v2only-celery, case
@@ -197,3 +197,10 @@ digit accept decimal digits of any script, as `strptime`'s `\d` does; a month wr
 other mismatch. Two more cases (160 in all). The old refusal is the RED (v2-refusals.md, payment-state row
 "approve/date"). GREEN `v2resta-green-r4`: 160/160 on the four transports. Mutation `v2resta-mutation-r3` (the year
 limited to ASCII digits) fails `payment-state-approve-other-script-date` (CAUGHT).
+
+Long tail PR 5 (second review): `send_notification(request.user, ...)` fills `association_id` from
+`request.user.sport_association`, which for a COLLABORATOR scope user is the connected user's live association. The
+association import can make the scope user a collaborator who owns an association, so Go reads the connected user's
+association inside the transaction, before `validate_broadcast`; with no connected user or no live association it is
+Django's DoesNotExist: the 500 page, everything rolled back, no notification. Cases
+`approve-paid-flow-collaborator-owner-imported` and `approve-paid-flow-collaborator-owner-orphan-server-error`.

@@ -66,8 +66,5 @@ func (h *CommunicationSendEmailHandler) Send(c echo.Context) error {
 	case errors.Is(err, domain.ErrSendEmailMessageNotFound):
 		return c.JSON(404, map[string]string{"msg": "message not found."})
 	}
-	if errors.Is(err, domain.ErrSendEmailNotPorted) {
-		c.Logger().Error(err)
-	}
 	return restError(c, err)
 }

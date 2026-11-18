@@ -1,7 +1,6 @@
 package dto
 
 import (
-	"encoding/json"
 	"errors"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
@@ -91,14 +90,15 @@ const formJSONNesting = 20000
 // form value: json.loads of the text. ok=false is "Value must be valid JSON."
 // (a 400); rejected=true is a document Python parses (lone surrogate escapes
 // are kept as code units) but the jsonb column refuses at save time; depth is
-// the maximum nesting of the text (auditJSONDepth's D), used by the callers'
-// measured recursion bands (X15).
+// the container nesting json.loads reaches before it stops
+// (pythonJSONLoadsDepth), measured for every error except nesting, used by the
+// callers' measured recursion bands (X15).
 func automationFormTree(value any) (tree any, ok, rejected bool, depth int) {
 	text, isText := value.(string)
 	if !isText {
 		return nil, false, false, 0
 	}
-	depth = auditJSONDepth(text)
+	depth = pythonJSONLoadsDepth(text)
 	tree, err := parseProfileTablesJSONConstantsLimit([]byte(text), map[int64]any{}, true, formJSONNesting)
 	switch {
 	case err == nil:
@@ -107,13 +107,6 @@ func automationFormTree(value any) (tree any, ok, rejected bool, depth int) {
 		// Past even the reader's limit: keep the depth so the callers answer
 		// their measured band, with an empty list they never store.
 		return []any{}, true, false, depth
-	}
-	// json.loads stops at the first syntax error: only the nesting reached
-	// before it can raise RecursionError, so a deeper tail after the error is
-	// still "Value must be valid JSON.".
-	var syntax *json.SyntaxError
-	if errors.As(err, &syntax) && syntax.Offset >= 0 && syntax.Offset <= int64(len(text)) {
-		depth = auditJSONDepth(text[:syntax.Offset])
 	}
 	return nil, false, false, depth
 }

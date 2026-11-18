@@ -10,6 +10,7 @@ entry matches an authored event, in order, with its authored index row (or
 none). Rows the run creates are removed before the fixture cleanup compares the
 model state.
 """
+from contextlib import contextmanager
 import ipaddress
 import json
 from datetime import date, datetime, timedelta, timezone
@@ -286,5 +287,42 @@ def assert_effect(case, before, after, source, context):
         check_event(case, event, indexes, before=before, ids=source['ids'], spec=spec, key=key, changes=changes, context=context)
 
 
+@contextmanager
+def deep_report_rows(case):
+    """Open the case's stored report JSON (owner decision X15 edge).
+
+    The harness's state snapshot decodes every jsonb column and walks it in
+    Python, which cannot hold a value this deep: the value exists only around
+    the case's request, and each column is restored afterwards.
+    """
+    targets = (case.get('setup') or {}).get('deep')
+    if not targets:
+        yield
+        return
+    from django.db import connection
+    source = contract.load_source()
+    resolved = []
+    for target in targets:
+        if target['target'] == 'registry':
+            table, key, value = 'application_attendanceregistry', 'attendance_registry_id', source['registries'][target['label']]['id']
+        elif target['target'] == 'day':
+            table, key, value = 'application_attendanceday', 'attendance_day_id', source['days'][target['label']]['id']
+        else:
+            table, key, value = 'application_course', 'course_id', source['courses'][target['label']]['id']
+        resolved.append((table, key, value, target['column'], target['value']))
+    saved = []
+    with connection.cursor() as cursor:
+        for table, key, value, column, deep in resolved:
+            cursor.execute(f'SELECT {column}::text FROM {table} WHERE {key}=%s', [value])
+            saved.append((table, key, value, column, cursor.fetchone()[0]))
+            cursor.execute(f'UPDATE {table} SET {column}=%s::jsonb WHERE {key}=%s', [deep, value])
+    try:
+        yield
+    finally:
+        with connection.cursor() as cursor:
+            for table, key, value, column, stored in saved:
+                cursor.execute(f'UPDATE {table} SET {column}=%s::jsonb WHERE {key}=%s', [stored, value])
+
+
 fixture_context = harness.fixture_context_for(contract, seed_rows, purge=(lambda: model('Instructor'), lambda: model('Payment')))
-run_workload = harness.run_workload_for(contract, assert_effect, prepare=prepared)
+run_workload = harness.run_workload_for(contract, assert_effect, prepare=prepared, case_scope=deep_report_rows)

@@ -241,9 +241,9 @@ cases = []
 
 
 def add(name, actor, method, path, status, response, *, body=None, raw_body=None, content_type=None, headers=None, effect=None,
-        celery=()):
+        celery=(), setup=None):
     case = {'name': f'invoice-core-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
-            'status': status, 'response': response, 'effect': effect, 'celery': list(celery)}
+            'status': status, 'response': response, 'effect': effect, 'celery': list(celery), 'setup': setup}
     if body is not None:
         case['body'] = body
     if raw_body is not None:
@@ -501,6 +501,57 @@ add('delete-group-visible', 'owner', 'POST', ID('single_grouped'), 200, DELETED,
     effect=effect('owner', deleted={'invoice': [INVOICES['single_grouped']['invoice_id']]},
                   audits=[deleted_audit('invoice', INVOICES['single_grouped']['invoice_id'], INVOICE_INDEX)]))
 add('delete-again-server-error', 'owner', 'POST', ID('single'), 500, SERVER, body={})
+
+# Stored Payment JSON at the interpreter's recursion bands (owner decision X15).
+# Payment.course is a jsonb column psycopg2 loads with json.loads: the parity
+# harness's Django (CPython 3.13.16) reads 9937 levels in invoice_delete and
+# raises RecursionError at 9938, which the view does not handle (its plain 500
+# page, nothing written). Deeper than the index resolver's reload (9927) the
+# payment's audit entry falls back to the actor's association. The value sits in
+# a column the view loads but never renders; each one exists only around its own
+# case (the adapter's case scope), because the state snapshot walks JSON values
+# in Python and cannot hold a value this deep.
+
+
+def deep_course(depth):
+    """A course JSON text whose total nesting is depth."""
+    assert depth >= 2
+    return '{"label": "Corso profondo", "unused": ' + '[' * (depth - 1) + ']' * (depth - 1) + '}'
+
+
+def json_depth(text):
+    depth = deepest = 0
+    for char in text:
+        if char in '[{':
+            depth += 1
+            deepest = max(deepest, depth)
+        elif char in ']}':
+            depth -= 1
+    return deepest
+
+
+DEEP_INDEX_PAST, DEEP_LOAD_PAST, DEEP_LOADED = deep_course(9931), deep_course(9967), deep_course(9000)
+assert (json_depth(DEEP_INDEX_PAST), json_depth(DEEP_LOAD_PAST), json_depth(DEEP_LOADED)) == (9931, 9967, 9000)
+supplier_pay, mario_pay = PAYMENTS['supplier']['payment_id'], PAYMENTS['mario']['payment_id']
+add('delete-stored-json-index-past', 'owner', 'POST', ID('supplier'), 200, DELETED, body={},
+    # The payment's stored description ('Quota') is not None, so Payment.save()
+    # leaves it alone: only the invoice link and paid change.
+    effect=effect('owner', changed={'payment': {supplier_pay: {'invoice_id': None, 'paid': False}}},
+                  deleted={'invoice': [INVOICES['supplier']['invoice_id']]},
+                  audits=[{'model': 'payment', 'key': supplier_pay, 'action': 1, 'index': [OWN, 'actor.sport_association'],
+                           'changes': {'invoice': [INVOICES['supplier']['invoice_id'], 'None'], 'paid': ['True', 'False']}}]
+                  + [deleted_audit('invoice', INVOICES['supplier']['invoice_id'], INVOICE_INDEX)]),
+    setup={'payment': 'supplier', 'course': DEEP_INDEX_PAST})
+add('delete-stored-json-past-load-band-server-error', 'owner', 'POST', ID('mario'), 500, SERVER, body={},
+    setup={'payment': 'mario', 'course': DEEP_LOAD_PAST})
+add('delete-stored-json-loaded', 'owner', 'POST', ID('mario'), 200, DELETED, body={},
+    effect=effect('owner', changed={'payment': {mario_pay: {'invoice_id': None, 'paid': False},
+                                                PAYMENTS['mario_old']['payment_id']: {'invoice_id': None}}},
+                  deleted={'invoice': [INVOICES['mario']['invoice_id']]},
+                  audits=[{'model': 'payment', 'key': mario_pay, 'action': 1, 'index': [OWN, 'direct'],
+                           'changes': {'invoice': [INVOICES['mario']['invoice_id'], 'None'], 'paid': ['True', 'False']}}]
+                  + [deleted_audit('invoice', INVOICES['mario']['invoice_id'], INVOICE_INDEX)]),
+    setup={'payment': 'mario', 'course': DEEP_LOADED})
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Invoice list, archived list, bulk archive, bulk delete and delete authored sequence',

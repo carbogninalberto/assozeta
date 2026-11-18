@@ -208,6 +208,45 @@ def moment(text):
     return datetime.fromisoformat(text.replace('Z', '+00:00')) if text else None
 
 
+@contextmanager
+def deep_rows(case):
+    """Insert the payment whose stored JSON no state snapshot can decode (X15 bands).
+
+    The row exists only around the case's request: the harness's state snapshot
+    walks every JSON value in Python and cannot hold a value this deep. Its course
+    is written from the authored text with raw SQL, because psycopg2's json.dumps
+    of a Python structure at that depth raises, and it is removed by primary key
+    without loading it for the same reason.
+    """
+    label = (case.get('setup') or {}).get('deep_payment')
+    if not label:
+        yield
+        return
+    from auditlog.context import disable_auditlog
+    from application.models import Payment
+    from django.db import connection
+    source = contract.load_source()
+    row, ids = source['payments'][label], source['ids']
+    with disable_auditlog():
+        Payment._base_manager.bulk_create([Payment(
+            payment_id=row['id'], sport_association_id=row['association'], subject=row['subject'], amount=Decimal(row['amount']),
+            paid=row['paid'], associate_id=source['associate']['id'] if row['associate'] else None,
+            user_id=ids['owner'] if row['user'] else None, payment_intent_id=row['intent'],
+            invoice_id=source['invoices'][label]['id'] if row['invoice'] else None,
+            group_id=ids[row['group']] if row['group'] else None, deleted=row['deleted'], payment_category_id=row['category'],
+            creation_date=moment(row['created']), payment_date=moment(row['payment_date']), description=row['description'],
+            meta_payment_categories=row.get('meta_categories'), meta=row.get('meta'), type=row['type'])])
+        with connection.cursor() as cursor:
+            cursor.execute('UPDATE application_payment SET course=%s::jsonb WHERE payment_id=%s',
+                           [row['course']['$raw_json'], row['id']])
+    try:
+        yield
+    finally:
+        with disable_auditlog():
+            with connection.cursor() as cursor:
+                cursor.execute('DELETE FROM application_payment WHERE payment_id=%s', [row['id']])
+
+
 def seed_rows(source, created):
     from application.models import (Associate, Course, CourseSubscription, CourseSubscriptionInstallment, Invoice, InvoiceSuppliers, Payment,
                                     PaymentCategory, SportAssociation, SupplierAndCustomers, Subscription, User)
@@ -252,6 +291,8 @@ def seed_rows(source, created):
                                 activity_fee=Decimal(payments[label]['amount']), number=row['number'], description='Ricevuta Stripe',
                                 creation_date=moment('2026-09-01T08:00:00Z')))
     for label, row in payments.items():
+        if row.get('deep'):
+            continue  # inserted for its own case (deep_rows): the state snapshot cannot decode it
         insert(Payment, Payment(
             payment_id=row['id'], sport_association_id=row['association'], subject=row['subject'], amount=Decimal(row['amount']),
             paid=row['paid'], associate_id=person['id'] if row['associate'] else None, user_id=owner if row['user'] else None,
@@ -553,6 +594,11 @@ def check_state(case, effect, before, after, source, context, binding):
                         require(isinstance(value, str) and recent(datetime.fromisoformat(value).replace(tzinfo=timezone.utc)), 'audit.now' + where)
                         created_now.append(value)
                         items.append(value)
+                    elif item == '$now' and spec.get('deep'):
+                        # The payment exists only around its case: its new date is the entry's.
+                        value = event['changes'].get(name, [None, None])[len(items)]
+                        require(isinstance(value, str) and recent(datetime.fromisoformat(value).replace(tzinfo=timezone.utc)), 'audit.now' + where)
+                        items.append(value)
                     elif item == '$now':
                         now_key = ('si:' if spec['model'] == 'invoicesuppliers' else '') + spec['label']
                         items.append(now_text.get(now_key, '<missing now>'))
@@ -587,4 +633,4 @@ def prepare(source):
     return paid.prepare(STATE['fixture'])
 
 
-run_workload = harness.run_workload_for(contract, assert_effect, prepare=prepare)
+run_workload = harness.run_workload_for(contract, assert_effect, prepare=prepare, case_scope=deep_rows)

@@ -182,7 +182,9 @@ func subscriptionImportLabels(labels []pandasxlsx.Value) []any {
 		case pandasxlsx.Time:
 			rendered = append(rendered, strings.Replace(label.TimeText(), " ", "T", 1))
 		case pandasxlsx.Timedelta, pandasxlsx.PyTimedelta:
-			rendered = append(rendered, dto.PythonFloatText(float64(label.D/time.Microsecond)/1e6))
+			// DRF's JSONEncoder writes a datetime.timedelta (and a pandas
+			// Timedelta) as str(obj.total_seconds()).
+			rendered = append(rendered, dto.PythonFloatText(label.TotalSeconds()))
 		case pandasxlsx.NaT, pandasxlsx.Date, pandasxlsx.TimeOfDay:
 			rendered = append(rendered, label.Str())
 		default:
@@ -459,8 +461,24 @@ func (s *SubscriptionImportUpload) importDocument(ctx context.Context, identity 
 		switch {
 		case errors.Is(err, pandasxlsx.ErrInvalid):
 			return nil, ErrSubscriptionImportServerError
+		case errors.Is(err, pandasxlsx.ErrRowsPastBound):
+			// A worksheet of more rows than a frame holds: read_excel runs out
+			// of memory before process_import_rows, which the view answers
+			// like a row loop that raised — the status changes, nothing
+			// written, the 400 FAILED_MESSAGE (the owner's decision of
+			// 2026-11-16).
+			var actor *string
+			if identity.Actor != nil {
+				actor = &identity.Actor.ID
+			}
+			failed := domain.SubscriptionImportEffects{StatusID: s.uploads.ids(), DocumentID: id, Failed: true}
+			if err = s.store.ImportRows(ctx, association, identity.ScopeUser.ID, actor, failed, uploadAuditContext(identity, audit),
+				s.uploads.at); err != nil {
+				return nil, err
+			}
+			return nil, ErrSubscriptionImportFailed
 		case err != nil:
-			return nil, err // ErrWorkbookNotPorted is handed off, the package's AppState is the 500 page
+			return nil, err
 		}
 		names, lookup = subscriptionImportLabels(frame.Labels), frame.Lookup
 		for _, cells := range frame.Rows {
@@ -517,11 +535,14 @@ func (s *SubscriptionImportUpload) upload(ctx context.Context, identity domain.R
 		}
 	case excel:
 		// read_excel reads the bytes whatever the suffix; a failure (then the
-		// xlrd fallback's ImportError) is the 500 page after the writes.
+		// xlrd fallback's ImportError, xlrd not being installed) is the 500
+		// page after the writes.
 		var frame *pandasxlsx.Frame
 		frame, parseErr = pandasxlsx.ReadAll(file.Content, nil)
-		if errors.Is(parseErr, refusal.ErrNotPorted) {
-			return nil, parseErr // the package's own refusal, before any write
+		if errors.Is(parseErr, pandasxlsx.ErrRowsPastBound) {
+			// Only the columns are answered, and they do not depend on the
+			// rows: read them without holding the rows a frame would.
+			frame, parseErr = pandasxlsx.ReadColumns(file.Content)
 		}
 		if parseErr == nil {
 			// auto_map_columns maps str() of each label.

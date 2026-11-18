@@ -15,7 +15,7 @@ import (
 )
 
 func mcpValueSettings() (ReportSettings, error) {
-	return ReportSettings{MaxResults: 5000, QueryTimeout: 10}, nil
+	return ReportSettings{MaxResults: big.NewInt(5000), QueryTimeout: big.NewInt(10)}, nil
 }
 
 // mcpCountPlan plans count_data for a filter object built by the test.
@@ -629,15 +629,7 @@ func TestMCPJSONValuesAndHasKey(t *testing.T) {
 		!mcpHasArg(mcpPlannedArgs(plan), math.Inf(1)) {
 		t.Errorf("has_key overflow: %v %#v", err, plan.Statements)
 	}
-	// A coerced value (the walk resolves names after a JSONField): Django
-	// sends it, so Go hands the request off.
-	if _, err := mcpJSONValue(mcpCoercedInt{big.NewInt(1)}); !errors.Is(err, refusal.ErrNotPorted) {
-		t.Errorf("JSON value coerced: %v", err)
-	}
 	q := newMCPQuery(mcpModelByLabel("application.Payment"))
-	if _, err := q.mcpJSONKeyArgument(mcpCoercedInt{big.NewInt(1)}); !errors.Is(err, refusal.ErrNotPorted) {
-		t.Errorf("has_key coerced value: %v", err)
-	}
 	if _, err := q.mcpJSONKeyArray([]any{mcpCoercedInt{big.NewInt(1)}}); !errors.Is(err, refusal.ErrAppState) {
 		t.Errorf("has_key unexpected list item: %v", err)
 	}

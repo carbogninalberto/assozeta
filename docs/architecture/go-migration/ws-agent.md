@@ -121,8 +121,8 @@ rebuilt per message, `CLICallback`'s ANSI output (tool arguments
 
 Long tail PR 4: the agent refuses nothing any more.
 - Accepted divergence X11 (owner, 2026-11-15): a business tool call whose Django answer Go does not reproduce (an
-  exception whose text carries SQL or an object address, an input another package still refuses, such as pdfexport's
-  paragraph subset) answers the tool result `{"error": "Errore durante l'esecuzione dello strumento."}` and the
+  exception whose text carries SQL or an object address, an exception text another package does not
+  reproduce) answers the tool result `{"error": "Errore durante l'esecuzione dello strumento."}` and the
   conversation continues; Django would send `str(e)`. `run_agent` and `manuale evaluate` share the agent and answer
   the same. Stream shapes outside the port (a non-string content chunk, non-string tool call ids or names, a NaN
   index) are a failed stream, the generic temporary-error frame; Django would stream the odd chunk first.

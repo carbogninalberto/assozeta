@@ -47,7 +47,7 @@ func (s *OrphanMedicalCleanup) Run(ctx context.Context, job domain.Job) error {
 		json.Unmarshal(job.Payload, &payload) != nil || payload == nil || len(payload) != 0 {
 		return domain.ErrJobInvalid
 	}
-	steps, err := s.plan(ctx, job)
+	steps, truncated, err := s.plan(ctx, job)
 	if err != nil {
 		return err
 	}
@@ -66,11 +66,29 @@ func (s *OrphanMedicalCleanup) Run(ctx context.Context, job domain.Job) error {
 		}
 		changes, err := s.deleteDocument(ctx, job, step.certificate)
 		if err != nil {
-			return err
+			if ctx.Err() != nil {
+				return ctx.Err()
+			}
+			// document.delete() raised (a PROTECT reference): its Collector
+			// rolled back, the storage file is already gone, and the task's
+			// outer except ends the run, keeping the earlier certificates.
+			s.logger.WarnContext(ctx, "orphan medical document delete failed", "code", "orphan_medical_document_delete")
+			break
 		}
 		if err = s.auditAgain(ctx, job, step.certificate.MedicalID, changes); err != nil {
-			return err
+			if ctx.Err() != nil {
+				return ctx.Err()
+			}
+			// medical_certificate.delete() raised after the collector: the
+			// task's except ends the run with the earlier effects kept.
+			s.logger.WarnContext(ctx, "orphan medical audit delete failed", "code", "orphan_medical_audit_delete")
+			break
 		}
+	}
+	if truncated {
+		// A later chunk held a timestamp psycopg2 cannot convert: Django
+		// raises while fetching it, after the chunks already returned.
+		s.logger.WarnContext(ctx, "orphan medical iterator stopped", "code", "orphan_medical_iterator")
 	}
 	tx, err := s.store.BeginOrphanMedical(ctx, job)
 	if err != nil {
@@ -83,22 +101,21 @@ func (s *OrphanMedicalCleanup) Run(ctx context.Context, job domain.Job) error {
 	return tx.Commit()
 }
 
-// plan reads the certificates once (the iterator's snapshot) and refuses the
-// run before any effect when a document in scope has a reference the
-// collector would cascade to, or a name the key helpers do not model.
-func (s *OrphanMedicalCleanup) plan(ctx context.Context, job domain.Job) ([]orphanMedicalStep, error) {
+// plan reads the certificates once (the iterator's snapshot) and builds one
+// step per row of the complete chunks. truncated reports that a later chunk
+// could not be fetched, so the run ends after these steps.
+func (s *OrphanMedicalCleanup) plan(ctx context.Context, job domain.Job) ([]orphanMedicalStep, bool, error) {
 	tx, err := s.store.BeginOrphanMedical(ctx, job)
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 	defer tx.Rollback()
-	certificates, err := tx.OrphanMedicalCertificates(ctx)
+	batch, err := tx.OrphanMedicalCertificates(ctx)
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
-	steps := make([]orphanMedicalStep, 0, len(certificates))
-	documents := []string{}
-	for _, certificate := range certificates {
+	steps := make([]orphanMedicalStep, 0, len(batch.Certificates))
+	for _, certificate := range batch.Certificates {
 		step := orphanMedicalStep{certificate: certificate}
 		if certificate.DocumentID == nil || certificate.Created == nil || certificate.Filename == nil {
 			// document.creation_date on None raises AttributeError.
@@ -106,16 +123,16 @@ func (s *OrphanMedicalCleanup) plan(ctx context.Context, job domain.Job) ([]orph
 			steps = append(steps, step)
 			continue
 		}
-		documents = append(documents, *certificate.DocumentID)
 		id, err := uuid.Parse(*certificate.DocumentID)
 		if err != nil {
-			return nil, err
+			return nil, false, err
 		}
 		name, err := documentkey.StoredName(*certificate.Created, id, *certificate.Filename, nil)
 		if err != nil {
-			// Document.creation_date has a default, not auto_now_add: the association import stores the archived
-			// value, which can lie outside Python's years (the task's except then logs and returns). Not ported.
-			return nil, errors.Join(domain.ErrOrphanMedicalUnsupported, err)
+			// The iterator stopped before an out-of-range creation date, and
+			// PostgreSQL timestamps are microsecond-precise, so no stored row
+			// reaches this: an application-state error.
+			return nil, false, errors.Join(domain.ErrOrphanMedicalUnreachable, err)
 		}
 		step.key, err = documentkey.S3Key(name, s.objects.Location())
 		var outside *documentkey.OutsideLocationError
@@ -124,19 +141,11 @@ func (s *OrphanMedicalCleanup) plan(ctx context.Context, job domain.Job) ([]orph
 			step.stop = true
 		} else if err != nil {
 			// filename is PostgreSQL text in a UTF-8 database: no NUL, always valid UTF-8.
-			return nil, errors.Join(domain.ErrOrphanMedicalUnreachable, err)
+			return nil, false, errors.Join(domain.ErrOrphanMedicalUnreachable, err)
 		}
 		steps = append(steps, step)
 	}
-	conflict, err := tx.OrphanMedicalReferenceConflict(ctx, documents)
-	if err != nil {
-		return nil, err
-	}
-	if conflict {
-		s.logger.WarnContext(ctx, "orphan medical cleanup refused", "code", "orphan_medical_cascade")
-		return nil, domain.ErrOrphanMedicalUnsupported
-	}
-	return steps, tx.Rollback()
+	return steps, batch.Truncated, tx.Rollback()
 }
 
 func (s *OrphanMedicalCleanup) deleteDocument(ctx context.Context, job domain.Job, certificate domain.OrphanMedicalCertificate) (map[string][2]string, error) {

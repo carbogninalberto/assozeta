@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 )
 
 // Expected values in this file were produced by CPython 3.13.16 running
@@ -238,7 +237,7 @@ func TestImportIterJSONArray(t *testing.T) {
 	}
 	for _, c := range cases {
 		items := []any{}
-		err := importIterJSONArray(&importBytesReader{data: []byte(c.input)}, importJSONChunkSize, func(item any) error {
+		err := importIterJSONArray(&importBytesReader{data: []byte(c.input)}, importJSONChunkSize, importValidationJSONEdge, func(item any) error {
 			items = append(items, item)
 			return nil
 		})
@@ -272,7 +271,7 @@ func TestImportIterJSONArrayChunks(t *testing.T) {
 	for _, chunk := range []int{1, 2, 3, 4, 5, 7} {
 		for _, c := range cases {
 			got := []string{}
-			err := importIterJSONArray(&importBytesReader{data: []byte(c.input)}, chunk, func(item any) error {
+			err := importIterJSONArray(&importBytesReader{data: []byte(c.input)}, chunk, importValidationJSONEdge, func(item any) error {
 				got = append(got, importJSONStr(item))
 				return nil
 			})
@@ -289,24 +288,57 @@ func TestImportIterJSONArrayChunks(t *testing.T) {
 	}
 }
 
-// TestImportJSONRecursionBounds: json.loads' C scanner parses 9998 nested
-// containers at the top of a thread (CPython 3.13.16: json.loads('['*n + ']'*n)
-// raises RecursionError from n = 9999); below 9800 every request stack parses,
-// the band in between is dto.ErrJSONRecursionBand (handed to Django).
+// TestImportJSONRecursionBounds: json.loads parses up to the measured edge of
+// POST association/import/validate (owner decision X15) and raises
+// RecursionError one level past it. The text names the container entered past
+// the edge.
 func TestImportJSONRecursionBounds(t *testing.T) {
 	nested := func(open, close string, n int) []byte {
 		return []byte(strings.Repeat(open, n) + strings.Repeat(close, n))
 	}
-	if _, err := importJSONParse(nested("[", "]", dto.StoredJSONRecursionBand-1)); err != nil {
-		t.Fatalf("9799 levels: %v", err)
-	}
-	for _, n := range []int{dto.StoredJSONRecursionBand, dto.StoredJSONRecursionFloor - 1} {
-		if _, err := importJSONParse(nested("[", "]", n)); !errors.Is(err, dto.ErrJSONRecursionBand) {
-			t.Fatalf("%d levels: %v, want the recursion band", n, err)
+	for _, n := range []int{importValidationJSONEdge - 1, importValidationJSONEdge} {
+		if _, err := importJSONParse(nested("[", "]", n)); err != nil {
+			t.Fatalf("%d levels: %v", n, err)
 		}
 	}
-	_, err := importJSONParse(nested(`{"a":`, "}", dto.StoredJSONRecursionFloor))
-	if err == nil || err.Error() != "maximum recursion depth exceeded while decoding a JSON object from a unicode string" {
-		t.Fatalf("9999 levels: %v", err)
+	for _, c := range []struct {
+		text   []byte
+		object bool
+	}{
+		{nested("[", "]", importValidationJSONEdge+1), false},
+		{nested(`{"a":`, "}", importValidationJSONEdge+1), true},
+	} {
+		_, err := importJSONParse(c.text)
+		var recursion *importJSONRecursionError
+		if !errors.As(err, &recursion) || recursion.object != c.object {
+			t.Fatalf("past the edge: %v", err)
+		}
+		kind := "array"
+		if c.object {
+			kind = "object"
+		}
+		want := "maximum recursion depth exceeded while decoding a JSON " + kind + " from a unicode string"
+		if err.Error() != want {
+			t.Fatalf("%d levels: %q, want %q", importValidationJSONEdge+1, err.Error(), want)
+		}
+	}
+}
+
+// TestImportIterJSONArrayRecursion: each item's own nesting counts, and a
+// RecursionError is not retried after a fill.
+func TestImportIterJSONArrayRecursion(t *testing.T) {
+	item := func(depth int) string { return strings.Repeat(`[`, depth) + strings.Repeat(`]`, depth) }
+	for _, depth := range []int{importValidationJSONEdge - 1, importValidationJSONEdge} {
+		input := "[" + item(depth) + "]"
+		err := importIterJSONArray(&importBytesReader{data: []byte(input)}, 7, importValidationJSONEdge, func(any) error { return nil })
+		if err != nil {
+			t.Fatalf("item depth %d: %v", depth, err)
+		}
+	}
+	input := "[" + item(importValidationJSONEdge+1) + "]"
+	err := importIterJSONArray(&importBytesReader{data: []byte(input)}, 7, importValidationJSONEdge, func(any) error { return nil })
+	var recursion *importJSONRecursionError
+	if !errors.As(err, &recursion) || recursion.object {
+		t.Fatalf("item past the edge: %v", err)
 	}
 }

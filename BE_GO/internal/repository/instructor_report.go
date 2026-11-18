@@ -26,7 +26,8 @@ func (r *InstructorReport) Instructors(ctx context.Context, user string) ([]doma
 func (r *InstructorReport) Registries(ctx context.Context, association string) ([]domain.InstructorReportRegistry, error) {
 	rows := []domain.InstructorReportRegistry{}
 	err := r.db.SelectContext(ctx, &rows, `SELECT "application_attendanceregistry"."attendance_registry_id",
- "application_attendanceregistry"."events"::text AS "events", "application_course"."title" AS "course_title"
+ "application_attendanceregistry"."events"::text AS "events", "application_course"."title" AS "course_title",
+ "application_course"."events"::text AS "course_events", "application_course"."multiple_quotes"::text AS "course_multiple_quotes"
  FROM "application_attendanceregistry" INNER JOIN "application_course"
  ON ("application_attendanceregistry"."course_id" = "application_course"."course_id")
  WHERE "application_course"."sport_association_id" = $1`, association)

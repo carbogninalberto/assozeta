@@ -125,10 +125,26 @@ The certificate named by `medical_certificate.medical_id` follows
 
 ## Not ported
 
+Long tail PR 5: nothing here hands off any more (`ErrSubscriptionCreateNotPorted` is gone). A collaborator association
+account renews in its connected account's association; the create and course enrolment raise sites the view's try
+reaches carry their CPython texts (`float()`, `int()`, the season calendar, a non-dict tutor or new member, a missing
+default category, a course without events or title), answered as `{"status": "error", "msg": str(e)}` (cases
+`renew-membership-plan-fee-not-a-number`, `renew-calendar-invalid-start-month`, `renew-course-events-none`,
+`renew-course-title-none`). The psycopg2 and decimal texts are rebuilt as well (long tail PR 5, R):
+- Non-text names at the existence check: IExact passes the raw `initial_data` value, psycopg2 writes it as its own literal
+  (` -5`, `true`, `ARRAY[...]`, `'{NULL}'`, `'Infinity'::float`). Go builds Django's exact statement
+  (`subscriptionExistsStatement`) and runs it in a savepoint: a server error is libpq's text (message, `LINE n:` window
+  and caret, `DETAIL`/`HINT`; `dto.Psycopg2ServerErrorText`), a dict or a NUL character is psycopg2's own error, and an
+  all-NULL list runs and reaches the serializer. Cases `renew-existence-*`.
+- `type`/`role` outside smallint: `smallint out of range` at the subscription's INSERT (`renew-type-*`, `renew-role-*`).
+- Non-finite membership plan fees: DecimalField's `['“inf” value must be a decimal number.']` at the payment's amount
+  filter or the membership's price (`renew-membership-plan-fee-*`). A stored `NaN` association fee follows the same path
+  (Go tests only: the fixture cannot store NaN through the ORM), and a stored `NaN` course fee is
+  `[<class 'decimal.InvalidOperation'>]` from `course.fee > 0`.
+- Draft approval swallows these like any exception (`approve-draft-database-errors-swallowed`); `subscription/add`
+  answers its 500 page.
+
 Refused with the 500 page before anything is committed:
-- a collaborator whose connected account owns exactly one association (`ErrSubscriptionCreateNotPorted`): setup creates
-  associations for association accounts, but the association import can reuse an existing collaborator as the owner;
-- `str(e)` bodies of the Python exceptions not listed above (non-dict tutors and similar; dateutil's own messages are ported with `internal/pydateutil`);
 - the inputs `subscription-create.md` refuses: new member accounts, signature uploads, `type_of_associate`, and the
   rest. A renewal with `preregistration: true` and no `subscription_id` is ported (tailsubs, `renew-preregistration`; with a `subscription_id` in t8subs, cases `renew-preregistration-*`): the renewed subscription's person, certificate, custom data, role and number, the request's type; an unknown or foreign one is the 400 `Iscrizione da rinnovare non trovata.`). A typed certificate expiration date without an upload is ported (tailsubs): the placeholder image, its document and the
   association account's certificate are created like in `subscription/add`.

@@ -1,0 +1,1426 @@
+{
+ "cases": [
+  {
+   "name": "file in root",
+   "url": "ftp://127.0.0.1:{port}/logo.jpg",
+   "welcome": [
+    "220 Service ready"
+   ],
+   "rules": [
+    {
+     "command": "USER anonymous",
+     "replies": [
+      "331 Password required"
+     ]
+    },
+    {
+     "command": "PASS anonymous@",
+     "replies": [
+      "230 Logged in"
+     ]
+    },
+    {
+     "command": "CWD .",
+     "replies": [
+      "250 Directory changed to /"
+     ]
+    },
+    {
+     "command": "PWD",
+     "replies": [
+      "257 \"/\" is the current directory"
+     ]
+    },
+    {
+     "command": "TYPE I",
+     "replies": [
+      "200 Type set to I"
+     ]
+    },
+    {
+     "command": "PASV",
+     "replies": [
+      "227 Entering Passive Mode (127,0,0,1,{p1},{p2})"
+     ],
+     "pasv": {
+      "host": "127,0,0,1"
+     }
+    },
+    {
+     "command": "RETR logo.jpg",
+     "replies": [
+      "150 Opening data connection"
+     ],
+     "data": "/9j/4AAQSkZJRgABAQAAAQABAAD/2Q==",
+     "final": [
+      "226 Transfer complete"
+     ]
+    }
+   ],
+   "commands": [
+    "USER anonymous",
+    "PASS anonymous@",
+    "CWD .",
+    "TYPE I",
+    "PASV",
+    "RETR logo.jpg"
+   ],
+   "outcome": {
+    "base64": "/9j/4AAQSkZJRgABAQAAAQABAAD/2Q=="
+   }
+  },
+  {
+   "name": "host name",
+   "url": "ftp://localhost:{port}/logo.jpg",
+   "welcome": [
+    "220 Service ready"
+   ],
+   "rules": [
+    {
+     "command": "USER anonymous",
+     "replies": [
+      "331 Password required"
+     ]
+    },
+    {
+     "command": "PASS anonymous@",
+     "replies": [
+      "230 Logged in"
+     ]
+    },
+    {
+     "command": "CWD .",
+     "replies": [
+      "250 Directory changed to /"
+     ]
+    },
+    {
+     "command": "TYPE I",
+     "replies": [
+      "200 Type set to I"
+     ]
+    },
+    {
+     "command": "PASV",
+     "replies": [
+      "227 Entering Passive Mode (10,9,8,7,{p1},{p2})"
+     ],
+     "pasv": {
+      "host": "10,9,8,7"
+     }
+    },
+    {
+     "command": "RETR logo.jpg",
+     "replies": [
+      "150 Opening data connection"
+     ],
+     "data": "/9j/4AAQSkZJRgABAQAAAQABAAD/2Q==",
+     "final": [
+      "226 Transfer complete"
+     ]
+    }
+   ],
+   "commands": [
+    "USER anonymous",
+    "PASS anonymous@",
+    "CWD .",
+    "TYPE I",
+    "PASV",
+    "RETR logo.jpg"
+   ],
+   "outcome": {
+    "base64": "/9j/4AAQSkZJRgABAQAAAQABAAD/2Q=="
+   }
+  },
+  {
+   "name": "nested directories",
+   "url": "ftp://127.0.0.1:{port}/one/two/three.jpg",
+   "welcome": [
+    "220 Service ready"
+   ],
+   "rules": [
+    {
+     "command": "USER anonymous",
+     "replies": [
+      "331 Password required"
+     ]
+    },
+    {
+     "command": "PASS anonymous@",
+     "replies": [
+      "230 Logged in"
+     ]
+    },
+    {
+     "command": "CWD one/two",
+     "replies": [
+      "250 Directory changed to /"
+     ]
+    },
+    {
+     "command": "TYPE I",
+     "replies": [
+      "200 Type set to I"
+     ]
+    },
+    {
+     "command": "PASV",
+     "replies": [
+      "227 Entering Passive Mode (10,9,8,7,{p1},{p2})"
+     ],
+     "pasv": {
+      "host": "10,9,8,7"
+     }
+    },
+    {
+     "command": "RETR three.jpg",
+     "replies": [
+      "150 Opening data connection"
+     ],
+     "data": "/9j/4AAQSkZJRgABAQAAAQABAAD/2Q==",
+     "final": [
+      "226 Transfer complete"
+     ]
+    }
+   ],
+   "commands": [
+    "USER anonymous",
+    "PASS anonymous@",
+    "CWD one/two",
+    "TYPE I",
+    "PASV",
+    "RETR three.jpg"
+   ],
+   "outcome": {
+    "base64": "/9j/4AAQSkZJRgABAQAAAQABAAD/2Q=="
+   }
+  },
+  {
+   "name": "percent escaped directory and file",
+   "url": "ftp://127.0.0.1:{port}/dir%20one/caf%C3%A9%20%2B.jpg",
+   "welcome": [
+    "220 Service ready"
+   ],
+   "rules": [
+    {
+     "command": "USER anonymous",
+     "replies": [
+      "331 Password required"
+     ]
+    },
+    {
+     "command": "PASS anonymous@",
+     "replies": [
+      "230 Logged in"
+     ]
+    },
+    {
+     "command": "CWD dir one",
+     "replies": [
+      "250 Directory changed to /"
+     ]
+    },
+    {
+     "command": "TYPE I",
+     "replies": [
+      "200 Type set to I"
+     ]
+    },
+    {
+     "command": "PASV",
+     "replies": [
+      "227 Entering Passive Mode (10,9,8,7,{p1},{p2})"
+     ],
+     "pasv": {
+      "host": "10,9,8,7"
+     }
+    },
+    {
+     "command": "RETR café +.jpg",
+     "replies": [
+      "150 Opening data connection"
+     ],
+     "data": "/9j/4AAQSkZJRgABAQAAAQABAAD/2Q==",
+     "final": [
+      "226 Transfer complete"
+     ]
+    }
+   ],
+   "commands": [
+    "USER anonymous",
+    "PASS anonymous@",
+    "CWD dir one",
+    "TYPE I",
+    "PASV",
+    "RETR café +.jpg"
+   ],
+   "outcome": {
+    "base64": "/9j/4AAQSkZJRgABAQAAAQABAAD/2Q=="
+   }
+  },
+  {
+   "name": "user and password",
+   "url": "ftp://alice:secret@127.0.0.1:{port}/a.jpg",
+   "welcome": [
+    "220 Service ready"
+   ],
+   "rules": [
+    {
+     "command": "USER alice",
+     "replies": [
+      "331 Password required"
+     ]
+    },
+    {
+     "command": "PASS secret",
+     "replies": [
+      "230 Logged in"
+     ]
+    },
+    {
+     "command": "CWD .",
+     "replies": [
+      "250 Directory changed to /"
+     ]
+    },
+    {
+     "command": "TYPE I",
+     "replies": [
+      "200 Type set to I"
+     ]
+    },
+    {
+     "command": "PASV",
+     "replies": [
+      "227 Entering Passive Mode (10,9,8,7,{p1},{p2})"
+     ],
+     "pasv": {
+      "host": "10,9,8,7"
+     }
+    },
+    {
+     "command": "RETR a.jpg",
+     "replies": [
+      "150 Opening data connection"
+     ],
+     "data": "/9j/4AAQSkZJRgABAQAAAQABAAD/2Q==",
+     "final": [
+      "226 Transfer complete"
+     ]
+    }
+   ],
+   "commands": [
+    "USER alice",
+    "PASS secret",
+    "CWD .",
+    "TYPE I",
+    "PASV",
+    "RETR a.jpg"
+   ],
+   "outcome": {
+    "base64": "/9j/4AAQSkZJRgABAQAAAQABAAD/2Q=="
+   }
+  },
+  {
+   "name": "percent escaped user and password",
+   "url": "ftp://us%40er:p%40ss@127.0.0.1:{port}/a.jpg",
+   "welcome": [
+    "220 Service ready"
+   ],
+   "rules": [
+    {
+     "command": "USER us@er",
+     "replies": [
+      "331 Password required"
+     ]
+    },
+    {
+     "command": "PASS p@ss",
+     "replies": [
+      "230 Logged in"
+     ]
+    },
+    {
+     "command": "CWD .",
+     "replies": [
+      "250 Directory changed to /"
+     ]
+    },
+    {
+     "command": "TYPE I",
+     "replies": [
+      "200 Type set to I"
+     ]
+    },
+    {
+     "command": "PASV",
+     "replies": [
+      "227 Entering Passive Mode (10,9,8,7,{p1},{p2})"
+     ],
+     "pasv": {
+      "host": "10,9,8,7"
+     }
+    },
+    {
+     "command": "RETR a.jpg",
+     "replies": [
+      "150 Opening data connection"
+     ],
+     "data": "/9j/4AAQSkZJRgABAQAAAQABAAD/2Q==",
+     "final": [
+      "226 Transfer complete"
+     ]
+    }
+   ],
+   "commands": [
+    "USER us@er",
+    "PASS p@ss",
+    "CWD .",
+    "TYPE I",
+    "PASV",
+    "RETR a.jpg"
+   ],
+   "outcome": {
+    "base64": "/9j/4AAQSkZJRgABAQAAAQABAAD/2Q=="
+   }
+  },
+  {
+   "name": "user without a password",
+   "url": "ftp://bob@127.0.0.1:{port}/a.jpg",
+   "welcome": [
+    "220 Service ready"
+   ],
+   "rules": [
+    {
+     "command": "USER bob",
+     "replies": [
+      "331 Password required"
+     ]
+    },
+    {
+     "command": "PASS ",
+     "replies": [
+      "230 Logged in"
+     ]
+    },
+    {
+     "command": "CWD .",
+     "replies": [
+      "250 Directory changed to /"
+     ]
+    },
+    {
+     "command": "TYPE I",
+     "replies": [
+      "200 Type set to I"
+     ]
+    },
+    {
+     "command": "PASV",
+     "replies": [
+      "227 Entering Passive Mode (10,9,8,7,{p1},{p2})"
+     ],
+     "pasv": {
+      "host": "10,9,8,7"
+     }
+    },
+    {
+     "command": "RETR a.jpg",
+     "replies": [
+      "150 Opening data connection"
+     ],
+     "data": "/9j/4AAQSkZJRgABAQAAAQABAAD/2Q==",
+     "final": [
+      "226 Transfer complete"
+     ]
+    }
+   ],
+   "commands": [
+    "USER bob",
+    "PASS ",
+    "CWD .",
+    "TYPE I",
+    "PASV",
+    "RETR a.jpg"
+   ],
+   "outcome": {
+    "base64": "/9j/4AAQSkZJRgABAQAAAQABAAD/2Q=="
+   }
+  },
+  {
+   "name": "type=a attribute",
+   "url": "ftp://127.0.0.1:{port}/notes.txt;type=a",
+   "welcome": [
+    "220 Service ready"
+   ],
+   "rules": [
+    {
+     "command": "USER anonymous",
+     "replies": [
+      "331 Password required"
+     ]
+    },
+    {
+     "command": "PASS anonymous@",
+     "replies": [
+      "230 Logged in"
+     ]
+    },
+    {
+     "command": "CWD .",
+     "replies": [
+      "250 Directory changed to /"
+     ]
+    },
+    {
+     "command": "TYPE A",
+     "replies": [
+      "200 Type set to A"
+     ]
+    },
+    {
+     "command": "PASV",
+     "replies": [
+      "227 Entering Passive Mode (10,9,8,7,{p1},{p2})"
+     ],
+     "pasv": {
+      "host": "10,9,8,7"
+     }
+    },
+    {
+     "command": "RETR notes.txt",
+     "replies": [
+      "150 Opening data connection"
+     ],
+     "data": "bGluZSBvbmUNCmxpbmUgdHdvDQo=",
+     "final": [
+      "226 Transfer complete"
+     ]
+    }
+   ],
+   "commands": [
+    "USER anonymous",
+    "PASS anonymous@",
+    "CWD .",
+    "TYPE A",
+    "PASV",
+    "RETR notes.txt"
+   ],
+   "outcome": {
+    "base64": "bGluZSBvbmUNCmxpbmUgdHdvDQo="
+   }
+  },
+  {
+   "name": "type=d attribute",
+   "url": "ftp://127.0.0.1:{port}/folder;type=d",
+   "welcome": [
+    "220 Service ready"
+   ],
+   "rules": [
+    {
+     "command": "USER anonymous",
+     "replies": [
+      "331 Password required"
+     ]
+    },
+    {
+     "command": "PASS anonymous@",
+     "replies": [
+      "230 Logged in"
+     ]
+    },
+    {
+     "command": "CWD .",
+     "replies": [
+      "250 Directory changed to /"
+     ]
+    },
+    {
+     "command": "TYPE A",
+     "replies": [
+      "200 Type set to A"
+     ]
+    },
+    {
+     "command": "TYPE A",
+     "replies": [
+      "200 Type set to A"
+     ]
+    },
+    {
+     "command": "PWD",
+     "replies": [
+      "257 \"/\" is the current directory"
+     ]
+    },
+    {
+     "command": "CWD folder",
+     "replies": [
+      "250 Directory changed to /folder"
+     ]
+    },
+    {
+     "command": "CWD /",
+     "replies": [
+      "250 Directory changed to /"
+     ]
+    },
+    {
+     "command": "PASV",
+     "replies": [
+      "227 Entering Passive Mode (10,9,8,7,{p1},{p2})"
+     ],
+     "pasv": {
+      "host": "10,9,8,7"
+     }
+    },
+    {
+     "command": "LIST folder",
+     "replies": [
+      "150 Here comes the directory listing"
+     ],
+     "data": "LXJ3LXItLXItLSAxIGZ0cCBmdHAgMTIgSmFuIDAxIDIwMjYgbG9nby5qcGcNCg==",
+     "final": [
+      "226 Transfer complete"
+     ]
+    }
+   ],
+   "commands": [
+    "USER anonymous",
+    "PASS anonymous@",
+    "CWD .",
+    "TYPE A",
+    "TYPE A",
+    "PWD",
+    "CWD folder",
+    "CWD /",
+    "PASV",
+    "LIST folder"
+   ],
+   "outcome": {
+    "base64": "LXJ3LXItLXItLSAxIGZ0cCBmdHAgMTIgSmFuIDAxIDIwMjYgbG9nby5qcGcNCg=="
+   }
+  },
+  {
+   "name": "retr 550 falls back to a listing",
+   "url": "ftp://127.0.0.1:{port}/missing.jpg",
+   "welcome": [
+    "220 Service ready"
+   ],
+   "rules": [
+    {
+     "command": "USER anonymous",
+     "replies": [
+      "331 Password required"
+     ]
+    },
+    {
+     "command": "PASS anonymous@",
+     "replies": [
+      "230 Logged in"
+     ]
+    },
+    {
+     "command": "CWD .",
+     "replies": [
+      "250 Directory changed to /"
+     ]
+    },
+    {
+     "command": "TYPE I",
+     "replies": [
+      "200 Type set to I"
+     ]
+    },
+    {
+     "command": "PASV",
+     "replies": [
+      "227 Entering Passive Mode (10,9,8,7,{p1},{p2})"
+     ],
+     "pasv": {
+      "host": "10,9,8,7"
+     }
+    },
+    {
+     "command": "RETR missing.jpg",
+     "replies": [
+      "550 No such file or directory"
+     ]
+    },
+    {
+     "command": "TYPE A",
+     "replies": [
+      "200 Type set to A"
+     ]
+    },
+    {
+     "command": "PWD",
+     "replies": [
+      "257 \"/\" is the current directory"
+     ]
+    },
+    {
+     "command": "CWD missing.jpg",
+     "replies": [
+      "250 Directory changed to /missing.jpg"
+     ]
+    },
+    {
+     "command": "CWD /",
+     "replies": [
+      "250 Directory changed to /"
+     ]
+    },
+    {
+     "command": "PASV",
+     "replies": [
+      "227 Entering Passive Mode (10,9,8,7,{p1},{p2})"
+     ],
+     "pasv": {
+      "host": "10,9,8,7"
+     }
+    },
+    {
+     "command": "LIST missing.jpg",
+     "replies": [
+      "150 Here comes the directory listing"
+     ],
+     "data": "LXJ3LXItLXItLSAxIGZ0cCBmdHAgMTIgSmFuIDAxIDIwMjYgbG9nby5qcGcNCg==",
+     "final": [
+      "226 Transfer complete"
+     ]
+    }
+   ],
+   "commands": [
+    "USER anonymous",
+    "PASS anonymous@",
+    "CWD .",
+    "TYPE I",
+    "PASV",
+    "RETR missing.jpg",
+    "TYPE A",
+    "PWD",
+    "CWD missing.jpg",
+    "CWD /",
+    "PASV",
+    "LIST missing.jpg"
+   ],
+   "outcome": {
+    "base64": "LXJ3LXItLXItLSAxIGZ0cCBmdHAgMTIgSmFuIDAxIDIwMjYgbG9nby5qcGcNCg=="
+   }
+  },
+  {
+   "name": "login rejected",
+   "url": "ftp://127.0.0.1:{port}/logo.jpg",
+   "welcome": [
+    "220 Service ready"
+   ],
+   "rules": [
+    {
+     "command": "USER anonymous",
+     "replies": [
+      "331 Password required"
+     ]
+    },
+    {
+     "command": "PASS anonymous@",
+     "replies": [
+      "530 Login incorrect"
+     ]
+    }
+   ],
+   "commands": [
+    "USER anonymous",
+    "PASS anonymous@"
+   ],
+   "outcome": {
+    "error": "URLError"
+   }
+  },
+  {
+   "name": "pasv rejected",
+   "url": "ftp://127.0.0.1:{port}/logo.jpg",
+   "welcome": [
+    "220 Service ready"
+   ],
+   "rules": [
+    {
+     "command": "USER anonymous",
+     "replies": [
+      "331 Password required"
+     ]
+    },
+    {
+     "command": "PASS anonymous@",
+     "replies": [
+      "230 Logged in"
+     ]
+    },
+    {
+     "command": "CWD .",
+     "replies": [
+      "250 Directory changed to /"
+     ]
+    },
+    {
+     "command": "TYPE I",
+     "replies": [
+      "200 Type set to I"
+     ]
+    },
+    {
+     "command": "PASV",
+     "replies": [
+      "425 Cannot open passive connection"
+     ]
+    }
+   ],
+   "commands": [
+    "USER anonymous",
+    "PASS anonymous@",
+    "CWD .",
+    "TYPE I",
+    "PASV"
+   ],
+   "outcome": {
+    "error": "URLError"
+   }
+  },
+  {
+   "name": "multiline replies",
+   "url": "ftp://127.0.0.1:{port}/logo.jpg",
+   "welcome": [
+    "220-Welcome to the test server",
+    "220 Ready"
+   ],
+   "rules": [
+    {
+     "command": "USER anonymous",
+     "replies": [
+      "331-Password required",
+      "331 Send PASS"
+     ]
+    },
+    {
+     "command": "PASS anonymous@",
+     "replies": [
+      "230-Logged in",
+      "230 Proceed"
+     ]
+    },
+    {
+     "command": "CWD .",
+     "replies": [
+      "250-Directory changed",
+      "250 to /"
+     ]
+    },
+    {
+     "command": "TYPE I",
+     "replies": [
+      "200-Type set",
+      "200 to I"
+     ]
+    },
+    {
+     "command": "PASV",
+     "replies": [
+      "227 Entering Passive Mode (10,9,8,7,{p1},{p2})"
+     ],
+     "pasv": {
+      "host": "10,9,8,7"
+     }
+    },
+    {
+     "command": "RETR logo.jpg",
+     "replies": [
+      "150 Opening data connection"
+     ],
+     "data": "/9j/4AAQSkZJRgABAQAAAQABAAD/2Q==",
+     "final": [
+      "226 Transfer complete"
+     ]
+    }
+   ],
+   "commands": [
+    "USER anonymous",
+    "PASS anonymous@",
+    "CWD .",
+    "TYPE I",
+    "PASV",
+    "RETR logo.jpg"
+   ],
+   "outcome": {
+    "base64": "/9j/4AAQSkZJRgABAQAAAQABAAD/2Q=="
+   }
+  },
+  {
+   "name": "data connection closed early",
+   "url": "ftp://127.0.0.1:{port}/logo.jpg",
+   "welcome": [
+    "220 Service ready"
+   ],
+   "rules": [
+    {
+     "command": "USER anonymous",
+     "replies": [
+      "331 Password required"
+     ]
+    },
+    {
+     "command": "PASS anonymous@",
+     "replies": [
+      "230 Logged in"
+     ]
+    },
+    {
+     "command": "CWD .",
+     "replies": [
+      "250 Directory changed to /"
+     ]
+    },
+    {
+     "command": "TYPE I",
+     "replies": [
+      "200 Type set to I"
+     ]
+    },
+    {
+     "command": "PASV",
+     "replies": [
+      "227 Entering Passive Mode (10,9,8,7,{p1},{p2})"
+     ],
+     "pasv": {
+      "host": "10,9,8,7"
+     }
+    },
+    {
+     "command": "RETR logo.jpg",
+     "replies": [
+      "150 Opening data connection"
+     ],
+     "data": "/9j/4AAQSkY=",
+     "final": [
+      "426 Connection closed; transfer aborted"
+     ]
+    }
+   ],
+   "commands": [
+    "USER anonymous",
+    "PASS anonymous@",
+    "CWD .",
+    "TYPE I",
+    "PASV",
+    "RETR logo.jpg"
+   ],
+   "outcome": {
+    "base64": "/9j/4AAQSkY="
+   }
+  },
+  {
+   "name": "directory url ending in a slash",
+   "url": "ftp://127.0.0.1:{port}/pub/",
+   "welcome": [
+    "220 Service ready"
+   ],
+   "rules": [
+    {
+     "command": "USER anonymous",
+     "replies": [
+      "331 Password required"
+     ]
+    },
+    {
+     "command": "PASS anonymous@",
+     "replies": [
+      "230 Logged in"
+     ]
+    },
+    {
+     "command": "CWD pub",
+     "replies": [
+      "250 Directory changed to /"
+     ]
+    },
+    {
+     "command": "TYPE A",
+     "replies": [
+      "200 Type set to A"
+     ]
+    },
+    {
+     "command": "TYPE A",
+     "replies": [
+      "200 Type set to A"
+     ]
+    },
+    {
+     "command": "PASV",
+     "replies": [
+      "227 Entering Passive Mode (10,9,8,7,{p1},{p2})"
+     ],
+     "pasv": {
+      "host": "10,9,8,7"
+     }
+    },
+    {
+     "command": "LIST",
+     "replies": [
+      "150 Here comes the directory listing"
+     ],
+     "data": "LXJ3LXItLXItLSAxIGZ0cCBmdHAgMTIgSmFuIDAxIDIwMjYgbG9nby5qcGcNCg==",
+     "final": [
+      "226 Transfer complete"
+     ]
+    }
+   ],
+   "commands": [
+    "USER anonymous",
+    "PASS anonymous@",
+    "CWD pub",
+    "TYPE A",
+    "TYPE A",
+    "PASV",
+    "LIST"
+   ],
+   "outcome": {
+    "base64": "LXJ3LXItLXItLSAxIGZ0cCBmdHAgMTIgSmFuIDAxIDIwMjYgbG9nby5qcGcNCg=="
+   }
+  },
+  {
+   "name": "type fails then the connection is opened again",
+   "url": "ftp://127.0.0.1:{port}/logo.jpg",
+   "welcome": [
+    "220 Service ready"
+   ],
+   "rules": [
+    {
+     "command": "USER anonymous",
+     "replies": [
+      "331 Password required"
+     ]
+    },
+    {
+     "command": "PASS anonymous@",
+     "replies": [
+      "230 Logged in"
+     ]
+    },
+    {
+     "command": "CWD .",
+     "replies": [
+      "250 Directory changed to /"
+     ]
+    },
+    {
+     "command": "TYPE I",
+     "replies": [
+      "500 Unknown command"
+     ]
+    },
+    {
+     "command": "USER anonymous",
+     "replies": [
+      "331 Password required"
+     ]
+    },
+    {
+     "command": "PASS anonymous@",
+     "replies": [
+      "230 Logged in"
+     ]
+    },
+    {
+     "command": "CWD .",
+     "replies": [
+      "250 Directory changed to /"
+     ]
+    },
+    {
+     "command": "TYPE I",
+     "replies": [
+      "200 Type set to I"
+     ]
+    },
+    {
+     "command": "PASV",
+     "replies": [
+      "227 Entering Passive Mode (10,9,8,7,{p1},{p2})"
+     ],
+     "pasv": {
+      "host": "10,9,8,7"
+     }
+    },
+    {
+     "command": "RETR logo.jpg",
+     "replies": [
+      "150 Opening data connection"
+     ],
+     "data": "/9j/4AAQSkZJRgABAQAAAQABAAD/2Q==",
+     "final": [
+      "226 Transfer complete"
+     ]
+    }
+   ],
+   "commands": [
+    "USER anonymous",
+    "PASS anonymous@",
+    "CWD .",
+    "TYPE I",
+    "USER anonymous",
+    "PASS anonymous@",
+    "CWD .",
+    "TYPE I",
+    "PASV",
+    "RETR logo.jpg"
+   ],
+   "outcome": {
+    "base64": "/9j/4AAQSkZJRgABAQAAAQABAAD/2Q=="
+   }
+  },
+  {
+   "name": "cwd rejected",
+   "url": "ftp://127.0.0.1:{port}/missing/logo.jpg",
+   "welcome": [
+    "220 Service ready"
+   ],
+   "rules": [
+    {
+     "command": "USER anonymous",
+     "replies": [
+      "331 Password required"
+     ]
+    },
+    {
+     "command": "PASS anonymous@",
+     "replies": [
+      "230 Logged in"
+     ]
+    },
+    {
+     "command": "CWD missing",
+     "replies": [
+      "550 No such directory"
+     ]
+    }
+   ],
+   "commands": [
+    "USER anonymous",
+    "PASS anonymous@",
+    "CWD missing"
+   ],
+   "outcome": {
+    "error": "URLError"
+   }
+  },
+  {
+   "name": "welcome lines separated by a lone cr",
+   "url": "ftp://127.0.0.1:{port}/logo.jpg",
+   "welcome": [
+    "220-Welcome\r220 Ready"
+   ],
+   "rules": [
+    {
+     "command": "USER anonymous",
+     "replies": [
+      "331 Password required"
+     ]
+    },
+    {
+     "command": "PASS anonymous@",
+     "replies": [
+      "230 Logged in"
+     ]
+    },
+    {
+     "command": "CWD .",
+     "replies": [
+      "250 Directory changed to /"
+     ]
+    },
+    {
+     "command": "TYPE I",
+     "replies": [
+      "200 Type set to I"
+     ]
+    },
+    {
+     "command": "PASV",
+     "replies": [
+      "227 Entering Passive Mode (10,9,8,7,{p1},{p2})"
+     ],
+     "pasv": {
+      "host": "10,9,8,7"
+     }
+    },
+    {
+     "command": "RETR logo.jpg",
+     "replies": [
+      "150 Opening data connection"
+     ],
+     "data": "/9j/4AAQSkZJRgABAQAAAQABAAD/2Q==",
+     "final": [
+      "226 Transfer complete"
+     ]
+    }
+   ],
+   "commands": [
+    "USER anonymous",
+    "PASS anonymous@",
+    "CWD .",
+    "TYPE I",
+    "PASV",
+    "RETR logo.jpg"
+   ],
+   "outcome": {
+    "base64": "/9j/4AAQSkZJRgABAQAAAQABAAD/2Q=="
+   }
+  },
+  {
+   "name": "command reply lines separated by lone crs",
+   "url": "ftp://127.0.0.1:{port}/logo.jpg",
+   "welcome": [
+    "220 Service ready"
+   ],
+   "rules": [
+    {
+     "command": "USER anonymous",
+     "replies": [
+      "331-Need\r331-more\r331 Password required"
+     ]
+    },
+    {
+     "command": "PASS anonymous@",
+     "replies": [
+      "230 Logged in"
+     ]
+    },
+    {
+     "command": "CWD .",
+     "replies": [
+      "250 Directory changed to /"
+     ]
+    },
+    {
+     "command": "TYPE I",
+     "replies": [
+      "200 Type set to I"
+     ]
+    },
+    {
+     "command": "PASV",
+     "replies": [
+      "227 Entering Passive Mode (10,9,8,7,{p1},{p2})"
+     ],
+     "pasv": {
+      "host": "10,9,8,7"
+     }
+    },
+    {
+     "command": "RETR logo.jpg",
+     "replies": [
+      "150 Opening data connection"
+     ],
+     "data": "/9j/4AAQSkZJRgABAQAAAQABAAD/2Q==",
+     "final": [
+      "226 Transfer complete"
+     ]
+    }
+   ],
+   "commands": [
+    "USER anonymous",
+    "PASS anonymous@",
+    "CWD .",
+    "TYPE I",
+    "PASV",
+    "RETR logo.jpg"
+   ],
+   "outcome": {
+    "base64": "/9j/4AAQSkZJRgABAQAAAQABAAD/2Q=="
+   }
+  },
+  {
+   "name": "welcome line of two byte characters at the limit",
+   "url": "ftp://127.0.0.1:{port}/logo.jpg",
+   "welcome": [
+    "220 ééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé"
+   ],
+   "rules": [
+    {
+     "command": "USER anonymous",
+     "replies": [
+      "331 Password required"
+     ]
+    },
+    {
+     "command": "PASS anonymous@",
+     "replies": [
+      "230 Logged in"
+     ]
+    },
+    {
+     "command": "CWD .",
+     "replies": [
+      "250 Directory changed to /"
+     ]
+    },
+    {
+     "command": "TYPE I",
+     "replies": [
+      "200 Type set to I"
+     ]
+    },
+    {
+     "command": "PASV",
+     "replies": [
+      "227 Entering Passive Mode (10,9,8,7,{p1},{p2})"
+     ],
+     "pasv": {
+      "host": "10,9,8,7"
+     }
+    },
+    {
+     "command": "RETR logo.jpg",
+     "replies": [
+      "150 Opening data connection"
+     ],
+     "data": "/9j/4AAQSkZJRgABAQAAAQABAAD/2Q==",
+     "final": [
+      "226 Transfer complete"
+     ]
+    }
+   ],
+   "commands": [
+    "USER anonymous",
+    "PASS anonymous@",
+    "CWD .",
+    "TYPE I",
+    "PASV",
+    "RETR logo.jpg"
+   ],
+   "outcome": {
+    "base64": "/9j/4AAQSkZJRgABAQAAAQABAAD/2Q=="
+   }
+  },
+  {
+   "name": "welcome line over the limit",
+   "url": "ftp://127.0.0.1:{port}/logo.jpg",
+   "welcome": [
+    "220 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+   ],
+   "rules": [],
+   "commands": [],
+   "outcome": {
+    "error": "URLError"
+   }
+  },
+  {
+   "name": "pwd reply that is not 257 falls back to a listing",
+   "url": "ftp://127.0.0.1:{port}/missing.jpg",
+   "welcome": [
+    "220 Service ready"
+   ],
+   "rules": [
+    {
+     "command": "USER anonymous",
+     "replies": [
+      "331 Password required"
+     ]
+    },
+    {
+     "command": "PASS anonymous@",
+     "replies": [
+      "230 Logged in"
+     ]
+    },
+    {
+     "command": "CWD .",
+     "replies": [
+      "250 Directory changed to /"
+     ]
+    },
+    {
+     "command": "TYPE I",
+     "replies": [
+      "200 Type set to I"
+     ]
+    },
+    {
+     "command": "PASV",
+     "replies": [
+      "227 Entering Passive Mode (10,9,8,7,{p1},{p2})"
+     ],
+     "pasv": {
+      "host": "10,9,8,7"
+     }
+    },
+    {
+     "command": "RETR missing.jpg",
+     "replies": [
+      "550 No such file or directory"
+     ]
+    },
+    {
+     "command": "TYPE A",
+     "replies": [
+      "200 Type set to A"
+     ]
+    },
+    {
+     "command": "PWD",
+     "replies": [
+      "250 \"/elsewhere\" is it"
+     ]
+    },
+    {
+     "command": "CWD missing.jpg",
+     "replies": [
+      "250 Directory changed to /missing.jpg"
+     ]
+    },
+    {
+     "command": "CWD .",
+     "replies": [
+      "250 Directory changed to /"
+     ]
+    },
+    {
+     "command": "PASV",
+     "replies": [
+      "227 Entering Passive Mode (10,9,8,7,{p1},{p2})"
+     ],
+     "pasv": {
+      "host": "10,9,8,7"
+     }
+    },
+    {
+     "command": "LIST missing.jpg",
+     "replies": [
+      "150 Here comes the directory listing"
+     ],
+     "data": "LXJ3LXItLXItLSAxIGZ0cCBmdHAgMTIgSmFuIDAxIDIwMjYgbG9nby5qcGcNCg==",
+     "final": [
+      "226 Transfer complete"
+     ]
+    }
+   ],
+   "commands": [
+    "USER anonymous",
+    "PASS anonymous@",
+    "CWD .",
+    "TYPE I",
+    "PASV",
+    "RETR missing.jpg",
+    "TYPE A",
+    "PWD",
+    "CWD missing.jpg",
+    "CWD .",
+    "PASV",
+    "LIST missing.jpg"
+   ],
+   "outcome": {
+    "base64": "LXJ3LXItLXItLSAxIGZ0cCBmdHAgMTIgSmFuIDAxIDIwMjYgbG9nby5qcGcNCg=="
+   }
+  }
+ ]
+}

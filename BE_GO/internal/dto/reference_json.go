@@ -31,6 +31,44 @@ func parseReferenceJSON(data []byte, constants map[int64]any, rateLimit bool) (a
 // ('[]' is 1, '{"a": {"a": 1}}' is 2).
 func AuditJSONDepth(text string) int { return auditJSONDepth(text) }
 
+// JSONValueDepth is the container nesting of a parsed JSON value (the top-level
+// container is 1; a scalar is 0). It is what json.dumps walks, so for a value
+// parsed from text without duplicate keys it equals AuditJSONDepth of that
+// text, while a duplicate key's overwritten deep value no longer counts.
+// Iterative: the band depths are past a recursive walk's own stack.
+func JSONValueDepth(value any) int {
+	type frame struct {
+		value any
+		depth int
+	}
+	deepest := 0
+	stack := []frame{{value: value}}
+	for len(stack) > 0 {
+		current := stack[len(stack)-1]
+		stack = stack[:len(stack)-1]
+		var children []any
+		switch value := current.value.(type) {
+		case domain.RequestObject:
+			children = make([]any, 0, len(value))
+			for _, field := range value {
+				children = append(children, field.Value)
+			}
+		case []any:
+			children = value
+		default:
+			continue
+		}
+		depth := current.depth + 1
+		if depth > deepest {
+			deepest = depth
+		}
+		for _, child := range children {
+			stack = append(stack, frame{value: child, depth: depth})
+		}
+	}
+	return deepest
+}
+
 // ParseStoredJSONDepth is json.loads for a stored jsonb text with the site's
 // measured total nesting band: text whose whole depth (AuditJSONDepth) exceeds
 // maxDepth is refused with ErrReferenceNesting before parsing, while a document

@@ -23,8 +23,16 @@ type Int string
 // with Python's 4300-digit limit, floats through float()). Values are nil,
 // bool, Int, float64, string, []any and map[string]any (the last duplicate key
 // wins). Strings keep a lone surrogate as its three-byte (WTF-8) encoding;
-// HasSurrogate reports them.
-func LoadJSON(raw []byte) (any, error) {
+// HasSurrogate reports them. loadOrderedJSON reads objects as Dicts instead,
+// keeping their source key order.
+func LoadJSON(raw []byte) (any, error) { return loadJSON(raw, false) }
+
+// loadOrderedJSON is json.loads(raw) for the release feed: an object is a Dict
+// in source key order, a repeated key keeping its first position and taking
+// its last value.
+func loadOrderedJSON(raw []byte) (any, error) { return loadJSON(raw, true) }
+
+func loadJSON(raw []byte, ordered bool) (any, error) {
 	switch encoding := detectEncoding(raw); encoding {
 	case "utf-8":
 	case "utf-8-sig":
@@ -39,7 +47,7 @@ func LoadJSON(raw []byte) (any, error) {
 	if !validSurrogatePass(raw) {
 		return nil, ErrJSON
 	}
-	p := &jsonParser{data: string(raw)}
+	p := &jsonParser{data: string(raw), ordered: ordered}
 	p.space()
 	value, err := p.value(0)
 	if err != nil {
@@ -173,6 +181,9 @@ const maxJSONDepth = 900
 type jsonParser struct {
 	data string
 	pos  int
+	// ordered makes object() build a Dict in source key order (the release
+	// feed) instead of a map.
+	ordered bool
 }
 
 func (p *jsonParser) space() {
@@ -357,9 +368,17 @@ func (p *jsonParser) str() (string, error) {
 
 func (p *jsonParser) object(depth int) (any, error) {
 	result := map[string]any{}
+	var fields Dict
+	index := map[string]int{}
+	if p.ordered {
+		fields = Dict{}
+	}
 	p.space()
 	if p.pos < len(p.data) && p.data[p.pos] == '}' {
 		p.pos++
+		if p.ordered {
+			return fields, nil
+		}
 		return result, nil
 	}
 	for {
@@ -381,7 +400,18 @@ func (p *jsonParser) object(depth int) (any, error) {
 		if err != nil {
 			return nil, err
 		}
-		result[key] = value
+		if p.ordered {
+			// A Python dict keeps a repeated key at its first position and
+			// takes the last value.
+			if i, seen := index[key]; seen {
+				fields[i].Value = value
+			} else {
+				index[key] = len(fields)
+				fields = append(fields, DictField{Name: key, Value: value})
+			}
+		} else {
+			result[key] = value
+		}
 		p.space()
 		if p.pos >= len(p.data) {
 			return nil, ErrJSON
@@ -389,6 +419,9 @@ func (p *jsonParser) object(depth int) (any, error) {
 		switch p.data[p.pos] {
 		case '}':
 			p.pos++
+			if p.ordered {
+				return fields, nil
+			}
 			return result, nil
 		case ',':
 			p.pos++
@@ -443,6 +476,8 @@ func Truthy(value any) bool {
 	case string:
 		return v != ""
 	case []any:
+		return len(v) > 0
+	case Dict:
 		return len(v) > 0
 	case map[string]any:
 		return len(v) > 0

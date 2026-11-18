@@ -18,10 +18,13 @@ import argparse
 import contextlib
 import difflib
 import gettext
+from itertools import product
 import json
 import locale
 import os
 from pathlib import Path
+import re
+from string import Formatter
 import sys
 from unittest.mock import patch
 
@@ -91,7 +94,7 @@ def catalog_key(language, directories):
 
 
 def candidate_languages(directories):
-    """Language codes covering every reachable catalog key.
+    """Language codes covering catalog selections without path components.
 
     A key depends only on the language, territory and modifier gettext expands
     from the normalized locale, filtered by the catalogs that exist. So every
@@ -128,6 +131,8 @@ EXTRA_KEY_SAMPLES = ('de-ch', 'DE-CH', 'de_CH.UTF-8', 'de_DE.ISO-8859-1@euro', '
                      'pt-\u0392r', 'sr-lat\u0131n', 'sr_RS@lat\u0131n', 'de.\u00fc', 'de@\u00fc', 'de:\u00fc', 'de\u2028', 'de\u0085',
                      'zh-\u0049\u0307', 'x' * 400, "de'", 'de"', 'de<ch>', 'de&ch', 'de;ch', 'de=ch', 'de+ch', 'de#', 'de?', 'de\\ch')
 
+
+CHAINED_KEY_SAMPLES = ('de/../it', 'de/../sr', './en', 'de/../ja', 'en_GB/../pt_BR')
 
 VERSION_SAMPLES = ('v 1', 'a#b', 'x: y', '- z', "it's", 'q"r', '\u00e9', '\u00fcn\u00ef c\u00f6d\u00e9', '\u65e5\u672c', 'a\tb', 'a\\b', '1.0',
                    'null', ' lead', 'trail ', 'a  b', '[x]', '{y}', 'a, b', 'x' * 100, ('word ' * 30).strip(), 'a\x01b', 'a\u2028b', 'a%b',
@@ -169,6 +174,161 @@ def apply_ops(base, ops):
         result += base[position:start] + replacement
         position = end
     return ''.join(result + base[position:])
+
+
+def catalog_lookup(composition, key):
+    """Yield the catalog dictionaries in Django's singular gettext lookup order."""
+    flag, *lists = key.split('|')
+    primary, fallbacks = [], []
+    for directory, names in zip(composition['translations'], lists, strict=True):
+        if names:
+            first, *rest = names.split(',')
+            primary.append(directory[first])
+            fallbacks.extend(directory[name] for name in rest)
+    yield from reversed(primary)
+    yield from fallbacks
+    if flag == '1':
+        yield from catalog_lookup(composition, composition['default_key'])
+
+
+def composition_ops(composition, form, key):
+    selected = {}
+    for translations in catalog_lookup(composition, key):
+        for message, choice in translations.items():
+            selected.setdefault(message, choice)
+    templates = composition['templates'][form]
+    for start, end, index in composition['slots'][form]:
+        template = templates[index]
+        choice = 0
+        for message in template['messages']:
+            choice = choice * len(composition['messages'][message]) + selected.get(message, 0)
+        yield start, end, [template['rendered'][choice]]
+
+
+def generate_composition(document, directories, base, base_key, version_lines):
+    """Discover translated fields and render each combination of their message values."""
+    import yaml
+    from django.utils.translation.trans_real import DjangoTranslation
+    from drf_spectacular.plumbing import is_trivial_string_variation
+    from drf_spectacular.renderers import OpenApiJsonRenderer, OpenApiYamlRenderer
+
+    marker = re.compile(r'[aA]ssozetaschema(\d+)end')
+    argument_separator = ' ASSOZETAARG '
+    formatter = Formatter()
+    msgids = []
+
+    def arguments(message):
+        return list(dict.fromkeys(name for _, name, _, _ in formatter.parse(message) if name is not None))
+
+    def mark(_translation, message):
+        if message not in msgids:
+            msgids.append(message)
+        # Preserve placeholders so interpolation reveals nested translation calls.
+        try:
+            names = arguments(message)
+        except ValueError:
+            names = []
+        assert all(name.isidentifier() for name in names), message
+        return f'assozetaschema{msgids.index(message)}end' + ''.join(
+            argument_separator + '{' + name + '}' for name in names)
+
+    with patch.object(DjangoTranslation, 'gettext', mark):
+        marked = {form: document('en', media) for form, media in (('yaml', YAML), ('json', JSON))}
+
+    def translated_fields(form):
+        loader = getattr(yaml, 'CBaseLoader', yaml.BaseLoader)
+        root = yaml.compose(marked[form], Loader=loader)
+        original = yaml.compose(''.join(base[form]), Loader=loader)
+
+        def visit(node, baseline, parent_field=None):
+            assert node.id == baseline.id
+            if node.id == 'mapping':
+                for (key, value), (base_field, base_value) in zip(node.value, baseline.value, strict=True):
+                    assert key.value == base_field.value and not marker.search(key.value)
+                    if value.id == 'scalar' and marker.search(value.value):
+                        start = base_field.start_mark.line
+                        end = base_value.end_mark.line + bool(base_value.end_mark.column)
+                        assert start < end and not start <= version_lines[form] < end
+                        yield start, end, base_field.start_mark.column, key.value, value.value, parent_field
+                    else:
+                        yield from visit(value, base_value, key.value)
+            elif node.id == 'sequence':
+                for value, base_value in zip(node.value, baseline.value, strict=True):
+                    yield from visit(value, base_value)
+            else:
+                assert node.value == baseline.value and not marker.search(node.value)
+
+        return list(visit(root, original))
+
+    fields_by_form = {form: translated_fields(form) for form in base}
+    values = {msgids[int(index)]: set() for fields in fields_by_form.values()
+              for _, _, _, _, value, _ in fields for index in marker.findall(value)}
+    translations = []
+    for directory, names in directories:
+        catalogs = {}
+        for name in names:
+            with (Path(directory) / name / 'LC_MESSAGES/django.mo').open('rb') as file:
+                catalog = gettext.GNUTranslations(file)._catalog
+            # GNUTranslations.gettext can also look up a plural entry.
+            assert not any(isinstance(key, tuple) and key[0] in values for key in catalog), name
+            catalogs[name] = {message: catalog[message] for message in values if message in catalog}
+            for message, value in catalogs[name].items():
+                values[message].add(value)
+        translations.append(catalogs)
+    messages = {message: [message, *sorted(values[message] - {message})] for message in sorted(values)}
+    translations = [{name: {message: messages[message].index(value) for message, value in catalog.items()}
+                     for name, catalog in directory.items()} for directory in translations]
+
+    templates, slots = {}, {}
+    for form, fields in fields_by_form.items():
+        renderer = OpenApiYamlRenderer() if form == 'yaml' else OpenApiJsonRenderer()
+        templates[form], slots[form] = [], []
+        indices = {}
+        for start, end, indent, field, marked_value, parent_field in sorted(fields):
+            ids = list(dict.fromkeys(marker.findall(marked_value)))
+            used = [msgids[int(index)] for index in ids]
+            if all(len(messages[message]) == 1 for message in used):
+                continue
+            comma = form == 'json' and base[form][end - 1].endswith(',\n')
+            title_field = parent_field if field == 'title' else None
+            signature = (indent, field, marked_value, comma, title_field)
+            if signature not in indices:
+                indices[signature] = len(templates[form])
+                outer, *args = marked_value.split(argument_separator)
+                assert marker.fullmatch(outer), marked_value
+                names = arguments(used[0])
+                assert len(names) == len(args), marked_value
+                step = 2 if form == 'yaml' else 4
+                assert indent % step == 0
+                depth = indent // step - (form == 'json')
+                rendered = []
+                for choices in product(*(messages[message] for message in used)):
+                    selected = dict(zip(ids, choices, strict=True))
+                    value = choices[0]
+                    if names:
+                        value = value.format(**{name: marker.sub(lambda match: selected[match[1]], arg)
+                                                for name, arg in zip(names, args, strict=True)})
+                    if outer[0].isupper():
+                        # DRF capitalizes some model field labels with capfirst().
+                        value = value[:1].upper() + value[1:]
+                    if title_field and (not value or is_trivial_string_variation(value, title_field)):
+                        # drf-spectacular omits a label that repeats the field name.
+                        assert form == 'yaml' or comma
+                        rendered.append('')
+                        continue
+                    # Render the scalar at its document indentation for YAML wrapping.
+                    data = {field: value}
+                    for _ in range(depth):
+                        data = {'outer': data}
+                    output = renderer.render(data).decode().splitlines(keepends=True)
+                    if form == 'yaml':
+                        rendered.append(''.join(output[depth:]))
+                    else:
+                        rendered.append(output[depth + 1].rstrip('\n') + (',' if comma else '') + '\n')
+                templates[form].append({'messages': used, 'rendered': rendered})
+            slots[form].append([start, end, indices[signature]])
+        assert all(left[1] <= right[0] for left, right in zip(slots[form], slots[form][1:]))
+    return {'default_key': base_key, 'messages': messages, 'translations': translations, 'templates': templates, 'slots': slots}
 
 
 def render_corpus():
@@ -294,7 +454,7 @@ def generate():
         assert response.status_code == 200 and response['Content-Type'].startswith(media), (language, media)
         return response.content.decode()
 
-    # Group every candidate by catalog key; candidates sharing a key must agree.
+    # Group standard language codes by catalog key; candidates sharing a key must agree.
     groups, keys = {}, {}
     for language in candidate_languages(directories):
         key = catalog_key(language, directories)
@@ -308,6 +468,16 @@ def generate():
     base = {form: lines(groups[base_key][form]) for form in ('yaml', 'json')}
     version_lines = {'yaml': base['yaml'].index('  version: 1.0.0\n'), 'json': base['json'].index('        "version": "1.0.0",\n')}
     assert all(base[form].count(base[form][version_lines[form]]) == 1 for form in base), 'version line must be unique'
+
+    composition = generate_composition(document, directories, base, base_key, version_lines)
+    for key, rendered in groups.items():
+        for form in base:
+            assert apply_ops(base[form], composition_ops(composition, form, key)) == rendered[form], (key, form)
+    for language in CHAINED_KEY_SAMPLES:
+        key = catalog_key(language, directories)
+        assert key not in groups, (language, key)
+        for form, media in (('yaml', YAML), ('json', JSON)):
+            assert apply_ops(base[form], composition_ops(composition, form, key)) == document(language, media), (language, key, form)
 
     variants, variant_of = [], {}
     distinct = {}
@@ -345,7 +515,7 @@ def generate():
     redoc = redoc.replace('spec-url="/schema/"', 'spec-url="' + URL_PLACEHOLDER + '"')
 
     alias = dict(sorted(locale.locale_alias.items()))
-    samples = {language: catalog_key(language, directories) for language in sorted(set(keys) | set(EXTRA_KEY_SAMPLES))}
+    samples = {language: catalog_key(language, directories) for language in sorted(set(keys) | set(EXTRA_KEY_SAMPLES) | set(CHAINED_KEY_SAMPLES))}
     catalog = {
         'comment': 'Generated by TESTS/adapters/django/api_schema.py --write; do not edit.',
         'language_code': settings.LANGUAGE_CODE,
@@ -356,6 +526,7 @@ def generate():
         'locale_alias': alias,
         'variant_of': dict(sorted(variant_of.items())),
         'variants': variants,
+        'composition': composition,
         'options': options,
         'pages': {'swagger': swagger, 'redoc': redoc, 'redoc_options': redoc_options},
     }

@@ -18,6 +18,7 @@ generate_invoice_html's bytes.
 """
 from datetime import date, datetime, timezone
 from decimal import Decimal
+import json
 import types
 
 from TESTS.contracts import test_invoice_views_http as base_contract
@@ -63,6 +64,28 @@ def association_ids(source):
     ids = {label: row['id'] for label, row in source['associations'].items()}
     ids.update(own=source['ids']['own_association'], foreign=source['ids']['foreign_association'])
     return ids
+
+
+RAW = '$raw'
+
+
+def raw_json(value):
+    """The jsonb text of a fixture value; {'$raw': text} is a number's own text."""
+    if isinstance(value, dict) and set(value) == {RAW}:
+        return value[RAW]
+    if isinstance(value, dict):
+        return '{' + ', '.join(json.dumps(key) + ': ' + raw_json(item) for key, item in value.items()) + '}'
+    if isinstance(value, list):
+        return '[' + ', '.join(raw_json(item) for item in value) + ']'
+    return json.dumps(value)
+
+
+def needs_raw(value):
+    if isinstance(value, dict):
+        return set(value) == {RAW} or any(needs_raw(item) for item in value.values())
+    if isinstance(value, list):
+        return any(needs_raw(item) for item in value)
+    return False
 
 
 def seed_rows(source, created):
@@ -135,17 +158,26 @@ def seed_rows(source, created):
             cancelled=row['cancelled'], selected_tutor_id=associate_ids[row['selected_tutor']] if row['selected_tutor'] else None,
             deleted=row['deleted'], group_id=ids[row['group']] if row['group'] else None, creation_date=seeded))
     categories = {label: row['id'] for label, row in source['categories'].items()}
+    from django.db import connection
     for row in source['payments']:
+        raw_categories = needs_raw(row['meta_categories'])
         insert(Payment, Payment(
             payment_id=row['id'], invoice_id=source['invoices'][row['invoice']]['id'], sport_association_id=associations[row['association']],
             type=row['type'], subject=row['subject'], description=row['description'], notes=row['notes'], payment_date=moment(row['date']),
-            payment_category_id=categories[row['category']] if row['category'] else None, meta_payment_categories=row['meta_categories'],
+            payment_category_id=categories[row['category']] if row['category'] else None,
+            meta_payment_categories=None if raw_categories else row['meta_categories'],
             associate_id=associate_ids[row['associate']] if row['associate'] else None,
             supplier_id=source['suppliers'][row['supplier']]['id'] if row['supplier'] else None,
             instructor_id=source['instructors'][row['instructor']]['id'] if row['instructor'] else None, course=row['course'],
             meta=row['meta'], deleted=row['deleted'], group_id=ids[row['group']] if row['group'] else None, amount=Decimal('10.00'),
             user_id=ids[source['payment_users'][row['invoice']]] if row['invoice'] in source['payment_users'] else None,
             creation_date=seeded))
+        if raw_categories:
+            # jsonb keeps a fraction beyond float64's range, so json.loads reads inf.
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    f'UPDATE {Payment._meta.db_table} SET meta_payment_categories = %s::jsonb WHERE payment_id = %s',
+                    [raw_json(row['meta_categories']), row['id']])
     for label, payment in source['subscription_payments'].items():
         Subscription._base_manager.filter(pk=subscription_ids[label]).update(payment_id=payment)
     for key, course, subscription, payment, deleted in source['course_subscriptions']:

@@ -19,19 +19,19 @@ response Django gives (and, for writes, Django's effect):
   Go), an invalid one is 400 `workflow not valid.`, and a tree nested past
   Python's recursion band is the 500 page Go now answers itself (X15). Go keeps no
   refusal on a workflow update either, so the family carries no hand-off case.
-- api-schema: `GET schema/?lang=xx/yy`. A `lang` with a path separator makes
-  gettext look outside the locale directories, which Go refuses
-  (errAPISchemaUnsupported) and hands to Django. No catalog exists at
-  `<localedir>/xx/yy`, so Django renders the same document as for the unknown
-  `lang=xx` (api-schema-lang-unknown), which is the ported control. This is the
-  sequence's only hand-off case: when Go ports that input too, the contract needs
-  another refused input.
+- api-schema: no production `lang` is refused any more. The hand-off input is
+  `GET schema/?lang=handoff-probe`, a refusal compiled only into the
+  `handoffprobe` test build (GO_BUILD_TAGS); Go replays it to Django. No catalog
+  exists at `<localedir>/handoff-probe`, so Django renders the same document as
+  for the unknown `lang=xx` (api-schema-lang-unknown). `?lang=xx/yy` (a path
+  separator) is a ported control: both servers select the same document.
 
 Each family also has one ported control case that Go serves itself. Cases marked
 `handoff` must be attributed to Django on the Go transports and carry
 `X-Assozeta-Handoff: django`; the others must not. Responses and effects reuse the
 source families' authored values (and their contracts), not values copied from
-a run. Run with ``python3 -I`` after the source families' generators.
+a run. Run with ``python3 -I`` after the source families' generators. The
+hand-off the sequence exercises exists only in the `handoffprobe` build.
 """
 import copy
 import json
@@ -148,13 +148,16 @@ DEEP = '[' * 30000 + ']' * 30000
 add('workflow-update', 'workflow-form-tree-too-deep', handoff=False, method='PATCH', path=PATH, status=500, response='<stable-server-error-page>',
     raw_body=urlencode({'automation_tree': DEEP}), content_type='application/x-www-form-urlencoded', effect=None)
 
-# api-schema: the unknown language is the ported control; the same language behind a path separator is refused by Go
-# and handed off, and Django finds no catalog at <localedir>/xx/yy either.
+# api-schema: the unknown language is the ported control; the same language behind a path separator is
+# ported too (Go walks the catalog directories), and the hand-off probe is the only refused input, which the
+# handoffprobe test build compiles in. Django finds no catalog for it either.
 UNKNOWN = source_case('api-schema', 'api-schema-lang-unknown')
 assert UNKNOWN['path'] == '/schema/?lang=xx' and UNKNOWN['actor'] == 'anonymous'
 add('api-schema', 'schema-lang-unknown-ported', handoff=False, actor='anonymous', path=UNKNOWN['path'],
     headers=copy.deepcopy(UNKNOWN['headers']), response_of='api-schema-lang-unknown')
-add('api-schema', 'schema-lang-path-separator', handoff=True, actor='anonymous', path='/schema/?lang=xx/yy',
+add('api-schema', 'schema-lang-path-separator-ported', handoff=False, actor='anonymous', path='/schema/?lang=xx/yy',
+    headers=copy.deepcopy(UNKNOWN['headers']), response_of='api-schema-lang-unknown')
+add('api-schema', 'schema-lang-handoff-probe', handoff=True, actor='anonymous', path='/schema/?lang=handoff-probe',
     headers=copy.deepcopy(UNKNOWN['headers']), response_of='api-schema-lang-unknown')
 
 assert len({c['name'] for c in cases}) == len(cases)

@@ -140,15 +140,17 @@ matrix for the MCP server as well.
 
 ## Not ported (refused with the HTML 500 page before any query)
 
-- In the file tools: the paragraph markup `pdfexport` still refuses (pdf-exports.md,
-  "Paragraph markup": anchors, internal links, images that are not base64 JPEG data URLs, `<unichar name="…">`, CMYK and
-  transparent colours, `<para>` indents, justification and borders, bullets and sequences). `u`, `strike`, `font`, `span`, `nobr`,
-  `sup`, `sub`, `a`, `link`, base64 JPEG `img`, `<para>` with attributes, `<greek>`, `<unichar code="…"/>`, the Courier and
-  Times faces and digits of other scripts are drawn (cases `export-pdf-rich-markup`, `export-pdf-rich-markup-over-pages`,
-  `export-pdf-inline-image`, `export-pdf-greek-unichar-fonts`, `export-pdf-digit-size` and the `export-pdf-rich-*-error` ones). Labels, cells and texts with `&`, `<`, entities, `<b>`,
-  `<i>`, `<br/>` or soft hyphens are drawn as reportlab draws them, and markup
-  its parser raises on (`A<B` opens a tag) fails the export like any other
-  exception (`v2rep3-*` receipts).
+- In the file tools: since long tail PR 5 `pdfexport` refuses no paragraph input (pdf-exports.md, "Long tail PR 5"):
+  `<unichar name>`, anchors and internal links, every image format Pillow reads, CMYK, alpha and expression colours,
+  numbers as CPython reads them, `<para>` indents, justification, bullets, borders, autoLeading, endDots, textTransform,
+  wordWrap and the hyphenation options are drawn (cases `export-pdf-unichar-*`, `-anchor-*`, `-link-undefined-error`,
+  `-number-*`, `-ftp-image-error`, `-empty-image-error`, `-para-*`, `-colours-*`, `-inline-png`, `-inline-*-error`,
+  `-wordwrap-*`, `-uri-waste-reduce`, `-embedded-hyphenation-two-error`), as were `u`, `strike`, `font`, `span`, `nobr`,
+  `sup`, `sub`, `a`, `link`, `img`, `<greek>`, `<unichar code="…"/>`, the Courier and Times faces and digits of other
+  scripts before (cases `export-pdf-rich-markup`, `export-pdf-rich-markup-over-pages`, `export-pdf-inline-image`,
+  `export-pdf-greek-unichar-fonts`, `export-pdf-digit-size` and the `export-pdf-rich-*-error` ones). Labels, cells and
+  texts with `&`, `<`, entities, `<b>`, `<i>`, `<br/>` or soft hyphens are drawn as reportlab draws them, and markup
+  its parser raises on (`A<B` opens a tag) fails the export like any other exception (`v2rep3-*` receipts).
 - The report tools use the query engine described in `mcp-server.md` (every
   whitelisted model, `get_schema`, relation paths). A list argument that is not iterable
   (`fields: 5`) raises Django's `'int' object is not iterable`, a string one is
@@ -169,14 +171,29 @@ matrix for the MCP server as well.
   `MCP_AGENT_QUERY_TIMEOUT` of 0 is Django's `''` and raises where QueryBuilder uses it, a negative value is used as
   Python uses it. The branches no input reaches (generated metadata, PostgreSQL output forms, the parsed JSON types)
   are `refusal.AppState`: Go's 500 page, never handed off.
+- Long tail PR 5: the review's three handoffs are ported. A JSON key lookup whose value the coercion walk turned into a
+  float or int sends `json.dumps` of it (`run-query-carnets-meta-key-float`); a date or datetime raises
+  `Object of type date is not JSON serializable` when the statement runs (`run-query-carnets-meta-key-date-error`).
+  `MCP_AGENT_MAX_RESULTS` and `MCP_AGENT_QUERY_TIMEOUT` are read from the configured environment (django-environ proxies,
+  the env file) as Python ints of any size: the limit compares exactly and reaches the SQL as Django writes it, and the
+  timeout is sent as `str(query_timeout * 1000)`, so PostgreSQL rejects `''`, negatives and values past its range with
+  its own message, the tool's exception (X14). An XLSX column label `1e400`/`-1e400` in the overrides is pandas'
+  `inf_rep` header (`run-export-xlsx-label-infinity`, `-negative-infinity`); NaN/Infinity labels from agent arguments get
+  `''`/`inf` the same way.
+- PR 5 review: an environment text `int()` rejects although it looks numeric (more than 4300 digits, or the bytes
+  `\x1c`-`\x1f`, which `int()` does not strip) stops Django's settings from loading; Go answers the 500 page.
+  `query_data` runs the count before it checks the ordering, the fields, the slice and the timeout, so a database
+  error of the count wins over those exceptions (and the count runs before the timeout is set);
+  `get_field_values` counts before it slices. An empty top-level filter elides every statement (count 0, no rows,
+  `Count` 0 and `None` for the other aggregates) and drops the other filters' parameters and adaptation errors.
 
 The XLSX workbooks of the file tools answer every stored label and cell ([xlsx-exports](xlsx-exports.md)); openpyxl's
 sheet-title comparison is `str.lower()` (avoid_duplicate_name), so two titles that differ only by their lower-case form (a
 capital and a final sigma, `ΑΣ` and `Ας`) are the same title and pandas' lookup of the second raises `KeyError('<title>')`:
 the export fails as in Django (go-v2only-xlsxvalue, golden case `rs-title-final-sigma`). The remaining `ErrNotPorted` sites
 of the report writer need state the app cannot write: more than 702 columns (a model row with 703 kept fields), a frame
-without rows, a `None`, bool or non-finite cell (`format_export_data` writes `''`/`Vero`/`Falso` and the label reader refuses
-them), and a `None` or non-finite label.
+without rows, and a `None`, bool or non-finite cell (`format_export_data` writes `''`/`Vero`/`Falso`). Non-finite labels
+are written as pandas formats them (long tail PR 5).
 
 ## Group and unusual arguments (`v2rep2-*` receipts)
 

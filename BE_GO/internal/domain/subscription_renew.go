@@ -17,6 +17,18 @@ func (e *SubscriptionCreateFailure) Is(target error) bool {
 	return target == ErrSubscriptionCreateServer
 }
 
+// CourseSubscriptionRaised is a Python exception add_course_to_subscription
+// raises whose str() the port reconstructs: subscription/renew answers 400
+// {"status": "error", "msg": Text} and its transaction rolls back. The course
+// views still answer the 500 page (it matches ErrCourseSubscriptionServer).
+type CourseSubscriptionRaised struct{ Text string }
+
+func (e *CourseSubscriptionRaised) Error() string { return "course subscription raised: " + e.Text }
+
+func (e *CourseSubscriptionRaised) Is(target error) bool {
+	return target == ErrCourseSubscriptionServer
+}
+
 // SubscriptionRenewAssociateStore is AssociateSerializer.create's associate_id
 // branch (subscription-renew.md).
 type SubscriptionRenewAssociateStore interface {
@@ -25,7 +37,8 @@ type SubscriptionRenewAssociateStore interface {
 	// AssociateByTaxCode is all_objects().filter(tax_code__iexact, sport_association).first() (by key).
 	AssociateByTaxCode(ctx context.Context, taxCode, association string) (*SubscriptionEditAssociate, error)
 	// LiveTaxCodeTaken reports a live associate of the association, other than
-	// except, whose UPPER(tax_code) matches (the partial unique index).
+	// except, whose UPPER(tax_code) matches (the partial unique index); the edit
+	// view refuses before its write, the serializer's branch lets the save fail.
 	LiveTaxCodeTaken(ctx context.Context, taxCode, association, except string) (bool, error)
 	// SetAssociateDeleted writes the deleted column.
 	SetAssociateDeleted(ctx context.Context, id string, deleted bool) error
@@ -52,9 +65,11 @@ type SubscriptionRenewTransaction interface {
 	// RenewAssociationOwner is SportAssociation.objects.get(sport_association_id=id).user
 	// (nil when no live association has the id).
 	RenewAssociationOwner(ctx context.Context, id string) (*Account, error)
-	// ConnectedAssociationCount counts the live associations of the account's
-	// connected account (User.sport_association of a collaborator), 0 when it has none.
-	ConnectedAssociationCount(ctx context.Context, user string) (int, error)
+	// RenewalAssociationUser is User.sport_association's account: the user itself,
+	// or a collaborator's connected account; count is the number of live
+	// associations that account owns (the caller answers Django's DoesNotExist /
+	// MultipleObjectsReturned).
+	RenewalAssociationUser(ctx context.Context, user string, role int) (string, int, error)
 	// MemberRenewable is _member_renewal_association's check: the association has a
 	// subscription of the requester, or of a person sharing a tax code or a family with one
 	// of the requester's subscriptions, for the associate (by key, or by tax code iexact

@@ -243,7 +243,7 @@ MAIN = 'http://schemas.openxmlformats.org/spreadsheetml/2006/main'
 RELS = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships'
 PACKAGE = 'http://schemas.openxmlformats.org/package/2006'
 DECLARATION = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'
-# cellXfs: 0 General, 1 a date (numFmtId 14).
+# cellXfs: 0 General, 1 a date (numFmtId 14), 2 a time (numFmtId 21).
 STYLES = (f'{DECLARATION}<styleSheet xmlns="{MAIN}"><fonts count="1"><font><sz val="11"/><name val="Calibri"/></font></fonts>'
           '<fills count="1"><fill><patternFill patternType="none"/></fill></fills>'
           '<borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders>'
@@ -252,6 +252,10 @@ STYLES = (f'{DECLARATION}<styleSheet xmlns="{MAIN}"><fonts count="1"><font><sz v
           '<xf numFmtId="14" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/>'
           '<xf numFmtId="21" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/></cellXfs>'
           '<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>')
+# The same stylesheet with a fourth cell format, a duration ([h]:mm:ss, numFmtId 46).
+DURATION_STYLES = STYLES.replace(
+    '</cellXfs>', '<xf numFmtId="46" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/></cellXfs>').replace(
+    '<cellXfs count="3">', '<cellXfs count="4">')
 
 
 def letters(column):
@@ -262,6 +266,10 @@ def letters(column):
     return text
 
 
+# The cellXfs index of each styled cell kind.
+STYLE_KINDS = {'date': 1, 'time': 2, 'duration': 3}
+
+
 def archive(parts):
     buffer = io.BytesIO()
     with zipfile.ZipFile(buffer, 'w', zipfile.ZIP_DEFLATED) as bundle:
@@ -270,12 +278,15 @@ def archive(parts):
     return buffer.getvalue()
 
 
-def workbook(rows):
+def workbook(rows, numbers=None, styles=STYLES):
     """A one-sheet .xlsx. A cell is None (absent), a str (shared string), an int or float (number) or
     ('date', serial): a number with the date style (days since 1899-12-30), ('time', fraction): a number with the
-    h:mm:ss style, True/False (a boolean cell), ('error', text): an error cell."""
+    h:mm:ss style, ('duration', serial): a number with the [h]:mm:ss style (a datetime.timedelta), True/False (a
+    boolean cell), ('error', text): an error cell. numbers: the row numbers to write (default 1..len(rows))."""
     strings, body = [], []
     for number, row in enumerate(rows, 1):
+        if numbers is not None:
+            number = numbers[number - 1]
         cells = ''
         for column, value in enumerate(row, 1):
             reference = f'{letters(column)}{number}'
@@ -290,7 +301,7 @@ def workbook(rows):
             elif isinstance(value, tuple) and value[0] == 'error':
                 cells += f'<c r="{reference}" t="e"><v>{value[1]}</v></c>'
             elif isinstance(value, tuple):
-                cells += f'<c r="{reference}" s="{2 if value[0] == "time" else 1}"><v>{value[1]}</v></c>'
+                cells += f'<c r="{reference}" s="{STYLE_KINDS[value[0]]}"><v>{value[1]}</v></c>'
             else:
                 cells += f'<c r="{reference}"><v>{value!r}</v></c>'
         body.append(f'<row r="{number}">{cells}</row>')
@@ -313,7 +324,7 @@ def workbook(rows):
          f'<Relationship Id="rId2" Type="{RELS}/styles" Target="styles.xml"/>'
          f'<Relationship Id="rId3" Type="{RELS}/sharedStrings" Target="sharedStrings.xml"/></Relationships>'),
         ('xl/worksheets/sheet1.xml', f'{DECLARATION}<worksheet xmlns="{MAIN}"><sheetData>{"".join(body)}</sheetData></worksheet>'),
-        ('xl/styles.xml', STYLES),
+        ('xl/styles.xml', styles),
         ('xl/sharedStrings.xml', f'{DECLARATION}<sst xmlns="{MAIN}">{shared}</sst>'),
     ])
 
@@ -380,6 +391,16 @@ upload('csv-whole-numbers', 'owner', 'interi.csv', b'Nome;CAP;Attivo\n1;00100;Tr
        keep='csvnumbers')
 upload('xlsx-whole-numbers', 'owner', 'numeri.xlsx', workbook([['Nome', 'CAP'], [1, 100], [2, 20100]]), columns=['Nome', 'CAP'], kind=XLSX,
        content_type=XLSX, keep='numbers')
+# A header cell that is a duration past pandas' Timedelta range (106751 days 23:47:16.854775807) and inside Python's
+# datetime.timedelta range: openpyxl reads it as a datetime.timedelta, pandas keeps it as a label of an object Index,
+# and the response renders str(label.total_seconds()) — a JSON string. auto_map_columns maps str(label).
+upload('xlsx-duration-label-past-timedelta', 'owner', 'durata.xlsx', workbook([
+    [('duration', 200000), 'Note'], [1, 'x']], styles=DURATION_STYLES), columns=['17280000000.0', 'Note'],
+    texts=['200000 days, 0:00:00', 'Note'], kind=XLSX, content_type=XLSX)
+# A row numbered past the 1,048,576 a frame holds: pandas pads a row per number and runs out of memory, while the upload
+# answers the columns, which do not depend on the rows (Go streams them: pandasxlsx.ReadColumns).
+upload('xlsx-row-past-the-frame-bound', 'owner', 'righe.xlsx', workbook([
+    ['Nome', 'CAP'], ['Mario', 100]], numbers=[1, 1048577]), columns=['Nome', 'CAP'], kind=XLSX, content_type=XLSX)
 
 # --- The import of a stored workbook ---------------------------------------------------------------------------
 pending_statuses = ['own_importing', 'own_importing_done']

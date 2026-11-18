@@ -65,7 +65,11 @@ type PaymentWritesAuditEntry struct {
 	Context     LoginAuditContext
 	Association *string
 	Path        string
-	At          time.Time
+	// IndexFallback is whether the index resolver cannot reload the row (its
+	// JSON is past the view's measured recursion edge): the entry then takes its
+	// association from the resolver's fallbacks instead of Association/Path.
+	IndexFallback bool
+	At            time.Time
 }
 
 // PaymentBulkRow is one payment payment_bulk_add builds; Amount is the

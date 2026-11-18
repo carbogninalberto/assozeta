@@ -4,10 +4,10 @@
 // Django generates the document at request time from its URL configuration and
 // the active translation catalogs; it only changes with the Django code or its
 // installed packages. TESTS/adapters/django/api_schema.py renders it through
-// Django for every reachable catalog selection and stores the result here:
+// Django for standard catalog selections and stores the result here:
 // schema.yaml and schema.json are the documents for the default language, and
-// catalog.json holds the line patches of every other language, the OPTIONS
-// bodies and the HTML pages. CI regenerates the data and fails when it is stale.
+// catalog.json holds language patches, message data for composing other catalog
+// selections, the OPTIONS bodies and the HTML pages. CI checks for drift.
 package apischema
 
 import (
@@ -63,6 +63,7 @@ type catalogData struct {
 	LocaleAlias  map[string]string            `json:"locale_alias"`
 	VariantOf    map[string]int               `json:"variant_of"`
 	Variants     []map[Format][]patch         `json:"variants"`
+	Composition  composition                  `json:"composition"`
 	Options      map[string]map[Format]string `json:"options"`
 	Pages        map[string]string            `json:"pages"`
 }
@@ -106,12 +107,18 @@ func LanguageCode() string { return loaded().LanguageCode }
 
 // Document returns the schema rendered by Django while the language with the
 // given catalog key is active. version is the non-empty `version` query
-// value, or "". ok is false for a catalog key the generator never rendered.
+// value, or "". ok is false for an invalid catalog key.
 func Document(format Format, key, version string) (string, bool) {
 	d := loaded()
+	var patches []patch
 	variant, ok := d.VariantOf[key]
-	if !ok {
-		return "", false
+	if ok {
+		patches = d.Variants[variant][format]
+	} else {
+		patches, ok = d.Composition.patches(format, key)
+		if !ok {
+			return "", false
+		}
 	}
 	base := d.base[format]
 	var out strings.Builder
@@ -129,7 +136,7 @@ func Document(format Format, key, version string) (string, bool) {
 		}
 	}
 	position := 0
-	for _, op := range d.Variants[variant][format] {
+	for _, op := range patches {
 		write(position, op.start)
 		for _, line := range op.replacement {
 			out.WriteString(line)

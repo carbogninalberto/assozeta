@@ -8,7 +8,9 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
+	"math"
 	"math/big"
 	"os"
 	"path/filepath"
@@ -176,6 +178,18 @@ func (s *ConsumerImportAssociation) prepare(ctx context.Context, request *celery
 		if call.tx != nil {
 			_ = call.tx.Rollback()
 			call.tx = nil
+		}
+		// A Python exception Django raises for the same archive is the task's
+		// {"success": false, "error": str(e)}, not a hand-off. The plan-state
+		// sentinel means a code/plan mismatch Django cannot produce either.
+		var django *importeffects.DjangoError
+		if errors.As(err, &django) {
+			call.result, call.failed = importFailureResult(django.Message), true
+			return nil
+		}
+		if errors.Is(err, importeffects.ErrPlanUnreachable) {
+			call.result, call.failed = importFailureResult(err.Error()), true
+			return nil
 		}
 		return celeryworker.ErrHandoff
 	}
@@ -373,14 +387,74 @@ func (r *consumerImportRun) execute(call *consumerImportCall) error {
 	return nil
 }
 
+// consumerImportJSONResult is the task result's JSON view of an in-memory
+// value (denomination): the Python value encoded as kombu would encode it.
 func consumerImportJSONResult(value importeffects.Value) (any, error) {
 	switch value.Kind {
 	case importeffects.None:
 		return nil, nil
 	case importeffects.Str:
 		return value.S, nil
+	case importeffects.Bool:
+		return value.B, nil
+	case importeffects.Int:
+		return celery.Number(value.S), nil
+	case importeffects.Float:
+		switch value.S {
+		case "nan":
+			return celery.Number("NaN"), nil
+		case "inf":
+			return celery.Number("Infinity"), nil
+		case "-inf":
+			return celery.Number("-Infinity"), nil
+		}
+		return celery.Number(value.S), nil
+	case importeffects.JSON:
+		return consumerImportJSONContainer(value.J)
 	}
-	return nil, errConsumerImportUnsupported
+	return nil, fmt.Errorf("consumer import: result value kind %d", value.Kind)
+}
+
+// consumerImportJSONContainer is the kombu JSON view of a JSON container.
+func consumerImportJSONContainer(value any) (any, error) {
+	switch v := value.(type) {
+	case nil, string, bool:
+		return v, nil
+	case json.Number:
+		return celery.Number(v), nil
+	case float64:
+		if math.IsNaN(v) {
+			return celery.Number("NaN"), nil
+		}
+		if math.IsInf(v, 1) {
+			return celery.Number("Infinity"), nil
+		}
+		if math.IsInf(v, -1) {
+			return celery.Number("-Infinity"), nil
+		}
+		return celery.Number(strconv.FormatFloat(v, 'g', -1, 64)), nil
+	case domain.RequestObject:
+		object := celery.Dict{}
+		for _, field := range v {
+			item, err := consumerImportJSONContainer(field.Value)
+			if err != nil {
+				return nil, err
+			}
+			object = append(object, celery.Item{Key: field.Name, Value: item})
+		}
+		return object, nil
+	case []any:
+		list := make([]any, len(v))
+		for i, item := range v {
+			converted, err := consumerImportJSONContainer(item)
+			if err != nil {
+				return nil, err
+			}
+			list[i] = converted
+		}
+		return list, nil
+	}
+	return nil, fmt.Errorf("consumer import: result container value %T", value)
 }
 
 // validate is AssociationImportService.validate(): the error list, or an
@@ -405,7 +479,7 @@ func (r *consumerImportRun) validate() ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	decoded, err := consumerImportJSON(data)
+	decoded, err := consumerImportJSON(data, consumerImportJSONEdge)
 	if err != nil {
 		return nil, err
 	}
@@ -445,7 +519,7 @@ func (r *consumerImportRun) validate() ([]string, error) {
 	associationID, _ := importGet(association, "sport_association_id")
 	associationText, ok := associationID.(string)
 	if !ok || !importeffects.CanonicalUUID(associationText) || !importeffects.CanonicalUUID(r.ownerUserID) {
-		return nil, errConsumerImportUnsupported
+		return nil, errImportArchive
 	}
 	var exists bool
 	if err := r.s.db.GetContext(r.ctx, &exists, `SELECT EXISTS(SELECT 1 FROM "application_sportassociation" WHERE
@@ -506,7 +580,7 @@ func (r *consumerImportRun) unlinkedUsers() ([]string, error) {
 			continue
 		}
 		if !importeffects.CanonicalUUID(id) {
-			return nil, errConsumerImportUnsupported
+			return nil, errImportArchive
 		}
 		ids = append(ids, id)
 	}
@@ -533,7 +607,7 @@ func consumerImportRestorable(value any) (bool, error) {
 	}
 	restorable, supported := restorablePasswordHash(text)
 	if !supported {
-		return false, errConsumerImportUnsupported
+		return false, errImportArchive
 	}
 	return restorable, nil
 }
@@ -557,13 +631,13 @@ func (r *consumerImportRun) skippedRecords(manifest domain.RequestObject) (celer
 	}
 	list, ok := specs.([]any)
 	if !ok {
-		return nil, errConsumerImportUnsupported
+		return nil, errImportArchive
 	}
 	for _, raw := range list {
 		spec, ok := raw.(domain.RequestObject)
 		if !ok {
 			if _, container := raw.([]any); container {
-				return nil, errConsumerImportUnsupported
+				return nil, errImportArchive
 			}
 			return nil, importError("'" + importTypeName(raw) + "' object has no attribute 'get'")
 		}
@@ -573,7 +647,7 @@ func (r *consumerImportRun) skippedRecords(manifest domain.RequestObject) (celer
 		if !isText || !deprecated {
 			switch nameValue.(type) {
 			case []any, domain.RequestObject:
-				return nil, errConsumerImportUnsupported
+				return nil, errImportArchive
 			}
 			continue
 		}
@@ -592,13 +666,15 @@ func (r *consumerImportRun) skippedRecords(manifest domain.RequestObject) (celer
 		if err != nil {
 			return nil, err
 		}
-		decoded, err := consumerImportJSON(data)
+		// skipped_records streams the retired section with iter_json_array: an
+		// item is one level inside the file's array.
+		decoded, err := consumerImportJSON(data, consumerImportJSONEdge+1)
 		if err != nil {
 			return nil, err
 		}
 		rows, ok := decoded.([]any)
 		if !ok {
-			return nil, errConsumerImportUnsupported
+			return nil, errImportArchive
 		}
 		for _, row := range rows {
 			if _, ok := row.(domain.RequestObject); !ok {
@@ -631,7 +707,7 @@ func (r *consumerImportRun) loadIdentity() (domain.RequestObject, domain.Request
 	if err != nil {
 		return nil, nil, err
 	}
-	decoded, err := consumerImportJSON(data)
+	decoded, err := consumerImportJSON(data, consumerImportJSONEdge)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -705,7 +781,7 @@ func (r *consumerImportRun) preflight() error {
 		files[entry.Model] = append(files[entry.Model], "data/"+entry.File)
 	}
 	if data, err := r.archive.read("manifest.json"); err == nil {
-		if decoded, err := consumerImportJSON(data); err == nil {
+		if decoded, err := consumerImportJSON(data, consumerImportJSONEdge); err == nil {
 			if manifest, ok := decoded.(domain.RequestObject); ok {
 				specs, _ := importGet(manifest, "models_exported")
 				list, _ := specs.([]any)
@@ -722,23 +798,6 @@ func (r *consumerImportRun) preflight() error {
 						files[nameText] = append(files[nameText], "data/"+fileText[strings.LastIndex(fileText, "/")+1:])
 					}
 				}
-			}
-		}
-	}
-	for _, model := range r.s.plan.Models {
-		if model.Audit == nil || model.Str == "default" || model.Str == "user" {
-			continue
-		}
-		for _, name := range files[model.Name] {
-			if !r.archive.has(name) {
-				continue
-			}
-			records, err := r.records(name)
-			if err != nil {
-				return err
-			}
-			if len(records) > 0 {
-				return errConsumerImportUnsupported
 			}
 		}
 	}
@@ -765,13 +824,15 @@ func (r *consumerImportRun) records(name string) ([]any, error) {
 	if err != nil {
 		return nil, err
 	}
-	decoded, err := consumerImportJSON(data)
+	// Django streams a data file with iter_json_array: an item is one level
+	// inside the file's array, so the item's edge is one deeper.
+	decoded, err := consumerImportJSON(data, consumerImportJSONEdge+1)
 	if err != nil {
 		return nil, err
 	}
 	list, ok := decoded.([]any)
 	if !ok {
-		return nil, errConsumerImportUnsupported
+		return nil, errImportArchive
 	}
 	if r.parsed != nil {
 		r.parsed[name] = list
@@ -827,7 +888,7 @@ func (r *consumerImportRun) importAll() error {
 	if err != nil {
 		return err
 	}
-	decoded, err := consumerImportJSON(data)
+	decoded, err := consumerImportJSON(data, consumerImportJSONEdge)
 	if err != nil {
 		return err
 	}
@@ -841,7 +902,7 @@ func (r *consumerImportRun) importAll() error {
 	}
 	info, ok := associationInfo.(domain.RequestObject)
 	if !ok {
-		return errConsumerImportUnsupported
+		return errImportArchive
 	}
 	if _, present := importGet(info, "denomination"); !present {
 		return importError("'denomination'")
@@ -859,7 +920,7 @@ func (r *consumerImportRun) importAll() error {
 			nameText, ok1 := name.(string)
 			fileText, ok2 := file.(string)
 			if !ok1 || !ok2 {
-				return errConsumerImportUnsupported
+				return errImportArchive
 			}
 			if strings.Contains(fileText, "/") {
 				fileText = fileText[strings.LastIndex(fileText, "/")+1:]
@@ -984,7 +1045,7 @@ func (r *consumerImportRun) createOwnerUser() error {
 	}
 	id := r.generateUUID(old, "User")
 	if !importeffects.CanonicalUUID(id) {
-		return errConsumerImportUnsupported
+		return errImportArchive
 	}
 	existing, _, found, err := r.loadUser(id)
 	if err != nil {
@@ -994,7 +1055,7 @@ func (r *consumerImportRun) createOwnerUser() error {
 	if found {
 		associationID, err := importStr(importGetValue(association, "sport_association_id"))
 		if err != nil || !importeffects.CanonicalUUID(associationID) {
-			return errConsumerImportUnsupported
+			return errImportArchive
 		}
 		conflict, err := r.conflictingAssociation(r.effects.Tx, id, associationID)
 		if err != nil {
@@ -1121,7 +1182,7 @@ func (r *consumerImportRun) importSportAssociation() error {
 	}
 	id := r.generateUUID(old, "SportAssociation")
 	if !importeffects.CanonicalUUID(id) {
-		return errConsumerImportUnsupported
+		return errImportArchive
 	}
 	model := r.s.plan.Model("SportAssociation")
 	exists, err := r.effects.Exists(r.ctx, model, importeffects.UUIDValue(id))
@@ -1191,7 +1252,8 @@ func (r *consumerImportRun) importModelData(filename string, model *importeffect
 	for _, raw := range records {
 		record, ok := raw.(domain.RequestObject)
 		if !ok {
-			return errConsumerImportUnsupported
+			// record.get(pk_field) on a decoded JSON value that is not a dict.
+			return importError("'" + importTypeName(raw) + "' object has no attribute 'get'")
 		}
 		created, err := r.importRecord(model, pkField, record)
 		if err != nil {
@@ -1294,7 +1356,7 @@ func (r *consumerImportRun) createModelInstance(model *importeffects.Model, data
 		id, _ := importGet(data, pkField)
 		idText, ok := id.(string)
 		if !ok || !importeffects.CanonicalUUID(idText) {
-			return nil, errConsumerImportUnsupported
+			return nil, errImportArchive
 		}
 		existing, stored, found, err := r.loadUser(idText)
 		if err != nil {
@@ -1329,7 +1391,7 @@ func (r *consumerImportRun) createModelInstance(model *importeffects.Model, data
 		if value, _ := importGet(data, pkField); value != nil {
 			text, ok := value.(string)
 			if !ok || !importeffects.CanonicalUUID(text) || model.PK.Kind != "uuid" || model.PK.Name != pkField {
-				return nil, errConsumerImportUnsupported
+				return nil, errImportArchive
 			}
 			exists, err := r.effects.Exists(r.ctx, model, importeffects.UUIDValue(text))
 			if err != nil {
@@ -1342,7 +1404,7 @@ func (r *consumerImportRun) createModelInstance(model *importeffects.Model, data
 	}
 	if !hasOld && model.PK.Kind == "uuid" {
 		// A missing key would take uuid4()'s random value.
-		return nil, errConsumerImportUnsupported
+		return nil, errImportArchive
 	}
 	// Deferred many-to-many values.
 	m2m := []domain.RequestField{}
@@ -1362,7 +1424,7 @@ func (r *consumerImportRun) createModelInstance(model *importeffects.Model, data
 			}
 			list, ok := item.Value.([]any)
 			if !ok || model.M2MField(item.Name) == nil {
-				return nil, errConsumerImportUnsupported
+				return nil, errImportArchive
 			}
 			r.deferredM2M = append(r.deferredM2M, consumerImportDeferredM2M{model: name, pk: oldText, field: item.Name, related: list})
 		}
@@ -1437,7 +1499,8 @@ func (r *consumerImportRun) importFolders(records []any) error {
 	for _, raw := range records {
 		record, ok := raw.(domain.RequestObject)
 		if !ok {
-			return errConsumerImportUnsupported
+			// record.get('id') on a decoded JSON value that is not a dict.
+			return importError("'" + importTypeName(raw) + "' object has no attribute 'get'")
 		}
 		key, err := importStr(importGetValue(record, "id"))
 		if err != nil {
@@ -1482,21 +1545,19 @@ func (r *consumerImportRun) importFolders(records []any) error {
 				name = ""
 			}
 			nameValue, err := importeffects.ParseArchived(model.Field("name"), name)
-			if err != nil || nameValue.Kind != importeffects.Str {
-				return errConsumerImportUnsupported
+			if err != nil {
+				return err
 			}
 			kwargs := map[string]importeffects.Value{"name": nameValue, "parent_id": parent,
 				"sport_association_id": r.association.PK()}
 			if created, _ := importGet(item.record, "created_at"); importTruthy(created) {
-				text, ok := created.(string)
-				if !ok {
-					return errConsumerImportUnsupported
-				}
-				moment, err := importeffects.ParseDateTime(text)
+				// parse_datetime(record['created_at']): a str is parsed, anything
+				// else keeps its value and the field's prep raises.
+				value, err := importeffects.ParseArchived(model.Field("created_at"), created)
 				if err != nil {
 					return err
 				}
-				kwargs["created_at"] = importeffects.DateTimeValue(moment)
+				kwargs["created_at"] = value
 			}
 			folder, err := r.effects.NewInstance(model, kwargs)
 			if err != nil {
@@ -1560,7 +1621,7 @@ func (r *consumerImportRun) resolveDeferredFKs() error {
 			}
 			field := plan.FieldByAttname(item.field)
 			if field == nil || plan.PK.Name != r.s.plan.PKFields[model] || !importeffects.CanonicalUUID(pk) {
-				return errConsumerImportUnsupported
+				return errImportArchive
 			}
 			value, err := importeffects.ParseRelated(field, target)
 			if err != nil {
@@ -1611,7 +1672,7 @@ func (r *consumerImportRun) importM2M() error {
 				continue
 			}
 			if plan.PK.Name != r.s.plan.PKFields[model] || !importeffects.CanonicalUUID(pk) {
-				return errConsumerImportUnsupported
+				return errImportArchive
 			}
 			exists, err := r.effects.Exists(r.ctx, plan, importeffects.UUIDValue(pk))
 			if err != nil {
@@ -1681,26 +1742,26 @@ func (r *consumerImportRun) importFiles() error {
 func (r *consumerImportRun) saveName(member, path string) (string, error) {
 	cleaned, err := documentkey.SaveName(path)
 	if err != nil {
-		return "", errConsumerImportUnsupported
+		return "", errImportArchive
 	}
 	key, err := documentkey.S3Key(cleaned, r.s.objects.Location())
 	if err != nil {
-		return "", errConsumerImportUnsupported
+		return "", errImportArchive
 	}
 	if !r.s.settings.Overwrite {
 		exists, err := r.s.objects.Exists(r.ctx, key)
 		if err != nil || exists {
-			return "", errConsumerImportUnsupported
+			return "", errImportArchive
 		}
 	}
 	for _, media := range r.media {
 		if media.key == key {
-			return "", errConsumerImportUnsupported
+			return "", errImportArchive
 		}
 	}
 	kind, known, encoding, err := pymime.GuessType(key)
 	if err != nil {
-		return "", errConsumerImportUnsupported
+		return "", errImportArchive
 	}
 	if !known {
 		kind = "application/octet-stream"
@@ -1719,7 +1780,7 @@ func (r *consumerImportRun) importDocumentFile(member, old, filename string) err
 		document = r.importedObjects["Document"][old]
 		if document == nil {
 			if !importeffects.CanonicalUUID(id) {
-				return errConsumerImportUnsupported
+				return errImportArchive
 			}
 			exists, err := r.effects.Exists(r.ctx, model, importeffects.UUIDValue(id))
 			if err != nil {
@@ -1756,14 +1817,14 @@ func (r *consumerImportRun) importSignatureFile(member, old, filename string) er
 	subscription := r.importedObjects["Subscription"][old]
 	if subscription == nil {
 		if !importeffects.CanonicalUUID(id) {
-			return errConsumerImportUnsupported
+			return errImportArchive
 		}
 		exists, err := r.effects.Exists(r.ctx, r.s.plan.Model("Subscription"), importeffects.UUIDValue(id))
 		if err != nil {
 			return err
 		}
 		if exists {
-			return errConsumerImportUnsupported
+			return errImportArchive
 		}
 		return importError("Signature media references missing Subscription " + old)
 	}

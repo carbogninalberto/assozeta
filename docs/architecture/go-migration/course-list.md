@@ -72,7 +72,7 @@ names: pandas keeps them, skips the numeric coercion for those columns and sizes
 ## Not ported (refused with the stable 500 page before any work)
 
 - **Exports:** workbook inputs `xlsxexport` does not reproduce (formula-like text and the other cases in
-  `xlsx-exports.md`). A PDF input `pdfexport` does not reproduce is pdfexport's own refusal.
+  `xlsx-exports.md`). Since long tail PR 5 `pdfexport` draws every PDF input.
 - The order of one course's athletes is the database's (no `ORDER BY` in either backend); with a broken associate
   among several athletes, which entries precede the stop depends on it. The contract compares athletes as a set.
 
@@ -99,4 +99,4 @@ form. Mutation `v2pdf-mutation-r1`: a document without the Tag column fails `pdf
 
 Long tail PR 3 (agent C): the ordering refusal was dead code and is removed; an ordering outside the
 model's own columns answers the 500 page like Django. A PDF input `pdfexport` does not reproduce is
-pdfexport's own refusal.
+pdfexport's own refusal (none since long tail PR 5).

@@ -475,12 +475,44 @@
    "csrf": null
   },
   {
-   "name": "django-handoff-schema-lang-path-separator",
+   "name": "django-handoff-schema-lang-path-separator-ported",
+   "family": "api-schema",
+   "handoff": false,
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/schema/?lang=xx/yy",
+   "headers": {
+    "Accept": "application/json"
+   },
+   "status": 200,
+   "response": {
+    "kind": "document",
+    "format": "json",
+    "lang": "xx",
+    "version": "",
+    "indent": 4
+   },
+   "effect": null,
+   "content_type": "application/json",
+   "allow": "GET, HEAD, OPTIONS",
+   "vary": [
+    "Accept",
+    "Cookie",
+    "origin",
+    "Accept-Language"
+   ],
+   "content_language": "it",
+   "disposition": "inline; filename=\"Bakney Sport API.json\"",
+   "location": null,
+   "csrf": null
+  },
+  {
+   "name": "django-handoff-schema-lang-handoff-probe",
    "family": "api-schema",
    "handoff": true,
    "actor": "anonymous",
    "method": "GET",
-   "path": "/schema/?lang=xx/yy",
+   "path": "/schema/?lang=handoff-probe",
    "headers": {
     "Accept": "application/json"
    },

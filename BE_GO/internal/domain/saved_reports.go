@@ -49,8 +49,14 @@ type SavedReportStore interface {
 	// ReportIntegration reads the first instance configuration (if any).
 	ReportIntegration(ctx context.Context) (selfHosted bool, settings *string, err error)
 	// RunReportStatements runs the statements in one read-only transaction
-	// with the statement timeout, returning each statement's text rows.
-	RunReportStatements(ctx context.Context, timeoutMS int64, statements []ReportStatement) ([][][]*string, error)
+	// with the statement timeout text (QueryBuilder's str(query_timeout * 1000),
+	// '' for the 0 stand-in or "0" for no timeout), returning each statement's
+	// text rows.
+	RunReportStatements(ctx context.Context, timeoutText string, statements []ReportStatement) ([][][]*string, error)
+	// CheckReportTimeout sends the same timeout text to PostgreSQL in a short
+	// read-only transaction (QueryBuilder._set_query_timeout at its call point),
+	// answering the tool's exception when PostgreSQL rejects it.
+	CheckReportTimeout(ctx context.Context, timeoutText string) error
 	ActiveAssociationForUser(ctx context.Context, user string) (string, error)
 	SavedReports(ctx context.Context, association, creator string) ([]SavedReport, error)
 	SavedReport(ctx context.Context, id, association, creator string) (SavedReport, error)

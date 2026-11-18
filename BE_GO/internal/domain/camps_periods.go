@@ -74,6 +74,9 @@ type CampsAudit struct {
 	// every field of the saved row against None. Changes then holds only the
 	// values the instance renders differently from the stored row.
 	Full bool
+	// IndexFallback resolves the entry's audit index through the resolver's
+	// fallbacks (the resolver cannot reload the saved row at its nesting).
+	IndexFallback bool
 }
 
 type CampsTransaction interface {

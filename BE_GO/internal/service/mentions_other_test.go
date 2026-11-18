@@ -2,7 +2,6 @@ package service
 
 import (
 	"encoding/json"
-	"errors"
 	"os"
 	"strings"
 	"testing"
@@ -63,12 +62,12 @@ func TestOtherResolverGolden(t *testing.T) {
 	}
 }
 
-// TestOtherResolverRefusals is the part of the str object graph the port does
-// not reproduce: a type object's __dict__ (a mappingproxy of addresses) and
-// the numbers that depend on the CPython build, and a method object's own
-// dunder methods (the port stops at the metadata a method carries). Each is
-// mentions.ErrUnsupported, so the view hands the request to Django.
-func TestOtherResolverRefusals(t *testing.T) {
+// TestOtherResolverOutsideTheModel is the part of the str object graph the
+// port does not reproduce: a type object's __dict__ (a mappingproxy of
+// addresses) and the numbers that depend on the CPython build, and a method
+// object's own dunder methods (the port stops at the metadata a method
+// carries). Each renders as the empty text (accepted divergence X20).
+func TestOtherResolverOutsideTheModel(t *testing.T) {
 	resolve := otherResolver(map[string]string{"today": "16/11/2026"})
 	for _, path := range []string{
 		"today.__class__.__dict__",
@@ -82,8 +81,8 @@ func TestOtherResolverRefusals(t *testing.T) {
 		"today.__class__.upper.__get__",
 		"today.upper.__class__.mro",
 	} {
-		if value, err := resolve(path); !errors.Is(err, mentions.ErrUnsupported) {
-			t.Errorf("%s: %q, %v, want ErrUnsupported", path, value, err)
+		if value, err := resolve(path); err != nil || value != "" {
+			t.Errorf("%s: %q, %v, want \"\", nil", path, value, err)
 		}
 	}
 }

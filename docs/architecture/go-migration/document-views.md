@@ -33,8 +33,8 @@ Golden tests: `TESTS/adapters/go/document_template_golden.py` renders all eight 
 (`go test ./internal/djtemplate ./internal/mentions`) require identical bytes (`testdata/*.json`). Since long tail PR 3
 `filter_mentions` runs on the full html.parser and bs4 tree port (`bs4prettify.Parse`, `Node.Decode` = `str(soup)`), so any
 stored markup is answered (`internal/mentions/testdata/filter_python.json`, 55 documents); a legacy alias whose
-`lower()` is no key raises KeyError in Django and is application state in Go. Mention paths the resolvers do not read
-(`service/document_views.go`) are still refused.
+`lower()` is no key raises KeyError in Django and is application state in Go. Since long tail PR 5 a mention path the
+resolvers do not model (`service/document_views.go`) renders as the empty text (accepted divergence X20).
 
 ## Views
 
@@ -73,8 +73,10 @@ whatsapp, address, address_city, address_cap, logo, user.email, federation, spor
 `associate.*`/`main_tutor.*` (the editor's associate fields and `sex`), and `other.<key>`. A key for an object the view does not pass
 is `''`, as in Django. Since long tail PR 4, `other.<key>.<attr...>` walks the str object graph as `get_nested_attr` does
 (methods, method-wrappers, the `str` type and their metadata; golden `service/testdata/mentions_other.json` from CPython
-3.13.16), with `pystr.ObjectAddress` for object addresses (approved divergence X18); the `str` type's layout fields and the
-dunders of a method object stay with Django.
+3.13.16), with `pystr.ObjectAddress` for object addresses (approved divergence X18). Since long tail PR 5 a path outside
+the modelled attributes (a model's relations and methods, the `str` type's layout fields, the dunders of a method object)
+renders as the empty text (X20) instead of going to Django. In the invoice views `associate.tutor.<field>` reads the view's
+tutor (the `main_tutor` object), and `associate.tutor` and `associate.is_minor` are X20.
 
 ## Main tutor promotion (`v2doc4`, `tutorpromo`)
 
@@ -97,8 +99,6 @@ unknown-paths family covers them).
 
 ## Not ported (refused with the 500 page; the views write nothing)
 
-- Markup outside the `filter_mentions` subset, and mention paths that name an attribute the port declares but does not read
-  (for example the model's methods and relations): `mentions.ErrUnsupported`, its own sentinel.
 - Template inputs outside `djtemplate`'s subset: the eight templates are fixed files, so their syntax is fully ported. The JSON columns
   the views read with `json.loads` (`subscription.additional_fields`, the association's and the user association's
   `additional_sections`, the association's `additional_fields`, `subscription.payment_meta`, `medical_appointment.meta`) are ported for

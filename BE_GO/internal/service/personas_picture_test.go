@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
@@ -46,6 +47,43 @@ func TestPersonaPicturePlan(t *testing.T) {
 	}
 	if invalid.Text == "" {
 		t.Fatal("no text")
+	}
+}
+
+// A file part named picture_path is not 'base64' text (iterating a file yields
+// bytes lines), so no upload is planned and the file reaches CharField
+// validation. A spooled file (TemporaryUploadedFile) cannot be pickled by
+// to_internal_value's data.copy(), so the body is the 500 page.
+func TestPersonaPicturePlanUpload(t *testing.T) {
+	body := domain.RequestObject{{Name: "picture_path", Value: domain.RequestUpload{Name: "a.jpg", Size: 3}}}
+	if _, upload, err := personaPicturePlan(body); upload || err != nil {
+		t.Fatalf("file part: upload %v, error %v", upload, err)
+	}
+	for _, body := range []domain.RequestObject{
+		{{Name: "picture_path", Value: domain.RequestUpload{Name: "a.jpg", Size: 3, Temp: true}}},
+		{{Name: "first_name", Value: domain.RequestUpload{Name: "a.jpg", Size: 3, Temp: true}}},
+		{{Name: "first_name", Value: "Ada", All: []any{"Ada", domain.RequestUpload{Name: "a.jpg", Size: 3, Temp: true}}}},
+	} {
+		_, upload, err := personaPicturePlan(body)
+		if !errors.Is(err, ErrPersonaUnhandled) || upload {
+			t.Fatalf("%v: upload %v, error %v", body, upload, err)
+		}
+	}
+}
+
+// Iterating a file yields its lines (bytes): an empty file yields nothing, a
+// non-empty one at least one line, a value the dict check of the caller rejects.
+func TestPythonIterateUpload(t *testing.T) {
+	items, ok := pythonIterate(domain.RequestUpload{Name: "empty.jpg"})
+	if !ok || len(items) != 0 {
+		t.Fatalf("empty file: %v %v", items, ok)
+	}
+	items, ok = pythonIterate(domain.RequestUpload{Name: "a.jpg", Size: 3})
+	if !ok || len(items) == 0 {
+		t.Fatalf("non-empty file: %v %v", items, ok)
+	}
+	if _, dict := items[0].(domain.RequestObject); dict {
+		t.Fatalf("line read as a dict: %v", items[0])
 	}
 }
 

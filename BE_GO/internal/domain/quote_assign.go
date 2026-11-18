@@ -24,7 +24,8 @@ type QuoteAssignAssociation struct {
 }
 
 // QuoteAssignSubscription is one balance-year subscription with the user and
-// associate fields the task reads.
+// associate fields the task reads, plus its payment's JSON columns as text
+// (select_related loads the payment row).
 type QuoteAssignSubscription struct {
 	ID             string  `db:"subscription_id"`
 	UserID         string  `db:"user_id"`
@@ -32,6 +33,11 @@ type QuoteAssignSubscription struct {
 	AssociateID    *string `db:"associate_id"`
 	AssociateFirst *string `db:"associate_first_name"`
 	AssociateLast  *string `db:"associate_last_name"`
+	// The subscription's payment JSON columns: the worker's stack has not been
+	// measured, so a value past the band is handed to Django.
+	PaymentMetaPaymentCategories *string `db:"payment_meta_payment_categories"`
+	PaymentMeta                  *string `db:"payment_meta"`
+	PaymentCourse                *string `db:"payment_course"`
 }
 
 type QuoteAssignStore interface {

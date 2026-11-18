@@ -4,7 +4,7 @@ Private PostgreSQL (actual Django current schema), a private Redis (broker DB 0,
 and a private MinIO (the production S3Boto3Storage). The fixture archive is made by Django itself: the instance's
 association is seeded in an earlier state and AssociationExportService.export() writes the backup; the variants
 (truncated, another manifest version or association, a missing attachment, circular folders, a value the database
-rejects, course subscriptions) are rewritten from it with zipfile. Each scenario seeds the instance in its current
+rejects) are rewritten from it with zipfile; a course subscription is seeded into the source for one scenario. Each scenario seeds the instance in its current
 state (self-hosted InstanceConfiguration, the owner as administrator, business rows and their stored attachments, an
 earlier completed restore whose recovery archive and staged attachments the pruning removes, the uploaded backup and
 its DataRestore receipt), builds the message with Django's own producer (args [operation id], task_id the operation id,
@@ -141,7 +141,8 @@ SCENARIOS = [
     Scenario('circular folders roll the replacement back', 'circular-folders', expect={'state': 'failed', 'error': GENERIC}),
     Scenario('a value the database rejects is handed off', 'db-reject', handoff=True,
              expect={'state': 'failed', 'error': GENERIC}),
-    Scenario('course subscriptions are handed off', 'course-subscription', handoff=True, expect={'state': 'completed'}),
+    Scenario('a course subscription is restored (str(self.__dict__) in the audit repr)', 'course-subscription',
+             expect={'state': 'completed'}),
     Scenario('an unknown keyword argument is handed off', kwargs={'extra': 1}, handoff=True, expect={'status': 'FAILURE'}),
     Scenario('a worker killed during the restore is redelivered and completes', mode='kill',
              expect={'state': 'completed', 'attempts': 2}),

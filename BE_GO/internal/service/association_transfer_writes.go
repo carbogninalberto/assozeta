@@ -716,7 +716,7 @@ func (s *AssociationTransfer) validateArchive(ctx context.Context, path string) 
 	}
 	decoded, err := importMemberJSON(archive, "manifest.json")
 	if err != nil {
-		if importIsArchiveError(err) || errors.Is(err, dto.ErrJSONRecursionBand) {
+		if importIsArchiveError(err) {
 			return nil, err
 		}
 		manifestResult.fail(importJSONReadMessage(true, err))
@@ -830,7 +830,7 @@ func (s *AssociationTransfer) validateOwnerIdentity(archive *consumerImportArchi
 	}
 	decoded, err := importMemberJSON(archive, "data/01_sport_association.json")
 	if err != nil {
-		if importIsArchiveError(err) || errors.Is(err, dto.ErrJSONRecursionBand) {
+		if importIsArchiveError(err) {
 			return nil, nil, err
 		}
 		result.fail(importJSONReadMessage(false, err))
@@ -878,7 +878,7 @@ func (s *AssociationTransfer) validateOwnerIdentity(archive *consumerImportArchi
 	var matches []domain.RequestObject
 	seen := map[string]bool{}
 	var userIDs []string
-	err = importIterJSONArray(users, importJSONChunkSize, func(item any) error {
+	err = importIterJSONArray(users, importJSONChunkSize, importValidationJSONEdge, func(item any) error {
 		user, ok := item.(domain.RequestObject)
 		if !ok {
 			return &importJSONAttributeError{kind: importJSONTypeName(item), attribute: "get"}
@@ -896,9 +896,6 @@ func (s *AssociationTransfer) validateOwnerIdentity(archive *consumerImportArchi
 		}
 		return nil
 	})
-	if errors.Is(err, dto.ErrJSONRecursionBand) {
-		return nil, nil, err
-	}
 	if err != nil {
 		result.fail(importJSONReadMessage(false, err))
 		return result, nil, nil

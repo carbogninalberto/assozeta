@@ -16,6 +16,7 @@ import time
 import urllib.error
 import urllib.request
 
+from TESTS.adapters.django.api_schema import apply_ops, composition_ops
 from TESTS.contracts.http_family import load_source as family_load_source
 from TESTS.contracts.test_email_logs_http import SERVER_ERROR_DOCUMENT, ResponseFailure, require, substitute
 from TESTS.http_client import NoRedirect
@@ -50,11 +51,12 @@ def expected_document(form, lang, version, indent, version_text=None):
         lines[line] = version_text
     elif version:
         lines[line] = lines[line].replace(catalog['version'], f"{catalog['version']} ({version})", 1)
-    out, position = [], 0
-    for start, end, replacement in catalog['variants'][catalog['variant_of'][keys[lang]]][form]:
-        out += lines[position:start] + replacement
-        position = end
-    text = ''.join(out + lines[position:])
+    key = keys[lang]
+    if key in catalog['variant_of']:
+        ops = catalog['variants'][catalog['variant_of'][key]][form]
+    else:
+        ops = composition_ops(catalog['composition'], form, key)
+    text = apply_ops(lines, ops)
     if form == 'json' and indent != 4:
         # DRF dumps the data again with the accepted indent.
         text = json.dumps(json.loads(text), indent=indent, ensure_ascii=False, separators=(',', ': '))

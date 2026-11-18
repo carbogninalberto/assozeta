@@ -44,7 +44,8 @@ func (t *paymentStateTransaction) ActorAssociation(ctx context.Context, actor st
 func (t *paymentStateTransaction) PaymentState(ctx context.Context, query domain.PaymentStateQuery) (*domain.PaymentStateRow, error) {
 	var row domain.PaymentStateRow
 	err := t.tx.GetContext(ctx, &row, `SELECT p.payment_id, COALESCE(p.sport_association_id::text, '') AS sport_association_id, p.subject,
- p.archived, p.payment_category_id, c.name AS payment_category_name, p.description, p.meta::text AS meta, p.course::text AS course, p.paid,
+ p.archived, p.payment_category_id, c.name AS payment_category_name, p.description, p.meta::text AS meta, p.course::text AS course,
+ p.meta_payment_categories::text AS meta_payment_categories, p.paid,
  p.expense, p.payment_date, p.invoice_id, p.associate_id, p.supplier_id, p.instructor_id
  FROM application_payment p LEFT JOIN application_paymentcategory c ON c.payment_category_id=p.payment_category_id
  WHERE p.payment_id=$1 AND NOT p.deleted AND ($2::uuid IS NULL OR p.group_id=$2::uuid)

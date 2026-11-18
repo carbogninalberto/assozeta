@@ -166,3 +166,9 @@ four transports. Mutation `secdoc2-mutation-r1` (the check dropped from the page
 
 Long tail PR 3 (agent C): the mention and stored-value refusals are their own sentinels, no longer wrapped in a
 document-view sentinel.
+
+Long tail PR 5 (second review): a stored `meta_payment_categories[].payment_category_id` str is read like
+`uuid.UUID(hex=)`: after the prefixes, braces and hyphens are dropped, 32 code points parsed with `int(text, 16)` rules
+(Unicode decimal digits, surrounding whitespace, `+`, `0x`, single underscores), `dto.PythonUUIDLookup`. The strict
+`DjangoUUIDLookup` other sites use is unchanged. Cases `invoice-meta-category-id-arabic` (200),
+`invoice-meta-category-id-control` and `invoice-meta-category-id-fullwidth` (500).

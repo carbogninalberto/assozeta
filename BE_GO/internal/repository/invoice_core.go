@@ -418,7 +418,7 @@ func (t *invoiceCoreTransaction) PaymentToUnlink(ctx context.Context, invoice st
 	var row domain.InvoiceCorePaymentSave
 	err := t.tx.GetContext(ctx, &row, `SELECT p.payment_id, COALESCE(p.sport_association_id::text, '') AS sport_association_id,
  p.sport_association_id AS association, p.subject, p.archived, p.paid, p.payment_category_id, c.name AS payment_category_name, p.description,
- p.meta::text AS meta, p.course::text AS course
+ p.meta::text AS meta, p.course::text AS course, p.meta_payment_categories::text AS meta_payment_categories
  FROM application_payment p LEFT JOIN application_paymentcategory c ON c.payment_category_id=p.payment_category_id
  WHERE p.invoice_id=$1 AND NOT p.deleted AND ($2::uuid IS NULL OR p.group_id=$2::uuid) AND ($3::uuid IS NULL OR p.sport_association_id=$3::uuid)
  ORDER BY p.payment_id LIMIT 1 FOR UPDATE OF p`, invoice, group, scope)
@@ -464,7 +464,8 @@ func (t *invoiceCoreTransaction) AppendPaymentSave(ctx context.Context, row doma
 		}
 	}
 	return appendModelAudit(ctx, t.tx, modelAuditEntry{Model: "payment", Key: row.ID, Representation: "Payment object (" + row.ID + ")",
-		Action: 1, Changes: changes, Context: audit.Audit, AssociationID: association, ResolutionPath: path, At: audit.At})
+		Action: 1, Changes: changes, Context: audit.Audit, AssociationID: association, ResolutionPath: path, At: audit.At,
+		IndexFallback: row.IndexFallback && row.Association != nil})
 }
 
 // DeleteInvoices follows the collector: attached-document links and the

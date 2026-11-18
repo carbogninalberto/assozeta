@@ -242,10 +242,42 @@ add('releases-feed-utf16-truncated', 'owner', RELEASES, 503, {'error': 'Release 
     outbound=[github(1, reply(200, raw=json.dumps(FEED_A).encode('utf-16-be') + b'\x00'))],
     cache={'catalog': None}, cache_after={'catalog': None})
 add('releases-cached', 'owner', RELEASES, 200, summary(CATALOG_A), cache={'catalog': [FEED_A]}, cache_after={'catalog': 'unchanged'})
+# normalize_release copies these values as they are (except where Python's
+# falsy rule replaces them): a str, an int of any size, a float and a bool id, a
+# numeric name, a list body and a float published_at. Django serves and renders
+# them from the cached catalog (big ints as digits, floats as repr) and stores
+# them again after a fetch.
+UNUSUAL = [
+    raw_release('release-string', 'v5.0.0', name='String id'),
+    raw_release(2 ** 70, 'v5.1.0', name=42),
+    raw_release(1.5, 'v5.2.0'),
+    raw_release(5, 'v5.3.0', name=[1, 'x'], body=['nota', 2, True, None]),
+    raw_release(6, 'v5.4.0', name=True, published=1.5, body=False),
+    raw_release(7, 'v5.5.0', name=0.5),
+]
+UNUSUAL_CATALOG = catalog(*UNUSUAL)
+add('releases-cached-values', 'owner', RELEASES, 200, summary(UNUSUAL_CATALOG), cache={'catalog': [UNUSUAL]},
+    cache_after={'catalog': 'unchanged'})
+add('releases-fetched-values', 'owner', RELEASES, 200, summary(UNUSUAL_CATALOG),
+    outbound=[github(1, reply(200, UNUSUAL))], cache={'catalog': None}, cache_after={'catalog': [UNUSUAL]})
 add('releases-cached-refresh-bounded', 'owner', f'{RELEASES}?refresh=1', 200, summary(CATALOG_A),
     cache={'catalog': [FEED_A], 'refresh': True}, cache_after={'catalog': 'unchanged', 'refresh': True})
 FEED_B = [raw_release(200 + n, f'v2.{n}.0', name=f'Release 2.{n}', body=f'Note {n}') for n in range(12)]
 CATALOG_B = catalog(*FEED_B)
+# One shared NaN object: json.load answers every NaN literal with the same float,
+# so both ids fold into a single catalog key (first position, last value). Their
+# version is 0.0.0, not pending and last in the sort: page 1 never renders them.
+NAN = float('nan')
+FEED_NAN = FEED_B + [raw_release(NAN, 'v0.0.0', name='NaN uno'), raw_release(NAN, '0.0.0', name='NaN due')]
+add('releases-fetched-nan-ids-fold', 'owner', RELEASES, 200, summary(catalog(*FEED_NAN)),
+    outbound=[github(1, reply(200, FEED_NAN))], cache={'catalog': None}, cache_after={'catalog': [FEED_NAN]})
+assert summary(catalog(*FEED_NAN))['total'] == 13
+# json.loads keeps the feed's key order; the cached pickle (compared byte for
+# byte) and the rendered body keep it.
+ORDERED = [raw_release(8, 'v6.0.0', name={'b': 1, 'a': 2}, body=[{'z': 1, 'y': {'d': None, 'c': True}}],
+                       published='2026-01-11T10:00:00Z')]
+add('releases-fetched-object-order', 'owner', RELEASES, 200, summary(catalog(*ORDERED)),
+    outbound=[github(1, reply(200, ORDERED))], cache={'catalog': None}, cache_after={'catalog': [ORDERED]})
 add('releases-refresh-fetches', 'owner', f'{RELEASES}?refresh=1&page=2', 200, summary(CATALOG_B, 2),
     outbound=[github(1, reply(200, FEED_B))], cache={'catalog': [FEED_A]}, cache_after={'catalog': [FEED_B], 'refresh': True})
 add('releases-refresh-other-value', 'owner', f'{RELEASES}?refresh=true&page=2&page=1', 200, summary(CATALOG_A, 1),

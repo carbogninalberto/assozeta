@@ -3,7 +3,8 @@ package pdfexport
 import (
 	"errors"
 	"fmt"
-	"strconv"
+	"math"
+	"math/big"
 	"strings"
 	"sync"
 	"unicode/utf8"
@@ -47,9 +48,10 @@ func seqSplit(text string) []string {
 }
 
 // seqCounter is sequencer._Counter. Its base is the zero every counter starts
-// at: nothing changes a base, so _Counter.reset() goes back to 0.
+// at: nothing changes a base, so _Counter.reset() goes back to 0. The value is
+// a Python int, exact at any size.
 type seqCounter struct {
-	value  int64
+	value  *big.Int
 	format byte // the key of one of the five formats: '1', 'A', 'a', 'I' or 'i'
 	resets []*seqCounter
 }
@@ -58,6 +60,9 @@ type seqCounter struct {
 type seqSequencer struct {
 	counters map[seqKey]*seqCounter
 	def      seqKey
+	// oversized is set by format when one of the fields of the template was
+	// wider than seqExactWidth, and reset at the start of every format.
+	oversized bool
 }
 
 func newSeqSequencer() *seqSequencer {
@@ -68,7 +73,7 @@ func newSeqSequencer() *seqSequencer {
 func (s *seqSequencer) counter(key seqKey) *seqCounter {
 	counter, ok := s.counters[key]
 	if !ok {
-		counter = &seqCounter{format: '1'}
+		counter = &seqCounter{format: '1', value: new(big.Int)}
 		s.counters[key] = counter
 	}
 	return counter
@@ -85,11 +90,11 @@ func (s *seqSequencer) key(counter seqKey) seqKey {
 
 // next is _Counter.next: the value goes up by one, then the counters chained
 // to this one start again.
-func (c *seqCounter) next() int64 {
-	c.value++
-	value := c.value
+func (c *seqCounter) next() *big.Int {
+	c.value = new(big.Int).Add(c.value, big.NewInt(1))
+	value := new(big.Int).Set(c.value)
 	for _, child := range c.resets {
-		child.value = 0 // _Counter.reset(): the base
+		child.value = new(big.Int) // _Counter.reset(): the base
 	}
 	return value
 }
@@ -107,14 +112,19 @@ func (s *seqSequencer) thisf(counter seqKey) (string, error) {
 }
 
 // this is Sequencer._this: a counter's value, not its text.
-func (s *seqSequencer) this(counter seqKey) int64 {
+func (s *seqSequencer) this(counter seqKey) *big.Int {
 	return s.counter(s.key(counter)).value
 }
 
 // reset is Sequencer.reset: it sets the value (the base stays zero, so a
 // chained reset of the counter goes back to 0 and not to this value).
 func (s *seqSequencer) reset(counter seqKey, base int64) {
-	s.counter(s.key(counter)).value = base
+	s.resetWide(counter, big.NewInt(base))
+}
+
+// resetWide is reset for a Python int of any size.
+func (s *seqSequencer) resetWide(counter seqKey, base *big.Int) {
+	s.counter(s.key(counter)).value = new(big.Int).Set(base)
 }
 
 // setDefaultCounter is Sequencer.setDefaultCounter.
@@ -152,14 +162,18 @@ func (s *seqSequencer) getitem(key string) (string, error) {
 	return s.thisf(seqKey{name: key})
 }
 
-// seqMaxWidth is the widest column a template pads a value to. A wider width
-// is refused: reportlab writes the padding, which is of no use in a table
-// cell.
-const seqMaxWidth = 1 << 20
-
-// errSeqTemplateHandoff marks a template this package does not format (the
-// parse answers ErrNotPorted): one that pads a value beyond seqMaxWidth.
-var errSeqTemplateHandoff = errors.New("pdfexport: sequence template outside the formatted subset")
+// seqExactWidth is the widest field a template pads exactly. reportlab writes
+// the width-len(text) spaces of the field, bounded only by the memory of the
+// host (a width of 9223372036854775807 asks for that many bytes). This port
+// writes every field up to seqExactWidth exactly; a wider field pads to
+// seqExactWidth+1 characters and format records it as oversized
+// (seqSequencer.oversized), which the default, RTL and LTR line breaking
+// ignores: they draw a run of spaces between words as one space, so the pad
+// lays out the same lines at any width. wordWrap 'CJK' lays out every space of
+// the pad, so breakCJK answers an oversized field as the MemoryError CPython
+// raises when the host runs out of memory; that host-memory bound is not an
+// approved divergence yet (pending owner decision).
+const seqExactWidth = 1 << 21
 
 // seqObjectText is str(Sequencer()): Sequencer has no __repr__ of its own, so
 // CPython prints the default repr with the object's address, which this port
@@ -171,12 +185,15 @@ var rnTemplates = [10]int{0, 1, 9, 73, 10, 2, 17, 137, 1097, 11} // _RN_TEMPLATE
 const rnLetters = "IVXLCDM" // _RN_LETTERS
 
 // formatRoman is _format_I: the letters of a value in 0..3999.
-func formatRoman(value int64) string {
+func formatRoman(value *big.Int) string {
 	var letters []byte
 	base := -1
-	for value > 0 {
-		digit := value % 10
-		value /= 10
+	ten := big.NewInt(10)
+	number := new(big.Int).Set(value)
+	for number.Sign() > 0 {
+		remainder := new(big.Int)
+		number.QuoRem(number, ten, remainder)
+		digit := int(remainder.Int64())
 		for template := rnTemplates[digit]; template > 0; {
 			letter := template % 8
 			template /= 8
@@ -192,30 +209,27 @@ func formatRoman(value int64) string {
 
 // formatSeq is one of Sequencer._formatters: registerFormat has no caller, so
 // a counter's format is one of the five.
-func formatSeq(format byte, value int64) (string, error) {
+func formatSeq(format byte, value *big.Int) (string, error) {
 	switch format {
 	case 'A', 'a':
-		index := (value - 1) % 26
-		if index < 0 {
-			index += 26
-		}
+		index := int(new(big.Int).Mod(new(big.Int).Sub(value, big.NewInt(1)), big.NewInt(26)).Int64())
 		if format == 'A' {
 			return string(rune('A' + index)), nil
 		}
 		return string(rune('a' + index)), nil
 	case 'I':
 		// _format_I raises ValueError outside 0..3999.
-		if value < 0 || value > 3999 {
+		if value.Sign() < 0 || value.Cmp(big.NewInt(3999)) > 0 {
 			return "", errors.New("illegal value")
 		}
 		return formatRoman(value), nil
 	case 'i':
-		if value < 0 || value > 3999 {
+		if value.Sign() < 0 || value.Cmp(big.NewInt(3999)) > 0 {
 			return "", errors.New("illegal value")
 		}
 		return strings.ToLower(formatRoman(value)), nil
 	}
-	return strconv.FormatInt(value, 10), nil
+	return value.String(), nil
 }
 
 // format is Sequencer.format: `template % self`, a mapping format of the
@@ -234,10 +248,14 @@ func formatSeq(format byte, value int64) (string, error) {
 // the rest of the conversion then raises, and the looked-up value becomes
 // the one positional argument a `*` or the conversion consumes. One length
 // modifier (h, l or L) is skipped before the conversion character.
+//
+// A width is a Py_ssize_t and a precision an int: more digits than fit raise
+// ValueError('width too big') or ValueError('precision too big'), as CPython
+// checks while reading them. A width up to seqExactWidth pads exactly; a wider
+// one pads to seqExactWidth+1 characters and sets oversized, which the caller
+// reads after the call.
 func (s *seqSequencer) format(template string) (string, error) {
-	if seqTemplateTooWide(template) {
-		return "", errSeqTemplateHandoff // refused before any counter moves
-	}
+	s.oversized = false
 	var out strings.Builder
 	// The positional argument a `*` or a conversion takes: the Sequencer
 	// itself, or the text of the last (key). consumed is CPython's argidx
@@ -301,7 +319,7 @@ func (s *seqSequencer) format(template string) (string, error) {
 			}
 			pos++
 		}
-		width := 0
+		width := int64(0)
 		if pos < len(template) && template[pos] == '*' {
 			// `*` takes the next positional argument: the Sequencer or a
 			// counter's text, which int() refuses, or nothing after it.
@@ -311,10 +329,14 @@ func (s *seqSequencer) format(template string) (string, error) {
 			return "", errors.New("* wants int")
 		}
 		for pos < len(template) && template[pos] >= '0' && template[pos] <= '9' {
-			width = width*10 + int(template[pos]-'0')
+			digit := int64(template[pos] - '0')
+			if width > (math.MaxInt64-digit)/10 {
+				return "", errors.New("width too big")
+			}
+			width = width*10 + digit
 			pos++
 		}
-		precision := -1
+		precision := int64(-1)
 		if pos < len(template) && template[pos] == '.' {
 			precision, pos = 0, pos+1
 			if pos < len(template) && template[pos] == '*' {
@@ -324,7 +346,11 @@ func (s *seqSequencer) format(template string) (string, error) {
 				return "", errors.New("* wants int")
 			}
 			for pos < len(template) && template[pos] >= '0' && template[pos] <= '9' {
-				precision = precision*10 + int(template[pos]-'0')
+				digit := int64(template[pos] - '0')
+				if precision > (math.MaxInt32-digit)/10 {
+					return "", errors.New("precision too big")
+				}
+				precision = precision*10 + digit
 				pos++
 			}
 		}
@@ -376,19 +402,27 @@ func (s *seqSequencer) format(template string) (string, error) {
 				return "", seqUnsupportedCharacter(template, conversion)
 			}
 		}
-		runes := []rune(text)
-		if precision >= 0 && len(runes) > precision {
-			runes = runes[:precision]
-		}
-		if width > len(runes) {
-			pad := strings.Repeat(" ", width-len(runes))
-			if left {
-				runes = append(runes, []rune(pad)...)
-			} else {
-				runes = append([]rune(pad), runes...)
+		if precision >= 0 {
+			if runes := []rune(text); int64(len(runes)) > precision {
+				text = string(runes[:precision])
 			}
 		}
-		out.WriteString(string(runes))
+		limit := width
+		if limit > seqExactWidth {
+			// Past the exact bound every field pads the same way: one
+			// character more than the bound, marked for breakCJK.
+			limit = seqExactWidth + 1
+			s.oversized = true
+		}
+		if pad := int(limit) - utf8.RuneCountInString(text); pad > 0 {
+			spaces := strings.Repeat(" ", pad)
+			if left {
+				text += spaces
+			} else {
+				text = spaces + text
+			}
+		}
+		out.WriteString(text)
 	}
 	return out.String(), nil
 }
@@ -404,33 +438,6 @@ func seqUnsupportedCharacter(template string, conversion int) error {
 		utf8.RuneCountInString(template[:conversion]))
 }
 
-// seqTemplateTooWide reports a run of digits past seqMaxWidth after a '%'
-// (a width or precision, or digits inside a key, which only makes the check
-// stricter): the whole template is refused before any (key) is looked up, so
-// no counter moves for a request that is handed off.
-func seqTemplateTooWide(template string) bool {
-	number, inSpec := 0, false
-	for pos := 0; pos < len(template); pos++ {
-		c := template[pos]
-		switch {
-		case c == '%':
-			inSpec, number = !inSpec || template[pos-1] != '%', 0
-		case !inSpec:
-		case c >= '0' && c <= '9':
-			number = number*10 + int(c-'0')
-			if number > seqMaxWidth {
-				return true
-			}
-		case c == '.' || c == '(' || c == ')' || c == '-' || c == '+' || c == ' ' || c == '#' || c == '*' ||
-			c == 'h' || c == 'l' || c == 'L':
-			number = 0
-		default:
-			inSpec, number = false, 0
-		}
-	}
-	return false
-}
-
 // paraSeqMu guards paraSeq: the one Sequencer of the process.
 var (
 	paraSeqMu sync.Mutex
@@ -438,8 +445,7 @@ var (
 )
 
 // seqCall runs fn on the process-wide Sequencer. An error of a formatter or a
-// format fails the parse the way reportlab's exception does; a text this
-// package does not write is refused.
+// format fails the parse the way reportlab's exception does.
 //
 // None of the five handlers pushes a fragment or changes the stack: their end
 // handlers are pass (end_seq and the aliases of paraparser), so a self-closing
@@ -449,15 +455,11 @@ func (p *paraParser) seqCall(fn func(*seqSequencer) (string, error)) (string, bo
 	paraSeqMu.Lock()
 	defer paraSeqMu.Unlock()
 	text, err := fn(paraSeq)
-	if err == nil {
-		return text, true
-	}
-	if errors.Is(err, errSeqTemplateHandoff) {
-		p.unsupported()
-	} else {
+	if err != nil {
 		p.fail("%s", err.Error())
+		return "", false
 	}
-	return "", false
+	return text, true
 }
 
 // startSeq is start_seq: the value of a counter, or the text of a template.
@@ -471,11 +473,30 @@ func (p *paraParser) startSeq(attrs []htmlAttr) bool {
 			// `None % Sequencer`
 			return p.fail("%s", "unsupported operand type(s) for %: 'NoneType' and 'Sequencer'")
 		}
-		text, ok := p.seqCall(func(s *seqSequencer) (string, error) { return s.format(template.value) })
+		oversized := false
+		text, ok := p.seqCall(func(s *seqSequencer) (string, error) {
+			value, err := s.format(template.value)
+			oversized = s.oversized
+			return value, err
+		})
 		if !ok {
 			return false
 		}
-		return p.data(text)
+		bullet := p.stack[len(p.stack)-1].isBullet
+		frags, bulletFrags := len(p.frags), len(p.bulletFrags)
+		if !p.data(text) {
+			return false
+		}
+		// A field wider than seqExactWidth: the fragment that holds the pad
+		// is the one breakCJK refuses (see seqExactWidth).
+		if oversized {
+			if bullet && len(p.bulletFrags) > bulletFrags {
+				p.bulletFrags[len(p.bulletFrags)-1].seqOversized = true
+			} else if !bullet && len(p.frags) > frags {
+				p.frags[len(p.frags)-1].seqOversized = true
+			}
+		}
+		return true
 	}
 	id := seqAttrKey(values, "id")
 	increment, hasIncrement := values["inc"]
@@ -497,8 +518,6 @@ func (p *paraParser) startSeq(attrs []htmlAttr) bool {
 	step, st := pyInt(increment.value, 10)
 	switch st {
 	case attrOK:
-	case attrUnsupported:
-		return p.unsupported() // an integer beyond the ones this package reads
 	default:
 		return p.fail("invalid literal for int() with base 10: %s", pythonAscii(increment.value))
 	}
@@ -509,7 +528,7 @@ func (p *paraParser) startSeq(attrs []htmlAttr) bool {
 		}
 		// start_seq resets the counter to the value of the default counter plus
 		// the step, not to the value of id plus the step.
-		s.reset(id, s.this(seqNoKey)+step)
+		s.resetWide(id, new(big.Int).Add(s.this(seqNoKey), step))
 		return value, nil
 	})
 	if !ok {
@@ -526,17 +545,14 @@ func (p *paraParser) startSeqReset(attrs []htmlAttr) bool {
 	}
 	_, values := dedupeAttrs(attrs)
 	id := seqAttrKey(values, "id")
-	base := int64(0)
+	base := big.NewInt(0)
 	if attr, ok := values["base"]; ok {
-		switch value, st := pyInt(attr.value, 10); st {
-		case attrOK:
+		if value, st := pyInt(attr.value, 10); st == attrOK {
 			base = value
-		case attrUnsupported:
-			return p.unsupported() // an integer beyond the ones this package reads
 		}
 	}
 	_, ok := p.seqCall(func(s *seqSequencer) (string, error) {
-		s.reset(id, base)
+		s.resetWide(id, base)
 		return "", nil
 	})
 	return ok

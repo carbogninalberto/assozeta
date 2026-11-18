@@ -20,9 +20,14 @@ import (
 // transaction.on_commit runs once the block committed (after the
 // notification, which Django sends inside the block).
 type paymentPaidFlowNotification struct {
-	user, message, association string
-	subscribed                 bool
-	print                      *paymentPaidFlowPrint
+	user, message string
+	// association is the notification's association_id: send_notification fills
+	// it by role when the view passes none, so an association account keeps the
+	// association the view found while a collaborator account gets its connected
+	// user's live association, and any other request user keeps JSON null.
+	association *string
+	subscribed  bool
+	print       *paymentPaidFlowPrint
 }
 
 // paymentPaidFlowPrint is the on-commit print_document_invoice.delay(invoice, token).
@@ -36,7 +41,7 @@ func (n *paymentPaidFlowNotification) deliver(ctx context.Context, notifier *Sub
 	if n == nil {
 		return nil
 	}
-	if err := notifier.DeliverValidated(ctx, n.user, "payment", n.message, n.association, n.subscribed); err != nil {
+	if err := notifier.DeliverValidatedAssociation(ctx, n.user, "payment", n.message, n.association, n.subscribed); err != nil {
 		return err
 	}
 	if n.print == nil {
@@ -48,11 +53,12 @@ func (n *paymentPaidFlowNotification) deliver(ctx context.Context, notifier *Sub
 // stripeMarkPaid is mark_payment_as_paid's first save of an unpaid payment:
 // payment.paid = True, payment.payment_date = now, payment.type = 'stripe' and
 // payment.save(update_fields=['paid', 'payment_date', 'type']). Payment.save()
-// computes its defaults (a failure raises inside the block) but only the
-// update fields are written; auditlog records the changed update fields.
-func stripeMarkPaid(ctx context.Context, tx domain.PaymentPaidFlowTransaction, row domain.PaymentSaveRow, before *time.Time,
+// computes its defaults on the instance (a failure raises inside the block) but
+// only the update fields are written, so the instance keeps them for the later
+// full save; auditlog records the changed update fields.
+func stripeMarkPaid(ctx context.Context, tx domain.PaymentPaidFlowTransaction, row *domain.PaymentSaveRow, before *time.Time,
 	audit domain.LoginAuditContext, now time.Time) error {
-	if err := paymentSaveDefaults(ctx, tx, &row, map[string][2]string{}); err != nil {
+	if err := paymentSaveDefaults(ctx, tx, row, map[string][2]string{}); err != nil {
 		return err
 	}
 	previous, err := tx.MarkStripePaymentPaid(ctx, row.ID, now)
@@ -67,7 +73,19 @@ func stripeMarkPaid(ctx context.Context, tx domain.PaymentPaidFlowTransaction, r
 		changes["type"] = [2]string{previous, "stripe"}
 	}
 	return tx.AppendPaymentAudit(ctx, domain.PaymentArchiveEvent{PaymentID: row.ID, AssociationID: row.AssociationID, Changes: changes,
-		Context: audit, At: now})
+		IndexFallback: row.IndexFallback, Context: audit, At: now})
+}
+
+// paymentPaidFlowInstance carries Payment.save()'s in-memory defaults from
+// mark_payment_as_paid's update_fields save to its later full save: both save
+// the same instance, whose category and description the first hook already
+// set (the column kept the stored text). DescriptionValue is the value the
+// hook left on the description attribute when the meta replacement is not a
+// string; the full save starts from it and a truthy non-string raises before
+// writing.
+func paymentPaidFlowInstance(row *domain.PaymentStateRow, instance *domain.PaymentSaveRow) {
+	row.CategoryID, row.CategoryName = instance.CategoryID, instance.CategoryName
+	row.Description, row.DescriptionValue = instance.Description, instance.DescriptionValue
 }
 
 // paymentPaidFlowSentGroup is the group Invoice.objects.create is given: the
@@ -114,19 +132,34 @@ func paymentPaidFlowFloat(value any) (float64, error) {
 	return invoiceFloatOfStr(value)
 }
 
+// paymentPaidFlowStoredJSON is a paid-flow view's parse of a stored payment JSON
+// column. The view fetches the row before it computes anything, so with the
+// view's measured edges the document already parsed at that load (Django decodes
+// every column of the fetched row): only the 1000-level reference parser's limit
+// is lifted. A context without edges keeps the reference parser.
+func paymentPaidFlowStoredJSON(ctx context.Context, text *string) (any, error) {
+	if text == nil {
+		return nil, nil
+	}
+	if edges, measured := paymentJSONEdgesOf(ctx); measured {
+		return dto.ParseStoredJSONDepth(*text, edges.Load)
+	}
+	return dto.ParseReferenceJSON([]byte(*text))
+}
+
 // paymentPaidFlowStripeFees is mark_payment_as_paid's fee arithmetic: like
 // the approve view's, except that float() reads the amounts directly and the
 // membership fee is only recomputed when there are meta payment categories.
-func paymentPaidFlowStripeFees(subject int, payment domain.InvoiceGeneratePayment) (invoiceFeePair, error) {
+func paymentPaidFlowStripeFees(ctx context.Context, subject int, payment domain.InvoiceGeneratePayment) (invoiceFeePair, error) {
 	if subject != 1 {
-		return invoiceFeesAny(subject, payment)
+		return invoiceFeesAtDepth(subject, payment, paymentJSONLoadEdge(ctx))
 	}
 	zero, _ := floatFeeAny(0)
 	pair := invoiceFeePair{membership: decimalFee(payment.Amount), activity: zero}
 	if payment.MetaPaymentCategories == nil {
 		return pair, nil
 	}
-	parsed, err := dto.ParseReferenceJSON([]byte(*payment.MetaPaymentCategories))
+	parsed, err := paymentPaidFlowStoredJSON(ctx, payment.MetaPaymentCategories)
 	if err != nil {
 		return pair, err
 	}
@@ -296,17 +329,14 @@ func (s *PaymentStates) approvePaid(ctx context.Context, tx domain.PaymentPaidFl
 		}
 	}
 	user := identity.ScopeUser
-	if user == nil || (user.Role != domain.RoleAssociation && user.Role != domain.RoleCollaborator) {
-		// Setup makes the owner an association account (BE/instance/views.py:198-211), but the association import
-		// (import_service.py) can make an existing athlete the owner of an imported association; Django then
-		// answers as for the owner. Not ported.
-		return nil, domain.ErrPaymentStateNotPorted
+	if user == nil {
+		return nil, domain.ErrPaymentStateServer
 	}
 	payment, err := tx.InvoiceGeneratePayment(ctx, row.ID)
 	if err != nil {
 		return nil, err
 	}
-	fees, err := invoiceFeesAny(row.Subject, payment)
+	fees, err := invoiceFeesAtDepth(row.Subject, payment, paymentJSONLoadEdge(ctx))
 	if err != nil {
 		return nil, err
 	}
@@ -392,7 +422,7 @@ func (s *PaymentStates) approvePaid(ctx context.Context, tx domain.PaymentPaidFl
 		return nil, err
 	}
 	if err = tx.AppendPaymentAudit(ctx, domain.PaymentArchiveEvent{PaymentID: row.ID, AssociationID: row.AssociationID, Changes: changes,
-		Context: audit, At: at}); err != nil {
+		IndexFallback: row.IndexFallback, Context: audit, At: at}); err != nil {
 		return nil, err
 	}
 	row.Paid, row.PaymentDate, row.InvoiceID = true, paymentDate, invoice
@@ -419,6 +449,10 @@ func (s *PaymentStates) approvePaid(ctx context.Context, tx domain.PaymentPaidFl
 		return nil, err
 	}
 	message := paymentPaidFlowMessage(payment.Amount, notified, people)
+	notificationAssociation, err := paymentPaidFlowAssociation(ctx, tx, user, association)
+	if err != nil {
+		return nil, err
+	}
 	subscribed, err := tx.ValidateBroadcast(ctx, user.ID, "broadcast_"+user.ID, audit, at)
 	if err != nil {
 		return nil, err
@@ -441,7 +475,8 @@ func (s *PaymentStates) approvePaid(ctx context.Context, tx domain.PaymentPaidFl
 	if err = tx.Commit(); err != nil {
 		return nil, err
 	}
-	notification := &paymentPaidFlowNotification{user: user.ID, message: message, association: association, subscribed: subscribed}
+	notification := &paymentPaidFlowNotification{user: user.ID, message: message, association: notificationAssociation,
+		subscribed: subscribed}
 	if err = notification.deliver(ctx, s.notifier); err != nil {
 		return nil, err
 	}
@@ -483,9 +518,11 @@ func (s *PaymentStates) paySupplierInvoice(ctx context.Context, tx domain.Paymen
 // year, no lock), the description, the invoice, the payment save recording it,
 // the course subscription or installment paid flag, validate_broadcast for
 // payment.user and the on-commit print_document_invoice.delay (returned with
-// the notification, published after the commit).
+// the notification, published after the commit). memory is the instance the
+// first save ran the hook on: the full save starts from its category and
+// description.
 func (s *StripeRoutes) stripePaidFlow(ctx context.Context, tx domain.PaymentPaidFlowTransaction, identity domain.ResolvedIdentity,
-	request StripeRequest, id string, now time.Time, withRequest bool) (*paymentPaidFlowNotification, error) {
+	request StripeRequest, id string, now time.Time, withRequest bool, memory *domain.PaymentSaveRow) (*paymentPaidFlowNotification, error) {
 	group := supplierGroup(request.GroupHeader)
 	row, err := tx.PaymentState(ctx, domain.PaymentStateQuery{ID: id, Group: group})
 	if err != nil {
@@ -494,6 +531,15 @@ func (s *StripeRoutes) stripePaidFlow(ctx context.Context, tx domain.PaymentPaid
 	if row == nil || row.AssociationID == "" {
 		return nil, domain.ErrStripeServer
 	}
+	// auditlog's entry of this save compares the instance with the stored row:
+	// the update_fields save wrote paid, payment_date and type only, so the
+	// hook's category and description are still unwritten here.
+	stored := row.PaymentSaveRow
+	if memory != nil {
+		// mark_payment_as_paid saves one instance twice: the update_fields save
+		// left the hook's defaults on it, and the full save starts from them.
+		paymentPaidFlowInstance(row, memory)
+	}
 	// The update_fields save already ran Payment.save()'s defaults on the
 	// in-memory payment: the invoice description reads them, and the later
 	// full save records them with the invoice.
@@ -501,11 +547,17 @@ func (s *StripeRoutes) stripePaidFlow(ctx context.Context, tx domain.PaymentPaid
 	if err = paymentSaveDefaults(ctx, tx, &row.PaymentSaveRow, changes); err != nil {
 		return nil, err
 	}
+	if !samePointer(stored.CategoryID, row.CategoryID) {
+		changes["payment_category"] = [2]string{pythonOptional(stored.CategoryID), pythonOptional(row.CategoryID)}
+	}
+	if !samePointer(stored.Description, row.Description) {
+		changes["description"] = [2]string{pythonOptional(stored.Description), pythonOptional(row.Description)}
+	}
 	payment, err := tx.InvoiceGeneratePayment(ctx, row.ID)
 	if err != nil {
 		return nil, err
 	}
-	fees, err := paymentPaidFlowStripeFees(row.Subject, payment)
+	fees, err := paymentPaidFlowStripeFees(ctx, row.Subject, payment)
 	if err != nil {
 		return nil, err
 	}
@@ -553,7 +605,7 @@ func (s *StripeRoutes) stripePaidFlow(ctx context.Context, tx domain.PaymentPaid
 		return nil, err
 	}
 	if err = tx.AppendPaymentAudit(ctx, domain.PaymentArchiveEvent{PaymentID: row.ID, AssociationID: row.AssociationID, Changes: changes,
-		Context: audit, At: now}); err != nil {
+		IndexFallback: row.IndexFallback, Context: audit, At: now}); err != nil {
 		return nil, err
 	}
 	notified := ""
@@ -590,6 +642,39 @@ func (s *StripeRoutes) stripePaidFlow(ctx context.Context, tx domain.PaymentPaid
 	if err != nil {
 		return nil, err
 	}
-	return &paymentPaidFlowNotification{user: *people.UserID, message: message, association: row.AssociationID, subscribed: subscribed,
+	// mark_payment_as_paid passes association_id=payment.sport_association_id
+	// explicitly, so send_notification keeps it whatever the user's role.
+	stripeAssociation := row.AssociationID
+	return &paymentPaidFlowNotification{user: *people.UserID, message: message, association: &stripeAssociation, subscribed: subscribed,
 		print: &paymentPaidFlowPrint{publisher: s.publisher, invoice: create.ID, token: token}}, nil
+}
+
+// paymentPaidFlowAssociation is send_notification's association_id for
+// payment_approve, called without one, read inside the transaction because a
+// failure there rolls the request back: request.user.sport_association. An
+// association account keeps the row the view found with get(user=request.user);
+// a collaborator account gets their connected user's live association, since the
+// association import can make that scope user a collaborator who owns the
+// imported association; any other role keeps None (JSON null). A collaborator
+// without a live connected association raises like Django's DoesNotExist: the
+// 500 page, the rollback and no notification.
+func paymentPaidFlowAssociation(ctx context.Context, tx domain.PaymentPaidFlowTransaction, user *domain.Account,
+	association string) (*string, error) {
+	if user == nil {
+		return nil, nil
+	}
+	switch user.Role {
+	case domain.RoleAssociation:
+		return &association, nil
+	case domain.RoleCollaborator:
+		connected, err := tx.PaidFlowUserAssociation(ctx, user.ConnectedUserID)
+		if err != nil {
+			return nil, err
+		}
+		if connected == nil {
+			return nil, domain.ErrPaymentStateServer
+		}
+		return connected, nil
+	}
+	return nil, nil
 }

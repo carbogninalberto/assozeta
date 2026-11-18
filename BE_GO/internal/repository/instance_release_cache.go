@@ -84,50 +84,152 @@ func decodeCatalog(raw []byte) ([]instanceprobe.Release, bool, error) {
 
 func cachedRelease(item any) (instanceprobe.Release, bool) {
 	var r instanceprobe.Release
-	object, ok := item.(map[string]any)
+	object, ok := item.(instanceprobe.Dict)
 	if !ok || len(object) != 9 {
 		return r, false
 	}
-	id, ok := object["id"].(int64)
-	if !ok {
+	id, present := object.Lookup("id")
+	if !present {
 		return r, false
 	}
-	r.ID = id
-	for key, target := range map[string]*string{"tag": &r.Tag, "version": &r.Version, "name": &r.Name,
-		"published_at": &r.PublishedAt, "notes": &r.Notes, "url": &r.URL} {
-		text, ok := object[key].(string)
-		if !ok {
-			return r, false
+	switch value := id.(type) {
+	case *big.Int:
+		if value.IsInt64() {
+			r.ID = value.Int64()
+		} else {
+			r.IDValue, r.IDValueSet = value, true
 		}
-		*target = text
+	case float64, string, bool:
+		r.IDValue, r.IDValueSet = id, true
+	case nil:
+		r.IDValueSet = true // Python None
+	default:
+		return r, false
+	}
+	if r.Tag, ok = cachedString(object, "tag"); !ok {
+		return r, false
 	}
 	if _, ok := instanceprobe.VersionTuple(r.Tag); !ok {
 		return r, false
 	}
-	if r.ArtifactsReady, ok = object["artifacts_ready"].(bool); !ok {
+	if r.Version, ok = cachedString(object, "version"); !ok {
 		return r, false
 	}
-	switch reason := object["unavailable_reason"].(type) {
+	if !cachedField(object, "name", &r.Name, &r.NameValue) {
+		return r, false
+	}
+	if !cachedField(object, "published_at", &r.PublishedAt, &r.PublishedValue) {
+		return r, false
+	}
+	if !cachedField(object, "notes", &r.Notes, &r.NotesValue) {
+		return r, false
+	}
+	if r.URL, ok = cachedString(object, "url"); !ok {
+		return r, false
+	}
+	artifacts, present := object.Lookup("artifacts_ready")
+	if !present {
+		return r, false
+	}
+	if r.ArtifactsReady, ok = artifacts.(bool); !ok {
+		return r, false
+	}
+	reasonValue, present := object.Lookup("unavailable_reason")
+	if !present {
+		return r, false
+	}
+	switch reason := reasonValue.(type) {
 	case nil:
 	case string:
 		r.UnavailableReason = &reason
 	default:
 		return r, false
 	}
-	r.NameIsTag = r.Name == r.Tag
+	r.NameIsTag = r.NameValue == nil && r.Name == r.Tag
 	return r, true
+}
+
+// cachedString is a field Django always writes as a str.
+func cachedString(object instanceprobe.Dict, name string) (string, bool) {
+	value, present := object.Lookup(name)
+	if !present {
+		return "", false
+	}
+	text, ok := value.(string)
+	return text, ok
+}
+
+// cachedField reads a field normalize_release copies: the plain str goes to
+// typed, any other Python value (an int of any size, a float, a bool, a list
+// or an object) to kept. normalize_release never copies None into name,
+// published_at or notes (a falsy one becomes the tag or the empty string) and
+// the view is the only writer of the catalog, so None there is outside what
+// Django writes.
+func cachedField(object instanceprobe.Dict, name string, typed *string, kept *any) bool {
+	value, present := object.Lookup(name)
+	if !present {
+		return false
+	}
+	if text, ok := value.(string); ok {
+		*typed = text
+		return true
+	}
+	if value == nil || !cachedPythonValue(value) {
+		return false
+	}
+	*kept = value
+	return true
+}
+
+// cachedPythonValue reports the values normalize_release copies and DRF
+// renders: an int, float, bool, str, None, a list or an object.
+func cachedPythonValue(value any) bool {
+	switch v := value.(type) {
+	case nil, bool, string, float64, *big.Int:
+		return true
+	case []any:
+		for _, item := range v {
+			if !cachedPythonValue(item) {
+				return false
+			}
+		}
+		return true
+	case instanceprobe.Dict:
+		for _, field := range v {
+			if !cachedPythonValue(field.Value) {
+				return false
+			}
+		}
+		return true
+	}
+	return false
 }
 
 const maxCatalogBytes = 64 << 20
 
 type catalogMark struct{}
 
+// catalogDict is a pickled dict under construction: keys in insertion order,
+// the last assignment of a repeated key keeping the first position (a Python
+// dict's order).
+type catalogDict struct {
+	keys   []string
+	values map[string]any
+}
+
+func (d *catalogDict) set(key string, value any) {
+	if _, ok := d.values[key]; !ok {
+		d.keys = append(d.keys, key)
+	}
+	d.values[key] = value
+}
+
 // unpickleCatalog reads the opcodes CPython's protocol 2 to 5 picklers write
 // for a list of release dicts (frames anywhere between opcodes, memo
-// references, str, int, float, bool, None, list and dict); anything else is an
-// error. It is a data decoder only: no global, reduce or object construction
-// exists. Protocol 5 only adds opcodes for buffers (BYTEARRAY8, NEXT_BUFFER),
-// which a list of dicts of str/int/bool/None never uses.
+// references, str, int of any size, float, bool, None, list and dict); anything
+// else is an error. It is a data decoder only: no global, reduce or object
+// construction exists. Protocol 5 only adds opcodes for buffers (BYTEARRAY8,
+// NEXT_BUFFER), which a list of dicts of str/int/bool/None never uses.
 func unpickleCatalog(data []byte) (any, error) {
 	bad := errCatalogNotReadable
 	if len(data) < 3 || len(data) > maxCatalogBytes || data[0] != 0x80 || data[1] < 2 || data[1] > 5 {
@@ -136,7 +238,6 @@ func unpickleCatalog(data []byte) (any, error) {
 	pos := 2
 	var stack []any
 	var memo []any
-	lists := map[*[]any]bool{}
 	take := func(n int) ([]byte, bool) {
 		if n < 0 || n > len(data)-pos {
 			return nil, false
@@ -173,11 +274,9 @@ func unpickleCatalog(data []byte) (any, error) {
 				return nil, bad
 			}
 		case ']':
-			list := &[]any{}
-			lists[list] = true
-			stack = append(stack, list)
+			stack = append(stack, &[]any{})
 		case '}':
-			stack = append(stack, map[string]any{})
+			stack = append(stack, &catalogDict{values: map[string]any{}})
 		case '(':
 			stack = append(stack, catalogMark{})
 		case 0x94: // MEMOIZE
@@ -244,7 +343,10 @@ func unpickleCatalog(data []byte) (any, error) {
 				size = int(binary.LittleEndian.Uint64(raw))
 			}
 			text, ok := take(size)
-			if !ok || !utf8.Valid(text) {
+			// CPython writes a str as UTF-8 with surrogatepass, so a lone
+			// surrogate arrives as its three-byte form: DRF cannot encode it
+			// and the render refuses it (the 500 page).
+			if !ok || !validWTF8(text) {
 				return nil, bad
 			}
 			stack = append(stack, string(text))
@@ -256,11 +358,11 @@ func unpickleCatalog(data []byte) (any, error) {
 			}
 			switch op {
 			case 'K':
-				stack = append(stack, int64(raw[0]))
+				stack = append(stack, big.NewInt(int64(raw[0])))
 			case 'M':
-				stack = append(stack, int64(binary.LittleEndian.Uint16(raw)))
+				stack = append(stack, big.NewInt(int64(binary.LittleEndian.Uint16(raw))))
 			default:
-				stack = append(stack, int64(int32(binary.LittleEndian.Uint32(raw))))
+				stack = append(stack, big.NewInt(int64(int32(binary.LittleEndian.Uint32(raw)))))
 			}
 		case 0x8a, 0x8b: // LONG1, LONG4
 			width := 1
@@ -276,17 +378,10 @@ func unpickleCatalog(data []byte) (any, error) {
 				length = int(binary.LittleEndian.Uint32(raw))
 			}
 			body, ok := take(length)
-			if !ok || len(body) > 8 {
+			if !ok {
 				return nil, bad
 			}
-			var value int64
-			for i := len(body) - 1; i >= 0; i-- {
-				value = value<<8 | int64(body[i])
-			}
-			if len(body) > 0 && len(body) < 8 && body[len(body)-1]&0x80 != 0 {
-				value -= 1 << (8 * len(body))
-			}
-			stack = append(stack, value)
+			stack = append(stack, pythonLong(body))
 		case 'G': // BINFLOAT
 			raw, ok := take(8)
 			if !ok {
@@ -311,8 +406,8 @@ func unpickleCatalog(data []byte) (any, error) {
 			if !ok || len(items)%2 != 0 || len(stack) == 0 {
 				return nil, bad
 			}
-			object, isMap := stack[len(stack)-1].(map[string]any)
-			if !isMap {
+			object, isDict := stack[len(stack)-1].(*catalogDict)
+			if !isDict {
 				return nil, bad
 			}
 			for i := 0; i < len(items); i += 2 {
@@ -320,7 +415,7 @@ func unpickleCatalog(data []byte) (any, error) {
 				if !isString {
 					return nil, bad
 				}
-				object[key] = items[i+1]
+				object.set(key, items[i+1])
 			}
 		case 'e', 'a':
 			var items []any
@@ -345,15 +440,47 @@ func unpickleCatalog(data []byte) (any, error) {
 			if !ok || len(stack) != 0 || pos != len(data) {
 				return nil, bad
 			}
-			if list, isList := value.(*[]any); isList {
-				return *list, nil
-			}
-			return value, nil
+			budget := 2*len(data) + 16
+			return catalogValue(value, 0, &budget)
 		default:
 			return nil, bad
 		}
 	}
 	return nil, bad
+}
+
+// catalogValue turns the decoder's containers into []any and
+// instanceprobe.Dict (keys in insertion order), keeping the scalars. budget
+// bounds the expanded tree, which memoized containers could otherwise grow
+// past the pickle's own size.
+func catalogValue(value any, depth int, budget *int) (any, error) {
+	if depth > 64 || *budget <= 0 {
+		return nil, errCatalogNotReadable
+	}
+	*budget = *budget - 1
+	switch v := value.(type) {
+	case *catalogDict:
+		out := make(instanceprobe.Dict, 0, len(v.keys))
+		for _, key := range v.keys {
+			item, err := catalogValue(v.values[key], depth+1, budget)
+			if err != nil {
+				return nil, err
+			}
+			out = append(out, instanceprobe.DictField{Name: key, Value: item})
+		}
+		return out, nil
+	case *[]any:
+		out := make([]any, 0, len(*v))
+		for _, item := range *v {
+			converted, err := catalogValue(item, depth+1, budget)
+			if err != nil {
+				return nil, err
+			}
+			out = append(out, converted)
+		}
+		return out, nil
+	}
+	return value, nil
 }
 
 // SetCatalog is cache.set(CATALOG_KEY, releases, timeout=600).
@@ -382,6 +509,9 @@ type releasePickler struct {
 	out        []byte
 	frameStart int
 	memo       map[string]int
+	// fresh numbers the str and container objects that are distinct Python
+	// objects (a feed's value appears once; the cache reader does not write).
+	fresh int
 }
 
 func (p *releasePickler) write(b ...byte) {
@@ -464,8 +594,137 @@ func (p *releasePickler) saveInt(value int64) {
 		binary.LittleEndian.PutUint32(b[:], uint32(int32(value)))
 		p.write(append([]byte{'J'}, b[:]...)...)
 	default:
-		data := longBytes(big.NewInt(value))
+		p.saveBigInt(big.NewInt(value))
+	}
+}
+
+// saveBigInt is save_long for an int of any size: the smallest of BININT1,
+// BININT2, BININT, LONG1 and LONG4 CPython chooses, then encode_long's bytes.
+func (p *releasePickler) saveBigInt(value *big.Int) {
+	p.boundary()
+	if value.IsInt64() {
+		small := value.Int64()
+		switch {
+		case small >= 0 && small <= 0xff:
+			p.write('K', byte(small))
+			return
+		case small >= 0 && small <= 0xffff:
+			p.write('M', byte(small), byte(small>>8))
+			return
+		case small >= -1<<31 && small <= 1<<31-1:
+			var b [4]byte
+			binary.LittleEndian.PutUint32(b[:], uint32(int32(small)))
+			p.write(append([]byte{'J'}, b[:]...)...)
+			return
+		}
+	}
+	data := longBytes(value)
+	if len(data) < 256 {
 		p.write(append([]byte{0x8a, byte(len(data))}, data...)...)
+		return
+	}
+	header := make([]byte, 5)
+	header[0] = 0x8b
+	binary.LittleEndian.PutUint32(header[1:], uint32(len(data)))
+	p.write(append(header, data...)...)
+}
+
+// saveFloat is save_float: BINFLOAT and the IEEE 754 bits, big-endian (a NaN
+// or infinity included: the render, not the cache, is where DRF refuses it).
+// CPython's float('nan') is the canonical quiet NaN; Go's math.NaN differs in
+// the payload.
+func (p *releasePickler) saveFloat(value float64) {
+	p.boundary()
+	bits := math.Float64bits(value)
+	if math.IsNaN(value) {
+		bits = 0x7ff8000000000000
+	}
+	var data [8]byte
+	binary.BigEndian.PutUint64(data[:], bits)
+	p.write('G')
+	p.write(data[:]...)
+}
+
+// nextIdentity names a str or container object that appears once (a feed's
+// value: json.loads makes a new object for every occurrence except the shared
+// one-character and empty strings, which stringIdentity keeps).
+func (p *releasePickler) nextIdentity() string {
+	p.fresh++
+	return "fresh:" + strconv.Itoa(p.fresh)
+}
+
+// saveValue is save() for the Python value a Release field keeps: None, bool,
+// int, float, str, list or dict.
+func (p *releasePickler) saveValue(value any) {
+	switch v := value.(type) {
+	case nil:
+		p.saveNone()
+	case bool:
+		p.saveBool(v)
+	case *big.Int:
+		p.saveBigInt(v)
+	case float64:
+		p.saveFloat(v)
+	case string:
+		p.saveString(stringIdentity(p.nextIdentity(), v), v)
+	case []any:
+		p.saveList(v)
+	case instanceprobe.Dict:
+		p.saveDict(v)
+	default:
+		// Only normalize and the cache reader build Releases; a value outside
+		// their representation is a programming error, never feed data.
+		panic("repository: unsupported release value")
+	}
+}
+
+// saveList is save_list and _batch_appends: EMPTY_LIST, MEMOIZE, then APPEND
+// for one item or MARK, items, APPENDS in batches of 1000.
+func (p *releasePickler) saveList(items []any) {
+	p.boundary()
+	p.write(']')
+	p.memo[p.nextIdentity()] = len(p.memo)
+	p.write(0x94)
+	for start := 0; start < len(items); start += 1000 {
+		end := min(start+1000, len(items))
+		switch end - start {
+		case 0:
+		case 1:
+			p.saveValue(items[start])
+			p.write('a')
+		default:
+			p.write('(')
+			for _, item := range items[start:end] {
+				p.saveValue(item)
+			}
+			p.write('e')
+		}
+	}
+}
+
+// saveDict is save_dict and _batch_setitems: EMPTY_DICT, MEMOIZE, then
+// SETITEM for one pair or MARK, pairs, SETITEMS in batches of 1000.
+func (p *releasePickler) saveDict(fields instanceprobe.Dict) {
+	p.boundary()
+	p.write('}')
+	p.memo[p.nextIdentity()] = len(p.memo)
+	p.write(0x94)
+	for start := 0; start < len(fields); start += 1000 {
+		end := min(start+1000, len(fields))
+		switch end - start {
+		case 0:
+		case 1:
+			p.saveValue(fields[start].Name)
+			p.saveValue(fields[start].Value)
+			p.write('s')
+		default:
+			p.write('(')
+			for _, field := range fields[start:end] {
+				p.saveValue(field.Name)
+				p.saveValue(field.Value)
+			}
+			p.write('u')
+		}
 	}
 }
 
@@ -554,22 +813,37 @@ func (p *releasePickler) saveRelease(index int, r instanceprobe.Release) {
 	p.write('(')
 	key := func(name string) { p.saveString("key:"+name, name) }
 	key("id")
-	p.saveInt(r.ID)
+	if r.IDValueSet {
+		p.saveValue(r.IDValue)
+	} else {
+		p.saveInt(r.ID)
+	}
 	key("tag")
 	tag := stringIdentity(object+"tag", r.Tag)
 	p.saveString(tag, r.Tag)
 	key("version")
 	p.saveString(stringIdentity(object+"version", r.Version), r.Version)
 	key("name")
-	if r.NameIsTag {
+	switch {
+	case r.NameIsTag:
 		p.saveString(tag, r.Tag)
-	} else {
+	case r.NameValue != nil:
+		p.saveValue(r.NameValue)
+	default:
 		p.saveString(stringIdentity(object+"name", r.Name), r.Name)
 	}
 	key("published_at")
-	p.saveString(stringIdentity(object+"published_at", r.PublishedAt), r.PublishedAt)
+	if r.PublishedValue != nil {
+		p.saveValue(r.PublishedValue)
+	} else {
+		p.saveString(stringIdentity(object+"published_at", r.PublishedAt), r.PublishedAt)
+	}
 	key("notes")
-	p.saveString(stringIdentity(object+"notes", r.Notes), r.Notes)
+	if r.NotesValue != nil {
+		p.saveValue(r.NotesValue)
+	} else {
+		p.saveString(stringIdentity(object+"notes", r.Notes), r.Notes)
+	}
 	key("url")
 	p.saveString(stringIdentity(object+"url", r.URL), r.URL)
 	key("artifacts_ready")

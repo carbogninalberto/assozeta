@@ -309,8 +309,14 @@ def build_archive(spec):
                 'models_exported': [{'name': name, 'file': file, 'count': len(rows.get(name, []))} for name, file in sections],
                 'statistics': {'files_exported': len(spec['members']), 'files_failed': 0}, 'errors': [], **spec['manifest']}
     buffer = io.BytesIO()
+    manifest_text = json.dumps(manifest)
+    if spec.get('deep'):
+        # The measured json.loads nesting edge case (owner decision X15): an
+        # unused top-level value authored as text, which json.dumps cannot
+        # serialize at this depth.
+        manifest_text = manifest_text[:-1] + ', "extra": ' + '[' * (spec['deep'] - 1) + ']' * (spec['deep'] - 1) + '}'
     with zipfile.ZipFile(buffer, 'w', zipfile.ZIP_DEFLATED) as archive:
-        archive.writestr('manifest.json', json.dumps(manifest))
+        archive.writestr('manifest.json', manifest_text)
         for name, file in sections:
             archive.writestr(file, json.dumps(rows.get(name, [])))
         for name, content in spec['members'].items():

@@ -70,6 +70,9 @@ func chat(associationID, envFile string, stdin io.Reader, stdout, stderr io.Writ
 	if err != nil {
 		return errors.New("invalid environment configuration")
 	}
+	// The business tools read MCP_AGENT_MAX_RESULTS and MCP_AGENT_QUERY_TIMEOUT
+	// from the resolved environment, as Django's env.int does.
+	service.SetReportEnvironment(cfg.InstanceAdmin.AIIntegerTexts[1], cfg.InstanceAdmin.AIIntegerTexts[2])
 	database, err := pgx.ParseConfig(cfg.DatabaseURL())
 	if err != nil {
 		return errors.New("invalid database configuration")

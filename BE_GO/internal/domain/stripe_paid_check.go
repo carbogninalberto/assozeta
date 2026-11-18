@@ -21,6 +21,11 @@ type StripePaidCheckPayment struct {
 	InvoiceID     *string `db:"invoice_id"`
 	UserID        *string `db:"user_id"`
 	AssociationID *string `db:"sport_association_id"`
+	// The three JSON columns Payment.save() reads, as stored text: the job has
+	// no measured recursion edge, so it hands a deeply nested row to Django.
+	MetaPaymentCategories *string `db:"meta_payment_categories"`
+	Meta                  *string `db:"meta"`
+	Course                *string `db:"course"`
 }
 
 type StripePaidCheckStore interface {

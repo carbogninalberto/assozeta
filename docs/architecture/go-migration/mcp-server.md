@@ -118,7 +118,7 @@ Since long tail PR 4 nothing is refused (`ErrBusinessMCPNotPorted` is gone):
 - An exception whose `str(e)` Go does not reproduce exactly is `service.ErrBusinessToolRaised` carrying its closest
   text (accepted divergence X11, extended 2026-11-16): a PostgreSQL error is psycopg2's text without the `LINE`/caret
   lines that quote Django's own statement (message, then `DETAIL:`, `HINT:`, `CONTEXT:` lines), a reportlab table
-  without columns uses the placeholder address `0x0000000000000000` (X18), other exceptions a generic text. The command
+  without columns uses `pystr.ObjectAddress` (`0x7f0000000000`, X18), other exceptions a generic text. The command
   and the agent answer `{"error": <text>}`; the saved-report run answers its JSON 500.
 - Every other input is ported: non-finite floats (`NaN`/`Infinity` tokens, numbers beyond the float range), integers
   beyond 64 bits in `in`/`range`, raw `regex`/`iexact` values with psycopg2's literal types, `Decimal(str)` spellings,
@@ -127,6 +127,15 @@ Since long tail PR 4 nothing is refused (`ErrBusinessMCPNotPorted` is gone):
   through `repr()`, `save_report` values stored with `str()`, the exporters' TypeError/AttributeError texts and the
   attendance `save_info` written back as given. The defensive branches no input reaches are `refusal.AppState`
   (metadata invariants asserted by `TestMCPModelsInvariants`).
+- Long tail PR 5: JSON key lookups with a value `_coerce_filter_values` coerced (a key named like a field of the same
+  model, e.g. `meta__amount: "12"` on Payment) send `json.dumps` of the int/float; a coerced date/datetime raises
+  Django's `Object of type ... is not JSON serializable` when the statement would run (after any compile error), and
+  `has_key` passes the adapted literal so PostgreSQL reports the operator error for its type. `key__iexact: None` is
+  the isnull lookup on the key transform (`->`), so a key holding JSON null does not match.
+- PR 5 review: a node `WhereNode.as_sql` drops (EmptyResultSet/FullResultSet) loses its parameters, so a coerced
+  value's adaptation error and PostgreSQL's errors on them do not happen; children after the deciding one are not
+  compiled. An empty top-level filter elides every statement. `execute_query` and `get_field_values` count before
+  the slice/field/timeout exceptions, so the count's database error wins (`dto.ReportDeferred`).
 - Manual tools in the Go command run `service.ManualTools` (parity is the
   manual family's, semantic); their text keeps Go key order.
 - argparse usage/errors and Django's global command options.

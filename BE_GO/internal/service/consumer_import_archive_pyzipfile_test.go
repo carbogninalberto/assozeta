@@ -6,10 +6,38 @@ import (
 	"hash/crc32"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/importeffects"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/pyzipfile"
 )
+
+// TestConsumerImportJSONRecursionEdge: the Celery import worker parses with
+// json.loads up to the edge measured for the same worker and parsers in the
+// restore task; one level deeper is Django's RecursionError, which the task's
+// except reports. A data file Django streams with iter_json_array passes one
+// level more, since the file's array level is not parsed recursively.
+func TestConsumerImportJSONRecursionEdge(t *testing.T) {
+	nested := func(depth int) []byte {
+		return []byte(strings.Repeat("[", depth) + strings.Repeat("]", depth))
+	}
+	for _, edge := range []int{consumerImportJSONEdge, consumerImportJSONEdge + 1} {
+		for _, depth := range []int{edge, edge - 1, 2000} {
+			if _, err := consumerImportJSON(nested(depth), edge); err != nil {
+				t.Fatalf("edge %d depth %d: %v", edge, depth, err)
+			}
+		}
+		_, err := consumerImportJSON(nested(edge+1), edge)
+		var django *importeffects.DjangoError
+		if !errors.As(err, &django) || django.Class != "RecursionError" || django.Message != recursionArrayText {
+			t.Fatalf("edge %d: err=%v, want Django's RecursionError", edge, err)
+		}
+		if errors.Is(err, errImportArchive) {
+			t.Fatalf("edge %d: %v, want the Django error, not the archive hand-off", edge, err)
+		}
+	}
+}
 
 // storedZip builds one stored member with the given central/local flags and
 // CRC, so the service tests can exercise crafted archives without depending
@@ -108,7 +136,7 @@ func TestConsumerImportArchiveNotAZip(t *testing.T) {
 		t.Fatalf("is_zipfile = %v, %v", isZip, err)
 	}
 	_, err = consumerImportOpenArchive(path)
-	if !errors.Is(err, errConsumerImportUnsupported) {
+	if !errors.Is(err, errImportArchive) {
 		t.Fatalf("error %v does not match the refusal sentinel", err)
 	}
 	var exc *pyzipfile.Exception
@@ -132,7 +160,7 @@ func TestConsumerImportArchiveMissingMember(t *testing.T) {
 	if exc.Text != `"There is no item named 'nope' in the archive"` {
 		t.Fatalf("text = %q", exc.Text)
 	}
-	if !errors.Is(err, errConsumerImportUnsupported) {
+	if !errors.Is(err, errImportArchive) {
 		t.Fatal("missing member must still match the refusal sentinel")
 	}
 }

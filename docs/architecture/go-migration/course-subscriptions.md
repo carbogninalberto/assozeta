@@ -62,7 +62,7 @@ not an object is the 500 page). `excel` answers `{"file": <base64 workbook>, "fi
 columns as rows up to `Tags` and `Carnet` (the per-tag columns belong to the workbook), titled `<title> (giorno stampa
 DD/MM/YYYY)` with the rebound title, in a file always named `[DD/MM/YYYY] Iscrizioni corsi filtrate - <denomination>.pdf`.
 A member without phone or e-mail is an empty cell. A carnet's `lessons_left` stored as a list or a dict renders as
-Python's `str()` of it (keys in stored order); a PDF input `pdfexport` does not reproduce is pdfexport's own refusal.
+Python's `str()` of it (keys in stored order); since long tail PR 5 `pdfexport` draws every PDF input.
 
 Row order. None of the export's statements has an ORDER BY: the rows, the tags and the carnets come in the order the database
 returns them. Go sends the statements the ORM compiles, with the same tables, join types, predicates and selected columns
@@ -257,4 +257,4 @@ t4l3: 168 cases (`router-course-subscriptions` 45, shared seed). GREEN CI `t4l3-
 
 Long tail PR 3 (agent C): a carnet's `lessons_left` stored as a list or a dict renders as Python's
 `str()` (keys in stored order) in the export; a PDF input `pdfexport` does not reproduce is
-pdfexport's own refusal.
+pdfexport's own refusal (none since long tail PR 5).

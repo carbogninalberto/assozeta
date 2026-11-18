@@ -12,6 +12,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/celery"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pystr"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/stripeapi"
 )
 
@@ -79,6 +80,26 @@ type StripeRequest struct {
 }
 
 func (s *StripeRoutes) at() time.Time { return s.now().UTC().Truncate(time.Microsecond) }
+
+// The stripe views' measured edges (stripe-routes.txt): the payment's own load
+// in the view, auditlog's refetch of the stored row before the UPDATE, and the
+// audit index resolver's reload. mark_payment_as_paid loads the row again
+// inside its transaction at the view's own edge.
+var (
+	stripePayJSONEdges         = paymentJSONEdges{Load: 9935, Save: 9933, Index: 9925}
+	stripeMultiplePayJSONEdges = paymentJSONEdges{Load: 9932, Save: 9932, Index: 9926}
+	stripeWebhookJSONEdges     = paymentJSONEdges{Load: 9936, Save: 9934, Index: 9926}
+)
+
+// stripe_multiple_pay loads each listed payment three times before its save:
+// the serializer (to_representation), the loop's get(payment_id=...) and
+// mark_payment_as_paid's lock. The serializer runs first, so it is the binding
+// load of the route (stripeMultiplePayJSONEdges.Load); the later two edges are
+// higher.
+const (
+	stripeMultiplePayRenderEdge = 9932
+	stripeMultiplePayLookupEdge = 9934
+)
 
 func stripeQuery(identity domain.ResolvedIdentity, group *string) domain.StripePaymentQuery {
 	return domain.StripePaymentQuery{Scope: paymentStateScope(identity), Group: group}
@@ -344,7 +365,7 @@ func stripeObjectRepr(object domain.RequestObject) string {
 	if id, ok := lookupString(object, "id"); ok {
 		parts = append(parts, "id="+id)
 	}
-	return "<" + strings.Join(parts, " ") + " at 0x0000000000000000> JSON: " + string(dto.PythonJSONDumpsSortedIndent(object, 2))
+	return "<" + strings.Join(parts, " ") + " at " + pystr.ObjectAddress + "> JSON: " + string(dto.PythonJSONDumpsSortedIndent(object, 2))
 }
 
 // lookupString is self.get(key) when it is a str.
@@ -426,6 +447,10 @@ func (s *StripeRoutes) mark(ctx context.Context, identity domain.ResolvedIdentit
 	if row == nil {
 		return domain.ErrStripeServer
 	}
+	// mark_payment_as_paid locks the row before it writes anything.
+	if err = paymentJSONLoadFailure(ctx, &row.PaymentSaveRow); err != nil {
+		return err
+	}
 	invoice, err := tx.SupplierInvoice(ctx, row.ID)
 	if err != nil {
 		return err
@@ -452,11 +477,11 @@ func (s *StripeRoutes) mark(ctx context.Context, identity domain.ResolvedIdentit
 		if !ok {
 			return domain.ErrServerComposition
 		}
-		if err := stripeMarkPaid(ctx, flow, row.PaymentSaveRow, row.PaymentDate, stripeAuditContext(identity, request.Audit), now); err != nil {
+		if err := stripeMarkPaid(ctx, flow, &row.PaymentSaveRow, row.PaymentDate, stripeAuditContext(identity, request.Audit), now); err != nil {
 			return err
 		}
 		if row.InvoiceID == nil {
-			if notification, err = s.stripePaidFlow(ctx, flow, identity, request, row.ID, now, withRequest); err != nil {
+			if notification, err = s.stripePaidFlow(ctx, flow, identity, request, row.ID, now, withRequest, &row.PaymentSaveRow); err != nil {
 				return err
 			}
 		}
@@ -495,7 +520,7 @@ func (s *StripeRoutes) saveIntent(ctx context.Context, identity domain.ResolvedI
 	payment.IntentID = intent
 	if len(changes) > 0 {
 		if err := tx.AppendPaymentAudit(ctx, domain.PaymentArchiveEvent{PaymentID: payment.ID, AssociationID: payment.AssociationID,
-			Changes: changes, Context: stripeAuditContext(identity, request.Audit), At: s.at()}); err != nil {
+			Changes: changes, IndexFallback: payment.IndexFallback, Context: stripeAuditContext(identity, request.Audit), At: s.at()}); err != nil {
 			return err
 		}
 	}
@@ -510,6 +535,7 @@ var stripeMarked = map[string]any{"data": map[string]any{"msg": "payment mark as
 
 // Pay follows stripe_pay.
 func (s *StripeRoutes) Pay(ctx context.Context, identity domain.ResolvedIdentity, request StripeRequest, rawID string, intentQuery *string) (map[string]any, error) {
+	ctx = withPaymentJSONEdges(ctx, stripePayJSONEdges)
 	group := supplierGroup(request.GroupHeader)
 	query := stripeQuery(identity, group)
 	var stripe *stripeapi.Session
@@ -519,6 +545,9 @@ func (s *StripeRoutes) Pay(ctx context.Context, identity domain.ResolvedIdentity
 			return nil, err
 		}
 		if payment != nil {
+			if err = paymentJSONLoadFailure(ctx, &payment.PaymentSaveRow); err != nil {
+				return nil, err
+			}
 			available, err := s.online(ctx, payment)
 			if err != nil {
 				return nil, err
@@ -562,6 +591,11 @@ func (s *StripeRoutes) Pay(ctx context.Context, identity domain.ResolvedIdentity
 						if err != nil {
 							return nil, err
 						}
+						if row != nil {
+							if err = paymentJSONLoadFailure(ctx, &row.PaymentSaveRow); err != nil {
+								return nil, err
+							}
+						}
 						if row != nil && !row.Paid {
 							if err := s.mark(ctx, identity, request, row, true); err != nil {
 								return nil, err
@@ -589,6 +623,9 @@ func (s *StripeRoutes) Pay(ctx context.Context, identity domain.ResolvedIdentity
 	}
 	if payment == nil {
 		return nil, ErrStripePaymentNotFound
+	}
+	if err = paymentJSONLoadFailure(ctx, &payment.PaymentSaveRow); err != nil {
+		return nil, err
 	}
 	available, err := s.online(ctx, payment)
 	if err != nil {
@@ -701,6 +738,7 @@ func paymentIDLookup(value any) (string, error) {
 
 // MultiplePay follows stripe_multiple_pay.
 func (s *StripeRoutes) MultiplePay(ctx context.Context, identity domain.ResolvedIdentity, request StripeRequest, body any) (map[string]any, error) {
+	ctx = withPaymentJSONEdges(ctx, stripeMultiplePayJSONEdges)
 	data, ok := body.(domain.RequestObject)
 	if !ok {
 		return nil, domain.ErrStripeServer
@@ -768,6 +806,13 @@ func (s *StripeRoutes) MultiplePay(ctx context.Context, identity domain.Resolved
 	for _, id := range found {
 		render, err := tx.RenderPayment(ctx, id, group)
 		if err != nil {
+			tx.Rollback()
+			return nil, err
+		}
+		// PaymentSerializer(payments, many=True).data: the view's first load of
+		// each listed row.
+		loaded := &render.Payment.InvoicePartyPayment
+		if err = paymentJSONTextsFailureAt(loaded.MetaPaymentCategories, loaded.Meta, loaded.Course, stripeMultiplePayRenderEdge); err != nil {
 			tx.Rollback()
 			return nil, err
 		}
@@ -863,6 +908,10 @@ func (s *StripeRoutes) MultiplePay(ctx context.Context, identity domain.Resolved
 			if payment == nil {
 				return domain.ErrStripeServer
 			}
+			// The loop's get(payment_id=...) after the serializer.
+			if err = paymentJSONTextsFailureAt(payment.MetaPaymentCategories, payment.Meta, payment.Course, stripeMultiplePayLookupEdge); err != nil {
+				return err
+			}
 			available, err := s.online(ctx, payment)
 			if err != nil {
 				return err
@@ -918,6 +967,10 @@ func (s *StripeRoutes) MultiplePay(ctx context.Context, identity domain.Resolved
 		}
 		if payment == nil {
 			return nil, domain.ErrStripeServer
+		}
+		// The unpaid_payments queryset, loaded after the marks.
+		if err = paymentJSONTextsFailureAt(payment.MetaPaymentCategories, payment.Meta, payment.Course, stripeMultiplePayLookupEdge); err != nil {
+			return nil, err
 		}
 		unpaid = append(unpaid, payment)
 		amounts = append(amounts, payment.Amount)
@@ -995,6 +1048,7 @@ func (s *StripeRoutes) WebhookSecret(ctx context.Context) (string, error) {
 // event type. charge.succeeded marks the unpaid payments holding the intent;
 // its exceptions are swallowed (200).
 func (s *StripeRoutes) Webhook(ctx context.Context, identity domain.ResolvedIdentity, request StripeRequest, payload []byte, signature *string) error {
+	ctx = withPaymentJSONEdges(ctx, stripeWebhookJSONEdges)
 	secret, err := s.WebhookSecret(ctx)
 	if err != nil {
 		return err
@@ -1025,6 +1079,14 @@ func (s *StripeRoutes) Webhook(ctx context.Context, identity domain.ResolvedIden
 	}
 	if len(payments) == 0 {
 		return ErrStripeWebhookRejected
+	}
+	// The view iterates the matching rows before it marks any of them; a stored
+	// value past the load's edge raises inside the view's try and answers 200.
+	for index := range payments {
+		if err = paymentJSONLoadFailure(ctx, &payments[index].PaymentSaveRow); err != nil {
+			s.log.Error("stripe webhook: charge.succeeded", "error", err)
+			return nil
+		}
 	}
 	for index := range payments {
 		if payments[index].Paid {

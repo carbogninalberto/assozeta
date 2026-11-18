@@ -2,14 +2,12 @@ package pdfexport
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strconv"
 	"strings"
 	"unicode"
 
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/pystr"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pyunicodedata"
 )
 
 // _FK_TEXT, _FK_IMG, _FK_APPEND and _FK_BREAK of paragraph.py.
@@ -41,7 +39,7 @@ type usLine struct {
 	hasColor           bool
 	color              color
 	width, offset, gap usVal
-	rise               float64
+	rise               pyNum
 	mult               int
 }
 
@@ -56,9 +54,9 @@ type linkRef struct {
 // words instead of text.
 type frag struct {
 	font      *font
-	size      float64
+	size      pyNum
 	color     color
-	rise      float64
+	rise      pyNum
 	text      string
 	words     []*simpleWord
 	hasWords  bool
@@ -69,6 +67,10 @@ type frag struct {
 	back      *color
 	nobr      bool
 	img       *imgDefn
+	anchor    *anchorDefn
+	// seqOversized marks the pad of a <seq template> field wider than
+	// seqExactWidth: breakCJK refuses it.
+	seqOversized bool
 }
 
 func (f *frag) clone() *frag {
@@ -76,12 +78,52 @@ func (f *frag) clone() *frag {
 	return &copied
 }
 
+// usLineEq is == of two us_lines tuples: the numbers, the kind, the colour,
+// the width, offset and gap values and the repeats.
+func usLineEq(a, b usLine) bool {
+	return a.n == b.n && a.kind == b.kind && a.hasColor == b.hasColor && colorEq(a.color, b.color) &&
+		usValEq(a.width, b.width) && usValEq(a.offset, b.offset) && a.rise == b.rise && a.mult == b.mult &&
+		usValEq(a.gap, b.gap)
+}
+
+// usValEq is == of two underline width, offset or gap values.
+func usValEq(a, b usVal) bool {
+	return a.str == b.str && a.num == b.num && a.isNum == b.isNum
+}
+
+// usLineKey is a key that separates the us_lines tuples usLineEq tells apart.
+func usLineKey(l usLine) string {
+	var out strings.Builder
+	out.WriteString(strconv.Itoa(l.n))
+	out.WriteByte('|')
+	out.WriteString(strconv.Itoa(l.kind))
+	out.WriteByte('|')
+	if l.hasColor {
+		out.WriteString(colorKey(l.color))
+	}
+	out.WriteByte('|')
+	out.WriteString(usValKey(l.width))
+	out.WriteString(usValKey(l.offset))
+	out.WriteString(fpStr(l.rise.float()))
+	out.WriteByte('|')
+	out.WriteString(strconv.Itoa(l.mult))
+	out.WriteString(usValKey(l.gap))
+	return out.String()
+}
+
+func usValKey(v usVal) string {
+	if v.isNum {
+		return "n" + fpStr(v.num) + ";"
+	}
+	return "s" + v.str + ";"
+}
+
 func sameUS(a, b []usLine) bool {
 	if len(a) != len(b) {
 		return false
 	}
 	for i := range a {
-		if a[i] != b[i] {
+		if !usLineEq(a[i], b[i]) {
 			return false
 		}
 	}
@@ -104,31 +146,44 @@ func sameBack(a, b *color) bool {
 	if a == nil || b == nil {
 		return a == b
 	}
-	return *a == *b
+	return colorEq(*a, *b)
 }
 
 // sameFrag is rl_accel.sameFrag.
 func sameFrag(f, g *frag) bool {
-	if f.img != nil || g.img != nil || f.lineBreak || g.lineBreak {
+	if f.img != nil || g.img != nil || f.anchor != nil || g.anchor != nil || f.lineBreak || g.lineBreak {
 		return false
 	}
-	return f.font == g.font && f.size == g.size && f.color == g.color && f.rise == g.rise && sameUS(f.us, g.us) &&
+	return f.font == g.font && numEqual(f.size, g.size) && colorEq(f.color, g.color) && numEqual(f.rise, g.rise) && sameUS(f.us, g.us) &&
 		sameLinks(f.links, g.links) && sameBack(f.back, g.back) && f.nobr == g.nobr
 }
 
 // dim is the width or height of an image: points, or a percentage (of the
 // paragraph width for a width, of the font size for a height).
 type dim struct {
-	v   float64
+	v   pyNum
 	pct bool
 }
 
-// norm is imgNormV: a percentage of nv, computed as _PCT.normalizedValue.
-func (d dim) norm(nv float64) float64 {
+// truthy is bool(dim): a percentage is the float a _PCT is, otherwise the
+// number itself.
+func (d dim) truthy() bool {
 	if d.pct {
-		return (nv * d.v) * 0.01
+		return d.v.float()*0.01 != 0
 	}
-	return d.v
+	return d.v.truthy()
+}
+
+// norm is imgNormV: a percentage of nv, computed as _PCT.normalizedValue.
+func (d dim) norm(nv pyNum) float64 {
+	if d.pct {
+		product, ok := numMul(nv, d.v)
+		if !ok {
+			panic(paraFailure{"int too large to convert to float"})
+		}
+		return product.float() * 0.01
+	}
+	return d.v.float()
 }
 
 // valign is the vertical alignment of an image: a name, a percentage of the
@@ -136,28 +191,32 @@ func (d dim) norm(nv float64) float64 {
 type valign struct {
 	name string
 	pct  bool
-	v    float64
+	v    pyNum
 }
 
 // imgVRange is imgVRange: the bottom and top offsets from the baseline.
-func imgVRange(h float64, va valign, fontSize float64) (float64, float64) {
+func imgVRange(h float64, va valign, fontSize pyNum) (float64, float64) {
 	var iyo float64
 	switch {
 	case va.pct:
-		iyo = (fontSize * va.v) * 0.01
+		product, ok := numMul(fontSize, va.v)
+		if !ok {
+			panic(paraFailure{"int too large to convert to float"})
+		}
+		iyo = product.float() * 0.01
 	case va.name == "":
-		iyo = va.v
+		iyo = va.v.float()
 	case va.name == "baseline":
 	case va.name == "text-top" || va.name == "top":
-		iyo = fontSize - h
+		iyo = fontSize.float() - h
 	case va.name == "middle":
-		iyo = fontSize - (1.2*fontSize+h)*0.5
+		iyo = fontSize.float() - (1.2*fontSize.float()+h)*0.5
 	case va.name == "text-bottom" || va.name == "bottom":
-		iyo = fontSize - 1.2*fontSize
+		iyo = fontSize.float() - 1.2*fontSize.float()
 	case va.name == "super":
-		iyo = 0.5 * fontSize
+		iyo = 0.5 * fontSize.float()
 	case va.name == "sub":
-		iyo = -0.5 * fontSize
+		iyo = -0.5 * fontSize.float()
 	}
 	return iyo, iyo + h
 }
@@ -165,10 +224,13 @@ func imgVRange(h float64, va valign, fontSize float64) (float64, float64) {
 // imgDefn is the cbDefn of an <img> fragment.
 type imgDefn struct {
 	src           string
-	image         *jpegImage
+	image         *imageReader
 	width, height dim
 	valign        valign
 }
+
+// anchorDefn is the cbDefn of an <a name="..."/> fragment.
+type anchorDefn struct{ name string }
 
 // imgAttrs are the attributes of an <img> tag, inherited by the tags inside.
 type imgAttrs struct {
@@ -177,16 +239,116 @@ type imgAttrs struct {
 	valign        *valign
 }
 
-// paraPorted are the tags whose effect on the layout is reproduced. Every
-// other tag ParaParser has a handler for is refused; tags it does not know
-// are ignored, as it does.
-var paraPorted = map[string]bool{"para": true, "b": true, "strong": true, "i": true, "em": true, "br": true, "u": true, "strike": true,
-	"font": true, "span": true, "nobr": true, "sup": true, "super": true, "sub": true, "link": true, "a": true, "img": true,
-	"greek": true, "unichar": true, "index": true, "ondraw": true, "seq": true, "seqchain": true, "seqdefault": true,
-	"seqformat": true, "seqreset": true}
+// bulletAttrNames is _bulletAttrMap: the attributes of <bullet>.
+var bulletAttrNames = func() map[string]paraAttrSpec {
+	table := []struct {
+		keys []string
+		attr string
+		kind paraAttrKind
+	}{
+		{[]string{"font", "face"}, "bulletFontName", pkStr},
+		{[]string{"size", "fontsize"}, "bulletFontSize", pkNum},
+		{[]string{"offsety"}, "bulletOffsetY", pkNum},
+		{[]string{"indent"}, "bulletIndent", pkNum},
+		{[]string{"color", "fg"}, "bulletColor", pkColor},
+		{[]string{"anchor"}, "bulletAnchor", pkAnchor},
+	}
+	names := map[string]paraAttrSpec{}
+	for _, entry := range table {
+		spec := paraAttrSpec{entry.attr, entry.kind}
+		for _, key := range entry.keys {
+			names[key] = spec
+		}
+		names[entry.attr] = spec
+		names[strings.ToLower(entry.attr)] = spec
+	}
+	return names
+}()
 
-// paraNotPortedTags are the tags of ParaParser that are still refused.
-var paraNotPortedTags = map[string]bool{"bullet": true, "link": true}
+// startBullet is start_bullet: the text of the <bullet> tag is kept apart
+// from the paragraph, in the bullet style the tag's attributes set.
+func (p *paraParser) startBullet(attrs []htmlAttr) bool {
+	if len(p.stack) == 0 {
+		return p.fail("tag outside the paragraph")
+	}
+	if p.hasBullet {
+		return p.syntaxError("only one <bullet> tag allowed")
+	}
+	p.hasBullet = true
+	style := p.style
+	order, values := dedupeAttrs(attrs)
+	for _, name := range order {
+		attr := values[name]
+		spec, ok := bulletAttrNames[name]
+		if !ok {
+			return p.fail("invalid attribute name %s", name)
+		}
+		if !attr.has {
+			return p.fail("invalid value for %s", name)
+		}
+		value := attr.value
+		switch spec.kind {
+		case pkNum:
+			n, st := paraNum(value, true)
+			if st != attrOK {
+				return p.attrFailure("invalid number")
+			}
+			failed := false
+			apply := func(current *pyNum) {
+				if n.rel {
+					sum, ok := numAdd(*current, n.v)
+					if !ok {
+						failed = true
+						return
+					}
+					*current = sum
+				} else {
+					*current = n.v
+				}
+			}
+			switch spec.attr {
+			case "bulletFontSize":
+				apply(&style.bulletFontSize)
+			case "bulletOffsetY":
+				apply(&style.bulletOffsetY)
+			default:
+				apply(&style.bulletIndent)
+			}
+			if failed {
+				return p.fail("int too large to convert to float")
+			}
+		case pkColor:
+			c, st := paraColor(value)
+			if st != attrOK {
+				return p.attrFailure("Invalid color value " + pyReprStr(value))
+			}
+			style.bulletColor = &c
+		case pkAnchor:
+			lower := pythonLower(value)
+			switch lower {
+			case "start", "middle", "end", "numeric":
+				style.bulletAnchor = lower
+			default:
+				return p.fail("illegal bullet anchor %s", pythonAscii(value))
+			}
+		default:
+			style.bulletFontName = value
+		}
+	}
+	p.style = style
+	family, bold, italic, st := ps2tt(style.bulletFontName)
+	if st != attrOK {
+		return p.attrFailure("error with style name")
+	}
+	col := style.textColor
+	if style.bulletColor != nil {
+		col = *style.bulletColor
+	}
+	p.stack = append(p.stack, paraTag{tag: "bullet", family: family, bold: bold, italic: italic, size: style.bulletFontSize,
+		color: col, isBullet: true})
+	p.nlines, p.nlinks = 0, 0
+	return true
+}
 
 // lineAttr is what <u> and <strike> (and <link underline>) set on a frag.
 type lineAttr struct {
@@ -207,10 +369,10 @@ type paraTag struct {
 	tag          string
 	family       string
 	bold, italic bool
-	size         float64
+	size         pyNum
 	color        color
 	back         *color
-	rise         float64
+	rise         pyNum
 	us           []usLine
 	links        []linkRef
 	line         [2]lineAttr
@@ -219,8 +381,10 @@ type paraTag struct {
 	greek        bool // <greek>: the fragment's text goes through the Symbol font
 	imgAttrs     *imgAttrs
 	selfClosing  string
+	anchorName   string
 	lineBreak    bool
 	img          *imgDefn
+	isBullet     bool // a <bullet> tag: its text goes to the bullet, not the paragraph
 }
 
 // paraParser is reportlab's ParaParser.
@@ -229,9 +393,12 @@ type paraParser struct {
 	started bool
 	stack   []paraTag
 	frags   []*frag
-	err     error
-	nlines  int
-	nlinks  int
+	// bulletFrags is bFragList: the fragments of the <bullet> tag.
+	bulletFrags []*frag
+	hasBullet   bool
+	err         error
+	nlines      int
+	nlinks      int
 }
 
 func (p *paraParser) fail(format string, args ...any) bool {
@@ -249,19 +416,8 @@ func (p *paraParser) syntaxError(format string, args ...any) bool {
 	return false
 }
 
-func (p *paraParser) unsupported() bool {
-	if p.err == nil {
-		p.err = ErrNotPorted
-	}
-	return false
-}
-
-// attrFailure answers the status of a conversion: an exception of reportlab
-// or an input that is not ported.
-func (p *paraParser) attrFailure(st attrStatus, what string) bool {
-	if st == attrUnsupported {
-		return p.unsupported()
-	}
+// attrFailure fails the paragraph with the text of a conversion's exception.
+func (p *paraParser) attrFailure(what string) bool {
 	return p.fail("%s", what)
 }
 
@@ -352,14 +508,20 @@ func (p *paraParser) usValue(raw string, has bool) (*usVal, bool) {
 			strings.Contains("PLfF", pyTrimASCII(s[idx+1:])) {
 			v, st := pyFloat(s[:idx])
 			if st != attrOK {
-				p.attrFailure(st, "invalid value for a line attribute")
+				p.attrFailure("invalid value for a line attribute")
 				return nil, false
 			}
 			if pyTrimASCII(s[idx+1:]) == "P" {
-				return &usVal{num: p.stack[0].size * v, isNum: true}, true
+				scale := p.stack[0].size
+				product, ok := numMul(scale, numFloat(v))
+				if !ok {
+					p.fail("invalid value for a line attribute")
+					return nil, false
+				}
+				return &usVal{num: product.float(), isNum: true}, true
 			}
 		} else if _, st := paraNum(s, false); st != attrOK {
-			p.attrFailure(st, "invalid value for a line attribute")
+			p.attrFailure("invalid value for a line attribute")
 			return nil, false
 		}
 	}
@@ -382,7 +544,7 @@ func (p *paraParser) lineAttributes(attrs []htmlAttr, specs map[string]attrSpec,
 			}
 			c, st := paraColor(attr.value)
 			if st != attrOK {
-				return p.attrFailure(st, "invalid color")
+				return p.attrFailure("Invalid color value " + pyReprStr(attr.value))
 			}
 			into.hasColor, into.color = true, c
 		case attrUSWidth, attrUSOffset, attrUSGap:
@@ -464,10 +626,11 @@ func (p *paraParser) startTag(tag string, attrs []htmlAttr) bool {
 		}
 		family, bold, italic, st := ps2tt(p.style.fontName)
 		if st != attrOK {
-			return p.attrFailure(st, "error with style name")
+			return p.attrFailure("error with style name")
 		}
 		p.started = true
-		p.stack = []paraTag{{tag: "para", family: family, bold: bold, italic: italic, size: p.style.fontSize, color: p.style.textColor}}
+		p.stack = []paraTag{{tag: "para", family: family, bold: bold, italic: italic, size: p.style.fontSize, rise: numInt(0),
+			color: p.style.textColor}}
 		p.nlines, p.nlinks = 0, 0
 		return true
 	case "b", "strong":
@@ -531,6 +694,8 @@ func (p *paraParser) startTag(tag string, attrs []htmlAttr) bool {
 		return p.startSeqFormat(attrs)
 	case "img":
 		return p.startImg(attrs)
+	case "bullet":
+		return p.startBullet(attrs)
 	case "link":
 		return p.startLink(tag, attrs)
 	case "a":
@@ -540,9 +705,6 @@ func (p *paraParser) startTag(tag string, attrs []htmlAttr) bool {
 			}
 		}
 		return p.startLink(tag, attrs)
-	}
-	if paraNotPortedTags[tag] && !paraPorted[tag] {
-		return p.unsupported()
 	}
 	return true
 }
@@ -567,7 +729,7 @@ func (p *paraParser) startFont(tag string, attrs []htmlAttr) bool {
 			}
 			n, st := paraNum(attr.value, true)
 			if st != attrOK {
-				return p.attrFailure(st, "invalid size")
+				return p.attrFailure("invalid size")
 			}
 			size = &n
 		case "face", "name", "fontname":
@@ -576,7 +738,7 @@ func (p *paraParser) startFont(tag string, attrs []htmlAttr) bool {
 			}
 			fam, b, i, st := ps2tt(attr.value)
 			if st != attrOK {
-				return p.attrFailure(st, "invalid font name")
+				return p.attrFailure("invalid font name")
 			}
 			family, bold, italic, hasFamily = fam, b, i, true
 		case "fg", "color", "textcolor", "backcolor", "bgcolor":
@@ -585,7 +747,7 @@ func (p *paraParser) startFont(tag string, attrs []htmlAttr) bool {
 			}
 			c, st := paraColor(attr.value)
 			if st != attrOK {
-				return p.attrFailure(st, "invalid color")
+				return p.attrFailure("Invalid color value " + pyReprStr(attr.value))
 			}
 			if name == "backcolor" || name == "bgcolor" {
 				backColor = &c
@@ -600,14 +762,20 @@ func (p *paraParser) startFont(tag string, attrs []htmlAttr) bool {
 			return p.fail("invalid attribute name %s", name)
 		}
 	}
-	return p.push(tag, func(t *paraTag) {
-		if size != nil {
-			if size.rel {
-				t.size += size.v
-			} else {
-				t.size = size.v
+	newSize := p.stack[len(p.stack)-1].size
+	if size != nil {
+		if size.rel {
+			sum, ok := numAdd(newSize, size.v)
+			if !ok {
+				return p.fail("int too large to convert to float")
 			}
+			newSize = sum
+		} else {
+			newSize = size.v
 		}
+	}
+	return p.push(tag, func(t *paraTag) {
+		t.size = newSize
 		if hasFamily {
 			t.family, t.bold, t.italic = family, bold, italic
 		}
@@ -635,8 +803,8 @@ func (p *paraParser) startSup(tag string, attrs []htmlAttr) bool {
 		if !attr.has {
 			return p.fail("invalid value for %s", name)
 		}
-		if _, st := fontSizeNormalize(supSpec{attr.value, true}, p.stack[len(p.stack)-1].size, 0); st != attrOK {
-			return p.attrFailure(st, "invalid value for "+name)
+		if _, st := fontSizeNormalize(supSpec{attr.value, true}, p.stack[len(p.stack)-1].size, numInt(0)); st != attrOK {
+			return p.attrFailure("invalid value for " + name)
 		}
 		if name == "rise" {
 			rise = supSpec{attr.value, true}
@@ -659,19 +827,36 @@ func (p *paraParser) startSup(tag string, attrs []htmlAttr) bool {
 		return false
 	}
 	top := &p.stack[len(p.stack)-1]
-	fraction := 0.5
-	delta, st := fontSizeNormalize(top.supr, top.size, top.size*fraction)
+	const fraction = 0.5
+	defRise, ok := numMul(top.size, numFloat(fraction))
+	if !ok {
+		return p.fail("int too large to convert to float")
+	}
+	delta, st := fontSizeNormalize(top.supr, top.size, defRise)
 	if st != attrOK {
-		return p.attrFailure(st, "invalid rise")
+		return p.attrFailure("invalid rise")
 	}
 	if name == "sub" {
-		top.rise -= delta
+		if top.rise, ok = numSub(top.rise, delta); !ok {
+			return p.fail("int too large to convert to float")
+		}
 	} else {
-		top.rise += delta
+		if top.rise, ok = numAdd(top.rise, delta); !ok {
+			return p.fail("int too large to convert to float")
+		}
 	}
-	newSize, st := fontSizeNormalize(top.sups, top.size, top.size-min(2, 0.2*top.size))
+	// min(sizeDelta, 0.2*frag.fontSize) of the default size.
+	shrink, mulOK := numMul(numFloat(0.2), top.size)
+	if !mulOK {
+		return p.fail("int too large to convert to float")
+	}
+	defSize, ok := numSub(top.size, numMin(numInt(2), shrink))
+	if !ok {
+		return p.fail("int too large to convert to float")
+	}
+	newSize, st := fontSizeNormalize(top.sups, top.size, defSize)
 	if st != attrOK {
-		return p.attrFailure(st, "invalid size")
+		return p.attrFailure("invalid size")
 	}
 	top.size = newSize
 	return true
@@ -687,12 +872,27 @@ func (p *paraParser) endTag(tag string) bool {
 		return ok
 	case "img":
 		return p.endImg()
+	case "bullet":
+		_, ok := p.pop("bullet")
+		return ok
 	case "link":
 		_, ok := p.pop("link")
 		return ok
 	case "a":
 		if len(p.stack) > 0 && p.stack[len(p.stack)-1].selfClosing != "" {
-			return p.fail("Parser failure in <a/>")
+			top := p.stack[len(p.stack)-1]
+			if top.selfClosing != "anchor" || top.anchorName == "" {
+				return p.fail("Parser failure in <a/>")
+			}
+			// end_a makes the fragment of the bookmark: handle_data('') of the
+			// tag's own style, with the cbDefn of an anchor.
+			fontName, st := top.fontName()
+			if st != attrOK {
+				return p.attrFailure("Can't find font family " + top.family)
+			}
+			p.frags = append(p.frags, &frag{font: fontsByName[fontName], size: top.size, color: top.color, rise: top.rise, text: "",
+				lineBreak: top.lineBreak, us: top.us, links: top.links, back: top.back, nobr: top.nobr,
+				anchor: &anchorDefn{name: top.anchorName}})
 		}
 		_, ok := p.pop("a")
 		return ok
@@ -718,9 +918,6 @@ func (p *paraParser) endTag(tag string) bool {
 		}
 		_, ok := p.pop("br")
 		return ok
-	}
-	if paraNotPortedTags[tag] && !paraPorted[tag] {
-		return p.unsupported()
 	}
 	return true
 }
@@ -815,27 +1012,40 @@ func ps2tt(name string) (family string, bold, italic bool, st attrStatus) {
 
 // fontSizeNormalize is paraparser.fontSizeNormalize for a rise or size
 // string of <sup> and <sub>.
-func fontSizeNormalize(spec supSpec, size, def float64) (float64, attrStatus) {
+func fontSizeNormalize(spec supSpec, size, def pyNum) (pyNum, attrStatus) {
 	if !spec.set {
 		return def, attrOK
 	}
 	raw := spec.raw
 	if strings.HasSuffix(raw, "%") {
-		v, st := paraConvNum(raw[:len(raw)-1], 1, true)
+		v, st := paraConvNum(raw[:len(raw)-1], unitNone, true)
 		if st != attrOK {
-			return 0, st
+			return pyNum{}, st
 		}
 		if v.rel {
-			return 0, attrInvalid // a tuple times 0.01
+			return pyNum{}, attrInvalid // a tuple times 0.01
 		}
-		return (size * v.v) * 0.01, attrOK
+		// _PCT.normalizedValue(size): _PCT(size*_value) is (size*_value)*0.01.
+		product, ok := numMul(size, v.v)
+		if !ok {
+			return pyNum{}, attrInvalid
+		}
+		value, ok := product.toFloat()
+		if !ok {
+			return pyNum{}, attrInvalid
+		}
+		return numFloat(value * 0.01), attrOK
 	}
 	v, st := paraNum(raw, true)
 	if st != attrOK {
-		return 0, st
+		return pyNum{}, st
 	}
 	if v.rel {
-		return v.v + size, attrOK
+		sum, ok := numAdd(v.v, size)
+		if !ok {
+			return pyNum{}, attrInvalid
+		}
+		return sum, attrOK
 	}
 	return v.v, attrOK
 }
@@ -857,7 +1067,7 @@ func (p *paraParser) data(text string) bool {
 	}
 	fontName, st := top.fontName()
 	if st != attrOK {
-		return p.attrFailure(st, "Can't find font family "+top.family)
+		return p.attrFailure("Can't find font family " + top.family)
 	}
 	if top.greek {
 		// _handle_data: <greek> draws in Symbol, its bytes standing for the Greek letters.
@@ -871,8 +1081,14 @@ func (p *paraParser) data(text string) bool {
 		text = converted
 	}
 	back := top.back
-	p.frags = append(p.frags, &frag{font: fontsByName[fontName], size: top.size, color: top.color, rise: top.rise, text: text,
-		lineBreak: top.lineBreak, us: top.us, links: top.links, back: back, nobr: top.nobr, img: top.img})
+	f := &frag{font: fontsByName[fontName], size: top.size, color: top.color, rise: top.rise, text: text,
+		lineBreak: top.lineBreak, us: top.us, links: top.links, back: back, nobr: top.nobr, img: top.img}
+	if top.isBullet {
+		// handle_data keeps the text of a <bullet> in bFragList.
+		p.bulletFrags = append(p.bulletFrags, f)
+		return true
+	}
+	p.frags = append(p.frags, f)
 	return true
 }
 
@@ -967,15 +1183,16 @@ func paraIsPara(text []rune) bool {
 }
 
 // parseParagraph is ParaParser.parse of cleaned text in a Helvetica style:
-// the fragments, ErrLayout where reportlab raises, ErrNotPorted for the tags
-// above.
-func parseParagraph(text string, style paraStyle) ([]*frag, paraStyle, error) {
+// the fragments, the bullet fragments of a <bullet> tag, and ErrLayout where
+// reportlab raises.
+func parseParagraph(text string, style paraStyle) ([]*frag, *paraBullet, paraStyle, error) {
+	style = style.withDefaults()
 	base := fontsByName[style.fontName]
 	if !strings.ContainsAny(text, "<&") {
 		if text == "" {
-			return nil, style, nil
+			return nil, nil, style, nil
 		}
-		return []*frag{{font: base, size: style.fontSize, color: style.textColor, text: text}}, style, nil
+		return []*frag{{font: base, size: style.fontSize, color: style.textColor, text: text}}, nil, style, nil
 	}
 	if !style.linesSet {
 		style.lines, style.linesSet = defaultLines(), true
@@ -986,26 +1203,29 @@ func parseParagraph(text string, style paraStyle) ([]*frag, paraStyle, error) {
 		raw = []rune("<para>" + text + "</para>")
 	}
 	ok := (&htmlParser{raw: raw, events: parser}).feed()
-	if errors.Is(parser.err, ErrNotPorted) {
-		return nil, style, parser.err
-	}
 	if parser.err != nil {
 		// ParaParser.parse: annotateException wraps a failure of feed() with the
 		// paragraph text; _complete_parse reports the tags left open.
-		return nil, style, layoutFailure("\nparagraph text " + pythonAscii(string(raw)) + " caused exception " + parser.err.Error())
+		return nil, nil, style, layoutFailure("\nparagraph text " + pythonAscii(string(raw)) + " caused exception " + parser.err.Error())
 	}
 	if len(parser.stack) > 0 {
 		tags := make([]string, 0, len(parser.stack))
 		for i := len(parser.stack) - 1; i >= 0; i-- {
 			tags = append(tags, parser.stack[i].tag)
 		}
-		return nil, style, layoutFailure(fmt.Sprintf("paraparser: syntax error: parse ended with %d unclosed tags\n %s",
+		return nil, nil, style, layoutFailure(fmt.Sprintf("paraparser: syntax error: parse ended with %d unclosed tags\n %s",
 			len(tags), strings.Join(tags, "\n ")))
 	}
 	if !ok || !parser.started {
-		return nil, style, fmt.Errorf("%w: paragraph markup", ErrLayout)
+		return nil, nil, style, fmt.Errorf("%w: paragraph markup", ErrLayout)
 	}
-	return parser.frags, parser.style, nil
+	// _setup: textTransformFrags(frags, style) and the bullet of the markup.
+	transformFrags(parser.frags, parser.style)
+	var bullet *paraBullet
+	if len(parser.bulletFrags) > 0 {
+		bullet = &paraBullet{frags: parser.bulletFrags}
+	}
+	return parser.frags, bullet, parser.style, nil
 }
 
 // pythonAscii is ascii() of a str: repr() with every non-ASCII character
@@ -1046,8 +1266,9 @@ func padHex(value, width int) string {
 	return text
 }
 
-// startAnchor is the <a name="..."/> variant of start_a: the attribute errors
-// of reportlab, then a refusal (the bookmark it makes is not ported).
+// startAnchor is start_a with a name attribute: the anchor variant of the tag,
+// which allows only the name attribute, requires it non-blank and closes the
+// tag empty (end_a makes its fragment).
 func (p *paraParser) startAnchor(attrs []htmlAttr) bool {
 	if len(p.stack) == 0 {
 		return p.fail("tag outside the paragraph")
@@ -1055,35 +1276,45 @@ func (p *paraParser) startAnchor(attrs []htmlAttr) bool {
 	order, values := dedupeAttrs(attrs)
 	for _, name := range order {
 		if name != "name" {
-			return p.fail("invalid attribute name %s", name)
+			// getAttributes(_anchorAttrMap) names the attributes it knows.
+			return p.syntaxError("invalid attribute name %s attrMap=%s", name, "['name']")
 		}
 	}
 	name := values["name"]
-	if !name.has || pyTrimUnicode(name.value) == "" {
+	if !name.has {
+		return p.fail("'NoneType' object has no attribute 'strip'")
+	}
+	if pyTrimUnicode(name.value) == "" {
 		return p.syntaxError("<a name=\"...\"/> anchor variant requires non-blank name")
 	}
-	return p.unsupported()
+	if len(values) > 1 {
+		return p.syntaxError("<a name=\"...\"/> anchor variant only allows name attribute")
+	}
+	return p.push("a", func(t *paraTag) {
+		t.selfClosing, t.anchorName = "anchor", name.value
+	})
 }
 
-// startUnichar is start_unichar: the character of the code attribute is data
-// of the paragraph, then the tag has to close empty. A name attribute needs
-// Python's unicodedata table and stays refused.
+// startUnichar is start_unichar: the character of the name or code attribute
+// is data of the paragraph, then the tag has to close empty.
 func (p *paraParser) startUnichar(attrs []htmlAttr) bool {
 	if len(p.stack) == 0 {
 		return p.fail("tag outside the paragraph")
 	}
 	order, values := dedupeAttrs(attrs)
 	code, hasCode := values["code"]
-	if _, hasName := values["name"]; hasName {
-		for _, name := range order {
-			if name != "name" && name != "code" {
-				return p.fail("invalid attribute name %s", name)
-			}
-		}
+	if name, hasName := values["name"]; hasName {
 		if hasCode {
 			return p.syntaxError("<unichar/> invalid with both name and code attributes")
 		}
-		return p.unsupported() // unicodedata.lookup
+		value, ok := pyunicodedata.Lookup(name.value)
+		if !ok {
+			return p.syntaxError("<unichar/> invalid name attribute\n\"%s\"", pythonAscii(name.value))
+		}
+		if !p.data(value) {
+			return false
+		}
+		return p.push("unichar", func(t *paraTag) { t.selfClosing = "unichar" })
 	}
 	if !hasCode {
 		for _, name := range order {
@@ -1204,34 +1435,29 @@ func pyIntLiteral(text string) (int64, bool) {
 // pyTrimUnicode is str.strip().
 func pyTrimUnicode(s string) string { return strings.Trim(s, pySpaces) }
 
-// linkTarget is what _doLink does with a link: no annotation for an empty
-// one, a URI or GoToR annotation, or ok false for the destinations (#name,
-// document:name) and the targets this package does not write.
-func linkTarget(link string) (kind, target string, ok bool) {
+// linkTarget is _doLink's choice of annotation: none for an empty link, the
+// bookmark of a '#name' or 'document:name' link, a GoToR file action of a
+// 'pdf:' target, a URI action otherwise.
+func linkTarget(link string) (kind, target string) {
 	if link == "" {
-		return "", "", true
-	}
-	for i := 0; i < len(link); i++ {
-		if link[i] < 0x20 || link[i] >= 0x7f {
-			return "", "", false
-		}
+		return "", ""
 	}
 	if strings.HasPrefix(link, "#") {
-		return "", "", false
+		return "internal", link[1:]
 	}
 	scheme := ""
 	if idx := strings.Index(link, ":"); idx >= 0 {
 		scheme = strings.ToLower(link[:idx])
 	}
-	switch {
-	case scheme == "document":
-		return "", "", false
-	case len(scheme) >= 2 && schemeLetters(scheme):
+	if scheme == "document" {
+		return "internal", link[strings.Index(link, ":")+1:]
+	}
+	if len(scheme) >= 2 && schemeLetters(scheme) {
 		if scheme == "pdf" {
-			return "GoToR", link[strings.Index(link, ":")+1:], true
+			return "GoToR", link[strings.Index(link, ":")+1:]
 		}
 	}
-	return "URI", link, true
+	return "URI", link
 }
 
 // schemeLetters is _scheme_re: a letter, then letters, digits, '-' and '+'.
@@ -1257,7 +1483,6 @@ func (p *paraParser) startLink(tag string, attrs []htmlAttr) bool {
 	var hasFamily bool
 	var textColor, backColor *color
 	var href string
-	var hasHref bool
 	underline := false // platypus_link_underline
 	var line lineAttr
 	need := func(attr htmlAttr, what string) bool {
@@ -1275,7 +1500,7 @@ func (p *paraParser) startLink(tag string, attrs []htmlAttr) bool {
 			}
 			n, st := paraNum(attr.value, true)
 			if st != attrOK {
-				return p.attrFailure(st, "invalid size")
+				return p.attrFailure("invalid size")
 			}
 			size = &n
 		case "face", "name", "fontname":
@@ -1289,7 +1514,7 @@ func (p *paraParser) startLink(tag string, attrs []htmlAttr) bool {
 			}
 			c, st := paraColor(attr.value)
 			if st != attrOK {
-				return p.attrFailure(st, "invalid color")
+				return p.attrFailure("Invalid color value " + pyReprStr(attr.value))
 			}
 			switch name {
 			case "backcolor", "bgcolor":
@@ -1303,7 +1528,7 @@ func (p *paraParser) startLink(tag string, attrs []htmlAttr) bool {
 			if !need(attr, "link") {
 				return false
 			}
-			href, hasHref = attr.value, true
+			href = attr.value
 		case "uoffset", "uwidth", "ugap", "underlineoffset", "underlinewidth", "underlinegap":
 			v, ok := p.usValue(attr.value, attr.has)
 			if !ok {
@@ -1323,7 +1548,7 @@ func (p *paraParser) startLink(tag string, attrs []htmlAttr) bool {
 			}
 			b, st := paraBool(attr.value)
 			if st != attrOK {
-				return p.attrFailure(st, "invalid underline")
+				return p.attrFailure("invalid underline")
 			}
 			underline = b
 		case "ukind", "underlinekind":
@@ -1336,11 +1561,6 @@ func (p *paraParser) startLink(tag string, attrs []htmlAttr) bool {
 		}
 	}
 	target := pyTrimUnicode(href)
-	if hasHref {
-		if _, _, ok := linkTarget(target); !ok {
-			return p.unsupported()
-		}
-	}
 	n := p.nlinks
 	p.nlinks++
 	top := p.stack[len(p.stack)-1]
@@ -1360,16 +1580,22 @@ func (p *paraParser) startLink(tag string, attrs []htmlAttr) bool {
 	if line.kind != "" {
 		merged.kind = line.kind
 	}
+	newSize := top.size
+	if size != nil {
+		if size.rel {
+			sum, ok := numAdd(newSize, size.v)
+			if !ok {
+				return p.fail("int too large to convert to float")
+			}
+			newSize = sum
+		} else {
+			newSize = size.v
+		}
+	}
 	if !p.push(tag, func(t *paraTag) {
 		t.links = append(append([]linkRef{}, t.links...), linkRef{n: n, target: target})
 		t.line[lineUnderline] = merged
-		if size != nil {
-			if size.rel {
-				t.size += size.v
-			} else {
-				t.size = size.v
-			}
-		}
+		t.size = newSize
 		if hasFamily {
 			t.family = family
 		}
@@ -1391,7 +1617,7 @@ func (p *paraParser) startLink(tag string, attrs []htmlAttr) bool {
 // numPct is _numpct(s, allowRelative=False): points or a percentage.
 func numPct(s string) (dim, attrStatus) {
 	if strings.HasSuffix(s, "%") {
-		v, st := paraConvNum(s[:len(s)-1], 1, false)
+		v, st := paraConvNum(s[:len(s)-1], unitNone, false)
 		return dim{v: v.v, pct: true}, st
 	}
 	v, st := paraNum(s, false)
@@ -1400,20 +1626,16 @@ func numPct(s string) (dim, attrStatus) {
 
 // valignPct is _valignpc.
 func valignPct(text string) (valign, attrStatus) {
-	s, ok := normalizeDigits(text)
-	if !ok {
-		return valign{}, attrUnsupported
-	}
-	lower := strings.ToLower(s)
+	lower := strings.ToLower(text)
 	switch lower {
 	case "baseline", "sub", "super", "top", "text-top", "middle", "bottom", "text-bottom":
 		return valign{name: lower}, attrOK
 	}
 	if strings.HasSuffix(lower, "%") {
-		n, st := paraConvNum(lower[:len(lower)-1], 1, true)
+		n, st := paraConvNum(lower[:len(lower)-1], unitNone, true)
 		return valign{pct: true, v: n.v}, st
 	}
-	n, st := paraNum(s, true)
+	n, st := paraNum(lower, true)
 	return valign{v: n.v}, st
 }
 
@@ -1439,7 +1661,7 @@ func (p *paraParser) startImg(attrs []htmlAttr) bool {
 			}
 			d, st := numPct(attr.value)
 			if st != attrOK {
-				return p.attrFailure(st, "invalid "+name)
+				return p.attrFailure("invalid " + name)
 			}
 			if name == "width" {
 				img.width = &d
@@ -1452,7 +1674,7 @@ func (p *paraParser) startImg(attrs []htmlAttr) bool {
 			}
 			v, st := valignPct(attr.value)
 			if st != attrOK {
-				return p.attrFailure(st, "invalid valign")
+				return p.attrFailure("invalid valign")
 			}
 			img.valign = &v
 		default:
@@ -1478,32 +1700,20 @@ func (p *paraParser) startImg(attrs []htmlAttr) bool {
 }
 
 // loadImageSource is ImageReader(src): reportlab opens the path or fetches the
-// URL, and reads the image with PIL. The image, an exception of reportlab (ok
-// false), or a refusal: an image this package does not embed as it is (a PNG
-// or another format PIL decodes) keeps its refusal.
-func loadImageSource(src string) (image *jpegImage, st attrStatus) {
+// URL, and reads the image with PIL. It returns the reader, its status and the
+// text of the exception (the caller fails the paragraph with it).
+func loadImageSource(src string) (image *imageReader, st attrStatus, failure string) {
 	// A document is built without a request context (Build takes none), so the
 	// fetch of a URL has none: reportlab's urlopen has no deadline either.
 	data, err := Resource.Open(context.Background(), src)
-	switch {
-	case err != nil:
-		if errors.Is(err, ErrNotPorted) {
-			return nil, attrUnsupported
-		}
-		return nil, attrInvalid
-	case len(data) == 0:
-		// The source opens and PIL raises UnidentifiedImageError, whose text
-		// names the BytesIO object, not "Cannot open resource": handed off
-		// like the other bytes that are not a JPEG.
-		return nil, attrUnsupported
-	case len(data) < 3 || data[0] != 0xFF || data[1] != 0xD8 || data[2] != 0xFF:
-		return nil, attrUnsupported
+	if err != nil {
+		return nil, attrInvalid, resourceFailure(src)
 	}
-	image, err = jpegFromBytes(data)
-	if err != nil || image == nil {
-		return nil, attrUnsupported
+	image, err = newImageReader(data, inlineIdentity(src))
+	if err != nil {
+		return nil, attrInvalid, imageSourceFailure(src, pillowText(err))
 	}
-	return image, attrOK
+	return image, attrOK, ""
 }
 
 // resourceFailure is the text of reportlab's failure to read an image source:
@@ -1512,8 +1722,7 @@ func loadImageSource(src string) (image *jpegImage, st attrStatus) {
 // hex(id(self)), which this port writes as pystr.ObjectAddress (approved
 // divergence X18).
 func resourceFailure(src string) string {
-	name := dto.PythonStringRepr(src)
-	return "\nfileName=" + name + " identity=[ImageReader@" + pystr.ObjectAddress + " filename=" + name + `] Cannot open resource "` + src + `"`
+	return imageSourceFailure(src, `Cannot open resource "`+src+`"`)
 }
 
 // endImg is end_img.
@@ -1522,12 +1731,12 @@ func (p *paraParser) endImg() bool {
 		return p.fail("Parser failure in <img/>")
 	}
 	top := &p.stack[len(p.stack)-1]
-	image, st := loadImageSource(top.imgAttrs.src)
+	image, st, failure := loadImageSource(top.imgAttrs.src)
 	if st != attrOK {
-		return p.attrFailure(st, resourceFailure(top.imgAttrs.src))
+		return p.attrFailure(failure)
 	}
-	defn := &imgDefn{src: top.imgAttrs.src, image: image, width: dim{v: float64(image.width)}, height: dim{v: float64(image.height)},
-		valign: valign{name: "bottom"}}
+	defn := &imgDefn{src: top.imgAttrs.src, image: image, width: dim{v: numInt(int64(image.image.Width))},
+		height: dim{v: numInt(int64(image.image.Height))}, valign: valign{name: "bottom"}}
 	if a := top.imgAttrs; a != nil {
 		if a.width != nil {
 			defn.width = *a.width
@@ -1586,7 +1795,7 @@ var paraAttrNames = func() map[string]paraAttrSpec {
 		{[]string{"boffsety"}, "bulletOffsetY", pkNum}, {[]string{"bindent"}, "bulletIndent", pkNum}, {[]string{"bcolor"}, "bulletColor", pkColor},
 		{[]string{"banchor"}, "bulletAnchor", pkAnchor}, {[]string{"color", "fg"}, "textColor", pkColor},
 		{[]string{"backcolor", "bgcolor", "bg"}, "backColor", pkColor}, {[]string{"justifybreaks"}, "justifyBreaks", pkBool},
-		{[]string{"justifylastline"}, "justifyLastLine", pkInt}, {[]string{"wordwrap"}, "wordWrap", pkWordWrap},
+		{[]string{"justifylastline"}, "justifyLastLine", pkInt}, {[]string{"wordwrap", "wordWrap"}, "wordWrap", pkWordWrap},
 		{[]string{"allowwidows"}, "allowWidows", pkBool}, {[]string{"alloworphans"}, "allowOrphans", pkBool},
 		{[]string{"splitlongwords"}, "splitLongWords", pkBool}, {[]string{"borderwidth"}, "borderWidth", pkNum},
 		{[]string{"borderpadding"}, "borderPadding", pkNum}, {[]string{"bordercolor"}, "borderColor", pkColor},
@@ -1596,9 +1805,11 @@ var paraAttrNames = func() map[string]paraAttrSpec {
 		{[]string{"underlinegap"}, "underlineGap", pkUS}, {[]string{"strikewidth"}, "strikeWidth", pkUS},
 		{[]string{"strikecolor"}, "strikeColor", pkColor}, {[]string{"strikeoffset"}, "strikeOffset", pkUS},
 		{[]string{"strikegap"}, "strikeGap", pkUS}, {[]string{"spaceshrinkage"}, "spaceShrinkage", pkNum},
-		{[]string{"hyphenationlang"}, "hyphenationLang", pkStr}, {[]string{"hyphenationoverflow"}, "hyphenationOverflow", pkBool},
-		{[]string{"hyphenationminwordlength"}, "hyphenationMinWordLength", pkInt}, {[]string{"uriwastereduce"}, "uriWasteReduce", pkNum},
-		{[]string{"embeddedhyphenation"}, "embeddedHyphenation", pkBool},
+		{[]string{"hyphenationLanguage", "hyphenationLang", "hyphenationlang"}, "hyphenationLang", pkStr},
+		{[]string{"hyphenationOverflow", "hyphenationoverflow"}, "hyphenationOverflow", pkBool},
+		{[]string{"hyphenationMinWordLength", "hyphenationminwordlength"}, "hyphenationMinWordLength", pkInt},
+		{[]string{"uriWasteReduce", "uriwastereduce"}, "uriWasteReduce", pkNum},
+		{[]string{"embeddedHyphenation", "embeddedhyphenation"}, "embeddedHyphenation", pkBool},
 	}
 	names := map[string]paraAttrSpec{}
 	for _, entry := range table {
@@ -1612,24 +1823,22 @@ var paraAttrNames = func() map[string]paraAttrSpec {
 }()
 
 // applyParaAttrs is _initial_frag's style change: the style is copied and
-// the attributes of <para> applied. The ones that change the layout in ways
-// this package does not draw (indents, justified lines, borders, bullets,
-// text transforms, hyphenation) are refused once their values are known to
-// be valid.
+// the attributes of <para> applied.
 func (p *paraParser) applyParaAttrs(attrs []htmlAttr) bool {
 	style := p.style
 	if !style.linesSet {
 		style.lines, style.linesSet = defaultLines(), true
 	}
 	order, values := dedupeAttrs(attrs)
-	refused := false
 	for _, name := range order {
 		attr := values[name]
 		spec, ok := paraAttrNames[name]
 		if !ok {
 			return p.fail("invalid attribute name %s", name)
 		}
-		if !attr.has {
+		if !attr.has && spec.kind != pkStr {
+			// A value reportlab reads without a converter is None; every other
+			// one fails its converter.
 			return p.fail("invalid value for %s", name)
 		}
 		value := attr.value
@@ -1638,34 +1847,43 @@ func (p *paraParser) applyParaAttrs(attrs []htmlAttr) bool {
 		case pkNum:
 			n, st := paraNum(value, true)
 			if st != attrOK {
-				return p.attrFailure(st, "invalid number")
+				return p.attrFailure("invalid number")
 			}
 			number = n
 		case pkInt:
-			if _, st := pyInt(value, 10); st != attrOK {
-				return p.attrFailure(st, "invalid integer")
+			n, st := pyInt(value, 10)
+			if st != attrOK {
+				return p.attrFailure("invalid integer")
+			}
+			if spec.attr == "justifyLastLine" {
+				style.justifyLastLine = numWide(n)
+			}
+			if spec.attr == "hyphenationMinWordLength" {
+				style.minWordLength, style.minWordLengthSet = numWide(n), true
 			}
 		case pkBool:
 			b, st := paraBool(value)
 			if st != attrOK {
-				return p.attrFailure(st, "invalid boolean")
+				return p.attrFailure("invalid boolean")
 			}
-			if spec.attr == "allowWidows" {
+			switch spec.attr {
+			case "allowWidows":
 				style.denyWidows = !b
-			}
-			if spec.attr == "allowOrphans" {
+			case "allowOrphans":
 				style.allowOrphans = b
-			}
-			if spec.attr == "splitLongWords" {
+			case "splitLongWords":
 				style.noSplit = !b
-			}
-			if spec.attr == "embeddedHyphenation" && b {
-				refused = true
+			case "justifyBreaks":
+				style.justifyBreaks = b
+			case "embeddedHyphenation":
+				style.embeddedHyphenation = b
+			case "hyphenationOverflow":
+				style.hyphenationOverflow = b
 			}
 		case pkColor:
 			c, st := paraColor(value)
 			if st != attrOK {
-				return p.attrFailure(st, "invalid color")
+				return p.attrFailure("Invalid color value " + pyReprStr(value))
 			}
 			switch spec.attr {
 			case "textColor":
@@ -1677,14 +1895,12 @@ func (p *paraParser) applyParaAttrs(attrs []htmlAttr) bool {
 			case "strikeColor":
 				style.lines[lineStrike].hasColor, style.lines[lineStrike].color = true, c
 			case "bulletColor":
-			default:
-				refused = true
+				style.bulletColor = &c
+			case "borderColor":
+				style.borderColor = &c
 			}
 		case pkAlign:
-			if !asciiOnly(value) {
-				return p.unsupported()
-			}
-			switch strings.ToLower(value) {
+			switch pythonLower(value) {
 			case "left":
 				style.align, style.centred = alignLeft, false
 			case "right":
@@ -1692,51 +1908,57 @@ func (p *paraParser) applyParaAttrs(attrs []htmlAttr) bool {
 			case "center", "centre":
 				style.align, style.centred = alignCenter, false
 			case "justify":
-				refused = true
+				style.align, style.centred = alignJustify, false
 			default:
-				return p.fail("illegal alignment %q", value)
+				return p.fail("illegal alignment %s", pythonAscii(value))
 			}
 		case pkFont:
 			if _, _, _, st := ps2tt(value); st != attrOK {
-				return p.attrFailure(st, "invalid font name")
+				return p.attrFailure("invalid font name")
 			}
 			style.fontName = canonicalFontName(value)
 		case pkAutoLeading:
-			switch strings.ToLower(value) {
-			case "", "off":
-			case "min", "max":
-				refused = true
+			switch lower := strings.ToLower(value); lower {
+			case "", "off", "min", "max":
+				style.autoLeading = lower
 			default:
 				return p.fail("Invalid autoLeading")
 			}
 		case pkWordWrap:
-			switch strings.ToUpper(pyTrimASCII(value)) {
+			switch upper := pythonUpper(pyTrimUnicode(value)); upper {
 			case "":
+				style.wordWrap = ""
 			case "CJK", "RTL", "LTR":
-				refused = true
+				style.wordWrap = upper
 			default:
 				return p.fail("cannot convert wordWrap")
 			}
 		case pkTransform:
-			if !asciiOnly(value) {
-				return p.unsupported()
-			}
-			switch strings.ToLower(pyTrimASCII(value)) {
+			lower := pyTrimUnicode(pythonLower(value))
+			switch lower {
 			case "":
+				style.textTransform = ""
 			case "uppercase", "lowercase", "capitalize", "none":
-				refused = true
+				style.textTransform = lower
 			default:
 				return p.fail("cannot convert textTransform")
 			}
 		case pkAnchor:
-			switch strings.ToLower(value) {
+			lower := pythonLower(value)
+			switch lower {
 			case "start", "middle", "end", "numeric":
+				style.bulletAnchor = lower
 			default:
-				return p.fail("illegal bullet anchor")
+				return p.fail("illegal bullet anchor %s", pythonAscii(value))
 			}
 		case pkStr:
-			if spec.attr == "endDots" && value != "" || spec.attr == "hyphenationLang" && pyTrimUnicode(value) != "" {
-				refused = true
+			switch spec.attr {
+			case "endDots":
+				style.endDots = value
+			case "bulletFontName":
+				style.bulletFontName = value
+			case "hyphenationLang":
+				style.hyphenationLang = value
 			}
 		case pkUS:
 			v, ok := p.usValue(value, true)
@@ -1759,44 +1981,77 @@ func (p *paraParser) applyParaAttrs(attrs []htmlAttr) bool {
 		if spec.kind != pkNum {
 			continue
 		}
-		apply := func(current *float64) {
+		failed := false
+		applyTo := func(current *pyNum) {
 			if number.rel {
-				*current += number.v
+				sum, ok := numAdd(*current, number.v)
+				if !ok {
+					failed = true
+					return
+				}
+				*current = sum
 			} else {
 				*current = number.v
 			}
 		}
 		switch spec.attr {
 		case "fontSize":
-			apply(&style.fontSize)
+			applyTo(&style.fontSize)
 		case "leading":
-			apply(&style.leading)
+			applyTo(&style.leading)
 		case "spaceBefore":
-			apply(&style.spaceBefore)
+			applyTo(&style.spaceBefore)
 		case "spaceAfter":
-			apply(&style.spaceAfter)
+			applyTo(&style.spaceAfter)
 		case "spaceShrinkage":
 			shrink := style.shrinkage()
-			apply(&shrink)
-			style.shrink, style.shrinkSet = shrink, true
-		case "leftIndent", "rightIndent", "firstLineIndent", "borderWidth", "borderPadding", "borderRadius", "uriWasteReduce":
-			current := 0.0
-			apply(&current)
-			if current != 0 {
-				refused = true
+			if number.rel {
+				sum, ok := numAdd(shrink, number.v)
+				if !ok {
+					failed = true
+				} else {
+					shrink = sum
+				}
+			} else {
+				shrink = number.v
 			}
+			style.shrink, style.shrinkSet = shrink, true
+		case "leftIndent":
+			applyTo(&style.leftIndent)
+		case "rightIndent":
+			applyTo(&style.rightIndent)
+		case "firstLineIndent":
+			applyTo(&style.firstLineIndent)
+		case "borderWidth":
+			applyTo(&style.borderWidth)
+		case "borderPadding":
+			applyTo(&style.borderPadding)
+		case "borderRadius":
+			if number.rel && !style.borderRadiusSet {
+				return p.fail("unsupported operand type(s) for +: %s and 'NoneType'", pyNumberType(number.v))
+			}
+			applyTo(&style.borderRadius)
+			style.borderRadiusSet = true
+		case "bulletFontSize":
+			applyTo(&style.bulletFontSize)
+		case "bulletIndent":
+			applyTo(&style.bulletIndent)
+		case "bulletOffsetY":
+			applyTo(&style.bulletOffsetY)
+		case "uriWasteReduce":
+			applyTo(&style.uriWasteReduce)
+		}
+		if failed {
+			return p.fail("int too large to convert to float")
 		}
 	}
 	p.style = style
-	if refused {
-		return p.unsupported()
-	}
 	return true
 }
 
 // canonicalFontName is the style font name of a name ps2tt accepts: the
 // concrete Helvetica, Symbol or ZapfDingbats font (a name for another family
-// is refused before this).
+// is an exception before this).
 func canonicalFontName(name string) string {
 	switch strings.ToLower(name) {
 	case "helvetica":

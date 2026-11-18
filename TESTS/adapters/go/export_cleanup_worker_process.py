@@ -38,7 +38,7 @@ EXPECTED = {
     'native worker reproduces the Django task state, storage and result',
     'unsupported version payload and tenant fail before business effects',
     'a later run on the cleaned state deletes nothing',
-    'a cascading document reference refuses the run before any effect',
+    'a cascading document reference is deleted like Django',
 }
 
 
@@ -119,8 +119,13 @@ class ExportFixture:
             InstructorHours.objects.create(instructor_hours_id=UUID(int=86501), instructor=instructor, hours='1.00',
                 creation_date=now, date=today, document=documents[1])
             if cascade:
-                # A medical certificate cascades from a young export document.
-                MedicalCertificate.objects.create(medical_id=UUID(int=86600), document=documents[0])
+                # A medical certificate cascades from the old export document
+                # the age pass deletes (the committed document deletion graph
+                # declares no PROTECT relation reachable from Document, so
+                # there is no PROTECT seed).
+                MedicalCertificate.objects.create(medical_id=UUID(int=86600), document=documents[1])
+                # creation_date is auto_now_add: pin it, so the delete diff of both runs is the same text.
+                MedicalCertificate.objects.filter(medical_id=UUID(int=86600)).update(creation_date=now)
         return self.snapshot()
 
     def snapshot(self):
@@ -180,15 +185,15 @@ class ExportRehearsal(Rehearsal):
         self.env_file.chmod(0o600)
         self.storage = storage
         self.fixture = ExportFixture(storage)
-        self.django = self.django_expected()
+        self.django = {variant: self.django_expected(variant) for variant in ('main', 'cascade')}
 
-    def django_expected(self):
+    def django_expected(self, variant):
         """Run the actual Django task on a fresh seed against the private MinIO."""
         from contextlib import redirect_stdout
         import io
         from django.test import override_settings
         from application import tasks
-        before = self.fixture.seed()
+        before = self.fixture.seed(cascade=variant == 'cascade')
         storages = {'default': {'BACKEND': 'storages.backends.s3boto3.S3Boto3Storage'},
                     'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'}}
         since = datetime.now(timezone.utc)
@@ -208,7 +213,13 @@ class ExportRehearsal(Rehearsal):
             LOCATION + '/exports/a/young_3.zip', LOCATION + '/exports/a/report.zip',
             LOCATION + '/exports/a/upper.zip', LOCATION + '/exports/c/one.zip', LOCATION + '/exports/c/two.zip'}, after['storage']
         assert [row['document_id'] for row in after['application.InstructorHours']] == [None]
-        assert len(after['auditlog.LogEntry']) == 10 and len(after['application.AuditLogIndex']) == 4
+        assert len(after['application.AuditLogIndex']) == 4
+        if variant == 'cascade':
+            # document.delete() cascaded to the medical certificate.
+            assert after['application.MedicalCertificate'] == [], after['application.MedicalCertificate']
+            assert len(after['auditlog.LogEntry']) == 11, len(after['auditlog.LogEntry'])
+        else:
+            assert len(after['auditlog.LogEntry']) == 10, len(after['auditlog.LogEntry'])
         assert before != after
         return self.fixture.normalized(after, since, until)
 
@@ -233,15 +244,15 @@ class ExportRehearsal(Rehearsal):
         assert self.job(identifier)[:3] == ('completed', 1, ''), self.job(identifier)
         assert self.sql('SELECT result FROM assozeta_go_jobs WHERE id=%s', (identifier,)) == [(result,)]
 
-    def compare(self):
+    def compare(self, variant='main'):
         until = datetime.now(timezone.utc)
         actual = self.fixture.normalized(self.fixture.snapshot(), self.since, until)
-        state = self.django
+        state = self.django[variant]
         if actual != state:
             differences = {label: {'django': state.get(label), 'go': actual.get(label)}
                            for label in set(state) | set(actual) if state.get(label) != actual.get(label)}
-            (self.output / 'difference.json').write_text(json.dumps(differences, indent=1, default=str) + '\n')
-        assert actual == state, 'Go export cleanup differs from the Django task on the same seed'
+            (self.output / f'difference-{variant}.json').write_text(json.dumps(differences, indent=1, default=str) + '\n')
+        assert actual == state, f'Go export cleanup differs from the Django task on the {variant} seed'
 
     def run(self):
         self.command('migrate')
@@ -281,13 +292,12 @@ class ExportRehearsal(Rehearsal):
         assert self.fixture.snapshot() == later
         self.case('a later run on the cleaned state deletes nothing')
 
-        identifier, before = self.seed_job(cascade=True)
+        identifier, _ = self.seed_job(cascade=True)
         process = self.worker()
-        await_condition(lambda: self.job(identifier)[0] == 'failed', 'cascading export reference refused')
+        self.cleanup_complete(identifier, {'deleted_count': 5})
         self.stop(process)
-        assert self.sql('SELECT error_code FROM assozeta_go_jobs WHERE id=%s', (identifier,)) == [('task_failed',)]
-        assert self.fixture.snapshot() == before
-        self.case('a cascading document reference refuses the run before any effect')
+        self.compare('cascade')
+        self.case('a cascading document reference is deleted like Django')
         assert set(self.completed) == EXPECTED and len(self.completed) == len(EXPECTED)
 
 

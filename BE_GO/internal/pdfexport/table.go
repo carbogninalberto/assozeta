@@ -31,7 +31,7 @@ type cellStyle struct {
 
 func defaultCellStyle() *cellStyle {
 	return &cellStyle{fontName: "Helvetica", fontSize: 10, leading: 12, leftPadding: 6, rightPadding: 6, topPadding: 3,
-		bottomPadding: 3, color: color{named: true}, alignment: "LEFT", valign: "BOTTOM"}
+		bottomPadding: 3, color: strColor("black"), alignment: "LEFT", valign: "BOTTOM"}
 }
 
 // tableCell is a str cell (text, None normalized to ”) or a list of flowables.
@@ -430,7 +430,7 @@ func (t *table) draw(c *canvas) {
 		rowpos, rowheight := t.rowPositions[i+1], t.rowHeights[i]
 		for j, cell := range row {
 			s := t.styles[i][j]
-			if current == nil || s.color != current.color {
+			if current == nil || !colorEq(s.color, current.color) {
 				c.setFillColor(s.color)
 			}
 			if current == nil || s.leading != current.leading || s.fontName != current.fontName || s.fontSize != current.fontSize {
@@ -455,18 +455,14 @@ func (t *table) drawBackgrounds(c *canvas) {
 			for i := 0; i < er-sr+1; i++ {
 				col := cmd.colors[i%len(cmd.colors)]
 				h = t.rowHeights[sr+i]
-				if !col.none {
-					c.setFillColor(col)
-					c.fillRect(x0, y0, w, -h)
-				}
+				c.setFillColor(col)
+				c.fillRect(x0, y0, w, -h)
 				y0 -= h
 			}
 			continue
 		}
-		if !cmd.colors[0].none {
-			c.setFillColor(cmd.colors[0])
-			c.fillRect(x0, y0, w, h)
-		}
+		c.setFillColor(cmd.colors[0])
+		c.fillRect(x0, y0, w, h)
 	}
 }
 
@@ -537,7 +533,7 @@ type lineState struct {
 }
 
 func (l *lineState) prep(weight float64, col color) {
-	if l.color == nil || col != *l.color {
+	if l.color == nil || !colorEq(col, *l.color) {
 		l.c.setStrokeColor(col)
 		l.color = &col
 	}

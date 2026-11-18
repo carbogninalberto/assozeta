@@ -32,7 +32,7 @@ KIND = 'auto_delete_orphan_medical_certificate'
 BUCKET = 'orphan-medical'
 LOCATION = 'private'
 SENTINEL = (LOCATION + '/unrelated/keep.txt', b'unrelated object')
-VARIANTS = ('main', 'stop-document', 'stop-outside')
+VARIANTS = ('main', 'stop-document', 'stop-outside', 'cascade', 'far-date')
 EXPECTED = {
     'default Django owner does not claim or delete certificates',
     'native worker reproduces the Django task state and storage',
@@ -40,7 +40,8 @@ EXPECTED = {
     'a file name outside the storage location ends the run like Django',
     'unsupported version payload and tenant fail before business effects',
     'a later run on the cleaned state deletes nothing',
-    'a cascading document reference refuses the run before any effect',
+    'a cascading document reference is deleted like Django',
+    'a creation date outside Python years ends the run before deleting the chunk',
 }
 
 
@@ -77,7 +78,7 @@ class OrphanFixture:
             rows.insert(3, (8, '/fuori.pdf', timedelta(days=2), False, None))
         return rows
 
-    def seed(self, variant='main', *, cascade=False):
+    def seed(self, variant='main'):
         from application.models import Instructor, InstructorHours
         from application.models.user_models import SportAssociationDocumentsArchive
         from application.models.subscriptions_models import MedicalCertificate, Subscription
@@ -121,21 +122,41 @@ class OrphanFixture:
                 creation_date=self.now, date=self.now.date(), document=documents[0])
             Subscription._base_manager.bulk_create([Subscription(subscription_id=U(450), sport_association_id=U(11), user_id=U(2),
                 document_pdf=documents[3], creation_date=self.now)])
-            if cascade:
+            if variant == 'cascade':
+                # An archive row cascades from an orphan certificate's document.
                 SportAssociationDocumentsArchive.objects.create(sport_association_documents_archive_id=U(600),
                     sport_association_id=U(11), document=documents[4], date=self.now.date())
+            if variant == 'far-date':
+                # PostgreSQL stores it and the association import can write it,
+                # but psycopg2 raises while fetching the chunk that holds it.
+                with connection.cursor() as cursor:
+                    cursor.execute("UPDATE docmanager_document SET creation_date = '10000-01-01 00:00:00+00' "
+                                   'WHERE document_id=%s', (U(200),))
         # Fresh planner statistics on every seed: the unordered queryset then gets
         # the same plan, hence the same row order, in the Django and Go runs.
         with connection.cursor() as cursor:
             cursor.execute('ANALYZE application_medicalcertificate, docmanager_document, application_subscription')
-        return self.snapshot()
+        return self.snapshot(text_dates=variant == 'far-date')
 
-    def snapshot(self):
+    def snapshot(self, *, text_dates=False):
         from django.apps import apps
         state = {m._meta.label: list(m._base_manager.order_by('pk').values())
-                 for m in apps.get_models() if m._meta.managed and not m._meta.proxy}
+                 for m in apps.get_models()
+                 if m._meta.managed and not m._meta.proxy and not (text_dates and m._meta.label == 'docmanager.Document')}
+        if text_dates:
+            # psycopg2 cannot convert the far-date row: read the Document table
+            # with its timestamps as text, for the before and after snapshots.
+            state['docmanager.Document'] = self.document_snapshot()
         state['storage'] = self.listing()
         return state
+
+    def document_snapshot(self):
+        from django.db import connection
+        with connection.cursor() as cursor:
+            cursor.execute('''SELECT document_id, creation_date::text, filepath, filename, file_size_bytes, token
+                              FROM docmanager_document ORDER BY document_id''')
+            columns = ('document_id', 'creation_date', 'filepath', 'filename', 'file_size_bytes', 'token')
+            return [dict(zip(columns, row)) for row in cursor.fetchall()]
 
     def listing(self):
         client = self.storage['client']
@@ -210,7 +231,7 @@ class OrphanRehearsal(Rehearsal):
         until = datetime.now(timezone.utc)
         if os.environ.get('ORPHAN_MEDICAL_PROBE'):
             (self.output / f'probe-{variant}.sql').write_text(''.join(q['sql'] + ';\n' for q in queries.captured_queries))
-        after = self.fixture.snapshot()
+        after = self.fixture.snapshot(text_dates=variant == 'far-date')
         self.authored_checks(variant, before, after, printed.getvalue())
         return self.fixture.normalized(after, since, until)
 
@@ -233,9 +254,29 @@ class OrphanRehearsal(Rehearsal):
             # certificate without document stops the loop after the first deletion.
             assert certificates == {1, 2, 3, 4, 5, 6, 7}, sorted(certificates)
             assert len(entries) == 3 and "error 'NoneType' object has no attribute 'creation_date'" in printed, printed
-        else:
+        elif variant == 'stop-outside':
             assert certificates == {1, 2, 3, 4, 5, 6, 8}, (sorted(certificates), printed)
             assert len(entries) == 3 and "error Attempted access to '/fuori.pdf' denied." in printed, printed
+        elif variant == 'cascade':
+            # document.delete() also deletes the archive row that references it;
+            # the archive's live association gives its audit entry an index.
+            assert certificates == {1, 2}, sorted(certificates)
+            assert documents == {1, 2}, sorted(documents)
+            assert after['application.SportAssociationDocumentsArchive'] == []
+            assert len(entries) == 16 and len(after['application.AuditLogIndex']) == 1, \
+                (len(entries), after['application.AuditLogIndex'])
+            assert [row['document_id'] for row in after['application.InstructorHours']] == [None]
+            assert '{}/{}'.format(LOCATION, 'other/path.pdf') in after['storage']
+            assert '[DEPLOY TASK] OK!' in printed
+        else:
+            # Fewer than 50 rows: the whole queryset is one chunk, so psycopg2
+            # raises before yielding any row and nothing is deleted.
+            assert after == before, 'the far-date seed changed'
+            assert certificates == {0, 1, 2, 3, 4, 5, 6}, sorted(certificates)
+            assert documents == {0, 1, 2, 3, 4, 5, 6}, sorted(documents)
+            assert not entries and not after['application.AuditLogIndex']
+            assert after['storage'] == before['storage']
+            assert 'year 10000 is out of range' in printed, printed
 
     def connect(self, name):
         connection = psycopg2.connect(host=str(self.work), user='contracts', dbname=DATABASE,
@@ -243,9 +284,9 @@ class OrphanRehearsal(Rehearsal):
         self.connections.append(connection)
         return connection
 
-    def seed_job(self, *, version=1, payload='{}', association=NIL, variant='main', cascade=False, reseed=True):
+    def seed_job(self, *, version=1, payload='{}', association=NIL, variant='main', reseed=True):
         self.sql('DELETE FROM assozeta_go_jobs')
-        before = self.fixture.seed(variant, cascade=cascade) if reseed else self.fixture.snapshot()
+        before = self.fixture.seed(variant) if reseed else self.fixture.snapshot()
         identifier = str(uuid4())
         self.sql('''INSERT INTO assozeta_go_jobs(id,association_id,kind,version,idempotency_key,payload,max_attempts,available_at)
           VALUES (%s,%s,%s,%s,%s,%s::jsonb,3,clock_timestamp())''', (identifier, association, KIND, version, identifier, payload))
@@ -259,7 +300,7 @@ class OrphanRehearsal(Rehearsal):
 
     def compare(self, variant):
         until = datetime.now(timezone.utc)
-        actual = self.fixture.normalized(self.fixture.snapshot(), self.since, until)
+        actual = self.fixture.normalized(self.fixture.snapshot(text_dates=variant == 'far-date'), self.since, until)
         state = self.django[variant]
         if actual != state:
             differences = {label: {'django': state.get(label), 'go': actual.get(label)}
@@ -281,7 +322,9 @@ class OrphanRehearsal(Rehearsal):
         self.handoff('go')
         labels = {'main': 'native worker reproduces the Django task state and storage',
                   'stop-document': 'a certificate without document ends the run like Django',
-                  'stop-outside': 'a file name outside the storage location ends the run like Django'}
+                  'stop-outside': 'a file name outside the storage location ends the run like Django',
+                  'cascade': 'a cascading document reference is deleted like Django',
+                  'far-date': 'a creation date outside Python years ends the run before deleting the chunk'}
         process = self.worker()
         self.cleanup_complete(identifier)
         self.compare('main')
@@ -310,12 +353,7 @@ class OrphanRehearsal(Rehearsal):
         assert self.fixture.snapshot() == later
         self.case('a later run on the cleaned state deletes nothing')
 
-        identifier, before = self.seed_job(cascade=True)
-        await_condition(lambda: self.job(identifier)[0] == 'failed', 'cascading orphan medical reference refused')
-        assert self.sql('SELECT error_code FROM assozeta_go_jobs WHERE id=%s', (identifier,)) == [('task_failed',)]
-        assert self.fixture.snapshot() == before
         self.stop(process)
-        self.case('a cascading document reference refuses the run before any effect')
         assert set(self.completed) == EXPECTED and len(self.completed) == len(EXPECTED)
 
 

@@ -74,7 +74,7 @@ def carnet(association, title, fee, lessons, *, description=None, public=True, m
 CARNETS = {
     'dieci': carnet(OWN, 'Dieci ingressi', '80.00', 10, description='Pacchetto', meta={'colore': 'blu'}, created='2026-05-01T10:00:00+00:00'),
     'cinque': carnet(OWN, 'Cinque', '45.50', 5, public=False, created='2026-06-01T10:00:00+00:00'),
-    'vuoto': carnet(OWN, None, '0.00', 0, created='2026-07-01T10:00:00+00:00'),
+    'vuoto': carnet(OWN, None, '0.00', 0, meta={'fee': 0.0}, created='2026-07-01T10:00:00+00:00'),
     'foreign': carnet(FOREIGN, 'Estero', '99.00', 3, created='2026-06-15T10:00:00+00:00'),
 }
 
@@ -274,11 +274,18 @@ add('run-override-model-not-whitelisted-error', 'owner', 'POST', RUN('count'), 5
 add('run-override-model-number-error', 'owner', 'POST', RUN('count'), 500, FAILED, body={'overrides': {'model_name': 5}})
 
 
-def run(name, tool, params, status, response, *, overrides=None, actor='owner', group=None):
+def run(name, tool, params, status, response, *, overrides=None, actor='owner', group=None, raw_body=None):
     label = name.replace('-', '_')
     report(label, tool, params)
-    add(f'run-{name}', actor, 'POST', RUN(label), status, response, body={} if overrides is None else {'overrides': overrides},
-        headers=None if group is None else {'X-Group-Id': group})
+    headers = None if group is None else {'X-Group-Id': group}
+    if raw_body is None:
+        add(f'run-{name}', actor, 'POST', RUN(label), status, response, body={} if overrides is None else {'overrides': overrides},
+            headers=headers)
+    else:
+        # A body json.dumps cannot write faithfully: the 1e400 literal (json.dumps writes Infinity,
+        # which DRF's strict parser rejects).
+        add(f'run-{name}', actor, 'POST', RUN(label), status, response, raw_body=raw_body,
+            content_type='application/json', headers=headers)
 
 
 # query_data
@@ -535,6 +542,52 @@ def image_base64(width, height, colour):
     out = io.BytesIO()
     Image.new('RGB', (width, height), colour).save(out, 'JPEG')
     return base64.b64encode(out.getvalue()).decode()
+
+
+def png_data_url():
+    """A 6x4 RGBA PNG with an alpha value per pixel, as a data URL."""
+    import base64
+    import io
+    from PIL import Image
+    image = Image.new('RGBA', (6, 4))
+    for y in range(4):
+        for x in range(6):
+            image.putpixel((x, y), (x * 40, y * 60, 200, 40 + x * 20 + y * 10))
+    out = io.BytesIO()
+    image.save(out, 'PNG')
+    return 'data:image/png;base64,' + base64.b64encode(out.getvalue()).decode()
+
+
+def gif_data_url():
+    """A 4x3 palette GIF with palette entry 1 marked transparent, as a data URL."""
+    import base64
+    import io
+    from PIL import Image
+    image = Image.new('P', (4, 3))
+    image.putpalette([255, 0, 0, 0, 255, 0, 0, 0, 255] + [0] * 759)
+    image.putdata([0, 1, 2] * 4)
+    out = io.BytesIO()
+    image.save(out, 'GIF', transparency=1)
+    return 'data:image/gif;base64,' + base64.b64encode(out.getvalue()).decode()
+
+
+def bmp_data_url():
+    """A 3x2 24-bit BMP, as a data URL."""
+    import base64
+    import io
+    from PIL import Image
+    image = Image.new('RGB', (3, 2))
+    image.putdata([(10, 20, 30), (40, 50, 60), (70, 80, 90), (100, 110, 120), (130, 140, 150), (160, 170, 180)])
+    out = io.BytesIO()
+    image.save(out, 'BMP')
+    return 'data:image/bmp;base64,' + base64.b64encode(out.getvalue()).decode()
+
+
+def truncated_jpeg_data_url(width, height, colour, length=300):
+    """The first ``length`` bytes of a JPEG, as a data URL."""
+    import base64
+    return ('data:image/jpeg;base64,'
+            + base64.b64encode(base64.b64decode(image_base64(width, height, colour))[:length]).decode())
 
 
 MARKUP_LABELS = {'tag_name': 'Nome & <b>tag</b>', 'creation_date': 'A < B &lt;data&gt;'}
@@ -900,6 +953,152 @@ run('attendance-course-id-float-error', 'get_attendance_matrix', {'course_id': 1
 run('attendance-course-name-number', 'get_attendance_matrix', {'course_name': 7}, 400, {'error': 'Nessun corso trovato con nome: 7'})
 # Exporter exceptions: the run answers every one with its 500.
 run('export-multi-sheet-number-error', 'export_multi_sheet', {'sheets': 5}, 500, FAILED)
+# Coerced values after a JSONField: the walk resolves a field name on the same model. fee is a
+# DecimalField, so "0.00" becomes the float 0.0 and is sent as json.dumps(0.0) = "0.0".
+run('query-carnets-meta-key-float', 'query_data', {'model_name': 'Carnet', 'fields': ['title'],
+    'filters': {'meta__fee': '0.00'}, 'order_by': ['title']}, 200, listing(1, [{'title': None}]))
+# creation_date is a DateTimeField: the date value cannot be dumped as JSON, so the run answers its 500.
+run('query-carnets-meta-key-date-error', 'query_data', {'model_name': 'Carnet', 'fields': ['title'],
+    'filters': {'meta__creation_date': '2026-05-01'}}, 500, FAILED)
+# A column label json.loads reads as an infinity (1e400 is past the double range): pandas formats the header with
+# inf_rep ('inf'/'-inf') as a str. The body carries the literal 1e400: json.dumps would write Infinity, which DRF rejects.
+run('export-xlsx-label-infinity', 'export_data', {**NUOTO, 'format': 'xlsx'}, 200,
+    download('Tags.xlsx', XLSX, xlsx={'engine': 'report_sheets', 'sheets': [
+        {'title': 'Tags', 'columns': [F(float('inf')), 'creation_date'], 'rows': [['Nuoto', '15/09/2026 08:30']]}]}),
+    raw_body='{"overrides": {"column_labels": {"tag_name": 1e400}}}')
+run('export-xlsx-label-negative-infinity', 'export_data', {**NUOTO, 'format': 'xlsx'}, 200,
+    download('Tags.xlsx', XLSX, xlsx={'engine': 'report_sheets', 'sheets': [
+        {'title': 'Tags', 'columns': [F(float('-inf')), 'creation_date'], 'rows': [['Nuoto', '15/09/2026 08:30']]}]}),
+    raw_body='{"overrides": {"column_labels": {"tag_name": -1e400}}}')
+
+# Long tail PR 5: reportlab paragraph features the Go writer draws now (appended so the earlier ids stay).
+# <unichar name>: a character by its Unicode name (unicodedata.lookup), in labels and texts; an unknown name fails the export.
+UNICHAR_LABELS = {'tag_name': 'Nome <unichar name="latin small letter e with grave"/>', 'creation_date': 'Data'}
+UNICHAR_BEFORE = 'Prezzo <unichar name="EURO SIGN"/> 10 e <unichar name="LATIN CAPITAL LETTER A WITH MACRON AND GRAVE"/>'
+UNICHAR_AFTER = '<unichar name="BLACK HEART SUIT"/> fine'
+run('export-pdf-unichar-names', 'export_data', {**NUOTO_PDF, 'column_labels': UNICHAR_LABELS, 'text_before': UNICHAR_BEFORE,
+    'text_after': UNICHAR_AFTER}, 200,
+    download('Tags.pdf', 'application/pdf', pdf={**NUOTO_TABLE, 'headers': list(UNICHAR_LABELS.values()), 'text_before': UNICHAR_BEFORE,
+                                                 'text_after': UNICHAR_AFTER}))
+run('export-pdf-unichar-name-error', 'export_data', {**NUOTO_PDF, 'text_before': 'a <unichar name="NOT A NAME"/> b'}, 500, FAILED)
+
+# Anchors and links: a named destination in the text, a link to it within the same page and across pages, an external URL
+# (with a non-ASCII path), a 'document:' reference and a 'pdf:' attachment; a destination no anchor defines fails the export.
+ANCHOR_BEFORE = ('<a name="inizio"/>Inizio del documento, <a href="#fine">vai alla fine</a> e '
+                 '<a href="https://example.test/città?a=1&amp;b=2">sede</a>')
+ANCHOR_AFTER = ('<a name="fine"/>Fine. <a href="document:inizio" color="blue">Torna all\'inizio</a> '
+                '<a href="pdf:allegato.pdf">allegato</a>')
+run('export-pdf-anchor-links', 'export_data', {**NUOTO_PDF, 'text_before': ANCHOR_BEFORE, 'text_after': ANCHOR_AFTER}, 200,
+    download('Tags.pdf', 'application/pdf', pdf={**NUOTO_TABLE, 'text_before': ANCHOR_BEFORE, 'text_after': ANCHOR_AFTER}))
+ANCHOR_LONG = ' '.join(['<a href="#fondo">vai in fondo</a> testo di riempimento del paragrafo'] * 150)
+ANCHOR_LONG_AFTER = '<a name="fondo"/>Fondo <a href="#fondo">qui</a>'
+run('export-pdf-anchor-links-over-pages', 'export_data', {**NUOTO_PDF, 'text_before': ANCHOR_LONG, 'text_after': ANCHOR_LONG_AFTER}, 200,
+    download('Tags.pdf', 'application/pdf', pdf={**NUOTO_TABLE, 'text_before': ANCHOR_LONG, 'text_after': ANCHOR_LONG_AFTER}))
+run('export-pdf-link-undefined-error', 'export_data', {**NUOTO_PDF, 'text_before': 'a <a href="#manca">b</a>'}, 500, FAILED)
+run('export-pdf-anchor-blank-error', 'export_data', {**NUOTO_PDF, 'text_before': 'a <a name=" "/> b'}, 500, FAILED)
+
+# Numbers in tag attributes follow CPython's float() and int(): a padded size, a size with underscores, the Arabic-Indic
+# digit three as a rise and an integer past 2**53 (a hexadecimal size is not a float, so that label is in the failure below).
+NUMBER_LABELS = {'tag_name': '<font size=" 14">Nome</font>'}
+NUMBER_BEFORE = '<font size="1_2">a</font> <sup rise="٣">b</sup> <font size="+9007199254740993">c</font>'
+run('export-pdf-number-forms', 'export_data', {**NUOTO_PDF, 'column_labels': NUMBER_LABELS, 'text_before': NUMBER_BEFORE}, 200,
+    download('Tags.pdf', 'application/pdf', pdf={**NUOTO_TABLE, 'headers': ['<font size=" 14">Nome</font>', 'creation_date'],
+                                                 'text_before': NUMBER_BEFORE}))
+# A hexadecimal size cannot be read as a float, and NaN and infinite values cannot be drawn as sizes or rises.
+run('export-pdf-number-hex-error', 'export_data', {**NUOTO_PDF, 'column_labels': {'creation_date': '<font size="0x0E">Data</font>'}},
+    500, FAILED)
+run('export-pdf-number-nan-error', 'export_data', {**NUOTO_PDF, 'text_before': 'a <font size="nan">b</font>'}, 500, FAILED)
+run('export-pdf-number-inf-error', 'export_data', {**NUOTO_PDF, 'text_before': 'a <sup rise="-inf">b</sup>'}, 500, FAILED)
+
+# An image source that refuses the connection and an empty base64 payload cannot be read as an image.
+run('export-pdf-ftp-image-error', 'export_data', {**NUOTO_PDF, 'text_before': 'a <img src="ftp://127.0.0.1:9/logo.jpg"/> b'}, 500, FAILED)
+run('export-pdf-empty-image-error', 'export_data', {**NUOTO_PDF, 'text_before': 'a <img src="data:image/png;base64,"/> b'}, 500, FAILED)
+
+# Paragraph indents, justification, hanging bullets, borders, the case transform and automatic leading; colours in
+# their CMYK, alpha and tuple forms; and inline PNG, GIF and BMP sources.
+JUSTIFY_TEXT = ('Il corso di nuoto per adulti si tiene il martedì e il giovedì, con <b>istruttori</b> qualificati'
+                ' e <u>vasca</u> riscaldata. ')
+JUSTIFY_BEFORE = '<para align="justify" lindent="18" rindent="12" findent="-9">' + JUSTIFY_TEXT * 6 + '</para>'
+JUSTIFY_AFTER = '<para align="justify" justifylastline="1">Ultima riga giustificata anche se corta.</para>'
+run('export-pdf-para-justify-indent', 'export_data', {**NUOTO_PDF, 'text_before': JUSTIFY_BEFORE, 'text_after': JUSTIFY_AFTER}, 200,
+    download('Tags.pdf', 'application/pdf', pdf={**NUOTO_TABLE, 'text_before': JUSTIFY_BEFORE, 'text_after': JUSTIFY_AFTER}))
+BULLET_TEXT = "Primo punto dell'elenco con testo che va a capo su più righe "
+BULLET_BEFORE = ('<para lindent="18" findent="-10" bfontsize="8" bcolor="#aa0000"><bullet>&bull;</bullet>'
+                 + BULLET_TEXT * 3 + '</para>')
+BULLET_AFTER = '<para banchor="end" bindent="12" lindent="20"><bullet><b>1.</b></bullet>Punto numerato</para>'
+run('export-pdf-para-bullets', 'export_data', {**NUOTO_PDF, 'text_before': BULLET_BEFORE, 'text_after': BULLET_AFTER}, 200,
+    download('Tags.pdf', 'application/pdf', pdf={**NUOTO_TABLE, 'text_before': BULLET_BEFORE, 'text_after': BULLET_AFTER}))
+TRANSFORM_LABELS = {'tag_name': '<para texttransform="uppercase">nome straße</para>',
+                    'creation_date': '<para texttransform="capitalize">data di creazione</para>'}
+TRANSFORM_BEFORE = ('<para borderwidth="1" bordercolor="#005599" borderpadding="4" borderradius="3" backcolor="#eeeeff">'
+                    'Riquadro con bordo arrotondato</para>')
+TRANSFORM_AFTER = '<para enddots="." align="left">Totale</para>'
+run('export-pdf-para-border-transform', 'export_data', {**NUOTO_PDF, 'column_labels': TRANSFORM_LABELS,
+    'text_before': TRANSFORM_BEFORE, 'text_after': TRANSFORM_AFTER}, 200,
+    download('Tags.pdf', 'application/pdf', pdf={**NUOTO_TABLE, 'headers': list(TRANSFORM_LABELS.values()),
+                                                 'text_before': TRANSFORM_BEFORE, 'text_after': TRANSFORM_AFTER}))
+AUTOLEADING_BEFORE = '<para autoleading="max">testo <font size="20">grande</font> e piccolo ' * 4 + '</para>'
+AUTOLEADING_AFTER = '<para autoleading="min">riga <font size="18">alta</font></para>'
+run('export-pdf-para-autoleading', 'export_data', {**NUOTO_PDF, 'text_before': AUTOLEADING_BEFORE,
+    'text_after': AUTOLEADING_AFTER}, 200,
+    download('Tags.pdf', 'application/pdf', pdf={**NUOTO_TABLE, 'text_before': AUTOLEADING_BEFORE, 'text_after': AUTOLEADING_AFTER}))
+run('export-pdf-para-bullet-twice-error', 'export_data', {**NUOTO_PDF, 'text_before': '<bullet>a</bullet><bullet>b</bullet>testo'},
+    500, FAILED)
+
+# Colours: cmyk()/pcmyk(), rgba()/hsla() with alpha, a Blacker() expression, a Python tuple and CMYKColor(); the last
+# paragraph has a transparent background. A tuple of five numbers names no colour of any form.
+COLOUR_BEFORE = ('<font color="cmyk(0,1,0,0)">magenta</font> <font color="rgba(255,0,0,0.5)">semitrasparente</font> '
+                 '<font color="Blacker(red,0.5)">scuro</font> <font backcolor="pcmyk(0,0,100,0)">giallo</font> '
+                 '<u color="hsla(120,100%,50%,0.3)">linea</u> <font color="(0.2,0.4,0.6)">tupla</font> '
+                 '<font color="CMYKColor(0,0,0,1,alpha=0.4)">nero</font>')
+COLOUR_AFTER = '<para backcolor="transparent">sfondo trasparente</para>'
+run('export-pdf-colours-cmyk-alpha', 'export_data', {**NUOTO_PDF, 'text_before': COLOUR_BEFORE, 'text_after': COLOUR_AFTER}, 200,
+    download('Tags.pdf', 'application/pdf', pdf={**NUOTO_TABLE, 'text_before': COLOUR_BEFORE, 'text_after': COLOUR_AFTER}))
+run('export-pdf-colours-expression-error', 'export_data', {**NUOTO_PDF, 'text_before': 'a <font color="(1,2,3,4,5)">b</font>'},
+    500, FAILED)
+
+# Inline images: one PNG drawn twice at two sizes, a GIF with a transparent palette entry and a 24-bit BMP; a payload
+# that is not a PNG and a JPEG cut short are not images.
+INLINE_PNG = png_data_url()
+INLINE_BEFORE = f'logo <img src="{INLINE_PNG}" width="20" height="10"/> fine'
+INLINE_AFTER = (f'<img src="{INLINE_PNG}" width="12" height="8"/> <img src="{INLINE_PNG}" width="8" height="5"/> '
+                f'<img src="{gif_data_url()}" width="8" height="6"/> <img src="{bmp_data_url()}" width="9" height="6"/>')
+run('export-pdf-inline-png', 'export_data', {**NUOTO_PDF, 'text_before': INLINE_BEFORE, 'text_after': INLINE_AFTER}, 200,
+    download('Tags.pdf', 'application/pdf', pdf={**NUOTO_TABLE, 'text_before': INLINE_BEFORE, 'text_after': INLINE_AFTER}))
+run('export-pdf-inline-image-junk-error', 'export_data', {**NUOTO_PDF,
+    'text_before': 'a <img src="data:image/png;base64,AAAAAAAA"/> b'}, 500, FAILED)
+run('export-pdf-inline-truncated-jpeg-error', 'export_data', {**NUOTO_PDF,
+    'text_before': f'a <img src="{truncated_jpeg_data_url(30, 20, (200, 30, 30))}"/> b'}, 500, FAILED)
+
+# Word wrapping: the CJK mode breaks between ideographs and keeps the Latin run together, the RTL mode lays the Hebrew,
+# Arabic and Latin ranges out from the right, and the LTR mode hyphenates the paragraph's hyphenationlang; a bullet and
+# enddots follow the RTL direction.
+CJK_BEFORE = '<para wordwrap="CJK">' + '日本語の文章と中文的句子、句読点。' * 12 + '</para>'
+CJK_AFTER = '<para wordwrap="CJK" align="center">Latin text 混在 mixed（括弧）</para>'
+run('export-pdf-wordwrap-cjk', 'export_data', {**NUOTO_PDF, 'text_before': CJK_BEFORE, 'text_after': CJK_AFTER}, 200,
+    download('Tags.pdf', 'application/pdf', pdf={**NUOTO_TABLE, 'text_before': CJK_BEFORE, 'text_after': CJK_AFTER}))
+RTL_BEFORE = ('<para wordwrap="RTL" align="justify" lindent="10" rindent="20">'
+              + 'testo da destra a sinistra con <b>parole</b> diverse ' * 8 + '</para>')
+RTL_AFTER = '<para wordwrap="RTL" enddots="."><bullet>*</bullet>voce</para>'
+run('export-pdf-wordwrap-rtl', 'export_data', {**NUOTO_PDF, 'text_before': RTL_BEFORE, 'text_after': RTL_AFTER}, 200,
+    download('Tags.pdf', 'application/pdf', pdf={**NUOTO_TABLE, 'text_before': RTL_BEFORE, 'text_after': RTL_AFTER}))
+LTR_BEFORE = '<para wordwrap="LTR" hyphenationlang="it_IT">' + 'precipitevolissimevolmente ' * 10 + '</para>'
+run('export-pdf-wordwrap-ltr-hyphenation-lang', 'export_data', {**NUOTO_PDF, 'text_before': LTR_BEFORE}, 200,
+    download('Tags.pdf', 'application/pdf', pdf={**NUOTO_TABLE, 'text_before': LTR_BEFORE}))
+
+# URI waste reduction in labels and text, with embedded hyphenation in a hyphenated label and text; a truthiness value
+# other than a boolean word is not one (embeddedhyphenation="2" fails the export).
+URI_LABELS = {'tag_name': '<para uriwastereduce="0.3">https://example.test/percorso/molto/lungo/della/risorsa'
+                          '?parametro=valore&amp;altro=1</para>',
+              'creation_date': '<para embeddedhyphenation="1">nuoto-pallanuoto-tuffi-salvamento</para>'}
+URI_BEFORE = ('<para uriwastereduce="0.2" embeddedhyphenation="1">vedi '
+              'https://example.test/a/b/c/d/e/f/g/h/i/l/m/n/o/p e mario.rossi@example.test e '
+              'anti-age-super-long-word-chain</para>')
+run('export-pdf-uri-waste-reduce', 'export_data', {**NUOTO_PDF, 'column_labels': URI_LABELS, 'text_before': URI_BEFORE}, 200,
+    download('Tags.pdf', 'application/pdf', pdf={**NUOTO_TABLE, 'headers': list(URI_LABELS.values()),
+                                                 'text_before': URI_BEFORE}))
+run('export-pdf-embedded-hyphenation-two-error', 'export_data',
+    {**NUOTO_PDF, 'text_before': '<para embeddedhyphenation="2">a-b</para>'}, 500, FAILED)
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Template update and saved report run authored sequence', 'ids': IDS,

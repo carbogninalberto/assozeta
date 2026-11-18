@@ -19,9 +19,23 @@ type PaymentSaveRow struct {
 	Description   *string `db:"description"`
 	Meta          *string `db:"meta"`
 	Course        *string `db:"course"`
+	// MetaPaymentCategories is the third JSON column Payment.save() reads.
+	// Queries select it as text, like meta and course.
+	MetaPaymentCategories *string `db:"meta_payment_categories"`
+	// DescriptionValue is the in-memory description Payment.save()'s hook left
+	// on the instance when the stored meta replacement is not a string (nil:
+	// Description holds the text). Saving the same row again starts from it; a
+	// row read from the database starts nil.
+	DescriptionValue any
 	// CustomAccounts is whether custom_accounts is set; nil unless the query
 	// selects it.
 	CustomAccounts *bool `db:"custom_accounts_set"`
+	// JSONDepth is the deepest nesting (dto.AuditJSONDepth) of the three JSON
+	// texts above, 0 for NULL. The save hook fills it in.
+	JSONDepth int `db:"-"`
+	// IndexFallback is whether the audit index resolver cannot reload this row
+	// and so resolves the association from the log entry instead.
+	IndexFallback bool `db:"-"`
 }
 
 // PaymentLinkedName is get_course_carnet_name's linked row: the first course
@@ -40,6 +54,10 @@ type PaymentArchiveEvent struct {
 	AssociationID string
 	Changes       map[string][2]string
 	Context       LoginAuditContext
+	// IndexFallback is whether the audit index resolver could not reload this
+	// payment row (its JSON is nested past the resolver's measured edge): the
+	// index row then resolves from the log entry instead.
+	IndexFallback bool
 	At            time.Time
 }
 

@@ -47,7 +47,8 @@ func (t *stripePaidCheckTransaction) StripePaidCheckPayments(ctx context.Context
 
 func (t *stripePaidCheckTransaction) LockStripePaidCheck(ctx context.Context, id string) (*domain.StripePaidCheckPayment, error) {
 	var row domain.StripePaidCheckPayment
-	err := t.tx.GetContext(ctx, &row, `SELECT payment_id::text, paid, type, payment_intent_id, invoice_id::text, user_id::text, sport_association_id::text
+	err := t.tx.GetContext(ctx, &row, `SELECT payment_id::text, paid, type, payment_intent_id, invoice_id::text, user_id::text, sport_association_id::text,
+ meta_payment_categories::text AS meta_payment_categories, meta::text AS meta, course::text AS course
  FROM application_payment WHERE NOT deleted AND payment_id=$1::uuid FOR UPDATE`, id)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil

@@ -43,9 +43,6 @@ func TestSubscriptionCreateBornDateAnyJSON(t *testing.T) {
 			if !errors.As(err, &failure) {
 				t.Fatalf("error %v is not the 500 page failure", err)
 			}
-			if errors.Is(err, domain.ErrSubscriptionCreateNotPorted) {
-				t.Fatalf("born_date %v is still refused", test.value)
-			}
 			if test.parsed {
 				if failure.Text != nextKey {
 					t.Fatalf("failure text %q, want the next key error %q", failure.Text, nextKey)

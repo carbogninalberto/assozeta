@@ -32,13 +32,16 @@ sidecar under `/static/`. DRF handles each request in this order:
 4. The view. The document is rendered in the `lang` query language when it is
    non-empty (`translation.override`), else LocaleMiddleware's; `version`
    becomes `info.version = '1.0.0 (<version>)'` and part of the
-   `Content-Disposition` filename. Swagger UI embeds the schema URL (DRF's
-   `reverse` keeps a non-empty `format`; `lang`/`version` are added when sent,
-   even empty) and a masked CSRF token, so it sets the `csrftoken` cookie
-   (an existing well-formed secret is kept, a legacy 64-character one is
-   unmasked) and `Cross-Origin-Opener-Policy: unsafe-none`. Its OPTIONS renders
-   the page template without context and fails (500). Redoc embeds the
-   HTML-escaped schema URL; its OPTIONS renders the template with empty values.
+   `Content-Disposition` filename. The language reaches gettext, which joins it
+   to each locale directory as a path (`os.path.join(localedir, lang,
+   'LC_MESSAGES', 'django.mo')`), so a `/` walks the file system. Swagger UI
+   embeds the schema URL (DRF's `reverse` keeps a non-empty `format`;
+   `lang`/`version` are added when sent, even empty) and a masked CSRF token, so
+   it sets the `csrftoken` cookie (an existing well-formed secret is kept, a
+   legacy 64-character one is unmasked) and `Cross-Origin-Opener-Policy:
+   unsafe-none`. Its OPTIONS renders the page template without context and fails
+   (500). Redoc embeds the HTML-escaped schema URL; its OPTIONS renders the
+   template with empty values.
 
 ## Go implementation
 
@@ -60,6 +63,31 @@ sidecar under `/static/`. DRF handles each request in this order:
   (113 keys, 86 distinct documents) and asserts that candidates sharing a key
   render the same bytes; Go ports `to_locale`, `locale.normalize` (CPython's
   alias table is embedded) and `_expand_lang`.
+- A `lang` with a path separator walks the catalog directories, as the kernel
+  resolves the path gettext joins. The port models the only directories that
+  exist in a catalog directory: the directory itself, `<dir>/<name>` and
+  `<dir>/<name>/LC_MESSAGES` for every catalog name the generator lists.
+  Empty and `.` components stay, `..` goes up one level and leaves the model
+  above the directory (so `xx/../it` selects nothing while `it/../it` and
+  `it/` select Italian), an absolute expansion selects nothing, and the key
+  lists the resolved catalog names in gettext's order (duplicates included,
+  like Django: `it/../it` gives `it,it`). A rewritten encoding never carries a
+  path: `locale._replace_encoding` normalizes it, so `normalizeLocale`'s
+  `.codeset` placeholder cannot move the walk. Two answers stay outside parity
+  because the host file system decides them: a case-insensitive volume finds
+  differently cased directories (`de-ch/../fr` → `de_Ch/../Fr`), and
+  `catalog_key()` names a selection that ends in `..` by that component
+  (`it/LC_MESSAGES/..`), where the port names the resolved catalog (`it`); the
+  document is the same in both.
+- Go uses generated document patches for standard keys and composes other keys
+  message by message. The embedded catalog stores the schema's msgid
+  translations by directory and the exact YAML and JSON line replacements for
+  each field's message values, including interpolated descriptions. Lookup
+  checks the first catalog of each directory in reverse merge order, then
+  checks the remaining catalogs in directory and selection order, then the
+  default language if the key enables it. A missing translation uses the
+  msgid. The generator verifies both formats against Django for standard keys
+  and path chains such as `de/../sr` and `en_GB/../pt_BR`.
 - **Drift check**: `python TESTS/adapters/django/api_schema.py --check` runs in
   the `golang` job of `.github/workflows/go-quality.yml` and fails when the
   embedded data differs from what the current Django code and pinned packages
@@ -79,8 +107,11 @@ unhandled ValueError, the 500 page).
 
 ## Not ported (refused with the 500 page)
 
-- A `lang` containing `/` (gettext then looks up paths relative to the Django
-  host's file layout).
+- (Long tail PR 5) The only refused `lang` is `handoff-probe`, and only in a
+  `handoffprobe` test build (`BE_GO/internal/handler/api_schema_handoff_probe.go`):
+  the production build answers every language, so the django-handoff family
+  keeps one input it can replay to Django. The probe answers the 500 page when
+  nothing replays it, exactly like the removed path-separator hand-off.
 - (Long tail PR 4) Accept parameters in any Python text codec decode through
   `internal/pycodecs` (cases `accept-indent-rfc2231-utf-16-le`, `-cp932`, `-utf-7`),
   and a query whose `1 + count('&')` passes DATA_UPLOAD_MAX_NUMBER_FIELDS is
@@ -99,18 +130,25 @@ the contract compares the set of names.
 ## Evidence
 
 Family `api-schema`: generator `TESTS/fixtures/generate_api_schema_http.py`
-(76 cases), contract `TESTS/contracts/test_api_schema_http.py` (exact bytes,
+(107 cases), contract `TESTS/contracts/test_api_schema_http.py` (exact bytes,
 including Content-Length and HEAD; Content-Type, Allow, Content-Language,
 Content-Disposition, Location, WWW-Authenticate, Cross-Origin-Opener-Policy;
 the Vary set with GZipMiddleware's rule; the CSRF cookie format, expiry and the
 token unmasking to the cookie secret), adapter
 `TESTS/adapters/django/api_schema_http.py` (read family: state unchanged).
 
-- RED (`run api-schema --label red`, Go routes removed): Django 76/76, Go 404.
-- GREEN (`run api-schema --versioned --label green`): 76/76 on native Django,
-  native Go, Caddy `/api/v1` and `/api/v2`.
+- RED (`run api-schema --label red`, Go routes removed; the fixture then had 76
+  cases): Django 76/76, Go 404.
+- GREEN (`run api-schema --versioned --label green`, 76 cases then): 76/76 on
+  native Django, native Go, Caddy `/api/v1` and `/api/v2`.
 - Mutation (`--label fallback-case`): matching the fallback exemption
   (`it`/`en…`) case-insensitively is CAUGHT by `lang-upper-english`.
 - `go test ./internal/apischema`: catalog keys for 289 language codes, the
   YAML/JSON renderer cases (418) and 644 negotiation cases from Django/DRF/PyYAML.
+  `locale_test.go` adds the catalog keys of languages with a path separator and
+  an encoding (computed with the reference Python), `_expand_lang`'s expansions
+  for them, and the encoding placeholder; `api_schema_test.go` serves
+  `it/../it`, `it/`, `en/../it`, `xx/../it`, `/tmp` and `xx/yy` through the
+  handler. `go test -tags handoffprobe ./internal/handler -run Probe` checks the
+  test build's refusal.
 - Re-run with the shared changes: `instance-setup` and `instance-admin` green.

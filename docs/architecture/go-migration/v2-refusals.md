@@ -1667,7 +1667,7 @@ HTTP/WebSocket 53 -> 28, other roots 12 -> 5; whole report 297 -> 263 (HTTP/WebS
 | `agentllm.ErrNotPorted` | 1 -> 0 | **ported**: the base URL as httpx parses and sends it. An `xn--` host is decoded before each request like httpx's `URL.host` (`idna2008.Decode`, idna's own message texts) and a port past int's range is kept as Python keeps it |
 | `pandascsv.ErrUnsupported` | 1 -> 1 | **ported**: platform-built floats (macOS arm64 fused, Linux plain, as xlsxexport), int32 exponents, the bare-CR re-read; narrowed to `ErrBareCRBacktrack` for the re-read cases pandas answers |
 | `pandasxlsx.ErrUnsupported` | 1 -> 1 | every site checked against pandas with a hand-built workbook: raises -> the same 500 (`ErrInvalid`), answers -> **ported**; narrowed to `ErrWorkbookNotPorted` (non-UTF-8 XML, durations past `Timedelta.max`, size bounds, date-index text lookup) |
-| `importeffects.ErrUnsupported` | 2 -> 2 | unchanged (crafted archive values and ZIP shapes) |
+| `importeffects.ErrUnsupported` | 2 -> 0 | **deleted**: the ORM effects handle every JSON value the archive can carry (dict/list, any int, float with NaN/Infinity, bool, null, non-canonical UUID/date/datetime/Decimal texts) and return the Python exception Django raises (`*DjangoError`, stored as the task's `{"success": false, "error": str(e)}`); conditions only plan.json rules out are `ErrPlanUnreachable` (app state). ZIP shapes stay in the service's own `errImportArchive` hand-off. |
 
 Family runs (local, `--versioned`, 4 transports): profile-template 86, stripe-routes 127, payment-reads 293, instance-updates 40, subscription-create 212, instructor-writes 180, subscription-renew 131, subscription-misc 178, document-views 172, balance-sheet 97, course-list 175, saved-reports 32, subscription-reads 364, printing-generate 113, course-subscriptions 168 (cases per transport, all green); associates-draft stops on django-native at `associates-draft-edit-year-below-1000-born-date-server-error` (the fixture is Linux's `strftime`; macOS pads the year), so it is left to CI; on the final code communications-send-email 61, invoice-parties 277, invoice-sync-print 82, invoice-views 93, payment-misc 120, subscription-import-upload 98 and ws-agent 60 (54 through Caddy) are green. instance-outbound passed 130 on four transports before the Django e-mail path change; on the final code three local reruns stopped on a different django-native diagnostics-probe case each (deadline under load 20-50), so it is left to CI.
 
@@ -1758,7 +1758,7 @@ can reuse an existing user as the owner by UUID without checking the role (`impo
 | `service/course_calendar.go` collaborator scope user | app state | refusal (`ErrCalendarNotPorted`) | the import keeps collaborator chains |
 | `service/subscription_create.go`, `subscription_create_quick.go` fee plans that are not a list of objects | app state | refusal (`ErrSubscriptionCreateNotPorted`) | imported plans; `get_subscription_fee`'s `except` falls back to the default fee |
 | `service/subscription_renew.go` collaborator owner with one association | app state | refusal (`ErrSubscriptionCreateNotPorted`) | the import can reuse a collaborator as the owner |
-| `service/orphan_medical_cleanup.go` creation date outside Python's years | app state | refusal (`ErrOrphanMedicalUnsupported`) | the import stores the archived `creation_date` |
+| `service/orphan_medical_cleanup.go` creation date outside Python's years | app state | **ported** | the import stores the archived `creation_date`; psycopg2 raises while fetching its chunk, so the earlier chunks are processed |
 | `repository/instance_release_cache.go` pickles and release dicts Go does not decode | app state | refusal (`ErrReleaseCacheShape`); a value that is not a list stays app state | Django caches GitHub's payload as it is |
 | `smtpsend` text that is no Python str | app state | refusal | raw process environment bytes, which Python decodes with surrogateescape |
 
@@ -1810,7 +1810,7 @@ X11 extension, X12, X13, X14, X17, X18; the X lines are added by the combiner). 
 
 | Site | Sentinel | Native answer | X |
 |---|---|---|---|
-| MCP command `Calls.Execute`, agent `AgentTools.Business` | `service.ErrBusinessMCPNotPorted` (deleted) | `{"error": <closest text>}`: PostgreSQL message with `DETAIL:`/`HINT:`/`CONTEXT:` (no `LINE`/caret, no bound-parameter context), reportlab text with address `0x0000000000000000`, else the generic text | X11, X18 |
+| MCP command `Calls.Execute`, agent `AgentTools.Business` | `service.ErrBusinessMCPNotPorted` (deleted) | `{"error": <closest text>}`: PostgreSQL message with `DETAIL:`/`HINT:`/`CONTEXT:` (no `LINE`/caret, no bound-parameter context), reportlab text with address `pystr.ObjectAddress` (`0x7f0000000000`), else the generic text | X11, X18 |
 | `GuardAcquire` decr race | `repository.ErrAgentCacheShape` (deleted) | the decr worked: concurrent session, close 4002 | X17 |
 | document add / medical upload / persona picture / docmanager stream storage failures | `ErrDocumentWritesNotPorted` (2 sites), `ErrPersonaNotPorted` (3 sites), `domain.ErrDocmanagerNotPorted` (deleted) | botocore's final text (`(reached max retries: 4)`, endpoint connection errors, `CreateMultipartUpload` from 8 MiB) | X12 |
 | `bufferMultipart` bodies over 250 MiB | `ErrDocumentWritesNotPorted` | spooled to a temporary file and read through a read-only mapping | X12 |
@@ -1846,7 +1846,7 @@ output answer with a stable placeholder (`pystr.ObjectAddress`, approved diverge
 | mentions (`document-views.md`) | `other.<key>.<attr...>` over the str object graph (X18 for method reprs) | — | model attributes the resolvers do not carry, the `str` type's layout fields |
 | association transfer (`association-transfer.md`) | import multipart as MultiPartParser; validation for any archive content (`import-validate-*`); CPython's zipfile, zlib, bz2 and lzma reading (`internal/pyzipfile`); deleting a referenced export document with Django's Collector (`delete-owner-referenced-*`) | sentinel deleted | — |
 | data restore (`data-restore.md`, `consumer-restore.md`) | the whole `Archive.validate()`: legacy invoices, tutor normalization and preview counts, any JSON value, member name rules (`upload-archive-*`, 33 new cases); the Celery restore stages a backslash basename with `_` (`backslash-media`) | sentinel deleted; uncaught reader exceptions and `int(inf)` are Django's 500 page; plan kinds outside the converted set | a member nested in the C recursion band (`dto.ErrJSONRecursionBand`); the Celery restore hands off archives `validate()` rewrites |
-| pandas (`subscription-import-upload.md`) | the CSV tokenizer's re-read buffers after a bare CR; xlsx XML encodings, number text, out-of-range durations and datetimes, streamed sheets | `pandascsv.ErrBareCRBacktrack` deleted | xlsx parts over 256 MiB and sheets past 1,048,576 rows (host memory), a duration column label, dateutil default-date text |
+| pandas (`subscription-import-upload.md`) | the CSV tokenizer's re-read buffers after a bare CR; xlsx XML encodings, number text, out-of-range durations and datetimes, streamed sheets | `pandascsv.ErrBareCRBacktrack` deleted | — (long tail 5B answered the last four, see below) |
 
 `refusal_reach.py`, whole report: 50 points, 148 HTTP/WebSocket and 28 other rows before; 44 points, 135 and 29 after.
 Agent B's points: 14 → 7 (61 → 46 HTTP rows, 4 other), plus the shared `dto.ErrJSONRecursionBand` (3 HTTP rows and 1
@@ -1900,7 +1900,8 @@ The three branches were combined on `go-v2only/longtail-pr4` (base `6779988b`). 
   `ErrInvoicePartyNotPorted`, `ErrPaymentReadsNotPorted`, `ErrSubscriptionReadsNotPorted`.
 - `cmd/refusal-reach` now follows a sentinel through `append([]any{sentinel}, args...)` before `fmt.Errorf("%w", ...)`.
   It had missed `errInvoiceViewsNotPorted` (2 HTTP rows: the invoice views' stored meta/course/description values)
-  and an `importeffects.ErrUnsupported` return on the data restore upload (1 HTTP row).
+  and an `importeffects.ErrUnsupported` return on the data restore upload (1 HTTP row). `importeffects.ErrUnsupported`
+  was deleted later (Long tail PR 5): every JSON value is ported and plan-only states are app state.
 - django-handoff takes its refused input from api-schema (`GET schema/?lang=xx/yy`, `handoff.md`).
 
 Review of the AppState and native-answer sites (import-reachability rule): 49 sites sampled across the three agents
@@ -1945,9 +1946,127 @@ result (`accepted-divergences.md`). The other 86 are the ceiling of the `--http`
 | `service.errInvoiceViewsNotPorted` | 2 | 0 | invoice views: stored meta/course/description that is not a dict or str |
 | `dto.ErrAuditNotPorted` | 2 | 0 | instructor hours form JSON nested past 500 (X15 band not measured) |
 | `domain.ErrSendEmailNotPorted`, `smtpsend.ErrEncodedWordCharset` | 2 | 1 | an `idna` encoded word in an address |
-| `importeffects.ErrUnsupported` | 1 | 1 | archive values outside the ORM conversions (`str()` of a JSON container) |
+| `importeffects.ErrUnsupported` | 1 | 0 | **deleted**: archive values reach Django's conversions and exceptions (`str()`/repr of JSON containers included); plan-only branches are `ErrPlanUnreachable`, app state |
 | `domain.ErrInstructorWritesNotPorted` | 1 | 0 | compensation notes: NaN payload, exponent overflow |
 | `domain.ErrPaymentStateNotPorted` | 1 | 0 | paid flow for an athlete owning an imported association |
 | `handler.errAPISchemaUnsupported` | 1 | 0 | `lang` with a path separator (the django-handoff example) |
-| `pandasxlsx.ErrWorkbookNotPorted` | 1 | 0 | parts over 256 MiB, sheets past 1,048,576 rows, a duration column label, dateutil default-date text |
-| `domain.ErrOrphanMedicalUnsupported`, `domain.ErrExportCleanupUnsupported` | 0 | 2 | Document collector cascade in the cleanup jobs |
+| `pandasxlsx.ErrWorkbookNotPorted` (deleted) | 1 -> 0 | 0 | **ported** in long tail 5B: a part over 256 MiB is `pandasxlsx.ErrInvalid` (the host cannot parse it, the xlrd retry raises: the 500 page); a sheet past 1,048,576 rows answers the upload's columns (`ReadColumns`, streamed) or the import's 400 `FAILED_MESSAGE` between the status changes; a duration column label past `Timedelta` renders `str(total_seconds())`; a header text is read once with dateutil's raw fields and pandas' `_DEFAULT_DATETIME` |
+
+## Long tail PR 5, agent A: the reportlab paragraph surface (pdfexport)
+
+`pdfexport.ErrNotPorted` is deleted (16 HTTP/WebSocket rows and 3 command rows before). Every input is drawn as reportlab
+4.2.5 draws it, or fails the export where reportlab raises (`ErrLayout`, which each caller answers as Django answers an
+exception of the export). Details and evidence: `pdf-exports.md`, "Long tail PR 5".
+
+| Site | Condition | Django | Rule | Go |
+|---|---|---|---|---|
+| `paraparser.go` startUnichar | `<unichar name>` | `unicodedata.lookup` | 1 | `internal/pyunicodedata` |
+| `paraparser.go` startAnchor, linkTarget | `<a name>`, `#name`/`document:name`, targets outside printable ASCII | bookmarks, `/Dest` annotations resolved at save, `PDFString` | 1 | ported |
+| `paraattr.go`, `paraparser.go` valignPct | Unicode digits/spaces, `0x`, big ints, inf/nan, `1e400` | CPython `int()`/`float()`; values flow into the layout | 1 | `pyNum`, ported |
+| `paraattr.go` paraColor | CMYK, alpha, separations, `Blacker`/`Whiter`, literal and safe-call expressions | `toColor` | 1 | ported |
+| `paraparser.go` applyParaAttrs, `<bullet>` | indents, justify, bullets, borders, autoLeading, endDots, textTransform, wordWrap, uriWasteReduce, embeddedHyphenation, hyphenationLang | `Paragraph` | 1 | ported |
+| `header.go` loadJPEG, `paraparser.go` loadImageSource | logos and `<img>` that are not JPEG, JPEG Go cannot decode, empty or unknown data | Pillow + `PDFImageXObject`; `cannot identify image file <_io.BytesIO object at 0x...>` | 1; X18 (address); X19 (codec libraries) | `internal/pilimage`, `image.go` |
+| `resource.go` readURL | `ftp:` image source | `urlopen` FTP | 4 (closest answer: the same transfer) | `resource_ftp.go` |
+| `sequencer.go` | template width > 2**20, counters beyond int64 | `%` padding, Python ints | 1; 4 (host memory) | padded to 2**20 spaces (same layout), exact counters |
+
+X18: the reportlab `Table` repr of `service/report_files.go` now uses `pystr.ObjectAddress` (`0x7f0000000000`) like the
+other placeholders. X19 is new (image codec libraries, `accepted-divergences.md`).
+
+## Long tail PR 5, agent B
+
+Rendering, reads and archives: the cleanup jobs' document cascade, the invoice view's stored values, the API schema's
+`lang` with a path separator (with a test-build-only refusal for the django-handoff family), the pandas xlsx reader, the
+document render inputs and the X8 signature overlay, the association import's ORM values (`importeffects`), the payment
+save's stored JSON nesting and the stored-JSON recursion bands (X15, measured per view). Same rules as PR 4; the owner's
+2026-11-16 decision approves the closest Django answer for every rule-4 group. Per-site table:
+`tmp/long-tail/pr5-B.md` (worktree notes).
+
+X15 measurement method (new in this PR): instead of bisecting each route with deep requests, the parity harness's Django
+ran each family's own cases with `JSONField.from_db_value`, psycopg2's `Json` adapter, auditlog's diff, `json.loads`
+and `JSONDecoder.raw_decode` instrumented: at each call the deepest list nesting the same call could parse (or encode)
+was measured in place by bisecting a probe document, together with the order of the SQL writes. One shallow request then
+gives every edge of a route. The numbers move by up to two levels between requests of the same view (interpreter
+specialization): Go uses the value most requests show, and parity cases sit at least four levels from an edge.
+
+| point | ported (cases) | now application state / deleted | left |
+|---|---|---|---|
+| cleanup jobs (`tasks-db-e.md`, `tasks-db-f.md`) | `Document.delete()` through the shared collector graph in `cleanup_old_exports` and `auto_delete_orphan_medical_certificate`; the orphan iterator stops at the chunk holding a timestamp psycopg2 cannot convert (`export_cleanup_worker_process`, `orphan_medical_worker_process` cascade and far-date variants) | `ErrExportCleanupUnsupported`, `ErrOrphanMedicalUnsupported` deleted | — |
+| invoice views (`invoice-views.md`) | non-dict meta/course membership tests, any JSON description, category ids through `UUIDField.to_python`, CPython's compensated `sum()`, `str.lower()`, non-finite floats (21 cases) | `errInvoiceViewsNotPorted` deleted; `numeric(9,2)` text and parser types are application state | — |
+| API schema (`api-schema.md`, `handoff.md`) | `lang` with `/`: gettext's path joins resolved against the catalog directories Django ships (rule 4, closest answer: several languages in one directory answer the first catalog's document) (`lang-path-*`) | `errAPISchemaUnsupported` deleted | the django-handoff family's refusal lives only in the `handoffprobe` test build |
+| pandas xlsx (`subscription-import-upload.md`) | see below | `ErrWorkbookNotPorted` deleted | — |
+| document render (`document-render.md`) | filled form with a line break or a storage name Django rejects (JSON 500 after the Document); a header uvicorn refuses closes the connection after the writes (rule 4, Caddy 502); the X8 overlay drawn as PyMuPDF does, pixel-equal at 100 dpi (`<connection-closed>`, `<form-pdf-visual>` cases) | `ErrDocumentRenderNotPorted` deleted | — |
+| import ORM values (`consumer-restore.md`) | every archive value: Python date/decimal/UUID/int parsing, `str()` of JSON containers, `str(self.__dict__)` (X18 address), save-hook membership tests and their exceptions, race outcomes (X17) | `importeffects.ErrUnsupported` deleted; plan-only branches are `ErrPlanUnreachable` pinned by `TestPlanFacts` | the Celery import's own archive-shape gaps keep `errImportArchive` (other rows) |
+| payment save stored JSON (`payment-writes.md` and the route docs) | every view that saves a Payment reads its stored JSON at its measured edges: Django's RecursionError past them (keeping a non-atomic view's earlier writes), the audit index resolver's fallbacks in the band where its reload raises (`model-hooks.md` "Stored JSON nesting"; payment-archive, payment-state, payment-writes, payment-misc, stripe-routes, invoice-generate, invoice-sync-print, invoice-core, subscription-lifecycle and camps-periods `*-stored-json-*` / `*-depth-band-*` cases) | `errPaymentStoredJSONNested` deleted; the combine deleted `errPaymentStoredJSONWorkerBand` too: the quote-assign and stripe paid-check jobs use the HTTP band of the same parser (X15) | — |
+| stored-JSON recursion band (`instructor-writes.md`, `association-transfer.md`, `data-restore.md`) | each `json.loads` port takes its call site's measured edge (`dto.StoredJSONEdge`, `dto.PythonJSONLoadsEdge`): the instructor report 9940 (the uncaught RecursionError, 500 page), import validation 9942 (`is_valid: false` with the manifest or owner identity error and Python's object/array text), the data-restore upload 9942 and the Celery restore 9975 (the damaged archive) (`report-deep-*`, `import-validate-deep-*`, `upload-archive-manifest-depth-*`) | `dto.ErrJSONRecursionBand` deleted; the combine gave the Celery import the restore worker's measured edge (9975, the same worker and parsers): past it Django's RecursionError | the Celery import's other archive shapes (`errImportArchive`, other row) |
+| mentions (`document-views.md`) | — | — | model attribute paths beyond the resolvers' fields: see "Mentions: decision needed" |
+
+### Long tail PR 5, agent B: mentions, decision needed
+
+`mentions.ErrUnsupported` (7 HTTP rows: the document and invoice views) is left. A mention key is `get_nested_attr`
+over a model instance: `getattr` along any dotted path, then `str()` of the result. The resolvers already answer every
+field the editor offers, `other.<key>` over the whole `str` object graph (X18 addresses) and every first name that is not
+an attribute (the empty text). What is left is the rest of Python's and Django's object model reachable from five model
+instances: every concrete field and relation of each model and of every related model (recursively), reverse managers
+(`application.Payment.None`), bound methods (`<bound method ... of <Model: ...>>`), class attributes, `__dict__`,
+`__class__` and its type attributes, `_meta` (Django's `Options`), `_state` and every attribute of each of those objects.
+The surface is unbounded, and only a hand-written HTML header, footer or template body reaches it (the editor's mention
+list matches the resolvers). Porting it whole is not feasible; a decision is needed between keeping these keys on the
+Django handoff (the 7 rows stay) and an approved native answer for keys past the modelled surface (for example the empty
+text, or the 500 page), which would bring the rows to 0.
+
+Decision (owner, delegated to the combine, 2026-11-17): X20. A path outside the modelled attributes renders as the empty
+text, `get_nested_attr`'s answer for a name `getattr` cannot resolve; `mentions.ErrUnsupported` is deleted (7 HTTP rows
+to 0). In the invoice views `associate.tutor.<field>` reads the view's tutor.
+
+### Long tail PR 5, agent B: the pandas readers' last refusals
+
+`pandasxlsx.ErrWorkbookNotPorted` is deleted; each of its four sites answers natively with its closest Django answer
+(owner decision of 2026-11-16, long-tail rule 4). Evidence: pandas 2.2.3 with openpyxl 3.1.5 on the reference
+interpreter.
+
+| Site | Before | Now |
+|---|---|---|
+| a part openpyxl parses whole above 256 MiB (`reader.go`) | handed off | `pandasxlsx.ErrInvalid`, the 500 page: the host cannot parse the part, and `get_pandas_df_from_file`'s `read_excel(engine="xlrd")` retry raises `ImportError` (xlrd is not installed; `XLRDError` for an xlsx file where it is) |
+| a header cell that is a duration past pandas' `Timedelta` range (106751 days 23:47:16.854775807) | handed off | the `datetime.timedelta` pandas keeps: an object Index, `str()` for the `.<n>` names and `auto_map_columns`, and DRF's `str(obj.total_seconds())` for the response (`'17280000000.0'` for 200000 days) |
+| a header cell past Python's timedelta range (±999999999 days) | handed off | openpyxl's `#VALUE!` error cell: the label is nan, the same 500 page every error-cell header answers |
+| a header text dateutil reads under one default date only | handed off | read once: dateutil's raw fields, pandas' `_DEFAULT_DATETIME` (`datetime(1, 1, 1)`), the finest field set as the resolution, `_find_subsecond_reso` and numpy's ISO nanoseconds (`'30th'`, `'Feb 29'`, `'29 febbraio'`, `'31/02'`, `'Mar 2023'`, `'10:30:00.1234567'` in `pandasxlsx.TestParseDateKey`) |
+| a worksheet with a row numbered past 1,048,576 | handed off | `pandasxlsx.ErrRowsPastBound`: the upload answers the columns by streaming the rows (`ReadColumns`, every cell still parsed), the import the 400 `FAILED_MESSAGE` with `manage_import_status` start and end and nothing written |
+
+Goldens: `go test ./internal/pandasxlsx` accepts every reading pandas makes (6,273 of 6,273 without converters, 11,110
+of 11,110 with the text converter). Parity: `subscription-import-upload-xlsx-duration-label-past-timedelta` and
+`-xlsx-row-past-the-frame-bound` (upload step, columns answer).
+
+## Long tail PR 5, agent C
+
+Request values and MCP: the PR 4 review's handoffs, the subscription, persona, audit, smtpsend, instructor and paid-flow
+points, and the review's findings outside the refusal sites. A state the association import can write is reachable.
+Recursion bands (X15) were measured on the harness's Django (CPython 3.13.16) with probe requests at every depth around
+the edges; D is the nesting `auditJSONDepth` counts. Per-site evidence: the commits of `go-v2only/lt5-C`.
+
+| Site | Condition | Now | Evidence |
+|---|---|---|---|
+| `dto.errMCPJSONCoerced` (deleted) | a JSON key lookup or `has_key` with a value `_coerce_filter_values` coerced (a key named like a field of the same model) | **ported**: `json.dumps` of the int/float; a date/datetime raises `Object of type ... is not JSON serializable` when the statement would run (after a compile error); `has_key` sends the adapted literal | mcp-server-tools new cases; templates-reports `run-query-carnets-meta-key-*` |
+| `dto/mcp_query.go` (finding) | `key__iexact=None` | **fixed**: the isnull lookup on the key transform (`->`) | mcp-server-tools `meta__b__iexact: None` |
+| `service.errReportEnvironmentNotPorted` (deleted) | `MCP_AGENT_MAX_RESULTS`/`QUERY_TIMEOUT` beyond int64, and read through django-environ | **ported** (X14 for the environment): configured texts (proxies, env file), Python ints, exact limit compare, `LIMIT` and `SET statement_timeout` texts as Django sends them; PostgreSQL's rejection of an unusable timeout is the tool's exception | `TestLoadReportSettings*`, `instance_ai_texts_test.go` |
+| `service.errReportLabelNonFinite` (deleted) | an XLSX label float() reads as ±inf; NaN/Infinity labels from agent arguments | **ported**: pandas `na_rep`/`inf_rep` headers | templates-reports `run-export-xlsx-label-*infinity` |
+| `report_files.go`, `stripe_routes.go` (finding) | object address placeholder | `pystr.ObjectAddress` everywhere (X18) | unit tests |
+| `smtpsend.ErrEncodedWordCharset`, `domain.ErrSendEmailNotPorted` (deleted) | an `idna` encoded word in an address | **ported**: CPython's strict idna decode in `pycodecs` (nameprep tables and the Unicode 3.2.0 NFKC CPython runs, generated from CPython, corpora 100%); other render errors are the 500 page | `TestIDNA*`, smtpsend idna tests |
+| `domain.ErrInstructorWritesNotPorted` (deleted) | compensation notes: long NaN payloads, exponents past ±999999999, subnormal products | **ported**: the exact Decimal constructor and the default context's product | instructor-writes `comp-nan-payload-and-subnormal-decimals` |
+| `domain.ErrPaymentStateNotPorted` (deleted) | paid flow of an athlete who owns an imported association | **ported**: runs as for the owner; the notification's `association_id` is null for that role | payment-state new cases |
+| `service.errCourseEnrolmentFormJSONBand` (deleted) | form `multiple_quote` 9929..9942 | **X15 per path**: below 9943 another invalid field answers its 400; the stored value's depth >= 9934 fails the row INSERT (every course type), >= 9929 the quote payment (multiple-quote courses); add rolls back, the router create keeps what ran before | course-enrolment, router-course-subscriptions-create new cases |
+| camps service update (finding) | 'Quota Corso' with a non-text `meta.description` saved twice | **fixed**: the second save of the same instance raises `'<type>' object has no attribute 'lower'` (JSON 500, first save kept) | camps-periods new cases |
+| `dto.ErrAuditNotPorted` (deleted) | instructor hours update form `courses`/`calculation_data` nested past 500 | **X15**: read deep; D >= 9942 the validation 500 (nothing written, whatever the other fields); a stored value of depth 9939..9941 keeps the pre_save entry with the row unchanged (500); a digit-limit integer is the field's 400 | instructor-hours new cases |
+| `service.ErrPersonaNotPorted` (deleted) | router `POST /personas/`: base64 picture, HTML form body | **ported**: picture before the field validation, stored before the row (with `tutors_data` the TypeError follows the upload); DRF's form rules | router-personas, personas-writes new cases |
+| `domain.ErrSubscriptionCreateNotPorted` (deleted) | `saveAssociateByID`: non-canonical `associate_id`, the tax-code `IntegrityError` fallbacks, a tutor naming the minor's own key; renew: the 400 text of Python exceptions, a collaborator association account, the course loop | **ported**: the sent key spelling kept on the instance and in auditlog's entries, the savepoint fallbacks, psycopg2's IntegrityError text; renew answers `str(e)` of the raise sites it reaches and runs a collaborator's renewal in its connected account's association. Long tail PR 5 (R): the psycopg2/decimal texts are rebuilt too: the existence check's statement (psycopg2's literals) runs in a savepoint and the server error becomes libpq's message with its LINE/caret window; a dict or NUL fails like psycopg2; type/role outside smallint, non-finite amounts and membership prices, a NaN course fee carry their texts | subscription-create, subscription-renew new cases (`renew-existence-*`, `renew-type-*`, `renew-role-*`, `renew-membership-plan-fee-*`, `approve-draft-database-errors-swallowed`) |
+| Stripe paid flow, payment add (finding, as camps) | one instance saved twice | the in-memory description carried | stripe-routes webhook case |
+| release cache (finding, X14) | values Django caches from the feed | **read and served** (generic values, pickled back, DRF rendering) | instance-outbound `releases-*-values` |
+| saved reports / MCP timeout (follow-up) | an unusable statement timeout with an answer Django gives after its SET | the SET is sent at QueryBuilder's own points | `report_timeout_check_test.go` |
+
+Refusal reach (`refusal_reach.py`, base `82e1bde7`): this agent's eleven points are gone (47 rows: 34 HTTP/WebSocket not
+accepted, 4 `/ws/agent/` rows accepted under X11, 9 other). `--http`: 86 -> 52 on this branch alone; the three
+`/ws/agent/` accepted lines of the removed reasons are dropped from `accepted-divergences.md`.
+
+Measurement note (X15): the probes sent the same form bodies to native Django at every depth around each edge (coarse
+points, then bisection), recording status, body shape, created rows and audit entries. The bands depend on the stored
+value's depth for the dumps and on the text's depth for DRF's validation (a repeated key's overwritten deep text
+validates deep and stores shallow); the parity cases keep a margin and the edges are Go tests.

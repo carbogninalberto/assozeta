@@ -159,9 +159,9 @@ resources reader (`repository.ScopedResources.Available`, kind `subscription`; `
 - In the POST export of subscription/list: workbook inputs `xlsxexport` does not reproduce (`xlsx-exports.md`).
 
 Since long-tail PR 3 (agent B) the unwired sessions, tasks and athlete list are application state
-(`ErrServerComposition`, the 500 page): the server always wires them. So are a persona lookup error, an unknown order
-column and the export's `pdfexport` refusal (`ErrSubscriptionReadsUnreachable`): the lookup never fails, the columns are
-whitelisted and the export table has no header, logo or paragraphs. `?` ordering stays a refusal.
+(`ErrServerComposition`, the 500 page): the server always wires them. So are a persona lookup error and an unknown order
+column (`ErrSubscriptionReadsUnreachable`): the lookup never fails and the columns are whitelisted. Since long tail PR 5
+`pdfexport` refuses no input. `?` ordering stays a refusal.
 
 Not authored: the Italian invalid-page message, two course subscriptions of one course in info, a null end date in the
 archived renewal lookup.

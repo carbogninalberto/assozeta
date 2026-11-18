@@ -293,6 +293,32 @@ def prepare(source):
     return {'started': time.time()}
 
 
+@contextmanager
+def deep_payment_rows(case):
+    """Open the case's stored Payment JSON (owner decision X15 band).
+
+    The harness's state snapshot decodes every jsonb column and walks it in
+    Python, which cannot hold a value this deep: the value exists only around
+    the case's request, and the column is restored afterwards.
+    """
+    setup = case.get('setup') or {}
+    label = setup.get('payment')
+    if not label:
+        yield
+        return
+    from django.db import connection
+    payment = contract.load_source()['payments'][label]['id']
+    with connection.cursor() as cursor:
+        cursor.execute('SELECT course::text FROM application_payment WHERE payment_id=%s', [payment])
+        stored = cursor.fetchone()[0]
+        cursor.execute('UPDATE application_payment SET course=%s::jsonb WHERE payment_id=%s', [setup['course'], payment])
+    try:
+        yield
+    finally:
+        with connection.cursor() as cursor:
+            cursor.execute('UPDATE application_payment SET course=%s::jsonb WHERE payment_id=%s', [stored, payment])
+
+
 def stamp(value):
     return datetime.fromisoformat(value.replace('Z', '+00:00')) if isinstance(value, str) else value
 
@@ -459,4 +485,4 @@ def assert_effect(case, before, after, source, context):
                 'index.fields' + where)
 
 
-run_workload = harness.run_workload_for(contract, assert_effect, prepare=prepare)
+run_workload = harness.run_workload_for(contract, assert_effect, prepare=prepare, case_scope=deep_payment_rows)

@@ -121,6 +121,12 @@ its form fields with pypdf. Nothing is sent to the renderer or to the broker.
 - **Storage and answer**: `default_storage.save('<creation timestamp>/<document id>/<filename>', bytes)`, then the saved
   file is the body: `application/pdf`, `Content-Disposition: inline; filename=<filename>` (`attachment` with a truthy
   `?download`), `Content-Length`. Then `appointment.document = document; appointment.save()`.
+- **Refused answers**: the save runs inside the view's `try`, so a name `validate_file_name`/`_normalize_name` rejects is
+  `500 {"exception": str(e)}` after the Document (a `..` path component: `Detected path traversal attempt in
+  '<timestamp>/<document id>/<filename>'`; a name outside `AWS_LOCATION`: `Attempted access to '<name>' denied.`), with no
+  stored object and nothing linked. Setting the header afterwards raises Django's `BadHeaderError` for a filename with CR
+  or LF: the form file is stored and the answer is `500 {"exception": "Header values can't contain newlines (got
+  '<header>')"}`, nothing linked. A header value uvicorn refuses closes the connection (see "Closed connections").
 
 Go (`internal/medicalform`): the output of pypdf for this template depends on the values only through the `/V` strings, so
 the package embeds that output with a marker in each field (`piemonte_biella.skeleton`), the field keys and pypdf's
@@ -131,37 +137,107 @@ PDFDocEncoding table. `FillBiella` writes the values as `TextStringObject.write_
 rows (`AppointmentForm`, `AppointmentFormTutor`), creates the Document, saves the bytes through `service.DocumentUploads`
 (`SaveGenerated`: the upload views' `default_storage.save`) and links the appointment. Go does not read the object back.
 
+## Divergence X8: the signature overlay is visually equal, not byte-equal
+
+When the association has a president signature, `fill_pdf_fields` first opens the template with PyMuPDF 1.25.5, decodes
+`sport_association.president_signature` (the text after the first `;base64,` when the value has one, then
+`base64.b64decode` without validation) and draws it with `Page.insert_image(Rect(400, 20, 520, 1300))` on the first page;
+the stamp, in its own `try`, is drawn in `Rect(100, 20, 260, 1300)`. A missing signature key, a value base64 refuses or a
+file MuPDF cannot open raises in the outer block and no image is drawn at all (the plain fill stands); a stamp that fails is
+skipped alone. pypdf then fills the form from the saved file. Go reproduces that flow (`medicalform.FillImages`) and adds
+the images to its own filled form as an incremental update (`medicalform.FillBiellaWithImages`): the answer is a different
+document with the same pixels, the owner-approved divergence X8 ("visually equal PDF, not byte-equal").
+
+- **Images MuPDF opens**: PNG, JPEG, GIF, BMP, TIFF, PNM (P1-P6, PAM P7 and PFM), PSD, JPEG 2000, JBIG2 and JPEG XR.
+  Go decides with its own loaders modelled on MuPDF 1.25.5's `load-*.c`, matching `fz_recognize_image_format`'s order:
+  PNG (every colour type and bit depth, Adam7, tRNS, and MuPDF's leniency: chunk CRCs and unknown chunks are ignored, a
+  missing IEND and bytes after IEND are tolerated, a zero-length IDAT or bytes the zlib stream leaves unconsumed are
+  refused, an IHDR with no image data opens with 0xff samples, and a zlib stream cut in the middle of a symbol opens with
+  the samples zlib decodes: `inflateZlib` mirrors zlib's answer, where `compress/flate` stops one symbol short of it on
+  truncated input because it raises the literal table's minimum code length to the end-of-block code's length), JPEG (the
+  marker segments up to a complete start of scan are validated as libjpeg does; the file itself is embedded as one
+  `/DCTDecode` stream, so scan data is never re-encoded), GIF (every image block is painted on one canvas, so an animation
+  draws its frames composited; a short LZW stream is zero-padded and an out-of-range code abandons that frame without
+  refusing the file), BMP (Windows v3/v4/v5 and OS/2 headers, 1/2/4/8/16/24/32/64-bit pixels, RLE4/RLE8/RLE24, bit fields
+  and alpha masks, top-down rows, the default palettes and the zero rows of a truncated bitmap), TIFF (strips and tiles;
+  none, LZW, PackBits, Deflate with predictor 2 and JPEG compression; WhiteIsZero, palettes, CMYK, extra samples as alpha
+  and 1/2/4/8/16-bit samples) and PSD (RGB, gray and CMYK at 8 or 16 bits, raw or PackBits, planes in channel order).
+  JPEG 2000 and JBIG2 (and JPEG XR where MuPDF is built with it) are the formats MuPDF recognises that Go still refuses.
+- **Samples**: MuPDF embeds a JPEG as its own `/DCTDecode` stream (CMYK with the `/Decode` inversion) and every other image
+  as 8-bit DeviceGray, DeviceRGB or DeviceCMYK samples with the alpha channel as an `/SMask` (1 bit per component when
+  every alpha sample is 0 or 255, else 8), with the colour samples premultiplied and divided by alpha again (`fz_mul255`,
+  `fz_div255`) and 16-bit samples reduced to their high byte. Go writes the same samples, mask and filters, so the renderer
+  sees the same image data.
+- **Placement**: `calc_image_matrix` keeps the image's aspect ratio inside the rectangle and centres it
+  (`keep_proportion=True`, no rotation, no DPI scaling); the rectangle is mapped through `~page.transformation_matrix` (a
+  y-flip at the MediaBox height on the unrotated page) and the content stream `q <matrix> cm /fzImgN Do Q` is appended
+  after the page's content, after `wrap_contents` balances the graphics state. Go computes the same matrix
+  (`imageMatrix`) and appends the same operators.
+- **Comparison**: the authored `<form-pdf-visual>` cases (signature only, signature and JPEG stamp, a stamp MuPDF cannot
+  open, and one download variant) are compared by rendering every page of the received and the expected PDF with PyMuPDF
+  at 100 dpi: equal page count, equal page size, and every channel within `PIXEL_TOLERANCE` (1). The authored cases
+  measure a difference of 0 on all three pages (827x1170x3). A 284-file authoring corpus also pins the open decision and
+  the samples against PyMuPDF 1.25.5 (`insert_image` plus the pixmap of the image object); 282 files are comparable (one is
+  the corpus manifest, one an empty stream PyMuPDF refuses before MuPDF sees it). The decision matches on all 282: 39 are
+  refused by both and 243 open, of which 241 decode to byte-identical samples. Two differ: the strips of the two TIFF files
+  compressed with JPEG differ by at most 1 in 755 of 17751 samples, because MuPDF decodes them with libjpeg's integer IDCT
+  and colour conversion while Go uses `image/jpeg` (a JPEG in a `.jpg` file is embedded as `/DCTDecode` instead, byte for
+  byte). The end-to-end comparison (Django's fill against Go's filled form, signature and stamp rectangles, 100 dpi) is 0
+  on every one of the 284 files: the widest channel difference of any rendered page is 1, on those two TIFF files. The same
+  comparison checks the object the view stored. A signature MuPDF cannot open keeps the exact `<form-pdf>` comparison: its
+  block is skipped, so the bytes are Django's plain fill. The decisions are table tests over files generated in the test
+  (`overlay_formats_test.go`, `TestImageFormatDecisions`), and `image_inflate_test.go` pins the truncated zlib stream to
+  zlib's samples.
+
 ## Biella without a primary tutor (v2-rest-docs)
 
 `get_main_tutor()` runs while the view maps the form's fields, after the Document exists. Go does the same: the Document is
 created first and the first tutor relation is then saved as primary (its audit entry indexed to the associate's association) in
-the same transaction, before the fields are filled. A refusal after that point (for example a signature) is decided before the
-Document is created, so nothing is written; the promotion itself runs only on the admitted path. Cases
-`medical-form-biella-promotes-tutor` and `medical-form-biella-promoted-tutor-again`: 241 cases, receipt
+the same transaction, before the fields are filled. A refusal after that point is decided before the Document is created, so
+nothing is written; the promotion itself runs only on the admitted path. The signature overlay is no longer a refusal (see
+divergence X8). Cases `medical-form-biella-promotes-tutor` and `medical-form-biella-promoted-tutor-again`: 241 cases, receipt
 `document-render-http-sweep-restdocs-3` (GitHub run 42910943209), 4 transports. Mutation (the promotion read instead of saved) CAUGHT.
 
 ## Not ported (refused with the 500 page before any write)
 
-- **medical-appointment**, Piemonte Biella, when the association has a stored president signature (any text that is not empty
-  and not `None`): `fill_pdf_fields` first draws the signature, and then the stamp, on the first page with PyMuPDF
-  (`insert_image`, then a full `save`). That is image decoding and recompression inside MuPDF; the rules of this migration
-  keep image processing out of Go. Without a signature the stamp is never drawn (its text only fills the field).
-- **medical-appointment**, Piemonte Biella, for a filename `default_storage.save` rejects.
 - A storage failure while saving a filled form is the 500 page (Django answers the provider's text); the Document stays.
-- Filenames whose Content-Disposition bytes uvicorn refuses (`HEADER_VALUE_RE`, `[\x00-\x08\x0a-\x1f\x7f]`): it closes
-  the connection after the view ran, which Go does not reproduce (long-tail rule 4, platform). Django writes an
-  ISO-8859-1 value as its bytes (a C0 control other than tab, or DEL, is refused; U+0085 is sent) and any other value as
-  `email.header` MIME words, folded with `"\n "` at a `str.splitlines()` boundary (`\x0b`, `\x0c`, `\x1c`-`\x1e`,
-  `\x85`, `\u2028`, `\u2029`: refused); other control characters are encoded inside the word and sent. Since long
-  tail PR 4 the served ones are answered (`pdfrender.ServerRefusesHeader`, cases `subscription-name-with-nel-header`,
-  `subscription-name-with-control-header`). A filename with CR or LF is served (see the evidence); for a filled form
-  it stays refused.
 - **template** and **invoice** bodies the parsers refuse for reasons the port does not model (a multipart body over the
   upload limit or with the encodings `documents-writes.md` lists).
 - A collaborator account as `request.user` in the template route (identity resolution maps collaborators to the owner).
 - Not byte-identical, and not authored: renderer connection errors and timeouts (requests' text names urllib3 objects by
   address), broker failures (the 500 JSON carries the Go error text) and redirects from the renderer. A non-UTF-8 error body
   without a charset is decoded as UTF-8; requests would guess with charset_normalizer.
+
+## Closed connections (long-tail rule 4, platform)
+
+Django writes an ISO-8859-1 `Content-Disposition` value as its bytes and any other value as `email.header` MIME words.
+uvicorn 0.35's `httptools_impl.send` sets `response_started` and then refuses a value matching `HEADER_VALUE_RE`
+(`[\x00-\x08\x0a-\x1f\x7f]`), which covers a C0 control other than tab and DEL in the ISO-8859-1 bytes and, in MIME
+words, the `str.splitlines()` boundaries `\x0b`, `\x0c`, `\x1c`-`\x1e`, `\x85`, `\u2028`, `\u2029` that fold the value
+with `"\n "`. `run_asgi` catches the `RuntimeError` after `response_started` and closes the transport: the client reads
+the connection closed with no status line, and Caddy answers its 502 for that upstream.
+
+Since long-tail PR 4 the values uvicorn serves are answered (`pdfrender.ServerRefusesHeader`, cases
+`subscription-name-with-nel-header`, `subscription-name-with-control-header`); the refused ones follow the owner
+decision of 2026-11-16 (rule 4: the closest Django answer). Go runs every write the view makes before its answer and
+then closes the client connection without writing a response: `DocumentRenderReply.CloseConnection` and
+`http.NewResponseController(...).Hijack()` in the handler, whose response-writer wrappers (the CORS, security-header and
+session writers, the handoff writer and the unmatched-page writer) all reach `net/http`'s hijack. Behind Caddy both
+servers answer 502. Caddy's transport (Go `net/http`) sends a GET without a body once more when its pooled upstream
+connection closes before any answer, so behind Caddy the view runs twice for Django and Go alike whenever the pool
+reused a connection, and Caddy answers what the second run answers. The parity cases send a one-byte body, which the
+views ignore and which makes the request not replayable, so every workload runs the view once. Django keeps its own CR/LF answer: `BadHeaderError` inside the view's `try` is the 500 JSON, not a
+closed connection.
+
+Cases: `subscription-name-with-refused-byte` (an ISO-8859-1 name with `\x01`), `subscription-name-with-mime-break` (a
+name that is not ISO-8859-1 with `\x0b`), `medical-form-refused-header` (a filled form with `\x02`; the Document, the
+stored form and the appointment link), `medical-form-line-break` (a filled form with `\n`: the Document and the stored
+form, 500 `BadHeaderError`) and `medical-form-rejected-storage-name` (a Biella denomination with `/../`: the Document and
+500 `Detected path traversal attempt in '<timestamp>/<document id>/<filename>'`, nothing stored or linked).
+`TESTS/contracts/test_document_render_http.py` reads the closed connection as the pseudo-status `closed` (Caddy: 502 with
+an empty body) and `$document-directory` stands for the generated storage directory in that exception text. The
+fixture has 253 cases; `go test ./internal/service` and `./internal/handler` cover the two 500 texts, the stored form,
+the links and the closed connection.
 
 ## Routes not in this family
 

@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/pandasxlsx"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/documentkey"
 )
@@ -201,22 +200,22 @@ func subscriptionImportPlanTestUpload() *SubscriptionImportUpload {
 	}}
 }
 
-// The frame's own refusal (a text looked up in an index of dates or durations)
-// is process_import_rows' exception and is handed off as the package returns
-// it, not joined with a service error.
-func TestSubscriptionImportPlanReturnsFrameRefusal(t *testing.T) {
-	lookupErr := pandasxlsx.ErrWorkbookNotPorted
+// The frame's own error (an application state the package reports for a lookup
+// it cannot make) is process_import_rows' exception and is handed on as the
+// package returns it, not joined with a service error.
+func TestSubscriptionImportPlanReturnsFrameError(t *testing.T) {
+	lookupErr := refusal.AppState("test: a lookup this package cannot make")
 	lookup := func(any) (int, bool, bool, error) { return 0, false, false, lookupErr }
 	data := domain.RequestObject{{Name: "map", Value: domain.RequestObject{{Name: "nome", Value: "Nome"}}}}
 	effects, err := subscriptionImportPlanTestUpload().subscriptionImportPlan(lookup, [][]any{{"Ada"}}, data)
 	if err != lookupErr {
 		t.Fatalf("subscriptionImportPlan(lookup error) = %v, want the sentinel itself", err)
 	}
-	if !errors.Is(err, refusal.ErrNotPorted) {
-		t.Error("the frame's refusal does not match refusal.ErrNotPorted")
+	if !errors.Is(err, refusal.ErrAppState) {
+		t.Error("the frame's error does not match refusal.ErrAppState")
 	}
 	if effects.Failed || len(effects.Drafts) != 0 {
-		t.Errorf("a frame refusal reported row effects: %#v", effects)
+		t.Errorf("a frame error reported row effects: %#v", effects)
 	}
 }
 

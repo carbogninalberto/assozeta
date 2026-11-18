@@ -4,7 +4,8 @@ Private PostgreSQL (actual Django current schema), a private Redis (broker DB 0,
 (the production S3Boto3Storage). The fixture archives are made by Django itself: a source association is seeded and
 AssociationExportService.export() writes the archive; the variants (truncated, without manifest or association file,
 circular folders, an undecodable data file, a foreign-key value the database rejects, a media member with a wrong
-CRC, an owner without an archived password hash, course subscriptions) are rewritten from it with zipfile.
+CRC, an owner without an archived password hash) are rewritten from it with zipfile; a course subscription is
+seeded into the source for one scenario.
 
 Each scenario seeds the target database and bucket (the archive uploaded where the API stores it), builds one message
 with Django's own producer, routed by GO_TASK_QUEUE_TASKS to ``assozeta-go``, and runs the identical bytes once on a
@@ -118,8 +119,30 @@ SCENARIOS = [
     Scenario('an existing tag key rolls the import back', 'rich', target='tag-exists',
              expect={'success': False, 'error': f'Tags UUID collision: {TAG_A} already exists. Only User rows may be '
                                                 'reused by exact UUID during import.'}),
+    # AutoField keys from the archive: Django reads the key back from INSERT ... RETURNING (object_pk is str(int)),
+    # and an explicit key that already exists is an UPDATE of that row (no audit entry), not an insert.
+    Scenario('a tutor relation key written as a float is read back as an integer', 'tutor-id-float',
+             expect={'success': True, 'files': 5}),
+    Scenario('a tutor relation key written as true is read back as an integer', 'tutor-id-true',
+             expect={'success': True, 'files': 5}),
+    Scenario('a tutor relation key with spaces is read back as an integer', 'tutor-id-space',
+             expect={'success': True, 'files': 5}),
+    Scenario('a zero-padded tutor relation key is read back as an integer', 'tutor-id-padded',
+             expect={'success': True, 'files': 5}),
+    Scenario('a tutor relation key that already exists updates that row', 'rich', target='tutor-relation-exists',
+             expect={'success': True, 'files': 5}),
+    # Associate.tutors has its own through model (AssociateTutorRelation, is_primary defaults to False). A
+    # _m2m_tutors key runs RelatedManager.set(): rows already imported in pass 1 are compared, the missing ones
+    # removed (a queryset delete, audited) and the new ones bulk-created with the through defaults (not audited).
+    Scenario('an m2m tutors key on an associate without tutors adds the relation', 'tutors-m2m-new',
+             expect={'success': True, 'files': 5}),
+    Scenario('an m2m tutors key replaces an imported tutor relation', 'tutors-m2m-replace',
+             expect={'success': True, 'files': 5}),
+    Scenario('an m2m tutors key naming the imported tutor changes nothing', 'tutors-m2m-same',
+             expect={'success': True, 'files': 5}),
     Scenario('an undecodable data file is handed off', 'bad-json', handoff=True, expect={'success': False}),
-    Scenario('course subscriptions are handed off', 'course-subscription', handoff=True, expect={'success': True, 'files': 5}),
+    Scenario('a course subscription is imported (str(self.__dict__) in the audit repr)', 'course-subscription',
+             expect={'success': True, 'files': 5}),
     Scenario('a key the database rejects at the constraint check is handed off', 'fk-violation', handoff=True,
              expect={'success': False}),
     Scenario('a media member with a wrong CRC is handed off', 'bad-crc', handoff=True, expect={'success': False}),
@@ -330,6 +353,19 @@ def build_archives():
     fk = rewrite(rich, lambda name, body: None if name == 'data/14_folders.json' else body)
     archives['fk-violation'] = edit_records(fk, 'data/43_payments.json', violation)
     archives['bad-crc'] = corrupt_crc(rich, media[-1])
+    for name, owner, tutors in (('tutors-m2m-new', U(72), [U(71)]), ('tutors-m2m-replace', U(71), [U(73)]),
+                                ('tutors-m2m-same', U(71), [U(72)])):
+        def m2m_tutors(records, owner=owner, tutors=tutors):
+            matched = [record for record in records if record['associate_id'] == str(owner)]
+            assert matched, owner
+            matched[0]['_m2m_tutors'] = [str(tutor) for tutor in tutors]
+        archives[name] = edit_records(rich, 'data/07_associates.json', m2m_tutors)
+    for name, key in (('tutor-id-float', 7.0), ('tutor-id-true', True), ('tutor-id-space', ' 7 '), ('tutor-id-padded', '07')):
+        def tutor_key(records, key=key):
+            assert records, 'the fixture archive has a tutor relation'
+            for record in records:
+                record['id'] = key
+        archives[name] = edit_records(rich, 'data/08_associate_tutor_relations.json', tutor_key)
     seed_source(owner_hash=False)
     archives['no-owner-hash'] = export_archive()
     assert '"password"' not in [json.dumps(u) for u in json.loads(zipfile.ZipFile(
@@ -388,6 +424,16 @@ class Stack:
         if scenario.target == 'tag-exists':
             Tags.objects.bulk_create([Tags(tag_id=TAG_A, tag_name='altro', sport_association_id=OTHER,
                                            creation_date=SOURCE_CREATED)])
+        if scenario.target == 'tutor-relation-exists':
+            # Two associates of another association, related under the key the archive's relation carries (7).
+            from application.models import Associate, AssociateTutorRelation
+            Associate.objects.bulk_create([
+                Associate(associate_id=U(271), sport_association_id=OTHER, first_name='Altro', last_name='Socio',
+                          creation_date=SOURCE_CREATED),
+                Associate(associate_id=U(272), sport_association_id=OTHER, first_name='Altro', last_name='Tutore',
+                          creation_date=SOURCE_CREATED)])
+            AssociateTutorRelation.objects.bulk_create([AssociateTutorRelation(id=7, associate_id=U(271),
+                                                                               tutor_id=U(272), is_primary=False)])
         if scenario.target == 'restore-pending':
             from instance.models import DataRestore
             DataRestore._base_manager.bulk_create([DataRestore(id=U(301), owner_id=OTHER_OWNER, association_id=OTHER,

@@ -163,6 +163,13 @@ class RefusalReachCeilingTests(unittest.TestCase):
         self.assertIn('lower "http" in', completed.stderr)
         self.assertIn('to 2', completed.stderr)
 
+    def test_committed_ceiling_is_zero(self):
+        # The ratchet reached 0 in long tail PR 5: the go-inventory gate now
+        # fails on any unaccepted HTTP/WebSocket row. A new one needs an
+        # owner-approved line in accepted-divergences.md, not a higher ceiling.
+        committed = json.loads((ROOT / 'tools/go-migration/refusal_ceiling.json').read_text())
+        self.assertEqual(committed, {'http': 0})
+
     def test_accepted_rows_are_not_counted(self):
         completed = run_gate(REPORT, '- reason one | /x | first\n', '{"http": 1}\n')
         self.assertEqual(completed.returncode, 0, completed.stderr)

@@ -4,10 +4,14 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pystr"
+	"math/rand"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -36,6 +40,23 @@ type Instance struct {
 // Get returns the attribute named attname (None when absent).
 func (i *Instance) Get(attname string) Value { return i.Values[attname] }
 
+// dictRepr is str(self.__dict__) (CourseSubscription.__str__): ModelState's
+// object repr first (Model.__init__ sets _state before the fields), with the
+// stable placeholder address (approved divergence X18), then the concrete
+// attributes in meta.concrete_fields order.
+func (i *Instance) dictRepr() (string, error) {
+	// Model.__init__ sets _state before the concrete fields.
+	parts := []string{"'_state': <django.db.models.base.ModelState object at " + pystr.ObjectAddress + ">"}
+	for _, field := range i.Model.Fields {
+		repr, err := i.Get(field.Attname).Repr()
+		if err != nil {
+			return "", err
+		}
+		parts = append(parts, dto.PythonStringRepr(field.Attname)+": "+repr)
+	}
+	return "{" + strings.Join(parts, ", ") + "}", nil
+}
+
 // PK is the primary key attribute.
 func (i *Instance) PK() Value { return i.Values[i.Model.PK.Attname] }
 
@@ -47,9 +68,19 @@ type Effects struct {
 	// Now is timezone.now(); NewUUID is str(uuid.uuid4()).
 	Now     func() time.Time
 	NewUUID func() string
+	// Random supplies random_color's random.randint(0, 0xFFFFFF) (nil:
+	// math/rand); a test can pin it.
+	Random func() uint32
 }
 
-func (e *Effects) now() time.Time         { return e.Now() }
+func (e *Effects) now() time.Time { return e.Now() }
+func (e *Effects) randomColor() string {
+	n := rand.Uint32()
+	if e.Random != nil {
+		n = e.Random()
+	}
+	return fmt.Sprintf("#%06x", n&0xFFFFFF)
+}
 func (e *Effects) newUUID() string        { return e.NewUUID() }
 func quote(name string) string            { return `"` + strings.ReplaceAll(name, `"`, `""`) + `"` }
 func cast(field *Field) string            { return "::" + field.DBType }
@@ -77,7 +108,9 @@ func (e *Effects) NewInstance(model *Model, kwargs map[string]Value) (*Instance,
 	}
 	for key := range kwargs {
 		if model.FieldByAttname(key) == nil {
-			return nil, unsupported("keyword %s for %s", key, model.Name)
+			// plan.json: buildInstance passes only the model's own attnames
+			// (consumer_import_association.go buildInstance).
+			return nil, planUnreachable("keyword %s for %s", key, model.Name)
 		}
 	}
 	return instance, nil
@@ -88,7 +121,9 @@ func (e *Effects) NewInstance(model *Model, kwargs map[string]Value) (*Instance,
 // log_create with its index.
 func (e *Effects) Save(ctx context.Context, instance *Instance) error {
 	if !instance.Adding {
-		return unsupported("save of an existing %s", instance.Model.Name)
+		// plan.json: Save is called only for new instances (the import creates
+		// rows; updates go through SaveFields/SaveForceUpdate).
+		return planUnreachable("save of an existing %s", instance.Model.Name)
 	}
 	model := instance.Model
 	switch model.Save {
@@ -103,15 +138,37 @@ func (e *Effects) Save(ctx context.Context, instance *Instance) error {
 	case "course", "default":
 		// Course.save reads Course.objects.get(pk) and finds nothing for a new row.
 	default:
-		return unsupported("save override %s", model.Save)
+		// plan.json: save is default, payment, subscription or course; mptt
+		// (Folder) goes through SaveTreeNode.
+		return planUnreachable("save override %s", model.Save)
 	}
 	now := e.now().UTC()
 	for _, field := range model.Fields {
 		if field.AutoNow || field.AutoNowAdd {
 			if field.Type != "DateTimeField" {
-				return unsupported("auto date on %s", field.Type)
+				// plan.json: every auto_now/auto_now_add field is a DateTimeField.
+				return planUnreachable("auto date on %s", field.Type)
 			}
 			instance.set(field.Attname, DateTimeValue(now))
+		}
+	}
+	var pkField *Field
+	for _, field := range model.Fields {
+		if field.PrimaryKey && isAutoField(field) {
+			pkField = field
+		}
+	}
+	if pkField != nil && !instance.Get(pkField.Attname).IsNone() {
+		// Model.save tries the UPDATE first when the pk is set (and has no
+		// default): an existing row is updated in place, so post_save has
+		// created=False and no audit create entry is written.
+		updated, err := e.updateExisting(ctx, instance, pkField)
+		if err != nil {
+			return err
+		}
+		if updated {
+			instance.Adding = false
+			return nil
 		}
 	}
 	if err := e.insert(ctx, instance); err != nil {
@@ -141,9 +198,14 @@ func (e *Effects) insert(ctx context.Context, instance *Instance) error {
 	var returning *Field
 	for _, field := range model.Fields {
 		value := instance.Get(field.Attname)
-		if field.PrimaryKey && isAutoField(field) && value.IsNone() {
+		if field.PrimaryKey && isAutoField(field) {
+			// Model._save_table reads the pk back with RETURNING, even when
+			// the instance already carries a value (the column is inserted
+			// too); only a value of None leaves the column out.
 			returning = field
-			continue
+			if value.IsNone() {
+				continue
+			}
 		}
 		bound, err := dbValue(field, value)
 		if err != nil {
@@ -166,6 +228,41 @@ func (e *Effects) insert(ctx context.Context, instance *Instance) error {
 	return nil
 }
 
+// updateExisting is the UPDATE Model._save_table issues before the INSERT
+// when the instance carries a pk value (the pk has no default): every
+// non-pk column is set. It reports whether a row was updated; no row
+// matched means the save falls through to the INSERT.
+func (e *Effects) updateExisting(ctx context.Context, instance *Instance, pkField *Field) (bool, error) {
+	model := instance.Model
+	sets, args := []string{}, []any{}
+	for _, field := range model.Fields {
+		if field == pkField {
+			continue
+		}
+		bound, err := dbValue(field, instance.Get(field.Attname))
+		if err != nil {
+			return false, err
+		}
+		args = append(args, bound)
+		sets = append(sets, quote(field.Column)+" = "+placeholder(len(args))+cast(field))
+	}
+	pk, err := dbValue(pkField, instance.Get(pkField.Attname))
+	if err != nil {
+		return false, err
+	}
+	args = append(args, pk)
+	result, err := e.tx().ExecContext(ctx, `UPDATE `+quote(model.Table)+` SET `+strings.Join(sets, ", ")+` WHERE `+
+		quote(pkField.Column)+` = `+placeholder(len(args))+cast(pkField), args...)
+	if err != nil {
+		return false, err
+	}
+	affected, err := result.RowsAffected()
+	if err != nil {
+		return false, err
+	}
+	return affected > 0, nil
+}
+
 // Repr is str(instance).
 func (e *Effects) Repr(instance *Instance) (string, error) {
 	model := instance.Model
@@ -180,8 +277,11 @@ func (e *Effects) Repr(instance *Instance) (string, error) {
 		}
 		last, err := instance.Get("last_name").Text()
 		return "name: " + first + " " + last, err
+	case "dict":
+		return instance.dictRepr()
 	}
-	return "", unsupported("__str__ of %s", model.Name)
+	// plan.json: str is default, user or dict.
+	return "", planUnreachable("__str__ of %s", model.Name)
 }
 
 func (e *Effects) entry(instance *Instance, action int, changes map[string][2]string) (LogEntry, error) {
@@ -199,7 +299,8 @@ func (e *Effects) entry(instance *Instance, action int, changes map[string][2]st
 	if model.pkIsInt() {
 		id, err := strconv.ParseInt(pk, 10, 64)
 		if err != nil {
-			return LogEntry{}, unsupported("integer key")
+			// plan.json: no audited model has an int primary key.
+			return LogEntry{}, planUnreachable("integer key %s", model.Name)
 		}
 		entry.ObjectID = &id
 	}
@@ -216,7 +317,8 @@ func (e *Effects) logCreate(ctx context.Context, instance *Instance) error {
 		excluded[name] = true
 	}
 	if len(model.Audit.Include) > 0 {
-		return unsupported("auditlog include_fields")
+		// plan.json: no imported model registers include_fields.
+		return planUnreachable("auditlog include_fields on %s", model.Name)
 	}
 	changes := map[string][2]string{}
 	for _, field := range model.Fields {
@@ -249,7 +351,9 @@ func (e *Effects) logCreate(ctx context.Context, instance *Instance) error {
 func (e *Effects) SaveFields(ctx context.Context, instance *Instance, names ...string) error {
 	model := instance.Model
 	if instance.Adding {
-		return unsupported("update of an unsaved %s", model.Name)
+		// plan.json/callers: SaveFields is called on rows created in this run
+		// (Document filepath, Subscription signature keys).
+		return planUnreachable("update of an unsaved %s", model.Name)
 	}
 	switch model.Save {
 	case "subscription":
@@ -258,13 +362,17 @@ func (e *Effects) SaveFields(ctx context.Context, instance *Instance, names ...s
 		}
 	case "default", "course":
 	default:
-		return unsupported("save override %s on update", model.Save)
+		// plan.json: Payment is never updated through SaveFields; mptt is not
+		// reached here.
+		return planUnreachable("save override %s on update", model.Save)
 	}
 	fields := make([]*Field, 0, len(names))
 	for _, name := range names {
 		field := model.Field(name)
 		if field == nil || field.IsFK() || field.AutoNow {
-			return unsupported("update field %s", name)
+			// Callers update text fields only (Document.filepath, Subscription
+			// signature_storage_key/signature_url).
+			return planUnreachable("update field %s of %s", name, model.Name)
 		}
 		fields = append(fields, field)
 	}
@@ -285,14 +393,10 @@ func (e *Effects) SaveFields(ctx context.Context, instance *Instance, names ...s
 		for i := range old {
 			targets[i] = &old[i]
 		}
-		found := true
-		if err := row.Scan(targets...); errors.Is(err, sql.ErrNoRows) {
-			found = false
-		} else if err != nil {
+		// log_update's `old = manager.filter(pk).first()`: a row that is gone
+		// leaves every scanned value NULL, so the diff is against None.
+		if err := row.Scan(targets...); err != nil && !errors.Is(err, sql.ErrNoRows) {
 			return err
-		}
-		if !found {
-			return unsupported("update audit of a row the default manager hides")
 		}
 		for i, field := range fields {
 			before := NoneValue
@@ -336,8 +440,13 @@ func (e *Effects) SaveFields(ctx context.Context, instance *Instance, names ...s
 	if err != nil {
 		return err
 	}
-	if affected, err := result.RowsAffected(); err != nil || affected != 1 {
-		return unsupported("update_fields affected no row")
+	if affected, err := result.RowsAffected(); err != nil {
+		return err
+	} else if affected == 0 {
+		// Django raises DatabaseError from the UPDATE save_base issues.
+		return databaseError("Save with update_fields did not affect any rows.")
+	} else if affected != 1 {
+		return planUnreachable("update_fields matched %d rows", affected)
 	}
 	return nil
 }
@@ -346,15 +455,21 @@ func (e *Effects) SaveFields(ctx context.Context, instance *Instance, names ...s
 // excludes the field, so the diff is empty and no entry is written.
 func (e *Effects) UpdatePassword(ctx context.Context, model *Model, pk, password string) error {
 	if model.Name != "User" || model.Audit == nil || !contains(model.Audit.Exclude, "password") {
-		return unsupported("password update of %s", model.Name)
+		// plan.json: User is the only model with update_fields=['password']
+		// (consumer_import_association.go) and its audit excludes password.
+		return planUnreachable("password update of %s", model.Name)
 	}
 	result, err := e.tx().ExecContext(ctx, `UPDATE `+quote(model.Table)+` SET "password" = $1 WHERE `+quote(model.PK.Column)+
 		` = $2::uuid`, password, pk)
 	if err != nil {
 		return err
 	}
-	if affected, err := result.RowsAffected(); err != nil || affected != 1 {
-		return unsupported("password update affected no row")
+	if affected, err := result.RowsAffected(); err != nil {
+		return err
+	} else if affected == 0 {
+		return databaseError("Save with update_fields did not affect any rows.")
+	} else if affected != 1 {
+		return planUnreachable("password update matched %d rows", affected)
 	}
 	return nil
 }
@@ -385,7 +500,9 @@ func (e *Effects) Exists(ctx context.Context, model *Model, key Value) (bool, er
 func (e *Effects) QuerysetUpdate(ctx context.Context, model *Model, key Value, attname string, value Value) (int64, error) {
 	field := model.FieldByAttname(attname)
 	if field == nil {
-		return 0, unsupported("update of %s.%s", model.Name, attname)
+		// consumer_import_association.go resolves the attname in the plan
+		// before calling.
+		return 0, planUnreachable("update of %s.%s", model.Name, attname)
 	}
 	bound, err := dbValue(field, value)
 	if err != nil {
@@ -403,17 +520,42 @@ func (e *Effects) QuerysetUpdate(ctx context.Context, model *Model, key Value, a
 	return result.RowsAffected()
 }
 
-// SetM2M is getattr(instance, field).set(keys) on a saved instance with no
-// related rows: the through rows of the distinct keys, in the order of the
-// CPython set _add_items builds, in one INSERT ... ON CONFLICT DO NOTHING.
+// SetM2M is getattr(instance, field).set(keys) on a saved instance: for an
+// auto-created through table the through rows of the distinct keys, in the
+// order of the CPython set _add_items builds, in one INSERT ... ON CONFLICT DO
+// NOTHING (the instance's rows cannot exist yet); for a custom (not
+// auto-created) through model the remove/add diff set() computes, see
+// setThrough.
 func (e *Effects) SetM2M(ctx context.Context, model *Model, field *M2M, key Value, targets []string) error {
-	if !field.AutoCreated || field.TargetKind != "uuid" || model.PK.Kind != "uuid" {
-		return unsupported("m2m %s.%s", model.Name, field.Name)
+	if (field.TargetKind != "uuid" && field.TargetKind != "int") || model.PK.Kind != "uuid" {
+		// plan.json: through targets are uuid (the imported models' keys) or
+		// int (auth Group/Permission); every model with an m2m has a uuid pk.
+		return planUnreachable("m2m %s.%s (%s -> %s)", model.Name, field.Name, model.PK.Kind, field.TargetKind)
 	}
+	prepped := make([]string, 0, len(targets))
 	for _, target := range targets {
-		if !CanonicalUUID(target) {
-			return unsupported("m2m key")
+		value, err := rawValue(target)
+		if err != nil {
+			return err
 		}
+		if field.TargetKind == "uuid" {
+			text, err := uuidText(value)
+			if err != nil {
+				return err
+			}
+			prepped = append(prepped, text)
+			continue
+		}
+		digits, err := intFieldPrep(field.Target, value)
+		if err != nil {
+			return err
+		}
+		prepped = append(prepped, digits)
+	}
+	if !field.AutoCreated {
+		// ManyRelatedManager.set() over a custom through model compares the
+		// existing rows and removes/adds the difference.
+		return e.setThrough(ctx, field, key, prepped)
 	}
 	var existing int
 	if err := e.tx().GetContext(ctx, &existing, `SELECT count(*) FROM `+quote(field.Table)+` WHERE `+quote(field.Source)+` = $1::uuid`,
@@ -421,20 +563,294 @@ func (e *Effects) SetM2M(ctx context.Context, model *Model, field *M2M, key Valu
 		return err
 	}
 	if existing != 0 {
-		return unsupported("m2m set over existing rows")
+		// The row was created in this transaction, so Django's slow path
+		// (remove then add) cannot see through rows here.
+		return planUnreachable("m2m %s.%s over existing rows", model.Name, field.Name)
 	}
-	ordered := pySetOrder(targets)
+	ordered := pySetOrder(prepped)
+	if field.TargetKind == "int" {
+		ordered = pySetOrderInts(prepped)
+	}
 	if len(ordered) == 0 {
 		return nil
 	}
 	values, args := []string{}, []any{key.S}
+	targetCast := ""
+	if field.TargetKind == "uuid" {
+		targetCast = "::uuid"
+	}
 	for _, target := range ordered {
 		args = append(args, target)
-		values = append(values, "($1::uuid, "+placeholder(len(args))+"::uuid)")
+		values = append(values, "($1::uuid, "+placeholder(len(args))+targetCast+")")
 	}
 	_, err := e.tx().ExecContext(ctx, `INSERT INTO `+quote(field.Table)+` (`+quote(field.Source)+`, `+quote(field.Target)+`) VALUES `+
 		strings.Join(values, ", ")+` ON CONFLICT DO NOTHING`, args...)
 	return err
+}
+
+// throughModel is the plan model whose table is field's through table (a custom
+// through model, the one a not auto-created m2m names).
+func (e *Effects) throughModel(field *M2M) (*Model, error) {
+	for _, model := range e.Plan.byName {
+		if model.Table == field.Table {
+			return model, nil
+		}
+	}
+	// plan.json: every m2m names the table of an imported model (an
+	// auto-created one or AssociateTutorRelation).
+	return nil, planUnreachable("through table %s", field.Table)
+}
+
+// throughField is the through model field stored in column.
+func throughField(through *Model, column string) (*Field, error) {
+	for _, field := range through.Fields {
+		if field.Column == column {
+			return field, nil
+		}
+	}
+	// plan.json: a through model has a field for each source/target column its
+	// m2m names.
+	return nil, planUnreachable("through column %s of %s", column, through.Name)
+}
+
+// throughRow is a through row loaded from the database: its instance (for the
+// audit entry and the primary key) and the canonical text of its target id.
+type throughRow struct {
+	instance *Instance
+	target   string
+}
+
+// setThrough is ManyRelatedManager.set() for a custom (not auto-created)
+// through model. set() collects old_ids from the existing through rows, takes
+// each prepared target out of old_ids (the ones left over are removed) and
+// adds the others: _remove_items deletes the leftovers with a queryset delete,
+// so every row's pre_delete writes auditlog's log_delete entry, while
+// _add_items bulk-creates the new rows from the through model (its field
+// defaults applied, no save(), no audit entry).
+func (e *Effects) setThrough(ctx context.Context, field *M2M, key Value, prepped []string) error {
+	through, err := e.throughModel(field)
+	if err != nil {
+		return err
+	}
+	source, err := throughField(through, field.Source)
+	if err != nil {
+		return err
+	}
+	target, err := throughField(through, field.Target)
+	if err != nil {
+		return err
+	}
+	sourceKey, err := uuidText(key)
+	if err != nil {
+		return err
+	}
+	rows, err := e.throughRows(ctx, field, through, sourceKey)
+	if err != nil {
+		return err
+	}
+	// old_ids is a set of the target ids the through rows hold.
+	old := map[string]bool{}
+	for _, row := range rows {
+		old[row.target] = true
+	}
+	added := []string{}
+	for _, text := range prepped {
+		if old[text] {
+			// set() drops the id from old_ids and keeps no new object for it.
+			delete(old, text)
+			continue
+		}
+		added = append(added, text)
+	}
+	// remove(old_ids): the queryset delete matches the through rows in the
+	// collector's pk order; each row's DELETE runs first, because auditlog
+	// connects log_delete to post_delete and so writes the one auditlog delete
+	// entry per row after that row is gone.
+	excluded := map[string]bool{}
+	if through.audited() {
+		if len(through.Audit.Include) > 0 {
+			// plan.json: no imported model registers include_fields.
+			return planUnreachable("auditlog include_fields on %s", through.Name)
+		}
+		for _, name := range through.Audit.Exclude {
+			excluded[name] = true
+		}
+	}
+	for _, row := range rows {
+		if !old[row.target] {
+			continue
+		}
+		pk, err := dbValue(through.PKField(), row.instance.PK())
+		if err != nil {
+			return err
+		}
+		if _, err := e.tx().ExecContext(ctx, `DELETE FROM `+quote(field.Table)+` WHERE `+quote(through.PK.Column)+
+			` = $1`+cast(through.PKField()), pk); err != nil {
+			return err
+		}
+		// log_delete runs on post_delete: the entry is written after the row's
+		// DELETE, from the instance the collector still holds.
+		if through.audited() {
+			changes := map[string][2]string{}
+			for _, column := range through.Fields {
+				if excluded[column.Name] {
+					continue
+				}
+				text, include, err := auditCreate(column, row.instance.Get(column.Attname))
+				if err != nil {
+					return err
+				}
+				if !include {
+					continue
+				}
+				// log_delete's diff: the old value against the absent side.
+				changes[column.Name] = [2]string{text, "None"}
+			}
+			entry, err := e.entry(row.instance, 2, changes)
+			if err != nil {
+				return err
+			}
+			if err := e.Audit(ctx, e.Tx, entry); err != nil {
+				return err
+			}
+		}
+	}
+	// add(new ids): one through row per missing target, in the CPython set
+	// _add_items builds, with the through model's defaults (bulk_create).
+	ordered := pySetOrder(added)
+	if field.TargetKind == "int" {
+		ordered = pySetOrderInts(added)
+	}
+	for _, text := range ordered {
+		value := UUIDValue(text)
+		if field.TargetKind == "int" {
+			value = Value{Kind: Int, S: text}
+		}
+		instance, err := e.NewInstance(through, map[string]Value{source.Attname: key, target.Attname: value})
+		if err != nil {
+			return err
+		}
+		// bulk_create: the AutoField key comes back from the INSERT, and
+		// neither save() nor auditlog runs.
+		if err := e.insert(ctx, instance); err != nil {
+			return err
+		}
+		instance.Adding = false
+	}
+	return nil
+}
+
+// throughRows is the through model's rows for one source key, ordered by
+// primary key (the order Django's delete collector sorts them in). The row set
+// is read before any instance is built, so the connection is free for the
+// deletes that follow.
+func (e *Effects) throughRows(ctx context.Context, field *M2M, through *Model, sourceKey string) ([]throughRow, error) {
+	rows, err := e.tx().QueryxContext(ctx, `SELECT * FROM `+quote(field.Table)+` WHERE `+quote(field.Source)+
+		` = $1::uuid ORDER BY `+quote(through.PK.Column), sourceKey)
+	if err != nil {
+		return nil, err
+	}
+	scanned := []map[string]any{}
+	for rows.Next() {
+		row := map[string]any{}
+		if err := rows.MapScan(row); err != nil {
+			_ = rows.Close()
+			return nil, err
+		}
+		scanned = append(scanned, row)
+	}
+	if err := rows.Err(); err != nil {
+		_ = rows.Close()
+		return nil, err
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	target, err := throughField(through, field.Target)
+	if err != nil {
+		return nil, err
+	}
+	loaded := make([]throughRow, 0, len(scanned))
+	for _, row := range scanned {
+		// model(**row): the instance log_delete renders its delete diff from.
+		instance, err := e.NewInstance(through, map[string]Value{})
+		if err != nil {
+			return nil, err
+		}
+		for _, column := range through.Fields {
+			value, err := dbFieldValue(column, row[column.Column])
+			if err != nil {
+				return nil, err
+			}
+			instance.set(column.Attname, value)
+		}
+		// old_ids holds the target ids as set() reads them: values_list's
+		// values, canonical uuid text or int digits.
+		targetValue := instance.Get(target.Attname)
+		var text string
+		if field.TargetKind == "int" {
+			text, err = intFieldPrep(target.Name, targetValue)
+		} else {
+			text, err = uuidText(targetValue)
+		}
+		if err != nil {
+			return nil, err
+		}
+		loaded = append(loaded, throughRow{instance: instance, target: text})
+	}
+	return loaded, nil
+}
+
+// dbFieldValue is the attribute psycopg2 loads for a scanned column.
+func dbFieldValue(field *Field, raw any) (Value, error) {
+	if raw == nil {
+		return NoneValue, nil
+	}
+	kind := field.Kind
+	if field.IsFK() {
+		kind = field.TargetKind
+	}
+	switch kind {
+	case "uuid":
+		switch value := raw.(type) {
+		case string:
+			return UUIDValue(value), nil
+		case []byte:
+			return UUIDValue(string(value)), nil
+		case [16]byte:
+			// pgx decodes a uuid column into its 16 bytes.
+			hex := fmt.Sprintf("%x", value[:])
+			return UUIDValue(hex[:8] + "-" + hex[8:12] + "-" + hex[12:16] + "-" + hex[16:20] + "-" + hex[20:]), nil
+		}
+	case "int":
+		switch value := raw.(type) {
+		case int64:
+			return IntValue(value), nil
+		case int32:
+			return IntValue(int64(value)), nil
+		case int:
+			return IntValue(int64(value)), nil
+		case string:
+			return Value{Kind: Int, S: value}, nil
+		case []byte:
+			return Value{Kind: Int, S: string(value)}, nil
+		}
+	case "bool":
+		if value, ok := raw.(bool); ok {
+			return BoolValue(value), nil
+		}
+	case "text":
+		switch value := raw.(type) {
+		case string:
+			return StrValue(value), nil
+		case []byte:
+			return StrValue(string(value)), nil
+		}
+	}
+	// plan.json: the only custom through model (AssociateTutorRelation) holds an
+	// AutoField, two uuid foreign keys and a boolean, and pgx decodes those into
+	// the types above.
+	return Value{}, fmt.Errorf("importeffects: scanned %T for %s.%s", raw, field.Name, kind)
 }
 
 // CheckConstraints is connection.check_constraints() on PostgreSQL.
@@ -453,7 +869,9 @@ func (e *Effects) CheckConstraints(ctx context.Context) error {
 func (e *Effects) SaveTreeNode(ctx context.Context, instance *Instance) error {
 	model := instance.Model
 	if !model.IsMPTT || model.audited() {
-		return unsupported("tree save of %s", model.Name)
+		// plan.json: Folder is the only MPTT model and it is not audited;
+		// SaveTreeNode is called for Folder records only.
+		return planUnreachable("tree save of %s", model.Name)
 	}
 	parent := instance.Get("parent_id")
 	table := quote(model.Table)

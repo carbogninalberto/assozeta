@@ -243,7 +243,7 @@ Interface (`importeffects.Effects{Plan, Tx, Audit, Now, NewUUID}`, all inside th
 | `instance.save(update_fields=[...])`: override, `log_update` (old row, restricted diff), UPDATE | `SaveFields(ctx, instance, names...)` |
 | `user.save(update_fields=['password'])` (excluded from audit: no entry) | `UpdatePassword(ctx, model, pk, hash)` |
 | `<unfiltered manager>.filter(pk=).exists()` / `.update(field=value)` | `Exists`, `QuerysetUpdate` |
-| `related_manager.set(keys)` (fast add: CPython set order of the ids, one INSERT ... ON CONFLICT DO NOTHING) | `SetM2M` (`pySetOrder`, unit-tested against CPython goldens) |
+| `related_manager.set(keys)` (fast add: CPython set order of the ids, one INSERT ... ON CONFLICT DO NOTHING; uuid or int targets, auto-created and custom through tables) | `SetM2M` (`pySetOrder`/`pySetOrderInts`, unit-tested against CPython goldens) |
 | `MPTTModel.save()` (root: max tree id + 1; child: `_create_space` then last child) | `SaveTreeNode` |
 | `connection.check_constraints()` | `CheckConstraints` |
 | auditlog `LogEntry` + `create_audit_log_index` | `AuditWriter` (`repository.ImportEffectsAudit`, the generic resolver) |
@@ -251,25 +251,33 @@ Interface (`importeffects.Effects{Plan, Tx, Audit, Now, NewUUID}`, all inside th
 Audit rendering follows `auditlog.diff.get_field_value` on the in-memory instance (not the stored row): FKs and
 `DateTimeField`s keep `None` (`['None', 'None']`), JSON fields `json.dumps(sort_keys=True)` (`null` included), other
 fields are kept when `str(value) != 'None'`, datetimes naive UTC, reverse accessors with a `related_name` render
-`app.Model.None`, `exclude_fields` apply; `object_repr` is `Model object (pk)` or `User.__str__`. Values whose in-memory
-form, stored form or text would differ in ways the package does not model return `importeffects.ErrUnsupported`
-(non-canonical UUID text, naive or non-ISO datetimes, decimals not already at the column's places, non-bool booleans,
-non-string text, `CourseSubscription.__str__` = `str(self.__dict__)`, Payment descriptions an account transfer derives,
-Subscriptions whose dates `save()` would fill, unknown defaults).
+`app.Model.None`, `exclude_fields` apply; `object_repr` is `Model object (pk)`, `User.__str__` or `str(self.__dict__)` for
+CourseSubscription. Every JSON value an archive member can carry is handled the way Django handles it: `_parse_value`
+per field type (non-canonical UUID/date/datetime/Decimal texts, ints of any size, non-string values in Char/Text/JSON
+fields, float `NaN`/`Infinity`), `get_db_prep_save` (naive datetimes made aware in UTC, Decimal bound as
+`str(Decimal)`, JSON as `json.dumps`), `auditlog.diff.get_field_value` (`str()` of containers, sorted JSON, datetime
+naive UTC) and Payment/Subscription `save()` (get_course_carnet_name, the quota-corso meta override, the season range
+and the dates the owner's settings fill). A Python exception Django raises for such a value is returned as
+`*importeffects.DjangoError` and becomes the task result's error (the restore's generic failure message); a branch
+only plan.json rules out (no save override, no auditlog include_fields, no JSON encoder, ...) is
+`importeffects.ErrPlanUnreachable`, application state.
 
 ### Handed off to Django (before any effect)
 
 Arguments other than a string path and a string recovery password (other arities, unknown keywords); a missing or
 unreadable staged object; an archive Go's reader or the checks above reject (ZIP64, duplicate or non-UTF-8 member
 names, encrypted or non-deflate members, a local header name differing from the directory, a CRC error, data files
-that are not UTF-8 JSON arrays Go decodes as Python does, a manifest that is not a dict); every value or path that
-returns `ErrUnsupported`; a media name `default_storage.save` would change (existing object, suspicious names); any
-database error. Plan stages the archive, validates it, reads every data file and media member, and then performs the
-database part of `import_all()` (passes 1–3, the constraint check and the database writes of pass 4) in one open
-transaction; any of the above rolls it back and hands the message off. Records of an audited model whose `__str__` is
-not reproduced (CourseSubscription) are found by the read pass and handed off before the transaction starts. The harness
-normalizes the `ModelState object at 0x...` address inside that repr, which differs between two Django processes. Run (after admission) uploads the media in
-Django's order, commits, deletes the staged object and returns the result; a deferral (pending restore) rolls back.
+that are not UTF-8 JSON arrays Go decodes as Python does (including Python's `NaN`/`Infinity` literals, duplicate
+keys and the 4300-digit integer limit, which raises Django's `ValueError` instead), a manifest that is not a dict) — the service's own
+`errImportArchive`; a media name `default_storage.save` would change (existing object, suspicious names); a database
+error. Plan stages the archive, validates it, reads every data file and media member, and then performs the database
+part of `import_all()` (passes 1–3, the constraint check and the database writes of pass 4) in one open transaction;
+any of the above rolls it back and hands the message off. A value whose ORM conversion raises in Django is not handed
+off: the ORM effects return Django's exception and the task stores `{"success": false, "error": str(e)}` (the restore
+stores its generic failure message). The harness normalizes the `ModelState object at 0x...` address inside
+CourseSubscription's `str(self.__dict__)` repr, which differs between two Django processes. Run (after admission)
+uploads the media in Django's order, commits, deletes the staged object and returns the result; a deferral (pending
+restore) rolls back.
 
 ### Documented differences
 
@@ -312,7 +320,11 @@ the import.
 - Re-run after the shared change (`cmd/celery-consumer/consumer_restore.go` registration): export 8/8, capabilities
   13/13, `celery_consumer_process.py` 15/15 (receipts `consumer-import-rerun-*`).
 
-- Unit tests: `go test ./internal/importeffects` (CPython set order goldens, audit rendering, plan, season ranges).
+- Unit tests: `go test ./internal/importeffects` (CPython set order goldens for uuid and int sets; corpora of
+  `str()`/`repr()`/`json.dumps`, `_parse_value` + `auditlog.diff` create diffs, `get_db_prep_save` texts and Decimal
+  parsing checked against CPython 3.13/Django 5.2.18; parse_datetime cross-checked with `dto.DjangoParseDateTimeWide`;
+  plan facts pinning every `planUnreachable`; season ranges and the date fill; CourseSubscription's
+  `str(self.__dict__)`).
 
 ## Step 4: `instance.restore.execute`
 

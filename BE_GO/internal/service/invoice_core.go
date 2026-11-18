@@ -372,6 +372,13 @@ func (s *InvoiceCore) BulkDelete(ctx context.Context, request InvoiceCoreRequest
 	})
 }
 
+// invoiceCoreDeleteJSONEdges are invoice_delete's measured edges (CPython
+// 3.13.16 on the parity harness, total nesting as dto.AuditJSONDepth counts
+// it): the view's payment lookup reads 9937 levels, auditlog's log_update
+// refetch of the old row 9935, and the index resolver's reload 9927. The view
+// is not atomic, so a request that already saved rows keeps them.
+var invoiceCoreDeleteJSONEdges = paymentJSONEdges{Load: 9937, Save: 9935, Index: 9927}
+
 // Delete follows invoice_delete: is_valid_uuid, the scoped live association
 // .get(), the association's live, group-aware invoice (none: 500), its first
 // payment by key unlinked, unpaid and saved (Payment.save() defaults,
@@ -400,11 +407,17 @@ func (s *InvoiceCore) Delete(ctx context.Context, request InvoiceCoreRequest, ra
 		return domain.ErrInvoiceCoreServer // raise Exception('Invoice not found')
 	}
 	audit := s.deleteContext(request)
+	ctx = withPaymentJSONEdges(ctx, invoiceCoreDeleteJSONEdges)
 	payment, err := tx.PaymentToUnlink(ctx, id, group, scope)
 	if err != nil {
 		return err
 	}
 	if payment != nil {
+		// The view's payment lookup reads the row's three JSON columns; past its
+		// measured edge Django raises before unlinking or deleting anything.
+		if err = paymentJSONLoadRefusal(&payment.PaymentSaveRow, invoiceCoreDeleteJSONEdges); err != nil {
+			return err
+		}
 		changes := map[string][2]string{"invoice": {id, "None"}}
 		if payment.Paid {
 			changes["paid"] = [2]string{"True", "False"}

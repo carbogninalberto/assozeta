@@ -127,9 +127,10 @@ func TestDefaultResourceSources(t *testing.T) {
 		}
 	}
 
-	// reportlab downloads an ftp: URL; that download is not ported.
-	if _, err := (DefaultResourceOpener{}).Open(context.Background(), "ftp://127.0.0.1/logo.jpg"); !errors.Is(err, ErrNotPorted) {
-		t.Errorf("ftp: %v", err)
+	// reportlab downloads an ftp: URL with urlopen; with nothing listening the
+	// fetch fails, and TestFTPImageSourceTranscripts proves the successful reads.
+	if _, err := (DefaultResourceOpener{}).Open(context.Background(), "ftp://127.0.0.1:1/logo.jpg"); err == nil {
+		t.Errorf("ftp: want a failure")
 	}
 }
 
@@ -150,7 +151,7 @@ func setResource(t *testing.T, opener ResourceOpener) {
 // message; an opener that answers the source serves the image.
 func TestImageSourceFailureAndSeam(t *testing.T) {
 	setResource(t, openResource(func(string) ([]byte, error) { return nil, errors.New("no such file") }))
-	_, _, err := parseParagraph(`a <img src="logo.jpg"/> b`, paraStyle{fontName: "Helvetica", fontSize: 9, leading: 12})
+	_, _, _, err := parseParagraph(`a <img src="logo.jpg"/> b`, paraStyle{fontName: "Helvetica", fontSize: numInt(9), leading: numInt(12)})
 	var failure *LayoutError
 	if !errors.As(err, &failure) {
 		t.Fatalf("a source reportlab cannot open: %v", err)
@@ -167,24 +168,32 @@ func TestImageSourceFailureAndSeam(t *testing.T) {
 		}
 		return jpegSource, nil
 	}))
-	frags, _, err := parseParagraph(`a <img src="served.jpg"/> b`, paraStyle{fontName: "Helvetica", fontSize: 9, leading: 12})
+	frags, _, _, err := parseParagraph(`a <img src="served.jpg"/> b`, paraStyle{fontName: "Helvetica", fontSize: numInt(9), leading: numInt(12)})
 	if err != nil {
 		t.Fatal(err)
 	}
-	var carried *jpegImage
+	var carried *imageReader
 	for _, frag := range frags {
 		if frag.img != nil {
 			carried = frag.img.image
 		}
 	}
-	if carried == nil || carried.width != 24 || carried.height != 16 || len(carried.data) == 0 {
+	if carried == nil || carried.image.Width != 24 || carried.image.Height != 16 || len(carried.data) == 0 {
 		t.Fatalf("image %+v", carried)
 	}
-	// A format this package does not embed as it is stays a refusal.
+	// A format pilimage decodes is carried with Pillow's size; a source Pillow
+	// cannot identify is the paragraph's exception.
 	setResource(t, openResource(func(string) ([]byte, error) {
 		return []byte("\x89PNG\r\n\x1a\n"), nil
 	}))
-	if _, _, err := parseParagraph(`a <img src="logo.png"/> b`, paraStyle{fontName: "Helvetica", fontSize: 9}); !errors.Is(err, ErrNotPorted) {
-		t.Fatalf("a PNG source: %v", err)
+	if _, _, _, err := parseParagraph(`a <img src="logo.png"/> b`, paraStyle{fontName: "Helvetica", fontSize: numInt(9)}); !errors.Is(err, ErrLayout) {
+		t.Fatalf("a truncated PNG source: %v", err)
+	}
+	// A TIFF source is decoded and carried like the other formats.
+	setResource(t, openResource(func(string) ([]byte, error) {
+		return []byte("II*\x00\x08\x00\x00\x00\x0a\x00\x00\x01\x04\x00\x01\x00\x00\x00\x02\x00\x00\x00\x01\x01\x04\x00\x01\x00\x00\x00\x02\x00\x00\x00\x02\x01\x03\x00\x03\x00\x00\x00\x86\x00\x00\x00\x03\x01\x03\x00\x01\x00\x00\x00\x01\x00\x00\x00\x06\x01\x03\x00\x01\x00\x00\x00\x02\x00\x00\x00\x11\x01\x04\x00\x01\x00\x00\x00\x8c\x00\x00\x00\x15\x01\x03\x00\x01\x00\x00\x00\x03\x00\x00\x00\x16\x01\x04\x00\x01\x00\x00\x00\x02\x00\x00\x00\x17\x01\x04\x00\x01\x00\x00\x00\x0c\x00\x00\x00\x1c\x01\x03\x00\x01\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x08\x00\x08\x00\x08\x00\x01\x02\x03\x01\x02\x03\x01\x02\x03\x01\x02\x03"), nil
+	}))
+	if _, _, _, err := parseParagraph(`a <img src="logo.tif"/> b`, paraStyle{fontName: "Helvetica", fontSize: numInt(9)}); err != nil {
+		t.Fatalf("a TIFF source: %v", err)
 	}
 }

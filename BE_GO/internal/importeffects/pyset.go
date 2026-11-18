@@ -13,6 +13,18 @@ import (
 // modulo 2**61 - 1 on 64-bit builds (Objects/setobject.c, set_add_entry,
 // set_table_resize and set_insert_clean).
 func pySetOrder(keys []string) []string {
+	return pySetOrderBy(keys, pyUUIDHash)
+}
+
+// pySetOrderInts is pySetOrder for a set of Python ints (hash(int) is the value
+// modulo 2**61 - 1, negated for negative values; -1 becomes -2).
+func pySetOrderInts(keys []string) []string {
+	return pySetOrderBy(keys, pyIntHash)
+}
+
+// pySetOrderBy builds the CPython set of keys hashed by hash and returns its
+// iteration order.
+func pySetOrderBy(keys []string, hash func(string) uint64) []string {
 	const linearProbes, perturbShift = 9, 5
 	type entry struct {
 		key  string
@@ -43,10 +55,10 @@ func pySetOrder(keys []string) []string {
 		}
 	}
 	for _, key := range keys {
-		hash := pyUUIDHash(key)
+		hashValue := hash(key)
 		mask := uint64(len(table) - 1)
-		perturb := hash
-		i := hash & mask
+		perturb := hashValue
+		i := hashValue & mask
 		found := false
 	probe:
 		for {
@@ -57,10 +69,10 @@ func pySetOrder(keys []string) []string {
 			for j := uint64(0); j <= probes; j++ {
 				slot := &table[i+j]
 				if !slot.used {
-					*slot = entry{key: key, hash: hash, used: true}
+					*slot = entry{key: key, hash: hashValue, used: true}
 					break probe
 				}
-				if slot.hash == hash && slot.key == key {
+				if slot.hash == hashValue && slot.key == key {
 					found = true
 					break probe
 				}
@@ -101,6 +113,26 @@ func pySetOrder(keys []string) []string {
 }
 
 var pyHashModulus = new(big.Int).Sub(new(big.Int).Lsh(big.NewInt(1), 61), big.NewInt(1))
+
+// pyIntHash is hash(int) as the set table uses it (size_t of the signed hash).
+func pyIntHash(key string) uint64 {
+	n, _ := new(big.Int).SetString(key, 10)
+	if n == nil {
+		return 0
+	}
+	negative := n.Sign() < 0
+	modulus := new(big.Int).Mod(new(big.Int).Abs(n), pyHashModulus)
+	if negative {
+		modulus.Neg(modulus)
+		if modulus.Cmp(big.NewInt(-1)) == 0 {
+			modulus.SetInt64(-2)
+		}
+	}
+	if modulus.Sign() < 0 {
+		return modulus.Uint64() // two's complement
+	}
+	return modulus.Uint64()
+}
 
 func pyUUIDHash(key string) uint64 {
 	n, _ := new(big.Int).SetString(strings.ReplaceAll(key, "-", ""), 16)

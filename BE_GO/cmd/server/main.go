@@ -79,6 +79,9 @@ func run() (runErr error) {
 	if err != nil {
 		return err
 	}
+	// The saved-report and business-MCP tools read the AI settings the way
+	// Django's env.int does (deployment file, $ proxies, any-size integers).
+	service.SetReportEnvironment(cfg.InstanceAdmin.AIIntegerTexts[1], cfg.InstanceAdmin.AIIntegerTexts[2])
 	dbConfig, err := pgx.ParseConfig(cfg.DatabaseURL())
 	if err != nil {
 		return errors.New("invalid database configuration")

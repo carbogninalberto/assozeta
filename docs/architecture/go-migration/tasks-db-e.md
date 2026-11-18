@@ -95,34 +95,39 @@ Files: `BE_GO/internal/{domain,repository,service}/export_cleanup.go`,
 - Result `{'deleted_count': n}`; Go completes the job with
   `{"deleted_count": n}`.
 
-### Refused or different
+### Cascading document deletes
 
-- Refused before any effect (job fails with `task_failed`): a run in which
-  any export document in scope is referenced outside the five SET_NULL foreign
-  keys by anything but its one archive row (a second archive row, a medical
-  certificate, appointment, subscription file or many-to-many link). Django's
-  collector would delete those rows with their own audit entries; Go does not
-  reproduce that cascade (same boundary as `documents/bulk-delete`,
-  [documents-archive](documents-archive.md)). Every export row of the run is
-  checked, because which rows the excess pass reaches depends on the age pass.
-- Infrastructure failures: database errors inside one row's steps go back to
-  the executor (the job fails) where Django logs and continues; a storage
-  delete that succeeded before a failed transaction is not undone, as in
-  Django.
+`document.delete()` runs Django's full Collector: the document, the rows that
+cascade from it (a second archive row, a medical certificate, an appointment,
+a subscription file or a many-to-many link) with their own audit entries, and
+the SET_NULL references cleared. The Collector is atomic in its own
+transaction. A PROTECT reference raises as Django's `ProtectedError`: the
+archive row stays deleted, the document and its cascade are untouched, and
+the per-export handler logs the failure and continues with the next export.
+The committed document deletion graph declares no PROTECT relation reachable
+from `docmanager.Document`, so the process harness has no PROTECT seed.
+
+### Different
+
+- Infrastructure failures: database errors opening or reading the archive's
+  transaction go back to the executor (the job fails); an error inside the
+  document Collector rolls back that transaction, is logged and continues, as
+  in Django. A storage delete that succeeded before a failed transaction is
+  not undone, as in Django.
 
 ## Ported in tasks-db-f: auto_delete_orphan_medical_certificate
 
-Ported in [tasks-db-f](tasks-db-f.md), with the same cascade refusal. The task
-deletes the file, then `document.delete()` (which cascades to the certificate
-and to every other row referencing the document), then
-`medical_certificate.delete()` again on the deleted instance (a second audit
-entry), and a certificate without document ends the whole task.
+Ported in [tasks-db-f](tasks-db-f.md). The task deletes the file, then
+`document.delete()` (the Collector cascades to the certificate and to every
+other row referencing the document), then `medical_certificate.delete()`
+again on the deleted instance (a second audit entry), and a certificate
+without document ends the whole task.
 
 Since long-tail PR 3 (agent B) a name that is not UTF-8 or holds a NUL is
 application state (`ErrOrphanMedicalUnreachable`, the job fails from Go):
-PostgreSQL refuses the text. A creation date outside Python's range stays
-refused: the association import stores the archived value. A run whose document other
-rows reference stays refused.
+PostgreSQL refuses the text. A creation date outside Python's years is ported
+by chunk: Django's server-side cursor raises while fetching the chunk that
+holds it, so the rows of the earlier chunks are processed and the run ends.
 
 ## Evidence
 
@@ -142,10 +147,11 @@ Receipts are under ignored `quality-reports/go-migration/export-cleanup-worker-p
   must match the complete managed-model state (audit ids and timestamps
   normalized), the bucket contents and the job result. Five groups: default
   Django owner, native parity, invalid version/payload/tenant, a later run
-  deleting nothing, and the cascade refusal leaving state and bucket unchanged.
-  RED: without the registration the job stays pending (`Timed out: registered
-  export cleanup worker durable completion`) after the Django oracle and the
-  default-owner group pass. GREEN 5/5.
+  deleting nothing, and a document reference that cascades (a medical
+  certificate on an old export document): the Django oracle deletes it and Go
+  must match the same state. RED: without the registration the job stays
+  pending (`Timed out: registered export cleanup worker durable completion`)
+  after the Django oracle and the default-owner group pass. GREEN 5/5.
 - **Mutation** (caught): `EXPORT_MAX_COUNT` 3 to 4 (job result and state
   differ from Django).
 - **Timing/publication**: `cleanup_old_exports` added to the schedule

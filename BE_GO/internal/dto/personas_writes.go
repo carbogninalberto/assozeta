@@ -117,6 +117,37 @@ func PersonaDMYUnported(value any) bool {
 	return ok && StrptimeUnicodeDigits(text)
 }
 
+// PersonaListFieldPresent is ListField.get_value's presence for a request
+// body. A JSON body carries the key itself; an HTML form carries its values
+// (getlist, present even when the values are empty) or, when it has none, the
+// indexed keys parse_html_list collects for it (tutors_data[0],
+// tutors_data[0]key). Without either key the field is skipped, so its value
+// never reaches the model.
+func PersonaListFieldPresent(body domain.RequestObject, name string, form bool) bool {
+	if _, present := body.Lookup(name); present {
+		return true
+	}
+	if !form {
+		return false
+	}
+	for _, field := range body {
+		rest, found := strings.CutPrefix(field.Name, name+"[")
+		if !found {
+			continue
+		}
+		index, trailing, closed := strings.Cut(rest, "]")
+		// Python's re: `(.*)$` — '.' does not match '\n' and '$' matches at the
+		// end or just before ONE final '\n', so the text after ']' has no
+		// newline, or is newline-free text followed by exactly one final '\n'.
+		matched := strings.Count(trailing, "\n") == 0 ||
+			strings.Count(trailing, "\n") == 1 && strings.HasSuffix(trailing, "\n")
+		if closed && matched && index != "" && strings.TrimLeft(index, "0123456789") == "" {
+			return true
+		}
+	}
+	return false
+}
+
 // ParsePersonaFields ports the serializer's field validation. related(name,
 // id) checks existence (false: does not exist) and returns
 // domain.ErrPersonaWriteForeignReference to escape validation (tenant_scope).
@@ -163,6 +194,13 @@ func ParsePersonaFields(object domain.RequestObject, options PersonaFieldOptions
 			case string:
 				if !options.Form {
 					invalid.Fields["tutors_data"] = []string{"not-a-list:str"}
+				}
+			case domain.RequestUpload:
+				// Python: an HTML form's ListField reads getlist, so a file part
+				// named tutors_data is a list holding the file and validates like
+				// a string value. Outside a form it would be a non-list value.
+				if !options.Form {
+					invalid.Fields["tutors_data"] = []string{"not-a-list:" + pythonTypeName(value)}
 				}
 			default:
 				invalid.Fields["tutors_data"] = []string{"not-a-list:" + pythonTypeName(value)}
@@ -216,6 +254,13 @@ func ParsePersonaFields(object domain.RequestObject, options PersonaFieldOptions
 	}
 	for _, name := range PersonaBooleanFields {
 		value, present := lookup(name)
+		if present && options.Form && value == "" {
+			// Field.get_value on an HTML input: '' on a field that is not
+			// required and not nullable is empty, so the field is skipped and
+			// the model default (a create) or the stored value (a partial
+			// update) stays.
+			continue
+		}
 		if !present {
 			if options.Form && !options.Partial {
 				fields.Booleans[name] = false // BooleanField.default_empty_html

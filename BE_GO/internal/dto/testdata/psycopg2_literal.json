@@ -1,0 +1,222 @@
+[
+ {
+  "json": "\"a\"",
+  "literal": "'a'"
+ },
+ {
+  "json": "\"\"",
+  "literal": "''"
+ },
+ {
+  "json": "\"it's\"",
+  "literal": "'it''s'"
+ },
+ {
+  "json": "\"back\\\\slash\"",
+  "literal": "'back\\slash'"
+ },
+ {
+  "json": "\"uni\\u65e5\"",
+  "literal": "'uni日'"
+ },
+ {
+  "json": "\"a\\u0000b\"",
+  "error": "A string literal cannot contain NUL (0x00) characters."
+ },
+ {
+  "json": "5",
+  "literal": "5"
+ },
+ {
+  "json": "-5",
+  "literal": " -5"
+ },
+ {
+  "json": "0",
+  "literal": "0"
+ },
+ {
+  "json": "-0",
+  "literal": "0"
+ },
+ {
+  "json": "12345678901234567890",
+  "literal": "12345678901234567890"
+ },
+ {
+  "json": "-99999999999999999999999",
+  "literal": " -99999999999999999999999"
+ },
+ {
+  "json": "true",
+  "literal": "true"
+ },
+ {
+  "json": "false",
+  "literal": "false"
+ },
+ {
+  "json": "null",
+  "literal": "NULL"
+ },
+ {
+  "json": "1.5",
+  "literal": "1.5"
+ },
+ {
+  "json": "-1.5",
+  "literal": " -1.5"
+ },
+ {
+  "json": "1.0",
+  "literal": "1.0"
+ },
+ {
+  "json": "-0.0",
+  "literal": " -0.0"
+ },
+ {
+  "json": "1E5",
+  "literal": "100000.0"
+ },
+ {
+  "json": "1e16",
+  "literal": "1e+16"
+ },
+ {
+  "json": "1e-5",
+  "literal": "1e-05"
+ },
+ {
+  "json": "0.1",
+  "literal": "0.1"
+ },
+ {
+  "json": "1e22",
+  "literal": "1e+22"
+ },
+ {
+  "json": "1.5e300",
+  "literal": "1.5e+300"
+ },
+ {
+  "json": "1e400",
+  "literal": "'Infinity'::float"
+ },
+ {
+  "json": "-1e400",
+  "literal": "'-Infinity'::float"
+ },
+ {
+  "json": "1e-400",
+  "literal": "0.0"
+ },
+ {
+  "json": "123456789.123456789",
+  "literal": "123456789.12345679"
+ },
+ {
+  "json": "[]",
+  "literal": "'{}'"
+ },
+ {
+  "json": "[null]",
+  "literal": "'{NULL}'"
+ },
+ {
+  "json": "[[]]",
+  "literal": "ARRAY[ARRAY[]]"
+ },
+ {
+  "json": "[[null]]",
+  "literal": "'{{NULL}}'"
+ },
+ {
+  "json": "[[null],[null]]",
+  "literal": "'{{NULL},{NULL}}'"
+ },
+ {
+  "json": "[[], 1]",
+  "literal": "ARRAY[ARRAY[],1]"
+ },
+ {
+  "json": "[null, 1]",
+  "literal": "ARRAY[NULL,1]"
+ },
+ {
+  "json": "[[null], [1]]",
+  "literal": "ARRAY['{NULL}',ARRAY[1]]"
+ },
+ {
+  "json": "[[1], [null]]",
+  "literal": "ARRAY[ARRAY[1],'{NULL}']"
+ },
+ {
+  "json": "[null, null]",
+  "literal": "'{NULL,NULL}'"
+ },
+ {
+  "json": "[[[]]]",
+  "literal": "ARRAY[ARRAY[ARRAY[]]]"
+ },
+ {
+  "json": "[\"a\", null]",
+  "literal": "ARRAY['a',NULL]"
+ },
+ {
+  "json": "[true, false]",
+  "literal": "ARRAY[true,false]"
+ },
+ {
+  "json": "[1, -2.5, 1e400]",
+  "literal": "ARRAY[1, -2.5,'Infinity'::float]"
+ },
+ {
+  "json": "[[1,2],[3]]",
+  "literal": "ARRAY[ARRAY[1,2],ARRAY[3]]"
+ },
+ {
+  "json": "[[[null]]]",
+  "literal": "'{{{NULL}}}'"
+ },
+ {
+  "json": "{\"a\": 1}",
+  "error": "can't adapt type 'dict'"
+ },
+ {
+  "json": "[{\"a\": 1}]",
+  "error": "can't adapt type 'dict'"
+ },
+ {
+  "json": "[\"x\", \"a\\u0000\"]",
+  "error": "A string literal cannot contain NUL (0x00) characters."
+ },
+ {
+  "json": "[{\"a\":1}, \"b\\u0000\"]",
+  "error": "can't adapt type 'dict'"
+ },
+ {
+  "json": "[\"b\\u0000\", {\"a\":1}]",
+  "error": "A string literal cannot contain NUL (0x00) characters."
+ },
+ {
+  "json": "[[], []]",
+  "literal": "ARRAY[ARRAY[],ARRAY[]]"
+ },
+ {
+  "json": "[[null], []]",
+  "literal": "ARRAY['{NULL}',ARRAY[]]"
+ },
+ {
+  "json": "[[], [null]]",
+  "literal": "ARRAY[ARRAY[],'{NULL}']"
+ },
+ {
+  "json": "[\"\", \"{}\"]",
+  "literal": "ARRAY['','{}']"
+ },
+ {
+  "json": "[-0, 0.0]",
+  "literal": "ARRAY[0,0.0]"
+ }
+]

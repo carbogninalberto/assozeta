@@ -266,6 +266,66 @@ CASES += [
 ]
 
 
+# The numbers of paragraph markup in a built document: the same values as generate_pdf_paragraphs.py reads, one per
+# case, in the text before the table. A value reportlab raises on is recorded as its exception class.
+GOLDEN_NUMBERS = ['inf', '-inf', 'nan', 'Infinity', '+NaN', '1e400', '-1e400', '1e308', '99999999999999999999', '+99999999999999999999',
+                  '9007199254740993', '+9007199254740993', '0x1F', ' 12', '1 ', '12 mm', '١٢', '1_000', '1__0', '12x', '½', '1' * 400,
+                  '1' * 4400]
+IMAGE_URL = 'data:image/jpeg;base64,' + jpeg(4, 3, (200, 30, 30))
+GOLDEN_NUMBER_ATTRIBUTES = [
+    ('font-size', '<font size="%s">x</font>'),
+    ('font-size-relative', '<font size="+%s">x</font>'),
+    ('link-size', '<link href="https://example.test/n" size="%s">x</link>'),
+    ('sup-rise', '<sup rise="%s">x</sup>'),
+    ('sup-size', '<sup size="%s">x</sup>'),
+    ('sub-rise', '<sub rise="%s">x</sub>'),
+    ('img-width', '<img src="' + IMAGE_URL + '" width="%s"/>'),
+    ('img-height', '<img src="' + IMAGE_URL + '" height="%s"/>'),
+    ('img-valign', '<img src="' + IMAGE_URL + '" valign="%s"/>'),
+    ('u-width', '<u width="%s">x</u>'),
+    ('u-offset', '<u offset="%s">x</u>'),
+    ('u-gap', '<u gap="%s">x</u>'),
+    ('strike-width', '<strike width="%s">x</strike>'),
+    ('para-size', '<para size="%s">x</para>'),
+    ('para-leading', '<para leading="%s">x</para>'),
+    ('para-spaceb', '<para spaceb="%s">x</para>'),
+    ('para-spacea', '<para spacea="%s">x</para>'),
+    ('para-spaceshrinkage', '<para spaceshrinkage="%s">x</para>'),
+]
+
+
+def number_slug(value):
+    """A case name for a number: its digits and the markers of a long or special value."""
+    if len(value) > 18:
+        return 'n%d' % len(value) + (value[:4].replace('+', 'p').replace('-', 'm'))
+    return ''.join(char if char.isascii() and (char.isalnum() or char in '._-') else '_' for char in value)
+
+
+CASES += [
+    report('num-%s-%s' % (name, number_slug(value)), ['N'], [['x']], 'Numeri', text_before=template % value)
+    for name, template in GOLDEN_NUMBER_ATTRIBUTES
+    for value in GOLDEN_NUMBERS
+]
+
+# The same exact ints combined with the layout of several fragments and lines: the font size and the rise of a run
+# reach the text operators, the position of a line and the drawing of an underline, a link and a background.
+BIG = '9007199254740993'
+CASES += [
+    report('num-combo-underline', ['N'], [['x']], 'Numeri', text_before='<para size="%s"><u>a</u></para>' % BIG),
+    report('num-combo-underline-lines', ['N'], [['x']], 'Numeri', text_before='<font size="%s">a<br/>b<br/>c</font>' % BIG),
+    report('num-combo-strike', ['N'], [['x']], 'Numeri', text_before='<font size="%s"><strike>a</strike></font>' % BIG),
+    report('num-combo-link', ['N'], [['x']], 'Numeri', text_before='<a href="https://example.test/x" size="%s">a</a>' % BIG),
+    report('num-combo-sup-underline', ['N'], [['x']], 'Numeri', text_before='<sup rise="%s"><u>a</u></sup>' % BIG),
+    report('num-combo-sub-underline', ['N'], [['x']], 'Numeri', text_before='<sub rise="%s">a<u>b</u></sub>' % BIG),
+    report('num-combo-background', ['N'], [['x']], 'Numeri', text_before='<font size="%s" backcolor="red">a</font>' % BIG),
+    report('num-combo-underline-width', ['N'], [['x']], 'Numeri', text_before='<u width="%s">a</u>' % BIG),
+    report('num-combo-u-p', ['N'], [['x']], 'Numeri', text_before='<para size="%s"><u width="2*P">a</u></para>' % BIG),
+    report('num-combo-link-lines', ['N'], [['x']], 'Numeri', text_before='<a href="https://example.test/x" size="%s">a b c</a>' % BIG),
+    report('num-combo-background-lines', ['N'], [['x']], 'Numeri', text_before='<font size="%s" backcolor="red">a b c</font>' % BIG),
+    report('num-combo-sup-multi', ['N'], [['x']], 'Numeri', text_before='a <sup rise="%s">b</sup> c' % BIG),
+]
+
+
 def with_additional(case, items):
     case['spec']['additional'] = items
     return case
@@ -389,6 +449,27 @@ CASES += [
 ]
 
 
+# Anchors (a with a name) and internal links (#name, document:name): the destinations a document binds when it is saved.
+CASES += [
+    report('rt-anchor-link', ['Nome'], [['x']], 'Ancora', text_before='Apri <a name="inizio"/>qui.', text_after='Torna <a href="#inizio">su</a>.'),
+    report('rt-anchor-link-first', ['Nome'], [['x']], 'Ancora', text_before='Vai <a href="#fine">giù</a>.', text_after='<a name="fine"/>Fine.'),
+    report('rt-anchor-pages', ['Nome'], [['x']], 'Pagine', text_before='<a name="testata"/>' + ' '.join([WORDS] * 140),
+           text_after='<a href="#testata">testata</a> e <a href="document:testata">di nuovo</a>.'),
+    report('rt-anchor-document', ['Nome'], [['x']], 'Documento', text_before='<a name="dest"/>Testo.', text_after='Vai <a href="document:dest">qui</a>.'),
+    report('rt-anchor-undefined', ['Nome'], [['x']], 'Manca', text_before='Vai <a href="#manca">qui</a>.'),
+    report('rt-anchor-rebound', ['Nome'], [['x']], 'Rilegata', text_before='<a name="punto"/>Prima.', text_after='<a name="punto"/>Dopo e <a href="#punto">vai</a>.'),
+    report('rt-anchor-cells', ['Da', 'A'], [['<a name="riga1"/>uno', '<a href="#riga1">vai</a>'],
+                                            ['<a name="riga2"/>due', '<a href="document:riga2">vai</a>']], 'Celle'),
+    report('rt-anchor-cell-only', ['<a name="solo"/>'], [['y']], 'Solo'),
+    report('rt-anchor-row-only', ['A'], [['<a name="solo"/>']], 'Solo'),
+    report('rt-anchor-header', ['<a name="testata"/>Nome', 'Nota'], [['x', 'y']] * 60, 'Testata',
+           text_after='<a href="#testata">testata</a>'),
+    report('rt-anchor-targets', ['A'], [['<a href="città/日本">x</a>'], ['<a href="#a&#1;b">y</a>'], ['<a href="pdf:città.pdf">z</a>'],
+                                         ['<a href="pdf:a&#9;b.pdf">w</a>']], 'URL', text_before='<a name="a&#1;b"/>'),
+    report('rt-anchor-urls', ['A'], [['<a href="https://example.test/é?q=1&amp;r=2">x</a>'], ["<a href='a\"b(c)\\\\d'>y</a>"],
+                                     ['<a href="x y">z</a>'], ['<a href="😀/日本">w</a>']], 'URL'),
+]
+
 # Inline images (img with a JPEG data URL): in the line, sized and aligned, wrapped and cut between pages.
 PIX = 'data:image/jpeg;base64,' + jpeg(30, 20, (200, 30, 30))
 TALL = 'data:image/jpeg;base64,' + jpeg(8, 40, (20, 160, 60))
@@ -463,6 +544,211 @@ CASES += [
                            [('<para size="8">Rossi</para>', ['P', 'A'])]), ('Nuoto', ['02/01/2026'], [('Neri', ['P'])])),
 ]
 
+# Placed, justified, bulleted, framed, end-dotted and case-transformed paragraphs: the attributes of <para> and the
+# <bullet> tag, in the header, in cells, cut over pages and in additional rows.
+PLACED = [
+    '<para lindent="18">' + 'testo lungo che va a capo ' * 8 + '</para>',
+    '<para rindent="24">' + 'testo lungo che va a capo ' * 8 + '</para>',
+    '<para findent="18">' + 'testo lungo che va a capo ' * 8 + '</para>',
+    '<para lindent="18" rindent="12" findent="-9">' + 'testo lungo che va a capo ' * 8 + '</para>',
+    '<para lindent="1cm" findent="0.5cm">a b c</para>', '<para lindent="+6" rindent="+3">relativi</para>',
+    '<para align="justify">' + 'giustificato con più parole ' * 6 + '</para>',
+    '<para align="justify">giu <b>sti</b> fi <i>ca</i> to</para>',
+    '<para align="justify" justifylastline="2">' + 'ultima riga giustificata ' * 4 + '</para>',
+    '<para align="justify">a<br/>b<br/>c</para>', '<para align="justify" justifybreaks="1">a<br/>b<br/>c</para>',
+    '<para align="justify">a&nbsp;b c&nbsp;d e&nbsp;f g</para>',
+    '<para align="justify"><u>sotto</u> <a href="https://example.test/j">link</a> e <img src="%s"/> immagine</para>' % PIX,
+    '<para align="justify"><img src="%s" width="10" height="7"/> giustificato con immagine</para>' % PIX,
+    '<bullet>*</bullet>' + 'voce lunga che va a capo ' * 6,
+    '<para lindent="18" findent="-9"><bullet>*</bullet>' + 'voce lunga che va a capo ' * 6 + '</para>',
+    '<para lindent="18" findent="-9"><bullet><b>1.</b></bullet>' + 'prima voce della lista ' * 4 + '</para>',
+    '<para lindent="18" findent="-9"><bullet anchor="end">*</bullet>pallino a fine</para>',
+    '<para lindent="18" findent="-9"><bullet anchor="middle">*</bullet>pallino al centro</para>',
+    '<para lindent="18" findent="-9"><bullet anchor="numeric">9.9</bullet>numerico</para>',
+    '<para lindent="18" findent="-9" bindent="4"><bullet>*</bullet>rientrato</para>',
+    '<para lindent="18" findent="-9" bcolor="red" bfont="Times-Bold" bfontsize="9"><bullet>x</bullet>rosso</para>',
+    '<para lindent="6" findent="0" boffsety="3"><bullet>**</bullet>pallino più largo del rientro</para>',
+    '<para lindent="4"><bullet>***</bullet>largo</para>',
+    '<para borderwidth="1">bordo</para>', '<para borderwidth="2" bordercolor="blue">bordo blu</para>',
+    '<para borderwidth="1" borderpadding="4" bordercolor="#008000">padding</para>',
+    '<para borderwidth="1" borderpadding="3" borderradius="5" bordercolor="red">angoli</para>',
+    '<para borderwidth="1" borderpadding="6" bordercolor="black" backcolor="#eeeeee">' + 'bordo e sfondo ' * 6 + '</para>',
+    '<para lindent="12" rindent="6" borderwidth="1" borderpadding="2" bordercolor="blue">' + 'rientrato e bordato ' * 5 + '</para>',
+    '<para autoleading="min">piccolo <font size="18">grande</font> e <font size="6">minuto</font> testo</para>',
+    '<para autoleading="max">' + 'solo una font e testo lungo ' * 8 + '</para>',
+    '<para autoleading="min">' + 'solo una font e testo lungo ' * 8 + '</para>',
+    '<para autoleading="max">piccolo <font size="18">grande</font> e <img src="%s"/> testo</para>' % PIX,
+    '<para autoleading="min">' + 'righe con immagini <img src="%s" width="10" height="8"/> e testo ' % PIX * 6 + '</para>',
+    '<para autoleading="max" lindent="12">' + 'righe allargate e rientrate ' * 8 + '</para>',
+    '<para enddots=".">' + 'punti finali a sinistra ' * 4 + '</para>',
+    '<para enddots="." align="center">' + 'punti finali al centro ' * 4 + '</para>',
+    '<para enddots="." align="right">' + 'punti finali a destra ' * 4 + '</para>',
+    '<para enddots="." align="justify">' + 'punti finali giustificati ' * 4 + '</para>',
+    '<para enddots=" ." backcolor="#ffffcc">' + 'sfondo e punti ' * 4 + '</para>',
+    '<para enddots="…">puntini ' + 'di sospensione ' * 5 + '</para>',
+    '<para texttransform="uppercase">Straße città <b>ﬁne</b> İstanbul</para>',
+    '<para texttransform="lowercase">STRASSE CITTÀ <b>FINE</b> İSTANBUL</para>',
+    '<para texttransform="capitalize">hello world of <b>titles and</b> ΣΟΣΟΣ words</para>',
+    '<para texttransform="none">Mixed <b>Case</b></para>',
+    '<para texttransform="uppercase" align="center">a <i>b</i> c</para>',
+]
+# The colour model in the attributes of this port: CMYK, PCMYK and alpha colours and Blacker/Whiter as the paragraph
+# background, the border, the bullet and the end dots (reportlab draws each through setFillColor/setStrokeColor, the
+# separations and the ExtGState alpha included).
+COLOURED = [
+    '<para bordercolor="cmyk(0,1,0,0)" borderwidth="1" backcolor="rgba(255,0,0,0.5)"><bullet color="cmyk(0,0,1,0)">*</bullet>' +
+    'bordo ciano e sfondo rosso trasparente ' * 5 + '</para>',
+    '<para backcolor="pcmyk(20,0,0,0)">' + 'sfondo pcmyk ' * 6 + '</para>',
+    '<para bordercolor="cmyk(0,0,1,0)" borderwidth="2" borderpadding="3">bordo giallo</para>',
+    '<para bordercolor="rgba(0,0,255,0.25)" borderwidth="1">bordo blu trasparente</para>',
+    '<para backcolor="Blacker(blue,0.3)">sfondo scuro</para>',
+    '<para backcolor="Whiter(green,0.5)">sfondo chiaro</para>',
+    '<para backcolor="cmyk(0,0,0,0.2)" borderwidth="1" bordercolor="rgba(0,128,0,0.5)" borderradius="4">' +
+    'bordo e sfondo ' * 5 + '</para>',
+    '<para bcolor="Blacker(red,0.5)" lindent="18" findent="-9"><bullet>*</bullet>pallino scuro</para>',
+    '<para bcolor="rgba(0,0,255,0.5)" bindent="4"><bullet>*</bullet>pallino trasparente</para>',
+    '<para banchor="end" bcolor="cmyk(0,1,0,0)" bindent="6"><bullet>1.</bullet>numeric</para>',
+    '<para enddots="." color="cmyk(0,1,0,0)">' + 'punti ciano ' * 6 + '</para>',
+    '<para enddots="." color="rgba(0,0,0,0.4)" align="right">' + 'punti trasparenti ' * 6 + '</para>',
+    '<para color="pcmyk(100,0,0,0)" enddots="." align="center">' + 'punti pcmyk ' * 5 + '</para>',
+    '<para enddots=" ." color="cmyk(0,0,0,0.3)" backcolor="Whiter(yellow,0.6)">' + 'sfondo e punti ' * 5 + '</para>',
+]
+# The numbers of the paragraph attributes this port added, written the ways Python's int() and float() read them: the
+# Unicode digits and spaces, an underscore group, relative values, an exact int beyond 2**53 — and the values that fail
+# the build (a hex literal int() refuses, and the non-finite numbers fp_str cannot format).
+NUMBERED = [
+    '<para lindent="١٢">' + 'cifre unicode rientrate ' * 6 + '</para>',
+    '<para findent="۱۵" lindent="١٢">a capo rientrato con cifre</para>',
+    '<para borderwidth="٢" borderpadding="٣" bordercolor="red">' + 'bordo con cifre unicode ' * 5 + '</para>',
+    '<para lindent="1_0" findent="-4"><bullet indent="2">*</bullet>cifre raggruppate</para>',
+    '<para lindent="9007199254740993" borderwidth="9007199254740993">oltre 2**53</para>',
+    '<para lindent="+1_0" rindent="+٢">relativi</para>',
+    '<para borderradius="9007199254740993" borderwidth="1">raggio grande</para>',
+    '<para justifylastline="1_0" align="justify">' + 'ultima riga giustificata ' * 12 + '</para>',
+    '<para justifylastline="9007199254740993" align="justify">' + 'tutte le righe giustificate ' * 12 + '</para>',
+    '<para><bullet size="١٢" indent="٣" offsety="١">*</bullet>pallino con cifre unicode</para>',
+    '<para lindent="١٢" findent="-٦"><bullet size="9007199254740993">*</bullet>pallino enorme</para>',
+]
+CASES += [
+    balance('bs-placed', header(None, '<para lindent="12" align="justify">ASD Aurora club con rientro e giustificato</para>',
+                                city='Roma', address='Via Roma 1')),
+    balance('bs-bullet', header(None, '<para lindent="14" findent="-8"><bullet>*</bullet>ASD Aurora club e società</para>',
+                                city='', address='')),
+    balance('bs-border', header(None, '<para borderwidth="1" borderpadding="2" bordercolor="red">ASD Aurora club</para>')),
+    balance('bs-auto-leading', header(None, '<para autoleading="max">ASD <font size="24">Aurora</font> club con testo lungo</para>')),
+    balance('bs-end-dots', header(None, '<para enddots="." align="center">ASD Aurora club e società sportiva</para>')),
+    balance('bs-text-transform', header(None, '<para texttransform="uppercase">ASD <b>aurora</b> straße</para>')),
+    with_additional(balance('bs-placed-additional', header(None, 'ASD Aurora')),
+                    [['balance_at_date', '<para lindent="12" findent="-6"><bullet>*</bullet>' + 'I saldi sono riportati al 31/12/2025. ' * 9 + '</para>'],
+                     ['altro', '<para align="justify" enddots=".">' + 'I saldi sono riportati &amp; al 31/12/2025. ' * 9 + '</para>'],
+                     ['solo', '<para borderwidth="1" borderpadding="3" borderradius="4" bordercolor="blue">' + 'bordo ' * 40 + '</para>'],
+                     ['punti', '<para endDots="." texttransform="uppercase" autoleading="max">' + 'maiuscolo ' * 40 + '</para>']]),
+    report('rt-placed-cells', ['<para lindent="6">Nome</para>', 'Testo', 'Note'],
+           [[PLACED[i], PLACED[(i + 5) % len(PLACED)], PLACED[(i + 9) % len(PLACED)]] for i in range(len(PLACED))], 'Posizioni'),
+    report('rt-placed-squeezed', ['<para lindent="3">Colonna %d</para>' % i for i in range(12)],
+           [[PLACED[(i * 5 + j) % len(PLACED)] for j in range(12)] for i in range(len(PLACED))], 'Posizioni strette'),
+    report('rt-placed-pages', ['N', 'Testo'], [[str(i), PLACED[i % len(PLACED)]] for i in range(120)], 'Posizioni su pagine'),
+    report('rt-placed-text-cut', ['Nome'], [['x']], 'Tagliato',
+           text_before='<para lindent="18" rindent="12" findent="-9">' + 'testo rientrato che va a capo e si divide ' * 200 + '</para>',
+           text_after='<para align="justify">' + 'riga giustificata<br/>' * 200 + '</para>'),
+    report('rt-bullet-split', ['Nome'], [['x']], 'Pallino',
+           text_before='<para lindent="18" findent="-9"><bullet>*</bullet>' + 'voce della lista che va a capo ' * 120 + '</para>'),
+    report('rt-justify-split', ['Nome'], [['x']], 'Giustificato',
+           text_before='<para align="justify">' + 'giustificato su più righe e pagine ' * 150 + '</para>',
+           text_after='<para align="justify" enddots=".">' + 'altra giustificazione ' * 60 + '</para>'),
+    report('rt-justify-break-cut', ['Nome'], [['x']], 'Giustificato a capo',
+           text_before='<para align="justify">' + 'linea giustificata<br/>' * 400 + '</para>',
+           text_after='<para align="justify" justifybreaks="1">' + 'rotto<br/>' * 120 + '</para>'),
+    report('rt-justify-frags-split', ['Nome'], [['x']], 'Giustificato con frammenti',
+           text_before='<para align="justify">' + 'giu <b>sti</b> fi <i>ca</i> to ' * 400 + '</para>',
+           text_after='<para align="justify"><u>sotto</u> e <a href="https://example.test/k">link</a> ' * 120 + '</para>'),
+    report('rt-enddots-break-split', ['Nome'], [['x']], 'Punti a capo',
+           text_before='<para align="right" enddots=".">' + 'riga con punti<br/>' * 200 + '</para>'),
+    report('rt-bullet-text-whole', ['Nome'], [['x']], 'Pallino intero',
+           text_before='<para lindent="18" findent="-9" autoleading="max"><bullet>1.</bullet>' +
+                       'voce <font size="14">alta</font> della lista ' * 300 + '</para>'),
+    report('rt-auto-leading-split', ['Nome'], [['x']], 'Interlinea',
+           text_before='<para autoleading="max">' + 'grande <font size="20">testo</font> e piccolo ' * 80 + '</para>'),
+    report('rt-auto-leading-simple-split', ['Nome'], [['x']], 'Interlinea semplice',
+           text_before='<para autoleading="min">' + 'testo con interlinea minima ' * 200 + '</para>',
+           text_after='<para autoleading="max">' + 'testo con interlinea massima ' * 200 + '</para>'),
+    report('rt-border-split', ['Nome'], [['x']], 'Bordo',
+           text_before='<para borderwidth="1" borderpadding="3" bordercolor="blue">' + 'bordato su più pagine ' * 150 + '</para>'),
+    report('rt-placed-errors', ['A'], [['x']], 'Errori', text_after='<para lindent="x">a</para>'),
+    # The numbers of the style now that every attribute is a Python number: Unicode digits, an underscore group, a hex
+    # literal int() refuses, exact ints beyond 2**53, and the non-finite values fp_str cannot format.
+    report('rt-numbered-cells', ['<para lindent="١٢">Nome</para>', 'Testo', 'Note'],
+           [[NUMBERED[i], NUMBERED[(i + 5) % len(NUMBERED)], NUMBERED[(i + 9) % len(NUMBERED)]] for i in range(len(NUMBERED))],
+           'Numeri'),
+    report('rt-numbered-text', ['Nome'], [['x']], 'Numeri',
+           text_before='<para lindent="١٢" rindent="٨">' + 'testo rientrato con cifre unicode ' * 40 + '</para>',
+           text_after='<para findent="1_0" lindent="١٢">' + 'cifre raggruppate ' * 40 + '</para>'),
+    report('rt-numbered-justify', ['Nome'], [['x']], 'Numeri',
+           text_before='<para align="justify" justifylastline="9007199254740993">' + 'ultima riga giustificata ' * 60 + '</para>',
+           text_after='<para align="justify" justifylastline="1_0">' + 'altra ultima riga ' * 60 + '</para>'),
+    report('rt-numbered-bullet', ['Nome'], [['x']], 'Numeri',
+           text_before='<para lindent="١٢" findent="-٦"><bullet size="١٢" indent="٣" offsety="١">*</bullet>' +
+                       'pallino con cifre unicode ' * 40 + '</para>'),
+    report('rt-numbered-nan', ['Nome'], [['x']], 'Numeri', text_before='<para lindent="nan">non finito</para>'),
+    report('rt-numbered-inf', ['Nome'], [['x']], 'Numeri', text_before='<para borderwidth="inf" bordercolor="blue">x</para>'),
+    report('rt-numbered-overflow', ['Nome'], [['x']], 'Numeri', text_before='<para lindent="1e400">oltre il range</para>'),
+    report('rt-numbered-hex', ['Nome'], [['x']], 'Numeri', text_before='<para lindent="0x10">esadecimale</para>'),
+    report('rt-numbered-padding-nan', ['Nome'], [['x']], 'Numeri',
+           text_before='<para borderwidth="1" borderpadding="nan" bordercolor="red">x</para>'),
+    report('rt-numbered-negative-overflow', ['Nome'], [['x']], 'Numeri', text_before='<para lindent="-1e400">oltre il range</para>'),
+    # A relative border radius is added to the style's None (reportlab's TypeError).
+    report('rt-numbered-radius-relative', ['Nome'], [['x']], 'Numeri',
+           text_before='<para borderradius="+3" borderwidth="1">raggio relativo</para>'),
+    report('rt-numbered-bullet-big', ['Nome'], [['x']], 'Numeri',
+           text_before='<para><bullet size="9007199254740993">*</bullet>pallino enorme</para>'),
+    report('rt-numbered-bullet-nan', ['Nome'], [['x']], 'Numeri', text_before='<para><bullet size="nan">*</bullet>pallino nan</para>'),
+    balance('bs-numbered', header(None, '<para lindent="١٢" borderwidth="٢"><bullet size="١٢" indent="٣">*</bullet>ASD Aurora</para>')),
+    balance('bs-numbered-big', header(None, '<para lindent="9007199254740993">ASD Aurora oltre 2**53</para>')),
+    balance('bs-numbered-nan', header(None, '<para lindent="nan">ASD Aurora</para>')),
+    report('rt-colour-marks-cells', ['<para bordercolor="cmyk(0,1,0,0)" borderwidth="1">Colore</para>', 'Testo', 'Note'],
+           [[COLOURED[i], COLOURED[(i + 5) % len(COLOURED)], COLOURED[(i + 9) % len(COLOURED)]] for i in range(len(COLOURED))],
+           'Colori'),
+    report('rt-colour-marks-text', ['Nome'], [['x']], 'Colori',
+           text_before='<para bordercolor="cmyk(0,1,0,0)" borderwidth="1" backcolor="rgba(255,0,0,0.5)">' +
+                       '<bullet color="Blacker(red,0.5)">*</bullet>' + 'bordo ciano e sfondo trasparente ' * 40 + '</para>',
+           text_after='<para bcolor="cmyk(0,0,1,0)" lindent="18" findent="-9"><bullet>*</bullet>' +
+                      'pallino giallo su più righe ' * 40 + '</para>'),
+    report('rt-colour-marks-pages', ['N', 'Testo'], [[str(i), COLOURED[i % len(COLOURED)]] for i in range(90)], 'Colori su pagine'),
+    report('rt-colour-marks-enddots', ['Nome'], [['x']], 'Colori',
+           text_before='<para enddots="." color="cmyk(0,1,0,0)">' + 'punti in un paragrafo ciano ' * 80 + '</para>',
+           text_after='<para enddots=" ." color="rgba(0,0,0,0.4)" backcolor="pcmyk(0,0,20,0)">' + 'punti trasparenti ' * 60 + '</para>'),
+    report('rt-colour-marks-cut', ['Nome'], [['x']], 'Colori',
+           text_before='<para bordercolor="rgba(255,0,0,0.5)" borderwidth="2" backcolor="cmyk(0,0,0,0.1)">' + 'bordato su più pagine ' * 150 + '</para>'),
+    balance('bs-colour-marks', header(None, '<para bordercolor="cmyk(0,1,0,0)" borderwidth="1" backcolor="rgba(255,0,0,0.5)" ' +
+                                             'bcolor="Blacker(red,0.5)"><bullet>*</bullet>ASD Aurora</para>')),
+    balance('bs-colour-marks-alpha', header(None, '<para backcolor="rgba(0,0,255,0.3)" bordercolor="cmyk(0,0,1,0)" borderwidth="2">' +
+                                                  'ASD <font color="cmyk(1,0,0,0)">Aurora</font> club</para>')),
+    attendance('at-colour-marks', ('<para backcolor="rgba(0,255,0,0.4)" bcolor="cmyk(0,1,0,0)"><bullet>*</bullet>Yoga</para>',
+                                   ['01/01/2026'], [('<para bordercolor="Blacker(blue,0.5)" borderwidth="1">Rossi</para>', ['P'])]),
+               ('Nuoto', ['02/01/2026'], [('Neri', ['P'])])),
+    attendance('at-numbered', ('<para lindent="١٢"><bullet size="١٢">*</bullet>Yoga</para>', ['01/01/2026'],
+                               [('<para borderwidth="١">Rossi</para>', ['P'])]), ('Nuoto', ['02/01/2026'], [('Neri', ['P'])])),
+    # An anchor inside a justified, an indented, a bulleted and an autoLeading paragraph, with the # link that names it.
+    report('rt-anchor-justify', ['Nome'], [['x']], 'Ancora giustificata',
+           text_before='<para align="justify">' + 'giustificato con <a name="g1"/>ancora e testo ' * 60 + '</para>',
+           text_after='<para align="justify">Torna <a href="#g1">alla prima</a> e ancora.</para>'),
+    report('rt-anchor-indented', ['Nome'], [['x']], 'Ancora rientrata',
+           text_before='<para lindent="18" findent="-9">' + 'rientrato con <a name="i1"/>ancora ' * 60 + '</para>',
+           text_after='<para>Vai <a href="#i1">qui</a>.</para>'),
+    report('rt-anchor-bullet', ['Nome'], [['x']], 'Ancora con pallino',
+           text_before='<para lindent="18" findent="-9" align="justify"><bullet>*</bullet>' +
+                       'pallino con <a name="b1"/>ancora ' * 60 + '</para>',
+           text_after='<para>Vai <a href="#b1">qui</a>.</para>'),
+    report('rt-anchor-autoleading', ['Nome'], [['x']], 'Ancora interlinea',
+           text_before='<para autoleading="max">' + 'interlinea con <a name="l1"/>ancora e <font size="20">grande</font> ' * 40 + '</para>',
+           text_after='<para autoleading="min">Vai <a href="#l1">qui</a> con <font size="16">grande</font>.</para>'),
+    report('rt-anchor-enddots', ['Nome'], [['x']], 'Ancora punti',
+           text_before='<para enddots="." align="right">punti con <a name="e1"/>ancora ' * 30 + '</para>',
+           text_after='<para>Vai <a href="#e1">qui</a>.</para>'),
+    attendance('at-placed', ('<para lindent="6"><bullet>*</bullet>Yoga</para>', ['01/01/2026', '<para align="right">x</para>'],
+                             [('<para texttransform="uppercase">Rossi</para>', ['P', '<para enddots=".">A</para>'])]),
+               ('Nuoto', ['02/01/2026'], [('Neri', ['P'])])),
+]
 
 # Random mixtures of the tags above (a fixed seed): lines, fonts, sizes, colours, rises, links, images and breaks in one text.
 import random  # noqa: E402
@@ -545,6 +831,190 @@ CASES += [
 ]
 
 
+# <unichar name="..."/>: the character, name alias or named sequence unicodedata.lookup returns, in a header, a cell and
+# the text before the table; an unknown name is a syntax error of the paragraph.
+UNICHAR_NAMES = ('<unichar name="EURO SIGN"/> <unichar name="LATIN CAPITAL LETTER A WITH MACRON AND GRAVE"/> '
+                 '<unichar name="LATIN SMALL LETTER E WITH GRAVE"/>')
+CASES += [
+    report('rt-unichar-names', ['<unichar name="EURO SIGN"/> Importo', 'Nome'],
+           [['<unichar name="LATIN CAPITAL LETTER A WITH MACRON AND GRAVE"/>', '<unichar name="LATIN SMALL LETTER E WITH GRAVE"/>']],
+           '<unichar name="EURO SIGN"/> Titolo', text_before=UNICHAR_NAMES),
+    report('rt-unichar-name-error', ['A'], [['<unichar name="zzz"/>']], 'Errore'),
+]
+
+
+# Hyphenation (no pyphen is installed: a language leaves the line breaking alone), embedded hyphens and URI
+# splitting, in text and in narrow table cells.
+HYPHENATED = 'poli-sportiva contro-mano sotto-passo fuori-programma porta-tessera '
+LONG_URL = 'https://example.test/uno/due/tre/quattro/cinque/sei/sette/otto/nove/dieci?chiave=valore'
+WIDE_URL = LONG_URL + '&altra=cosa&terza=altra&quarta=quattro&quinta=cinque&sesta=sei'
+BEFORE_URL = 'parola ' * 6
+PATH_LIKE = 'prima/dopo/ancora/avanti/indietro/sopra/sotto/dentro/fuori'
+EMBEDDED = '<para embeddedhyphenation="1">' + HYPHENATED * 5 + '</para>'
+CASES += [
+    report('rt-hy-lang', ['A'], [['x']], 'Lingua', text_before='<para hyphenationlang="en_GB">' + HYPHENATED * 5 + '</para>'),
+    report('rt-hy-lang-off', ['A'], [['x']], 'Lingua', text_before=HYPHENATED * 5),
+    report('rt-hy-lang-blank', ['A'], [['x']], 'Lingua', text_before='<para hyphenationlang="">' + HYPHENATED * 3 + '</para>'),
+    report('rt-hy-embedded', ['A'], [['x']], 'Trattini', text_before=EMBEDDED),
+    report('rt-hy-embedded-off', ['A'], [['x']], 'Trattini', text_before=HYPHENATED * 5),
+    report('rt-hy-embedded-two', ['A'], [['x']], 'Trattini', text_before='<para embeddedhyphenation="2">' + HYPHENATED + '</para>'),
+    report('rt-hy-embedded-frags', ['A'], [['x']], 'Trattini',
+           text_before='<para embeddedhyphenation="1">' + ('poli-<b>sportiva</b> contro-<i>mano</i> fuori-<b><i>programma</i></b> ' * 10) + '</para>'),
+    report('rt-hy-uri-frag-parts', ['A'], [['x']], 'URI',
+           text_before='<para uriwastereduce="0.3">' + BEFORE_URL + 'https://example.test/<b>uno</b>/due/tre/quattro/cinque/sei?x=1' +
+                       ' <i>https://</i>example.test/uno/due/tre/quattro/cinque</para>'),
+    report('rt-hy-minword', ['A'], [['x']], 'Minimo',
+           text_before='<para embeddedhyphenation="1" hyphenationminwordlength="40">' + HYPHENATED * 5 + '</para>'),
+    report('rt-hy-minword-small', ['A'], [['x']], 'Minimo',
+           text_before='<para embeddedhyphenation="1" hyphenationminwordlength="3">' + HYPHENATED * 5 + '</para>'),
+    report('rt-hy-minword-zero', ['A'], [['x']], 'Minimo',
+           text_before='<para embeddedhyphenation="1" hyphenationminwordlength="0">' + HYPHENATED * 3 + '</para>'),
+    report('rt-hy-uri', ['A'], [['x']], 'URI',
+           text_before='<para uriwastereduce="0.3">' + BEFORE_URL + WIDE_URL + ' e ' + PATH_LIKE + '</para>'),
+    report('rt-hy-uri-off', ['A'], [['x']], 'URI', text_before=BEFORE_URL + WIDE_URL + ' e ' + PATH_LIKE),
+    report('rt-hy-uri-zero', ['A'], [['x']], 'URI',
+           text_before='<para uriwastereduce="0">' + BEFORE_URL + WIDE_URL + '</para>'),
+    report('rt-hy-uri-one', ['A'], [['x']], 'URI', text_before='<para uriwastereduce="1">' + BEFORE_URL + WIDE_URL + '</para>'),
+    report('rt-hy-uri-two', ['A'], [['x']], 'URI', text_before='<para uriwastereduce="2">' + BEFORE_URL + WIDE_URL + '</para>'),
+    report('rt-hy-uri-frags', ['A'], [['x']], 'URI',
+           text_before='<para uriwastereduce="0.3">' + 'scarica <b>' + WIDE_URL + '</b> e <i>' + PATH_LIKE + '</i> ' * 6 + '</para>'),
+    report('rt-hy-cells', ['A', 'B', 'C', 'D', 'E', 'F'],
+           [[HYPHENATED * 2, LONG_URL, PATH_LIKE, EMBEDDED, '<para uriwastereduce="0.3">' + LONG_URL + '</para>',
+             '<para embeddedhyphenation="1" hyphenationminwordlength="3">' + HYPHENATED + '</para>'] for _ in range(4)],
+           'Sillabe'),
+    report('rt-hy-cells-uri', ['URI %d' % i for i in range(8)],
+           [[LONG_URL, PATH_LIKE, '<para uriwastereduce="0.3">' + LONG_URL + '</para>',
+             '<para uriwastereduce="0.1">' + PATH_LIKE + '</para>', HYPHENATED, EMBEDDED,
+             '<para embeddedhyphenation="1">' + PATH_LIKE + '</para>', LONG_URL] for _ in range(3)], 'URI celle'),
+    report('rt-hy-text-cut', ['Nome'], [['x']], 'Tagliato',
+           text_before='<para embeddedhyphenation="1">' + HYPHENATED * 90 + '</para>',
+           text_after='<para uriwastereduce="0.3">' + (BEFORE_URL + WIDE_URL + ' ') * 20 + '</para>'),
+    report('rt-hy-uri-nan', ['A'], [['x']], 'URI', text_before='<para uriwastereduce="nan">' + BEFORE_URL + WIDE_URL + '</para>'),
+    report('rt-hy-uri-inf', ['A'], [['x']], 'URI', text_before='<para uriwastereduce="inf">' + BEFORE_URL + WIDE_URL + '</para>'),
+    report('rt-hy-uri-ninf', ['A'], [['x']], 'URI',
+           text_before='<para uriwastereduce="-inf">' + BEFORE_URL + WIDE_URL + '</para>'),
+    report('rt-hy-nobr', ['A'], [['x']], 'nobr',
+           text_before='<para embeddedhyphenation="1">' + '<nobr>poli-sportiva</nobr> ' * 12 + '</para>'),
+    report('rt-hy-nobr-uri', ['A'], [['x']], 'nobr',
+           text_before='<para uriwastereduce="0.3">' + BEFORE_URL + '<nobr>' + WIDE_URL + '</nobr></para>'),
+    report('rt-hy-nobr-frags', ['A'], [['x']], 'nobr',
+           text_before='<para embeddedhyphenation="1">x <nobr>poli-sportiva</nobr> y poli-sportiva poli-sportiva</para>'),
+    report('rt-hy-frags-minword', ['A'], [['x']], 'Minimo',
+           text_before='<para embeddedhyphenation="1" hyphenationminwordlength="3">' +
+                       ('poli-<b>sportiva</b> a-b contro-<i>mano</i> ' * 8) + '</para>'),
+    report('rt-hy-all', ['A'], [['x']], 'Insieme',
+           text_before='<para uriwastereduce="0.3" embeddedhyphenation="1" hyphenationlang="en_GB" ' +
+                       'hyphenationminwordlength="4">' + BEFORE_URL + WIDE_URL + ' ' + HYPHENATED * 4 + '</para>'),
+    report('rt-hy-nosplit', ['A'], [['x']], 'Intero',
+           text_before='<para embeddedhyphenation="1" splitlongwords="0">' + HYPHENATED * 4 + '</para>'),
+    report('rt-hy-nosplit-uri', ['A'], [['x']], 'Intero',
+           text_before='<para uriwastereduce="0.3" splitlongwords="0">' + BEFORE_URL + WIDE_URL + '</para>'),
+    report('rt-hy-email', ['A'], [['x']], 'Email',
+           text_before='<para uriwastereduce="0.3">' + BEFORE_URL + 'mario.rossi@example.test e ' +
+                       'info@associazione-sportiva.example.test e ' + PATH_LIKE + '</para>'),
+    report('rt-hy-cells-embedded', ['C%d' % i for i in range(12)],
+           [[EMBEDDED if j % 2 else HYPHENATED for j in range(12)] for _ in range(3)], 'Trattini stretti'),
+    report('rt-hy-pages', ['N', 'Testo'], [[str(i), EMBEDDED if i % 2 else '<para uriwastereduce="0.3">' + LONG_URL + '</para>']
+                                          for i in range(60)], 'Sillabe su pagine'),
+]
+
+
+# wordWrap 'RTL': the reversed words of the several-fragment layout, the last line of a justified paragraph, the
+# bullet placed from the right indent and the end dots before the line; and 'LTR', which changes nothing.
+RTL_TEXT = 'il corso di nuoto agonistico per adulti si tiene ogni settimana nella piscina comunale'
+RTL_FRAGS = 'il <b>corso</b> di <i>nuoto</i> &amp; <u>pallanuoto</u> agonistico per adulti'
+CASES += [
+    report('rt-rtl-left', ['A'], [['x']], 'RTL', text_before='<para wordwrap="RTL" align="left">' + RTL_TEXT * 3 + '</para>'),
+    report('rt-rtl-right', ['A'], [['x']], 'RTL', text_before='<para wordwrap="RTL" align="right">' + RTL_TEXT * 3 + '</para>'),
+    report('rt-rtl-center', ['A'], [['x']], 'RTL', text_before='<para wordwrap="RTL" align="center">' + RTL_TEXT * 3 + '</para>'),
+    report('rt-rtl-justify', ['A'], [['x']], 'RTL', text_before='<para wordwrap="RTL" align="justify">' + RTL_TEXT * 3 + '</para>'),
+    report('rt-rtl-frags', ['A'], [['x']], 'RTL', text_before='<para wordwrap="RTL">' + RTL_FRAGS * 4 + '</para>'),
+    report('rt-rtl-frags-justify', ['A'], [['x']], 'RTL',
+           text_before='<para wordwrap="RTL" align="justify">' + RTL_FRAGS * 4 + '</para>'),
+    report('rt-rtl-bullet', ['A'], [['x']], 'RTL',
+           text_before='<para wordwrap="RTL" lindent="18" findent="-9"><bullet>*</bullet>' + RTL_TEXT * 3 + '</para>'),
+    report('rt-rtl-bullet-end', ['A'], [['x']], 'RTL',
+           text_before='<para wordwrap="RTL" align="right" lindent="12" findent="-6"><bullet anchor="end">1.</bullet>' +
+                       RTL_TEXT * 3 + '</para>'),
+    report('rt-rtl-enddots', ['A'], [['x']], 'RTL',
+           text_before='<para wordwrap="RTL" enddots=".">' + RTL_TEXT * 2 + '</para>'),
+    report('rt-rtl-enddots-justify', ['A'], [['x']], 'RTL',
+           text_before='<para wordwrap="RTL" enddots=" ." align="justify">' + RTL_TEXT * 2 + '</para>'),
+    report('rt-rtl-enddots-right', ['A'], [['x']], 'RTL',
+           text_before='<para wordwrap="RTL" enddots="." align="right">' + RTL_TEXT * 2 + '</para>'),
+    report('rt-rtl-enddots-center', ['A'], [['x']], 'RTL',
+           text_before='<para wordwrap="RTL" enddots="." align="center">' + RTL_TEXT * 2 + '</para>'),
+    report('rt-rtl-cells', ['Nome', 'Nota', 'Testo'],
+           [['<para wordwrap="RTL">' + RTL_TEXT + '</para>', RTL_TEXT, '<para wordwrap="RTL" align="justify">' + RTL_TEXT + '</para>']
+            for _ in range(4)], 'RTL celle'),
+    report('rt-rtl-pages', ['N', 'Testo'],
+           [[str(i), '<para wordwrap="RTL" align="%s">%s</para>' % (('left', 'right', 'center', 'justify')[i % 4], RTL_TEXT * 2)]
+            for i in range(40)], 'RTL su pagine'),
+    report('rt-rtl-text-cut', ['Nome'], [['x']], 'Tagliato',
+           text_before='<para wordwrap="RTL" align="justify" enddots=".">' + RTL_TEXT * 60 + '</para>',
+           text_after='<para wordwrap="RTL" lindent="12" findent="-6"><bullet>*</bullet>' + RTL_TEXT * 40 + '</para>'),
+    report('rt-rtl-justifylastline', ['A'], [['x']], 'RTL',
+           text_before='<para wordwrap="RTL" align="justify" justifylastline="0">' + RTL_TEXT * 2 + '</para>'),
+    report('rt-rtl-justifylastline-words', ['A'], [['x']], 'RTL',
+           text_before='<para wordwrap="RTL" align="justify" justifylastline="40">' + RTL_TEXT * 2 + '</para>'),
+    report('rt-rtl-indents', ['A'], [['x']], 'RTL',
+           text_before='<para wordwrap="RTL" lindent="24" rindent="30" findent="-12"><bullet anchor="middle">**</bullet>' +
+                       RTL_TEXT * 3 + '</para>'),
+    report('rt-rtl-autoleading', ['A'], [['x']], 'RTL',
+           text_before='<para wordwrap="RTL" autoleading="max" enddots="." align="justify">' + RTL_TEXT * 2 + '</para>'),
+    report('rt-rtl-frags-split', ['A'], [['x']], 'RTL',
+           text_before='<para wordwrap="RTL" align="justify">' + ('il <b>corso</b> di <i>nuoto</i> &amp; <u>pallanuoto</u> ' * 80) + '</para>'),
+    report('rt-ltr-text', ['A'], [['x']], 'LTR', text_before='<para wordwrap="LTR" align="justify">' + RTL_TEXT * 3 + '</para>'),
+    report('rt-ltr-cells', ['Nome', 'Testo'], [['<para wordwrap="LTR">' + RTL_TEXT + '</para>', RTL_TEXT] for _ in range(3)], 'LTR'),
+    attendance('at-rtl', ('<para wordwrap="RTL">Yoga</para>', ['01/01/2026', '<para wordwrap="RTL" align="right">x</para>'],
+                           [('<para wordwrap="RTL">Rossi</para>', ['P', 'A'])]), ('Nuoto', ['02/01/2026'], [('Neri', ['P'])])),
+]
+
+
+# wordWrap 'CJK': the characters of the line breaking of textsplit, the characters that cannot start a line, the
+# fragments of a line and the table cells of a report.
+JAPANESE = '日本語のテキストを改行するテストです。'
+CHINESE = '中文文本换行测试。'
+KINSOKU = 'あ、い。う！え？お「か」き（く）け、こ。さ'
+CASES += [
+    report('rt-cjk-japanese', ['A'], [['x']], 'CJK', text_before='<para wordwrap="CJK">' + JAPANESE * 6 + '</para>'),
+    report('rt-cjk-chinese', ['A'], [['x']], 'CJK', text_before='<para wordwrap="CJK">' + CHINESE * 8 + '</para>'),
+    report('rt-cjk-mixed', ['A'], [['x']], 'CJK',
+           text_before='<para wordwrap="CJK">' + ('abc def 日本語 ghi jkl 中文 mno ' * 6) + '</para>'),
+    report('rt-cjk-kinsoku', ['A'], [['x']], 'CJK', text_before='<para wordwrap="CJK">' + KINSOKU * 5 + '</para>'),
+    report('rt-cjk-frags', ['A'], [['x']], 'CJK',
+           text_before='<para wordwrap="CJK">' + ('il <b>corso</b> 日本語 <i>nuoto</i> ' * 30) + '</para>'),
+    report('rt-cjk-enddots', ['A'], [['x']], 'CJK', text_before='<para wordwrap="CJK" enddots=".">' + JAPANESE * 8 + '</para>'),
+    report('rt-cjk-justify', ['A'], [['x']], 'CJK',
+           text_before='<para wordwrap="CJK" align="justify">' + (JAPANESE + ' ' + CHINESE) * 6 + '</para>'),
+    report('rt-cjk-autoleading', ['A'], [['x']], 'CJK',
+           text_before='<para wordwrap="CJK" autoleading="max">' + ('日本 <b>語のテキスト</b> です。' * 20) + '</para>'),
+    report('rt-cjk-breaks', ['A'], [['x']], 'CJK',
+           text_before='<para wordwrap="CJK">' + ('日本語<br/>テキスト<br/>' * 20) + '</para>'),
+    report('rt-cjk-pages', ['A'], [['x']], 'CJK', text_before='<para wordwrap="CJK">' + JAPANESE * 260 + '</para>'),
+    report('rt-cjk-pages-frags', ['A'], [['x']], 'CJK',
+           text_before='<para wordwrap="CJK">' + ('日本語 <b>のテキスト</b> を改行するテストです。' * 120) + '</para>'),
+    report('rt-cjk-anchor', ['A'], [['x']], 'CJK',
+           text_before='<para wordwrap="CJK">日本<a name="cjk"/>語のテキストを改行するテストです。</para>'),
+    report('rt-cjk-image', ['A'], [['x']], 'CJK',
+           text_before='<para wordwrap="CJK">日本語の<img src="data:image/jpeg;base64,' + jpeg(20, 12, (30, 90, 200)) + '" width="12" height="8" valign="middle"/>テキストです。</para>'),
+    report('rt-cjk-image-pct', ['A'], [['x']], 'CJK',
+           text_before='<para wordwrap="CJK">日本語<img src="data:image/jpeg;base64,' + jpeg(20, 12, (200, 40, 40)) +
+                       '" width="20%" valign="middle"/>テキスト</para>'),
+    report('rt-cjk-image-nbsp', ['A'], [['x']], 'CJK',
+           text_before='<para wordwrap="CJK" align="justify">日本語&nbsp;日本語<img src="data:image/jpeg;base64,' +
+                       jpeg(20, 12, (40, 40, 200)) + '" width="20%" valign="middle"/>テキストです。</para>'),
+    report('rt-cjk-cells', ['日本語', '中文', 'Testo'],
+           [[JAPANESE * 2, CHINESE * 2, '<para wordwrap="CJK">' + JAPANESE * 2 + '</para>'] for _ in range(4)], 'CJK celle'),
+    report('rt-cjk-cells-squeezed', ['列 %d' % i for i in range(8)],
+           [[JAPANESE, CHINESE, '<para wordwrap="CJK">' + JAPANESE + '</para>',
+             'あ、い。う！え？', '<para wordwrap="CJK">' + KINSOKU + '</para>', 'abc 日本語 def', CHINESE, JAPANESE]
+            for _ in range(3)], 'CJK strette'),
+    attendance('at-cjk', ('<para wordwrap="CJK">日本語</para>', ['01/01/2026', '中文'],
+                          [('<para wordwrap="CJK">日本 語</para>', ['P', 'A'])]), ('Nuoto', ['02/01/2026'], [('Neri', ['P'])])),
+]
+
+
 # /balance-sheet: an income/expense description is any json.loads value; reportlab draws str(value), a list taken for a
 # list of flowables (which raises unless it flattens to nothing), in the sheet's portrait A3 layout with its header.
 DESCRIBED = [['A) ENTRATE', '', '', ''], ['Entrate Generali', '', '', ''],
@@ -555,6 +1025,273 @@ CASES += [
     balance('bs-description-values', header(None, 'ASD Aurora'), rows=DESCRIBED),
     balance('bs-description-list', header(None, 'ASD Aurora'), rows=DESCRIBED + [[{'list': ['a', {'int': '1'}]}, '', '', '']]),
     balance('bs-description-empty-list', header(None, 'ASD Aurora'), rows=DESCRIBED + [[{'list': []}, '', '', '']]),
+]
+
+
+# Images: every format Pillow writes reaches the two paths a document draws one with — the balance-sheet logo, which
+# the view's own `src="data:image/jpeg;base64,…"` pattern hands to Image(BytesIO(...)), and an inline <img> of a report's
+# text before the table. Also the failures: a source Pillow cannot open (the paragraph's exception), a JPEG whose scan
+# data is cut (the draw raises), a logo Django's try around Image() catches (the '[LOGO]' paragraph), a logo that opens
+# and fails at draw, the same image twice (one object), a JPEG reportlab cannot read the dimensions of (its canned
+# image, proved in image_test.go: its stream has no ASCII85 terminator), and a PNG with a bad CRC, which Pillow logs
+# and decodes.
+import struct  # noqa: E402
+import zlib  # noqa: E402
+
+from PIL import Image as PILImage  # noqa: E402
+
+PALETTE = [(200, 30, 30), (10, 200, 30), (30, 30, 200), (255, 255, 0)]
+
+
+def image_bytes(image, fmt, **options):
+    out = io.BytesIO()
+    image.save(out, fmt, **options)
+    return out.getvalue()
+
+
+def palette_image(size=(4, 3)):
+    image = PILImage.new('P', size)
+    image.putpalette([channel for colour in PALETTE for channel in colour])
+    return image
+
+
+def indexed_bmp(bits, size, indexes, palette):
+    """A BITMAPINFOHEADER BMP at bits per pixel (Pillow writes 1, 8, 24 and 32 only)."""
+    width, height = size
+    stride = ((width * bits + 31) // 32) * 4
+    rows = []
+    for y in range(height - 1, -1, -1):
+        row = bytearray(stride)
+        for x in range(width):
+            index = indexes[y * width + x]
+            if bits == 8:
+                row[x] = index
+            elif bits == 4:
+                row[x // 2] |= index << (4 if x % 2 == 0 else 0)
+            else:
+                row[x // 8] |= (index & 1) << (7 - x % 8)
+        rows.append(bytes(row))
+    entries = 2 ** bits
+    table = b''.join(bytes((b, g, r, 0)) for r, g, b in (palette + [(0, 0, 0)] * entries)[:entries])
+    pixels = b''.join(rows)
+    header = struct.pack('<2sIHHI', b'BM', 14 + 40 + len(table) + len(pixels), 0, 0, 14 + 40 + len(table))
+    info = struct.pack('<IiiHHIIiiII', 40, width, height, 1, bits, 0, len(pixels), 0, 0, entries, 0)
+    return header + info + table + pixels
+
+
+def interlaced_png(width, height, pixels):
+    """An 8-bit RGB Adam7-interlaced PNG (Pillow decodes them but cannot write them)."""
+    def chunk(kind, payload):
+        return struct.pack('>I', len(payload)) + kind + payload + struct.pack('>I', zlib.crc32(kind + payload) & 0xffffffff)
+
+    passes = [(0, 0, 8, 8), (4, 0, 8, 8), (0, 4, 4, 8), (2, 0, 4, 4), (0, 2, 2, 4), (1, 0, 2, 2), (0, 1, 1, 2)]
+    raw = b''
+    for x0, y0, dx, dy in passes:
+        for y in range(y0, height, dy):
+            raw += b'\x00' + b''.join(bytes(pixels[y * width + x]) for x in range(x0, width, dx))
+    ihdr = struct.pack('>IIBBBBB', width, height, 8, 2, 0, 0, 1)
+    return b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', ihdr) + chunk(b'IDAT', zlib.compress(raw)) + chunk(b'IEND', b'')
+
+
+def bad_crc_png():
+    """A valid 4x3 RGB PNG whose IDAT CRC is wrong: Pillow logs a warning and decodes it."""
+    def chunk(kind, payload):
+        return struct.pack('>I', len(payload)) + kind + payload + struct.pack('>I', zlib.crc32(kind + payload) & 0xffffffff)
+
+    raw = b''.join(b'\x00' + bytes((200, 30, 30)) * 4 for _ in range(3))
+    good = chunk(b'IDAT', zlib.compress(raw))
+    damaged = good[:-1] + bytes((good[-1] ^ 0xff,))
+    return (b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', struct.pack('>IIBBBBB', 4, 3, 8, 2, 0, 0, 0)) + damaged
+            + chunk(b'IEND', b''))
+
+
+def jpeg_entropy_start(data):
+    """The offset of the entropy-coded data after the first SOS marker."""
+    position = data.find(b'\xff\xda')
+    length = (data[position + 2] << 8) | data[position + 3]
+    return position + 2 + length
+
+
+def corrupt_jpeg(data):
+    """A complete JPEG (EOI present) with one entropy-coded byte changed: Pillow decodes it with a warning."""
+    damaged = bytearray(data)
+    damaged[jpeg_entropy_start(data) + 3] ^= 0xff
+    return bytes(damaged)
+
+
+def data_url(data, media):
+    return 'data:%s;base64,%s' % (media, base64.b64encode(data).decode())
+
+
+IMAGES = [
+    ('png-l', image_bytes(PILImage.new('L', (4, 3), 90), 'PNG'), 'image/png'),
+    ('png-rgb', image_bytes(PILImage.new('RGB', (4, 3), (200, 30, 30)), 'PNG'), 'image/png'),
+    ('png-palette', image_bytes(palette_image(), 'PNG'), 'image/png'),
+    ('png-palette-trns', image_bytes(palette_image(), 'PNG', transparency=1), 'image/png'),
+    ('png-la', image_bytes(PILImage.new('LA', (4, 3), (90, 128)), 'PNG'), 'image/png'),
+    ('png-rgba', image_bytes(PILImage.new('RGBA', (4, 3), (200, 30, 30, 128)), 'PNG'), 'image/png'),
+    ('png-16bit', image_bytes(PILImage.new('I;16', (4, 3), 1000), 'PNG'), 'image/png'),
+    ('png-interlaced', interlaced_png(8, 8, [((x * 31) % 256, (y * 47) % 256, (x * y * 13) % 256)
+                                             for y in range(8) for x in range(8)]), 'image/png'),
+    ('png-bad-crc', bad_crc_png(), 'image/png'),
+    ('gif', image_bytes(palette_image(), 'GIF', optimize=False), 'image/gif'),
+    ('gif-transparency', image_bytes(palette_image(), 'GIF', optimize=False, transparency=1), 'image/gif'),
+    ('bmp-1bit', image_bytes(PILImage.new('1', (8, 3), 1), 'BMP'), 'image/bmp'),
+    ('bmp-4bit', indexed_bmp(4, (4, 3), [0, 1, 2, 3, 3, 2, 1, 0, 1, 1, 2, 2], PALETTE), 'image/bmp'),
+    ('bmp-8bit', image_bytes(palette_image(), 'BMP'), 'image/bmp'),
+    ('bmp-24bit', image_bytes(PILImage.new('RGB', (4, 3), (200, 30, 30)), 'BMP'), 'image/bmp'),
+    ('bmp-32bit', image_bytes(PILImage.new('RGBA', (4, 3), (200, 30, 30, 128)), 'BMP'), 'image/bmp'),
+    ('pbm', image_bytes(PILImage.new('1', (4, 3), 1), 'PPM'), 'image/x-portable-bitmap'),
+    ('pgm', image_bytes(PILImage.new('L', (4, 3), 90), 'PPM'), 'image/x-portable-graymap'),
+    ('ppm', image_bytes(PILImage.new('RGB', (4, 3), (200, 30, 30)), 'PPM'), 'image/x-portable-pixmap'),
+    ('jpeg-rgb', image_bytes(PILImage.new('RGB', (8, 6), (200, 30, 30)), 'JPEG'), 'image/jpeg'),
+    ('jpeg-grey', image_bytes(PILImage.new('L', (8, 6), 90), 'JPEG'), 'image/jpeg'),
+    ('jpeg-cmyk', image_bytes(PILImage.new('CMYK', (8, 6), (10, 200, 30, 5)), 'JPEG'), 'image/jpeg'),
+    ('jpeg-progressive', image_bytes(PILImage.new('RGB', (8, 6), (200, 30, 30)), 'JPEG', progressive=True), 'image/jpeg'),
+]
+
+IMAGE_BYTES = {name: data for name, data, _ in IMAGES}
+JPEG_RGB = IMAGE_BYTES['jpeg-rgb']
+
+
+def inline_image(name, data, media='image/png', extra=''):
+    return report(name, ['Immagine', 'Testo'], [['a <img src="%s"/>%s b' % (data_url(data, media), extra), 'x']], 'Immagine')
+
+
+def logo_image(name, data, media='image/jpeg'):
+    return balance(name, header(data_url(data, media), 'ASD Aurora'))
+
+
+CASES += [inline_image('img-%s' % name, data, media) for name, data, media in IMAGES]
+CASES += [logo_image('logo-%s' % name, IMAGE_BYTES[name], media) for name, media in (
+    ('png-rgb', 'image/jpeg'),
+    ('png-palette-trns', 'image/jpeg'),
+    ('png-rgba', 'image/jpeg'),
+    ('gif-transparency', 'image/jpeg'),
+    ('bmp-24bit', 'image/jpeg'),
+    ('ppm', 'image/jpeg'),
+    ('jpeg-rgb', 'image/jpeg'),
+    ('jpeg-grey', 'image/jpeg'),
+    ('jpeg-cmyk', 'image/jpeg'),
+    ('jpeg-progressive', 'image/jpeg'),
+)]
+
+CASES += [
+    # The same image twice: reportlab names an object after its pixels, so both
+    # drawings share object and content-stream /FormXob name.
+    inline_image('img-same-twice', IMAGE_BYTES['png-rgba'],
+                 extra='<img src="%s"/>' % data_url(IMAGE_BYTES['png-rgba'], 'image/png')),
+    balance('logo-same-image-inline', header(data_url(IMAGE_BYTES['png-rgb'], 'image/jpeg'),
+                                             'ASD <img src="%s"/> Aurora' % data_url(IMAGE_BYTES['png-rgb'], 'image/png'))),
+    # A JPEG whose scan data is cut before the EOI marker: Pillow opens it and its
+    # load raises OSError("image file is truncated ..."), so the draw fails.
+    inline_image('img-jpeg-truncated', JPEG_RGB[:jpeg_entropy_start(JPEG_RGB)], 'image/jpeg'),
+    logo_image('logo-jpeg-truncated', JPEG_RGB[:jpeg_entropy_start(JPEG_RGB)]),
+    # A complete JPEG with damaged entropy data: Pillow continues with a warning.
+    inline_image('img-jpeg-corrupt', corrupt_jpeg(JPEG_RGB), 'image/jpeg'),
+    # A source Pillow cannot identify: ImageReader raises UnidentifiedImageError and
+    # the paragraph is the export's exception.
+    inline_image('img-empty', b''),
+    inline_image('img-junk', b'this is not an image'),
+    # Logos the view answers with the '[LOGO]' paragraph: Python's base64 refuses
+    # the text, or Pillow cannot identify the bytes, or Pillow's stub formats open
+    # at 0x0 and the drawWidth division raises.
+    balance('logo-base64-junk', header('data:image/jpeg;base64,!!!', 'ASD Aurora')),
+    balance('logo-base64-padding', header('data:image/jpeg;base64,QUJDR', 'ASD Aurora')),
+    balance('logo-base64-no-data', header('data:image/jpeg;base64,=', 'ASD Aurora')),
+    balance('logo-unidentified', header(data_url(b'hello', 'image/jpeg'), 'ASD Aurora')),
+    balance('logo-zero-size', header(data_url(b'BUFR', 'image/jpeg'), 'ASD Aurora')),
+    balance('logo-png-in-jpeg-url', header(data_url(IMAGE_BYTES['png-rgb'], 'image/jpeg'), 'ASD Aurora')),
+    # A logo that opens (its size is known) and fails when it is drawn: its
+    # image data is cut, so Pillow's load raises while Django has already built
+    # the flowable.
+    balance('logo-draw-failure', header(data_url(image_bytes(palette_image(), 'PNG')[:-24], 'image/jpeg'), 'ASD Aurora')),
+    # Images and alpha colours on one page: the image objects (with the RGBA
+    # soft mask) and the ExtGState entries of the alpha colours are registered
+    # as reportlab registers them.
+    report('img-colour-alpha', ['Immagine'], [['x']], 'Alpha',
+           text_before='<font color="rgba(255,0,0,0.5)">alfa</font> <img src="%s"/> '
+                       '<font color="cmyk(0,1,0,0)">ciano</font> <font color="cmyka(1,0,0,0,0.5)">alfa cmyk</font>'
+                       % data_url(IMAGE_BYTES['png-rgba'], 'image/png')),
+    balance('img-colour-alpha-logo', header(data_url(IMAGE_BYTES['png-rgba'], 'image/jpeg'),
+                                            '<font color="rgba(0,0,255,0.5)">ASD</font> Aurora '
+                                            '<img src="%s"/> <font color="cmyk(1,0,0,0)">ciano</font>'
+                                            % data_url(IMAGE_BYTES['png-palette-trns'], 'image/png'))),
+    report('img-colour-alpha-same', ['Immagine'], [['x']], 'Alpha',
+           text_before='<img src="%s"/> <font backcolor="rgba(0,128,0,0.3)">sfondo</font> '
+                       '<img src="%s"/> <font color="pcmyk(0,0,0,100)">nero</font>'
+                       % (data_url(IMAGE_BYTES['png-rgba'], 'image/png'), data_url(IMAGE_BYTES['png-rgba'], 'image/png'))),
+]
+
+# Colours beyond plain RGB: the CMYK and PCMYK forms, transparency, the CMYK
+# separation colour space, Blacker/Whiter and a literal tuple in text,
+# backgrounds, underlines and strikes, and the colours that make reportlab raise
+# while it draws.
+COLOURED = [
+    '<font color="cmyk(1,0,0,0)">ciano</font> e <font color="cmyk(0,0,0,1)">nero</font>',
+    '<font color="pcmyk(100,65,0,30)">pcmyk</font> e <font color="pcmyk(0,0,0,100)">pcmyk nero</font>',
+    '<font color="rgba(255,0,0,0.5)">alfa</font> e <font color="rgba(0,0,255,0)">chiaro</font>',
+    '<font color="cmyka(1,0,0,0,0.5)">alfa cmyk</font> <font color="pcmyka(0,100,0,0,50)">alfa pcmyk</font>',
+    '<font backcolor="cmyk(0,0,0,0.2)">sfondo cmyk</font> <font backcolor="rgba(0,128,0,0.3)">sfondo alfa</font>',
+    '<u color="rgba(0,0,255,0.5)">sotto alfa</u> <strike color="pcmyk(0,0,0,100)">barrato pcmyk</strike>',
+    '<u color="cmyk(0.2,0.3,0.4,0.5)">sotto cmyk</u>',
+    '<font color="Blacker(red,0.5)">blacker</font> <font color="Whiter(blue,0.25)">whiter</font>',
+    '<font color="Blacker(_CMYK_black,0.4)">blacker cmyk</font> <font color="Whiter(transparent,0.5)">whiter alfa</font>',
+    '<font color="(0.2,0.4,0.6)">tupla</font> e <font color="(0.1,0.2,0.3,0.4)">tupla cmyk</font>',
+    '<font color="_CMYK_black">nero cmyk</font> <font color="transparent">trasparente</font>',
+    '<font color="cmyk(1,0,0,0)" backcolor="rgba(0,0,0,0.2)">combo</font>',
+    '<font color="hsl(120,100%,50%)">verde hsl</font> <font color="rgb(10%,20%,30%)">percento</font>',
+    '<font color="#123456">esadecimale</font> <font color="Blacker(red,0.5)">b</font>',
+]
+COLOUR_ROWS = [[COLOURED[i % len(COLOURED)], COLOURED[(i + 7) % len(COLOURED)]] for i in range(len(COLOURED))]
+CASES += [
+    report('rt-colour-cells', ['<font color="cmyk(1,0,0,0)">Colore</font>', '<font color="rgba(255,0,0,0.5)">Nota</font>'],
+           COLOUR_ROWS, 'Colori'),
+    report('rt-colour-text', ['Nome'], [['x']], 'Colori',
+           text_before=' '.join(COLOURED), text_after='<font color="cmyk(1,0,0,0)">fine</font> e <u color="rgba(0,0,0,0.5)">sotto</u>'),
+    report('rt-colour-pages', ['N', 'Testo'], [[str(i), COLOURED[i % len(COLOURED)]] for i in range(120)], 'Colori su pagine',
+           text_before=' '.join(COLOURED * 4), text_after='<font color="pcmyk(100,0,0,0)">coda</font>'),
+    report('rt-colour-header', ['<font color="cmyk(0,0,1,0)">A</font>'], [['x']], '<font color="rgba(0,0,0,0.5)">Titolo</font>',
+           footer_text='<font color="cmyk(1,0,0,0)">piede</font>'),
+    report('rt-colour-para', ['A'], [['<para color="cmyk(0,1,0,0)" backcolor="rgba(255,255,0,0.4)" underlinecolor="pcmyk(0,0,100,0)"'
+                                    ' strikecolor="cmyk(0,0,0,0.5)">paragrafo <u>sotto</u> <strike>barrato</strike></para>']], 'Paragrafo'),
+    # Colours that make reportlab raise while it draws the document.
+    report('rt-colour-alpha-error', ['A'], [['<font color="Color(1,0,0,2)">x</font>']], 'Errore'),
+    report('rt-colour-list-error', ['A'], [['<font color="fade(CMYKColor(1,0,0,0),[50])">x</font>']], 'Errore'),
+    report('rt-colour-dict-error', ['A'], [['<font color="getAllNamedColors()">x</font>']], 'Errore'),
+    report('rt-colour-none-error', ['A'], [['<font color="None">x</font>']], 'Errore'),
+    report('rt-colour-float-error', ['A'], [['<font color="1.5">x</font>']], 'Errore'),
+    report('rt-colour-background-error', ['A'], [['<font backcolor="getAllNamedColors()">x</font>']], 'Errore'),
+    report('rt-colour-text-error', ['Nome'], [['x']], 'Errore', text_before='<font color="Color(1,0,0,-1)">x</font>'),
+    report('rt-colour-string-background', ['A'], [['<font backcolor="asNative(&quot;red&quot;)">x</font>']], 'Stringa'),
+    # A colour value that is false draws no background at all.
+    report('rt-colour-empty-background', ['A'], [['<font backcolor="{}">x</font> <font backcolor="--0">y</font>']], 'Vuoto'),
+    report('rt-colour-density', ['A'], [['<font color="CMYKColor(0,0,1,0,density=0.5)">densita</font> <font color="pcmyk(0,0,100,0)">pieno</font>']], 'Densita'),
+    report('rt-colour-values', ['A'], [['<font color="hsl2rgb(0.5,1,2)">fuori</font> <font color="obj_R_G_B((0.2,0.4,0.6,1))">rgb</font>']], 'Valori'),
+    report('rt-colour-string-text-name', ['A'], [['<font color="asNative(&quot;red&quot;)">rosso</font> <u color="Color(0,0,0,0.5)">alfa</u>']], 'Nomi'),
+    report('rt-colour-string-text', ['A'], [['<font color="fp_str(1)">x</font>']], 'Stringa'),
+    # A separation colour space has a stream without a filter, which TESTS.contracts.pdf
+    # cannot record: only the case that raises before it writes one is here.
+    report('rt-colour-separation-error', ['A'], [['<font color="CMYKColorSep(1,1,1,0)">x</font>']], 'Errore'),
+    # Colour components of every number kind drawn through fp_str, a spotName of
+    # another type (ignored by a plain CMYK colour), the \N{...} escapes and the
+    # values reportlab raises on while drawing.
+    report('rt-colour-numbers', ['A'], [['<font color="Color(100000000000000000000, 0, 0)">grande</font> '
+                                        '<font color="Color(100000000000000000001, 0, 0)">arrotondato</font> '
+                                        '<font color="Color(True, 0, 0)">vero</font> '
+                                        '<font color="CMYKColor(1180591620717411303424,0,0,0)">cmyk grande</font> '
+                                        '<font color="Color(0x10,0,0)">sedici</font>']], 'Numeri'),
+    report('rt-colour-names-escape', ['A'], [[r"""<font color="'\N{LATIN SMALL LETTER R}ED'">rosso</font> """
+                                             r"""<font color="'\N{latin small letter b}lue'">blu</font> """
+                                             r"""<font color="'\N{LATIN SMALL LETTER G}REEN'">verde</font>"""]], 'Nomi'),
+    report('rt-colour-escape-value-error', ['A'], [[r"""<font color="'\N{VULGAR FRACTION ONE HALF}'">x</font>"""]], 'Errore'),
+    report('rt-colour-escape-nul-error', ['A'], [[r"""<font color="'\N{NUL}x'">x</font>"""]], 'Errore'),
+    report('rt-colour-spotname', ['A'], [['<font color="CMYKColor(1,0,0,0,spotName=0)">a</font> '
+                                          '<font color="PCMYKColor(0,65,100,30,spotName=())">b</font>']], 'Spot'),
+    report('rt-colour-escape-error', ['A'], [[r"""<font color="'\N{KEYCAP NUMBER SIGN}'">x</font>"""]], 'Errore'),
+    report('rt-colour-spotname-error', ['A'], [['<font color="CMYKColorSep(1,0,0,0,spotName=7)">x</font>']], 'Errore'),
+    report('rt-colour-component-error', ['A'], [['<font color="Color(red,0,0)">x</font>']], 'Errore'),
+    report('rt-colour-infinite-error', ['A'], [['<font color="Color(1e400,0,0)">x</font>']], 'Errore'),
 ]
 
 

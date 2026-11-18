@@ -1856,6 +1856,635 @@
    "family": null,
    "id": "a1000000-0000-4000-8000-000000677051",
    "created": "2024-02-22T07:00:00Z"
+  },
+  "pic_upd": {
+   "picture_path": "https://cdn.example.test/fosca-old.jpg",
+   "first_name": "Fosca",
+   "last_name": "Fotografata",
+   "sex": "A",
+   "tax_code": null,
+   "born_date": null,
+   "born_city": null,
+   "address_city": null,
+   "address": null,
+   "address_cap": null,
+   "nationality": "Italiana",
+   "nationality_residence": "Italia",
+   "email": null,
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "phone_label": null,
+   "phone_2_label": null,
+   "phone_3_label": null,
+   "phone_4_label": null,
+   "is_minor": false,
+   "disabled": false,
+   "draft": false,
+   "deleted": false,
+   "family_role": null,
+   "id_number": null,
+   "migrated": false,
+   "notes": null,
+   "user": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": null,
+   "family": null,
+   "id": "a1000000-0000-4000-8000-000000677052",
+   "created": "2024-02-23T07:00:00Z"
+  },
+  "pic_collab": {
+   "picture_path": null,
+   "first_name": "Fulvio",
+   "last_name": "Fotocollaborato",
+   "sex": "A",
+   "tax_code": null,
+   "born_date": null,
+   "born_city": null,
+   "address_city": null,
+   "address": null,
+   "address_cap": null,
+   "nationality": "Italiana",
+   "nationality_residence": "Italia",
+   "email": null,
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "phone_label": null,
+   "phone_2_label": null,
+   "phone_3_label": null,
+   "phone_4_label": null,
+   "is_minor": false,
+   "disabled": false,
+   "draft": false,
+   "deleted": false,
+   "family_role": null,
+   "id_number": null,
+   "migrated": false,
+   "notes": null,
+   "user": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": null,
+   "family": null,
+   "id": "a1000000-0000-4000-8000-000000677053",
+   "created": "2024-02-24T07:00:00Z"
+  },
+  "pic_form": {
+   "picture_path": null,
+   "first_name": "Flora",
+   "last_name": "Fotomodulo",
+   "sex": "A",
+   "tax_code": null,
+   "born_date": null,
+   "born_city": null,
+   "address_city": null,
+   "address": null,
+   "address_cap": null,
+   "nationality": "Italiana",
+   "nationality_residence": "Italia",
+   "email": null,
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "phone_label": null,
+   "phone_2_label": null,
+   "phone_3_label": null,
+   "phone_4_label": null,
+   "is_minor": false,
+   "disabled": false,
+   "draft": false,
+   "deleted": false,
+   "family_role": null,
+   "id_number": null,
+   "migrated": false,
+   "notes": null,
+   "user": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": null,
+   "family": null,
+   "id": "a1000000-0000-4000-8000-000000677054",
+   "created": "2024-02-25T07:00:00Z"
+  },
+  "pic_keep": {
+   "picture_path": "https://cdn.example.test/fabio.jpg",
+   "first_name": "Fabio",
+   "last_name": "Fotofallita",
+   "sex": "A",
+   "tax_code": null,
+   "born_date": null,
+   "born_city": null,
+   "address_city": null,
+   "address": null,
+   "address_cap": null,
+   "nationality": "Italiana",
+   "nationality_residence": "Italia",
+   "email": null,
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "phone_label": null,
+   "phone_2_label": null,
+   "phone_3_label": null,
+   "phone_4_label": null,
+   "is_minor": false,
+   "disabled": false,
+   "draft": false,
+   "deleted": false,
+   "family_role": null,
+   "id_number": null,
+   "migrated": false,
+   "notes": null,
+   "user": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": null,
+   "family": null,
+   "id": "a1000000-0000-4000-8000-000000677055",
+   "created": "2024-02-26T07:00:00Z"
+  },
+  "pic_denied": {
+   "picture_path": "https://cdn.example.test/fermo.jpg",
+   "first_name": "Fermo",
+   "last_name": "Fotonegata",
+   "sex": "A",
+   "tax_code": null,
+   "born_date": null,
+   "born_city": null,
+   "address_city": null,
+   "address": null,
+   "address_cap": null,
+   "nationality": "Italiana",
+   "nationality_residence": "Italia",
+   "email": null,
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "phone_label": null,
+   "phone_2_label": null,
+   "phone_3_label": null,
+   "phone_4_label": null,
+   "is_minor": false,
+   "disabled": false,
+   "draft": false,
+   "deleted": false,
+   "family_role": null,
+   "id_number": null,
+   "migrated": false,
+   "notes": null,
+   "user": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": null,
+   "family": null,
+   "id": "a1000000-0000-4000-8000-000000677056",
+   "created": "2024-02-27T07:00:00Z"
+  },
+  "pic_other": {
+   "picture_path": "https://cdn.example.test/fedra.jpg",
+   "first_name": "Fedra",
+   "last_name": "Fotoaltrui",
+   "sex": "A",
+   "tax_code": null,
+   "born_date": null,
+   "born_city": null,
+   "address_city": null,
+   "address": null,
+   "address_cap": null,
+   "nationality": "Italiana",
+   "nationality_residence": "Italia",
+   "email": null,
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "phone_label": null,
+   "phone_2_label": null,
+   "phone_3_label": null,
+   "phone_4_label": null,
+   "is_minor": false,
+   "disabled": false,
+   "draft": false,
+   "deleted": false,
+   "family_role": null,
+   "id_number": null,
+   "migrated": false,
+   "notes": null,
+   "user": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": null,
+   "family": null,
+   "id": "a1000000-0000-4000-8000-000000677057",
+   "created": "2024-02-28T07:00:00Z"
+  },
+  "pic_text": {
+   "picture_path": null,
+   "first_name": "Folco",
+   "last_name": "Fototesto",
+   "sex": "A",
+   "tax_code": null,
+   "born_date": null,
+   "born_city": null,
+   "address_city": null,
+   "address": null,
+   "address_cap": null,
+   "nationality": "Italiana",
+   "nationality_residence": "Italia",
+   "email": null,
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "phone_label": null,
+   "phone_2_label": null,
+   "phone_3_label": null,
+   "phone_4_label": null,
+   "is_minor": false,
+   "disabled": false,
+   "draft": false,
+   "deleted": false,
+   "family_role": null,
+   "id_number": null,
+   "migrated": false,
+   "notes": null,
+   "user": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": null,
+   "family": null,
+   "id": "a1000000-0000-4000-8000-000000677058",
+   "created": "2024-03-01T07:00:00Z"
+  },
+  "int_tutor": {
+   "picture_path": null,
+   "first_name": "Ivo",
+   "last_name": "Intero",
+   "sex": "A",
+   "tax_code": null,
+   "born_date": "1971-01-01",
+   "born_city": null,
+   "address_city": null,
+   "address": null,
+   "address_cap": null,
+   "nationality": "Italiana",
+   "nationality_residence": "Italia",
+   "email": null,
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "phone_label": null,
+   "phone_2_label": null,
+   "phone_3_label": null,
+   "phone_4_label": null,
+   "is_minor": false,
+   "disabled": false,
+   "draft": false,
+   "deleted": false,
+   "family_role": null,
+   "id_number": null,
+   "migrated": false,
+   "notes": null,
+   "user": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": null,
+   "family": null,
+   "id": "00000000-0000-0000-0000-000000001092",
+   "created": "2024-03-02T07:00:00Z"
+  },
+  "one_tutor": {
+   "picture_path": null,
+   "first_name": "Ugo",
+   "last_name": "Uno",
+   "sex": "A",
+   "tax_code": null,
+   "born_date": "1972-01-01",
+   "born_city": null,
+   "address_city": null,
+   "address": null,
+   "address_cap": null,
+   "nationality": "Italiana",
+   "nationality_residence": "Italia",
+   "email": null,
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "phone_label": null,
+   "phone_2_label": null,
+   "phone_3_label": null,
+   "phone_4_label": null,
+   "is_minor": false,
+   "disabled": false,
+   "draft": false,
+   "deleted": false,
+   "family_role": null,
+   "id_number": null,
+   "migrated": false,
+   "notes": null,
+   "user": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": null,
+   "family": null,
+   "id": "00000000-0000-0000-0000-000000000001",
+   "created": "2024-03-03T07:00:00Z"
+  },
+  "prim": {
+   "picture_path": null,
+   "first_name": "Prima",
+   "last_name": "Flag",
+   "sex": "A",
+   "tax_code": null,
+   "born_date": "2010-01-01",
+   "born_city": null,
+   "address_city": null,
+   "address": null,
+   "address_cap": null,
+   "nationality": "Italiana",
+   "nationality_residence": "Italia",
+   "email": null,
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "phone_label": null,
+   "phone_2_label": null,
+   "phone_3_label": null,
+   "phone_4_label": null,
+   "is_minor": false,
+   "disabled": false,
+   "draft": false,
+   "deleted": false,
+   "family_role": null,
+   "id_number": null,
+   "migrated": false,
+   "notes": null,
+   "user": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": null,
+   "family": null,
+   "id": "a1000000-0000-4000-8000-000000677061",
+   "created": "2024-03-04T07:00:00Z"
+  },
+  "prim_t1": {
+   "picture_path": null,
+   "first_name": "Pino",
+   "last_name": "Primo",
+   "sex": "A",
+   "tax_code": null,
+   "born_date": "1980-01-01",
+   "born_city": null,
+   "address_city": null,
+   "address": null,
+   "address_cap": null,
+   "nationality": "Italiana",
+   "nationality_residence": "Italia",
+   "email": null,
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "phone_label": null,
+   "phone_2_label": null,
+   "phone_3_label": null,
+   "phone_4_label": null,
+   "is_minor": false,
+   "disabled": false,
+   "draft": false,
+   "deleted": false,
+   "family_role": null,
+   "id_number": null,
+   "migrated": false,
+   "notes": null,
+   "user": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": null,
+   "family": null,
+   "id": "a1000000-0000-4000-8000-000000677062",
+   "created": "2024-03-05T07:00:00Z"
+  },
+  "prim_t2": {
+   "picture_path": null,
+   "first_name": "Pina",
+   "last_name": "Seconda",
+   "sex": "A",
+   "tax_code": null,
+   "born_date": "1981-01-01",
+   "born_city": null,
+   "address_city": null,
+   "address": null,
+   "address_cap": null,
+   "nationality": "Italiana",
+   "nationality_residence": "Italia",
+   "email": null,
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "phone_label": null,
+   "phone_2_label": null,
+   "phone_3_label": null,
+   "phone_4_label": null,
+   "is_minor": false,
+   "disabled": false,
+   "draft": false,
+   "deleted": false,
+   "family_role": null,
+   "id_number": null,
+   "migrated": false,
+   "notes": null,
+   "user": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": null,
+   "family": null,
+   "id": "a1000000-0000-4000-8000-000000677063",
+   "created": "2024-03-06T07:00:00Z"
+  },
+  "idu": {
+   "picture_path": null,
+   "first_name": "Ida",
+   "last_name": "Intera",
+   "sex": "A",
+   "tax_code": null,
+   "born_date": "2011-01-01",
+   "born_city": null,
+   "address_city": null,
+   "address": null,
+   "address_cap": null,
+   "nationality": "Italiana",
+   "nationality_residence": "Italia",
+   "email": null,
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "phone_label": null,
+   "phone_2_label": null,
+   "phone_3_label": null,
+   "phone_4_label": null,
+   "is_minor": false,
+   "disabled": false,
+   "draft": false,
+   "deleted": false,
+   "family_role": null,
+   "id_number": null,
+   "migrated": false,
+   "notes": null,
+   "user": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": null,
+   "family": null,
+   "id": "a1000000-0000-4000-8000-000000677064",
+   "created": "2024-03-07T07:00:00Z"
+  },
+  "idu2": {
+   "picture_path": null,
+   "first_name": "Ines",
+   "last_name": "Intera",
+   "sex": "A",
+   "tax_code": null,
+   "born_date": "2011-02-01",
+   "born_city": null,
+   "address_city": null,
+   "address": null,
+   "address_cap": null,
+   "nationality": "Italiana",
+   "nationality_residence": "Italia",
+   "email": null,
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "phone_label": null,
+   "phone_2_label": null,
+   "phone_3_label": null,
+   "phone_4_label": null,
+   "is_minor": false,
+   "disabled": false,
+   "draft": false,
+   "deleted": false,
+   "family_role": null,
+   "id_number": null,
+   "migrated": false,
+   "notes": null,
+   "user": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": null,
+   "family": null,
+   "id": "a1000000-0000-4000-8000-000000677065",
+   "created": "2024-03-08T07:00:00Z"
+  },
+  "idu3": {
+   "picture_path": null,
+   "first_name": "Ivana",
+   "last_name": "Intera",
+   "sex": "A",
+   "tax_code": null,
+   "born_date": "2011-03-01",
+   "born_city": null,
+   "address_city": null,
+   "address": null,
+   "address_cap": null,
+   "nationality": "Italiana",
+   "nationality_residence": "Italia",
+   "email": null,
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "phone_label": null,
+   "phone_2_label": null,
+   "phone_3_label": null,
+   "phone_4_label": null,
+   "is_minor": false,
+   "disabled": false,
+   "draft": false,
+   "deleted": false,
+   "family_role": null,
+   "id_number": null,
+   "migrated": false,
+   "notes": null,
+   "user": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": null,
+   "family": null,
+   "id": "a1000000-0000-4000-8000-000000677066",
+   "created": "2024-03-09T07:00:00Z"
+  },
+  "idu4": {
+   "picture_path": null,
+   "first_name": "Irma",
+   "last_name": "Intera",
+   "sex": "A",
+   "tax_code": null,
+   "born_date": "2011-04-01",
+   "born_city": null,
+   "address_city": null,
+   "address": null,
+   "address_cap": null,
+   "nationality": "Italiana",
+   "nationality_residence": "Italia",
+   "email": null,
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "phone_label": null,
+   "phone_2_label": null,
+   "phone_3_label": null,
+   "phone_4_label": null,
+   "is_minor": false,
+   "disabled": false,
+   "draft": false,
+   "deleted": false,
+   "family_role": null,
+   "id_number": null,
+   "migrated": false,
+   "notes": null,
+   "user": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": null,
+   "family": null,
+   "id": "a1000000-0000-4000-8000-000000677067",
+   "created": "2024-03-10T07:00:00Z"
+  },
+  "idu_t": {
+   "picture_path": null,
+   "first_name": "Iris",
+   "last_name": "Vecchia",
+   "sex": "A",
+   "tax_code": null,
+   "born_date": "1982-01-01",
+   "born_city": null,
+   "address_city": null,
+   "address": null,
+   "address_cap": null,
+   "nationality": "Italiana",
+   "nationality_residence": "Italia",
+   "email": null,
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "phone_label": null,
+   "phone_2_label": null,
+   "phone_3_label": null,
+   "phone_4_label": null,
+   "is_minor": false,
+   "disabled": false,
+   "draft": false,
+   "deleted": false,
+   "family_role": null,
+   "id_number": null,
+   "migrated": false,
+   "notes": null,
+   "user": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": null,
+   "family": null,
+   "id": "a1000000-0000-4000-8000-000000677068",
+   "created": "2024-03-11T07:00:00Z"
   }
  },
  "relations": {
@@ -1906,19 +2535,49 @@
    "associate": "promote",
    "tutor": "promote_t",
    "primary": false
+  },
+  "prim_r1": {
+   "id": 677009,
+   "associate": "prim",
+   "tutor": "prim_t1",
+   "primary": true
+  },
+  "prim_r2": {
+   "id": 677010,
+   "associate": "prim",
+   "tutor": "prim_t2",
+   "primary": false
+  },
+  "idu_r": {
+   "id": 677011,
+   "associate": "idu",
+   "tutor": "idu_t",
+   "primary": true
+  },
+  "idu_r2": {
+   "id": 677012,
+   "associate": "idu2",
+   "tutor": "idu_t",
+   "primary": true
+  },
+  "idu_r3": {
+   "id": 677013,
+   "associate": "idu3",
+   "tutor": "idu_t",
+   "primary": true
   }
  },
  "medical": {
-  "id": "a1000000-0000-4000-8000-000000677052",
+  "id": "a1000000-0000-4000-8000-000000677069",
   "expiration": "2030-01-31"
  },
  "tag": {
-  "id": "a1000000-0000-4000-8000-000000677053",
+  "id": "a1000000-0000-4000-8000-000000677070",
   "name": "Agonisti"
  },
  "subscriptions": {
   "cur": {
-   "id": "a1000000-0000-4000-8000-000000677054",
+   "id": "a1000000-0000-4000-8000-000000677071",
    "associate": "a1000000-0000-4000-8000-000000677049",
    "start": "2020-01-01",
    "end": "2099-12-31",
@@ -1939,7 +2598,7 @@
    "draft": false
   },
   "old": {
-   "id": "a1000000-0000-4000-8000-000000677055",
+   "id": "a1000000-0000-4000-8000-000000677072",
    "associate": "a1000000-0000-4000-8000-000000677049",
    "start": "2019-01-01",
    "end": "2019-12-31",
@@ -1947,7 +2606,7 @@
    "signature_storage_key": "private/key.png"
   },
   "gone": {
-   "id": "a1000000-0000-4000-8000-000000677056",
+   "id": "a1000000-0000-4000-8000-000000677073",
    "associate": "a1000000-0000-4000-8000-000000677049",
    "start": "2018-01-01",
    "end": "2018-12-31",
@@ -1955,7 +2614,7 @@
    "deleted": true
   },
   "grouped": {
-   "id": "a1000000-0000-4000-8000-000000677057",
+   "id": "a1000000-0000-4000-8000-000000677074",
    "associate": "a1000000-0000-4000-8000-000000677049",
    "start": "2017-01-01",
    "end": "2017-12-31",
@@ -1964,7 +2623,7 @@
    "archived": true
   },
   "future": {
-   "id": "a1000000-0000-4000-8000-000000677058",
+   "id": "a1000000-0000-4000-8000-000000677075",
    "associate": "a1000000-0000-4000-8000-000000677049",
    "start": "2099-01-01",
    "end": "2099-12-31",
@@ -1972,7 +2631,7 @@
    "trial": true
   },
   "lone_past": {
-   "id": "a1000000-0000-4000-8000-000000677059",
+   "id": "a1000000-0000-4000-8000-000000677076",
    "associate": "a1000000-0000-4000-8000-000000677050",
    "start": "2018-01-01",
    "end": "2018-12-31",
@@ -1986,7 +2645,7 @@
    ]
   },
   "far": {
-   "id": "a1000000-0000-4000-8000-000000677060",
+   "id": "a1000000-0000-4000-8000-000000677077",
    "associate": "a1000000-0000-4000-8000-000000677049",
    "start": "2020-01-01",
    "end": "2099-12-31",
@@ -1994,7 +2653,7 @@
    "association": "a1000000-0000-4000-8000-000000701002"
   },
   "hilde": {
-   "id": "a1000000-0000-4000-8000-000000677061",
+   "id": "a1000000-0000-4000-8000-000000677078",
    "associate": "a1000000-0000-4000-8000-000000677051",
    "start": "2020-01-01",
    "end": "2099-12-31",
@@ -3694,6 +4353,767 @@
    }
   },
   {
+   "name": "router-personas-create-form-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/personas/",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "associate_id": "$a3",
+    "full_name": "Modulo Html",
+    "is_minor_now": true,
+    "is_tutor": false,
+    "age": 0,
+    "family_members": [],
+    "tutors": [],
+    "picture_path": null,
+    "first_name": "Modulo",
+    "last_name": "Html",
+    "sex": "A",
+    "tax_code": null,
+    "born_date": null,
+    "born_city": null,
+    "address_city": null,
+    "address": null,
+    "address_cap": null,
+    "nationality": "Italiana",
+    "nationality_residence": "Italia",
+    "email": null,
+    "phone": null,
+    "phone_2": null,
+    "phone_3": null,
+    "phone_4": null,
+    "phone_label": null,
+    "phone_2_label": null,
+    "phone_3_label": null,
+    "phone_4_label": null,
+    "is_minor": false,
+    "disabled": false,
+    "draft": false,
+    "deleted": false,
+    "family_role": null,
+    "id_number": null,
+    "migrated": false,
+    "notes": null,
+    "creation_date": "$now3",
+    "user": "a1000000-0000-4000-8000-000000700001",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "group": null,
+    "family": null
+   },
+   "allow": [
+    "DELETE",
+    "GET",
+    "HEAD",
+    "OPTIONS",
+    "POST"
+   ],
+   "effect": {
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "associate",
+      "ref": "$a3",
+      "action": 0,
+      "changes": {
+       "associate_id": [
+        "None",
+        "$a3"
+       ],
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "family": [
+        "None",
+        "None"
+       ],
+       "first_name": [
+        "None",
+        "Modulo"
+       ],
+       "last_name": [
+        "None",
+        "Html"
+       ],
+       "sex": [
+        "None",
+        "A"
+       ],
+       "nationality": [
+        "None",
+        "Italiana"
+       ],
+       "nationality_residence": [
+        "None",
+        "Italia"
+       ],
+       "is_minor": [
+        "None",
+        "False"
+       ],
+       "disabled": [
+        "None",
+        "False"
+       ],
+       "draft": [
+        "None",
+        "False"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ],
+       "migrated": [
+        "None",
+        "False"
+       ],
+       "creation_date": [
+        "None",
+        "$now3"
+       ],
+       "tutor_relations": [
+        "None",
+        "application.AssociateTutorRelation.None"
+       ],
+       "tutored_relations": [
+        "None",
+        "application.AssociateTutorRelation.None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "created": [
+     {
+      "picture_path": null,
+      "first_name": "Modulo",
+      "last_name": "Html",
+      "sex": "A",
+      "tax_code": null,
+      "born_date": null,
+      "born_city": null,
+      "address_city": null,
+      "address": null,
+      "address_cap": null,
+      "nationality": "Italiana",
+      "nationality_residence": "Italia",
+      "email": null,
+      "phone": null,
+      "phone_2": null,
+      "phone_3": null,
+      "phone_4": null,
+      "phone_label": null,
+      "phone_2_label": null,
+      "phone_3_label": null,
+      "phone_4_label": null,
+      "is_minor": false,
+      "disabled": false,
+      "draft": false,
+      "deleted": false,
+      "family_role": null,
+      "id_number": null,
+      "migrated": false,
+      "notes": null,
+      "user": "a1000000-0000-4000-8000-000000700001",
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "group": null,
+      "family": null,
+      "id": "$a3",
+      "created": "$now3"
+     }
+    ],
+    "changed": {},
+    "relations_created": [],
+    "relations_deleted": [],
+    "relations_changed": {}
+   },
+   "raw_body": "first_name=Modulo&last_name=Html",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "router-personas-create-form-empty-boolean",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/personas/",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "associate_id": "$a4",
+    "full_name": "Modulo None",
+    "is_minor_now": true,
+    "is_tutor": false,
+    "age": 0,
+    "family_members": [],
+    "tutors": [],
+    "picture_path": null,
+    "first_name": "Modulo",
+    "last_name": null,
+    "sex": "A",
+    "tax_code": null,
+    "born_date": null,
+    "born_city": null,
+    "address_city": null,
+    "address": null,
+    "address_cap": null,
+    "nationality": "Italiana",
+    "nationality_residence": "Italia",
+    "email": null,
+    "phone": null,
+    "phone_2": null,
+    "phone_3": null,
+    "phone_4": null,
+    "phone_label": null,
+    "phone_2_label": null,
+    "phone_3_label": null,
+    "phone_4_label": null,
+    "is_minor": false,
+    "disabled": false,
+    "draft": false,
+    "deleted": false,
+    "family_role": null,
+    "id_number": null,
+    "migrated": false,
+    "notes": null,
+    "creation_date": "$now4",
+    "user": "a1000000-0000-4000-8000-000000700001",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "group": null,
+    "family": null
+   },
+   "allow": [
+    "DELETE",
+    "GET",
+    "HEAD",
+    "OPTIONS",
+    "POST"
+   ],
+   "effect": {
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "associate",
+      "ref": "$a4",
+      "action": 0,
+      "changes": {
+       "associate_id": [
+        "None",
+        "$a4"
+       ],
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "family": [
+        "None",
+        "None"
+       ],
+       "first_name": [
+        "None",
+        "Modulo"
+       ],
+       "sex": [
+        "None",
+        "A"
+       ],
+       "nationality": [
+        "None",
+        "Italiana"
+       ],
+       "nationality_residence": [
+        "None",
+        "Italia"
+       ],
+       "is_minor": [
+        "None",
+        "False"
+       ],
+       "disabled": [
+        "None",
+        "False"
+       ],
+       "draft": [
+        "None",
+        "False"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ],
+       "migrated": [
+        "None",
+        "False"
+       ],
+       "creation_date": [
+        "None",
+        "$now4"
+       ],
+       "tutor_relations": [
+        "None",
+        "application.AssociateTutorRelation.None"
+       ],
+       "tutored_relations": [
+        "None",
+        "application.AssociateTutorRelation.None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "created": [
+     {
+      "picture_path": null,
+      "first_name": "Modulo",
+      "last_name": null,
+      "sex": "A",
+      "tax_code": null,
+      "born_date": null,
+      "born_city": null,
+      "address_city": null,
+      "address": null,
+      "address_cap": null,
+      "nationality": "Italiana",
+      "nationality_residence": "Italia",
+      "email": null,
+      "phone": null,
+      "phone_2": null,
+      "phone_3": null,
+      "phone_4": null,
+      "phone_label": null,
+      "phone_2_label": null,
+      "phone_3_label": null,
+      "phone_4_label": null,
+      "is_minor": false,
+      "disabled": false,
+      "draft": false,
+      "deleted": false,
+      "family_role": null,
+      "id_number": null,
+      "migrated": false,
+      "notes": null,
+      "user": "a1000000-0000-4000-8000-000000700001",
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "group": null,
+      "family": null,
+      "id": "$a4",
+      "created": "$now4"
+     }
+    ],
+    "changed": {},
+    "relations_created": [],
+    "relations_deleted": [],
+    "relations_changed": {}
+   },
+   "raw_body": "first_name=Modulo&is_minor=",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "router-personas-create-form-boolean-invalid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/personas/",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "is_minor": [
+     "Must be a valid boolean."
+    ]
+   },
+   "allow": [
+    "DELETE",
+    "GET",
+    "HEAD",
+    "OPTIONS",
+    "POST"
+   ],
+   "effect": null,
+   "raw_body": "first_name=Modulo&is_minor=maybe",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "router-personas-create-form-validation",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/personas/",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "email": [
+     "Enter a valid email address."
+    ]
+   },
+   "allow": [
+    "DELETE",
+    "GET",
+    "HEAD",
+    "OPTIONS",
+    "POST"
+   ],
+   "effect": null,
+   "raw_body": "first_name=Modulo&email=nope",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "router-personas-create-form-tutors-data-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/personas/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "allow": [
+    "DELETE",
+    "GET",
+    "HEAD",
+    "OPTIONS",
+    "POST"
+   ],
+   "effect": null,
+   "raw_body": "first_name=Con&tutors_data=x",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "router-personas-create-form-tutors-data-indexed-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/personas/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "allow": [
+    "DELETE",
+    "GET",
+    "HEAD",
+    "OPTIONS",
+    "POST"
+   ],
+   "effect": null,
+   "raw_body": "first_name=Con&tutors_data%5B0%5D=x",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "router-personas-create-picture-invalid-base64",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/personas/",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "picture_path": "Error processing image: {'picture_path': ErrorDetail(string='Invalid base64 string', code='invalid')}"
+   },
+   "allow": [
+    "DELETE",
+    "GET",
+    "HEAD",
+    "OPTIONS",
+    "POST"
+   ],
+   "effect": null,
+   "body": {
+    "first_name": "Fausto",
+    "email": "nope",
+    "picture_path": "data:image/png;base64,QUJDQQ"
+   }
+  },
+  {
+   "name": "router-personas-create-list-body-picture-path-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/personas/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "allow": [
+    "DELETE",
+    "GET",
+    "HEAD",
+    "OPTIONS",
+    "POST"
+   ],
+   "effect": null,
+   "body": [
+    "picture_path"
+   ]
+  },
+  {
+   "name": "router-personas-create-form-tutors-data-key-line-break",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/personas/",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "associate_id": "$a5",
+    "full_name": "Riga None",
+    "is_minor_now": true,
+    "is_tutor": false,
+    "age": 0,
+    "family_members": [],
+    "tutors": [],
+    "picture_path": null,
+    "first_name": "Riga",
+    "last_name": null,
+    "sex": "A",
+    "tax_code": null,
+    "born_date": null,
+    "born_city": null,
+    "address_city": null,
+    "address": null,
+    "address_cap": null,
+    "nationality": "Italiana",
+    "nationality_residence": "Italia",
+    "email": null,
+    "phone": null,
+    "phone_2": null,
+    "phone_3": null,
+    "phone_4": null,
+    "phone_label": null,
+    "phone_2_label": null,
+    "phone_3_label": null,
+    "phone_4_label": null,
+    "is_minor": false,
+    "disabled": false,
+    "draft": false,
+    "deleted": false,
+    "family_role": null,
+    "id_number": null,
+    "migrated": false,
+    "notes": null,
+    "creation_date": "$now5",
+    "user": "a1000000-0000-4000-8000-000000700001",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "group": null,
+    "family": null
+   },
+   "allow": [
+    "DELETE",
+    "GET",
+    "HEAD",
+    "OPTIONS",
+    "POST"
+   ],
+   "effect": {
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "associate",
+      "ref": "$a5",
+      "action": 0,
+      "changes": {
+       "associate_id": [
+        "None",
+        "$a5"
+       ],
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "family": [
+        "None",
+        "None"
+       ],
+       "first_name": [
+        "None",
+        "Riga"
+       ],
+       "sex": [
+        "None",
+        "A"
+       ],
+       "nationality": [
+        "None",
+        "Italiana"
+       ],
+       "nationality_residence": [
+        "None",
+        "Italia"
+       ],
+       "is_minor": [
+        "None",
+        "False"
+       ],
+       "disabled": [
+        "None",
+        "False"
+       ],
+       "draft": [
+        "None",
+        "False"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ],
+       "migrated": [
+        "None",
+        "False"
+       ],
+       "creation_date": [
+        "None",
+        "$now5"
+       ],
+       "tutor_relations": [
+        "None",
+        "application.AssociateTutorRelation.None"
+       ],
+       "tutored_relations": [
+        "None",
+        "application.AssociateTutorRelation.None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "created": [
+     {
+      "picture_path": null,
+      "first_name": "Riga",
+      "last_name": null,
+      "sex": "A",
+      "tax_code": null,
+      "born_date": null,
+      "born_city": null,
+      "address_city": null,
+      "address": null,
+      "address_cap": null,
+      "nationality": "Italiana",
+      "nationality_residence": "Italia",
+      "email": null,
+      "phone": null,
+      "phone_2": null,
+      "phone_3": null,
+      "phone_4": null,
+      "phone_label": null,
+      "phone_2_label": null,
+      "phone_3_label": null,
+      "phone_4_label": null,
+      "is_minor": false,
+      "disabled": false,
+      "draft": false,
+      "deleted": false,
+      "family_role": null,
+      "id_number": null,
+      "migrated": false,
+      "notes": null,
+      "user": "a1000000-0000-4000-8000-000000700001",
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "group": null,
+      "family": null,
+      "id": "$a5",
+      "created": "$now5"
+     }
+    ],
+    "changed": {},
+    "relations_created": [],
+    "relations_deleted": [],
+    "relations_changed": {}
+   },
+   "raw_body": "first_name=Riga&tutors_data%5B0%5Da%0Ab=x",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "router-personas-create-multipart-picture-file",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/personas/",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "picture_path": [
+     "Not a valid string."
+    ]
+   },
+   "allow": [
+    "DELETE",
+    "GET",
+    "HEAD",
+    "OPTIONS",
+    "POST"
+   ],
+   "effect": null,
+   "raw_body": "--personasboundary5e1b\r\nContent-Disposition: form-data; name=\"first_name\"\r\n\r\nFile\r\n--personasboundary5e1b\r\nContent-Disposition: form-data; name=\"picture_path\"; filename=\"a.jpg\"\r\n\r\nbase64\r\n--personasboundary5e1b--\r\n",
+   "content_type": "multipart/form-data; boundary=personasboundary5e1b"
+  },
+  {
+   "name": "router-personas-create-multipart-tutors-data-file-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/personas/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "allow": [
+    "DELETE",
+    "GET",
+    "HEAD",
+    "OPTIONS",
+    "POST"
+   ],
+   "effect": null,
+   "raw_body": "--personasboundary5e1b\r\nContent-Disposition: form-data; name=\"first_name\"\r\n\r\nFile\r\n--personasboundary5e1b\r\nContent-Disposition: form-data; name=\"tutors_data\"; filename=\"a.txt\"\r\n\r\nx\r\n--personasboundary5e1b--\r\n",
+   "content_type": "multipart/form-data; boundary=personasboundary5e1b"
+  },
+  {
+   "name": "router-personas-create-multipart-spooled-file-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/personas/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "allow": [
+    "DELETE",
+    "GET",
+    "HEAD",
+    "OPTIONS",
+    "POST"
+   ],
+   "effect": null,
+   "raw_parts": [
+    "--personasboundary5e1b\r\nContent-Disposition: form-data; name=\"first_name\"\r\n\r\nFile\r\n--personasboundary5e1b\r\nContent-Disposition: form-data; name=\"attachment\"; filename=\"a.txt\"\r\n\r\n",
+    {
+     "repeat": "x",
+     "count": 2700000
+    },
+    "\r\n--personasboundary5e1b--\r\n"
+   ],
+   "content_type": "multipart/form-data; boundary=personasboundary5e1b"
+  },
+  {
    "name": "router-personas-detail-anonymous",
    "actor": "anonymous",
    "method": "GET",
@@ -5173,6 +6593,30 @@
    "body": {
     "tutors_data": {}
    }
+  },
+  {
+   "name": "router-personas-update-multipart-picture-file",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/personas/a1000000-0000-4000-8000-000000677041/",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "picture_path": [
+     "Not a valid string."
+    ]
+   },
+   "allow": [
+    "DELETE",
+    "GET",
+    "HEAD",
+    "OPTIONS",
+    "PATCH",
+    "PUT"
+   ],
+   "effect": null,
+   "raw_body": "--personasboundary5e1b\r\nContent-Disposition: form-data; name=\"notes\"\r\n\r\nFile\r\n--personasboundary5e1b\r\nContent-Disposition: form-data; name=\"picture_path\"; filename=\"a.jpg\"\r\n\r\nbase64\r\n--personasboundary5e1b--\r\n",
+   "content_type": "multipart/form-data; boundary=personasboundary5e1b"
   },
   {
    "name": "router-personas-update-full-collaborator-put-is-partial",

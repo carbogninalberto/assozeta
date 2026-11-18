@@ -23,8 +23,6 @@ import (
 // ResourceOpener reads the bytes of an inline image source. An error means
 // reportlab cannot open the resource: ImageReader raises
 // IOError('Cannot open resource "%s"'), which is the export's failure.
-// ErrNotPorted reports a source reportlab may open but this package does not
-// read (an ftp: URL).
 type ResourceOpener interface {
 	// Open returns the bytes reportlab reads for name; ctx bounds the fetch of
 	// a URL.
@@ -127,6 +125,11 @@ var resourceClient = &http.Client{}
 // readURL is rlUrlRead: urlopen(name).read(), the bytes of the response or the
 // failure of the request.
 func readURL(ctx context.Context, name string) ([]byte, error) {
+	// An ftp: URL is read from the text urllib splits, so an escape that
+	// net/url refuses is still the escape FTPHandler decodes.
+	if scheme, _, ok := urllibSplitType(urllibSplitTag(urllibUnwrap(name))); ok && scheme == "ftp" {
+		return readFTPURL(ctx, name)
+	}
 	reference, err := url.Parse(name)
 	if err != nil {
 		return nil, err
@@ -136,9 +139,6 @@ func readURL(ctx context.Context, name string) ([]byte, error) {
 		return fetchURL(ctx, name)
 	case "file":
 		return readFileURL(reference)
-	case "ftp":
-		// reportlab downloads an ftp: URL with urlopen.
-		return nil, fmt.Errorf("%w: an ftp: URL", ErrNotPorted)
 	}
 	return nil, fmt.Errorf("unknown url type %q", reference.Scheme)
 }

@@ -15,6 +15,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/pdfexport"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/pdfrender"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pystr"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/xlsxexport"
 )
@@ -166,10 +167,10 @@ func mcpExportColumns(data []any, labels domain.RequestObject) ([]string, []stri
 var errReportExportLabel = refusal.AppState("business MCP export label that is not a string")
 
 // reportlabTableText is reportlab's ValueError for a table without a column:
-// Table.identity() with a placeholder object address. rows counts the header
-// row the exporter prepends.
+// Table.identity() with pystr.ObjectAddress for the object's address (approved
+// divergence X18). rows counts the header row the exporter prepends.
 func reportlabTableText(rows int) string {
-	return fmt.Sprintf("<Table@0x0000000000000000 %d rows x 0 cols>... must have at least a row and column", rows)
+	return fmt.Sprintf("<Table@%s %d rows x 0 cols>... must have at least a row and column", pystr.ObjectAddress, rows)
 }
 
 // mcpExportXLSXValue is format_export_data's value in a workbook cell. A JSON
@@ -210,12 +211,8 @@ func mcpExportXLSXValue(value any) (xlsxexport.Value, error) {
 // cannot hold one.
 var mcpXLSXNonFinite = refusal.AppState("business MCP query result with a non-finite float")
 
-// errReportLabelNonFinite is a column label float() reads as an infinity: a
-// label comes from the request (the run's overrides) or the tool arguments,
-// and Django writes the header pandas formats ('inf'), so it is handed off.
-var errReportLabelNonFinite = refusal.New("business MCP non-finite export label not ported")
-
-// mcpNonFiniteNumber reports a JSON float literal float() reads as an infinity.
+// mcpNonFiniteNumber reports a JSON float literal float() reads as an infinity
+// (1e400 in the run's overrides).
 func mcpNonFiniteNumber(number json.Number) bool {
 	text := string(number)
 	if !strings.ContainsAny(text, ".eE") {
@@ -260,12 +257,16 @@ func mcpReportSheet(title string, data []any, labels domain.RequestObject) (xlsx
 				if whole, ok := new(big.Int).SetString(string(typed), 10); ok && !whole.IsInt64() {
 					label = xlsxexport.BigIntValue(whole.String()) // an int label of any size names the column
 				} else if mcpNonFiniteNumber(typed) {
-					// A label float() makes inf (1e400 in the run's overrides):
-					// pandas writes the header 'inf' and Django answers 200.
-					return xlsxexport.ReportSheet{}, errReportLabelNonFinite
+					// A label float() makes ±inf: pandas writes the header
+					// 'inf'/'-inf' and Django answers 200.
+					number, _ := strconv.ParseFloat(string(typed), 64)
+					label = xlsxexport.FloatValue(number)
 				} else if label, err = mcpExportXLSXValue(typed); err != nil {
 					return xlsxexport.ReportSheet{}, err
 				}
+			case float64:
+				// The tool arguments of the agent (NaN, Infinity, -Infinity).
+				label = xlsxexport.FloatValue(typed)
 			default:
 				return xlsxexport.ReportSheet{}, xlsxexport.DjangoFailure(labelFailureText(value))
 			}
@@ -316,9 +317,8 @@ func raisedText(err error) (string, bool) {
 }
 
 // mcpBuiltFile maps a document builder's outcome: an exception of the Django
-// exporter is a raisedFile with its text, an input pdfexport does not
-// reproduce keeps its own refusal, xlsxexport's unexpected input is app
-// state and passes through.
+// exporter is a raisedFile with its text, and xlsxexport's unexpected input is
+// app state and passes through.
 func mcpBuiltFile(ctx context.Context, file []byte, err error) ([]byte, error) {
 	if errors.Is(err, xlsxexport.ErrDjango) || errors.Is(err, pdfexport.ErrLayout) {
 		text, ok := djangoFailureText(err)
@@ -326,9 +326,6 @@ func mcpBuiltFile(ctx context.Context, file []byte, err error) ([]byte, error) {
 			return nil, mcpRunOnly(ctx, "")
 		}
 		return nil, &raisedFile{text: text}
-	}
-	if errors.Is(err, pdfexport.ErrNotPorted) {
-		return nil, fmt.Errorf("pdf exporter: %w", err)
 	}
 	return file, err
 }

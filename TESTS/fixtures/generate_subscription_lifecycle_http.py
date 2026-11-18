@@ -671,6 +671,53 @@ add('delete-payment-shared-with-installment', 'owner', route('d_shared_inst', 'd
     dict(removed('coursesubscription', 'shi', ACTOR, {'deleted': ['True', 'None'], **NULL_PAYMENT}), repr=shi_saved),
 ], subscriptions={'deleted': ['d_shared_inst']}, payments={'deleted': ['shi_p']}, cs={'deleted': ['shi']}, installments={'deleted': ['shi_i']}))
 
+# ---------------------------------------------------------------- stored Payment JSON bands
+# Payment.course is a jsonb column psycopg2 loads with json.loads: the parity
+# harness's Django (CPython 3.13.16) reads 9935 levels in subscription_archive's
+# lazy loads and raises RecursionError at 9936, which the view's except Exception
+# answers (the plain 500 page). Deeper than the index resolver's reload (9927)
+# a saved payment's entry falls back to the actor's association. The value sits
+# in a column the view loads but never renders; each one exists only around its
+# own case (the adapter's setup), because the state snapshot walks JSON values
+# in Python and cannot hold a value this deep. Each row has an associate of its
+# own, so no other case's period query selects its payment.
+def deep_course(depth):
+    """A course JSON text whose total nesting is depth."""
+    assert depth >= 2
+    return '{"label": "Corso profondo", "unused": ' + '[' * (depth - 1) + ']' * (depth - 1) + '}'
+
+
+def json_depth(text):
+    depth = deepest = 0
+    for char in text:
+        if char in '[{':
+            depth += 1
+            deepest = max(deepest, depth)
+        elif char in ']}':
+            depth -= 1
+    return deepest
+
+
+DEEP_INDEX_PAST, DEEP_LOAD_PAST, DEEP_LOADED = deep_course(9931), deep_course(9965), deep_course(9000)
+assert (json_depth(DEEP_INDEX_PAST), json_depth(DEEP_LOAD_PAST), json_depth(DEEP_LOADED)) == (9931, 9965, 9000)
+for _name, _label in (('deep_i', 'deepi'), ('deep_p', 'deepp'), ('deep_n', 'deepn')):
+    ASSOCIATES[_label] = {'id': next(ids), 'association': OWN, 'first': 'Profondo', 'last': 'Fixture'}
+    PAYMENTS[f'{_name}_p'] = payment(subject=1, associate=_label, created='2022-03-01T10:00:00Z')
+    SUBSCRIPTIONS[f'a_{_name}'] = subscription(_label, start='2022-01-01', end='2022-12-31', payment=f'{_name}_p')
+add('archive-stored-json-index-past', 'owner', route('a_deep_i', 'archive'), 200, ARCHIVED, effect=effect('owner', [
+    updated('payment', 'deep_i_p', FLIP, ACTOR),
+    updated('subscription', 'a_deep_i', FLIP, DIRECT),
+], subscriptions={'changed': {'a_deep_i': {'archived': True}}}, payments={'changed': {'deep_i_p': {'archived': True}}}),
+    setup={'deep_payments': [{'payment': 'deep_i_p', 'course': DEEP_INDEX_PAST}]})
+# The view's own load of the payment raises: the subscription is not saved (the HTML 500 page).
+add('archive-stored-json-past-load-band-server-error', 'owner', route('a_deep_p', 'archive'), 500, SERVER,
+    setup={'deep_payments': [{'payment': 'deep_p_p', 'course': DEEP_LOAD_PAST}]})
+add('archive-stored-json-loaded', 'owner', route('a_deep_n', 'archive'), 200, ARCHIVED, effect=effect('owner', [
+    updated('payment', 'deep_n_p', FLIP, DIRECT),
+    updated('subscription', 'a_deep_n', FLIP, DIRECT),
+], subscriptions={'changed': {'a_deep_n': {'archived': True}}}, payments={'changed': {'deep_n_p': {'archived': True}}}),
+    setup={'deep_payments': [{'payment': 'deep_n_p', 'course': DEEP_LOADED}]})
+
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Subscription reject, archive and delete authored sequence with audit effects',
                               'ids': IDS, 'category': CATEGORY, 'associates': ASSOCIATES, 'courses': COURSES, 'tags': TAGS,

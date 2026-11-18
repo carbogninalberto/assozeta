@@ -248,7 +248,7 @@ def misroute_control(case, base_url, observer, fixture, apps, raw):
 
 
 @contextmanager
-def go_service(reuse, report, work, log, tool_environment, redis_port, versioned):
+def go_service(reuse, report, work, log, tool_environment, redis_port, versioned, tags=()):
     from TESTS.adapters.go.payment_category_server import native_server
     process = None
 
@@ -260,7 +260,7 @@ def go_service(reuse, report, work, log, tool_environment, redis_port, versioned
     try:
         report['go_build_source_sha256'] = source_hashes()
         with native_server(work, log, owned_tool_environment(tool_environment), f'127.0.0.1:{redis_port}',
-                           versioned=versioned, process_observer=remember) as native:
+                           versioned=versioned, process_observer=remember, tags=tags) as native:
             contract.require(process is not None and process.poll() is None, 'go.process')
             executable = Path(process.args[0]).resolve()
             contract.require(executable.parent == work.resolve(), 'go.artifact-directory')

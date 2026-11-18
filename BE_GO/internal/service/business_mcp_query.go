@@ -27,7 +27,8 @@ import (
 // BusinessMCPQueryStore runs the read-only QueryBuilder statements.
 type BusinessMCPQueryStore interface {
 	ReportIntegration(ctx context.Context) (bool, *string, error)
-	RunReportStatements(ctx context.Context, timeoutMS int64, statements []domain.ReportStatement) ([][][]*string, error)
+	RunReportStatements(ctx context.Context, timeoutText string, statements []domain.ReportStatement) ([][][]*string, error)
+	CheckReportTimeout(ctx context.Context, timeoutText string) error
 }
 
 func mcpObj(pairs ...any) domain.RequestObject {
@@ -75,14 +76,14 @@ func mcpRaisedResult(ctx context.Context, message string) (any, error) {
 }
 
 // runPlan executes a planned QueryBuilder call and renders its result.
-func (t *BusinessMCPTools) runPlan(ctx context.Context, plan dto.ReportPlan, timeoutMS int64) (any, error) {
+func (t *BusinessMCPTools) runPlan(ctx context.Context, plan dto.ReportPlan, timeoutText string) (any, error) {
 	if plan.Immediate != nil {
 		return mcpErrorResult(plan.Immediate.Message), nil
 	}
 	if plan.Value != nil {
 		return plan.Value, nil
 	}
-	results, err := t.store.RunReportStatements(ctx, timeoutMS, plan.Statements)
+	results, err := t.store.RunReportStatements(ctx, timeoutText, plan.Statements)
 	if err != nil {
 		return mcpToolOutcome(ctx, err)
 	}
@@ -95,12 +96,17 @@ func (t *BusinessMCPTools) runPlan(ctx context.Context, plan dto.ReportPlan, tim
 
 // query plans and runs one QueryBuilder method with kwargs.
 func (t *BusinessMCPTools) query(ctx context.Context, tool string, kwargs domain.RequestObject) (any, error) {
-	var timeout int64
+	var timeout string
 	plan, err := dto.PlanMCPToolGroup(tool, kwargs, t.association, t.group, func() (dto.ReportSettings, error) {
 		settings, err := loadReportSettings(ctx, t.store)
-		timeout = settings.QueryTimeout * 1000
+		if err == nil {
+			timeout = settings.QueryTimeoutText()
+			text := timeout
+			settings.SetTimeout = func() error { return t.store.CheckReportTimeout(ctx, text) }
+		}
 		return settings, err
 	})
+	err = reportDeferredOutcome(ctx, t.store.RunReportStatements, plan, timeout, err)
 	if err != nil {
 		return mcpToolOutcome(ctx, err)
 	}
@@ -492,7 +498,8 @@ type attendanceRow struct {
 }
 
 func (t *BusinessMCPTools) rows(ctx context.Context, sql string, args []any, columns int) ([][]*string, error) {
-	results, err := t.store.RunReportStatements(ctx, 0, []domain.ReportStatement{{SQL: sql, Args: args, Text: columns}})
+	// These reads run without a statement timeout ("0" is PostgreSQL's none).
+	results, err := t.store.RunReportStatements(ctx, "0", []domain.ReportStatement{{SQL: sql, Args: args, Text: columns}})
 	if err != nil {
 		return nil, err
 	}

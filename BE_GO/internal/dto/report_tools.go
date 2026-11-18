@@ -38,32 +38,61 @@ func (e *ReportToolError) Error() string { return e.Message }
 // ReportSettings are QueryBuilder's effective_integration('ai') values.
 // The environment form of both fields is Django's `getattr(settings, NAME, "")
 // or ""`: 0 stands for the empty string (the instance-stored settings are
-// always >= 1, and a negative environment value stays negative).
+// always >= 1, and a negative environment value stays negative). Both are
+// Python ints, which keep every digit env.int's int() accepts, so they are
+// big.Int values (never nil).
 type ReportSettings struct {
-	MaxResults   int64
-	QueryTimeout int64
+	MaxResults   *big.Int
+	QueryTimeout *big.Int
+	// SetTimeout is QueryBuilder._set_query_timeout at its call point: it
+	// sends the timeout text to PostgreSQL and answers the database error an
+	// unusable value raises (the tool's exception). nil means nothing to
+	// check.
+	SetTimeout func() error
+}
+
+// setTimeout is the callback with its nil case.
+func (s ReportSettings) setTimeout() error {
+	if s.SetTimeout == nil {
+		return nil
+	}
+	return s.SetTimeout()
+}
+
+// QueryTimeoutText is str(query_timeout * 1000), the text Django writes into
+// SET statement_timeout: the empty text when the setting is the empty string
+// (the 0 stand-in), the exact decimal product otherwise.
+func (s ReportSettings) QueryTimeoutText() string {
+	if s.QueryTimeout == nil || s.QueryTimeout.Sign() == 0 {
+		return ""
+	}
+	return new(big.Int).Mul(s.QueryTimeout, big.NewInt(1000)).String()
 }
 
 // mcpEffectiveMaxResults is the effective_limit arithmetic: `min(limit or
 // self.max_results, self.max_results)` with self.max_results the empty string
 // (0) raises a TypeError in Python (at min(), or at the following
 // offset + limit), whose text is not reproduced.
-func mcpEffectiveMaxResults(maximum int64) error {
-	if maximum == 0 {
+func mcpEffectiveMaxResults(maximum *big.Int) error {
+	if maximum == nil || maximum.Sign() == 0 {
 		return fmt.Errorf("%w: effective limit against an empty max_results", ErrReportFailed)
 	}
 	return nil
 }
 
-// mcpSetQueryTimeout is QueryBuilder._set_query_timeout: PostgreSQL rejects
-// the empty string (0) and every value <= 0 in SET statement_timeout, so the
-// tool raises there with a database error whose text is not reproduced.
-func mcpSetQueryTimeout(config ReportSettings) error {
-	if config.QueryTimeout <= 0 {
-		return fmt.Errorf("%w: query timeout %d cannot set statement_timeout", ErrReportFailed, config.QueryTimeout)
-	}
-	return nil
+// ReportDeferred is an exception Django raises only after the plan's
+// statements ran: execute_query counts before it validates the ordering, the
+// fields and the slice and before it sets the timeout; get_field_values
+// counts before it slices. A database error of those statements wins;
+// otherwise the call raises Err. Untimed statements run before Django sets
+// the timeout (statement_timeout '0').
+type ReportDeferred struct {
+	Err     error
+	Untimed bool
 }
+
+func (e *ReportDeferred) Error() string { return e.Err.Error() }
+func (e *ReportDeferred) Unwrap() error { return e.Err }
 
 // ReportPlan is one tool call: statements to run in order, then Render.
 type ReportPlan struct {
@@ -153,12 +182,17 @@ func PlanMCPToolGroup(tool string, params domain.RequestObject, association stri
 	}
 	switch tool {
 	case "count_data":
+		// QueryBuilder.count sets the timeout (query_builder.py:478) before
+		// qs.count() compiles and runs the statement; the log line before it
+		// formats the query lazily and logging swallows what that raises.
+		if err := config.setTimeout(); err != nil {
+			return ReportPlan{}, err
+		}
 		if q.compileErr != nil {
 			return ReportPlan{}, q.compileErr
 		}
-		// QueryBuilder.count logs the compiled query, then sets the timeout.
-		if err := mcpSetQueryTimeout(config); err != nil {
-			return ReportPlan{}, err
+		if q.adaptErr != nil {
+			return ReportPlan{}, q.adaptErr
 		}
 		return ReportPlan{Statements: []domain.ReportStatement{q.countStatement()},
 			Render: func(results [][][]*string) (any, error) {
@@ -372,14 +406,37 @@ func (q *mcpQuery) concreteColumns() []string {
 	return columns
 }
 
+// mcpEmptyCount is QuerySet.count() of a query whose WHERE raised
+// EmptyResultSet: Django elides the statement and answers 0.
+func mcpEmptyCount() domain.ReportStatement {
+	return domain.ReportStatement{SQL: `SELECT '0'::text`, Text: 1}
+}
+
 // countStatement is QuerySet.count() of the distinct queryset.
 func (q *mcpQuery) countStatement() domain.ReportStatement {
+	if q.empty {
+		return mcpEmptyCount()
+	}
 	var selects []string
 	for i, column := range q.concreteColumns() {
 		selects = append(selects, column+` AS "col`+strconv.Itoa(i+1)+`"`)
 	}
 	sql := `SELECT COUNT(*)::text FROM (SELECT DISTINCT ` + strings.Join(selects, ", ") + ` FROM ` + q.from() + q.whereSQL() + `) subquery`
 	return domain.ReportStatement{SQL: sql, Args: q.args.values, Text: 1}
+}
+
+// mcpEmptyRows is the listing of a query whose WHERE raised EmptyResultSet:
+// Django elides the statement, so the port selects no row.
+func mcpEmptyRows(columns int) domain.ReportStatement {
+	sql := "SELECT WHERE FALSE"
+	if columns > 0 {
+		selects := make([]string, columns)
+		for i := range selects {
+			selects[i] = "NULL::text"
+		}
+		sql = "SELECT " + strings.Join(selects, ", ") + " WHERE FALSE"
+	}
+	return domain.ReportStatement{SQL: sql, Text: columns}
 }
 
 // mcpColumnOut is one rendered output column.
@@ -501,6 +558,9 @@ type mcpPyNumber struct {
 
 func mcpPyInt(number int64) mcpPyNumber { return mcpPyNumber{integer: big.NewInt(number)} }
 
+// mcpPyBigInt is an arbitrary-size Python int (the effective max_results).
+func mcpPyBigInt(number *big.Int) mcpPyNumber { return mcpPyNumber{integer: new(big.Int).Set(number)} }
+
 func (n mcpPyNumber) typeName() string {
 	switch {
 	case n.isFloat:
@@ -574,12 +634,28 @@ func mcpPyNumberValue(value any) (mcpPyNumber, bool) {
 	return mcpPyNumber{}, false
 }
 
+// mcpMaxLessFloat is Python's `maximum < value` for an int and a float: an
+// exact comparison (the int is not rounded to a float first), NaN comparing
+// False and the infinities comparing as themselves.
+func mcpMaxLessFloat(maximum *big.Int, value float64) bool {
+	switch {
+	case math.IsNaN(value):
+		return false
+	case math.IsInf(value, 1):
+		return true
+	case math.IsInf(value, -1):
+		return false
+	}
+	rational := new(big.Rat).SetFloat64(value)
+	return rational != nil && new(big.Rat).SetInt(maximum).Cmp(rational) < 0
+}
+
 // mcpEffectiveLimit is min(limit or MAX, MAX).
-func mcpEffectiveLimit(value any, maximum int64) (mcpPyNumber, error) {
+func mcpEffectiveLimit(value any, maximum *big.Int) (mcpPyNumber, error) {
 	if err := mcpEffectiveMaxResults(maximum); err != nil {
 		return mcpPyNumber{}, err
 	}
-	limit := mcpPyInt(maximum)
+	limit := mcpPyBigInt(maximum)
 	if !PythonTruthy(value) {
 		return limit, nil
 	}
@@ -591,12 +667,12 @@ func mcpEffectiveLimit(value any, maximum int64) (mcpPyNumber, error) {
 	if number.isFloat {
 		// min(limit, MAX) keeps limit unless MAX < limit; NaN compares false,
 		// so Python keeps it too.
-		if float64(maximum) < number.float {
+		if mcpMaxLessFloat(maximum, number.float) {
 			return limit, nil
 		}
 		return number, nil
 	}
-	if number.integer.Cmp(limit.integer) < 0 {
+	if number.integer.Cmp(maximum) < 0 {
 		return number, nil
 	}
 	return limit, nil
@@ -650,11 +726,11 @@ type mcpSliceBounds struct {
 // mcpSlice is effective_limit = min(limit or MAX, MAX) and
 // qs[offset:offset+effective_limit] (Django's QuerySet.__getitem__ calls
 // int() on both bounds).
-func mcpSlice(params domain.RequestObject, maximum int64) (mcpSliceBounds, error) {
+func mcpSlice(params domain.RequestObject, maximum *big.Int) (mcpSliceBounds, error) {
 	if err := mcpEffectiveMaxResults(maximum); err != nil {
 		return mcpSliceBounds{}, err
 	}
-	effective := mcpPyInt(maximum)
+	effective := mcpPyBigInt(maximum)
 	if value, _ := params.Lookup("limit"); PythonTruthy(value) {
 		number, err := mcpEffectiveLimit(value, maximum)
 		if err != nil {
@@ -792,7 +868,9 @@ func (q *mcpQuery) validateJoins(joins any) error {
 	return nil
 }
 
-// planQuery is QueryBuilder.execute_query after the filters.
+// planQuery is QueryBuilder.execute_query after the filters: the count (which
+// Django runs first) and, when the rest of the method raises, the count
+// statement with that exception deferred.
 func (q *mcpQuery) planQuery(params domain.RequestObject, config ReportSettings) (ReportPlan, error) {
 	if joins, _ := params.Lookup("joins"); PythonTruthy(joins) {
 		if err := q.validateJoins(joins); err != nil {
@@ -802,7 +880,20 @@ func (q *mcpQuery) planQuery(params domain.RequestObject, config ReportSettings)
 	if q.compileErr != nil {
 		return ReportPlan{}, q.compileErr
 	}
+	if q.adaptErr != nil {
+		return ReportPlan{}, q.adaptErr
+	}
 	count := q.countStatement()
+	plan, err := q.planListing(count, params, config)
+	if err != nil {
+		return ReportPlan{Statements: []domain.ReportStatement{count}}, &ReportDeferred{Err: err, Untimed: true}
+	}
+	return plan, nil
+}
+
+// planListing is execute_query after total_count = qs.count(): the ordering,
+// the fields, the slice, the timeout and the listing.
+func (q *mcpQuery) planListing(count domain.ReportStatement, params domain.RequestObject, config ReportSettings) (ReportPlan, error) {
 	orderValue, _ := params.Lookup("order_by")
 	orders, err := q.validateOrder(orderValue)
 	if err != nil {
@@ -821,8 +912,10 @@ func (q *mcpQuery) planQuery(params domain.RequestObject, config ReportSettings)
 	if err != nil {
 		return ReportPlan{}, err
 	}
-	// QueryBuilder.execute_query sets the timeout after the slice.
-	if err := mcpSetQueryTimeout(config); err != nil {
+	// QueryBuilder.execute_query sets the timeout after the slice and before
+	// it runs the statements (query_builder.py:446): after the count, which
+	// Django ran before the SET.
+	if err := config.setTimeout(); err != nil {
 		return ReportPlan{}, err
 	}
 	var columns []mcpColumnOut
@@ -904,6 +997,10 @@ func (q *mcpQuery) planQuery(params domain.RequestObject, config ReportSettings)
 		}
 	}
 	statement := mcpWrap(inner, columns, q.args.values)
+	if q.empty {
+		// The top-level WHERE raised EmptyResultSet: the listing is empty.
+		statement = mcpEmptyRows(len(columns))
+	}
 	return ReportPlan{Statements: []domain.ReportStatement{count, statement},
 		Render: func(results [][][]*string) (any, error) {
 			total, _ := strconv.ParseInt(*results[0][0][0], 10, 64)
@@ -933,9 +1030,9 @@ func (q *mcpQuery) planQuery(params domain.RequestObject, config ReportSettings)
 
 func (q *mcpQuery) planFieldValues(name string, params domain.RequestObject, config ReportSettings) (ReportPlan, error) {
 	labels := mcpChoiceMap(q.model, []string{name})
-	// QueryBuilder.get_field_values sets the timeout after the field and filter
-	// checks, before both queries.
-	if err := mcpSetQueryTimeout(config); err != nil {
+	// QueryBuilder.get_field_values sets the timeout after the choice map and
+	// before both queries (query_builder.py:507).
+	if err := config.setTimeout(); err != nil {
 		return ReportPlan{}, err
 	}
 	counted := q.clone()
@@ -946,10 +1043,26 @@ func (q *mcpQuery) planFieldValues(name string, params domain.RequestObject, con
 	if counted.compileErr != nil {
 		return ReportPlan{}, counted.compileErr
 	}
-	total := domain.ReportStatement{SQL: `SELECT COUNT(*)::text FROM (SELECT DISTINCT ` + expr.sql + ` AS "c0" FROM ` + counted.from() +
-		counted.whereSQL() + `) subquery`, Args: counted.args.values, Text: 1}
+	if counted.adaptErr != nil {
+		return ReportPlan{}, counted.adaptErr
+	}
+	total := mcpEmptyCount()
+	if !counted.empty {
+		total = domain.ReportStatement{SQL: `SELECT COUNT(*)::text FROM (SELECT DISTINCT ` + expr.sql + ` AS "c0" FROM ` + counted.from() +
+			counted.whereSQL() + `) subquery`, Args: counted.args.values, Text: 1}
+	}
+	plan, err := q.planFieldListing(name, total, labels, params)
+	if err != nil {
+		return ReportPlan{Statements: []domain.ReportStatement{total}}, &ReportDeferred{Err: err}
+	}
+	return plan, nil
+}
+
+// planFieldListing is get_field_values after total_distinct: the listing whose
+// [:limit] slice raises after the count ran.
+func (q *mcpQuery) planFieldListing(name string, total domain.ReportStatement, labels mcpLabels, params domain.RequestObject) (ReportPlan, error) {
 	listed := q.clone()
-	expr, err = listed.resolveField(name)
+	expr, err := listed.resolveField(name)
 	if err != nil {
 		return ReportPlan{}, err
 	}
@@ -985,7 +1098,12 @@ func (q *mcpQuery) planFieldValues(name string, params domain.RequestObject, con
 	}
 	inner := `SELECT DISTINCT ` + selects + ` FROM ` + listed.from() + listed.whereSQL() + ` ORDER BY ` + order.sql + ` ASC` + limit
 	column := mcpColumnOut{key: name, expr: expr, alias: "c0"}
-	return ReportPlan{Statements: []domain.ReportStatement{total, mcpWrap(inner, []mcpColumnOut{column}, listed.args.values)},
+	listing := mcpWrap(inner, []mcpColumnOut{column}, listed.args.values)
+	if listed.empty {
+		// The top-level WHERE raised EmptyResultSet: no value is listed.
+		listing = mcpEmptyRows(1)
+	}
+	return ReportPlan{Statements: []domain.ReportStatement{total, listing},
 		Render: func(results [][][]*string) (any, error) {
 			items := []any{}
 			mapping := labels[name]
@@ -1117,8 +1235,8 @@ func (q *mcpQuery) planAggregate(params domain.RequestObject, config ReportSetti
 		return ReportPlan{Immediate: &ReportToolError{Message: "No valid aggregations"}}, nil
 	}
 	// QueryBuilder.execute_aggregation sets the timeout after those two
-	// answers and before it validates group_by.
-	if err := mcpSetQueryTimeout(config); err != nil {
+	// answers and before it validates group_by (query_builder.py:565).
+	if err := config.setTimeout(); err != nil {
 		return ReportPlan{}, err
 	}
 	groupValue, _ := params.Lookup("group_by")
@@ -1197,9 +1315,17 @@ func (q *mcpQuery) planAggregate(params domain.RequestObject, config ReportSetti
 	if q.compileErr != nil {
 		return ReportPlan{}, q.compileErr
 	}
+	if q.adaptErr != nil {
+		return ReportPlan{}, q.adaptErr
+	}
 	inner := `SELECT DISTINCT ` + strings.Join(selects, ", ") + ` FROM ` + q.from() + q.whereSQL() + ` GROUP BY ` +
 		strings.Join(groupBy, ", ") + ` ORDER BY ` + strings.Join(keys, ", ")
-	return ReportPlan{Statements: []domain.ReportStatement{mcpWrap(inner, columns, q.args.values)},
+	statement := mcpWrap(inner, columns, q.args.values)
+	if q.empty {
+		// The top-level WHERE raised EmptyResultSet: there is no group.
+		statement = mcpEmptyRows(len(columns))
+	}
+	return ReportPlan{Statements: []domain.ReportStatement{statement},
 		Render: func(results [][][]*string) (any, error) {
 			data := []any{}
 			for _, record := range results[0] {
@@ -1256,9 +1382,25 @@ func (q *mcpQuery) planFlatAggregate(aggregates []mcpAggregate) (ReportPlan, err
 	if q.compileErr != nil {
 		return ReportPlan{}, q.compileErr
 	}
+	if q.adaptErr != nil {
+		return ReportPlan{}, q.adaptErr
+	}
 	inner := `SELECT ` + strings.Join(outer, ", ") + ` FROM (SELECT DISTINCT ` + strings.Join(selects, ", ") + ` FROM ` + q.from() +
 		q.whereSQL() + `) subquery`
-	return ReportPlan{Statements: []domain.ReportStatement{mcpWrap(inner, columns, q.args.values)},
+	statement := mcpWrap(inner, columns, q.args.values)
+	if q.empty {
+		// The top-level WHERE raised EmptyResultSet: Django answers each
+		// aggregate's empty value (Count 0, the others None).
+		values := make([]string, len(aggregates))
+		for i, aggregate := range aggregates {
+			values[i] = "NULL::text"
+			if aggregate.out().kind == "int" && (aggregate.field == "" || aggregate.function == "count") {
+				values[i] = "'0'::text"
+			}
+		}
+		statement = domain.ReportStatement{SQL: "SELECT " + strings.Join(values, ", "), Text: len(columns)}
+	}
+	return ReportPlan{Statements: []domain.ReportStatement{statement},
 		Render: func(results [][][]*string) (any, error) {
 			row := domain.RequestObject{}
 			for i, column := range columns {

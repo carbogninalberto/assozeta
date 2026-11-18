@@ -90,7 +90,7 @@ func (s *SubscriptionCreates) newMember(ctx context.Context, tx domain.Subscript
 	}
 	info, ok := infoValue.(domain.RequestObject)
 	if !ok {
-		return nil, domain.ErrSubscriptionCreateServer // initial_data['email'] on a non-dict
+		return nil, pythonSubscriptError(infoValue) // initial_data['email'] on a non-dict
 	}
 	emailValue, present := info.Lookup("email")
 	if !present {

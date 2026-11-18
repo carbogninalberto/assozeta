@@ -3,7 +3,9 @@ package service
 import (
 	"context"
 	"errors"
+	"math/big"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
@@ -33,6 +35,32 @@ func clearReportEnvironment(t *testing.T) {
 	}
 }
 
+// withReportEnvironment installs the deployment environment's texts for one
+// test and restores the previous wiring.
+func withReportEnvironment(t *testing.T, maxResults, queryTimeout *string) {
+	t.Helper()
+	previous := reportEnvironment
+	SetReportEnvironment(maxResults, queryTimeout)
+	t.Cleanup(func() { reportEnvironment = previous })
+}
+
+// bigText is a setting's decimal text ("<nil>" when it is unset).
+func bigText(number *big.Int) string {
+	if number == nil {
+		return "<nil>"
+	}
+	return number.String()
+}
+
+// requireReportSettings checks both settings' decimal texts.
+func requireReportSettings(t *testing.T, settings dto.ReportSettings, err error, maximum, timeout string) {
+	t.Helper()
+	if err != nil || bigText(settings.MaxResults) != maximum || bigText(settings.QueryTimeout) != timeout {
+		t.Fatalf("settings {%s, %s} err %v, want {%s, %s}",
+			bigText(settings.MaxResults), bigText(settings.QueryTimeout), err, maximum, timeout)
+	}
+}
+
 func TestLoadReportSettingsStored(t *testing.T) {
 	load := func(t *testing.T, text string) (dto.ReportSettings, error) {
 		t.Helper()
@@ -40,17 +68,16 @@ func TestLoadReportSettingsStored(t *testing.T) {
 		return loadReportSettings(context.Background(), storedSettings(text))
 	}
 	settings, err := load(t, `{"ai": {"revision": 3, "settings": {"max_results": 100, "query_timeout": 5}}}`)
-	if err != nil || settings.MaxResults != 100 || settings.QueryTimeout != 5 {
-		t.Fatalf("settings %+v err %v", settings, err)
-	}
+	requireReportSettings(t, settings, err, "100", "5")
 	// A stored null or an absent record falls back to the environment.
-	if settings, err = load(t, `{"ai": {"settings": null}}`); err != nil || settings.MaxResults != 5000 ||
-		settings.QueryTimeout != 10 {
-		t.Fatalf("environment settings %+v err %v", settings, err)
+	if settings, err = load(t, `{"ai": {"settings": null}}`); err != nil {
+		t.Fatal(err)
 	}
-	if settings, err = load(t, `{}`); err != nil || settings.MaxResults != 5000 || settings.QueryTimeout != 10 {
-		t.Fatalf("empty settings %+v err %v", settings, err)
+	requireReportSettings(t, settings, err, "5000", "10")
+	if settings, err = load(t, `{}`); err != nil {
+		t.Fatal(err)
 	}
+	requireReportSettings(t, settings, err, "5000", "10")
 
 	for _, item := range []struct{ name, text string }{
 		{"missing-max", `{"ai": {"settings": {"query_timeout": 5}}}`},
@@ -78,9 +105,7 @@ func TestLoadReportSettingsEnvironment(t *testing.T) {
 	t.Setenv("MCP_AGENT_MAX_RESULTS", " 1_000 ")
 	t.Setenv("MCP_AGENT_QUERY_TIMEOUT", "٣")
 	settings, err := loadReportSettings(context.Background(), settingsStore{})
-	if err != nil || settings.MaxResults != 1000 || settings.QueryTimeout != 3 {
-		t.Fatalf("settings %+v err %v", settings, err)
-	}
+	requireReportSettings(t, settings, err, "1000", "3")
 
 	for _, item := range []struct{ name, value string }{
 		{"empty", ""}, {"text", "abc"}, {"float", "1.5"}, {"plus-sign-only", "+"},
@@ -95,45 +120,76 @@ func TestLoadReportSettingsEnvironment(t *testing.T) {
 		})
 	}
 
-	// Python's int() keeps an integer beyond int64 and Django answers with it:
-	// handed off.
-	clearReportEnvironment(t)
-	t.Setenv("MCP_AGENT_MAX_RESULTS", "99999999999999999999999999")
-	if _, err := loadReportSettings(context.Background(), settingsStore{}); !errors.Is(err, refusal.ErrNotPorted) {
-		t.Fatalf("beyond int64: expected the refusal, got %v", err)
-	}
-
 	// Django's env.int keeps 0 ('' after `or ''`) and negatives; the tool
-	// raises on them at use.
-	for _, item := range []struct {
-		name  string
-		value string
-		want  int64
-	}{
-		{"zero", "0", 0}, {"negative", "-5", -5},
+	// hands the value to PostgreSQL at use.
+	for _, item := range []struct{ name, value string }{
+		{"zero", "0"}, {"negative", "-5"},
 	} {
 		t.Run(item.name, func(t *testing.T) {
 			clearReportEnvironment(t)
 			t.Setenv("MCP_AGENT_QUERY_TIMEOUT", item.value)
 			settings, err := loadReportSettings(context.Background(), settingsStore{})
-			if err != nil || settings.QueryTimeout != item.want || settings.MaxResults != 5000 {
-				t.Fatalf("settings %+v err %v, want query timeout %d", settings, err, item.want)
-			}
+			requireReportSettings(t, settings, err, "5000", item.value)
 		})
-	}
-	for _, item := range []struct {
-		name  string
-		value string
-		want  int64
-	}{
-		{"zero", "0", 0}, {"negative", "-5", -5},
-	} {
 		t.Run("max-results-"+item.name, func(t *testing.T) {
 			clearReportEnvironment(t)
 			t.Setenv("MCP_AGENT_MAX_RESULTS", item.value)
 			settings, err := loadReportSettings(context.Background(), settingsStore{})
-			if err != nil || settings.MaxResults != item.want || settings.QueryTimeout != 10 {
-				t.Fatalf("settings %+v err %v, want max results %d", settings, err, item.want)
+			requireReportSettings(t, settings, err, item.value, "10")
+		})
+	}
+}
+
+// TestLoadReportSettingsConfiguredTexts is SetReportEnvironment: the texts
+// config resolved (deployment file, $ proxies) are env.int's input, and
+// Python's int() keeps every digit.
+func TestLoadReportSettingsConfiguredTexts(t *testing.T) {
+	text := func(value string) *string { return &value }
+	for _, item := range []struct {
+		name                     string
+		maxResults, queryTimeout *string
+		wantMaximum, wantTimeout string
+	}{
+		{"beyond-int64", text("99999999999999999999"), text("-99999999999999999999"), "99999999999999999999", "-99999999999999999999"},
+		{"underscores", text("1_0"), text("1_0"), "10", "10"},
+		{"spaces", text(" 7 "), text(" 7 "), "7", "7"},
+		{"unicode-digits", text("٣"), text("٣"), "3", "3"},
+		{"max-digits", text(strings.Repeat("1", 4300)), text("1"), strings.Repeat("1", 4300), "1"},
+		{"unset", nil, nil, "5000", "10"},
+	} {
+		t.Run(item.name, func(t *testing.T) {
+			clearReportEnvironment(t)
+			// The process environment is not read once the texts are installed.
+			t.Setenv("MCP_AGENT_MAX_RESULTS", "1")
+			t.Setenv("MCP_AGENT_QUERY_TIMEOUT", "1")
+			withReportEnvironment(t, item.maxResults, item.queryTimeout)
+			settings, err := loadReportSettings(context.Background(), settingsStore{})
+			requireReportSettings(t, settings, err, item.wantMaximum, item.wantTimeout)
+		})
+	}
+	// The timeout text of a 20-digit value keeps every digit (the 25-digit
+	// product PostgreSQL rejects with its own message).
+	withReportEnvironment(t, text("99999999999999999999"), text("99999999999999999999"))
+	settings, err := loadReportSettings(context.Background(), settingsStore{})
+	if err != nil || settings.QueryTimeoutText() != "99999999999999999999000" {
+		t.Fatalf("timeout text: %q, %v", settings.QueryTimeoutText(), err)
+	}
+
+	// Two texts dto.PythonIntText accepts are int() ValueErrors: a control
+	// byte int() does not strip (\x1c-\x1f) and more than
+	// sys.int_info.default_max_str_digits digits.
+	for _, item := range []struct{ name, value string }{
+		{"leading-unit-separator", "\x1c12"},
+		{"trailing-unit-separator", "12\x1f"},
+		{"too-many-digits", strings.Repeat("1", 4301)},
+		{"leading-zeros", strings.Repeat("0", 4300) + "1"},
+	} {
+		t.Run(item.name, func(t *testing.T) {
+			clearReportEnvironment(t)
+			withReportEnvironment(t, text(item.value), text("1"))
+			_, err := loadReportSettings(context.Background(), settingsStore{})
+			if !errors.Is(err, refusal.ErrAppState) || errors.Is(err, refusal.ErrNotPorted) {
+				t.Fatalf("expected an application-state error, got %v", err)
 			}
 		})
 	}

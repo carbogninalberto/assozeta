@@ -79,9 +79,9 @@ I = lambda label: INSTRUCTORS[label]['id']
 
 
 def hour(instructor, day, hours, amount, **values):
-    row = {'id': next(ids), 'instructor': instructor, 'date': day, 'hours': hours, 'amount': amount, 'created': '2026-09-01T08:00:00Z',
-           'compensation_type': 'hourly', 'hourly_billing': '10.00', 'percentage_billing': '0.00', 'paid': False, 'payment': None,
-           'notes': None, 'calculation_data': []}
+    row = {'id': values.pop('id') if 'id' in values else next(ids), 'instructor': instructor, 'date': day, 'hours': hours,
+           'amount': amount, 'created': '2026-09-01T08:00:00Z', 'compensation_type': 'hourly', 'hourly_billing': '10.00',
+           'percentage_billing': '0.00', 'paid': False, 'payment': None, 'notes': None, 'calculation_data': []}
     row.update(values)
     return row
 
@@ -123,6 +123,29 @@ HOURS = {
     'r_b': hour('removable', '2026-09-02', '2.00', '2.00', notes='due'),
     'abroad_h': hour('abroad', '2026-09-03', '1.00', '1.00'),
 }
+# Decimal edge cases for the notes, appended with explicit ids so the ids of
+# the rows above (and every authored expectation) stay put. The amount is read
+# as Decimal(str(...)), multiplied by percentage_billing / 100 when it is
+# non-zero, and both are written with str().
+special_ids = iter(f'a1000000-0000-4000-8000-{967901 + n:012d}' for n in range(4))
+HOURS.update({
+    # A 35-digit NaN payload: unchanged for the amount, cut to 28 digits in the product.
+    'c_nan_payload': hour('comp', '2026-09-22', '1.00', '8.00', id=next(special_ids), compensation_type='percentage',
+                          percentage_billing='50.00',
+                          calculation_data=[{'amount': 'NaN' + '12345678901234567890123456789012345',
+                                             'full_athlete_name': 'N', 'course': 'C'}]),
+    # Adjusted exponent above Emax: the product overflows.
+    'c_huge_exponent': hour('comp', '2026-09-23', '1.00', '5.00', id=next(special_ids), compensation_type='percentage',
+                            percentage_billing='50.00',
+                            calculation_data=[{'amount': '1E1000000000', 'full_athlete_name': 'A', 'course': 'C'}]),
+    # Subnormal products round at exponent Etiny: to zero and to 2.
+    'c_subnormal_zero': hour('comp', '2026-09-24', '1.00', '2.00', id=next(special_ids), compensation_type='percentage',
+                             percentage_billing='50.00',
+                             calculation_data=[{'amount': '1E-1000030', 'full_athlete_name': 'S', 'course': 'C'}]),
+    'c_subnormal_round': hour('comp', '2026-09-25', '1.00', '3.00', id=next(special_ids), compensation_type='percentage',
+                              percentage_billing='50.00',
+                              calculation_data=[{'amount': '5E-1000026', 'full_athlete_name': 'T', 'course': 'C'}]),
+})
 REMINDERS = {
     'm_a': {'id': next(ids), 'instructor': 'removable', 'title': 'Promemoria', 'send_at': '2026-09-20T08:00:00Z', 'association': OWN},
     'm_b': {'id': next(ids), 'instructor': 'removable', 'title': 'Secondo', 'send_at': '2026-09-21T08:00:00Z', 'association': None},
@@ -283,13 +306,16 @@ NEW_ADD, UNUSED_KEY = next(ids), next(ids)
 cases = []
 
 
-def add(name, actor, path, status, response, *, method='GET', body=None, raw_body=None, content_type=None, headers=None, effect=None):
+def add(name, actor, path, status, response, *, method='GET', body=None, raw_body=None, content_type=None, headers=None, effect=None,
+        setup=None):
     case = {'name': f'instructor-writes-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
             'status': status, 'response': response, 'effect': effect}
     if body is not None:
         case['body'] = body
     if raw_body is not None:
         case['raw_body'], case['content_type'] = raw_body, content_type
+    if setup is not None:
+        case['setup'] = setup
     cases.append(case)
 
 
@@ -561,6 +587,50 @@ for name, day in (('deep-events-600', '01/12/2026'), ('deep-events-900', '02/12/
 ENORMOUS = report(OWN, '06/12/2026', '06/12/2026')
 ENORMOUS['data']['report_file'] = None
 add('report-description-int-past-double', 'owner', RQ('06/12/2026', '06/12/2026'), 200, ENORMOUS)
+# GET instructor/report parses the stored JSON with json.loads at the edge
+# measured on the harness's Django request thread (owner decision X15): 9940
+# levels (one cold request showed 9938). The value exists only around its own
+# case (the adapter's case scope), because the state snapshot walks every jsonb
+# column in Python and cannot hold one this deep. Below the edge the report is
+# answered; past it json.loads raises RecursionError in
+# JSONField.from_db_value, which the view does not catch.
+REPORT_EDGE = 9940
+
+
+def report_deep_event(total, event_id):
+    """A registry events list whose total nesting is total."""
+    depth = total - 3
+    return ('[{"event_id": "%s", "title": "Annidato", "extendedProps": {"instructor": {"instructor_id": "%s"}, '
+            '"extra": %s}}]' % (event_id, INSTRUCTORS['full']['id'], '[' * depth + ']' * depth))
+
+
+def report_deep_attendees(total):
+    """An attendance day's attendees list whose total nesting is total."""
+    depth = total - 2
+    return ('[{"course_subscription_id": "%s", "extra": %s}]'
+            % (COURSE_SUBSCRIPTIONS['cs_mario']['id'], '[' * depth + ']' * depth))
+
+
+def report_deep_json(total):
+    return '[' * total + ']' * total
+
+
+for label, total in (('9936', REPORT_EDGE - 4), ('9970', REPORT_EDGE + 30)):
+    status, response = (200, report(OWN, '01/12/2026', '01/12/2026')) if total <= REPORT_EDGE else (500, SERVER)
+    add(f'report-deep-registry-events-{label}', 'owner', RQ('01/12/2026', '01/12/2026'), status, response,
+        setup={'deep': [{'target': 'registry', 'label': 'reg_report_json', 'column': 'events',
+                         'value': report_deep_event(total, DEEP['events600'])}]})
+    status, response = (200, report(OWN, '03/12/2026', '03/12/2026')) if total <= REPORT_EDGE else (500, SERVER)
+    add(f'report-deep-attendees-{label}', 'owner', RQ('03/12/2026', '03/12/2026'), status, response,
+        setup={'deep': [{'target': 'day', 'label': 'deep_attendees600', 'column': 'attendees',
+                         'value': report_deep_attendees(total)}]})
+    # select_related('course') also deserializes Course.events and
+    # Course.multiple_quotes, though the view reads only the title.
+    for column in ('events', 'multiple_quotes'):
+        status, response = (200, report(OWN, '01/12/2026', '01/12/2026')) if total <= REPORT_EDGE else (500, SERVER)
+        add(f'report-deep-course-{column.replace("_", "-")}-{label}', 'owner', RQ('01/12/2026', '01/12/2026'), status,
+            response, setup={'deep': [{'target': 'course', 'label': 'ca', 'column': column,
+                                       'value': report_deep_json(total)}]})
 add('report-athlete-denied', 'athlete', REPORT, 403, {'detail': 'User is not a sport association'})
 add('report-owner-without-association', 'owner_without_association', RQ('14/09/2026', '30/09/2026'), 500, SERVER)
 authorization('report', REPORT, 'GET', 'read', 'Instructor Report', 'POST')
@@ -776,8 +846,17 @@ add('comp-special-decimals', 'owner', COMP(), 200, CREATED_COMP, method='POST', 
     effect=effect('owner', rows={'Payment': {'$new': payment_columns('10.00', '$now', notes_for(SPECIAL))},
                                  'InstructorHours': {label: {'payment_id': '$new'} for label in SPECIAL}},
                   audit=[payment_created(), linked('c_special'), linked('c_nan_plain'), payment_notes({'notes': ['None', notes_for(SPECIAL)]})]))
+# A NaN payload longer than the context's 28 digits and subnormal products: the notes show the
+# constructor's payload for the amount and the rounded product.
+SUBNORMAL = ['c_nan_payload', 'c_subnormal_zero', 'c_subnormal_round']
+add('comp-nan-payload-and-subnormal-decimals', 'owner', COMP(), 200, CREATED_COMP, method='POST',
+    body={'hours': [H(label) for label in SUBNORMAL]},
+    effect=effect('owner', rows={'Payment': {'$new': payment_columns('13.00', '$now', notes_for(SUBNORMAL))},
+                                 'InstructorHours': {label: {'payment_id': '$new'} for label in SUBNORMAL}},
+                  audit=[payment_created()] + [linked(label) for label in SUBNORMAL] +
+                        [payment_notes({'notes': ['None', notes_for(SUBNORMAL)]})]))
 # A signalling NaN or an exponent above the limit raises while the notes are composed: the saved work stays.
-for label, name in (('c_snan', 'signalling-nan'), ('c_overflow', 'overflow')):
+for label, name in (('c_snan', 'signalling-nan'), ('c_overflow', 'overflow'), ('c_huge_exponent', 'huge-exponent')):
     add(f'comp-{name}-keeps-saved-work', 'owner', COMP(), 500, SERVER, method='POST', body={'hours': [H(label)]},
         effect=effect('owner', rows={'Payment': {'$new': payment_columns('5.00', '$now', None)}, 'InstructorHours': {label: {'payment_id': '$new'}}},
                       audit=[payment_created(), linked(label)]))

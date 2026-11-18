@@ -157,6 +157,12 @@ def moment(text):
     return datetime.fromisoformat(text.replace('Z', '+00:00')) if text else None
 
 
+def case_json_columns(row):
+    """The payment columns the case scope holds as raw text ('$raw_json')."""
+    return {column: row[column] for column in ('meta_payment_categories', 'meta', 'course')
+            if isinstance(row.get(column), dict) and set(row[column]) == {'$raw_json'}}
+
+
 def seed_rows(source, created):
     from application.models import Associate, Instructor, Payment, PaymentCategory, SupplierAndCustomers, Subscription
     from application.models.balance_sheet_models import CustomAccounts
@@ -208,6 +214,8 @@ def seed_rows(source, created):
                             membership_fee=Decimal(bill['membership_fee']), activity_fee=Decimal(bill['activity_fee']),
                             description=bill['description'], number=bill['number']))
     for row in source['payments'].values():
+        if case_json_columns(row):
+            continue  # its JSON column is past the state snapshot: inserted around its case
         values = {key: value for key, value in row.items() if key != 'id'}
         for column in TIMES:
             values[column] = moment(values[column])
@@ -235,6 +243,49 @@ base_fixture_context = harness.fixture_context_for(contract, seed_rows, purge=(p
 
 def prepare(source):
     return {'objects': listing()}
+
+
+def setup_payment(source, label):
+    """Insert the payment whose stored JSON the state snapshot cannot decode (X15 band).
+
+    Django loads it with json.loads like any other; the harness walks every stored
+    JSON value in Python, which cannot hold a value this deep, so the row exists
+    only around its case and its deep column is written from the authored text with
+    raw SQL (psycopg2's json.dumps of a Python structure at that depth raises).
+    """
+    from application.models import Payment
+    from django.db import connection
+    row, raw = source['payments'][label], case_json_columns(source['payments'][label])
+    values = {key: value for key, value in row.items() if key != 'id'}
+    for column in TIMES:
+        values[column] = moment(values[column])
+    values['amount'] = Decimal(values['amount'])
+    for column in raw:
+        values[column] = None
+    Payment._base_manager.bulk_create([Payment(payment_id=row['id'], **values)])
+    with connection.cursor() as cursor:
+        for column, value in raw.items():
+            cursor.execute(f'UPDATE application_payment SET {column}=%s::jsonb WHERE payment_id=%s', [value['$raw_json'], row['id']])
+
+
+@contextmanager
+def case_rows(case):
+    """The stored payment of a case's JSON band, inserted and removed around its request."""
+    label = (case.get('setup') or {}).get('payment')
+    if not label:
+        yield
+        return
+    from auditlog.context import disable_auditlog
+    from django.db import connection
+    source = base_contract.load_source()
+    with disable_auditlog():
+        setup_payment(source, label)
+    try:
+        yield
+    finally:
+        with disable_auditlog():
+            with connection.cursor() as cursor:
+                cursor.execute('DELETE FROM application_payment WHERE payment_id=%s', [source['payments'][label]['id']])
 
 
 @contextmanager
@@ -421,4 +472,4 @@ def assert_effect(case, before, after, source, context):
         contract.require(invoice_moments[0] == invoice_now, 'audit.invoice-now-stored')
 
 
-run_workload = harness.run_workload_for(contract, assert_effect, prepare=prepare)
+run_workload = harness.run_workload_for(contract, assert_effect, prepare=prepare, case_scope=case_rows)

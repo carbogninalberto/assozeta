@@ -12,7 +12,11 @@ import (
 // TESTS/adapters/go/pandas_xlsx_golden.py write, in Go.
 func testWorkbook(t *testing.T, sheet, strings string) []byte {
 	t.Helper()
-	parts := [][2]string{
+	return zipParts(t, testParts(sheet, strings))
+}
+
+func testParts(sheet, shared string) [][2]string {
+	return [][2]string{
 		{"[Content_Types].xml", `<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">` +
 			`<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>` +
 			`<Default Extension="xml" ContentType="application/xml"/>` +
@@ -31,8 +35,13 @@ func testWorkbook(t *testing.T, sheet, strings string) []byte {
 			`<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings" Target="sharedStrings.xml"/>` +
 			`</Relationships>`},
 		{"xl/worksheets/sheet1.xml", sheet},
-		{"xl/sharedStrings.xml", strings},
+		{"xl/sharedStrings.xml", shared},
 	}
+}
+
+// zipParts is the archive the fixtures' book() writes: one part per entry.
+func zipParts(t *testing.T, parts [][2]string) []byte {
+	t.Helper()
 	var buffer bytes.Buffer
 	bundle := zip.NewWriter(&buffer)
 	for _, part := range parts {
@@ -62,11 +71,11 @@ func stringsOf(items ...string) string {
 
 const testRow = `<row r="1"><c r="A1" t="inlineStr"><is><t>Nome</t></is></c><c r="B1"><v>1</v></c></row>`
 
-// TestPartBounds is the size bound: the parts openpyxl parses whole (the
-// workbook, its relationships, the content types, the shared strings) are left
-// to Django past maxPartBytes, because pandas needs that much memory for them
-// on top of the rest of the request; the worksheet is read as it is parsed, as
-// openpyxl's iterparse does, so its size alone is no refusal.
+// TestPartBounds is the size bound: a part openpyxl parses whole (the
+// workbook, its relationships, the content types, the shared strings) past
+// maxPartBytes is the 500 page (ErrInvalid), because the host cannot parse it
+// and read_excel's xlrd retry raises too; the worksheet is read as it is
+// parsed, as openpyxl's iterparse does, so its size alone is no refusal.
 func TestPartBounds(t *testing.T) {
 	saved := maxPartBytes
 	maxPartBytes = 1024
@@ -84,7 +93,7 @@ func TestPartBounds(t *testing.T) {
 	}
 
 	data = testWorkbook(t, sheetOf(testRow), stringsOf("<si><t>"+strings.Repeat("y", 4096)+"</t></si>"))
-	if _, err = ReadAll(data, nil); !errors.Is(err, ErrWorkbookNotPorted) {
+	if _, err = ReadAll(data, nil); !errors.Is(err, ErrInvalid) {
 		t.Fatalf("a shared string table past the bound: %v", err)
 	}
 }

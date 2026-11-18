@@ -15,10 +15,15 @@ group-aware, the query parameters; AssociateSerializer, as info), PUT to
 update() (partial), PATCH to partial_update() (500) and DELETE to the stock
 destroy(): Associate.delete(), a hard delete through Django's Collector (the
 tutor relations cascade), not the viewset's soft delete. Format twins:
-list() and update() reject format= (500). HTML form input on create is not
-ported (refused). Expectations reuse the personas-writes seed and authoring
-helpers (loaded from generate_personas_writes_http.py up to its first case).
-Run with ``python3 -I``.
+list() and update() reject format= (500). HTML form input on create follows
+the serializer's form rules (absent booleans are False, a present empty
+boolean input is skipped; tutors_data is read
+from the form's values, else its indexed keys, and still reaches Associate()
+as a keyword: the 500 page). A list body whose elements include the string
+'picture_path' fails to_internal_value's index lookup (500); any other list
+is the dict-check 400. Expectations reuse the personas-writes seed and
+authoring helpers (loaded from generate_personas_writes_http.py up to its
+first case). Run with ``python3 -I``.
 """
 import json
 from pathlib import Path
@@ -35,7 +40,8 @@ LIST_ALLOW = ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'POST']
 DETAIL_ALLOW = ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'PATCH', 'PUT']
 
 
-def add(name, actor, method, path, status, response, *, body=None, raw_body=None, content_type=None, headers=None, effect=None):
+def add(name, actor, method, path, status, response, *, body=None, raw_body=None, raw_parts=None, content_type=None, headers=None,
+        effect=None):
     detail = path.split('?')[0].rstrip('/').count('/') > 1
     case = {'name': f'router-personas-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
             'status': status, 'response': response, 'allow': DETAIL_ALLOW if detail else LIST_ALLOW,
@@ -44,6 +50,8 @@ def add(name, actor, method, path, status, response, *, body=None, raw_body=None
         case['body'] = body
     if raw_body is not None:
         case['raw_body'], case['content_type'] = raw_body, content_type
+    if raw_parts is not None:
+        case['raw_parts'], case['content_type'] = raw_parts, content_type
     cases.append(case)
 
 
@@ -102,6 +110,75 @@ effect = Effect('full_collaborator')
 ref = effect.create(user=OWNER, first_name='Formato')
 add('create-format-json', 'full_collaborator', 'POST', '/personas.json/', 201, info(ref), body={'first_name': 'Formato'}, effect=effect)
 
+# HTML form input: AssociateSerializer.to_internal_value copies the QueryDict and
+# the field values follow Field.get_value's html rules (an absent boolean is
+# default_empty_html False, an empty nullable text input the empty string).
+effect = Effect('owner')
+ref = effect.create(user=OWNER, first_name='Modulo', last_name='Html')
+add('create-form-body', 'owner', 'POST', LIST, 201, info(ref),
+    raw_body=urllib.parse.urlencode({'first_name': 'Modulo', 'last_name': 'Html'}),
+    content_type='application/x-www-form-urlencoded', effect=effect)
+# A present empty boolean input is empty (not required, not nullable): the field
+# is skipped and the model default (False) stays.
+effect = Effect('owner')
+ref = effect.create(user=OWNER, first_name='Modulo')
+add('create-form-empty-boolean', 'owner', 'POST', LIST, 201, info(ref),
+    raw_body=urllib.parse.urlencode({'first_name': 'Modulo', 'is_minor': ''}),
+    content_type='application/x-www-form-urlencoded', effect=effect)
+add('create-form-boolean-invalid', 'owner', 'POST', LIST, 400, {'is_minor': ['Must be a valid boolean.']},
+    raw_body=urllib.parse.urlencode({'first_name': 'Modulo', 'is_minor': 'maybe'}),
+    content_type='application/x-www-form-urlencoded')
+add('create-form-validation', 'owner', 'POST', LIST, 400, {'email': ['Enter a valid email address.']},
+    raw_body=urllib.parse.urlencode({'first_name': 'Modulo', 'email': 'nope'}),
+    content_type='application/x-www-form-urlencoded')
+# ListField.get_value on an html form: the field's own values (getlist), else the
+# indexed keys parse_html_list collects; the ListField's child is unvalidated, so
+# either form reaches Associate() as a keyword (the 500 page).
+add('create-form-tutors-data-server-error', 'owner', 'POST', LIST, 500, SERVER,
+    raw_body=urllib.parse.urlencode({'first_name': 'Con', 'tutors_data': 'x'}),
+    content_type='application/x-www-form-urlencoded')
+add('create-form-tutors-data-indexed-server-error', 'owner', 'POST', LIST, 500, SERVER,
+    raw_body=urllib.parse.urlencode({'first_name': 'Con', 'tutors_data[0]': 'x'}),
+    content_type='application/x-www-form-urlencoded')
+# to_internal_value decodes a picture_path containing 'base64' before the field
+# validation: its 400 is the answer, the invalid e-mail is not reported.
+add('create-picture-invalid-base64', 'owner', 'POST', LIST, 400,
+    {'picture_path': "Error processing image: {'picture_path': ErrorDetail(string='Invalid base64 string', code='invalid')}"},
+    body={'first_name': 'Fausto', 'email': 'nope', 'picture_path': 'data:image/png;base64,QUJDQQ'})
+# For a list body, `'picture_path' in` the copied body is an element test, and
+# indexing the list by that name raises the TypeError (the 500 page). A list
+# without that element reaches the dict check (create-list-body above).
+add('create-list-body-picture-path-server-error', 'owner', 'POST', LIST, 500, SERVER, body=['picture_path'])
+# parse_html_list's key pattern is ^tutors_data\[([0-9]+)\](.*)$: '.' stops at a line break and '$' only allows one
+# final '\n', so this key is not an indexed tutors_data key and the create has no tutors.
+effect = Effect('owner')
+ref = effect.create(user=OWNER, first_name='Riga')
+add('create-form-tutors-data-key-line-break', 'owner', 'POST', LIST, 201, info(ref),
+    raw_body=urllib.parse.urlencode({'first_name': 'Riga', 'tutors_data[0]a\nb': 'x'}),
+    content_type='application/x-www-form-urlencoded', effect=effect)
+# Multipart file parts: request.data is the form updated with the files, and to_internal_value starts with its
+# data.copy() (a deepcopy).
+BOUNDARY = 'personasboundary5e1b'
+MULTIPART = f'multipart/form-data; boundary={BOUNDARY}'
+
+
+def part(name, value, filename=None):
+    disposition = f'form-data; name="{name}"' + (f'; filename="{filename}"' if filename else '')
+    return f'--{BOUNDARY}\r\nContent-Disposition: {disposition}\r\n\r\n{value}\r\n'
+
+
+# `'base64' in file` iterates the file's lines (bytes, never equal to a str): the file reaches the CharField.
+add('create-multipart-picture-file', 'owner', 'POST', LIST, 400, {'picture_path': ['Not a valid string.']},
+    raw_body=part('first_name', 'File') + part('picture_path', 'base64', 'a.jpg') + f'--{BOUNDARY}--\r\n', content_type=MULTIPART)
+# ListField.get_value reads getlist: the file is a one-item list, which validates and reaches Associate() (500).
+add('create-multipart-tutors-data-file-server-error', 'owner', 'POST', LIST, 500, SERVER,
+    raw_body=part('first_name', 'File') + part('tutors_data', 'x', 'a.txt') + f'--{BOUNDARY}--\r\n', content_type=MULTIPART)
+# Over FILE_UPLOAD_MAX_MEMORY_SIZE the file is spooled to a TemporaryUploadedFile, which data.copy() cannot
+# deep-copy (TypeError): the 500 page, nothing written.
+add('create-multipart-spooled-file-server-error', 'owner', 'POST', LIST, 500, SERVER, content_type=MULTIPART,
+    raw_parts=[part('first_name', 'File') + f'--{BOUNDARY}\r\nContent-Disposition: form-data; name="attachment"; '
+               'filename="a.txt"\r\n\r\n', {'repeat': 'x', 'count': 2700000}, f'\r\n--{BOUNDARY}--\r\n'])
+
 # The detail route.
 add('detail-anonymous', 'anonymous', 'GET', detail('enzo'), 401, {'detail': 'Authentication credentials were not provided.'})
 add('detail-restricted-unmapped', 'restricted_collaborator', 'GET', detail('enzo'), 403, unmapped(f'personas/{A["enzo"]}'))
@@ -123,6 +200,8 @@ add('update-format-json-server-error', 'owner', 'PUT', detail('collab_upd', '.js
 add('update-foreign-not-found', 'owner', 'PUT', detail('abroad'), 404, NO_MATCH, body={'notes': 'x'})
 add('update-tutors-data-dict', 'owner', 'PUT', detail('collab_upd'), 400, {'tutors_data': ['Expected a list of items but got type "dict".']},
     body={'tutors_data': {}})
+add('update-multipart-picture-file', 'owner', 'PUT', detail('collab_upd'), 400, {'picture_path': ['Not a valid string.']},
+    raw_body=part('notes', 'File') + part('picture_path', 'base64', 'a.jpg') + f'--{BOUNDARY}--\r\n', content_type=MULTIPART)
 effect = Effect('full_collaborator')
 effect.save('collab_upd', phone='3330002222', sex='M')
 add('update-full-collaborator-put-is-partial', 'full_collaborator', 'PUT', detail('collab_upd'), 200, info('collab_upd'),

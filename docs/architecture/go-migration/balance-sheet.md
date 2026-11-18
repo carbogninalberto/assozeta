@@ -100,8 +100,8 @@ An exception of the export is the same 500 after the save as for `excel`.
   answered since long tail PR 4.)
   Amounts `float()` reads as `nan` or infinity are formatted as Python does
   (`nan`, `inf`, `-inf`; the outgoing cell prefixes `-`, so `-nan` and
-  `--inf`). A PDF input `pdfexport` does not reproduce is pdfexport's own
-  refusal.
+  `--inf`). Since long tail PR 5 `pdfexport` draws every
+  PDF input, the logo of any image format included.
 - In the `pdf` export: a denomination, city, postal code or address with a
   paragraph tag whose drawing is not ported (`<u>`, `<a>`, `<font>` and the
   others listed in pdf-exports.md, "Paragraph markup"), and
@@ -186,7 +186,7 @@ change".
 
 Long tail PR 3 (agent C): amounts `float()` reads as `nan` or infinity are formatted as Python does
 (`nan`, `inf`, `-inf`; the outgoing cell prefixes `-`, so `-nan` and `--inf`). A PDF input
-`pdfexport` does not reproduce is pdfexport's own refusal, and a description that is a number, list
+`pdfexport` does not reproduce is pdfexport's own refusal (none since long tail PR 5), and a description that is a number, list
 or dict stays refused.
 
 Long tail PR 4 (agent B): such a description is the Python value Django hands the writers. In the workbook an int is

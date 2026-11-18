@@ -443,4 +443,49 @@ def check_configuration_audit(effect, events, indexes, before, source):
     return rest
 
 
-run_workload = harness.run_workload_for(contract, assert_effect, prepare=prepare)
+def setup_subscription(source, label):
+    """Insert the subscription whose previous-plan payment JSON the state snapshot cannot
+    decode (X15 band), with its payment's meta written from the authored text.
+
+    Django's queryset decodes the payment row with json.loads like any other; the
+    harness walks every stored JSON value in Python, which cannot hold a value this
+    deep, so the rows exist only around their case. psycopg2's json.dumps of a Python
+    structure at that depth raises, so the column goes in as text with raw SQL.
+    """
+    from application.models import Payment, Subscription
+    from django.db import connection
+    row, deep = source['deep_subscriptions'][label], source['deep_subscriptions'][label]['payment_meta_raw']
+    Payment._base_manager.bulk_create([Payment(payment_id=row['payment'], subject=1, amount=Decimal('10.00'), meta=None,
+                                               user_id=row['user'], associate_id=row['associate'],
+                                               sport_association_id=row['association'], type='default',
+                                               description='Quota precedente', creation_date=moment('2026-01-01T00:00:00Z'))])
+    with connection.cursor() as cursor:
+        cursor.execute('UPDATE application_payment SET meta=%s::jsonb WHERE payment_id=%s', [deep, row['payment']])
+    Subscription._base_manager.bulk_create([Subscription(
+        subscription_id=row['id'], sport_association_id=row['association'], user_id=row['user'], associate_id=row['associate'],
+        payment_id=row['payment'], creation_date=created_at(row['created']), deleted=False, archived=False, meta=row['meta'],
+        group_id=None, status_flag=Subscription.ACCEPTED)])
+
+
+@contextmanager
+def case_rows(case):
+    """The deep stored subscription of a case, inserted and removed around its request."""
+    label = (case.get('setup') or {}).get('subscription')
+    if not label:
+        yield
+        return
+    from auditlog.context import disable_auditlog
+    from django.db import connection
+    source = contract.load_source()
+    with disable_auditlog():
+        setup_subscription(source, label)
+    try:
+        yield
+    finally:
+        with disable_auditlog():
+            with connection.cursor() as cursor:
+                cursor.execute('DELETE FROM application_subscription WHERE subscription_id=%s', [source['deep_subscriptions'][label]['id']])
+                cursor.execute('DELETE FROM application_payment WHERE payment_id=%s', [source['deep_subscriptions'][label]['payment']])
+
+
+run_workload = harness.run_workload_for(contract, assert_effect, prepare=prepare, case_scope=case_rows)

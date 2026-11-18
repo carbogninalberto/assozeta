@@ -38,7 +38,36 @@ type SubscriptionEditAssociate struct {
 	FamilyID      *string    `db:"family_id"`
 	FamilyRole    *string    `db:"family_role"`
 	CreationDate  time.Time  `db:"creation_date"`
+	// Spelling is associate_id as the Django instance holds it when that is not
+	// the stored key: AssociateSerializer.create assigns the text a client sent
+	// to the instance, which keeps it after the write (the column stores the
+	// canonical uuid). auditlog writes that text as object_pk and renders it for
+	// the field and for every foreign key assigned from the instance.
+	Spelling string `db:"-"`
 }
+
+// AuditKey is the key auditlog records for this row: the in-memory spelling
+// when the instance keeps one, the stored key otherwise.
+func (a SubscriptionEditAssociate) AuditKey() string {
+	if a.Spelling != "" {
+		return a.Spelling
+	}
+	return a.ID
+}
+
+// AssociateIntegrityError is the psycopg2 IntegrityError an Associate write
+// raises: Text is psycopg2's str() of the server's answer. The serializer's
+// associate_id branch catches it around the create's savepoint and lets it out
+// of save() (the whole registration rolls back).
+// Err is the driver's error, so callers that treat any database error as the
+// exception their try block catches (the draft approval loop) still see it.
+type AssociateIntegrityError struct {
+	Text string
+	Err  error
+}
+
+func (e *AssociateIntegrityError) Error() string { return "associate integrity error: " + e.Text }
+func (e *AssociateIntegrityError) Unwrap() error { return e.Err }
 
 // SubscriptionEditRelation is an AssociateTutorRelation row.
 type SubscriptionEditRelation struct {

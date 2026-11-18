@@ -57,9 +57,15 @@ Hard deletes reuse the Collector port of `collaborator-delete-go.md`
 - personas-subscriptions create, PUT and PATCH are ported in [persona-subs-writes](persona-subs-writes.md);
   its input-level refusals are listed there.
 - Inherited from the explicit-route ports: document uploads in `documents_data`, primary-key
-  changes, persona base64 pictures, unported date spellings and non-canonical `X-Group-Id`;
-  personas create form bodies. Course-enrolment form bodies are served at the measured X15
-  recursion bands ([course-enrolment](course-enrolment.md)).
+  changes, unported date spellings and non-canonical `X-Group-Id`. Course-enrolment form bodies are served at the
+  measured X15 recursion bands ([course-enrolment](course-enrolment.md)). Long tail PR 5: the personas create ports
+  the base64 picture branch (decoded before the field validation, stored under the new associate's id before the
+  row; with `tutors_data` the TypeError follows the upload) and HTML form bodies (non-partial form rules, `''` on a
+  boolean skipped, `tutors_data` present through `getlist` or indexed keys); a JSON list holding `'picture_path'` is
+  the 500 page. Multipart file parts: a file `picture_path` is the CharField's `Not a valid string.` (create and
+  update), a file `tutors_data` validates through `getlist` and reaches the TypeError (500), and a spooled upload
+  (request over 2.5 MiB) is the 500 page from `data.copy()`'s deepcopy, nothing written. An indexed key only counts
+  when it matches `^tutors_data\[([0-9]+)\](.*)$` (no line break after the index but one final `\n`).
 - course-subscriptions create: a database error in the middle of the non-atomic writes rolls
   back the earlier statements in Go (Django keeps them); Python-level failures keep them in both.
 

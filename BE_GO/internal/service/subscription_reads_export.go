@@ -111,9 +111,6 @@ func (s *SubscriptionReads) Export(ctx context.Context, export *SubscriptionRead
 		document, err := pdfexport.DataTable{Columns: columns, Rows: pdfexport.RowsOf(cells),
 			Title: export.title + " (giorno stampa " + printingDate(now) + ")"}.Build(now)
 		switch {
-		case errors.Is(err, pdfexport.ErrNotPorted):
-			// this table has no header, logo or paragraphs: the only inputs pdfexport refuses.
-			return nil, errors.Join(domain.ErrSubscriptionReadsUnreachable, err)
 		case errors.Is(err, refusal.ErrAppState):
 			return nil, err // a layout no export builds (pdfexport.ErrUnexpectedLayout)
 		case err != nil:

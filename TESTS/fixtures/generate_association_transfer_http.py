@@ -873,6 +873,44 @@ def shape_error(message):
 
 MISSING = ['Missing data file: data/10_courses.json']
 
+# json.loads and JSONDecoder.raw_decode at POST association/import/validate
+# parse up to the edge measured on the harness's Django request thread (owner
+# decision X15): 9942 levels (one request showed 9940). Below it the archive is
+# validated normally; past it validators.py's generic except clause reports the
+# RecursionError text as a validation error. iter_json_array counts each item's
+# own nesting (the enclosing array is not scanned by raw_decode).
+IMPORT_EDGE = 9942
+
+
+def deep_array(total):
+    return '[' * total + ']' * total
+
+
+def deep_manifest(total):
+    return json.dumps(MANIFEST, ensure_ascii=False)[:-1] + ', "deep": ' + deep_array(total - 1) + '}'
+
+
+def deep_users(total):
+    return ('[{"user_id": "%s", "username": "imported-owner", "email": "owner@imported.example.test", "password": "%s",'
+            ' "deep": %s}]' % (NEW_OWNER, PBKDF2, deep_array(total - 1)))
+
+
+deep_manifest_below = make_zip({**export_members(), 'manifest.json': deep_manifest(IMPORT_EDGE - 4)}, raw=('manifest.json',))
+validate_case('deep-manifest-9938', deep_manifest_below, validation(
+    deep_manifest_below, warnings=MISSING, info={**FILES_INFO, 'association': IMPORTED, 'owner_user': OWNER_INFO(False)}))
+deep_manifest_above = make_zip({**export_members(), 'manifest.json': deep_manifest(IMPORT_EDGE + 30)}, raw=('manifest.json',))
+validate_case('deep-manifest-9972', deep_manifest_above, validation(
+    deep_manifest_above, valid=False,
+    errors=['Error reading manifest: maximum recursion depth exceeded while decoding a JSON array from a unicode string']))
+deep_users_below = make_zip({**export_members(), 'data/02_users.json': deep_users(IMPORT_EDGE - 4)}, raw=('data/02_users.json',))
+validate_case('deep-users-9938', deep_users_below, validation(
+    deep_users_below, warnings=MISSING, info={**FILES_INFO, 'association': IMPORTED, 'owner_user': OWNER_INFO(False)}))
+deep_users_above = make_zip({**export_members(), 'data/02_users.json': deep_users(IMPORT_EDGE + 30)}, raw=('data/02_users.json',))
+validate_case('deep-users-9972', deep_users_above, validation(
+    deep_users_above, valid=False,
+    errors=['Error reading owner identity: maximum recursion depth exceeded while decoding a JSON array from a unicode string'],
+    warnings=MISSING, info={**FILES_INFO, 'association': MANIFEST['association']}))
+
 for label, manifest, message in (
         ('manifest-list', [1], "'list' object has no attribute 'get'"),
         ('manifest-int', 5, "argument of type 'int' is not iterable"),

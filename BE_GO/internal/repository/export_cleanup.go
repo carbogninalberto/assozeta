@@ -76,40 +76,6 @@ func (t *exportCleanupTransaction) AssociationExports(ctx context.Context, assoc
 	return exports, nil
 }
 
-func (t *exportCleanupTransaction) ExportReferenceConflict(ctx context.Context, documents []string) (bool, error) {
-	if len(documents) == 0 {
-		return false, nil
-	}
-	references := []struct {
-		Table  string `db:"table_name"`
-		Column string `db:"column_name"`
-	}{}
-	if err := t.tx.SelectContext(ctx, &references, `SELECT c.conrelid::regclass::text AS table_name, a.attname AS column_name
- FROM pg_constraint c JOIN pg_attribute a ON a.attrelid=c.conrelid AND a.attnum=c.conkey[1]
- WHERE c.contype='f' AND c.confrelid='docmanager_document'::regclass AND array_length(c.conkey, 1)=1`); err != nil {
-		return false, err
-	}
-	for _, ref := range references {
-		if documentSetNull[ref.Table+"."+ref.Column] {
-			continue
-		}
-		// The archive row being deleted is the one reference the task expects.
-		allowed := 0
-		if ref.Table == "application_sportassociationdocumentsarchive" && ref.Column == "document_id" {
-			allowed = 1
-		}
-		var conflict bool
-		if err := t.tx.GetContext(ctx, &conflict, `SELECT EXISTS(SELECT 1 FROM `+ref.Table+` WHERE `+ref.Column+`=ANY($1::uuid[])
- GROUP BY `+ref.Column+` HAVING count(*)>$2)`, documents, allowed); err != nil {
-			return false, err
-		}
-		if conflict {
-			return true, nil
-		}
-	}
-	return false, nil
-}
-
 // The archive has no live object to resolve after the delete: the index comes
 // from changes_json.sport_association through SportAssociation.objects (not
 // deleted associations only).
@@ -131,31 +97,12 @@ func (t *exportCleanupTransaction) DeleteExportArchive(ctx context.Context, arch
 	return appendModelAudit(ctx, t.tx, event)
 }
 
-// Django's collector clears the SET_NULL references with an update; the task
-// has no actor, so the Document entry resolves no association index.
+// DeleteExportDocument is Django's Collector for the document: CASCADE rows
+// and what cascades from them, SET_NULL updates, audit entries with their
+// index rows. The task has no actor and the Document entry resolves no
+// association index.
 func (t *exportCleanupTransaction) DeleteExportDocument(ctx context.Context, document string, at time.Time) error {
-	for column := range documentSetNull {
-		table, field := splitExportCleanupColumn(column)
-		if _, err := t.tx.ExecContext(ctx, `UPDATE `+table+` SET `+field+`=NULL WHERE `+field+`=$1::uuid`, document); err != nil {
-			return err
-		}
-	}
-	reverse := map[string]string{"customer_invoice_pdf": "application.CustomerInvoice.None"}
-	changes, _, err := deleteModelWithAuditReverse(ctx, t.tx, "docmanager_document", "document_id", document, reverse)
-	if err != nil {
-		return err
-	}
-	return appendModelAuditForApp(ctx, t.tx, "docmanager", modelAuditEntry{Model: "document", Key: document,
-		Representation: "Document object (" + document + ")", Action: 2, Changes: changes, At: at})
-}
-
-func splitExportCleanupColumn(column string) (string, string) {
-	for i := len(column) - 1; i >= 0; i-- {
-		if column[i] == '.' {
-			return column[:i], column[i+1:]
-		}
-	}
-	return column, ""
+	return deleteDocumentCascade(ctx, t.tx, document, domain.LoginAuditContext{}, at)
 }
 
 func (t *exportCleanupTransaction) CompleteJob(ctx context.Context, id, token uuid.UUID, result json.RawMessage) error {

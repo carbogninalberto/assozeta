@@ -219,6 +219,12 @@ type courseEnrolled struct {
 	dated   bool
 }
 
+// courseEventsNotIterableError is `for e in course.events` on a stored value
+// that is NULL or not iterable.
+func courseEventsNotIterableError(stored any) error {
+	return courseRaised("'" + pythonTypeLabel(stored) + "' object is not iterable")
+}
+
 // addCourseToSubscription is add_course_to_subscription after the callers'
 // lookups, on the caller's transaction: the quote of a quote course, the
 // course subscription, its payments and installments. nil without an error
@@ -363,9 +369,12 @@ func (s *CourseEnrolment) overviewPayments(ctx context.Context, tx domain.Course
 		if err != nil {
 			return nil, false, err
 		}
+		if stored == nil {
+			return nil, false, courseEventsNotIterableError(stored)
+		}
 		events, ok := dto.PythonIterate(stored)
-		if stored == nil || !ok {
-			return nil, false, courseEnrolmentServer
+		if !ok {
+			return nil, false, courseEventsNotIterableError(stored)
 		}
 		day := created.row.CreationDate.UTC()
 		day = time.Date(day.Year(), day.Month(), day.Day(), 0, 0, 0, 0, time.UTC)

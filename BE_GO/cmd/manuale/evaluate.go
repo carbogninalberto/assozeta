@@ -923,6 +923,9 @@ func evaluate(values map[string]string, stdout, stderr io.Writer) error {
 	if err != nil {
 		return evaluateTraceback
 	}
+	// The evaluate run's business tools read the AI settings from the same
+	// resolved environment (django-environ's env.int).
+	service.SetReportEnvironment(cfg.InstanceAdmin.AIIntegerTexts[1], cfg.InstanceAdmin.AIIntegerTexts[2])
 	database, err := pgx.ParseConfig(cfg.DatabaseURL())
 	if err != nil {
 		return evaluateTraceback

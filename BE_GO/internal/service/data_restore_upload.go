@@ -41,6 +41,14 @@ func (s *DataRestore) WithArchives(archives DataRestoreArchives) *DataRestore {
 
 const dataRestoreUploadFailed = "Caricamento non riuscito. Riprova."
 
+// dataRestoreUploadJSONEdge is the deepest container nesting (AuditJSONDepth:
+// "[]" counts 1) that json.loads parses in Archive.validate on the
+// POST instance/admin/data-restore request thread on the parity harness's
+// Django 3.13 (measured 9942; owner decision X15). A deeper member raises
+// RecursionError, which validate() catches as a RuntimeError and answers as
+// the damaged archive 400.
+const dataRestoreUploadJSONEdge = 9942
+
 // acceptUpload is DataRestoreView.post from Archive(temporary).validate():
 // the owner's receipts in review are cancelled and cleaned, the receipt is
 // created with the archive's summary, and the upload is stored under
@@ -61,7 +69,7 @@ func (s *DataRestore) acceptUpload(ctx context.Context, user string, config *dom
 	}
 	limits := restoreLimits{Expanded: s.archives.Limits.Expanded, JSON: s.archives.Limits.JSON, File: s.archives.Limits.File}
 	run := &consumerImportRun{s: &ConsumerImportAssociation{plan: s.archives.Plan}, ctx: ctx, path: path}
-	archive, err := validateRestoreArchive(run, path, limits)
+	archive, err := validateRestoreArchive(run, path, limits, dataRestoreUploadJSONEdge)
 	var failure *restoreError
 	if errors.As(err, &failure) {
 		return dataRestoreError(400, failure.message), nil

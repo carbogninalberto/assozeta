@@ -665,6 +665,28 @@
    "course_type": 1,
    "multiple_quotes": null,
    "deleted": false
+  },
+  "no_events": {
+   "id": "a1000000-0000-4000-8000-000000951016",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Senza eventi",
+   "fee": "0.00",
+   "multi_payments": true,
+   "events": null,
+   "course_type": 1,
+   "multiple_quotes": null,
+   "deleted": false
+  },
+  "no_title": {
+   "id": "a1000000-0000-4000-8000-000000951017",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": null,
+   "fee": "12.00",
+   "multi_payments": false,
+   "events": null,
+   "course_type": 1,
+   "multiple_quotes": null,
+   "deleted": false
   }
  },
  "certificates": {
@@ -940,6 +962,60 @@
     },
     "preregistration": true,
     "subscription_id": "a1000000-0000-4000-8000-000000956008"
+   }
+  },
+  "odd_name": {
+   "id": "a1000000-0000-4000-8000-000000958001",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "valid": true,
+   "late": true,
+   "data": {
+    "associate": {
+     "first_name": 5,
+     "last_name": "Numero",
+     "tax_code": "NMRCNQ90A41H501N",
+     "born_date": "01/01/1990",
+     "sex": "F",
+     "email": null
+    },
+    "associate_tutor": null,
+    "new_user_account": {
+     "new_member": false
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    }
+   }
+  },
+  "odd_type": {
+   "id": "a1000000-0000-4000-8000-000000958002",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "valid": true,
+   "late": true,
+   "data": {
+    "associate": {
+     "first_name": "Tea",
+     "last_name": "Tipo",
+     "tax_code": "TPITEA90A41H501T",
+     "born_date": "01/01/1990",
+     "sex": "F",
+     "email": null
+    },
+    "associate_tutor": null,
+    "new_user_account": {
+     "new_member": false
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    }
    }
   }
  },
@@ -2483,6 +2559,57 @@
     "courses": null
    },
    "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-membership-plan-fee-not-a-number",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "status": "error",
+    "msg": "could not convert string to float: 'non-un-numero'"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": 1,
+    "associate_data": {
+     "first_name": "Rita",
+     "last_name": "Rossa",
+     "tax_code": "RSSRTI90C41H501K",
+     "born_date": "15/03/1990",
+     "sex": "M",
+     "type": 2
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": []
+   },
+   "setup": {
+    "association": {
+     "multiple_membership_fee": true,
+     "membership_fee": "0",
+     "membership_fee_plans": [
+      {
+       "id": 1,
+       "name": "Piano",
+       "membership_fee": "non-un-numero"
+      }
+     ]
+    }
+   }
   },
   {
    "name": "subscription-renew-renew-basic",
@@ -7914,6 +8041,92 @@
    "setup": null
   },
   {
+   "name": "subscription-renew-renew-course-events-none",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "status": "error",
+    "msg": "'NoneType' object is not iterable"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "first_name": "Rita",
+     "last_name": "Rossa",
+     "tax_code": "RSSRTI90C41H501K",
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [
+     {
+      "label": "Senza eventi",
+      "value": "a1000000-0000-4000-8000-000000951016"
+     }
+    ]
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-course-title-none",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "status": "error",
+    "msg": "sequence item 0: expected str instance, NoneType found"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "first_name": "Rita",
+     "last_name": "Rossa",
+     "tax_code": "RSSRTI90C41H501K",
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [
+     {
+      "label": null,
+      "value": "a1000000-0000-4000-8000-000000951017"
+     }
+    ]
+   },
+   "setup": null
+  },
+  {
    "name": "subscription-renew-renew-owner-scoped-session-with-course",
    "actor": "owner",
    "method": "POST",
@@ -11022,6 +11235,923 @@
      "prereg"
     ],
     "approving_cleared": true
+   }
+  },
+  {
+   "name": "subscription-renew-renew-existence-first-name-number",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "status": "error",
+    "msg": "function upper(integer) does not exist\nLINE 1: ...PER(\"application_associate\".\"first_name\"::text) = UPPER(5) A...\n                                                             ^\nHINT:  No function matches the given name and argument types. You might need to add explicit type casts.\n"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "first_name": 5,
+     "last_name": "Rossa",
+     "tax_code": "RSSRTI90C41H501K",
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": []
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-existence-last-name-boolean",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "status": "error",
+    "msg": "function upper(boolean) does not exist\nLINE 1: ...PPER(\"application_associate\".\"last_name\"::text) = UPPER(true...\n                                                             ^\nHINT:  No function matches the given name and argument types. You might need to add explicit type casts.\n"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "first_name": "Rita",
+     "last_name": true,
+     "tax_code": "RSSRTI90C41H501K",
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": []
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-existence-tax-code-negative-float",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "status": "error",
+    "msg": "function upper(numeric) does not exist\nLINE 1: ...UPPER(\"application_associate\".\"tax_code\"::text) = UPPER( -1....\n                                                             ^\nHINT:  No function matches the given name and argument types. You might need to add explicit type casts.\n"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "first_name": "Rita",
+     "last_name": "Rossa",
+     "tax_code": -1.5,
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": []
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-existence-tax-code-text-list",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "status": "error",
+    "msg": "function upper(text[]) does not exist\nLINE 1: ...UPPER(\"application_associate\".\"tax_code\"::text) = UPPER(ARRA...\n                                                             ^\nHINT:  No function matches the given name and argument types. You might need to add explicit type casts.\n"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "first_name": "Rita",
+     "last_name": "Rossa",
+     "tax_code": [
+      "a",
+      "b"
+     ],
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": []
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-existence-tax-code-nested-empty-list",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "status": "error",
+    "msg": "cannot determine type of empty array\nLINE 1: ...cation_associate\".\"tax_code\"::text) = UPPER(ARRAY[ARRAY[]]) ...\n                                                             ^\nHINT:  Explicitly cast to the desired type, for example ARRAY[]::integer[].\n"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "first_name": "Rita",
+     "last_name": "Rossa",
+     "tax_code": [
+      []
+     ],
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": []
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-existence-tax-code-mixed-list",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "status": "error",
+    "msg": "invalid input syntax for type integer: \"a\"\nLINE 1: ...tion_associate\".\"tax_code\"::text) = UPPER(ARRAY[1,'a']) AND ...\n                                                             ^\n"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "first_name": "Rita",
+     "last_name": "Rossa",
+     "tax_code": [
+      1,
+      "a"
+     ],
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": []
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-existence-tax-code-dict",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "status": "error",
+    "msg": "can't adapt type 'dict'"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "first_name": "Rita",
+     "last_name": "Rossa",
+     "tax_code": {
+      "a": 1
+     },
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": []
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-existence-first-name-nul",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "status": "error",
+    "msg": "A string literal cannot contain NUL (0x00) characters."
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "first_name": "Ri\u0000ta",
+     "last_name": "Rossa",
+     "tax_code": "RSSRTI90C41H501K",
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": []
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-existence-last-name-newline",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "status": "error",
+    "msg": "function upper(integer) does not exist\nLINE 2: ...UPPER(\"application_associate\".\"tax_code\"::text) = UPPER(7) A...\n                                                             ^\nHINT:  No function matches the given name and argument types. You might need to add explicit type casts.\n"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "first_name": "Rita",
+     "last_name": "Ros\nsa",
+     "tax_code": 7,
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": []
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-existence-tax-code-big-integer",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "status": "error",
+    "msg": "function upper(numeric) does not exist\nLINE 1: ...UPPER(\"application_associate\".\"tax_code\"::text) = UPPER(1234...\n                                                             ^\nHINT:  No function matches the given name and argument types. You might need to add explicit type casts.\n"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "first_name": "Rita",
+     "last_name": "Rossa",
+     "tax_code": 12345678901234567890123,
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": []
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-existence-tax-code-infinite",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "status": "error",
+    "msg": "function upper(double precision) does not exist\nLINE 1: ...UPPER(\"application_associate\".\"tax_code\"::text) = UPPER('Inf...\n                                                             ^\nHINT:  No function matches the given name and argument types. You might need to add explicit type casts.\n"
+   },
+   "effect": null,
+   "body": null,
+   "setup": null,
+   "raw_body": "{\"new_user_account\": {\"new_member\": false}, \"plan_id\": null, \"membership_plan_id\": null, \"associate_data\": {\"first_name\": \"Rita\", \"last_name\": \"Rossa\", \"tax_code\": 1e400, \"born_date\": \"15/03/1990\", \"sex\": \"M\"}, \"signature\": {\"there_is_signature\": false, \"data\": \"\"}, \"medical_certificate\": {\"medical_id\": null}, \"custom_data\": {}, \"additional_fields\": {}, \"courses\": []}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "subscription-renew-renew-existence-first-name-number-group",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 400,
+   "response": {
+    "status": "error",
+    "msg": "function upper(integer) does not exist\nLINE 1: ...PER(\"application_associate\".\"first_name\"::text) = UPPER(5) A...\n                                                             ^\nHINT:  No function matches the given name and argument types. You might need to add explicit type casts.\n"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "first_name": 5,
+     "last_name": "Rossa",
+     "tax_code": "RSSRTI90C41H501K",
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": []
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-existence-tax-code-null-list",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "tax_code": [
+     "Not a valid string."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "first_name": "Rita",
+     "last_name": "Rossa",
+     "tax_code": [
+      null
+     ],
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": []
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-type-beyond-smallint",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "status": "error",
+    "msg": "smallint out of range\n"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "first_name": "Rita",
+     "last_name": "Rossa",
+     "tax_code": "RSSRTI90C41H501K",
+     "born_date": "15/03/1990",
+     "sex": "M",
+     "type": 70000
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": []
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-type-below-smallint",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "status": "error",
+    "msg": "smallint out of range\n"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "first_name": "Rita",
+     "last_name": "Rossa",
+     "tax_code": "RSSRTI90C41H501K",
+     "born_date": "15/03/1990",
+     "sex": "M",
+     "type": -40000
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": []
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-role-beyond-int64",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "status": "error",
+    "msg": "smallint out of range\n"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "first_name": "Rita",
+     "last_name": "Rossa",
+     "tax_code": "RSSRTI90C41H501K",
+     "born_date": "15/03/1990",
+     "sex": "M",
+     "role": "99999999999999999999"
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": []
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-membership-plan-fee-infinite",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "status": "error",
+    "msg": "['“inf” value must be a decimal number.']"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": 1,
+    "associate_data": {
+     "first_name": "Rita",
+     "last_name": "Rossa",
+     "tax_code": "RSSRTI90C41H501K",
+     "born_date": "15/03/1990",
+     "sex": "M",
+     "type": 2
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": []
+   },
+   "setup": {
+    "association": {
+     "multiple_membership_fee": true,
+     "membership_fee": "0",
+     "membership_fee_plans": [
+      {
+       "id": 1,
+       "name": "Piano",
+       "membership_fee": "inf"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "subscription-renew-renew-membership-plan-fee-nan-price",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "status": "error",
+    "msg": "['“nan” value must be a decimal number.']"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": 1,
+    "associate_data": {
+     "first_name": "Rita",
+     "last_name": "Rossa",
+     "tax_code": "RSSRTI90C41H501K",
+     "born_date": "15/03/1990",
+     "sex": "M",
+     "type": 2
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": []
+   },
+   "setup": {
+    "association": {
+     "multiple_membership_fee": true,
+     "membership_fee": "0",
+     "membership_fee_plans": [
+      {
+       "id": 1,
+       "name": "Piano",
+       "membership_fee": "nan"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "subscription-renew-renew-membership-plan-fee-negative-infinite-member-only",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "status": "error",
+    "msg": "['“-inf” value must be a decimal number.']"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": 1,
+    "associate_data": {
+     "first_name": "Rita",
+     "last_name": "Rossa",
+     "tax_code": "RSSRTI90C41H501K",
+     "born_date": "15/03/1990",
+     "sex": "M",
+     "type": 3
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": []
+   },
+   "setup": {
+    "association": {
+     "multiple_membership_fee": true,
+     "membership_fee": "0",
+     "membership_fee_plans": [
+      {
+       "id": 1,
+       "name": "Piano",
+       "membership_fee": "-inf"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "subscription-renew-renew-membership-plan-fee-nan-zero-payments",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "status": "error",
+    "msg": "['“nan” value must be a decimal number.']"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": 1,
+    "associate_data": {
+     "first_name": "Rita",
+     "last_name": "Rossa",
+     "tax_code": "RSSRTI90C41H501K",
+     "born_date": "15/03/1990",
+     "sex": "M",
+     "type": 2
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": []
+   },
+   "setup": {
+    "owner": {
+     "show_zero_payments": true
+    },
+    "association": {
+     "multiple_membership_fee": true,
+     "membership_fee": "0",
+     "membership_fee_plans": [
+      {
+       "id": 1,
+       "name": "Piano",
+       "membership_fee": "nan"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "subscription-renew-approve-draft-database-errors-swallowed",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/list/approve",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "0 su 2 atleti approvati.",
+    "approved": 0
+   },
+   "effect": {
+    "actor": "owner",
+    "new": [],
+    "changed": {},
+    "deleted": {},
+    "tags": [],
+    "audit": [
+     {
+      "model": "associateimportdraftstatus",
+      "action": 0,
+      "ref": "$status",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application",
+      "status": "create"
+     },
+     {
+      "model": "associateimportdraftstatus",
+      "action": 2,
+      "ref": "$status",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "changes_json.sport_association"
+      ],
+      "app": "application",
+      "status": "delete"
+     }
+    ],
+    "celery": [],
+    "notifications": []
+   },
+   "body": {
+    "associate_import_draft_ids": [
+     "a1000000-0000-4000-8000-000000958001",
+     "a1000000-0000-4000-8000-000000958002"
+    ],
+    "subscription_details": {
+     "type": 70000
+    }
+   },
+   "setup": {
+    "drafts_insert": [
+     "odd_name",
+     "odd_type"
+    ],
+    "approving_cleared": true
+   }
+  },
+  {
+   "name": "subscription-renew-renew-calendar-invalid-start-month",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "status": "error",
+    "msg": "Month must be between 1 and 12"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "first_name": "Rita",
+     "last_name": "Rossa",
+     "tax_code": "RSSRTI90C41H501K",
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": []
+   },
+   "setup": {
+    "owner": {
+     "subscription_start_month": 0
+    }
    }
   }
  ]

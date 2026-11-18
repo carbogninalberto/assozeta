@@ -42,8 +42,6 @@ const (
 var (
 	// ErrDocumentRenderServer is an exception the view does not catch (the 500 page).
 	ErrDocumentRenderServer = errors.New("document render: unhandled exception")
-	// ErrDocumentRenderNotPorted refuses an input before any write (the 500 page).
-	ErrDocumentRenderNotPorted = refusal.New("document render: input not ported")
 	// ErrDocumentRenderAppState is a state no request or stored row produces:
 	// a renderer built without its form storage (cmd/server/main.go always
 	// calls WithFormStorage), a multipart body net/http did not hand over, or
@@ -109,12 +107,18 @@ type DocumentRenderRequest struct {
 	Audit domain.LoginAuditContext
 }
 
-// DocumentRenderReply is the view's answer: a JSON body or the PDF.
+// DocumentRenderReply is the view's answer: a JSON body, the PDF, or a closed
+// connection.
 type DocumentRenderReply struct {
-	Status      int
-	JSON        any
-	PDF         []byte
+	Status int
+	JSON   any
+	PDF    []byte
+	// Disposition is the Content-Disposition value of a PDF, as Django's bytes.
 	Disposition string
+	// CloseConnection is the server refusing the answer's header value after the
+	// view ran (uvicorn closes the transport: the client receives no response).
+	// The handler hijacks the connection and closes it; PDF and JSON stay unused.
+	CloseConnection bool
 }
 
 func renderException(status int, text string) *DocumentRenderReply {
@@ -235,6 +239,9 @@ type renderJob struct {
 	failed *DocumentRenderReply
 	// fill is fill_pdf_and_store: the PDF the view builds and saves itself instead of asking the renderer.
 	fill func() []byte
+	// closeConnection is set when uvicorn refuses the answer's header value: the view's writes run, no
+	// response is sent.
+	closeConnection bool
 }
 
 // Render follows the route's view: lookups, the filename, then the shared
@@ -264,13 +271,10 @@ func (s *DocumentRender) Render(ctx context.Context, identity domain.ResolvedIde
 		return reply, err
 	}
 	if !job.ignore && job.failed == nil {
-		lineBreak := strings.ContainsAny(job.filename, "\r\n")
-		if lineBreak && job.fill != nil || !lineBreak && pdfrender.ServerRefusesHeader(job.filename) {
-			// A filled form with a line break, or a header the HTTP server refuses after the view's writes
-			// (uvicorn closes the connection: long-tail rule 4, platform). A line break otherwise is Django's own
-			// BadHeaderError, answered by print after the storage task.
-			return nil, ErrDocumentRenderNotPorted
-		}
+		// A header value uvicorn refuses (pdfrender.ServerRefusesHeader): the view answers 200 and writes every
+		// effect, then the server closes the connection (long-tail rule 4, platform). A line break is Django's own
+		// BadHeaderError instead, answered by print after the writes.
+		job.closeConnection = !strings.ContainsAny(job.filename, "\r\n") && pdfrender.ServerRefusesHeader(job.filename)
 	}
 	return s.print(ctx, identity, request, job)
 }
@@ -290,14 +294,8 @@ func (s *DocumentRender) print(ctx context.Context, identity domain.ResolvedIden
 	if err != nil {
 		return nil, err
 	}
-	if job.fill != nil {
-		// A name default_storage.save would reject answers an exception text after the Document: not ported.
-		if s.forms == nil {
-			return nil, ErrDocumentRenderAppState
-		}
-		if s.forms.GeneratedName(created, document.ID, document.Filename) != nil {
-			return nil, ErrDocumentRenderNotPorted
-		}
+	if job.fill != nil && s.forms == nil {
+		return nil, ErrDocumentRenderAppState
 	}
 	if err := s.store.CreateDocument(ctx, document, actorAssociation, audit, s.now()); err != nil {
 		return nil, err
@@ -313,6 +311,11 @@ func (s *DocumentRender) print(ctx context.Context, identity domain.ResolvedIden
 	var pdf []byte
 	if job.fill != nil {
 		pdf = job.fill()
+		// fill_pdf_and_store saves the form into the default storage: a name Django's storage refuses
+		// (validate_file_name's SuspiciousFileOperation) is the view's 500 after the Document, nothing stored.
+		if err := s.forms.GeneratedName(created, document.ID, document.Filename); err != nil {
+			return renderException(500, err.Error()), nil
+		}
 		// The view reads the saved file back for its answer: the same bytes.
 		if err := s.forms.SaveGenerated(ctx, created, document.ID, document.Filename, pdf); err != nil {
 			return nil, err
@@ -348,7 +351,8 @@ func (s *DocumentRender) print(ctx context.Context, identity domain.ResolvedIden
 		disposition = "attachment"
 	}
 	if strings.ContainsAny(job.filename, "\r\n") {
-		// The response refuses the header once the storage task is queued; the view links nothing.
+		// Django's response refuses the header after the storage task is queued (or the form saved); the
+		// view links nothing.
 		return renderException(500, "Header values can't contain newlines (got "+
 			dto.PythonStringRepr(disposition+"; filename="+job.filename)+")"), nil
 	}
@@ -376,6 +380,11 @@ func (s *DocumentRender) print(ctx context.Context, identity domain.ResolvedIden
 		if err := job.after(ctx, document); err != nil {
 			return renderException(500, err.Error()), nil
 		}
+	}
+	if job.closeConnection {
+		// Every effect is written; the server refuses the header value and closes the connection, so the
+		// response never reaches the client (Caddy answers its 502).
+		return &DocumentRenderReply{Status: 200, CloseConnection: true}, nil
 	}
 	return &DocumentRenderReply{Status: 200, PDF: pdf, Disposition: pdfrender.HeaderBytes(disposition + "; filename=" + job.filename)}, nil
 }
@@ -887,10 +896,6 @@ func (s *DocumentRender) medicalJob(ctx context.Context, identity domain.Resolve
 		job.failed = renderException(500, "'NoneType' object has no attribute 'main_tutor'")
 		return job, nil, nil
 	}
-	if _, signed := medicalFormValues(form, nil)[medicalform.SignatureKey]; signed {
-		// fill_pdf_fields draws the stored signature (and stamp) on the first page with PyMuPDF: image processing, not ported.
-		return nil, nil, ErrDocumentRenderNotPorted
-	}
 	tutor, err := s.store.AppointmentFormTutor(ctx, *form.Associate)
 	if errors.Is(err, domain.ErrTutorPromotionNeeded) {
 		// get_main_tutor() promotes the first tutor relation while the view maps the form's fields, after
@@ -900,14 +905,14 @@ func (s *DocumentRender) medicalJob(ctx context.Context, identity domain.Resolve
 			tutor, err = s.store.PromoteAppointmentFormTutor(ctx, associate, audit, s.now())
 			return err
 		}
-		job.fill = func() []byte { return medicalform.FillBiella(medicalFormValues(form, tutor)) }
+		job.fill = func() []byte { return medicalFormPDF(medicalFormValues(form, tutor)) }
 		return job, nil, nil
 	}
 	if err != nil {
 		return nil, nil, err
 	}
 	values := medicalFormValues(form, tutor)
-	job.fill = func() []byte { return medicalform.FillBiella(values) }
+	job.fill = func() []byte { return medicalFormPDF(values) }
 	return job, nil, nil
 }
 
@@ -960,4 +965,11 @@ func medicalFormValues(form *domain.RenderAppointmentForm, tutor *domain.RenderF
 		values[key] = text
 	}
 	return values
+}
+
+// medicalFormPDF is fill_pdf_fields for the regional form: the values filled as
+// pypdf writes them, with the president signature (and stamp) added to the
+// first page when their values hold an image PyMuPDF opens.
+func medicalFormPDF(values map[string]string) []byte {
+	return medicalform.FillBiellaWithImages(values, medicalform.FillImages(values))
 }

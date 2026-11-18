@@ -112,6 +112,12 @@ def assert_case(case, base_url, *, token, sessions):
     if 'raw_body' in case:
         body = case['raw_body'].encode()
         headers['Content-Type'] = case['content_type']
+    elif 'raw_parts' in case:
+        # Large bodies whose filler is stored as a repeat count: strings are sent
+        # as is, {'repeat': text, 'count': n} as text * n.
+        body = ''.join(part if isinstance(part, str) else part['repeat'] * part['count']
+                       for part in case['raw_parts']).encode('utf-8')
+        headers['Content-Type'] = case['content_type']
     BOUND.clear()
     status, raw, received = Client(base_url, token).request(case['method'], case['path'], body, headers, raw=True, include_headers=True)
 

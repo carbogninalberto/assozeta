@@ -157,16 +157,20 @@ self-hosted instance) and the receipt's association the primary one, else 403
   invoices become association documents and count in `legacy_invoices`; tutors are reassigned, cleared or ignored as
   `_normalize_legacy_tutors` does, with the preview's `reassigned_tutors`, `tutor_tax_code_conflicts` and
   `tutor_reassignment_details`; every JSON value is read as `json.loads(zf.read(name))` (BOM and UTF-16/32 detection,
-  surrogatepass, `NaN`/`Infinity` tokens, the 4300-digit limit, RecursionError from 9999 levels; `dto.PythonJSONLoads`)
-  and converted by the plan's field kinds as `to_python` does; duplicate, encrypted
-  and backslash member names follow `_validate_entries`. A ZIP reader exception the except tuple catches is the damaged
-  archive 400; the others (EOFError, OSError from bz2, LZMAError) and `int(inf)`'s OverflowError escape the view and
-  answer Django's 500 page (`errRestoreReaderRaised`, application state). A field kind outside the generated plan is
-  `errRestorePlanKind` (application state, pinned by `TestRestorePlanKindsConverted`). Cases `upload-archive-text-*`,
-  `-int-*`, `-uuid-float`, `-date-basic`, `-version-int`, `-errors-*`, `-spec-*`, `-specs-null`, `-denomination-list`,
-  `-folder-*`, `-tutor-*`, `-corrupt-deflate`, `-bzip2-corrupt`, `-encrypted-member`, `-truncated-member`,
-  `-huge-declared-size`, `-duplicate-member`, `-backslash-*`, `-drive-digit`.) A member nested 9800 to 9998 levels deep
-  stays a refusal (`dto.ErrJSONRecursionBand`: CPython's C stack decides).
+  surrogatepass, `NaN`/`Infinity` tokens, the 4300-digit limit; `dto.PythonJSONLoadsEdge`) and converted by the plan's
+  field kinds as `to_python` does; duplicate, encrypted
+  and backslash member names follow `_validate_entries`. The JSON nesting edge is the measured depth of the calling
+  site (owner decision X15): 9942 on the upload request thread and 9975 in the Celery `restore_instance_data` prefork
+  worker, for `Archive.validate`'s whole members and `iter_json_array`'s items alike. One level past the edge
+  `json.loads` raises RecursionError, a RuntimeError `validate()` catches, so the answer is the damaged archive. A ZIP
+  reader exception the except tuple catches is the damaged archive 400; the others (EOFError, OSError from bz2,
+  LZMAError) and `int(inf)`'s OverflowError escape the view and answer Django's 500 page (`errRestoreReaderRaised`,
+  application state). A field kind outside the generated plan is `errRestorePlanKind` (application state, pinned by
+  `TestRestorePlanKindsConverted`). Cases `upload-archive-text-*`, `-int-*`, `-uuid-float`, `-date-basic`, `-version-int`,
+  `-errors-*`, `-spec-*`, `-specs-null`, `-denomination-list`, `-folder-*`, `-tutor-*`, `-corrupt-deflate`,
+  `-bzip2-corrupt`, `-encrypted-member`, `-truncated-member`, `-huge-declared-size`, `-duplicate-member`, `-backslash-*`,
+  `-drive-digit`, and the measured-edge pair `-manifest-depth-{9938,9972}` (the adapter authors the deep manifest value as
+  raw text).)
 - (Long tail PR 4: RFC 2231 names in every Python text codec decode through `internal/pycodecs`, and a name that
   decodes to a lone surrogate skips its line, so the part is not the upload: cases `upload-rfc2231-cp932-file-name`,
   `upload-rfc2231-surrogate-name-skipped`.) Other media types answer DRF's 415; a base64

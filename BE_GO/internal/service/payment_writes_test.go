@@ -208,9 +208,12 @@ type paymentWritesUpdateTx struct {
 	association string
 	row         *domain.PaymentWriteRow
 	before      map[string]string
-	audits      []domain.PaymentWritesAuditEntry
-	commits     int
-	rollbacks   int
+	// after is the stored row once the save ran (nil: the row does not change).
+	after     map[string]string
+	saves     int
+	audits    []domain.PaymentWritesAuditEntry
+	commits   int
+	rollbacks int
 }
 
 func (t *paymentWritesUpdateTx) ScopedAssociation(context.Context, string, *string) (string, error) {
@@ -230,11 +233,24 @@ func (t *paymentWritesUpdateTx) DefaultPaymentCategory(context.Context, *string)
 }
 
 func (t *paymentWritesUpdateTx) PaymentAuditValues(context.Context, string) (map[string]string, error) {
+	source := t.before
+	if t.saves > 0 && t.after != nil {
+		source = t.after
+	}
 	values := map[string]string{}
-	for field, value := range t.before {
+	for field, value := range source {
 		values[field] = value
 	}
 	return values, nil
+}
+
+func (t *paymentWritesUpdateTx) SavePaymentRow(_ context.Context, row domain.PaymentWriteRow) error {
+	t.row, t.saves = &row, t.saves+1
+	return nil
+}
+
+func (t *paymentWritesUpdateTx) RenderPayment(context.Context, string, *string) (domain.PaymentStateRender, error) {
+	return domain.PaymentStateRender{}, nil
 }
 
 func (t *paymentWritesUpdateTx) AppendPaymentWritesAudit(_ context.Context, entry domain.PaymentWritesAuditEntry) error {
@@ -436,5 +452,230 @@ func TestPaymentWritesUpdateFormJSONSurrogateKeepsAudit(t *testing.T) {
 	}
 	if row.MetaCategories != nil {
 		t.Fatalf("the UPDATE ran: meta=%v", row.MetaCategories)
+	}
+}
+
+// paymentWritesCreateStore is the transaction payment_add opens for a body that
+// creates one payment: the row's INSERT, its stored audit values and the
+// response render, without a store behind them.
+type paymentWritesCreateStore struct {
+	domain.PaymentWritesStore
+	tx *paymentWritesCreateTx
+}
+
+func (s *paymentWritesCreateStore) BeginPaymentWrites(context.Context) (domain.PaymentWritesTransaction, error) {
+	return s.tx, nil
+}
+
+// paymentWritesCreateTx records what payment_add wrote: the created rows, the
+// audit entries and the transaction's outcome.
+type paymentWritesCreateTx struct {
+	domain.PaymentWritesTransaction
+	association string
+	rows        []domain.PaymentWriteRow
+	audits      []domain.PaymentWritesAuditEntry
+	commits     int
+	rollbacks   int
+}
+
+func (t *paymentWritesCreateTx) ScopedAssociation(context.Context, string, *string) (string, error) {
+	return t.association, nil
+}
+
+func (t *paymentWritesCreateTx) AutoPaid(context.Context, string) (bool, error) { return false, nil }
+
+func (t *paymentWritesCreateTx) TenantAssociation(context.Context, string) (*string, error) {
+	return nil, nil
+}
+
+func (t *paymentWritesCreateTx) AssociationExists(context.Context, string) (bool, error) {
+	return true, nil
+}
+
+func (t *paymentWritesCreateTx) DefaultPaymentCategory(context.Context, *string) (*string, *string, error) {
+	return nil, nil, nil
+}
+
+func (t *paymentWritesCreateTx) InsertPaymentRow(_ context.Context, row domain.PaymentWriteRow) error {
+	t.rows = append(t.rows, row)
+	return nil
+}
+
+func (t *paymentWritesCreateTx) PaymentAuditValues(context.Context, string) (map[string]string, error) {
+	values := map[string]string{"type": "default", "subject": "0", "amount": "13.00", "sport_association": "None",
+		"course": "null", "notes": "None"}
+	if row := t.last(); row != nil {
+		if row.MetaCategories != nil {
+			values["meta_payment_categories"] = *row.MetaCategories
+		}
+		if row.Meta != nil {
+			values["meta"] = *row.Meta
+		}
+		if row.Course != nil {
+			values["course"] = *row.Course
+		}
+	}
+	return values, nil
+}
+
+func (t *paymentWritesCreateTx) last() *domain.PaymentWriteRow {
+	if len(t.rows) == 0 {
+		return nil
+	}
+	return &t.rows[len(t.rows)-1]
+}
+
+func (t *paymentWritesCreateTx) SavePaymentRow(_ context.Context, row domain.PaymentWriteRow) error {
+	t.rows = append(t.rows, row)
+	return nil
+}
+
+func (t *paymentWritesCreateTx) AppendPaymentWritesAudit(_ context.Context, entry domain.PaymentWritesAuditEntry) error {
+	t.audits = append(t.audits, entry)
+	return nil
+}
+
+func (t *paymentWritesCreateTx) RenderPayment(context.Context, string, *string) (domain.PaymentStateRender, error) {
+	return domain.PaymentStateRender{}, nil
+}
+
+func (t *paymentWritesCreateTx) Commit() error {
+	t.commits++
+	return nil
+}
+
+func (t *paymentWritesCreateTx) Rollback() error {
+	t.rollbacks++
+	return nil
+}
+
+// jsonEdgesValue is a JSON body value nested depth levels ('[]' is 1).
+func jsonEdgesValue(depth int) any {
+	var value any = []any{}
+	for level := 1; level < depth; level++ {
+		value = []any{value}
+	}
+	return value
+}
+
+func paymentWritesCreateBody(course any) domain.RequestObject {
+	return domain.RequestObject{{Name: "creation_date", Value: "2026-06-01"}, {Name: "payment_date", Value: nil},
+		{Name: "amount", Value: "13"}, {Name: "description", Value: "Quota"}, {Name: "complex_item", Value: nil},
+		{Name: "sport_association", Value: paymentWritesCreateAssociation}, {Name: "course", Value: course}}
+}
+
+const paymentWritesCreateAssociation = "a1000000-0000-4000-8000-000000988778"
+
+// payment_add's measured stored-JSON edges (owner decision X15): the created
+// row's INSERT json.dumps (adapt~9925) raises past 9925 with nothing written,
+// and the create entry's index resolver reloads the new row (loads 9916, inside
+// except Exception): past 9916 the entry takes the resolver's fallbacks.
+func TestPaymentWritesAddFormJSONInsertBand(t *testing.T) {
+	for _, test := range []struct {
+		depth     int
+		recursion bool
+		fallback  bool
+	}{
+		{depth: paymentAddCreateIndexJSONDepth - 1},
+		{depth: paymentAddCreateIndexJSONDepth},
+		{depth: paymentAddCreateIndexJSONDepth + 1, fallback: true},
+		{depth: paymentAddInsertJSONDepth, fallback: true},
+		{depth: paymentAddInsertJSONDepth + 1, recursion: true},
+	} {
+		tx := &paymentWritesCreateTx{association: paymentWritesCreateAssociation}
+		writes := paymentWritesWithStore(&paymentWritesCreateStore{tx: tx})
+		_, err := writes.Add(context.Background(), paymentWritesEntryIdentity(), PaymentWritesRequest{},
+			paymentWritesCreateBody(jsonEdgesValue(test.depth)))
+		if test.recursion {
+			var recursionErr *PaymentStoredJSONRecursionError
+			if !errors.As(err, &recursionErr) || recursionErr.AfterWrites {
+				t.Fatalf("depth %d: err=%v, want a recursion error before any write", test.depth, err)
+			}
+			if recursionErr.Text != recursionArrayText || !errors.Is(err, refusal.ErrAppState) {
+				t.Fatalf("depth %d: err=%v, want the array text of an application-state error", test.depth, err)
+			}
+			if len(tx.rows) != 0 || tx.audits != nil || tx.commits != 0 || tx.rollbacks != 1 {
+				t.Fatalf("depth %d: rows=%d audits=%d commits=%d rollbacks=%d", test.depth, len(tx.rows), len(tx.audits),
+					tx.commits, tx.rollbacks)
+			}
+			continue
+		}
+		if err != nil {
+			t.Fatalf("depth %d: err=%v", test.depth, err)
+		}
+		if len(tx.rows) != 2 || tx.commits != 1 || tx.rollbacks != 1 {
+			t.Fatalf("depth %d: rows=%d commits=%d rollbacks=%d", test.depth, len(tx.rows), tx.commits, tx.rollbacks)
+		}
+		if len(tx.audits) == 0 || tx.audits[0].Action != 0 || tx.audits[0].IndexFallback != test.fallback {
+			t.Fatalf("depth %d: create entry=%+v, want IndexFallback=%v", test.depth, tx.audits, test.fallback)
+		}
+		for _, entry := range tx.audits[1:] {
+			// The update entry's resolver reloads the row deeper than the INSERT's
+			// own edge can carry: it never falls back.
+			if entry.IndexFallback {
+				t.Fatalf("depth %d: update entry=%+v fell back", test.depth, entry)
+			}
+		}
+	}
+}
+
+// payment_update's measured stored-JSON edges (owner decision X15), for a row
+// whose stored columns (not the form) hold the deep value: the view's own load
+// (loads 9937), auditlog's pre_save refetch of the old row (loads 9933, before
+// which the view writes nothing) and the index resolver's reload (loads 9925,
+// caught).
+func TestPaymentWritesUpdateStoredJSONEdges(t *testing.T) {
+	for _, test := range []struct {
+		depth     int
+		recursion bool
+		after     bool
+		fallback  bool
+	}{
+		{depth: paymentUpdateIndexJSONDepth - 1},
+		{depth: paymentUpdateIndexJSONDepth},
+		{depth: paymentUpdateIndexJSONDepth + 1, fallback: true},
+		{depth: paymentUpdateSaveJSONDepth, fallback: true},
+		{depth: paymentUpdateSaveJSONDepth + 1, recursion: true, after: true},
+		{depth: paymentUpdateLoadJSONDepth, recursion: true, after: true},
+		{depth: paymentUpdateLoadJSONDepth + 1, recursion: true},
+	} {
+		association := "a1000000-0000-4000-8000-000000988777"
+		row := &domain.PaymentWriteRow{ID: "a1000000-0000-4000-8000-000000988450", AssociationID: &association,
+			Type: "default", Subject: 0, Amount: "10.00", CreationDate: time.Date(2026, 3, 1, 0, 0, 0, 0, time.UTC),
+			Course: jsonEdgesArray(test.depth)}
+		tx := &paymentWritesUpdateTx{association: association, row: row,
+			before: map[string]string{"notes": "None", "course": "null"},
+			after:  map[string]string{"notes": "Nota", "course": "null"}}
+		writes := paymentWritesWithStore(&paymentWritesUpdateStore{tx: tx})
+		_, err := writes.Update(context.Background(), paymentWritesEntryIdentity(), PaymentWritesRequest{ID: row.ID},
+			domain.RequestObject{{Name: "notes", Value: "Nota"}})
+		if test.recursion {
+			var recursionErr *PaymentStoredJSONRecursionError
+			if !errors.As(err, &recursionErr) || recursionErr.AfterWrites != test.after {
+				t.Fatalf("depth %d: err=%v, want a recursion error (after writes %v)", test.depth, err, test.after)
+			}
+			if recursionErr.Text != recursionArrayText || !errors.Is(err, refusal.ErrAppState) {
+				t.Fatalf("depth %d: err=%v, want the array text of an application-state error", test.depth, err)
+			}
+			// The view writes nothing before payment.save(): the failure keeps the
+			// stored row and writes no audit entry.
+			if tx.saves != 0 || tx.audits != nil || tx.commits != 0 || tx.rollbacks != 1 {
+				t.Fatalf("depth %d: saves=%d audits=%d commits=%d rollbacks=%d", test.depth, tx.saves, len(tx.audits),
+					tx.commits, tx.rollbacks)
+			}
+			continue
+		}
+		if err != nil {
+			t.Fatalf("depth %d: err=%v", test.depth, err)
+		}
+		if tx.saves != 1 || tx.commits != 1 || tx.rollbacks != 1 {
+			t.Fatalf("depth %d: saves=%d commits=%d rollbacks=%d", test.depth, tx.saves, tx.commits, tx.rollbacks)
+		}
+		if len(tx.audits) != 1 || tx.audits[0].Action != 1 || tx.audits[0].IndexFallback != test.fallback {
+			t.Fatalf("depth %d: audits=%+v, want IndexFallback=%v", test.depth, tx.audits, test.fallback)
+		}
+		if changes := tx.audits[0].Changes; len(changes) != 1 || changes["notes"] != [2]string{"None", "Nota"} {
+			t.Fatalf("depth %d: changes=%v", test.depth, changes)
+		}
 	}
 }

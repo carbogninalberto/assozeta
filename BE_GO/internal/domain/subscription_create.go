@@ -11,9 +11,6 @@ import (
 var (
 	// ErrSubscriptionCreateServer is an exception Django raises (the 500 page).
 	ErrSubscriptionCreateServer = errors.New("subscription create server error")
-	// ErrSubscriptionCreateNotPorted refuses input this port does not handle (the
-	// 500 page, nothing committed).
-	ErrSubscriptionCreateNotPorted = refusal.New("subscription create input not ported")
 	// ErrSubscriptionCreateUnreachable is a state no request or stored row
 	// produces (each site names the decoder or constraint that rules it out).
 	ErrSubscriptionCreateUnreachable = refusal.AppState("subscription create: unreachable state")
@@ -29,6 +26,18 @@ type SubscriptionCreateInvalid struct {
 }
 
 func (e *SubscriptionCreateInvalid) Error() string { return "invalid subscription data" }
+
+// SubscriptionCreateRaised is a Python exception create_subscription raises
+// whose str() the port reconstructs. It still matches
+// ErrSubscriptionCreateServer, so subscription/add keeps answering the 500
+// page while subscription/renew answers 400 {"status": "error", "msg": Text}.
+type SubscriptionCreateRaised struct{ Text string }
+
+func (e *SubscriptionCreateRaised) Error() string { return "subscription create raised: " + e.Text }
+
+func (e *SubscriptionCreateRaised) Is(target error) bool {
+	return target == ErrSubscriptionCreateServer
+}
 
 // SubscriptionCreateRejected is DRF's ValidationError(<text>): the body is the
 // JSON array of the messages the exception carries (list(ValidationError)).
@@ -159,16 +168,18 @@ type SubscriptionCreateMembership struct {
 }
 
 // SubscriptionCreateAudit is one auditlog entry. Created entries render the
-// stored row (Table/Column) with Overrides; others use Changes.
+// stored row (Table/Column) with Overrides; others use Changes. Row is the
+// stored key when Key is a spelling of it (the text a client sent for a new
+// associate): the entry keeps Key, the row is read with Row.
 type SubscriptionCreateAudit struct {
-	App, Model, Representation, Table, Column, Key string
-	Action                                         int
-	Created                                        bool
-	Overrides, Changes                             map[string][2]string
-	Association                                    *string
-	Path                                           string
-	Context                                        LoginAuditContext
-	At                                             time.Time
+	App, Model, Representation, Table, Column, Key, Row string
+	Action                                              int
+	Created                                             bool
+	Overrides, Changes                                  map[string][2]string
+	Association                                         *string
+	Path                                                string
+	Context                                             LoginAuditContext
+	At                                                  time.Time
 }
 
 type SubscriptionCreateTransaction interface {
@@ -213,6 +224,14 @@ type SubscriptionCreateTransaction interface {
 	QuickAssociate(ctx context.Context, id string) (*SubscriptionEditAssociate, error)
 	// InsertFamily is Family.objects.create(type=kind) with its create entry.
 	InsertFamily(ctx context.Context, id, kind string, audit LoginAuditContext, at time.Time) error
+	// InsertAssociateAttempt is Associate.objects.create(associate_id=..., ...)
+	// inside transaction.atomic(): the INSERT runs in a savepoint, so a row the
+	// database refuses leaves nothing behind and the psycopg2 IntegrityError text
+	// (*AssociateIntegrityError) is reported for the serializer's fallbacks.
+	InsertAssociateAttempt(ctx context.Context, row SubscriptionEditAssociate) error
+	// ExistsStatement runs a complete statement (literals inlined) inside a savepoint and reports whether it
+	// returned a row. A server error rolls the savepoint back and is returned as it is (*pgconn.PgError).
+	ExistsStatement(ctx context.Context, statement string) (bool, error)
 	// RenderPayment is what PaymentSerializer reads for a stored payment.
 	RenderPayment(ctx context.Context, id string) (PaymentStateRender, error)
 	// QuickAssociationExists is SportAssociation.objects.get(sport_association_id=id) finding a row.

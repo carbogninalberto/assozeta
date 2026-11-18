@@ -530,6 +530,296 @@
    "csrf": null
   },
   {
+   "name": "api-schema-lang-path-relative-parent",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/schema/?lang=it/../it",
+   "headers": {
+    "Accept": "application/json"
+   },
+   "status": 200,
+   "response": {
+    "kind": "document",
+    "format": "json",
+    "lang": "it",
+    "version": "",
+    "indent": 4
+   },
+   "content_type": "application/json",
+   "allow": "GET, HEAD, OPTIONS",
+   "vary": [
+    "Accept",
+    "Cookie",
+    "origin",
+    "Accept-Language"
+   ],
+   "content_language": "it",
+   "disposition": "inline; filename=\"Bakney Sport API.json\"",
+   "location": null,
+   "csrf": null
+  },
+  {
+   "name": "api-schema-lang-path-trailing-slash",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/schema/?lang=it/",
+   "headers": {
+    "Accept": "application/json"
+   },
+   "status": 200,
+   "response": {
+    "kind": "document",
+    "format": "json",
+    "lang": "it",
+    "version": "",
+    "indent": 4
+   },
+   "content_type": "application/json",
+   "allow": "GET, HEAD, OPTIONS",
+   "vary": [
+    "Accept",
+    "Cookie",
+    "origin",
+    "Accept-Language"
+   ],
+   "content_language": "it",
+   "disposition": "inline; filename=\"Bakney Sport API.json\"",
+   "location": null,
+   "csrf": null
+  },
+  {
+   "name": "api-schema-lang-path-encoded-slashes",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/schema/?lang=xx%2F..%2Fit",
+   "headers": {
+    "Accept": "application/json"
+   },
+   "status": 200,
+   "response": {
+    "kind": "document",
+    "format": "json",
+    "lang": "xx",
+    "version": "",
+    "indent": 4
+   },
+   "content_type": "application/json",
+   "allow": "GET, HEAD, OPTIONS",
+   "vary": [
+    "Accept",
+    "Cookie",
+    "origin",
+    "Accept-Language"
+   ],
+   "content_language": "it",
+   "disposition": "inline; filename=\"Bakney Sport API.json\"",
+   "location": null,
+   "csrf": null
+  },
+  {
+   "name": "api-schema-lang-path-absolute",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/schema/?lang=/tmp",
+   "headers": {
+    "Accept": "application/json"
+   },
+   "status": 200,
+   "response": {
+    "kind": "document",
+    "format": "json",
+    "lang": "xx",
+    "version": "",
+    "indent": 4
+   },
+   "content_type": "application/json",
+   "allow": "GET, HEAD, OPTIONS",
+   "vary": [
+    "Accept",
+    "Cookie",
+    "origin",
+    "Accept-Language"
+   ],
+   "content_language": "it",
+   "disposition": "inline; filename=\"Bakney Sport API.json\"",
+   "location": null,
+   "csrf": null
+  },
+  {
+   "name": "api-schema-lang-path-overrides-english",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/schema/?lang=en/../it",
+   "headers": {
+    "Accept": "application/json"
+   },
+   "status": 200,
+   "response": {
+    "kind": "document",
+    "format": "json",
+    "lang": "it",
+    "version": "",
+    "indent": 4
+   },
+   "content_type": "application/json",
+   "allow": "GET, HEAD, OPTIONS",
+   "vary": [
+    "Accept",
+    "Cookie",
+    "origin",
+    "Accept-Language"
+   ],
+   "content_language": "it",
+   "disposition": "inline; filename=\"Bakney Sport API.json\"",
+   "location": null,
+   "csrf": null
+  },
+  {
+   "name": "api-schema-lang-path-chain-german-italian",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/schema/?lang=de/../it",
+   "headers": {
+    "Accept": "application/json"
+   },
+   "status": 200,
+   "response": {
+    "kind": "document",
+    "format": "json",
+    "lang": "de/../it",
+    "version": "",
+    "indent": 4
+   },
+   "content_type": "application/json",
+   "allow": "GET, HEAD, OPTIONS",
+   "vary": [
+    "Accept",
+    "Cookie",
+    "origin",
+    "Accept-Language"
+   ],
+   "content_language": "it",
+   "disposition": "inline; filename=\"Bakney Sport API.json\"",
+   "location": null,
+   "csrf": null
+  },
+  {
+   "name": "api-schema-lang-path-chain-german-serbian",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/schema/?lang=de/../sr",
+   "headers": {
+    "Accept": "application/json"
+   },
+   "status": 200,
+   "response": {
+    "kind": "document",
+    "format": "json",
+    "lang": "de/../sr",
+    "version": "",
+    "indent": 4
+   },
+   "content_type": "application/json",
+   "allow": "GET, HEAD, OPTIONS",
+   "vary": [
+    "Accept",
+    "Cookie",
+    "origin",
+    "Accept-Language"
+   ],
+   "content_language": "it",
+   "disposition": "inline; filename=\"Bakney Sport API.json\"",
+   "location": null,
+   "csrf": null
+  },
+  {
+   "name": "api-schema-lang-path-chain-dot-english",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/schema/?lang=./en",
+   "headers": {
+    "Accept": "application/json"
+   },
+   "status": 200,
+   "response": {
+    "kind": "document",
+    "format": "json",
+    "lang": "./en",
+    "version": "",
+    "indent": 4
+   },
+   "content_type": "application/json",
+   "allow": "GET, HEAD, OPTIONS",
+   "vary": [
+    "Accept",
+    "Cookie",
+    "origin",
+    "Accept-Language"
+   ],
+   "content_language": "it",
+   "disposition": "inline; filename=\"Bakney Sport API.json\"",
+   "location": null,
+   "csrf": null
+  },
+  {
+   "name": "api-schema-lang-path-chain-german-japanese",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/schema/?lang=de/../ja",
+   "headers": {
+    "Accept": "application/json"
+   },
+   "status": 200,
+   "response": {
+    "kind": "document",
+    "format": "json",
+    "lang": "de/../ja",
+    "version": "",
+    "indent": 4
+   },
+   "content_type": "application/json",
+   "allow": "GET, HEAD, OPTIONS",
+   "vary": [
+    "Accept",
+    "Cookie",
+    "origin",
+    "Accept-Language"
+   ],
+   "content_language": "it",
+   "disposition": "inline; filename=\"Bakney Sport API.json\"",
+   "location": null,
+   "csrf": null
+  },
+  {
+   "name": "api-schema-lang-path-chain-british-brazilian",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/schema/?lang=en_GB/../pt_BR",
+   "headers": {
+    "Accept": "application/json"
+   },
+   "status": 200,
+   "response": {
+    "kind": "document",
+    "format": "json",
+    "lang": "en_GB/../pt_BR",
+    "version": "",
+    "indent": 4
+   },
+   "content_type": "application/json",
+   "allow": "GET, HEAD, OPTIONS",
+   "vary": [
+    "Accept",
+    "Cookie",
+    "origin",
+    "Accept-Language"
+   ],
+   "content_language": "it",
+   "disposition": "inline; filename=\"Bakney Sport API.json\"",
+   "location": null,
+   "csrf": null
+  },
+  {
    "name": "api-schema-lang-last-value",
    "actor": "anonymous",
    "method": "GET",

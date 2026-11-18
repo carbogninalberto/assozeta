@@ -499,6 +499,50 @@ func TestImportValidateLoneSurrogate(t *testing.T) {
 	}
 }
 
+func TestImportValidateRecursionEdge(t *testing.T) {
+	deep := func(total int) string {
+		return strings.Repeat("[", total) + strings.Repeat("]", total)
+	}
+	manifest := func(total int) []byte {
+		return []byte(`{"version": "1.0.0", "export_format": "bakney_sport_export_v1", "export_date": "2026-01-15T10:00:00+00:00",` +
+			` "association": {"sport_association_id": "` + importTestAssociation + `"},` +
+			` "models_exported": [{"name": "SportAssociation", "file": "data/01_sport_association.json"}],` +
+			` "extra": ` + deep(total-1) + `}`)
+	}
+	users := func(total int) []byte {
+		return []byte(`[{"user_id": "` + importTestOwner + `", "username": "o", "email": "e", "password": "!",` +
+			` "extra": ` + deep(total-1) + `}]`)
+	}
+	// At the measured edge of POST association/import/validate (owner decision
+	// X15) both json.loads and each raw_decode item parse.
+	for _, total := range []int{importValidationJSONEdge - 4, importValidationJSONEdge} {
+		body := importTestBody(t, importTestMembers(t, map[string]any{"manifest.json": manifest(total)}))
+		if body["is_valid"] != true {
+			t.Fatalf("manifest depth %d: %#v", total, body)
+		}
+		body = importTestBody(t, importTestMembers(t, map[string]any{"data/02_users.json": users(total)}))
+		if body["is_valid"] != true {
+			t.Fatalf("users depth %d: %#v", total, body)
+		}
+	}
+	// Past it, validators.py's generic except clause reports the validation
+	// error text (json.loads and iter_json_array items alike).
+	for _, total := range []int{importValidationJSONEdge + 1, importValidationJSONEdge + 30} {
+		body := importTestBody(t, importTestMembers(t, map[string]any{"manifest.json": manifest(total)}))
+		errors_, _ := body["errors"].([]string)
+		want := "Error reading manifest: maximum recursion depth exceeded while decoding a JSON array from a unicode string"
+		if body["is_valid"] != false || len(errors_) != 1 || errors_[0] != want {
+			t.Fatalf("manifest depth %d: %#v", total, body)
+		}
+		body = importTestBody(t, importTestMembers(t, map[string]any{"data/02_users.json": users(total)}))
+		errors_, _ = body["errors"].([]string)
+		want = "Error reading owner identity: maximum recursion depth exceeded while decoding a JSON array from a unicode string"
+		if body["is_valid"] != false || len(errors_) != 1 || errors_[0] != want {
+			t.Fatalf("users depth %d: %#v", total, body)
+		}
+	}
+}
+
 func TestImportValidateUUIDConflicts(t *testing.T) {
 	// A non-UUID sport_association_id is UUIDField.to_python's ValidationError.
 	reply, err := importTestValidate(t, importTestMembers(t, map[string]any{

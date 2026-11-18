@@ -4,9 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"math/big"
 	"os"
 	"strconv"
+	"strings"
 	"time"
+	"unicode"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
@@ -174,6 +177,24 @@ func (s *SavedReports) Update(ctx context.Context, identity domain.ResolvedIdent
 	return row.ID, echo, nil
 }
 
+// reportDeferredOutcome is a dto.ReportDeferred plan error: the statements
+// Django runs before the exception run first, and their own database error
+// is the answer; otherwise the deferred exception is.
+func reportDeferredOutcome(ctx context.Context, run func(context.Context, string, []domain.ReportStatement) ([][][]*string, error),
+	plan dto.ReportPlan, timeout string, err error) error {
+	var deferred *dto.ReportDeferred
+	if !errors.As(err, &deferred) {
+		return err
+	}
+	if deferred.Untimed {
+		timeout = "0"
+	}
+	if _, runErr := run(ctx, timeout, plan.Statements); runErr != nil {
+		return runErr
+	}
+	return deferred.Err
+}
+
 // Run follows SavedReportViewSet.run: the report lookup, the TOOL_FUNCTIONS
 // check, the merge of the stored params with request.data['overrides']
 // (outside the try: TypeError/AttributeError are uncaught) and the tool call.
@@ -228,13 +249,24 @@ func (s *SavedReports) RunGroup(ctx context.Context, identity domain.ResolvedIde
 		}
 		return s.runFileTool(ctx, row.ToolName, merged, association, supplierGroup(group))
 	}
-	var timeout int64
+	var timeout string
 	plan, err := dto.PlanReportToolGroup(row.ToolName, merged, association, supplierGroup(group), func() (dto.ReportSettings, error) {
 		settings, err := s.reportSettings(ctx)
-		timeout = settings.QueryTimeout * 1000
+		if err == nil {
+			timeout = settings.QueryTimeoutText()
+			text := timeout
+			settings.SetTimeout = func() error { return s.store.CheckReportTimeout(ctx, text) }
+		}
 		return settings, err
 	})
+	err = reportDeferredOutcome(ctx, s.store.RunReportStatements, plan, timeout, err)
 	if err != nil {
+		// A rejected statement_timeout is the tool's exception, as in
+		// RunReportStatements.
+		var failed *domain.ReportQueryError
+		if errors.As(err, &failed) {
+			return nil, dto.ErrReportFailed
+		}
 		return nil, err
 	}
 	if plan.Immediate != nil {
@@ -278,10 +310,73 @@ var errReportIntegrationShape = refusal.AppState("saved reports: stored integrat
 // Django's settings module raises on env.int and the server does not start.
 var errReportEnvironmentSetting = refusal.AppState("saved reports: environment setting int() rejects")
 
-// errReportEnvironmentNotPorted is an environment integer beyond int64:
-// Python's int() keeps it and Django answers (a capped limit, or the run's
-// JSON 500 where a statement fails), so the request is handed off.
-var errReportEnvironmentNotPorted = refusal.New("saved reports: environment setting beyond int64 not ported")
+// reportEnvironmentSettings is SetReportEnvironment's value: the resolved
+// environment texts of MCP_AGENT_MAX_RESULTS and MCP_AGENT_QUERY_TIMEOUT
+// (config.InstanceAdminSettings.AIIntegerTexts). A nil text is an unset
+// variable, so env.int's default applies; a resolved setting of nil texts
+// still means "unset" rather than "read the process environment".
+type reportEnvironmentSettings struct {
+	resolved                 bool
+	maxResults, queryTimeout *string
+}
+
+var reportEnvironment reportEnvironmentSettings
+
+// SetReportEnvironment installs the deployment environment's texts for the
+// two AI settings. Every cmd main that builds SavedReports or
+// BusinessMCPTools calls it after config.Load; a process that never calls it
+// (tests, direct service wiring) reads the process environment instead.
+func SetReportEnvironment(maxResults, queryTimeout *string) {
+	reportEnvironment = reportEnvironmentSettings{resolved: true, maxResults: maxResults, queryTimeout: queryTimeout}
+}
+
+// reportEnvironmentTexts is the pair env.int reads, after the $ proxies the
+// caller resolved.
+func reportEnvironmentTexts() (maxResults, queryTimeout *string) {
+	if reportEnvironment.resolved {
+		return reportEnvironment.maxResults, reportEnvironment.queryTimeout
+	}
+	return processEnvironmentText("MCP_AGENT_MAX_RESULTS"), processEnvironmentText("MCP_AGENT_QUERY_TIMEOUT")
+}
+
+func processEnvironmentText(name string) *string {
+	if value, present := os.LookupEnv(name); present {
+		return &value
+	}
+	return nil
+}
+
+// pythonIntMaxStrDigits is sys.int_info.default_max_str_digits: int() of a
+// text with more digits raises ValueError.
+const pythonIntMaxStrDigits = 4300
+
+// reportEnvironmentInteger is env.int(name, fallback): an unset text is the
+// default, otherwise Python's int() of the text (any size; 0 and negatives
+// stay). Two texts dto.PythonIntText accepts are int() ValueErrors: one with
+// a control byte str.strip removes but int() does not (\x1c-\x1f), and one
+// with more digits than sys.int_info.default_max_str_digits.
+func reportEnvironmentInteger(text *string, fallback int64) (*big.Int, error) {
+	if text == nil {
+		return big.NewInt(fallback), nil
+	}
+	if strings.ContainsAny(*text, "\x1c\x1d\x1e\x1f") {
+		return nil, errReportEnvironmentSetting
+	}
+	digits := 0
+	for _, r := range *text {
+		if unicode.IsDigit(r) {
+			digits++
+		}
+	}
+	if digits > pythonIntMaxStrDigits {
+		return nil, errReportEnvironmentSetting
+	}
+	number, ok := dto.PythonIntText(*text)
+	if !ok {
+		return nil, errReportEnvironmentSetting
+	}
+	return number, nil
+}
 
 func loadReportSettings(ctx context.Context, store reportIntegrationStore) (dto.ReportSettings, error) {
 	selfHosted, text, err := store.ReportIntegration(ctx)
@@ -327,31 +422,18 @@ func loadReportSettings(ctx context.Context, store reportIntegrationStore) (dto.
 					return dto.ReportSettings{}, err
 				}
 				timeout, err := number("query_timeout")
-				return dto.ReportSettings{MaxResults: maximum, QueryTimeout: timeout}, err
+				return dto.ReportSettings{MaxResults: big.NewInt(maximum), QueryTimeout: big.NewInt(timeout)}, err
 			}
 		}
 	}
-	environment := func(name string, fallback int64) (int64, error) {
-		text, present := os.LookupEnv(name)
-		if !present {
-			return fallback, nil
-		}
-		number, ok := dto.PythonIntText(text)
-		if !ok {
-			return 0, errReportEnvironmentSetting
-		}
-		if !number.IsInt64() {
-			return 0, errReportEnvironmentNotPorted
-		}
-		// env.int keeps 0 and negatives; Django's `or ''` turns 0 into '' and
-		// ReportSettings documents that.
-		return number.Int64(), nil
-	}
-	maximum, err := environment("MCP_AGENT_MAX_RESULTS", 5000)
+	maxText, timeoutText := reportEnvironmentTexts()
+	maximum, err := reportEnvironmentInteger(maxText, 5000)
 	if err != nil {
 		return dto.ReportSettings{}, err
 	}
-	timeout, err := environment("MCP_AGENT_QUERY_TIMEOUT", 10)
+	// env.int keeps 0 and negatives; Django's `or ''` turns 0 into '' and
+	// ReportSettings documents that.
+	timeout, err := reportEnvironmentInteger(timeoutText, 10)
 	return dto.ReportSettings{MaxResults: maximum, QueryTimeout: timeout}, err
 }
 

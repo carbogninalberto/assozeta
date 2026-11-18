@@ -191,8 +191,16 @@ var paymentAuditFields = []string{"payment_id", "type", "subject", "amount", "cr
 	"payment_category", "meta_payment_categories", "invoice", "user", "associate", "supplier", "instructor", "sport_association",
 	"payment_intent_id", "archived", "invoice_fiscal_code", "meta", "notes", "custom_accounts", "signature", "deleted", "group", "course"}
 
+// paymentAuditJSONDepth is the deepest stored payment JSON text auditlog's
+// rendering of the row parses at for the routes that measured their save bands
+// (owner decision X15): the update view's audit dumps of the row the save writes
+// sit one level above its jsonb adapter, and a value it can save is below both,
+// so the audit renders every value the save accepts. The reference parser's 1000
+// levels would refuse a stored value the request legitimately wrote.
+const paymentAuditJSONDepth = 9937
+
 func (t *paymentWritesTransaction) PaymentAuditValues(ctx context.Context, id string) (map[string]string, error) {
-	changes, _, err := storedModelChanges(ctx, t.tx, "application_payment", "payment_id", id, true, false)
+	changes, _, err := storedModelChangesAt(ctx, t.tx, "application_payment", "payment_id", id, true, false, paymentAuditJSONDepth)
 	if err != nil {
 		return nil, err
 	}
@@ -213,7 +221,7 @@ func (t *paymentWritesTransaction) AppendPaymentWritesAudit(ctx context.Context,
 	}
 	return appendModelAudit(ctx, t.tx, modelAuditEntry{Model: "payment", Key: entry.PaymentID,
 		Representation: "Payment object (" + entry.PaymentID + ")", Action: entry.Action, Changes: entry.Changes, Context: entry.Context,
-		AssociationID: entry.Association, ResolutionPath: path, At: entry.At})
+		AssociationID: entry.Association, ResolutionPath: path, IndexFallback: entry.IndexFallback, At: entry.At})
 }
 
 func (t *paymentWritesTransaction) BulkAssociates(ctx context.Context, ids []string, association string, group, scope *string) ([]string, error) {

@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"math"
 	"math/big"
 	"strings"
@@ -37,9 +38,14 @@ type InstanceAdminSettings struct {
 	// Environment integrations (integration_configuration.PROVIDERS).
 	AIAPIKey, AIModel, AICheapModel, AIBaseURL string `json:"-"`
 	// MCP_AGENT_* in AI_FIELDS order; AIIntegersInvalid when env.int fails.
-	AIIntegers                                      [6]int64
-	AIIntegersInvalid                               bool
-	StripePublicKey, StripeKey, StripeWebhookSecret string `json:"-"`
+	AIIntegers        [6]int64
+	AIIntegersInvalid bool
+	// AIIntegerTexts are the same names' resolved environment texts: the value
+	// after following $ proxies, nil when the variable (or the end of its proxy
+	// chain) is unset, so env.int's default applies. The texts keep every digit
+	// env.int's int() accepts, which AIIntegers truncates to int64.
+	AIIntegerTexts                                  [6]*string `json:"-"`
+	StripePublicKey, StripeKey, StripeWebhookSecret string     `json:"-"`
 	// SetupToken is INSTANCE_SETUP_TOKEN (env.str, default ''), read by
 	// SetupTokenOrAuthenticated before the instance is configured.
 	SetupToken string `json:"-"`
@@ -112,6 +118,9 @@ func parseInstanceAdmin(values map[string]string) (InstanceAdminSettings, error)
 		if err != nil {
 			return s, err
 		}
+		if s.AIIntegerTexts[index], err = environmentText(values, name); err != nil {
+			return s, err
+		}
 		s.AIIntegers[index] = fallback
 		if _, ok := values[name]; ok {
 			number, valid := pythonInt(text)
@@ -150,6 +159,29 @@ func backupUploadMaxBytes(value string) int64 {
 		return math.MaxInt64 // Python's int has no ceiling; no Content-Length exceeds this
 	}
 	return number.Int64()
+}
+
+// environmentText is one Env-based setting's value after following $ proxies
+// (django-environ's get_value lstrips every '$'); nil when the variable or the
+// end of its proxy chain is unset, which leaves env.int's default in place.
+func environmentText(values map[string]string, name string) (*string, error) {
+	origin := name
+	seen := map[string]bool{}
+	for {
+		if seen[name] {
+			return nil, fmt.Errorf("cyclic %s environment proxy", origin)
+		}
+		seen[name] = true
+		value, present := values[name]
+		if !present {
+			return nil, nil
+		}
+		if strings.HasPrefix(value, "$") {
+			name = strings.TrimLeft(value, "$")
+			continue
+		}
+		return &value, nil
+	}
 }
 
 // pythonInt is int(text) for decimal text that fits an int64.

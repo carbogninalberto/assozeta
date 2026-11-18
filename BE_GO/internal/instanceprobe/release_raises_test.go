@@ -39,13 +39,18 @@ func TestNormalizeRaisesIsAppState(t *testing.T) {
 		t.Fatalf("missing id: error %v, want ErrReleaseRaises", err)
 	}
 
-	notIntID := valid()
-	notIntID["id"] = "abc"
-	if _, err = normalize(notIntID); !errors.Is(err, ErrReleaseUnread) {
-		t.Fatalf("id \"abc\": error %v, want ErrReleaseUnread", err)
+	stringID := valid()
+	stringID["id"] = "abc"
+	release, err = normalize(stringID)
+	if err != nil || release == nil || !release.IDValueSet || release.IDValue != "abc" {
+		t.Fatalf("id \"abc\": %v, %v; want the string id kept", release, err)
 	}
-	if errors.Is(err, refusal.ErrNotPorted) || errors.Is(err, refusal.ErrAppState) {
-		t.Fatalf("id \"abc\": error %v must be neither a refusal nor app state", err)
+
+	unhashableID := valid()
+	unhashableID["id"] = []any{Int("1")}
+	release, err = normalize(unhashableID)
+	if release != nil || !errors.Is(err, ErrReleaseRaises) || !errors.Is(err, refusal.ErrAppState) {
+		t.Fatalf("list id: %v, %v; want ErrReleaseRaises app state", release, err)
 	}
 
 	release, err = normalize(valid())

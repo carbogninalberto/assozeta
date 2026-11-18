@@ -277,9 +277,8 @@ Refused with the 500 page before anything is committed:
 - the placeholder certificate when the names sent are not strings, when the file name is not storable (over 255 characters,
   control characters, a path the storage rejects), when the text is outside `pilplaceholder`'s subset, or when
   `PIL_PLACEHOLDER_ZLIB` names an unknown zlib; 
-- an unknown non-canonical `associate_id` spelling or one whose save would hit the unique tax-code index (the `associate_id` branch
-  itself is ported, see [subscription-renew](subscription-renew.md)), a text `internal/pydateutil` refuses (over 64 KiB),
-  an associate that already has tutors when a tutor is added, a tutor sent with an `associate_id` naming the minor's own row.
+- a text `internal/pydateutil` refuses (over 64 KiB), an associate that already has tutors when a tutor is added. The
+  `associate_id` branch's own three outcomes are ported in [PR 5](#long-tail-pr-5-agent-e-the-associate_id-branchs-three-outcomes).
 
 The placeholder text outside `pilplaceholder`'s subset is refused while drawing (an unknown `PIL_PLACEHOLDER_ZLIB` leaves
 the placeholder unwired): `create_subscription` swallows the drawing error inside its try block and creates no
@@ -556,14 +555,9 @@ Left:
   collaborator the owner of a second association, but the family's account fixture seeds only the owner's user and
   association and cannot add the collaborator account (role, `connected_user`), so Go keeps refusing it before any
   write.
-- A non-canonical `associate_id` spelling. Django stores `instance.pk` exactly as sent, so auditlog's create entry's
-  `object_pk`, its `object_repr` (`Associate object (<sent text>)`) and its `associate_id` change all hold the sent
-  text, while the column and every later lookup keep the canonical uuid — and the following
-  `associate.user = user; save()` logs the raw/canonical difference as an update entry. Porting needs per-field
-  create-diff overrides and that second entry, and the audit model compares the create diff against the stored row.
-- A tutor whose `associate_id` is the minor's own key (two serializer saves of one row and the stale-instance
-  write-back): the structural support exists, the case was not authored.
-- The unique tax-code index fallbacks (`get_or_create`'s `IntegrityError` retries).
+- The `get_or_create` branch of `AssociateSerializer.create` (no `associate_id`): its `MultipleObjectsReturned` lookup is
+  ported, but a tax-code `IntegrityError` there needs a concurrent writer (the branch's `iexact` lookup covers the same
+  rows as the partial index), so no case reaches the retries. The `associate_id` branch's conflicts are covered (PR 5).
 - The two renew sites below.
 
 Two renew sites stay refused because their Django answer is the 400 body
@@ -582,3 +576,66 @@ Two renew sites stay refused because their Django answer is the 400 body
 
 Evidence this round: 32 new cases (248 in all) in `TESTS/fixtures/subscription_create_http.json`. RED/GREEN and the
 mutation control are the orchestrator's runs (this worker does not run the family).
+
+## Long tail PR 5 (agent E): the `associate_id` branch's three outcomes
+
+`AssociateSerializer.create` with an `associate_id` (`user_serializers.py:67-210`) is now ported whole: the key is a
+`CharField`, the in-memory instance keeps the text a client sent, and the save may break the partial unique index
+`unique_tax_code_sport_assoc_upper_active` (`UPPER(tax_code), sport_association_id WHERE deleted = false AND tax_code IS NOT NULL`).
+
+- Unknown key, live row with that tax code: `Associate.objects.create` runs inside `transaction.atomic()` (a savepoint),
+  so the refused INSERT leaves nothing at all — `post_save` never runs and no create entry is written. The `except
+  IntegrityError` block then looks the key up again, then the association's first row with `tax_code__iexact` (any
+  deleted state, `ORDER BY pk`, the tax code **not** upper-cased), applies every validated field but `associate_id`,
+  sets `deleted = false` and saves it: an update entry from the stored row, then the registration continues with that
+  row (its key in the payment, subscription and membership). When that row is a deleted one while another live row
+  holds the code, `deleted = false` breaks the index and the `IntegrityError` reaches `create_subscription`: the whole
+  registration rolls back (the 500 page on add and approve, `{"status": "error", "msg": str(e)}` on renew). The loop
+  retries at most three times (only a race can leave both fallbacks empty). Go: `saveAssociateByID` +
+  `InsertAssociateAttempt` (a real `SAVEPOINT`, rolled back only on failure) + `AssociateIntegrityError` (psycopg2's
+  `str()`, `psycopg2ErrorText`), and `associateSaveError` for `save()`'s error.
+- An existing row whose `save()` breaks the index (the row the key names, or the target association's row the tax
+  code names): the `IntegrityError` is uncaught, nothing is written. The tax code lookup always runs: the serializer's
+  `instance.sport_association_id != new_sport_association` compares a UUID with the association instance, which is
+  never equal (`Model.__eq__` refuses a non-model), so the same-association case takes that branch too. Go had refused
+  both with `ErrSubscriptionCreateNotPorted` before any write; both are gone.
+- A key spelled differently from its canonical uuid (upper case, no dashes, braces, `urn:uuid:`): the column stores the
+  canonical uuid through `UUIDField.get_prep_value`, while the instance keeps the sent text, so auditlog's create entry
+  has `object_pk` and `object_repr` (`Associate object (<sent text>)`) and `associate_id: ['None', '<sent text>']`;
+  the following `associate.user = user; save()` logs `associate_id: ['<canonical>', '<sent text>']` next to `user`;
+  and every row created from the instance renders the sent text for its `associate` foreign key (`Payment`,
+  `Subscription`, `SubscriptionMembership`), the membership's own `save()` logging
+  `associate: ['<canonical>', '<sent text>']` in its update entry. Go: `SubscriptionEditAssociate.Spelling`
+  (`AuditKey()`), the create-diff `Overrides` plus `SubscriptionCreateAudit.Row`/`SubscriptionEditAudit.Row` (the entry
+  keeps the spelling, the row is read through the canonical key) and `associateChanges`' `associate_id` pair.
+- A tutor whose `associate_id` is the minor's own key: two serializer saves of one row (the minor's create, then the
+  tutor's data through its own instance), `associate_tutor.user = user; save()`, the self relation
+  (`add_main_tutor`), then the stale minor instance's `associate.user = user; associate.save()` writing the minor's
+  values back over the tutor's — each save's `pre_save` entry compares against the row as stored at that moment.
+  Go's sequence (`savedTutor.ID == saved.ID`) already did this; only the refusal is gone.
+
+The three `IntegrityError` cases answer exactly
+`duplicate key value violates unique constraint "unique_tax_code_sport_assoc_upper_active"\nDETAIL:  Key
+(upper(tax_code::text), sport_association_id)=(TXDUP12345, <uuid>) already exists.\n` (psycopg2's `str()` keeps the
+trailing newline). The text was read from psycopg2 (the driver Django uses) against the shared contract server: a
+temporary table carrying the same expression index was filled and the second insert failed (the transaction rolled
+back, nothing on the server changed), printing that `str()`. The entries were read from the models and auditlog's own
+helpers instead of a database: `Associate(associate_id='<upper case, no dashes>')` keeps `.pk` and `.associate_id` as
+the sent text, `str()` is `Associate object (<sent text>)`, `LogEntry.objects._get_pk_value` returns the text,
+`model_instance_diff(None, instance)` gives `associate_id: ('None', '<sent text>')` (and `user: ('None', 'None')`,
+`tutor_relations`/`tutored_relations` against `application.AssociateTutorRelation.None`), `Payment(associate=instance)`
+and `SubscriptionMembership(associate=instance)` expose the text through `associate_id`, and
+`model_instance_diff(stored, instance)` gives `associate_id: ('<canonical>', '<sent text>')` next to `user`. The
+fallback's update diff is `born_date/first_name/sex/tax_code`, the spelling's entries are the six listed above in that
+order (create, the user save, payment, subscription, membership and the membership's own save), and the self tutor's
+are the five above.
+
+Restoring a soft-deleted row is one `deleted = false` write in Django's `save()`, so the port writes the columns and
+then the flag (`SetAssociateDeleted`, wrapped like the other Associate writes): a live row holding the code makes that
+statement the refused one, and the psycopg2 text is the error renew turns into its 400 body.
+
+Cases: `associate-id-unknown-key-tax-code-taken` (the fallback's update, 200), `associate-id-unknown-key-deleted-row-taken`,
+`associate-id-other-key-deleted-row-taken` and `associate-id-deleted-row-tax-code-taken` (the three rollbacks, 500),
+`associate-id-non-canonical-spelling` (its create, update, payment, subscription and two membership entries) and
+`associate-tutor-with-the-minors-key` (the self tutor's five entries); 6 new cases (258 in all). The adapter seeds
+`deleted` associates and lets an audit expectation carry auditlog's in-memory `object_pk`/`object_repr`.

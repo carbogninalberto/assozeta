@@ -4,6 +4,7 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pycodecs"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/pystr"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
@@ -264,9 +265,8 @@ func TestCharsetDecode(t *testing.T) {
 // the addresses and results measured from CPython 3.13.16 with Django: the
 // display name is decoded and re-encoded as UTF-8, an encoded word whose
 // surrogateescape retry re-raises keeps its text (the invalid-word fallback
-// Python's header parser makes), a name holding a lone surrogate reaches
-// Django's Header.encode UnicodeEncodeError, and idna, whose strict decode is
-// not carried, stays with Django as the refusal.
+// Python's header parser makes), and a name holding a lone surrogate reaches
+// Django's Header.encode UnicodeEncodeError.
 func TestCharsetAddress(t *testing.T) {
 	for _, test := range []struct{ address, want string }{
 		{"=?cp1251?b?yOLg7Q==?= <ivan@example.test>", "=?utf-8?b?0JjQstCw0L0=?= <ivan@example.test>"},
@@ -289,7 +289,7 @@ func TestCharsetAddress(t *testing.T) {
 		t.Errorf("utf-16-be lone surrogate: %v, want ErrRaises", err)
 	}
 	// The multibyte and stateful codecs decode through pycodecs (CPython
-	// 3.13.16 with Django 5.2.18); idna stays with Django.
+	// 3.13.16 with Django 5.2.18).
 	for address, want := range map[string]string{
 		"=?gb2312?b?xOO6ww==?= <a@example.test>":    "=?utf-8?b?5L2g5aW9?= <a@example.test>",
 		"=?shift_jis?b?gsiCsQ==?= <a@example.test>": "=?utf-8?b?44Gq44GT?= <a@example.test>",
@@ -299,17 +299,29 @@ func TestCharsetAddress(t *testing.T) {
 			t.Errorf("%q = %q, %v; want %q", address, got, err, want)
 		}
 	}
-	if _, err := SanitizeAddress("=?idna?q?xn--bcher-kva?= <a@example.test>"); !errors.Is(err, ErrEncodedWordCharset) {
-		t.Errorf("idna: %v, want the refusal", err)
+	// idna: a valid ACE word decodes (the display name is then re-encoded as
+	// UTF-8), mixed case keeps the decoded text's case, and a word whose name
+	// is not a valid IDN keeps its text like every other invalid word.
+	for address, want := range map[string]string{
+		"=?idna?q?xn--bcher-kva?= <a@example.test>":         "=?utf-8?q?b=C3=BCcher?= <a@example.test>",
+		"=?idna?b?eG4tLWJjaGVyLWt2YQ==?= <a@example.test>":  "=?utf-8?q?b=C3=BCcher?= <a@example.test>",
+		"=?IDNA?Q?XN--BCHER-KVA?= <a@example.test>":         "=?utf-8?q?B=C3=BCCHER?= <a@example.test>",
+		"=?idna?q?xn--bcher-kva.example?= <a@example.test>": "=?utf-8?b?YsO8Y2hlci5leGFtcGxl?= <a@example.test>",
+		"=?idna?q?xn--zca?= <a@example.test>":               "=?idna?q?xn--zca?= <a@example.test>",
+		"=?idna?q?xn--abc-?= <a@example.test>":              "=?idna?q?xn--abc-?= <a@example.test>",
+		"=?idna?q?xn--?= <a@example.test>":                  "=?idna?q?xn--?= <a@example.test>",
+		"=?idna?q?a=FF?= <a@example.test>":                  "=?idna?q?a=FF?= <a@example.test>",
+	} {
+		if got, err := SanitizeAddress(address); err != nil || got != want {
+			t.Errorf("%q = %q, %v; want %q", address, got, err, want)
+		}
 	}
 }
 
 // TestCharsetCoverage: every text codec of CPython's registry is decoded here
-// (through internal/pycodecs), except idna, whose strict decode needs
-// nameprep and stays with Django. A refusal name that Python no longer knows
-// would mean this list has gone stale.
+// (through internal/pycodecs); none is refused any more, so a refusal would
+// mean this list has gone stale.
 func TestCharsetCoverage(t *testing.T) {
-	refused := map[string]bool{"idna": true}
 	known := map[string]bool{}
 	for _, canonical := range pythonTextCodecs {
 		if known[canonical] {
@@ -320,23 +332,30 @@ func TestCharsetCoverage(t *testing.T) {
 		if got, err := decodeCharset(nil, canonical); got != "" || err != nil {
 			t.Errorf("%s empty: %q, %v", canonical, got, err)
 		}
-		_, err := decodeCharset([]byte("a"), canonical)
-		if refused[canonical] {
-			if !errors.Is(err, refusal.ErrNotPorted) {
-				t.Errorf("%s: %v, want the refusal", canonical, err)
-			}
-			continue
-		}
-		if errors.Is(err, refusal.ErrNotPorted) {
+		if _, err := decodeCharset([]byte("a"), canonical); errors.Is(err, refusal.ErrNotPorted) {
 			t.Errorf("%s: %v, want a decode", canonical, err)
 		}
 	}
 	if len(known) < 100 {
 		t.Fatalf("coverage: %d canonical text codecs", len(known))
 	}
-	for canonical := range refused {
-		if !known[canonical] {
-			t.Errorf("%s: not a text codec in CPython", canonical)
+}
+
+// TestCharsetCodecs: decodePythonCodec's !ok branch is unreachable from
+// decodeCharset, because every canonical name pythonTextCodecs can return is
+// either handled directly or registered in pycodecs. The branch itself is an
+// application-state error (never a Django handoff) in case that changes.
+func TestCharsetCodecs(t *testing.T) {
+	special := map[string]bool{"utf-8": true, "ascii": true, "iso8859-1": true}
+	for _, canonical := range pythonTextCodecs {
+		if special[canonical] {
+			continue
 		}
+		if !pycodecs.Has(canonical) {
+			t.Errorf("%s: codec not registered in pycodecs", canonical)
+		}
+	}
+	if _, err := decodePythonCodec([]byte("a"), "not-a-codec"); !errors.Is(err, refusal.ErrAppState) {
+		t.Errorf("unregistered codec: %v, want an application-state error", err)
 	}
 }

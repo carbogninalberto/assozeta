@@ -51,6 +51,26 @@ func printInvoice(ctx context.Context, publisher celery.Publisher, args ...any) 
 	return nil
 }
 
+// paymentJSONLoadRefusal is the RecursionError a view's own load of a payment
+// raises for a stored JSON column nested past its Load edge (owner decision
+// X15): Django raises it while fetching the row, before the view writes
+// anything for it.
+func paymentJSONLoadRefusal(row *domain.PaymentSaveRow, edges paymentJSONEdges) error {
+	row.JSONDepth = paymentJSONColumnsDepth(row)
+	if row.JSONDepth <= edges.Load {
+		return nil
+	}
+	return &PaymentStoredJSONRecursionError{Text: paymentJSONRecursionTextAt(row, edges.Load)}
+}
+
+// invoiceGenerateJSONEdges are payment_generate_invoice's measured edges
+// (CPython 3.13.16 on the parity harness, total nesting as dto.AuditJSONDepth
+// counts it): the view's select_for_update load reads 9935 levels, auditlog's
+// log_update refetch of the old row 9933, and the index resolver's reload 9925.
+// The value moves by a level or two between requests, so parity cases sit four
+// levels away from each edge.
+var invoiceGenerateJSONEdges = paymentJSONEdges{Load: 9935, Save: 9933, Index: 9925}
+
 func authorizationArg(authorization *string) any {
 	if authorization == nil {
 		return nil
@@ -115,6 +135,12 @@ func (s *InvoiceGenerations) Generate(ctx context.Context, identity domain.Resol
 	if err != nil {
 		return nil, err
 	}
+	// The view's own select_for_update load reads the row's three JSON columns;
+	// past its measured edge Django raises before anything is written.
+	ctx = withPaymentJSONEdges(ctx, invoiceGenerateJSONEdges)
+	if err = paymentJSONLoadRefusal(&row.PaymentSaveRow, invoiceGenerateJSONEdges); err != nil {
+		return nil, err
+	}
 	subscriptionValue, _ := object.Lookup("subscription_id")
 	if subscriptionValue == nil {
 		return nil, domain.ErrInvoiceGenerateSelect
@@ -134,7 +160,7 @@ func (s *InvoiceGenerations) Generate(ctx context.Context, identity domain.Resol
 	if err != nil {
 		return nil, err
 	}
-	fees, err := invoiceFeesAny(row.Subject, payment)
+	fees, err := invoiceFeesAtDepth(row.Subject, payment, invoiceGenerateJSONEdges.Load)
 	if err != nil {
 		return nil, err
 	}
@@ -209,7 +235,7 @@ func (s *InvoiceGenerations) Generate(ctx context.Context, identity domain.Resol
 	}
 	if len(changes) > 0 {
 		if err = tx.AppendPaymentAudit(ctx, domain.PaymentArchiveEvent{PaymentID: row.ID, AssociationID: row.AssociationID, Changes: changes,
-			Context: audit, At: at}); err != nil {
+			Context: audit, At: at, IndexFallback: row.IndexFallback}); err != nil {
 			return nil, err
 		}
 	}
@@ -303,6 +329,14 @@ func floatFeeAny(value float64) (invoiceFee, error) {
 // (float(str(amount))) and its positive amount minus that sum the membership
 // fee; other payments have membership 0.0 and the amount as activity fee.
 func invoiceFeesAny(subject int, payment domain.InvoiceGeneratePayment) (invoiceFeePair, error) {
+	return invoiceFeesAtDepth(subject, payment, 0)
+}
+
+// invoiceFeesAtDepth is invoiceFeesAny for a view whose measured load edge is
+// known: maxDepth 0 keeps the reference parser's limit, a measured edge reads
+// a stored value nested as deep as the view itself loads it (the view has
+// already raised past that edge).
+func invoiceFeesAtDepth(subject int, payment domain.InvoiceGeneratePayment, maxDepth int) (invoiceFeePair, error) {
 	amount, ok := new(big.Rat).SetString(payment.Amount)
 	if !ok {
 		return invoiceFeePair{}, domain.ErrPaymentStateServer
@@ -313,7 +347,13 @@ func invoiceFeesAny(subject int, payment domain.InvoiceGeneratePayment) (invoice
 	}
 	activity := 0.0
 	if payment.MetaPaymentCategories != nil {
-		parsed, err := dto.ParseReferenceJSON([]byte(*payment.MetaPaymentCategories))
+		var parsed any
+		var err error
+		if maxDepth > 0 {
+			parsed, err = paymentStoredJSONAtDepth(payment.MetaPaymentCategories, maxDepth)
+		} else {
+			parsed, err = dto.ParseReferenceJSON([]byte(*payment.MetaPaymentCategories))
+		}
 		if err != nil {
 			return invoiceFeePair{}, err
 		}
@@ -428,12 +468,19 @@ func invoicePeriod(period domain.InvoiceGeneratePeriod) string {
 }
 
 // metaName is (payment.meta or {}).get('subscription_data') or {} and its
-// truthy 'name' as str(); ok false: nothing to add.
-func metaName(meta *string) (string, bool, error) {
+// truthy 'name' as str(); ok false: nothing to add. maxDepth is the view's
+// measured load edge (0: the reference parser's limit).
+func metaName(meta *string, maxDepth int) (string, bool, error) {
 	if meta == nil {
 		return "", false, nil
 	}
-	parsed, err := dto.ParseReferenceJSON([]byte(*meta))
+	var parsed any
+	var err error
+	if maxDepth > 0 {
+		parsed, err = paymentStoredJSONAtDepth(meta, maxDepth)
+	} else {
+		parsed, err = dto.ParseReferenceJSON([]byte(*meta))
+	}
 	if err != nil {
 		return "", false, err
 	}
@@ -472,6 +519,12 @@ func metaName(meta *string) (string, bool, error) {
 
 func (s *InvoiceGenerations) description(ctx context.Context, tx domain.InvoiceGenerateTransaction, row *domain.PaymentStateRow,
 	payment domain.InvoiceGeneratePayment, associate *string, association string, group *string) (string, error) {
+	// A view that measured its payment JSON edges parses the stored meta up to
+	// its own load edge (the row has already raised past it).
+	jsonDepth := 0
+	if edges, measured := paymentJSONEdgesOf(ctx); measured {
+		jsonDepth = edges.Load
+	}
 	denominationValue, err := tx.AssociationDenomination(ctx, association)
 	if err != nil {
 		return "", err
@@ -516,7 +569,7 @@ func (s *InvoiceGenerations) description(ctx context.Context, tx domain.InvoiceG
 		if subscription != nil {
 			label = invoicePeriod(*period) + " "
 		}
-		metaLabel, present, err := metaName(row.Meta)
+		metaLabel, present, err := metaName(row.Meta, jsonDepth)
 		if err != nil {
 			return "", err
 		}

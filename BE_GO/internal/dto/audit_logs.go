@@ -24,15 +24,14 @@ var (
 	ErrAuditUnhandled = errors.New("audit serializer exception")
 	// ErrAuditUnreachable is text only the application writes outside the
 	// ported subset: str.title() of a non-ASCII model or field name (both are
-	// Python identifiers of the application's models), and NaN, Infinity or a
-	// lone surrogate in text PostgreSQL jsonb never stores.
+	// Python identifiers of the application's models), NaN, Infinity or a
+	// lone surrogate in text PostgreSQL jsonb never stores, and JSON nested
+	// past the 500 levels the readers without a measured band (AuditJSONLoads,
+	// auditPythonJSONLoads) refuse. Those two have no production caller since
+	// the instructor-hours form reads deep text itself (owner decision X15), so
+	// the deeper input is an application state as well: the 500 page, never a
+	// handoff.
 	ErrAuditUnreachable = refusal.AppState("audit serializer: unreachable state")
-	// ErrAuditNotPorted refuses JSON nested past 500 levels: Python's
-	// RecursionError depth depends on the interpreter's live call stack, so
-	// Django may still answer. Handed off to Django by the readers outside the
-	// audit-logs endpoints (instructor hours and report, modules export); the
-	// audit-logs reads use the measured bands below instead.
-	ErrAuditNotPorted = refusal.New("audit serializer input not ported")
 )
 
 // Audit recursion bands (owner decision X15), measured on the parity harness's
@@ -189,10 +188,14 @@ var auditBooleanFields = map[string]bool{"archived": true, "deleted": true, "dra
 
 // AuditJSONLoads is json.loads(text) for the serializer: decoded=false is a
 // JSONDecodeError (which every caller catches). Integers over Python's 4300
-// digit limit raise ValueError (not caught); NaN/Infinity literals, lone
-// surrogate escapes and deep nesting are refused.
+// digit limit raise ValueError (not caught); NaN/Infinity literals and lone
+// surrogate escapes are refused. It has no production caller since the
+// instructor-hours form reads deep text itself (X15); text nested deeper than
+// 500 levels is ErrAuditUnreachable rather than a handoff, since Django's own
+// RecursionError depth depends on the live call stack and cannot be replayed
+// faithfully (the audit-logs reads use the measured ...At bands).
 func AuditJSONLoads(text string) (any, bool, error) {
-	return auditJSONLoads(text, 500, referenceJSONNesting, ErrAuditNotPorted)
+	return auditJSONLoads(text, 500, referenceJSONNesting, ErrAuditUnreachable)
 }
 
 // AuditJSONLoadsAt is AuditJSONLoads at an endpoint's total-depth band: text
@@ -233,10 +236,11 @@ func auditJSONLoads(text string, refuseDepth, parseLimit int, nestingErr error) 
 // auditPythonJSONLoads is json.loads(text) with Python's NaN, Infinity and
 // -Infinity constants (float64) and lone surrogate escapes (kept as code
 // units) for the audit serializer; the response renderer then fails on
-// whatever reaches the output (AuditResponseEncodable). Nesting past the
-// limit stays refused: the recursion limit depends on the live call stack.
+// whatever reaches the output (AuditResponseEncodable). It has no production
+// caller (the audit-logs reads use auditPythonJSONLoadsAt): text nested past
+// 500 levels is ErrAuditUnreachable, never a handoff.
 func auditPythonJSONLoads(text string) (any, bool, error) {
-	return auditPythonJSONLoadsDepth(text, 500, referenceJSONNesting, ErrAuditNotPorted)
+	return auditPythonJSONLoadsDepth(text, 500, referenceJSONNesting, ErrAuditUnreachable)
 }
 
 // auditPythonJSONLoadsAt is auditPythonJSONLoads at an endpoint's total-depth
@@ -302,7 +306,9 @@ func AuditResponseEncodable(value any) bool {
 	return AuditFiniteJSON(value)
 }
 
-// AuditStoredJSON loads a jsonb column the way Django's JSONField does.
+// AuditStoredJSON loads a jsonb column the way Django's JSONField does. It has
+// no production caller (the audit-logs reads use AuditStoredJSONAt with their
+// measured bands); see AuditJSONLoads for its nesting limit.
 func AuditStoredJSON(text *string) (any, error) {
 	if text == nil {
 		return nil, nil

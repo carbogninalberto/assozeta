@@ -89,11 +89,8 @@ func (d *docTemplate) before(f flowable) float64 {
 	if d.atTop {
 		return 0
 	}
-	s := f.spaceBefore() - d.prevSpace
-	if s < 0 {
-		s = 0
-	}
-	return s
+	// max(spaceBefore - prevSpace, 0)
+	return pyMax(f.spaceBefore()-d.prevSpace, 0)
 }
 
 // add is Frame._add.
@@ -101,7 +98,7 @@ func (d *docTemplate) add(f flowable) bool {
 	y, p := d.y, d.y1p
 	s := d.before(f)
 	h := y - p - s
-	if h <= 0 {
+	if !(h > 0) {
 		return false
 	}
 	w, h := f.wrap(d.c, d.availWidth, h)
@@ -183,5 +180,5 @@ func (d *docTemplate) build(flowables []flowable) (document []byte, err error) {
 			return nil, err
 		}
 	}
-	return d.c.save(d.now), nil
+	return d.c.save(d.now)
 }

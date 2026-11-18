@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"math"
 	"os"
 	"strings"
 	"testing"
@@ -24,7 +25,6 @@ type raiseCase struct {
 type portedCase struct {
 	Name     string       `json:"name"`
 	Workbook string       `json:"workbook"`
-	Refusal  bool         `json:"refusal"`
 	Labels   [][]string   `json:"labels"`
 	Rows     [][][]string `json:"rows"`
 }
@@ -65,7 +65,7 @@ func TestRaiseCases(t *testing.T) {
 }
 
 // TestPortedCases requires the frame pandas answers for every workbook the
-// package reads, and a refusal for the values the frame model does not carry.
+// package reads.
 func TestPortedCases(t *testing.T) {
 	var corpus struct {
 		Cases []portedCase `json:"cases"`
@@ -74,20 +74,13 @@ func TestPortedCases(t *testing.T) {
 	if len(corpus.Cases) < 45 {
 		t.Fatalf("only %d cases", len(corpus.Cases))
 	}
-	refusals, frames := 0, 0
+	frames := 0
 	for index, item := range corpus.Cases {
 		data, err := base64.StdEncoding.DecodeString(item.Workbook)
 		if err != nil {
 			t.Fatalf("case %d (%s): %v", index, item.Name, err)
 		}
 		frame, err := ReadAll(data, nil)
-		if item.Refusal {
-			refusals++
-			if !errors.Is(err, ErrWorkbookNotPorted) {
-				t.Errorf("case %d (%s): %v, %v; want a refusal", index, item.Name, frame, err)
-			}
-			continue
-		}
 		if err != nil {
 			t.Errorf("case %d (%s): %v", index, item.Name, err)
 			continue
@@ -114,7 +107,7 @@ func TestPortedCases(t *testing.T) {
 			}
 		}
 	}
-	t.Logf("%d frames, %d refusals", frames, refusals)
+	t.Logf("%d frames", frames)
 }
 
 // TestCellColumn is openpyxl's coordinate_to_tuple and
@@ -188,7 +181,8 @@ func TestPythonNumbers(t *testing.T) {
 			t.Errorf("float(%q) = %v, want a refusal", text, got)
 		}
 	}
-	rows := map[string]int64{"1": 1, " 3 ": 3, "+2": 2, "1_0": 10, "5.0": 5, "1e3": 1000, "\u0662": 2, "0": 0, "-5": -5}
+	rows := map[string]int64{"1": 1, " 3 ": 3, "+2": 2, "1_0": 10, "5.0": 5, "1e3": 1000, "\u0662": 2, "0": 0, "-5": -5,
+		"1048577": 1048577, "1e9": 1000000000}
 	for text, want := range rows {
 		got, err := rowNumber(text)
 		if err != nil || got != want {
@@ -200,9 +194,11 @@ func TestPythonNumbers(t *testing.T) {
 			t.Errorf("row %q: %v, want ErrInvalid", text, err)
 		}
 	}
-	for _, text := range []string{"1048577", "1e9"} {
-		if _, err := rowNumber(text); !errors.Is(err, ErrWorkbookNotPorted) {
-			t.Errorf("row %q: %v, want a refusal", text, err)
+	// A number past int64 is past the frame bound either way: it saturates.
+	for text, want := range map[string]int64{"99999999999999999999": math.MaxInt64, "-99999999999999999999": math.MinInt64,
+		"1E+30": math.MaxInt64} {
+		if got, err := rowNumber(text); err != nil || got != want {
+			t.Errorf("row %q: %d, %v; want %d", text, got, err, want)
 		}
 	}
 }

@@ -26,6 +26,7 @@ var _ domain.StripeRoutesStore = (*StripeRoutes)(nil)
 // defaults), user, associate, association (base managers) and owner.
 const stripePaymentColumns = `SELECT p.payment_id, COALESCE(p.sport_association_id::text, '') AS sport_association_id, p.subject, p.archived,
  p.payment_category_id, c.name AS payment_category_name, p.description, p.meta::text AS meta, p.course::text AS course,
+ p.meta_payment_categories::text AS meta_payment_categories,
  p.amount::text AS amount, p.paid, p.payment_date, p.payment_intent_id, p.invoice_id, p.user_id, u.first_name AS user_first_name,
  u.last_name AS user_last_name, p.associate_id, a.first_name AS associate_first_name, a.last_name AS associate_last_name,
  a.user_id AS associate_user_id, s.sport_association_id IS NOT NULL AS has_association, s.denomination,

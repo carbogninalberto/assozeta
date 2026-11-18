@@ -3,6 +3,7 @@ package dto
 import (
 	"encoding/json"
 	"math"
+	"math/big"
 	"strings"
 	"testing"
 
@@ -21,7 +22,9 @@ func portedParams(t *testing.T, text string) domain.RequestObject {
 }
 
 func portedSettings() func() (ReportSettings, error) {
-	return func() (ReportSettings, error) { return ReportSettings{MaxResults: 50, QueryTimeout: 10}, nil }
+	return func() (ReportSettings, error) {
+		return ReportSettings{MaxResults: big.NewInt(50), QueryTimeout: big.NewInt(10)}, nil
+	}
 }
 
 func sameFloat(left, right float64) bool {
@@ -180,11 +183,11 @@ func TestMCPNumberArithmetic(t *testing.T) {
 		}
 	}
 	// min(limit or MAX, MAX): NaN is kept, an infinity yields MAX.
-	if number, err := mcpEffectiveLimit(nan, 50); err != nil || !number.isFloat || !math.IsNaN(number.float) {
+	if number, err := mcpEffectiveLimit(nan, big.NewInt(50)); err != nil || !number.isFloat || !math.IsNaN(number.float) {
 		t.Errorf("mcpEffectiveLimit(NaN, 50) = %+v, %v", number, err)
 	}
-	if number, err := mcpEffectiveLimit(inf, 50); err != nil || number.isFloat || number.integer.String() != "50" {
-		t.Errorf("mcpEffectiveLimit(inf, 50) = %+v, %v", number, err)
+	if number, err := mcpEffectiveLimit(inf, big.NewInt(50)); err != nil || number.isFloat || number.integer.String() != "50" {
+		t.Errorf("mcpEffectiveLimit(inf, big.NewInt(50)) = %+v, %v", number, err)
 	}
 	// The slice converts both bounds once the negative check passed.
 	for _, tc := range []struct {
@@ -196,7 +199,7 @@ func TestMCPNumberArithmetic(t *testing.T) {
 		{domain.RequestObject{{Name: "offset", Value: json.Number("1e400")}}, "cannot convert float infinity to integer"},
 		{domain.RequestObject{{Name: "offset", Value: math.Inf(-1)}}, "Negative indexing is not supported."},
 	} {
-		if _, err := mcpSlice(tc.params, 50); err == nil || err.Error() != tc.want {
+		if _, err := mcpSlice(tc.params, big.NewInt(50)); err == nil || err.Error() != tc.want {
 			t.Errorf("mcpSlice(%+v) error = %v, want %q", tc.params, err, tc.want)
 		}
 	}

@@ -8,7 +8,7 @@
   - `query[generalSearch]` is `icontains` on date, hours, amount and notes (`UPPER(col::text) LIKE`, pattern escaped; an empty value matches every row).
   - `KTDatatablePagination`: `pagination[page]` (`last`; out of range 404 `Invalid page.`) and `pagination[perpage]` (default 10). The response is `{'data': [...], 'meta': {total, page, pages, perpage, rowIds}}`.
   - For each row of the page, a paid payment marks the hour paid (`Model.save()`; auditlog records `paid` only when it changes). A document without a payment is deleted. Django's collector nulls the SET_NULL references, the Document delete is audited, and the response still renders the in-memory document id and token.
-- `add` looks the instructor up by id and `user=request.user` (404 `{'error': 'instructor not found'}` for an unknown or another owner's instructor, and for athletes) after reading `request.data` (a parse error is a 400 first). `data['instructor'] = uid` makes a form body (an immutable `QueryDict`), a list or a `null` body a 500. It then saves `InstructorHoursSerializer` (fields `'__all__'`) and answers `{'msg': 'hours added.'}`. t5pk: `instructor_hours_id` is read-only, so an add stores a generated key whatever the body holds.
+- `add` looks the instructor up by id and `user=request.user` (404 `{'error': 'instructor not found'}` for an unknown or another owner's instructor, and for athletes) after reading `request.data` (a parse error is a 400 first). `data['instructor'] = uid` makes a form body (an immutable `QueryDict`), a list or a `null` body a 500; a multipart body with a file part is DRF's mutable copy, so it is validated and saved as a form (`add-multipart-with-file`, `add-multipart-file-as-notes`; without a file `add-multipart-without-file-server-error`). It then saves `InstructorHoursSerializer` (fields `'__all__'`) and answers `{'msg': 'hours added.'}`. t5pk: `instructor_hours_id` is read-only, so an add stores a generated key whatever the body holds.
 - `update` and `delete` look up the instructor by id and `user=request.user`, then the hour by instructor and id (404 `{'error': 'hours not found'}`), all before the body is read.
   - `update` is a partial serializer save (`{'success': True}`). A `null` body is `{'non_field_errors': ['No data provided']}` and a non-dict body DRF's dictionary error. t5pk: `instructor_hours_id` is read-only, so a key in the body (an unused one, another hour's, the path hour's in any case) is ignored and the hour the path names is saved in place (`update-new-key-ignored`, `update-existing-key-ignored`, `update-own-key-ignored`); a body holding only the key changes nothing and writes no audit entry.
   - `delete` deletes the hour's document first. The hour's delete diff keeps the in-memory document id. The answer is `{'msg': 'hours deleted.'}`.
@@ -17,7 +17,7 @@
   - `creation_date` (ISO, rendered UTC) and `date` (DATE_INPUT_FORMATS `['%d/%m/%Y']`);
   - `compensation_type` (15, not blank), `period` (50, nullable, blank) and `notes` (nullable, blank);
   - the decimals `hours` (4, 2; required), `hourly_billing` and `amount` (9, 2) and `percentage_billing` (4, 2; a blank value is None);
-  - `courses` and `calculation_data` (JSONField; HTML input must be valid JSON);
+  - `courses` and `calculation_data` (JSONField; HTML input must be valid JSON; text nested past 500 levels is ported, see the measured recursion bands below);
   - `paid`, and the relations `instructor`, `payment` (`Payment.objects`: live, group-aware) and `document`.
   A relation to another tenant's payment, or to another association's instructor (resolved through the instructor's owner, `instructor_resolver`; an owner without an association passes), is DRF's generic 403, which escapes before the field errors. Empty HTML values follow DRF's `get_value` rules.
 - auditlog reads the in-memory instance on create, so model defaults the serializer did not provide are recorded as the float `0.0` for the decimals and as `str(timezone.now())` for `date`. The stored row holds `0.00` and the UTC date. An hour's create and update entries resolve the stored hour when the entry is written (auditlog writes the update entry before the save, so the previous instructor) through its instructor's owner's association (`instructor.user.sport_association`). Delete entries, document entries and hours whose instructor's owner has no association fall back to the actor's association (`actor.sport_association`); a collaborator or athlete actor then has no index row.
@@ -54,11 +54,43 @@
 
 Since long-tail PR 3 (agent B) the printer the server always wires is application state (`ErrServerComposition`, the
 500 page, never handed off), and `ErrInstructorHoursNotPorted` is deleted. The document deletes and the shared
-document page are ported (t4l2); the HTML JSON with NaN and the routes left on Django stay refusals.
+document page are ported (t4l2); the HTML JSON with NaN or Infinity answers the 500 page without a handoff and the
+routes left on Django stay refusals.
+
+## Measured form JSON recursion bands (owner decision X15)
+
+The form path of `courses` and `calculation_data` reads text nested far past the old 500-level refusal. The bands were
+measured on the parity harness's Django (CPython 3.13.16, default recursion limit) with an HTML form PATCH whose field is
+`{"deep": <n nested objects>}` or `[<n nested objects>]`; D is `auditJSONDepth` of the text (n + 1 for those shapes).
+
+- D <= 9938: 200, one audit update entry, the row updated (the UPDATE's `json.dumps` walks the parsed value).
+- D 9939..9941: the 500 page. auditlog's `pre_save` entry is written before the UPDATE's `json.dumps` raises and the view
+  is not atomic, so the entry (with the changes as Django writes them) is kept and the row is unchanged. Go keeps both
+  writes in the request's transaction and skips `UpdateHour` in this band.
+- D >= 9942: DRF's `json.loads` RecursionError during validation: the 500 page before any write, even with another field
+  invalid (`hours=abc` answers the 400 up to D 9941).
+- A duplicate key overwrites its deep value, so the text can be past a band while the parsed value (what `json.dumps`
+  walks) is shallow: `{"a": <9900 levels>, "a": 1}` stores `{"a": 1}`. The band that binds there is the value's
+  `JSONValueDepth`, not the text's.
+- The add view assigns `data['instructor']` on `request.data`, so a form body is the 500 page there unless a multipart
+  file part makes it a mutable copy; that form reads the JSON text like the update.
+- D is the nesting `json.loads` reaches before it stops (`dto.pythonJSONLoadsDepth`): its first error or the end of the
+  first value, so a deep tail after `{} `, a 5000-digit integer or a bad `\u` escape is the 400
+  (`update-form-courses-extra-data-deep-tail`, `-long-integer-deep-tail`, `-bad-escape-deep-tail`).
+- Cases `update-form-courses-depth-9960-server-error`, `update-form-courses-depth-9960-other-field-invalid` and
+  `update-form-courses-depth-9900-repeated-key`. A stored value in the 9939..9941 band cannot be read back by the state
+  snapshot, so that band is pinned by the Go tests (`TestInstructorHoursUpdateJSONBand`).
+
+`dto.ErrAuditNotPorted` is deleted: the two 500-level readers without a measured band (`AuditJSONLoads`,
+`auditPythonJSONLoads`) have no production caller any more and answer `ErrAuditUnreachable` (application state, the 500
+page) instead of a handoff.
 
 ## Evidence
 
-`TESTS/fixtures/instructor_hours_http.json` (135 cases, generated by `TESTS/fixtures/generate_instructor_hours_http.py`).
+`TESTS/fixtures/instructor_hours_http.json` (148 cases, generated by `TESTS/fixtures/generate_instructor_hours_http.py`).
+The measured form JSON recursion bands (X15) add `update-form-courses-depth-9960-server-error`,
+`update-form-courses-depth-9960-other-field-invalid` and `update-form-courses-depth-9900-repeated-key`, which the harness
+sends through `raw_parts` repeat items.
 
 - RED (`native-r5`): Django 127/127; Go 404 on the first case.
 - GREEN (`versioned-r2`): 127/127 on native Django, native Go, Caddy `/api/v1` and `/api/v2`, with exact hour, document, audit and index effects.

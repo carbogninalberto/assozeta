@@ -35,9 +35,9 @@ func TestCatalogKeyMatchesGettext(t *testing.T) {
 			t.Errorf("CatalogKey(%q) = %q, %v; Django selects %q", language, got, ok, want)
 		}
 	}
-	for _, refused := range []string{"../it", "it/x", "/"} {
-		if _, ok := CatalogKey(refused); ok {
-			t.Errorf("CatalogKey(%q) is accepted", refused)
+	for _, language := range []string{"../it", "it/x", "/"} {
+		if _, ok := CatalogKey(language); !ok {
+			t.Errorf("CatalogKey(%q) is refused", language)
 		}
 	}
 }
@@ -74,6 +74,34 @@ func TestDefaultDocumentIsTheEmbeddedOne(t *testing.T) {
 	document, _ := Document(FormatJSON, english, "")
 	if err := json.Unmarshal([]byte(document), &parsed); err != nil || parsed["openapi"] != "3.0.3" {
 		t.Errorf("patched English JSON does not parse: %v", err)
+	}
+}
+
+func TestComposedDocumentsMatchRenderedVariants(t *testing.T) {
+	d := loaded()
+	for key := range d.VariantOf {
+		lists := strings.Split(key, "|")
+		for i, list := range lists[1:] {
+			if list != "" {
+				// A second copy of the primary adds no translations to the chain.
+				first, _, _ := strings.Cut(list, ",")
+				lists[i+1] += "," + first
+			}
+		}
+		composedKey := strings.Join(lists, "|")
+		if composedKey == key {
+			continue
+		}
+		if _, rendered := d.VariantOf[composedKey]; rendered {
+			t.Fatalf("key %q must use composition", composedKey)
+		}
+		for _, format := range []Format{FormatYAML, FormatJSON} {
+			want, _ := Document(format, key, "v2")
+			got, ok := Document(format, composedKey, "v2")
+			if !ok || got != want {
+				t.Errorf("%s composition of %q differs from rendered key %q", format, composedKey, key)
+			}
+		}
 	}
 }
 

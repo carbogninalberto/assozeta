@@ -166,12 +166,19 @@ def run_workload_for(contract, effect=None, *, prepare=None, handoff=None, throt
                         status = contract.assert_case(case, base_url, token=token, sessions=fixture['sessions'], backend=backend)
                     if throttle:
                         throttle.finish(case, status, ident, contract.require)
+                # A refused answer: uvicorn sets response_started (the view's 200) and then raises while
+                # writing the header value, so the observer records RuntimeError while the client gets no
+                # status line (or Caddy's 502).
+                closed = ({'connection_closed': (200, 'RuntimeError')}
+                          if case.get('response') == '<connection-closed>' and status in ('closed', 502) else {})
                 if effect:
                     after = scopes.snapshot_state(apps)
-                    shared.assert_attribution(served, case['method'], case['path'], status, observer.delta(cursor), case['name'])
+                    shared.assert_attribution(served, case['method'], case['path'], status, observer.delta(cursor), case['name'],
+                                              **closed)
                     effect(case, before, after, source, context)
                 else:
-                    shared.assert_attribution(served, case['method'], case['path'], status, observer.delta(cursor), case['name'])
+                    shared.assert_attribution(served, case['method'], case['path'], status, observer.delta(cursor), case['name'],
+                                              **closed)
                     carnets.state_unchanged(fixture['baseline_state'], scopes.snapshot_state(apps))
             except BaseException as error:
                 error.case = f'{label}:{case["name"]}'

@@ -192,9 +192,10 @@ STATE = copy.deepcopy(PAYMENTS)
 cases = []
 
 
-def add(name, actor, path, status, response, *, method='POST', body=None, raw_body=None, content_type=None, headers=None, effect=None):
+def add(name, actor, path, status, response, *, method='POST', body=None, raw_body=None, content_type=None, headers=None, effect=None,
+        setup=None):
     case = {'name': f'invoice-generate-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
-            'status': status, 'response': response, 'effect': effect}
+            'status': status, 'response': response, 'effect': effect, 'setup': setup}
     if body is not None:
         case['body'] = body
     if raw_body is not None:
@@ -581,6 +582,39 @@ add('approve-receipt-lone-surrogate', 'owner', APPROVE('p_invoiced'), 200, APPRO
     raw_body='{"send_receipt_email": "\\ud800"}', content_type='application/json', effect=dispatch('p_invoiced', LONE))
 add('approve-admin-impersonating-owner', 'admin', APPROVE('p_invoiced'), 200, APPROVED('p_invoiced'), body={'send_receipt_email': False},
     headers=ADMIN_OWNER, effect=dispatch('p_invoiced', False, 'admin'))
+
+# --- stored Payment JSON past the view's load edge (owner decision X15) -----------------------------
+# Payment.course is a jsonb column psycopg2 loads with json.loads: the parity
+# harness's Django (CPython 3.13.16) reads 9935 levels in payment_generate_invoice
+# and raises RecursionError at 9936, which the view does not handle (its plain
+# 500 page) and its transaction.atomic block rolls back. The deep value exists
+# only around its own case (the adapter's case scope): the state snapshot walks
+# JSON values in Python and cannot hold one this deep, and the response of a
+# successful generation renders the payment's columns, so the deeper bands are
+# checked by the Go unit tests.
+
+
+def deep_course(depth):
+    """A course JSON text whose total nesting is depth."""
+    assert depth >= 2
+    return '{"label": "Corso profondo", "unused": ' + '[' * (depth - 1) + ']' * (depth - 1) + '}'
+
+
+def json_depth(text):
+    depth = deepest = 0
+    for char in text:
+        if char in '[{':
+            depth += 1
+            deepest = max(deepest, depth)
+        elif char in ']}':
+            depth -= 1
+    return deepest
+
+
+DEEP_LOAD_REFUSED = deep_course(9965)
+assert json_depth(DEEP_LOAD_REFUSED) == 9965
+add('stored-json-past-load-band-server-error', 'owner', GENERATE('p_other'), 500, SERVER, body={'subscription_id': SUB('sub_bruno')},
+    effect=nothing(), setup={'payment': 'p_other', 'course': DEEP_LOAD_REFUSED})
 
 assert len({c['name'] for c in cases}) == len(cases)
 # A lone surrogate cannot be written as UTF-8, and json.dumps(ensure_ascii=False)

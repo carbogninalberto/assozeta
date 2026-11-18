@@ -42,23 +42,67 @@ var errSecCategoryAssociation = errors.New("payment save defaults: payment assoc
 // so this is application state rather than a value a request can send.
 var errPaymentStoredJSON = refusal.AppState("payment save: stored meta or course is not JSON")
 
-// errPaymentStoredJSONNested is a stored meta/course nested past the reference
-// parser's 1000 levels: a request (the form JSON of a payment update) or the
-// association import can write one, and Django loads it (psycopg2's json.loads
-// reads about 9900 levels), so it is handed off.
-var errPaymentStoredJSONNested = refusal.New("payment save: stored meta or course nested past the reference parser not ported")
+// errPaymentStoredJSONUnmeasured is a save hook reached without the view's
+// measured JSON edges reading a stored meta/course nested past the reference
+// parser's 1000 levels. Every view that saves a Payment sets its edges
+// (withPaymentJSONEdges, owner decision X15), so this is a programming error:
+// application state, the 500 page.
+var errPaymentStoredJSONUnmeasured = refusal.AppState("payment save: stored JSON past 1000 levels on a view without measured edges")
 
-// paymentStoredJSON is paymentJSON for the save hook: nesting past the
-// reference parser is the handoff, any other failure application state.
+// paymentStoredJSON is paymentJSON for a save hook without measured edges:
+// nesting past the reference parser and any other failure are application
+// state.
 func paymentStoredJSON(text *string) (any, error) {
 	value, err := paymentJSON(text)
 	switch {
 	case errors.Is(err, dto.ErrReferenceNesting):
-		return nil, errPaymentStoredJSONNested
+		return nil, errPaymentStoredJSONUnmeasured
 	case err != nil:
 		return nil, errPaymentStoredJSON
 	}
 	return value, nil
+}
+
+// paymentStoredJSONAtDepth is the save hook's parse once the view's measured
+// edges are known: the load's own recursion edge bounds the parse (the 1000
+// level reference limit no longer applies), and anything else it raises is a
+// stored jsonb text the decoder refuses, as before.
+func paymentStoredJSONAtDepth(text *string, maxDepth int) (any, error) {
+	if text == nil {
+		return nil, nil
+	}
+	value, err := dto.ParseStoredJSONDepth(*text, maxDepth)
+	if err != nil {
+		return nil, errPaymentStoredJSON
+	}
+	return value, nil
+}
+
+// paymentJSONRecursionFailure maps the measured edges to the RecursionError the
+// view meets: past Load the view fails before writing anything, deeper than
+// Save but within Load it fails after the writes it made before the save.
+func paymentJSONRecursionFailure(row *domain.PaymentSaveRow, edges paymentJSONEdges) error {
+	switch {
+	case row.JSONDepth > edges.Load:
+		return &PaymentStoredJSONRecursionError{AfterWrites: false, Text: paymentJSONRecursionTextAt(row, edges.Load)}
+	case row.JSONDepth > edges.Save:
+		return &PaymentStoredJSONRecursionError{AfterWrites: true, Text: paymentJSONRecursionTextAt(row, edges.Save)}
+	}
+	return nil
+}
+
+// paymentJSONStoredEdges applies the measured edges to a payment row another
+// query loaded (the store keeps the columns as text, so the view's own load and
+// the audit's refetch of the stored row are not decoded by the save hook): the
+// RecursionError they raise, and whether the index resolver's reload of the same
+// row fails so the entry takes the resolver's fallbacks.
+func paymentJSONStoredEdges(metaPaymentCategories, meta, course *string, edges paymentJSONEdges) (bool, error) {
+	row := domain.PaymentSaveRow{MetaPaymentCategories: metaPaymentCategories, Meta: meta, Course: course}
+	row.JSONDepth = paymentJSONColumnsDepth(&row)
+	if err := paymentJSONRecursionFailure(&row, edges); err != nil {
+		return false, err
+	}
+	return row.JSONDepth > edges.Index, nil
 }
 
 func paymentSaveDefaults(ctx context.Context, tx domain.PaymentArchiveTransaction, row *domain.PaymentSaveRow, changes map[string][2]string) error {
@@ -73,6 +117,14 @@ func paymentSaveDefaults(ctx context.Context, tx domain.PaymentArchiveTransactio
 // may be NULL (nil: only the global categories).
 func secCategorySaveDefaults(ctx context.Context, tx domain.PaymentArchiveTransaction, row *domain.PaymentSaveRow, association *string,
 	changes map[string][2]string) error {
+	row.JSONDepth = paymentJSONColumnsDepth(row)
+	edges, measured := paymentJSONEdgesOf(ctx)
+	if measured {
+		if err := paymentJSONRecursionFailure(row, edges); err != nil {
+			return err
+		}
+		row.IndexFallback = row.JSONDepth > edges.Index
+	}
 	if row.CategoryID == nil {
 		id, name, err := tx.DefaultPaymentCategory(ctx, association)
 		if err != nil {
@@ -83,11 +135,17 @@ func secCategorySaveDefaults(ctx context.Context, tx domain.PaymentArchiveTransa
 			row.CategoryID, row.CategoryName = id, name
 		}
 	}
-	meta, err := paymentStoredJSON(row.Meta)
-	if err != nil {
-		return err
+	var meta, course any
+	var err error
+	if measured {
+		if meta, err = paymentStoredJSONAtDepth(row.Meta, edges.Save); err == nil {
+			course, err = paymentStoredJSONAtDepth(row.Course, edges.Save)
+		}
+	} else {
+		if meta, err = paymentStoredJSON(row.Meta); err == nil {
+			course, err = paymentStoredJSON(row.Course)
+		}
 	}
-	course, err := paymentStoredJSON(row.Course)
 	if err != nil {
 		return err
 	}
@@ -102,7 +160,7 @@ func secCategorySaveDefaults(ctx context.Context, tx domain.PaymentArchiveTransa
 			input.Related[linked.Slot] = &domain.PaymentDescriptionRelation{Title: linked.Title, Meta: meta, MissingCarnet: linked.MissingCarnet}
 		}
 	}
-	description, err := ResolvePaymentDescription(ctx, input)
+	description, memory, err := resolvePaymentDescriptionValue(ctx, input, row.DescriptionValue)
 	if errors.Is(err, domain.ErrPaymentDescription) {
 		return errors.Join(ErrPaymentSaveFailed, err)
 	}
@@ -112,7 +170,7 @@ func secCategorySaveDefaults(ctx context.Context, tx domain.PaymentArchiveTransa
 	if !samePointer(row.Description, description) {
 		changes["description"] = [2]string{pythonOptional(row.Description), pythonOptional(description)}
 	}
-	row.Description = description
+	row.Description, row.DescriptionValue = description, memory
 	return nil
 }
 
@@ -127,10 +185,16 @@ func pythonOptional(value *string) string {
 	return *value
 }
 
+// paymentArchiveJSONEdges are payment_archive's measured edges: the view's own
+// load, the smallest load before the UPDATE (get_course_carnet_name, else
+// auditlog's refetch of the stored row) and the audit index resolver's reload.
+var paymentArchiveJSONEdges = paymentJSONEdges{Load: 9935, Save: 9933, Index: 9925}
+
 // Archive follows payment_archive: is_valid_uuid, is_sport_association,
 // the payment of request.user.sport_association (a miss is a 500), toggle
 // archived, Payment.save() defaults and the audited save.
 func (s *PaymentArchives) Archive(ctx context.Context, identity domain.ResolvedIdentity, raw, groupHeader string, audit domain.LoginAuditContext) (string, error) {
+	ctx = withPaymentJSONEdges(ctx, paymentArchiveJSONEdges)
 	id, err := messageReadsParseUUID(raw)
 	if err != nil {
 		return "", err
@@ -166,7 +230,8 @@ func (s *PaymentArchives) Archive(ctx context.Context, identity domain.ResolvedI
 		return "", err
 	}
 	event := domain.PaymentArchiveEvent{PaymentID: row.ID, AssociationID: row.AssociationID, Changes: changes,
-		Context: paymentCategoryAuditContext(identity, audit), At: s.now().UTC().Truncate(time.Microsecond)}
+		IndexFallback: row.IndexFallback,
+		Context:       paymentCategoryAuditContext(identity, audit), At: s.now().UTC().Truncate(time.Microsecond)}
 	if err = tx.AppendPaymentAudit(ctx, event); err != nil {
 		return "", err
 	}

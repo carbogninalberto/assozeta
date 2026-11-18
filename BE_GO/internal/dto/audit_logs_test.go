@@ -118,13 +118,20 @@ func TestAuditJSONLoadsRefusals(t *testing.T) {
 	}
 }
 
-func TestAuditJSONLoadsDeepNestingIsHandedOff(t *testing.T) {
+// The 500-level readers no longer hand off: they have no production caller
+// (the instructor-hours form reads deep text itself, X15), so deeper input is
+// an application state, the 500 page, never a refusal.
+func TestAuditJSONLoadsDeepNestingIsAppState(t *testing.T) {
 	deep := strings.Repeat("[", 501) + strings.Repeat("]", 501)
-	if _, _, err := AuditJSONLoads(deep); !errors.Is(err, ErrAuditNotPorted) || !errors.Is(err, refusal.ErrNotPorted) {
-		t.Errorf("AuditJSONLoads: %v", err)
-	}
-	if _, _, err := auditPythonJSONLoads(deep); !errors.Is(err, ErrAuditNotPorted) || !errors.Is(err, refusal.ErrNotPorted) {
-		t.Errorf("auditPythonJSONLoads: %v", err)
+	for name, load := range map[string]func(string) (any, bool, error){"AuditJSONLoads": AuditJSONLoads,
+		"auditPythonJSONLoads": auditPythonJSONLoads} {
+		_, _, err := load(deep)
+		if !errors.Is(err, ErrAuditUnreachable) || !errors.Is(err, refusal.ErrAppState) {
+			t.Errorf("%s: %v", name, err)
+		}
+		if errors.Is(err, refusal.ErrNotPorted) {
+			t.Errorf("%s still hands the text off: %v", name, err)
+		}
 	}
 }
 
