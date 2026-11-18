@@ -5791,11 +5791,11 @@
       "title": "Introduzione",
       "content_sha256": "1626986a099270e2481ad58dd0a6cc60e29c7ba58a75179dbc59e76eb14d7788",
       "recipe_module": "docs/manuale/settings-additional-reference-recipes.mjs",
-      "recipe_sha256": "442baf62d68e0ccbb1d105a575d385fc5a76daf5898c52ceeb3f344e79f15396",
+      "recipe_sha256": "aaffecd68c2bfd0a0624d8b11fde0410bb04f06257b0d3917b9cbd60dd53b784",
       "content_source": "authored-mdx",
       "recipe_review": {
-        "previous_sha256": "4f02bd8251f2e4443b697da00e0ccefb457c5ad8b5fe7c72198995382f07b277",
-        "sha256": "442baf62d68e0ccbb1d105a575d385fc5a76daf5898c52ceeb3f344e79f15396",
+        "previous_sha256": "442baf62d68e0ccbb1d105a575d385fc5a76daf5898c52ceeb3f344e79f15396",
+        "sha256": "aaffecd68c2bfd0a0624d8b11fde0410bb04f06257b0d3917b9cbd60dd53b784",
         "purpose": "editorial-review-only"
       }
     },
