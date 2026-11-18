@@ -4,7 +4,9 @@
   MODEL_HOOKS_SHARD=I/N python -m TESTS.adapters.go.model_hooks_process [--label L]
   python -m TESTS.adapters.go.model_hooks_process [--label L] --merge-shards PATH [PATH ...]
 
-Each shard runs every Nth family in FAMILIES order, starting at I (1-based).
+Split FAMILIES in order into blocks of up to N names and reverse every second
+block, including the final block if it falls on a reverse turn. Shard I takes
+the Ith name (1-based) from each block with at least I names.
 A passing shard reports shard_success. Merge every shard's results.json to certify
 full coverage at the current HEAD.
 
@@ -250,7 +252,15 @@ def next_label(shard=None):
 def shard_families(index, count):
     if not 1 <= index <= count <= len(FAMILIES):
         raise ValueError(f'shard must satisfy 1 <= I <= N <= {len(FAMILIES)}')
-    return list(FAMILIES)[index - 1::count]
+    names = list(FAMILIES)
+    selected = []
+    for block_number, start in enumerate(range(0, len(names), count)):
+        block = names[start:start + count]
+        if block_number % 2:
+            block.reverse()
+        if index <= len(block):
+            selected.append(block[index - 1])
+    return selected
 
 
 def run_family(family, output):

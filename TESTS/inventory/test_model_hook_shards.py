@@ -12,6 +12,17 @@ from TESTS.adapters.go import model_hooks_process as hooks
 
 
 class ModelHookShards(unittest.TestCase):
+    def test_ci_distributes_the_two_longest_native_families(self):
+        shards = [hooks.shard_families(i, 4) for i in range(1, 5)]
+        self.assertCountEqual([name for shard in shards for name in shard], hooks.FAMILIES.keys())
+        self.assertFalse(any('payment-state' in shard and 'subscription-create' in shard for shard in shards))
+
+        for count in (1, 3, len(hooks.FAMILIES)):
+            with self.subTest(count=count):
+                parts = [hooks.shard_families(i, count) for i in range(1, count + 1)]
+                self.assertCountEqual([name for part in parts for name in part], hooks.FAMILIES.keys())
+                self.assertLessEqual(max(map(len, parts)) - min(map(len, parts)), 1)
+
     def test_shards_preserve_full_coverage_gates(self):
         families = {'one': {'Payment'}, 'two': {'Subscription'}, 'three': {'Payment'}}
         def run_family(name, output):
