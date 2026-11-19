@@ -49,7 +49,8 @@ class ReleaseWorkflowTests(unittest.TestCase):
         self.assertEqual(gate['if'], 'always()')
         self.assertEqual(sorted(gate['needs']), sorted([
             'go-inventory', 'go-race', 'go-django-contracts', 'go-manual-contracts',
-            'go-logo-storage', 'go-runtime-adapters', 'go-image']))
+            'go-logo-storage', 'go-runtime-adapters', 'go-background-tasks',
+            'go-model-hook-coverage', 'go-image']))
         self.assertFalse([step for step in gate['steps'] if 'uses' in step])
 
     def test_release_images_bundle_a_fresh_or_carried_manual(self):

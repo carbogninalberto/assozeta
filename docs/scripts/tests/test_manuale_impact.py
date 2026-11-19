@@ -740,13 +740,25 @@ class ImpactRepositoryTest(unittest.TestCase):
     def test_every_tracked_top_level_area_is_mapped(self):
         """New top-level areas must be classified explicitly; this lists those that would be unknown."""
         tracked = subprocess.run(['git', '-C', str(ROOT), 'ls-files'], capture_output=True, text=True).stdout.split()
-        areas = sorted({path.split('/')[0] for path in tracked})
-        report = impact.analyze(ROOT, [area + '/__impact_probe__' if (ROOT / area).is_dir() else area
-                                       for area in areas], base=None, head=None)
+        # Only individual generated files under tmp are tracked. Check each one.
+        areas = sorted({path.split('/')[0] for path in tracked if not path.startswith('tmp/')})
+        probes = [area + '/__impact_probe__' if (ROOT / area).is_dir() else area for area in areas]
+        probes.extend(path for path in tracked if path.startswith('tmp/'))
+        report = impact.analyze(ROOT, probes, base=None, head=None)
         unknown = [item['path'] for item in report['files'] if item['category'] == 'unknown']
         self.assertTrue(set(unknown) <= {'BE/__impact_probe__', 'UI/__impact_probe__', 'selfhost/__impact_probe__',
                                          'docs/__impact_probe__', '.github/__impact_probe__',
                                          'manuale/__impact_probe__'}, unknown)
+
+    def test_generated_task_inventory_is_unrelated_to_manual_captures(self):
+        path = 'tmp/golang-migration/go-tasks/inventory.json'
+        report = impact.analyze(ROOT, [path], base=None, head=None)
+        self.assertEqual((report['mode'], report['files'][0]['category']), ('unaffected', 'unrelated'))
+        for other in (path + '.bak', 'tmp/golang-migration/go-tasks/other.json'):
+            with self.subTest(other=other):
+                report = impact.analyze(ROOT, [other], base=None, head=None)
+                self.assertEqual(report['files'][0]['category'], 'unknown')
+                self.assertTrue(report['full_verification_required'])
 
 
 if __name__ == '__main__':
