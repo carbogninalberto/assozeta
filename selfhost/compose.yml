@@ -369,6 +369,8 @@ services:
       AWS_S3_REGION_NAME: ""
       AWS_S3_ENDPOINT_URL: http://localhost
       AWS_LOCATION: ""
+    networks:
+      - internal
     volumes: []
     deploy:
       replicas: ${ASSOZETA_GO_RELAY_REPLICAS:-0}
