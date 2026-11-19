@@ -197,3 +197,29 @@ for (const enabled of [false, true]) {
         await expect.poll(() => changes).toEqual([!enabled]);
     });
 }
+
+test('Go background tasks show ON after an accepted enable and reload', async ({page}) => {
+    let enabled = false;
+    const operation = {kind: 'go_tasks', request_id: 'fixture-go-tasks', status: 'queued', stage: 'queued'};
+    await page.route('**/instance/admin', async route => {
+        if (route.request().method() === 'PUT') {
+            enabled = route.request().postDataJSON().goTasksEnabled;
+            return route.fulfill({status: 202, json: {operation}});
+        }
+        const response = await route.fetch();
+        return route.fulfill({response, json: {...await response.json(), go_tasks_enabled: enabled}});
+    });
+    await page.route('**/instance-update-status', route => route.fulfill({json: {
+        available: true, is_owner: true, protocol: 1, active: null,
+        history: [{...operation, status: 'succeeded', stage: 'completed', verified_at: new Date().toISOString()}],
+    }}));
+    await page.goto('/#/profile?page=self-instance&tab=api');
+    const control = page.getByRole('switch', {name: 'Attività in background su Go (beta)', exact: true});
+    await expect(control).not.toBeChecked();
+    await page.locator('label[for="instance-go-tasks"]').click();
+    const dialog = page.getByRole('dialog', {name: 'Attivare le attività in background su Go?'});
+    await dialog.getByLabel('Conferma la tua password').fill('fixture');
+    await Promise.all([page.waitForEvent('load'), dialog.getByRole('button', {name: 'Attiva e riavvia'}).click()]);
+    expect(enabled).toBe(true);
+    await expect(control).toBeChecked();
+});
