@@ -93,6 +93,7 @@ class RealtimeRelayBackendTests(unittest.TestCase):
                 self.assertEqual(relay['deploy']['replicas'], django)
                 self.assertEqual(relay_go['entrypoint'], ['/app/relay-go-realtime'])
                 self.assertEqual(relay_go['deploy']['replicas'], go)
+                self.assertEqual(set(relay_go['networks']), {'internal'})
                 self.assertEqual(relay_go['image'], config['api-go']['image'])
                 self.assertEqual(relay_go['restart'], 'unless-stopped')
                 self.assertNotIn('profiles', relay_go)
