@@ -330,6 +330,7 @@
       }
     },
     "beat_task_routing": {
+      "email_tasks": ["send_email_text", "send_email_template", "send_email_html"],
       "expected": {
         "default_queues": [
           "celery"
@@ -340,7 +341,18 @@
         "one_listed": {
           "instance.backups.notify_failures": "assozeta-go"
         },
-        "scheduled_task_count": 22
+        "scheduled_task_count": 22,
+        "scheduled_email_tasks": [],
+        "listed_email_queues": {
+          "send_email_text": "assozeta-go",
+          "send_email_template": "assozeta-go",
+          "send_email_html": "assozeta-go"
+        },
+        "unlisted_email_queues": {
+          "send_email_text": "celery",
+          "send_email_template": "celery",
+          "send_email_html": "celery"
+        }
       }
     },
     "cold_bootstrap": {

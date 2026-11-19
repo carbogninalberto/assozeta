@@ -10,7 +10,12 @@ from journal import now
 
 # The task names the owner switch routes to the Go queue. Only names verified
 # on the Go consumer; never taken from a request.
-GO_TASK_NAMES = ('core.tasks.send_mail_async',)
+GO_TASK_NAMES = (
+    'core.tasks.send_mail_async',
+    'send_email_text',
+    'send_email_template',
+    'send_email_html',
+)
 MISSING_WORKER = 'Questa versione non include il servizio worker-go: aggiorna l’installazione prima di attivare le attività in background su Go.'
 CHECK_FAILED = 'Impossibile verificare i servizi dell’installazione.'
 RESTART_FAILED = 'Riavvio non completato dopo la modifica delle attività in background su Go.'

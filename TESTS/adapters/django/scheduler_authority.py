@@ -139,12 +139,16 @@ def observe(fixture):
     }
     # GO_TASK_QUEUE_TASKS (core.task_routing): empty keeps every scheduled task on the
     # default queue; a listed name goes to the Go consumer's queue, the others stay.
+    email_tasks = fixture['cases']['beat_task_routing']['email_tasks']
     observations['beat_task_routing'] = {
         'default_queues': sorted(set(routed_queues(app, tasks, '').values())),
         'all_listed_queues': sorted(set(routed_queues(app, tasks, ','.join(tasks)).values())),
         'one_listed': {name: queue for name, queue in routed_queues(
             app, tasks, 'instance.backups.notify_failures').items() if queue != 'celery'},
         'scheduled_task_count': len(tasks),
+        'scheduled_email_tasks': sorted(set(tasks).intersection(email_tasks)),
+        'listed_email_queues': routed_queues(app, email_tasks, ','.join(email_tasks)),
+        'unlisted_email_queues': routed_queues(app, email_tasks, ''),
     }
     # Preserve schedule authority; replace only external transports after measuring
     # actual core.settings/core.celery. Never touch developer .env or Redis.

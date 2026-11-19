@@ -13,6 +13,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path[:0] = [str(ROOT / 'selfhost/updater'), str(ROOT / 'BE/instance')]
 from common import compose_command
 from engine import Engine
+from go_tasks import go_tasks_values
 import recovery
 from restart import service_order
 
@@ -288,6 +289,13 @@ class GoTaskRoutingGuardTests(unittest.TestCase):
 
 
 class WorkerGoUpdaterTests(unittest.TestCase):
+    def test_email_routes_when_the_owner_switch_is_enabled_or_disabled(self):
+        self.assertEqual(go_tasks_values(True), {
+            'ASSOZETA_GO_TASKS': '1',
+            'GO_TASK_QUEUE_TASKS': 'core.tasks.send_mail_async,send_email_text,send_email_template,send_email_html',
+        })
+        self.assertEqual(go_tasks_values(False), {'GO_TASK_QUEUE_TASKS': ''})
+
     def test_compose_command_adds_profile_only_for_enabled_application_project(self):
         with TemporaryDirectory() as directory:
             root = Path(directory); env = root / '.env'
