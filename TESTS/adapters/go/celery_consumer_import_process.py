@@ -16,9 +16,10 @@ Compared after each worker stopped: the complete managed-model state including t
 tables (every row of every table, serial ids included, except LogEntry/AuditLogIndex keys), every auditlog entry
 (object, repr, action, changes) and AuditLogIndex row, the TaskResult (status, result, meta), every broker key and
 every bucket object (key, ContentType, ContentEncoding, CacheControl, Metadata, SHA-256 of the body). Values that
-differ per run by construction are normalized after a shape check: timestamps inside the run window, the
-``%Y%m%d_%H%M%S`` storage stamps, the staged temporary file name, random tokens of documents created from media
-(labelled), unusable passwords (``!`` + 40 characters) and the owner's recovery hash (verified with check_password).
+differ per run by construction are normalized after a shape check. This covers timestamps inside the run window
+(excluding exact archive matches), ``%Y%m%d_%H%M%S`` storage stamps, the staged temporary file name, random tokens of
+documents created from media (labelled), unusable passwords (``!`` + 40 characters) and the owner's recovery hash
+(verified with check_password).
 
 Authored assertions check that the Django oracle took the intended path. Handoff scenarios require Go to move the
 message unchanged to Django's ``celery`` queue with no effect; the original message then runs on Django's worker.
@@ -37,6 +38,7 @@ import sys
 import tempfile
 import time
 import zipfile
+import zlib
 from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
 from pathlib import Path
@@ -639,6 +641,9 @@ class Harness:
         original = json.loads(payload)
         task_id = original['headers']['id']
         known = set(self.known)
+        archived_times = archived_timestamps(self.stack.archives.get(scenario.archive))
+        # Auditlog renders aware timestamps in UTC without an offset.
+        archived_audit_times = {str(moment.replace(tzinfo=None)) for moment in archived_times}
         labels = {task_id: '<task>'}
 
         def label(text):
@@ -660,7 +665,7 @@ class Harness:
             if STAGED.search(value):
                 value = STAGED.sub('<staged>', value)
             naive = NAIVE.fullmatch(value)
-            if naive:
+            if naive and value not in archived_audit_times:
                 moment = datetime.fromisoformat(value).replace(tzinfo=timezone.utc)
                 if since - timedelta(seconds=1) <= moment <= until:
                     return 'run'
@@ -674,7 +679,7 @@ class Harness:
 
         def normalize(value):
             if isinstance(value, datetime):
-                if since - timedelta(seconds=1) <= value <= until:
+                if value not in archived_times and since - timedelta(seconds=1) <= value <= until:
                     return 'run'
                 return value.isoformat()
             if isinstance(value, UUID):
@@ -858,6 +863,33 @@ def known_uuids(snapshot, archive):
         except zipfile.BadZipFile:
             pass
     return found
+
+
+def archived_timestamps(archive):
+    """Collect the aware timestamps emitted in exported data records."""
+    timestamps = set()
+    if not archive:
+        return timestamps
+    with contextlib.suppress(zipfile.BadZipFile, UnicodeDecodeError), zipfile.ZipFile(io.BytesIO(archive)) as zf:
+        for member in zf.infolist():
+            if not (member.filename.startswith('data/') and member.filename.endswith('.json')):
+                continue
+            try:
+                records = json.loads(zf.read(member))
+            except (zipfile.BadZipFile, EOFError, OSError, RuntimeError, ValueError, zlib.error):
+                continue
+            if not isinstance(records, list):
+                continue
+            for record in records:
+                if not isinstance(record, dict):
+                    continue
+                for value in record.values():
+                    if isinstance(value, str):
+                        with contextlib.suppress(ValueError, OverflowError):
+                            moment = datetime.fromisoformat(value)
+                            if moment.tzinfo is not None:
+                                timestamps.add(moment.astimezone(timezone.utc))
+    return timestamps
 
 
 @contextlib.contextmanager

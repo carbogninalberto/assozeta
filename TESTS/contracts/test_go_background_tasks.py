@@ -127,6 +127,26 @@ class GoBackgroundTasks(unittest.TestCase):
         self.assertNotIn('fixture', result.stdout + result.stderr)
         self.assertNotIn(str(ROOT), result.stdout + result.stderr)
 
+    def test_ci_import_difference_reports_only_known_sections(self):
+        steps = yaml.safe_load((ROOT / '.github/workflows/go-quality.yml').read_text())['jobs']['go-background-tasks']['steps']
+        diagnostic = next(step for step in steps if 'traceback locations' in step.get('name', '').lower())
+        with tempfile.TemporaryDirectory() as work:
+            subprocess.run(['git', 'init', '-q', work], check=True)
+            Path(work, 'go-background-task.log').touch()
+            report = Path(work, 'quality-reports/go-migration/consumer-import-process/difference.json')
+            report.parent.mkdir(parents=True)
+            report.write_text(json.dumps({
+                'scenario': 'private-case', 'django': {'audit': ['private-a'], 'models': {}, 'private-key': 0},
+                'go': {'audit': ['private-b'], 'models': {}, 'private-key': 1},
+            }))
+            env = {**os.environ, 'GITHUB_WORKSPACE': work, 'RUNNER_TEMP': work,
+                   'HARNESS': 'celery_consumer_import_process'}
+            output = subprocess.check_output(['bash', '-euo', 'pipefail', '-c', diagnostic['run']],
+                                             cwd=work, env=env, text=True)
+        self.assertIn('audit', output)
+        self.assertNotIn('models', output)
+        self.assertNotIn('private', output)
+
 
 if __name__ == '__main__':
     unittest.main()

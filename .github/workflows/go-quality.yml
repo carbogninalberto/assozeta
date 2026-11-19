@@ -168,6 +168,8 @@ jobs:
         run: python TESTS/adapters/django/security_headers.py
       - name: Verify SSO pairing Retry-After timing
         run: python -m unittest -v TESTS.contracts.test_sso_pairing_retry_after
+      - name: Verify import observation timestamps
+        run: python -m unittest -v TESTS.contracts.test_import_observation_times
       - name: Verify the background task inventory against Django and CI
         run: python -m unittest -v TESTS.contracts.test_go_background_tasks
       - uses: actions/upload-artifact@v4
@@ -510,9 +512,12 @@ jobs:
           python -m "TESTS.adapters.go.$HARNESS" > "$RUNNER_TEMP/go-background-task.log" 2>&1
       - name: Report background task traceback locations
         if: failure() && steps.background-task.outcome == 'failure'
+        env:
+          HARNESS: ${{ matrix.harness }}
         run: |
           python - <<'PY'
           from collections import deque
+          import json
           import os
           from pathlib import Path
           import re
@@ -540,10 +545,28 @@ jobs:
                           if path in tracked and re.fullmatch(rb'[A-Za-z0-9_./-]+', path):
                               locations.append(f'{path.decode("ascii")}:{match[2].decode("ascii")}')
           except (OSError, subprocess.CalledProcessError):
-              raise SystemExit(0)
+              pass
+          else:
+              for location in locations:
+                  print(location)
 
-          for location in locations:
-              print(location)
+          if os.environ.get('HARNESS') == 'celery_consumer_import_process':
+              report_path = Path(workspace) / 'quality-reports/go-migration/consumer-import-process/difference.json'
+              sections = ('audit', 'audit_index', 'audit_removed', 'broker', 'bucket', 'cache', 'models', 'task_results')
+              missing = object()
+              try:
+                  with report_path.open(encoding='utf-8') as report_file:
+                      report = json.load(report_file)
+                  if not isinstance(report, dict):
+                      raise SystemExit(0)
+                  django, go = report.get('django'), report.get('go')
+                  if not isinstance(django, dict) or not isinstance(go, dict):
+                      raise SystemExit(0)
+                  changed = [section for section in sections if django.get(section, missing) != go.get(section, missing)]
+              except (OSError, ValueError, RecursionError):
+                  raise SystemExit(0)
+              for section in changed:
+                  print(section)
           PY
       - name: Select the successful model hook shard receipt
         id: model-hook-receipt
