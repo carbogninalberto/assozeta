@@ -186,6 +186,8 @@
     {"match": ["UI/src/"], "category": "unrelated", "handler": "ui-outside-closures",
      "reason": "Frontend module outside every workflow's import closure (declared route components, app shell and landing dashboard)."},
     {"match": ["docs/scripts/tests/"], "category": "unrelated", "reason": "Manual tooling unit test; unit tests run in every mode."},
+    {"match": ["tmp/golang-migration/go-tasks/inventory[.]json"], "category": "unrelated",
+     "reason": "Generated copy of docs/architecture/go-migration/go-tasks-inventory.json with no manual capture consumer."},
     {"match": ["TESTS/", "BE_GO/", "WEB/", "docs/architecture/", "docs/diagrams/", "docs/goal-prompts/", "docs/matrix/",
                "docs/verification/", "docs/contracts/", "docs/img/", "docs/README.md", "docs/ci.md",
                "docs/scripts/README.md", "docs/scripts/analyze_architecture.mjs",

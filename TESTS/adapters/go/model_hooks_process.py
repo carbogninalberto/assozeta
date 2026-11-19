@@ -1,6 +1,14 @@
 """Model-hook parity for Payment.save() and Subscription.save() through every Go writer.
 
   python -m TESTS.adapters.go.model_hooks_process [--label L] [--families a,b] [--discover]
+  MODEL_HOOKS_SHARD=I/N python -m TESTS.adapters.go.model_hooks_process [--label L]
+  python -m TESTS.adapters.go.model_hooks_process [--label L] --merge-shards PATH [PATH ...]
+
+Split FAMILIES in order into blocks of up to N names and reverse every second
+block, including the final block if it falls on a reverse turn. Shard I takes
+the Ith name (1-based) from each block with at least I names.
+A passing shard reports shard_success. Merge every shard's results.json to certify
+full coverage at the current HEAD.
 
 1. Writer inventory: every SQL statement in BE_GO that inserts, updates or deletes
    application_payment / application_subscription rows must be listed in WRITERS with
@@ -224,14 +232,35 @@ def inventory():
     return {'writers': {k: v for k, v in sorted(found.items())}, 'problems': problems}
 
 
-def next_label():
-    head = subprocess.run(['git', 'rev-parse', '--short=8', 'HEAD'], cwd=ROOT, capture_output=True, text=True, check=True).stdout.strip()
+def git_head(*options):
+    head = subprocess.check_output(['git', 'rev-parse', *options, 'HEAD'], cwd=ROOT, text=True).strip()
     if not head:
         raise SystemExit('GUARD: cannot read HEAD')
+    return head
+
+
+def next_label(shard=None):
+    head = git_head('--short=8')
+    if shard is not None:
+        head += f'-shard-{shard[0]}-of-{shard[1]}'
     number = 1
     while (REPORTS / f'model-hooks-{head}-r{number}').exists():
         number += 1
     return f'{head}-r{number}'
+
+
+def shard_families(index, count):
+    if not 1 <= index <= count <= len(FAMILIES):
+        raise ValueError(f'shard must satisfy 1 <= I <= N <= {len(FAMILIES)}')
+    names = list(FAMILIES)
+    selected = []
+    for block_number, start in enumerate(range(0, len(names), count)):
+        block = names[start:start + count]
+        if block_number % 2:
+            block.reverse()
+        if index <= len(block):
+            selected.append(block[index - 1])
+    return selected
 
 
 def run_family(family, output):
@@ -264,25 +293,11 @@ def run_family(family, output):
     return result, records
 
 
-def main(argv=None):
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument('--label')
-    parser.add_argument('--families', help='comma-separated subset (a partial run never reports success)')
-    parser.add_argument('--discover', action='store_true', help='report coverage without enforcing REQUIRED')
-    args = parser.parse_args(argv)
-    from TESTS.adapters.django.production_runtime import require_production_python
-    require_production_python()
-    selected = list(FAMILIES) if not args.families else [f for f in args.families.split(',') if f]
-    unknown = [f for f in selected if f not in FAMILIES]
-    if not selected or unknown:
-        raise SystemExit('GUARD: no families selected or unknown families: ' + ', '.join(unknown))
-    label = args.label or next_label()
-    output = REPORTS / f'model-hooks-{label}'
-    if output.exists():
-        raise SystemExit(f'GUARD: report directory exists: {output}')
-    output.mkdir(parents=True)
-    report = {'success': False, 'label': label, 'partial': selected != list(FAMILIES), 'discover': args.discover,
-              'scope': __doc__.strip().splitlines()[0], 'families': {}, 'coverage': {}, 'problems': []}
+def write_report(output, report):
+    (output / 'results.json').write_text(json.dumps(report, indent=1, sort_keys=True) + '\n')
+
+
+def run_families(selected, output, report):
     found = inventory()
     report['inventory'] = found['writers']
     report['problems'] += found['problems']
@@ -291,7 +306,7 @@ def main(argv=None):
     for family in selected:
         result, records = run_family(family, output)
         report['families'][family] = result
-        (output / 'results.json').write_text(json.dumps(report, indent=1, sort_keys=True) + '\n')
+        write_report(output, report)
         if not result['success']:
             report['problems'].append(f'{family}: family did not pass on native Django and Go ({result.get("error") or result.get("errors")})')
             continue
@@ -311,31 +326,165 @@ def main(argv=None):
             report['problems'].append(f'{family}: tracer could not label a save')
     report['coverage'] = {k: sorted(v) for k, v in sorted(coverage.items())}
     report['observed'] = {k: sorted(v) for k, v in sorted(observed.items())}
-    if not args.discover:
-        if not REQUIRED:
-            report['problems'].append('REQUIRED is empty')
-        missing = [label for label in REQUIRED if label not in coverage]
-        missing += [label + '@raised' for label in REQUIRED_RAISED
-                    if not any(k.startswith(label + '@raised') for k in observed)]
-        if missing and not report['partial']:
-            report['problems'].append('required branches not taken by a passing family: ' + ', '.join(missing))
-        seen = [label for label in UNREACHABLE if label in coverage or any(k.startswith(label + '@') for k in observed)]
-        if seen:
-            report['problems'].append('branches recorded as unreachable were taken: ' + ', '.join(seen))
-        report['required'] = {label: report['coverage'].get(label, []) for label in REQUIRED}
-        report['required_raised'] = {label: sorted({c for k, v in observed.items() if k.startswith(label + '@raised') for c in v})
-                                     for label in REQUIRED_RAISED}
-        report['not_traced'] = NOT_TRACED
-        report['unreachable'] = UNREACHABLE
-        report['worker_branches'] = WORKER_BRANCHES
-    report['success'] = bool(not report['problems'] and not report['partial'] and not args.discover
-                             and all(r['success'] for r in report['families'].values())
-                             and len(report['families']) == len(FAMILIES))
-    (output / 'results.json').write_text(json.dumps(report, indent=1, sort_keys=True) + '\n')
-    print(json.dumps({'success': report['success'], 'label': label, 'families': len(report['families']),
-                      'passed': sum(1 for r in report['families'].values() if r['success']),
-                      'required': len(REQUIRED), 'problems': report['problems'][:5]}))
-    return 0 if report['success'] else 1
+
+
+def check_coverage(report):
+    coverage, observed = report['coverage'], report['observed']
+    if not REQUIRED:
+        report['problems'].append('REQUIRED is empty')
+    missing = [label for label in REQUIRED if label not in coverage]
+    missing += [label + '@raised' for label in REQUIRED_RAISED
+                if not any(k.startswith(label + '@raised') for k in observed)]
+    if missing and not report['partial']:
+        report['problems'].append('required branches not taken by a passing family: ' + ', '.join(missing))
+    seen = [label for label in UNREACHABLE if label in coverage or any(k.startswith(label + '@') for k in observed)]
+    if seen:
+        report['problems'].append('branches recorded as unreachable were taken: ' + ', '.join(seen))
+    report['required'] = {label: coverage.get(label, []) for label in REQUIRED}
+    report['required_raised'] = {label: sorted({c for k, v in observed.items() if k.startswith(label + '@raised') for c in v})
+                                 for label in REQUIRED_RAISED}
+    report['not_traced'] = NOT_TRACED
+    report['unreachable'] = UNREACHABLE
+    report['worker_branches'] = WORKER_BRANCHES
+
+
+def unique_json_object(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError(f'duplicate JSON key {key!r}')
+        result[key] = value
+    return result
+
+
+def read_shard(path, revision):
+    part = json.loads(path.read_text(), object_pairs_hook=unique_json_object)
+    if not isinstance(part, dict) or part.get('source_revision') != revision:
+        raise ValueError(f'shard source revision must match HEAD ({revision})')
+    shard = part.get('shard')
+    if not isinstance(shard, list) or len(shard) != 2 or any(type(value) is not int for value in shard):
+        raise ValueError('invalid shard identity, expected [I, N]')
+    expected = shard_families(*shard)
+    if (part.get('shard_success') is not True or part.get('problems') != [] or part.get('success') is not False
+            or part.get('partial') is not True or part.get('discover') is not False):
+        raise ValueError(f'shard did not pass (problems: {part.get("problems")})')
+    families = part.get('families')
+    if not isinstance(families, dict) or families.keys() != set(expected):
+        raise ValueError('shard family membership must be exactly: ' + ', '.join(expected))
+    for name, result in families.items():
+        if not isinstance(result, dict) or result.get('success') is not True:
+            raise ValueError(f'{name}: family did not pass')
+    if not isinstance(part.get('inventory'), dict):
+        raise ValueError('missing writer inventory')
+    prefixes = tuple(f'{name}:' for name in expected)
+    for field in ('coverage', 'observed'):
+        evidence = part.get(field)
+        if not isinstance(evidence, dict):
+            raise ValueError(f'invalid {field} evidence')
+        for tag, cases in evidence.items():
+            if (not tag or not isinstance(cases, list) or not cases
+                    or any(not isinstance(case, str) or not case.startswith(prefixes) for case in cases)):
+                raise ValueError(f'invalid {field} evidence for {tag!r}')
+    return part
+
+
+def merge_shards(paths, report):
+    count, seen = None, set()
+    evidence = {field: collections.defaultdict(set) for field in ('coverage', 'observed')}
+    for path in paths:
+        try:
+            part = read_shard(path, report['source_revision'])
+            index, total = part['shard']
+            if count is not None and total != count:
+                raise ValueError(f'shard count {total} does not match {count}')
+            if index in seen:
+                raise ValueError(f'duplicate shard {index}/{total}')
+            if 'inventory' in report and part['inventory'] != report['inventory']:
+                raise ValueError('writer inventory differs between shards')
+        except (OSError, ValueError) as error:
+            report['problems'].append(f'{path}: {error}')
+            continue
+        count = total
+        seen.add(index)
+        report['inventory'] = part['inventory']
+        report['families'].update(part['families'])
+        for field, joined in evidence.items():
+            for tag, cases in part[field].items():
+                joined[tag].update(cases)
+    if count is not None:
+        missing = [f'{index}/{count}' for index in range(1, count + 1) if index not in seen]
+        if missing:
+            report['problems'].append('missing shards: ' + ', '.join(missing))
+    report.setdefault('inventory', {})
+    report['partial'] = report['families'].keys() != FAMILIES.keys()
+    for field, joined in evidence.items():
+        report[field] = {tag: sorted(cases) for tag, cases in sorted(joined.items())}
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument('--label')
+    parser.add_argument('--families', help='comma-separated subset (a partial run never reports success)')
+    parser.add_argument('--discover', action='store_true', help='report coverage without enforcing REQUIRED')
+    parser.add_argument('--merge-shards', metavar='PATH', nargs='+', type=Path, action='extend',
+                        help='join shard results.json files')
+    args = parser.parse_args(argv)
+    shard = None
+    selected = list(FAMILIES)
+    if args.merge_shards:
+        if args.families is not None or args.discover:
+            parser.error('--merge-shards cannot be combined with --families or --discover')
+    else:
+        shard_spec = os.environ.get('MODEL_HOOKS_SHARD')
+        if shard_spec is not None:
+            if args.families is not None or args.discover:
+                parser.error('MODEL_HOOKS_SHARD cannot be combined with --families or --discover')
+            match = re.fullmatch(r'([0-9]+)/([0-9]+)', shard_spec)
+            if not match:
+                parser.error('MODEL_HOOKS_SHARD must be I/N')
+            try:
+                shard = (int(match[1]), int(match[2]))
+                selected = shard_families(*shard)
+            except ValueError as error:
+                parser.error(f'MODEL_HOOKS_SHARD: {error}')
+        elif args.families:
+            selected = [family for family in args.families.split(',') if family]
+        from TESTS.adapters.django.production_runtime import require_production_python
+        require_production_python()
+        unknown = [family for family in selected if family not in FAMILIES]
+        if not selected or unknown:
+            raise SystemExit('GUARD: no families selected or unknown families: ' + ', '.join(unknown))
+    revision = git_head() if shard is not None or args.merge_shards else None
+    label = args.label or next_label(shard)
+    output = REPORTS / f'model-hooks-{label}'
+    if output.exists():
+        raise SystemExit(f'GUARD: report directory exists: {output}')
+    output.mkdir(parents=True)
+    report = {'success': False, 'label': label, 'partial': shard is not None or selected != list(FAMILIES),
+              'discover': args.discover, 'scope': __doc__.strip().splitlines()[0], 'families': {}, 'coverage': {},
+              'problems': []}
+    if revision is not None:
+        report['source_revision'] = revision
+    if shard is not None:
+        report.update(shard=shard, shard_success=False)
+    if args.merge_shards:
+        merge_shards(args.merge_shards, report)
+    else:
+        run_families(selected, output, report)
+    if shard is None and not args.discover:
+        check_coverage(report)
+    passed = sum(1 for r in report['families'].values() if r['success'])
+    if shard is not None:
+        report['shard_success'] = not report['problems'] and passed == len(selected)
+    else:
+        report['success'] = not report['problems'] and not report['partial'] and not args.discover and passed == len(FAMILIES)
+    write_report(output, report)
+    summary = {'success': report['success'], 'label': label, 'families': len(report['families']), 'passed': passed,
+               'required': len(REQUIRED), 'problems': report['problems'][:5]}
+    if shard is not None:
+        summary.update(shard=shard, shard_success=report['shard_success'])
+    print(json.dumps(summary))
+    return 0 if report.get('shard_success', report['success']) else 1
 
 
 if __name__ == '__main__':

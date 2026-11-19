@@ -1,0 +1,494 @@
+[
+  {
+    "name": "association_quote_assign",
+    "django_site": "BE/application/tasks.py:1417",
+    "scheduled": true,
+    "consumer": false,
+    "job": true,
+    "routed": false,
+    "harness": [
+      "TESTS/adapters/go/quote_assign_worker_process.py",
+      "TESTS/adapters/go/email_tasks_worker_process.py"
+    ]
+  },
+  {
+    "name": "auto_archive_subscription",
+    "django_site": "BE/application/tasks.py:597",
+    "scheduled": true,
+    "consumer": false,
+    "job": true,
+    "routed": false,
+    "harness": [
+      "TESTS/adapters/go/nightly_subscriptions_worker_process.py"
+    ]
+  },
+  {
+    "name": "auto_delete_orphan_medical_certificate",
+    "django_site": "BE/application/tasks.py:767",
+    "scheduled": true,
+    "consumer": false,
+    "job": true,
+    "routed": false,
+    "harness": [
+      "TESTS/adapters/go/orphan_medical_worker_process.py"
+    ]
+  },
+  {
+    "name": "auto_mark_attendance",
+    "django_site": "BE/application/tasks.py:641",
+    "scheduled": true,
+    "consumer": false,
+    "job": true,
+    "routed": false,
+    "harness": [
+      "TESTS/adapters/go/auto_mark_worker_process.py"
+    ]
+  },
+  {
+    "name": "auto_move_users_to_base_plan",
+    "django_site": "BE/application/tasks.py:628",
+    "scheduled": false,
+    "consumer": false,
+    "job": false,
+    "routed": false,
+    "harness": []
+  },
+  {
+    "name": "celery.backend_cleanup",
+    "django_site": "celery.app.builtins.add_backend_cleanup_task",
+    "scheduled": true,
+    "consumer": false,
+    "job": false,
+    "routed": false,
+    "harness": []
+  },
+  {
+    "name": "change_type_of_stripe_payments",
+    "django_site": "BE/application/tasks.py:349",
+    "scheduled": true,
+    "consumer": false,
+    "job": true,
+    "routed": false,
+    "harness": [
+      "TESTS/adapters/go/tasks_db_d_worker_process.py"
+    ]
+  },
+  {
+    "name": "check_workflows_trigger",
+    "django_site": "BE/application/tasks.py:1318",
+    "scheduled": false,
+    "consumer": true,
+    "job": false,
+    "routed": false,
+    "harness": [
+      "TESTS/adapters/go/celery_consumer_workflow_process.py"
+    ]
+  },
+  {
+    "name": "check_workflows_trigger_cron",
+    "django_site": "BE/application/tasks.py:1345",
+    "scheduled": false,
+    "consumer": true,
+    "job": false,
+    "routed": false,
+    "harness": [
+      "TESTS/adapters/go/celery_consumer_workflow_process.py"
+    ]
+  },
+  {
+    "name": "cleanup_old_exports",
+    "django_site": "BE/application/tasks.py:1788",
+    "scheduled": true,
+    "consumer": false,
+    "job": true,
+    "routed": false,
+    "harness": [
+      "TESTS/adapters/go/export_cleanup_worker_process.py"
+    ]
+  },
+  {
+    "name": "clear_deleted_subscription",
+    "django_site": "BE/application/tasks.py:555",
+    "scheduled": true,
+    "consumer": false,
+    "job": true,
+    "routed": false,
+    "harness": [
+      "TESTS/adapters/go/nightly_subscriptions_worker_process.py"
+    ]
+  },
+  {
+    "name": "clear_expired_subscription_tokens",
+    "django_site": "BE/application/tasks.py:269",
+    "scheduled": true,
+    "consumer": false,
+    "job": true,
+    "routed": false,
+    "harness": [
+      "TESTS/adapters/go/token_worker_process.py"
+    ]
+  },
+  {
+    "name": "core.tasks.send_mail_async",
+    "django_site": "BE/core/tasks.py:43",
+    "scheduled": false,
+    "consumer": true,
+    "job": false,
+    "routed": true,
+    "harness": [
+      "TESTS/adapters/go/celery_consumer_email_process.py",
+      "TESTS/adapters/go/celery_consumer_process.py"
+    ]
+  },
+  {
+    "name": "delete_old_audit_logs",
+    "django_site": "BE/application/tasks.py:1665",
+    "scheduled": true,
+    "consumer": false,
+    "job": true,
+    "routed": false,
+    "harness": [
+      "TESTS/adapters/go/audit_worker_process.py"
+    ]
+  },
+  {
+    "name": "delete_users_with_request",
+    "django_site": "BE/application/tasks.py:215",
+    "scheduled": true,
+    "consumer": false,
+    "job": true,
+    "routed": false,
+    "harness": [
+      "TESTS/adapters/go/user_deletion_worker_process.py"
+    ]
+  },
+  {
+    "name": "export_association_data",
+    "django_site": "BE/application/tasks.py:1879",
+    "scheduled": false,
+    "consumer": true,
+    "job": false,
+    "routed": false,
+    "harness": [
+      "TESTS/adapters/go/celery_consumer_export_process.py"
+    ]
+  },
+  {
+    "name": "export_invoices_to_zip",
+    "django_site": "BE/application/tasks.py:1614",
+    "scheduled": false,
+    "consumer": true,
+    "job": false,
+    "routed": false,
+    "harness": [
+      "TESTS/adapters/go/celery_consumer_print_process.py"
+    ]
+  },
+  {
+    "name": "fixture.early_ack",
+    "django_site": "BE/instance/tests/maintenance_worker_fixture.py:33",
+    "scheduled": false,
+    "consumer": false,
+    "job": false,
+    "routed": false,
+    "harness": [],
+    "excluded": "test fixture"
+  },
+  {
+    "name": "generate_coupon_if_not_exists",
+    "django_site": "BE/application/tasks.py:314",
+    "scheduled": true,
+    "consumer": false,
+    "job": true,
+    "routed": false,
+    "harness": [
+      "TESTS/adapters/go/tasks_db_d_worker_process.py"
+    ]
+  },
+  {
+    "name": "import_association_data",
+    "django_site": "BE/application/tasks.py:2115",
+    "scheduled": false,
+    "consumer": true,
+    "job": false,
+    "routed": false,
+    "harness": [
+      "TESTS/adapters/go/celery_consumer_import_process.py"
+    ]
+  },
+  {
+    "name": "instance.backups.notify_failures",
+    "django_site": "BE/instance/tasks.py:36",
+    "scheduled": true,
+    "consumer": true,
+    "job": false,
+    "routed": false,
+    "harness": [
+      "TESTS/adapters/go/celery_consumer_backup_failures_process.py"
+    ]
+  },
+  {
+    "name": "instance.restore.cleanup",
+    "django_site": "BE/instance/tasks.py:17",
+    "scheduled": true,
+    "consumer": false,
+    "job": true,
+    "routed": false,
+    "harness": [
+      "TESTS/adapters/go/data_restore_cleanup_worker_process.py",
+      "TESTS/adapters/go/worker_process.py"
+    ]
+  },
+  {
+    "name": "instance.restore.execute",
+    "django_site": "BE/instance/tasks.py:5",
+    "scheduled": false,
+    "consumer": true,
+    "job": false,
+    "routed": false,
+    "harness": [
+      "TESTS/adapters/go/celery_consumer_restore_process.py"
+    ]
+  },
+  {
+    "name": "instance.sso.tasks.maintain_bakney_pairings",
+    "django_site": "BE/instance/sso/tasks.py:9",
+    "scheduled": true,
+    "consumer": false,
+    "job": true,
+    "routed": false,
+    "harness": [
+      "TESTS/adapters/go/bakney_maintenance_worker_process.py"
+    ]
+  },
+  {
+    "name": "mark_as_paid_payments_checking_stripe",
+    "django_site": "BE/application/tasks.py:402",
+    "scheduled": true,
+    "consumer": false,
+    "job": true,
+    "routed": false,
+    "harness": [
+      "TESTS/adapters/go/stripe_paid_check_worker_process.py",
+      "TESTS/adapters/go/tasks_db_d_worker_process.py"
+    ]
+  },
+  {
+    "name": "nurturing_warm_leads",
+    "django_site": "BE/application/tasks.py:635",
+    "scheduled": false,
+    "consumer": false,
+    "job": false,
+    "routed": false,
+    "harness": []
+  },
+  {
+    "name": "print_document_compensation",
+    "django_site": "BE/application/printing_tasks.py:30",
+    "scheduled": false,
+    "consumer": true,
+    "job": false,
+    "routed": false,
+    "harness": [
+      "TESTS/adapters/go/celery_consumer_print_process.py"
+    ]
+  },
+  {
+    "name": "print_document_customer_invoice",
+    "django_site": "BE/application/printing_tasks.py:18",
+    "scheduled": false,
+    "consumer": true,
+    "job": false,
+    "routed": false,
+    "harness": [
+      "TESTS/adapters/go/celery_consumer_print_process.py"
+    ]
+  },
+  {
+    "name": "print_document_invoice",
+    "django_site": "BE/application/printing_tasks.py:7",
+    "scheduled": false,
+    "consumer": true,
+    "job": false,
+    "routed": false,
+    "harness": [
+      "TESTS/adapters/go/celery_consumer_print_process.py"
+    ]
+  },
+  {
+    "name": "print_document_medical_appointment",
+    "django_site": "BE/application/printing_tasks.py:42",
+    "scheduled": false,
+    "consumer": true,
+    "job": false,
+    "routed": false,
+    "harness": [
+      "TESTS/adapters/go/celery_consumer_print_process.py"
+    ]
+  },
+  {
+    "name": "print_document_subscription",
+    "django_site": "BE/application/tasks.py:254",
+    "scheduled": false,
+    "consumer": true,
+    "job": false,
+    "routed": false,
+    "harness": [
+      "TESTS/adapters/go/celery_consumer_print_process.py"
+    ]
+  },
+  {
+    "name": "renew_memberships_payments",
+    "django_site": "BE/application/tasks.py:59",
+    "scheduled": true,
+    "consumer": false,
+    "job": true,
+    "routed": false,
+    "harness": [
+      "TESTS/adapters/go/tasks_db_d_worker_process.py"
+    ]
+  },
+  {
+    "name": "reset_communication_daily_email_balance",
+    "django_site": "BE/application/tasks.py:1600",
+    "scheduled": true,
+    "consumer": false,
+    "job": true,
+    "routed": false,
+    "harness": [
+      "TESTS/adapters/go/worker_process.py",
+      "TESTS/adapters/go/scheduler_process.py"
+    ]
+  },
+  {
+    "name": "save_binary_to_storage",
+    "django_site": "BE/docmanager/tasks.py:23",
+    "scheduled": false,
+    "consumer": false,
+    "job": false,
+    "routed": false,
+    "harness": []
+  },
+  {
+    "name": "save_to_storage",
+    "django_site": "BE/docmanager/tasks.py:11",
+    "scheduled": false,
+    "consumer": true,
+    "job": false,
+    "routed": false,
+    "harness": [
+      "TESTS/adapters/go/celery_consumer_print_process.py"
+    ]
+  },
+  {
+    "name": "send_email_html",
+    "django_site": "BE/application/tasks.py:1183",
+    "scheduled": false,
+    "consumer": true,
+    "job": false,
+    "routed": false,
+    "harness": [
+      "TESTS/adapters/go/celery_consumer_email_process.py",
+      "TESTS/adapters/go/celery_consumer_process.py"
+    ]
+  },
+  {
+    "name": "send_email_template",
+    "django_site": "BE/application/tasks.py:1120",
+    "scheduled": false,
+    "consumer": true,
+    "job": false,
+    "routed": false,
+    "harness": [
+      "TESTS/adapters/go/celery_consumer_email_process.py",
+      "TESTS/adapters/go/celery_consumer_process.py"
+    ]
+  },
+  {
+    "name": "send_email_text",
+    "django_site": "BE/application/tasks.py:1161",
+    "scheduled": false,
+    "consumer": true,
+    "job": false,
+    "routed": false,
+    "harness": [
+      "TESTS/adapters/go/celery_consumer_email_process.py",
+      "TESTS/adapters/go/celery_consumer_process.py"
+    ]
+  },
+  {
+    "name": "send_expired_certificate_email",
+    "django_site": "BE/application/tasks.py:906",
+    "scheduled": true,
+    "consumer": false,
+    "job": true,
+    "routed": false,
+    "harness": [
+      "TESTS/adapters/go/email_tasks_worker_process.py"
+    ]
+  },
+  {
+    "name": "send_expiring_certificate_email",
+    "django_site": "BE/application/tasks.py:791",
+    "scheduled": true,
+    "consumer": false,
+    "job": true,
+    "routed": false,
+    "harness": [
+      "TESTS/adapters/go/email_tasks_worker_process.py"
+    ]
+  },
+  {
+    "name": "send_reminders",
+    "django_site": "BE/application/tasks.py:1365",
+    "scheduled": true,
+    "consumer": false,
+    "job": true,
+    "routed": false,
+    "harness": [
+      "TESTS/adapters/go/email_tasks_worker_process.py"
+    ]
+  },
+  {
+    "name": "send_updated_certificate_email",
+    "django_site": "BE/application/tasks.py:1067",
+    "scheduled": false,
+    "consumer": false,
+    "job": false,
+    "routed": false,
+    "harness": []
+  },
+  {
+    "name": "send_user_partial_registration_email",
+    "django_site": "BE/application/tasks.py:1021",
+    "scheduled": true,
+    "consumer": false,
+    "job": true,
+    "routed": false,
+    "harness": [
+      "TESTS/adapters/go/email_tasks_worker_process.py"
+    ]
+  },
+  {
+    "name": "update_age_of_associates",
+    "django_site": "BE/application/tasks.py:283",
+    "scheduled": true,
+    "consumer": false,
+    "job": true,
+    "routed": false,
+    "harness": [
+      "TESTS/adapters/go/age_worker_process.py"
+    ]
+  },
+  {
+    "name": "workflow_block_execute",
+    "django_site": "BE/application/tasks.py:1230",
+    "scheduled": false,
+    "consumer": true,
+    "job": false,
+    "routed": false,
+    "harness": [
+      "TESTS/adapters/go/celery_consumer_workflow_process.py"
+    ]
+  }
+]

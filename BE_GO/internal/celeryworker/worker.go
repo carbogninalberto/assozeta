@@ -31,6 +31,7 @@ package celeryworker
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -289,22 +290,34 @@ func (w *Worker) Run(ctx context.Context) error {
 // receive is the worker strategy: it returns true when the message must be
 // executed now; otherwise it was handed off, revoked or held.
 func (w *Worker) receive(ctx context.Context, d *Delivery) bool {
+	started := time.Now()
 	m := d.Message
 	if d.Err != nil || m == nil {
-		w.handoff(ctx, d, "undecodable")
+		if w.handoff(ctx, d, "undecodable") == outcomeHandedOff {
+			var envelope struct {
+				Headers struct {
+					Task string `json:"task"`
+					ID   string `json:"id"`
+				} `json:"headers"`
+			}
+			// Unmarshal can recover either string even if the other has the wrong type.
+			_ = json.Unmarshal(d.Raw, &envelope)
+			w.logTaskDone(envelope.Headers.Task, envelope.Headers.ID, outcomeHandedOff, started)
+		}
 		return false
 	}
 	task, ok := w.tasks[m.Task]
 	if !ok {
-		w.handoff(ctx, d, "unregistered")
+		w.logTaskDone(m.Task, m.ID, w.handoff(ctx, d, "unregistered"), started)
 		return false
 	}
 	if m.Expires != nil && w.now().After(*m.Expires) {
 		w.revoke(ctx, d)
+		w.logTaskDone(m.Task, m.ID, outcomeFailure, started)
 		return false
 	}
 	if !m.PlainWith(task.Prefork) || (task.Prefork && !validTimeLimits(m.TimeLimit)) {
-		w.handoff(ctx, d, "options")
+		w.logTaskDone(m.Task, m.ID, w.handoff(ctx, d, "options"), started)
 		return false
 	}
 	if m.ETA != nil {
@@ -319,12 +332,32 @@ func (w *Worker) receive(ctx context.Context, d *Delivery) bool {
 // Delivery is celery.Delivery.
 type Delivery = celery.Delivery
 
-func (w *Worker) handoff(ctx context.Context, d *Delivery, reason string) {
-	if err := w.transport.Handoff(ctx, d, w.options.HandoffQueue); err != nil {
-		w.logger.Error("celery handoff failed", "code", "celery_handoff_failed", "reason", reason)
+type taskOutcome string
+
+const (
+	outcomeNone      taskOutcome = ""
+	outcomeSuccess   taskOutcome = "success"
+	outcomeFailure   taskOutcome = "failure"
+	outcomeRetry     taskOutcome = "retry"
+	outcomeHandedOff taskOutcome = "handed_off"
+)
+
+func (w *Worker) logTaskDone(task, id string, outcome taskOutcome, started time.Time) {
+	switch outcome {
+	case outcomeSuccess, outcomeFailure, outcomeRetry, outcomeHandedOff:
+	default:
 		return
 	}
+	w.logger.Info("celery task done", "task", task, "id", id, "outcome", string(outcome), "duration_ms", time.Since(started).Milliseconds())
+}
+
+func (w *Worker) handoff(ctx context.Context, d *Delivery, reason string) taskOutcome {
+	if err := w.transport.Handoff(ctx, d, w.options.HandoffQueue); err != nil {
+		w.logger.Error("celery handoff failed", "code", "celery_handoff_failed", "reason", reason)
+		return outcomeNone
+	}
 	w.logger.Info("celery message handed off", "queue", w.options.HandoffQueue, "reason", reason)
+	return outcomeHandedOff
 }
 
 // revoke is Request._announce_revoked('expired'): REVOKED, then ack.
@@ -376,7 +409,7 @@ func meta(children []string) string {
 	return string(raw)
 }
 
-func (w *Worker) store(ctx context.Context, id, status string, value any, children []string) {
+func (w *Worker) store(ctx context.Context, id, status string, value any, children []string) bool {
 	var result string
 	switch v := value.(type) {
 	case *Exception:
@@ -393,7 +426,9 @@ func (w *Worker) store(ctx context.Context, id, status string, value any, childr
 	}
 	if err := w.results.StoreResult(ctx, id, status, result, meta(children)); err != nil {
 		w.logger.Error("celery result store failed", "code", "celery_result_failed", "status", status)
+		return false
 	}
+	return true
 }
 
 // databaseFailure stands for an infrastructure error inside the task (the
@@ -413,11 +448,14 @@ var (
 )
 
 func (w *Worker) execute(ctx context.Context, d *Delivery) {
+	started := time.Now()
 	m := d.Message
+	var outcome taskOutcome
+	defer func() { w.logTaskDone(m.Task, m.ID, outcome, started) }()
 	task := w.tasks[m.Task]
 	job := w.jobs.Add(1) - 1
 	if task.Prefork {
-		w.executePrefork(ctx, d, task, job)
+		outcome = w.executePrefork(ctx, d, task, job)
 		return
 	}
 	request := &Request{Message: m, Hostname: w.options.Hostname}
@@ -426,14 +464,14 @@ func (w *Worker) execute(ctx context.Context, d *Delivery) {
 	}
 	if task.Plan != nil {
 		if err := task.Plan(ctx, request); errors.Is(err, ErrHandoff) {
-			w.handoff(ctx, d, "input")
+			outcome = w.handoff(ctx, d, "input")
 			return
 		}
 	}
 	// Request.execute_using_pool: acks_late is off, the message is
 	// acknowledged when the task is accepted.
 	w.ack(ctx, d)
-	w.perform(ctx, ctx, request, task, false)
+	outcome = w.perform(ctx, ctx, request, task, false)
 }
 
 // coordinated is CoordinatedTask.__call__'s condition: a configured lock
@@ -448,30 +486,27 @@ func (w *Worker) coordinated(name string) bool {
 // prefork child). A retry records its own message among the request's
 // children (Task.retry publishes with add_to_parent), as the Django prefork
 // worker stores it.
-func (w *Worker) perform(ctx, taskCtx context.Context, request *Request, task Task, child bool) {
+func (w *Worker) perform(ctx, taskCtx context.Context, request *Request, task Task, child bool) taskOutcome {
 	m := request.Message
 	if w.coordinated(m.Task) {
 		lease, completed, err := w.admission.Acquire(ctx)
 		switch {
 		case errors.Is(err, domain.ErrRestorePending):
-			w.defer15(ctx, request, busyPending)
-			return
+			return w.deferForMaintenance(ctx, request, 15, busyPending)
 		case errors.Is(err, domain.ErrRestoreBusy):
-			w.defer15(ctx, request, busyLocked)
-			return
+			return w.deferForMaintenance(ctx, request, 15, busyLocked)
 		case errors.Is(err, domain.ErrRestoreVolumeUnavailable):
-			w.defer15(ctx, request, busyVolume)
-			return
+			return w.deferForMaintenance(ctx, request, 15, busyVolume)
 		case err != nil:
 			w.store(ctx, m.ID, "FAILURE", databaseFailure, nil)
-			return
+			return outcomeFailure
 		}
 		defer lease.Close()
 		if completed != nil {
 			cutoff := float64(completed.UnixMicro()) / 1e6
 			if m.PublishedAt == nil || *m.PublishedAt < cutoff {
 				w.store(ctx, m.ID, "FAILURE", staleData, nil)
-				return
+				return outcomeFailure
 			}
 		}
 	}
@@ -487,36 +522,46 @@ func (w *Worker) perform(ctx, taskCtx context.Context, request *Request, task Ta
 	var exc *Exception
 	switch {
 	case err == nil:
-		w.store(ctx, m.ID, "SUCCESS", value, request.children)
+		if !w.store(ctx, m.ID, "SUCCESS", value, request.children) {
+			return outcomeFailure
+		}
+		return outcomeSuccess
 	case errors.As(err, &retry) && retry.Maintenance:
-		w.republish(ctx, request, m.Retries, retry.Countdown, true)
-		request.AddChild(m.ID)
-		w.store(ctx, m.ID, "RETRY", retry.Exc, request.children)
+		return w.deferForMaintenance(ctx, request, retry.Countdown, retry.Exc)
 	case errors.As(err, &retry):
 		if task.MaxRetries >= 0 && m.Retries+1 > task.MaxRetries {
 			w.store(ctx, m.ID, "FAILURE", retry.Exc, request.children)
-			return
+			return outcomeFailure
 		}
 		if !w.republish(ctx, request, m.Retries+1, retry.Countdown, false) {
-			return // Reject(requeue=False): no result is stored
+			return outcomeFailure // Reject(requeue=False): no result is stored
 		}
 		request.AddChild(m.ID)
-		w.store(ctx, m.ID, "RETRY", retry.Exc, request.children)
+		if !w.store(ctx, m.ID, "RETRY", retry.Exc, request.children) {
+			return outcomeFailure
+		}
+		return outcomeRetry
 	case errors.As(err, &exc):
 		w.store(ctx, m.ID, "FAILURE", exc, request.children)
+		return outcomeFailure
 	default:
 		w.logger.Error("celery task failed", "code", "celery_task_failed", "task", m.Task)
 		w.store(ctx, m.ID, "FAILURE", databaseFailure, request.children)
+		return outcomeFailure
 	}
 }
 
-// defer15 is defer_for_maintenance(countdown=15): the same command is
+// deferForMaintenance is defer_for_maintenance: the same command is
 // republished (retried until the broker accepts it) and recorded as a child,
 // then the RETRY state is stored with the Busy exception.
-func (w *Worker) defer15(ctx context.Context, request *Request, exc *Exception) {
-	w.republish(ctx, request, request.Retries, 15, true)
+func (w *Worker) deferForMaintenance(ctx context.Context, request *Request, countdown int64, exc *Exception) taskOutcome {
+	published := w.republish(ctx, request, request.Retries, countdown, true)
 	request.AddChild(request.ID)
-	w.store(ctx, request.ID, "RETRY", exc, request.children)
+	stored := w.store(ctx, request.ID, "RETRY", exc, request.children)
+	if !published || !stored {
+		return outcomeFailure
+	}
+	return outcomeRetry
 }
 
 func (w *Worker) republish(ctx context.Context, request *Request, retries, countdown int64, persist bool) bool {

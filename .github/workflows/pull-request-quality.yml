@@ -2,22 +2,34 @@ name: Pull request quality
 
 on:
   pull_request:
-    # Always report the final check, including for documentation-only PRs.
-    # The marketing site (WEB/) is outside every CI check: a PR touching only
-    # WEB/ runs nothing here.
-    paths-ignore:
-      - 'WEB/**'
+  push:
+    branches: [main]
 
 permissions:
   contents: read
 
 concurrency:
-  group: pr-quality-${{ github.event.pull_request.number }}
+  group: pr-quality-${{ github.event.pull_request.number || github.sha }}
   cancel-in-progress: true
 
 jobs:
+  go-tasks-inventory:
+    name: Go background task inventory
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: BE_GO/go.mod
+          cache-dependency-path: BE_GO/go.sum
+      - run: python3 tools/go-migration/go_tasks_inventory.py --check
+
   changes:
     name: Select affected checks
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -52,7 +64,7 @@ jobs:
             stack:
               # Stack/upgrade changes require integration coverage; ordinary
               # BE/UI changes run only their component suites.
-              - '{selfhost/**,Makefile}'
+              - '{selfhost/**,Makefile,.github/workflows/pull-request-quality.yml}'
               - '!**/*.md'
               # Browser dependencies/config and self-instance.spec.js also
               # exercise the upgrade suite; standalone fixtures do not.
@@ -128,8 +140,8 @@ jobs:
 
   result:
     name: PR quality
-    if: always()
-    needs: [changes, golang, quality, selfhost, stack, workflows]
+    if: always() && github.event_name == 'pull_request'
+    needs: [go-tasks-inventory, changes, golang, quality, selfhost, stack, workflows]
     runs-on: ubuntu-latest
     steps:
       - name: Require every selected check to pass
@@ -140,5 +152,6 @@ jobs:
           import json, os
           results = json.loads(os.environ['RESULTS'])
           assert results['changes']['result'] == 'success', results
+          assert results['go-tasks-inventory']['result'] == 'success', results
           assert all(job['result'] in ('success', 'skipped') for job in results.values()), results
           PY

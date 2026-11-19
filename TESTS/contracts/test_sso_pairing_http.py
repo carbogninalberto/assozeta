@@ -20,6 +20,7 @@ Response markers: '$new' (a UUID), '$now' (a recent UTC 'Z' timestamp),
 (verified by the runner). In Location and Set-Cookie: '$state',
 '$challenge', '$fresh' (43-character URL-safe values), '$access' (a JWT) and
 '$expires(N)' (an HTTP date N seconds from now, within five seconds).
+In throttled responses, '$retry-after' is the verified delay and its unit.
 RUNTIME['last'] keeps what the runner's effect check needs.
 """
 import base64
@@ -28,6 +29,7 @@ from email.utils import parsedate_to_datetime
 import hashlib
 import hmac
 import json
+import math
 from pathlib import Path
 import re
 import time
@@ -163,7 +165,7 @@ def _resolve_expected(expected, actual, payload, captured, status):
     return resolved
 
 
-def assert_case(case, base_url, *, token, sessions):
+def assert_case(case, base_url, *, token, sessions, throttle_stamp=None):
     source = RUNTIME['source']
     headers = {'Accept-Language': 'en', 'Accept': 'application/json', 'X-Correlation-ID': case['name'], **case['headers']}
     cookies = cookie_header(case)
@@ -178,8 +180,11 @@ def assert_case(case, base_url, *, token, sessions):
         sent, payload = materialize_body(case['body'], source)
         body = json.dumps(sent).encode()
         headers['Content-Type'] = 'application/json'
-    RUNTIME['last'] = last = {'sent': sent, 'payload': payload, 'captured': {}, 'response': None, 'started': time.time()}
-    status, raw, received = Client(base_url, token).request(case['method'], case['path'], body, headers, raw=True, include_headers=True)
+    RUNTIME['last'] = last = {'sent': sent, 'payload': payload, 'captured': {}, 'response': None}
+    client = Client(base_url, token)
+    last['started'] = started = time.time()
+    status, raw, received = client.request(case['method'], case['path'], body, headers, raw=True, include_headers=True)
+    ended = time.time()
     captured = last['captured']
 
     def check(condition, code):
@@ -192,12 +197,28 @@ def assert_case(case, base_url, *, token, sessions):
     for name, value in source['secure_headers'].items():
         check(received.get_all(name) == [value], 'response.secure-' + name.lower())
     check(received.get('WWW-Authenticate') == ('Bearer realm="api"' if status == 401 else None), 'response.authentication')
-    check(received.get('Retry-After') == ('50' if status == 429 else None), 'response.retry-after')
+    expected = case['response']
+    retry_after = received.get('Retry-After')
+    if status == 429:
+        check(type(throttle_stamp) in (int, float) and started <= ended, 'response.retry-after-window')
+        try:
+            delay = int(retry_after)
+        except (TypeError, ValueError):
+            raise ResponseFailure('response.retry-after', status) from None
+        # DRF subtracts elapsed time before rounding up. The latest observation gives the smallest delay.
+        minimum = math.ceil(60 - (ended - throttle_stamp))
+        maximum = math.ceil(60 - (started - throttle_stamp))
+        check(delay > 0 and minimum <= delay <= maximum and received.get_all('Retry-After') == [str(delay)],
+              'response.retry-after')
+        unit = 'second' if delay == 1 else 'seconds'
+        expected = {**expected, 'detail': expected['detail'].replace('$retry-after', f'{delay} {unit}')}
+    else:
+        check(retry_after is None, 'response.retry-after')
     set_cookies = received.get_all('Set-Cookie') or []
     check(len(set_cookies) == len(case['set_cookies']), 'response.set-cookie-count')
     for template, actual in zip(case['set_cookies'], set_cookies):
         _match(template, actual, captured, 'response.set-cookie', status)
-    if case['response'] == '<redirect>':
+    if expected == '<redirect>':
         check(raw == b'', 'response.redirect-body')
         check(received.get('Content-Type') == 'text/html; charset=utf-8', 'response.redirect-type')
         _match(case['location'], received.get('Location'), captured, 'response.location', status)
@@ -209,7 +230,6 @@ def assert_case(case, base_url, *, token, sessions):
         raise ResponseFailure('response.json', status) from None
     check(received.get('Content-Type', '').split(';')[0] == 'application/json', 'response.type')
     last['response'] = actual
-    expected = case['response']
     if isinstance(expected, str) and expected.startswith('$login:'):
         check(isinstance(actual, dict) and isinstance(actual.get('access_token'), str) and actual.get('token_type') == 'Bearer',
               'response.login-tokens')

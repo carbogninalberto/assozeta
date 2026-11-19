@@ -39,6 +39,7 @@ import (
 	"os/exec"
 	"os/signal"
 	"strconv"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -53,7 +54,8 @@ var ErrSoftTimeLimit = errors.New("celeryworker: soft time limit exceeded")
 
 var softTimeLimitExceeded = &Exception{Type: "SoftTimeLimitExceeded", Module: "billiard.exceptions"}
 
-// Child events (one per line on file descriptor 3).
+// Child events (one per line on file descriptor 3). Terminal events can
+// carry the outcome after a space for the parent to log.
 const (
 	eventAccepted = "accepted"
 	eventHandoff  = "handoff"
@@ -131,21 +133,19 @@ func (j *preforkJob) settle() bool {
 	return true
 }
 
-func (w *Worker) executePrefork(ctx context.Context, d *Delivery, task Task, job int64) {
+func (w *Worker) executePrefork(ctx context.Context, d *Delivery, task Task, job int64) taskOutcome {
 	m := d.Message
 	cmd := w.options.Child()
 	events, eventsWriter, err := os.Pipe()
 	if err != nil {
-		w.preforkLost(ctx, d, task, job, nil)
-		return
+		return w.preforkLost(ctx, d, task, job, nil)
 	}
 	defer events.Close()
 	cmd.ExtraFiles = []*os.File{eventsWriter}
 	input, err := json.Marshal(childInput{Raw: d.Raw})
 	if err != nil {
 		eventsWriter.Close()
-		w.preforkLost(ctx, d, task, job, nil)
-		return
+		return w.preforkLost(ctx, d, task, job, nil)
 	}
 	stdin, err := cmd.StdinPipe()
 	if err == nil {
@@ -154,8 +154,7 @@ func (w *Worker) executePrefork(ctx context.Context, d *Delivery, task Task, job
 	eventsWriter.Close()
 	if err != nil {
 		w.logger.Error("celery prefork child failed to start", "code", "celery_child_start_failed")
-		w.preforkLost(ctx, d, task, job, nil)
-		return
+		return w.preforkLost(ctx, d, task, job, nil)
 	}
 	go func() {
 		_, _ = stdin.Write(input)
@@ -186,6 +185,7 @@ func (w *Worker) executePrefork(ctx context.Context, d *Delivery, task Task, job
 	}
 	hardValue, hard := effectiveLimit(m.TimeLimit[0], task.TimeLimit)
 	_, soft := effectiveLimit(m.TimeLimit[1], task.SoftTimeLimit)
+	hardSettled := make(chan struct{})
 	onHard := func() {
 		if !state.settle() {
 			return
@@ -197,14 +197,20 @@ func (w *Worker) executePrefork(ctx context.Context, d *Delivery, task Task, job
 		}
 		w.logger.Error("celery hard time limit exceeded", "code", "celery_hard_time_limit", "task", m.Task)
 		_ = cmd.Process.Signal(syscall.SIGTERM)
+		close(hardSettled)
 		time.Sleep(100 * time.Millisecond)
 		_ = cmd.Process.Signal(syscall.SIGKILL)
 	}
 	done, handedOff := false, false
+	var outcome taskOutcome
 	for line := range lines {
-		switch line {
+		event, reportedOutcome, _ := strings.Cut(line, " ")
+		switch event {
 		case eventHandoff:
 			handedOff = true
+			if reportedOutcome == string(outcomeHandedOff) {
+				outcome = outcomeHandedOff
+			}
 		case eventAccepted:
 			if !task.AcksLate {
 				w.ack(ctx, d)
@@ -223,38 +229,42 @@ func (w *Worker) executePrefork(ctx context.Context, d *Delivery, task Task, job
 			}
 		case eventDone:
 			done = true
+			outcome = taskOutcome(reportedOutcome)
 		}
 	}
 	_ = cmd.Wait()
 	stopTimers()
-	switch {
-	case handedOff:
-		return
-	case done:
-		if state.settle() && task.AcksLate {
+	if handedOff {
+		return outcome
+	}
+	if !state.settle() {
+		// The hard timeout won. Wait for its result and acknowledgement.
+		<-hardSettled
+		return outcomeFailure
+	}
+	if done {
+		if task.AcksLate {
 			w.ack(ctx, d)
 		}
-	default:
-		if !state.settle() {
-			return // the hard time limit handled the job
-		}
-		w.preforkLost(ctx, d, task, job, cmd.ProcessState)
+		return outcome
 	}
+	return w.preforkLost(ctx, d, task, job, cmd.ProcessState)
 }
 
 // preforkLost is Request.on_failure with WorkerLostError.
-func (w *Worker) preforkLost(ctx context.Context, d *Delivery, task Task, job int64, state *os.ProcessState) {
+func (w *Worker) preforkLost(ctx context.Context, d *Delivery, task Task, job int64, state *os.ProcessState) taskOutcome {
 	if task.AcksLate && task.RejectOnWorkerLost {
 		if err := w.transport.Reject(ctx, d.Message.DeliveryTag, true); err != nil {
 			w.logger.Error("celery reject failed", "code", "celery_reject_failed")
 		}
-		return
+		return outcomeNone
 	}
 	if task.AcksLate {
 		w.ack(ctx, d)
 	}
 	w.store(ctx, d.Message.ID, "FAILURE", &Exception{Type: "WorkerLostError", Module: "billiard.exceptions",
 		Args: []any{fmt.Sprintf("Worker exited prematurely: %s Job: %d.", humanStatus(state), job)}}, nil)
+	return outcomeFailure
 }
 
 // RunChild executes one prefork job in this process: in is the message the
@@ -290,7 +300,9 @@ func (w *Worker) RunChild(ctx context.Context, in io.Reader, events io.Writer) e
 	}
 	if task.Plan != nil {
 		if err := task.Plan(ctx, request); errors.Is(err, ErrHandoff) {
-			w.handoff(ctx, d, "input")
+			if outcome := w.handoff(ctx, d, "input"); outcome == outcomeHandedOff {
+				return emit(eventHandoff + " " + string(outcome))
+			}
 			return emit(eventHandoff)
 		}
 	}
@@ -309,8 +321,8 @@ func (w *Worker) RunChild(ctx context.Context, in io.Reader, events io.Writer) e
 	if err := emit(eventAccepted); err != nil {
 		return err
 	}
-	w.perform(ctx, taskCtx, request, task, true)
-	return emit(eventDone)
+	outcome := w.perform(ctx, taskCtx, request, task, true)
+	return emit(eventDone + " " + string(outcome))
 }
 
 // ChildCommand is the default Options.Child: this executable with args.

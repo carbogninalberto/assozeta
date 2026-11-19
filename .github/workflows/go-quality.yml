@@ -34,6 +34,8 @@ jobs:
       - go-manual-contracts
       - go-logo-storage
       - go-runtime-adapters
+      - go-background-tasks
+      - go-model-hook-coverage
       - go-image
     steps:
       - name: Require every Go foundation job to succeed
@@ -88,6 +90,8 @@ jobs:
           test -s "$RUNNER_TEMP/race-shards.txt"
           test "$(sort -u "$RUNNER_TEMP/race-shards.txt" | wc -l)" -eq "$(wc -l < "$RUNNER_TEMP/race-shards.txt")"
           diff -u "$RUNNER_TEMP/race-all.txt" "$RUNNER_TEMP/race-shards.txt"
+      - name: Check the generated background task inventory
+        run: python3 tools/go-migration/go_tasks_inventory.py --check
 
   go-race:
     name: Go race tests (${{ matrix.name }})
@@ -162,6 +166,12 @@ jobs:
         run: python TESTS/adapters/django/cors.py
       - name: Verify current Django security headers
         run: python TESTS/adapters/django/security_headers.py
+      - name: Verify SSO pairing Retry-After timing
+        run: python -m unittest -v TESTS.contracts.test_sso_pairing_retry_after
+      - name: Verify import observation timestamps
+        run: python -m unittest -v TESTS.contracts.test_import_observation_times
+      - name: Verify the background task inventory against Django and CI
+        run: python -m unittest -v TESTS.contracts.test_go_background_tasks
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -185,9 +195,16 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/go-foundation-setup
+      - name: Install offline manual dependencies
+        run: python -m pip install -r docs/manuale/requirements-offline.txt
+      - name: Check release gate and inventory
+        run: >-
+          python -m unittest
+          docs.scripts.tests.test_manuale_release_workflow.ReleaseWorkflowTests.test_installable_images_require_complete_current_go_inventory
+          docs.scripts.tests.test_manuale_impact.ImpactRepositoryTest.test_generated_task_inventory_is_unrelated_to_manual_captures
+          docs.scripts.tests.test_manuale_impact.ImpactRepositoryTest.test_every_tracked_top_level_area_is_mapped
       - name: Verify public instance bootstrap and manual package contracts
         run: |
-          python -m pip install -r docs/manuale/requirements-offline.txt
           python TESTS/adapters/django/manual_availability.py
           python TESTS/adapters/django/manual_bundle.py
           python TESTS/adapters/django/manual_reader_library.py
@@ -347,6 +364,254 @@ jobs:
             quality-reports/go-migration/server-fence/
             quality-reports/go-migration/restore-drain-pooler/
             quality-reports/go-migration/restore-server-barrier/
+
+  go-background-tasks:
+    name: Go background tasks (${{ matrix.harness == 'model_hooks_process' && format('model hooks {0}/4', matrix.part) || matrix.harness }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        harness:
+          - age_worker_process
+          - audit_worker_process
+          - auto_mark_worker_process
+          - bakney_maintenance_worker_process
+          - celery_consumer_backup_failures_process
+          - celery_consumer_capabilities_process
+          - celery_consumer_email_process
+          - celery_consumer_export_process
+          - celery_consumer_import_process
+          - celery_consumer_print_process
+          - celery_consumer_process
+          - celery_consumer_restore_process
+          - celery_consumer_workflow_process
+          - data_restore_cleanup_worker_process
+          - email_tasks_worker_process
+          - export_cleanup_worker_process
+          - model_hooks_process
+          - nightly_subscriptions_worker_process
+          - orphan_medical_worker_process
+          - quote_assign_worker_process
+          - schedule_due
+          - schedule_page
+          - scheduler_process
+          - stripe_paid_check_worker_process
+          - tasks_db_d_worker_process
+          - test_message_image_process
+          - token_worker_process
+          - user_deletion_worker_process
+          - worker_process
+        part: [1]
+        include:
+          - {harness: model_hooks_process, part: 2}
+          - {harness: model_hooks_process, part: 3}
+          - {harness: model_hooks_process, part: 4}
+    env:
+      LC_ALL: C
+      LANG: C
+      GOTOOLCHAIN: local
+      PIP_CONSTRAINT: ${{ github.workspace }}/TESTS/adapters/django/constraints-parity.txt
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/go-foundation-setup
+        if: matrix.harness != 'test_message_image_process'
+      - name: Prepare the native HTTP parity fixtures
+        if: matrix.harness == 'model_hooks_process'
+        shell: bash
+        run: |
+          sudo apt-get install -y libpq-dev
+          python -m pip install -r docs/manuale/requirements-offline.txt
+          echo "GO_MIGRATION_GO_BIN=$(dirname "$(command -v go)")" >> "$GITHUB_ENV"
+
+          # Match the MIME table and Pillow text layout used by the family sweep.
+          python - <<'PY' | while IFS= read -r file; do sudo mv "$file" "$file.host"; done
+          import mimetypes
+          from pathlib import Path
+
+          go_files = ['/usr/local/share/mime/globs2', '/usr/share/mime/globs2',
+                      '/etc/apache/mime.types', '/etc/httpd/conf/mime.types']
+          for name in sorted(set(mimetypes.knownfiles) | set(go_files)):
+              if Path(name).is_file():
+                  print(name)
+          PY
+          sudo install -m 0644 TESTS/fixtures/mime.types /etc/mime.types
+          sudo mkdir -p /opt/runner-fonts.host
+          for directory in /usr/share/fonts /usr/local/share/fonts; do
+            if [ -d "$directory" ]; then
+              find "$directory" -name DejaVuSans.ttf -print0 |
+                while IFS= read -r -d '' file; do sudo mv "$file" "/opt/runner-fonts.host/${file//\//_}"; done
+            fi
+          done
+          find /usr/lib /lib -name 'libfribidi.so*' ! -name '*.host' -print0 |
+            while IFS= read -r -d '' file; do sudo mv "$file" "$file.host"; done
+      - name: Fetch the Go modules used by offline builds
+        if: matrix.harness != 'test_message_image_process'
+        working-directory: BE_GO
+        run: go mod download all
+      - name: Warm the native Go build cache
+        if: matrix.harness != 'test_message_image_process'
+        shell: bash
+        working-directory: BE_GO
+        env:
+          HARNESS: ${{ matrix.harness }}
+          GOPROXY: 'off'
+        run: |
+          # Use the harness targets and flags to warm builds with short subprocess deadlines.
+          output="$RUNNER_TEMP/go-background-build/"
+          mkdir -p "$output"
+          case "$HARNESS" in
+            model_hooks_process)
+              go build -mod=readonly -o "$output" ./cmd/server ./cmd/migrate
+              ;;
+            celery_consumer_capabilities_process)
+              go build -race -tags=consumerprobe -o "$output" ./cmd/celery-consumer
+              ;;
+            celery_consumer*_process)
+              go build -race -o "$output" ./cmd/celery-consumer
+              ;;
+            schedule_due)
+              go build -race ./internal/service
+              ;;
+            schedule_page)
+              go build -race -tags=schedulepageintegration ./internal/repository
+              ;;
+            scheduler_process)
+              go build -race -o "$output" ./cmd/scheduler ./cmd/worker ./cmd/migrate
+              ;;
+            worker_process|*_worker_process)
+              go build -race -o "$output" ./cmd/worker ./cmd/migrate
+              ;;
+          esac
+      - name: Cache the pinned MinIO fixture image
+        if: >-
+          matrix.harness == 'model_hooks_process' ||
+          matrix.harness == 'celery_consumer_export_process' ||
+          matrix.harness == 'celery_consumer_import_process' ||
+          matrix.harness == 'celery_consumer_print_process' ||
+          matrix.harness == 'celery_consumer_restore_process' ||
+          matrix.harness == 'data_restore_cleanup_worker_process' ||
+          matrix.harness == 'export_cleanup_worker_process' ||
+          matrix.harness == 'nightly_subscriptions_worker_process' ||
+          matrix.harness == 'orphan_medical_worker_process'
+        run: |
+          python - <<'PY'
+          import subprocess
+          from TESTS.adapters.django.s3_objects import IMAGE
+          subprocess.run(['docker', 'pull', IMAGE], check=True)
+          PY
+      - name: Run ${{ matrix.harness }}
+        id: background-task
+        env:
+          HARNESS: ${{ matrix.harness }}
+          MODEL_HOOKS_SHARD: ${{ matrix.harness == 'model_hooks_process' && format('{0}/4', matrix.part) || '' }}
+        run: |
+          umask 077
+          python -m "TESTS.adapters.go.$HARNESS" > "$RUNNER_TEMP/go-background-task.log" 2>&1
+      - name: Report background task traceback locations
+        if: failure() && steps.background-task.outcome == 'failure'
+        env:
+          HARNESS: ${{ matrix.harness }}
+        run: |
+          python - <<'PY'
+          from collections import deque
+          import json
+          import os
+          from pathlib import Path
+          import re
+          import subprocess
+
+          workspace = os.environ['GITHUB_WORKSPACE']
+          prefix = os.fsencode(workspace.rstrip('/')) + b'/'
+          log_path = Path(os.environ['RUNNER_TEMP']) / 'go-background-task.log'
+          frame = re.compile(rb'  File "([^"\r\n]+)", line ([1-9][0-9]{0,9})(?:, in [^\r\n]*)?\r?\n?')
+          locations = deque(maxlen=8)
+          in_traceback = False
+
+          try:
+              tracked = set(subprocess.check_output(
+                  ['git', 'ls-files', '-z', '--', '*.py'], cwd=workspace,
+                  stderr=subprocess.DEVNULL).split(b'\0'))
+              with log_path.open('rb') as log:
+                  for line in log:
+                      if line.rstrip(b'\r\n') == b'Traceback (most recent call last):':
+                          in_traceback = True
+                      elif not line.startswith(b'  '):
+                          in_traceback = False
+                      elif in_traceback and (match := frame.fullmatch(line)):
+                          path = match[1].removeprefix(prefix).removeprefix(b'./')
+                          if path in tracked and re.fullmatch(rb'[A-Za-z0-9_./-]+', path):
+                              locations.append(f'{path.decode("ascii")}:{match[2].decode("ascii")}')
+          except (OSError, subprocess.CalledProcessError):
+              pass
+          else:
+              for location in locations:
+                  print(location)
+
+          if os.environ.get('HARNESS') == 'celery_consumer_import_process':
+              report_path = Path(workspace) / 'quality-reports/go-migration/consumer-import-process/difference.json'
+              sections = ('audit', 'audit_index', 'audit_removed', 'broker', 'bucket', 'cache', 'models', 'task_results')
+              missing = object()
+              try:
+                  with report_path.open(encoding='utf-8') as report_file:
+                      report = json.load(report_file)
+                  if not isinstance(report, dict):
+                      raise SystemExit(0)
+                  django, go = report.get('django'), report.get('go')
+                  if not isinstance(django, dict) or not isinstance(go, dict):
+                      raise SystemExit(0)
+                  changed = [section for section in sections if django.get(section, missing) != go.get(section, missing)]
+              except (OSError, ValueError, RecursionError):
+                  raise SystemExit(0)
+              for section in changed:
+                  print(section)
+          PY
+      - name: Select the successful model hook shard receipt
+        id: model-hook-receipt
+        if: success() && matrix.harness == 'model_hooks_process'
+        shell: bash
+        run: |
+          shopt -s nullglob
+          reports=(quality-reports/go-migration/model-hooks-*/results.json)
+          if (( ${#reports[@]} != 1 )) || [[ ! -s "${reports[0]}" ]]; then
+            echo '::error::Expected one nonempty model hook shard receipt'
+            exit 1
+          fi
+          printf 'path=%s\n' "${reports[0]}" >> "$GITHUB_OUTPUT"
+      - name: Upload the model hook shard receipt
+        if: success() && matrix.harness == 'model_hooks_process'
+        uses: actions/upload-artifact@v4
+        with:
+          name: go-model-hooks-shard-${{ matrix.part }}
+          path: ${{ steps.model-hook-receipt.outputs.path }}
+          if-no-files-found: error
+          overwrite: true
+
+  go-model-hook-coverage:
+    name: Go model hook coverage
+    needs: [go-background-tasks]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: 'go-model-hooks-shard-[1-4]'
+          path: ${{ runner.temp }}/go-model-hooks-shards
+      - name: Merge model hook coverage from all four shards
+        shell: bash
+        run: |
+          shopt -s nullglob
+          reports=("$RUNNER_TEMP"/go-model-hooks-shards/go-model-hooks-shard-[1-4]/results.json)
+          if (( ${#reports[@]} != 4 )); then
+            echo '::error::Expected one results.json from each of the four model hook shards'
+            exit 1
+          fi
+          python3 -m TESTS.adapters.go.model_hooks_process --label combined --merge-shards "${reports[@]}"
 
   go-image:
     name: Isolated Go image and packaged processes

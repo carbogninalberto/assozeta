@@ -317,7 +317,11 @@ def preload_throttle(case):
     spec = case.get('throttle')
     if spec:
         stamp = time.time() - spec['age']
-        cache.set(throttle_key(case), [int(stamp) if spec.get('ints') else stamp] * spec['preload'], 60)
+        if spec.get('ints'):
+            stamp = int(stamp)
+        cache.set(throttle_key(case), [stamp] * spec['preload'], 60)
+        return stamp
+    return None
 
 
 def check_throttle(case, status):
@@ -598,14 +602,15 @@ def run_workload(label, backend, base_url, fixture, apps, raw, observer):
     for case in source['cases']:
         try:
             setup_time = apply_setup(case, source, fixture)
-            preload_throttle(case)
+            throttle_stamp = preload_throttle(case)
             setup_state = sso_state()
             before = scopes.snapshot_state(apps)
             with STUB['lock']:
                 STUB['log'], STUB['script'] = [], case['authority']
             cursor = observer.cursor()
             token = None if case['actor'] == 'anonymous' else fixture['tokens'][case['actor']]
-            status = base_contract.assert_case(case, base_url, token=token, sessions=fixture['sessions'])
+            status = base_contract.assert_case(case, base_url, token=token, sessions=fixture['sessions'],
+                                               throttle_stamp=throttle_stamp)
             after = scopes.snapshot_state(apps)
             shared.assert_attribution(backend, case['method'], case['path'], status, observer.delta(cursor), case['name'])
             check_throttle(case, status)
