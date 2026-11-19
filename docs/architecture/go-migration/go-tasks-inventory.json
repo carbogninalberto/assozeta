@@ -386,7 +386,7 @@
     "scheduled": false,
     "consumer": true,
     "job": false,
-    "routed": false,
+    "routed": true,
     "harness": [
       "TESTS/adapters/go/celery_consumer_email_process.py",
       "TESTS/adapters/go/celery_consumer_process.py"
@@ -398,7 +398,7 @@
     "scheduled": false,
     "consumer": true,
     "job": false,
-    "routed": false,
+    "routed": true,
     "harness": [
       "TESTS/adapters/go/celery_consumer_email_process.py",
       "TESTS/adapters/go/celery_consumer_process.py"
@@ -410,7 +410,7 @@
     "scheduled": false,
     "consumer": true,
     "job": false,
-    "routed": false,
+    "routed": true,
     "harness": [
       "TESTS/adapters/go/celery_consumer_email_process.py",
       "TESTS/adapters/go/celery_consumer_process.py"

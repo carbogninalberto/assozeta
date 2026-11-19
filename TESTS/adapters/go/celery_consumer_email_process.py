@@ -26,6 +26,9 @@ for on both sides; one scenario stops Go right after the task result so the
 consumer's shutdown must wait for the pending send. Handoff scenarios require
 Go to move the message unchanged to the ``celery`` queue, where a Django
 worker reaches the Django-only final state.
+
+Three cases start Django producers with the owner switch disabled and enabled.
+They check both queues and follow the enabled delivery through SMTP on both workers.
 """
 import json
 import os
@@ -39,10 +42,13 @@ import sys
 import tempfile
 import hashlib
 import time
+from unittest.mock import patch
 from uuid import UUID
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT))
+sys.path.extend([str(ROOT / 'selfhost/updater'), str(ROOT / 'BE/instance')])
+from go_tasks import go_tasks_values
 from TESTS.adapters.django.production_runtime import require_production_python
 from TESTS.adapters.go import celery_consumer_process as base
 from TESTS.adapters.go.celery_consumer_process import (U, ASSOCIATION, CONFIGURED, OWNER, BRAND, HOST_USER, GO_QUEUE, DJANGO_QUEUE,
@@ -128,10 +134,11 @@ class Scenario(base.Scenario):
     sides must reach before stopping (send_email_html's Timer); ``early_stop`` stops Go once the task result exists."""
 
     def __init__(self, name, task, kwargs=None, *, args=(), routes=(), unchecked=False, celery_left=0, effect=None,
-                 early_stop=False, **rest):
+                 early_stop=False, owner_publisher=False, **rest):
         super().__init__(name, kwargs or {}, **rest)
         self.task, self.args, self.routes, self.unchecked = task, list(args), tuple(routes) or (task,), unchecked
         self.celery_left, self.effect, self.early_stop = celery_left, effect, early_stop
+        self.owner_publisher = owner_publisher
 
 
 def subscription_data(first='Giulia', last='Rossi', denomination='ASD Uno'):
@@ -270,6 +277,32 @@ SCENARIOS = [
 ]
 
 
+def owner_email_scenarios():
+    routes = go_tasks_values(True)['GO_TASK_QUEUE_TASKS'].split(',')
+    bodies = [(TEXT, {'message': 'Promemoria'}),
+              (TEMPLATE, {'template': NEW_SUBSCRIPTION, 'data': subscription_data()}),
+              (HTML, {'html_message': '<p>Promemoria</p>'})]
+    return [Scenario('owner switch routes ' + task, task,
+                     {**body, 'subject': SUBJECT, 'recipient_list': TO, 'sport_association_id': str(ASSOCIATION)},
+                     routes=routes, owner_publisher=True,
+                     expect={'status': 'SUCCESS', 'rows': 2, 'children': 1, 'mails': 1,
+                             'emaillog': [('socio@example.test', SUBJECT, 'Sent', ASSOCIATION)]})
+            for task, body in bodies]
+
+
+def publish_owner_message():
+    task, kwargs = json.load(sys.stdin)
+    if (task not in (TEXT, TEMPLATE, HTML) or os.environ.get('DBNAME') != DATABASE
+            or os.environ.get('REDIS_HOST') != '127.0.0.1'):
+        raise ValueError('Expected an email task and the disposable consumer services')
+    import django
+    with patch('environ.Env.read_env'):
+        django.setup()
+    import application.tasks  # noqa: F401  registers the e-mail tasks
+    from core.celery import app
+    app.tasks[task].apply_async(kwargs=kwargs)
+
+
 class Stack(base.Stack):
     phase = None
 
@@ -312,6 +345,17 @@ class Stack(base.Stack):
         self.seeding = (started, datetime.now(timezone.utc))
         return result
 
+    def publish_with_routes(self, scenario, routes):
+        # A fresh process loads core.settings from the same environment as an installed producer.
+        connection = self.broker.connection_pool.connection_kwargs
+        env = dict(os.environ, DJANGO_SETTINGS_MODULE='core.settings', PYTHONPATH=f'{ROOT / "BE"}:{ROOT}',
+                   GO_TASK_QUEUE_TASKS=routes, REDIS_USERNAME='default', REDIS_SSLAUTH='')
+        env.update({f'REDIS_{key.upper()}': str(connection[key]) for key in ('host', 'port', 'password')})
+        with (OUTPUT / 'owner-publisher.log').open('a') as log:
+            subprocess.run([sys.executable, '-m', 'TESTS.adapters.go.celery_consumer_email_process',
+                            '--publish-owner-message'], input=json.dumps([scenario.task, scenario.kwargs]),
+                           env=env, cwd=self.work, stdout=log, stderr=log, text=True, check=True, timeout=60)
+
     def publish(self, scenario):
         from core.celery import app
         import application.tasks  # noqa: F401  registers the e-mail tasks
@@ -319,7 +363,13 @@ class Stack(base.Stack):
         if scenario.retries is not None:
             options['retries'] = scenario.retries
         self.broker.flushdb()
-        if scenario.unchecked:
+        if scenario.owner_publisher:
+            self.publish_with_routes(scenario, go_tasks_values(False)['GO_TASK_QUEUE_TASKS'])
+            disabled = self.broker.rpop(DJANGO_QUEUE)
+            assert disabled and json.loads(disabled)['headers']['task'] == scenario.task, 'disabled owner route'
+            assert not self.broker.llen(GO_QUEUE) and not self.broker.llen(DJANGO_QUEUE), 'unexpected duplicate delivery'
+            self.publish_with_routes(scenario, ','.join(scenario.routes))
+        elif scenario.unchecked:
             app.send_task(scenario.task, args=scenario.args, kwargs=scenario.kwargs, **options)
         else:
             app.tasks[scenario.task].apply_async(args=scenario.args, kwargs=scenario.kwargs, **options)
@@ -496,6 +546,7 @@ def main():
     environment = {k: v for k, v in os.environ.items() if k in ('PATH', 'HOME', 'TMPDIR', 'GOCACHE', 'GOMODCACHE', 'GOTOOLCHAIN')}
     environment.update(LC_ALL='C', LANG='C')
     only = os.environ.get('CELERY_CONSUMER_ONLY')
+    scenarios = [*SCENARIOS, *owner_email_scenarios()]
     harness = None
     with tempfile.TemporaryDirectory(prefix='az-celery-email-', dir='/tmp') as directory, (OUTPUT / 'services.log').open('w') as log:
         work = Path(directory); attempted = False; redis_process = None; smtp = None
@@ -517,7 +568,7 @@ def main():
             initialize_current_schema(work, work, '5432', DATABASE, log)
             stack = Stack(work, environment, redis_port, smtp)
             harness = Harness(stack, work / 'celery-consumer')
-            for scenario in SCENARIOS:
+            for scenario in scenarios:
                 if only and only not in scenario.name:
                     continue
                 harness.execute(scenario)
@@ -550,10 +601,10 @@ def main():
                             if (work / 'postgres/postmaster.pid').exists():
                                 raise
                     report.write_text(json.dumps(result, indent=2) + '\n')
-    expected = [s.name for s in SCENARIOS if not only or only in s.name]
+    expected = [s.name for s in scenarios if not only or only in s.name]
     assert harness.completed == expected, 'not every scenario completed'
     paths = ['TESTS/adapters/go/celery_consumer_email_process.py', 'TESTS/adapters/go/celery_consumer_process.py', *base.ORACLE_SOURCES,
-             'BE/core/tasks.py',
+             'BE/core/tasks.py', 'BE/core/settings.py', 'BE/core/task_routing.py', 'selfhost/updater/go_tasks.py',
              'BE/application/tasks.py', 'BE/communications/models.py', 'BE/instance/email_configuration.py',
              'BE/instance/restore/task_base.py', 'BE/templates/email/account/email_new_subscription.html']
     paths += sorted(str(p.relative_to(ROOT)) for p in (ROOT / 'BE_GO').rglob('*.go')
@@ -566,4 +617,7 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    if sys.argv[1:] == ['--publish-owner-message']:
+        publish_owner_message()
+    else:
+        main()

@@ -9,7 +9,7 @@ from uuid import uuid4
 ROOT = Path(__file__).resolve().parents[2]
 sys.path[:0] = [str(ROOT / 'selfhost/updater'), str(ROOT / 'BE/instance')]
 from common import read_env
-from go_tasks import MISSING_WORKER, apply_go_tasks, release_has_go_worker, validate_go_tasks_request
+from go_tasks import MISSING_WORKER, apply_go_tasks, go_tasks_values, release_has_go_worker, validate_go_tasks_request
 from journal import Journal, Conflict
 
 
@@ -47,7 +47,7 @@ class GoTasksSwitchTests(unittest.TestCase):
             apply_go_tasks(self.root, self.env, self.journal, operation)
         values = read_env(self.env)
         self.assertEqual(values['ASSOZETA_GO_TASKS'], '1')
-        self.assertEqual(values['GO_TASK_QUEUE_TASKS'], 'core.tasks.send_mail_async')
+        self.assertEqual(values['GO_TASK_QUEUE_TASKS'], go_tasks_values(True)['GO_TASK_QUEUE_TASKS'])
         self.assertEqual(run.call_args.args[0], [str(self.root / 'bin/assozeta'), 'restart'])
         self.assertEqual(run.call_args.kwargs['env']['ASSOZETA_ENV_FILE'], str(self.env))
         record = self.journal.records()[0]
