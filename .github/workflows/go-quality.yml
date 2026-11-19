@@ -166,6 +166,8 @@ jobs:
         run: python TESTS/adapters/django/cors.py
       - name: Verify current Django security headers
         run: python TESTS/adapters/django/security_headers.py
+      - name: Verify SSO pairing Retry-After timing
+        run: python -m unittest -v TESTS.contracts.test_sso_pairing_retry_after
       - name: Verify the background task inventory against Django and CI
         run: python -m unittest -v TESTS.contracts.test_go_background_tasks
       - uses: actions/upload-artifact@v4

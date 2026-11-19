@@ -3273,7 +3273,7 @@
    "authority": [],
    "status": 429,
    "response": {
-    "detail": "Request was throttled. Expected available in 50 seconds."
+    "detail": "Request was throttled. Expected available in $retry-after."
    },
    "location": null,
    "set_cookies": [],
@@ -5567,7 +5567,7 @@
    "authority": [],
    "status": 429,
    "response": {
-    "detail": "Request was throttled. Expected available in 50 seconds."
+    "detail": "Request was throttled. Expected available in $retry-after."
    },
    "location": null,
    "set_cookies": [],
@@ -5633,7 +5633,7 @@
    "authority": [],
    "status": 429,
    "response": {
-    "detail": "Request was throttled. Expected available in 50 seconds."
+    "detail": "Request was throttled. Expected available in $retry-after."
    },
    "location": null,
    "set_cookies": [],
@@ -8130,7 +8130,7 @@
    "authority": [],
    "status": 429,
    "response": {
-    "detail": "Request was throttled. Expected available in 50 seconds."
+    "detail": "Request was throttled. Expected available in $retry-after."
    },
    "location": null,
    "set_cookies": [],
@@ -14005,7 +14005,7 @@
    "authority": [],
    "status": 429,
    "response": {
-    "detail": "Request was throttled. Expected available in 50 seconds."
+    "detail": "Request was throttled. Expected available in $retry-after."
    },
    "location": null,
    "set_cookies": [],

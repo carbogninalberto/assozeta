@@ -59,6 +59,7 @@ DENOMINATION = 'Message reads own'
 PARSES = ['application/json', 'application/x-www-form-urlencoded', 'multipart/form-data']
 SECURE = {'Cache-Control': 'no-store', 'Pragma': 'no-cache', 'Referrer-Policy': 'no-referrer', 'X-Frame-Options': 'DENY'}
 CHECKED = '2026-11-01T08:00:00Z'
+THROTTLED = {'detail': 'Request was throttled. Expected available in $retry-after.'}
 
 BROWSER = 'sso-browser-cookie-000000000000000000000001'
 OTHER_BROWSER = 'sso-browser-cookie-000000000000000000000002'
@@ -342,7 +343,7 @@ add('admin-list-body', 'owner', ADMIN, 409, error('stale_pairing'), method='POST
 add('admin-unknown-action', 'owner', ADMIN, 400, error('invalid_request'), method='POST', body={'action': 'pair', 'pairing_id': LOCAL})
 add('admin-malformed-json', 'owner', ADMIN, 400, {'detail': 'JSON parse error - Expecting value: line 1 column 1 (char 0)'},
     method='POST', raw_body='nope', content_type=JSON, state=setup(None), effect_=effect(pairing='created'))
-add('admin-throttled', 'owner', ADMIN, 429, {'detail': 'Request was throttled. Expected available in 50 seconds.'},
+add('admin-throttled', 'owner', ADMIN, 429, THROTTLED,
     throttle={'preload': 30, 'age': 10.2})
 
 # =============================================================================
@@ -408,14 +409,14 @@ add('challenge-text-body', 'anonymous', CHALLENGE, 415, {'detail': 'Unsupported 
     raw_body='hello', content_type='text/plain', state=setup('generated'))
 add('challenge-undecryptable', 'anonymous', CHALLENGE, 409, error('configuration_required'), method='POST', body=handshake('challenge'),
     state=setup(pairing('generated', secret='$garbage')))
-add('challenge-throttled', 'anonymous', CHALLENGE, 429, {'detail': 'Request was throttled. Expected available in 50 seconds.'},
+add('challenge-throttled', 'anonymous', CHALLENGE, 429, THROTTLED,
     method='POST', body=handshake('challenge'), state=setup('generated'), throttle={'preload': 30, 'age': 10.2})
 # The throttle reads whatever the entry holds: a history of integer timestamps counts like one of floats. (An entry
 # that is not a history raises before the view runs, which this family cannot author: it runs with DEBUG on, so
 # Django answers the technical 500 page.)
 UNREACHED_HANDSHAKE = {'protocol': VERSION, 'pairing_id': REMOTE, 'association_id': OWN, 'instance_id': '', 'origin': ORIGIN,
                        'callback_uri': CALLBACK, 'generation': GEN, 'nonce': f'nonce-{999:037d}', 'expires_at': '$expires+60'}
-add('challenge-integer-history', 'anonymous', CHALLENGE, 429, {'detail': 'Request was throttled. Expected available in 50 seconds.'},
+add('challenge-integer-history', 'anonymous', CHALLENGE, 429, THROTTLED,
     method='POST', body=UNREACHED_HANDSHAKE, state=setup('generated'), throttle={'preload': 30, 'age': 10, 'ints': True})
 
 nonce = next(NONCES)
@@ -492,7 +493,7 @@ for label, query in (('missing-attempt', f'?protocol={VERSION}&pairing_id={REMOT
 add('start-encoded-query', 'anonymous', START, 302, '<redirect>',
     query=f'?protocol=bakney%2Dpairing%2Dv1&pairing_id={REMOTE}&attempt_id={ATTEMPT}', location=HANDOFF, set_cookies=[STARTED_COOKIE],
     authority=[status_exchange()], effect_=effect(pairing=SYNCED, logins=[NEW_LOGIN]))
-add('start-throttled', 'anonymous', START, 429, {'detail': 'Request was throttled. Expected available in 50 seconds.'},
+add('start-throttled', 'anonymous', START, 429, THROTTLED,
     query=START_QUERY, throttle={'preload': 30, 'age': 10.2})
 
 # =============================================================================
@@ -633,7 +634,7 @@ add('session-login-generation-changed', 'anonymous', SESSION, 400, error('invali
 add('session-login-ineligible', 'anonymous', SESSION, 403, error('membership_required'), method='POST', body={'confirm_for': []},
     headers=POST_HEADERS, cookies=cookie_header(), state=setup(logins=[ready_login('former_member')]),
     authority=[status_exchange()], effect_=effect(pairing=SYNCED))
-add('session-throttled', 'anonymous', SESSION, 429, {'detail': 'Request was throttled. Expected available in 50 seconds.'},
+add('session-throttled', 'anonymous', SESSION, 429, THROTTLED,
     cookies=cookie_header(), state=READY, throttle={'preload': 30, 'age': 10.2})
 
 assert len({c['name'] for c in cases}) == len(cases)
