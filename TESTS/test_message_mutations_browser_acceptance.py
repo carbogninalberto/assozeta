@@ -94,7 +94,7 @@ def browser_row(version, frozen):
         fixture_cleanup_owner='parent', proxy_observations=events,
         context_close_proofs=[{'actor': actor, 'observed_after_context_close': True}
                               for actor in cli.browser.ACTORS],
-        final_state_proof={'models': {'models': 128, 'rows': 679, 'sha256': DIGEST},
+        final_state_proof={'models': {'models': 130, 'rows': 679, 'sha256': DIGEST},
                           'cache': dict(typed_values_exact=True, absolute_expirations_exact=True,
                             contrast_keys_verified=2, readiness_prefix_excluded=False,
                             unexpected_readiness_keys=0, cache_sha256=DIGEST)},
@@ -106,7 +106,7 @@ def browser_row(version, frozen):
 
 def denial_row(version, frozen):
     return dict(success=True, version=version, http_denials_verified=True,
-        proxy_cleanup_verified=True, models=128, browser_acceptance=False,
+        proxy_cleanup_verified=True, models=130, browser_acceptance=False,
         complete_message_family_parity=False, fixture_cleanup_owner='parent',
         source_sha256={name: frozen['sources'][name] for name in cli.denials.source_hashes()},
         cases=[dict(verified=True, case=case['name'], status=case['status'], source='parent-http',
@@ -118,7 +118,7 @@ def fixture_receipt(version):
     return dict(version=version, verified=True, owned_logo_removed=True,
         results=dict.fromkeys(('rows', 'cache', 'sequences', 'private_fixture'), True),
         login_restore=dict(all_128_models_restored=True, complete_db1_restored=True,
-            cache_sha256=DIGEST, models=dict(models=128, rows=679, sha256=DIGEST)))
+            cache_sha256=DIGEST, models=dict(models=130, rows=679, sha256=DIGEST)))
 
 
 def complete_report():
@@ -133,7 +133,7 @@ def complete_report():
         input_binding=frozen, native_build=frozen['native'],
         sensitive_cleanup=dict(verified=True, errors=[], results=dict.fromkeys(
             ('tokenized_fixture_removed', 'private_sql_log_removed', 'private_query_observation_removed'), True)),
-        schema=dict(mode='full-migration-history', remaining_plan=0, applied_migrations=552),
+        schema=dict(mode='full-migration-history', remaining_plan=0, applied_migrations=553),
         private_io_bounds=dict(connect_seconds=5, redis_socket_seconds=5, statement_seconds=30,
             lock_seconds=5, execution_seconds=1500, cleanup_grace_seconds=180),
         fixtures=[fixture_receipt(version) for version in ('v1', 'v2')],

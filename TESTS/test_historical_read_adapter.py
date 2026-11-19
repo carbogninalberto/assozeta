@@ -275,7 +275,7 @@ class HistoricalReadAdapterControls(unittest.TestCase):
         before = state()
         receipt = adapter.assert_read_unchanged(before, copy.deepcopy(before), {b'key': b'bytes'}, {b'key': b'bytes'})
         self.assertTrue(receipt['unchanged'])
-        self.assertEqual(receipt['managed_models'], 128)
+        self.assertEqual(receipt['managed_models'], 130)
 
     def test_acceptance_cache_comparison_is_typed_absolute_nonvacuous_and_redacted(self):
         from TESTS.test_historical_read_cache import FakeEntry, FakeRedis
@@ -356,7 +356,7 @@ class HistoricalReadAdapterControls(unittest.TestCase):
         self.assertEqual(models, [concrete, through])
         self.assertEqual(calls, [{'include_auto_created': True}])
 
-    def test_full_schema_registry_preserves_exact_128_table_snapshot_inventory(self):
+    def test_full_schema_registry_preserves_exact_managed_table_snapshot_inventory(self):
         queries = []
         registry_calls = []
 
@@ -388,6 +388,7 @@ class HistoricalReadAdapterControls(unittest.TestCase):
                 return TableRows(meta.label)
 
         tables = [Model(f'application.Table{index}') for index in range(127)]
+        tables.extend([Model('communications.MessageTemplate'), Model('communications.OutgoingMessage')])
         tables.append(Model('application.User_groups', auto_created=True))
         registered = tables + [
             Model('drf_api_logger.APILogsModel', managed=False),
@@ -410,7 +411,7 @@ class HistoricalReadAdapterControls(unittest.TestCase):
         snapshot = adapter.managed_population_snapshot(models)
         self.assertEqual(models, tables)
         self.assertEqual(schema, tuple(registered))
-        self.assertEqual(len(snapshot), 128)
+        self.assertEqual(len(snapshot), 130)
         self.assertEqual(set(snapshot), {item._meta.label for item in tables})
         self.assertEqual(queries, [(item._meta.label, 'pk') for item in tables])
         self.assertEqual(registry_calls, [

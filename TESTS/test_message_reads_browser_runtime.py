@@ -26,7 +26,7 @@ LOGIN_COOKIE = ('BKN_AUTH=TOKEN-SECRET.PAYLOAD.SIGNATURE; Path=/; Secure; HttpOn
 
 
 def state():
-    return {'models': {f'model.{i}': [] for i in range(128)},
+    return {'models': {f'model.{i}': [] for i in range(130)},
             'cache': HistoricalReadCacheSnapshot(MappingProxyType({}))}
 
 
@@ -178,7 +178,7 @@ class ProtocolTests(unittest.TestCase):
             with self.assertRaises(StopIteration): running.send(None)
             if mutation == 'none':
                 _actual, proof = harness.observe_closed_state(observer, lambda: current, baseline, contrasts, timeout=0)
-                self.assertEqual(proof['models']['models'], 128)
+                self.assertEqual(proof['models']['models'], 130)
             else:
                 with self.subTest(mutation=mutation), self.assertRaises(AssertionError):
                     harness.observe_closed_state(observer, lambda: current, baseline, contrasts, timeout=0)
@@ -376,7 +376,7 @@ class ProvenanceAndPrivacyTests(unittest.TestCase):
             path = Path(temporary) / 'checkpoint.json'
             harness.save_snapshot(path, raw_state)
             data = json.loads(path.read_text())
-            self.assertEqual(len(data['models']), 128)
+            self.assertEqual(len(data['models']), 130)
             self.assertEqual(data['cache'][0]['expires_at_ms'], 2000000000000)
             self.assertEqual(data['cache'][0]['type_b64'], 'aGFzaA==')
             self.assertEqual(path.stat().st_mode & 0o777, 0o600)

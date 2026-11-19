@@ -207,7 +207,7 @@ def run_denials(*, version, apps, raw, fixture, observer, django_port, go_port,
         start_cursor = observer.cursor()
         websocket_baseline = (observer.websocket_started, observer.websocket_completed)
         baseline = shared.durable_snapshot(apps, raw)
-        shared.require(len(baseline['models']) == 128, 'denial-full-models')
+        shared.require(len(baseline['models']) == 130, 'denial-full-models')
         browser.shared.assert_cache_unchanged(baseline['cache'], baseline['cache'], fixture['contrasts'])
         # Nonvacuous targets must already exist before the first HTTP request.
         targets = {browser.contract.scalar(row['message_id']) for row in
@@ -222,7 +222,7 @@ def run_denials(*, version, apps, raw, fixture, observer, django_port, go_port,
         def stable(state):
             budget.remaining()
             shared.require(process_guard() == guard, 'denial-process-changed')
-            shared.require(len(state['models']) == 128 and
+            shared.require(len(state['models']) == 130 and
                            set(state['models']) == set(baseline['models']), 'denial-full-schema')
             browser.shared.assert_state_unchanged(baseline['models'], state['models'])
             browser.shared.assert_cache_unchanged(baseline['cache'], state['cache'], fixture['contrasts'])
@@ -292,7 +292,7 @@ def run_denials(*, version, apps, raw, fixture, observer, django_port, go_port,
                                'denial-total-traffic')
                 stable(final)
         return {'success': True, 'version': version, 'http_denials_verified': True,
-                'cases': receipts, 'models': 128, 'proxy_cleanup_verified': True,
+                'cases': receipts, 'models': 130, 'proxy_cleanup_verified': True,
                 'source_sha256': hashes, 'fixture_cleanup_owner': 'parent',
                 'browser_acceptance': False, 'complete_message_family_parity': False}
     except Exception:

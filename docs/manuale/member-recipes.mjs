@@ -18,7 +18,7 @@ const reviewed = {
   "BE/application/utils/subscriptions_utils.py": "2befe90fee8d12947e43ce809973792bc84a5600d768bc4ba9b4a7f6709ea2ef",
   "BE/application/serializers/subscriptions_serializers.py": "19b0a153b95d3d82599820ce3d41ecc4e9ab73e335a7924c389203b1a3ee4904",
   "BE/application/models/subscriptions_models.py": "348705bf0908ccd489167eb26c4975dc51ddfd77d82d7699f7cc1dbf69c17c7c",
-  "BE/application/permissions_registry.py": "b8318ad63daa9452ac736b2152449b14c49f73bc1417622a4181b7c3ceb3b1fa",
+  "BE/application/permissions_registry.py": "d6f30e78c76ea081c5c16331ae0f53b6e9051a04dc8faee2e263c81366e28a9b",
   "UI/src/components/buttons/ApproveButton.svelte": "4531bd12ab2764ec6069c516c8797660122deea749f26516ea0851dad58f4f0f",
   "UI/src/routes/accounting/payment/PaymentList.svelte": "31d3e103a34980df77ffe1178198789c0411f819f3ade64baba89ab0dcf3870a",
   "BE/application/views/payment_views.py": "7d63fd98c253499dbb7d2be9026f1fd2921f89518e7aa854713e29642d88afae",

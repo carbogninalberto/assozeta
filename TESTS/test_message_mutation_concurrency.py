@@ -741,7 +741,7 @@ class ExactEffectControls(unittest.TestCase):
         case = probe._cases(contract, fixture, 'go')[0]
         target, owner = case['effect']['message_id'], case['audit_actor']
         own, foreign = fixture['authored']['ids']['own_association'], fixture['authored']['ids']['foreign_association']
-        before = {f'foreign.Model{i}': [dict(id=1, value='preserve')] for i in range(122)}
+        before = {f'foreign.Model{i}': [dict(id=1, value='preserve')] for i in range(124)}
         message = dict(message_id=target, sport_association_id=own, type='EMAIL', message='Saved',
                        subject='Subject', created_at='2026-10-26T10:00:00Z')
         before.update({contract.MESSAGE: [message, dict(message, message_id=fixture['authored']['ids']['foreign_email'],

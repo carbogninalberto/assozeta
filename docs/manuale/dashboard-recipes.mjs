@@ -20,7 +20,7 @@ const reviewed = {
   "BE/application/models/courses_models.py": "58b9f15cc8b2a946469685305b924aa5db38043ba6197c894bd25c9006819671",
   "BE/application/models/carnet_models.py": "3e3cb2cfb3d2be09cc5db6b97b43e2a2f391d91ccb61dfb38c99bf0ec7913713",
   "BE/application/utils/api_utils.py": "dbbdaa92161a01903c58b40be6135466df85f4780128b23175da236ae69c4c43",
-  "BE/application/permissions_registry.py": "b8318ad63daa9452ac736b2152449b14c49f73bc1417622a4181b7c3ceb3b1fa",
+  "BE/application/permissions_registry.py": "d6f30e78c76ea081c5c16331ae0f53b6e9051a04dc8faee2e263c81366e28a9b",
   "BE/application/impersonation.py": "760fd6e63c6baebee14744cbdfe571ac4aa4e0fb1a5e0ac9b6147dfcf299cced",
   "UI/src/components/widgets/Associates.svelte": "5bb400b1d4716eaa0a8fb48186f328ecedddf2b0ab2aab66893ba426acf2eeab",
   "UI/src/components/widgets/Payments.svelte": "4e3e6fe698b9208613e9a2ee270294b601ab5a5b89abb7ba3a48c7eec86328b5",

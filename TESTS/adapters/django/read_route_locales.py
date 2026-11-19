@@ -128,7 +128,7 @@ def run(work, log, tool_env, address, *, go_server_factory=None, output=OUTPUT,
     runtime_sources = _runtime_sources()
     models = [m for m in apps.get_models(include_auto_created=True)
               if m._meta.managed and not m._meta.proxy]
-    assert len(models) == 128
+    assert len(models) == 130
     report['managed_models'] = len(models)
 
     def snapshot():

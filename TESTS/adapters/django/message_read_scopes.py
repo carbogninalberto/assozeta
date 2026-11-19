@@ -84,7 +84,7 @@ def cleanup_steps(steps):
 
 def snapshot_state(apps):
     state = shared.snapshot_models(apps)
-    contract.require(len(state) == 128, 'state.requires-128-models')
+    contract.require(len(state) == 130, 'state.requires-130-models')
     return state
 
 

@@ -23,7 +23,7 @@ const reviewed = {
   "UI/src/routes/association/course/carnet/detail/modals/AddCarnetModal.svelte": "00dcea9bfea001c1b12209d79d485448640826173e5bf33da8fc886c7e50857f",
   "UI/src/routes/accounting/payment/PaymentList.svelte": "31d3e103a34980df77ffe1178198789c0411f819f3ade64baba89ab0dcf3870a",
   "BE/application/urls.py": "b475e7ed8c26a891854c4021d7308aefb192d2a26df8b3ee916a33f88e7cc359",
-  "BE/application/permissions_registry.py": "b8318ad63daa9452ac736b2152449b14c49f73bc1417622a4181b7c3ceb3b1fa",
+  "BE/application/permissions_registry.py": "d6f30e78c76ea081c5c16331ae0f53b6e9051a04dc8faee2e263c81366e28a9b",
   "BE/application/views/course_views.py": "28ce719b7f6897bccde939737866533899649def382f68a47def300a5dbc1c66",
   // Reviewed: documented carnet workflows are unchanged.
   "BE/application/views/carnet_views.py": "709e3ae74f5ceeeb682899b7c95e371d573a94ebc5c4bce19fa3a485d017c0c6",

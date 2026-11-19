@@ -29865,9 +29865,9 @@
       "kind": "route",
       "django": {
         "file": "BE/communications/urls.py",
-        "line": 30,
+        "line": 39,
         "symbol": "communications/email-logs/list -> communication_email_logs_list",
-        "sha256": "46e17c2dac6b36ee18465b68ce2811a93381c016160170ac380c2100237eef73"
+        "sha256": "dfefc1501a428385939a7163d1c7130d9de2c4e5d5d1dbcc515f1d670834087d"
       },
       "source_present": true,
       "declaration": {
@@ -29875,7 +29875,7 @@
         "target": "communication_email_logs_list",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/email_logs.go",
         "BE_GO/internal/repository/email_logs.go",
@@ -29939,9 +29939,9 @@
       "kind": "route",
       "django": {
         "file": "BE/communications/urls.py",
-        "line": 20,
+        "line": 29,
         "symbol": "communications/messages/<str:message_id>/delete -> communication_messages_delete",
-        "sha256": "46e17c2dac6b36ee18465b68ce2811a93381c016160170ac380c2100237eef73"
+        "sha256": "dfefc1501a428385939a7163d1c7130d9de2c4e5d5d1dbcc515f1d670834087d"
       },
       "source_present": true,
       "declaration": {
@@ -29949,7 +29949,7 @@
         "target": "communication_messages_delete",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/message_mutations.go",
         "BE_GO/internal/dto/message_mutations.go",
@@ -30066,9 +30066,9 @@
       "kind": "route",
       "django": {
         "file": "BE/communications/urls.py",
-        "line": 19,
+        "line": 28,
         "symbol": "communications/messages/<str:message_id>/detail -> communication_messages_detail",
-        "sha256": "46e17c2dac6b36ee18465b68ce2811a93381c016160170ac380c2100237eef73"
+        "sha256": "dfefc1501a428385939a7163d1c7130d9de2c4e5d5d1dbcc515f1d670834087d"
       },
       "source_present": true,
       "declaration": {
@@ -30076,7 +30076,7 @@
         "target": "communication_messages_detail",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/message_reads.go",
         "BE_GO/internal/dto/message_reads.go",
@@ -30157,9 +30157,9 @@
       "kind": "route",
       "django": {
         "file": "BE/communications/urls.py",
-        "line": 17,
+        "line": 26,
         "symbol": "communications/messages/add -> communication_messages_add",
-        "sha256": "46e17c2dac6b36ee18465b68ce2811a93381c016160170ac380c2100237eef73"
+        "sha256": "dfefc1501a428385939a7163d1c7130d9de2c4e5d5d1dbcc515f1d670834087d"
       },
       "source_present": true,
       "declaration": {
@@ -30167,7 +30167,7 @@
         "target": "communication_messages_add",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/message_mutations.go",
         "BE_GO/internal/dto/message_mutations.go",
@@ -30269,9 +30269,9 @@
       "kind": "route",
       "django": {
         "file": "BE/communications/urls.py",
-        "line": 18,
+        "line": 27,
         "symbol": "communications/messages/list -> communication_messages_list",
-        "sha256": "46e17c2dac6b36ee18465b68ce2811a93381c016160170ac380c2100237eef73"
+        "sha256": "dfefc1501a428385939a7163d1c7130d9de2c4e5d5d1dbcc515f1d670834087d"
       },
       "source_present": true,
       "declaration": {
@@ -30279,7 +30279,7 @@
         "target": "communication_messages_list",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/message_reads.go",
         "BE_GO/internal/dto/message_reads.go",
@@ -30373,13 +30373,83 @@
       ]
     },
     {
+      "id": "route:BE/communications/urls.py:communications/outgoing/previews/<str:preview_id> -> outgoing_message_action",
+      "kind": "route",
+      "django": {
+        "file": "BE/communications/urls.py",
+        "line": 20,
+        "symbol": "communications/outgoing/previews/<str:preview_id> -> outgoing_message_action",
+        "sha256": "dfefc1501a428385939a7163d1c7130d9de2c4e5d5d1dbcc515f1d670834087d"
+      },
+      "source_present": true,
+      "declaration": {
+        "path": "communications/outgoing/previews/<str:preview_id>",
+        "target": "outgoing_message_action",
+        "syntax": "path"
+      },
+      "status": "uncharacterized",
+      "go": [],
+      "dependencies": [],
+      "contract": {
+        "methods": null,
+        "external_paths": null,
+        "request": null,
+        "response": null,
+        "errors": null,
+        "authentication": null,
+        "permissions": null,
+        "resource_scope": null,
+        "side_effects": null,
+        "transaction": null,
+        "execution_owner": "django"
+      },
+      "tests": [],
+      "evidence": [],
+      "notes": []
+    },
+    {
+      "id": "route:BE/communications/urls.py:communications/outgoing/recipients/<str:associate_id> -> outgoing_message_recipient",
+      "kind": "route",
+      "django": {
+        "file": "BE/communications/urls.py",
+        "line": 19,
+        "symbol": "communications/outgoing/recipients/<str:associate_id> -> outgoing_message_recipient",
+        "sha256": "dfefc1501a428385939a7163d1c7130d9de2c4e5d5d1dbcc515f1d670834087d"
+      },
+      "source_present": true,
+      "declaration": {
+        "path": "communications/outgoing/recipients/<str:associate_id>",
+        "target": "outgoing_message_recipient",
+        "syntax": "path"
+      },
+      "status": "uncharacterized",
+      "go": [],
+      "dependencies": [],
+      "contract": {
+        "methods": null,
+        "external_paths": null,
+        "request": null,
+        "response": null,
+        "errors": null,
+        "authentication": null,
+        "permissions": null,
+        "resource_scope": null,
+        "side_effects": null,
+        "transaction": null,
+        "execution_owner": "django"
+      },
+      "tests": [],
+      "evidence": [],
+      "notes": []
+    },
+    {
       "id": "route:BE/communications/urls.py:communications/send/email -> configuration_send_email",
       "kind": "route",
       "django": {
         "file": "BE/communications/urls.py",
-        "line": 15,
+        "line": 24,
         "symbol": "communications/send/email -> configuration_send_email",
-        "sha256": "46e17c2dac6b36ee18465b68ce2811a93381c016160170ac380c2100237eef73"
+        "sha256": "dfefc1501a428385939a7163d1c7130d9de2c4e5d5d1dbcc515f1d670834087d"
       },
       "source_present": true,
       "declaration": {
@@ -30387,7 +30457,7 @@
         "target": "configuration_send_email",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/cmd/server/communications_send_email.go",
         "BE_GO/cmd/server/main.go",
@@ -30452,9 +30522,9 @@
       "kind": "route",
       "django": {
         "file": "BE/communications/urls.py",
-        "line": 16,
+        "line": 25,
         "symbol": "communications/send/post -> configuration_send_post",
-        "sha256": "46e17c2dac6b36ee18465b68ce2811a93381c016160170ac380c2100237eef73"
+        "sha256": "dfefc1501a428385939a7163d1c7130d9de2c4e5d5d1dbcc515f1d670834087d"
       },
       "source_present": true,
       "declaration": {
@@ -30462,7 +30532,7 @@
         "target": "configuration_send_post",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/misc_routes.go",
@@ -30539,13 +30609,118 @@
       ]
     },
     {
+      "id": "route:BE/communications/urls.py:communications/settings/message-templates -> message_template_list",
+      "kind": "route",
+      "django": {
+        "file": "BE/communications/urls.py",
+        "line": 16,
+        "symbol": "communications/settings/message-templates -> message_template_list",
+        "sha256": "dfefc1501a428385939a7163d1c7130d9de2c4e5d5d1dbcc515f1d670834087d"
+      },
+      "source_present": true,
+      "declaration": {
+        "path": "communications/settings/message-templates",
+        "target": "message_template_list",
+        "syntax": "path"
+      },
+      "status": "uncharacterized",
+      "go": [],
+      "dependencies": [],
+      "contract": {
+        "methods": null,
+        "external_paths": null,
+        "request": null,
+        "response": null,
+        "errors": null,
+        "authentication": null,
+        "permissions": null,
+        "resource_scope": null,
+        "side_effects": null,
+        "transaction": null,
+        "execution_owner": "django"
+      },
+      "tests": [],
+      "evidence": [],
+      "notes": []
+    },
+    {
+      "id": "route:BE/communications/urls.py:communications/settings/message-templates/<str:template_id> -> message_template_detail",
+      "kind": "route",
+      "django": {
+        "file": "BE/communications/urls.py",
+        "line": 18,
+        "symbol": "communications/settings/message-templates/<str:template_id> -> message_template_detail",
+        "sha256": "dfefc1501a428385939a7163d1c7130d9de2c4e5d5d1dbcc515f1d670834087d"
+      },
+      "source_present": true,
+      "declaration": {
+        "path": "communications/settings/message-templates/<str:template_id>",
+        "target": "message_template_detail",
+        "syntax": "path"
+      },
+      "status": "uncharacterized",
+      "go": [],
+      "dependencies": [],
+      "contract": {
+        "methods": null,
+        "external_paths": null,
+        "request": null,
+        "response": null,
+        "errors": null,
+        "authentication": null,
+        "permissions": null,
+        "resource_scope": null,
+        "side_effects": null,
+        "transaction": null,
+        "execution_owner": "django"
+      },
+      "tests": [],
+      "evidence": [],
+      "notes": []
+    },
+    {
+      "id": "route:BE/communications/urls.py:communications/settings/message-templates/sample -> message_template_sample",
+      "kind": "route",
+      "django": {
+        "file": "BE/communications/urls.py",
+        "line": 17,
+        "symbol": "communications/settings/message-templates/sample -> message_template_sample",
+        "sha256": "dfefc1501a428385939a7163d1c7130d9de2c4e5d5d1dbcc515f1d670834087d"
+      },
+      "source_present": true,
+      "declaration": {
+        "path": "communications/settings/message-templates/sample",
+        "target": "message_template_sample",
+        "syntax": "path"
+      },
+      "status": "uncharacterized",
+      "go": [],
+      "dependencies": [],
+      "contract": {
+        "methods": null,
+        "external_paths": null,
+        "request": null,
+        "response": null,
+        "errors": null,
+        "authentication": null,
+        "permissions": null,
+        "resource_scope": null,
+        "side_effects": null,
+        "transaction": null,
+        "execution_owner": "django"
+      },
+      "tests": [],
+      "evidence": [],
+      "notes": []
+    },
+    {
       "id": "route:BE/communications/urls.py:communications/settings/smtp/info -> configuration_smtp_info",
       "kind": "route",
       "django": {
         "file": "BE/communications/urls.py",
-        "line": 13,
+        "line": 22,
         "symbol": "communications/settings/smtp/info -> configuration_smtp_info",
-        "sha256": "46e17c2dac6b36ee18465b68ce2811a93381c016160170ac380c2100237eef73"
+        "sha256": "dfefc1501a428385939a7163d1c7130d9de2c4e5d5d1dbcc515f1d670834087d"
       },
       "source_present": true,
       "declaration": {
@@ -30553,7 +30728,7 @@
         "target": "configuration_smtp_info",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/communications_smtp.go",
@@ -30623,9 +30798,9 @@
       "kind": "route",
       "django": {
         "file": "BE/communications/urls.py",
-        "line": 12,
+        "line": 21,
         "symbol": "communications/settings/smtp/update -> configuration_smtp_update",
-        "sha256": "46e17c2dac6b36ee18465b68ce2811a93381c016160170ac380c2100237eef73"
+        "sha256": "dfefc1501a428385939a7163d1c7130d9de2c4e5d5d1dbcc515f1d670834087d"
       },
       "source_present": true,
       "declaration": {
@@ -30633,7 +30808,7 @@
         "target": "configuration_smtp_update",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/communications_smtp.go",
@@ -30703,9 +30878,9 @@
       "kind": "route",
       "django": {
         "file": "BE/communications/urls.py",
-        "line": 14,
+        "line": 23,
         "symbol": "communications/settings/smtp/verify -> configuration_smtp_verify",
-        "sha256": "46e17c2dac6b36ee18465b68ce2811a93381c016160170ac380c2100237eef73"
+        "sha256": "dfefc1501a428385939a7163d1c7130d9de2c4e5d5d1dbcc515f1d670834087d"
       },
       "source_present": true,
       "declaration": {
@@ -30713,7 +30888,7 @@
         "target": "configuration_smtp_verify",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/communications_smtp.go",
@@ -30783,9 +30958,9 @@
       "kind": "route",
       "django": {
         "file": "BE/communications/urls.py",
-        "line": 24,
+        "line": 33,
         "symbol": "communications/staff-board/<str:staff_board_message_id>/delete -> staff_board_messages_delete",
-        "sha256": "46e17c2dac6b36ee18465b68ce2811a93381c016160170ac380c2100237eef73"
+        "sha256": "dfefc1501a428385939a7163d1c7130d9de2c4e5d5d1dbcc515f1d670834087d"
       },
       "source_present": true,
       "declaration": {
@@ -30793,7 +30968,7 @@
         "target": "staff_board_messages_delete",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE/notifications/go_realtime.py",
         "BE/notifications/management/commands/relay_go_realtime.py",
@@ -30868,9 +31043,9 @@
       "kind": "route",
       "django": {
         "file": "BE/communications/urls.py",
-        "line": 23,
+        "line": 32,
         "symbol": "communications/staff-board/<str:staff_board_message_id>/update -> staff_board_messages_update",
-        "sha256": "46e17c2dac6b36ee18465b68ce2811a93381c016160170ac380c2100237eef73"
+        "sha256": "dfefc1501a428385939a7163d1c7130d9de2c4e5d5d1dbcc515f1d670834087d"
       },
       "source_present": true,
       "declaration": {
@@ -30878,7 +31053,7 @@
         "target": "staff_board_messages_update",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE/notifications/go_realtime.py",
         "BE/notifications/management/commands/relay_go_realtime.py",
@@ -30966,9 +31141,9 @@
       "kind": "route",
       "django": {
         "file": "BE/communications/urls.py",
-        "line": 22,
+        "line": 31,
         "symbol": "communications/staff-board/add -> staff_board_messages_add",
-        "sha256": "46e17c2dac6b36ee18465b68ce2811a93381c016160170ac380c2100237eef73"
+        "sha256": "dfefc1501a428385939a7163d1c7130d9de2c4e5d5d1dbcc515f1d670834087d"
       },
       "source_present": true,
       "declaration": {
@@ -30976,7 +31151,7 @@
         "target": "staff_board_messages_add",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE/notifications/go_realtime.py",
         "BE/notifications/management/commands/relay_go_realtime.py",
@@ -31064,9 +31239,9 @@
       "kind": "route",
       "django": {
         "file": "BE/communications/urls.py",
-        "line": 21,
+        "line": 30,
         "symbol": "communications/staff-board/list -> staff_board_messages_list",
-        "sha256": "46e17c2dac6b36ee18465b68ce2811a93381c016160170ac380c2100237eef73"
+        "sha256": "dfefc1501a428385939a7163d1c7130d9de2c4e5d5d1dbcc515f1d670834087d"
       },
       "source_present": true,
       "declaration": {
@@ -31074,7 +31249,7 @@
         "target": "staff_board_messages_list",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/staff_board.go",
@@ -31147,9 +31322,9 @@
       "kind": "route",
       "django": {
         "file": "BE/communications/urls.py",
-        "line": 27,
+        "line": 36,
         "symbol": "communications/workflows/<str:workflow_id>/delete -> communication_workflows_delete",
-        "sha256": "46e17c2dac6b36ee18465b68ce2811a93381c016160170ac380c2100237eef73"
+        "sha256": "dfefc1501a428385939a7163d1c7130d9de2c4e5d5d1dbcc515f1d670834087d"
       },
       "source_present": true,
       "declaration": {
@@ -31157,7 +31332,7 @@
         "target": "communication_workflows_delete",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/dto/automation_workflow_write.go",
         "BE_GO/internal/dto/python_json.go",
@@ -31221,9 +31396,9 @@
       "kind": "route",
       "django": {
         "file": "BE/communications/urls.py",
-        "line": 29,
+        "line": 38,
         "symbol": "communications/workflows/<str:workflow_id>/details -> communication_workflows_details",
-        "sha256": "46e17c2dac6b36ee18465b68ce2811a93381c016160170ac380c2100237eef73"
+        "sha256": "dfefc1501a428385939a7163d1c7130d9de2c4e5d5d1dbcc515f1d670834087d"
       },
       "source_present": true,
       "declaration": {
@@ -31231,7 +31406,7 @@
         "target": "communication_workflows_details",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/automation_workflows.go",
         "BE_GO/internal/repository/automation_workflows.go",
@@ -31293,9 +31468,9 @@
       "kind": "route",
       "django": {
         "file": "BE/communications/urls.py",
-        "line": 28,
+        "line": 37,
         "symbol": "communications/workflows/<str:workflow_id>/update -> communication_workflows_update",
-        "sha256": "46e17c2dac6b36ee18465b68ce2811a93381c016160170ac380c2100237eef73"
+        "sha256": "dfefc1501a428385939a7163d1c7130d9de2c4e5d5d1dbcc515f1d670834087d"
       },
       "source_present": true,
       "declaration": {
@@ -31303,7 +31478,7 @@
         "target": "communication_workflows_update",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/automation_workflows.go",
@@ -31372,9 +31547,9 @@
       "kind": "route",
       "django": {
         "file": "BE/communications/urls.py",
-        "line": 26,
+        "line": 35,
         "symbol": "communications/workflows/add -> communication_workflows_add",
-        "sha256": "46e17c2dac6b36ee18465b68ce2811a93381c016160170ac380c2100237eef73"
+        "sha256": "dfefc1501a428385939a7163d1c7130d9de2c4e5d5d1dbcc515f1d670834087d"
       },
       "source_present": true,
       "declaration": {
@@ -31382,7 +31557,7 @@
         "target": "communication_workflows_add",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/dto/automation_workflow_write.go",
         "BE_GO/internal/dto/python_json.go",
@@ -31446,9 +31621,9 @@
       "kind": "route",
       "django": {
         "file": "BE/communications/urls.py",
-        "line": 25,
+        "line": 34,
         "symbol": "communications/workflows/list -> communication_workflows_list",
-        "sha256": "46e17c2dac6b36ee18465b68ce2811a93381c016160170ac380c2100237eef73"
+        "sha256": "dfefc1501a428385939a7163d1c7130d9de2c4e5d5d1dbcc515f1d670834087d"
       },
       "source_present": true,
       "declaration": {
@@ -31456,7 +31631,7 @@
         "target": "communication_workflows_list",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/automation_workflows.go",
         "BE_GO/internal/repository/automation_workflows.go",

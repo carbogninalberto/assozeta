@@ -11,12 +11,12 @@ export const communicationAuthReviewedSources = Object.freeze({
     "UI/src/routes/association/communication/messages/Messages.svelte": "7a5862099d6165b59b93bbb3ff1be6fa7703a85db6dbae7749aca198d115a43f",
     "UI/src/routes/association/communication/messages/modals/Send.svelte": "20aab21730a6af1f44cea41c3b6e2134b7f0d386897c7e81a1686d41c4c0b56b",
     "UI/src/utils/Functions.js": "c9ed79a8214d4e2ceb9d91e2cd3d52f42a32706f96e2890082ba5584c6787147",
-    "BE/communications/models.py": "32530538f7a66f9cf0a6e0c94f7846ef142bce13e5a1cae67663126927ebc591",
+    "BE/communications/models.py": "a26c39cd92129d1b027a1a549945c787a9ed54e1de313dc2562c0fc3cccb3c05",
     "BE/communications/views.py": "dd9b9feae532e57b67d3d89a137543293b17efc387f407f02f207b7a9efebd7c",
     "BE/application/views/statistic_views.py": "ef067ca1027ba67f32d04e20df927ae5b3c5bf85a48b2f4fa4dae5f12b40783f",
     "BE/communications/serializers.py": "2f53cb68ea3804b35cffea81315f2c17b5c55c2f4ba8129b42f77ccc62dcf354",
     "UI/src/routes/association/communication/settings/sections/EmailSMTP.svelte": "878c6421a023d8e0135b8c0e871c20cbc7391aee8268478b22327efabd9128bb",
-    "UI/src/routes/association/communication/settings/Menu.svelte": "2a152a0eeaf3196dd1b569e4bd656da561f93836a84049fed6cbb41186f9e610",
+    "UI/src/routes/association/communication/settings/Menu.svelte": "a9162c8839cc6d73eeaed2d138565fc98eb93d413f603884e7a7154d9a2d19d3",
     "UI/src/routes/association/communication/settings/sections/Stats.svelte": "f595cb94d796d748b44c26c321702fdd387118b039909ad6c6f89a76949d2a65",
     "BE/application/tasks.py": "36e3babcc1d2ff6692e322560948ed96c0fc8274958f438a84c4b69e1bad247c",
     "UI/src/routes/association/communication/automation/Automation.svelte": "8a0b6012241c3a32ab2bc92dc119793579d08efd19934b6afaa7f73885d6e699",
@@ -137,7 +137,7 @@ export const communicationAuthSourceContracts = Object.freeze([
     ],
     [
         "UI/src/routes/association/communication/settings/Menu.svelte",
-        "let pages = ['email', 'stats'];",
+        "let pages = ['email', 'stats', 'templates'];",
         91
     ],
     [

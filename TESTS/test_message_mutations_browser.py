@@ -58,7 +58,7 @@ def state_control():
         'message': 'Preserve the unrelated delivery', 'created_at': STAMP})
     baseline['communications.Message'].sort(key=lambda r: r['message_id'])
     baseline['communications.MessageTransaction'].append({'message_transaction_id': 'sentinel', 'message_id': sentinel})
-    for n in range(128 - len(baseline)):
+    for n in range(130 - len(baseline)):
         baseline['offline.Model' + str(n)] = [{'id': n, 'sentinel': 'unchanged'}]
     return baseline
 

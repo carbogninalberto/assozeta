@@ -56,7 +56,7 @@ def build_source_matches(source, manifest):
 def assert_workloads(result, image_id):
     assert result['success'] and result['source_stable']
     assert result['managed_state_preserved'] and result['cache_preserved']
-    assert result['managed_models'] == 128
+    assert result['managed_models'] == 130
     assert result['cleanup'] == {'django': True, 'go': True, 'proxy': True}
     assert result['versioned'] is True and result['cross_runtime_verified'] is True
     assert result['repository_checked'] is False and result['repository_tests'] == []

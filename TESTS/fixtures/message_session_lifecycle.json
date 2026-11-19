@@ -2,7 +2,7 @@
   "matrix_version": 1,
   "scope": "Bounded warm message-read session invalidation; parent-owned runtime only.",
   "read_effects": {
-    "managed_models": 128,
+    "managed_models": 130,
     "audit_rows_created": 0,
     "session_writes": 0,
     "cache_exclusions": []

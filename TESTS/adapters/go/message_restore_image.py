@@ -35,7 +35,7 @@ def validate_result(case, result, *, public=False):
     need(type(result) is dict and set(result) == keys, 'result-fields')
     need(result['name'] == 'message-mutations-restore-' + case
          and result['backend'] == 'go' and result['transport'] == 'packaged-actual-http'
-         and type(result['models']) is int and result['models'] == 128, 'result-binding')
+         and type(result['models']) is int and result['models'] == 130, 'result-binding')
     booleans = keys - {'name', 'backend', 'transport', 'models', 'blocked_backend', 'blocked_backend_sha256'}
     need(all(result[key] is True for key in booleans), 'result-checks')
     if case.endswith('lease'):

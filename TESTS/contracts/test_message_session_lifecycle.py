@@ -120,7 +120,7 @@ def validate_runtime(runtime, source=None):
 
 def restoration_receipt(baseline):
     return {'verified': True, 'checks': {'session': True, 'cache': True, 'state': True},
-            'models': 128, 'state_sha256': baseline['state_sha256'],
+            'models': 130, 'state_sha256': baseline['state_sha256'],
             'cache_sha256': baseline['cache_sha256']}
 
 
@@ -135,7 +135,7 @@ def _true_checks(value, names):
 def _restored(value, baseline):
     return (type(value) is dict and set(value) == set(restoration_receipt(baseline))
             and value['verified'] is True and _true_checks(value['checks'], ('session', 'cache', 'state'))
-            and type(value['models']) is int and value['models'] == 128
+            and type(value['models']) is int and value['models'] == 130
             and value['state_sha256'] == baseline['state_sha256']
             and value['cache_sha256'] == baseline['cache_sha256'])
 
@@ -160,7 +160,7 @@ def acceptance(report, expected_sources=None):
                 and all(_hash(item) for item in report['source_sha256'].values()), 'receipt.source')
         baseline = report['baseline']
         require(set(baseline) == {'models', 'state_sha256', 'cache_sha256', 'cache_keys'}, 'receipt.baseline')
-        require(type(baseline['models']) is int and baseline['models'] == 128
+        require(type(baseline['models']) is int and baseline['models'] == 130
                 and type(baseline['cache_keys']) is int and baseline['cache_keys'] >= 3
                 and _hash(baseline['state_sha256']) and _hash(baseline['cache_sha256']), 'receipt.baseline-values')
         require(_hash(report['process_sha256']), 'receipt.process')
@@ -175,7 +175,7 @@ def acceptance(report, expected_sources=None):
             require(change['code'] == authored['transition'] and type(change['removed_keys']) is int
                     and change['removed_keys'] == 1 and type(change['unchanged_keys']) is int
                     and change['unchanged_keys'] == baseline['cache_keys'] - 1, 'receipt.one-owned-key')
-            require(type(change['models']) is int and change['models'] == 128
+            require(type(change['models']) is int and change['models'] == 130
                     and change['state_sha256'] == baseline['state_sha256']
                     and _hash(change['cache_sha256']) and change['cache_sha256'] != baseline['cache_sha256']
                     and _true_checks(change['checks'], ('state', 'cache', 'process')), 'receipt.transition')
@@ -192,7 +192,7 @@ def acceptance(report, expected_sources=None):
                         and phase['status'] == case['status'] and phase['check'] == case['check']
                         and phase['authored_sha256'] == source_digest(case), 'receipt.authored')
                 require(_true_checks(phase['checks'], ('response', 'state', 'cache', 'attribution', 'process'))
-                        and type(phase['models']) is int and phase['models'] == 128
+                        and type(phase['models']) is int and phase['models'] == 130
                         and phase['state_sha256'] == baseline['state_sha256']
                         and phase['cache_sha256'] == (baseline if index == 0 else change)['cache_sha256']
                         and phase['process_sha256'] == report['process_sha256'], 'receipt.phase-observation')

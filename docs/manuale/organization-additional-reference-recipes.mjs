@@ -9,7 +9,7 @@ export const organizationAdditionalReviewedSources = Object.freeze({
     "UI/src/routes/association/Members/detail/sections/subcomponents/Tessera.svelte": "47539a823dbdc092996cb671eec8044a6168da923a2b2a62550d438673a86fd7",
     "BE/application/views/subscriptions_views.py": "5fb701ca27d2ca4bbf9a11b0a6f374cd79f6db6bb556f52e10b441aae06f064c",
     "UI/src/routes/association/Members/MembersList.svelte": "2205d4071d49dc3c96bad02299dd157668037807f33811b395f811197841650a",
-    "BE/application/permissions_registry.py": "b8318ad63daa9452ac736b2152449b14c49f73bc1417622a4181b7c3ceb3b1fa",
+    "BE/application/permissions_registry.py": "d6f30e78c76ea081c5c16331ae0f53b6e9051a04dc8faee2e263c81366e28a9b",
     "UI/src/routes/association/Members/shared/ExportData.svelte": "119330667e35cbc6b316abb6c45f484ef4a8aae2ea5951d477f21c32ca9f7307",
     "UI/src/components/modals/CurrentViewPrintingModal.svelte": "89cd17ec6bc9c60c50579a72a88ce83ef716dbd4ffa2719f5c0d3bd064b9be7a",
     "UI/src/routes/accounting/payment/PaymentList.svelte": "31d3e103a34980df77ffe1178198789c0411f819f3ade64baba89ab0dcf3870a",
@@ -48,7 +48,7 @@ export const organizationAdditionalReviewedSources = Object.freeze({
     "UI/src/routes/connectedCollaborators/CollaboratorActions.svelte": "2df48f56f3e4035b34ca2db58fa83423b7db8f2cce72d983e5dd1c826907ca8b",
     "BE/application/views/collaborator_views.py": "170561838fb06cf89016da5356cb0d39a2731b3591cc6a3487113c395ecbc558",
     "UI/src/routes/association/communication/messages/Messages.svelte": "7a5862099d6165b59b93bbb3ff1be6fa7703a85db6dbae7749aca198d115a43f",
-    "BE/communications/models.py": "32530538f7a66f9cf0a6e0c94f7846ef142bce13e5a1cae67663126927ebc591",
+    "BE/communications/models.py": "a26c39cd92129d1b027a1a549945c787a9ed54e1de313dc2562c0fc3cccb3c05",
     // Reviewed: import reuses only accounts linked to the archive owner, and
     // existing accounts keep their own credentials.
     "BE/application/services/import_service.py": "999118c2b1bded6aed88b2531097ebffef779947083da6ea2b46a2abd434af1c"

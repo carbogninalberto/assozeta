@@ -30,7 +30,7 @@ const reviewed = {
   "BE/application/views/search_views.py": "0cc8b4378133ef496ae8d193ad0904456dc92f394f8a04aebf9a5e3d58e1e380",
   "BE/application/serializers/auth_serializers.py": "06b647dcce4c370545bdb0c61e23a5a48c3c56e2c4878b7197fb8b3d9dd62d1e",
   "BE/application/models/user_models.py": "4800cd1f7a757e9e7d5203d1ea086d58e92ac4592e43c7fa7758103071336c96",
-  "BE/application/permissions_registry.py": "b8318ad63daa9452ac736b2152449b14c49f73bc1417622a4181b7c3ceb3b1fa",
+  "BE/application/permissions_registry.py": "d6f30e78c76ea081c5c16331ae0f53b6e9051a04dc8faee2e263c81366e28a9b",
   "UI/src/routes/profile/sections/Settings.svelte": "aed683b4bbb10c7a226a6eed573d1d748defc4d8baa7c13fd121e833b6561901",
   "UI/src/routes/association/archive/TemplatesList.svelte": "2fb5b32a1326a36787f24bca61ad8a456f420c90742d8da30938fa3d72d6f173",
   "UI/src/routes/association/archive/detail/partials/template-form.svelte": "83348b084cf65b145bbd366c0f388abe6cdb8156064e07708346dc72d6141cad",

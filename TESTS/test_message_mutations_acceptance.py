@@ -31,7 +31,7 @@ class AcceptanceControls(unittest.TestCase):
             'go_build_source_sha256': self.hashes, 'source_unchanged': True,
             'python': {'python': cli.production_python_version(), 'sha256': 'c' * 64},
             'go_toolchain': {'required': '1.25.12', 'actual': '1.25.12', 'local': True},
-            'schema': {'applied_migrations': 552, 'remaining_plan': 0, 'mode': 'full-migration-history'},
+            'schema': {'applied_migrations': 553, 'remaining_plan': 0, 'mode': 'full-migration-history'},
             'audit_resolvers_after_migration': True,
             'service_binary_sha256': dict.fromkeys(cli.TOOLS, 'd' * 64),
             'go_artifact': {'server_sha256': 'e' * 64, 'codec_sha256': 'f' * 64,
@@ -54,7 +54,7 @@ class AcceptanceControls(unittest.TestCase):
             workloads.append({'label': label, 'backend': backend, 'success': True,
                 'normalized_effects_sha256': '1' * 64,
                 'go_binary_sha256': 'e' * 64 if backend == 'go' else None,
-                'cases': [{'case': case['name'], 'status': case['status'], 'models': 128,
+                'cases': [{'case': case['name'], 'status': case['status'], 'models': 130,
                            'checks': dict.fromkeys(('response', 'state', 'audit', 'cache', 'attribution'), True),
                            'state_before_sha256': '2' * 64, 'state_after_sha256': '3' * 64,
                            'cache_sha256': '4' * 64} for case in self.source['cases']]})
@@ -87,8 +87,8 @@ class AcceptanceControls(unittest.TestCase):
         from TESTS.adapters.django.historical_read_cache import HistoricalReadCacheSnapshot
         from types import MappingProxyType
         case = self.source['cases'][0]
-        state = {f'synthetic.Model{number}': [] for number in range(128)}
-        receipt = {'case': case['name'], 'status': case['status'], 'models': 128,
+        state = {f'synthetic.Model{number}': [] for number in range(130)}
+        receipt = {'case': case['name'], 'status': case['status'], 'models': 130,
                    'state_before_sha256': adapter.shared.digest(state),
                    'state_after_sha256': adapter.shared.digest(state),
                    'cache_sha256': HistoricalReadCacheSnapshot(MappingProxyType({})).digest}
@@ -118,12 +118,12 @@ class AcceptanceControls(unittest.TestCase):
         from TESTS.adapters.django.historical_read_cache import HistoricalReadCacheSnapshot
         from types import MappingProxyType
         case = self.source['cases'][0]  # Authored CREATE requires a new Message and audit/index.
-        state = {f'synthetic.Model{number}': [] for number in range(125)}
+        state = {f'synthetic.Model{number}': [] for number in range(127)}
         state.update({contract.MESSAGE: [], contract.AUDIT: [], contract.DELIVERY: []})
         observation = {'case': case['name'], 'status': case['status'], 'before': state, 'after': state,
             'cache_before': [], 'cache_after': [], 'observed': [{'seq': 1, 'method': case['method'],
                 'path': case['path'], 'cid': case['name'], 'status': case['status'], 'error_type': None}]}
-        receipt = {'case': case['name'], 'status': case['status'], 'models': 128,
+        receipt = {'case': case['name'], 'status': case['status'], 'models': 130,
             'state_before_sha256': adapter.shared.digest(state), 'state_after_sha256': adapter.shared.digest(state),
             'cache_sha256': HistoricalReadCacheSnapshot(MappingProxyType({})).digest}
         workload = {'label': 'django-native', 'backend': 'django', 'cases': [receipt],
