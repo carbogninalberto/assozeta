@@ -47,8 +47,7 @@ RUN mkdir -p /var/cache/assozeta-logo && \
 # these ownership/mode bits into a fresh anonymous volume at first mount.
 RUN mkdir -p /var/cache/assozeta-message-list && \
     chown 10001:10001 /var/cache/assozeta-message-list && chmod 0700 /var/cache/assozeta-message-list
-# The opt-in Celery consumer (worker-go) stages export/import/restore archives
-# here (TMPDIR) on its own disk volume; no authoritative data.
+# The Go API and consumer each stage archives on a private disk volume here.
 RUN mkdir -p /var/cache/assozeta-go-tasks && \
     chown 10001:10001 /var/cache/assozeta-go-tasks && chmod 0700 /var/cache/assozeta-go-tasks
 COPY --chown=0:0 release-manual/ /app/release-manual/

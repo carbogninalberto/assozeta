@@ -25,8 +25,19 @@ type documentUploadObjects struct {
 }
 
 func (o documentUploadObjects) Put(ctx context.Context, key string, body []byte, contentType, contentEncoding string) error {
-	return o.S3.Put(ctx, key, body, documentobjects.Upload{ContentType: contentType, ContentEncoding: contentEncoding,
-		CacheControl: o.cacheControl, ACL: o.acl})
+	return o.S3.Put(ctx, key, body, o.uploadOptions(contentType, contentEncoding))
+}
+
+func (o documentUploadObjects) PutFile(ctx context.Context, key string, file *os.File, contentType, contentEncoding string) error {
+	info, err := file.Stat()
+	if err != nil {
+		return err
+	}
+	return o.S3.PutReader(ctx, key, file, info.Size(), o.uploadOptions(contentType, contentEncoding))
+}
+
+func (o documentUploadObjects) uploadOptions(contentType, contentEncoding string) documentobjects.Upload {
+	return documentobjects.Upload{ContentType: contentType, ContentEncoding: contentEncoding, CacheControl: o.cacheControl, ACL: o.acl}
 }
 
 // composeCourseLocationUploads is the document storage for course location

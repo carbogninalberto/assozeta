@@ -105,6 +105,8 @@ class Scenario:
 
 SCENARIOS = [
     Scenario('an archive replaces the current association data', expect={'state': 'completed'}),
+    Scenario('a document collision preserves the external file and remaps the imported attachment',
+             'single-attachment', setup='document-collision', expect={'state': 'completed'}),
     Scenario('only accounts of the replaced association take archived passwords', 'former-collaborator',
              setup='passwordless-accounts',
              expect={'state': 'completed', 'passwords': {str(ATHLETE): PBKDF2, str(FORMER): '!former'}}),
@@ -348,6 +350,12 @@ def build_archives():
         return body
     archives['missing-media'] = rewrite(good, missing)
 
+    def single_attachment(records):
+        # One M2M link avoids assigning sequence IDs in random UUID set order.
+        payment = next(row for row in records if row['payment_id'] == str(U(131)))
+        payment['_m2m_attachments'] = [str(D_ATTACHMENT)]
+    archives['single-attachment'] = edit_records(good, 'data/43_payments.json', single_attachment)
+
     attachment = [m for m in media if m.endswith('/allegato.txt')]
     assert len(attachment) == 1, media
     archives['backslash-media'] = renamed(good, attachment[0], attachment[0].replace('allegato.txt', 'alle\\gato.txt'))
@@ -400,6 +408,11 @@ class Stack:
         started = datetime.now(timezone.utc)
         truncate()
         seed_association(current=True)
+        if scenario.setup == 'document-collision':
+            from application.models import Payment
+            from docmanager.models import Document
+            Payment.attachments.through.objects.filter(document_id=D_ATTACHMENT).delete()
+            Document.objects.filter(pk=D_ATTACHMENT).update(filename='keep.txt', filepath='unrelated/keep.txt')
         if scenario.setup == 'passwordless-accounts':
             # The member's account lost its password; the former collaborator's account is outside the association.
             User.original_objects.filter(user_id=ATHLETE).update(password='!athlete')
@@ -765,6 +778,18 @@ class Harness:
             if isinstance(value, (date, Decimal)):
                 return str(value)
             return value
+        if scenario.setup == 'document-collision':
+            from application.models import Payment
+            from docmanager.models import Document
+            existing = Document.objects.get(pk=D_ATTACHMENT)
+            assert (existing.filename, existing.filepath, existing.token) == ('keep.txt', 'unrelated/keep.txt', U(56))
+            imported = Payment.objects.get(pk=U(131)).attachments.get(filename='allegato.txt')
+            assert imported.pk != existing.pk and imported.token != existing.token
+            body = self.stack.s3.get_object(Bucket=BUCKET, Key=f'{LOCATION}/{imported.filepath}')['Body']
+            try:
+                assert body.read() == MEDIA['attachments/allegato.txt']
+            finally:
+                body.close()
         state = self.stack.snapshot()
         before = self.before
         out = {}

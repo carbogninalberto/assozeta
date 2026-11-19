@@ -1406,7 +1406,16 @@ func (r *consumerImportRun) createModelInstance(model *importeffects.Model, data
 				return nil, err
 			}
 			if exists {
-				return nil, importError(name + " UUID collision: " + text + " already exists. Only User rows may be reused by exact UUID during import.")
+				if name != "Document" || r.replace == nil {
+					return nil, importError(name + " UUID collision: " + text + " already exists. Only User rows may be reused by exact UUID during import.")
+				}
+				id, err := r.unusedRestoreDocumentID(model)
+				if err != nil {
+					return nil, err
+				}
+				r.uuidMapping[oldText] = id
+				data = importSet(data, pkField, id)
+				data, _, _ = importPop(data, "token") // Use the new document's sharing token.
 			}
 		}
 	}

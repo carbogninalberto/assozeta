@@ -29,7 +29,7 @@ const server = await createServer({
             if (id === '/operations-entry.js') return '\0fixture-entry';
         },
         load(id) {
-            if (id === '\0fixture-api') return `export const originalFetch = window.fetch.bind(window); export async function apiFetch(url, options) { const r = await fetch(url, options); return {error: !r.ok, response: await r.json()}; }`;
+            if (id === '\0fixture-api') return `export const originalFetch = window.fetch.bind(window); export async function apiFetch(url, options) { const r = await fetch(url, options); return {error: !r.ok, response: await r.json(), status: r.status}; }`;
             if (id === '\0fixture-store') return `import {writable} from 'svelte/store'; export const oemConfig = writable({logo: '/oem/assozeta/brand/logo.svg'}); export const getApiHost = () => '/api'; export const saveRuntimeConfig = () => {}; export const clearInstanceCache = () => {}; export const uploadInstanceLogo = async () => {}; export const applyApiVersion = async () => 'v1';`;
             if (id === '\0fixture-entry') return `import SelfInstance from '/src/routes/profile/sections/SelfInstance.svelte'; new SelfInstance({target: document.getElementById('app')});`;
         },
@@ -187,14 +187,31 @@ try {
         });
         // Trasferisci dati closes the Backup tab: Bakney ZIP export list and import drawer.
         await page.route('**/api/association/export/list', route => route.fulfill({json: {exports: [{document_id: 'fixture-export', filename: 'export_fixture.zip', file_size_bytes: 48 * 1024 ** 2, download_token: 'fixture', created_at: hoursAgo(30)}]}}));
-        await page.route('**/api/instance/admin/data-restore', route => route.fulfill({json: {available: true, max_upload_bytes: 5 * GIB, active: null, history: [], backups: [], backups_next: null}}));
+        await page.route('**/api/instance/admin/data-restore', route => {
+            if (route.request().method() === 'POST') return route.fulfill({status: 413, json: {}});
+            return route.fulfill({json: {available: true, max_upload_bytes: 5 * GIB, active: null, history: [], backups: [], backups_next: null}});
+        });
         await page.goto(`http://127.0.0.1:${port}/#/profile?page=self-instance&tab=backups`);
         const transfer = page.getByRole('region', {name: 'Trasferisci dati'});
         await expect(transfer.getByRole('list', {name: 'Export'}).getByRole('listitem')).toHaveCount(1);
         await transfer.getByRole('button', {name: 'Importa da Bakney'}).click();
-        await expect(page.getByRole('dialog', {name: 'Importa da Bakney'}).getByRole('button', {name: 'Seleziona backup ZIP'})).toBeVisible();
+        const importDialog = page.getByRole('dialog', {name: 'Importa da Bakney'});
+        await expect(importDialog.getByRole('button', {name: 'Seleziona backup ZIP'})).toBeVisible();
+        const steps = await importDialog.getByRole('list', {name: 'Passaggi'}).locator('.num').evaluateAll(nodes =>
+            nodes.map(node => { const {x, y, width, height} = node.getBoundingClientRect(); return {x, y, width, height}; }));
+        assert.equal(steps.length, 4);
+        const spacing = steps[1].x - steps[0].x;
+        assert(spacing > steps[0].width);
+        steps.forEach(({x, y, width, height}, index) => {
+            assert(Math.abs(x - steps[0].x - index * spacing) < 1);
+            assert.equal(y, steps[0].y);
+            assert.equal(width, height);
+        });
         await page.waitForTimeout(400);
         await page.screenshot({path: path.join(output, `transfer-import-${viewport.width}.png`)});
+        await importDialog.locator('input[type=file]').setInputFiles({name: 'test.zip', mimeType: 'application/zip', buffer: Buffer.from('fixture')});
+        await importDialog.getByRole('button', {name: 'Carica e verifica'}).click();
+        await expect(importDialog.getByRole('alert')).toContainText('HTTP 413');
         await page.keyboard.press('Escape');
         await transfer.scrollIntoViewIfNeeded();
         await page.screenshot({path: path.join(output, `transfer-${viewport.width}.png`)});

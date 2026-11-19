@@ -1,7 +1,9 @@
 package handler
 
 import (
+	"bytes"
 	"errors"
+	"io"
 	"net/textproto"
 	"strings"
 	"unicode/utf8"
@@ -130,45 +132,53 @@ var errPyBase64 = errors.New("binascii.Error")
 // characters outside the alphabet are skipped, a padding sequence ends the
 // input and an incomplete group is an error.
 func pyBase64Decode(data []byte) ([]byte, error) {
-	const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
-	var table [256]int8
-	for i := range table {
-		table[i] = -1
+	return io.ReadAll(&pyBase64Reader{source: bytes.NewReader(data)})
+}
+
+// pyBase64Reader decodes in place so multipart ZIPs need only a copy buffer.
+type pyBase64Reader struct {
+	source           io.Reader
+	quad, pads, left int
+}
+
+func (r *pyBase64Reader) Read(p []byte) (int, error) {
+	if len(p) == 0 {
+		return 0, nil
 	}
-	for i := 0; i < len(alphabet); i++ {
-		table[alphabet[i]] = int8(i)
-	}
-	out := make([]byte, 0, len(data)/4*3)
-	quad, pads, left := 0, 0, 0
-	for _, c := range data {
-		if c == '=' {
-			// pads only counts once the group holds two characters.
-			if quad >= 2 {
-				pads++
+	for {
+		n, err := r.source.Read(p)
+		out := p[:0]
+		for _, c := range p[:n] {
+			if c == '=' {
+				if r.quad >= 2 {
+					r.pads++
+				}
+				continue
 			}
-			continue
+			value := strings.IndexByte("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/", c)
+			if value < 0 {
+				continue
+			}
+			r.pads = 0
+			switch r.quad {
+			case 0:
+				r.quad, r.left = 1, value
+			case 1:
+				out = append(out, byte(r.left<<2|value>>4))
+				r.quad, r.left = 2, value&0xf
+			case 2:
+				out = append(out, byte(r.left<<4|value>>2))
+				r.quad, r.left = 3, value&0x3
+			case 3:
+				out = append(out, byte(r.left<<6|value))
+				r.quad, r.left = 0, 0
+			}
 		}
-		value := table[c]
-		if value < 0 {
-			continue
+		if err == io.EOF && r.quad != 0 && !(r.quad >= 2 && r.quad+r.pads >= 4) {
+			err = errPyBase64
 		}
-		pads = 0
-		switch quad {
-		case 0:
-			quad, left = 1, int(value)
-		case 1:
-			out = append(out, byte(left<<2|int(value)>>4))
-			quad, left = 2, int(value)&0xf
-		case 2:
-			out = append(out, byte(left<<4|int(value)>>2))
-			quad, left = 3, int(value)&0x3
-		case 3:
-			out = append(out, byte(left<<6|int(value)))
-			quad, left = 0, 0
+		if len(out) > 0 || err != nil {
+			return len(out), err
 		}
 	}
-	if quad != 0 && !(quad >= 2 && quad+pads >= 4) {
-		return nil, errPyBase64
-	}
-	return out, nil
 }

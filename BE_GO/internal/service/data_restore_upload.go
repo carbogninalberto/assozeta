@@ -17,7 +17,7 @@ import (
 // DataRestoreUploads is the default storage's write side for the upload.
 type DataRestoreUploads interface {
 	Exists(ctx context.Context, key string) (bool, error)
-	Put(ctx context.Context, key string, body []byte, contentType, contentEncoding string) error
+	PutFile(ctx context.Context, key string, file *os.File, contentType, contentEncoding string) error
 }
 
 // DataRestoreArchives enables the upload's archive validation: the import
@@ -53,20 +53,7 @@ const dataRestoreUploadJSONEdge = 9942
 // the owner's receipts in review are cancelled and cleaned, the receipt is
 // created with the archive's summary, and the upload is stored under
 // restores/<id>/upload/archive.zip.
-func (s *DataRestore) acceptUpload(ctx context.Context, user string, config *domain.DataRestoreInstance, content []byte) (*DataRestoreReply, error) {
-	temp, err := os.CreateTemp("", "data-restore-*.zip")
-	if err != nil {
-		return nil, err
-	}
-	path := temp.Name()
-	defer os.Remove(path)
-	_, err = temp.Write(content)
-	if closeErr := temp.Close(); err == nil {
-		err = closeErr
-	}
-	if err != nil {
-		return nil, err
-	}
+func (s *DataRestore) acceptUpload(ctx context.Context, user string, config *domain.DataRestoreInstance, path string) (*DataRestoreReply, error) {
 	limits := restoreLimits{Expanded: s.archives.Limits.Expanded, JSON: s.archives.Limits.JSON, File: s.archives.Limits.File}
 	run := &consumerImportRun{s: &ConsumerImportAssociation{plan: s.archives.Plan}, ctx: ctx, path: path}
 	archive, err := validateRestoreArchive(run, path, limits, dataRestoreUploadJSONEdge)
@@ -110,7 +97,7 @@ func (s *DataRestore) acceptUpload(ctx context.Context, user string, config *dom
 		return nil, err
 	}
 	name := "restores/" + op.ID + "/upload/archive.zip"
-	if err := s.storeUpload(ctx, name, content); err != nil {
+	if err := s.storeUpload(ctx, name, path); err != nil {
 		changes := repository.DataRestoreChanges{{Column: "state", Value: "failed"}, {Column: "stage", Value: "failed"},
 			{Column: "error", Value: dataRestoreUploadFailed}}
 		now := s.now().UTC().Truncate(time.Microsecond)
@@ -133,7 +120,7 @@ func (s *DataRestore) acceptUpload(ctx context.Context, user string, config *dom
 
 // storeUpload is default_storage.save(name, File(temporary)): the content
 // type guessed from the name (no upload content type on a File).
-func (s *DataRestore) storeUpload(ctx context.Context, name string, content []byte) error {
+func (s *DataRestore) storeUpload(ctx context.Context, name, path string) error {
 	key, err := documentkey.S3Key(name, s.objects.Location())
 	if err != nil {
 		return err
@@ -154,7 +141,12 @@ func (s *DataRestore) storeUpload(ctx context.Context, name string, content []by
 	if !known {
 		kind = "application/octet-stream"
 	}
-	return s.archives.Uploads.Put(ctx, key, content, kind, encoding)
+	file, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	return s.archives.Uploads.PutFile(ctx, key, file, kind, encoding)
 }
 
 // summary is Archive.summary() after validate(): the manifest's skipped
