@@ -1,5 +1,9 @@
 from django.urls import path
 
+from communications.message_template_views import (
+    message_template_detail, message_template_list, message_template_sample,
+    outgoing_message_action, outgoing_message_recipient,
+)
 from communications.views import configuration_smtp_update, configuration_smtp_info, configuration_smtp_verify, \
     configuration_send_email, \
     configuration_send_post, communication_messages_list, communication_messages_detail, communication_messages_delete, \
@@ -9,6 +13,11 @@ from communications.views import configuration_smtp_update, configuration_smtp_i
     staff_board_messages_update, staff_board_messages_delete
 
 urlpatterns = [
+    path('communications/settings/message-templates', message_template_list),
+    path('communications/settings/message-templates/sample', message_template_sample),
+    path('communications/settings/message-templates/<str:template_id>', message_template_detail),
+    path('communications/outgoing/recipients/<str:associate_id>', outgoing_message_recipient),
+    path('communications/outgoing/previews/<str:preview_id>', outgoing_message_action),
     path(r'communications/settings/smtp/update', configuration_smtp_update),
     path(r'communications/settings/smtp/info', configuration_smtp_info),
     path(r'communications/settings/smtp/verify', configuration_smtp_verify),

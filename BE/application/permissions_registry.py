@@ -238,6 +238,12 @@ PERMISSIONS_REGISTRY = {
     ('POST', 'communications/staff-board/add'): 'association.communication.messages.create',
     ('PATCH', 'communications/staff-board/*/update'): 'association.communication.messages.update',
     ('DELETE', 'communications/staff-board/*/delete'): 'association.communication.messages.delete',
+    ('GET', 'communications/settings/message-templates'): 'association.communication.settings.read',
+    ('POST', 'communications/settings/message-templates'): 'association.communication.settings.update',
+    'communications/settings/message-templates/sample': 'association.communication.settings.update',
+    'communications/settings/message-templates/*': 'association.communication.settings.update',
+    'communications/outgoing/recipients/*': 'association.communication.messages.create',
+    'communications/outgoing/previews/*': 'association.communication.messages.create',
 
     # ============================================
     # Modules (Forms/Documents)

@@ -2,12 +2,15 @@
     import {onMount} from 'svelte';
     import {toast} from 'svelte-sonner';
     import {apiFetch, replaceUID} from 'utils/ApiMiddleware';
+    import {canPerformAction} from 'utils/Permissions';
+    import OutgoingMessage from '../../../communication/messages/modals/OutgoingMessage.svelte';
     import AssociateForm from '../partials/associate-form.svelte';
 
     export let associateId;
     export let width = '85vw';
 
     let associate;
+    let composeMessage = false;
 
     async function fetchData() {
         let res = await apiFetch(replaceUID(__bakney.env.API.PERSONAS.INFO, associateId));
@@ -47,6 +50,13 @@
 </script>
 
 {#if associate}
+    {#if canPerformAction('association.communication.messages.create')}
+        <div class="d-flex justify-content-end px-4 pt-4">
+            <button type="button" class="btn btn-light-primary font-weight-bold" on:click={() => composeMessage = true}>
+                Invia messaggio
+            </button>
+        </div>
+    {/if}
     <AssociateForm {associate} on:submit={handleSubmit} {width} on:incomplete={handleIncomplete} />
 {:else}
     <div
@@ -55,4 +65,8 @@
         <div class="spinner-border spinner-border-lg mr-2 text-primary" role="status" aria-hidden="true" />
         Caricamento...
     </div>
+{/if}
+
+{#if composeMessage}
+    <OutgoingMessage {associateId} on:close={() => composeMessage = false} />
 {/if}

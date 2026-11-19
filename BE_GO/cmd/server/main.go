@@ -848,7 +848,8 @@ func run() (runErr error) {
 	e.Any("/communications/settings/smtp/info", communicationSMTPHandler.Info, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/communications/settings/smtp/update", communicationSMTPHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/communications/settings/smtp/verify", communicationSMTPHandler.Verify, middleware.DjangoSessionAudit(sessionAuthentication))
-	e.Any("/communications/send/email", composeCommunicationSendEmail(cfg, db, tasks, service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations).Send, middleware.DjangoSessionAudit(sessionAuthentication))
+	registerCommunicationDelivery(e, cfg, db, tasks, service.NewActorAuthentication(accounts, tokens), identities,
+		middleware.DjangoSessionAudit(sessionAuthentication), paymentCategoryOperations)
 	e.Any("/communications/staff-board/list", staffBoardHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/communications/staff-board/add", staffBoardHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/communications/staff-board/:staff_board_message_id/update", staffBoardHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))

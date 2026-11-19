@@ -6189,6 +6189,26 @@
      "target_column": "sport_association_id"
     },
     {
+     "column": "sport_association_id",
+     "fast": true,
+     "field": "sport_association",
+     "model": "communications.MessageTemplate",
+     "null": false,
+     "on_delete": "CASCADE",
+     "table": "communications_messagetemplate",
+     "target_column": "sport_association_id"
+    },
+    {
+     "column": "sport_association_id",
+     "fast": true,
+     "field": "sport_association",
+     "model": "communications.OutgoingMessage",
+     "null": false,
+     "on_delete": "CASCADE",
+     "table": "communications_outgoingmessage",
+     "target_column": "sport_association_id"
+    },
+    {
      "column": "primary_association_id",
      "fast": false,
      "field": "primary_association",
@@ -8661,6 +8681,22 @@
    "str": null,
    "table": "communications_message"
   },
+  "communications.MessageTemplate": {
+   "additional_data": null,
+   "app_label": "communications",
+   "audit": null,
+   "auto_created": false,
+   "fast_root": true,
+   "model_name": "messagetemplate",
+   "object_name": "MessageTemplate",
+   "pk": "id",
+   "pk_type": "UUIDField",
+   "post_delete": [],
+   "pre_delete": [],
+   "relations": [],
+   "str": null,
+   "table": "communications_messagetemplate"
+  },
   "communications.MessageTransaction": {
    "additional_data": null,
    "app_label": "communications",
@@ -8676,6 +8712,22 @@
    "relations": [],
    "str": null,
    "table": "communications_messagetransaction"
+  },
+  "communications.OutgoingMessage": {
+   "additional_data": null,
+   "app_label": "communications",
+   "audit": null,
+   "auto_created": false,
+   "fast_root": true,
+   "model_name": "outgoingmessage",
+   "object_name": "OutgoingMessage",
+   "pk": "id",
+   "pk_type": "UUIDField",
+   "post_delete": [],
+   "pre_delete": [],
+   "relations": [],
+   "str": null,
+   "table": "communications_outgoingmessage"
   },
   "communications.StaffBoardMessage": {
    "additional_data": null,
@@ -9071,6 +9123,8 @@
   "communications.MessageTransaction",
   "communications.StaffBoardMessage",
   "communications.AutomationWorkflow",
+  "communications.MessageTemplate",
+  "communications.OutgoingMessage",
   "application.User",
   "application.User_preview_and_custom_features",
   "application.User_groups",
