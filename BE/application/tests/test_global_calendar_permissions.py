@@ -85,13 +85,42 @@ class GlobalCalendarPermissionTests(BaseAPITestCase):
             self.assertEqual(self.client.post(self.url, {'action':'create','events':events}, format='json').status_code, 400)
         self.assertEqual(self.client.get('/calendar/events', {'start':'no'}).status_code, 400)
 
-    def test_instructor_sees_only_own_lessons(self):
-        staff = self.staff('association.calendar.read')
-        instructor = Instructor.objects.create(user=self.user, associated_user_id=staff.pk, first_name='Instructor', last_name='Test')
+    def test_substitute_instructor_sees_only_assigned_lessons(self):
+        regular_user = self.staff('association.calendar.read')
+        substitute_user = self.staff('association.calendar.read')
+        regular = Instructor.objects.create(
+            user=self.user, associated_user_id=regular_user.pk, first_name='Regular', last_name='Instructor',
+        )
+        substitute = Instructor.objects.create(
+            user=self.user, associated_user_id=substitute_user.pk, first_name='Substitute', last_name='Instructor',
+        )
+        regular_assignment = {'instructor_id': str(regular.pk)}
+        substitute_assignment = {'instructor_id': str(substitute.pk)}
+        friday, tuesday, unassigned = event(), event(), event()
+        for lesson, day in [(friday, '2030-01-04'), (tuesday, '2030-01-08'), (unassigned, '2030-01-11')]:
+            lesson['start'] = f'{day}T18:00:00Z'
+            lesson['end'] = f'{day}T19:00:00Z'
+        friday['extendedProps']['instructor'] = regular_assignment
+        tuesday['extendedProps']['instructor'] = [regular_assignment, substitute_assignment]
         course = create_test_course(sport_association=self.sport_association)
-        own, someone_else = event(), event()
-        own['extendedProps']['instructor'] = [{'instructor_id':str(instructor.pk)}]
-        AttendanceRegistry.objects.create(course=course, events=[own,someone_else], status=AttendanceRegistry.PUBLISHED)
-        response = self.client.get('/calendar/events')
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual([e['event_id'] for e in response.json()['data']['events']], [own['event_id']])
+        AttendanceRegistry.objects.create(
+            course=course, events=[friday, tuesday, unassigned], status=AttendanceRegistry.PUBLISHED,
+        )
+
+        date_range = {'start': '2030-01-01', 'end': '2030-02-01', 'get_lesson': 'false'}
+        for user, expected in [(substitute_user, [tuesday]), (regular_user, [friday, tuesday])]:
+            with self.subTest(user=user.pk):
+                self.client.force_authenticate(user=user)
+                response = self.client.get('/calendar/events', date_range)
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(
+                    [item['event_id'] for item in response.json()['data']['events']],
+                    [lesson['event_id'] for lesson in expected],
+                )
+
+        self.client.force_authenticate(user=substitute_user)
+        for lesson, expected in [(tuesday, [tuesday['event_id']]), (friday, [])]:
+            with self.subTest(event=lesson['event_id']):
+                response = self.client.get('/calendar/events', {'event_id': lesson['event_id']})
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual([item['event_id'] for item in response.json()['data']['events']], expected)
