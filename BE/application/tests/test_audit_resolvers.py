@@ -67,19 +67,17 @@ class BaseResolverTestCase(TestCase):
 class RegisterResolverTests(TestCase):
     """Tests for register_resolver and get_resolver functions."""
 
-    def test_register_resolver_success(self):
-        """Test registering a resolver for a model."""
-        test_resolver = lambda obj: (obj.sport_association, 'test') if obj.sport_association else None
-        register_resolver(Payment, test_resolver)
-
-        content_type = ContentType.objects.get_for_model(Payment)
-        key = f"{content_type.app_label}.{content_type.model}"
-        self.assertIn(key, SPORT_ASSOCIATION_RESOLVERS)
+    def test_register_resolver_without_content_type_query(self):
+        ContentType.objects.clear_cache()
+        with patch.dict(SPORT_ASSOCIATION_RESOLVERS, clear=True):
+            with self.assertNumQueries(0):
+                register_resolver(Payment, direct_resolver)
+            content_type = ContentType.objects.get_for_model(Payment)
+            self.assertIs(get_resolver(content_type), direct_resolver)
 
     def test_get_resolver_returns_function(self):
-        """Test getting a registered resolver."""
         content_type = ContentType.objects.get_for_model(Payment)
-        resolver = get_resolver(content_type)
+        self.assertIs(get_resolver(content_type), direct_resolver)
 
     def test_get_resolver_nonexistent_returns_none(self):
         """Test getting resolver for unregistered model returns None."""
@@ -93,10 +91,8 @@ class RegisterResolverTests(TestCase):
     @patch('application.audit_resolvers.logger')
     def test_register_resolver_exception_logs_warning(self, mock_logger):
         """Test that registration exception logs warning."""
-        with patch('application.audit_resolvers.ContentType.objects.get_for_model') as mock_get:
-            mock_get.side_effect = Exception("Test error")
-            register_resolver(MagicMock, lambda x: None)
-            mock_logger.warning.assert_called()
+        register_resolver(object, direct_resolver)
+        mock_logger.warning.assert_called_once()
 
 
 class DirectResolverTests(BaseResolverTestCase):

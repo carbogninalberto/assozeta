@@ -7,8 +7,6 @@ for each audited model type. Used by the signal handler to create AuditLogIndex 
 """
 import logging
 
-from django.contrib.contenttypes.models import ContentType
-
 logger = logging.getLogger(__name__)
 
 # Registry mapping content type keys to resolver functions
@@ -24,8 +22,8 @@ def register_resolver(model_class, resolver_func):
         resolver_func: Function that takes an object and returns (sport_association, resolution_path) or None
     """
     try:
-        content_type = ContentType.objects.get_for_model(model_class)
-        key = f"{content_type.app_label}.{content_type.model}"
+        # Match get_for_model's concrete-model key even before the first migration.
+        key = model_class._meta.concrete_model._meta.label_lower
         SPORT_ASSOCIATION_RESOLVERS[key] = resolver_func
         logger.debug(f"Registered audit resolver for {key}")
     except Exception as e:
