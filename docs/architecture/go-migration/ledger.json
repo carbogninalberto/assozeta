@@ -30387,25 +30387,58 @@
         "target": "outgoing_message_action",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/message_templates.go",
+        "BE_GO/internal/dto/message_templates.go",
+        "BE_GO/internal/handler/message_templates.go",
+        "BE_GO/internal/repository/message_templates.go",
+        "BE_GO/internal/service/message_templates.go"
+      ],
+      "dependencies": [
+        "communications_messagetemplate",
+        "communications_outgoingmessage",
+        "application_associate"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/communications/outgoing/previews/<preview_id>",
+          "/api/v2/communications/outgoing/previews/<preview_id>",
+          "/api/communications/outgoing/previews/<preview_id>"
+        ],
+        "request": "Action and edited subject and body.",
+        "response": "200 outcome with warning or WhatsApp link where applicable.",
+        "errors": "400 validation, 401 authentication, 403 authorization, 404 unknown recipient or preview, 409 conflicting action or changed recipient address.",
+        "authentication": "Authenticated association session.",
+        "permissions": "Message create and recipient read grants.",
+        "resource_scope": "Actor-owned preview in the active association. Delivery rechecks the scoped recipient.",
+        "side_effects": "Records the approved text and one claim per preview. Marks stale claims unknown on a matching replay.",
+        "transaction": "Locks the preview and commits its claim before delivery. Persists provider outcome separately.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/message_templates_http.json",
+        "TESTS/contracts/test_message_templates_http.py",
+        "TESTS/adapters/django/message_templates_http.py",
+        "selfhost/tests/browser/message-templates-ui.mjs"
+      ],
+      "evidence": [
+        {
+          "command": "python tools/go-migration/family.py run message-templates --label review",
+          "revision": "committing change",
+          "result": "passed",
+          "artifact": "quality-reports/go-migration/message-templates-http-review/results.json",
+          "receipt_sha256": "4faf2bf0710637ee98ac5d789bd8ab57ed43ee0873ff3f58af2de3786dbdb688",
+          "scope": "17 HTTP cases each on native Django and Go with the Django-migrated PostgreSQL schema and captured SMTP delivery."
+        }
+      ],
+      "notes": [
+        "Parity family: message-templates."
+      ]
     },
     {
       "id": "route:BE/communications/urls.py:communications/outgoing/recipients/<str:associate_id> -> outgoing_message_recipient",
@@ -30422,25 +30455,59 @@
         "target": "outgoing_message_recipient",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/message_templates.go",
+        "BE_GO/internal/dto/message_templates.go",
+        "BE_GO/internal/handler/message_templates.go",
+        "BE_GO/internal/repository/message_templates.go",
+        "BE_GO/internal/service/message_templates.go"
+      ],
+      "dependencies": [
+        "communications_messagetemplate",
+        "communications_outgoingmessage",
+        "application_associate"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/communications/outgoing/recipients/<associate_id>",
+          "/api/v2/communications/outgoing/recipients/<associate_id>",
+          "/api/communications/outgoing/recipients/<associate_id>"
+        ],
+        "request": "Channel, locale, optional template ID and date, time and link variables on POST.",
+        "response": "200 recipient and enabled templates or 201 preview.",
+        "errors": "400 validation, 401 authentication, 403 authorization, 404 unknown recipient or preview, 409 conflicting action or changed recipient address.",
+        "authentication": "Authenticated association session.",
+        "permissions": "Message create and recipient read grants.",
+        "resource_scope": "Recipient in the active association and selected group.",
+        "side_effects": "Seeds defaults as needed and stores rendered previews on POST.",
+        "transaction": "Preview rendering and insert are atomic.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/message_templates_http.json",
+        "TESTS/contracts/test_message_templates_http.py",
+        "TESTS/adapters/django/message_templates_http.py",
+        "selfhost/tests/browser/message-templates-ui.mjs"
+      ],
+      "evidence": [
+        {
+          "command": "python tools/go-migration/family.py run message-templates --label review",
+          "revision": "committing change",
+          "result": "passed",
+          "artifact": "quality-reports/go-migration/message-templates-http-review/results.json",
+          "receipt_sha256": "4faf2bf0710637ee98ac5d789bd8ab57ed43ee0873ff3f58af2de3786dbdb688",
+          "scope": "17 HTTP cases each on native Django and Go with the Django-migrated PostgreSQL schema and captured SMTP delivery."
+        }
+      ],
+      "notes": [
+        "Parity family: message-templates."
+      ]
     },
     {
       "id": "route:BE/communications/urls.py:communications/send/email -> configuration_send_email",
@@ -30623,25 +30690,59 @@
         "target": "message_template_list",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/message_templates.go",
+        "BE_GO/internal/dto/message_templates.go",
+        "BE_GO/internal/handler/message_templates.go",
+        "BE_GO/internal/repository/message_templates.go",
+        "BE_GO/internal/service/message_templates.go"
+      ],
+      "dependencies": [
+        "communications_messagetemplate",
+        "auditlog_logentry",
+        "application_auditlogindex"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/communications/settings/message-templates",
+          "/api/v2/communications/settings/message-templates",
+          "/api/communications/settings/message-templates"
+        ],
+        "request": "Template fields on POST.",
+        "response": "200 template list and variable names or 201 saved template.",
+        "errors": "400 validation, 401 authentication, 403 authorization, 404 unknown template.",
+        "authentication": "Authenticated association session.",
+        "permissions": "Settings read or update grant by method.",
+        "resource_scope": "Active association templates.",
+        "side_effects": "Seeds defaults when needed. POST creates a template and audits any default change.",
+        "transaction": "Association lock for seeding and writes.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/message_templates_http.json",
+        "TESTS/contracts/test_message_templates_http.py",
+        "TESTS/adapters/django/message_templates_http.py",
+        "selfhost/tests/browser/message-templates-ui.mjs"
+      ],
+      "evidence": [
+        {
+          "command": "python tools/go-migration/family.py run message-templates --label review",
+          "revision": "committing change",
+          "result": "passed",
+          "artifact": "quality-reports/go-migration/message-templates-http-review/results.json",
+          "receipt_sha256": "4faf2bf0710637ee98ac5d789bd8ab57ed43ee0873ff3f58af2de3786dbdb688",
+          "scope": "17 HTTP cases each on native Django and Go with the Django-migrated PostgreSQL schema and captured SMTP delivery."
+        }
+      ],
+      "notes": [
+        "Parity family: message-templates."
+      ]
     },
     {
       "id": "route:BE/communications/urls.py:communications/settings/message-templates/<str:template_id> -> message_template_detail",
@@ -30658,25 +30759,59 @@
         "target": "message_template_detail",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/message_templates.go",
+        "BE_GO/internal/dto/message_templates.go",
+        "BE_GO/internal/handler/message_templates.go",
+        "BE_GO/internal/repository/message_templates.go",
+        "BE_GO/internal/service/message_templates.go"
+      ],
+      "dependencies": [
+        "communications_messagetemplate",
+        "auditlog_logentry",
+        "application_auditlogindex"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "PATCH",
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/communications/settings/message-templates/<template_id>",
+          "/api/v2/communications/settings/message-templates/<template_id>",
+          "/api/communications/settings/message-templates/<template_id>"
+        ],
+        "request": "Partial template fields on PATCH.",
+        "response": "200 updated template or 204 after archiving.",
+        "errors": "400 validation, 401 authentication, 403 authorization, 404 unknown template.",
+        "authentication": "Authenticated association session.",
+        "permissions": "Settings update grant.",
+        "resource_scope": "Active template owned by the association.",
+        "side_effects": "Audits edits, default reassignment and archiving.",
+        "transaction": "Association lock with audit and template changes in one transaction.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/message_templates_http.json",
+        "TESTS/contracts/test_message_templates_http.py",
+        "TESTS/adapters/django/message_templates_http.py",
+        "selfhost/tests/browser/message-templates-ui.mjs"
+      ],
+      "evidence": [
+        {
+          "command": "python tools/go-migration/family.py run message-templates --label review",
+          "revision": "committing change",
+          "result": "passed",
+          "artifact": "quality-reports/go-migration/message-templates-http-review/results.json",
+          "receipt_sha256": "4faf2bf0710637ee98ac5d789bd8ab57ed43ee0873ff3f58af2de3786dbdb688",
+          "scope": "17 HTTP cases each on native Django and Go with the Django-migrated PostgreSQL schema and captured SMTP delivery."
+        }
+      ],
+      "notes": [
+        "Parity family: message-templates."
+      ]
     },
     {
       "id": "route:BE/communications/urls.py:communications/settings/message-templates/sample -> message_template_sample",
@@ -30693,25 +30828,58 @@
         "target": "message_template_sample",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/message_templates.go",
+        "BE_GO/internal/dto/message_templates.go",
+        "BE_GO/internal/handler/message_templates.go",
+        "BE_GO/internal/repository/message_templates.go",
+        "BE_GO/internal/service/message_templates.go"
+      ],
+      "dependencies": [
+        "communications_messagetemplate",
+        "auditlog_logentry",
+        "application_auditlogindex"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/communications/settings/message-templates/sample",
+          "/api/v2/communications/settings/message-templates/sample",
+          "/api/communications/settings/message-templates/sample"
+        ],
+        "request": "Template fields.",
+        "response": "200 sample subject and body.",
+        "errors": "400 validation, 401 authentication, 403 authorization, 404 unknown template.",
+        "authentication": "Authenticated association session.",
+        "permissions": "Settings update grant.",
+        "resource_scope": "Active association account.",
+        "side_effects": "None.",
+        "transaction": "Read-only.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/message_templates_http.json",
+        "TESTS/contracts/test_message_templates_http.py",
+        "TESTS/adapters/django/message_templates_http.py",
+        "selfhost/tests/browser/message-templates-ui.mjs"
+      ],
+      "evidence": [
+        {
+          "command": "python tools/go-migration/family.py run message-templates --label review",
+          "revision": "committing change",
+          "result": "passed",
+          "artifact": "quality-reports/go-migration/message-templates-http-review/results.json",
+          "receipt_sha256": "4faf2bf0710637ee98ac5d789bd8ab57ed43ee0873ff3f58af2de3786dbdb688",
+          "scope": "17 HTTP cases each on native Django and Go with the Django-migrated PostgreSQL schema and captured SMTP delivery."
+        }
+      ],
+      "notes": [
+        "Parity family: message-templates."
+      ]
     },
     {
       "id": "route:BE/communications/urls.py:communications/settings/smtp/info -> configuration_smtp_info",

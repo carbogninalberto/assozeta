@@ -41,7 +41,7 @@ func (h *MessageTemplatesHandler) serve(operation, methods, parameter string) ec
 			return err
 		}
 		r := c.Request()
-		if err = h.templates.Admit(r.Context(), *identity, strings.HasPrefix(operation, "outgoing_")); err != nil {
+		if err = h.templates.Admit(*identity, strings.HasPrefix(operation, "outgoing_")); err != nil {
 			return restError(c, err)
 		}
 		if r.Method == http.MethodOptions {
@@ -84,7 +84,7 @@ func (h *MessageTemplatesHandler) serve(operation, methods, parameter string) ec
 		}
 		defer release()
 		if r.Method == http.MethodDelete {
-			if err := h.templates.Archive(write.Context, *identity, id); err != nil {
+			if err := h.templates.Archive(write.Context, *identity, id, write.Audit); err != nil {
 				return messageTemplateError(c, err)
 			}
 			return c.NoContent(204)
@@ -111,7 +111,7 @@ func (h *MessageTemplatesHandler) serve(operation, methods, parameter string) ec
 			if r.Method == http.MethodPost {
 				status = 201
 			}
-			result, err := h.templates.Save(write.Context, *identity, id, data)
+			result, err := h.templates.Save(write.Context, *identity, id, data, write.Audit)
 			return messageTemplateResponse(c, status, result, err)
 		}
 	}

@@ -1,9 +1,12 @@
 import re
 from datetime import date
 
+from auditlog.models import LogEntry
 from django.db import transaction
 from django.utils import timezone
 from rest_framework.exceptions import ValidationError
+
+from application.audit_context import atomic_audit_mutation
 
 from .models import MessageTemplate
 
@@ -107,6 +110,31 @@ def template_data(template):
     return {'id': str(template.pk), **{field: getattr(template, field) for field in TEMPLATE_FIELDS}}
 
 
+def template_audit_values(template):
+    return {field: str(getattr(template, field)) for field in (*TEMPLATE_FIELDS, 'archived')}
+
+
+def audit_template(template, before, actor):
+    after = template_audit_values(template)
+    changes = {field: [before.get(field, 'None'), value] for field, value in after.items()
+               if before.get(field) != value}
+    if changes:
+        LogEntry.objects.log_create(
+            template, changes=changes, actor=actor, actor_email=actor.email,
+            action=LogEntry.Action.UPDATE if before else LogEntry.Action.CREATE,
+        )
+
+
+def update_template(template, actor, at, **values):
+    before = template_audit_values(template)
+    for field, value in values.items():
+        setattr(template, field, value)
+    template.updated_by_id = actor.pk
+    template.updated_at = at
+    template.save(update_fields=[*values, 'updated_by_id', 'updated_at'])
+    audit_template(template, before, actor)
+
+
 def association_templates(association):
     templates = MessageTemplate.objects.filter(sport_association=association)
     if not templates.exists():
@@ -125,8 +153,8 @@ def association_templates(association):
     return templates.filter(archived=False)
 
 
-def save_template(association, actor_id, data, template_id=None):
-    with transaction.atomic():
+def save_template(association, actor, data, template_id=None):
+    with atomic_audit_mutation():
         type(association).objects.select_for_update().get(pk=association.pk)
         templates = association_templates(association)
         current = templates.filter(pk=template_id).first() if template_id else None
@@ -136,17 +164,27 @@ def save_template(association, actor_id, data, template_id=None):
         rendered_message(values, SAMPLE)
         now = timezone.now()
         if values['is_default']:
-            templates.filter(channel=values['channel'], locale=values['locale'], is_default=True).exclude(
+            defaults = templates.filter(channel=values['channel'], locale=values['locale'], is_default=True).exclude(
                 pk=template_id,
-            ).update(is_default=False, updated_by_id=actor_id, updated_at=now)
+            )
+            for previous in defaults:
+                update_template(previous, actor, now, is_default=False)
         if current is None:
-            return templates.create(sport_association=association, updated_by_id=actor_id, updated_at=now, **values)
-        for field, value in values.items():
-            setattr(current, field, value)
-        current.updated_by_id = actor_id
-        current.updated_at = now
-        current.save(update_fields=[*TEMPLATE_FIELDS, 'updated_by_id', 'updated_at'])
+            current = templates.create(sport_association=association, updated_by_id=actor.pk, updated_at=now, **values)
+            audit_template(current, {}, actor)
+        else:
+            update_template(current, actor, now, **values)
         return current
+
+
+def archive_template(association, actor, template_id):
+    with atomic_audit_mutation():
+        type(association).objects.select_for_update().get(pk=association.pk)
+        current = MessageTemplate.objects.filter(sport_association=association, archived=False, pk=template_id).first()
+        if current is None:
+            return False
+        update_template(current, actor, timezone.now(), archived=True, enabled=False, is_default=False)
+        return True
 
 
 def choose_template(templates, channel, locale, template_id):

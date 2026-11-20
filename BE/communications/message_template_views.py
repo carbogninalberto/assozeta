@@ -1,5 +1,6 @@
 import logging
 import re
+from datetime import timedelta
 from urllib.parse import quote
 from uuid import UUID
 
@@ -18,18 +19,20 @@ from application.permissions import IsAssociationUser
 from core.middleware import IsAuthenticated
 
 from .message_templates import (
-    SAMPLE, VARIABLES, association_templates, channel_code, choose_template, invalid, locale_code,
+    SAMPLE, VARIABLES, archive_template, association_templates, channel_code, choose_template, invalid, locale_code,
     message_context, message_text, rendered_message, save_template, template_data, validate_template,
 )
 from .models import CommunicationConfiguration, OutgoingMessage
 
 logger = logging.getLogger(__name__)
 
+SEND_CONFIRMATION_WINDOW = timedelta(minutes=10)
 WARNINGS = {
     'discarded': 'Anteprima scartata. L’invio automatico è stato annullato.',
     'manual': 'Invio automatico saltato. Completa l’invio in WhatsApp.',
     'skipped': 'Invio automatico saltato. Nessuna integrazione è disponibile per questo canale.',
     'failed': 'Il servizio di invio non ha confermato la richiesta.',
+    'unknown': 'Non è stato possibile confermare l’invio. Verifica la consegna prima di inviare un altro messaggio.',
 }
 
 
@@ -82,7 +85,7 @@ def message_template_list(request):
     if request.method == 'GET':
         templates = association_templates(association).order_by('channel', 'locale', 'id')
         return Response({'data': [template_data(row) for row in templates], 'variables': VARIABLES})
-    template = save_template(association, request.original_user.pk, request_data(request))
+    template = save_template(association, request.original_user, request_data(request))
     return Response({'data': template_data(template)}, status=201)
 
 
@@ -94,19 +97,13 @@ def message_template_detail(request, template_id):
     association = association_for(request)
     template_id = identifier(template_id)
     if request.method == 'PATCH':
-        template = save_template(association, request.original_user.pk, request_data(request), template_id)
+        template = save_template(association, request.original_user, request_data(request), template_id)
         if not template:
             raise NotFound()
         return Response({'data': template_data(template)})
 
-    with transaction.atomic():
-        SportAssociation.objects.select_for_update().get(pk=association.pk)
-        changed = association_templates(association).filter(pk=template_id).update(
-            archived=True, enabled=False, is_default=False,
-            updated_by_id=request.original_user.pk, updated_at=timezone.now(),
-        )
-        if not changed:
-            raise NotFound()
+    if not archive_template(association, request.original_user, template_id):
+        raise NotFound()
     return Response(status=204)
 
 
@@ -217,19 +214,33 @@ def outgoing_message_recipient(request, associate_id):
 def outgoing_message_action(request, preview_id):
     association = outgoing_association(request)
     attempts = OutgoingMessage.objects.filter(sport_association=association, actor_id=request.original_user.pk)
-    attempt = attempts.filter(pk=identifier(preview_id)).first()
-    if attempt is None:
-        raise NotFound()
+    with transaction.atomic():
+        attempt = attempts.select_for_update().filter(pk=identifier(preview_id)).first()
+        if attempt is None:
+            raise NotFound()
 
-    data = request_data(request)
-    action = data.get('action')
-    delivery = DELIVERY.get(attempt.channel)
-    if action not in ('send', 'discard', 'open_whatsapp'):
-        invalid('action', 'Azione non valida.')
-    edited = message_text(data, attempt.channel, required=action != 'discard')
-    if attempt.status == 'preview':
+        data = request_data(request)
+        action = data.get('action')
+        delivery = DELIVERY.get(attempt.channel)
+        if action not in ('send', 'discard', 'open_whatsapp'):
+            invalid('action', 'Azione non valida.')
+        edited = message_text(data, attempt.channel, required=action != 'discard')
         if action == 'discard':
-            new_status = 'discarded'
+            edited = {field: value for field, value in edited.items() if field in data}
+
+        now = timezone.now()
+        if attempt.status != 'preview':
+            if attempt.action != action or any(getattr(attempt, field) != value for field, value in edited.items()):
+                return Response({'detail': 'Questa anteprima è già stata utilizzata.'}, status=409)
+            if attempt.status == 'sending' and attempt.updated_at <= now - SEND_CONFIRMATION_WINDOW:
+                # Keep the claim when the provider may already have accepted the message.
+                attempt.status = 'unknown'
+                attempt.updated_at = now
+                attempt.save(update_fields=['status', 'updated_at'])
+            return Response({'data': outgoing_data(attempt)})
+
+        if action == 'discard':
+            attempt.status = 'discarded'
         else:
             recipient = recipient_for(association, attempt.recipient_id)
             if recipient is None or address_for(recipient, attempt.channel) != attempt.recipient:
@@ -237,23 +248,23 @@ def outgoing_message_action(request, preview_id):
             if action == 'open_whatsapp':
                 if attempt.channel != 'whatsapp' or delivery:
                     invalid('action', 'Apertura manuale di WhatsApp non disponibile.')
-                new_status = 'manual'
+                attempt.status = 'manual'
             else:
-                new_status = 'sending' if delivery else 'skipped'
-        claimed = attempts.filter(pk=attempt.pk, status='preview').update(
-            action=action, status=new_status, updated_at=timezone.now(), **edited,
+                attempt.status = 'sending' if delivery else 'skipped'
+        for field, value in edited.items():
+            setattr(attempt, field, value)
+        attempt.action = action
+        attempt.updated_at = now
+        attempt.save(update_fields=['action', 'status', 'updated_at', *edited])
+
+    if attempt.status == 'sending':
+        try:
+            accepted = delivery(attempt, association)
+        except Exception:
+            logger.exception('Unable to submit outgoing message %s', attempt.pk)
+            accepted = False
+        attempts.filter(pk=attempt.pk, status__in=('sending', 'unknown')).update(
+            status='submitted' if accepted else 'failed', updated_at=timezone.now(),
         )
         attempt.refresh_from_db()
-        if claimed and new_status == 'sending':
-            try:
-                accepted = delivery(attempt, association)
-            except Exception:
-                logger.exception('Unable to submit outgoing message %s', attempt.pk)
-                accepted = False
-            attempt.status = 'submitted' if accepted else 'failed'
-            attempt.updated_at = timezone.now()
-            attempt.save(update_fields=['status', 'updated_at'])
-
-    if attempt.action != action or attempt.subject != edited['subject'] or attempt.body != edited['body']:
-        return Response({'detail': 'Questa anteprima è già stata utilizzata.'}, status=409)
     return Response({'data': outgoing_data(attempt)})

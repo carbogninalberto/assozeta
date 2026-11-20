@@ -1,6 +1,11 @@
+from datetime import timedelta
 from urllib.parse import parse_qs, urlsplit
 from unittest.mock import patch
 
+from auditlog.models import LogEntry
+from django.utils import timezone
+
+from application.models.audit_models import AuditLogIndex
 from application.models import Associate, User
 from application.tests.base import BaseAPITestCase
 from application.tests.fixtures.factories import create_test_sport_association, create_test_user
@@ -63,6 +68,24 @@ class MessageTemplateTests(BaseAPITestCase):
         self.assertEqual(self.client.delete(url).status_code, 204)
         self.assertTrue(MessageTemplate.objects.get(pk=second['id']).archived)
         self.assertNotIn(second['id'], [row['id'] for row in self.client.get(self.settings).json()['data']])
+        trail = LogEntry.objects.filter(
+            content_type__model='messagetemplate', actor_id=self.user.pk, actor_email=self.user.email,
+        ).order_by('id')
+        self.assertEqual(list(trail.values_list('action', 'object_pk')), [
+            (LogEntry.Action.CREATE, template['id']),
+            (LogEntry.Action.UPDATE, template['id']),
+            (LogEntry.Action.CREATE, second['id']),
+            (LogEntry.Action.UPDATE, second['id']),
+            (LogEntry.Action.UPDATE, second['id']),
+        ])
+        self.assertEqual(trail[1].changes, {'is_default': ['True', 'False']})
+        self.assertEqual(trail[3].changes, {
+            'name': ['Secondo', 'Modificato'], 'enabled': ['True', 'False'], 'is_default': ['True', 'False'],
+        })
+        self.assertEqual(trail[4].changes, {'archived': ['False', 'True']})
+        self.assertEqual(AuditLogIndex.objects.filter(
+            sport_association=self.sport_association, resolution_path='direct', log_entry__in=trail,
+        ).count(), 5)
 
     def test_preview_and_email_deliver_exact_edits_once(self):
         template = self.create_template().json()['data']
@@ -114,6 +137,31 @@ class MessageTemplateTests(BaseAPITestCase):
             failed = self.act(self.preview().json()['data'], 'send').json()['data']
             self.assertEqual(failed['status'], 'failed')
             self.assertTrue(failed['warning'])
+
+    def test_discard_preserves_omitted_text_and_stale_send_is_unknown(self):
+        preview = self.preview().json()['data']
+        discard = {'action': 'discard', 'body': 'Saved edit'}
+        for _ in range(2):
+            result = self.client.post(self.previews + preview['id'], discard, format='json').json()['data']
+            self.assertEqual((result['status'], result['subject'], result['body']),
+                             ('discarded', preview['subject'], 'Saved edit'))
+        minimal = self.preview().json()['data']
+        result = self.client.post(self.previews + minimal['id'], {'action': 'discard'}, format='json').json()['data']
+        self.assertEqual((result['subject'], result['body']), (minimal['subject'], minimal['body']))
+
+        preview = self.preview().json()['data']
+        stored = OutgoingMessage.objects.filter(pk=preview['id'])
+        stored.update(status='sending', action='send')
+        with patch.object(CommunicationConfiguration, 'send_email') as deliver:
+            self.assertEqual(self.act(preview, 'send').json()['data']['status'], 'sending')
+            stored.update(updated_at=timezone.now() - timedelta(minutes=11))
+            for _ in range(2):
+                result = self.act(preview, 'send').json()['data']
+                self.assertEqual(result['status'], 'unknown')
+                self.assertTrue(result['warning'])
+            self.assertEqual(self.act(preview, 'send', body='different').status_code, 409)
+        deliver.assert_not_called()
+        self.assertEqual(stored.get().status, 'unknown')
 
     def test_direct_whatsapp_hook_and_contact_revalidation(self):
         delivered = []

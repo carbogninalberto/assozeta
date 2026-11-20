@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log/slog"
+	"slices"
 	"strings"
 	"time"
 
@@ -40,11 +41,14 @@ type OutgoingMessageResult struct {
 var ErrOutgoingMessageUsed = errors.New("Questa anteprima è già stata utilizzata.")
 var ErrOutgoingRecipientChanged = errors.New("Il recapito è cambiato. Crea una nuova anteprima.")
 
+const sendConfirmationWindow = 10 * time.Minute
+
 var outgoingWarnings = map[string]string{
 	"discarded": "Anteprima scartata. L’invio automatico è stato annullato.",
 	"manual":    "Invio automatico saltato. Completa l’invio in WhatsApp.",
 	"skipped":   "Invio automatico saltato. Nessuna integrazione è disponibile per questo canale.",
 	"failed":    "Il servizio di invio non ha confermato la richiesta.",
+	"unknown":   "Non è stato possibile confermare l’invio. Verifica la consegna prima di inviare un altro messaggio.",
 }
 
 func (s *MessageTemplates) result(row domain.OutgoingMessage) OutgoingMessageResult {
@@ -57,7 +61,7 @@ func (s *MessageTemplates) result(row domain.OutgoingMessage) OutgoingMessageRes
 	return result
 }
 
-func (s *MessageTemplates) Admit(ctx context.Context, identity domain.ResolvedIdentity, outgoing bool) error {
+func (s *MessageTemplates) Admit(identity domain.ResolvedIdentity, outgoing bool) error {
 	if _, err := paymentCategoryOwner(identity, denial("Accesso negato.")); err != nil {
 		return err
 	}
@@ -69,7 +73,10 @@ func (s *MessageTemplates) Admit(ctx context.Context, identity domain.ResolvedId
 		if err != nil {
 			return err
 		}
-		return NewPermissions().CheckCollaborator(ctx, domain.PermissionSubject{Collaborator: true, Grants: grants}, "GET", "personas/recipient/info")
+		const permission = "association.personas.read"
+		if !slices.Contains(grants, permission) {
+			return denial("Missing permission: " + permission)
+		}
 	}
 	return nil
 }
@@ -101,7 +108,7 @@ func seedMessageTemplates(ctx context.Context, tx domain.MessageTemplateTransact
 		if channel == "email" {
 			row.Subject = "Un messaggio da {{association_name}}"
 		}
-		if err := tx.InsertTemplate(ctx, association, nil, row, at); err != nil {
+		if err := tx.InsertTemplate(ctx, association, row, domain.LoginAuditContext{}, at); err != nil {
 			return err
 		}
 	}
@@ -124,7 +131,7 @@ func (s *MessageTemplates) List(ctx context.Context, identity domain.ResolvedIde
 	return rows, tx.Commit()
 }
 
-func (s *MessageTemplates) Save(ctx context.Context, identity domain.ResolvedIdentity, id string, data domain.RequestObject) (domain.MessageTemplate, error) {
+func (s *MessageTemplates) Save(ctx context.Context, identity domain.ResolvedIdentity, id string, data domain.RequestObject, audit domain.LoginAuditContext) (domain.MessageTemplate, error) {
 	tx, association, _, err := s.begin(ctx, identity, true)
 	if err != nil {
 		return domain.MessageTemplate{}, err
@@ -152,16 +159,16 @@ func (s *MessageTemplates) Save(ctx context.Context, identity domain.ResolvedIde
 	if _, err = dto.SampleMessageTemplate(row); err != nil {
 		return row, err
 	}
-	actor := identity.Actor.ID
+	audit = paymentCategoryAuditContext(identity, audit)
 	if row.IsDefault {
-		if err = tx.ClearDefault(ctx, association, actor, row, at); err != nil {
+		if err = tx.ClearDefault(ctx, association, row, audit, at); err != nil {
 			return row, err
 		}
 	}
 	if id == "" {
-		err = tx.InsertTemplate(ctx, association, &actor, row, at)
+		err = tx.InsertTemplate(ctx, association, row, audit, at)
 	} else {
-		err = tx.UpdateTemplate(ctx, association, actor, row, at)
+		err = tx.UpdateTemplate(ctx, association, current, row, audit, at)
 	}
 	if err != nil {
 		return row, err
@@ -169,13 +176,13 @@ func (s *MessageTemplates) Save(ctx context.Context, identity domain.ResolvedIde
 	return row, tx.Commit()
 }
 
-func (s *MessageTemplates) Archive(ctx context.Context, identity domain.ResolvedIdentity, id string) error {
+func (s *MessageTemplates) Archive(ctx context.Context, identity domain.ResolvedIdentity, id string, audit domain.LoginAuditContext) error {
 	tx, association, _, err := s.begin(ctx, identity, true)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
-	if err = tx.ArchiveTemplate(ctx, association, identity.Actor.ID, id, s.now()); err != nil {
+	if err = tx.ArchiveTemplate(ctx, association, id, paymentCategoryAuditContext(identity, audit), s.now()); err != nil {
 		return err
 	}
 	return tx.Commit()
@@ -333,18 +340,35 @@ func (s *MessageTemplates) claim(ctx context.Context, identity domain.ResolvedId
 	if err != nil {
 		return row, association, false, err
 	}
+	if action == "discard" {
+		if _, provided := data.Lookup("subject"); !provided {
+			edited.Subject = row.Subject
+		}
+		if _, provided := data.Lookup("body"); !provided {
+			edited.Body = row.Body
+		}
+	}
+	now := s.now()
 	if row.Status != "preview" {
 		if row.Action != action || row.Subject != edited.Subject || row.Body != edited.Body {
 			return row, association, false, ErrOutgoingMessageUsed
 		}
-		return row, association, false, nil
+		if row.Status != "sending" || now.Before(row.UpdatedAt.Add(sendConfirmationWindow)) {
+			return row, association, false, nil
+		}
+		// Keep the claim when the provider may already have accepted the message.
+		row.Status = "unknown"
+		if err := tx.SaveOutgoingMessageAction(ctx, association, row, now); err != nil {
+			return row, association, false, err
+		}
+		return row, association, false, tx.Commit()
 	}
 	status, err := s.actionStatus(ctx, tx, association, group, row, action)
 	if err != nil {
 		return row, association, false, err
 	}
 	row.Action, row.Status, row.Subject, row.Body = action, status, edited.Subject, edited.Body
-	if err := tx.ClaimOutgoingMessage(ctx, association, row, s.now()); err != nil {
+	if err := tx.SaveOutgoingMessageAction(ctx, association, row, now); err != nil {
 		return row, association, false, err
 	}
 	return row, association, true, tx.Commit()

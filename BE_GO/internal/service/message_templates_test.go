@@ -39,9 +39,49 @@ func (t *outgoingTestTx) LockOutgoingMessage(context.Context, string, string, st
 	return t.store.row, nil
 }
 
-func (t *outgoingTestTx) ClaimOutgoingMessage(_ context.Context, _ string, row domain.OutgoingMessage, _ time.Time) error {
+func (t *outgoingTestTx) SaveOutgoingMessageAction(_ context.Context, _ string, row domain.OutgoingMessage, at time.Time) error {
+	row.UpdatedAt = at
 	t.store.row = row
 	return nil
+}
+
+func TestOutgoingMessageStaleClaimAndDiscardWithoutEdits(t *testing.T) {
+	account := &domain.Account{ID: "actor", Role: domain.RoleAssociation, Active: true}
+	identity := domain.ResolvedIdentity{Actor: account, Effective: account, ScopeUser: account}
+	now := time.Date(2026, 11, 20, 0, 0, 0, 0, time.UTC)
+	store := &outgoingTestStore{row: domain.OutgoingMessage{
+		Channel: "email", Body: "Approved body", Subject: "Approved subject", Action: "send",
+		Status: "sending", UpdatedAt: now.Add(-sendConfirmationWindow + time.Second),
+	}}
+	svc := NewMessageTemplates(store, map[string]MessageDelivery{"email": func(context.Context, string, domain.OutgoingMessage, domain.LoginAuditContext) (bool, error) {
+		t.Fatal("replayed delivery")
+		return false, nil
+	}}, func() time.Time { return now })
+	act := func(data domain.RequestObject) OutgoingMessageResult {
+		t.Helper()
+		result, err := svc.Action(context.Background(), identity, "preview", "", data, domain.LoginAuditContext{})
+		if err != nil {
+			t.Fatal(err)
+		}
+		return result
+	}
+	send := domain.RequestObject{{Name: "action", Value: "send"}, {Name: "subject", Value: store.row.Subject}, {Name: "body", Value: store.row.Body}}
+	if result := act(send); result.Status != "sending" || result.Warning != "" {
+		t.Fatalf("recent claim: %+v", result)
+	}
+	now = now.Add(time.Second)
+	for i := 0; i < 2; i++ {
+		if result := act(send); result.Status != "unknown" || result.Warning == "" || store.row.Status != "unknown" {
+			t.Fatalf("expired claim: %+v", result)
+		}
+	}
+	store.row.Status = "preview"
+	discard := domain.RequestObject{{Name: "action", Value: "discard"}}
+	for i := 0; i < 2; i++ {
+		if result := act(discard); result.Status != "discarded" || result.Subject != "Approved subject" || result.Body != "Approved body" {
+			t.Fatalf("discarded preview: %+v", result)
+		}
+	}
 }
 
 func (*outgoingTestTx) Commit() error   { return nil }
