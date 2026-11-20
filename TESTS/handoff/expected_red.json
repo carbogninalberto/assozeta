@@ -234,6 +234,310 @@
       "signatures": [
         "handoff inventory missing"
       ]
+    },
+    "TESTS.handoff.test_p2_process_sets.RuntimeProcessSets.test_each_runtime_profile_renders_exactly_its_application_services": {
+      "phase": 2,
+      "owner": "t-p2",
+      "reason": "selfhost/compose.yml has no runtime profiles: every long-running service renders in every mode (both APIs, Django worker/Beat, one relay chosen by replica counts)",
+      "signatures": [
+        "long-running application services for runtime"
+      ]
+    },
+    "TESTS.handoff.test_p2_process_sets.RuntimeProcessSets.test_every_application_service_has_exactly_one_runtime_profile": {
+      "phase": 2,
+      "owner": "t-p2",
+      "reason": "no service carries a django/go profile; worker-go is in the legacy go-tasks profile; scheduler-go and job-worker-go do not exist",
+      "signatures": [
+        "runtime profile per application service"
+      ]
+    },
+    "TESTS.handoff.test_p2_process_sets.RuntimeProcessSets.test_web_depends_on_no_application_service": {
+      "phase": 2,
+      "owner": "t-p2",
+      "reason": "web depends_on api and api-go (service_healthy), forcing both APIs up",
+      "signatures": [
+        "web depends on application services"
+      ]
+    },
+    "TESTS.handoff.test_p2_process_sets.RuntimeProcessSets.test_legacy_go_preferences_cannot_change_the_django_process_set": {
+      "phase": 2,
+      "owner": "t-p2",
+      "reason": "ASSOZETA_*_RELAY_REPLICAS and the go-tasks profile swap the relay and add worker-go/api-go in Django mode",
+      "signatures": [
+        "long-running application services for runtime django with legacy Go preferences"
+      ]
+    },
+    "TESTS.handoff.test_p2_process_sets.RuntimeProcessSets.test_legacy_django_preferences_cannot_change_the_go_process_set": {
+      "phase": 2,
+      "owner": "t-p2",
+      "reason": "selfhost/compose.yml has no runtime profiles: every long-running service renders in every mode (both APIs, Django worker/Beat, one relay chosen by replica counts)",
+      "signatures": [
+        "long-running application services for runtime go with legacy Django preferences"
+      ]
+    },
+    "TESTS.handoff.test_p2_process_sets.RuntimeProcessSets.test_exactly_one_relay_per_mode_whatever_the_relay_setting": {
+      "phase": 2,
+      "owner": "t-p2",
+      "reason": "the relay is chosen by ASSOZETA_REALTIME_RELAY_BACKEND replica counts, not by the runtime",
+      "signatures": [
+        "relays in runtime"
+      ]
+    },
+    "TESTS.handoff.test_p2_process_sets.GoBackgroundServices.test_scheduler_and_job_worker_run_the_go_binaries_with_the_go_image": {
+      "phase": 2,
+      "owner": "t-p2",
+      "reason": "production Compose has no scheduler-go or job-worker-go service (the Go image ships /app/scheduler and /app/worker unused)",
+      "signatures": [
+        "Go background service definition"
+      ]
+    },
+    "TESTS.handoff.test_p2_process_sets.GoBackgroundServices.test_scheduler_and_job_worker_permissions_storage_and_network": {
+      "phase": 2,
+      "owner": "t-p2",
+      "reason": "production Compose has no scheduler-go or job-worker-go service (the Go image ships /app/scheduler and /app/worker unused)",
+      "signatures": [
+        "Go background service definition"
+      ]
+    },
+    "TESTS.handoff.test_p2_process_sets.GoBackgroundServices.test_scheduler_and_job_worker_resource_limits_and_stop_grace": {
+      "phase": 2,
+      "owner": "t-p2",
+      "reason": "production Compose has no scheduler-go or job-worker-go service (the Go image ships /app/scheduler and /app/worker unused)",
+      "signatures": [
+        "Go background service definition"
+      ]
+    },
+    "TESTS.handoff.test_p2_process_sets.GoBackgroundServices.test_scheduler_and_job_worker_wait_for_healthy_dependencies": {
+      "phase": 2,
+      "owner": "t-p2",
+      "reason": "production Compose has no scheduler-go or job-worker-go service (the Go image ships /app/scheduler and /app/worker unused)",
+      "signatures": [
+        "Go background service definition"
+      ]
+    },
+    "TESTS.handoff.test_p2_process_sets.GoApiStartupEffects.test_api_go_never_hands_requests_to_django": {
+      "phase": 2,
+      "owner": "t-p2",
+      "reason": "api-go environment DJANGO_HANDOFF_URL defaults to http://api:8000 (server-to-server replay to Django)",
+      "signatures": [
+        "api-go hands refused requests to Django"
+      ]
+    },
+    "TESTS.handoff.test_p2_process_sets.GoApiStartupEffects.test_whatsapp_outbox_gate_is_passed_to_api_go": {
+      "phase": 2,
+      "owner": "t-p2",
+      "reason": "api-go has no ASSOZETA_GO_WHATSAPP_OUTBOX switch; the embedded WhatsApp loop always starts",
+      "signatures": [
+        "api-go ASSOZETA_GO_WHATSAPP_OUTBOX"
+      ]
+    },
+    "TESTS.handoff.test_p2_process_sets.InternalApiReferences.test_only_the_two_apis_declare_the_active_api_alias_on_both_networks": {
+      "phase": 2,
+      "owner": "t-p2",
+      "reason": "no service declares the active-api network alias",
+      "signatures": [
+        "services declaring the active-api alias"
+      ]
+    },
+    "TESTS.handoff.test_p2_process_sets.InternalApiReferences.test_generated_internal_api_references_resolve_to_the_active_api_in_each_mode": {
+      "phase": 2,
+      "owner": "t-p2",
+      "reason": "configure writes CURRENT_HOST/CURRENT_HOST_PUPPETEER=http://api:8000, which does not resolve in Go mode",
+      "signatures": [
+        "does not reach exactly the active API"
+      ]
+    },
+    "TESTS.handoff.test_p2_process_sets.InternalApiReferences.test_renderer_allowlist_follows_the_puppeteer_reference": {
+      "phase": 2,
+      "owner": "t-p2",
+      "reason": "RENDER_ALLOWED_HOSTS is api,minio,cdn.jsdelivr.net (runtime-specific host)",
+      "signatures": [
+        "the renderer allowlist names a runtime-specific API host",
+        "the renderer allowlist does not allow"
+      ]
+    },
+    "TESTS.handoff.test_p2_lifecycle.EffectiveRuntimeProcessSet.test_fresh_install_reads_the_authority_and_runs_only_django": {
+      "phase": 2,
+      "owner": "t-p2",
+      "reason": "bin/assozeta ignores the runtime authority: start_prod_app_services always ups api web api-go plus worker, beat and the replica-selected relay",
+      "signatures": [
+        "application services running after"
+      ]
+    },
+    "TESTS.handoff.test_p2_lifecycle.EffectiveRuntimeProcessSet.test_install_without_an_authority_row_runs_django": {
+      "phase": 2,
+      "owner": "t-p2",
+      "reason": "bin/assozeta ignores the runtime authority: start_prod_app_services always ups api web api-go plus worker, beat and the replica-selected relay",
+      "signatures": [
+        "application services running after"
+      ]
+    },
+    "TESTS.handoff.test_p2_lifecycle.EffectiveRuntimeProcessSet.test_start_and_restart_in_go_mode_run_only_the_go_process_set": {
+      "phase": 2,
+      "owner": "t-p2",
+      "reason": "bin/assozeta ignores the runtime authority: start_prod_app_services always ups api web api-go plus worker, beat and the replica-selected relay",
+      "signatures": [
+        "application services running after"
+      ]
+    },
+    "TESTS.handoff.test_p2_lifecycle.EffectiveRuntimeProcessSet.test_migrate_restarts_the_running_go_process_set": {
+      "phase": 2,
+      "owner": "t-p2",
+      "reason": "bin/assozeta ignores the runtime authority: start_prod_app_services always ups api web api-go plus worker, beat and the replica-selected relay",
+      "signatures": [
+        "application services running after"
+      ]
+    },
+    "TESTS.handoff.test_p2_lifecycle.InactiveSetStaysStopped.test_round_trip_restarts_leave_the_inactive_set_stopped": {
+      "phase": 2,
+      "owner": "t-p2",
+      "reason": "bin/assozeta ignores the runtime authority: start_prod_app_services always ups api web api-go plus worker, beat and the replica-selected relay",
+      "signatures": [
+        "application services running after"
+      ]
+    },
+    "TESTS.handoff.test_p2_lifecycle.LegacyPreferences.test_legacy_go_preferences_in_django_mode_start_no_go_service": {
+      "phase": 2,
+      "owner": "t-p2",
+      "reason": "bin/assozeta ignores the runtime authority: start_prod_app_services always ups api web api-go plus worker, beat and the replica-selected relay",
+      "signatures": [
+        "application services running after"
+      ]
+    },
+    "TESTS.handoff.test_p2_lifecycle.LegacyPreferences.test_go_mode_ignores_the_legacy_task_switch": {
+      "phase": 2,
+      "owner": "t-p2",
+      "reason": "bin/assozeta ignores the runtime authority: start_prod_app_services always ups api web api-go plus worker, beat and the replica-selected relay",
+      "signatures": [
+        "application services running after"
+      ]
+    },
+    "TESTS.handoff.test_p2_lifecycle.EffectiveRuntimeProcessSet.test_unreadable_authority_starts_no_application_service": {
+      "phase": 2,
+      "owner": "t-p2",
+      "reason": "the CLI never reads the authority, so an unreadable database still starts the dual set",
+      "signatures": [
+        "restart with an unreadable runtime authority"
+      ]
+    },
+    "TESTS.handoff.test_p2_lifecycle.EffectiveRuntimeProcessSet.test_crashed_go_scheduler_fails_the_start_and_keeps_maintenance": {
+      "phase": 2,
+      "owner": "t-p2",
+      "reason": "Go mode is not started and scheduler-go is not part of any health check",
+      "signatures": [
+        "did not stay running",
+        "does not name scheduler-go",
+        "maintenance was lifted"
+      ]
+    },
+    "TESTS.handoff.test_p2_lifecycle.InactiveSetStaysStopped.test_no_application_service_restarts_on_its_own_after_a_daemon_restart": {
+      "phase": 2,
+      "owner": "t-p2",
+      "reason": "api-go runs in Django mode",
+      "signatures": [
+        "Go application services running in runtime django",
+        "application services a daemon restart would revive"
+      ]
+    },
+    "TESTS.handoff.test_p2_lifecycle.LegacyPreferences.test_routed_go_tasks_in_django_mode_are_refused_before_starting": {
+      "phase": 2,
+      "owner": "t-p2",
+      "reason": "ASSOZETA_GO_TASKS=1 with routed names starts worker-go in Django mode instead of refusing",
+      "signatures": [
+        "GO_TASK_QUEUE_TASKS routed to Go in runtime django"
+      ]
+    },
+    "TESTS.handoff.test_p2_lifecycle.InternalReferenceConfiguration.test_installed_default_references_move_to_the_runtime_independent_api": {
+      "phase": 2,
+      "owner": "t-p2",
+      "reason": "already-installed CURRENT_HOST/CURRENT_HOST_PUPPETEER=http://api:8000 and ALLOWED_HOSTS are never migrated",
+      "signatures": [
+        "does not reach exactly the active API",
+        "already-installed ALLOWED_HOSTS"
+      ]
+    },
+    "TESTS.handoff.test_p2_lifecycle.InternalReferenceConfiguration.test_runtime_specific_override_is_preserved_and_reported": {
+      "phase": 2,
+      "owner": "t-p2",
+      "reason": "validate accepts CURRENT_HOST/CURRENT_HOST_PUPPETEER naming api, api-go or a host the renderer rejects",
+      "signatures": [
+        "validate accepted the incompatible override",
+        "was rewritten"
+      ]
+    },
+    "TESTS.handoff.test_p2_updater.RuntimeServiceDiscovery.test_runtime_services_per_mode": {
+      "phase": 2,
+      "owner": "t-p2",
+      "reason": "selfhost/updater/common.py has no runtime_services",
+      "signatures": [
+        "updater runtime_services for runtime"
+      ]
+    },
+    "TESTS.handoff.test_p2_updater.HistoricalRuntimeServiceDiscovery.test_runtime_services_of_a_historical_distribution_are_its_legacy_set": {
+      "phase": 2,
+      "owner": "t-p2",
+      "reason": "selfhost/updater/common.py has no runtime_services",
+      "signatures": [
+        "updater runtime_services for a historical distribution"
+      ]
+    },
+    "TESTS.handoff.test_p2_updater.ControllerRestart.test_restart_helper_restarts_only_the_active_set": {
+      "phase": 2,
+      "owner": "t-p2",
+      "reason": "restart.service_order restarts every configured long-running service, both runtimes included",
+      "signatures": [
+        "restart helper inventory in runtime"
+      ]
+    },
+    "TESTS.handoff.test_p2_updater.LiveVerification.test_live_verification_requires_exactly_the_active_set": {
+      "phase": 2,
+      "owner": "t-p2",
+      "reason": "engine.verify_running hardcodes api/worker/beat (+api-go) and never rejects a running service of the other runtime",
+      "signatures": [
+        "live verification in runtime"
+      ]
+    },
+    "TESTS.handoff.test_p2_routing.ActiveRuntimeRouting.test_every_api_entry_point_reaches_the_active_runtime_with_the_other_absent": {
+      "phase": 2,
+      "owner": "t-p2",
+      "reason": "Caddy chooses the backend by path: /api and /api/v1 -> api:8000, /api/v2 -> api-go:8000",
+      "signatures": [
+        "entry points not served by the active API"
+      ]
+    },
+    "TESTS.handoff.test_p2_routing.ActiveRuntimeRouting.test_maintenance_serves_status_from_the_controller_and_readiness_from_the_active_api": {
+      "phase": 2,
+      "owner": "t-p2",
+      "reason": "readiness routes are fixed per path (/api/v2/readyz -> api-go, others -> api)",
+      "signatures": [
+        "readiness during maintenance not served by the active API"
+      ]
+    },
+    "TESTS.handoff.test_p2_routing.LegacyProtocolSetting.test_bakney_protocol_follows_the_active_runtime_whatever_its_legacy_setting": {
+      "phase": 2,
+      "owner": "t-p2",
+      "reason": "/bakney/v1/* follows ASSOZETA_BAKNEY_PROTOCOL_UPSTREAM and prefixed protocol paths follow the version prefix",
+      "signatures": [
+        "Bakney protocol not served by the active API"
+      ]
+    },
+    "TESTS.handoff.test_p2_renderer.PdfRendering.test_pdf_renders_with_assets_from_the_go_api": {
+      "phase": 2,
+      "owner": "t-p2",
+      "reason": "CURRENT_HOST_PUPPETEER=http://api:8000 does not resolve when only api-go runs (net::ERR_NAME_NOT_RESOLVED)",
+      "signatures": [
+        "PDF render of",
+        "document or assets not fetched from the active API"
+      ]
+    },
+    "TESTS.handoff.test_p2_go_startup.GoApiStartupGate.test_whatsapp_outbox_is_independently_gateable": {
+      "phase": 2,
+      "owner": "t-p2",
+      "reason": "BE_GO/cmd/server has no startup switch: run() always starts the WhatsApp outbox loop",
+      "signatures": [
+        "CONTRACT MISSING: BE_GO/cmd/server",
+        "Go API startup gating contract failed"
+      ]
     }
   }
 }
