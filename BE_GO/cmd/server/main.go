@@ -89,6 +89,9 @@ func run() (runErr error) {
 	}
 	// Transaction poolers cannot retain prepared statements across transactions.
 	dbConfig.DefaultQueryExecMode = pgx.QueryExecModeExec
+	// Outbox polls have their own PostgreSQL identity and no HTTP request tracer.
+	outboxConfig := dbConfig.Copy()
+	outboxConfig.RuntimeParams["application_name"] = "assozeta-go-whatsapp-outbox"
 	queryObserver, closeQueryObservation, err := openQueryObservationFiles(*queryObservationFile, *queryConnectionObservationFile)
 	if err != nil {
 		return err
@@ -333,7 +336,8 @@ func run() (runErr error) {
 	}
 	healthService := service.NewHealthService(repository.NewDatabaseProbe(db), repository.NewRedisProbe(cache), 2*time.Second)
 	healthHandler := handler.NewHealthHandler(healthService, cfg.Version)
-	restoreAdmission := service.NewRestoreAdmission(repository.NewRestoreFileLock(cfg.RestoreLockPath), repository.NewRestoreStates(db), cfg.RestoreLockPath != "")
+	restoreLock := repository.NewRestoreFileLock(cfg.RestoreLockPath)
+	restoreAdmission := service.NewRestoreAdmission(restoreLock, repository.NewRestoreStates(db), cfg.RestoreLockPath != "")
 	e := echo.New()
 	e.HideBanner = true
 	e.HidePort = true
@@ -1030,7 +1034,12 @@ func run() (runErr error) {
 	workerDone := make(chan struct{})
 	go func() {
 		defer close(workerDone)
-		waQueue.Run(ctx, restoreAdmission.AcquireWrite)
+		outboxDB := sqlx.NewDb(ownedpgx.OpenDB(*outboxConfig), "pgx")
+		defer outboxDB.Close()
+		outboxDB.SetMaxOpenConns(1)
+		admin := newInstanceAdmin(cfg, outboxDB, nil)
+		admission := service.NewRestoreAdmission(restoreLock, repository.NewRestoreStates(outboxDB), cfg.RestoreLockPath != "")
+		whatsapp.NewQueue(outboxDB.DB, admin.WhatsAppSettings).Run(ctx, admission.AcquireWrite)
 	}()
 	defer func() { stop(); <-workerDone }()
 	stopped := make(chan error, 1)

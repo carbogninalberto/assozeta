@@ -215,7 +215,7 @@ def exercise(work, log, options, env, report):
     from django.core.cache import cache
     from django.db import connections
     from django.test import override_settings
-    from TESTS.contracts.test_instance_logo import cases, payload_bytes, assert_observation, case_for_transport
+    from TESTS.contracts.test_instance_logo import cases, payload_bytes, assert_observation, case_for_transport, logo_sql_statements
     from TESTS.http_client import Client, poll
     from TESTS.adapters.go.server import build_server
 
@@ -363,7 +363,7 @@ def exercise(work, log, options, env, report):
                                         fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
                                     status,wire,headers=logo_request(client,request['method'],prefix+request['path'],request_headers,request.get('header_lines',[]))
                                 sql_lines=sql_log.read_bytes()[sql_offset:].decode(errors='replace').splitlines()
-                                queries=[line.split('LOG:  ',1)[-1] for line in sql_lines if re.search(r'LOG:  (?:statement:|execute [^:]+:)',line)]
+                                queries=logo_sql_statements(sql_lines)
                                 objects_after=object_snapshot()
                                 expected_objects=dict(objects_before)
                                 if mode=='s3' and case['setup'].get('fault') in ('delete-after-exists','delete-before-get'):
@@ -557,7 +557,7 @@ def main():
             try:
                 command([binaries/'initdb','-D',work/'postgres','-A','trust','-U','contracts','--no-sync','--no-locale','-E','UTF8'])
                 started=True
-                command([binaries/'pg_ctl','-D',work/'postgres','-l',work/'postgres.log','-o',f"-k {work} -h '' -F -c log_statement=all",'-w','start'])
+                command([binaries/'pg_ctl','-D',work/'postgres','-l',work/'postgres.log','-o',f"-k {work} -h '' -F -c log_statement=all -c log_line_prefix='[%a] %m [%p] '",'-w','start'])
                 command([binaries/'createdb','-h',work,'-U','contracts',DATABASE])
                 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
                 from cryptography.hazmat.primitives import serialization

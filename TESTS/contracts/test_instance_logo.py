@@ -2,6 +2,7 @@
 import copy
 import gzip
 import hashlib
+import re
 import unittest
 
 ALLOW = 'GET, HEAD, OPTIONS'
@@ -170,6 +171,13 @@ def payload_bytes(name):
     return PAYLOADS[name]
 
 
+def logo_sql_statements(lines):
+    # The Go API polls the outbox while either HTTP backend serves requests.
+    return [line.split('LOG:  ', 1)[1] for line in lines
+            if not line.startswith('[assozeta-go-whatsapp-outbox] ')
+            and re.search(r'LOG:  (?:statement:|execute [^:]+:)', line)]
+
+
 def assert_observation(actual, case):
     expected = case['expected']
     for key, value in expected.items():
@@ -188,6 +196,14 @@ def assert_observation(actual, case):
 
 
 class InstanceLogoContract(unittest.TestCase):
+    def test_concurrent_outbox_queries_are_attributed_by_session(self):
+        read = 'execute <unnamed>: SELECT 1'
+        write = "statement: UPDATE settings SET value = '[assozeta-go-whatsapp-outbox] '"
+        lines = [f'[assozeta-go-whatsapp-outbox] [10] LOG:  {read}',
+                 f'[[unknown]] [11] LOG:  {read}',
+                 f'[web] [12] LOG:  {write}']
+        self.assertEqual(logo_sql_statements(lines), [read, write])
+
     def test_authored_cases_are_unique_and_explicit(self):
         matrix = cases()
         self.assertEqual(len(matrix), len({case['name'] for case in matrix}))
