@@ -34,7 +34,7 @@ def successful_evidence():
                'all_models_unchanged_before_blocker_release': True,
                'request_future_done_before_blocker_release': True,
                'request_transport_failure_before_blocker_release': True,
-               'model_count_before_blocker_release': 130,
+               'model_count_before_blocker_release': 132,
                'activity_before_blocker_release': [], 'ungranted_locks_before_blocker_release': [],
                'activity_after_blocker_release': [], 'late_commit_observed': False,
                'abandoned_audit_rows': 0}

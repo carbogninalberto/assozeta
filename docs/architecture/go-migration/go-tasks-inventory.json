@@ -129,6 +129,15 @@
     ]
   },
   {
+    "name": "communications.tasks.deliver_whatsapp",
+    "django_site": "BE/communications/tasks.py:7",
+    "scheduled": true,
+    "consumer": false,
+    "job": false,
+    "routed": false,
+    "harness": []
+  },
+  {
     "name": "core.tasks.send_mail_async",
     "django_site": "BE/core/tasks.py:43",
     "scheduled": false,

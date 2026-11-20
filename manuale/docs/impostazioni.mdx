@@ -13,6 +13,16 @@ Nelle installazioni self-hosted il proprietario trova anche **Profilo → Istanz
 
 Nella stessa sezione l’interruttore **Attività in background su Go (beta)** fa eseguire gli invii email in background al servizio Go: chiede la password del proprietario e riavvia l’applicazione per circa un minuto. Se il servizio Go non è attivo, le attività restano in attesa finché non lo riattivi o spegni l’interruttore.
 
+**WhatsApp Business per pagamenti e abbonamenti.** Il proprietario dell’istanza trova il modulo in **Profilo → Istanza → Impostazioni → Integrazioni → WhatsApp Business**. Per preparare un mittente di prova, apri l’app nel [pannello Meta](https://developers.facebook.com/apps/) e segui la [guida ufficiale di WhatsApp Cloud API](https://developers.facebook.com/documentation/business-messaging/whatsapp/get-started).
+
+1. In **WhatsApp → API Setup**, seleziona il mittente e copia **Phone number ID** e **WhatsApp Business Account ID** nei due campi ID. Con il mittente di prova, aggiungi e verifica in Meta il numero WhatsApp che riceverà il messaggio.
+2. Per una prova puoi generare un token temporaneo in **API Setup**. Per gli invii automatici, assegna all’utente di sistema l’app e l’account WhatsApp. Genera un token per l’app con i permessi `whatsapp_business_messaging` e `whatsapp_business_management`, poi inseriscilo in **Token di accesso**. [Impostazioni business di Meta → Utenti di sistema](https://business.facebook.com/latest/settings)
+3. In **Impostazioni app → Di base**, copia **App secret** in **Segreto app Meta**. Per **Token di verifica webhook**, scegli un valore segreto distinto e conservalo per il passaggio successivo.
+4. Attiva WhatsApp Business. In **Pagamenti** o **Abbonamenti**, scegli **Modello approvato**, copia da WhatsApp Manager il nome esatto e il codice lingua e salva. Per un testo libero, il destinatario deve aver scritto al mittente nelle ultime 24 ore. **Verifica WhatsApp Business** controlla le credenziali del mittente.
+5. Nel pannello WhatsApp dell’app Meta, configura il webhook con l’**URL webhook** HTTPS mostrato nel modulo e lo stesso token di verifica. Sottoscrivi il campo `messages` e collega l’app all’account WhatsApp per ricevere le conferme. [Sottoscrizione dell’account WhatsApp](https://developers.facebook.com/docs/graph-api/reference/whats-app-business-account/subscribed_apps/)
+
+Per provare l’invio, usa un account di prova con il numero verificato e registra come pagato un pagamento di prova. Apri la conversazione WhatsApp sul telefono del destinatario per controllare il messaggio.
+
 Le sezioni seguenti distinguono le impostazioni proposte dalla loro applicazione a iscrizioni, pagamenti e documenti. Una scelta nel modulo deve essere salvata prima di essere usata.
 
 ## Informazioni dell'organizzazione

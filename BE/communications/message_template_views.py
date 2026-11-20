@@ -19,7 +19,7 @@ from application.permissions import IsAssociationUser
 from core.middleware import IsAuthenticated
 
 from .message_templates import (
-    SAMPLE, VARIABLES, archive_template, association_templates, channel_code, choose_template, invalid, locale_code,
+    SAMPLE, VARIABLES, archive_template, association_templates, channel_code, choose_template, international_phone, invalid, locale_code,
     message_context, message_text, rendered_message, save_template, template_data, validate_template,
 )
 from .models import CommunicationConfiguration, OutgoingMessage
@@ -135,10 +135,7 @@ def address_for(recipient, channel):
         except DjangoValidationError:
             pass
         return ''
-    phone = re.sub(r'[ ().-]', '', (recipient.phone or '').strip())
-    if phone.startswith('00'):
-        phone = '+' + phone[2:]
-    return phone if re.fullmatch(r'\+[1-9][0-9]{6,14}', phone) else ''
+    return international_phone(recipient.phone)
 
 
 def deliver_email(attempt, association):

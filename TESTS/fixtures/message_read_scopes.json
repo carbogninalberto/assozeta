@@ -29,7 +29,7 @@
     "foreign_delivery": "a1000000-0000-4000-8000-000000703004"
   },
   "read_effects": {
-    "managed_models": 130,
+    "managed_models": 132,
     "audit_rows_created": 0,
     "session_writes": 0,
     "cache_exclusions": []

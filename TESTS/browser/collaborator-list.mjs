@@ -53,7 +53,7 @@ async function checkpoint(actor, action, context = {}) {
 
 async function record(response, actor) {
     const url = new URL(response.url());
-    if (url.origin !== input.origin) return;
+    assert.equal(url.origin, input.origin, 'External HTTP response reached the page');
     const route = url.pathname.startsWith('/api/') ? url.pathname.slice(5) : null;
     const item = {
         actor, method: response.request().method(), path: url.pathname,
@@ -77,16 +77,21 @@ async function record(response, actor) {
 }
 
 async function fresh(pageName) {
-    const context = await browser.newContext({viewport: {width: 1440, height: 1000}});
+    const context = await browser.newContext({
+        viewport: {width: 1440, height: 1000}, serviceWorkers: 'block',
+    });
     const contextEntry = {context, closed: false};
     contexts.push(contextEntry);
-    await context.route('**/*', route => {
-        const url = new URL(route.request().url());
-        if (url.origin === input.origin) return route.continue();
-        blockedExternal.push({origin: url.origin, path: url.pathname});
-        return route.abort('blockedbyclient');
-    });
     const page = await context.newPage();
+    // Keep post-login dashboard chunks and API requests off the test driver's
+    // request queue. Chromium applies the first matching rule before sending.
+    const network = await context.newCDPSession(page);
+    await network.send('Network.enable');
+    await network.send('Network.setBlockedURLs', {urlPatterns: [
+        {urlPattern: input.origin + '/*', block: false},
+        {urlPattern: 'http://*:*/*', block: true},
+        {urlPattern: 'https://*:*/*', block: true},
+    ]});
     activePage = page;
     page.setDefaultTimeout(30000);
     page.on('response', response => pending.push(record(response, pageName).catch(() =>
@@ -100,8 +105,11 @@ async function fresh(pageName) {
     }));
     page.on('requestfailed', request => {
         const url = new URL(request.url());
-        if (url.origin === input.origin && request.failure()?.errorText !== 'net::ERR_ABORTED')
-            failures.push({kind: 'requestfailed', phase, actor: pageName, path: url.pathname});
+        const reason = request.failure()?.errorText;
+        if (url.origin !== input.origin && reason === 'inspector')
+            blockedExternal.push({origin: url.origin, path: url.pathname});
+        else if (reason !== 'net::ERR_ABORTED')
+            failures.push({kind: 'requestfailed', phase, actor: pageName, path: url.pathname, reason});
     });
     page.on('websocket', socket => {
         const item = {
@@ -160,7 +168,6 @@ async function login(page, actorName, actor) {
         refresh: localStorage.getItem('refreshToken'),
     }));
     assert(credentials.access && credentials.refresh, 'Password login did not create an ordinary UI session');
-    await page.waitForTimeout(750);
     await expect.poll(() => responses.some(row =>
         row.actor === actorName && row.path === '/api/association/export/active'
         && row.status === (['owner', 'foreign-owner'].includes(actorName) ? 200 : 403))).toBe(true);

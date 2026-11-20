@@ -988,7 +988,7 @@ class Checkpoints:
                 frame['seq'] == index + 1 and index < len(browser.CHECKPOINTS), 'checkpoint-protocol')
         require((frame['actor'], frame['action']) == browser.CHECKPOINTS[index], 'checkpoint-order')
         state = self.snapshot(frame['actor'], frame['action'])
-        require(set(state) == {'models', 'cache'} and len(state['models']) == 130,
+        require(set(state) == {'models', 'cache'} and len(state['models']) == 132,
                 'checkpoint-snapshot-scope')
         self.states.append(dict(state, actor=frame['actor'], action=frame['action']))
         return {'type': 'ack', 'seq': frame['seq'], 'success': True}
@@ -1007,7 +1007,7 @@ class Checkpoints:
                 (payload['actor'], payload['action']) == (actor, action) and
                 isinstance(payload['requests'], list), 'checkpoint-order-or-payload')
         state = self.snapshot(copy.deepcopy(payload))
-        require(set(state) == {'models', 'cache'} and len(state['models']) == 130,
+        require(set(state) == {'models', 'cache'} and len(state['models']) == 132,
                 'checkpoint-snapshot-scope')
         self.states.append(dict(state, actor=actor, action=action))
         if action == 'closed':
@@ -1199,7 +1199,7 @@ def durable_snapshot(apps, raw):
         with connection.cursor() as cursor:
             cursor.execute('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY')
         models = browser.oracle.snapshot_models(apps)
-    require(len(models) == 130, 'managed-model-inventory-drift')
+    require(len(models) == 132, 'managed-model-inventory-drift')
     return {'models': models, 'cache': snapshot_historical_read_cache(raw)}
 
 

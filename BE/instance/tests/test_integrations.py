@@ -41,7 +41,7 @@ class IntegrationSettingsTests(TestCase):
         other = User.objects.create_user(username='unrelated-user')
         for user in (None, other):
             self.client.force_authenticate(user)
-            for provider in ('stripe', 'google', 'apple'):
+            for provider in ('stripe', 'google', 'apple', 'whatsapp'):
                 for method in ('get', 'put', 'delete'):
                     with self.subTest(user=user, provider=provider, method=method):
                         response = getattr(self.client, method)(self.endpoint(provider), {}, format='json', HTTP_USER_ID=str(self.owner.pk))
@@ -50,6 +50,53 @@ class IntegrationSettingsTests(TestCase):
         self.config.self_hosted = False
         self.config.save(update_fields=['self_hosted'])
         self.assertEqual(self.client.get(self.endpoint('stripe')).status_code, 403)
+
+    def test_whatsapp_owner_settings_drive_sending_without_restart(self):
+        from communications.models import WhatsAppDelivery
+        from communications.tasks import deliver_whatsapp
+        from communications.whatsapp import queue_notifications
+        from instance.integration_probe import verify_integration
+
+        endpoint = self.endpoint('whatsapp')
+        self.owner.phone = '+393331234567'
+        fields = dict(phone_number_id='123456', business_account_id='345678',
+                      notification_routes='{"payment":"receipt/it/message"}')
+        secrets = {key: 'test-only-' + key for key in ('access_token', 'app_secret', 'webhook_verify_token')}
+        put = lambda **values: self.client.put(endpoint, {**fields, **values}, format='json')
+        self.assertEqual(put(revision=0, enabled=True).status_code, 400)
+        self.assertEqual(put(revision=0, enabled=True, notification_routes='[]', **secrets).status_code, 400)
+        saved = put(revision=0, enabled=True, **secrets)
+        self.assertEqual(saved.status_code, 200)
+        self.config.refresh_from_db()
+        for key, secret in secrets.items():
+            self.assertTrue(saved.data[key + '_configured'])
+            self.assertNotIn(key, saved.data)
+            self.assertNotIn(secret, str(self.config.integration_settings))
+        with patch('instance.integration_probe.get_json', return_value=({'id': '123456'}, None)) as probe:
+            self.assertEqual(verify_integration('whatsapp', 1)['status'], 'passed')
+            self.assertTrue(probe.call_args.args[0].endswith('/123456'))
+        msg = [{'type': 'payment', 'msg': 'Conferma'}]
+        queue_notifications(self.owner, msg)
+        row = WhatsAppDelivery.objects.get()
+        self.assertEqual(row.template_name, 'receipt')
+        self.assertEqual(put(revision=0, enabled=False).status_code, 409)
+        self.assertEqual(put(revision=1, enabled=False).status_code, 200)
+        queue_notifications(self.owner, msg)
+        self.assertEqual(WhatsAppDelivery.objects.count(), 1)
+        with patch('communications.whatsapp_provider.requests.request') as send:
+            deliver_whatsapp()
+            send.assert_not_called()
+            self.assertEqual(put(revision=2, enabled=True).status_code, 200)
+            send.return_value.status_code = 200
+            send.return_value.json.return_value = {'messages': [{'id': 'wamid.confirmation'}]}
+            deliver_whatsapp()
+            self.assertTrue(send.call_args.args[1].endswith('/123456/messages'))
+            self.assertEqual(send.call_args.kwargs['headers']['Authorization'], 'Bearer ' + secrets['access_token'])
+        row.refresh_from_db()
+        self.assertEqual((row.status, row.provider_message_id), ('sent', 'wamid.confirmation'))
+        reset = self.client.delete(endpoint, {'revision': 3}, format='json')
+        self.assertEqual(reset.data['source'], 'environment')
+        self.assertFalse(reset.data['enabled'])
 
     def test_environment_values_loaded_and_secrets_never_returned(self):
         for provider in ('stripe', 'google', 'apple'):

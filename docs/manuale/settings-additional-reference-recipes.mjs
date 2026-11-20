@@ -7,6 +7,7 @@
 // Prose belongs to authored MDX; this module only records reviewed implementation evidence.
 // Reviewed: the Istanza settings switch for API v2 (beta), its readiness check and the fallback to v1.
 // Reviewed: the Go background tasks (beta) switch, its password dialog and the restart it starts.
+// Reviewed the WhatsApp sender, secret and event route fields in the owner integration form.
 export const settingsAdditionalReviewedSources = Object.freeze({
   "BE/application/audit_context.py": "8609c865f5b2d5c4f818cd6b4fe6620ec9504fae2d5a2368fccb5745cbce25ff",
   "BE/application/signals.py": "a14dd1d21a83573a8d2da26ca6da76c2c090d6bc419b51d593a7ead1012d2ff1",
@@ -23,7 +24,7 @@ export const settingsAdditionalReviewedSources = Object.freeze({
   "UI/src/routes/subscribe/wizard/Step2.svelte": "871d4ff3b52672efd93b0348c3b587d355aeaa31edd60696d777e1b5db35a128",
   "UI/src/routes/subscribe/wizard/Step0.svelte": "6219f8340109f6637059137a679d7e73d272b95a61893a0e2aa2f58d071064a9",
   "BE/application/tasks.py": "36e3babcc1d2ff6692e322560948ed96c0fc8274958f438a84c4b69e1bad247c",
-  "BE/core/celery.py": "a3309ce3b177ef08acb19bd2c5783d3f813aa0c6e1ee5a39c84b880851677be2",
+  "BE/core/celery.py": "df2fc7b696fed1f9939c3d1bd1799ad07ec9e75442c9b7c5f7ee28531a59277d",
   "BE/application/serializers/courses_serializers.py": "6b5ed962bb1aaf588e04ecffba1f6bcedd26f8a5d55c8e9a0d97430c893a1481",
   "BE/application/views/course_views.py": "28ce719b7f6897bccde939737866533899649def382f68a47def300a5dbc1c66",
   "BE/application/utils/subscriptions_utils.py": "2befe90fee8d12947e43ce809973792bc84a5600d768bc4ba9b4a7f6709ea2ef",
@@ -33,7 +34,8 @@ export const settingsAdditionalReviewedSources = Object.freeze({
   "UI/src/routes/profile/sections/SelfInstance.svelte": "8b39187d4614b8ed73c00a301b552cf8217ba67a071ca26df5e27e15e1e6fff5",
   "UI/src/routes/profile/sections/InstanceApiVersion.svelte": "28a42cb508a214877d0237104702e75eedf472678c3df3f4c2968b3588ad8c17",
   "UI/src/utils/apiVersion.js": "1e57f66925758f499fd5b5ac9c1a0dc022ab5e2799b7576409981aee167709fa",
-  "UI/src/routes/profile/sections/InstanceGoTasks.svelte": "3cfe06b6580002bacf80368fb0d15a38e7f982452e382c19f387072697bbca99"
+  "UI/src/routes/profile/sections/InstanceGoTasks.svelte": "3cfe06b6580002bacf80368fb0d15a38e7f982452e382c19f387072697bbca99",
+  "UI/src/routes/profile/sections/WhatsAppFields.svelte": "ac947ef125de6936935b9107d8ed1ee6bf27d1d061421be1ece86ea0ca7c33b6"
 });
 const contracts = {
   "atomic_audit_context": ["BE/application/audit_context.py", "_strict_audit_indexes = ContextVar(", 20],
@@ -248,6 +250,11 @@ const contracts = {
     "export function fallbackToDefaultApi(",
     10
   ],
+  "whatsapp_settings": [
+    "UI/src/routes/profile/sections/WhatsAppFields.svelte",
+    "<label>ID numero di telefono",
+    34
+  ],
   "go_tasks_switch": [
     "UI/src/routes/profile/sections/InstanceGoTasks.svelte",
     "async function confirm()",
@@ -271,7 +278,8 @@ const sections = [
             "instance_settings_menu",
             "api_version_switch",
             "api_version_fallback",
-            "go_tasks_switch"
+            "go_tasks_switch",
+            "whatsapp_settings"
         ]
     },
     {

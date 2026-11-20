@@ -16,12 +16,16 @@ AI_FIELDS = {
 
 PROVIDERS = {
     'ai': AI_FIELDS,
+    'whatsapp': {key: 'WHATSAPP_' + key.upper() for key in (
+        'phone_number_id', 'business_account_id', 'access_token', 'app_secret', 'webhook_verify_token',
+        'notification_routes')},
     'stripe': {'public_key': 'STRIPE_PUBLIC_KEY', 'secret_key': 'STRIPE_KEY',
                'webhook_secret': 'STRIPE_WEBHOOK_SECRET'},
     'google': {'client_id': 'SOCIAL_AUTH_GOOGLE_OAUTH2_KEY'},
     'apple': {'client_id': 'SOCIAL_AUTH_APPLE_ID_CLIENT'},
 }
-SECRET_FIELDS = {'ai': ('api_key',), 'stripe': ('secret_key', 'webhook_secret'), 'google': (), 'apple': ()}
+SECRET_FIELDS = {'ai': ('api_key',), 'stripe': ('secret_key', 'webhook_secret'), 'google': (), 'apple': (),
+                 'whatsapp': ('access_token', 'app_secret', 'webhook_verify_token')}
 UNSET = object()
 
 
@@ -55,6 +59,8 @@ def effective_integration(provider, config=UNSET, decrypt=True):
     if value is None:
         value = {key: getattr(settings, name, '') or '' for key, name in PROVIDERS[provider].items()}
         value['enabled'] = bool(value['api_key']) if provider == 'ai' else any(value.values())
+        if provider == 'whatsapp':
+            value['enabled'] = bool(value['phone_number_id'] and value['access_token'])
         if provider == 'google' and config and config.self_hosted:
             value['enabled'] = value['enabled'] and config.get_display_settings().get('login', {}).get('allowOauthLogin', False)
     else:
@@ -79,9 +85,10 @@ def public_integration(provider, config):
     last_test = (config.diagnostic_results or {}).get('integration_tests', {}).get(provider) if config else None
     if last_test and last_test.get('revision') != value['revision']:
         last_test = None
+    webhook = {'stripe': '/api/stripe/webhook', 'whatsapp': '/api/communications/whatsapp/webhook'}.get(provider)
     return {**value, 'provider': provider, 'credential_error': credential_error, 'last_test': last_test,
             'restart_required': False,
-            'webhook_url': settings.APP_URL.rstrip('/') + '/api/stripe/webhook' if provider == 'stripe' else None,
+            'webhook_url': settings.APP_URL.rstrip('/') + webhook if webhook else None,
             'authorized_origin': settings.APP_URL if provider == 'google' else None,
             'web_login_available': provider == 'google' if provider != 'stripe' else None}
 

@@ -144,6 +144,11 @@ app.conf.beat_schedule = {
         'schedule': crontab(hour='2', minute='30'),  # Run daily at 2:30 AM
         'args': ()
     },
+    'deliver-whatsapp': {
+        'task': 'communications.tasks.deliver_whatsapp',
+        'schedule': 10.0,
+        'options': {'expires': 10},
+    },
 }
 # We used CELERY_BROKER_URL in settings.py instead of:
 # app.conf.broker_url = ''

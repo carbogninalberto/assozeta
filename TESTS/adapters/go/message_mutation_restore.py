@@ -258,7 +258,7 @@ class _LiveControl:
 
         with self.database.execute_wrapper(bounded):
             state = self.portable.snapshot_state(self.apps)
-        _require(isinstance(state, dict) and len(state) == 130, 'requires-all-130-models')
+        _require(isinstance(state, dict) and len(state) == 132, 'requires-all-132-models')
         cached = self.portable.snapshot_cache(self.raw)
         self.check_request_deadline()
         _require(time.monotonic() < deadline, 'snapshot-deadline')

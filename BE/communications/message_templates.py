@@ -196,3 +196,10 @@ def choose_template(templates, channel, locale, template_id):
         if code in defaults:
             return defaults[code]
     return None
+
+
+def international_phone(value):
+    phone = re.sub(r'[ ().-]', '', (value or '').strip())
+    if phone.startswith('00'):
+        phone = '+' + phone[2:]
+    return phone if re.fullmatch(r'\+[1-9][0-9]{6,14}', phone) else ''

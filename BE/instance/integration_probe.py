@@ -3,6 +3,7 @@ import json
 from urllib.parse import urlsplit
 
 import requests
+from django.conf import settings
 
 from .diagnostic_probe import result
 from .integration_configuration import effective_integration
@@ -41,6 +42,15 @@ def verify_integration(provider, revision):
         if not isinstance(data, dict) or not any(isinstance(key, dict) and key.get('kid') and key.get('kty') == 'RSA' and key.get('n') and key.get('e') for key in data.get('keys', [])):
             return result('failed', 'Il provider non ha restituito chiavi pubbliche valide.')
         return result('warning', 'Provider raggiungibile e chiavi pubbliche disponibili. Validità del client ID, origini autorizzate e accesso utente richiedono una prova di login.' + (' Il pulsante Apple sul web non è disponibile in questa versione.' if provider == 'apple' else ''))
+    if provider == 'whatsapp':
+        sender = value['phone_number_id']
+        url = f"{settings.WHATSAPP_API_BASE_URL.rstrip('/')}/{settings.WHATSAPP_API_VERSION}/{sender}"
+        data, error = get_json(url, {'Authorization': 'Bearer ' + value['access_token']})
+        if error:
+            return error
+        if not isinstance(data, dict) or data.get('id') != sender:
+            return result('failed', 'Il provider non ha confermato il numero mittente.')
+        return result('passed', 'Numero mittente verificato con Meta.')
     if provider == 'stripe':
         if not all(value.get(key) for key in ('public_key', 'secret_key', 'webhook_secret')):
             return result('not_configured', 'Completa le chiavi Stripe e la firma webhook.', 'configuration')

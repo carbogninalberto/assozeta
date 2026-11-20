@@ -48,7 +48,7 @@ export const organizationAdditionalReviewedSources = Object.freeze({
     "UI/src/routes/connectedCollaborators/CollaboratorActions.svelte": "2df48f56f3e4035b34ca2db58fa83423b7db8f2cce72d983e5dd1c826907ca8b",
     "BE/application/views/collaborator_views.py": "170561838fb06cf89016da5356cb0d39a2731b3591cc6a3487113c395ecbc558",
     "UI/src/routes/association/communication/messages/Messages.svelte": "7a5862099d6165b59b93bbb3ff1be6fa7703a85db6dbae7749aca198d115a43f",
-    "BE/communications/models.py": "a26c39cd92129d1b027a1a549945c787a9ed54e1de313dc2562c0fc3cccb3c05",
+    "BE/communications/models.py": "c6363961426275721ed99beaf96b44c4a2d326b1d25eac1dd9c9d4f17b60600b",
     // Reviewed: import reuses only accounts linked to the archive owner, and
     // existing accounts keep their own credentials.
     "BE/application/services/import_service.py": "999118c2b1bded6aed88b2531097ebffef779947083da6ea2b46a2abd434af1c"

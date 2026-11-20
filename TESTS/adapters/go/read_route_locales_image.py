@@ -115,7 +115,7 @@ def assert_oracle_workloads(result, image_id, binary_sha256):
         assert result.get(key) is True, key
     assert result.get('complete_route_parity') is False
     assert result.get('cleanup_errors') == []
-    assert result.get('managed_models') == 130
+    assert result.get('managed_models') == 132
     assert result.get('supported_languages') == EXPECTED_SUPPORTED_LANGUAGES
     assert result.get('selection_cases') == EXPECTED_SELECTION_CASES
     assert result.get('message_cases') == EXPECTED_MESSAGE_CASES

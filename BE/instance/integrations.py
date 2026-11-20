@@ -1,4 +1,5 @@
 """Owner-managed overrides for the integrations actually consumed by this app."""
+import json
 import re
 
 from django.core.exceptions import ImproperlyConfigured
@@ -31,6 +32,34 @@ class StripeSettingsSerializer(IntegrationSerializer):
         for key, pattern in patterns.items():
             if data.get(key) and not re.fullmatch(pattern, data[key]):
                 raise serializers.ValidationError({key: 'Formato della chiave non valido.'})
+        if any(data.get(key) for key in data['clear_secrets']):
+            raise serializers.ValidationError('Scegli se sostituire o rimuovere ciascuna credenziale.')
+        return data
+
+
+class WhatsAppSettingsSerializer(IntegrationSerializer):
+    phone_number_id = serializers.RegexField(r'^[0-9]+$', max_length=64, allow_blank=True)
+    business_account_id = serializers.RegexField(r'^[0-9]+$', max_length=64, allow_blank=True)
+    access_token = serializers.CharField(max_length=2000, required=False, allow_blank=True, write_only=True)
+    app_secret = serializers.CharField(max_length=2000, required=False, allow_blank=True, write_only=True)
+    webhook_verify_token = serializers.CharField(max_length=2000, required=False, allow_blank=True, write_only=True)
+    notification_routes = serializers.CharField(max_length=8192)
+    clear_secrets = serializers.ListField(child=serializers.ChoiceField(choices=SECRET_FIELDS['whatsapp']), default=list)
+
+    def validate_notification_routes(self, value):
+        from communications.whatsapp import TEMPLATE_ROUTE
+        try:
+            routes = json.loads(value)
+        except ValueError:
+            routes = None
+        if not isinstance(routes, dict) or any(
+            not key or not isinstance(route, str) or (route != 'text' and not TEMPLATE_ROUTE.fullmatch(route))
+            for key, route in routes.items()
+        ):
+            raise serializers.ValidationError('Usa text oppure nome/lingua con il suffisso /message facoltativo.')
+        return value
+
+    def validate(self, data):
         if any(data.get(key) for key in data['clear_secrets']):
             raise serializers.ValidationError('Scegli se sostituire o rimuovere ciascuna credenziale.')
         return data
@@ -86,7 +115,8 @@ class IntegrationSettingsView(OwnerOperationsView):
     @transaction.atomic
     def put(self, request, **kwargs):
         provider = self.provider()
-        serializer = ({'stripe': StripeSettingsSerializer, 'ai': AISettingsSerializer}.get(provider, LoginSettingsSerializer))(data=request.data)
+        serializer = ({'stripe': StripeSettingsSerializer, 'ai': AISettingsSerializer,
+                       'whatsapp': WhatsAppSettingsSerializer}.get(provider, LoginSettingsSerializer))(data=request.data)
         serializer.is_valid(raise_exception=True)
         value = dict(serializer.validated_data)
         config = InstanceConfiguration.objects.select_for_update().first()
@@ -115,6 +145,10 @@ class IntegrationSettingsView(OwnerOperationsView):
                 if not ((value['public_key'].startswith('pk_test_') and value['secret_key'].startswith(('sk_test_', 'rk_test_'))) or
                         (value['public_key'].startswith('pk_live_') and value['secret_key'].startswith(('sk_live_', 'rk_live_')))):
                     raise serializers.ValidationError('Chiave pubblica e segreta devono appartenere allo stesso ambiente Stripe.')
+            elif provider == 'whatsapp':
+                missing = [key for key in PROVIDERS[provider] if not value.get(key)]
+                if missing:
+                    raise serializers.ValidationError({key: 'Campo richiesto per abilitare WhatsApp.' for key in missing})
             elif provider == 'ai':
                 if not value.get('api_key'):
                     raise serializers.ValidationError({'api_key': 'Chiave API richiesta per abilitare il bot AI.'})

@@ -331,7 +331,7 @@ def fixture_scope(apps, work, raw, cleanup):
     )
     original = oracle.snapshot_models(apps)
     original_cache = snapshot_historical_read_cache(raw)
-    if len(original) != 130:
+    if len(original) != 132:
         raise AcceptanceFailure("managed-model-count")
     assert not original_cache.entries, "private cache must begin empty"
     planned = planned_fixture_rows()
@@ -376,7 +376,7 @@ def execute_owned(private, service_report, cleanup, report, tools):
             try:
                 connections.close_all()
                 schema = lifecycle.migrate_full_schema(log)
-                if schema != {"mode": "full-migration-history", "applied_migrations": 553,
+                if schema != {"mode": "full-migration-history", "applied_migrations": 554,
                               "remaining_plan": 0}:
                     raise AcceptanceFailure("migration-count")
                 report["schema"] = schema

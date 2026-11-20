@@ -33,7 +33,7 @@ def run(*, base, owner, foreign, association, person, seed, snapshot,
     assert connection.settings_dict['NAME'] == 'assozeta_contract_accounts'
     assert Path(connection.settings_dict['HOST']).resolve().parent == Path('/tmp').resolve()
     assert Path(connection.settings_dict['HOST']).name.startswith('az-accounts-')
-    assert len(models) == 130, ('Expected all 130 current-schema managed models', len(models))
+    assert len(models) == 132, ('Expected all 132 current-schema managed models', len(models))
     with connection.cursor() as cursor:
         cursor.execute('SELECT current_database(), to_regclass(%s), to_regclass(%s)',
                        ['bakney_user', 'application_collaborationinvites'])

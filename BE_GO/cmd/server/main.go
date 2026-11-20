@@ -34,6 +34,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/stripeapi"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/whatsapp"
 	passwordcrypto "github.com/carbogninalberto/assozeta/BE_GO/pkg/crypto"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/jwt"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/manual"
@@ -88,6 +89,9 @@ func run() (runErr error) {
 	}
 	// Transaction poolers cannot retain prepared statements across transactions.
 	dbConfig.DefaultQueryExecMode = pgx.QueryExecModeExec
+	// Outbox polls have their own PostgreSQL identity and no HTTP request tracer.
+	outboxConfig := dbConfig.Copy()
+	outboxConfig.RuntimeParams["application_name"] = "assozeta-go-whatsapp-outbox"
 	queryObserver, closeQueryObservation, err := openQueryObservationFiles(*queryObservationFile, *queryConnectionObservationFile)
 	if err != nil {
 		return err
@@ -332,7 +336,8 @@ func run() (runErr error) {
 	}
 	healthService := service.NewHealthService(repository.NewDatabaseProbe(db), repository.NewRedisProbe(cache), 2*time.Second)
 	healthHandler := handler.NewHealthHandler(healthService, cfg.Version)
-	restoreAdmission := service.NewRestoreAdmission(repository.NewRestoreFileLock(cfg.RestoreLockPath), repository.NewRestoreStates(db), cfg.RestoreLockPath != "")
+	restoreLock := repository.NewRestoreFileLock(cfg.RestoreLockPath)
+	restoreAdmission := service.NewRestoreAdmission(restoreLock, repository.NewRestoreStates(db), cfg.RestoreLockPath != "")
 	e := echo.New()
 	e.HideBanner = true
 	e.HidePort = true
@@ -964,8 +969,19 @@ func run() (runErr error) {
 	}
 	// subscription/add: Channels group messages are written for Django sockets
 	// and mirrored for Go sockets (internal/channels), on Redis database 0.
+	waQueue := whatsapp.NewQueue(db.DB, instanceAdminService.WhatsAppSettings)
+	waWebhook := func(c echo.Context) error {
+		settings, err := instanceAdminService.WhatsAppSettings(c.Request().Context())
+		if err != nil {
+			return c.NoContent(http.StatusServiceUnavailable)
+		}
+		whatsapp.Webhook(db.DB, whatsapp.NewCloudAPI(settings)).ServeHTTP(c.Response(), c.Request())
+		return nil
+	}
+	e.GET("/communications/whatsapp/webhook", waWebhook)
+	e.POST("/communications/whatsapp/webhook", waWebhook)
 	subscriptionNotifier := service.NewSubscriptionNotifier(repository.NewSubscriptionNotifications(db), notificationStore,
-		channels.NewLayer(notificationRedis, nil, nil, nil), time.Now)
+		channels.NewLayer(notificationRedis, nil, nil, nil), time.Now).WithNotificationChannel(waQueue.Enqueue)
 	paymentPaidFlows := repository.NewPaymentPaidFlows(repository.NewPaymentStates(db))
 	paymentStates.WithPaidFlow(paymentPaidFlows, subscriptionNotifier)
 	stripeRoutes.WithPaidFlow(paymentPaidFlows, subscriptionNotifier, tasks, os.Getenv("DOCUMENT_BYPASS_TOKEN"))
@@ -1015,6 +1031,17 @@ func run() (runErr error) {
 	server := &http.Server{Addr: cfg.ListenAddress, Handler: webSockets.Routes(e), ReadHeaderTimeout: 10 * time.Second, IdleTimeout: 60 * time.Second}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
+	workerDone := make(chan struct{})
+	go func() {
+		defer close(workerDone)
+		outboxDB := sqlx.NewDb(ownedpgx.OpenDB(*outboxConfig), "pgx")
+		defer outboxDB.Close()
+		outboxDB.SetMaxOpenConns(1)
+		admin := newInstanceAdmin(cfg, outboxDB, nil)
+		admission := service.NewRestoreAdmission(restoreLock, repository.NewRestoreStates(outboxDB), cfg.RestoreLockPath != "")
+		whatsapp.NewQueue(outboxDB.DB, admin.WhatsAppSettings).Run(ctx, admission.AcquireWrite)
+	}()
+	defer func() { stop(); <-workerDone }()
 	stopped := make(chan error, 1)
 	go func() { stopped <- server.ListenAndServe() }()
 	select {

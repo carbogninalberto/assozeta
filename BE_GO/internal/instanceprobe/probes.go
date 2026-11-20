@@ -175,6 +175,21 @@ func (c *Client) verifyIntegration(ctx context.Context, provider string, value m
 			message += " Il pulsante Apple sul web non è disponibile in questa versione."
 		}
 		return result("warning", message, "connectivity"), nil
+	case "whatsapp":
+		target, _ := value["sender_url"].(string)
+		header, err := authorization(value["access_token"])
+		if err != nil {
+			return nil, err
+		}
+		data, failure, err := c.getJSON(ctx, target, map[string]string{"Authorization": header})
+		if err != nil || failure != nil {
+			return failure, err
+		}
+		object, ok := data.(map[string]any)
+		if !ok || object["id"] != value["phone_number_id"] {
+			return result("failed", "Il provider non ha confermato il numero mittente.", "connectivity"), nil
+		}
+		return result("passed", "Numero mittente verificato con Meta.", "connectivity"), nil
 	case "stripe":
 		for _, key := range []string{"public_key", "secret_key", "webhook_secret"} {
 			if !Truthy(value[key]) {

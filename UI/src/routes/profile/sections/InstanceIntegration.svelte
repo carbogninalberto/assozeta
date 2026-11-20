@@ -7,6 +7,7 @@
     import DiagnosticResult from './DiagnosticResult.svelte';
     import InstanceMenu from './InstanceMenu.svelte';
     import InstanceDialog from './InstanceDialog.svelte';
+    import WhatsAppFields, {whatsAppDraft, whatsAppPayload} from './WhatsAppFields.svelte';
     export let provider;
     export let title;
     export let check;
@@ -30,6 +31,7 @@
     const descriptions = {
         ai: 'Assistente che risponde alle domande sui dati dell’associazione.',
         stripe: 'Pagamenti online con carta.',
+        whatsapp: 'Invio automatico delle notifiche di pagamento e abbonamento.',
         google: 'Accesso con Google.',
         apple: 'Verifica dei token Apple dalle app compatibili.',
     };
@@ -38,7 +40,7 @@
     function adopt(value) {
         config = value;
         testResult = value.last_test;
-        draft = {enabled: value.enabled, ...(provider === 'ai' ? Object.fromEntries(aiFields.map(({key}) => [key, value[key]])) : provider === 'stripe' ? {public_key: value.public_key} : {client_id: value.client_id})};
+        draft = provider === 'whatsapp' ? whatsAppDraft(value) : {enabled: value.enabled, ...(provider === 'ai' ? Object.fromEntries(aiFields.map(({key}) => [key, value[key]])) : provider === 'stripe' ? {public_key: value.public_key} : {client_id: value.client_id})};
         baseline = JSON.stringify(draft);
         secretKey = ''; webhookSecret = ''; clearSecret = false; clearWebhook = false;
     }
@@ -53,7 +55,7 @@
         if (busy || disabled || !changes) return;
         busy = true; error = '';
         try {
-            const data = {...draft, revision: config.revision};
+            const data = {...(provider === 'whatsapp' ? whatsAppPayload(draft) : draft), revision: config.revision};
             if (provider === 'ai') {
                 data.clear_secrets = clearSecret ? ['api_key'] : [];
                 if (secretKey) data.api_key = secretKey;
@@ -135,6 +137,8 @@
                             </label>
                         {/each}
                     </div>
+                {:else if provider === 'whatsapp'}
+                    <WhatsAppFields {config} bind:draft />
                 {:else if provider === 'stripe'}
                     <div class="si-grid-2">
                         <label class="span-2">Chiave pubblica Stripe<input class="form-control" bind:value={draft.public_key} maxlength="300" autocomplete="off" placeholder="pk_live_…" required={draft.enabled} /></label>

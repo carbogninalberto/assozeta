@@ -60,7 +60,7 @@ def safe_status_failure(error):
 def assert_workloads(result, image_id, case_count, required_names):
     for key in ('success','source_stable','cleanup_verified','proxy_cleanup_verified'):
         assert result[key] is True, key
-    assert result['cleanup_errors']==[] and result['managed_models']==130
+    assert result['cleanup_errors']==[] and result['managed_models']==132
     assert result['repository_required'] is False and result['repository_tests']==[]
     assert result['repository_execution']=='not_run_required_separately'
     assert result['go_runtime']['immutable_id']==image_id
@@ -115,7 +115,7 @@ class CollaboratorImageAcceptanceTests(unittest.TestCase):
     def fixture(self):
         names=['collaborator-list-owner-list','collaborator-list-anonymous']
         result={'success':True,'source_stable':True,'cleanup_verified':True,
-            'proxy_cleanup_verified':True,'cleanup_errors':[],'managed_models':130,
+            'proxy_cleanup_verified':True,'cleanup_errors':[],'managed_models':132,
             'repository_required':False,'repository_tests':[],'repository_execution':'not_run_required_separately','http_cases':len(names),
             'go_runtime':{'immutable_id':'sha256:'+'a'*64},'workloads':[],
             'fallback_negative_control':{'rejected':True,'reason':'upstream_mismatch','status':200,

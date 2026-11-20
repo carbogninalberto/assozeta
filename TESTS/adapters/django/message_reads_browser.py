@@ -295,7 +295,7 @@ def verify_acceptance(receipt, *, state_checkpoints, contrasts, attribution,
     state_checkpoints: one {actor, action, models, cache} per CHECKPOINTS; models
     are oracle.snapshot_models(apps), cache snapshot_historical_read_cache(raw).
     Every login establishes a new baseline AFTER ordinary password login. Every
-    read/reload/denied checkpoint compares all 130 models and complete DB1.
+    read/reload/denied checkpoint compares all 132 models and complete DB1.
 
     attribution: one {cid, proxy, django_events} per selected list response.
     proxy is an independent real proxy observation, never constructed from the
@@ -400,7 +400,7 @@ def verify_acceptance(receipt, *, state_checkpoints, contrasts, attribution,
     state_receipts = []
     baseline = None
     for state in state_checkpoints:
-        assert len(state['models']) == 130, 'All 130 managed models are required'
+        assert len(state['models']) == 132, 'All 132 managed models are required'
         if state['action'] == 'login':
             baseline = state
         assert baseline and state['actor'] == baseline['actor']

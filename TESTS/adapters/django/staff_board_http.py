@@ -2,7 +2,7 @@
 
 Seeds the shared identity fixture plus staff-board rows through the Django ORM,
 runs the authored sequence against one live endpoint, and verifies every case
-against the complete 130-model state, the historical cache and per-request
+against the complete 132-model state, the historical cache and per-request
 upstream attribution. A Django-only run is reference evidence, not parity.
 """
 from contextlib import contextmanager

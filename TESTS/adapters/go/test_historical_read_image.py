@@ -37,7 +37,7 @@ def acceptance(first='django'):
     for index, spec in enumerate(specifications):
         workloads.append({**spec, 'success': True, 'tests': 4, 'logins': 1,
                           'django_requests': 8 if spec['backend'] == 'django' else 0,
-                          'reads': [{'unchanged': True, 'managed_models': 130,
+                          'reads': [{'unchanged': True, 'managed_models': 132,
                                      'cache': cache(), 'cache_preflight': cache()} for _ in range(7)]})
         login = {'workload': spec['label'], 'backend': spec['backend'], 'exact_projection': True,
                  'cache': cache(), 'password_upgrade': {'performed': index == 0},
@@ -53,7 +53,7 @@ def acceptance(first='django'):
                                    'final_login_projection_verified', 'import_worker_quiescent_before_baseline')}
     oracle.update(first_backend=first, versioned=True, go_import_supported=False,
                   whole_read_family_verified=False, historical_population={'exact': True},
-                  schema={'mode': 'full-migration-history', 'remaining_plan': 0, 'applied_migrations': 553},
+                  schema={'mode': 'full-migration-history', 'remaining_plan': 0, 'applied_migrations': 554},
                   **{'import': {'success': True, 'skipped_records': image.oracle.SKIPS, 'warnings': []}},
                   configuration={'success': True}, workloads=workloads, logins=logins,
                   workload_counts=image.oracle.assert_workload_receipts(workloads, specifications),
@@ -166,7 +166,7 @@ class HistoricalImageControls(unittest.TestCase):
     def test_each_order_requires_exact_pinned_migration_history(self):
         for first in ('django', 'go'):
             self.assertIs(image.assert_acceptance(acceptance(first))['success'], True)
-            for count in (1, 552, 554, 0, -1, True, 553.0, '553', None):
+            for count in (1, 553, 555, 0, -1, True, 554.0, '554', None):
                 report = acceptance(first)
                 report['oracle']['schema']['applied_migrations'] = count
                 with self.subTest(first=first, count=count), self.assertRaises(AssertionError):
@@ -177,8 +177,8 @@ class HistoricalImageControls(unittest.TestCase):
                 image.assert_acceptance(report)
 
     def test_both_orders_reject_inconsistent_or_equally_unpinned_migration_histories(self):
-        for counts in ((1, 552), (552, 1), (553, 552), (552, 553),
-                       (553, 554), (554, 553), (552, 552), (554, 554)):
+        for counts in ((1, 553), (553, 1), (554, 553), (553, 554),
+                       (554, 555), (555, 554), (553, 553), (555, 555)):
             reports = [acceptance('django'), acceptance('go')]
             for report, count in zip(reports, counts):
                 report['oracle']['schema']['applied_migrations'] = count
@@ -334,7 +334,7 @@ class HistoricalImageControls(unittest.TestCase):
                     report.update(acceptance('go')['oracle'])
                     report['service_cleanup'] = {name: 'stopped' for name in image.oracle.SERVICES}
                     if fault == 'migrations':
-                        report['schema']['applied_migrations'] = 552
+                        report['schema']['applied_migrations'] = 553
                     if fault == 'receipt':
                         build_path.write_text('{}')
 

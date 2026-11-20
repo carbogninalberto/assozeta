@@ -174,7 +174,7 @@ class ReadRouteLocaleImageControlTests(unittest.TestCase):
             'fallback_rejected': True,
             'complete_route_parity': False,
             'cleanup_errors': [],
-            'managed_models': 130,
+            'managed_models': 132,
             'supported_languages': EXPECTED_SUPPORTED_LANGUAGES,
             'selection_cases': EXPECTED_SELECTION_CASES,
             'message_cases': EXPECTED_MESSAGE_CASES,

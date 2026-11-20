@@ -61,7 +61,7 @@ def run(*, base, owner, foreign, association, person, seed, snapshot,
     from application.models.audit_models import AuditLogIndex
     from TESTS.contracts.test_collaborator_delete import assert_case
 
-    assert len(models) == 130, ('Expected all 130 managed models', len(models))
+    assert len(models) == 132, ('Expected all 132 managed models', len(models))
     assert not report.get('email_link_cases'), (
         'Email-link fixture helper must run once per report',
     )

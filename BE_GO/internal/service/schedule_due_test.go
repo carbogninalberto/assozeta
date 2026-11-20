@@ -370,14 +370,12 @@ func TestPeriodicJobKindMapsOnlyRegisteredTasks(t *testing.T) {
 	}
 }
 
-// scheduleDueConsumerOwned are effective Beat tasks the native Go scheduler
-// does not publish: Django Beat keeps publishing them, and the Go Celery
-// consumer runs them when GO_TASK_QUEUE_TASKS routes them (celery-consumer.md).
-var scheduleDueConsumerOwned = map[string]bool{"instance.backups.notify_failures": true}
+// Django Beat publishes these tasks. The native scheduler must leave them alone.
+var djangoBeatTasks = map[string]bool{
+	"instance.backups.notify_failures":      true, // May be routed to the Go Celery consumer.
+	"communications.tasks.deliver_whatsapp": true, // The Go API polls the same outbox directly.
+}
 
-// Every declaration of the effective schedule (core/celery.py, measured by the
-// scheduler-authority oracle) is either a supported persisted definition for
-// a registered Go job or explicitly consumer-owned and refused here.
 func TestScheduleDueEffectiveDeclarations(t *testing.T) {
 	data, err := os.ReadFile(filepath.Join("..", "..", "..", "TESTS", "fixtures", "scheduler-authority.json"))
 	if err != nil {
@@ -399,7 +397,10 @@ func TestScheduleDueEffectiveDeclarations(t *testing.T) {
 							DayOfMonth  string  `json:"day_of_month"`
 							MonthOfYear string  `json:"month_of_year"`
 						} `json:"schedule"`
-						Args []any `json:"args"`
+						Args    []any `json:"args"`
+						Options struct {
+							Expires *int `json:"expires"`
+						} `json:"options"`
 					} `json:"declarations"`
 				} `json:"expected"`
 			} `json:"configuration_authority"`
@@ -434,12 +435,13 @@ func TestScheduleDueEffectiveDeclarations(t *testing.T) {
 		default:
 			t.Fatalf("%s: schedule kind %q", name, schedule.Kind)
 		}
+		row.ExpireSeconds = declaration.Options.Expires
 		_, mapped := domain.PeriodicJobKind(declaration.Task)
 		_, err := EvaluateScheduleDue(row, now)
-		if scheduleDueConsumerOwned[declaration.Task] {
+		if djangoBeatTasks[declaration.Task] {
 			owned++
 			if mapped || !errors.Is(err, domain.ErrScheduleUnsupported) {
-				t.Fatalf("%s: a consumer-owned task must be refused by the Go scheduler (mapped=%v, err=%v)", name, mapped, err)
+				t.Fatalf("%s: a Django Beat task must be refused by the Go scheduler (mapped=%v, err=%v)", name, mapped, err)
 			}
 			continue
 		}
@@ -447,7 +449,7 @@ func TestScheduleDueEffectiveDeclarations(t *testing.T) {
 			t.Fatalf("%s: effective declaration not published by Go (mapped=%v, err=%v)", name, mapped, err)
 		}
 	}
-	if owned != len(scheduleDueConsumerOwned) {
-		t.Fatalf("consumer-owned tasks missing from the effective schedule: %d", owned)
+	if owned != len(djangoBeatTasks) {
+		t.Fatalf("Django Beat tasks missing from the effective schedule: %d", owned)
 	}
 }

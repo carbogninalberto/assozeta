@@ -220,7 +220,7 @@ class CheckpointVerifier:
         need(set(payload) == fields and isinstance(payload['requests'], list), 'checkpoint.payload')
         actor, action = payload['actor'], payload['action']
         need((actor, action) == CHECKPOINTS[self.verified], 'checkpoint.order')
-        need(self.previous is not None and len(self.previous) == len(models) == 130 and
+        need(self.previous is not None and len(self.previous) == len(models) == 132 and
              set(self.previous) == set(models), 'checkpoint.full-schema')
         need(started <= finished and isinstance(remote_addr, str) and bool(remote_addr), 'checkpoint.window')
         need(isinstance(process_before, dict) and process_before.get('running') is True and
@@ -359,7 +359,7 @@ def verify_denial(case_name, *, before, after, cache_before, cache_after, contra
     independent. Parent must retain matching proxy/process/identity evidence too.
     """
     cases = {case['name']: case for case in authored_spec()['denials']}
-    need(case_name in cases and len(before) == len(after) == 130 and version in ('v1', 'v2'), 'denial.case-schema')
+    need(case_name in cases and len(before) == len(after) == 132 and version in ('v1', 'v2'), 'denial.case-schema')
     case = cases[case_name]
     need(authenticated_user_id == case['audit_actor'], 'denial.transport-identity')
     need(isinstance(process_before, dict) and process_before.get('running') is True and
