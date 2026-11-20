@@ -1698,6 +1698,24 @@ class SplitPostgresControls(unittest.TestCase):
                         self.assertNotIn(value, encoded)
                 self.assertNotIn("SELECT", encoded)
 
+    def test_idle_outbox_poll_does_not_consume_the_http_query_budget(self):
+        binding, events = self.sample()
+        helper = StructuredPostgresControls()
+        session = {"pid": 42, "session": "outbox"}
+        ping = helper.event("-- ping", **session)
+        ping["message"] = "statement: -- ping"
+        restore = helper.event(runtime.RESTORE_PENDING_SQL, ("queued", "running"), line=2, **session)
+        settings = helper.event(runtime.OUTBOX_SETTINGS_SQL, line=3, **session)
+        for event in (ping, restore, settings):
+            event["application_name"] = "assozeta-go-whatsapp-outbox"
+        events[1:1] = [ping, restore, settings]
+        events.append({**ping, "line_num": 4})  # A worker probe can also arrive just after the barrier.
+        self.assertTrue(self.reconcile(events, binding, self.proof())["split_accounting_verified"])
+
+        for key, value in (("application_name", "http"), ("message", "statement: DELETE FROM communications_message")):
+            with self.subTest(key=key), mock.patch.dict(settings, {key: value}), self.assertRaises(AssertionError):
+                self.reconcile(events, binding, self.proof())
+
     def test_raw_probe_mismatch_extra_account_and_all_unknown_controls_fail_with_counts(self):
         binding, original = self.sample()
         cases = {}

@@ -506,6 +506,11 @@ QUERY_KEYS = ("total", "association", "messages", "transactions", "writes")
 # The restore check precedes authentication even though these views never write.
 # Keep it out of CORRELATED_SQL: growth/distinct-owner windows may not use it.
 RESTORE_PENDING_SQL = "SELECT EXISTS (SELECT 1 FROM instance_datarestore WHERE state IN ($1, $2))"
+OUTBOX_SETTINGS_SQL = (
+    "SELECT id,self_hosted,display_settings,google_client_id,apple_client_id,email_settings,"
+    " email_password_encrypted,email_revision,diagnostic_results,integration_settings"
+    " FROM instance_instanceconfiguration ORDER BY id LIMIT 1"
+)
 PORTABLE_POST_EXPECTATIONS = {
     "message-reads-list-post-method": (
         "/communications/messages/list", 405, "a1000000-0000-4000-8000-000000700001"),
@@ -771,7 +776,18 @@ def postgres_events(content):
         evidence_require(matched is not None, "unexpected nonstatement event")
         evidence_require(not any(key in event for key in ("statement", "internal_query", "context")),
                          "unexpected secondary statement")
-        events.append((matched[2], event.get("detail"), matched[1]))
+        sql, detail, protocol = matched[2], event.get("detail"), matched[1]
+        if event.get("application_name") == "assozeta-go-whatsapp-outbox":
+            # This fixture has no configured sender. Its independent worker
+            # may only check restore state, read settings or probe its connection.
+            settings_read = (protocol.startswith("execute ") and detail is None
+                             and " ".join(sql.split()) == OUTBOX_SETTINGS_SQL)
+            evidence_require(
+                settings_read or _exact_probe(sql, detail, protocol) or _restore_pending_execution(sql, detail, protocol),
+                "unexpected WhatsApp outbox execution",
+            )
+            continue
+        events.append((sql, detail, protocol))
     return events
 
 
@@ -1124,7 +1140,7 @@ def _locked_same_owner_batch(query_log, observations, request, cids, *, receipt,
 
 
 def postgres_statement_diagnostics(content, *, barrier, portable_restore=False):
-    """Classify private executions without removing any from the raw budget.
+    """Classify every request execution, including probes, in the raw budget.
 
     The exact pgx v5.9.2 PgConn.Ping statement may come from session reset or a
     readiness Ping. SQL alone cannot distinguish those callers or bind a probe
