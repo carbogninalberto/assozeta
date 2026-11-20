@@ -1,0 +1,38 @@
+name: Go handoff contracts
+
+# Instance-wide Django/Go switch (feat/go-handoff). The suite contains
+# expected-red acceptance tests listed in TESTS/handoff/expected_red.json. The job
+# passes only while every listed test fails for its recorded reason and every
+# other test passes; a skip, an error or an unlisted red fails it. Its report
+# states release_evidence: false and is never a release or phase-exit receipt.
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  handoff:
+    name: Handoff contracts (expected red tracked)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The legacy baseline distribution is read from git history.
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Pull the pinned proxy image
+        run: docker pull "$(sed -n 's/^FROM \(caddy:[^ ]*\) AS production$/\1/p' UI/Dockerfile)"
+      - name: Run the handoff suite with expected-red tracking
+        run: python3 -B -m TESTS.handoff.run_expected_red
+      - name: Retain the expected-red report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: handoff-expected-red-${{ github.sha }}
+          path: quality-reports/handoff/expected-red.json
+          if-no-files-found: warn
+          retention-days: 14
