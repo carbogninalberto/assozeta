@@ -9,7 +9,7 @@ const reviewed = {
   "BE/application/views/subscriptions_views.py": "5fb701ca27d2ca4bbf9a11b0a6f374cd79f6db6bb556f52e10b441aae06f064c",
   "BE/application/utils/subscriptions_utils.py": "2befe90fee8d12947e43ce809973792bc84a5600d768bc4ba9b4a7f6709ea2ef",
   "BE/application/models/subscriptions_models.py": "348705bf0908ccd489167eb26c4975dc51ddfd77d82d7699f7cc1dbf69c17c7c",
-  "BE/application/permissions_registry.py": "b8318ad63daa9452ac736b2152449b14c49f73bc1417622a4181b7c3ceb3b1fa"
+  "BE/application/permissions_registry.py": "d6f30e78c76ea081c5c16331ae0f53b6e9051a04dc8faee2e263c81366e28a9b"
 };
 const contracts = [
   ["UI/src/components/Sidebar.svelte","<span class=\"menu-text\">Organizzazione</span>",50],

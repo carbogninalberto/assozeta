@@ -207,7 +207,7 @@ def validate_report(report):
              and sources == source_hashes() == report['source_sha256_after'] == report['build_source_sha256']
              and report['go_build_source_sha256'] == _go_sources(sources)
              and report['source_unchanged'] is True, 'receipt.source')
-        need(report['schema'] == {'applied_migrations': 552, 'remaining_plan': 0,
+        need(report['schema'] == {'applied_migrations': 553, 'remaining_plan': 0,
                                  'mode': 'full-migration-history'}
              and type(report['schema']['applied_migrations']) is int
              and type(report['schema']['remaining_plan']) is int
@@ -256,7 +256,7 @@ def validate_report(report):
             need(len(workload['cases']) == 119, 'receipt.case-count')
             for expected, actual in zip(source['cases'], workload['cases'], strict=True):
                 need(actual['case'] == expected['name'] and type(actual['status']) is int
-                     and actual['status'] == expected['status'] and actual['models'] == 128, 'receipt.case')
+                     and actual['status'] == expected['status'] and actual['models'] == 130, 'receipt.case')
                 need(set(actual['checks']) == set(CHECKS) and all(v is True for v in actual['checks'].values()), 'receipt.checks')
                 need(all(_hash(actual[k]) for k in ('state_before_sha256', 'state_after_sha256', 'cache_sha256')), 'receipt.case-hashes')
         need(set(report['client_measurements']) == set(labels), 'receipt.client-address')
@@ -319,7 +319,7 @@ def verify_observations(runtime, endpoints, work, *, started, finished):
                 observed = json.loads(line)
                 need(observed['case'] == receipt['case'] == case['name']
                      and observed['status'] == receipt['status'] == case['status'], 'evidence.case')
-                need(len(observed['before']) == len(observed['after']) == receipt['models'] == 128
+                need(len(observed['before']) == len(observed['after']) == receipt['models'] == 130
                      and adapter.shared.digest(observed['before']) == receipt['state_before_sha256']
                      and adapter.shared.digest(observed['after']) == receipt['state_after_sha256'], 'evidence.state')
                 need(observed['cache_before'] == observed['cache_after'], 'evidence.cache')

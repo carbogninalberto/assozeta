@@ -181,7 +181,7 @@ def run_workload(label, backend, base_url, fixture, apps, raw, observer):
         source = contract.load_source()
         report['source_sha256'] = contract.source_hashes()
         report['manifest_sha256'] = contract.source_digest(source)
-        contract.require(len(baseline) == 128, 'state.requires-128-models')
+        contract.require(len(baseline) == 130, 'state.requires-130-models')
         report['baseline'] = {'models': len(baseline), 'state_sha256': scopes.shared.digest(baseline),
                               'cache_sha256': original.digest, 'cache_keys': len(original.entries)}
         scopes.contract.validate_runtime(fixture['runtime'])
@@ -217,7 +217,7 @@ def run_workload(label, backend, base_url, fixture, apps, raw, observer):
                     contract.require(expired is True or type(expired) is int and expired == 1, 'transition.expire-count')
                 _boundary(apps, raw, baseline, changed, fixture['contrasts'], guard, process)
                 result['transition'] = {'code': scenario['transition'], 'removed_keys': 1,
-                    'unchanged_keys': len(original.entries) - 1, 'models': 128,
+                    'unchanged_keys': len(original.entries) - 1, 'models': 130,
                     'state_sha256': report['baseline']['state_sha256'], 'cache_sha256': changed.digest,
                     'checks': {'state': True, 'cache': True, 'process': True}}
                 result['phases'].append(_read(scenario['phases'][1], authored['phases'][1],

@@ -5,6 +5,7 @@
     import * as easing from 'svelte/easing';
     import EmailSmtp from './sections/EmailSMTP.svelte';
     import Stats from './sections/Stats.svelte';
+    import MessageTemplates from './sections/MessageTemplates.svelte';
 
     role.useLocalStorage();
 </script>
@@ -23,6 +24,8 @@
                     <EmailSmtp />
                 {:else if $subPage == 'stats'}
                     <Stats />
+                {:else if $subPage == 'templates'}
+                    <MessageTemplates />
                 {/if}
             </div>
 

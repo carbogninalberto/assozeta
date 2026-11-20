@@ -12,7 +12,7 @@ const reviewed = {
   "BE/application/views/profile_views.py": "adea11d45c4364fe508860db111f574d1e99a752bb5e792309d1a74ae6200c09",
   "BE/application/serializers/auth_serializers.py": "06b647dcce4c370545bdb0c61e23a5a48c3c56e2c4878b7197fb8b3d9dd62d1e",
   "BE/application/models/user_models.py": "4800cd1f7a757e9e7d5203d1ea086d58e92ac4592e43c7fa7758103071336c96",
-  "BE/application/permissions_registry.py": "b8318ad63daa9452ac736b2152449b14c49f73bc1417622a4181b7c3ceb3b1fa",
+  "BE/application/permissions_registry.py": "d6f30e78c76ea081c5c16331ae0f53b6e9051a04dc8faee2e263c81366e28a9b",
   "UI/src/routes/profile/sections/Settings.svelte": "aed683b4bbb10c7a226a6eed573d1d748defc4d8baa7c13fd121e833b6561901",
   "BE/application/utils/api_utils.py": "dbbdaa92161a01903c58b40be6135466df85f4780128b23175da236ae69c4c43",
   "BE/application/models/subscriptions_models.py": "348705bf0908ccd489167eb26c4975dc51ddfd77d82d7699f7cc1dbf69c17c7c",

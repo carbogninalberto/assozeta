@@ -311,7 +311,7 @@ def assert_oracle(result, image_id, binary_sha256, processes):
                 'request_future_done_before_blocker_release',
                 'request_transport_failure_before_blocker_release'):
         assert expired.get(key) is True, key
-    assert expired['model_count_before_blocker_release'] == 128
+    assert expired['model_count_before_blocker_release'] == 130
     assert expired['activity_before_blocker_release'] == []
     assert expired['ungranted_locks_before_blocker_release'] == []
     assert expired['activity_after_blocker_release'] == []

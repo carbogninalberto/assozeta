@@ -57,7 +57,7 @@ def load_source(path=SOURCE):
     source = json.loads(Path(path).read_text())
     require(source['matrix_version'] == 1, 'manifest.version')
     require(tuple(case['name'] for case in source['cases']) == CASE_NAMES, 'manifest.sequence')
-    require(source['read_effects'] == {'managed_models': 128, 'audit_rows_created': 0,
+    require(source['read_effects'] == {'managed_models': 130, 'audit_rows_created': 0,
             'session_writes': 0, 'cache_exclusions': []}, 'manifest.effects')
     for case in source['cases']:
         require(set(case) == {'name', 'actor', 'effective', 'scope', 'method', 'path',

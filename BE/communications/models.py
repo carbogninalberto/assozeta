@@ -365,3 +365,46 @@ class AutomationWorkflow(models.Model):
 auditlog.register(CommunicationConfiguration, exclude_fields=['email_smtp_password'])
 auditlog.register(Message)
 auditlog.register(AutomationWorkflow)
+
+
+class MessageTemplate(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    sport_association = models.ForeignKey(SportAssociation, on_delete=models.CASCADE)
+    channel = models.CharField(max_length=10)
+    locale = models.CharField(max_length=35)
+    name = models.CharField(max_length=100)
+    subject = models.CharField(max_length=100, blank=True)
+    body = models.TextField()
+    enabled = models.BooleanField(default=True)
+    is_default = models.BooleanField(default=False)
+    archived = models.BooleanField(default=False)
+    updated_by_id = models.UUIDField(null=True)
+    updated_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['sport_association', 'channel', 'locale'],
+                condition=Q(is_default=True, enabled=True, archived=False),
+                name='message_template_active_default',
+            ),
+        ]
+
+
+class OutgoingMessage(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    sport_association = models.ForeignKey(SportAssociation, on_delete=models.CASCADE)
+    actor_id = models.UUIDField()
+    recipient_id = models.UUIDField()
+    template_id = models.UUIDField()
+    channel = models.CharField(max_length=10)
+    locale = models.CharField(max_length=35)
+    recipient = models.CharField(max_length=254)
+    rendered_subject = models.CharField(max_length=100)
+    rendered_body = models.TextField()
+    subject = models.CharField(max_length=100)
+    body = models.TextField()
+    action = models.CharField(max_length=16, blank=True)
+    status = models.CharField(max_length=16, default='preview')
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(default=timezone.now)

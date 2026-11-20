@@ -37,7 +37,7 @@ sys.path[:0] = [str(ROOT / 'BE'), str(ROOT)]
 
 from TESTS.adapters.django import historical_read_cache, historical_read_population
 
-MODEL_COUNT = 128
+MODEL_COUNT = 130
 DB_NAME = 'assozeta_contract_historical'
 # A run that uses the shared server registers its private work directory here so
 # the settings path can point Django and Go at that run's own database.

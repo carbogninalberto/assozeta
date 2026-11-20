@@ -74,7 +74,7 @@ class LifecycleControls(unittest.TestCase):
     def setUp(self):
         self.raw = OfflineRedis()
         self.source = contract.load_source()
-        self.state = {f'model.{index}': [] for index in range(126)}
+        self.state = {f'model.{index}': [] for index in range(128)}
         self.state.update({'auditlog.LogEntry': [], 'application.AuditLogIndex': []})
         self.baseline = copy.deepcopy(self.state)
         self.observer = Observer()
@@ -526,7 +526,7 @@ class LifecycleControls(unittest.TestCase):
                 receipt = changed['restoration'] if location == 'workload' else changed['scenarios'][0]['restoration']
                 if field == 'verified': receipt[field] = 1
                 if field == 'checks': receipt[field]['session'] = 1
-                if field == 'models': receipt[field] = 128.0
+                if field == 'models': receipt[field] = 130.0
                 with self.subTest(location=location, field=field):
                     self.assertFalse(adapter.acceptance(changed))
 

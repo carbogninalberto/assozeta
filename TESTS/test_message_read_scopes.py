@@ -36,7 +36,7 @@ def cache_fixture():
 def synthetic_lifecycle_receipt(label):
     """Shape control only; this provides no actual runtime/process evidence."""
     source = lifecycle_contract.load_source()
-    baseline = {'models': 128, 'cache_keys': 4, 'state_sha256': 'a' * 64, 'cache_sha256': 'b' * 64}
+    baseline = {'models': 130, 'cache_keys': 4, 'state_sha256': 'a' * 64, 'cache_sha256': 'b' * 64}
     report = {'label': label, 'backend': lifecycle_contract.LABELS[label],
         'source_sha256': lifecycle_contract.source_hashes(),
         'manifest_sha256': lifecycle_contract.source_digest(source), 'success': True, 'failure': None,
@@ -45,14 +45,14 @@ def synthetic_lifecycle_receipt(label):
     for scenario in source['scenarios']:
         result = {'scenario': scenario['name'], 'process_sha256': report['process_sha256'],
             'phases': [], 'transition': {'code': scenario['transition'], 'removed_keys': 1,
-                'unchanged_keys': 3, 'models': 128, 'state_sha256': baseline['state_sha256'],
+                'unchanged_keys': 3, 'models': 130, 'state_sha256': baseline['state_sha256'],
                 'cache_sha256': 'd' * 64, 'checks': dict.fromkeys(('state', 'cache', 'process'), True)},
             'restoration': lifecycle_contract.restoration_receipt(baseline)}
         for index, phase in enumerate(scenario['phases']):
             result['phases'].append({'phase': 'denied' if index else 'warm', 'case': phase['name'],
                 'status': phase['status'], 'check': phase['check'],
                 'checks': dict.fromkeys(('response', 'state', 'cache', 'attribution', 'process'), True),
-                'models': 128, 'state_sha256': baseline['state_sha256'],
+                'models': 130, 'state_sha256': baseline['state_sha256'],
                 'cache_sha256': 'd' * 64 if index else baseline['cache_sha256'],
                 'authored_sha256': lifecycle_contract.source_digest(phase),
                 'process_sha256': report['process_sha256']})
@@ -255,7 +255,7 @@ class ManifestControls(unittest.TestCase):
         self.assertEqual(len(self.source['cases']), 38)
         self.assertFalse(set(contract.CASE_NAMES) & {case['name'] for case in original['cases']})
         self.assertTrue(all(case['reason'] and case['check'] for case in self.source['cases']))
-        self.assertEqual(self.source['read_effects'], {'managed_models': 128, 'audit_rows_created': 0,
+        self.assertEqual(self.source['read_effects'], {'managed_models': 130, 'audit_rows_created': 0,
                          'session_writes': 0, 'cache_exclusions': []})
 
     def test_credential_projection_preserves_all_authored_expectations(self):
@@ -527,7 +527,7 @@ class RuntimeControls(unittest.TestCase):
                 reuse = SimpleNamespace(owned_message_database=owned,
                     private_environment=lambda *args: ({}, set()), apply_private_environment=lambda env: None,
                     initialize_django_apps=lambda: (apps, None), cache_override=lambda port: {},
-                    migrate_full_schema=lambda log: {'applied_migrations': 552},
+                    migrate_full_schema=lambda log: {'applied_migrations': 553},
                     django_application=django, owned_caddy=caddy)
                 report = {'workloads': [], 'lifecycle_workloads': []}
                 with patch.dict(sys.modules, modules), patch.object(runtime, 'go_service', new=golang), \
@@ -651,7 +651,7 @@ class RuntimeControls(unittest.TestCase):
 
     def test_snapshot_requires_all_128_models(self):
         with patch.object(shared, 'snapshot_models', return_value={'one': []}):
-            with self.assertRaisesRegex(AssertionError, '128'):
+            with self.assertRaisesRegex(AssertionError, '130'):
                 adapter.snapshot_state(None)
 
     def test_cache_session_type_dump_expiry_and_key_mutations_are_not_excluded(self):
@@ -709,7 +709,7 @@ class RuntimeControls(unittest.TestCase):
             reuse = SimpleNamespace(owned_message_database=owned,
                 private_environment=lambda *args: ({}, set()), apply_private_environment=lambda env: None,
                 initialize_django_apps=lambda: (None, None), cache_override=lambda port: {},
-                migrate_full_schema=lambda log: {'applied_migrations': 552})
+                migrate_full_schema=lambda log: {'applied_migrations': 553})
 
             def broken_seed(*args):
                 private.mkdir()
@@ -809,7 +809,7 @@ class RuntimeControls(unittest.TestCase):
         hashes = runtime.source_hashes()
         report = {'runtime_executed': True, 'errors': [], 'cleanup_errors': [], 'versioned': versioned,
                   'source_sha256': hashes, 'source_sha256_after': hashes.copy(),
-                  'go_build_source_sha256': hashes.copy(), 'schema': {'applied_migrations': 552,
+                  'go_build_source_sha256': hashes.copy(), 'schema': {'applied_migrations': 553,
                   'remaining_plan': 0, 'mode': 'full-migration-history'}, 'cleanup_verified': True,
                   'fixture_cleanup': {'verified': True, 'results': dict.fromkeys(runtime.FIXTURE_CLEANUP, True)},
                   'go_artifact': {'server_sha256': 'a' * 64, 'codec_sha256': 'b' * 64, 'process_exit': 0},
@@ -831,7 +831,7 @@ class RuntimeControls(unittest.TestCase):
             report['workloads'].append({'label': label, 'success': True, 'cases': [
                 {'case': case['name'], 'status': case['status'], 'check': case['check'],
                  'checks': dict.fromkeys(('response', 'state', 'cache', 'attribution'), True),
-                 'models': 128, 'state_sha256': baseline['state_sha256'],
+                 'models': 130, 'state_sha256': baseline['state_sha256'],
                  'cache_sha256': baseline['cache_sha256']}
                 for case in cases]})
         if versioned:
@@ -850,7 +850,7 @@ class RuntimeControls(unittest.TestCase):
                 if change == 'case': changed['workloads'][0]['cases'].pop()
                 if change == 'status': changed['workloads'][0]['cases'][0]['status'] = 500
                 if change == 'check': changed['workloads'][0]['cases'][0]['check'] = 'other'
-                if change == 'models': changed['workloads'][0]['cases'][0]['models'] = 127
+                if change == 'models': changed['workloads'][0]['cases'][0]['models'] = 128
                 if change == 'cache': changed['workloads'][0]['cases'][0]['checks']['cache'] = False
                 if change == 'artifact': changed['go_artifact'].pop('codec_sha256')
                 if change == 'exit': changed['go_artifact']['process_exit'] = 7

@@ -12,7 +12,7 @@ const reviewed = {
   "BE/application/services/subscription_service.py": "dabb1369f276602e5f95694843c61c94e63b947133b908d3edcb7d77fec01d82",
   "BE/application/serializers/subscriptions_serializers.py": "19b0a153b95d3d82599820ce3d41ecc4e9ab73e335a7924c389203b1a3ee4904",
   "BE/application/models/subscriptions_models.py": "348705bf0908ccd489167eb26c4975dc51ddfd77d82d7699f7cc1dbf69c17c7c",
-  "BE/application/permissions_registry.py": "b8318ad63daa9452ac736b2152449b14c49f73bc1417622a4181b7c3ceb3b1fa",
+  "BE/application/permissions_registry.py": "d6f30e78c76ea081c5c16331ae0f53b6e9051a04dc8faee2e263c81366e28a9b",
   "UI/src/routes/association/Members/detail/sections/Medical.svelte": "e577b134442d77f32b4950935b9efd2e650cb6d3248c2f9c481bf0eae6bef2c5",
   "UI/src/routes/association/Members/detail/sections/modals/AddMedicalCertificate.svelte": "5f24574bfba22af294439d2844ff6ada728fbc9ed483dac5f0d22badf54ec7ae",
   "UI/src/routes/association/Members/detail/sections/modals/medicalCertificateUpload.js": "8b78ae7aaf29c309c5eaf6d8f2ed00078a085beba54ef7316675a585f2a83f21"

@@ -1,0 +1,720 @@
+{
+  "matrix_version": 1,
+  "ids": {
+    "owner": "a1000000-0000-4000-8000-000000700001",
+    "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "group": "a1000000-0000-4000-8000-000000714001",
+    "other_group": "a1000000-0000-4000-8000-000000714002",
+    "recipient": "a1000000-0000-4000-8000-000000790001",
+    "send": "a1000000-0000-4000-8000-000000790002",
+    "discard": "a1000000-0000-4000-8000-000000790003",
+    "interrupted": "a1000000-0000-4000-8000-000000790004"
+  },
+  "template": {
+    "id": "a1000000-0000-4000-8000-000000790005",
+    "channel": "email",
+    "locale": "it",
+    "name": "Welcome",
+    "subject": "Hello {{customer_name}}",
+    "body": "See you at {{time}}.",
+    "enabled": true,
+    "is_default": true
+  },
+  "cases": [
+    {
+      "name": "message-templates-seed",
+      "actor": "foreign_owner",
+      "method": "GET",
+      "path": "/communications/settings/message-templates",
+      "headers": {},
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "status": 200,
+      "response": {
+        "data": [
+          {
+            "id": "$uuid",
+            "channel": "email",
+            "locale": "it",
+            "name": "Messaggio di saluto",
+            "subject": "Un messaggio da {{association_name}}",
+            "body": "Ciao {{customer_name}}, ti scriviamo da {{association_name}}.",
+            "enabled": true,
+            "is_default": true
+          },
+          {
+            "id": "$uuid",
+            "channel": "sms",
+            "locale": "it",
+            "name": "Messaggio di saluto",
+            "subject": "",
+            "body": "Ciao {{customer_name}}, ti scriviamo da {{association_name}}.",
+            "enabled": true,
+            "is_default": true
+          },
+          {
+            "id": "$uuid",
+            "channel": "whatsapp",
+            "locale": "it",
+            "name": "Messaggio di saluto",
+            "subject": "",
+            "body": "Ciao {{customer_name}}, ti scriviamo da {{association_name}}.",
+            "enabled": true,
+            "is_default": true
+          }
+        ],
+        "variables": [
+          "customer_name",
+          "association_name",
+          "date",
+          "time",
+          "link"
+        ]
+      },
+      "effect": {
+        "templates": [
+          {
+            "channel": "email",
+            "locale": "it",
+            "name": "Messaggio di saluto",
+            "subject": "Un messaggio da {{association_name}}",
+            "body": "Ciao {{customer_name}}, ti scriviamo da {{association_name}}.",
+            "enabled": true,
+            "is_default": true,
+            "archived": false,
+            "sport_association_id": "a1000000-0000-4000-8000-000000701002"
+          },
+          {
+            "channel": "sms",
+            "locale": "it",
+            "name": "Messaggio di saluto",
+            "subject": "",
+            "body": "Ciao {{customer_name}}, ti scriviamo da {{association_name}}.",
+            "enabled": true,
+            "is_default": true,
+            "archived": false,
+            "sport_association_id": "a1000000-0000-4000-8000-000000701002"
+          },
+          {
+            "channel": "whatsapp",
+            "locale": "it",
+            "name": "Messaggio di saluto",
+            "subject": "",
+            "body": "Ciao {{customer_name}}, ti scriviamo da {{association_name}}.",
+            "enabled": true,
+            "is_default": true,
+            "archived": false,
+            "sport_association_id": "a1000000-0000-4000-8000-000000701002"
+          }
+        ]
+      }
+    },
+    {
+      "name": "message-templates-list",
+      "actor": "owner",
+      "method": "GET",
+      "path": "/communications/settings/message-templates",
+      "headers": {},
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "status": 200,
+      "response": {
+        "data": [
+          {
+            "id": "a1000000-0000-4000-8000-000000790005",
+            "channel": "email",
+            "locale": "it",
+            "name": "Welcome",
+            "subject": "Hello {{customer_name}}",
+            "body": "See you at {{time}}.",
+            "enabled": true,
+            "is_default": true
+          }
+        ],
+        "variables": [
+          "customer_name",
+          "association_name",
+          "date",
+          "time",
+          "link"
+        ]
+      }
+    },
+    {
+      "name": "message-templates-invalid-placeholder",
+      "actor": "owner",
+      "method": "POST",
+      "path": "/communications/settings/message-templates/sample",
+      "headers": {},
+      "methods": [
+        "POST"
+      ],
+      "status": 400,
+      "response": {
+        "body": "Variabile sconosciuta: unknown."
+      },
+      "body": {
+        "id": "a1000000-0000-4000-8000-000000790005",
+        "channel": "email",
+        "locale": "it",
+        "name": "Welcome",
+        "subject": "Hello {{customer_name}}",
+        "body": "{{unknown}}",
+        "enabled": true,
+        "is_default": true
+      }
+    },
+    {
+      "name": "message-templates-sample",
+      "actor": "owner",
+      "method": "POST",
+      "path": "/communications/settings/message-templates/sample",
+      "headers": {},
+      "methods": [
+        "POST"
+      ],
+      "status": 200,
+      "response": {
+        "data": {
+          "subject": "Hello Giulia Rossi",
+          "body": "See you at 18:30."
+        }
+      },
+      "body": {
+        "id": "a1000000-0000-4000-8000-000000790005",
+        "channel": "email",
+        "locale": "it",
+        "name": "Welcome",
+        "subject": "Hello {{customer_name}}",
+        "body": "See you at {{time}}.",
+        "enabled": true,
+        "is_default": true
+      }
+    },
+    {
+      "name": "message-templates-restricted-persona",
+      "actor": "restricted_collaborator",
+      "method": "GET",
+      "path": "/communications/outgoing/recipients/a1000000-0000-4000-8000-000000790001",
+      "headers": {},
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "status": 403,
+      "response": {
+        "detail": "Missing permission: association.personas.read"
+      }
+    },
+    {
+      "name": "message-templates-group-denied",
+      "actor": "owner",
+      "method": "GET",
+      "path": "/communications/outgoing/recipients/a1000000-0000-4000-8000-000000790001",
+      "headers": {
+        "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+      },
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "status": 404,
+      "response": {
+        "detail": "Not found."
+      }
+    },
+    {
+      "name": "message-templates-group-recipient",
+      "actor": "owner",
+      "method": "GET",
+      "path": "/communications/outgoing/recipients/a1000000-0000-4000-8000-000000790001",
+      "headers": {
+        "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+      },
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "status": 200,
+      "response": {
+        "data": {
+          "recipient_name": "Giulia Rossi",
+          "templates": [
+            {
+              "id": "a1000000-0000-4000-8000-000000790005",
+              "channel": "email",
+              "locale": "it",
+              "name": "Welcome",
+              "subject": "Hello {{customer_name}}",
+              "body": "See you at {{time}}.",
+              "enabled": true,
+              "is_default": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "message-templates-preview",
+      "actor": "owner",
+      "method": "POST",
+      "path": "/communications/outgoing/recipients/a1000000-0000-4000-8000-000000790001",
+      "headers": {
+        "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+      },
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "status": 201,
+      "response": {
+        "data": {
+          "id": "$uuid",
+          "template_id": "a1000000-0000-4000-8000-000000790005",
+          "channel": "email",
+          "locale": "it",
+          "recipient": "recipient@example.test",
+          "subject": "Hello Giulia Rossi",
+          "body": "See you at 18:15.",
+          "status": "preview",
+          "can_send": true,
+          "can_open_whatsapp": false,
+          "warning": ""
+        }
+      },
+      "body": {
+        "channel": "email",
+        "locale": "it",
+        "time": "18:15"
+      },
+      "effect": {
+        "outgoing": [
+          {
+            "recipient_id": "a1000000-0000-4000-8000-000000790001",
+            "actor_id": "a1000000-0000-4000-8000-000000700001",
+            "template_id": "a1000000-0000-4000-8000-000000790005",
+            "subject": "Hello Giulia Rossi",
+            "body": "See you at 18:15.",
+            "rendered_subject": "Hello Giulia Rossi",
+            "rendered_body": "See you at 18:15.",
+            "status": "preview"
+          }
+        ]
+      }
+    },
+    {
+      "name": "message-templates-send",
+      "actor": "owner",
+      "method": "POST",
+      "path": "/communications/outgoing/previews/a1000000-0000-4000-8000-000000790002",
+      "headers": {},
+      "methods": [
+        "POST"
+      ],
+      "status": 200,
+      "response": {
+        "data": {
+          "id": "a1000000-0000-4000-8000-000000790002",
+          "template_id": "a1000000-0000-4000-8000-000000790005",
+          "channel": "email",
+          "locale": "it",
+          "recipient": "recipient@example.test",
+          "subject": "Approved subject",
+          "body": "  Approved text.\nSecond line.  ",
+          "status": "submitted",
+          "can_send": true,
+          "can_open_whatsapp": false,
+          "warning": ""
+        }
+      },
+      "body": {
+        "action": "send",
+        "subject": "Approved subject",
+        "body": "  Approved text.\nSecond line.  "
+      },
+      "effect": {
+        "outgoing": [
+          {
+            "id": "a1000000-0000-4000-8000-000000790002",
+            "status": "submitted",
+            "action": "send",
+            "subject": "Approved subject",
+            "body": "  Approved text.\nSecond line.  ",
+            "rendered_subject": "Rendered subject",
+            "rendered_body": "Rendered body"
+          }
+        ],
+        "smtp": {
+          "subject": "Approved subject",
+          "body": "  Approved text.\nSecond line.  "
+        }
+      }
+    },
+    {
+      "name": "message-templates-send-replay",
+      "actor": "owner",
+      "method": "POST",
+      "path": "/communications/outgoing/previews/a1000000-0000-4000-8000-000000790002",
+      "headers": {},
+      "methods": [
+        "POST"
+      ],
+      "status": 200,
+      "response": {
+        "data": {
+          "id": "a1000000-0000-4000-8000-000000790002",
+          "template_id": "a1000000-0000-4000-8000-000000790005",
+          "channel": "email",
+          "locale": "it",
+          "recipient": "recipient@example.test",
+          "subject": "Approved subject",
+          "body": "  Approved text.\nSecond line.  ",
+          "status": "submitted",
+          "can_send": true,
+          "can_open_whatsapp": false,
+          "warning": ""
+        }
+      },
+      "body": {
+        "action": "send",
+        "subject": "Approved subject",
+        "body": "  Approved text.\nSecond line.  "
+      }
+    },
+    {
+      "name": "message-templates-send-conflict",
+      "actor": "owner",
+      "method": "POST",
+      "path": "/communications/outgoing/previews/a1000000-0000-4000-8000-000000790002",
+      "headers": {},
+      "methods": [
+        "POST"
+      ],
+      "status": 409,
+      "response": {
+        "detail": "Questa anteprima è già stata utilizzata."
+      },
+      "body": {
+        "action": "send",
+        "subject": "Approved subject",
+        "body": "Changed"
+      }
+    },
+    {
+      "name": "message-templates-discard",
+      "actor": "owner",
+      "method": "POST",
+      "path": "/communications/outgoing/previews/a1000000-0000-4000-8000-000000790003",
+      "headers": {},
+      "methods": [
+        "POST"
+      ],
+      "status": 200,
+      "response": {
+        "data": {
+          "id": "a1000000-0000-4000-8000-000000790003",
+          "template_id": "a1000000-0000-4000-8000-000000790005",
+          "channel": "email",
+          "locale": "it",
+          "recipient": "recipient@example.test",
+          "subject": "Rendered subject",
+          "body": "Rendered body",
+          "status": "discarded",
+          "can_send": true,
+          "can_open_whatsapp": false,
+          "warning": "Anteprima scartata. L’invio automatico è stato annullato."
+        }
+      },
+      "body": {
+        "action": "discard"
+      },
+      "effect": {
+        "outgoing": [
+          {
+            "id": "a1000000-0000-4000-8000-000000790003",
+            "status": "discarded",
+            "action": "discard",
+            "subject": "Rendered subject",
+            "body": "Rendered body",
+            "rendered_subject": "Rendered subject",
+            "rendered_body": "Rendered body"
+          }
+        ]
+      }
+    },
+    {
+      "name": "message-templates-interrupted",
+      "actor": "owner",
+      "method": "POST",
+      "path": "/communications/outgoing/previews/a1000000-0000-4000-8000-000000790004",
+      "headers": {},
+      "methods": [
+        "POST"
+      ],
+      "status": 200,
+      "response": {
+        "data": {
+          "id": "a1000000-0000-4000-8000-000000790004",
+          "template_id": "a1000000-0000-4000-8000-000000790005",
+          "channel": "email",
+          "locale": "it",
+          "recipient": "recipient@example.test",
+          "subject": "Rendered subject",
+          "body": "Rendered body",
+          "status": "unknown",
+          "can_send": true,
+          "can_open_whatsapp": false,
+          "warning": "Non è stato possibile confermare l’invio. Verifica la consegna prima di inviare un altro messaggio."
+        }
+      },
+      "body": {
+        "action": "send",
+        "subject": "Rendered subject",
+        "body": "Rendered body"
+      },
+      "effect": {
+        "outgoing": [
+          {
+            "id": "a1000000-0000-4000-8000-000000790004",
+            "status": "unknown",
+            "action": "send",
+            "subject": "Rendered subject",
+            "body": "Rendered body",
+            "rendered_subject": "Rendered subject",
+            "rendered_body": "Rendered body"
+          }
+        ]
+      }
+    },
+    {
+      "name": "message-templates-interrupted-replay",
+      "actor": "owner",
+      "method": "POST",
+      "path": "/communications/outgoing/previews/a1000000-0000-4000-8000-000000790004",
+      "headers": {},
+      "methods": [
+        "POST"
+      ],
+      "status": 200,
+      "response": {
+        "data": {
+          "id": "a1000000-0000-4000-8000-000000790004",
+          "template_id": "a1000000-0000-4000-8000-000000790005",
+          "channel": "email",
+          "locale": "it",
+          "recipient": "recipient@example.test",
+          "subject": "Rendered subject",
+          "body": "Rendered body",
+          "status": "unknown",
+          "can_send": true,
+          "can_open_whatsapp": false,
+          "warning": "Non è stato possibile confermare l’invio. Verifica la consegna prima di inviare un altro messaggio."
+        }
+      },
+      "body": {
+        "action": "send",
+        "subject": "Rendered subject",
+        "body": "Rendered body"
+      }
+    },
+    {
+      "name": "message-templates-new-default",
+      "actor": "owner",
+      "method": "POST",
+      "path": "/communications/settings/message-templates",
+      "headers": {},
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "status": 201,
+      "response": {
+        "data": {
+          "id": "$uuid",
+          "channel": "email",
+          "locale": "it",
+          "name": "New default",
+          "subject": "Hello {{customer_name}}",
+          "body": "New {{customer_name}}",
+          "enabled": true,
+          "is_default": true
+        }
+      },
+      "body": {
+        "channel": "email",
+        "locale": "it",
+        "name": "New default",
+        "subject": "Hello {{customer_name}}",
+        "body": "New {{customer_name}}",
+        "enabled": true,
+        "is_default": true
+      },
+      "effect": {
+        "templates": [
+          {
+            "channel": "email",
+            "locale": "it",
+            "name": "New default",
+            "subject": "Hello {{customer_name}}",
+            "body": "New {{customer_name}}",
+            "enabled": true,
+            "is_default": true,
+            "archived": false,
+            "sport_association_id": "a1000000-0000-4000-8000-000000701001"
+          },
+          {
+            "id": "a1000000-0000-4000-8000-000000790005",
+            "is_default": false
+          }
+        ],
+        "audit": [
+          {
+            "template": "Welcome",
+            "action": 1,
+            "changes": {
+              "is_default": [
+                "True",
+                "False"
+              ]
+            }
+          },
+          {
+            "template": "New default",
+            "action": 0,
+            "changes": {
+              "channel": [
+                "None",
+                "email"
+              ],
+              "locale": [
+                "None",
+                "it"
+              ],
+              "name": [
+                "None",
+                "New default"
+              ],
+              "subject": [
+                "None",
+                "Hello {{customer_name}}"
+              ],
+              "body": [
+                "None",
+                "New {{customer_name}}"
+              ],
+              "enabled": [
+                "None",
+                "True"
+              ],
+              "is_default": [
+                "None",
+                "True"
+              ],
+              "archived": [
+                "None",
+                "False"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "message-templates-edit",
+      "actor": "owner",
+      "method": "PATCH",
+      "path": "/communications/settings/message-templates/a1000000-0000-4000-8000-000000790005",
+      "headers": {},
+      "methods": [
+        "PATCH",
+        "DELETE"
+      ],
+      "status": 200,
+      "response": {
+        "data": {
+          "id": "a1000000-0000-4000-8000-000000790005",
+          "channel": "email",
+          "locale": "it",
+          "name": "Renamed",
+          "subject": "Hello {{customer_name}}",
+          "body": "Edited {{customer_name}}",
+          "enabled": false,
+          "is_default": false
+        }
+      },
+      "body": {
+        "name": "Renamed",
+        "body": "Edited {{customer_name}}",
+        "enabled": false
+      },
+      "effect": {
+        "templates": [
+          {
+            "id": "a1000000-0000-4000-8000-000000790005",
+            "name": "Renamed",
+            "enabled": false,
+            "body": "Edited {{customer_name}}"
+          }
+        ],
+        "audit": [
+          {
+            "template": "Renamed",
+            "action": 1,
+            "changes": {
+              "name": [
+                "Welcome",
+                "Renamed"
+              ],
+              "body": [
+                "See you at {{time}}.",
+                "Edited {{customer_name}}"
+              ],
+              "enabled": [
+                "True",
+                "False"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "message-templates-archive",
+      "actor": "owner",
+      "method": "DELETE",
+      "path": "/communications/settings/message-templates/a1000000-0000-4000-8000-000000790005",
+      "headers": {},
+      "methods": [
+        "PATCH",
+        "DELETE"
+      ],
+      "status": 204,
+      "response": "<empty>",
+      "effect": {
+        "templates": [
+          {
+            "id": "a1000000-0000-4000-8000-000000790005",
+            "archived": true
+          }
+        ],
+        "audit": [
+          {
+            "template": "Renamed",
+            "action": 1,
+            "changes": {
+              "archived": [
+                "False",
+                "True"
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

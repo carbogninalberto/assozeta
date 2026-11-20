@@ -33,7 +33,7 @@ ROOT = Path(__file__).resolve().parents[3]
 DRAIN_SECONDS = 25
 # Separate bounded transaction/driver cleanup after the admission drain.
 EXIT_CLEANUP_TOLERANCE_SECONDS = 6.5
-MODEL_COUNT = 128
+MODEL_COUNT = 130
 CATEGORY_MODEL = 'application.PaymentCategory'
 AUDIT_MODELS = ('auditlog.LogEntry', 'application.AuditLogIndex')
 EXPECTED_CASES = (
@@ -587,7 +587,7 @@ def run(*, work, log, tool_env, address, owner_id, association_id, token, snapsh
                     label, 'pre-existing audit/index row changed',
                 )
             else:
-                assert after[label] == prior, (label, 'unrelated 128-model state changed')
+                assert after[label] == prior, (label, 'unrelated 130-model state changed')
         events = list(LogEntry.objects.filter(cid__startswith=cid_prefix).order_by('cid'))
         expected_cids = sorted(expected['stable']['cid'] for expected in expected_audits)
         assert [event.cid for event in events] == expected_cids, (

@@ -85,7 +85,7 @@ CHECKPOINTS = (
 )
 READ_ACTORS = ('owner', 'restricted', 'foreign-owner')
 EXPECTED_LIST_REQUESTS = 7
-EXPECTED_MANAGED_MODELS = 128
+EXPECTED_MANAGED_MODELS = 130
 LOGIN_ACTORS = ('owner', 'restricted', 'foreign-owner', 'denied')
 USER_MODEL = 'application.User'
 
@@ -820,7 +820,7 @@ def exercise(proof, work, output, log, options, tool_env, report):
         result = {model._meta.label: list(model._base_manager.order_by('pk').values())
                   for model in apps.get_models(include_auto_created=True)
                   if model._meta.managed and not model._meta.proxy}
-        assert len(result) == EXPECTED_MANAGED_MODELS, 'Expected exactly 128 managed models'
+        assert len(result) == EXPECTED_MANAGED_MODELS, 'Expected exactly 130 managed models'
         return result
 
     def cache_snapshot():

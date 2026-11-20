@@ -89,7 +89,7 @@ def runtime_receipt():
     workloads = []
     for label, backend in image.ENDPOINTS:
         workloads.append(dict(label=label, backend=backend, success=True,
-            cases=[dict(case=case['name'], status=case['status'], models=128,
+            cases=[dict(case=case['name'], status=case['status'], models=130,
                 state_before_sha256=H, state_after_sha256=H, cache_sha256=H,
                 checks=dict.fromkeys(image.CASE_CHECKS, True)) for case in source['cases']],
             process_sha256=H, normalized_effects_sha256=H,
@@ -673,7 +673,7 @@ class OracleComposition(unittest.TestCase):
         from types import MappingProxyType
         guard = lambda: {'pid': 42, 'instance': 123, 'running': True}
         address_receipt = image.ip_receipt('127.0.0.1', 'connected-host-socket', guard)
-        state = {f'synthetic.Model{number}': [] for number in range(125)}
+        state = {f'synthetic.Model{number}': [] for number in range(127)}
         state.update({image.contract.MESSAGE: [], image.contract.AUDIT: [], image.contract.DELIVERY: []})
         cases = image.contract.load_source()['cases']
         cache_digest = HistoricalReadCacheSnapshot(MappingProxyType({})).digest
@@ -700,7 +700,7 @@ class OracleComposition(unittest.TestCase):
                             elif corruption == 'attribution':
                                 row['observed'] = []
                         rows.append(row)
-                        receipts.append({'case': case['name'], 'status': case['status'], 'models': 128,
+                        receipts.append({'case': case['name'], 'status': case['status'], 'models': 130,
                             'state_before_sha256': image.adapter.shared.digest(state),
                             'state_after_sha256': image.adapter.shared.digest(state), 'cache_sha256': cache_digest,
                             'checks': dict.fromkeys(image.CASE_CHECKS, True)})

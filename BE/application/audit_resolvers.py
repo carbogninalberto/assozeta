@@ -272,7 +272,7 @@ def setup_audit_resolvers():
         NurturingEmailsPlan, NurturingEmails, BillingPlan,
         BillingSubscription, BillingPayment
     )
-    from communications.models import Message, AutomationWorkflow, CommunicationConfiguration
+    from communications.models import Message, AutomationWorkflow, CommunicationConfiguration, MessageTemplate
 
     # =========================================================================
     # SPECIAL CASE: SportAssociation is itself
@@ -344,6 +344,7 @@ def setup_audit_resolvers():
         Message,
         AutomationWorkflow,
         CommunicationConfiguration,
+        MessageTemplate,
     ]
 
     for model in direct_fk_models:

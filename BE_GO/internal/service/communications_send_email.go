@@ -189,6 +189,27 @@ func sendEmailServer(row domain.CommunicationConfigurationRecord) smtpsend.Serve
 		Timeout: 10 * time.Second}
 }
 
+// DeliverTemplate submits the approved text without passing it through the
+// legacy form serializer. The caller owns the durable attempt and its status.
+func (s *CommunicationSendEmail) DeliverTemplate(ctx context.Context, association string, row domain.OutgoingMessage,
+	audit domain.LoginAuditContext) (bool, error) {
+	var configuration domain.CommunicationConfigurationRecord
+	if err := s.step(ctx, func(tx domain.CommunicationSendEmailTransaction) error {
+		var err error
+		configuration, err = tx.FirstConfiguration(ctx, association, false)
+		if errors.Is(err, domain.ErrCommunicationConfigurationNotFound) {
+			configuration = domain.CommunicationConfigurationRecord{AssociationID: &association, DailyLimit: 1000}
+			return nil
+		}
+		return err
+	}); err != nil {
+		return false, err
+	}
+	result, err := s.sendEmail(ctx, configuration, dto.SendEmailInput{Email: row.Recipient, Subject: row.Subject, Message: row.Body},
+		[]string{row.Recipient}, audit)
+	return result.Result, err
+}
+
 func (s *CommunicationSendEmail) render(row domain.CommunicationConfigurationRecord, input dto.SendEmailInput, recipients []string) (string, error) {
 	if s.renderedMessage != nil {
 		return s.renderedMessage(row, input, recipients)

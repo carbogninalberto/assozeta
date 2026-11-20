@@ -15,7 +15,7 @@ const reviewed = {
   "BE/application/models/payment_models.py": "30d4c9c5bf5b21d78a0fdda78edb45edc9266e9c0fc42e2ff83a3c9e3fcf0a4b",
   "BE/application/models/invoices_models.py": "5848c1bcdbafdd6d644f5dd70e82979095d1bdbe85c989075784e54418fc1af6",
   "BE/application/services/invoice_service.py": "98ba3acf0950b310fb5e47abbd8ba57cc9737b757fa461e5c2989ab18af95519",
-  "BE/application/permissions_registry.py": "b8318ad63daa9452ac736b2152449b14c49f73bc1417622a4181b7c3ceb3b1fa",
+  "BE/application/permissions_registry.py": "d6f30e78c76ea081c5c16331ae0f53b6e9051a04dc8faee2e263c81366e28a9b",
   "UI/src/routes/accounting/receipts/ReceiptList.svelte": "69b7c0c6188590a5be6db126e497cc1e7aa9dabf5ef91e2e07f05499928b7e51",
   "UI/src/routes/accounting/receipts/invoiceActionState.js": "6c1c7673e6dd2e227bdd8f50ea6bea439662b15ebd414b4bd011d39b22432289",
   "UI/src/components/modals/InvoicePreviewModal.svelte": "d65ee4f5163e304ff2f4a5de11fbca7f724c388e7c1e652e3d1b44d98fc21ed6",

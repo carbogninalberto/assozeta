@@ -721,7 +721,7 @@ def browser_control(spec):
     }))
     for actor, action in browser.CHECKPOINTS:
         states.append({'actor': actor, 'action': action,
-                       'models': {f'model.{i}': [] for i in range(128)}, 'cache': cache})
+                       'models': {f'model.{i}': [] for i in range(130)}, 'cache': cache})
         if action == 'login':
             continue
         if action == 'denied':

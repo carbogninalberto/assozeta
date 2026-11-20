@@ -83,11 +83,20 @@ export const buildConfig = function(config={
                     },
                     COMMUNICATIONS: {
                         SETTINGS: {
+                            MESSAGE_TEMPLATES: {
+                                LIST: `${apiHost}/communications/settings/message-templates`,
+                                DETAIL: `${apiHost}/communications/settings/message-templates/<uid>`,
+                                SAMPLE: `${apiHost}/communications/settings/message-templates/sample`,
+                            },
                             SMTP: {
                                 UPDATE: `${apiHost}/communications/settings/smtp/update`,
                                 INFO: `${apiHost}/communications/settings/smtp/info`,
                                 VERIFY: `${apiHost}/communications/settings/smtp/verify`,
                             }
+                        },
+                        OUTGOING: {
+                            RECIPIENT: `${apiHost}/communications/outgoing/recipients/<uid>`,
+                            PREVIEW: `${apiHost}/communications/outgoing/previews/<uid>`,
                         },
                         SEND: {
                             EMAIL: `${apiHost}/communications/send/email`,

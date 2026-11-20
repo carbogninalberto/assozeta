@@ -18,7 +18,7 @@ const reviewed = {
   "BE/application/models/balance_sheet_models.py": "08aef0835594ebea11087743e7e327289c2682a0944bc492eb9b2739c72b2aca",
   "BE/application/utils/balance_sheet_utils.py": "16edc940ec32f5a0ec086edd1a8b1852af19994a4f8499441297b2b7e79cd317",
   "BE/application/utils/api_utils.py": "dbbdaa92161a01903c58b40be6135466df85f4780128b23175da236ae69c4c43",
-  "BE/application/permissions_registry.py": "b8318ad63daa9452ac736b2152449b14c49f73bc1417622a4181b7c3ceb3b1fa",
+  "BE/application/permissions_registry.py": "d6f30e78c76ea081c5c16331ae0f53b6e9051a04dc8faee2e263c81366e28a9b",
   "BE/application/impersonation.py": "760fd6e63c6baebee14744cbdfe571ac4aa4e0fb1a5e0ac9b6147dfcf299cced",
   "BE/application/models/payment_models.py": "30d4c9c5bf5b21d78a0fdda78edb45edc9266e9c0fc42e2ff83a3c9e3fcf0a4b",
   "UI/src/routes/accounting/payment/category/Categories.svelte": "e358b8768d55f757cada0af4dabd2443e2168248057f5442f428a6bed58ad768",

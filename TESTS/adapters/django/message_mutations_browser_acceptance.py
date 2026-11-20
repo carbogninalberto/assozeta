@@ -291,7 +291,7 @@ def _hashes(value):
 
 
 def _models(value):
-    need(isinstance(value, dict) and value.get('models') == 128 and
+    need(isinstance(value, dict) and value.get('models') == 130 and
          type(value.get('rows')) is int and value['rows'] > 0 and _hash(value.get('sha256')))
 
 
@@ -416,7 +416,7 @@ def validate_report(report):
         for row in denial_versions:
             need(all(row.get(key) is True for key in
                      ('success', 'http_denials_verified', 'proxy_cleanup_verified')))
-            need(row['models'] == 128 and row['browser_acceptance'] is False and
+            need(row['models'] == 130 and row['browser_acceptance'] is False and
                  row['complete_message_family_parity'] is False and row['fixture_cleanup_owner'] == 'parent')
             denial_sources = set(browser.EXTRA_SOURCES) | {
                 'TESTS/adapters/django/message_mutations_browser_denials.py',

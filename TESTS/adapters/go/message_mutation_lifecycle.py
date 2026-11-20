@@ -110,7 +110,7 @@ def _same_wait(rows, owner, proof):
 
 
 def _verify_effect(portable, case, before, after, contrasts, *, started, finished, client_ip):
-    _require(len(before[0]) == len(after[0]) == 128, 'requires-all-128-models')
+    _require(len(before[0]) == len(after[0]) == 130, 'requires-all-130-models')
     # Both portable domains are checked even if one fails; no generated-value
     # normalization is introduced here. The return value of assert_effect is
     # deliberately discarded: acceptance is against its exact raw projection.
@@ -128,7 +128,7 @@ def _verify_effect(portable, case, before, after, contrasts, *, started, finishe
         if len(errors) == 1:
             raise errors[0]
         raise ExceptionGroup('message lifecycle exact effects failed', errors)
-    return {'models': 128, 'exact_effects': True, 'full_redis': True}
+    return {'models': 130, 'exact_effects': True, 'full_redis': True}
 
 
 def _run_case(control, case, mode):
@@ -296,7 +296,7 @@ class _LiveControl:
         with self.database.execute_wrapper(bounded_query):
             state = self.portable.snapshot_state(self.apps)
         _require(time.monotonic() < deadline, 'snapshot-deadline')
-        _require(isinstance(state, dict) and len(state) == 128, 'requires-all-128-models')
+        _require(isinstance(state, dict) and len(state) == 130, 'requires-all-130-models')
         cached = self.portable.snapshot_cache(self.raw)
         _require(time.monotonic() < deadline, 'snapshot-deadline')
         return state, cached

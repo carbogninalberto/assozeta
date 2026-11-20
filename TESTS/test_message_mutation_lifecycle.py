@@ -102,7 +102,7 @@ class FakeControl:
     def response(self, case): self.events.append('response')
     def verify(self, case, before, started, finished):
         self.events.append('exact-effects')
-        return {'models': 128}
+        return {'models': 130}
     def clean_exit(self): self.events.append('clean-exit')
     def close_request(self): self.events.append('close')
 
@@ -355,7 +355,7 @@ class ResourceControls(unittest.TestCase):
                         now[0] = limit + lateness if lateness is not None else limit / 2
                         return value
 
-                    models = {str(i): [] for i in range(128)}
+                    models = {str(i): [] for i in range(130)}
                     control.portable = SimpleNamespace(
                         snapshot_state=lambda apps: observed(models) if phase == 'models' else models,
                         snapshot_cache=lambda raw: observed('cache'))
@@ -450,7 +450,7 @@ class ExactEffectControls(unittest.TestCase):
         before = {self.contract.MESSAGE: [], self.contract.DELIVERY: [], self.contract.AUDIT: [],
             self.contract.INDEX: [], 'contenttypes.ContentType': [dict(id=30, app_label='communications', model='message')],
             'application.User': [dict(user_id='actor', email='actor@example.test')]}
-        before.update({f'foreign.Model{i}': [dict(id=1, value='preserve')] for i in range(122)})
+        before.update({f'foreign.Model{i}': [dict(id=1, value='preserve')] for i in range(124)})
         after = copy.deepcopy(before)
         after[self.contract.MESSAGE] = [dict(message_id=identifier, type='EMAIL', message='Saved',
             subject='Subject', sport_association_id='own', created_at='2026-10-26T10:00:00Z')]
@@ -541,7 +541,7 @@ class ExactEffectControls(unittest.TestCase):
     def test_all_128_models_required_even_when_otherwise_exact(self):
         case, before, after = self.states()
         for state in (before, after): del state['foreign.Model121']
-        with self.assertRaisesRegex(AssertionError, '128'):
+        with self.assertRaisesRegex(AssertionError, '130'):
             self.verify(case, before, after)
 
     def delete_states(self):

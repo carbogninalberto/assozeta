@@ -178,6 +178,7 @@ var auditIndexResolvers = func() map[string]auditIndexResolver {
 		{"communications.message", "communications_message:message_id"},
 		{"communications.automationworkflow", "communications_automationworkflow:automation_workflow_id"},
 		{"communications.communicationconfiguration", "communications_communicationconfiguration:communication_configuration_id"},
+		{"communications.messagetemplate", "communications_messagetemplate:id"},
 		// Registered with direct_resolver but without a sport_association attribute.
 		{"application.previewandcustomfeatures", "application_previewandcustomfeatures:preview_and_custom_features_id:-"},
 		{"application.usersonboarding", "application_usersonboarding:users_onboarding_id:-"},

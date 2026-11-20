@@ -53,7 +53,7 @@ FIXTURE_CLEANUP = ('rows', 'cache', 'sequences', 'private_fixture')
 SERVICES = packaged.SERVICES
 RESOURCES = packaged.RESOURCES
 PRIVATE_CHECKS = packaged.PRIVATE_CHECKS
-SCHEMA = {'applied_migrations': 552, 'remaining_plan': 0, 'mode': 'full-migration-history'}
+SCHEMA = {'applied_migrations': 553, 'remaining_plan': 0, 'mode': 'full-migration-history'}
 EXPECTED_CASES = 119
 BUILD_KEYS = ('success', 'source_stable', 'tracked_context_exact', 'cleanup_verified',
               'private_directory_removed', 'source_revision', 'packaged_revision',
@@ -260,7 +260,7 @@ def runtime_acceptance(report):
             for authored, observed in zip(source['cases'], workload['cases'], strict=True):
                 need(observed['case'] == authored['name'] and type(observed['status']) is int
                      and observed['status'] == authored['status'] and type(observed['models']) is int
-                     and observed['models'] == 128, 'receipt.case')
+                     and observed['models'] == 130, 'receipt.case')
                 need(set(observed['checks']) == set(CASE_CHECKS)
                      and all(value is True for value in observed['checks'].values())
                      and all(hashed(observed[key]) for key in (
@@ -562,7 +562,7 @@ def image_admission_controller(proof, guard):
 def baseline(apps, raw):
     from TESTS.adapters.django.historical_read_cache import snapshot_historical_read_cache
     state = scopes.snapshot_state(apps)
-    need(len(state) == 128, 'mutation-image.models128')
+    need(len(state) == 130, 'mutation-image.models130')
     return {'state_sha256': adapter.shared.digest(state),
             'cache_sha256': snapshot_historical_read_cache(raw).digest,
             'sequences_sha256': adapter.shared.digest(adapter.sequence_snapshot())}

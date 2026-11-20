@@ -15,7 +15,7 @@ const reviewed = {
   "BE/application/views/instructor_views.py": "111d01ab43c07ef99fc95bc6214d1702b4b5511b2f84d52edcaf2896e893bc6c",
   "BE/application/serializers/user_serializers.py": "90f4fbac57865fb1b60084d30c88a37f75c8a747fea44b3acd2ab02e999135de",
   "BE/application/models/user_models.py": "4800cd1f7a757e9e7d5203d1ea086d58e92ac4592e43c7fa7758103071336c96",
-  "BE/application/permissions_registry.py": "b8318ad63daa9452ac736b2152449b14c49f73bc1417622a4181b7c3ceb3b1fa",
+  "BE/application/permissions_registry.py": "d6f30e78c76ea081c5c16331ae0f53b6e9051a04dc8faee2e263c81366e28a9b",
   "BE/core/settings.py": "09c2e93d930ce7b9754627039b724c23575f7d84c7186399fb5cde16f8c520a0"
 };
 const contracts = [

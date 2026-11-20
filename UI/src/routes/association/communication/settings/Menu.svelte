@@ -2,7 +2,7 @@
     import {onMount} from 'svelte';
     import {querystring} from 'svelte-spa-router';
     import {refreshToken, sessionToken, expires, role, currentPage, userData, subPage} from 'store/stores.js';
-    import {Envelope, Checks} from 'phosphor-svelte';
+    import {Envelope, Checks, FileText} from 'phosphor-svelte';
 
     sessionToken.useLocalStorage();
     refreshToken.useLocalStorage();
@@ -12,7 +12,7 @@
     userData.useLocalStorage();
     subPage.useLocalStorage();
 
-    let pages = ['email', 'stats'];
+    let pages = ['email', 'stats', 'templates'];
 
     function checkParams() {
         let splittedQuery = $querystring.split('&');
@@ -43,6 +43,17 @@
             </div>
             <!--begin::Nav-->
             <div class="navi navi-bold navi-hover navi-active navi-link-rounded navi-settings">
+                <div class="navi-item mb-2">
+                    <a
+                        href="/#/communication/configuration?page=templates"
+                        on:click={() => changeSubPage('templates')}
+                        class="navi-link py-4 {$subPage == 'templates' ? 'active' : ''}">
+                        <span class="menu-icon m-0 mr-md-3">
+                            <FileText size="24" weight="duotone" />
+                        </span>
+                        <span class="navi-text font-size-lg">Modelli di messaggio</span>
+                    </a>
+                </div>
                 <div class="navi-item mb-2">
                     <a
                         href="/#/communication/configuration"

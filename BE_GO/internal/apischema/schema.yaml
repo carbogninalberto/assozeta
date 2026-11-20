@@ -1066,6 +1066,81 @@ paths:
       responses:
         '200':
           description: No response body
+  /communications/outgoing/previews/{preview_id}:
+    post:
+      operationId: communications_outgoing_previews_create
+      parameters:
+      - in: path
+        name: preview_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - communications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /communications/outgoing/recipients/{associate_id}:
+    get:
+      operationId: communications_outgoing_recipients_retrieve
+      parameters:
+      - in: path
+        name: associate_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - communications
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+    post:
+      operationId: communications_outgoing_recipients_create
+      parameters:
+      - in: path
+        name: associate_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - communications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
   /communications/send/email:
     post:
       operationId: communications_send_email_create
@@ -1082,6 +1157,94 @@ paths:
       responses:
         '200':
           description: No response body
+  /communications/settings/message-templates:
+    get:
+      operationId: communications_settings_message_templates_retrieve
+      tags:
+      - communications
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+    post:
+      operationId: communications_settings_message_templates_create
+      tags:
+      - communications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /communications/settings/message-templates/{template_id}:
+    patch:
+      operationId: communications_settings_message_templates_partial_update
+      parameters:
+      - in: path
+        name: template_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - communications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+    delete:
+      operationId: communications_settings_message_templates_destroy
+      parameters:
+      - in: path
+        name: template_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - communications
+      responses:
+        '204':
+          description: No response body
+  /communications/settings/message-templates/sample:
+    post:
+      operationId: communications_settings_message_templates_sample_create
+      tags:
+      - communications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
   /communications/settings/smtp/info:
     get:
       operationId: communications_settings_smtp_info_retrieve
