@@ -10,6 +10,20 @@ Choose a delivery format separately for **Pagamenti** and **Abbonamenti**. For a
 
 Saving takes effect for the next notification and worker send in either backend. Turning the integration off pauses queued sends. Signed status updates can still arrive for previously sent messages. **Ripristina valori del server** restores the deployment settings. The Graph API version and base URL always come from the deployment.
 
+## Find the values in Meta
+
+Select the app and the WhatsApp use case in the [Meta App Dashboard](https://developers.facebook.com/apps/). The [official setup guide](https://developers.facebook.com/documentation/business-messaging/whatsapp/get-started) covers connecting a business account, choosing a test sender and verifying the recipient.
+
+| Owner setting | Where the value comes from |
+| --- | --- |
+| Phone number ID and business account ID | Select the sender in **WhatsApp → API Setup**. Copy the two resource IDs for that sender. |
+| Access token | Use the temporary API Setup token for a first test. For automation, assign the app and WABA to a system user, generate a token for that app with `whatsapp_business_messaging` and `whatsapp_business_management`, and plan for its expiry. [Business Settings](https://business.facebook.com/latest/settings) |
+| Meta app secret | Open the same app’s **App settings → Basic** and reveal its app secret. [Meta app secret guide](https://developers.facebook.com/docs/graph-api/guides/secure-requests/) |
+| Webhook verification token | Generate a private value. Save it here and enter the identical value with the displayed public HTTPS callback URL in Meta’s WhatsApp webhook configuration. Subscribe to the `messages` field and ensure the app is subscribed to the sender’s WABA. [WABA subscriptions](https://developers.facebook.com/docs/graph-api/reference/whats-app-business-account/subscribed_apps/) |
+| Template name and language | In WhatsApp Manager’s message templates, open an approved translation for the same WABA. Copy its name and locale. The template commands below also list approved translations. |
+
+The Italian walkthrough is in the user manual under **Impostazioni → Introduzione**. For a recipient-side check, trigger a payment on a test account with the verified recipient number and open the sender’s chat on that device. The provider message ID marks acceptance. The delivered and read callbacks record subsequent progress when available.
+
 ## Deployment settings
 
 | Setting | Value |
@@ -46,7 +60,7 @@ Subscribe the Meta app to the WABA's messages webhooks at the public backend rou
 
 ## Operations
 
-Run the Django migrations first. Celery beat and worker drain the Django outbox. The Go API drains the same PostgreSQL queue in the background when its sender is configured. Row locks with SKIP LOCKED coordinate concurrent consumers. Network errors, HTTP 429 and 5xx are retried with delays of 30 and 60 seconds, up to three attempts. Permanent errors and exhausted attempts are visible immediately. If Meta accepts a message and its response is lost, a retry can produce a second provider message ID for the same local reference.
+Run the Django migrations first. Django Beat schedules an outbox check every ten seconds. The wake-up task expires after ten seconds, and any queued delivery remains available for the next check. The Go API drains the same PostgreSQL queue in the background when its sender is configured. Row locks with SKIP LOCKED coordinate concurrent consumers. Network errors, HTTP 429 and 5xx are retried with delays of 30 and 60 seconds, up to three attempts. Permanent errors and exhausted attempts are visible immediately. If Meta accepts a message and its response is lost, a retry can produce a second provider message ID for the same local reference.
 
 Use `python manage.py whatsapp_templates list`, `get NAME LANGUAGE`, or `register < definition.json` in the Django API container. In the Go image use `/app/whatsapp-templates` with the same arguments. The Go command reads the saved instance settings when `DBHOST` is configured, and otherwise uses the environment sender. Register accepts a JSON object with name, language, category and components. List includes only approved translations, so pending registrations become selectable after Meta approves them. [Meta template reference](https://developers.facebook.com/docs/graph-api/reference/whats-app-business-account/message_templates/)
 

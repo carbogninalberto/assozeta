@@ -37789,7 +37789,7 @@
         "file": "BE/core/celery.py",
         "line": 67,
         "symbol": "association-quote-assign",
-        "sha256": "a3309ce3b177ef08acb19bd2c5783d3f813aa0c6e1ee5a39c84b880851677be2"
+        "sha256": "df2fc7b696fed1f9939c3d1bd1799ad07ec9e75442c9b7c5f7ee28531a59277d"
       },
       "source_present": true,
       "declaration": {
@@ -37883,7 +37883,7 @@
         "file": "BE/core/celery.py",
         "line": 102,
         "symbol": "auto-archive-subscription",
-        "sha256": "a3309ce3b177ef08acb19bd2c5783d3f813aa0c6e1ee5a39c84b880851677be2"
+        "sha256": "df2fc7b696fed1f9939c3d1bd1799ad07ec9e75442c9b7c5f7ee28531a59277d"
       },
       "source_present": true,
       "declaration": {
@@ -37981,7 +37981,7 @@
         "file": "BE/core/celery.py",
         "line": 117,
         "symbol": "auto-delete-orphan-medical-certificate",
-        "sha256": "a3309ce3b177ef08acb19bd2c5783d3f813aa0c6e1ee5a39c84b880851677be2"
+        "sha256": "df2fc7b696fed1f9939c3d1bd1799ad07ec9e75442c9b7c5f7ee28531a59277d"
       },
       "source_present": true,
       "declaration": {
@@ -38075,7 +38075,7 @@
         "file": "BE/core/celery.py",
         "line": 112,
         "symbol": "auto-mark-attendance",
-        "sha256": "a3309ce3b177ef08acb19bd2c5783d3f813aa0c6e1ee5a39c84b880851677be2"
+        "sha256": "df2fc7b696fed1f9939c3d1bd1799ad07ec9e75442c9b7c5f7ee28531a59277d"
       },
       "source_present": true,
       "declaration": {
@@ -38168,7 +38168,7 @@
         "file": "BE/core/celery.py",
         "line": 44,
         "symbol": "bakney-pairing-maintenance",
-        "sha256": "a3309ce3b177ef08acb19bd2c5783d3f813aa0c6e1ee5a39c84b880851677be2"
+        "sha256": "df2fc7b696fed1f9939c3d1bd1799ad07ec9e75442c9b7c5f7ee28531a59277d"
       },
       "source_present": true,
       "declaration": {
@@ -38246,7 +38246,7 @@
         "file": "BE/core/celery.py",
         "line": 87,
         "symbol": "change-type-of-stripe-payments",
-        "sha256": "a3309ce3b177ef08acb19bd2c5783d3f813aa0c6e1ee5a39c84b880851677be2"
+        "sha256": "df2fc7b696fed1f9939c3d1bd1799ad07ec9e75442c9b7c5f7ee28531a59277d"
       },
       "source_present": true,
       "declaration": {
@@ -38339,7 +38339,7 @@
         "file": "BE/core/celery.py",
         "line": 45,
         "symbol": "cleanup-data-restores",
-        "sha256": "a3309ce3b177ef08acb19bd2c5783d3f813aa0c6e1ee5a39c84b880851677be2"
+        "sha256": "df2fc7b696fed1f9939c3d1bd1799ad07ec9e75442c9b7c5f7ee28531a59277d"
       },
       "source_present": true,
       "declaration": {
@@ -38432,7 +38432,7 @@
         "file": "BE/core/celery.py",
         "line": 142,
         "symbol": "cleanup-old-exports",
-        "sha256": "a3309ce3b177ef08acb19bd2c5783d3f813aa0c6e1ee5a39c84b880851677be2"
+        "sha256": "df2fc7b696fed1f9939c3d1bd1799ad07ec9e75442c9b7c5f7ee28531a59277d"
       },
       "source_present": true,
       "declaration": {
@@ -38525,7 +38525,7 @@
         "file": "BE/core/celery.py",
         "line": 97,
         "symbol": "clear-deleted-subscription",
-        "sha256": "a3309ce3b177ef08acb19bd2c5783d3f813aa0c6e1ee5a39c84b880851677be2"
+        "sha256": "df2fc7b696fed1f9939c3d1bd1799ad07ec9e75442c9b7c5f7ee28531a59277d"
       },
       "source_present": true,
       "declaration": {
@@ -38622,7 +38622,7 @@
         "file": "BE/core/celery.py",
         "line": 52,
         "symbol": "clear-expired-subscription-tokens",
-        "sha256": "a3309ce3b177ef08acb19bd2c5783d3f813aa0c6e1ee5a39c84b880851677be2"
+        "sha256": "df2fc7b696fed1f9939c3d1bd1799ad07ec9e75442c9b7c5f7ee28531a59277d"
       },
       "source_present": true,
       "declaration": {
@@ -38717,7 +38717,7 @@
         "file": "BE/core/celery.py",
         "line": 137,
         "symbol": "delete-old-audit-logs",
-        "sha256": "a3309ce3b177ef08acb19bd2c5783d3f813aa0c6e1ee5a39c84b880851677be2"
+        "sha256": "df2fc7b696fed1f9939c3d1bd1799ad07ec9e75442c9b7c5f7ee28531a59277d"
       },
       "source_present": true,
       "declaration": {
@@ -38812,7 +38812,7 @@
         "file": "BE/core/celery.py",
         "line": 62,
         "symbol": "delete-users-with-request",
-        "sha256": "a3309ce3b177ef08acb19bd2c5783d3f813aa0c6e1ee5a39c84b880851677be2"
+        "sha256": "df2fc7b696fed1f9939c3d1bd1799ad07ec9e75442c9b7c5f7ee28531a59277d"
       },
       "source_present": true,
       "declaration": {
@@ -38900,13 +38900,49 @@
       ]
     },
     {
+      "id": "schedule:BE/core/celery.py:deliver-whatsapp",
+      "kind": "schedule",
+      "django": {
+        "file": "BE/core/celery.py",
+        "line": 147,
+        "symbol": "deliver-whatsapp",
+        "sha256": "df2fc7b696fed1f9939c3d1bd1799ad07ec9e75442c9b7c5f7ee28531a59277d"
+      },
+      "source_present": true,
+      "declaration": {
+        "schedule": "{'task': 'communications.tasks.deliver_whatsapp', 'schedule': 10.0, 'options': {'expires': 10}}",
+        "assignment": [
+          "app.conf.beat_schedule"
+        ]
+      },
+      "status": "uncharacterized",
+      "go": [],
+      "dependencies": [],
+      "contract": {
+        "methods": null,
+        "external_paths": null,
+        "request": null,
+        "response": null,
+        "errors": null,
+        "authentication": null,
+        "permissions": null,
+        "resource_scope": null,
+        "side_effects": null,
+        "transaction": null,
+        "execution_owner": "django"
+      },
+      "tests": [],
+      "evidence": [],
+      "notes": []
+    },
+    {
       "id": "schedule:BE/core/celery.py:generate-coupon-if-not-exists",
       "kind": "schedule",
       "django": {
         "file": "BE/core/celery.py",
         "line": 82,
         "symbol": "generate-coupon-if-not-exists",
-        "sha256": "a3309ce3b177ef08acb19bd2c5783d3f813aa0c6e1ee5a39c84b880851677be2"
+        "sha256": "df2fc7b696fed1f9939c3d1bd1799ad07ec9e75442c9b7c5f7ee28531a59277d"
       },
       "source_present": true,
       "declaration": {
@@ -38999,7 +39035,7 @@
         "file": "BE/core/celery.py",
         "line": 92,
         "symbol": "mark-as-paid-payments-checking-stripe",
-        "sha256": "a3309ce3b177ef08acb19bd2c5783d3f813aa0c6e1ee5a39c84b880851677be2"
+        "sha256": "df2fc7b696fed1f9939c3d1bd1799ad07ec9e75442c9b7c5f7ee28531a59277d"
       },
       "source_present": true,
       "declaration": {
@@ -39093,7 +39129,7 @@
         "file": "BE/core/celery.py",
         "line": 46,
         "symbol": "notify-backup-failures",
-        "sha256": "a3309ce3b177ef08acb19bd2c5783d3f813aa0c6e1ee5a39c84b880851677be2"
+        "sha256": "df2fc7b696fed1f9939c3d1bd1799ad07ec9e75442c9b7c5f7ee28531a59277d"
       },
       "source_present": true,
       "declaration": {
@@ -39170,7 +39206,7 @@
         "file": "BE/core/celery.py",
         "line": 47,
         "symbol": "renew-memberships-payments",
-        "sha256": "a3309ce3b177ef08acb19bd2c5783d3f813aa0c6e1ee5a39c84b880851677be2"
+        "sha256": "df2fc7b696fed1f9939c3d1bd1799ad07ec9e75442c9b7c5f7ee28531a59277d"
       },
       "source_present": true,
       "declaration": {
@@ -39263,7 +39299,7 @@
         "file": "BE/core/celery.py",
         "line": 57,
         "symbol": "reset-communication-daily-email-balance",
-        "sha256": "a3309ce3b177ef08acb19bd2c5783d3f813aa0c6e1ee5a39c84b880851677be2"
+        "sha256": "df2fc7b696fed1f9939c3d1bd1799ad07ec9e75442c9b7c5f7ee28531a59277d"
       },
       "source_present": true,
       "declaration": {
@@ -39364,7 +39400,7 @@
         "file": "BE/core/celery.py",
         "line": 127,
         "symbol": "send-expired-certificate-email",
-        "sha256": "a3309ce3b177ef08acb19bd2c5783d3f813aa0c6e1ee5a39c84b880851677be2"
+        "sha256": "df2fc7b696fed1f9939c3d1bd1799ad07ec9e75442c9b7c5f7ee28531a59277d"
       },
       "source_present": true,
       "declaration": {
@@ -39457,7 +39493,7 @@
         "file": "BE/core/celery.py",
         "line": 122,
         "symbol": "send-expiring-certificate-email",
-        "sha256": "a3309ce3b177ef08acb19bd2c5783d3f813aa0c6e1ee5a39c84b880851677be2"
+        "sha256": "df2fc7b696fed1f9939c3d1bd1799ad07ec9e75442c9b7c5f7ee28531a59277d"
       },
       "source_present": true,
       "declaration": {
@@ -39550,7 +39586,7 @@
         "file": "BE/core/celery.py",
         "line": 72,
         "symbol": "send-reminders",
-        "sha256": "a3309ce3b177ef08acb19bd2c5783d3f813aa0c6e1ee5a39c84b880851677be2"
+        "sha256": "df2fc7b696fed1f9939c3d1bd1799ad07ec9e75442c9b7c5f7ee28531a59277d"
       },
       "source_present": true,
       "declaration": {
@@ -39643,7 +39679,7 @@
         "file": "BE/core/celery.py",
         "line": 132,
         "symbol": "send-user-partial-registration-email",
-        "sha256": "a3309ce3b177ef08acb19bd2c5783d3f813aa0c6e1ee5a39c84b880851677be2"
+        "sha256": "df2fc7b696fed1f9939c3d1bd1799ad07ec9e75442c9b7c5f7ee28531a59277d"
       },
       "source_present": true,
       "declaration": {
@@ -39736,7 +39772,7 @@
         "file": "BE/core/celery.py",
         "line": 77,
         "symbol": "update-age-of-associates",
-        "sha256": "a3309ce3b177ef08acb19bd2c5783d3f813aa0c6e1ee5a39c84b880851677be2"
+        "sha256": "df2fc7b696fed1f9939c3d1bd1799ad07ec9e75442c9b7c5f7ee28531a59277d"
       },
       "source_present": true,
       "declaration": {

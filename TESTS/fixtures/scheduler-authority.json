@@ -8,7 +8,7 @@
   "cases": {
     "configuration_authority": {
       "expected": {
-        "declared_count": 22,
+        "declared_count": 23,
         "effective_names": [
           "association-quote-assign",
           "auto-archive-subscription",
@@ -22,6 +22,7 @@
           "clear-expired-subscription-tokens",
           "delete-old-audit-logs",
           "delete-users-with-request",
+          "deliver-whatsapp",
           "generate-coupon-if-not-exists",
           "mark-as-paid-payments-checking-stripe",
           "notify-backup-failures",
@@ -325,6 +326,18 @@
               "seconds": 60
             },
             "args": []
+          },
+          "deliver-whatsapp": {
+            "source": "BE/core/celery.py",
+            "task": "communications.tasks.deliver_whatsapp",
+            "schedule": {
+              "kind": "interval",
+              "seconds": 10
+            },
+            "args": [],
+            "options": {
+              "expires": 10
+            }
           }
         }
       }
@@ -341,7 +354,7 @@
         "one_listed": {
           "instance.backups.notify_failures": "assozeta-go"
         },
-        "scheduled_task_count": 22,
+        "scheduled_task_count": 23,
         "scheduled_email_tasks": [],
         "listed_email_queues": {
           "send_email_text": "assozeta-go",
@@ -371,6 +384,7 @@
           "clear-expired-subscription-tokens",
           "delete-old-audit-logs",
           "delete-users-with-request",
+          "deliver-whatsapp",
           "generate-coupon-if-not-exists",
           "mark-as-paid-payments-checking-stripe",
           "notify-backup-failures",

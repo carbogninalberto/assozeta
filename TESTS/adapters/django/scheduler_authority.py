@@ -51,10 +51,13 @@ def declarations_text(text, target, source, required=True):
                 schedule.update({item.arg: ast.literal_eval(item.value) for item in raw.keywords})
             else:
                 schedule = {'kind': 'interval', 'seconds': ast.literal_eval(raw)}
-            result[ast.literal_eval(key)] = {
+            name = ast.literal_eval(key)
+            result[name] = {
                 'source': source, 'task': ast.literal_eval(fields['task']),
                 'schedule': schedule, 'args': list(ast.literal_eval(fields['args'])) if 'args' in fields else [],
             }
+            if 'options' in fields:
+                result[name]['options'] = ast.literal_eval(fields['options'])
         return result
     if not required:
         return {}
@@ -126,11 +129,12 @@ def observe(fixture):
         'declared_count': len(declared), 'declarations': declared,
         'settings_schedule_defined': hasattr(settings, 'CELERY_BEAT_SCHEDULE'),
         'effective_names': sorted(effective),
-        'effective_matches_declarations': {name: {k: loaded[name][k] for k in ('task', 'schedule', 'args')}
-                                           for name in loaded} == {name: {k: v for k, v in entry.items() if k != 'source'}
+        'effective_matches_declarations': {name: {k: v for k, v in entry.items()
+                                                 if k in ('task', 'schedule', 'args') or (k == 'options' and v)}
+                                           for name, entry in loaded.items()} == {name: {k: v for k, v in entry.items() if k != 'source'}
                                                                    for name, entry in declared.items()},
         'effective_extra': sorted({(k, repr(v)) for entry in loaded.values() for k, v in entry.items()
-                                   if k in ('kwargs', 'options', 'relative') and v}),
+                                   if k in ('kwargs', 'relative') and v}),
         'unregistered_tasks': sorted(set(tasks) - set(app.tasks)),
         'effective_task': effective['bakney-pairing-maintenance']['task'],
         'effective_interval_seconds': effective['bakney-pairing-maintenance']['schedule'],

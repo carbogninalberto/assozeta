@@ -131,7 +131,7 @@
   {
     "name": "communications.tasks.deliver_whatsapp",
     "django_site": "BE/communications/tasks.py:7",
-    "scheduled": false,
+    "scheduled": true,
     "consumer": false,
     "job": false,
     "routed": false,

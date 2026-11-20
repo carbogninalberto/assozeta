@@ -278,6 +278,7 @@
     "UI/src/routes/profile/sections/Settings.svelte",
     "UI/src/routes/profile/sections/Stripe.svelte",
     "UI/src/routes/profile/sections/TwoFactor.svelte",
+    "UI/src/routes/profile/sections/WhatsAppFields.svelte",
     "UI/src/routes/stripe/Checkout.svelte",
     "UI/src/routes/subscribe-multiple/SubscribeMultiple.svelte",
     "UI/src/routes/subscribe-multiple/wizard/Step3.svelte",
@@ -4377,6 +4378,7 @@
       "UI/src/routes/profile/sections/InstanceGoTasks.svelte",
       "UI/src/routes/profile/sections/SelfInstance.svelte",
       "UI/src/routes/profile/sections/Settings.svelte",
+      "UI/src/routes/profile/sections/WhatsAppFields.svelte",
       "UI/src/utils/apiVersion.js"
     ],
     "docs/impostazioni.mdx#modalita-scura": [
