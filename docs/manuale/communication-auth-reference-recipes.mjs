@@ -11,7 +11,7 @@ export const communicationAuthReviewedSources = Object.freeze({
     "UI/src/routes/association/communication/messages/Messages.svelte": "7a5862099d6165b59b93bbb3ff1be6fa7703a85db6dbae7749aca198d115a43f",
     "UI/src/routes/association/communication/messages/modals/Send.svelte": "20aab21730a6af1f44cea41c3b6e2134b7f0d386897c7e81a1686d41c4c0b56b",
     "UI/src/utils/Functions.js": "c9ed79a8214d4e2ceb9d91e2cd3d52f42a32706f96e2890082ba5584c6787147",
-    "BE/communications/models.py": "a26c39cd92129d1b027a1a549945c787a9ed54e1de313dc2562c0fc3cccb3c05",
+    "BE/communications/models.py": "c6363961426275721ed99beaf96b44c4a2d326b1d25eac1dd9c9d4f17b60600b",
     "BE/communications/views.py": "dd9b9feae532e57b67d3d89a137543293b17efc387f407f02f207b7a9efebd7c",
     "BE/application/views/statistic_views.py": "ef067ca1027ba67f32d04e20df927ae5b3c5bf85a48b2f4fa4dae5f12b40783f",
     "BE/communications/serializers.py": "2f53cb68ea3804b35cffea81315f2c17b5c55c2f4ba8129b42f77ccc62dcf354",

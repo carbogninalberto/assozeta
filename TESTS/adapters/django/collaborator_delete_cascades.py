@@ -51,7 +51,7 @@ def run(*, base, owner, foreign, association, person, seed, snapshot,
     from instance.models import DataRestore
     from notifications.models import NotificationsBroadcast, UserNotificationsBroadcast
 
-    assert len(models) == 130, ('Expected all 130 current-schema managed models', len(models))
+    assert len(models) == 132, ('Expected all 132 current-schema managed models', len(models))
     access = AccessToken()
     access['user_id'] = str(owner.pk)
     token = str(access)

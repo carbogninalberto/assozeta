@@ -271,11 +271,11 @@ class HistoricalReadAdapterControls(unittest.TestCase):
         self.assertIn('Traceback (most recent call last)', log.getvalue())
         self.assertIn('actual-read', log.getvalue())
 
-    def test_exact_read_accepts_128_models_and_raw_cache(self):
+    def test_exact_read_accepts_all_managed_models_and_raw_cache(self):
         before = state()
         receipt = adapter.assert_read_unchanged(before, copy.deepcopy(before), {b'key': b'bytes'}, {b'key': b'bytes'})
         self.assertTrue(receipt['unchanged'])
-        self.assertEqual(receipt['managed_models'], 130)
+        self.assertEqual(receipt['managed_models'], 132)
 
     def test_acceptance_cache_comparison_is_typed_absolute_nonvacuous_and_redacted(self):
         from TESTS.test_historical_read_cache import FakeEntry, FakeRedis
@@ -389,6 +389,7 @@ class HistoricalReadAdapterControls(unittest.TestCase):
 
         tables = [Model(f'application.Table{index}') for index in range(127)]
         tables.extend([Model('communications.MessageTemplate'), Model('communications.OutgoingMessage')])
+        tables.extend([Model('communications.WhatsAppDelivery'), Model('communications.WhatsAppReceipt')])
         tables.append(Model('application.User_groups', auto_created=True))
         registered = tables + [
             Model('drf_api_logger.APILogsModel', managed=False),
@@ -411,7 +412,7 @@ class HistoricalReadAdapterControls(unittest.TestCase):
         snapshot = adapter.managed_population_snapshot(models)
         self.assertEqual(models, tables)
         self.assertEqual(schema, tuple(registered))
-        self.assertEqual(len(snapshot), 130)
+        self.assertEqual(len(snapshot), 132)
         self.assertEqual(set(snapshot), {item._meta.label for item in tables})
         self.assertEqual(queries, [(item._meta.label, 'pk') for item in tables])
         self.assertEqual(registry_calls, [

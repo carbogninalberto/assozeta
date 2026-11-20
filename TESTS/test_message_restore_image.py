@@ -16,7 +16,7 @@ from TESTS.test_message_mutations_image import H, IID, cleanup
 
 
 def helper_result(case):
-    result = dict(name='message-mutations-restore-' + case, success=True, models=130,
+    result = dict(name='message-mutations-restore-' + case, success=True, models=132,
         exact_effects=True, full_redis=True, backend='go', transport='packaged-actual-http',
         fixture_reset_owned_by_parent=True)
     if case.endswith('lease'):

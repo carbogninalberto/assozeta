@@ -427,7 +427,7 @@ def _nonretrying_redis(options):
 
 def _fresh(contract, case, state, ids):
     models = state[0]
-    _require(len(models) == 130, 'requires-all-130-models')
+    _require(len(models) == 132, 'requires-all-132-models')
     target = case['effect']['message_id']
     messages = [contract.row_values(row) for row in models[contract.MESSAGE]
                 if contract.scalar(row['message_id']) == target]
@@ -641,7 +641,7 @@ class _Control:
             state = self.portable.snapshot_state(self.apps)
         cached = self.portable.snapshot_cache(self.raw)
         self.remaining(end)
-        _require(isinstance(state, dict) and len(state) == 130, 'requires-all-130-models')
+        _require(isinstance(state, dict) and len(state) == 132, 'requires-all-132-models')
         return state, cached
 
     def hold(self):

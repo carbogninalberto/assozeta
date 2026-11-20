@@ -84,7 +84,7 @@ class Control:
         self.events.append('effects')
         if self.failure == 'effects':
             raise AssertionError('effects')
-        return dict(models=130, exact_effects=True, full_redis=True)
+        return dict(models=132, exact_effects=True, full_redis=True)
 
     def assert_alive(self): self.events.append('guard')
 
@@ -491,7 +491,7 @@ class ResourceControls(unittest.TestCase):
         for phase in ('wait', 'finish', 'snapshot', 'response'):
             control, now = self.control(), [0.0]
             control.database.execute_wrapper.return_value = io.StringIO()
-            control.portable.snapshot_state.return_value = {str(i): [] for i in range(130)}
+            control.portable.snapshot_state.return_value = {str(i): [] for i in range(132)}
             control.portable.snapshot_cache.side_effect = lambda raw: observed('cache')
             control.request, control.request_deadline = Mock(), control.bounds.request
             def observed(value):
