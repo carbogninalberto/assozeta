@@ -226,6 +226,14 @@
       "signatures": [
         "Go request rejected: bin/assozeta runtime-switch go"
       ]
+    },
+    "TESTS.handoff.test_inventory_gate.CheckedInInventory.test_present_owners_are_true_for_the_current_distribution": {
+      "phase": 0,
+      "owner": "i-p0",
+      "reason": "docs/architecture/go-migration/handoff-inventory.json does not exist yet",
+      "signatures": [
+        "handoff inventory missing"
+      ]
     }
   }
 }

@@ -88,6 +88,33 @@ FILES = {
         	e.Any("/*", unmatched)
         }
         ''',
+    'BE_GO/cmd/server/delivery.go': '''\
+        package main
+
+        func registerHandoffDelivery(e *echo.Echo, audit echo.MiddlewareFunc) {
+        	e.Any("/handoff-base-helper", baseHandler, audit)
+        	probe.NewProbeHandler().Register(e, audit)
+        }
+        ''',
+    'BE_GO/internal/handler/probe_routes.go': '''\
+        package handler
+
+        func (h *ProbeHandler) Register(e *echo.Echo, audit echo.MiddlewareFunc) {
+        	e.Any("/handoff-base-handler", h.serve, audit)
+        }
+        ''',
+    'BE_GO/internal/handler/websocket.go': '''\
+        package handler
+
+        func (h *WebSocketHandler) dispatch(s *session) {
+        	switch s.path {
+        	case "/ws/handoff-base-go-socket/":
+        	\ts.consumer = baseConsumer{}
+        	default:
+        	\ts.consumer = nil
+        	}
+        }
+        ''',
     'BE_GO/cmd/worker/main.go': '''\
         package main
 
@@ -196,7 +223,8 @@ FILES = {
 # Distinctive baseline names discovery must report, per kind.
 BASELINE = {
     'route': ('handoff-base/', 'handoff-base-nested', 'handoff-base-socket', 'handoff-base-go',
-              'handoff-base-group', 'handoff-base-caddy'),
+              'handoff-base-group', 'handoff-base-caddy', 'handoff-base-helper', 'handoff-base-handler',
+              'handoff-base-go-socket'),
     'task': ('handoff_base_task', 'probe.handoff_base_named'),
     'schedule': ('handoff-base-beat', 'handoff-base-cron', 'handoff_base_task', 'handoffBaseLoop'),
     'service': ('api-go', 'worker', 'migrate', 'updater'),
@@ -241,6 +269,16 @@ ADDITIONS = {
     ('route', 'go-router'): (_replace('BE_GO/cmd/server/main.go', '\te.Any(',
                                       '\te.POST("/handoff-new-go-route", baseHandler)\n\te.Any('),
                              ('handoff-new-go-route',)),
+    ('route', 'go-helper-file'): (_replace('BE_GO/cmd/server/delivery.go', '\tprobe.NewProbeHandler()',
+                                           '\te.POST("/handoff-new-helper-route", baseHandler)\n\tprobe.NewProbeHandler()'),
+                                  ('handoff-new-helper-route',)),
+    ('route', 'go-handler-register'): (_replace('BE_GO/internal/handler/probe_routes.go', '\te.Any("/handoff-base-handler"',
+                                                '\te.GET("/handoff-new-handler-route", h.serve, audit)\n'
+                                                '\te.Any("/handoff-base-handler"'),
+                                       ('handoff-new-handler-route',)),
+    ('route', 'go-websocket'): (_replace('BE_GO/internal/handler/websocket.go', '\tdefault:',
+                                         '\tcase "/ws/handoff-new-go-socket/":\n\t\ts.consumer = baseConsumer{}\n\tdefault:'),
+                                ('handoff-new-go-socket',)),
     ('route', 'caddy'): (_replace('selfhost/caddy/Caddyfile', '        handle_path /api/v2/* {',
                                   '        handle /handoff-new-caddy-route/* {\n'
                                   '            reverse_proxy api-go:8000\n        }\n\n'

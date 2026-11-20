@@ -46,9 +46,12 @@ Document
 
 Discovered keys (exact formats for the real inventory)
   route     django:<TESTS.inventory.catalog id> for catalog kinds route, mount, websocket;
-            go:<METHOD> <path> for echo registrations in BE_GO/cmd/server/main.go (groups
-            resolved; METHOD ANY for Any); caddy:<path> for each handle/handle_path path in
-            selfhost/caddy/Caddyfile
+            go:<METHOD> <path> for every echo registration in non-test Go under BE_GO/cmd/server
+            and BE_GO/internal/handler, wherever it is made (main.go, helper functions such as
+            registerCommunicationDelivery, handler Register(e *echo.Echo, ...) methods, literal
+            loops, router-stock expansion; groups resolved; METHOD ANY for Any);
+            go:WS <path> for each WebSocket path dispatched in BE_GO/internal/handler/websocket.go
+            (case "/ws/..."); caddy:<path> for each handle/handle_path path in selfhost/caddy/Caddyfile
   task      the Celery name, as go_tasks_inventory.django_tasks() finds it, plus celery.backend_cleanup
   schedule  beat:<entry> (BE/core/celery.py app.conf.beat_schedule, BE/core/settings.py
             CELERY_BEAT_SCHEDULE), beat:celery.backend_cleanup, go-periodic:<task name>
@@ -64,6 +67,7 @@ Discovered keys (exact formats for the real inventory)
 """
 import json
 import os
+import re
 from pathlib import Path
 import shutil
 import subprocess
@@ -346,7 +350,9 @@ class CheckedInInventory(ToolCase):
                         'compose:migrate-go', 'compose:web', 'go-cmd:scheduler', 'go-cmd:worker',
                         'go-cmd:celery-consumer', 'go-cmd:relay-go-realtime', 'go-cmd:server'],
             'route': ['caddy:/api/v2/*', 'caddy:/api/*', 'caddy:/ws/*', 'caddy:/bakney/v1/*', 'go:ANY /*',
-                      'go:GET /communications/whatsapp/webhook'],
+                      'go:GET /communications/whatsapp/webhook', 'go:ANY /communications/send/email',
+                      'go:ANY /communications/settings/message-templates', 'go:WS /ws/notifications/',
+                      'go:WS /ws/agent/'],
             'publisher': ['go:BE_GO/internal/service/tasks_db_d.go:', 'py:BE/application/signals.py:',
                           'py:BE/docmanager/views/printing_views.py:'],
         }
@@ -372,6 +378,69 @@ class CheckedInInventory(ToolCase):
             with self.subTest(service):
                 self.assertEqual({entries[service]['owner'][mode]['runtime'] for mode in ('django', 'go')},
                                  {'shared'})
+
+    def entries_with(self, document, predicate):
+        return [entry for entry in document['entries'] if any(predicate(item) for item in entry['items'])]
+
+    def test_present_owners_are_true_for_the_current_distribution(self):
+        """status "present" means the named owner does this in that mode on this revision.
+
+        Each rule is anchored to source that the later phase changes; once that source
+        changes, the rule stops applying and the inventory may say "present".
+        """
+        document = self.load()
+        compose = (ROOT / 'selfhost/compose.yml').read_text()
+        cli = (ROOT / 'selfhost/bin/assozeta').read_text()
+        problems = []
+
+        def require_planned(entries, mode, why):
+            for entry in entries:
+                if entry['owner'][mode]['status'] != 'planned':
+                    problems.append(f"{entry['id']}: owner.{mode} is 'present' but {why}")
+
+        # The stock Compose file has no native Go scheduler or durable worker service.
+        if not any(f'/app/{binary}' in compose for binary in ('scheduler', 'worker"')):
+            native = {row['name'] for row in json.loads(
+                (ROOT / 'docs/architecture/go-migration/go-tasks-inventory.json').read_text())
+                if row['job'] and not row['consumer']}
+            require_planned(self.entries_with(document, lambda item: item.startswith('go-periodic:')),
+                            'go', 'no Go scheduler service runs in the stock distribution (Phase 2 adds it)')
+            require_planned([entry for entry in document['entries'] if entry['kind'] == 'task'
+                             and set(entry['items']) & native], 'go',
+                            'no Go durable worker service runs in the stock distribution')
+            require_planned(self.entries_with(document, lambda item: item.startswith(
+                ('go:BE_GO/internal/service/occurrence.go:', 'go:BE_GO/internal/repository/occurrence.go:',
+                 'go-loop:BE_GO/internal/service/job_executor.go:'))), 'go',
+                'its Go process (scheduler or durable worker) is not deployed')
+        # The Go consumer hands unported inputs back to the Python celery queue.
+        consumer = (ROOT / 'BE_GO/cmd/celery-consumer/main.go').read_text()
+        if 'HandoffQueue: celery.DefaultQueue' in consumer:
+            registered = {row['name'] for row in json.loads(
+                (ROOT / 'docs/architecture/go-migration/go-tasks-inventory.json').read_text()) if row['consumer']}
+            require_planned([entry for entry in document['entries'] if entry['kind'] == 'task'
+                             and set(entry['items']) & registered], 'go',
+                            'worker-go hands unported inputs back to the Python celery queue (Phase 4)')
+        # Go producers fall back to the Python celery queue unless GO_TASK_QUEUE_TASKS routes the name.
+        if 'return DefaultQueue' in (ROOT / 'BE_GO/internal/celery/routes.go').read_text():
+            def go_broker_publish(item):
+                return (item.startswith('go:BE_GO/') and re.search(r'\.Publish(#\d+)?$', item) is not None
+                        and 'internal/celery/pidbox.go' not in item and 'internal/service/occurrence.go' not in item)
+            require_planned(self.entries_with(document, go_broker_publish), 'go',
+                            'Go producers publish to the celery queue only a Django worker consumes (Phase 3 routing)')
+        # The stock CLI and Compose start api-go, the WhatsApp loop inside it, worker and Beat in every mode.
+        if 'api-go:\n        condition: service_healthy' in compose or 'set -- "$@" "$go_api_service"' in cli:
+            require_planned(self.entries_with(document, lambda item: item in ('compose:api-go', 'go-cmd:server')),
+                            'django', 'the stock distribution starts api-go in Django mode (RED1)')
+            require_planned(self.entries_with(document, lambda item: item ==
+                                              'go-loop:BE_GO/internal/whatsapp/delivery.go:DeliveryQueue.Run'),
+                            'django', 'api-go runs this WhatsApp loop next to Beat deliver_whatsapp in Django mode')
+        if 'up -d worker beat' in cli or 'up -d --force-recreate worker beat' in cli:
+            require_planned(self.entries_with(document, lambda item: item in ('compose:worker', 'compose:beat')),
+                            'go', 'the stock CLI starts worker and beat whatever the mode')
+        if 'api:\n        condition: service_healthy' in compose:
+            require_planned(self.entries_with(document, lambda item: item == 'compose:api'),
+                            'go', 'web depends on api, so api cannot be stopped')
+        self.assertEqual(problems, [])
 
 
 if __name__ == '__main__':
