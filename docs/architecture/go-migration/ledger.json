@@ -882,6 +882,52 @@
       ]
     },
     {
+      "id": "command:BE/communications/management/commands/whatsapp_templates.py:whatsapp_templates",
+      "kind": "command",
+      "django": {
+        "file": "BE/communications/management/commands/whatsapp_templates.py",
+        "line": 9,
+        "symbol": "whatsapp_templates",
+        "sha256": "98f6c4a8cb76913ba10dcf7d0660751c825ae40406cacf4f701f4cc9955b7885"
+      },
+      "source_present": true,
+      "declaration": {
+        "bases": [
+          "BaseCommand"
+        ]
+      },
+      "status": "implementing",
+      "go": [
+        "BE_GO/cmd/whatsapp-templates/main.go",
+        "BE_GO/internal/whatsapp/provider.go"
+      ],
+      "dependencies": [
+        "WhatsApp Business Account message_templates"
+      ],
+      "contract": {
+        "methods": null,
+        "external_paths": null,
+        "request": "list, get NAME LANGUAGE, or register with a template definition on stdin.",
+        "response": "JSON provider result or approved template translations.",
+        "errors": null,
+        "authentication": null,
+        "permissions": "Deployment operator with the management token.",
+        "resource_scope": null,
+        "side_effects": "Registration submits a template to Meta for review.",
+        "transaction": null,
+        "execution_owner": "django"
+      },
+      "tests": [
+        "BE/communications/tests/test_whatsapp.py",
+        "BE_GO/internal/whatsapp/provider_test.go",
+        "BE_GO/internal/service/whatsapp_integration_test.go"
+      ],
+      "evidence": [],
+      "notes": [
+        "Shared configuration and delivery contract in docs/whatsapp.md."
+      ]
+    },
+    {
       "id": "command:BE/notifications/management/commands/relay_go_realtime.py:relay_go_realtime",
       "kind": "command",
       "django": {
@@ -29865,9 +29911,9 @@
       "kind": "route",
       "django": {
         "file": "BE/communications/urls.py",
-        "line": 39,
+        "line": 41,
         "symbol": "communications/email-logs/list -> communication_email_logs_list",
-        "sha256": "dfefc1501a428385939a7163d1c7130d9de2c4e5d5d1dbcc515f1d670834087d"
+        "sha256": "62bdeef45fe2c778a4ec82964f4f8ab20f429569ac030a4a0e62a70845178ced"
       },
       "source_present": true,
       "declaration": {
@@ -29939,9 +29985,9 @@
       "kind": "route",
       "django": {
         "file": "BE/communications/urls.py",
-        "line": 29,
+        "line": 31,
         "symbol": "communications/messages/<str:message_id>/delete -> communication_messages_delete",
-        "sha256": "dfefc1501a428385939a7163d1c7130d9de2c4e5d5d1dbcc515f1d670834087d"
+        "sha256": "62bdeef45fe2c778a4ec82964f4f8ab20f429569ac030a4a0e62a70845178ced"
       },
       "source_present": true,
       "declaration": {
@@ -30066,9 +30112,9 @@
       "kind": "route",
       "django": {
         "file": "BE/communications/urls.py",
-        "line": 28,
+        "line": 30,
         "symbol": "communications/messages/<str:message_id>/detail -> communication_messages_detail",
-        "sha256": "dfefc1501a428385939a7163d1c7130d9de2c4e5d5d1dbcc515f1d670834087d"
+        "sha256": "62bdeef45fe2c778a4ec82964f4f8ab20f429569ac030a4a0e62a70845178ced"
       },
       "source_present": true,
       "declaration": {
@@ -30157,9 +30203,9 @@
       "kind": "route",
       "django": {
         "file": "BE/communications/urls.py",
-        "line": 26,
+        "line": 28,
         "symbol": "communications/messages/add -> communication_messages_add",
-        "sha256": "dfefc1501a428385939a7163d1c7130d9de2c4e5d5d1dbcc515f1d670834087d"
+        "sha256": "62bdeef45fe2c778a4ec82964f4f8ab20f429569ac030a4a0e62a70845178ced"
       },
       "source_present": true,
       "declaration": {
@@ -30269,9 +30315,9 @@
       "kind": "route",
       "django": {
         "file": "BE/communications/urls.py",
-        "line": 27,
+        "line": 29,
         "symbol": "communications/messages/list -> communication_messages_list",
-        "sha256": "dfefc1501a428385939a7163d1c7130d9de2c4e5d5d1dbcc515f1d670834087d"
+        "sha256": "62bdeef45fe2c778a4ec82964f4f8ab20f429569ac030a4a0e62a70845178ced"
       },
       "source_present": true,
       "declaration": {
@@ -30377,9 +30423,9 @@
       "kind": "route",
       "django": {
         "file": "BE/communications/urls.py",
-        "line": 20,
+        "line": 22,
         "symbol": "communications/outgoing/previews/<str:preview_id> -> outgoing_message_action",
-        "sha256": "dfefc1501a428385939a7163d1c7130d9de2c4e5d5d1dbcc515f1d670834087d"
+        "sha256": "62bdeef45fe2c778a4ec82964f4f8ab20f429569ac030a4a0e62a70845178ced"
       },
       "source_present": true,
       "declaration": {
@@ -30445,9 +30491,9 @@
       "kind": "route",
       "django": {
         "file": "BE/communications/urls.py",
-        "line": 19,
+        "line": 21,
         "symbol": "communications/outgoing/recipients/<str:associate_id> -> outgoing_message_recipient",
-        "sha256": "dfefc1501a428385939a7163d1c7130d9de2c4e5d5d1dbcc515f1d670834087d"
+        "sha256": "62bdeef45fe2c778a4ec82964f4f8ab20f429569ac030a4a0e62a70845178ced"
       },
       "source_present": true,
       "declaration": {
@@ -30514,9 +30560,9 @@
       "kind": "route",
       "django": {
         "file": "BE/communications/urls.py",
-        "line": 24,
+        "line": 26,
         "symbol": "communications/send/email -> configuration_send_email",
-        "sha256": "dfefc1501a428385939a7163d1c7130d9de2c4e5d5d1dbcc515f1d670834087d"
+        "sha256": "62bdeef45fe2c778a4ec82964f4f8ab20f429569ac030a4a0e62a70845178ced"
       },
       "source_present": true,
       "declaration": {
@@ -30589,9 +30635,9 @@
       "kind": "route",
       "django": {
         "file": "BE/communications/urls.py",
-        "line": 25,
+        "line": 27,
         "symbol": "communications/send/post -> configuration_send_post",
-        "sha256": "dfefc1501a428385939a7163d1c7130d9de2c4e5d5d1dbcc515f1d670834087d"
+        "sha256": "62bdeef45fe2c778a4ec82964f4f8ab20f429569ac030a4a0e62a70845178ced"
       },
       "source_present": true,
       "declaration": {
@@ -30680,9 +30726,9 @@
       "kind": "route",
       "django": {
         "file": "BE/communications/urls.py",
-        "line": 16,
+        "line": 18,
         "symbol": "communications/settings/message-templates -> message_template_list",
-        "sha256": "dfefc1501a428385939a7163d1c7130d9de2c4e5d5d1dbcc515f1d670834087d"
+        "sha256": "62bdeef45fe2c778a4ec82964f4f8ab20f429569ac030a4a0e62a70845178ced"
       },
       "source_present": true,
       "declaration": {
@@ -30749,9 +30795,9 @@
       "kind": "route",
       "django": {
         "file": "BE/communications/urls.py",
-        "line": 18,
+        "line": 20,
         "symbol": "communications/settings/message-templates/<str:template_id> -> message_template_detail",
-        "sha256": "dfefc1501a428385939a7163d1c7130d9de2c4e5d5d1dbcc515f1d670834087d"
+        "sha256": "62bdeef45fe2c778a4ec82964f4f8ab20f429569ac030a4a0e62a70845178ced"
       },
       "source_present": true,
       "declaration": {
@@ -30818,9 +30864,9 @@
       "kind": "route",
       "django": {
         "file": "BE/communications/urls.py",
-        "line": 17,
+        "line": 19,
         "symbol": "communications/settings/message-templates/sample -> message_template_sample",
-        "sha256": "dfefc1501a428385939a7163d1c7130d9de2c4e5d5d1dbcc515f1d670834087d"
+        "sha256": "62bdeef45fe2c778a4ec82964f4f8ab20f429569ac030a4a0e62a70845178ced"
       },
       "source_present": true,
       "declaration": {
@@ -30886,9 +30932,9 @@
       "kind": "route",
       "django": {
         "file": "BE/communications/urls.py",
-        "line": 22,
+        "line": 24,
         "symbol": "communications/settings/smtp/info -> configuration_smtp_info",
-        "sha256": "dfefc1501a428385939a7163d1c7130d9de2c4e5d5d1dbcc515f1d670834087d"
+        "sha256": "62bdeef45fe2c778a4ec82964f4f8ab20f429569ac030a4a0e62a70845178ced"
       },
       "source_present": true,
       "declaration": {
@@ -30966,9 +31012,9 @@
       "kind": "route",
       "django": {
         "file": "BE/communications/urls.py",
-        "line": 21,
+        "line": 23,
         "symbol": "communications/settings/smtp/update -> configuration_smtp_update",
-        "sha256": "dfefc1501a428385939a7163d1c7130d9de2c4e5d5d1dbcc515f1d670834087d"
+        "sha256": "62bdeef45fe2c778a4ec82964f4f8ab20f429569ac030a4a0e62a70845178ced"
       },
       "source_present": true,
       "declaration": {
@@ -31046,9 +31092,9 @@
       "kind": "route",
       "django": {
         "file": "BE/communications/urls.py",
-        "line": 23,
+        "line": 25,
         "symbol": "communications/settings/smtp/verify -> configuration_smtp_verify",
-        "sha256": "dfefc1501a428385939a7163d1c7130d9de2c4e5d5d1dbcc515f1d670834087d"
+        "sha256": "62bdeef45fe2c778a4ec82964f4f8ab20f429569ac030a4a0e62a70845178ced"
       },
       "source_present": true,
       "declaration": {
@@ -31126,9 +31172,9 @@
       "kind": "route",
       "django": {
         "file": "BE/communications/urls.py",
-        "line": 33,
+        "line": 35,
         "symbol": "communications/staff-board/<str:staff_board_message_id>/delete -> staff_board_messages_delete",
-        "sha256": "dfefc1501a428385939a7163d1c7130d9de2c4e5d5d1dbcc515f1d670834087d"
+        "sha256": "62bdeef45fe2c778a4ec82964f4f8ab20f429569ac030a4a0e62a70845178ced"
       },
       "source_present": true,
       "declaration": {
@@ -31211,9 +31257,9 @@
       "kind": "route",
       "django": {
         "file": "BE/communications/urls.py",
-        "line": 32,
+        "line": 34,
         "symbol": "communications/staff-board/<str:staff_board_message_id>/update -> staff_board_messages_update",
-        "sha256": "dfefc1501a428385939a7163d1c7130d9de2c4e5d5d1dbcc515f1d670834087d"
+        "sha256": "62bdeef45fe2c778a4ec82964f4f8ab20f429569ac030a4a0e62a70845178ced"
       },
       "source_present": true,
       "declaration": {
@@ -31309,9 +31355,9 @@
       "kind": "route",
       "django": {
         "file": "BE/communications/urls.py",
-        "line": 31,
+        "line": 33,
         "symbol": "communications/staff-board/add -> staff_board_messages_add",
-        "sha256": "dfefc1501a428385939a7163d1c7130d9de2c4e5d5d1dbcc515f1d670834087d"
+        "sha256": "62bdeef45fe2c778a4ec82964f4f8ab20f429569ac030a4a0e62a70845178ced"
       },
       "source_present": true,
       "declaration": {
@@ -31407,9 +31453,9 @@
       "kind": "route",
       "django": {
         "file": "BE/communications/urls.py",
-        "line": 30,
+        "line": 32,
         "symbol": "communications/staff-board/list -> staff_board_messages_list",
-        "sha256": "dfefc1501a428385939a7163d1c7130d9de2c4e5d5d1dbcc515f1d670834087d"
+        "sha256": "62bdeef45fe2c778a4ec82964f4f8ab20f429569ac030a4a0e62a70845178ced"
       },
       "source_present": true,
       "declaration": {
@@ -31486,13 +31532,67 @@
       ]
     },
     {
+      "id": "route:BE/communications/urls.py:communications/whatsapp/webhook -> webhook",
+      "kind": "route",
+      "django": {
+        "file": "BE/communications/urls.py",
+        "line": 17,
+        "symbol": "communications/whatsapp/webhook -> webhook",
+        "sha256": "62bdeef45fe2c778a4ec82964f4f8ab20f429569ac030a4a0e62a70845178ced"
+      },
+      "source_present": true,
+      "declaration": {
+        "path": "communications/whatsapp/webhook",
+        "target": "webhook",
+        "syntax": "path"
+      },
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/whatsapp/webhook.go",
+        "BE_GO/internal/whatsapp/delivery.go"
+      ],
+      "dependencies": [
+        "communications_whatsappdelivery",
+        "communications_whatsappreceipt"
+      ],
+      "contract": {
+        "methods": [
+          "GET",
+          "POST"
+        ],
+        "external_paths": [
+          "/api/communications/whatsapp/webhook",
+          "/api/v1/communications/whatsapp/webhook",
+          "/api/v2/communications/whatsapp/webhook"
+        ],
+        "request": "Verification challenge or signed Meta status batch.",
+        "response": "Plain-text challenge or empty 200.",
+        "errors": "400 invalid payload, 403 verification or signature failure.",
+        "authentication": "Configured verification token on GET, HMAC-SHA256 on POST.",
+        "permissions": null,
+        "resource_scope": "Configured sender ID and WABA.",
+        "side_effects": "Records distinct delivery status receipts.",
+        "transaction": "Per callback, lock delivery and update receipt and state together.",
+        "execution_owner": "django"
+      },
+      "tests": [
+        "BE/communications/tests/test_whatsapp.py",
+        "BE_GO/internal/whatsapp/provider_test.go",
+        "BE_GO/internal/service/whatsapp_integration_test.go"
+      ],
+      "evidence": [],
+      "notes": [
+        "Shared configuration and delivery contract in docs/whatsapp.md."
+      ]
+    },
+    {
       "id": "route:BE/communications/urls.py:communications/workflows/<str:workflow_id>/delete -> communication_workflows_delete",
       "kind": "route",
       "django": {
         "file": "BE/communications/urls.py",
-        "line": 36,
+        "line": 38,
         "symbol": "communications/workflows/<str:workflow_id>/delete -> communication_workflows_delete",
-        "sha256": "dfefc1501a428385939a7163d1c7130d9de2c4e5d5d1dbcc515f1d670834087d"
+        "sha256": "62bdeef45fe2c778a4ec82964f4f8ab20f429569ac030a4a0e62a70845178ced"
       },
       "source_present": true,
       "declaration": {
@@ -31564,9 +31664,9 @@
       "kind": "route",
       "django": {
         "file": "BE/communications/urls.py",
-        "line": 38,
+        "line": 40,
         "symbol": "communications/workflows/<str:workflow_id>/details -> communication_workflows_details",
-        "sha256": "dfefc1501a428385939a7163d1c7130d9de2c4e5d5d1dbcc515f1d670834087d"
+        "sha256": "62bdeef45fe2c778a4ec82964f4f8ab20f429569ac030a4a0e62a70845178ced"
       },
       "source_present": true,
       "declaration": {
@@ -31636,9 +31736,9 @@
       "kind": "route",
       "django": {
         "file": "BE/communications/urls.py",
-        "line": 37,
+        "line": 39,
         "symbol": "communications/workflows/<str:workflow_id>/update -> communication_workflows_update",
-        "sha256": "dfefc1501a428385939a7163d1c7130d9de2c4e5d5d1dbcc515f1d670834087d"
+        "sha256": "62bdeef45fe2c778a4ec82964f4f8ab20f429569ac030a4a0e62a70845178ced"
       },
       "source_present": true,
       "declaration": {
@@ -31715,9 +31815,9 @@
       "kind": "route",
       "django": {
         "file": "BE/communications/urls.py",
-        "line": 35,
+        "line": 37,
         "symbol": "communications/workflows/add -> communication_workflows_add",
-        "sha256": "dfefc1501a428385939a7163d1c7130d9de2c4e5d5d1dbcc515f1d670834087d"
+        "sha256": "62bdeef45fe2c778a4ec82964f4f8ab20f429569ac030a4a0e62a70845178ced"
       },
       "source_present": true,
       "declaration": {
@@ -31789,9 +31889,9 @@
       "kind": "route",
       "django": {
         "file": "BE/communications/urls.py",
-        "line": 34,
+        "line": 36,
         "symbol": "communications/workflows/list -> communication_workflows_list",
-        "sha256": "dfefc1501a428385939a7163d1c7130d9de2c4e5d5d1dbcc515f1d670834087d"
+        "sha256": "62bdeef45fe2c778a4ec82964f4f8ab20f429569ac030a4a0e62a70845178ced"
       },
       "source_present": true,
       "declaration": {
@@ -44375,6 +44475,51 @@
         "Implementing evidence: red: Django passed, Go timed out on the first scenario (every message handed off) (quality-reports/go-migration/consumer-workflow-process-red/results.json)",
         "Implementing evidence: caught: Timed out: Go consumer: cron approved target fans out to the accepted subscription (extra fan-out to the archived subscription) (quality-reports/go-migration/consumer-workflow-process-mutation/results.json)",
         "Implementing evidence: re-run green 14/14 after the shared celery.Task and cmd/celery-consumer changes (quality-reports/go-migration/celery-consumer-process/results.json)"
+      ]
+    },
+    {
+      "id": "task:BE/communications/tasks.py:deliver_whatsapp",
+      "kind": "task",
+      "django": {
+        "file": "BE/communications/tasks.py",
+        "line": 9,
+        "symbol": "deliver_whatsapp",
+        "sha256": "b9d5d184324773e09e4f2e8d60fcda800fbb0a3031a071e6640ce4e9e675c494"
+      },
+      "source_present": true,
+      "declaration": {
+        "name": "deliver_whatsapp",
+        "arguments": "",
+        "options": {}
+      },
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/whatsapp/delivery.go"
+      ],
+      "dependencies": [
+        "communications_whatsappdelivery"
+      ],
+      "contract": {
+        "methods": null,
+        "external_paths": null,
+        "request": null,
+        "response": null,
+        "errors": null,
+        "authentication": null,
+        "permissions": null,
+        "resource_scope": null,
+        "side_effects": "Sends due notifications to the Cloud API and records provider IDs or retry details.",
+        "transaction": "One locked outbox row per attempt.",
+        "execution_owner": "Celery worker or Go API background worker."
+      },
+      "tests": [
+        "BE/communications/tests/test_whatsapp.py",
+        "BE_GO/internal/whatsapp/provider_test.go",
+        "BE_GO/internal/service/whatsapp_integration_test.go"
+      ],
+      "evidence": [],
+      "notes": [
+        "Shared configuration and delivery contract in docs/whatsapp.md."
       ]
     },
     {

@@ -117,6 +117,7 @@ class ExceptionHandlerMiddleware:
                 request.method in ['POST', 'PUT', 'PATCH', 'DELETE']
                 and not (request.content_type or '').startswith('multipart/')
                 and request.path not in STREAMED_PATHS
+                and request.path != '/communications/whatsapp/webhook'
             ):
                 request.body
             response = self.get_response(request)

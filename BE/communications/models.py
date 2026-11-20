@@ -408,3 +408,37 @@ class OutgoingMessage(models.Model):
     status = models.CharField(max_length=16, default='preview')
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(default=timezone.now)
+
+
+class WhatsAppDelivery(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    event_type = models.TextField()
+    recipient = models.TextField()
+    body = models.TextField(blank=True)
+    template_name = models.TextField(blank=True)
+    template_language = models.TextField(blank=True)
+    provider_message_id = models.TextField(unique=True, null=True)
+    status = models.CharField(max_length=16, default='queued')
+    attempts = models.PositiveIntegerField(default=0)
+    error_code = models.TextField(blank=True)
+    error_message = models.TextField(blank=True)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(default=timezone.now)
+    next_attempt_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        indexes = [models.Index(fields=['status', 'next_attempt_at'], name='whatsapp_delivery_due')]
+
+
+class WhatsAppReceipt(models.Model):
+    delivery = models.ForeignKey(WhatsAppDelivery, on_delete=models.CASCADE)
+    provider_message_id = models.TextField()
+    status = models.CharField(max_length=16)
+    occurred_at = models.DateTimeField()
+    error_code = models.TextField(blank=True)
+    error_message = models.TextField(blank=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(
+            fields=['delivery', 'provider_message_id', 'status'], name='whatsapp_receipt_unique',
+        )]

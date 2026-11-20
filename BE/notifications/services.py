@@ -7,6 +7,7 @@ from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.core.cache import cache
 
+from communications.whatsapp import queue_notifications
 from notifications.models import UserNotificationsBroadcast
 
 logger = logging.getLogger(__name__)
@@ -109,6 +110,7 @@ class NotificationService:
         result = manager.add_notification_role_broadcast(messages, broadcast=broadcast)
 
         if result:
+            queue_notifications(user, messages)
             # Push via WebSocket to connected clients
             cls._push_to_websocket(user, messages)
 

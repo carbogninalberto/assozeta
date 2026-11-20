@@ -32,11 +32,20 @@ func (s *RestoreAdmission) AcquireHTTP(ctx context.Context, method, path string)
 			return nil, nil
 		}
 	}
+	return s.acquire(ctx, method != "GET" && method != "HEAD")
+}
+
+// AcquireWrite coordinates background mutations with installed restore operations.
+func (s *RestoreAdmission) AcquireWrite(ctx context.Context) (io.Closer, error) {
+	return s.acquire(ctx, true)
+}
+
+func (s *RestoreAdmission) acquire(ctx context.Context, writing bool) (io.Closer, error) {
 	lease, err := s.locks.Acquire(ctx, false, false)
 	if err != nil {
 		return nil, err
 	}
-	if s.configured && method != "GET" && method != "HEAD" {
+	if s.configured && writing {
 		pending, err := s.states.Pending(ctx)
 		if err != nil {
 			_ = lease.Close()

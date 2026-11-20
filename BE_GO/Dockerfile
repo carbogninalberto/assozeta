@@ -5,6 +5,7 @@ COPY third_party/aws-config/go.mod third_party/aws-config/go.sum ./third_party/a
 RUN go mod download
 COPY . .
 RUN CGO_ENABLED=0 go build -trimpath -o /server ./cmd/server && \
+    CGO_ENABLED=0 go build -trimpath -o /whatsapp-templates ./cmd/whatsapp-templates && \
     CGO_ENABLED=0 go build -trimpath -o /worker ./cmd/worker && \
     CGO_ENABLED=0 go build -trimpath -o /scheduler ./cmd/scheduler && \
     CGO_ENABLED=0 go build -trimpath -o /migrate ./cmd/migrate && \
@@ -58,6 +59,7 @@ RUN printf '%s\n' "$VERSION" > /app/VERSION && \
     if [ -n "$MANUAL_CARRIED_FROM" ]; then printf '%s\n' "$MANUAL_CARRIED_FROM" > /app/MANUAL_CARRIED_FROM; fi && \
     chmod -R a+rX,a-w /app/release-manual
 COPY --from=builder /server /app/server
+COPY --from=builder /whatsapp-templates /app/whatsapp-templates
 COPY --from=builder /worker /app/worker
 COPY --from=builder /scheduler /app/scheduler
 COPY --from=builder /migrate /app/migrate

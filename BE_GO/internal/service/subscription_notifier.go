@@ -28,15 +28,22 @@ type GroupSender interface {
 // user and one message; the association id is nullable, as send_notification
 // fills it only for association and collaborator accounts.
 type SubscriptionNotifier struct {
-	rows  domain.SubscriptionNotificationStore
-	redis SubscriptionNotificationRedis
-	layer GroupSender
-	now   func() time.Time
+	channel func(context.Context, string, string, string) error
+	rows    domain.SubscriptionNotificationStore
+	redis   SubscriptionNotificationRedis
+	layer   GroupSender
+	now     func() time.Time
 }
 
 func NewSubscriptionNotifier(rows domain.SubscriptionNotificationStore, redis SubscriptionNotificationRedis, layer GroupSender,
 	now func() time.Time) *SubscriptionNotifier {
 	return &SubscriptionNotifier{rows: rows, redis: redis, layer: layer, now: now}
+}
+
+// WithNotificationChannel adds a delivery channel after the notification is stored.
+func (n *SubscriptionNotifier) WithNotificationChannel(enqueue func(context.Context, string, string, string) error) *SubscriptionNotifier {
+	n.channel = enqueue
+	return n
 }
 
 var errNotificationPush = errors.New("notification push value not supported")
@@ -122,7 +129,15 @@ func (n *SubscriptionNotifier) append(ctx context.Context, user, kind, message s
 	items = append(items, domain.RequestObject{{Name: "id", Value: id.String()}, {Name: "type", Value: kind}, {Name: "msg", Value: message},
 		{Name: "association_id", Value: notificationAssociation(association)}, {Name: "users", Value: []any{}},
 		{Name: "expires", Value: json.Number(jsonInt(expires))}})
-	return n.redis.SaveNotifications(ctx, broadcast, items)
+	if err := n.redis.SaveNotifications(ctx, broadcast, items); err != nil {
+		return err
+	}
+	if n.channel != nil {
+		if err := n.channel(ctx, user, kind, message); err != nil {
+			slog.ErrorContext(ctx, "Could not enqueue notification delivery")
+		}
+	}
+	return nil
 }
 
 // notificationAssociation is the stored association_id: the id, or nil (JSON

@@ -763,7 +763,7 @@ DRF_API_LOGGER_PATH_TYPE = 'ABSOLUTE'
 DRF_LOGGER_QUEUE_MAX_SIZE = 1 # Default to 50 if not specified.
 DRF_LOGGER_INTERVAL = 1 # In Seconds, Default to 10 seconds if not specified.
 DRF_API_LOGGER_SKIP_URL_NAME = ['', 'health', 'instance-email-settings', 'instance-email-test', 'instance-diagnostics', 'instance-integration-settings']
-DRF_API_LOGGER_SKIP_URL_NAME += ['instance-backup-download-token']
+DRF_API_LOGGER_SKIP_URL_NAME += ['instance-backup-download-token', 'whatsapp-webhook']
 DRF_API_LOGGER_SKIP_URL_NAME += ['instance-backup-remote' + suffix for suffix in ('', '-test', '-key', '-key-confirm', '-fetch')]
 DRF_API_LOGGER_SKIP_URL_NAME += ['bakney-pairing-admin', 'bakney-pairing-challenge', 'bakney-pairing-commit',
                                'bakney-sso-start', 'bakney-sso-callback', 'bakney-sso-session']
@@ -773,3 +773,13 @@ DRF_API_LOGGER_METHODS = ['PATCH', 'POST', 'DELETE', 'PUT']
 
 # CRM token API
 CRM_API_TOKEN = env.str('CRM_API_TOKEN')
+
+# WhatsApp Business Cloud API (per deployment).
+WHATSAPP_PHONE_NUMBER_ID = os.getenv('WHATSAPP_PHONE_NUMBER_ID', '')
+WHATSAPP_BUSINESS_ACCOUNT_ID = os.getenv('WHATSAPP_BUSINESS_ACCOUNT_ID', '')
+WHATSAPP_ACCESS_TOKEN = os.getenv('WHATSAPP_ACCESS_TOKEN', '')
+WHATSAPP_API_VERSION = os.getenv('WHATSAPP_API_VERSION') or 'v23.0'
+WHATSAPP_API_BASE_URL = os.getenv('WHATSAPP_API_BASE_URL') or 'https://graph.facebook.com'
+WHATSAPP_WEBHOOK_VERIFY_TOKEN = os.getenv('WHATSAPP_WEBHOOK_VERIFY_TOKEN', '')
+WHATSAPP_APP_SECRET = os.getenv('WHATSAPP_APP_SECRET', '')
+WHATSAPP_NOTIFICATION_ROUTES = os.getenv('WHATSAPP_NOTIFICATION_ROUTES') or '{}'

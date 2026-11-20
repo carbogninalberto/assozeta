@@ -34,6 +34,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/stripeapi"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/whatsapp"
 	passwordcrypto "github.com/carbogninalberto/assozeta/BE_GO/pkg/crypto"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/jwt"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/manual"
@@ -964,8 +965,13 @@ func run() (runErr error) {
 	}
 	// subscription/add: Channels group messages are written for Django sockets
 	// and mirrored for Go sockets (internal/channels), on Redis database 0.
+	waProvider := whatsapp.NewCloudAPI(cfg.WhatsApp)
+	waQueue := whatsapp.NewQueue(db.DB, cfg.WhatsApp, waProvider)
+	waWebhook := echo.WrapHandler(whatsapp.Webhook(db.DB, waProvider))
+	e.GET("/communications/whatsapp/webhook", waWebhook)
+	e.POST("/communications/whatsapp/webhook", waWebhook)
 	subscriptionNotifier := service.NewSubscriptionNotifier(repository.NewSubscriptionNotifications(db), notificationStore,
-		channels.NewLayer(notificationRedis, nil, nil, nil), time.Now)
+		channels.NewLayer(notificationRedis, nil, nil, nil), time.Now).WithNotificationChannel(waQueue.Enqueue)
 	paymentPaidFlows := repository.NewPaymentPaidFlows(repository.NewPaymentStates(db))
 	paymentStates.WithPaidFlow(paymentPaidFlows, subscriptionNotifier)
 	stripeRoutes.WithPaidFlow(paymentPaidFlows, subscriptionNotifier, tasks, os.Getenv("DOCUMENT_BYPASS_TOKEN"))
@@ -1015,6 +1021,14 @@ func run() (runErr error) {
 	server := &http.Server{Addr: cfg.ListenAddress, Handler: webSockets.Routes(e), ReadHeaderTimeout: 10 * time.Second, IdleTimeout: 60 * time.Second}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
+	if cfg.WhatsApp.PhoneID != "" && cfg.WhatsApp.AccessToken != "" {
+		workerDone := make(chan struct{})
+		go func() {
+			defer close(workerDone)
+			waQueue.Run(ctx, restoreAdmission.AcquireWrite)
+		}()
+		defer func() { stop(); <-workerDone }()
+	}
 	stopped := make(chan error, 1)
 	go func() { stopped <- server.ListenAndServe() }()
 	select {
