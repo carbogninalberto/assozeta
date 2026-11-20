@@ -6,7 +6,7 @@
     export let changes = false;
     export let busy = false;
     export let onSaved = () => {};
-    const providers = [{id: 'stripe', title: 'Stripe'}, {id: 'google', title: 'Google'}, {id: 'apple', title: 'Apple'}];
+    const providers = [{id: 'stripe', title: 'Stripe'}, {id: 'google', title: 'Google'}, {id: 'apple', title: 'Apple'}, {id: 'whatsapp', title: 'WhatsApp Business'}];
     let changed = {};
     let pending = {};
     $: changes = Object.values(changed).some(Boolean);

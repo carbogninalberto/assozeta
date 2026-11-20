@@ -34,6 +34,7 @@ import json
 import math
 import os
 from datetime import datetime, timedelta, timezone
+from email.policy import compat32
 from pathlib import Path
 import re
 import shutil
@@ -67,9 +68,9 @@ if ORACLE not in ('prefork', 'thread'):
     raise RuntimeError('CELERY_CONSUMER_ORACLE must be prefork or thread')
 ORACLE_SOURCES = ['TESTS/adapters/go/consumer_prefork_oracle_settings.py', 'TESTS/adapters/go/consumer_restore_settings.py',
                   'TESTS/adapters/go/consumer_restore_worker.py', 'BE/core/celery.py']
-# A long DNS_NAME makes compat32 fold the header onto its own line ('Message-ID: \r\n <...>'):
-# the separator is kept so that a folding difference still shows.
-MESSAGE_ID = re.compile(r'Message-ID:( | \r\n )<[^>\r\n]+>')
+# Generated IDs in the two workers can straddle the 78-character folding limit.
+MESSAGE_ID = re.compile(r'Message-ID:(?: | \r\n )(<[^>\r\n]+>)')
+SMTP_HEADERS = compat32.clone(linesep='\r\n')
 DATE = re.compile(r'Date: [A-Z][a-z]{2}, \d\d [A-Z][a-z]{2} \d{4} \d\d:\d\d:\d\d -0000')
 SIZE = re.compile(r' size=(\d+)\r\n\Z')
 
@@ -140,8 +141,12 @@ SCENARIOS = [
 
 
 def normalize_unit(unit):
-    unit = MESSAGE_ID.sub(lambda match: 'Message-ID:' + match.group(1) + '<message-id>', DATE.sub('Date: <date>', unit))
-    return unit
+    def normalize_id(match):
+        header = SMTP_HEADERS.fold('Message-ID', match.group(1)).removesuffix('\r\n')
+        assert match.group() == header, 'Incorrect folding for generated Message-ID'
+        return 'Message-ID: <message-id>'
+
+    return MESSAGE_ID.sub(normalize_id, DATE.sub('Date: <date>', unit))
 
 
 def normalize_transcript(units):

@@ -489,6 +489,10 @@ func (s *InstanceOutbound) integrationPlan(provider string, row *domain.Instance
 			Message: "Integrazione disattivata. Abilitala e salva prima di verificarla."}, nil
 	}
 	value, _ := probeValue(current.value).(map[string]any)
+	if provider == "whatsapp" {
+		w := s.admin.env.WhatsApp
+		value["sender_url"] = strings.TrimRight(w.BaseURL, "/") + "/" + w.APIVersion + "/" + fmt.Sprint(value["phone_number_id"])
+	}
 	return value, nil, nil
 }
 

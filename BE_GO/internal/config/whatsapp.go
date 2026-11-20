@@ -1,6 +1,7 @@
 package config
 
 type WhatsAppSettings struct {
+	Disabled                                                                             bool
 	PhoneID, AccountID, AccessToken, APIVersion, BaseURL, VerifyToken, AppSecret, Routes string
 }
 

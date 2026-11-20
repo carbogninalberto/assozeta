@@ -591,8 +591,10 @@ var (
 	}
 )
 
+var WhatsAppTemplateRoute = regexp.MustCompile(`^([a-z0-9_]+)/([A-Za-z0-9_]+)(/message)?$`)
+
 // InstanceAdminSecretFields is integration_configuration.SECRET_FIELDS.
-var InstanceAdminSecretFields = map[string][]string{"ai": {"api_key"}, "stripe": {"secret_key", "webhook_secret"}, "google": {}, "apple": {}}
+var InstanceAdminSecretFields = map[string][]string{"ai": {"api_key"}, "stripe": {"secret_key", "webhook_secret"}, "google": {}, "apple": {}, "whatsapp": {"access_token", "app_secret", "webhook_verify_token"}}
 
 // InstanceAdminIntegration is the provider serializer's is_valid():
 // StripeSettingsSerializer, AISettingsSerializer or LoginSettingsSerializer.
@@ -662,6 +664,32 @@ func InstanceAdminIntegration(provider string, body any) (*InstanceAdminIntegrat
 		input.Clear = list
 	}
 	switch provider {
+	case "whatsapp":
+		for _, name := range []string{"phone_number_id", "business_account_id"} {
+			text(name, drfText{max: 64, allowBlank: true}, true, func(value string) []string {
+				if value != "" && strings.Trim(value, "0123456789") != "" {
+					return []string{InstanceAdminRegex}
+				}
+				return nil
+			})
+		}
+		for _, name := range InstanceAdminSecretFields[provider] {
+			text(name, drfText{max: 2000, allowBlank: true}, false, nil)
+		}
+		clear(InstanceAdminSecretFields[provider]...)
+		text("notification_routes", drfText{max: 8192}, true, func(value string) []string {
+			var routes map[string]string
+			invalid := []string{"Usa text oppure nome/lingua con il suffisso /message facoltativo."}
+			if json.Unmarshal([]byte(value), &routes) != nil || routes == nil {
+				return invalid
+			}
+			for kind, route := range routes {
+				if kind == "" || (route != "text" && !WhatsAppTemplateRoute.MatchString(route)) {
+					return invalid
+				}
+			}
+			return nil
+		})
 	case "stripe":
 		text("public_key", drfText{max: 300, allowBlank: true}, true, nil)
 		text("secret_key", drfText{max: 500, allowBlank: true}, false, nil)
@@ -716,6 +744,8 @@ func InstanceAdminIntegrationRules(provider string, values map[string]any, clear
 				return &InstanceAdminInvalid{Body: map[string]any{key: []string{"Formato della chiave non valido."}}}
 			}
 		}
+		fallthrough
+	case "whatsapp":
 		for _, key := range clear {
 			if text, _ := values[key].(string); text != "" {
 				return &InstanceAdminInvalid{Body: map[string]any{"non_field_errors": []string{"Scegli se sostituire o rimuovere ciascuna credenziale."}}}

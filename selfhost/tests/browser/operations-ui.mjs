@@ -12,13 +12,13 @@ const {createServer} = await import(pathToFileURL(path.join(ui, 'node_modules/vi
 const {svelte} = await import(pathToFileURL(path.join(ui, 'node_modules/@sveltejs/vite-plugin-svelte/src/index.js')));
 const output = process.env.ASSOZETA_BROWSER_OUTPUT || path.join(root, 'quality-reports/operations-ui');
 await fs.mkdir(output, {recursive: true});
-// Scan every profile component up front: a dependency discovered mid-test makes
+// Scan the instance settings entry point up front: a dependency discovered mid-test makes
 // Vite reload the page. A private cache and port keep concurrent runs apart.
 const port = Number(process.env.ASSOZETA_OPERATIONS_PORT || 5198);
 const cacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'assozeta-operations-vite-'));
 const server = await createServer({
     root: ui, configFile: false, logLevel: process.env.ASSOZETA_VITE_LOG || 'error', server: {host: '127.0.0.1', port, strictPort: true, hmr: false, watch: null},
-    cacheDir, optimizeDeps: {entries: ['src/routes/profile/**/*.svelte'],
+    cacheDir, optimizeDeps: {entries: ['src/routes/profile/sections/SelfInstance.svelte'],
         // Reached through imports the scan cannot follow (app aliases are not configured here).
         include: ['lucide', 'moment', 'sweetalert2', 'fetch-intercept', 'svelte-spa-router', 'svelte-spa-router/wrap', 'svelte-portal', 'lucide-svelte', '@capacitor/core']},
     resolve: {alias: {utils: `${ui}/src/utils`, store: `${ui}/src/store`}},
@@ -58,6 +58,9 @@ try {
             {id: 'email', label: 'Configurazione email', core: false, status: 'not_checked', message: 'Esegui la diagnostica.', level: 'configuration', section: 'email'},
         ], integrations: [{id: 'stripe', label: 'Stripe', status: 'not_configured', message: 'Integrazione facoltativa non configurata.', level: 'configuration', core: false}]};
         const integrationEnvironment = {
+            whatsapp: {source: 'environment', revision: 0, enabled: false, phone_number_id: '', business_account_id: '',
+                notification_routes: '{}', access_token_configured: false, app_secret_configured: false, webhook_verify_token_configured: false,
+                webhook_url: 'https://club.example.test/api/communications/whatsapp/webhook'},
             stripe: {source: 'environment', revision: 0, enabled: true, public_key: 'pk_test_environment', secret_key_configured: true, webhook_secret_configured: true},
             google: {source: 'environment', revision: 0, enabled: false, client_id: ''},
             apple: {source: 'environment', revision: 0, enabled: false, client_id: ''},
@@ -137,14 +140,14 @@ try {
             }
             else if (endpoint === '/admin/bakney-pairing' && method === 'GET') value = {state: 'disconnected', pairing_id: null, forwarding_enabled: false};
             else if (endpoint.startsWith('/admin/integrations/')) {
-                const provider = endpoint.split('/').at(-1);
+                const provider = endpoint.split('/')[3];
                 if (method === 'PUT') {
                     if (failIntegrationSave) {status = 409; value = {error: 'Integrazione modificata in un’altra sessione.'};}
                     else {
                         const input = request.postDataJSON();
                         assert.equal(input.revision, integrationValues[provider].revision);
-                        value = {...integrationValues[provider], ...input, source: 'instance', revision: input.revision + 1};
-                        for (const key of ['secret_key', 'webhook_secret']) {
+                        value = {...integrationValues[provider], ...input, source: 'instance', last_test: null, revision: input.revision + 1};
+                        for (const key of ['secret_key', 'webhook_secret', 'access_token', 'webhook_verify_token', 'app_secret']) {
                             if (input[key]) value[key + '_configured'] = true;
                             if (input.clear_secrets?.includes(key)) value[key + '_configured'] = false;
                             delete value[key];
@@ -152,6 +155,9 @@ try {
                         delete value.clear_secrets;
                         integrationValues[provider] = value;
                     }
+                } else if (method === 'POST' && endpoint.endsWith('/test')) {
+                    value = {status: 'passed', level: 'connectivity', message: 'Numero mittente verificato con Meta.'};
+                    integrationValues[provider].last_test = value;
                 } else if (method === 'DELETE') {
                     value = {...integrationEnvironment[provider], revision: integrationValues[provider].revision + 1};
                     integrationValues[provider] = value;
@@ -191,7 +197,7 @@ try {
             if (route.request().method() === 'POST') return route.fulfill({status: 413, json: {}});
             return route.fulfill({json: {available: true, max_upload_bytes: 5 * GIB, active: null, history: [], backups: [], backups_next: null}});
         });
-        await page.goto(`http://127.0.0.1:${port}/#/profile?page=self-instance&tab=backups`);
+        await page.goto(`http://127.0.0.1:${port}/#/profile?page=self-instance&tab=backups`, {timeout: 120000});
         const transfer = page.getByRole('region', {name: 'Trasferisci dati'});
         await expect(transfer.getByRole('list', {name: 'Export'}).getByRole('listitem')).toHaveCount(1);
         await transfer.getByRole('button', {name: 'Importa da Bakney'}).click();
@@ -348,6 +354,52 @@ try {
         await page.getByRole('menuitem', {name: /Ripristina valori del server/}).click();
         await page.getByRole('dialog').getByRole('button', {name: 'Ripristina Stripe', exact: true}).click();
         await expect(page.getByLabel('Chiave pubblica Stripe', {exact: true})).toHaveValue('pk_test_environment');
+
+        const wa = page.getByRole('region', {name: 'WhatsApp Business', exact: true});
+        const captureWhatsApp = async name => {
+            await noOverflow('whatsapp-' + name);
+            await wa.screenshot({path: path.join(output, `whatsapp-${name}-${viewport.width}.png`)});
+        };
+        const enableWhatsApp = wa.getByLabel('Abilita WhatsApp Business', {exact: true});
+        const saveWhatsApp = wa.getByRole('button', {name: 'Salva WhatsApp Business'});
+        await captureWhatsApp('disabled');
+        await setSwitch(wa, 'integration-whatsapp-enabled', 'Abilita WhatsApp Business', true);
+        await wa.getByLabel('ID numero di telefono').fill('100200300');
+        await wa.getByLabel('ID account WhatsApp Business').fill('400500600');
+        for (const label of ['Token di accesso', 'Segreto app Meta', 'Token di verifica webhook']) {
+            await wa.getByLabel(label, {exact: true}).fill('fixture-only');
+        }
+        await wa.getByLabel('Pagamenti', {exact: true}).selectOption('template');
+        await wa.getByLabel('Nome modello').fill('conferma_pagamento');
+        await wa.getByLabel('Lingua del modello').fill('it');
+        await setSwitch(wa, 'whatsapp-parameter-payment', 'Usa la notifica come parametro del modello', true);
+        await wa.getByLabel('Abbonamenti', {exact: true}).selectOption('text');
+        await captureWhatsApp('edit');
+        failIntegrationSave = true;
+        await saveWhatsApp.click();
+        await expect(wa.getByRole('alert')).toContainText('altra sessione');
+        await captureWhatsApp('error');
+        failIntegrationSave = false;
+        await saveWhatsApp.click();
+        await expect(saveWhatsApp).toBeDisabled();
+        assert.deepEqual(JSON.parse(integrationValues.whatsapp.notification_routes), {payment: 'conferma_pagamento/it/message', subscription: 'text'});
+        await expect(wa.getByLabel('Token di accesso', {exact: true})).toHaveValue('');
+        await wa.getByRole('button', {name: 'Verifica WhatsApp Business'}).click();
+        await expect(wa.getByText('Numero mittente verificato con Meta.')).toBeVisible();
+        await captureWhatsApp('verified');
+        await setSwitch(wa, 'integration-whatsapp-enabled', 'Abilita WhatsApp Business', false);
+        await wa.getByRole('button', {name: 'Annulla', exact: true}).click();
+        await expect(enableWhatsApp).toBeChecked();
+        await setSwitch(wa, 'integration-whatsapp-enabled', 'Abilita WhatsApp Business', false);
+        await saveWhatsApp.click();
+        await expect(saveWhatsApp).toBeDisabled();
+        await captureWhatsApp('paused');
+        await wa.getByRole('button', {name: 'Altre azioni WhatsApp Business'}).click();
+        await page.getByRole('menuitem', {name: /Ripristina valori del server/}).click();
+        await shot('whatsapp-reset');
+        await page.getByRole('dialog').getByRole('button', {name: 'Ripristina WhatsApp Business', exact: true}).click();
+        await expect(wa.getByLabel('ID numero di telefono')).toHaveValue('');
+        await expect(enableWhatsApp).not.toBeChecked();
 
         // Backup: disk, list, download with password, keep, delete, schedule, create.
         await navigate('Backup');

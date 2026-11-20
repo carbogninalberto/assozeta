@@ -130,7 +130,7 @@
   },
   {
     "name": "communications.tasks.deliver_whatsapp",
-    "django_site": "BE/communications/tasks.py:8",
+    "django_site": "BE/communications/tasks.py:7",
     "scheduled": false,
     "consumer": false,
     "job": false,

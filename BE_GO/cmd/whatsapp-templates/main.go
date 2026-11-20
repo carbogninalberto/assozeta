@@ -6,14 +6,40 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/config"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/database"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/whatsapp"
+	"github.com/jackc/pgx/v5"
+	"github.com/jmoiron/sqlx"
 )
 
 func run(args []string) error {
 	ctx := context.Background()
-	provider := whatsapp.NewCloudAPI(config.WhatsAppFromEnv(os.Getenv))
+	settings := config.WhatsAppFromEnv(os.Getenv)
+	if os.Getenv("DBHOST") != "" {
+		cfg, err := config.Load("")
+		if err != nil {
+			return errors.New("invalid instance configuration")
+		}
+		pg, err := pgx.ParseConfig(cfg.DatabaseURL())
+		if err != nil {
+			return errors.New("invalid database configuration")
+		}
+		db := sqlx.NewDb(database.OpenDB(*pg), "pgx")
+		defer db.Close()
+		admin := service.NewInstanceAdmin(repository.NewInstanceAdmin(db), nil, service.InstanceAdminEnvironment{
+			WhatsApp: cfg.WhatsApp, SecretKeys: []string{cfg.SessionSecret},
+		}, time.Now)
+		settings, err = admin.WhatsAppSettings(ctx)
+		if err != nil {
+			return errors.New("cannot read WhatsApp instance configuration")
+		}
+	}
+	provider := whatsapp.NewCloudAPI(settings)
 	var result any
 	var err error
 	switch {

@@ -1,6 +1,16 @@
 # WhatsApp Business notifications
 
-Django and Go subscribe to the same user notification flow. A successful payment or subscription notification can enqueue one delivery to the notified user's international phone number. Configure event types explicitly in the backend environment and restart the API and workers after changes. Configure only recipients and events for which the sender has permission to send WhatsApp notifications.
+Django and Go subscribe to the same user notification flow. A successful payment or subscription notification can enqueue one delivery to the notified user's international phone number. The instance owner selects which events send WhatsApp messages. Configure only recipients and events for which the sender has permission to send WhatsApp notifications.
+
+## Enable from the app
+
+Sign in as the self-hosted instance owner. In **Profilo → Istanza → Impostazioni → Integrazioni**, open **WhatsApp Business**. Turn it on, enter the sender phone number ID, the WhatsApp Business account ID, access token, Meta app secret and webhook verification token. The form encrypts saved credentials with the instance secret key. On subsequent edits it shows whether each credential is present.
+
+Choose a delivery format separately for **Pagamenti** and **Abbonamenti**. For an approved template, enter its exact Meta name and language and select whether it takes the notification text as its body parameter. **Nessun invio** skips that event. Save the settings and choose **Verifica WhatsApp Business** to check that Meta accepts the token for the sender ID. Register the displayed callback URL in the Meta app to receive delivery receipts.
+
+Saving takes effect for the next notification and worker send in either backend. Turning the integration off pauses queued sends. Signed status updates can still arrive for previously sent messages. **Ripristina valori del server** restores the deployment settings. The Graph API version and base URL always come from the deployment.
+
+## Deployment settings
 
 | Setting | Value |
 | --- | --- |
@@ -38,7 +48,7 @@ Subscribe the Meta app to the WABA's messages webhooks at the public backend rou
 
 Run the Django migrations first. Celery beat and worker drain the Django outbox. The Go API drains the same PostgreSQL queue in the background when its sender is configured. Row locks with SKIP LOCKED coordinate concurrent consumers. Network errors, HTTP 429 and 5xx are retried with delays of 30 and 60 seconds, up to three attempts. Permanent errors and exhausted attempts are visible immediately. If Meta accepts a message and its response is lost, a retry can produce a second provider message ID for the same local reference.
 
-Use `python manage.py whatsapp_templates list`, `get NAME LANGUAGE`, or `register < definition.json` in the Django API container. In the Go image use `/app/whatsapp-templates` with the same arguments. Register accepts a JSON object with name, language, category and components. List includes only approved translations, so pending registrations become selectable after Meta approves them. [Meta template reference](https://developers.facebook.com/docs/graph-api/reference/whats-app-business-account/message_templates/)
+Use `python manage.py whatsapp_templates list`, `get NAME LANGUAGE`, or `register < definition.json` in the Django API container. In the Go image use `/app/whatsapp-templates` with the same arguments. The Go command reads the saved instance settings when `DBHOST` is configured, and otherwise uses the environment sender. Register accepts a JSON object with name, language, category and components. List includes only approved translations, so pending registrations become selectable after Meta approves them. [Meta template reference](https://developers.facebook.com/docs/graph-api/reference/whats-app-business-account/message_templates/)
 
 Both deployments expose delivery history to operators through the same SQL queries.
 
@@ -55,7 +65,7 @@ The delivery moves from queued to sent when Meta accepts the request. Signed cal
 
 ## Local QA
 
-Run `make dev-config`, add the sender and route settings to `selfhost/.env.dev`, then run `make dev` (Django API port 8000). The packaged Go backend can share the development database and Redis on port 8001.
+Run `make dev-config` and `make dev`. Open the UI on port **5001** (Django API port **8000**). Use the instance owner settings above, or set the deployment defaults in `selfhost/.env.dev` before startup. The packaged Go backend can share the development database and Redis on port 8001.
 
 ```sh
 docker build -t assozeta-whatsapp-go BE_GO

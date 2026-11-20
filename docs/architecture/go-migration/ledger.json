@@ -44482,9 +44482,9 @@
       "kind": "task",
       "django": {
         "file": "BE/communications/tasks.py",
-        "line": 9,
+        "line": 8,
         "symbol": "deliver_whatsapp",
-        "sha256": "b9d5d184324773e09e4f2e8d60fcda800fbb0a3031a071e6640ce4e9e675c494"
+        "sha256": "8cfbc240ee9e8b4842b2b57012070ced2ea12db4edd9e68c7d80dd1ad9f4142f"
       },
       "source_present": true,
       "declaration": {

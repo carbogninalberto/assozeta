@@ -6,11 +6,10 @@ from threading import Thread
 from unittest.mock import Mock, patch
 
 import requests
-from django.apps import apps
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.db import connections
-from django.test import SimpleTestCase, TestCase, TransactionTestCase, override_settings, skipUnlessDBFeature
+from django.test import TestCase, TransactionTestCase, override_settings, skipUnlessDBFeature
 from django.utils import timezone
 
 from application.models import User
@@ -34,17 +33,10 @@ def api_response(status, data):
 
 
 @override_settings(**CONFIG)
-class ProviderTests(SimpleTestCase):
-    @patch('core.celery.app.add_periodic_task')
-    def test_configured_app_schedules_the_delivery_worker(self, add_periodic_task):
-        communications = apps.get_app_config('communications')
-        communications.ready()
-        seconds, signature = add_periodic_task.call_args.args
-        self.assertEqual((seconds, signature.task), (10.0, 'communications.tasks.deliver_whatsapp'))
-        add_periodic_task.reset_mock()
-        with self.settings(WHATSAPP_ACCESS_TOKEN=''):
-            communications.ready()
-        add_periodic_task.assert_not_called()
+class ProviderTests(TestCase):
+    def test_worker_can_be_enabled_after_startup(self):
+        from core.celery import app
+        self.assertEqual(app.conf.beat_schedule['deliver-whatsapp']['task'], 'communications.tasks.deliver_whatsapp')
 
     @patch('communications.whatsapp_provider.requests.request')
     def test_text_and_provider_errors(self, request):

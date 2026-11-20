@@ -18,6 +18,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/config"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/database"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/whatsapp"
 	"github.com/jackc/pgx/v5"
 )
@@ -60,7 +61,7 @@ func TestWhatsAppNotificationDelivery(t *testing.T) {
 	var status atomic.Int32
 	status.Store(200)
 	graph := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/v23.0/phone/messages" {
+		if r.URL.Path != "/v23.0/12345/messages" || r.Header.Get("Authorization") != "Bearer fixture-access" {
 			t.Error(r.URL.Path)
 		}
 		var payload graphRequest
@@ -77,12 +78,22 @@ func TestWhatsAppNotificationDelivery(t *testing.T) {
 		}
 	}))
 	defer graph.Close()
-	cfg := config.WhatsAppSettings{PhoneID: "phone", AccountID: "account", AccessToken: "token", AppSecret: "fixture-secret",
-		APIVersion: "v23.0", BaseURL: graph.URL, Routes: `{"payment":"receipt/en_US/message"}`}
-	client := whatsapp.NewCloudAPI(cfg)
-	queue := whatsapp.NewQueue(db, cfg, client)
-	notifier := NewSubscriptionNotifier(&paidFlowRows{}, newPaidFlowRedis(), &paidFlowLayer{}, time.Now).WithNotificationChannel(queue.Enqueue)
 	ctx := context.Background()
+	store := whatsAppSettingsStore{row: &domain.InstanceAdminRow{SelfHosted: true, IntegrationSettings: json.RawMessage("{}"), DiagnosticResults: json.RawMessage("{}")}}
+	admin := NewInstanceAdmin(store, nil, InstanceAdminEnvironment{
+		SecretKeys: []string{"fixture-only"}, WhatsApp: config.WhatsAppSettings{APIVersion: "v23.0", BaseURL: graph.URL},
+	}, time.Now)
+	_, err = admin.PutIntegration(ctx, "whatsapp", domain.RequestObject{
+		{Name: "revision", Value: json.Number("0")}, {Name: "enabled", Value: true},
+		{Name: "phone_number_id", Value: "12345"}, {Name: "business_account_id", Value: "67890"},
+		{Name: "access_token", Value: "fixture-access"}, {Name: "webhook_verify_token", Value: "fixture-verify"},
+		{Name: "app_secret", Value: "fixture-app"}, {Name: "notification_routes", Value: `{"payment":"receipt/en_US/message"}`},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	queue := whatsapp.NewQueue(db, admin.WhatsAppSettings)
+	notifier := NewSubscriptionNotifier(&paidFlowRows{}, newPaidFlowRedis(), &paidFlowLayer{}, time.Now).WithNotificationChannel(queue.Enqueue)
 	trigger := func() {
 		t.Helper()
 		if err := notifier.DeliverValidatedAssociation(ctx, "user", "payment", "Payment received", nil, false); err != nil {
@@ -108,9 +119,13 @@ func TestWhatsAppNotificationDelivery(t *testing.T) {
 	if err := db.QueryRow("SELECT status,provider_message_id,attempts FROM communications_whatsappdelivery WHERE id=$1", id).Scan(&state, &providerID, &attempts); err != nil || state != "sent" || providerID != "wamid.example" || attempts != 1 {
 		t.Fatal(state, providerID, attempts, err)
 	}
-	webhook := whatsapp.Webhook(db, client)
+	cfg, err := admin.WhatsAppSettings(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	webhook := whatsapp.Webhook(db, whatsapp.NewCloudAPI(cfg))
 	for _, event := range []string{"read", "delivered", "read", "sent"} {
-		body := []byte(fmt.Sprintf(`{"object":"whatsapp_business_account","entry":[{"id":"account","changes":[{"field":"messages","value":{"metadata":{"phone_number_id":"phone"},"statuses":[{"id":"wamid.example","status":"%s","timestamp":"1700000000"}]}}]}]}`, event))
+		body := []byte(fmt.Sprintf(`{"object":"whatsapp_business_account","entry":[{"id":"67890","changes":[{"field":"messages","value":{"metadata":{"phone_number_id":"12345"},"statuses":[{"id":"wamid.example","status":"%s","timestamp":"1700000000"}]}}]}]}`, event))
 		mac := hmac.New(sha256.New, []byte(cfg.AppSecret))
 		mac.Write(body)
 		req := httptest.NewRequest("POST", "/communications/whatsapp/webhook", bytes.NewReader(body))

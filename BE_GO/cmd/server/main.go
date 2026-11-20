@@ -965,9 +965,15 @@ func run() (runErr error) {
 	}
 	// subscription/add: Channels group messages are written for Django sockets
 	// and mirrored for Go sockets (internal/channels), on Redis database 0.
-	waProvider := whatsapp.NewCloudAPI(cfg.WhatsApp)
-	waQueue := whatsapp.NewQueue(db.DB, cfg.WhatsApp, waProvider)
-	waWebhook := echo.WrapHandler(whatsapp.Webhook(db.DB, waProvider))
+	waQueue := whatsapp.NewQueue(db.DB, instanceAdminService.WhatsAppSettings)
+	waWebhook := func(c echo.Context) error {
+		settings, err := instanceAdminService.WhatsAppSettings(c.Request().Context())
+		if err != nil {
+			return c.NoContent(http.StatusServiceUnavailable)
+		}
+		whatsapp.Webhook(db.DB, whatsapp.NewCloudAPI(settings)).ServeHTTP(c.Response(), c.Request())
+		return nil
+	}
 	e.GET("/communications/whatsapp/webhook", waWebhook)
 	e.POST("/communications/whatsapp/webhook", waWebhook)
 	subscriptionNotifier := service.NewSubscriptionNotifier(repository.NewSubscriptionNotifications(db), notificationStore,
@@ -1021,14 +1027,12 @@ func run() (runErr error) {
 	server := &http.Server{Addr: cfg.ListenAddress, Handler: webSockets.Routes(e), ReadHeaderTimeout: 10 * time.Second, IdleTimeout: 60 * time.Second}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
-	if cfg.WhatsApp.PhoneID != "" && cfg.WhatsApp.AccessToken != "" {
-		workerDone := make(chan struct{})
-		go func() {
-			defer close(workerDone)
-			waQueue.Run(ctx, restoreAdmission.AcquireWrite)
-		}()
-		defer func() { stop(); <-workerDone }()
-	}
+	workerDone := make(chan struct{})
+	go func() {
+		defer close(workerDone)
+		waQueue.Run(ctx, restoreAdmission.AcquireWrite)
+	}()
+	defer func() { stop(); <-workerDone }()
 	stopped := make(chan error, 1)
 	go func() { stopped <- server.ListenAndServe() }()
 	select {

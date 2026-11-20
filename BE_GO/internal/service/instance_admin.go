@@ -20,6 +20,7 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/config"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 )
@@ -60,6 +61,7 @@ type InstanceAdminBootstrap interface {
 
 // InstanceAdminEnvironment holds the core.settings values these views read.
 type InstanceAdminEnvironment struct {
+	WhatsApp                                           config.WhatsAppSettings
 	Version, ConfiguredVersion, DeploymentMode, AppURL string
 	EmailHost, EmailUsername, EmailPassword            string
 	EmailPort                                          int64
@@ -794,6 +796,11 @@ func (s *InstanceAdmin) environmentIntegration(provider string, row *domain.Inst
 		}
 		value["enabled"] = s.env.AIAPIKey != ""
 		return value, nil
+	case "whatsapp":
+		w := s.env.WhatsApp
+		return map[string]any{"phone_number_id": w.PhoneID, "business_account_id": w.AccountID,
+			"access_token": w.AccessToken, "webhook_verify_token": w.VerifyToken, "app_secret": w.AppSecret,
+			"notification_routes": w.Routes, "enabled": w.PhoneID != "" && w.AccessToken != ""}, nil
 	case "stripe":
 		return map[string]any{"public_key": s.env.StripePublicKey, "secret_key": s.env.StripeKey, "webhook_secret": s.env.StripeWebhookSecret,
 			"enabled": s.env.StripePublicKey != "" || s.env.StripeKey != "" || s.env.StripeWebhookSecret != ""}, nil
@@ -811,6 +818,28 @@ func (s *InstanceAdmin) environmentIntegration(provider string, row *domain.Inst
 		}
 	}
 	return map[string]any{"client_id": s.env.GoogleClientID, "enabled": enabled}, nil
+}
+
+// WhatsAppSettings resolves a fresh sender configuration for a send, webhook or template command.
+func (s *InstanceAdmin) WhatsAppSettings(ctx context.Context) (config.WhatsAppSettings, error) {
+	w := s.env.WhatsApp
+	row, err := s.store.Read(ctx)
+	if err != nil || row == nil {
+		return w, err
+	}
+	current, err := s.effective("whatsapp", row, true)
+	if err != nil || !current.instance {
+		return w, err
+	}
+	value := current.value
+	w.Disabled = value["enabled"] != true
+	w.PhoneID, _ = value["phone_number_id"].(string)
+	w.AccountID, _ = value["business_account_id"].(string)
+	w.AccessToken, _ = value["access_token"].(string)
+	w.VerifyToken, _ = value["webhook_verify_token"].(string)
+	w.AppSecret, _ = value["app_secret"].(string)
+	w.Routes, _ = value["notification_routes"].(string)
+	return w, nil
 }
 
 // publicIntegration is integration_configuration.public_integration.
@@ -864,6 +893,9 @@ func (s *InstanceAdmin) publicIntegration(provider string, row *domain.InstanceA
 		value["webhook_url"] = s.env.AppURL + "/api/stripe/webhook"
 	} else {
 		value["web_login_available"] = provider == "google"
+	}
+	if provider == "whatsapp" {
+		value["webhook_url"] = strings.TrimRight(s.env.AppURL, "/") + "/api/communications/whatsapp/webhook"
 	}
 	if provider == "google" {
 		value["authorized_origin"] = s.env.AppURL
@@ -988,6 +1020,16 @@ func (s *InstanceAdmin) PutIntegration(ctx context.Context, provider string, bod
 
 func enabledIntegrationRules(provider string, values map[string]any) error {
 	switch provider {
+	case "whatsapp":
+		missing := map[string]any{}
+		for _, key := range []string{"phone_number_id", "business_account_id", "access_token", "webhook_verify_token", "app_secret"} {
+			if !instanceTruthy(values[key]) {
+				missing[key] = "Campo richiesto per abilitare WhatsApp."
+			}
+		}
+		if len(missing) > 0 {
+			return &dto.InstanceAdminInvalid{Body: missing}
+		}
 	case "stripe":
 		missing := map[string]any{}
 		for _, key := range []string{"public_key", "secret_key", "webhook_secret"} {

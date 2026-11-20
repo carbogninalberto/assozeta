@@ -7,7 +7,6 @@ import (
 	"errors"
 	"io"
 	"log/slog"
-	"regexp"
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/config"
@@ -16,25 +15,24 @@ import (
 	"github.com/google/uuid"
 )
 
-var templateRoute = regexp.MustCompile(`^([a-z0-9_]+)/([A-Za-z0-9_]+)(/message)?$`)
 var rank = map[string]int{"queued": 0, "sent": 1, "failed": 2, "delivered": 3, "read": 4}
 
 type DeliveryQueue struct {
 	db       *sql.DB
-	config   config.WhatsAppSettings
-	provider Provider
+	settings func(context.Context) (config.WhatsAppSettings, error)
 }
 
-func NewQueue(db *sql.DB, cfg config.WhatsAppSettings, provider Provider) *DeliveryQueue {
-	return &DeliveryQueue{db, cfg, provider}
+func NewQueue(db *sql.DB, settings func(context.Context) (config.WhatsAppSettings, error)) *DeliveryQueue {
+	return &DeliveryQueue{db, settings}
 }
 
 func (q *DeliveryQueue) Enqueue(ctx context.Context, user, kind, message string) error {
-	if q.config.Routes == "{}" {
-		return nil
+	cfg, err := q.settings(ctx)
+	if err != nil || cfg.Disabled || cfg.Routes == "{}" {
+		return err
 	}
 	var routes map[string]json.RawMessage
-	if err := json.Unmarshal([]byte(q.config.Routes), &routes); err != nil {
+	if err := json.Unmarshal([]byte(cfg.Routes), &routes); err != nil {
 		return errors.New("invalid WhatsApp notification routes")
 	}
 	raw := routes[kind]
@@ -51,7 +49,7 @@ func (q *DeliveryQueue) Enqueue(ctx context.Context, user, kind, message string)
 	recipient := dto.MessageRecipientAddress(domain.MessageRecipient{Phone: phone}, "whatsapp")
 	state, name, language, code, detail := "queued", "", "", "", ""
 	if route != "text" {
-		parts := templateRoute.FindStringSubmatch(route)
+		parts := dto.WhatsAppTemplateRoute.FindStringSubmatch(route)
 		if parts == nil {
 			code, detail = "configuration", "Invalid WhatsApp notification route"
 		} else {
@@ -61,7 +59,7 @@ func (q *DeliveryQueue) Enqueue(ctx context.Context, user, kind, message string)
 			}
 		}
 	}
-	if q.config.PhoneID == "" || q.config.AccessToken == "" {
+	if cfg.PhoneID == "" || cfg.AccessToken == "" {
 		code, detail = "configuration", "Missing WhatsApp resource ID or access token"
 	}
 	if recipient == "" {
@@ -72,7 +70,7 @@ func (q *DeliveryQueue) Enqueue(ctx context.Context, user, kind, message string)
 		state = "failed"
 		slog.WarnContext(ctx, "WhatsApp enqueue failed", "id", id, "code", code)
 	}
-	_, err := q.db.ExecContext(ctx, `INSERT INTO communications_whatsappdelivery
+	_, err = q.db.ExecContext(ctx, `INSERT INTO communications_whatsappdelivery
 		(id,event_type,recipient,body,template_name,template_language,status,attempts,error_code,error_message,created_at,updated_at,next_attempt_at)
 		VALUES ($1,$2,$3,$4,$5,$6,$7,0,$8,$9,now(),now(),now())`, id, kind, recipient, message, name, language, state, code, detail)
 	return err
@@ -81,6 +79,11 @@ func (q *DeliveryQueue) Enqueue(ctx context.Context, user, kind, message string)
 // DeliverOne locks one due row through the bounded provider request. Both
 // workers use the same locking protocol, including across backend rollouts.
 func (q *DeliveryQueue) DeliverOne(ctx context.Context) (bool, error) {
+	cfg, err := q.settings(ctx)
+	if err != nil || cfg.Disabled || cfg.PhoneID == "" || cfg.AccessToken == "" {
+		return false, err
+	}
+	provider := NewCloudAPI(cfg)
 	tx, err := q.db.BeginTx(ctx, nil)
 	if err != nil {
 		return false, err
@@ -100,9 +103,9 @@ func (q *DeliveryQueue) DeliverOne(ctx context.Context) (bool, error) {
 	attempts++
 	var providerID string
 	if name == "" {
-		providerID, err = q.provider.SendText(ctx, recipient, body, id)
+		providerID, err = provider.SendText(ctx, recipient, body, id)
 	} else {
-		providerID, err = q.provider.SendTemplate(ctx, recipient, name, language, body, id)
+		providerID, err = provider.SendTemplate(ctx, recipient, name, language, body, id)
 	}
 	state, code, detail := "sent", "", ""
 	delay := 0

@@ -21,7 +21,7 @@ func composeInstanceAdmin(cfg config.Config, db *sqlx.DB, bootstrap *service.Ins
 	identities *service.IdentityResolver, operations *paymentcategorylifecycle.Lifecycle) (*handler.InstanceAdminHandler, *service.InstanceAdmin) {
 	settings := cfg.InstanceAdmin
 	environment := service.InstanceAdminEnvironment{
-		Version: cfg.Version, ConfiguredVersion: settings.ConfiguredVersion, DeploymentMode: settings.DeploymentMode, AppURL: settings.AppURL,
+		WhatsApp: cfg.WhatsApp, Version: cfg.Version, ConfiguredVersion: settings.ConfiguredVersion, DeploymentMode: settings.DeploymentMode, AppURL: settings.AppURL,
 		EmailHost: settings.EmailHost, EmailUsername: settings.EmailUsername, EmailPassword: settings.EmailPassword,
 		EmailPort: settings.EmailPort, EmailPortInvalid: settings.EmailPortInvalid, EmailUseTLS: settings.EmailUseTLS, EmailUseSSL: settings.EmailUseSSL,
 		FromName: settings.FromName, FromAddress: settings.FromAddress,

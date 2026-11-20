@@ -4,7 +4,7 @@ import re
 from datetime import timedelta
 from uuid import UUID
 
-from django.conf import settings
+from instance.integration_configuration import effective_integration
 from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
@@ -19,12 +19,15 @@ TEMPLATE_ROUTE = re.compile(r'([a-z0-9_]+)/([A-Za-z0-9_]+)(/message)?')
 
 
 def queue_notifications(user, messages):
-    if settings.WHATSAPP_NOTIFICATION_ROUTES == '{}':
-        return
     try:
-        routes = json.loads(settings.WHATSAPP_NOTIFICATION_ROUTES)
-        # A savepoint isolates an outbox failure from the triggering transaction.
+        # A savepoint isolates settings and outbox failures from the triggering transaction.
         with transaction.atomic():
+            config = effective_integration('whatsapp')
+            if not config['enabled'] and config['source'] == 'instance':
+                return
+            routes = json.loads(config['notification_routes'])
+            if not routes:
+                return
             for message in messages:
                 route = routes.get(message.get('type'))
                 if route is None:
@@ -40,7 +43,7 @@ def queue_notifications(user, messages):
                             row.body = ''
                     else:
                         row.error_code, row.error_message = 'configuration', 'Invalid WhatsApp notification route'
-                if not settings.WHATSAPP_PHONE_NUMBER_ID or not settings.WHATSAPP_ACCESS_TOKEN:
+                if not config['phone_number_id'] or not config['access_token']:
                     row.error_code, row.error_message = 'configuration', 'Missing WhatsApp resource ID or access token'
                 if not recipient:
                     row.error_code, row.error_message = 'invalid_recipient', 'International phone number required'

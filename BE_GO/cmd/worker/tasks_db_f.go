@@ -11,6 +11,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/stripeapi"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/whatsapp"
 	"github.com/jmoiron/sqlx"
 	"github.com/redis/go-redis/v9"
 )
@@ -26,8 +27,12 @@ func composeStripePaidCheck(cfg config.Config, db *sqlx.DB, tasks celery.Publish
 	if err != nil {
 		return nil, err
 	}
+	admin := service.NewInstanceAdmin(repository.NewInstanceAdmin(db), nil, service.InstanceAdminEnvironment{
+		WhatsApp: cfg.WhatsApp, SecretKeys: []string{cfg.SessionSecret},
+	}, time.Now)
+	queue := whatsapp.NewQueue(db.DB, admin.WhatsAppSettings)
 	notifier := service.NewSubscriptionNotifier(repository.NewSubscriptionNotifications(db), notifications,
-		channels.NewLayer(store, nil, nil, nil), time.Now)
+		channels.NewLayer(store, nil, nil, nil), time.Now).WithNotificationChannel(queue.Enqueue)
 	stripe := service.NewStripeRoutes(repository.NewStripeRoutes(db), repository.NewSocialConfiguration(db),
 		service.StripeEnvironmentKeys{PublicKey: cfg.InstanceAdmin.StripePublicKey, SecretKey: cfg.InstanceAdmin.StripeKey,
 			WebhookSecret: cfg.InstanceAdmin.StripeWebhookSecret}, cfg.SessionSecret, stripeapi.NewClient(os.Getenv("STRIPE_API_BASE")), time.Now).

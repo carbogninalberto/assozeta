@@ -339,6 +339,16 @@ var instanceAdminStripeFormFields = append(append([]InstanceAdminFormField(nil),
 	InstanceAdminFormField{Name: "clear_secrets", Kind: InstanceAdminFormList, Default: []any{}},
 )
 
+var instanceAdminWhatsAppFormFields = append(append([]InstanceAdminFormField(nil), instanceAdminIntegrationFormFields...),
+	InstanceAdminFormField{Name: "phone_number_id", Kind: InstanceAdminFormText, Required: true, AllowBlank: true},
+	InstanceAdminFormField{Name: "business_account_id", Kind: InstanceAdminFormText, Required: true, AllowBlank: true},
+	InstanceAdminFormField{Name: "notification_routes", Kind: InstanceAdminFormText, Required: true},
+	InstanceAdminFormField{Name: "access_token", Kind: InstanceAdminFormText, AllowBlank: true},
+	InstanceAdminFormField{Name: "app_secret", Kind: InstanceAdminFormText, AllowBlank: true},
+	InstanceAdminFormField{Name: "webhook_verify_token", Kind: InstanceAdminFormText, AllowBlank: true},
+	InstanceAdminFormField{Name: "clear_secrets", Kind: InstanceAdminFormList, Default: []any{}},
+)
+
 var instanceAdminAIFormFields = append(append([]InstanceAdminFormField(nil), instanceAdminIntegrationFormFields...),
 	InstanceAdminFormField{Name: "api_key", Kind: InstanceAdminFormText, AllowBlank: true},
 	InstanceAdminFormField{Name: "model", Kind: InstanceAdminFormText, Required: true},
@@ -390,6 +400,8 @@ func InstanceAdminIntegrationForm(provider string, body any) (any, error) {
 	switch provider {
 	case "stripe":
 		fields = instanceAdminStripeFormFields
+	case "whatsapp":
+		fields = instanceAdminWhatsAppFormFields
 	case "ai":
 		fields = instanceAdminAIFormFields
 	}

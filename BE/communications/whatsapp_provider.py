@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 
 import requests
 from django.conf import settings
+from instance.integration_configuration import effective_integration
 
 
 class ProviderError(Exception):
@@ -15,24 +16,25 @@ class ProviderError(Exception):
         self.transient = transient
 
 
-def safe_message(message):
-    text = str(message)
-    for secret in (settings.WHATSAPP_ACCESS_TOKEN, settings.WHATSAPP_APP_SECRET,
-                   settings.WHATSAPP_WEBHOOK_VERIFY_TOKEN):
-        if secret:
-            text = text.replace(secret, '[redacted]')
-    return text[:1000]
-
-
 class CloudAPI:
+    def __init__(self):
+        self.config = effective_integration('whatsapp')
+
+    def safe_message(self, message):
+        text = str(message)
+        for key in ('access_token', 'app_secret', 'webhook_verify_token'):
+            if self.config[key]:
+                text = text.replace(self.config[key], '[redacted]')
+        return text[:1000]
+
     def _request(self, method, resource, edge, *, params=None, payload=None):
-        if not resource or not settings.WHATSAPP_ACCESS_TOKEN:
+        if not resource or not self.config["access_token"]:
             raise ProviderError('configuration', 'Missing WhatsApp resource ID or access token')
         url = f"{settings.WHATSAPP_API_BASE_URL.rstrip('/')}/{settings.WHATSAPP_API_VERSION}/{resource}/{edge}"
         try:
             response = requests.request(
                 method, url, params=params, json=payload, timeout=10, allow_redirects=False,
-                headers={'Authorization': f'Bearer {settings.WHATSAPP_ACCESS_TOKEN}'},
+                headers={'Authorization': f'Bearer {self.config["access_token"]}'},
             )
         except requests.RequestException:
             raise ProviderError('network', 'WhatsApp connection failed', True) from None
@@ -45,14 +47,14 @@ class CloudAPI:
             detail = detail if isinstance(detail, dict) else {}
             code = detail.get('code')
             raise ProviderError(code if isinstance(code, int) else response.status_code,
-                                safe_message(detail.get('message', 'WhatsApp API request failed')),
+                                self.safe_message(detail.get('message', 'WhatsApp API request failed')),
                                 response.status_code == 429 or response.status_code >= 500)
         if not isinstance(data, dict):
             raise ProviderError('invalid_response', 'Invalid WhatsApp API response')
         return data
 
     def _send(self, recipient, kind, content, reference):
-        data = self._request('POST', settings.WHATSAPP_PHONE_NUMBER_ID, 'messages', payload={
+        data = self._request('POST', self.config["phone_number_id"], 'messages', payload={
             'messaging_product': 'whatsapp', 'to': recipient.lstrip('+'), 'type': kind,
             kind: content, 'biz_opaque_callback_data': str(reference),
         })
@@ -74,13 +76,13 @@ class CloudAPI:
         return self._send(recipient, 'template', template, reference)
 
     def register_template(self, definition):
-        return self._request('POST', settings.WHATSAPP_BUSINESS_ACCOUNT_ID, 'message_templates', payload=definition)
+        return self._request('POST', self.config["business_account_id"], 'message_templates', payload=definition)
 
     def list_templates(self):
         params = {'status': '["APPROVED"]', 'fields': 'id,name,language,status,components'}
         result, seen = [], set()
         while True:
-            data = self._request('GET', settings.WHATSAPP_BUSINESS_ACCOUNT_ID, 'message_templates', params=params)
+            data = self._request('GET', self.config["business_account_id"], 'message_templates', params=params)
             if not isinstance(data.get('data'), list):
                 raise ProviderError('invalid_response', 'Missing WhatsApp template list')
             result.extend(item for item in data['data'] if isinstance(item, dict) and item.get('status') == 'APPROVED')
@@ -103,13 +105,13 @@ class CloudAPI:
         raise ProviderError('not_found', 'Approved template not found')
 
     def verify_webhook(self, mode, token, challenge):
-        expected = settings.WHATSAPP_WEBHOOK_VERIFY_TOKEN
+        expected = self.config["webhook_verify_token"]
         if not expected or mode != 'subscribe' or not challenge or not hmac.compare_digest(expected.encode(), token.encode()):
             raise PermissionError
         return challenge
 
     def parse_status_callback(self, body, signature):
-        secret = settings.WHATSAPP_APP_SECRET
+        secret = self.config["app_secret"]
         expected = 'sha256=' + hmac.new(secret.encode(), body, hashlib.sha256).hexdigest()
         if not secret or not hmac.compare_digest(expected.encode(), signature.encode()):
             raise PermissionError
@@ -118,12 +120,12 @@ class CloudAPI:
         if data['object'] != 'whatsapp_business_account':
             return result
         for entry in data.get('entry', []):
-            if not settings.WHATSAPP_BUSINESS_ACCOUNT_ID or entry.get('id') != settings.WHATSAPP_BUSINESS_ACCOUNT_ID:
+            if not self.config["business_account_id"] or entry.get('id') != self.config["business_account_id"]:
                 continue
             for change in entry.get('changes', []):
                 value = change.get('value', {})
                 sender = value.get('metadata', {}).get('phone_number_id')
-                if change.get('field') != 'messages' or not sender or sender != settings.WHATSAPP_PHONE_NUMBER_ID:
+                if change.get('field') != 'messages' or not sender or sender != self.config["phone_number_id"]:
                     continue
                 for item in value.get('statuses', []):
                     if item.get('status') not in ('sent', 'delivered', 'read', 'failed'):
@@ -136,6 +138,6 @@ class CloudAPI:
                         'reference': item.get('biz_opaque_callback_data'),
                         'occurred_at': datetime.fromtimestamp(int(item['timestamp']), timezone.utc),
                         'error_code': str(detail['code']) if isinstance(detail.get('code'), int) else '',
-                        'error_message': safe_message(detail.get('message') or detail.get('title', '')),
+                        'error_message': self.safe_message(detail.get('message') or detail.get('title', '')),
                     })
         return result
