@@ -20,6 +20,8 @@ simulated installation:
     state, health (healthy when the rendered service has a health check) and
     the rendered image.
   - `docker compose ... exec -T SERVICE cat /app/VERSION`: ASSOZETA_VERSION.
+  - Any call containing a fragment listed in the state's `failing` exits 7;
+    services listed in `crashing` exit right after they start.
 
 Environment: HANDOFF_DOCKER_STATE, HANDOFF_REAL_DOCKER (as fake_docker),
 HANDOFF_P2_AUTHORITY (optional).
@@ -207,11 +209,26 @@ def profile_scoped(arguments):
     return None, arguments
 
 
+def injected_failure(arguments):
+    """Exit status 7 when the call contains a fragment listed in the state's `failing`."""
+    state = fake_docker.load()
+    call = ' '.join(arguments)
+    for fragment in state.get('failing', []):
+        if fragment in call:
+            state['events'].append({'call': ['injected-failure', fragment]})
+            fake_docker.save(state)
+            print(f'simulated failure: {fragment}', file=sys.stderr)
+            return 7
+    return None
+
+
 def main():
     arguments = sys.argv[1:]
     with open(fake_docker.STATE + '.lock', 'a') as guard:
         fcntl.flock(guard, fcntl.LOCK_EX)
-        status = intercept(arguments)
+        status = injected_failure(arguments)
+        if status is None:
+            status = intercept(arguments)
         if status is None:
             status, arguments = profile_scoped(arguments)
     if status is not None:

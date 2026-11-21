@@ -648,10 +648,15 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
                     if probe == 'healthz':
                         assert value['version'].removeprefix('v') == version, (prefix, value)
             container = capture(compose('ps', '-q', 'api-go'), env=environment)
-            details = json.loads(capture(['docker', 'inspect', container]))[0]
-            assert details['Config']['Image'] == backend_go[int(version.rsplit('.', 1)[1])]
-            assert details['Config']['User'] == '10001:10001'
-            assert details['HostConfig']['ReadonlyRootfs']
+            # A dual-API distribution always runs the Go API next to Django. An
+            # exclusive one (runtime profiles) runs it only in Go mode; the default
+            # Django mode is pinned by TESTS/handoff/test_p2_*.py.
+            exclusive = 'go' in capture(compose('config', '--profiles'), env=environment).split()
+            if container or not exclusive:
+                details = json.loads(capture(['docker', 'inspect', container]))[0]
+                assert details['Config']['Image'] == backend_go[int(version.rsplit('.', 1)[1])]
+                assert details['Config']['User'] == '10001:10001'
+                assert details['HostConfig']['ReadonlyRootfs']
             # Delivery retains existing authoritative Celery ownership.
             for service in ('worker', 'beat'):
                 assert len(capture(compose('ps', '-q', service), env=environment).splitlines()) == 1

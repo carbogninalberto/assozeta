@@ -1,12 +1,22 @@
-"""Maintenance stays active through failed startup and public readiness checks."""
+"""Maintenance stays active through failed startup and public readiness checks.
+
+The stubbed command sequences below are those of the historical dual-API CLI
+(historical_distribution.REVISION), whose installations still exist. The same
+maintenance guarantees for the current CLI, against simulated containers, are
+in TESTS/handoff/test_p2_lifecycle.py (CurrentCliMaintenance).
+"""
 import os
 from pathlib import Path
 import subprocess
+import sys
 from tempfile import TemporaryDirectory
 import unittest
 
 ROOT = Path(__file__).resolve().parents[2]
 DEFINITIONS = (ROOT / 'selfhost/bin/assozeta').read_text().split('\ncommand=${1:-help}\n')[0]
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from historical_distribution import legacy_definitions  # noqa: E402
+LEGACY_DEFINITIONS = legacy_definitions()
 
 
 class MaintenanceLifecycleTests(unittest.TestCase):
@@ -16,7 +26,7 @@ class MaintenanceLifecycleTests(unittest.TestCase):
             with self.subTest(configured=configured, failure=failure, recreate=recreate), TemporaryDirectory() as directory:
                 (Path(directory) / '.env').write_text('MANUAL_CORPUS_BASE_URL=' + (
                     'https://manual.invalid/corpus' if configured else '') + '\n')
-                script = DEFINITIONS + r'''
+                script = LEGACY_DEFINITIONS + r'''
 prod_compose() {
     printf 'compose %s\n' "$*"
     case "$*" in
@@ -62,7 +72,7 @@ stop_prod_data_services
     def test_marker_covers_stop_start_and_is_retained_on_failure(self):
         for failure in ('none', 'stop', 'start', 'background', 'readiness'):
             with self.subTest(failure=failure), TemporaryDirectory() as directory:
-                script = DEFINITIONS + r'''
+                script = LEGACY_DEFINITIONS + r'''
 prod_compose() {
     test -f "$MAINTENANCE_FLAG" || exit 90
     printf 'compose %s\n' "$*"
@@ -96,7 +106,7 @@ fi
 
     def test_upgrade_reports_health_stage_before_public_readiness_failure(self):
         with TemporaryDirectory() as directory:
-            script = DEFINITIONS + r'''
+            script = LEGACY_DEFINITIONS + r'''
 prod_compose() { return 0; }
 require_background_services_running() { return 0; }
 wait_public_readiness() { printf 'readiness failed\n'; return 1; }

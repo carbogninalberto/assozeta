@@ -106,6 +106,18 @@ class ModeInstallation(Installation):
         state['crashing'] = sorted(services)
         self.state.write_text(json.dumps(state, indent=1, sort_keys=True))
 
+    def fail_compose(self, *fragments):
+        """Docker calls containing any of these fragments exit 7 (p2_docker `failing`)."""
+        state = self.observed()
+        state['failing'] = sorted(fragments)
+        self.state.write_text(json.dumps(state, indent=1, sort_keys=True))
+
+    def shell(self, body):
+        """Run the installation's CLI functions (its definitions) with `body`, in this environment."""
+        definitions = (self.root / 'bin/assozeta').read_text().split('\ncommand=${1:-help}\n')[0]
+        return subprocess.run(['sh', '-c', definitions + '\n' + body], cwd=self.root, env=self.environment(),
+                              capture_output=True, text=True, timeout=300)
+
     def application_running(self):
         return {name for name in self.running() if name not in SHARED}
 

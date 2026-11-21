@@ -41,12 +41,17 @@ Contract (bus topic p2, t-p2):
 """
 import json
 from pathlib import Path
+import shutil
+import subprocess
 import tempfile
 import unittest
 from urllib.parse import urlsplit
 
 from TESTS.handoff.p2_harness import (API_ALIAS, APP, ACTIVE_API, DJANGO_APP, EMAIL_TASKS, GO_APP, GO_SCHEDULER,
                                       SHARED, ModeInstallation, env_values, long_running, render, resolution)
+from TESTS.handoff.topology import BASELINE_REVISION, ROOT
+
+LEGACY_SET = {'api', 'api-go', 'worker', 'beat', 'realtime-relay'}
 
 
 class LifecycleCase(unittest.TestCase):
@@ -231,6 +236,149 @@ class InternalReferenceConfiguration(LifecycleCase):
         self.assertEqual(self.validate().returncode, 0, 'validate rejected a compatible CURRENT_HOST override')
         self.installation.cli('restart')
         self.assertEqual(env_values(self.installation.env_file)['CURRENT_HOST'], 'https://override.example.invalid')
+
+
+class HistoricalSourceWithCurrentCli(LifecycleCase):
+    """The current CLI operating on a historical dual-API Compose file (upgrade source, recovery).
+
+    Such a distribution has no runtime profiles and no authority row: the CLI
+    keeps its legacy service list (both APIs, Django worker/Beat, the relay its
+    replica counts select, worker-go only with ASSOZETA_GO_TASKS=1) and never
+    reads the authority.
+    """
+
+    def setUp(self):
+        super().setUp()
+        archive = subprocess.run(['git', '-C', str(ROOT), 'archive', '--format=tar', BASELINE_REVISION, '--',
+                                  'selfhost/compose.yml', 'selfhost/caddy/Caddyfile'], check=True, capture_output=True).stdout
+        source = self.directory / 'historical'
+        source.mkdir()
+        subprocess.run(['tar', '-x', '-C', str(source)], input=archive, check=True, capture_output=True)
+        shutil.copy2(source / 'selfhost/compose.yml', self.installation.root / 'compose.yml')
+        shutil.copy2(source / 'selfhost/caddy/Caddyfile', self.installation.root / 'caddy/Caddyfile')
+        self.installation.authority_unavailable()
+
+    def application(self):
+        return sorted(self.installation.application_running())
+
+    def test_historical_compose_runs_its_legacy_set_without_reading_the_authority(self):
+        self.installation.install()
+        self.assertEqual(self.application(), sorted(LEGACY_SET), self.installation.describe())
+        self.assertEqual(self.installation.authority_reads(), 0, 'the CLI read an authority the source does not have')
+        self.installation.cli('restart')
+        self.assertEqual(self.application(), sorted(LEGACY_SET), self.installation.describe())
+        self.installation.cli('stop')
+        self.assertEqual(self.application(), [])
+
+    def test_historical_go_task_and_relay_settings_keep_their_meaning(self):
+        self.installation.install()
+        self.installation.set_env(ASSOZETA_GO_TASKS='1', GO_TASK_QUEUE_TASKS=EMAIL_TASKS,
+                                  ASSOZETA_REALTIME_RELAY_BACKEND='go',
+                                  ASSOZETA_DJANGO_RELAY_REPLICAS='0', ASSOZETA_GO_RELAY_REPLICAS='1')
+        self.installation.cli('restart')
+        self.assertEqual(self.application(),
+                         sorted(LEGACY_SET - {'realtime-relay'} | {'realtime-relay-go', 'worker-go'}),
+                         self.installation.describe())
+
+    def test_historical_routed_tasks_without_the_consumer_start_nothing(self):
+        self.installation.install()
+        self.installation.set_env(ASSOZETA_GO_TASKS='0', GO_TASK_QUEUE_TASKS=EMAIL_TASKS)
+        before = len(self.installation.observed()['events'])
+        result = self.installation.cli('restart', check=False)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('GO_TASK_QUEUE_TASKS', result.stdout + result.stderr)
+        started = [event['call'] for event in self.installation.observed()['events'][before:]
+                   if event['call'][:2] == ['compose', 'up'] and set(event['call']) & LEGACY_SET]
+        self.assertEqual(started, [], 'the refused restart started application services')
+
+
+class CurrentCliMaintenance(LifecycleCase):
+    """Maintenance stays on through every failed stop, start, health and readiness step (current CLI)."""
+    FLAG = '.operations/maintenance.flag'
+
+    def marker(self):
+        return (self.installation.root / self.FLAG).exists()
+
+    def test_successful_restart_lifts_maintenance_in_each_runtime(self):
+        for runtime in ('django', 'go'):
+            with self.subTest(runtime=runtime):
+                self.setUp()
+                self.installed(runtime)
+                self.installation.cli('restart')
+                self.assertFalse(self.marker(), f'maintenance left on after a successful restart in runtime {runtime}')
+
+    def test_failed_steps_keep_maintenance(self):
+        cases = (('stop', lambda: self.installation.fail_compose(' stop ')),
+                 ('start', lambda: self.installation.fail_compose(' up ')),
+                 ('background', lambda: self.installation.crash('worker')),
+                 ('readiness', lambda: self.installation.fail_url('http://localhost/api/readyz')))
+        for label, inject in cases:
+            with self.subTest(failure=label):
+                self.setUp()
+                self.installed('django')
+                self.installation.clear_readiness()
+                inject()
+                result = self.installation.cli('restart', check=False)
+                self.assertNotEqual(result.returncode, 0, f'restart succeeded despite a {label} failure')
+                self.assertTrue(self.marker(), f'maintenance lifted after a {label} failure')
+                if label != 'readiness':
+                    self.assertEqual(self.installation.readiness(), [],
+                                     f'public readiness was claimed after a {label} failure')
+
+    def test_health_stage_is_reported_before_public_readiness_fails(self):
+        self.installed('django')
+        self.installation.fail_url('http://localhost/api/readyz')
+        result = self.installation.shell('stop_prod_data_services && start_prod_app_services false true')
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('@@ASSOZETA_STAGE health_check', result.stdout)
+        self.assertTrue(self.marker())
+
+    def test_configured_manual_refresh_precedes_start_and_its_failure_does_not_block(self):
+        for failure in (False, True):
+            with self.subTest(failure=failure):
+                self.setUp()
+                self.installed('django')
+                self.installation.set_env(MANUAL_CORPUS_BASE_URL='https://manual.example.invalid/corpus')
+                if failure:
+                    self.installation.fail_compose('sync_manuale_corpus')
+                self.installation.cli('restart')
+                calls = [' '.join(event['call']) for event in self.installation.observed()['events']]
+                refresh = [index for index, call in enumerate(calls) if 'sync_manuale_corpus' in call]
+                start = [index for index, call in enumerate(calls) if ' up ' in f' {call} ' and 'api' in call.split()]
+                self.assertTrue(refresh, 'the configured manual refresh did not run')
+                self.assertLess(refresh[-1], start[-1], 'the manual refresh ran after the API started')
+                self.assertFalse(self.marker())
+
+
+class BackgroundStartAndStatus(LifecycleCase):
+    def test_services_without_health_checks_start_without_waiting(self):
+        """Regression guard (bdaa4699): never `up --wait` a service without a health check."""
+        for runtime in ('django', 'go'):
+            with self.subTest(runtime=runtime):
+                self.setUp()
+                self.installed(runtime)
+                self.installation.cli('restart')
+                services = render(self.installation, '*')['services']
+                unhealthy = set()
+                for event in self.installation.observed()['events']:
+                    call = event['call']
+                    if call[:2] == ['compose', 'up'] and '--wait' in call:
+                        # `healthcheck: disable` services (worker, beat, relays, Go consumers);
+                        # a service without a Compose entry may still have an image health check.
+                        unhealthy |= {name for name in call[2:] if name in services
+                                      and (services[name].get('healthcheck') or {}).get('disable')}
+                self.assertEqual(sorted(unhealthy), [],
+                                 f'compose up --wait on services without a health check in runtime {runtime}: '
+                                 + ', '.join(sorted(unhealthy)))
+
+    def test_status_still_reports_containers_when_the_authority_is_unreadable(self):
+        self.installed('django')
+        self.installation.authority_unavailable()
+        result = self.installation.cli('status', check=False)
+        self.assertEqual(result.returncode, 0, 'status failed while the database was unreachable: '
+                         + (result.stderr or result.stdout)[-400:])
+        self.assertIn('ps', [event['call'][1] for event in self.installation.observed()['events']
+                             if event['call'][:1] == ['compose'] and len(event['call']) > 1])
 
 
 if __name__ == '__main__':

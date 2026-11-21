@@ -85,6 +85,8 @@ STATIC_REQUESTS = (
     ('logo', '/oem/assozeta/brand/logo.svg', 'GET', (), None),
     ('ui bundle', '/static/app.js', 'GET', (), None),
     ('spa route', '/profile/settings', 'GET', (), None),
+    # No exact /api route historically: it is the SPA shell, not an API root.
+    ('bare api path', '/api', 'GET', (), None),
 )
 READINESS = ('/api/readyz', '/api/v1/readyz', '/api/v2/readyz')
 

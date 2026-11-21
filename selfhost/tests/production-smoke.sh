@@ -89,6 +89,15 @@ curl_ready() {
 }
 
 go_probe() {
+    # The probe writes through the shipped Go API and reads back through Django,
+    # which needs both APIs at once: the historical dual-API distribution. An
+    # exclusive distribution runs one runtime (Django by default); its Go-mode
+    # installed lane belongs to the runtime switch (TESTS/handoff, Phases 5-6).
+    if [ -z "$(compose ps --status running --services api-go)" ] \
+        && compose config --profiles | grep -qx go; then
+        printf 'Go probe %s skipped: exclusive runtime distribution in Django mode.\n' "$1" >&2
+        return 0
+    fi
     python3 "$ROOT/selfhost/tests/go-production-probe.py" "$@" \
         --env-file "$ENV_FILE" --login-json "$TEMPORARY/owner-login.json"
 }

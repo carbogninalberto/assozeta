@@ -158,8 +158,13 @@ assert instance.name == 'Release Quality Sentinel'
 with default_storage.open(instance.logo_path, 'rb') as logo:
     assert logo.read() == __import__('base64').b64decode('iVBORw0KGgoAAAANSUhEUgAAAAMAAAACCAIAAAASFvFNAAAAEElEQVR4nGMwVJ0CQQxwFgA0mgV9TDUSVgAAAABJRU5ErkJggg==')
 '''))
+        # A dual-API release always runs the Go API; an exclusive release (runtime
+        # profiles) runs it only in Go mode and starts upgraded instances in Django mode.
+        exclusive = 'go' in command(compose('config', '--profiles'), capture=True).split()
         for service, image in {'api': 'backend', 'api-go': 'backend-go', 'worker': 'backend', 'beat': 'backend', 'web': 'web', 'renderer': 'renderer'}.items():
             container = command(compose('ps', '-q', service), capture=True)
+            if exclusive and service == 'api-go' and not container:
+                continue
             if command(['docker', 'inspect', '--format', '{{.Image}}', container], capture=True) != image_ids[image]:
                 raise ValueError(f'{service} is not running the verified release image')
         updater = command(['docker', 'compose', '--env-file', str(env_file), '-f', str(installation / 'compose.updater.yml'),

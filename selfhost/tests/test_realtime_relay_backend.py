@@ -1,13 +1,26 @@
-"""The realtime relay stays on Django unless the operator opts in to Go."""
+"""Historical distributions: the realtime relay stays on Django unless the operator opts in to Go.
+
+The dual-API distribution (historical_distribution.REVISION) chose the relay
+with ASSOZETA_REALTIME_RELAY_BACKEND and two replica counts. Installations of
+it still exist, so this pins that distribution's own CLI and Compose file. In
+the exclusive distribution the runtime selects exactly one relay
+(TESTS/handoff/test_p2_process_sets.py); the one property that still holds for
+the current CLI (an old .env without relay keys is left alone) runs on both.
+"""
 from pathlib import Path
 import json
 import os
 import shutil
 import subprocess
+import sys
 from tempfile import TemporaryDirectory
 import unittest
 
-ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from historical_distribution import legacy_root  # noqa: E402
+
+CURRENT_CLI = Path(__file__).resolve().parents[2] / 'selfhost/bin/assozeta'
+ROOT = legacy_root()
 CLI = ROOT / 'selfhost/bin/assozeta'
 COMPOSE = ROOT / 'selfhost/compose.yml'
 
@@ -20,8 +33,8 @@ class RealtimeRelayBackendTests(unittest.TestCase):
         self.addCleanup(directory.cleanup)
         self.env = Path(directory.name) / '.env'
 
-    def configure(self):
-        return subprocess.run(['sh', str(CLI), 'configure', '--domain', 'localhost', '--version', 'test'],
+    def configure(self, cli=CLI):
+        return subprocess.run(['sh', str(cli), 'configure', '--domain', 'localhost', '--version', 'test'],
                               capture_output=True, text=True,
                               env={**os.environ, 'ASSOZETA_ENV_FILE': str(self.env)})
 
@@ -66,16 +79,21 @@ class RealtimeRelayBackendTests(unittest.TestCase):
     def test_an_existing_installation_without_the_setting_is_left_alone(self):
         # An .env written by an older release has none of the three keys: the
         # file stays unchanged and Compose's defaults run the Django relay.
-        self.assertEqual(self.configure().returncode, 0)
-        kept = [line for line in self.env.read_text().splitlines()
-                if not line.startswith(('ASSOZETA_REALTIME_RELAY_BACKEND=', 'ASSOZETA_DJANGO_RELAY_REPLICAS=',
-                                        'ASSOZETA_GO_RELAY_REPLICAS='))]
-        self.env.write_text('\n'.join(kept) + '\n')
-        result = self.configure()
-        self.assertEqual(result.returncode, 0, result.stderr)
-        values = self.values()
-        for key in ('ASSOZETA_REALTIME_RELAY_BACKEND', 'ASSOZETA_DJANGO_RELAY_REPLICAS', 'ASSOZETA_GO_RELAY_REPLICAS'):
-            self.assertNotIn(key, values)
+        # Still true of the current CLI, which has no relay selector at all.
+        for cli in (CLI, CURRENT_CLI):
+            with self.subTest(cli='historical' if cli == CLI else 'current'):
+                self.env.unlink(missing_ok=True)
+                self.assertEqual(self.configure(cli).returncode, 0)
+                kept = [line for line in self.env.read_text().splitlines()
+                        if not line.startswith(('ASSOZETA_REALTIME_RELAY_BACKEND=', 'ASSOZETA_DJANGO_RELAY_REPLICAS=',
+                                                'ASSOZETA_GO_RELAY_REPLICAS='))]
+                self.env.write_text('\n'.join(kept) + '\n')
+                result = self.configure(cli)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                values = self.values()
+                for key in ('ASSOZETA_REALTIME_RELAY_BACKEND', 'ASSOZETA_DJANGO_RELAY_REPLICAS',
+                            'ASSOZETA_GO_RELAY_REPLICAS'):
+                    self.assertNotIn(key, values)
 
     @unittest.skipUnless(shutil.which('docker'), 'docker compose is required')
     def test_compose_runs_exactly_the_chosen_relay(self):

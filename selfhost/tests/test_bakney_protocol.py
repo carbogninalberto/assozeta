@@ -1,11 +1,22 @@
-"""The /bakney/v1/* backend switch stays on Django unless the operator opts in."""
+"""Historical distributions: the /bakney/v1/* backend switch stays on Django unless the operator opts in.
+
+The dual-API distribution (historical_distribution.REVISION) chose the Bakney
+protocol upstream with ASSOZETA_BAKNEY_PROTOCOL_BACKEND. Installations of it
+still exist, so this pins that distribution's own CLI, Caddyfile and Compose
+file. The exclusive distribution routes the protocol to the active runtime
+(TESTS/handoff/test_p2_routing.py, LegacyProtocolSetting).
+"""
 from pathlib import Path
 import os
 import subprocess
+import sys
 from tempfile import TemporaryDirectory
 import unittest
 
-ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from historical_distribution import legacy_root  # noqa: E402
+
+ROOT = legacy_root()
 CLI = ROOT / 'selfhost/bin/assozeta'
 
 

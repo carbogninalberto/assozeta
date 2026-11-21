@@ -1,4 +1,9 @@
-"""Dual API delivery and historical recovery, without touching an installation."""
+"""Dual API delivery and historical recovery, without touching an installation.
+
+Cases that pin the dual-API lifecycle of the historical distribution
+(historical_distribution.REVISION) run that distribution's own CLI or Compose
+file; the rest run the current checkout.
+"""
 import json
 import fcntl
 import os
@@ -15,102 +20,117 @@ from engine import Engine
 import recovery
 
 DEFINITIONS = (ROOT / 'selfhost/bin/assozeta').read_text().split('\ncommand=${1:-help}\n')[0]
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from historical_distribution import legacy_definitions, legacy_root  # noqa: E402
+LEGACY = legacy_root()
+LEGACY_DEFINITIONS = legacy_definitions()
+
+
+def render(selfhost, directory, *profiles, extra=''):
+    """Compose services of a distribution (`selfhost` dir) for the given profiles."""
+    env_file = Path(directory) / '.env'
+    env_file.write_text((selfhost / '.env.example').read_text() + extra)
+    arguments = ['docker', 'compose', '--env-file', str(env_file), '-f', str(selfhost / 'compose.yml')]
+    for profile in profiles:
+        arguments += ['--profile', profile]
+    result = subprocess.run(arguments + ['config', '--format', 'json'],
+                            env={**os.environ, 'ASSOZETA_ENV_FILE': str(env_file), 'ASSOZETA_SELFHOST_DIR': directory},
+                            capture_output=True, text=True, check=True)
+    return json.loads(result.stdout)['services']
+
+
+# (label, selfhost directory, profiles rendering both APIs, API-only startup keys)
+DISTRIBUTIONS = (('historical', LEGACY / 'selfhost', (), {'DJANGO_HANDOFF_URL'}),
+                 ('current', ROOT / 'selfhost', ('*',), {'DJANGO_HANDOFF_URL', 'ASSOZETA_GO_WHATSAPP_OUTBOX'}))
 
 
 class GoComposeTests(unittest.TestCase):
+    """The Go API shares the Django API's configuration (both distributions).
+
+    The dual topology itself (both APIs in one render, web waiting on api-go,
+    worker-go only behind its profile, Django handoff URL) is pinned on the
+    historical distribution; the exclusive topology is pinned in
+    TESTS/handoff/test_p2_process_sets.py.
+    """
+
     def test_normal_compose_delivers_second_api_with_same_configuration_and_lifecycle_lock(self):
-        with TemporaryDirectory() as directory:
-            env_file = Path(directory) / '.env'
-            env_file.write_text((ROOT / 'selfhost/.env.example').read_text())
-            environment = {**os.environ, 'ASSOZETA_ENV_FILE': str(env_file),
-                           'ASSOZETA_SELFHOST_DIR': directory}
-            result = subprocess.run(['docker', 'compose', '--env-file', str(env_file), '-f',
-                                     str(ROOT / 'selfhost/compose.yml'), 'config', '--format', 'json'],
-                                    env=environment, capture_output=True, text=True, check=True)
-            services = json.loads(result.stdout)['services']
-            self.assertIn('api-go', services)
-            django, golang = services['api'], services['api-go']
-            self.assertEqual(golang['image'], 'ghcr.io/carbogninalberto/assozeta-backend-go:latest')
-            self.assertEqual(golang['user'], '10001:10001')
-            self.assertTrue(golang['read_only'])
-            django_manual = next(mount for mount in django['volumes'] if mount['target'] == '/app/manuale')
-            go_manual = next(mount for mount in golang['volumes'] if mount['target'] == '/app/manuale')
-            self.assertEqual(go_manual['source'], django_manual['source'])
-            self.assertFalse(go_manual.get('read_only', False), 'Go must refresh the same manual cache under its shared file lease')
-            self.assertEqual(golang['environment']['MANUAL_INDEX_PATH'], '/app/manuale/index.json')
-            self.assertEqual(golang['environment']['DATA_RESTORE_LOCK_PATH'],
-                             django['environment']['DATA_RESTORE_LOCK_PATH'])
-            for key in ('DBHOST', 'DBNAME', 'DBUSER', 'DBPASSWORD', 'REDIS_HOST',
-                        'REDIS_PASSWORD', 'SECRET_KEY', 'JWT_SECRET_KEY_B64', 'JWT_PUBLIC_KEY_B64'):
-                self.assertEqual(golang['environment'][key], django['environment'][key])
-            self.assertTrue(any(mount['target'] == '/run/assozeta-operations' and
-                                mount['source'] == directory + '/.operations'
-                                for mount in golang['volumes']))
-            self.assertIn('api-go', services['web']['depends_on'])
-            self.assertIn('celery', services['worker']['command'])
-            self.assertIn('celery', services['beat']['command'])
-            self.assertNotIn('worker-go', services)
-            self.assertNotIn('beat-go', services)
+        for label, selfhost, profiles, _ in DISTRIBUTIONS:
+            with self.subTest(distribution=label), TemporaryDirectory() as directory:
+                services = render(selfhost, directory, *profiles)
+                self.assertIn('api-go', services)
+                django, golang = services['api'], services['api-go']
+                self.assertEqual(golang['image'], 'ghcr.io/carbogninalberto/assozeta-backend-go:latest')
+                self.assertEqual(golang['user'], '10001:10001')
+                self.assertTrue(golang['read_only'])
+                django_manual = next(mount for mount in django['volumes'] if mount['target'] == '/app/manuale')
+                go_manual = next(mount for mount in golang['volumes'] if mount['target'] == '/app/manuale')
+                self.assertEqual(go_manual['source'], django_manual['source'])
+                self.assertFalse(go_manual.get('read_only', False), 'Go must refresh the same manual cache under its shared file lease')
+                self.assertEqual(golang['environment']['MANUAL_INDEX_PATH'], '/app/manuale/index.json')
+                self.assertEqual(golang['environment']['DATA_RESTORE_LOCK_PATH'],
+                                 django['environment']['DATA_RESTORE_LOCK_PATH'])
+                for key in ('DBHOST', 'DBNAME', 'DBUSER', 'DBPASSWORD', 'REDIS_HOST',
+                            'REDIS_PASSWORD', 'SECRET_KEY', 'JWT_SECRET_KEY_B64', 'JWT_PUBLIC_KEY_B64'):
+                    self.assertEqual(golang['environment'][key], django['environment'][key])
+                self.assertTrue(any(mount['target'] == '/run/assozeta-operations' and
+                                    mount['source'] == directory + '/.operations'
+                                    for mount in golang['volumes']))
+                self.assertIn('celery', services['worker']['command'])
+                self.assertIn('celery', services['beat']['command'])
+                self.assertNotIn('beat-go', services)
+                if label == 'historical':
+                    self.assertIn('api-go', services['web']['depends_on'])
+                    self.assertNotIn('worker-go', services)
 
     def test_django_handoff_can_be_switched_off(self):
         with TemporaryDirectory() as directory:
-            env_file = Path(directory) / '.env'
-            env_file.write_text((ROOT / 'selfhost/.env.example').read_text() + '\nDJANGO_HANDOFF_URL=\n')
-            result = subprocess.run(['docker', 'compose', '--env-file', str(env_file), '-f',
-                                     str(ROOT / 'selfhost/compose.yml'), 'config', '--format', 'json'],
-                                    env={**os.environ, 'ASSOZETA_ENV_FILE': str(env_file),
-                                         'ASSOZETA_SELFHOST_DIR': directory},
-                                    capture_output=True, text=True, check=True)
-            self.assertEqual(json.loads(result.stdout)['services']['api-go']['environment']['DJANGO_HANDOFF_URL'], '')
+            services = render(LEGACY / 'selfhost', directory, extra='\nDJANGO_HANDOFF_URL=\n')
+            self.assertEqual(services['api-go']['environment']['DJANGO_HANDOFF_URL'], '')
 
     def test_operational_migrator_reuses_go_image_configuration_without_http_health(self):
-        with TemporaryDirectory() as directory:
-            env_file = Path(directory) / '.env'
-            env_file.write_text((ROOT / 'selfhost/.env.example').read_text())
-            result = subprocess.run(['docker', 'compose', '--env-file', str(env_file), '-f',
-                                     str(ROOT / 'selfhost/compose.yml'), '--profile', 'tools',
-                                     'config', '--format', 'json'],
-                                    env={**os.environ, 'ASSOZETA_ENV_FILE': str(env_file),
-                                         'ASSOZETA_SELFHOST_DIR': directory},
-                                    capture_output=True, text=True, check=True)
-            services = json.loads(result.stdout)['services']
-            self.assertIn('migrate-go', services)
-            migration, api = services['migrate-go'], services['api-go']
-            for field in ('image', 'user', 'read_only', 'security_opt'):
-                self.assertEqual(migration[field], api[field], field)
-            http_spools = {
-                'GO_LOGO_SPOOL_DIR': '/var/cache/assozeta-logo',
-                'GO_MESSAGE_LIST_SPOOL_DIR': '/var/cache/assozeta-message-list',
-                'TMPDIR': '/var/cache/assozeta-go-tasks',
-            }
-            # Only the HTTP API hands refused requests off to Django.
-            self.assertEqual(api['environment']['DJANGO_HANDOFF_URL'], 'http://api:8000')
-            self.assertNotIn('DJANGO_HANDOFF_URL', migration['environment'])
-            self.assertEqual(migration['environment'], {
-                name: value for name, value in api['environment'].items()
-                if name not in http_spools and name != 'DJANGO_HANDOFF_URL'})
-            # Only the HTTP API calls the update runner.
-            self.assertIn({'type': 'volume', 'source': 'updater_api', 'target': '/run/assozeta-updater',
-                           'read_only': True, 'volume': {}}, api['volumes'])
-            self.assertEqual(migration['volumes'], [
-                volume for volume in api['volumes']
-                if volume['target'] not in http_spools.values() and volume['source'] != 'updater_api'])
-            for variable, target in http_spools.items():
-                self.assertEqual(api['environment'][variable], target)
-                self.assertNotIn(variable, migration['environment'])
-                spool = [volume for volume in api['volumes'] if volume['target'] == target]
-                self.assertEqual(len(spool), 1)
-                self.assertEqual(spool[0]['type'], 'volume')
-                self.assertNotIn('source', spool[0])
-            self.assertEqual(migration['entrypoint'], ['/app/migrate'])
-            self.assertEqual(migration['profiles'], ['tools'])
-            self.assertEqual(migration['restart'], 'no')
-            self.assertTrue(migration['healthcheck']['disable'])
-            self.assertEqual(set(migration['depends_on']), {'postgres'})
+        for label, selfhost, profiles, api_only in DISTRIBUTIONS:
+            with self.subTest(distribution=label), TemporaryDirectory() as directory:
+                services = render(selfhost, directory, *(profiles or ('tools',)))
+                self.assertIn('migrate-go', services)
+                migration, api = services['migrate-go'], services['api-go']
+                for field in ('image', 'user', 'read_only', 'security_opt'):
+                    self.assertEqual(migration[field], api[field], field)
+                http_spools = {
+                    'GO_LOGO_SPOOL_DIR': '/var/cache/assozeta-logo',
+                    'GO_MESSAGE_LIST_SPOOL_DIR': '/var/cache/assozeta-message-list',
+                    'TMPDIR': '/var/cache/assozeta-go-tasks',
+                }
+                if label == 'historical':
+                    # Only the HTTP API hands refused requests off to Django.
+                    self.assertEqual(api['environment']['DJANGO_HANDOFF_URL'], 'http://api:8000')
+                for name in api_only:
+                    self.assertNotIn(name, migration['environment'])
+                self.assertEqual(migration['environment'], {
+                    name: value for name, value in api['environment'].items()
+                    if name not in http_spools and name not in api_only})
+                # Only the HTTP API calls the update runner.
+                self.assertIn({'type': 'volume', 'source': 'updater_api', 'target': '/run/assozeta-updater',
+                               'read_only': True, 'volume': {}}, api['volumes'])
+                self.assertEqual(migration['volumes'], [
+                    volume for volume in api['volumes']
+                    if volume['target'] not in http_spools.values() and volume['source'] != 'updater_api'])
+                for variable, target in http_spools.items():
+                    self.assertEqual(api['environment'][variable], target)
+                    self.assertNotIn(variable, migration['environment'])
+                    spool = [volume for volume in api['volumes'] if volume['target'] == target]
+                    self.assertEqual(len(spool), 1)
+                    self.assertEqual(spool[0]['type'], 'volume')
+                    self.assertNotIn('source', spool[0])
+                self.assertEqual(migration['entrypoint'], ['/app/migrate'])
+                self.assertEqual(migration['profiles'], ['tools'])
+                self.assertEqual(migration['restart'], 'no')
+                self.assertTrue(migration['healthcheck']['disable'])
+                self.assertEqual(set(migration['depends_on']), {'postgres'})
 
 
 class GoLifecycleTests(unittest.TestCase):
-    def run_shell(self, body, *, golang=True, migrator=True, config_failure=False, failure='', inherited_lease=False):
+    def run_shell(self, body, *, golang=True, migrator=True, config_failure=False, failure='', inherited_lease=False,
+                  definitions=DEFINITIONS):
         with TemporaryDirectory() as directory:
             root = Path(directory)
             (root / '.env').write_text('APP_URL=http://fixture.invalid\n')
@@ -130,7 +150,7 @@ prod_compose() {
 require_background_services_running() { printf 'django-background\n'; }
 wait_url_ready() { printf 'ready %s\n' "$2"; }
 '''
-            result = subprocess.run(['sh', '-c', DEFINITIONS + harness + body], capture_output=True, text=True,
+            result = subprocess.run(['sh', '-c', definitions + harness + body], capture_output=True, text=True,
                                     env={**os.environ, 'ASSOZETA_INSTALL_ROOT': directory,
                                          'TEST_GO': str(golang).lower(), 'TEST_CONFIG_FAILURE': str(config_failure).lower(),
                                          'TEST_MIGRATOR': str(migrator and golang).lower(),
@@ -139,7 +159,8 @@ wait_url_ready() { printf 'ready %s\n' "$2"; }
             return result, (root / '.operations/maintenance.flag').exists()
 
     def test_new_stack_stops_and_starts_both_apis_with_django_background_ownership(self):
-        result, marker = self.run_shell('\nstop_prod_data_services\nstart_prod_app_services true\n')
+        result, marker = self.run_shell('\nstop_prod_data_services\nstart_prod_app_services true\n',
+                                        definitions=LEGACY_DEFINITIONS)
         self.assertEqual(result.returncode, 0, result.stderr)
         lines = result.stdout.splitlines()
         self.assertIn('compose stop api worker beat api-go', lines)
@@ -150,7 +171,8 @@ wait_url_ready() { printf 'ready %s\n' "$2"; }
         self.assertFalse(marker)
 
     def test_historical_stack_never_passes_missing_go_service_to_compose(self):
-        result, marker = self.run_shell('\nstop_prod_data_services\nstart_prod_app_services\n', golang=False)
+        result, marker = self.run_shell('\nstop_prod_data_services\nstart_prod_app_services\n', golang=False,
+                                        definitions=LEGACY_DEFINITIONS)
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertNotIn('api-go', result.stdout)
         self.assertNotIn('/api/v1/', result.stdout)
@@ -170,7 +192,8 @@ wait_url_ready() { printf 'ready %s\n' "$2"; }
         self.assertNotIn('compose up ', result.stdout)
 
     def test_initialisation_orders_both_migrations_before_any_application_resumes(self):
-        result, marker = self.run_shell('\nprod_operations_lock_held=true\ninitialise_prod\nstart_prod_app_services\n')
+        result, marker = self.run_shell('\nprod_operations_lock_held=true\ninitialise_prod\nstart_prod_app_services\n',
+                                        definitions=LEGACY_DEFINITIONS)
         self.assertEqual(result.returncode, 0, result.stderr)
         lines = result.stdout.splitlines()
         django = lines.index('compose --profile tools run --rm --no-deps migrate')
@@ -195,7 +218,8 @@ wait_url_ready() { printf 'ready %s\n' "$2"; }
         for golang in (False, True):
             with self.subTest(golang=golang):
                 result, marker = self.run_shell('\ninitialise_prod\nstart_prod_app_services\n',
-                                                golang=golang, migrator=False)
+                                                golang=golang, migrator=False,
+                                                definitions=LEGACY_DEFINITIONS)
                 self.assertEqual(result.returncode, 0, result.stderr)
                 self.assertIn('run --rm --no-deps migrate\n', result.stdout)
                 self.assertNotIn('migrate-go', result.stdout)
