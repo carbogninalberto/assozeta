@@ -8,8 +8,9 @@
 //
 // Fields the evaluator needs beyond today's domain.PeriodicSchedule are pinned by name and
 // set by reflection so this file compiles before they exist:
-//   ClockedTime   *time.Time  (django_celery_beat_clockedschedule.clocked_time)
-//   TotalRunCount int64       (django_celery_beat_periodictask.total_run_count)
+//
+//	ClockedTime   *time.Time  (django_celery_beat_clockedschedule.clocked_time)
+//	TotalRunCount int64       (django_celery_beat_periodictask.total_run_count)
 package service
 
 import (
