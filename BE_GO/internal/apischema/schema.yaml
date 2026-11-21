@@ -3462,6 +3462,21 @@ paths:
       responses:
         '200':
           description: No response body
+  /instance/admin/runtime:
+    get:
+      operationId: instance_admin_runtime_retrieve
+      tags:
+      - instance
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: instance_admin_runtime_create
+      tags:
+      - instance
+      responses:
+        '200':
+          description: No response body
   /instance/admin/updates:
     get:
       operationId: instance_admin_updates_retrieve
