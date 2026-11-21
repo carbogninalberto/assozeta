@@ -1,5 +1,5 @@
 import {test, expect, settings, retired} from './p5-runtime-stub.js';
-import {operationId, snapshot} from '../../../UI/scripts/p5-runtime-fixtures.mjs';
+import {controller, operationId, snapshot} from '../../../UI/scripts/p5-runtime-fixtures.mjs';
 
 const field = (page, name) => page.getByTestId('runtime-' + name).filter({visible: true});
 const toggle = page => page.getByRole('switch', {name: 'Usa Go per l’istanza', exact: true});
@@ -44,14 +44,19 @@ function assertBody(body, target, generation) {
 }
 
 test('owner_access', async ({stub}) => {
+    stub.runtime = snapshot('settle');
     const guest = await stub.open({owner: false});
     await expect(guest.page.getByText(/riservata al proprietario/)).toBeVisible();
     await expect(toggle(guest.page)).toHaveCount(0);
-    stub.runtime = {...snapshot(), switch_available: false, unavailable_reason: 'Cambio non disponibile su questa versione.'};
+    await expect(guest.page.locator('body')).not.toContainText(operationId);
+    stub.runtime = {...snapshot(), switch_available: false, unavailable_reason: 'Questa versione non supporta il cambio di runtime.'};
     const page = await openSettings(stub);
     await expect(toggle(page), 'Owner needs a named runtime switch even when unavailable').toBeVisible();
     await expect(toggle(page)).toBeDisabled();
     await expect(page.getByText(stub.runtime.unavailable_reason)).toBeVisible();
+    const section = page.getByRole('region', {name: 'Runtime dell’istanza'});
+    await expect(section.getByRole('alert')).toHaveCount(0);
+    await expect(section.getByRole('dialog')).toHaveCount(0);
     await expect(field(page, 'effective')).toHaveText('Django');
     await expect(field(page, 'intended')).toHaveText('Django');
     await expect(page.getByText('Runtime effettivo', {exact: true})).toBeVisible();
@@ -132,6 +137,14 @@ test('cold_maintenance', async ({stub}) => {
     await stage(page, 'Verifica del runtime di destinazione', 6);
     const guest = await stub.open({owner: false});
     await expect.poll(() => stub.calls.filter(c => c.page === guest.page && c.path === '/instance-update-status').length).toBeGreaterThan(0);
+    await expect(guest.page.locator('body')).not.toContainText(operationId);
+    // A response delivered without verified ownership must never disclose its payload.
+    await guest.page.route('**/instance-update-status', route => route.fulfill({json: {
+        ...controller(stub.runtime), is_owner: false,
+    }}));
+    const checked = guest.page.waitForRequest(request => new URL(request.url()).pathname === '/' && !request.isNavigationRequest());
+    await guest.page.reload();
+    await checked;
     await expect(guest.page.locator('body')).not.toContainText(operationId);
     stub.offline = false;
     stub.runtime = snapshot('completed');
@@ -258,4 +271,163 @@ test('other_route_refresh', async ({stub}) => {
         'An open route must refresh runtime-dependent configuration after reconnect').toBeVisible();
     await expect(page).toHaveURL(/\/#\/$/);
     expect(submissions(stub)).toHaveLength(0);
+});
+
+test('maintenance_revoked', async ({stub}) => {
+    stub.offline = true;
+    stub.runtime = snapshot('stop_source');
+    // The current owner can change during a long maintenance window.
+    const revoked = await stub.open();
+    await expect(field(revoked.page, 'operation')).toHaveText(operationId);
+    await revoked.page.route('**/instance-update-status', route => route.fulfill({status: 403, json: {}}));
+    await revoked.page.waitForResponse(response => response.url().endsWith('/instance-update-status') && response.status() === 403);
+    await expect(revoked.page.locator('body'), 'A denied owner must lose previously displayed operation details').not.toContainText(operationId);
+});
+
+test('cold_recovery', async ({stub}) => {
+    stub.offline = true;
+    stub.runtime = snapshot('verify', {failed: true});
+    const {page} = await stub.open();
+    await expect(field(page, 'operation')).toHaveText(operationId);
+    await expect(field(page, 'effective'), 'Cold recovery must identify the effective runtime').toHaveText('Go');
+    await expect(field(page, 'intended')).toHaveText('Go');
+    await expect(field(page, 'last-completed')).toContainText('Attivazione');
+    await expect(field(page, 'recovery')).toContainText('runtime-recover');
+});
+
+test('reversal_requires_password', async ({stub}) => {
+    // The controller has cleared the recovery operation and now admits a new switch.
+    stub.runtime = snapshot('completed');
+    const page = await openSettings(stub);
+    await expect(toggle(page)).toBeEnabled();
+    await toggle(page).focus();
+    await page.keyboard.press('Space');
+    const dialog = page.getByRole('dialog', {name: 'Tornare a Django?'});
+    await expect(dialog.getByRole('button', {name: 'Conferma cambio'})).toBeDisabled();
+    // The shared dialog restores the opener in its native close handler.
+    const dismissal = await dialog.evaluateHandle(node => ({
+        done: new Promise(resolve => node.addEventListener('close', () => resolve(), {once: true})),
+    }));
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+    await dismissal.evaluate(({done}) => done);
+    await dismissal.dispose();
+    await expect(toggle(page)).toBeFocused();
+    expect(submissions(stub)).toHaveLength(0);
+    stub.onSubmit = route => route.fulfill({status: 400, json: {error: 'Password non corretta.'}});
+    await confirm(page);
+    await expect(dialog.getByRole('alert')).toHaveText('Password non corretta.');
+    await expect(dialog.getByLabel('Conferma la tua password')).toHaveValue('');
+    accept(stub, 'go', 8);
+    await dialog.getByLabel('Conferma la tua password').fill('fixture');
+    await dialog.getByRole('button', {name: 'Conferma cambio'}).click();
+    await expect(dialog).toBeHidden();
+    assertBody(submissions(stub)[1].body, 'django', 8);
+    await expect(field(page, 'intended')).toHaveText('Django');
+    await page.context().close();
+
+    // A reachable API alone does not clear the controller's recovery interlock.
+    stub.runtime = snapshot('verify', {failed: true});
+    const pending = await openSettings(stub);
+    await expect(field(pending, 'recovery')).toContainText('runtime-recover');
+    await expect(toggle(pending), 'An active recovery must clear before another switch is available').toBeDisabled();
+    expect(submissions(stub)).toHaveLength(2);
+});
+
+test('blocker_age', async ({stub}) => {
+    stub.runtime = snapshot('stage_backlog', {blocked: true});
+    const running = await openSettings(stub);
+    await expect(field(running, 'status')).toHaveText('Bloccato');
+    await expect(toggle(running)).toBeDisabled();
+    await expect(field(running, 'operation')).toHaveText(operationId);
+    await running.context().close();
+    for (const [seconds, label] of [[73, '73 secondi'], [180, '3 minuti'], [10800, '3 ore'], [1, '1 secondo']]) {
+        stub.runtime = snapshot('preflight', {failed: true, blocked: true});
+        stub.runtime.operation.blockers.oldest_age_seconds = seconds;
+        const page = await openSettings(stub);
+        await expect(field(page, 'oldest'), 'Format the oldest blocked item as ' + label).toHaveText(label);
+        await page.context().close();
+    }
+});
+
+test('network_blips_keep_draft', async ({stub}) => {
+    const {page, sockets} = await stub.open({path: settings.replace('tab=api', 'tab=email')});
+    const draft = page.getByLabel('Server SMTP');
+    await draft.fill('draft.example.test');
+    const original = await draft.elementHandle();
+    const origin = await page.evaluate(() => performance.timeOrigin);
+    const connections = path => sockets.filter(socket => socket.path === path).length;
+    const reads = () => stub.calls.filter(call => call.path === '/api/instance/config').length;
+    await expect.poll(() => connections('/ws/health/')).toBe(1);
+    await expect.poll(() => connections('/ws/notifications/')).toBe(1);
+    const initial = reads();
+    for (let i = 1; i <= 3; i++) {
+        await stub.disconnect('/ws/health/');
+        await expect(page.locator('.connection-status')).toBeVisible();
+        await expect.poll(reads).toBe(initial + i);
+        await expect(page.locator('.connection-status')).toBeHidden();
+        expect(connections('/ws/health/')).toBe(i + 1);
+        expect(connections('/ws/notifications/')).toBe(1);
+        await expect(draft).toHaveValue('draft.example.test');
+        expect(await original.evaluate(node => node.isConnected)).toBe(true);
+    }
+    // Advance beyond the longest scheduled health retry. A stable socket stays open.
+    await new Promise(resolve => setTimeout(resolve, 9000));
+    expect(connections('/ws/health/')).toBe(4);
+    expect(reads()).toBe(initial + 3);
+    expect(await page.evaluate(() => performance.timeOrigin)).toBe(origin);
+});
+
+test('validation_error_leaves_password_dialog', async ({stub}) => {
+    const page = await openSettings(stub);
+    stub.onSubmit = route => route.fulfill({status: 400, json: {error: 'Richiesta non valida.'}});
+    await confirm(page);
+    await expect(page.getByRole('dialog'), 'A validation failure must leave password confirmation').toBeHidden();
+    await expect(page.getByText('Richiesta non valida.', {exact: true})).toBeVisible();
+    expect(submissions(stub)).toHaveLength(1);
+});
+
+test('settings_access_revoked', async ({stub}) => {
+    stub.runtime = snapshot('settle');
+    const page = await openSettings(stub);
+    await expect(field(page, 'operation')).toHaveText(operationId);
+    await page.route('**/api/instance/admin/runtime', route => route.fulfill({status: 403, json: {error: 'Accesso negato.'}}));
+    await page.route('**/api/instance/admin/updates', route => route.fulfill({status: 403, json: {}}));
+    await page.route('**/instance-update-status', route => route.fulfill({status: 403, json: {}}));
+    await page.waitForResponse(response => response.url().endsWith('/admin/runtime') && response.status() === 403);
+    await expect(toggle(page), 'Revoked settings access must remove the owner switch').toHaveCount(0);
+    await expect(page.locator('body')).not.toContainText(operationId);
+});
+
+test('maintenance_session_change', async ({stub}) => {
+    stub.offline = true;
+    stub.runtime = snapshot('stop_source');
+    const {page} = await stub.open();
+    await expect(field(page, 'operation')).toHaveText(operationId);
+    const arrived = Promise.withResolvers();
+    const release = Promise.withResolvers();
+    await page.route('**/instance-update-status', async route => {
+        // Hold the last owner reply until the browser has changed sessions.
+        arrived.resolve();
+        await release.promise;
+        await route.fulfill({json: controller(stub.runtime)});
+    });
+    await arrived.promise;
+    const processed = page.waitForRequest(request => new URL(request.url()).pathname === '/' && !request.isNavigationRequest());
+    await page.evaluate(() => localStorage.setItem('sessionToken', JSON.stringify('fixture-member')));
+    release.resolve();
+    await processed;
+    await expect(page.locator('body'), 'Owner progress belongs to the session that requested it').not.toContainText(operationId);
+});
+
+test('maintenance_session_outage', async ({stub}) => {
+    stub.offline = true;
+    stub.runtime = snapshot('stop_source');
+    const {page} = await stub.open();
+    await expect(field(page, 'operation')).toHaveText(operationId);
+    await page.route('**/instance-update-status', route => route.fulfill({status: 503, json: {}}));
+    await page.evaluate(() => localStorage.setItem('sessionToken', JSON.stringify('fixture-member')));
+    await page.waitForResponse(response => response.url().endsWith('/instance-update-status') &&
+        response.request().headers().authorization === 'Bearer fixture-member');
+    await expect(page.locator('body'), 'A different session must have a public maintenance view during an outage').not.toContainText(operationId);
 });

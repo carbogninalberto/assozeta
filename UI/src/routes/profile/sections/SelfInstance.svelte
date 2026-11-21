@@ -7,7 +7,7 @@
     import {apiErrorMessage} from './backupPassword.js';
     import {createCompletionRefresh, mergeRunnerStatus, restartResult} from './updateStatus.js';
     import {v4 as uuidv4} from 'uuid';
-    import {SquaresFour, Archive, ArrowsClockwise, GearSix, IdentificationCard, EnvelopeSimple, Plugs, Robot, LinkSimple, Power, Flask} from 'phosphor-svelte';
+    import {SquaresFour, Archive, ArrowsClockwise, GearSix, IdentificationCard, EnvelopeSimple, Plugs, Robot, LinkSimple, Power, Cpu} from 'phosphor-svelte';
     import './selfInstance.css';
     import InstanceBanner from './InstanceBanner.svelte';
     import InstanceMenu from './InstanceMenu.svelte';
@@ -20,8 +20,7 @@
     import InstanceIntegrations from './InstanceIntegrations.svelte';
     import InstanceIntegration from './InstanceIntegration.svelte';
     import BakneyPairing from './BakneyPairing.svelte';
-    import InstanceApiVersion from './InstanceApiVersion.svelte';
-    import InstanceGoTasks from './InstanceGoTasks.svelte';
+    import InstanceRuntime from './InstanceRuntime.svelte';
 
     export let changes = false;
     const endpoint = `${getApiHost()}/instance`;
@@ -29,7 +28,7 @@
     // Top-level tabs; settings has its own sub-sections. The URL keeps the
     // sub-section id (tab=email…) so earlier links keep working.
     const tabs = [['overview', 'Panoramica', SquaresFour], ['backups', 'Backup', Archive], ['updates', 'Aggiornamenti', ArrowsClockwise], ['settings', 'Impostazioni', GearSix]];
-    const settingsSections = [['branding', 'Identità', IdentificationCard], ['email', 'Email', EnvelopeSimple], ['integrations', 'Integrazioni', Plugs], ['ai', 'Bot AI', Robot], ['pairing', 'Bakney', LinkSimple], ['api', 'API (beta)', Flask]];
+    const settingsSections = [['branding', 'Identità', IdentificationCard], ['email', 'Email', EnvelopeSimple], ['integrations', 'Integrazioni', Plugs], ['ai', 'Bot AI', Robot], ['pairing', 'Bakney', LinkSimple], ['api', 'Runtime', Cpu]];
     const settingsIds = settingsSections.map(([id]) => id);
     let tab = 'overview';
     let settingsSection = 'branding';
@@ -75,8 +74,6 @@
     let integrationChanges = false;
     let integrationBusy = false;
     let pairingBusy = false;
-    let apiBusy = false;
-    let goTasksBusy = false;
 
     let diagnostics;
     let diagnosticError = '';
@@ -115,7 +112,7 @@
 
     $: settingsDirty = {branding: logoChanges, email: emailChanges, integrations: integrationChanges, ai: aiChanges, pairing: false, api: false};
     $: changes = aiChanges || integrationChanges || emailChanges || logoChanges;
-    $: settingsBusy = logoBusy || emailBusy || aiBusy || integrationBusy || pairingBusy || apiBusy || goTasksBusy;
+    $: settingsBusy = logoBusy || emailBusy || aiBusy || integrationBusy || pairingBusy;
     $: active = simulation || runner.active || (restartRequestId ? {kind: 'restart', stage: 'queued'} : null);
     $: locked = apiUnavailable || !!active || starting;
     $: restartBlocked = info?.mode !== 'production' ? 'Disponibile solo in produzione.'
@@ -131,6 +128,9 @@
         : catalog?.latest && !catalog.latest.artifacts_ready ? 'La versione è pubblicata ma non ancora pronta. Riprova più tardi.'
         : settingsBusy || diagnosticBusy || refreshingInfo || checkingReleases ? 'Attendi il completamento dell’operazione.'
         : releaseError ? 'Controlla di nuovo gli aggiornamenti.' : '';
+    // The runtime switch follows its own operation; any other one blocks it.
+    $: runtimeBlocked = apiUnavailable ? 'App non raggiungibile.'
+        : simulation || starting || restartRequestId || (runner.active && runner.active.kind !== 'runtime_switch') ? 'C’è già un’operazione in corso.' : '';
     $: backupBlocked = changes ? 'Salva o annulla prima le modifiche nelle impostazioni.'
         : apiUnavailable || !runner.available ? 'Servizio di backup non disponibile.'
         : runner.can_update === false && runner.reason ? runner.reason : '';
@@ -228,17 +228,6 @@
         refreshingInfo = true;
         try { info = await request('/admin'); }
         finally { refreshingInfo = false; }
-    }
-
-    // A go_tasks change restarts every service, like a restart: follow it with
-    // the same polling so the page reloads on success and shows the failure.
-    function followOperation(operation) {
-        if (!operation) return;
-        restartRequestId = operation.request_id;
-        restartStartedAt = Date.now();
-        restartTimedOut = false;
-        runner = {...runner, active: operation};
-        if (!disposed) loadRunner();
     }
 
     async function loadReleases(refresh = false, page = 1) {
@@ -469,8 +458,7 @@
                             {#if settingsSection === 'pairing'}<BakneyPairing {request} bind:busy={pairingBusy} disabled={locked} />{/if}
                         </div>
                         <div id="instance-settings-panel-api" role="tabpanel" aria-labelledby="instance-settings-api" hidden={settingsSection !== 'api'}>
-                            <InstanceApiVersion {request} config={info.config} bind:busy={apiBusy} disabled={locked} onSaved={config => info = {...info, config}} />
-                            <InstanceGoTasks {request} enabled={!!info.go_tasks_enabled} mode={info.mode} bind:busy={goTasksBusy} disabled={locked} onStarted={followOperation} />
+                            {#if settingsSection === 'api'}<InstanceRuntime blockedReason={runtimeBlocked} />{/if}
                         </div>
                     </div>
                 </div>

@@ -11,9 +11,10 @@ export const test = base.extend({
     stub: async ({browser, baseURL}, use) => {
         const contexts = [], errors = [], openSockets = new Set();
         const state = {runtime: snapshot(), offline: false, calls: [], onSubmit: null};
-        state.disconnect = async () => {
-            await Promise.all([...openSockets].map(ws => ws.close({code: 1001, reason: 'Manutenzione'})));
-            openSockets.clear();
+        state.disconnect = async (path = null) => {
+            const selected = [...openSockets].filter(ws => !path || new URL(ws.url()).pathname === path);
+            await Promise.all(selected.map(ws => ws.close({code: 1001, reason: 'Manutenzione'})));
+            selected.forEach(ws => openSockets.delete(ws));
         };
         state.open = async ({owner = true, stale = false, path = settings} = {}) => {
             const role = owner ? 'administrator' : 'association';

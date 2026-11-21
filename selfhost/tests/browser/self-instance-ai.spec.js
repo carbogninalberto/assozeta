@@ -30,8 +30,8 @@ for (const viewport of [{width: 1440, height: 1000}, {width: 390, height: 844}])
         await tabs.getByRole('tab', {name: 'Impostazioni'}).click();
         await settingsNav.getByRole('tab', {name: 'Identità'}).focus();
         await page.keyboard.press('End');
-        await expect(settingsNav.getByRole('tab', {name: 'API (beta)'})).toHaveAttribute('aria-selected', 'true');
-        // Bot AI is two sections before the last one: Bot AI, Bakney, API (beta).
+        await expect(settingsNav.getByRole('tab', {name: 'Runtime'})).toHaveAttribute('aria-selected', 'true');
+        // Bot AI is two sections before the last one: Bot AI, Bakney, Runtime.
         await page.keyboard.press('ArrowLeft');
         await page.keyboard.press('ArrowLeft');
         const card = page.getByRole('region', {name: 'Bot AI', exact: true});

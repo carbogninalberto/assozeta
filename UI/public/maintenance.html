@@ -21,6 +21,23 @@
     .btn-primary:hover { filter: brightness(.94); }
     .btn-primary:focus-visible { outline: 3px solid var(--primary); outline-offset: 4px; }
     .btn-primary svg { width: 19px; height: 19px; }
+    .runtime { margin: 0 0 30px; padding: 18px 20px; border: 1px solid var(--border); border-radius: 16px; text-align: left; }
+    .runtime[hidden] { display: none; }
+    .runtime h2 { margin: 0 0 8px; font-size: 16px; line-height: 1.35; }
+    .runtime p { margin: 0; color: var(--text); }
+    .runtime .bar { height: 6px; margin: 12px 0; border-radius: 999px; background: var(--border); overflow: hidden; }
+    .runtime .bar span { display: block; width: 0; height: 100%; border-radius: inherit; background: var(--primary); transition: width .4s ease; }
+    .runtime dl { margin: 0; font-size: 14px; }
+    .runtime dt { color: var(--muted); }
+    .runtime dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 130px), 1fr)); gap: 10px 16px; }
+    .runtime dd { margin: 2px 0 0; font-weight: 600; overflow-wrap: anywhere; }
+    .runtime dd.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-weight: 400; }
+    .runtime .full { grid-column: 1 / -1; }
+    .runtime .runtime-error { margin-top: 12px; color: #c8283a; }
+    [data-theme="dark"] .runtime .runtime-error { color: #ff6b7a; }
+    .runtime [data-testid="runtime-recovery"] { margin-top: 12px; }
+    .runtime [hidden] { display: none; }
+    @media (prefers-reduced-motion: reduce) { .runtime .bar span { transition: none; } }
   </style>
   <script>
     try {
@@ -45,11 +62,146 @@
     </div>
     <div class="eyebrow">Manutenzione in corso</div>
     <h1>Torniamo tra poco</h1>
-    <p>L’applicazione è temporaneamente non disponibile per manutenzione. Riprova tra qualche minuto.</p>
-    <button class="btn-primary" type="button" onclick="location.pathname === '/maintenance.html' ? location.replace('/' + location.hash) : location.reload()">
+    <p>L’applicazione è temporaneamente non disponibile per manutenzione. La pagina si riapre da sola appena l’app torna disponibile.</p>
+    <section class="runtime" id="runtime" aria-labelledby="runtime-title" hidden>
+      <h2 id="runtime-title">Cambio runtime</h2>
+      <p role="status"><strong data-testid="runtime-status"></strong> · <span data-testid="runtime-stage"></span> · <span data-testid="runtime-progress"></span></p>
+      <div class="bar" aria-hidden="true"><span></span></div>
+      <dl id="runtime-facts"></dl>
+      <p class="runtime-error" id="runtime-error" hidden></p>
+      <p data-testid="runtime-recovery" hidden></p>
+    </section>
+    <button class="btn-primary" type="button" onclick="resume()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2 6"/><path d="M20 4v7h-7"/></svg>
       Riprova
     </button>
   </main>
+  <script>
+    // Served by Caddy while neither application API is up, so everything is
+    // inline. The owner sees the runtime switch from the controller's status
+    // socket; everyone returns to the app as soon as it answers again.
+    // Labels mirror UI/src/routes/profile/sections/operationLabels.js.
+    const STAGES = {queued: 'In coda', preflight: 'Controlli iniziali', close_admission: 'Sospensione delle nuove attività',
+      settle: 'Completamento delle attività in corso', stage_backlog: 'Trasferimento delle attività in attesa',
+      stop_source: 'Arresto del runtime di origine', target_preflight: 'Verifica del runtime di destinazione',
+      commit: 'Registrazione del cambio', activate: 'Attivazione', verify: 'Verifica finale', completed: 'Completato'};
+    const STATES = {queued: 'In coda', running: 'In corso', succeeded: 'Completato', failed: 'Non riuscito', recovery_required: 'Ripristino necessario'};
+    const NAMES = {django: 'Django', go: 'Go'};
+    const STEPS = Object.keys(STAGES).slice(1, -1);
+    const COUNTS = [['staged', 'In attesa'], ['transferred', 'Trasferite'], ['blocked', 'Bloccate'], ['ambiguous', 'Esito incerto']];
+    const ACTIONS = {retry: 'Riprova', recover: 'Ripristina', reconcile: 'Riconcilia'};
+
+    function resume() {
+      if (location.pathname === '/maintenance.html') location.replace('/' + location.hash);
+      else location.reload();
+    }
+
+    function field(name) { return document.querySelector('[data-testid="runtime-' + name + '"]'); }
+    function name(runtime) { return NAMES[runtime] || '—'; }
+    function count(value) { return Number.isInteger(value) && value >= 0 ? String(value) : '0'; }
+
+    function age(seconds) {
+      if (seconds < 120) return seconds === 1 ? '1 secondo' : seconds + ' secondi';
+      if (seconds < 7200) return Math.round(seconds / 60) + ' minuti';
+      if (seconds < 172800) return Math.round(seconds / 3600) + ' ore';
+      return Math.round(seconds / 86400) + ' giorni';
+    }
+
+    // The session whose verified owner status is on screen, if any.
+    let shownFor = null;
+
+    // Private details disappear on denial, another session or no operation.
+    function hide() {
+      shownFor = null;
+      document.getElementById('runtime').hidden = true;
+      for (const node of document.querySelectorAll('#runtime [data-testid], #runtime-facts, #runtime-error')) node.textContent = '';
+      document.getElementById('runtime-title').textContent = 'Cambio runtime';
+    }
+
+    // Only the fields the status contract lists, written as text.
+    function show(runtime) {
+      const op = runtime && (runtime.active || runtime.operation);
+      if (!op || op.kind !== 'runtime_switch' || typeof op.id !== 'string') return hide();
+      const progress = op.progress || {};
+      const failed = op.status === 'failed' || op.status === 'recovery_required';
+      const stage = failed ? op.failed_stage : progress.stage || op.stage;
+      const total = Number(progress.total) || 9;
+      const step = Math.min(Math.max(Number(progress.index) || 0, 0), total);
+      document.getElementById('runtime-title').textContent = 'Cambio runtime · ' + name(op.previous_runtime) + ' → ' + name(op.requested_runtime);
+      field('status').textContent = STATES[op.status] || 'In corso';
+      field('stage').textContent = STAGES[stage] || '';
+      field('progress').textContent = 'passo ' + step + ' di ' + total;
+      document.querySelector('.runtime .bar span').style.width = (step / total * 100) + '%';
+
+      const facts = [['effective', 'Runtime effettivo', name(runtime.effective_runtime)],
+        ['intended', 'Runtime previsto', name(runtime.intended_runtime || runtime.effective_runtime)],
+        ['operation', 'Operazione', op.id, 'mono full']];
+      if (failed) {
+        const previous = STEPS[STEPS.indexOf(op.failed_stage) - 1];
+        facts.push(['last-completed', 'Ultima fase completata', previous ? STAGES[previous] : 'Nessuna', 'full']);
+      }
+      const dispositions = op.dispositions || {};
+      const blockers = op.blockers || {};
+      if (blockers.count > 0 || COUNTS.some(([key]) => dispositions[key] > 0)) {
+        for (const [key, label] of COUNTS) facts.push([key, label, count(dispositions[key])]);
+        if (Number.isInteger(blockers.oldest_age_seconds)) facts.push(['oldest', 'Blocco più vecchio', age(blockers.oldest_age_seconds)]);
+      }
+      document.getElementById('runtime-facts').replaceChildren(...facts.map(([key, label, value, style]) => {
+        const row = document.createElement('div');
+        const term = document.createElement('dt');
+        const detail = document.createElement('dd');
+        if (style) { row.className = style.includes('full') ? 'full' : ''; detail.className = style.includes('mono') ? 'mono' : ''; }
+        term.textContent = label;
+        detail.textContent = value;
+        detail.dataset.testid = 'runtime-' + key;
+        row.append(term, detail);
+        return row;
+      }));
+
+      const error = document.getElementById('runtime-error');
+      error.textContent = failed && typeof op.error === 'string' ? op.error : '';
+      error.hidden = !error.textContent;
+      const recovery = field('recovery');
+      const instruction = op.recovery_action === 'reconcile' ? blockers.action || 'Verifica le attività bloccate prima di riprovare.'
+        : op.recovery_action === 'recover' ? 'sul server esegui ' + (op.recovery || './bin/assozeta runtime-recover') + '.'
+        : op.recovery_action === 'retry' ? name(runtime.effective_runtime) + ' è ancora attivo. Richiedi di nuovo il cambio dalle impostazioni.' : '';
+      recovery.textContent = instruction ? ACTIONS[op.recovery_action] + ': ' + instruction : '';
+      recovery.hidden = !instruction;
+      document.getElementById('runtime').hidden = false;
+    }
+
+    function sessionToken() {
+      try {
+        const token = JSON.parse(localStorage.getItem('sessionToken'));
+        return typeof token === 'string' && token ? token : null;
+      } catch { return null; }
+    }
+
+    async function ok(url, init) {
+      try { return (await fetch(url, Object.assign({cache: 'no-store'}, init))).ok; }
+      catch { return false; }
+    }
+
+    async function poll() {
+      const token = sessionToken();
+      // A different session sees nothing until its own ownership is verified.
+      if (token !== shownFor) hide();
+      if (token) {
+        try {
+          const response = await fetch('/instance-update-status', {method: 'POST', cache: 'no-store', body: '{}',
+            headers: {'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json'}});
+          const status = response.ok ? await response.json().catch(() => null) : null;
+          // A reply for a session that has since changed is discarded.
+          if (sessionToken() !== token) hide();
+          else if (status && status.is_owner === true && status.protocol === 1) { show(status.runtime); if (!document.getElementById('runtime').hidden) shownFor = token; }
+          else if (response.status === 401 || response.status === 403 || status) hide();
+        } catch { /* The controller can be restarting too: keep the last progress. */ }
+      }
+      // The app shell is served again (no 503) and its API answers.
+      if (await ok('/') && await ok('/api/readyz')) return resume();
+      setTimeout(poll, 3000);
+    }
+    poll();
+  </script>
 </body>
 </html>

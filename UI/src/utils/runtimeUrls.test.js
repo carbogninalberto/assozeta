@@ -1,8 +1,8 @@
 import test from 'node:test';
+import {get} from 'svelte/store';
 import assert from 'node:assert/strict';
 import {setImmediate as settle} from 'node:timers/promises';
-import {loadInstanceConfig, getApiHost, instanceConfig} from '../store/instanceStore.js';
-import * as version from './apiVersion.js';
+import {loadInstanceConfig, getApiHost, instanceConfig, instanceStatus, refreshConfigInBackground} from '../store/instanceStore.js';
 import {getWebSocketUrl} from './websocketUrl.js';
 
 const retired = ['assozeta_api_override', 'assozeta_api_v2_probe', 'assozeta_ws_v2_fallback', 'uiApiVersion'];
@@ -14,7 +14,6 @@ function setup(t, {query = '', hash = '', seed = false, response = 200, custom =
     t.after(async () => {
         await settle(); // The cache-hit path refreshes configuration in the background.
         instanceConfig.set(null);
-        version.resetApiVersionState?.();
         for (const [key, descriptor] of originals) {
             if (descriptor) Object.defineProperty(globalThis, key, descriptor);
             else delete globalThis[key];
@@ -65,12 +64,43 @@ test('bootstrap_no_fallback', async t => {
 test('socket_and_request_urls', async t => {
     const calls = setup(t, {seed: true});
     await loadInstanceConfig();
+    // An open tab can receive an old preference from another version of the client.
+    localStorage.setItem('uiApiVersion', 'v2');
+    sessionStorage.setItem('assozeta_api_override', 'v2');
+    location.search = '?api=v2';
     assert.equal(new URL(getWebSocketUrl('/ws/notifications/', 'fixture')).pathname, '/ws/notifications/',
         'Socket URL must be independent of the old Go preference');
-    assert.equal(version.rewriteApiUrl?.('/api/instance/status') ?? '/api/instance/status', '/api/instance/status');
     assert.ok(!calls.includes('/api/v2/readyz'));
     __bakney.env.HOST = 'https://custom.example.test/api';
     __bakney.env.DOMAIN = 'https://custom.example.test';
     assert.equal(getApiHost(), __bakney.env.HOST);
     assert.equal(getWebSocketUrl('/ws/health/'), 'wss://custom.example.test/ws/health/');
+});
+
+test('cached_config_offline', async t => {
+    const cached = {oem: {name: 'Fixture', selfHosted: true}, features: {selfHosted: true}};
+    setup(t);
+    localStorage.setItem('assozeta_instance_config', JSON.stringify(cached));
+    localStorage.setItem('assozeta_config_timestamp', String(Date.now()));
+    globalThis.fetch = async () => { throw new Error('fixture offline'); };
+    await assert.doesNotReject(async () => assert.equal(await loadInstanceConfig(), true),
+        'Cached configuration must survive an unreachable status endpoint');
+    assert.equal(get(instanceConfig).oem.name, 'Fixture');
+    assert.equal(get(instanceStatus).configured, true);
+    assert.match(get(instanceStatus).error, /fixture offline/);
+});
+
+
+test('config_response_order', async t => {
+    setup(t);
+    const older = Promise.withResolvers();
+    globalThis.fetch = () => older.promise;
+    const first = refreshConfigInBackground();
+    const response = name => Response.json({oem: {name}, features: {selfHosted: true}});
+    globalThis.fetch = async () => response('Destination');
+    await refreshConfigInBackground();
+    older.resolve(response('Source'));
+    await first;
+    assert.equal(get(instanceConfig).oem.name, 'Destination', 'An older config response must not replace its successor');
+    assert.equal(JSON.parse(localStorage.getItem('assozeta_instance_config')).oem.name, 'Destination');
 });

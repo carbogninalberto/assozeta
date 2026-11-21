@@ -150,7 +150,8 @@ export default defineConfig({
     },
     define: {
         ...oemConfig,
-        ...(OEM.selfHosted ? { '__bakney.env.DOMAIN': 'globalThis.location.origin' } : {})
+        // A same-origin self-hosted build follows the page; an explicit frontend host is kept.
+        ...(OEM.selfHosted && !domain ? { '__bakney.env.DOMAIN': 'globalThis.location.origin' } : {})
     },
     plugins: [
         // basicSsl(),

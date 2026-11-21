@@ -37212,7 +37212,7 @@
         "TESTS/adapters/django/manual_availability.py",
         "TESTS/adapters/django/manual_bundle.py",
         "TESTS/adapters/go/manual_image.py",
-        "TESTS/adapters/django/ui_api_version_browser.py"
+        "UI/src/utils/runtimeUrls.test.js"
       ],
       "evidence": [
         {

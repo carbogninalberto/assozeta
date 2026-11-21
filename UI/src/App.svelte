@@ -13,7 +13,7 @@
         unreadNotificationsCounter,
         preventBackHistoryUnsavedChanges,
     } from 'store/stores.js';
-    import {instanceStatus, loadInstanceConfig, isSelfHostedMode, oemConfig, metaConfig, assistantEnabled} from 'store/instanceStore.js';
+    import {instanceStatus, loadInstanceConfig, refreshConfigInBackground, isSelfHostedMode, oemConfig, metaConfig, assistantEnabled} from 'store/instanceStore.js';
     import DashboardLayout from './layouts/DashboardLayout.svelte';
     import {slide} from 'svelte/transition';
     import {setPermissions} from 'utils/Permissions';
@@ -240,6 +240,13 @@
             },
             () => {
                 offline = true;
+            },
+            () => {
+                // Back after an outage, possibly on the other runtime: reload
+                // the configuration and reopen the notification socket.
+                offline = false;
+                if (isSelfHostedMode()) refreshConfigInBackground();
+                if (!notificationService.isConnected()) notificationService.reconnect();
             }
         );
 

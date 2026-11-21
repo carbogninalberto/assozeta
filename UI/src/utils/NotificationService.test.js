@@ -69,17 +69,13 @@ function socketFixture() {
         dispatch,
     };
 }
-test('an API version change reconnects the notification socket until disconnect', () => {
+test('notification service disconnect removes its visibility reconnect listener', () => {
     const f = socketFixture();
-    const store = () => ({set() {}});
-    f.service.init(store(), store());
+    f.service.init({set() {}}, {set() {}});
     assert.deepEqual(f.socket().calls, ['connect']);
-    assert.equal(f.listeners('assozeta:api-version'), 1);
-    f.dispatch({type: 'assozeta:api-version', detail: {version: 'v2'}});
-    assert.deepEqual(f.socket().calls, ['connect', 'reset', 'disconnect', 'connect']);
+    assert.equal(f.listeners('visibilitychange'), 1);
     f.service.disconnect();
-    assert.equal(f.listeners('assozeta:api-version'), 0);
-    f.dispatch({type: 'assozeta:api-version', detail: {version: 'v1'}});
-    assert.deepEqual(f.socket().calls, ['connect', 'reset', 'disconnect', 'connect', 'disconnect'],
-        'no reconnect after disconnect');
+    assert.equal(f.listeners('visibilitychange'), 0);
+    f.dispatch({type: 'visibilitychange'});
+    assert.deepEqual(f.socket().calls, ['connect', 'disconnect']);
 });

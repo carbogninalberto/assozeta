@@ -1,6 +1,5 @@
 <script>
     import {onMount} from 'svelte';
-    import {rewriteApiUrl} from 'utils/apiVersion.js';
     import {framedDocument} from 'utils/framedDocument.js';
 	import { X } from 'lucide-svelte';
     import Portal from 'svelte-portal';
@@ -12,9 +11,7 @@
 
     // The preview needs the session: the page is fetched with it and shown from memory.
     onMount(async () => {
-        const address = rewriteApiUrl(
-            `${__bakney.env.API.DOCUMENT.SUBSCRIPTION_PREVIEW}?sport_association_id=${userData?.sport_association?.sport_association_id}`
-        );
+        const address = `${__bakney.env.API.DOCUMENT.SUBSCRIPTION_PREVIEW}?sport_association_id=${userData?.sport_association?.sport_association_id}`;
         try {
             const res = await fetch(address, {method: 'GET'});
             if (!res.ok) throw new Error(`HTTP ${res.status}`);

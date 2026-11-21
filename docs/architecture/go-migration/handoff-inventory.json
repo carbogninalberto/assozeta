@@ -9053,7 +9053,7 @@
         }
       },
       "refs": [
-        "UI/src/routes/profile/sections/InstanceApiVersion.svelte",
+        "UI/src/routes/profile/sections/InstanceRuntime.svelte",
         "UI/src/store/instanceStore.js",
         "UI/src/utils/apiVersion.js"
       ]

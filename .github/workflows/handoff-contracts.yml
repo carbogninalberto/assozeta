@@ -32,9 +32,9 @@ jobs:
       - uses: ./.github/actions/go-foundation-setup
       - name: Pull the pinned proxy image
         run: docker pull "$(sed -n 's/^FROM \(caddy:[^ ]*\) AS production$/\1/p' UI/Dockerfile)"
-      - name: Run the handoff suite with expected-red tracking (the task matrix, installed lanes and UI run in their own jobs)
+      - name: Run the handoff suite with expected-red tracking (the task matrix and installed lanes run separately)
         run: |
-          modules=$(ls TESTS/handoff/test_*.py | grep -v -e '/test_p4_task_matrix\.py$' -e '/test_p5_installed\.py$' -e '/test_p5_ui\.py$' | sed 's#/#.#g; s#\.py$##')
+          modules=$(ls TESTS/handoff/test_*.py | grep -v -e '/test_p4_task_matrix\.py$' -e '/test_p5_installed\.py$' | sed 's#/#.#g; s#\.py$##')
           python3 -B -m TESTS.handoff.run_expected_red $modules
       - name: Retain the expected-red report
         if: always()
@@ -104,7 +104,7 @@ jobs:
           retention-days: 14
 
   settings-ui:
-    name: Phase 5 settings UI (expected red tracked)
+    name: Phase 5 settings UI
     runs-on: ubuntu-24.04
     # Two npm installs, one UI build, one serial Chromium worker. Allow ~5–8 min cold.
     timeout-minutes: 18
@@ -124,12 +124,8 @@ jobs:
           npm ci --prefix UI
           npm ci --prefix selfhost/tests/browser
           npm exec --prefix selfhost/tests/browser -- playwright install --with-deps --only-shell chromium
-      - name: Run the runtime settings contracts
-        run: python3 -B -m TESTS.handoff.run_expected_red --report quality-reports/handoff/expected-red-ui.json TESTS.handoff.test_p5_ui
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: handoff-settings-ui-${{ github.sha }}
-          path: quality-reports/handoff/expected-red-ui.json
-          if-no-files-found: error
-          retention-days: 14
+      - name: Run UI unit tests
+        run: npm test --prefix UI
+      - name: Verify owner runtime settings
+        working-directory: selfhost/tests/browser
+        run: npm exec -- playwright test --config runtime-settings.config.js
