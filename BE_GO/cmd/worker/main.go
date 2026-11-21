@@ -21,6 +21,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/config"
 	ownedpgx "github.com/carbogninalberto/assozeta/BE_GO/internal/database"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/handoff"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/redisclient"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
@@ -50,6 +51,7 @@ func run(arguments []string) error {
 	poll := flags.Duration("poll-interval", time.Second, "idle claim interval")
 	maintenance := flags.Duration("maintenance-interval", 15*time.Second, "restore deferral interval")
 	drain := flags.Duration("drain-timeout", 25*time.Second, "grace before cancelling admitted jobs")
+	heartbeat := flags.Duration("handoff-heartbeat", time.Second, "handoff consumer heartbeat interval")
 	taskTimeout := flags.Duration("task-timeout", time.Minute, "registered task deadline")
 	if err := flags.Parse(arguments); err != nil {
 		if errors.Is(err, flag.ErrHelp) {
@@ -60,6 +62,9 @@ func run(arguments []string) error {
 	}
 	if flags.NArg() != 0 {
 		return errors.New("unexpected worker arguments")
+	}
+	if *heartbeat <= 0 {
+		return errors.New("invalid handoff heartbeat interval")
 	}
 	cfg, err := config.Load(*envFile)
 	if err != nil {
@@ -116,8 +121,9 @@ func run(arguments []string) error {
 	defer closeBakney()
 	admission := service.NewJobRestoreAdmission(repository.NewRestoreFileLock(cfg.RestoreLockPath),
 		repository.NewRestoreStates(db), cfg.RestoreLockPath != "")
-	jobs := repository.NewJobs(db)
-	executorOptions := service.JobExecutorOptions{Owner: "worker-" + uuid.NewString(), Concurrency: *concurrency,
+	owner := "worker-" + uuid.NewString()
+	jobs := repository.NewJobs(db).WithConsumerID(owner)
+	executorOptions := service.JobExecutorOptions{Owner: owner, Concurrency: *concurrency,
 		Lease: *lease, RenewInterval: *renew, StoreTimeout: *storeTimeout, PollInterval: *poll,
 		MaintenanceInterval: *maintenance, DrainTimeout: *drain}
 	executor, err := service.NewJobExecutor(jobs, admission,
@@ -170,6 +176,7 @@ func run(arguments []string) error {
 	if err != nil {
 		return errors.New("worker operational schema unavailable or incompatible")
 	}
+	go heartbeatWorker(ctx, jobs, executorOptions.Owner, *heartbeat, *storeTimeout)
 	logger.Info("worker ready", "concurrency", *concurrency)
 	// cleanup_data_restores runs on its own executor (no ordinary admission);
 	// both stop on the same signal and drain within the same deadline.
@@ -223,4 +230,24 @@ func celeryBroker(cfg config.Config) (*redis.Client, error) {
 	}
 	options.Dialer = redisclient.DialContext(options)
 	return redis.NewClient(options), nil
+}
+
+func heartbeatWorker(ctx context.Context, jobs *repository.Jobs, owner string, interval, timeout time.Duration) {
+	ticker := time.NewTicker(interval)
+	defer ticker.Stop()
+	var acknowledged uuid.UUID
+	for {
+		beat, cancel := context.WithTimeout(ctx, timeout)
+		operation, err := jobs.HandoffHeartbeat(beat, owner)
+		cancel()
+		if err == nil && operation != nil && *operation != acknowledged {
+			acknowledged = *operation
+			handoff.Barrier("freeze:acknowledged", owner)
+		}
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+		}
+	}
 }

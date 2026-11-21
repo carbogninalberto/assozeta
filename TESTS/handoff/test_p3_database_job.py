@@ -49,7 +49,10 @@ association uuid.Nil). Its business effect is one UPDATE statement, counted per 
      accepted (p_runtime is effective, admission open: row pending, owner = p_runtime/generation;
        the caller may publish) | held (admission frozen, p_runtime is the source: row held with
        operation_id; the caller must NOT publish) | rejected (p_runtime is not effective: no row;
-       the caller fails retryably) | duplicate (task id exists: no change, no second publish).
+       the caller fails retryably) | duplicate (terminal row, or a row of another owner/generation:
+       no change, no publish). Re-admitting a pending or running row of the same owner at the current
+       generation (Celery retry, maintenance deferral, kombu publish retry) is accepted/held and updates
+       envelope, eta, expires and retries in place (correction, verification round 1).
        parent_id, root_id, retries and priority are read from a broker envelope's headers.
    assozeta_handoff_claim(p_runtime, p_consumer_id, p_task_id, p_task_name, p_envelope bytea)
        RETURNS TABLE(outcome, attempt_id uuid, generation)
@@ -173,6 +176,27 @@ class DatabaseJobGoToDjango(ScenarioAssertions, unittest.TestCase):
 
     def test_go_created_rows_without_envelope_cross_once_and_future_stays_future(self):
         self.scenario('reverse_d01')
+
+
+
+class BeyondTheHappyPath(ScenarioAssertions, unittest.TestCase):
+    """Added in verification round 1: behaviour a reference built only for the scenarios above could miss."""
+    SUITE = 'db'
+
+    def test_celery_retry_of_a_running_job_is_republished_not_dropped(self):
+        self.scenario('retry_is_republished_while_open')
+
+    def test_publication_in_a_rolled_back_transaction_leaves_nothing_and_commit_publishes_once(self):
+        self.scenario('rollback_publishes_nothing_commit_publishes_once')
+
+    def test_freeze_waits_for_an_open_admitting_transaction_and_staging_includes_it(self):
+        self.scenario('admission_racing_close_is_staged')
+
+    def test_frozen_go_worker_does_not_adopt_a_pre_ledger_row(self):
+        self.scenario('frozen_go_worker_adopts_nothing')
+
+    def test_without_the_ledger_table_both_runtimes_behave_as_before(self):
+        self.scenario('legacy_without_ledger_is_unchanged')
 
 
 if __name__ == '__main__':

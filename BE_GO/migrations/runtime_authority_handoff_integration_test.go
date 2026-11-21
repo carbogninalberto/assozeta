@@ -148,15 +148,16 @@ func TestHandoffRuntimeAuthorityPostgres(t *testing.T) {
 		execute(t, `CREATE TABLE assozeta_go_schema_migrations(version bigint PRIMARY KEY, dirty boolean NOT NULL);
  INSERT INTO assozeta_go_schema_migrations VALUES (4, false);
  UPDATE public.assozeta_go_job_ownership SET runtime='go', generation=7 WHERE singleton=1`)
-		if CurrentVersion != 5 {
-			t.Fatalf("CONTRACT MISSING: migration 000005_runtime_authority (CurrentVersion=%d, want 5)", CurrentVersion)
+		if CurrentVersion < 5 {
+			t.Fatalf("CONTRACT MISSING: migration 000005_runtime_authority (CurrentVersion=%d, want >= 5)", CurrentVersion)
 		}
 		if e := Apply(dsn); e != nil {
 			t.Fatal(e)
 		}
 		var version uint
-		if e := db.GetContext(ctx, &version, `SELECT version FROM assozeta_go_schema_migrations WHERE NOT dirty`); e != nil || version != 5 {
-			t.Fatal("operational schema is not at version 5", version, e)
+		// Later migrations (000006_job_handoff, Phase 3) apply on top; the upgrade lands on the binary's version.
+		if e := db.GetContext(ctx, &version, `SELECT version FROM assozeta_go_schema_migrations WHERE NOT dirty`); e != nil || version != CurrentVersion {
+			t.Fatal("operational schema is not at the current version", version, CurrentVersion, e)
 		}
 		row := read(t)
 		if row.Runtime != "go" || row.Generation != 7 || row.OperationID.Valid {

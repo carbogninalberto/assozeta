@@ -374,17 +374,20 @@ def d10_legacy_and_unsupported_messages(stack):
     legacy = {}
     for queue, envelopes in fixtures.load('legacy-mixed').broker.items():
         for envelope in envelopes:
+            if envelope['headers']['task'] == 'communications.tasks.deliver_whatsapp':
+                continue  # Phase 4 gives the legacy WhatsApp poll a Go handler; its disposition is tested there
             payload = dumps(envelope).encode()
             stack.push(queue, payload, envelope['properties'].get('priority') or 0)
             legacy[envelope['headers']['id']] = (envelope['headers']['task'], queue, payload)
-    unknown, pickled, chained, unstamped = new_id(), new_id(), new_id(), new_id()
+    unknown, pickled, chained, unstamped, django_only = new_id(), new_id(), new_id(), new_id(), new_id()
     stack.push('celery', stack.envelope('retired.task.name', unknown, stamp=time.time()))
     stack.push('celery', stack.envelope(DB_TASK, pickled, stamp=time.time(), content_type='application/x-python-serialize'))
     stack.push('celery', stack.envelope(DB_TASK, chained, stamp=time.time(), chain=[{'task': DB_TASK}]))
     stack.push('celery', stack.envelope(DB_TASK, unstamped))
-    whatsapp = next(t for t, (name, _, _) in legacy.items() if name == 'communications.tasks.deliver_whatsapp')
+    django_only_payload = stack.envelope('fixture.early_ack', django_only, stamp=time.time())  # no Go handler
+    stack.push('celery', django_only_payload)
     expected = [(unknown, 'unknown_task'), (pickled, 'unsupported_encoding'), (chained, 'unsupported_option'),
-                (whatsapp, 'no_target_handler')]
+                (django_only, 'no_target_handler')]
     snapshot = stack.broker_snapshot()
     operation = uuid.uuid4()
     record = stack.record(operation, 'django', 1, 'go')
@@ -399,14 +402,14 @@ def d10_legacy_and_unsupported_messages(stack):
     steps['settle'](record)
     for attempt in range(2):
         blocked(stack, steps['stage_backlog'], record, expected)
-    raw = {unknown: None, pickled: None, chained: None, whatsapp: legacy[whatsapp][2]}
+    raw = {unknown: None, pickled: None, chained: None, django_only: django_only_payload}
     for task, reason in expected:
         row = stack.work_row(task)
         check(row and (row['state'], row['block_reason']) == ('blocked', reason), f'{task} is in protected staging: {row}')
         if raw[task] is not None:
             check(bytes(row['envelope']) == raw[task], f'{task}: the original envelope is preserved byte for byte')
         check(not stack.redis_copies(task), f'{task} must leave the source queue (no poison loop): {stack.redis_copies(task)}')
-    adopted = [t for t, (name, _, _) in legacy.items() if t != whatsapp] + [unstamped]
+    adopted = list(legacy) + [unstamped]
     for task in adopted:
         check(stack.work_row(task)['state'] == 'staged', f'legacy envelope {task} is adopted and staged once')
     check(stack.work_row(unstamped)['accepted_at'] == datetime.fromtimestamp(0, timezone.utc),

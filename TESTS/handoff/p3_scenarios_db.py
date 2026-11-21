@@ -10,7 +10,7 @@ import uuid
 import psycopg2
 
 from TESTS.handoff import p3_oracle
-from TESTS.handoff.p3_stack import DB_TASK, GO_WORKER_APP, ROOT, ContractFailure, check, wait_for
+from TESTS.handoff.p3_stack import DB_TASK, GO_WORKER_APP, NIL, ROOT, ContractFailure, check, wait_for
 
 REJECTED = 'core.handoff.AdmissionRejected'
 
@@ -131,13 +131,20 @@ def sql_functions(stack):
     check((row['state'], row['owner_runtime'], row['owner_generation'], row['origin_runtime'], row['transport'],
            bytes(row['envelope'])) == ('pending', 'django', 1, 'django', 'broker', envelope),
           f'accepted row must be pending, owned django/1, with the exact envelope: {row}')
-    check(admit('django', a)[0] == 'duplicate', 're-admitting an existing task id must return duplicate')
+    check(admit('django', a) == ('accepted', 1),
+          're-admitting a pending task id of the same owner (a republish) must return accepted, not duplicate')
+    check(stack.work_row(a)['state'] == 'pending', 'the republished row stays pending')
     check(admit('go', new_id())[0] == 'rejected', 'admit by a non-effective runtime must return rejected')
     claim = q("SELECT * FROM public.assozeta_handoff_claim('django','sql-consumer',%s,%s,NULL)", (a, DB_TASK))[0]
     check(claim[0] == 'claimed' and claim[2] == 1, f'claim of an owned pending row must succeed: {claim}')
     attempt = claim[1]
     check(q('SELECT * FROM public.assozeta_handoff_claim(%s,%s,%s,%s,NULL)', ('django', 'other', a, DB_TASK))[0][0] == 'duplicate',
           'a second claim of a running row must return duplicate')
+    done = new_id()
+    check(admit('django', done)[0] == 'accepted', 'admit')
+    finished = q("SELECT * FROM public.assozeta_handoff_claim('django','sql-consumer',%s,%s,NULL)", (done, DB_TASK))[0]
+    q("SELECT public.assozeta_handoff_finish(%s,'completed')", (finished[1],))
+    check(admit('django', done)[0] == 'duplicate', 're-admitting a completed task id must return duplicate')
     operation = str(uuid.uuid4())
     check(q("SELECT public.assozeta_handoff_close_admission(%s,'django',1)", (operation,))[0][0] == 'closed',
           'close_admission must return closed')
@@ -397,6 +404,139 @@ def reverse_d01(stack):
                     rejected=[stale], source=('go', 2), target=('django', 3), effects={'go': 1, 'django': 2})
 
 
+# -- behaviour beyond the happy path (added in verification round 1) -------------------------------
+def retry_is_republished_while_open(stack):
+    """A Celery retry republishes the same task id; admission must not swallow it as a duplicate."""
+    import json
+    from TESTS.handoff.p3_scenarios_email import publish_mail
+    stack.require_table('assozeta_handoff_work')
+    worker = stack.django_worker()
+    stack.django_ready()
+    stack.smtp.failing = True
+    task = new_id()
+    check(publish_mail(stack, task) == ('returned', None), 'Django publication')
+
+    def retried():
+        for raw in [*stack.redis.lrange('celery', 0, -1), *stack.redis.hvals('unacked')]:
+            text = raw.decode()
+            if task in text and '"retries": 1' in text:
+                return True
+        return False
+    wait_for(lambda: retried() or (stack.work_row(task) or {}).get('retries') == 1 and stack.task_result(task) == 'RETRY',
+             f'the failed send of {task} was never retried')
+    wait_for(retried, f'the retry of {task} (retries 1) was admitted but never published: the job is lost until a switch '
+                      '(a republish of an existing task id must not be dropped as a duplicate)', timeout=10)
+    row = stack.work_row(task)
+    check(row['state'] in ('pending', 'running') and row['retries'] == 1,
+          f'the ledger records the retry in place: state {row["state"]}, retries {row["retries"]}')
+    stack.stop(worker)
+    assert json
+
+
+def rollback_publishes_nothing_commit_publishes_once(stack):
+    """apply_async inside a business transaction: nothing before commit, nothing after a rollback."""
+    from django.db import transaction
+    from application.tasks import reset_email_balance
+    stack.require_table('assozeta_handoff_work')
+    rolled, committed = new_id(), new_id()
+
+    class Abort(Exception):
+        pass
+    try:
+        with transaction.atomic():
+            reset_email_balance.apply_async(task_id=rolled)
+            raise Abort()
+    except Abort:
+        pass
+    check(stack.work_row(rolled) is None and not stack.redis_copies(rolled),
+          f'a publication inside a rolled-back transaction left work behind: {stack.work_row(rolled)}, '
+          f'{sorted(stack.redis_copies(rolled))}')
+    with transaction.atomic():
+        reset_email_balance.apply_async(task_id=committed)
+        check(not stack.redis_copies(committed), 'a publication inside a transaction reached the broker before commit')
+    check(list(stack.redis_copies(committed)) == ['celery'] and len(stack.redis_copies(committed)['celery']) == 1,
+          f'the committed publication is pushed exactly once after commit: {stack.redis_copies(committed)}')
+    check(stack.work_row(committed)['state'] == 'pending', 'and its ledger row is pending')
+
+
+def admission_racing_close_is_staged(stack):
+    """A producer whose admitting transaction is still open when the freeze starts: the freeze waits, staging sees it."""
+    import threading
+    from django.db import transaction
+    from application.tasks import reset_email_balance
+    stack.job_handoff()
+    stack.seed_balance()
+    task = new_id()
+    operation = uuid.uuid4()
+    record = stack.record(operation, 'django', 1, 'go')
+    steps = stack.handoff_steps(heartbeat_grace=1.0)
+    result = {}
+    with transaction.atomic():
+        reset_email_balance.apply_async(task_id=task)
+        closing = threading.Thread(target=lambda: result.setdefault('close', steps['close_admission'](record)), daemon=True)
+        closing.start()
+        wait_for(lambda: stack.sql("""SELECT count(*) FROM pg_stat_activity WHERE wait_event_type='Lock'
+            AND query LIKE '%%assozeta_handoff_close_admission%%'""")[0][0] == 1,
+                 'close_admission must wait for the open admitting transaction (it took no exclusive authority lock)')
+        check(closing.is_alive(), 'close_admission returned while an admitted publication was uncommitted')
+    closing.join(30)
+    check('close' in result, 'close_admission did not finish after the producer committed')
+    steps['settle'](record)
+    steps['stage_backlog'](record)
+    check(stack.work_row(task)['state'] == 'staged', f'the racing job is staged: {stack.work_row(task)["state"]}')
+    check(tuple(stack.commit_authority(str(operation), 'django', 1, 'go')) == ('committed', 'go', 2), 'commit')
+    steps['activate'](record)
+    go = stack.go_worker()
+    wait_for(lambda: (stack.go_job(task) or ('',))[0] == 'completed', 'the racing job runs once on Go')
+    stack.stop(go)
+    p3_oracle.check(stack, accepted={task: 'target_completed'}, source=('django', 1), target=('go', 2),
+                    effects={'django': 0, 'go': 1})
+
+
+def frozen_go_worker_adopts_nothing(stack):
+    """A pre-ledger Go row appearing during the freeze is not adopted or claimed by the frozen worker."""
+    stack.job_handoff()
+    to_go(stack)
+    stack.seed_balance()
+    worker = stack.go_worker()
+    consumer = consumer_of(stack, 'go')[0]['consumer_id']
+    operation = uuid.uuid4()
+    record = stack.record(operation, 'go', 2, 'django')
+    stack.handoff_steps(heartbeat_grace=1.0)['close_admission'](record)
+    historical = new_id()
+    stack.sql("""INSERT INTO public.assozeta_go_jobs (id, association_id, kind, version, idempotency_key, payload, max_attempts,
+      available_at) VALUES (%s, %s, %s, 1, %s, '{}', 3, clock_timestamp())""", (historical, NIL, DB_TASK, 'historical:' + historical))
+    heartbeats_after(stack, consumer)
+    job = stack.go_job(historical)
+    check(job[0] == 'pending' and job[1] == 0 and stack.work_row(historical) is None and stack.effect_total() == 0,
+          f'the frozen Go worker adopted or claimed a pre-ledger row: {job}, ledger {stack.work_row(historical)}')
+    stack.stop(worker)
+
+
+def legacy_without_ledger_is_unchanged(stack):
+    """A database before migration 6 (no ledger table, schema version 5): both runtimes publish and execute as before."""
+    stack.seed_balance()
+    stack.sql('ALTER TABLE public.assozeta_handoff_work RENAME TO assozeta_handoff_work_hidden')
+    stack.sql('UPDATE public.assozeta_go_schema_migrations SET version = version - 1')
+    try:
+        task = new_id()
+        check(stack.django_publish(task) == ('returned', None), 'legacy Django publication must succeed')
+        check(list(stack.redis_copies(task)) == ['celery'], 'legacy publication reaches the celery queue')
+        worker = stack.django_worker()
+        wait_for(lambda: stack.task_result(task) == 'SUCCESS', 'the legacy Django worker executes the job')
+        stack.stop(worker)
+        stack.set_authority('go', 2)  # fixture: the commit function itself needs the ledger table
+        job = new_id()
+        check(stack.go_enqueue(job).get('outcome') == 'enqueued', 'legacy Go enqueue must succeed')
+        go = stack.go_worker()
+        wait_for(lambda: (stack.go_job(job) or ('',))[0] == 'completed', 'the legacy Go worker executes the job')
+        stack.stop(go)
+        check(stack.effects() == {'handoff-django-worker': 1, 'assozeta-go-worker': 1}, f'one effect each: {stack.effects()}')
+    finally:
+        stack.sql('UPDATE public.assozeta_go_schema_migrations SET version = version + 1')
+        stack.sql('ALTER TABLE public.assozeta_handoff_work_hidden RENAME TO assozeta_handoff_work')
+
+
 SCENARIOS = {
     'schema_contract': schema_contract,
     'sql_functions': sql_functions,
@@ -407,5 +547,10 @@ SCENARIOS = {
     'reverse_stale_producer': reverse_stale_producer,
     'reverse_stale_worker_complete': reverse_stale_worker_complete,
     'reverse_d01': reverse_d01,
+    'retry_is_republished_while_open': retry_is_republished_while_open,
+    'rollback_publishes_nothing_commit_publishes_once': rollback_publishes_nothing_commit_publishes_once,
+    'admission_racing_close_is_staged': admission_racing_close_is_staged,
+    'frozen_go_worker_adopts_nothing': frozen_go_worker_adopts_nothing,
+    'legacy_without_ledger_is_unchanged': legacy_without_ledger_is_unchanged,
 }
 assert GO_WORKER_APP

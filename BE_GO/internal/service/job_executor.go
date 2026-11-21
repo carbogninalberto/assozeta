@@ -10,7 +10,9 @@ import (
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/handoff"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
+	"github.com/google/uuid"
 )
 
 // Services own successful completion, including CompleteInTx for database-only
@@ -54,7 +56,7 @@ func NewJobExecutor(store repository.JobExecutionStore, admission JobAdmission, 
 
 func (s *JobExecutor) ExecuteNext(ctx context.Context) (bool, error) { return s.executeNext(ctx, ctx) }
 
-func (s *JobExecutor) executeNext(intake, execution context.Context) (bool, error) {
+func (s *JobExecutor) executeNext(intake, execution context.Context) (ran bool, resultErr error) {
 	if err := intake.Err(); err != nil {
 		return false, err
 	}
@@ -80,6 +82,22 @@ func (s *JobExecutor) executeNext(intake, execution context.Context) (bool, erro
 		return true, domain.ErrJobInvalid
 	}
 	job := jobs[0]
+	defer func() {
+		if !errors.Is(resultErr, domain.ErrJobLeaseLost) {
+			return
+		}
+		if recorder, ok := s.store.(interface {
+			RecordFenced(context.Context, uuid.UUID) error
+		}); ok {
+			ctx, cancel := context.WithTimeout(context.WithoutCancel(execution), s.options.StoreTimeout)
+			defer cancel()
+			if err := recorder.RecordFenced(ctx, job.LeaseToken); err != nil {
+				resultErr = errors.Join(resultErr, err)
+				return
+			}
+		}
+		handoff.Barrier("attempt:fenced", job.ID.String())
+	}()
 	fail := func(failure domain.JobFailure) (bool, error) {
 		writeCtx, cancel := context.WithTimeout(context.WithoutCancel(execution), s.options.StoreTimeout)
 		defer cancel()
@@ -123,6 +141,7 @@ func (s *JobExecutor) executeNext(intake, execution context.Context) (bool, erro
 			}
 		}
 	}()
+	handoff.Barrier("claim:granted", job.ID.String())
 	handlerErr := invokeJob(taskCtx, definition.Run, job)
 	taskErr := taskCtx.Err()
 	stopHeartbeat()

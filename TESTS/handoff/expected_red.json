@@ -12,340 +12,211 @@
         "Go request rejected: bin/assozeta runtime-switch go"
       ]
     },
-    "TESTS.handoff.test_p3_database_job.HandoffSchemaContract.test_migration_6_adds_the_ledger_tables_and_shared_functions": {
-      "phase": 3,
-      "owner": "t-p3",
-      "reason": "migration 000006_job_handoff (ledger tables, admission columns, shared SQL functions) and CurrentVersion 6 do not exist",
-      "signatures": [
-        "contract: BE_GO/migrations/000006_job_handoff.{up,down}.sql missing"
-      ]
-    },
-    "TESTS.handoff.test_p3_database_job.HandoffSchemaContract.test_shared_sql_admits_holds_claims_fences_and_binds_at_commit": {
-      "phase": 3,
-      "owner": "t-p3",
-      "reason": "public.assozeta_handoff_work and the admit/claim/fence/finish/heartbeat/freeze functions do not exist",
-      "signatures": [
-        "contract: public.assozeta_handoff_work does not exist (migration 000006_job_handoff)"
-      ]
-    },
-    "TESTS.handoff.test_p3_database_job.DatabaseJobDjangoToGo.test_stale_django_producer_cannot_publish_after_commit": {
-      "phase": 3,
-      "owner": "t-p3",
-      "reason": "the Django producer has no durable admission: after the authority moves to go, apply_async still LPUSHes to the celery queue",
-      "signatures": [
-        "to its cached queue after the authority moved"
-      ]
-    },
-    "TESTS.handoff.test_p3_database_job.DatabaseJobDjangoToGo.test_stale_django_worker_cannot_claim_after_commit": {
-      "phase": 3,
-      "owner": "t-p3",
-      "reason": "the Django worker has no claim fence: a Django worker started after the authority moved to go executes a queued job",
-      "signatures": [
-        "stale Django worker executed"
-      ]
-    },
-    "TESTS.handoff.test_p3_database_job.DatabaseJobDjangoToGo.test_stale_django_attempt_cannot_complete_after_commit": {
-      "phase": 3,
-      "owner": "t-p3",
-      "reason": "the Django worker has no claim/barrier hooks: it never passes claim:granted, and no fenced effect transaction exists",
-      "signatures": [
-        "Django worker never passed barrier claim:granted"
-      ]
-    },
-    "TESTS.handoff.test_p3_database_job.DatabaseJobDjangoToGo.test_before_during_after_the_switch_every_accepted_job_runs_once": {
-      "phase": 3,
-      "owner": "t-p3",
-      "reason": "the controller transfer seam selfhost/updater/job_handoff.py (handoff_steps, PsqlStore, RespBroker) does not exist",
-      "signatures": [
-        "contract: selfhost/updater/job_handoff.py is missing"
-      ]
-    },
-    "TESTS.handoff.test_p3_database_job.DatabaseJobGoToDjango.test_stale_go_producer_cannot_enqueue_after_commit": {
-      "phase": 3,
-      "owner": "t-p3",
-      "reason": "repository.Jobs.Enqueue has no durable admission: a Go producer is accepted after the authority moved to django",
-      "signatures": [
-        "stale Go producer was accepted after the authority moved to django"
-      ]
-    },
-    "TESTS.handoff.test_p3_database_job.DatabaseJobGoToDjango.test_stale_go_attempt_cannot_complete_after_commit": {
-      "phase": 3,
-      "owner": "t-p3",
-      "reason": "cmd/worker has no --handoff-heartbeat flag (no consumer registration, freeze acknowledgement or barrier hooks)",
-      "signatures": [
-        "contract: cmd/worker refused --handoff-heartbeat"
-      ]
-    },
-    "TESTS.handoff.test_p3_database_job.DatabaseJobGoToDjango.test_go_created_rows_without_envelope_cross_once_and_future_stays_future": {
-      "phase": 3,
-      "owner": "t-p3",
-      "reason": "the controller transfer seam selfhost/updater/job_handoff.py (handoff_steps, PsqlStore, RespBroker) does not exist",
-      "signatures": [
-        "contract: selfhost/updater/job_handoff.py is missing"
-      ]
-    },
     "TESTS.handoff.test_p3_email_job.EmailJob.test_django_email_transfers_and_sends_once_on_the_go_consumer": {
       "phase": 3,
       "owner": "t-p3",
-      "reason": "worktree: controller seam selfhost/updater/job_handoff.py missing; with the part A reference: contract: job_handoff handoff_steps()['activate']",
+      "reason": "with Part A implemented: contract: job_handoff handoff_steps()['stage_backlog'] raised RuntimeError: task has no database handoff adapter",
       "signatures": [
-        "contract: selfhost/updater/job_handoff.py is missing",
-        "contract: job_handoff handoff_steps()['activate']"
+        "contract: job_handoff handoff_steps()['stage_backlog'] raised RuntimeError: task has no database handoff adapter"
       ]
     },
     "TESTS.handoff.test_p3_email_job.EmailJob.test_go_email_transfers_and_sends_once_on_django": {
       "phase": 3,
       "owner": "t-p3",
-      "reason": "worktree: controller seam selfhost/updater/job_handoff.py missing; with the part A reference: contract: public.assozeta_handoff_effects does not exist (migration 000006_job_handoff)",
+      "reason": "with Part A implemented: contract: job_handoff handoff_steps()['stage_backlog'] raised RuntimeError: task has no database handoff adapter",
       "signatures": [
-        "contract: selfhost/updater/job_handoff.py is missing",
-        "contract: public.assozeta_handoff_effects does not exist (migration 000006_job_handoff)"
+        "contract: job_handoff handoff_steps()['stage_backlog'] raised RuntimeError: task has no database handoff adapter"
       ]
     },
     "TESTS.handoff.test_p3_email_job.EmailJob.test_stale_go_consumer_cannot_claim_while_django_owns": {
       "phase": 3,
       "owner": "t-p3",
-      "reason": "cmd/celery-consumer has no --handoff-heartbeat flag (no registration, ownership check or claim fence)",
+      "reason": "with Part A implemented: contract: cmd/celery-consumer refused --handoff-heartbeat (Phase 3 freeze heartbeat flag missing)",
       "signatures": [
-        "contract: cmd/celery-consumer refused --handoff-heartbeat"
+        "contract: cmd/celery-consumer refused --handoff-heartbeat (Phase 3 freeze heartbeat flag missing)"
       ]
     },
     "TESTS.handoff.test_p3_email_job.EmailJob.test_go_consumer_receives_zero_claims_after_its_freeze_acknowledgement": {
       "phase": 3,
       "owner": "t-p3",
-      "reason": "worktree: controller seam selfhost/updater/job_handoff.py missing; with the part A reference: contract: cmd/celery-consumer refused --handoff-heartbeat (Phase 3 freeze heartbeat flag missing)",
+      "reason": "with Part A implemented: contract: cmd/celery-consumer refused --handoff-heartbeat (Phase 3 freeze heartbeat flag missing)",
       "signatures": [
-        "contract: selfhost/updater/job_handoff.py is missing",
         "contract: cmd/celery-consumer refused --handoff-heartbeat (Phase 3 freeze heartbeat flag missing)"
       ]
     },
     "TESTS.handoff.test_p3_email_job.EmailJob.test_crash_before_the_send_is_a_safe_retry": {
       "phase": 3,
       "owner": "t-p3",
-      "reason": "worktree: controller seam selfhost/updater/job_handoff.py missing; with the part A reference: contract: job_handoff handoff_steps()['settle']",
+      "reason": "with Part A implemented: contract: job_handoff handoff_steps()['close_admission'] raised RuntimeError: source consumers have not acknowledged the freeze",
       "signatures": [
-        "contract: selfhost/updater/job_handoff.py is missing",
-        "contract: job_handoff handoff_steps()['settle']"
+        "contract: job_handoff handoff_steps()['close_admission'] raised RuntimeError: source consumers have not acknowledged the freeze"
       ]
     },
     "TESTS.handoff.test_p3_email_job.EmailJob.test_ambiguous_smtp_send_blocks_replay_and_success_until_reconciled_django_source": {
       "phase": 3,
       "owner": "t-p3",
-      "reason": "worktree: controller seam selfhost/updater/job_handoff.py missing; with the part A reference: contract: job_handoff.abort is missing",
+      "reason": "with Part A implemented: contract: job_handoff.abort is missing",
       "signatures": [
-        "contract: selfhost/updater/job_handoff.py is missing",
         "contract: job_handoff.abort is missing"
       ]
     },
     "TESTS.handoff.test_p3_email_job.EmailJob.test_ambiguous_smtp_send_blocks_until_reconciled_go_source": {
       "phase": 3,
       "owner": "t-p3",
-      "reason": "worktree: controller seam selfhost/updater/job_handoff.py missing; with the part A reference: contract: cmd/celery-consumer refused --handoff-heartbeat (Phase 3 freeze heartbeat flag missing)",
+      "reason": "with Part A implemented: contract: cmd/celery-consumer refused --handoff-heartbeat (Phase 3 freeze heartbeat flag missing)",
       "signatures": [
-        "contract: selfhost/updater/job_handoff.py is missing",
         "contract: cmd/celery-consumer refused --handoff-heartbeat (Phase 3 freeze heartbeat flag missing)"
       ]
     },
     "TESTS.handoff.test_p3_broker_backlog.BrokerBacklog.test_priority_subqueues_of_both_queues_cross_by_identity_django_to_go": {
       "phase": 3,
       "owner": "t-p3",
-      "reason": "worktree: controller seam selfhost/updater/job_handoff.py missing; with the part A reference: contract: job_handoff handoff_steps()['activate']",
+      "reason": "with Part A implemented: contract: job_handoff handoff_steps()['stage_backlog'] raised RuntimeError: task has no database handoff adapter",
       "signatures": [
-        "contract: selfhost/updater/job_handoff.py is missing",
-        "contract: job_handoff handoff_steps()['activate']"
+        "contract: job_handoff handoff_steps()['stage_backlog'] raised RuntimeError: task has no database handoff adapter"
       ]
     },
     "TESTS.handoff.test_p3_broker_backlog.BrokerBacklog.test_priority_subqueues_of_both_queues_cross_by_identity_go_to_django": {
       "phase": 3,
       "owner": "t-p3",
-      "reason": "worktree: controller seam selfhost/updater/job_handoff.py missing; with the part A reference: the Django queue holds exactly the accepted ids once: 24 of 16",
+      "reason": "with Part A implemented: contract: job_handoff handoff_steps()['stage_backlog'] raised RuntimeError: task has no database handoff adapter",
       "signatures": [
-        "contract: selfhost/updater/job_handoff.py is missing",
-        "the Django queue holds exactly the accepted ids once: 24 of 16"
+        "contract: job_handoff handoff_steps()['stage_backlog'] raised RuntimeError: task has no database handoff adapter"
       ]
     },
     "TESTS.handoff.test_p3_broker_backlog.BrokerBacklog.test_crash_between_pop_and_unacked_bookkeeping_loses_nothing": {
       "phase": 3,
       "owner": "t-p3",
-      "reason": "worktree: controller seam selfhost/updater/job_handoff.py missing; with the part A reference: contract: cmd/celery-consumer refused --handoff-heartbeat (Phase 3 freeze heartbeat flag missing)",
+      "reason": "with Part A implemented: contract: cmd/celery-consumer refused --handoff-heartbeat (Phase 3 freeze heartbeat flag missing)",
       "signatures": [
-        "contract: selfhost/updater/job_handoff.py is missing",
         "contract: cmd/celery-consumer refused --handoff-heartbeat (Phase 3 freeze heartbeat flag missing)"
       ]
     },
     "TESTS.handoff.test_p3_broker_backlog.BrokerBacklog.test_controller_crashes_after_receipt_source_ack_and_destination_publish_converge": {
       "phase": 3,
       "owner": "t-p3",
-      "reason": "worktree: controller seam selfhost/updater/job_handoff.py missing; with the part A reference: Timed out: job_handoff.py stage-backlog never passed barrier receipt:persisted for",
+      "reason": "with Part A implemented: Timed out: job_handoff.py stage-backlog never passed barrier receipt:persisted for",
       "signatures": [
-        "contract: selfhost/updater/job_handoff.py is missing",
         "Timed out: job_handoff.py stage-backlog never passed barrier receipt:persisted for"
-      ]
-    },
-    "TESTS.handoff.test_p3_broker_backlog.BrokerBacklog.test_prefetched_running_held_and_next_month_jobs_get_one_disposition_each": {
-      "phase": 3,
-      "owner": "t-p3",
-      "reason": "worktree: controller seam selfhost/updater/job_handoff.py missing; passes with a part A reference",
-      "signatures": [
-        "contract: selfhost/updater/job_handoff.py is missing"
       ]
     },
     "TESTS.handoff.test_p3_broker_backlog.BrokerBacklog.test_visibility_restore_racing_staging_leaves_no_source_copy": {
       "phase": 3,
       "owner": "t-p3",
-      "reason": "worktree: controller seam selfhost/updater/job_handoff.py missing; with the part A reference: Timed out: job_handoff.py stage-backlog never passed receipt:persisted (contract: --barrier-dir)",
+      "reason": "with Part A implemented: Timed out: job_handoff.py stage-backlog never passed receipt:persisted (contract: --barrier-dir)",
       "signatures": [
-        "contract: selfhost/updater/job_handoff.py is missing",
         "Timed out: job_handoff.py stage-backlog never passed receipt:persisted (contract: --barrier-dir)"
       ]
     },
     "TESTS.handoff.test_p3_broker_backlog.BrokerBacklog.test_retry_on_the_boundary_keeps_id_lineage_stamp_and_eta": {
       "phase": 3,
       "owner": "t-p3",
-      "reason": "worktree: controller seam selfhost/updater/job_handoff.py missing; with the part A reference: a retry published during the freeze is held durably, not queued: pending, {}",
+      "reason": "with Part A implemented: contract: job_handoff handoff_steps()['activate'] raised RuntimeError: task has no database handoff adapter",
       "signatures": [
-        "contract: selfhost/updater/job_handoff.py is missing",
-        "a retry published during the freeze is held durably, not queued: pending, {}"
+        "contract: job_handoff handoff_steps()['activate'] raised RuntimeError: task has no database handoff adapter"
       ]
     },
     "TESTS.handoff.test_p3_broker_backlog.BrokerBacklog.test_child_published_during_drain_keeps_lineage_and_runs_once_on_target": {
       "phase": 3,
       "owner": "t-p3",
-      "reason": "worktree: controller seam selfhost/updater/job_handoff.py missing; with the part A reference: contract: job_handoff handoff_steps()['activate']",
+      "reason": "with Part A implemented: contract: job_handoff handoff_steps()['activate'] raised RuntimeError: task has no database handoff adapter",
       "signatures": [
-        "contract: selfhost/updater/job_handoff.py is missing",
-        "contract: job_handoff handoff_steps()['activate']"
+        "contract: job_handoff handoff_steps()['activate'] raised RuntimeError: task has no database handoff adapter"
       ]
     },
     "TESTS.handoff.test_p3_broker_backlog.BrokerBacklog.test_original_expiry_still_applies_on_the_target": {
       "phase": 3,
       "owner": "t-p3",
-      "reason": "worktree: controller seam selfhost/updater/job_handoff.py missing; with the part A reference: contract: job_handoff handoff_steps()['activate']",
+      "reason": "with Part A implemented: contract: job_handoff handoff_steps()['stage_backlog'] raised RuntimeError: task has no database handoff adapter",
       "signatures": [
-        "contract: selfhost/updater/job_handoff.py is missing",
-        "contract: job_handoff handoff_steps()['activate']"
+        "contract: job_handoff handoff_steps()['stage_backlog'] raised RuntimeError: task has no database handoff adapter"
       ]
     },
     "TESTS.handoff.test_p3_broker_backlog.BrokerBacklog.test_legacy_and_unsupported_messages_are_adopted_or_blocked_with_a_reason": {
       "phase": 3,
       "owner": "t-p3",
-      "reason": "worktree: controller seam selfhost/updater/job_handoff.py missing; with the part A reference: contract: TransferBlocked/reconcile missing",
+      "reason": "with Part A implemented: contract: TransferBlocked/reconcile missing",
       "signatures": [
-        "contract: selfhost/updater/job_handoff.py is missing",
         "contract: TransferBlocked/reconcile missing"
       ]
     },
     "TESTS.handoff.test_p3_broker_backlog.BrokerBacklog.test_two_tenants_and_a_backlog_larger_than_the_batch_cross_completely": {
       "phase": 3,
       "owner": "t-p3",
-      "reason": "worktree: controller seam selfhost/updater/job_handoff.py missing; with the part A reference: contract: job_handoff handoff_steps()['activate']",
+      "reason": "with Part A implemented: contract: job_handoff handoff_steps()['stage_backlog'] raised RuntimeError: task has no database handoff adapter",
       "signatures": [
-        "contract: selfhost/updater/job_handoff.py is missing",
-        "contract: job_handoff handoff_steps()['activate']"
+        "contract: job_handoff handoff_steps()['stage_backlog'] raised RuntimeError: task has no database handoff adapter"
       ]
     },
     "TESTS.handoff.test_p3_durable_jobs.RunningAttempts.test_early_acked_job_with_zero_broker_depth_holds_settle": {
       "phase": 3,
       "owner": "t-p3",
-      "reason": "worktree: controller seam selfhost/updater/job_handoff.py missing; with the part A reference: contract: job_handoff.TransferBlocked is missing",
+      "reason": "with Part A implemented: contract: job_handoff.TransferBlocked is missing",
       "signatures": [
-        "contract: selfhost/updater/job_handoff.py is missing",
         "contract: job_handoff.TransferBlocked is missing"
       ]
     },
     "TESTS.handoff.test_p3_durable_jobs.RunningAttempts.test_killed_attempt_before_its_effect_is_released_and_runs_once": {
       "phase": 3,
       "owner": "t-p3",
-      "reason": "worktree: controller seam selfhost/updater/job_handoff.py missing; with the part A reference: contract: job_handoff handoff_steps()['settle']",
+      "reason": "with Part A implemented: contract: job_handoff handoff_steps()['close_admission'] raised RuntimeError: source consumers have not acknowledged the freeze",
       "signatures": [
-        "contract: selfhost/updater/job_handoff.py is missing",
-        "contract: job_handoff handoff_steps()['settle']"
+        "contract: job_handoff handoff_steps()['close_admission'] raised RuntimeError: source consumers have not acknowledged the freeze"
       ]
     },
     "TESTS.handoff.test_p3_durable_jobs.RunningAttempts.test_stopped_django_worker_cannot_complete_after_the_switch": {
       "phase": 3,
       "owner": "t-p3",
-      "reason": "worktree: controller seam selfhost/updater/job_handoff.py missing; with the part A reference: contract: job_handoff handoff_steps()['settle']",
+      "reason": "with Part A implemented: contract: job_handoff handoff_steps()['close_admission'] raised RuntimeError: source consumers have not acknowledged the freeze",
       "signatures": [
-        "contract: selfhost/updater/job_handoff.py is missing",
-        "contract: job_handoff handoff_steps()['settle']"
+        "contract: job_handoff handoff_steps()['close_admission'] raised RuntimeError: source consumers have not acknowledged the freeze"
       ]
     },
     "TESTS.handoff.test_p3_durable_jobs.RunningAttempts.test_go_worker_dying_with_a_lease_is_settled_after_the_lease": {
       "phase": 3,
       "owner": "t-p3",
-      "reason": "worktree: controller seam selfhost/updater/job_handoff.py missing; with the part A reference: contract: job_handoff handoff_steps()['settle']",
+      "reason": "with Part A implemented: contract: job_handoff handoff_steps()['close_admission'] raised RuntimeError: source consumers have not acknowledged the freeze",
       "signatures": [
-        "contract: selfhost/updater/job_handoff.py is missing",
-        "contract: job_handoff handoff_steps()['settle']"
+        "contract: job_handoff handoff_steps()['close_admission'] raised RuntimeError: source consumers have not acknowledged the freeze"
       ]
     },
     "TESTS.handoff.test_p3_durable_jobs.RunningAttempts.test_stopped_go_worker_resuming_before_commit_is_fenced": {
       "phase": 3,
       "owner": "t-p3",
-      "reason": "worktree: controller seam selfhost/updater/job_handoff.py missing; with the part A reference: contract: job_handoff handoff_steps()['settle']",
+      "reason": "with Part A implemented: contract: job_handoff handoff_steps()['close_admission'] raised RuntimeError: source consumers have not acknowledged the freeze",
       "signatures": [
-        "contract: selfhost/updater/job_handoff.py is missing",
-        "contract: job_handoff handoff_steps()['settle']"
+        "contract: job_handoff handoff_steps()['close_admission'] raised RuntimeError: source consumers have not acknowledged the freeze"
       ]
     },
     "TESTS.handoff.test_p3_durable_jobs.SqlJobsAndRollback.test_go_pending_leased_terminal_and_historical_rows_on_the_reverse_switch": {
       "phase": 3,
       "owner": "t-p3",
-      "reason": "worktree: controller seam selfhost/updater/job_handoff.py missing; with the part A reference: contract: job_handoff handoff_steps()['settle']",
+      "reason": "with Part A implemented: contract: job_handoff handoff_steps()['close_admission'] raised RuntimeError: source consumers have not acknowledged the freeze",
       "signatures": [
-        "contract: selfhost/updater/job_handoff.py is missing",
-        "contract: job_handoff handoff_steps()['settle']"
+        "contract: job_handoff handoff_steps()['close_admission'] raised RuntimeError: source consumers have not acknowledged the freeze"
       ]
     },
     "TESTS.handoff.test_p3_durable_jobs.SqlJobsAndRollback.test_legacy_broker_task_becomes_a_go_durable_job": {
       "phase": 3,
       "owner": "t-p3",
-      "reason": "worktree: controller seam selfhost/updater/job_handoff.py missing; with the part A reference: the adopted row keeps the publication stamp as created_at: None",
+      "reason": "with Part A implemented: the adopted row keeps the publication stamp as created_at: None",
       "signatures": [
-        "contract: selfhost/updater/job_handoff.py is missing",
         "the adopted row keeps the publication stamp as created_at: None"
-      ]
-    },
-    "TESTS.handoff.test_p3_durable_jobs.SqlJobsAndRollback.test_rollback_transfers_the_target_backlog_under_a_new_generation": {
-      "phase": 3,
-      "owner": "t-p3",
-      "reason": "worktree: controller seam selfhost/updater/job_handoff.py missing; passes with a part A reference",
-      "signatures": [
-        "contract: selfhost/updater/job_handoff.py is missing"
       ]
     },
     "TESTS.handoff.test_p3_durable_jobs.SqlJobsAndRollback.test_abort_before_commit_returns_staged_and_held_work_to_the_source": {
       "phase": 3,
       "owner": "t-p3",
-      "reason": "worktree: controller seam selfhost/updater/job_handoff.py missing; with the part A reference: contract: job_handoff.abort(store, broker, record) is missing",
+      "reason": "with Part A implemented: contract: job_handoff.abort(store, broker, record) is missing",
       "signatures": [
-        "contract: selfhost/updater/job_handoff.py is missing",
         "contract: job_handoff.abort(store, broker, record) is missing"
-      ]
-    },
-    "TESTS.handoff.test_p3_producers.ProducerPaths.test_every_django_publication_api_is_refused_after_commit": {
-      "phase": 3,
-      "owner": "t-p3",
-      "reason": "worktree: stale Django delay published after the authority moved to go (['celery']); passes with a part A reference",
-      "signatures": [
-        "stale Django delay published after the authority moved to go (['celery'])"
-      ]
-    },
-    "TESTS.handoff.test_p3_producers.ProducerPaths.test_every_django_publication_api_is_held_during_frozen_intake": {
-      "phase": 3,
-      "owner": "t-p3",
-      "reason": "worktree: controller seam selfhost/updater/job_handoff.py missing; passes with a part A reference",
-      "signatures": [
-        "contract: selfhost/updater/job_handoff.py is missing"
       ]
     },
     "TESTS.handoff.test_p3_producers.ProducerPaths.test_go_task_child_published_during_drain_is_admitted_and_runs_once_on_target": {
       "phase": 3,
       "owner": "t-p3",
-      "reason": "worktree: controller seam selfhost/updater/job_handoff.py missing; with the part A reference: the Go child publication reached the ledger exactly once: []",
+      "reason": "with Part A implemented: the Go child publication reached the ledger exactly once: []",
       "signatures": [
-        "contract: selfhost/updater/job_handoff.py is missing",
         "the Go child publication reached the ledger exactly once: []"
       ]
     },

@@ -41617,15 +41617,15 @@
       "kind": "signal_connection",
       "django": {
         "file": "BE/instance/restore/task_base.py",
-        "line": 75,
+        "line": 81,
         "symbol": "before_task_publish.connect:stamp_published_task",
-        "sha256": "7f6cca9b45e86ec9ccc5d36648b0c9adcf82bd55999cb0a6d9c15732a79cb997"
+        "sha256": "42e6fb8305e27221092eabe868a7fbb65e8fb8132d8d838e8ec6da97413d8d3a"
       },
       "source_present": true,
       "declaration": {
         "call": "before_task_publish.connect(stamp_published_task, weak=False)"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/celery/celery.go",
         "BE_GO/internal/celery/python.go"

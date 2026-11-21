@@ -390,6 +390,10 @@ class Rehearsal:
         assert self.job(identifier)[:2] == ('running', 1) and not self.effects()
         self.sql('DROP TRIGGER fixture_pause_claim ON assozeta_go_jobs')
         self.handoff('go')
+        # The fixture handoffs bypass the Phase 3 transfer; bind the job to the new generation as its
+        # authority commit would, so the expired lease is recoverable by the new owner.
+        self.sql('UPDATE assozeta_handoff_work SET owner_generation=(SELECT generation FROM assozeta_go_job_ownership) '
+                 'WHERE task_id=%s', (identifier,))
         recovery = self.worker()
         self.complete(identifier, attempts=2)
         self.stop(recovery)

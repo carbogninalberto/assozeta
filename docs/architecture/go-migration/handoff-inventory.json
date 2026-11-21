@@ -7680,6 +7680,31 @@
       ]
     },
     {
+      "id": "schedule:worker-handoff-heartbeat",
+      "kind": "schedule",
+      "items": [
+        "go-loop:BE_GO/cmd/worker/main.go:heartbeatWorker"
+      ],
+      "fixture": "legacy-mixed",
+      "effect": "Register the durable worker, refresh its heartbeat and acknowledge a source freeze after the SQL claim gate closes.",
+      "owner": {
+        "django": {
+          "runtime": "none",
+          "status": "present",
+          "disposition": "stopped: the Go durable worker is inactive in Django mode"
+        },
+        "go": {
+          "runtime": "go",
+          "component": "/app/worker",
+          "status": "present"
+        }
+      },
+      "refs": [
+        "BE_GO/cmd/worker/main.go",
+        "BE_GO/internal/repository/job_handoff.go"
+      ]
+    },
+    {
       "id": "publisher:api-email",
       "kind": "publisher",
       "items": [
@@ -9310,6 +9335,13 @@
       "finding": "Delivery logic (DeliverOne) exists in Go but the Celery name has no Go registry entry: a queued poll routed to the Go queue would be handed back to Django, and no scheduler/worker owns the poll.",
       "executable_gap": true,
       "evidence_gap": false
+    },
+    {
+      "ledger_id": "signal_connection:BE/instance/restore/task_base.py:before_task_publish.connect:stamp_published_task",
+      "status": "needs_review",
+      "finding": "Phase 3 wrapped CoordinatedTask.__call__ with the handoff claim; the publish stamp connection in the same file is unchanged. Re-verify the celery-producer component and promote.",
+      "executable_gap": false,
+      "evidence_gap": true
     }
   ],
   "django_handoff": [],
