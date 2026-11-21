@@ -2637,6 +2637,158 @@
       "signatures": [
         "P5 contract red"
       ]
+    },
+    "TESTS.handoff.test_p5_ui.Unit.test_store_transitions": {
+      "phase": 5,
+      "owner": "t-p5ui",
+      "reason": "Missing runtimeSwitchStore.js: owner runtime status store",
+      "signatures": [
+        "Missing runtimeSwitchStore.js: owner runtime status store"
+      ]
+    },
+    "TESTS.handoff.test_p5_ui.Unit.test_store_poll_fallback": {
+      "phase": 5,
+      "owner": "t-p5ui",
+      "reason": "Missing runtimeSwitchStore.js: owner runtime status store",
+      "signatures": [
+        "Missing runtimeSwitchStore.js: owner runtime status store"
+      ]
+    },
+    "TESTS.handoff.test_p5_ui.Unit.test_store_denied": {
+      "phase": 5,
+      "owner": "t-p5ui",
+      "reason": "Missing runtimeSwitchStore.js: owner runtime status store",
+      "signatures": [
+        "Missing runtimeSwitchStore.js: owner runtime status store"
+      ]
+    },
+    "TESTS.handoff.test_p5_ui.Unit.test_bootstrap_preferences": {
+      "phase": 5,
+      "owner": "t-p5ui",
+      "reason": "First bootstrap request must use the stable API",
+      "signatures": [
+        "First bootstrap request must use the stable API"
+      ]
+    },
+    "TESTS.handoff.test_p5_ui.Unit.test_bootstrap_no_fallback": {
+      "phase": 5,
+      "owner": "t-p5ui",
+      "reason": "An unavailable API must not trigger a probe or alias retry",
+      "signatures": [
+        "An unavailable API must not trigger a probe or alias retry"
+      ]
+    },
+    "TESTS.handoff.test_p5_ui.Unit.test_socket_and_request_urls": {
+      "phase": 5,
+      "owner": "t-p5ui",
+      "reason": "Socket URL must be independent of the old Go preference",
+      "signatures": [
+        "Socket URL must be independent of the old Go preference"
+      ]
+    },
+    "TESTS.handoff.test_p5_ui.Browser.test_switch_to_go": {
+      "phase": 5,
+      "owner": "t-p5ui",
+      "reason": "Owner settings must expose the instance runtime switch",
+      "signatures": [
+        "Owner settings must expose the instance runtime switch"
+      ]
+    },
+    "TESTS.handoff.test_p5_ui.Browser.test_switch_to_django": {
+      "phase": 5,
+      "owner": "t-p5ui",
+      "reason": "Owner settings must expose the instance runtime switch",
+      "signatures": [
+        "Owner settings must expose the instance runtime switch"
+      ]
+    },
+    "TESTS.handoff.test_p5_ui.Browser.test_lost_reply": {
+      "phase": 5,
+      "owner": "t-p5ui",
+      "reason": "Owner settings must expose the instance runtime switch",
+      "signatures": [
+        "Owner settings must expose the instance runtime switch"
+      ]
+    },
+    "TESTS.handoff.test_p5_ui.Browser.test_stale_generation": {
+      "phase": 5,
+      "owner": "t-p5ui",
+      "reason": "Owner settings must expose the instance runtime switch",
+      "signatures": [
+        "Owner settings must expose the instance runtime switch"
+      ]
+    },
+    "TESTS.handoff.test_p5_ui.Browser.test_operation_in_progress": {
+      "phase": 5,
+      "owner": "t-p5ui",
+      "reason": "Owner settings must expose the instance runtime switch",
+      "signatures": [
+        "Owner settings must expose the instance runtime switch"
+      ]
+    },
+    "TESTS.handoff.test_p5_ui.Browser.test_idempotency_conflict": {
+      "phase": 5,
+      "owner": "t-p5ui",
+      "reason": "Owner settings must expose the instance runtime switch",
+      "signatures": [
+        "Owner settings must expose the instance runtime switch"
+      ]
+    },
+    "TESTS.handoff.test_p5_ui.Browser.test_owner_access": {
+      "phase": 5,
+      "owner": "t-p5ui",
+      "reason": "Owner needs a named runtime switch even when unavailable",
+      "signatures": [
+        "Owner needs a named runtime switch even when unavailable"
+      ]
+    },
+    "TESTS.handoff.test_p5_ui.Browser.test_cold_maintenance": {
+      "phase": 5,
+      "owner": "t-p5ui",
+      "reason": "Cold maintenance document must resume the controller operation",
+      "signatures": [
+        "Cold maintenance document must resume the controller operation"
+      ]
+    },
+    "TESTS.handoff.test_p5_ui.Browser.test_blocked_dispositions": {
+      "phase": 5,
+      "owner": "t-p5ui",
+      "reason": "Settings must show blocked work separately",
+      "signatures": [
+        "Settings must show blocked work separately"
+      ]
+    },
+    "TESTS.handoff.test_p5_ui.Browser.test_post_commit_failure": {
+      "phase": 5,
+      "owner": "t-p5ui",
+      "reason": "Failure after commit must identify the effective runtime",
+      "signatures": [
+        "Failure after commit must identify the effective runtime"
+      ]
+    },
+    "TESTS.handoff.test_p5_ui.Browser.test_stale_browser": {
+      "phase": 5,
+      "owner": "t-p5ui",
+      "reason": "A stale browser must use the stable API on its first load",
+      "signatures": [
+        "A stale browser must use the stable API on its first load"
+      ]
+    },
+    "TESTS.handoff.test_p5_ui.Browser.test_other_route_refresh": {
+      "phase": 5,
+      "owner": "t-p5ui",
+      "reason": "An open route must refresh runtime-dependent configuration after reconnect",
+      "signatures": [
+        "An open route must refresh runtime-dependent configuration after reconnect"
+      ]
+    },
+    "TESTS.handoff.test_p5_ui.Browser.test_pre_commit_failure": {
+      "phase": 5,
+      "owner": "t-p5ui",
+      "reason": "A pre-commit failure must show the last completed stage",
+      "signatures": [
+        "A pre-commit failure must show the last completed stage"
+      ]
     }
   }
 }
