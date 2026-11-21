@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
 )
 
 type SchedulePageOptions struct {
@@ -106,6 +107,7 @@ func (s *SchedulePager) Tick(ctx context.Context, cursor domain.ScheduleCursor) 
 	if err := ctx.Err(); err != nil {
 		return result, err
 	}
+	_, leased := repository.CurrentScheduleLease(ctx)
 	result.Outcomes = make([]domain.SchedulePageOutcome, 0, len(rows))
 	for _, row := range rows {
 		if err := ctx.Err(); err != nil {
@@ -117,7 +119,7 @@ func (s *SchedulePager) Tick(ctx context.Context, cursor domain.ScheduleCursor) 
 		outcome := domain.SchedulePageOutcome{SourceID: row.ID}
 		if !row.Enabled {
 			outcome.Status = domain.SchedulePageDisabled
-		} else if _, supported := domain.PeriodicJobKind(row.Task); !supported {
+		} else if _, supported := domain.PeriodicJobKind(row.Task); !supported && !(leased && row.Task == domain.PeriodicBackupNotice) {
 			outcome.Status = domain.SchedulePageUnrelated
 		} else {
 			sourceCtx, cancelSource := context.WithTimeout(ctx, s.options.SourceTimeout)

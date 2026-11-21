@@ -228,204 +228,13 @@
         "publishers still owner-planned for phase 3"
       ]
     },
-    "TESTS.handoff.test_p4_scheduling.SeedingAndDefinitions.test_django_and_go_embed_one_canonical_declaration_list": {
-      "phase": 4,
-      "owner": "t-p4",
-      "reason": "Phase 4 part A: migration 000007_schedule_authority (seed record, scheduler lease, runtime-neutral occurrence receipts), the shared seed/acquire/fence SQL, scheduler registration, clock and barrier seams do not exist; needs Phase 3 part A (000006) first",
-      "signatures": [
-        "(migration 000006_job_handoff)",
-        "(migration 000007_schedule_authority)"
-      ]
-    },
-    "TESTS.handoff.test_p4_scheduling.SeedingAndDefinitions.test_fresh_database_is_seeded_once_and_a_restart_reseeds_nothing": {
-      "phase": 4,
-      "owner": "t-p4",
-      "reason": "Phase 4 part A: migration 000007_schedule_authority (seed record, scheduler lease, runtime-neutral occurrence receipts), the shared seed/acquire/fence SQL, scheduler registration, clock and barrier seams do not exist; needs Phase 3 part A (000006) first",
-      "signatures": [
-        "(migration 000006_job_handoff)",
-        "(migration 000007_schedule_authority)"
-      ]
-    },
-    "TESTS.handoff.test_p4_scheduling.SeedingAndDefinitions.test_go_on_a_fresh_database_where_beat_never_ran_seeds_what_beat_would": {
-      "phase": 4,
-      "owner": "t-p4",
-      "reason": "Phase 4 part A: migration 000007_schedule_authority (seed record, scheduler lease, runtime-neutral occurrence receipts), the shared seed/acquire/fence SQL, scheduler registration, clock and barrier seams do not exist; needs Phase 3 part A (000006) first",
-      "signatures": [
-        "(migration 000006_job_handoff)",
-        "(migration 000007_schedule_authority)"
-      ]
-    },
-    "TESTS.handoff.test_p4_scheduling.SeedingAndDefinitions.test_customized_disabled_deleted_one_off_and_custom_definitions_survive_restart_and_both_switches": {
-      "phase": 4,
-      "owner": "t-p4",
-      "reason": "Phase 4 part A: Beat (DatabaseScheduler.update_from_dict) overwrites customized declared definitions and re-creates deleted ones on every start; seeding once is not implemented",
-      "signatures": [
-        "(migration 000006_job_handoff)",
-        "(migration 000007_schedule_authority)",
-        "a Beat restart overwrote customized definitions"
-      ]
-    },
-    "TESTS.handoff.test_p4_scheduling.SeedingAndDefinitions.test_a_changed_declaration_updates_only_uncustomized_definitions": {
-      "phase": 4,
-      "owner": "t-p4",
-      "reason": "Phase 4 part A: migration 000007_schedule_authority (seed record, scheduler lease, runtime-neutral occurrence receipts), the shared seed/acquire/fence SQL, scheduler registration, clock and barrier seams do not exist; needs Phase 3 part A (000006) first",
-      "signatures": [
-        "(migration 000006_job_handoff)",
-        "(migration 000007_schedule_authority)"
-      ]
-    },
-    "TESTS.handoff.test_p4_scheduling.OccurrenceAuthority.test_beat_commits_receipt_job_and_cursor_together_and_a_crash_before_push_publishes_once": {
-      "phase": 4,
-      "owner": "t-p4",
-      "reason": "Phase 4 part A: migration 000007_schedule_authority (seed record, scheduler lease, runtime-neutral occurrence receipts), the shared seed/acquire/fence SQL, scheduler registration, clock and barrier seams do not exist; needs Phase 3 part A (000006) first",
-      "signatures": [
-        "(migration 000006_job_handoff)",
-        "(migration 000007_schedule_authority)"
-      ]
-    },
-    "TESTS.handoff.test_p4_scheduling.OccurrenceAuthority.test_occurrence_due_at_the_freeze_fires_once_on_go": {
-      "phase": 4,
-      "owner": "t-p4",
-      "reason": "Phase 4 part A: migration 000007_schedule_authority (seed record, scheduler lease, runtime-neutral occurrence receipts), the shared seed/acquire/fence SQL, scheduler registration, clock and barrier seams do not exist; needs Phase 3 part A (000006) first",
-      "signatures": [
-        "(migration 000006_job_handoff)",
-        "(migration 000007_schedule_authority)"
-      ]
-    },
-    "TESTS.handoff.test_p4_scheduling.OccurrenceAuthority.test_occurrence_due_at_the_freeze_fires_once_on_django": {
-      "phase": 4,
-      "owner": "t-p4",
-      "reason": "Phase 4 part A: migration 000007_schedule_authority (seed record, scheduler lease, runtime-neutral occurrence receipts), the shared seed/acquire/fence SQL, scheduler registration, clock and barrier seams do not exist; needs Phase 3 part A (000006) first",
-      "signatures": [
-        "(migration 000006_job_handoff)",
-        "(migration 000007_schedule_authority)"
-      ]
-    },
-    "TESTS.handoff.test_p4_scheduling.OccurrenceAuthority.test_occurrence_committed_before_the_freeze_runs_once_on_go_and_is_not_republished": {
-      "phase": 4,
-      "owner": "t-p4",
-      "reason": "Phase 4 part A: migration 000007_schedule_authority (seed record, scheduler lease, runtime-neutral occurrence receipts), the shared seed/acquire/fence SQL, scheduler registration, clock and barrier seams do not exist; needs Phase 3 part A (000006) first",
-      "signatures": [
-        "(migration 000006_job_handoff)",
-        "(migration 000007_schedule_authority)"
-      ]
-    },
-    "TESTS.handoff.test_p4_scheduling.OccurrenceAuthority.test_occurrence_committed_before_the_freeze_runs_once_on_django_and_is_not_republished": {
-      "phase": 4,
-      "owner": "t-p4",
-      "reason": "Phase 4 part A: migration 000007_schedule_authority (seed record, scheduler lease, runtime-neutral occurrence receipts), the shared seed/acquire/fence SQL, scheduler registration, clock and barrier seams do not exist; needs Phase 3 part A (000006) first",
-      "signatures": [
-        "(migration 000006_job_handoff)",
-        "(migration 000007_schedule_authority)"
-      ]
-    },
-    "TESTS.handoff.test_p4_scheduling.OccurrenceAuthority.test_go_on_a_fresh_database_where_beat_never_ran_publishes_and_executes": {
-      "phase": 4,
-      "owner": "t-p4",
-      "reason": "Phase 4 part A: migration 000007_schedule_authority (seed record, scheduler lease, runtime-neutral occurrence receipts), the shared seed/acquire/fence SQL, scheduler registration, clock and barrier seams do not exist; needs Phase 3 part A (000006) first",
-      "signatures": [
-        "(migration 000006_job_handoff)",
-        "(migration 000007_schedule_authority)"
-      ]
-    },
-    "TESTS.handoff.test_p4_scheduling.OccurrenceAuthority.test_switching_back_before_the_next_due_time_fires_once_on_django": {
-      "phase": 4,
-      "owner": "t-p4",
-      "reason": "Phase 4 part A: migration 000007_schedule_authority (seed record, scheduler lease, runtime-neutral occurrence receipts), the shared seed/acquire/fence SQL, scheduler registration, clock and barrier seams do not exist; needs Phase 3 part A (000006) first",
-      "signatures": [
-        "(migration 000006_job_handoff)",
-        "(migration 000007_schedule_authority)"
-      ]
-    },
-    "TESTS.handoff.test_p4_scheduling.OccurrenceAuthority.test_missed_ticks_are_applied_once_on_resume": {
-      "phase": 4,
-      "owner": "t-p4",
-      "reason": "Phase 4 part A: migration 000007_schedule_authority (seed record, scheduler lease, runtime-neutral occurrence receipts), the shared seed/acquire/fence SQL, scheduler registration, clock and barrier seams do not exist; needs Phase 3 part A (000006) first",
-      "signatures": [
-        "(migration 000006_job_handoff)",
-        "(migration 000007_schedule_authority)"
-      ]
-    },
-    "TESTS.handoff.test_p4_scheduling.DefinitionTypes.test_dst_forward_and_repeated_local_times_match_beat_across_a_switch": {
-      "phase": 4,
-      "owner": "t-p4",
-      "reason": "Phase 4 part A: migration 000007_schedule_authority (seed record, scheduler lease, runtime-neutral occurrence receipts), the shared seed/acquire/fence SQL, scheduler registration, clock and barrier seams do not exist; needs Phase 3 part A (000006) first",
-      "signatures": [
-        "(migration 000006_job_handoff)",
-        "(migration 000007_schedule_authority)"
-      ]
-    },
-    "TESTS.handoff.test_p4_scheduling.DefinitionTypes.test_interval_and_cron_types_match_beat_across_a_switch": {
-      "phase": 4,
-      "owner": "t-p4",
-      "reason": "Phase 4 part A: migration 000007_schedule_authority (seed record, scheduler lease, runtime-neutral occurrence receipts), the shared seed/acquire/fence SQL, scheduler registration, clock and barrier seams do not exist; needs Phase 3 part A (000006) first",
-      "signatures": [
-        "(migration 000006_job_handoff)",
-        "(migration 000007_schedule_authority)"
-      ]
-    },
-    "TESTS.handoff.test_p4_scheduling.DefinitionTypes.test_definition_edited_during_the_transition_applies_on_the_target": {
-      "phase": 4,
-      "owner": "t-p4",
-      "reason": "Phase 4 part A: migration 000007_schedule_authority (seed record, scheduler lease, runtime-neutral occurrence receipts), the shared seed/acquire/fence SQL, scheduler registration, clock and barrier seams do not exist; needs Phase 3 part A (000006) first",
-      "signatures": [
-        "(migration 000006_job_handoff)",
-        "(migration 000007_schedule_authority)"
-      ]
-    },
-    "TESTS.handoff.test_p4_scheduling.DefinitionTypes.test_disabled_never_fires_and_one_off_fires_once_in_both_directions": {
-      "phase": 4,
-      "owner": "t-p4",
-      "reason": "Phase 4 part A: migration 000007_schedule_authority (seed record, scheduler lease, runtime-neutral occurrence receipts), the shared seed/acquire/fence SQL, scheduler registration, clock and barrier seams do not exist; needs Phase 3 part A (000006) first",
-      "signatures": [
-        "(migration 000006_job_handoff)",
-        "(migration 000007_schedule_authority)"
-      ]
-    },
-    "TESTS.handoff.test_p4_scheduling.SchedulerGenerations.test_lost_go_scheduler_heartbeat_cannot_admit_a_second_generation": {
-      "phase": 4,
-      "owner": "t-p4",
-      "reason": "Phase 4 part A: migration 000007_schedule_authority (seed record, scheduler lease, runtime-neutral occurrence receipts), the shared seed/acquire/fence SQL, scheduler registration, clock and barrier seams do not exist; needs Phase 3 part A (000006) first",
-      "signatures": [
-        "(migration 000006_job_handoff)",
-        "(migration 000007_schedule_authority)"
-      ]
-    },
-    "TESTS.handoff.test_p4_scheduling.SchedulerGenerations.test_lost_beat_heartbeat_cannot_admit_a_second_generation": {
-      "phase": 4,
-      "owner": "t-p4",
-      "reason": "Phase 4 part A: migration 000007_schedule_authority (seed record, scheduler lease, runtime-neutral occurrence receipts), the shared seed/acquire/fence SQL, scheduler registration, clock and barrier seams do not exist; needs Phase 3 part A (000006) first",
-      "signatures": [
-        "(migration 000006_job_handoff)",
-        "(migration 000007_schedule_authority)"
-      ]
-    },
-    "TESTS.handoff.test_p4_scheduling.ScheduledExceptions.test_backup_failure_notice_occurrence_is_counted_once_across_a_scheduler_crash": {
-      "phase": 4,
-      "owner": "t-p4",
-      "reason": "Phase 4 part A: migration 000007_schedule_authority (seed record, scheduler lease, runtime-neutral occurrence receipts), the shared seed/acquire/fence SQL, scheduler registration, clock and barrier seams do not exist; needs Phase 3 part A (000006) first",
-      "signatures": [
-        "(migration 000006_job_handoff)",
-        "(migration 000007_schedule_authority)"
-      ]
-    },
     "TESTS.handoff.test_p4_scheduling.ScheduledExceptions.test_result_retention_runs_in_go_mode_on_fresh_and_upgraded_installs": {
       "phase": 4,
       "owner": "t-p4",
-      "reason": "Phase 4 part A: migration 000007_schedule_authority (seed record, scheduler lease, runtime-neutral occurrence receipts), the shared seed/acquire/fence SQL, scheduler registration, clock and barrier seams do not exist; needs Phase 3 part A (000006) first",
       "signatures": [
-        "(migration 000006_job_handoff)",
-        "(migration 000007_schedule_authority)"
-      ]
-    },
-    "TESTS.handoff.test_p4_go_units.GoScheduleEvaluator.test_native_evaluator_matches_every_authored_beat_case": {
-      "phase": 4,
-      "owner": "t-p4",
-      "signatures": [
-        "the Go evaluator refused it",
-        "contract: domain.PeriodicSchedule."
+        "cmd/celery-consumer refused --handoff-heartbeat"
       ],
-      "reason": "Phase 4 part A: the Go evaluator refuses local-timezone crontabs (DST gap/fold), day_of_week, clocked/completed one-offs and expiry that Beat evaluates (ErrScheduleUnsupported); PeriodicSchedule lacks ClockedTime/TotalRunCount"
+      "reason": "Phase 4 part A is implemented (Go result retention runs as a native job); the scenario also starts the Go consumer, which needs Phase 3 part B (cmd/celery-consumer --handoff-heartbeat). Promote when part B lands."
     },
     "TESTS.handoff.test_p4_outbox_realtime.WhatsAppOutbox.test_only_the_effective_runtime_delivers_before_and_after_a_switch": {
       "phase": 4,
@@ -2789,6 +2598,22 @@
       "signatures": [
         "A pre-commit failure must show the last completed stage"
       ]
+    },
+    "TESTS.handoff.test_p3_database_job.HandoffSchemaContract.test_migration_6_adds_the_ledger_tables_and_shared_functions": {
+      "phase": 4,
+      "owner": "t-p4",
+      "signatures": [
+        "contract: migrations.CurrentVersion must be 6"
+      ],
+      "reason": "stale by Phase 4 part A (migration 000007, CurrentVersion 7): the P3 schema scenario pins CurrentVersion == 6. t-p3 to relax it to >= 6 (bus #159) and remove this entry in that change."
+    },
+    "TESTS.handoff.test_p3_database_job.BeyondTheHappyPath.test_without_the_ledger_table_both_runtimes_behave_as_before": {
+      "phase": 4,
+      "owner": "t-p4",
+      "signatures": [
+        "worker operational schema unavailable or incompatible"
+      ],
+      "reason": "stale by Phase 4 part A: the legacy emulation hides only the ledger and records version 6 while migration 7 lease tables remain; Jobs.CheckSchema correctly refuses that hybrid. t-p3 to emulate a pre-ledger install fully (bus #159) and remove this entry."
     }
   }
 }

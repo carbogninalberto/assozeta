@@ -74,7 +74,9 @@ def routes():
 
 
 def harnesses():
-    result = {}
+    # The Celery built-in has no Django source declaration in the migration ledger.
+    result = {('celery.app.builtins.add_backend_cleanup_task', 'backend_cleanup'):
+              ['TESTS/handoff/test_p4_scheduling.py']}
     for entry in json.loads((ROOT / 'docs/architecture/go-migration/ledger.json').read_bytes())['entries']:
         if entry['kind'] == 'task' and entry['source_present']:
             paths = [p for p in entry['tests'] if p.startswith('TESTS/adapters/go/') and p.endswith('_process.py')]

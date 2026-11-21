@@ -24,14 +24,19 @@ def declared_names(stack):
     return set(stack.app.conf.beat_schedule) | {'celery.backend_cleanup'}
 
 
+def base_instant():
+    """The scheduler clock of a fresh seed: 5 s past the current real minute. Seeding stamps date_changed with
+    the scheduler clock, so a scenario that only moves the clock by a few seconds past this instant can never
+    make a seeded definition due (shortest declared interval 10 s; no minute boundary within the next 54 s)."""
+    now = datetime.now(timezone.utc)
+    return now.replace(second=5, microsecond=0)
+
+
 def boot(stack, runtime, *, disable=True):
-    """Start the runtime's scheduler at the real current instant (seeding stamps are never in the
-    future of that clock, so no seeded definition is due), wait for its first pass, then disable
-    every seeded definition so only the scenario's own definitions can fire."""
-    instant = datetime.now(timezone.utc).replace(microsecond=0)
-    stack.set_clock(instant)
-    process = stack.beat() if runtime == 'django' else stack.go_scheduler()
-    stack.tick(instant, who=f'the {runtime} scheduler (first pass)')
+    """Start the runtime's scheduler at base_instant(), wait for its first pass, then disable every seeded
+    definition so only the scenario's own definitions can fire. stack.t0 keeps that instant."""
+    stack.t0 = base_instant()
+    process = launch(stack, runtime, stack.t0, f'the {runtime} scheduler (first pass)')
     if disable:
         stack.disable_all()
     return process
@@ -39,6 +44,19 @@ def boot(stack, runtime, *, disable=True):
 
 def start(stack, runtime):
     return stack.beat() if runtime == 'django' else stack.go_scheduler()
+
+
+def launch(stack, runtime, at, who=None):
+    """Start a scheduler with the clock already at `at` and wait for its first complete pass at `at`. A scheduler
+    evaluates on startup (missed-tick rule), so the clock must never be moved after the process starts."""
+    key = clock_key(at)
+    for stale in (stack.barrier.directory / f'arrived.schedule:ticked.{key}',):
+        if stale.exists():
+            stale.unlink()
+    stack.set_clock(at)
+    process = start(stack, runtime)
+    stack.barrier.wait_arrived('schedule:ticked', key, who or f'the {runtime} scheduler at start')
+    return process
 
 
 def lease_of(stack, runtime):
@@ -128,14 +146,12 @@ def seed_once_fresh_beat(stack):
     check(set(seeds) == declared_names(stack) and {s['seeded_by'] for s in seeds.values()} == {'django'},
           f'public.assozeta_periodic_seed records each seeded declaration once (seeded_by django): {sorted(seeds)}')
     stack.stop(beat)
-    instant = datetime.now(timezone.utc).replace(microsecond=0) + S
-    stack.beat()
-    stack.tick(instant, 'Beat after a restart')
+    instant = stack.t0 + S
+    launch(stack, 'django', instant, 'Beat after a restart')
     check(stack.definitions() == definitions, 'a Beat restart changed seeded definitions')
     check(stack.seed_rows() == seeds, 'a Beat restart re-seeded (seed records changed)')
     stack.stop(stack.scheduler_processes[-1])
-    stack.go_scheduler()
-    stack.tick(instant + S, 'the Go scheduler (not effective)')
+    launch(stack, 'go', instant + S, 'the Go scheduler (not effective)')
     check(stack.definitions() == definitions and stack.seed_rows() == seeds,
           'a non-effective Go scheduler changed the seeded definitions')
     check(not stack.receipts(), f'nothing was due, yet occurrences were published: {stack.receipts()}')
@@ -187,7 +203,7 @@ def customize(stack):
 def await_seed_pass(stack, before):
     """Positive evidence that a (re)started Beat finished its startup pass: the Phase 4 tick barrier,
     or -- today -- its overwrite of a customized definition."""
-    instant = datetime.now(timezone.utc).replace(microsecond=0) + S
+    instant = stack.t0 + S
     key = clock_key(instant)
     stack.set_clock(instant)
     wait_for(lambda: stack.barrier.arrival('schedule:ticked', key) or stack.definitions() != before,
@@ -199,13 +215,14 @@ def customized_definitions_survive_restart_and_both_switches(stack):
     """Customized, disabled, deleted, one-off and custom definitions survive a restart (upgrade
     boundary), Django -> Go and Go -> Django."""
     stack.require_handoff_ledger()
-    instant = datetime.now(timezone.utc).replace(microsecond=0)
-    stack.set_clock(instant)
+    stack.t0 = base_instant()
+    stack.set_clock(stack.t0)
     beat = stack.beat()
     wait_for(lambda: len(stack.definitions()) >= len(declared_names(stack)), 'Beat seeds the declared definitions')
     customize(stack)
     expected = stack.definitions()
     stack.stop(beat)
+    stack.set_clock(stack.t0 + S)  # before the restart: the restarted Beat evaluates at once
     stack.beat()
     await_seed_pass(stack, expected)
     observed = stack.definitions()
@@ -213,13 +230,11 @@ def customized_definitions_survive_restart_and_both_switches(stack):
     check(not changed, f'a Beat restart overwrote customized definitions (expected, observed): {changed}')
     stack.require_schedule_schema()
     generation = stack.switch('django', 1, 'go', stop=[stack.scheduler_processes[-1]])
-    go_process = stack.go_scheduler()
-    stack.tick(datetime.now(timezone.utc).replace(microsecond=0) + 2 * S, 'the Go scheduler after the switch')
+    go_process = launch(stack, 'go', stack.t0 + 2 * S, 'the Go scheduler after the switch')
     check(stack.definitions() == expected, 'Django -> Go changed customized definitions: '
           + str({n: v for n, v in stack.definitions().items() if expected.get(n) != v}))
     stack.switch('go', generation, 'django', stop=[go_process])
-    stack.beat()
-    stack.tick(datetime.now(timezone.utc).replace(microsecond=0) + 3 * S, 'Beat after switching back')
+    launch(stack, 'django', stack.t0 + 3 * S, 'Beat after switching back')
     check(stack.definitions() == expected, 'Go -> Django changed customized definitions: '
           + str({n: v for n, v in stack.definitions().items() if expected.get(n) != v}))
 
@@ -282,8 +297,7 @@ def beat_receipt_cursor_and_crash_before_push(stack):
     check(not stack.redis_copies(row['task_id']), 'barrier schedule:committed is after the commit and before the broker push')
     stack.kill_tree(stack.scheduler_processes[-1], arrival)
     stack.barrier.reset()
-    stack.beat()
-    stack.tick(due + 5 * S, 'Beat after a crash between commit and push')
+    launch(stack, 'django', due + 5 * S, 'Beat after a crash between commit and push')
     copies = wait_for(lambda: stack.redis_copies(row['task_id']), 'the admitted occurrence job is published after the crash')
     check(sum(len(v) for v in copies.values()) == 1, f'exactly one broker copy: {copies}')
     check(len(receipts(stack)) == 1, f'the restarted Beat published the occurrence again: {receipts(stack)}')
@@ -315,8 +329,7 @@ def held_at_due_then_frozen(stack, source, target):
         stack.go_worker()
     else:
         stack.django_worker()
-    start(stack, target)
-    stack.tick(due + 10 * S, f'the {target} scheduler after activation')
+    launch(stack, target, due + 10 * S, f'the {target} scheduler after activation')
     row = one_receipt(stack, runtime=target, at=due + 10 * S, generation=generation)
     await_completion(stack, row['task_id'], f'the {target} executor')
     p3_oracle.check(stack, accepted={row['task_id']: 'source_completed'}, source=(target, generation),
@@ -351,8 +364,7 @@ def committed_then_frozen(stack, source, target):
         stack.go_worker()
     else:
         stack.django_worker()
-    start(stack, target)
-    stack.tick(due + 10 * S, f'the {target} scheduler after activation')
+    launch(stack, target, due + 10 * S, f'the {target} scheduler after activation')
     stack.tick(due + M, f'the {target} scheduler at the next slot')
     rows = receipts(stack)
     check([r['runtime'] for r in rows] == [source, target] and rows[1]['dispatched_at'] == due + M,
@@ -401,12 +413,10 @@ def switch_back_before_next_due(stack):
     stack.add_definition(CUSTOM, cron={'minute': '0', 'hour': '12'}, last_run_at=due - timedelta(days=1))
     stack.tick(due - 4 * H, 'Beat')
     generation = stack.switch('django', 1, 'go', stop=[stack.scheduler_processes[-1]])
-    stack.go_scheduler()
-    stack.tick(due - 3 * H, 'the Go scheduler')
+    launch(stack, 'go', due - 3 * H, 'the Go scheduler')
     generation = stack.switch('go', generation, 'django', stop=[stack.scheduler_processes[-1]])
-    stack.beat()
     stack.django_worker()
-    stack.tick(due - 2 * H, 'Beat after switching back')
+    launch(stack, 'django', due - 2 * H, 'Beat after switching back')
     check(not receipts(stack), f'nothing was due before {due.isoformat()}: {receipts(stack)}')
     stack.tick(due, 'Beat at the due time')
     row = one_receipt(stack, runtime='django', at=due, generation=generation)
@@ -435,8 +445,8 @@ def missed_ticks_once_on_resume(stack):
     check(len(receipts(stack)) == 1, f'the frozen source published missed slots: {dispatched(stack)}')
     generation = stack.finish_switch(record, steps, stop=[stack.scheduler_processes[-1], worker])
     stack.go_worker()
-    stack.go_scheduler()
-    for instant in (start_at + 5 * M + 10 * S, start_at + 5 * M + 40 * S, start_at + 6 * M):
+    launch(stack, 'go', start_at + 5 * M + 10 * S, 'the Go scheduler after activation')
+    for instant in (start_at + 5 * M + 40 * S, start_at + 6 * M):
         stack.tick(instant, 'the Go scheduler after activation')
     expected = [start_at, start_at + 5 * M + 10 * S, start_at + 6 * M]
     check(dispatched(stack) == expected, f'occurrences {[d.isoformat() for d in dispatched(stack)]}, expected '
@@ -463,7 +473,7 @@ def walk(stack, runtime, definitions, instants, switch_after=None):
         if index == switch_after:
             target = 'go' if current == 'django' else 'django'
             generation = stack.switch(current, generation, target, stop=[stack.scheduler_processes[-1]])
-            start(stack, target)
+            launch(stack, target, instant, f'the {target} scheduler after the switch')
             current = target
     return {name: dispatched(stack, name) for name in definitions}
 
@@ -533,8 +543,8 @@ def edited_definition_during_transition(stack):
     stack.tick(due - 30 * M, 'the frozen Beat (edited definition due)')
     check(not receipts(stack), 'a frozen scheduler published the edited definition')
     stack.finish_switch(record, steps, stop=[stack.scheduler_processes[-1]])
-    stack.go_scheduler()
-    for instant in (due - 30 * M + 5 * S, due, due + 5 * S):
+    launch(stack, 'go', due - 30 * M + 5 * S, 'the Go scheduler after activation')
+    for instant in (due, due + 5 * S):
         stack.tick(instant, 'the Go scheduler')
     check(dispatched(stack) == [due - 30 * M + 5 * S],
           f'expected one occurrence of the edited definition at resume and none of the old 12:00 slot: '
@@ -557,8 +567,8 @@ def disabled_and_one_off_definitions(stack):
         check(len(dispatched(stack, 'p4-one-off')) == 1 and dispatched(stack, 'p4-one-off')[0] == due,
               f'{source}: the one-off fires once at its clocked time: {dispatched(stack, "p4-one-off")}')
         generation = stack.switch(source, 1, target, stop=[stack.scheduler_processes[-1]])
-        start(stack, target)
-        for minutes in (2, 3, 60):
+        launch(stack, target, due + 2 * M, f'the {target} scheduler after the switch')
+        for minutes in (3, 60):
             stack.tick(due + minutes * M, f'the {target} scheduler')
         check(len(dispatched(stack, 'p4-one-off')) == 1, f'{source} -> {target}: the one-off fired again: '
                                                          f'{dispatched(stack, "p4-one-off")}')
@@ -599,8 +609,9 @@ def lost_heartbeat(stack, runtime):
           f'only the current scheduler generation publishes: {[(r["scheduler_generation"], r["runtime"]) for r in rows]}')
     beats = lease_b['heartbeat_at']
     wait_for(lambda: stack.lease()['heartbeat_at'] > beats, 'scheduler B keeps renewing its lease')
-    check(stack.lease()['scheduler_generation'] == lease_b['scheduler_generation'],
-          'the resumed scheduler A admitted another scheduler generation while B was alive')
+    lease_now = stack.lease()
+    check(lease_now['scheduler_generation'] == lease_b['scheduler_generation'] and lease_now['holder'] == lease_b['holder'],
+          'the resumed scheduler A took the lease back (a new generation or holder) while B was alive')
     stack.tick(due + M, f'scheduler B ({runtime}) at the next slot')
     rows = receipts(stack)
     check(len(rows) == 2 and {r['scheduler_generation'] for r in rows} == {lease_b['scheduler_generation']},
@@ -635,8 +646,7 @@ def backup_notifications_counted_once_across_crash(stack):
     receipt = one_receipt(stack, runtime='go', at=due, name=name, generation=1)
     stack.kill_tree(stack.scheduler_processes[-1], arrival)
     stack.barrier.reset()
-    stack.go_scheduler()
-    stack.tick(due + 10 * S, 'the restarted Go scheduler')
+    launch(stack, 'go', due + 10 * S, 'the restarted Go scheduler')
     copies = wait_for(lambda: stack.redis_copies(receipt['task_id']), 'the committed backup-notice occurrence was never published')
     check(list(copies) == ['assozeta-go'] and len(copies['assozeta-go']) == 1,
           f'one broker copy on the Go consumer queue: {sorted((k, len(v)) for k, v in copies.items())}')
@@ -686,8 +696,7 @@ def backend_cleanup_on_go(stack):
     generation = stack.switch('django', 1, 'go', stop=[stack.scheduler_processes[-1]])
     stack.go_worker()
     stack.go_consumer()
-    stack.go_scheduler()
-    stack.tick(day + timedelta(hours=12), 'the Go scheduler, not due')
+    launch(stack, 'go', day + timedelta(hours=12), 'the Go scheduler, not due')
     check('p4-expired-4' in stack.result_ids(), 'cleanup ran outside its occurrence')
     stack.tick(day + timedelta(days=1), 'the Go scheduler at the next 04:00')
     wait_for(lambda: 'p4-expired-4' not in stack.result_ids(), 'Go mode never removed the expired result after the switch',

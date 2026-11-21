@@ -206,7 +206,9 @@ class SchedulerRehearsal(Rehearsal):
         self.sql("UPDATE django_celery_beat_periodictask SET enabled=true,last_run_at=clock_timestamp()-interval '2 days' WHERE id=%s",(edited,))
         self.published(edited)
         assert self.sql('SELECT last_update FROM django_celery_beat_periodictasks')==marker
-        assert self.sql('SELECT count(*) FROM django_celery_beat_periodictask')==[(2,)]
+        # Migration 7: the scheduler seeds the release declarations once (assozeta_periodic_seed); no other row appears.
+        assert self.sql('SELECT count(*) FROM django_celery_beat_periodictask WHERE name NOT IN '
+                        '(SELECT name FROM assozeta_periodic_seed)')==[(2,)]
         self.case('persisted markerless edits are reread without static seeding')
         self.handoff('django')
         held=self.source('owner-loss')

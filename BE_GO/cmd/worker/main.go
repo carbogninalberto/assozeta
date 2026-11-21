@@ -4,8 +4,6 @@ package main
 
 import (
 	"context"
-	"crypto/tls"
-	"crypto/x509"
 	"errors"
 	"flag"
 	"fmt"
@@ -128,6 +126,7 @@ func run(arguments []string) error {
 		MaintenanceInterval: *maintenance, DrainTimeout: *drain}
 	executor, err := service.NewJobExecutor(jobs, admission,
 		map[string]service.JobDefinition{
+			domain.JobResultRetention:                    {Version: 1, Timeout: *taskTimeout, Run: jobs.RunResultRetention},
 			domain.JobResetDailyEmailBalance:             {Version: 1, Timeout: *taskTimeout, Run: reset.Run},
 			domain.JobUpdateAssociateAge:                 {Version: 1, Timeout: *taskTimeout, Run: ages.Run},
 			domain.JobClearExpiredSubscriptionTokens:     {Version: 1, Timeout: *taskTimeout, Run: tokens.Run},
@@ -209,27 +208,7 @@ func run(arguments []string) error {
 // celeryBroker is the Redis client for Django's CELERY_BROKER_URL: the shared
 // Redis settings without a database number (DB 0), as in cmd/server.
 func celeryBroker(cfg config.Config) (*redis.Client, error) {
-	options := &redis.Options{Addr: cfg.RedisAddress, Username: cfg.RedisUsername, Password: cfg.RedisPassword,
-		DB: 0, MaxRetries: -1, DialTimeout: 2 * time.Second, ReadTimeout: 2 * time.Second, WriteTimeout: 2 * time.Second, ContextTimeoutEnabled: true}
-	if cfg.RedisTLS {
-		options.TLSConfig = &tls.Config{MinVersion: tls.VersionTLS12}
-		if cfg.RedisRootCertificate != "" {
-			pem, err := os.ReadFile(cfg.RedisRootCertificate)
-			if err != nil {
-				return nil, errors.New("cannot read Redis root certificate")
-			}
-			roots, err := x509.SystemCertPool()
-			if err != nil {
-				roots = x509.NewCertPool()
-			}
-			if !roots.AppendCertsFromPEM(pem) {
-				return nil, errors.New("invalid Redis root certificate")
-			}
-			options.TLSConfig.RootCAs = roots
-		}
-	}
-	options.Dialer = redisclient.DialContext(options)
-	return redis.NewClient(options), nil
+	return redisclient.NewBroker(cfg)
 }
 
 func heartbeatWorker(ctx context.Context, jobs *repository.Jobs, owner string, interval, timeout time.Duration) {

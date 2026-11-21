@@ -19,7 +19,6 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
-	"github.com/carbogninalberto/assozeta/BE_GO/migrations"
 	"github.com/jackc/pgx/v5"
 	"github.com/jmoiron/sqlx"
 )
@@ -98,8 +97,14 @@ func TestSchedulePagesPostgres(t *testing.T) {
 	if e := db.GetContext(ctx, &actualHistory, `SELECT count(*) FROM django_migrations WHERE app='django_celery_beat'`); e != nil || actualHistory == 0 {
 		t.Fatal("real Beat fixture missing", e)
 	}
-	if e := migrations.Apply(dsn); e != nil {
-		t.Fatal(e)
+	// This proof pins the legacy unleased page publisher, which only runs on schema 5/6: from
+	// migration 7 every publication is fenced by a scheduler lease (TESTS/handoff/test_p4_scheduling).
+	for _, name := range legacyPageMigrations(t) {
+		script, e := os.ReadFile(name)
+		if e != nil {
+			t.Fatal(e)
+		}
+		exec(string(script))
 	}
 	exec(`CREATE TABLE instance_datarestore(state text,completed_at timestamptz)`)
 	candidates := repository.NewScheduleCandidates(db)
@@ -487,4 +492,23 @@ func boolInt(value bool) int {
 		return 1
 	}
 	return 0
+}
+
+// legacyPageMigrations returns the operational migrations up to the last schema without the scheduler lease.
+func legacyPageMigrations(t *testing.T) []string {
+	t.Helper()
+	names, err := filepath.Glob(filepath.Join("..", "..", "migrations", "0*_*.up.sql"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var legacy []string
+	for _, name := range names {
+		if filepath.Base(name) < "000007" {
+			legacy = append(legacy, name)
+		}
+	}
+	if len(legacy) != 6 {
+		t.Fatalf("expected migrations 1-6, found %v", legacy)
+	}
+	return legacy
 }

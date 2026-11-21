@@ -14,8 +14,10 @@ func (r *Jobs) CheckSchema(ctx context.Context, currentVersion uint) error {
 	var ready bool
 	if err := r.db.GetContext(ctx, &ready, `SELECT count(*)=1 AND
  COALESCE(bool_and(NOT dirty AND (
-    (version=$1 AND ($1<>6 OR to_regclass('public.assozeta_handoff_work') IS NOT NULL))
-    OR ($1=6 AND version=5 AND to_regclass('public.assozeta_handoff_work') IS NULL)
+    (version BETWEEN 5 AND $1 AND
+      (version >= 6) = (to_regclass('public.assozeta_handoff_work') IS NOT NULL) AND
+      (version >= 7) = (to_regclass('public.assozeta_scheduler_lease') IS NOT NULL))
+    OR (version=$1 AND $1<5)
  )),false) FROM public.assozeta_go_schema_migrations`, currentVersion); err != nil {
 		return err
 	}

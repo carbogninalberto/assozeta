@@ -62,6 +62,17 @@ func EvaluateScheduleDue(row domain.PeriodicSchedule, now time.Time) (domain.Sch
 		}
 		return domain.ScheduleDue{NextCheckAfter: delay}, nil
 	}
+	const never = 100000000 * time.Second // django_celery_beat.utils.NEVER_CHECK_TIMEOUT
+	if (row.ExpiresAt != nil && !now.Before(*row.ExpiresAt)) || (row.OneOff && row.TotalRunCount > 0) {
+		return domain.ScheduleDue{NextCheckAfter: never}, nil
+	}
+	if row.ClockedTime != nil {
+		if !now.Before(*row.ClockedTime) {
+			return domain.ScheduleDue{Due: true, NextCheckAfter: never}, nil
+		}
+		delay, err := scheduleDelay(now, *row.ClockedTime)
+		return domain.ScheduleDue{NextCheckAfter: delay}, err
+	}
 	var next time.Time
 	if row.Interval != nil {
 		next = last.Add(period)
@@ -91,7 +102,7 @@ func EvaluateScheduleDue(row domain.PeriodicSchedule, now time.Time) (domain.Sch
 	return domain.ScheduleDue{Due: true, NextCheckAfter: delay}, nil
 }
 
-func validatePeriodicDefinition(row domain.PeriodicSchedule) (time.Duration, cronSlots, error) {
+func validateLegacyPeriodicDefinition(row domain.PeriodicSchedule) (time.Duration, cronSlots, error) {
 	unsupported := func() (time.Duration, cronSlots, error) { return 0, cronSlots{}, domain.ErrScheduleUnsupported }
 	if _, supported := domain.PeriodicJobKind(row.Task); !supported || row.HasSolar || row.HasClocked || row.OneOff || row.ExpiresAt != nil || row.ExpireSeconds != nil ||
 		row.Priority != nil || row.Queue != "" || row.Exchange != "" || row.RoutingKey != "" ||
@@ -212,13 +223,14 @@ func cronListField(raw string, minimum, maximum int) ([]int, bool) {
 // cronSlots are Celery's expanded crontab hour and minute sets, ascending.
 // dated rows also restrict days of the month and months (ascending).
 type cronSlots struct {
-	hours, minutes, days, months []int
-	dated                        bool
+	hours, minutes, days, months, weekdays []int
+	location                               *time.Location
+	dated                                  bool
 }
 
 // onDate is Celery's execute_this_date for a wildcard day_of_week.
 func (s cronSlots) onDate(value time.Time) bool {
-	return !s.dated || (containsCronValue(s.months, int(value.Month())) && containsCronValue(s.days, value.Day()))
+	return (len(s.weekdays) == 0 || containsCronValue(s.weekdays, int(value.Weekday()))) && (!s.dated || (containsCronValue(s.months, int(value.Month())) && containsCronValue(s.days, value.Day())))
 }
 
 func cronRange(first, last, step int) []int {
@@ -242,6 +254,24 @@ func containsCronValue(values []int, value int) bool {
 // day_of_week, with expanded hour and minute sets and, for dated rows, day of
 // month and month sets (_delta_to_next).
 func nextCronSlot(after, now time.Time, slots cronSlots) (time.Time, error) {
+	if slots.location != nil && slots.location != time.UTC {
+		// Celery advances the local calendar, then subtracts in UTC. PEP 495
+		// fold=0 picks the pre-transition offset for both folds and gaps.
+		zone := slots.location
+		slots.location = nil
+		slot, err := nextCronSlot(wallAt(after, zone), wallAt(now, zone), slots)
+		if err != nil {
+			return time.Time{}, err
+		}
+		_, before := slot.Add(-25 * time.Hour).In(zone).Zone()
+		_, afterOffset := slot.Add(25 * time.Hour).In(zone).Zone()
+		first := slot.Add(-time.Duration(before) * time.Second)
+		second := slot.Add(-time.Duration(afterOffset) * time.Second)
+		if wallAt(first, zone).Equal(slot) || !wallAt(second, zone).Equal(slot) {
+			return first, nil
+		}
+		return second, nil
+	}
 	after, now = after.UTC(), now.UTC()
 	hours, minutes := slots.hours, slots.minutes
 	day := time.Date(after.Year(), after.Month(), after.Day(), 0, 0, 0, 0, time.UTC)
@@ -264,6 +294,19 @@ func nextCronSlot(after, now time.Time, slots cronSlots) (time.Time, error) {
 				return day.Add(time.Duration(hour)*time.Hour + time.Duration(minutes[0])*time.Minute), nil
 			}
 		}
+	}
+	if len(slots.weekdays) > 0 {
+		// The Gregorian date/weekday cycle repeats every 400 years.
+		for dayCount := 0; dayCount < 146097; dayCount++ {
+			day = day.AddDate(0, 0, 1)
+			if day.Year() > 9999 {
+				break
+			}
+			if slots.onDate(day) {
+				return day.Add(time.Duration(hours[0])*time.Hour + time.Duration(minutes[0])*time.Minute), nil
+			}
+		}
+		return time.Time{}, domain.ErrScheduleInvalid
 	}
 	if !slots.dated {
 		return day.AddDate(0, 0, 1).Add(time.Duration(hours[0])*time.Hour + time.Duration(minutes[0])*time.Minute), nil
@@ -321,4 +364,113 @@ func scheduleDelay(now, until time.Time) (time.Duration, error) {
 		return 0, domain.ErrScheduleInvalid
 	}
 	return delay, nil
+}
+
+func wallAt(value time.Time, zone *time.Location) time.Time {
+	value = value.In(zone)
+	return time.Date(value.Year(), value.Month(), value.Day(), value.Hour(), value.Minute(), value.Second(), value.Nanosecond(), time.UTC)
+}
+
+func validatePeriodicDefinition(row domain.PeriodicSchedule) (time.Duration, cronSlots, error) {
+	// Keep the exact pre-handoff subset available to legacy publishers.
+	if period, slots, err := validateLegacyPeriodicDefinition(row); err == nil {
+		return period, slots, nil
+	}
+	unsupported := domain.ErrScheduleUnsupported
+	if _, ok := domain.PeriodicJobKind(row.Task); (!ok && row.Task != domain.PeriodicBackupNotice) || row.HasSolar ||
+		row.Queue != "" || row.Exchange != "" || row.RoutingKey != "" || row.Priority != nil ||
+		!emptyScheduleJSON(row.Args, true) || !emptyScheduleJSON(row.Kwargs, false) || !emptyScheduleJSON(row.Headers, false) {
+		return 0, cronSlots{}, unsupported
+	}
+	if row.HasClocked {
+		if row.ClockedTime == nil || !row.OneOff || row.Interval != nil || row.Cron != nil || !validScheduleTime(*row.ClockedTime) {
+			return 0, cronSlots{}, unsupported
+		}
+		return 0, cronSlots{}, nil
+	}
+	if (row.Interval == nil) == (row.Cron == nil) {
+		return 0, cronSlots{}, unsupported
+	}
+	if i := row.Interval; i != nil {
+		unit := map[string]time.Duration{"days": 24 * time.Hour, "hours": time.Hour, "minutes": time.Minute, "seconds": time.Second, "microseconds": time.Microsecond}[i.Period]
+		if unit == 0 || i.Every <= 0 || i.Every > math.MaxInt64/int64(unit) {
+			return 0, cronSlots{}, unsupported
+		}
+		return time.Duration(i.Every) * unit, cronSlots{}, nil
+	}
+	c := row.Cron
+	loc, err := time.LoadLocation(c.Timezone)
+	if err != nil || c.Timezone == "" || c.Timezone == "Local" {
+		return 0, cronSlots{}, unsupported
+	}
+	slots := cronSlots{location: loc, dated: c.DayOfMonth != "*" || c.MonthOfYear != "*"}
+	for _, field := range []struct {
+		raw      string
+		min, max int
+		out      *[]int
+		names    []string
+	}{
+		{c.Minute, 0, 59, &slots.minutes, nil}, {c.Hour, 0, 23, &slots.hours, nil},
+		{c.DayOfMonth, 1, 31, &slots.days, nil}, {c.MonthOfYear, 1, 12, &slots.months, strings.Fields("jan feb mar apr may jun jul aug sep oct nov dec")},
+		{c.DayOfWeek, 0, 6, &slots.weekdays, strings.Fields("sun mon tue wed thu fri sat")},
+	} {
+		values, ok := expandCronField(field.raw, field.min, field.max, field.names)
+		if !ok {
+			return 0, cronSlots{}, unsupported
+		}
+		*field.out = values
+	}
+	return 0, slots, nil
+}
+
+func expandCronField(raw string, minimum, maximum int, names []string) ([]int, bool) {
+	seen := make([]bool, maximum+1)
+	number := func(value string) (int, bool) {
+		for i, name := range names {
+			if strings.EqualFold(name, value) {
+				return i + minimum, true
+			}
+		}
+		n, ok := scalarCronField(value, maximum)
+		return n, ok && n >= minimum
+	}
+	for _, item := range strings.Split(raw, ",") {
+		base, stepString, stepped := strings.Cut(item, "/")
+		step := 1
+		if stepped {
+			n, ok := scalarCronField(stepString, maximum+1)
+			if !ok || n == 0 {
+				return nil, false
+			}
+			step = n
+		}
+		low, high := minimum, maximum
+		if base != "*" {
+			a, b, ranged := strings.Cut(base, "-")
+			var ok bool
+			if low, ok = number(a); !ok {
+				return nil, false
+			}
+			high = low
+			if ranged {
+				if high, ok = number(b); !ok {
+					return nil, false
+				}
+			} else if stepped {
+				return nil, false
+			}
+		}
+		width := maximum - minimum + 1
+		length := (high - low + width) % width
+		for offset := 0; offset <= length; offset += step {
+			seen[minimum+(low-minimum+offset)%width] = true
+		}
+	}
+	var values []int
+	for i, ok := range seen {
+		if ok {
+			values = append(values, i)
+		}
+	}
+	return values, len(values) > 0
 }

@@ -58,9 +58,11 @@
     "django_site": "celery.app.builtins.add_backend_cleanup_task",
     "scheduled": true,
     "consumer": false,
-    "job": false,
+    "job": true,
     "routed": false,
-    "harness": []
+    "harness": [
+      "TESTS/handoff/test_p4_scheduling.py"
+    ]
   },
   {
     "name": "change_type_of_stripe_payments",

@@ -39996,6 +39996,286 @@
       ]
     },
     {
+      "id": "schedule_mutation:BE/instance/schedule_authority.py:PeriodicTask.objects.filter",
+      "kind": "schedule_mutation",
+      "django": {
+        "file": "BE/instance/schedule_authority.py",
+        "line": 81,
+        "symbol": "PeriodicTask.objects.filter",
+        "sha256": "e7556721b4cdc19aa8f851d4ecb02b045f4255541cbec60d684d4f7fe7302c30"
+      },
+      "source_present": true,
+      "declaration": {
+        "call": "PeriodicTask.objects.filter(enabled=True)"
+      },
+      "status": "characterized",
+      "go": [
+        "BE_GO/cmd/scheduler/authority.go",
+        "BE_GO/internal/repository/occurrence.go"
+      ],
+      "dependencies": [],
+      "contract": {
+        "methods": null,
+        "external_paths": null,
+        "request": null,
+        "response": null,
+        "errors": null,
+        "authentication": null,
+        "permissions": null,
+        "resource_scope": null,
+        "side_effects": null,
+        "transaction": null,
+        "execution_owner": "django"
+      },
+      "tests": [
+        "TESTS/handoff/test_p4_scheduling.py"
+      ],
+      "evidence": [],
+      "notes": [
+        "Leased occurrence publication reads the effective definition, then locks and rechecks it before advancing the cursor."
+      ]
+    },
+    {
+      "id": "schedule_mutation:BE/instance/schedule_authority.py:PeriodicTask.objects.filter#2",
+      "kind": "schedule_mutation",
+      "django": {
+        "file": "BE/instance/schedule_authority.py",
+        "line": 127,
+        "symbol": "PeriodicTask.objects.filter",
+        "sha256": "e7556721b4cdc19aa8f851d4ecb02b045f4255541cbec60d684d4f7fe7302c30"
+      },
+      "source_present": true,
+      "declaration": {
+        "call": "PeriodicTask.objects.filter(pk=pk)"
+      },
+      "status": "characterized",
+      "go": [
+        "BE_GO/cmd/scheduler/authority.go",
+        "BE_GO/internal/repository/occurrence.go"
+      ],
+      "dependencies": [],
+      "contract": {
+        "methods": null,
+        "external_paths": null,
+        "request": null,
+        "response": null,
+        "errors": null,
+        "authentication": null,
+        "permissions": null,
+        "resource_scope": null,
+        "side_effects": null,
+        "transaction": null,
+        "execution_owner": "django"
+      },
+      "tests": [
+        "TESTS/handoff/test_p4_scheduling.py"
+      ],
+      "evidence": [],
+      "notes": [
+        "Leased occurrence publication reads the effective definition, then locks and rechecks it before advancing the cursor."
+      ]
+    },
+    {
+      "id": "schedule_mutation:BE/instance/schedule_authority.py:PeriodicTask.objects.filter(enabled=True).select_related",
+      "kind": "schedule_mutation",
+      "django": {
+        "file": "BE/instance/schedule_authority.py",
+        "line": 81,
+        "symbol": "PeriodicTask.objects.filter(enabled=True).select_related",
+        "sha256": "e7556721b4cdc19aa8f851d4ecb02b045f4255541cbec60d684d4f7fe7302c30"
+      },
+      "source_present": true,
+      "declaration": {
+        "call": "PeriodicTask.objects.filter(enabled=True).select_related('interval', 'crontab', 'clocked', 'solar')"
+      },
+      "status": "characterized",
+      "go": [
+        "BE_GO/cmd/scheduler/authority.go",
+        "BE_GO/internal/repository/occurrence.go"
+      ],
+      "dependencies": [],
+      "contract": {
+        "methods": null,
+        "external_paths": null,
+        "request": null,
+        "response": null,
+        "errors": null,
+        "authentication": null,
+        "permissions": null,
+        "resource_scope": null,
+        "side_effects": null,
+        "transaction": null,
+        "execution_owner": "django"
+      },
+      "tests": [
+        "TESTS/handoff/test_p4_scheduling.py"
+      ],
+      "evidence": [],
+      "notes": [
+        "Leased occurrence publication reads the effective definition, then locks and rechecks it before advancing the cursor."
+      ]
+    },
+    {
+      "id": "schedule_mutation:BE/instance/schedule_authority.py:PeriodicTask.objects.filter(pk=pk).update",
+      "kind": "schedule_mutation",
+      "django": {
+        "file": "BE/instance/schedule_authority.py",
+        "line": 127,
+        "symbol": "PeriodicTask.objects.filter(pk=pk).update",
+        "sha256": "e7556721b4cdc19aa8f851d4ecb02b045f4255541cbec60d684d4f7fe7302c30"
+      },
+      "source_present": true,
+      "declaration": {
+        "call": "PeriodicTask.objects.filter(pk=pk).update(last_run_at=now, total_run_count=row.total_run_count + 1, enabled=not row.one_off, date_changed=now)"
+      },
+      "status": "characterized",
+      "go": [
+        "BE_GO/cmd/scheduler/authority.go",
+        "BE_GO/internal/repository/occurrence.go"
+      ],
+      "dependencies": [],
+      "contract": {
+        "methods": null,
+        "external_paths": null,
+        "request": null,
+        "response": null,
+        "errors": null,
+        "authentication": null,
+        "permissions": null,
+        "resource_scope": null,
+        "side_effects": null,
+        "transaction": null,
+        "execution_owner": "django"
+      },
+      "tests": [
+        "TESTS/handoff/test_p4_scheduling.py"
+      ],
+      "evidence": [],
+      "notes": [
+        "Leased occurrence publication reads the effective definition, then locks and rechecks it before advancing the cursor."
+      ]
+    },
+    {
+      "id": "schedule_mutation:BE/instance/schedule_authority.py:PeriodicTask.objects.select_for_update",
+      "kind": "schedule_mutation",
+      "django": {
+        "file": "BE/instance/schedule_authority.py",
+        "line": 105,
+        "symbol": "PeriodicTask.objects.select_for_update",
+        "sha256": "e7556721b4cdc19aa8f851d4ecb02b045f4255541cbec60d684d4f7fe7302c30"
+      },
+      "source_present": true,
+      "declaration": {
+        "call": "PeriodicTask.objects.select_for_update()"
+      },
+      "status": "characterized",
+      "go": [
+        "BE_GO/cmd/scheduler/authority.go",
+        "BE_GO/internal/repository/occurrence.go"
+      ],
+      "dependencies": [],
+      "contract": {
+        "methods": null,
+        "external_paths": null,
+        "request": null,
+        "response": null,
+        "errors": null,
+        "authentication": null,
+        "permissions": null,
+        "resource_scope": null,
+        "side_effects": null,
+        "transaction": null,
+        "execution_owner": "django"
+      },
+      "tests": [
+        "TESTS/handoff/test_p4_scheduling.py"
+      ],
+      "evidence": [],
+      "notes": [
+        "Leased occurrence publication reads the effective definition, then locks and rechecks it before advancing the cursor."
+      ]
+    },
+    {
+      "id": "schedule_mutation:BE/instance/schedule_authority.py:PeriodicTask.objects.select_for_update().filter",
+      "kind": "schedule_mutation",
+      "django": {
+        "file": "BE/instance/schedule_authority.py",
+        "line": 105,
+        "symbol": "PeriodicTask.objects.select_for_update().filter",
+        "sha256": "e7556721b4cdc19aa8f851d4ecb02b045f4255541cbec60d684d4f7fe7302c30"
+      },
+      "source_present": true,
+      "declaration": {
+        "call": "PeriodicTask.objects.select_for_update().filter(pk=pk)"
+      },
+      "status": "characterized",
+      "go": [
+        "BE_GO/cmd/scheduler/authority.go",
+        "BE_GO/internal/repository/occurrence.go"
+      ],
+      "dependencies": [],
+      "contract": {
+        "methods": null,
+        "external_paths": null,
+        "request": null,
+        "response": null,
+        "errors": null,
+        "authentication": null,
+        "permissions": null,
+        "resource_scope": null,
+        "side_effects": null,
+        "transaction": null,
+        "execution_owner": "django"
+      },
+      "tests": [
+        "TESTS/handoff/test_p4_scheduling.py"
+      ],
+      "evidence": [],
+      "notes": [
+        "Leased occurrence publication reads the effective definition, then locks and rechecks it before advancing the cursor."
+      ]
+    },
+    {
+      "id": "schedule_mutation:BE/instance/schedule_authority.py:PeriodicTask.objects.select_for_update().filter(pk=pk).first",
+      "kind": "schedule_mutation",
+      "django": {
+        "file": "BE/instance/schedule_authority.py",
+        "line": 105,
+        "symbol": "PeriodicTask.objects.select_for_update().filter(pk=pk).first",
+        "sha256": "e7556721b4cdc19aa8f851d4ecb02b045f4255541cbec60d684d4f7fe7302c30"
+      },
+      "source_present": true,
+      "declaration": {
+        "call": "PeriodicTask.objects.select_for_update().filter(pk=pk).first()"
+      },
+      "status": "characterized",
+      "go": [
+        "BE_GO/cmd/scheduler/authority.go",
+        "BE_GO/internal/repository/occurrence.go"
+      ],
+      "dependencies": [],
+      "contract": {
+        "methods": null,
+        "external_paths": null,
+        "request": null,
+        "response": null,
+        "errors": null,
+        "authentication": null,
+        "permissions": null,
+        "resource_scope": null,
+        "side_effects": null,
+        "transaction": null,
+        "execution_owner": "django"
+      },
+      "tests": [
+        "TESTS/handoff/test_p4_scheduling.py"
+      ],
+      "evidence": [],
+      "notes": [
+        "Leased occurrence publication reads the effective definition, then locks and rechecks it before advancing the cursor."
+      ]
+    },
+    {
       "id": "serializer_hook:BE/application/serializers/balance_sheet.py:CustomAccountSerializer.save",
       "kind": "serializer_hook",
       "django": {

@@ -42,6 +42,14 @@ func (s *OccurrencePublisher) PublishNext(ctx context.Context, sourceID int64) (
 	}
 	defer tx.Rollback()
 	snapshot := tx.Snapshot()
+	if _, scoped := repository.CurrentScheduleLease(ctx); !scoped {
+		if snapshot.Schedule.Task == domain.JobResultRetention {
+			return result, domain.ErrScheduleUnsupported
+		}
+		if _, _, err = validateLegacyPeriodicDefinition(snapshot.Schedule); err != nil {
+			return result, err
+		}
+	}
 	due, err := EvaluateScheduleDue(snapshot.Schedule, snapshot.Now)
 	if err != nil {
 		return result, err

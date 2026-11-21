@@ -1,9 +1,9 @@
-// This explicit process visits persisted schedules in the supported subset. It
-// neither migrates/seeds definitions nor changes ownership or installed services.
+// The effective runtime seeds and publishes persisted Beat definitions under a renewable lease.
 package main
 
 import (
 	"context"
+	_ "embed"
 	"errors"
 	"flag"
 	"fmt"
@@ -18,12 +18,17 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/config"
 	ownedpgx "github.com/carbogninalberto/assozeta/BE_GO/internal/database"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/redisclient"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
 	"github.com/carbogninalberto/assozeta/BE_GO/migrations"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jmoiron/sqlx"
 )
+
+//go:embed declarations.json
+var declarations []byte
 
 func main() {
 	if err := run(os.Args[1:]); err != nil {
@@ -35,6 +40,9 @@ func main() {
 func run(arguments []string) error {
 	flags := flag.NewFlagSet("scheduler", flag.ContinueOnError)
 	flags.SetOutput(io.Discard)
+	printDeclarations := flags.Bool("print-declarations", false, "print the canonical periodic declarations")
+	leaseDuration := flags.Duration("lease", 30*time.Second, "scheduler authority lease")
+	heartbeat := flags.Duration("handoff-heartbeat", time.Second, "scheduler heartbeat interval")
 	envFile := flags.String("env-file", "", "optional existing deployment .env")
 	pageSize := flags.Int("page-size", 16, "maximum sources per page, from 1 to 64")
 	poll := flags.Duration("poll-interval", time.Second, "positive delay between pages, at most 5s")
@@ -43,7 +51,7 @@ func run(arguments []string) error {
 	startup := flags.Duration("startup-timeout", 5*time.Second, "startup database deadline, at most 30s")
 	if err := flags.Parse(arguments); err != nil {
 		if errors.Is(err, flag.ErrHelp) {
-			fmt.Println("Go scheduler: --env-file PATH; bounded --page-size, --poll-interval, --tick-timeout, --source-timeout and --startup-timeout. Requires existing migrations, Beat source tables and restore lock path. Initialization does not imply Go ownership; no schedules or ownership are seeded. Cancellation joins admitted SQL cleanup, which can outlast work deadlines.")
+			fmt.Println("Go scheduler: --env-file PATH; bounded --page-size, --poll-interval, --tick-timeout, --source-timeout and --startup-timeout. Requires existing migrations, Beat source tables and restore lock path. Migration 7 enables declaration seeding and leased publication. Cancellation joins admitted SQL cleanup, which can outlast work deadlines.")
 			return nil
 		}
 		return errors.New("invalid scheduler arguments")
@@ -51,7 +59,11 @@ func run(arguments []string) error {
 	if flags.NArg() != 0 {
 		return errors.New("unexpected scheduler arguments")
 	}
-	if *pageSize < 1 || *pageSize > 64 || *poll < time.Millisecond || *poll > 5*time.Second ||
+	if *printDeclarations {
+		_, err := os.Stdout.Write(declarations)
+		return err
+	}
+	if *leaseDuration <= 0 || *heartbeat <= 0 || *pageSize < 1 || *pageSize > 64 || *poll < time.Millisecond || *poll > 5*time.Second ||
 		*tick < time.Millisecond || *tick > 5*time.Second || *source < time.Millisecond || *source > *tick ||
 		*startup < time.Millisecond || *startup > 30*time.Second {
 		return errors.New("invalid scheduler execution bounds")
@@ -87,23 +99,19 @@ func run(arguments []string) error {
 	database.RuntimeParams["application_name"] = "assozeta-go-scheduler"
 	db := sqlx.NewDb(ownedpgx.OpenDB(*database), "pgx")
 	defer db.Close()
-	// Pages are serial. An occurrence owns one connection; discovery and restore
-	// reads precede it. No independent heartbeat or unbounded pool is needed.
+	// One connection can publish while the other renews or acknowledges a freeze.
 	db.SetMaxOpenConns(2)
 	db.SetMaxIdleConns(1)
 	db.SetConnMaxLifetime(30 * time.Minute)
 	candidates := repository.NewScheduleCandidates(db)
-	publisher := service.NewOccurrencePublisher(repository.NewOccurrences(db), locks, repository.NewRestoreStates(db))
-	pager, err := service.NewSchedulePager(candidates, publisher, service.SchedulePageOptions{
+	store := repository.NewOccurrences(db)
+	publisher := service.NewOccurrencePublisher(store, locks, repository.NewRestoreStates(db))
+	pager, err := service.NewSchedulePager(candidates, authorityPublisher{db, store, publisher}, service.SchedulePageOptions{
 		Limit: *pageSize, TickTimeout: *tick, SourceTimeout: *source})
 	if err != nil {
 		return errors.New("invalid scheduler execution bounds")
 	}
 	logger := slog.Default()
-	loop, err := service.NewScheduleLoop(&diagnosticTicker{next: pager, logger: logger}, service.ScheduleLoopOptions{PollInterval: *poll})
-	if err != nil {
-		return errors.New("invalid scheduler execution bounds")
-	}
 	startupCtx, cancelStartup := context.WithTimeout(ctx, *startup)
 	defer cancelStartup()
 	if err = db.PingContext(startupCtx); err != nil {
@@ -115,8 +123,49 @@ func run(arguments []string) error {
 	if err = candidates.CheckSchema(startupCtx); err != nil {
 		return errors.New("scheduler periodic source schema unavailable or incompatible")
 	}
+	var installed bool
+	if err = db.GetContext(startupCtx, &installed, "SELECT to_regclass('public.assozeta_scheduler_lease') IS NOT NULL"); err != nil {
+		return errors.New("scheduler authority unavailable")
+	}
+	var ticker domain.ScheduleTicker = pager
+	if installed {
+		if err = seed(startupCtx, db); err != nil {
+			return errors.New("scheduler seeding failed")
+		}
+		broker, err := redisclient.NewBroker(cfg)
+		if err != nil {
+			return errors.New("invalid scheduler broker configuration")
+		}
+		defer broker.Close()
+		authority := &authorityTicker{broker: broker, db: db, holder: "scheduler-" + uuid.NewString(), lease: *leaseDuration, next: ticker}
+		if err = authority.heartbeat(startupCtx); err != nil {
+			return errors.New("scheduler heartbeat failed")
+		}
+		bg, cancelRenew := context.WithCancel(ctx)
+		stopped := make(chan struct{})
+		go func() { defer close(stopped); authority.renew(bg, *heartbeat) }()
+		defer func() {
+			cancelRenew()
+			<-stopped
+			cleanup, cancel := context.WithTimeout(context.Background(), *startup)
+			defer cancel()
+			_, _ = db.ExecContext(cleanup, "SELECT public.assozeta_scheduler_release('go',$1)", authority.holder)
+		}()
+		ticker = authority
+	}
+	loop, err := service.NewScheduleLoop(&diagnosticTicker{next: ticker, logger: logger}, service.ScheduleLoopOptions{PollInterval: *poll})
+	if err != nil {
+		return errors.New("invalid scheduler execution bounds")
+	}
 	cancelStartup()
 	logger.Info("scheduler process initialized", "page_size", *pageSize)
+	if installed {
+		select {
+		case <-ctx.Done():
+			return nil
+		case <-time.After(*poll):
+		}
+	}
 	_, err = loop.Run(ctx, domain.ScheduleCursor{})
 	if err != nil && !(errors.Is(err, context.Canceled) && ctx.Err() != nil) {
 		return errors.New("scheduler loop failed")
