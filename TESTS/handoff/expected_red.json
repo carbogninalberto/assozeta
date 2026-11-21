@@ -2597,6 +2597,46 @@
       "signatures": [
         "P5 contract red"
       ]
+    },
+    "TESTS.handoff.test_p5_installed.InstalledLanes.test_1_forward": {
+      "phase": 5,
+      "owner": "t-p5",
+      "reason": "Phase 5 part D: the runner status socket carries no runtime status and the installed controller refuses the switch (switch_unavailable)",
+      "signatures": [
+        "P5 contract red"
+      ]
+    },
+    "TESTS.handoff.test_p5_installed.InstalledLanes.test_2_reverse": {
+      "phase": 5,
+      "owner": "t-p5",
+      "reason": "Phase 5 part D: no installed switch to reach Go first; status socket lacks the runtime status",
+      "signatures": [
+        "P5 contract red"
+      ]
+    },
+    "TESTS.handoff.test_p5_installed.InstalledLanes.test_3_round_trip_with_rapid_and_opposite_requests": {
+      "phase": 5,
+      "owner": "t-p5",
+      "reason": "Phase 5 part D: the first switch fails at once (switch_unavailable), so an opposite request is a no-op instead of 409 operation_in_progress",
+      "signatures": [
+        "P5 contract red"
+      ]
+    },
+    "TESTS.handoff.test_p5_installed.InstalledLanes.test_4_failed_before_commit": {
+      "phase": 5,
+      "owner": "t-p5",
+      "reason": "Phase 5 part D: status socket lacks the runtime status; no recovery_action",
+      "signatures": [
+        "P5 contract red"
+      ]
+    },
+    "TESTS.handoff.test_p5_installed.InstalledLanes.test_5_failed_after_commit": {
+      "phase": 5,
+      "owner": "t-p5",
+      "reason": "Phase 5 part D: ./bin/assozeta runtime-switch go exits before any authority commit (switch_unavailable)",
+      "signatures": [
+        "P5 contract red"
+      ]
     }
   }
 }
