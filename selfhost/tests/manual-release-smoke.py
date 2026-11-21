@@ -308,9 +308,17 @@ def main():
                     pass
                 time.sleep(1)
             raise RuntimeError('Disposable release application failed readiness')
+        def dual_api():
+            # The historical dual-API distribution always runs api-go next to Django. An
+            # exclusive one (runtime profiles) runs one runtime, Django by default; its
+            # Go-mode installed lane belongs to the runtime switch (TESTS/handoff, Phases 5-6).
+            profiles = subprocess.check_output([str(arg) for arg in compose('config', '--profiles')],
+                                               env=env, text=True).split()
+            return 'go' not in profiles or bool(subprocess.check_output(
+                [str(arg) for arg in compose('ps', '--status', 'running', '-q', 'api-go')], env=env, text=True).strip())
         def application_containers():
             containers = {}
-            for service in ('api', 'api-go', 'worker', 'beat'):
+            for service in ('api', 'api-go', 'worker', 'beat') if dual_api() else ('api', 'worker', 'beat'):
                 identifier = subprocess.check_output([str(arg) for arg in
                     compose('ps', '--status', 'running', '-q', service)], env=env, text=True).strip()
                 if not identifier:
@@ -534,33 +542,37 @@ def main():
                 fixture, fixture_path = manual_fixture(owner.token)
                 contracts('fresh', browser=True)
                 record('fresh installation: reader, assets, search and real browser assistance without AI or subscription')
-                go_container = subprocess.check_output([str(arg) for arg in compose('ps', '-q', 'api-go')],
-                                                      env=env, text=True).strip()
-                go_state = json.loads(subprocess.check_output(['docker', 'inspect', go_container], text=True))[0]
-                if (go_state['Image'] != result['target_images']['backend-go']
-                        or go_state['State'].get('Health', {}).get('Status') != 'healthy'):
-                    raise RuntimeError('Current-distribution Go image is not the expected healthy artifact')
-                result['current_go_image'] = go_state['Image']
-                # A real stopped upstream must fail on v2 while the Django alias still works.
-                command(compose('stop', 'api-go'), env=env)
-                go_owner = Client(origin + '/api/v2', owner.token)
-                first_asset = next(image['path'] for chunk in bundle.value['chunks'] for image in chunk['screenshots'])
-                asset_path = '/manuale/assets/' + quote(first_asset, safe='/')
-                controls = {
-                    'go_health': Client(origin + '/api/v2').request('GET', '/healthz')[0],
-                    'django_health': public.request('GET', '/healthz')[0],
-                    'go_sections': go_owner.request('GET', '/manuale/sections')[0],
-                    'django_sections': owner.request('GET', '/manuale/sections')[0],
-                    'go_asset': go_owner.request('GET', asset_path, raw=True)[0],
-                    'django_asset': owner.request('GET', asset_path, raw=True)[0],
-                }
-                result['go_upstream_negative_control'] = controls
-                if controls != {'go_health': 502, 'django_health': 200, 'go_sections': 502,
-                                'django_sections': 200, 'go_asset': 502, 'django_asset': 200}:
-                    raise RuntimeError('Go manual route negative control did not isolate the real upstream')
-                command(compose('up', '-d', '--wait', 'api-go'), env=env)
-                contracts('fresh-go', api_prefix='/api/v2')
-                record('current distribution: exact healthy Go artifact serves manual HTTP/assets; stopped-Go v2 rejects fallback while Django remains available')
+                if not dual_api():
+                    # Exclusive distribution in Django mode: no Go API runs to probe here.
+                    result['current_go_image'] = 'not running: exclusive runtime distribution in Django mode'
+                else:
+                    go_container = subprocess.check_output([str(arg) for arg in compose('ps', '-q', 'api-go')],
+                                                          env=env, text=True).strip()
+                    go_state = json.loads(subprocess.check_output(['docker', 'inspect', go_container], text=True))[0]
+                    if (go_state['Image'] != result['target_images']['backend-go']
+                            or go_state['State'].get('Health', {}).get('Status') != 'healthy'):
+                        raise RuntimeError('Current-distribution Go image is not the expected healthy artifact')
+                    result['current_go_image'] = go_state['Image']
+                    # A real stopped upstream must fail on v2 while the Django alias still works.
+                    command(compose('stop', 'api-go'), env=env)
+                    go_owner = Client(origin + '/api/v2', owner.token)
+                    first_asset = next(image['path'] for chunk in bundle.value['chunks'] for image in chunk['screenshots'])
+                    asset_path = '/manuale/assets/' + quote(first_asset, safe='/')
+                    controls = {
+                        'go_health': Client(origin + '/api/v2').request('GET', '/healthz')[0],
+                        'django_health': public.request('GET', '/healthz')[0],
+                        'go_sections': go_owner.request('GET', '/manuale/sections')[0],
+                        'django_sections': owner.request('GET', '/manuale/sections')[0],
+                        'go_asset': go_owner.request('GET', asset_path, raw=True)[0],
+                        'django_asset': owner.request('GET', asset_path, raw=True)[0],
+                    }
+                    result['go_upstream_negative_control'] = controls
+                    if controls != {'go_health': 502, 'django_health': 200, 'go_sections': 502,
+                                    'django_sections': 200, 'go_asset': 502, 'django_asset': 200}:
+                        raise RuntimeError('Go manual route negative control did not isolate the real upstream')
+                    command(compose('up', '-d', '--wait', 'api-go'), env=env)
+                    contracts('fresh-go', api_prefix='/api/v2')
+                    record('current distribution: exact healthy Go artifact serves manual HTTP/assets; stopped-Go v2 rejects fallback while Django remains available')
                 before_restart = application_containers()
                 # The shipped CLI handles workers with disabled healthchecks and
                 # waits for public API readiness, including older Compose versions.
