@@ -654,14 +654,6 @@
         "(migration 000008_outbox_ownership)"
       ],
       "reason": "Phase 4 part B: migration 000008_outbox_ownership (outbox effects ledger, relay delivery runtime), outbox/relay ownership claims, effect intent/confirm and the relay/outbox registration do not exist; both deliverers and both relays act regardless of the authority; needs Phase 3 part A first"
-    },
-    "TESTS.handoff.test_p2_updater.LiveVerificationOfRetiredStorageDefaults.test_verification_accepts_storage_started_from_a_resolved_retired_default": {
-      "phase": 2,
-      "owner": "t-p2",
-      "reason": "engine.verify_running compares the shared storage images with the updater render of .env, which keeps the retired quay.io MinIO default that bin/assozeta resolves to the pinned ghcr image (work/t-p2/defects-2.md D5)",
-      "signatures": [
-        "live verification rejected an installation with a retired storage default"
-      ]
     }
   }
 }

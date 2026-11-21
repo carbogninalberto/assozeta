@@ -152,6 +152,21 @@ class LiveVerification(UpdaterCase):
                                  f'live verification in runtime {runtime} accepted a running {other}: {rejected}')
 
 
+class LiveVerificationOfApplicationImages(UpdaterCase):
+    def test_live_verification_rejects_an_application_image_of_another_release(self):
+        """Exclusive installations keep the pre-Phase-2 image check for every application service."""
+        for runtime in ('django', 'go'):
+            with self.subTest(runtime=runtime):
+                self.setUp()
+                self.installed(runtime)
+                # Configure the next release without restarting: running images are the previous release.
+                self.installation.set_env(ASSOZETA_VERSION='1.4.1')
+                answer = self.updater('verify:1.4.1')
+                self.assertEqual((answer.get('result'), 'Running image differs from verified release' in
+                                  answer.get('reason', '')), ('rejected', True),
+                                 f'live verification in runtime {runtime} accepted images of another release: {answer}')
+
+
 class LiveVerificationOfRetiredStorageDefaults(UpdaterCase):
     """An installation configured before the storage images moved (v1.0.2: quay.io MinIO).
 

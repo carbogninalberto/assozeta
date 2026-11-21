@@ -195,7 +195,7 @@ class Engine:
         services = {name: 'BACKEND_GO' if name.endswith('-go') else 'BACKEND' for name in active}
         services.update(web='WEB', renderer='RENDERER')
         if runtime is not None:
-            # PostgreSQL, Redis and MinIO use the refs specified by Compose.
+            # Shared storage needs a health check. Its images are outside the release manifest.
             for service in SHARED_SERVICES:
                 services.setdefault(service, None)
         for service, image in services.items():
@@ -207,7 +207,9 @@ class Engine:
                 raise RuntimeError(f'Unhealthy service: {service}')
             if service == 'api-go' and details['State'].get('Health', {}).get('Status') != 'healthy':
                 raise RuntimeError('Go service has no passing readiness check')
-            expected = configured[service]['image'] if allow_configured_images or image is None else values.get(f'ASSOZETA_{image}_REF')
+            if image is None:
+                continue
+            expected = configured[service]['image'] if allow_configured_images else values.get(f'ASSOZETA_{image}_REF')
             if not expected or details['Config']['Image'] != expected:
                 raise RuntimeError(f'Running image differs from verified release: {service}')
         for service in ('api', 'api-go'):
