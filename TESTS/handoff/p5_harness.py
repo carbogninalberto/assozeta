@@ -423,7 +423,9 @@ class P5Installation(ModeInstallation):
         return self.sql(f"SELECT to_regclass('public.{name}') IS NOT NULL;") == 't'
 
     def authority(self):
-        line = self.sql('SELECT runtime, generation, operation_id FROM public.assozeta_go_job_ownership WHERE singleton=1;')
+        # The historical schema (<= 000004) has no operation_id column.
+        line = self.sql("SELECT runtime, generation, coalesce(to_jsonb(o)->>'operation_id', '') "
+                        "FROM public.assozeta_go_job_ownership o WHERE singleton=1;")
         runtime, generation, operation = line.split('|')
         return runtime, int(generation), operation or None
 
