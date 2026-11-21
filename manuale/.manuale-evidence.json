@@ -5789,7 +5789,7 @@
     },
     "docs/impostazioni.mdx#introduzione": {
       "title": "Introduzione",
-      "content_sha256": "7f0b1fc0c422a94f905ca46b7edf377788f1e1538ab0efbc923cc3b85297cbfa",
+      "content_sha256": "7a3095a97fee55a89f7d0e0bcaaddf2f99bd728f24e1cc218fd493c3992ac495",
       "recipe_module": "docs/manuale/settings-additional-reference-recipes.mjs",
       "recipe_sha256": "2882c33b3ba701f99d68cf2b8d2d4e17616bec5d86eca82dc50d4b54f3569e86",
       "content_source": "authored-mdx",
@@ -5797,6 +5797,14 @@
         "previous_sha256": "61491b7b67543804001a9e2ce5001a930efb14151c8c15876a74555fea4b0ad5",
         "sha256": "2882c33b3ba701f99d68cf2b8d2d4e17616bec5d86eca82dc50d4b54f3569e86",
         "purpose": "editorial-review-only"
+      },
+      "editorial_review": {
+        "format": 1,
+        "kind": "wording-only",
+        "from_sha256": "7f0b1fc0c422a94f905ca46b7edf377788f1e1538ab0efbc923cc3b85297cbfa",
+        "to_sha256": "7a3095a97fee55a89f7d0e0bcaaddf2f99bd728f24e1cc218fd493c3992ac495",
+        "recipe_sha256": "2882c33b3ba701f99d68cf2b8d2d4e17616bec5d86eca82dc50d4b54f3569e86",
+        "note": "Link text no longer says Cloud so unrelated cloud-hosting questions do not retrieve the WhatsApp setup"
       }
     },
     "docs/impostazioni.mdx#firma-del-presidente-e-timbro": {

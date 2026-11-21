@@ -29921,7 +29921,7 @@
         "target": "communication_email_logs_list",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/internal/domain/email_logs.go",
         "BE_GO/internal/repository/email_logs.go",
@@ -29965,11 +29965,11 @@
       ],
       "evidence": [
         {
-          "command": "python tools/go-migration/family.py run email-logs --versioned --label sweep-final-3",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "command": "python tools/go-migration/family.py run email-logs --versioned --label sweep-comms-reverify",
+          "revision": "2e94bbfd0fbf664e437adb88b5ab5388fda3728e",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/email-logs-http-sweep-final-3/results.json",
-          "receipt_sha256": "1b11e4127a6f7eafa63abd98767d6ac3dddf80ca1b6289e64fed6e5681e2f868",
+          "artifact": "quality-reports/go-migration/email-logs-http-sweep-comms-reverify/results.json",
+          "receipt_sha256": "22bd88d12977c125cf99f41a43bf4f67b22d38e0103103474e5fe2051c64b144",
           "scope": "HTTP family email-logs: 13/13 cases on native Django and native Go, 13/13 on Caddy /api/v1 and /api/v2."
         }
       ],
@@ -29977,7 +29977,8 @@
         "Implementing: HTTP parity proven on four transports; rows buffered within the 90-day window; query-plan review pending.",
         "Implementing evidence: docs/architecture/go-migration/email-logs.md",
         "Implementing evidence: RED: Django 13/13, Go 404 on the first case (route absent). Earlier 1-hour margins; superseded fixture margins are wider. (quality-reports/go-migration/email-logs-http-red-r1/results.json)",
-        "Implementing evidence: GREEN: 13/13 on native Django, native Go, Caddy /api/v1 and /api/v2 with full-state, attribution, cache and cleanup checks. (quality-reports/go-migration/email-logs-http-versioned-r3/results.json)"
+        "Implementing evidence: GREEN: 13/13 on native Django, native Go, Caddy /api/v1 and /api/v2 with full-state, attribution, cache and cleanup checks. (quality-reports/go-migration/email-logs-http-versioned-r3/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/email-logs-http-sweep-final-3/results.json)"
       ]
     },
     {
@@ -29995,7 +29996,7 @@
         "target": "communication_messages_delete",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/internal/domain/message_mutations.go",
         "BE_GO/internal/dto/message_mutations.go",
@@ -30072,11 +30073,11 @@
       ],
       "evidence": [
         {
-          "command": "python -m TESTS.adapters.django.message_mutations_acceptance --output quality-reports/go-migration/ledger-verified-r8/message-mutations-acceptance --versioned",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "command": "python -m TESTS.adapters.django.message_mutations_acceptance --output quality-reports/go-migration/ledger-verified-comms-reverify/message-mutations-acceptance --versioned",
+          "revision": "2e94bbfd0fbf664e437adb88b5ab5388fda3728e",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/ledger-verified-r8/message-mutations/1-results.json",
-          "receipt_sha256": "73a663d767046607d3b90d08f9fe980a40c490c112c1a45ba93aa05c7a045c35",
+          "artifact": "quality-reports/go-migration/ledger-verified-comms-reverify/message-mutations/1-results.json",
+          "receipt_sha256": "d5acf99190a5b0c976008328a0b353857564946fdbbdc2d5f671e25640778d03",
           "scope": "message-mutations harness: success=True."
         }
       ],
@@ -30104,7 +30105,8 @@
         "Implementing evidence: Combined acceptance FAILED. Go actual HTTP/stream/catalog linkage and single-effect evidence passed the initial verifier; Django stopped before requests because its documented parent-owned nonHTTP SQL was wrongly rejected. Independent review subsequently found that the finalizer can overlook contradictory terminal catalog samples; even Go acceptance remains provisional until that defect is repaired and freshly tested. No failed run is promoted. Both fixtures, all services and source-stability checks passed. (quality-reports/go-migration/message-delete-concurrency-live-r5/results.json)",
         "Implementing evidence: Hosted maintained browser CLI job121573948344 passed. Parent independently validated downloaded JSON and1479source hashes against exact clean CI merge4ff55a52 (tree identical to head e8fab911). Actual v1/v2 mutation UI/HTTP denials, complete state and cleanup gates passed. This closes hosted execution for these exact inputs only; no evidence is relabeled for new observer/rebase changes. (quality-reports/go-migration/mutation-ci-e8fab911/browser/results.json)",
         "Implementing evidence: Hosted packaged mutation job121573948227 and fullapplication CI40323268745 passed. Parent independently accepted immutable amd64 image c3ed7ebaba866f6f4a704101386300a258ebf47274831612374cbd0f86922b72 and1681runtime source hashes against exactcleanmerge4ff55a52:119authoredcases on4transports plusrestore controls, package/process/cleanup. Fullfamily and subsequent inputs remain unverified. (quality-reports/go-migration/mutation-ci-e8fab911/packaged/results.json)",
-        "Implementing evidence: Fresh actual native Django/Go concurrent DELETE passed after all three verifier repairs. Parent independently replayed finalization and original HTTP, checked generated request IDs/native PID/catalog binding, terminal idle catalog including released blocker, all128models/rawDB1, one200/one404, oneaudit/index and exact two-delivery cascade. Both Go streams finalized; native source/artifacts and service cleanup verified. Independent Sol review found all three findings repaired and157offline tests passed. Bounded native concurrent-delete evidence only; browser, packaged concurrency, recovery and full-family acceptance remain separate. (quality-reports/go-migration/message-delete-concurrency-live-r6/results.json)"
+        "Implementing evidence: Fresh actual native Django/Go concurrent DELETE passed after all three verifier repairs. Parent independently replayed finalization and original HTTP, checked generated request IDs/native PID/catalog binding, terminal idle catalog including released blocker, all128models/rawDB1, one200/one404, oneaudit/index and exact two-delivery cascade. Both Go streams finalized; native source/artifacts and service cleanup verified. Independent Sol review found all three findings repaired and157offline tests passed. Bounded native concurrent-delete evidence only; browser, packaged concurrency, recovery and full-family acceptance remain separate. (quality-reports/go-migration/message-delete-concurrency-live-r6/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/ledger-verified-r8/message-mutations/1-results.json)"
       ]
     },
     {
@@ -30122,7 +30124,7 @@
         "target": "communication_messages_detail",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/internal/domain/message_reads.go",
         "BE_GO/internal/dto/message_reads.go",
@@ -30177,11 +30179,11 @@
       ],
       "evidence": [
         {
-          "command": "python TESTS/adapters/django/message_reads_runtime.py --versioned --output quality-reports/go-migration/ledger-verified-r8/message-reads-http",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "command": "python TESTS/adapters/django/message_reads_runtime.py --versioned --output quality-reports/go-migration/ledger-verified-comms-reverify/message-reads-http",
+          "revision": "2e94bbfd0fbf664e437adb88b5ab5388fda3728e",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/ledger-verified-r8/message-reads/1-results.json",
-          "receipt_sha256": "9e8830219a4afa7d42c18571fad8e4e2ed362654798ca939e2711f6815febbf0",
+          "artifact": "quality-reports/go-migration/ledger-verified-comms-reverify/message-reads/1-results.json",
+          "receipt_sha256": "968c9b17b7a342c24d66382e0359c377babd91ff783448f854ef195e5f1e706f",
           "scope": "message-reads harness: success=True."
         }
       ],
@@ -30195,7 +30197,8 @@
         "Implementing evidence: historical live pass; independent review required restoration/receipt corrections, superseded by source-bound r2 (quality-reports/go-migration/message-scopes-lifecycle-live-r1/results.json)",
         "Implementing evidence: passed bounded v1/v2 browser workflow, 1203 exact source inputs and full cleanup (quality-reports/go-migration/message-browser-owned-live-r3/results.json)",
         "Implementing evidence: passed corrected 38-case/2-scenario workload on all four runtimes, 1454 exact source inputs and full cleanup (quality-reports/go-migration/message-scopes-lifecycle-live-r2/results.json)",
-        "Implementing evidence: passed parent-run packaged 38-case/2-sequence workload on all four runtimes; full migration/state/cache/process/provenance/nonroot/license and cleanup gates; independent Sol review found no confirmed defects; 112 parent offline controls passed (quality-reports/go-migration/message-scopes-image-e9f85627-r2/results.json)"
+        "Implementing evidence: passed parent-run packaged 38-case/2-sequence workload on all four runtimes; full migration/state/cache/process/provenance/nonroot/license and cleanup gates; independent Sol review found no confirmed defects; 112 parent offline controls passed (quality-reports/go-migration/message-scopes-image-e9f85627-r2/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/ledger-verified-r8/message-reads/1-results.json)"
       ]
     },
     {
@@ -30213,7 +30216,7 @@
         "target": "communication_messages_add",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/internal/domain/message_mutations.go",
         "BE_GO/internal/dto/message_mutations.go",
@@ -30282,11 +30285,11 @@
       ],
       "evidence": [
         {
-          "command": "python -m TESTS.adapters.django.message_mutations_acceptance --output quality-reports/go-migration/ledger-verified-r8/message-mutations-acceptance --versioned",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "command": "python -m TESTS.adapters.django.message_mutations_acceptance --output quality-reports/go-migration/ledger-verified-comms-reverify/message-mutations-acceptance --versioned",
+          "revision": "2e94bbfd0fbf664e437adb88b5ab5388fda3728e",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/ledger-verified-r8/message-mutations/1-results.json",
-          "receipt_sha256": "73a663d767046607d3b90d08f9fe980a40c490c112c1a45ba93aa05c7a045c35",
+          "artifact": "quality-reports/go-migration/ledger-verified-comms-reverify/message-mutations/1-results.json",
+          "receipt_sha256": "d5acf99190a5b0c976008328a0b353857564946fdbbdc2d5f671e25640778d03",
           "scope": "message-mutations harness: success=True."
         }
       ],
@@ -30307,7 +30310,8 @@
         "Implementing evidence: Maintained browser CLI passed against corrected Django DELETE reference and unchanged Go: v1/v2 each24UI checkpoints/26original correlated responses plus4separate HTTP mutation denials. Parent independently validated persisted JSON and all current inputs; fullstate/cache/artifact/service cleanup passed. This supersedes earlier local browser evidence only for this exact input graph; hosted new CLI execution still pending. (quality-reports/go-migration/message-mutations-browser-cli-r3/results.json)",
         "Implementing evidence: Maintained mutation CLI passed119authored cases on nativeDjango/nativeGo/Caddyv1/v2 after Django concurrent-delete correction. Parent independently validated persisted receipt; full128model/rawDB1 effects,547migrations, binary/source bindings, actual misroute rejection and all six owned service lifetimes/cleanup passed. This does not establish complete concurrency attribution or full-family acceptance. (quality-reports/go-migration/message-mutations-reference-versioned-r1/results.json)",
         "Implementing evidence: Hosted maintained browser CLI job121573948344 passed. Parent independently validated downloaded JSON and1479source hashes against exact clean CI merge4ff55a52 (tree identical to head e8fab911). Actual v1/v2 mutation UI/HTTP denials, complete state and cleanup gates passed. This closes hosted execution for these exact inputs only; no evidence is relabeled for new observer/rebase changes. (quality-reports/go-migration/mutation-ci-e8fab911/browser/results.json)",
-        "Implementing evidence: Hosted packaged mutation job121573948227 and fullapplication CI40323268745 passed. Parent independently accepted immutable amd64 image c3ed7ebaba866f6f4a704101386300a258ebf47274831612374cbd0f86922b72 and1681runtime source hashes against exactcleanmerge4ff55a52:119authoredcases on4transports plusrestore controls, package/process/cleanup. Fullfamily and subsequent inputs remain unverified. (quality-reports/go-migration/mutation-ci-e8fab911/packaged/results.json)"
+        "Implementing evidence: Hosted packaged mutation job121573948227 and fullapplication CI40323268745 passed. Parent independently accepted immutable amd64 image c3ed7ebaba866f6f4a704101386300a258ebf47274831612374cbd0f86922b72 and1681runtime source hashes against exactcleanmerge4ff55a52:119authoredcases on4transports plusrestore controls, package/process/cleanup. Fullfamily and subsequent inputs remain unverified. (quality-reports/go-migration/mutation-ci-e8fab911/packaged/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/ledger-verified-r8/message-mutations/1-results.json)"
       ]
     },
     {
@@ -30325,7 +30329,7 @@
         "target": "communication_messages_list",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/internal/domain/message_reads.go",
         "BE_GO/internal/dto/message_reads.go",
@@ -30389,11 +30393,11 @@
       ],
       "evidence": [
         {
-          "command": "python TESTS/adapters/django/message_reads_runtime.py --versioned --output quality-reports/go-migration/ledger-verified-r8/message-reads-http",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "command": "python TESTS/adapters/django/message_reads_runtime.py --versioned --output quality-reports/go-migration/ledger-verified-comms-reverify/message-reads-http",
+          "revision": "2e94bbfd0fbf664e437adb88b5ab5388fda3728e",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/ledger-verified-r8/message-reads/1-results.json",
-          "receipt_sha256": "9e8830219a4afa7d42c18571fad8e4e2ed362654798ca939e2711f6815febbf0",
+          "artifact": "quality-reports/go-migration/ledger-verified-comms-reverify/message-reads/1-results.json",
+          "receipt_sha256": "968c9b17b7a342c24d66382e0359c377babd91ff783448f854ef195e5f1e706f",
           "scope": "message-reads harness: success=True."
         }
       ],
@@ -30415,7 +30419,8 @@
         "Implementing evidence: Reproducible combined driver passes actual packaged phase1 and bounded faults, independently revalidated with original build/phase1 bytes and exact live source; final cleanup passes.98 parent offline controls pass without skips. Remaining DB-inflight cancellation and disk-fault scope unchanged; no family status promotion. (quality-reports/go-migration/message-list-spool-runtime-image-r1/faults.json)",
         "Implementing evidence: Packaged exact-query cancellation passes: unique PostgreSQL lock waiter and live spool observed; backend and descriptor released in 317ms before blocker rollback; full same-process recovery and final cleanup pass. Parent independently revalidated source/build/query/receipt bindings and response hashes.58 parent offline controls pass. Disk-fault coverage and whole-family acceptance remain incomplete. (quality-reports/go-migration/message-list-query-cancel-image-r1/query-cancellation.json)",
         "Implementing evidence: Committed source-bound runner passes actual packaged phase1 and exact-query cancellation in one fixture lifetime: unique lock waiter, 1-byte live spool, backend and descriptor released in 296ms before blocker rollback, same-process 1152-row/75,806,816-byte recovery equal to every phase1 LIST, final cleanup verified. Parent independently re-ran the pure gate with original build/phase1 bytes and fresh source binding; tampered recovery control rejected. 141 offline controls pass without skips. Supersedes the prototype driver; disk-fault scope and whole-family acceptance remain incomplete; no status promotion. (quality-reports/go-migration/message-list-query-runtime-image-r1/query-cancellation.json)",
-        "Implementing evidence: Unit-level errno injection (not packaged OS faults): os.PathError ENOSPC partial write, EIO write, EIO partial pre-commit check read and EIO second seek return Django's exact generic 500 page with no payload or error text; EIO on the first final read, after a committed prefix and with a partial n>0 read return EIO to Echo with HTTP 200 committed exactly once and only an exact spool prefix written. Every case closes the real descriptor, leaves no path and the next request recovers the full body. Mutations removing the pre-commit check or the spool close fail the test. gofmt, go vet ./... and go test -race ./... pass. Actual packaged ENOSPC/EIO remain open; this BE_GO change requires a fresh image build before reusing packaged message-list receipts. (BE_GO/internal/handler/message_reads_test.go)"
+        "Implementing evidence: Unit-level errno injection (not packaged OS faults): os.PathError ENOSPC partial write, EIO write, EIO partial pre-commit check read and EIO second seek return Django's exact generic 500 page with no payload or error text; EIO on the first final read, after a committed prefix and with a partial n>0 read return EIO to Echo with HTTP 200 committed exactly once and only an exact spool prefix written. Every case closes the real descriptor, leaves no path and the next request recovers the full body. Mutations removing the pre-commit check or the spool close fail the test. gofmt, go vet ./... and go test -race ./... pass. Actual packaged ENOSPC/EIO remain open; this BE_GO change requires a fresh image build before reusing packaged message-list receipts. (BE_GO/internal/handler/message_reads_test.go)",
+        "Implementing evidence: passed (quality-reports/go-migration/ledger-verified-r8/message-reads/1-results.json)"
       ]
     },
     {
@@ -30433,7 +30438,7 @@
         "target": "outgoing_message_action",
         "syntax": "path"
       },
-      "status": "implementing",
+      "status": "verified",
       "go": [
         "BE_GO/internal/domain/message_templates.go",
         "BE_GO/internal/dto/message_templates.go",
@@ -30474,16 +30479,17 @@
       ],
       "evidence": [
         {
-          "command": "python tools/go-migration/family.py run message-templates --label review",
-          "revision": "committing change",
+          "command": "python tools/go-migration/family.py run message-templates --versioned --label sweep-comms-reverify",
+          "revision": "2e94bbfd0fbf664e437adb88b5ab5388fda3728e",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/message-templates-http-review/results.json",
-          "receipt_sha256": "4faf2bf0710637ee98ac5d789bd8ab57ed43ee0873ff3f58af2de3786dbdb688",
-          "scope": "17 HTTP cases each on native Django and Go with the Django-migrated PostgreSQL schema and captured SMTP delivery."
+          "artifact": "quality-reports/go-migration/message-templates-http-sweep-comms-reverify/results.json",
+          "receipt_sha256": "c3450b872cdc61b93c1d2be98a90479ad345281b308cc097139d924cc3a5bd3f",
+          "scope": "HTTP family message-templates: 17/17 cases on native Django and native Go, 17/17 on Caddy /api/v1 and /api/v2."
         }
       ],
       "notes": [
-        "Parity family: message-templates."
+        "Parity family: message-templates.",
+        "Implementing evidence: passed (quality-reports/go-migration/message-templates-http-review/results.json)"
       ]
     },
     {
@@ -30501,7 +30507,7 @@
         "target": "outgoing_message_recipient",
         "syntax": "path"
       },
-      "status": "implementing",
+      "status": "verified",
       "go": [
         "BE_GO/internal/domain/message_templates.go",
         "BE_GO/internal/dto/message_templates.go",
@@ -30543,16 +30549,17 @@
       ],
       "evidence": [
         {
-          "command": "python tools/go-migration/family.py run message-templates --label review",
-          "revision": "committing change",
+          "command": "python tools/go-migration/family.py run message-templates --versioned --label sweep-comms-reverify",
+          "revision": "2e94bbfd0fbf664e437adb88b5ab5388fda3728e",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/message-templates-http-review/results.json",
-          "receipt_sha256": "4faf2bf0710637ee98ac5d789bd8ab57ed43ee0873ff3f58af2de3786dbdb688",
-          "scope": "17 HTTP cases each on native Django and Go with the Django-migrated PostgreSQL schema and captured SMTP delivery."
+          "artifact": "quality-reports/go-migration/message-templates-http-sweep-comms-reverify/results.json",
+          "receipt_sha256": "c3450b872cdc61b93c1d2be98a90479ad345281b308cc097139d924cc3a5bd3f",
+          "scope": "HTTP family message-templates: 17/17 cases on native Django and native Go, 17/17 on Caddy /api/v1 and /api/v2."
         }
       ],
       "notes": [
-        "Parity family: message-templates."
+        "Parity family: message-templates.",
+        "Implementing evidence: passed (quality-reports/go-migration/message-templates-http-review/results.json)"
       ]
     },
     {
@@ -30570,7 +30577,7 @@
         "target": "configuration_send_email",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/cmd/server/communications_send_email.go",
         "BE_GO/cmd/server/main.go",
@@ -30614,11 +30621,11 @@
       ],
       "evidence": [
         {
-          "command": "python tools/go-migration/family.py run communications-send-email --versioned --label sweep-final-3",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "command": "python tools/go-migration/family.py run communications-send-email --versioned --label sweep-comms-reverify",
+          "revision": "2e94bbfd0fbf664e437adb88b5ab5388fda3728e",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/communications-send-email-http-sweep-final-3/results.json",
-          "receipt_sha256": "63a58a52042b7d101fa25cea00dd33cdfeb0991a8850fe8ef849f4982adb4454",
+          "artifact": "quality-reports/go-migration/communications-send-email-http-sweep-comms-reverify/results.json",
+          "receipt_sha256": "36fbe05d8707a6d49d1babea0479a7c87a61e71466f98f011ab8f8a5dfd558d8",
           "scope": "HTTP family communications-send-email: 61/61 cases on native Django and native Go, 61/61 on Caddy /api/v1 and /api/v2."
         }
       ],
@@ -30627,7 +30634,8 @@
         "Implementing evidence: docs/architecture/go-migration/communications-send-email.md",
         "Implementing evidence: RED: Django 61/61; Go 404 on the first case. (quality-reports/go-migration/communications-send-email-http-native-r4/results.json)",
         "Implementing evidence: GREEN: 61/61 on native Django, native Go, Caddy /api/v1 and /api/v2. (quality-reports/go-migration/communications-send-email-http-sweep-restb2-ci-1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on communications-send-email-subject-unicode-lines-delivered (smtp.transcripts) (quality-reports/go-migration/communications-send-email-http-restb2-mutation-r2/results.json)"
+        "Implementing evidence: Mutation control: fails Go on communications-send-email-subject-unicode-lines-delivered (smtp.transcripts) (quality-reports/go-migration/communications-send-email-http-restb2-mutation-r2/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/communications-send-email-http-sweep-final-3/results.json)"
       ]
     },
     {
@@ -30645,7 +30653,7 @@
         "target": "configuration_send_post",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/misc_routes.go",
@@ -30705,12 +30713,12 @@
       ],
       "evidence": [
         {
-          "command": "python tools/go-migration/family.py run misc-routes --versioned --label sweep-final-3",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "command": "python tools/go-migration/family.py run misc-routes --versioned --label sweep-comms-reverify",
+          "revision": "2e94bbfd0fbf664e437adb88b5ab5388fda3728e",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/misc-routes-http-sweep-final-3/results.json",
-          "receipt_sha256": "7dae718e04ba96b8247d92f66c80013791361e050737107f91c886e5c34ea4cf",
-          "scope": "HTTP family misc-routes: 138/138 cases on native Django and native Go, 138/138 on Caddy /api/v1 and /api/v2."
+          "artifact": "quality-reports/go-migration/misc-routes-http-sweep-comms-reverify/results.json",
+          "receipt_sha256": "8231f6c796f420233ff6e3e0de766a19f7a1f875276be318b1a0b01701ebaa30",
+          "scope": "HTTP family misc-routes: 139/139 cases on native Django and native Go, 139/139 on Caddy /api/v1 and /api/v2."
         }
       ],
       "notes": [
@@ -30718,7 +30726,8 @@
         "Implementing evidence: docs/architecture/go-migration/misc-routes.md",
         "Implementing evidence: RED: Django 137/137; Go 500 on the first case. (quality-reports/go-migration/misc-routes-http-v2restc-red-r2/results.json)",
         "Implementing evidence: GREEN: 137/137 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects. (quality-reports/go-migration/misc-routes-http-v2restc-green-r3/results.json)",
-        "Implementing evidence: Mutation control: fails Go on misc-routes-export-offset-times (calendar bytes): CAUGHT. (quality-reports/go-migration/misc-routes-http-v2restc-mutation-r2/results.json)"
+        "Implementing evidence: Mutation control: fails Go on misc-routes-export-offset-times (calendar bytes): CAUGHT. (quality-reports/go-migration/misc-routes-http-v2restc-mutation-r2/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/misc-routes-http-sweep-final-3/results.json)"
       ]
     },
     {
@@ -30736,7 +30745,7 @@
         "target": "message_template_list",
         "syntax": "path"
       },
-      "status": "implementing",
+      "status": "verified",
       "go": [
         "BE_GO/internal/domain/message_templates.go",
         "BE_GO/internal/dto/message_templates.go",
@@ -30778,16 +30787,17 @@
       ],
       "evidence": [
         {
-          "command": "python tools/go-migration/family.py run message-templates --label review",
-          "revision": "committing change",
+          "command": "python tools/go-migration/family.py run message-templates --versioned --label sweep-comms-reverify",
+          "revision": "2e94bbfd0fbf664e437adb88b5ab5388fda3728e",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/message-templates-http-review/results.json",
-          "receipt_sha256": "4faf2bf0710637ee98ac5d789bd8ab57ed43ee0873ff3f58af2de3786dbdb688",
-          "scope": "17 HTTP cases each on native Django and Go with the Django-migrated PostgreSQL schema and captured SMTP delivery."
+          "artifact": "quality-reports/go-migration/message-templates-http-sweep-comms-reverify/results.json",
+          "receipt_sha256": "c3450b872cdc61b93c1d2be98a90479ad345281b308cc097139d924cc3a5bd3f",
+          "scope": "HTTP family message-templates: 17/17 cases on native Django and native Go, 17/17 on Caddy /api/v1 and /api/v2."
         }
       ],
       "notes": [
-        "Parity family: message-templates."
+        "Parity family: message-templates.",
+        "Implementing evidence: passed (quality-reports/go-migration/message-templates-http-review/results.json)"
       ]
     },
     {
@@ -30805,7 +30815,7 @@
         "target": "message_template_detail",
         "syntax": "path"
       },
-      "status": "implementing",
+      "status": "verified",
       "go": [
         "BE_GO/internal/domain/message_templates.go",
         "BE_GO/internal/dto/message_templates.go",
@@ -30847,16 +30857,17 @@
       ],
       "evidence": [
         {
-          "command": "python tools/go-migration/family.py run message-templates --label review",
-          "revision": "committing change",
+          "command": "python tools/go-migration/family.py run message-templates --versioned --label sweep-comms-reverify",
+          "revision": "2e94bbfd0fbf664e437adb88b5ab5388fda3728e",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/message-templates-http-review/results.json",
-          "receipt_sha256": "4faf2bf0710637ee98ac5d789bd8ab57ed43ee0873ff3f58af2de3786dbdb688",
-          "scope": "17 HTTP cases each on native Django and Go with the Django-migrated PostgreSQL schema and captured SMTP delivery."
+          "artifact": "quality-reports/go-migration/message-templates-http-sweep-comms-reverify/results.json",
+          "receipt_sha256": "c3450b872cdc61b93c1d2be98a90479ad345281b308cc097139d924cc3a5bd3f",
+          "scope": "HTTP family message-templates: 17/17 cases on native Django and native Go, 17/17 on Caddy /api/v1 and /api/v2."
         }
       ],
       "notes": [
-        "Parity family: message-templates."
+        "Parity family: message-templates.",
+        "Implementing evidence: passed (quality-reports/go-migration/message-templates-http-review/results.json)"
       ]
     },
     {
@@ -30874,7 +30885,7 @@
         "target": "message_template_sample",
         "syntax": "path"
       },
-      "status": "implementing",
+      "status": "verified",
       "go": [
         "BE_GO/internal/domain/message_templates.go",
         "BE_GO/internal/dto/message_templates.go",
@@ -30915,16 +30926,17 @@
       ],
       "evidence": [
         {
-          "command": "python tools/go-migration/family.py run message-templates --label review",
-          "revision": "committing change",
+          "command": "python tools/go-migration/family.py run message-templates --versioned --label sweep-comms-reverify",
+          "revision": "2e94bbfd0fbf664e437adb88b5ab5388fda3728e",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/message-templates-http-review/results.json",
-          "receipt_sha256": "4faf2bf0710637ee98ac5d789bd8ab57ed43ee0873ff3f58af2de3786dbdb688",
-          "scope": "17 HTTP cases each on native Django and Go with the Django-migrated PostgreSQL schema and captured SMTP delivery."
+          "artifact": "quality-reports/go-migration/message-templates-http-sweep-comms-reverify/results.json",
+          "receipt_sha256": "c3450b872cdc61b93c1d2be98a90479ad345281b308cc097139d924cc3a5bd3f",
+          "scope": "HTTP family message-templates: 17/17 cases on native Django and native Go, 17/17 on Caddy /api/v1 and /api/v2."
         }
       ],
       "notes": [
-        "Parity family: message-templates."
+        "Parity family: message-templates.",
+        "Implementing evidence: passed (quality-reports/go-migration/message-templates-http-review/results.json)"
       ]
     },
     {
@@ -30942,7 +30954,7 @@
         "target": "configuration_smtp_info",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/communications_smtp.go",
@@ -30991,11 +31003,11 @@
       ],
       "evidence": [
         {
-          "command": "python tools/go-migration/family.py run communications-smtp --versioned --label sweep-final-3",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "command": "python tools/go-migration/family.py run communications-smtp --versioned --label sweep-comms-reverify",
+          "revision": "2e94bbfd0fbf664e437adb88b5ab5388fda3728e",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/communications-smtp-http-sweep-final-3/results.json",
-          "receipt_sha256": "a13c98ff37f0912b4d674dc6b640ea3fc184a7a0ae8b3ceb093dbe636192c274",
+          "artifact": "quality-reports/go-migration/communications-smtp-http-sweep-comms-reverify/results.json",
+          "receipt_sha256": "4f2d071c655ee25a9ca92b82963fa09319b8f7e317b492bcf3ce2f3cd9e52e2c",
           "scope": "HTTP family communications-smtp: 107/107 cases on native Django and native Go, 107/107 on Caddy /api/v1 and /api/v2."
         }
       ],
@@ -31004,7 +31016,8 @@
         "Implementing evidence: docs/architecture/go-migration/communications-smtp.md",
         "Implementing evidence: RED: Django 107/107; Go 500 on the first case. (quality-reports/go-migration/communications-smtp-http-v2misc3-red-r2/results.json)",
         "Implementing evidence: GREEN: 107/107 on native Django, native Go, Caddy /api/v1 and /api/v2. (quality-reports/go-migration/communications-smtp-http-sweep-restb2-ci-1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on communications-smtp-verify-cram-md5-missing-user (smtp.transcripts) (quality-reports/go-migration/communications-smtp-http-restb2-mutation-r1/results.json)"
+        "Implementing evidence: Mutation control: fails Go on communications-smtp-verify-cram-md5-missing-user (smtp.transcripts) (quality-reports/go-migration/communications-smtp-http-restb2-mutation-r1/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/communications-smtp-http-sweep-final-3/results.json)"
       ]
     },
     {
@@ -31022,7 +31035,7 @@
         "target": "configuration_smtp_update",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/communications_smtp.go",
@@ -31071,11 +31084,11 @@
       ],
       "evidence": [
         {
-          "command": "python tools/go-migration/family.py run communications-smtp --versioned --label sweep-final-3",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "command": "python tools/go-migration/family.py run communications-smtp --versioned --label sweep-comms-reverify",
+          "revision": "2e94bbfd0fbf664e437adb88b5ab5388fda3728e",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/communications-smtp-http-sweep-final-3/results.json",
-          "receipt_sha256": "a13c98ff37f0912b4d674dc6b640ea3fc184a7a0ae8b3ceb093dbe636192c274",
+          "artifact": "quality-reports/go-migration/communications-smtp-http-sweep-comms-reverify/results.json",
+          "receipt_sha256": "4f2d071c655ee25a9ca92b82963fa09319b8f7e317b492bcf3ce2f3cd9e52e2c",
           "scope": "HTTP family communications-smtp: 107/107 cases on native Django and native Go, 107/107 on Caddy /api/v1 and /api/v2."
         }
       ],
@@ -31084,7 +31097,8 @@
         "Implementing evidence: docs/architecture/go-migration/communications-smtp.md",
         "Implementing evidence: RED: Django 107/107; Go 500 on the first case. (quality-reports/go-migration/communications-smtp-http-v2misc3-red-r2/results.json)",
         "Implementing evidence: GREEN: 107/107 on native Django, native Go, Caddy /api/v1 and /api/v2. (quality-reports/go-migration/communications-smtp-http-sweep-restb2-ci-1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on communications-smtp-verify-cram-md5-missing-user (smtp.transcripts) (quality-reports/go-migration/communications-smtp-http-restb2-mutation-r1/results.json)"
+        "Implementing evidence: Mutation control: fails Go on communications-smtp-verify-cram-md5-missing-user (smtp.transcripts) (quality-reports/go-migration/communications-smtp-http-restb2-mutation-r1/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/communications-smtp-http-sweep-final-3/results.json)"
       ]
     },
     {
@@ -31102,7 +31116,7 @@
         "target": "configuration_smtp_verify",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/communications_smtp.go",
@@ -31151,11 +31165,11 @@
       ],
       "evidence": [
         {
-          "command": "python tools/go-migration/family.py run communications-smtp --versioned --label sweep-final-3",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "command": "python tools/go-migration/family.py run communications-smtp --versioned --label sweep-comms-reverify",
+          "revision": "2e94bbfd0fbf664e437adb88b5ab5388fda3728e",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/communications-smtp-http-sweep-final-3/results.json",
-          "receipt_sha256": "a13c98ff37f0912b4d674dc6b640ea3fc184a7a0ae8b3ceb093dbe636192c274",
+          "artifact": "quality-reports/go-migration/communications-smtp-http-sweep-comms-reverify/results.json",
+          "receipt_sha256": "4f2d071c655ee25a9ca92b82963fa09319b8f7e317b492bcf3ce2f3cd9e52e2c",
           "scope": "HTTP family communications-smtp: 107/107 cases on native Django and native Go, 107/107 on Caddy /api/v1 and /api/v2."
         }
       ],
@@ -31164,7 +31178,8 @@
         "Implementing evidence: docs/architecture/go-migration/communications-smtp.md",
         "Implementing evidence: RED: Django 107/107; Go 500 on the first case. (quality-reports/go-migration/communications-smtp-http-v2misc3-red-r2/results.json)",
         "Implementing evidence: GREEN: 107/107 on native Django, native Go, Caddy /api/v1 and /api/v2. (quality-reports/go-migration/communications-smtp-http-sweep-restb2-ci-1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on communications-smtp-verify-cram-md5-missing-user (smtp.transcripts) (quality-reports/go-migration/communications-smtp-http-restb2-mutation-r1/results.json)"
+        "Implementing evidence: Mutation control: fails Go on communications-smtp-verify-cram-md5-missing-user (smtp.transcripts) (quality-reports/go-migration/communications-smtp-http-restb2-mutation-r1/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/communications-smtp-http-sweep-final-3/results.json)"
       ]
     },
     {
@@ -31182,7 +31197,7 @@
         "target": "staff_board_messages_delete",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE/notifications/go_realtime.py",
         "BE/notifications/management/commands/relay_go_realtime.py",
@@ -31233,11 +31248,11 @@
       ],
       "evidence": [
         {
-          "command": "python tools/go-migration/family.py run staff-board --versioned --label sweep-final-3",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "command": "python tools/go-migration/family.py run staff-board --versioned --label sweep-comms-reverify",
+          "revision": "2e94bbfd0fbf664e437adb88b5ab5388fda3728e",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/staff-board-http-sweep-final-3/results.json",
-          "receipt_sha256": "1871a10232d2c83c7b2e9579130b3087ff1b8236466a5cb1139d164d16bc4e08",
+          "artifact": "quality-reports/go-migration/staff-board-http-sweep-comms-reverify/results.json",
+          "receipt_sha256": "5936beacc8337ed8da4eab2a3909580f8f25b591f6d6de9d54832174e24c3ac7",
           "scope": "HTTP family staff-board: 32/32 cases on native Django and native Go, 32/32 on Caddy /api/v1 and /api/v2."
         }
       ],
@@ -31249,7 +31264,8 @@
         "Implementing evidence: Real PostgreSQL (full migration history): exact list order, foreign exclusion, deleted-author projection and a constant two-query list at 104 rows; insert, lock, column-scoped update, delete, foreign write denial and jsonb surrogate rejection; Django reads, renders and saves the Go-written row with seeded rows unchanged. Ordering mutation fails the run. No handler, route or realtime. (quality-reports/go-migration/staff-board-repository-r3/results.json)",
         "Implementing evidence: Go routes registered for /api/v2 with handler unit tests (metadata, 405, JSON/form detection, localized DRF errors, domain error bodies, generic 500). No authored HTTP contract yet; realtime publisher is an explicit unavailable stand-in, so Go writes do not invalidate connected clients. (BE_GO/internal/handler/staff_board_test.go)",
         "Implementing evidence: Authored 32-case HTTP sequence passes on native Django, native Go, Caddy /api/v1 and /api/v2 (exact status/body/headers, complete 128-model state effects, per-request attribution, cache unchanged, verified cleanup). Go author-check mutation fails only Go. No HTTP-level RED (Go code predates the sequence). Realtime invalidation still missing; not verified. (quality-reports/go-migration/staff-board-http-versioned-r6/results.json)",
-        "Implementing evidence: Installed update/recovery and old-controller smokes pass with schema 4; the managed relay delivered an outbox probe at every healthy checkpoint (10 and 9). (quality-reports/go-migration/installed-realtime-c422c820/recovery/update-recovery.json)"
+        "Implementing evidence: Installed update/recovery and old-controller smokes pass with schema 4; the managed relay delivered an outbox probe at every healthy checkpoint (10 and 9). (quality-reports/go-migration/installed-realtime-c422c820/recovery/update-recovery.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/staff-board-http-sweep-final-3/results.json)"
       ]
     },
     {
@@ -31267,7 +31283,7 @@
         "target": "staff_board_messages_update",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE/notifications/go_realtime.py",
         "BE/notifications/management/commands/relay_go_realtime.py",
@@ -31328,11 +31344,11 @@
       ],
       "evidence": [
         {
-          "command": "python tools/go-migration/family.py run staff-board --versioned --label sweep-final-3",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "command": "python tools/go-migration/family.py run staff-board --versioned --label sweep-comms-reverify",
+          "revision": "2e94bbfd0fbf664e437adb88b5ab5388fda3728e",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/staff-board-http-sweep-final-3/results.json",
-          "receipt_sha256": "1871a10232d2c83c7b2e9579130b3087ff1b8236466a5cb1139d164d16bc4e08",
+          "artifact": "quality-reports/go-migration/staff-board-http-sweep-comms-reverify/results.json",
+          "receipt_sha256": "5936beacc8337ed8da4eab2a3909580f8f25b591f6d6de9d54832174e24c3ac7",
           "scope": "HTTP family staff-board: 32/32 cases on native Django and native Go, 32/32 on Caddy /api/v1 and /api/v2."
         }
       ],
@@ -31347,7 +31363,8 @@
         "Implementing evidence: Real PostgreSQL (full migration history): exact list order, foreign exclusion, deleted-author projection and a constant two-query list at 104 rows; insert, lock, column-scoped update, delete, foreign write denial and jsonb surrogate rejection; Django reads, renders and saves the Go-written row with seeded rows unchanged. Ordering mutation fails the run. No handler, route or realtime. (quality-reports/go-migration/staff-board-repository-r3/results.json)",
         "Implementing evidence: Go routes registered for /api/v2 with handler unit tests (metadata, 405, JSON/form detection, localized DRF errors, domain error bodies, generic 500). No authored HTTP contract yet; realtime publisher is an explicit unavailable stand-in, so Go writes do not invalidate connected clients. (BE_GO/internal/handler/staff_board_test.go)",
         "Implementing evidence: Authored 32-case HTTP sequence passes on native Django, native Go, Caddy /api/v1 and /api/v2 (exact status/body/headers, complete 128-model state effects, per-request attribution, cache unchanged, verified cleanup). Go author-check mutation fails only Go. No HTTP-level RED (Go code predates the sequence). Realtime invalidation still missing; not verified. (quality-reports/go-migration/staff-board-http-versioned-r6/results.json)",
-        "Implementing evidence: Installed update/recovery and old-controller smokes pass with schema 4; the managed relay delivered an outbox probe at every healthy checkpoint (10 and 9). (quality-reports/go-migration/installed-realtime-c422c820/recovery/update-recovery.json)"
+        "Implementing evidence: Installed update/recovery and old-controller smokes pass with schema 4; the managed relay delivered an outbox probe at every healthy checkpoint (10 and 9). (quality-reports/go-migration/installed-realtime-c422c820/recovery/update-recovery.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/staff-board-http-sweep-final-3/results.json)"
       ]
     },
     {
@@ -31365,7 +31382,7 @@
         "target": "staff_board_messages_add",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE/notifications/go_realtime.py",
         "BE/notifications/management/commands/relay_go_realtime.py",
@@ -31426,11 +31443,11 @@
       ],
       "evidence": [
         {
-          "command": "python tools/go-migration/family.py run staff-board --versioned --label sweep-final-3",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "command": "python tools/go-migration/family.py run staff-board --versioned --label sweep-comms-reverify",
+          "revision": "2e94bbfd0fbf664e437adb88b5ab5388fda3728e",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/staff-board-http-sweep-final-3/results.json",
-          "receipt_sha256": "1871a10232d2c83c7b2e9579130b3087ff1b8236466a5cb1139d164d16bc4e08",
+          "artifact": "quality-reports/go-migration/staff-board-http-sweep-comms-reverify/results.json",
+          "receipt_sha256": "5936beacc8337ed8da4eab2a3909580f8f25b591f6d6de9d54832174e24c3ac7",
           "scope": "HTTP family staff-board: 32/32 cases on native Django and native Go, 32/32 on Caddy /api/v1 and /api/v2."
         }
       ],
@@ -31445,7 +31462,8 @@
         "Implementing evidence: Real PostgreSQL (full migration history): exact list order, foreign exclusion, deleted-author projection and a constant two-query list at 104 rows; insert, lock, column-scoped update, delete, foreign write denial and jsonb surrogate rejection; Django reads, renders and saves the Go-written row with seeded rows unchanged. Ordering mutation fails the run. No handler, route or realtime. (quality-reports/go-migration/staff-board-repository-r3/results.json)",
         "Implementing evidence: Go routes registered for /api/v2 with handler unit tests (metadata, 405, JSON/form detection, localized DRF errors, domain error bodies, generic 500). No authored HTTP contract yet; realtime publisher is an explicit unavailable stand-in, so Go writes do not invalidate connected clients. (BE_GO/internal/handler/staff_board_test.go)",
         "Implementing evidence: Authored 32-case HTTP sequence passes on native Django, native Go, Caddy /api/v1 and /api/v2 (exact status/body/headers, complete 128-model state effects, per-request attribution, cache unchanged, verified cleanup). Go author-check mutation fails only Go. No HTTP-level RED (Go code predates the sequence). Realtime invalidation still missing; not verified. (quality-reports/go-migration/staff-board-http-versioned-r6/results.json)",
-        "Implementing evidence: Installed update/recovery and old-controller smokes pass with schema 4; the managed relay delivered an outbox probe at every healthy checkpoint (10 and 9). (quality-reports/go-migration/installed-realtime-c422c820/recovery/update-recovery.json)"
+        "Implementing evidence: Installed update/recovery and old-controller smokes pass with schema 4; the managed relay delivered an outbox probe at every healthy checkpoint (10 and 9). (quality-reports/go-migration/installed-realtime-c422c820/recovery/update-recovery.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/staff-board-http-sweep-final-3/results.json)"
       ]
     },
     {
@@ -31463,7 +31481,7 @@
         "target": "staff_board_messages_list",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/staff_board.go",
@@ -31512,11 +31530,11 @@
       ],
       "evidence": [
         {
-          "command": "python tools/go-migration/family.py run staff-board --versioned --label sweep-final-3",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "command": "python tools/go-migration/family.py run staff-board --versioned --label sweep-comms-reverify",
+          "revision": "2e94bbfd0fbf664e437adb88b5ab5388fda3728e",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/staff-board-http-sweep-final-3/results.json",
-          "receipt_sha256": "1871a10232d2c83c7b2e9579130b3087ff1b8236466a5cb1139d164d16bc4e08",
+          "artifact": "quality-reports/go-migration/staff-board-http-sweep-comms-reverify/results.json",
+          "receipt_sha256": "5936beacc8337ed8da4eab2a3909580f8f25b591f6d6de9d54832174e24c3ac7",
           "scope": "HTTP family staff-board: 32/32 cases on native Django and native Go, 32/32 on Caddy /api/v1 and /api/v2."
         }
       ],
@@ -31528,7 +31546,8 @@
         "Implementing evidence: Service unit tests (15 authored cases, written after implementation) pass; publish-before-commit and validate-before-lookup mutations caught. Repository SQL not yet executed against PostgreSQL; no handler, route or realtime publisher. Deliberate column-scoped update vs Django full-row save() recorded for review. (BE_GO/internal/service/staff_board_test.go)",
         "Implementing evidence: Real PostgreSQL (full migration history): exact list order, foreign exclusion, deleted-author projection and a constant two-query list at 104 rows; insert, lock, column-scoped update, delete, foreign write denial and jsonb surrogate rejection; Django reads, renders and saves the Go-written row with seeded rows unchanged. Ordering mutation fails the run. No handler, route or realtime. (quality-reports/go-migration/staff-board-repository-r3/results.json)",
         "Implementing evidence: Go routes registered for /api/v2 with handler unit tests (metadata, 405, JSON/form detection, localized DRF errors, domain error bodies, generic 500). No authored HTTP contract yet; realtime publisher is an explicit unavailable stand-in, so Go writes do not invalidate connected clients. (BE_GO/internal/handler/staff_board_test.go)",
-        "Implementing evidence: Authored 32-case HTTP sequence passes on native Django, native Go, Caddy /api/v1 and /api/v2 (exact status/body/headers, complete 128-model state effects, per-request attribution, cache unchanged, verified cleanup). Go author-check mutation fails only Go. No HTTP-level RED (Go code predates the sequence). Realtime invalidation still missing; not verified. (quality-reports/go-migration/staff-board-http-versioned-r6/results.json)"
+        "Implementing evidence: Authored 32-case HTTP sequence passes on native Django, native Go, Caddy /api/v1 and /api/v2 (exact status/body/headers, complete 128-model state effects, per-request attribution, cache unchanged, verified cleanup). Go author-check mutation fails only Go. No HTTP-level RED (Go code predates the sequence). Realtime invalidation still missing; not verified. (quality-reports/go-migration/staff-board-http-versioned-r6/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/staff-board-http-sweep-final-3/results.json)"
       ]
     },
     {
@@ -31600,7 +31619,7 @@
         "target": "communication_workflows_delete",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/internal/dto/automation_workflow_write.go",
         "BE_GO/internal/dto/python_json.go",
@@ -31643,11 +31662,11 @@
       ],
       "evidence": [
         {
-          "command": "python tools/go-migration/family.py run workflow-writes --versioned --label sweep-final-3",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "command": "python tools/go-migration/family.py run workflow-writes --versioned --label sweep-comms-reverify",
+          "revision": "2e94bbfd0fbf664e437adb88b5ab5388fda3728e",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/workflow-writes-http-sweep-final-3/results.json",
-          "receipt_sha256": "5d2a17a563ee78b6c1efaeba710093cdb61bb9f37fa0b440a55726193480acdd",
+          "artifact": "quality-reports/go-migration/workflow-writes-http-sweep-comms-reverify/results.json",
+          "receipt_sha256": "0e1a98473b42a56359647d3e433035746514309e74ca31b65e1259a708df9ea2",
           "scope": "HTTP family workflow-writes: 27/27 cases on native Django and native Go, 27/27 on Caddy /api/v1 and /api/v2."
         }
       ],
@@ -31656,7 +31675,8 @@
         "Delete of a missing/foreign ID reproduces Django's 500 (candidate bug, decision pending).",
         "Implementing evidence: docs/architecture/go-migration/automation-workflows.md",
         "Implementing evidence: RED: Django 27/27 on first run; Go 404 on the first case. (quality-reports/go-migration/workflow-writes-http-red-r1/results.json)",
-        "Implementing evidence: GREEN: 27/27 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact workflow, audit entry and audit index effects; unsorted audit JSON mutation fails Go. (quality-reports/go-migration/workflow-writes-http-versioned-r1/results.json)"
+        "Implementing evidence: GREEN: 27/27 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact workflow, audit entry and audit index effects; unsorted audit JSON mutation fails Go. (quality-reports/go-migration/workflow-writes-http-versioned-r1/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/workflow-writes-http-sweep-final-3/results.json)"
       ]
     },
     {
@@ -31674,7 +31694,7 @@
         "target": "communication_workflows_details",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/internal/domain/automation_workflows.go",
         "BE_GO/internal/repository/automation_workflows.go",
@@ -31716,11 +31736,11 @@
       ],
       "evidence": [
         {
-          "command": "python tools/go-migration/family.py run workflows --versioned --label sweep-final-3",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "command": "python tools/go-migration/family.py run workflows --versioned --label sweep-comms-reverify",
+          "revision": "2e94bbfd0fbf664e437adb88b5ab5388fda3728e",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/workflows-http-sweep-final-3/results.json",
-          "receipt_sha256": "ab8fdb546f1931b55f7fcb34754ba3a55f5c532d56e3586e1195432de8303b47",
+          "artifact": "quality-reports/go-migration/workflows-http-sweep-comms-reverify/results.json",
+          "receipt_sha256": "c3fb3e94ee47e3ad6cb2fbd5f534e936af8e9d43431618cb63219553dd021575",
           "scope": "HTTP family workflows: 20/20 cases on native Django and native Go, 20/20 on Caddy /api/v1 and /api/v2."
         }
       ],
@@ -31728,7 +31748,8 @@
         "Implementing: read parity proven on four transports.",
         "Implementing evidence: docs/architecture/go-migration/automation-workflows.md",
         "Implementing evidence: RED: Django 20/20 on first run; Go 404 on the first case. (quality-reports/go-migration/workflows-http-red-r1/results.json)",
-        "Implementing evidence: GREEN: 20/20 on native Django, native Go, Caddy /api/v1 and /api/v2 with full-state, attribution, cache and cleanup checks; list-order mutation fails Go. (quality-reports/go-migration/workflows-http-versioned-r2/results.json)"
+        "Implementing evidence: GREEN: 20/20 on native Django, native Go, Caddy /api/v1 and /api/v2 with full-state, attribution, cache and cleanup checks; list-order mutation fails Go. (quality-reports/go-migration/workflows-http-versioned-r2/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/workflows-http-sweep-final-3/results.json)"
       ]
     },
     {
@@ -31746,7 +31767,7 @@
         "target": "communication_workflows_update",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/automation_workflows.go",
@@ -31794,12 +31815,12 @@
       ],
       "evidence": [
         {
-          "command": "python tools/go-migration/family.py run workflow-update --versioned --label sweep-final-3",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "command": "python tools/go-migration/family.py run workflow-update --versioned --label sweep-comms-reverify",
+          "revision": "2e94bbfd0fbf664e437adb88b5ab5388fda3728e",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/workflow-update-http-sweep-final-3/results.json",
-          "receipt_sha256": "41deb1c9a08873bf0ca5d41b4a1380fbc4dce5c3fc19e467c42b30f29f59d2d2",
-          "scope": "HTTP family workflow-update: 94/94 cases on native Django and native Go, 94/94 on Caddy /api/v1 and /api/v2."
+          "artifact": "quality-reports/go-migration/workflow-update-http-sweep-comms-reverify/results.json",
+          "receipt_sha256": "337f95d868427602366406b6b844a5c610afda19bc56779a6fd77a1ef7acebc4",
+          "scope": "HTTP family workflow-update: 99/99 cases on native Django and native Go, 99/99 on Caddy /api/v1 and /api/v2."
         }
       ],
       "notes": [
@@ -31807,7 +31828,8 @@
         "Implementing evidence: docs/architecture/go-migration/workflow-update.md",
         "Implementing evidence: RED: Django 75/75; Go 500 on the first case. (quality-reports/go-migration/workflow-update-http-v2misc-red-r3/results.json)",
         "Implementing evidence: GREEN: 75/75 on native Django, native Go, Caddy /api/v1 and /api/v2. (quality-reports/go-migration/workflow-update-http-sweep-restb2-ci-2/results.json)",
-        "Implementing evidence: Mutation control: fails Go on workflow-update-enable-cron-comma-fraction-past (500) (quality-reports/go-migration/workflow-update-http-restb2-mutation-r2/results.json)"
+        "Implementing evidence: Mutation control: fails Go on workflow-update-enable-cron-comma-fraction-past (500) (quality-reports/go-migration/workflow-update-http-restb2-mutation-r2/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/workflow-update-http-sweep-final-3/results.json)"
       ]
     },
     {
@@ -31825,7 +31847,7 @@
         "target": "communication_workflows_add",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/internal/dto/automation_workflow_write.go",
         "BE_GO/internal/dto/python_json.go",
@@ -31868,11 +31890,11 @@
       ],
       "evidence": [
         {
-          "command": "python tools/go-migration/family.py run workflow-writes --versioned --label sweep-final-3",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "command": "python tools/go-migration/family.py run workflow-writes --versioned --label sweep-comms-reverify",
+          "revision": "2e94bbfd0fbf664e437adb88b5ab5388fda3728e",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/workflow-writes-http-sweep-final-3/results.json",
-          "receipt_sha256": "5d2a17a563ee78b6c1efaeba710093cdb61bb9f37fa0b440a55726193480acdd",
+          "artifact": "quality-reports/go-migration/workflow-writes-http-sweep-comms-reverify/results.json",
+          "receipt_sha256": "0e1a98473b42a56359647d3e433035746514309e74ca31b65e1259a708df9ea2",
           "scope": "HTTP family workflow-writes: 27/27 cases on native Django and native Go, 27/27 on Caddy /api/v1 and /api/v2."
         }
       ],
@@ -31881,7 +31903,8 @@
         "Implementing evidence: docs/architecture/go-migration/automation-workflows.md",
         "Implementing evidence: RED: Django 27/27 on first run; Go 404 on the first case. (quality-reports/go-migration/workflow-writes-http-red-r1/results.json)",
         "Implementing evidence: GREEN: 27/27 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact workflow, audit entry and audit index effects; unsorted audit JSON mutation fails Go. (quality-reports/go-migration/workflow-writes-http-versioned-r1/results.json)",
-        "Implementing evidence: GREEN after correction: with audit resolvers registered as in production, creates are indexed direct; 27/27 on four transports. (quality-reports/go-migration/workflow-writes-http-versioned-r2/results.json)"
+        "Implementing evidence: GREEN after correction: with audit resolvers registered as in production, creates are indexed direct; 27/27 on four transports. (quality-reports/go-migration/workflow-writes-http-versioned-r2/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/workflow-writes-http-sweep-final-3/results.json)"
       ]
     },
     {
@@ -31899,7 +31922,7 @@
         "target": "communication_workflows_list",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/internal/domain/automation_workflows.go",
         "BE_GO/internal/repository/automation_workflows.go",
@@ -31941,11 +31964,11 @@
       ],
       "evidence": [
         {
-          "command": "python tools/go-migration/family.py run workflows --versioned --label sweep-final-3",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "command": "python tools/go-migration/family.py run workflows --versioned --label sweep-comms-reverify",
+          "revision": "2e94bbfd0fbf664e437adb88b5ab5388fda3728e",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/workflows-http-sweep-final-3/results.json",
-          "receipt_sha256": "ab8fdb546f1931b55f7fcb34754ba3a55f5c532d56e3586e1195432de8303b47",
+          "artifact": "quality-reports/go-migration/workflows-http-sweep-comms-reverify/results.json",
+          "receipt_sha256": "c3fb3e94ee47e3ad6cb2fbd5f534e936af8e9d43431618cb63219553dd021575",
           "scope": "HTTP family workflows: 20/20 cases on native Django and native Go, 20/20 on Caddy /api/v1 and /api/v2."
         }
       ],
@@ -31953,7 +31976,8 @@
         "Implementing: read parity proven on four transports.",
         "Implementing evidence: docs/architecture/go-migration/automation-workflows.md",
         "Implementing evidence: RED: Django 20/20 on first run; Go 404 on the first case. (quality-reports/go-migration/workflows-http-red-r1/results.json)",
-        "Implementing evidence: GREEN: 20/20 on native Django, native Go, Caddy /api/v1 and /api/v2 with full-state, attribution, cache and cleanup checks; list-order mutation fails Go. (quality-reports/go-migration/workflows-http-versioned-r2/results.json)"
+        "Implementing evidence: GREEN: 20/20 on native Django, native Go, Caddy /api/v1 and /api/v2 with full-state, attribution, cache and cleanup checks; list-order mutation fails Go. (quality-reports/go-migration/workflows-http-versioned-r2/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/workflows-http-sweep-final-3/results.json)"
       ]
     },
     {
