@@ -1,4 +1,6 @@
-import {createServer} from 'vite';
+import {build, preview} from 'vite';
+import {mkdir, writeFile} from 'node:fs/promises';
+import {join} from 'node:path';
 import {svelte} from '@sveltejs/vite-plugin-svelte';
 import {fileURLToPath} from 'node:url';
 
@@ -9,10 +11,15 @@ let failSave = false;
 let maintenance = false;
 let manual = false;
 const config = () => ({oem: {name: 'Associazione Aurora', abbreviation: 'Aurora', primaryColor: '#351dc2', supportEmail: 'support@example.test'}, features: {selfHosted: true, aiEnabled: ai.enabled, manualEnabled: manual}});
-const server = await createServer({
-    root, configFile: false, logLevel: 'error',
+// Serve one compiled snapshot so dependency discovery cannot reload an open form.
+const fixtureRoot = join(root, 'node_modules/.cache/self-instance-ai');
+await mkdir(fixtureRoot, {recursive: true});
+await writeFile(join(fixtureRoot, 'index.html'), `<html lang="it"><head><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="/static/css/bootstrap.min.css"><link rel="stylesheet" href="/static/css/app-bundle.css"><style>body{background:#f3f6fa;padding:24px;font-family:Arial,sans-serif}main{max-width:1200px;margin:auto}#navbar{display:flex;justify-content:flex-end;min-height:36px;margin-bottom:16px}@media(max-width:575px){body{padding:12px}.card-body{padding:16px!important}}</style></head><body><main><nav id="navbar" aria-label="Navbar"></nav><div id="app"></div></main><script type="module" src="/fixture-entry.js"></script></body></html>`);
+await build({
+    root: fixtureRoot, publicDir: join(root, 'public'), configFile: false, logLevel: 'error',
     define: {__bakney: JSON.stringify({OEM_CONFIG: {selfHosted: true}, env: {API_HOST: '/api'}})},
-    resolve: {alias: {store: `${root}/src/store`, utils: `${root}/src/utils`, components: `${root}/src/components`}},
+    build: {target: 'esnext', minify: false},
+    resolve: {alias: {'/src': join(root, 'src'), store: `${root}/src/store`, utils: `${root}/src/utils`, components: `${root}/src/components`}},
     plugins: [{name: 'self-instance-fixture', enforce: 'pre',
         resolveId(id) {
             // Also relative imports (NotificationService uses ./ApiMiddleware.js).
@@ -23,12 +30,13 @@ const server = await createServer({
             if (id === '\0fixture-api') return `export const originalFetch = window.fetch.bind(window); export async function apiFetch(url, options = {}) {const res = await fetch('/fixture/api' + url.slice(url.indexOf('/instance') + 9), {...options, headers: {'Content-Type': 'application/json'}}); return {error: !res.ok, response: await res.json()};}`;
             if (id === '\0fixture-entry') return `import {Toaster} from 'svelte-sonner'; new Toaster({target: document.body}); import SelfInstance from '/src/routes/profile/sections/SelfInstance.svelte'; import HeaderActions from '/src/components/HeaderActions.svelte'; import {saveRuntimeConfig} from '/src/store/instanceStore.js'; const data = await fetch('/fixture/api/admin').then(r => r.json()); saveRuntimeConfig(data.config); new HeaderActions({target: document.getElementById('navbar'), props: {quickAddItems: [{id: 'fixture', label: 'Nuovo elemento'}], showQuickAdd: true, showAI: true}}); new SelfInstance({target: document.getElementById('app')});`;
         },
-        configureServer(server) {
+    }, svelte({configFile: false})],
+});
+await preview({
+    root: fixtureRoot, configFile: false, logLevel: 'error',
+    plugins: [{name: 'self-instance-api',
+        configurePreviewServer(server) {
             server.middlewares.use(async (req, res, next) => {
-                if (req.url === '/') {
-                    res.setHeader('Content-Type', 'text/html');
-                    return res.end(await server.transformIndexHtml('/', `<html lang="it"><head><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="/static/css/bootstrap.min.css"><link rel="stylesheet" href="/static/css/app-bundle.css"><style>body{background:#f3f6fa;padding:24px;font-family:Arial,sans-serif}main{max-width:1200px;margin:auto}#navbar{display:flex;justify-content:flex-end;min-height:36px;margin-bottom:16px}@media(max-width:575px){body{padding:12px}.card-body{padding:16px!important}}</style></head><body><main><nav id="navbar" aria-label="Navbar"></nav><div id="app"></div></main><script type="module" src="/fixture-entry.js"></script></body></html>`));
-                }
                 if (!req.url.startsWith('/fixture/')) return next();
                 let raw = ''; for await (const chunk of req) raw += chunk;
                 const body = raw ? JSON.parse(raw) : {};
@@ -61,8 +69,7 @@ const server = await createServer({
                 res.statusCode = 404; send({error: 'Fixture endpoint missing: ' + path});
             });
         },
-    }, svelte({configFile: false})],
-    server: {host: '127.0.0.1', port: 5193, strictPort: true},
+    }],
+    preview: {host: '127.0.0.1', port: 5193, strictPort: true},
 });
-await server.listen();
 console.log('Self Instance fixture ready on http://127.0.0.1:5193');

@@ -77,17 +77,19 @@ for (const viewport of [{width: 1440, height: 1000}, {width: 390, height: 844}])
         await page.screenshot({path: `/tmp/assozeta-ai-${viewport.width}.png`, fullPage: true});
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBeTruthy();
         // A conflict retains the draft and the saved navbar state.
-        await request.post('/fixture/failure', {data: {enabled: true}});
+        // Setting this fixture flag is idempotent if the dev server closes an idle connection.
+        await expect(await request.post('/fixture/failure', {data: {enabled: true}, maxRetries: 1})).toBeOK();
         await toggle.focus();
         await page.keyboard.press('Space');
         await card.getByRole('button', {name: 'Salva Bot AI', exact: true}).click();
         await expect(card.getByRole('alert')).toContainText('un’altra sessione');
         await expect(page.getByRole('button', {name: 'Agente AI', exact: true})).toBeVisible();
-        await request.post('/fixture/failure', {data: {enabled: false}});
+        await expect(await request.post('/fixture/failure', {data: {enabled: false}, maxRetries: 1})).toBeOK();
         await card.getByRole('button', {name: 'Salva Bot AI', exact: true}).click();
         await expect(page.getByRole('button', {name: 'Agente AI', exact: true})).toHaveCount(0);
         await page.reload();
         await openAI();
+        await expect(card.getByLabel('Modello principale', {exact: false})).toHaveValue('fixture-model');
         await expect(toggle).not.toBeChecked();
         await expect(page.getByRole('button', {name: 'Agente AI', exact: true})).toHaveCount(0);
         await card.getByRole('button', {name: 'Altre azioni Bot AI'}).click();
