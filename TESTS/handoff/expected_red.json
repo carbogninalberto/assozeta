@@ -2357,6 +2357,110 @@
         "task-handoff-dispositions.json is missing"
       ],
       "reason": "Phase 4 part D: docs/architecture/go-migration/task-handoff-dispositions.json does not exist"
+    },
+    "TESTS.handoff.test_p5_controller.SwitchCase.test_forward_switch_runs_every_stage_in_order_with_its_evidence": {
+      "phase": 5,
+      "owner": "t-p5",
+      "reason": "Phase 5 part A: runtime_switch has no STEP_POINTS/PROGRESS_STAGES and default_steps refuses with switch_unavailable; no stop_source/target_preflight stages",
+      "signatures": [
+        "P5 contract red"
+      ]
+    },
+    "TESTS.handoff.test_p5_controller.SwitchCase.test_reverse_switch_mirrors_the_forward_protocol": {
+      "phase": 5,
+      "owner": "t-p5",
+      "reason": "Phase 5 part A: no wired controller (STEP_POINTS missing; default_steps refuses), so no go->django switch either",
+      "signatures": [
+        "P5 contract red"
+      ]
+    },
+    "TESTS.handoff.test_p5_controller.SwitchCase.test_progress_is_visible_without_either_api_at_every_stage": {
+      "phase": 5,
+      "owner": "t-p5",
+      "reason": "Phase 5 part A: no PROGRESS_STAGES, status has no progress/maintenance window; the switch refuses at preflight",
+      "signatures": [
+        "P5 contract red"
+      ]
+    },
+    "TESTS.handoff.test_p5_controller.SwitchCase.test_a_drain_that_cannot_finish_inside_the_window_reverts_to_the_source": {
+      "phase": 5,
+      "owner": "t-p5",
+      "reason": "Phase 5 part A: no maintenance window (ASSOZETA_RUNTIME_SWITCH_WINDOW_SECONDS); the switch fails switch_unavailable instead of window_exceeded at close_admission",
+      "signatures": [
+        "P5 contract red"
+      ]
+    },
+    "TESTS.handoff.test_p5_controller.SwitchCase.test_target_preflight_failure_before_commit_returns_everything_to_the_source": {
+      "phase": 5,
+      "owner": "t-p5",
+      "reason": "Phase 5 part A: no private target preflight stage; the switch fails at preflight (switch_unavailable)",
+      "signatures": [
+        "P5 contract red"
+      ]
+    },
+    "TESTS.handoff.test_p5_controller.SwitchCase.test_target_failure_after_commit_is_reversed_with_its_new_work": {
+      "phase": 5,
+      "owner": "t-p5",
+      "reason": "Phase 5 part A: no activation of the target set, no post-commit failure or reversal path; the switch fails switch_unavailable",
+      "signatures": [
+        "P5 contract red"
+      ]
+    },
+    "TESTS.handoff.test_p5_controller.SwitchCase.test_unresolved_blocker_prevents_success_and_is_reported_without_payloads": {
+      "phase": 5,
+      "owner": "t-p5",
+      "reason": "Phase 5 part A: preflight does not run job_handoff preflight; fails switch_unavailable instead of transfer_blocked with a blocker report",
+      "signatures": [
+        "P5 contract red"
+      ]
+    },
+    "TESTS.handoff.test_p5_controller.SwitchCase.test_kill_at_every_point_converges_to_the_uninterrupted_outcome": {
+      "phase": 5,
+      "owner": "t-p5",
+      "reason": "Phase 5 part A: STEP_POINTS missing; no controller to interrupt and recover",
+      "signatures": [
+        "P5 contract red"
+      ]
+    },
+    "TESTS.handoff.test_p5_controller.SwitchCase.test_real_kill_after_commit_before_the_proxy_opens_is_finished_by_runtime_recover": {
+      "phase": 5,
+      "owner": "t-p5",
+      "reason": "Phase 5 part A: runtime_switch.py switch refuses (switch_unavailable) and has no file barrier, so activate:started is never reached",
+      "signatures": [
+        "P5 contract red"
+      ]
+    },
+    "TESTS.handoff.test_p5_controller.SwitchCase.test_rapid_alternating_requests_each_complete_once": {
+      "phase": 5,
+      "owner": "t-p5",
+      "reason": "Phase 5 part A: no wired controller; the first switch fails switch_unavailable",
+      "signatures": [
+        "P5 contract red"
+      ]
+    },
+    "TESTS.handoff.test_p5_controller.SwitchCase.test_switch_submitted_from_the_outgoing_api_completes_once": {
+      "phase": 5,
+      "owner": "t-p5",
+      "reason": "Phase 5 part A: no wired controller; the submitted switch fails switch_unavailable",
+      "signatures": [
+        "P5 contract red"
+      ]
+    },
+    "TESTS.handoff.test_p5_controller.SwitchCase.test_delayed_retry_survives_round_trips_and_an_aborted_switch_without_the_inactive_runtime": {
+      "phase": 5,
+      "owner": "t-p5",
+      "reason": "Phase 5 part A: no wired controller; the first switch fails switch_unavailable",
+      "signatures": [
+        "P5 contract red"
+      ]
+    },
+    "TESTS.handoff.test_p5_controller.SwitchCase.test_operator_switch_leaves_only_go_processes_and_a_cold_client_reaches_go": {
+      "phase": 5,
+      "owner": "t-p5",
+      "reason": "Phase 5 part A: ./bin/assozeta runtime-switch go exits 1 with switch_unavailable",
+      "signatures": [
+        "P5 contract red"
+      ]
     }
   }
 }
