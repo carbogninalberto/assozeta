@@ -2309,6 +2309,54 @@
         "P4 matrix contract red: "
       ],
       "reason": "Phase 4 part C (workflows): the task does not finish on the effective runtime across this boundary (Go executor, hand-back removal, transfer adapter or effect seam missing) and its task-handoff-dispositions.json record does not exist"
+    },
+    "TESTS.handoff.test_p4_inventory.Phase0Inventory.test_no_entry_keeps_an_owner_planned_for_phase_4": {
+      "phase": 4,
+      "owner": "t-p4",
+      "signatures": [
+        "owners still planned for phase 4"
+      ],
+      "reason": "Phase 4 part D: 84 inventory owners are still planned for phase 4"
+    },
+    "TESTS.handoff.test_p4_inventory.Dispositions.test_every_current_consumer_handback_site_is_classified": {
+      "phase": 4,
+      "owner": "t-p4",
+      "signatures": [
+        "task-handoff-dispositions.json is missing"
+      ],
+      "reason": "Phase 4 part D: docs/architecture/go-migration/task-handoff-dispositions.json does not exist"
+    },
+    "TESTS.handoff.test_p4_inventory.Dispositions.test_every_phase0_consumer_handback_site_is_traced": {
+      "phase": 4,
+      "owner": "t-p4",
+      "signatures": [
+        "task-handoff-dispositions.json is missing"
+      ],
+      "reason": "Phase 4 part D: docs/architecture/go-migration/task-handoff-dispositions.json does not exist"
+    },
+    "TESTS.handoff.test_p4_inventory.Dispositions.test_the_four_worker_handback_reasons_have_go_mode_outcomes": {
+      "phase": 4,
+      "owner": "t-p4",
+      "signatures": [
+        "task-handoff-dispositions.json is missing"
+      ],
+      "reason": "Phase 4 part D: docs/architecture/go-migration/task-handoff-dispositions.json does not exist"
+    },
+    "TESTS.handoff.test_p4_inventory.Dispositions.test_legacy_names_have_a_proven_disposition": {
+      "phase": 4,
+      "owner": "t-p4",
+      "signatures": [
+        "task-handoff-dispositions.json is missing"
+      ],
+      "reason": "Phase 4 part D: docs/architecture/go-migration/task-handoff-dispositions.json does not exist"
+    },
+    "TESTS.handoff.test_p4_inventory.Dispositions.test_rate_and_time_limits_are_recorded_for_both_runtimes": {
+      "phase": 4,
+      "owner": "t-p4",
+      "signatures": [
+        "task-handoff-dispositions.json is missing"
+      ],
+      "reason": "Phase 4 part D: docs/architecture/go-migration/task-handoff-dispositions.json does not exist"
     }
   }
 }
