@@ -1,0 +1,131 @@
+name: Go handoff contracts
+
+# Instance-wide Django/Go switch (feat/go-handoff). The suite contains
+# expected-red acceptance tests listed in TESTS/handoff/expected_red.json. The job
+# passes only while every listed test fails for its recorded reason and every
+# other test passes; a skip, an error or an unlisted red fails it. Its report
+# states release_evidence: false and is never a release or phase-exit receipt.
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  handoff:
+    name: Handoff contracts (expected red tracked)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    env:
+      GOTOOLCHAIN: local
+      PIP_CONSTRAINT: ${{ github.workspace }}/TESTS/adapters/django/constraints-parity.txt
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The legacy baseline distribution is read from git history.
+          fetch-depth: 0
+          persist-credentials: false
+      # Phase 3 job handoff tests: Go (compiled worker/probe), production Python with the BE
+      # requirements (real Celery/Kombu), private PostgreSQL 16 and Redis.
+      - uses: ./.github/actions/go-foundation-setup
+      - name: Pull the pinned proxy image
+        run: docker pull "$(sed -n 's/^FROM \(caddy:[^ ]*\) AS production$/\1/p' UI/Dockerfile)"
+      - name: Run the handoff suite with expected-red tracking (the task matrix and installed lanes run separately)
+        run: |
+          modules=$(ls TESTS/handoff/test_*.py | grep -v -e '/test_p4_task_matrix\.py$' -e '/test_p5_installed\.py$' | sed 's#/#.#g; s#\.py$##')
+          python3 -B -m TESTS.handoff.run_expected_red $modules
+      - name: Retain the expected-red report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: handoff-expected-red-${{ github.sha }}
+          path: |
+            quality-reports/handoff/expected-red.json
+            quality-reports/handoff/p3/
+            quality-reports/handoff/p4/
+          if-no-files-found: warn
+          retention-days: 14
+
+  task-matrix:
+    name: Phase 4 task matrix (expected red tracked)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      GOTOOLCHAIN: local
+      PIP_CONSTRAINT: ${{ github.workspace }}/TESTS/adapters/django/constraints-parity.txt
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/go-foundation-setup
+      - name: Pull the pinned private storage image
+        run: |
+          python3 - <<'PY'
+          import subprocess
+          from TESTS.adapters.django.s3_objects import IMAGE
+          subprocess.run(['docker', 'pull', IMAGE], check=True)
+          PY
+      - name: Run every task family with expected-red tracking
+        run: python3 -B -m TESTS.handoff.run_expected_red --report quality-reports/handoff/expected-red-matrix.json TESTS.handoff.test_p4_task_matrix
+      - name: Retain the matrix report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: handoff-task-matrix-${{ github.sha }}
+          path: |
+            quality-reports/handoff/expected-red-matrix.json
+            quality-reports/handoff/p4/matrix/
+          if-no-files-found: warn
+          retention-days: 14
+
+  installed:
+    name: Phase 5 installed runtime switch lanes (expected red tracked)
+    runs-on: ubuntu-24.04
+    # ~20-25 min to build the five release images from this commit, ~10-15 min of lanes.
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Build this commit's images and run every installed lane
+        run: python3 -B -m TESTS.handoff.run_expected_red --report quality-reports/handoff/expected-red-installed.json TESTS.handoff.test_p5_installed
+      - name: Retain the installed-lane report and log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: handoff-installed-${{ github.sha }}
+          path: |
+            quality-reports/handoff/expected-red-installed.json
+            quality-reports/handoff/p5/installed/lanes.log
+            quality-reports/handoff/p5/installed/report.json
+          if-no-files-found: warn
+          retention-days: 14
+
+  settings-ui:
+    name: Phase 5 settings UI
+    runs-on: ubuntu-24.04
+    # Two npm installs, one UI build, one serial Chromium worker. Allow ~5–8 min cold.
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: |
+            UI/package-lock.json
+            selfhost/tests/browser/package-lock.json
+      - name: Install the UI and Chromium headless shell
+        run: |
+          npm ci --prefix UI
+          npm ci --prefix selfhost/tests/browser
+          npm exec --prefix selfhost/tests/browser -- playwright install --with-deps --only-shell chromium
+      - name: Run UI unit tests
+        run: npm test --prefix UI
+      - name: Verify owner runtime settings
+        working-directory: selfhost/tests/browser
+        run: npm exec -- playwright test --config runtime-settings.config.js

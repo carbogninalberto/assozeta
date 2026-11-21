@@ -8,6 +8,7 @@ import fcntl
 import hashlib
 import json
 import os
+import re
 from pathlib import Path
 import shutil
 import signal
@@ -18,6 +19,9 @@ import time
 from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[3]
+# The binary's operational schema version (BE_GO/migrations CurrentVersion):
+# clean/current, dirty, older and newer fixtures stay relative to it.
+CURRENT_SCHEMA = int(re.search(r'^const CurrentVersion = (\d+)$', (ROOT / 'BE_GO/migrations/migrations.go').read_text(), re.M)[1])
 sys.path.insert(0, str(ROOT))
 from TESTS.adapters.django.production_runtime import require_production_python
 from TESTS.adapters.go.worker_process import Rehearsal, await_condition, KIND, process_source_hashes
@@ -140,11 +144,11 @@ class SchedulerRehearsal(Rehearsal):
         self.command('migrate')
         failed=self.command('scheduler',success=False,env_file=path)
         assert 'scheduler process initialized' not in failed.stderr
-        for version,dirty in [(4,True),(3,False),(2,False),(999,False)]:
+        for version,dirty in [(CURRENT_SCHEMA,True),(CURRENT_SCHEMA-1,False),(CURRENT_SCHEMA-2,False),(999,False)]:
             self.sql('UPDATE assozeta_go_schema_migrations SET version=%s,dirty=%s',(version,dirty))
             failed=self.command('scheduler',success=False)
             assert 'scheduler process initialized' not in failed.stderr
-        self.sql('UPDATE assozeta_go_schema_migrations SET version=4,dirty=false')
+        self.sql('UPDATE assozeta_go_schema_migrations SET version=%s,dirty=false',(CURRENT_SCHEMA,))
         self.case('dirty and unknown operational schema refuse readiness')
         self.sql('ALTER TABLE django_celery_beat_periodictask RENAME TO fixture_hidden_beat')
         try:
@@ -202,7 +206,9 @@ class SchedulerRehearsal(Rehearsal):
         self.sql("UPDATE django_celery_beat_periodictask SET enabled=true,last_run_at=clock_timestamp()-interval '2 days' WHERE id=%s",(edited,))
         self.published(edited)
         assert self.sql('SELECT last_update FROM django_celery_beat_periodictasks')==marker
-        assert self.sql('SELECT count(*) FROM django_celery_beat_periodictask')==[(2,)]
+        # Migration 7: the scheduler seeds the release declarations once (assozeta_periodic_seed); no other row appears.
+        assert self.sql('SELECT count(*) FROM django_celery_beat_periodictask WHERE name NOT IN '
+                        '(SELECT name FROM assozeta_periodic_seed)')==[(2,)]
         self.case('persisted markerless edits are reread without static seeding')
         self.handoff('django')
         held=self.source('owner-loss')

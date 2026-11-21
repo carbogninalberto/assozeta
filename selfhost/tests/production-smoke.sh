@@ -89,6 +89,15 @@ curl_ready() {
 }
 
 go_probe() {
+    # The probe writes through the shipped Go API and reads back through Django,
+    # which needs both APIs at once: the historical dual-API distribution. An
+    # exclusive distribution runs one runtime (Django by default); its Go-mode
+    # installed lane belongs to the runtime switch (TESTS/handoff, Phases 5-6).
+    if [ -z "$(compose ps --status running --services api-go)" ] \
+        && compose config --profiles | grep -qx go; then
+        printf 'Go probe %s skipped: exclusive runtime distribution in Django mode.\n' "$1" >&2
+        return 0
+    fi
     python3 "$ROOT/selfhost/tests/go-production-probe.py" "$@" \
         --env-file "$ENV_FILE" --login-json "$TEMPORARY/owner-login.json"
 }
@@ -113,9 +122,11 @@ db_query() {
 }
 
 assert_go_operational_schema() {
+    # The packaged binary's operational schema (BE_GO/migrations CurrentVersion).
+    expected_schema=$(sed -n 's/^const CurrentVersion = \([0-9][0-9]*\)$/\1/p' "$ROOT/BE_GO/migrations/migrations.go")
     actual=$(db_query "SELECT version || ':' || dirty FROM public.assozeta_go_schema_migrations;")
-    [ "$actual" = '4:false' ] || {
-        printf 'Expected clean Go operational schema 4, got %s.\n' "$actual" >&2
+    [ -n "$expected_schema" ] && [ "$actual" = "$expected_schema:false" ] || {
+        printf 'Expected clean Go operational schema %s, got %s.\n' "$expected_schema" "$actual" >&2
         exit 1
     }
     actual=$(db_query "SELECT runtime || ':' || generation FROM public.assozeta_go_job_ownership WHERE singleton=1;")
@@ -254,7 +265,7 @@ django_migration_count=$(db_query 'SELECT count(*) FROM django_migrations;')
 django_migration_digest=$(db_query 'SELECT md5(json_agg(m ORDER BY id)::text) FROM django_migrations m;')
 db_sql "INSERT INTO public.assozeta_go_jobs(id,association_id,kind,version,idempotency_key,payload,max_attempts,available_at) VALUES ('11111111-1111-4111-8111-111111111111','00000000-0000-0000-0000-000000000000','fixture.lifecycle',1,'production-smoke','{\"checkpoint\":\"before-backup\",\"integer\":9007199254740993}',3,clock_timestamp());"
 # Storage sentinel only: this fixture does not activate periodic publication.
-db_sql "INSERT INTO public.assozeta_go_periodic_occurrences(id,periodic_task_id,source_name,dispatch_sequence,job_id,dispatched_at,ownership_generation,definition_sha256) VALUES ('22222222-2222-4222-8222-222222222222',17,'fixture-retained',9,'11111111-1111-4111-8111-111111111111',clock_timestamp(),7,repeat('a',64));"
+db_sql "INSERT INTO public.assozeta_go_periodic_occurrences(id,periodic_task_id,source_name,dispatch_sequence,job_id,task_id,dispatched_at,ownership_generation,definition_sha256) VALUES ('22222222-2222-4222-8222-222222222222',17,'fixture-retained',9,'11111111-1111-4111-8111-111111111111','11111111-1111-4111-8111-111111111111',clock_timestamp(),7,repeat('a',64));"
 go_occurrence_snapshot=$(db_query "SELECT md5(row_to_json(r)::text) FROM public.assozeta_go_periodic_occurrences r WHERE id='22222222-2222-4222-8222-222222222222';")
 go_before_backup=$(go_intent_digest)
 

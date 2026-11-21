@@ -513,7 +513,8 @@ func TestAssociateAgeUpdatePostgres(t *testing.T) {
 			if e := service.Run(ctx, job); e != nil {
 				t.Fatal(e)
 			}
-			if trace.count.Load() != 6 {
+			// Phase 3 ledger (migration 6): the fenced completion also probes the ledger and finishes the attempt (+2).
+			if trace.count.Load() != 8 {
 				t.Fatalf("%d rows: %d statements", n, trace.count.Load())
 			}
 			counts(t, n, n, n)

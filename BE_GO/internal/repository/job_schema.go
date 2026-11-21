@@ -9,10 +9,16 @@ import (
 // may defer every claim, so claims alone cannot detect an absent operational
 // schema. A missing ownership row remains an inert state; dirty or unknown
 // history and absent tables require an explicit migration or operator repair.
+// A clean v5 installation uses the previous queue path until migration 6 installs the ledger.
 func (r *Jobs) CheckSchema(ctx context.Context, currentVersion uint) error {
 	var ready bool
 	if err := r.db.GetContext(ctx, &ready, `SELECT count(*)=1 AND
- COALESCE(bool_and(version=$1 AND NOT dirty),false) FROM public.assozeta_go_schema_migrations`, currentVersion); err != nil {
+ COALESCE(bool_and(NOT dirty AND (
+    (version BETWEEN 5 AND $1 AND
+      (version >= 6) = (to_regclass('public.assozeta_handoff_work') IS NOT NULL) AND
+      (version >= 7) = (to_regclass('public.assozeta_scheduler_lease') IS NOT NULL))
+    OR (version=$1 AND $1<5)
+ )),false) FROM public.assozeta_go_schema_migrations`, currentVersion); err != nil {
 		return err
 	}
 	if !ready {

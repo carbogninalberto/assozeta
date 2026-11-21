@@ -16,6 +16,8 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path[:0] = [str(ROOT / 'selfhost/updater'), str(ROOT / 'BE/instance')]
 import distribution
 from common import EDGE_OVERLAY, compose_command
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from historical_distribution import legacy_root  # noqa: E402
 
 CLI = ROOT / 'selfhost/bin/assozeta'
 DEFINITIONS = CLI.read_text().split('\ncommand=${1:-help}\n')[0]
@@ -83,17 +85,17 @@ if args[:2] == ['compose', 'version']:
         return {**HERMETIC, 'PATH': str(root) + os.pathsep + os.environ['PATH'],
                 'CALLS': str(root / 'calls')}
 
-    def exercise(self, arguments, *, edge_line='', version='2.39.1'):
+    def exercise(self, arguments, *, edge_line='', version='2.39.1', selfhost=ROOT / 'selfhost'):
         with TemporaryDirectory() as directory:
             root = Path(directory)
             environment = {**self.fake_docker(root), 'FAKE_COMPOSE_VERSION': version}
             installation = root / 'installation'
             (installation / 'bin').mkdir(parents=True)
             for name in ('compose.yml', 'compose.dev.yml'):
-                shutil.copy2(ROOT / 'selfhost' / name, installation / name)
+                shutil.copy2(selfhost / name, installation / name)
             (installation / 'config').mkdir()
-            shutil.copy2(ROOT / 'selfhost/config/compose.edge.yml', installation / 'config/compose.edge.yml')
-            shutil.copy2(CLI, installation / 'bin/assozeta')
+            shutil.copy2(selfhost / 'config/compose.edge.yml', installation / 'config/compose.edge.yml')
+            shutil.copy2(selfhost / 'bin/assozeta', installation / 'bin/assozeta')
             (installation / 'bin/assozeta').chmod(0o755)
             for name in ('.env', '.env.dev'):
                 (installation / name).write_text(INSTALLATION_ENV + edge_line)
@@ -106,8 +108,8 @@ if args[:2] == ['compose', 'version']:
             compose = [json.loads(line) for line in calls]
             return result, [call for call in compose if call[:2] == ['compose', '--env-file']], installation
 
-    def production_call(self, edge_line):
-        result, calls, installation = self.exercise(['logs', 'web'], edge_line=edge_line)
+    def production_call(self, edge_line, selfhost=ROOT / 'selfhost'):
+        result, calls, installation = self.exercise(['logs', 'web'], edge_line=edge_line, selfhost=selfhost)
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(len(calls), 1)
         return calls[-1], installation
@@ -129,7 +131,10 @@ if args[:2] == ['compose', 'version']:
                                                   '-f', str(installation / 'config/compose.edge.yml')])
 
     def test_absent_network_keeps_the_exact_production_command(self):
-        arguments, installation = self.production_call('')
+        # The exact vector of the historical dual-API CLI (historical_distribution);
+        # the current CLI adds an explicit runtime profile, and the absence of the
+        # overlay for it is covered by test_blank_network_never_selects_the_overlay.
+        arguments, installation = self.production_call('', selfhost=legacy_root() / 'selfhost')
         self.assertEqual(arguments[:6], ['compose', '--env-file', str(installation / '.env'),
                                          '-f', str(installation / 'compose.yml'), 'logs'])
         self.assertEqual(arguments.count('-f'), 1)

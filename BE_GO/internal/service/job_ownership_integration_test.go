@@ -95,7 +95,15 @@ func TestJobOwnershipPostgres(t *testing.T) {
 	}
 	t.Run("default Django ownership never claims or spends attempts", func(t *testing.T) {
 		defer clean()
+		var initialRuntime string
+		var initialGeneration int64
+		if e := db.QueryRowContext(ctx, `SELECT runtime,generation FROM assozeta_go_job_ownership WHERE singleton=1`).Scan(&initialRuntime, &initialGeneration); e != nil || initialRuntime != "django" || initialGeneration != 1 {
+			t.Fatal("unsafe initial ownership", e)
+		}
+		// Phase 3: a Go producer is refused while Django owns, so accept the job under Go, then return to Django.
+		handoff("go")
 		j := publish()
+		handoff("django")
 		jobs, e := queue.Claim(ctx, []string{j.Kind}, "inactive", 1, time.Minute)
 		if e != nil || len(jobs) != 0 {
 			t.Fatalf("Django-owned job claimed: %d %v", len(jobs), e)
@@ -103,11 +111,6 @@ func TestJobOwnershipPostgres(t *testing.T) {
 		got, e := queue.Get(ctx, j.AssociationID, j.ID)
 		if e != nil || got.State != "pending" || got.Attempts != 0 {
 			t.Fatal("inactive worker mutated durable intent", e)
-		}
-		var runtime string
-		var generation int64
-		if e = db.QueryRowContext(ctx, `SELECT runtime,generation FROM assozeta_go_job_ownership WHERE singleton=1`).Scan(&runtime, &generation); e != nil || runtime != "django" || generation != 1 {
-			t.Fatal("unsafe initial ownership", e)
 		}
 	})
 	t.Run("lost ownership rejects effects renewal failure and completion", func(t *testing.T) {
@@ -142,6 +145,9 @@ func TestJobOwnershipPostgres(t *testing.T) {
 		}
 		balance(9)
 		exec(`UPDATE assozeta_go_jobs SET lease_until=clock_timestamp()-interval '1 second'`)
+		// The direct fixture handoffs bypass the Phase 3 transfer; bind the job to the current generation
+		// as the transfer's authority commit would, so the expired lease is recoverable.
+		exec(`UPDATE assozeta_handoff_work SET owner_generation=(SELECT generation FROM assozeta_go_job_ownership) WHERE task_id=$1`, old.ID.String())
 		current := claim()
 		if current.LeaseToken == old.LeaseToken || current.Attempts != 2 {
 			t.Fatal("recovery did not fence prior attempt")
@@ -308,6 +314,8 @@ func TestJobOwnershipPostgres(t *testing.T) {
 		first := claim()
 		// Return this fixture claim to pending; production uses fenced Fail for retries.
 		exec(`UPDATE assozeta_go_jobs SET state='pending',lease_owner='',lease_token='00000000-0000-0000-0000-000000000000',lease_until=NULL WHERE id=$1`, first.ID)
+		exec(`UPDATE assozeta_handoff_attempts SET outcome='released',finished_at=clock_timestamp() WHERE task_id=$1 AND outcome='running'`, first.ID.String())
+		exec(`UPDATE assozeta_handoff_work SET state='pending' WHERE task_id=$1`, first.ID.String())
 		second := publish()
 		entered := make(chan struct{})
 		gate := NewJobRestoreAdmission(repository.NewRestoreFileLock(""), repository.NewRestoreStates(db), false)
@@ -442,6 +450,7 @@ func TestJobOwnershipPostgres(t *testing.T) {
 	})
 	t.Run("missing owner row denies claims without losing queued work", func(t *testing.T) {
 		defer clean()
+		handoff("go") // Phase 3: only the effective Go runtime may accept the job
 		j := publish()
 		exec(`DELETE FROM assozeta_go_job_ownership`)
 		jobs, e := queue.Claim(ctx, []string{j.Kind}, "missing", 1, time.Minute)

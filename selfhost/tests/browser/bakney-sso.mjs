@@ -63,7 +63,7 @@ async function checkProductionProxy() {
     const ip=command(docker,['inspect','--format','{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}',receiverContainer.name]).trim();
     const name=`assozeta-sso-caddy-${process.pid}`;
     const log=await fs.open(path.join(temp,'caddy.log'),'w');
-    const processHandle=spawn(docker,['run','--rm','--name',name,'--network','assozeta-dev_dev','--add-host',`api:${ip}`,
+    const processHandle=spawn(docker,['run','--rm','--name',name,'--network','assozeta-dev_dev','--add-host',`api:${ip}`,'--add-host',`active-api:${ip}`,
         '-e','SITE_ADDRESS=:80','-p','127.0.0.1:5447:80','-v',`${root}/selfhost/caddy/Caddyfile:/etc/caddy/Caddyfile:ro`,
         '-v',`${root}/UI/dist/public:/srv:ro`,'caddy:2.11.7-alpine'],{stdio:['ignore',log.fd,log.fd]});
     containers.push({name,processHandle});await log.close();

@@ -20,26 +20,25 @@
 
 import HealthWebSocket from './HealthWebSocket.js';
 
-// Dispatched on globalThis when the session switches between '/api' and '/api/v2'.
-const API_VERSION_EVENT = 'assozeta:api-version';
-
 class HealthService {
     constructor() {
         this.ws = null;
         this.isInitialized = false;
         this.onHealthCallback = null;
         this.onOfflineCallback = null;
+        this.onReconnectCallback = null;
+        this.connected = false;
         this.lastHealth = null;
         this.visibilityHandler = null;
-        this.apiVersionHandler = null;
     }
 
     /**
      * Initialize the health service
      * @param {function({status: string, msg: string, version: string}): void} onHealth - Health status callback
      * @param {function(): void} [onOffline] - Called when connection is lost
+     * @param {function(): void} [onReconnect] - Called when the connection is back after a loss
      */
-    init(onHealth, onOffline = null) {
+    init(onHealth, onOffline = null, onReconnect = null) {
         if (this.isInitialized) {
             console.warn('[HealthService] Already initialized');
             return;
@@ -47,8 +46,17 @@ class HealthService {
 
         this.onHealthCallback = onHealth;
         this.onOfflineCallback = onOffline;
+        this.onReconnectCallback = onReconnect;
+        this.connected = false;
 
         this.ws = new HealthWebSocket();
+
+        // A reconnection can reach another runtime (the owner's switch), so
+        // pages reload what depends on it.
+        this.ws.setOnConnect(() => {
+            if (this.connected) this.onReconnectCallback?.();
+            this.connected = true;
+        });
 
         this.ws.setOnHealth((health) => {
             this.lastHealth = health;
@@ -76,15 +84,6 @@ class HealthService {
             }
         };
         document.addEventListener('visibilitychange', this.visibilityHandler);
-
-        // Reconnect on the new socket when the session switches API version,
-        // otherwise the open socket would stay on the previous backend.
-        this.apiVersionHandler = () => {
-            if (this.isInitialized) this.reconnect();
-        };
-        if (typeof globalThis.addEventListener === 'function') {
-            globalThis.addEventListener(API_VERSION_EVENT, this.apiVersionHandler);
-        }
     }
 
     /**
@@ -121,12 +120,6 @@ class HealthService {
         if (this.visibilityHandler) {
             document.removeEventListener('visibilitychange', this.visibilityHandler);
             this.visibilityHandler = null;
-        }
-        if (this.apiVersionHandler) {
-            if (typeof globalThis.removeEventListener === 'function') {
-                globalThis.removeEventListener(API_VERSION_EVENT, this.apiVersionHandler);
-            }
-            this.apiVersionHandler = null;
         }
         if (this.ws) {
             this.ws.disconnect();

@@ -29,5 +29,10 @@
 </div>
 
 <style>
+    /* The theme hides the native input with zero size. Lay it, still
+       transparent and under the drawn track, over that track instead, so the
+       accessible switch has the size and position people see. */
+    .switch {position: relative;}
+    .switch input {inset: 0; width: 100%; height: 100%; margin: 0;}
     input:focus-visible + span {outline: 3px solid var(--primary); outline-offset: 3px;}
 </style>

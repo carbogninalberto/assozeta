@@ -34,3 +34,9 @@ func fenceJobEffects(ctx context.Context, tx *sqlx.Tx, id, token uuid.UUID) erro
 	}
 	return err
 }
+
+func handoffInstalled(ctx context.Context, tx sqlx.QueryerContext) (bool, error) {
+	var installed bool
+	err := sqlx.GetContext(ctx, tx, &installed, `SELECT to_regclass('public.assozeta_handoff_work') IS NOT NULL`)
+	return installed, err
+}

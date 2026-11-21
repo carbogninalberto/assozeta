@@ -1,4 +1,4 @@
-import {getWebSocketUrl, isWebSocketV2Path, noteWebSocketV2OpenFailure, noteWebSocketV2Opened} from './websocketUrl.js';
+import {getWebSocketUrl} from './websocketUrl.js';
 import WebSocketHeartbeat from './WebSocketHeartbeat.js';
 
 /**
@@ -62,15 +62,11 @@ class AgentWebSocket {
 
         const wsPath = __bakney.env.WS?.AGENT || '/ws/agent/';
         const url = getWebSocketUrl(wsPath, this.token);
-        const v2Socket = isWebSocketV2Path(wsPath);
-        let opened = false;
 
         this.ws = new WebSocket(url);
         const socket = this.ws;
 
         this.ws.onopen = () => {
-            opened = true;
-            if (v2Socket) noteWebSocketV2Opened(wsPath);
             console.log('[AgentWebSocket] Connected');
             this.reconnectAttempts = 0;
             this.heartbeat.start();
@@ -97,9 +93,6 @@ class AgentWebSocket {
 
             // Manual disconnect — don't reconnect
             if (this.manualCloseSockets.has(socket)) return;
-
-            // A v2 socket that never opened counts towards the fallback to Django.
-            if (!opened && v2Socket) noteWebSocketV2OpenFailure(wsPath, `close ${event.code} before open`);
 
             // Terminal close codes – don't reconnect
             if (TERMINAL_CODES[event.code]) {

@@ -106,6 +106,8 @@ jobs:
       - name: Check out source
         uses: actions/checkout@v4
         with:
+          # Legacy suites read the historical dual-API distribution from git history.
+          fetch-depth: 0
           persist-credentials: false
 
       - uses: ./.github/actions/prepare-storage

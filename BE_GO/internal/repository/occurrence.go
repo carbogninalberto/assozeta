@@ -17,6 +17,23 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+type scheduleLeaseKey struct{}
+
+type ScheduleLease struct {
+	Holder     string
+	Generation int64
+	Now        time.Time
+}
+
+func WithScheduleLease(ctx context.Context, lease ScheduleLease) context.Context {
+	return context.WithValue(ctx, scheduleLeaseKey{}, lease)
+}
+
+func CurrentScheduleLease(ctx context.Context) (ScheduleLease, bool) {
+	lease, ok := ctx.Value(scheduleLeaseKey{}).(ScheduleLease)
+	return lease, ok
+}
+
 type Occurrences struct{ db *sqlx.DB }
 
 func NewOccurrences(db *sqlx.DB) *Occurrences { return &Occurrences{db: db} }
@@ -46,15 +63,17 @@ type periodicSource struct {
 	OneOff        bool          `db:"one_off"`
 }
 type occurrenceTransaction struct {
-	tx         *sqlx.Tx
-	lifetime   *ownedTransaction
-	jobs       *Jobs
-	source     periodicSource
-	interval   *domain.PeriodicInterval
-	cron       *domain.PeriodicCron
-	generation int64
-	now        time.Time
-	published  bool
+	tx                  *sqlx.Tx
+	lifetime            *ownedTransaction
+	jobs                *Jobs
+	source              periodicSource
+	interval            *domain.PeriodicInterval
+	cron                *domain.PeriodicCron
+	generation          int64
+	now                 time.Time
+	clocked             *time.Time
+	schedulerGeneration int64
+	published           bool
 }
 
 func occurrenceError(err error) error {
@@ -80,7 +99,13 @@ func (r *Occurrences) BeginOccurrence(ctx context.Context, id int64) (domain.Occ
 	}
 	t := &occurrenceTransaction{tx: tx, lifetime: lifetime, jobs: NewJobs(r.db)}
 	// Separate statements establish lock order without relying on join planning.
-	err = tx.GetContext(ctx, &t.generation, `SELECT generation FROM public.assozeta_go_job_ownership WHERE singleton=1 AND runtime='go' FOR SHARE`)
+	pass, leased := CurrentScheduleLease(ctx)
+	if leased {
+		t.schedulerGeneration = pass.Generation
+		err = tx.GetContext(ctx, &t.generation, "SELECT public.assozeta_scheduler_fence($1,$2)", pass.Holder, pass.Generation)
+	} else {
+		err = tx.GetContext(ctx, &t.generation, `SELECT generation FROM public.assozeta_go_job_ownership WHERE singleton=1 AND runtime='go' AND to_regclass('public.assozeta_scheduler_lease') IS NULL FOR SHARE`)
+	}
 	if errors.Is(err, sql.ErrNoRows) {
 		return fail(domain.ErrOccurrenceInactive)
 	}
@@ -113,7 +138,17 @@ func (r *Occurrences) BeginOccurrence(ctx context.Context, id int64) (domain.Occ
 			return fail(err)
 		}
 	}
-	if err = tx.GetContext(ctx, &t.now, `SELECT clock_timestamp()`); err != nil {
+	if leased && t.source.Clocked.Valid {
+		var instant time.Time
+		err = tx.GetContext(ctx, &instant, "SELECT clocked_time FROM public.django_celery_beat_clockedschedule WHERE id=$1 FOR SHARE NOWAIT", t.source.Clocked.Int64)
+		if err != nil {
+			return fail(err)
+		}
+		t.clocked = &instant
+	}
+	if leased && !pass.Now.IsZero() {
+		t.now = pass.Now
+	} else if err = tx.GetContext(ctx, &t.now, `SELECT clock_timestamp()`); err != nil {
 		return fail(err)
 	}
 	return t, nil
@@ -136,7 +171,7 @@ func optionalInt(value sql.NullInt64) *int {
 func (t *occurrenceTransaction) Snapshot() domain.OccurrenceSnapshot {
 	s := t.source
 	row := domain.PeriodicSchedule{Task: s.Task, Enabled: s.Enabled, LastRunAt: optionalTime(s.Last), DateChanged: s.Changed,
-		StartTime: optionalTime(s.Start), HasSolar: s.Solar.Valid, HasClocked: s.Clocked.Valid, Args: json.RawMessage(s.Args), Kwargs: json.RawMessage(s.Kwargs), Headers: json.RawMessage(s.Headers),
+		StartTime: optionalTime(s.Start), HasSolar: s.Solar.Valid, HasClocked: s.Clocked.Valid, ClockedTime: t.clocked, TotalRunCount: s.Count, Args: json.RawMessage(s.Args), Kwargs: json.RawMessage(s.Kwargs), Headers: json.RawMessage(s.Headers),
 		Queue: s.Queue, Exchange: s.Exchange, RoutingKey: s.RoutingKey, Priority: optionalInt(s.Priority), ExpiresAt: optionalTime(s.Expires), ExpireSeconds: optionalInt(s.ExpireSeconds), OneOff: s.OneOff}
 	if t.interval != nil {
 		value := *t.interval
@@ -152,7 +187,8 @@ func (t *occurrenceTransaction) Snapshot() domain.OccurrenceSnapshot {
 func (t *occurrenceTransaction) Publish(ctx context.Context) (domain.OccurrenceReceipt, error) {
 	var receipt domain.OccurrenceReceipt
 	kind, supported := domain.PeriodicJobKind(t.source.Task)
-	if t.published || !t.source.Enabled || !supported {
+	broker := t.schedulerGeneration > 0 && t.source.Task == domain.PeriodicBackupNotice
+	if t.published || !t.source.Enabled || (!supported && !broker) {
 		return receipt, domain.ErrJobConflict
 	}
 	var previous int64
@@ -164,31 +200,64 @@ func (t *occurrenceTransaction) Publish(ctx context.Context) (domain.OccurrenceR
 		return receipt, domain.ErrJobConflict
 	}
 	sequence := previous + 1
-	definition := t.Snapshot().Schedule
-	definition.LastRunAt = nil
-	definition.DateChanged = time.Time{}
-	raw, err := json.Marshal(definition)
-	if err != nil {
-		return receipt, err
-	}
-	digest := sha256.Sum256(raw)
 	// Three total attempts bound operational crash recovery; this is not Celery
 	// business retry parity. Each task service still handles its business errors.
-	job, err := t.jobs.Enqueue(ctx, t.tx, domain.JobIntent{ID: uuid.New(), AssociationID: uuid.Nil, Kind: kind, Version: 1,
-		Key: fmt.Sprintf("periodic:%d:%d", t.source.ID, sequence), Payload: json.RawMessage(`{}`), AvailableAt: t.now, MaxAttempts: 3})
+	available := t.now
+	if t.schedulerGeneration > 0 {
+		available = time.Time{}
+	}
+	taskID := uuid.New()
+	var jobID *uuid.UUID
+	if broker {
+		err = t.admitBrokerOccurrence(ctx, taskID)
+	} else {
+		var job domain.Job
+		job, err = t.jobs.Enqueue(ctx, t.tx, domain.JobIntent{ID: taskID, AssociationID: uuid.Nil, Kind: kind, Version: 1,
+			Key: fmt.Sprintf("periodic:%d:%d", t.source.ID, sequence), Payload: json.RawMessage(`{}`), AvailableAt: available, MaxAttempts: 3})
+		taskID = job.ID
+		jobID = &job.ID
+		if err == nil && t.schedulerGeneration > 0 && (t.source.ExpireSeconds.Valid || t.source.Expires.Valid) {
+			_, err = t.tx.ExecContext(ctx, `UPDATE public.assozeta_handoff_work SET expires=COALESCE($2::timestamptz,
+                accepted_at+make_interval(secs=>$3)) WHERE task_id=$1`, taskID.String(), t.source.Expires, t.source.ExpireSeconds)
+		}
+	}
 	if err != nil {
 		return receipt, err
 	}
-	receipt = domain.OccurrenceReceipt{ID: uuid.New(), SourceID: t.source.ID, SourceName: t.source.Name, Sequence: sequence, JobID: job.ID, DispatchedAt: t.now, OwnershipGeneration: t.generation, DefinitionDigest: hex.EncodeToString(digest[:])}
-	_, err = t.tx.ExecContext(ctx, `INSERT INTO public.assozeta_go_periodic_occurrences
+	receipt = domain.OccurrenceReceipt{ID: uuid.New(), SourceID: t.source.ID, SourceName: t.source.Name, Sequence: sequence, DispatchedAt: t.now, OwnershipGeneration: t.generation}
+	if jobID != nil {
+		receipt.JobID = *jobID
+	}
+	if t.schedulerGeneration != 0 {
+		err = t.tx.GetContext(ctx, &receipt.DefinitionDigest, "SELECT public.assozeta_periodic_digest($1)", t.source.ID)
+		if err != nil {
+			return receipt, err
+		}
+		_, err = t.tx.ExecContext(ctx, `INSERT INTO public.assozeta_go_periodic_occurrences
+        (id,periodic_task_id,source_name,dispatch_sequence,job_id,dispatched_at,ownership_generation,definition_sha256,
+         runtime,task_id,scheduler_generation) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'go',$9,$10)`,
+			receipt.ID, receipt.SourceID, receipt.SourceName, receipt.Sequence, jobID, receipt.DispatchedAt,
+			receipt.OwnershipGeneration, receipt.DefinitionDigest, taskID.String(), t.schedulerGeneration)
+	} else {
+		definition := t.Snapshot().Schedule
+		definition.LastRunAt = nil
+		definition.DateChanged = time.Time{}
+		raw, err := json.Marshal(definition)
+		if err != nil {
+			return receipt, err
+		}
+		digest := sha256.Sum256(raw)
+		receipt.DefinitionDigest = hex.EncodeToString(digest[:])
+		_, err = t.tx.ExecContext(ctx, `INSERT INTO public.assozeta_go_periodic_occurrences
  (id,periodic_task_id,source_name,dispatch_sequence,job_id,dispatched_at,ownership_generation,definition_sha256) VALUES($1,$2,$3,$4,$5,$6,$7,$8)`,
-		receipt.ID, receipt.SourceID, receipt.SourceName, receipt.Sequence, receipt.JobID, receipt.DispatchedAt, receipt.OwnershipGeneration, receipt.DefinitionDigest)
+			receipt.ID, receipt.SourceID, receipt.SourceName, receipt.Sequence, receipt.JobID, receipt.DispatchedAt, receipt.OwnershipGeneration, receipt.DefinitionDigest)
+	}
 	if err != nil {
 		return domain.OccurrenceReceipt{}, err
 	}
 	// ModelEntry.save uses no_changes=True (a Python attribute, not a column).
 	// Advance the existing Django cursor/date_changed but do not touch its marker.
-	_, err = t.tx.ExecContext(ctx, `UPDATE public.django_celery_beat_periodictask SET last_run_at=$2,total_run_count=total_run_count+1,date_changed=clock_timestamp() WHERE id=$1`, t.source.ID, t.now)
+	_, err = t.tx.ExecContext(ctx, `UPDATE public.django_celery_beat_periodictask SET last_run_at=$2,total_run_count=total_run_count+1,enabled=CASE WHEN one_off THEN false ELSE enabled END,date_changed=clock_timestamp() WHERE id=$1`, t.source.ID, t.now)
 	if err != nil {
 		return domain.OccurrenceReceipt{}, err
 	}

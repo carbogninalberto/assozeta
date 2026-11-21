@@ -41,10 +41,16 @@ class CoordinatedTask(Task):
     abstract = True
 
     def __call__(self, *args, **kwargs):
+        from core import handoff
+        if self.request.id and not self.request.called_directly and not self.request.is_eager and handoff.enabled():
+            return handoff.execute(self, self._run_with_restore_lock, super().__call__, args, kwargs)
+        return self._run_with_restore_lock(super().__call__, *args, **kwargs)
+
+    def _run_with_restore_lock(self, run, /, *args, **kwargs):
         from django.conf import settings
         from .locking import operation_lock, restore_pending, Busy
         if self.name.startswith('instance.restore.') or not getattr(settings, 'DATA_RESTORE_LOCK_PATH', ''):
-            return super().__call__(*args, **kwargs)
+            return run(*args, **kwargs)
         try:
             with operation_lock():
                 if restore_pending():
@@ -55,7 +61,7 @@ class CoordinatedTask(Task):
                     published = (self.request.headers or {}).get('assozeta_published_at')
                     if completed and (published is None or published < completed.timestamp()):
                         raise StaleDataTask('Operazione annullata dopo il ripristino dei dati. Ripeti la richiesta.')
-                return super().__call__(*args, **kwargs)
+                return run(*args, **kwargs)
         except Busy as exc:
             defer_for_maintenance(self, exc, countdown=15)
 

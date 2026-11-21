@@ -1,0 +1,174 @@
+{
+  "assozeta-go": [
+    {
+      "body": "W1siRml4dHVyZSByZW1pbmRlciIsICJTeW50aGV0aWMgcmVtaW5kZXIiLCAic2VuZGVyQGV4YW1wbGUuaW52YWxpZCIsIFsicmVjaXBpZW50QGV4YW1wbGUuaW52YWxpZCJdXSwge30sIHsiY2FsbGJhY2tzIjogbnVsbCwgImVycmJhY2tzIjogbnVsbCwgImNoYWluIjogbnVsbCwgImNob3JkIjogbnVsbH1d",
+      "content-encoding": "utf-8",
+      "content-type": "application/json",
+      "headers": {
+        "argsrepr": "('Fixture reminder', 'Synthetic reminder', 'sender@example.invalid', ['recipient@example.invalid'])",
+        "assozeta_published_at": 1795176000,
+        "eta": "2026-11-20T12:30:00Z",
+        "expires": null,
+        "group": null,
+        "group_index": null,
+        "id": "40195c8c-9161-5c35-b3c5-a9343974fab2",
+        "ignore_result": false,
+        "kwargsrepr": "{}",
+        "lang": "py",
+        "origin": "fixture@localhost",
+        "parent_id": null,
+        "replaced_task_nesting": 0,
+        "retries": 1,
+        "root_id": "40195c8c-9161-5c35-b3c5-a9343974fab2",
+        "shadow": null,
+        "stamped_headers": null,
+        "stamps": {},
+        "task": "core.tasks.send_mail_async",
+        "timelimit": [
+          null,
+          null
+        ]
+      },
+      "properties": {
+        "body_encoding": "base64",
+        "correlation_id": "40195c8c-9161-5c35-b3c5-a9343974fab2",
+        "delivery_info": {
+          "exchange": "",
+          "routing_key": "assozeta-go"
+        },
+        "delivery_mode": 2,
+        "delivery_tag": "cf48b3f2-36b8-575c-a322-e86d20be1c7c",
+        "priority": 3,
+        "reply_to": "fbd12227-7211-590b-a196-e8bcf1480220"
+      }
+    }
+  ],
+  "celery": [
+    {
+      "body": "W1tdLCB7fSwgeyJjYWxsYmFja3MiOiBudWxsLCAiZXJyYmFja3MiOiBudWxsLCAiY2hhaW4iOiBudWxsLCAiY2hvcmQiOiBudWxsfV0=",
+      "content-encoding": "utf-8",
+      "content-type": "application/json",
+      "headers": {
+        "argsrepr": "()",
+        "assozeta_published_at": 1795176000,
+        "eta": null,
+        "expires": null,
+        "group": null,
+        "group_index": null,
+        "id": "e95dd503-c351-5d3a-a631-474650984f8e",
+        "ignore_result": false,
+        "kwargsrepr": "{}",
+        "lang": "py",
+        "origin": "fixture@localhost",
+        "parent_id": null,
+        "replaced_task_nesting": 0,
+        "retries": 0,
+        "root_id": "e95dd503-c351-5d3a-a631-474650984f8e",
+        "shadow": null,
+        "stamped_headers": null,
+        "stamps": {},
+        "task": "clear_expired_subscription_tokens",
+        "timelimit": [
+          null,
+          null
+        ]
+      },
+      "properties": {
+        "body_encoding": "base64",
+        "correlation_id": "e95dd503-c351-5d3a-a631-474650984f8e",
+        "delivery_info": {
+          "exchange": "",
+          "routing_key": "celery"
+        },
+        "delivery_mode": 2,
+        "delivery_tag": "66485b53-9d89-5f97-9e50-42ffd3ab6a27",
+        "priority": 0,
+        "reply_to": "fbd12227-7211-590b-a196-e8bcf1480220"
+      }
+    },
+    {
+      "body": "W1tdLCB7fSwgeyJjYWxsYmFja3MiOiBudWxsLCAiZXJyYmFja3MiOiBudWxsLCAiY2hhaW4iOiBudWxsLCAiY2hvcmQiOiBudWxsfV0=",
+      "content-encoding": "utf-8",
+      "content-type": "application/json",
+      "headers": {
+        "argsrepr": "()",
+        "assozeta_published_at": 1795176000,
+        "eta": null,
+        "expires": "2026-11-20T12:00:10Z",
+        "group": null,
+        "group_index": null,
+        "id": "e33463c0-16f2-5500-800d-28a66d87032b",
+        "ignore_result": false,
+        "kwargsrepr": "{}",
+        "lang": "py",
+        "origin": "fixture@localhost",
+        "parent_id": null,
+        "replaced_task_nesting": 0,
+        "retries": 0,
+        "root_id": "e33463c0-16f2-5500-800d-28a66d87032b",
+        "shadow": null,
+        "stamped_headers": null,
+        "stamps": {},
+        "task": "communications.tasks.deliver_whatsapp",
+        "timelimit": [
+          null,
+          null
+        ]
+      },
+      "properties": {
+        "body_encoding": "base64",
+        "correlation_id": "e33463c0-16f2-5500-800d-28a66d87032b",
+        "delivery_info": {
+          "exchange": "",
+          "routing_key": "celery"
+        },
+        "delivery_mode": 2,
+        "delivery_tag": "db680c8c-1ac7-55d6-81e6-ddba3a11bcaf",
+        "priority": 0,
+        "reply_to": "fbd12227-7211-590b-a196-e8bcf1480220"
+      }
+    },
+    {
+      "body": "W1tdLCB7ImF0dGVtcHQiOiAyLCAibWF4X2F0dGVtcHRzIjogM30sIHsiY2FsbGJhY2tzIjogbnVsbCwgImVycmJhY2tzIjogbnVsbCwgImNoYWluIjogbnVsbCwgImNob3JkIjogbnVsbH1d",
+      "content-encoding": "utf-8",
+      "content-type": "application/json",
+      "headers": {
+        "argsrepr": "()",
+        "assozeta_published_at": 1795176000,
+        "eta": "2026-11-20T12:30:00Z",
+        "expires": null,
+        "group": null,
+        "group_index": null,
+        "id": "f6590137-09d8-5e03-ab94-c7cc4ddc2636",
+        "ignore_result": false,
+        "kwargsrepr": "{'attempt': 2, 'max_attempts': 3}",
+        "lang": "py",
+        "origin": "fixture@localhost",
+        "parent_id": null,
+        "replaced_task_nesting": 0,
+        "retries": 0,
+        "root_id": "f6590137-09d8-5e03-ab94-c7cc4ddc2636",
+        "shadow": null,
+        "stamped_headers": null,
+        "stamps": {},
+        "task": "renew_memberships_payments",
+        "timelimit": [
+          null,
+          null
+        ]
+      },
+      "properties": {
+        "body_encoding": "base64",
+        "correlation_id": "f6590137-09d8-5e03-ab94-c7cc4ddc2636",
+        "delivery_info": {
+          "exchange": "",
+          "routing_key": "celery"
+        },
+        "delivery_mode": 2,
+        "delivery_tag": "fb791dd2-60e1-54df-981d-d418b7881b31",
+        "priority": 0,
+        "reply_to": "fbd12227-7211-590b-a196-e8bcf1480220"
+      }
+    }
+  ]
+}

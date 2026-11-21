@@ -401,11 +401,15 @@ def celery_worker_accepts(contract, fixture, payload, kwargs, *, restore_owner, 
     with exactly `kwargs` (decoded values, e.g. UUIDs) and succeed. Then a
     data restore completed after the message's assozeta_published_at stamp is
     recorded and the same message must be refused by CoordinatedTask
-    (StaleDataTask). Result and restore rows and the worker's broker keys are
-    removed afterwards.
+    (StaleDataTask). The second delivery carries a fresh task id: with the
+    accepted-work ledger (migration 6) a redelivery of an already completed
+    logical job is acknowledged without running, before the restore fence is
+    reached. Result and restore rows and the worker's broker keys are removed
+    afterwards.
     """
     import json
     import time
+    import uuid
     from auditlog.context import disable_auditlog
     from celery.contrib.testing.worker import start_worker
     from celery.signals import task_prerun
@@ -416,12 +420,15 @@ def celery_worker_accepts(contract, fixture, payload, kwargs, *, restore_owner, 
     broker = fixture['celery_broker']
     message = json.loads(payload)
     task_id, name = message['headers']['id'], message['headers']['task']
+    stale_id = str(uuid.uuid4())
+    stale = json.loads(payload)
+    stale['headers']['id'] = stale['properties']['correlation_id'] = stale_id
     started = []
 
     def prerun(sender=None, task_id=None, task=None, args=None, kwargs=None, **_):
         started.append((task_id, task.name, tuple(args or ()), dict(kwargs or {})))
 
-    def wait(status):
+    def wait(status, task_id=task_id):
         deadline = time.monotonic() + timeout
         while time.monotonic() < deadline:
             row = TaskResult.objects.filter(task_id=task_id, status=status).first()
@@ -442,13 +449,13 @@ def celery_worker_accepts(contract, fixture, payload, kwargs, *, restore_owner, 
                                       sha256='0' * 64)
                 contract.require(restore.completed_at.timestamp() > message['headers']['assozeta_published_at'], 'celery.restore-after-publish')
                 DataRestore._base_manager.bulk_create([restore])
-            broker.lpush(CELERY_QUEUE, payload)
-            refused = wait('FAILURE')
+            broker.lpush(CELERY_QUEUE, json.dumps(stale))
+            refused = wait('FAILURE', stale_id)
             contract.require('StaleDataTask' in (refused.result or ''), 'celery.worker-restore-fence')
     finally:
         task_prerun.disconnect(prerun)
         with disable_auditlog():
-            TaskResult.objects.filter(task_id=task_id).delete()
+            TaskResult.objects.filter(task_id__in=(task_id, stale_id)).delete()
             if restore is not None:
                 DataRestore._base_manager.filter(pk=restore.pk).delete()
         key, _ = CELERY_BINDING

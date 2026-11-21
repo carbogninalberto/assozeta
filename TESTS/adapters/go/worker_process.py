@@ -9,6 +9,7 @@ import fcntl
 import hashlib
 import json
 import os
+import re
 from pathlib import Path
 import shutil
 import signal
@@ -21,6 +22,9 @@ from uuid import uuid4
 import psycopg2
 
 ROOT = Path(__file__).resolve().parents[3]
+# The binary's operational schema version (BE_GO/migrations CurrentVersion):
+# clean/current, dirty, older and newer fixtures stay relative to it.
+CURRENT_SCHEMA = int(re.search(r'^const CurrentVersion = (\d+)$', (ROOT / 'BE_GO/migrations/migrations.go').read_text(), re.M)[1])
 KIND = 'reset_communication_daily_email_balance'
 NIL = '00000000-0000-0000-0000-000000000000'
 
@@ -187,7 +191,7 @@ class Rehearsal:
         assert self.sql('SELECT singleton,runtime,generation FROM assozeta_go_job_ownership') == [(1, 'django', 1)]
         self.command('migrate')
         assert self.sql('SELECT * FROM django_migrations') == [(7, 'fixture', 'unchanged')]
-        assert self.sql('SELECT version,dirty FROM assozeta_go_schema_migrations') == [(4, False)]
+        assert self.sql('SELECT version,dirty FROM assozeta_go_schema_migrations') == [(CURRENT_SCHEMA, False)]
         assert self.sql('SELECT runtime,generation FROM assozeta_go_job_ownership') == [('django', 1)]
         self.command('migrate', '--down', success=False)
         self.case('explicit forward migration is idempotent and preserves Django history and default ownership')
@@ -221,7 +225,7 @@ class Rehearsal:
             assert self.job(identifier)[:2] == ('pending', 0) and not self.effects()
             assert self.sql('SELECT daily_email_balance FROM communications_communicationconfiguration ORDER BY id') == [(9,), (0,), (-1,)]
             assert self.sql('SELECT runtime,generation FROM assozeta_go_job_ownership') == [('go', 2)]
-            assert self.sql('SELECT version,dirty FROM assozeta_go_schema_migrations') == [(4, False)]
+            assert self.sql('SELECT version,dirty FROM assozeta_go_schema_migrations') == [(CURRENT_SCHEMA, False)]
         self.sql('DELETE FROM instance_datarestore')
         self.sql('DELETE FROM assozeta_go_jobs')
         self.sql("UPDATE assozeta_go_job_ownership SET runtime='django',generation=1")
@@ -235,11 +239,11 @@ class Rehearsal:
 
         with (self.work / 'operations.lock').open('a') as lock:
             fcntl.flock(lock, fcntl.LOCK_EX)
-            for version, dirty in [(4, True), (3, False), (5, False)]:
+            for version, dirty in [(CURRENT_SCHEMA, True), (CURRENT_SCHEMA - 1, False), (CURRENT_SCHEMA + 1, False)]:
                 self.sql('UPDATE assozeta_go_schema_migrations SET version=%s,dirty=%s', (version, dirty))
                 failed = self.command('worker', success=False, timeout=3)
                 assert 'worker ready' not in failed.stderr
-            self.sql('UPDATE assozeta_go_schema_migrations SET version=4,dirty=false')
+            self.sql('UPDATE assozeta_go_schema_migrations SET version=%s,dirty=false', (CURRENT_SCHEMA,))
         self.case('dirty or unknown migration history refuses readiness even during maintenance')
         self.sql('ALTER TABLE assozeta_go_periodic_occurrences RENAME TO fixture_hidden_occurrences')
         try:
@@ -386,6 +390,10 @@ class Rehearsal:
         assert self.job(identifier)[:2] == ('running', 1) and not self.effects()
         self.sql('DROP TRIGGER fixture_pause_claim ON assozeta_go_jobs')
         self.handoff('go')
+        # The fixture handoffs bypass the Phase 3 transfer; bind the job to the new generation as its
+        # authority commit would, so the expired lease is recoverable by the new owner.
+        self.sql('UPDATE assozeta_handoff_work SET owner_generation=(SELECT generation FROM assozeta_go_job_ownership) '
+                 'WHERE task_id=%s', (identifier,))
         recovery = self.worker()
         self.complete(identifier, attempts=2)
         self.stop(recovery)

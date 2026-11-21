@@ -1,8 +1,6 @@
 import {applyBrandColor} from '../utils/BrandTheme.js';
 import {writable, derived, get} from 'svelte/store';
-import {
-    API_DEFAULT_HOST, activeApiHost, activeApiVersion, fallbackToDefaultApi, readApiOverride, rewriteApiUrl, selectApiVersion,
-} from '../utils/apiVersion.js';
+import {API_DEFAULT_HOST, forgetRetiredApiPreferences} from '../utils/apiVersion.js';
 
 /**
  * Instance Configuration Store
@@ -129,54 +127,19 @@ export function isSelfHostedMode() {
     return false;
 }
 
-// A build-time API host other than the default same-origin '/api'.
-function customApiHost() {
-    const host = typeof __bakney !== 'undefined' ? __bakney.env?.HOST : null;
-    return host && host !== API_DEFAULT_HOST ? host : null;
-}
-
-// Get API host: a custom build-time host wins; otherwise the same-origin
-// '/api' or, when the beta API is active for this session, '/api/v2'.
+// Get API host: a custom build-time host, else the same-origin '/api'.
 export function getApiHost() {
-    return customApiHost() || activeApiHost();
+    return (typeof __bakney !== 'undefined' && __bakney.env?.HOST) || API_DEFAULT_HOST;
 }
 
-// The API version this browser should use: its own override, else the
-// instance setting, else v1. A custom build-time host always keeps v1.
-export function desiredApiVersion(config) {
-    if (customApiHost()) return 'v1';
-    return readApiOverride() || (config?.features?.uiApiVersion === 'v2' ? 'v2' : 'v1');
-}
-
-/**
- * Applies the API version for a loaded configuration: v2 only after its
- * readiness probe succeeds. Returns the active version.
- */
-export async function applyApiVersion(config, options) {
-    const desired = desiredApiVersion(config);
-    if (desired === activeApiVersion()) return desired;
-    return selectApiVersion(desired, options);
-}
-
-// Bootstrap request: on v2, a network failure or 5xx returns the session to
-// '/api' and the request is repeated there.
-async function bootstrapFetch(category, endpoint) {
-    const url = getEndpoint(category, endpoint, getApiHost());
-    if (activeApiVersion() !== 'v2' || customApiHost()) return fetch(url);
-    try {
-        const response = await fetch(url);
-        if (response.status < 500) return response;
-        fallbackToDefaultApi(`HTTP ${response.status}`);
-    } catch (error) {
-        fallbackToDefaultApi(error?.message || 'errore di rete');
-    }
+function bootstrapFetch(category, endpoint) {
     return fetch(getEndpoint(category, endpoint, getApiHost()));
 }
 
 // Get endpoint URL - uses centralized endpoints when available, falls back to constructed path
 function getEndpoint(category, endpoint, apiHost) {
     if (typeof __bakney !== 'undefined' && __bakney.env?.API?.[category]?.[endpoint]) {
-        return rewriteApiUrl(__bakney.env.API[category][endpoint]);
+        return __bakney.env.API[category][endpoint];
     }
     // Fallback paths for bootstrap (before __bakney is available)
     const fallbackPaths = {
@@ -226,10 +189,11 @@ function getCachedConfig() {
     return null;
 }
 
-// Save to localStorage cache
+// Save to localStorage cache, without the retired per-browser API choice.
 function setCachedConfig(config) {
     try {
-        localStorage.setItem(CACHE_KEY, JSON.stringify(config));
+        const {uiApiVersion, ...features} = config?.features || {};
+        localStorage.setItem(CACHE_KEY, JSON.stringify(config?.features ? {...config, features} : config));
         localStorage.setItem(CACHE_TIMESTAMP_KEY, Date.now().toString());
     } catch (e) {
         console.warn('Failed to cache instance config:', e);
@@ -244,6 +208,14 @@ export function clearInstanceCache() {
     } catch (e) {
         console.warn('Failed to clear instance cache:', e);
     }
+}
+
+// Earlier releases let each browser choose '/api/v2'. Drop those choices,
+// including the copy kept in the cached configuration.
+function forgetRetiredPreferences() {
+    forgetRetiredApiPreferences();
+    const cached = getCachedConfig();
+    if (cached?.features && 'uiApiVersion' in cached.features) setCachedConfig(cached);
 }
 
 export function saveRuntimeConfig(config) {
@@ -302,9 +274,7 @@ export async function loadInstanceConfig() {
     }
 
     try {
-        // Choose the API before the first request: the browser override or
-        // the cached instance setting (v2 only once its probe succeeds).
-        await applyApiVersion(getCachedConfig());
+        forgetRetiredPreferences();
 
         // Check if instance is configured
         const statusRes = await bootstrapFetch('INSTANCE', 'STATUS');
@@ -352,7 +322,6 @@ export async function loadInstanceConfig() {
         applyRuntimeConfig(config);
         instanceConfig.set(config);
         setCachedConfig(config);
-        await applyApiVersion(config);
 
         instanceStatus.set({
             loading: false,
@@ -367,8 +336,9 @@ export async function loadInstanceConfig() {
         // Try to use cached config as fallback
         const cached = getCachedConfig();
         if (cached) {
+            // The status is unknown here: keep the cached feature flags.
             applyRuntimeConfig(cached);
-            instanceConfig.set({...cached, features: {...cached.features, aiEnabled: status.ai_enabled === true, manualEnabled: status.manual_enabled === true}});
+            instanceConfig.set(cached);
             instanceStatus.set({
                 loading: false,
                 configured: true,
@@ -387,16 +357,21 @@ export async function loadInstanceConfig() {
     }
 }
 
-// Refresh config in background without blocking
-async function refreshConfigInBackground() {
+// Refresh config in background without blocking. Also used after the
+// instance's runtime changes, so open pages show its current configuration.
+// Only the latest refresh applies: a slow reply from the outgoing runtime
+// must not replace the destination's configuration.
+let configRefresh = 0;
+export async function refreshConfigInBackground() {
+    const id = ++configRefresh;
     try {
         const configRes = await bootstrapFetch('INSTANCE', 'CONFIG');
         if (configRes.ok) {
             const config = await configRes.json();
+            if (id !== configRefresh) return;
             applyRuntimeConfig(config);
             instanceConfig.set(config);
             setCachedConfig(config);
-            await applyApiVersion(config);
         }
     } catch (e) {
         // Silent fail for background refresh

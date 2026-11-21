@@ -17,6 +17,8 @@ import tempfile
 from uuid import uuid4
 
 ROOT = Path(__file__).resolve().parents[3]
+# The binary's operational schema version (BE_GO/migrations CurrentVersion).
+CURRENT_SCHEMA = int(re.search(r'^const CurrentVersion = (\d+)$', (ROOT / 'BE_GO/migrations/migrations.go').read_text(), re.M)[1])
 sys.path.insert(0, str(ROOT))
 from TESTS.adapters.django.production_runtime import require_production_python
 from TESTS.adapters.go.age_worker_fixture import initialize_current_schema
@@ -335,7 +337,7 @@ test ! -w /app/migrate
         )[0]) == ('django', 1)
         assert tuple(self.sql(
             'SELECT version,dirty FROM assozeta_go_schema_migrations'
-        )[0]) == (4, False)
+        )[0]) == (CURRENT_SCHEMA, False)
         self.case(
             'packaged worker and migrate run as UID10001 on read-only root with owned metadata'
         )

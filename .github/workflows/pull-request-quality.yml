@@ -98,6 +98,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          # Legacy suites read the historical dual-API distribution from git history.
+          fetch-depth: 0
           persist-credentials: false
       - run: make selfhost-test
       - name: Verify versioned API transport through real Caddy

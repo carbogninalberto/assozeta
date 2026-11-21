@@ -31,6 +31,8 @@ type PeriodicSchedule struct {
 	Cron          *PeriodicCron
 	HasSolar      bool
 	HasClocked    bool
+	ClockedTime   *time.Time `json:",omitempty"`
+	TotalRunCount int64      `json:"-"`
 	Args          json.RawMessage
 	Kwargs        json.RawMessage
 	Headers       json.RawMessage
@@ -71,7 +73,10 @@ type ScheduleDue struct {
 // periodicJobKinds maps each supported persisted Beat task name to the
 // instance-wide version 1 Go job it publishes. Every listed kind is registered
 // by the native worker; no other Beat task name is published.
+const JobResultRetention = "celery.backend_cleanup"
+
 var periodicJobKinds = map[string]string{
+	JobResultRetention:                    JobResultRetention,
 	JobResetDailyEmailBalance:             JobResetDailyEmailBalance,
 	JobUpdateAssociateAge:                 JobUpdateAssociateAge,
 	JobClearExpiredSubscriptionTokens:     JobClearExpiredSubscriptionTokens,
@@ -105,3 +110,6 @@ func PeriodicJobKind(task string) (string, bool) {
 func PeriodicTaskNames() []string {
 	return slices.Sorted(maps.Keys(periodicJobKinds))
 }
+
+// The declared backup check is executed by the Go Celery consumer.
+const PeriodicBackupNotice = "instance.backups.notify_failures"

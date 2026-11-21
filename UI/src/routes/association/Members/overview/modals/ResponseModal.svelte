@@ -1,5 +1,4 @@
 <script>
-    import {rewriteApiUrl} from 'utils/apiVersion.js';
     import BasicModal from 'components/modals/BasicModal.svelte';
     import {File} from 'phosphor-svelte';
     import {onMount} from 'svelte';
@@ -80,11 +79,11 @@
                         <div class="font-size-sm rounded-lg">
                             {#each data.attachments_docs as attachment}
                                 <a
-                                    href={rewriteApiUrl(__bakney.env.API.DOCUMENT.RETRIEVE +
+                                    href={__bakney.env.API.DOCUMENT.RETRIEVE +
                                         '/' +
                                         attachment.document_id +
                                         '?download=true&token=' +
-                                        attachment.token)}
+                                        attachment.token}
                                     target="_blank"
                                     class="d-block text-primary font-weight-bolder pt-2 font-size-lg d-flex align-items-center cursor-pointer"
                                     download={attachment.filename}>

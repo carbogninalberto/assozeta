@@ -1,4 +1,4 @@
-import {getWebSocketUrl, isWebSocketV2Path, noteWebSocketV2OpenFailure, noteWebSocketV2Opened} from './websocketUrl.js';
+import {getWebSocketUrl} from './websocketUrl.js';
 import WebSocketHeartbeat from './WebSocketHeartbeat.js';
 
 /**
@@ -43,15 +43,11 @@ class HealthWebSocket {
         if (this.ws && (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING)) return;
         const wsPath = __bakney.env.WS.HEALTH;
         const url = getWebSocketUrl(wsPath);
-        const v2Socket = isWebSocketV2Path(wsPath);
-        let opened = false;
 
         this.ws = new WebSocket(url);
         const socket = this.ws;
 
         this.ws.onopen = () => {
-            opened = true;
-            if (v2Socket) noteWebSocketV2Opened(wsPath);
             console.log('[HealthWebSocket] Connected');
             this.reconnectAttempts = 0;
             this.heartbeat.start();
@@ -78,9 +74,6 @@ class HealthWebSocket {
             this.onDisconnect?.(event.code);
 
             if (this.manualCloseSockets.has(socket)) return;
-
-            // A v2 socket that never opened counts towards the fallback to Django.
-            if (!opened && v2Socket) noteWebSocketV2OpenFailure(wsPath, `close ${event.code} before open`);
 
             // Attempt reconnection
             this.attemptReconnect();
@@ -117,17 +110,13 @@ class HealthWebSocket {
     }
 
     /**
-     * Attempt to reconnect with exponential backoff
+     * Attempt to reconnect with exponential backoff, capped at the last delay
      * @private
      */
     attemptReconnect() {
-        if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-            console.error('[HealthWebSocket] Max reconnection attempts reached');
-            this.onError?.('Max reconnection attempts reached');
-            return;
-        }
-
-        this.reconnectAttempts++;
+        // Keep trying at the longest delay: after an update or a runtime
+        // switch the instance comes back, and open pages must reconnect.
+        this.reconnectAttempts = Math.min(this.reconnectAttempts + 1, this.maxReconnectAttempts);
         const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1);
 
         console.log(`[HealthWebSocket] Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts})`);

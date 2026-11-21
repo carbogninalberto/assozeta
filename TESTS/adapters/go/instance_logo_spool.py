@@ -204,7 +204,8 @@ class Deployment(ImageFixture):
         operations.chmod(0o777)
         render_env = {**os.environ, 'ASSOZETA_ENV_FILE': str(environment),
             'ASSOZETA_SELFHOST_DIR': str(self.work), 'ASSOZETA_BACKEND_GO_REF': self.image_id}
-        rendered = subprocess.run(['docker', 'compose', '--profile', 'tools', '--env-file', str(environment),
+        # api-go is in the go runtime profile, migrate-go in tools.
+        rendered = subprocess.run(['docker', 'compose', '--profile', 'go', '--profile', 'tools', '--env-file', str(environment),
             '-f', str(ROOT / 'selfhost/compose.yml'), 'config', '--format', 'json'],
             env=render_env, capture_output=True, text=True, timeout=30)
         assert rendered.returncode == 0, 'Production Compose render failed'
@@ -227,6 +228,8 @@ class Deployment(ImageFixture):
             networks={'fixture': {}}, extra_hosts=['host.docker.internal:host-gateway'],
             labels={LABEL: self.identifier})
         service.pop('container_name', None)
+        # The owned project starts this one service directly, outside the runtime profile.
+        service.pop('profiles', None)
         # The update runner socket is installation wiring this fixture does not own.
         service['volumes'] = [v for v in service['volumes'] if v.get('source') != 'updater_api']
         manual =[v for v in service['volumes'] if v['target'] == '/app/manuale'][0]

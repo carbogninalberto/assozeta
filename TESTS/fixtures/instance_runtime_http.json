@@ -1,0 +1,1315 @@
+{
+ "matrix_version": 1,
+ "scope": "instance/admin/runtime (phase 1 handoff)",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "instance": {
+  "id": 7520,
+  "domain": "runtime.example.test",
+  "name": "Istanza runtime",
+  "abbreviation": "IR",
+  "primary_color": "#123456",
+  "support_email": "supporto@example.test",
+  "logo_path": "",
+  "setup_provenance": "fresh",
+  "display_settings": {},
+  "self_hosted": true,
+  "support_multiple_associations": false,
+  "primary_association": "own_association",
+  "google_client_id": "",
+  "apple_client_id": "",
+  "email_settings": {},
+  "email_password_encrypted": "",
+  "email_revision": 0,
+  "diagnostic_results": {},
+  "integration_settings": {}
+ },
+ "runner_token": "runner-token-placeholder",
+ "hashes": {
+  "owner": "pbkdf2_sha256$1000000$runtimeswitchowner0000001$hnIXfPPXXUe5SvfNuAGZQe/tyZxunVuopsGbZbK7UEE=",
+  "admin": "pbkdf2_sha256$1000000$runtimeswitchadmin0000001$WNYP1RII9NQz9j4WAHvKrwvm8DynnE+6ohkt/2LCs+I="
+ },
+ "password": "Fixture-runtime-placeholder-1",
+ "cases": [
+  {
+   "name": "instance-runtime-anonymous-status",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/instance/admin/runtime",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": true
+  },
+  {
+   "name": "instance-runtime-anonymous-switch",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/admin/runtime",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": true,
+   "body": {
+    "target": "go",
+    "expected_generation": 1,
+    "idempotency_key": "b1000000-0000-4000-8000-000000000001",
+    "password": "Fixture-runtime-placeholder-1"
+   }
+  },
+  {
+   "name": "instance-runtime-athlete-status",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/instance/admin/runtime",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Only the instance owner or an administrator can administer this installation."
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": true
+  },
+  {
+   "name": "instance-runtime-collaborator-switch",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/instance/admin/runtime",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Only the instance owner or an administrator can administer this installation."
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": true,
+   "body": {
+    "target": "go",
+    "expected_generation": 1,
+    "idempotency_key": "b1000000-0000-4000-8000-000000000001",
+    "password": "Fixture-runtime-placeholder-1"
+   }
+  },
+  {
+   "name": "instance-runtime-put-not-allowed",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin/runtime",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"PUT\" not allowed."
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": true,
+   "body": {
+    "target": "go",
+    "expected_generation": 1,
+    "idempotency_key": "b1000000-0000-4000-8000-000000000001",
+    "password": "Fixture-runtime-placeholder-1"
+   }
+  },
+  {
+   "name": "instance-runtime-status-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instance/admin/runtime",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "protocol": 1,
+    "effective_runtime": "django",
+    "generation": 1,
+    "last_operation_id": null,
+    "requested_runtime": "go",
+    "operation": {
+     "id": "b1000000-0000-4000-8000-0000000000a1",
+     "kind": "runtime_switch",
+     "actor_id": "a1000000-0000-4000-8000-000000700001",
+     "previous_runtime": "django",
+     "requested_runtime": "go",
+     "expected_generation": 1,
+     "status": "queued",
+     "stage": "queued",
+     "outcome": null,
+     "counts": {
+      "pending": 0,
+      "transferred": 0,
+      "blocked": 0
+     },
+     "committed_generation": null,
+     "error": null,
+     "error_code": null,
+     "recovery": null,
+     "created_at": "2026-11-20T10:00:00+00:00",
+     "updated_at": "2026-11-20T10:00:00+00:00"
+    },
+    "active": {
+     "id": "b1000000-0000-4000-8000-0000000000a1",
+     "kind": "runtime_switch",
+     "actor_id": "a1000000-0000-4000-8000-000000700001",
+     "previous_runtime": "django",
+     "requested_runtime": "go",
+     "expected_generation": 1,
+     "status": "queued",
+     "stage": "queued",
+     "outcome": null,
+     "counts": {
+      "pending": 0,
+      "transferred": 0,
+      "blocked": 0
+     },
+     "committed_generation": null,
+     "error": null,
+     "error_code": null,
+     "recovery": null,
+     "created_at": "2026-11-20T10:00:00+00:00",
+     "updated_at": "2026-11-20T10:00:00+00:00"
+    },
+    "authority_error": null,
+    "recovery_command": "./bin/assozeta runtime-recover",
+    "note": "àè"
+   },
+   "runner": {
+    "state": "up",
+    "status": 200,
+    "body": "{\"protocol\": 1, \"effective_runtime\": \"django\", \"generation\": 1, \"last_operation_id\": null, \"requested_runtime\": \"go\", \"operation\": {\"id\": \"b1000000-0000-4000-8000-0000000000a1\", \"kind\": \"runtime_switch\", \"actor_id\": \"a1000000-0000-4000-8000-000000700001\", \"previous_runtime\": \"django\", \"requested_runtime\": \"go\", \"expected_generation\": 1, \"status\": \"queued\", \"stage\": \"queued\", \"outcome\": null, \"counts\": {\"pending\": 0, \"transferred\": 0, \"blocked\": 0}, \"committed_generation\": null, \"error\": null, \"error_code\": null, \"recovery\": null, \"created_at\": \"2026-11-20T10:00:00+00:00\", \"updated_at\": \"2026-11-20T10:00:00+00:00\"}, \"active\": {\"id\": \"b1000000-0000-4000-8000-0000000000a1\", \"kind\": \"runtime_switch\", \"actor_id\": \"a1000000-0000-4000-8000-000000700001\", \"previous_runtime\": \"django\", \"requested_runtime\": \"go\", \"expected_generation\": 1, \"status\": \"queued\", \"stage\": \"queued\", \"outcome\": null, \"counts\": {\"pending\": 0, \"transferred\": 0, \"blocked\": 0}, \"committed_generation\": null, \"error\": null, \"error_code\": null, \"recovery\": null, \"created_at\": \"2026-11-20T10:00:00+00:00\", \"updated_at\": \"2026-11-20T10:00:00+00:00\"}, \"authority_error\": null, \"recovery_command\": \"./bin/assozeta runtime-recover\", \"note\": \"àè\"}",
+    "early": false,
+    "expect": [
+     {
+      "method": "GET",
+      "path": "/runtime",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json"
+      },
+      "body": null
+     }
+    ]
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": true
+  },
+  {
+   "name": "instance-runtime-status-admin",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/instance/admin/runtime",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "protocol": 1,
+    "effective_runtime": "django",
+    "generation": 1,
+    "last_operation_id": null,
+    "requested_runtime": "go",
+    "operation": {
+     "id": "b1000000-0000-4000-8000-0000000000a1",
+     "kind": "runtime_switch",
+     "actor_id": "a1000000-0000-4000-8000-000000700001",
+     "previous_runtime": "django",
+     "requested_runtime": "go",
+     "expected_generation": 1,
+     "status": "queued",
+     "stage": "queued",
+     "outcome": null,
+     "counts": {
+      "pending": 0,
+      "transferred": 0,
+      "blocked": 0
+     },
+     "committed_generation": null,
+     "error": null,
+     "error_code": null,
+     "recovery": null,
+     "created_at": "2026-11-20T10:00:00+00:00",
+     "updated_at": "2026-11-20T10:00:00+00:00"
+    },
+    "active": {
+     "id": "b1000000-0000-4000-8000-0000000000a1",
+     "kind": "runtime_switch",
+     "actor_id": "a1000000-0000-4000-8000-000000700001",
+     "previous_runtime": "django",
+     "requested_runtime": "go",
+     "expected_generation": 1,
+     "status": "queued",
+     "stage": "queued",
+     "outcome": null,
+     "counts": {
+      "pending": 0,
+      "transferred": 0,
+      "blocked": 0
+     },
+     "committed_generation": null,
+     "error": null,
+     "error_code": null,
+     "recovery": null,
+     "created_at": "2026-11-20T10:00:00+00:00",
+     "updated_at": "2026-11-20T10:00:00+00:00"
+    },
+    "authority_error": null,
+    "recovery_command": "./bin/assozeta runtime-recover",
+    "note": "àè"
+   },
+   "runner": {
+    "state": "up",
+    "status": 200,
+    "body": "{\"protocol\": 1, \"effective_runtime\": \"django\", \"generation\": 1, \"last_operation_id\": null, \"requested_runtime\": \"go\", \"operation\": {\"id\": \"b1000000-0000-4000-8000-0000000000a1\", \"kind\": \"runtime_switch\", \"actor_id\": \"a1000000-0000-4000-8000-000000700001\", \"previous_runtime\": \"django\", \"requested_runtime\": \"go\", \"expected_generation\": 1, \"status\": \"queued\", \"stage\": \"queued\", \"outcome\": null, \"counts\": {\"pending\": 0, \"transferred\": 0, \"blocked\": 0}, \"committed_generation\": null, \"error\": null, \"error_code\": null, \"recovery\": null, \"created_at\": \"2026-11-20T10:00:00+00:00\", \"updated_at\": \"2026-11-20T10:00:00+00:00\"}, \"active\": {\"id\": \"b1000000-0000-4000-8000-0000000000a1\", \"kind\": \"runtime_switch\", \"actor_id\": \"a1000000-0000-4000-8000-000000700001\", \"previous_runtime\": \"django\", \"requested_runtime\": \"go\", \"expected_generation\": 1, \"status\": \"queued\", \"stage\": \"queued\", \"outcome\": null, \"counts\": {\"pending\": 0, \"transferred\": 0, \"blocked\": 0}, \"committed_generation\": null, \"error\": null, \"error_code\": null, \"recovery\": null, \"created_at\": \"2026-11-20T10:00:00+00:00\", \"updated_at\": \"2026-11-20T10:00:00+00:00\"}, \"authority_error\": null, \"recovery_command\": \"./bin/assozeta runtime-recover\", \"note\": \"àè\"}",
+    "early": false,
+    "expect": [
+     {
+      "method": "GET",
+      "path": "/runtime",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json"
+      },
+      "body": null
+     }
+    ]
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": true
+  },
+  {
+   "name": "instance-runtime-status-unreachable",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instance/admin/runtime",
+   "headers": {},
+   "status": 503,
+   "response": {
+    "error": "Il servizio di aggiornamento non è raggiungibile. Verifica l’esito della configurazione automatica."
+   },
+   "runner": {
+    "state": "no-socket",
+    "status": 200,
+    "body": "",
+    "early": false,
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": true
+  },
+  {
+   "name": "instance-runtime-extra-key",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/runtime",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Richiesta non valida."
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": true,
+   "body": {
+    "target": "go",
+    "expected_generation": 1,
+    "idempotency_key": "b1000000-0000-4000-8000-000000000001",
+    "password": "Fixture-runtime-placeholder-1",
+    "tasks": "x"
+   }
+  },
+  {
+   "name": "instance-runtime-missing-password",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/runtime",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Richiesta non valida."
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": true,
+   "body": {
+    "target": "go",
+    "expected_generation": 1,
+    "idempotency_key": "b1000000-0000-4000-8000-000000000001"
+   }
+  },
+  {
+   "name": "instance-runtime-missing-key",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/runtime",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Richiesta non valida."
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": true,
+   "body": {
+    "target": "go",
+    "expected_generation": 1,
+    "password": "Fixture-runtime-placeholder-1"
+   }
+  },
+  {
+   "name": "instance-runtime-unknown-target",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/runtime",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Richiesta non valida."
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": true,
+   "body": {
+    "target": "node",
+    "expected_generation": 1,
+    "idempotency_key": "b1000000-0000-4000-8000-000000000001",
+    "password": "Fixture-runtime-placeholder-1"
+   }
+  },
+  {
+   "name": "instance-runtime-capitalized-target",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/runtime",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Richiesta non valida."
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": true,
+   "body": {
+    "target": "Go",
+    "expected_generation": 1,
+    "idempotency_key": "b1000000-0000-4000-8000-000000000001",
+    "password": "Fixture-runtime-placeholder-1"
+   }
+  },
+  {
+   "name": "instance-runtime-boolean-generation",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/runtime",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Richiesta non valida."
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": true,
+   "body": {
+    "target": "go",
+    "expected_generation": true,
+    "idempotency_key": "b1000000-0000-4000-8000-000000000001",
+    "password": "Fixture-runtime-placeholder-1"
+   }
+  },
+  {
+   "name": "instance-runtime-string-generation",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/runtime",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Richiesta non valida."
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": true,
+   "body": {
+    "target": "go",
+    "expected_generation": "1",
+    "idempotency_key": "b1000000-0000-4000-8000-000000000001",
+    "password": "Fixture-runtime-placeholder-1"
+   }
+  },
+  {
+   "name": "instance-runtime-zero-generation",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/runtime",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Richiesta non valida."
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": true,
+   "body": {
+    "target": "go",
+    "expected_generation": 0,
+    "idempotency_key": "b1000000-0000-4000-8000-000000000001",
+    "password": "Fixture-runtime-placeholder-1"
+   }
+  },
+  {
+   "name": "instance-runtime-invalid-key",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/runtime",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Richiesta non valida."
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": true,
+   "body": {
+    "target": "go",
+    "expected_generation": 1,
+    "idempotency_key": "retry-1",
+    "password": "Fixture-runtime-placeholder-1"
+   }
+  },
+  {
+   "name": "instance-runtime-list-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/runtime",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Richiesta non valida."
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": true,
+   "raw_body": "[{\"target\": \"go\", \"expected_generation\": 1, \"idempotency_key\": \"b1000000-0000-4000-8000-000000000001\", \"password\": \"Fixture-runtime-placeholder-1\"}]",
+   "content_type": "application/json"
+  },
+  {
+   "name": "instance-runtime-blank-password",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/runtime",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "password": [
+     "This field may not be blank."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": true,
+   "body": {
+    "target": "go",
+    "expected_generation": 1,
+    "idempotency_key": "b1000000-0000-4000-8000-000000000001",
+    "password": ""
+   }
+  },
+  {
+   "name": "instance-runtime-wrong-password",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/runtime",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Password non corretta."
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {
+    "attempts": {
+     "a1000000-0000-4000-8000-000000700001": {
+      "value": 1,
+      "ttl": "fresh"
+     }
+    }
+   },
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": true,
+   "body": {
+    "target": "go",
+    "expected_generation": 1,
+    "idempotency_key": "b1000000-0000-4000-8000-000000000001",
+    "password": "Fixture-runtime-placeholder-1x"
+   }
+  },
+  {
+   "name": "instance-runtime-too-many-attempts",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/runtime",
+   "headers": {},
+   "status": 429,
+   "response": {
+    "error": "Troppi tentativi. Riprova tra qualche minuto."
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {
+    "attempts": {
+     "a1000000-0000-4000-8000-000000700001": 5
+    }
+   },
+   "cache_after": {
+    "attempts": {
+     "a1000000-0000-4000-8000-000000700001": {
+      "value": 5,
+      "ttl": "kept"
+     }
+    }
+   },
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": true,
+   "body": {
+    "target": "go",
+    "expected_generation": 1,
+    "idempotency_key": "b1000000-0000-4000-8000-000000000001",
+    "password": "Fixture-runtime-placeholder-1"
+   }
+  },
+  {
+   "name": "instance-runtime-accepted",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/runtime",
+   "headers": {},
+   "status": 202,
+   "response": {
+    "operation": {
+     "id": "b1000000-0000-4000-8000-0000000000a1",
+     "kind": "runtime_switch",
+     "actor_id": "a1000000-0000-4000-8000-000000700001",
+     "previous_runtime": "django",
+     "requested_runtime": "go",
+     "expected_generation": 1,
+     "status": "queued",
+     "stage": "queued",
+     "outcome": null,
+     "counts": {
+      "pending": 0,
+      "transferred": 0,
+      "blocked": 0
+     },
+     "committed_generation": null,
+     "error": null,
+     "error_code": null,
+     "recovery": null,
+     "created_at": "2026-11-20T10:00:00+00:00",
+     "updated_at": "2026-11-20T10:00:00+00:00"
+    },
+    "authority": {
+     "runtime": "django",
+     "generation": 1,
+     "operation_id": null
+    },
+    "replayed": false
+   },
+   "runner": {
+    "state": "up",
+    "status": 202,
+    "body": "{\"operation\": {\"id\": \"b1000000-0000-4000-8000-0000000000a1\", \"kind\": \"runtime_switch\", \"actor_id\": \"a1000000-0000-4000-8000-000000700001\", \"previous_runtime\": \"django\", \"requested_runtime\": \"go\", \"expected_generation\": 1, \"status\": \"queued\", \"stage\": \"queued\", \"outcome\": null, \"counts\": {\"pending\": 0, \"transferred\": 0, \"blocked\": 0}, \"committed_generation\": null, \"error\": null, \"error_code\": null, \"recovery\": null, \"created_at\": \"2026-11-20T10:00:00+00:00\", \"updated_at\": \"2026-11-20T10:00:00+00:00\"}, \"authority\": {\"runtime\": \"django\", \"generation\": 1, \"operation_id\": null}, \"replayed\": false}",
+    "early": false,
+    "expect": [
+     {
+      "method": "POST",
+      "path": "/runtime-switches",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "$length"
+      },
+      "body": {
+       "json": {
+        "request_id": "b1000000-0000-4000-8000-000000000001",
+        "actor_id": "a1000000-0000-4000-8000-000000700001",
+        "target": "go",
+        "expected_generation": 1
+       }
+      }
+     }
+    ]
+   },
+   "cache": {
+    "attempts": {
+     "a1000000-0000-4000-8000-000000700001": 3
+    }
+   },
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": {
+    "changes": {
+     "runtime_switch": [
+      "django",
+      "go"
+     ]
+    },
+    "additional_data": {
+     "actor_id": "a1000000-0000-4000-8000-000000700001",
+     "operation": "b1000000-0000-4000-8000-0000000000a1",
+     "expected_generation": 1
+    },
+    "actor": "owner",
+    "association": "own_association"
+   },
+   "send": null,
+   "no_store": true,
+   "body": {
+    "target": "go",
+    "expected_generation": 1,
+    "idempotency_key": "b1000000-0000-4000-8000-000000000001",
+    "password": "Fixture-runtime-placeholder-1"
+   }
+  },
+  {
+   "name": "instance-runtime-uppercase-key-is-canonical",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/runtime",
+   "headers": {},
+   "status": 202,
+   "response": {
+    "operation": {
+     "id": "b1000000-0000-4000-8000-0000000000a1",
+     "kind": "runtime_switch",
+     "actor_id": "a1000000-0000-4000-8000-000000700001",
+     "previous_runtime": "django",
+     "requested_runtime": "go",
+     "expected_generation": 1,
+     "status": "queued",
+     "stage": "queued",
+     "outcome": null,
+     "counts": {
+      "pending": 0,
+      "transferred": 0,
+      "blocked": 0
+     },
+     "committed_generation": null,
+     "error": null,
+     "error_code": null,
+     "recovery": null,
+     "created_at": "2026-11-20T10:00:00+00:00",
+     "updated_at": "2026-11-20T10:00:00+00:00"
+    },
+    "authority": {
+     "runtime": "django",
+     "generation": 1,
+     "operation_id": null
+    },
+    "replayed": true
+   },
+   "runner": {
+    "state": "up",
+    "status": 202,
+    "body": "{\"operation\": {\"id\": \"b1000000-0000-4000-8000-0000000000a1\", \"kind\": \"runtime_switch\", \"actor_id\": \"a1000000-0000-4000-8000-000000700001\", \"previous_runtime\": \"django\", \"requested_runtime\": \"go\", \"expected_generation\": 1, \"status\": \"queued\", \"stage\": \"queued\", \"outcome\": null, \"counts\": {\"pending\": 0, \"transferred\": 0, \"blocked\": 0}, \"committed_generation\": null, \"error\": null, \"error_code\": null, \"recovery\": null, \"created_at\": \"2026-11-20T10:00:00+00:00\", \"updated_at\": \"2026-11-20T10:00:00+00:00\"}, \"authority\": {\"runtime\": \"django\", \"generation\": 1, \"operation_id\": null}, \"replayed\": true}",
+    "early": false,
+    "expect": [
+     {
+      "method": "POST",
+      "path": "/runtime-switches",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "$length"
+      },
+      "body": {
+       "json": {
+        "request_id": "b1000000-0000-4000-8000-000000000001",
+        "actor_id": "a1000000-0000-4000-8000-000000700001",
+        "target": "go",
+        "expected_generation": 1
+       }
+      }
+     }
+    ]
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": true,
+   "body": {
+    "target": "go",
+    "expected_generation": 1,
+    "idempotency_key": "B1000000-0000-4000-8000-000000000001",
+    "password": "Fixture-runtime-placeholder-1"
+   }
+  },
+  {
+   "name": "instance-runtime-noop",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/runtime",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "operation": {
+     "id": "b1000000-0000-4000-8000-0000000000a1",
+     "kind": "runtime_switch",
+     "actor_id": "a1000000-0000-4000-8000-000000700001",
+     "previous_runtime": "django",
+     "requested_runtime": "django",
+     "expected_generation": 1,
+     "status": "succeeded",
+     "stage": "completed",
+     "outcome": "noop",
+     "counts": {
+      "pending": 0,
+      "transferred": 0,
+      "blocked": 0
+     },
+     "committed_generation": null,
+     "error": null,
+     "error_code": null,
+     "recovery": null,
+     "created_at": "2026-11-20T10:00:00+00:00",
+     "updated_at": "2026-11-20T10:00:00+00:00"
+    },
+    "authority": {
+     "runtime": "django",
+     "generation": 1,
+     "operation_id": null
+    },
+    "replayed": false
+   },
+   "runner": {
+    "state": "up",
+    "status": 200,
+    "body": "{\"operation\": {\"id\": \"b1000000-0000-4000-8000-0000000000a1\", \"kind\": \"runtime_switch\", \"actor_id\": \"a1000000-0000-4000-8000-000000700001\", \"previous_runtime\": \"django\", \"requested_runtime\": \"django\", \"expected_generation\": 1, \"status\": \"succeeded\", \"stage\": \"completed\", \"outcome\": \"noop\", \"counts\": {\"pending\": 0, \"transferred\": 0, \"blocked\": 0}, \"committed_generation\": null, \"error\": null, \"error_code\": null, \"recovery\": null, \"created_at\": \"2026-11-20T10:00:00+00:00\", \"updated_at\": \"2026-11-20T10:00:00+00:00\"}, \"authority\": {\"runtime\": \"django\", \"generation\": 1, \"operation_id\": null}, \"replayed\": false}",
+    "early": false,
+    "expect": [
+     {
+      "method": "POST",
+      "path": "/runtime-switches",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "$length"
+      },
+      "body": {
+       "json": {
+        "request_id": "b1000000-0000-4000-8000-000000000001",
+        "actor_id": "a1000000-0000-4000-8000-000000700001",
+        "target": "django",
+        "expected_generation": 1
+       }
+      }
+     }
+    ]
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": true,
+   "body": {
+    "target": "django",
+    "expected_generation": 1,
+    "idempotency_key": "b1000000-0000-4000-8000-000000000001",
+    "password": "Fixture-runtime-placeholder-1"
+   }
+  },
+  {
+   "name": "instance-runtime-stale-generation",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/instance/admin/runtime",
+   "headers": {},
+   "status": 409,
+   "response": {
+    "error": "Lo stato è cambiato.",
+    "code": "stale_generation",
+    "authority": {
+     "runtime": "go",
+     "generation": 2,
+     "operation_id": "b1000000-0000-4000-8000-0000000000a1"
+    },
+    "active": null
+   },
+   "runner": {
+    "state": "up",
+    "status": 409,
+    "body": "{\"error\": \"Lo stato è cambiato.\", \"code\": \"stale_generation\", \"authority\": {\"runtime\": \"go\", \"generation\": 2, \"operation_id\": \"b1000000-0000-4000-8000-0000000000a1\"}, \"active\": null}",
+    "early": false,
+    "expect": [
+     {
+      "method": "POST",
+      "path": "/runtime-switches",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "$length"
+      },
+      "body": {
+       "json": {
+        "request_id": "b1000000-0000-4000-8000-000000000001",
+        "actor_id": "a1000000-0000-4000-8000-000000710001",
+        "target": "django",
+        "expected_generation": 1
+       }
+      }
+     }
+    ]
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": true,
+   "body": {
+    "target": "django",
+    "expected_generation": 1,
+    "idempotency_key": "b1000000-0000-4000-8000-000000000001",
+    "password": "Fixture-runtime-placeholder-1"
+   }
+  },
+  {
+   "name": "instance-runtime-operation-in-progress",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/runtime",
+   "headers": {},
+   "status": 409,
+   "response": {
+    "error": "Operazione in corso.",
+    "code": "operation_in_progress",
+    "authority": {
+     "runtime": "django",
+     "generation": 1,
+     "operation_id": null
+    },
+    "active": {
+     "id": "b1000000-0000-4000-8000-0000000000b2",
+     "kind": "restore",
+     "status": "running",
+     "stage": "checking"
+    }
+   },
+   "runner": {
+    "state": "up",
+    "status": 409,
+    "body": "{\"error\": \"Operazione in corso.\", \"code\": \"operation_in_progress\", \"authority\": {\"runtime\": \"django\", \"generation\": 1, \"operation_id\": null}, \"active\": {\"id\": \"b1000000-0000-4000-8000-0000000000b2\", \"kind\": \"restore\", \"status\": \"running\", \"stage\": \"checking\"}}",
+    "early": false,
+    "expect": [
+     {
+      "method": "POST",
+      "path": "/runtime-switches",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "$length"
+      },
+      "body": {
+       "json": {
+        "request_id": "b1000000-0000-4000-8000-000000000001",
+        "actor_id": "a1000000-0000-4000-8000-000000700001",
+        "target": "go",
+        "expected_generation": 1
+       }
+      }
+     }
+    ]
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": true,
+   "body": {
+    "target": "go",
+    "expected_generation": 1,
+    "idempotency_key": "b1000000-0000-4000-8000-000000000001",
+    "password": "Fixture-runtime-placeholder-1"
+   }
+  },
+  {
+   "name": "instance-runtime-idempotency-conflict",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/runtime",
+   "headers": {},
+   "status": 409,
+   "response": {
+    "error": "Identificativo già usato.",
+    "code": "idempotency_conflict",
+    "authority": {
+     "runtime": "django",
+     "generation": 1,
+     "operation_id": null
+    },
+    "active": null,
+    "operation": {
+     "id": "b1000000-0000-4000-8000-0000000000a1",
+     "kind": "runtime_switch",
+     "actor_id": "a1000000-0000-4000-8000-000000700001",
+     "previous_runtime": "django",
+     "requested_runtime": "go",
+     "expected_generation": 1,
+     "status": "queued",
+     "stage": "queued",
+     "outcome": null,
+     "counts": {
+      "pending": 0,
+      "transferred": 0,
+      "blocked": 0
+     },
+     "committed_generation": null,
+     "error": null,
+     "error_code": null,
+     "recovery": null,
+     "created_at": "2026-11-20T10:00:00+00:00",
+     "updated_at": "2026-11-20T10:00:00+00:00"
+    }
+   },
+   "runner": {
+    "state": "up",
+    "status": 409,
+    "body": "{\"error\": \"Identificativo già usato.\", \"code\": \"idempotency_conflict\", \"authority\": {\"runtime\": \"django\", \"generation\": 1, \"operation_id\": null}, \"active\": null, \"operation\": {\"id\": \"b1000000-0000-4000-8000-0000000000a1\", \"kind\": \"runtime_switch\", \"actor_id\": \"a1000000-0000-4000-8000-000000700001\", \"previous_runtime\": \"django\", \"requested_runtime\": \"go\", \"expected_generation\": 1, \"status\": \"queued\", \"stage\": \"queued\", \"outcome\": null, \"counts\": {\"pending\": 0, \"transferred\": 0, \"blocked\": 0}, \"committed_generation\": null, \"error\": null, \"error_code\": null, \"recovery\": null, \"created_at\": \"2026-11-20T10:00:00+00:00\", \"updated_at\": \"2026-11-20T10:00:00+00:00\"}}",
+    "early": false,
+    "expect": [
+     {
+      "method": "POST",
+      "path": "/runtime-switches",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "$length"
+      },
+      "body": {
+       "json": {
+        "request_id": "b1000000-0000-4000-8000-000000000001",
+        "actor_id": "a1000000-0000-4000-8000-000000700001",
+        "target": "go",
+        "expected_generation": 2
+       }
+      }
+     }
+    ]
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": true,
+   "body": {
+    "target": "go",
+    "expected_generation": 2,
+    "idempotency_key": "b1000000-0000-4000-8000-000000000001",
+    "password": "Fixture-runtime-placeholder-1"
+   }
+  },
+  {
+   "name": "instance-runtime-authority-unavailable",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/runtime",
+   "headers": {},
+   "status": 503,
+   "response": {
+    "error": "Lo stato del runtime non è leggibile.",
+    "code": "authority_unavailable"
+   },
+   "runner": {
+    "state": "up",
+    "status": 503,
+    "body": "{\"error\": \"Lo stato del runtime non è leggibile.\", \"code\": \"authority_unavailable\"}",
+    "early": false,
+    "expect": [
+     {
+      "method": "POST",
+      "path": "/runtime-switches",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "$length"
+      },
+      "body": {
+       "json": {
+        "request_id": "b1000000-0000-4000-8000-000000000001",
+        "actor_id": "a1000000-0000-4000-8000-000000700001",
+        "target": "go",
+        "expected_generation": 1
+       }
+      }
+     }
+    ]
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": true,
+   "body": {
+    "target": "go",
+    "expected_generation": 1,
+    "idempotency_key": "b1000000-0000-4000-8000-000000000001",
+    "password": "Fixture-runtime-placeholder-1"
+   }
+  },
+  {
+   "name": "instance-runtime-runner-unreachable",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/runtime",
+   "headers": {},
+   "status": 503,
+   "response": {
+    "error": "Il servizio di aggiornamento non è raggiungibile. Verifica l’esito della configurazione automatica."
+   },
+   "runner": {
+    "state": "no-socket",
+    "status": 200,
+    "body": "",
+    "early": false,
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": true,
+   "body": {
+    "target": "go",
+    "expected_generation": 1,
+    "idempotency_key": "b1000000-0000-4000-8000-000000000001",
+    "password": "Fixture-runtime-placeholder-1"
+   }
+  }
+ ]
+}

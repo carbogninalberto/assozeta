@@ -1,0 +1,197 @@
+{
+  "assozeta_go_job_ownership": [
+    {
+      "generation": 1,
+      "runtime": "django",
+      "singleton": 1
+    }
+  ],
+  "assozeta_go_jobs": [
+    {
+      "association_id": "00000000-0000-0000-0000-000000000000",
+      "attempts": 0,
+      "available_at": "2026-11-20T12:00:00Z",
+      "created_at": "2026-11-20T12:00:00Z",
+      "error_code": "",
+      "finished_at": null,
+      "id": "15e3c575-5c88-5cf8-a21c-8732a42f5cec",
+      "idempotency_key": "periodic:104:1",
+      "kind": "reset_communication_daily_email_balance",
+      "lease_owner": "",
+      "lease_token": "00000000-0000-0000-0000-000000000000",
+      "lease_until": null,
+      "max_attempts": 3,
+      "ownership_generation": 0,
+      "payload": {},
+      "result": null,
+      "state": "pending",
+      "version": 1
+    }
+  ],
+  "communications_whatsappdelivery": [
+    {
+      "attempts": 0,
+      "body": "Fixture subscription approved.",
+      "created_at": "2026-11-20T12:00:00Z",
+      "error_code": "",
+      "error_message": "",
+      "event_type": "subscription_approved",
+      "id": "efcdcb89-8760-5751-b5db-f0c3911a8441",
+      "next_attempt_at": "2026-11-20T12:00:00Z",
+      "provider_message_id": null,
+      "recipient": "+12025550123",
+      "status": "queued",
+      "template_language": "",
+      "template_name": "",
+      "updated_at": "2026-11-20T12:00:00Z"
+    }
+  ],
+  "django_celery_beat_crontabschedule": [
+    {
+      "day_of_month": "*",
+      "day_of_week": "*",
+      "hour": "*",
+      "id": 1,
+      "minute": "*/15",
+      "month_of_year": "*",
+      "timezone": "Europe/Rome"
+    },
+    {
+      "day_of_month": "*",
+      "day_of_week": "*",
+      "hour": "0",
+      "id": 2,
+      "minute": "0",
+      "month_of_year": "*",
+      "timezone": "Europe/Rome"
+    }
+  ],
+  "django_celery_beat_intervalschedule": [
+    {
+      "every": 11,
+      "id": 1,
+      "period": "minutes"
+    },
+    {
+      "every": 10,
+      "id": 2,
+      "period": "seconds"
+    }
+  ],
+  "django_celery_beat_periodictask": [
+    {
+      "args": "[]",
+      "clocked_id": null,
+      "crontab_id": 1,
+      "date_changed": "2026-11-20T12:00:00Z",
+      "description": "Synthetic handoff definition",
+      "enabled": false,
+      "exchange": null,
+      "expire_seconds": null,
+      "expires": null,
+      "headers": "{}",
+      "id": 101,
+      "interval_id": null,
+      "kwargs": "{}",
+      "last_run_at": null,
+      "name": "auto-mark-attendance",
+      "one_off": false,
+      "priority": null,
+      "queue": null,
+      "routing_key": null,
+      "solar_id": null,
+      "start_time": null,
+      "task": "auto_mark_attendance",
+      "total_run_count": 0
+    },
+    {
+      "args": "[]",
+      "clocked_id": null,
+      "crontab_id": null,
+      "date_changed": "2026-11-20T12:00:00Z",
+      "description": "Synthetic handoff definition",
+      "enabled": true,
+      "exchange": null,
+      "expire_seconds": null,
+      "expires": null,
+      "headers": "{}",
+      "id": 102,
+      "interval_id": 1,
+      "kwargs": "{}",
+      "last_run_at": null,
+      "name": "fixture custom token sweep",
+      "one_off": false,
+      "priority": null,
+      "queue": null,
+      "routing_key": null,
+      "solar_id": null,
+      "start_time": null,
+      "task": "clear_expired_subscription_tokens",
+      "total_run_count": 0
+    },
+    {
+      "args": "[]",
+      "clocked_id": null,
+      "crontab_id": null,
+      "date_changed": "2026-11-20T12:00:00Z",
+      "description": "Synthetic handoff definition",
+      "enabled": true,
+      "exchange": null,
+      "expire_seconds": 10,
+      "expires": null,
+      "headers": "{}",
+      "id": 103,
+      "interval_id": 2,
+      "kwargs": "{}",
+      "last_run_at": null,
+      "name": "deliver-whatsapp",
+      "one_off": false,
+      "priority": null,
+      "queue": null,
+      "routing_key": null,
+      "solar_id": null,
+      "start_time": null,
+      "task": "communications.tasks.deliver_whatsapp",
+      "total_run_count": 0
+    },
+    {
+      "args": "[]",
+      "clocked_id": null,
+      "crontab_id": 2,
+      "date_changed": "2026-11-20T12:00:00Z",
+      "description": "Synthetic handoff definition",
+      "enabled": true,
+      "exchange": null,
+      "expire_seconds": null,
+      "expires": null,
+      "headers": "{}",
+      "id": 104,
+      "interval_id": null,
+      "kwargs": "{}",
+      "last_run_at": "2026-11-20T12:00:00Z",
+      "name": "reset-communication-daily-email-balance",
+      "one_off": false,
+      "priority": null,
+      "queue": null,
+      "routing_key": null,
+      "solar_id": null,
+      "start_time": null,
+      "task": "reset_communication_daily_email_balance",
+      "total_run_count": 1
+    }
+  ],
+  "instance_instanceconfiguration": [
+    {
+      "abbreviation": "Fixture",
+      "configured_at": "2026-11-20T12:00:00Z",
+      "domain": "localhost",
+      "go_tasks_enabled": true,
+      "id": 1,
+      "name": "Handoff fixture",
+      "self_hosted": true,
+      "setup_provenance": "legacy",
+      "ui_api_version": "v2",
+      "updated_at": "2026-11-20T12:00:00Z"
+    }
+  ]
+}
