@@ -555,6 +555,105 @@
         "contract: domain.PeriodicSchedule."
       ],
       "reason": "Phase 4 part A: the Go evaluator refuses local-timezone crontabs (DST gap/fold), day_of_week, clocked/completed one-offs and expiry that Beat evaluates (ErrScheduleUnsupported); PeriodicSchedule lacks ClockedTime/TotalRunCount"
+    },
+    "TESTS.handoff.test_p4_outbox_realtime.WhatsAppOutbox.test_only_the_effective_runtime_delivers_before_and_after_a_switch": {
+      "phase": 4,
+      "owner": "t-p4",
+      "signatures": [
+        "(migration 000006_job_handoff)",
+        "(migration 000008_outbox_ownership)"
+      ],
+      "reason": "Phase 4 part B: migration 000008_outbox_ownership (outbox effects ledger, relay delivery runtime), outbox/relay ownership claims, effect intent/confirm and the relay/outbox registration do not exist; both deliverers and both relays act regardless of the authority; needs Phase 3 part A first"
+    },
+    "TESTS.handoff.test_p4_outbox_realtime.WhatsAppOutbox.test_pending_rows_keep_identity_attempts_backoff_and_status_in_both_directions": {
+      "phase": 4,
+      "owner": "t-p4",
+      "signatures": [
+        "(migration 000006_job_handoff)",
+        "(migration 000008_outbox_ownership)"
+      ],
+      "reason": "Phase 4 part B: migration 000008_outbox_ownership (outbox effects ledger, relay delivery runtime), outbox/relay ownership claims, effect intent/confirm and the relay/outbox registration do not exist; both deliverers and both relays act regardless of the authority; needs Phase 3 part A first"
+    },
+    "TESTS.handoff.test_p4_outbox_realtime.WhatsAppOutbox.test_already_queued_legacy_polls_have_an_explicit_outcome": {
+      "phase": 4,
+      "owner": "t-p4",
+      "signatures": [
+        "(migration 000006_job_handoff)",
+        "(migration 000008_outbox_ownership)"
+      ],
+      "reason": "Phase 4 part B: migration 000008_outbox_ownership (outbox effects ledger, relay delivery runtime), outbox/relay ownership claims, effect intent/confirm and the relay/outbox registration do not exist; both deliverers and both relays act regardless of the authority; needs Phase 3 part A first"
+    },
+    "TESTS.handoff.test_p4_outbox_realtime.WhatsAppOutbox.test_a_send_in_flight_at_the_freeze_finishes_on_the_source_and_is_not_repeated": {
+      "phase": 4,
+      "owner": "t-p4",
+      "signatures": [
+        "(migration 000006_job_handoff)",
+        "(migration 000008_outbox_ownership)"
+      ],
+      "reason": "Phase 4 part B: migration 000008_outbox_ownership (outbox effects ledger, relay delivery runtime), outbox/relay ownership claims, effect intent/confirm and the relay/outbox registration do not exist; both deliverers and both relays act regardless of the authority; needs Phase 3 part A first"
+    },
+    "TESTS.handoff.test_p4_outbox_realtime.WhatsAppOutbox.test_a_crash_after_provider_acceptance_blocks_replay_until_reconciled": {
+      "phase": 4,
+      "owner": "t-p4",
+      "signatures": [
+        "(migration 000006_job_handoff)",
+        "(migration 000008_outbox_ownership)"
+      ],
+      "reason": "Phase 4 part B: migration 000008_outbox_ownership (outbox effects ledger, relay delivery runtime), outbox/relay ownership claims, effect intent/confirm and the relay/outbox registration do not exist; both deliverers and both relays act regardless of the authority; needs Phase 3 part A first"
+    },
+    "TESTS.handoff.test_p4_outbox_realtime.WhatsAppOutbox.test_a_receipt_arriving_during_maintenance_is_recorded_once": {
+      "phase": 4,
+      "owner": "t-p4",
+      "signatures": [
+        "(migration 000006_job_handoff)",
+        "(migration 000008_outbox_ownership)"
+      ],
+      "reason": "Phase 4 part B: migration 000008_outbox_ownership (outbox effects ledger, relay delivery runtime), outbox/relay ownership claims, effect intent/confirm and the relay/outbox registration do not exist; both deliverers and both relays act regardless of the authority; needs Phase 3 part A first"
+    },
+    "TESTS.handoff.test_p4_outbox_realtime.WhatsAppOutbox.test_an_unsent_row_and_redundant_polls_send_once_in_both_modes": {
+      "phase": 4,
+      "owner": "t-p4",
+      "signatures": [
+        "(migration 000006_job_handoff)",
+        "(migration 000008_outbox_ownership)"
+      ],
+      "reason": "Phase 4 part B: migration 000008_outbox_ownership (outbox effects ledger, relay delivery runtime), outbox/relay ownership claims, effect intent/confirm and the relay/outbox registration do not exist; both deliverers and both relays act regardless of the authority; needs Phase 3 part A first"
+    },
+    "TESTS.handoff.test_p4_outbox_realtime.RealtimeRelay.test_only_the_effective_relay_delivers_events_with_their_ids": {
+      "phase": 4,
+      "owner": "t-p4",
+      "signatures": [
+        "(migration 000006_job_handoff)",
+        "(migration 000008_outbox_ownership)"
+      ],
+      "reason": "Phase 4 part B: migration 000008_outbox_ownership (outbox effects ledger, relay delivery runtime), outbox/relay ownership claims, effect intent/confirm and the relay/outbox registration do not exist; both deliverers and both relays act regardless of the authority; needs Phase 3 part A first"
+    },
+    "TESTS.handoff.test_p4_outbox_realtime.RealtimeRelay.test_the_source_relay_releases_its_claim_before_activation": {
+      "phase": 4,
+      "owner": "t-p4",
+      "signatures": [
+        "(migration 000006_job_handoff)",
+        "(migration 000008_outbox_ownership)"
+      ],
+      "reason": "Phase 4 part B: migration 000008_outbox_ownership (outbox effects ledger, relay delivery runtime), outbox/relay ownership claims, effect intent/confirm and the relay/outbox registration do not exist; both deliverers and both relays act regardless of the authority; needs Phase 3 part A first"
+    },
+    "TESTS.handoff.test_p4_outbox_realtime.RealtimeRelay.test_an_unrecorded_send_is_redelivered_once_with_the_same_event_id": {
+      "phase": 4,
+      "owner": "t-p4",
+      "signatures": [
+        "(migration 000006_job_handoff)",
+        "(migration 000008_outbox_ownership)"
+      ],
+      "reason": "Phase 4 part B: migration 000008_outbox_ownership (outbox effects ledger, relay delivery runtime), outbox/relay ownership claims, effect intent/confirm and the relay/outbox registration do not exist; both deliverers and both relays act regardless of the authority; needs Phase 3 part A first"
+    },
+    "TESTS.handoff.test_p4_outbox_realtime.RealtimeRelay.test_a_subscriber_reconnecting_across_the_switch_misses_no_event": {
+      "phase": 4,
+      "owner": "t-p4",
+      "signatures": [
+        "(migration 000006_job_handoff)",
+        "(migration 000008_outbox_ownership)"
+      ],
+      "reason": "Phase 4 part B: migration 000008_outbox_ownership (outbox effects ledger, relay delivery runtime), outbox/relay ownership claims, effect intent/confirm and the relay/outbox registration do not exist; both deliverers and both relays act regardless of the authority; needs Phase 3 part A first"
     }
   }
 }

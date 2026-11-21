@@ -30,7 +30,11 @@ due occurrence", tdd-and-release.md D08.
 2. SHARED SQL (one implementation; every function locks the ownership row FOR SHARE):
    assozeta_seed_periodic_definitions(p_runtime text, p_definitions jsonb) RETURNS TABLE(name, outcome)
      per declaration: created (no seed record, no row: definition + schedule rows inserted, seed
-     recorded) | adopted (no seed record, a row of that name exists: recorded, row untouched) |
+     recorded) | adopted (no seed record, a row of that name exists -- an install upgraded
+     from a release whose Beat re-applied the declaration on every start: the declaration is applied
+     one last time exactly as DatabaseScheduler.update_from_dict did, keeping enabled, cursor, one_off
+     and start_time, so TESTS/fixtures/scheduler-authority.json persisted_reconciliation stays valid;
+     seed recorded) |
      kept (seed record with the same definition) | updated (the declaration changed and the row
      still equals the previously seeded definition: row follows the new declaration) |
      kept_custom (declaration changed, row customized: row untouched, new declaration recorded) |
