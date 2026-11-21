@@ -862,7 +862,7 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
         go_intent_query = "SELECT md5(row_to_json(j)::text) FROM public.assozeta_go_jobs j WHERE id='11111111-1111-4111-8111-111111111111'"
         go_intent_snapshot = capture(compose(*database, go_intent_query), env=environment)
         # Storage sentinel, without enabling a scheduler or changing the owner.
-        command(compose(*database, "INSERT INTO public.assozeta_go_periodic_occurrences(id,periodic_task_id,source_name,dispatch_sequence,job_id,dispatched_at,ownership_generation,definition_sha256) VALUES ('22222222-2222-4222-8222-222222222222',17,'fixture-retained',9,'11111111-1111-4111-8111-111111111111',clock_timestamp(),7,repeat('a',64))"), env=environment)
+        command(compose(*database, "INSERT INTO public.assozeta_go_periodic_occurrences(id,periodic_task_id,source_name,dispatch_sequence,job_id,task_id,dispatched_at,ownership_generation,definition_sha256) VALUES ('22222222-2222-4222-8222-222222222222',17,'fixture-retained',9,'11111111-1111-4111-8111-111111111111','11111111-1111-4111-8111-111111111111',clock_timestamp(),7,repeat('a',64))"), env=environment)
         go_occurrence_snapshot = capture(compose(*database, "SELECT md5(row_to_json(r)::text) FROM public.assozeta_go_periodic_occurrences r WHERE id='22222222-2222-4222-8222-222222222222'"), env=environment)
         assert api('admin')['config']['oem']['name'] == 'Preserved Club'
         assert_logo()
