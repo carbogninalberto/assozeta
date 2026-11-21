@@ -709,6 +709,33 @@ class RecoveryTests(HandoffCase):
                 self.assertEqual(self.recover(), [])
                 self.assertEqual(self.snapshot(operation['id']), expected)
 
+    def test_reverse_switch_from_go_commits_once_and_recovers_on_both_sides_of_the_commit(self):
+        for point in (None, 'stage:commit', 'authority:committed'):
+            with self.subTest(kill=point):
+                self.database = PG.fresh_database()
+                directory = TemporaryDirectory()
+                self.addCleanup(directory.cleanup)
+                self.journal = Journal(Path(directory.name) / 'operations.sqlite3')
+                forward = self.fixture_commit('django', 1, 'go')
+                self.assertEqual(self.row(), ('go', 2, forward))
+                status, payload = self.submit(self.body('django', 2))
+                self.assertEqual(status, 202, payload)
+                operation = self.record(payload['operation']['id'])
+                self.assertEqual((operation['previous_runtime'], operation['source_generation']), ('go', 2))
+
+                def kill(reached):
+                    if reached == point:
+                        raise SimulatedKill(point)
+                if point is None:
+                    self.run_op(operation)
+                else:
+                    with self.assertRaises(SimulatedKill):
+                        self.run_op(operation, barrier=kill)
+                    self.recover()
+                record = self.record(operation['id'])
+                self.assertEqual((record['status'], record['outcome'], record['committed_generation']), ('succeeded', 'committed', 3))
+                self.assertEqual(self.row(), ('django', 3, operation['id']))
+
     def test_database_committed_while_journal_says_an_earlier_stage(self):
         operation = self.queued()
         self.journal.update(operation['id'], status='running', stage='preflight')
@@ -747,6 +774,50 @@ class RecoveryTests(HandoffCase):
         record = self.record(operation['id'])
         self.assertEqual((record['status'], record['stage']), ('running', 'settle'),
                          'interrupt_running must not mark a runtime switch as an interrupted update')
+
+    def test_repeated_recovery_while_the_database_is_down_does_not_churn_journal_or_log(self):
+        # The runner calls recover() on every work-loop iteration (about every 2 s).
+        module = rs('PsqlAuthority')
+        operation = self.queued()
+        self.journal.update(operation['id'], status='running', stage='commit')
+        down = module.PsqlAuthority(PG.psql_command('handoff_database_that_does_not_exist'))
+        self.recover(authority=down)
+        first = self.record(operation['id'])
+        self.assertEqual((first['status'], first['error_code']), ('recovery_required', 'authority_unknown'))
+        log = self.root / '.updater/logs' / f"{operation['id']}.log"
+        lines = log.read_text().count('\n') if log.exists() else 0
+        for _ in range(3):
+            self.recover(authority=down)
+        self.assertEqual(self.record(operation['id']), first, 'an unchanged outcome must not be rewritten each loop')
+        self.assertEqual(log.read_text().count('\n') if log.exists() else 0, lines, 'no log line per retry')
+        self.recover()
+        final = self.record(operation['id'])
+        self.assertEqual((final['status'], final['outcome']), ('succeeded', 'committed'))
+        self.assertEqual(self.row(), ('go', 2, operation['id']))
+
+    def test_a_new_error_during_an_outage_is_recorded_once_with_the_original_failed_stage(self):
+        # A post-commit failure followed by a database outage is a real change of
+        # state (a different error): it must be recorded, keeping the stage that failed.
+        module = rs('PsqlAuthority')
+        operation = self.queued()
+        steps = self.noop_steps()
+
+        def failing(context):
+            raise RuntimeError('target not ready')
+        steps['activate'] = failing
+        failed = self.run_op(operation, steps=steps)
+        self.assertEqual((failed['error_code'], failed['failed_stage']), ('post_commit_failed', 'activate'))
+        down = module.PsqlAuthority(PG.psql_command('handoff_database_that_does_not_exist'))
+        self.recover(authority=down)
+        outage = self.record(operation['id'])
+        self.assertEqual((outage['status'], outage['error_code'], outage['failed_stage']),
+                         ('recovery_required', 'authority_unknown', 'activate'))
+        self.recover(authority=down)
+        self.assertEqual(self.record(operation['id']), outage)
+        self.recover()
+        final = self.record(operation['id'])
+        self.assertEqual((final['status'], final['outcome']), ('succeeded', 'committed'))
+        self.assertEqual(self.row(), ('go', 2, operation['id']))
 
     def test_recover_leaves_an_operation_owned_by_a_live_controller(self):
         operation = self.queued()
@@ -927,6 +998,49 @@ os.execv(command[0], command)
         [record] = [item for item in Journal(self.root / '.updater/operations.sqlite3').records()]
         self.assertEqual((record['actor_id'], record['status']), (rs('OPERATOR_ACTOR').OPERATOR_ACTOR, 'failed'))
         self.assertEqual(self.row(), ('django', 1, None))
+
+
+class ReconcileUpdatesTests(HandoffCase):
+    """reconcile-updates (recovery.reconcile) is for versioned updates and restores only.
+
+    A runtime switch needing recovery carries no release tags; reconcile must
+    leave it untouched and point the operator to ./bin/assozeta runtime-recover,
+    while still reconciling update/restore records next to it.
+    """
+
+    def runtime_record(self):
+        operation = self.queued()
+        return self.journal.update(operation['id'], status='recovery_required', stage='recovery_required',
+                                   failed_stage='commit', error_code='authority_unknown')
+
+    def test_a_runtime_switch_alone_is_refused_with_the_runtime_recovery_command(self):
+        from recovery import reconcile
+        from release_catalog import ReleaseError
+        record = self.runtime_record()
+        with self.assertRaises(ReleaseError) as refused:
+            reconcile(self.root, self.env)
+        self.assertIn('runtime-recover', str(refused.exception))
+        self.assertEqual(self.record(record['id']), record)
+        self.assertNoCommands()
+
+    def test_updates_are_still_reconciled_beside_an_untouched_runtime_switch(self):
+        from recovery import reconcile
+        runtime = self.runtime_record()
+        # reconcile() opens the installation journal, which is this one.
+        self.assertEqual(Path(self.journal.path), self.root / '.updater/operations.sqlite3')
+        with self.journal.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            update = {'request_id': str(uuid4()), 'actor_id': OWNER, 'release_id': 3, 'tag': 'v1.4.1',
+                      'source_version': 'v1.4.0', 'kind': 'update', 'id': str(uuid4()), 'status': 'recovery_required',
+                      'stage': 'recovery_required', 'target_version': 'v1.4.1', 'created_at': 'x', 'updated_at': 'x',
+                      'error': None, 'recovery': None}
+            db.execute('INSERT INTO operations VALUES (?, ?, ?, ?)',
+                       (update['id'], update['request_id'], 'recovery_required', json.dumps(update)))
+        with patch('recovery.Engine.verify_running') as verify:
+            reconcile(self.root, self.env)
+        verify.assert_called_once()
+        self.assertEqual(self.record(update['id'])['status'], 'recovered')
+        self.assertEqual(self.record(runtime['id']), runtime)
 
 
 CLI_HARNESS = r'''

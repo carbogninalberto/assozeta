@@ -896,6 +896,7 @@ func run() (runErr error) {
 	e.Any("/instance/admin/backups/schedule", instanceBackupActionsHandler.Schedule, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin/backups/upload", instanceBackupActionsHandler.Upload, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin/backups/:name/restore", instanceBackupActionsHandler.Restore, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/instance/admin/runtime", instanceBackupActionsHandler.Runtime, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin/backups/remote", instanceBackupActionsHandler.RemoteSettings, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin/backups/remote/test", instanceBackupActionsHandler.RemoteTest, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin/backups/remote/key", instanceBackupActionsHandler.RemoteKey, middleware.DjangoSessionAudit(sessionAuthentication))

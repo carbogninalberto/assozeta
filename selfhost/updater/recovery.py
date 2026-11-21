@@ -111,6 +111,9 @@ def reconcile(root, env_file):
     unresolved = journal.requiring_recovery()
     if not unresolved:
         raise ReleaseError('No update requires reconciliation.')
+    unresolved = [operation for operation in unresolved if operation.get('kind') != 'runtime_switch']
+    if not unresolved:
+        raise ReleaseError('Use ./bin/assozeta runtime-recover to recover the runtime switch.')
     engine = Engine(root, env_file, journal)
     configured = image_version(read_env(env_file).get('ASSOZETA_VERSION'))
     for operation in unresolved:

@@ -12,6 +12,7 @@ import hashlib
 import io
 import json
 import os
+import re
 import select
 from pathlib import Path
 import shutil
@@ -656,7 +657,9 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
                 assert len(capture(compose('ps', '-q', service), env=environment).splitlines()) == 1
             settings = read_env(env_file)
             sql = ['exec', '-T', 'postgres', 'psql', '-U', settings['DBUSER'], '-d', settings['DBNAME'], '-At', '-c']
-            assert capture(compose(*sql, 'SELECT version,dirty FROM public.assozeta_go_schema_migrations'), env=environment) == '4|f'
+            # Every fixture Go image is built from this checkout's backend-go image.
+            schema = re.search(r'^const CurrentVersion = (\d+)$', (ROOT / 'BE_GO/migrations/migrations.go').read_text(), re.M)[1]
+            assert capture(compose(*sql, 'SELECT version,dirty FROM public.assozeta_go_schema_migrations'), env=environment) == f'{schema}|f'
             # The managed relay forwards Go outbox events through Django Channels.
             assert len(capture(compose('ps', '-q', 'realtime-relay'), env=environment).splitlines()) == 1
             assert not capture(compose('ps', '--all', '-q', 'realtime-relay-go'), env=environment)

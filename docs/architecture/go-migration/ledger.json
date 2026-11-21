@@ -34474,7 +34474,7 @@
         "file": "BE/instance/urls.py",
         "line": 52,
         "symbol": "access -> InstanceAccessView.as_view()",
-        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
+        "sha256": "23c7d111e9b3bf1162322a0575678ec8eed718dea37a3eb0bc8ef4ae8030c461"
       },
       "source_present": true,
       "declaration": {
@@ -34482,7 +34482,7 @@
         "target": "InstanceAccessView.as_view()",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/instance_bootstrap.go",
         "BE_GO/internal/dto/instance_bootstrap.go",
@@ -34567,7 +34567,7 @@
         "file": "BE/instance/urls.py",
         "line": 53,
         "symbol": "admin -> InstanceAdminView.as_view()",
-        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
+        "sha256": "23c7d111e9b3bf1162322a0575678ec8eed718dea37a3eb0bc8ef4ae8030c461"
       },
       "source_present": true,
       "declaration": {
@@ -34575,7 +34575,7 @@
         "target": "InstanceAdminView.as_view()",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/cmd/server/instance_admin.go",
@@ -34666,7 +34666,7 @@
         "file": "BE/instance/urls.py",
         "line": 37,
         "symbol": "admin/backups -> BackupOverviewView.as_view()",
-        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
+        "sha256": "23c7d111e9b3bf1162322a0575678ec8eed718dea37a3eb0bc8ef4ae8030c461"
       },
       "source_present": true,
       "declaration": {
@@ -34674,7 +34674,7 @@
         "target": "BackupOverviewView.as_view()",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/handler/instance_backups.go",
         "BE_GO/internal/service/instance_backups.go",
@@ -34753,7 +34753,7 @@
         "file": "BE/instance/urls.py",
         "line": 48,
         "symbol": "admin/backups/<str:name> -> BackupItemView.as_view()",
-        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
+        "sha256": "23c7d111e9b3bf1162322a0575678ec8eed718dea37a3eb0bc8ef4ae8030c461"
       },
       "source_present": true,
       "declaration": {
@@ -34761,7 +34761,7 @@
         "target": "BackupItemView.as_view()",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/handler/instance_backup_actions.go",
         "BE_GO/internal/service/instance_backup_actions.go",
@@ -34845,7 +34845,7 @@
         "file": "BE/instance/urls.py",
         "line": 39,
         "symbol": "admin/backups/<str:name>/download -> BackupDownloadView.as_view()",
-        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
+        "sha256": "23c7d111e9b3bf1162322a0575678ec8eed718dea37a3eb0bc8ef4ae8030c461"
       },
       "source_present": true,
       "declaration": {
@@ -34853,7 +34853,7 @@
         "target": "BackupDownloadView.as_view()",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/handler/instance_backups.go",
         "BE_GO/internal/service/instance_backups.go",
@@ -34930,7 +34930,7 @@
         "file": "BE/instance/urls.py",
         "line": 42,
         "symbol": "admin/backups/<str:name>/restore -> BackupRestoreView.as_view()",
-        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
+        "sha256": "23c7d111e9b3bf1162322a0575678ec8eed718dea37a3eb0bc8ef4ae8030c461"
       },
       "source_present": true,
       "declaration": {
@@ -34938,7 +34938,7 @@
         "target": "BackupRestoreView.as_view()",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/handler/instance_backup_actions.go",
         "BE_GO/internal/service/instance_backup_actions.go",
@@ -35021,7 +35021,7 @@
         "file": "BE/instance/urls.py",
         "line": 38,
         "symbol": "admin/backups/download-token -> BackupDownloadTokenView.as_view()",
-        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
+        "sha256": "23c7d111e9b3bf1162322a0575678ec8eed718dea37a3eb0bc8ef4ae8030c461"
       },
       "source_present": true,
       "declaration": {
@@ -35029,7 +35029,7 @@
         "target": "BackupDownloadTokenView.as_view()",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/handler/instance_backups.go",
         "BE_GO/internal/service/instance_backups.go",
@@ -35106,7 +35106,7 @@
         "file": "BE/instance/urls.py",
         "line": 43,
         "symbol": "admin/backups/remote -> RemoteBackupSettingsView.as_view()",
-        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
+        "sha256": "23c7d111e9b3bf1162322a0575678ec8eed718dea37a3eb0bc8ef4ae8030c461"
       },
       "source_present": true,
       "declaration": {
@@ -35114,7 +35114,7 @@
         "target": "RemoteBackupSettingsView.as_view()",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/handler/instance_backup_actions.go",
         "BE_GO/internal/service/instance_backup_actions.go",
@@ -35201,7 +35201,7 @@
         "file": "BE/instance/urls.py",
         "line": 47,
         "symbol": "admin/backups/remote/fetch -> RemoteBackupFetchView.as_view()",
-        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
+        "sha256": "23c7d111e9b3bf1162322a0575678ec8eed718dea37a3eb0bc8ef4ae8030c461"
       },
       "source_present": true,
       "declaration": {
@@ -35209,7 +35209,7 @@
         "target": "RemoteBackupFetchView.as_view()",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/handler/instance_backup_actions.go",
         "BE_GO/internal/service/instance_backup_actions.go",
@@ -35293,7 +35293,7 @@
         "file": "BE/instance/urls.py",
         "line": 45,
         "symbol": "admin/backups/remote/key -> RemoteBackupKeyView.as_view()",
-        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
+        "sha256": "23c7d111e9b3bf1162322a0575678ec8eed718dea37a3eb0bc8ef4ae8030c461"
       },
       "source_present": true,
       "declaration": {
@@ -35301,7 +35301,7 @@
         "target": "RemoteBackupKeyView.as_view()",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/handler/instance_backup_actions.go",
         "BE_GO/internal/service/instance_backup_actions.go",
@@ -35384,7 +35384,7 @@
         "file": "BE/instance/urls.py",
         "line": 46,
         "symbol": "admin/backups/remote/key/confirm -> RemoteBackupKeyConfirmView.as_view()",
-        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
+        "sha256": "23c7d111e9b3bf1162322a0575678ec8eed718dea37a3eb0bc8ef4ae8030c461"
       },
       "source_present": true,
       "declaration": {
@@ -35392,7 +35392,7 @@
         "target": "RemoteBackupKeyConfirmView.as_view()",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/handler/instance_backup_actions.go",
         "BE_GO/internal/service/instance_backup_actions.go",
@@ -35475,7 +35475,7 @@
         "file": "BE/instance/urls.py",
         "line": 44,
         "symbol": "admin/backups/remote/test -> RemoteBackupTestView.as_view()",
-        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
+        "sha256": "23c7d111e9b3bf1162322a0575678ec8eed718dea37a3eb0bc8ef4ae8030c461"
       },
       "source_present": true,
       "declaration": {
@@ -35483,7 +35483,7 @@
         "target": "RemoteBackupTestView.as_view()",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/handler/instance_backup_actions.go",
         "BE_GO/internal/service/instance_backup_actions.go",
@@ -35568,7 +35568,7 @@
         "file": "BE/instance/urls.py",
         "line": 40,
         "symbol": "admin/backups/schedule -> BackupScheduleView.as_view()",
-        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
+        "sha256": "23c7d111e9b3bf1162322a0575678ec8eed718dea37a3eb0bc8ef4ae8030c461"
       },
       "source_present": true,
       "declaration": {
@@ -35576,7 +35576,7 @@
         "target": "BackupScheduleView.as_view()",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/handler/instance_backup_actions.go",
         "BE_GO/internal/service/instance_backup_actions.go",
@@ -35659,7 +35659,7 @@
         "file": "BE/instance/urls.py",
         "line": 41,
         "symbol": "admin/backups/upload -> BackupUploadView.as_view()",
-        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
+        "sha256": "23c7d111e9b3bf1162322a0575678ec8eed718dea37a3eb0bc8ef4ae8030c461"
       },
       "source_present": true,
       "declaration": {
@@ -35667,7 +35667,7 @@
         "target": "BackupUploadView.as_view()",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/handler/instance_backup_actions.go",
         "BE_GO/internal/service/instance_backup_actions.go",
@@ -35752,7 +35752,7 @@
         "file": "BE/instance/urls.py",
         "line": 30,
         "symbol": "admin/bakney-pairing -> PairingAdminView.as_view()",
-        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
+        "sha256": "23c7d111e9b3bf1162322a0575678ec8eed718dea37a3eb0bc8ef4ae8030c461"
       },
       "source_present": true,
       "declaration": {
@@ -35760,7 +35760,7 @@
         "target": "PairingAdminView.as_view()",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/bakney_sso.go",
         "BE_GO/internal/repository/bakney_sso.go",
@@ -35839,7 +35839,7 @@
         "file": "BE/instance/urls.py",
         "line": 31,
         "symbol": "admin/data-restore -> DataRestoreView.as_view()",
-        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
+        "sha256": "23c7d111e9b3bf1162322a0575678ec8eed718dea37a3eb0bc8ef4ae8030c461"
       },
       "source_present": true,
       "declaration": {
@@ -35847,7 +35847,7 @@
         "target": "DataRestoreView.as_view()",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/data_restore.go",
         "BE_GO/internal/repository/data_restore.go",
@@ -35941,7 +35941,7 @@
         "file": "BE/instance/urls.py",
         "line": 34,
         "symbol": "admin/data-restore/<uuid:operation_id>/<str:action> -> DataRestoreActionView.as_view()",
-        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
+        "sha256": "23c7d111e9b3bf1162322a0575678ec8eed718dea37a3eb0bc8ef4ae8030c461"
       },
       "source_present": true,
       "declaration": {
@@ -35949,7 +35949,7 @@
         "target": "DataRestoreActionView.as_view()",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/data_restore.go",
         "BE_GO/internal/repository/data_restore.go",
@@ -36043,7 +36043,7 @@
         "file": "BE/instance/urls.py",
         "line": 33,
         "symbol": "admin/data-restore/<uuid:operation_id>/download -> DataRestoreDownloadView.as_view()",
-        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
+        "sha256": "23c7d111e9b3bf1162322a0575678ec8eed718dea37a3eb0bc8ef4ae8030c461"
       },
       "source_present": true,
       "declaration": {
@@ -36051,7 +36051,7 @@
         "target": "DataRestoreDownloadView.as_view()",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/data_restore.go",
         "BE_GO/internal/repository/data_restore.go",
@@ -36144,7 +36144,7 @@
         "file": "BE/instance/urls.py",
         "line": 32,
         "symbol": "admin/data-restore/backups -> DataRestoreBackupsView.as_view()",
-        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
+        "sha256": "23c7d111e9b3bf1162322a0575678ec8eed718dea37a3eb0bc8ef4ae8030c461"
       },
       "source_present": true,
       "declaration": {
@@ -36152,7 +36152,7 @@
         "target": "DataRestoreBackupsView.as_view()",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/data_restore.go",
         "BE_GO/internal/repository/data_restore.go",
@@ -36245,7 +36245,7 @@
         "file": "BE/instance/urls.py",
         "line": 49,
         "symbol": "admin/diagnostics -> DiagnosticsView.as_view()",
-        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
+        "sha256": "23c7d111e9b3bf1162322a0575678ec8eed718dea37a3eb0bc8ef4ae8030c461"
       },
       "source_present": true,
       "declaration": {
@@ -36253,7 +36253,7 @@
         "target": "DiagnosticsView.as_view()",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/cmd/server/instance_admin.go",
@@ -36344,7 +36344,7 @@
         "file": "BE/instance/urls.py",
         "line": 50,
         "symbol": "admin/email -> EmailSettingsView.as_view()",
-        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
+        "sha256": "23c7d111e9b3bf1162322a0575678ec8eed718dea37a3eb0bc8ef4ae8030c461"
       },
       "source_present": true,
       "declaration": {
@@ -36352,7 +36352,7 @@
         "target": "EmailSettingsView.as_view()",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/cmd/server/instance_admin.go",
@@ -36444,7 +36444,7 @@
         "file": "BE/instance/urls.py",
         "line": 51,
         "symbol": "admin/email/test -> EmailTestView.as_view()",
-        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
+        "sha256": "23c7d111e9b3bf1162322a0575678ec8eed718dea37a3eb0bc8ef4ae8030c461"
       },
       "source_present": true,
       "declaration": {
@@ -36452,7 +36452,7 @@
         "target": "EmailTestView.as_view()",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/instanceprobe/http.go",
         "BE_GO/internal/instanceprobe/pyjson.go",
@@ -36523,7 +36523,7 @@
         "file": "BE/instance/urls.py",
         "line": 36,
         "symbol": "admin/integrations/<str:provider> -> IntegrationSettingsView.as_view()",
-        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
+        "sha256": "23c7d111e9b3bf1162322a0575678ec8eed718dea37a3eb0bc8ef4ae8030c461"
       },
       "source_present": true,
       "declaration": {
@@ -36531,7 +36531,7 @@
         "target": "IntegrationSettingsView.as_view()",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/cmd/server/instance_admin.go",
@@ -36623,7 +36623,7 @@
         "file": "BE/instance/urls.py",
         "line": 35,
         "symbol": "admin/integrations/<str:provider>/test -> IntegrationTestView.as_view()",
-        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
+        "sha256": "23c7d111e9b3bf1162322a0575678ec8eed718dea37a3eb0bc8ef4ae8030c461"
       },
       "source_present": true,
       "declaration": {
@@ -36631,7 +36631,7 @@
         "target": "IntegrationTestView.as_view()",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/instanceprobe/http.go",
         "BE_GO/internal/instanceprobe/pyjson.go",
@@ -36702,7 +36702,7 @@
         "file": "BE/instance/urls.py",
         "line": 54,
         "symbol": "admin/logo -> OwnerLogoView.as_view()",
-        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
+        "sha256": "23c7d111e9b3bf1162322a0575678ec8eed718dea37a3eb0bc8ef4ae8030c461"
       },
       "source_present": true,
       "declaration": {
@@ -36710,7 +36710,7 @@
         "target": "OwnerLogoView.as_view()",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/instance_setup.go",
         "BE_GO/internal/dto/instance_setup.go",
@@ -36784,7 +36784,7 @@
         "file": "BE/instance/urls.py",
         "line": 55,
         "symbol": "admin/releases -> InstanceReleasesView.as_view()",
-        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
+        "sha256": "23c7d111e9b3bf1162322a0575678ec8eed718dea37a3eb0bc8ef4ae8030c461"
       },
       "source_present": true,
       "declaration": {
@@ -36792,7 +36792,7 @@
         "target": "InstanceReleasesView.as_view()",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/instanceprobe/http.go",
         "BE_GO/internal/instanceprobe/pyjson.go",
@@ -36864,7 +36864,7 @@
         "file": "BE/instance/urls.py",
         "line": 57,
         "symbol": "admin/restarts -> InstanceRestartsView.as_view()",
-        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
+        "sha256": "23c7d111e9b3bf1162322a0575678ec8eed718dea37a3eb0bc8ef4ae8030c461"
       },
       "source_present": true,
       "declaration": {
@@ -36872,7 +36872,7 @@
         "target": "InstanceRestartsView.as_view()",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/service/instance_updates.go",
         "BE_GO/internal/service/instance_admin.go",
@@ -36936,13 +36936,98 @@
       ]
     },
     {
+      "id": "route:BE/instance/urls.py:admin/runtime -> InstanceRuntimeView.as_view()",
+      "kind": "route",
+      "django": {
+        "file": "BE/instance/urls.py",
+        "line": 66,
+        "symbol": "admin/runtime -> InstanceRuntimeView.as_view()",
+        "sha256": "23c7d111e9b3bf1162322a0575678ec8eed718dea37a3eb0bc8ef4ae8030c461"
+      },
+      "source_present": true,
+      "declaration": {
+        "path": "admin/runtime",
+        "target": "InstanceRuntimeView.as_view()",
+        "syntax": "path"
+      },
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/handler/instance_runtime.go",
+        "BE_GO/internal/service/instance_runtime.go",
+        "BE_GO/internal/service/instance_backup_actions.go",
+        "BE_GO/internal/updaterrunner/client.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Update runner socket and token (ASSOZETA_UPDATER_DIRECTORY): GET /runtime, POST /runtime-switches",
+        "Owner password confirmation shared with the backup actions (instance:backup-download-attempts)",
+        "instance_instanceconfiguration",
+        "application_sportassociation",
+        "bakney_user",
+        "auditlog_logentry",
+        "selfhost/updater/runtime_switch.py and public.assozeta_go_job_ownership (migration 000005_runtime_authority)"
+      ],
+      "contract": {
+        "methods": [
+          "GET",
+          "POST",
+          "HEAD",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/instance/admin/runtime",
+          "/api/v2/instance/admin/runtime",
+          "/api/instance/admin/runtime"
+        ],
+        "request": "GET: none. POST: exactly {'target': 'django'|'go', 'expected_generation': int >= 1, 'idempotency_key': UUID, 'password': str}.",
+        "response": "Runner status and JSON verbatim (GET /runtime; POST /runtime-switches 200 no-op, 202 queued or replayed, 400, 409 with code/authority/active, 503).",
+        "errors": "401; 403; 405; 400 {'error': 'Richiesta non valida.'}; password 400/429; 503 updater unreachable.",
+        "authentication": "DRF authentication (JWT/session); administration path, no impersonation.",
+        "permissions": "IsInstanceOwner (authenticated actor) plus owner password confirmation for POST.",
+        "resource_scope": "None (update runner; the instance runtime authority).",
+        "side_effects": "POST: runner POST /runtime-switches (journals an operation); one UPDATE audit entry for a new accepted operation; password attempt counter.",
+        "transaction": "None in the API; the runner journal and the authority compare-and-set are transactional.",
+        "execution_owner": "django"
+      },
+      "tests": [
+        "TESTS/fixtures/instance_runtime_http.json",
+        "TESTS/fixtures/generate_instance_runtime_http.py",
+        "TESTS/contracts/test_instance_runtime_http.py",
+        "TESTS/adapters/django/instance_runtime_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/instance-runtime.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 29/29; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/instance-runtime-http-red-go-route-absent/results.json",
+          "receipt_sha256": "78f8db2dfa635e5da868f91669e5bbba21930c174c95dc0e8c7900074b54f8bd"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 29/29 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/instance-runtime-http-green-versioned/results.json",
+          "receipt_sha256": "5a201f5520375fe5e5190f17d436fa7b5808b81ce58a068ea1adefe815111244"
+        },
+        {
+          "revision": "Go audits a replayed (replayed: true) runner acceptance",
+          "result": "Mutation control: fails Go on instance-runtime-uppercase-key-is-canonical (audit.count)",
+          "artifact": "quality-reports/go-migration/instance-runtime-http-mutation-audit-replay/results.json",
+          "receipt_sha256": "02edc3ae7ad15bc1ab50b71fbe3a7081de827007f52ba7c46b93a6f2195c26b6"
+        }
+      ],
+      "notes": [
+        "Implementing: handoff Phase 1 owner runtime switch status/submission relayed to the update runner; identical on Django and Go."
+      ]
+    },
+    {
       "id": "route:BE/instance/urls.py:admin/updates -> InstanceUpdatesView.as_view()",
       "kind": "route",
       "django": {
         "file": "BE/instance/urls.py",
         "line": 56,
         "symbol": "admin/updates -> InstanceUpdatesView.as_view()",
-        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
+        "sha256": "23c7d111e9b3bf1162322a0575678ec8eed718dea37a3eb0bc8ef4ae8030c461"
       },
       "source_present": true,
       "declaration": {
@@ -36950,7 +37035,7 @@
         "target": "InstanceUpdatesView.as_view()",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/service/instance_updates.go",
         "BE_GO/internal/service/instance_admin.go",
@@ -37022,7 +37107,7 @@
         "file": "BE/instance/urls.py",
         "line": 60,
         "symbol": "config -> InstanceConfigView.as_view()",
-        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
+        "sha256": "23c7d111e9b3bf1162322a0575678ec8eed718dea37a3eb0bc8ef4ae8030c461"
       },
       "source_present": true,
       "declaration": {
@@ -37030,7 +37115,7 @@
         "target": "InstanceConfigView.as_view()",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/instance_bootstrap.go",
         "BE_GO/internal/dto/instance_bootstrap.go",
@@ -37123,7 +37208,7 @@
         "file": "BE/instance/urls.py",
         "line": 61,
         "symbol": "configure -> InstanceSetupView.as_view()",
-        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
+        "sha256": "23c7d111e9b3bf1162322a0575678ec8eed718dea37a3eb0bc8ef4ae8030c461"
       },
       "source_present": true,
       "declaration": {
@@ -37131,7 +37216,7 @@
         "target": "InstanceSetupView.as_view()",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/instance_setup.go",
         "BE_GO/internal/dto/instance_setup.go",
@@ -37205,7 +37290,7 @@
         "file": "BE/instance/urls.py",
         "line": 62,
         "symbol": "logo -> InstanceLogoUploadView.as_view()",
-        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
+        "sha256": "23c7d111e9b3bf1162322a0575678ec8eed718dea37a3eb0bc8ef4ae8030c461"
       },
       "source_present": true,
       "declaration": {
@@ -37213,7 +37298,7 @@
         "target": "InstanceLogoUploadView.as_view()",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/instance_setup.go",
         "BE_GO/internal/dto/instance_setup.go",
@@ -37287,7 +37372,7 @@
         "file": "BE/instance/urls.py",
         "line": 63,
         "symbol": "logo.png -> InstanceLogoServeView.as_view()",
-        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
+        "sha256": "23c7d111e9b3bf1162322a0575678ec8eed718dea37a3eb0bc8ef4ae8030c461"
       },
       "source_present": true,
       "declaration": {
@@ -37295,7 +37380,7 @@
         "target": "InstanceLogoServeView.as_view()",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/cmd/server/instance_logo.go",
         "BE_GO/internal/domain/instance_logo.go",
@@ -37405,7 +37490,7 @@
         "file": "BE/instance/urls.py",
         "line": 64,
         "symbol": "manifest.json -> InstanceManifestView.as_view()",
-        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
+        "sha256": "23c7d111e9b3bf1162322a0575678ec8eed718dea37a3eb0bc8ef4ae8030c461"
       },
       "source_present": true,
       "declaration": {
@@ -37413,7 +37498,7 @@
         "target": "InstanceManifestView.as_view()",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/instance_manifest.go",
         "BE_GO/internal/dto/instance_manifest.go",
@@ -37532,7 +37617,7 @@
         "file": "BE/instance/urls.py",
         "line": 65,
         "symbol": "reconfigure -> InstanceReconfigureView.as_view()",
-        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
+        "sha256": "23c7d111e9b3bf1162322a0575678ec8eed718dea37a3eb0bc8ef4ae8030c461"
       },
       "source_present": true,
       "declaration": {
@@ -37540,7 +37625,7 @@
         "target": "InstanceReconfigureView.as_view()",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/instance_setup.go",
         "BE_GO/internal/dto/instance_setup.go",
@@ -37614,7 +37699,7 @@
         "file": "BE/instance/urls.py",
         "line": 59,
         "symbol": "setup-token/validate -> InstanceSetupTokenValidateView.as_view()",
-        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
+        "sha256": "23c7d111e9b3bf1162322a0575678ec8eed718dea37a3eb0bc8ef4ae8030c461"
       },
       "source_present": true,
       "declaration": {
@@ -37622,7 +37707,7 @@
         "target": "InstanceSetupTokenValidateView.as_view()",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/instance_setup.go",
         "BE_GO/internal/dto/instance_setup.go",
@@ -37696,7 +37781,7 @@
         "file": "BE/instance/urls.py",
         "line": 58,
         "symbol": "status -> InstanceStatusView.as_view()",
-        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
+        "sha256": "23c7d111e9b3bf1162322a0575678ec8eed718dea37a3eb0bc8ef4ae8030c461"
       },
       "source_present": true,
       "declaration": {
@@ -37704,7 +37789,7 @@
         "target": "InstanceStatusView.as_view()",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/instance_bootstrap.go",
         "BE_GO/internal/dto/instance_bootstrap.go",

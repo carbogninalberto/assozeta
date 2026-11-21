@@ -81,6 +81,13 @@ def open_runner_stream(path):
 
 
 def call_runner(method, path, payload=None, timeout=5):
+    code, body = runner_response(method, path, payload, timeout)
+    if code >= 400:
+        raise UpdaterRejected(body.get('error', 'Aggiornamento non disponibile.'), code)
+    return body
+
+
+def runner_response(method, path, payload=None, timeout=5):
     directory = _runner_directory()
     connection = UnixConnection(directory / 'runner.sock', timeout=timeout)
     try:
@@ -91,10 +98,7 @@ def call_runner(method, path, payload=None, timeout=5):
             'Authorization': f'Bearer {token}', 'Content-Type': 'application/json',
         })
         response = connection.getresponse()
-        body = json.loads(response.read())
-        if response.status >= 400:
-            raise UpdaterRejected(body.get('error', 'Aggiornamento non disponibile.'), response.status)
-        return body
+        return response.status, json.loads(response.read())
     except (OSError, ValueError, http.client.HTTPException) as exc:
         raise UpdaterUnavailable('Il servizio di aggiornamento non è raggiungibile. Verifica l’esito della configurazione automatica.') from exc
     finally:

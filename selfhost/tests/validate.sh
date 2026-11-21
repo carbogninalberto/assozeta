@@ -36,6 +36,7 @@ python3 -m compileall -q "$ROOT/BE"
 python3 -m compileall -q "$ROOT/selfhost/updater"
 python3 -m unittest discover -s "$ROOT/selfhost/tests" -p test_updater.py
 python3 -m unittest discover -s "$ROOT/selfhost/tests" -p "test_go_*.py"
+python3 -m unittest discover -s "$ROOT/selfhost/tests" -p "test_handoff_*.py"
 python3 -m unittest discover -s "$ROOT/selfhost/tests" -p test_bakney_protocol.py
 python3 -m unittest discover -s "$ROOT/selfhost/tests" -p test_restart.py
 python3 -m unittest discover -s "$ROOT/selfhost/tests" -p test_maintenance_lifecycle.py

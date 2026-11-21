@@ -113,9 +113,11 @@ db_query() {
 }
 
 assert_go_operational_schema() {
+    # The packaged binary's operational schema (BE_GO/migrations CurrentVersion).
+    expected_schema=$(sed -n 's/^const CurrentVersion = \([0-9][0-9]*\)$/\1/p' "$ROOT/BE_GO/migrations/migrations.go")
     actual=$(db_query "SELECT version || ':' || dirty FROM public.assozeta_go_schema_migrations;")
-    [ "$actual" = '4:false' ] || {
-        printf 'Expected clean Go operational schema 4, got %s.\n' "$actual" >&2
+    [ -n "$expected_schema" ] && [ "$actual" = "$expected_schema:false" ] || {
+        printf 'Expected clean Go operational schema %s, got %s.\n' "$expected_schema" "$actual" >&2
         exit 1
     }
     actual=$(db_query "SELECT runtime || ':' || generation FROM public.assozeta_go_job_ownership WHERE singleton=1;")

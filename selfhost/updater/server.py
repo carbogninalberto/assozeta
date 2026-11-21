@@ -24,6 +24,7 @@ from go_tasks import CHECK_FAILED, MISSING_WORKER, apply_go_tasks, release_has_g
 from journal import Journal, Conflict
 from release_catalog import version_tuple
 import remote_backups
+import runtime_switch
 from remote_backups import RemoteError, Uploader
 from common import read_env, update_eligibility_reason
 from status_access import AccessDenied, OwnershipUnavailable, authenticate_access_token, require_current_owner
@@ -82,6 +83,7 @@ def serve(root, env_file, engine_class=Engine):
         raise RuntimeError('Runner credentials are not provisioned')
     journal = Journal(directory / 'operations.sqlite3')
     journal.interrupt_running()
+    runtime_switch.recover(root, env_file, journal, None)
     reconcile_restarts(journal)
     engine = engine_class(root, env_file, journal)
     uploader = Uploader(root, env_file)
@@ -158,6 +160,9 @@ def serve(root, env_file, engine_class=Engine):
 
         def do_GET(self):
             if not self.authorized():
+                return
+            if self.path == '/runtime':
+                self.respond(200, runtime_switch.status(root, env_file, journal, None))
                 return
             if self.path == '/diagnostics':
                 self.respond(200, backup_readiness(root))
@@ -282,6 +287,16 @@ def serve(root, env_file, engine_class=Engine):
                 return
             if not self.authorized():
                 return
+            if self.path == '/runtime-switches':
+                try:
+                    body = self.read_body()
+                except (ValueError, TypeError):
+                    body = None
+                code, payload = runtime_switch.submit(root, env_file, journal, None, body)
+                self.respond(code, payload)
+                if code == 202:
+                    wake.set()
+                return
             if self.path not in ('/updates', '/restarts', '/go-tasks'):
                 self.respond(404, {'error': 'Unknown endpoint.'})
                 return
@@ -346,6 +361,7 @@ def serve(root, env_file, engine_class=Engine):
     def work():
         last_schedule_check = 0.0
         while not stop.is_set():
+            runtime_switch.recover(root, env_file, journal, None)
             reconcile_restarts(journal)
             if time.monotonic() - last_schedule_check >= 30:
                 last_schedule_check = time.monotonic()
@@ -372,6 +388,8 @@ def serve(root, env_file, engine_class=Engine):
                     uploader.kick()
                 elif pending.get('kind') == 'fetch':
                     remote_backups.run_fetch(root, env_file, journal, pending)
+                elif pending.get('kind') == 'runtime_switch':
+                    runtime_switch.run(root, env_file, journal, None, pending)
                 elif pending.get('kind') == 'go_tasks':
                     apply_go_tasks(root, env_file, journal, pending)
                 else:

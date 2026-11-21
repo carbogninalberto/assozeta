@@ -312,6 +312,8 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/go-foundation-setup
+      - name: Verify runtime authority transitions on PostgreSQL
+        run: python TESTS/adapters/go/handoff_authority.py
       - name: Verify effective scheduler authority and Go timing
         run: python TESTS/adapters/go/schedule_due.py
       - name: Verify atomic periodic publication on the Django schedule schema
