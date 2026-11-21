@@ -469,13 +469,14 @@ func TestSubscriptionTokenCleanupPostgres(t *testing.T) {
 			if e := cleanup.Run(ctx, job); e != nil {
 				t.Fatal(e)
 			}
-			want := int64(6)
+			// Phase 3 ledger (migration 6): the fenced completion also probes the ledger and finishes the attempt (+2).
+			want := int64(8)
 			if got := trace.count.Load(); got != want {
 				t.Fatalf("%d tokens: %d statements, want %d", n, got, want)
 			}
 			counts(t, 0, n)
 		}
-		t.Log("Six statements: BEGIN, shared server fence, early ownership/lease admission, DELETE RETURNING with audit INSERT, fenced completion and COMMIT; no token rows materialized in Go")
+		t.Log("Eight statements: BEGIN, shared server fence, early ownership/lease admission, DELETE RETURNING with audit INSERT, fenced completion, ledger probe, attempt finish and COMMIT; no token rows materialized in Go")
 	})
 	t.Run("heartbeat can renew during atomic cleanup", func(t *testing.T) {
 		seed(t, fixture.Tokens)

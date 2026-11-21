@@ -355,9 +355,11 @@ func TestSchedulePagesPostgres(t *testing.T) {
 		queries.reset()
 		result, e := pager(candidates, 16).Tick(ctx, domain.ScheduleCursor{})
 		captured := queries.snapshot()
-		// Two discovery reads, eleven existing statements and one acknowledged
-		// shared server fence for each successful publication; count every statement.
-		if e != nil || len(result.Outcomes) != 16 || len(captured) != 2+(11+1)*16 {
+		// Two discovery reads, eleven existing statements, one acknowledged shared
+		// server fence and the four ledger admission statements of Jobs.Enqueue
+		// (ledger probe, ownership FOR SHARE, admit, association binding) for each
+		// successful publication; count every statement.
+		if e != nil || len(result.Outcomes) != 16 || len(captured) != 2+(11+1+4)*16 {
 			t.Fatal("publication query budget", len(captured), e)
 		}
 		candidateReads := 0
