@@ -2049,13 +2049,15 @@
         "go:ANY /instance/admin/logo",
         "go:ANY /instance/admin/releases",
         "go:ANY /instance/admin/restarts",
-        "go:ANY /instance/admin/updates"
+        "go:ANY /instance/admin/updates",
+        "django:route:BE/instance/urls.py:admin/runtime -> InstanceRuntimeView.as_view()",
+        "go:ANY /instance/admin/runtime"
       ],
       "fixture": [
         "django-default",
         "legacy-mixed"
       ],
-      "effect": "Authorize owner requests and relay instance update, backup and restart operations to the existing updater.",
+      "effect": "Authorize owner requests and relay instance update, backup, restart and runtime-switch operations to the existing updater; the runtime switch reads the durable authority and status, and submits an authenticated, idempotent switch through the updater journal.",
       "owner": {
         "django": {
           "runtime": "django",
@@ -2069,6 +2071,7 @@
         }
       },
       "refs": [
+        "BE/instance/runtime.py",
         "BE/instance/urls.py",
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/handler/bakney_sso.go",
@@ -2077,6 +2080,7 @@
         "BE_GO/internal/handler/instance_backup_actions.go",
         "BE_GO/internal/handler/instance_backups.go",
         "BE_GO/internal/handler/instance_outbound.go",
+        "BE_GO/internal/handler/instance_runtime.go",
         "BE_GO/internal/handler/instance_setup.go",
         "BE_GO/internal/service/bakney_sso.go",
         "BE_GO/internal/service/bakney_sso_protocol.go",
@@ -2088,8 +2092,10 @@
         "BE_GO/internal/service/instance_bootstrap.go",
         "BE_GO/internal/service/instance_diagnostics.go",
         "BE_GO/internal/service/instance_outbound.go",
+        "BE_GO/internal/service/instance_runtime.go",
         "BE_GO/internal/service/instance_setup.go",
-        "BE_GO/internal/service/instance_updates.go"
+        "BE_GO/internal/service/instance_updates.go",
+        "selfhost/updater/runtime_switch.py"
       ]
     },
     {
