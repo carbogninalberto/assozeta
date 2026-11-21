@@ -346,28 +346,13 @@ compose_with_env() {
     )
 }
 
-prod_go_tasks_enabled() {
-    [ -f "$PROD_ENV" ] && [ "$(env_value ASSOZETA_GO_TASKS "$PROD_ENV")" = 1 ]
-}
-
 prod_compose() {
-    # ASSOZETA_GO_TASKS=1 activates the opt-in Go task consumer (worker-go).
-    # An explicit flag, because --profile tools would replace COMPOSE_PROFILES.
-    if prod_go_tasks_enabled; then
-        compose_with_env "$PROD_ENV" "$PROD_COMPOSE" --profile go-tasks "$@"
-    else
-        compose_with_env "$PROD_ENV" "$PROD_COMPOSE" "$@"
-    fi
-}
-
-prod_compose_go_tasks() {
-    # The go-tasks profile whatever ASSOZETA_GO_TASKS says: discovery, and
-    # stopping a consumer whose profile was turned off since it started.
-    if prod_go_tasks_enabled; then
-        prod_compose "$@"
-    else
-        prod_compose --profile go-tasks "$@"
-    fi
+    case "${1:-}" in
+        --profile) ;;
+        pull) set -- --profile django --profile go --profile go-tasks "$@" ;;
+        *) set -- --profile '*' "$@" ;;
+    esac
+    compose_with_env "$PROD_ENV" "$PROD_COMPOSE" "$@"
 }
 
 dev_compose() {
@@ -402,14 +387,17 @@ env_value() {
     ' "$file"
 }
 
-edge_network_value() {
-    # Same rule as the updater's read_env: surrounding quotes and blanks are not a value.
-    [ -f "$1" ] || return 0
-    edge_value=$(env_value ASSOZETA_EDGE_NETWORK "$1" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')
-    case "$edge_value" in
-        \"*\"|\'*\') edge_value=${edge_value#?}; edge_value=${edge_value%?} ;;
+unquoted_env_value() {
+    value=$(env_value "$1" "$2" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')
+    case "$value" in
+        \"*\"|\'*\') value=${value#?}; value=${value%?} ;;
     esac
-    printf '%s\n' "$edge_value"
+    printf '%s\n' "$value"
+}
+
+edge_network_value() {
+    [ -f "$1" ] || return 0
+    unquoted_env_value ASSOZETA_EDGE_NETWORK "$1"
 }
 
 env_has_key() {
@@ -443,12 +431,32 @@ set_env_value() {
     mv "$temporary" "$file"
 }
 
-bakney_protocol_upstream() {
-    # The operator chooses a backend name; Caddy needs its in-network address.
-    case "$1" in
-        django) printf 'api:8000\n' ;;
-        go) printf 'api-go:8000\n' ;;
-        *) return 1 ;;
+ensure_runtime_references() {
+    for reference_key in CURRENT_HOST CURRENT_HOST_PUPPETEER; do
+        reference=$(unquoted_env_value "$reference_key" "$PROD_ENV")
+        if [ "$reference" = http://api:8000 ]; then
+            set_env_value "$reference_key" http://active-api:8000 "$PROD_ENV"
+            continue
+        fi
+        # Inspect the hostname only. Paths, ports and userinfo in a compatible
+        # operator override are preserved in the installation file.
+        host=$(printf '%s\n' "$reference" | tr '[:upper:]' '[:lower:]' |
+            sed -E 's@^[a-z][a-z0-9+.-]*://@@; s@[/?#].*$@@; s/^.*@//; s/:.*$//')
+        case "${host%.}" in
+            api|api-go) die "$reference_key names a runtime-specific API host; use active-api" ;;
+        esac
+        if [ "$reference_key" = CURRENT_HOST_PUPPETEER ]; then
+            case "$reference" in
+                [hH][tT][tT][pP]://*|[hH][tT][tT][pP][sS]://*) ;;
+                *) die "$reference_key must be an HTTP or HTTPS URL on active-api" ;;
+            esac
+            [ "$host" = active-api ] || die "$reference_key must name the renderer's active-api host"
+        fi
+    done
+    allowed=$(unquoted_env_value ALLOWED_HOSTS "$PROD_ENV")
+    case ",$allowed," in
+        *,active-api,*) ;;
+        *) set_env_value ALLOWED_HOSTS "${allowed:+$allowed,}active-api" "$PROD_ENV" ;;
     esac
 }
 
@@ -456,22 +464,8 @@ ensure_configuration_values() {
     file=$1
     [ -f "$file" ] || return
 
-    # ASSOZETA_REALTIME_RELAY_BACKEND selects the realtime relay. Keep the two
-    # replica counts Compose reads in step with it. Without the setting the
-    # file is left alone and Compose's defaults run the Django relay.
-    relay_backend=$(env_value ASSOZETA_REALTIME_RELAY_BACKEND "$file")
-    if [ -n "$relay_backend" ]; then
-        case "$relay_backend" in
-            django) django_relay_replicas=1; go_relay_replicas=0 ;;
-            go) django_relay_replicas=0; go_relay_replicas=1 ;;
-            *) die "invalid ASSOZETA_REALTIME_RELAY_BACKEND in $file: $relay_backend (use django or go)" ;;
-        esac
-        if [ "$(env_value ASSOZETA_DJANGO_RELAY_REPLICAS "$file")" != "$django_relay_replicas" ] \
-            || [ "$(env_value ASSOZETA_GO_RELAY_REPLICAS "$file")" != "$go_relay_replicas" ]; then
-            set_env_value ASSOZETA_DJANGO_RELAY_REPLICAS "$django_relay_replicas" "$file"
-            set_env_value ASSOZETA_GO_RELAY_REPLICAS "$go_relay_replicas" "$file"
-            log "realtime relay backend $relay_backend"
-        fi
+    if [ "$file" = "$PROD_ENV" ] && [ -f "$PROD_COMPOSE" ] && prod_has_runtime_profiles; then
+        ensure_runtime_references
     fi
 
     if ! env_has_key STRIPE_PUBLIC_KEY "$file"; then
@@ -499,18 +493,6 @@ ensure_configuration_values() {
         [ -n "$app_url" ] || die "missing APP_URL in $file"
         set_env_value GOOGLE_CALENDAR_REDIRECT_URL "${app_url%/}/api/google/oauth2callback" "$file"
         log "added GOOGLE_CALENDAR_REDIRECT_URL to $file"
-    fi
-
-    # ASSOZETA_BAKNEY_PROTOCOL_BACKEND selects the backend for /bakney/v1/*.
-    # Keep the address Caddy reads in step with it; only django and go exist.
-    backend=$(env_value ASSOZETA_BAKNEY_PROTOCOL_BACKEND "$file")
-    if [ -n "$backend" ]; then
-        upstream=$(bakney_protocol_upstream "$backend") \
-            || die "invalid ASSOZETA_BAKNEY_PROTOCOL_BACKEND in $file: $backend (use django or go)"
-        if [ "$(env_value ASSOZETA_BAKNEY_PROTOCOL_UPSTREAM "$file")" != "$upstream" ]; then
-            set_env_value ASSOZETA_BAKNEY_PROTOCOL_UPSTREAM "$upstream" "$file"
-            log "Bakney protocol backend $backend: /bakney/v1/* uses $upstream"
-        fi
     fi
 }
 
@@ -666,6 +648,7 @@ write_configuration() {
         ratelimit=False
         cors_all=True
         secure_cookie=False
+        internal_api_host=api
         allowed_hosts="localhost,127.0.0.1,api"
         trusted_origins="http://localhost:5001,http://localhost:8000"
         app_url=http://localhost:5001
@@ -683,7 +666,8 @@ write_configuration() {
             http://*) secure_cookie=False ;;
             *) secure_cookie=True ;;
         esac
-        allowed_hosts="$APP_ALLOWED_HOST,api,localhost,127.0.0.1"
+        internal_api_host=active-api
+        allowed_hosts="$APP_ALLOWED_HOST,api,localhost,127.0.0.1,active-api"
         trusted_origins=$APP_URL
         app_url=$APP_URL
         app_host=$APP_HOST
@@ -744,7 +728,7 @@ CORS_ALLOWED_ORIGINS=$trusted_origins
 CSRF_TRUSTED_ORIGINS=$trusted_origins
 SESSION_COOKIE_SECURE=$secure_cookie
 CSRF_COOKIE_SECURE=$secure_cookie
-CURRENT_HOST=http://api:8000
+CURRENT_HOST=http://$internal_api_host:8000
 GOOGLE_CALENDAR_REDIRECT_URL=$app_url/api/google/oauth2callback
 WHITELABEL_NAME=Assozeta
 
@@ -776,7 +760,7 @@ MINIO_ROOT_PASSWORD=$minio_password
 
 PUPPETEER_HOST=renderer
 PUPPETEER_PORT=3000
-CURRENT_HOST_PUPPETEER=http://api:8000
+CURRENT_HOST_PUPPETEER=http://$internal_api_host:8000
 
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY=
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET=
@@ -802,17 +786,7 @@ WEB_CONCURRENCY=2
 CELERY_CONCURRENCY=2
 ASSOZETA_GO_TASKS=0
 GO_TASK_QUEUE_TASKS=
-# The Bakney SSO protocol root paths (/bakney/v1/*) stay on Django. Set
-# ASSOZETA_BAKNEY_PROTOCOL_BACKEND=go to serve them from the Go API; the
-# upstream address below is derived from it and passed to Caddy.
-ASSOZETA_BAKNEY_PROTOCOL_BACKEND=django
-ASSOZETA_BAKNEY_PROTOCOL_UPSTREAM=api:8000
-# The realtime outbox relay uses Django by default. Set
-# ASSOZETA_REALTIME_RELAY_BACKEND=go to use the Go relay. Compose uses the
-# two replica counts below, which bin/assozeta derives from the setting.
-ASSOZETA_REALTIME_RELAY_BACKEND=django
-ASSOZETA_DJANGO_RELAY_REPLICAS=1
-ASSOZETA_GO_RELAY_REPLICAS=0
+
 TZ=Europe/Rome
 DEV_UI_PORT=5001
 DEV_API_PORT=8000
@@ -901,14 +875,13 @@ validate_file() {
     https_port=$(env_value HTTPS_PORT "$file")
     [ -z "$https_port" ] || validate_port "$https_port" "HTTPS_PORT in $file"
 
-    compose_with_env "$file" "$compose_file" --profile tools config --quiet
+    compose_with_env "$file" "$compose_file" --profile '*' config --quiet
 }
 
 validate_prod() {
     preflight
     ensure_configuration_values "$PROD_ENV"
     validate_file "$PROD_ENV" "$PROD_COMPOSE"
-    require_go_task_consumer || exit 1
     log "production configuration is valid"
 }
 
@@ -968,10 +941,51 @@ prod_optional_go_api() {
     fi
 }
 
-prod_optional_realtime_relay() {
-    # Historical distributions may define only the Django relay or neither relay.
-    configured_services=$(prod_compose config --services) || return $?
-    printf '%s\n' "$configured_services" | awk '$0 == "realtime-relay" || $0 == "realtime-relay-go"'
+prod_effective_runtime() {
+    authority_runtime=$(prod_compose exec -T postgres psql -X -qAt -v ON_ERROR_STOP=1 \
+        -U "$(env_value DBUSER "$PROD_ENV")" -d "$(env_value DBNAME "$PROD_ENV")" \
+        -c 'SELECT runtime FROM public.assozeta_go_job_ownership WHERE singleton=1;') \
+        || die "cannot read the runtime authority"
+    case "$authority_runtime" in
+        ''|django) printf '%s\n' django ;;
+        go) printf '%s\n' go ;;
+        *) die "invalid runtime in the authority row" ;;
+    esac
+}
+
+prod_has_runtime_profiles() {
+    installed_profiles=$(prod_compose config --profiles) || die "cannot inspect Compose profiles"
+    printf '%s\n' "$installed_profiles" | grep -Eq '^(django|go)$'
+}
+
+prod_start_profile() {
+    if prod_has_runtime_profiles; then
+        prod_effective_runtime
+    elif [ "$(env_value ASSOZETA_GO_TASKS "$PROD_ENV")" = 1 ]; then
+        # A historical source has no authority or exclusive runtime profiles.
+        printf '%s\n' go-tasks
+    else
+        printf '%s\n' legacy
+    fi
+}
+
+runtime_app_services() {
+    service_profile=$1
+    set -- config --services
+    [ "$service_profile" = '*' ] || set -- --profile "$service_profile" "$@"
+    configured_services=$(prod_compose "$@") || return $?
+    for service in $configured_services; do
+        case "$service" in
+            postgres|redis|minio|renderer|web|minio-init|migrate|migrate-go) continue ;;
+        esac
+        case "$service_profile:$service" in
+            legacy:realtime-relay-go|go-tasks:realtime-relay-go)
+                [ "$(env_value ASSOZETA_GO_RELAY_REPLICAS "$PROD_ENV")" = 1 ] || continue ;;
+            legacy:realtime-relay|go-tasks:realtime-relay)
+                [ "$(env_value ASSOZETA_DJANGO_RELAY_REPLICAS "$PROD_ENV")" != 0 ] || continue ;;
+        esac
+        printf '%s\n' "$service"
+    done
 }
 
 prod_optional_go_migrator() {
@@ -980,41 +994,6 @@ prod_optional_go_migrator() {
     configured_tools=$(prod_compose --profile tools config --services) || return $?
     if printf '%s\n' "$configured_tools" | awk '$0 == "migrate-go" { found = 1 } END { exit !found }'; then
         printf 'migrate-go\n'
-    fi
-}
-
-prod_optional_go_consumer() {
-    # The opt-in Go task consumer, when this distribution defines it (enabled
-    # or not): historical distributions have no worker-go service.
-    configured_go_tasks=$(prod_compose_go_tasks config --services) || return $?
-    if printf '%s\n' "$configured_go_tasks" | awk '$0 == "worker-go" { found = 1 } END { exit !found }'; then
-        printf 'worker-go\n'
-    fi
-}
-
-prod_active_go_consumer() {
-    prod_go_tasks_enabled || return 0
-    prod_optional_go_consumer
-}
-
-require_go_task_consumer() {
-    # Task names routed to the assozeta-go queue need a running consumer;
-    # without one they would wait on that queue indefinitely.
-    go_tasks_flag=$(env_value ASSOZETA_GO_TASKS "$PROD_ENV")
-    case "$go_tasks_flag" in
-        ''|0|1) ;;
-        *) printf '[assozeta] error: ASSOZETA_GO_TASKS must be 0 or 1\n' >&2; return 1 ;;
-    esac
-    go_task_names=$(env_value GO_TASK_QUEUE_TASKS "$PROD_ENV" | tr -d ' \t,"'"'")
-    if [ "$go_tasks_flag" != 1 ]; then
-        [ -z "$go_task_names" ] && return 0
-        printf '[assozeta] error: GO_TASK_QUEUE_TASKS routes tasks to the Go queue, but ASSOZETA_GO_TASKS=1 is not set; set ASSOZETA_GO_TASKS=1 or empty GO_TASK_QUEUE_TASKS\n' >&2
-        return 1
-    fi
-    go_consumer_service=$(prod_optional_go_consumer) || return $?
-    if [ -z "$go_consumer_service" ]; then
-        printf '[assozeta] error: ASSOZETA_GO_TASKS=1, but this release has no worker-go service\n' >&2
-        return 1
     fi
 }
 
@@ -1064,8 +1043,8 @@ wait_public_readiness() {
     wait_url_ready "web" "$app_url/healthz" || return 1
     wait_url_ready "API" "$app_url/api/readyz" || return 1
     if [ -n "$go_api_service" ]; then
-        wait_url_ready "Django API" "$app_url/api/v1/readyz" || return 1
-        wait_url_ready "Go API" "$app_url/api/v2/readyz" || return 1
+        wait_url_ready "API v1" "$app_url/api/v1/readyz" || return 1
+        wait_url_ready "API v2" "$app_url/api/v2/readyz" || return 1
     fi
 }
 
@@ -1073,30 +1052,16 @@ require_public_readiness() {
     wait_public_readiness || die "public web/API readiness checks failed"
 }
 
-require_background_services_running() {
-    relay_services=$(prod_optional_realtime_relay) || return 1
-    # A historical Compose file with only the Django relay has a fixed replica.
-    case "$relay_services" in
-        *realtime-relay-go*)
-            if [ "$(env_value ASSOZETA_GO_RELAY_REPLICAS "$PROD_ENV")" = 1 ]; then
-                relay_services=realtime-relay-go
-            else
-                relay_services=realtime-relay
-            fi
-            ;;
-    esac
-    go_consumer_service=$(prod_active_go_consumer) || return 1
-    running=$(prod_compose ps --status running --services worker beat $relay_services $go_consumer_service 2>/dev/null) || return 1
-
-    for service in worker beat $relay_services $go_consumer_service; do
-        if printf '%s\n' "$running" | awk -v service="$service" '$0 == service { found=1 } END { exit !found }'; then
-            continue
+require_app_services_running() {
+    profile=$1
+    shift
+    running=$(prod_compose --profile "$profile" ps --status running --services "$@") || return 1
+    for service do
+        if ! printf '%s\n' "$running" | grep -Fxq "$service"; then
+            log "$service did not remain running after startup"
+            prod_compose --profile "$profile" ps "$service" >&2 || true
+            return 1
         fi
-
-        log "$service did not remain running after startup"
-        prod_compose ps "$service" >&2 || true
-        prod_compose logs --no-color --tail=100 "$service" >&2 || true
-        return 1
     done
 }
 
@@ -1106,54 +1071,58 @@ stop_prod_data_services() {
         : > "$MAINTENANCE_FLAG"
         chmod 644 "$MAINTENANCE_FLAG"
     fi
-    # Keep Caddy serving the maintenance page while the data services stop.
-    go_api_service=$(prod_optional_go_api) || return $?
-    relay_services=$(prod_optional_realtime_relay) || return $?
-    go_consumer_service=$(prod_optional_go_consumer) || return $?
-    set -- api worker beat $relay_services
-    [ -z "$go_api_service" ] || set -- "$@" "$go_api_service"
-    if [ -n "$go_consumer_service" ]; then
-        # The Go consumer drains its running tasks within stop_grace_period.
-        prod_compose_go_tasks stop "$go_consumer_service" "$@"
-    else
-        prod_compose stop "$@"
-    fi
+    # Keep Caddy serving maintenance while either application set stops.
+    stop_services=$(runtime_app_services '*') || return $?
+    [ -n "$stop_services" ] || return 0
+    prod_compose stop $stop_services
 }
 
 start_prod_app_services() {
     force_recreate=${1:-false}
     report_health_stage=${2:-false}
-    # Refuse before starting anything: routed tasks need the Go consumer.
-    require_go_task_consumer || return $?
-    go_api_service=$(prod_optional_go_api) || return $?
-
-    # Populate the persistent manual before serving requests. A temporarily
-    # unavailable publisher must not prevent the application from starting.
-    if [ -n "$(env_value MANUAL_CORPUS_BASE_URL "$PROD_ENV")" ]; then
-        if ! prod_compose run --rm --no-deps api python manage.py sync_manuale_corpus; then
+    start_profile=$(prod_start_profile) || return $?
+    # Upgrade and recovery may have replaced the distribution since validation.
+    case "$start_profile" in django|go) ensure_runtime_references || return $? ;; esac
+    app_services=$(runtime_app_services "$start_profile") || return $?
+    [ -n "$app_services" ] || die "no application services in Compose profile $start_profile"
+    case "$start_profile" in
+        django|legacy)
+            go_task_names=$(env_value GO_TASK_QUEUE_TASKS "$PROD_ENV" | tr -d ' \t,"'"'")
+            if [ -n "$go_task_names" ]; then
+                die "GO_TASK_QUEUE_TASKS routes work to a stopped Go consumer"
+            fi ;;
+    esac
+    # The Go manual loader refreshes its published corpus on demand.
+    if [ "$start_profile" != go ] && [ -n "$(env_value MANUAL_CORPUS_BASE_URL "$PROD_ENV")" ]; then
+        if ! prod_compose --profile "$start_profile" run --rm --no-deps api python manage.py sync_manuale_corpus; then
             log "manual refresh failed; retained content still requires the running revision/version"
         fi
     fi
 
-    set -- api web
-    [ -z "$go_api_service" ] || set -- "$@" "$go_api_service"
-    relay_services=$(prod_optional_realtime_relay) || return $?
-    go_consumer_service=$(prod_active_go_consumer) || return $?
-    if [ "$force_recreate" = true ]; then
-        prod_compose up -d --force-recreate worker beat $relay_services $go_consumer_service || return $?
-        prod_compose up -d --wait --force-recreate "$@" || return $?
-    else
-        prod_compose up -d worker beat $relay_services $go_consumer_service || return $?
-        prod_compose up -d --wait "$@" || return $?
+    prod_compose --profile "$start_profile" up -d --wait postgres redis minio renderer || return $?
+    set -- web
+    background_services=
+    for service in $app_services; do
+        case "$service" in
+            api|api-go) set -- "$@" "$service" ;;
+            *) background_services="$background_services $service" ;;
+        esac
+    done
+    recreate=
+    [ "$force_recreate" != true ] || recreate=--force-recreate
+    if [ -n "$background_services" ]; then
+        prod_compose --profile "$start_profile" up -d $recreate $background_services || return $?
     fi
+    prod_compose --profile "$start_profile" up -d --wait $recreate "$@" || return $?
+    require_app_services_running "$start_profile" web $app_services || return $?
 
-    require_background_services_running || return $?
     if [ "$report_health_stage" = true ]; then
         printf '%s\n' '@@ASSOZETA_STAGE health_check'
     fi
     # Container health alone does not prove that public routing reaches the API.
     # The readiness routes bypass maintenance so failures keep the page active.
     wait_public_readiness || return $?
+    require_app_services_running "$start_profile" postgres redis minio renderer web $app_services || return $?
     rm -f "$MAINTENANCE_FLAG"
 }
 
@@ -1259,7 +1228,15 @@ restart_prod() {
 
 status_prod() {
     [ -f "$PROD_ENV" ] || die "run configure first"
-    prod_compose ps
+    prod_compose --profile '*' ps --all || return $?
+    if status_profile=$(prod_start_profile); then
+        case "$status_profile" in
+            django|go) log "effective runtime is $status_profile" ;;
+            *) log "historical deployment profile is $status_profile" ;;
+        esac
+    else
+        log "effective runtime is unknown"
+    fi
     app_url=$(env_value APP_URL "$PROD_ENV")
     if command -v curl >/dev/null 2>&1; then
         curl --fail --silent --show-error "$app_url/healthz" >/dev/null \
@@ -1272,13 +1249,8 @@ status_prod() {
 }
 
 prod_app_services_running() {
-    go_api_service=$(prod_optional_go_api) || return 2
-    relay_services=$(prod_optional_realtime_relay) || return 2
-    go_consumer_service=$(prod_active_go_consumer) || return 2
-    set -- web api worker beat $relay_services
-    [ -z "$go_consumer_service" ] || set -- "$@" "$go_consumer_service"
-    [ -z "$go_api_service" ] || set -- "$@" "$go_api_service"
-    running=$(prod_compose ps --status running --services "$@" 2>/dev/null) || return 2
+    services=$(runtime_app_services '*') || return 2
+    running=$(prod_compose --profile '*' ps --status running --services web $services) || return 2
     [ -n "$running" ]
 }
 

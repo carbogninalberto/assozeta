@@ -481,8 +481,7 @@
         "go": {
           "runtime": "go",
           "component": "api-go",
-          "status": "planned",
-          "phase": 2
+          "status": "present"
         }
       },
       "refs": [
@@ -1398,8 +1397,7 @@
         "go": {
           "runtime": "go",
           "component": "api-go",
-          "status": "planned",
-          "phase": 2
+          "status": "present"
         }
       },
       "refs": [
@@ -1410,7 +1408,7 @@
         "selfhost/bin/assozeta:776"
       ],
       "notes": [
-        "Go serves the HTTP handler. The generated print origin still directs this branch to Django."
+        "The generated print origin and renderer allowlist use the active-api alias."
       ]
     },
     {
@@ -1726,8 +1724,7 @@
         "go": {
           "runtime": "go",
           "component": "api-go",
-          "status": "planned",
-          "phase": 2
+          "status": "present"
         }
       },
       "refs": [
@@ -1754,7 +1751,7 @@
         "selfhost/bin/assozeta:744"
       ],
       "notes": [
-        "Go serves the HTTP handler. The generated print origin still directs this branch to Django."
+        "The generated print origin and renderer allowlist use the active-api alias."
       ]
     },
     {
@@ -1778,8 +1775,7 @@
         "go": {
           "runtime": "go",
           "component": "api-go",
-          "status": "planned",
-          "phase": 2
+          "status": "present"
         }
       },
       "refs": [
@@ -2321,8 +2317,7 @@
         "go": {
           "runtime": "go",
           "component": "api-go",
-          "status": "planned",
-          "phase": 2
+          "status": "present"
         }
       },
       "refs": [
@@ -2335,7 +2330,7 @@
         "selfhost/bin/assozeta:744"
       ],
       "notes": [
-        "Go serves the HTTP handler. The generated print origin still directs this branch to Django."
+        "The generated print origin and renderer allowlist use the active-api alias."
       ]
     },
     {
@@ -2652,8 +2647,7 @@
         "go": {
           "runtime": "go",
           "component": "api-go",
-          "status": "planned",
-          "phase": 2
+          "status": "present"
         }
       },
       "refs": [
@@ -2667,7 +2661,7 @@
         "selfhost/bin/assozeta:744"
       ],
       "notes": [
-        "Go serves the HTTP handler. The generated print origin still directs this branch to Django."
+        "The generated print origin and renderer allowlist use the active-api alias."
       ]
     },
     {
@@ -2963,8 +2957,7 @@
         "go": {
           "runtime": "go",
           "component": "api-go",
-          "status": "planned",
-          "phase": 2
+          "status": "present"
         }
       },
       "refs": [
@@ -2975,8 +2968,7 @@
         "selfhost/caddy/Caddyfile:123"
       ],
       "notes": [
-        "The Go callback exists. The pinned Compose routes the unversioned callback to Django; installed transport and parity evidence are still open.",
-        "Phase 2 routes the existing unversioned provider callback to the active application."
+        "The unversioned callback reaches the active API. The transport checks cover paths, queries, signatures and request bodies."
       ]
     },
     {
@@ -3057,16 +3049,12 @@
         "go": {
           "runtime": "shared",
           "component": "web (Caddy)",
-          "status": "planned",
-          "phase": 2
+          "status": "present"
         }
       },
       "refs": [
-        "selfhost/caddy/Caddyfile:51",
-        "selfhost/caddy/Caddyfile:56"
-      ],
-      "notes": [
-        "The pinned Caddy path reaches the Django API. Phase 2 switches it when Go is effective."
+        "TESTS/handoff/test_p2_routing.py",
+        "selfhost/caddy/Caddyfile"
       ]
     },
     {
@@ -3085,8 +3073,7 @@
         "django": {
           "runtime": "shared",
           "component": "web (Caddy)",
-          "status": "planned",
-          "phase": 2
+          "status": "present"
         },
         "go": {
           "runtime": "shared",
@@ -3095,10 +3082,8 @@
         }
       },
       "refs": [
-        "selfhost/caddy/Caddyfile:61"
-      ],
-      "notes": [
-        "The pinned Caddy v2 path already reaches the Go API."
+        "TESTS/handoff/test_p2_routing.py",
+        "selfhost/caddy/Caddyfile"
       ]
     },
     {
@@ -3114,7 +3099,7 @@
         "django-default",
         "legacy-mixed"
       ],
-      "effect": "Strip the unversioned or v1 API prefix and forward the request to the application, preserving the v1 root rewrite.",
+      "effect": "Strip the unversioned or v1 API prefix and forward to the active API, rewriting the exact v1 root to /.",
       "owner": {
         "django": {
           "runtime": "shared",
@@ -3124,17 +3109,12 @@
         "go": {
           "runtime": "shared",
           "component": "web (Caddy)",
-          "status": "planned",
-          "phase": 2
+          "status": "present"
         }
       },
       "refs": [
-        "selfhost/caddy/Caddyfile:105",
-        "selfhost/caddy/Caddyfile:115",
-        "selfhost/caddy/Caddyfile:123"
-      ],
-      "notes": [
-        "The pinned Caddy path reaches the Django API. Phase 2 switches it when Go is effective."
+        "TESTS/handoff/test_p2_routing.py",
+        "selfhost/caddy/Caddyfile"
       ]
     },
     {
@@ -3154,8 +3134,7 @@
         "django": {
           "runtime": "shared",
           "component": "web (Caddy)",
-          "status": "planned",
-          "phase": 2
+          "status": "present"
         },
         "go": {
           "runtime": "shared",
@@ -3164,11 +3143,8 @@
         }
       },
       "refs": [
-        "selfhost/caddy/Caddyfile:110",
-        "selfhost/caddy/Caddyfile:119"
-      ],
-      "notes": [
-        "The pinned Caddy v2 path already reaches the Go API."
+        "TESTS/handoff/test_p2_routing.py",
+        "selfhost/caddy/Caddyfile"
       ]
     },
     {
@@ -3182,7 +3158,7 @@
         "django-default",
         "legacy-mixed"
       ],
-      "effect": "Forward the root protocol unchanged to the backend selected by the deployment, with no-store and no-referrer headers.",
+      "effect": "Forward the root protocol path unchanged to the active API with no-store and no-referrer headers.",
       "owner": {
         "django": {
           "runtime": "shared",
@@ -3196,13 +3172,8 @@
         }
       },
       "refs": [
-        "selfhost/bin/assozeta:503",
-        "selfhost/bin/assozeta:508",
-        "selfhost/caddy/Caddyfile",
-        "selfhost/caddy/Caddyfile:99"
-      ],
-      "notes": [
-        "The installed CLI already selects the Go upstream for the explicit Bakney backend setting. Automatic public callback routing is tracked under client:callbacks."
+        "TESTS/handoff/test_p2_routing.py",
+        "selfhost/caddy/Caddyfile"
       ]
     },
     {
@@ -3226,11 +3197,11 @@
         "go": {
           "runtime": "shared",
           "component": "web (Caddy)",
-          "status": "planned",
-          "phase": 2
+          "status": "present"
         }
       },
       "refs": [
+        "TESTS/handoff/test_p2_routing.py",
         "selfhost/caddy/Caddyfile"
       ]
     },
@@ -3461,7 +3432,7 @@
         "django-default",
         "legacy-mixed"
       ],
-      "effect": "Serve the UI and proxy application and status routes. The baseline dependency graph starts both APIs.",
+      "effect": "Serve the UI, proxy status to the controller and proxy API traffic to active-api:8000.",
       "owner": {
         "django": {
           "runtime": "shared",
@@ -3475,7 +3446,7 @@
         }
       },
       "refs": [
-        "selfhost/compose.yml:383"
+        "selfhost/compose.yml"
       ]
     },
     {
@@ -3503,7 +3474,14 @@
         }
       },
       "refs": [
-        "selfhost/compose.updater.yml:4"
+        "TESTS/handoff/test_p2_updater.py",
+        "selfhost/compose.updater.yml:4",
+        "selfhost/updater/common.py",
+        "selfhost/updater/engine.py",
+        "selfhost/updater/restart.py"
+      ],
+      "notes": [
+        "On profiled installations, restart discovers the effective process set from the PostgreSQL authority. Live verification rejects running services of the other runtime."
       ]
     },
     {
@@ -3526,14 +3504,17 @@
         },
         "go": {
           "runtime": "none",
-          "status": "planned",
-          "disposition": "stopped: the Go topology does not run this resident Django service",
-          "phase": 2
+          "status": "present",
+          "disposition": "stopped: the Go topology does not run this resident Django service"
         }
       },
       "refs": [
-        "selfhost/bin/assozeta:1135",
-        "selfhost/compose.yml:156"
+        "TESTS/handoff/test_p2_lifecycle.py",
+        "selfhost/bin/assozeta",
+        "selfhost/compose.yml"
+      ],
+      "notes": [
+        "The CLI stops both application sets before migration and reads the authority to select the profile for startup and readiness."
       ]
     },
     {
@@ -3556,14 +3537,13 @@
         },
         "go": {
           "runtime": "none",
-          "status": "planned",
-          "disposition": "stopped: the Go topology does not run this resident Django service",
-          "phase": 2
+          "status": "present",
+          "disposition": "stopped: the Go topology does not run this resident Django service"
         }
       },
       "refs": [
-        "selfhost/bin/assozeta:1135",
-        "selfhost/compose.yml:294"
+        "selfhost/bin/assozeta",
+        "selfhost/compose.yml"
       ]
     },
     {
@@ -3586,14 +3566,13 @@
         },
         "go": {
           "runtime": "none",
-          "status": "planned",
-          "disposition": "stopped: the Go topology does not run this resident Django service",
-          "phase": 2
+          "status": "present",
+          "disposition": "stopped: the Go topology does not run this resident Django service"
         }
       },
       "refs": [
-        "selfhost/bin/assozeta:1135",
-        "selfhost/compose.yml:310"
+        "selfhost/bin/assozeta",
+        "selfhost/compose.yml"
       ]
     },
     {
@@ -3621,11 +3600,11 @@
         }
       },
       "refs": [
-        "selfhost/bin/assozeta:456",
-        "selfhost/compose.yml:323"
+        "selfhost/bin/assozeta",
+        "selfhost/compose.yml"
       ],
       "notes": [
-        "The existing relay selector can already stop the Django relay through its replica count."
+        "The django profile starts this relay. The go profile starts realtime-relay-go."
       ]
     },
     {
@@ -3675,9 +3654,8 @@
       "owner": {
         "django": {
           "runtime": "none",
-          "status": "planned",
-          "disposition": "stopped: the Django topology does not run this resident Go service",
-          "phase": 2
+          "status": "present",
+          "disposition": "stopped: the Django topology does not run this resident Go service"
         },
         "go": {
           "runtime": "go",
@@ -3686,10 +3664,9 @@
         }
       },
       "refs": [
-        "BE_GO/cmd/server/main.go:1",
-        "selfhost/bin/assozeta:1135",
-        "selfhost/compose.yml:186",
-        "selfhost/compose.yml:408"
+        "BE_GO/cmd/server/main.go",
+        "selfhost/bin/assozeta",
+        "selfhost/compose.yml"
       ]
     },
     {
@@ -3719,14 +3696,11 @@
       },
       "refs": [
         "BE_GO/cmd/celery-consumer/main.go:1",
-        "selfhost/bin/assozeta:1138",
-        "selfhost/bin/assozeta:347",
-        "selfhost/bin/assozeta:992",
-        "selfhost/compose.yml:264",
-        "selfhost/compose.yml:268"
+        "selfhost/bin/assozeta",
+        "selfhost/compose.yml"
       ],
       "notes": [
-        "The installed go-tasks profile starts worker-go when ASSOZETA_GO_TASKS=1. Task execution and publication entries track the remaining handoff work."
+        "The go profile starts the consumer. Task execution and publication entries track handoff coverage."
       ]
     },
     {
@@ -3756,7 +3730,7 @@
       },
       "refs": [
         "BE_GO/cmd/relay-go-realtime/main.go:1",
-        "selfhost/compose.yml:340"
+        "selfhost/compose.yml"
       ]
     },
     {
@@ -3826,6 +3800,7 @@
       "id": "service:scheduler",
       "kind": "service",
       "items": [
+        "compose:scheduler-go",
         "go-cmd:scheduler"
       ],
       "fixture": "legacy-mixed",
@@ -3838,19 +3813,21 @@
         },
         "go": {
           "runtime": "go",
-          "component": "/app/scheduler (native periodic publication)",
-          "status": "planned",
-          "phase": 2
+          "component": "scheduler-go (/app/scheduler)",
+          "status": "present"
         }
       },
       "refs": [
-        "BE_GO/cmd/scheduler/main.go:1"
+        "BE_GO/cmd/scheduler/main.go:1",
+        "TESTS/handoff/test_p2_process_sets.py",
+        "selfhost/compose.yml"
       ]
     },
     {
       "id": "service:go-durable-worker",
       "kind": "service",
       "items": [
+        "compose:job-worker-go",
         "go-cmd:worker"
       ],
       "fixture": "legacy-mixed",
@@ -3863,13 +3840,14 @@
         },
         "go": {
           "runtime": "go",
-          "component": "/app/worker (native durable jobs)",
-          "status": "planned",
-          "phase": 2
+          "component": "job-worker-go (/app/worker)",
+          "status": "present"
         }
       },
       "refs": [
-        "BE_GO/cmd/worker/main.go:1"
+        "BE_GO/cmd/worker/main.go:1",
+        "TESTS/handoff/test_p2_process_sets.py",
+        "selfhost/compose.yml"
       ]
     },
     {
@@ -7636,8 +7614,7 @@
         "go": {
           "runtime": "go",
           "component": "/app/worker",
-          "status": "planned",
-          "phase": 2
+          "status": "present"
         }
       },
       "refs": [
@@ -7658,8 +7635,7 @@
         "django": {
           "runtime": "django",
           "component": "beat (InstanceScheduler)",
-          "status": "planned",
-          "phase": 2
+          "status": "present"
         },
         "go": {
           "runtime": "go",
@@ -7670,11 +7646,12 @@
       },
       "refs": [
         "BE/core/celery.py",
-        "BE_GO/cmd/server/main.go:1042",
-        "BE_GO/internal/whatsapp/delivery.go:136"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/whatsapp/delivery.go:136",
+        "TESTS/handoff/test_p2_go_startup.py"
       ],
       "notes": [
-        "The baseline api-go starts its poller alongside Django Beat. Phase 2 makes startup gateable and removes api-go from the Django process set."
+        "Only the Go API starts this poller. ASSOZETA_GO_WHATSAPP_OUTBOX=0 disables it during private startup."
       ]
     },
     {
@@ -8285,7 +8262,7 @@
           "runtime": "go",
           "component": "worker-go + api-go + renderer",
           "status": "planned",
-          "phase": 2
+          "phase": 4
         }
       },
       "refs": [
@@ -8317,8 +8294,7 @@
         },
         "go": {
           "runtime": "none",
-          "status": "planned",
-          "phase": 2,
+          "status": "present",
           "disposition": "stopped: remove the cross-runtime HTTP replay path from exclusive Go"
         }
       },
@@ -8422,8 +8398,7 @@
         "go": {
           "runtime": "go",
           "component": "api-go",
-          "status": "planned",
-          "phase": 2
+          "status": "present"
         }
       },
       "refs": [
@@ -8456,14 +8431,12 @@
         "django": {
           "runtime": "django",
           "component": "api",
-          "status": "planned",
-          "phase": 2
+          "status": "present"
         },
         "go": {
           "runtime": "go",
           "component": "api-go socket dispatcher and Caddy wiring",
-          "status": "planned",
-          "phase": 2
+          "status": "present"
         }
       },
       "refs": [
@@ -8475,7 +8448,7 @@
         "selfhost/caddy/Caddyfile:127"
       ],
       "notes": [
-        "Today Django serves the root path while the v2 alias reaches Go."
+        "Caddy forwards root and versioned socket paths through active-api:8000."
       ]
     },
     {
@@ -9004,7 +8977,8 @@
         "selfhost/updater/recovery.py"
       ],
       "notes": [
-        "The shared CLI already performs this recovery on the installed distribution. Preserving queued work and restoring mode-specific topology are separate lifecycle requirements."
+        "The shared CLI already performs this recovery on the installed distribution. Preserving queued work and restoring mode-specific topology are separate lifecycle requirements.",
+        "Phase 6 obligation (Phase 2 review): an upgrade or rollback of a Go-mode installation whose target Go image fails health must recover to the source; application-update-smoke --legacy-controller now pins only the Django-mode delivery, and production-smoke skips the packaged Go probe in the default Django-mode install until a Go-mode installed lane exists (Phases 5-6)."
       ]
     },
     {
@@ -9159,14 +9133,12 @@
         "django": {
           "runtime": "shared",
           "component": "Caddy and active application",
-          "status": "planned",
-          "phase": 2
+          "status": "present"
         },
         "go": {
           "runtime": "shared",
           "component": "Caddy and active application",
-          "status": "planned",
-          "phase": 2
+          "status": "present"
         }
       },
       "refs": [
@@ -9194,14 +9166,12 @@
         "django": {
           "runtime": "shared",
           "component": "Caddy and active application",
-          "status": "planned",
-          "phase": 2
+          "status": "present"
         },
         "go": {
           "runtime": "shared",
           "component": "Caddy and active application",
-          "status": "planned",
-          "phase": 2
+          "status": "present"
         }
       },
       "refs": [
@@ -9230,13 +9200,13 @@
           "runtime": "shared",
           "component": "Caddy and active application",
           "status": "planned",
-          "phase": 2
+          "phase": 5
         },
         "go": {
           "runtime": "shared",
           "component": "Caddy and active application",
           "status": "planned",
-          "phase": 2
+          "phase": 5
         }
       },
       "refs": [
@@ -9263,14 +9233,12 @@
         "django": {
           "runtime": "shared",
           "component": "Caddy and active application",
-          "status": "planned",
-          "phase": 2
+          "status": "present"
         },
         "go": {
           "runtime": "shared",
           "component": "Caddy and active application",
-          "status": "planned",
-          "phase": 2
+          "status": "present"
         }
       },
       "refs": [
@@ -9298,14 +9266,12 @@
         "django": {
           "runtime": "shared",
           "component": "Caddy and active application",
-          "status": "planned",
-          "phase": 2
+          "status": "present"
         },
         "go": {
           "runtime": "shared",
           "component": "Caddy and active application",
-          "status": "planned",
-          "phase": 2
+          "status": "present"
         }
       },
       "refs": [

@@ -3,6 +3,7 @@ import json
 import os
 from pathlib import Path
 import re
+import subprocess
 import tempfile
 
 from release_catalog import version_tuple
@@ -93,6 +94,55 @@ def compose_command(root, env_file, updater=False):
         # Same opt-in Go task consumer profile as bin/assozeta.
         command += ['--profile', GO_TASKS_PROFILE]
     return command
+
+
+RUNTIME_PROFILES = {'django', 'go'}
+SHARED_SERVICES = {'postgres', 'redis', 'minio', 'renderer', 'web'}
+
+
+def has_runtime_profiles(services):
+    return any(RUNTIME_PROFILES.intersection(service.get('profiles', ())) for service in services.values())
+
+
+def effective_runtime(root, env_file, services):
+    # Historical distributions predate both the profiles and the authority row.
+    if has_runtime_profiles(services):
+        from runtime_switch import AuthorityUnavailable, compose_authority, read_authority
+        try:
+            return read_authority(root, env_file).runtime
+        except AuthorityUnavailable:
+            # The switch controller needs a full generation. Lifecycle commands
+            # can use the fresh-install default only after confirming no row exists.
+            authority = compose_authority(root, env_file)
+            try:
+                probe = subprocess.run(authority.command, env=authority.environment, text=True, timeout=20,
+                                       input='SELECT singleton FROM public.assozeta_go_job_ownership WHERE singleton=1;',
+                                       capture_output=True)
+            except (OSError, subprocess.SubprocessError):
+                raise AuthorityUnavailable() from None
+            if probe.returncode == 0 and probe.stdout == '':
+                return 'django'
+            raise
+    return None
+
+
+def runtime_services(root, env_file, runtime, *, configured=None):
+    """Application services from this installation, including legacy mixed deployments."""
+    if configured is None:
+        command = compose_command(root, env_file) + ['--profile', '*', 'config', '--format', 'json']
+        configured = json.loads(subprocess.check_output(command, env=compose_environment(root, env_file),
+                                                        text=True, timeout=30))['services']
+    if has_runtime_profiles(configured):
+        if runtime not in RUNTIME_PROFILES:
+            raise ValueError('Unknown application runtime')
+        return sorted(name for name, service in configured.items() if runtime in service.get('profiles', ()))
+
+    # Legacy render with no runtime profile: unprofiled apps plus the selected
+    # consumer, excluding tools and the relay scaled to zero.
+    legacy_profiles = {GO_TASKS_PROFILE} if go_tasks_enabled(env_file) else set()
+    return sorted(name for name, service in configured.items()
+                  if name not in SHARED_SERVICES and service.get('deploy', {}).get('replicas', 1) != 0
+                  and (not service.get('profiles') or legacy_profiles.intersection(service['profiles'])))
 
 
 GO_TASKS_PROFILE = 'go-tasks'

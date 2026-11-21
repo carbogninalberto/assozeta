@@ -8,7 +8,8 @@ import sys
 import traceback
 from uuid import UUID
 
-from common import compose_command, compose_environment, read_env, write_json, update_eligibility_reason
+from common import (SHARED_SERVICES, compose_command, compose_environment, effective_runtime, read_env,
+                    runtime_services, update_eligibility_reason, write_json)
 from distribution import go_backend_reference
 from journal import now
 from release_catalog import fetch_release, image_version, version_tuple, ReleaseError
@@ -156,7 +157,7 @@ class Engine:
         values = read_env(self.env_file)
         if image_version(values.get('ASSOZETA_VERSION')) != image_version(target):
             raise RuntimeError('Configured target does not match requested release')
-        command = compose_command(self.root, self.env_file)
+        command = compose_command(self.root, self.env_file) + ['--profile', '*']
         environment = compose_environment(self.root, self.env_file)
         configured = json.loads(subprocess.check_output(command + ['config', '--format', 'json'], env=environment, text=True))['services']
         manifest_path = self.root / '.updater/target-manifest.json'
@@ -167,23 +168,37 @@ class Engine:
             expected_go = go_backend_reference(manifest)
             if expected_go and (values.get('ASSOZETA_BACKEND_GO_REF') != expected_go or 'api-go' not in configured):
                 raise RuntimeError('Verified Go delivery is missing or changed')
-        services = [('api', 'BACKEND'), ('worker', 'BACKEND'), ('beat', 'BACKEND'), ('web', 'WEB'), ('renderer', 'RENDERER')]
-        # Historical releases may define only the Django relay or neither relay.
-        for service, image in (('realtime-relay', 'BACKEND'), ('realtime-relay-go', 'BACKEND_GO')):
-            if service not in configured:
-                continue
-            if configured[service].get('deploy', {}).get('replicas', 1) != 0:
-                services.append((service, image))
-            elif subprocess.check_output(command + ['ps', '--all', '-q', service], env=environment, text=True).strip():
-                raise RuntimeError(f'Unexpected container for disabled service: {service}')
-        if 'api-go' in configured:
-            services.append(('api-go', 'BACKEND_GO'))
-        elif values.get('ASSOZETA_BACKEND_GO_REF') and not allow_configured_images:
+        if values.get('ASSOZETA_BACKEND_GO_REF') and 'api-go' not in configured and not allow_configured_images:
             raise RuntimeError('Verified Go image has no configured service')
-        # Present only when ASSOZETA_GO_TASKS enables its Compose profile.
-        if 'worker-go' in configured:
-            services.append(('worker-go', 'BACKEND_GO'))
-        for service, image in services:
+        runtime = effective_runtime(self.root, self.env_file, configured)
+        active = runtime_services(self.root, self.env_file, runtime, configured=configured)
+        if runtime is None:
+            for service in ('api', 'worker', 'beat'):
+                if service not in active:
+                    raise RuntimeError(f'Missing service: {service}')
+            # Historically the disabled relay was scaled to zero.
+            for service in ('realtime-relay', 'realtime-relay-go'):
+                if service in configured and service not in active and subprocess.check_output(
+                        command + ['ps', '--all', '-q', service], env=environment, text=True).strip():
+                    raise RuntimeError(f'Unexpected container for disabled service: {service}')
+        else:
+            api = 'api-go' if runtime == 'go' else 'api'
+            if api not in active:
+                raise RuntimeError(f'Missing service: {api}')
+            other = 'go' if runtime == 'django' else 'django'
+            inactive = runtime_services(self.root, self.env_file, other, configured=configured)
+            running = subprocess.check_output(command + ['ps', '--status', 'running', '--services'],
+                                              env=environment, text=True).splitlines()
+            unexpected = sorted(set(inactive).intersection(running))
+            if unexpected:
+                raise RuntimeError('Inactive runtime services running: ' + ', '.join(unexpected))
+        services = {name: 'BACKEND_GO' if name.endswith('-go') else 'BACKEND' for name in active}
+        services.update(web='WEB', renderer='RENDERER')
+        if runtime is not None:
+            # PostgreSQL, Redis and MinIO use the refs specified by Compose.
+            for service in SHARED_SERVICES:
+                services.setdefault(service, None)
+        for service, image in services.items():
             container = subprocess.check_output(command + ['ps', '-q', service], env=environment, text=True).strip()
             if not container:
                 raise RuntimeError(f'Missing service: {service}')
@@ -192,10 +207,12 @@ class Engine:
                 raise RuntimeError(f'Unhealthy service: {service}')
             if service == 'api-go' and details['State'].get('Health', {}).get('Status') != 'healthy':
                 raise RuntimeError('Go service has no passing readiness check')
-            expected = configured[service]['image'] if allow_configured_images else values.get(f'ASSOZETA_{image}_REF')
+            expected = configured[service]['image'] if allow_configured_images or image is None else values.get(f'ASSOZETA_{image}_REF')
             if not expected or details['Config']['Image'] != expected:
                 raise RuntimeError(f'Running image differs from verified release: {service}')
-        for service in ('api', 'api-go') if 'api-go' in configured else ('api',):
+        for service in ('api', 'api-go'):
+            if service not in active:
+                continue
             running = subprocess.check_output(command + ['exec', '-T', service, 'cat', '/app/VERSION'], env=environment, text=True).strip()
             if version_tuple(running) != version_tuple(target):
                 raise RuntimeError(f'Running backend reports a different release: {service}')

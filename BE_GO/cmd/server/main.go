@@ -71,7 +71,27 @@ func main() {
 		os.Exit(1)
 	}
 }
+
+type startupEffects struct {
+	WhatsAppOutbox bool
+}
+
+func startupEffectsFrom(getenv func(string) string) (startupEffects, error) {
+	switch getenv("ASSOZETA_GO_WHATSAPP_OUTBOX") {
+	case "", "1":
+		return startupEffects{WhatsAppOutbox: true}, nil
+	case "0":
+		return startupEffects{}, nil
+	default:
+		return startupEffects{}, errors.New("ASSOZETA_GO_WHATSAPP_OUTBOX must be 0 or 1")
+	}
+}
+
 func run() (runErr error) {
+	effects, err := startupEffectsFrom(os.Getenv)
+	if err != nil {
+		return err
+	}
 	envFile := flag.String("env-file", "", "optional path to the existing deployment .env")
 	queryObservationFile := flag.String("query-observation-file", "", "optional new private JSONL file for bounded query diagnostics")
 	queryConnectionObservationFile := flag.String("query-connection-observation-file", "", "optional new private connection JSONL file; requires query-observation-file")
@@ -1032,17 +1052,19 @@ func run() (runErr error) {
 	server := &http.Server{Addr: cfg.ListenAddress, Handler: webSockets.Routes(e), ReadHeaderTimeout: 10 * time.Second, IdleTimeout: 60 * time.Second}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
-	workerDone := make(chan struct{})
-	go func() {
-		defer close(workerDone)
-		outboxDB := sqlx.NewDb(ownedpgx.OpenDB(*outboxConfig), "pgx")
-		defer outboxDB.Close()
-		outboxDB.SetMaxOpenConns(1)
-		admin := newInstanceAdmin(cfg, outboxDB, nil)
-		admission := service.NewRestoreAdmission(restoreLock, repository.NewRestoreStates(outboxDB), cfg.RestoreLockPath != "")
-		whatsapp.NewQueue(outboxDB.DB, admin.WhatsAppSettings).Run(ctx, admission.AcquireWrite)
-	}()
-	defer func() { stop(); <-workerDone }()
+	if effects.WhatsAppOutbox {
+		workerDone := make(chan struct{})
+		go func() {
+			defer close(workerDone)
+			outboxDB := sqlx.NewDb(ownedpgx.OpenDB(*outboxConfig), "pgx")
+			defer outboxDB.Close()
+			outboxDB.SetMaxOpenConns(1)
+			admin := newInstanceAdmin(cfg, outboxDB, nil)
+			admission := service.NewRestoreAdmission(restoreLock, repository.NewRestoreStates(outboxDB), cfg.RestoreLockPath != "")
+			whatsapp.NewQueue(outboxDB.DB, admin.WhatsAppSettings).Run(ctx, admission.AcquireWrite)
+		}()
+		defer func() { stop(); <-workerDone }()
+	}
 	stopped := make(chan error, 1)
 	go func() { stopped <- server.ListenAndServe() }()
 	select {
