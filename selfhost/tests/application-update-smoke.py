@@ -778,10 +778,19 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
             failed_transition = await_operation(failed_transition['id'])
             assert failed_transition['status'] == 'recovery_required' and failed_transition['failed_stage'] == 'health_check', failed_transition
             target_go = capture(compose('ps', '-q', 'api-go'), env=environment)
-            assert target_go, 'First Go delivery never started its target API'
-            target_go_state = json.loads(capture(['docker', 'inspect', target_go]))[0]
-            assert target_go_state['Config']['Image'] == backend_go[4]
-            assert target_go_state['State']['Running'] and target_go_state['State']['Health']['Status'] == 'healthy'
+            # The injected failure is the target's public /healthz (Caddy 503), so the
+            # transition fails at health_check in either distribution. A dual-API target
+            # (the historical distribution) starts its Go API on first delivery; an
+            # exclusive target upgrades in Django mode and never starts Go. A Go-mode
+            # target whose Go image fails health is a Phase 6 lifecycle obligation
+            # (handoff-inventory.json rollback_source:interrupted-upgrade).
+            if 'go' in capture(compose('config', '--profiles'), env=environment).split():
+                assert not target_go, 'A Django-mode delivery started the Go API'
+            else:
+                assert target_go, 'First Go delivery never started its target API'
+                target_go_state = json.loads(capture(['docker', 'inspect', target_go]))[0]
+                assert target_go_state['Config']['Image'] == backend_go[4]
+                assert target_go_state['State']['Running'] and target_go_state['State']['Health']['Status'] == 'healthy'
             assert_maintenance_web()
             pending = json.loads((installation / '.updater/pending-distribution/transaction.json').read_text())
             assert pending['source_version'] == '1.0.17'
