@@ -53,8 +53,10 @@ class ManifestImageFixture(ImageFixture):
         if suffix == 'server':
             # Explicit startup /readyz and /healthz still run. Suppress only the
             # timer's unrelated SELECTs during per-request SQL measurement.
+            # The WhatsApp outbox loop also polls PostgreSQL every ten seconds (its
+            # SELECTs land in a measured window at random); Phase 2 gates it off.
             args += ('--no-healthcheck', '--env',
-                     'CORS_ALLOWED_ORIGINS=https://allowed.example.test')
+                     'CORS_ALLOWED_ORIGINS=https://allowed.example.test', '--env', 'ASSOZETA_GO_WHATSAPP_OUTBOX=0')
         container = super().run_container(suffix, image, *args)
         if suffix == 'server':
             self.server_container = container

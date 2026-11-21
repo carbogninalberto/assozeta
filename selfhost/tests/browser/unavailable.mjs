@@ -41,7 +41,8 @@ try {
     await new Promise(resolve => api.listen(0, '0.0.0.0', resolve));
     const upstream = 'host.docker.internal:' + api.address().port;
     const config = (await readFile(join(root, 'selfhost/caddy/Caddyfile'), 'utf8'))
-        .replaceAll('api:8000', upstream)
+        // Every API upstream name: historical api/api-go and the exclusive active-api alias.
+        .replace(/\b(?:active-api|api-go|api):8000\b/g, upstream)
         .replace('unix//run/assozeta-update-status/status.sock', upstream);
     await writeFile(join(temporary, 'Caddyfile'), config);
     execFileSync('docker', ['run', '--rm', '-d', '--name', container,

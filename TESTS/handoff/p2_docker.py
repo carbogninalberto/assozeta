@@ -111,9 +111,12 @@ def container(name, state, options):
     definition = config['services'].get(service, {})
     running = service in state['running']
     healthcheck = definition.get('healthcheck')
+    # The image the container was started with (the caller's Compose environment
+    # at `up` time), not a re-render with this call's environment.
+    image = (state['definitions'].get(service) or {}).get('image') or definition.get('image', '')
     document = {
-        'Id': name, 'Name': '/' + name, 'Image': definition.get('image', ''),
-        'Config': {'Image': definition.get('image', ''), 'Labels': {
+        'Id': name, 'Name': '/' + name, 'Image': image,
+        'Config': {'Image': image, 'Labels': {
             'com.docker.compose.project': config.get('name', 'assozeta'),
             'com.docker.compose.service': service, 'com.docker.compose.oneoff': 'False'}},
         'State': {'Running': running, 'Status': 'running' if running else 'exited', 'StartedAt': 'simulated'},

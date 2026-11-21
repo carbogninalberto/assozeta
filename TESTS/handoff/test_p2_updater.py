@@ -87,7 +87,8 @@ class UpdaterCase(unittest.TestCase):
         self.installation.set_env(ASSOZETA_VERSION=VERSION)
         if runtime != 'django':
             self.installation.set_authority(runtime)
-            self.installation.cli('restart', check=False)
+        # Containers must run the configured release (p2_docker reports the started image).
+        self.installation.cli('restart', check=False)
         return self.installation
 
 
@@ -149,6 +150,29 @@ class LiveVerification(UpdaterCase):
                 rejected = self.updater(f'verify:{VERSION}')
                 self.assertEqual(rejected.get('result'), 'rejected',
                                  f'live verification in runtime {runtime} accepted a running {other}: {rejected}')
+
+
+class LiveVerificationOfRetiredStorageDefaults(UpdaterCase):
+    """An installation configured before the storage images moved (v1.0.2: quay.io MinIO).
+
+    bin/assozeta resolves the retired MINIO_IMAGE / MINIO_CLIENT_IMAGE defaults to
+    the pinned ghcr references when it runs Compose (storage_image_ref) without
+    rewriting .env, so the running MinIO container uses the resolved image.
+    Live verification must accept that installation.
+    """
+
+    def test_verification_accepts_storage_started_from_a_resolved_retired_default(self):
+        self.installation.set_authority('django')
+        self.installation.install()
+        self.installation.set_env(ASSOZETA_VERSION=VERSION,
+                                  MINIO_IMAGE='quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z',
+                                  MINIO_CLIENT_IMAGE='quay.io/minio/mc:RELEASE.2025-04-16T18-13-26Z')
+        self.installation.cli('restart')
+        started = self.installation.observed()['definitions']['minio']['image']
+        self.assertTrue(started.startswith('ghcr.io/carbogninalberto/minio:'), started)
+        answer = self.updater(f'verify:{VERSION}')
+        self.assertEqual(answer.get('result'), 'accepted',
+                         f'live verification rejected an installation with a retired storage default: {answer}')
 
 
 if __name__ == '__main__':

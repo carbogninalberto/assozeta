@@ -33,6 +33,7 @@ from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path[:0] = [str(ROOT / 'BE'), str(ROOT)]
+from TESTS.adapters.caddy import fixture_routes  # noqa: E402
 DATABASE = 'assozeta_contract_ui_api_version_browser'
 CACHE_PASSWORD = 'private-ui-api-browser-cache'
 DJANGO_ON_V2 = ('/instance/manifest.json', '/instance/logo.png')
@@ -72,8 +73,9 @@ def shipped_caddy(ui_dir, django_port, go_port, log):
         work = Path(directory).resolve()
         (work / 'operations').mkdir()
         configuration = (ROOT / 'selfhost/caddy/Caddyfile').read_text()
-        configuration = re.sub(r'api-go:8000|api:8000', lambda match: f'host.docker.internal:{go_port}'
-                               if match[0] == 'api-go:8000' else f'host.docker.internal:{django_port}', configuration)
+        # Historical path split, or the exclusive Caddyfile's /api/v2 blocks to Go (fixture_routes).
+        configuration = fixture_routes(configuration, f'host.docker.internal:{django_port}',
+                                       f'host.docker.internal:{go_port}')
         assert configuration.count(f'host.docker.internal:{go_port}') >= 2, 'Go upstream missing from Caddyfile'
         (work / 'Caddyfile').write_text(configuration)
 

@@ -501,9 +501,19 @@ InstanceConfiguration.objects.update(logo_path=path)
                               'sh', str(bootstrap), '--directory', str(installation), '--version', '2.0.1'])
             assert json.loads((installation / '.updater/provisioning.json').read_text())['schema_version'] == 2
             current_environment = read_env(env_file)
+            # An exclusive target (runtime profiles) moves the generated internal API
+            # references to the runtime-independent active-api alias and adds that host
+            # to ALLOWED_HOSTS; every other legacy value, and any override, is kept.
+            exclusive = 'go' in capture(compose('config', '--profiles'), env=environment).split()
             for key, value in legacy_environment.items():
-                if key != 'ASSOZETA_VERSION':
-                    assert current_environment[key] == value, f'Legacy environment changed: {key}'
+                if key == 'ASSOZETA_VERSION':
+                    continue
+                expected = value
+                if exclusive and key in ('CURRENT_HOST', 'CURRENT_HOST_PUPPETEER') and value == 'http://api:8000':
+                    expected = 'http://active-api:8000'
+                elif exclusive and key == 'ALLOWED_HOSTS' and 'active-api' not in value.split(','):
+                    expected = value + ',active-api'
+                assert current_environment[key] == expected, f'Legacy environment changed: {key}'
             command(compose('exec', '-T', 'api', 'python', 'manage.py', 'shell', '-c', '''
 from django.db import connection
 from django.core.files.storage import default_storage
@@ -1137,7 +1147,8 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
             for filename in ('compose.updater.yml', 'compose.yml'):
                 with log.open('a') as output:
                     project_args = ['--project-name', f'{project}-updater'] if filename == 'compose.updater.yml' else []
-                    subprocess.run(['docker', 'compose', '--env-file', str(env_file), '-f', str(installation / filename), *project_args, 'down', '--timeout', '10', '--volumes', '--remove-orphans'],
+                    # Every profile: an exclusive release keeps its runtime services in profiles.
+                    subprocess.run(['docker', 'compose', '--env-file', str(env_file), '-f', str(installation / filename), *project_args, '--profile', '*', 'down', '--timeout', '10', '--volumes', '--remove-orphans'],
                                    env=environment, stdout=output, stderr=output)
             subprocess.run(['docker', 'volume', 'rm', f'{project}_updater_api', f'{project}_updater_status'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         for tag in reversed(image_tags):

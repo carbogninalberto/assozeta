@@ -207,8 +207,9 @@ with default_storage.open(instance.logo_path, 'rb') as logo:
             with log.open('a') as output:
                 for filename, name in (('compose.updater.yml', f'{project}-updater'), ('compose.yml', project)):
                     if (installation / filename).exists():
+                        # Every profile: an exclusive release keeps its runtime services in profiles.
                         subprocess.run(['docker', 'compose', '--env-file', str(env_file), '-f', str(installation / filename),
-                            '--project-name', name, 'down', '--volumes', '--remove-orphans'], env=environment, stdout=output, stderr=output)
+                            '--project-name', name, '--profile', '*', 'down', '--volumes', '--remove-orphans'], env=environment, stdout=output, stderr=output)
                 subprocess.run(['docker', 'volume', 'rm', f'{project}_updater_api', f'{project}_updater_status'], stdout=output, stderr=output)
         assert_project_removed(project)
         if evidence is not None:
