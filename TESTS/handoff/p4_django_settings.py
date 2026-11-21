@@ -38,3 +38,33 @@ _password = os.environ.get('ASSOZETA_HANDOFF_REDIS_PASSWORD', '')
 CHANNEL_LAYERS = {'default': {'BACKEND': 'notifications.realtime_layer.GoMirroredRedisChannelLayer',
                               'CONFIG': {'hosts': [{'address': 'redis://' + _redis.rsplit('@', 1)[-1],
                                                     'password': _password}]}}}
+
+# Production-shaped cache (django-redis, database 1 of the private Redis): cross-process state such as
+# the backup-failure notice dedup keys lives there in production.
+CACHES = {'default': {'BACKEND': 'django_redis.cache.RedisCache',
+                      'LOCATION': 'redis://' + _redis.rsplit('@', 1)[-1].rsplit('/', 1)[0] + '/1',
+                      'OPTIONS': {'CLIENT_CLASS': 'django_redis.client.DefaultClient', 'PASSWORD': _password}}}
+# A valid sender for team notices (core.settings derives it from EMAIL_HOST_USER); no password, so no SMTP AUTH.
+EMAIL_HOST_USER = 'team@example.test'
+DEFAULT_TEAM_EMAIL = 'Il Team di Handoff Fixture <team@example.test>'
+
+# Matrix families (p4_matrix_kit / p4_family_*): the stack's private services, when it runs them.
+if os.environ.get('STORE_ON_DISK') == 'False' and os.environ.get('AWS_S3_ENDPOINT_URL'):
+    # Same backend as production (core.settings), on the stack's private MinIO bucket.
+    STORAGES = {'default': {'BACKEND': 'storages.backends.s3boto3.S3Boto3Storage'},
+                'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'}}
+    STORE_ON_DISK = False
+    AWS_S3_ADDRESSING_STYLE = 'path'
+STRIPE_KEY = os.environ.get('STRIPE_KEY', '')
+STRIPE_PUBLIC_KEY = os.environ.get('STRIPE_PUBLIC_KEY', '')
+if os.environ.get('STRIPE_API_BASE'):
+    import stripe
+    stripe.api_key = STRIPE_KEY
+    stripe.api_base = os.environ['STRIPE_API_BASE']  # the stack's Stripe stub (both runtimes read STRIPE_API_BASE)
+if os.environ.get('ASSOZETA_HANDOFF_DEVELOPMENT_HTTP') == '1':
+    # Plain-http peers (the Bakney peer stub) are accepted only in development mode (instance.sso.protocol).
+    DEBUG = True
+    ASSOZETA_DEPLOYMENT_MODE = 'development'
+if os.environ.get('ASSOZETA_HANDOFF_CURRENT_HOST'):
+    # The trusted print origin (a family's recording stub or the active API); the base test settings pin a dead port.
+    CURRENT_HOST = CURRENT_HOST_PUPPETEER = os.environ['ASSOZETA_HANDOFF_CURRENT_HOST']

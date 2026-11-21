@@ -32,8 +32,10 @@ jobs:
       - uses: ./.github/actions/go-foundation-setup
       - name: Pull the pinned proxy image
         run: docker pull "$(sed -n 's/^FROM \(caddy:[^ ]*\) AS production$/\1/p' UI/Dockerfile)"
-      - name: Run the handoff suite with expected-red tracking
-        run: python3 -B -m TESTS.handoff.run_expected_red
+      - name: Run the handoff suite with expected-red tracking (the Phase 4 task matrix runs in its own job)
+        run: |
+          modules=$(ls TESTS/handoff/test_*.py | grep -v '/test_p4_task_matrix\.py$' | sed 's#/#.#g; s#\.py$##')
+          python3 -B -m TESTS.handoff.run_expected_red $modules
       - name: Retain the expected-red report
         if: always()
         uses: actions/upload-artifact@v4
@@ -42,5 +44,38 @@ jobs:
           path: |
             quality-reports/handoff/expected-red.json
             quality-reports/handoff/p3/
+            quality-reports/handoff/p4/
+          if-no-files-found: warn
+          retention-days: 14
+
+  task-matrix:
+    name: Phase 4 task matrix (expected red tracked)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      GOTOOLCHAIN: local
+      PIP_CONSTRAINT: ${{ github.workspace }}/TESTS/adapters/django/constraints-parity.txt
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/go-foundation-setup
+      - name: Pull the pinned private storage image
+        run: |
+          python3 - <<'PY'
+          import subprocess
+          from TESTS.adapters.django.s3_objects import IMAGE
+          subprocess.run(['docker', 'pull', IMAGE], check=True)
+          PY
+      - name: Run every task family with expected-red tracking
+        run: python3 -B -m TESTS.handoff.run_expected_red --report quality-reports/handoff/expected-red-matrix.json TESTS.handoff.test_p4_task_matrix
+      - name: Retain the matrix report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: handoff-task-matrix-${{ github.sha }}
+          path: |
+            quality-reports/handoff/expected-red-matrix.json
+            quality-reports/handoff/p4/matrix/
           if-no-files-found: warn
           retention-days: 14

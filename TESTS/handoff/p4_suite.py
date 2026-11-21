@@ -38,6 +38,9 @@ def suite(name, timeout=5400):
 class ScenarioAssertions:
     """Mixin: SUITE names the driver suite; scenario(name) asserts that scenario passed."""
     SUITE = None
+    # The matrix marks every contract red (a ContractFailure, never a crash) with one stable prefix: its scenarios
+    # stay red through several phases' seams (P3 transfer, P4 executors, P4-D record), so the reason text moves.
+    FAILURE_PREFIX = ''
 
     def scenario(self, name):
         result = suite(self.SUITE)['scenarios'].get(name)
@@ -45,4 +48,4 @@ class ScenarioAssertions:
             raise RuntimeError(f'scenario {name} did not run (ASSOZETA_HANDOFF_P4_FAMILIES excludes it?)')
         if 'error' in result:
             raise RuntimeError(f'scenario {name} crashed (not a contract red):\n{result["error"]}')
-        self.assertTrue(result['ok'], result.get('failure'))
+        self.assertTrue(result['ok'], self.FAILURE_PREFIX + (result.get('failure') or ''))
