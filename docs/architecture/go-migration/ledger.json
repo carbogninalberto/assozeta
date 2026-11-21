@@ -34482,7 +34482,7 @@
         "target": "InstanceAccessView.as_view()",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/internal/domain/instance_bootstrap.go",
         "BE_GO/internal/dto/instance_bootstrap.go",
@@ -34535,18 +34535,18 @@
       "evidence": [
         {
           "command": "python TESTS/adapters/django/instance_bootstrap.py --backend django",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "6d0644b28f881cf2a52bba868fb10531854d5d11",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/ledger-verified-r8/instance-bootstrap/1-results.json",
-          "receipt_sha256": "416091c1df29609ffbd03bc657a8fac7f12ec9aa146ac6f44057be44106c436e",
+          "artifact": "quality-reports/go-migration/ledger-verified-p1-instance/instance-bootstrap/1-results.json",
+          "receipt_sha256": "2f655e45b9de0ed6509c7234d2e4810f5f21407033549e6f2e3bc4f9c51c4b8d",
           "scope": "instance-bootstrap harness: success=True."
         },
         {
           "command": "python TESTS/adapters/django/instance_bootstrap.py --backend go --manifest-versioned",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "6d0644b28f881cf2a52bba868fb10531854d5d11",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/ledger-verified-r8/instance-bootstrap/2-results.json",
-          "receipt_sha256": "14b33be97f138bcc963fabc4eeead9fc0017b7e2de9ed9694462d01acde83284",
+          "artifact": "quality-reports/go-migration/ledger-verified-p1-instance/instance-bootstrap/2-results.json",
+          "receipt_sha256": "ceebc8ee915e72f50914e8a5290240a08f8153a5d2762f262e4bcae457051b48",
           "scope": "instance-bootstrap harness: success=True."
         }
       ],
@@ -34557,7 +34557,9 @@
         "Implementing evidence: passed: 128 Django bootstrap cases (quality-reports/go-migration/instance-bootstrap/results.json)",
         "Implementing evidence: passed: 128 Go bootstrap cases (quality-reports/go-migration/instance-bootstrap-go/results.json)",
         "Implementing evidence: passed: 128 Django bootstrap cases; views unchanged by the merge. (quality-reports/go-migration/instance-reverify-bootstrap-django/results.json)",
-        "Implementing evidence: passed: 128 Go bootstrap cases. (quality-reports/go-migration/instance-reverify-bootstrap-go/results.json)"
+        "Implementing evidence: passed: 128 Go bootstrap cases. (quality-reports/go-migration/instance-reverify-bootstrap-go/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/ledger-verified-r8/instance-bootstrap/1-results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/ledger-verified-r8/instance-bootstrap/2-results.json)"
       ]
     },
     {
@@ -34575,7 +34577,7 @@
         "target": "InstanceAdminView.as_view()",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/cmd/server/instance_admin.go",
@@ -34643,12 +34645,12 @@
       ],
       "evidence": [
         {
-          "command": "python tools/go-migration/family.py run instance-admin --versioned --label sweep-final-3",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "command": "python tools/go-migration/family.py run instance-admin --versioned --label sweep-p1-instance",
+          "revision": "6d0644b28f881cf2a52bba868fb10531854d5d11",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/instance-admin-http-sweep-final-3/results.json",
-          "receipt_sha256": "166e1235d101ba8ffc5fae46648a3aaee107783d317364603c88df050ce38cf5",
-          "scope": "HTTP family instance-admin: 207/207 cases on native Django and native Go, 207/207 on Caddy /api/v1 and /api/v2."
+          "artifact": "quality-reports/go-migration/instance-admin-http-sweep-p1-instance/results.json",
+          "receipt_sha256": "9462ed5632a79d41418a447285daa83c9e30134d26726870f5342eea7deaf3f1",
+          "scope": "HTTP family instance-admin: 213/213 cases on native Django and native Go, 213/213 on Caddy /api/v1 and /api/v2."
         }
       ],
       "notes": [
@@ -34656,7 +34658,8 @@
         "Implementing evidence: docs/architecture/go-migration/instance-admin.md",
         "Implementing evidence: RED: Django 172/172; Go 500 on the first case. (quality-reports/go-migration/instance-admin-http-diag-red/results.json)",
         "Implementing evidence: GREEN: 172/172 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact InstanceConfiguration effects, outbound requests, pidbox broadcasts and cache cleanup. (quality-reports/go-migration/instance-admin-http-diag-green/results.json)",
-        "Implementing evidence: Mutation control: fails Go on instance-admin-diagnostics-run-odd-answers (response.body:checks[4]:status). (quality-reports/go-migration/instance-admin-http-diag-mutation/results.json)"
+        "Implementing evidence: Mutation control: fails Go on instance-admin-diagnostics-run-odd-answers (response.body:checks[4]:status). (quality-reports/go-migration/instance-admin-http-diag-mutation/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/instance-admin-http-sweep-final-3/results.json)"
       ]
     },
     {
@@ -34674,7 +34677,7 @@
         "target": "BackupOverviewView.as_view()",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/internal/handler/instance_backups.go",
         "BE_GO/internal/service/instance_backups.go",
@@ -34729,12 +34732,12 @@
       ],
       "evidence": [
         {
-          "command": "python tools/go-migration/family.py run instance-backups --versioned --label sweep-final-3",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "command": "python tools/go-migration/family.py run instance-backups --versioned --label sweep-p1-instance",
+          "revision": "6d0644b28f881cf2a52bba868fb10531854d5d11",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/instance-backups-http-sweep-final-3/results.json",
-          "receipt_sha256": "0334bafdd99250f2c19c653d714d19da90ebf891fd5828907890d5a7a9d139b8",
-          "scope": "HTTP family instance-backups: 165/165 cases on native Django and native Go, 165/165 on Caddy /api/v1 and /api/v2."
+          "artifact": "quality-reports/go-migration/instance-backups-http-sweep-p1-instance/results.json",
+          "receipt_sha256": "9859ad511d47ad0c8c4276c87eed4e686bacebfbf453610c6d4f96aa68b1baec",
+          "scope": "HTTP family instance-backups: 185/185 cases on native Django and native Go, 185/185 on Caddy /api/v1 and /api/v2."
         }
       ],
       "notes": [
@@ -34743,7 +34746,8 @@
         "Implementing evidence: RED: Django 161/161; Go fails the first case (Allow without POST). (quality-reports/go-migration/instance-reverify-backups-red/results.json)",
         "Implementing evidence: GREEN: 161/161 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact runner requests, cache bytes and TTLs, audit entries and stored hashes. (quality-reports/go-migration/instance-reverify-backups-green/results.json)",
         "Implementing evidence: Mutation control: fails Go on instance-backups-create-runner-404 (500 page instead of 409). (quality-reports/go-migration/instance-reverify-backups-mutation/results.json)",
-        "Implementing evidence: GREEN: 161/161 on native Django, native Go, Caddy /api/v1 and /api/v2 after password_refusal counts each try before the check (shared with the backup actions). (quality-reports/go-migration/sec-backups-overview-green/results.json)"
+        "Implementing evidence: GREEN: 161/161 on native Django, native Go, Caddy /api/v1 and /api/v2 after password_refusal counts each try before the check (shared with the backup actions). (quality-reports/go-migration/sec-backups-overview-green/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/instance-backups-http-sweep-final-3/results.json)"
       ]
     },
     {
@@ -34761,7 +34765,7 @@
         "target": "BackupItemView.as_view()",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/internal/handler/instance_backup_actions.go",
         "BE_GO/internal/service/instance_backup_actions.go",
@@ -34822,12 +34826,12 @@
       ],
       "evidence": [
         {
-          "command": "python tools/go-migration/family.py run instance-backups-actions --versioned --label sweep-final-3",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "command": "python tools/go-migration/family.py run instance-backups-actions --versioned --label sweep-p1-instance",
+          "revision": "6d0644b28f881cf2a52bba868fb10531854d5d11",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/instance-backups-actions-http-sweep-final-3/results.json",
-          "receipt_sha256": "05b4ff7ac5a2566f92bc0d1a3088a8fa4fcf41b6bbdaaccd047cf3e81a2a7cea",
-          "scope": "HTTP family instance-backups-actions: 275/275 cases on native Django and native Go, 275/275 on Caddy /api/v1 and /api/v2."
+          "artifact": "quality-reports/go-migration/instance-backups-actions-http-sweep-p1-instance/results.json",
+          "receipt_sha256": "9e48cd68ee1be26858496e62c9f7d4d80b74bd9e8006115edfb9a7ab5c32f0f1",
+          "scope": "HTTP family instance-backups-actions: 277/277 cases on native Django and native Go, 277/277 on Caddy /api/v1 and /api/v2."
         }
       ],
       "notes": [
@@ -34835,7 +34839,8 @@
         "Implementing evidence: docs/architecture/go-migration/instance-backups-actions.md",
         "Implementing evidence: RED: Django 254/254; Go 503 on the first case. (quality-reports/go-migration/sec-backups-2-actions-red/results.json)",
         "Implementing evidence: GREEN: 254/254 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact runner requests (headers and body bytes, uploads included), attempts cache values and TTLs, audit entries and stored hashes, password confirmations, the upload limit and the endpoint rules. (quality-reports/go-migration/sec-backups-2-actions-green/results.json)",
-        "Implementing evidence: Mutation control: fails Go on instance-backups-actions-remote-test-saved-settings (attempts key left in place: no password check). (quality-reports/go-migration/sec-backups-2-actions-mutation/results.json)"
+        "Implementing evidence: Mutation control: fails Go on instance-backups-actions-remote-test-saved-settings (attempts key left in place: no password check). (quality-reports/go-migration/sec-backups-2-actions-mutation/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/instance-backups-actions-http-sweep-final-3/results.json)"
       ]
     },
     {
@@ -34853,7 +34858,7 @@
         "target": "BackupDownloadView.as_view()",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/internal/handler/instance_backups.go",
         "BE_GO/internal/service/instance_backups.go",
@@ -34906,12 +34911,12 @@
       ],
       "evidence": [
         {
-          "command": "python tools/go-migration/family.py run instance-backups --versioned --label sweep-final-3",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "command": "python tools/go-migration/family.py run instance-backups --versioned --label sweep-p1-instance",
+          "revision": "6d0644b28f881cf2a52bba868fb10531854d5d11",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/instance-backups-http-sweep-final-3/results.json",
-          "receipt_sha256": "0334bafdd99250f2c19c653d714d19da90ebf891fd5828907890d5a7a9d139b8",
-          "scope": "HTTP family instance-backups: 165/165 cases on native Django and native Go, 165/165 on Caddy /api/v1 and /api/v2."
+          "artifact": "quality-reports/go-migration/instance-backups-http-sweep-p1-instance/results.json",
+          "receipt_sha256": "9859ad511d47ad0c8c4276c87eed4e686bacebfbf453610c6d4f96aa68b1baec",
+          "scope": "HTTP family instance-backups: 185/185 cases on native Django and native Go, 185/185 on Caddy /api/v1 and /api/v2."
         }
       ],
       "notes": [
@@ -34920,7 +34925,8 @@
         "Implementing evidence: RED: Django 161/161; Go fails the first case (Allow without POST). (quality-reports/go-migration/instance-reverify-backups-red/results.json)",
         "Implementing evidence: GREEN: 161/161 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact runner requests, cache bytes and TTLs, audit entries and stored hashes. (quality-reports/go-migration/instance-reverify-backups-green/results.json)",
         "Implementing evidence: Mutation control: fails Go on instance-backups-create-runner-404 (500 page instead of 409). (quality-reports/go-migration/instance-reverify-backups-mutation/results.json)",
-        "Implementing evidence: GREEN: 161/161 on native Django, native Go, Caddy /api/v1 and /api/v2 after password_refusal counts each try before the check (shared with the backup actions). (quality-reports/go-migration/sec-backups-overview-green/results.json)"
+        "Implementing evidence: GREEN: 161/161 on native Django, native Go, Caddy /api/v1 and /api/v2 after password_refusal counts each try before the check (shared with the backup actions). (quality-reports/go-migration/sec-backups-overview-green/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/instance-backups-http-sweep-final-3/results.json)"
       ]
     },
     {
@@ -34938,7 +34944,7 @@
         "target": "BackupRestoreView.as_view()",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/internal/handler/instance_backup_actions.go",
         "BE_GO/internal/service/instance_backup_actions.go",
@@ -34998,12 +35004,12 @@
       ],
       "evidence": [
         {
-          "command": "python tools/go-migration/family.py run instance-backups-actions --versioned --label sweep-final-3",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "command": "python tools/go-migration/family.py run instance-backups-actions --versioned --label sweep-p1-instance",
+          "revision": "6d0644b28f881cf2a52bba868fb10531854d5d11",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/instance-backups-actions-http-sweep-final-3/results.json",
-          "receipt_sha256": "05b4ff7ac5a2566f92bc0d1a3088a8fa4fcf41b6bbdaaccd047cf3e81a2a7cea",
-          "scope": "HTTP family instance-backups-actions: 275/275 cases on native Django and native Go, 275/275 on Caddy /api/v1 and /api/v2."
+          "artifact": "quality-reports/go-migration/instance-backups-actions-http-sweep-p1-instance/results.json",
+          "receipt_sha256": "9e48cd68ee1be26858496e62c9f7d4d80b74bd9e8006115edfb9a7ab5c32f0f1",
+          "scope": "HTTP family instance-backups-actions: 277/277 cases on native Django and native Go, 277/277 on Caddy /api/v1 and /api/v2."
         }
       ],
       "notes": [
@@ -35011,7 +35017,8 @@
         "Implementing evidence: docs/architecture/go-migration/instance-backups-actions.md",
         "Implementing evidence: RED: Django 254/254; Go 503 on the first case. (quality-reports/go-migration/sec-backups-2-actions-red/results.json)",
         "Implementing evidence: GREEN: 254/254 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact runner requests (headers and body bytes, uploads included), attempts cache values and TTLs, audit entries and stored hashes, password confirmations, the upload limit and the endpoint rules. (quality-reports/go-migration/sec-backups-2-actions-green/results.json)",
-        "Implementing evidence: Mutation control: fails Go on instance-backups-actions-remote-test-saved-settings (attempts key left in place: no password check). (quality-reports/go-migration/sec-backups-2-actions-mutation/results.json)"
+        "Implementing evidence: Mutation control: fails Go on instance-backups-actions-remote-test-saved-settings (attempts key left in place: no password check). (quality-reports/go-migration/sec-backups-2-actions-mutation/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/instance-backups-actions-http-sweep-final-3/results.json)"
       ]
     },
     {
@@ -35029,7 +35036,7 @@
         "target": "BackupDownloadTokenView.as_view()",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/internal/handler/instance_backups.go",
         "BE_GO/internal/service/instance_backups.go",
@@ -35082,12 +35089,12 @@
       ],
       "evidence": [
         {
-          "command": "python tools/go-migration/family.py run instance-backups --versioned --label sweep-final-3",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "command": "python tools/go-migration/family.py run instance-backups --versioned --label sweep-p1-instance",
+          "revision": "6d0644b28f881cf2a52bba868fb10531854d5d11",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/instance-backups-http-sweep-final-3/results.json",
-          "receipt_sha256": "0334bafdd99250f2c19c653d714d19da90ebf891fd5828907890d5a7a9d139b8",
-          "scope": "HTTP family instance-backups: 165/165 cases on native Django and native Go, 165/165 on Caddy /api/v1 and /api/v2."
+          "artifact": "quality-reports/go-migration/instance-backups-http-sweep-p1-instance/results.json",
+          "receipt_sha256": "9859ad511d47ad0c8c4276c87eed4e686bacebfbf453610c6d4f96aa68b1baec",
+          "scope": "HTTP family instance-backups: 185/185 cases on native Django and native Go, 185/185 on Caddy /api/v1 and /api/v2."
         }
       ],
       "notes": [
@@ -35096,7 +35103,8 @@
         "Implementing evidence: RED: Django 161/161; Go fails the first case (Allow without POST). (quality-reports/go-migration/instance-reverify-backups-red/results.json)",
         "Implementing evidence: GREEN: 161/161 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact runner requests, cache bytes and TTLs, audit entries and stored hashes. (quality-reports/go-migration/instance-reverify-backups-green/results.json)",
         "Implementing evidence: Mutation control: fails Go on instance-backups-create-runner-404 (500 page instead of 409). (quality-reports/go-migration/instance-reverify-backups-mutation/results.json)",
-        "Implementing evidence: GREEN: 161/161 on native Django, native Go, Caddy /api/v1 and /api/v2 after password_refusal counts each try before the check (shared with the backup actions). (quality-reports/go-migration/sec-backups-overview-green/results.json)"
+        "Implementing evidence: GREEN: 161/161 on native Django, native Go, Caddy /api/v1 and /api/v2 after password_refusal counts each try before the check (shared with the backup actions). (quality-reports/go-migration/sec-backups-overview-green/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/instance-backups-http-sweep-final-3/results.json)"
       ]
     },
     {
@@ -35114,7 +35122,7 @@
         "target": "RemoteBackupSettingsView.as_view()",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/internal/handler/instance_backup_actions.go",
         "BE_GO/internal/service/instance_backup_actions.go",
@@ -35176,12 +35184,12 @@
       ],
       "evidence": [
         {
-          "command": "python tools/go-migration/family.py run instance-backups-actions --versioned --label sweep-final-3",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "command": "python tools/go-migration/family.py run instance-backups-actions --versioned --label sweep-p1-instance",
+          "revision": "6d0644b28f881cf2a52bba868fb10531854d5d11",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/instance-backups-actions-http-sweep-final-3/results.json",
-          "receipt_sha256": "05b4ff7ac5a2566f92bc0d1a3088a8fa4fcf41b6bbdaaccd047cf3e81a2a7cea",
-          "scope": "HTTP family instance-backups-actions: 275/275 cases on native Django and native Go, 275/275 on Caddy /api/v1 and /api/v2."
+          "artifact": "quality-reports/go-migration/instance-backups-actions-http-sweep-p1-instance/results.json",
+          "receipt_sha256": "9e48cd68ee1be26858496e62c9f7d4d80b74bd9e8006115edfb9a7ab5c32f0f1",
+          "scope": "HTTP family instance-backups-actions: 277/277 cases on native Django and native Go, 277/277 on Caddy /api/v1 and /api/v2."
         }
       ],
       "notes": [
@@ -35191,7 +35199,8 @@
         "Implementing evidence: GREEN: 254/254 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact runner requests (headers and body bytes, uploads included), attempts cache values and TTLs, audit entries and stored hashes, password confirmations, the upload limit and the endpoint rules. (quality-reports/go-migration/sec-backups-2-actions-green/results.json)",
         "Implementing evidence: Mutation control: fails Go on instance-backups-actions-remote-test-saved-settings (attempts key left in place: no password check). (quality-reports/go-migration/sec-backups-2-actions-mutation/results.json)",
         "Implementing evidence: Mutation control: fails Go on instance-backups-actions-remote-put-endpoint-before-password (password checked instead of 400 for the address). (quality-reports/go-migration/sec-backups-actions-mutation-endpoint/results.json)",
-        "Implementing evidence: passed: the update runner checks the saved endpoint when it builds a client and connects only to a checked address of the host; without the connection check the guard tests fail. (quality-reports/go-migration/sec-backups-2-checks/sb2-selfhost.log)"
+        "Implementing evidence: passed: the update runner checks the saved endpoint when it builds a client and connects only to a checked address of the host; without the connection check the guard tests fail. (quality-reports/go-migration/sec-backups-2-checks/sb2-selfhost.log)",
+        "Implementing evidence: passed (quality-reports/go-migration/instance-backups-actions-http-sweep-final-3/results.json)"
       ]
     },
     {
@@ -35209,7 +35218,7 @@
         "target": "RemoteBackupFetchView.as_view()",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/internal/handler/instance_backup_actions.go",
         "BE_GO/internal/service/instance_backup_actions.go",
@@ -35269,12 +35278,12 @@
       ],
       "evidence": [
         {
-          "command": "python tools/go-migration/family.py run instance-backups-actions --versioned --label sweep-final-3",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "command": "python tools/go-migration/family.py run instance-backups-actions --versioned --label sweep-p1-instance",
+          "revision": "6d0644b28f881cf2a52bba868fb10531854d5d11",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/instance-backups-actions-http-sweep-final-3/results.json",
-          "receipt_sha256": "05b4ff7ac5a2566f92bc0d1a3088a8fa4fcf41b6bbdaaccd047cf3e81a2a7cea",
-          "scope": "HTTP family instance-backups-actions: 275/275 cases on native Django and native Go, 275/275 on Caddy /api/v1 and /api/v2."
+          "artifact": "quality-reports/go-migration/instance-backups-actions-http-sweep-p1-instance/results.json",
+          "receipt_sha256": "9e48cd68ee1be26858496e62c9f7d4d80b74bd9e8006115edfb9a7ab5c32f0f1",
+          "scope": "HTTP family instance-backups-actions: 277/277 cases on native Django and native Go, 277/277 on Caddy /api/v1 and /api/v2."
         }
       ],
       "notes": [
@@ -35283,7 +35292,8 @@
         "Implementing evidence: RED: Django 254/254; Go 503 on the first case. (quality-reports/go-migration/sec-backups-2-actions-red/results.json)",
         "Implementing evidence: GREEN: 254/254 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact runner requests (headers and body bytes, uploads included), attempts cache values and TTLs, audit entries and stored hashes, password confirmations, the upload limit and the endpoint rules. (quality-reports/go-migration/sec-backups-2-actions-green/results.json)",
         "Implementing evidence: Mutation control: fails Go on instance-backups-actions-remote-test-saved-settings (attempts key left in place: no password check). (quality-reports/go-migration/sec-backups-2-actions-mutation/results.json)",
-        "Implementing evidence: passed: the update runner checks the saved endpoint when it builds a client and connects only to a checked address of the host; without the connection check the guard tests fail. (quality-reports/go-migration/sec-backups-2-checks/sb2-selfhost.log)"
+        "Implementing evidence: passed: the update runner checks the saved endpoint when it builds a client and connects only to a checked address of the host; without the connection check the guard tests fail. (quality-reports/go-migration/sec-backups-2-checks/sb2-selfhost.log)",
+        "Implementing evidence: passed (quality-reports/go-migration/instance-backups-actions-http-sweep-final-3/results.json)"
       ]
     },
     {
@@ -35301,7 +35311,7 @@
         "target": "RemoteBackupKeyView.as_view()",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/internal/handler/instance_backup_actions.go",
         "BE_GO/internal/service/instance_backup_actions.go",
@@ -35361,12 +35371,12 @@
       ],
       "evidence": [
         {
-          "command": "python tools/go-migration/family.py run instance-backups-actions --versioned --label sweep-final-3",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "command": "python tools/go-migration/family.py run instance-backups-actions --versioned --label sweep-p1-instance",
+          "revision": "6d0644b28f881cf2a52bba868fb10531854d5d11",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/instance-backups-actions-http-sweep-final-3/results.json",
-          "receipt_sha256": "05b4ff7ac5a2566f92bc0d1a3088a8fa4fcf41b6bbdaaccd047cf3e81a2a7cea",
-          "scope": "HTTP family instance-backups-actions: 275/275 cases on native Django and native Go, 275/275 on Caddy /api/v1 and /api/v2."
+          "artifact": "quality-reports/go-migration/instance-backups-actions-http-sweep-p1-instance/results.json",
+          "receipt_sha256": "9e48cd68ee1be26858496e62c9f7d4d80b74bd9e8006115edfb9a7ab5c32f0f1",
+          "scope": "HTTP family instance-backups-actions: 277/277 cases on native Django and native Go, 277/277 on Caddy /api/v1 and /api/v2."
         }
       ],
       "notes": [
@@ -35374,7 +35384,8 @@
         "Implementing evidence: docs/architecture/go-migration/instance-backups-actions.md",
         "Implementing evidence: RED: Django 254/254; Go 503 on the first case. (quality-reports/go-migration/sec-backups-2-actions-red/results.json)",
         "Implementing evidence: GREEN: 254/254 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact runner requests (headers and body bytes, uploads included), attempts cache values and TTLs, audit entries and stored hashes, password confirmations, the upload limit and the endpoint rules. (quality-reports/go-migration/sec-backups-2-actions-green/results.json)",
-        "Implementing evidence: Mutation control: fails Go on instance-backups-actions-remote-test-saved-settings (attempts key left in place: no password check). (quality-reports/go-migration/sec-backups-2-actions-mutation/results.json)"
+        "Implementing evidence: Mutation control: fails Go on instance-backups-actions-remote-test-saved-settings (attempts key left in place: no password check). (quality-reports/go-migration/sec-backups-2-actions-mutation/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/instance-backups-actions-http-sweep-final-3/results.json)"
       ]
     },
     {
@@ -35392,7 +35403,7 @@
         "target": "RemoteBackupKeyConfirmView.as_view()",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/internal/handler/instance_backup_actions.go",
         "BE_GO/internal/service/instance_backup_actions.go",
@@ -35452,12 +35463,12 @@
       ],
       "evidence": [
         {
-          "command": "python tools/go-migration/family.py run instance-backups-actions --versioned --label sweep-final-3",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "command": "python tools/go-migration/family.py run instance-backups-actions --versioned --label sweep-p1-instance",
+          "revision": "6d0644b28f881cf2a52bba868fb10531854d5d11",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/instance-backups-actions-http-sweep-final-3/results.json",
-          "receipt_sha256": "05b4ff7ac5a2566f92bc0d1a3088a8fa4fcf41b6bbdaaccd047cf3e81a2a7cea",
-          "scope": "HTTP family instance-backups-actions: 275/275 cases on native Django and native Go, 275/275 on Caddy /api/v1 and /api/v2."
+          "artifact": "quality-reports/go-migration/instance-backups-actions-http-sweep-p1-instance/results.json",
+          "receipt_sha256": "9e48cd68ee1be26858496e62c9f7d4d80b74bd9e8006115edfb9a7ab5c32f0f1",
+          "scope": "HTTP family instance-backups-actions: 277/277 cases on native Django and native Go, 277/277 on Caddy /api/v1 and /api/v2."
         }
       ],
       "notes": [
@@ -35465,7 +35476,8 @@
         "Implementing evidence: docs/architecture/go-migration/instance-backups-actions.md",
         "Implementing evidence: RED: Django 254/254; Go 503 on the first case. (quality-reports/go-migration/sec-backups-2-actions-red/results.json)",
         "Implementing evidence: GREEN: 254/254 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact runner requests (headers and body bytes, uploads included), attempts cache values and TTLs, audit entries and stored hashes, password confirmations, the upload limit and the endpoint rules. (quality-reports/go-migration/sec-backups-2-actions-green/results.json)",
-        "Implementing evidence: Mutation control: fails Go on instance-backups-actions-remote-test-saved-settings (attempts key left in place: no password check). (quality-reports/go-migration/sec-backups-2-actions-mutation/results.json)"
+        "Implementing evidence: Mutation control: fails Go on instance-backups-actions-remote-test-saved-settings (attempts key left in place: no password check). (quality-reports/go-migration/sec-backups-2-actions-mutation/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/instance-backups-actions-http-sweep-final-3/results.json)"
       ]
     },
     {
@@ -35483,7 +35495,7 @@
         "target": "RemoteBackupTestView.as_view()",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/internal/handler/instance_backup_actions.go",
         "BE_GO/internal/service/instance_backup_actions.go",
@@ -35543,12 +35555,12 @@
       ],
       "evidence": [
         {
-          "command": "python tools/go-migration/family.py run instance-backups-actions --versioned --label sweep-final-3",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "command": "python tools/go-migration/family.py run instance-backups-actions --versioned --label sweep-p1-instance",
+          "revision": "6d0644b28f881cf2a52bba868fb10531854d5d11",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/instance-backups-actions-http-sweep-final-3/results.json",
-          "receipt_sha256": "05b4ff7ac5a2566f92bc0d1a3088a8fa4fcf41b6bbdaaccd047cf3e81a2a7cea",
-          "scope": "HTTP family instance-backups-actions: 275/275 cases on native Django and native Go, 275/275 on Caddy /api/v1 and /api/v2."
+          "artifact": "quality-reports/go-migration/instance-backups-actions-http-sweep-p1-instance/results.json",
+          "receipt_sha256": "9e48cd68ee1be26858496e62c9f7d4d80b74bd9e8006115edfb9a7ab5c32f0f1",
+          "scope": "HTTP family instance-backups-actions: 277/277 cases on native Django and native Go, 277/277 on Caddy /api/v1 and /api/v2."
         }
       ],
       "notes": [
@@ -35558,7 +35570,8 @@
         "Implementing evidence: GREEN: 254/254 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact runner requests (headers and body bytes, uploads included), attempts cache values and TTLs, audit entries and stored hashes, password confirmations, the upload limit and the endpoint rules. (quality-reports/go-migration/sec-backups-2-actions-green/results.json)",
         "Implementing evidence: Mutation control: fails Go on instance-backups-actions-remote-test-saved-settings (attempts key left in place: no password check). (quality-reports/go-migration/sec-backups-2-actions-mutation/results.json)",
         "Implementing evidence: Mutation control: fails Go on instance-backups-actions-remote-put-endpoint-before-password (password checked instead of 400 for the address). (quality-reports/go-migration/sec-backups-actions-mutation-endpoint/results.json)",
-        "Implementing evidence: passed: the update runner checks the saved endpoint when it builds a client and connects only to a checked address of the host; without the connection check the guard tests fail. (quality-reports/go-migration/sec-backups-2-checks/sb2-selfhost.log)"
+        "Implementing evidence: passed: the update runner checks the saved endpoint when it builds a client and connects only to a checked address of the host; without the connection check the guard tests fail. (quality-reports/go-migration/sec-backups-2-checks/sb2-selfhost.log)",
+        "Implementing evidence: passed (quality-reports/go-migration/instance-backups-actions-http-sweep-final-3/results.json)"
       ]
     },
     {
@@ -35576,7 +35589,7 @@
         "target": "BackupScheduleView.as_view()",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/internal/handler/instance_backup_actions.go",
         "BE_GO/internal/service/instance_backup_actions.go",
@@ -35636,12 +35649,12 @@
       ],
       "evidence": [
         {
-          "command": "python tools/go-migration/family.py run instance-backups-actions --versioned --label sweep-final-3",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "command": "python tools/go-migration/family.py run instance-backups-actions --versioned --label sweep-p1-instance",
+          "revision": "6d0644b28f881cf2a52bba868fb10531854d5d11",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/instance-backups-actions-http-sweep-final-3/results.json",
-          "receipt_sha256": "05b4ff7ac5a2566f92bc0d1a3088a8fa4fcf41b6bbdaaccd047cf3e81a2a7cea",
-          "scope": "HTTP family instance-backups-actions: 275/275 cases on native Django and native Go, 275/275 on Caddy /api/v1 and /api/v2."
+          "artifact": "quality-reports/go-migration/instance-backups-actions-http-sweep-p1-instance/results.json",
+          "receipt_sha256": "9e48cd68ee1be26858496e62c9f7d4d80b74bd9e8006115edfb9a7ab5c32f0f1",
+          "scope": "HTTP family instance-backups-actions: 277/277 cases on native Django and native Go, 277/277 on Caddy /api/v1 and /api/v2."
         }
       ],
       "notes": [
@@ -35649,7 +35662,8 @@
         "Implementing evidence: docs/architecture/go-migration/instance-backups-actions.md",
         "Implementing evidence: RED: Django 254/254; Go 503 on the first case. (quality-reports/go-migration/sec-backups-2-actions-red/results.json)",
         "Implementing evidence: GREEN: 254/254 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact runner requests (headers and body bytes, uploads included), attempts cache values and TTLs, audit entries and stored hashes, password confirmations, the upload limit and the endpoint rules. (quality-reports/go-migration/sec-backups-2-actions-green/results.json)",
-        "Implementing evidence: Mutation control: fails Go on instance-backups-actions-remote-test-saved-settings (attempts key left in place: no password check). (quality-reports/go-migration/sec-backups-2-actions-mutation/results.json)"
+        "Implementing evidence: Mutation control: fails Go on instance-backups-actions-remote-test-saved-settings (attempts key left in place: no password check). (quality-reports/go-migration/sec-backups-2-actions-mutation/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/instance-backups-actions-http-sweep-final-3/results.json)"
       ]
     },
     {
@@ -35667,7 +35681,7 @@
         "target": "BackupUploadView.as_view()",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/internal/handler/instance_backup_actions.go",
         "BE_GO/internal/service/instance_backup_actions.go",
@@ -35727,12 +35741,12 @@
       ],
       "evidence": [
         {
-          "command": "python tools/go-migration/family.py run instance-backups-actions --versioned --label sweep-final-3",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "command": "python tools/go-migration/family.py run instance-backups-actions --versioned --label sweep-p1-instance",
+          "revision": "6d0644b28f881cf2a52bba868fb10531854d5d11",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/instance-backups-actions-http-sweep-final-3/results.json",
-          "receipt_sha256": "05b4ff7ac5a2566f92bc0d1a3088a8fa4fcf41b6bbdaaccd047cf3e81a2a7cea",
-          "scope": "HTTP family instance-backups-actions: 275/275 cases on native Django and native Go, 275/275 on Caddy /api/v1 and /api/v2."
+          "artifact": "quality-reports/go-migration/instance-backups-actions-http-sweep-p1-instance/results.json",
+          "receipt_sha256": "9e48cd68ee1be26858496e62c9f7d4d80b74bd9e8006115edfb9a7ab5c32f0f1",
+          "scope": "HTTP family instance-backups-actions: 277/277 cases on native Django and native Go, 277/277 on Caddy /api/v1 and /api/v2."
         }
       ],
       "notes": [
@@ -35742,7 +35756,8 @@
         "Implementing evidence: GREEN: 254/254 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact runner requests (headers and body bytes, uploads included), attempts cache values and TTLs, audit entries and stored hashes, password confirmations, the upload limit and the endpoint rules. (quality-reports/go-migration/sec-backups-2-actions-green/results.json)",
         "Implementing evidence: Mutation control: fails Go on instance-backups-actions-remote-test-saved-settings (attempts key left in place: no password check). (quality-reports/go-migration/sec-backups-2-actions-mutation/results.json)",
         "Implementing evidence: Mutation control: fails Go on instance-backups-actions-upload-over-the-limit (the runner is called instead of 413). (quality-reports/go-migration/sec-backups-actions-mutation-upload/results.json)",
-        "Implementing evidence: passed: the update runner checks the saved endpoint when it builds a client and connects only to a checked address of the host; without the connection check the guard tests fail. (quality-reports/go-migration/sec-backups-2-checks/sb2-selfhost.log)"
+        "Implementing evidence: passed: the update runner checks the saved endpoint when it builds a client and connects only to a checked address of the host; without the connection check the guard tests fail. (quality-reports/go-migration/sec-backups-2-checks/sb2-selfhost.log)",
+        "Implementing evidence: passed (quality-reports/go-migration/instance-backups-actions-http-sweep-final-3/results.json)"
       ]
     },
     {
@@ -35760,7 +35775,7 @@
         "target": "PairingAdminView.as_view()",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/internal/domain/bakney_sso.go",
         "BE_GO/internal/repository/bakney_sso.go",
@@ -35814,12 +35829,12 @@
       ],
       "evidence": [
         {
-          "command": "python tools/go-migration/family.py run sso-pairing --versioned --label sweep-final-3",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "command": "python tools/go-migration/family.py run sso-pairing --versioned --label sweep-p1-instance",
+          "revision": "6d0644b28f881cf2a52bba868fb10531854d5d11",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/sso-pairing-http-sweep-final-3/results.json",
-          "receipt_sha256": "43f4c98d838f3c85f0cc9812cf483fb13ab3c5e291c0f7f28debaeefb2392adb",
-          "scope": "HTTP family sso-pairing: 172/172 cases on native Django and native Go, 172/172 on Caddy /api/v1 and /api/v2."
+          "artifact": "quality-reports/go-migration/sso-pairing-http-sweep-p1-instance/results.json",
+          "receipt_sha256": "b9d643ced0ff806d7b1ee666b9572f819f4813c6bb80aea0382f6eac732a7373",
+          "scope": "HTTP family sso-pairing: 173/173 cases on native Django and native Go, 173/173 on Caddy /api/v1 and /api/v2."
         }
       ],
       "notes": [
@@ -35829,7 +35844,8 @@
         "Implementing evidence: GREEN: 172/172 on native Django, native Go, Caddy /api/v1 and /api/v2 against a per-run Bakney authority stub (exact outbound requests, verified proofs and PKCE, issued tokens) with exact effects. (quality-reports/go-migration/sso-pairing-http-versioned-r3/results.json)",
         "Implementing evidence: Mutation control: fails Go on sso-pairing-commit-expired-challenge (200 instead of 409) (quality-reports/go-migration/sso-pairing-http-mutation-r3/results.json)",
         "Implementing evidence: passed: 172/172 on native Django, native Go, Caddy /api/v1 and /api/v2 (quality-reports/go-migration/sso-pairing-http-versioned-r1/results.json)",
-        "Implementing evidence: GREEN: 172/172 on native Django, native Go, Caddy /api/v1 and /api/v2; the view is unchanged (its beat entry moved to core/celery.py). (quality-reports/go-migration/instance-reverify-sso-pairing-green/results.json)"
+        "Implementing evidence: GREEN: 172/172 on native Django, native Go, Caddy /api/v1 and /api/v2; the view is unchanged (its beat entry moved to core/celery.py). (quality-reports/go-migration/instance-reverify-sso-pairing-green/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/sso-pairing-http-sweep-final-3/results.json)"
       ]
     },
     {
@@ -35847,7 +35863,7 @@
         "target": "DataRestoreView.as_view()",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/internal/domain/data_restore.go",
         "BE_GO/internal/repository/data_restore.go",
@@ -35918,12 +35934,12 @@
       ],
       "evidence": [
         {
-          "command": "python tools/go-migration/family.py run data-restore --versioned --label sweep-final-3",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "command": "python tools/go-migration/family.py run data-restore --versioned --label sweep-p1-instance",
+          "revision": "6d0644b28f881cf2a52bba868fb10531854d5d11",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/data-restore-http-sweep-final-3/results.json",
-          "receipt_sha256": "ebab39ba123644de5f54ad6b96ea7f28a61fb784d981a53bb4f98224a8df4fd4",
-          "scope": "HTTP family data-restore: 157/157 cases on native Django and native Go, 157/157 on Caddy /api/v1 and /api/v2."
+          "artifact": "quality-reports/go-migration/data-restore-http-sweep-p1-instance/results.json",
+          "receipt_sha256": "44d47041179366e90ee8e8487a098902b319ef25742d5c966c855a64ab2d98eb",
+          "scope": "HTTP family data-restore: 194/194 cases on native Django and native Go, 194/194 on Caddy /api/v1 and /api/v2."
         }
       ],
       "notes": [
@@ -35931,7 +35947,8 @@
         "Implementing evidence: docs/architecture/go-migration/data-restore.md",
         "Implementing evidence: RED: Django 150/150; Go 500 on the first case. (quality-reports/go-migration/data-restore-http-v2-admin-red/results.json)",
         "Implementing evidence: GREEN: 150/150 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact receipt, storage and Celery effects. (quality-reports/go-migration/data-restore-http-v2-admin-final-green/results.json)",
-        "Implementing evidence: Mutation control: fails Go on data-restore-upload-archive-with-media (response.body:preview:records). (quality-reports/go-migration/data-restore-http-v2-admin-mutation-record-count/results.json)"
+        "Implementing evidence: Mutation control: fails Go on data-restore-upload-archive-with-media (response.body:preview:records). (quality-reports/go-migration/data-restore-http-v2-admin-mutation-record-count/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/data-restore-http-sweep-final-3/results.json)"
       ]
     },
     {
@@ -35949,7 +35966,7 @@
         "target": "DataRestoreActionView.as_view()",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/internal/domain/data_restore.go",
         "BE_GO/internal/repository/data_restore.go",
@@ -36020,12 +36037,12 @@
       ],
       "evidence": [
         {
-          "command": "python tools/go-migration/family.py run data-restore --versioned --label sweep-final-3",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "command": "python tools/go-migration/family.py run data-restore --versioned --label sweep-p1-instance",
+          "revision": "6d0644b28f881cf2a52bba868fb10531854d5d11",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/data-restore-http-sweep-final-3/results.json",
-          "receipt_sha256": "ebab39ba123644de5f54ad6b96ea7f28a61fb784d981a53bb4f98224a8df4fd4",
-          "scope": "HTTP family data-restore: 157/157 cases on native Django and native Go, 157/157 on Caddy /api/v1 and /api/v2."
+          "artifact": "quality-reports/go-migration/data-restore-http-sweep-p1-instance/results.json",
+          "receipt_sha256": "44d47041179366e90ee8e8487a098902b319ef25742d5c966c855a64ab2d98eb",
+          "scope": "HTTP family data-restore: 194/194 cases on native Django and native Go, 194/194 on Caddy /api/v1 and /api/v2."
         }
       ],
       "notes": [
@@ -36033,7 +36050,8 @@
         "Implementing evidence: docs/architecture/go-migration/data-restore.md",
         "Implementing evidence: RED: Django 150/150; Go 500 on the first case. (quality-reports/go-migration/data-restore-http-v2-admin-red/results.json)",
         "Implementing evidence: GREEN: 150/150 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact receipt, storage and Celery effects. (quality-reports/go-migration/data-restore-http-v2-admin-final-green/results.json)",
-        "Implementing evidence: Mutation control: fails Go on data-restore-upload-archive-with-media (response.body:preview:records). (quality-reports/go-migration/data-restore-http-v2-admin-mutation-record-count/results.json)"
+        "Implementing evidence: Mutation control: fails Go on data-restore-upload-archive-with-media (response.body:preview:records). (quality-reports/go-migration/data-restore-http-v2-admin-mutation-record-count/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/data-restore-http-sweep-final-3/results.json)"
       ]
     },
     {
@@ -36051,7 +36069,7 @@
         "target": "DataRestoreDownloadView.as_view()",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/internal/domain/data_restore.go",
         "BE_GO/internal/repository/data_restore.go",
@@ -36121,12 +36139,12 @@
       ],
       "evidence": [
         {
-          "command": "python tools/go-migration/family.py run data-restore --versioned --label sweep-final-3",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "command": "python tools/go-migration/family.py run data-restore --versioned --label sweep-p1-instance",
+          "revision": "6d0644b28f881cf2a52bba868fb10531854d5d11",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/data-restore-http-sweep-final-3/results.json",
-          "receipt_sha256": "ebab39ba123644de5f54ad6b96ea7f28a61fb784d981a53bb4f98224a8df4fd4",
-          "scope": "HTTP family data-restore: 157/157 cases on native Django and native Go, 157/157 on Caddy /api/v1 and /api/v2."
+          "artifact": "quality-reports/go-migration/data-restore-http-sweep-p1-instance/results.json",
+          "receipt_sha256": "44d47041179366e90ee8e8487a098902b319ef25742d5c966c855a64ab2d98eb",
+          "scope": "HTTP family data-restore: 194/194 cases on native Django and native Go, 194/194 on Caddy /api/v1 and /api/v2."
         }
       ],
       "notes": [
@@ -36134,7 +36152,8 @@
         "Implementing evidence: docs/architecture/go-migration/data-restore.md",
         "Implementing evidence: RED: Django 150/150; Go 500 on the first case. (quality-reports/go-migration/data-restore-http-v2-admin-red/results.json)",
         "Implementing evidence: GREEN: 150/150 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact receipt, storage and Celery effects. (quality-reports/go-migration/data-restore-http-v2-admin-final-green/results.json)",
-        "Implementing evidence: Mutation control: fails Go on data-restore-upload-archive-with-media (response.body:preview:records). (quality-reports/go-migration/data-restore-http-v2-admin-mutation-record-count/results.json)"
+        "Implementing evidence: Mutation control: fails Go on data-restore-upload-archive-with-media (response.body:preview:records). (quality-reports/go-migration/data-restore-http-v2-admin-mutation-record-count/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/data-restore-http-sweep-final-3/results.json)"
       ]
     },
     {
@@ -36152,7 +36171,7 @@
         "target": "DataRestoreBackupsView.as_view()",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/internal/domain/data_restore.go",
         "BE_GO/internal/repository/data_restore.go",
@@ -36222,12 +36241,12 @@
       ],
       "evidence": [
         {
-          "command": "python tools/go-migration/family.py run data-restore --versioned --label sweep-final-3",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "command": "python tools/go-migration/family.py run data-restore --versioned --label sweep-p1-instance",
+          "revision": "6d0644b28f881cf2a52bba868fb10531854d5d11",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/data-restore-http-sweep-final-3/results.json",
-          "receipt_sha256": "ebab39ba123644de5f54ad6b96ea7f28a61fb784d981a53bb4f98224a8df4fd4",
-          "scope": "HTTP family data-restore: 157/157 cases on native Django and native Go, 157/157 on Caddy /api/v1 and /api/v2."
+          "artifact": "quality-reports/go-migration/data-restore-http-sweep-p1-instance/results.json",
+          "receipt_sha256": "44d47041179366e90ee8e8487a098902b319ef25742d5c966c855a64ab2d98eb",
+          "scope": "HTTP family data-restore: 194/194 cases on native Django and native Go, 194/194 on Caddy /api/v1 and /api/v2."
         }
       ],
       "notes": [
@@ -36235,7 +36254,8 @@
         "Implementing evidence: docs/architecture/go-migration/data-restore.md",
         "Implementing evidence: RED: Django 150/150; Go 500 on the first case. (quality-reports/go-migration/data-restore-http-v2-admin-red/results.json)",
         "Implementing evidence: GREEN: 150/150 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact receipt, storage and Celery effects. (quality-reports/go-migration/data-restore-http-v2-admin-final-green/results.json)",
-        "Implementing evidence: Mutation control: fails Go on data-restore-upload-archive-with-media (response.body:preview:records). (quality-reports/go-migration/data-restore-http-v2-admin-mutation-record-count/results.json)"
+        "Implementing evidence: Mutation control: fails Go on data-restore-upload-archive-with-media (response.body:preview:records). (quality-reports/go-migration/data-restore-http-v2-admin-mutation-record-count/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/data-restore-http-sweep-final-3/results.json)"
       ]
     },
     {
@@ -36253,7 +36273,7 @@
         "target": "DiagnosticsView.as_view()",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/cmd/server/instance_admin.go",
@@ -36321,12 +36341,12 @@
       ],
       "evidence": [
         {
-          "command": "python tools/go-migration/family.py run instance-admin --versioned --label sweep-final-3",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "command": "python tools/go-migration/family.py run instance-admin --versioned --label sweep-p1-instance",
+          "revision": "6d0644b28f881cf2a52bba868fb10531854d5d11",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/instance-admin-http-sweep-final-3/results.json",
-          "receipt_sha256": "166e1235d101ba8ffc5fae46648a3aaee107783d317364603c88df050ce38cf5",
-          "scope": "HTTP family instance-admin: 207/207 cases on native Django and native Go, 207/207 on Caddy /api/v1 and /api/v2."
+          "artifact": "quality-reports/go-migration/instance-admin-http-sweep-p1-instance/results.json",
+          "receipt_sha256": "9462ed5632a79d41418a447285daa83c9e30134d26726870f5342eea7deaf3f1",
+          "scope": "HTTP family instance-admin: 213/213 cases on native Django and native Go, 213/213 on Caddy /api/v1 and /api/v2."
         }
       ],
       "notes": [
@@ -36334,7 +36354,8 @@
         "Implementing evidence: docs/architecture/go-migration/instance-admin.md",
         "Implementing evidence: RED: Django 172/172; Go 500 on the first case. (quality-reports/go-migration/instance-admin-http-diag-red/results.json)",
         "Implementing evidence: GREEN: 172/172 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact InstanceConfiguration effects, outbound requests, pidbox broadcasts and cache cleanup. (quality-reports/go-migration/instance-admin-http-diag-green/results.json)",
-        "Implementing evidence: Mutation control: fails Go on instance-admin-diagnostics-run-odd-answers (response.body:checks[4]:status). (quality-reports/go-migration/instance-admin-http-diag-mutation/results.json)"
+        "Implementing evidence: Mutation control: fails Go on instance-admin-diagnostics-run-odd-answers (response.body:checks[4]:status). (quality-reports/go-migration/instance-admin-http-diag-mutation/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/instance-admin-http-sweep-final-3/results.json)"
       ]
     },
     {
@@ -36352,7 +36373,7 @@
         "target": "EmailSettingsView.as_view()",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/cmd/server/instance_admin.go",
@@ -36421,12 +36442,12 @@
       ],
       "evidence": [
         {
-          "command": "python tools/go-migration/family.py run instance-admin --versioned --label sweep-final-3",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "command": "python tools/go-migration/family.py run instance-admin --versioned --label sweep-p1-instance",
+          "revision": "6d0644b28f881cf2a52bba868fb10531854d5d11",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/instance-admin-http-sweep-final-3/results.json",
-          "receipt_sha256": "166e1235d101ba8ffc5fae46648a3aaee107783d317364603c88df050ce38cf5",
-          "scope": "HTTP family instance-admin: 207/207 cases on native Django and native Go, 207/207 on Caddy /api/v1 and /api/v2."
+          "artifact": "quality-reports/go-migration/instance-admin-http-sweep-p1-instance/results.json",
+          "receipt_sha256": "9462ed5632a79d41418a447285daa83c9e30134d26726870f5342eea7deaf3f1",
+          "scope": "HTTP family instance-admin: 213/213 cases on native Django and native Go, 213/213 on Caddy /api/v1 and /api/v2."
         }
       ],
       "notes": [
@@ -36434,7 +36455,8 @@
         "Implementing evidence: docs/architecture/go-migration/instance-admin.md",
         "Implementing evidence: RED: Django 172/172; Go 500 on the first case. (quality-reports/go-migration/instance-admin-http-diag-red/results.json)",
         "Implementing evidence: GREEN: 172/172 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact InstanceConfiguration effects, outbound requests, pidbox broadcasts and cache cleanup. (quality-reports/go-migration/instance-admin-http-diag-green/results.json)",
-        "Implementing evidence: Mutation control: fails Go on instance-admin-diagnostics-run-odd-answers (response.body:checks[4]:status). (quality-reports/go-migration/instance-admin-http-diag-mutation/results.json)"
+        "Implementing evidence: Mutation control: fails Go on instance-admin-diagnostics-run-odd-answers (response.body:checks[4]:status). (quality-reports/go-migration/instance-admin-http-diag-mutation/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/instance-admin-http-sweep-final-3/results.json)"
       ]
     },
     {
@@ -36452,7 +36474,7 @@
         "target": "EmailTestView.as_view()",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/internal/instanceprobe/http.go",
         "BE_GO/internal/instanceprobe/pyjson.go",
@@ -36498,12 +36520,12 @@
       ],
       "evidence": [
         {
-          "command": "python tools/go-migration/family.py run instance-outbound --versioned --label sweep-final-3",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "command": "python tools/go-migration/family.py run instance-outbound --versioned --label sweep-p1-instance",
+          "revision": "6d0644b28f881cf2a52bba868fb10531854d5d11",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/instance-outbound-http-sweep-final-3/results.json",
-          "receipt_sha256": "95cede2ccbc033c95dca049da2d41fee947cd2d2297b0b82f0af96da5212bd6a",
-          "scope": "HTTP family instance-outbound: 127/127 cases on native Django and native Go, 127/127 on Caddy /api/v1 and /api/v2."
+          "artifact": "quality-reports/go-migration/instance-outbound-http-sweep-p1-instance/results.json",
+          "receipt_sha256": "c17bf86b2927eb1de2a74584d24f9c488ac82e286361b9e0d95c26bca4c1b36c",
+          "scope": "HTTP family instance-outbound: 134/134 cases on native Django and native Go, 134/134 on Caddy /api/v1 and /api/v2."
         }
       ],
       "notes": [
@@ -36513,7 +36535,8 @@
         "Implementing evidence: GREEN: 106/106 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects, outbound requests, SMTP transcripts and cache bytes. (quality-reports/go-migration/instance-outbound-http-versioned-r3/results.json)",
         "Implementing evidence: Mutation control: fails Go on instance-outbound-releases-two-pages (pending[33].name). (quality-reports/go-migration/instance-outbound-http-mutation-r2/results.json)",
         "Implementing evidence: passed: 106/106 on native Django, native Go, Caddy /api/v1 and /api/v2 (quality-reports/go-migration/instance-outbound-http-versioned-r1/results.json)",
-        "Implementing evidence: GREEN: 106/106 on native Django, native Go, Caddy /api/v1 and /api/v2; Django source of these views unchanged by the merge (a first run failed one Caddy v1 timing-window state check and passed on re-run). (quality-reports/go-migration/instance-reverify-outbound-green/results.json)"
+        "Implementing evidence: GREEN: 106/106 on native Django, native Go, Caddy /api/v1 and /api/v2; Django source of these views unchanged by the merge (a first run failed one Caddy v1 timing-window state check and passed on re-run). (quality-reports/go-migration/instance-reverify-outbound-green/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/instance-outbound-http-sweep-final-3/results.json)"
       ]
     },
     {
@@ -36531,7 +36554,7 @@
         "target": "IntegrationSettingsView.as_view()",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/cmd/server/instance_admin.go",
@@ -36600,12 +36623,12 @@
       ],
       "evidence": [
         {
-          "command": "python tools/go-migration/family.py run instance-admin --versioned --label sweep-final-3",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "command": "python tools/go-migration/family.py run instance-admin --versioned --label sweep-p1-instance",
+          "revision": "6d0644b28f881cf2a52bba868fb10531854d5d11",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/instance-admin-http-sweep-final-3/results.json",
-          "receipt_sha256": "166e1235d101ba8ffc5fae46648a3aaee107783d317364603c88df050ce38cf5",
-          "scope": "HTTP family instance-admin: 207/207 cases on native Django and native Go, 207/207 on Caddy /api/v1 and /api/v2."
+          "artifact": "quality-reports/go-migration/instance-admin-http-sweep-p1-instance/results.json",
+          "receipt_sha256": "9462ed5632a79d41418a447285daa83c9e30134d26726870f5342eea7deaf3f1",
+          "scope": "HTTP family instance-admin: 213/213 cases on native Django and native Go, 213/213 on Caddy /api/v1 and /api/v2."
         }
       ],
       "notes": [
@@ -36613,7 +36636,8 @@
         "Implementing evidence: docs/architecture/go-migration/instance-admin.md",
         "Implementing evidence: RED: Django 172/172; Go 500 on the first case. (quality-reports/go-migration/instance-admin-http-diag-red/results.json)",
         "Implementing evidence: GREEN: 172/172 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact InstanceConfiguration effects, outbound requests, pidbox broadcasts and cache cleanup. (quality-reports/go-migration/instance-admin-http-diag-green/results.json)",
-        "Implementing evidence: Mutation control: fails Go on instance-admin-diagnostics-run-odd-answers (response.body:checks[4]:status). (quality-reports/go-migration/instance-admin-http-diag-mutation/results.json)"
+        "Implementing evidence: Mutation control: fails Go on instance-admin-diagnostics-run-odd-answers (response.body:checks[4]:status). (quality-reports/go-migration/instance-admin-http-diag-mutation/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/instance-admin-http-sweep-final-3/results.json)"
       ]
     },
     {
@@ -36631,7 +36655,7 @@
         "target": "IntegrationTestView.as_view()",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/internal/instanceprobe/http.go",
         "BE_GO/internal/instanceprobe/pyjson.go",
@@ -36677,12 +36701,12 @@
       ],
       "evidence": [
         {
-          "command": "python tools/go-migration/family.py run instance-outbound --versioned --label sweep-final-3",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "command": "python tools/go-migration/family.py run instance-outbound --versioned --label sweep-p1-instance",
+          "revision": "6d0644b28f881cf2a52bba868fb10531854d5d11",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/instance-outbound-http-sweep-final-3/results.json",
-          "receipt_sha256": "95cede2ccbc033c95dca049da2d41fee947cd2d2297b0b82f0af96da5212bd6a",
-          "scope": "HTTP family instance-outbound: 127/127 cases on native Django and native Go, 127/127 on Caddy /api/v1 and /api/v2."
+          "artifact": "quality-reports/go-migration/instance-outbound-http-sweep-p1-instance/results.json",
+          "receipt_sha256": "c17bf86b2927eb1de2a74584d24f9c488ac82e286361b9e0d95c26bca4c1b36c",
+          "scope": "HTTP family instance-outbound: 134/134 cases on native Django and native Go, 134/134 on Caddy /api/v1 and /api/v2."
         }
       ],
       "notes": [
@@ -36692,7 +36716,8 @@
         "Implementing evidence: GREEN: 106/106 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects, outbound requests, SMTP transcripts and cache bytes. (quality-reports/go-migration/instance-outbound-http-versioned-r3/results.json)",
         "Implementing evidence: Mutation control: fails Go on instance-outbound-releases-two-pages (pending[33].name). (quality-reports/go-migration/instance-outbound-http-mutation-r2/results.json)",
         "Implementing evidence: passed: 106/106 on native Django, native Go, Caddy /api/v1 and /api/v2 (quality-reports/go-migration/instance-outbound-http-versioned-r1/results.json)",
-        "Implementing evidence: GREEN: 106/106 on native Django, native Go, Caddy /api/v1 and /api/v2; Django source of these views unchanged by the merge (a first run failed one Caddy v1 timing-window state check and passed on re-run). (quality-reports/go-migration/instance-reverify-outbound-green/results.json)"
+        "Implementing evidence: GREEN: 106/106 on native Django, native Go, Caddy /api/v1 and /api/v2; Django source of these views unchanged by the merge (a first run failed one Caddy v1 timing-window state check and passed on re-run). (quality-reports/go-migration/instance-reverify-outbound-green/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/instance-outbound-http-sweep-final-3/results.json)"
       ]
     },
     {
@@ -36710,7 +36735,7 @@
         "target": "OwnerLogoView.as_view()",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/internal/domain/instance_setup.go",
         "BE_GO/internal/dto/instance_setup.go",
@@ -36761,12 +36786,12 @@
       ],
       "evidence": [
         {
-          "command": "python tools/go-migration/family.py run instance-setup --versioned --label sweep-final-3",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "command": "python tools/go-migration/family.py run instance-setup --versioned --label sweep-p1-instance",
+          "revision": "6d0644b28f881cf2a52bba868fb10531854d5d11",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/instance-setup-http-sweep-final-3/results.json",
-          "receipt_sha256": "9954b98c11230f48bd7a63b1f6e97a2863e08ec147ef28ce511136152f3fa851",
-          "scope": "HTTP family instance-setup: 107/107 cases on native Django and native Go, 107/107 on Caddy /api/v1 and /api/v2."
+          "artifact": "quality-reports/go-migration/instance-setup-http-sweep-p1-instance/results.json",
+          "receipt_sha256": "154265ca24de42c03cf8aadb60fe63cc90bfc86ef5434cc9655cb386427a27b1",
+          "scope": "HTTP family instance-setup: 118/118 cases on native Django and native Go, 118/118 on Caddy /api/v1 and /api/v2."
         }
       ],
       "notes": [
@@ -36774,7 +36799,8 @@
         "Implementing evidence: docs/architecture/go-migration/instance-setup.md",
         "Implementing evidence: RED: Django 99/99; Go 500 on the first case. (quality-reports/go-migration/instance-setup-http-v2-admin-red/results.json)",
         "Implementing evidence: GREEN: 99/99 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact row and storage effects. (quality-reports/go-migration/instance-setup-http-v2-admin-final-green/results.json)",
-        "Implementing evidence: Mutation control: fails Go on instance-setup-configure-import-association-id-key (import.primary-association). (quality-reports/go-migration/instance-setup-http-v2-admin-mutation-association-key/results.json)"
+        "Implementing evidence: Mutation control: fails Go on instance-setup-configure-import-association-id-key (import.primary-association). (quality-reports/go-migration/instance-setup-http-v2-admin-mutation-association-key/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/instance-setup-http-sweep-final-3/results.json)"
       ]
     },
     {
@@ -36792,7 +36818,7 @@
         "target": "InstanceReleasesView.as_view()",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/internal/instanceprobe/http.go",
         "BE_GO/internal/instanceprobe/pyjson.go",
@@ -36839,12 +36865,12 @@
       ],
       "evidence": [
         {
-          "command": "python tools/go-migration/family.py run instance-outbound --versioned --label sweep-final-3",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "command": "python tools/go-migration/family.py run instance-outbound --versioned --label sweep-p1-instance",
+          "revision": "6d0644b28f881cf2a52bba868fb10531854d5d11",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/instance-outbound-http-sweep-final-3/results.json",
-          "receipt_sha256": "95cede2ccbc033c95dca049da2d41fee947cd2d2297b0b82f0af96da5212bd6a",
-          "scope": "HTTP family instance-outbound: 127/127 cases on native Django and native Go, 127/127 on Caddy /api/v1 and /api/v2."
+          "artifact": "quality-reports/go-migration/instance-outbound-http-sweep-p1-instance/results.json",
+          "receipt_sha256": "c17bf86b2927eb1de2a74584d24f9c488ac82e286361b9e0d95c26bca4c1b36c",
+          "scope": "HTTP family instance-outbound: 134/134 cases on native Django and native Go, 134/134 on Caddy /api/v1 and /api/v2."
         }
       ],
       "notes": [
@@ -36854,7 +36880,8 @@
         "Implementing evidence: GREEN: 106/106 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects, outbound requests, SMTP transcripts and cache bytes. (quality-reports/go-migration/instance-outbound-http-versioned-r3/results.json)",
         "Implementing evidence: Mutation control: fails Go on instance-outbound-releases-two-pages (pending[33].name). (quality-reports/go-migration/instance-outbound-http-mutation-r2/results.json)",
         "Implementing evidence: passed: 106/106 on native Django, native Go, Caddy /api/v1 and /api/v2 (quality-reports/go-migration/instance-outbound-http-versioned-r1/results.json)",
-        "Implementing evidence: GREEN: 106/106 on native Django, native Go, Caddy /api/v1 and /api/v2; Django source of these views unchanged by the merge (a first run failed one Caddy v1 timing-window state check and passed on re-run). (quality-reports/go-migration/instance-reverify-outbound-green/results.json)"
+        "Implementing evidence: GREEN: 106/106 on native Django, native Go, Caddy /api/v1 and /api/v2; Django source of these views unchanged by the merge (a first run failed one Caddy v1 timing-window state check and passed on re-run). (quality-reports/go-migration/instance-reverify-outbound-green/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/instance-outbound-http-sweep-final-3/results.json)"
       ]
     },
     {
@@ -36872,7 +36899,7 @@
         "target": "InstanceRestartsView.as_view()",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/internal/service/instance_updates.go",
         "BE_GO/internal/service/instance_admin.go",
@@ -36919,12 +36946,12 @@
       ],
       "evidence": [
         {
-          "command": "python tools/go-migration/family.py run instance-updates --versioned --label sweep-final-3",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "command": "python tools/go-migration/family.py run instance-updates --versioned --label sweep-p1-instance",
+          "revision": "6d0644b28f881cf2a52bba868fb10531854d5d11",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/instance-updates-http-sweep-final-3/results.json",
-          "receipt_sha256": "e9d1e8a0dd6d6f8bb52dab853c252f327565ff28843484eec1440627096f3b0b",
-          "scope": "HTTP family instance-updates: 40/40 cases on native Django and native Go, 40/40 on Caddy /api/v1 and /api/v2."
+          "artifact": "quality-reports/go-migration/instance-updates-http-sweep-p1-instance/results.json",
+          "receipt_sha256": "a378305390bc4042e05cdc302cb241085cf287d2d7e7f1faad7a67ad12838c11",
+          "scope": "HTTP family instance-updates: 42/42 cases on native Django and native Go, 42/42 on Caddy /api/v1 and /api/v2."
         }
       ],
       "notes": [
@@ -36932,7 +36959,8 @@
         "Implementing evidence: docs/architecture/go-migration/instance-updates.md",
         "Implementing evidence: RED: Django 40/40; Go 500 on the first case. (quality-reports/go-migration/instance-updates-http-v2-admin-red/results.json)",
         "Implementing evidence: GREEN: 40/40 on native Django, native Go, Caddy /api/v1 and /api/v2. (quality-reports/go-migration/instance-updates-http-v2-admin-final-green/results.json)",
-        "Implementing evidence: Mutation control: fails Go on instance-updates-request-release-not-newer (response.status). (quality-reports/go-migration/instance-updates-http-v2-admin-mutation-version-check/results.json)"
+        "Implementing evidence: Mutation control: fails Go on instance-updates-request-release-not-newer (response.status). (quality-reports/go-migration/instance-updates-http-v2-admin-mutation-version-check/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/instance-updates-http-sweep-final-3/results.json)"
       ]
     },
     {
@@ -36950,7 +36978,7 @@
         "target": "InstanceRuntimeView.as_view()",
         "syntax": "path"
       },
-      "status": "implementing",
+      "status": "verified",
       "go": [
         "BE_GO/internal/handler/instance_runtime.go",
         "BE_GO/internal/service/instance_runtime.go",
@@ -36996,28 +37024,21 @@
         "TESTS/adapters/django/instance_runtime_http.py"
       ],
       "evidence": [
-        "docs/architecture/go-migration/instance-runtime.md",
         {
-          "revision": "committing change, before Go code",
-          "result": "RED: Django 29/29; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/instance-runtime-http-red-go-route-absent/results.json",
-          "receipt_sha256": "78f8db2dfa635e5da868f91669e5bbba21930c174c95dc0e8c7900074b54f8bd"
-        },
-        {
-          "revision": "committing change",
-          "result": "GREEN: 29/29 on native Django, native Go, Caddy /api/v1 and /api/v2.",
-          "artifact": "quality-reports/go-migration/instance-runtime-http-green-versioned/results.json",
-          "receipt_sha256": "5a201f5520375fe5e5190f17d436fa7b5808b81ce58a068ea1adefe815111244"
-        },
-        {
-          "revision": "Go audits a replayed (replayed: true) runner acceptance",
-          "result": "Mutation control: fails Go on instance-runtime-uppercase-key-is-canonical (audit.count)",
-          "artifact": "quality-reports/go-migration/instance-runtime-http-mutation-audit-replay/results.json",
-          "receipt_sha256": "02edc3ae7ad15bc1ab50b71fbe3a7081de827007f52ba7c46b93a6f2195c26b6"
+          "command": "python tools/go-migration/family.py run instance-runtime --versioned --label sweep-p1-instance",
+          "revision": "6d0644b28f881cf2a52bba868fb10531854d5d11",
+          "result": "passed",
+          "artifact": "quality-reports/go-migration/instance-runtime-http-sweep-p1-instance/results.json",
+          "receipt_sha256": "aa8bc4b2a1f4becb62162a737bd3edce3b37e1554fa43a793663be190e33bbf7",
+          "scope": "HTTP family instance-runtime: 29/29 cases on native Django and native Go, 29/29 on Caddy /api/v1 and /api/v2."
         }
       ],
       "notes": [
-        "Implementing: handoff Phase 1 owner runtime switch status/submission relayed to the update runner; identical on Django and Go."
+        "Implementing: handoff Phase 1 owner runtime switch status/submission relayed to the update runner; identical on Django and Go.",
+        "Implementing evidence: docs/architecture/go-migration/instance-runtime.md",
+        "Implementing evidence: RED: Django 29/29; Go 404 on the first case. (quality-reports/go-migration/instance-runtime-http-red-go-route-absent/results.json)",
+        "Implementing evidence: GREEN: 29/29 on native Django, native Go, Caddy /api/v1 and /api/v2. (quality-reports/go-migration/instance-runtime-http-green-versioned/results.json)",
+        "Implementing evidence: Mutation control: fails Go on instance-runtime-uppercase-key-is-canonical (audit.count) (quality-reports/go-migration/instance-runtime-http-mutation-audit-replay/results.json)"
       ]
     },
     {
@@ -37035,7 +37056,7 @@
         "target": "InstanceUpdatesView.as_view()",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/internal/service/instance_updates.go",
         "BE_GO/internal/service/instance_admin.go",
@@ -37084,12 +37105,12 @@
       ],
       "evidence": [
         {
-          "command": "python tools/go-migration/family.py run instance-updates --versioned --label sweep-final-3",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "command": "python tools/go-migration/family.py run instance-updates --versioned --label sweep-p1-instance",
+          "revision": "6d0644b28f881cf2a52bba868fb10531854d5d11",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/instance-updates-http-sweep-final-3/results.json",
-          "receipt_sha256": "e9d1e8a0dd6d6f8bb52dab853c252f327565ff28843484eec1440627096f3b0b",
-          "scope": "HTTP family instance-updates: 40/40 cases on native Django and native Go, 40/40 on Caddy /api/v1 and /api/v2."
+          "artifact": "quality-reports/go-migration/instance-updates-http-sweep-p1-instance/results.json",
+          "receipt_sha256": "a378305390bc4042e05cdc302cb241085cf287d2d7e7f1faad7a67ad12838c11",
+          "scope": "HTTP family instance-updates: 42/42 cases on native Django and native Go, 42/42 on Caddy /api/v1 and /api/v2."
         }
       ],
       "notes": [
@@ -37097,7 +37118,8 @@
         "Implementing evidence: docs/architecture/go-migration/instance-updates.md",
         "Implementing evidence: RED: Django 40/40; Go 500 on the first case. (quality-reports/go-migration/instance-updates-http-v2-admin-red/results.json)",
         "Implementing evidence: GREEN: 40/40 on native Django, native Go, Caddy /api/v1 and /api/v2. (quality-reports/go-migration/instance-updates-http-v2-admin-final-green/results.json)",
-        "Implementing evidence: Mutation control: fails Go on instance-updates-request-release-not-newer (response.status). (quality-reports/go-migration/instance-updates-http-v2-admin-mutation-version-check/results.json)"
+        "Implementing evidence: Mutation control: fails Go on instance-updates-request-release-not-newer (response.status). (quality-reports/go-migration/instance-updates-http-v2-admin-mutation-version-check/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/instance-updates-http-sweep-final-3/results.json)"
       ]
     },
     {
@@ -37115,7 +37137,7 @@
         "target": "InstanceConfigView.as_view()",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/internal/domain/instance_bootstrap.go",
         "BE_GO/internal/dto/instance_bootstrap.go",
@@ -37171,18 +37193,18 @@
       "evidence": [
         {
           "command": "python TESTS/adapters/django/instance_bootstrap.py --backend django",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "6d0644b28f881cf2a52bba868fb10531854d5d11",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/ledger-verified-r8/instance-bootstrap/1-results.json",
-          "receipt_sha256": "416091c1df29609ffbd03bc657a8fac7f12ec9aa146ac6f44057be44106c436e",
+          "artifact": "quality-reports/go-migration/ledger-verified-p1-instance/instance-bootstrap/1-results.json",
+          "receipt_sha256": "2f655e45b9de0ed6509c7234d2e4810f5f21407033549e6f2e3bc4f9c51c4b8d",
           "scope": "instance-bootstrap harness: success=True."
         },
         {
           "command": "python TESTS/adapters/django/instance_bootstrap.py --backend go --manifest-versioned",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "6d0644b28f881cf2a52bba868fb10531854d5d11",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/ledger-verified-r8/instance-bootstrap/2-results.json",
-          "receipt_sha256": "14b33be97f138bcc963fabc4eeead9fc0017b7e2de9ed9694462d01acde83284",
+          "artifact": "quality-reports/go-migration/ledger-verified-p1-instance/instance-bootstrap/2-results.json",
+          "receipt_sha256": "ceebc8ee915e72f50914e8a5290240a08f8153a5d2762f262e4bcae457051b48",
           "scope": "instance-bootstrap harness: success=True."
         }
       ],
@@ -37198,7 +37220,9 @@
         "Implementing evidence: docs/architecture/go-migration/ui-api-version.md",
         "Implementing evidence: passed: 129 Django bootstrap cases (new configured-config-ui-api-v2). (quality-reports/go-migration/ui-v2-bootstrap-django/results.json)",
         "Implementing evidence: RED: Go fails configured-config (features keys: uiApiVersion). (quality-reports/go-migration/ui-v2-bootstrap-go-red/results.json)",
-        "Implementing evidence: passed: 129 Go bootstrap cases plus the repository integration groups. Mutation (features.uiApiVersion fixed to v1) failed configured-config-ui-api-v2 and was restored. (quality-reports/go-migration/ui-v2-bootstrap-go-green/results.json)"
+        "Implementing evidence: passed: 129 Go bootstrap cases plus the repository integration groups. Mutation (features.uiApiVersion fixed to v1) failed configured-config-ui-api-v2 and was restored. (quality-reports/go-migration/ui-v2-bootstrap-go-green/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/ledger-verified-r8/instance-bootstrap/1-results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/ledger-verified-r8/instance-bootstrap/2-results.json)"
       ]
     },
     {
@@ -37216,7 +37240,7 @@
         "target": "InstanceSetupView.as_view()",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/internal/domain/instance_setup.go",
         "BE_GO/internal/dto/instance_setup.go",
@@ -37267,12 +37291,12 @@
       ],
       "evidence": [
         {
-          "command": "python tools/go-migration/family.py run instance-setup --versioned --label sweep-final-3",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "command": "python tools/go-migration/family.py run instance-setup --versioned --label sweep-p1-instance",
+          "revision": "6d0644b28f881cf2a52bba868fb10531854d5d11",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/instance-setup-http-sweep-final-3/results.json",
-          "receipt_sha256": "9954b98c11230f48bd7a63b1f6e97a2863e08ec147ef28ce511136152f3fa851",
-          "scope": "HTTP family instance-setup: 107/107 cases on native Django and native Go, 107/107 on Caddy /api/v1 and /api/v2."
+          "artifact": "quality-reports/go-migration/instance-setup-http-sweep-p1-instance/results.json",
+          "receipt_sha256": "154265ca24de42c03cf8aadb60fe63cc90bfc86ef5434cc9655cb386427a27b1",
+          "scope": "HTTP family instance-setup: 118/118 cases on native Django and native Go, 118/118 on Caddy /api/v1 and /api/v2."
         }
       ],
       "notes": [
@@ -37280,7 +37304,8 @@
         "Implementing evidence: docs/architecture/go-migration/instance-setup.md",
         "Implementing evidence: RED: Django 99/99; Go 500 on the first case. (quality-reports/go-migration/instance-setup-http-v2-admin-red/results.json)",
         "Implementing evidence: GREEN: 99/99 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact row and storage effects. (quality-reports/go-migration/instance-setup-http-v2-admin-final-green/results.json)",
-        "Implementing evidence: Mutation control: fails Go on instance-setup-configure-import-association-id-key (import.primary-association). (quality-reports/go-migration/instance-setup-http-v2-admin-mutation-association-key/results.json)"
+        "Implementing evidence: Mutation control: fails Go on instance-setup-configure-import-association-id-key (import.primary-association). (quality-reports/go-migration/instance-setup-http-v2-admin-mutation-association-key/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/instance-setup-http-sweep-final-3/results.json)"
       ]
     },
     {
@@ -37298,7 +37323,7 @@
         "target": "InstanceLogoUploadView.as_view()",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/internal/domain/instance_setup.go",
         "BE_GO/internal/dto/instance_setup.go",
@@ -37349,12 +37374,12 @@
       ],
       "evidence": [
         {
-          "command": "python tools/go-migration/family.py run instance-setup --versioned --label sweep-final-3",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "command": "python tools/go-migration/family.py run instance-setup --versioned --label sweep-p1-instance",
+          "revision": "6d0644b28f881cf2a52bba868fb10531854d5d11",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/instance-setup-http-sweep-final-3/results.json",
-          "receipt_sha256": "9954b98c11230f48bd7a63b1f6e97a2863e08ec147ef28ce511136152f3fa851",
-          "scope": "HTTP family instance-setup: 107/107 cases on native Django and native Go, 107/107 on Caddy /api/v1 and /api/v2."
+          "artifact": "quality-reports/go-migration/instance-setup-http-sweep-p1-instance/results.json",
+          "receipt_sha256": "154265ca24de42c03cf8aadb60fe63cc90bfc86ef5434cc9655cb386427a27b1",
+          "scope": "HTTP family instance-setup: 118/118 cases on native Django and native Go, 118/118 on Caddy /api/v1 and /api/v2."
         }
       ],
       "notes": [
@@ -37362,7 +37387,8 @@
         "Implementing evidence: docs/architecture/go-migration/instance-setup.md",
         "Implementing evidence: RED: Django 99/99; Go 500 on the first case. (quality-reports/go-migration/instance-setup-http-v2-admin-red/results.json)",
         "Implementing evidence: GREEN: 99/99 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact row and storage effects. (quality-reports/go-migration/instance-setup-http-v2-admin-final-green/results.json)",
-        "Implementing evidence: Mutation control: fails Go on instance-setup-configure-import-association-id-key (import.primary-association). (quality-reports/go-migration/instance-setup-http-v2-admin-mutation-association-key/results.json)"
+        "Implementing evidence: Mutation control: fails Go on instance-setup-configure-import-association-id-key (import.primary-association). (quality-reports/go-migration/instance-setup-http-v2-admin-mutation-association-key/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/instance-setup-http-sweep-final-3/results.json)"
       ]
     },
     {
@@ -37380,7 +37406,7 @@
         "target": "InstanceLogoServeView.as_view()",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/cmd/server/instance_logo.go",
         "BE_GO/internal/domain/instance_logo.go",
@@ -37446,11 +37472,11 @@
       ],
       "evidence": [
         {
-          "command": "python TESTS/adapters/django/instance_logo.py --backend both --versioned --output quality-reports/go-migration/ledger-verified-r8/instance-logo",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "command": "python TESTS/adapters/django/instance_logo.py --backend both --versioned --output quality-reports/go-migration/ledger-verified-p1-instance/instance-logo",
+          "revision": "6d0644b28f881cf2a52bba868fb10531854d5d11",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/ledger-verified-r8/instance-logo/1-results.json",
-          "receipt_sha256": "07c9d71f535421d9b56ce20da3923c5d1e6b261fecdd74f0384e47ada6a699d7",
+          "artifact": "quality-reports/go-migration/ledger-verified-p1-instance/instance-logo/1-results.json",
+          "receipt_sha256": "17440cc10acef135deda2b8d7db22ce9a5ea92fb1b6f7bb7eada8634e01b033a",
           "scope": "instance-logo harness: success=True."
         }
       ],
@@ -37480,7 +37506,8 @@
         "Implementing evidence: quality-reports/go-migration/storage-tls-parent/spool-corrected/results.json",
         "Implementing evidence: quality-reports/go-migration/storage-tls-parent/bookworm-strict-results.json",
         "Implementing evidence: passed: Django and Go logo cases, versioned (quality-reports/go-migration/instance-logo-refresh/results.json)",
-        "Implementing evidence: passed: 76 cases on Django S3, Go, Caddy /api/v1 and /api/v2 (64 Django disk injection); view unchanged by the merge. (quality-reports/go-migration/instance-reverify-logo/results.json)"
+        "Implementing evidence: passed: 76 cases on Django S3, Go, Caddy /api/v1 and /api/v2 (64 Django disk injection); view unchanged by the merge. (quality-reports/go-migration/instance-reverify-logo/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/ledger-verified-r8/instance-logo/1-results.json)"
       ]
     },
     {
@@ -37498,7 +37525,7 @@
         "target": "InstanceManifestView.as_view()",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/internal/domain/instance_manifest.go",
         "BE_GO/internal/dto/instance_manifest.go",
@@ -37557,27 +37584,19 @@
       ],
       "evidence": [
         {
-          "command": "TESTS_READ_ROUTE_LOCALES_GO=1 TESTS_READ_ROUTE_LOCALES_VERSIONED=1 python TESTS/adapters/django/accounts.py --only read-route-locales",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/ledger-verified-r8/read-route-locales/1-results.json",
-          "receipt_sha256": "116ac6d6a0853d5664aa16815564d5d556368fcfe5da6e418e5b8d06ac103a67",
-          "scope": "read-route-locales harness: success=True."
-        },
-        {
           "command": "python TESTS/adapters/django/instance_bootstrap.py --backend django",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "6d0644b28f881cf2a52bba868fb10531854d5d11",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/ledger-verified-r8/instance-bootstrap/1-results.json",
-          "receipt_sha256": "416091c1df29609ffbd03bc657a8fac7f12ec9aa146ac6f44057be44106c436e",
+          "artifact": "quality-reports/go-migration/ledger-verified-p1-instance/instance-bootstrap/1-results.json",
+          "receipt_sha256": "2f655e45b9de0ed6509c7234d2e4810f5f21407033549e6f2e3bc4f9c51c4b8d",
           "scope": "instance-bootstrap harness: success=True."
         },
         {
           "command": "python TESTS/adapters/django/instance_bootstrap.py --backend go --manifest-versioned",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "6d0644b28f881cf2a52bba868fb10531854d5d11",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/ledger-verified-r8/instance-bootstrap/2-results.json",
-          "receipt_sha256": "14b33be97f138bcc963fabc4eeead9fc0017b7e2de9ed9694462d01acde83284",
+          "artifact": "quality-reports/go-migration/ledger-verified-p1-instance/instance-bootstrap/2-results.json",
+          "receipt_sha256": "ceebc8ee915e72f50914e8a5290240a08f8153a5d2762f262e4bcae457051b48",
           "scope": "instance-bootstrap harness: success=True."
         }
       ],
@@ -37607,7 +37626,10 @@
         "Implementing evidence: passed: 128 Django bootstrap cases (quality-reports/go-migration/instance-bootstrap/results.json)",
         "Implementing evidence: passed: 128 Go bootstrap cases (quality-reports/go-migration/instance-bootstrap-go/results.json)",
         "Implementing evidence: passed: 128 Django bootstrap cases; views unchanged by the merge. (quality-reports/go-migration/instance-reverify-bootstrap-django/results.json)",
-        "Implementing evidence: passed: 128 Go bootstrap cases. (quality-reports/go-migration/instance-reverify-bootstrap-go/results.json)"
+        "Implementing evidence: passed: 128 Go bootstrap cases. (quality-reports/go-migration/instance-reverify-bootstrap-go/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/ledger-verified-r8/read-route-locales/1-results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/ledger-verified-r8/instance-bootstrap/1-results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/ledger-verified-r8/instance-bootstrap/2-results.json)"
       ]
     },
     {
@@ -37625,7 +37647,7 @@
         "target": "InstanceReconfigureView.as_view()",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/internal/domain/instance_setup.go",
         "BE_GO/internal/dto/instance_setup.go",
@@ -37676,12 +37698,12 @@
       ],
       "evidence": [
         {
-          "command": "python tools/go-migration/family.py run instance-setup --versioned --label sweep-final-3",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "command": "python tools/go-migration/family.py run instance-setup --versioned --label sweep-p1-instance",
+          "revision": "6d0644b28f881cf2a52bba868fb10531854d5d11",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/instance-setup-http-sweep-final-3/results.json",
-          "receipt_sha256": "9954b98c11230f48bd7a63b1f6e97a2863e08ec147ef28ce511136152f3fa851",
-          "scope": "HTTP family instance-setup: 107/107 cases on native Django and native Go, 107/107 on Caddy /api/v1 and /api/v2."
+          "artifact": "quality-reports/go-migration/instance-setup-http-sweep-p1-instance/results.json",
+          "receipt_sha256": "154265ca24de42c03cf8aadb60fe63cc90bfc86ef5434cc9655cb386427a27b1",
+          "scope": "HTTP family instance-setup: 118/118 cases on native Django and native Go, 118/118 on Caddy /api/v1 and /api/v2."
         }
       ],
       "notes": [
@@ -37689,7 +37711,8 @@
         "Implementing evidence: docs/architecture/go-migration/instance-setup.md",
         "Implementing evidence: RED: Django 99/99; Go 500 on the first case. (quality-reports/go-migration/instance-setup-http-v2-admin-red/results.json)",
         "Implementing evidence: GREEN: 99/99 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact row and storage effects. (quality-reports/go-migration/instance-setup-http-v2-admin-final-green/results.json)",
-        "Implementing evidence: Mutation control: fails Go on instance-setup-configure-import-association-id-key (import.primary-association). (quality-reports/go-migration/instance-setup-http-v2-admin-mutation-association-key/results.json)"
+        "Implementing evidence: Mutation control: fails Go on instance-setup-configure-import-association-id-key (import.primary-association). (quality-reports/go-migration/instance-setup-http-v2-admin-mutation-association-key/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/instance-setup-http-sweep-final-3/results.json)"
       ]
     },
     {
@@ -37707,7 +37730,7 @@
         "target": "InstanceSetupTokenValidateView.as_view()",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/internal/domain/instance_setup.go",
         "BE_GO/internal/dto/instance_setup.go",
@@ -37758,12 +37781,12 @@
       ],
       "evidence": [
         {
-          "command": "python tools/go-migration/family.py run instance-setup --versioned --label sweep-final-3",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "command": "python tools/go-migration/family.py run instance-setup --versioned --label sweep-p1-instance",
+          "revision": "6d0644b28f881cf2a52bba868fb10531854d5d11",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/instance-setup-http-sweep-final-3/results.json",
-          "receipt_sha256": "9954b98c11230f48bd7a63b1f6e97a2863e08ec147ef28ce511136152f3fa851",
-          "scope": "HTTP family instance-setup: 107/107 cases on native Django and native Go, 107/107 on Caddy /api/v1 and /api/v2."
+          "artifact": "quality-reports/go-migration/instance-setup-http-sweep-p1-instance/results.json",
+          "receipt_sha256": "154265ca24de42c03cf8aadb60fe63cc90bfc86ef5434cc9655cb386427a27b1",
+          "scope": "HTTP family instance-setup: 118/118 cases on native Django and native Go, 118/118 on Caddy /api/v1 and /api/v2."
         }
       ],
       "notes": [
@@ -37771,7 +37794,8 @@
         "Implementing evidence: docs/architecture/go-migration/instance-setup.md",
         "Implementing evidence: RED: Django 99/99; Go 500 on the first case. (quality-reports/go-migration/instance-setup-http-v2-admin-red/results.json)",
         "Implementing evidence: GREEN: 99/99 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact row and storage effects. (quality-reports/go-migration/instance-setup-http-v2-admin-final-green/results.json)",
-        "Implementing evidence: Mutation control: fails Go on instance-setup-configure-import-association-id-key (import.primary-association). (quality-reports/go-migration/instance-setup-http-v2-admin-mutation-association-key/results.json)"
+        "Implementing evidence: Mutation control: fails Go on instance-setup-configure-import-association-id-key (import.primary-association). (quality-reports/go-migration/instance-setup-http-v2-admin-mutation-association-key/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/instance-setup-http-sweep-final-3/results.json)"
       ]
     },
     {
@@ -37789,7 +37813,7 @@
         "target": "InstanceStatusView.as_view()",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/internal/domain/instance_bootstrap.go",
         "BE_GO/internal/dto/instance_bootstrap.go",
@@ -37842,18 +37866,18 @@
       "evidence": [
         {
           "command": "python TESTS/adapters/django/instance_bootstrap.py --backend django",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "6d0644b28f881cf2a52bba868fb10531854d5d11",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/ledger-verified-r8/instance-bootstrap/1-results.json",
-          "receipt_sha256": "416091c1df29609ffbd03bc657a8fac7f12ec9aa146ac6f44057be44106c436e",
+          "artifact": "quality-reports/go-migration/ledger-verified-p1-instance/instance-bootstrap/1-results.json",
+          "receipt_sha256": "2f655e45b9de0ed6509c7234d2e4810f5f21407033549e6f2e3bc4f9c51c4b8d",
           "scope": "instance-bootstrap harness: success=True."
         },
         {
           "command": "python TESTS/adapters/django/instance_bootstrap.py --backend go --manifest-versioned",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "6d0644b28f881cf2a52bba868fb10531854d5d11",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/ledger-verified-r8/instance-bootstrap/2-results.json",
-          "receipt_sha256": "14b33be97f138bcc963fabc4eeead9fc0017b7e2de9ed9694462d01acde83284",
+          "artifact": "quality-reports/go-migration/ledger-verified-p1-instance/instance-bootstrap/2-results.json",
+          "receipt_sha256": "ceebc8ee915e72f50914e8a5290240a08f8153a5d2762f262e4bcae457051b48",
           "scope": "instance-bootstrap harness: success=True."
         }
       ],
@@ -37864,7 +37888,9 @@
         "Implementing evidence: passed: 128 Django bootstrap cases (quality-reports/go-migration/instance-bootstrap/results.json)",
         "Implementing evidence: passed: 128 Go bootstrap cases (quality-reports/go-migration/instance-bootstrap-go/results.json)",
         "Implementing evidence: passed: 128 Django bootstrap cases; views unchanged by the merge. (quality-reports/go-migration/instance-reverify-bootstrap-django/results.json)",
-        "Implementing evidence: passed: 128 Go bootstrap cases. (quality-reports/go-migration/instance-reverify-bootstrap-go/results.json)"
+        "Implementing evidence: passed: 128 Go bootstrap cases. (quality-reports/go-migration/instance-reverify-bootstrap-go/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/ledger-verified-r8/instance-bootstrap/1-results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/ledger-verified-r8/instance-bootstrap/2-results.json)"
       ]
     },
     {
