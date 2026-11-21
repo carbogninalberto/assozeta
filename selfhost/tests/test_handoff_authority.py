@@ -103,8 +103,12 @@ CLI = Path(os.environ.get('ASSOZETA_HANDOFF_CLI') or ROOT / 'selfhost/bin/assoze
 DEFINITIONS = CLI.read_text().split('\ncommand=${1:-help}\n')[0]
 REAL_POPEN = subprocess.Popen
 SECRETS = ('P1-DBPASSWORD-SENTINEL', 'P1-SECRET-KEY-SENTINEL', 'P1-JWT-SENTINEL', 'P1-RUNNER-TOKEN-SENTINEL',
-           'P1-ADMIN-PASSWORD-SENTINEL', 'P1-JOB-PAYLOAD-SENTINEL')
+           'P1-ADMIN-PASSWORD-SENTINEL', 'P1-JOB-PAYLOAD-SENTINEL', 'P1-TASK-ARGUMENT-SENTINEL')
+# Key names that would carry credentials, job payloads or task arguments, at any depth.
+FORBIDDEN_KEYS = {'payload', 'args', 'kwargs', 'arguments', 'envelope', 'password', 'credentials', 'environment', 'env'}
 OWNER, OTHER_OWNER = str(uuid4()), str(uuid4())
+# Required keys. Later phases add keys additively (P5-STATUS v1); every key, old or
+# new, is still scanned by HandoffCase.assertPublishesNoSecrets.
 VIEW_KEYS = {'id', 'kind', 'actor_id', 'previous_runtime', 'requested_runtime', 'expected_generation', 'status',
              'stage', 'outcome', 'counts', 'committed_generation', 'error', 'error_code', 'recovery',
              'created_at', 'updated_at'}
@@ -263,6 +267,24 @@ class HandoffCase(unittest.TestCase):
         return {'authority': self.row(), 'files': files,
                 'maintenance': (self.root / '.operations/maintenance.flag').exists()}
 
+    def assertPublishesNoSecrets(self, *published):
+        """No credential, password, job payload or task argument in any key or value, at any depth."""
+        def walk(value, path):
+            if isinstance(value, dict):
+                for key, item in value.items():
+                    self.assertNotIn(str(key).lower(), FORBIDDEN_KEYS, f'forbidden key {path}.{key}')
+                    walk(key, f'{path}.<key>')
+                    walk(item, f'{path}.{key}')
+            elif isinstance(value, (list, tuple)):
+                for index, item in enumerate(value):
+                    walk(item, f'{path}[{index}]')
+            elif isinstance(value, (str, bytes)):
+                text = value.decode('latin-1') if isinstance(value, bytes) else value
+                for secret in SECRETS:
+                    self.assertNotIn(secret, text, f'secret published at {path}')
+        for index, value in enumerate(published):
+            walk(value, f'published[{index}]')
+
     def assertNoCommands(self):
         self.assertEqual(self.commands, [], 'no Docker/host command may run in Phase 1')
 
@@ -277,11 +299,12 @@ class SubmissionTests(HandoffCase):
         key = str(uuid4())
         status, payload = self.submit(self.body('go', 1, key))
         self.assertEqual(status, 202)
-        self.assertEqual(set(payload), {'operation', 'authority', 'replayed'})
+        self.assertLessEqual({'operation', 'authority', 'replayed'}, set(payload))
+        self.assertPublishesNoSecrets(payload)
         self.assertIs(payload['replayed'], False)
         self.assertEqual(payload['authority'], {'runtime': 'django', 'generation': 1, 'operation_id': None})
         view = payload['operation']
-        self.assertEqual(set(view), VIEW_KEYS)
+        self.assertLessEqual(VIEW_KEYS, set(view))
         UUID(view['id'])
         self.assertEqual({k: view[k] for k in ('kind', 'actor_id', 'previous_runtime', 'requested_runtime',
                                                 'expected_generation', 'status', 'stage', 'outcome', 'counts',
@@ -868,9 +891,20 @@ class RedactionAndStatusTests(HandoffCase):
         PG.query(self.database, "INSERT INTO assozeta_go_jobs(id, association_id, kind, version, idempotency_key, payload, "
                                 "max_attempts, available_at) VALUES (gen_random_uuid(), gen_random_uuid(), 'fixture.pending', 1, "
                                 f"'p1-key', '{{\"secret\": \"{SECRETS[5]}\"}}', 3, clock_timestamp());")
-        operation = self.queued()
+        PG.query(self.database, "INSERT INTO assozeta_go_jobs(id, association_id, kind, version, idempotency_key, payload, "
+                                "max_attempts, available_at) VALUES (gen_random_uuid(), gen_random_uuid(), 'fixture.task', 1, "
+                                f"'p1-task', '{{\"args\": [\"{SECRETS[6]}\"], \"kwargs\": {{\"to\": \"{SECRETS[6]}\"}}}}', 3, "
+                                "clock_timestamp());")
+        idle = module.status(self.root, self.env, self.journal, self.authority())
+        code, submitted = self.submit(self.body('go', 1))
+        self.assertEqual(code, 202, submitted)
+        operation = self.record(submitted['operation']['id'])
+        active = module.status(self.root, self.env, self.journal, self.authority())
         self.run_op(operation)
         status = module.status(self.root, self.env, self.journal, self.authority())
+        records = Journal(self.journal.path).records()
+        self.assertPublishesNoSecrets(idle, submitted, active, status, records,
+                                      (self.root / '.updater/operations.sqlite3').read_bytes())
         view = status['operation']
         self.assertEqual({k: view[k] for k in ('id', 'actor_id', 'previous_runtime', 'requested_runtime', 'stage', 'counts', 'outcome')},
                          {'id': operation['id'], 'actor_id': OWNER, 'previous_runtime': 'django', 'requested_runtime': 'go',
@@ -879,6 +913,7 @@ class RedactionAndStatusTests(HandoffCase):
         self.assertTrue(log.is_file(), 'the operation keeps a private log')
         self.assertEqual(log.stat().st_mode & 0o077, 0, 'the log is private to the updater')
         lines = [json.loads(line) for line in log.read_text().splitlines()]
+        self.assertPublishesNoSecrets(lines, log.read_text())
         for line in lines:
             self.assertTrue({'at', 'operation_id', 'actor_id', 'previous_runtime', 'requested_runtime', 'stage',
                              'counts', 'outcome'} <= set(line), line)
@@ -892,7 +927,8 @@ class RedactionAndStatusTests(HandoffCase):
     def test_status_reports_effective_requested_and_active_operation(self):
         module = rs('status')
         idle = module.status(self.root, self.env, self.journal, self.authority())
-        self.assertEqual(set(idle), STATUS_KEYS)
+        self.assertLessEqual(STATUS_KEYS, set(idle))
+        self.assertPublishesNoSecrets(idle)
         self.assertEqual({k: idle[k] for k in STATUS_KEYS - {'operation', 'active'}},
                          {'protocol': 1, 'effective_runtime': 'django', 'generation': 1, 'last_operation_id': None,
                           'requested_runtime': None, 'authority_error': None,
