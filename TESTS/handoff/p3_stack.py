@@ -24,6 +24,7 @@ interpreter with the BE requirements installed. Everything is private and dispos
 Barriers (FileBarrier) follow the file protocol pinned in test_p3_database_job's docstring.
 No timed sleep decides which side of a commit ran; waits only poll for durable evidence.
 """
+import base64
 from contextlib import suppress
 from datetime import datetime, timezone
 import json
@@ -36,6 +37,7 @@ import socket
 import subprocess
 import sys
 import tempfile
+import threading
 import time
 import uuid
 
@@ -50,8 +52,13 @@ DRIVER_APP = 'handoff-driver'
 GO_WORKER_APP = 'assozeta-go-worker'
 GO_PRODUCER_APP = 'handoff-go-producer'
 DB_TASK = 'reset_communication_daily_email_balance'
+MAIL_TASK = 'core.tasks.send_mail_async'
+GO_QUEUE = 'assozeta-go'
+GO_CONSUMER_APP = 'assozeta-go-celery-consumer'
+PRIORITY_SEPARATOR = '\x06\x16'
+HANDOFF_CLI = 'selfhost/updater/job_handoff.py'
 NIL = '00000000-0000-0000-0000-000000000000'
-HANDOFF_TABLES = ('assozeta_handoff_attempts', 'assozeta_handoff_transfers', 'assozeta_handoff_consumers',
+HANDOFF_TABLES = ('assozeta_handoff_effects', 'assozeta_handoff_attempts', 'assozeta_handoff_transfers', 'assozeta_handoff_consumers',
                   'assozeta_handoff_work')
 
 
@@ -130,6 +137,74 @@ class FileBarrier:
                         timeout=timeout)
 
 
+class CountingSMTP:
+    """A local ESMTP server (no TLS, no AUTH) that counts the messages it accepted (250 after DATA)."""
+
+    def __init__(self):
+        self.listener = socket.create_server(('127.0.0.1', 0))
+        self.port = self.listener.getsockname()[1]
+        self.lock = threading.Lock()
+        self.accepted = []
+        self.failing = False  # True: refuse every MAIL FROM with a temporary failure (the client raises)
+        threading.Thread(target=self.serve, daemon=True).start()
+
+    def count(self):
+        with self.lock:
+            return len(self.accepted)
+
+    def messages(self):
+        with self.lock:
+            return list(self.accepted)
+
+    def reset(self):
+        with self.lock:
+            self.accepted = []
+            self.failing = False
+
+    def close(self):
+        with suppress(OSError):
+            self.listener.close()
+
+    def serve(self):
+        while True:
+            try:
+                connection, _ = self.listener.accept()
+            except OSError:
+                return
+            threading.Thread(target=self.converse, args=(connection,), daemon=True).start()
+
+    def converse(self, connection):
+        with suppress(OSError, ValueError):
+            connection.settimeout(30)
+            reader = connection.makefile('rb')
+            connection.sendall(b'220 fake.smtp.test ESMTP\r\n')
+            while True:
+                line = reader.readline()
+                if not line:
+                    return
+                verb = line.split(b' ', 1)[0].strip().upper()
+                if verb in (b'EHLO', b'HELO'):
+                    connection.sendall(b'250-fake.smtp.test\r\n250 SIZE 10485760\r\n')
+                elif verb == b'DATA':
+                    connection.sendall(b'354 go ahead\r\n')
+                    body = b''
+                    while not body.endswith(b'\r\n.\r\n'):
+                        chunk = reader.readline()
+                        if not chunk:
+                            return
+                        body += chunk
+                    with self.lock:
+                        self.accepted.append(body.decode('latin-1'))
+                    connection.sendall(b'250 queued\r\n')
+                elif verb == b'MAIL' and self.failing:
+                    connection.sendall(b'451 4.3.0 temporary failure\r\n')
+                elif verb == b'QUIT':
+                    connection.sendall(b'221 bye\r\n')
+                    return
+                else:
+                    connection.sendall(b'250 ok\r\n')
+
+
 class Stack:
     def __init__(self, output):
         self.output = Path(output)
@@ -159,6 +234,7 @@ class Stack:
         if not redis_server or not shutil.which('go') or not self.psql:
             raise RuntimeError('redis-server, Go and PostgreSQL (with psql) are required; never skipped')
         self.redis_port = free_port()
+        self.smtp = CountingSMTP()
         self.redis_process = subprocess.Popen(
             [redis_server, '--port', str(self.redis_port), '--bind', '127.0.0.1', '--requirepass', REDIS_PASSWORD,
              '--save', '', '--appendonly', 'no', '--dir', str(self.work)], stdout=self.log, stderr=subprocess.STDOUT)
@@ -186,7 +262,8 @@ class Stack:
 
     def build_go(self):
         env = dict(self.base_env)
-        for name, package, race in (('worker', './cmd/worker', True), ('handoff-probe', './cmd/handoff-probe', False)):
+        for name, package, race in (('worker', './cmd/worker', True), ('handoff-probe', './cmd/handoff-probe', False),
+                                    ('celery-consumer', './cmd/celery-consumer', True)):
             command = ['go', 'build', '-tags', 'handoff', *(['-race'] if race else []), '-o', str(self.work / name), package]
             self.run(command, cwd=ROOT / 'BE_GO', env=env, timeout=600)
 
@@ -211,6 +288,7 @@ class Stack:
                                                          serialization.PublicFormat.SubjectPublicKeyInfo).decode(),
             GO_TASK_QUEUE_TASKS='', ASSOZETA_HANDOFF_BROKER_URL=f'redis://default:{REDIS_PASSWORD}@127.0.0.1:{self.redis_port}/0',
             ASSOZETA_HANDOFF_BARRIER_DIR=str(self.barrier.directory), ASSOZETA_HANDOFF_APPLICATION=DRIVER_APP,
+            ASSOZETA_HANDOFF_SMTP_PORT=str(self.smtp.port),
             PYTHONPATH=f'{ROOT / "BE"}:{ROOT}', OBJC_DISABLE_INITIALIZE_FORK_SAFETY='YES')
         return values
 
@@ -263,6 +341,8 @@ class Stack:
             stream.close()
         with suppress(Exception):
             self.connection.close()
+        with suppress(Exception):
+            self.smtp.close()
         with suppress(Exception):
             from django.db import connections
             connections.close_all()
@@ -367,9 +447,11 @@ class Stack:
         self.sql('TRUNCATE ' + ', '.join(['public.assozeta_go_periodic_occurrences', 'public.assozeta_go_jobs',
                                           'django_celery_results_taskresult', 'handoff_test_effects',
                                           'communications_communicationconfiguration', 'instance_datarestore',
+                                          'application_emaillog',
                                           *('public.' + t for t in present)]) + ' CASCADE')
         self.set_authority('django', 1)
         self.barrier.reset()
+        self.smtp.reset()
 
     def seed_balance(self):
         from communications.models import CommunicationConfiguration
@@ -484,18 +566,143 @@ class Stack:
                 check(private not in text, 'a worker log leaked private configuration: ' + log.name)
         return code
 
-    def go_enqueue(self, job_id, available_at=None, kind=DB_TASK, key=None):
+    def go_enqueue(self, job_id, available_at=None, kind=DB_TASK, key=None, payload=None):
         """A Go durable producer (cmd/handoff-probe) calling the production repository.Jobs.Enqueue."""
         command = [str(self.work / 'handoff-probe'), 'enqueue', '--dsn',
                    f'host={self.work} user={USER} dbname={DATABASE} sslmode=disable', '--id', job_id, '--kind', kind,
                    '--key', key or f'probe:{job_id}']
         if available_at is not None:
             command += ['--available-at', available_at.astimezone(timezone.utc).isoformat()]
+        if payload is not None:
+            command += ['--payload', payload]
         completed = subprocess.run(command, env=self.base_env, capture_output=True, text=True, timeout=60)
         try:
             return json.loads(completed.stdout.strip().splitlines()[-1])
         except (ValueError, IndexError):
             raise RuntimeError('handoff-probe produced no result: ' + completed.stdout + completed.stderr) from None
+
+    def go_consumer_env_file(self):
+        path = self.work / 'go-consumer.env'
+        if not path.exists():
+            text = self.go_env_file().read_text().replace('GO_TASK_QUEUE_TASKS=\n', '')
+            extra = {'GO_TASK_QUEUE_TASKS': ','.join([MAIL_TASK, 'send_email_text', 'send_email_template', 'send_email_html']),
+                     'EMAIL_HOST': '127.0.0.1', 'EMAIL_PORT': str(self.smtp.port), 'EMAIL_HOST_USER': '',
+                     'EMAIL_HOST_PASSWORD': '', 'EMAIL_USE_TLS': 'False', 'EMAIL_USE_SSL': 'False',
+                     'WHITELABEL_NAME': 'Handoff Fixture', 'IS_WHITELABEL': 'False'}
+            path.write_text(text + ''.join(f'{key}={value}\n' for key, value in extra.items()))
+            path.chmod(0o600)
+        return path
+
+    def go_consumer(self):
+        """cmd/celery-consumer (-tags handoff, race build) on the assozeta-go queue with the Phase 3 heartbeat flag."""
+        probe = subprocess.run([str(self.work / 'celery-consumer'), '--handoff-heartbeat', '100ms', '--list-tasks'],
+                               env=self.base_env, capture_output=True, text=True, timeout=60)
+        check(probe.returncode == 0, 'contract: cmd/celery-consumer refused --handoff-heartbeat '
+                                     '(Phase 3 freeze heartbeat flag missing)')
+        log = self.output / f'go-consumer-{len(self.children) + 1}.log'
+        stream = log.open('w')
+        env = dict(self.base_env, ASSOZETA_HANDOFF_BARRIER_DIR=str(self.barrier.directory))
+        command = [str(self.work / 'celery-consumer'), '--env-file', str(self.go_consumer_env_file()), '--concurrency', '1',
+                   '--drain-timeout', '3s', '--handoff-heartbeat', '100ms']
+        process = subprocess.Popen(command, env=env, stdout=stream, stderr=subprocess.STDOUT)
+        self.children.append((process, stream, log))
+        time.sleep(0.2)
+        if process.poll() is not None:
+            text = log.read_text()
+            check('invalid celery consumer arguments' not in text,
+                  'contract: cmd/celery-consumer refused --handoff-heartbeat (Phase 3 freeze heartbeat flag missing)')
+            raise ContractFailure('Go consumer exited during startup: ' + text[-800:])
+        return process
+
+    def kill(self, pid, sig=signal.SIGKILL):
+        with suppress(ProcessLookupError):
+            os.kill(int(pid), sig)
+
+    def kill_tree(self, process, arrival=None):
+        """SIGKILL a worker and, when a barrier arrival names a child process, that child too."""
+        if arrival and arrival.get('pid'):
+            self.kill(arrival['pid'])
+        if process.poll() is None:
+            process.kill()
+        process.wait(timeout=20)
+
+    # -- broker envelopes -----------------------------------------------------------------------------
+    @staticmethod
+    def envelope(task, task_id, *, args=(), kwargs=None, queue='celery', eta=None, expires=None, retries=0,
+                 parent_id=None, root_id=None, priority=0, stamp=None, chain=None, content_type='application/json'):
+        """A Celery protocol 2 JSON message as kombu's Redis transport stores it (TESTS producer for raw/legacy work).
+
+        stamp=None omits assozeta_published_at (an envelope from a release before the restore stamp)."""
+        from kombu.utils.json import dumps
+        kwargs = kwargs or {}
+        body = base64.b64encode(dumps([list(args), kwargs, {'callbacks': None, 'errbacks': None, 'chain': chain,
+                                                             'chord': None}]).encode()).decode()
+        headers = {'lang': 'py', 'task': task, 'id': task_id, 'shadow': None,
+                   'eta': eta.astimezone(timezone.utc).isoformat() if eta else None,
+                   'expires': expires.astimezone(timezone.utc).isoformat() if expires else None,
+                   'group': None, 'group_index': None, 'retries': retries, 'timelimit': [None, None],
+                   'root_id': root_id or task_id, 'parent_id': parent_id, 'argsrepr': repr(tuple(args)),
+                   'kwargsrepr': repr(kwargs), 'origin': 'gen1@handoff-fixture', 'ignore_result': False,
+                   'replaced_task_nesting': 0, 'stamped_headers': None, 'stamps': {}}
+        if stamp is not None:
+            headers['assozeta_published_at'] = stamp
+        message = {'body': body, 'content-encoding': 'utf-8', 'content-type': content_type, 'headers': headers,
+                   'properties': {'correlation_id': task_id, 'reply_to': str(uuid.uuid4()), 'delivery_mode': 2,
+                                  'delivery_info': {'exchange': '', 'routing_key': queue}, 'priority': priority,
+                                  'body_encoding': 'base64', 'delivery_tag': str(uuid.uuid4())}}
+        return dumps(message).encode()
+
+    @staticmethod
+    def priority_queue(queue, priority):
+        step = max([0] + [s for s in (3, 6, 9) if priority >= s])
+        return queue if step == 0 else f'{queue}{PRIORITY_SEPARATOR}{step}'
+
+    def push(self, queue, payload, priority=0):
+        self.redis.sadd('_kombu.binding.' + queue, f'{queue}{PRIORITY_SEPARATOR}{PRIORITY_SEPARATOR}{queue}')
+        self.redis.lpush(self.priority_queue(queue, priority), payload)
+
+    def admit(self, runtime, task_id, task_name, queue, payload, eta=None, expires=None):
+        """A correct producer's durable acceptance through the shared SQL (contract P3-A), returning the outcome."""
+        import psycopg2
+        check(self.sql("SELECT to_regprocedure('public.assozeta_handoff_admit(text,text,text,text,text,bytea,"
+                       "timestamp with time zone,timestamp with time zone,timestamp with time zone)') IS NOT NULL")[0][0],
+              'contract: public.assozeta_handoff_admit is missing (migration 000006_job_handoff)')
+        stamp = json.loads(payload)['headers'].get('assozeta_published_at')
+        accepted = datetime.fromtimestamp(stamp, timezone.utc) if stamp else None
+        return self.sql('SELECT outcome FROM public.assozeta_handoff_admit(%s,%s,%s,%s,%s,%s,%s,%s,%s)',
+                        (runtime, task_id, task_name, 'broker', queue, psycopg2.Binary(payload), accepted, eta, expires))[0][0]
+
+    def broker_snapshot(self, exclude=()):
+        """Every Redis key with its exact value (bytes), for unrelated-key comparisons."""
+        state = {}
+        for key in self.redis.keys('*'):
+            name = key.decode('utf-8', 'backslashreplace')
+            if any(name.startswith(prefix) for prefix in exclude):
+                continue
+            kind = self.redis.type(key).decode()
+            if kind == 'list':
+                state[name] = ('list', tuple(self.redis.lrange(key, 0, -1)))
+            elif kind == 'hash':
+                state[name] = ('hash', tuple(sorted(self.redis.hgetall(key).items())))
+            elif kind == 'set':
+                state[name] = ('set', tuple(sorted(self.redis.smembers(key))))
+            elif kind == 'zset':
+                state[name] = ('zset', tuple(self.redis.zrange(key, 0, -1, withscores=True)))
+            elif kind == 'string':
+                state[name] = ('string', self.redis.get(key))
+        return state
+
+    def queued_ids(self, key):
+        return [json.loads(raw)['headers']['id'] for raw in self.redis.lrange(key, 0, -1)]
+
+    def effects_rows(self, task_id):
+        self.require_table('assozeta_handoff_effects')
+        with self.connection.cursor() as cursor:
+            cursor.execute('SELECT * FROM public.assozeta_handoff_effects WHERE task_id=%s ORDER BY recorded_at', (task_id,))
+            return [dict(zip([c.name for c in cursor.description], row)) for row in cursor.fetchall()]
+
+    def email_logs(self):
+        return self.sql('SELECT recipient, result FROM application_emaillog ORDER BY sent_at')
 
     # -- controller seams -------------------------------------------------------------------------
     def job_handoff(self):
@@ -514,13 +721,59 @@ class Stack:
     def psql_command(self):
         return [self.psql, '-h', str(self.work), '-U', USER, '-d', DATABASE, '-X', '-q', '-At', '-v', 'ON_ERROR_STOP=1']
 
-    def handoff_steps(self, **options):
+    def handoff_parts(self):
+        """(job_handoff module, PsqlStore, RespBroker) on the private services."""
         module = self.job_handoff()
         store = module.PsqlStore(self.psql_command(), dict(self.base_env))
         broker = module.RespBroker('127.0.0.1', self.redis_port, username='default', password=REDIS_PASSWORD, db=0)
+        return module, store, broker
+
+    def handoff_steps(self, **options):
+        module, store, broker = self.handoff_parts()
         options.setdefault('freeze_timeout', 30.0)
         options.setdefault('settle_timeout', 30.0)
-        return module.handoff_steps(store, broker, **options)
+        return {name: self.contract_call(f'handoff_steps()[{name!r}]', step, module)
+                for name, step in module.handoff_steps(store, broker, **options).items()}
+
+    @staticmethod
+    def contract_call(label, function, module):
+        """A seam that raises anything but TransferBlocked has failed its contract (a red, not a harness error)."""
+        blocked = getattr(module, 'TransferBlocked', ())
+
+        def call(*args, **kwargs):
+            try:
+                return function(*args, **kwargs)
+            except Exception as exc:
+                if blocked and isinstance(exc, blocked):
+                    raise
+                raise ContractFailure(f'contract: job_handoff {label} raised {type(exc).__name__}: {exc}') from exc
+        return call
+
+    def handoff_cli(self, step, record=None, *, barrier_dir=None, timeout=120, extra=()):
+        """The controller transfer as its own process: python3 -B selfhost/updater/job_handoff.py STEP ...
+
+        Returns (exit code, parsed JSON stdout or None, stderr tail)."""
+        self.job_handoff()
+        command = [sys.executable, '-B', str(ROOT / HANDOFF_CLI), step, '--psql', json.dumps(self.psql_command()),
+                   '--redis', json.dumps({'host': '127.0.0.1', 'port': self.redis_port, 'username': 'default',
+                                          'password': REDIS_PASSWORD, 'db': 0}),
+                   '--heartbeat-grace', '1', '--freeze-timeout', '30', '--settle-timeout', '30']
+        if record is not None:
+            command += ['--record', json.dumps(record)]
+        if barrier_dir:
+            command += ['--barrier-dir', str(barrier_dir)]
+        command += list(extra)
+        process = subprocess.Popen(command, env=dict(self.base_env), stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        return process
+
+    @staticmethod
+    def finish_cli(process, timeout=120):
+        out, err = process.communicate(timeout=timeout)
+        try:
+            parsed = json.loads(out.strip().splitlines()[-1]) if out.strip() else None
+        except ValueError:
+            parsed = None
+        return process.returncode, parsed, err[-1500:]
 
     @staticmethod
     def record(operation_id, source, generation, target):

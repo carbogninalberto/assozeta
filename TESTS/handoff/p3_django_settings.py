@@ -25,3 +25,14 @@ DATABASES['default'].setdefault('OPTIONS', {})['application_name'] = os.environ.
                                                                                     'handoff-django')
 ASSOZETA_HANDOFF_BARRIER_DIR = os.environ.get('ASSOZETA_HANDOFF_BARRIER_DIR', '')
 ASSOZETA_HANDOFF_HEARTBEAT_SECONDS = 0.1
+
+# The counting SMTP server of the stack (TESTS/handoff/p3_stack.py CountingSMTP): no TLS, no AUTH.
+EMAIL_BACKEND = 'instance.email_configuration.EmailBackend'
+EMAIL_HOST = '127.0.0.1'
+EMAIL_PORT = int(os.environ.get('ASSOZETA_HANDOFF_SMTP_PORT') or 9)
+EMAIL_HOST_USER = ''
+EMAIL_HOST_PASSWORD = ''
+EMAIL_USE_TLS = EMAIL_USE_SSL = False
+DEFAULT_FROM_EMAIL = 'Handoff Fixture <noreply@example.test>'
+# Test-only task 'fixture.early_ack' (early acknowledgement probe), never registered in production.
+CELERY_IMPORTS = ['TESTS.handoff.p3_probe_tasks']

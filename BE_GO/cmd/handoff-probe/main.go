@@ -63,6 +63,7 @@ func run(arguments []string, result map[string]any) error {
 	availableAt := flags.String("available-at", "", "RFC 3339 due time")
 	association := flags.String("association", uuid.Nil.String(), "association id (nil: instance-wide)")
 	maxAttempts := flags.Int("max-attempts", 3, "attempt budget")
+	payload := flags.String("payload", "{}", "JSON payload")
 	if err := flags.Parse(arguments[1:]); err != nil {
 		return err
 	}
@@ -75,7 +76,7 @@ func run(arguments []string, result map[string]any) error {
 		return errors.New("invalid --association")
 	}
 	intent := domain.JobIntent{ID: jobID, AssociationID: associationID, Kind: *kind, Version: 1, Key: *key,
-		Payload: json.RawMessage(`{}`), MaxAttempts: *maxAttempts}
+		Payload: json.RawMessage(*payload), MaxAttempts: *maxAttempts}
 	if *availableAt != "" {
 		if intent.AvailableAt, err = time.Parse(time.RFC3339Nano, *availableAt); err != nil {
 			return errors.New("invalid --available-at")

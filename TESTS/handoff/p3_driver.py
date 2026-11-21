@@ -19,7 +19,9 @@ import time
 import traceback
 
 ROOT = Path(__file__).resolve().parents[2]
-SUITES = {'db': 'TESTS.handoff.p3_scenarios_db'}
+SUITES = {'db': 'TESTS.handoff.p3_scenarios_db', 'email': 'TESTS.handoff.p3_scenarios_email',
+          'broker': 'TESTS.handoff.p3_scenarios_broker', 'durable': 'TESTS.handoff.p3_scenarios_durable',
+          'producers': 'TESTS.handoff.p3_scenarios_producers'}
 
 
 def main(argv=None):
