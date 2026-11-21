@@ -1,0 +1,46 @@
+{
+  "celery": [
+    {
+      "body": "W1tdLCB7fSwgeyJjYWxsYmFja3MiOiBudWxsLCAiZXJyYmFja3MiOiBudWxsLCAiY2hhaW4iOiBudWxsLCAiY2hvcmQiOiBudWxsfV0=",
+      "content-encoding": "utf-8",
+      "content-type": "application/json",
+      "headers": {
+        "argsrepr": "()",
+        "assozeta_published_at": 1795176000,
+        "eta": null,
+        "expires": null,
+        "group": null,
+        "group_index": null,
+        "id": "d332a0ff-ffaa-5317-8cb2-0cb5b139d33e",
+        "ignore_result": false,
+        "kwargsrepr": "{}",
+        "lang": "py",
+        "origin": "fixture@localhost",
+        "parent_id": null,
+        "replaced_task_nesting": 0,
+        "retries": 0,
+        "root_id": "d332a0ff-ffaa-5317-8cb2-0cb5b139d33e",
+        "shadow": null,
+        "stamped_headers": null,
+        "stamps": {},
+        "task": "clear_expired_subscription_tokens",
+        "timelimit": [
+          null,
+          null
+        ]
+      },
+      "properties": {
+        "body_encoding": "base64",
+        "correlation_id": "d332a0ff-ffaa-5317-8cb2-0cb5b139d33e",
+        "delivery_info": {
+          "exchange": "",
+          "routing_key": "celery"
+        },
+        "delivery_mode": 2,
+        "delivery_tag": "b9916ee0-9692-5d0e-bf6e-5ba6cc114937",
+        "priority": 0,
+        "reply_to": "7faa0215-6574-5273-b5fa-bf7f366eb0f7"
+      }
+    }
+  ]
+}

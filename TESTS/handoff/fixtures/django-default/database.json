@@ -1,0 +1,86 @@
+{
+  "django_celery_beat_crontabschedule": [
+    {
+      "day_of_month": "*",
+      "day_of_week": "*",
+      "hour": "*",
+      "id": 1,
+      "minute": "*/15",
+      "month_of_year": "*",
+      "timezone": "Europe/Rome"
+    }
+  ],
+  "django_celery_beat_intervalschedule": [
+    {
+      "every": 11,
+      "id": 1,
+      "period": "minutes"
+    }
+  ],
+  "django_celery_beat_periodictask": [
+    {
+      "args": "[]",
+      "clocked_id": null,
+      "crontab_id": 1,
+      "date_changed": "2026-11-20T12:00:00Z",
+      "description": "Synthetic handoff definition",
+      "enabled": false,
+      "exchange": null,
+      "expire_seconds": null,
+      "expires": null,
+      "headers": "{}",
+      "id": 101,
+      "interval_id": null,
+      "kwargs": "{}",
+      "last_run_at": null,
+      "name": "auto-mark-attendance",
+      "one_off": false,
+      "priority": null,
+      "queue": null,
+      "routing_key": null,
+      "solar_id": null,
+      "start_time": null,
+      "task": "auto_mark_attendance",
+      "total_run_count": 0
+    },
+    {
+      "args": "[]",
+      "clocked_id": null,
+      "crontab_id": null,
+      "date_changed": "2026-11-20T12:00:00Z",
+      "description": "Synthetic handoff definition",
+      "enabled": true,
+      "exchange": null,
+      "expire_seconds": null,
+      "expires": null,
+      "headers": "{}",
+      "id": 102,
+      "interval_id": 1,
+      "kwargs": "{}",
+      "last_run_at": null,
+      "name": "fixture custom token sweep",
+      "one_off": false,
+      "priority": null,
+      "queue": null,
+      "routing_key": null,
+      "solar_id": null,
+      "start_time": null,
+      "task": "clear_expired_subscription_tokens",
+      "total_run_count": 0
+    }
+  ],
+  "instance_instanceconfiguration": [
+    {
+      "abbreviation": "Fixture",
+      "configured_at": "2026-11-20T12:00:00Z",
+      "domain": "localhost",
+      "go_tasks_enabled": false,
+      "id": 1,
+      "name": "Handoff fixture",
+      "self_hosted": true,
+      "setup_provenance": "legacy",
+      "ui_api_version": "v1",
+      "updated_at": "2026-11-20T12:00:00Z"
+    }
+  ]
+}
