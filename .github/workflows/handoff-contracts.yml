@@ -17,13 +17,19 @@ jobs:
   handoff:
     name: Handoff contracts (expected red tracked)
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 40
+    env:
+      GOTOOLCHAIN: local
+      PIP_CONSTRAINT: ${{ github.workspace }}/TESTS/adapters/django/constraints-parity.txt
     steps:
       - uses: actions/checkout@v4
         with:
           # The legacy baseline distribution is read from git history.
           fetch-depth: 0
           persist-credentials: false
+      # Phase 3 job handoff tests: Go (compiled worker/probe), production Python with the BE
+      # requirements (real Celery/Kombu), private PostgreSQL 16 and Redis.
+      - uses: ./.github/actions/go-foundation-setup
       - name: Pull the pinned proxy image
         run: docker pull "$(sed -n 's/^FROM \(caddy:[^ ]*\) AS production$/\1/p' UI/Dockerfile)"
       - name: Run the handoff suite with expected-red tracking
@@ -33,6 +39,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: handoff-expected-red-${{ github.sha }}
-          path: quality-reports/handoff/expected-red.json
+          path: |
+            quality-reports/handoff/expected-red.json
+            quality-reports/handoff/p3/
           if-no-files-found: warn
           retention-days: 14

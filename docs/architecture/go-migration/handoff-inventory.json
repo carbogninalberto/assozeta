@@ -4066,6 +4066,31 @@
       ]
     },
     {
+      "id": "service:handoff-probe",
+      "kind": "service",
+      "items": [
+        "go-cmd:handoff-probe"
+      ],
+      "fixture": "legacy-mixed",
+      "effect": "Phase 3 test helper: a Go durable producer that records one job through repository.Jobs.Enqueue.",
+      "owner": {
+        "django": {
+          "runtime": "none",
+          "status": "present",
+          "disposition": "test-only: built only with -tags handoff by TESTS/handoff/p3_stack.py"
+        },
+        "go": {
+          "runtime": "none",
+          "status": "present",
+          "disposition": "test-only: built only with -tags handoff, never part of an image"
+        }
+      },
+      "refs": [
+        "BE_GO/cmd/handoff-probe/main.go:1",
+        "TESTS/handoff/p3_stack.py:1"
+      ]
+    },
+    {
       "id": "service:mcp-server",
       "kind": "service",
       "items": [

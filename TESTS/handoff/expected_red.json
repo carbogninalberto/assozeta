@@ -323,6 +323,78 @@
         "CONTRACT MISSING: BE_GO/cmd/server",
         "Go API startup gating contract failed"
       ]
+    },
+    "TESTS.handoff.test_p3_database_job.HandoffSchemaContract.test_migration_6_adds_the_ledger_tables_and_shared_functions": {
+      "phase": 3,
+      "owner": "t-p3",
+      "reason": "migration 000006_job_handoff (ledger tables, admission columns, shared SQL functions) and CurrentVersion 6 do not exist",
+      "signatures": [
+        "contract: BE_GO/migrations/000006_job_handoff.{up,down}.sql missing"
+      ]
+    },
+    "TESTS.handoff.test_p3_database_job.HandoffSchemaContract.test_shared_sql_admits_holds_claims_fences_and_binds_at_commit": {
+      "phase": 3,
+      "owner": "t-p3",
+      "reason": "public.assozeta_handoff_work and the admit/claim/fence/finish/heartbeat/freeze functions do not exist",
+      "signatures": [
+        "contract: public.assozeta_handoff_work does not exist (migration 000006_job_handoff)"
+      ]
+    },
+    "TESTS.handoff.test_p3_database_job.DatabaseJobDjangoToGo.test_stale_django_producer_cannot_publish_after_commit": {
+      "phase": 3,
+      "owner": "t-p3",
+      "reason": "the Django producer has no durable admission: after the authority moves to go, apply_async still LPUSHes to the celery queue",
+      "signatures": [
+        "to its cached queue after the authority moved"
+      ]
+    },
+    "TESTS.handoff.test_p3_database_job.DatabaseJobDjangoToGo.test_stale_django_worker_cannot_claim_after_commit": {
+      "phase": 3,
+      "owner": "t-p3",
+      "reason": "the Django worker has no claim fence: a Django worker started after the authority moved to go executes a queued job",
+      "signatures": [
+        "stale Django worker executed"
+      ]
+    },
+    "TESTS.handoff.test_p3_database_job.DatabaseJobDjangoToGo.test_stale_django_attempt_cannot_complete_after_commit": {
+      "phase": 3,
+      "owner": "t-p3",
+      "reason": "the Django worker has no claim/barrier hooks: it never passes claim:granted, and no fenced effect transaction exists",
+      "signatures": [
+        "Django worker never passed barrier claim:granted"
+      ]
+    },
+    "TESTS.handoff.test_p3_database_job.DatabaseJobDjangoToGo.test_before_during_after_the_switch_every_accepted_job_runs_once": {
+      "phase": 3,
+      "owner": "t-p3",
+      "reason": "the controller transfer seam selfhost/updater/job_handoff.py (handoff_steps, PsqlStore, RespBroker) does not exist",
+      "signatures": [
+        "contract: selfhost/updater/job_handoff.py is missing"
+      ]
+    },
+    "TESTS.handoff.test_p3_database_job.DatabaseJobGoToDjango.test_stale_go_producer_cannot_enqueue_after_commit": {
+      "phase": 3,
+      "owner": "t-p3",
+      "reason": "repository.Jobs.Enqueue has no durable admission: a Go producer is accepted after the authority moved to django",
+      "signatures": [
+        "stale Go producer was accepted after the authority moved to django"
+      ]
+    },
+    "TESTS.handoff.test_p3_database_job.DatabaseJobGoToDjango.test_stale_go_attempt_cannot_complete_after_commit": {
+      "phase": 3,
+      "owner": "t-p3",
+      "reason": "cmd/worker has no --handoff-heartbeat flag (no consumer registration, freeze acknowledgement or barrier hooks)",
+      "signatures": [
+        "contract: cmd/worker refused --handoff-heartbeat"
+      ]
+    },
+    "TESTS.handoff.test_p3_database_job.DatabaseJobGoToDjango.test_go_created_rows_without_envelope_cross_once_and_future_stays_future": {
+      "phase": 3,
+      "owner": "t-p3",
+      "reason": "the controller transfer seam selfhost/updater/job_handoff.py (handoff_steps, PsqlStore, RespBroker) does not exist",
+      "signatures": [
+        "contract: selfhost/updater/job_handoff.py is missing"
+      ]
     }
   }
 }
