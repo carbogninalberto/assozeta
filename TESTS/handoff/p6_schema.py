@@ -312,6 +312,14 @@ def differences(expected, actual, limit=12):
 
 # -- production-Python entry point -------------------------------------------------------------------------------------
 def _django_main(database, leaves_json=None):
+    workdir = tempfile.mkdtemp(prefix='az-p6-django-')
+    try:
+        return _django_run(database, leaves_json, workdir)
+    finally:
+        shutil.rmtree(workdir, ignore_errors=True)
+
+
+def _django_run(database, leaves_json, workdir):
     try:
         values = {}
         for line in (ROOT / 'selfhost/.env.example').read_text().splitlines():
@@ -324,7 +332,7 @@ def _django_main(database, leaves_json=None):
         key = Ed25519PrivateKey.generate()
         values.update(
             DJANGO_SETTINGS_MODULE='TESTS.handoff.p6_django_settings', TESTS_DATABASE=database,
-            TESTS_WORKDIR=tempfile.mkdtemp(prefix='az-p6-django-'), DBTYPE='POSTGRES', DBHOST=os.environ['P6_DBHOST'],
+            TESTS_WORKDIR=workdir, DBTYPE='POSTGRES', DBHOST=os.environ['P6_DBHOST'],
             DBPORT='5432', DBNAME=database, DBUSER='contracts', DBPASSWORD='', USE_PGBOUNCER='False',
             STORE_ON_DISK='True', JWT_SECRET_KEY_B64='', JWT_PUBLIC_KEY_B64='',
             JWT_SECRET_KEY=key.private_bytes(serialization.Encoding.PEM, serialization.PrivateFormat.PKCS8,
