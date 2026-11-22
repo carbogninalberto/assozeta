@@ -7,7 +7,7 @@ const reviewed = {
   "UI/src/components/Sidebar.svelte": "261e159d3c922f77a6ab19e5b04cdbdeae4ca09c70f1c0abbf4815b8a51be571",
   "UI/src/routes.js": "65c76943b3751fb41201069b7c74d16ef31ca9fc28c86f45c2081fd3fe8876b4",
   "UI/src/utils/Permissions.js": "bf5966b4e5f67d53a7e59e84433e144bfeb5cbbea8a1842f13c10376f8405644",
-  "UI/src/routes/accounting/payment/modals/AddEditModal.svelte": "a10e4ff9329c1ef31e51e1d07bd5aa203d6d5f08bddd2ca96f300ea1eea3f406",
+  "UI/src/routes/accounting/payment/modals/AddEditModal.svelte": "77a7defcba165aae2d26f479d477f5864a8a04a6749a7a46e612dacda7f774c5",
   "UI/src/routes/accounting/payment/PaymentList.svelte": "31d3e103a34980df77ffe1178198789c0411f819f3ade64baba89ab0dcf3870a",
   "BE/application/views/payment_views.py": "7d63fd98c253499dbb7d2be9026f1fd2921f89518e7aa854713e29642d88afae",
   "BE/application/serializers/payment_serializers.py": "7381f90ea6fdec4ac99e8198deb8fe107cd0ad54fbce3625932a13035f2d179b",
