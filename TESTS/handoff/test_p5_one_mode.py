@@ -14,6 +14,8 @@ runner status socket POST /instance-update-status under the key 'runtime'.
   maintenance       bool, .operations/maintenance.flag exists
   switch_available  bool, the installed Compose declares the django and go profiles
   unavailable_reason str|null (Italian) when switch_available is false
+                    Both are always present with explicit values on every surface, also when the
+                    authority (database) is unavailable.
   operation view (operation, active) = Phase 1 keys plus source_generation, failed_stage,
   adoption (bool), progress {stage, index, total 9, maintenance_since,
   maintenance_deadline}, dispositions {staged, transferred, blocked, ambiguous},
@@ -121,6 +123,26 @@ class StatusContract(ModeCase):
         result, operator = self.inst.tool_json('status', str(self.inst.root), str(self.inst.env_file))
         self.assertEqual((result.returncode, {k: operator.get(k) for k in P5_STATUS}),
                          (0, {k: status[k] for k in P5_STATUS}), f'{RED}: operator status differs from the API status')
+
+    def test_switch_capability_is_explicit_on_every_surface_even_without_the_database(self):
+        inst = self.inst
+        module = inst.rs('status', 'PsqlAuthority')
+        surfaces = {'runner/API status': inst.status()}
+        with inst.active():
+            surfaces['status with the database unavailable'] = module.status(
+                inst.root, inst.env_file, inst.journal(),
+                module.PsqlAuthority(inst.services.psql_command('p5_database_that_does_not_exist')))
+        surfaces['operator tool'] = inst.tool_json('status', str(inst.root), str(inst.env_file))[1] or {}
+        output = inst.cli('runtime-status', check=False).stdout
+        surfaces['bin/assozeta runtime-status'] = json.loads(output[output.index('{'):output.rindex('}') + 1]) \
+            if '{' in output else {}
+        for label, status in surfaces.items():
+            with self.subTest(surface=label):
+                self.assertTrue({'switch_available', 'unavailable_reason'} <= set(status),
+                                f'{RED}: {label} must carry switch_available and unavailable_reason explicitly')
+                self.assertEqual((status['switch_available'], status['unavailable_reason']), (True, None),
+                                 f'{RED}: {label}: capability of an exclusive distribution')
+        self.assertEqual(surfaces['status with the database unavailable'].get('authority_error'), 'authority_unavailable')
 
     def test_operation_view_while_running_and_after_success(self):
         inst = self.inst

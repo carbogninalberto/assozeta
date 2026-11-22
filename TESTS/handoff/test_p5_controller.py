@@ -72,6 +72,23 @@ Failure after the commit: record 'recovery_required' (post_commit_failed), the m
   target = its previous_runtime and expected_generation = its committed_generation is
   admitted (202), the old record becomes status 'failed' with superseded_by = the new id,
   and the new operation transfers everything the failed target accepted since the commit.
+Schedules Go cannot publish (F1, task-coverage "unknown definitions identified before the source stops"):
+  a switch to go fails at preflight (transfer_blocked, nothing changed) when an ENABLED persisted Beat
+  definition (django_celery_beat_periodictask) is one the leased Go scheduler would skip: a task that is
+  neither a Go periodic job kind nor instance.backups.notify_failures, a solar schedule, any of
+  queue/exchange/routing_key/priority set, or non-empty args/kwargs/headers (the rule of
+  BE_GO/internal/service/schedule_due.go validatePeriodicDefinition, which P4-B may widen, e.g.
+  deliver-whatsapp). Each is one blocker {'task_id': 'periodic:<definition name>', 'reason':
+  'unsupported_schedule'} (status items ref 'periodic:<name>', age_seconds 0; the definition name is shown,
+  never its task, args or kwargs); disabled definitions and publishable ones never block. A switch to
+  django is never blocked by definitions (Beat publishes every persisted definition).
+Attempt leases (Phase 3 part B: broker attempts carry assozeta_handoff_attempts.lease_until, 30 s,
+  renewed every 10 s by the executing process): the lease is the fence for the switch. settle releases a
+  running source attempt only once its lease has expired, even while its consumer still heartbeats and
+  acknowledged the freeze (the executor died; finished_at >= lease_until), then the unacked copy is staged
+  and delivered once; it never releases an attempt whose lease is still being renewed, even when the
+  consumer's heartbeat stopped: such a switch fails before the commit (window_exceeded or
+  transfer_blocked 'running'), the attempt stays running and its task is not transferred.
 Interruption: killing the controller at any BARRIER_POINT or STEP_POINT and running
   recover() (restarted runner) or `./bin/assozeta runtime-recover` converges to the
   uninterrupted outcome. runtime_switch.py main honours env ASSOZETA_HANDOFF_BARRIER_DIR
@@ -420,6 +437,89 @@ class SwitchCase(h.ContractCase, unittest.TestCase):
         for forbidden in (sentinel, 'fixture.p5.retired_task', h.MAIL_TASK, inst.services.redis_password, 'recipient'):
             self.assertNotIn(forbidden, published, f'{RED}: status leaks job data or credentials')
         self.assertEqual(sum(inst.copies(good).values()), 1, f'{RED}: unblocked work must stay at the source')
+
+    # -- schedules Go cannot publish (F1) -------------------------------------------------------------------------
+    def test_schedules_go_cannot_publish_block_a_switch_to_go_at_preflight(self):
+        inst = self.inst
+        work = inst.push('celery', h.MAIL_TASK, args=h.mail_args(10))
+        custom = inst.periodic('p5-custom-nightly', 'fixture.p5.custom_periodic')
+        with_args = inst.periodic('p5-balance-with-args', h.DB_TASK, args='[1]')
+        routed = inst.periodic('p5-balance-routed', h.DB_TASK, queue='priority')
+        inst.periodic('p5-balance-plain', h.DB_TASK)
+        inst.periodic('p5-custom-disabled', 'fixture.p5.custom_periodic', enabled=False)
+        before, env = inst.mark(), inst.env_text()
+        final = inst.switch('go')
+        self.assertEqual((final['status'], final.get('error_code'), final.get('failed_stage')),
+                         ('failed', 'transfer_blocked', 'preflight'),
+                         f'{RED}: definitions the Go scheduler would skip must block the switch at preflight')
+        self.assertEqual((inst.changes(before), inst.maintenance(), inst.admission(), inst.authority(), inst.env_text()),
+                         ([], False, 'open', ('django', 1, None), env), f'{RED}: a blocked preflight changed something')
+        blockers = (inst.status()['operation'] or {}).get('blockers') or {}
+        self.assertEqual(({item['ref']: item['reason'] for item in blockers.get('items', [])}, blockers.get('by_reason')),
+                         ({custom: 'unsupported_schedule', with_args: 'unsupported_schedule',
+                           routed: 'unsupported_schedule'}, {'unsupported_schedule': 3}),
+                         f'{RED}: exactly the enabled unpublishable definitions block, by definition name')
+        self.assertTrue(blockers.get('action'), f'{RED}: the schedule blockers need an actionable reason')
+        self.assertEqual(inst.status()['operation'].get('recovery_action'), 'retry', f'{RED}: recovery action')
+        self.assertNotIn('fixture.p5.custom_periodic', json.dumps(inst.status()), f'{RED}: status names a task')
+        self.assertEqual(sum(inst.copies(work).values()), 1, f'{RED}: work moved by a blocked preflight')
+        inst.sql("UPDATE public.django_celery_beat_periodictask SET enabled=false WHERE name LIKE 'p5-%' "
+                 "AND name <> 'p5-balance-plain';")
+        self.committed(inst.switch('go'), 2, 'the switch once the definitions are disabled')
+
+    def test_definitions_never_block_a_switch_to_django(self):
+        inst = self.inst
+        self.committed(inst.switch('go'), 2, 'django->go')
+        inst.periodic('p5-custom-nightly', 'fixture.p5.custom_periodic')
+        inst.periodic('p5-balance-with-args', h.DB_TASK, args='[1]')
+        self.committed(inst.switch('django'), 3, 'go->django with definitions only Beat can publish')
+        inst.assert_mode(self, 'django', 'the reverse switch with Beat-only definitions')
+
+    # -- attempt leases ---------------------------------------------------------------------------------------------
+    def test_a_dead_executor_is_released_after_its_lease_and_its_task_transfers_once(self):
+        inst = self.inst
+        inst.set_env(ASSOZETA_RUNTIME_SWITCH_WINDOW_SECONDS='300')
+        task = inst.push('celery', h.MAIL_TASK, args=h.mail_args(11))
+        consumer, halt = inst.register_consumer('django', acknowledge=True)
+        self.addCleanup(halt)
+        inst.running_attempt('django', consumer, task, lease_seconds=8)
+        final = inst.switch('go')
+        halt()
+        self.committed(final, 2, 'a switch with a dead executor whose consumer still heartbeats')
+        attempt = inst.attempt(task)
+        self.assertEqual((attempt['outcome'] in ('released', 'fenced'), attempt['after_lease']), (True, True),
+                         f'{RED}: the dead attempt must be released, and only after its lease expired: {attempt}')
+        self.assert_on(task, 'go', 2, 'the task of the dead executor')
+        self.assertEqual(inst.broker().call('HLEN', 'unacked'), 0, f'{RED}: the unacked copy was left behind')
+
+    def test_a_renewed_lease_is_never_released_by_the_switch(self):
+        inst = self.inst
+        inst.set_env(ASSOZETA_RUNTIME_SWITCH_WINDOW_SECONDS='12')
+        task = inst.push('celery', h.MAIL_TASK, args=h.mail_args(12))
+        consumer, halt = inst.register_consumer('django', acknowledge=True)
+        inst.running_attempt('django', consumer, task, lease_seconds=30)
+        halt()  # the consumer's heartbeat stops; its surviving executor keeps renewing the lease
+        renewing, stop = True, __import__('threading').Event()
+
+        def renew():
+            while not stop.is_set():
+                inst.renew(task, 30)
+                stop.wait(2)
+        thread = __import__('threading').Thread(target=renew, daemon=True)
+        thread.start()
+        self.addCleanup(lambda: (stop.set(), thread.join(10)))
+        final = inst.switch('go')
+        stop.set()
+        thread.join(10)
+        self.assertEqual((final['status'], final['committed_generation'], final.get('error_code') in
+                          ('window_exceeded', 'transfer_blocked')), ('failed', None, True),
+                         f'{RED}: a live lease must keep the switch from committing')
+        self.assertEqual(((inst.attempt(task) or {}).get('outcome'), inst.authority()[:2], inst.maintenance()),
+                         ('running', ('django', 1), False), f'{RED}: the switch released a live attempt or kept maintenance')
+        self.assertEqual([t for t in inst.transfers(final['id']) if t['task_id'] == task and t['delivered_at']], [],
+                         f'{RED}: the task of a live attempt was transferred')
+        inst.assert_mode(self, 'django', 'a switch refused by a live lease')
+        self.assertTrue(renewing)
 
     # -- interruption ---------------------------------------------------------------------------------------------
     def test_kill_at_every_point_converges_to_the_uninterrupted_outcome(self):

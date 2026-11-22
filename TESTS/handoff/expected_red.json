@@ -2462,6 +2462,46 @@
         "worker operational schema unavailable or incompatible"
       ],
       "reason": "stale by Phase 4 part A: the legacy emulation hides only the ledger and records version 6 while migration 7 lease tables remain; Jobs.CheckSchema correctly refuses that hybrid. t-p3 to emulate a pre-ledger install fully (bus #159) and remove this entry."
+    },
+    "TESTS.handoff.test_p5_controller.SwitchCase.test_schedules_go_cannot_publish_block_a_switch_to_go_at_preflight": {
+      "phase": 5,
+      "owner": "t-p5",
+      "reason": "Phase 5 part A (F1): preflight does not list Beat definitions the Go scheduler would skip (unsupported_schedule); the switch fails switch_unavailable",
+      "signatures": [
+        "P5 contract red"
+      ]
+    },
+    "TESTS.handoff.test_p5_controller.SwitchCase.test_definitions_never_block_a_switch_to_django": {
+      "phase": 5,
+      "owner": "t-p5",
+      "reason": "Phase 5 part A (F1): no wired switch (switch_unavailable)",
+      "signatures": [
+        "P5 contract red"
+      ]
+    },
+    "TESTS.handoff.test_p5_controller.SwitchCase.test_a_dead_executor_is_released_after_its_lease_and_its_task_transfers_once": {
+      "phase": 5,
+      "owner": "t-p5",
+      "reason": "Phase 5 part A + Phase 3 part B: no attempt lease committed (lease_until) / settle ignores the expired lease of a dead executor; no wired switch",
+      "signatures": [
+        "P5 contract red"
+      ]
+    },
+    "TESTS.handoff.test_p5_controller.SwitchCase.test_a_renewed_lease_is_never_released_by_the_switch": {
+      "phase": 5,
+      "owner": "t-p5",
+      "reason": "Phase 5 part A + Phase 3 part B: no attempt lease committed (lease_until) / settle releases on stale heartbeat while the lease is renewed; no wired switch",
+      "signatures": [
+        "P5 contract red"
+      ]
+    },
+    "TESTS.handoff.test_p5_one_mode.StatusContract.test_switch_capability_is_explicit_on_every_surface_even_without_the_database": {
+      "phase": 5,
+      "owner": "t-p5",
+      "reason": "Phase 5 part B: status omits switch_available/unavailable_reason on every surface",
+      "signatures": [
+        "P5 contract red"
+      ]
     }
   }
 }

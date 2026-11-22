@@ -24,6 +24,14 @@ opposite requests, failed-before-commit and failed-after-commit):
       (the private preflight); the notification socket reconnects (HTTP 101) on /ws/ and
       /api/v2/ws/ with the same token; the status passes through the maintenance window
       while public readiness is unavailable and ends with effective = intended = target.
+  browser (forward)   a signed-in owner (TESTS/browser/p5-installed-runtime.mjs, real Chromium, unmodified
+      UI, no interception) has the Runtime tab open before submission and a second route open; submits
+      once with the password; while public readiness is unavailable a cold signed-in browser shows the
+      same operation id (from the controller's status); the open tab reaches effective = intended =
+      target; the other route reconnects its socket without a page reload.
+  password            a wrong owner password answers exactly HTTP 400 {"error": "Password non corretta."}
+      on the active API in either mode and starts no operation (also pinned on both APIs by the
+      instance-runtime HTTP family).
   round trip + rapid  a request for the opposite target while one runs answers 409
       operation_in_progress with the running operation; replaying the first request's
       idempotency key after completion (served by the other runtime) returns the same
@@ -31,9 +39,11 @@ opposite requests, failed-before-commit and failed-after-commit):
   failed before commit  the target image cannot start (its reference points to an image
       that does not exist): the operation fails before the commit, the source keeps
       serving, no target container ever started, status offers recovery_action 'retry'.
-  failed after commit   the operator's controller container is killed right after the
-      authority commit (generation advanced, maintenance still on); `runtime-recover`
-      finishes forward to a healthy target with the work accounted for.
+  failed after commit   `./bin/assozeta runtime-switch go` runs with ASSOZETA_HANDOFF_BARRIER_DIR set to a
+      directory inside the installation root (test-only seam: the CLI forwards that variable to the
+      updater container only then; runtime_switch.py honours it, P5-A) holding 'activate:started';
+      once the controller arrives there (authority committed, maintenance still on) its container is
+      killed; `runtime-recover` finishes forward to a healthy target with the work accounted for.
 This lane closes t-p0's RED2 intent (a cold client reaches Go after a Go request, Django
 stopped) and the Phase 2 coverage gaps (#89, #90): a Go-mode installation switched
 through the real controller with packaged Go writes read back by Django.
@@ -159,7 +169,7 @@ class Installed:
         status, login = self.http('POST', '/api/oauth2/login', body={'username': OWNER_EMAIL, 'password': OWNER_PASSWORD})
         if status != 200:
             raise h.HarnessError(f'owner login failed: HTTP {status}')
-        self.token = login['access_token']
+        self.token, self.refresh = login['access_token'], login.get('refresh_token')
 
     def uninstall(self):
         if self.env_file.exists():
@@ -370,6 +380,38 @@ class InstalledLanes(h.ContractCase, unittest.TestCase):
         self.assertEqual(status, 202, f'{RED}: the owner request for {target} was not accepted: {status} {payload}')
         return payload['operation']['id'], key
 
+    def wrong_password(self, target):
+        inst = self.inst
+        before = (inst.runtime_status()[1] or {}).get('operation') or {}
+        code, payload = inst.http('POST', '/api/instance/admin/runtime', inst.token,
+                                  {'target': target, 'expected_generation': inst.authority()[1],
+                                   'idempotency_key': str(uuid.uuid4()), 'password': 'P5-wrong-password'})
+        self.assertEqual((code, payload), (400, {'error': 'Password non corretta.'}),
+                         f'{RED}: a wrong owner password must answer exactly 400 Password non corretta.')
+        after = (inst.runtime_status()[1] or {}).get('operation') or {}
+        self.assertEqual(after.get('id'), before.get('id'), f'{RED}: a wrong password started an operation')
+
+    def browser_switch(self, target):
+        inst = self.inst
+        claims = json.loads(base64.urlsafe_b64decode(inst.token.split('.')[1] + '=='))
+        user = {'user_id': claims['user_id'], 'username': OWNER_EMAIL, 'first_name': 'P5', 'role': 'administrator',
+                'is_superuser': True}
+        session = {'sessionToken': inst.token, 'refreshToken': inst.refresh, 'expires': int(time.time() * 1000) + 3600000,
+                   'role': 'administrator', 'userData': user, 'subPage': 'self-instance', 'permissions': [],
+                   'snoozeTestimonial': True}
+        report_path = STATE['work'] / f'browser-{target}.json'
+        result = subprocess.run(['node', ROOT / 'TESTS/browser/p5-installed-runtime.mjs'], capture_output=True,
+                                text=True, timeout=2400, env={**os.environ, 'P5_BASE_URL': inst.base,
+                                'P5_SESSION': json.dumps(session), 'P5_PASSWORD': OWNER_PASSWORD, 'P5_TARGET': target,
+                                'P5_REPORT': str(report_path), 'PLAYWRIGHT_MODULE': str(
+                                    ROOT / 'selfhost/tests/browser/node_modules/playwright/index.mjs')})
+        report = json.loads(report_path.read_text()) if report_path.exists() else {
+            'failure': 'no report: ' + (result.stderr or result.stdout)[-600:]}
+        STATE.setdefault('lanes', []).append({'browser': target, 'checks': report.get('checks')})
+        failure = report.get('failure')
+        self.assertIsNone(failure, f'{RED}: browser step: {failure}')
+        return report['operation']
+
     def follow(self, operation_id, timeout=1800):
         """Poll the runner status socket (works with neither API up) until the operation ends."""
         seen, deadline, unanswered = [], time.monotonic() + timeout, time.monotonic()
@@ -446,14 +488,10 @@ class InstalledLanes(h.ContractCase, unittest.TestCase):
         work = {'due now': inst.seed('celery', h.DB_TASK), 'next month': inst.seed('celery', h.MAIL_TASK, eta=h.future(30),
                                                                                     args=h.mail_args(1))}
         self.assertEqual(inst.websocket('/ws/notifications/'), 101, 'the socket works before the switch (control)')
-        operation, key = self.request('go')
+        self.wrong_password('go')
+        operation = self.browser_switch('go')
         status, seen = self.follow(operation)
         self.assert_switched('go', generation + 1, operation, seen, work)
-        code, replay = inst.http('POST', '/api/instance/admin/runtime', inst.token,
-                                 {'target': 'go', 'expected_generation': generation, 'idempotency_key': key,
-                                  'password': OWNER_PASSWORD})
-        self.assertEqual((code, (replay or {}).get('replayed'), ((replay or {}).get('operation') or {}).get('id')),
-                         (202, True, operation), f'{RED}: replaying the request on the new runtime')
         tables = {'p5': {'columns': ['name'], 'written_by': 'go'}}
         written, _ = inst.http('POST', '/api/profile/settings/tables', inst.token, {'tables_settings': tables})
         self.assertIn(written, (200, 201, 204), f'{RED}: a settings write through the Go API failed: {written}')
@@ -465,9 +503,15 @@ class InstalledLanes(h.ContractCase, unittest.TestCase):
         generation = inst.authority()[1]
         work = {'due now': inst.seed('assozeta-go', h.MAIL_TASK, args=h.mail_args(2)),
                 'next month': inst.seed('assozeta-go', h.MAIL_TASK, eta=h.future(30), args=h.mail_args(3))}
-        operation, _ = self.request('django')
+        self.wrong_password('django')
+        operation, key = self.request('django')
         status, seen = self.follow(operation)
         self.assert_switched('django', generation + 1, operation, seen, work)
+        code, replay = inst.http('POST', '/api/instance/admin/runtime', inst.token,
+                                 {'target': 'django', 'expected_generation': generation, 'idempotency_key': key,
+                                  'password': OWNER_PASSWORD})
+        self.assertEqual((code, (replay or {}).get('replayed'), ((replay or {}).get('operation') or {}).get('id')),
+                         (202, True, operation), f'{RED}: replaying the request on the new runtime')
         if STATE.get('tables'):
             code, settings = inst.http('GET', '/api/profile/settings', inst.token)
             self.assertEqual((code, (settings or {}).get('tables_settings', {}).get('p5')), (200, STATE['tables']['p5']),
@@ -518,19 +562,27 @@ class InstalledLanes(h.ContractCase, unittest.TestCase):
         self.ensure('django')
         generation = inst.authority()[1]
         work = {'due now': inst.seed('celery', h.DB_TASK)}
+        barriers = inst.root / '.p5-barriers'
+        barriers.mkdir(exist_ok=True)
+        (barriers / 'hold.activate:started.all').write_text('')
         environment = {key: value for key, value in os.environ.items() if not key.startswith('ASSOZETA_')}
-        environment.update(ASSOZETA_ENV_FILE=str(inst.env_file), PATH=f'{inst.tools}{os.pathsep}{os.environ["PATH"]}')
+        environment.update(ASSOZETA_ENV_FILE=str(inst.env_file), PATH=f'{inst.tools}{os.pathsep}{os.environ["PATH"]}',
+                           ASSOZETA_HANDOFF_BARRIER_DIR=str(barriers))
         process = subprocess.Popen([str(inst.root / 'bin/assozeta'), 'runtime-switch', 'go'], cwd=inst.root,
                                    env=environment, stdout=inst.log, stderr=subprocess.STDOUT)
         try:
-            h.wait_for(lambda: inst.authority()[1] > generation or process.poll() is not None,
-                       'the authority commit', timeout=1800, interval=0.2)
+            h.wait_for(lambda: list(barriers.glob('arrived.activate:started.*')) or process.poll() is not None,
+                       'the controller to reach activate:started', timeout=1800, interval=0.5)
+            self.assertTrue(list(barriers.glob('arrived.activate:started.*')),
+                            f'{RED}: the operator switch never reached activate:started (barrier seam)')
+            self.assertEqual((inst.authority()[1], (inst.root / h.FLAG).exists()), (generation + 1, True),
+                             f'{RED}: at activate:started the authority is committed and the proxy still closed')
             helpers = run(['docker', 'ps', '-q', '--filter', f'label=org.assozeta.lifecycle.installation={inst.root}'],
                           log=inst.log).stdout.split()
-            self.assertTrue(helpers and inst.authority()[1] == generation + 1,
-                            f'{RED}: no controller container alive right after the commit')
+            self.assertTrue(helpers, f'{RED}: no controller container alive at activate:started')
             run(['docker', 'kill', *helpers], log=inst.log, check=False)
         finally:
+            (barriers / 'hold.activate:started.all').unlink(missing_ok=True)
             process.wait(600)
         result = inst.cli('runtime-recover', check=False)
         self.assertEqual(result.returncode, 0, f'{RED}: runtime-recover after a post-commit kill: {result.stdout[-600:]}')

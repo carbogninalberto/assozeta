@@ -76,6 +76,27 @@ CREATE TABLE IF NOT EXISTS public.communications_whatsappdelivery (
     id uuid PRIMARY KEY, status text NOT NULL, attempts integer NOT NULL DEFAULT 0, body text, recipient text,
     event_type text, template_name text, template_language text, error_code text, error_message text,
     provider_message_id text, next_attempt_at timestamptz, created_at timestamptz, updated_at timestamptz);
+CREATE TABLE IF NOT EXISTS public.django_celery_beat_intervalschedule (
+    id serial PRIMARY KEY, every integer NOT NULL, period varchar(24) NOT NULL);
+CREATE TABLE IF NOT EXISTS public.django_celery_beat_crontabschedule (
+    id serial PRIMARY KEY, minute varchar(240) NOT NULL DEFAULT '*', hour varchar(96) NOT NULL DEFAULT '*',
+    day_of_week varchar(64) NOT NULL DEFAULT '*', day_of_month varchar(124) NOT NULL DEFAULT '*',
+    month_of_year varchar(64) NOT NULL DEFAULT '*', timezone varchar(63) NOT NULL DEFAULT 'UTC');
+CREATE TABLE IF NOT EXISTS public.django_celery_beat_solarschedule (
+    id serial PRIMARY KEY, event varchar(24) NOT NULL, latitude numeric(9,6) NOT NULL, longitude numeric(9,6) NOT NULL);
+CREATE TABLE IF NOT EXISTS public.django_celery_beat_clockedschedule (id serial PRIMARY KEY, clocked_time timestamptz NOT NULL);
+CREATE TABLE IF NOT EXISTS public.django_celery_beat_periodictask (
+    id serial PRIMARY KEY, name varchar(200) NOT NULL UNIQUE, task varchar(200) NOT NULL,
+    args text NOT NULL DEFAULT '[]', kwargs text NOT NULL DEFAULT '{}', queue varchar(200), exchange varchar(200),
+    routing_key varchar(200), headers text NOT NULL DEFAULT '{}', priority integer, expires timestamptz,
+    expire_seconds integer, one_off boolean NOT NULL DEFAULT false, start_time timestamptz,
+    enabled boolean NOT NULL DEFAULT true, last_run_at timestamptz, total_run_count integer NOT NULL DEFAULT 0,
+    date_changed timestamptz NOT NULL DEFAULT clock_timestamp(), description text NOT NULL DEFAULT '',
+    interval_id integer REFERENCES public.django_celery_beat_intervalschedule(id),
+    crontab_id integer REFERENCES public.django_celery_beat_crontabschedule(id),
+    solar_id integer REFERENCES public.django_celery_beat_solarschedule(id),
+    clocked_id integer REFERENCES public.django_celery_beat_clockedschedule(id));
+CREATE TABLE IF NOT EXISTS public.django_celery_beat_periodictasks (ident smallint PRIMARY KEY, last_update timestamptz NOT NULL);
 '''
 
 
@@ -560,7 +581,57 @@ class P5Installation(ModeInstallation):
                  "'+12025550123', 'subscription_approved', clock_timestamp(), clock_timestamp(), clock_timestamp());")
         return identifier
 
-    def register_consumer(self, runtime, role='broker'):
+    def periodic(self, name, task, *, every=60, args='[]', kwargs='{}', queue=None, enabled=True):
+        """A persisted Beat definition (django_celery_beat), as the admin or a release seed leaves it."""
+        interval = self.sql(f"INSERT INTO public.django_celery_beat_intervalschedule (every, period) "
+                            f"VALUES ({every}, 'seconds') RETURNING id;")
+        self.sql("INSERT INTO public.django_celery_beat_periodictask (name, task, args, kwargs, queue, enabled, "
+                 f"interval_id) VALUES ('{name}', '{task}', '{args}', '{kwargs}', "
+                 f"{repr(queue) if queue else 'NULL'}, {str(enabled).lower()}, {interval});")
+        return 'periodic:' + name
+
+    def has_column(self, table, column):
+        return self.sql(f"SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='{table}' "
+                        f"AND column_name='{column}');") == 't'
+
+    def running_attempt(self, runtime, consumer, task_id, lease_seconds):
+        """A broker attempt claimed by `consumer` whose executor stopped renewing: its row lease ends in
+        `lease_seconds`, and its message sits in kombu's unacked hash (the consumer still holds it)."""
+        if not self.has_column('assozeta_handoff_attempts', 'lease_until'):
+            raise AssertionError('P5 contract red: CONTRACT MISSING assozeta_handoff_attempts.lease_until '
+                                 '(Phase 3 part B attempt lease) for the lease/switch cases')
+        tag = str(uuid.uuid4())
+        row = self.ledger(task_id)
+        payload = envelope(row['task_name'], task_id, queue=row['queue'])
+        message = json.loads(payload)
+        message['properties']['delivery_tag'] = tag
+        payload = json.dumps(message).encode()
+        self.sql(f"UPDATE public.assozeta_handoff_work SET envelope=decode('{base64.b64encode(payload).decode()}',"
+                 f"'base64') WHERE task_id='{task_id}';")
+        outcome = self.sql(f"SELECT outcome FROM public.assozeta_handoff_claim('{runtime}', '{consumer}', '{task_id}', "
+                           f"'{row['task_name']}', decode('{base64.b64encode(payload).decode()}', 'base64'), '{tag}', "
+                           "false);")
+        if outcome != 'claimed':
+            raise HarnessError(f'fixture claim answered {outcome}')
+        self.sql(f"UPDATE public.assozeta_handoff_attempts SET lease_until=clock_timestamp() + "
+                 f"make_interval(secs => {lease_seconds}) WHERE task_id='{task_id}' AND outcome='running';")
+        for key in [k for k, ids in self.queue_ids(row['queue']).items() if task_id in ids and k != 'unacked']:
+            self.broker().call('LREM', key, 0, next(raw for raw in self.broker().call('LRANGE', key, 0, -1)
+                                                    if json.loads(raw)['headers']['id'] == task_id))
+        self.broker().call('HSET', 'unacked', tag, json.dumps([message, '', row['queue']]))
+        self.broker().call('ZADD', 'unacked_index', int(time.time()), tag)
+        return tag
+
+    def attempt(self, task_id):
+        rows = self.rows("SELECT outcome, finished_at, lease_until, (finished_at >= lease_until) AS after_lease "
+                         f"FROM public.assozeta_handoff_attempts WHERE task_id='{task_id}' ORDER BY claimed_at")
+        return rows[0] if rows else None
+
+    def renew(self, task_id, seconds=30):
+        self.sql("UPDATE public.assozeta_handoff_attempts SET lease_until=clock_timestamp() + "
+                 f"make_interval(secs => {seconds}) WHERE task_id='{task_id}' AND outcome='running';")
+
+    def register_consumer(self, runtime, role='broker', acknowledge=False):
         """A live source consumer that heartbeats and never acknowledges a freeze (until stopped)."""
         consumer = str(uuid.uuid4())
         stop = threading.Event()
@@ -568,7 +639,14 @@ class P5Installation(ModeInstallation):
         def beat():
             while not stop.is_set():
                 try:
-                    self.sql(f"SELECT * FROM public.assozeta_handoff_heartbeat('{consumer}', '{runtime}', '{role}');")
+                    state = self.sql(f"SELECT admission||'|'||coalesce(operation_id::text,'') FROM "
+                                     f"public.assozeta_handoff_heartbeat('{consumer}', '{runtime}', '{role}');")
+                    admission, _, operation = state.partition('|')
+                    if acknowledge and admission == 'frozen':
+                        frozen = self.sql('SELECT admission_operation_id FROM public.assozeta_go_job_ownership '
+                                          'WHERE singleton=1;')
+                        if frozen:
+                            self.sql(f"SELECT public.assozeta_handoff_acknowledge_freeze('{consumer}', '{frozen}');")
                 except HarnessError:
                     pass
                 stop.wait(0.3)
