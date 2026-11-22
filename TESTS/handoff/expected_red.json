@@ -2502,6 +2502,406 @@
       "signatures": [
         "P5 contract red"
       ]
+    },
+    "TESTS.handoff.test_p6_resident.ActiveRuntimeOperations.test_go_superuser_creation_uses_the_go_api": {
+      "phase": 6,
+      "owner": "t-p6",
+      "reason": "milestone A: create-superuser execs into the Django api service, which is stopped in Go mode (service \"api\" is not running); contract: exec -T api-go /app/create-instance-superuser",
+      "signatures": [
+        "P6A contract red"
+      ]
+    },
+    "TESTS.handoff.test_p6_resident.ActiveRuntimeOperations.test_go_manual_sync_uses_the_packaged_go_command": {
+      "phase": 6,
+      "owner": "t-p6",
+      "reason": "milestone A: sync-manual runs a one-shot of the Django api image in Go mode; contract: /app/manuale sync-corpus in the Go image",
+      "signatures": [
+        "P6A contract red"
+      ]
+    },
+    "TESTS.handoff.test_p6_resident.Health.test_django_health_passes_on_django_signals": {
+      "phase": 6,
+      "owner": "t-p6",
+      "reason": "milestone A: bin/assozeta has no health command (unknown command: health)",
+      "signatures": [
+        "P6A contract red"
+      ]
+    },
+    "TESTS.handoff.test_p6_resident.Health.test_go_health_passes_on_go_signals": {
+      "phase": 6,
+      "owner": "t-p6",
+      "reason": "milestone A: bin/assozeta has no health command (unknown command: health)",
+      "signatures": [
+        "P6A contract red"
+      ]
+    },
+    "TESTS.handoff.test_p6_resident.Health.test_django_health_fails_for_each_missing_signal": {
+      "phase": 6,
+      "owner": "t-p6",
+      "reason": "milestone A: bin/assozeta has no health command (unknown command: health)",
+      "signatures": [
+        "P6A contract red"
+      ]
+    },
+    "TESTS.handoff.test_p6_resident.Health.test_go_health_fails_for_each_missing_signal": {
+      "phase": 6,
+      "owner": "t-p6",
+      "reason": "milestone A: bin/assozeta has no health command (unknown command: health)",
+      "signatures": [
+        "P6A contract red"
+      ]
+    },
+    "TESTS.handoff.test_p6_resident.BackupCheckpoint.test_django_backup_checkpoints_outstanding_work": {
+      "phase": 6,
+      "owner": "t-p6",
+      "reason": "milestone A: backup manifest.txt has no format/runtime/runtime_generation/work_checkpoint/work_outstanding and unledgered broker work is not reconciled before the dump",
+      "signatures": [
+        "P6A contract red"
+      ]
+    },
+    "TESTS.handoff.test_p6_resident.BackupCheckpoint.test_go_backup_checkpoints_outstanding_work": {
+      "phase": 6,
+      "owner": "t-p6",
+      "reason": "milestone A: backup manifest.txt has no format/runtime/runtime_generation/work_checkpoint/work_outstanding and unledgered broker work is not reconciled before the dump",
+      "signatures": [
+        "P6A contract red"
+      ]
+    },
+    "TESTS.handoff.test_p6_resident.Restore.test_django_backup_restored_into_go_mode_with_work_queued": {
+      "phase": 6,
+      "owner": "t-p6",
+      "reason": "milestone A: restore adopts the archived authority row (back to django, generation rewound) instead of keeping the running Go runtime with a newer generation",
+      "signatures": [
+        "P6A contract red"
+      ]
+    },
+    "TESTS.handoff.test_p6_resident.Restore.test_go_backup_restored_into_django_mode_with_work_queued": {
+      "phase": 6,
+      "owner": "t-p6",
+      "reason": "milestone A: restore adopts the archived authority row (back to go, generation rewound) instead of keeping the running Django runtime with a newer generation",
+      "signatures": [
+        "P6A contract red"
+      ]
+    },
+    "TESTS.handoff.test_p6_resident.Restore.test_django_backup_restored_in_django_mode_redelivers_work": {
+      "phase": 6,
+      "owner": "t-p6",
+      "reason": "milestone A: restore does not advance the generation and the archived queued work has no delivery after the Redis flush",
+      "signatures": [
+        "P6A contract red"
+      ]
+    },
+    "TESTS.handoff.test_p6_resident.Restore.test_go_backup_restored_in_go_mode_redelivers_work": {
+      "phase": 6,
+      "owner": "t-p6",
+      "reason": "milestone A: restore does not advance the generation and the archived queued work has no delivery after the Redis flush",
+      "signatures": [
+        "P6A contract red"
+      ]
+    },
+    "TESTS.handoff.test_p6_resident.Restore.test_in_app_restore_of_a_django_backup_in_go_mode": {
+      "phase": 6,
+      "owner": "t-p6",
+      "reason": "milestone A: the in-app restore (updater restore_jobs -> CLI) adopts the archived django authority",
+      "signatures": [
+        "P6A contract red"
+      ]
+    },
+    "TESTS.handoff.test_p6_resident.Restore.test_in_app_restore_of_a_go_backup_in_django_mode": {
+      "phase": 6,
+      "owner": "t-p6",
+      "reason": "milestone A: the in-app restore (updater restore_jobs -> CLI) adopts the archived go authority",
+      "signatures": [
+        "P6A contract red"
+      ]
+    },
+    "TESTS.handoff.test_p6_resident.Restore.test_django_restore_without_backup_refuses_outstanding_work": {
+      "phase": 6,
+      "owner": "t-p6",
+      "reason": "milestone A: restore --no-backup proceeds and flushes Redis while work is outstanding",
+      "signatures": [
+        "P6A contract red"
+      ]
+    },
+    "TESTS.handoff.test_p6_resident.Restore.test_go_restore_without_backup_refuses_outstanding_work": {
+      "phase": 6,
+      "owner": "t-p6",
+      "reason": "milestone A: restore --no-backup proceeds and flushes Redis while work is outstanding",
+      "signatures": [
+        "P6A contract red"
+      ]
+    },
+    "TESTS.handoff.test_p6_resident.Restore.test_django_historical_archive_restores_with_its_limitation": {
+      "phase": 6,
+      "owner": "t-p6",
+      "reason": "milestone A: restoring a historical archive prints no @@ASSOZETA_RESTORE_LIMITATION no_work_checkpoint",
+      "signatures": [
+        "P6A contract red"
+      ]
+    },
+    "TESTS.handoff.test_p6_resident.Restore.test_go_historical_archive_restores_with_its_limitation": {
+      "phase": 6,
+      "owner": "t-p6",
+      "reason": "milestone A: restoring a historical archive prints no @@ASSOZETA_RESTORE_LIMITATION no_work_checkpoint",
+      "signatures": [
+        "P6A contract red"
+      ]
+    },
+    "TESTS.handoff.test_p6_resident.Restore.test_django_interrupted_database_swap_recovers_on_next_command": {
+      "phase": 6,
+      "owner": "t-p6",
+      "reason": "milestone A: after the restore is killed between the two database renames the next start fails (the live database is missing); nothing completes the interrupted swap",
+      "signatures": [
+        "P6A contract red"
+      ]
+    },
+    "TESTS.handoff.test_p6_resident.Restore.test_go_interrupted_database_swap_recovers_on_next_command": {
+      "phase": 6,
+      "owner": "t-p6",
+      "reason": "milestone A: after the restore is killed between the two database renames the next start fails (the live database is missing); nothing completes the interrupted swap",
+      "signatures": [
+        "P6A contract red"
+      ]
+    },
+    "TESTS.handoff.test_p6_resident.FailedUpgrade.test_go_upgrade_with_a_failing_go_image_recovers_to_the_source": {
+      "phase": 6,
+      "owner": "t-p6",
+      "reason": "milestone A: recover-upgrade restores the pre-update backup without advancing the generation",
+      "signatures": [
+        "P6A contract red"
+      ]
+    },
+    "TESTS.handoff.test_p6_resident.FailedUpgrade.test_django_upgrade_with_a_failing_django_image_recovers_to_the_source": {
+      "phase": 6,
+      "owner": "t-p6",
+      "reason": "milestone A: recover-upgrade restores the pre-update backup without advancing the generation",
+      "signatures": [
+        "P6A contract red"
+      ]
+    },
+    "TESTS.handoff.test_p6_independence.LifecycleMatrix.test_django_lifecycle_runs_no_go_container": {
+      "phase": 6,
+      "owner": "t-p6",
+      "reason": "milestone B: install/start/restart/migrate/restore run the Go migrate-go one-shot in Django mode",
+      "signatures": [
+        "P6B contract red"
+      ]
+    },
+    "TESTS.handoff.test_p6_independence.LifecycleMatrix.test_go_lifecycle_runs_no_django_container": {
+      "phase": 6,
+      "owner": "t-p6",
+      "reason": "milestone B: start/restart/migrate/restore run the Django migrate one-shot, sync-manual a Django one-shot and create-superuser execs into api in Go mode",
+      "signatures": [
+        "P6B contract red"
+      ]
+    },
+    "TESTS.handoff.test_p6_independence.FailedUpgradeIndependence.test_go_upgrade_and_recovery_run_no_django_container": {
+      "phase": 6,
+      "owner": "t-p6",
+      "reason": "milestone B: the Go-mode upgrade and recover-upgrade run the Django migrate one-shot",
+      "signatures": [
+        "P6B contract red"
+      ]
+    },
+    "TESTS.handoff.test_p6_independence.FailedUpgradeIndependence.test_django_upgrade_and_recovery_run_no_go_container": {
+      "phase": 6,
+      "owner": "t-p6",
+      "reason": "milestone B: the Django-mode upgrade and recover-upgrade run the Go migrate-go one-shot",
+      "signatures": [
+        "P6B contract red"
+      ]
+    },
+    "TESTS.handoff.test_p6_independence.SwitchWithoutMigration.test_switch_to_go_runs_no_schema_migration": {
+      "phase": 6,
+      "owner": "t-p6",
+      "reason": "milestone B, needs the Phase 5 controller: the runtime switch does not succeed yet (switch_unavailable), so a migration-free switch cannot be shown",
+      "signatures": [
+        "P6B contract red"
+      ]
+    },
+    "TESTS.handoff.test_p6_independence.SwitchWithoutMigration.test_switch_to_django_runs_no_schema_migration": {
+      "phase": 6,
+      "owner": "t-p6",
+      "reason": "milestone B, needs the Phase 5 controller: the runtime switch does not succeed yet (switch_unavailable), so a migration-free switch cannot be shown",
+      "signatures": [
+        "P6B contract red"
+      ]
+    },
+    "TESTS.handoff.test_p6_independence.Packaging.test_go_image_ships_the_native_superuser_and_manual_commands": {
+      "phase": 6,
+      "owner": "t-p6",
+      "reason": "milestone B: BE_GO/Dockerfile neither builds ./cmd/manuale nor ships /app/manuale",
+      "signatures": [
+        "P6B contract red"
+      ]
+    },
+    "TESTS.handoff.test_p6_independence.Packaging.test_release_carries_the_go_manual_from_a_go_image": {
+      "phase": 6,
+      "owner": "t-p6",
+      "reason": "milestone B: publish-images.yml carries the Go image manual from the previous Django image (assozeta-backend:latest)",
+      "signatures": [
+        "P6B contract red"
+      ]
+    },
+    "TESTS.handoff.test_p6_independence.ReversalArtifacts.test_go_mode_verification_requires_the_django_image": {
+      "phase": 6,
+      "owner": "t-p6",
+      "reason": "milestone B: engine.verify_running never inspects the inactive runtime image the manifest pins",
+      "signatures": [
+        "P6B contract red"
+      ]
+    },
+    "TESTS.handoff.test_p6_independence.ReversalArtifacts.test_django_mode_verification_requires_the_go_image": {
+      "phase": 6,
+      "owner": "t-p6",
+      "reason": "milestone B: engine.verify_running never inspects the inactive runtime image the manifest pins",
+      "signatures": [
+        "P6B contract red"
+      ]
+    },
+    "TESTS.handoff.test_p6_schema.SharedSchema.test_go_migrator_builds_the_whole_schema_on_an_empty_database": {
+      "phase": 6,
+      "owner": "t-p6",
+      "reason": "milestone B: cmd/migrate applies only the Go operational migrations (business schema, Django history, content types and permissions missing)",
+      "signatures": [
+        "P6B contract red"
+      ]
+    },
+    "TESTS.handoff.test_p6_schema.SharedSchema.test_django_migrations_prepare_the_operational_tables_on_an_empty_database": {
+      "phase": 6,
+      "owner": "t-p6",
+      "reason": "milestone B: manage.py migrate does not create the operational tables (assozeta_*) nor their golang-migrate history",
+      "signatures": [
+        "P6B contract red"
+      ]
+    },
+    "TESTS.handoff.test_p6_schema.SharedSchema.test_go_migration_path_upgrades_from_v1_0_2": {
+      "phase": 6,
+      "owner": "t-p6",
+      "reason": "milestone B: cmd/migrate does not apply the Django business migrations added since the baseline",
+      "signatures": [
+        "P6B contract red"
+      ]
+    },
+    "TESTS.handoff.test_p6_schema.SharedSchema.test_go_migration_path_upgrades_from_v1_0_5": {
+      "phase": 6,
+      "owner": "t-p6",
+      "reason": "milestone B: cmd/migrate does not apply the Django business migrations added since the baseline",
+      "signatures": [
+        "P6B contract red"
+      ]
+    },
+    "TESTS.handoff.test_p6_schema.SharedSchema.test_go_migration_path_upgrades_from_v1_0_17": {
+      "phase": 6,
+      "owner": "t-p6",
+      "reason": "milestone B: cmd/migrate does not apply the Django business migrations added since the baseline",
+      "signatures": [
+        "P6B contract red"
+      ]
+    },
+    "TESTS.handoff.test_p6_schema.SharedSchema.test_go_migration_path_upgrades_from_v1_0_18": {
+      "phase": 6,
+      "owner": "t-p6",
+      "reason": "milestone B: cmd/migrate does not apply the Django business migrations added since the baseline",
+      "signatures": [
+        "P6B contract red"
+      ]
+    },
+    "TESTS.handoff.test_p6_schema.SharedSchema.test_django_migration_path_upgrades_from_v1_0_2": {
+      "phase": 6,
+      "owner": "t-p6",
+      "reason": "milestone B: manage.py migrate does not apply the Go operational migrations added since the baseline",
+      "signatures": [
+        "P6B contract red"
+      ]
+    },
+    "TESTS.handoff.test_p6_schema.SharedSchema.test_django_migration_path_upgrades_from_v1_0_5": {
+      "phase": 6,
+      "owner": "t-p6",
+      "reason": "milestone B: manage.py migrate does not apply the Go operational migrations added since the baseline",
+      "signatures": [
+        "P6B contract red"
+      ]
+    },
+    "TESTS.handoff.test_p6_schema.SharedSchema.test_django_migration_path_upgrades_from_v1_0_17": {
+      "phase": 6,
+      "owner": "t-p6",
+      "reason": "milestone B: manage.py migrate does not apply the Go operational migrations added since the baseline",
+      "signatures": [
+        "P6B contract red"
+      ]
+    },
+    "TESTS.handoff.test_p6_schema.SharedSchema.test_django_migration_path_upgrades_from_v1_0_18": {
+      "phase": 6,
+      "owner": "t-p6",
+      "reason": "milestone B: manage.py migrate does not apply the Go operational migrations added since the baseline",
+      "signatures": [
+        "P6B contract red"
+      ]
+    },
+    "TESTS.handoff.test_p6_schema.SharedSchema.test_django_migration_path_upgrades_from_2284ed46": {
+      "phase": 6,
+      "owner": "t-p6",
+      "reason": "milestone B: manage.py migrate does not apply the Go operational migrations added since the baseline",
+      "signatures": [
+        "P6B contract red"
+      ]
+    },
+    "TESTS.handoff.test_p6_installed.GoModeInstalled.test_1_go_mode_lifecycle_runs_only_go": {
+      "phase": 2,
+      "owner": "t-p6",
+      "reason": "not a Phase 6 gap: realtime-relay-go crash-loops in a real Go-mode installation (its Compose environment lacks SOCIAL_AUTH_GOOGLE_OAUTH2_KEY/SECRET, required by the Go config loader; bus #234), so the Go-mode restart fails and maintenance stays on. Green once that is fixed (verified with the two keys added): remove this entry then",
+      "signatures": [
+        "P6A contract red"
+      ]
+    },
+    "TESTS.handoff.test_p6_installed.GoModeInstalled.test_6_go_mode_failing_go_image_never_falls_back_to_django": {
+      "phase": 2,
+      "owner": "t-p6",
+      "reason": "not a Phase 6 gap: realtime-relay-go crash-loops in a real Go-mode installation (its Compose environment lacks SOCIAL_AUTH_GOOGLE_OAUTH2_KEY/SECRET, required by the Go config loader; bus #234), so the Go-mode restart fails and maintenance stays on. Green once that is fixed (verified with the two keys added): remove this entry then",
+      "signatures": [
+        "P6A contract red"
+      ]
+    },
+    "TESTS.handoff.test_p6_installed.GoModeInstalled.test_2_go_mode_health": {
+      "phase": 6,
+      "owner": "t-p6",
+      "reason": "milestone A: bin/assozeta has no health command",
+      "signatures": [
+        "P6A contract red"
+      ]
+    },
+    "TESTS.handoff.test_p6_installed.GoModeInstalled.test_3_go_mode_owner_diagnostics": {
+      "phase": 6,
+      "owner": "t-p6",
+      "reason": "milestone A: in Go mode the owner diagnostics report the worker as failed (Celery control ping, no Go equivalent); the scheduler already passes. Until the relay fix: 503, Go mode never healthy",
+      "signatures": [
+        "P6A contract red"
+      ]
+    },
+    "TESTS.handoff.test_p6_installed.GoModeInstalled.test_4_go_mode_superuser_creation": {
+      "phase": 6,
+      "owner": "t-p6",
+      "reason": "milestone A: create-superuser execs into the stopped Django api (service \"api\" is not running)",
+      "signatures": [
+        "P6A contract red"
+      ]
+    },
+    "TESTS.handoff.test_p6_installed.GoModeInstalled.test_5_go_mode_backup_and_restore_keep_go_and_the_work": {
+      "phase": 6,
+      "owner": "t-p6",
+      "reason": "milestone A: the restore does not advance the generation (2 not greater than 2); until the relay fix the Go-mode installation does not serve the control write (503)",
+      "signatures": [
+        "P6A contract red"
+      ]
+    },
+    "TESTS.handoff.test_p6_installed.GoModeInstalled.test_7_go_mode_history_has_no_django_container": {
+      "phase": 6,
+      "owner": "t-p6",
+      "reason": "milestone B: the Go-mode restart and restore create the Django migrate one-shot container",
+      "signatures": [
+        "P6B contract red"
+      ]
     }
   }
 }

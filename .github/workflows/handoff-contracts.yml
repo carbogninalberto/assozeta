@@ -32,9 +32,9 @@ jobs:
       - uses: ./.github/actions/go-foundation-setup
       - name: Pull the pinned proxy image
         run: docker pull "$(sed -n 's/^FROM \(caddy:[^ ]*\) AS production$/\1/p' UI/Dockerfile)"
-      - name: Run the handoff suite with expected-red tracking (the task matrix and installed lanes run separately)
+      - name: Run the handoff suite with expected-red tracking (the task matrix, Phase 6 and installed lanes run separately)
         run: |
-          modules=$(ls TESTS/handoff/test_*.py | grep -v -e '/test_p4_task_matrix\.py$' -e '/test_p5_installed\.py$' | sed 's#/#.#g; s#\.py$##')
+          modules=$(ls TESTS/handoff/test_*.py | grep -v -e '/test_p4_task_matrix\.py$' -e '/test_p5_installed\.py$' -e '/test_p6_' | sed 's#/#.#g; s#\.py$##')
           python3 -B -m TESTS.handoff.run_expected_red $modules
       - name: Retain the expected-red report
         if: always()
@@ -80,11 +80,44 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
+  lifecycle:
+    name: Phase 6 mode-aware lifecycle (expected red tracked)
+    runs-on: ubuntu-24.04
+    # Simulated installations on private PostgreSQL/Redis (~15 min) and the schema
+    # comparison of both migration paths from empty and five baselines (~10 min).
+    timeout-minutes: 50
+    env:
+      GOTOOLCHAIN: local
+      PIP_CONSTRAINT: ${{ github.workspace }}/TESTS/adapters/django/constraints-parity.txt
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Upgrade baselines and the legacy distribution are read from git history.
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: ./.github/actions/go-foundation-setup
+      - name: Milestone A, resident-service exclusivity
+        run: python3 -B -m TESTS.handoff.run_expected_red --report quality-reports/handoff/expected-red-p6-resident.json TESTS.handoff.test_p6_resident
+      - name: Milestone B, full Go-mode independence
+        if: success() || failure()
+        run: python3 -B -m TESTS.handoff.run_expected_red --report quality-reports/handoff/expected-red-p6-independence.json TESTS.handoff.test_p6_independence TESTS.handoff.test_p6_schema
+      - name: Retain the Phase 6 reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: handoff-lifecycle-${{ github.sha }}
+          path: |
+            quality-reports/handoff/expected-red-p6-resident.json
+            quality-reports/handoff/expected-red-p6-independence.json
+          if-no-files-found: warn
+          retention-days: 14
+
   installed:
     name: Phase 5 installed runtime switch lanes (expected red tracked)
     runs-on: ubuntu-24.04
-    # ~20-25 min to build the five release images from this commit, ~10-15 min of lanes.
-    timeout-minutes: 75
+    # ~20-25 min to build the five release images from this commit, ~10-15 min of lanes
+    # per phase (Phase 5 switch lanes, then the Phase 6 Go-mode lifecycle lane).
+    timeout-minutes: 110
     steps:
       - uses: actions/checkout@v4
         with:
@@ -98,6 +131,9 @@ jobs:
           npm exec --prefix selfhost/tests/browser -- playwright install --with-deps chromium
       - name: Build this commit's images and run every installed lane
         run: python3 -B -m TESTS.handoff.run_expected_red --report quality-reports/handoff/expected-red-installed.json TESTS.handoff.test_p5_installed
+      - name: Run the Phase 6 Go-mode installed lifecycle lane (same images, rebuilt from cache)
+        if: success() || failure()
+        run: python3 -B -m TESTS.handoff.run_expected_red --report quality-reports/handoff/expected-red-installed-p6.json TESTS.handoff.test_p6_installed
       - name: Retain the installed-lane report and log
         if: always()
         uses: actions/upload-artifact@v4
@@ -105,8 +141,10 @@ jobs:
           name: handoff-installed-${{ github.sha }}
           path: |
             quality-reports/handoff/expected-red-installed.json
+            quality-reports/handoff/expected-red-installed-p6.json
             quality-reports/handoff/p5/installed/lanes.log
             quality-reports/handoff/p5/installed/report.json
+            quality-reports/handoff/p6/installed/lanes.log
           if-no-files-found: warn
           retention-days: 14
 
