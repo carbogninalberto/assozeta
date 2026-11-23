@@ -124,11 +124,14 @@ create_superuser() {
         fi
     else
         [ -f "$PROD_ENV" ] || die "run configure and start the production API first"
-        if [ -t 0 ]; then
-            prod_compose exec -e DJANGO_SUPERUSER_PASSWORD api python manage.py create_instance_superuser "$@"
-        else
-            prod_compose exec -T -e DJANGO_SUPERUSER_PASSWORD api python manage.py create_instance_superuser "$@"
-        fi
+        superuser_profile=$(prod_start_profile) || return $?
+        case "$superuser_profile" in
+            go) set -- api-go /app/create-instance-superuser "$@" ;;
+            *) set -- api python manage.py create_instance_superuser "$@" ;;
+        esac
+        set -- -e DJANGO_SUPERUSER_PASSWORD "$@"
+        if [ ! -t 0 ]; then set -- -T "$@"; fi
+        prod_compose exec "$@"
     fi
 }
 
@@ -1077,6 +1080,15 @@ stop_prod_data_services() {
     prod_compose stop $stop_services
 }
 
+sync_prod_manual() {
+    case "$1" in
+        go)
+            prod_compose --profile go run --rm --no-deps --entrypoint /app/manuale-cli api-go sync-corpus ;;
+        *)
+            prod_compose run --rm --no-deps api python manage.py sync_manuale_corpus ;;
+    esac
+}
+
 start_prod_app_services() {
     force_recreate=${1:-false}
     report_health_stage=${2:-false}
@@ -1092,9 +1104,8 @@ start_prod_app_services() {
                 die "GO_TASK_QUEUE_TASKS routes work to a stopped Go consumer"
             fi ;;
     esac
-    # The Go manual loader refreshes its published corpus on demand.
-    if [ "$start_profile" != go ] && [ -n "$(env_value MANUAL_CORPUS_BASE_URL "$PROD_ENV")" ]; then
-        if ! prod_compose --profile "$start_profile" run --rm --no-deps api python manage.py sync_manuale_corpus; then
+    if [ -n "$(env_value MANUAL_CORPUS_BASE_URL "$PROD_ENV")" ]; then
+        if ! sync_prod_manual "$start_profile"; then
             log "manual refresh failed; retained content still requires the running revision/version"
         fi
     fi
@@ -2338,7 +2349,8 @@ run_locked_prod_command() {
         pull) validate_prod; prod_compose pull ;;
         sync-manual)
             validate_prod
-            prod_compose run --rm --no-deps api python manage.py sync_manuale_corpus
+            manual_profile=$(prod_start_profile) || return $?
+            sync_prod_manual "$manual_profile"
             ;;
         migrate) migrate_prod ;;
         start) start_prod ;;

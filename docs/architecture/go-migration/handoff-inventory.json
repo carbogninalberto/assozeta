@@ -3786,14 +3786,13 @@
         },
         "go": {
           "runtime": "none",
-          "status": "planned",
-          "phase": 6,
-          "disposition": "not-applicable: Go lifecycle ships a native or packaged manual corpus"
+          "status": "present",
+          "disposition": "not-applicable: Go mode runs the packaged manuale-cli instead"
         }
       },
       "refs": [
-        "selfhost/bin/assozeta:1130",
-        "selfhost/bin/assozeta:2335"
+        "selfhost/bin/assozeta",
+        "TESTS/handoff/test_p6_resident.py"
       ]
     },
     {
@@ -3866,13 +3865,14 @@
         },
         "go": {
           "runtime": "go",
-          "component": "Go cmd/create-instance-superuser",
-          "status": "planned",
-          "phase": 6
+          "component": "api-go (/app/create-instance-superuser)",
+          "status": "present"
         }
       },
       "refs": [
-        "BE_GO/cmd/create-instance-superuser/main.go:1"
+        "BE_GO/cmd/create-instance-superuser/main.go:1",
+        "selfhost/bin/assozeta",
+        "TESTS/handoff/test_p6_resident.py"
       ]
     },
     {
@@ -3967,6 +3967,7 @@
       "id": "service:manuale",
       "kind": "service",
       "items": [
+        "cli-run:api-go",
         "go-cmd:manuale"
       ],
       "fixture": "legacy-mixed",
@@ -3979,18 +3980,14 @@
         },
         "go": {
           "runtime": "go",
-          "component": "Go cmd/manuale",
-          "status": "planned",
-          "phase": 6
+          "component": "api-go (/app/manuale-cli sync-corpus)",
+          "status": "present"
         }
       },
       "refs": [
-        "BE_GO/Dockerfile:61",
-        "BE_GO/cmd/manuale/main.go:1",
-        "selfhost/bin/assozeta:1130"
-      ],
-      "notes": [
-        "The sync implementation exists in Go source. The stock image omits the manuale command and the lifecycle calls Django sync."
+        "BE_GO/Dockerfile",
+        "BE_GO/cmd/manuale/main.go",
+        "selfhost/bin/assozeta"
       ]
     },
     {
