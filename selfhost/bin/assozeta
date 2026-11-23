@@ -1754,6 +1754,25 @@ backup_prune() {
     done
 }
 
+# Empty on installations predating the ledger. A failed query must stop the backup.
+prod_work_ledger() {
+    prod_compose exec -T postgres psql -X -qAt -v ON_ERROR_STOP=1 \
+        -U "$(env_value DBUSER "$PROD_ENV")" -d "$(env_value DBNAME "$PROD_ENV")" \
+        -c "SELECT to_regclass('public.assozeta_handoff_work');"
+}
+
+maintenance_work() (
+    updater_tool_image=${ASSOZETA_VERIFIED_UPDATER_REF:-$(env_value ASSOZETA_UPDATER_REF "$PROD_ENV")}
+    if [ -z "$updater_tool_image" ]; then
+        maintenance_version=$(env_value ASSOZETA_VERSION "$PROD_ENV")
+        updater_tool_image="ghcr.io/carbogninalberto/assozeta-updater:${maintenance_version#v}"
+    fi
+    updater_tool_options=
+    maintenance_action=$1
+    shift
+    run_updater_tool /runner/maintenance_work.py "$maintenance_action" "$SELFHOST_DIR" "$PROD_ENV" "$@"
+)
+
 backup_prod() {
     backup_origin=${backup_origin:-manual}
     while [ "$#" -gt 0 ]; do
@@ -1815,6 +1834,14 @@ backup_prod() {
 
     drain_prod_go_transactions || return $?
 
+    if prod_has_runtime_profiles; then
+        ledger=$(prod_work_ledger) || return $?
+        if [ -n "$ledger" ]; then
+            prod_compose up -d --wait redis
+            maintenance_work checkpoint > "$working/manifest.txt" || return $?
+        fi
+    fi
+
     log "backing up PostgreSQL"
     prod_compose exec -T postgres pg_dump -U "$database_user" -d "$database_name" -Fc > "$working/postgres.dump"
 
@@ -1826,7 +1853,7 @@ backup_prod() {
         "mc alias set local http://minio:9000 \"\$MINIO_ROOT_USER\" \"\$MINIO_ROOT_PASSWORD\" && mc mirror --quiet local/$bucket /backup"
 
     cp "$PROD_ENV" "$working/config.env"
-    cat > "$working/manifest.txt" <<EOF
+    cat >> "$working/manifest.txt" <<EOF
 created_at=$timestamp
 version=$(env_value ASSOZETA_VERSION "$PROD_ENV")
 database=$database_name

@@ -520,7 +520,8 @@ def handoff_steps(store, broker, *, barrier=None, batch_size=500, freeze_timeout
             raise TransferBlocked([{'task_id': task, 'reason': reason} for task, reason in sorted(problems.items())])
         return {'outstanding_source': 0, 'undelivered': 0, 'blocked': 0}
 
-    return {'preflight': preflight, 'close_admission': close_admission, 'settle': settle,
+    return {'discover': lambda record: discover(params(record)),
+            'preflight': preflight, 'close_admission': close_admission, 'settle': settle,
             'stage_backlog': stage_backlog, 'activate': activate, 'verify': verify}
 
 

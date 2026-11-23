@@ -1972,22 +1972,6 @@
         "P5 contract red"
       ]
     },
-    "TESTS.handoff.test_p6_resident.BackupCheckpoint.test_django_backup_checkpoints_outstanding_work": {
-      "phase": 6,
-      "owner": "t-p6",
-      "reason": "milestone A: backup manifest.txt has no format/runtime/runtime_generation/work_checkpoint/work_outstanding and unledgered broker work is not reconciled before the dump",
-      "signatures": [
-        "P6A contract red"
-      ]
-    },
-    "TESTS.handoff.test_p6_resident.BackupCheckpoint.test_go_backup_checkpoints_outstanding_work": {
-      "phase": 6,
-      "owner": "t-p6",
-      "reason": "milestone A: backup manifest.txt has no format/runtime/runtime_generation/work_checkpoint/work_outstanding and unledgered broker work is not reconciled before the dump",
-      "signatures": [
-        "P6A contract red"
-      ]
-    },
     "TESTS.handoff.test_p6_resident.Restore.test_django_backup_restored_into_go_mode_with_work_queued": {
       "phase": 6,
       "owner": "t-p6",
