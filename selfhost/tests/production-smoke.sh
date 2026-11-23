@@ -500,8 +500,14 @@ fi
 cat "$dirty_history_restore_log"
 # A storage/preflight failure also returns nonzero while preserving live state.
 # Require the injected post-swap migration failure and both actual rollbacks.
+# The dirty history is rejected by Django's migrate (its operational receiver, Phase 6 B1)
+# or, where Go migrates, by the Go migrator.
+if ! grep -E 'Go operational migration failed|Dirty or incompatible operational schema migration history' \
+        "$dirty_history_restore_log" >/dev/null; then
+    printf 'Expected dirty-history restore evidence was not observed: operational migration rejection\n' >&2
+    exit 1
+fi
 for restore_marker in \
-    'Go operational migration failed' \
     'restore failed; rolling back live database/object data' \
     'rolling back PostgreSQL' \
     'rolling back object storage'; do

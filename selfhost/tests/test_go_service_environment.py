@@ -28,7 +28,8 @@ class GoServiceEnvironmentTests(unittest.TestCase):
                                              '--profile', '*', 'config', '--format', 'json'], env=environment)
             services = json.loads(model)['services']
             cases = [('api-go', 'server', 'invalid database configuration'),
-                     ('migrate-go', 'migrate', 'Go operational migration failed'),
+                     # The default path migrates the business schema first (Phase 6 B2).
+                     ('migrate-go', 'migrate', 'invalid business migration database configuration'),
                      ('worker-go', 'celery-consumer', 'invalid celery consumer database configuration'),
                      ('job-worker-go', 'worker', 'invalid worker database configuration'),
                      ('scheduler-go', 'scheduler', 'invalid scheduler database configuration'),

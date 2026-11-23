@@ -781,6 +781,9 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
 
         manifest_checkpoint('before-installed-upgrade', '1.0.17' if legacy_controller else '2.0.1', old_source=legacy_controller)
         if legacy_controller:
+            # The source runs the current fixture backend, whose Django migrate also prepares the
+            # operational tables (Phase 6 B1); recovery must bring back exactly this state.
+            source_go_history = capture(compose(*database, "SELECT to_regclass('public.assozeta_go_schema_migrations') IS NULL"), env=environment)
             (fixtures / 'releases.json').write_text(json.dumps(catalog))
             print('Testing failed first Go delivery through frozen owner-request controller and rollback to four-image source.', flush=True)
             failed_transition = api('admin/updates', {'release_id': 4, 'tag': 'v2.0.4',
@@ -811,7 +814,7 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
             assert not capture(['docker', 'ps', '-aq', '--filter',
                 f'label=com.docker.compose.project={project}', '--filter', 'label=com.docker.compose.service=api-go'])
             assert capture(compose(*database, 'SELECT value FROM upgrade_sentinel'), env=environment) == 'preserved'
-            assert capture(compose(*database, "SELECT to_regclass('public.assozeta_go_schema_migrations') IS NULL"), env=environment) == 't'
+            assert capture(compose(*database, "SELECT to_regclass('public.assozeta_go_schema_migrations') IS NULL"), env=environment) == source_go_history
             assert_logo()
             manifest_checkpoint('first-go-delivery-recovered', '1.0.17', old_source=True, restored=True)
             await_runner_version('1.0.17')
@@ -1006,7 +1009,10 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
         assert_logo()
         manifest_checkpoint('interrupted-migration-recovered', '2.0.2', restored=True)
 
-        print('Testing abrupt runner interruption while the packaged Go migration waits in PostgreSQL.', flush=True)
+        # Phase 6 B1: in Django mode the schema one-shot is Django's migrate, which also prepares the
+        # operational tables; the Go migrator no longer runs here. The interrupted helper is that one-shot,
+        # held on its own migration history table.
+        print('Testing abrupt runner interruption while the packaged schema migration waits in PostgreSQL.', flush=True)
         (fixtures / 'go-launch-ready').unlink(missing_ok=True)
         (fixtures / 'hold-go-launch').touch()
         interrupted_go = api('admin/updates', {'release_id': 4, 'tag': 'v2.0.4', 'request_id': str(uuid4())})['operation']
@@ -1020,25 +1026,24 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
             go_blocker = subprocess.Popen(compose('exec', '-T', 'postgres', 'psql', '-X', '-qAt', '-v', 'ON_ERROR_STOP=1',
                 '-U', original_env['DBUSER'], '-d', original_env['DBNAME']), env=environment,
                 stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=output, text=True)
-        go_blocker.stdin.write("BEGIN; LOCK TABLE public.assozeta_go_schema_migrations IN ACCESS EXCLUSIVE MODE; SELECT 'go-schema-locked';\n")
+        go_blocker.stdin.write("BEGIN; LOCK TABLE public.django_migrations IN ACCESS EXCLUSIVE MODE; SELECT 'go-schema-locked';\n")
         go_blocker.stdin.flush()
         assert select.select([go_blocker.stdout], [], [], 10)[0], 'Fixture PostgreSQL lock not acquired'
         assert go_blocker.stdout.readline().strip() == 'go-schema-locked'
         (fixtures / 'hold-go-launch').unlink()
         running_go = ['docker', 'ps', '-q', '--filter', f'label=com.docker.compose.project={project}',
-                      '--filter', 'label=com.docker.compose.service=migrate-go', '--filter', 'label=com.docker.compose.oneoff=True']
+                      '--filter', 'label=com.docker.compose.service=migrate', '--filter', 'label=com.docker.compose.oneoff=True']
         deadline = time.monotonic() + 10
         while time.monotonic() < deadline:
             go_container = capture(running_go)
-            waiting = capture(compose(*database, "SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE wait_event_type='Lock' AND query ILIKE '%assozeta_go_schema_migrations%')"), env=environment)
+            waiting = capture(compose(*database, "SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE wait_event_type='Lock' AND query ILIKE '%django_migrations%')"), env=environment)
             if go_container and waiting == 't':
                 break
             time.sleep(0.1)
         else:
-            raise AssertionError('Packaged Go migration never blocked on actual PostgreSQL history')
+            raise AssertionError('Packaged schema migration never blocked on actual PostgreSQL history')
         details = json.loads(capture(['docker', 'inspect', go_container]))[0]
-        assert details['Config']['Image'] == backend_go[4] and details['Config']['Entrypoint'] == ['/app/migrate']
-        assert details['Config']['User'] == '10001:10001' and details['HostConfig']['ReadonlyRootfs']
+        assert details['Config']['Image'] == backend[4]
         go_waiter = subprocess.Popen(['docker', 'wait', go_container], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         runner_container = capture(['docker', 'ps', '-q', '--filter', f'label=com.docker.compose.project={project}-updater'])
         command(['docker', 'kill', '--signal', 'KILL', runner_container])

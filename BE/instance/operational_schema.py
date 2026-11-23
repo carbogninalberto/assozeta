@@ -10,6 +10,13 @@ from django.db import connections, router
 SQL_DIRECTORY = Path(__file__).with_name('operational_sql')
 
 
+def instance_migrated(connection, label):
+    from django.db.migrations.loader import MigrationLoader
+    loader = MigrationLoader(connection, ignore_no_migrations=True)
+    leaves = loader.graph.leaf_nodes(label)
+    return bool(leaves) and all(leaf in loader.applied_migrations for leaf in leaves)
+
+
 def apply_operational_schema(sender, using, plan=None, **kwargs):
     connection = connections[using]
     # flush also sends post_migrate, without a migration plan.
@@ -17,6 +24,10 @@ def apply_operational_schema(sender, using, plan=None, **kwargs):
         return
     # Respect deployments using syncdb in place of this app's migration path.
     if settings.MIGRATION_MODULES.get(sender.label, True) is None:
+        return
+    # Only a migrate that leaves this app fully migrated prepares the operational tables;
+    # a partial run (e.g. 'migrate django_celery_beat' in a fixture) leaves them alone.
+    if not instance_migrated(connection, sender.label):
         return
     versions = {int(path.name.split('_', 1)[0]): path for path in sorted(SQL_DIRECTORY.glob('*.up.sql'))}
     if not versions:

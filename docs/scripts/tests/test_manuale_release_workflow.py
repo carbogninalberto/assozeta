@@ -74,8 +74,11 @@ class ReleaseWorkflowTests(unittest.TestCase):
         carried = next(step for step in steps if step.get('id') == 'carried')
         self.assertIn("needs.manual-release.result != 'success'", carried['if'])
         self.assertIn("env.RELEASE_TAG != ''", carried['if'])
-        self.assertIn('assozeta-backend:latest', carried['env']['SOURCE_IMAGE'])
-        # Both backend images carry the same package into their own context.
+        # Each backend image carries the manual of its own previous image (Phase 6 B4).
+        self.assertEqual(carried['env']['SOURCE_IMAGE'], 'ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}:latest')
+        for backend, image in (('backend', 'assozeta-backend'), ('backend-go', 'assozeta-backend-go')):
+            entry = next(item for item in jobs['publish']['strategy']['matrix']['include'] if item['name'] == backend)
+            self.assertEqual(entry['image'], image)
         for backend in ('backend', 'backend-go'):
             self.assertIn("matrix.name == '" + backend + "'", carried['if'])
         self.assertEqual(carried['env']['DESTINATION'], '${{ matrix.context }}/release-manual')

@@ -92,6 +92,9 @@ WRITERS = {
     'subscription_medical.go:DeleteCertificate:UPDATE:subscription': ('collector', ['http:subscription-medical']),
     'subscription_sign.go:Save:UPDATE:subscription': ('save', ['http:subscription-sign']),
     'subscription_signature_migration.go:Save:UPDATE:subscription': ('save', ['component:subscription-signature-migration']),
+    # The Go business migrator's port of migration 0426 (Phase 6 B2): Django writes the same columns with raw SQL
+    # (migration_helpers._apply_signature_updates), no save(); the Phase 6 schema parity compares the result.
+    'signatures.go:migrateSubscriptionSignatures:UPDATE:subscription': ('queryset', ['handoff:test_p6_schema']),
     'subscription_tags.go:SaveSubscriptionDates:UPDATE:subscription': ('save', ['http:subscription-tags']),
     'subscription_update.go:SaveSubscription:UPDATE:subscription': ('save', ['http:celery-routes-a']),
     'tasks_db_d.go:MarkStripeType:UPDATE:payment': ('queryset', ['process:tasks_db_d_worker_process']),

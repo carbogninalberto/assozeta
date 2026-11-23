@@ -932,14 +932,6 @@
         "P5 contract red"
       ]
     },
-    "TESTS.handoff.test_p5_installed.InstalledLanes.test_4_failed_before_commit": {
-      "phase": 5,
-      "owner": "t-p5",
-      "reason": "Phase 5 part D: status socket lacks the runtime status; no recovery_action",
-      "signatures": [
-        "P5 contract red"
-      ]
-    },
     "TESTS.handoff.test_p5_installed.InstalledLanes.test_5_failed_after_commit": {
       "phase": 5,
       "owner": "t-p5",
@@ -1076,34 +1068,10 @@
         "P6B contract red"
       ]
     },
-    "TESTS.handoff.test_p6_independence.SwitchWithoutMigration.test_switch_to_go_runs_no_schema_migration": {
-      "phase": 6,
-      "owner": "t-p6",
-      "reason": "milestone B, needs the Phase 5 controller: the runtime switch does not succeed yet (switch_unavailable), so a migration-free switch cannot be shown",
-      "signatures": [
-        "P6B contract red"
-      ]
-    },
-    "TESTS.handoff.test_p6_independence.SwitchWithoutMigration.test_switch_to_django_runs_no_schema_migration": {
-      "phase": 6,
-      "owner": "t-p6",
-      "reason": "milestone B, needs the Phase 5 controller: the runtime switch does not succeed yet (switch_unavailable), so a migration-free switch cannot be shown",
-      "signatures": [
-        "P6B contract red"
-      ]
-    },
     "TESTS.handoff.test_p6_installed.GoModeInstalled.test_2_go_mode_health": {
       "phase": 6,
       "owner": "t-p6",
       "reason": "milestone A: bin/assozeta has no health command",
-      "signatures": [
-        "P6A contract red"
-      ]
-    },
-    "TESTS.handoff.test_p6_installed.GoModeInstalled.test_4_go_mode_superuser_creation": {
-      "phase": 6,
-      "owner": "t-p6",
-      "reason": "milestone A: create-superuser execs into the stopped Django api (service \"api\" is not running)",
       "signatures": [
         "P6A contract red"
       ]

@@ -83,7 +83,14 @@ class ProviderTests(TestCase):
         self.assertEqual(self.client.post(WEBHOOK, b'{}', content_type='application/json').status_code, 403)
 
 
+# These cases cover Django's own delivery. The test database now carries the operational
+# outbox (Phase 6 B1), whose managed path commits intents on a second connection that
+# cannot see a test transaction's rows; the managed path is covered by the handoff suites.
+unmanaged = patch('communications.whatsapp.outbox.installed', new=lambda: False)
+
+
 @override_settings(**CONFIG)
+@unmanaged
 class DeliveryTests(TestCase):
     @classmethod
     def setUpTestData(cls):
@@ -199,6 +206,7 @@ class DeliveryTests(TestCase):
         self.assertEqual(row.status, 'failed')
 
 
+@unmanaged
 @skipUnlessDBFeature('has_select_for_update_skip_locked')
 class ConcurrentDeliveryTests(TransactionTestCase):
     def test_other_worker_skips_in_flight_send(self):
