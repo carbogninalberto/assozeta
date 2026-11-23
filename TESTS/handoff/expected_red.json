@@ -2847,22 +2847,6 @@
         "P6B contract red"
       ]
     },
-    "TESTS.handoff.test_p6_installed.GoModeInstalled.test_1_go_mode_lifecycle_runs_only_go": {
-      "phase": 2,
-      "owner": "t-p6",
-      "reason": "not a Phase 6 gap: realtime-relay-go crash-loops in a real Go-mode installation (its Compose environment lacks SOCIAL_AUTH_GOOGLE_OAUTH2_KEY/SECRET, required by the Go config loader; bus #234), so the Go-mode restart fails and maintenance stays on. Green once that is fixed (verified with the two keys added): remove this entry then",
-      "signatures": [
-        "P6A contract red"
-      ]
-    },
-    "TESTS.handoff.test_p6_installed.GoModeInstalled.test_6_go_mode_failing_go_image_never_falls_back_to_django": {
-      "phase": 2,
-      "owner": "t-p6",
-      "reason": "not a Phase 6 gap: realtime-relay-go crash-loops in a real Go-mode installation (its Compose environment lacks SOCIAL_AUTH_GOOGLE_OAUTH2_KEY/SECRET, required by the Go config loader; bus #234), so the Go-mode restart fails and maintenance stays on. Green once that is fixed (verified with the two keys added): remove this entry then",
-      "signatures": [
-        "P6A contract red"
-      ]
-    },
     "TESTS.handoff.test_p6_installed.GoModeInstalled.test_2_go_mode_health": {
       "phase": 6,
       "owner": "t-p6",

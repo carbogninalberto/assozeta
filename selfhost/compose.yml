@@ -381,17 +381,6 @@ services:
       REDIS_PASSWORD: ${REDIS_PASSWORD}
       REDIS_SSLAUTH: ${REDIS_SSLAUTH:-}
       REDIS_SSLCERT: ${REDIS_SSLCERT:-}
-      # The shared Go config loader requires these keys. The relay never uses them.
-      DEBUG: "False"
-      SECRET_KEY: ""
-      JWT_SECRET_KEY: ""
-      JWT_PUBLIC_KEY: ""
-      AWS_ACCESS_KEY_ID: ""
-      AWS_SECRET_ACCESS_KEY: ""
-      AWS_STORAGE_BUCKET_NAME: ""
-      AWS_S3_REGION_NAME: ""
-      AWS_S3_ENDPOINT_URL: http://localhost
-      AWS_LOCATION: ""
     networks:
       - internal
     volumes: []

@@ -103,7 +103,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 		fmt.Fprintln(stderr, "relay-go-realtime: error: "+err.Error())
 		return 2
 	}
-	cfg, err := config.Load(parsed.envFile)
+	cfg, err := config.LoadRelay(parsed.envFile)
 	if err != nil {
 		fmt.Fprintln(stderr, "invalid environment configuration")
 		return 1

@@ -101,19 +101,9 @@ func (c Config) MigrationDatabaseURL() string { return c.migrationDatabaseURL }
 // Load gives process environment priority over the optional existing .env file.
 // It does not mutate the process environment or log parser input on failure.
 func Load(path string) (Config, error) {
-	values := map[string]string{}
-	if path != "" {
-		content, err := os.ReadFile(path)
-		if err != nil || !utf8.Valid(content) {
-			return Config{}, errors.New("cannot read environment file")
-		}
-		values = djangoEnvironmentFile(string(content))
-	}
-	for _, entry := range os.Environ() {
-		key, value, ok := strings.Cut(entry, "=")
-		if ok {
-			values[key] = value
-		}
+	values, err := readEnvironment(path)
+	if err != nil {
+		return Config{}, err
 	}
 	cfg, err := Parse(values)
 	if err != nil {
@@ -135,37 +125,61 @@ func Load(path string) (Config, error) {
 	return cfg, nil
 }
 
-func Parse(values map[string]string) (Config, error) {
-	get := func(key, fallback string) string {
-		value, ok := values[key]
-		if !ok {
-			return fallback
+func readEnvironment(path string) (map[string]string, error) {
+	values := map[string]string{}
+	if path != "" {
+		content, err := os.ReadFile(path)
+		if err != nil || !utf8.Valid(content) {
+			return nil, errors.New("cannot read environment file")
 		}
+		values = djangoEnvironmentFile(string(content))
+	}
+	for _, entry := range os.Environ() {
+		key, value, ok := strings.Cut(entry, "=")
+		if ok {
+			values[key] = value
+		}
+	}
+	return values, nil
+}
+
+// LoadRelay reads the PostgreSQL and Redis connections used by the realtime relay.
+func LoadRelay(path string) (Config, error) {
+	values, err := readEnvironment(path)
+	if err != nil {
+		return Config{}, err
+	}
+	var cfg Config
+	err = cfg.parseConnections(values)
+	return cfg, err
+}
+
+func envDefault(values map[string]string, key, fallback string) string {
+	if value, ok := values[key]; ok {
 		return value
 	}
+	return fallback
+}
+
+func (cfg *Config) parseConnections(values map[string]string) error {
 	for _, key := range []string{"DBNAME", "DBUSER", "DBHOST"} {
 		if values[key] == "" {
-			return Config{}, fmt.Errorf("%s is required", key)
+			return fmt.Errorf("%s is required", key)
 		}
 	}
 	if values["DBTYPE"] != "POSTGRES" {
-		return Config{}, errors.New("DBTYPE must select PostgreSQL")
+		return errors.New("DBTYPE must select PostgreSQL")
 	}
-	host, port := values["DBHOST"], get("DBPORT", "5432")
+	host, port := values["DBHOST"], envDefault(values, "DBPORT", "5432")
 	if values["USE_PGBOUNCER"] == "True" {
-		host, port = get("PGBOUNCER_HOST", "localhost"), get("PGBOUNCER_PORT", "6432")
+		host, port = envDefault(values, "PGBOUNCER_HOST", "localhost"), envDefault(values, "PGBOUNCER_PORT", "6432")
 	}
 	if !validPort(port) {
-		return Config{}, errors.New("invalid database port")
+		return errors.New("invalid database port")
 	}
-	redisPort := get("REDIS_PORT", "6379")
+	redisPort := envDefault(values, "REDIS_PORT", "6379")
 	if !validPort(redisPort) {
-		return Config{}, errors.New("invalid Redis port")
-	}
-	address := get("GO_LISTEN_ADDR", ":8000")
-	_, listenPort, err := net.SplitHostPort(address)
-	if err != nil || !validPort(listenPort) {
-		return Config{}, errors.New("invalid GO_LISTEN_ADDR")
+		return errors.New("invalid Redis port")
 	}
 	query := url.Values{"host": {host}, "port": {port}, "dbname": {values["DBNAME"]}, "connect_timeout": {"10"}}
 	// core.settings applies these options only when BOTH are supplied.
@@ -177,8 +191,25 @@ func Parse(values map[string]string) (Config, error) {
 	migrationDSN := dsn
 	migrationQuery := migrationDSN.Query()
 	migrationQuery.Set("host", values["DBHOST"])
-	migrationQuery.Set("port", get("DBPORT", "5432"))
+	migrationQuery.Set("port", envDefault(values, "DBPORT", "5432"))
 	migrationDSN.RawQuery = migrationQuery.Encode()
+	cfg.databaseURL = dsn.String()
+	cfg.migrationDatabaseURL = migrationDSN.String()
+	cfg.RedisAddress = net.JoinHostPort(envDefault(values, "REDIS_HOST", "localhost"), redisPort)
+	cfg.RedisUsername = envDefault(values, "REDIS_USERNAME", "default")
+	cfg.RedisPassword = values["REDIS_PASSWORD"]
+	// Existing Django code uses string truthiness, not env.bool, for this flag.
+	cfg.RedisTLS = values["REDIS_SSLAUTH"] != ""
+	cfg.RedisRootCertificate = values["REDIS_SSLCERT"]
+	return nil
+}
+
+func Parse(values map[string]string) (Config, error) {
+	address := envDefault(values, "GO_LISTEN_ADDR", ":8000")
+	_, listenPort, err := net.SplitHostPort(address)
+	if err != nil || !validPort(listenPort) {
+		return Config{}, errors.New("invalid GO_LISTEN_ADDR")
+	}
 	debugValue, err := environmentString(values, "DEBUG", "", true)
 	if err != nil {
 		return Config{}, err
@@ -286,7 +317,7 @@ func Parse(values map[string]string) (Config, error) {
 	if err != nil {
 		return Config{}, err
 	}
-	manualSettings.Release = get("RUNNING_VERSION", "v0.0.0")
+	manualSettings.Release = envDefault(values, "RUNNING_VERSION", "v0.0.0")
 	bootstrap := make([]string, 4)
 	for i, key := range []string{"AI_API_KEY", "STRIPE_PUBLIC_KEY", "STRIPE_KEY", "STRIPE_WEBHOOK_SECRET"} {
 		bootstrap[i], err = environmentString(values, key, "", false)
@@ -318,14 +349,14 @@ func Parse(values map[string]string) (Config, error) {
 	if err != nil {
 		return Config{}, err
 	}
-	return Config{GoTaskQueueTasks: values["GO_TASK_QUEUE_TASKS"], InstanceAdmin: instanceAdmin, SubscriptionImport: subscriptionImport, MedicalCertificateUpload: medicalCertificateUpload, PublicFlows: publicFlows, DataRestoreMaxUploadBytes: dataRestoreMaxUpload, DataRestoreArchiveLimits: archiveLimits, DataRestoreRecoveryBackups: dataRestoreRecoveryBackups(values), Manual: manualSettings, AIEnabled: bootstrap[0] != "", StripePublicKey: bootstrap[1], StripeSecretConfigured: bootstrap[2] != "", StripeEnabled: bootstrap[1] != "" || bootstrap[2] != "" || bootstrap[3] != "", WhitelabelName: whitelabelName, IsWhitelabel: isWhitelabel, DefaultFromEmail: whitelabelName + " <" + emailHostUser + ">", DefaultTeamEmail: "Il Team di " + whitelabelName + " <" + emailHostUser + ">", EmailHostSupport: supportEmail, ProviderCABundle: providerCABundle, Storage: storage, LogoSpoolDirectory: logoSpoolDirectory, MessageListSpoolDirectory: messageListSpoolDirectory, SessionSecret: sessionSecret, SenjaWebhookSecret: senjaSecret, Debug: debug, RateLimitEnabled: rateEnabled, GoogleClientID: providerValues[0], GoogleClientSecret: providerValues[1], AppleClientID: providerValues[2], AppleTeamID: providerValues[3], AppleKeyID: providerValues[4], AppleSecret: environmentMultiline(providerValues[5]),
+	cfg := Config{GoTaskQueueTasks: values["GO_TASK_QUEUE_TASKS"], InstanceAdmin: instanceAdmin, SubscriptionImport: subscriptionImport, MedicalCertificateUpload: medicalCertificateUpload, PublicFlows: publicFlows, DataRestoreMaxUploadBytes: dataRestoreMaxUpload, DataRestoreArchiveLimits: archiveLimits, DataRestoreRecoveryBackups: dataRestoreRecoveryBackups(values), Manual: manualSettings, AIEnabled: bootstrap[0] != "", StripePublicKey: bootstrap[1], StripeSecretConfigured: bootstrap[2] != "", StripeEnabled: bootstrap[1] != "" || bootstrap[2] != "" || bootstrap[3] != "", WhitelabelName: whitelabelName, IsWhitelabel: isWhitelabel, DefaultFromEmail: whitelabelName + " <" + emailHostUser + ">", DefaultTeamEmail: "Il Team di " + whitelabelName + " <" + emailHostUser + ">", EmailHostSupport: supportEmail, ProviderCABundle: providerCABundle, Storage: storage, LogoSpoolDirectory: logoSpoolDirectory, MessageListSpoolDirectory: messageListSpoolDirectory, SessionSecret: sessionSecret, SenjaWebhookSecret: senjaSecret, Debug: debug, RateLimitEnabled: rateEnabled, GoogleClientID: providerValues[0], GoogleClientSecret: providerValues[1], AppleClientID: providerValues[2], AppleTeamID: providerValues[3], AppleKeyID: providerValues[4], AppleSecret: environmentMultiline(providerValues[5]),
 		WhatsApp:                  WhatsAppFromEnv(func(key string) string { return values[key] }),
 		FamilyRegistrationEnabled: family, FederationRegistrationEnabled: federation, MultipleRegistrationEnabled: multiple, JWTSigningKey: privateKey, JWTVerifyingKey: publicKey,
-		CSRFTrustedOrigins: origins, CSRFCookieSecure: csrfCookieSecure, CORSAllowAll: corsAll, CORSAllowedOrigins: corsOrigins, RestoreLockPath: restoreLockPath, ListenAddress: address, Version: get("RUNNING_VERSION", "v0.0.0"), databaseURL: dsn.String(), migrationDatabaseURL: migrationDSN.String(),
-		RedisAddress:  net.JoinHostPort(get("REDIS_HOST", "localhost"), redisPort),
-		RedisUsername: get("REDIS_USERNAME", "default"), RedisPassword: values["REDIS_PASSWORD"],
-		// Existing Django code uses string truthiness, not env.bool, for this flag.
-		RedisTLS: values["REDIS_SSLAUTH"] != "", RedisRootCertificate: values["REDIS_SSLCERT"]}, nil
+		CSRFTrustedOrigins: origins, CSRFCookieSecure: csrfCookieSecure, CORSAllowAll: corsAll, CORSAllowedOrigins: corsOrigins, RestoreLockPath: restoreLockPath, ListenAddress: address, Version: envDefault(values, "RUNNING_VERSION", "v0.0.0")}
+	if err := cfg.parseConnections(values); err != nil {
+		return Config{}, err
+	}
+	return cfg, nil
 }
 
 func environmentList(values map[string]string, name string) ([]string, error) {
