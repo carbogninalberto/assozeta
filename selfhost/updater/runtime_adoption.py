@@ -52,7 +52,8 @@ def preflight(root, env_file, *, report_inventory=True):
     if previous and previous['status'] in ('running', 'queued', 'recovery_required'):
         raise AdoptionInterrupted()
     required = not (owner.get('op') or (previous and previous['status'] == 'succeeded')
-                    or (Path(root) / '.operations/exclusive-install').exists())
+                    or Path(f'{env_file}.exclusive-install').is_file()
+                    or (Path(root) / '.operations/exclusive-install').is_file())
     if not required and not report_inventory:
         return {'adoption_required': False, 'requested_runtime': owner.get('runtime', 'django'), 'blockers': []}
     setting = None

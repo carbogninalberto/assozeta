@@ -855,8 +855,7 @@ configure() {
     write_configuration "$PROD_ENV" production "$domain" "$email" "$version"
     # This release generated a fresh installation. A future upgrade must not
     # reinterpret its UI setting as a request to adopt a legacy topology.
-    mkdir -p "$SELFHOST_DIR/.operations"
-    : > "$SELFHOST_DIR/.operations/exclusive-install"
+    : > "${PROD_ENV}.exclusive-install"
     log "created $PROD_ENV"
 }
 
