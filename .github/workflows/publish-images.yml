@@ -112,6 +112,11 @@ jobs:
 
       - uses: ./.github/actions/prepare-storage
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install the updater's Compose parser
+        run: python3 -m pip install "$(grep '^PyYAML==' BE/requirements.txt)"
       - name: Run static self-host validation
         run: make selfhost-test
 

@@ -20,7 +20,7 @@ from backup_jobs import (BackupRejected, create_backup, delete_archive, run_back
                          schedule_tick, set_keep, update_schedule)
 from restore_jobs import ArchiveInvalid, UploadIncomplete, receive_upload, run_restore, start_restore
 from engine import Engine
-from go_tasks import CHECK_FAILED, MISSING_WORKER, apply_go_tasks, release_has_go_worker, validate_go_tasks_request
+from go_tasks import RETIRED, retired, CHECK_FAILED, MISSING_WORKER, apply_go_tasks, release_has_go_worker, validate_go_tasks_request
 from journal import Journal, Conflict
 from release_catalog import version_tuple
 import remote_backups
@@ -309,6 +309,9 @@ def serve(root, env_file, engine_class=Engine):
                 if self.path == '/restarts':
                     request = validate_restart_request(body, env_file)
                 elif self.path == '/go-tasks':
+                    if retired(root, env_file):
+                        self.respond(410, {'code': 'retired', 'error': RETIRED})
+                        return
                     request = validate_go_tasks_request(body, env_file)
                     # The web UI shows this refusal before anything is recorded.
                     if request['enabled']:

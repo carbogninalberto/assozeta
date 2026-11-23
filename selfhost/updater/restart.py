@@ -14,7 +14,8 @@ import time
 import traceback
 from uuid import UUID
 
-from common import GO_TASKS_PROFILE, compose_command, compose_environment, effective_runtime, read_env, runtime_services
+import proxy_readiness
+from common import GO_TASKS_PROFILE, compose_command, compose_environment, effective_runtime, runtime_services
 from journal import Journal, now
 
 RECOVERY = ('Verifica i container e i log del server, poi riprova il riavvio. '
@@ -202,17 +203,15 @@ class Restart:
             for item in application + updater:
                 self.wait_healthy(item)
             # Container health alone does not prove routing/public API readiness.
-            app_url = read_env(self.env_file).get('APP_URL', '').rstrip('/')
-            if not app_url.startswith(('http://', 'https://')):
-                raise RuntimeError('Missing installation URL')
+            command, app_url = proxy_readiness.probe(self.root, self.env_file, self.run)
             endpoints = ['/healthz', '/api/readyz']
             if self.runtime or any(item['Config']['Labels']['com.docker.compose.service'] == 'api-go' for item in application):
                 endpoints.extend(('/api/v1/readyz', '/api/v2/readyz'))
             for endpoint in endpoints:
+                probe = command + [app_url + endpoint]
                 while True:
                     try:
-                        self.run(['curl', '--fail', '--silent', '--show-error', '--connect-timeout', '5',
-                                  '--max-time', '10', app_url + endpoint], timeout=15)
+                        self.run(probe, timeout=15)
                         break
                     except subprocess.CalledProcessError:
                         time.sleep(2)

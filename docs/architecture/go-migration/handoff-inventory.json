@@ -8988,14 +8988,12 @@
         "django": {
           "runtime": "shared",
           "component": "runtime switch controller",
-          "status": "planned",
-          "phase": 5
+          "status": "present"
         },
         "go": {
           "runtime": "shared",
           "component": "runtime switch controller",
-          "status": "planned",
-          "phase": 5
+          "status": "present"
         }
       },
       "refs": [
@@ -9053,14 +9051,12 @@
         "django": {
           "runtime": "shared",
           "component": "Caddy and active application",
-          "status": "planned",
-          "phase": 5
+          "status": "present"
         },
         "go": {
           "runtime": "shared",
           "component": "Caddy and active application",
-          "status": "planned",
-          "phase": 5
+          "status": "present"
         }
       },
       "refs": [
@@ -9153,14 +9149,12 @@
         "django": {
           "runtime": "shared",
           "component": "Caddy and active application",
-          "status": "planned",
-          "phase": 5
+          "status": "present"
         },
         "go": {
           "runtime": "shared",
           "component": "Caddy and active application",
-          "status": "planned",
-          "phase": 5
+          "status": "present"
         }
       },
       "refs": [

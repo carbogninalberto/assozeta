@@ -81,9 +81,12 @@ class Journal:
         if recovery:
             raise Conflict('Un aggiornamento richiede una verifica di ripristino prima di un nuovo tentativo.',
                            'recovery_required', json.loads(recovery[0]))
-        active = db.execute("SELECT record FROM operations WHERE status IN ('queued', 'running')").fetchone()
-        if active:
-            raise Conflict('An update is already in progress.', 'operation_in_progress', json.loads(active[0]))
+        for (raw,) in db.execute("SELECT record FROM operations WHERE status IN ('queued', 'running', 'adopting')"):
+            active = json.loads(raw)
+            if (request.get('adoption') and active.get('kind', 'update') == 'update'
+                    and active['status'] == 'running' and active['id'] == request.get('parent_update')):
+                continue
+            raise Conflict('An update is already in progress.', 'operation_in_progress', active)
         if (request.get('kind') == 'runtime_switch' and 'source_generation' in request
                 and request['source_generation'] != request['expected_generation']):
             raise Conflict('La generazione richiesta non è più attuale.', 'stale_generation')
@@ -92,8 +95,16 @@ class Journal:
             'target_version': request.get('tag'), 'created_at': now(), 'updated_at': now(),
             'error': None, 'recovery': None,
         }
-        db.execute('INSERT INTO operations VALUES (?, ?, ?, ?)', (record['id'], request['request_id'], status, json.dumps(record)))
+        db.execute('INSERT INTO operations VALUES (?, ?, ?, ?)', (record['id'], request['request_id'], self.index_status(record), json.dumps(record)))
         return record, False
+
+    @staticmethod
+    def index_status(record):
+        # An upgrade owns the unique active slot through its migration and
+        # adoption. The child still has its own recoverable operation record.
+        if record.get('parent_update') and record['status'] == 'running':
+            return 'adopting'
+        return record['status']
 
     def update(self, operation_id, *, if_status=None, **changes):
         with self.connect() as db:
@@ -108,10 +119,12 @@ class Journal:
         if if_status is not None and record['status'] != if_status:
             return None
         record.update(changes, updated_at=now())
-        db.execute('UPDATE operations SET status=?, record=? WHERE id=?', (record['status'], json.dumps(record), operation_id))
+        db.execute('UPDATE operations SET status=?, record=? WHERE id=?', (self.index_status(record), json.dumps(record), operation_id))
         return record
 
     def records(self, *statuses):
+        if 'running' in statuses:
+            statuses += ('adopting',)
         query = 'SELECT record FROM operations'
         if statuses:
             query += ' WHERE status IN (' + ','.join('?' for _ in statuses) + ')'

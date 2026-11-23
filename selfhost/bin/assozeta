@@ -68,6 +68,7 @@ Production commands:
   runtime-status
   runtime-recover
   runtime-switch django|go
+  runtime-adopt
   upgrade VERSION
   uninstall [--volumes] [--yes]
 
@@ -470,6 +471,11 @@ ensure_configuration_values() {
 
     if [ "$file" = "$PROD_ENV" ] && [ -f "$PROD_COMPOSE" ] && prod_has_runtime_profiles; then
         ensure_runtime_references
+        if env_has_key ASSOZETA_GO_WHATSAPP_OUTBOX "$PROD_ENV"; then
+            temporary=$(mktemp "${PROD_ENV}.XXXXXX")
+            awk '!/^ASSOZETA_GO_WHATSAPP_OUTBOX=/' "$PROD_ENV" > "$temporary"
+            mv "$temporary" "$PROD_ENV"
+        fi
     fi
 
     if ! env_has_key STRIPE_PUBLIC_KEY "$file"; then
@@ -847,6 +853,10 @@ configure() {
     esac
 
     write_configuration "$PROD_ENV" production "$domain" "$email" "$version"
+    # This release generated a fresh installation. A future upgrade must not
+    # reinterpret its UI setting as a request to adopt a legacy topology.
+    mkdir -p "$SELFHOST_DIR/.operations"
+    : > "$SELFHOST_DIR/.operations/exclusive-install"
     log "created $PROD_ENV"
 }
 
@@ -2189,6 +2199,16 @@ run_updater_tool() {
         # shellcheck disable=SC2086
         set -- ${updater_tool_options:-} "$updater_tool_image" "$@"
     fi
+    if [ -n "${ASSOZETA_HANDOFF_BARRIER_DIR:-}" ] && [ -d "$ASSOZETA_HANDOFF_BARRIER_DIR" ]; then
+        barrier_dir=$(CDPATH= cd -P -- "$ASSOZETA_HANDOFF_BARRIER_DIR" && pwd -P) || return 1
+        barrier_root=$(CDPATH= cd -P -- "$SELFHOST_DIR" && pwd -P) || return 1
+        case "$barrier_dir" in
+            "$barrier_root"/*)
+                # Docker mounts the installation at SELFHOST_DIR inside the helper.
+                set -- --env "ASSOZETA_HANDOFF_BARRIER_DIR=$SELFHOST_DIR/${barrier_dir#"$barrier_root"/}" "$@"
+                ;;
+        esac
+    fi
     case "$PROD_ENV" in
         "$SELFHOST_DIR"/*)
             docker run --rm -v "$SELFHOST_DIR:$SELFHOST_DIR" -v /var/run/docker.sock:/var/run/docker.sock \
@@ -2241,6 +2261,11 @@ runtime_status_prod() {
     runtime_tool_prod status
 }
 
+runtime_adopt_prod() {
+    [ "$#" -eq 0 ] || die "runtime-adopt does not accept arguments"
+    runtime_tool_prod adopt
+}
+
 runtime_recover_prod() {
     [ "$#" -eq 0 ] || die "runtime-recover does not accept arguments"
     runtime_tool_prod recover
@@ -2286,11 +2311,18 @@ upgrade_prod() {
             [ -z "$(env_value "$pinned_key" "$PROD_ENV")" ] || die "cannot perform legacy upgrade: $pinned_key pins an image independently of ASSOZETA_VERSION; verify the installation configuration first"
         done
     fi
-    ensure_configuration_values "$PROD_ENV"
     if [ "$managed_update" = true ]; then
         updater_tool_image=${ASSOZETA_VERIFIED_UPDATER_REF:-"ghcr.io/carbogninalberto/assozeta-updater:$version"}
         docker pull "$updater_tool_image"
+    else
+        updater_tool_image=$(env_value ASSOZETA_UPDATER_REF "$PROD_ENV")
+        updater_tool_image=${updater_tool_image:-ghcr.io/carbogninalberto/assozeta-updater:$version}
     fi
+    adoption_code=0
+    adoption_report=$(run_updater_tool /runner/runtime_switch.py adopt-preflight "$SELFHOST_DIR" "$PROD_ENV") || adoption_code=$?
+    printf '@@ASSOZETA_RUNTIME_ADOPTION %s\n' "$adoption_report"
+    [ "$adoption_code" -eq 0 ] || die "runtime adoption preflight failed"
+    ensure_configuration_values "$PROD_ENV"
     printf '%s\n' '@@ASSOZETA_STAGE backup'
     backup_keep_stopped=true
     backup_origin=pre-upgrade
@@ -2322,6 +2354,14 @@ upgrade_prod() {
         run_updater_tool /runner/distribution.py migration_started "$SELFHOST_DIR"
     fi
     initialise_prod
+    updater_tool_options='--env ASSOZETA_RUNTIME_UPGRADE=1'
+    if [ "${prod_lock_held:-false}" = true ]; then
+        runtime_host_lock=directory
+        [ "${prod_operations_lock_held:-false}" != true ] || runtime_host_lock=both
+        updater_tool_options="$updater_tool_options --env ASSOZETA_RUNTIME_HOST_LOCK=$runtime_host_lock"
+    fi
+    run_updater_tool /runner/runtime_switch.py adopt "$SELFHOST_DIR" "$PROD_ENV"
+    updater_tool_options=
     printf '%s\n' '@@ASSOZETA_STAGE restarting'
     # Recreate even unchanged images: replaced host bind files (e.g. Caddyfile)
     # otherwise remain attached to the old inode in an existing container.
@@ -2443,6 +2483,7 @@ run_locked_prod_command() {
         recover-upgrade) recover_upgrade_prod "$@" ;;
         reconcile-updates) reconcile_updates_prod "$@" ;;
         runtime-recover) runtime_recover_prod "$@" ;;
+        runtime-adopt) runtime_adopt_prod "$@" ;;
         runtime-switch) runtime_switch_prod "$@" ;;
         upgrade) upgrade_prod "$@" ;;
         uninstall)
@@ -2490,7 +2531,7 @@ case "$command" in
         fi
         ;;
     runtime-status) runtime_status_prod "$@" ;;
-    configure|install|pull|migrate|start|stop|restart|sync-manual|backup|restore|recover-upgrade|reconcile-updates|runtime-recover|runtime-switch|uninstall) run_locked_prod_command "$command" "$@" ;;
+    configure|install|pull|migrate|start|stop|restart|sync-manual|backup|restore|recover-upgrade|reconcile-updates|runtime-recover|runtime-switch|runtime-adopt|uninstall) run_locked_prod_command "$command" "$@" ;;
     validate) validate_prod ;;
     health) preflight; health_prod ;;
     status) preflight; status_prod ;;

@@ -22,6 +22,14 @@ RESTART_FAILED = 'Riavvio non completato dopo la modifica delle attività in bac
 RESTART_RECOVERY = 'La configurazione è stata salvata. Controlla i log del server ed esegui ./bin/assozeta restart.'
 
 
+RETIRED = 'Le attività in background seguono il runtime dell’installazione.'
+
+
+def retired(root, env_file):
+    from runtime_switch import switch_available
+    return switch_available(root)
+
+
 def go_tasks_values(enabled):
     """Never unset ASSOZETA_GO_TASKS: an interrupted queue drains there."""
     if enabled:
@@ -51,6 +59,9 @@ def apply_go_tasks(root, env_file, journal, operation):
     """Runs in the runner's worker thread; the CLI restart leaves it alive."""
     root, env_file = Path(root), Path(env_file)
     operation_id = operation['id']
+    if retired(root, env_file):
+        journal.update(operation_id, status='failed', stage='failed', error=RETIRED, error_code='retired', recovery=None)
+        return
     log = root / '.updater/logs' / f'{UUID(operation_id)}.log'
     journal.update(operation_id, status='running', stage='checking')
     if operation['enabled']:

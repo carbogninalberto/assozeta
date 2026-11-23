@@ -101,6 +101,11 @@ jobs:
           # Legacy suites read the historical dual-API distribution from git history.
           fetch-depth: 0
           persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install the updater's Compose parser
+        run: python3 -m pip install "$(grep '^PyYAML==' BE/requirements.txt)"
       - run: make selfhost-test
       - name: Verify versioned API transport through real Caddy
         run: python3 selfhost/tests/versioned-routing.py

@@ -219,6 +219,33 @@ def _envelope(job):
     }).encode()
 
 
+def bind_adoption(store, record):
+    """Bind the frozen backlog without changing a same-runtime authority."""
+    # Every write depends on acquiring this operation's admission fence.
+    result = store.scalar("""BEGIN;
+        SELECT 1 AS locked FROM public.assozeta_go_job_ownership WHERE singleton=1 FOR UPDATE \\gset
+        WITH fence AS (
+        UPDATE public.assozeta_go_job_ownership SET admission='open',admission_operation_id=NULL
+        WHERE singleton=1 AND runtime=:'target' AND generation=:'gen'
+          AND admission='frozen' AND admission_operation_id=:'op' RETURNING generation),
+        held AS (
+        INSERT INTO public.assozeta_handoff_transfers(operation_id,task_id,source_runtime,source_generation,
+                                                       target_runtime,target_generation,source_location)
+        SELECT :'op',w.task_id,:'target',generation,:'target',generation,
+               CASE w.transport WHEN 'sql' THEN 'sql' ELSE 'ledger' END
+        FROM public.assozeta_handoff_work w CROSS JOIN fence WHERE w.operation_id=:'op' AND w.state='held'),
+        bound AS (
+        UPDATE public.assozeta_handoff_work SET state='pending',owner_runtime=:'target',
+               owner_generation=fence.generation,updated_at=clock_timestamp() FROM fence
+        WHERE operation_id=:'op' AND state IN ('held','staged')),
+        receipts AS (
+        UPDATE public.assozeta_handoff_transfers SET target_generation=fence.generation FROM fence
+        WHERE operation_id=:'op')
+        SELECT count(*) FROM fence; COMMIT""", op=record['id'], gen=record['source_generation'], target=record['target'])
+    if result != '1':
+        raise RuntimeError('adoption admission conflict')
+
+
 def handoff_steps(store, broker, *, barrier=None, batch_size=500, freeze_timeout=60.0, settle_timeout=60.0,
                   heartbeat_grace=5.0):
     if batch_size < 1:
@@ -228,7 +255,7 @@ def handoff_steps(store, broker, *, barrier=None, batch_size=500, freeze_timeout
 
     def params(record):
         return dict(op=record['id'], source=record['previous_runtime'], gen=record['source_generation'],
-                    target=record['target'])
+                    target=record['target'], adoption=bool(record.get('adoption')))
 
     def close_admission(record):
         values = params(record)
@@ -298,14 +325,14 @@ def handoff_steps(store, broker, *, barrier=None, batch_size=500, freeze_timeout
             running = int(store.scalar("""SELECT count(*) FROM public.assozeta_handoff_attempts
                 WHERE runtime=:'source' AND generation=:'gen' AND outcome='running'""", **params(record)))
             historical_running = []
-            if record['previous_runtime'] == 'go':
+            if record['previous_runtime'] == 'go' or record.get('adoption'):
                 # Pre-ledger workers have no consumer registration. Their SQL
                 # lease token is the fence; invalidate it only after expiry.
                 store.execute("""UPDATE public.assozeta_go_jobs j SET state='pending',lease_owner='',
                     lease_token='00000000-0000-0000-0000-000000000000',lease_until=NULL
                     WHERE j.state='running' AND j.lease_until<=clock_timestamp() AND NOT EXISTS
                     (SELECT 1 FROM public.assozeta_handoff_attempts a WHERE a.attempt_id=j.lease_token AND a.outcome='running')
-                    AND EXISTS (SELECT 1 FROM public.assozeta_go_job_ownership WHERE runtime='go' AND admission_operation_id=:'op')""",
+                    AND EXISTS (SELECT 1 FROM public.assozeta_go_job_ownership WHERE runtime=:'source' AND generation=:'gen' AND admission_operation_id=:'op')""",
                               **params(record))
                 historical_running = list(task_rows("""SELECT j.id::text AS task_id,'running' AS reason FROM public.assozeta_go_jobs j
                     WHERE j.state='running' AND NOT EXISTS (SELECT 1 FROM public.assozeta_handoff_attempts a
@@ -353,7 +380,7 @@ def handoff_steps(store, broker, *, barrier=None, batch_size=500, freeze_timeout
         return {'blockers': [{'task_id': task, 'reason': reason} for task, reason in sorted(problems.items())]}
 
     def historical(values):
-        if values['source'] != 'go':
+        if values['source'] != 'go' and not values['adoption']:
             return
         yield from task_rows("""SELECT j.id::text AS task_id,j.kind AS task_name,j.version,j.state,j.attempts,
             j.association_id,j.created_at,j.available_at FROM public.assozeta_go_jobs j
@@ -366,7 +393,7 @@ def handoff_steps(store, broker, *, barrier=None, batch_size=500, freeze_timeout
                 raise TransferBlocked([{'task_id': row['task_id'], 'reason': 'running'}])
             store.execute("""INSERT INTO public.assozeta_handoff_work(task_id,task_name,transport,origin_runtime,
                 owner_runtime,owner_generation,state,accepted_at,eta,retries,association_id)
-                VALUES(:'task_id',:'task_name','sql','go','go',:'gen','pending',:'created_at',:'available_at',:'attempts',:'association_id')
+                VALUES(:'task_id',:'task_name','sql','go',:'source',:'gen','pending',:'created_at',:'available_at',:'attempts',:'association_id')
                 ON CONFLICT DO NOTHING""", **row, **values)
 
         # Inventory both historical queue names before removing anything. The
@@ -443,12 +470,18 @@ def handoff_steps(store, broker, *, barrier=None, batch_size=500, freeze_timeout
             raise TransferBlocked(blocked)
         return {'staged': staged}
 
+    def require_target(values):
+        same = values['adoption'] and values['source'] == values['target']
+        committed = store.scalar("""SELECT count(*) FROM public.assozeta_go_job_ownership
+            WHERE runtime=:'target' AND generation=:'destination_gen' AND admission='open'
+              AND (:'same'::boolean OR operation_id=:'op')""",
+                                 destination_gen=values['gen'] + (0 if same else 1), same=same, **values)
+        if committed != '1':
+            raise RuntimeError('target ownership must commit before delivery')
+
     def activate(record):
         values = params(record)
-        committed = store.scalar("""SELECT count(*) FROM public.assozeta_go_job_ownership WHERE runtime=:'target'
-            AND generation=:'gen'::bigint+1 AND operation_id=:'op'""", **values)
-        if committed != '1':
-            raise RuntimeError('target ownership must commit before activation')
+        require_target(values)
         delivered = 0
         while True:
             rows = store.rows("""SELECT w.task_id,w.task_name,w.transport,w.accepted_at,w.eta,w.retries,
@@ -498,7 +531,7 @@ def handoff_steps(store, broker, *, barrier=None, batch_size=500, freeze_timeout
                     # A crash here leaves an undelivered receipt for the rerun.
                     store.execute("""BEGIN;
                         UPDATE public.assozeta_go_jobs SET state='cancelled',error_code='handoff_transferred',
-                            finished_at=clock_timestamp() WHERE id::text=:'task' AND state='pending' AND :'source'='go';
+                            finished_at=clock_timestamp() WHERE id::text=:'task' AND state='pending' AND (:'source'='go' OR :'adoption'::boolean);
                         UPDATE public.assozeta_handoff_work SET transport='broker',queue=:'queue',
                             envelope=decode(:'payload','base64'),updated_at=clock_timestamp() WHERE task_id=:'task';
                         COMMIT""", task=task, queue=queue, payload=base64.b64encode(payload).decode(), **values)
@@ -517,12 +550,9 @@ def handoff_steps(store, broker, *, barrier=None, batch_size=500, freeze_timeout
 
     def verify(record):
         values = params(record)
-        committed = store.scalar("""SELECT count(*) FROM public.assozeta_go_job_ownership
-            WHERE runtime=:'target' AND generation=:'gen'::bigint+1 AND operation_id=:'op'""", **values)
-        if committed != '1':
-            raise RuntimeError('target ownership must commit before verification')
+        require_target(values)
         problems = {r['task_id']: r['reason'] for r in blockers(record)}
-        source_queue = 'assozeta-go' if values['source'] == 'go' else 'celery'
+        source_queue = 'assozeta-go' if values['target'] == 'django' else 'celery'
         for queue, _, _, _, raw in _items(broker, batch_size):
             if queue == source_queue:
                 task, _ = _message(raw)
@@ -530,7 +560,7 @@ def handoff_steps(store, broker, *, barrier=None, batch_size=500, freeze_timeout
         rows = task_rows("""SELECT task_id FROM public.assozeta_handoff_transfers
             WHERE operation_id=:'op' AND (delivered_at IS NULL OR source_removed_at IS NULL)
             UNION SELECT task_id FROM public.assozeta_handoff_work WHERE owner_runtime=:'source'
-              AND owner_generation=:'gen' AND state IN ('running','pending','staged')""", **values)
+              AND owner_generation=:'gen' AND (:'source'<>:'target' OR state='staged') AND state IN ('running','pending','staged')""", **values)
         for row in rows:
             problems.setdefault(row['task_id'], 'running')
         if problems:

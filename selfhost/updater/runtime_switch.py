@@ -6,12 +6,15 @@ import fcntl
 import json
 import os
 from pathlib import Path
+import sqlite3
 import subprocess
 import sys
 import time
 from uuid import UUID, uuid4
 
 import job_handoff
+import runtime_adoption
+import proxy_readiness
 from common import atomic_write, compose_command, compose_environment, read_env, runtime_services
 from runtime_schedules import schedule_blockers
 from journal import Conflict, Journal, now
@@ -24,6 +27,10 @@ CommitResult = namedtuple('CommitResult', 'outcome authority')
 
 
 class AuthorityUnavailable(Exception):
+    pass
+
+
+class StalePreference(Exception):
     pass
 
 
@@ -103,7 +110,7 @@ def operation_view(record):
             'dispositions': dispositions, 'blockers': blockers, 'recovery_action': action}
 
 
-def submit(root, env_file, journal, authority, body, claim=False):
+def submit(root, env_file, journal, authority, body, claim=False, *, adoption=None, parent_update=None):
     invalid = (400, {'code': 'invalid_request', 'error': 'Richiesta non valida.'})
     if not isinstance(body, dict) or set(body) != {'request_id', 'actor_id', 'target', 'expected_generation'}:
         return invalid
@@ -126,12 +133,16 @@ def submit(root, env_file, journal, authority, body, claim=False):
                 if db.execute('PRAGMA data_version').fetchone() == revision:
                     break
                 db.rollback()
-            noop = row.runtime == body['target']
+            noop = adoption is None and row.runtime == body['target']
             request = {**body, 'kind': 'runtime_switch', 'source_generation': row.generation, 'previous_runtime': row.runtime,
                        'outcome': 'noop' if noop else None, 'committed_generation': None, 'error_code': None,
                        'failed_stage': None, 'counts': {'pending': 0, 'transferred': 0, 'blocked': 0}}
+            if adoption is not None:
+                request.update(adoption=True, legacy_services=adoption['legacy']['services'])
+                if parent_update:
+                    request['parent_update'] = parent_update
             pending = (Path(root) / '.updater/pending-distribution').exists()
-            options = dict(blocked_reason='La transazione precedente richiede un ripristino.' if pending else None,
+            options = dict(blocked_reason='La transazione precedente richiede un ripristino.' if pending and adoption is None else None,
                            status='succeeded' if noop else ('running' if claim else 'queued'),
                            stage='completed' if noop else 'queued')
             try:
@@ -215,9 +226,13 @@ PROGRESS_STAGES = (*PRE_COMMIT, 'commit', *POST_COMMIT)
 def switch_available(root):
     # Read the installed file directly: this status is also served when Docker
     # is unavailable. SafeLoader resolves the shipped YAML service anchors.
+    try:
+        data = (Path(root) / 'compose.yml').read_bytes()
+    except OSError:
+        return False
     import yaml
     try:
-        config = yaml.safe_load((Path(root) / 'compose.yml').read_bytes())
+        config = yaml.safe_load(data)
         services = config['services'].values()
         declared = {profile for service in services if isinstance(service, dict)
                     for profile in service.get('profiles', ())}
@@ -234,7 +249,7 @@ class RollbackBroker:
         source_queue = 'celery' if source == 'django' else 'assozeta-go'
         # Snapshot both ready and unacked copies before abort reopens admission.
         self.present = {job_handoff._message(raw)[0] for queue, _, _, _, raw in job_handoff._items(broker, 500)
-                        if queue == source_queue}
+                        if source is None or queue == source_queue}
 
     def call(self, command, *args):
         if command == 'LPUSH':
@@ -262,11 +277,12 @@ def default_steps(root, env_file, *, barrier=None):
     handoff = job_handoff.handoff_steps(store, broker)
     command = compose_command(root, env_file) + ['--profile', '*']
     environment = compose_environment(root, env_file)
+    environment['ASSOZETA_GO_WHATSAPP_OUTBOX'] = '1'
     flag = Path(root) / '.operations/maintenance.flag'
     services = {}
 
-    def execute(args, timeout=180):
-        return subprocess.run(args, env=environment, capture_output=True, text=True,
+    def execute(args, timeout=180, *, env=None):
+        return subprocess.run(args, env=environment if env is None else env, capture_output=True, text=True,
                               check=True, timeout=timeout).stdout
 
     def app(runtime):
@@ -285,6 +301,9 @@ def default_steps(root, env_file, *, barrier=None):
         return schedule_blockers(store, job_handoff._task_catalog()) if target == 'go' else []
 
     def preflight(record):
+        if (not record.get('adoption') and record['target'] == 'django'
+                and read_env(env_file).get('GO_TASK_QUEUE_TASKS', '').strip()):
+            raise StalePreference()
         app(record['target'])
         problems = handoff['preflight'](record)['blockers']
         problems += unsupported_schedules(record['target'])
@@ -298,6 +317,10 @@ def default_steps(root, env_file, *, barrier=None):
 
     def close_admission(record):
         atomic_write(flag, record['id'] + '\n', mode=0o644)
+        if record.get('adoption') and record['legacy_services']:
+            # Unmodified legacy consumers do not acknowledge the ledger freeze.
+            # Quiesce them while Caddy serves maintenance, before reading queues.
+            execute(command + ['stop', *record['legacy_services']])
         drain('close_admission', record)
 
     def stop(runtime):
@@ -339,17 +362,37 @@ def default_steps(root, env_file, *, barrier=None):
 
     def activate(record):
         atomic_write(flag, record['id'] + '\n', mode=0o644)
-        start(record['target'])
+        if record.get('adoption'):
+            # Start with the final producer routing while preserving the real
+            # installation file until service and transfer verification succeeds.
+            execute(command + ['up', '-d', '--no-deps', '--force-recreate', 'web'])
+            clean_env = Path(root) / '.updater' / ('adopt-' + str(UUID(record['id'])) + '.env')
+            runtime_adoption.retire_preferences(env_file, clean_env)
+            try:
+                execute(command + ['up', '-d', '--no-deps', *app(record['target'])],
+                        env={**environment, 'ASSOZETA_ENV_FILE': str(clean_env)})
+            finally:
+                clean_env.unlink(missing_ok=True)
+        else:
+            start(record['target'])
         handoff['activate'](record)
         if barrier:
             barrier('activate:started')
         return {'dispositions': receipt_dispositions(store, record['id'])}
 
     def public_readiness():
-        url = read_env(env_file)['APP_URL'].rstrip('/')
+        command, url = proxy_readiness.probe(root, env_file, execute)
         for endpoint in ('/api/readyz', '/api/v1/readyz', '/api/v2/readyz'):
-            execute(['curl', '--fail', '--silent', '--retry', '5', '--retry-all-errors', '--max-time', '10',
-                     url + endpoint])
+            probe = command + [url + endpoint]
+            deadline = time.monotonic() + 60
+            while True:
+                try:
+                    execute(probe, timeout=15)
+                    break
+                except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
+                    if time.monotonic() >= deadline:
+                        raise
+                    time.sleep(1)
 
     def inspect_runtime(runtime, inactive):
         target, source = app(runtime), app(inactive)
@@ -374,18 +417,37 @@ def default_steps(root, env_file, *, barrier=None):
     def verify(record):
         public_readiness()
         handoff['verify'](record)
-        inspect_runtime(record['target'], record['previous_runtime'])
+        inspect_runtime(record['target'], 'go' if record['target'] == 'django' else 'django')
         evidence = {'dispositions': receipt_dispositions(store, record['id'])}
         if not log_stage(root, {**record, 'outcome': 'verified', **disposition_fields(evidence['dispositions'])}):
             raise RuntimeError('verification audit unavailable')
+        if record.get('adoption'):
+            runtime_adoption.retire_preferences(env_file)
         flag.unlink(missing_ok=True)
         if barrier:
             barrier('verify:opened')
         return evidence
 
+    def stop_source(record):
+        if record.get('adoption'):
+            for runtime in RUNTIMES:
+                stop(runtime)
+        else:
+            stop(record['previous_runtime'])
+
     def abort(record):
         stop(record['target'])
-        job_handoff.abort(store, RollbackBroker(broker, record['previous_runtime']), record)
+        source = None if record.get('adoption') else record['previous_runtime']
+        job_handoff.abort(store, RollbackBroker(broker, source), record)
+        if record.get('adoption'):
+            previous = record['legacy_services']
+            if previous:
+                execute(command + ['start', *previous])
+                public_readiness()
+                if not running().issuperset(previous):
+                    raise RuntimeError('legacy services unavailable')
+                flag.unlink(missing_ok=True)
+            return
         start(record['previous_runtime'])
         if not record.get('reverses'):
             public_readiness()
@@ -393,7 +455,7 @@ def default_steps(root, env_file, *, barrier=None):
             flag.unlink(missing_ok=True)
 
     return {'preflight': preflight, 'close_admission': close_admission, 'settle': lambda record: drain('settle', record),
-            'stage_backlog': stage_backlog, 'stop_source': lambda record: stop(record['previous_runtime']),
+            'stage_backlog': stage_backlog, 'stop_source': stop_source,
             'target_preflight': target_preflight, 'activate': activate, 'verify': verify, 'abort': abort}
 
 
@@ -428,6 +490,7 @@ def log_stage(root, record):
 
 
 ERRORS = {
+    'stale_preference': 'Rimuovi GO_TASK_QUEUE_TASKS prima di passare a Django.',
     'switch_unavailable': 'Questa versione non supporta il cambio di runtime.',
     'authority_unavailable': 'Stato del runtime non disponibile.',
     'stale_generation': 'La generazione richiesta non è più attuale.',
@@ -525,6 +588,7 @@ def advance(root, env_file, journal, authority, record, steps, barrier, recoveri
     installed = steps is None
     operation_id = record['id']
     source = record['previous_runtime'], record['source_generation']
+    same = record.get('adoption') and record['target'] == source[0]
     destination = Authority(record['target'], source[1] + 1, operation_id)
     failed_stage = record.get('failed_stage') or record['stage']
     try:
@@ -545,6 +609,18 @@ def advance(root, env_file, journal, authority, record, steps, barrier, recoveri
             return next(r for r in journal.records() if r['id'] == operation_id)
         record = claimed
     committed = row == destination
+    same_store = None
+    if same and (row.runtime, row.generation) == source:
+        same_store = job_handoff.compose_store(root, env_file)
+        # Commit intent is journalled before the SQL transaction. Open
+        # admission at that checkpoint distinguishes a lost commit reply.
+        committed = record.get('committed_generation') == row.generation
+        if not committed and failed_stage == 'commit' and not record.get('abort_code'):
+            try:
+                committed = same_store.scalar("SELECT admission FROM public.assozeta_go_job_ownership "
+                                              "WHERE singleton=1") == 'open'
+            except RuntimeError:
+                return fail(root, journal, record, 'authority_unknown', failed_stage)
     if not committed and (row.runtime, row.generation) != source:
         return fail(root, journal, record, 'authority_diverged' if recovering else 'stale_generation', failed_stage)
 
@@ -574,8 +650,13 @@ def advance(root, env_file, journal, authority, record, steps, barrier, recoveri
                 raise TimeoutError()
             if stage == 'commit':
                 try:
-                    result = authority.commit(operation_id, *source, record['target'])
-                except (AuthorityUnavailable, OSError):
+                    if same:
+                        job_handoff.bind_adoption(same_store, record)
+                        destination = row
+                        result = CommitResult('committed', row)
+                    else:
+                        result = authority.commit(operation_id, *source, record['target'])
+                except (AuthorityUnavailable, OSError, RuntimeError):
                     return fail(root, journal, record, 'authority_unknown', stage)
                 if result.outcome == 'conflict' or result.authority != destination:
                     return fail(root, journal, record, 'authority_diverged' if recovering else 'stale_generation', stage)
@@ -601,6 +682,8 @@ def advance(root, env_file, journal, authority, record, steps, barrier, recoveri
                 record = journal.update(operation_id, blockers=summary, **disposition_fields(counts))
             elif not committed and record.get('maintenance_deadline') and remaining_window(record) <= 0:
                 code = 'window_exceeded'
+            elif isinstance(exc, StalePreference):
+                code = 'stale_preference'
             elif isinstance(exc, SwitchUnavailable):
                 code = 'switch_unavailable'
             if not committed and 'abort' in steps and (stage != 'preflight' or record.get('maintenance_since')):
@@ -660,10 +743,22 @@ def recover(root, env_file, journal, authority, steps=None, barrier=None, caller
 
 def main(argv=None):
     args = sys.argv[1:] if argv is None else argv
-    if (len(args) != 3 or args[0] not in ('status', 'recover')) and (
+    if (len(args) != 3 or args[0] not in ('status', 'recover', 'adopt-preflight', 'adopt')) and (
             len(args) != 4 or args[0] != 'switch' or args[3] not in RUNTIMES):
-        raise SystemExit('Usage: runtime_switch.py status|recover ROOT ENV | switch ROOT ENV django|go')
+        raise SystemExit('Usage: runtime_switch.py status|recover|adopt-preflight|adopt ROOT ENV | switch ROOT ENV django|go')
     action, root, env_file = args[:3]
+    if action in ('adopt-preflight', 'adopt'):
+        try:
+            report = runtime_adoption.preflight(root, env_file, report_inventory=action == 'adopt-preflight')
+        except runtime_adoption.AdoptionInterrupted:
+            print(json.dumps({'code': 'recovery_required', 'recovery_command': RECOVERY}))
+            return 1
+        except (RuntimeError, OSError, ValueError, sqlite3.Error, subprocess.SubprocessError):
+            print(json.dumps({'error': ERRORS['authority_unavailable']}))
+            return 1
+        if action == 'adopt-preflight' or report['blockers'] or not report['adoption_required']:
+            print(json.dumps(report))
+            return 3 if report['blockers'] else 0
     journal = Journal(Path(root) / '.updater/operations.sqlite3')
     if action == 'status':
         print(json.dumps(status(root, env_file, journal, None)))
@@ -680,8 +775,25 @@ def main(argv=None):
                 return int(bool(payload['authority_error']) or any(r['status'] != 'succeeded' for r in changed))
             authority = compose_authority(root, env_file)
             row = authority.read()
-            body = {'request_id': str(uuid4()), 'actor_id': OPERATOR_ACTOR, 'target': args[3], 'expected_generation': row.generation}
-            code, payload = submit(root, env_file, journal, authority, body, claim=True)
+            adoption = None
+            parent_update = None
+            if action == 'adopt':
+                adoption = report if host_lock == 'both' else runtime_adoption.preflight(
+                    root, env_file, report_inventory=False)
+                if adoption['blockers'] or not adoption['adoption_required']:
+                    print(json.dumps(adoption))
+                    return 3 if adoption['blockers'] else 0
+                pending = Path(root) / '.updater/pending-distribution/transaction.json'
+                if pending.exists():
+                    transaction = json.loads(pending.read_text())
+                    if (os.environ.get('ASSOZETA_RUNTIME_UPGRADE') != '1'
+                            or transaction['phase'] != 'migration_started'):
+                        raise BlockingIOError()
+                    parent_update = transaction.get('operation_id')
+            body = {'request_id': str(uuid4()), 'actor_id': OPERATOR_ACTOR,
+                    'target': adoption['requested_runtime'] if adoption else args[3], 'expected_generation': row.generation}
+            code, payload = submit(root, env_file, journal, authority, body, claim=True, adoption=adoption,
+                                   parent_update=parent_update)
             if code not in (200, 202):
                 print(json.dumps(payload))
                 return 1
@@ -693,7 +805,10 @@ def main(argv=None):
             return int(operation['outcome'] not in ('committed', 'noop'))
     except BlockingIOError:
         code = 'lifecycle_busy'
-    except (AuthorityUnavailable, OSError):
+    except runtime_adoption.AdoptionInterrupted:
+        print(json.dumps({'code': 'recovery_required', 'recovery_command': RECOVERY}))
+        return 1
+    except (AuthorityUnavailable, OSError, RuntimeError, sqlite3.Error, subprocess.SubprocessError):
         code = 'authority_unavailable'
     print(json.dumps({'error': ERRORS[code], 'code': code}))
     return 1
