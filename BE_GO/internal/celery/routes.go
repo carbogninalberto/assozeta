@@ -78,6 +78,15 @@ func ownedPrintTask(name string) bool {
 	}
 }
 
+func ownedAssociationDataTask(name string) bool {
+	switch name {
+	case "export_association_data", "import_association_data", "instance.restore.execute":
+		return true
+	default:
+		return false
+	}
+}
+
 func routeEnvelope(raw []byte, queue string) ([]byte, error) {
 	value, err := DecodeJSON(raw)
 	if err != nil {

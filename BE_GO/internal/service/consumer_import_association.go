@@ -24,6 +24,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/importeffects"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pyzipfile"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/pymime"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/documentkey"
 	"github.com/jmoiron/sqlx"
@@ -171,6 +172,10 @@ func (s *ConsumerImportAssociation) prepare(ctx context.Context, request *celery
 		err = closeErr
 	}
 	if err != nil {
+		if celeryworker.HasBrokerAttempt(ctx) && s.objects.Missing(err) {
+			call.result, call.failed = importFailureResult("File does not exist: "+key), true
+			return nil
+		}
 		return celeryworker.ErrHandoff
 	}
 	run := &consumerImportRun{s: s, ctx: ctx, path: call.tempPath, password: password}
@@ -189,6 +194,11 @@ func (s *ConsumerImportAssociation) prepare(ctx context.Context, request *celery
 		}
 		if errors.Is(err, importeffects.ErrPlanUnreachable) {
 			call.result, call.failed = importFailureResult(err.Error()), true
+			return nil
+		}
+		var rejected *pyzipfile.Exception
+		if celeryworker.HasBrokerAttempt(ctx) && errors.As(err, &rejected) {
+			call.result, call.failed = importFailureResult("Error validating export file: "+rejected.Text), true
 			return nil
 		}
 		return celeryworker.ErrHandoff
