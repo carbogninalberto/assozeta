@@ -27,9 +27,13 @@ Lanes, in order (one installation; each lane leaves it in Go mode):
   7 independence   the container event history since Go mode began (lanes 1-6) holds no container of
                    the Django backend image, one-shot migrators included (milestone B).
 
-Images as in Phase 5 (ASSOZETA_HANDOFF_P5_IMAGES json, else built once from the checkout).
-ASSOZETA_HANDOFF_P5_WORKDIR keeps the install root out of the worktree. Cost: the image builds,
-then ~10 min of lanes. Run: python3 -B -m unittest -v TESTS.handoff.test_p6_installed
+Images: ASSOZETA_HANDOFF_P5_IMAGES json if given; else the images the Phase 5 lane already built for
+this revision (tags assozeta-p5-<name>:<revision>, reused, never rebuilt: a rebuild after the Phase 5
+lane would send its root-owned leftovers under quality-reports/ as build context); else built once
+from the checkout as Phase 5 does. The install root lives in the system temporary directory (or
+ASSOZETA_HANDOFF_P6_WORKDIR), never under the repository, so this lane leaves nothing in a later
+build context either. Cost: the image builds if any, then ~10 min of lanes.
+Run: python3 -B -m unittest -v TESTS.handoff.test_p6_installed
 """
 import json
 import os
@@ -50,15 +54,77 @@ STATE = {}
 OUTPUT = ROOT / 'quality-reports/handoff/p6/installed'
 
 
+def watch(installed):
+    """Stream this installation's container events into a file from now until tearDownModule.
+
+    A one-off `docker events --since` replays only the daemon's short in-memory history (health-check
+    exec events alone can push a lifecycle command's events out of it), so the Go-mode history is
+    recorded live instead."""
+    path = STATE['work'] / 'events.jsonl'
+    STATE['events_file'] = path
+    STATE['watcher'] = subprocess.Popen(
+        ['docker', 'events', '--filter', f'label=com.docker.compose.project={installed.project}', '--filter',
+         'type=container', '--format', '{{json .}}'], stdout=path.open('w'), stderr=subprocess.DEVNULL)
+
+
+def recorded(since=0.0):
+    """Container events recorded by watch() at or after `since` (epoch seconds)."""
+    found = []
+    path = STATE.get('events_file')
+    for line in (path.read_text().splitlines() if path and path.exists() else []):
+        try:
+            event = json.loads(line)
+        except ValueError:
+            continue
+        attributes = event.get('Actor', {}).get('Attributes', {})
+        moment = event.get('timeNano', 0) / 1e9
+        if moment >= since:
+            found.append({'action': event.get('Action') or event.get('status'), 'time': moment,
+                          'service': attributes.get('com.docker.compose.service'), 'image': attributes.get('image'),
+                          'oneoff': attributes.get('com.docker.compose.oneoff') == 'True'})
+    return found
+
+
+def settle(quiet=5, limit=180):
+    """Wait until the event stream has delivered what the last command caused (no new event for
+    `quiet` seconds, at most `limit`): a loaded daemon delivers events late."""
+    path = STATE.get('events_file')
+    size, still, deadline = -1, 0, time.monotonic() + limit
+    while path and time.monotonic() < deadline and still < quiet:
+        time.sleep(1)
+        current = path.stat().st_size if path.exists() else 0
+        still = still + 1 if current == size else 0
+        size = current
+
+
+def phase5_tags(log):
+    """{name: tag} of the images test_p5_installed builds for this revision (p5i.images naming)."""
+    revision = p5i.run(['git', '-C', ROOT, 'rev-parse', '--short=12', 'HEAD'], log=log).stdout.strip()
+    return {name: f'assozeta-p5-{name}:{revision}' for name in ('backend', 'backend-go', 'web', 'renderer', 'updater')}
+
+
+def images(log):
+    if os.environ.get('ASSOZETA_HANDOFF_P5_IMAGES'):
+        return p5i.images(log)
+    tags = phase5_tags(log)
+    present = [p5i.run(['docker', 'image', 'inspect', '--format', '{{.Id}}', tag], log=log, check=False).returncode == 0
+               for tag in tags.values()]
+    if all(present):
+        STATE['images'] = 'reused from the Phase 5 lane'
+        return tags
+    STATE['images'] = 'built'
+    return p5i.images(log)
+
+
 def setUpModule():
     OUTPUT.mkdir(parents=True, exist_ok=True)
     STATE['log'] = log = (OUTPUT / 'lanes.log').open('w')
     p5i.STATE['log'] = log
-    work = Path(os.environ.get('ASSOZETA_HANDOFF_P5_WORKDIR') or OUTPUT)
+    work = Path(os.environ.get('ASSOZETA_HANDOFF_P6_WORKDIR') or tempfile.gettempdir()).resolve()
     work.mkdir(parents=True, exist_ok=True)
-    STATE['work'] = Path(tempfile.mkdtemp(prefix='run-', dir=work))
+    STATE['work'] = Path(tempfile.mkdtemp(prefix='assozeta-p6-installed-', dir=work))
     try:
-        installed = p5i.Installed(STATE['work'], p5i.images(log), log)
+        installed = p5i.Installed(STATE['work'], images(log), log)
         STATE['installed'] = installed
         installed.install()
         runtime, generation, _, _ = installed.authority()
@@ -66,6 +132,8 @@ def setUpModule():
                                  f"'{runtime}', {generation}, 'go');")
         if outcome != 'committed':
             raise h5.HarnessError(f'fixture authority commit answered {outcome}')
+        watch(installed)
+        settle()
         STATE['go_since'] = time.time()
         STATE['restart'] = installed.cli('restart', check=False)
     except BaseException:
@@ -75,6 +143,10 @@ def setUpModule():
 
 def tearDownModule():
     installed = STATE.get('installed')
+    watcher = STATE.get('watcher')
+    if watcher and watcher.poll() is None:
+        watcher.terminate()
+        watcher.wait(30)
     try:
         if installed:
             installed.uninstall()
@@ -97,7 +169,8 @@ class GoModeInstalled(unittest.TestCase):
         self.assertTrue(h5.SHARED <= running, f'{red}: shared services stopped {label}')
 
     def django_residents_started(self, since):
-        return [e for e in self.inst.events(since) if e['action'] in ('create', 'start', 'restart')
+        settle()
+        return [e for e in recorded(since) if e['action'] in ('create', 'start', 'restart')
                 and e['service'] in h5.DJANGO_APP]
 
     def health(self):
@@ -143,6 +216,7 @@ class GoModeInstalled(unittest.TestCase):
         environment.update(ASSOZETA_ENV_FILE=str(self.inst.env_file), DJANGO_SUPERUSER_PASSWORD=password,
                            PATH=f'{self.inst.tools}{os.pathsep}{os.environ["PATH"]}')
         p5i.STATE.setdefault('secrets', []).append(password)
+        started = time.time()
         result = p5i.run([self.inst.root / 'bin/assozeta', 'create-superuser', '--username', 'admin-p6', '--email', email,
                           '--first-name', 'Admin', '--last-name', 'Fixture', '--noinput'], log=self.inst.log, check=False,
                          cwd=self.inst.root, env=environment, stdin=subprocess.DEVNULL)
@@ -200,7 +274,8 @@ class GoModeInstalled(unittest.TestCase):
 
     def test_7_go_mode_history_has_no_django_container(self):
         image = self.inst.images['backend']
-        django = [e for e in self.inst.events(STATE['go_since']) if e['action'] in ('create', 'start')
+        settle()
+        django = [e for e in recorded(STATE['go_since']) if e['action'] in ('create', 'start')
                   and (e['image'] == image or e['service'] in h5.DJANGO_APP or e['service'] == 'migrate')]
         self.assertEqual(django, [], f'{RED_B}: Go-mode lifecycle ran Django containers (one-shots included)')
 
