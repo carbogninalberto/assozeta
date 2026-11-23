@@ -107,7 +107,7 @@ func InstanceBootstrapLocale() echo.MiddlewareFunc {
 				c.Response().Writer = &instanceLocaleWriter{ResponseWriter: c.Response().Writer, language: restLanguage(c.Request())}
 			}
 			switch c.Request().URL.Path {
-			case "/instance/manifest.json":
+			case "/instance/manifest.json", "/communications/whatsapp/webhook":
 				c.Response().Writer = &instanceLocaleWriter{ResponseWriter: c.Response().Writer, language: handlerReadRouteLocale.Language(c.Request())}
 			case "/schema", "/schema/", "/schema/swagger-ui", "/schema/swagger-ui/", "/schema/redoc", "/schema/redoc/", "/chat/test", "/chat/test/":
 				c.Response().Writer = &instanceLocaleWriter{ResponseWriter: c.Response().Writer, language: handlerReadRouteLocale.Language(c.Request())}

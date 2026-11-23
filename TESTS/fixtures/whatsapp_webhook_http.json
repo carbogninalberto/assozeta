@@ -1,0 +1,2137 @@
+{
+ "matrix_version": 1,
+ "scope": "WhatsApp webhook verification and signed status callbacks with delivery/receipt effects",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "whatsapp": {
+  "phone_number_id": "1098765432109",
+  "business_account_id": "2109876543210",
+  "webhook_verify_token": "synthetic-whatsapp-verify-token",
+  "app_secret": "synthetic-whatsapp-app-secret",
+  "seeded_at": "2026-11-01T08:00:00+00:00"
+ },
+ "deliveries": {
+  "sent": {
+   "id": "a1000000-0000-4000-8000-000001910001",
+   "status": "sent",
+   "provider_message_id": "wamid.SENT",
+   "error_code": "",
+   "error_message": "",
+   "recipient": "+393331234567",
+   "body": "Fixture sent",
+   "event_type": "subscription.accepted",
+   "attempts": 1,
+   "next_attempt_at": "2026-11-01T08:00:00+00:00"
+  },
+  "queued": {
+   "id": "a1000000-0000-4000-8000-000001910002",
+   "status": "queued",
+   "provider_message_id": null,
+   "error_code": "",
+   "error_message": "",
+   "recipient": "+393331234567",
+   "body": "Fixture queued",
+   "event_type": "subscription.accepted",
+   "attempts": 1,
+   "next_attempt_at": "2099-01-01T00:00:00+00:00"
+  },
+  "provider": {
+   "id": "a1000000-0000-4000-8000-000001910003",
+   "status": "sent",
+   "provider_message_id": "wamid.PROVIDER",
+   "error_code": "",
+   "error_message": "",
+   "recipient": "+393331234567",
+   "body": "Fixture provider",
+   "event_type": "subscription.accepted",
+   "attempts": 1,
+   "next_attempt_at": "2026-11-01T08:00:00+00:00"
+  },
+  "braced": {
+   "id": "a1000000-0000-4000-8000-000001910004",
+   "status": "sent",
+   "provider_message_id": "wamid.BRACED",
+   "error_code": "",
+   "error_message": "",
+   "recipient": "+393331234567",
+   "body": "Fixture braced",
+   "event_type": "subscription.accepted",
+   "attempts": 1,
+   "next_attempt_at": "2026-11-01T08:00:00+00:00"
+  },
+  "none_ref": {
+   "id": "a1000000-0000-4000-8000-000001910005",
+   "status": "sent",
+   "provider_message_id": "wamid.NONEREF",
+   "error_code": "",
+   "error_message": "",
+   "recipient": "+393331234567",
+   "body": "Fixture none_ref",
+   "event_type": "subscription.accepted",
+   "attempts": 1,
+   "next_attempt_at": "2026-11-01T08:00:00+00:00"
+  },
+  "failed_row": {
+   "id": "a1000000-0000-4000-8000-000001910006",
+   "status": "failed",
+   "provider_message_id": "wamid.FAILED",
+   "error_code": "131026",
+   "error_message": "Message undeliverable",
+   "recipient": "+393331234567",
+   "body": "Fixture failed_row",
+   "event_type": "subscription.accepted",
+   "attempts": 1,
+   "next_attempt_at": "2026-11-01T08:00:00+00:00"
+  },
+  "errors": {
+   "id": "a1000000-0000-4000-8000-000001910007",
+   "status": "sent",
+   "provider_message_id": "wamid.ERRORS",
+   "error_code": "",
+   "error_message": "",
+   "recipient": "+393331234567",
+   "body": "Fixture errors",
+   "event_type": "subscription.accepted",
+   "attempts": 1,
+   "next_attempt_at": "2026-11-01T08:00:00+00:00"
+  },
+  "title": {
+   "id": "a1000000-0000-4000-8000-000001910008",
+   "status": "sent",
+   "provider_message_id": "wamid.TITLE",
+   "error_code": "",
+   "error_message": "",
+   "recipient": "+393331234567",
+   "body": "Fixture title",
+   "event_type": "subscription.accepted",
+   "attempts": 1,
+   "next_attempt_at": "2026-11-01T08:00:00+00:00"
+  },
+  "long": {
+   "id": "a1000000-0000-4000-8000-000001910009",
+   "status": "sent",
+   "provider_message_id": "wamid.LONG",
+   "error_code": "",
+   "error_message": "",
+   "recipient": "+393331234567",
+   "body": "Fixture long",
+   "event_type": "subscription.accepted",
+   "attempts": 1,
+   "next_attempt_at": "2026-11-01T08:00:00+00:00"
+  },
+  "batch_one": {
+   "id": "a1000000-0000-4000-8000-000001910010",
+   "status": "sent",
+   "provider_message_id": "wamid.BATCH1",
+   "error_code": "",
+   "error_message": "",
+   "recipient": "+393331234567",
+   "body": "Fixture batch_one",
+   "event_type": "subscription.accepted",
+   "attempts": 1,
+   "next_attempt_at": "2026-11-01T08:00:00+00:00"
+  },
+  "batch_two": {
+   "id": "a1000000-0000-4000-8000-000001910011",
+   "status": "delivered",
+   "provider_message_id": "wamid.BATCH2",
+   "error_code": "",
+   "error_message": "",
+   "recipient": "+393331234567",
+   "body": "Fixture batch_two",
+   "event_type": "subscription.accepted",
+   "attempts": 1,
+   "next_attempt_at": "2026-11-01T08:00:00+00:00"
+  },
+  "parse_first": {
+   "id": "a1000000-0000-4000-8000-000001910012",
+   "status": "sent",
+   "provider_message_id": "wamid.PARSE",
+   "error_code": "",
+   "error_message": "",
+   "recipient": "+393331234567",
+   "body": "Fixture parse_first",
+   "event_type": "subscription.accepted",
+   "attempts": 1,
+   "next_attempt_at": "2026-11-01T08:00:00+00:00"
+  },
+  "disabled": {
+   "id": "a1000000-0000-4000-8000-000001910013",
+   "status": "sent",
+   "provider_message_id": "wamid.DISABLED",
+   "error_code": "",
+   "error_message": "",
+   "recipient": "+393331234567",
+   "body": "Fixture disabled",
+   "event_type": "subscription.accepted",
+   "attempts": 1,
+   "next_attempt_at": "2026-11-01T08:00:00+00:00"
+  },
+  "capital": {
+   "id": "a1000000-0000-4000-8000-000001910014",
+   "status": "sent",
+   "provider_message_id": "wamid.CAPITAL",
+   "error_code": "",
+   "error_message": "",
+   "recipient": "+393331234567",
+   "body": "Fixture capital",
+   "event_type": "subscription.accepted",
+   "attempts": 1,
+   "next_attempt_at": "2026-11-01T08:00:00+00:00"
+  },
+  "bom": {
+   "id": "a1000000-0000-4000-8000-000001910015",
+   "status": "sent",
+   "provider_message_id": "wamid.BOM",
+   "error_code": "",
+   "error_message": "",
+   "recipient": "+393331234567",
+   "body": "Fixture bom",
+   "event_type": "subscription.accepted",
+   "attempts": 1,
+   "next_attempt_at": "2026-11-01T08:00:00+00:00"
+  },
+  "int_timestamp": {
+   "id": "a1000000-0000-4000-8000-000001910016",
+   "status": "sent",
+   "provider_message_id": "wamid.INTSTAMP",
+   "error_code": "",
+   "error_message": "",
+   "recipient": "+393331234567",
+   "body": "Fixture int_timestamp",
+   "event_type": "subscription.accepted",
+   "attempts": 1,
+   "next_attempt_at": "2026-11-01T08:00:00+00:00"
+  },
+  "space_timestamp": {
+   "id": "a1000000-0000-4000-8000-000001910017",
+   "status": "sent",
+   "provider_message_id": "wamid.SPACESTAMP",
+   "error_code": "",
+   "error_message": "",
+   "recipient": "+393331234567",
+   "body": "Fixture space_timestamp",
+   "event_type": "subscription.accepted",
+   "attempts": 1,
+   "next_attempt_at": "2026-11-01T08:00:00+00:00"
+  },
+  "string_code": {
+   "id": "a1000000-0000-4000-8000-000001910018",
+   "status": "sent",
+   "provider_message_id": "wamid.STRCODE",
+   "error_code": "",
+   "error_message": "",
+   "recipient": "+393331234567",
+   "body": "Fixture string_code",
+   "event_type": "subscription.accepted",
+   "attempts": 1,
+   "next_attempt_at": "2026-11-01T08:00:00+00:00"
+  },
+  "int_reference": {
+   "id": "a1000000-0000-4000-8000-000001910019",
+   "status": "sent",
+   "provider_message_id": "wamid.INTREF",
+   "error_code": "",
+   "error_message": "",
+   "recipient": "+393331234567",
+   "body": "Fixture int_reference",
+   "event_type": "subscription.accepted",
+   "attempts": 1,
+   "next_attempt_at": "2026-11-01T08:00:00+00:00"
+  }
+ },
+ "cases": [
+  {
+   "name": "whatsapp-webhook-verify-challenge",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/communications/whatsapp/webhook?hub.mode=subscribe&hub.verify_token=synthetic-whatsapp-verify-token&hub.challenge=1158201444",
+   "headers": {},
+   "status": 200,
+   "response": "1158201444",
+   "content_type_response": "text/plain",
+   "allow": null,
+   "signature": null,
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   }
+  },
+  {
+   "name": "whatsapp-webhook-verify-wrong-token",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/communications/whatsapp/webhook?hub.mode=subscribe&hub.verify_token=wrong&hub.challenge=1158201444",
+   "headers": {},
+   "status": 403,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": null,
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   }
+  },
+  {
+   "name": "whatsapp-webhook-verify-token-prefix",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/communications/whatsapp/webhook?hub.mode=subscribe&hub.verify_token=synthetic-whatsapp-verify-toke&hub.challenge=1",
+   "headers": {},
+   "status": 403,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": null,
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   }
+  },
+  {
+   "name": "whatsapp-webhook-verify-wrong-mode",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/communications/whatsapp/webhook?hub.mode=unsubscribe&hub.verify_token=synthetic-whatsapp-verify-token&hub.challenge=1",
+   "headers": {},
+   "status": 403,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": null,
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   }
+  },
+  {
+   "name": "whatsapp-webhook-verify-missing-challenge",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/communications/whatsapp/webhook?hub.mode=subscribe&hub.verify_token=synthetic-whatsapp-verify-token",
+   "headers": {},
+   "status": 403,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": null,
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   }
+  },
+  {
+   "name": "whatsapp-webhook-verify-empty-challenge",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/communications/whatsapp/webhook?hub.mode=subscribe&hub.verify_token=synthetic-whatsapp-verify-token&hub.challenge=",
+   "headers": {},
+   "status": 403,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": null,
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   }
+  },
+  {
+   "name": "whatsapp-webhook-verify-no-parameters",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 403,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": null,
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   }
+  },
+  {
+   "name": "whatsapp-webhook-verify-unicode-challenge",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/communications/whatsapp/webhook?hub.mode=subscribe&hub.verify_token=synthetic-whatsapp-verify-token&hub.challenge=%C3%A8+ok%21",
+   "headers": {},
+   "status": 200,
+   "response": "è ok!",
+   "content_type_response": "text/plain",
+   "allow": null,
+   "signature": null,
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   }
+  },
+  {
+   "name": "whatsapp-webhook-verify-repeated-mode-last-wins",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/communications/whatsapp/webhook?hub.mode=unsubscribe&hub.mode=subscribe&hub.verify_token=synthetic-whatsapp-verify-token&hub.challenge=7",
+   "headers": {},
+   "status": 200,
+   "response": "7",
+   "content_type_response": "text/plain",
+   "allow": null,
+   "signature": null,
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   }
+  },
+  {
+   "name": "whatsapp-webhook-verify-repeated-token-last-wins",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/communications/whatsapp/webhook?hub.mode=subscribe&hub.verify_token=synthetic-whatsapp-verify-token&hub.verify_token=wrong&hub.challenge=7",
+   "headers": {},
+   "status": 403,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": null,
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   }
+  },
+  {
+   "name": "whatsapp-webhook-verify-semicolon-in-challenge",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/communications/whatsapp/webhook?hub.mode=subscribe&hub.verify_token=synthetic-whatsapp-verify-token&hub.challenge=a;b",
+   "headers": {},
+   "status": 200,
+   "response": "a;b",
+   "content_type_response": "text/plain",
+   "allow": null,
+   "signature": null,
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   }
+  },
+  {
+   "name": "whatsapp-webhook-verify-unconfigured-token",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/communications/whatsapp/webhook?hub.mode=subscribe&hub.verify_token=&hub.challenge=1",
+   "headers": {},
+   "status": 403,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": null,
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {
+    "webhook_verify_token": ""
+   },
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   }
+  },
+  {
+   "name": "whatsapp-webhook-verify-disabled-integration",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/communications/whatsapp/webhook?hub.mode=subscribe&hub.verify_token=synthetic-whatsapp-verify-token&hub.challenge=42",
+   "headers": {},
+   "status": 200,
+   "response": "42",
+   "content_type_response": "text/plain",
+   "allow": null,
+   "signature": null,
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {
+    "enabled": false
+   },
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   }
+  },
+  {
+   "name": "whatsapp-webhook-verify-authenticated-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/communications/whatsapp/webhook?hub.mode=subscribe&hub.verify_token=synthetic-whatsapp-verify-token&hub.challenge=43",
+   "headers": {},
+   "status": 200,
+   "response": "43",
+   "content_type_response": "text/plain",
+   "allow": null,
+   "signature": null,
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   }
+  },
+  {
+   "name": "whatsapp-webhook-put-not-allowed",
+   "actor": "anonymous",
+   "method": "PUT",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 405,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": [
+    "GET",
+    "POST"
+   ],
+   "signature": null,
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   }
+  },
+  {
+   "name": "whatsapp-webhook-patch-not-allowed",
+   "actor": "anonymous",
+   "method": "PATCH",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 405,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": [
+    "GET",
+    "POST"
+   ],
+   "signature": null,
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   }
+  },
+  {
+   "name": "whatsapp-webhook-delete-not-allowed",
+   "actor": "anonymous",
+   "method": "DELETE",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 405,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": [
+    "GET",
+    "POST"
+   ],
+   "signature": null,
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   }
+  },
+  {
+   "name": "whatsapp-webhook-options-not-allowed",
+   "actor": "anonymous",
+   "method": "OPTIONS",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 405,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": [
+    "GET",
+    "POST"
+   ],
+   "signature": null,
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   }
+  },
+  {
+   "name": "whatsapp-webhook-head-not-allowed",
+   "actor": "anonymous",
+   "method": "HEAD",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 405,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": [
+    "GET",
+    "POST"
+   ],
+   "signature": null,
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   }
+  },
+  {
+   "name": "whatsapp-webhook-missing-signature",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 403,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": null,
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   },
+   "raw_body": "{\"object\": \"page\"}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-wrong-signature",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 403,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "sha256=0000000000000000000000000000000000000000000000000000000000000000",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   },
+   "raw_body": "{\"object\": \"page\"}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-signature-without-prefix",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 403,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid-bare",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   },
+   "raw_body": "{\"object\": \"page\"}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-signature-uppercase-hex",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 403,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid-upper",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   },
+   "raw_body": "{\"object\": \"page\"}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-signature-other-secret",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 403,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "another-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   },
+   "raw_body": "{\"object\": \"page\"}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-signature-unconfigured-secret",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 403,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "",
+   "config": {
+    "app_secret": ""
+   },
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   },
+   "raw_body": "{\"object\": \"page\"}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-invalid-json-unsigned",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 403,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": null,
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   },
+   "raw_body": "{\"object\": ",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-invalid-json",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 400,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   },
+   "raw_body": "{\"object\": ",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-empty-body",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 400,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   },
+   "raw_body": "",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-list-body",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 400,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   },
+   "raw_body": "[]",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-missing-object",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 400,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   },
+   "raw_body": "{}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-other-object",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 200,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   },
+   "raw_body": "{\"object\": \"page\"}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-empty-object",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 200,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   },
+   "raw_body": "{\"object\": \"\"}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-numeric-object",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 200,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   },
+   "raw_body": "{\"object\": 5}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-other-object-malformed-entry",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 200,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   },
+   "raw_body": "{\"object\": \"page\", \"entry\": {\"id\": \"2109876543210\"}}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-nan-in-other-object",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 200,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   },
+   "raw_body": "{\"object\": \"page\", \"n\": NaN}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-invalid-utf8",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 400,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   },
+   "raw_b64": "eyJvYmplY3QiOiAi/yJ9",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-form-content-type",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 200,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   },
+   "raw_body": "{\"object\": \"page\"}",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "whatsapp-webhook-authenticated-owner",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 200,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   },
+   "raw_body": "{\"object\": \"page\"}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-object-key-is-case-sensitive",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 400,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   },
+   "raw_body": "{\"Object\": \"whatsapp_business_account\", \"entry\": [{\"id\": \"2109876543210\", \"changes\": [{\"field\": \"messages\", \"value\": {\"messaging_product\": \"whatsapp\", \"metadata\": {\"display_phone_number\": \"15550001111\", \"phone_number_id\": \"1098765432109\"}, \"statuses\": [{\"id\": \"wamid.CAPITAL\", \"status\": \"read\", \"timestamp\": \"1763700000\", \"recipient_id\": \"393331234567\", \"biz_opaque_callback_data\": \"a1000000-0000-4000-8000-000001910014\"}]}}]}]}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-entry-null",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 400,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   },
+   "raw_body": "{\"object\": \"whatsapp_business_account\", \"entry\": null}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-changes-null",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 400,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   },
+   "raw_body": "{\"object\": \"whatsapp_business_account\", \"entry\": [{\"id\": \"2109876543210\", \"changes\": null}]}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-metadata-null",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 400,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   },
+   "raw_body": "{\"object\": \"whatsapp_business_account\", \"entry\": [{\"id\": \"2109876543210\", \"changes\": [{\"field\": \"messages\", \"value\": {\"metadata\": null, \"statuses\": []}}]}]}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-foreign-entry-malformed-changes",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 200,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   },
+   "raw_body": "{\"object\": \"whatsapp_business_account\", \"entry\": [{\"id\": \"other-waba\", \"changes\": \"x\"}]}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-foreign-waba",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 200,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   },
+   "raw_body": "{\"object\": \"whatsapp_business_account\", \"entry\": [{\"id\": \"other-waba\", \"changes\": [{\"field\": \"messages\", \"value\": {\"messaging_product\": \"whatsapp\", \"metadata\": {\"display_phone_number\": \"15550001111\", \"phone_number_id\": \"1098765432109\"}, \"statuses\": [{\"id\": \"wamid.SENT\", \"status\": \"read\", \"timestamp\": \"1763700000\", \"recipient_id\": \"393331234567\", \"biz_opaque_callback_data\": \"a1000000-0000-4000-8000-000001910001\"}]}}]}]}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-foreign-phone",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 200,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   },
+   "raw_body": "{\"object\": \"whatsapp_business_account\", \"entry\": [{\"id\": \"2109876543210\", \"changes\": [{\"field\": \"messages\", \"value\": {\"messaging_product\": \"whatsapp\", \"metadata\": {\"display_phone_number\": \"15550001111\", \"phone_number_id\": \"other-phone\"}, \"statuses\": [{\"id\": \"wamid.SENT\", \"status\": \"read\", \"timestamp\": \"1763700000\", \"recipient_id\": \"393331234567\", \"biz_opaque_callback_data\": \"a1000000-0000-4000-8000-000001910001\"}]}}]}]}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-other-field",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 200,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   },
+   "raw_body": "{\"object\": \"whatsapp_business_account\", \"entry\": [{\"id\": \"2109876543210\", \"changes\": [{\"field\": \"account_update\", \"value\": {\"messaging_product\": \"whatsapp\", \"metadata\": {\"display_phone_number\": \"15550001111\", \"phone_number_id\": \"1098765432109\"}, \"statuses\": [{\"id\": \"wamid.SENT\", \"status\": \"read\", \"timestamp\": \"1763700000\", \"recipient_id\": \"393331234567\", \"biz_opaque_callback_data\": \"a1000000-0000-4000-8000-000001910001\"}]}}]}]}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-unconfigured-waba",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 200,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {
+    "business_account_id": ""
+   },
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   },
+   "raw_body": "{\"object\": \"whatsapp_business_account\", \"entry\": [{\"id\": \"\", \"changes\": [{\"field\": \"messages\", \"value\": {\"messaging_product\": \"whatsapp\", \"metadata\": {\"display_phone_number\": \"15550001111\", \"phone_number_id\": \"1098765432109\"}, \"statuses\": [{\"id\": \"wamid.SENT\", \"status\": \"read\", \"timestamp\": \"1763700000\", \"recipient_id\": \"393331234567\", \"biz_opaque_callback_data\": \"a1000000-0000-4000-8000-000001910001\"}]}}]}]}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-skipped-statuses",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 200,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   },
+   "raw_body": "{\"object\": \"whatsapp_business_account\", \"entry\": [{\"id\": \"2109876543210\", \"changes\": [{\"field\": \"messages\", \"value\": {\"messaging_product\": \"whatsapp\", \"metadata\": {\"display_phone_number\": \"15550001111\", \"phone_number_id\": \"1098765432109\"}, \"statuses\": [{\"id\": \"wamid.SENT\", \"status\": \"deleted\", \"timestamp\": \"1763700000\", \"recipient_id\": \"393331234567\", \"biz_opaque_callback_data\": \"a1000000-0000-4000-8000-000001910001\"}, {\"id\": \"wamid.SENT\", \"status\": \"queued\", \"timestamp\": \"1763700000\", \"recipient_id\": \"393331234567\", \"biz_opaque_callback_data\": \"a1000000-0000-4000-8000-000001910001\"}, {\"id\": 5, \"status\": \"pending\", \"timestamp\": \"1763700000\", \"recipient_id\": \"393331234567\"}]}}]}]}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-missing-status-id",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 400,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   },
+   "raw_body": "{\"object\": \"whatsapp_business_account\", \"entry\": [{\"id\": \"2109876543210\", \"changes\": [{\"field\": \"messages\", \"value\": {\"messaging_product\": \"whatsapp\", \"metadata\": {\"display_phone_number\": \"15550001111\", \"phone_number_id\": \"1098765432109\"}, \"statuses\": [{\"id\": \"\", \"status\": \"read\", \"timestamp\": \"1763700000\", \"recipient_id\": \"393331234567\", \"biz_opaque_callback_data\": \"a1000000-0000-4000-8000-000001910001\"}]}}]}]}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-numeric-status-id",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 400,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   },
+   "raw_body": "{\"object\": \"whatsapp_business_account\", \"entry\": [{\"id\": \"2109876543210\", \"changes\": [{\"field\": \"messages\", \"value\": {\"messaging_product\": \"whatsapp\", \"metadata\": {\"display_phone_number\": \"15550001111\", \"phone_number_id\": \"1098765432109\"}, \"statuses\": [{\"id\": 7, \"status\": \"read\", \"timestamp\": \"1763700000\", \"recipient_id\": \"393331234567\", \"biz_opaque_callback_data\": \"a1000000-0000-4000-8000-000001910001\"}]}}]}]}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-missing-timestamp",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 400,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   },
+   "raw_body": "{\"object\": \"whatsapp_business_account\", \"entry\": [{\"id\": \"2109876543210\", \"changes\": [{\"field\": \"messages\", \"value\": {\"messaging_product\": \"whatsapp\", \"metadata\": {\"display_phone_number\": \"15550001111\", \"phone_number_id\": \"1098765432109\"}, \"statuses\": [{\"id\": \"wamid.UNKNOWN\", \"status\": \"read\"}]}}]}]}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-fractional-timestamp-text",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 400,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   },
+   "raw_body": "{\"object\": \"whatsapp_business_account\", \"entry\": [{\"id\": \"2109876543210\", \"changes\": [{\"field\": \"messages\", \"value\": {\"messaging_product\": \"whatsapp\", \"metadata\": {\"display_phone_number\": \"15550001111\", \"phone_number_id\": \"1098765432109\"}, \"statuses\": [{\"id\": \"wamid.UNKNOWN\", \"status\": \"read\", \"timestamp\": \"1.5\", \"recipient_id\": \"393331234567\"}]}}]}]}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-timestamp-out-of-range",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 400,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   },
+   "raw_body": "{\"object\": \"whatsapp_business_account\", \"entry\": [{\"id\": \"2109876543210\", \"changes\": [{\"field\": \"messages\", \"value\": {\"messaging_product\": \"whatsapp\", \"metadata\": {\"display_phone_number\": \"15550001111\", \"phone_number_id\": \"1098765432109\"}, \"statuses\": [{\"id\": \"wamid.UNKNOWN\", \"status\": \"read\", \"timestamp\": \"253402300800\", \"recipient_id\": \"393331234567\"}]}}]}]}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-status-list-item-not-object",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 400,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   },
+   "raw_body": "{\"object\": \"whatsapp_business_account\", \"entry\": [{\"id\": \"2109876543210\", \"changes\": [{\"field\": \"messages\", \"value\": {\"messaging_product\": \"whatsapp\", \"metadata\": {\"display_phone_number\": \"15550001111\", \"phone_number_id\": \"1098765432109\"}, \"statuses\": [\"wamid.UNKNOWN\"]}}]}]}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-parse-before-record",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 400,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   },
+   "raw_body": "{\"object\": \"whatsapp_business_account\", \"entry\": [{\"id\": \"2109876543210\", \"changes\": [{\"field\": \"messages\", \"value\": {\"messaging_product\": \"whatsapp\", \"metadata\": {\"display_phone_number\": \"15550001111\", \"phone_number_id\": \"1098765432109\"}, \"statuses\": [{\"id\": \"wamid.PARSE\", \"status\": \"read\", \"timestamp\": \"1763700000\", \"recipient_id\": \"393331234567\", \"biz_opaque_callback_data\": \"a1000000-0000-4000-8000-000001910012\"}, {\"status\": \"read\", \"timestamp\": \"1763700000\"}]}}]}]}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-body-over-two-mebibytes",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 400,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": null,
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   },
+   "raw_parts": [
+    "{\"object\": \"page\", \"pad\": \"",
+    {
+     "repeat": "x",
+     "count": 2097124
+    },
+    "\"}"
+   ],
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-body-of-two-mebibytes",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 200,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   },
+   "raw_parts": [
+    "{\"object\": \"page\", \"pad\": \"",
+    {
+     "repeat": "x",
+     "count": 2097123
+    },
+    "\"}"
+   ],
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-sent-row-delivered",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 200,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {
+     "sent": {
+      "status": "delivered"
+     }
+    },
+    "receipts": [
+     {
+      "delivery": "sent",
+      "provider_message_id": "wamid.SENT",
+      "status": "delivered",
+      "occurred_at": "2025-11-21T04:41:40+00:00",
+      "error_code": "",
+      "error_message": ""
+     }
+    ]
+   },
+   "raw_body": "{\"object\": \"whatsapp_business_account\", \"entry\": [{\"id\": \"2109876543210\", \"changes\": [{\"field\": \"messages\", \"value\": {\"messaging_product\": \"whatsapp\", \"metadata\": {\"display_phone_number\": \"15550001111\", \"phone_number_id\": \"1098765432109\"}, \"statuses\": [{\"id\": \"wamid.SENT\", \"status\": \"delivered\", \"timestamp\": \"1763700100\", \"recipient_id\": \"393331234567\", \"biz_opaque_callback_data\": \"a1000000-0000-4000-8000-000001910001\"}]}}]}]}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-repeated-receipt-ignored",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 200,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   },
+   "raw_body": "{\"object\": \"whatsapp_business_account\", \"entry\": [{\"id\": \"2109876543210\", \"changes\": [{\"field\": \"messages\", \"value\": {\"messaging_product\": \"whatsapp\", \"metadata\": {\"display_phone_number\": \"15550001111\", \"phone_number_id\": \"1098765432109\"}, \"statuses\": [{\"id\": \"wamid.SENT\", \"status\": \"delivered\", \"timestamp\": \"1763700200\", \"recipient_id\": \"393331234567\", \"biz_opaque_callback_data\": \"a1000000-0000-4000-8000-000001910001\"}]}}]}]}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-lower-rank-receipt-recorded-only",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 200,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": [
+     {
+      "delivery": "sent",
+      "provider_message_id": "wamid.SENT",
+      "status": "sent",
+      "occurred_at": "2025-11-21T04:40:50+00:00",
+      "error_code": "",
+      "error_message": ""
+     }
+    ]
+   },
+   "raw_body": "{\"object\": \"whatsapp_business_account\", \"entry\": [{\"id\": \"2109876543210\", \"changes\": [{\"field\": \"messages\", \"value\": {\"messaging_product\": \"whatsapp\", \"metadata\": {\"display_phone_number\": \"15550001111\", \"phone_number_id\": \"1098765432109\"}, \"statuses\": [{\"id\": \"wamid.SENT\", \"status\": \"sent\", \"timestamp\": \"1763700050\", \"recipient_id\": \"393331234567\", \"biz_opaque_callback_data\": \"a1000000-0000-4000-8000-000001910001\"}]}}]}]}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-sent-row-read",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 200,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {
+     "sent": {
+      "status": "read"
+     }
+    },
+    "receipts": [
+     {
+      "delivery": "sent",
+      "provider_message_id": "wamid.SENT",
+      "status": "read",
+      "occurred_at": "2025-11-21T04:45:00+00:00",
+      "error_code": "",
+      "error_message": ""
+     }
+    ]
+   },
+   "raw_body": "{\"object\": \"whatsapp_business_account\", \"entry\": [{\"id\": \"2109876543210\", \"changes\": [{\"field\": \"messages\", \"value\": {\"messaging_product\": \"whatsapp\", \"metadata\": {\"display_phone_number\": \"15550001111\", \"phone_number_id\": \"1098765432109\"}, \"statuses\": [{\"id\": \"wamid.SENT\", \"status\": \"read\", \"timestamp\": \"1763700300\", \"recipient_id\": \"393331234567\", \"biz_opaque_callback_data\": \"a1000000-0000-4000-8000-000001910001\"}]}}]}]}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-queued-row-gets-provider-id",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 200,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {
+     "queued": {
+      "status": "sent",
+      "provider_message_id": "wamid.QUEUED"
+     }
+    },
+    "receipts": [
+     {
+      "delivery": "queued",
+      "provider_message_id": "wamid.QUEUED",
+      "status": "sent",
+      "occurred_at": "2025-11-21T04:46:40+00:00",
+      "error_code": "",
+      "error_message": ""
+     }
+    ]
+   },
+   "raw_body": "{\"object\": \"whatsapp_business_account\", \"entry\": [{\"id\": \"2109876543210\", \"changes\": [{\"field\": \"messages\", \"value\": {\"messaging_product\": \"whatsapp\", \"metadata\": {\"display_phone_number\": \"15550001111\", \"phone_number_id\": \"1098765432109\"}, \"statuses\": [{\"id\": \"wamid.QUEUED\", \"status\": \"sent\", \"timestamp\": \"1763700400\", \"recipient_id\": \"393331234567\", \"biz_opaque_callback_data\": \"a1000000-0000-4000-8000-000001910002\"}]}}]}]}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-queued-row-failed-with-error",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 200,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {
+     "queued": {
+      "status": "failed",
+      "error_code": "131047",
+      "error_message": "Outside window for [redacted]"
+     }
+    },
+    "receipts": [
+     {
+      "delivery": "queued",
+      "provider_message_id": "wamid.QUEUED",
+      "status": "failed",
+      "occurred_at": "2025-11-21T04:48:20+00:00",
+      "error_code": "131047",
+      "error_message": "Outside window for [redacted]"
+     }
+    ]
+   },
+   "raw_body": "{\"object\": \"whatsapp_business_account\", \"entry\": [{\"id\": \"2109876543210\", \"changes\": [{\"field\": \"messages\", \"value\": {\"messaging_product\": \"whatsapp\", \"metadata\": {\"display_phone_number\": \"15550001111\", \"phone_number_id\": \"1098765432109\"}, \"statuses\": [{\"id\": \"wamid.QUEUED\", \"status\": \"failed\", \"timestamp\": \"1763700500\", \"recipient_id\": \"393331234567\", \"biz_opaque_callback_data\": \"a1000000-0000-4000-8000-000001910002\", \"errors\": [{\"code\": 131047, \"title\": \"Re-engagement message\", \"message\": \"Outside window for synthetic-whatsapp-app-secret\"}]}]}}]}]}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-failed-row-delivered-clears-error",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 200,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {
+     "failed_row": {
+      "status": "delivered",
+      "error_code": "",
+      "error_message": ""
+     }
+    },
+    "receipts": [
+     {
+      "delivery": "failed_row",
+      "provider_message_id": "wamid.FAILED",
+      "status": "delivered",
+      "occurred_at": "2025-11-21T04:50:00+00:00",
+      "error_code": "",
+      "error_message": ""
+     }
+    ]
+   },
+   "raw_body": "{\"object\": \"whatsapp_business_account\", \"entry\": [{\"id\": \"2109876543210\", \"changes\": [{\"field\": \"messages\", \"value\": {\"messaging_product\": \"whatsapp\", \"metadata\": {\"display_phone_number\": \"15550001111\", \"phone_number_id\": \"1098765432109\"}, \"statuses\": [{\"id\": \"wamid.FAILED\", \"status\": \"delivered\", \"timestamp\": \"1763700600\", \"recipient_id\": \"393331234567\", \"biz_opaque_callback_data\": \"a1000000-0000-4000-8000-000001910006\"}]}}]}]}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-provider-id-when-reference-invalid",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 200,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {
+     "provider": {
+      "status": "delivered"
+     }
+    },
+    "receipts": [
+     {
+      "delivery": "provider",
+      "provider_message_id": "wamid.PROVIDER",
+      "status": "delivered",
+      "occurred_at": "2025-11-21T04:51:40+00:00",
+      "error_code": "",
+      "error_message": ""
+     }
+    ]
+   },
+   "raw_body": "{\"object\": \"whatsapp_business_account\", \"entry\": [{\"id\": \"2109876543210\", \"changes\": [{\"field\": \"messages\", \"value\": {\"messaging_product\": \"whatsapp\", \"metadata\": {\"display_phone_number\": \"15550001111\", \"phone_number_id\": \"1098765432109\"}, \"statuses\": [{\"id\": \"wamid.PROVIDER\", \"status\": \"delivered\", \"timestamp\": \"1763700700\", \"recipient_id\": \"393331234567\", \"biz_opaque_callback_data\": \"not-a-uuid\"}]}}]}]}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-unknown-reference-ignores-provider-id",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 200,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   },
+   "raw_body": "{\"object\": \"whatsapp_business_account\", \"entry\": [{\"id\": \"2109876543210\", \"changes\": [{\"field\": \"messages\", \"value\": {\"messaging_product\": \"whatsapp\", \"metadata\": {\"display_phone_number\": \"15550001111\", \"phone_number_id\": \"1098765432109\"}, \"statuses\": [{\"id\": \"wamid.PROVIDER\", \"status\": \"read\", \"timestamp\": \"1763700800\", \"recipient_id\": \"393331234567\", \"biz_opaque_callback_data\": \"a1000000-0000-4000-8000-000001910020\"}]}}]}]}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-braced-uppercase-reference",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 200,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {
+     "braced": {
+      "status": "read"
+     }
+    },
+    "receipts": [
+     {
+      "delivery": "braced",
+      "provider_message_id": "wamid.BRACED",
+      "status": "read",
+      "occurred_at": "2025-11-21T04:55:00+00:00",
+      "error_code": "",
+      "error_message": ""
+     }
+    ]
+   },
+   "raw_body": "{\"object\": \"whatsapp_business_account\", \"entry\": [{\"id\": \"2109876543210\", \"changes\": [{\"field\": \"messages\", \"value\": {\"messaging_product\": \"whatsapp\", \"metadata\": {\"display_phone_number\": \"15550001111\", \"phone_number_id\": \"1098765432109\"}, \"statuses\": [{\"id\": \"wamid.BRACED\", \"status\": \"read\", \"timestamp\": \"1763700900\", \"recipient_id\": \"393331234567\", \"biz_opaque_callback_data\": \"{A1000000-0000-4000-8000-000001910004}\"}]}}]}]}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-null-reference-uses-provider-id",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 200,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {
+     "none_ref": {
+      "status": "delivered"
+     }
+    },
+    "receipts": [
+     {
+      "delivery": "none_ref",
+      "provider_message_id": "wamid.NONEREF",
+      "status": "delivered",
+      "occurred_at": "2025-11-21T04:56:40+00:00",
+      "error_code": "",
+      "error_message": ""
+     }
+    ]
+   },
+   "raw_body": "{\"object\": \"whatsapp_business_account\", \"entry\": [{\"id\": \"2109876543210\", \"changes\": [{\"field\": \"messages\", \"value\": {\"messaging_product\": \"whatsapp\", \"metadata\": {\"display_phone_number\": \"15550001111\", \"phone_number_id\": \"1098765432109\"}, \"statuses\": [{\"id\": \"wamid.NONEREF\", \"status\": \"delivered\", \"timestamp\": \"1763701000\", \"recipient_id\": \"393331234567\", \"biz_opaque_callback_data\": null}]}}]}]}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-unknown-provider-id",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 200,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {},
+    "receipts": []
+   },
+   "raw_body": "{\"object\": \"whatsapp_business_account\", \"entry\": [{\"id\": \"2109876543210\", \"changes\": [{\"field\": \"messages\", \"value\": {\"messaging_product\": \"whatsapp\", \"metadata\": {\"display_phone_number\": \"15550001111\", \"phone_number_id\": \"1098765432109\"}, \"statuses\": [{\"id\": \"wamid.UNKNOWN\", \"status\": \"read\", \"timestamp\": \"1763701100\", \"recipient_id\": \"393331234567\"}]}}]}]}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-failed-error-code-and-message",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 200,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {
+     "errors": {
+      "status": "failed",
+      "error_code": "131026",
+      "error_message": "Token [redacted] rejected"
+     }
+    },
+    "receipts": [
+     {
+      "delivery": "errors",
+      "provider_message_id": "wamid.ERRORS",
+      "status": "failed",
+      "occurred_at": "2025-11-21T05:00:00+00:00",
+      "error_code": "131026",
+      "error_message": "Token [redacted] rejected"
+     }
+    ]
+   },
+   "raw_body": "{\"object\": \"whatsapp_business_account\", \"entry\": [{\"id\": \"2109876543210\", \"changes\": [{\"field\": \"messages\", \"value\": {\"messaging_product\": \"whatsapp\", \"metadata\": {\"display_phone_number\": \"15550001111\", \"phone_number_id\": \"1098765432109\"}, \"statuses\": [{\"id\": \"wamid.ERRORS\", \"status\": \"failed\", \"timestamp\": \"1763701200\", \"recipient_id\": \"393331234567\", \"biz_opaque_callback_data\": \"a1000000-0000-4000-8000-000001910007\", \"errors\": [{\"code\": 131026, \"title\": \"Undeliverable\", \"message\": \"Token synthetic-whatsapp-verify-token rejected\"}, {\"code\": 1}]}]}}]}]}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-failed-title-when-message-empty",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 200,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {
+     "title": {
+      "status": "failed",
+      "error_code": "131000",
+      "error_message": "Generic failure"
+     }
+    },
+    "receipts": [
+     {
+      "delivery": "title",
+      "provider_message_id": "wamid.TITLE",
+      "status": "failed",
+      "occurred_at": "2025-11-21T05:01:40+00:00",
+      "error_code": "131000",
+      "error_message": "Generic failure"
+     }
+    ]
+   },
+   "raw_body": "{\"object\": \"whatsapp_business_account\", \"entry\": [{\"id\": \"2109876543210\", \"changes\": [{\"field\": \"messages\", \"value\": {\"messaging_product\": \"whatsapp\", \"metadata\": {\"display_phone_number\": \"15550001111\", \"phone_number_id\": \"1098765432109\"}, \"statuses\": [{\"id\": \"wamid.TITLE\", \"status\": \"failed\", \"timestamp\": \"1763701300\", \"recipient_id\": \"393331234567\", \"biz_opaque_callback_data\": \"a1000000-0000-4000-8000-000001910008\", \"errors\": [{\"code\": 131000, \"message\": \"\", \"title\": \"Generic failure\"}]}]}}]}]}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-failed-message-truncated",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 200,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {
+     "long": {
+      "status": "failed",
+      "error_code": "2",
+      "error_message": "éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé"
+     }
+    },
+    "receipts": [
+     {
+      "delivery": "long",
+      "provider_message_id": "wamid.LONG",
+      "status": "failed",
+      "occurred_at": "2025-11-21T05:03:20+00:00",
+      "error_code": "2",
+      "error_message": "éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé"
+     }
+    ]
+   },
+   "raw_body": "{\"object\": \"whatsapp_business_account\", \"entry\": [{\"id\": \"2109876543210\", \"changes\": [{\"field\": \"messages\", \"value\": {\"messaging_product\": \"whatsapp\", \"metadata\": {\"display_phone_number\": \"15550001111\", \"phone_number_id\": \"1098765432109\"}, \"statuses\": [{\"id\": \"wamid.LONG\", \"status\": \"failed\", \"timestamp\": \"1763701400\", \"recipient_id\": \"393331234567\", \"biz_opaque_callback_data\": \"a1000000-0000-4000-8000-000001910009\", \"errors\": [{\"code\": 2, \"message\": \"éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé\"}]}]}}]}]}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-batch-several-rows-and-repeat",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 200,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {
+     "batch_one": {
+      "status": "read"
+     },
+     "batch_two": {
+      "status": "read"
+     }
+    },
+    "receipts": [
+     {
+      "delivery": "batch_one",
+      "provider_message_id": "wamid.BATCH1",
+      "status": "delivered",
+      "occurred_at": "2025-11-21T05:05:00+00:00",
+      "error_code": "",
+      "error_message": ""
+     },
+     {
+      "delivery": "batch_two",
+      "provider_message_id": "wamid.BATCH2",
+      "status": "read",
+      "occurred_at": "2025-11-21T05:05:01+00:00",
+      "error_code": "",
+      "error_message": ""
+     },
+     {
+      "delivery": "batch_one",
+      "provider_message_id": "wamid.BATCH1",
+      "status": "read",
+      "occurred_at": "2025-11-21T05:05:03+00:00",
+      "error_code": "",
+      "error_message": ""
+     }
+    ]
+   },
+   "raw_body": "{\"object\": \"whatsapp_business_account\", \"entry\": [{\"id\": \"2109876543210\", \"changes\": [{\"field\": \"messages\", \"value\": {\"messaging_product\": \"whatsapp\", \"metadata\": {\"display_phone_number\": \"15550001111\", \"phone_number_id\": \"1098765432109\"}, \"statuses\": [{\"id\": \"wamid.BATCH1\", \"status\": \"delivered\", \"timestamp\": \"1763701500\", \"recipient_id\": \"393331234567\", \"biz_opaque_callback_data\": \"a1000000-0000-4000-8000-000001910010\"}, {\"id\": \"wamid.BATCH2\", \"status\": \"read\", \"timestamp\": \"1763701501\", \"recipient_id\": \"393331234567\", \"biz_opaque_callback_data\": \"a1000000-0000-4000-8000-000001910011\"}, {\"id\": \"wamid.BATCH1\", \"status\": \"delivered\", \"timestamp\": \"1763701502\", \"recipient_id\": \"393331234567\", \"biz_opaque_callback_data\": \"a1000000-0000-4000-8000-000001910010\"}, {\"id\": \"wamid.BATCH1\", \"status\": \"read\", \"timestamp\": \"1763701503\", \"recipient_id\": \"393331234567\", \"biz_opaque_callback_data\": \"a1000000-0000-4000-8000-000001910010\"}]}}]}]}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-receipt-with-disabled-integration",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 200,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {
+    "enabled": false
+   },
+   "effect": {
+    "deliveries": {
+     "disabled": {
+      "status": "delivered"
+     }
+    },
+    "receipts": [
+     {
+      "delivery": "disabled",
+      "provider_message_id": "wamid.DISABLED",
+      "status": "delivered",
+      "occurred_at": "2025-11-21T05:06:40+00:00",
+      "error_code": "",
+      "error_message": ""
+     }
+    ]
+   },
+   "raw_body": "{\"object\": \"whatsapp_business_account\", \"entry\": [{\"id\": \"2109876543210\", \"changes\": [{\"field\": \"messages\", \"value\": {\"messaging_product\": \"whatsapp\", \"metadata\": {\"display_phone_number\": \"15550001111\", \"phone_number_id\": \"1098765432109\"}, \"statuses\": [{\"id\": \"wamid.DISABLED\", \"status\": \"delivered\", \"timestamp\": \"1763701600\", \"recipient_id\": \"393331234567\", \"biz_opaque_callback_data\": \"a1000000-0000-4000-8000-000001910013\"}]}}]}]}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-utf8-bom-body",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 200,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {
+     "bom": {
+      "status": "delivered"
+     }
+    },
+    "receipts": [
+     {
+      "delivery": "bom",
+      "provider_message_id": "wamid.BOM",
+      "status": "delivered",
+      "occurred_at": "2025-11-21T05:08:20+00:00",
+      "error_code": "",
+      "error_message": ""
+     }
+    ]
+   },
+   "raw_body": "﻿{\"object\": \"whatsapp_business_account\", \"entry\": [{\"id\": \"2109876543210\", \"changes\": [{\"field\": \"messages\", \"value\": {\"messaging_product\": \"whatsapp\", \"metadata\": {\"display_phone_number\": \"15550001111\", \"phone_number_id\": \"1098765432109\"}, \"statuses\": [{\"id\": \"wamid.BOM\", \"status\": \"delivered\", \"timestamp\": \"1763701700\", \"recipient_id\": \"393331234567\", \"biz_opaque_callback_data\": \"a1000000-0000-4000-8000-000001910015\"}]}}]}]}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-integer-timestamp",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 200,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {
+     "int_timestamp": {
+      "status": "delivered"
+     }
+    },
+    "receipts": [
+     {
+      "delivery": "int_timestamp",
+      "provider_message_id": "wamid.INTSTAMP",
+      "status": "delivered",
+      "occurred_at": "2025-11-21T05:10:00+00:00",
+      "error_code": "",
+      "error_message": ""
+     }
+    ]
+   },
+   "raw_body": "{\"object\": \"whatsapp_business_account\", \"entry\": [{\"id\": \"2109876543210\", \"changes\": [{\"field\": \"messages\", \"value\": {\"messaging_product\": \"whatsapp\", \"metadata\": {\"display_phone_number\": \"15550001111\", \"phone_number_id\": \"1098765432109\"}, \"statuses\": [{\"id\": \"wamid.INTSTAMP\", \"status\": \"delivered\", \"timestamp\": 1763701800, \"recipient_id\": \"393331234567\", \"biz_opaque_callback_data\": \"a1000000-0000-4000-8000-000001910016\"}]}}]}]}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-timestamp-with-spaces",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 200,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {
+     "space_timestamp": {
+      "status": "delivered"
+     }
+    },
+    "receipts": [
+     {
+      "delivery": "space_timestamp",
+      "provider_message_id": "wamid.SPACESTAMP",
+      "status": "delivered",
+      "occurred_at": "2025-11-21T05:11:40+00:00",
+      "error_code": "",
+      "error_message": ""
+     }
+    ]
+   },
+   "raw_body": "{\"object\": \"whatsapp_business_account\", \"entry\": [{\"id\": \"2109876543210\", \"changes\": [{\"field\": \"messages\", \"value\": {\"messaging_product\": \"whatsapp\", \"metadata\": {\"display_phone_number\": \"15550001111\", \"phone_number_id\": \"1098765432109\"}, \"statuses\": [{\"id\": \"wamid.SPACESTAMP\", \"status\": \"delivered\", \"timestamp\": \" 1763701900 \", \"recipient_id\": \"393331234567\", \"biz_opaque_callback_data\": \"a1000000-0000-4000-8000-000001910017\"}]}}]}]}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-string-error-code-dropped",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 200,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {
+     "string_code": {
+      "status": "failed",
+      "error_code": "",
+      "error_message": "Text code"
+     }
+    },
+    "receipts": [
+     {
+      "delivery": "string_code",
+      "provider_message_id": "wamid.STRCODE",
+      "status": "failed",
+      "occurred_at": "2025-11-21T05:13:20+00:00",
+      "error_code": "",
+      "error_message": "Text code"
+     }
+    ]
+   },
+   "raw_body": "{\"object\": \"whatsapp_business_account\", \"entry\": [{\"id\": \"2109876543210\", \"changes\": [{\"field\": \"messages\", \"value\": {\"messaging_product\": \"whatsapp\", \"metadata\": {\"display_phone_number\": \"15550001111\", \"phone_number_id\": \"1098765432109\"}, \"statuses\": [{\"id\": \"wamid.STRCODE\", \"status\": \"failed\", \"timestamp\": \"1763702000\", \"recipient_id\": \"393331234567\", \"biz_opaque_callback_data\": \"a1000000-0000-4000-8000-000001910018\", \"errors\": [{\"code\": \"131026\", \"message\": \"Text code\"}]}]}}]}]}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "whatsapp-webhook-integer-reference-uses-provider-id",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/whatsapp/webhook",
+   "headers": {},
+   "status": 200,
+   "response": "<empty>",
+   "content_type_response": "text/html; charset=utf-8",
+   "allow": null,
+   "signature": "valid",
+   "signed_with": "synthetic-whatsapp-app-secret",
+   "config": {},
+   "effect": {
+    "deliveries": {
+     "int_reference": {
+      "status": "read"
+     }
+    },
+    "receipts": [
+     {
+      "delivery": "int_reference",
+      "provider_message_id": "wamid.INTREF",
+      "status": "read",
+      "occurred_at": "2025-11-21T05:15:00+00:00",
+      "error_code": "",
+      "error_message": ""
+     }
+    ]
+   },
+   "raw_body": "{\"object\": \"whatsapp_business_account\", \"entry\": [{\"id\": \"2109876543210\", \"changes\": [{\"field\": \"messages\", \"value\": {\"messaging_product\": \"whatsapp\", \"metadata\": {\"display_phone_number\": \"15550001111\", \"phone_number_id\": \"1098765432109\"}, \"statuses\": [{\"id\": \"wamid.INTREF\", \"status\": \"read\", \"timestamp\": \"1763702100\", \"recipient_id\": \"393331234567\", \"biz_opaque_callback_data\": 5}]}}]}]}",
+   "content_type": "application/json"
+  }
+ ]
+}

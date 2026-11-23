@@ -833,6 +833,7 @@ func (s *InstanceAdmin) WhatsAppSettings(ctx context.Context) (config.WhatsAppSe
 	}
 	value := current.value
 	w.Disabled = value["enabled"] != true
+	w.FromInstance = true
 	w.PhoneID, _ = value["phone_number_id"].(string)
 	w.AccountID, _ = value["business_account_id"].(string)
 	w.AccessToken, _ = value["access_token"].(string)

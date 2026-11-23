@@ -98,7 +98,7 @@ func (q *DeliveryQueue) Drain(ctx context.Context, consumer string) error {
 
 func (q *DeliveryQueue) deliverOne(ctx context.Context, consumer string) (bool, error) {
 	cfg, err := q.settings(ctx)
-	if err != nil || cfg.Disabled || cfg.PhoneID == "" || cfg.AccessToken == "" {
+	if err != nil || !cfg.DeliveryEnabled() {
 		return false, err
 	}
 	defer q.owner.Enter()()
@@ -201,13 +201,13 @@ func (q *DeliveryQueue) deliverOne(ctx context.Context, consumer string) (bool, 
 		}
 		if managed {
 			if failure.Code == "network" || failure.Code == "invalid_response" {
+				// The provider may have accepted the message: the ambiguous effect keeps
+				// it from being sent again until a receipt or the owner resolves it.
+				// The row still records the outcome the task has always recorded.
 				_, err = tx.ExecContext(ctx, "UPDATE public.assozeta_outbox_effects SET state='ambiguous' WHERE outbox='whatsapp' AND item_id=$1 AND attempt=$2 AND state='intent'", id, attempts)
-				if err != nil {
-					return false, err
-				}
-				return true, tx.Commit()
+			} else {
+				_, err = tx.ExecContext(ctx, "SELECT public.assozeta_outbox_reconcile('whatsapp',$1,'not_sent',$2)", id, consumer)
 			}
-			_, err = tx.ExecContext(ctx, "SELECT public.assozeta_outbox_reconcile('whatsapp',$1,'not_sent',$2)", id, consumer)
 			if err != nil {
 				return false, err
 			}
@@ -275,8 +275,8 @@ func recordStatus(ctx context.Context, db *sql.DB, event Status) error {
 	}
 	defer tx.Rollback()
 	var reference any
-	if ref, err := uuid.Parse(event.Reference); err == nil {
-		reference = ref.String()
+	if ref, ok := dto.PythonUUIDLookup(event.Reference); ok {
+		reference = ref
 	}
 	var id, state string
 	var currentID sql.NullString

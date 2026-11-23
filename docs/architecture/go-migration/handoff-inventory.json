@@ -2940,8 +2940,7 @@
       "kind": "route",
       "items": [
         "django:route:BE/communications/urls.py:communications/whatsapp/webhook -> webhook",
-        "go:GET /communications/whatsapp/webhook",
-        "go:POST /communications/whatsapp/webhook"
+        "go:ANY /communications/whatsapp/webhook"
       ],
       "fixture": [
         "django-default",
@@ -9209,27 +9208,6 @@
       "evidence_gap": true
     },
     {
-      "ledger_id": "command:BE/communications/management/commands/whatsapp_templates.py:whatsapp_templates",
-      "status": "implementing",
-      "finding": "Go binary exists and ships in the image; evidence list is empty. Output encoders differ (Django json.dumps(ensure_ascii=False); Go json.NewEncoder escapes <,>,& and appends a newline), so byte parity is unproven.",
-      "executable_gap": false,
-      "evidence_gap": true
-    },
-    {
-      "ledger_id": "route:BE/communications/urls.py:communications/whatsapp/webhook -> webhook",
-      "status": "implementing",
-      "finding": "Go handler exists and is routed, but nothing records HTTP parity (Go answers 503 when instance settings cannot load, Django has no such state; non-GET/POST answers and OPTIONS unobserved) and the Go<->Django integration test skips without a DSN no workflow sets. Callback URL is the unversioned /api path that Caddy sends to Django.",
-      "executable_gap": false,
-      "evidence_gap": true
-    },
-    {
-      "ledger_id": "schedule:BE/core/celery.py:deliver-whatsapp",
-      "status": "uncharacterized",
-      "finding": "The leased Go scheduler publishes this definition to the Go consumer. Its occurrence and expiry share the broker publication path with the backup notice.",
-      "executable_gap": false,
-      "evidence_gap": true
-    },
-    {
       "ledger_id": "schedule_mutation:BE/instance/schedule_authority.py:PeriodicTask.objects.filter",
       "status": "characterized",
       "finding": "Phase 4 scheduling scenarios exercise the shared cursor. Exact revision verification belongs to the test author.",
@@ -9282,13 +9260,6 @@
       "ledger_id": "signal_connection:BE/instance/restore/task_base.py:before_task_publish.connect:stamp_published_task",
       "status": "needs_review",
       "finding": "Phase 3 wrapped CoordinatedTask.__call__ with the handoff claim; the publish stamp connection in the same file is unchanged. Re-verify the celery-producer component and promote.",
-      "executable_gap": false,
-      "evidence_gap": true
-    },
-    {
-      "ledger_id": "task:BE/communications/tasks.py:deliver_whatsapp",
-      "status": "implementing",
-      "finding": "The Go consumer registers the poll and the leased scheduler publishes it. Phase 4 outbox verification covers transfer and provider acceptance.",
       "executable_gap": false,
       "evidence_gap": true
     }

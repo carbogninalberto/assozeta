@@ -403,6 +403,8 @@ jobs:
           - test_message_image_process
           - token_worker_process
           - user_deletion_worker_process
+          - whatsapp_delivery_process
+          - whatsapp_templates_process
           - worker_process
         part: [1]
         include:
@@ -421,7 +423,7 @@ jobs:
       - uses: ./.github/actions/go-foundation-setup
         if: matrix.harness != 'test_message_image_process'
       - name: Prepare the native HTTP parity fixtures
-        if: matrix.harness == 'model_hooks_process'
+        if: matrix.harness == 'model_hooks_process' || startsWith(matrix.harness, 'whatsapp_')
         shell: bash
         run: |
           sudo apt-get install -y libpq-dev
@@ -465,8 +467,11 @@ jobs:
           output="$RUNNER_TEMP/go-background-build/"
           mkdir -p "$output"
           case "$HARNESS" in
-            model_hooks_process)
+            model_hooks_process|whatsapp_delivery_process)
               go build -mod=readonly -o "$output" ./cmd/server ./cmd/migrate
+              ;;
+            whatsapp_templates_process)
+              go build -mod=readonly -o "$output" ./cmd/server ./cmd/migrate ./cmd/whatsapp-templates
               ;;
             celery_consumer_capabilities_process)
               go build -race -tags=consumerprobe -o "$output" ./cmd/celery-consumer

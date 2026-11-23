@@ -999,8 +999,7 @@ func run() (runErr error) {
 		whatsapp.Webhook(db.DB, whatsapp.NewCloudAPI(settings)).ServeHTTP(c.Response(), c.Request())
 		return nil
 	}
-	e.GET("/communications/whatsapp/webhook", waWebhook)
-	e.POST("/communications/whatsapp/webhook", waWebhook)
+	e.Any("/communications/whatsapp/webhook", waWebhook)
 	subscriptionNotifier := service.NewSubscriptionNotifier(repository.NewSubscriptionNotifications(db), notificationStore,
 		channels.NewLayer(notificationRedis, nil, nil, nil), time.Now).WithNotificationChannel(waQueue.Enqueue)
 	paymentPaidFlows := repository.NewPaymentPaidFlows(repository.NewPaymentStates(db))

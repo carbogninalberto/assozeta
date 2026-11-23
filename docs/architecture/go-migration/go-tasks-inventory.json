@@ -138,6 +138,7 @@
     "job": false,
     "routed": false,
     "harness": [
+      "TESTS/adapters/go/whatsapp_delivery_process.py",
       "TESTS/handoff/test_p4_outbox_realtime.py"
     ]
   },
