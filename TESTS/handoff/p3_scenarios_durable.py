@@ -222,7 +222,7 @@ def outlive_the_first_lease(stack, task):
              timeout=60)
 
 
-def long_execution_keeps_its_lease_django(stack, kill_parent=False):
+def long_execution_keeps_its_lease_django(stack, kill_parent=False, child_dies_too=False):
     """No switch: a Django execution parked longer than one lease keeps it (renewed by the pool parent, or by the
     child itself once the parent is gone), so its own redelivery still answers 'active' and nothing is recovered."""
     stack.job_handoff()
@@ -238,6 +238,25 @@ def long_execution_keeps_its_lease_django(stack, kill_parent=False):
             check(arrival['pid'] != worker.pid, 'the execution runs in a prefork child')
             worker.kill()
             worker.wait(timeout=20)
+            if child_dies_too:  # what PR_SET_PDEATHSIG does on Linux, forced on any platform
+                stack.kill(arrival['pid'])
+            deadline = time.monotonic() + 5  # give a parent-death signal time to land
+            while process_alive(arrival['pid']) and time.monotonic() < deadline:
+                time.sleep(0.1)
+            if not process_alive(arrival['pid']):
+                # Linux: Celery's prefork initializer sets PR_SET_PDEATHSIG=SIGKILL, so the child dies with its
+                # pool parent. No executor is left: nobody may keep the lease alive, and once it lapses on the
+                # database clock its own redelivery recovers the attempt.
+                outlive_the_first_lease(stack, task)
+                live = stack.sql("SELECT lease_until > clock_timestamp() FROM public.assozeta_handoff_attempts "
+                                 "WHERE task_id=%s AND outcome='running'", (task,))[0][0]
+                check(not live, 'a lease whose executor died with its parent is not renewed')
+                check(probe_redelivery(stack, 'django', task) == 'claimed',
+                      'its redelivery recovers the attempt once the lease has expired')
+                outcomes = [a['outcome'] for a in stack.attempts(task_id=task)]
+                check(outcomes == ['released', 'running'] and stack.effect_total() == 0,
+                      f'the dead execution is released, nothing ran twice: {outcomes}')
+                return
         outlive_the_first_lease(stack, task)
         live = stack.sql("SELECT lease_until > clock_timestamp() FROM public.assozeta_handoff_attempts "
                          "WHERE task_id=%s AND outcome='running'", (task,))[0][0]
@@ -254,8 +273,30 @@ def long_execution_keeps_its_lease_django(stack, kill_parent=False):
     check(outcomes == ['completed'] and stack.effect_total() == 1, f'one attempt, one effect: {outcomes}')
 
 
+def process_alive(pid):
+    import os
+    try:
+        os.kill(int(pid), 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    try:  # a zombie (killed, not yet reaped) is gone for our purpose
+        waited, _ = os.waitpid(int(pid), os.WNOHANG)
+        return waited == 0
+    except ChildProcessError:
+        return True
+
+
 def orphan_child_keeps_its_lease(stack):
+    """The pool parent dies while its child executes. On macOS the child survives and must renew its own lease;
+    on Linux Celery's PR_SET_PDEATHSIG kills the child with its parent, and the lease must then lapse."""
     long_execution_keeps_its_lease_django(stack, kill_parent=True)
+
+
+def child_dying_with_its_parent_lets_the_lease_lapse(stack):
+    """The Linux case on every platform: parent and child die together; the lease lapses and is recovered."""
+    long_execution_keeps_its_lease_django(stack, kill_parent=True, child_dies_too=True)
 
 
 def long_execution_keeps_its_lease_go(stack):
@@ -511,6 +552,7 @@ SCENARIOS = {
     'redelivery_while_the_executor_runs_waits': redelivery_while_the_executor_runs_waits,
     'long_execution_keeps_its_lease_django': long_execution_keeps_its_lease_django,
     'orphan_child_keeps_its_lease': orphan_child_keeps_its_lease,
+    'child_dying_with_its_parent_lets_the_lease_lapse': child_dying_with_its_parent_lets_the_lease_lapse,
     'long_execution_keeps_its_lease_go': long_execution_keeps_its_lease_go,
     'd05_early_ack_zero_depth_holds_settle': d05_early_ack_zero_depth_holds_settle,
     'd05_killed_attempt_is_released_and_runs_once': d05_killed_attempt_is_released_and_runs_once,

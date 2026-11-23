@@ -30,6 +30,9 @@ class RunningAttempts(ScenarioAssertions, unittest.TestCase):
     def test_an_orphaned_django_child_keeps_its_lease(self):
         self.scenario('orphan_child_keeps_its_lease')
 
+    def test_a_django_child_dying_with_its_parent_lets_the_lease_lapse(self):
+        self.scenario('child_dying_with_its_parent_lets_the_lease_lapse')
+
     def test_a_go_execution_longer_than_one_lease_keeps_it(self):
         self.scenario('long_execution_keeps_its_lease_go')
 
