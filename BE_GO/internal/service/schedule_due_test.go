@@ -394,12 +394,11 @@ func TestPeriodicJobKindMapsOnlyRegisteredTasks(t *testing.T) {
 }
 
 // Django Beat publishes these tasks. The native scheduler must leave them alone.
-var djangoBeatTasks = map[string]bool{
-	"communications.tasks.deliver_whatsapp": true, // The Go API polls the same outbox directly (Phase 4 part B).
-}
+var djangoBeatTasks = map[string]bool{}
 
-// Published by the leased Go scheduler as an admitted broker task for the Go consumer (Phase 4 part A).
-var leasedBrokerTasks = map[string]bool{domain.PeriodicBackupNotice: true}
+// Published by the leased Go scheduler as admitted broker tasks for the Go consumer: the backup notice
+// (Phase 4 part A) and the WhatsApp outbox poll (Phase 4 part B, one bounded drain per poll).
+var leasedBrokerTasks = map[string]bool{domain.PeriodicBackupNotice: true, domain.PeriodicWhatsApp: true}
 
 func TestScheduleDueEffectiveDeclarations(t *testing.T) {
 	data, err := os.ReadFile(filepath.Join("..", "..", "..", "TESTS", "fixtures", "scheduler-authority.json"))

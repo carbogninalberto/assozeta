@@ -1058,7 +1058,7 @@ func run() (runErr error) {
 			defer close(workerDone)
 			outboxDB := sqlx.NewDb(ownedpgx.OpenDB(*outboxConfig), "pgx")
 			defer outboxDB.Close()
-			outboxDB.SetMaxOpenConns(1)
+			outboxDB.SetMaxOpenConns(2) // delivery and independent heartbeat
 			admin := newInstanceAdmin(cfg, outboxDB, nil)
 			admission := service.NewRestoreAdmission(restoreLock, repository.NewRestoreStates(outboxDB), cfg.RestoreLockPath != "")
 			whatsapp.NewQueue(outboxDB.DB, admin.WhatsAppSettings).Run(ctx, admission.AcquireWrite)

@@ -145,6 +145,14 @@ func (a *brokerAttempt) context(ctx context.Context) context.Context {
 	return smtpsend.WithEffectIntent(context.WithValue(ctx, attemptContext{}, a), a.intent)
 }
 
+// BrokerConsumerID identifies the registered worker that claimed this task.
+func BrokerConsumerID(ctx context.Context) string {
+	if attempt, ok := ctx.Value(attemptContext{}).(*brokerAttempt); ok {
+		return attempt.ledger.id
+	}
+	return ""
+}
+
 func HasBrokerAttempt(ctx context.Context) bool {
 	return ctx.Value(attemptContext{}) != nil
 }

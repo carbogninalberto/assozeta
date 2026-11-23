@@ -932,9 +932,9 @@
       "kind": "command",
       "django": {
         "file": "BE/notifications/management/commands/relay_go_realtime.py",
-        "line": 9,
+        "line": 10,
         "symbol": "relay_go_realtime",
-        "sha256": "9140c1d27e831de1a38a1d9eba6d5be6837f2deb19d811d27a91b03085500b82"
+        "sha256": "de948348df3fa9235a230137756b2a7b578dd5427e6ae4049bf33751e340dc49"
       },
       "source_present": true,
       "declaration": {
@@ -942,7 +942,7 @@
           "BaseCommand"
         ]
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/cmd/relay-go-realtime/main.go",
         "BE_GO/internal/service/relay_go_realtime.go",

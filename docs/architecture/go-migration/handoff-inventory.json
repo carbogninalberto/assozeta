@@ -4778,12 +4778,13 @@
         "go": {
           "runtime": "go",
           "component": "Go WhatsApp outbox worker and legacy poll adapter",
-          "status": "planned",
-          "phase": 4
+          "status": "present"
         }
       },
       "refs": [
-        "BE/communications/tasks.py:7"
+        "BE/communications/tasks.py:7",
+        "BE_GO/cmd/celery-consumer/consumer_whatsapp.go",
+        "TESTS/handoff/test_p4_outbox_realtime.py"
       ],
       "task": {
         "producers": [
@@ -7304,13 +7305,14 @@
         "go": {
           "runtime": "go",
           "component": "Go WhatsApp delivery loop and queued-poll adapter",
-          "status": "planned",
-          "phase": 4
+          "status": "present"
         }
       },
       "refs": [
         "BE/core/celery.py:147",
-        "BE/instance/scheduler.py"
+        "BE/instance/scheduler.py",
+        "BE_GO/internal/domain/schedule.go",
+        "BE_GO/internal/repository/occurrence_broker.go"
       ]
     },
     {
@@ -7534,15 +7536,14 @@
         "go": {
           "runtime": "go",
           "component": "api-go (WhatsApp outbox loop)",
-          "status": "planned",
-          "phase": 4
+          "status": "present"
         }
       },
       "refs": [
         "BE/core/celery.py",
         "BE_GO/cmd/server/main.go",
-        "BE_GO/internal/whatsapp/delivery.go:136",
-        "TESTS/handoff/test_p2_go_startup.py"
+        "BE_GO/internal/whatsapp/delivery.go",
+        "TESTS/handoff/test_p4_outbox_realtime.py"
       ],
       "notes": [
         "Only the Go API starts this poller. ASSOZETA_GO_WHATSAPP_OUTBOX=0 disables it during private startup."
@@ -7604,6 +7605,32 @@
         "BE/instance/schedule_authority.py",
         "BE_GO/cmd/scheduler/authority.go",
         "BE_GO/migrations/000007_schedule_authority.up.sql"
+      ]
+    },
+    {
+      "id": "schedule:outbox-handoff-heartbeat",
+      "kind": "schedule",
+      "items": [
+        "go-loop:BE_GO/internal/handoff/outbox.go:OutboxOwner.Start"
+      ],
+      "fixture": "legacy-mixed",
+      "effect": "Register the Go outbox poller and realtime relay, refresh their liveness, and acknowledge a freeze after the current delivery finishes.",
+      "owner": {
+        "django": {
+          "runtime": "none",
+          "status": "present",
+          "disposition": "stopped: the Go poller and relay are inactive in Django mode"
+        },
+        "go": {
+          "runtime": "go",
+          "component": "api-go and realtime-relay-go",
+          "status": "present"
+        }
+      },
+      "refs": [
+        "BE_GO/internal/handoff/outbox.go",
+        "BE_GO/internal/whatsapp/delivery.go",
+        "BE_GO/cmd/relay-go-realtime/main.go"
       ]
     },
     {
@@ -8548,21 +8575,19 @@
         "django": {
           "runtime": "django",
           "component": "realtime-relay",
-          "status": "planned",
-          "phase": 4
+          "status": "present"
         },
         "go": {
           "runtime": "go",
           "component": "realtime-relay-go with exclusive claims",
-          "status": "planned",
-          "phase": 4
+          "status": "present"
         }
       },
       "refs": [
-        "BE/communications/staff_board.py:146",
         "BE/notifications/go_realtime.py",
-        "BE_GO/cmd/relay-go-realtime/main.go",
-        "BE_GO/migrations/000004_realtime_events.up.sql"
+        "BE_GO/internal/repository/relay_go_realtime.go",
+        "BE_GO/migrations/000008_outbox_ownership.up.sql",
+        "TESTS/handoff/test_p4_outbox_realtime.py"
       ],
       "notes": [
         "The existing Django path performs its local work. Phase 4 supplies shared, exclusive effect ownership through a handoff."
@@ -8582,21 +8607,19 @@
         "django": {
           "runtime": "django",
           "component": "worker",
-          "status": "planned",
-          "phase": 4
+          "status": "present"
         },
         "go": {
           "runtime": "go",
           "component": "Go WhatsApp delivery worker",
-          "status": "planned",
-          "phase": 4
+          "status": "present"
         }
       },
       "refs": [
         "BE/communications/whatsapp.py",
-        "BE/communications/whatsapp.py:54",
         "BE_GO/internal/whatsapp/delivery.go",
-        "BE_GO/internal/whatsapp/delivery.go:135"
+        "BE_GO/migrations/000008_outbox_ownership.up.sql",
+        "selfhost/updater/job_handoff.py"
       ],
       "notes": [
         "The existing Django path performs its local work. Phase 4 supplies shared, exclusive effect ownership through a handoff."
@@ -9257,6 +9280,13 @@
   ],
   "ledger_reconciliation": [
     {
+      "ledger_id": "command:BE/notifications/management/commands/relay_go_realtime.py:relay_go_realtime",
+      "status": "needs_review",
+      "finding": "Both relays claim ownership and stamp event IDs on schema 8. The command's existing evidence covers the earlier schema.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
       "ledger_id": "command:BE/communications/management/commands/whatsapp_templates.py:whatsapp_templates",
       "status": "implementing",
       "finding": "Go binary exists and ships in the image; evidence list is empty. Output encoders differ (Django json.dumps(ensure_ascii=False); Go json.NewEncoder escapes <,>,& and appends a newline), so byte parity is unproven.",
@@ -9273,9 +9303,9 @@
     {
       "ledger_id": "schedule:BE/core/celery.py:deliver-whatsapp",
       "status": "uncharacterized",
-      "finding": "Beat entry (every 10 s, expires 10 s) has no Go schedule, scheduler job or consumer mapping; Go only polls from inside api-go, which already runs in Django mode, so two executors drain one outbox today.",
-      "executable_gap": true,
-      "evidence_gap": false
+      "finding": "The leased Go scheduler publishes this definition to the Go consumer. Its occurrence and expiry share the broker publication path with the backup notice.",
+      "executable_gap": false,
+      "evidence_gap": true
     },
     {
       "ledger_id": "schedule_mutation:BE/instance/schedule_authority.py:PeriodicTask.objects.filter",
@@ -9336,9 +9366,9 @@
     {
       "ledger_id": "task:BE/communications/tasks.py:deliver_whatsapp",
       "status": "implementing",
-      "finding": "Delivery logic (DeliverOne) exists in Go but the Celery name has no Go registry entry: a queued poll routed to the Go queue would be handed back to Django, and no scheduler/worker owns the poll.",
-      "executable_gap": true,
-      "evidence_gap": false
+      "finding": "The Go consumer registers the poll and the leased scheduler publishes it. Phase 4 outbox verification covers transfer and provider acceptance.",
+      "executable_gap": false,
+      "evidence_gap": true
     }
   ],
   "django_handoff": [],

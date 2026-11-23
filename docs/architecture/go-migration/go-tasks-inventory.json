@@ -134,10 +134,12 @@
     "name": "communications.tasks.deliver_whatsapp",
     "django_site": "BE/communications/tasks.py:7",
     "scheduled": true,
-    "consumer": false,
+    "consumer": true,
     "job": false,
     "routed": false,
-    "harness": []
+    "harness": [
+      "TESTS/handoff/test_p4_outbox_realtime.py"
+    ]
   },
   {
     "name": "core.tasks.send_mail_async",

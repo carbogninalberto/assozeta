@@ -187,7 +187,17 @@ func (t *occurrenceTransaction) Snapshot() domain.OccurrenceSnapshot {
 func (t *occurrenceTransaction) Publish(ctx context.Context) (domain.OccurrenceReceipt, error) {
 	var receipt domain.OccurrenceReceipt
 	kind, supported := domain.PeriodicJobKind(t.source.Task)
-	broker := t.schedulerGeneration > 0 && t.source.Task == domain.PeriodicBackupNotice
+	broker := t.schedulerGeneration > 0 && domain.PeriodicBrokerTask(t.source.Task)
+	if broker && t.source.Task == domain.PeriodicWhatsApp {
+		// A v7 scheduler has the lease, but its worker still hands polls back.
+		var installed bool
+		if err := t.tx.GetContext(ctx, &installed, "SELECT to_regclass('public.assozeta_outbox_effects') IS NOT NULL"); err != nil {
+			return receipt, err
+		}
+		if !installed {
+			return receipt, domain.ErrScheduleUnsupported
+		}
+	}
 	if t.published || !t.source.Enabled || (!supported && !broker) {
 		return receipt, domain.ErrJobConflict
 	}

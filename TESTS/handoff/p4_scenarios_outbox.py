@@ -45,8 +45,14 @@ def confirmed_by(stack, identifier, runtime):
           f'delivery {identifier}: provider identity differs between stub, effect and row')
 
 
-def outbox_consumer(stack, runtime):
-    rows = consumer_of(stack, runtime)
+def outbox_consumer(stack, runtime, exclude=()):
+    """The live consumer of `runtime` that registered after `exclude` (ids of processes already seen or killed):
+    a killed process keeps its row, so a restart must be identified by its new id, never by row order."""
+    def fresh():
+        rows = [r for r in stack.consumers(runtime) if r['consumer_id'] not in exclude and (r['heartbeat_seq'] or 0) >= 2]
+        return rows
+    rows = wait_for(fresh, f'no new {runtime} consumer registered a heartbeat (excluding {sorted(exclude)})', timeout=30)
+    check(len(rows) == 1, f'expected one live {runtime} consumer besides {sorted(exclude)}, found {[r["consumer_id"] for r in rows]}')
     return rows[0]['consumer_id']
 
 
@@ -199,6 +205,7 @@ def crash_after_provider_acceptance(stack):
             process = stack.go_api()
         arrival = stack.barrier.wait_arrived('effect:accepted', row, f'the {source} deliverer after provider acceptance')
         check(stack.whatsapp.count(row) == 1, 'the provider accepted the send')
+        killed = {r['consumer_id'] for r in stack.consumers(source)}
         stack.kill_tree(process, arrival)
         stack.barrier.reset()
         effect = stack.outbox_effects(row)
@@ -208,10 +215,9 @@ def crash_after_provider_acceptance(stack):
             stack.django_worker()
             stack.django_ready()
             poll_django(stack)
-            consumer = consumer_of(stack, 'django')[0]['consumer_id']
         else:
             stack.go_api()
-            consumer = outbox_consumer(stack, 'go')
+        consumer = outbox_consumer(stack, source, exclude=killed)
         heartbeats_after(stack, consumer, count=5)
         check(stack.whatsapp.count(row) == 1, f'{source}: an unconfirmed send was replayed automatically')
         wait_for(lambda: [e['state'] for e in stack.outbox_effects(row)] == ['ambiguous'],

@@ -84,6 +84,7 @@ def harnesses():
                 if not (ROOT / path).is_file():
                     raise ValueError(f'missing task harness {path}')
             result[entry['django']['file'], entry['django']['symbol']] = paths
+    result['BE/communications/tasks.py', 'deliver_whatsapp'] = ['TESTS/handoff/test_p4_outbox_realtime.py']
     return result
 
 

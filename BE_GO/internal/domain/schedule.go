@@ -113,3 +113,8 @@ func PeriodicTaskNames() []string {
 
 // The declared backup check is executed by the Go Celery consumer.
 const PeriodicBackupNotice = "instance.backups.notify_failures"
+const PeriodicWhatsApp = "communications.tasks.deliver_whatsapp"
+
+func PeriodicBrokerTask(task string) bool {
+	return task == PeriodicBackupNotice || task == PeriodicWhatsApp
+}

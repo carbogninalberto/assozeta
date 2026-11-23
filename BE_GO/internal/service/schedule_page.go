@@ -119,7 +119,7 @@ func (s *SchedulePager) Tick(ctx context.Context, cursor domain.ScheduleCursor) 
 		outcome := domain.SchedulePageOutcome{SourceID: row.ID}
 		if !row.Enabled {
 			outcome.Status = domain.SchedulePageDisabled
-		} else if _, supported := domain.PeriodicJobKind(row.Task); !supported && !(leased && row.Task == domain.PeriodicBackupNotice) {
+		} else if _, supported := domain.PeriodicJobKind(row.Task); !supported && !(leased && domain.PeriodicBrokerTask(row.Task)) {
 			outcome.Status = domain.SchedulePageUnrelated
 		} else {
 			sourceCtx, cancelSource := context.WithTimeout(ctx, s.options.SourceTimeout)

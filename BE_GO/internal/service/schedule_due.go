@@ -377,7 +377,7 @@ func validatePeriodicDefinition(row domain.PeriodicSchedule) (time.Duration, cro
 		return period, slots, nil
 	}
 	unsupported := domain.ErrScheduleUnsupported
-	if _, ok := domain.PeriodicJobKind(row.Task); (!ok && row.Task != domain.PeriodicBackupNotice) || row.HasSolar ||
+	if _, ok := domain.PeriodicJobKind(row.Task); (!ok && !domain.PeriodicBrokerTask(row.Task)) || row.HasSolar ||
 		row.Queue != "" || row.Exchange != "" || row.RoutingKey != "" || row.Priority != nil ||
 		!emptyScheduleJSON(row.Args, true) || !emptyScheduleJSON(row.Kwargs, false) || !emptyScheduleJSON(row.Headers, false) {
 		return 0, cronSlots{}, unsupported

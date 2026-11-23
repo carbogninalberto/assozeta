@@ -2,10 +2,12 @@ import json
 import logging
 import re
 from datetime import timedelta
-from uuid import UUID
+from uuid import UUID, uuid4
+from contextlib import closing
 
 from instance.integration_configuration import effective_integration
-from django.db import transaction
+from core import handoff, outbox
+from django.db import connection, transaction
 from django.db.models import Q
 from django.utils import timezone
 
@@ -57,10 +59,37 @@ def queue_notifications(user, messages):
 
 @transaction.atomic
 def deliver_one(provider):
-    row = (WhatsAppDelivery.objects.select_for_update(skip_locked=True)
-           .filter(status='queued', next_attempt_at__lte=timezone.now()).order_by('next_attempt_at', 'id').first())
-    if row is None:
-        return False
+    due = WhatsAppDelivery.objects.select_for_update(skip_locked=True).filter(
+        status='queued', next_attempt_at__lte=timezone.now()).order_by('next_attempt_at', 'id')
+    managed = outbox.installed()
+    if managed:
+        consumer = handoff._consumer_id or f'django-whatsapp-{uuid4()}'
+        # The item lock spans the provider call. Commit the intent on an
+        # independent connection so a crash rolls back only the row update.
+        with closing(connection.copy()) as admission, admission.cursor() as cursor:
+            admission.set_autocommit(False)
+            cursor.execute("SELECT outcome FROM public.assozeta_outbox_claim('django',%s,'whatsapp')", [consumer])
+            if cursor.fetchone()[0] != 'owner':
+                return False
+            row = due.extra(where=["""NOT EXISTS (SELECT FROM public.assozeta_outbox_effects e
+                WHERE e.outbox='whatsapp' AND e.item_id=communications_whatsappdelivery.id::text
+                AND e.state IN ('confirmed','ambiguous','reconciled_sent'))"""]).first()
+            if row is None:
+                return False
+            with connection.cursor() as lock:
+                lock.execute("SELECT pg_try_advisory_xact_lock(hashtextextended(%s,8))", [str(row.pk)])
+                if not lock.fetchone()[0]:
+                    return False
+            cursor.execute("SELECT public.assozeta_outbox_effect_intent('django',%s,'whatsapp',%s,%s)",
+                           [consumer, str(row.pk), row.attempts + 1])
+            outcome = cursor.fetchone()[0]
+            admission.commit()
+            if outcome != 'recorded':
+                return True
+    else:
+        row = due.first()
+        if row is None:
+            return False
     row.attempts += 1
     try:
         if row.template_name:
@@ -68,8 +97,22 @@ def deliver_one(provider):
                                                              row.body, row.id)
         else:
             row.provider_message_id = provider.send_text(row.recipient, row.body, row.id)
+        if managed:
+            handoff.barrier('effect:accepted', str(row.pk))
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT public.assozeta_outbox_effect_confirm('whatsapp',%s,%s,%s)",
+                               [str(row.pk), row.attempts, row.provider_message_id])
         row.status, row.error_code, row.error_message = 'sent', '', ''
     except ProviderError as error:
+        if managed:
+            with connection.cursor() as cursor:
+                if error.code in ('network', 'invalid_response'):
+                    cursor.execute("""UPDATE public.assozeta_outbox_effects SET state='ambiguous'
+                        WHERE outbox='whatsapp' AND item_id=%s AND attempt=%s AND state='intent'""",
+                                   [str(row.pk), row.attempts])
+                    return True
+                cursor.execute("SELECT public.assozeta_outbox_reconcile('whatsapp',%s,'not_sent',%s)",
+                               [str(row.pk), consumer])
         row.error_code, row.error_message = error.code, str(error)
         if error.transient and row.attempts < 3:
             row.next_attempt_at = timezone.now() + timedelta(seconds=30 * 2 ** (row.attempts - 1))
@@ -94,6 +137,12 @@ def record_status(event):
     row = WhatsAppDelivery.objects.select_for_update().filter(query).first()
     if row is None:
         return
+    if outbox.installed():
+        with connection.cursor() as cursor:
+            cursor.execute("""UPDATE public.assozeta_outbox_effects SET state='reconciled_sent',
+                provider_ref=%s,resolved_at=clock_timestamp(),resolved_by='webhook'
+                WHERE outbox='whatsapp' AND item_id=%s AND state IN ('intent','ambiguous')""",
+                           [message_id, str(row.pk)])
     _, created = WhatsAppReceipt.objects.get_or_create(
         delivery=row, provider_message_id=message_id, status=event['status'],
         defaults={key: event[key] for key in ('occurred_at', 'error_code', 'error_message')},

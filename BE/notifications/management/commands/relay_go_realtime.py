@@ -4,6 +4,7 @@ from django.core.management.base import BaseCommand
 from django.db import connection
 
 from notifications.go_realtime import relay_once
+from notifications.relay_owner import registered_relay
 
 
 class Command(BaseCommand):
@@ -14,8 +15,12 @@ class Command(BaseCommand):
         parser.add_argument('--poll-seconds', type=float, default=2.0)
 
     def handle(self, *args, once=False, poll_seconds=2.0, **options):
+        with registered_relay() as consumer:
+            self.run_relay(consumer, once, poll_seconds)
+
+    def run_relay(self, consumer, once, poll_seconds):
         if once:
-            self.stdout.write(str(relay_once()))
+            self.stdout.write(str(relay_once(consumer=consumer)))
             return
         # LISTEN shortens latency; polling still covers missed notifications.
         connection.ensure_connection()
@@ -26,7 +31,7 @@ class Command(BaseCommand):
         while True:
             # Drain while making progress; a retry waits for the next interval.
             while True:
-                counts = relay_once()
+                counts = relay_once(consumer=consumer)
                 if counts['retry'] or not (counts['delivered'] or counts['failed']):
                     break
             if select.select([raw], [], [], poll_seconds) != ([], [], []):

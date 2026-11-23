@@ -137,6 +137,16 @@ func run(arguments []string) error {
 	if err = consumerBackupFailuresRegister(tasks, cfg, db, broker, mail); err != nil {
 		return errors.New("celery consumer cannot prepare the backup failure notices")
 	}
+	outboxInstalled := *listTasks
+	if !*listTasks {
+		outboxInstalled, err = handoff.OutboxInstalled(context.Background(), db.DB)
+		if err != nil {
+			return errors.New("cannot check outbox ownership schema")
+		}
+	}
+	if outboxInstalled {
+		tasks[domain.PeriodicWhatsApp] = whatsappPollTask(cfg, db)
+	}
 	if *listTasks {
 		return json.NewEncoder(os.Stdout).Encode(map[string][]string{
 			"consumer": slices.Sorted(maps.Keys(tasks)),

@@ -252,10 +252,21 @@ def handoff_steps(store, broker, *, barrier=None, batch_size=500, freeze_timeout
             yield from rows
             after = rows[-1]['task_id']
 
+    def outbox_blockers(record, *, settled=False):
+        if store.scalar("SELECT count(*) WHERE to_regclass('public.assozeta_outbox_effects') IS NOT NULL") != '1':
+            return []
+        # A live sender holds the item lock through confirmation. Its intent
+        # becomes a blocker if the sender disappears before the next poll.
+        return list(task_rows("""SELECT outbox || ':' || item_id AS task_id,'ambiguous_effect' AS reason
+            FROM public.assozeta_outbox_effects WHERE state='ambiguous' OR
+              (state='intent' AND (ownership_generation < :'gen' OR
+                (:'settled'::boolean AND ownership_generation = :'gen') OR
+                pg_try_advisory_xact_lock(hashtextextended(item_id,8))))""", settled=settled, **params(record)))
+
     def blockers(record):
         return list(task_rows("""SELECT task_id,block_reason AS reason FROM public.assozeta_handoff_work
             WHERE state='blocked' AND ((owner_runtime=:'source' AND owner_generation=:'gen') OR operation_id=:'op')""",
-                              **params(record)))
+                              **params(record))) + outbox_blockers(record, settled=True)
 
     def settle(record):
         deadline = time.monotonic() + settle_timeout
@@ -319,7 +330,7 @@ def handoff_steps(store, broker, *, barrier=None, batch_size=500, freeze_timeout
 
     def preflight(record):
         values = params(record)
-        problems = {}
+        problems = {r['task_id']: r['reason'] for r in outbox_blockers(record)}
         for _, _, _, _, raw in _items(broker, batch_size):
             task, msg = _message(raw)
             reason = _reason(msg, catalog, values['target'])

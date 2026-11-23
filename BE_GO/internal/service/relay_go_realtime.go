@@ -4,10 +4,12 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"strconv"
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/channels"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/handoff"
 )
 
 // Port of Django's relay_go_realtime management command and
@@ -71,9 +73,15 @@ func (r *RelayGoRealtime) Once(ctx context.Context) (RelayGoRealtimeCounts, erro
 			return err
 		}
 		for _, row := range rows {
+			if row.Owned {
+				handoff.Barrier("relay:claimed", strconv.FormatInt(row.ID, 10))
+			}
 			outcome, code := r.deliver(ctx, row)
 			switch {
 			case outcome == "delivered":
+				if row.Owned {
+					handoff.Barrier("relay:sent", strconv.FormatInt(row.ID, 10))
+				}
 				err = claim.Delivered(ctx, row.ID)
 				counts.Delivered++
 			case outcome == "failed" || row.Attempts+1 >= RelayGoRealtimeMaxAttempts:
@@ -106,6 +114,9 @@ func (r *RelayGoRealtime) deliver(ctx context.Context, row domain.RelayGoRealtim
 		return "failed", "unsupported_event"
 	}
 	group, message := handler(row.Target)
+	if row.Owned {
+		message = append(message, channels.Item{Key: "event_id", Value: row.ID})
+	}
 	if err := r.sender.GroupSend(ctx, group, message); err != nil {
 		r.logger.Error("Unable to relay Go realtime event", "error", err)
 		return "retry", ""

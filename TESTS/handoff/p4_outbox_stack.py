@@ -113,33 +113,44 @@ class RealtimeSubscriber:
 
     def __init__(self, port):
         self.port, self.received, self.lock, self.thread, self.pubsub = port, [], threading.Lock(), None, None
+        self.client, self.errors = None, []
         self.connections = 0
 
     def connect(self):
         import redis
-        client = redis.Redis(host='127.0.0.1', port=self.port, password=REDIS_PASSWORD, socket_timeout=None)
+        # Keep the client for the subscription's lifetime: redis-py closes its pool (and the pub/sub connection)
+        # when the client object is collected.
+        self.client = client = redis.Redis(host='127.0.0.1', port=self.port, password=REDIS_PASSWORD, socket_timeout=None)
         self.pubsub = client.pubsub(ignore_subscribe_messages=True)
         self.pubsub.subscribe(REALTIME_CHANNEL)
         self.connections += 1
         pubsub = self.pubsub
 
         def listen():
-            with suppress(Exception):
+            try:
                 for item in pubsub.listen():
                     if item.get('type') == 'message':
                         with self.lock:
                             self.received.append(json.loads(item['data']))
+            except Exception as exc:  # recorded: a lost subscription must not look like zero deliveries
+                if self.pubsub is pubsub:
+                    self.errors.append(repr(exc))
         self.thread = threading.Thread(target=listen, daemon=True)
         self.thread.start()
         wait_for(lambda: client.execute_command('PUBSUB', 'NUMSUB', REALTIME_CHANNEL)[1] >= 1, 'subscriber attached')
 
     def disconnect(self):
         if self.pubsub:
+            pubsub, self.pubsub = self.pubsub, None
             with suppress(Exception):
-                self.pubsub.close()
-            self.pubsub = None
+                pubsub.close()
+        if self.client:
+            with suppress(Exception):
+                self.client.close()
+            self.client = None
 
     def event_ids(self):
+        check(not self.errors, f'the realtime subscriber lost its subscription: {self.errors}')
         with self.lock:
             return [item.get('message', {}).get('event_id') for item in self.received]
 
