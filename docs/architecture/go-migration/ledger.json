@@ -896,7 +896,7 @@
           "BaseCommand"
         ]
       },
-      "status": "implementing",
+      "status": "verified",
       "go": [
         "BE_GO/cmd/whatsapp-templates/main.go",
         "BE_GO/internal/whatsapp/provider.go"
@@ -910,19 +910,30 @@
         "request": "list, get NAME LANGUAGE, or register with a template definition on stdin.",
         "response": "JSON provider result or approved template translations.",
         "errors": null,
-        "authentication": null,
+        "authentication": "None: management command run by an operator with process and database access; Cloud API requests carry the configured access token as Bearer.",
         "permissions": "Deployment operator with the management token.",
-        "resource_scope": null,
+        "resource_scope": "The effective WhatsApp integration's business account (instance settings, else WHATSAPP_*; enabled flag not consulted): its message_templates edge only.",
         "side_effects": "Registration submits a template to Meta for review.",
-        "transaction": null,
+        "transaction": "None: no database writes; one Cloud API request per listed page or registration.",
         "execution_owner": "django"
       },
       "tests": [
         "BE/communications/tests/test_whatsapp.py",
         "BE_GO/internal/whatsapp/provider_test.go",
-        "BE_GO/internal/service/whatsapp_integration_test.go"
+        "BE_GO/internal/service/whatsapp_integration_test.go",
+        "TESTS/adapters/go/whatsapp_templates_process.py",
+        "TESTS/adapters/go/whatsapp_meta_stub.py"
       ],
-      "evidence": [],
+      "evidence": [
+        {
+          "command": "python -m TESTS.adapters.go.whatsapp_templates_process",
+          "revision": "b78f7f908987b46d6ba5a845bda139b5061410c5",
+          "result": "passed",
+          "artifact": "quality-reports/go-migration/sweep-wa-parity/process-whatsapp_templates_process.log",
+          "receipt_sha256": "6d64311aaa14eb35cb05e8eb0fe6a1cb345ac13cd30d7ec6c16856b9fd10b1f3",
+          "scope": "Process harness whatsapp_templates_process: {\"success\": true, \"workloads\": [\"django-native\", \"go-native\"], \"errors\": []}"
+        }
+      ],
       "notes": [
         "Shared configuration and delivery contract in docs/whatsapp.md."
       ]
@@ -31565,7 +31576,7 @@
         "target": "webhook",
         "syntax": "path"
       },
-      "status": "implementing",
+      "status": "verified",
       "go": [
         "BE_GO/internal/whatsapp/webhook.go",
         "BE_GO/internal/whatsapp/delivery.go"
@@ -31588,7 +31599,7 @@
         "response": "Plain-text challenge or empty 200.",
         "errors": "400 invalid payload, 403 verification or signature failure.",
         "authentication": "Configured verification token on GET, HMAC-SHA256 on POST.",
-        "permissions": null,
+        "permissions": "None: public Meta callback (csrf_exempt plain view, no DRF authentication or registry permission); bearer tokens are ignored.",
         "resource_scope": "Configured sender ID and WABA.",
         "side_effects": "Records distinct delivery status receipts.",
         "transaction": "Per callback, lock delivery and update receipt and state together.",
@@ -31597,9 +31608,23 @@
       "tests": [
         "BE/communications/tests/test_whatsapp.py",
         "BE_GO/internal/whatsapp/provider_test.go",
-        "BE_GO/internal/service/whatsapp_integration_test.go"
+        "BE_GO/internal/service/whatsapp_integration_test.go",
+        "TESTS/fixtures/whatsapp_webhook_http.json",
+        "TESTS/fixtures/generate_whatsapp_webhook_http.py",
+        "TESTS/contracts/test_whatsapp_webhook_http.py",
+        "TESTS/adapters/django/whatsapp_webhook_http.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py"
       ],
-      "evidence": [],
+      "evidence": [
+        {
+          "command": "python tools/go-migration/family.py run whatsapp-webhook --versioned --label sweep-wa-parity",
+          "revision": "b78f7f908987b46d6ba5a845bda139b5061410c5",
+          "result": "passed",
+          "artifact": "quality-reports/go-migration/whatsapp-webhook-http-sweep-wa-parity/results.json",
+          "receipt_sha256": "1a104486aea927cf51475f10b3a047f2c58a57f6df3cc166b3f88ad19711c99a",
+          "scope": "HTTP family whatsapp-webhook: 79/79 cases on native Django and native Go, 79/79 on Caddy /api/v1 and /api/v2."
+        }
+      ],
       "notes": [
         "Shared configuration and delivery contract in docs/whatsapp.md."
       ]
@@ -38939,25 +38964,45 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "verified",
+      "go": [
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/whatsapp/delivery.go"
+      ],
+      "dependencies": [
+        "communications_whatsappdelivery",
+        "task:BE/communications/tasks.py:deliver_whatsapp"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
         "request": null,
         "response": null,
         "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "authentication": "Internal scheduler only: Celery beat every 10 s (expires 10 s); Go runs it as the server outbox goroutine ticker (no Beat source or job row).",
+        "permissions": "None beyond process and database access; Go admits each attempt through the restore write lease (DATA_RESTORE_LOCK_PATH).",
+        "resource_scope": "Instance-wide communications_whatsappdelivery outbox and the effective WhatsApp integration.",
+        "side_effects": "Each tick runs deliver_whatsapp once: up to 50 due rows sent to the Cloud API, provider IDs or retry/failure details recorded.",
+        "transaction": "None of its own; one locked outbox row transaction per attempt.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/adapters/go/whatsapp_delivery_process.py",
+        "TESTS/adapters/go/whatsapp_meta_stub.py"
+      ],
+      "evidence": [
+        {
+          "command": "python -m TESTS.adapters.go.whatsapp_delivery_process",
+          "revision": "b78f7f908987b46d6ba5a845bda139b5061410c5",
+          "result": "passed",
+          "artifact": "quality-reports/go-migration/sweep-wa-parity/process-whatsapp_delivery_process.log",
+          "receipt_sha256": "fa40fdf120112a4e2b8d622e8f8436a9921311d378f32c592034853f971dfea9",
+          "scope": "Process harness whatsapp_delivery_process: {\"success\": true, \"workloads\": [\"django-native\", \"go-native\"], \"errors\": []}"
+        }
+      ],
+      "notes": [
+        "Shared configuration and delivery contract in docs/whatsapp.md."
+      ]
     },
     {
       "id": "schedule:BE/core/celery.py:generate-coupon-if-not-exists",
@@ -44552,9 +44597,11 @@
         "arguments": "",
         "options": {}
       },
-      "status": "implementing",
+      "status": "verified",
       "go": [
-        "BE_GO/internal/whatsapp/delivery.go"
+        "BE_GO/internal/whatsapp/delivery.go",
+        "BE_GO/internal/whatsapp/provider.go",
+        "BE_GO/cmd/server/main.go"
       ],
       "dependencies": [
         "communications_whatsappdelivery"
@@ -44565,9 +44612,9 @@
         "request": null,
         "response": null,
         "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
+        "authentication": "Internal: argument-less Celery task (Go: the server outbox tick); Cloud API requests carry the configured access token as Bearer.",
+        "permissions": "None beyond process and database access; a run stops when the integration is not enabled.",
+        "resource_scope": "Instance-wide outbox: queued rows due now (next_attempt_at, id order, SKIP LOCKED), at most 50 per run; the effective WhatsApp integration (instance settings, else WHATSAPP_*).",
         "side_effects": "Sends due notifications to the Cloud API and records provider IDs or retry details.",
         "transaction": "One locked outbox row per attempt.",
         "execution_owner": "Celery worker or Go API background worker."
@@ -44575,9 +44622,20 @@
       "tests": [
         "BE/communications/tests/test_whatsapp.py",
         "BE_GO/internal/whatsapp/provider_test.go",
-        "BE_GO/internal/service/whatsapp_integration_test.go"
+        "BE_GO/internal/service/whatsapp_integration_test.go",
+        "TESTS/adapters/go/whatsapp_delivery_process.py",
+        "TESTS/adapters/go/whatsapp_meta_stub.py"
       ],
-      "evidence": [],
+      "evidence": [
+        {
+          "command": "python -m TESTS.adapters.go.whatsapp_delivery_process",
+          "revision": "b78f7f908987b46d6ba5a845bda139b5061410c5",
+          "result": "passed",
+          "artifact": "quality-reports/go-migration/sweep-wa-parity/process-whatsapp_delivery_process.log",
+          "receipt_sha256": "fa40fdf120112a4e2b8d622e8f8436a9921311d378f32c592034853f971dfea9",
+          "scope": "Process harness whatsapp_delivery_process: {\"success\": true, \"workloads\": [\"django-native\", \"go-native\"], \"errors\": []}"
+        }
+      ],
       "notes": [
         "Shared configuration and delivery contract in docs/whatsapp.md."
       ]

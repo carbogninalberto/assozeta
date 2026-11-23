@@ -135,7 +135,9 @@
     "consumer": false,
     "job": false,
     "routed": false,
-    "harness": []
+    "harness": [
+      "TESTS/adapters/go/whatsapp_delivery_process.py"
+    ]
   },
   {
     "name": "core.tasks.send_mail_async",
