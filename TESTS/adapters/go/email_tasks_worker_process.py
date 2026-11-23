@@ -333,6 +333,11 @@ class EmailRehearsal(Rehearsal):
         self.fixture = EmailFixture(servers['TLS'].port, servers['SSL'].port)
         self.django = {task: self.django_expected(task) for task in TASKS}
         self.django_line_break = self.django_expected('send_reminders', variant='unsupported')
+        # The Go worker on the handoff ledger defers configured reminder sends to children (see matches_django).
+        self.deferred_calls = {False: [], True: []}
+        self.django_deferred = {False: self.django_expected('send_reminders', deferred=self.deferred_calls[False]),
+                                True: self.django_expected('send_reminders', variant='unsupported',
+                                                           deferred=self.deferred_calls[True])}
 
     def connect(self, name):
         connection = psycopg2.connect(host=str(self.work), user='contracts', dbname=DATABASE,
@@ -341,15 +346,20 @@ class EmailRehearsal(Rehearsal):
         return connection
 
     def drain(self):
-        raw = [item.decode() for item in reversed(self.broker.lrange('celery', 0, -1))]
-        self.broker.delete('celery')
+        # Under Go ownership (migration 6+) a child with a Go handler is routed to the Go consumer's queue.
+        raw = []
+        for queue in ('celery', 'assozeta-go'):
+            raw += [item.decode() for item in reversed(self.broker.lrange(queue, 0, -1))]
+            self.broker.delete(queue)
         return raw
 
     def transcripts(self):
         return {mode: server.take() for mode, server in self.servers.items()}
 
-    def django_expected(self, task, variant='main'):
-        """Run the actual Django task on a fresh seed with the production broker settings."""
+    def django_expected(self, task, variant='main', deferred=None):
+        """Run the actual Django task on a fresh seed with the production broker settings. With `deferred` (a list),
+        send_reminders' in-process send_email_html calls are recorded there instead of run: the control for a Go
+        worker on the handoff ledger, which publishes each of them as a send_email_html child of the job."""
         from contextlib import redirect_stdout, ExitStack
         import io
         from unittest.mock import patch
@@ -360,36 +370,38 @@ class EmailRehearsal(Rehearsal):
         from application import tasks
         before = self.fixture.seed(variant)
         self.drain(); self.transcripts()
-        keys = ('CELERY_BROKER_URL', 'CELERY_TASK_DEFAULT_QUEUE', 'CELERY_TASK_ROUTES')
-        saved = {key: app.conf[key] for key in keys}
-        app.conf.update(dict(zip(keys, (f'redis://default:{REDIS_PASSWORD}@127.0.0.1:{self.redis_port}', 'celery', None))))
-        _reset_celery_app(app)
-        values = dict(WHITELABEL_NAME=BRAND, IS_WHITELABEL=False, APP_URL=APP_URL,
-                      DEFAULT_FROM_EMAIL=f'{BRAND} <{HOST_USER}>', DEFAULT_TEAM_EMAIL=f'Il Team di {BRAND} <{HOST_USER}>')
         since, started = datetime.now(timezone.utc), time.time()
-        try:
-            with ExitStack() as stack:
-                stack.enter_context(override_settings(**values))
-                for name, value in values.items():
-                    stack.enter_context(patch.object(core_settings, name, value))
-                stack.enter_context(patch.object(tasks, 'WHITELABEL_NAME', BRAND))
-                stack.enter_context(redirect_stdout(io.StringIO()))
-                assert getattr(tasks, task).run() is None
-                if task == 'send_reminders':
-                    time.sleep(TIMER_WAIT)  # the Timer threads send after 1-30 s
-        finally:
-            app.conf.update(saved)
-            _reset_celery_app(app)
+        with self.django_runtime(), ExitStack() as recording:
+            if deferred is not None:
+                # Go defers exactly the calls for an association with a communication configuration (its own SMTP
+                # or none); without one both runtimes publish send_mail_async in the task.
+                from communications.models import CommunicationConfiguration
+                names = ('html_message', 'subject', 'recipient_list', 'sport_association_id', 'reply_to')
+                real = tasks.send_email_html
+
+                def send_email_html(*args, **kwargs):
+                    call = {**dict(zip(names, args)), **kwargs}
+                    association = call.get('sport_association_id')
+                    if association and CommunicationConfiguration.objects.filter(sport_association_id=association).exists():
+                        deferred.append(call)
+                    else:
+                        real(*args, **kwargs)
+                recording.enter_context(patch.object(tasks, 'send_email_html', send_email_html))
+            assert getattr(tasks, task).run() is None
+            if task == 'send_reminders' and deferred is None:
+                time.sleep(TIMER_WAIT)  # the Timer threads send after 1-30 s
         until = datetime.now(timezone.utc)
         raw = self.drain()
-        assert raw or variant != 'main', f'Django {task} published no Celery message'
+        assert raw or variant != 'main' or deferred is not None, f'Django {task} published no Celery message'
         specs = [spec_from(item) for item in raw]
         for i, (item, spec) in enumerate(zip(raw, specs)):
             from TESTS.adapters.django.family_harness import check_celery_message
             check_celery_message(Contract(), item, spec, since=started, until=time.time(), where=f':{i}')
         after = self.fixture.snapshot()
         transcripts = self.transcripts()
-        if variant == 'main':
+        if deferred is not None:
+            assert deferred and not any(transcripts.values()), 'the deferred control sends no SMTP itself'
+        elif variant == 'main':
             self.authored_checks(task, before, after, specs, transcripts)
         else:
             # The SMTP path: as_string() raises inside send_email's try, the failure is logged and the reminder completed.
@@ -401,6 +413,61 @@ class EmailRehearsal(Rehearsal):
                           key=lambda message: message[:2])
         return (self.fixture.normalized(after, since, until), messages,
                 {mode: sorted(json.dumps(t) for t in items) for mode, items in transcripts.items()})
+
+    def django_runtime(self):
+        """The production broker and settings the Django tasks run with in this rehearsal."""
+        from contextlib import contextmanager, redirect_stdout, ExitStack
+        import io
+        from unittest.mock import patch
+        from django.test import override_settings
+        from core.celery import app
+        from core import settings as core_settings
+        from TESTS.adapters.django.family_harness import _reset_celery_app
+        from application import tasks
+
+        @contextmanager
+        def runtime():
+            keys = ('CELERY_BROKER_URL', 'CELERY_TASK_DEFAULT_QUEUE', 'CELERY_TASK_ROUTES')
+            saved = {key: app.conf[key] for key in keys}
+            app.conf.update(dict(zip(keys, (f'redis://default:{REDIS_PASSWORD}@127.0.0.1:{self.redis_port}', 'celery', None))))
+            _reset_celery_app(app)
+            values = dict(WHITELABEL_NAME=BRAND, IS_WHITELABEL=False, APP_URL=APP_URL,
+                          DEFAULT_FROM_EMAIL=f'{BRAND} <{HOST_USER}>', DEFAULT_TEAM_EMAIL=f'Il Team di {BRAND} <{HOST_USER}>')
+            try:
+                with ExitStack() as stack:
+                    stack.enter_context(override_settings(**values))
+                    for name, value in values.items():
+                        stack.enter_context(patch.object(core_settings, name, value))
+                    stack.enter_context(patch.object(tasks, 'WHITELABEL_NAME', BRAND))
+                    stack.enter_context(redirect_stdout(io.StringIO()))
+                    yield
+            finally:
+                app.conf.update(saved)
+                _reset_celery_app(app)
+        return runtime()
+
+    def deferred_html_children(self, identifier, calls):
+        """With the handoff ledger (migration 6+), Go send_reminders publishes each configured send as a
+        send_email_html child of the job on the Go consumer queue (run there; its effects are covered by the
+        P4 certificate_emails matrix and the consumer e-mail adapter) where the Django task calls
+        send_email_html in-process. The children must carry exactly the recorded Django calls; return the
+        other messages for the usual envelope comparison."""
+        from kombu.utils.json import loads
+        raw = self.drain()
+        html = [item for item in raw if json.loads(item)['headers']['task'] == 'send_email_html']
+        published = []
+        for item in html:
+            message = json.loads(item)
+            assert message['properties']['delivery_info']['routing_key'] == 'assozeta-go', 'send_email_html child queue'
+            assert (message['headers']['parent_id'], message['headers']['root_id']) == (str(identifier), str(identifier)), \
+                'send_email_html child lineage'
+            args, kwargs, _ = loads(base64.b64decode(message['body']))
+            assert not args, args
+            published.append(kwargs)
+        normal = lambda calls: sorted(json.dumps({k: (str(v) if isinstance(v, UUID) else v) for k, v in call.items()},
+                                                 sort_keys=True, ensure_ascii=False) for call in calls)
+        assert normal(published) == normal(calls), 'Go send_email_html children differ from the Django in-process calls'
+        return [item for item in raw if item not in html]
 
     def authored_checks(self, task, before, after, specs, transcripts):
         """The oracle exercised the intended paths."""
@@ -448,8 +515,13 @@ class EmailRehearsal(Rehearsal):
         await_condition(lambda: self.job(identifier)[0] == 'completed', 'registered e-mail worker durable completion', timeout=60)
         assert self.job(identifier)[:3] == ('completed', 1, '')
         assert self.sql('SELECT result FROM assozeta_go_jobs WHERE id=%s', (identifier,)) == [(None,)]
-        if task == 'send_reminders':
-            time.sleep(TIMER_WAIT)
+        rest = None
+        if task == 'send_reminders' and self.ledger:
+            line_break = expected is not None  # the 'unsupported' seed variant
+            expected = self.django_deferred[line_break]
+            rest = self.deferred_html_children(identifier, self.deferred_calls[line_break])
+        elif task == 'send_reminders':
+            time.sleep(TIMER_WAIT)  # the worker's local Timer sends
         state, messages, transcripts = expected or self.django[task]
         bodies = [body for body, _, _ in messages]
         actual = self.fixture.normalized(self.fixture.snapshot(), self.since, datetime.now(timezone.utc))
@@ -458,7 +530,7 @@ class EmailRehearsal(Rehearsal):
                            for label in set(state) | set(actual) if state.get(label) != actual.get(label)}
             (self.output / f'difference-{task}.json').write_text(json.dumps(differences, indent=1, default=str) + '\n')
         assert actual == state, f'Go {task} state differs from the Django task on the same seed'
-        raw = self.drain()
+        raw = self.drain() if rest is None else rest + self.drain()
         go = sorted((json.loads(item)['body'], item) for item in raw)
         if [body for body, _ in go] != bodies:
             decode = lambda items: [json.loads(base64.b64decode(item)) for item in items]
@@ -473,6 +545,10 @@ class EmailRehearsal(Rehearsal):
         from TESTS.adapters.django.family_harness import check_celery_message
         go = sorted(go, key=lambda pair: (pair[0], json.loads(pair[1])['headers']['task']))
         for i, ((body, item), (_, _, spec)) in enumerate(zip(go, messages, strict=True)):
+            # The Go job publishes its children as their parent (and root), on the queue of their Go handler.
+            spec = dict(spec, queue=json.loads(item)['properties']['delivery_info']['routing_key'],
+                        root_id=str(identifier), parent_id=str(identifier))
+            assert spec['queue'] == 'assozeta-go', f'Go {task} child routed to {spec["queue"]}, expected the Go consumer queue'
             check_celery_message(Contract(), item, spec, since=self.started, until=time.time(), where=f':{i}')
         actual_transcripts = {mode: sorted(json.dumps(t) for t in items) for mode, items in self.transcripts().items()}
         if actual_transcripts != transcripts:
@@ -481,6 +557,7 @@ class EmailRehearsal(Rehearsal):
 
     def run(self):
         self.command('migrate')
+        self.ledger = self.sql("SELECT to_regclass('public.assozeta_handoff_work') IS NOT NULL")[0][0]
         assert self.sql('SELECT runtime,generation FROM assozeta_go_job_ownership') == [('django', 1)]
         identifier, before = self.seed_job('send_expiring_certificate_email')
         process = self.worker()

@@ -4840,10 +4840,7 @@
           "go:BE_GO/internal/service/consumer_export_association.go:ConsumerExportAssociation.sendMail:s.producer.Publish",
           "go:BE_GO/internal/service/document_render.go:DocumentRender.invoiceJob:s.publisher.Publish",
           "go:BE_GO/internal/service/email_render_routes.go:EmailRenderRoutes.sendMail:s.publisher.Publish",
-          "go:BE_GO/internal/service/email_tasks.go:EmailTasks.SendEmailHTML:s.publisher.Publish",
-          "go:BE_GO/internal/service/email_tasks.go:EmailTasks.certificate:s.publisher.Publish",
-          "go:BE_GO/internal/service/email_tasks.go:EmailTasks.configurationSend:s.publisher.Publish",
-          "go:BE_GO/internal/service/email_tasks.go:EmailTasks.partialRegistration:s.publisher.Publish",
+          "go:BE_GO/internal/service/email_tasks.go:EmailTasks.publishMail:s.publisher.Publish",
           "go:BE_GO/internal/service/oauth_accounts.go:OAuthAccounts.publish:s.publisher.Publish",
           "go:BE_GO/internal/service/subscription_create.go:SubscriptionCreates.afterCommit:s.tasks.Publish",
           "go:BE_GO/internal/service/subscription_transfer.go:SubscriptionTransfers.createAccount:s.publisher.Publish",
@@ -6265,8 +6262,7 @@
         "go": {
           "runtime": "go",
           "component": "/app/worker",
-          "status": "planned",
-          "phase": 4
+          "status": "present"
         }
       },
       "refs": [
@@ -6318,8 +6314,7 @@
         "go": {
           "runtime": "go",
           "component": "/app/worker",
-          "status": "planned",
-          "phase": 4
+          "status": "present"
         }
       },
       "refs": [
@@ -6371,8 +6366,7 @@
         "go": {
           "runtime": "go",
           "component": "/app/worker",
-          "status": "planned",
-          "phase": 4
+          "status": "present"
         }
       },
       "refs": [
@@ -6469,8 +6463,7 @@
         "go": {
           "runtime": "go",
           "component": "/app/worker",
-          "status": "planned",
-          "phase": 4
+          "status": "present"
         }
       },
       "refs": [
@@ -7463,8 +7456,7 @@
         "go": {
           "runtime": "go",
           "component": "/app/worker",
-          "status": "planned",
-          "phase": 4
+          "status": "present"
         }
       },
       "refs": [
@@ -7474,7 +7466,7 @@
         "selfhost/compose.yml"
       ],
       "notes": [
-        "The Go delay runs from the native reminder job, which is absent from the installed worker set. Its fallback publishes mail."
+        "The Go reminder job publishes configured HTML mail as a portable child before completing."
       ]
     },
     {
@@ -8067,10 +8059,7 @@
       "items": [
         "go:BE_GO/internal/service/consumer_email.go:SendMailAsync.consumerEmailPublish:s.publisher.Publish",
         "go:BE_GO/internal/service/consumer_export_association.go:ConsumerExportAssociation.sendMail:s.producer.Publish",
-        "go:BE_GO/internal/service/email_tasks.go:EmailTasks.SendEmailHTML:s.publisher.Publish",
-        "go:BE_GO/internal/service/email_tasks.go:EmailTasks.certificate:s.publisher.Publish",
-        "go:BE_GO/internal/service/email_tasks.go:EmailTasks.configurationSend:s.publisher.Publish",
-        "go:BE_GO/internal/service/email_tasks.go:EmailTasks.partialRegistration:s.publisher.Publish",
+        "go:BE_GO/internal/service/email_tasks.go:EmailTasks.publishMail:s.publisher.Publish",
         "go:BE_GO/internal/service/user_deletion_requests.go:UserDeletionRequests.deleteOne:s.publisher.Publish",
         "py:BE/application/tasks.py:delete_users_with_request:send_email_text.apply_async",
         "py:BE/application/tasks.py:export_association_data:send_mail_async.delay",

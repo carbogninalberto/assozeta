@@ -22,9 +22,27 @@ func registerDurableClaim(ctx context.Context, tx *sqlx.Tx, job *domain.Job, con
 	if err != nil {
 		return err
 	}
-	_, err = tx.ExecContext(ctx, `UPDATE public.assozeta_handoff_attempts SET outcome='released',finished_at=clock_timestamp()
- WHERE task_id=$1 AND runtime='go' AND outcome='running'`, taskID)
+	released, err := tx.ExecContext(ctx, `WITH released AS (
+ UPDATE public.assozeta_handoff_attempts SET outcome='released',finished_at=clock_timestamp()
+ WHERE task_id=$1 AND runtime='go' AND outcome='running' RETURNING attempt_id
+)
+UPDATE public.assozeta_handoff_effects e SET state='ambiguous' FROM released r
+WHERE e.attempt_id=r.attempt_id AND e.state='intent'`, taskID)
 	if err != nil {
+		return err
+	}
+	count, err := released.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if count > 0 {
+		job.State = "pending"
+		if _, err = tx.ExecContext(ctx, `UPDATE public.assozeta_handoff_work
+ SET state='blocked',block_reason='ambiguous_effect',updated_at=clock_timestamp() WHERE task_id=$1`, taskID); err != nil {
+			return err
+		}
+		_, err = tx.ExecContext(ctx, `UPDATE public.assozeta_go_jobs
+ SET state='pending',attempts=greatest(attempts-1,0),finished_at=NULL,error_code='',`+clearJobLease+` WHERE id=$1`, job.ID)
 		return err
 	}
 	state, retries := "pending", job.Attempts-1
@@ -37,8 +55,10 @@ func registerDurableClaim(ctx context.Context, tx *sqlx.Tx, job *domain.Job, con
 		return err
 	}
 	var attempt uuid.UUID
-	err = tx.GetContext(ctx, &attempt, `SELECT attempt_id FROM public.assozeta_handoff_claim('go',$1,$2,$3,NULL)
- WHERE outcome='claimed'`, consumer, taskID, job.Kind)
+	err = tx.QueryRowxContext(ctx, `SELECT c.attempt_id,coalesce(nullif(w.root_id,''),w.task_id)
+ FROM public.assozeta_handoff_claim('go',$1,$2,$3,NULL) c
+ CROSS JOIN public.assozeta_handoff_work w WHERE c.outcome='claimed' AND w.task_id=$2`,
+		consumer, taskID, job.Kind).Scan(&attempt, &job.HandoffRootID)
 	if err != nil {
 		return err
 	}

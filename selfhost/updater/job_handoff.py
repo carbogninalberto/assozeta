@@ -612,7 +612,11 @@ def reconcile(store, task_id, decision, actor):
         UPDATE public.assozeta_handoff_work SET state=:'state',block_reason=NULL,updated_at=clock_timestamp(),
             resolved_by=:'actor',resolved_at=clock_timestamp()
         WHERE task_id=:'task' AND state='blocked' AND (:'decision'='discard' OR block_reason='ambiguous_effect')
-        RETURNING task_id),
+        RETURNING task_id,transport),
+        jobs AS (UPDATE public.assozeta_go_jobs j
+            SET state=:'state', finished_at=CASE WHEN :'state'='pending' THEN NULL ELSE clock_timestamp() END,
+                lease_owner='',lease_token='00000000-0000-0000-0000-000000000000',lease_until=NULL,error_code=''
+            FROM resolved r WHERE r.transport='sql' AND j.id::text=r.task_id),
         effects AS (UPDATE public.assozeta_handoff_effects e SET
             state=CASE :'decision' WHEN 'sent' THEN 'reconciled_sent' ELSE 'reconciled_unsent' END,
             effect_key=CASE WHEN :'decision'='not_sent' THEN effect_key||':'||attempt_id::text ELSE effect_key END,

@@ -252,6 +252,46 @@
         null
       ],
       "go_time_limits": null
+    },
+    "send_expiring_certificate_email": {
+      "family": "certificate_emails",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "send_expired_certificate_email": {
+      "family": "certificate_emails",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "send_reminders": {
+      "family": "certificate_emails",
+      "rate_limit": "60/m",
+      "go_rate_limit": "EmailTasks.waitForReminderSlot paces starts in each handoff worker",
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "send_user_partial_registration_email": {
+      "family": "certificate_emails",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
     }
   }
 }

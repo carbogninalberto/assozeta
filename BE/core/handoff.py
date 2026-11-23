@@ -98,7 +98,7 @@ def _install_mail():
         active = _mail.get()
         if active is None:
             return original_data(client, msg)
-        _, task_id, retries, attempt, sequence = active
+        _, task_id, retries, attempt, sequence, _ = active
         key = f'{task_id}:{retries}:smtp:{next(sequence)}'
         outcome, = _fetch("SELECT public.assozeta_handoff_effect_intent(%s,%s,'smtp')", (attempt, key))
         if outcome == 'confirmed':
@@ -122,7 +122,7 @@ def _install_mail():
 
     def start(timer):
         active = _mail.get()
-        if active is None or active[0] != 'send_email_html':
+        if active is None or active[0] not in ('send_email_html', 'send_reminders'):
             return original_start(timer)
         # The configured HTML sender schedules its SMTP call in a Timer. Keep
         # the logical attempt alive through that call and its confirmation.
@@ -130,7 +130,7 @@ def _install_mail():
         context = copy_context()
         timer.function = lambda *a, **kw: context.run(callback, *a, **kw)
         original_start(timer)
-        timer.join()
+        active[5].append(timer)
 
     smtplib.SMTP.data = data
     Timer.start = start
@@ -160,6 +160,10 @@ def install_producer():
             return original_put(channel, queue, message, **kwargs)
         task_id = headers['id']
         running = _running.get()
+        if running and running[0] != task_id and not headers.get('parent_id'):
+            headers['parent_id'] = running[0]
+            if headers.get('root_id') in (None, task_id):
+                headers['root_id'] = running[2]
         if running and running[0] == task_id:
             # Retire the old attempt and admit its successor together. Even a
             # zero-countdown retry can now be claimed as soon as it is pushed.
@@ -366,14 +370,21 @@ def _execute_claim(task, guarded, run, args, kwargs, attempt):
             return result
 
     from itertools import count
-    mail = _mail.set((task.name, task_id, task.request.retries, attempt, count()) if task.name in ('core.tasks.send_mail_async', 'send_email_html', 'send_email_template', 'send_email_text') else None)
-    token = _running.set((task_id, attempt))
+    smtp_tasks = ('core.tasks.send_mail_async', 'send_email_html', 'send_email_template', 'send_email_text',
+                  'send_expiring_certificate_email', 'send_expired_certificate_email', 'send_reminders')
+    timers = []
+    mail = _mail.set((task.name, task_id, task.request.retries, attempt, count(), timers) if task.name in smtp_tasks else None)
+    token = _running.set((task_id, attempt, task.request.root_id or task_id))
     try:
         try:
             if task.name == 'reset_communication_daily_email_balance':
                 # Restore deferral can publish a retry before business execution.
                 return guarded(database_effect, *args, **kwargs)
-            result = guarded(run, *args, **kwargs)
+            try:
+                result = guarded(run, *args, **kwargs)
+            finally:
+                for timer in timers:
+                    timer.join()
         except Retry:
             _finish(attempt, 'retried')
             raise

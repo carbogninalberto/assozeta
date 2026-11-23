@@ -79,7 +79,6 @@ type brokerAttempt struct {
 	ledger      *BrokerHandoff
 	id, task    string
 	retries     int64
-	effects     int
 }
 
 func (w *Worker) claim(ctx context.Context, d *Delivery) (context.Context, bool) {
@@ -238,7 +237,7 @@ func (a *brokerAttempt) renew(ctx context.Context) {
 }
 
 func (a *brokerAttempt) context(ctx context.Context) context.Context {
-	return smtpsend.WithEffectIntent(context.WithValue(ctx, attemptContext{}, a), a.intent)
+	return smtpsend.WithLedgerAttempt(context.WithValue(ctx, attemptContext{}, a), a.ledger.DB, a.task, a.id, a.retries)
 }
 
 // BrokerConsumerID identifies the registered worker that claimed this task.
@@ -251,29 +250,6 @@ func BrokerConsumerID(ctx context.Context) string {
 
 func HasBrokerAttempt(ctx context.Context) bool {
 	return ctx.Value(attemptContext{}) != nil
-}
-
-func (a *brokerAttempt) intent(ctx context.Context) (func(bool) error, error) {
-	key := fmt.Sprintf("%s:%d:smtp:%d", a.task, a.retries, a.effects)
-	a.effects++
-	var outcome string
-	err := a.ledger.DB.QueryRowContext(ctx, "SELECT public.assozeta_handoff_effect_intent($1,$2,'smtp')", a.id, key).Scan(&outcome)
-	if err != nil || outcome == "confirmed" {
-		return nil, err
-	}
-	if outcome != "recorded" {
-		return nil, errors.New("SMTP effect needs reconciliation")
-	}
-	return func(accepted bool) error {
-		if !accepted {
-			_, err := a.ledger.DB.ExecContext(ctx, "DELETE FROM public.assozeta_handoff_effects WHERE effect_key=$1 AND attempt_id=$2 AND state='intent'", key, a.id)
-			return err
-		}
-		handoff.Barrier("effect:accepted", a.task)
-		_, err := a.ledger.DB.ExecContext(ctx, `SELECT public.assozeta_handoff_effect_confirm($1,NULL)
-  FROM (SELECT public.assozeta_handoff_fence($2)) fenced`, key, a.id)
-		return err
-	}, nil
 }
 
 func (a *brokerAttempt) finish(ctx context.Context, result taskOutcome) {

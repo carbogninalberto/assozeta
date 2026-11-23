@@ -46,6 +46,7 @@ type JobIntent struct {
 }
 
 type Job struct {
+	HandoffRootID       string           `db:"-"`
 	OwnershipGeneration int64            `db:"ownership_generation"`
 	ID                  uuid.UUID        `db:"id"`
 	AssociationID       uuid.UUID        `db:"association_id"`

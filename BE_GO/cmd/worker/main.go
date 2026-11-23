@@ -99,7 +99,7 @@ func run(arguments []string) error {
 	attendance := service.NewAutoMarkAttendance(repository.NewAutoMarkAttendance(db), time.Now, logger)
 	emails := service.NewEmailTasks(repository.NewEmailTasks(db), tasks, service.SMTPMailer{}, service.EmailTaskSettings{
 		AppURL: cfg.InstanceAdmin.AppURL, WhitelabelName: cfg.WhitelabelName, DefaultFromEmail: cfg.DefaultFromEmail,
-		DefaultTeamEmail: cfg.DefaultTeamEmail, IsWhitelabel: cfg.IsWhitelabel}, time.Now, logger)
+		DefaultTeamEmail: cfg.DefaultTeamEmail, IsWhitelabel: cfg.IsWhitelabel}, time.Now, logger).WithHandoffLedger(db.DB)
 	exports := service.NewExportCleanup(repository.NewExportCleanups(db), composeExportCleanupObjects(cfg), time.Now, logger)
 	quotes := service.NewQuoteAssign(repository.NewQuoteAssigns(db), emails, cfg.WhitelabelName, time.Now, logger)
 	orphans := service.NewOrphanMedicalCleanup(repository.NewOrphanMedicalCleanups(db), composeExportCleanupObjects(cfg), time.Now, logger)
