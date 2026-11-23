@@ -582,6 +582,63 @@ def _file_barrier(directory):
     return mark
 
 
+def compose_store(root, env_file):
+    from common import compose_command, compose_environment, read_env
+    values = read_env(env_file)
+    command = compose_command(root, env_file) + ['exec', '-T', 'postgres', 'psql',
+        '-U', values.get('DBUSER', 'assozeta'), '-d', values.get('DBNAME', 'assozeta')]
+    return PsqlStore(command, compose_environment(root, env_file))
+
+
+class ComposeBroker:
+    def __init__(self, command, environment, username, password):
+        self.command, self.environment = command, environment
+        self.auth = ('AUTH', username, password)
+
+    def call(self, *arguments):
+        from threading import Timer
+
+        def send(stream, parts):
+            stream.write(b'*%d\r\n' % len(parts))
+            for part in parts:
+                data = part if isinstance(part, bytes) else str(part).encode()
+                stream.write(b'$%d\r\n' % len(data))
+                stream.write(data)
+                stream.write(b'\r\n')
+            stream.flush()
+
+        with subprocess.Popen(self.command, env=self.environment, stdin=subprocess.PIPE,
+                              stdout=subprocess.PIPE, stderr=subprocess.DEVNULL) as process:
+            deadline = Timer(30, process.kill)
+            deadline.start()
+            try:
+                send(process.stdin, self.auth)
+                if RespBroker._reply(process.stdout) != b'OK':
+                    raise RuntimeError('broker authentication failed')
+                send(process.stdin, arguments)
+                result = RespBroker._reply(process.stdout)
+                # Finish the pipe even when nc waits for its peer after stdin closes.
+                try:
+                    send(process.stdin, ('QUIT',))
+                    process.stdin.close()
+                except BrokenPipeError:
+                    pass  # The command's complete reply has already arrived.
+                process.wait()
+                return result
+            finally:
+                deadline.cancel()
+                if process.poll() is None:
+                    process.kill()
+
+
+def compose_broker(root, env_file):
+    from common import compose_command, compose_environment, read_env
+    values = read_env(env_file)
+    command = compose_command(root, env_file) + ['exec', '-T', 'redis', 'nc', '127.0.0.1', '6379']
+    return ComposeBroker(command, compose_environment(root, env_file),
+                         values.get('REDIS_USERNAME') or 'default', values['REDIS_PASSWORD'])
+
+
 class _Arguments(argparse.ArgumentParser):
     def error(self, message):
         # argparse's default error includes the argument value (possibly the

@@ -352,7 +352,8 @@ def serve(root, env_file, engine_class=Engine):
                     raise AccessDenied()
                 actor = authenticate_access_token(authorization[7:], read_env(env_file))
                 require_current_owner(root, env_file, actor)
-                self.respond(200, {'is_owner': True, **status_payload()})
+                self.respond(200, {'is_owner': True, **status_payload(),
+                                   'runtime': runtime_switch.status(root, env_file, journal, None)})
             except (AccessDenied, ValueError, TypeError, KeyError):
                 self.respond(403, {'error': 'Access denied.'})
             except OwnershipUnavailable:

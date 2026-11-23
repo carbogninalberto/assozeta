@@ -98,15 +98,18 @@ class Journal:
     def update(self, operation_id, *, if_status=None, **changes):
         with self.connect() as db:
             db.execute('BEGIN IMMEDIATE')
-            row = db.execute('SELECT record FROM operations WHERE id=?', (operation_id,)).fetchone()
-            if not row:
-                raise KeyError(operation_id)
-            record = json.loads(row[0])
-            if if_status is not None and record['status'] != if_status:
-                return None
-            record.update(changes, updated_at=now())
-            db.execute('UPDATE operations SET status=?, record=? WHERE id=?', (record['status'], json.dumps(record), operation_id))
-            return record
+            return self.update_in(db, operation_id, if_status=if_status, **changes)
+
+    def update_in(self, db, operation_id, *, if_status=None, **changes):
+        row = db.execute('SELECT record FROM operations WHERE id=?', (operation_id,)).fetchone()
+        if not row:
+            raise KeyError(operation_id)
+        record = json.loads(row[0])
+        if if_status is not None and record['status'] != if_status:
+            return None
+        record.update(changes, updated_at=now())
+        db.execute('UPDATE operations SET status=?, record=? WHERE id=?', (record['status'], json.dumps(record), operation_id))
+        return record
 
     def records(self, *statuses):
         query = 'SELECT record FROM operations'
