@@ -2274,7 +2274,7 @@
     "TESTS.handoff.test_p6_resident.ActiveRuntimeOperations.test_go_manual_sync_uses_the_packaged_go_command": {
       "phase": 6,
       "owner": "t-p6",
-      "reason": "milestone A: sync-manual runs a one-shot of the Django api image in Go mode; contract: /app/manuale sync-corpus in the Go image",
+      "reason": "milestone A: sync-manual runs a one-shot of the Django api image in Go mode; contract: /app/manuale-cli sync-corpus in the Go image",
       "signatures": [
         "P6A contract red"
       ]
@@ -2490,7 +2490,7 @@
     "TESTS.handoff.test_p6_independence.Packaging.test_go_image_ships_the_native_superuser_and_manual_commands": {
       "phase": 6,
       "owner": "t-p6",
-      "reason": "milestone B: BE_GO/Dockerfile neither builds ./cmd/manuale nor ships /app/manuale",
+      "reason": "milestone B: BE_GO/Dockerfile neither builds ./cmd/manuale nor ships it as /app/manuale-cli",
       "signatures": [
         "P6B contract red"
       ]

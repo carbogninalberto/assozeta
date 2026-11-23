@@ -60,8 +60,18 @@ def reference(baseline=None):
         if code:
             raise s.SchemaHarnessError(f'reference Django migrations failed: {output}')
         s.operational_sql(cluster(), name)
-        STATE['references'][key] = (name, s.snapshot(cluster(), name))
+        STATE['references'][key] = (name, s.snapshot(cluster(), name, preserved(baseline)))
     return STATE['references'][key]
+
+
+def preserved(baseline):
+    """UUIDs of the database the migrations start from (none for an empty database)."""
+    if baseline is None:
+        return frozenset()
+    cache = STATE.setdefault('preserved', {})
+    if baseline not in cache:
+        cache[baseline] = s.existing_uuids(cluster(), base(baseline))
+    return cache[baseline]
 
 
 def base(baseline):
@@ -90,8 +100,21 @@ class SharedSchema(h.ContractB, unittest.TestCase):
         name, code, output = self.candidate(path, baseline)
         label = f'the {path} migration path {"on an empty database" if baseline is None else "from " + baseline}'
         self.assertEqual(code, 0, f'{RED}: {label} failed: {output}')
-        found = s.differences(expected, s.snapshot(cluster(), name))
+        found = s.differences(expected, s.snapshot(cluster(), name, preserved(baseline)))
         self.assertEqual(found, [], f'{RED}: {label} does not build the shared schema:\n' + '\n'.join(found))
+
+    def test_two_independent_reference_builds_are_identical(self):
+        """Control (green guard): the comparator does not see two runs of the same path as different.
+
+        Data migrations mint random UUIDs on every run (application 0230 add_enti_feature); everything else
+        must compare exactly, so this also proves the normalization is limited to those values."""
+        _, expected = reference()
+        name, code, output = self.candidate('django')
+        if code:
+            raise s.SchemaHarnessError(f'control Django migrations failed: {output}')
+        s.operational_sql(cluster(), name)
+        found = s.differences(expected, s.snapshot(cluster(), name))
+        self.assertEqual(found, [], 'two independent reference builds differ:\n' + '\n'.join(found))
 
     def test_go_migrator_builds_the_whole_schema_on_an_empty_database(self):
         self.compare('go')

@@ -23,6 +23,7 @@ values), functions, triggers, the Django and Go migration histories, content typ
 by natural key, and every table's rows (timestamps reduced to null/not-null, content-type ids
 replaced by natural keys).
 """
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -252,7 +253,35 @@ SNAPSHOT_SQL = {
 }
 
 
-def snapshot(cluster, database):
+def uuid_columns(cluster, database):
+    """{table: [uuid-typed columns]} of the public schema."""
+    found = {}
+    for row in cluster.rows(database, "SELECT table_name, column_name FROM information_schema.columns WHERE "
+                                      "table_schema='public' AND data_type='uuid' ORDER BY table_name, column_name"):
+        found.setdefault(row['table_name'], []).append(row['column_name'])
+    return found
+
+
+def existing_uuids(cluster, database):
+    """Every UUID value stored in a uuid-typed column: the identifiers a migration path must preserve."""
+    values = set()
+    for table, columns in uuid_columns(cluster, database).items():
+        for column in columns:
+            values.update(r['v'] for r in cluster.rows(
+                database, f'SELECT DISTINCT "{column}"::text AS v FROM public."{table}" WHERE "{column}" IS NOT NULL'))
+    return frozenset(values)
+
+
+def snapshot(cluster, database, preserved=frozenset()):
+    """Comparable state of `database`.
+
+    Exact everywhere except one class of value: a UUID in a uuid-typed column that a migration minted
+    (uuid4 defaults of rows created by data migrations, e.g. application 0230 add_enti_feature), i.e.
+    absent from `preserved` (the UUIDs of the database the migrations started from). Each minted value
+    becomes a token named after its first occurrence in a deterministic walk (tables, columns, rows
+    ordered by their content without UUIDs), and every reference to it gets the same token. Preserved
+    identifiers, and every non-UUID value, are compared as they are.
+    """
     result = {}
     for category, statement in SNAPSHOT_SQL.items():
         rows = cluster.rows(database, statement)
@@ -283,8 +312,29 @@ def snapshot(cluster, database):
                                       "'timestamp without time zone', 'date')"):
         temporal.setdefault(row['table_name'], set()).add(row['column_name'])
     data = {}
+    uuids = uuid_columns(cluster, database)
+    minted, documents = {}, {}
     for table in tables:
-        if table in NATURAL:
+        if table in NATURAL or table not in uuids:
+            continue
+        rows = [r['d'] for r in cluster.rows(database, f'SELECT to_jsonb(t) AS d FROM public."{table}" t')]
+        for document in rows:
+            for column in temporal.get(table, ()):
+                document[column] = document.get(column) is None
+        rows.sort(key=lambda d: json.dumps({k: (None if k in uuids[table] else v) for k, v in d.items()},
+                                           sort_keys=True))
+        documents[table] = rows
+        for column in uuids[table]:
+            for index, document in enumerate(rows):
+                value = document.get(column)
+                if value is not None and value not in preserved and value not in minted:
+                    minted[value] = f'minted:{table}.{column}:{index}'
+    for table, rows in documents.items():
+        normalized = sorted(json.dumps({k: minted.get(v, v) if k in uuids[table] else v for k, v in d.items()},
+                                       sort_keys=True) for d in rows)
+        data[table] = f"{len(normalized)}:{hashlib.md5('|'.join(normalized).encode()).hexdigest() if normalized else ''}"
+    for table in tables:
+        if table in NATURAL or table in uuids:
             continue
         masked = ' - '.join(f"'{column}'" for column in sorted(temporal.get(table, ())))
         expression = f"to_jsonb(t){' - ' + masked if masked else ''}"

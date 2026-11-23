@@ -18,7 +18,8 @@ Contract pinned here:
                      documentation assets (no `collectstatic` in a Django container).
   switch             a runtime switch (Phase 5 controller) runs no schema migration at all: migrations
                      belong to lifecycle boundaries (install, upgrade, restore, explicit migrate).
-  packaging          BE_GO/Dockerfile builds and ships /app/create-instance-superuser and /app/manuale;
+  packaging          BE_GO/Dockerfile builds and ships /app/create-instance-superuser and /app/manuale-cli
+                     (built from ./cmd/manuale; /app/manuale stays the shared manual-data volume);
                      the release workflow carries the Go image's manual from a Go image, not from the
                      previous Django image.
   reversal artifacts engine.Engine.verify_running(target) also verifies the image of the inactive
@@ -146,7 +147,7 @@ class SwitchWithoutMigration(Base):
 class Packaging(Base):
     def test_go_image_ships_the_native_superuser_and_manual_commands(self):
         dockerfile = (ROOT / 'BE_GO/Dockerfile').read_text()
-        for command, package in (('create-instance-superuser', 'create-instance-superuser'), ('manuale', 'manuale')):
+        for command, package in (('create-instance-superuser', 'create-instance-superuser'), ('manuale-cli', 'manuale')):
             with self.subTest(command=command):
                 self.assertRegex(dockerfile, rf'go build[^\n]*-o /{command} \./cmd/{package}\b',
                                  f'{RED}: BE_GO/Dockerfile does not build ./cmd/{package}')

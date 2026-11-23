@@ -18,7 +18,8 @@ Contract pinned here (names are the implementer's interface):
                      Django mode `exec ... api python manage.py create_instance_superuser ARGS`
                      (the password travels by variable name, never in argv).
   sync-manual        one-shot of the active runtime's image with --no-deps: Go mode the packaged
-                     `/app/manuale sync-corpus`, Django mode `python manage.py sync_manuale_corpus`.
+                     `/app/manuale-cli sync-corpus` (/app/manuale stays the shared manual-data
+                     volume), Django mode `python manage.py sync_manuale_corpus`.
   health             new read-only command `bin/assozeta health`: last stdout line is one JSON object
                      {runtime, generation, status: passed|failed, checks: {routing, schema, worker,
                      scheduler, relay}}, each check {status: passed|failed, reason: code|null}; exit 0
@@ -147,7 +148,7 @@ class ActiveRuntimeOperations(Base):
             self.assertEqual([item['runtime'] for item in oneshots], [runtime],
                              f'{RED}: sync-manual must be exactly one {runtime} one-shot: {oneshots}')
             argv = ' '.join(oneshots[0]['argv'])
-            needle = '/app/manuale sync-corpus' if runtime == 'go' else 'manage.py sync_manuale_corpus'
+            needle = '/app/manuale-cli sync-corpus' if runtime == 'go' else 'manage.py sync_manuale_corpus'
             self.assertIn(needle, argv, f'{RED}: native manual sync for {runtime}')
             self.assertFalse([item for item in inst.executables(mark) if item['kind'] == 'resident'
                               and item['runtime'] != 'shared'], f'{RED}: sync-manual started an application service')
