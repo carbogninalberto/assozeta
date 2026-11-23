@@ -200,11 +200,10 @@ jobs:
       - name: Carry the manual of the previous release
         # Releases without include_manual reuse the verified manual of the
         # current :latest release image unchanged (it may itself be carried).
-        # Both backend images take the same package from the Django image.
         id: carried
         if: (matrix.name == 'backend' || matrix.name == 'backend-go') && needs.manual-release.result != 'success' && env.RELEASE_TAG != ''
         env:
-          SOURCE_IMAGE: ghcr.io/${{ github.repository_owner }}/assozeta-backend:latest
+          SOURCE_IMAGE: ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}:latest
           DESTINATION: ${{ matrix.context }}/release-manual
         run: |
           set -euo pipefail
