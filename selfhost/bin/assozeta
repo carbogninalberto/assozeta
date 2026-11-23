@@ -52,6 +52,7 @@ Production commands:
   stop
   restart
   status
+  health                    Report routing, schema, worker, scheduler and relay health as JSON.
   logs [SERVICE]
   sync-manual               Install the published manual for the configured release.
   backup [--scheduled] [DIRECTORY]
@@ -1237,6 +1238,44 @@ restart_prod() {
     status_prod
 }
 
+health_check_json() {
+    if [ "$1" = ok ]; then
+        printf '{"status":"passed","reason":null}'
+    else
+        printf '{"status":"failed","reason":"%s"}' "$1"
+    fi
+}
+
+health_prod() {
+    [ -f "$PROD_ENV" ] || die "run configure first"
+    health_url=$(env_value APP_URL "$PROD_ENV")
+    health_routing=readiness_failed
+    if curl --connect-timeout 5 --max-time 15 --fail --silent --show-error \
+        "${health_url%/}/api/readyz" >/dev/null 2>&1; then
+        health_routing=ok
+    fi
+
+    health_heartbeat=${ASSOZETA_HEALTH_HEARTBEAT_SECONDS:-$(env_value ASSOZETA_HEALTH_HEARTBEAT_SECONDS "$PROD_ENV")}
+    health_stall=${ASSOZETA_HEALTH_STALL_SECONDS:-$(env_value ASSOZETA_HEALTH_STALL_SECONDS "$PROD_ENV")}
+    health_values=$(prod_compose exec -T postgres psql -X -qAt -F '|' -v ON_ERROR_STOP=1 \
+        -U "$(env_value DBUSER "$PROD_ENV")" -d "$(env_value DBNAME "$PROD_ENV")" \
+        -v heartbeat="${health_heartbeat:-90}" -v stall="${health_stall:-600}" \
+        < "$SELFHOST_DIR/config/runtime-health.sql") || health_values='unknown|null|database_unavailable|database_unavailable|database_unavailable|database_unavailable'
+    IFS='|' read -r health_runtime health_generation health_schema health_worker health_scheduler health_relay <<EOF
+$health_values
+EOF
+    case "$health_runtime" in django|go) health_runtime_json=\"$health_runtime\" ;; *) health_runtime_json=null ;; esac
+    health_status=failed
+    if [ "$health_routing/$health_schema/$health_worker/$health_scheduler/$health_relay" = ok/ok/ok/ok/ok ]; then
+        health_status=passed
+    fi
+    printf '%s{"runtime":%s,"generation":%s,"status":"%s","checks":{"routing":%s,"schema":%s,"worker":%s,"scheduler":%s,"relay":%s}}\n' \
+        "${1:-}" "$health_runtime_json" "${health_generation:-null}" "$health_status" \
+        "$(health_check_json "$health_routing")" "$(health_check_json "$health_schema")" \
+        "$(health_check_json "$health_worker")" "$(health_check_json "$health_scheduler")" "$(health_check_json "$health_relay")"
+    [ "$health_status" = passed ]
+}
+
 status_prod() {
     [ -f "$PROD_ENV" ] || die "run configure first"
     prod_compose --profile '*' ps --all || return $?
@@ -1257,6 +1296,7 @@ status_prod() {
             && log "API readiness check passed" \
             || log "API readiness check has not passed yet"
     fi
+    health_prod '@@ASSOZETA_HEALTH ' || true
 }
 
 prod_app_services_running() {
@@ -2410,6 +2450,7 @@ case "$command" in
     runtime-status) runtime_status_prod "$@" ;;
     configure|install|pull|migrate|start|stop|restart|sync-manual|backup|restore|recover-upgrade|reconcile-updates|runtime-recover|runtime-switch|uninstall) run_locked_prod_command "$command" "$@" ;;
     validate) validate_prod ;;
+    health) preflight; health_prod ;;
     status) preflight; status_prod ;;
     logs) preflight; [ -f "$PROD_ENV" ] || die "run configure first"; prod_compose logs --follow --tail=200 "$@" ;;
     dev-config) dev_config ;;
