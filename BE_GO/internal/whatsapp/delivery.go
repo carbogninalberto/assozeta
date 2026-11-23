@@ -80,7 +80,7 @@ func (q *DeliveryQueue) Enqueue(ctx context.Context, user, kind, message string)
 // workers use the same locking protocol, including across backend rollouts.
 func (q *DeliveryQueue) DeliverOne(ctx context.Context) (bool, error) {
 	cfg, err := q.settings(ctx)
-	if err != nil || cfg.Disabled || cfg.PhoneID == "" || cfg.AccessToken == "" {
+	if err != nil || !cfg.DeliveryEnabled() {
 		return false, err
 	}
 	provider := NewCloudAPI(cfg)
@@ -167,8 +167,8 @@ func recordStatus(ctx context.Context, db *sql.DB, event Status) error {
 	}
 	defer tx.Rollback()
 	var reference any
-	if ref, err := uuid.Parse(event.Reference); err == nil {
-		reference = ref.String()
+	if ref, ok := dto.PythonUUIDLookup(event.Reference); ok {
+		reference = ref
 	}
 	var id, state string
 	var currentID sql.NullString

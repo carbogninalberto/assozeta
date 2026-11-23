@@ -18,6 +18,15 @@ var ErrPythonJSON = errors.New("python json.loads failed")
 // pythonJSONMaxDepth bounds nesting like the interpreter's recursion guard.
 const pythonJSONMaxDepth = 10000
 
+// ParsePythonJSONBytes applies json.loads' encoding detection before parsing.
+func ParsePythonJSONBytes(raw []byte) (any, error) {
+	text, ok := runnerJSONText(raw)
+	if !ok {
+		return nil, ErrPythonJSON
+	}
+	return ParsePythonJSON(text)
+}
+
 // ParsePythonJSON is Python's json.loads with its C scanner: NaN, Infinity
 // and -Infinity literals (as float64), integers and floats kept as their
 // json.Number text, objects in first-key order with the last duplicate value,
