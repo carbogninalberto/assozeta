@@ -33,6 +33,7 @@ type InstanceDiagnosticsProbes interface {
 	Health(ctx context.Context, target string, expected *string) (bool, error)
 	// Storage is the S3 list_objects_v2 check.
 	Storage(ctx context.Context) error
+	GoProgress(ctx context.Context, role string) (fresh, applicable bool, err error)
 	// Ping is app.control.inspect(timeout=2).ping(): the reply bodies.
 	Ping(ctx context.Context) ([]any, error)
 	// Heartbeat is the raw Django cache value of 'instance:scheduler:heartbeat'.
@@ -199,6 +200,24 @@ var errDiagnosticProbe = errors.New("diagnostic probe raised")
 // an error is an exception inside it (main()'s generic answer).
 func (s *InstanceOutbound) diagnosticProbe(ctx context.Context, name string) (instanceprobe.Result, error) {
 	probes, settings, env := s.diagnostics, s.diagnosticSettings, s.admin.env
+	if name == "worker" || name == "scheduler" {
+		fresh, applicable, err := probes.GoProgress(ctx, name)
+		if err != nil {
+			return instanceprobe.Result{}, err
+		}
+		if applicable {
+			if name == "worker" {
+				if fresh {
+					return diagnosticResult("passed", "Entrambi i worker Go hanno inviato un segnale negli ultimi 90 secondi.", "functional")
+				}
+				return diagnosticResult("failed", "Segnale assente o scaduto. Verifica i servizi worker-go e job-worker-go.", "connectivity")
+			}
+			if fresh {
+				return diagnosticResult("passed", "Lo scheduler Go è attivo e detiene il lease corrente.", "functional")
+			}
+			return diagnosticResult("failed", "Lease dello scheduler assente o scaduto. Verifica il servizio scheduler-go.", "connectivity")
+		}
+	}
 	switch name {
 	case "database":
 		if err := probes.Database(ctx); err != nil {
