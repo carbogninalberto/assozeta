@@ -4192,8 +4192,7 @@
         "go": {
           "runtime": "go",
           "component": "/app/worker",
-          "status": "planned",
-          "phase": 4
+          "status": "present"
         }
       },
       "refs": [
@@ -4245,8 +4244,7 @@
         "go": {
           "runtime": "go",
           "component": "/app/worker",
-          "status": "planned",
-          "phase": 4
+          "status": "present"
         }
       },
       "refs": [
@@ -4665,8 +4663,7 @@
         "go": {
           "runtime": "go",
           "component": "/app/worker",
-          "status": "planned",
-          "phase": 4
+          "status": "present"
         }
       },
       "refs": [
@@ -4963,8 +4960,7 @@
         "go": {
           "runtime": "go",
           "component": "/app/worker",
-          "status": "planned",
-          "phase": 4
+          "status": "present"
         }
       },
       "refs": [
@@ -6231,7 +6227,7 @@
         "producers": [
           "go:BE_GO/internal/service/oauth_accounts.go:OAuthAccounts.publish:s.publisher.Publish",
           "go:BE_GO/internal/service/user_deletion_requests.go:UserDeletionRequests.deleteOne:s.publisher.Publish",
-          "py:BE/application/tasks.py:delete_users_with_request:send_email_text.delay",
+          "py:BE/application/tasks.py:delete_users_with_request:send_email_text.apply_async",
           "py:BE/application/views/auth_views.py:oauth2_delete_account:send_email_text.delay",
           "py:BE/application/views/auth_views.py:partial_signup:send_email_text.delay"
         ],
@@ -8080,7 +8076,7 @@
         "go:BE_GO/internal/service/email_tasks.go:EmailTasks.configurationSend:s.publisher.Publish",
         "go:BE_GO/internal/service/email_tasks.go:EmailTasks.partialRegistration:s.publisher.Publish",
         "go:BE_GO/internal/service/user_deletion_requests.go:UserDeletionRequests.deleteOne:s.publisher.Publish",
-        "py:BE/application/tasks.py:delete_users_with_request:send_email_text.delay",
+        "py:BE/application/tasks.py:delete_users_with_request:send_email_text.apply_async",
         "py:BE/application/tasks.py:export_association_data:send_mail_async.delay",
         "py:BE/application/tasks.py:export_association_data:send_mail_async.delay#2",
         "py:BE/application/tasks.py:send_email_html:send_mail_async.apply_async",

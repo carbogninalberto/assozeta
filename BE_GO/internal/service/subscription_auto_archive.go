@@ -5,9 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"log/slog"
+	"strconv"
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/handoff"
 	"github.com/google/uuid"
 )
 
@@ -67,6 +69,7 @@ func (s *SubscriptionAutoArchive) Run(ctx context.Context, job domain.Job) error
 		}
 		if done {
 			archived++
+			handoff.Barrier("batch:committed", job.Kind+"-"+strconv.Itoa(archived))
 		}
 	}
 	tx, err := s.store.BeginSubscriptionArchive(ctx, job)

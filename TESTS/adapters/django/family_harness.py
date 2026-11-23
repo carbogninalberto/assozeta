@@ -342,7 +342,10 @@ def check_celery_message(contract, raw, spec, *, since, until, where=''):
     args = tuple(_celery_value(item) for item in spec['args'])
     kwargs = {key: _celery_value(item) for key, item in spec['kwargs']}
     task_id = headers['id']
-    contract.require(isinstance(task_id, str) and uuid_shape.match(task_id) and task_id[14] == '4', 'celery.id' + where)
+    if spec.get('id') is not None:  # a deterministic id (a child a job publishes again after a crash reuses it)
+        contract.require(task_id == spec['id'], 'celery.id' + where)
+    else:
+        contract.require(isinstance(task_id, str) and uuid_shape.match(task_id) and task_id[14] == '4', 'celery.id' + where)
     # apply_async(task_id=...): the authored id.
     contract.require(spec.get('id', task_id) == task_id, 'celery.task-id' + where)
     eta = spec.get('eta')
@@ -357,7 +360,9 @@ def check_celery_message(contract, raw, spec, *, since, until, where=''):
         eta = received
     expected_headers = {
         'lang': 'py', 'task': spec['task'], 'id': task_id, 'shadow': None, 'eta': eta, 'expires': spec.get('expires'),
-        'group': None, 'group_index': None, 'retries': 0, 'timelimit': spec.get('timelimit', [None, None]), 'root_id': task_id, 'parent_id': None,
+        'group': None, 'group_index': None, 'retries': 0, 'timelimit': spec.get('timelimit', [None, None]),
+        # A child published by a running job carries that job's lineage (Phase 4 contract); top-level work roots itself.
+        'root_id': spec.get('root_id') or task_id, 'parent_id': spec.get('parent_id'),
         'argsrepr': saferepr(list(args) if spec.get('args_list') else args, 1024), 'kwargsrepr': saferepr(kwargs, 1024), 'origin': headers['origin'], 'ignore_result': False,
         'replaced_task_nesting': 0, 'stamped_headers': None, 'stamps': {}, 'assozeta_published_at': headers['assozeta_published_at']}
     contract.require(headers == expected_headers, 'celery.headers' + where)

@@ -144,15 +144,33 @@ class Broker:
         self.client = redis.Redis(host='127.0.0.1', port=port, db=0, password=REDIS_PASSWORD,
                                   socket_timeout=5, socket_connect_timeout=5)
 
-    def messages(self, expected, since, until):
-        from TESTS.adapters.django.family_harness import check_celery_message, CELERY_BINDING
-        raw = [item.decode() for item in reversed(self.client.lrange('celery', 0, -1))]
-        self.client.delete('celery')
+    def messages(self, expected, since, until, job=None):
+        """Notices published by the Django task (queue celery), or by the Go job `job`: with the handoff ledger
+        installed (migration 6+) Go publishes each notice on the Go consumer queue as the job's child, under the
+        deterministic id uuid5(URL, 'assozeta:delete_users_with_request:<job>:<user>') it reuses after a crash."""
+        from uuid import NAMESPACE_URL, uuid5
+        from TESTS.adapters.django.family_harness import check_celery_message, CELERY_BINDING, CELERY_QUEUE
+        raw, queues = [], set()
+        for queue in ('celery', 'assozeta-go'):
+            items = [item.decode() for item in reversed(self.client.lrange(queue, 0, -1))]
+            self.client.delete(queue)
+            raw += items
+            queues |= {queue} if items else set()
         assert len(raw) == len(expected), f'published {len(raw)} messages, expected {len(expected)}'
+        assert len(queues) <= 1, f'notices split across queues {sorted(queues)}'
         recipients = sorted(raw, key=lambda item: self.recipient(item))
+        if queues == {'assozeta-go'}:
+            assert job is not None, 'only a Go job publishes on the Go consumer queue'
+            ids = {str(uuid5(NAMESPACE_URL, f'assozeta:delete_users_with_request:{job}:{user}')) for user in self.users}
+            specs = []
+            for item, spec in zip(recipients, expected):
+                identifier = json.loads(item)['headers']['id']
+                assert identifier in ids, f'notice id {identifier} is not the deterministic id of a due user'
+                specs.append(dict(spec, id=identifier, queue='assozeta-go', root_id=str(job), parent_id=str(job)))
+            expected = specs
         checked = [check_celery_message(Contract(), item, spec, since=since, until=until, where=f':{i}')
                    for i, (item, spec) in enumerate(zip(recipients, expected))]
-        if expected:
+        if expected and queues == {CELERY_QUEUE}:
             key, member = CELERY_BINDING
             assert {m.decode() for m in self.client.smembers(key)} == {member}, 'celery.binding'
         return checked
@@ -253,7 +271,9 @@ class DeletionRehearsal(Rehearsal):
                            for label in set(state) | set(actual) if state.get(label) != actual.get(label)}
             (self.output / 'difference.json').write_text(json.dumps(differences, indent=1, default=str) + '\n')
         assert actual == state, 'Go deletion differs from the Django task on the same seed'
-        messages = self.broker.messages(self.fixture.expected_messages(conflict=conflict), self.started, time.time())
+        self.broker.users = self.fixture.users
+        messages = self.broker.messages(self.fixture.expected_messages(conflict=conflict), self.started, time.time(),
+                                        job=identifier)
         assert [m['body'] for m in messages] == bodies, 'Go notices differ from the Django task'
 
     def quiet(self, process, identifier, before):

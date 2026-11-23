@@ -76,6 +76,46 @@
       ],
       "go_time_limits": null
     },
+    "auto_archive_subscription": {
+      "family": "collectors",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "clear_deleted_subscription": {
+      "family": "collectors",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "auto_delete_orphan_medical_certificate": {
+      "family": "collectors",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "delete_users_with_request": {
+      "family": "collectors",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
     "update_age_of_associates": {
       "family": "db_maintenance",
       "rate_limit": null,
