@@ -191,6 +191,9 @@ func consumerEmailReplyTo(value any) (list []string, ok bool) {
 // current task, so neither applies.
 func (s *SendMailAsync) consumerEmailPublish(ctx context.Context, request *celeryworker.Request, kwargs celery.Dict) error {
 	task := celery.Task{Name: SendMailAsyncTask, Kwargs: kwargs}
+	if celeryworker.HasBrokerAttempt(ctx) {
+		task.Queue = celery.GoQueue
+	}
 	if request != nil {
 		task.RootID, task.ParentID = request.RootID, request.ID
 		if task.RootID == "" {
@@ -362,10 +365,13 @@ func (s *SendMailAsync) SendEmailTextTask() celeryworker.Task {
 	return celeryworker.Task{MaxRetries: 3, Plan: s.planEmailText, Run: s.runEmailText}
 }
 
-func (s *SendMailAsync) planEmailText(_ context.Context, request *celeryworker.Request) error {
+func (s *SendMailAsync) planEmailText(ctx context.Context, request *celeryworker.Request) error {
 	call, err := s.planForward(consumerEmailForwardNames, request)
 	if err != nil {
 		return err
+	}
+	if _, list := call.recipients.([]any); celeryworker.HasBrokerAttempt(ctx) && !list {
+		return celeryworker.ErrHandoff
 	}
 	request.State = call
 	return nil

@@ -564,46 +564,6 @@
       ],
       "reason": "Phase 4 part C (envelope_options): the task does not finish on the effective runtime across this boundary (Go executor, hand-back removal, transfer adapter or effect seam missing) and its task-handoff-dispositions.json record does not exist"
     },
-    "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue": {
-      "phase": 4,
-      "owner": "t-p4",
-      "signatures": [
-        "P4 matrix contract red: "
-      ],
-      "reason": "Phase 4 part C (handback): the task does not finish on the effective runtime across this boundary (Go executor, hand-back removal, transfer adapter or effect seam missing) and its task-handoff-dispositions.json record does not exist"
-    },
-    "TESTS.handoff.test_p4_task_matrix.Handback.test_options_never_reaches_the_django_queue": {
-      "phase": 4,
-      "owner": "t-p4",
-      "signatures": [
-        "P4 matrix contract red: "
-      ],
-      "reason": "Phase 4 part C (handback): the task does not finish on the effective runtime across this boundary (Go executor, hand-back removal, transfer adapter or effect seam missing) and its task-handoff-dispositions.json record does not exist"
-    },
-    "TESTS.handoff.test_p4_task_matrix.Handback.test_supported_input_finishes_on_go": {
-      "phase": 4,
-      "owner": "t-p4",
-      "signatures": [
-        "P4 matrix contract red: "
-      ],
-      "reason": "Phase 4 part C (handback): the task does not finish on the effective runtime across this boundary (Go executor, hand-back removal, transfer adapter or effect seam missing) and its task-handoff-dispositions.json record does not exist"
-    },
-    "TESTS.handoff.test_p4_task_matrix.Handback.test_undecodable_never_reaches_the_django_queue": {
-      "phase": 4,
-      "owner": "t-p4",
-      "signatures": [
-        "P4 matrix contract red: "
-      ],
-      "reason": "Phase 4 part C (handback): the task does not finish on the effective runtime across this boundary (Go executor, hand-back removal, transfer adapter or effect seam missing) and its task-handoff-dispositions.json record does not exist"
-    },
-    "TESTS.handoff.test_p4_task_matrix.Handback.test_unregistered_never_reaches_the_django_queue": {
-      "phase": 4,
-      "owner": "t-p4",
-      "signatures": [
-        "P4 matrix contract red: "
-      ],
-      "reason": "Phase 4 part C (handback): the task does not finish on the effective runtime across this boundary (Go executor, hand-back removal, transfer adapter or effect seam missing) and its task-handoff-dispositions.json record does not exist"
-    },
     "TESTS.handoff.test_p4_task_matrix.Payments.test_association_quote_assign__django": {
       "phase": 4,
       "owner": "t-p4",
@@ -1269,14 +1229,6 @@
       "reason": "Phase 4 part D: docs/architecture/go-migration/task-handoff-dispositions.json does not exist"
     },
     "TESTS.handoff.test_p4_inventory.Dispositions.test_every_phase0_consumer_handback_site_is_traced": {
-      "phase": 4,
-      "owner": "t-p4",
-      "signatures": [
-        "task-handoff-dispositions.json is missing"
-      ],
-      "reason": "Phase 4 part D: docs/architecture/go-migration/task-handoff-dispositions.json does not exist"
-    },
-    "TESTS.handoff.test_p4_inventory.Dispositions.test_the_four_worker_handback_reasons_have_go_mode_outcomes": {
       "phase": 4,
       "owner": "t-p4",
       "signatures": [

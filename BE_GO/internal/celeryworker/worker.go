@@ -24,9 +24,8 @@
 //     acks_late, reject_on_worker_lost and soft/hard time limits applied
 //     as billiard's AsynPool applies them.
 //
-// Messages the Go side does not run (an unregistered name, a payload or
-// option outside the decoded subset, or an input the task's Plan refuses)
-// are handed off unchanged to Django's "celery" queue before any effect.
+// The handoff ledger preserves messages the Go side cannot run. On older
+// databases the worker still forwards them to Django before any effect.
 package celeryworker
 
 import (
@@ -80,7 +79,7 @@ type Retry struct {
 
 func (r *Retry) Error() string { return "celery task retry: " + r.Exc.Error() }
 
-// ErrHandoff from Task.Plan hands the message to Django's queue.
+// ErrHandoff marks an input the task planner cannot execute.
 var ErrHandoff = errors.New("celeryworker: handed off to the Django worker")
 
 // Request is the running task's request (Task.request).
@@ -316,7 +315,11 @@ func (w *Worker) receive(ctx context.Context, d *Delivery) bool {
 	started := time.Now()
 	m := d.Message
 	if d.Err != nil || m == nil {
-		if w.handoff(ctx, d, "undecodable") == outcomeHandedOff {
+		reason := "undecodable"
+		if w.options.Handoff != nil && errors.Is(d.Err, celery.ErrCanvasOptions) {
+			reason = "options"
+		}
+		if outcome := w.handoff(ctx, d, reason); outcome != outcomeNone {
 			var envelope struct {
 				Headers struct {
 					Task string `json:"task"`
@@ -325,7 +328,7 @@ func (w *Worker) receive(ctx context.Context, d *Delivery) bool {
 			}
 			// Unmarshal can recover either string even if the other has the wrong type.
 			_ = json.Unmarshal(d.Raw, &envelope)
-			w.logTaskDone(envelope.Headers.Task, envelope.Headers.ID, outcomeHandedOff, started)
+			w.logTaskDone(envelope.Headers.Task, envelope.Headers.ID, outcome, started)
 		}
 		return false
 	}
@@ -370,11 +373,12 @@ const (
 	outcomeFailure   taskOutcome = "failure"
 	outcomeRetry     taskOutcome = "retry"
 	outcomeHandedOff taskOutcome = "handed_off"
+	outcomeBlocked   taskOutcome = "blocked"
 )
 
 func (w *Worker) logTaskDone(task, id string, outcome taskOutcome, started time.Time) {
 	switch outcome {
-	case outcomeSuccess, outcomeFailure, outcomeRetry, outcomeHandedOff:
+	case outcomeSuccess, outcomeFailure, outcomeRetry, outcomeHandedOff, outcomeBlocked:
 	default:
 		return
 	}
@@ -382,6 +386,9 @@ func (w *Worker) logTaskDone(task, id string, outcome taskOutcome, started time.
 }
 
 func (w *Worker) handoff(ctx context.Context, d *Delivery, reason string) taskOutcome {
+	if w.options.Handoff != nil {
+		return w.blockDelivery(ctx, d, reason)
+	}
 	if err := w.transport.Handoff(ctx, d, w.options.HandoffQueue); err != nil {
 		w.logger.Error("celery handoff failed", "code", "celery_handoff_failed", "reason", reason)
 		return outcomeNone

@@ -213,9 +213,7 @@ func (w *Worker) executePrefork(ctx context.Context, d *Delivery, task Task, job
 		switch event {
 		case eventHandoff:
 			handedOff = true
-			if reportedOutcome == string(outcomeHandedOff) {
-				outcome = outcomeHandedOff
-			}
+			outcome = taskOutcome(reportedOutcome)
 		case eventAccepted:
 			// The child now owns renewal. Until it accepts, the parent
 			// also covers process startup, even if it takes a full lease.
@@ -322,10 +320,7 @@ func (w *Worker) RunChild(ctx context.Context, in io.Reader, events io.Writer) e
 	}
 	if task.Plan != nil {
 		if err := task.Plan(ctx, request); errors.Is(err, ErrHandoff) {
-			if outcome := w.handoff(ctx, d, "input"); outcome == outcomeHandedOff {
-				return emit(eventHandoff + " " + string(outcome))
-			}
-			return emit(eventHandoff)
+			return emit(eventHandoff + " " + string(w.handoff(ctx, d, "input")))
 		}
 	}
 	taskCtx, cancel := context.WithCancelCause(ctx)

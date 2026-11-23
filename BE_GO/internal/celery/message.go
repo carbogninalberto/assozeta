@@ -2,11 +2,15 @@ package celery
 
 import (
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
 	"time"
 )
+
+// ErrCanvasOptions identifies an otherwise decoded message with canvas metadata.
+var ErrCanvasOptions = errors.New("canvas options")
 
 // Message is one task message as kombu's Redis transport delivers it
 // (protocol 2, JSON serializer, base64 body), decoded the way Celery's
@@ -188,7 +192,7 @@ func ParseMessage(raw []byte) (*Message, error) {
 	}
 	for _, key := range []string{"callbacks", "errbacks", "chain", "chord"} {
 		if get(embed, key) != nil {
-			return nil, fmt.Errorf("%w: canvas", ErrUndecodable)
+			return nil, fmt.Errorf("%w: %w", ErrUndecodable, ErrCanvasOptions)
 		}
 	}
 	return m, nil

@@ -46,8 +46,10 @@ def spacing(times):
 
 def paced(gaps, interval=2.0):
     """Celery's token bucket (capacity 1): after the first start, starts are >= interval apart; the first gap
-    may be shorter because the first start is delayed by process startup, not by the bucket."""
-    return len(gaps) >= 2 and all(gap >= interval - 0.1 for gap in sorted(gaps)[1:])
+    may be shorter because the first start is delayed by process startup, not by the bucket. Claim stamps are
+    taken after the bucket releases the task, so under load a gap can read up to 10% short (observed 1.89 s
+    for 2 s on the Django control); an unpaced runtime starts within milliseconds."""
+    return len(gaps) >= 2 and all(gap >= interval * 0.9 for gap in sorted(gaps)[1:])
 
 
 def rate_limit_spacing_matches_django(stack):

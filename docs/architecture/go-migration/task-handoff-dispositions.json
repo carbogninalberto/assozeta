@@ -1,8 +1,75 @@
 {
   "format": 1,
-  "handback_sites": {},
-  "handback_reasons": {},
-  "ported_sites": [],
+  "handback_sites": {
+    "BE_GO/internal/celeryworker/worker.go:execute#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-handoff-input"
+      ]
+    },
+    "BE_GO/internal/celeryworker/prefork.go:RunChild#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": []
+    },
+    "BE_GO/cmd/celery-consumer/probe_tasks.go:probeTask#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-probe_tasks-38"
+      ]
+    },
+    "BE_GO/cmd/celery-consumer/probe_tasks.go:probeTask#2": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-probe_tasks-42"
+      ]
+    },
+    "BE_GO/cmd/celery-consumer/probe_tasks.go:probeTask#3": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-probe_tasks-47"
+      ]
+    },
+    "BE_GO/internal/service/consumer_email.go:planEmailText#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": []
+    }
+  },
+  "handback_reasons": {
+    "undecodable": {
+      "outcome": "blocked:undecodable",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_undecodable_never_reaches_the_django_queue"
+    },
+    "unregistered": {
+      "outcome": "blocked:unregistered",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_unregistered_never_reaches_the_django_queue"
+    },
+    "options": {
+      "outcome": "blocked:unsupported_options",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_options_never_reaches_the_django_queue"
+    },
+    "input": {
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue"
+    }
+  },
+  "ported_sites": [
+    "consumer-handoff-queue",
+    "consumer-handoff-undecodable",
+    "consumer-handoff-unregistered",
+    "consumer-handoff-options"
+  ],
   "legacy_names": {
     "auto_move_users_to_base_plan": {
       "disposition": "retired",

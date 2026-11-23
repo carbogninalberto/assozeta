@@ -45,6 +45,7 @@ type Delivery struct {
 	// Message is nil when the payload is outside the decoded subset.
 	Message *Message
 	Err     error
+	source  string
 }
 
 func (t *Transport) now() time.Time {
@@ -91,7 +92,7 @@ func (t *Transport) Get(ctx context.Context, timeout time.Duration) (*Delivery, 
 	if err != nil {
 		return nil, err
 	}
-	d := &Delivery{Raw: []byte(item[1])}
+	d := &Delivery{Raw: []byte(item[1]), source: item[0]}
 	d.Message, d.Err = ParseMessage(d.Raw)
 	if d.Err != nil {
 		return d, nil
@@ -117,6 +118,11 @@ func (t *Transport) Get(ctx context.Context, timeout time.Duration) (*Delivery, 
 		t.ReservationBarrier("reservation:confirmed", d.Message.ID)
 	}
 	return d, nil
+}
+
+// RestoreUndecodable returns an untracked delivery to its original priority list.
+func (t *Transport) RestoreUndecodable(ctx context.Context, d *Delivery) error {
+	return t.Client.RPush(ctx, d.source, d.Raw).Err()
 }
 
 // Ack is QoS.ack: the message leaves the unacked hash and index.

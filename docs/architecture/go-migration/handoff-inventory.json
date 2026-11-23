@@ -8318,7 +8318,7 @@
         "redis-celery-default"
       ],
       "fixture": "legacy-mixed",
-      "effect": "The Go consumer can reject or republish an unsupported delivery to Python. Inventory the envelope, plan refusals and producer queues before proving compatible execution in exclusive mode.",
+      "effect": "In Go mode the consumer records unsupported envelopes and planner refusals in the handoff ledger, preserving the envelope for reconciliation.",
       "owner": {
         "django": {
           "runtime": "django",
@@ -8328,8 +8328,7 @@
         "go": {
           "runtime": "go",
           "component": "Go Celery-compatible consumer and transfer receipts",
-          "status": "planned",
-          "phase": 4
+          "status": "present"
         }
       },
       "refs": [

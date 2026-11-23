@@ -2,9 +2,12 @@ package celeryworker
 
 import (
 	"context"
+	"crypto/sha256"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -119,6 +122,99 @@ func (w *Worker) claim(ctx context.Context, d *Delivery) (context.Context, bool)
 		return ctx, false
 	}
 	return a.context(ctx), true
+}
+
+func (w *Worker) blockDelivery(ctx context.Context, d *Delivery, reason string) taskOutcome {
+	if reason == "input" || reason == "options" {
+		reason = "unsupported_" + reason
+	}
+	var err error
+	if d.Message == nil {
+		err = w.blockUndecodable(ctx, d, reason)
+		if err != nil {
+			err = errors.Join(err, w.transport.RestoreUndecodable(ctx, d))
+		}
+	} else {
+		attempt, ok := ctx.Value(attemptContext{}).(*brokerAttempt)
+		if !ok {
+			claimed, ok := w.claim(ctx, d)
+			if !ok {
+				return outcomeNone
+			}
+			attempt = claimed.Value(attemptContext{}).(*brokerAttempt)
+			defer attempt.stopRenewal()
+		}
+		err = attempt.block(ctx, reason)
+		if err == nil {
+			w.ack(ctx, d)
+		}
+	}
+	if err != nil {
+		w.logger.Warn("celery delivery could not be blocked", "code", "celery_block_failed", "reason", reason)
+		return outcomeNone
+	}
+	return outcomeBlocked
+}
+
+func (a *brokerAttempt) block(ctx context.Context, reason string) error {
+	tx, err := a.ledger.DB.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	if _, err := tx.ExecContext(ctx, "SELECT public.assozeta_handoff_finish($1,'released')", a.id); err != nil {
+		return err
+	}
+	if _, err := tx.ExecContext(ctx, `UPDATE public.assozeta_handoff_work
+SET state='blocked',block_reason=$2,updated_at=clock_timestamp() WHERE task_id=$1 AND state='pending'`, a.task, reason); err != nil {
+		return err
+	}
+	return tx.Commit()
+}
+
+func (w *Worker) blockUndecodable(ctx context.Context, d *Delivery, reason string) error {
+	var raw struct {
+		Headers struct {
+			ID   string `json:"id"`
+			Task string `json:"task"`
+		} `json:"headers"`
+	}
+	_ = json.Unmarshal(d.Raw, &raw)
+	id, task := raw.Headers.ID, raw.Headers.Task
+	fallback := fmt.Sprintf("undecodable:%x", sha256.Sum256(d.Raw))
+	if id == "" || len(id) > 255 || strings.ContainsRune(id, 0) {
+		id = fallback
+	}
+	if task == "" || len(task) > 255 || strings.ContainsRune(task, 0) {
+		task = "undecodable"
+	}
+	// Preserve the raw bytes even when no task identity or usable metadata
+	// survived decoding. A conflicting legacy ID gets a separate ledger row.
+	var recorded bool
+	err := w.options.Handoff.DB.QueryRowContext(ctx, `
+WITH owner AS MATERIALIZED (
+    SELECT runtime,generation FROM public.assozeta_go_job_ownership
+    WHERE singleton=1 AND runtime='go' AND admission='open' FOR SHARE
+), saved AS (
+    INSERT INTO public.assozeta_handoff_work AS w
+        (task_id,task_name,transport,queue,envelope,origin_runtime,owner_runtime,owner_generation,state,accepted_at,block_reason)
+    SELECT CASE WHEN EXISTS(SELECT 1 FROM public.assozeta_handoff_work
+                            WHERE task_id=$1 AND envelope IS DISTINCT FROM $4) THEN $2 ELSE $1 END,
+           $3,'broker',$5,$4,runtime,runtime,generation,'blocked',clock_timestamp(),$6
+    FROM owner
+    ON CONFLICT (task_id) DO UPDATE SET state='blocked',block_reason=excluded.block_reason,updated_at=clock_timestamp()
+    WHERE w.owner_runtime=excluded.owner_runtime AND w.owner_generation=excluded.owner_generation
+        AND w.envelope=excluded.envelope AND w.state='pending'
+    RETURNING 1
+)
+SELECT EXISTS(SELECT 1 FROM saved) OR EXISTS(
+    SELECT 1 FROM public.assozeta_handoff_work w,owner
+    WHERE w.task_id IN ($1,$2) AND w.envelope=$4 AND w.state IN ('blocked','completed','failed','expired','revoked','cancelled')
+)`, id, fallback, task, d.Raw, w.transport.Queue, reason).Scan(&recorded)
+	if err == nil && !recorded {
+		return errors.New("undecodable delivery was not recorded")
+	}
+	return err
 }
 
 // Renew on the ordinary pool, independently of a blocking task. Short tasks
