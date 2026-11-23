@@ -7,10 +7,12 @@ import (
 	"io"
 	"log/slog"
 	"math/big"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/handoff"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/documentkey"
 	"github.com/google/uuid"
@@ -72,6 +74,7 @@ func (s *DataRestoreCleanup) Run(ctx context.Context, job domain.Job) error {
 	if err != nil {
 		return err
 	}
+	cleaned := 0
 	for i := range receipts {
 		op := &receipts[i]
 		now := s.now().UTC().Truncate(time.Microsecond)
@@ -84,6 +87,8 @@ func (s *DataRestoreCleanup) Run(ctx context.Context, job domain.Job) error {
 			if err = s.cleanup(ctx, job, op); err != nil {
 				return err
 			}
+			cleaned++
+			handoff.Barrier("batch:committed", job.Kind+"-"+strconv.Itoa(cleaned))
 		}
 	}
 	if err = s.prune(ctx, job); err != nil {

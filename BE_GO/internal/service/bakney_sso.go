@@ -18,6 +18,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/handoff"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/jwt"
 	"github.com/google/uuid"
 )
@@ -1232,6 +1233,7 @@ func (s *BakneySSO) Maintain(ctx context.Context, job domain.Job) error {
 	if err := effect(func(tx BakneySSOTransaction) (err error) { revocations, err = tx.Revocations(ctx); return err }); err != nil {
 		return err
 	}
+	committed := 0
 	for _, notification := range revocations {
 		result, err := s.upstreamTo(ctx, notification, "disconnect", nil, true)
 		var ssoErr *BakneySSOError
@@ -1252,6 +1254,8 @@ func (s *BakneySSO) Maintain(ctx context.Context, job domain.Job) error {
 		if err := effect(func(tx BakneySSOTransaction) error { return tx.DeleteRevocation(ctx, notification.PairingID) }); err != nil {
 			return err
 		}
+		committed++
+		handoff.Barrier("batch:committed", job.Kind+"-"+strconv.Itoa(committed))
 	}
 	for _, cleanup := range []struct {
 		table string
@@ -1267,11 +1271,13 @@ func (s *BakneySSO) Maintain(ctx context.Context, job domain.Job) error {
 		return err
 	}
 	// The job completes in the transaction of its last effect.
-	return effect(func(tx BakneySSOTransaction) error {
+	synchronized := false
+	err := effect(func(tx BakneySSOTransaction) error {
 		if pending {
 			st, err := s.lockedPairing(ctx, tx)
 			if err == nil && (st.pairing.State == "pending" || st.pairing.State == "paired") && st.pairing.RemotePairingID != nil {
 				err = s.synchronize(ctx, st)
+				synchronized = err == nil
 			}
 			var ssoErr *BakneySSOError
 			if err != nil && !errors.As(err, &ssoErr) {
@@ -1281,4 +1287,8 @@ func (s *BakneySSO) Maintain(ctx context.Context, job domain.Job) error {
 		}
 		return tx.CompleteJob(ctx, job.ID, job.LeaseToken)
 	})
+	if err == nil && synchronized {
+		handoff.Barrier("batch:committed", job.Kind+"-"+strconv.Itoa(committed+1))
+	}
+	return err
 }

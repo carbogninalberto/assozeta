@@ -176,7 +176,7 @@ def consume_nonce(value, expires_at):
         raise SSOError('replayed_request', 409) from None
 
 
-def deliver_revocations():
+def deliver_revocations(on_delivery=None):
     # Network errors are intentionally not logged: transport objects can contain credentials.
     for notification in BakneyRevocation.objects.order_by('created_at')[:20]:
         try:
@@ -187,6 +187,8 @@ def deliver_revocations():
             if exc.code != 'pairing_rejected':
                 continue
         notification.delete()
+        if on_delivery is not None:
+            on_delivery()
     BakneyChallenge.objects.filter(expires_at__lt=timezone.now()).delete()
     BakneyNonce.objects.filter(expires_at__lt=timezone.now() - timedelta(minutes=5)).delete()
     BakneyLogin.objects.filter(expires_at__lt=timezone.now()).delete()

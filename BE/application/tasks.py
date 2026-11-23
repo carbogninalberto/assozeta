@@ -1758,6 +1758,8 @@ def cleanup_old_exports(sport_association_id: str = None, max_count: int = EXPOR
                         export.delete()
                         document.delete()
                         deleted_count += 1
+                        if cleanup_old_exports_task.request.id:
+                            barrier('batch:committed', f'cleanup_old_exports-{deleted_count}')
                         logger.info(
                             f"Deleted old export",
                             extra={
@@ -1786,6 +1788,8 @@ def cleanup_old_exports(sport_association_id: str = None, max_count: int = EXPOR
                 if document:
                     document.delete()
                 deleted_count += 1
+                if cleanup_old_exports_task.request.id:
+                    barrier('batch:committed', f'cleanup_old_exports-{deleted_count}')
                 logger.info(
                     f"Deleted excess export",
                     extra={

@@ -18,16 +18,21 @@ def restore_instance_data(self, operation_id):
 def cleanup_data_restores():
     from datetime import timedelta
     from django.utils import timezone
+    from core.handoff import barrier
     from .models import DataRestore
     from .restore.execution import cleanup, prune_storage, save_operation
     from .restore.locking import operation_lock, Busy
     try:
         with operation_lock(exclusive=True, required=True):
+            cleaned = 0
             for op in DataRestore.objects.exclude(state__in=DataRestore.ACTIVE).iterator():
                 if op.state == 'review' and op.created_at < timezone.now() - timedelta(hours=24):
                     save_operation(op, state='cancelled', stage='expired')
                 if op.state in ('failed', 'cancelled', 'completed'):
                     cleanup(op)
+                    cleaned += 1
+                    if cleanup_data_restores.request.id:
+                        barrier('batch:committed', f'instance.restore.cleanup-{cleaned}')
             prune_storage()
     except Busy:
         return

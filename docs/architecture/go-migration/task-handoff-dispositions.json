@@ -116,6 +116,46 @@
       ],
       "go_time_limits": null
     },
+    "cleanup_old_exports": {
+      "family": "retention",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "delete_old_audit_logs": {
+      "family": "retention",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "instance.restore.cleanup": {
+      "family": "retention",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "instance.sso.tasks.maintain_bakney_pairings": {
+      "family": "retention",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
     "update_age_of_associates": {
       "family": "db_maintenance",
       "rate_limit": null,
