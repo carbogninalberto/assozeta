@@ -19,9 +19,10 @@ import (
 // effects. Returning nil without durable completion is a terminal programming
 // error. No business effect may follow a service's successful completion commit.
 type JobDefinition struct {
-	Version int
-	Timeout time.Duration
-	Run     func(context.Context, domain.Job) error
+	Version          int
+	Timeout          time.Duration
+	MinStartInterval time.Duration
+	Run              func(context.Context, domain.Job) error
 }
 type JobExecutorOptions struct {
 	Owner                                                                               string
@@ -34,6 +35,8 @@ type JobExecutor struct {
 	definitions map[string]JobDefinition
 	kinds       []string
 	options     JobExecutorOptions
+	claimMu     sync.Mutex
+	nextStart   map[string]time.Time
 }
 
 var executorKind = regexp.MustCompile(`^[a-z][a-z0-9_.]{0,127}$`)
@@ -44,17 +47,47 @@ func NewJobExecutor(store repository.JobExecutionStore, admission JobAdmission, 
 	}
 	s := &JobExecutor{store: store, admission: admission, options: options, definitions: map[string]JobDefinition{}}
 	for kind, definition := range definitions {
-		if !executorKind.MatchString(kind) || definition.Version < 1 || definition.Timeout < time.Millisecond || definition.Timeout > 24*time.Hour || definition.Run == nil {
+		if !executorKind.MatchString(kind) || definition.Version < 1 || definition.Timeout < time.Millisecond || definition.Timeout > 24*time.Hour || definition.MinStartInterval < 0 || definition.Run == nil {
 			return nil, domain.ErrJobInvalid
 		}
 		s.definitions[kind] = definition
 		s.kinds = append(s.kinds, kind)
+		if definition.MinStartInterval > 0 && s.nextStart == nil {
+			s.nextStart = make(map[string]time.Time)
+		}
 	}
 	sort.Strings(s.kinds)
 	return s, nil
 }
 
 func (s *JobExecutor) ExecuteNext(ctx context.Context) (bool, error) { return s.executeNext(ctx, ctx) }
+
+func (s *JobExecutor) claim(ctx context.Context) ([]domain.Job, error) {
+	if s.nextStart == nil {
+		return s.store.Claim(ctx, s.kinds, s.options.Owner, 1, s.options.Lease)
+	}
+	// A rate-limited kind stays pending until a slot is available. Serialize
+	// selection across slots so they cannot start the same kind together.
+	s.claimMu.Lock()
+	defer s.claimMu.Unlock()
+	now := time.Now()
+	kinds := make([]string, 0, len(s.kinds))
+	for _, kind := range s.kinds {
+		if !now.Before(s.nextStart[kind]) {
+			kinds = append(kinds, kind)
+		}
+	}
+	if len(kinds) == 0 {
+		return nil, nil
+	}
+	jobs, err := s.store.Claim(ctx, kinds, s.options.Owner, 1, s.options.Lease)
+	if err == nil && len(jobs) == 1 {
+		if interval := s.definitions[jobs[0].Kind].MinStartInterval; interval > 0 {
+			s.nextStart[jobs[0].Kind] = time.Now().Add(interval)
+		}
+	}
+	return jobs, err
+}
 
 func (s *JobExecutor) executeNext(intake, execution context.Context) (ran bool, resultErr error) {
 	if err := intake.Err(); err != nil {
@@ -70,7 +103,7 @@ func (s *JobExecutor) executeNext(intake, execution context.Context) (ran bool, 
 		defer lease.Close()
 	}
 	claimCtx, cancelClaim := context.WithTimeout(intake, s.options.StoreTimeout)
-	jobs, err := s.store.Claim(claimCtx, s.kinds, s.options.Owner, 1, s.options.Lease)
+	jobs, err := s.claim(claimCtx)
 	cancelClaim()
 	if err != nil {
 		return false, err

@@ -146,7 +146,7 @@ def after_scheduling(source, target):
         check([str(a) for a in args] == [str(m.W1), str(m.S1), '3'] and headers.get('parent_id') == root,
               f'lineage and arguments of the follow-up: {args} {headers.get("parent_id")}')
         if target == 'go':
-            exclusive_go(stack, [root, child])
+            exclusive_go(stack, [root, child], generation)  # the root's finished source attempt is history
         identity(stack, {root: 'source_completed', child: 'target_pending'}, (source, 1), (target, generation),
                  {source: 1, target: 0})
         require_record(BLOCK, FAMILY)

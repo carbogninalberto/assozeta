@@ -1,0 +1,49 @@
+{
+  "format": 1,
+  "handback_sites": {},
+  "handback_reasons": {},
+  "ported_sites": [],
+  "legacy_names": {},
+  "tasks": {
+    "auto_mark_attendance": {
+      "family": "db_maintenance",
+      "rate_limit": "4/m",
+      "go_rate_limit": "JobExecutor enforces a minimum claim interval per task kind and worker process",
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "update_age_of_associates": {
+      "family": "db_maintenance",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "reset_communication_daily_email_balance": {
+      "family": "db_maintenance",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "clear_expired_subscription_tokens": {
+      "family": "db_maintenance",
+      "rate_limit": "60/m",
+      "go_rate_limit": "JobExecutor enforces a minimum claim interval per task kind and worker process",
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    }
+  }
+}

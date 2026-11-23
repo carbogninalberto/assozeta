@@ -48,8 +48,20 @@ class P4MatrixStack(P4OutboxStack):
         if 'storage' in selected_needs():
             self.start_storage()
         super().start()
+        # Both runtimes share the restore lock (the Go env file already names this path; Django reads it
+        # from the environment before any restore work).
+        self.env['DATA_RESTORE_LOCK_PATH'] = str(self.work / 'contract-lifecycle.lock')
         self._baseline_env = dict(self.env)
         return self
+
+    def django_environment(self):
+        # Modules that open their own Redis client from core.settings (notifications.utils.REDIS_POOL) must use the
+        # stack's private Redis, never a host from BE/.env or a default localhost:6379 (driver and workers alike).
+        from TESTS.handoff.p3_stack import REDIS_PASSWORD
+        values = super().django_environment()
+        values.update(REDIS_HOST='127.0.0.1', REDIS_PORT=str(self.redis_port), REDIS_USERNAME='default',
+                      REDIS_PASSWORD=REDIS_PASSWORD)
+        return values
 
     def start_storage(self):
         from TESTS.adapters.django.instance_logo import minio
@@ -80,6 +92,8 @@ class P4MatrixStack(P4OutboxStack):
         if 'P4_STORAGE=1' not in path.read_text():
             lines = [l for l in path.read_text().splitlines() if l.split('=', 1)[0] not in extra]
             path.write_text('\n'.join(lines + [f'{k}={v}' for k, v in extra.items()] + ['P4_STORAGE=1']) + '\n')
+        if not hasattr(self, '_go_env_baseline'):
+            self._go_env_baseline = path.read_text()
         return path
 
     def go_consumer_env_file(self):
@@ -94,6 +108,11 @@ class P4MatrixStack(P4OutboxStack):
         self.processes = {'django': [], 'go': []}
         if hasattr(self, '_baseline_env'):
             self.env = dict(self._baseline_env)  # a family may adjust worker environment for its own scenario only
+        if hasattr(self, '_go_env_baseline'):  # ... and the Go env files (the consumer's is derived again)
+            (self.work / 'go.env').write_text(self._go_env_baseline)
+            consumer = self.work / 'go-consumer.env'
+            if consumer.exists():
+                consumer.unlink()
         # Family fixtures own their business rows: every scenario starts from an empty business schema.
         self.sql('TRUNCATE bakney_user, application_sportassociation, auditlog_logentry CASCADE')
 
@@ -166,12 +185,15 @@ def await_done(stack, task_id, who, timeout=90):
     return row['state']
 
 
-def exclusive_go(stack, task_ids):
-    """Exclusive Go mode: nothing handed back to the Django queue, no Django attempt, no Django process."""
+def exclusive_go(stack, task_ids, generation=None):
+    """Exclusive Go mode: nothing handed back to the Django queue, no Django attempt, no Django process.
+    After a switch to Go at `generation`, the source's history (finished attempts of earlier generations) is
+    expected; only a Django attempt at or after that generation, or one still running, breaks exclusivity."""
     for task_id in task_ids:
         stale = sorted(k for k in stack.redis_copies(task_id) if k.startswith('celery'))
         check(not stale, f'{task_id} was handed back to the Django queue {stale} in exclusive Go mode')
-        django = [a for a in stack.attempts(task_id=task_id) if a['runtime'] == 'django']
+        django = [a for a in stack.attempts(task_id=task_id) if a['runtime'] == 'django' and (
+            generation is None or a['generation'] >= generation or a['outcome'] == 'running')]
         check(not django, f'{task_id} has Django attempts in exclusive Go mode: {django}')
     check(not stack.processes['django'], 'a Django executor ran in exclusive Go mode')
 

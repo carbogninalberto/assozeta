@@ -168,7 +168,37 @@ def rerun_on_the_other_runtime(case):
     return scenario
 
 
+def rate_limit_pacing(task, count):
+    """Go starts the task no faster than the Django declaration (Celery rate_limit, per worker): with `count` jobs
+    queued before the Go worker starts, consecutive claims are at least the declared interval apart."""
+    def scenario(stack):
+        from TESTS.handoff.p4_matrix_kit import require_matrix_prerequisites
+        from TESTS.handoff.p4_family_envelope_options import claims, spacing
+        require_matrix_prerequisites(stack)
+        stack.app.loader.import_default_modules()
+        # core.celery declares the limits as task annotations (applied to the registered task class).
+        annotations = stack.app.conf.task_annotations
+        annotated = annotations.get(task, {}) if isinstance(annotations, dict) else {}
+        declared = annotated.get('rate_limit') or stack.app.tasks[task].rate_limit
+        check(declared, f'{task} has no Django rate limit')
+        number, unit = declared.split('/')
+        interval = {'s': 1, 'm': 60, 'h': 3600}[unit] / float(number)
+        stack.set_authority('go', 1)
+        jobs = [produce_go_job(stack, task) for _ in range(count)]
+        stack.executors('go')
+        for job in jobs:
+            check(await_done(stack, job, 'the Go worker', 60 + count * interval) == 'completed', f'{task} on Go')
+        gaps = spacing(claims(stack, jobs))
+        check(len(gaps) == count - 1 and all(gap >= interval - 0.1 for gap in gaps),
+              f"Go starts {task} faster than its Django rate limit '{declared}' allows: gaps {gaps}")
+        exclusive_go(stack, jobs)
+        require_record(task, 'db_maintenance')
+    return scenario
+
+
 SCENARIOS = {}
 for _case in (RESET, AGE, TOKENS, MARK):
     SCENARIOS.update(standard(_case, 'db_maintenance'))
     SCENARIOS[f'{_case.task}__rerun_on_the_other_runtime'] = rerun_on_the_other_runtime(_case)
+SCENARIOS['clear_expired_subscription_tokens__rate_limit_pacing'] = rate_limit_pacing('clear_expired_subscription_tokens', 4)
+SCENARIOS['auto_mark_attendance__rate_limit_pacing'] = rate_limit_pacing('auto_mark_attendance', 3)

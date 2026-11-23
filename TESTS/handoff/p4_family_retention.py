@@ -131,14 +131,41 @@ def pairing_make(stack):
     align_environment(stack, ASSOZETA_HANDOFF_DEVELOPMENT_HTTP='1',
                       **{k: v for k, v in peer_settings(stack).items() if k != 'SECRET_KEY'})
     adapter.SECRET_KEY = settings.SECRET_KEY  # the fixture encrypts pairing secrets with the stack's key
+    # The Go worker accepts the plain-http peer stub only in development mode (the kit restores go.env afterwards).
+    path = stack.go_env_file()
+    lines = [l for l in path.read_text().splitlines() if l.split('=', 1)[0] not in ('DEBUG', 'ASSOZETA_DEPLOYMENT_MODE')]
+    path.write_text('\n'.join(lines + ['DEBUG=True', 'ASSOZETA_DEPLOYMENT_MODE=development']) + '\n')
     return adapter.MaintenanceFixture(authority)
+
+
+class _ReplyByRequest:
+    """The stub's script indexed by request, not by position: a job resumed after a kill sends again the
+    requests of the units it had not committed (the stub handler reads script[n - 1] for the n-th request)."""
+
+    def __init__(self, adapter, exchanges):
+        self.adapter = adapter
+        self.replies = {json.dumps(body).encode(): reply for body, reply in exchanges}
+
+    def __len__(self):
+        return len(self.adapter.STUB['log'])
+
+    def __getitem__(self, index):
+        return self.replies.get(self.adapter.STUB['log'][index]['body'], (500, {'error': 'unexpected'}))
+
+
+def _without_effect(reply):
+    """Replies after which the Django and Go maintenance keep the unit (busy, still pending): resending is safe."""
+    status, payload = reply
+    return status >= 500 or (status == 200 and isinstance(payload, dict) and payload.get('status') == 'pending')
 
 
 def pairing_seed(stack, fixture):
     adapter, _ = peer(stack)
     fixture.seed('main')
+    exchanges = fixture.script('main')
+    _PEER['harmless'] = {json.dumps(body).encode() for body, reply in exchanges if _without_effect(reply)}
     with adapter.STUB['lock']:
-        adapter.STUB['log'], adapter.STUB['script'] = [], [reply for _request, reply in fixture.script('main')]
+        adapter.STUB['log'], adapter.STUB['script'] = [], _ReplyByRequest(adapter, exchanges)
 
 
 def pairing_control(stack, fixture):
@@ -150,9 +177,20 @@ def pairing_control(stack, fixture):
 
 
 def peer_requests(stack):
+    """Distinct authority requests in first-sent order, plus every request sent again although its unit had an
+    effect (must stay empty: a committed revocation or status update is never replayed)."""
     adapter, _ = peer(stack)
     with adapter.STUB['lock']:
-        return [(entry['path'], json.loads(entry['body'] or b'null')) for entry in adapter.STUB['log']]
+        log = list(adapter.STUB['log'])
+    seen, distinct, replayed = set(), [], []
+    for entry in log:
+        if entry['body'] in seen:
+            if entry['body'] not in _PEER.get('harmless', ()):
+                replayed.append(json.loads(entry['body'] or b'null'))
+            continue
+        seen.add(entry['body'])
+        distinct.append((entry['path'], json.loads(entry['body'] or b'null')))
+    return {'requests': distinct, 'replayed_after_effect': replayed}
 
 
 PAIRINGS = Controlled('instance.sso.tasks.maintain_bakney_pairings', FAMILY,

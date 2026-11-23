@@ -108,6 +108,15 @@ def check(stack, *, accepted, rejected=(), source, target, effects, children=Non
     return report
 
 
+# Django tasks declared @shared_task(ignore_result=True): no django_celery_results row by production policy.
+IGNORE_RESULT = frozenset({'instance.sso.tasks.maintain_bakney_pairings'})
+
+
+def task_name(stack, task_id):
+    rows = stack.sql('SELECT task_name FROM public.assozeta_handoff_work WHERE task_id=%s', (task_id,))
+    return rows[0][0] if rows else None
+
+
 def target_identity(stack, task_id, target, transport, completed):
     runtime, generation = target
     if runtime == 'go' and transport == 'sql':
@@ -121,6 +130,11 @@ def target_identity(stack, task_id, target, transport, completed):
             return [f'{task_id} Go row is {state}; expected pending']
         return []
     status = stack.task_result(task_id)
+    if completed and status is None and task_name(stack, task_id) in IGNORE_RESULT:
+        # Declared ignore_result=True: Celery stores no result; the completion is the attempt the ledger recorded.
+        done = stack.sql('SELECT count(*) FROM public.assozeta_handoff_attempts WHERE task_id=%s AND runtime=%s '
+                         'AND generation=%s AND outcome=%s', (task_id, runtime, generation, 'completed'))[0][0]
+        return [] if done == 1 else [f'{task_id} (ignore_result) has {done} completed {runtime} attempts at {generation}']
     if completed and status != 'SUCCESS':
         return [f'{task_id} has result {status}; expected SUCCESS under the same task id on {runtime}']
     if not completed and status is not None:

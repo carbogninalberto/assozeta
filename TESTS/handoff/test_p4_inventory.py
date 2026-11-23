@@ -80,7 +80,19 @@ def test_exists(identifier):
     if len(parts) < 5 or parts[:2] != ['TESTS', 'handoff']:
         return False
     module = ROOT / 'TESTS/handoff' / f'{parts[2]}.py'
-    return module.exists() and re.search(rf'def {re.escape(parts[-1])}\(', module.read_text()) is not None
+    if not module.exists():
+        return False
+    if re.search(rf'def {re.escape(parts[-1])}\(', module.read_text()):
+        return True
+    # Generated tests (the task matrix builds its methods from the family modules): resolve the installed method.
+    import importlib
+    try:
+        target = importlib.import_module('.'.join(parts[:3]))
+        for name in parts[3:]:
+            target = getattr(target, name)
+    except (ImportError, AttributeError):
+        return False
+    return callable(target)
 
 
 class Phase0Inventory(unittest.TestCase):

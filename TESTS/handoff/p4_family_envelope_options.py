@@ -103,11 +103,11 @@ def failed_attempt_retries_with_the_same_identity(stack):
         stack.reset()
         stack.set_authority(runtime, 1)
         stack.smtp.failing = True
-        root, parent = str(uuid.uuid4()), str(uuid.uuid4())
+        # The same explicit lineage on both runtimes: a child of another task, as producers publish it.
+        root, parent = '00000000-0000-4000-8000-0000000000e1', '00000000-0000-4000-8000-0000000000e2'
         kwargs = dict(subject='Retry', message='body', from_email='noreply@example.test', recipient_list=['a@example.test'])
         if runtime == 'django':
-            task_id = produce_django(stack, MAIL_TASK, kwargs=kwargs)
-            root = task_id
+            task_id = produce_django(stack, MAIL_TASK, kwargs=kwargs, root_id=root, parent_id=parent)
         else:
             task_id = produce_go_task(stack, MAIL_TASK, kwargs=kwargs, root_id=root, parent_id=parent)
         stack.executors(runtime)
@@ -116,9 +116,10 @@ def failed_attempt_retries_with_the_same_identity(stack):
         failed = sorted(stack.attempts(task_id=task_id), key=lambda a: a['claimed_at'])[0]
         delay = (row['eta'] - failed['claimed_at']).total_seconds() if row['eta'] else None
         observed[runtime] = {'state': row['state'], 'retries': row['retries'], 'delay': None if delay is None else round(delay)}
-        # Celery's retry keeps the root and makes the failed attempt the parent (observed on the Django control).
-        check((row['root_id'], row['parent_id']) == (root, task_id), f'{runtime}: retry lineage (root, parent) '
-              f'{(row["root_id"], row["parent_id"])}, expected {(root, task_id)}')
+        # Celery's retry republishes from the request: root and the explicit parent are kept (Celery 5.6
+        # Task.signature_from_request forwards parent_id; send_task fills it only when absent).
+        check((row['root_id'], row['parent_id']) == (root, parent), f'{runtime}: retry lineage (root, parent) '
+              f'{(row["root_id"], row["parent_id"])}, expected {(root, parent)}')
         check(stack.smtp.count() == 0, f'{runtime}: nothing was accepted by the failing SMTP server')
         if runtime == 'go':
             exclusive_go(stack, [task_id])

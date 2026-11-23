@@ -435,7 +435,7 @@ def killed_at_batch(controlled, source, target, key_index=1):
                   f'{controlled.task}: the interrupted job completes on {target}')
         case.verify(stack, context, target)
         if target == 'go':
-            exclusive_go(stack, produced)
+            exclusive_go(stack, produced, generation)
         children = case.children(stack, context)
         identity(stack, {t: 'target_completed' for t in produced} | children, (source, 1), (target, generation),
                  {target: len(produced) + sum(1 for v in children.values() if v == 'target_completed'),

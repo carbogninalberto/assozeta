@@ -55,7 +55,7 @@ FAMILIES = (
     Family('workflows', 'L', 300,
            'Broker consumers: check_workflows_trigger, check_workflows_trigger_cron, workflow_block_execute',
            ('check_workflows_trigger', 'check_workflows_trigger_cron', 'workflow_block_execute'),
-           ('after_scheduling', 'before_execution', 'after_child_published'), (), None),
+           ('after_scheduling', 'before_execution', 'after_child_published'), ('storage',), None),
     Family('payments', 'L', 300,
            'Jobs mapped by the Go scheduler: association_quote_assign, renew_memberships_payments, '
            'change_type_of_stripe_payments, generate_coupon_if_not_exists, mark_as_paid_payments_checking_stripe',

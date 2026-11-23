@@ -4298,8 +4298,7 @@
         "go": {
           "runtime": "go",
           "component": "/app/worker",
-          "status": "planned",
-          "phase": 4
+          "status": "present"
         }
       },
       "refs": [
@@ -4723,8 +4722,7 @@
         "go": {
           "runtime": "go",
           "component": "/app/worker",
-          "status": "planned",
-          "phase": 4
+          "status": "present"
         }
       },
       "refs": [
@@ -5948,8 +5946,7 @@
         "go": {
           "runtime": "go",
           "component": "/app/worker",
-          "status": "planned",
-          "phase": 4
+          "status": "present"
         }
       },
       "refs": [
@@ -6537,8 +6534,7 @@
         "go": {
           "runtime": "go",
           "component": "/app/worker",
-          "status": "planned",
-          "phase": 4
+          "status": "present"
         }
       },
       "refs": [

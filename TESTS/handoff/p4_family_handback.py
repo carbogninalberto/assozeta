@@ -13,7 +13,7 @@ import json
 import time
 import uuid
 
-from TESTS.handoff.p3_stack import DB_TASK, GO_QUEUE, check
+from TESTS.handoff.p3_stack import DB_TASK, GO_QUEUE, check, wait_for
 from TESTS.handoff.p4_matrix_kit import await_done, exclusive_go, require_matrix_prerequisites
 
 INPUTS = {
@@ -72,7 +72,12 @@ def supported_input_finishes_on_go(stack):
     check(stack.admit('go', task_id, 'send_email_text', GO_QUEUE, payload) == 'accepted', 'admission')
     stack.push(GO_QUEUE, payload)
     check(await_done(stack, task_id, 'the Go consumer') == 'completed', 'a supported input completes on Go')
-    exclusive_go(stack, [task_id])
+    # send_email_text publishes core.tasks.send_mail_async, which sends: wait for that child, then count.
+    from TESTS.handoff.p4_matrix_kit import children_of
+    children = wait_for(lambda: children_of(stack, task_id), 'the supported input never published its mail child')
+    for child in children:
+        check(await_done(stack, child, 'the Go consumer (mail child)') == 'completed', f'child {child} completes on Go')
+    exclusive_go(stack, [task_id, *children])
     check(stack.smtp.count() == 1, f'one message accepted by SMTP, got {stack.smtp.count()}')
     recorded_outcome('input')
 
