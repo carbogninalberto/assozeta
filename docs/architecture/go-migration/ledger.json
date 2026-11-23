@@ -896,7 +896,7 @@
           "BaseCommand"
         ]
       },
-      "status": "implementing",
+      "status": "verified",
       "go": [
         "BE_GO/cmd/whatsapp-templates/main.go",
         "BE_GO/internal/whatsapp/provider.go"
@@ -924,7 +924,16 @@
         "TESTS/adapters/go/whatsapp_templates_process.py",
         "TESTS/adapters/go/whatsapp_meta_stub.py"
       ],
-      "evidence": [],
+      "evidence": [
+        {
+          "command": "python -m TESTS.adapters.go.whatsapp_templates_process",
+          "revision": "b78f7f908987b46d6ba5a845bda139b5061410c5",
+          "result": "passed",
+          "artifact": "quality-reports/go-migration/sweep-wa-parity/process-whatsapp_templates_process.log",
+          "receipt_sha256": "6d64311aaa14eb35cb05e8eb0fe6a1cb345ac13cd30d7ec6c16856b9fd10b1f3",
+          "scope": "Process harness whatsapp_templates_process: {\"success\": true, \"workloads\": [\"django-native\", \"go-native\"], \"errors\": []}"
+        }
+      ],
       "notes": [
         "Shared configuration and delivery contract in docs/whatsapp.md."
       ]
@@ -31567,7 +31576,7 @@
         "target": "webhook",
         "syntax": "path"
       },
-      "status": "implementing",
+      "status": "verified",
       "go": [
         "BE_GO/internal/whatsapp/webhook.go",
         "BE_GO/internal/whatsapp/delivery.go"
@@ -31606,7 +31615,16 @@
         "TESTS/adapters/django/whatsapp_webhook_http.py",
         "TESTS/adapters/django/staff_board_http_acceptance.py"
       ],
-      "evidence": [],
+      "evidence": [
+        {
+          "command": "python tools/go-migration/family.py run whatsapp-webhook --versioned --label sweep-wa-parity",
+          "revision": "b78f7f908987b46d6ba5a845bda139b5061410c5",
+          "result": "passed",
+          "artifact": "quality-reports/go-migration/whatsapp-webhook-http-sweep-wa-parity/results.json",
+          "receipt_sha256": "1a104486aea927cf51475f10b3a047f2c58a57f6df3cc166b3f88ad19711c99a",
+          "scope": "HTTP family whatsapp-webhook: 79/79 cases on native Django and native Go, 79/79 on Caddy /api/v1 and /api/v2."
+        }
+      ],
       "notes": [
         "Shared configuration and delivery contract in docs/whatsapp.md."
       ]
@@ -38946,7 +38964,7 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "implementing",
+      "status": "verified",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/whatsapp/delivery.go"
@@ -38972,7 +38990,16 @@
         "TESTS/adapters/go/whatsapp_delivery_process.py",
         "TESTS/adapters/go/whatsapp_meta_stub.py"
       ],
-      "evidence": [],
+      "evidence": [
+        {
+          "command": "python -m TESTS.adapters.go.whatsapp_delivery_process",
+          "revision": "b78f7f908987b46d6ba5a845bda139b5061410c5",
+          "result": "passed",
+          "artifact": "quality-reports/go-migration/sweep-wa-parity/process-whatsapp_delivery_process.log",
+          "receipt_sha256": "fa40fdf120112a4e2b8d622e8f8436a9921311d378f32c592034853f971dfea9",
+          "scope": "Process harness whatsapp_delivery_process: {\"success\": true, \"workloads\": [\"django-native\", \"go-native\"], \"errors\": []}"
+        }
+      ],
       "notes": [
         "Shared configuration and delivery contract in docs/whatsapp.md."
       ]
@@ -44570,7 +44597,7 @@
         "arguments": "",
         "options": {}
       },
-      "status": "implementing",
+      "status": "verified",
       "go": [
         "BE_GO/internal/whatsapp/delivery.go",
         "BE_GO/internal/whatsapp/provider.go",
@@ -44599,7 +44626,16 @@
         "TESTS/adapters/go/whatsapp_delivery_process.py",
         "TESTS/adapters/go/whatsapp_meta_stub.py"
       ],
-      "evidence": [],
+      "evidence": [
+        {
+          "command": "python -m TESTS.adapters.go.whatsapp_delivery_process",
+          "revision": "b78f7f908987b46d6ba5a845bda139b5061410c5",
+          "result": "passed",
+          "artifact": "quality-reports/go-migration/sweep-wa-parity/process-whatsapp_delivery_process.log",
+          "receipt_sha256": "fa40fdf120112a4e2b8d622e8f8436a9921311d378f32c592034853f971dfea9",
+          "scope": "Process harness whatsapp_delivery_process: {\"success\": true, \"workloads\": [\"django-native\", \"go-native\"], \"errors\": []}"
+        }
+      ],
       "notes": [
         "Shared configuration and delivery contract in docs/whatsapp.md."
       ]
