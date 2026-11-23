@@ -45,6 +45,10 @@ SYNTHETIC = {'boolean': False, 'integer': 0, 'bigint': 0, 'smallint': 0, 'numeri
              'timestamp with time zone': '2026-01-01T00:00:00+00:00', 'date': '2026-01-01',
              'timestamp without time zone': '2026-01-01T00:00:00', 'ARRAY': [], 'character varying': 'p6',
              'text': 'p6'}
+# dispatch_uid of the Django post_migrate receiver that prepares the operational tables (B1).
+OPERATIONAL_RECEIVER = 'assozeta_operational_schema'
+# Where the Django image carries its copy of the Go operational migrations (B1), byte for byte.
+VENDORED_OPERATIONAL_SQL = ROOT / 'BE/instance/operational_sql'
 NATURAL = {'django_content_type', 'auth_permission', 'auth_group_permissions', 'django_migrations',
            'assozeta_go_schema_migrations'}
 
@@ -402,6 +406,10 @@ def _django_run(database, leaves_json, workdir):
         print(f'setup: {type(error).__name__}: {error}', file=sys.stderr)
         return 3
     if leaves_json:
+        # A historical release had no operational post_migrate receiver (Phase 6 B1): rebuilding its
+        # schema with the current code must not run it.
+        from django.db.models.signals import post_migrate
+        post_migrate.disconnect(dispatch_uid=OPERATIONAL_RECEIVER)
         labels = {Path(config.path).name: config.label for config in apps.get_app_configs()
                   if Path(config.path).parent == ROOT / 'BE'}
         for directory, name in json.loads(leaves_json):

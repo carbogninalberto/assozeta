@@ -3750,8 +3750,7 @@
       "owner": {
         "django": {
           "runtime": "none",
-          "status": "planned",
-          "phase": 6,
+          "status": "present",
           "disposition": "not-applicable: full Django lifecycle prepares shared operational tables without the Go command"
         },
         "go": {
@@ -3763,7 +3762,8 @@
       "refs": [
         "BE_GO/cmd/migrate/main.go:1",
         "selfhost/bin/assozeta:1051",
-        "selfhost/compose.yml:241"
+        "selfhost/compose.yml:241",
+        "BE/instance/operational_schema.py"
       ]
     },
     {
@@ -8715,8 +8715,7 @@
         "django": {
           "runtime": "django",
           "component": "Django-compatible operational migration path",
-          "status": "planned",
-          "phase": 6
+          "status": "present"
         },
         "go": {
           "runtime": "go",
@@ -8727,7 +8726,8 @@
       "refs": [
         "BE_GO/cmd/migrate/main.go",
         "BE_GO/migrations/README.md",
-        "selfhost/bin/assozeta"
+        "selfhost/bin/assozeta",
+        "BE/instance/operational_schema.py"
       ]
     },
     {

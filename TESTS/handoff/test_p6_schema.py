@@ -103,6 +103,15 @@ class SharedSchema(h.ContractB, unittest.TestCase):
         found = s.differences(expected, s.snapshot(cluster(), name, preserved(baseline)))
         self.assertEqual(found, [], f'{RED}: {label} does not build the shared schema:\n' + '\n'.join(found))
 
+    def test_django_image_carries_the_operational_migrations_byte_for_byte(self):
+        """B1: the Django path applies the same operational SQL the Go migrator embeds."""
+        source = {path.name: path.read_bytes() for path in sorted((s.ROOT / 'BE_GO/migrations').glob('*.up.sql'))}
+        vendored = {path.name: path.read_bytes() for path in sorted(s.VENDORED_OPERATIONAL_SQL.glob('*.up.sql'))}
+        self.assertEqual((sorted(set(source) - set(vendored)), sorted(set(vendored) - set(source)),
+                          sorted(name for name in set(source) & set(vendored) if source[name] != vendored[name])),
+                         ([], [], []), f'{RED}: {s.VENDORED_OPERATIONAL_SQL.relative_to(s.ROOT)} differs from '
+                                       'BE_GO/migrations (missing, extra, changed)')
+
     def test_two_independent_reference_builds_are_identical(self):
         """Control (green guard): the comparator does not see two runs of the same path as different.
 
