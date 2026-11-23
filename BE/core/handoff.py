@@ -427,7 +427,7 @@ def _recover_smtp():
             AND a.generation=w.owner_generation
         WHERE a.outcome='running' AND a.lease_until<=clock_timestamp()
           AND EXISTS (SELECT 1 FROM public.assozeta_handoff_effects e
-                      WHERE e.attempt_id=a.attempt_id AND e.kind='smtp' AND e.state='intent')
+                      WHERE e.attempt_id=a.attempt_id AND e.kind IN ('smtp','print') AND e.state='intent')
         ORDER BY a.lease_until LIMIT 100 FOR UPDATE OF a SKIP LOCKED
     )
     SELECT count(public.assozeta_handoff_finish(attempt_id,'released')) FROM expired""")

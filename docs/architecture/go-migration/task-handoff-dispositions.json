@@ -654,6 +654,62 @@
       "outcome": "blocked:unsupported_input",
       "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
       "sites": []
+    },
+    "BE_GO/internal/service/consumer_print_tasks.go:consumerPrintBind#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-consumer_print_tasks-94"
+      ]
+    },
+    "BE_GO/internal/service/consumer_print_tasks.go:consumerPrintBind#2": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-consumer_print_tasks-102"
+      ]
+    },
+    "BE_GO/internal/service/consumer_print_tasks.go:consumerPrintBind#3": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-consumer_print_tasks-108"
+      ]
+    },
+    "BE_GO/internal/service/consumer_print_tasks.go:consumerPrintAuthorization#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-consumer_print_tasks-165"
+      ]
+    },
+    "BE_GO/internal/service/consumer_print_tasks.go:consumerPrintAuthorization#2": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-consumer_print_tasks-175"
+      ]
+    },
+    "BE_GO/internal/service/consumer_print_tasks.go:plan#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-consumer_print_tasks-187"
+      ]
+    },
+    "BE_GO/internal/service/consumer_print_tasks.go:plan#2": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-consumer_print_tasks-197"
+      ]
     }
   },
   "handback_reasons": {
@@ -1038,6 +1094,56 @@
     },
     "save_to_storage": {
       "family": "storage",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "print_document_compensation": {
+      "family": "print",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "print_document_customer_invoice": {
+      "family": "print",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "print_document_invoice": {
+      "family": "print",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "print_document_medical_appointment": {
+      "family": "print",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "print_document_subscription": {
+      "family": "print",
       "rate_limit": null,
       "go_rate_limit": null,
       "time_limits": [

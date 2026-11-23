@@ -68,6 +68,16 @@ func ownedStorageTask(name string) bool {
 	return name == "save_to_storage" || name == "export_invoices_to_zip"
 }
 
+func ownedPrintTask(name string) bool {
+	switch name {
+	case "print_document_subscription", "print_document_invoice", "print_document_customer_invoice",
+		"print_document_compensation", "print_document_medical_appointment":
+		return true
+	default:
+		return false
+	}
+}
+
 func routeEnvelope(raw []byte, queue string) ([]byte, error) {
 	value, err := DecodeJSON(raw)
 	if err != nil {

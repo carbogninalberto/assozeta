@@ -3,10 +3,12 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/celeryworker"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/handoff"
 	"github.com/google/uuid"
 )
 
@@ -206,8 +208,8 @@ func (p *ConsumerPrint) plan(spec consumerPrintSpec, request *celeryworker.Reque
 	return nil
 }
 
-// run sends the GET with requests' default headers and reads the body;
-// every error is swallowed and the task returns None.
+// run sends the GET with requests' default headers and reads the body.
+// An unresolved intent makes the ledger hold the task for reconciliation.
 func (p *ConsumerPrint) run(ctx context.Context, request *celeryworker.Request) (any, error) {
 	call, _ := request.State.(consumerPrintCall)
 	if !call.send {
@@ -222,11 +224,31 @@ func (p *ConsumerPrint) run(ctx context.Context, request *celeryworker.Request) 
 	if call.authorization != nil {
 		outbound.Header["Authorization"] = []string{*call.authorization}
 	}
+	db, attempt := celeryworker.ActiveBrokerAttempt(ctx)
+	key := fmt.Sprintf("%s:%d:print", request.ID, request.Retries)
+	if db != nil {
+		var disposition string
+		if err := db.QueryRowContext(ctx, "SELECT public.assozeta_handoff_effect_intent($1,$2,'print')", attempt, key).Scan(&disposition); err != nil {
+			return nil, err
+		}
+		switch disposition {
+		case "confirmed":
+			return nil, nil
+		case "recorded":
+		default:
+			return nil, errors.New("print effect needs reconciliation")
+		}
+	}
 	response, err := p.client.Do(outbound)
 	if err != nil {
 		return nil, nil
 	}
 	_, _ = io.Copy(io.Discard, response.Body)
 	_ = response.Body.Close()
+	if db != nil {
+		handoff.Barrier("effect:accepted", request.ID)
+		_, err = db.ExecContext(ctx, "SELECT public.assozeta_handoff_effect_confirm($1,NULL)", key)
+		return nil, err
+	}
 	return nil, nil
 }

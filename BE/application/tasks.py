@@ -262,15 +262,17 @@ def delete_users_with_request():
 
 @shared_task(name="print_document_subscription")
 def print_document_subscription(subscription_id, auth_token):
+    from application.printing_tasks import print_request
+
     logger.info("Starting print_document_subscription task", extra={'task_name': 'print_document_subscription', 'subscription_id': str(subscription_id)})
     try:
         print(f"[PRINTING TASK] starting...")
         headers = {'Authorization': auth_token}
-        response = requests.get(f"{CURRENT_HOST}/document/subscription/{subscription_id}", headers=headers)
-        logger.info("Completed print_document_subscription task", extra={'task_name': 'print_document_subscription', 'subscription_id': str(subscription_id), 'status_code': response.status_code})
+        response = print_request(f"{CURRENT_HOST}/document/subscription/{subscription_id}", headers)
+        logger.info("Completed print_document_subscription task", extra={'task_name': 'print_document_subscription', 'subscription_id': str(subscription_id), 'status_code': getattr(response, 'status_code', None)})
         # Depending on the response, you can take further actions or handle errors
         print(f"[PRINTING TASK] finished!")
-    except Exception as e:
+    except requests.RequestException as e:
         logger.error("Error in print_document_subscription task", extra={'task_name': 'print_document_subscription', 'subscription_id': str(subscription_id)}, exc_info=True)
         print(f"[PRINTING TASK] error {e}")
 

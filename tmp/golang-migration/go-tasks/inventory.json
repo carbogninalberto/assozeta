@@ -1,7 +1,7 @@
 [
   {
     "name": "association_quote_assign",
-    "django_site": "BE/application/tasks.py:1432",
+    "django_site": "BE/application/tasks.py:1434",
     "scheduled": true,
     "consumer": false,
     "job": true,
@@ -13,7 +13,7 @@
   },
   {
     "name": "auto_archive_subscription",
-    "django_site": "BE/application/tasks.py:608",
+    "django_site": "BE/application/tasks.py:610",
     "scheduled": true,
     "consumer": false,
     "job": true,
@@ -24,7 +24,7 @@
   },
   {
     "name": "auto_delete_orphan_medical_certificate",
-    "django_site": "BE/application/tasks.py:780",
+    "django_site": "BE/application/tasks.py:782",
     "scheduled": true,
     "consumer": false,
     "job": true,
@@ -35,7 +35,7 @@
   },
   {
     "name": "auto_mark_attendance",
-    "django_site": "BE/application/tasks.py:654",
+    "django_site": "BE/application/tasks.py:656",
     "scheduled": true,
     "consumer": false,
     "job": true,
@@ -46,7 +46,7 @@
   },
   {
     "name": "auto_move_users_to_base_plan",
-    "django_site": "BE/application/tasks.py:641",
+    "django_site": "BE/application/tasks.py:643",
     "scheduled": false,
     "consumer": false,
     "job": false,
@@ -66,7 +66,7 @@
   },
   {
     "name": "change_type_of_stripe_payments",
-    "django_site": "BE/application/tasks.py:358",
+    "django_site": "BE/application/tasks.py:360",
     "scheduled": true,
     "consumer": false,
     "job": true,
@@ -77,7 +77,7 @@
   },
   {
     "name": "check_workflows_trigger",
-    "django_site": "BE/application/tasks.py:1333",
+    "django_site": "BE/application/tasks.py:1335",
     "scheduled": false,
     "consumer": true,
     "job": false,
@@ -88,7 +88,7 @@
   },
   {
     "name": "check_workflows_trigger_cron",
-    "django_site": "BE/application/tasks.py:1360",
+    "django_site": "BE/application/tasks.py:1362",
     "scheduled": false,
     "consumer": true,
     "job": false,
@@ -99,7 +99,7 @@
   },
   {
     "name": "cleanup_old_exports",
-    "django_site": "BE/application/tasks.py:1807",
+    "django_site": "BE/application/tasks.py:1809",
     "scheduled": true,
     "consumer": false,
     "job": true,
@@ -110,7 +110,7 @@
   },
   {
     "name": "clear_deleted_subscription",
-    "django_site": "BE/application/tasks.py:564",
+    "django_site": "BE/application/tasks.py:566",
     "scheduled": true,
     "consumer": false,
     "job": true,
@@ -121,7 +121,7 @@
   },
   {
     "name": "clear_expired_subscription_tokens",
-    "django_site": "BE/application/tasks.py:278",
+    "django_site": "BE/application/tasks.py:280",
     "scheduled": true,
     "consumer": false,
     "job": true,
@@ -155,7 +155,7 @@
   },
   {
     "name": "delete_old_audit_logs",
-    "django_site": "BE/application/tasks.py:1680",
+    "django_site": "BE/application/tasks.py:1682",
     "scheduled": true,
     "consumer": false,
     "job": true,
@@ -177,7 +177,7 @@
   },
   {
     "name": "export_association_data",
-    "django_site": "BE/application/tasks.py:1898",
+    "django_site": "BE/application/tasks.py:1900",
     "scheduled": false,
     "consumer": true,
     "job": false,
@@ -188,7 +188,7 @@
   },
   {
     "name": "export_invoices_to_zip",
-    "django_site": "BE/application/tasks.py:1629",
+    "django_site": "BE/application/tasks.py:1631",
     "scheduled": false,
     "consumer": true,
     "job": false,
@@ -209,7 +209,7 @@
   },
   {
     "name": "generate_coupon_if_not_exists",
-    "django_site": "BE/application/tasks.py:323",
+    "django_site": "BE/application/tasks.py:325",
     "scheduled": true,
     "consumer": false,
     "job": true,
@@ -220,7 +220,7 @@
   },
   {
     "name": "import_association_data",
-    "django_site": "BE/application/tasks.py:2134",
+    "django_site": "BE/application/tasks.py:2136",
     "scheduled": false,
     "consumer": true,
     "job": false,
@@ -276,7 +276,7 @@
   },
   {
     "name": "mark_as_paid_payments_checking_stripe",
-    "django_site": "BE/application/tasks.py:411",
+    "django_site": "BE/application/tasks.py:413",
     "scheduled": true,
     "consumer": false,
     "job": true,
@@ -288,7 +288,7 @@
   },
   {
     "name": "nurturing_warm_leads",
-    "django_site": "BE/application/tasks.py:648",
+    "django_site": "BE/application/tasks.py:650",
     "scheduled": false,
     "consumer": false,
     "job": false,
@@ -297,7 +297,7 @@
   },
   {
     "name": "print_document_compensation",
-    "django_site": "BE/application/printing_tasks.py:30",
+    "django_site": "BE/application/printing_tasks.py:55",
     "scheduled": false,
     "consumer": true,
     "job": false,
@@ -308,7 +308,7 @@
   },
   {
     "name": "print_document_customer_invoice",
-    "django_site": "BE/application/printing_tasks.py:18",
+    "django_site": "BE/application/printing_tasks.py:43",
     "scheduled": false,
     "consumer": true,
     "job": false,
@@ -319,7 +319,7 @@
   },
   {
     "name": "print_document_invoice",
-    "django_site": "BE/application/printing_tasks.py:7",
+    "django_site": "BE/application/printing_tasks.py:32",
     "scheduled": false,
     "consumer": true,
     "job": false,
@@ -330,7 +330,7 @@
   },
   {
     "name": "print_document_medical_appointment",
-    "django_site": "BE/application/printing_tasks.py:42",
+    "django_site": "BE/application/printing_tasks.py:67",
     "scheduled": false,
     "consumer": true,
     "job": false,
@@ -363,7 +363,7 @@
   },
   {
     "name": "reset_communication_daily_email_balance",
-    "django_site": "BE/application/tasks.py:1615",
+    "django_site": "BE/application/tasks.py:1617",
     "scheduled": true,
     "consumer": false,
     "job": true,
@@ -395,7 +395,7 @@
   },
   {
     "name": "send_email_html",
-    "django_site": "BE/application/tasks.py:1198",
+    "django_site": "BE/application/tasks.py:1200",
     "scheduled": false,
     "consumer": true,
     "job": false,
@@ -407,7 +407,7 @@
   },
   {
     "name": "send_email_template",
-    "django_site": "BE/application/tasks.py:1135",
+    "django_site": "BE/application/tasks.py:1137",
     "scheduled": false,
     "consumer": true,
     "job": false,
@@ -419,7 +419,7 @@
   },
   {
     "name": "send_email_text",
-    "django_site": "BE/application/tasks.py:1176",
+    "django_site": "BE/application/tasks.py:1178",
     "scheduled": false,
     "consumer": true,
     "job": false,
@@ -431,7 +431,7 @@
   },
   {
     "name": "send_expired_certificate_email",
-    "django_site": "BE/application/tasks.py:921",
+    "django_site": "BE/application/tasks.py:923",
     "scheduled": true,
     "consumer": false,
     "job": true,
@@ -442,7 +442,7 @@
   },
   {
     "name": "send_expiring_certificate_email",
-    "django_site": "BE/application/tasks.py:806",
+    "django_site": "BE/application/tasks.py:808",
     "scheduled": true,
     "consumer": false,
     "job": true,
@@ -453,7 +453,7 @@
   },
   {
     "name": "send_reminders",
-    "django_site": "BE/application/tasks.py:1380",
+    "django_site": "BE/application/tasks.py:1382",
     "scheduled": true,
     "consumer": false,
     "job": true,
@@ -464,7 +464,7 @@
   },
   {
     "name": "send_updated_certificate_email",
-    "django_site": "BE/application/tasks.py:1082",
+    "django_site": "BE/application/tasks.py:1084",
     "scheduled": false,
     "consumer": false,
     "job": false,
@@ -473,7 +473,7 @@
   },
   {
     "name": "send_user_partial_registration_email",
-    "django_site": "BE/application/tasks.py:1036",
+    "django_site": "BE/application/tasks.py:1038",
     "scheduled": true,
     "consumer": false,
     "job": true,
@@ -484,7 +484,7 @@
   },
   {
     "name": "update_age_of_associates",
-    "django_site": "BE/application/tasks.py:292",
+    "django_site": "BE/application/tasks.py:294",
     "scheduled": true,
     "consumer": false,
     "job": true,
@@ -495,7 +495,7 @@
   },
   {
     "name": "workflow_block_execute",
-    "django_site": "BE/application/tasks.py:1245",
+    "django_site": "BE/application/tasks.py:1247",
     "scheduled": false,
     "consumer": true,
     "job": false,

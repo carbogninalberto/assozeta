@@ -49,7 +49,8 @@ func (b AdmittingBroker) PublishAttempt(ctx context.Context, queue string, raw [
 		return errors.New("invalid task envelope")
 	}
 	m := envelope.Headers
-	if queue == DefaultQueue && (ownedEmailTask(m.Task) || ownedWorkflowTask(m.Task) || ownedStorageTask(m.Task)) {
+	if queue == DefaultQueue && (ownedEmailTask(m.Task) || ownedWorkflowTask(m.Task) || ownedStorageTask(m.Task) ||
+		ownedPrintTask(m.Task)) {
 		routed, err := routeEnvelope(raw, GoQueue)
 		if err != nil {
 			return err

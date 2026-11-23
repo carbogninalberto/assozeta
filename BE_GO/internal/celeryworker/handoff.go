@@ -49,7 +49,7 @@ func (h *BrokerHandoff) heartbeat(ctx context.Context) {
 }
 
 func (h *BrokerHandoff) recoverSMTP(ctx context.Context) {
-	// Early-acked SMTP tasks can lose their broker delivery before storing an
+	// Early-acked outbound tasks can lose their broker delivery before storing an
 	// outcome. The expired lease and unresolved intent suffice to block them.
 	_, _ = h.DB.ExecContext(ctx, `WITH owner AS MATERIALIZED (
     SELECT generation FROM public.assozeta_go_job_ownership
@@ -62,7 +62,7 @@ func (h *BrokerHandoff) recoverSMTP(ctx context.Context) {
         AND a.generation=w.owner_generation
     WHERE a.outcome='running' AND a.lease_until<=clock_timestamp()
       AND EXISTS (SELECT 1 FROM public.assozeta_handoff_effects e
-                  WHERE e.attempt_id=a.attempt_id AND e.kind='smtp' AND e.state='intent')
+                  WHERE e.attempt_id=a.attempt_id AND e.kind IN ('smtp','print') AND e.state='intent')
     ORDER BY a.lease_until LIMIT 100 FOR UPDATE OF a SKIP LOCKED
 )
 SELECT public.assozeta_handoff_finish(attempt_id,'released') FROM expired`)

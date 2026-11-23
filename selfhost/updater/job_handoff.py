@@ -354,6 +354,15 @@ def handoff_steps(store, broker, *, barrier=None, batch_size=500, freeze_timeout
                     WHERE j.state='running' AND NOT EXISTS (SELECT 1 FROM public.assozeta_handoff_attempts a
                     WHERE a.attempt_id=j.lease_token AND a.outcome='running')"""))
             if not running and not historical_running:
+                # Print callers reconcile ambiguous requests before resuming settle.
+                print_blockers = list(task_rows("""SELECT w.task_id, w.block_reason AS reason
+                    FROM public.assozeta_handoff_work w
+                    WHERE w.owner_runtime=:'source' AND w.owner_generation=:'gen'
+                      AND w.state='blocked' AND w.block_reason='ambiguous_effect'
+                      AND EXISTS (SELECT 1 FROM public.assozeta_handoff_effects e
+                        WHERE e.task_id=w.task_id AND e.kind='print' AND e.state='ambiguous')""", **params(record)))
+                if print_blockers:
+                    raise TransferBlocked(print_blockers)
                 return {'running': 0}
             if time.monotonic() >= deadline:
                 raise TransferBlocked(historical_running + list(task_rows("""SELECT task_id,'running' AS reason FROM public.assozeta_handoff_attempts
