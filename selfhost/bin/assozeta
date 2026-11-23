@@ -1255,12 +1255,24 @@ health_prod() {
         health_routing=ok
     fi
 
-    health_heartbeat=${ASSOZETA_HEALTH_HEARTBEAT_SECONDS:-$(env_value ASSOZETA_HEALTH_HEARTBEAT_SECONDS "$PROD_ENV")}
-    health_stall=${ASSOZETA_HEALTH_STALL_SECONDS:-$(env_value ASSOZETA_HEALTH_STALL_SECONDS "$PROD_ENV")}
-    health_values=$(prod_compose exec -T postgres psql -X -qAt -F '|' -v ON_ERROR_STOP=1 \
-        -U "$(env_value DBUSER "$PROD_ENV")" -d "$(env_value DBNAME "$PROD_ENV")" \
-        -v heartbeat="${health_heartbeat:-90}" -v stall="${health_stall:-600}" \
-        < "$SELFHOST_DIR/config/runtime-health.sql") || health_values='unknown|null|database_unavailable|database_unavailable|database_unavailable|database_unavailable'
+    health_profile=${2:-}
+    if [ -z "$health_profile" ]; then
+        if (prod_has_runtime_profiles); then health_profile=current; else health_profile=legacy; fi
+    fi
+    case "$health_profile" in
+        legacy|go-tasks)
+            # Historical mixed installations have no runtime authority or role-specific signals.
+            health_values='unknown|null|schema_missing|no_heartbeat|no_lease|no_heartbeat'
+            ;;
+        *)
+            health_heartbeat=${ASSOZETA_HEALTH_HEARTBEAT_SECONDS:-$(unquoted_env_value ASSOZETA_HEALTH_HEARTBEAT_SECONDS "$PROD_ENV")}
+            health_stall=${ASSOZETA_HEALTH_STALL_SECONDS:-$(unquoted_env_value ASSOZETA_HEALTH_STALL_SECONDS "$PROD_ENV")}
+            health_values=$(prod_compose exec -T postgres psql -X -qAt -F '|' -v ON_ERROR_STOP=1 \
+                -U "$(env_value DBUSER "$PROD_ENV")" -d "$(env_value DBNAME "$PROD_ENV")" \
+                -v heartbeat="${health_heartbeat:-90}" -v stall="${health_stall:-600}" \
+                < "$SELFHOST_DIR/config/runtime-health.sql") || health_values='unknown|null|database_unavailable|database_unavailable|database_unavailable|database_unavailable'
+            ;;
+    esac
     IFS='|' read -r health_runtime health_generation health_schema health_worker health_scheduler health_relay <<EOF
 $health_values
 EOF
@@ -1296,7 +1308,7 @@ status_prod() {
             && log "API readiness check passed" \
             || log "API readiness check has not passed yet"
     fi
-    health_prod '@@ASSOZETA_HEALTH ' || true
+    health_prod '@@ASSOZETA_HEALTH ' "${status_profile:-unknown}" || true
 }
 
 prod_app_services_running() {
