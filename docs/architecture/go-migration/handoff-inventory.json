@@ -4138,8 +4138,7 @@
         "go": {
           "runtime": "go",
           "component": "/app/worker",
-          "status": "planned",
-          "phase": 4
+          "status": "present"
         }
       },
       "refs": [
@@ -4439,8 +4438,7 @@
         "go": {
           "runtime": "go",
           "component": "/app/worker",
-          "status": "planned",
-          "phase": 4
+          "status": "present"
         }
       },
       "refs": [
@@ -5161,8 +5159,7 @@
         "go": {
           "runtime": "go",
           "component": "/app/worker",
-          "status": "planned",
-          "phase": 4
+          "status": "present"
         }
       },
       "refs": [
@@ -5486,8 +5483,7 @@
         "go": {
           "runtime": "go",
           "component": "/app/worker",
-          "status": "planned",
-          "phase": 4
+          "status": "present"
         }
       },
       "refs": [
@@ -5874,8 +5870,7 @@
         "go": {
           "runtime": "go",
           "component": "/app/worker",
-          "status": "planned",
-          "phase": 4
+          "status": "present"
         }
       },
       "refs": [
@@ -5894,7 +5889,7 @@
         "children": "renew_memberships_payments retry with incremented attempt; payment effects can publish print and mail.",
         "handler": {
           "django": "BE/application/tasks.py:59 (renew_memberships_payments)",
-          "go": "BE_GO/cmd/worker/main.go (stripeTasks.RunRenewMembershipsPayments, durable job v1)"
+          "go": "BE_GO/cmd/worker/main.go (stripeTasks.RunRenewMembershipsPayments, durable job v1); cmd/celery-consumer adapts due broker deliveries"
         },
         "payload_versions": "Celery protocol 2 JSON; Optional attempt and max_attempts integers; scheduled invocation has no arguments. Native version 1 instance job payload.",
         "tenant_scope": "Instance-wide scan; retain each selected row’s tenant and run under the instance authority.",
@@ -7998,8 +7993,7 @@
         "go": {
           "runtime": "go",
           "component": "/app/worker",
-          "status": "planned",
-          "phase": 4
+          "status": "present"
         }
       },
       "refs": [

@@ -19,6 +19,10 @@ func NewStripePaidChecks(db *sqlx.DB) *StripePaidChecks {
 	return &StripePaidChecks{flows: NewPaymentPaidFlows(NewPaymentStates(db))}
 }
 
+func (r *StripePaidChecks) HandoffRoot(ctx context.Context, id uuid.UUID) (string, error) {
+	return paymentJobRoot(ctx, r.flows.states.db, id)
+}
+
 var _ domain.StripePaidCheckStore = (*StripePaidChecks)(nil)
 
 type stripePaidCheckTransaction struct{ *paymentPaidFlowTransaction }

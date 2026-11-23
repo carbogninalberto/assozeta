@@ -228,6 +228,17 @@ var retryDelays = []time.Duration{0, 200 * time.Millisecond, 400 * time.Millisec
 // Publish encodes and pushes the task and returns its id. The publish stamp
 // is taken once, before the first attempt, like Celery's retries.
 func (p *Producer) Publish(ctx context.Context, task Task) (string, error) {
+	if parent, ok := ctx.Value(goParentKey{}).(goParent); ok {
+		if task.Queue == "" {
+			task.Queue = GoQueue
+		}
+		if task.ParentID == "" {
+			task.ParentID = parent.id
+		}
+		if task.RootID == "" {
+			task.RootID = parent.root
+		}
+	}
 	now := p.now()
 	id := task.ID
 	if id == "" {

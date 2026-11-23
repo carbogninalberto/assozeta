@@ -38,6 +38,8 @@ from TESTS.adapters.go.email_tasks_worker_process import FakeSMTP, tls_context, 
 
 DATABASE = 'assozeta_contract_quote_assign_worker'
 KIND = 'association_quote_assign'
+# The Go worker starts association_quote_assign no faster than Django's rate limit (1/m).
+PACING = 60
 REDIS_PASSWORD = 'private-redis-password-canary'
 BRAND = 'Assozeta Fixture'
 APP_URL = 'https://app.example.test'
@@ -273,6 +275,9 @@ class QuoteRehearsal(Rehearsal):
         self.redis_port = redis_port
         self.fixture = QuoteFixture(smtp.port)
         self.django = {variant: self.django_expected(variant) for variant in VARIANTS}
+        # The Go worker on the handoff ledger defers configured sends to send_email_html children (matches_django).
+        self.deferred_calls = {variant: [] for variant in VARIANTS}
+        self.django_deferred = {variant: self.django_expected(variant, deferred=self.deferred_calls[variant]) for variant in VARIANTS}
         if ORDER_PROBE:
             self.order_probe()
 
@@ -301,12 +306,18 @@ class QuoteRehearsal(Rehearsal):
         return connection
 
     def drain(self):
-        raw = [item.decode() for item in reversed(self.broker.lrange('celery', 0, -1))]
-        self.broker.delete('celery')
+        # Under Go ownership (handoff ledger, migration 6+) the job's children go to the Go consumer queue.
+        raw = []
+        for queue in ('celery', 'assozeta-go'):
+            raw += [item.decode() for item in reversed(self.broker.lrange(queue, 0, -1))]
+            self.broker.delete(queue)
         return raw
 
-    def django_expected(self, variant):
-        """Run the actual Django task on a fresh seed with the production broker settings."""
+    def django_expected(self, variant, deferred=None):
+        """Run the actual Django task on a fresh seed with the production broker settings. With `deferred` (a list),
+        the in-process send_email_html calls for an association with a communication configuration are recorded
+        there instead of run: the control for a Go worker on the handoff ledger, which publishes each of them as a
+        send_email_html child of the job (run by the Go consumer)."""
         from contextlib import redirect_stdout, ExitStack
         import io
         from unittest.mock import patch
@@ -334,8 +345,22 @@ class QuoteRehearsal(Rehearsal):
                 stack.enter_context(patch.object(tasks, 'WHITELABEL_NAME', BRAND))
                 stack.enter_context(redirect_stdout(io.StringIO()))
                 queries = stack.enter_context(CaptureQueriesContext(connection))
+                if deferred is not None:
+                    from communications.models import CommunicationConfiguration
+                    names = ('html_message', 'subject', 'recipient_list', 'sport_association_id', 'reply_to')
+                    real = tasks.send_email_html
+
+                    def send_email_html(*args, **kwargs):
+                        call = {**dict(zip(names, args)), **kwargs}
+                        association = call.get('sport_association_id')
+                        if association and CommunicationConfiguration.objects.filter(sport_association_id=association).exists():
+                            deferred.append(call)
+                        else:
+                            real(*args, **kwargs)
+                    stack.enter_context(patch.object(tasks, 'send_email_html', send_email_html))
                 assert tasks.association_quote_assign.run() is None
-                time.sleep(TIMER_WAIT)  # the Timer threads send after 1-30 s
+                if deferred is None:
+                    time.sleep(TIMER_WAIT)  # the Timer threads send after 1-30 s
         finally:
             app.conf.update(saved)
             _reset_celery_app(app)
@@ -349,7 +374,10 @@ class QuoteRehearsal(Rehearsal):
         after = self.fixture.snapshot()
         transcripts = self.smtp.take()
         seeded = {str(row['payment_id']) for row in before['application.Payment']}
-        self.authored_checks(variant, before, after, specs, transcripts, seeded)
+        if deferred is None:
+            self.authored_checks(variant, before, after, specs, transcripts, seeded)
+        else:
+            assert not transcripts, 'the deferred control sends no SMTP itself'
         bodies = sorted(json.loads(item)['body'] for item in raw)
         return (normalized(delta(before, after), since, until, seeded), bodies, sorted(json.dumps(t) for t in transcripts), seeded)
 
@@ -395,6 +423,26 @@ class QuoteRehearsal(Rehearsal):
         else:
             assert len(created) < 10 and (24, 'plan-new', '30.00') in quotes, quotes
 
+    @staticmethod
+    def deferred_html_children(identifier, raw, calls):
+        """The send_email_html children of the Go job (Go consumer queue, the job as parent and root) must carry exactly
+        Django's recorded in-process calls; the other messages are returned for the envelope comparison."""
+        from kombu.utils.json import loads
+        html = [item for item in raw if json.loads(item)['headers']['task'] == 'send_email_html']
+        published = []
+        for item in html:
+            message = json.loads(item)
+            assert message['properties']['delivery_info']['routing_key'] == 'assozeta-go', 'send_email_html child queue'
+            assert (message['headers']['parent_id'], message['headers']['root_id']) == (str(identifier), str(identifier)), \
+                'send_email_html child lineage'
+            args, kwargs, _ = loads(base64.b64decode(message['body']))
+            assert not args, args
+            published.append(kwargs)
+        normal = lambda items: sorted(json.dumps({k: (str(v) if isinstance(v, UUID) else v) for k, v in call.items()},
+                                                 sort_keys=True, ensure_ascii=False, default=str) for call in items)
+        assert normal(published) == normal(calls), 'Go send_email_html children differ from the Django in-process calls'
+        return [item for item in raw if item not in html]
+
     def seed_job(self, *, version=1, payload='{}', association=NIL, variant='main', reseed=True):
         self.sql('DELETE FROM assozeta_go_jobs')
         before = self.fixture.seed(variant) if reseed else self.fixture.snapshot()
@@ -407,11 +455,13 @@ class QuoteRehearsal(Rehearsal):
 
     def matches_django(self, variant, identifier, before):
         await_condition(lambda: self.job(identifier)[0] in ('completed', 'failed'), 'registered quote assign worker durable completion',
-                        timeout=60)
+                        timeout=60 + PACING)
         assert self.job(identifier)[:3] == ('completed', 1, ''), self.job(identifier)
         assert self.sql('SELECT result FROM assozeta_go_jobs WHERE id=%s', (identifier,)) == [(None,)]
-        time.sleep(TIMER_WAIT)
-        state, bodies, transcripts, seeded = self.django[variant]
+        ledger = self.sql("SELECT to_regclass('public.assozeta_handoff_work') IS NOT NULL")[0][0]
+        if not ledger:
+            time.sleep(TIMER_WAIT)  # the worker's local Timer sends
+        state, bodies, transcripts, seeded = (self.django_deferred if ledger else self.django)[variant]
         actual = normalized(delta(before, self.fixture.snapshot()), self.since, datetime.now(timezone.utc), seeded)
         if actual != state:
             differences = {label: {'django': state.get(label), 'go': actual.get(label)}
@@ -419,6 +469,8 @@ class QuoteRehearsal(Rehearsal):
             (self.output / f'difference-{variant}.json').write_text(json.dumps(differences, indent=1, default=str) + '\n')
         assert actual == state, f'Go quote assign state differs from the Django task on the {variant} seed'
         raw = self.drain()
+        if ledger:
+            raw = self.deferred_html_children(identifier, raw, self.deferred_calls[variant])
         go = sorted((json.loads(item)['body'], item) for item in raw)
         if [body for body, _ in go] != bodies:
             decode = lambda items: [json.loads(base64.b64decode(item)) for item in items]
@@ -427,7 +479,10 @@ class QuoteRehearsal(Rehearsal):
         assert [body for body, _ in go] == bodies, f'Go quote assign messages differ from the Django task on the {variant} seed'
         from TESTS.adapters.django.family_harness import check_celery_message
         for i, (_, item) in enumerate(go):
-            check_celery_message(Contract(), item, spec_from(item), since=self.started, until=time.time(), where=f':{i}')
+            spec = spec_from(item)
+            if json.loads(item)['properties']['delivery_info']['routing_key'] == 'assozeta-go':
+                spec.update(queue='assozeta-go', root_id=str(identifier), parent_id=str(identifier))
+            check_celery_message(Contract(), item, spec, since=self.started, until=time.time(), where=f':{i}')
         actual_transcripts = sorted(json.dumps(t) for t in self.smtp.take())
         if actual_transcripts != transcripts:
             (self.output / f'smtp-{variant}.json').write_text(json.dumps({'django': transcripts, 'go': actual_transcripts}, indent=1) + '\n')
@@ -451,7 +506,7 @@ class QuoteRehearsal(Rehearsal):
         self.case('native worker reproduces the Django task, its messages and delayed sends')
         later = self.fixture.snapshot()
         identifier, _ = self.seed_job(reseed=False)
-        await_condition(lambda: self.job(identifier)[0] == 'completed', 'later quote assign run')
+        await_condition(lambda: self.job(identifier)[0] == 'completed', 'later quote assign run', 12 + PACING)
         assert self.fixture.snapshot() == later and not self.drain() and not self.smtp.take()
         self.case('a later run on the assigned state creates nothing')
         identifier, before = self.seed_job(variant='stop')
@@ -461,7 +516,7 @@ class QuoteRehearsal(Rehearsal):
         for kwargs, code in [({'version': 2}, 'unsupported_version'), ({'payload': '{"date":"2026-01-01"}'}, 'task_failed'),
                              ({'association': str(U(11))}, 'task_failed')]:
             identifier, before = self.seed_job(**kwargs)
-            await_condition(lambda: self.job(identifier)[0] == 'failed', 'invalid quote assign envelope rejected')
+            await_condition(lambda: self.job(identifier)[0] == 'failed', 'invalid quote assign envelope rejected', 12 + PACING)
             assert self.sql('SELECT error_code FROM assozeta_go_jobs WHERE id=%s', (identifier,)) == [(code,)]
             assert self.fixture.snapshot() == before and not self.drain() and not self.smtp.take()
         self.case('unsupported version payload and tenant fail before business effects')

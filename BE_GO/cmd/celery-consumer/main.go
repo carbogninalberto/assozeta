@@ -148,6 +148,7 @@ func run(arguments []string) error {
 		tasks[domain.PeriodicWhatsApp] = whatsappPollTask(cfg, db)
 	}
 	if *listTasks {
+		tasks[domain.JobRenewMembershipsPayments] = renewalDeliveryTask(repository.NewJobs(db))
 		return json.NewEncoder(os.Stdout).Encode(map[string][]string{
 			"consumer": slices.Sorted(maps.Keys(tasks)),
 			"job":      domain.PeriodicTaskNames(),
@@ -166,6 +167,7 @@ func run(arguments []string) error {
 		return errors.New("cannot check broker handoff schema")
 	}
 	if installed {
+		tasks[domain.JobRenewMembershipsPayments] = renewalDeliveryTask(repository.NewJobs(db))
 		if *heartbeat <= 0 {
 			return errors.New("invalid heartbeat interval")
 		}

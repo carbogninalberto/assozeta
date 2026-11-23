@@ -68,3 +68,14 @@ if os.environ.get('ASSOZETA_HANDOFF_DEVELOPMENT_HTTP') == '1':
 if os.environ.get('ASSOZETA_HANDOFF_CURRENT_HOST'):
     # The trusted print origin (a family's recording stub or the active API); the base test settings pin a dead port.
     CURRENT_HOST = CURRENT_HOST_PUPPETEER = os.environ['ASSOZETA_HANDOFF_CURRENT_HOST']
+if os.environ.get('ASSOZETA_HANDOFF_ONE_THREAD_POOL') == '1':
+    # mark_as_paid_payments_checking_stripe submits each payment to a ten-thread pool, so its invoice numbers follow
+    # thread completion order. The paid-check scenarios pin the pool to one thread in the worker as in the control
+    # (the established fixture control of TESTS/adapters/go/stripe_paid_check_worker_process.py).
+    import concurrent.futures
+
+    class _OneThreadPool(concurrent.futures.ThreadPoolExecutor):
+        def __init__(self, max_workers=None, *args, **kwargs):
+            super().__init__(1, *args, **kwargs)
+
+    concurrent.futures.ThreadPoolExecutor = _OneThreadPool

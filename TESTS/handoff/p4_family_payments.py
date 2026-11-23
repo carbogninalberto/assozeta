@@ -128,6 +128,7 @@ RENEWAL = Controlled(RENEW, FAMILY, ('application.Payment', 'application.CourseS
 def paid_make(stack):
     from TESTS.adapters.go import stripe_paid_check_worker_process as adapter
     stripe_stub(stack)
+    stack.env['ASSOZETA_HANDOFF_ONE_THREAD_POOL'] = '1'  # Django workers of this scenario (the kit restores env)
     return adapter.PaidFixture()
 
 
@@ -137,13 +138,24 @@ def paid_seed(stack, fixture):
 
 
 def paid_control(stack, fixture):
+    """The Django reference with its payment pool forced to one thread (deterministic invoice numbers), like the
+    scenario's Django workers (p4_django_settings ASSOZETA_HANDOFF_ONE_THREAD_POOL)."""
+    import concurrent.futures
+    from unittest.mock import patch
     from application import tasks
-    with stripe_settings(stack, DOCUMENT_BYPASS_TOKEN='bypass-placeholder'):
+    real = concurrent.futures.ThreadPoolExecutor
+
+    def one_thread(max_workers=None, *args, **kwargs):
+        return real(1, *args, **kwargs)
+    with stripe_settings(stack, DOCUMENT_BYPASS_TOKEN='bypass-placeholder'), \
+            patch.object(concurrent.futures, 'ThreadPoolExecutor', one_thread):
         quiet_django(tasks.mark_as_paid_payments_checking_stripe.run)
 
 
 PAID = Controlled('mark_as_paid_payments_checking_stripe', FAMILY,
-                  ('application.Payment', 'application.Invoice', 'auditlog.LogEntry', 'application.AuditLogIndex'),
+                  ('application.Payment', 'application.Invoice', 'auditlog.LogEntry', 'application.AuditLogIndex',
+                   # the paid notices: compared as rows, and their minted ids normalize in the audit entries
+                   'notifications.NotificationsBroadcast', 'notifications.UserNotificationsBroadcast'),
                   paid_make, paid_seed, paid_control, externals=('smtp',), extra={'stripe': stripe_requests})
 
 
