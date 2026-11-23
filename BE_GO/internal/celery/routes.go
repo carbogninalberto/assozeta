@@ -55,6 +55,15 @@ func ownedEmailTask(name string) bool {
 	}
 }
 
+func ownedWorkflowTask(name string) bool {
+	switch name {
+	case "check_workflows_trigger", "check_workflows_trigger_cron", "workflow_block_execute":
+		return true
+	default:
+		return false
+	}
+}
+
 func routeEnvelope(raw []byte, queue string) ([]byte, error) {
 	value, err := DecodeJSON(raw)
 	if err != nil {

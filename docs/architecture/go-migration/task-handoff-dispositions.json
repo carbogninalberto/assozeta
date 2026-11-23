@@ -402,6 +402,164 @@
       "sites": [
         "consumer-plan-send_mail_async-378"
       ]
+    },
+    "BE_GO/internal/service/workflow_tasks.go:finish#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-workflow_tasks-96"
+      ]
+    },
+    "BE_GO/internal/service/workflow_tasks.go:workflowTasksBind#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-workflow_tasks-151"
+      ]
+    },
+    "BE_GO/internal/service/workflow_tasks.go:workflowTasksBind#2": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-workflow_tasks-166"
+      ]
+    },
+    "BE_GO/internal/service/workflow_tasks.go:workflowTasksBind#3": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-workflow_tasks-172"
+      ]
+    },
+    "BE_GO/internal/service/workflow_tasks.go:workflowTasksUUID#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-workflow_tasks-195"
+      ]
+    },
+    "BE_GO/internal/service/workflow_tasks.go:workflowTasksDecodeTree#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-workflow_tasks-275"
+      ]
+    },
+    "BE_GO/internal/service/workflow_tasks.go:workflowTasksInt#1": {
+      "disposition": "unreachable",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": []
+    },
+    "BE_GO/internal/service/workflow_tasks.go:workflowTasksInt#2": {
+      "disposition": "unreachable",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-workflow_tasks-319"
+      ]
+    },
+    "BE_GO/internal/service/workflow_tasks.go:workflowTasksInt#3": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-workflow_tasks-324"
+      ]
+    },
+    "BE_GO/internal/service/workflow_tasks.go:workflowTasksInt#4": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-workflow_tasks-328"
+      ]
+    },
+    "BE_GO/internal/service/workflow_tasks.go:workflowTasksInt#5": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-workflow_tasks-332"
+      ]
+    },
+    "BE_GO/internal/service/workflow_tasks.go:workflowTasksIdx#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-workflow_tasks-342"
+      ]
+    },
+    "BE_GO/internal/service/workflow_tasks.go:workflowTasksIdx#2": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-workflow_tasks-349"
+      ]
+    },
+    "BE_GO/internal/service/workflow_tasks.go:trigger#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-workflow_tasks-370"
+      ]
+    },
+    "BE_GO/internal/service/workflow_tasks.go:trigger#2": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-workflow_tasks-372"
+      ]
+    },
+    "BE_GO/internal/service/workflow_tasks.go:cron#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-workflow_tasks-447"
+      ]
+    },
+    "BE_GO/internal/service/workflow_tasks.go:block#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-workflow_tasks-534"
+      ]
+    },
+    "BE_GO/internal/service/workflow_tasks.go:block#2": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-workflow_tasks-537"
+      ]
+    },
+    "BE_GO/internal/service/workflow_tasks.go:email#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-workflow_tasks-621"
+      ]
+    },
+    "BE_GO/internal/service/workflow_tasks.go:wait#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-workflow_tasks-719"
+      ]
     }
   },
   "handback_reasons": {
@@ -735,6 +893,36 @@
     },
     "send_email_html": {
       "family": "email",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "check_workflows_trigger": {
+      "family": "workflows",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "check_workflows_trigger_cron": {
+      "family": "workflows",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "workflow_block_execute": {
+      "family": "workflows",
       "rate_limit": null,
       "go_rate_limit": null,
       "time_limits": [

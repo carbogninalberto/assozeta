@@ -7,6 +7,7 @@ import (
 	"math/big"
 	"math/rand/v2"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -120,6 +121,7 @@ func (s *WorkflowTasks) run(ctx context.Context, request *celeryworker.Request) 
 	if root == "" {
 		root = request.ID
 	}
+	publishedAt := s.now().UTC()
 	for _, action := range plan.actions {
 		if action.promote != nil {
 			if err := s.store.PromoteTutorRelation(ctx, *action.promote, s.now().UTC().Truncate(time.Microsecond)); err != nil {
@@ -130,7 +132,7 @@ func (s *WorkflowTasks) run(ctx context.Context, request *celeryworker.Request) 
 		task := *action.task
 		task.RootID, task.ParentID = root, request.ID
 		if action.countdown != 0 {
-			eta := s.now().UTC().Add(time.Duration(action.countdown) * time.Second)
+			eta := publishedAt.Add(time.Duration(action.countdown) * time.Second)
 			task.ETA = &eta
 		}
 		id, err := s.publisher.Publish(ctx, task)
@@ -306,19 +308,33 @@ func workflowTasksPortable(value any) bool {
 
 var workflowTasksDecimal = regexp.MustCompile(`^[ \t\n\r\f\v]*[+-]?[0-9]+[ \t\n\r\f\v]*$`)
 
-// workflowTasksInt is int(value) for the wait amount: JSON integers and
-// plain decimal strings; None, lists and dicts raise TypeError; floats,
-// bools and other strings are handed off.
-func workflowTasksInt(value any) (int64, error) {
+// workflowTasksInt is int(value) for a wait amount. The coordinated executor
+// also accepts fractional numbers, truncating them as Django does.
+func workflowTasksInt(value any, coordinated bool) (int64, error) {
 	var text string
 	switch v := value.(type) {
 	case nil, []any, celery.Dict:
 		return 0, workflowTasksPyError
 	case celery.Number:
 		if strings.ContainsAny(string(v), ".eE") {
-			return 0, celeryworker.ErrHandoff
+			if !coordinated {
+				return 0, celeryworker.ErrHandoff
+			}
+			converted, err := strconv.ParseFloat(string(v), 64)
+			if err != nil || converted < math.MinInt64 || converted >= math.MaxInt64 {
+				return 0, workflowTasksPyError
+			}
+			return int64(converted), nil
 		}
 		text = string(v)
+	case bool:
+		if !coordinated {
+			return 0, celeryworker.ErrHandoff
+		}
+		if v {
+			return 1, nil
+		}
+		return 0, nil
 	case string:
 		if !workflowTasksDecimal.MatchString(v) {
 			return 0, celeryworker.ErrHandoff
@@ -596,7 +612,7 @@ func (s *WorkflowTasks) block(ctx context.Context, request *celeryworker.Request
 		}
 		return s.email(ctx, plan, values[0], workflow, subscription, node, next)
 	case workflowTasksIs(id, "wait"):
-		return s.wait(plan, values[0], subscription, node, next)
+		return s.wait(ctx, plan, values[0], subscription, node, next)
 	}
 	return nil
 }
@@ -696,7 +712,7 @@ func (s *WorkflowTasks) mainTutor(ctx context.Context, plan *workflowTasksPlan, 
 var workflowTasksUnits = map[string]int64{"minutes": 60, "hours": 3600, "days": 86400}
 
 // wait schedules the next block after amount minutes, hours or days.
-func (s *WorkflowTasks) wait(plan *workflowTasksPlan, workflowArg any, subscription *domain.WorkflowTaskSubscription, node, next any) error {
+func (s *WorkflowTasks) wait(ctx context.Context, plan *workflowTasksPlan, workflowArg any, subscription *domain.WorkflowTaskSubscription, node, next any) error {
 	unit, err := workflowTasksPath(node, "data", "type")
 	if err != nil {
 		return err
@@ -710,7 +726,7 @@ func (s *WorkflowTasks) wait(plan *workflowTasksPlan, workflowArg any, subscript
 		if err != nil {
 			return err
 		}
-		value, err := workflowTasksInt(amount)
+		value, err := workflowTasksInt(amount, celeryworker.HasBrokerAttempt(ctx))
 		if err != nil {
 			return err
 		}
