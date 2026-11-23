@@ -160,6 +160,7 @@ class Engine:
         command = compose_command(self.root, self.env_file) + ['--profile', '*']
         environment = compose_environment(self.root, self.env_file)
         configured = json.loads(subprocess.check_output(command + ['config', '--format', 'json'], env=environment, text=True))['services']
+        manifest = None
         manifest_path = self.root / '.updater/target-manifest.json'
         if not allow_configured_images and manifest_path.is_file():
             manifest = json.loads(manifest_path.read_text())
@@ -186,6 +187,17 @@ class Engine:
             if api not in active:
                 raise RuntimeError(f'Missing service: {api}')
             other = 'go' if runtime == 'django' else 'django'
+            if manifest is not None:
+                if other == 'go':
+                    pinned, ref_key, service = expected_go, 'ASSOZETA_BACKEND_GO_REF', 'api-go'
+                else:
+                    pinned, ref_key, service = manifest['images']['backend'], 'ASSOZETA_BACKEND_REF', 'api'
+                if not pinned or values.get(ref_key) != pinned or configured.get(service, {}).get('image') != pinned:
+                    raise RuntimeError(f'Inactive {other} runtime image differs from the release manifest')
+                result = subprocess.run(['docker', 'image', 'inspect', '--', pinned], env=environment,
+                                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=30)
+                if result.returncode:
+                    raise RuntimeError(f'Inactive {other} runtime image is unavailable: {pinned}')
             inactive = runtime_services(self.root, self.env_file, other, configured=configured)
             running = subprocess.check_output(command + ['ps', '--status', 'running', '--services'],
                                               env=environment, text=True).splitlines()

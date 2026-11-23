@@ -2439,22 +2439,6 @@
         "P6B contract red"
       ]
     },
-    "TESTS.handoff.test_p6_independence.ReversalArtifacts.test_go_mode_verification_requires_the_django_image": {
-      "phase": 6,
-      "owner": "t-p6",
-      "reason": "milestone B: engine.verify_running never inspects the inactive runtime image the manifest pins",
-      "signatures": [
-        "P6B contract red"
-      ]
-    },
-    "TESTS.handoff.test_p6_independence.ReversalArtifacts.test_django_mode_verification_requires_the_go_image": {
-      "phase": 6,
-      "owner": "t-p6",
-      "reason": "milestone B: engine.verify_running never inspects the inactive runtime image the manifest pins",
-      "signatures": [
-        "P6B contract red"
-      ]
-    },
     "TESTS.handoff.test_p6_schema.SharedSchema.test_go_migrator_builds_the_whole_schema_on_an_empty_database": {
       "phase": 6,
       "owner": "t-p6",
