@@ -5,12 +5,13 @@ import (
 	"crypto/sha256"
 	"database/sql"
 	"encoding/hex"
-	"encoding/json"
 	"errors"
 	"io"
 	"net/http"
-	"strconv"
 	"time"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 )
 
 type Status struct {
@@ -33,75 +34,124 @@ func (p *CloudAPI) ParseStatusCallback(body []byte, signature string) ([]Status,
 	if p.config.AppSecret == "" || !hmac.Equal([]byte(signature), []byte("sha256="+hex.EncodeToString(mac.Sum(nil)))) {
 		return nil, denied
 	}
-	var envelope struct {
-		Object string
-		Entry  []struct {
-			ID      string
-			Changes []struct {
-				Field string
-				Value struct {
-					Metadata struct {
-						Phone string `json:"phone_number_id"`
-					}
-					Statuses []struct {
-						ID, Status, Timestamp string
-						Reference             string `json:"biz_opaque_callback_data"`
-						Errors                []struct {
-							Code           json.Number
-							Message, Title string
-						}
-					}
-				}
-			}
-		}
-	}
-	if err := json.Unmarshal(body, &envelope); err != nil {
+	value, err := dto.ParsePythonJSONBytes(body)
+	if err != nil {
 		return nil, err
 	}
-	if envelope.Object == "" {
-		return nil, errors.New("missing webhook object")
+	envelope, _ := value.(domain.RequestObject)
+	kind, present := envelope.Lookup("object")
+	if !present {
+		return nil, invalidStatus
+	}
+	if kind != "whatsapp_business_account" {
+		return nil, nil
+	}
+	entries, ok := iterableField(envelope, "entry")
+	if !ok {
+		return nil, invalidStatus
 	}
 	var result []Status
-	if envelope.Object != "whatsapp_business_account" {
-		return result, nil
-	}
-	for _, entry := range envelope.Entry {
-		if entry.ID == "" || entry.ID != p.config.AccountID {
+	for _, raw := range entries {
+		if p.config.AccountID == "" {
+			break
+		}
+		entry, ok := raw.(domain.RequestObject)
+		if !ok {
+			return nil, invalidStatus
+		}
+		if field(entry, "id", nil) != p.config.AccountID {
 			continue
 		}
-		for _, change := range entry.Changes {
-			if change.Field != "messages" || change.Value.Metadata.Phone == "" || change.Value.Metadata.Phone != p.config.PhoneID {
-				continue
+		changes, ok := iterableField(entry, "changes")
+		if !ok {
+			return nil, invalidStatus
+		}
+		for _, change := range changes {
+			events, err := p.changeStatuses(change)
+			if err != nil {
+				return nil, err
 			}
-			for _, item := range change.Value.Statuses {
-				if rank[item.Status] == 0 {
-					continue
-				}
-				seconds, err := strconv.ParseInt(item.Timestamp, 10, 64)
-				if err != nil || item.ID == "" || seconds < -62135596800 || seconds > 253402300799 {
-					return nil, errors.New("invalid WhatsApp status")
-				}
-				status := Status{ID: item.ID, Reference: item.Reference, State: item.Status, At: time.Unix(seconds, 0).UTC()}
-				if len(item.Errors) > 0 {
-					detail := item.Errors[0]
-					status.Code = detail.Code.String()
-					status.Message = p.safeMessage(detail.Message)
-					if status.Message == "" {
-						status.Message = p.safeMessage(detail.Title)
-					}
-				}
-				result = append(result, status)
-			}
+			result = append(result, events...)
 		}
 	}
 	return result, nil
 }
 
+var invalidStatus = errors.New("invalid WhatsApp status")
+
+// Missing collections default to empty. Explicit null is not iterable.
+func iterableField(object domain.RequestObject, name string) ([]any, bool) {
+	return dto.PythonIterate(field(object, name, []any{}))
+}
+
+func (p *CloudAPI) changeStatuses(raw any) ([]Status, error) {
+	change, ok := raw.(domain.RequestObject)
+	if !ok {
+		return nil, invalidStatus
+	}
+	value, ok := field(change, "value", domain.RequestObject{}).(domain.RequestObject)
+	if !ok {
+		return nil, invalidStatus
+	}
+	metadata, ok := field(value, "metadata", domain.RequestObject{}).(domain.RequestObject)
+	if !ok {
+		return nil, invalidStatus
+	}
+	if field(change, "field", nil) != "messages" || p.config.PhoneID == "" || field(metadata, "phone_number_id", nil) != p.config.PhoneID {
+		return nil, nil
+	}
+	items, ok := iterableField(value, "statuses")
+	if !ok {
+		return nil, invalidStatus
+	}
+	var statuses []Status
+	for _, raw := range items {
+		item, ok := raw.(domain.RequestObject)
+		if !ok {
+			return nil, invalidStatus
+		}
+		state, _ := field(item, "status", nil).(string)
+		if rank[state] == 0 {
+			continue
+		}
+		id, _ := field(item, "id", nil).(string)
+		stamp, parsed := dto.PythonInt(field(item, "timestamp", nil))
+		if id == "" || parsed != dto.PythonIntOK || !stamp.IsInt64() {
+			return nil, invalidStatus
+		}
+		at := time.Unix(stamp.Int64(), 0).UTC()
+		if at.Year() < 1 || at.Year() > 9999 {
+			return nil, invalidStatus
+		}
+		var detail domain.RequestObject
+		if details := field(item, "errors", nil); dto.PythonTruthy(details) {
+			list, ok := details.([]any)
+			if !ok {
+				return nil, invalidStatus
+			}
+			detail, ok = list[0].(domain.RequestObject)
+			if !ok {
+				return nil, invalidStatus
+			}
+		}
+		message := field(detail, "message", nil)
+		if !dto.PythonTruthy(message) {
+			message = field(detail, "title", "")
+		}
+		statuses = append(statuses, Status{
+			ID: id, Reference: dto.PythonStr(field(item, "biz_opaque_callback_data", nil)), State: state, At: at,
+			Code: integerCode(field(detail, "code", nil), ""), Message: p.safeMessage(dto.PythonStr(message)),
+		})
+	}
+	return statuses, nil
+}
+
 func Webhook(db *sql.DB, provider Provider) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		if r.Method == http.MethodGet {
-			q := r.URL.Query()
-			challenge, err := provider.VerifyWebhook(q.Get("hub.mode"), q.Get("hub.verify_token"), q.Get("hub.challenge"))
+			q := dto.ParseQueryPairs(r.URL.RawQuery, false)
+			challenge, err := provider.VerifyWebhook(stringField(q, "hub.mode"), stringField(q, "hub.verify_token"), stringField(q, "hub.challenge"))
 			if err != nil {
 				w.WriteHeader(403)
 				return
@@ -111,6 +161,7 @@ func Webhook(db *sql.DB, provider Provider) http.HandlerFunc {
 			return
 		}
 		if r.Method != http.MethodPost {
+			w.Header().Set("Allow", "GET, POST")
 			w.WriteHeader(405)
 			return
 		}

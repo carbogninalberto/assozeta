@@ -107,12 +107,15 @@ def deliver_one(provider):
         if managed:
             with connection.cursor() as cursor:
                 if error.code in ('network', 'invalid_response'):
+                    # The provider may have accepted the message: the ambiguous effect keeps
+                    # it from being sent again until a receipt or the owner resolves it.
+                    # The row still records the outcome the task has always recorded.
                     cursor.execute("""UPDATE public.assozeta_outbox_effects SET state='ambiguous'
                         WHERE outbox='whatsapp' AND item_id=%s AND attempt=%s AND state='intent'""",
                                    [str(row.pk), row.attempts])
-                    return True
-                cursor.execute("SELECT public.assozeta_outbox_reconcile('whatsapp',%s,'not_sent',%s)",
-                               [str(row.pk), consumer])
+                else:
+                    cursor.execute("SELECT public.assozeta_outbox_reconcile('whatsapp',%s,'not_sent',%s)",
+                                   [str(row.pk), consumer])
         row.error_code, row.error_message = error.code, str(error)
         if error.transient and row.attempts < 3:
             row.next_attempt_at = timezone.now() + timedelta(seconds=30 * 2 ** (row.attempts - 1))

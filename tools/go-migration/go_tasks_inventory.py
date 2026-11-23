@@ -84,7 +84,9 @@ def harnesses():
                 if not (ROOT / path).is_file():
                     raise ValueError(f'missing task harness {path}')
             result[entry['django']['file'], entry['django']['symbol']] = paths
-    result['BE/communications/tasks.py', 'deliver_whatsapp'] = ['TESTS/handoff/test_p4_outbox_realtime.py']
+    # The outbox ownership suite covers the same task as the ledger's process harness.
+    key = 'BE/communications/tasks.py', 'deliver_whatsapp'
+    result[key] = [*result.get(key, []), 'TESTS/handoff/test_p4_outbox_realtime.py']
     return result
 
 
