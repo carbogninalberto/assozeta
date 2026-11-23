@@ -106,6 +106,8 @@ def forward_runs_once_on_go_consumer(stack):
     wait_for(lambda: stack.task_result(task) == 'SUCCESS', 'the transferred email runs on the Go consumer')
     stack.stop(consumer)
     check(stack.smtp.count() == 1, f'SMTP accepted {stack.smtp.count()} messages; expected exactly 1')
+    check(stack.smtp.intents_at_accept == [1], 'the Go consumer must record the effect intent before the SMTP '
+          f'transaction (unconfirmed intents seen by the provider at acceptance: {stack.smtp.intents_at_accept})')
     effects = stack.effects_rows(task)
     check([e['state'] for e in effects] == ['confirmed'], f'the provider acceptance is a confirmed effect: {effects}')
     p3_oracle.check(stack, accepted={task: 'target_completed'}, source=('django', 1), target=('go', 2),
@@ -124,6 +126,8 @@ def reverse_runs_once_on_django(stack):
     wait_for(lambda: stack.task_result(task) == 'SUCCESS', 'the transferred email runs on Django')
     stack.stop(worker)
     check(stack.smtp.count() == 1, f'SMTP accepted {stack.smtp.count()} messages; expected exactly 1')
+    check(stack.smtp.intents_at_accept == [1], 'Django must record the effect intent before the SMTP transaction '
+          f'(unconfirmed intents seen by the provider at acceptance: {stack.smtp.intents_at_accept})')
     check([e['state'] for e in stack.effects_rows(task)] == ['confirmed'], 'the Django send is a confirmed effect')
     p3_oracle.check(stack, accepted={task: 'target_completed'}, source=('go', 2), target=('django', 3),
                     effects={'django': 0, 'go': 0}, completions={'django': 1, 'go': 0})
@@ -185,6 +189,9 @@ def crash_before_send_is_a_safe_retry(stack):
     check(publish_mail(stack, task) == ('returned', None), 'Django publication')
     arrival = stack.barrier.wait_arrived('claim:granted', task, 'Django worker')
     stack.kill_tree(worker, arrival)
+    # The target attempt carries the same task id, so it passes the same barrier key: lift the source's hold
+    # once the source can no longer move (killed or stopped), or the target waits on it too.
+    stack.barrier.release(arrival['point'], arrival['key'])
     check(stack.smtp.count() == 0, 'nothing was sent before the crash')
     handoff(stack, 'django', 1, 'go')
     consumer = stack.go_consumer()
@@ -210,6 +217,9 @@ def ambiguous_send_blocks_until_reconciled_forward(stack):
     arrival = stack.barrier.wait_arrived('effect:accepted', task, 'Django worker (provider accepted)')
     check(stack.smtp.count() == 1, 'the provider accepted the message before the crash')
     stack.kill_tree(worker, arrival)
+    # The target attempt carries the same task id, so it passes the same barrier key: lift the source's hold
+    # once the source can no longer move (killed or stopped), or the target waits on it too.
+    stack.barrier.release(arrival['point'], arrival['key'])
     operation = uuid.uuid4()
     record = stack.record(operation, 'django', 1, 'go')
     steps = stack.handoff_steps(heartbeat_grace=1.0)
@@ -251,6 +261,9 @@ def ambiguous_send_blocks_until_reconciled_reverse(stack):
     arrival = stack.barrier.wait_arrived('effect:accepted', task, 'Go consumer (provider accepted)')
     check(stack.smtp.count() == 1, 'the provider accepted the message before the crash')
     stack.kill_tree(consumer, arrival)
+    # The target attempt carries the same task id, so it passes the same barrier key: lift the source's hold
+    # once the source can no longer move (killed or stopped), or the target waits on it too.
+    stack.barrier.release(arrival['point'], arrival['key'])
     operation = uuid.uuid4()
     record = stack.record(operation, 'go', 2, 'django')
     steps = stack.handoff_steps(heartbeat_grace=1.0)

@@ -171,9 +171,13 @@ type RedisBroker struct{ Client redis.Cmdable }
 const bindingSeparator = "\x06\x16"
 
 func (b RedisBroker) Push(ctx context.Context, queue string, payload []byte) error {
+	return b.pushPriority(ctx, queue, payload, 0)
+}
+
+func (b RedisBroker) pushPriority(ctx context.Context, queue string, payload []byte, priority int64) error {
 	_, err := b.Client.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
 		pipe.SAdd(ctx, "_kombu.binding."+queue, queue+bindingSeparator+bindingSeparator+queue)
-		pipe.LPush(ctx, queue, payload)
+		pipe.LPush(ctx, queueForPriority(queue, priority), payload)
 		return nil
 	})
 	return err

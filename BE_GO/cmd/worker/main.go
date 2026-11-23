@@ -94,7 +94,7 @@ func run(arguments []string) error {
 		return err
 	}
 	defer broker.Close()
-	tasks := celery.NewProducer(celery.RedisBroker{Client: broker}).WithRoutes(celery.ParseRoutes(cfg.GoTaskQueueTasks))
+	tasks := celery.NewProducer(celery.AdmittingBroker{DB: db.DB, Redis: celery.RedisBroker{Client: broker}}).WithRoutes(celery.ParseRoutes(cfg.GoTaskQueueTasks))
 	deletions := service.NewUserDeletionRequests(repository.NewUserDeletionRequests(db), tasks, cfg.WhitelabelName, time.Now, logger)
 	attendance := service.NewAutoMarkAttendance(repository.NewAutoMarkAttendance(db), time.Now, logger)
 	emails := service.NewEmailTasks(repository.NewEmailTasks(db), tasks, service.SMTPMailer{}, service.EmailTaskSettings{

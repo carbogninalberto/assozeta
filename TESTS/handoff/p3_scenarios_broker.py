@@ -132,8 +132,32 @@ def d03_pop_before_bookkeeping(stack):
                     effects={'django': 0, 'go': 0}, completions={'django': 1})
 
 
-def run_cli(stack, step, record, *, hold=None, expect=0):
-    """Run one controller step as a process; with hold=(point, key) kill it at that barrier, then return."""
+def d03_pre_ledger_envelope_in_pop_gap_leaves_no_trace(stack):
+    """Documented limit, pinned: an envelope that never reached the ledger (an older release's, published before
+    migration 6) and is popped by a consumer that dies before its unacked bookkeeping leaves no trace anywhere; the
+    switch then completes without it. Ledger-admitted work survives the same gap (d03_pop_before_bookkeeping)."""
+    stack.job_handoff()
+    to_go(stack)
+    task = new_id()
+    stack.barrier.hold('reservation:popped', task)
+    consumer = stack.go_consumer()
+    go_consumer_of(stack)
+    stack.push(GO_QUEUE, stack.envelope(MAIL_TASK, task, kwargs=mail_kwargs('socio@example.test'), queue=GO_QUEUE,
+                                        stamp=time.time()))
+    arrival = stack.barrier.wait_arrived('reservation:popped', task, 'Go consumer (BRPOP returned)')
+    stack.kill_tree(consumer, arrival)
+    stack.barrier.release(arrival['point'], arrival['key'])
+    check(not stack.redis_copies(task) and stack.work_row(task) is None,
+          f'the limit changed (good): a pre-ledger envelope lost in the pop gap is now recorded somewhere '
+          f'({sorted(stack.redis_copies(task))}, {stack.work_row(task)}); update this test and the Phase 3 limits')
+    handoff(stack, 'go', 2, 'django')
+    check(stack.work_row(task) is None and stack.smtp.count() == 0 and stack.task_result(task) is None,
+          'the switch completes without the lost pre-ledger envelope, and nothing ran it')
+
+
+def run_cli(stack, step, record, *, hold=None, expect=0, at_hold=None):
+    """Run one controller step as a process; with hold=(point, key) kill it at that barrier, then return.
+    at_hold(), if given, runs while the controller is parked at the barrier, before the kill."""
     directory = stack.work / f'cli-barriers-{uuid.uuid4().hex[:8]}'
     directory.mkdir()
     if hold:
@@ -144,6 +168,8 @@ def run_cli(stack, step, record, *, hold=None, expect=0):
         try:
             wait_for(path.exists, f'job_handoff.py {step} never passed barrier {hold[0]} for {hold[1]} '
                                   '(contract: --barrier-dir)', timeout=60)
+            if at_hold:
+                at_hold()
         finally:
             process.send_signal(signal.SIGKILL)
             process.wait(timeout=20)
@@ -163,7 +189,12 @@ def d03_controller_crashes(stack):
     record = stack.record(operation, 'django', 1, 'go')
     run_cli(stack, 'close-admission', record)
     run_cli(stack, 'settle', record)
-    run_cli(stack, 'stage-backlog', record, hold=('receipt:persisted', jobs[0]))
+    def receipt_before_removal():
+        receipts = stack.sql('SELECT count(*) FROM public.assozeta_handoff_transfers WHERE operation_id=%s AND task_id=%s',
+                             (str(operation), jobs[0]))[0][0]
+        check(receipts == 1, f'the receipt of {jobs[0]} is durable (committed) at receipt:persisted: {receipts}')
+        check(stack.redis_copies(jobs[0]), f'the source copy of {jobs[0]} was removed before its receipt was durable')
+    run_cli(stack, 'stage-backlog', record, hold=('receipt:persisted', jobs[0]), at_hold=receipt_before_removal)
     run_cli(stack, 'stage-backlog', record, hold=('source:acked', jobs[1]))
     run_cli(stack, 'stage-backlog', record)
     rows = stack.sql('SELECT task_id, count(*) FROM public.assozeta_handoff_transfers WHERE operation_id=%s GROUP BY task_id',
@@ -290,10 +321,12 @@ def d06_retry_on_the_boundary(stack):
     steps['activate'](record)
     message = json.loads(stack.redis.lrange(GO_QUEUE, 0, -1)[0])
     headers = message['headers']
+    # Celery's own retry (signature_from_request(...).apply_async() inside the task) keeps the root and makes the
+    # retrying task the parent; the transferred retry must be that message, not a rewritten one.
     check(headers['id'] == task and headers['retries'] == 1 and headers['root_id'] == original['headers']['root_id']
-          and headers['parent_id'] == original['headers']['parent_id']
+          and headers['parent_id'] == task
           and headers['assozeta_published_at'] == original['headers']['assozeta_published_at'],
-          f'the retry keeps id, root/parent ids and the restore stamp with retries 1: {headers}')
+          f'the retry keeps id, root id (parent = the retrying task, as Celery sets it) and the restore stamp: {headers}')
     eta = datetime.fromisoformat(headers['eta'])
     check(eta > datetime.now(timezone.utc) + timedelta(seconds=100) and abs((eta - row['eta']).total_seconds()) < 1,
           f'the retry countdown is kept as its absolute eta: {headers["eta"]}')
@@ -475,6 +508,7 @@ SCENARIOS = {
     'd02_priorities_reverse': d02_priorities_reverse,
     'd03_pop_before_bookkeeping': d03_pop_before_bookkeeping,
     'd03_controller_crashes': d03_controller_crashes,
+    'd03_pre_ledger_envelope_in_pop_gap_leaves_no_trace': d03_pre_ledger_envelope_in_pop_gap_leaves_no_trace,
     'd04_prefetch_running_held_and_next_month': d04_prefetch_running_held_and_next_month,
     'd04_visibility_restore_races_staging': d04_visibility_restore_races_staging,
     'd06_retry_on_the_boundary': d06_retry_on_the_boundary,

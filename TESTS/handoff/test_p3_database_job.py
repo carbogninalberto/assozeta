@@ -148,6 +148,12 @@ class HandoffSchemaContract(ScenarioAssertions, unittest.TestCase):
     def test_shared_sql_admits_holds_claims_fences_and_binds_at_commit(self):
         self.scenario('sql_functions')
 
+    def test_a_redelivered_broker_message_recovers_only_a_lost_attempt_of_its_own_delivery(self):
+        self.scenario('broker_redelivery_rules')
+
+    def test_settle_releases_by_the_broker_lease_not_by_the_consumer_heartbeat(self):
+        self.scenario('settle_follows_the_broker_lease')
+
 
 class DatabaseJobDjangoToGo(ScenarioAssertions, unittest.TestCase):
     SUITE = 'db'

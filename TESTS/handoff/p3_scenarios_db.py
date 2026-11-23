@@ -5,6 +5,7 @@ ContractFailure on the first unmet contract point. The contract is the docstring
 TESTS/handoff/test_p3_database_job.py.
 """
 from datetime import timedelta
+import time
 import uuid
 
 import psycopg2
@@ -102,8 +103,9 @@ def schema_contract(stack):
     migrations = ROOT / 'BE_GO/migrations'
     check((migrations / '000006_job_handoff.up.sql').is_file() and (migrations / '000006_job_handoff.down.sql').is_file(),
           'contract: BE_GO/migrations/000006_job_handoff.{up,down}.sql missing')
-    check('const CurrentVersion = 6' in (migrations / 'migrations.go').read_text(),
-          'contract: migrations.CurrentVersion must be 6')
+    import re
+    version = re.search(r'const CurrentVersion = (\d+)', (migrations / 'migrations.go').read_text())
+    check(version and int(version[1]) >= 6, 'contract: migrations.CurrentVersion must be at least 6')
     for table, columns in TABLE_COLUMNS.items():
         stack.require_table(table)
         missing = columns - stack.columns(table)
@@ -516,8 +518,13 @@ def frozen_go_worker_adopts_nothing(stack):
 def legacy_without_ledger_is_unchanged(stack):
     """A database before migration 6 (no ledger table, schema version 5): both runtimes publish and execute as before."""
     stack.seed_balance()
+    # Emulate a version-5 database: hide the ledger and every later operational table, record version 5.
+    later = [t for t in ('assozeta_scheduler_lease',) if stack.exists('public.' + t)]
+    recorded = stack.sql('SELECT version FROM public.assozeta_go_schema_migrations')[0][0]
     stack.sql('ALTER TABLE public.assozeta_handoff_work RENAME TO assozeta_handoff_work_hidden')
-    stack.sql('UPDATE public.assozeta_go_schema_migrations SET version = version - 1')
+    for table in later:
+        stack.sql(f'ALTER TABLE public.{table} RENAME TO {table}_hidden')
+    stack.sql('UPDATE public.assozeta_go_schema_migrations SET version = 5')
     try:
         task = new_id()
         check(stack.django_publish(task) == ('returned', None), 'legacy Django publication must succeed')
@@ -533,13 +540,303 @@ def legacy_without_ledger_is_unchanged(stack):
         stack.stop(go)
         check(stack.effects() == {'handoff-django-worker': 1, 'assozeta-go-worker': 1}, f'one effect each: {stack.effects()}')
     finally:
-        stack.sql('UPDATE public.assozeta_go_schema_migrations SET version = version + 1')
+        stack.sql('UPDATE public.assozeta_go_schema_migrations SET version = %s', (recorded,))
+        for table in later:
+            stack.sql(f'ALTER TABLE public.{table}_hidden RENAME TO {table}')
         stack.sql('ALTER TABLE public.assozeta_handoff_work_hidden RENAME TO assozeta_handoff_work')
+
+
+def broker_redelivery_rules(stack):
+    """Who may claim a redelivered broker message (the rule every installation runs, switching or not).
+
+    An executor keeps its attempt alive with a database-clock lease that only the current runtime and
+    generation can renew. A redelivery of the same delivery tag recovers the attempt only after the lease
+    really expires: a closed or pooled client proves nothing. Ordinary duplicates, superseded tags, untagged
+    copies, stale generations and the other runtime never steal a running attempt; two racing redeliveries
+    recover it once; recovery never repeats a confirmed effect and blocks on an unconfirmed one."""
+    import threading
+    from TESTS.handoff.p3_stack import DATABASE, USER
+    stack.require_table('assozeta_handoff_work')
+    q = stack.sql
+
+    def session():
+        connection = psycopg2.connect(host=str(stack.work), user=USER, dbname=DATABASE, application_name='handoff-executor')
+        connection.autocommit = True
+        return connection
+
+    def claim(connection, runtime, task, tag, redelivered):
+        with connection.cursor() as cursor:
+            cursor.execute('SELECT outcome FROM public.assozeta_handoff_claim(%s,%s,%s,%s,NULL,%s,%s)',
+                           (runtime, 'executor', task, DB_TASK, tag, redelivered))
+            return cursor.fetchone()[0]
+
+    def admitted(tag):
+        task = new_id()
+        envelope = ('{"headers": {"id": "%s", "retries": 0}, "properties": {"priority": 0, "delivery_tag": "%s"}}'
+                    % (task, tag)).encode()
+        outcome = q("SELECT outcome FROM public.assozeta_handoff_admit('django',%s,%s,'broker','celery',%s,"
+                    "clock_timestamp(),NULL,NULL)", (task, DB_TASK, psycopg2.Binary(envelope)))[0][0]
+        check(outcome == 'accepted', f'admission: {outcome}')
+        return task
+
+    def outcomes(task):
+        return [a['outcome'] for a in stack.attempts(task_id=task)]
+
+    # 1. Executor alive: a redelivery of its own tag waits ('active'); nothing else steals.
+    tag = str(uuid.uuid4())
+    task = admitted(tag)
+    executor = session()
+    check(claim(executor, 'django', task, tag, False) == 'claimed', 'first delivery is claimed')
+    probe = session()
+    check(claim(probe, 'django', task, tag, True) == 'active', 'a redelivery while the executor lives must wait')
+    check(claim(probe, 'django', task, tag, False) == 'duplicate', 'an ordinary duplicate never runs')
+    check(claim(probe, 'django', task, str(uuid.uuid4()), True) == 'duplicate',
+          'a redelivery of another delivery tag never recovers the attempt')
+    check(claim(probe, 'django', task, None, True) == 'duplicate', 'an untagged copy never recovers the attempt')
+    check(claim(probe, 'go', task, tag, True) != 'claimed', 'the other runtime never recovers the attempt')
+    check(outcomes(task) == ['running'], f'nothing stole the live attempt: {outcomes(task)}')
+
+    # 2. A closed (or pooled) client does not release an unexpired lease: the redelivery keeps waiting.
+    executor.close()
+    check(claim(probe, 'django', task, tag, True) == 'active',
+          'a closed client must not release an unexpired lease (transaction pooling keeps no session proof)')
+    check(outcomes(task) == ['running'], f'nothing recovered inside the lease: {outcomes(task)}')
+    span = q("SELECT extract(epoch FROM lease_until - claimed_at) FROM public.assozeta_handoff_attempts "
+             "WHERE task_id=%s AND outcome='running'", (task,))[0][0]
+    check(span is not None and 25 <= float(span) <= 35, f'the lease is about 30 s on the database clock: {span}')
+    # Wait out the real lease (no rewrite): the database clock decides.
+    wait_for(lambda: q("SELECT lease_until <= clock_timestamp() FROM public.assozeta_handoff_attempts "
+                       "WHERE task_id=%s AND outcome='running'", (task,))[0][0], 'the lease expires', timeout=45)
+    # Two racing redeliveries of its tag then recover it exactly once.
+    racers, results = [session(), session()], []
+    gate = threading.Barrier(2)
+
+    def race(connection):
+        gate.wait()
+        results.append(claim(connection, 'django', task, tag, True))
+    threads = [threading.Thread(target=race, args=(c,)) for c in racers]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join(30)
+    check(sorted(results) == ['active', 'claimed'] or sorted(results) == ['claimed', 'duplicate'],
+          f'two racing redeliveries recover the attempt once: {results}')
+    check(outcomes(task) == ['released', 'running'], f'the lost attempt is released, one new attempt runs: {outcomes(task)}')
+    for connection in racers + [probe]:
+        connection.close()
+
+    def lease(attempt):
+        return q('SELECT lease_until, lease_until > clock_timestamp() FROM public.assozeta_handoff_attempts '
+                 'WHERE attempt_id=%s', (attempt,))[0]
+
+    def renew(attempt):
+        q('SELECT public.assozeta_handoff_renew(%s::uuid[])', ([str(attempt)],))
+
+    def expire(attempt):
+        # Fixture shortcut for the cases below; case 2 waits out a real lease.
+        q("UPDATE public.assozeta_handoff_attempts SET lease_until=clock_timestamp() - interval '1 second' "
+          'WHERE attempt_id=%s', (attempt,))
+
+    def claimed_attempt(task):
+        return q("SELECT attempt_id FROM public.assozeta_handoff_attempts WHERE task_id=%s AND outcome='running'",
+                 (task,))[0][0]
+
+    # 3. Renewal: extends a live lease of the current runtime and generation; never revives an expired one.
+    tag = str(uuid.uuid4())
+    task = admitted(tag)
+    holder = session()
+    check(claim(holder, 'django', task, tag, False) == 'claimed', 'claimed')
+    attempt = claimed_attempt(task)
+    before, _ = lease(attempt)
+    time.sleep(1.1)
+    renew(attempt)
+    after, live = lease(attempt)
+    check(live and after > before, f'renewal extends a live lease: {before} -> {after}')
+    expire(attempt)
+    stale_until, _ = lease(attempt)
+    renew(attempt)
+    check(lease(attempt) == (stale_until, False), 'an expired lease is never renewed back to life')
+    holder.close()
+
+    # 4. Stale generation: after the authority moves, neither a redelivery nor a renewal by the previous
+    #    runtime, or by the same runtime in a newer generation, touches the old attempt, even after expiry.
+    tag = str(uuid.uuid4())
+    task = admitted(tag)
+    executor = session()
+    check(claim(executor, 'django', task, tag, False) == 'claimed', 'claimed before the switch')
+    attempt = claimed_attempt(task)
+    executor.close()
+    check(tuple(stack.commit_authority(str(uuid.uuid4()), 'django', 1, 'go')) == ('committed', 'go', 2), 'commit')
+    until, _ = lease(attempt)
+    renew(attempt)
+    check(lease(attempt)[0] == until, 'a renewal under a previous runtime renews nothing')
+    expire(attempt)
+    late = session()
+    check(claim(late, 'django', task, tag, True) != 'claimed', 'a redelivery to the previous runtime never runs')
+    check(outcomes(task) == ['running'], f'a redelivery to the previous runtime releases nothing: {outcomes(task)}')
+    # Same runtime, newer generation (django 1 -> go 2 -> django 3): the generation alone must decide.
+    check(tuple(stack.commit_authority(str(uuid.uuid4()), 'go', 2, 'django')) == ('committed', 'django', 3), 'commit back')
+    q("UPDATE public.assozeta_handoff_attempts SET lease_until=clock_timestamp() + interval '20 seconds' "
+      'WHERE attempt_id=%s', (attempt,))
+    until, _ = lease(attempt)
+    renew(attempt)
+    check(lease(attempt)[0] == until, 'a renewal of an older generation renews nothing')
+    expire(attempt)
+    check(claim(late, 'django', task, tag, True) != 'claimed', 'a stale-generation redelivery never runs')
+    check(outcomes(task) == ['running'], f'a stale-generation redelivery releases nothing: {outcomes(task)}')
+    late.close()
+
+    # 5. Lease lost while the original still works (database unreachable past the lease): a redelivery may
+    #    recover it, but never repeats a confirmed effect and blocks on an unconfirmed one; the original is
+    #    fenced at its next fence.
+    def fenced(attempt):
+        try:
+            q('SELECT public.assozeta_handoff_fence(%s)', (attempt,))
+        except psycopg2.Error as exc:
+            return exc.pgcode
+        return None
+
+    for confirmed in (True, False):
+        tag = str(uuid.uuid4())
+        task = admitted(tag)
+        original = session()
+        check(claim(original, 'django', task, tag, False) == 'claimed', 'claimed')
+        attempt = claimed_attempt(task)
+        key = f'{task}:0:smtp:0'
+        check(q("SELECT public.assozeta_handoff_effect_intent(%s,%s,'smtp')", (attempt, key))[0][0] == 'recorded',
+              'intent recorded before the send')
+        if confirmed:
+            q('SELECT public.assozeta_handoff_effect_confirm(%s,NULL)', (key,))
+        expire(attempt)
+        copy = session()
+        outcome = claim(copy, 'django', task, tag, True)
+        if confirmed:
+            check(outcome == 'claimed', f'an expired lease with only confirmed effects is recovered: {outcome}')
+            recovered = claimed_attempt(task)
+            check(q("SELECT public.assozeta_handoff_effect_intent(%s,%s,'smtp')", (recovered, key))[0][0] == 'confirmed',
+                  'the recovered attempt sees the confirmed send and does not repeat it')
+        else:
+            check(outcome == 'blocked', f'an expired lease with an unconfirmed send blocks for the owner: {outcome}')
+            check(stack.work_row(task)['block_reason'] == 'ambiguous_effect', 'blocked as ambiguous')
+        check(fenced(attempt) == 'AZF01', 'the original attempt is fenced once recovered')
+        for connection in (original, copy):
+            connection.close()
+
+
+def settle_follows_the_broker_lease(stack):
+    """During a switch the broker attempt lease, not the consumer heartbeat, decides whether an execution is gone.
+
+    A: the execution died but its consumer lives (a prefork child lost under a live pool parent, which expires the
+       lease): settle releases it, so the switch is not blocked by a dead execution.
+    B: the consumer went silent but the execution still renews its lease (an orphaned child): settle must not
+       release it (its non-ledger side effects would run twice once the copy runs on the target); the switch is
+       blocked with the job 'running' and the attempt stays running.
+    C: an attempt without a lease (untagged delivery) keeps the heartbeat rule: released once its consumer is silent.
+    The controller's own clock is skewed a minute ahead during settle: only the database clock may decide."""
+    import threading
+    from TESTS.handoff.p3_stack import DATABASE, USER
+    from TESTS.handoff.p3_scenarios_email import blocked
+    stack.job_handoff()
+    q = stack.sql
+
+    def session():
+        connection = psycopg2.connect(host=str(stack.work), user=USER, dbname=DATABASE, application_name='handoff-executor')
+        connection.autocommit = True
+        return connection
+
+    def admitted():
+        task, tag = new_id(), str(uuid.uuid4())
+        envelope = ('{"headers": {"id": "%s", "retries": 0}, "properties": {"priority": 0, "delivery_tag": "%s"}}'
+                    % (task, tag)).encode()
+        check(q("SELECT outcome FROM public.assozeta_handoff_admit('django',%s,%s,'broker','celery',%s,"
+                "clock_timestamp(),NULL,NULL)", (task, DB_TASK, psycopg2.Binary(envelope)))[0][0] == 'accepted', 'admit')
+        return task, tag
+
+    def claimed(connection, consumer, task, tag):
+        with connection.cursor() as cursor:
+            cursor.execute('SELECT outcome, attempt_id FROM public.assozeta_handoff_claim(%s,%s,%s,%s,NULL,%s,%s)',
+                           ('django', consumer, task, DB_TASK, tag, False))
+            outcome, attempt = cursor.fetchone()
+        check(outcome == 'claimed', f'claim: {outcome}')
+        return attempt
+
+    stop = threading.Event()
+    live, gone = session(), session()
+    for consumer, connection in (('settle-live', live), ('settle-gone', gone)):
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM public.assozeta_handoff_heartbeat(%s,'django','broker')", (consumer,))
+    lost_task, lost_tag = admitted()
+    lost = claimed(live, 'settle-live', lost_task, lost_tag)
+    orphan_task, orphan_tag = admitted()
+    orphan = claimed(gone, 'settle-gone', orphan_task, orphan_tag)
+    untagged_task, _ = admitted()
+    untagged = claimed(gone, 'settle-gone', untagged_task, None)
+    check(q('SELECT lease_until FROM public.assozeta_handoff_attempts WHERE attempt_id=%s', (untagged,))[0][0] is None,
+          'an untagged claim has no lease')
+    # A: the pool parent has proof the execution died and expires its lease (what core.handoff does).
+    q('UPDATE public.assozeta_handoff_attempts SET lease_until=clock_timestamp() WHERE attempt_id=%s', (lost,))
+
+    def consumer_alive():
+        connection = session()
+        try:
+            while not stop.is_set():
+                with connection.cursor() as cursor:
+                    cursor.execute("SELECT operation_id FROM public.assozeta_handoff_heartbeat('settle-live','django','broker')")
+                    operation, = cursor.fetchone()
+                    if operation:
+                        cursor.execute("SELECT public.assozeta_handoff_acknowledge_freeze('settle-live',%s)", (operation,))
+                stop.wait(0.3)
+        finally:
+            connection.close()
+
+    def orphan_renews():
+        connection = session()
+        try:
+            while not stop.is_set():
+                with connection.cursor() as cursor:
+                    cursor.execute('SELECT public.assozeta_handoff_renew(%s::uuid[])', ([str(orphan)],))
+                stop.wait(1.0)
+        finally:
+            connection.close()
+    threads = [threading.Thread(target=consumer_alive, daemon=True), threading.Thread(target=orphan_renews, daemon=True)]
+    for thread in threads:
+        thread.start()
+    try:
+        wait_for(lambda: q("SELECT heartbeat_at < clock_timestamp() - interval '1.5 seconds' FROM "
+                           "public.assozeta_handoff_consumers WHERE consumer_id='settle-gone'")[0][0],
+                 'the orphan\'s consumer goes silent', timeout=10)
+        record = stack.record(uuid.uuid4(), 'django', 1, 'go')
+        steps = stack.handoff_steps(heartbeat_grace=1.0, settle_timeout=8.0)
+        steps['close_admission'](record)
+        from datetime import datetime as real_datetime, timedelta as real_timedelta
+        from unittest import mock
+        module = stack.job_handoff()
+
+        class Ahead(real_datetime):
+            @classmethod
+            def now(cls, tz=None):
+                return real_datetime.now(tz) + real_timedelta(seconds=60)
+        with mock.patch.object(module, 'datetime', Ahead) if hasattr(module, 'datetime') else mock.MagicMock():
+            blocked(stack, steps['settle'], record, [(orphan_task, 'running')])
+        untagged_outcome = q('SELECT outcome FROM public.assozeta_handoff_attempts WHERE attempt_id=%s', (untagged,))[0][0]
+        check(untagged_outcome == 'released', f'C: an attempt without a lease keeps the heartbeat rule: {untagged_outcome}')
+        lost_outcome = q('SELECT outcome FROM public.assozeta_handoff_attempts WHERE attempt_id=%s', (lost,))[0][0]
+        orphan_outcome = q('SELECT outcome FROM public.assozeta_handoff_attempts WHERE attempt_id=%s', (orphan,))[0][0]
+        check(lost_outcome == 'released', f'A: settle releases the execution whose lease expired: {lost_outcome}')
+        check(orphan_outcome == 'running', f'B: settle keeps an execution that still renews its lease: {orphan_outcome}')
+    finally:
+        stop.set()
+        for thread in threads:
+            thread.join(5)
+        live.close()
+        gone.close()
 
 
 SCENARIOS = {
     'schema_contract': schema_contract,
     'sql_functions': sql_functions,
+    'broker_redelivery_rules': broker_redelivery_rules,
+    'settle_follows_the_broker_lease': settle_follows_the_broker_lease,
     'forward_stale_producer': forward_stale_producer,
     'forward_stale_worker_claim': forward_stale_worker_claim,
     'forward_stale_worker_complete': forward_stale_worker_complete,

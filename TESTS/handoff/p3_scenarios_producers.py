@@ -107,11 +107,21 @@ def go_task_child_is_admitted(stack):
     steps['activate'](record)
     django = stack.django_worker()
     wait_for(lambda: stack.task_result(child['task_id']) == 'SUCCESS', 'the Go child runs once on Django')
+    # send_email_text publishes its own send_mail_async: a separately admitted logical job (the grandchild).
+    grandchildren = wait_for(lambda: [row[0] for row in stack.sql(
+        "SELECT task_id FROM public.assozeta_handoff_work WHERE parent_id=%s", (child['task_id'],))] or None,
+        'the child publishes its send_mail_async grandchild through admission')
+    check(len(grandchildren) == 1, f'exactly one grandchild is admitted: {grandchildren}')
+    grandchild = stack.work_row(grandchildren[0])
+    check((grandchild['owner_runtime'], grandchild['owner_generation'], grandchild['root_id'])
+          == ('django', 3, child['root_id']), f'the grandchild belongs to the new owner and keeps the lineage: {grandchild}')
+    wait_for(lambda: stack.task_result(grandchild['task_id']) == 'SUCCESS', 'the grandchild runs once on Django')
     stack.stop(django)
-    check(stack.smtp.count() == 1, f'SMTP accepted {stack.smtp.count()}; the child notice is sent once')
-    p3_oracle.check(stack, accepted={job: 'source_completed'}, children={child['task_id']: 'target_completed'},
+    check(stack.smtp.count() == 1, f'SMTP accepted {stack.smtp.count()}; the notice is sent once')
+    p3_oracle.check(stack, accepted={job: 'source_completed'},
+                    children={child['task_id']: 'target_completed', grandchild['task_id']: 'target_completed'},
                     source=('go', 2), target=('django', 3), effects={'django': 0, 'go': 0},
-                    completions={'go': 1, 'django': 1})
+                    completions={'go': 1, 'django': 2})
 
 
 SCENARIOS = {

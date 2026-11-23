@@ -423,12 +423,35 @@ def celery_worker_accepts(contract, fixture, payload, kwargs, *, restore_owner, 
     stale_id = str(uuid.uuid4())
     stale = json.loads(payload)
     stale['headers']['id'] = stale['properties']['correlation_id'] = stale_id
+    # A Go-published message is executed here by a Django worker (wire compatibility). With the ledger the
+    # Django worker only claims while Django owns jobs, and the Go admission bound this task id to Go: lend
+    # Django the authority for the check and run the same envelope under a fresh id, then give it back.
+    from django.db import connection
+
+    def owner(runtime=None):
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT to_regclass('public.assozeta_handoff_work') IS NOT NULL")
+            if not cursor.fetchone()[0]:
+                return None
+            if runtime:
+                cursor.execute("UPDATE public.assozeta_go_job_ownership SET runtime=%s,generation=generation+1 "
+                               "WHERE singleton=1 AND runtime<>%s", [runtime, runtime])
+            cursor.execute('SELECT runtime FROM public.assozeta_go_job_ownership WHERE singleton=1')
+            return cursor.fetchone()[0]
+    lent = owner() not in (None, 'django')
+    run_id, first = task_id, payload
+    if lent:
+        owner('django')
+        run_id = str(uuid.uuid4())
+        copy = json.loads(payload)
+        copy['headers']['id'] = copy['properties']['correlation_id'] = run_id
+        first = json.dumps(copy)
     started = []
 
     def prerun(sender=None, task_id=None, task=None, args=None, kwargs=None, **_):
         started.append((task_id, task.name, tuple(args or ()), dict(kwargs or {})))
 
-    def wait(status, task_id=task_id):
+    def wait(status, task_id=run_id):
         deadline = time.monotonic() + timeout
         while time.monotonic() < deadline:
             row = TaskResult.objects.filter(task_id=task_id, status=status).first()
@@ -441,9 +464,9 @@ def celery_worker_accepts(contract, fixture, payload, kwargs, *, restore_owner, 
     task_prerun.connect(prerun, weak=False)
     try:
         with start_worker(app, pool='solo', concurrency=1, perform_ping_check=False, loglevel='WARNING', shutdown_timeout=30):
-            broker.lpush(CELERY_QUEUE, payload)
+            broker.lpush(CELERY_QUEUE, first)
             wait('SUCCESS')
-            contract.require(started == [(task_id, name, (), kwargs)], 'celery.worker-arguments')
+            contract.require(started == [(run_id, name, (), kwargs)], 'celery.worker-arguments')
             with disable_auditlog():
                 restore = DataRestore(owner_id=restore_owner, association_id=association, state='completed', completed_at=timezone.now(),
                                       sha256='0' * 64)
@@ -454,8 +477,10 @@ def celery_worker_accepts(contract, fixture, payload, kwargs, *, restore_owner, 
             contract.require('StaleDataTask' in (refused.result or ''), 'celery.worker-restore-fence')
     finally:
         task_prerun.disconnect(prerun)
+        if lent:
+            owner('go')
         with disable_auditlog():
-            TaskResult.objects.filter(task_id__in=(task_id, stale_id)).delete()
+            TaskResult.objects.filter(task_id__in=(task_id, run_id, stale_id)).delete()
             if restore is not None:
                 DataRestore._base_manager.filter(pk=restore.pk).delete()
         key, _ = CELERY_BINDING

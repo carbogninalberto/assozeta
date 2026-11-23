@@ -32,10 +32,11 @@ var prioritySteps = []int64{0, 3, 6, 9}
 // restore of messages past the visibility timeout under unacked_mutex,
 // and restore of held messages at shutdown.
 type Transport struct {
-	Client     redis.UniversalClient
-	Queue      string
-	Visibility time.Duration
-	Now        func() time.Time
+	Client             redis.UniversalClient
+	Queue              string
+	Visibility         time.Duration
+	Now                func() time.Time
+	ReservationBarrier func(string, string)
 }
 
 // Delivery is one message taken from the queue.
@@ -95,6 +96,9 @@ func (t *Transport) Get(ctx context.Context, timeout time.Duration) (*Delivery, 
 	if d.Err != nil {
 		return d, nil
 	}
+	if t.ReservationBarrier != nil {
+		t.ReservationBarrier("reservation:popped", d.Message.ID)
+	}
 	stored, err := EncodeJSON([]any{d.Message.Envelope, d.Message.Exchange, d.Message.RoutingKey})
 	if err != nil {
 		d.Message, d.Err = nil, err
@@ -108,6 +112,9 @@ func (t *Transport) Get(ctx context.Context, timeout time.Duration) (*Delivery, 
 	})
 	if err != nil {
 		return nil, fmt.Errorf("celery: unacked bookkeeping: %w", err)
+	}
+	if t.ReservationBarrier != nil {
+		t.ReservationBarrier("reservation:confirmed", d.Message.ID)
 	}
 	return d, nil
 }

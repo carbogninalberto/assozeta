@@ -6,10 +6,12 @@ from .celery import app as celery_app  # noqa
 # heartbeat. Installed here, next to the app import, so core/celery.py (catalogued beat schedule)
 # stays unchanged.
 from celery.signals import worker_init as _worker_init, worker_ready as _worker_ready  # noqa: E402
+from celery.signals import task_revoked as _task_revoked  # noqa: E402
 from . import handoff as _handoff  # noqa: E402
 
 _handoff.install_producer()
 _worker_init.connect(_handoff.worker_identity)
 _worker_ready.connect(_handoff.start_heartbeat)
+_task_revoked.connect(_handoff.record_revoked)
 
 __all__ = ('celery_app',)

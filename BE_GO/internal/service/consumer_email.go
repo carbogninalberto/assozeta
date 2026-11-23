@@ -466,6 +466,15 @@ func (s *SendMailAsync) runEmailHTML(ctx context.Context, request *celeryworker.
 	}
 	if plan.config != nil {
 		call := plan.config
+		if celeryworker.HasBrokerAttempt(ctx) {
+			select {
+			case <-ctx.Done():
+				return nil, ctx.Err()
+			case <-time.After(s.delay()):
+			}
+			s.configSend(ctx, nil, call)
+			return nil, nil
+		}
 		s.timers.Add(1)
 		time.AfterFunc(s.delay(), func() {
 			defer s.timers.Done()

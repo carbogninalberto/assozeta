@@ -137,6 +137,82 @@ class FileBarrier:
                         timeout=timeout)
 
 
+class LingeringPooler:
+    """A TCP stand-in for a transaction-mode connection pooler in front of PostgreSQL (USE_PGBOUNCER=True).
+
+    It forwards each client connection to the server socket and, like a pooler, keeps the server session open
+    after its client disconnects: session state taken by the client (advisory locks, settings) outlives it.
+    Like a real pool it is bounded: only the most recent LINGER orphaned server sessions are kept, so a long
+    scenario cannot exhaust PostgreSQL's max_connections (which would hang every later client)."""
+
+    LINGER = 20
+
+    def __init__(self, server_socket):
+        self.server_socket = str(server_socket)
+        self.listener = socket.create_server(('127.0.0.1', 0))
+        self.port = self.listener.getsockname()[1]
+        self.parked = []
+        self.orphans = []
+        self.lock = threading.Lock()
+        self.accepted = 0
+        self.errors = []
+        threading.Thread(target=self.serve, daemon=True).start()
+
+    def serve(self):
+        while True:
+            try:
+                client, _ = self.listener.accept()
+            except OSError:
+                return
+            self.accepted += 1
+            # Never let one failed server connect stop the accept loop (a dead loop leaves every later client
+            # connected at the TCP level but unanswered); retry briefly like a pooler would, then refuse.
+            server = None
+            for _ in range(20):
+                candidate = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+                try:
+                    candidate.connect(self.server_socket)
+                    server = candidate
+                    break
+                except OSError as exc:
+                    candidate.close()
+                    self.errors.append(repr(exc))
+                    time.sleep(0.05)
+            if server is None:
+                client.close()
+                continue
+            self.parked.append(server)
+            threading.Thread(target=self.pump, args=(client, server, True), daemon=True).start()
+            threading.Thread(target=self.pump, args=(server, client, False), daemon=True).start()
+
+    def orphan(self, server):
+        with self.lock:
+            self.orphans.append(server)
+            expired = self.orphans[:-self.LINGER]
+            del self.orphans[:-self.LINGER]
+        for old in expired:
+            with suppress(OSError):
+                old.close()
+
+    def pump(self, source, target, from_client):
+        while True:
+            try:
+                data = source.recv(65536)
+            except OSError:
+                data = b''
+            if not data:
+                if from_client:
+                    self.orphan(target)  # the client left: the pooled server session stays open (bounded)
+                    return
+                with suppress(OSError):
+                    target.close()
+                return
+            try:
+                target.sendall(data)
+            except OSError:
+                return
+
+
 class CountingSMTP:
     """A local ESMTP server (no TLS, no AUTH) that counts the messages it accepted (250 after DATA)."""
 
@@ -146,6 +222,10 @@ class CountingSMTP:
         self.lock = threading.Lock()
         self.accepted = []
         self.failing = False  # True: refuse every MAIL FROM with a temporary failure (the client raises)
+        # probe() runs when a message's DATA is complete, before the 250: the effect ledger must already
+        # hold an unconfirmed intent for it (the intent precedes the SMTP transaction).
+        self.probe = None
+        self.intents_at_accept = []
         threading.Thread(target=self.serve, daemon=True).start()
 
     def count(self):
@@ -160,6 +240,7 @@ class CountingSMTP:
         with self.lock:
             self.accepted = []
             self.failing = False
+            self.intents_at_accept = []
 
     def close(self):
         with suppress(OSError):
@@ -193,6 +274,9 @@ class CountingSMTP:
                         if not chunk:
                             return
                         body += chunk
+                    if self.probe is not None:
+                        with suppress(Exception):
+                            self.intents_at_accept.append(self.probe())
                     with self.lock:
                         self.accepted.append(body.decode('latin-1'))
                     connection.sendall(b'250 queued\r\n')
@@ -249,6 +333,7 @@ class Stack:
         self.init_django()
         self.apply_operational_migrations()
         self.install_effect_counter()
+        self.smtp.probe = self.unconfirmed_intents
         import redis
         self.redis = redis.Redis(host='127.0.0.1', port=self.redis_port, password=REDIS_PASSWORD, db=0, socket_timeout=10)
         wait_for(lambda: self._redis_ready(), 'private Redis startup', timeout=20)
@@ -286,6 +371,9 @@ class Stack:
                                              serialization.NoEncryption()).decode(),
             JWT_PUBLIC_KEY=key.public_key().public_bytes(serialization.Encoding.PEM,
                                                          serialization.PublicFormat.SubjectPublicKeyInfo).decode(),
+            # core.settings derives DEFAULT_FROM_EMAIL / DEFAULT_TEAM_EMAIL from EMAIL_HOST_USER and models read
+            # core.settings directly: give the fixture sender a mailbox (Django settings keep no SMTP login).
+            EMAIL_HOST_USER='noreply@example.test',
             GO_TASK_QUEUE_TASKS='', ASSOZETA_HANDOFF_BROKER_URL=f'redis://default:{REDIS_PASSWORD}@127.0.0.1:{self.redis_port}/0',
             ASSOZETA_HANDOFF_BARRIER_DIR=str(self.barrier.directory), ASSOZETA_HANDOFF_APPLICATION=DRIVER_APP,
             ASSOZETA_HANDOFF_SMTP_PORT=str(self.smtp.port),
@@ -392,6 +480,20 @@ class Stack:
         self.sql(f'UPDATE public.assozeta_go_job_ownership SET {", ".join(assignments)} WHERE singleton=1',
                  (runtime, generation))
 
+    def unconfirmed_intents(self):
+        """Effect rows still in state 'intent' (own connection: called from the SMTP server thread)."""
+        import psycopg2
+        connection = psycopg2.connect(host=str(self.work), user=USER, dbname=DATABASE, application_name=DRIVER_APP)
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT to_regclass('public.assozeta_handoff_effects') IS NOT NULL")
+                if not cursor.fetchone()[0]:
+                    return 0
+                cursor.execute("SELECT count(*) FROM public.assozeta_handoff_effects WHERE state='intent'")
+                return cursor.fetchone()[0]
+        finally:
+            connection.close()
+
     def effects(self):
         return dict(self.sql('SELECT application, count(*) FROM handoff_test_effects GROUP BY application'))
 
@@ -496,11 +598,11 @@ class Stack:
                 found[name] = hits
         return found
 
-    def django_worker(self, name='handoff'):
+    def django_worker(self, name='handoff', env=None, concurrency=1):
         log = self.output / f'django-worker-{len(self.children) + 1}.log'
         stream = log.open('w')
-        env = dict(self.env, ASSOZETA_HANDOFF_APPLICATION=DJANGO_WORKER_APP)
-        process = subprocess.Popen([sys.executable, '-m', 'TESTS.adapters.go.consumer_restore_worker', '-P', 'prefork', '-c', '1',
+        env = dict(self.env, ASSOZETA_HANDOFF_APPLICATION=DJANGO_WORKER_APP, **(env or {}))
+        process = subprocess.Popen([sys.executable, '-m', 'TESTS.adapters.go.consumer_restore_worker', '-P', 'prefork', '-c', str(concurrency),
                                     '-Q', 'celery', '-n', f'{name}-{len(self.children)}@%h', '--without-heartbeat',
                                     '--without-gossip', '--without-mingle', '-l', 'WARNING'],
                                    cwd=ROOT / 'BE', env=env, stdout=stream, stderr=subprocess.STDOUT)

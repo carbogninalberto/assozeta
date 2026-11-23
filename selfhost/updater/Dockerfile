@@ -6,6 +6,7 @@ FROM docker:29-cli
 RUN apk add --no-cache python3 py3-boto3 age curl openssl util-linux git tar tzdata
 WORKDIR /runner
 COPY selfhost/updater/*.py ./
+COPY docs/architecture/go-migration/go-tasks-inventory.json ./
 COPY selfhost/bin/check-manual-image ./check-manual-image
 COPY BE/instance/release_catalog.py ./
 ARG VERSION=development

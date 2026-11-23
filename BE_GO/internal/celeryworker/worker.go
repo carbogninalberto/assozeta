@@ -141,6 +141,7 @@ type Admission interface {
 
 // Options bound the worker.
 type Options struct {
+	Handoff     *BrokerHandoff
 	Concurrency int
 	// HandoffQueue is Django's queue ("celery").
 	HandoffQueue string
@@ -206,6 +207,10 @@ func New(transport *celery.Transport, tasks map[string]Task, results Results, ad
 // restores held messages (Celery's warm shutdown).
 func (w *Worker) Run(ctx context.Context) error {
 	background := context.WithoutCancel(ctx)
+	h := w.options.Handoff
+	if h != nil {
+		h.start(ctx)
+	}
 	if err := w.transport.Declare(ctx); err != nil {
 		return fmt.Errorf("declare queue: %w", err)
 	}
@@ -229,7 +234,18 @@ func (w *Worker) Run(ctx context.Context) error {
 		case <-ctx.Done():
 			continue
 		}
+		if h != nil && !h.reserve() {
+			<-slots
+			select {
+			case <-ctx.Done():
+			case <-time.After(h.Interval):
+			}
+			continue
+		}
 		if delivery := w.nextReady(); delivery != nil {
+			if h != nil {
+				h.reserved()
+			}
 			running.Add(1)
 			go func() {
 				defer running.Done()
@@ -240,6 +256,9 @@ func (w *Worker) Run(ctx context.Context) error {
 		}
 		delivery, err := w.transport.Get(ctx, time.Second)
 		if err != nil || delivery == nil {
+			if h != nil {
+				h.reserved()
+			}
 			<-slots
 			if err != nil && ctx.Err() == nil {
 				w.logger.Warn("celery broker read failed", "code", "celery_broker_failed")
@@ -247,7 +266,11 @@ func (w *Worker) Run(ctx context.Context) error {
 			}
 			continue
 		}
-		if !w.receive(background, delivery) {
+		ready := w.receive(background, delivery)
+		if h != nil {
+			h.reserved()
+		}
+		if !ready {
 			<-slots
 			continue
 		}
@@ -312,11 +335,18 @@ func (w *Worker) receive(ctx context.Context, d *Delivery) bool {
 		return false
 	}
 	if m.Expires != nil && w.now().After(*m.Expires) {
+		if w.options.Handoff != nil {
+			return true
+		}
 		w.revoke(ctx, d)
 		w.logTaskDone(m.Task, m.ID, outcomeFailure, started)
 		return false
 	}
-	if !m.PlainWith(task.Prefork) || (task.Prefork && !validTimeLimits(m.TimeLimit)) {
+	supported := m.PlainWith(task.Prefork)
+	if w.options.Handoff != nil {
+		supported = m.HandoffOptions(task.Prefork)
+	}
+	if !supported || (task.Prefork && !validTimeLimits(m.TimeLimit)) {
 		w.logTaskDone(m.Task, m.ID, w.handoff(ctx, d, "options"), started)
 		return false
 	}
@@ -452,6 +482,16 @@ func (w *Worker) execute(ctx context.Context, d *Delivery) {
 	m := d.Message
 	var outcome taskOutcome
 	defer func() { w.logTaskDone(m.Task, m.ID, outcome, started) }()
+	if w.options.Handoff != nil {
+		var claimed bool
+		ctx, claimed = w.claim(ctx, d)
+		if !claimed {
+			return
+		}
+		attempt := ctx.Value(attemptContext{}).(*brokerAttempt)
+		defer attempt.stopRenewal()
+		defer func() { attempt.finish(ctx, outcome) }()
+	}
 	task := w.tasks[m.Task]
 	job := w.jobs.Add(1) - 1
 	if task.Prefork {
@@ -565,7 +605,7 @@ func (w *Worker) deferForMaintenance(ctx context.Context, request *Request, coun
 }
 
 func (w *Worker) republish(ctx context.Context, request *Request, retries, countdown int64, persist bool) bool {
-	payload, err := celery.EncodeRepublish(request.Message, celery.Republish{Retries: retries,
+	payload, err := celery.EncodeRepublish(request.Message, celery.Republish{Retries: retries, HandoffOptions: w.options.Handoff != nil,
 		ETA: w.now().UTC().Add(time.Duration(countdown) * time.Second), DeliveryTag: w.newID(), Origin: w.options.Origin})
 	if err != nil {
 		w.logger.Error("celery republish encoding failed", "code", "celery_republish_failed")
@@ -573,7 +613,12 @@ func (w *Worker) republish(ctx context.Context, request *Request, retries, count
 	}
 	delay := time.Second
 	for {
-		err = w.transport.Publish(ctx, request.RepublishQueue(), payload)
+		if attempt, ok := ctx.Value(attemptContext{}).(*brokerAttempt); ok {
+			publisher := celery.AdmittingBroker{DB: attempt.ledger.DB, Redis: celery.RedisBroker{Client: w.transport.Client}}
+			err = publisher.PublishAttempt(ctx, request.RepublishQueue(), payload, attempt.id)
+		} else {
+			err = w.transport.Publish(ctx, request.RepublishQueue(), payload)
+		}
 		if err == nil {
 			return true
 		}

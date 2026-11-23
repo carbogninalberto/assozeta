@@ -16,6 +16,9 @@ class BrokerBacklog(ScenarioAssertions, unittest.TestCase):
     def test_crash_between_pop_and_unacked_bookkeeping_loses_nothing(self):
         self.scenario('d03_pop_before_bookkeeping')
 
+    def test_documented_limit_a_pre_ledger_envelope_lost_in_the_pop_gap_leaves_no_trace(self):
+        self.scenario('d03_pre_ledger_envelope_in_pop_gap_leaves_no_trace')
+
     def test_controller_crashes_after_receipt_source_ack_and_destination_publish_converge(self):
         self.scenario('d03_controller_crashes')
 

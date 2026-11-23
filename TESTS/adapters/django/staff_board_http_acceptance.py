@@ -38,6 +38,22 @@ SOURCES = ('TESTS/adapters/django/staff_board_http_acceptance.py', 'BE_GO/cmd/se
            'BE_GO/migrations/000004_realtime_events.up.sql')
 
 
+def serving_runtime_owns_jobs(backend):
+    """Give job authority to the runtime serving the next workload.
+
+    An installation runs one runtime at a time (compose profiles django/go), so the
+    API that publishes a task is the effective job owner. With the Phase 3 ledger
+    (migration 6) a publication by a runtime that does not own jobs is rejected, so
+    each workload runs with its own runtime as owner, the generation moving forward
+    as a committed switch would. Without the ledger nothing changes."""
+    from django.db import connections
+    with connections['default'].cursor() as cursor:
+        cursor.execute("SELECT to_regclass('public.assozeta_handoff_work') IS NOT NULL")
+        if cursor.fetchone()[0]:
+            cursor.execute("UPDATE public.assozeta_go_job_ownership SET runtime=%s,generation=generation+1 "
+                           "WHERE singleton=1 AND runtime<>%s", [backend, backend])
+
+
 def source_hashes(family='staff-board'):
     names = SOURCES + tuple(family_runner(family).SOURCES)
     return {name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest() for name in names}
@@ -130,6 +146,7 @@ def run_family(report, tools, private, log, shared):
                         for index, (label, backend, base_url, guard) in enumerate(selected):
                             cleanup = {}
                             report['fixture_cleanup'].append(cleanup)
+                            serving_runtime_owns_jobs(backend)
                             with runner.fixture_context(apps, private / f'fixture-{label}', raw, cleanup_receipt=cleanup) as fixture:
                                 workload = runner.run_workload(label, backend, base_url, fixture, apps, raw, observer)
                                 guard()

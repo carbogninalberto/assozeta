@@ -7616,7 +7616,7 @@
         "go-loop:BE_GO/cmd/worker/main.go:heartbeatWorker"
       ],
       "fixture": "legacy-mixed",
-      "effect": "Register the durable worker, refresh its heartbeat and acknowledge a source freeze after the SQL claim gate closes.",
+      "effect": "Register the durable worker, refresh its heartbeat and running attempt leases, and acknowledge a source freeze after the SQL claim gate closes.",
       "owner": {
         "django": {
           "runtime": "none",
@@ -7674,7 +7674,7 @@
           "runtime": "go",
           "component": "api-go",
           "status": "planned",
-          "phase": 3
+          "phase": 4
         }
       },
       "refs": [
@@ -7698,7 +7698,8 @@
       ],
       "notes": [
         "Published task or transport: core.tasks.send_mail_async, send_email_template, send_email_text.",
-        "Without a legacy per-name route, the existing producer defaults to the Django queue."
+        "Without a legacy per-name route, the existing producer defaults to the Django queue.",
+        "Go admission is in place (Phase 3). Routing a Go-owned publication to the Go consumer instead of the celery fallback (routes.go DefaultQueue) is Phase 4."
       ]
     },
     {
@@ -7722,7 +7723,7 @@
           "runtime": "go",
           "component": "api-go",
           "status": "planned",
-          "phase": 3
+          "phase": 4
         }
       },
       "refs": [
@@ -7733,7 +7734,8 @@
       "notes": [
         "Published task or transport: export_association_data, import_association_data.",
         "Phase 3 must retain the accepted intent and original lineage across the runtime barrier.",
-        "Without a legacy per-name route, the existing producer defaults to the Django queue."
+        "Without a legacy per-name route, the existing producer defaults to the Django queue.",
+        "Go admission is in place (Phase 3). Routing a Go-owned publication to the Go consumer instead of the celery fallback (routes.go DefaultQueue) is Phase 4."
       ]
     },
     {
@@ -7748,8 +7750,7 @@
         "django": {
           "runtime": "django",
           "component": "worker",
-          "status": "planned",
-          "phase": 3
+          "status": "present"
         },
         "go": {
           "runtime": "go",
@@ -7818,7 +7819,7 @@
           "runtime": "go",
           "component": "api-go",
           "status": "planned",
-          "phase": 3
+          "phase": 4
         }
       },
       "refs": [
@@ -7828,7 +7829,8 @@
       ],
       "notes": [
         "Published task or transport: save_to_storage.",
-        "Without a legacy per-name route, the existing producer defaults to the Django queue."
+        "Without a legacy per-name route, the existing producer defaults to the Django queue.",
+        "Go admission is in place (Phase 3). Routing a Go-owned publication to the Go consumer instead of the celery fallback (routes.go DefaultQueue) is Phase 4."
       ]
     },
     {
@@ -7879,7 +7881,7 @@
           "runtime": "go",
           "component": "api-go",
           "status": "planned",
-          "phase": 3
+          "phase": 4
         }
       },
       "refs": [
@@ -7889,7 +7891,8 @@
       ],
       "notes": [
         "Published task or transport: export_invoices_to_zip.",
-        "Without a legacy per-name route, the existing producer defaults to the Django queue."
+        "Without a legacy per-name route, the existing producer defaults to the Django queue.",
+        "Go admission is in place (Phase 3). Routing a Go-owned publication to the Go consumer instead of the celery fallback (routes.go DefaultQueue) is Phase 4."
       ]
     },
     {
@@ -7909,8 +7912,7 @@
         "go": {
           "runtime": "go",
           "component": "worker-go (/app/celery-consumer)",
-          "status": "planned",
-          "phase": 3
+          "status": "present"
         }
       },
       "refs": [
@@ -7958,7 +7960,7 @@
           "runtime": "go",
           "component": "api-go and native durable worker",
           "status": "planned",
-          "phase": 3
+          "phase": 4
         }
       },
       "refs": [
@@ -7979,7 +7981,8 @@
       "notes": [
         "Published task or transport: print_document_invoice, print_document_subscription.",
         "Phase 3 must retain the accepted intent and original lineage across the runtime barrier.",
-        "Without a legacy per-name route, the existing producer defaults to the Django queue."
+        "Without a legacy per-name route, the existing producer defaults to the Django queue.",
+        "Go admission is in place (Phase 3). Routing a Go-owned publication to the Go consumer instead of the celery fallback (routes.go DefaultQueue) is Phase 4."
       ]
     },
     {
@@ -8001,7 +8004,7 @@
           "runtime": "go",
           "component": "/app/worker",
           "status": "planned",
-          "phase": 3
+          "phase": 4
         }
       },
       "refs": [
@@ -8012,7 +8015,8 @@
       "notes": [
         "Published task or transport: renew_memberships_payments.",
         "Phase 3 must retain the accepted intent and original lineage across the runtime barrier.",
-        "Without a legacy per-name route, the existing producer defaults to the Django queue."
+        "Without a legacy per-name route, the existing producer defaults to the Django queue.",
+        "Go admission is in place (Phase 3). Routing a Go-owned publication to the Go consumer instead of the celery fallback (routes.go DefaultQueue) is Phase 4."
       ]
     },
     {
@@ -8034,7 +8038,7 @@
           "runtime": "go",
           "component": "api-go",
           "status": "planned",
-          "phase": 3
+          "phase": 4
         }
       },
       "refs": [
@@ -8045,7 +8049,8 @@
       "notes": [
         "Published task or transport: instance.restore.execute.",
         "Phase 3 must retain the accepted intent and original lineage across the runtime barrier.",
-        "Without a legacy per-name route, the existing producer defaults to the Django queue."
+        "Without a legacy per-name route, the existing producer defaults to the Django queue.",
+        "Go admission is in place (Phase 3). Routing a Go-owned publication to the Go consumer instead of the celery fallback (routes.go DefaultQueue) is Phase 4."
       ]
     },
     {
@@ -8078,14 +8083,13 @@
         "django": {
           "runtime": "django",
           "component": "worker",
-          "status": "planned",
-          "phase": 3
+          "status": "present"
         },
         "go": {
           "runtime": "go",
           "component": "Go durable worker and Celery consumer",
           "status": "planned",
-          "phase": 3
+          "phase": 4
         }
       },
       "refs": [
@@ -8103,7 +8107,8 @@
         "Published task or transport: core.tasks.send_mail_async, send_email_html, send_email_text.",
         "Phase 3 must retain the accepted intent and original lineage across the runtime barrier.",
         "Without a legacy per-name route, the existing producer defaults to the Django queue.",
-        "Django publishes children and retries today. Independent acceptance reconciliation is still required."
+        "Django publishes children and retries today. Independent acceptance reconciliation is still required.",
+        "Go admission is in place (Phase 3). Routing a Go-owned publication to the Go consumer instead of the celery fallback (routes.go DefaultQueue) is Phase 4."
       ]
     },
     {
@@ -8129,7 +8134,7 @@
           "runtime": "go",
           "component": "worker-go (/app/celery-consumer)",
           "status": "planned",
-          "phase": 3
+          "phase": 4
         }
       },
       "refs": [
@@ -8141,7 +8146,8 @@
       "notes": [
         "Published task or transport: check_workflows_trigger_cron, send_email_html, workflow_block_execute.",
         "Phase 3 must retain the accepted intent and original lineage across the runtime barrier.",
-        "Without a legacy per-name route, the existing producer defaults to the Django queue."
+        "Without a legacy per-name route, the existing producer defaults to the Django queue.",
+        "Go admission is in place (Phase 3). Routing a Go-owned publication to the Go consumer instead of the celery fallback (routes.go DefaultQueue) is Phase 4."
       ]
     },
     {
@@ -8172,7 +8178,7 @@
           "runtime": "go",
           "component": "api-go",
           "status": "planned",
-          "phase": 3
+          "phase": 4
         }
       },
       "refs": [
@@ -8185,7 +8191,8 @@
       ],
       "notes": [
         "Published task or transport: check_workflows_trigger, check_workflows_trigger_cron.",
-        "Without a legacy per-name route, the existing producer defaults to the Django queue."
+        "Without a legacy per-name route, the existing producer defaults to the Django queue.",
+        "Go admission is in place (Phase 3). Routing a Go-owned publication to the Go consumer instead of the celery fallback (routes.go DefaultQueue) is Phase 4."
       ]
     },
     {
@@ -9188,6 +9195,32 @@
         "BE/application/utils/printing.py",
         "BE/application/views/auth_views.py",
         "BE_GO/internal/handler/router_stock.go"
+      ]
+    },
+    {
+      "id": "schedule:broker-handoff-heartbeat",
+      "kind": "schedule",
+      "items": [
+        "go-loop:BE_GO/internal/celeryworker/handoff.go:BrokerHandoff.start",
+        "go-loop:BE_GO/internal/celeryworker/handoff.go:brokerAttempt.renew"
+      ],
+      "fixture": "legacy-mixed",
+      "effect": "Register the Go broker consumer, refresh its heartbeat and running attempt leases, and acknowledge a source freeze after its outstanding reservation completes.",
+      "owner": {
+        "django": {
+          "runtime": "none",
+          "status": "present",
+          "disposition": "stopped: the Go broker consumer is inactive in Django mode"
+        },
+        "go": {
+          "runtime": "go",
+          "component": "/app/celery-consumer",
+          "status": "present"
+        }
+      },
+      "refs": [
+        "BE_GO/internal/celeryworker/handoff.go",
+        "BE_GO/cmd/celery-consumer/main.go"
       ]
     },
     {
