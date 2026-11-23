@@ -1,0 +1,2357 @@
+[
+  {
+    "app": "django_celery_beat",
+    "name": "0001_initial",
+    "sql": "000101_django_celery_beat_0001_initial.up.sql"
+  },
+  {
+    "app": "contenttypes",
+    "name": "0001_initial",
+    "sql": "000102_contenttypes_0001_initial.up.sql"
+  },
+  {
+    "app": "docmanager",
+    "name": "0001_initial",
+    "sql": "000103_docmanager_0001_initial.up.sql"
+  },
+  {
+    "app": "docmanager",
+    "name": "0002_document_token",
+    "sql": "000104_docmanager_0002_document_token.up.sql"
+  },
+  {
+    "app": "docmanager",
+    "name": "0003_auto_20230524_1639",
+    "sql": "000105_docmanager_0003_auto_20230524_1639.up.sql"
+  },
+  {
+    "app": "docmanager",
+    "name": "0004_document_docmanager__documen_6d9774_idx",
+    "sql": "000106_docmanager_0004_document_docmanager__documen_6d9774_idx.up.sql"
+  },
+  {
+    "app": "docmanager",
+    "name": "0005_document_filepath",
+    "sql": "000107_docmanager_0005_document_filepath.up.sql"
+  },
+  {
+    "app": "contenttypes",
+    "name": "0002_remove_content_type_name",
+    "sql": "000108_contenttypes_0002_remove_content_type_name.up.sql"
+  },
+  {
+    "app": "auth",
+    "name": "0001_initial",
+    "sql": "000109_auth_0001_initial.up.sql"
+  },
+  {
+    "app": "auth",
+    "name": "0002_alter_permission_name_max_length",
+    "sql": "000110_auth_0002_alter_permission_name_max_length.up.sql"
+  },
+  {
+    "app": "auth",
+    "name": "0003_alter_user_email_max_length",
+    "sql": "000111_auth_0003_alter_user_email_max_length.up.sql"
+  },
+  {
+    "app": "auth",
+    "name": "0004_alter_user_username_opts",
+    "sql": "000112_auth_0004_alter_user_username_opts.up.sql"
+  },
+  {
+    "app": "auth",
+    "name": "0005_alter_user_last_login_null",
+    "sql": "000113_auth_0005_alter_user_last_login_null.up.sql"
+  },
+  {
+    "app": "auth",
+    "name": "0006_require_contenttypes_0002",
+    "sql": "000114_auth_0006_require_contenttypes_0002.up.sql"
+  },
+  {
+    "app": "auth",
+    "name": "0007_alter_validators_add_error_messages",
+    "sql": "000115_auth_0007_alter_validators_add_error_messages.up.sql"
+  },
+  {
+    "app": "auth",
+    "name": "0008_alter_user_username_max_length",
+    "sql": "000116_auth_0008_alter_user_username_max_length.up.sql"
+  },
+  {
+    "app": "auth",
+    "name": "0009_alter_user_last_name_max_length",
+    "sql": "000117_auth_0009_alter_user_last_name_max_length.up.sql"
+  },
+  {
+    "app": "auth",
+    "name": "0010_alter_group_name_max_length",
+    "sql": "000118_auth_0010_alter_group_name_max_length.up.sql"
+  },
+  {
+    "app": "auth",
+    "name": "0011_update_proxy_permissions",
+    "sql": "000119_auth_0011_update_proxy_permissions.up.sql"
+  },
+  {
+    "app": "auth",
+    "name": "0012_alter_user_first_name_max_length",
+    "sql": "000120_auth_0012_alter_user_first_name_max_length.up.sql"
+  },
+  {
+    "app": "application",
+    "name": "0001_initial_squashed_0413_associate_associate_sport_assoc_id_idx",
+    "sql": "000121_application_0001_initial_squashed_0413_associate_associate_sport_assoc_id_idx.up.sql",
+    "replaces": [
+      [
+        "application",
+        "0001_initial"
+      ],
+      [
+        "application",
+        "0002_associate_disabled"
+      ],
+      [
+        "application",
+        "0003_user_two_fa_user_two_fa_secret"
+      ],
+      [
+        "application",
+        "0004_alter_user_two_fa_secret"
+      ],
+      [
+        "application",
+        "0005_alter_user_two_fa_alter_user_two_fa_secret"
+      ],
+      [
+        "application",
+        "0006_billingplan_billingsubscription"
+      ],
+      [
+        "application",
+        "0007_stripeonboarding_user_stripe_account_id_and_more"
+      ],
+      [
+        "application",
+        "0008_delete_stripeonboarding"
+      ],
+      [
+        "application",
+        "0009_payment_payment_intent_id"
+      ],
+      [
+        "application",
+        "0010_attendanceregistry_attendanceday"
+      ],
+      [
+        "application",
+        "0011_remove_attendanceday_id_remove_userfollow_id_and_more"
+      ],
+      [
+        "application",
+        "0012_attendanceregistry_status"
+      ],
+      [
+        "application",
+        "0013_alter_attendanceregistry_status"
+      ],
+      [
+        "application",
+        "0014_rename_period_attendanceregistry_events"
+      ],
+      [
+        "application",
+        "0015_attendanceday_title"
+      ],
+      [
+        "application",
+        "0016_subscription_archived"
+      ],
+      [
+        "application",
+        "0017_course_events_course_multi_payments"
+      ],
+      [
+        "application",
+        "0018_coursesubscriptioninstallment"
+      ],
+      [
+        "application",
+        "0019_coursesubscription_multi_payments_and_more"
+      ],
+      [
+        "application",
+        "0015_ticket"
+      ],
+      [
+        "application",
+        "0020_merge_20221011_0601"
+      ],
+      [
+        "application",
+        "0021_associate_draft_associatetutor_draft_and_more"
+      ],
+      [
+        "application",
+        "0022_alter_associate_draft_alter_associatetutor_draft"
+      ],
+      [
+        "application",
+        "0023_associateimportdraft"
+      ],
+      [
+        "application",
+        "0024_alter_associateimportdraft_data"
+      ],
+      [
+        "application",
+        "0025_alter_associateimportdraft_data"
+      ],
+      [
+        "application",
+        "0026_alter_associateimportdraft_valid"
+      ],
+      [
+        "application",
+        "0027_user_balance_sheet_year_user_enumerate_invoices_and_more"
+      ],
+      [
+        "application",
+        "0028_balancesheet"
+      ],
+      [
+        "application",
+        "0027_billingpayment"
+      ],
+      [
+        "application",
+        "0028_alter_billingplan_annually_fee_and_more"
+      ],
+      [
+        "application",
+        "0029_merge_20221204_1124"
+      ],
+      [
+        "application",
+        "0030_alter_user_online_payments"
+      ],
+      [
+        "application",
+        "0031_rename_archived_subscription_deleted"
+      ],
+      [
+        "application",
+        "0032_subscription_archived"
+      ],
+      [
+        "application",
+        "0033_balancesheet_archived_invoice_archived_and_more"
+      ],
+      [
+        "application",
+        "0034_billingplan_billing_type"
+      ],
+      [
+        "application",
+        "0035_user_temporary_invoice_deletion"
+      ],
+      [
+        "application",
+        "0036_user_auto_archive_alter_balancesheet_year"
+      ],
+      [
+        "application",
+        "0037_medicalcertificate_expiration_date"
+      ],
+      [
+        "application",
+        "0038_userpartial"
+      ],
+      [
+        "application",
+        "0039_course_one_fee_course_one_fee_payment"
+      ],
+      [
+        "application",
+        "0040_payment_meta"
+      ],
+      [
+        "application",
+        "0041_coursesubscription_one_fee_payment"
+      ],
+      [
+        "application",
+        "0042_carnet_alter_course_description_carnetsubscription"
+      ],
+      [
+        "application",
+        "0043_carnetsubscription_subscription"
+      ],
+      [
+        "application",
+        "0044_carnetsubscription_course_subscription"
+      ],
+      [
+        "application",
+        "0045_associate_phone_2_associate_phone_3_and_more"
+      ],
+      [
+        "application",
+        "0046_carnetsubscription_disabled"
+      ],
+      [
+        "application",
+        "0047_instructor"
+      ],
+      [
+        "application",
+        "0048_subscription_original_associate"
+      ],
+      [
+        "application",
+        "0049_customaccounts_customaccountstransfer"
+      ],
+      [
+        "application",
+        "0050_payment_custom_accounts"
+      ],
+      [
+        "application",
+        "0051_user_auto_mark_attendance"
+      ],
+      [
+        "application",
+        "0052_attendanceday_auto_marked"
+      ],
+      [
+        "application",
+        "0053_payment_expense_alter_course_description_and_more"
+      ],
+      [
+        "application",
+        "0054_alter_paymentcategory_sport_association"
+      ],
+      [
+        "application",
+        "0055_paymentcategory_archived_and_more"
+      ],
+      [
+        "application",
+        "0056_auto_20230415_0838"
+      ],
+      [
+        "application",
+        "0057_customaccounts_editable"
+      ],
+      [
+        "application",
+        "0058_auto_20230415_0902"
+      ],
+      [
+        "application",
+        "0059_alter_payment_payment_category"
+      ],
+      [
+        "application",
+        "0060_remove_carnetsubscription_course_subscription_and_more"
+      ],
+      [
+        "application",
+        "0061_user_balance_sheet_start_day_and_more"
+      ],
+      [
+        "application",
+        "0062_carnet_public"
+      ],
+      [
+        "application",
+        "0063_payment_description"
+      ],
+      [
+        "application",
+        "0064_payment_invoice_fiscal_code_supplier_and_more"
+      ],
+      [
+        "application",
+        "0065_payment_notes"
+      ],
+      [
+        "application",
+        "0066_payment_instructor"
+      ],
+      [
+        "application",
+        "0067_alter_payment_notes"
+      ],
+      [
+        "application",
+        "0068_user_payment_date_equal_invoice_date"
+      ],
+      [
+        "application",
+        "0069_attendanceday_expected_absences"
+      ],
+      [
+        "application",
+        "0070_course_is_sport_camp"
+      ],
+      [
+        "application",
+        "0071_user_starting_number_invoices"
+      ],
+      [
+        "application",
+        "0072_sportassociation_multiple_subscription_fee_and_more"
+      ],
+      [
+        "application",
+        "0073_subscription_meta"
+      ],
+      [
+        "application",
+        "0074_auto_20230526_1726"
+      ],
+      [
+        "application",
+        "0075_subscriptiontransfer"
+      ],
+      [
+        "application",
+        "0076_alter_subscriptiontransfer_expires_at"
+      ],
+      [
+        "application",
+        "0077_remove_subscriptiontransfer_id_and_more"
+      ],
+      [
+        "application",
+        "0078_alter_subscriptiontransfer_expires_at_and_more"
+      ],
+      [
+        "application",
+        "0079_alter_subscriptiontransfer_expires_at_and_more"
+      ],
+      [
+        "application",
+        "0080_alter_sportassociation_subscription_fee_plans_and_more"
+      ],
+      [
+        "application",
+        "0081_sportassociation_invoice_footer_and_more"
+      ],
+      [
+        "application",
+        "0082_alter_subscriptiontransfer_expires_at"
+      ],
+      [
+        "application",
+        "0083_alter_subscriptiontransfer_expires_at_and_more"
+      ],
+      [
+        "application",
+        "0084_auto_20230718_2256"
+      ],
+      [
+        "application",
+        "0085_auto_20230718_2331"
+      ],
+      [
+        "application",
+        "0086_event_alter_subscriptiontransfer_expires_at_and_more"
+      ],
+      [
+        "application",
+        "0087_invoicesuppliers_supplier_and_more"
+      ],
+      [
+        "application",
+        "0088_auto_20230727_2014"
+      ],
+      [
+        "application",
+        "0089_alter_eventsubscription_medical_certificate_and_more"
+      ],
+      [
+        "application",
+        "0090_alter_subscriptiontransfer_expires_at"
+      ],
+      [
+        "application",
+        "0091_alter_subscriptiontransfer_expires_at"
+      ],
+      [
+        "application",
+        "0092_alter_subscriptiontransfer_expires_at"
+      ],
+      [
+        "application",
+        "0093_user_connected_user"
+      ],
+      [
+        "application",
+        "0094_collaborationinvites"
+      ],
+      [
+        "application",
+        "0095_collaborationinvites_token"
+      ],
+      [
+        "application",
+        "0096_alter_user_role"
+      ],
+      [
+        "application",
+        "0097_user_auto_paid_payment"
+      ],
+      [
+        "application",
+        "0098_payment_meta_payment_categories"
+      ],
+      [
+        "application",
+        "0099_invoice_meta_payment_categories"
+      ],
+      [
+        "application",
+        "0100_auto_20230919_1012"
+      ],
+      [
+        "application",
+        "0101_auto_20230923_1540"
+      ],
+      [
+        "application",
+        "0102_auto_20230924_2123"
+      ],
+      [
+        "application",
+        "0103_auto_20230927_0015"
+      ],
+      [
+        "application",
+        "0104_user_tables_settings"
+      ],
+      [
+        "application",
+        "0105_tags_subscription_tags"
+      ],
+      [
+        "application",
+        "0106_rename_tag_tags_tag_name"
+      ],
+      [
+        "application",
+        "0107_sportassociationinvoices"
+      ],
+      [
+        "application",
+        "0108_remove_sportassociationinvoices_file_and_more"
+      ],
+      [
+        "application",
+        "0109_sentemails_alter_payment_type_emaillog"
+      ],
+      [
+        "application",
+        "0110_sportassociation_configuration"
+      ],
+      [
+        "application",
+        "0111_sportassociation_reviewed"
+      ],
+      [
+        "application",
+        "0112_sportassociation_affiliate_code"
+      ],
+      [
+        "application",
+        "0113_sportassociation_affiliate_code_stripe_and_more"
+      ],
+      [
+        "application",
+        "0114_associate_phone_2_label_associate_phone_3_label_and_more"
+      ],
+      [
+        "application",
+        "0115_nurturingemailsplan_nurturingemails"
+      ],
+      [
+        "application",
+        "0116_auto_20231119_2013"
+      ],
+      [
+        "application",
+        "0117_nurturingemails_sent_date"
+      ],
+      [
+        "application",
+        "0118_alter_user_managers_sportassociation_deleted_and_more"
+      ],
+      [
+        "application",
+        "0119_alter_sportassociation_managers_alter_user_managers_and_more"
+      ],
+      [
+        "application",
+        "0120_alter_payment_subject_testimonial"
+      ],
+      [
+        "application",
+        "0121_ticket_created_at"
+      ],
+      [
+        "application",
+        "0122_medicalcertificate_competitive_medical_certificate_and_more"
+      ],
+      [
+        "application",
+        "0123_sportassociation_additional_sections"
+      ],
+      [
+        "application",
+        "0124_subscriptionfile"
+      ],
+      [
+        "application",
+        "0125_auto_20240110_0949"
+      ],
+      [
+        "application",
+        "0126_alter_balancesheet_year_and_more"
+      ],
+      [
+        "application",
+        "0127_alter_balancesheet_year"
+      ],
+      [
+        "application",
+        "0128_auto_20240110_1526"
+      ],
+      [
+        "application",
+        "0129_subscription_membership_number_and_more"
+      ],
+      [
+        "application",
+        "0130_alter_subscription_membership_start_date"
+      ],
+      [
+        "application",
+        "0131_payment_application_payment_f9c2ec_idx_and_more"
+      ],
+      [
+        "application",
+        "0132_subscription_membership_end_date_and_more"
+      ],
+      [
+        "application",
+        "0133_coursesubscription_application_course__3a0677_idx"
+      ],
+      [
+        "application",
+        "0134_invoice_application_invoice_65b26a_idx_and_more"
+      ],
+      [
+        "application",
+        "0135_associate_application_associa_2adac7_idx_and_more"
+      ],
+      [
+        "application",
+        "0136_user_dark_mode"
+      ],
+      [
+        "application",
+        "0137_customerinvoice"
+      ],
+      [
+        "application",
+        "0138_alter_customerinvoice_prefix"
+      ],
+      [
+        "application",
+        "0139_customerinvoice_paid_customerinvoice_total_amount_and_more"
+      ],
+      [
+        "application",
+        "0140_remove_customerinvoice_total_amount"
+      ],
+      [
+        "application",
+        "0141_alter_customerinvoice_payment_expiry_date_and_more"
+      ],
+      [
+        "application",
+        "0142_alter_customerinvoice_unique_together_and_more"
+      ],
+      [
+        "application",
+        "0143_alter_customerinvoice_assignor_address_and_more"
+      ],
+      [
+        "application",
+        "0144_alter_customerinvoice_assignor_contact_email_and_more"
+      ],
+      [
+        "application",
+        "0145_invoice_cancelled"
+      ],
+      [
+        "application",
+        "0146_associateimportdraftstatus"
+      ],
+      [
+        "application",
+        "0147_rename_status_associateimportdraftstatus_importing"
+      ],
+      [
+        "application",
+        "0148_remove_associateimportdraftstatus_importing_and_more"
+      ],
+      [
+        "application",
+        "0149_rename_status_type_associateimportdraftstatus_status_type"
+      ],
+      [
+        "application",
+        "0150_alter_associate_address_alter_associate_address_cap_and_more"
+      ],
+      [
+        "application",
+        "0151_alter_associate_tax_code_and_more"
+      ],
+      [
+        "application",
+        "0152_alter_medicalcertificate_expiration_date"
+      ],
+      [
+        "application",
+        "0153_alter_associatetutor_first_name_and_more"
+      ],
+      [
+        "application",
+        "0154_alter_associate_phone_alter_associate_phone_2_and_more"
+      ],
+      [
+        "application",
+        "0155_instructor_associated_user_id"
+      ],
+      [
+        "application",
+        "0156_instructorhours"
+      ],
+      [
+        "application",
+        "0157_alter_instructorhours_amount"
+      ],
+      [
+        "application",
+        "0158_alter_instructorhours_date"
+      ],
+      [
+        "application",
+        "0159_instructorhours_payment"
+      ],
+      [
+        "application",
+        "0160_course_google_calendar_id_and_more"
+      ],
+      [
+        "application",
+        "0161_sportassociation_integration_google_state"
+      ],
+      [
+        "application",
+        "0162_sportassociation_integration_google_code_and_more"
+      ],
+      [
+        "application",
+        "0163_remove_sportassociation_integration_google_code_and_more"
+      ],
+      [
+        "application",
+        "0164_user_integration_google_access_token_and_more"
+      ],
+      [
+        "application",
+        "0165_remove_user_integration_google_access_token_and_more"
+      ],
+      [
+        "application",
+        "0166_course_google_foreground_color"
+      ],
+      [
+        "application",
+        "0167_rename_google_foreground_color_course_google_background_color"
+      ],
+      [
+        "application",
+        "0168_user_integration_google_auto_sync"
+      ],
+      [
+        "application",
+        "0169_user_dashboard_layout"
+      ],
+      [
+        "application",
+        "0170_sportassociation_review_url_and_more"
+      ],
+      [
+        "application",
+        "0171_user_full_installments_plan"
+      ],
+      [
+        "application",
+        "0172_associate_optional_tutors_alter_payment_invoice"
+      ],
+      [
+        "application",
+        "0173_subscription_end_date_subscription_start_date_and_more"
+      ],
+      [
+        "application",
+        "0174_alter_user_subscription_duration_equal_sport_year"
+      ],
+      [
+        "application",
+        "0175_subscription_duration"
+      ],
+      [
+        "application",
+        "0176_invoice_tutor"
+      ],
+      [
+        "application",
+        "0177_remove_invoice_tutor"
+      ],
+      [
+        "application",
+        "0178_invoice_tutor"
+      ],
+      [
+        "application",
+        "0179_sportassociation_crm_contact_id_and_more"
+      ],
+      [
+        "application",
+        "0180_crm_connection"
+      ],
+      [
+        "application",
+        "0181_globalcalendarevents"
+      ],
+      [
+        "application",
+        "0182_reminders"
+      ],
+      [
+        "application",
+        "0183_reminders_sport_association"
+      ],
+      [
+        "application",
+        "0184_reminders_event_reminder_text"
+      ],
+      [
+        "application",
+        "0185_rename_date_reminders_send_at"
+      ],
+      [
+        "application",
+        "0186_instructorhours_compensation_type_and_more"
+      ],
+      [
+        "application",
+        "0187_instructorhours_calculation_data"
+      ],
+      [
+        "application",
+        "0188_instructor_address_instructor_address_city_and_more"
+      ],
+      [
+        "application",
+        "0189_alter_instructor_address_and_more"
+      ],
+      [
+        "application",
+        "0190_instructorhours_document"
+      ],
+      [
+        "application",
+        "0191_instructorhours_stipulated_contract_in"
+      ],
+      [
+        "application",
+        "0192_remove_instructorhours_stipulated_contract_in_and_more"
+      ],
+      [
+        "application",
+        "0193_make_original_associates_disabled"
+      ],
+      [
+        "application",
+        "0194_coursesubscription_archived_and_more"
+      ],
+      [
+        "application",
+        "0195_invoice_meta"
+      ],
+      [
+        "application",
+        "0196_for_archive_subscriptions_archive_payments_and_course_subs"
+      ],
+      [
+        "application",
+        "0197_alter_associatetutor_address_and_more"
+      ],
+      [
+        "application",
+        "0198_alter_instructorhours_courses_and_more"
+      ],
+      [
+        "application",
+        "0199_instructorhours_creation_date"
+      ],
+      [
+        "application",
+        "0200_payment_signature"
+      ],
+      [
+        "application",
+        "0201_alter_emaillog_recipient_alter_user_email"
+      ],
+      [
+        "application",
+        "0202_instructor_default_hourly_billing_and_more"
+      ],
+      [
+        "application",
+        "0203_user_delete_on"
+      ],
+      [
+        "application",
+        "0204_module_moduleresponses_and_more"
+      ],
+      [
+        "application",
+        "0205_rename_form_data_module_elements"
+      ],
+      [
+        "application",
+        "0206_alter_module_end_date_alter_module_start_date"
+      ],
+      [
+        "application",
+        "0207_alter_moduleresponses_approved"
+      ],
+      [
+        "application",
+        "0208_module_response_message"
+      ],
+      [
+        "application",
+        "0209_alter_moduleresponses_attachments"
+      ],
+      [
+        "application",
+        "0210_sportassociation_president_signature_and_more"
+      ],
+      [
+        "application",
+        "0211_associatetutor_health_insurance_card_and_more"
+      ],
+      [
+        "application",
+        "0212_medicalappointments_sport"
+      ],
+      [
+        "application",
+        "0213_alter_medicalappointments_date"
+      ],
+      [
+        "application",
+        "0214_medicalappointments_meta"
+      ],
+      [
+        "application",
+        "0215_sportassociation_federation"
+      ],
+      [
+        "application",
+        "0216_alter_medicalappointments_sport"
+      ],
+      [
+        "application",
+        "0217_coursetags_course_tags_and_more"
+      ],
+      [
+        "application",
+        "0218_attendanceday_associated_event"
+      ],
+      [
+        "application",
+        "0219_campsandretreats_campsandretreatsperiod_and_more"
+      ],
+      [
+        "application",
+        "0220_campsandretreats_sport_association"
+      ],
+      [
+        "application",
+        "0221_rename_camps_and_retreats_period_campsandretreatsperiod_camps_and_retreats_period"
+      ],
+      [
+        "application",
+        "0222_rename_camps_and_retreats_period_campsandretreatsperiod_camps_and_retreats_period_id"
+      ],
+      [
+        "application",
+        "0223_alter_campsandretreatsperiod_end_date_and_more"
+      ],
+      [
+        "application",
+        "0224_alter_campsandretreatsperiod_end_date_and_more"
+      ],
+      [
+        "application",
+        "0225_alter_campsandretreatssubscription_status_flag"
+      ],
+      [
+        "application",
+        "0226_alter_campsandretreatssubscriptionperiod_payment"
+      ],
+      [
+        "application",
+        "0227_alter_campsandretreatssubscriptionperiod_payment"
+      ],
+      [
+        "application",
+        "0228_campsandretreatsperiod_created_at_and_more"
+      ],
+      [
+        "application",
+        "0229_previewandcustomfeatures_and_more"
+      ],
+      [
+        "application",
+        "0230_add_enti_feature"
+      ],
+      [
+        "application",
+        "0231_subscription_acceptance_date_and_more"
+      ],
+      [
+        "application",
+        "0232_sportassociation_membership_fee_and_more"
+      ],
+      [
+        "application",
+        "0233_subscription_custom_data"
+      ],
+      [
+        "application",
+        "0234_sportassociation_custom_subscription_form_data"
+      ],
+      [
+        "application",
+        "0235_remove_moduleresponses_attachments_and_more"
+      ],
+      [
+        "application",
+        "0236_subscription_instructor_subscription_supplier_and_more"
+      ],
+      [
+        "application",
+        "0237_sportassociation_sport"
+      ],
+      [
+        "application",
+        "0238_user_lead_sport_association_role_and_more"
+      ],
+      [
+        "application",
+        "0239_usersonboarding"
+      ],
+      [
+        "application",
+        "0240_rename_create_or_import_associate_usersonboarding_create_membership_and_more"
+      ],
+      [
+        "application",
+        "0241_usersonboarding_view_membership"
+      ],
+      [
+        "application",
+        "0242_sportassociation_enabled_for"
+      ],
+      [
+        "application",
+        "0243_user_disable_account_creation"
+      ],
+      [
+        "application",
+        "0244_sportassociation_checkout_info"
+      ],
+      [
+        "application",
+        "0245_alter_payment_description_alter_payment_notes"
+      ],
+      [
+        "application",
+        "0246_sportassociation_additional_fields"
+      ],
+      [
+        "application",
+        "0247_subscription_additional_fields"
+      ],
+      [
+        "application",
+        "0248_sportassociation_stripe_available_methods"
+      ],
+      [
+        "application",
+        "0249_subscription_unique_active_subscription"
+      ],
+      [
+        "application",
+        "0250_user_show_zero_payments"
+      ],
+      [
+        "application",
+        "0251_user_membership_duration_user_subscription_duration_and_more"
+      ],
+      [
+        "application",
+        "0252_assign_default_sub_config_values"
+      ],
+      [
+        "application",
+        "0253_alter_user_membership_duration_and_more"
+      ],
+      [
+        "application",
+        "0254_alter_user_membership_duration_and_more"
+      ],
+      [
+        "application",
+        "0255_assign_default_sub_settings_for_sport_associations"
+      ],
+      [
+        "application",
+        "0256_user_membership_starting_number"
+      ],
+      [
+        "application",
+        "0257_copy_membership_starting_number_for_pwka"
+      ],
+      [
+        "application",
+        "0258_clean_copy_membership_starting_number_for_pwka"
+      ],
+      [
+        "application",
+        "0259_alter_subscription_membership_number"
+      ],
+      [
+        "application",
+        "0260_user_force_account_creation"
+      ],
+      [
+        "application",
+        "0261_alter_subscription_membership_number"
+      ],
+      [
+        "application",
+        "0262_user_default_membership_type"
+      ],
+      [
+        "application",
+        "0263_remove_course_is_sport_camp_course_billed_every_and_more"
+      ],
+      [
+        "application",
+        "0264_subscriptiontoken"
+      ],
+      [
+        "application",
+        "0265_vatmanagement_paymentcategory_type_and_more"
+      ],
+      [
+        "application",
+        "0266_sportassociation_document_header_and_more"
+      ],
+      [
+        "application",
+        "0267_alter_subscriptiontoken_expiration_date"
+      ],
+      [
+        "application",
+        "0268_paymentcategory_creation_date"
+      ],
+      [
+        "application",
+        "0269_alter_subscription_membership_number"
+      ],
+      [
+        "application",
+        "0270_sportassociation_enable_quotes_management"
+      ],
+      [
+        "application",
+        "0271_course_course_type"
+      ],
+      [
+        "application",
+        "0272_course_multiple_quotes_and_more"
+      ],
+      [
+        "application",
+        "0273_alter_course_fee"
+      ],
+      [
+        "application",
+        "0274_alter_course_description"
+      ],
+      [
+        "application",
+        "0275_alter_user_default_membership_type"
+      ],
+      [
+        "application",
+        "0276_payment_deleted"
+      ],
+      [
+        "application",
+        "0277_course_pinned"
+      ],
+      [
+        "application",
+        "0278_course_deleted_coursesubscription_deleted_and_more"
+      ],
+      [
+        "application",
+        "0279_remove_subscription_unique_active_subscription_and_more"
+      ],
+      [
+        "application",
+        "0280_sportassociation_abbreviated_sportassociation_iban_and_more"
+      ],
+      [
+        "application",
+        "0281_sportassociationheadquarter"
+      ],
+      [
+        "application",
+        "0282_sportassociationmoduletemplates"
+      ],
+      [
+        "application",
+        "0283_sportassociationmaterial"
+      ],
+      [
+        "application",
+        "0284_invoice_attached_documents"
+      ],
+      [
+        "application",
+        "0285_subscriptionmembership_and_more"
+      ],
+      [
+        "application",
+        "0286_notificationtemplates"
+      ],
+      [
+        "application",
+        "0287_notificationtemplates_type_productsandservices"
+      ],
+      [
+        "application",
+        "0288_subscriptionmembership_membership_number_and_more"
+      ],
+      [
+        "application",
+        "0289_soldproducts"
+      ],
+      [
+        "application",
+        "0290_instructor_documents"
+      ],
+      [
+        "application",
+        "0291_reminder"
+      ],
+      [
+        "application",
+        "0292_sportassociationdocumentsarchive"
+      ],
+      [
+        "application",
+        "0293_courselocation_course_locations"
+      ],
+      [
+        "application",
+        "0294_alter_courselocation_address_and_more"
+      ],
+      [
+        "application",
+        "0295_payment_attachments"
+      ],
+      [
+        "application",
+        "0296_folder_sportassociationdocumentsarchive_folder"
+      ],
+      [
+        "application",
+        "0297_courselocation_sport_association"
+      ],
+      [
+        "application",
+        "0298_set_default_description_to_payments"
+      ],
+      [
+        "application",
+        "0299_alter_subscriptionmembership_description"
+      ],
+      [
+        "application",
+        "0300_remove_subscriptionmembership_paid"
+      ],
+      [
+        "application",
+        "0301_remove_course_billed_every_and_more"
+      ],
+      [
+        "application",
+        "0302_rename_billed_every_coursesubscription_billed_frequency_and_more"
+      ],
+      [
+        "application",
+        "0303_remove_coursesubscription_is_membership"
+      ],
+      [
+        "application",
+        "0304_remove_coursesubscriptioninstallment_is_membership_payment_and_more"
+      ],
+      [
+        "application",
+        "0305_sportassociation_imported_from_associami"
+      ],
+      [
+        "application",
+        "0306_remove_coursesubscription_status_flag"
+      ],
+      [
+        "application",
+        "0307_coursesubscription_billed_from_day_of_month"
+      ],
+      [
+        "application",
+        "0308_sportassociation_extra_text_invoices"
+      ],
+      [
+        "application",
+        "0309_remove_subscription_subscription_memberships_and_more"
+      ],
+      [
+        "application",
+        "0310_rename_subscription_id_subscriptionmembership_subscription"
+      ],
+      [
+        "application",
+        "0311_invoicerows"
+      ],
+      [
+        "application",
+        "0312_institution"
+      ],
+      [
+        "application",
+        "0313_invoice_imported_from_associami"
+      ],
+      [
+        "application",
+        "0314_rename_address_group_description_associate_group_and_more"
+      ],
+      [
+        "application",
+        "0315_remove_group_created_at"
+      ],
+      [
+        "application",
+        "0316_alter_invoice_imported_from_associami_and_more"
+      ],
+      [
+        "application",
+        "0317_remove_soldproducts_products_and_more"
+      ],
+      [
+        "application",
+        "0318_alter_soldproducts_subscription"
+      ],
+      [
+        "application",
+        "0319_course_group"
+      ],
+      [
+        "application",
+        "0320_course_end_date_course_start_date"
+      ],
+      [
+        "application",
+        "0321_material"
+      ],
+      [
+        "application",
+        "0322_reminder_template_html_reminder_template_text"
+      ],
+      [
+        "application",
+        "0323_alter_reminder_next_occurrence_and_more"
+      ],
+      [
+        "application",
+        "0324_alter_course_multiple_quotes"
+      ],
+      [
+        "application",
+        "0325_alter_course_multiple_quotes"
+      ],
+      [
+        "application",
+        "0326_alter_course_multiple_quotes"
+      ],
+      [
+        "application",
+        "0327_alter_coursesubscription_membership_fee"
+      ],
+      [
+        "application",
+        "0328_user_imported_from_associami"
+      ],
+      [
+        "application",
+        "0329_alter_productsandservices_product_description_and_more"
+      ],
+      [
+        "application",
+        "0330_alter_group_sport_association"
+      ],
+      [
+        "application",
+        "0331_add_meta_data_to_course_payments"
+      ],
+      [
+        "application",
+        "0332_add_meta_data_to_course_payments"
+      ],
+      [
+        "application",
+        "0332_delete_installments_with_empty_payments"
+      ],
+      [
+        "application",
+        "0333_sportassociation_invoice_template"
+      ],
+      [
+        "application",
+        "0334_associate_deleted_associatetutor_deleted_and_more"
+      ],
+      [
+        "application",
+        "0335_subscription_application_sport_a_a395c9_idx_and_more"
+      ],
+      [
+        "application",
+        "0336_subscription_sub_full_search_idx"
+      ],
+      [
+        "application",
+        "0337_remove_subscription_application_subscri_e86ff9_idx_and_more"
+      ],
+      [
+        "application",
+        "0338_subscription_application_start_d_a790ae_idx"
+      ],
+      [
+        "application",
+        "0339_subscription_trial"
+      ],
+      [
+        "application",
+        "0340_payment_course"
+      ],
+      [
+        "application",
+        "0341_alter_payment_course"
+      ],
+      [
+        "application",
+        "0342_alter_payment_course"
+      ],
+      [
+        "application",
+        "0343_course_application_sport_a_57736f_idx_and_more"
+      ],
+      [
+        "application",
+        "0344_user_custom_end_date_user_subscription_end_day_and_more"
+      ],
+      [
+        "application",
+        "0345_alter_subscriptionmembership_membership_number"
+      ],
+      [
+        "application",
+        "0346_sportassociation_show_demand_to_athletes_and_more"
+      ],
+      [
+        "application",
+        "0347_set_module_additional_section_visibility"
+      ],
+      [
+        "application",
+        "0348_alter_sportassociation_additional_sections_and_more"
+      ],
+      [
+        "application",
+        "0349_subscription_competitive"
+      ],
+      [
+        "application",
+        "0350_add_preview_feature_family"
+      ],
+      [
+        "application",
+        "0351_family_associate_family_associatetutor_family"
+      ],
+      [
+        "application",
+        "0352_associate_family_role_associatetutor_family_role"
+      ],
+      [
+        "application",
+        "0353_associatetutorrelation_associate_tutors_and_more"
+      ],
+      [
+        "application",
+        "0354_associate_creation_date_associate_migrated"
+      ],
+      [
+        "application",
+        "0355_set_deleted_the_unused_associates"
+      ],
+      [
+        "application",
+        "0356_remove_subscription_unique_active_subscription"
+      ],
+      [
+        "application",
+        "0357_create_the_unique_associates"
+      ],
+      [
+        "application",
+        "0358_update_tutors_to_new_model"
+      ],
+      [
+        "application",
+        "0359_invoice_selected_tutor"
+      ],
+      [
+        "application",
+        "0360_associate_sport_association"
+      ],
+      [
+        "application",
+        "0361_update_associates_to_set_sport_association_id"
+      ],
+      [
+        "application",
+        "0362_associate_picture_path"
+      ],
+      [
+        "application",
+        "0363_remove_associate_optional_tutors_and_more"
+      ],
+      [
+        "application",
+        "0364_alter_associate_first_name_alter_associate_last_name"
+      ],
+      [
+        "application",
+        "0365_alter_associate_first_name_alter_associate_last_name"
+      ],
+      [
+        "application",
+        "0366_remove_subscription_original_associate"
+      ],
+      [
+        "application",
+        "0367_subscriptionmembership_associate"
+      ],
+      [
+        "application",
+        "0368_set_default_associate_to_memberships_and_add_base_memberships"
+      ],
+      [
+        "application",
+        "0369_remove_invoice_tutor_delete_associatetutor"
+      ],
+      [
+        "application",
+        "0370_rename_membership_number_subscription_subscription_number_and_more"
+      ],
+      [
+        "application",
+        "0371_associate_application_first_n_6c07aa_idx_and_more"
+      ],
+      [
+        "application",
+        "0372_remove_subscription_expiration_date_and_more"
+      ],
+      [
+        "application",
+        "0373_alter_associate_address_cap_and_more"
+      ],
+      [
+        "application",
+        "0374_user_hide_category_name_and_more"
+      ],
+      [
+        "application",
+        "0375_remove_subscription_request_date_and_more"
+      ],
+      [
+        "application",
+        "0376_sportassociation_subscription_template"
+      ],
+      [
+        "application",
+        "0377_alter_subscription_status_flag"
+      ],
+      [
+        "application",
+        "0378_associate_notes_subscription_notes"
+      ],
+      [
+        "application",
+        "0379_sportassociationmoduletemplates_footer_and_more"
+      ],
+      [
+        "application",
+        "0380_remove_sportassociationmoduletemplates_title"
+      ],
+      [
+        "application",
+        "0381_paymentcategory_deleted"
+      ],
+      [
+        "application",
+        "0382_instructor_is_volunteer"
+      ],
+      [
+        "application",
+        "0383_sportassociationmoduletemplates_custom_footer_and_more"
+      ],
+      [
+        "application",
+        "0384_associate_id_number"
+      ],
+      [
+        "application",
+        "0385_alter_associate_picture_path"
+      ],
+      [
+        "application",
+        "0386_user_lead_sport_market_channel"
+      ],
+      [
+        "application",
+        "0387_alter_associate_picture_path"
+      ],
+      [
+        "application",
+        "0388_alter_subscription_role"
+      ],
+      [
+        "application",
+        "0389_remove_customaccounts_application_custom__64cc62_idx"
+      ],
+      [
+        "application",
+        "0390_customaccounts_application_sport_a_48e157_idx"
+      ],
+      [
+        "application",
+        "0391_user_default_payment_category"
+      ],
+      [
+        "application",
+        "0392_user_default_payment_category_courses_and_more"
+      ],
+      [
+        "application",
+        "0393_alter_carnetsubscription_course_subscription_and_more"
+      ],
+      [
+        "application",
+        "0394_alter_sportassociation_additional_sections_and_more"
+      ],
+      [
+        "application",
+        "0395_alter_associate_address_alter_associate_address_cap_and_more"
+      ],
+      [
+        "application",
+        "0396_sportassociation_president_first_name_and_more"
+      ],
+      [
+        "application",
+        "0397_sportassociation_stamp"
+      ],
+      [
+        "application",
+        "0398_medicalappointments_address_and_more"
+      ],
+      [
+        "application",
+        "0399_rename_supplier_supplierandcustomers_and_more"
+      ],
+      [
+        "application",
+        "0400_auto_20250518_1549"
+      ],
+      [
+        "application",
+        "0401_family_type"
+      ],
+      [
+        "application",
+        "0402_customerinvoice_json_customerinvoice_pdf"
+      ],
+      [
+        "application",
+        "0403_alter_course_status_flag_and_more"
+      ],
+      [
+        "application",
+        "0404_alter_subscription_subscription_number"
+      ],
+      [
+        "application",
+        "0405_sportassociationmembershipcardconfiguration"
+      ],
+      [
+        "application",
+        "0406_subscription_application_sport_a_8b80c7_idx_and_more"
+      ],
+      [
+        "application",
+        "0407_subscription_subscription_overlap_idx_and_more"
+      ],
+      [
+        "application",
+        "0408_add_payment_stats_indexes"
+      ],
+      [
+        "application",
+        "0409_add_invoice_list_indexes"
+      ],
+      [
+        "application",
+        "0410_add_case_insensitive_unique_constraint"
+      ],
+      [
+        "application",
+        "0411_remove_invoiceprefab_sport_association_and_more"
+      ],
+      [
+        "application",
+        "0412_remove_event_sport_association_and_more"
+      ],
+      [
+        "application",
+        "0413_associate_associate_sport_assoc_id_idx"
+      ]
+    ]
+  },
+  {
+    "app": "auditlog",
+    "name": "0001_initial",
+    "sql": "000122_auditlog_0001_initial.up.sql"
+  },
+  {
+    "app": "application",
+    "name": "0414_add_signature_url_to_subscription",
+    "sql": "000123_application_0414_add_signature_url_to_subscription.up.sql"
+  },
+  {
+    "app": "application",
+    "name": "0415_remove_subscription_signature",
+    "sql": "000124_application_0415_remove_subscription_signature.up.sql"
+  },
+  {
+    "app": "application",
+    "name": "0416_payment_active_payments_idx_and_more",
+    "sql": "000125_application_0416_payment_active_payments_idx_and_more.up.sql"
+  },
+  {
+    "app": "application",
+    "name": "0417_add_quick_win_indexes",
+    "sql": "000126_application_0417_add_quick_win_indexes.up.sql"
+  },
+  {
+    "app": "application",
+    "name": "0418_remove_associate_application_sport_a_f36e4c_idx_and_more",
+    "sql": "000127_application_0418_remove_associate_application_sport_a_f36e4c_idx_and_more.up.sql"
+  },
+  {
+    "app": "application",
+    "name": "0419_add_renewal_check_index",
+    "sql": "000128_application_0419_add_renewal_check_index.up.sql"
+  },
+  {
+    "app": "application",
+    "name": "0420_sportassociation_notes",
+    "sql": "000129_application_0420_sportassociation_notes.up.sql"
+  },
+  {
+    "app": "application",
+    "name": "0421_create_audit_log_index",
+    "sql": "000130_application_0421_create_audit_log_index.up.sql"
+  },
+  {
+    "app": "application",
+    "name": "0422_remove_oauth2_provider_tables",
+    "sql": "000131_application_0422_remove_oauth2_provider_tables.up.sql"
+  },
+  {
+    "app": "application",
+    "name": "0423_delete_userfollow",
+    "sql": "000132_application_0423_delete_userfollow.up.sql"
+  },
+  {
+    "app": "application",
+    "name": "0424_saved_report",
+    "sql": "000133_application_0424_saved_report.up.sql"
+  },
+  {
+    "app": "application",
+    "name": "0425_subscription_signature_storage_key",
+    "sql": "000134_application_0425_subscription_signature_storage_key.up.sql"
+  },
+  {
+    "app": "application",
+    "name": "0426_subscription_signature_backup_compatibility",
+    "sql": "000135_application_0426_subscription_signature_backup_compatibility.up.sql"
+  },
+  {
+    "app": "application",
+    "name": "0427_delete_sport_association_invoices",
+    "sql": "000136_application_0427_delete_sport_association_invoices.up.sql"
+  },
+  {
+    "app": "application",
+    "name": "0428_remove_legacy_notification_channels",
+    "sql": "000137_application_0428_remove_legacy_notification_channels.up.sql"
+  },
+  {
+    "app": "application",
+    "name": "0429_repair_group_sport_association_fk",
+    "sql": "000138_application_0429_repair_group_sport_association_fk.up.sql"
+  },
+  {
+    "app": "application",
+    "name": "0430_retire_software_plan_expiry",
+    "sql": "000139_application_0430_retire_software_plan_expiry.up.sql"
+  },
+  {
+    "app": "application",
+    "name": "0431_associate_tax_code_upper_idx",
+    "sql": "000140_application_0431_associate_tax_code_upper_idx.up.sql"
+  },
+  {
+    "app": "application",
+    "name": "0432_moduleresponses_attachment_token_hash",
+    "sql": "000141_application_0432_moduleresponses_attachment_token_hash.up.sql"
+  },
+  {
+    "app": "auditlog",
+    "name": "0002_auto_support_long_primary_keys",
+    "sql": "000142_auditlog_0002_auto_support_long_primary_keys.up.sql"
+  },
+  {
+    "app": "auditlog",
+    "name": "0003_logentry_remote_addr",
+    "sql": "000143_auditlog_0003_logentry_remote_addr.up.sql"
+  },
+  {
+    "app": "auditlog",
+    "name": "0004_logentry_detailed_object_repr",
+    "sql": "000144_auditlog_0004_logentry_detailed_object_repr.up.sql"
+  },
+  {
+    "app": "auditlog",
+    "name": "0005_logentry_additional_data_verbose_name",
+    "sql": "000145_auditlog_0005_logentry_additional_data_verbose_name.up.sql"
+  },
+  {
+    "app": "auditlog",
+    "name": "0006_object_pk_index",
+    "sql": "000146_auditlog_0006_object_pk_index.up.sql"
+  },
+  {
+    "app": "auditlog",
+    "name": "0007_object_pk_type",
+    "sql": "000147_auditlog_0007_object_pk_type.up.sql"
+  },
+  {
+    "app": "auditlog",
+    "name": "0008_action_index",
+    "sql": "000148_auditlog_0008_action_index.up.sql"
+  },
+  {
+    "app": "auditlog",
+    "name": "0009_alter_logentry_additional_data",
+    "sql": "000149_auditlog_0009_alter_logentry_additional_data.up.sql"
+  },
+  {
+    "app": "auditlog",
+    "name": "0010_alter_logentry_timestamp",
+    "sql": "000150_auditlog_0010_alter_logentry_timestamp.up.sql"
+  },
+  {
+    "app": "auditlog",
+    "name": "0011_logentry_serialized_data",
+    "sql": "000151_auditlog_0011_logentry_serialized_data.up.sql"
+  },
+  {
+    "app": "auditlog",
+    "name": "0012_add_logentry_action_access",
+    "sql": "000152_auditlog_0012_add_logentry_action_access.up.sql"
+  },
+  {
+    "app": "auditlog",
+    "name": "0013_alter_logentry_timestamp",
+    "sql": "000153_auditlog_0013_alter_logentry_timestamp.up.sql"
+  },
+  {
+    "app": "auditlog",
+    "name": "0014_logentry_cid",
+    "sql": "000154_auditlog_0014_logentry_cid.up.sql"
+  },
+  {
+    "app": "auditlog",
+    "name": "0015_alter_logentry_changes",
+    "sql": "000155_auditlog_0015_alter_logentry_changes.up.sql"
+  },
+  {
+    "app": "auditlog",
+    "name": "0016_logentry_remote_port",
+    "sql": "000156_auditlog_0016_logentry_remote_port.up.sql"
+  },
+  {
+    "app": "auditlog",
+    "name": "0017_add_actor_email",
+    "sql": "000157_auditlog_0017_add_actor_email.up.sql"
+  },
+  {
+    "app": "communications",
+    "name": "0001_initial",
+    "sql": "000158_communications_0001_initial.up.sql"
+  },
+  {
+    "app": "communications",
+    "name": "0002_communicationconfiguration_daily_email_balance",
+    "sql": "000159_communications_0002_communicationconfiguration_daily_email_balance.up.sql"
+  },
+  {
+    "app": "communications",
+    "name": "0003_communicationconfiguration_sport_association",
+    "sql": "000160_communications_0003_communicationconfiguration_sport_association.up.sql"
+  },
+  {
+    "app": "communications",
+    "name": "0004_smscreditpayment_paid",
+    "sql": "000161_communications_0004_smscreditpayment_paid.up.sql"
+  },
+  {
+    "app": "communications",
+    "name": "0005_message_subject",
+    "sql": "000162_communications_0005_message_subject.up.sql"
+  },
+  {
+    "app": "communications",
+    "name": "0006_message_created_at",
+    "sql": "000163_communications_0006_message_created_at.up.sql"
+  },
+  {
+    "app": "communications",
+    "name": "0007_rename_content_message_message",
+    "sql": "000164_communications_0007_rename_content_message_message.up.sql"
+  },
+  {
+    "app": "communications",
+    "name": "0008_alter_communicationconfiguration_sms_balance",
+    "sql": "000165_communications_0008_alter_communicationconfiguration_sms_balance.up.sql"
+  },
+  {
+    "app": "communications",
+    "name": "0009_automationworkflow",
+    "sql": "000166_communications_0009_automationworkflow.up.sql"
+  },
+  {
+    "app": "communications",
+    "name": "0010_automationworkflow_communicati_automat_e17cf8_idx_and_more",
+    "sql": "000167_communications_0010_automationworkflow_communicati_automat_e17cf8_idx_and_more.up.sql"
+  },
+  {
+    "app": "communications",
+    "name": "0011_remove_legacy_message_channels",
+    "sql": "000168_communications_0011_remove_legacy_message_channels.up.sql"
+  },
+  {
+    "app": "communications",
+    "name": "0012_staffboardmessage",
+    "sql": "000169_communications_0012_staffboardmessage.up.sql"
+  },
+  {
+    "app": "communications",
+    "name": "0013_staffboardmessage_document",
+    "sql": "000170_communications_0013_staffboardmessage_document.up.sql"
+  },
+  {
+    "app": "communications",
+    "name": "0014_redact_smtp_password_audit",
+    "sql": "000171_communications_0014_redact_smtp_password_audit.up.sql"
+  },
+  {
+    "app": "communications",
+    "name": "0015_message_templates",
+    "sql": "000172_communications_0015_message_templates.up.sql"
+  },
+  {
+    "app": "communications",
+    "name": "0016_whatsapp_delivery",
+    "sql": "000173_communications_0016_whatsapp_delivery.up.sql"
+  },
+  {
+    "app": "django_celery_beat",
+    "name": "0002_auto_20161118_0346",
+    "sql": "000174_django_celery_beat_0002_auto_20161118_0346.up.sql"
+  },
+  {
+    "app": "django_celery_beat",
+    "name": "0003_auto_20161209_0049",
+    "sql": "000175_django_celery_beat_0003_auto_20161209_0049.up.sql"
+  },
+  {
+    "app": "django_celery_beat",
+    "name": "0004_auto_20170221_0000",
+    "sql": "000176_django_celery_beat_0004_auto_20170221_0000.up.sql"
+  },
+  {
+    "app": "django_celery_beat",
+    "name": "0005_add_solarschedule_events_choices",
+    "sql": "000177_django_celery_beat_0005_add_solarschedule_events_choices.up.sql"
+  },
+  {
+    "app": "django_celery_beat",
+    "name": "0006_auto_20180322_0932",
+    "sql": "000178_django_celery_beat_0006_auto_20180322_0932.up.sql"
+  },
+  {
+    "app": "django_celery_beat",
+    "name": "0007_auto_20180521_0826",
+    "sql": "000179_django_celery_beat_0007_auto_20180521_0826.up.sql"
+  },
+  {
+    "app": "django_celery_beat",
+    "name": "0008_auto_20180914_1922",
+    "sql": "000180_django_celery_beat_0008_auto_20180914_1922.up.sql"
+  },
+  {
+    "app": "django_celery_beat",
+    "name": "0006_auto_20180210_1226",
+    "sql": "000181_django_celery_beat_0006_auto_20180210_1226.up.sql"
+  },
+  {
+    "app": "django_celery_beat",
+    "name": "0006_periodictask_priority",
+    "sql": "000182_django_celery_beat_0006_periodictask_priority.up.sql"
+  },
+  {
+    "app": "django_celery_beat",
+    "name": "0009_periodictask_headers",
+    "sql": "000183_django_celery_beat_0009_periodictask_headers.up.sql"
+  },
+  {
+    "app": "django_celery_beat",
+    "name": "0010_auto_20190429_0326",
+    "sql": "000184_django_celery_beat_0010_auto_20190429_0326.up.sql"
+  },
+  {
+    "app": "django_celery_beat",
+    "name": "0011_auto_20190508_0153",
+    "sql": "000185_django_celery_beat_0011_auto_20190508_0153.up.sql"
+  },
+  {
+    "app": "django_celery_beat",
+    "name": "0012_periodictask_expire_seconds",
+    "sql": "000186_django_celery_beat_0012_periodictask_expire_seconds.up.sql"
+  },
+  {
+    "app": "django_celery_beat",
+    "name": "0013_auto_20200609_0727",
+    "sql": "000187_django_celery_beat_0013_auto_20200609_0727.up.sql"
+  },
+  {
+    "app": "django_celery_beat",
+    "name": "0014_remove_clockedschedule_enabled",
+    "sql": "000188_django_celery_beat_0014_remove_clockedschedule_enabled.up.sql"
+  },
+  {
+    "app": "django_celery_beat",
+    "name": "0015_edit_solarschedule_events_choices",
+    "sql": "000189_django_celery_beat_0015_edit_solarschedule_events_choices.up.sql"
+  },
+  {
+    "app": "django_celery_beat",
+    "name": "0016_alter_crontabschedule_timezone",
+    "sql": "000190_django_celery_beat_0016_alter_crontabschedule_timezone.up.sql"
+  },
+  {
+    "app": "django_celery_beat",
+    "name": "0017_alter_crontabschedule_month_of_year",
+    "sql": "000191_django_celery_beat_0017_alter_crontabschedule_month_of_year.up.sql"
+  },
+  {
+    "app": "django_celery_beat",
+    "name": "0018_improve_crontab_helptext",
+    "sql": "000192_django_celery_beat_0018_improve_crontab_helptext.up.sql"
+  },
+  {
+    "app": "django_celery_beat",
+    "name": "0019_alter_periodictasks_options",
+    "sql": "000193_django_celery_beat_0019_alter_periodictasks_options.up.sql"
+  },
+  {
+    "app": "django_celery_results",
+    "name": "0001_initial",
+    "sql": "000194_django_celery_results_0001_initial.up.sql"
+  },
+  {
+    "app": "django_celery_results",
+    "name": "0002_add_task_name_args_kwargs",
+    "sql": "000195_django_celery_results_0002_add_task_name_args_kwargs.up.sql"
+  },
+  {
+    "app": "django_celery_results",
+    "name": "0003_auto_20181106_1101",
+    "sql": "000196_django_celery_results_0003_auto_20181106_1101.up.sql"
+  },
+  {
+    "app": "django_celery_results",
+    "name": "0004_auto_20190516_0412",
+    "sql": "000197_django_celery_results_0004_auto_20190516_0412.up.sql"
+  },
+  {
+    "app": "django_celery_results",
+    "name": "0005_taskresult_worker",
+    "sql": "000198_django_celery_results_0005_taskresult_worker.up.sql"
+  },
+  {
+    "app": "django_celery_results",
+    "name": "0006_taskresult_date_created",
+    "sql": "000199_django_celery_results_0006_taskresult_date_created.up.sql"
+  },
+  {
+    "app": "django_celery_results",
+    "name": "0007_remove_taskresult_hidden",
+    "sql": "000200_django_celery_results_0007_remove_taskresult_hidden.up.sql"
+  },
+  {
+    "app": "django_celery_results",
+    "name": "0008_chordcounter",
+    "sql": "000201_django_celery_results_0008_chordcounter.up.sql"
+  },
+  {
+    "app": "django_celery_results",
+    "name": "0009_groupresult",
+    "sql": "000202_django_celery_results_0009_groupresult.up.sql"
+  },
+  {
+    "app": "django_celery_results",
+    "name": "0010_remove_duplicate_indices",
+    "sql": "000203_django_celery_results_0010_remove_duplicate_indices.up.sql"
+  },
+  {
+    "app": "django_celery_results",
+    "name": "0011_taskresult_periodic_task_name",
+    "sql": "000204_django_celery_results_0011_taskresult_periodic_task_name.up.sql"
+  },
+  {
+    "app": "docmanager",
+    "name": "0006_document_file_size_bytes",
+    "sql": "000205_docmanager_0006_document_file_size_bytes.up.sql"
+  },
+  {
+    "app": "drf_api_logger",
+    "name": "0001_initial",
+    "sql": "000206_drf_api_logger_0001_initial.up.sql"
+  },
+  {
+    "app": "drf_api_logger",
+    "name": "0002_auto_20211221_2155",
+    "sql": "000207_drf_api_logger_0002_auto_20211221_2155.up.sql"
+  },
+  {
+    "app": "instance",
+    "name": "0001_initial",
+    "sql": "000208_instance_0001_initial.up.sql"
+  },
+  {
+    "app": "instance",
+    "name": "0002_setup_provenance_onboarding_completion",
+    "sql": "000209_instance_0002_setup_provenance_onboarding_completion.up.sql"
+  },
+  {
+    "app": "instance",
+    "name": "0003_instance_operations",
+    "sql": "000210_instance_0003_instance_operations.up.sql"
+  },
+  {
+    "app": "instance",
+    "name": "0004_instance_integrations",
+    "sql": "000211_instance_0004_instance_integrations.up.sql"
+  },
+  {
+    "app": "instance",
+    "name": "0005_datarestore",
+    "sql": "000212_instance_0005_datarestore.up.sql"
+  },
+  {
+    "app": "instance",
+    "name": "0006_datarestoreuserdetachment",
+    "sql": "000213_instance_0006_datarestoreuserdetachment.up.sql"
+  },
+  {
+    "app": "instance",
+    "name": "0007_bakneylogin_bakneynonce_bakneyrevocation_and_more",
+    "sql": "000214_instance_0007_bakneylogin_bakneynonce_bakneyrevocation_and_more.up.sql"
+  },
+  {
+    "app": "instance",
+    "name": "0008_bakneychallenge_bakneylogin_attempt_id_and_more",
+    "sql": "000215_instance_0008_bakneychallenge_bakneylogin_attempt_id_and_more.up.sql"
+  },
+  {
+    "app": "instance",
+    "name": "0009_ui_api_version",
+    "sql": "000216_instance_0009_ui_api_version.up.sql"
+  },
+  {
+    "app": "instance",
+    "name": "0010_go_tasks_enabled",
+    "sql": "000217_instance_0010_go_tasks_enabled.up.sql"
+  },
+  {
+    "app": "notifications",
+    "name": "0001_initial",
+    "sql": "000218_notifications_0001_initial.up.sql"
+  },
+  {
+    "app": "notifications",
+    "name": "0002_add_user_broadcast_indexes",
+    "sql": "000219_notifications_0002_add_user_broadcast_indexes.up.sql"
+  },
+  {
+    "app": "sessions",
+    "name": "0001_initial",
+    "sql": "000220_sessions_0001_initial.up.sql"
+  },
+  {
+    "app": "social_django",
+    "name": "0001_initial",
+    "sql": "000221_social_django_0001_initial.up.sql"
+  },
+  {
+    "app": "social_django",
+    "name": "0002_add_related_name",
+    "sql": "000222_social_django_0002_add_related_name.up.sql"
+  },
+  {
+    "app": "social_django",
+    "name": "0003_alter_email_max_length",
+    "sql": "000223_social_django_0003_alter_email_max_length.up.sql"
+  },
+  {
+    "app": "social_django",
+    "name": "0004_auto_20160423_0400",
+    "sql": "000224_social_django_0004_auto_20160423_0400.up.sql"
+  },
+  {
+    "app": "social_django",
+    "name": "0005_auto_20160727_2333",
+    "sql": "000225_social_django_0005_auto_20160727_2333.up.sql"
+  },
+  {
+    "app": "social_django",
+    "name": "0006_partial",
+    "sql": "000226_social_django_0006_partial.up.sql"
+  },
+  {
+    "app": "social_django",
+    "name": "0007_code_timestamp",
+    "sql": "000227_social_django_0007_code_timestamp.up.sql"
+  },
+  {
+    "app": "social_django",
+    "name": "0008_partial_timestamp",
+    "sql": "000228_social_django_0008_partial_timestamp.up.sql"
+  },
+  {
+    "app": "social_django",
+    "name": "0009_auto_20191118_0520",
+    "sql": "000229_social_django_0009_auto_20191118_0520.up.sql"
+  },
+  {
+    "app": "social_django",
+    "name": "0010_uid_db_index",
+    "sql": "000230_social_django_0010_uid_db_index.up.sql"
+  },
+  {
+    "app": "social_django",
+    "name": "0011_alter_id_fields",
+    "sql": "000231_social_django_0011_alter_id_fields.up.sql"
+  },
+  {
+    "app": "social_django",
+    "name": "0012_usersocialauth_extra_data_new",
+    "sql": "000232_social_django_0012_usersocialauth_extra_data_new.up.sql"
+  },
+  {
+    "app": "social_django",
+    "name": "0013_migrate_extra_data",
+    "sql": "000233_social_django_0013_migrate_extra_data.up.sql"
+  },
+  {
+    "app": "social_django",
+    "name": "0014_remove_usersocialauth_extra_data",
+    "sql": "000234_social_django_0014_remove_usersocialauth_extra_data.up.sql"
+  },
+  {
+    "app": "social_django",
+    "name": "0015_rename_extra_data_new_usersocialauth_extra_data",
+    "sql": "000235_social_django_0015_rename_extra_data_new_usersocialauth_extra_data.up.sql"
+  },
+  {
+    "app": "social_django",
+    "name": "0016_alter_usersocialauth_extra_data",
+    "sql": "000236_social_django_0016_alter_usersocialauth_extra_data.up.sql"
+  },
+  {
+    "app": "social_django",
+    "name": "0017_usersocialauth_user_social_auth_uid_required",
+    "sql": "000237_social_django_0017_usersocialauth_user_social_auth_uid_required.up.sql"
+  }
+]

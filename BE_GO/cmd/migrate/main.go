@@ -1,4 +1,4 @@
-// This explicit command applies additive Go operational migrations only. The
+// This explicit command applies the shared business and Go operational migrations. The
 // installing lifecycle must hold the existing exclusive operations lock before
 // invoking it and before resuming application/background services. Managed
 // updates take their backup first. HTTP/worker startup
@@ -6,6 +6,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"flag"
 	"fmt"
@@ -15,6 +16,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/config"
 	"github.com/carbogninalberto/assozeta/BE_GO/migrations"
+	"github.com/carbogninalberto/assozeta/BE_GO/migrations/business"
 )
 
 func main() {
@@ -28,9 +30,10 @@ func run(arguments []string) error {
 	flags := flag.NewFlagSet("migrate", flag.ContinueOnError)
 	flags.SetOutput(io.Discard)
 	envFile := flags.String("env-file", "", "optional existing deployment .env")
+	operationalOnly := flags.Bool("operational-only", false, "apply only the Go operational schema")
 	if err := flags.Parse(arguments); err != nil {
 		if errors.Is(err, flag.ErrHelp) {
-			fmt.Println("Go operational migrations: --env-file PATH. Forward only; caller must hold the exclusive deployment operations lock throughout migration and before application/background admission. Managed updates take their backup first. Does not migrate Django, change runtime ownership, or start workers.")
+			fmt.Println("Shared business and Go operational migrations: --env-file PATH [--operational-only]. Forward only; caller must hold the exclusive deployment operations lock throughout migration and before application/background admission. Managed updates take their backup first. No runtime ownership changes or worker startup.")
 			return nil
 		}
 		return errors.New("invalid migration arguments")
@@ -41,6 +44,12 @@ func run(arguments []string) error {
 	cfg, err := config.Load(*envFile)
 	if err != nil {
 		return errors.New("invalid migration environment configuration")
+	}
+	if !*operationalOnly {
+		if err = business.Apply(context.Background(), cfg); err != nil {
+			return err
+		}
+		slog.Info("Business migrations applied")
 	}
 	// Migration session advisory locks require a direct PostgreSQL connection;
 	// the ordinary DatabaseURL may select a transaction-mode PgBouncer endpoint.

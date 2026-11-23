@@ -2423,46 +2423,6 @@
         "P6B contract red"
       ]
     },
-    "TESTS.handoff.test_p6_schema.SharedSchema.test_go_migrator_builds_the_whole_schema_on_an_empty_database": {
-      "phase": 6,
-      "owner": "t-p6",
-      "reason": "milestone B: cmd/migrate applies only the Go operational migrations (business schema, Django history, content types and permissions missing)",
-      "signatures": [
-        "P6B contract red"
-      ]
-    },
-    "TESTS.handoff.test_p6_schema.SharedSchema.test_go_migration_path_upgrades_from_v1_0_2": {
-      "phase": 6,
-      "owner": "t-p6",
-      "reason": "milestone B: cmd/migrate does not apply the Django business migrations added since the baseline",
-      "signatures": [
-        "P6B contract red"
-      ]
-    },
-    "TESTS.handoff.test_p6_schema.SharedSchema.test_go_migration_path_upgrades_from_v1_0_5": {
-      "phase": 6,
-      "owner": "t-p6",
-      "reason": "milestone B: cmd/migrate does not apply the Django business migrations added since the baseline",
-      "signatures": [
-        "P6B contract red"
-      ]
-    },
-    "TESTS.handoff.test_p6_schema.SharedSchema.test_go_migration_path_upgrades_from_v1_0_17": {
-      "phase": 6,
-      "owner": "t-p6",
-      "reason": "milestone B: cmd/migrate does not apply the Django business migrations added since the baseline",
-      "signatures": [
-        "P6B contract red"
-      ]
-    },
-    "TESTS.handoff.test_p6_schema.SharedSchema.test_go_migration_path_upgrades_from_v1_0_18": {
-      "phase": 6,
-      "owner": "t-p6",
-      "reason": "milestone B: cmd/migrate does not apply the Django business migrations added since the baseline",
-      "signatures": [
-        "P6B contract red"
-      ]
-    },
     "TESTS.handoff.test_p6_installed.GoModeInstalled.test_2_go_mode_health": {
       "phase": 6,
       "owner": "t-p6",

@@ -95,6 +95,10 @@ class Rehearsal:
         print('PASS: ' + name, flush=True)
 
     def command(self, binary, *arguments, success=True, env_file=None, timeout=35):
+        if binary == 'migrate':
+            # These fixtures carry stub Django tables, not a Django history: apply only the Go
+            # operational schema (Phase 6: /app/migrate builds the business schema by default).
+            arguments = ('--operational-only', *arguments)
         completed = subprocess.run([str(self.work / binary), '--env-file', str(env_file or self.env_file), *arguments],
                                    env=self.env, capture_output=True, text=True, timeout=timeout)
         self.safe_output(completed.stdout + completed.stderr)

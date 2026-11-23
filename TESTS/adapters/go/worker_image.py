@@ -87,6 +87,10 @@ class Proof:
             command += ['--detach', '--init']
         else:
             command += ['--rm']
+        if entrypoint == '/app/migrate' and '--help' not in arguments:
+            # Synthetic fixture databases have no Django history: Go operational schema only
+            # (Phase 6: /app/migrate builds the business schema by default).
+            arguments = ['--operational-only', *arguments]
         result = self.docker(*command, self.image, *arguments, timeout=40)
         return name if detached else result.stdout.strip()
 
