@@ -4349,9 +4349,8 @@
         },
         "go": {
           "runtime": "go",
-          "component": "Go worker or explicitly recorded legacy disposition",
-          "status": "planned",
-          "phase": 4
+          "component": "updater job handoff",
+          "status": "present"
         }
       },
       "refs": [
@@ -4364,7 +4363,7 @@
         "children": "No task child.",
         "handler": {
           "django": "BE/application/tasks.py:628 (auto_move_users_to_base_plan)",
-          "go": "Phase 4: historical retirement disposition for already-accepted tombstone requests."
+          "go": "Migration 0430 disabled the schedule. Go activation cancels the queued tombstone with reason retired_task."
         },
         "payload_versions": "Celery protocol 2 JSON; No arguments for the surviving Django tombstone.",
         "tenant_scope": "Preserve the tenant from the arguments, owning record or authenticated caller; preserve instance-level inputs where accepted.",
@@ -5552,9 +5551,8 @@
         },
         "go": {
           "runtime": "go",
-          "component": "Go worker or explicitly recorded legacy disposition",
-          "status": "planned",
-          "phase": 4
+          "component": "updater job handoff",
+          "status": "present"
         }
       },
       "refs": [
@@ -5567,7 +5565,7 @@
         "children": "No task child.",
         "handler": {
           "django": "BE/application/tasks.py:635 (nurturing_warm_leads)",
-          "go": "Phase 4: historical retirement disposition for already-accepted tombstone requests."
+          "go": "Migration 0430 disabled the schedule. Go activation cancels the queued tombstone with reason retired_task."
         },
         "payload_versions": "Celery protocol 2 JSON; No arguments for the surviving Django tombstone.",
         "tenant_scope": "Preserve the tenant from the arguments, owning record or authenticated caller; preserve instance-level inputs where accepted.",
@@ -5998,9 +5996,8 @@
         },
         "go": {
           "runtime": "go",
-          "component": "Go worker or explicitly recorded legacy disposition",
-          "status": "planned",
-          "phase": 4
+          "component": "updater job handoff",
+          "status": "present"
         }
       },
       "refs": [
@@ -6013,7 +6010,7 @@
         "children": "No task child.",
         "handler": {
           "django": "BE/docmanager/tasks.py:23 (save_binary_to_storage)",
-          "go": "Phase 4: legacy binary write adapter or a blocking disposition with the envelope preserved."
+          "go": "Preflight blocks Go activation with reason retired_task. Django keeps the original envelope and can write the binary object."
         },
         "payload_versions": "Celery protocol 2 JSON; file_path and Kombu binary-tagged value; preserve bytes independently of JSON encoding.",
         "tenant_scope": "Preserve the tenant from the arguments, owning record or authenticated caller; preserve instance-level inputs where accepted.",
@@ -6434,9 +6431,8 @@
         },
         "go": {
           "runtime": "go",
-          "component": "Go worker or explicitly recorded legacy disposition",
-          "status": "planned",
-          "phase": 4
+          "component": "updater job handoff",
+          "status": "present"
         }
       },
       "refs": [
@@ -6449,7 +6445,7 @@
         "children": "core.tasks.send_mail_async.",
         "handler": {
           "django": "BE/application/tasks.py:1067 (send_updated_certificate_email)",
-          "go": "Phase 4: legacy certificate notice adapter or a blocking disposition with the envelope preserved."
+          "go": "Preflight blocks Go activation with reason retired_task. Django keeps the original envelope and can send the certificate email."
         },
         "payload_versions": "Celery protocol 2 JSON; Subscription UUID.",
         "tenant_scope": "Preserve the tenant from the arguments, owning record or authenticated caller; preserve instance-level inputs where accepted.",

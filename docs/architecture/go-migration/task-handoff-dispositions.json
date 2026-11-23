@@ -3,8 +3,69 @@
   "handback_sites": {},
   "handback_reasons": {},
   "ported_sites": [],
-  "legacy_names": {},
+  "legacy_names": {
+    "auto_move_users_to_base_plan": {
+      "disposition": "retired",
+      "outcome": "Migration 0430 disabled the schedule. Go activation cancels the queued tombstone with reason retired_task.",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.LegacyNames.test_auto_move_users_to_base_plan__queued_forward"
+    },
+    "nurturing_warm_leads": {
+      "disposition": "retired",
+      "outcome": "Migration 0430 disabled the schedule. Go activation cancels the queued tombstone with reason retired_task.",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.LegacyNames.test_nurturing_warm_leads__queued_forward"
+    },
+    "save_binary_to_storage": {
+      "disposition": "refuse_transition",
+      "outcome": "Preflight blocks Go activation with reason retired_task. Django keeps the original envelope and can write the binary object.",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.LegacyNames.test_save_binary_to_storage__queued_forward"
+    },
+    "send_updated_certificate_email": {
+      "disposition": "refuse_transition",
+      "outcome": "Preflight blocks Go activation with reason retired_task. Django keeps the original envelope and can send the certificate email.",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.LegacyNames.test_send_updated_certificate_email__queued_forward"
+    }
+  },
   "tasks": {
+    "auto_move_users_to_base_plan": {
+      "family": "legacy_names",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "nurturing_warm_leads": {
+      "family": "legacy_names",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "save_binary_to_storage": {
+      "family": "legacy_names",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "send_updated_certificate_email": {
+      "family": "legacy_names",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
     "auto_mark_attendance": {
       "family": "db_maintenance",
       "rate_limit": "4/m",

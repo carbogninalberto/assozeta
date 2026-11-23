@@ -15,6 +15,9 @@ from datetime import datetime, timezone
 
 RESET_TASK = 'reset_communication_daily_email_balance'
 QUEUES = ('celery', 'assozeta-go')
+# Django migration 0430 retired both schedules and left no-op task bodies.
+RETIRED_TASKS = frozenset(('auto_move_users_to_base_plan', 'nurturing_warm_leads'))
+LEGACY_DJANGO_TASKS = frozenset(('save_binary_to_storage', 'send_updated_certificate_email'))
 
 
 def _task_catalog():
@@ -168,7 +171,9 @@ def _reason(message, catalog, target):
     except (KeyError, TypeError, ValueError, UnicodeError):
         return 'unsupported_encoding'
     if target == 'go':
-        if not (catalog[name]['consumer'] or catalog[name]['job']):
+        if name in LEGACY_DJANGO_TASKS:
+            return 'retired_task'
+        if name not in RETIRED_TASKS and not (catalog[name]['consumer'] or catalog[name]['job']):
             return 'no_target_handler'
         if any(options.values()) or any(headers.get(k) is not None for k in ('shadow','group','group_index','stamped_headers')):
             return 'unsupported_option'
@@ -394,11 +399,18 @@ def handoff_steps(store, broker, *, barrier=None, batch_size=500, freeze_timeout
         staged = 0
         pending = ledger_pages(values)
         while batch := list(islice(pending, batch_size)):
+            reasons = {row['task_id']: row_reason(row, values['target']) for row in batch}
+            refusals = [{'task_id': row['task_id'], 'reason': 'retired_task'} for row in batch
+                        if reasons[row['task_id']] == 'retired_task']
+            if refusals:
+                # Leave the source delivery runnable on abort. The ledger also
+                # holds the exact envelope if it came from an older release.
+                raise TransferBlocked(refusals)
             broker_ids = {row['task_id'] for row in batch if row['transport'] == 'broker'}
             copies = _copies(broker, batch_size, broker_ids) if broker_ids else {}
             for row in batch:
                 task = row['task_id']
-                reason = row_reason(row, values['target'])
+                reason = reasons[task]
                 if reason:
                     store.execute("""UPDATE public.assozeta_handoff_work SET state='blocked',block_reason=:'reason',operation_id=:'op'
                         WHERE task_id=:'task'""", task=task, reason=reason, **values)
@@ -451,7 +463,12 @@ def handoff_steps(store, broker, *, barrier=None, batch_size=500, freeze_timeout
             for row in rows:
                 task = row['task_id']
                 native = values['target'] == 'go' and not catalog[row['task_name']]['consumer']
-                if native:
+                if values['target'] == 'go' and row['task_name'] in RETIRED_TASKS:
+                    store.execute("""UPDATE public.assozeta_handoff_work
+                        SET state='cancelled',block_reason='retired_task',updated_at=clock_timestamp()
+                        WHERE task_id=:'task' AND state='pending'""", task=task)
+                    delivery = 'retired:' + task
+                elif native:
                     kwargs = {}
                     if row['envelope']:
                         message = json.loads(base64.b64decode(row['envelope']))
