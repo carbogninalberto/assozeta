@@ -375,7 +375,7 @@
   },
   {
     "name": "save_binary_to_storage",
-    "django_site": "BE/docmanager/tasks.py:23",
+    "django_site": "BE/docmanager/tasks.py:25",
     "scheduled": false,
     "consumer": false,
     "job": false,
@@ -384,7 +384,7 @@
   },
   {
     "name": "save_to_storage",
-    "django_site": "BE/docmanager/tasks.py:11",
+    "django_site": "BE/docmanager/tasks.py:13",
     "scheduled": false,
     "consumer": true,
     "job": false,

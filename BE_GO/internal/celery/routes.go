@@ -64,6 +64,10 @@ func ownedWorkflowTask(name string) bool {
 	}
 }
 
+func ownedStorageTask(name string) bool {
+	return name == "save_to_storage" || name == "export_invoices_to_zip"
+}
+
 func routeEnvelope(raw []byte, queue string) ([]byte, error) {
 	value, err := DecodeJSON(raw)
 	if err != nil {

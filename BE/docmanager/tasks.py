@@ -5,6 +5,8 @@ from celery import shared_task
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 
+from .handoff_storage import save_task_file
+
 logger = logging.getLogger(__name__)
 
 
@@ -14,7 +16,7 @@ def save_to_storage(file_path, pdf_base64):
     try:
         # Convert base64 back to binary
         content = base64.b64decode(pdf_base64)
-        default_storage.save(file_path, ContentFile(content))
+        save_task_file(default_storage, file_path, ContentFile(content))
         logger.info("Completed save_to_storage task", extra={'task_name': 'save_to_storage', 'file_path': file_path})
     except Exception as e:
         logger.error("Error in save_to_storage task", extra={'task_name': 'save_to_storage', 'file_path': file_path}, exc_info=True)

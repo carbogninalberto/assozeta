@@ -277,6 +277,15 @@ func HasBrokerAttempt(ctx context.Context) bool {
 	return ctx.Value(attemptContext{}) != nil
 }
 
+// ActiveBrokerAttempt returns the ledger connection and fenced attempt for
+// a task that needs to checkpoint a provider operation.
+func ActiveBrokerAttempt(ctx context.Context) (*sql.DB, string) {
+	if attempt, ok := ctx.Value(attemptContext{}).(*brokerAttempt); ok {
+		return attempt.ledger.DB, attempt.id
+	}
+	return nil, ""
+}
+
 func (a *brokerAttempt) finish(ctx context.Context, result taskOutcome) {
 	outcome := map[taskOutcome]string{outcomeSuccess: "completed", outcomeRetry: "retried", outcomeFailure: "failed", outcomeHandedOff: "released"}[result]
 	if outcome == "" {

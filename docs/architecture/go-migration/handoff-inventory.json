@@ -5057,8 +5057,7 @@
         "go": {
           "runtime": "go",
           "component": "worker-go (/app/celery-consumer)",
-          "status": "planned",
-          "phase": 4
+          "status": "present"
         }
       },
       "refs": [
@@ -6023,8 +6022,7 @@
         "go": {
           "runtime": "go",
           "component": "worker-go (/app/celery-consumer)",
-          "status": "planned",
-          "phase": 4
+          "status": "present"
         }
       },
       "refs": [
@@ -7805,8 +7803,7 @@
         "go": {
           "runtime": "go",
           "component": "api-go",
-          "status": "planned",
-          "phase": 4
+          "status": "present"
         }
       },
       "refs": [
@@ -7816,8 +7813,7 @@
       ],
       "notes": [
         "Published task or transport: save_to_storage.",
-        "Without a legacy per-name route, the existing producer defaults to the Django queue.",
-        "Go admission is in place (Phase 3). Routing a Go-owned publication to the Go consumer instead of the celery fallback (routes.go DefaultQueue) is Phase 4."
+        "In exclusive Go mode, admission records the Go queue and envelope together before dispatch to the Go consumer."
       ]
     },
     {
@@ -7867,8 +7863,7 @@
         "go": {
           "runtime": "go",
           "component": "api-go",
-          "status": "planned",
-          "phase": 4
+          "status": "present"
         }
       },
       "refs": [
@@ -7878,8 +7873,7 @@
       ],
       "notes": [
         "Published task or transport: export_invoices_to_zip.",
-        "Without a legacy per-name route, the existing producer defaults to the Django queue.",
-        "Go admission is in place (Phase 3). Routing a Go-owned publication to the Go consumer instead of the celery fallback (routes.go DefaultQueue) is Phase 4."
+        "In exclusive Go mode, admission records the Go queue and envelope together before dispatch to the Go consumer."
       ]
     },
     {
