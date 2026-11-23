@@ -16,6 +16,10 @@ type QuoteAssigns struct{ db *sqlx.DB }
 
 func NewQuoteAssigns(db *sqlx.DB) *QuoteAssigns { return &QuoteAssigns{db: db} }
 
+func (r *QuoteAssigns) HandoffRoot(ctx context.Context, id uuid.UUID) (string, error) {
+	return paymentJobRoot(ctx, r.db, id)
+}
+
 var _ domain.QuoteAssignStore = (*QuoteAssigns)(nil)
 
 type quoteAssignTransaction struct{ *paymentMiscTransaction }

@@ -355,7 +355,7 @@
     "name": "renew_memberships_payments",
     "django_site": "BE/application/tasks.py:61",
     "scheduled": true,
-    "consumer": false,
+    "consumer": true,
     "job": true,
     "routed": false,
     "harness": [

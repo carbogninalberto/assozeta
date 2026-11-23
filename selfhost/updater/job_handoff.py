@@ -14,6 +14,7 @@ import uuid
 from datetime import datetime, timezone
 
 RESET_TASK = 'reset_communication_daily_email_balance'
+RENEWAL_TASK = 'renew_memberships_payments'
 QUEUES = ('celery', 'assozeta-go')
 # Django migration 0430 retired both schedules and left no-op task bodies.
 RETIRED_TASKS = frozenset(('auto_move_users_to_base_plan', 'nurturing_warm_leads'))
@@ -154,6 +155,16 @@ def _message(raw):
     return 'opaque-' + hashlib.sha256(raw).hexdigest(), {}
 
 
+def _renewal_arguments(args, kwargs):
+    names = ('attempt', 'max_attempts')
+    if len(args) > len(names) or any(name in kwargs for name in names[:len(args)]):
+        raise ValueError('invalid renewal arguments')
+    arguments = dict(zip(names, args), **kwargs)
+    if any(name not in names or type(value) is not int or value < 1 for name, value in arguments.items()):
+        raise ValueError('invalid renewal arguments')
+    return arguments
+
+
 def _reason(message, catalog, target):
     headers = message.get('headers', {})
     name = headers.get('task')
@@ -177,7 +188,12 @@ def _reason(message, catalog, target):
             return 'no_target_handler'
         if any(options.values()) or any(headers.get(k) is not None for k in ('shadow','group','group_index','stamped_headers')):
             return 'unsupported_option'
-        if catalog[name]['job'] and not catalog[name]['consumer'] and args:
+        if name == RENEWAL_TASK:
+            try:
+                _renewal_arguments(args, kwargs)
+            except ValueError:
+                return 'unsupported_input'
+        elif catalog[name]['job'] and not catalog[name]['consumer'] and args:
             return 'unsupported_option'
     return None
 
@@ -398,10 +414,21 @@ def handoff_steps(store, broker, *, barrier=None, batch_size=500, freeze_timeout
 
         # Inventory both historical queue names before removing anything. The
         # position is the BRPOP order, independent of wall clocks and UUIDs.
-        for pos, (queue, _, _, _, raw) in enumerate(_items(broker, batch_size)):
+        native_renewal_copies = []
+        for pos, (queue, kind, key, value, raw) in enumerate(_items(broker, batch_size)):
             task, msg = _message(raw)
             headers = msg.get('headers', {})
             name = headers.get('task') or 'unknown'
+            if values['source'] == 'go' and name == RENEWAL_TASK and store.scalar("""
+                SELECT EXISTS(SELECT 1 FROM public.assozeta_handoff_work w
+                    JOIN public.assozeta_go_jobs j ON j.id::text=w.task_id
+                    WHERE w.task_id=:'task' AND w.task_name='renew_memberships_payments'
+                    AND w.owner_runtime='go' AND w.owner_generation=:'gen' AND w.transport='sql')""",
+                    task=task, **values) == 't':
+                # A crash between native admission and broker ACK can leave the
+                # old delivery. The SQL receipt is already independently durable.
+                native_renewal_copies.append((kind, key, value))
+                continue
             store.execute("""INSERT INTO public.assozeta_handoff_work AS w
                 (task_id,task_name,transport,queue,envelope,origin_runtime,owner_runtime,owner_generation,state,
                  accepted_at,eta,expires,retries,priority,parent_id,root_id,source_position)
@@ -415,6 +442,7 @@ def handoff_steps(store, broker, *, barrier=None, batch_size=500, freeze_timeout
                           expires=headers.get('expires') or '', retries=headers.get('retries') or 0,
                           priority=msg.get('properties', {}).get('priority') or 0, parent=headers.get('parent_id') or '',
                           root=headers.get('root_id') or '', pos=pos, **values)
+        _remove(broker, native_renewal_copies)
 
     def stage_backlog(record):
         values = params(record)
@@ -495,7 +523,7 @@ def handoff_steps(store, broker, *, barrier=None, batch_size=500, freeze_timeout
                 return {'delivered': delivered}
             for row in rows:
                 task = row['task_id']
-                native = values['target'] == 'go' and not catalog[row['task_name']]['consumer']
+                native = values['target'] == 'go' and (row['task_name'] == RENEWAL_TASK or not catalog[row['task_name']]['consumer'])
                 if values['target'] == 'go' and row['task_name'] in RETIRED_TASKS:
                     store.execute("""UPDATE public.assozeta_handoff_work
                         SET state='cancelled',block_reason='retired_task',updated_at=clock_timestamp()
@@ -505,7 +533,9 @@ def handoff_steps(store, broker, *, barrier=None, batch_size=500, freeze_timeout
                     kwargs = {}
                     if row['envelope']:
                         message = json.loads(base64.b64decode(row['envelope']))
-                        _, kwargs, _ = json.loads(base64.b64decode(message['body']))
+                        args, kwargs, _ = json.loads(base64.b64decode(message['body']))
+                        if row['task_name'] == RENEWAL_TASK:
+                            kwargs = _renewal_arguments(args, kwargs)
                     store.execute("""BEGIN;
                         INSERT INTO public.assozeta_go_jobs (id,association_id,kind,version,idempotency_key,payload,
                           max_attempts,attempts,available_at,created_at)

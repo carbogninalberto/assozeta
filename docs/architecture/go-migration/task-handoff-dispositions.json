@@ -583,6 +583,56 @@
       ],
       "go_time_limits": null
     },
+    "association_quote_assign": {
+      "family": "payments",
+      "rate_limit": "1/m",
+      "go_rate_limit": "JobExecutor enforces a minimum claim interval per task kind and worker process",
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "renew_memberships_payments": {
+      "family": "payments",
+      "rate_limit": "1/m",
+      "go_rate_limit": "JobExecutor enforces a minimum claim interval per task kind and worker process",
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "change_type_of_stripe_payments": {
+      "family": "payments",
+      "rate_limit": "30/m",
+      "go_rate_limit": "JobExecutor enforces a minimum claim interval per task kind and worker process",
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "generate_coupon_if_not_exists": {
+      "family": "payments",
+      "rate_limit": "4/m",
+      "go_rate_limit": "JobExecutor enforces a minimum claim interval per task kind and worker process",
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "mark_as_paid_payments_checking_stripe": {
+      "family": "payments",
+      "rate_limit": "3/m",
+      "go_rate_limit": "JobExecutor enforces a minimum claim interval per task kind and worker process",
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
     "update_age_of_associates": {
       "family": "db_maintenance",
       "rate_limit": null,

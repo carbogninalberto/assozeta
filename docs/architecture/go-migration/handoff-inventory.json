@@ -4137,8 +4137,7 @@
         "go": {
           "runtime": "go",
           "component": "/app/worker",
-          "status": "planned",
-          "phase": 4
+          "status": "present"
         }
       },
       "refs": [
@@ -4438,8 +4437,7 @@
         "go": {
           "runtime": "go",
           "component": "/app/worker",
-          "status": "planned",
-          "phase": 4
+          "status": "present"
         }
       },
       "refs": [
@@ -5160,8 +5158,7 @@
         "go": {
           "runtime": "go",
           "component": "/app/worker",
-          "status": "planned",
-          "phase": 4
+          "status": "present"
         }
       },
       "refs": [
@@ -5485,8 +5482,7 @@
         "go": {
           "runtime": "go",
           "component": "/app/worker",
-          "status": "planned",
-          "phase": 4
+          "status": "present"
         }
       },
       "refs": [
@@ -5873,8 +5869,7 @@
         "go": {
           "runtime": "go",
           "component": "/app/worker",
-          "status": "planned",
-          "phase": 4
+          "status": "present"
         }
       },
       "refs": [
@@ -5893,7 +5888,7 @@
         "children": "renew_memberships_payments retry with incremented attempt; payment effects can publish print and mail.",
         "handler": {
           "django": "BE/application/tasks.py:59 (renew_memberships_payments)",
-          "go": "BE_GO/cmd/worker/main.go (stripeTasks.RunRenewMembershipsPayments, durable job v1)"
+          "go": "BE_GO/cmd/worker/main.go (stripeTasks.RunRenewMembershipsPayments, durable job v1); cmd/celery-consumer adapts due broker deliveries"
         },
         "payload_versions": "Celery protocol 2 JSON; Optional attempt and max_attempts integers; scheduled invocation has no arguments. Native version 1 instance job payload.",
         "tenant_scope": "Instance-wide scan; retain each selected row’s tenant and run under the instance authority.",
@@ -7739,7 +7734,7 @@
         "go:BE_GO/internal/celeryworker/worker.go:Worker.republish:w.transport.Publish"
       ],
       "fixture": "legacy-mixed",
-      "effect": "Republish an accepted Redis envelope on retry or hand-back while preserving identity and available delivery metadata. Phase 3 requires a receipt before source acknowledgement.",
+      "effect": "Republish an accepted Redis envelope on retry or maintenance deferral, preserving its identity, lineage, priority, expiry and restore stamp.",
       "owner": {
         "django": {
           "runtime": "django",
@@ -7749,19 +7744,19 @@
         "go": {
           "runtime": "go",
           "component": "worker-go (/app/celery-consumer)",
-          "status": "planned",
-          "phase": 4
+          "status": "present"
         }
       },
       "refs": [
         "BE/instance/restore/task_base.py:12",
-        "BE_GO/cmd/celery-consumer/main.go:152",
-        "BE_GO/internal/celeryworker/worker.go"
+        "BE_GO/internal/celery/admission.go",
+        "BE_GO/internal/celery/message.go",
+        "BE_GO/internal/celeryworker/worker.go",
+        "TESTS/handoff/p4_family_envelope_options.py"
       ],
       "notes": [
-        "Published task or transport: Original request queue or fallback queue.",
-        "The baseline consumer can republish to Python; Phase 4 removes the cross-runtime fallback in exclusive Go mode.",
-        "Django can retry its own Celery delivery. A cross-mode receipt and source acknowledgement are Phase 3 work."
+        "Go admits the retry with the same task ID before publishing it on the Go consumer queue. A runtime switch preserves its absolute due time.",
+        "Django and Go retain the same explicit root and parent IDs and the same retry countdown."
       ]
     },
     {
@@ -7997,8 +7992,7 @@
         "go": {
           "runtime": "go",
           "component": "/app/worker",
-          "status": "planned",
-          "phase": 4
+          "status": "present"
         }
       },
       "refs": [

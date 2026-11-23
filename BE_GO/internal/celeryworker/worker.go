@@ -103,6 +103,9 @@ func (r *Request) Children() []string { return append([]string(nil), r.children.
 type Task struct {
 	// MaxRetries is the task's max_retries; negative means None.
 	MaxRetries int64
+	// ToNative transfers a due delivery to a native job before either
+	// executor claims it. A successful transfer owns the original ID.
+	ToNative func(context.Context, *celery.Message) (bool, error)
 	// Plan runs before the acknowledgement and must have no effect; it
 	// returns ErrHandoff for inputs outside the ported subset.
 	Plan func(context.Context, *Request) error
@@ -487,8 +490,20 @@ var (
 func (w *Worker) execute(ctx context.Context, d *Delivery) {
 	started := time.Now()
 	m := d.Message
+	task := w.tasks[m.Task]
 	var outcome taskOutcome
 	defer func() { w.logTaskDone(m.Task, m.ID, outcome, started) }()
+	if task.ToNative != nil && (m.Expires == nil || w.now().Before(*m.Expires)) {
+		adapted, err := task.ToNative(ctx, m)
+		if err != nil {
+			// Keep the unacked broker copy if the native receipt did not commit.
+			return
+		}
+		if adapted {
+			w.ack(ctx, d)
+			return
+		}
+	}
 	if w.options.Handoff != nil {
 		var claimed bool
 		ctx, claimed = w.claim(ctx, d)
@@ -499,7 +514,6 @@ func (w *Worker) execute(ctx context.Context, d *Delivery) {
 		defer attempt.stopRenewal()
 		defer func() { attempt.finish(ctx, outcome) }()
 	}
-	task := w.tasks[m.Task]
 	job := w.jobs.Add(1) - 1
 	if task.Prefork {
 		outcome = w.executePrefork(ctx, d, task, job)

@@ -71,10 +71,18 @@ func tasksDBDSleep(ctx context.Context, d time.Duration) error {
 // errTasksDBDStopped is an exception the task's outer handler catches.
 var errTasksDBDStopped = errors.New("task stopped by a handled exception")
 
-func tasksDBDEnvelope(job domain.Job, kind string) error {
+func tasksDBDPayload(job domain.Job, kind string) (map[string]json.RawMessage, error) {
 	var payload map[string]json.RawMessage
 	if job.AssociationID != uuid.Nil || job.ID == uuid.Nil || job.LeaseToken == uuid.Nil || job.State != "running" || job.Kind != kind ||
-		job.Version != 1 || len(job.Payload) > 65536 || json.Unmarshal(job.Payload, &payload) != nil || payload == nil || len(payload) != 0 {
+		job.Version != 1 || len(job.Payload) > 65536 || json.Unmarshal(job.Payload, &payload) != nil || payload == nil {
+		return nil, domain.ErrJobInvalid
+	}
+	return payload, nil
+}
+
+func tasksDBDEnvelope(job domain.Job, kind string) error {
+	payload, err := tasksDBDPayload(job, kind)
+	if err != nil || len(payload) != 0 {
 		return domain.ErrJobInvalid
 	}
 	return nil
@@ -359,7 +367,45 @@ const (
 	tasksDBDRenewMaxAttempts = 3
 )
 
-// RunRenewMembershipsPayments is the scheduled call (attempt=1, max_attempts=3).
+type paymentJobLineage interface {
+	HandoffRoot(context.Context, uuid.UUID) (string, error)
+}
+
+func paymentPublicationContext(ctx context.Context, store any, job domain.Job) (context.Context, error) {
+	ledger, ok := store.(paymentJobLineage)
+	if !ok {
+		return ctx, nil
+	}
+	root, err := ledger.HandoffRoot(ctx, job.ID)
+	if err == nil && root != "" {
+		ctx = celery.WithGoParent(ctx, job.ID.String(), root)
+	}
+	return ctx, err
+}
+
+// RenewalAttempts is the call signature shared by the native job and its
+// delayed broker delivery. The broker retry counter is independent of these
+// application-level arguments.
+func RenewalAttempts(payload map[string]json.RawMessage) (attempt, maxAttempts int, err error) {
+	attempt, maxAttempts = tasksDBDRenewAttempt, tasksDBDRenewMaxAttempts
+	for key, value := range payload {
+		var target *int
+		switch key {
+		case "attempt":
+			target = &attempt
+		case "max_attempts":
+			target = &maxAttempts
+		default:
+			return 0, 0, domain.ErrJobInvalid
+		}
+		if string(value) == "null" || json.Unmarshal(value, target) != nil || *target < 1 {
+			return 0, 0, domain.ErrJobInvalid
+		}
+	}
+	return attempt, maxAttempts, nil
+}
+
+// RunRenewMembershipsPayments runs the scheduled occurrence or its delayed retry.
 // The Django cache lock is taken first (held: nothing happens). A run whose
 // due period already has a paid payment would end with Django's synchronous
 // send_mail to support: it is refused (lock released, no effect). Each due
@@ -367,7 +413,12 @@ const (
 // and, after the lock release, the retry is published as Celery's
 // apply_async(kwargs={'attempt': 2, 'max_attempts': 3}, countdown=60).
 func (s *TasksDBD) RunRenewMembershipsPayments(ctx context.Context, job domain.Job) error {
-	if err := tasksDBDEnvelope(job, domain.JobRenewMembershipsPayments); err != nil {
+	payload, err := tasksDBDPayload(job, domain.JobRenewMembershipsPayments)
+	if err != nil {
+		return err
+	}
+	attempt, maxAttempts, err := RenewalAttempts(payload)
+	if err != nil {
 		return err
 	}
 	added, err := s.lock.Acquire(ctx)
@@ -388,10 +439,21 @@ func (s *TasksDBD) RunRenewMembershipsPayments(ctx context.Context, job domain.J
 	if releaseErr != nil {
 		return releaseErr
 	}
-	if lockErrors && tasksDBDRenewAttempt < tasksDBDRenewMaxAttempts {
+	if lockErrors && attempt < maxAttempts {
 		eta := s.now().UTC().Add(60 * time.Second)
-		if _, err := s.publisher.Publish(ctx, celery.Task{Name: domain.JobRenewMembershipsPayments, ETA: &eta, Kwargs: celery.Dict{
-			{Key: "attempt", Value: tasksDBDRenewAttempt + 1}, {Key: "max_attempts", Value: tasksDBDRenewMaxAttempts}}}); err != nil {
+		retry := celery.Task{Name: domain.JobRenewMembershipsPayments, ETA: &eta, Kwargs: celery.Dict{
+			{Key: "attempt", Value: attempt + 1}, {Key: "max_attempts", Value: maxAttempts}}}
+		if store, ok := s.store.(paymentJobLineage); ok {
+			root, err := store.HandoffRoot(ctx, job.ID)
+			if err != nil {
+				return err
+			}
+			if root != "" {
+				retry.Queue, retry.RootID, retry.ParentID = celery.GoQueue, root, job.ID.String()
+				retry.ID = uuid.NewSHA1(uuid.NameSpaceURL, []byte("assozeta:renew_memberships_payments:retry:"+job.ID.String())).String()
+			}
+		}
+		if _, err := s.publisher.Publish(ctx, retry); err != nil {
 			return err
 		}
 		return s.finish(ctx, job, err, "renew_memberships_payments")
