@@ -44,6 +44,364 @@
       "outcome": "blocked:unsupported_input",
       "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
       "sites": []
+    },
+    "BE_GO/internal/service/consumer_email.go:consumerEmailBind#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_send_email_text__go",
+      "sites": [
+        "consumer-plan-consumer_email-148"
+      ]
+    },
+    "BE_GO/internal/service/consumer_email.go:consumerEmailBind#2": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_send_email_text__go",
+      "sites": [
+        "consumer-plan-consumer_email-156"
+      ]
+    },
+    "BE_GO/internal/service/consumer_email.go:consumerEmailBind#3": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_send_email_text__go",
+      "sites": [
+        "consumer-plan-consumer_email-162"
+      ]
+    },
+    "BE_GO/internal/service/consumer_email.go:planConfigSend#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_send_email_text__go",
+      "sites": [
+        "consumer-plan-consumer_email-262"
+      ]
+    },
+    "BE_GO/internal/service/consumer_email.go:planConfigSend#2": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_send_email_text__go",
+      "sites": [
+        "consumer-plan-consumer_email-265"
+      ]
+    },
+    "BE_GO/internal/service/consumer_email.go:planConfigSend#3": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_send_email_text__go",
+      "sites": [
+        "consumer-plan-consumer_email-268"
+      ]
+    },
+    "BE_GO/internal/service/consumer_email.go:planConfigSend#4": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_send_email_text__go",
+      "sites": [
+        "consumer-plan-consumer_email-283"
+      ]
+    },
+    "BE_GO/internal/service/consumer_email.go:planForward#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_send_email_text__go",
+      "sites": [
+        "consumer-plan-consumer_email-387"
+      ]
+    },
+    "BE_GO/internal/service/consumer_email.go:planEmailHTML#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_send_email_html__go",
+      "sites": [
+        "consumer-plan-consumer_email-434"
+      ]
+    },
+    "BE_GO/internal/service/consumer_email.go:planEmailHTML#2": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_send_email_html__go",
+      "sites": [
+        "consumer-plan-consumer_email-443"
+      ]
+    },
+    "BE_GO/internal/service/consumer_email.go:planEmailHTML#3": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_send_email_html__go",
+      "sites": [
+        "consumer-plan-consumer_email-447"
+      ]
+    },
+    "BE_GO/internal/service/consumer_email.go:planEmailTemplate#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_send_email_template__go",
+      "sites": [
+        "consumer-plan-consumer_email-547"
+      ]
+    },
+    "BE_GO/internal/service/consumer_email.go:planEmailTemplate#2": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_send_email_template__go",
+      "sites": [
+        "consumer-plan-consumer_email-553"
+      ]
+    },
+    "BE_GO/internal/service/consumer_email.go:planEmailTemplate#3": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_send_email_template__go",
+      "sites": [
+        "consumer-plan-consumer_email-556"
+      ]
+    },
+    "BE_GO/internal/service/consumer_email.go:planEmailTemplate#4": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_send_email_template__go",
+      "sites": [
+        "consumer-plan-consumer_email-563"
+      ]
+    },
+    "BE_GO/internal/service/consumer_email.go:planEmailTemplate#5": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_send_email_template__go",
+      "sites": [
+        "consumer-plan-consumer_email-578"
+      ]
+    },
+    "BE_GO/internal/service/consumer_email.go:planEmailTemplate#6": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_send_email_template__go",
+      "sites": [
+        "consumer-plan-consumer_email-582"
+      ]
+    },
+    "BE_GO/internal/service/consumer_email.go:planEmailTemplate#7": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_send_email_template__go",
+      "sites": [
+        "consumer-plan-consumer_email-587"
+      ]
+    },
+    "BE_GO/internal/service/consumer_email.go:planEmailTemplate#8": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_send_email_template__go",
+      "sites": [
+        "consumer-plan-consumer_email-596"
+      ]
+    },
+    "BE_GO/internal/service/send_mail_async.go:bind#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_core_tasks_send_mail_async__go",
+      "sites": [
+        "consumer-plan-send_mail_async-146"
+      ]
+    },
+    "BE_GO/internal/service/send_mail_async.go:bind#2": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_core_tasks_send_mail_async__go",
+      "sites": [
+        "consumer-plan-send_mail_async-155"
+      ]
+    },
+    "BE_GO/internal/service/send_mail_async.go:bind#3": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_core_tasks_send_mail_async__go",
+      "sites": [
+        "consumer-plan-send_mail_async-158"
+      ]
+    },
+    "BE_GO/internal/service/send_mail_async.go:bind#4": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_core_tasks_send_mail_async__go",
+      "sites": [
+        "consumer-plan-send_mail_async-164"
+      ]
+    },
+    "BE_GO/internal/service/send_mail_async.go:plan#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_core_tasks_send_mail_async__go",
+      "sites": [
+        "consumer-plan-send_mail_async-187"
+      ]
+    },
+    "BE_GO/internal/service/send_mail_async.go:plan#2": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_core_tasks_send_mail_async__go",
+      "sites": [
+        "consumer-plan-send_mail_async-194"
+      ]
+    },
+    "BE_GO/internal/service/send_mail_async.go:plan#3": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_core_tasks_send_mail_async__go",
+      "sites": [
+        "consumer-plan-send_mail_async-197"
+      ]
+    },
+    "BE_GO/internal/service/send_mail_async.go:plan#4": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_core_tasks_send_mail_async__go",
+      "sites": [
+        "consumer-plan-send_mail_async-201"
+      ]
+    },
+    "BE_GO/internal/service/send_mail_async.go:plan#5": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_core_tasks_send_mail_async__go",
+      "sites": [
+        "consumer-plan-send_mail_async-208"
+      ]
+    },
+    "BE_GO/internal/service/send_mail_async.go:plan#6": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_core_tasks_send_mail_async__go",
+      "sites": [
+        "consumer-plan-send_mail_async-212"
+      ]
+    },
+    "BE_GO/internal/service/send_mail_async.go:plan#7": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_core_tasks_send_mail_async__go",
+      "sites": [
+        "consumer-plan-send_mail_async-216"
+      ]
+    },
+    "BE_GO/internal/service/send_mail_async.go:plan#8": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_core_tasks_send_mail_async__go",
+      "sites": [
+        "consumer-plan-send_mail_async-221"
+      ]
+    },
+    "BE_GO/internal/service/send_mail_async.go:plan#9": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_core_tasks_send_mail_async__go",
+      "sites": [
+        "consumer-plan-send_mail_async-232"
+      ]
+    },
+    "BE_GO/internal/service/send_mail_async.go:plan#10": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_core_tasks_send_mail_async__go",
+      "sites": [
+        "consumer-plan-send_mail_async-237"
+      ]
+    },
+    "BE_GO/internal/service/send_mail_async.go:plan#11": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_core_tasks_send_mail_async__go",
+      "sites": [
+        "consumer-plan-send_mail_async-254"
+      ]
+    },
+    "BE_GO/internal/service/send_mail_async.go:plan#12": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_core_tasks_send_mail_async__go",
+      "sites": []
+    },
+    "BE_GO/internal/service/send_mail_async.go:plan#13": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_core_tasks_send_mail_async__go",
+      "sites": [
+        "consumer-plan-send_mail_async-283"
+      ]
+    },
+    "BE_GO/internal/service/send_mail_async.go:plan#14": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_core_tasks_send_mail_async__go",
+      "sites": [
+        "consumer-plan-send_mail_async-291"
+      ]
+    },
+    "BE_GO/internal/service/send_mail_async.go:planSource#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_core_tasks_send_mail_async__go",
+      "sites": [
+        "consumer-plan-send_mail_async-321"
+      ]
+    },
+    "BE_GO/internal/service/send_mail_async.go:planSource#2": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_core_tasks_send_mail_async__go",
+      "sites": [
+        "consumer-plan-send_mail_async-326"
+      ]
+    },
+    "BE_GO/internal/service/send_mail_async.go:planSource#3": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_core_tasks_send_mail_async__go",
+      "sites": [
+        "consumer-plan-send_mail_async-343"
+      ]
+    },
+    "BE_GO/internal/service/send_mail_async.go:planSource#4": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_core_tasks_send_mail_async__go",
+      "sites": [
+        "consumer-plan-send_mail_async-351"
+      ]
+    },
+    "BE_GO/internal/service/send_mail_async.go:planSource#5": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_core_tasks_send_mail_async__go",
+      "sites": [
+        "consumer-plan-send_mail_async-357"
+      ]
+    },
+    "BE_GO/internal/service/send_mail_async.go:planSource#6": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_core_tasks_send_mail_async__go",
+      "sites": [
+        "consumer-plan-send_mail_async-365"
+      ]
+    },
+    "BE_GO/internal/service/send_mail_async.go:planSource#7": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_core_tasks_send_mail_async__go",
+      "sites": [
+        "consumer-plan-send_mail_async-375"
+      ]
+    },
+    "BE_GO/internal/service/send_mail_async.go:planSource#8": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_core_tasks_send_mail_async__go",
+      "sites": [
+        "consumer-plan-send_mail_async-378"
+      ]
     }
   },
   "handback_reasons": {
@@ -68,7 +426,9 @@
     "consumer-handoff-queue",
     "consumer-handoff-undecodable",
     "consumer-handoff-unregistered",
-    "consumer-handoff-options"
+    "consumer-handoff-options",
+    "consumer-plan-payment_misc-794",
+    "consumer-plan-in-process-payment-fee-mail"
   ],
   "legacy_names": {
     "auto_move_users_to_base_plan": {
@@ -285,6 +645,46 @@
     },
     "send_user_partial_registration_email": {
       "family": "certificate_emails",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "core.tasks.send_mail_async": {
+      "family": "email",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "send_email_text": {
+      "family": "email",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "send_email_template": {
+      "family": "email",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "send_email_html": {
+      "family": "email",
       "rate_limit": null,
       "go_rate_limit": null,
       "time_limits": [

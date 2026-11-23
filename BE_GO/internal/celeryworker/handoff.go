@@ -22,6 +22,7 @@ type BrokerHandoff struct {
 	Interval          time.Duration
 	id                string
 	acknowledged      string
+	nextSMTPRecovery  time.Time
 	mu                sync.Mutex
 	active, reserving bool
 }
@@ -31,6 +32,10 @@ func (h *BrokerHandoff) heartbeat(ctx context.Context) {
 	var op sql.NullString
 	err := h.DB.QueryRowContext(ctx, `SELECT runtime, admission, operation_id FROM
  public.assozeta_handoff_heartbeat($1,'go','broker')`, h.id).Scan(&owner, &admission, &op)
+	if now := time.Now(); err == nil && owner == "go" && admission == "open" && !now.Before(h.nextSMTPRecovery) {
+		h.nextSMTPRecovery = now.Add(time.Second)
+		h.recoverSMTP(ctx)
+	}
 	h.mu.Lock()
 	defer h.mu.Unlock()
 	h.active = err == nil && owner == "go" && admission == "open"
@@ -41,6 +46,26 @@ func (h *BrokerHandoff) heartbeat(ctx context.Context) {
 			handoff.Barrier("freeze:acknowledged", h.id)
 		}
 	}
+}
+
+func (h *BrokerHandoff) recoverSMTP(ctx context.Context) {
+	// Early-acked SMTP tasks can lose their broker delivery before storing an
+	// outcome. The expired lease and unresolved intent suffice to block them.
+	_, _ = h.DB.ExecContext(ctx, `WITH owner AS MATERIALIZED (
+    SELECT generation FROM public.assozeta_go_job_ownership
+    WHERE singleton=1 AND runtime='go' AND admission='open' FOR SHARE
+), expired AS MATERIALIZED (
+    SELECT a.attempt_id FROM owner o
+    JOIN public.assozeta_handoff_work w ON w.owner_runtime='go' AND w.owner_generation=o.generation
+        AND w.state='running' AND w.transport='broker'
+    JOIN public.assozeta_handoff_attempts a ON a.task_id=w.task_id AND a.runtime=w.owner_runtime
+        AND a.generation=w.owner_generation
+    WHERE a.outcome='running' AND a.lease_until<=clock_timestamp()
+      AND EXISTS (SELECT 1 FROM public.assozeta_handoff_effects e
+                  WHERE e.attempt_id=a.attempt_id AND e.kind='smtp' AND e.state='intent')
+    ORDER BY a.lease_until LIMIT 100 FOR UPDATE OF a SKIP LOCKED
+)
+SELECT public.assozeta_handoff_finish(attempt_id,'released') FROM expired`)
 }
 
 func (h *BrokerHandoff) start(ctx context.Context) {

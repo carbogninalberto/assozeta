@@ -4820,8 +4820,7 @@
         "go": {
           "runtime": "go",
           "component": "worker-go (/app/celery-consumer)",
-          "status": "planned",
-          "phase": 4
+          "status": "present"
         }
       },
       "refs": [
@@ -6087,8 +6086,7 @@
         "go": {
           "runtime": "go",
           "component": "worker-go (/app/celery-consumer)",
-          "status": "planned",
-          "phase": 4
+          "status": "present"
         }
       },
       "refs": [
@@ -6102,6 +6100,7 @@
       ],
       "task": {
         "producers": [
+          "go:BE_GO/internal/service/consumer_email.go:SendMailAsync.PlanEmailHTMLInProcess:producer.Publish",
           "go:BE_GO/internal/service/workflow_tasks.go:WorkflowTasks.run:s.publisher.Publish",
           "py:BE/application/tasks.py:workflow_block_execute:app.send_task",
           "BE/application/tasks.py:send_reminders invokes the task synchronously for eligible recipients."
@@ -6144,8 +6143,7 @@
         "go": {
           "runtime": "go",
           "component": "worker-go (/app/celery-consumer)",
-          "status": "planned",
-          "phase": 4
+          "status": "present"
         }
       },
       "refs": [
@@ -6203,8 +6201,7 @@
         "go": {
           "runtime": "go",
           "component": "worker-go (/app/celery-consumer)",
-          "status": "planned",
-          "phase": 4
+          "status": "present"
         }
       },
       "refs": [
@@ -7395,9 +7392,8 @@
         },
         "go": {
           "runtime": "go",
-          "component": "api-go (eager payment mail)",
-          "status": "planned",
-          "phase": 4
+          "component": "api-go to worker-go",
+          "status": "present"
         }
       },
       "refs": [
@@ -7406,7 +7402,7 @@
         "BE_GO/internal/service/payment_misc.go:792"
       ],
       "notes": [
-        "The timer is created by the API on the fee-assignment path. Unsupported configured mail shapes can fail in the planner before the timer starts."
+        "The Go API commits the fee operation and publishes configured HTML delivery as a portable task."
       ]
     },
     {
@@ -7426,8 +7422,7 @@
         "go": {
           "runtime": "go",
           "component": "worker-go (/app/celery-consumer)",
-          "status": "planned",
-          "phase": 4
+          "status": "present"
         }
       },
       "refs": [
@@ -7436,7 +7431,7 @@
         "BE_GO/internal/service/consumer_email.go:470"
       ],
       "notes": [
-        "The Go timer is reached through the opt-in HTML task, which can hand back before choosing the delay branch."
+        "The Go consumer keeps the attempt active through delayed HTML email delivery."
       ]
     },
     {
@@ -7638,6 +7633,7 @@
       "id": "publisher:api-email",
       "kind": "publisher",
       "items": [
+        "go:BE_GO/internal/service/consumer_email.go:SendMailAsync.PlanEmailHTMLInProcess:producer.Publish",
         "go:BE_GO/internal/service/communications_send_email.go:CommunicationSendEmail.sendEmail:s.publisher.Publish",
         "go:BE_GO/internal/service/document_render.go:DocumentRender.invoiceJob:s.publisher.Publish",
         "go:BE_GO/internal/service/email_render_routes.go:EmailRenderRoutes.sendMail:s.publisher.Publish",
@@ -7673,8 +7669,7 @@
         "go": {
           "runtime": "go",
           "component": "api-go",
-          "status": "planned",
-          "phase": 4
+          "status": "present"
         }
       },
       "refs": [
@@ -7697,9 +7692,9 @@
         "BE_GO/internal/service/subscription_transfer.go"
       ],
       "notes": [
-        "Published task or transport: core.tasks.send_mail_async, send_email_template, send_email_text.",
-        "Without a legacy per-name route, the existing producer defaults to the Django queue.",
-        "Go admission is in place (Phase 3). Routing a Go-owned publication to the Go consumer instead of the celery fallback (routes.go DefaultQueue) is Phase 4."
+        "Published tasks: core.tasks.send_mail_async, send_email_template, send_email_text, send_email_html.",
+        "Instances without a ledger keep their configured legacy task routes.",
+        "With the handoff ledger, Go-owned email publications route to the Go consumer."
       ]
     },
     {
@@ -8085,8 +8080,7 @@
         "go": {
           "runtime": "go",
           "component": "Go durable worker and Celery consumer",
-          "status": "planned",
-          "phase": 4
+          "status": "present"
         }
       },
       "refs": [

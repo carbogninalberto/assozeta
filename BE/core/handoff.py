@@ -414,6 +414,25 @@ def record_revoked(request=None, expired=False, **kwargs):
         RETURNING w.task_id""", ('expired' if expired else 'revoked', request.id))
 
 
+def _recover_smtp():
+    # An early acknowledgement can leave only an expired lease and SMTP intent.
+    _fetch("""WITH owner AS MATERIALIZED (
+        SELECT generation FROM public.assozeta_go_job_ownership
+        WHERE singleton=1 AND runtime='django' AND admission='open' FOR SHARE
+    ), expired AS MATERIALIZED (
+        SELECT a.attempt_id FROM owner o
+        JOIN public.assozeta_handoff_work w ON w.owner_runtime='django' AND w.owner_generation=o.generation
+            AND w.state='running' AND w.transport='broker'
+        JOIN public.assozeta_handoff_attempts a ON a.task_id=w.task_id AND a.runtime=w.owner_runtime
+            AND a.generation=w.owner_generation
+        WHERE a.outcome='running' AND a.lease_until<=clock_timestamp()
+          AND EXISTS (SELECT 1 FROM public.assozeta_handoff_effects e
+                      WHERE e.attempt_id=a.attempt_id AND e.kind='smtp' AND e.state='intent')
+        ORDER BY a.lease_until LIMIT 100 FOR UPDATE OF a SKIP LOCKED
+    )
+    SELECT count(public.assozeta_handoff_finish(attempt_id,'released')) FROM expired""")
+
+
 def start_heartbeat(sender=None, **kwargs):
     global _managed_worker
     from threading import Event, Thread
@@ -426,6 +445,7 @@ def start_heartbeat(sender=None, **kwargs):
     task_received.connect(_stamp_execution)
     _managed_worker = True
     next_renewal = time.monotonic() + _renew_interval
+    next_smtp_recovery = 0
     queues = tuple(sender.task_consumer.queues)
     interval = getattr(settings, 'ASSOZETA_HANDOFF_HEARTBEAT_SECONDS', 1.0)
     acknowledged = None
@@ -441,7 +461,7 @@ def start_heartbeat(sender=None, **kwargs):
                 sender.cancel_task_queue(queue.name)
 
     def synchronize(in_worker_thread):
-        nonlocal consuming, acknowledged, pending, next_renewal
+        nonlocal consuming, acknowledged, pending, next_renewal, next_smtp_recovery
         runtime, _, admission, operation = _fetch(
             "SELECT * FROM public.assozeta_handoff_heartbeat(%s,'django','broker')", (_consumer_id,),
         )
@@ -453,6 +473,9 @@ def start_heartbeat(sender=None, **kwargs):
             if _parent_pulse is not None:
                 _parent_pulse.value = time.monotonic()
         active = runtime == 'django' and admission == 'open'
+        if active and time.monotonic() >= next_smtp_recovery:
+            next_smtp_recovery = time.monotonic() + 1
+            _recover_smtp()
         if pending is not None:
             target, finished, errors = pending
             if not finished.is_set():

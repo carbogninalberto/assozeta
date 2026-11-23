@@ -195,6 +195,15 @@ type Producer struct {
 	routes  map[string]string
 }
 
+func (p *Producer) HandoffLedgerEnabled(ctx context.Context) (bool, error) {
+	if broker, ok := p.broker.(interface {
+		HandoffLedgerEnabled(context.Context) (bool, error)
+	}); ok {
+		return broker.HandoffLedgerEnabled(ctx)
+	}
+	return false, nil
+}
+
 // NewProducer returns a producer for broker with the process's origin and
 // reply_to values.
 func NewProducer(broker Broker) *Producer {

@@ -19,10 +19,18 @@ func (b AdmittingBroker) Push(ctx context.Context, queue string, raw []byte) err
 	return b.PublishAttempt(ctx, queue, raw, "")
 }
 
-func (b AdmittingBroker) PublishAttempt(ctx context.Context, queue string, raw []byte, attempt string) error {
+func (b AdmittingBroker) HandoffLedgerEnabled(ctx context.Context) (bool, error) {
 	var installed bool
 	if err := b.DB.QueryRowContext(ctx, "SELECT to_regclass('public.assozeta_handoff_work') IS NOT NULL").Scan(&installed); err != nil {
-		return errors.New("cannot check task admission")
+		return false, errors.New("cannot check task admission")
+	}
+	return installed, nil
+}
+
+func (b AdmittingBroker) PublishAttempt(ctx context.Context, queue string, raw []byte, attempt string) error {
+	installed, err := b.HandoffLedgerEnabled(ctx)
+	if err != nil {
+		return err
 	}
 	if !installed {
 		return b.Redis.Push(ctx, queue, raw)
@@ -41,6 +49,13 @@ func (b AdmittingBroker) PublishAttempt(ctx context.Context, queue string, raw [
 		return errors.New("invalid task envelope")
 	}
 	m := envelope.Headers
+	if queue == DefaultQueue && ownedEmailTask(m.Task) {
+		routed, err := routeEnvelope(raw, GoQueue)
+		if err != nil {
+			return err
+		}
+		queue, raw = GoQueue, routed
+	}
 	tx, err := b.DB.BeginTx(ctx, nil)
 	if err != nil {
 		return err

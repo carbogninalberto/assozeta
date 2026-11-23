@@ -141,7 +141,7 @@ func stringList(value any) ([]string, bool) {
 // bind applies the signature send_mail_async(self, subject, message,
 // from_email, recipient_list, sport_association_id=None, **kwargs) and
 // custom_send_mail's keyword parameters; anything else is handed off.
-func (s *SendMailAsync) bind(request *celeryworker.Request) (map[string]any, error) {
+func (s *SendMailAsync) bind(request *celeryworker.Request, ledger bool) (map[string]any, error) {
 	if len(request.Args) > len(sendMailAsyncPositional) {
 		return nil, celeryworker.ErrHandoff
 	}
@@ -149,7 +149,8 @@ func (s *SendMailAsync) bind(request *celeryworker.Request) (map[string]any, err
 	for i, value := range request.Args {
 		values[sendMailAsyncPositional[i]] = value
 	}
-	allowed := map[string]bool{"fail_silently": true, "html_message": true, "reply_to": true, "skip_association_check": true}
+	allowed := map[string]bool{"fail_silently": true, "html_message": true, "reply_to": true, "skip_association_check": true,
+		"auth_user": ledger, "auth_password": ledger}
 	for _, item := range request.Kwargs {
 		if _, duplicate := values[item.Key]; duplicate {
 			return nil, celeryworker.ErrHandoff
@@ -177,7 +178,7 @@ func containsString(list []string, value string) bool {
 }
 
 func (s *SendMailAsync) plan(ctx context.Context, request *celeryworker.Request) error {
-	values, err := s.bind(request)
+	values, err := s.bind(request, celeryworker.HasBrokerAttempt(ctx))
 	if err != nil {
 		return err
 	}
@@ -274,6 +275,18 @@ func (s *SendMailAsync) plan(ctx context.Context, request *celeryworker.Request)
 	}
 	if err = s.planSource(ctx, call); err != nil {
 		return err
+	}
+	if !call.source.instance {
+		for _, override := range []struct {
+			name string
+			dest *string
+		}{{"auth_user", &call.source.username}, {"auth_password", &call.source.password}} {
+			if value := values[override.name]; value != nil {
+				if *override.dest, ok = value.(string); !ok {
+					return celeryworker.ErrHandoff
+				}
+			}
+		}
 	}
 	if _, err = smtpsend.DjangoEnvelope(call.envelopeFrom()); err != nil {
 		if errors.Is(err, refusal.ErrAppState) {

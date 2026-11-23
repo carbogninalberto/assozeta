@@ -12,7 +12,6 @@ import (
 	"time"
 	"unicode"
 
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/celeryworker"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/emailrender"
@@ -791,11 +790,6 @@ func (s *PaymentMisc) Apply(ctx context.Context, identity domain.ResolvedIdentit
 			}
 			mail.start, err = s.configured.PlanEmailHTMLInProcess(ctx, association, mail.message, mail.subject, []any{mail.recipient},
 				[]any{optionalValue(run.association.OwnerEmail)})
-			if errors.Is(err, celeryworker.ErrHandoff) {
-				// The planner hands off a message outside smtpsend's subset; it
-				// wraps that refusal, which is what this request answers.
-				return err
-			}
 			if err != nil {
 				return err
 			}

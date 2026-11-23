@@ -1,6 +1,9 @@
 package celery
 
-import "strings"
+import (
+	"errors"
+	"strings"
+)
 
 // GoQueue is the dedicated queue of the Go consumer (BE/core/task_routing.py
 // GO_TASK_QUEUE).
@@ -41,4 +44,30 @@ func (p *Producer) queueFor(task Task) string {
 		return queue
 	}
 	return DefaultQueue
+}
+
+func ownedEmailTask(name string) bool {
+	switch name {
+	case "core.tasks.send_mail_async", "send_email_text", "send_email_template", "send_email_html":
+		return true
+	default:
+		return false
+	}
+}
+
+func routeEnvelope(raw []byte, queue string) ([]byte, error) {
+	value, err := DecodeJSON(raw)
+	if err != nil {
+		return nil, errors.New("invalid task envelope")
+	}
+	envelope, _ := value.(Dict)
+	properties, _ := envelope.Get("properties")
+	fields, _ := properties.(Dict)
+	delivery, _ := fields.Get("delivery_info")
+	info, ok := delivery.(Dict)
+	if !ok {
+		return nil, errors.New("invalid task delivery info")
+	}
+	fields.Set("delivery_info", info.Set("routing_key", queue))
+	return EncodeJSON(envelope)
 }
