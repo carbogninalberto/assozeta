@@ -40054,7 +40054,7 @@
       "declaration": {
         "call": "PeriodicTask.objects.filter(enabled=True)"
       },
-      "status": "characterized",
+      "status": "verified",
       "go": [
         "BE_GO/cmd/scheduler/authority.go",
         "BE_GO/internal/repository/occurrence.go"
@@ -40066,17 +40066,26 @@
         "request": null,
         "response": null,
         "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "authentication": "None: runs in the Celery Beat process (InstanceScheduler with ScheduleAuthority) on the database connection; no user or token.",
+        "permissions": "Only the leaseholder publishes: tick() works only while assozeta_scheduler_acquire returned acquired/renewed for this holder, and every publication transaction first passes assozeta_scheduler_fence for its generation (AZF02 otherwise).",
+        "resource_scope": "Every enabled django_celery_beat PeriodicTask of the installation with its interval, crontab, clocked or solar schedule.",
+        "side_effects": "None: a read that selects the candidate definitions for the due check; publication happens per row in publish().",
+        "transaction": "Autocommit read iterated in id order in chunks of 128 after flushing pushed-but-unacknowledged occurrences; each due row is then rechecked under a lock.",
         "execution_owner": "django"
       },
       "tests": [
         "TESTS/handoff/test_p4_scheduling.py"
       ],
-      "evidence": [],
+      "evidence": [
+        {
+          "command": "python -m TESTS.handoff.p4_driver --suite sched --report quality-reports/go-migration/schedule-authority-p4-close/results.json",
+          "revision": "5ff8334142edddd51877abdb2c94966979020be4",
+          "result": "passed",
+          "artifact": "quality-reports/go-migration/ledger-verified-p4-close/schedule-authority/1-results.json",
+          "receipt_sha256": "24743a7946ad469ba36d448b2beba8382d45698f0c549fcf25a0e335a821d8c3",
+          "scope": "schedule-authority harness: success=True."
+        }
+      ],
       "notes": [
         "Leased occurrence publication reads the effective definition, then locks and rechecks it before advancing the cursor."
       ]
@@ -40094,7 +40103,7 @@
       "declaration": {
         "call": "PeriodicTask.objects.filter(pk=pk)"
       },
-      "status": "characterized",
+      "status": "verified",
       "go": [
         "BE_GO/cmd/scheduler/authority.go",
         "BE_GO/internal/repository/occurrence.go"
@@ -40106,17 +40115,26 @@
         "request": null,
         "response": null,
         "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "authentication": "None: runs in the Celery Beat process (InstanceScheduler with ScheduleAuthority) on the database connection; no user or token.",
+        "permissions": "Only the leaseholder publishes: tick() works only while assozeta_scheduler_acquire returned acquired/renewed for this holder, and every publication transaction first passes assozeta_scheduler_fence for its generation (AZF02 otherwise).",
+        "resource_scope": "The one PeriodicTask row (pk) just published.",
+        "side_effects": "Sets last_run_at=now, total_run_count+1, enabled=not one_off and date_changed=now, as django_celery_beat does after a run; the matching assozeta_go_periodic_occurrences row and the admitted ledger work row are written in the same transaction.",
+        "transaction": "Same fenced publication transaction as the occurrence insert and the task admission; the Redis push happens later in flush() and is idempotent through a marker key.",
         "execution_owner": "django"
       },
       "tests": [
         "TESTS/handoff/test_p4_scheduling.py"
       ],
-      "evidence": [],
+      "evidence": [
+        {
+          "command": "python -m TESTS.handoff.p4_driver --suite sched --report quality-reports/go-migration/schedule-authority-p4-close/results.json",
+          "revision": "5ff8334142edddd51877abdb2c94966979020be4",
+          "result": "passed",
+          "artifact": "quality-reports/go-migration/ledger-verified-p4-close/schedule-authority/1-results.json",
+          "receipt_sha256": "24743a7946ad469ba36d448b2beba8382d45698f0c549fcf25a0e335a821d8c3",
+          "scope": "schedule-authority harness: success=True."
+        }
+      ],
       "notes": [
         "Leased occurrence publication reads the effective definition, then locks and rechecks it before advancing the cursor."
       ]
@@ -40134,7 +40152,7 @@
       "declaration": {
         "call": "PeriodicTask.objects.filter(enabled=True).select_related('interval', 'crontab', 'clocked', 'solar')"
       },
-      "status": "characterized",
+      "status": "verified",
       "go": [
         "BE_GO/cmd/scheduler/authority.go",
         "BE_GO/internal/repository/occurrence.go"
@@ -40146,17 +40164,26 @@
         "request": null,
         "response": null,
         "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "authentication": "None: runs in the Celery Beat process (InstanceScheduler with ScheduleAuthority) on the database connection; no user or token.",
+        "permissions": "Only the leaseholder publishes: tick() works only while assozeta_scheduler_acquire returned acquired/renewed for this holder, and every publication transaction first passes assozeta_scheduler_fence for its generation (AZF02 otherwise).",
+        "resource_scope": "Every enabled django_celery_beat PeriodicTask of the installation with its interval, crontab, clocked or solar schedule.",
+        "side_effects": "None: a read that selects the candidate definitions for the due check; publication happens per row in publish().",
+        "transaction": "Autocommit read iterated in id order in chunks of 128 after flushing pushed-but-unacknowledged occurrences; each due row is then rechecked under a lock.",
         "execution_owner": "django"
       },
       "tests": [
         "TESTS/handoff/test_p4_scheduling.py"
       ],
-      "evidence": [],
+      "evidence": [
+        {
+          "command": "python -m TESTS.handoff.p4_driver --suite sched --report quality-reports/go-migration/schedule-authority-p4-close/results.json",
+          "revision": "5ff8334142edddd51877abdb2c94966979020be4",
+          "result": "passed",
+          "artifact": "quality-reports/go-migration/ledger-verified-p4-close/schedule-authority/1-results.json",
+          "receipt_sha256": "24743a7946ad469ba36d448b2beba8382d45698f0c549fcf25a0e335a821d8c3",
+          "scope": "schedule-authority harness: success=True."
+        }
+      ],
       "notes": [
         "Leased occurrence publication reads the effective definition, then locks and rechecks it before advancing the cursor."
       ]
@@ -40174,7 +40201,7 @@
       "declaration": {
         "call": "PeriodicTask.objects.filter(pk=pk).update(last_run_at=now, total_run_count=row.total_run_count + 1, enabled=not row.one_off, date_changed=now)"
       },
-      "status": "characterized",
+      "status": "verified",
       "go": [
         "BE_GO/cmd/scheduler/authority.go",
         "BE_GO/internal/repository/occurrence.go"
@@ -40186,17 +40213,26 @@
         "request": null,
         "response": null,
         "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "authentication": "None: runs in the Celery Beat process (InstanceScheduler with ScheduleAuthority) on the database connection; no user or token.",
+        "permissions": "Only the leaseholder publishes: tick() works only while assozeta_scheduler_acquire returned acquired/renewed for this holder, and every publication transaction first passes assozeta_scheduler_fence for its generation (AZF02 otherwise).",
+        "resource_scope": "The one PeriodicTask row (pk) just published.",
+        "side_effects": "Sets last_run_at=now, total_run_count+1, enabled=not one_off and date_changed=now, as django_celery_beat does after a run; the matching assozeta_go_periodic_occurrences row and the admitted ledger work row are written in the same transaction.",
+        "transaction": "Same fenced publication transaction as the occurrence insert and the task admission; the Redis push happens later in flush() and is idempotent through a marker key.",
         "execution_owner": "django"
       },
       "tests": [
         "TESTS/handoff/test_p4_scheduling.py"
       ],
-      "evidence": [],
+      "evidence": [
+        {
+          "command": "python -m TESTS.handoff.p4_driver --suite sched --report quality-reports/go-migration/schedule-authority-p4-close/results.json",
+          "revision": "5ff8334142edddd51877abdb2c94966979020be4",
+          "result": "passed",
+          "artifact": "quality-reports/go-migration/ledger-verified-p4-close/schedule-authority/1-results.json",
+          "receipt_sha256": "24743a7946ad469ba36d448b2beba8382d45698f0c549fcf25a0e335a821d8c3",
+          "scope": "schedule-authority harness: success=True."
+        }
+      ],
       "notes": [
         "Leased occurrence publication reads the effective definition, then locks and rechecks it before advancing the cursor."
       ]
@@ -40214,7 +40250,7 @@
       "declaration": {
         "call": "PeriodicTask.objects.select_for_update()"
       },
-      "status": "characterized",
+      "status": "verified",
       "go": [
         "BE_GO/cmd/scheduler/authority.go",
         "BE_GO/internal/repository/occurrence.go"
@@ -40226,17 +40262,26 @@
         "request": null,
         "response": null,
         "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "authentication": "None: runs in the Celery Beat process (InstanceScheduler with ScheduleAuthority) on the database connection; no user or token.",
+        "permissions": "Only the leaseholder publishes: tick() works only while assozeta_scheduler_acquire returned acquired/renewed for this holder, and every publication transaction first passes assozeta_scheduler_fence for its generation (AZF02 otherwise).",
+        "resource_scope": "The one PeriodicTask row (pk) being published and, next, its timing definition row.",
+        "side_effects": "Row locks only (SELECT ... FOR UPDATE on the definition and its schedule) so an admin edit cannot interleave with the due recheck.",
+        "transaction": "Inside the fenced publication transaction (transaction.atomic): fence, lock, recheck due, admit the task, insert the occurrence, advance the cursor, commit together.",
         "execution_owner": "django"
       },
       "tests": [
         "TESTS/handoff/test_p4_scheduling.py"
       ],
-      "evidence": [],
+      "evidence": [
+        {
+          "command": "python -m TESTS.handoff.p4_driver --suite sched --report quality-reports/go-migration/schedule-authority-p4-close/results.json",
+          "revision": "5ff8334142edddd51877abdb2c94966979020be4",
+          "result": "passed",
+          "artifact": "quality-reports/go-migration/ledger-verified-p4-close/schedule-authority/1-results.json",
+          "receipt_sha256": "24743a7946ad469ba36d448b2beba8382d45698f0c549fcf25a0e335a821d8c3",
+          "scope": "schedule-authority harness: success=True."
+        }
+      ],
       "notes": [
         "Leased occurrence publication reads the effective definition, then locks and rechecks it before advancing the cursor."
       ]
@@ -40254,7 +40299,7 @@
       "declaration": {
         "call": "PeriodicTask.objects.select_for_update().filter(pk=pk)"
       },
-      "status": "characterized",
+      "status": "verified",
       "go": [
         "BE_GO/cmd/scheduler/authority.go",
         "BE_GO/internal/repository/occurrence.go"
@@ -40266,17 +40311,26 @@
         "request": null,
         "response": null,
         "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "authentication": "None: runs in the Celery Beat process (InstanceScheduler with ScheduleAuthority) on the database connection; no user or token.",
+        "permissions": "Only the leaseholder publishes: tick() works only while assozeta_scheduler_acquire returned acquired/renewed for this holder, and every publication transaction first passes assozeta_scheduler_fence for its generation (AZF02 otherwise).",
+        "resource_scope": "The one PeriodicTask row (pk) being published and, next, its timing definition row.",
+        "side_effects": "Row locks only (SELECT ... FOR UPDATE on the definition and its schedule) so an admin edit cannot interleave with the due recheck.",
+        "transaction": "Inside the fenced publication transaction (transaction.atomic): fence, lock, recheck due, admit the task, insert the occurrence, advance the cursor, commit together.",
         "execution_owner": "django"
       },
       "tests": [
         "TESTS/handoff/test_p4_scheduling.py"
       ],
-      "evidence": [],
+      "evidence": [
+        {
+          "command": "python -m TESTS.handoff.p4_driver --suite sched --report quality-reports/go-migration/schedule-authority-p4-close/results.json",
+          "revision": "5ff8334142edddd51877abdb2c94966979020be4",
+          "result": "passed",
+          "artifact": "quality-reports/go-migration/ledger-verified-p4-close/schedule-authority/1-results.json",
+          "receipt_sha256": "24743a7946ad469ba36d448b2beba8382d45698f0c549fcf25a0e335a821d8c3",
+          "scope": "schedule-authority harness: success=True."
+        }
+      ],
       "notes": [
         "Leased occurrence publication reads the effective definition, then locks and rechecks it before advancing the cursor."
       ]
@@ -40294,7 +40348,7 @@
       "declaration": {
         "call": "PeriodicTask.objects.select_for_update().filter(pk=pk).first()"
       },
-      "status": "characterized",
+      "status": "verified",
       "go": [
         "BE_GO/cmd/scheduler/authority.go",
         "BE_GO/internal/repository/occurrence.go"
@@ -40306,17 +40360,26 @@
         "request": null,
         "response": null,
         "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "authentication": "None: runs in the Celery Beat process (InstanceScheduler with ScheduleAuthority) on the database connection; no user or token.",
+        "permissions": "Only the leaseholder publishes: tick() works only while assozeta_scheduler_acquire returned acquired/renewed for this holder, and every publication transaction first passes assozeta_scheduler_fence for its generation (AZF02 otherwise).",
+        "resource_scope": "The one PeriodicTask row (pk) being published and, next, its timing definition row.",
+        "side_effects": "Row locks only (SELECT ... FOR UPDATE on the definition and its schedule) so an admin edit cannot interleave with the due recheck.",
+        "transaction": "Inside the fenced publication transaction (transaction.atomic): fence, lock, recheck due, admit the task, insert the occurrence, advance the cursor, commit together.",
         "execution_owner": "django"
       },
       "tests": [
         "TESTS/handoff/test_p4_scheduling.py"
       ],
-      "evidence": [],
+      "evidence": [
+        {
+          "command": "python -m TESTS.handoff.p4_driver --suite sched --report quality-reports/go-migration/schedule-authority-p4-close/results.json",
+          "revision": "5ff8334142edddd51877abdb2c94966979020be4",
+          "result": "passed",
+          "artifact": "quality-reports/go-migration/ledger-verified-p4-close/schedule-authority/1-results.json",
+          "receipt_sha256": "24743a7946ad469ba36d448b2beba8382d45698f0c549fcf25a0e335a821d8c3",
+          "scope": "schedule-authority harness: success=True."
+        }
+      ],
       "notes": [
         "Leased occurrence publication reads the effective definition, then locks and rechecks it before advancing the cursor."
       ]
@@ -41951,7 +42014,7 @@
       "declaration": {
         "call": "before_task_publish.connect(stamp_published_task, weak=False)"
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/internal/celery/celery.go",
         "BE_GO/internal/celery/python.go"
@@ -41982,25 +42045,27 @@
       "evidence": [
         {
           "command": "python -m TESTS.adapters.go.celery_producer_golden",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "5ff8334142edddd51877abdb2c94966979020be4",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/ledger-verified-r8/celery-producer/1-kombu_messages.json",
-          "receipt_sha256": "0152a0a1411b95d3727260e1bc96ceaffae768deed1095227f49156c8d991d77",
-          "scope": "celery-producer harness: 11 cases captured."
+          "artifact": "quality-reports/go-migration/ledger-verified-p4-close/celery-producer/1-kombu_messages.json",
+          "receipt_sha256": "cc20c87e8b32e6bbd28b8369ca1f87b8c56701db63605e7c60bf4ae98208db6b",
+          "scope": "celery-producer harness: 13 cases captured."
         },
         {
           "command": "go test -count=1 -json ./internal/celery/ (in BE_GO)",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "5ff8334142edddd51877abdb2c94966979020be4",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/ledger-verified-r8/celery-producer/2-2.log",
-          "receipt_sha256": "495759ebf15874955f67637fb685ee8450bcbaeee7b95d679108cde66399c319",
-          "scope": "celery-producer harness: 25 tests passed, 0 failed."
+          "artifact": "quality-reports/go-migration/ledger-verified-p4-close/celery-producer/2-2.log",
+          "receipt_sha256": "41ab3454b1b04b269f86acfcac4c92bfe15ffeea2132a663a0d40b4ec6bf6d94",
+          "scope": "celery-producer harness: 30 tests passed, 0 failed."
         }
       ],
       "notes": [
         "Implementing: Producer.Publish (the only Go path that pushes Celery messages; every publishing service goes through celery.Publisher) stamps the header for every task via Encode. Byte parity with the real before_task_publish handler: TestEncodeMatchesKombu re-encodes kombu-captured payloads including the stamp (go test ./internal/celery passes at this revision); TestPublishStampsAndRetries pins one stamp across retries. family_harness.celery_published checks the stamp within the request window for every publishing family, and subscription-approve's GREEN runs a real Django worker that accepts the message and refuses it with StaleDataTask after a later restore. Go never republishes an existing message, so setdefault's keep-existing branch only applies to Django's own retries.",
         "Implementing evidence: docs/architecture/go-migration/celery-producer.md",
-        "Implementing evidence: docs/architecture/go-migration/subscription-approve.md"
+        "Implementing evidence: docs/architecture/go-migration/subscription-approve.md",
+        "Implementing evidence: passed (quality-reports/go-migration/ledger-verified-r8/celery-producer/1-kombu_messages.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/ledger-verified-r8/celery-producer/2-2.log)"
       ]
     },
     {

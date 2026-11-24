@@ -9198,64 +9198,7 @@
       ]
     }
   ],
-  "ledger_reconciliation": [
-    {
-      "ledger_id": "schedule_mutation:BE/instance/schedule_authority.py:PeriodicTask.objects.filter",
-      "status": "characterized",
-      "finding": "Phase 4 scheduling scenarios exercise the shared cursor. Exact revision verification belongs to the test author.",
-      "executable_gap": false,
-      "evidence_gap": true
-    },
-    {
-      "ledger_id": "schedule_mutation:BE/instance/schedule_authority.py:PeriodicTask.objects.filter#2",
-      "status": "characterized",
-      "finding": "Phase 4 scheduling scenarios exercise the shared cursor. Exact revision verification belongs to the test author.",
-      "executable_gap": false,
-      "evidence_gap": true
-    },
-    {
-      "ledger_id": "schedule_mutation:BE/instance/schedule_authority.py:PeriodicTask.objects.filter(enabled=True).select_related",
-      "status": "characterized",
-      "finding": "Phase 4 scheduling scenarios exercise the shared cursor. Exact revision verification belongs to the test author.",
-      "executable_gap": false,
-      "evidence_gap": true
-    },
-    {
-      "ledger_id": "schedule_mutation:BE/instance/schedule_authority.py:PeriodicTask.objects.filter(pk=pk).update",
-      "status": "characterized",
-      "finding": "Phase 4 scheduling scenarios exercise the shared cursor. Exact revision verification belongs to the test author.",
-      "executable_gap": false,
-      "evidence_gap": true
-    },
-    {
-      "ledger_id": "schedule_mutation:BE/instance/schedule_authority.py:PeriodicTask.objects.select_for_update",
-      "status": "characterized",
-      "finding": "Phase 4 scheduling scenarios exercise the shared cursor. Exact revision verification belongs to the test author.",
-      "executable_gap": false,
-      "evidence_gap": true
-    },
-    {
-      "ledger_id": "schedule_mutation:BE/instance/schedule_authority.py:PeriodicTask.objects.select_for_update().filter",
-      "status": "characterized",
-      "finding": "Phase 4 scheduling scenarios exercise the shared cursor. Exact revision verification belongs to the test author.",
-      "executable_gap": false,
-      "evidence_gap": true
-    },
-    {
-      "ledger_id": "schedule_mutation:BE/instance/schedule_authority.py:PeriodicTask.objects.select_for_update().filter(pk=pk).first",
-      "status": "characterized",
-      "finding": "Phase 4 scheduling scenarios exercise the shared cursor. Exact revision verification belongs to the test author.",
-      "executable_gap": false,
-      "evidence_gap": true
-    },
-    {
-      "ledger_id": "signal_connection:BE/instance/restore/task_base.py:before_task_publish.connect:stamp_published_task",
-      "status": "needs_review",
-      "finding": "Phase 3 wrapped CoordinatedTask.__call__ with the handoff claim; the publish stamp connection in the same file is unchanged. Re-verify the celery-producer component and promote.",
-      "executable_gap": false,
-      "evidence_gap": true
-    }
-  ],
+  "ledger_reconciliation": [],
   "django_handoff": [],
   "django_handoff_evidence": {
     "revision": "2284ed467908b5f90f6330fae4c18de3b275036f",
