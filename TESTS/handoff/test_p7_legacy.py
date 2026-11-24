@@ -156,7 +156,10 @@ class LegacyInstalled(p5.Installed):
         self.base = f'http://{self.host}:{self.port}'
 
     def install(self):
-        self.cli('configure', '--domain', f'http://{self.host}:{self.port}', '--version', SOURCE[1:])
+        # An address domain counts as public, which needs a contact email (as in the update smoke and the
+        # release rehearsal).
+        self.cli('configure', '--domain', f'http://{self.host}:{self.port}', '--email', 'owner-p7@example.invalid',
+                 '--version', SOURCE[1:])
         p5.STATE['secrets'] = sorted({value for key, value in self.env().items() if len(value) >= 16 and any(
             word in key for word in ('PASSWORD', 'SECRET', 'TOKEN', 'KEY'))} | {p5.OWNER_PASSWORD}, key=len, reverse=True)
         self.set_env(COMPOSE_PROJECT_NAME=self.project, HTTP_PORT=self.port, HTTPS_PORT=h.free_port())

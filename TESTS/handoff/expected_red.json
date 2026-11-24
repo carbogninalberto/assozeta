@@ -95,45 +95,13 @@
       ],
       "reason": "Phase 4 part D: instance.backups.notify_failures has no limits record; family 08 backup_notify is held: worker-go has no scoped credential for the update runner, and mounting updater_api would give the job worker the admin token (coordinator #594; proposal in work/t-p4/NOTES.md)"
     },
-    "TESTS.handoff.test_p5_installed.InstalledLanes.test_1_forward": {
-      "phase": 5,
-      "owner": "t-p5",
-      "reason": "Phase 5 part D: in run 45392002850 the browser switch succeeded but the status poll started after the browser step had already waited for completion, so it saw no maintenance window (fixed test-side: the browser's own cold-load check during readiness-down is the window evidence); the next installed run decides",
-      "signatures": [
-        "P5 contract red"
-      ]
-    },
-    "TESTS.handoff.test_p7_installed.ReleaseLanes.test_1_steady_state_observations_in_both_modes": {
-      "phase": 7,
-      "owner": "t-p7",
-      "reason": "part C (installed): in run 45392002850 the Go-mode database task was seeded as a Celery message on the Go queue, which the Go consumer blocks (Go runs it as a native durable job), so the gate saw unresolved_work (fixed test-side: a durable job in Go mode); the next installed run decides",
-      "signatures": [
-        "P7 contract red"
-      ]
-    },
-    "TESTS.handoff.test_p7_installed.ReleaseLanes.test_5_mutation_unresolved_task": {
-      "phase": 7,
-      "owner": "t-p7",
-      "reason": "part C (installed): the clean control failed: the Go-mode database task was seeded as a Celery message on the Go queue, which the Go consumer blocks (Go runs it as a native durable job), so the gate saw unresolved_work (fixed test-side: a durable job in Go mode); the next installed run decides",
-      "signatures": [
-        "P7 contract red"
-      ]
-    },
-    "TESTS.handoff.test_p7_installed.ReleaseLanes.test_7_mutation_forced_old_runtime_http_call": {
-      "phase": 7,
-      "owner": "t-p7",
-      "reason": "part C (installed): the forced call asked Django for /api/healthz, which its own port does not serve, so the wait timed out (fixed test-side: /healthz); the next installed run decides",
-      "signatures": [
-        "P7 contract red"
-      ]
-    },
     "TESTS.handoff.test_p7_legacy.LegacyMixedUpgrade.test_mixed_release_upgraded_into_go": {
       "phase": 7,
       "owner": "t-p7",
       "signatures": [
         "P7 contract red"
       ],
-      "reason": "part C2 (installed): in run 45384724020 the adoption itself succeeded in this mode; the bootstrapped CLI then failed its public readiness check because the fixture's APP_URL was localhost, which does not reach the host from inside the updater container, and the root-owned .env it left blocked cleanup (both fixed test-side: docker host domain as in the update smoke, .env reclaimed); the next installed run decides"
+      "reason": "part C2 (installed): in run 45402517048 v1.0.48's configure refused the Docker host address domain without --email (fixed test-side: a fixture contact email, as in the update smoke); in run 45384724020 the adoption itself succeeded in this mode and only the fixture's localhost domain failed the readiness check; the next installed run decides"
     },
     "TESTS.handoff.test_p7_legacy.LegacyMixedUpgrade.test_mixed_release_upgraded_into_django": {
       "phase": 7,
@@ -141,7 +109,7 @@
       "signatures": [
         "P7 contract red"
       ],
-      "reason": "part C2 (installed): in run 45384724020 the adoption itself succeeded in this mode; the bootstrapped CLI then failed its public readiness check because the fixture's APP_URL was localhost, which does not reach the host from inside the updater container, and the root-owned .env it left blocked cleanup (both fixed test-side: docker host domain as in the update smoke, .env reclaimed); the next installed run decides"
+      "reason": "part C2 (installed): in run 45402517048 v1.0.48's configure refused the Docker host address domain without --email (fixed test-side: a fixture contact email, as in the update smoke); in run 45384724020 the adoption itself succeeded in this mode and only the fixture's localhost domain failed the readiness check; the next installed run decides"
     }
   }
 }
