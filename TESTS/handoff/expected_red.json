@@ -11,14 +11,6 @@
       "signatures": [
         "Go request rejected: bin/assozeta runtime-switch go"
       ]
-    },
-    "TESTS.handoff.test_p5_installed.InstalledLanes.test_6_backup_notices_reach_only_the_job_workers": {
-      "phase": 4,
-      "owner": "t-p4",
-      "signatures": [
-        "backup notices:"
-      ],
-      "reason": "Phase 4 family 08 backup_notify: the scoped backup notices socket is not built yet (contract TESTS/handoff/test_p4_backup_notices.py; implementer brief work/i-p4c2/prompt-3.md): no installed notices volume or socket"
     }
   }
 }
