@@ -271,6 +271,7 @@ services:
       TMPDIR: /var/cache/assozeta-go-tasks
     volumes:
       - ${ASSOZETA_SELFHOST_DIR:-.}/.operations:/run/assozeta-operations
+      - updater_notices:/run/assozeta-updater-notices:ro
       # Anonymous disk-backed staging for export/import/restore archives.
       - /var/cache/assozeta-go-tasks
     depends_on: *go-data-dependencies
@@ -316,6 +317,11 @@ services:
 
   worker:
     <<: *backend
+    volumes:
+      - ${ASSOZETA_SELFHOST_DIR:-.}/.operations:/run/assozeta-operations
+      - django_static:/app/staticfiles
+      - manuale_data:/app/manuale
+      - updater_notices:/run/assozeta-updater-notices:ro
     profiles: [django]
     # Explicit default queue: the assozeta-go queue belongs to worker-go.
     command: ["celery", "-A", "core", "worker", "-Q", "celery", "--loglevel=info", "--max-tasks-per-child=50", "--concurrency=${CELERY_CONCURRENCY:-2}", "--prefetch-multiplier=2"]
@@ -423,6 +429,8 @@ networks:
   renderer_egress:
 
 volumes:
+  updater_notices:
+    name: ${COMPOSE_PROJECT_NAME:-assozeta}_updater_notices
   updater_status:
     name: ${COMPOSE_PROJECT_NAME:-assozeta}_updater_status
   updater_api:

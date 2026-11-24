@@ -371,7 +371,8 @@ def _execute_claim(task, guarded, run, args, kwargs, attempt):
 
     from itertools import count
     smtp_tasks = ('core.tasks.send_mail_async', 'send_email_html', 'send_email_template', 'send_email_text',
-                  'send_expiring_certificate_email', 'send_expired_certificate_email', 'send_reminders')
+                  'send_expiring_certificate_email', 'send_expired_certificate_email', 'send_reminders',
+                  'instance.backups.notify_failures')
     timers = []
     mail = _mail.set((task.name, task_id, task.request.retries, attempt, count(), timers) if task.name in smtp_tasks else None)
     token = _running.set((task_id, attempt, task.request.root_id or task_id))

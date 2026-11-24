@@ -32,10 +32,10 @@ def deployment_mode():
     return getattr(settings, 'ASSOZETA_DEPLOYMENT_MODE', 'development')
 
 
-def _runner_directory():
+def _runner_directory(setting='ASSOZETA_UPDATER_DIRECTORY', default='/run/assozeta-updater'):
     if deployment_mode() != 'production':
         raise UpdaterUnavailable('Gli aggiornamenti dell’installazione sono disabilitati in sviluppo.')
-    return Path(getattr(settings, 'ASSOZETA_UPDATER_DIRECTORY', '/run/assozeta-updater'))
+    return Path(getattr(settings, setting, default))
 
 
 class RunnerBody:
@@ -81,17 +81,28 @@ def open_runner_stream(path):
 
 
 def call_runner(method, path, payload=None, timeout=5):
-    code, body = runner_response(method, path, payload, timeout)
+    return _checked_reply(*runner_response(method, path, payload, timeout))
+
+
+def read_backup_failures():
+    directory = _runner_directory('ASSOZETA_UPDATER_NOTICES_DIRECTORY', '/run/assozeta-updater-notices')
+    return _checked_reply(*_json_response(directory / 'notices.sock', 'GET', '/backup-failures', None, 5))
+
+
+def _checked_reply(code, body):
     if code >= 400:
         raise UpdaterRejected(body.get('error', 'Aggiornamento non disponibile.'), code)
     return body
 
 
 def runner_response(method, path, payload=None, timeout=5):
-    directory = _runner_directory()
-    connection = UnixConnection(directory / 'runner.sock', timeout=timeout)
+    return _json_response(_runner_directory() / 'runner.sock', method, path, payload, timeout)
+
+
+def _json_response(socket_path, method, path, payload, timeout):
+    connection = UnixConnection(socket_path, timeout=timeout)
     try:
-        token = (directory / 'token').read_text().strip()
+        token = (socket_path.parent / 'token').read_text().strip()
         if not token:
             raise OSError('Missing runner credentials')
         connection.request(method, path, body=json.dumps(payload) if payload is not None else None, headers={

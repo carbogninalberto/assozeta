@@ -7,6 +7,8 @@ import re
 import subprocess
 import sys
 
+import notices
+
 from common import atomic_write, compose_command, compose_environment, write_json, read_env
 from distribution import snapshot_managed
 
@@ -34,14 +36,15 @@ def provision(root, env_file, start=True):
     project = values.get('COMPOSE_PROJECT_NAME', 'assozeta')
     if not re.fullmatch(r'[a-z0-9][a-z0-9_-]*', project):
         raise RuntimeError('Invalid installation project name')
-    volume = f'{project}_updater_api'
     image = values.get('ASSOZETA_UPDATER_REF') or f'ghcr.io/carbogninalberto/assozeta-updater:{values["ASSOZETA_VERSION"].removeprefix("v")}'
-    subprocess.run(['docker', 'volume', 'create', '--label', f'com.docker.compose.project={project}',
-                    '--label', 'com.docker.compose.volume=updater_api', volume], check=True, stdout=subprocess.DEVNULL)
-    subprocess.run(['docker', 'volume', 'create', '--label', f'com.docker.compose.project={project}',
-                    '--label', 'com.docker.compose.volume=updater_status', f'{project}_updater_status'], check=True, stdout=subprocess.DEVNULL)
-    subprocess.run(['docker', 'run', '--rm', '-v', f'{volume}:/run/assozeta-updater', image,
-                    '/runner/provision.py', '--credentials'], check=True)
+    for name in ('updater_api', 'updater_status', 'updater_notices'):
+        subprocess.run(['docker', 'volume', 'create', '--label', f'com.docker.compose.project={project}',
+                        '--label', f'com.docker.compose.volume={name}', f'{project}_{name}'],
+                       check=True, stdout=subprocess.DEVNULL)
+    for name, directory, option in (('updater_api', '/run/assozeta-updater', '--credentials'),
+                                    ('updater_notices', notices.DIRECTORY, '--notices-credentials')):
+        subprocess.run(['docker', 'run', '--rm', '-v', f'{project}_{name}:{directory}', image,
+                        '/runner/provision.py', option], check=True)
     baseline = state / 'managed.json'
     if not baseline.exists():
         write_json(baseline, snapshot_managed(root))
@@ -59,5 +62,7 @@ def provision(root, env_file, start=True):
 if __name__ == '__main__':
     if sys.argv[1:] == ['--credentials']:
         credentials()
+    elif sys.argv[1:] == ['--notices-credentials']:
+        notices.credentials()
     else:
         provision(sys.argv[1], sys.argv[2], start='--files-only' not in sys.argv)

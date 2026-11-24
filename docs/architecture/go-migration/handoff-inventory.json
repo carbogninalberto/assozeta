@@ -5260,8 +5260,7 @@
         "go": {
           "runtime": "go",
           "component": "worker-go (/app/celery-consumer)",
-          "status": "planned",
-          "phase": 4
+          "status": "present"
         }
       },
       "refs": [
@@ -5288,14 +5287,13 @@
         "retry_ack": "Celery default early ACK; CoordinatedTask defers during restoration and preserves original retry count. Go parses delivery options and uses the registered Celery policy; preserve the source ACK and retry behavior.",
         "result": "Django returns its notification summary; verify the same notice count and dedupe in Go.",
         "effect_identity": "Backup run ID and delivery recipient; preserve deduplication across owners.",
-        "mounts_network": "Runner socket/token and access permissions, Redis cache, PostgreSQL and SMTP.",
-        "schedule_owner": "Django Beat notify-backup-failures every 300 seconds. Phase 4 supplies equivalent scheduling or a mutually exclusive outbox disposition.",
+        "mounts_network": "Workers read GET /backup-failures on notices.sock through the read-only updater_notices volume and authenticate with its own token. Delivery uses Redis, PostgreSQL and SMTP.",
+        "schedule_owner": "Django Beat or the active Go scheduler publishes notify-backup-failures every 300 seconds.",
         "reverse_mapping": "Preserve protocol-2 name instance.backups.notify_failures, task ID, payload, root/parent lineage, priority and absolute ETA on the celery queue.",
         "legacy_fixture": "legacy-mixed @ 2284ed46, Celery protocol 2; use this historical wire version when seeding the family-specific exercise."
       },
       "notes": [
-        "Supply runner mounts/token, restricted permissions and occurrence publication.",
-        "The handler is registered in the opt-in consumer. Phase 4 completes supported envelopes and inputs without handing them back to Python."
+        "Both runtimes share the seven-day notice deduplication keys and record SMTP effects."
       ]
     },
     {

@@ -72,6 +72,8 @@ class WorkerGoComposeTests(ComposeCase):
     """Historical distribution: worker-go behind the opt-in go-tasks profile."""
     profiles = ('go-tasks',)
     consumer_profiles = ['go-tasks']
+    # Phase 4 family 08: the current consumer also reads the update runner's scoped backup notices socket.
+    notices = False
 
     def test_profile_renders_hardened_consumer_with_api_go_configuration(self):
         services = self.services(*self.profiles)
@@ -102,12 +104,17 @@ class WorkerGoComposeTests(ComposeCase):
             self.assertEqual(consumer['environment'][key], api['environment'][key], key)
         self.assertNotIn('GO_LOGO_SPOOL_DIR', consumer['environment'])
         volumes = {volume['target']: volume for volume in consumer['volumes']}
-        self.assertEqual(set(volumes), {'/run/assozeta-operations', '/var/cache/assozeta-go-tasks'})
+        notices = {'/run/assozeta-updater-notices'} if self.notices else set()
+        self.assertEqual(set(volumes), {'/run/assozeta-operations', '/var/cache/assozeta-go-tasks'} | notices)
+        if self.notices:
+            mount = volumes['/run/assozeta-updater-notices']
+            self.assertEqual((mount['type'], mount['source'], mount.get('read_only')), ('volume', 'updater_notices', True))
         self.assertEqual(volumes['/run/assozeta-operations']['source'], self.directory + '/.operations')
         self.assertEqual(volumes['/var/cache/assozeta-go-tasks']['type'], 'volume')
         self.assertNotIn('source', volumes['/var/cache/assozeta-go-tasks'])
+        # Never the runner's administration socket and token (updater_api), nor Docker.
         self.assertFalse(any('docker.sock' in volume['target'] or 'updater' in volume.get('source', '')
-                             for volume in consumer['volumes']))
+                             for volume in consumer['volumes'] if volume.get('source') != 'updater_notices'))
         self.assertNotIn('ports', consumer)
 
     def test_concurrency_follows_its_own_setting_then_celery_concurrency(self):
@@ -128,6 +135,7 @@ class CurrentWorkerGoComposeTests(WorkerGoComposeTests):
     selfhost = ROOT / 'selfhost'
     profiles = ('*',)
     consumer_profiles = None
+    notices = True
 
 
 class WorkerGoImageTests(unittest.TestCase):

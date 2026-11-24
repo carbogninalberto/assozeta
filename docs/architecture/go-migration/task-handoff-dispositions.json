@@ -871,6 +871,150 @@
       "sites": [
         "consumer-plan-consumer_restore_instance-248"
       ]
+    },
+    "BE_GO/internal/service/consumer_backup_failures.go:plan#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.BackupNotify.test_instance_backups_notify_failures__go",
+      "sites": [
+        "consumer-plan-consumer_backup_failures-115"
+      ]
+    },
+    "BE_GO/internal/service/consumer_backup_failures.go:prepare#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.BackupNotify.test_instance_backups_notify_failures__go",
+      "sites": [
+        "consumer-plan-consumer_backup_failures-183"
+      ]
+    },
+    "BE_GO/internal/service/consumer_backup_failures.go:prepare#2": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.BackupNotify.test_instance_backups_notify_failures__go",
+      "sites": [
+        "consumer-plan-consumer_backup_failures-187"
+      ]
+    },
+    "BE_GO/internal/service/consumer_backup_failures.go:call#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.BackupNotify.test_instance_backups_notify_failures__go",
+      "sites": [
+        "consumer-plan-consumer_backup_failures-208"
+      ]
+    },
+    "BE_GO/internal/service/consumer_backup_failures.go:call#2": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.BackupNotify.test_instance_backups_notify_failures__go",
+      "sites": [
+        "consumer-plan-consumer_backup_failures-217"
+      ]
+    },
+    "BE_GO/internal/service/consumer_backup_failures.go:call#3": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.BackupNotify.test_instance_backups_notify_failures__go",
+      "sites": [
+        "consumer-plan-consumer_backup_failures-223"
+      ]
+    },
+    "BE_GO/internal/service/consumer_backup_failures.go:backupFailuresObject#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.BackupNotify.test_instance_backups_notify_failures__go",
+      "sites": [
+        "consumer-plan-consumer_backup_failures-278"
+      ]
+    },
+    "BE_GO/internal/service/consumer_backup_failures.go:backupFailuresParse#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.BackupNotify.test_instance_backups_notify_failures__go",
+      "sites": [
+        "consumer-plan-consumer_backup_failures-293"
+      ]
+    },
+    "BE_GO/internal/service/consumer_backup_failures.go:backupFailuresParse#2": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.BackupNotify.test_instance_backups_notify_failures__go",
+      "sites": [
+        "consumer-plan-consumer_backup_failures-300"
+      ]
+    },
+    "BE_GO/internal/service/consumer_backup_failures.go:backupFailuresParse#3": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.BackupNotify.test_instance_backups_notify_failures__go",
+      "sites": [
+        "consumer-plan-consumer_backup_failures-310"
+      ]
+    },
+    "BE_GO/internal/service/consumer_backup_failures.go:backupFailuresParse#4": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.BackupNotify.test_instance_backups_notify_failures__go",
+      "sites": [
+        "consumer-plan-consumer_backup_failures-314"
+      ]
+    },
+    "BE_GO/internal/service/consumer_backup_failures.go:consumerBackupFailuresList#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.BackupNotify.test_instance_backups_notify_failures__go",
+      "sites": [
+        "consumer-plan-consumer_backup_failures-335"
+      ]
+    },
+    "BE_GO/internal/service/consumer_backup_failures.go:consumerBackupFailuresList#2": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.BackupNotify.test_instance_backups_notify_failures__go",
+      "sites": [
+        "consumer-plan-consumer_backup_failures-347"
+      ]
+    },
+    "BE_GO/internal/service/consumer_backup_failures.go:consumerBackupFailuresList#3": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.BackupNotify.test_instance_backups_notify_failures__go",
+      "sites": [
+        "consumer-plan-consumer_backup_failures-362"
+      ]
+    },
+    "BE_GO/internal/service/consumer_backup_failures.go:consumerBackupFailuresList#4": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.BackupNotify.test_instance_backups_notify_failures__go",
+      "sites": [
+        "consumer-plan-consumer_backup_failures-368"
+      ]
+    },
+    "BE_GO/internal/service/consumer_backup_failures.go:consumerBackupFailuresList#5": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.BackupNotify.test_instance_backups_notify_failures__go",
+      "sites": [
+        "consumer-plan-consumer_backup_failures-372"
+      ]
+    },
+    "BE_GO/internal/service/consumer_backup_failures.go:consumerBackupFailuresList#6": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.BackupNotify.test_instance_backups_notify_failures__go",
+      "sites": [
+        "consumer-plan-consumer_backup_failures-375"
+      ]
+    },
+    "BE_GO/internal/service/consumer_backup_failures.go:run#1": {
+      "disposition": "unsupported",
+      "outcome": "failure:ValueError",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.BackupNotify.test_instance_backups_notify_failures__go",
+      "sites": [
+        "consumer-plan-consumer_backup_failures-448"
+      ]
     }
   },
   "handback_reasons": {
@@ -1355,6 +1499,16 @@
     },
     "communications.tasks.deliver_whatsapp": {
       "family": "scheduled_exceptions",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "instance.backups.notify_failures": {
+      "family": "backup_notify",
       "rate_limit": null,
       "go_rate_limit": null,
       "time_limits": [

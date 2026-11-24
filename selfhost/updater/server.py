@@ -23,6 +23,7 @@ from engine import Engine
 from go_tasks import RETIRED, retired, CHECK_FAILED, MISSING_WORKER, apply_go_tasks, release_has_go_worker, validate_go_tasks_request
 from journal import Journal, Conflict
 from release_catalog import version_tuple
+import notices
 import remote_backups
 import runtime_switch
 from remote_backups import RemoteError, Uploader
@@ -81,6 +82,9 @@ def serve(root, env_file, engine_class=Engine):
     token = (api_directory / 'token').read_text().strip()
     if len(token) < 32:
         raise RuntimeError('Runner credentials are not provisioned')
+    notices_token = (notices.DIRECTORY / 'token').read_text().strip()
+    if len(notices_token) < 32 or notices_token == token:
+        raise RuntimeError('Independent notices credentials are required')
     journal = Journal(directory / 'operations.sqlite3')
     journal.interrupt_running()
     runtime_switch.recover(root, env_file, journal, None)
@@ -112,6 +116,12 @@ def serve(root, env_file, engine_class=Engine):
             'runner_version': os.environ.get('RUNNER_VERSION', 'development'),
             'active': active, 'history': [item for item in records if item != active],
         }
+
+    def backup_inventory():
+        value = remote_backups.merge_inventory(root, inventory(root, env_file))
+        return {**value, 'schedule': schedule_payload(root, env_file),
+                'actions': {'create': True, 'keep': True, 'delete': True, 'restore': True,
+                            'upload': True, 'remote': True}}
 
     class Handler(BaseHTTPRequestHandler):
         def setup(self):
@@ -169,10 +179,7 @@ def serve(root, env_file, engine_class=Engine):
                 return
             if self.path == '/backups':
                 try:
-                    value = remote_backups.merge_inventory(root, inventory(root, env_file))
-                    self.respond(200, {**value, 'schedule': schedule_payload(root, env_file),
-                                       'actions': {'create': True, 'keep': True, 'delete': True, 'restore': True,
-                                                   'upload': True, 'remote': True}})
+                    self.respond(200, backup_inventory())
                 except OSError:
                     self.respond(503, {'error': 'La cartella dei backup non è leggibile. Verifica i permessi sul server.'})
                 return
@@ -414,6 +421,10 @@ def serve(root, env_file, engine_class=Engine):
     status_server = Server(str(status_path), StatusHandler)
     os.chmod(status_path, 0o666)
     status_thread = threading.Thread(target=status_server.serve_forever, kwargs={'poll_interval': 0.5})
+    notices_server = notices.start(notices.DIRECTORY, notices_token,
+                                   lambda: notices.backup_failures(status_payload(), backup_inventory()))
+    notices_path = notices.DIRECTORY / notices.SOCKET
+    os.chown(notices_path, 10001, 10001)
     status_thread.start()
     worker = threading.Thread(target=work)
     worker.start()
@@ -431,6 +442,9 @@ def serve(root, env_file, engine_class=Engine):
         stop.set()
         wake.set()
         worker.join()
+        notices_server.shutdown()
+        notices_server.server_close()
+        notices_path.unlink(missing_ok=True)
         status_server.shutdown()
         status_thread.join()
         status_server.server_close()

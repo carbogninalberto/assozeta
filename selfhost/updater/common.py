@@ -164,6 +164,7 @@ def compose_environment(root, env_file):
     values = read_env(env_file)
     result = {key: value for key, value in os.environ.items() if key not in values}
     result.update(ASSOZETA_ENV_FILE=str(env_file), ASSOZETA_SELFHOST_DIR=str(root),
+                  ASSOZETA_UPDATER_NOTICES_VOLUME=f'{values.get("COMPOSE_PROJECT_NAME", "assozeta")}_updater_notices',
                   ASSOZETA_UPDATER_STATUS_VOLUME=f'{values.get("COMPOSE_PROJECT_NAME", "assozeta")}_updater_status',
                   ASSOZETA_UPDATER_API_VOLUME=f'{values.get("COMPOSE_PROJECT_NAME", "assozeta")}_updater_api')
     return result

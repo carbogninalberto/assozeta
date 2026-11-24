@@ -18,7 +18,7 @@ const reviewed = {
   "BE/application/signals.py": "a14dd1d21a83573a8d2da26ca6da76c2c090d6bc419b51d593a7ead1012d2ff1",
   // Reviewed: download, restore, delete, un-keep and remote copy changes on the
   // owner Backup page confirm the owner password again.
-  "BE/instance/backups.py": "952402ded4623e2e762d7bd86ddc7de515a113a78c0aa90eb94512f26839c123",
+  "BE/instance/backups.py": "7f482e3b8e555d696ca53d489710cde7e382c4f5023057e51f76e10bd6aec8eb",
   "BE/instance/remote_backups.py": "d930d4ce634f0df806f54e19ac28f162a0a136bdb5dee1eb7f673703b543d46b"
 };
 const contracts = [

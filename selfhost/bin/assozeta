@@ -336,6 +336,7 @@ compose_with_env() {
         ASSOZETA_SELFHOST_DIR=$SELFHOST_DIR; export ASSOZETA_SELFHOST_DIR
         compose_application_project=$(env_value COMPOSE_PROJECT_NAME "$compose_env_file")
         ASSOZETA_UPDATER_API_VOLUME="${compose_application_project:-assozeta}_updater_api"; export ASSOZETA_UPDATER_API_VOLUME
+        ASSOZETA_UPDATER_NOTICES_VOLUME="${compose_application_project:-assozeta}_updater_notices"; export ASSOZETA_UPDATER_NOTICES_VOLUME
         ASSOZETA_UPDATER_STATUS_VOLUME="${compose_application_project:-assozeta}_updater_status"; export ASSOZETA_UPDATER_STATUS_VOLUME
         # Resolve retired defaults without rewriting the saved environment.
         MINIO_IMAGE=$(storage_image_ref server "$(env_value MINIO_IMAGE "$compose_env_file")")

@@ -10,6 +10,7 @@ services:
     volumes:
       - ${ASSOZETA_SELFHOST_DIR}:${ASSOZETA_SELFHOST_DIR}
       - updater_api:/run/assozeta-updater
+      - updater_notices:/run/assozeta-updater-notices
       - updater_status:/run/assozeta-update-status
       - /var/run/docker.sock:/var/run/docker.sock
     security_opt:
@@ -21,6 +22,9 @@ services:
         max-file: "3"
 
 volumes:
+  updater_notices:
+    external: true
+    name: ${ASSOZETA_UPDATER_NOTICES_VOLUME:?Shared notices volume is required}
   updater_status:
     external: true
     name: ${ASSOZETA_UPDATER_STATUS_VOLUME:?Shared read-only status volume is required}

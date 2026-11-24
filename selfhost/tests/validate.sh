@@ -52,6 +52,7 @@ python3 -m unittest discover -s "$ROOT/selfhost/tests" -p test_edge_proxy.py
 
 ASSOZETA_SELFHOST_DIR="$ROOT/selfhost" ASSOZETA_ENV_FILE="$TEMPORARY/prod.env" \
     ASSOZETA_UPDATER_API_VOLUME=assozeta_updater_api ASSOZETA_UPDATER_STATUS_VOLUME=assozeta_updater_status \
+    ASSOZETA_UPDATER_NOTICES_VOLUME=assozeta_updater_notices \
     docker compose --env-file "$TEMPORARY/prod.env" -f "$ROOT/selfhost/compose.updater.yml" \
     --project-name assozeta-updater config --format json | python3 -c '
 import json, sys
@@ -61,6 +62,8 @@ assert config["volumes"]["updater_api"]["name"] == "assozeta_updater_api"
 assert config["volumes"]["updater_api"]["external"]
 assert config["volumes"]["updater_status"]["name"] == "assozeta_updater_status"
 assert config["volumes"]["updater_status"]["external"]
+assert config["volumes"]["updater_notices"]["name"] == "assozeta_updater_notices"
+assert config["volumes"]["updater_notices"]["external"]
 '
 
 ASSOZETA_ENV_FILE="$TEMPORARY/prod.env" \

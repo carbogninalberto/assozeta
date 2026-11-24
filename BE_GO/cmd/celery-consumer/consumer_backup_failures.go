@@ -15,7 +15,7 @@ import (
 )
 
 // consumerBackupFailuresRegister adds instance.backups.notify_failures: the
-// update runner (ASSOZETA_DEPLOYMENT_MODE, ASSOZETA_UPDATER_DIRECTORY), the
+// update runner (ASSOZETA_DEPLOYMENT_MODE, ASSOZETA_UPDATER_NOTICES_DIRECTORY), the
 // Django cache (database 1 of the broker's Redis) and the system e-mail.
 func consumerBackupFailuresRegister(tasks map[string]celeryworker.Task, cfg config.Config, db *sqlx.DB, broker *redis.Client,
 	mail *service.SendMailAsync) error {
@@ -26,7 +26,7 @@ func consumerBackupFailuresRegister(tasks map[string]celeryworker.Task, cfg conf
 		return err
 	}
 	production := cfg.InstanceAdmin.DeploymentMode == "production"
-	runner := updaterrunner.Client{Production: production, Directory: cfg.InstanceAdmin.UpdaterDirectory}
+	runner := updaterrunner.Client{Production: production, Directory: cfg.InstanceAdmin.UpdaterNoticesDirectory}
 	notices := service.NewConsumerBackupFailures(store, runner, repository.NewRestoreStates(db), mail, production,
 		strings.TrimSpace(cfg.RestoreLockPath) != "", cfg.DefaultFromEmail, time.Now, slog.Default())
 	tasks[service.ConsumerBackupFailuresTask] = notices.Task()

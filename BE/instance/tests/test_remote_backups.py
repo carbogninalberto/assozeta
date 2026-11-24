@@ -143,9 +143,9 @@ class RemoteBackupTests(TestCase):
     def test_failed_uploads_are_emailed_once(self):
         recent = timezone.now().isoformat()
         old = (timezone.now() - timedelta(days=5)).isoformat()
-        status = {'history': []}
-        inventory = {'remote': {'last_failure': {'at': recent, 'name': ARCHIVE, 'error': 'Storage non raggiungibile: controlla endpoint e rete.'}}}
-        with patch('instance.backups.call_runner', side_effect=lambda method, path: status if path == '/status' else inventory):
+        # The job workers read the scoped notices socket (GET /backup-failures), not the runner API.
+        inventory = {'history': [], 'remote': {'last_failure': {'at': recent, 'name': ARCHIVE, 'error': 'Storage non raggiungibile: controlla endpoint e rete.'}}}
+        with patch('instance.backups.read_backup_failures', side_effect=lambda: inventory):
             self.assertEqual(notify_failures(), 1)
             self.assertEqual(notify_failures(), 0)
             inventory['remote']['last_failure']['at'] = old
