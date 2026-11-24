@@ -174,10 +174,13 @@ func run(arguments []string) error {
 		ledger = &celeryworker.BrokerHandoff{DB: db.DB, Interval: *heartbeat}
 		transport.ReservationBarrier = handoff.Barrier
 	}
-	worker, err := celeryworker.New(transport, tasks,
-		repository.NewCeleryResults(db), admission, celeryworker.Options{Handoff: ledger, Concurrency: *concurrency, HandoffQueue: celery.DefaultQueue,
-			Origin: "gen" + strconv.Itoa(os.Getpid()) + "@" + host, Hostname: "celery@" + host, DrainTimeout: *drain,
-			Coordinated: strings.TrimSpace(cfg.RestoreLockPath) != "", Child: celeryworker.ChildCommand(childArgs...)}, slog.Default())
+	options := celeryworker.Options{Handoff: ledger, Concurrency: *concurrency,
+		Origin: "gen" + strconv.Itoa(os.Getpid()) + "@" + host, Hostname: "celery@" + host, DrainTimeout: *drain,
+		Coordinated: strings.TrimSpace(cfg.RestoreLockPath) != "", Child: celeryworker.ChildCommand(childArgs...)}
+	if ledger == nil {
+		options.HandoffQueue = celery.DefaultQueue
+	}
+	worker, err := celeryworker.New(transport, tasks, repository.NewCeleryResults(db), admission, options, slog.Default())
 	if err != nil {
 		return errors.New("invalid celery consumer bounds")
 	}

@@ -1,6 +1,7 @@
 package celery
 
 import (
+	"cmp"
 	"errors"
 	"strings"
 )
@@ -29,21 +30,17 @@ func ParseRoutes(value string) map[string]string {
 
 // WithRoutes makes the producer send a task without an explicit Queue to the
 // queue its name is routed to (Celery's task_routes {'queue': name}: the
-// anonymous exchange with the queue as routing key). nil keeps every task on
-// DefaultQueue, as before.
+// anonymous exchange with the queue as routing key). Without a legacy route
+// the requested queue defaults to celery. Admission chooses the managed queue.
 func (p *Producer) WithRoutes(routes map[string]string) *Producer {
 	p.routes = routes
 	return p
 }
 
+// queueFor selects the requested transport route. An admitted publication on
+// a managed queue follows the effective runtime before it reaches Redis.
 func (p *Producer) queueFor(task Task) string {
-	if task.Queue != "" {
-		return task.Queue
-	}
-	if queue, ok := p.routes[task.Name]; ok {
-		return queue
-	}
-	return DefaultQueue
+	return cmp.Or(task.Queue, p.routes[task.Name], DefaultQueue)
 }
 
 func ownedEmailTask(name string) bool {

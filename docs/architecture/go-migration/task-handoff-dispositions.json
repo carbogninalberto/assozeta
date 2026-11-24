@@ -1342,6 +1342,26 @@
         3600
       ],
       "go_time_limits": "prefork envelope timelimit"
+    },
+    "celery.backend_cleanup": {
+      "family": "scheduled_exceptions",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "communications.tasks.deliver_whatsapp": {
+      "family": "scheduled_exceptions",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
     }
   }
 }

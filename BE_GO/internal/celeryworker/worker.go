@@ -145,7 +145,7 @@ type Admission interface {
 type Options struct {
 	Handoff     *BrokerHandoff
 	Concurrency int
-	// HandoffQueue is Django's queue ("celery").
+	// HandoffQueue is the legacy worker's fallback when no handoff ledger is installed.
 	HandoffQueue string
 	// Origin is the worker's nodename (gen<pid>@<host>), used for republished
 	// messages whose request has no origin.
@@ -184,7 +184,8 @@ type heldMessage struct {
 }
 
 func New(transport *celery.Transport, tasks map[string]Task, results Results, admission Admission, options Options, logger *slog.Logger) (*Worker, error) {
-	if options.Concurrency < 1 || options.Concurrency > 32 || options.HandoffQueue == "" || options.HandoffQueue == transport.Queue {
+	invalidLegacyQueue := options.Handoff == nil && (options.HandoffQueue == "" || options.HandoffQueue == transport.Queue)
+	if options.Concurrency < 1 || options.Concurrency > 32 || invalidLegacyQueue {
 		return nil, errors.New("celeryworker: invalid options")
 	}
 	if options.RestoreEvery <= 0 {

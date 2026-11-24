@@ -49,14 +49,6 @@ func (b AdmittingBroker) PublishAttempt(ctx context.Context, queue string, raw [
 		return errors.New("invalid task envelope")
 	}
 	m := envelope.Headers
-	if queue == DefaultQueue && (ownedEmailTask(m.Task) || ownedWorkflowTask(m.Task) || ownedStorageTask(m.Task) ||
-		ownedPrintTask(m.Task) || ownedAssociationDataTask(m.Task)) {
-		routed, err := routeEnvelope(raw, GoQueue)
-		if err != nil {
-			return err
-		}
-		queue, raw = GoQueue, routed
-	}
 	tx, err := b.DB.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -70,12 +62,30 @@ func (b AdmittingBroker) PublishAttempt(ctx context.Context, queue string, raw [
 	}
 	stamp := time.Unix(0, int64(m.PublishedAt*1e9))
 	var disposition string
-	err = tx.QueryRowContext(ctx, `SELECT outcome FROM public.assozeta_handoff_admit('go',$1,$2,'broker',$3,$4,$5,$6,$7)`, m.ID, m.Task, queue, raw, stamp, m.ETA, m.Expires).Scan(&disposition)
+	// Schema 8 provides the exclusive consumer for the managed broker queue.
+	var exclusiveRoutes bool
+	err = tx.QueryRowContext(ctx, `SELECT outcome, to_regclass('public.assozeta_outbox_effects') IS NOT NULL
+        FROM public.assozeta_handoff_admit('go',$1,$2,'broker',$3,$4,$5,$6,$7)`, m.ID, m.Task, queue, raw, stamp, m.ETA, m.Expires).Scan(&disposition, &exclusiveRoutes)
 	if err != nil {
 		return errors.New("task admission failed")
 	}
 	if disposition == "rejected" {
 		return errors.New("Go task admission rejected")
+	}
+	// Admission holds the authority lock. Record the same route in the ledger
+	// and the envelope, including a retry inherited from the old queue.
+	goRoute := exclusiveRoutes || ownedEmailTask(m.Task) || ownedWorkflowTask(m.Task) ||
+		ownedStorageTask(m.Task) || ownedPrintTask(m.Task) || ownedAssociationDataTask(m.Task)
+	if (disposition == "accepted" || disposition == "held") && queue == DefaultQueue && goRoute {
+		raw, err = routeEnvelope(raw, GoQueue)
+		if err != nil {
+			return err
+		}
+		queue = GoQueue
+		if _, err = tx.ExecContext(ctx, `UPDATE public.assozeta_handoff_work
+            SET queue=$2,envelope=$3 WHERE task_id=$1`, m.ID, queue, raw); err != nil {
+			return err
+		}
 	}
 	if err = tx.Commit(); err != nil {
 		return err
