@@ -88,6 +88,46 @@ class ManualReleaseImagesTests(unittest.TestCase):
                 SMOKE.build_manual_backends(root, package, 'target-version', 'exact-revision', image)
 
 
+class UpgradeRejectionTests(unittest.TestCase):
+    def test_cli_configuration_uses_the_locally_built_updater(self):
+        tree = ast.parse(Path(SMOKE.__file__).read_text())
+        calls = [node for node in ast.walk(tree) if isinstance(node, ast.Call)]
+        self.assertTrue(any(ast.unparse(call.func) == 'set_env'
+                            and "'ASSOZETA_UPDATER_REF': updater" in ast.unparse(call) for call in calls),
+                        'CLI installation env is missing the built updater reference')
+        self.assertTrue(any(ast.unparse(call.func) == 'image' and ast.unparse(call.args[0]) == "'updater'"
+                            and 'selfhost/updater/Dockerfile' in ast.unparse(call) for call in calls),
+                        'rehearsal must build the updater from the checkout')
+
+    def test_both_expected_failures_check_the_upgrade_stage(self):
+        tree = ast.parse(Path(SMOKE.__file__).read_text())
+        checks = [node for node in ast.walk(tree) if isinstance(node, ast.Call)
+                  and ast.unparse(node.func) == 'expect_upgrade_rejection']
+        self.assertEqual({ast.unparse(call.args[1]) for call in checks},
+                         {"'manual-unavailable-candidate'", 'args.release'})
+        historical = next(call for call in checks if ast.unparse(call.args[1]) == 'args.release')
+        self.assertIn('manual_error', {kw.arg for kw in historical.keywords})
+
+    def test_rejection_requires_the_candidate_rollback_and_requested_manual_error(self):
+        rollback = '[assozeta] error: failed to download or validate version next; restored configured version old\n'
+        manual = 'Invalid or unsupported manual index'
+        for code, output, expected, accepted in (
+            (1, 'runtime adoption preflight failed\n', None, False),
+            (1, rollback, None, True),
+            (1, rollback, manual, False),
+            (1, manual, manual, False),
+            (1, manual + '\n' + rollback, manual, True),
+            (0, manual + '\n' + rollback, manual, False),
+        ):
+            with self.subTest(code=code, output=output, expected=expected):
+                log = io.BytesIO()
+                result = CompletedProcess([], code, output.encode())
+                with patch.object(SMOKE.subprocess, 'run', return_value=result):
+                    with contextlib.nullcontext() if accepted else self.assertRaises(RuntimeError):
+                        SMOKE.expect_upgrade_rejection('cli', 'next', 'old', {}, log, manual_error=expected)
+                self.assertEqual(log.getvalue(), result.stdout)
+
+
 class ConcurrentRunTests(unittest.TestCase):
     def test_jobs_overlap_and_results_keep_input_order(self):
         barrier = threading.Barrier(2, timeout=10)

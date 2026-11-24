@@ -34,6 +34,18 @@ def free_port():
         return sock.getsockname()[1]
 
 
+def expect_upgrade_rejection(cli, version, previous, env, log, *, manual_error=None):
+    attempt = subprocess.run([str(cli), 'upgrade', version], env=env,
+                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    log.write(attempt.stdout)
+    log.flush()
+    rollback = f'failed to download or validate version {version}; restored configured version {previous}'
+    if attempt.returncode == 0 or rollback.encode() not in attempt.stdout:
+        raise RuntimeError(f'Upgrade to {version} did not reject the candidate and report rollback')
+    if manual_error and manual_error.encode() not in attempt.stdout:
+        raise RuntimeError(f'Upgrade to {version} did not report the expected manual error: {manual_error}')
+
+
 def run_concurrently(jobs):
     """Run independent zero-argument jobs concurrently, keeping their order.
 
@@ -431,6 +443,10 @@ def main():
                 for name in repositories}
             record('production images built and historical image digests resolved')
             command([cli, 'configure', '--domain', f'localhost:{port}', '--version', args.release], env=env)
+            if args.scope == 'full':
+                updater = image('updater', ROOT, '-f', ROOT / 'selfhost/updater/Dockerfile',
+                                '--label', 'org.opencontainers.image.revision=' + revision)
+                set_env({'ASSOZETA_UPDATER_REF': updater})
             set_env({'COMPOSE_PROJECT_NAME': project,
                      'ASSOZETA_BACKEND_IMAGE': repositories['backend'],
                      'ASSOZETA_BACKEND_GO_IMAGE': repositories['backend-go'],
@@ -495,7 +511,8 @@ def main():
                     'corrupt-image': 'from pathlib import Path; Path(' + repr('/app/release-manual/' + first_image) + ").write_bytes(b'corrupt')",
                 }
                 expected_errors = {
-                    'missing-index': 'FileNotFoundError', 'missing-image': 'FileNotFoundError',
+                    'missing-index': "No such file or directory: '/app/release-manual/index.json'",
+                    'missing-image': f"No such file or directory: '/app/release-manual/{first_image}'",
                     'corrupt-index': 'Invalid or unsupported manual index',
                     'wrong-version': 'No verified manual for the running application',
                     'corrupt-image': 'Bundled screenshot differs from verified evidence',
@@ -507,7 +524,10 @@ def main():
                     (damaged / 'Dockerfile').write_text(f'FROM {backend}\nUSER root\nRUN ' +
                         json.dumps(['python', '-c', mutation]) + '\nUSER assozeta\n')
                     corrupt = image(name, damaged)
-                    built[name] = corrupt
+                    # check-manual-image checks /app/VERSION before invoking the bundle validator.
+                    manual_error = ('Candidate backend version differs from the requested release'
+                                    if name == 'wrong-version' else expected_errors[name])
+                    built[name] = (corrupt, manual_error)
                     if not verify:
                         continue
                     attempt = subprocess.run(['docker', 'run', '--rm', corrupt], capture_output=True, text=True, timeout=60)
@@ -601,11 +621,10 @@ def main():
                 record('normal CLI startup recovers activation interrupted between container creation and startup')
                 # Exercise the shipped upgrade error path: backup stops services,
                 # the missing candidate fails to pull, and the CLI restores them.
-                unavailable = subprocess.run([str(cli), 'upgrade', 'manual-unavailable-candidate'],
-                                             env=env, stdout=log, stderr=log)
+                expect_upgrade_rejection(cli, 'manual-unavailable-candidate', args.release, env, log)
                 configured = next(line.split('=', 1)[1] for line in env_file.read_text().splitlines()
                                   if line.startswith('ASSOZETA_VERSION='))
-                if unavailable.returncode == 0 or configured != args.release:
+                if configured != args.release:
                     raise RuntimeError('Failed candidate download did not retain the installed release')
                 ready(); contracts('failed-upgrade-recovery')
                 contracts('failed-upgrade-recovery-go', api_prefix='/api/v2')
@@ -680,12 +699,11 @@ def main():
                 historical_backup, = created_backups
                 historical_environment = env_file.read_bytes()
                 target_tag = repositories['backend'] + ':' + args.release
-                for fault, corrupt in corrupt_images.items():
+                for fault, (corrupt, manual_error) in corrupt_images.items():
                     command(['docker', 'tag', corrupt, target_tag])
                     command(['docker', 'push', target_tag])
-                    attempt = subprocess.run([str(cli), 'upgrade', args.release], env=env, stdout=log, stderr=log)
-                    if attempt.returncode == 0:
-                        raise RuntimeError(fault + ' was accepted by the ordinary upgrade command')
+                    expect_upgrade_rejection(cli, args.release, args.previous_release, env, log,
+                                             manual_error=manual_error)
                     configured = next(line.split('=', 1)[1] for line in env_file.read_text().splitlines()
                                       if line.startswith('ASSOZETA_VERSION='))
                     if configured != args.previous_release:
