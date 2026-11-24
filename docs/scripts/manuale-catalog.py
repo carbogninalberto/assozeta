@@ -63,7 +63,7 @@ class Sources:
         if relative in self.files:
             return self.files[relative]
         allowed = Path(relative).suffix in ('.py', '.js', '.svelte', '.json') or (
-            relative.startswith('BE/templates/') and Path(relative).suffix == '.html')
+            relative.startswith(('BE/templates/', 'UI/public/')) and Path(relative).suffix == '.html')
         if not relative.startswith(('BE/', 'UI/')) or '..' in Path(relative).parts or not allowed:
             raise CatalogError('Review targets must be application source: ' + relative)
         path = owned(self.root, relative)

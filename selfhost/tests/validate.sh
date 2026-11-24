@@ -45,6 +45,7 @@ python3 -m unittest discover -s "$ROOT/selfhost/tests" -p test_update_cleanup.py
 python3 -m unittest discover -s "$ROOT/selfhost/tests" -p test_quality.py
 python3 -m unittest discover -s "$ROOT/selfhost/tests" -p test_sync_repo.py
 python3 -m unittest discover -s "$ROOT/selfhost/tests" -p test_manual_sync.py
+python3 -m unittest discover -s "$ROOT/selfhost/tests" -p test_manual_release_smoke.py
 python3 -m unittest discover -s "$ROOT/selfhost/tests" -p test_operational_diagnostics.py
 python3 -m unittest discover -s "$ROOT/selfhost/tests" -p test_remote_backups.py
 python3 -m unittest discover -s "$ROOT/selfhost/tests" -p test_remote_endpoint_guard.py

@@ -271,7 +271,7 @@ def tokens(text):
 def verify_source(root, source, *, catalog=None):
     path = source.get('path', '')
     allowed = Path(path).suffix in ('.py', '.js', '.svelte', '.json') or (
-        path.startswith('BE/templates/') and Path(path).suffix == '.html')
+        path.startswith(('BE/templates/', 'UI/public/')) and Path(path).suffix == '.html')
     if not path.startswith(('BE/', 'UI/')) or '..' in Path(path).parts or not allowed:
         raise EvidenceError('Evidence must reference application source, not credentials/runtime files')
     actual = owned_path(root, path)
@@ -338,7 +338,7 @@ def load_source_catalog(manual_root, code_root, manifest, artifact_root):
             raise EvidenceError('Manual changed after catalog validation: ' + relative)
     for relative, record in catalog['files'].items():
         allowed = Path(relative).suffix in ('.py', '.js', '.svelte', '.json') or (
-            relative.startswith('BE/templates/') and Path(relative).suffix == '.html')
+            relative.startswith(('BE/templates/', 'UI/public/')) and Path(relative).suffix == '.html')
         if not relative.startswith(('BE/', 'UI/')) or '..' in Path(relative).parts or not allowed:
             raise EvidenceError('Invalid catalog source path')
         if record['path'] != relative or file_digest(owned_path(code_root, relative)) != record['sha256']:
