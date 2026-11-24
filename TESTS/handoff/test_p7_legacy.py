@@ -52,6 +52,7 @@ import uuid
 from TESTS.handoff import p5_harness as h
 from TESTS.handoff import p7_release as r
 from TESTS.handoff import test_p5_installed as p5
+from TESTS.handoff import test_p6_installed as p6
 from TESTS.handoff.test_p7_installed import now
 from TESTS.handoff.topology import ROOT
 
@@ -74,9 +75,9 @@ STATE = {}
 def setUpModule():
     OUTPUT.mkdir(parents=True, exist_ok=True)
     STATE['log'] = (OUTPUT / 'lanes.log').open('w')
-    work = Path(os.environ.get('ASSOZETA_HANDOFF_P7_WORKDIR') or OUTPUT)
+    work = Path(os.environ.get('ASSOZETA_HANDOFF_P7_WORKDIR') or tempfile.gettempdir()).resolve()
     work.mkdir(parents=True, exist_ok=True)
-    STATE['work'] = Path(tempfile.mkdtemp(prefix='legacy-', dir=work))
+    STATE['work'] = Path(tempfile.mkdtemp(prefix='assozeta-p7-legacy-', dir=work))
     STATE['tags'] = []
 
 
@@ -97,7 +98,7 @@ def tearDownModule():
 def candidate_images():
     if 'candidate' not in STATE:
         p5.STATE['log'] = STATE['log']
-        STATE['candidate'] = p5.images(STATE['log'])
+        STATE['candidate'] = p6.images(STATE['log'])
     return STATE['candidate']
 
 
@@ -108,11 +109,23 @@ def build(directory, dockerfile, tag):
     return p5.run(['docker', 'image', 'inspect', '--format', '{{.Id}}', tag], log=STATE['log']).stdout.strip()
 
 
+def source_tag():
+    """CI checks out shallow, without tags: fetch the source release's tag once when it is missing."""
+    present = subprocess.run(['git', '-C', ROOT, 'rev-parse', '-q', '--verify', f'{SOURCE}^{{commit}}'],
+                             capture_output=True).returncode == 0
+    if not present:
+        fetched = subprocess.run(['git', '-C', ROOT, 'fetch', '--quiet', '--depth=1', 'origin', 'tag', SOURCE],
+                                 capture_output=True, text=True, timeout=600)
+        if fetched.returncode:
+            raise h.HarnessError(f'cannot fetch the source release tag {SOURCE}: {fetched.stderr[-400:]}')
+
+
 class LegacyInstalled(p5.Installed):
     """The v1.0.48 distribution, installed from its own files with its published images."""
 
     def __init__(self, work, log):
         self.work, self.log, self.images = work, log, {}
+        source_tag()
         archive = subprocess.run(['git', '-C', ROOT, 'archive', SOURCE, 'selfhost'], check=True,
                                  capture_output=True).stdout
         with tarfile.open(fileobj=io.BytesIO(archive)) as release:

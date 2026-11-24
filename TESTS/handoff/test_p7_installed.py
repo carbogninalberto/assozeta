@@ -32,7 +32,8 @@ Lanes (release matrix lanes in TESTS/handoff/release_matrix.json):
       duplicate_effect). The sixth mutation (a skipped release test) has no installed form: a skip is
       a violation for run_expected_red and test_not_passed for the gate (test_p7_gate).
 
-Cost: the Phase 5 image build (cached after test_p5_installed in the same job) plus ~25 min of
+Images: as Phase 6 (the Phase 5 lane's images reused; install root in the system temporary
+directory). Cost: ~25 min of
 lanes. CI only (handoff-contracts.yml 'installed'); never run locally on the shared machine.
 
 Run: python3 -B -m unittest -v TESTS.handoff.test_p7_installed
@@ -52,6 +53,7 @@ import uuid
 from TESTS.handoff import p5_harness as h
 from TESTS.handoff import p7_release as r
 from TESTS.handoff import test_p5_installed as p5
+from TESTS.handoff import test_p6_installed as p6
 from TESTS.handoff.topology import BUNDLE, ROOT
 
 RED = r.RED
@@ -189,12 +191,14 @@ class Sink:
 def setUpModule():
     OUTPUT.mkdir(parents=True, exist_ok=True)
     STATE['log'] = log = (OUTPUT / 'lanes.log').open('w')
-    work = Path(os.environ.get('ASSOZETA_HANDOFF_P7_WORKDIR') or OUTPUT)
+    # Outside the repository: a later image build must not see this installation's root-owned files.
+    work = Path(os.environ.get('ASSOZETA_HANDOFF_P7_WORKDIR') or tempfile.gettempdir()).resolve()
     work.mkdir(parents=True, exist_ok=True)
-    STATE['work'] = Path(tempfile.mkdtemp(prefix='run-', dir=work))
+    STATE['work'] = Path(tempfile.mkdtemp(prefix='assozeta-p7-installed-', dir=work))
     try:
         p5.STATE['log'] = log
-        installed = p5.Installed(STATE['work'], p5.images(log), log)
+        # The Phase 5 lane's images for this revision, reused (a rebuild after it fails on its leftovers).
+        installed = p5.Installed(STATE['work'], p6.images(log), log)
         STATE['installed'] = installed
         installed.install()
         sink = Sink(installed, STATE['work'])
