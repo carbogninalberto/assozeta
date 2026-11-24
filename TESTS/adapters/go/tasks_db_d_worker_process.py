@@ -45,7 +45,8 @@ REDIS_PASSWORD = 'private-redis-password-canary'
 BRAND = 'Assozeta Fixture'
 PUBLIC_KEY, SECRET_KEY = 'pk_test_placeholder', 'sk_test_placeholder'
 LOCK_KEY = ':1:renew_memberships_payments_lock'
-# The Go worker starts each kind no faster than Django's rate limit; renewals are the slowest (1/m).
+# The Go worker starts each kind no faster than Django's rate limit; renewals are the slowest (1/m). A rejected
+# envelope also takes a start slot, so back-to-back renewal cases can wait a full interval plus the worker's poll.
 PACING = 60
 CHANGE, COUPON, RENEW = 'change_type_of_stripe_payments', 'generate_coupon_if_not_exists', 'renew_memberships_payments'
 CODE = re.compile(r'\A[A-HJKMNP-Z2-9]{8}\Z')
@@ -700,7 +701,7 @@ class TasksRehearsal(Rehearsal):
             for kwargs, code in [({'version': 2}, 'unsupported_version'), ({'payload': '{"unexpected":true}'}, 'task_failed'),
                                  ({'association': str(self.fixture.associations[0])}, 'task_failed')]:
                 identifier, before = self.seed_job(kind, f.change_seed, **kwargs)
-                await_condition(lambda: self.job(identifier)[0] == 'failed', 'invalid envelope rejected', 12 + PACING)
+                await_condition(lambda: self.job(identifier)[0] == 'failed', 'invalid envelope rejected', 12 + 2 * PACING)
                 assert self.sql('SELECT error_code FROM assozeta_go_jobs WHERE id=%s', (identifier,)) == [(code,)]
                 assert self.fixture.snapshot() == before and self.broker.client.llen('celery') == 0 and not self.stub.take()
         self.stop(process)
