@@ -532,6 +532,53 @@ class InstalledLanes(h.ContractCase, unittest.TestCase):
                                               'stages': sorted({e['stage'] for e in seen if e['stage']})})
 
     # -- lanes --------------------------------------------------------------------------------------------------
+    def notices_mounts(self, service):
+        """(read-only notices mount present, updater_api mounted) for the running container of `service`."""
+        inst = self.inst
+        lines = inst.compose('ps', '-q', service).stdout.split()
+        container = lines[-1] if lines else ''
+        self.assertTrue(container, f'backup notices: no running {service} container')
+        mounts = json.loads(run(['docker', 'inspect', '--format', '{{json .Mounts}}', container], log=inst.log).stdout.splitlines()[-1])
+        notices = [m for m in mounts if m.get('Destination') == '/run/assozeta-updater-notices']
+        api = [m for m in mounts if m.get('Destination') == '/run/assozeta-updater'
+               or m.get('Name') == f'{inst.project}_updater_api']
+        return (len(notices) == 1 and notices[0].get('RW') is False
+                and notices[0].get('Name') == f'{inst.project}_updater_notices'), bool(api)
+
+    def test_6_backup_notices_reach_only_the_job_workers(self):
+        """Family 08 installed (contract TESTS/handoff/test_p4_backup_notices.py): the provisioned notices volume, the
+        runner answering GET /backup-failures on notices.sock to its own token and nothing else there, and the job
+        workers of both modes mounting it read-only without the updater administration volume."""
+        inst = self.inst
+        volume = run(['docker', 'volume', 'inspect', f'{inst.project}_updater_notices'], log=inst.log, check=False)
+        self.assertEqual(volume.returncode, 0, 'backup notices: the installation has no updater_notices volume')
+        updater = run(['docker', 'ps', '-q', '--filter', f'label=com.docker.compose.project={inst.project}-updater',
+                       '--filter', 'label=com.docker.compose.service=updater'], log=inst.log).stdout.split()
+        updater = updater[-1] if updater else ''
+        self.assertTrue(updater, 'backup notices: no running updater container')
+        probe = ("import http.client,json,socket,pathlib\n"
+                 "d=pathlib.Path('/run/assozeta-updater-notices')\n"
+                 "class C(http.client.HTTPConnection):\n"
+                 "    def connect(self):\n"
+                 "        self.sock=socket.socket(socket.AF_UNIX);self.sock.connect(str(d/'notices.sock'))\n"
+                 "def get(path,token):\n"
+                 "    c=C('localhost',timeout=10);c.request('GET',path,headers={'Authorization':'Bearer '+token});r=c.getresponse()\n"
+                 "    return r.status,r.read()\n"
+                 "token=(d/'token').read_text().strip()\n"
+                 "code,body=get('/backup-failures',token)\n"
+                 "print(json.dumps({'code':code,'keys':sorted(json.loads(body)) if code==200 else None,"
+                 "'other':get('/status',token)[0],'foreign':get('/backup-failures','x'*64)[0]}))\n")
+        answer = run(['docker', 'exec', updater, 'python3', '-c', probe], log=inst.log, check=False)
+        self.assertEqual(answer.returncode, 0, f'backup notices: the notices socket did not answer: {answer.stdout[-300:]}')
+        self.assertEqual(json.loads(answer.stdout.strip().splitlines()[-1]),
+                         {'code': 200, 'keys': ['history', 'remote', 'schedule'], 'other': 404, 'foreign': 403},
+                         'backup notices: GET /backup-failures answers its own token only, nothing else is served')
+        for runtime, service in (('go', 'worker-go'), ('django', 'worker')):
+            self.ensure(runtime)
+            mounted, api = self.notices_mounts(service)
+            self.assertTrue(mounted, f'backup notices: {service} does not mount updater_notices read-only')
+            self.assertFalse(api, f'backup notices: {service} mounts the updater administration volume')
+
     def test_1_forward(self):
         inst = self.inst
         self.ensure('django')

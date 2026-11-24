@@ -95,7 +95,9 @@ class BackupActionTests(TestCase):
             {'id': 'd', 'status': 'failed', 'updated_at': recent},
         ]}
         inventory = {'schedule': {'last_run': {'at': recent, 'status': 'failed', 'error': 'Backup automatico non eseguito.'}}}
-        with patch('instance.backups.call_runner', side_effect=lambda method, path: status if path == '/status' else inventory):
+        # The job workers read the scoped notices socket (GET /backup-failures), never the administration API.
+        with patch('instance.backups.call_runner', side_effect=AssertionError('notify_failures called the runner API')), \
+                patch('instance.backups.read_backup_failures', return_value={**inventory, 'history': status['history']}):
             self.assertEqual(notify_failures(), 2)
             self.assertEqual(notify_failures(), 0)
         self.assertEqual(len(mail.outbox), 2)

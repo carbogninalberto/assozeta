@@ -1,20 +1,22 @@
 """Matrix family backup_notify: instance.backups.notify_failures (Go consumer handler; Beat publishes it
 every 300 s, the Go scheduler in Go mode -- see test_p4_scheduling.ScheduledExceptions).
 
-task-coverage.md row: wire the updater socket/token access with the existing restricted permissions,
-run a real runner fixture and check deduplicated notices after a switch. The runner is the update
-runner stub of TESTS/adapters/go/celery_consumer_backup_failures_process.py (HTTP over
-<ASSOZETA_UPDATER_DIRECTORY>/runner.sock, bearer token in <dir>/token; directory 0700, token 0600),
-answering GET /status and GET /backups with the adapter's ``failures`` data: four failures to notice
-(op-created, op-recent, schedule:<at>, remote:<at>). Every notice goes to the owner of the instance's
-primary association through the instance/system SMTP (the CountingSMTP).
-Both runtimes run with ASSOZETA_DEPLOYMENT_MODE=production and ASSOZETA_UPDATER_DIRECTORY=<dir>
-(Django worker environment and the Go consumer env file).
+task-coverage.md row: wire the update runner access with restricted permissions, run a real runner
+fixture and check deduplicated notices after a switch. The job workers read the scoped backup notices
+socket, never the administration socket (contract: TESTS/handoff/test_p4_backup_notices.py): the stub
+of TESTS/adapters/go/celery_consumer_backup_failures_process.py serves HTTP over
+<ASSOZETA_UPDATER_NOTICES_DIRECTORY>/notices.sock with its own bearer token in <dir>/token (directory
+0700, token 0600) and answers GET /backup-failures with the projection of the adapter's ``failures``
+data: four failures to notice (op-created, op-recent, schedule:<at>, remote:<at>).
+ASSOZETA_UPDATER_DIRECTORY names a directory without runner.sock. Every notice goes to the owner of
+the instance's primary association through the instance/system SMTP (the CountingSMTP).
+Both runtimes run with ASSOZETA_DEPLOYMENT_MODE=production and those two directories (Django worker
+environment and the Go consumer env file).
 
 Scenarios:
   instance_backups_notify_failures__{django,go,queued_forward,queued_reverse} (p4_matrix_kit.standard):
-    one run sends exactly four notices to owner@example.test and reads the runner with the bearer
-    token (GET /status, GET /backups, Authorization: Bearer <token>); Go mode has no Django process.
+    one run sends exactly four notices to owner@example.test and reads the notices socket once with its
+    bearer token (GET /backup-failures, Authorization: Bearer <token>); Go mode has no Django process.
   instance_backups_notify_failures__dedup_after_switch_{forward,reverse}: a run on the source sends
     the four notices; after the switch the same runner answer run on the target sends none (the
     dedup keys 'instance:backup-failure-notified:<key>', 7 days, live in the shared production cache:
@@ -58,12 +60,13 @@ def configure(stack, status, inventory):
     stub.configure(SimpleNamespace(runner={}), status, inventory)
     os.chmod(stub.directory, 0o700)
     os.chmod(stub.directory / 'token', stat.S_IRUSR | stat.S_IWUSR)
-    values = {'ASSOZETA_DEPLOYMENT_MODE': 'production', 'ASSOZETA_UPDATER_DIRECTORY': str(stub.directory)}
+    values = {'ASSOZETA_DEPLOYMENT_MODE': 'production', 'ASSOZETA_UPDATER_NOTICES_DIRECTORY': str(stub.directory),
+              'ASSOZETA_UPDATER_DIRECTORY': str(stub.directory / 'no-runner')}
     stack.env.update(values)
     path = stack.go_consumer_env_file()
     lines = [line for line in path.read_text().splitlines() if line.split('=', 1)[0] not in values]
     path.write_text(''.join(line + '\n' for line in lines + [f'{k}={v}' for k, v in values.items()]))
-    return adapter.RUNNER_TOKEN
+    return adapter.NOTICES_TOKEN
 
 
 def seed(stack, data=None):
@@ -99,10 +102,10 @@ def producer():
 def runner_reads(stack, context, who):
     requests = runner(stack).take()
     paths = [f'{r["method"]} {r["path"]}' for r in requests]
-    check(paths == ['GET /status', 'GET /backups'], f'{who}: runner requests {paths}')
+    check(paths == ['GET /backup-failures'], f'{who}: notices socket requests {paths} (expected one GET /backup-failures)')
     for request in requests:
         check(['authorization', f'Bearer {context["token"]}'] in request['headers'],
-              f'{who}: the runner request carries the restricted bearer token')
+              f'{who}: the notices request carries the notices bearer token')
 
 
 def verify(stack, context, runtime):

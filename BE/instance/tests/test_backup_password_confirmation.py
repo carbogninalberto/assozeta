@@ -292,7 +292,7 @@ class BackupFailureNoticeTests(TestCase):
                                'error': 'pg_dump: connection to /run/postgresql failed: password authentication'}]}
         inventory = {'remote': {'last_failure': {'at': at.isoformat(), 'name': ARCHIVE,
                                                  'error': 'AccessDenied for AKIAFIXTURE at https://s3.internal.example.test'}}}
-        with patch('instance.backups.call_runner', side_effect=lambda method, path: status if path == '/status' else inventory):
+        with patch('instance.backups.read_backup_failures', return_value={**inventory, 'history': status['history']}):
             self.assertEqual(notify_failures(), 2)
         local = timezone.localtime(at).strftime('%d/%m/%Y %H:%M')
         backup, remote = mail.outbox
@@ -310,6 +310,6 @@ class BackupFailureNoticeTests(TestCase):
             cache.clear()
             mail.outbox.clear()
             inventory = {'remote': {'last_failure': {'at': at, 'name': name, 'error': 'x'}}}
-            with patch('instance.backups.call_runner', side_effect=lambda method, path: {'history': []} if path == '/status' else inventory):
+            with patch('instance.backups.read_backup_failures', return_value={**inventory, 'history': []}):
                 self.assertEqual(notify_failures(), 1)
             self.assertTrue(mail.outbox[0].body.startswith('La copia remota del backup non è riuscita ('), mail.outbox[0].body)
