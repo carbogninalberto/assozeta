@@ -127,14 +127,6 @@
         "P5 contract red"
       ]
     },
-    "TESTS.handoff.test_p6_installed.GoModeInstalled.test_5_go_mode_backup_and_restore_keep_go_and_the_work": {
-      "phase": 6,
-      "owner": "t-p6",
-      "reason": "milestone A: the restore does not advance the generation (2 not greater than 2); until the relay fix the Go-mode installation does not serve the control write (503)",
-      "signatures": [
-        "P6A contract red"
-      ]
-    },
     "TESTS.handoff.test_p7_installed.ReleaseLanes.test_1_steady_state_observations_in_both_modes": {
       "phase": 7,
       "owner": "t-p7",

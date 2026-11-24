@@ -228,16 +228,26 @@ class GoModeInstalled(unittest.TestCase):
     def test_5_go_mode_backup_and_restore_keep_go_and_the_work(self):
         inst = self.inst
         before_value = {'p6': {'columns': ['name'], 'written_by': 'before-backup'}}
+        after_value = {'p6': {'columns': ['name'], 'written_by': 'after-backup'}}
+
+        def table_settings():
+            # GET /api/profile/settings answers {'settings': {..., 'table_settings': ...}} (singular).
+            code, body = inst.http('GET', '/api/profile/settings', inst.token)
+            return code, (((body or {}).get('settings') or {}).get('table_settings') or {}).get('p6')
+
         self.assertIn(inst.http('POST', '/api/profile/settings/tables', inst.token, {'tables_settings': before_value})[0],
                       (200, 201, 204), f'{RED_A}: the Go-mode installation does not serve a settings write before '
                                        'the backup (Go mode never became healthy)')
+        self.assertEqual(table_settings(), (200, before_value['p6']),
+                         f'{RED_A}: the Go API does not read back its own settings write before the backup')
         task = inst.seed('assozeta-go', h5.MAIL_TASK, eta=h5.future(30), args=h5.mail_args(6))
         archived_generation = inst.authority()[1]
         backup = inst.cli('backup', check=False)
         self.assertEqual(backup.returncode, 0, f'{RED_A}: backup in Go mode: {backup.stdout[-400:]}')
         archive = sorted((inst.root / 'backups').glob('assozeta-*.tar.gz'))[-1]
-        inst.http('POST', '/api/profile/settings/tables', inst.token,
-                  {'tables_settings': {'p6': {'columns': ['name'], 'written_by': 'after-backup'}}})
+        inst.http('POST', '/api/profile/settings/tables', inst.token, {'tables_settings': after_value})
+        self.assertEqual(table_settings(), (200, after_value['p6']),
+                         f'{RED_A}: the Go API does not read back the settings written after the backup')
         started = time.time()
         restore = inst.cli('restore', str(archive), '--yes', check=False)
         self.assertEqual(restore.returncode, 0, f'{RED_A}: restore in Go mode: {restore.stdout[-600:]}')
@@ -250,8 +260,7 @@ class GoModeInstalled(unittest.TestCase):
         self.assertTrue(row and row[1] == 'go' and int(row[2]) == generation and row[0] in ('pending', 'running'),
                         f'{RED_A}: the archived Go work is not owned by Go after the restore: {row}')
         self.assertFalse(inst.copies(task).get('celery'), f'{RED_A}: archived Go work moved to the Django queue')
-        code, settings = inst.http('GET', '/api/profile/settings', inst.token)
-        self.assertEqual((code, (settings or {}).get('tables_settings', {}).get('p6')), (200, before_value['p6']),
+        self.assertEqual(table_settings(), (200, before_value['p6']),
                          f'{RED_A}: the Go API does not read back the restored data')
 
     def test_6_go_mode_failing_go_image_never_falls_back_to_django(self):
