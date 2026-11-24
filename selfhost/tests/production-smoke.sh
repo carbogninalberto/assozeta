@@ -89,6 +89,15 @@ curl_ready() {
 }
 
 go_probe() {
+    # The probe writes through the shipped Go API and reads back through Django,
+    # which needs both APIs at once: the historical dual-API distribution. An
+    # exclusive distribution runs one runtime (Django by default); its Go-mode
+    # installed lane belongs to the runtime switch (TESTS/handoff, Phases 5-6).
+    if [ -z "$(compose ps --status running --services api-go)" ] \
+        && compose config --profiles | grep -qx go; then
+        printf 'Go probe %s skipped: exclusive runtime distribution in Django mode.\n' "$1" >&2
+        return 0
+    fi
     python3 "$ROOT/selfhost/tests/go-production-probe.py" "$@" \
         --env-file "$ENV_FILE" --login-json "$TEMPORARY/owner-login.json"
 }
@@ -113,17 +122,28 @@ db_query() {
 }
 
 assert_go_operational_schema() {
+    # The packaged binary's operational schema (BE_GO/migrations CurrentVersion).
+    expected_schema=$(sed -n 's/^const CurrentVersion = \([0-9][0-9]*\)$/\1/p' "$ROOT/BE_GO/migrations/migrations.go")
     actual=$(db_query "SELECT version || ':' || dirty FROM public.assozeta_go_schema_migrations;")
-    [ "$actual" = '4:false' ] || {
-        printf 'Expected clean Go operational schema 4, got %s.\n' "$actual" >&2
+    [ -n "$expected_schema" ] && [ "$actual" = "$expected_schema:false" ] || {
+        printf 'Expected clean Go operational schema %s, got %s.\n' "$expected_schema" "$actual" >&2
         exit 1
     }
-    actual=$(db_query "SELECT runtime || ':' || generation FROM public.assozeta_go_job_ownership WHERE singleton=1;")
-    [ "$actual" = 'django:1' ] || {
-        printf 'Ordinary lifecycle changed default Django execution ownership: %s.\n' "$actual" >&2
+    actual=$(owner_generation)
+    [ "$actual" = "django:$expected_owner_generation" ] || {
+        printf 'Ordinary lifecycle changed default Django execution ownership: %s (expected django:%s).\n' \
+            "$actual" "$expected_owner_generation" >&2
         exit 1
     }
 }
+
+owner_generation() {
+    db_query "SELECT runtime || ':' || generation FROM public.assozeta_go_job_ownership WHERE singleton=1;"
+}
+
+# Ordinary lifecycle steps never move execution ownership. Only a completed restore
+# advances the generation, once, past both the live and the archived database (Phase 6 A5).
+expected_owner_generation=1
 
 go_intent_digest() {
     db_query "SELECT md5(row_to_json(j)::text) FROM public.assozeta_go_jobs j WHERE id='11111111-1111-4111-8111-111111111111';"
@@ -220,7 +240,8 @@ create_corrupt_object_archive() {
 }
 
 phase "configure production environment"
-ASSOZETA_ENV_FILE="$ENV_FILE" "$CLI" configure --domain localhost:58080 --version test
+# A release candidate's images carry its version; local builds use "test".
+ASSOZETA_ENV_FILE="$ENV_FILE" "$CLI" configure --domain localhost:58080 --version "${ASSOZETA_RELEASE_VERSION:-test}"
 set_value COMPOSE_PROJECT_NAME assozeta-production-smoke
 set_value ASSOZETA_BACKEND_IMAGE assozeta-backend
 set_value ASSOZETA_BACKEND_GO_IMAGE assozeta-backend-go
@@ -254,7 +275,7 @@ django_migration_count=$(db_query 'SELECT count(*) FROM django_migrations;')
 django_migration_digest=$(db_query 'SELECT md5(json_agg(m ORDER BY id)::text) FROM django_migrations m;')
 db_sql "INSERT INTO public.assozeta_go_jobs(id,association_id,kind,version,idempotency_key,payload,max_attempts,available_at) VALUES ('11111111-1111-4111-8111-111111111111','00000000-0000-0000-0000-000000000000','fixture.lifecycle',1,'production-smoke','{\"checkpoint\":\"before-backup\",\"integer\":9007199254740993}',3,clock_timestamp());"
 # Storage sentinel only: this fixture does not activate periodic publication.
-db_sql "INSERT INTO public.assozeta_go_periodic_occurrences(id,periodic_task_id,source_name,dispatch_sequence,job_id,dispatched_at,ownership_generation,definition_sha256) VALUES ('22222222-2222-4222-8222-222222222222',17,'fixture-retained',9,'11111111-1111-4111-8111-111111111111',clock_timestamp(),7,repeat('a',64));"
+db_sql "INSERT INTO public.assozeta_go_periodic_occurrences(id,periodic_task_id,source_name,dispatch_sequence,job_id,task_id,dispatched_at,ownership_generation,definition_sha256) VALUES ('22222222-2222-4222-8222-222222222222',17,'fixture-retained',9,'11111111-1111-4111-8111-111111111111','11111111-1111-4111-8111-111111111111',clock_timestamp(),7,repeat('a',64));"
 go_occurrence_snapshot=$(db_query "SELECT md5(row_to_json(r)::text) FROM public.assozeta_go_periodic_occurrences r WHERE id='22222222-2222-4222-8222-222222222222';")
 go_before_backup=$(go_intent_digest)
 
@@ -489,8 +510,14 @@ fi
 cat "$dirty_history_restore_log"
 # A storage/preflight failure also returns nonzero while preserving live state.
 # Require the injected post-swap migration failure and both actual rollbacks.
+# The dirty history is rejected by Django's migrate (its operational receiver, Phase 6 B1)
+# or, where Go migrates, by the Go migrator.
+if ! grep -E 'Go operational migration failed|Dirty or incompatible operational schema migration history' \
+        "$dirty_history_restore_log" >/dev/null; then
+    printf 'Expected dirty-history restore evidence was not observed: operational migration rejection\n' >&2
+    exit 1
+fi
 for restore_marker in \
-    'Go operational migration failed' \
     'restore failed; rolling back live database/object data' \
     'rolling back PostgreSQL' \
     'rolling back object storage'; do
@@ -505,9 +532,19 @@ assert_object_sentinel after-backup
 go_probe verify --receipt "$TEMPORARY/go-after-backup.json"
 assert_go_intent "$go_after_backup"
 
+live_owner=$(owner_generation)
+archived_generation=$(tar -xzOf "$archive" ./manifest.txt | sed -n 's/^runtime_generation=\([0-9][0-9]*\)$/\1/p')
+[ "${live_owner%%:*}" = django ] && [ -n "$archived_generation" ] || {
+    printf 'Expected a Django-owned installation and a format 2 checkpoint before restore, got %s / %s.\n' \
+        "$live_owner" "$archived_generation" >&2
+    exit 1
+}
 ASSOZETA_ENV_FILE="$ENV_FILE" "$CLI" restore "$archive" --yes
 
 phase "verify valid restore"
+live_generation=${live_owner#*:}
+expected_owner_generation=$(( (live_generation > archived_generation ? live_generation : archived_generation) + 1 ))
+assert_go_operational_schema
 curl_ready
 assert_db_sentinel before-backup
 assert_object_sentinel before-backup

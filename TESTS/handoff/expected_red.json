@@ -1,0 +1,7 @@
+{
+  "format": 1,
+  "release_evidence": false,
+  "rule": "Tests listed here must fail with one of their signatures. Remove an entry in the change that turns it green (test author verifies). A release or phase-exit gate must refuse while any entry remains.",
+  "baseline_revision": "2284ed46",
+  "tests": {}
+}

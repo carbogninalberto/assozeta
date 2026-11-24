@@ -53,6 +53,7 @@ const (
 	PartialRegistration    = "email/account/email_user_partial_registration.html"
 	CertificateExpiring    = "email/account/email_subscription_medical_certificate_expiring.html"
 	CertificateExpired     = "email/account/email_subscription_medical_certificate_expired.html"
+	CertificateChanged     = "email/account/email_subscription_medical_certificate_changed.html"
 	ReminderEvent          = "email/reminders/event.html"
 	AccountWelcomePassword = "email/account/email_welcome_password_message.html"
 	FeeAssigned            = "email/payment/fee_assigned.html"
@@ -394,7 +395,7 @@ var (
 
 // Names lists the embedded templates.
 var names = []string{"email/_base.html", CollaboratorInvite, PaymentPending, PaymentReceipt, AccountWelcome, AccountReset, AccountResetConfirm,
-	PartialRegistration, CertificateExpiring, CertificateExpired, ReminderEvent, AccountWelcomePassword, FeeAssigned, NewSubscription}
+	PartialRegistration, CertificateExpiring, CertificateExpired, CertificateChanged, ReminderEvent, AccountWelcomePassword, FeeAssigned, NewSubscription}
 
 func templates() (map[string]*template, error) {
 	loadOnce.Do(func() {

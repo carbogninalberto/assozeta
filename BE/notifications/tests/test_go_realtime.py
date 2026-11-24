@@ -9,9 +9,11 @@ from django.test import TestCase
 from communications.staff_board import staff_board_group
 from notifications import go_realtime
 
-# Exact copy of BE_GO/migrations/000004_realtime_events.up.sql. Django never
-# migrates this Go-owned table; TESTS/test_go_realtime_outbox_ddl.py keeps the
-# copy byte-identical so this test exercises the shipped schema.
+# Exact copy of BE_GO/migrations/000004_realtime_events.up.sql;
+# TESTS/test_go_realtime_outbox_ddl.py keeps the copy byte-identical so this test
+# exercises the shipped schema. Django's migrate now also applies the operational
+# SQL (instance.operational_schema), so the test database may already hold the
+# table (possibly at a later operational version): the tests then use it, emptied.
 OUTBOX_DDL = "-- Transactional realtime outbox. Go appends an event in the same transaction as\n-- the business write, so rolled-back writes publish nothing and committed ones\n-- are never lost. The runtime owning WebSocket delivery claims and forwards\n-- events through its own transport; the envelope, not a Channels encoding, is\n-- the cross-runtime protocol. Delivery is at least once; events only invalidate.\nCREATE TABLE public.assozeta_go_realtime_events (\n    id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,\n    envelope_version smallint NOT NULL CHECK (envelope_version = 1),\n    kind text NOT NULL CHECK (kind ~ '^[a-z][a-z_]{0,63}$'),\n    target_id uuid NOT NULL,\n    created_at timestamptz NOT NULL DEFAULT clock_timestamp(),\n    attempts integer NOT NULL DEFAULT 0 CHECK (attempts >= 0),\n    delivered_at timestamptz,\n    failed_code text,\n    CHECK (delivered_at IS NULL OR failed_code IS NULL)\n);\nCREATE INDEX assozeta_go_realtime_events_pending ON public.assozeta_go_realtime_events (id)\n    WHERE delivered_at IS NULL AND failed_code IS NULL;\n"
 
 
@@ -20,10 +22,19 @@ class FailingLayer:
         raise ConnectionError('channel layer unavailable')
 
 
+def drop_outbox(cursor):
+    cursor.execute('DROP TABLE IF EXISTS public.assozeta_go_realtime_events')
+
+
 class GoRealtimeRelayTests(TestCase):
     def create_outbox(self):
+        # The migrated table when Django's migrate created it (rolled back with the test), else the shipped DDL.
         with connection.cursor() as cursor:
-            cursor.execute(OUTBOX_DDL)
+            cursor.execute("SELECT to_regclass('public.assozeta_go_realtime_events') IS NULL")
+            if cursor.fetchone()[0]:
+                cursor.execute(OUTBOX_DDL)
+            else:
+                cursor.execute('TRUNCATE public.assozeta_go_realtime_events RESTART IDENTITY')
 
     def event(self, kind='staff_board_changed', target=None):
         with connection.cursor() as cursor:
@@ -38,6 +49,8 @@ class GoRealtimeRelayTests(TestCase):
             return cursor.fetchone()
 
     def test_absent_outbox_is_inert(self):
+        with connection.cursor() as cursor:
+            drop_outbox(cursor)  # a database that predates the outbox; rolled back with the test
         self.assertFalse(go_realtime.outbox_present())
         self.assertEqual(go_realtime.relay_once(layer=InMemoryChannelLayer()), {'delivered': 0, 'retry': 0, 'failed': 0})
 
@@ -49,7 +62,9 @@ class GoRealtimeRelayTests(TestCase):
         async_to_sync(layer.group_add)(staff_board_group(association), channel)
         identifier = self.event(target=association)
         self.assertEqual(go_realtime.relay_once(layer=layer), {'delivered': 1, 'retry': 0, 'failed': 0})
-        self.assertEqual(async_to_sync(layer.receive)(channel), {'type': 'staff_board_changed'})
+        received = async_to_sync(layer.receive)(channel)
+        # The outbox at operational version 8 (Phase 4) also carries the event id.
+        self.assertEqual(received, {'type': 'staff_board_changed', **({'event_id': identifier} if 'event_id' in received else {})})
         self.assertEqual(self.row(identifier), (1, True, None))
         # Delivered events are never resent.
         self.assertEqual(go_realtime.relay_once(layer=layer), {'delivered': 0, 'retry': 0, 'failed': 0})
@@ -86,7 +101,13 @@ class GoRealtimeSocketTests(BaseTransactionTestCase):
         from application.models import User
         super().setUp()
         with connection.cursor() as cursor:
-            cursor.execute(OUTBOX_DDL)
+            # Not rolled back here: keep a migrated table for later tests, emptied.
+            cursor.execute("SELECT to_regclass('public.assozeta_go_realtime_events') IS NULL")
+            self.created_outbox = cursor.fetchone()[0]
+            if self.created_outbox:
+                cursor.execute(OUTBOX_DDL)
+            else:
+                cursor.execute('TRUNCATE public.assozeta_go_realtime_events RESTART IDENTITY')
         self.owner = create_test_user(role=User.ASSOCIATION)
         self.association = create_test_sport_association(user=self.owner)
         create_test_billing_subscription(user=self.owner, plan_type='pro')
@@ -96,7 +117,10 @@ class GoRealtimeSocketTests(BaseTransactionTestCase):
 
     def tearDown(self):
         with connection.cursor() as cursor:
-            cursor.execute('DROP TABLE public.assozeta_go_realtime_events')
+            if self.created_outbox:
+                drop_outbox(cursor)
+            else:
+                cursor.execute('TRUNCATE public.assozeta_go_realtime_events RESTART IDENTITY')
         super().tearDown()
 
     def event(self):

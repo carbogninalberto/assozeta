@@ -370,7 +370,7 @@ class CommitObserver:
         from django.db import connection
         pubsub = self.broker.pubsub()
         try:
-            pubsub.subscribe(f'__keyspace@0__:{harness.CELERY_QUEUE}')
+            pubsub.subscribe(f'__keyspace@0__:{harness.CELERY_QUEUE}', f'__keyspace@0__:{harness.GO_QUEUE}')
             self.ready.set()
             while not self.stop.is_set():
                 message = pubsub.get_message(ignore_subscribe_messages=True, timeout=0.2)
@@ -383,7 +383,7 @@ class CommitObserver:
     def observe(self):
         import base64
         from application.models import Invoice, Payment
-        for raw in self.broker.lrange(harness.CELERY_QUEUE, 0, -1):
+        for raw in self.broker.lrange(harness.CELERY_QUEUE, 0, -1) + self.broker.lrange(harness.GO_QUEUE, 0, -1):
             envelope = json.loads(raw)
             task = envelope['headers']['id']
             with self.lock:
@@ -475,7 +475,8 @@ def side_channels(case, effect, fixture, context, binding, until):
     contract.require(len(messages) == len(specs), 'celery.count')
     for index, (raw, spec) in enumerate(zip(messages, specs)):
         args = [values.get(item, item) if isinstance(item, str) else item for item in spec['args']]
-        harness.check_celery_message(contract, raw, {**spec, 'args': args}, since=since, until=until, where=f':{index}')
+        harness.check_celery_message(contract, raw, harness.owned_spec(contract, raw, {**spec, 'args': args}), since=since,
+                                     until=until, where=f':{index}')
         if 'committed' in spec:
             # What a worker reading the database sees when the message arrives.
             seen = fixture['commit_observer'].observation(json.loads(raw)['headers']['id'])
@@ -483,8 +484,7 @@ def side_channels(case, effect, fixture, context, binding, until):
             contract.require(seen == {'invoice': committed['invoice'], 'payments': [[committed['paid'], committed['type']]]},
                              f'celery.committed:{index}')
     if specs:
-        key, member = harness.CELERY_BINDING
-        contract.require({m.decode() for m in fixture['celery_broker'].smembers(key)} == {member}, 'celery.binding')
+        harness.require_celery_binding(contract, fixture, messages)
     created = any(item['model'] == 'notificationsbroadcast' for item in effect['audit'])
     paid.check_notification(contract, effect.get('notification'), fixture, context['prepared'], created, until)
 

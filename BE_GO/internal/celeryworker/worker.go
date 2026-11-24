@@ -24,9 +24,8 @@
 //     acks_late, reject_on_worker_lost and soft/hard time limits applied
 //     as billiard's AsynPool applies them.
 //
-// Messages the Go side does not run (an unregistered name, a payload or
-// option outside the decoded subset, or an input the task's Plan refuses)
-// are handed off unchanged to Django's "celery" queue before any effect.
+// The handoff ledger preserves messages the Go side cannot run. On older
+// databases the worker still forwards them to Django before any effect.
 package celeryworker
 
 import (
@@ -80,7 +79,7 @@ type Retry struct {
 
 func (r *Retry) Error() string { return "celery task retry: " + r.Exc.Error() }
 
-// ErrHandoff from Task.Plan hands the message to Django's queue.
+// ErrHandoff marks an input the task planner cannot execute.
 var ErrHandoff = errors.New("celeryworker: handed off to the Django worker")
 
 // Request is the running task's request (Task.request).
@@ -104,6 +103,9 @@ func (r *Request) Children() []string { return append([]string(nil), r.children.
 type Task struct {
 	// MaxRetries is the task's max_retries; negative means None.
 	MaxRetries int64
+	// ToNative transfers a due delivery to a native job before either
+	// executor claims it. A successful transfer owns the original ID.
+	ToNative func(context.Context, *celery.Message) (bool, error)
 	// Plan runs before the acknowledgement and must have no effect; it
 	// returns ErrHandoff for inputs outside the ported subset.
 	Plan func(context.Context, *Request) error
@@ -141,8 +143,9 @@ type Admission interface {
 
 // Options bound the worker.
 type Options struct {
+	Handoff     *BrokerHandoff
 	Concurrency int
-	// HandoffQueue is Django's queue ("celery").
+	// HandoffQueue is the legacy worker's fallback when no handoff ledger is installed.
 	HandoffQueue string
 	// Origin is the worker's nodename (gen<pid>@<host>), used for republished
 	// messages whose request has no origin.
@@ -181,7 +184,8 @@ type heldMessage struct {
 }
 
 func New(transport *celery.Transport, tasks map[string]Task, results Results, admission Admission, options Options, logger *slog.Logger) (*Worker, error) {
-	if options.Concurrency < 1 || options.Concurrency > 32 || options.HandoffQueue == "" || options.HandoffQueue == transport.Queue {
+	invalidLegacyQueue := options.Handoff == nil && (options.HandoffQueue == "" || options.HandoffQueue == transport.Queue)
+	if options.Concurrency < 1 || options.Concurrency > 32 || invalidLegacyQueue {
 		return nil, errors.New("celeryworker: invalid options")
 	}
 	if options.RestoreEvery <= 0 {
@@ -206,6 +210,10 @@ func New(transport *celery.Transport, tasks map[string]Task, results Results, ad
 // restores held messages (Celery's warm shutdown).
 func (w *Worker) Run(ctx context.Context) error {
 	background := context.WithoutCancel(ctx)
+	h := w.options.Handoff
+	if h != nil {
+		h.start(ctx)
+	}
 	if err := w.transport.Declare(ctx); err != nil {
 		return fmt.Errorf("declare queue: %w", err)
 	}
@@ -229,7 +237,18 @@ func (w *Worker) Run(ctx context.Context) error {
 		case <-ctx.Done():
 			continue
 		}
+		if h != nil && !h.reserve() {
+			<-slots
+			select {
+			case <-ctx.Done():
+			case <-time.After(h.Interval):
+			}
+			continue
+		}
 		if delivery := w.nextReady(); delivery != nil {
+			if h != nil {
+				h.reserved()
+			}
 			running.Add(1)
 			go func() {
 				defer running.Done()
@@ -240,6 +259,9 @@ func (w *Worker) Run(ctx context.Context) error {
 		}
 		delivery, err := w.transport.Get(ctx, time.Second)
 		if err != nil || delivery == nil {
+			if h != nil {
+				h.reserved()
+			}
 			<-slots
 			if err != nil && ctx.Err() == nil {
 				w.logger.Warn("celery broker read failed", "code", "celery_broker_failed")
@@ -247,7 +269,11 @@ func (w *Worker) Run(ctx context.Context) error {
 			}
 			continue
 		}
-		if !w.receive(background, delivery) {
+		ready := w.receive(background, delivery)
+		if h != nil {
+			h.reserved()
+		}
+		if !ready {
 			<-slots
 			continue
 		}
@@ -293,7 +319,11 @@ func (w *Worker) receive(ctx context.Context, d *Delivery) bool {
 	started := time.Now()
 	m := d.Message
 	if d.Err != nil || m == nil {
-		if w.handoff(ctx, d, "undecodable") == outcomeHandedOff {
+		reason := "undecodable"
+		if w.options.Handoff != nil && errors.Is(d.Err, celery.ErrCanvasOptions) {
+			reason = "options"
+		}
+		if outcome := w.handoff(ctx, d, reason); outcome != outcomeNone {
 			var envelope struct {
 				Headers struct {
 					Task string `json:"task"`
@@ -302,7 +332,7 @@ func (w *Worker) receive(ctx context.Context, d *Delivery) bool {
 			}
 			// Unmarshal can recover either string even if the other has the wrong type.
 			_ = json.Unmarshal(d.Raw, &envelope)
-			w.logTaskDone(envelope.Headers.Task, envelope.Headers.ID, outcomeHandedOff, started)
+			w.logTaskDone(envelope.Headers.Task, envelope.Headers.ID, outcome, started)
 		}
 		return false
 	}
@@ -312,11 +342,18 @@ func (w *Worker) receive(ctx context.Context, d *Delivery) bool {
 		return false
 	}
 	if m.Expires != nil && w.now().After(*m.Expires) {
+		if w.options.Handoff != nil {
+			return true
+		}
 		w.revoke(ctx, d)
 		w.logTaskDone(m.Task, m.ID, outcomeFailure, started)
 		return false
 	}
-	if !m.PlainWith(task.Prefork) || (task.Prefork && !validTimeLimits(m.TimeLimit)) {
+	supported := m.PlainWith(task.Prefork)
+	if w.options.Handoff != nil {
+		supported = m.HandoffOptions(task.Prefork)
+	}
+	if !supported || (task.Prefork && !validTimeLimits(m.TimeLimit)) {
 		w.logTaskDone(m.Task, m.ID, w.handoff(ctx, d, "options"), started)
 		return false
 	}
@@ -340,11 +377,12 @@ const (
 	outcomeFailure   taskOutcome = "failure"
 	outcomeRetry     taskOutcome = "retry"
 	outcomeHandedOff taskOutcome = "handed_off"
+	outcomeBlocked   taskOutcome = "blocked"
 )
 
 func (w *Worker) logTaskDone(task, id string, outcome taskOutcome, started time.Time) {
 	switch outcome {
-	case outcomeSuccess, outcomeFailure, outcomeRetry, outcomeHandedOff:
+	case outcomeSuccess, outcomeFailure, outcomeRetry, outcomeHandedOff, outcomeBlocked:
 	default:
 		return
 	}
@@ -352,6 +390,9 @@ func (w *Worker) logTaskDone(task, id string, outcome taskOutcome, started time.
 }
 
 func (w *Worker) handoff(ctx context.Context, d *Delivery, reason string) taskOutcome {
+	if w.options.Handoff != nil {
+		return w.blockDelivery(ctx, d, reason)
+	}
 	if err := w.transport.Handoff(ctx, d, w.options.HandoffQueue); err != nil {
 		w.logger.Error("celery handoff failed", "code", "celery_handoff_failed", "reason", reason)
 		return outcomeNone
@@ -450,9 +491,30 @@ var (
 func (w *Worker) execute(ctx context.Context, d *Delivery) {
 	started := time.Now()
 	m := d.Message
+	task := w.tasks[m.Task]
 	var outcome taskOutcome
 	defer func() { w.logTaskDone(m.Task, m.ID, outcome, started) }()
-	task := w.tasks[m.Task]
+	if task.ToNative != nil && (m.Expires == nil || w.now().Before(*m.Expires)) {
+		adapted, err := task.ToNative(ctx, m)
+		if err != nil {
+			// Keep the unacked broker copy if the native receipt did not commit.
+			return
+		}
+		if adapted {
+			w.ack(ctx, d)
+			return
+		}
+	}
+	if w.options.Handoff != nil {
+		var claimed bool
+		ctx, claimed = w.claim(ctx, d)
+		if !claimed {
+			return
+		}
+		attempt := ctx.Value(attemptContext{}).(*brokerAttempt)
+		defer attempt.stopRenewal()
+		defer func() { attempt.finish(ctx, outcome) }()
+	}
 	job := w.jobs.Add(1) - 1
 	if task.Prefork {
 		outcome = w.executePrefork(ctx, d, task, job)
@@ -565,7 +627,7 @@ func (w *Worker) deferForMaintenance(ctx context.Context, request *Request, coun
 }
 
 func (w *Worker) republish(ctx context.Context, request *Request, retries, countdown int64, persist bool) bool {
-	payload, err := celery.EncodeRepublish(request.Message, celery.Republish{Retries: retries,
+	payload, err := celery.EncodeRepublish(request.Message, celery.Republish{Retries: retries, HandoffOptions: w.options.Handoff != nil,
 		ETA: w.now().UTC().Add(time.Duration(countdown) * time.Second), DeliveryTag: w.newID(), Origin: w.options.Origin})
 	if err != nil {
 		w.logger.Error("celery republish encoding failed", "code", "celery_republish_failed")
@@ -573,7 +635,12 @@ func (w *Worker) republish(ctx context.Context, request *Request, retries, count
 	}
 	delay := time.Second
 	for {
-		err = w.transport.Publish(ctx, request.RepublishQueue(), payload)
+		if attempt, ok := ctx.Value(attemptContext{}).(*brokerAttempt); ok {
+			publisher := celery.AdmittingBroker{DB: attempt.ledger.DB, Redis: celery.RedisBroker{Client: w.transport.Client}}
+			err = publisher.PublishAttempt(ctx, request.RepublishQueue(), payload, attempt.id)
+		} else {
+			err = w.transport.Publish(ctx, request.RepublishQueue(), payload)
+		}
 		if err == nil {
 			return true
 		}

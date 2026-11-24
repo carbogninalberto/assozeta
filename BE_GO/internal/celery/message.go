@@ -2,11 +2,15 @@ package celery
 
 import (
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
 	"time"
 )
+
+// ErrCanvasOptions identifies an otherwise decoded message with canvas metadata.
+var ErrCanvasOptions = errors.New("canvas options")
 
 // Message is one task message as kombu's Redis transport delivers it
 // (protocol 2, JSON serializer, base64 body), decoded the way Celery's
@@ -188,7 +192,7 @@ func ParseMessage(raw []byte) (*Message, error) {
 	}
 	for _, key := range []string{"callbacks", "errbacks", "chain", "chord"} {
 		if get(embed, key) != nil {
-			return nil, fmt.Errorf("%w: canvas", ErrUndecodable)
+			return nil, fmt.Errorf("%w: %w", ErrUndecodable, ErrCanvasOptions)
 		}
 	}
 	return m, nil
@@ -201,7 +205,13 @@ func (m *Message) Plain() bool { return m.PlainWith(false) }
 // PlainWith is Plain, also accepting time limits when timeLimits is true
 // (tasks the worker runs in a prefork child, which applies them).
 func (m *Message) PlainWith(timeLimits bool) bool {
-	if !m.plainOptions() {
+	return m.plainWithOptions(timeLimits, false)
+}
+
+func (m *Message) HandoffOptions(timeLimits bool) bool { return m.plainWithOptions(timeLimits, true) }
+
+func (m *Message) plainWithOptions(timeLimits, portable bool) bool {
+	if !m.plainOptions(portable) {
 		return false
 	}
 	if timeLimits {
@@ -220,8 +230,8 @@ func (m *Message) Redelivered() bool {
 	return flag
 }
 
-func (m *Message) plainOptions() bool {
-	for _, key := range []string{"shadow", "group", "group_index", "stamped_headers", "expires"} {
+func (m *Message) plainOptions(portable bool) bool {
+	for _, key := range []string{"shadow", "group", "group_index", "stamped_headers"} {
 		if v, _ := m.Headers.Get(key); v != nil {
 			return false
 		}
@@ -231,16 +241,17 @@ func (m *Message) plainOptions() bool {
 		return false
 	}
 	nesting, _ := integer(func() any { v, _ := m.Headers.Get("replaced_task_nesting"); return v }())
-	return m.Priority == 0 && nesting == 0 && m.Exchange == ""
+	return (portable || (m.Priority == 0 && m.Expires == nil)) && nesting == 0 && m.Exchange == ""
 }
 
 // Republish is a message the running task publishes for itself
 // (Task.retry, or the maintenance deferral of CoordinatedTask):
 // signature_from_request(request, countdown=..., retries=...).apply_async().
 type Republish struct {
-	Retries     int64
-	ETA         time.Time
-	DeliveryTag string
+	HandoffOptions bool
+	Retries        int64
+	ETA            time.Time
+	DeliveryTag    string
 	// Origin is the publisher's nodename, used when the request has none.
 	Origin string
 }
@@ -252,7 +263,7 @@ type Republish struct {
 // to the running task, the request's origin in the headers and properties,
 // and the queue the message came from (the anonymous exchange).
 func EncodeRepublish(m *Message, r Republish) ([]byte, error) {
-	if !m.PlainWith(true) {
+	if !m.PlainWith(true) && !(r.HandoffOptions && m.HandoffOptions(true)) {
 		return nil, fmt.Errorf("%w: republish options", ErrUnsupportedValue)
 	}
 	// signature_from_request passes request.args, a tuple: argsrepr is the
@@ -302,6 +313,11 @@ func EncodeRepublish(m *Message, r Republish) ([]byte, error) {
 	properties := Dict{{"correlation_id", m.ID}, {"reply_to", replyTo}, {"origin", origin}, {"delivery_mode", 2},
 		{"delivery_info", Dict{{"exchange", ""}, {"routing_key", m.RoutingKey}}}, {"priority", 0},
 		{"body_encoding", "base64"}, {"delivery_tag", r.DeliveryTag}}
+	if m.Expires != nil {
+		v, _ := m.Headers.Get("expires")
+		headers.Set("expires", v)
+	}
+	properties.Set("priority", m.Priority)
 	out := []byte(`{"body": "`)
 	out = append(out, base64.StdEncoding.EncodeToString(body)...)
 	out = append(out, `", "content-encoding": "utf-8", "content-type": "application/json", "headers": `...)

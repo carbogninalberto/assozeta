@@ -1,0 +1,100 @@
+{
+  "fixtures": {
+    "django-default": {
+      "captured_at": "2026-11-20T12:00:00Z",
+      "description": "Configured legacy v1 instance with default task routing, custom and disabled Beat definitions.",
+      "files": {
+        "broker": "django-default/broker.json",
+        "browser": "django-default/browser.json",
+        "database": "django-default/database.json",
+        "env": "django-default/env.json"
+      },
+      "generator": "python3 -B -m TESTS.handoff.fixtures.generate",
+      "observed": {
+        "running_services": [
+          "api",
+          "api-go",
+          "beat",
+          "minio",
+          "postgres",
+          "realtime-relay",
+          "redis",
+          "renderer",
+          "web",
+          "worker"
+        ]
+      },
+      "revision": "2284ed467908b5f90f6330fae4c18de3b275036f",
+      "sha256": {
+        "django-default/broker.json": "5314b25ec989c16658f3b47be0e8963400b60871059c49b47353f7504feddd2f",
+        "django-default/browser.json": "e29a0eda81afc752ad873c2aef182121e0866f094aa968e67a5ac1bf7f67d4c6",
+        "django-default/database.json": "4464619ebce74699881c894577cab77fa8c73982bf6f514dca8f67484e4ce858",
+        "django-default/env.json": "9b04dde0561bbd4702f6897ab7290debd2f2d77721a00162f7e5cafadfc8d67f"
+      }
+    },
+    "fresh": {
+      "captured_at": "2026-11-20T12:00:00Z",
+      "description": "Empty host and cold client; observed services are from stock CLI install.",
+      "files": {
+        "broker": "fresh/broker.json",
+        "browser": "fresh/browser.json",
+        "database": null,
+        "env": null
+      },
+      "generator": "python3 -B -m TESTS.handoff.fixtures.generate",
+      "observed": {
+        "running_services": [
+          "api",
+          "api-go",
+          "beat",
+          "minio",
+          "postgres",
+          "realtime-relay",
+          "redis",
+          "renderer",
+          "web",
+          "worker"
+        ]
+      },
+      "revision": "2284ed467908b5f90f6330fae4c18de3b275036f",
+      "sha256": {
+        "fresh/broker.json": "ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356",
+        "fresh/browser.json": "a9f1ee3964064e8f737d71a31be9c02a96fe0fb5a9b8f4b265761564ebe61725"
+      }
+    },
+    "legacy-mixed": {
+      "captured_at": "2026-11-20T12:00:00Z",
+      "description": "Configured legacy v2 instance with four email routes, pending work on both queues and persisted outbox work.",
+      "files": {
+        "broker": "legacy-mixed/broker.json",
+        "browser": "legacy-mixed/browser.json",
+        "database": "legacy-mixed/database.json",
+        "env": "legacy-mixed/env.json"
+      },
+      "generator": "python3 -B -m TESTS.handoff.fixtures.generate",
+      "observed": {
+        "running_services": [
+          "api",
+          "api-go",
+          "beat",
+          "minio",
+          "postgres",
+          "realtime-relay",
+          "redis",
+          "renderer",
+          "web",
+          "worker",
+          "worker-go"
+        ]
+      },
+      "revision": "2284ed467908b5f90f6330fae4c18de3b275036f",
+      "sha256": {
+        "legacy-mixed/broker.json": "5cfbd338d2455575bd74d003fcc226c4ad056169b0543cd2571357ff1a574dfa",
+        "legacy-mixed/browser.json": "2a2cadf8405200c8a271af1b7af503b3ea98dc45c06904055bcc21b1c90d85c8",
+        "legacy-mixed/database.json": "b2d68036eeb12b1f53e5adeabef3396e5c1b0bfe41ab256bb8f0eeeaab18d592",
+        "legacy-mixed/env.json": "43f972ef635dc3307cdb3d0feaf50684b274ed319404b57bcbe74248986ddfca"
+      }
+    }
+  },
+  "format": 1
+}

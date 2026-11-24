@@ -36,6 +36,7 @@ python3 -m compileall -q "$ROOT/BE"
 python3 -m compileall -q "$ROOT/selfhost/updater"
 python3 -m unittest discover -s "$ROOT/selfhost/tests" -p test_updater.py
 python3 -m unittest discover -s "$ROOT/selfhost/tests" -p "test_go_*.py"
+python3 -m unittest discover -s "$ROOT/selfhost/tests" -p "test_handoff_*.py"
 python3 -m unittest discover -s "$ROOT/selfhost/tests" -p test_bakney_protocol.py
 python3 -m unittest discover -s "$ROOT/selfhost/tests" -p test_restart.py
 python3 -m unittest discover -s "$ROOT/selfhost/tests" -p test_maintenance_lifecycle.py
@@ -51,6 +52,7 @@ python3 -m unittest discover -s "$ROOT/selfhost/tests" -p test_edge_proxy.py
 
 ASSOZETA_SELFHOST_DIR="$ROOT/selfhost" ASSOZETA_ENV_FILE="$TEMPORARY/prod.env" \
     ASSOZETA_UPDATER_API_VOLUME=assozeta_updater_api ASSOZETA_UPDATER_STATUS_VOLUME=assozeta_updater_status \
+    ASSOZETA_UPDATER_NOTICES_VOLUME=assozeta_updater_notices \
     docker compose --env-file "$TEMPORARY/prod.env" -f "$ROOT/selfhost/compose.updater.yml" \
     --project-name assozeta-updater config --format json | python3 -c '
 import json, sys
@@ -60,10 +62,12 @@ assert config["volumes"]["updater_api"]["name"] == "assozeta_updater_api"
 assert config["volumes"]["updater_api"]["external"]
 assert config["volumes"]["updater_status"]["name"] == "assozeta_updater_status"
 assert config["volumes"]["updater_status"]["external"]
+assert config["volumes"]["updater_notices"]["name"] == "assozeta_updater_notices"
+assert config["volumes"]["updater_notices"]["external"]
 '
 
 ASSOZETA_ENV_FILE="$TEMPORARY/prod.env" \
-    docker compose --env-file "$TEMPORARY/prod.env" -f "$ROOT/selfhost/compose.yml" --profile tools config --format json | python3 -c '
+    docker compose --env-file "$TEMPORARY/prod.env" -f "$ROOT/selfhost/compose.yml" --profile '*' config --format json | python3 -c '
 import json, sys
 config = json.load(sys.stdin)
 for service in ("web", "api"):
@@ -71,9 +75,9 @@ for service in ("web", "api"):
 relay = config["services"]["realtime-relay"]
 assert relay["command"] == ["python", "manage.py", "relay_go_realtime"] and relay["restart"] == "unless-stopped"
 assert all("docker.sock" not in mount["target"] for mount in relay["volumes"])
-assert relay["deploy"]["replicas"] == 1
+# Relay selection: historical replica counts in test_realtime_relay_backend.py,
+# exclusive runtime profiles in TESTS/handoff/test_p2_process_sets.py.
 relay_go = config["services"]["realtime-relay-go"]
-assert relay_go["deploy"]["replicas"] == 0
 assert all("docker.sock" not in mount["target"] for mount in relay_go.get("volumes", []))
 assert all(not key.startswith("MANUAL_") for key in relay_go["environment"])
 for service in ("api", "worker", "beat", "realtime-relay", "migrate"):

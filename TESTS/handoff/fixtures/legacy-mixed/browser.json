@@ -1,0 +1,18 @@
+[
+  {
+    "localStorage": {
+      "assozeta_instance_config": "{\"features\": {\"uiApiVersion\": \"v2\"}}"
+    },
+    "name": "legacy-v2",
+    "sessionStorage": {}
+  },
+  {
+    "localStorage": {
+      "assozeta_instance_config": "{\"features\": {\"uiApiVersion\": \"v1\"}}"
+    },
+    "name": "legacy-v1",
+    "sessionStorage": {
+      "assozeta_api_override": "v1"
+    }
+  }
+]

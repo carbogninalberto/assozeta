@@ -103,14 +103,14 @@ func (c timedConn) Write(p []byte) (int, error) {
 // do sends one http.client request: 'Host: localhost', 'Accept-Encoding:
 // identity', the given headers, no User-Agent, and the body with its
 // Content-Length when there is one.
-func do(ctx context.Context, directory, method, path string, headers map[string]string, body []byte, timeout time.Duration) (*http.Response, error) {
+func do(ctx context.Context, socketPath, method, path string, headers map[string]string, body []byte, timeout time.Duration) (*http.Response, error) {
 	for i := 0; i < len(path); i++ {
 		if path[i] >= 0x7f || path[i] <= ' ' {
 			return nil, unreachable() // putrequest: non-ASCII or control characters in the URL (ValueError)
 		}
 	}
 	dialer := net.Dialer{Timeout: timeout}
-	conn, err := dialer.DialContext(ctx, "unix", filepath.Join(directory, "runner.sock"))
+	conn, err := dialer.DialContext(ctx, "unix", socketPath)
 	if err != nil {
 		return nil, unreachable()
 	}
@@ -173,6 +173,15 @@ func (c Client) Call(ctx context.Context, method, path string) (*Reply, error) {
 // CallPayload is call_runner(method, path, payload) with the payload already
 // encoded as json.dumps(payload) (nil sends no body, as payload=None).
 func (c Client) CallPayload(ctx context.Context, method, path string, payload []byte) (*Reply, error) {
+	return c.call(ctx, "runner.sock", method, path, payload)
+}
+
+// ReadBackupFailures reads the job worker's projection with its own socket and token.
+func (c Client) ReadBackupFailures(ctx context.Context) (*Reply, error) {
+	return c.call(ctx, "notices.sock", http.MethodGet, "/backup-failures", nil)
+}
+
+func (c Client) call(ctx context.Context, socketName, method, path string, payload []byte) (*Reply, error) {
 	directory, err := c.directory()
 	if err != nil {
 		return nil, err
@@ -181,7 +190,7 @@ func (c Client) CallPayload(ctx context.Context, method, path string, payload []
 	if err != nil {
 		return nil, err
 	}
-	response, err := do(ctx, directory, method, path, map[string]string{
+	response, err := do(ctx, filepath.Join(directory, socketName), method, path, map[string]string{
 		"Authorization": "Bearer " + bearer, "Content-Type": "application/json"}, payload, 5*time.Second)
 	if err != nil {
 		return nil, err
@@ -204,7 +213,7 @@ func (c Client) Open(ctx context.Context, path string) (*Stream, error) {
 	if err != nil {
 		return nil, err
 	}
-	response, err := do(ctx, directory, http.MethodGet, path, map[string]string{"Authorization": "Bearer " + bearer}, nil, 300*time.Second)
+	response, err := do(ctx, filepath.Join(directory, "runner.sock"), http.MethodGet, path, map[string]string{"Authorization": "Bearer " + bearer}, nil, 300*time.Second)
 	if err != nil {
 		return nil, err
 	}

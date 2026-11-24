@@ -28,7 +28,7 @@ from application.utils.printing import _AsyncStreamingBody
 
 from .models import InstanceConfiguration
 from .permissions import IsInstanceOwner, is_instance_administrator
-from .updater_client import UpdaterRejected, UpdaterUnavailable, call_runner, open_runner_stream, send_runner_stream
+from .updater_client import UpdaterRejected, UpdaterUnavailable, call_runner, open_runner_stream, read_backup_failures, send_runner_stream
 from .upload_stream import UploadAborted, body_chunks
 
 logger = logging.getLogger(__name__)
@@ -376,23 +376,23 @@ FAILURE_NOTIFIED = 'instance:backup-failure-notified:{}'
 FAILURE_WINDOW_HOURS = 48
 
 
-def _failures(status, inventory):
+def _failures(payload):
     """Failed backups of the last two days, as (key, when, reason, archive name or '')."""
     from datetime import timedelta
     from django.utils import timezone
     from django.utils.dateparse import parse_datetime
     cutoff = timezone.now() - timedelta(hours=FAILURE_WINDOW_HOURS)
-    for operation in status.get('history', []):
+    for operation in payload.get('history', []):
         when = parse_datetime(operation.get('updated_at') or operation.get('created_at') or '')
         if operation.get('kind') == 'backup' and operation.get('status') == 'failed' and when and when >= cutoff:
             yield operation['id'], when, operation.get('error') or '', ''
-    last = (inventory.get('schedule') or {}).get('last_run') or {}
+    last = (payload.get('schedule') or {}).get('last_run') or {}
     when = parse_datetime(last.get('at') or '')
     # A scheduled run that could not start has no operation of its own.
     if last.get('status') == 'failed' and not last.get('operation') and when and when >= cutoff:
         yield f'schedule:{last["at"]}', when, last.get('error') or '', ''
     # Uploads to the remote copy are retried by the runner before they count.
-    failure = (inventory.get('remote') or {}).get('last_failure') or {}
+    failure = (payload.get('remote') or {}).get('last_failure') or {}
     when = parse_datetime(failure.get('at') or '')
     if when and when >= cutoff:
         name = failure.get('name')
@@ -411,8 +411,7 @@ def notify_failures():
     if deployment_mode() != 'production':
         return 0
     try:
-        status = call_runner('GET', '/status')
-        inventory = call_runner('GET', '/backups')
+        payload = read_backup_failures()
     except (UpdaterUnavailable, UpdaterRejected):
         return 0
     config = InstanceConfiguration.objects.select_related('primary_association__user').first()
@@ -420,7 +419,7 @@ def notify_failures():
     if not owner or not owner.email:
         return 0
     sent = 0
-    for key, when, reason, name in _failures(status, inventory):
+    for key, when, reason, name in _failures(payload):
         if not cache.add(FAILURE_NOTIFIED.format(key), True, timeout=7 * 86400):
             continue
         logger.warning('Backup failure %s: %s', key, reason)

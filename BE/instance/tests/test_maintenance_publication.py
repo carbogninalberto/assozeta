@@ -1,6 +1,7 @@
 """Regression coverage for acknowledged jobs whose maintenance publish fails."""
 import subprocess
 import sys
+import time
 from pathlib import Path
 from unittest.mock import Mock, patch
 
@@ -20,7 +21,11 @@ class MaintenancePublicationTests(SimpleTestCase):
         task.request.id = 'fixture-command'
         signature = task.signature_from_request.return_value
         signature.apply_async.side_effect = [ConnectionError('broker offline')] * 7 + [None]
-        with patch('instance.restore.task_base.time.sleep') as sleep:
+        # Patch the module task_base sees, not time.sleep itself: a global patch also captures every other
+        # thread of the test process (drf_api_logger's daemon calls time.sleep(DRF_LOGGER_INTERVAL=1) in a loop).
+        clock = Mock(wraps=time)
+        sleep = clock.sleep = Mock()
+        with patch('instance.restore.task_base.time', clock):
             with self.assertRaises(Retry) as caught:
                 defer_for_maintenance(task, RuntimeError('maintenance'), countdown=15)
         self.assertEqual([call.args[0] for call in sleep.call_args_list], [1, 2, 4, 8, 16, 30, 30])

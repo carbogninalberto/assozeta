@@ -70,6 +70,10 @@ func (s *StripePaidCheck) Run(ctx context.Context, job domain.Job) error {
 	if err := tasksDBDEnvelope(job, domain.JobMarkAsPaidPaymentsCheckingStripe); err != nil {
 		return err
 	}
+	ctx, err := paymentPublicationContext(ctx, s.store, job)
+	if err != nil {
+		return err
+	}
 	configured, err := s.stripe.TasksDBDCredentialsConfigured(ctx)
 	if err != nil {
 		return err

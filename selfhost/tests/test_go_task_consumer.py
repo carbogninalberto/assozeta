@@ -1,4 +1,11 @@
-"""Opt-in Go Celery consumer (worker-go): Compose profile, lifecycle and routing guard."""
+"""Go Celery consumer (worker-go): Compose definition, lifecycle and routing guard.
+
+In the historical dual-API distribution (historical_distribution.REVISION)
+worker-go is an opt-in `go-tasks` profile next to the Django worker; cases that
+pin that opt-in lifecycle run that distribution's own CLI and Compose file.
+The consumer's hardened definition is checked in both distributions (current:
+profile `go`). The exclusive selection is pinned in TESTS/handoff/test_p2_*.py.
+"""
 import json
 import os
 from pathlib import Path
@@ -19,11 +26,16 @@ from restart import service_order
 
 CLI = ROOT / 'selfhost/bin/assozeta'
 DEFINITIONS = CLI.read_text().split('\ncommand=${1:-help}\n')[0]
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from historical_distribution import legacy_definitions, legacy_root  # noqa: E402
+LEGACY = legacy_root()
+LEGACY_CLI = LEGACY / 'selfhost/bin/assozeta'
+LEGACY_DEFINITIONS = legacy_definitions()
 ROUTED = 'core.tasks.send_mail_async'
 
 
-def compose_services(env_file, directory, *profiles):
-    arguments = ['docker', 'compose', '--env-file', str(env_file), '-f', str(ROOT / 'selfhost/compose.yml')]
+def compose_services(env_file, directory, *profiles, selfhost=ROOT / 'selfhost'):
+    arguments = ['docker', 'compose', '--env-file', str(env_file), '-f', str(selfhost / 'compose.yml')]
     for profile in profiles:
         arguments += ['--profile', profile]
     result = subprocess.run(arguments + ['config', '--format', 'json'], capture_output=True, text=True, check=True,
@@ -33,23 +45,38 @@ def compose_services(env_file, directory, *profiles):
     return services
 
 
-class WorkerGoComposeTests(unittest.TestCase):
+class ComposeCase(unittest.TestCase):
+    selfhost = LEGACY / 'selfhost'
+
     def setUp(self):
         directory = TemporaryDirectory()
         self.addCleanup(directory.cleanup)
         self.directory = directory.name
         self.env = Path(self.directory) / '.env'
-        self.env.write_text((ROOT / 'selfhost/.env.example').read_text())
+        self.env.write_text((self.selfhost / '.env.example').read_text())
 
+    def services(self, *profiles):
+        return compose_services(self.env, self.directory, *profiles, selfhost=self.selfhost)
+
+
+class HistoricalDefaultStackTests(ComposeCase):
     def test_default_stack_has_no_go_consumer(self):
-        services = compose_services(self.env, self.directory)
+        services = self.services()
         self.assertNotIn('worker-go', services)
         self.assertIn('worker', services)
-        services = compose_services(self.env, self.directory, 'tools')
+        services = self.services('tools')
         self.assertNotIn('worker-go', services)
 
+
+class WorkerGoComposeTests(ComposeCase):
+    """Historical distribution: worker-go behind the opt-in go-tasks profile."""
+    profiles = ('go-tasks',)
+    consumer_profiles = ['go-tasks']
+    # Phase 4 family 08: the current consumer also reads the update runner's scoped backup notices socket.
+    notices = False
+
     def test_profile_renders_hardened_consumer_with_api_go_configuration(self):
-        services = compose_services(self.env, self.directory, 'go-tasks')
+        services = self.services(*self.profiles)
         consumer, api = services['worker-go'], services['api-go']
         for field in ('image', 'user', 'read_only', 'security_opt', 'init', 'tmpfs', 'env_file', 'restart'):
             self.assertEqual(consumer.get(field), api.get(field), field)
@@ -61,7 +88,8 @@ class WorkerGoComposeTests(unittest.TestCase):
         spool = api['environment']['TMPDIR']
         self.assertTrue(any(v['target'] == spool and v['type'] == 'volume' and 'source' not in v
                             for v in api['volumes']))
-        self.assertEqual(consumer['profiles'], ['go-tasks'])
+        if self.consumer_profiles is not None:
+            self.assertEqual(consumer['profiles'], self.consumer_profiles)
         self.assertEqual(consumer['entrypoint'], ['/app/celery-consumer'])
         self.assertEqual(consumer['command'], ['--concurrency=2', '--drain-timeout=50s'])
         self.assertEqual(consumer['stop_grace_period'], '1m0s')
@@ -76,25 +104,41 @@ class WorkerGoComposeTests(unittest.TestCase):
             self.assertEqual(consumer['environment'][key], api['environment'][key], key)
         self.assertNotIn('GO_LOGO_SPOOL_DIR', consumer['environment'])
         volumes = {volume['target']: volume for volume in consumer['volumes']}
-        self.assertEqual(set(volumes), {'/run/assozeta-operations', '/var/cache/assozeta-go-tasks'})
+        notices = {'/run/assozeta-updater-notices'} if self.notices else set()
+        self.assertEqual(set(volumes), {'/run/assozeta-operations', '/var/cache/assozeta-go-tasks'} | notices)
+        if self.notices:
+            mount = volumes['/run/assozeta-updater-notices']
+            self.assertEqual((mount['type'], mount['source'], mount.get('read_only')), ('volume', 'updater_notices', True))
         self.assertEqual(volumes['/run/assozeta-operations']['source'], self.directory + '/.operations')
         self.assertEqual(volumes['/var/cache/assozeta-go-tasks']['type'], 'volume')
         self.assertNotIn('source', volumes['/var/cache/assozeta-go-tasks'])
+        # Never the runner's administration socket and token (updater_api), nor Docker.
         self.assertFalse(any('docker.sock' in volume['target'] or 'updater' in volume.get('source', '')
-                             for volume in consumer['volumes']))
+                             for volume in consumer['volumes'] if volume.get('source') != 'updater_notices'))
         self.assertNotIn('ports', consumer)
 
     def test_concurrency_follows_its_own_setting_then_celery_concurrency(self):
         self.env.write_text(self.env.read_text().replace('CELERY_CONCURRENCY=2', 'CELERY_CONCURRENCY=3'))
-        self.assertIn('--concurrency=3', compose_services(self.env, self.directory, 'go-tasks')['worker-go']['command'])
+        self.assertIn('--concurrency=3', self.services(*self.profiles)['worker-go']['command'])
         with self.env.open('a') as handle:
             handle.write('GO_CELERY_CONCURRENCY=5\n')
-        self.assertIn('--concurrency=5', compose_services(self.env, self.directory, 'go-tasks')['worker-go']['command'])
+        self.assertIn('--concurrency=5', self.services(*self.profiles)['worker-go']['command'])
 
     def test_django_worker_consumes_only_the_default_queue(self):
-        command = compose_services(self.env, self.directory, 'go-tasks')['worker']['command']
+        command = self.services(*self.profiles)['worker']['command']
         self.assertEqual(command[command.index('-Q') + 1], 'celery')
 
+
+
+class CurrentWorkerGoComposeTests(WorkerGoComposeTests):
+    """Current distribution: the same hardened consumer (its runtime profile is pinned in test_p2_process_sets)."""
+    selfhost = ROOT / 'selfhost'
+    profiles = ('*',)
+    consumer_profiles = None
+    notices = True
+
+
+class WorkerGoImageTests(unittest.TestCase):
     def test_image_builds_and_ships_the_consumer_with_its_staging_directory(self):
         dockerfile = (ROOT / 'BE_GO/Dockerfile').read_text()
         self.assertIn('go build -trimpath -o /celery-consumer ./cmd/celery-consumer', dockerfile)
@@ -104,17 +148,17 @@ class WorkerGoComposeTests(unittest.TestCase):
 
 
 class WorkerGoCliComposeTests(unittest.TestCase):
-    """prod_compose passes the profile from ASSOZETA_GO_TASKS to real Compose."""
+    """Historical CLI: prod_compose passes the profile from ASSOZETA_GO_TASKS to real Compose."""
 
     def services(self, flag, *arguments):
         with TemporaryDirectory() as directory:
             root = Path(directory)
-            shutil.copy(ROOT / 'selfhost/compose.yml', root / 'compose.yml')
+            shutil.copy(LEGACY / 'selfhost/compose.yml', root / 'compose.yml')
             env = root / '.env'
-            env.write_text((ROOT / 'selfhost/.env.example').read_text().replace(
+            env.write_text((LEGACY / 'selfhost/.env.example').read_text().replace(
                 'ASSOZETA_GO_TASKS=0', f'ASSOZETA_GO_TASKS={flag}'))
             self.assertIn(f'ASSOZETA_GO_TASKS={flag}\n', env.read_text())
-            result = subprocess.run(['sh', '-c', DEFINITIONS + '\nprod_compose "$@"\n', 'test', *arguments],
+            result = subprocess.run(['sh', '-c', LEGACY_DEFINITIONS + '\nprod_compose "$@"\n', 'test', *arguments],
                                     capture_output=True, text=True,
                                     env={**os.environ, 'ASSOZETA_INSTALL_ROOT': directory})
             self.assertEqual(result.returncode, 0, result.stderr)
@@ -157,12 +201,13 @@ wait_url_ready() { printf 'ready %s\n' "$2"; }
 
 
 class WorkerGoLifecycleTests(unittest.TestCase):
-    def run_shell(self, body, *, flag='', names='', defined=True, not_running='', config_failure=False):
+    def run_shell(self, body, *, flag='', names='', defined=True, not_running='', config_failure=False,
+                  definitions=DEFINITIONS):
         with TemporaryDirectory() as directory:
             root = Path(directory)
             (root / '.env').write_text('APP_URL=http://fixture.invalid\n'
                                        f'ASSOZETA_GO_TASKS={flag}\nGO_TASK_QUEUE_TASKS={names}\n')
-            result = subprocess.run(['sh', '-c', DEFINITIONS + HARNESS + body], capture_output=True, text=True,
+            result = subprocess.run(['sh', '-c', definitions + HARNESS + body], capture_output=True, text=True,
                                     env={**os.environ, 'ASSOZETA_INSTALL_ROOT': directory,
                                          'TEST_DEFINED': str(defined).lower(), 'TEST_NOT_RUNNING': not_running,
                                          'TEST_CONFIG_FAILURE': str(config_failure).lower()})
@@ -170,7 +215,8 @@ class WorkerGoLifecycleTests(unittest.TestCase):
 
     def test_enabled_consumer_stops_with_the_django_worker_and_starts_after_migrations(self):
         result, lines, marker = self.run_shell('\nprod_operations_lock_held=true\ninitialise_prod\n'
-                                               'start_prod_app_services true\n', flag='1', names=ROUTED)
+                                               'start_prod_app_services true\n', flag='1', names=ROUTED,
+                                               definitions=LEGACY_DEFINITIONS)
         self.assertEqual(result.returncode, 0, result.stderr)
         stop = lines.index('compose --profile go-tasks stop worker-go api worker beat realtime-relay realtime-relay-go api-go')
         migrate = lines.index('compose --profile go-tasks --profile tools run --rm --no-deps migrate')
@@ -184,7 +230,8 @@ class WorkerGoLifecycleTests(unittest.TestCase):
     def test_disabled_consumer_is_still_stopped_but_never_started(self):
         for flag in ('', '0'):
             with self.subTest(flag=flag):
-                result, lines, marker = self.run_shell('\nstop_prod_data_services\nstart_prod_app_services\n', flag=flag)
+                result, lines, marker = self.run_shell('\nstop_prod_data_services\nstart_prod_app_services\n', flag=flag,
+                                                       definitions=LEGACY_DEFINITIONS)
                 self.assertEqual(result.returncode, 0, result.stderr)
                 self.assertIn('compose --profile go-tasks stop worker-go api worker beat realtime-relay realtime-relay-go api-go', lines)
                 self.assertIn('compose up -d worker beat realtime-relay realtime-relay-go', lines)
@@ -192,7 +239,8 @@ class WorkerGoLifecycleTests(unittest.TestCase):
                 self.assertFalse(marker)
 
     def test_historical_distribution_never_names_the_consumer_or_go_relay(self):
-        result, lines, marker = self.run_shell('\nstop_prod_data_services\nstart_prod_app_services\n', defined=False)
+        result, lines, marker = self.run_shell('\nstop_prod_data_services\nstart_prod_app_services\n', defined=False,
+                                               definitions=LEGACY_DEFINITIONS)
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn('compose stop api worker beat realtime-relay api-go', lines)
         self.assertNotIn('worker-go', result.stdout)
@@ -201,7 +249,8 @@ class WorkerGoLifecycleTests(unittest.TestCase):
 
     def test_backup_stop_and_restart_drain_the_consumer(self):
         result, lines, _ = self.run_shell('\nstop_prod_data_services\nbackup_app_stopped=true\n'
-                                          'backup_app_was_running=true\nbackup_cleanup 0\n', flag='1')
+                                          'backup_app_was_running=true\nbackup_cleanup 0\n', flag='1',
+                                          definitions=LEGACY_DEFINITIONS)
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertLess(lines.index('compose --profile go-tasks stop worker-go api worker beat realtime-relay realtime-relay-go api-go'),
                         lines.index('compose --profile go-tasks up -d worker beat realtime-relay realtime-relay-go worker-go'))
@@ -226,12 +275,12 @@ class WorkerGoLifecycleTests(unittest.TestCase):
 
 
 class GoTaskRoutingGuardTests(unittest.TestCase):
-    def guard(self, flag, names, defined=True):
+    def guard(self, flag, names, defined=True, definitions=DEFINITIONS):
         with TemporaryDirectory() as directory:
             root = Path(directory)
             (root / '.env').write_text('APP_URL=http://fixture.invalid\n'
                                        f'ASSOZETA_GO_TASKS={flag}\nGO_TASK_QUEUE_TASKS={names}\n')
-            return subprocess.run(['sh', '-c', DEFINITIONS + HARNESS + '\nstart_prod_app_services\n'],
+            return subprocess.run(['sh', '-c', definitions + HARNESS + '\nstart_prod_app_services\n'],
                                   capture_output=True, text=True,
                                   env={**os.environ, 'ASSOZETA_INSTALL_ROOT': directory,
                                        'TEST_DEFINED': str(defined).lower(), 'TEST_NOT_RUNNING': '',
@@ -241,7 +290,7 @@ class GoTaskRoutingGuardTests(unittest.TestCase):
         for flag in ('', '0'):
             for names in (ROUTED, f' {ROUTED} , ', f'"{ROUTED}"'):
                 with self.subTest(flag=flag, names=names):
-                    result = self.guard(flag, names)
+                    result = self.guard(flag, names, definitions=LEGACY_DEFINITIONS)
                     self.assertNotEqual(result.returncode, 0)
                     self.assertIn('ASSOZETA_GO_TASKS=1 is not set', result.stderr)
                     self.assertNotIn('compose ', result.stdout)
@@ -261,10 +310,10 @@ class GoTaskRoutingGuardTests(unittest.TestCase):
                 self.assertIn('worker-go', result.stdout)
 
     def test_invalid_flag_or_missing_service_is_refused(self):
-        result = self.guard('yes', '')
+        result = self.guard('yes', '', definitions=LEGACY_DEFINITIONS)
         self.assertNotEqual(result.returncode, 0)
         self.assertIn('ASSOZETA_GO_TASKS must be 0 or 1', result.stderr)
-        result = self.guard('1', ROUTED, defined=False)
+        result = self.guard('1', ROUTED, defined=False, definitions=LEGACY_DEFINITIONS)
         self.assertNotEqual(result.returncode, 0)
         self.assertIn('no worker-go service', result.stderr)
         self.assertNotIn('compose ', result.stdout)
@@ -273,7 +322,7 @@ class GoTaskRoutingGuardTests(unittest.TestCase):
         with TemporaryDirectory() as directory:
             env = Path(directory) / 'prod.env'
             environment = {**os.environ, 'ASSOZETA_ENV_FILE': str(env)}
-            subprocess.run([str(CLI), 'configure', '--domain', 'localhost', '--version', 'test'],
+            subprocess.run([str(LEGACY_CLI), 'configure', '--domain', 'localhost', '--version', 'test'],
                            env=environment, capture_output=True, text=True, check=True)
             generated = env.read_text()
             self.assertIn('ASSOZETA_GO_TASKS=0\n', generated)
@@ -282,7 +331,7 @@ class GoTaskRoutingGuardTests(unittest.TestCase):
                 with self.subTest(flag=flag):
                     env.write_text(generated.replace('ASSOZETA_GO_TASKS=0', f'ASSOZETA_GO_TASKS={flag}').replace(
                         'GO_TASK_QUEUE_TASKS=\n', f'GO_TASK_QUEUE_TASKS={ROUTED}\n'))
-                    result = subprocess.run([str(CLI), 'validate'], env=environment, capture_output=True, text=True)
+                    result = subprocess.run([str(LEGACY_CLI), 'validate'], env=environment, capture_output=True, text=True)
                     self.assertEqual(result.returncode == 0, accepted, result.stderr)
                     if not accepted:
                         self.assertIn('ASSOZETA_GO_TASKS=1 is not set', result.stderr)

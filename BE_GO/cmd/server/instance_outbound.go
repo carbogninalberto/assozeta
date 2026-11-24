@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"net"
 	"os"
@@ -14,6 +15,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/documentobjects"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jmoiron/sqlx"
 	"github.com/redis/go-redis/v9"
 )
@@ -102,4 +104,30 @@ func (p diagnosticProbes) Heartbeat(ctx context.Context) ([]byte, bool, error) {
 		return nil, false, nil
 	}
 	return raw, err == nil, err
+}
+
+// GoProgress reports whether both worker roles or the scheduler lease are fresh.
+// Legacy databases and a Django authority use the broker/cache probes.
+func (p diagnosticProbes) GoProgress(ctx context.Context, role string) (fresh, applicable bool, err error) {
+	var query string
+	switch role {
+	case "worker":
+		query = `SELECT (SELECT count(DISTINCT role) = 2 FROM public.assozeta_handoff_consumers
+                    WHERE runtime = owner.runtime AND role IN ('broker','durable')
+                      AND heartbeat_at BETWEEN now() - interval '90 seconds' AND now())
+                  FROM public.assozeta_go_job_ownership owner WHERE singleton = 1 AND runtime = 'go'`
+	case "scheduler":
+		query = `SELECT EXISTS (SELECT FROM public.assozeta_scheduler_lease
+                    WHERE runtime = owner.runtime AND ownership_generation = owner.generation
+                      AND lease_until > now() AND heartbeat_at BETWEEN now() - interval '90 seconds' AND now())
+                  FROM public.assozeta_go_job_ownership owner WHERE singleton = 1 AND runtime = 'go'`
+	default:
+		return false, false, errors.New("unknown runtime diagnostic")
+	}
+	err = p.db.GetContext(ctx, &fresh, query)
+	var pgErr *pgconn.PgError
+	if errors.Is(err, sql.ErrNoRows) || (errors.As(err, &pgErr) && pgErr.Code == "42P01") {
+		return false, false, nil
+	}
+	return fresh, true, err
 }

@@ -27,6 +27,7 @@ ROOT = Path(__file__).resolve().parents[3]
 sys.path[:0] = [str(ROOT / 'BE'), str(ROOT)]
 
 from TESTS.adapters.django.production_runtime import require_production_python
+from TESTS.adapters.django import browser_retry
 from TESTS.adapters.django.profile_browser import fingerprints, prepare_ui
 from TESTS.adapters.django.profile_browser import WORKFLOW_SOURCES as PROFILE_SOURCES
 from TESTS.adapters.go.age_worker_fixture import initialize_current_schema
@@ -1156,24 +1157,37 @@ def exercise(proof, work, output, log, options, tool_env, report):
                                 return {'managed_models': len(current),
                                         'cache_keys': len(current_cache)}
 
-                            process = subprocess.Popen(
-                                ['node', str(ROOT / 'TESTS/browser/collaborator-list.mjs')],
-                                cwd=ROOT,
-                                env={**tool_env, 'TESTS_FIXTURE': str(fixture_path),
-                                     'TESTS_OUTPUT': str(target)},
-                                stdout=log, stderr=subprocess.STDOUT)
                             try:
-                                drive_browser(process, checkpoints, on_checkpoint)
-                                process.wait(timeout=30)
-                            except BaseException:
-                                if process.poll() is None:
-                                    process.terminate()
-                                    try:
-                                        process.wait(timeout=10)
-                                    except subprocess.TimeoutExpired:
-                                        process.kill()
-                                        process.wait(timeout=5)
-                                raise
+                                for attempt in (1, 2):
+                                    attempt_output = browser_retry.attempt_log(work, version + '-collaborator', attempt)
+                                    with attempt_output.open('w') as child:
+                                        process = subprocess.Popen(
+                                            ['node', str(ROOT / 'TESTS/browser/collaborator-list.mjs')],
+                                            cwd=ROOT,
+                                            env={**tool_env, 'TESTS_FIXTURE': str(fixture_path),
+                                                 'TESTS_OUTPUT': str(target)},
+                                            stdout=child, stderr=subprocess.STDOUT)
+                                        try:
+                                            drive_browser(process, checkpoints, on_checkpoint)
+                                            process.wait(timeout=30)
+                                        except BaseException as error:
+                                            if process.poll() is None:
+                                                process.terminate()
+                                                try:
+                                                    process.wait(timeout=10)
+                                                except subprocess.TimeoutExpired:
+                                                    process.kill()
+                                                    process.wait(timeout=5)
+                                            # Only a child that died before its first checkpoint, of the
+                                            # runner's network, runs once more (browser_retry).
+                                            exited = str(error) == 'Browser exited before all checkpoints'
+                                            if exited and browser_retry.retry(log, attempt_output, attempt, checkpoints):
+                                                continue
+                                            if not exited:
+                                                browser_retry.flush(log, attempt_output)
+                                            raise
+                                    browser_retry.flush(log, attempt_output)
+                                    break
                             finally:
                                 fixture_path.unlink(missing_ok=True)
                             assert process.returncode == 0, 'Browser consumer failed'

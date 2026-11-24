@@ -104,6 +104,7 @@
     "BE/instance/remote_backups.py",
     "BE/instance/restore/views.py",
     "BE/templates/document/application/invoice.html",
+    "UI/public/maintenance.html",
     "UI/src/App.svelte",
     "UI/src/components/Header.svelte",
     "UI/src/components/PermissionsComponent.svelte",
@@ -269,10 +270,9 @@
     "UI/src/routes/profile/ProfileMenu.svelte",
     "UI/src/routes/profile/sections/Account.svelte",
     "UI/src/routes/profile/sections/DataExports.svelte",
-    "UI/src/routes/profile/sections/InstanceApiVersion.svelte",
-    "UI/src/routes/profile/sections/InstanceGoTasks.svelte",
     "UI/src/routes/profile/sections/InstanceIntegration.svelte",
     "UI/src/routes/profile/sections/InstanceIntegrations.svelte",
+    "UI/src/routes/profile/sections/InstanceRuntime.svelte",
     "UI/src/routes/profile/sections/Integrations.svelte",
     "UI/src/routes/profile/sections/SelfInstance.svelte",
     "UI/src/routes/profile/sections/Settings.svelte",
@@ -291,7 +291,6 @@
     "UI/src/utils/Functions.js",
     "UI/src/utils/Permissions.js",
     "UI/src/utils/TaxCode.js",
-    "UI/src/utils/apiVersion.js",
     "UI/src/utils/enumUtils.js",
     "UI/src/utils/eventCalendar.js"
   ],
@@ -4372,14 +4371,13 @@
     ],
     "docs/impostazioni.mdx#introduzione": [
       "BE/application/permissions_registry.py",
+      "UI/public/maintenance.html",
       "UI/src/routes/profile/ProfileMenu.svelte",
       "UI/src/routes/profile/sections/Account.svelte",
-      "UI/src/routes/profile/sections/InstanceApiVersion.svelte",
-      "UI/src/routes/profile/sections/InstanceGoTasks.svelte",
+      "UI/src/routes/profile/sections/InstanceRuntime.svelte",
       "UI/src/routes/profile/sections/SelfInstance.svelte",
       "UI/src/routes/profile/sections/Settings.svelte",
-      "UI/src/routes/profile/sections/WhatsAppFields.svelte",
-      "UI/src/utils/apiVersion.js"
+      "UI/src/routes/profile/sections/WhatsAppFields.svelte"
     ],
     "docs/impostazioni.mdx#modalita-scura": [
       "BE/application/views/profile_views.py",

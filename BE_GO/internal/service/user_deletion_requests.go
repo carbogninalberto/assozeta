@@ -2,13 +2,16 @@ package service
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"log/slog"
+	"strconv"
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/celery"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/handoff"
 	"github.com/google/uuid"
 )
 
@@ -19,10 +22,31 @@ type UserDeletionRequests struct {
 	brand     string
 	now       func() time.Time
 	logger    *slog.Logger
+	ledger    *sql.DB
 }
 
 func NewUserDeletionRequests(store domain.UserDeletionRequestStore, publisher celery.Publisher, whitelabelName string, now func() time.Time, logger *slog.Logger) *UserDeletionRequests {
 	return &UserDeletionRequests{store: store, publisher: publisher, brand: whitelabelName, now: now, logger: logger}
+}
+
+func (s *UserDeletionRequests) WithHandoffLedger(db *sql.DB) *UserDeletionRequests {
+	s.ledger = db
+	return s
+}
+
+func (s *UserDeletionRequests) noticeRoot(ctx context.Context, id uuid.UUID) (string, error) {
+	if s.ledger == nil {
+		return "", nil
+	}
+	var installed bool
+	err := s.ledger.QueryRowContext(ctx, "SELECT to_regclass('public.assozeta_handoff_work') IS NOT NULL").Scan(&installed)
+	if err != nil || !installed {
+		return "", err
+	}
+	var root string
+	err = s.ledger.QueryRowContext(ctx, `SELECT coalesce(nullif(root_id,''), task_id)
+ FROM public.assozeta_handoff_work WHERE task_id=$1`, id.String()).Scan(&root)
+	return root, err
 }
 
 // Run follows the task: the due users are read once, then for each user the
@@ -52,13 +76,18 @@ func (s *UserDeletionRequests) Run(ctx context.Context, job domain.Job) error {
 	if err = tx.Rollback(); err != nil {
 		return err
 	}
-	for _, user := range users {
-		if err = s.deleteOne(ctx, job, user); err != nil {
+	rootID, err := s.noticeRoot(ctx, job.ID)
+	if err != nil {
+		return err
+	}
+	for i, user := range users {
+		if err = s.deleteOne(ctx, job, rootID, user); err != nil {
 			if handled, ok := err.(handledTaskError); ok {
 				return s.handled(ctx, job, handled.err)
 			}
 			return err
 		}
+		handoff.Barrier("batch:committed", job.Kind+"-"+strconv.Itoa(i+1))
 	}
 	completion, err := s.store.BeginUserDeletionRequests(ctx, job)
 	if err != nil {
@@ -83,18 +112,24 @@ func (e handledTaskError) Error() string { return e.err.Error() }
 // deleteOne fences the job first, so a stale worker publishes nothing; the
 // notice is published before the save, as in the task, and the save commits
 // only after a successful publish.
-func (s *UserDeletionRequests) deleteOne(ctx context.Context, job domain.Job, user domain.UserDeletionCandidate) error {
+func (s *UserDeletionRequests) deleteOne(ctx context.Context, job domain.Job, rootID string, user domain.UserDeletionCandidate) error {
 	tx, err := s.store.BeginUserDeletionRequests(ctx, job)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
-	_, err = s.publisher.Publish(ctx, celery.Task{Name: "send_email_text", Kwargs: celery.Dict{
+	notice := celery.Task{Name: "send_email_text", Kwargs: celery.Dict{
 		{Key: "subject", Value: s.brand + " | Il tuo account è stato eliminato"},
 		{Key: "message", Value: "Ciao " + user.FirstName + ", Il tuo account è stato eliminato dal sistema " +
 			"perché hai richiesto la cancellazione 30 giorni fa. "},
 		{Key: "recipient_list", Value: []any{user.Email}},
-	}})
+	}}
+	if rootID != "" {
+		// Reuse the logical notice after a crash between publication and save.
+		notice.ID = uuid.NewSHA1(uuid.NameSpaceURL, []byte("assozeta:delete_users_with_request:"+job.ID.String()+":"+user.ID.String())).String()
+		notice.Queue, notice.ParentID, notice.RootID = celery.GoQueue, job.ID.String(), rootID
+	}
+	_, err = s.publisher.Publish(ctx, notice)
 	if err != nil {
 		if ctx.Err() != nil {
 			return ctx.Err()

@@ -31,6 +31,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/config"
 	ownedpgx "github.com/carbogninalberto/assozeta/BE_GO/internal/database"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/handoff"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/redisclient"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
@@ -53,6 +54,7 @@ func run(arguments []string) error {
 	envFile := flags.String("env-file", "", "optional existing deployment .env")
 	concurrency := flags.Int("concurrency", 2, "execution slots, from 1 to 32")
 	drain := flags.Duration("drain-timeout", 30*time.Second, "grace for running tasks at shutdown")
+	heartbeat := flags.Duration("handoff-heartbeat", time.Second, "ledger heartbeat interval")
 	listTasks := flags.Bool("list-tasks", false, "print the production task inventory as JSON and exit")
 	// Internal: one prefork job (see celeryworker/prefork.go), started by the consumer itself.
 	child := flags.Bool("prefork-child", false, "internal")
@@ -106,7 +108,7 @@ func run(arguments []string) error {
 		Username: admin.EmailUsername, Password: admin.EmailPassword, Port: admin.EmailPort, PortInvalid: admin.EmailPortInvalid,
 		UseTLS: admin.EmailUseTLS, UseSSL: admin.EmailUseSSL, LocalHostname: localHostname}, time.Now)
 	// Messages the e-mail tasks publish (send_mail_async) follow GO_TASK_QUEUE_TASKS like Django's producer.
-	emailPublisher := celery.NewProducer(celery.RedisBroker{Client: broker}).WithRoutes(celery.ParseRoutes(cfg.GoTaskQueueTasks))
+	emailPublisher := celery.NewProducer(celery.AdmittingBroker{DB: db.DB, Redis: celery.RedisBroker{Client: broker}}).WithRoutes(celery.ParseRoutes(cfg.GoTaskQueueTasks))
 	mail.WithEmailTasks(emailPublisher, service.ConsumerEmailSettings{AppURL: admin.AppURL, WhitelabelName: cfg.WhitelabelName,
 		DefaultFromEmail: cfg.DefaultFromEmail, DefaultTeamEmail: cfg.DefaultTeamEmail, IsWhitelabel: cfg.IsWhitelabel,
 		SecretKeys: []string{cfg.SessionSecret}}, slog.Default())
@@ -122,7 +124,7 @@ func run(arguments []string) error {
 		service.SendEmailHTMLTask: mail.SendEmailHTMLTask()}
 	// Messages the tasks publish (send_task inside a worker task) use the
 	// same routes as every other producer.
-	producer := celery.NewProducer(celery.RedisBroker{Client: broker}).WithRoutes(celery.ParseRoutes(cfg.GoTaskQueueTasks))
+	producer := emailPublisher
 	for name, task := range service.NewWorkflowTasks(repository.NewWorkflowTaskStore(db), producer, time.Now).Tasks() {
 		tasks[name] = task
 	}
@@ -135,7 +137,18 @@ func run(arguments []string) error {
 	if err = consumerBackupFailuresRegister(tasks, cfg, db, broker, mail); err != nil {
 		return errors.New("celery consumer cannot prepare the backup failure notices")
 	}
+	outboxInstalled := *listTasks
+	if !*listTasks {
+		outboxInstalled, err = handoff.OutboxInstalled(context.Background(), db.DB)
+		if err != nil {
+			return errors.New("cannot check outbox ownership schema")
+		}
+	}
+	if outboxInstalled {
+		tasks[domain.PeriodicWhatsApp] = whatsappPollTask(cfg, db)
+	}
 	if *listTasks {
+		tasks[domain.JobRenewMembershipsPayments] = renewalDeliveryTask(repository.NewJobs(db))
 		return json.NewEncoder(os.Stdout).Encode(map[string][]string{
 			"consumer": slices.Sorted(maps.Keys(tasks)),
 			"job":      domain.PeriodicTaskNames(),
@@ -148,10 +161,26 @@ func run(arguments []string) error {
 	if envPath != "" {
 		childArgs = append(childArgs, "--env-file", envPath)
 	}
-	worker, err := celeryworker.New(transport, tasks,
-		repository.NewCeleryResults(db), admission, celeryworker.Options{Concurrency: *concurrency, HandoffQueue: celery.DefaultQueue,
-			Origin: "gen" + strconv.Itoa(os.Getpid()) + "@" + host, Hostname: "celery@" + host, DrainTimeout: *drain,
-			Coordinated: strings.TrimSpace(cfg.RestoreLockPath) != "", Child: celeryworker.ChildCommand(childArgs...)}, slog.Default())
+	var ledger *celeryworker.BrokerHandoff
+	var installed bool
+	if err := db.Get(&installed, "SELECT to_regclass('public.assozeta_handoff_work') IS NOT NULL"); err != nil {
+		return errors.New("cannot check broker handoff schema")
+	}
+	if installed {
+		tasks[domain.JobRenewMembershipsPayments] = renewalDeliveryTask(repository.NewJobs(db))
+		if *heartbeat <= 0 {
+			return errors.New("invalid heartbeat interval")
+		}
+		ledger = &celeryworker.BrokerHandoff{DB: db.DB, Interval: *heartbeat}
+		transport.ReservationBarrier = handoff.Barrier
+	}
+	options := celeryworker.Options{Handoff: ledger, Concurrency: *concurrency,
+		Origin: "gen" + strconv.Itoa(os.Getpid()) + "@" + host, Hostname: "celery@" + host, DrainTimeout: *drain,
+		Coordinated: strings.TrimSpace(cfg.RestoreLockPath) != "", Child: celeryworker.ChildCommand(childArgs...)}
+	if ledger == nil {
+		options.HandoffQueue = celery.DefaultQueue
+	}
+	worker, err := celeryworker.New(transport, tasks, repository.NewCeleryResults(db), admission, options, slog.Default())
 	if err != nil {
 		return errors.New("invalid celery consumer bounds")
 	}

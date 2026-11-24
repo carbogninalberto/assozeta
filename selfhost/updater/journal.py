@@ -12,7 +12,10 @@ def now():
 
 
 class Conflict(Exception):
-    pass
+    def __init__(self, message, code=None, record=None):
+        super().__init__(message)
+        self.code = code
+        self.record = record
 
 
 def restore_recovery(record):
@@ -53,46 +56,80 @@ class Journal:
     def create(self, request, blocked_reason=None):
         with self.connect() as db:
             db.execute('BEGIN IMMEDIATE')
-            existing = db.execute('SELECT record FROM operations WHERE request_id=?', (request['request_id'],)).fetchone()
-            if existing:
-                record = json.loads(existing[0])
-                if request.get('kind') == 'restart':
-                    keys = ('actor_id',)
-                elif request.get('kind') == 'go_tasks':
-                    keys = ('actor_id', 'enabled')
-                else:
-                    keys = ('actor_id', 'release_id', 'tag')
-                if record.get('kind', 'update') != request.get('kind', 'update') or any(record[key] != request[key] for key in keys):
-                    raise Conflict('This request identifier was already used for a different update.')
-                return record
-            if blocked_reason:
-                raise Conflict(blocked_reason)
-            if db.execute("SELECT 1 FROM operations WHERE status='recovery_required'").fetchone():
-                raise Conflict('Un aggiornamento richiede una verifica di ripristino prima di un nuovo tentativo.')
-            if db.execute("SELECT 1 FROM operations WHERE status IN ('queued', 'running')").fetchone():
-                raise Conflict('An update is already in progress.')
-            record = {
-                **request, 'id': str(uuid4()), 'status': 'queued', 'stage': 'queued',
-                'target_version': request['tag'], 'created_at': now(), 'updated_at': now(),
-                'error': None, 'recovery': None,
-            }
-            db.execute('INSERT INTO operations VALUES (?, ?, ?, ?)', (record['id'], request['request_id'], 'queued', json.dumps(record)))
+            record, _ = self.create_in(db, request, blocked_reason=blocked_reason)
             return record
 
-    def update(self, operation_id, **changes):
+    def create_in(self, db, request, blocked_reason=None, status='queued', stage='queued'):
+        """Admit or replay within the caller's IMMEDIATE transaction."""
+        existing = db.execute('SELECT record FROM operations WHERE request_id=?', (request['request_id'],)).fetchone()
+        if existing:
+            record = json.loads(existing[0])
+            if request.get('kind') == 'restart':
+                keys = ('actor_id',)
+            elif request.get('kind') == 'go_tasks':
+                keys = ('actor_id', 'enabled')
+            elif request.get('kind') == 'runtime_switch':
+                keys = ('actor_id', 'target', 'expected_generation')
+            else:
+                keys = ('actor_id', 'release_id', 'tag')
+            if record.get('kind', 'update') != request.get('kind', 'update') or any(record[key] != request[key] for key in keys):
+                raise Conflict('This request identifier was already used for a different update.', 'idempotency_conflict', record)
+            return record, True
+        if blocked_reason:
+            raise Conflict(blocked_reason, 'recovery_required')
+        recovery = db.execute("SELECT record FROM operations WHERE status='recovery_required' LIMIT 1").fetchone()
+        if recovery:
+            raise Conflict('Un aggiornamento richiede una verifica di ripristino prima di un nuovo tentativo.',
+                           'recovery_required', json.loads(recovery[0]))
+        for (raw,) in db.execute("SELECT record FROM operations WHERE status IN ('queued', 'running', 'adopting')"):
+            active = json.loads(raw)
+            if (request.get('adoption') and active.get('kind', 'update') == 'update'
+                    and active['status'] == 'running' and active['id'] == request.get('parent_update')):
+                continue
+            raise Conflict('An update is already in progress.', 'operation_in_progress', active)
+        if (request.get('kind') == 'runtime_switch' and 'source_generation' in request
+                and request['source_generation'] != request['expected_generation']):
+            raise Conflict('La generazione richiesta non è più attuale.', 'stale_generation')
+        record = {
+            **request, 'id': str(uuid4()), 'status': status, 'stage': stage,
+            'target_version': request.get('tag'), 'created_at': now(), 'updated_at': now(),
+            'error': None, 'recovery': None,
+        }
+        db.execute('INSERT INTO operations VALUES (?, ?, ?, ?)', (record['id'], request['request_id'], self.index_status(record), json.dumps(record)))
+        return record, False
+
+    @staticmethod
+    def index_status(record):
+        # An upgrade owns the unique active slot through its migration and
+        # adoption. The child still has its own recoverable operation record.
+        if record.get('parent_update') and record['status'] == 'running':
+            return 'adopting'
+        return record['status']
+
+    def update(self, operation_id, *, if_status=None, **changes):
         with self.connect() as db:
             db.execute('BEGIN IMMEDIATE')
-            row = db.execute('SELECT record FROM operations WHERE id=?', (operation_id,)).fetchone()
-            if not row:
-                raise KeyError(operation_id)
-            record = {**json.loads(row[0]), **changes, 'updated_at': now()}
-            db.execute('UPDATE operations SET status=?, record=? WHERE id=?', (record['status'], json.dumps(record), operation_id))
-            return record
+            return self.update_in(db, operation_id, if_status=if_status, **changes)
 
-    def records(self):
+    def update_in(self, db, operation_id, *, if_status=None, **changes):
+        row = db.execute('SELECT record FROM operations WHERE id=?', (operation_id,)).fetchone()
+        if not row:
+            raise KeyError(operation_id)
+        record = json.loads(row[0])
+        if if_status is not None and record['status'] != if_status:
+            return None
+        record.update(changes, updated_at=now())
+        db.execute('UPDATE operations SET status=?, record=? WHERE id=?', (self.index_status(record), json.dumps(record), operation_id))
+        return record
+
+    def records(self, *statuses):
+        if 'running' in statuses:
+            statuses += ('adopting',)
+        query = 'SELECT record FROM operations'
+        if statuses:
+            query += ' WHERE status IN (' + ','.join('?' for _ in statuses) + ')'
         with self.connect() as db:
-            records = [json.loads(row[0]) for row in db.execute('SELECT record FROM operations ORDER BY rowid DESC')]
-        return records
+            return [json.loads(row[0]) for row in db.execute(query + ' ORDER BY rowid DESC', statuses)]
 
     def interrupt_running(self):
         for record in self.records():
@@ -120,7 +157,7 @@ class Journal:
                 self.update(record['id'], status='failed', stage='failed', interrupted_at=now(),
                             error='La modifica delle attività in background su Go è stata interrotta.',
                             recovery='Se l’app non torna disponibile, esegui ./bin/assozeta restart dal server.')
-            elif record['status'] == 'running' and record.get('kind') != 'restart':
+            elif record['status'] == 'running' and record.get('kind') not in ('restart', 'runtime_switch'):
                 self.update(record['id'], status='recovery_required', stage='recovery_required',
                             interrupted_at=now(), failed_stage=record['stage'],
                             error='Il servizio di aggiornamento è stato interrotto.',

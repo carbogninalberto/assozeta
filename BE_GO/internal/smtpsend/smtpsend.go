@@ -675,11 +675,24 @@ func (c *client) sendmailFrom(given, from string, to []string, data []byte) erro
 		c.rset()
 		return &Error{Kind: "SMTPRecipientsRefused", Refused: refused}
 	}
+	var finish func(bool) error
+	if intent, ok := c.ctx.Value(intentKey{}).(EffectIntent); ok {
+		finish, err = intent(c.ctx)
+		if err != nil || finish == nil {
+			c.rset()
+			return err
+		}
+	}
 	code, msg, err = c.docmd("data", "")
 	if err != nil {
 		return err
 	}
 	if code != 354 {
+		if finish != nil {
+			if err := finish(false); err != nil {
+				return err
+			}
+		}
 		return replyFailure("SMTPDataError", code, msg)
 	}
 	quoted := quotePeriods(data)
@@ -700,7 +713,15 @@ func (c *client) sendmailFrom(given, from string, to []string, data []byte) erro
 		} else {
 			c.rset()
 		}
+		if finish != nil {
+			if err := finish(false); err != nil {
+				return err
+			}
+		}
 		return replyFailure("SMTPDataError", code, msg)
+	}
+	if finish != nil {
+		return finish(true)
 	}
 	return nil
 }

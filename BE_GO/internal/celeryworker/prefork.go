@@ -63,7 +63,8 @@ const (
 )
 
 type childInput struct {
-	Raw []byte `json:"raw"`
+	Attempt string
+	Raw     []byte `json:"raw"`
 }
 
 // validTimeLimits accepts None or a JSON number for both header values.
@@ -142,7 +143,11 @@ func (w *Worker) executePrefork(ctx context.Context, d *Delivery, task Task, job
 	}
 	defer events.Close()
 	cmd.ExtraFiles = []*os.File{eventsWriter}
-	input, err := json.Marshal(childInput{Raw: d.Raw})
+	jobInput := childInput{Raw: d.Raw}
+	if a, ok := ctx.Value(attemptContext{}).(*brokerAttempt); ok {
+		jobInput.Attempt = a.id
+	}
+	input, err := json.Marshal(jobInput)
 	if err != nil {
 		eventsWriter.Close()
 		return w.preforkLost(ctx, d, task, job, nil)
@@ -208,10 +213,13 @@ func (w *Worker) executePrefork(ctx context.Context, d *Delivery, task Task, job
 		switch event {
 		case eventHandoff:
 			handedOff = true
-			if reportedOutcome == string(outcomeHandedOff) {
-				outcome = outcomeHandedOff
-			}
+			outcome = taskOutcome(reportedOutcome)
 		case eventAccepted:
+			// The child now owns renewal. Until it accepts, the parent
+			// also covers process startup, even if it takes a full lease.
+			if a, ok := ctx.Value(attemptContext{}).(*brokerAttempt); ok {
+				a.stopRenewal()
+			}
 			if !task.AcksLate {
 				w.ack(ctx, d)
 			}
@@ -254,6 +262,9 @@ func (w *Worker) executePrefork(ctx context.Context, d *Delivery, task Task, job
 // preforkLost is Request.on_failure with WorkerLostError.
 func (w *Worker) preforkLost(ctx context.Context, d *Delivery, task Task, job int64, state *os.ProcessState) taskOutcome {
 	if task.AcksLate && task.RejectOnWorkerLost {
+		if a, ok := ctx.Value(attemptContext{}).(*brokerAttempt); ok {
+			a.finish(ctx, outcomeHandedOff) // release before Redis makes the copy visible
+		}
 		if err := w.transport.Reject(ctx, d.Message.DeliveryTag, true); err != nil {
 			w.logger.Error("celery reject failed", "code", "celery_reject_failed")
 		}
@@ -285,6 +296,15 @@ func (w *Worker) RunChild(ctx context.Context, in io.Reader, events io.Writer) e
 	if err != nil {
 		return errors.New("celeryworker: undecodable child message")
 	}
+	if input.Attempt != "" {
+		a := &brokerAttempt{ledger: w.options.Handoff, id: input.Attempt, task: m.ID, retries: m.Retries}
+		if _, err := a.ledger.DB.ExecContext(ctx, "SELECT public.assozeta_handoff_fence($1)", a.id); err != nil {
+			return err
+		}
+		a.renew(ctx)
+		defer a.stopRenewal()
+		ctx = a.context(ctx)
+	}
 	d := &Delivery{Raw: input.Raw, Message: m}
 	task, ok := w.tasks[m.Task]
 	if !ok || !task.Prefork {
@@ -300,10 +320,7 @@ func (w *Worker) RunChild(ctx context.Context, in io.Reader, events io.Writer) e
 	}
 	if task.Plan != nil {
 		if err := task.Plan(ctx, request); errors.Is(err, ErrHandoff) {
-			if outcome := w.handoff(ctx, d, "input"); outcome == outcomeHandedOff {
-				return emit(eventHandoff + " " + string(outcome))
-			}
-			return emit(eventHandoff)
+			return emit(eventHandoff + " " + string(w.handoff(ctx, d, "input")))
 		}
 	}
 	taskCtx, cancel := context.WithCancelCause(ctx)
@@ -322,6 +339,9 @@ func (w *Worker) RunChild(ctx context.Context, in io.Reader, events io.Writer) e
 		return err
 	}
 	outcome := w.perform(ctx, taskCtx, request, task, true)
+	if a, ok := ctx.Value(attemptContext{}).(*brokerAttempt); ok {
+		a.finish(ctx, outcome) // commit before the parent acknowledges Redis
+	}
 	return emit(eventDone + " " + string(outcome))
 }
 

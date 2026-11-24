@@ -20,10 +20,12 @@ from backup_jobs import (BackupRejected, create_backup, delete_archive, run_back
                          schedule_tick, set_keep, update_schedule)
 from restore_jobs import ArchiveInvalid, UploadIncomplete, receive_upload, run_restore, start_restore
 from engine import Engine
-from go_tasks import CHECK_FAILED, MISSING_WORKER, apply_go_tasks, release_has_go_worker, validate_go_tasks_request
+from go_tasks import RETIRED, retired, CHECK_FAILED, MISSING_WORKER, apply_go_tasks, release_has_go_worker, validate_go_tasks_request
 from journal import Journal, Conflict
 from release_catalog import version_tuple
+import notices
 import remote_backups
+import runtime_switch
 from remote_backups import RemoteError, Uploader
 from common import read_env, update_eligibility_reason
 from status_access import AccessDenied, OwnershipUnavailable, authenticate_access_token, require_current_owner
@@ -80,8 +82,12 @@ def serve(root, env_file, engine_class=Engine):
     token = (api_directory / 'token').read_text().strip()
     if len(token) < 32:
         raise RuntimeError('Runner credentials are not provisioned')
+    notices_token = (notices.DIRECTORY / 'token').read_text().strip()
+    if len(notices_token) < 32 or notices_token == token:
+        raise RuntimeError('Independent notices credentials are required')
     journal = Journal(directory / 'operations.sqlite3')
     journal.interrupt_running()
+    runtime_switch.recover(root, env_file, journal, None)
     reconcile_restarts(journal)
     engine = engine_class(root, env_file, journal)
     uploader = Uploader(root, env_file)
@@ -110,6 +116,12 @@ def serve(root, env_file, engine_class=Engine):
             'runner_version': os.environ.get('RUNNER_VERSION', 'development'),
             'active': active, 'history': [item for item in records if item != active],
         }
+
+    def backup_inventory():
+        value = remote_backups.merge_inventory(root, inventory(root, env_file))
+        return {**value, 'schedule': schedule_payload(root, env_file),
+                'actions': {'create': True, 'keep': True, 'delete': True, 'restore': True,
+                            'upload': True, 'remote': True}}
 
     class Handler(BaseHTTPRequestHandler):
         def setup(self):
@@ -159,15 +171,15 @@ def serve(root, env_file, engine_class=Engine):
         def do_GET(self):
             if not self.authorized():
                 return
+            if self.path == '/runtime':
+                self.respond(200, runtime_switch.status(root, env_file, journal, None))
+                return
             if self.path == '/diagnostics':
                 self.respond(200, backup_readiness(root))
                 return
             if self.path == '/backups':
                 try:
-                    value = remote_backups.merge_inventory(root, inventory(root, env_file))
-                    self.respond(200, {**value, 'schedule': schedule_payload(root, env_file),
-                                       'actions': {'create': True, 'keep': True, 'delete': True, 'restore': True,
-                                                   'upload': True, 'remote': True}})
+                    self.respond(200, backup_inventory())
                 except OSError:
                     self.respond(503, {'error': 'La cartella dei backup non è leggibile. Verifica i permessi sul server.'})
                 return
@@ -282,6 +294,16 @@ def serve(root, env_file, engine_class=Engine):
                 return
             if not self.authorized():
                 return
+            if self.path == '/runtime-switches':
+                try:
+                    body = self.read_body()
+                except (ValueError, TypeError):
+                    body = None
+                code, payload = runtime_switch.submit(root, env_file, journal, None, body)
+                self.respond(code, payload)
+                if code == 202:
+                    wake.set()
+                return
             if self.path not in ('/updates', '/restarts', '/go-tasks'):
                 self.respond(404, {'error': 'Unknown endpoint.'})
                 return
@@ -294,6 +316,9 @@ def serve(root, env_file, engine_class=Engine):
                 if self.path == '/restarts':
                     request = validate_restart_request(body, env_file)
                 elif self.path == '/go-tasks':
+                    if retired(root, env_file):
+                        self.respond(410, {'code': 'retired', 'error': RETIRED})
+                        return
                     request = validate_go_tasks_request(body, env_file)
                     # The web UI shows this refusal before anything is recorded.
                     if request['enabled']:
@@ -337,7 +362,8 @@ def serve(root, env_file, engine_class=Engine):
                     raise AccessDenied()
                 actor = authenticate_access_token(authorization[7:], read_env(env_file))
                 require_current_owner(root, env_file, actor)
-                self.respond(200, {'is_owner': True, **status_payload()})
+                self.respond(200, {'is_owner': True, **status_payload(),
+                                   'runtime': runtime_switch.status(root, env_file, journal, None)})
             except (AccessDenied, ValueError, TypeError, KeyError):
                 self.respond(403, {'error': 'Access denied.'})
             except OwnershipUnavailable:
@@ -346,6 +372,7 @@ def serve(root, env_file, engine_class=Engine):
     def work():
         last_schedule_check = 0.0
         while not stop.is_set():
+            runtime_switch.recover(root, env_file, journal, None)
             reconcile_restarts(journal)
             if time.monotonic() - last_schedule_check >= 30:
                 last_schedule_check = time.monotonic()
@@ -372,6 +399,8 @@ def serve(root, env_file, engine_class=Engine):
                     uploader.kick()
                 elif pending.get('kind') == 'fetch':
                     remote_backups.run_fetch(root, env_file, journal, pending)
+                elif pending.get('kind') == 'runtime_switch':
+                    runtime_switch.run(root, env_file, journal, None, pending)
                 elif pending.get('kind') == 'go_tasks':
                     apply_go_tasks(root, env_file, journal, pending)
                 else:
@@ -392,6 +421,10 @@ def serve(root, env_file, engine_class=Engine):
     status_server = Server(str(status_path), StatusHandler)
     os.chmod(status_path, 0o666)
     status_thread = threading.Thread(target=status_server.serve_forever, kwargs={'poll_interval': 0.5})
+    notices_server = notices.start(notices.DIRECTORY, notices_token,
+                                   lambda: notices.backup_failures(status_payload(), backup_inventory()))
+    notices_path = notices.DIRECTORY / notices.SOCKET
+    os.chown(notices_path, 10001, 10001)
     status_thread.start()
     worker = threading.Thread(target=work)
     worker.start()
@@ -409,6 +442,9 @@ def serve(root, env_file, engine_class=Engine):
         stop.set()
         wake.set()
         worker.join()
+        notices_server.shutdown()
+        notices_server.server_close()
+        notices_path.unlink(missing_ok=True)
         status_server.shutdown()
         status_thread.join()
         status_server.server_close()

@@ -118,10 +118,14 @@ selfhost-renderer-test:
 
 selfhost-production-smoke:
 	@npm --prefix selfhost/renderer test
+ifneq ($(SELFHOST_PREBUILT_IMAGES),1)
 	@docker build --target production --build-arg VERSION=test -t assozeta-backend:test ./BE
 	@docker build --build-arg VERSION=test -t assozeta-backend-go:test ./BE_GO
 	@docker build --target production -t assozeta-web:test ./UI
 	@docker build -t assozeta-renderer:test ./selfhost/renderer
+# Backups run the work checkpoint from the updater image of the configured version (Phase 6 A4).
+	@docker build -t assozeta-updater:test -t ghcr.io/carbogninalberto/assozeta-updater:test -f selfhost/updater/Dockerfile .
+endif
 	@node selfhost/tests/renderer-contract.mjs assozeta-renderer:test
 	@./selfhost/tests/production-smoke.sh
 

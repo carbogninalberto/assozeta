@@ -4,8 +4,6 @@ package main
 
 import (
 	"context"
-	"crypto/tls"
-	"crypto/x509"
 	"errors"
 	"flag"
 	"fmt"
@@ -21,6 +19,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/config"
 	ownedpgx "github.com/carbogninalberto/assozeta/BE_GO/internal/database"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/handoff"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/redisclient"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
@@ -50,6 +49,7 @@ func run(arguments []string) error {
 	poll := flags.Duration("poll-interval", time.Second, "idle claim interval")
 	maintenance := flags.Duration("maintenance-interval", 15*time.Second, "restore deferral interval")
 	drain := flags.Duration("drain-timeout", 25*time.Second, "grace before cancelling admitted jobs")
+	heartbeat := flags.Duration("handoff-heartbeat", time.Second, "handoff consumer heartbeat interval")
 	taskTimeout := flags.Duration("task-timeout", time.Minute, "registered task deadline")
 	if err := flags.Parse(arguments); err != nil {
 		if errors.Is(err, flag.ErrHelp) {
@@ -60,6 +60,9 @@ func run(arguments []string) error {
 	}
 	if flags.NArg() != 0 {
 		return errors.New("unexpected worker arguments")
+	}
+	if *heartbeat <= 0 {
+		return errors.New("invalid handoff heartbeat interval")
 	}
 	cfg, err := config.Load(*envFile)
 	if err != nil {
@@ -91,12 +94,12 @@ func run(arguments []string) error {
 		return err
 	}
 	defer broker.Close()
-	tasks := celery.NewProducer(celery.RedisBroker{Client: broker}).WithRoutes(celery.ParseRoutes(cfg.GoTaskQueueTasks))
-	deletions := service.NewUserDeletionRequests(repository.NewUserDeletionRequests(db), tasks, cfg.WhitelabelName, time.Now, logger)
+	tasks := celery.NewProducer(celery.AdmittingBroker{DB: db.DB, Redis: celery.RedisBroker{Client: broker}}).WithRoutes(celery.ParseRoutes(cfg.GoTaskQueueTasks))
+	deletions := service.NewUserDeletionRequests(repository.NewUserDeletionRequests(db), tasks, cfg.WhitelabelName, time.Now, logger).WithHandoffLedger(db.DB)
 	attendance := service.NewAutoMarkAttendance(repository.NewAutoMarkAttendance(db), time.Now, logger)
 	emails := service.NewEmailTasks(repository.NewEmailTasks(db), tasks, service.SMTPMailer{}, service.EmailTaskSettings{
 		AppURL: cfg.InstanceAdmin.AppURL, WhitelabelName: cfg.WhitelabelName, DefaultFromEmail: cfg.DefaultFromEmail,
-		DefaultTeamEmail: cfg.DefaultTeamEmail, IsWhitelabel: cfg.IsWhitelabel}, time.Now, logger)
+		DefaultTeamEmail: cfg.DefaultTeamEmail, IsWhitelabel: cfg.IsWhitelabel}, time.Now, logger).WithHandoffLedger(db.DB)
 	exports := service.NewExportCleanup(repository.NewExportCleanups(db), composeExportCleanupObjects(cfg), time.Now, logger)
 	quotes := service.NewQuoteAssign(repository.NewQuoteAssigns(db), emails, cfg.WhitelabelName, time.Now, logger)
 	orphans := service.NewOrphanMedicalCleanup(repository.NewOrphanMedicalCleanups(db), composeExportCleanupObjects(cfg), time.Now, logger)
@@ -116,30 +119,32 @@ func run(arguments []string) error {
 	defer closeBakney()
 	admission := service.NewJobRestoreAdmission(repository.NewRestoreFileLock(cfg.RestoreLockPath),
 		repository.NewRestoreStates(db), cfg.RestoreLockPath != "")
-	jobs := repository.NewJobs(db)
-	executorOptions := service.JobExecutorOptions{Owner: "worker-" + uuid.NewString(), Concurrency: *concurrency,
+	owner := "worker-" + uuid.NewString()
+	jobs := repository.NewJobs(db).WithConsumerID(owner)
+	executorOptions := service.JobExecutorOptions{Owner: owner, Concurrency: *concurrency,
 		Lease: *lease, RenewInterval: *renew, StoreTimeout: *storeTimeout, PollInterval: *poll,
 		MaintenanceInterval: *maintenance, DrainTimeout: *drain}
 	executor, err := service.NewJobExecutor(jobs, admission,
 		map[string]service.JobDefinition{
+			domain.JobResultRetention:                    {Version: 1, Timeout: *taskTimeout, Run: jobs.RunResultRetention},
 			domain.JobResetDailyEmailBalance:             {Version: 1, Timeout: *taskTimeout, Run: reset.Run},
 			domain.JobUpdateAssociateAge:                 {Version: 1, Timeout: *taskTimeout, Run: ages.Run},
-			domain.JobClearExpiredSubscriptionTokens:     {Version: 1, Timeout: *taskTimeout, Run: tokens.Run},
+			domain.JobClearExpiredSubscriptionTokens:     {Version: 1, Timeout: *taskTimeout, MinStartInterval: time.Second, Run: tokens.Run},
 			domain.JobDeleteOldAuditLogs:                 {Version: 1, Timeout: *taskTimeout, Run: retention.Run},
 			domain.JobDeleteUsersWithRequest:             {Version: 1, Timeout: *taskTimeout, Run: deletions.Run},
-			domain.JobAutoMarkAttendance:                 {Version: 1, Timeout: *taskTimeout, Run: attendance.Run},
+			domain.JobAutoMarkAttendance:                 {Version: 1, Timeout: *taskTimeout, MinStartInterval: 15 * time.Second, Run: attendance.Run},
 			domain.JobSendUserPartialRegistrationEmail:   {Version: 1, Timeout: *taskTimeout, Run: emails.RunPartialRegistrations},
 			domain.JobSendExpiringCertificateEmail:       {Version: 1, Timeout: *taskTimeout, Run: emails.RunExpiringCertificates},
 			domain.JobSendExpiredCertificateEmail:        {Version: 1, Timeout: *taskTimeout, Run: emails.RunExpiredCertificates},
 			domain.JobSendReminders:                      {Version: 1, Timeout: *taskTimeout, Run: emails.RunReminders},
 			domain.JobMaintainBakneyPairings:             {Version: 1, Timeout: *taskTimeout, Run: bakney.Maintain},
 			domain.JobCleanupOldExports:                  {Version: 1, Timeout: *taskTimeout, Run: exports.Run},
-			domain.JobChangeTypeOfStripePayments:         {Version: 1, Timeout: max(*taskTimeout, tasksDBDLongTimeout), Run: stripeTasks.RunChangeTypeOfStripePayments},
-			domain.JobGenerateCouponIfNotExists:          {Version: 1, Timeout: *taskTimeout, Run: stripeTasks.RunGenerateCouponIfNotExists},
-			domain.JobRenewMembershipsPayments:           {Version: 1, Timeout: *taskTimeout, Run: stripeTasks.RunRenewMembershipsPayments},
+			domain.JobChangeTypeOfStripePayments:         {Version: 1, Timeout: max(*taskTimeout, tasksDBDLongTimeout), MinStartInterval: 2 * time.Second, Run: stripeTasks.RunChangeTypeOfStripePayments},
+			domain.JobGenerateCouponIfNotExists:          {Version: 1, Timeout: *taskTimeout, MinStartInterval: 15 * time.Second, Run: stripeTasks.RunGenerateCouponIfNotExists},
+			domain.JobRenewMembershipsPayments:           {Version: 1, Timeout: *taskTimeout, MinStartInterval: time.Minute, Run: stripeTasks.RunRenewMembershipsPayments},
 			domain.JobAutoDeleteOrphanMedicalCertificate: {Version: 1, Timeout: *taskTimeout, Run: orphans.Run},
-			domain.JobAssociationQuoteAssign:             {Version: 1, Timeout: *taskTimeout, Run: quotes.Run},
-			domain.JobMarkAsPaidPaymentsCheckingStripe:   {Version: 1, Timeout: *taskTimeout, Run: paidChecks.Run},
+			domain.JobAssociationQuoteAssign:             {Version: 1, Timeout: *taskTimeout, MinStartInterval: time.Minute, Run: quotes.Run},
+			domain.JobMarkAsPaidPaymentsCheckingStripe:   {Version: 1, Timeout: *taskTimeout, MinStartInterval: 20 * time.Second, Run: paidChecks.Run},
 			domain.JobClearDeletedSubscription:           {Version: 1, Timeout: *taskTimeout, Run: deletedSubscriptions.Run},
 			domain.JobAutoArchiveSubscription:            {Version: 1, Timeout: *taskTimeout, Run: archives.Run},
 		},
@@ -170,6 +175,7 @@ func run(arguments []string) error {
 	if err != nil {
 		return errors.New("worker operational schema unavailable or incompatible")
 	}
+	go heartbeatWorker(ctx, jobs, executorOptions.Owner, *heartbeat, *storeTimeout)
 	logger.Info("worker ready", "concurrency", *concurrency)
 	// cleanup_data_restores runs on its own executor (no ordinary admission);
 	// both stop on the same signal and drain within the same deadline.
@@ -202,25 +208,25 @@ func run(arguments []string) error {
 // celeryBroker is the Redis client for Django's CELERY_BROKER_URL: the shared
 // Redis settings without a database number (DB 0), as in cmd/server.
 func celeryBroker(cfg config.Config) (*redis.Client, error) {
-	options := &redis.Options{Addr: cfg.RedisAddress, Username: cfg.RedisUsername, Password: cfg.RedisPassword,
-		DB: 0, MaxRetries: -1, DialTimeout: 2 * time.Second, ReadTimeout: 2 * time.Second, WriteTimeout: 2 * time.Second, ContextTimeoutEnabled: true}
-	if cfg.RedisTLS {
-		options.TLSConfig = &tls.Config{MinVersion: tls.VersionTLS12}
-		if cfg.RedisRootCertificate != "" {
-			pem, err := os.ReadFile(cfg.RedisRootCertificate)
-			if err != nil {
-				return nil, errors.New("cannot read Redis root certificate")
-			}
-			roots, err := x509.SystemCertPool()
-			if err != nil {
-				roots = x509.NewCertPool()
-			}
-			if !roots.AppendCertsFromPEM(pem) {
-				return nil, errors.New("invalid Redis root certificate")
-			}
-			options.TLSConfig.RootCAs = roots
+	return redisclient.NewBroker(cfg)
+}
+
+func heartbeatWorker(ctx context.Context, jobs *repository.Jobs, owner string, interval, timeout time.Duration) {
+	ticker := time.NewTicker(interval)
+	defer ticker.Stop()
+	var acknowledged uuid.UUID
+	for {
+		beat, cancel := context.WithTimeout(ctx, timeout)
+		operation, err := jobs.HandoffHeartbeat(beat, owner)
+		cancel()
+		if err == nil && operation != nil && *operation != acknowledged {
+			acknowledged = *operation
+			handoff.Barrier("freeze:acknowledged", owner)
+		}
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
 		}
 	}
-	options.Dialer = redisclient.DialContext(options)
-	return redis.NewClient(options), nil
 }

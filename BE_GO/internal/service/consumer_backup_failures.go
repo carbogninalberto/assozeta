@@ -39,9 +39,9 @@ type ConsumerBackupFailuresStore interface {
 	DeleteNotified(ctx context.Context, key string) error
 }
 
-// ConsumerBackupFailuresRunner is call_runner without a payload.
+// ConsumerBackupFailuresRunner reads the scoped backup failure projection.
 type ConsumerBackupFailuresRunner interface {
-	Call(ctx context.Context, method, path string) (*updaterrunner.Reply, error)
+	ReadBackupFailures(ctx context.Context) (*updaterrunner.Reply, error)
 }
 
 // ConsumerBackupFailuresBarrier is the restore barrier CoordinatedTask
@@ -51,7 +51,7 @@ type ConsumerBackupFailuresBarrier interface {
 }
 
 // ConsumerBackupFailures runs BE/instance/backups.py notify_failures: in
-// production, read the runner's /status and /backups, then e-mail the
+// production, read GET /backup-failures, then e-mail the
 // primary association's owner once per failed backup, failed scheduled
 // start and failed remote copy of the last 48 hours (the cache key marks a
 // notice; a failed send releases it). The runner answers are read and checked
@@ -146,12 +146,7 @@ func consumerBackupFailuresStale(request *celeryworker.Request, completed time.T
 // prepare reads the runner and the owner, checks every answer against the
 // ported subset and renders the candidate notices once.
 func (s *ConsumerBackupFailures) prepare(ctx context.Context, call *backupFailuresCall) error {
-	status, ok, err := s.call(ctx, "/status")
-	if err != nil || !ok {
-		call.done = !ok && err == nil
-		return err
-	}
-	inventory, ok, err := s.call(ctx, "/backups")
+	projection, ok, err := s.call(ctx)
 	if err != nil || !ok {
 		call.done = !ok && err == nil
 		return err
@@ -164,7 +159,7 @@ func (s *ConsumerBackupFailures) prepare(ctx context.Context, call *backupFailur
 		call.done = true
 		return nil
 	}
-	if call.failures, err = consumerBackupFailuresList(status, inventory); err != nil {
+	if call.failures, err = consumerBackupFailuresList(projection, projection); err != nil {
 		return err
 	}
 	call.email = *owner.Email
@@ -196,11 +191,11 @@ func (s *ConsumerBackupFailures) mailFrom(call *backupFailuresCall) string {
 	return s.from
 }
 
-// call is call_runner('GET', path) as notify_failures reads it: ok is false
+// call reads the notices socket: ok is false
 // for UpdaterUnavailable and UpdaterRejected (the task returns 0); an answer
 // Python decodes differently, or reads with an AttributeError, is a handoff.
-func (s *ConsumerBackupFailures) call(ctx context.Context, path string) (any, bool, error) {
-	reply, err := s.runner.Call(ctx, "GET", path)
+func (s *ConsumerBackupFailures) call(ctx context.Context) (any, bool, error) {
+	reply, err := s.runner.ReadBackupFailures(ctx)
 	if err != nil {
 		if _, unavailable := updaterrunner.IsUnavailable(err); unavailable {
 			return nil, false, nil

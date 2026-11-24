@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"log/slog"
@@ -38,6 +39,10 @@ type EmailTasks struct {
 	delay     func() time.Duration
 	logger    *slog.Logger
 	timers    sync.WaitGroup
+	ledger    *sql.DB
+
+	reminderRateMu sync.Mutex
+	nextReminder   time.Time
 }
 
 func NewEmailTasks(store domain.EmailTaskStore, publisher celery.Publisher, mailer domain.SMTPMailer, settings EmailTaskSettings,
@@ -45,6 +50,18 @@ func NewEmailTasks(store domain.EmailTaskStore, publisher celery.Publisher, mail
 	return &EmailTasks{store: store, publisher: publisher, mailer: mailer, settings: settings, now: now, logger: logger,
 		// send_email_html: random.randint(1, 30) seconds.
 		delay: func() time.Duration { return time.Duration(1+rand.IntN(30)) * time.Second }}
+}
+
+func (s *EmailTasks) WithHandoffLedger(db *sql.DB) *EmailTasks {
+	s.ledger = db
+	return s
+}
+
+func (s *EmailTasks) smtpContext(ctx context.Context, job domain.Job) context.Context {
+	if s.ledger == nil || job.HandoffRootID == "" {
+		return ctx
+	}
+	return smtpsend.WithLedgerAttempt(ctx, s.ledger, job.ID.String(), job.LeaseToken.String(), 0)
 }
 
 // errEmailTaskStopped is an exception the task's outer handler catches.
@@ -82,9 +99,17 @@ func (s *EmailTasks) finish(ctx context.Context, job domain.Job, err error, name
 	return completion.Commit()
 }
 
-// Wait blocks until the delayed reminder sends started by send_reminders end,
-// as the worker process waits for the task's non-daemon Timer threads.
+// Wait drains delayed reminder sends on databases without the handoff ledger.
 func (s *EmailTasks) Wait() { s.timers.Wait() }
+
+func (s *EmailTasks) publishMail(ctx context.Context, job *domain.Job, name string, kwargs celery.Dict) (string, error) {
+	task := celery.Task{Name: name, Kwargs: kwargs}
+	if job != nil && job.HandoffRootID != "" {
+		task.Queue = celery.GoQueue
+		task.ParentID, task.RootID = job.ID.String(), job.HandoffRootID
+	}
+	return s.publisher.Publish(ctx, task)
+}
 
 func (s *EmailTasks) render(ctx context.Context, tx domain.EmailTaskTransaction, name string, context map[string]any) (string, error) {
 	stored, err := tx.InstanceConfig(ctx)
@@ -173,12 +198,12 @@ func (s *EmailTasks) partialRegistration(ctx context.Context, job domain.Job, pa
 		return err
 	}
 	defer tx.Rollback()
-	if _, err = s.publisher.Publish(ctx, celery.Task{Name: SendMailAsyncTask, Kwargs: celery.Dict{
+	if _, err = s.publishMail(ctx, &job, SendMailAsyncTask, celery.Dict{
 		{Key: "subject", Value: "Completa la tua registrazione per attivare la prova gratuita di " + s.settings.WhitelabelName},
 		{Key: "message", Value: message}, {Key: "from_email", Value: s.settings.DefaultTeamEmail},
 		{Key: "recipient_list", Value: []any{pythonLower(partial.Email)}}, {Key: "html_message", Value: message},
 		{Key: "fail_silently", Value: false},
-	}}); err != nil {
+	}); err != nil {
 		return publishError(ctx, err)
 	}
 	if err = tx.DeletePartialRegistration(ctx, partial, s.now().UTC().Truncate(time.Microsecond)); err != nil {
@@ -223,6 +248,7 @@ func (s *EmailTasks) runCertificates(ctx context.Context, job domain.Job, task c
 	if err := emailTaskEnvelope(job, task.kind); err != nil {
 		return err
 	}
+	ctx = s.smtpContext(ctx, job)
 	now := s.now().UTC()
 	reader, err := s.store.BeginEmailTask(ctx, &job)
 	if err != nil {
@@ -355,12 +381,12 @@ func (s *EmailTasks) certificate(ctx context.Context, job domain.Job, task certi
 	if send.configuration != nil {
 		return s.configurationSend(ctx, &job, *send.configuration, send.subject, send.message, []*string{&send.recipient}, replyTo)
 	}
-	if _, err = s.publisher.Publish(ctx, celery.Task{Name: SendMailAsyncTask, Kwargs: celery.Dict{
+	if _, err = s.publishMail(ctx, &job, SendMailAsyncTask, celery.Dict{
 		{Key: "subject", Value: send.subject}, {Key: "message", Value: send.message}, {Key: "from_email", Value: s.settings.DefaultTeamEmail},
 		{Key: "recipient_list", Value: []any{send.recipient}}, {Key: "html_message", Value: send.message},
 		{Key: "fail_silently", Value: false}, {Key: "sport_association_id", Value: subscription.AssociationID},
 		{Key: "reply_to", Value: []any{subscription.OwnerEmail}},
-	}}); err != nil {
+	}); err != nil {
 		return publishError(ctx, err)
 	}
 	return nil
@@ -481,13 +507,13 @@ func (s *EmailTasks) configurationSend(ctx context.Context, job *domain.Job, con
 	for i, address := range replyTo {
 		reply[i] = address
 	}
-	if _, err = s.publisher.Publish(ctx, celery.Task{Name: SendMailAsyncTask, Kwargs: celery.Dict{
+	if _, err = s.publishMail(ctx, job, SendMailAsyncTask, celery.Dict{
 		{Key: "subject", Value: subject}, {Key: "message", Value: nil},
 		{Key: "from_email", Value: strings.ReplaceAll(s.settings.DefaultFromEmail, s.settings.WhitelabelName, *denomination)},
 		{Key: "recipient_list", Value: list}, {Key: "fail_silently", Value: false}, {Key: "html_message", Value: html},
 		{Key: "sport_association_id", Value: *configuration.AssociationID}, {Key: "reply_to", Value: reply},
 		{Key: "skip_association_check", Value: true},
-	}}); err != nil && ctx.Err() != nil {
+	}); err != nil && ctx.Err() != nil {
 		return ctx.Err()
 	}
 	return nil
@@ -495,12 +521,16 @@ func (s *EmailTasks) configurationSend(ctx context.Context, job *domain.Job, con
 
 // --- send_reminders -------------------------------------------------------------
 
-// RunReminders: due, not completed reminders with an association; each is
-// rendered once, sent to the user and the instructor through send_email_html
-// (called in the task, not queued), then saved as completed.
+// RunReminders renders due reminders, schedules delivery to the user and the
+// instructor, and marks them completed.
 func (s *EmailTasks) RunReminders(ctx context.Context, job domain.Job) error {
 	if err := emailTaskEnvelope(job, domain.JobSendReminders); err != nil {
 		return err
+	}
+	if job.HandoffRootID != "" {
+		if err := s.waitForReminderSlot(ctx); err != nil {
+			return err
+		}
 	}
 	reader, err := s.store.BeginEmailTask(ctx, &job)
 	if err != nil {
@@ -547,6 +577,23 @@ func (s *EmailTasks) RunReminders(ctx context.Context, job domain.Job) error {
 	return s.finish(ctx, job, err, "send_reminders")
 }
 
+// The Django worker's send_reminders bucket allows one new run per second.
+func (s *EmailTasks) waitForReminderSlot(ctx context.Context) error {
+	s.reminderRateMu.Lock()
+	defer s.reminderRateMu.Unlock()
+	if delay := time.Until(s.nextReminder); delay > 0 {
+		timer := time.NewTimer(delay)
+		defer timer.Stop()
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-timer.C:
+		}
+	}
+	s.nextReminder = time.Now().Add(time.Second)
+	return nil
+}
+
 func reminderRecipients(reminder domain.EventReminder) [][]*string {
 	user := reminder.UserEmail
 	recipients := [][]*string{{&user}}
@@ -583,10 +630,9 @@ func (s *EmailTasks) sendEmailHTML(ctx context.Context, job domain.Job, reminder
 	return s.SendEmailHTML(ctx, job, reminder.AssociationID, s.reminderSubject(reminder), message, recipients, replyTo)
 }
 
-// SendEmailHTML is send_email_html(html_message, subject, recipient_list,
-// sport_association_id, reply_to) called in-process: with a configuration
-// the send runs after a random 1-30 s delay outside the task (Timer); without
-// one, send_mail_async is published. Its own try/except swallows failures.
+// SendEmailHTML schedules configured delivery through the Go consumer when
+// the ledger is installed. Legacy workers keep the local Timer. Without a
+// configuration the service publishes send_mail_async directly.
 func (s *EmailTasks) SendEmailHTML(ctx context.Context, job domain.Job, association uuid.UUID, subject, message string, recipients []*string,
 	replyTo []string) error {
 	reader, err := s.store.BeginEmailTask(ctx, &job)
@@ -601,7 +647,7 @@ func (s *EmailTasks) SendEmailHTML(ctx context.Context, job domain.Job, associat
 	if err = reader.Rollback(); err != nil {
 		return err
 	}
-	if configuration != nil {
+	if configuration != nil && job.HandoffRootID == "" {
 		loaded := *configuration
 		s.timers.Add(1)
 		time.AfterFunc(s.delay(), func() {
@@ -622,11 +668,18 @@ func (s *EmailTasks) SendEmailHTML(ctx context.Context, job domain.Job, associat
 	for i, address := range replyTo {
 		reply[i] = address
 	}
-	if _, err = s.publisher.Publish(ctx, celery.Task{Name: SendMailAsyncTask, Kwargs: celery.Dict{
+	if configuration != nil {
+		_, err := s.publishMail(ctx, &job, SendEmailHTMLTask, celery.Dict{
+			{Key: "subject", Value: subject}, {Key: "html_message", Value: message}, {Key: "recipient_list", Value: list},
+			{Key: "sport_association_id", Value: association}, {Key: "reply_to", Value: reply},
+		})
+		return err
+	}
+	if _, err = s.publishMail(ctx, &job, SendMailAsyncTask, celery.Dict{
 		{Key: "subject", Value: subject}, {Key: "message", Value: message}, {Key: "from_email", Value: s.settings.DefaultFromEmail},
 		{Key: "recipient_list", Value: list}, {Key: "html_message", Value: message}, {Key: "fail_silently", Value: false},
 		{Key: "sport_association_id", Value: association}, {Key: "reply_to", Value: reply},
-	}}); err != nil && ctx.Err() != nil {
+	}); err != nil && ctx.Err() != nil {
 		return ctx.Err()
 	}
 	return nil

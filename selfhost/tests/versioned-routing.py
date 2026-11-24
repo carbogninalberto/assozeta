@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Real Caddy transport rehearsal; synthetic upstreams are not backend parity."""
 import base64
+import contextlib
 import hashlib
 import json
 import os
@@ -18,6 +19,14 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 from TESTS.adapters.caddy import proxy
 from TESTS.http_client import Client, poll
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from historical_distribution import legacy_root  # noqa: E402
+
+# The historical dual-API Caddyfile routes by path (production ownership of
+# /api/v1 and /api/v2); the current exclusive Caddyfile sends every route to the
+# active runtime, so behind two fixtures it shows the transport properties of the
+# shipped rewrites (TESTS/adapters/caddy.fixture_routes). Both must pass.
+CADDYFILES = (('historical', legacy_root() / 'selfhost/caddy/Caddyfile'), ('current', None))
 
 
 def upstream(owner):
@@ -168,30 +177,40 @@ def main():
                 server.operations = Path(temporary)
             addresses = [f'host.docker.internal:{server.server_port}' for server, _ in servers]
             controls = {owner: f'http://127.0.0.1:{server.server_port}' for owner, (server, _) in zip(('django', 'go'), servers)}
-            with proxy(*addresses, log, operations=temporary) as (base, image):
-                with patch.dict(os.environ, TESTS_ROUTING_URL=base, TESTS_ROUTING_CONTROLS=json.dumps(controls)):
-                    def contracts(name):
+            with contextlib.ExitStack() as stack:
+                bases = {label: stack.enter_context(proxy(*addresses, log, operations=temporary, caddyfile=caddyfile))
+                         for label, caddyfile in CADDYFILES}
+                image = bases['current'][1]
+                bases = {label: value[0] for label, value in bases.items()}
+
+                def contracts(name, label):
+                    with patch.dict(os.environ, TESTS_ROUTING_URL=bases[label], TESTS_ROUTING_CONTROLS=json.dumps(controls)):
+                        print(f'--- {name} on the {label} Caddyfile', flush=True)
                         result = unittest.TextTestRunner(verbosity=2).run(unittest.defaultTestLoader.loadTestsFromName('TESTS.contracts.test_versioned_routing.' + name))
                         assert result.wasSuccessful() and not result.skipped
-                    contracts('VersionedRoutingContracts')
-                    # The Bakney SSO protocol root paths follow the backend the
-                    # instance selects: Django by default, Go when configured.
-                    with proxy(*addresses, log, operations=temporary, environment={
-                            'ASSOZETA_BAKNEY_PROTOCOL_UPSTREAM': addresses[1]}) as (bakney_base, _bakney_image):
-                        with patch.dict(os.environ, TESTS_ROUTING_BAKNEY_URL=bakney_base):
-                            contracts('BakneyProtocolBackendContracts')
-                    maintenance = Path(temporary) / 'maintenance.flag'
-                    maintenance.touch()
-                    try:
+                for label in bases:
+                    contracts('VersionedRoutingContracts', label)
+                # Historical distributions: the Bakney SSO protocol root paths follow
+                # the backend the instance selects: Django by default, Go when configured.
+                with proxy(*addresses, log, operations=temporary, caddyfile=CADDYFILES[0][1], environment={
+                        'ASSOZETA_BAKNEY_PROTOCOL_UPSTREAM': addresses[1]}) as (bakney_base, _bakney_image):
+                    with patch.dict(os.environ, TESTS_ROUTING_BAKNEY_URL=bakney_base):
+                        contracts('BakneyProtocolBackendContracts', 'historical')
+                maintenance = Path(temporary) / 'maintenance.flag'
+                maintenance.touch()
+                try:
+                    for label, base in bases.items():
                         poll(lambda: Client(base).request('GET', '/api/probe')[0], lambda code: code == 503, timeout=5, interval=.01)
-                        contracts('RoutingMaintenanceContracts')
-                    finally:
-                        maintenance.unlink()
+                        contracts('RoutingMaintenanceContracts', label)
+                finally:
+                    maintenance.unlink()
+                for base in bases.values():
                     poll(lambda: Client(base).request('GET', '/api/probe')[0], lambda code: code == 200, timeout=5, interval=.01)
-                    servers[1][0].shutdown()
-                    servers[1][0].server_close()
-                    servers[1][0].disconnect()
-                    contracts('RoutingUnavailableContracts')
+                servers[1][0].shutdown()
+                servers[1][0].server_close()
+                servers[1][0].disconnect()
+                for label in bases:
+                    contracts('RoutingUnavailableContracts', label)
                 report = {'success': True, 'image': image, 'scope': 'actual self-host Caddy; synthetic transport upstreams; no application parity or coordinated backend switch claim'}
                 result_path.write_text(json.dumps(report, indent=2) + '\n')
                 print(json.dumps(report))

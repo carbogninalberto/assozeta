@@ -32,10 +32,11 @@ var prioritySteps = []int64{0, 3, 6, 9}
 // restore of messages past the visibility timeout under unacked_mutex,
 // and restore of held messages at shutdown.
 type Transport struct {
-	Client     redis.UniversalClient
-	Queue      string
-	Visibility time.Duration
-	Now        func() time.Time
+	Client             redis.UniversalClient
+	Queue              string
+	Visibility         time.Duration
+	Now                func() time.Time
+	ReservationBarrier func(string, string)
 }
 
 // Delivery is one message taken from the queue.
@@ -44,6 +45,7 @@ type Delivery struct {
 	// Message is nil when the payload is outside the decoded subset.
 	Message *Message
 	Err     error
+	source  string
 }
 
 func (t *Transport) now() time.Time {
@@ -90,10 +92,13 @@ func (t *Transport) Get(ctx context.Context, timeout time.Duration) (*Delivery, 
 	if err != nil {
 		return nil, err
 	}
-	d := &Delivery{Raw: []byte(item[1])}
+	d := &Delivery{Raw: []byte(item[1]), source: item[0]}
 	d.Message, d.Err = ParseMessage(d.Raw)
 	if d.Err != nil {
 		return d, nil
+	}
+	if t.ReservationBarrier != nil {
+		t.ReservationBarrier("reservation:popped", d.Message.ID)
 	}
 	stored, err := EncodeJSON([]any{d.Message.Envelope, d.Message.Exchange, d.Message.RoutingKey})
 	if err != nil {
@@ -109,7 +114,15 @@ func (t *Transport) Get(ctx context.Context, timeout time.Duration) (*Delivery, 
 	if err != nil {
 		return nil, fmt.Errorf("celery: unacked bookkeeping: %w", err)
 	}
+	if t.ReservationBarrier != nil {
+		t.ReservationBarrier("reservation:confirmed", d.Message.ID)
+	}
 	return d, nil
+}
+
+// RestoreUndecodable returns an untracked delivery to its original priority list.
+func (t *Transport) RestoreUndecodable(ctx context.Context, d *Delivery) error {
+	return t.Client.RPush(ctx, d.source, d.Raw).Err()
 }
 
 // Ack is QoS.ack: the message leaves the unacked hash and index.

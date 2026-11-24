@@ -56,7 +56,8 @@ try {
     for (const navigation of ['open', 'reload']) {
         if (navigation === 'open') await page.goto(input.origin + '/#/login');
         else await page.reload();
-        await expect(page).toHaveTitle(input.title);
+        // The page load timeout is 15 s; give the SPA's title as long (slow hosted runners).
+        await expect(page).toHaveTitle(input.title, {timeout: 15000});
         await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute('content', input.color);
         await expect(page.locator('link[rel="manifest"]')).toHaveAttribute('href', '/api/instance/manifest.json');
         const logo = page.locator('img#logo:visible');

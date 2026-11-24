@@ -106,12 +106,15 @@ sys.exit(98)
 
     def test_managed_and_unpinned_custom_flows_remain_reachable(self):
         # Stop at the first downstream boundary, before backup or any real Docker use.
+        # The runtime adoption preflight (Phase 5) runs in the updater image before the
+        # backup; it reports no adoption here, so the custom flow reaches the backup.
         definitions = CLI.read_text().split('\ncommand=${1:-help}\n')[0]
         for custom in ('ASSOZETA_WEB_IMAGE', 'ASSOZETA_BACKEND_GO_IMAGE', None):
             with self.subTest(custom=custom):
                 self.write_env(self.values | ({custom: 'custom'} if custom else {}))
                 script = definitions + '''
 ensure_configuration_values() { :; }
+run_updater_tool() { printf '{"adoption_required": false, "blockers": []}\\n'; }
 docker() { printf 'managed-image-pull\\n'; exit 43; }
 backup_prod() { printf 'custom-backup-boundary\\n'; exit 44; }
 upgrade_prod 1.0.6
@@ -120,6 +123,8 @@ upgrade_prod 1.0.6
                 result = subprocess.run(['sh', '-c', script], env={**environment, 'ASSOZETA_ENV_FILE': str(self.env)}, capture_output=True, text=True)
                 self.assertEqual(result.returncode, 44 if custom else 43, result.stderr)
                 self.assertIn('custom-backup-boundary' if custom else 'managed-image-pull', result.stdout)
+                if custom:
+                    self.assertIn('@@ASSOZETA_RUNTIME_ADOPTION ', result.stdout)
 
 
 if __name__ == '__main__':

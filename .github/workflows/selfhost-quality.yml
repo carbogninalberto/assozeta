@@ -114,6 +114,9 @@ jobs:
       - name: Verify AI and manual availability
         working-directory: selfhost/tests/browser
         run: npm exec -- playwright test --config self-instance-ai.config.js
+      - name: Verify owner runtime settings
+        working-directory: selfhost/tests/browser
+        run: npm exec -- playwright test --config runtime-settings.config.js
       - name: Verify full application reload behind Caddy
         working-directory: selfhost/tests/browser
         env:

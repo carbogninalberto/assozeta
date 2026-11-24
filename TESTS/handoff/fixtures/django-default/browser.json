@@ -1,0 +1,9 @@
+[
+  {
+    "localStorage": {
+      "assozeta_instance_config": "{\"features\": {\"uiApiVersion\": \"v1\"}}"
+    },
+    "name": "legacy-v1",
+    "sessionStorage": {}
+  }
+]

@@ -52,6 +52,7 @@ Production commands:
   stop
   restart
   status
+  health                    Report routing, schema, worker, scheduler and relay health as JSON.
   logs [SERVICE]
   sync-manual               Install the published manual for the configured release.
   backup [--scheduled] [DIRECTORY]
@@ -64,6 +65,10 @@ Production commands:
                             and ASSOZETA_S3_SECRET_KEY (or the saved remote copy settings).
   recover-upgrade ARCHIVE [--yes]
   reconcile-updates
+  runtime-status
+  runtime-recover
+  runtime-switch django|go
+  runtime-adopt
   upgrade VERSION
   uninstall [--volumes] [--yes]
 
@@ -121,11 +126,14 @@ create_superuser() {
         fi
     else
         [ -f "$PROD_ENV" ] || die "run configure and start the production API first"
-        if [ -t 0 ]; then
-            prod_compose exec -e DJANGO_SUPERUSER_PASSWORD api python manage.py create_instance_superuser "$@"
-        else
-            prod_compose exec -T -e DJANGO_SUPERUSER_PASSWORD api python manage.py create_instance_superuser "$@"
-        fi
+        superuser_profile=$(prod_start_profile) || return $?
+        case "$superuser_profile" in
+            go) set -- api-go /app/create-instance-superuser "$@" ;;
+            *) set -- api python manage.py create_instance_superuser "$@" ;;
+        esac
+        set -- -e DJANGO_SUPERUSER_PASSWORD "$@"
+        if [ ! -t 0 ]; then set -- -T "$@"; fi
+        prod_compose exec "$@"
     fi
 }
 
@@ -328,6 +336,7 @@ compose_with_env() {
         ASSOZETA_SELFHOST_DIR=$SELFHOST_DIR; export ASSOZETA_SELFHOST_DIR
         compose_application_project=$(env_value COMPOSE_PROJECT_NAME "$compose_env_file")
         ASSOZETA_UPDATER_API_VOLUME="${compose_application_project:-assozeta}_updater_api"; export ASSOZETA_UPDATER_API_VOLUME
+        ASSOZETA_UPDATER_NOTICES_VOLUME="${compose_application_project:-assozeta}_updater_notices"; export ASSOZETA_UPDATER_NOTICES_VOLUME
         ASSOZETA_UPDATER_STATUS_VOLUME="${compose_application_project:-assozeta}_updater_status"; export ASSOZETA_UPDATER_STATUS_VOLUME
         # Resolve retired defaults without rewriting the saved environment.
         MINIO_IMAGE=$(storage_image_ref server "$(env_value MINIO_IMAGE "$compose_env_file")")
@@ -343,28 +352,13 @@ compose_with_env() {
     )
 }
 
-prod_go_tasks_enabled() {
-    [ -f "$PROD_ENV" ] && [ "$(env_value ASSOZETA_GO_TASKS "$PROD_ENV")" = 1 ]
-}
-
 prod_compose() {
-    # ASSOZETA_GO_TASKS=1 activates the opt-in Go task consumer (worker-go).
-    # An explicit flag, because --profile tools would replace COMPOSE_PROFILES.
-    if prod_go_tasks_enabled; then
-        compose_with_env "$PROD_ENV" "$PROD_COMPOSE" --profile go-tasks "$@"
-    else
-        compose_with_env "$PROD_ENV" "$PROD_COMPOSE" "$@"
-    fi
-}
-
-prod_compose_go_tasks() {
-    # The go-tasks profile whatever ASSOZETA_GO_TASKS says: discovery, and
-    # stopping a consumer whose profile was turned off since it started.
-    if prod_go_tasks_enabled; then
-        prod_compose "$@"
-    else
-        prod_compose --profile go-tasks "$@"
-    fi
+    case "${1:-}" in
+        --profile) ;;
+        pull) set -- --profile django --profile go --profile go-tasks "$@" ;;
+        *) set -- --profile '*' "$@" ;;
+    esac
+    compose_with_env "$PROD_ENV" "$PROD_COMPOSE" "$@"
 }
 
 dev_compose() {
@@ -399,14 +393,17 @@ env_value() {
     ' "$file"
 }
 
-edge_network_value() {
-    # Same rule as the updater's read_env: surrounding quotes and blanks are not a value.
-    [ -f "$1" ] || return 0
-    edge_value=$(env_value ASSOZETA_EDGE_NETWORK "$1" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')
-    case "$edge_value" in
-        \"*\"|\'*\') edge_value=${edge_value#?}; edge_value=${edge_value%?} ;;
+unquoted_env_value() {
+    value=$(env_value "$1" "$2" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')
+    case "$value" in
+        \"*\"|\'*\') value=${value#?}; value=${value%?} ;;
     esac
-    printf '%s\n' "$edge_value"
+    printf '%s\n' "$value"
+}
+
+edge_network_value() {
+    [ -f "$1" ] || return 0
+    unquoted_env_value ASSOZETA_EDGE_NETWORK "$1"
 }
 
 env_has_key() {
@@ -440,12 +437,32 @@ set_env_value() {
     mv "$temporary" "$file"
 }
 
-bakney_protocol_upstream() {
-    # The operator chooses a backend name; Caddy needs its in-network address.
-    case "$1" in
-        django) printf 'api:8000\n' ;;
-        go) printf 'api-go:8000\n' ;;
-        *) return 1 ;;
+ensure_runtime_references() {
+    for reference_key in CURRENT_HOST CURRENT_HOST_PUPPETEER; do
+        reference=$(unquoted_env_value "$reference_key" "$PROD_ENV")
+        if [ "$reference" = http://api:8000 ]; then
+            set_env_value "$reference_key" http://active-api:8000 "$PROD_ENV"
+            continue
+        fi
+        # Inspect the hostname only. Paths, ports and userinfo in a compatible
+        # operator override are preserved in the installation file.
+        host=$(printf '%s\n' "$reference" | tr '[:upper:]' '[:lower:]' |
+            sed -E 's@^[a-z][a-z0-9+.-]*://@@; s@[/?#].*$@@; s/^.*@//; s/:.*$//')
+        case "${host%.}" in
+            api|api-go) die "$reference_key names a runtime-specific API host; use active-api" ;;
+        esac
+        if [ "$reference_key" = CURRENT_HOST_PUPPETEER ]; then
+            case "$reference" in
+                [hH][tT][tT][pP]://*|[hH][tT][tT][pP][sS]://*) ;;
+                *) die "$reference_key must be an HTTP or HTTPS URL on active-api" ;;
+            esac
+            [ "$host" = active-api ] || die "$reference_key must name the renderer's active-api host"
+        fi
+    done
+    allowed=$(unquoted_env_value ALLOWED_HOSTS "$PROD_ENV")
+    case ",$allowed," in
+        *,active-api,*) ;;
+        *) set_env_value ALLOWED_HOSTS "${allowed:+$allowed,}active-api" "$PROD_ENV" ;;
     esac
 }
 
@@ -453,21 +470,12 @@ ensure_configuration_values() {
     file=$1
     [ -f "$file" ] || return
 
-    # ASSOZETA_REALTIME_RELAY_BACKEND selects the realtime relay. Keep the two
-    # replica counts Compose reads in step with it. Without the setting the
-    # file is left alone and Compose's defaults run the Django relay.
-    relay_backend=$(env_value ASSOZETA_REALTIME_RELAY_BACKEND "$file")
-    if [ -n "$relay_backend" ]; then
-        case "$relay_backend" in
-            django) django_relay_replicas=1; go_relay_replicas=0 ;;
-            go) django_relay_replicas=0; go_relay_replicas=1 ;;
-            *) die "invalid ASSOZETA_REALTIME_RELAY_BACKEND in $file: $relay_backend (use django or go)" ;;
-        esac
-        if [ "$(env_value ASSOZETA_DJANGO_RELAY_REPLICAS "$file")" != "$django_relay_replicas" ] \
-            || [ "$(env_value ASSOZETA_GO_RELAY_REPLICAS "$file")" != "$go_relay_replicas" ]; then
-            set_env_value ASSOZETA_DJANGO_RELAY_REPLICAS "$django_relay_replicas" "$file"
-            set_env_value ASSOZETA_GO_RELAY_REPLICAS "$go_relay_replicas" "$file"
-            log "realtime relay backend $relay_backend"
+    if [ "$file" = "$PROD_ENV" ] && [ -f "$PROD_COMPOSE" ] && prod_has_runtime_profiles; then
+        ensure_runtime_references
+        if env_has_key ASSOZETA_GO_WHATSAPP_OUTBOX "$PROD_ENV"; then
+            temporary=$(mktemp "${PROD_ENV}.XXXXXX")
+            awk '!/^ASSOZETA_GO_WHATSAPP_OUTBOX=/' "$PROD_ENV" > "$temporary"
+            mv "$temporary" "$PROD_ENV"
         fi
     fi
 
@@ -496,18 +504,6 @@ ensure_configuration_values() {
         [ -n "$app_url" ] || die "missing APP_URL in $file"
         set_env_value GOOGLE_CALENDAR_REDIRECT_URL "${app_url%/}/api/google/oauth2callback" "$file"
         log "added GOOGLE_CALENDAR_REDIRECT_URL to $file"
-    fi
-
-    # ASSOZETA_BAKNEY_PROTOCOL_BACKEND selects the backend for /bakney/v1/*.
-    # Keep the address Caddy reads in step with it; only django and go exist.
-    backend=$(env_value ASSOZETA_BAKNEY_PROTOCOL_BACKEND "$file")
-    if [ -n "$backend" ]; then
-        upstream=$(bakney_protocol_upstream "$backend") \
-            || die "invalid ASSOZETA_BAKNEY_PROTOCOL_BACKEND in $file: $backend (use django or go)"
-        if [ "$(env_value ASSOZETA_BAKNEY_PROTOCOL_UPSTREAM "$file")" != "$upstream" ]; then
-            set_env_value ASSOZETA_BAKNEY_PROTOCOL_UPSTREAM "$upstream" "$file"
-            log "Bakney protocol backend $backend: /bakney/v1/* uses $upstream"
-        fi
     fi
 }
 
@@ -663,6 +659,7 @@ write_configuration() {
         ratelimit=False
         cors_all=True
         secure_cookie=False
+        internal_api_host=api
         allowed_hosts="localhost,127.0.0.1,api"
         trusted_origins="http://localhost:5001,http://localhost:8000"
         app_url=http://localhost:5001
@@ -680,7 +677,8 @@ write_configuration() {
             http://*) secure_cookie=False ;;
             *) secure_cookie=True ;;
         esac
-        allowed_hosts="$APP_ALLOWED_HOST,api,localhost,127.0.0.1"
+        internal_api_host=active-api
+        allowed_hosts="$APP_ALLOWED_HOST,api,localhost,127.0.0.1,active-api"
         trusted_origins=$APP_URL
         app_url=$APP_URL
         app_host=$APP_HOST
@@ -741,7 +739,7 @@ CORS_ALLOWED_ORIGINS=$trusted_origins
 CSRF_TRUSTED_ORIGINS=$trusted_origins
 SESSION_COOKIE_SECURE=$secure_cookie
 CSRF_COOKIE_SECURE=$secure_cookie
-CURRENT_HOST=http://api:8000
+CURRENT_HOST=http://$internal_api_host:8000
 GOOGLE_CALENDAR_REDIRECT_URL=$app_url/api/google/oauth2callback
 WHITELABEL_NAME=Assozeta
 
@@ -773,7 +771,7 @@ MINIO_ROOT_PASSWORD=$minio_password
 
 PUPPETEER_HOST=renderer
 PUPPETEER_PORT=3000
-CURRENT_HOST_PUPPETEER=http://api:8000
+CURRENT_HOST_PUPPETEER=http://$internal_api_host:8000
 
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY=
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET=
@@ -799,17 +797,7 @@ WEB_CONCURRENCY=2
 CELERY_CONCURRENCY=2
 ASSOZETA_GO_TASKS=0
 GO_TASK_QUEUE_TASKS=
-# The Bakney SSO protocol root paths (/bakney/v1/*) stay on Django. Set
-# ASSOZETA_BAKNEY_PROTOCOL_BACKEND=go to serve them from the Go API; the
-# upstream address below is derived from it and passed to Caddy.
-ASSOZETA_BAKNEY_PROTOCOL_BACKEND=django
-ASSOZETA_BAKNEY_PROTOCOL_UPSTREAM=api:8000
-# The realtime outbox relay uses Django by default. Set
-# ASSOZETA_REALTIME_RELAY_BACKEND=go to use the Go relay. Compose uses the
-# two replica counts below, which bin/assozeta derives from the setting.
-ASSOZETA_REALTIME_RELAY_BACKEND=django
-ASSOZETA_DJANGO_RELAY_REPLICAS=1
-ASSOZETA_GO_RELAY_REPLICAS=0
+
 TZ=Europe/Rome
 DEV_UI_PORT=5001
 DEV_API_PORT=8000
@@ -866,6 +854,9 @@ configure() {
     esac
 
     write_configuration "$PROD_ENV" production "$domain" "$email" "$version"
+    # This release generated a fresh installation. A future upgrade must not
+    # reinterpret its UI setting as a request to adopt a legacy topology.
+    : > "${PROD_ENV}.exclusive-install"
     log "created $PROD_ENV"
 }
 
@@ -898,14 +889,13 @@ validate_file() {
     https_port=$(env_value HTTPS_PORT "$file")
     [ -z "$https_port" ] || validate_port "$https_port" "HTTPS_PORT in $file"
 
-    compose_with_env "$file" "$compose_file" --profile tools config --quiet
+    compose_with_env "$file" "$compose_file" --profile '*' config --quiet
 }
 
 validate_prod() {
     preflight
     ensure_configuration_values "$PROD_ENV"
     validate_file "$PROD_ENV" "$PROD_COMPOSE"
-    require_go_task_consumer || exit 1
     log "production configuration is valid"
 }
 
@@ -965,10 +955,57 @@ prod_optional_go_api() {
     fi
 }
 
-prod_optional_realtime_relay() {
-    # Historical distributions may define only the Django relay or neither relay.
-    configured_services=$(prod_compose config --services) || return $?
-    printf '%s\n' "$configured_services" | awk '$0 == "realtime-relay" || $0 == "realtime-relay-go"'
+prod_authority_missing() {
+    prod_compose exec -T postgres psql -X -qAt -v ON_ERROR_STOP=1 \
+        -U "$(env_value DBUSER "$PROD_ENV")" -d "$(env_value DBNAME "$PROD_ENV")" \
+        -c "SELECT to_regclass('public.assozeta_go_job_ownership') IS NULL;"
+}
+
+prod_effective_runtime() {
+    authority_runtime=$(prod_compose exec -T postgres psql -X -qAt -v ON_ERROR_STOP=1 \
+        -U "$(env_value DBUSER "$PROD_ENV")" -d "$(env_value DBNAME "$PROD_ENV")" \
+        -c 'SELECT runtime FROM public.assozeta_go_job_ownership WHERE singleton=1;') \
+        || die "cannot read the runtime authority"
+    case "$authority_runtime" in
+        ''|django) printf '%s\n' django ;;
+        go) printf '%s\n' go ;;
+        *) die "invalid runtime in the authority row" ;;
+    esac
+}
+
+prod_has_runtime_profiles() {
+    installed_profiles=$(prod_compose config --profiles) || die "cannot inspect Compose profiles"
+    printf '%s\n' "$installed_profiles" | grep -Eq '^(django|go)$'
+}
+
+prod_start_profile() {
+    if prod_has_runtime_profiles; then
+        prod_effective_runtime
+    elif [ "$(env_value ASSOZETA_GO_TASKS "$PROD_ENV")" = 1 ]; then
+        # A historical source has no authority or exclusive runtime profiles.
+        printf '%s\n' go-tasks
+    else
+        printf '%s\n' legacy
+    fi
+}
+
+runtime_app_services() {
+    service_profile=$1
+    set -- config --services
+    [ "$service_profile" = '*' ] || set -- --profile "$service_profile" "$@"
+    configured_services=$(prod_compose "$@") || return $?
+    for service in $configured_services; do
+        case "$service" in
+            postgres|redis|minio|renderer|web|minio-init|migrate|migrate-go) continue ;;
+        esac
+        case "$service_profile:$service" in
+            legacy:realtime-relay-go|go-tasks:realtime-relay-go)
+                [ "$(env_value ASSOZETA_GO_RELAY_REPLICAS "$PROD_ENV")" = 1 ] || continue ;;
+            legacy:realtime-relay|go-tasks:realtime-relay)
+                [ "$(env_value ASSOZETA_DJANGO_RELAY_REPLICAS "$PROD_ENV")" != 0 ] || continue ;;
+        esac
+        printf '%s\n' "$service"
+    done
 }
 
 prod_optional_go_migrator() {
@@ -977,41 +1014,6 @@ prod_optional_go_migrator() {
     configured_tools=$(prod_compose --profile tools config --services) || return $?
     if printf '%s\n' "$configured_tools" | awk '$0 == "migrate-go" { found = 1 } END { exit !found }'; then
         printf 'migrate-go\n'
-    fi
-}
-
-prod_optional_go_consumer() {
-    # The opt-in Go task consumer, when this distribution defines it (enabled
-    # or not): historical distributions have no worker-go service.
-    configured_go_tasks=$(prod_compose_go_tasks config --services) || return $?
-    if printf '%s\n' "$configured_go_tasks" | awk '$0 == "worker-go" { found = 1 } END { exit !found }'; then
-        printf 'worker-go\n'
-    fi
-}
-
-prod_active_go_consumer() {
-    prod_go_tasks_enabled || return 0
-    prod_optional_go_consumer
-}
-
-require_go_task_consumer() {
-    # Task names routed to the assozeta-go queue need a running consumer;
-    # without one they would wait on that queue indefinitely.
-    go_tasks_flag=$(env_value ASSOZETA_GO_TASKS "$PROD_ENV")
-    case "$go_tasks_flag" in
-        ''|0|1) ;;
-        *) printf '[assozeta] error: ASSOZETA_GO_TASKS must be 0 or 1\n' >&2; return 1 ;;
-    esac
-    go_task_names=$(env_value GO_TASK_QUEUE_TASKS "$PROD_ENV" | tr -d ' \t,"'"'")
-    if [ "$go_tasks_flag" != 1 ]; then
-        [ -z "$go_task_names" ] && return 0
-        printf '[assozeta] error: GO_TASK_QUEUE_TASKS routes tasks to the Go queue, but ASSOZETA_GO_TASKS=1 is not set; set ASSOZETA_GO_TASKS=1 or empty GO_TASK_QUEUE_TASKS\n' >&2
-        return 1
-    fi
-    go_consumer_service=$(prod_optional_go_consumer) || return $?
-    if [ -z "$go_consumer_service" ]; then
-        printf '[assozeta] error: ASSOZETA_GO_TASKS=1, but this release has no worker-go service\n' >&2
-        return 1
     fi
 }
 
@@ -1046,8 +1048,22 @@ drain_prod_go_transactions() {
 
 migrate_prod_schemas() {
     drain_prod_go_transactions || return $?
-    prod_compose --profile tools run --rm --no-deps migrate || return $?
-    if [ -n "$go_migration_service" ]; then
+    migration_profile=${1:-legacy}
+    if [ -z "${1:-}" ] && prod_has_runtime_profiles; then
+        # The first migration creates the authority table on a fresh instance.
+        missing_authority=$(prod_authority_missing) || return $?
+        if [ "$missing_authority" = t ]; then
+            migration_profile=django
+        else
+            migration_profile=$(prod_effective_runtime) || return $?
+        fi
+    fi
+    if [ "$migration_profile" != go ]; then
+        prod_compose --profile tools run --rm --no-deps migrate || return $?
+    elif [ -z "$go_migration_service" ]; then
+        die "Go mode requires the packaged Go migrator"
+    fi
+    if [ "$migration_profile" != django ] && [ -n "$go_migration_service" ]; then
         prod_compose --profile tools run --rm --no-deps "$go_migration_service" || return $?
     fi
 }
@@ -1061,8 +1077,8 @@ wait_public_readiness() {
     wait_url_ready "web" "$app_url/healthz" || return 1
     wait_url_ready "API" "$app_url/api/readyz" || return 1
     if [ -n "$go_api_service" ]; then
-        wait_url_ready "Django API" "$app_url/api/v1/readyz" || return 1
-        wait_url_ready "Go API" "$app_url/api/v2/readyz" || return 1
+        wait_url_ready "API v1" "$app_url/api/v1/readyz" || return 1
+        wait_url_ready "API v2" "$app_url/api/v2/readyz" || return 1
     fi
 }
 
@@ -1070,30 +1086,16 @@ require_public_readiness() {
     wait_public_readiness || die "public web/API readiness checks failed"
 }
 
-require_background_services_running() {
-    relay_services=$(prod_optional_realtime_relay) || return 1
-    # A historical Compose file with only the Django relay has a fixed replica.
-    case "$relay_services" in
-        *realtime-relay-go*)
-            if [ "$(env_value ASSOZETA_GO_RELAY_REPLICAS "$PROD_ENV")" = 1 ]; then
-                relay_services=realtime-relay-go
-            else
-                relay_services=realtime-relay
-            fi
-            ;;
-    esac
-    go_consumer_service=$(prod_active_go_consumer) || return 1
-    running=$(prod_compose ps --status running --services worker beat $relay_services $go_consumer_service 2>/dev/null) || return 1
-
-    for service in worker beat $relay_services $go_consumer_service; do
-        if printf '%s\n' "$running" | awk -v service="$service" '$0 == service { found=1 } END { exit !found }'; then
-            continue
+require_app_services_running() {
+    profile=$1
+    shift
+    running=$(prod_compose --profile "$profile" ps --status running --services "$@") || return 1
+    for service do
+        if ! printf '%s\n' "$running" | grep -Fxq "$service"; then
+            log "$service did not remain running after startup"
+            prod_compose --profile "$profile" ps "$service" >&2 || true
+            return 1
         fi
-
-        log "$service did not remain running after startup"
-        prod_compose ps "$service" >&2 || true
-        prod_compose logs --no-color --tail=100 "$service" >&2 || true
-        return 1
     done
 }
 
@@ -1103,54 +1105,66 @@ stop_prod_data_services() {
         : > "$MAINTENANCE_FLAG"
         chmod 644 "$MAINTENANCE_FLAG"
     fi
-    # Keep Caddy serving the maintenance page while the data services stop.
-    go_api_service=$(prod_optional_go_api) || return $?
-    relay_services=$(prod_optional_realtime_relay) || return $?
-    go_consumer_service=$(prod_optional_go_consumer) || return $?
-    set -- api worker beat $relay_services
-    [ -z "$go_api_service" ] || set -- "$@" "$go_api_service"
-    if [ -n "$go_consumer_service" ]; then
-        # The Go consumer drains its running tasks within stop_grace_period.
-        prod_compose_go_tasks stop "$go_consumer_service" "$@"
-    else
-        prod_compose stop "$@"
-    fi
+    # Keep Caddy serving maintenance while either application set stops.
+    stop_services=$(runtime_app_services '*') || return $?
+    [ -n "$stop_services" ] || return 0
+    prod_compose stop $stop_services
+}
+
+sync_prod_manual() {
+    case "$1" in
+        go)
+            prod_compose --profile go run --rm --no-deps --entrypoint /app/manuale-cli api-go sync-corpus ;;
+        *)
+            prod_compose run --rm --no-deps api python manage.py sync_manuale_corpus ;;
+    esac
 }
 
 start_prod_app_services() {
     force_recreate=${1:-false}
     report_health_stage=${2:-false}
-    # Refuse before starting anything: routed tasks need the Go consumer.
-    require_go_task_consumer || return $?
-    go_api_service=$(prod_optional_go_api) || return $?
-
-    # Populate the persistent manual before serving requests. A temporarily
-    # unavailable publisher must not prevent the application from starting.
+    start_profile=$(prod_start_profile) || return $?
+    # Upgrade and recovery may have replaced the distribution since validation.
+    case "$start_profile" in django|go) ensure_runtime_references || return $? ;; esac
+    app_services=$(runtime_app_services "$start_profile") || return $?
+    [ -n "$app_services" ] || die "no application services in Compose profile $start_profile"
+    case "$start_profile" in
+        django|legacy)
+            go_task_names=$(env_value GO_TASK_QUEUE_TASKS "$PROD_ENV" | tr -d ' \t,"'"'")
+            if [ -n "$go_task_names" ]; then
+                die "GO_TASK_QUEUE_TASKS routes work to a stopped Go consumer"
+            fi ;;
+    esac
     if [ -n "$(env_value MANUAL_CORPUS_BASE_URL "$PROD_ENV")" ]; then
-        if ! prod_compose run --rm --no-deps api python manage.py sync_manuale_corpus; then
+        if ! sync_prod_manual "$start_profile"; then
             log "manual refresh failed; retained content still requires the running revision/version"
         fi
     fi
 
-    set -- api web
-    [ -z "$go_api_service" ] || set -- "$@" "$go_api_service"
-    relay_services=$(prod_optional_realtime_relay) || return $?
-    go_consumer_service=$(prod_active_go_consumer) || return $?
-    if [ "$force_recreate" = true ]; then
-        prod_compose up -d --force-recreate worker beat $relay_services $go_consumer_service || return $?
-        prod_compose up -d --wait --force-recreate "$@" || return $?
-    else
-        prod_compose up -d worker beat $relay_services $go_consumer_service || return $?
-        prod_compose up -d --wait "$@" || return $?
+    prod_compose --profile "$start_profile" up -d --wait postgres redis minio renderer || return $?
+    set -- web
+    background_services=
+    for service in $app_services; do
+        case "$service" in
+            api|api-go) set -- "$@" "$service" ;;
+            *) background_services="$background_services $service" ;;
+        esac
+    done
+    recreate=
+    [ "$force_recreate" != true ] || recreate=--force-recreate
+    if [ -n "$background_services" ]; then
+        prod_compose --profile "$start_profile" up -d $recreate $background_services || return $?
     fi
+    prod_compose --profile "$start_profile" up -d --wait $recreate "$@" || return $?
+    require_app_services_running "$start_profile" web $app_services || return $?
 
-    require_background_services_running || return $?
     if [ "$report_health_stage" = true ]; then
         printf '%s\n' '@@ASSOZETA_STAGE health_check'
     fi
     # Container health alone does not prove that public routing reaches the API.
     # The readiness routes bypass maintenance so failures keep the page active.
     wait_public_readiness || return $?
+    require_app_services_running "$start_profile" postgres redis minio renderer web $app_services || return $?
     rm -f "$MAINTENANCE_FLAG"
 }
 
@@ -1254,9 +1268,67 @@ restart_prod() {
     status_prod
 }
 
+health_check_json() {
+    if [ "$1" = ok ]; then
+        printf '{"status":"passed","reason":null}'
+    else
+        printf '{"status":"failed","reason":"%s"}' "$1"
+    fi
+}
+
+health_prod() {
+    [ -f "$PROD_ENV" ] || die "run configure first"
+    health_url=$(env_value APP_URL "$PROD_ENV")
+    health_routing=readiness_failed
+    if curl --connect-timeout 5 --max-time 15 --fail --silent --show-error \
+        "${health_url%/}/api/readyz" >/dev/null 2>&1; then
+        health_routing=ok
+    fi
+
+    health_profile=${2:-}
+    if [ -z "$health_profile" ]; then
+        if (prod_has_runtime_profiles); then health_profile=current; else health_profile=legacy; fi
+    fi
+    case "$health_profile" in
+        legacy|go-tasks)
+            # Historical mixed installations have no runtime authority or role-specific signals.
+            health_values='unknown|null|schema_missing|no_heartbeat|no_lease|no_heartbeat'
+            ;;
+        *)
+            health_heartbeat=${ASSOZETA_HEALTH_HEARTBEAT_SECONDS:-$(unquoted_env_value ASSOZETA_HEALTH_HEARTBEAT_SECONDS "$PROD_ENV")}
+            health_stall=${ASSOZETA_HEALTH_STALL_SECONDS:-$(unquoted_env_value ASSOZETA_HEALTH_STALL_SECONDS "$PROD_ENV")}
+            health_values=$(prod_compose exec -T postgres psql -X -qAt -F '|' -v ON_ERROR_STOP=1 \
+                -U "$(env_value DBUSER "$PROD_ENV")" -d "$(env_value DBNAME "$PROD_ENV")" \
+                -v heartbeat="${health_heartbeat:-90}" -v stall="${health_stall:-600}" \
+                < "$SELFHOST_DIR/config/runtime-health.sql") || health_values='unknown|null|database_unavailable|database_unavailable|database_unavailable|database_unavailable'
+            ;;
+    esac
+    IFS='|' read -r health_runtime health_generation health_schema health_worker health_scheduler health_relay <<EOF
+$health_values
+EOF
+    case "$health_runtime" in django|go) health_runtime_json=\"$health_runtime\" ;; *) health_runtime_json=null ;; esac
+    health_status=failed
+    if [ "$health_routing/$health_schema/$health_worker/$health_scheduler/$health_relay" = ok/ok/ok/ok/ok ]; then
+        health_status=passed
+    fi
+    printf '%s{"runtime":%s,"generation":%s,"status":"%s","checks":{"routing":%s,"schema":%s,"worker":%s,"scheduler":%s,"relay":%s}}\n' \
+        "${1:-}" "$health_runtime_json" "${health_generation:-null}" "$health_status" \
+        "$(health_check_json "$health_routing")" "$(health_check_json "$health_schema")" \
+        "$(health_check_json "$health_worker")" "$(health_check_json "$health_scheduler")" "$(health_check_json "$health_relay")"
+    [ "$health_status" = passed ]
+}
+
 status_prod() {
     [ -f "$PROD_ENV" ] || die "run configure first"
-    prod_compose ps
+    prod_compose --profile '*' ps --all || return $?
+    if status_profile=$(prod_start_profile); then
+        case "$status_profile" in
+            django|go) log "effective runtime is $status_profile" ;;
+            *) log "historical deployment profile is $status_profile" ;;
+        esac
+    else
+        log "effective runtime is unknown"
+    fi
     app_url=$(env_value APP_URL "$PROD_ENV")
     if command -v curl >/dev/null 2>&1; then
         curl --fail --silent --show-error "$app_url/healthz" >/dev/null \
@@ -1266,16 +1338,12 @@ status_prod() {
             && log "API readiness check passed" \
             || log "API readiness check has not passed yet"
     fi
+    health_prod '@@ASSOZETA_HEALTH ' "${status_profile:-unknown}" || true
 }
 
 prod_app_services_running() {
-    go_api_service=$(prod_optional_go_api) || return 2
-    relay_services=$(prod_optional_realtime_relay) || return 2
-    go_consumer_service=$(prod_active_go_consumer) || return 2
-    set -- web api worker beat $relay_services
-    [ -z "$go_consumer_service" ] || set -- "$@" "$go_consumer_service"
-    [ -z "$go_api_service" ] || set -- "$@" "$go_api_service"
-    running=$(prod_compose ps --status running --services "$@" 2>/dev/null) || return 2
+    services=$(runtime_app_services '*') || return 2
+    running=$(prod_compose --profile '*' ps --status running --services web $services) || return 2
     [ -n "$running" ]
 }
 
@@ -1312,6 +1380,46 @@ backup_on_exit() {
     exit "$status"
 }
 
+restore_swap_names() {
+    bucket_suffix=$(printf '%s' "$1" | tr _ -)
+    restore_validation_database="assozeta_restore_stage_$1"
+    restore_rollback_database="assozeta_restore_rollback_$1"
+    restore_stage_bucket="assozeta-restore-stage-$bucket_suffix"
+    restore_rollback_bucket="assozeta-restore-rollback-$bucket_suffix"
+    restore_database_user=$(env_value DBUSER "$PROD_ENV")
+    restore_database_name=$(env_value DBNAME "$PROD_ENV")
+    restore_bucket=$(env_value AWS_STORAGE_BUCKET_NAME "$PROD_ENV")
+}
+
+recover_interrupted_swap() (
+    [ -f "$SELFHOST_DIR/.operations/restore-swap.json" ] || return 0
+    log "recovering interrupted restore"
+    swap_record=$(maintenance_work swap-journal read) || return 1
+    read -r swap_phase swap_suffix swap_directory swap_running <<EOF
+$swap_record
+EOF
+    restore_swap_names "$swap_suffix"
+    restore_temporary="$SELFHOST_DIR/$swap_directory"
+    restore_swap_recorded=true
+    restore_validation_database_created=true
+    restore_rollback_database_created=true
+    restore_stage_bucket_created=true
+    restore_rollback_bucket_created=true
+    prod_compose up -d --wait postgres redis minio || return 1
+    if [ "$swap_phase" = swapping ]; then
+        restore_rollback_database_needed=true
+        restore_rollback_bucket_needed=true
+        restore_broker_modified=true
+        restore_rollback_live_data || return 1
+        maintenance_work swap-journal rolled-back || return 1
+        swap_phase=rolled-back
+    fi
+    if [ "$swap_phase" = rolled-back ] && [ "$swap_running" = true ]; then
+        start_prod_app_services || return 1
+    fi
+    restore_cleanup 0
+)
+
 restore_cleanup() {
     status=${1:-$?}
     [ "${restore_cleanup_done:-false}" = true ] && return "$status"
@@ -1320,8 +1428,11 @@ restore_cleanup() {
     if [ "$status" -ne 0 ] && [ "${restore_live_modified:-false}" = true ]; then
         log "restore failed; rolling back live database/object data"
         if ! restore_rollback_live_data; then
-            log "restore rollback failed; manual recovery may be required"
-            status=1
+            log "restore rollback failed; preserving recovery data and leaving services stopped"
+            return 1
+        fi
+        if [ "${restore_swap_recorded:-false}" = true ]; then
+            maintenance_work swap-journal rolled-back || return 1
         fi
     fi
 
@@ -1330,8 +1441,9 @@ restore_cleanup() {
         if ! postgres_drop_database "$restore_database_user" "$restore_validation_database" >/dev/null 2>&1; then
             log "failed to remove restore validation database: $restore_validation_database"
             [ "$status" -eq 0 ] && status=1
+        else
+            restore_validation_database_created=false
         fi
-        restore_validation_database_created=false
     fi
 
     if [ "${restore_rollback_database_created:-false}" = true ]; then
@@ -1376,14 +1488,20 @@ restore_cleanup() {
         log "restarting application services"
         if ! start_prod_app_services || ! wait_public_readiness; then
             log "failed to restart application services after restore failure"
-            status=1
+            return 1
         fi
     fi
 
+    if [ "${restore_swap_recorded:-false}" = true ]; then
+        [ "$restore_validation_database_created/$restore_rollback_database_created/$restore_stage_bucket_created/$restore_rollback_bucket_created" = false/false/false/false ] || return 1
+    fi
     if [ -n "${restore_temporary:-}" ]; then
         rm -rf "$restore_temporary" || true
     fi
 
+    if [ "${restore_swap_recorded:-false}" = true ]; then
+        maintenance_work swap-journal clear || return 1
+    fi
     return "$status"
 }
 
@@ -1511,9 +1629,9 @@ restore_rollback_live_data() {
         fi
     fi
 
-    prod_compose exec -T \
-        -e REDISCLI_AUTH="$(env_value REDIS_PASSWORD "$PROD_ENV")" \
-        redis redis-cli FLUSHALL >/dev/null 2>&1 || true
+    if [ "${restore_broker_modified:-false}" = true ] && [ -d "$restore_temporary/live-broker" ]; then
+        maintenance_work restore-broker "$restore_temporary/live-broker" || rollback_status=1
+    fi
 
     return "$rollback_status"
 }
@@ -1713,6 +1831,25 @@ backup_prune() {
     done
 }
 
+# Empty on installations predating the ledger. A failed query must stop the backup.
+prod_work_ledger() {
+    prod_compose exec -T postgres psql -X -qAt -v ON_ERROR_STOP=1 \
+        -U "$(env_value DBUSER "$PROD_ENV")" -d "$(env_value DBNAME "$PROD_ENV")" \
+        -c "SELECT to_regclass('public.assozeta_handoff_work');"
+}
+
+maintenance_work() (
+    updater_tool_image=${ASSOZETA_VERIFIED_UPDATER_REF:-$(env_value ASSOZETA_UPDATER_REF "$PROD_ENV")}
+    if [ -z "$updater_tool_image" ]; then
+        maintenance_version=$(env_value ASSOZETA_VERSION "$PROD_ENV")
+        updater_tool_image="ghcr.io/carbogninalberto/assozeta-updater:${maintenance_version#v}"
+    fi
+    updater_tool_options=
+    maintenance_action=$1
+    shift
+    run_updater_tool /runner/maintenance_work.py "$maintenance_action" "$SELFHOST_DIR" "$PROD_ENV" "$@"
+)
+
 backup_prod() {
     backup_origin=${backup_origin:-manual}
     while [ "$#" -gt 0 ]; do
@@ -1774,6 +1911,14 @@ backup_prod() {
 
     drain_prod_go_transactions || return $?
 
+    if prod_has_runtime_profiles; then
+        ledger=$(prod_work_ledger) || return $?
+        if [ -n "$ledger" ]; then
+            prod_compose up -d --wait redis
+            maintenance_work checkpoint > "$working/manifest.txt" || return $?
+        fi
+    fi
+
     log "backing up PostgreSQL"
     prod_compose exec -T postgres pg_dump -U "$database_user" -d "$database_name" -Fc > "$working/postgres.dump"
 
@@ -1785,7 +1930,7 @@ backup_prod() {
         "mc alias set local http://minio:9000 \"\$MINIO_ROOT_USER\" \"\$MINIO_ROOT_PASSWORD\" && mc mirror --quiet local/$bucket /backup"
 
     cp "$PROD_ENV" "$working/config.env"
-    cat > "$working/manifest.txt" <<EOF
+    cat >> "$working/manifest.txt" <<EOF
 created_at=$timestamp
 version=$(env_value ASSOZETA_VERSION "$PROD_ENV")
 database=$database_name
@@ -1929,6 +2074,7 @@ restore_prod() {
     restore_rollback_bucket_created=false
     restore_rollback_bucket_needed=false
     restore_live_modified=false
+    restore_broker_modified=false
     restore_app_was_running=false
     restore_app_stopped=false
     if [ "${restore_safety_stopped:-false}" = true ]; then
@@ -1952,6 +2098,16 @@ restore_prod() {
     [ -f "$temporary/postgres.dump" ] || die "backup has no PostgreSQL dump"
     [ -d "$temporary/objects" ] || die "backup has no object-storage data"
 
+    restore_format=
+    if [ -f "$temporary/manifest.txt" ]; then
+        restore_format=$(env_value format "$temporary/manifest.txt")
+    fi
+    case "$restore_format" in
+        '') printf '%s\n' '@@ASSOZETA_RESTORE_LIMITATION no_work_checkpoint' ;;
+        2) [ "$(env_value work_checkpoint "$temporary/manifest.txt")" = ledger ] || die "missing ledger checkpoint" ;;
+        *) die "unsupported backup format" ;;
+    esac
+
     backup_aws_location=storage
     if [ -f "$temporary/manifest.txt" ]; then
         manifest_aws_location=$(env_value aws_location "$temporary/manifest.txt")
@@ -1969,18 +2125,11 @@ restore_prod() {
         die "backup AWS_LOCATION is $backup_aws_location but current AWS_LOCATION is $current_aws_location; restore requires matching object prefixes"
     fi
     database_suffix="$(date -u +%Y%m%d%H%M%S)_$$"
-    bucket_suffix="$(date -u +%Y%m%d%H%M%S)-$$"
-    validation_database="assozeta_restore_stage_$database_suffix"
-    rollback_database="assozeta_restore_rollback_$database_suffix"
-    stage_bucket="assozeta-restore-stage-$bucket_suffix"
-    rollback_bucket="assozeta-restore-rollback-$bucket_suffix"
-    restore_database_user=$database_user
-    restore_database_name=$database_name
-    restore_bucket=$bucket
-    restore_validation_database=$validation_database
-    restore_rollback_database=$rollback_database
-    restore_stage_bucket=$stage_bucket
-    restore_rollback_bucket=$rollback_bucket
+    restore_swap_names "$database_suffix"
+    validation_database=$restore_validation_database
+    rollback_database=$restore_rollback_database
+    stage_bucket=$restore_stage_bucket
+    rollback_bucket=$restore_rollback_bucket
 
     log "validating PostgreSQL dump"
     prod_compose up -d --wait postgres minio
@@ -1988,6 +2137,17 @@ restore_prod() {
     prod_compose exec -T postgres createdb -U "$database_user" "$validation_database"
     restore_validation_database_created=true
     prod_compose exec -T postgres pg_restore --exit-on-error -U "$database_user" -d "$validation_database" --no-owner --no-privileges < "$temporary/postgres.dump"
+
+    if [ "$restore_format" = 2 ]; then
+        checkpoint_query="SELECT runtime,generation,(SELECT count(*) FROM public.assozeta_handoff_work
+                WHERE state IN ('pending','held','staged','running','blocked'))
+                FROM public.assozeta_go_job_ownership WHERE singleton=1;"
+        archive_owner=$(prod_compose exec -T postgres psql -X -qAt -v ON_ERROR_STOP=1 \
+            -U "$database_user" -d "$validation_database" \
+            -c "$checkpoint_query") || return $?
+        manifest_owner="$(env_value runtime "$temporary/manifest.txt")|$(env_value runtime_generation "$temporary/manifest.txt")|$(env_value work_outstanding "$temporary/manifest.txt")"
+        [ "$archive_owner" = "$manifest_owner" ] || die "archive ledger checkpoint does not match its manifest"
+    fi
 
     log "staging object storage"
     restore_stage_bucket_created=true
@@ -2014,6 +2174,28 @@ restore_prod() {
     stop_prod_data_services
     prod_compose up -d --wait postgres redis minio
 
+    restore_runtime=
+    if prod_has_runtime_profiles; then
+        restore_runtime=django
+        restore_generation=0
+        ledger=$(prod_work_ledger) || return $?
+        if [ -n "$ledger" ]; then
+            if [ "${restore_take_backup:-true}" = false ]; then
+                maintenance_work require-empty || return $?
+            fi
+        fi
+        missing_authority=$(prod_authority_missing) || return $?
+        if [ "$missing_authority" != t ]; then
+            restore_runtime=$(prod_effective_runtime) || return $?
+            restore_generation=$(prod_compose exec -T postgres psql -X -qAt -v ON_ERROR_STOP=1 \
+                -U "$database_user" -d "$database_name" \
+                -c 'SELECT generation FROM public.assozeta_go_job_ownership WHERE singleton=1;') || return $?
+            restore_generation=${restore_generation:-0}
+        fi
+        mkdir "$temporary/live-broker"
+        maintenance_work save-broker "$temporary/live-broker" || return $?
+    fi
+
     log "snapshotting current object storage for rollback"
     restore_rollback_bucket_created=true
     prod_compose --profile tools run --rm -T \
@@ -2028,6 +2210,12 @@ restore_prod() {
          mc mirror --overwrite --remove "local/$RESTORE_BUCKET" "local/$RESTORE_ROLLBACK_BUCKET" >/dev/null'
 
     log "swapping PostgreSQL databases"
+    swap_restart=$restore_app_was_running
+    [ "${recover_upgrade_active:-false}" != true ] || swap_restart=false
+    if [ -n "$restore_runtime" ]; then
+        maintenance_work swap-journal begin "$database_suffix" "${temporary##*/}" "$swap_restart" || return $?
+        restore_swap_recorded=true
+    fi
     restore_rollback_database_needed=true
     restore_live_modified=true
     postgres_terminate_database "$database_user" "$database_name"
@@ -2041,14 +2229,22 @@ restore_prod() {
     minio_mirror_bucket "$stage_bucket" "$bucket"
 
     log "flushing Redis"
+    restore_broker_modified=true
     prod_compose exec -T \
         -e REDISCLI_AUTH="$(env_value REDIS_PASSWORD "$PROD_ENV")" \
         redis redis-cli FLUSHALL >/dev/null
 
-    migrate_prod_schemas
+    migrate_prod_schemas "$restore_runtime"
+    if [ -n "$restore_runtime" ]; then
+        maintenance_work recover "$restore_runtime" "$restore_generation" || return $?
+    fi
     printf '%s\n' '@@ASSOZETA_STAGE restarting'
     start_prod_app_services "${recover_upgrade_active:-false}" true
     require_public_readiness
+    if [ "${restore_swap_recorded:-false}" = true ]; then
+        maintenance_work swap-journal committed || return $?
+    fi
+    restore_live_modified=false
     cleanup_status=0
     restore_cleanup 0 || cleanup_status=$?
     [ "$cleanup_status" -eq 0 ] || exit "$cleanup_status"
@@ -2094,6 +2290,12 @@ restore_command_prod() {
         restore_safety_stopped=$backup_app_was_running
         printf '@@ASSOZETA_BACKUP %s\n' "$(basename -- "$archive")"
         log "safety backup created: $archive"
+    elif prod_has_runtime_profiles; then
+        prod_compose up -d --wait postgres redis
+        ledger=$(prod_work_ledger) || return $?
+        if [ -n "$ledger" ]; then
+            maintenance_work require-empty || return $?
+        fi
     fi
     printf '%s\n' '@@ASSOZETA_STAGE restoring'
     restore_prod "$restore_source" --yes
@@ -2120,6 +2322,16 @@ run_updater_tool() {
     else
         # shellcheck disable=SC2086
         set -- ${updater_tool_options:-} "$updater_tool_image" "$@"
+    fi
+    if [ -n "${ASSOZETA_HANDOFF_BARRIER_DIR:-}" ] && [ -d "$ASSOZETA_HANDOFF_BARRIER_DIR" ]; then
+        barrier_dir=$(CDPATH= cd -P -- "$ASSOZETA_HANDOFF_BARRIER_DIR" && pwd -P) || return 1
+        barrier_root=$(CDPATH= cd -P -- "$SELFHOST_DIR" && pwd -P) || return 1
+        case "$barrier_dir" in
+            "$barrier_root"/*)
+                # Docker mounts the installation at SELFHOST_DIR inside the helper.
+                set -- --env "ASSOZETA_HANDOFF_BARRIER_DIR=$SELFHOST_DIR/${barrier_dir#"$barrier_root"/}" "$@"
+                ;;
+        esac
     fi
     case "$PROD_ENV" in
         "$SELFHOST_DIR"/*)
@@ -2151,6 +2363,42 @@ require_no_surviving_lifecycle_helpers() {
         --filter 'label=com.docker.compose.oneoff=True') || die "cannot inspect surviving Compose tasks"
     [ -z "$surviving_helpers$surviving_compose" ] \
         || die "a lifecycle helper is still running after an interruption; wait for it to finish or inspect and stop it before retrying (containers: $surviving_helpers $surviving_compose)"
+}
+
+runtime_tool_prod() {
+    preflight
+    updater_tool_image=$(env_value ASSOZETA_UPDATER_REF "$PROD_ENV")
+    [ -n "$updater_tool_image" ] || die "the verified updater image is unavailable"
+    updater_tool_options=
+    if [ "${prod_lock_held:-false}" = true ]; then
+        runtime_host_lock=directory
+        [ "${prod_operations_lock_held:-false}" != true ] || runtime_host_lock=both
+        updater_tool_options="--env ASSOZETA_RUNTIME_HOST_LOCK=$runtime_host_lock"
+    fi
+    runtime_action=$1
+    shift
+    run_updater_tool /runner/runtime_switch.py "$runtime_action" "$SELFHOST_DIR" "$PROD_ENV" "$@"
+}
+
+runtime_status_prod() {
+    [ "$#" -eq 0 ] || die "runtime-status does not accept arguments"
+    runtime_tool_prod status
+}
+
+runtime_adopt_prod() {
+    [ "$#" -eq 0 ] || die "runtime-adopt does not accept arguments"
+    runtime_tool_prod adopt
+}
+
+runtime_recover_prod() {
+    [ "$#" -eq 0 ] || die "runtime-recover does not accept arguments"
+    runtime_tool_prod recover
+}
+
+runtime_switch_prod() {
+    [ "$#" -eq 1 ] || die "runtime-switch requires django or go"
+    case "$1" in django|go) ;; *) die "runtime-switch requires django or go" ;; esac
+    runtime_tool_prod switch "$1"
 }
 
 reconcile_updates_prod() {
@@ -2187,11 +2435,18 @@ upgrade_prod() {
             [ -z "$(env_value "$pinned_key" "$PROD_ENV")" ] || die "cannot perform legacy upgrade: $pinned_key pins an image independently of ASSOZETA_VERSION; verify the installation configuration first"
         done
     fi
-    ensure_configuration_values "$PROD_ENV"
     if [ "$managed_update" = true ]; then
         updater_tool_image=${ASSOZETA_VERIFIED_UPDATER_REF:-"ghcr.io/carbogninalberto/assozeta-updater:$version"}
         docker pull "$updater_tool_image"
+    else
+        updater_tool_image=$(env_value ASSOZETA_UPDATER_REF "$PROD_ENV")
+        updater_tool_image=${updater_tool_image:-ghcr.io/carbogninalberto/assozeta-updater:$version}
     fi
+    adoption_code=0
+    adoption_report=$(run_updater_tool /runner/runtime_switch.py adopt-preflight "$SELFHOST_DIR" "$PROD_ENV") || adoption_code=$?
+    printf '@@ASSOZETA_RUNTIME_ADOPTION %s\n' "$adoption_report"
+    [ "$adoption_code" -eq 0 ] || die "runtime adoption preflight failed"
+    ensure_configuration_values "$PROD_ENV"
     printf '%s\n' '@@ASSOZETA_STAGE backup'
     backup_keep_stopped=true
     backup_origin=pre-upgrade
@@ -2223,6 +2478,14 @@ upgrade_prod() {
         run_updater_tool /runner/distribution.py migration_started "$SELFHOST_DIR"
     fi
     initialise_prod
+    updater_tool_options='--env ASSOZETA_RUNTIME_UPGRADE=1'
+    if [ "${prod_lock_held:-false}" = true ]; then
+        runtime_host_lock=directory
+        [ "${prod_operations_lock_held:-false}" != true ] || runtime_host_lock=both
+        updater_tool_options="$updater_tool_options --env ASSOZETA_RUNTIME_HOST_LOCK=$runtime_host_lock"
+    fi
+    run_updater_tool /runner/runtime_switch.py adopt "$SELFHOST_DIR" "$PROD_ENV"
+    updater_tool_options=
     printf '%s\n' '@@ASSOZETA_STAGE restarting'
     # Recreate even unchanged images: replaced host bind files (e.g. Caddyfile)
     # otherwise remain attached to the old inode in an existing container.
@@ -2326,13 +2589,15 @@ run_locked_prod_command() {
         flock -x 8 || die "failed to acquire exclusive operations lease"
         prod_operations_lock_held=true
     fi
+    recover_interrupted_swap || die "interrupted restore recovery did not finish"
     case "$locked_command" in
         configure) configure "$@" ;;
         install) preflight; install_prod "$@" ;;
         pull) validate_prod; prod_compose pull ;;
         sync-manual)
             validate_prod
-            prod_compose run --rm --no-deps api python manage.py sync_manuale_corpus
+            manual_profile=$(prod_start_profile) || return $?
+            sync_prod_manual "$manual_profile"
             ;;
         migrate) migrate_prod ;;
         start) start_prod ;;
@@ -2342,6 +2607,9 @@ run_locked_prod_command() {
         restore) restore_command_prod "$@" ;;
         recover-upgrade) recover_upgrade_prod "$@" ;;
         reconcile-updates) reconcile_updates_prod "$@" ;;
+        runtime-recover) runtime_recover_prod "$@" ;;
+        runtime-adopt) runtime_adopt_prod "$@" ;;
+        runtime-switch) runtime_switch_prod "$@" ;;
         upgrade) upgrade_prod "$@" ;;
         uninstall)
             preflight
@@ -2387,8 +2655,10 @@ case "$command" in
             run_locked_prod_command "$command" "$@"
         fi
         ;;
-    configure|install|pull|migrate|start|stop|restart|sync-manual|backup|restore|recover-upgrade|reconcile-updates|uninstall) run_locked_prod_command "$command" "$@" ;;
+    runtime-status) runtime_status_prod "$@" ;;
+    configure|install|pull|migrate|start|stop|restart|sync-manual|backup|restore|recover-upgrade|reconcile-updates|runtime-recover|runtime-switch|runtime-adopt|uninstall) run_locked_prod_command "$command" "$@" ;;
     validate) validate_prod ;;
+    health) preflight; health_prod ;;
     status) preflight; status_prod ;;
     logs) preflight; [ -f "$PROD_ENV" ] || die "run configure first"; prod_compose logs --follow --tail=200 "$@" ;;
     dev-config) dev_config ;;

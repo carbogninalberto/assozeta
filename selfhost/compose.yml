@@ -107,7 +107,7 @@ services:
   renderer:
     image: ${ASSOZETA_RENDERER_REF:-${ASSOZETA_RENDERER_IMAGE:-ghcr.io/carbogninalberto/assozeta-renderer}:${ASSOZETA_VERSION:-latest}}
     environment:
-      RENDER_ALLOWED_HOSTS: api,minio,cdn.jsdelivr.net
+      RENDER_ALLOWED_HOSTS: active-api,minio,cdn.jsdelivr.net
       RENDER_POOL_SIZE: ${RENDER_POOL_SIZE:-2}
       RENDER_POOL_ACQUIRE_TIMEOUT_MS: ${RENDER_POOL_ACQUIRE_TIMEOUT_MS:-30000}
       RENDER_REQUEST_TIMEOUT_MS: ${RENDER_REQUEST_TIMEOUT_MS:-55000}
@@ -155,9 +155,12 @@ services:
 
   api:
     <<: *backend
-    networks:
-      - internal
-      - renderer_egress
+    profiles: [django]
+    networks: &api-networks
+      internal:
+        aliases: [active-api]
+      renderer_egress:
+        aliases: [active-api]
     volumes:
       - ${ASSOZETA_SELFHOST_DIR:-.}/.operations:/run/assozeta-operations
       - django_static:/app/staticfiles
@@ -181,9 +184,8 @@ services:
       start_period: 30s
       retries: 12
 
-  # Both APIs are delivered together. Django owns worker and Beat execution;
-  # the opt-in worker-go runs only the task names routed to the Go queue.
   api-go: &backend-go
+    profiles: [go]
     image: ${ASSOZETA_BACKEND_GO_REF:-${ASSOZETA_BACKEND_GO_IMAGE:-ghcr.io/carbogninalberto/assozeta-backend-go}:${ASSOZETA_VERSION:-latest}}
     env_file:
       - ${ASSOZETA_ENV_FILE:-.env}
@@ -192,11 +194,10 @@ services:
       ASSOZETA_DEPLOYMENT_MODE: production
       MANUAL_INDEX_PATH: /app/manuale/index.json
       TMPDIR: /var/cache/assozeta-go-tasks
+      ASSOZETA_GO_WHATSAPP_OUTBOX: ${ASSOZETA_GO_WHATSAPP_OUTBOX:-1}
       GO_LOGO_SPOOL_DIR: /var/cache/assozeta-logo
       GO_MESSAGE_LIST_SPOOL_DIR: /var/cache/assozeta-message-list
-      # Requests the Go API does not serve yet are replayed to the Django API
-      # (OPERATIONS.md, "Use the Go API"). An empty value answers them with 500.
-      DJANGO_HANDOFF_URL: ${DJANGO_HANDOFF_URL-http://api:8000}
+      DJANGO_HANDOFF_URL: ""
     user: "10001:10001"
     read_only: true
     tmpfs:
@@ -214,10 +215,8 @@ services:
       - /var/cache/assozeta-message-list
       # Restore uploads can exceed the 64 MiB /tmp tmpfs.
       - /var/cache/assozeta-go-tasks
-    networks:
-      - internal
-      - renderer_egress
-    depends_on:
+    networks: *api-networks
+    depends_on: &go-data-dependencies
       postgres:
         condition: service_healthy
       redis:
@@ -258,14 +257,10 @@ services:
     healthcheck:
       disable: true
 
-  # Opt-in Go Celery consumer (ASSOZETA_GO_TASKS=1 enables the profile). It
-  # consumes only the assozeta-go queue that GO_TASK_QUEUE_TASKS routes to and
-  # hands every task it does not run back to the celery queue.
   worker-go:
     <<: *backend-go
     networks:
       - internal
-    profiles: [go-tasks]
     entrypoint: ["/app/celery-consumer"]
     # Drain running tasks within the stop grace period; acks_late tasks that
     # are still running at the deadline are redelivered.
@@ -276,23 +271,58 @@ services:
       TMPDIR: /var/cache/assozeta-go-tasks
     volumes:
       - ${ASSOZETA_SELFHOST_DIR:-.}/.operations:/run/assozeta-operations
+      - updater_notices:/run/assozeta-updater-notices:ro
       # Anonymous disk-backed staging for export/import/restore archives.
       - /var/cache/assozeta-go-tasks
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      minio:
-        condition: service_healthy
+    depends_on: *go-data-dependencies
     stop_grace_period: 60s
     # No HTTP endpoint: the container exits with the consumer and restarts;
     # the lifecycle checks that it remains running, like the Django worker.
     healthcheck:
       disable: true
 
+  scheduler-go: &go-background
+    <<: *backend-go
+    entrypoint: ["/app/scheduler"]
+    environment:
+      DATA_RESTORE_LOCK_PATH: /run/assozeta-operations/lifecycle.lock
+      ASSOZETA_DEPLOYMENT_MODE: production
+    volumes:
+      - ${ASSOZETA_SELFHOST_DIR:-.}/.operations:/run/assozeta-operations
+    networks:
+      - internal
+    depends_on:
+      postgres:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          pids: 128
+          memory: 128M
+    stop_grace_period: 30s
+    healthcheck:
+      disable: true
+
+  job-worker-go:
+    <<: *go-background
+    entrypoint: ["/app/worker"]
+    command: ["--drain-timeout=25s"]
+    depends_on: *go-data-dependencies
+    deploy:
+      resources:
+        limits:
+          pids: 256
+          memory: 512M
+    stop_grace_period: 40s
+
   worker:
     <<: *backend
+    volumes:
+      - ${ASSOZETA_SELFHOST_DIR:-.}/.operations:/run/assozeta-operations
+      - django_static:/app/staticfiles
+      - manuale_data:/app/manuale
+      - updater_notices:/run/assozeta-updater-notices:ro
+    profiles: [django]
     # Explicit default queue: the assozeta-go queue belongs to worker-go.
     command: ["celery", "-A", "core", "worker", "-Q", "celery", "--loglevel=info", "--max-tasks-per-child=50", "--concurrency=${CELERY_CONCURRENCY:-2}", "--prefetch-multiplier=2"]
     depends_on:
@@ -309,6 +339,7 @@ services:
 
   beat:
     <<: *backend
+    profiles: [django]
     command: ["celery", "-A", "core", "beat", "--loglevel=info", "--pidfile=/tmp/celerybeat.pid"]
     depends_on:
       postgres:
@@ -322,10 +353,9 @@ services:
 
   realtime-relay:
     <<: *backend
+    profiles: [django]
     # Forwards Go realtime outbox events through Django Channels (Go migration 4).
     command: ["python", "manage.py", "relay_go_realtime"]
-    deploy:
-      replicas: ${ASSOZETA_DJANGO_RELAY_REPLICAS:-1}
     depends_on: &relay-dependencies
       postgres:
         condition: service_healthy
@@ -336,7 +366,6 @@ services:
     healthcheck:
       disable: true
 
-  # Opt-in Go relay for the same realtime outbox and Channels groups.
   realtime-relay-go:
     <<: *backend-go
     entrypoint: ["/app/relay-go-realtime"]
@@ -358,22 +387,9 @@ services:
       REDIS_PASSWORD: ${REDIS_PASSWORD}
       REDIS_SSLAUTH: ${REDIS_SSLAUTH:-}
       REDIS_SSLCERT: ${REDIS_SSLCERT:-}
-      # The shared Go config loader requires these keys. The relay never uses them.
-      DEBUG: "False"
-      SECRET_KEY: ""
-      JWT_SECRET_KEY: ""
-      JWT_PUBLIC_KEY: ""
-      AWS_ACCESS_KEY_ID: ""
-      AWS_SECRET_ACCESS_KEY: ""
-      AWS_STORAGE_BUCKET_NAME: ""
-      AWS_S3_REGION_NAME: ""
-      AWS_S3_ENDPOINT_URL: http://localhost
-      AWS_LOCATION: ""
     networks:
       - internal
     volumes: []
-    deploy:
-      replicas: ${ASSOZETA_GO_RELAY_REPLICAS:-0}
     depends_on: *relay-dependencies
     restart: unless-stopped
     stop_grace_period: 10s
@@ -386,10 +402,6 @@ services:
       SITE_ADDRESS: ${SITE_ADDRESS}
       ACME_EMAIL: ${ACME_EMAIL:-localhost@example.invalid}
       ASSOZETA_TRUSTED_PROXIES: ${ASSOZETA_TRUSTED_PROXIES:-}
-      # The Bakney SSO protocol root paths (/bakney/v1/*) stay on Django unless
-      # the instance sets ASSOZETA_BAKNEY_PROTOCOL_BACKEND=go; bin/assozeta
-      # derives this upstream (api:8000 or api-go:8000) from that setting.
-      ASSOZETA_BAKNEY_PROTOCOL_UPSTREAM: ${ASSOZETA_BAKNEY_PROTOCOL_UPSTREAM:-api:8000}
     ports:
       - ${HTTP_PORT:-80}:${HTTP_PORT:-80}
       - ${HTTPS_PORT:-443}:${HTTPS_PORT:-443}
@@ -402,11 +414,6 @@ services:
       - updater_status:/run/assozeta-update-status:ro
     networks:
       - internal
-    depends_on:
-      api:
-        condition: service_healthy
-      api-go:
-        condition: service_healthy
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
@@ -422,6 +429,8 @@ networks:
   renderer_egress:
 
 volumes:
+  updater_notices:
+    name: ${COMPOSE_PROJECT_NAME:-assozeta}_updater_notices
   updater_status:
     name: ${COMPOSE_PROJECT_NAME:-assozeta}_updater_status
   updater_api:

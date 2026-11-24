@@ -1716,6 +1716,43 @@ class SplitPostgresControls(unittest.TestCase):
             with self.subTest(key=key), mock.patch.dict(settings, {key: value}), self.assertRaises(AssertionError):
                 self.reconcile(events, binding, self.proof())
 
+    def test_idle_outbox_gate_is_allowed_but_no_outbox_effect(self):
+        """Migration 8: the poller's schema check, registration heartbeat and claim are allowed on its own
+        connection; recording an effect or touching a delivery row is not (the fixture queues nothing)."""
+        binding, events = self.sample()
+        helper = StructuredPostgresControls()
+        session = {"pid": 43, "session": "outbox-gate"}
+        gate = [
+            helper.event("SELECT to_regclass('public.assozeta_outbox_effects') IS NOT NULL", line=1, **session),
+            helper.event("SELECT outcome FROM public.assozeta_outbox_claim('go',$1,'whatsapp')", ("go-outbox-1",),
+                         line=2, **session),
+            helper.event("SELECT runtime,operation_id FROM public.assozeta_handoff_heartbeat($1,'go',$2)",
+                         ("go-outbox-1", "whatsapp"), line=3, **session),
+        ]
+        begin = helper.event("BEGIN", line=4, **session)
+        begin["message"] = "statement: BEGIN"
+        rollback = helper.event("ROLLBACK", line=5, **session)
+        rollback["message"] = "statement: ROLLBACK"
+        gate += [begin, rollback]
+        for event in gate:
+            event["application_name"] = "assozeta-go-whatsapp-outbox"
+        events[1:1] = gate
+        self.assertTrue(self.reconcile(events, binding, self.proof())["split_accounting_verified"])
+
+        forbidden = {
+            "intent": "execute s1: SELECT public.assozeta_outbox_effect_intent('go',$1,'whatsapp',$2,$3)",
+            "row-write": "statement: UPDATE communications_whatsappdelivery SET status='sent'",
+            "claim-args": None,
+        }
+        for name, message in forbidden.items():
+            mutated = copy.deepcopy(events)
+            if message is None:
+                mutated[2]["detail"] = "parameters: $1 = 'go-outbox-1', $2 = 'extra'"
+            else:
+                mutated[2]["message"] = message
+            with self.subTest(mutation=name), self.assertRaises(AssertionError):
+                self.reconcile(mutated, binding, self.proof())
+
     def test_raw_probe_mismatch_extra_account_and_all_unknown_controls_fail_with_counts(self):
         binding, original = self.sample()
         cases = {}

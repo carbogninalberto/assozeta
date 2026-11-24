@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"net/http"
 	"strconv"
@@ -11,6 +12,7 @@ import (
 	"github.com/aws/smithy-go"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/celeryworker"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/handoff"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/pymime"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/documentkey"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/documentobjects"
@@ -19,9 +21,7 @@ import (
 // ConsumerSaveToStorageTask is docmanager.tasks.save_to_storage's Celery name.
 const ConsumerSaveToStorageTask = "save_to_storage"
 
-// consumerStorageMultipartThreshold is s3transfer's multipart_threshold
-// (8 MiB): upload_fileobj splits content of that size or more into parts.
-const consumerStorageMultipartThreshold = 8 << 20
+const consumerStorageMultipartThreshold = documentobjects.MultipartThreshold
 
 // ConsumerStorageObjects is the S3 default storage the consumed tasks write:
 // S3Storage.exists (HeadObject, 404 is absent), one PutObject with
@@ -35,6 +35,12 @@ type ConsumerStorageObjects interface {
 	Read(ctx context.Context, key string) ([]byte, error)
 }
 
+type consumerMultipartObjects interface {
+	RecoverMultipart(ctx context.Context, key, uploadID, taskID string) (bool, error)
+	PutTaskMultipart(ctx context.Context, key string, body []byte, contentType, contentEncoding, taskID string,
+		checkpoint func(string) error, partUploaded func()) error
+}
+
 // ConsumerSaveToStorage runs save_to_storage(file_path, pdf_base64):
 //
 //	content = base64.b64decode(pdf_base64)
@@ -42,9 +48,8 @@ type ConsumerStorageObjects interface {
 //
 // re-raising any exception (no retry policy). Handed off before any effect:
 // non-string arguments, base64 text outside the subset below, names with
-// backslashes, NUL or invalid UTF-8, content of 8 MiB or more (multipart
-// upload), and a name that already exists without AWS_S3_FILE_OVERWRITE
-// (get_available_name would store under a random alternative name).
+// backslashes, NUL or invalid UTF-8. With the handoff ledger, uploads support
+// Django's alternate names and multipart uploads with a recovery checkpoint.
 type ConsumerSaveToStorage struct {
 	objects   ConsumerStorageObjects
 	overwrite bool
@@ -115,7 +120,8 @@ func (s *ConsumerSaveToStorage) plan(ctx context.Context, request *celeryworker.
 		request.State = consumerSaveCall{exc: exc}
 		return nil
 	}
-	if len(content) >= consumerStorageMultipartThreshold {
+	coordinated := celeryworker.HasBrokerAttempt(ctx)
+	if len(content) >= consumerStorageMultipartThreshold && !coordinated {
 		return celeryworker.ErrHandoff
 	}
 	cleaned, err := documentkey.SaveName(name)
@@ -141,13 +147,27 @@ func (s *ConsumerSaveToStorage) plan(ctx context.Context, request *celeryworker.
 	}
 	call := consumerSaveCall{key: key, kind: kind, encoding: encoding, content: content}
 	if !s.overwrite {
-		// get_available_name's exists check is a read: done here so that a taken
-		// name is handed off before any effect.
+		// Resolve the available name before writing anything to storage.
 		exists, err := s.objects.Exists(ctx, key)
 		if err != nil {
 			call.exc = ConsumerStorageException("HeadObject", err)
 		} else if exists {
-			return celeryworker.ErrHandoff
+			if !coordinated {
+				return celeryworker.ErrHandoff
+			}
+			available, err := documentkey.AvailableName(ctx, cleaned, func(ctx context.Context, candidate string) (bool, error) {
+				candidateKey, err := documentkey.S3Key(candidate, s.objects.Location())
+				if err != nil {
+					return false, err
+				}
+				return s.objects.Exists(ctx, candidateKey)
+			}, nil)
+			if err == nil {
+				call.key, err = documentkey.S3Key(available, s.objects.Location())
+			}
+			if err != nil {
+				call.exc = ConsumerStorageException("HeadObject", err)
+			}
 		}
 	}
 	request.State = call
@@ -159,10 +179,59 @@ func (s *ConsumerSaveToStorage) run(ctx context.Context, request *celeryworker.R
 	if call.exc != nil {
 		return nil, call.exc
 	}
+	if len(call.content) >= consumerStorageMultipartThreshold {
+		return nil, s.putMultipart(ctx, request.ID, call)
+	}
 	if err := s.objects.Put(ctx, call.key, call.content, call.kind, call.encoding); err != nil {
 		return nil, ConsumerStorageException("PutObject", err)
 	}
 	return nil, nil
+}
+
+func (s *ConsumerSaveToStorage) putMultipart(ctx context.Context, taskID string, call consumerSaveCall) error {
+	db, attempt := celeryworker.ActiveBrokerAttempt(ctx)
+	objects, ok := s.objects.(consumerMultipartObjects)
+	if !ok || db == nil {
+		return errors.New("multipart storage is unavailable")
+	}
+	key := taskID + ":storage:multipart"
+	var stored string
+	err := db.QueryRowContext(ctx, `SELECT coalesce(
+		(SELECT provider_ref FROM public.assozeta_handoff_effects WHERE effect_key=$1), '')`, key).Scan(&stored)
+	if err != nil {
+		return err
+	}
+	if stored != "" {
+		var previous [2]string
+		if err := json.Unmarshal([]byte(stored), &previous); err != nil || previous[0] == "" || previous[1] == "" {
+			return errors.New("invalid multipart checkpoint")
+		}
+		complete, err := objects.RecoverMultipart(ctx, previous[0], previous[1], taskID)
+		if err != nil {
+			return ConsumerStorageException("AbortMultipartUpload", err)
+		}
+		if complete {
+			return nil
+		}
+	}
+	err = objects.PutTaskMultipart(ctx, call.key, call.content, call.kind, call.encoding, taskID, func(uploadID string) error {
+		ref, err := json.Marshal([2]string{call.key, uploadID})
+		if err != nil {
+			return err
+		}
+		// This receipt confirms that S3 created the upload. The object's
+		// task metadata is the receipt for completing it.
+		_, err = db.ExecContext(ctx, `WITH fenced AS MATERIALIZED (SELECT public.assozeta_handoff_fence($1))
+			INSERT INTO public.assozeta_handoff_effects (effect_key, task_id, attempt_id, kind, state, provider_ref)
+			SELECT $2, $3, $1, 'storage_multipart', 'confirmed', $4 FROM fenced
+			ON CONFLICT (effect_key) DO UPDATE SET attempt_id=EXCLUDED.attempt_id, provider_ref=EXCLUDED.provider_ref`,
+			attempt, key, taskID, string(ref))
+		return err
+	}, func() { handoff.Barrier("storage:part_uploaded", taskID) })
+	if err != nil {
+		return ConsumerStorageException("UploadPart", err)
+	}
+	return nil
 }
 
 // consumerBotocoreModeled are the S3 error codes botocore's error factory

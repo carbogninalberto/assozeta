@@ -9,9 +9,20 @@ Le impostazioni dell’associazione si trovano in **Profilo**. Usa **Informazion
 
 I due pannelli hanno salvataggi distinti. Il menu comprende anche **Stripe** e **Autenticazione a due fattori**. I controlli di modifica dipendono dai permessi: per configurare l’associazione usa il suo account proprietario. Le voci visibili possono cambiare in un’istanza gestita autonomamente.
 
-Nelle installazioni self-hosted il proprietario trova anche **Profilo → Istanza**. In **Impostazioni → API (beta)**, l’interruttore **Usa la nuova API (v2) — beta** fa usare il nuovo server API all’interfaccia web di tutti gli utenti. Prima di attivarlo l’applicazione controlla che la nuova API risponda; se non risponde, l’interruttore resta spento. Se in seguito la nuova API non risponde, l’app torna da sola all’API attuale. Per tornare indietro spegni lo stesso interruttore: l’interfaccia riprende a usare l’API attuale (v1).
+Nelle installazioni self-hosted il proprietario trova anche **Profilo → Istanza**. In **Impostazioni → Runtime** l’interruttore **Usa Go per l’istanza** decide con quale implementazione funziona tutta l’istanza: interfaccia, attività in background e notifiche in tempo reale cambiano insieme. Con l’interruttore spento l’istanza usa Django, ed è la scelta predefinita; acceso, usa Go. Un link, una preferenza salvata nel browser o un altro browser non cambiano il runtime: lo decide solo questo interruttore, e vale per tutta l’istanza.
 
-Nella stessa sezione l’interruttore **Attività in background su Go (beta)** fa eseguire gli invii email in background al servizio Go: chiede la password del proprietario e riavvia l’applicazione per circa un minuto. Se il servizio Go non è attivo, le attività restano in attesa finché non lo riattivi o spegni l’interruttore.
+Solo il proprietario dell’istanza può usare l’interruttore, quando la versione installata supporta il cambio. Se non lo supporta, l’interruttore resta disattivato e la pagina mostra **Cambio non disponibile.** L’interruttore resta disattivato anche mentre un cambio è in corso, mentre un’altra operazione dell’istanza è in corso, se l’app non è raggiungibile e finché non completi un ripristino richiesto. La pagina mostra il motivo sotto l’interruttore. **Runtime effettivo** indica quello in uso, **Runtime previsto** quello richiesto con il cambio.
+
+1. Attiva o disattiva **Usa Go per l’istanza**. Si apre la finestra **Passare a Go?** (oppure **Tornare a Django?**): avvisa che l’app va in manutenzione per alcuni minuti e poi riprende sul nuovo runtime. Finché non confermi non cambia nulla.
+2. Inserisci la tua password in **Conferma la tua password** e premi **Conferma cambio**. Con una password errata il cambio non parte e puoi riprovare.
+3. Durante il cambio l’app è in manutenzione. Chi ha effettuato l’accesso come proprietario vede nella pagina di manutenzione **Cambio runtime**, con la fase in corso, il **passo** raggiunto e il codice **Operazione**. La pagina si riapre da sola appena l’app torna disponibile.
+4. Puoi chiudere la pagina: il cambio continua sul server. Riaprendo **Impostazioni → Runtime** trovi lo stato aggiornato, **Cambio in corso** oppure **Ultimo cambio**, con **Runtime effettivo**, **Runtime previsto** e lo stesso codice **Operazione**. Se compaiono attività in attesa, la pagina mostra anche quante sono **In attesa**, **Trasferite**, **Bloccate** e con **Esito incerto**.
+
+Un cambio riuscito mostra **Completato**. Se invece risulta **Non riuscito**, **Bloccato** o **Ripristino necessario**, **Runtime effettivo** dice quale runtime è davvero attivo, **Ultima fase completata** indica fin dove è arrivato il cambio e la pagina spiega cosa fare:
+
+- **Riprova**: il runtime indicato è ancora attivo. Usa l’interruttore per richiedere di nuovo il cambio.
+- **Riconcilia**: ci sono attività bloccate. Controlla quelle indicate nella pagina prima di riprovare.
+- **Ripristina**: sul server esegui il comando indicato dalla pagina, di norma `./bin/assozeta runtime-recover`. L’interruttore torna disponibile quando il ripristino è concluso.
 
 **WhatsApp Business per pagamenti e abbonamenti.** Il proprietario dell’istanza trova il modulo in **Profilo → Istanza → Impostazioni → Integrazioni → WhatsApp Business**. Per preparare un mittente di prova, apri l’app nel [pannello Meta](https://developers.facebook.com/apps/) e segui la [guida ufficiale delle API WhatsApp di Meta](https://developers.facebook.com/documentation/business-messaging/whatsapp/get-started).
 

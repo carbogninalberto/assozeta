@@ -14,7 +14,8 @@ import time
 import traceback
 from uuid import UUID
 
-from common import GO_TASKS_PROFILE, compose_command, compose_environment, read_env
+import proxy_readiness
+from common import GO_TASKS_PROFILE, compose_command, compose_environment, effective_runtime, runtime_services
 from journal import Journal, now
 
 RECOVERY = ('Verifica i container e i log del server, poi riprova il riavvio. '
@@ -73,13 +74,12 @@ def launch_restart(root, env_file, journal, operation):
                            error='Impossibile avviare il processo di riavvio.', recovery=RECOVERY)
 
 
-def service_order(services):
-    """Only long-running configured services; never rerun tools/migrations.
-
-    The opt-in Go task consumer is long-running; it is configured only when
-    compose_command enabled its profile."""
+def service_order(services, profiled_services=None):
+    """Order the selected long-running services by dependency."""
+    if profiled_services is None:
+        profiled_services = {name for name, value in services.items() if value.get('profiles') == [GO_TASKS_PROFILE]}
     selected = {name: value for name, value in services.items()
-                if value.get('profiles', []) in ([], [GO_TASKS_PROFILE])
+                if (not value.get('profiles') or name in profiled_services)
                 and value.get('deploy', {}).get('replicas', 1) != 0}
     ordered = []
     visiting = set()
@@ -104,6 +104,7 @@ class Restart:
     def __init__(self, root, env_file, journal, operation_id):
         self.root, self.env_file = Path(root), Path(env_file)
         self.journal, self.operation_id = journal, operation_id
+        self.runtime = None
         self.deadline = time.monotonic() + 480
         self.environment = compose_environment(root, env_file)
 
@@ -115,9 +116,16 @@ class Restart:
 
     def inventory(self, updater=False):
         command = compose_command(self.root, self.env_file, updater=updater)
+        if not updater:
+            command += ['--profile', '*']
         config = json.loads(self.run(command + ['config', '--format', 'json']))
+        services = config['services']
+        active = []
+        if not updater:
+            self.runtime = effective_runtime(self.root, self.env_file, services)
+            active = runtime_services(self.root, self.env_file, self.runtime, configured=services)
         containers = []
-        for service in service_order(config['services']):
+        for service in service_order(services, active):
             ids = self.run(command + ['ps', '--all', '-q', service]).split()
             if not ids:
                 raise RuntimeError(f'Missing existing container: {service}')
@@ -195,17 +203,15 @@ class Restart:
             for item in application + updater:
                 self.wait_healthy(item)
             # Container health alone does not prove routing/public API readiness.
-            app_url = read_env(self.env_file).get('APP_URL', '').rstrip('/')
-            if not app_url.startswith(('http://', 'https://')):
-                raise RuntimeError('Missing installation URL')
+            command, app_url = proxy_readiness.probe(self.root, self.env_file, self.run)
             endpoints = ['/healthz', '/api/readyz']
-            if any(item['Config']['Labels']['com.docker.compose.service'] == 'api-go' for item in application):
+            if self.runtime or any(item['Config']['Labels']['com.docker.compose.service'] == 'api-go' for item in application):
                 endpoints.extend(('/api/v1/readyz', '/api/v2/readyz'))
             for endpoint in endpoints:
+                probe = command + [app_url + endpoint]
                 while True:
                     try:
-                        self.run(['curl', '--fail', '--silent', '--show-error', '--connect-timeout', '5',
-                                  '--max-time', '10', app_url + endpoint], timeout=15)
+                        self.run(probe, timeout=15)
                         break
                     except subprocess.CalledProcessError:
                         time.sleep(2)

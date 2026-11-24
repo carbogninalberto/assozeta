@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"log/slog"
+	"strconv"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/handoff"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/documentkey"
 	"github.com/google/uuid"
 )
@@ -58,6 +60,7 @@ func (s *ClearDeletedSubscription) Run(ctx context.Context, job domain.Job) erro
 		if key != nil && *key != "" {
 			s.deleteSignature(ctx, job, *key)
 		}
+		handoff.Barrier("batch:committed", job.Kind+"-"+strconv.Itoa(removed))
 	}
 	tx, err := s.store.BeginClearDeleted(ctx, job)
 	if err != nil {

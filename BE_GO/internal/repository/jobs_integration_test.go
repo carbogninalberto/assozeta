@@ -488,14 +488,20 @@ func TestDurableJobsPostgres(t *testing.T) {
 	})
 	t.Run("bounded queries and additive migration ownership", func(t *testing.T) {
 		defer reset(t)
+		// The statement count of one claim is a constant: it never grows with the backlog. With the
+		// Phase 3 ledger (migration 6) a claim also registers its attempt, so the constant is no longer 4.
+		perClaim := int64(-1)
 		for _, size := range []int{1, 16, 128, 512} {
 			for i := 0; i < size; i++ {
 				enqueue(t, intent(uuid.NewString()))
 			}
 			queries.count.Store(0)
 			jobs, e := queue.Claim(ctx, []string{"contract.event"}, "batch", 1, time.Minute)
-			if e != nil || len(jobs) != 1 || queries.count.Load() != 4 {
-				t.Fatal("claim must use BEGIN/server fence/bounded claim/COMMIT", e)
+			if perClaim < 0 {
+				perClaim = queries.count.Load()
+			}
+			if e != nil || len(jobs) != 1 || queries.count.Load() != perClaim || perClaim > 12 {
+				t.Fatal("claim must use a bounded, backlog-independent number of statements", e, queries.count.Load(), perClaim)
 			}
 			reset(t)
 		}
@@ -505,8 +511,9 @@ func TestDurableJobsPostgres(t *testing.T) {
 		if _, e := db.ExecContext(ctx, `ANALYZE assozeta_go_jobs`); e != nil {
 			t.Fatal(e)
 		}
+		// Plan the statement a migrated database actually runs (the ledger-aware claim).
 		var plan json.RawMessage
-		e := db.GetContext(ctx, &plan, "EXPLAIN (ANALYZE,BUFFERS,FORMAT JSON) "+claimJobsSQL, []string{"contract.event"}, 4, "plan-worker", uuid.New(), int64(60000))
+		e := db.GetContext(ctx, &plan, "EXPLAIN (ANALYZE,BUFFERS,FORMAT JSON) "+handoffClaimJobsSQL, []string{"contract.event"}, 4, "plan-worker", uuid.New(), int64(60000))
 		if e != nil {
 			t.Fatal(e)
 		}

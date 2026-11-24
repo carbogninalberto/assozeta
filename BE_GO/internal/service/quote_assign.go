@@ -50,6 +50,10 @@ func (s *QuoteAssign) Run(ctx context.Context, job domain.Job) error {
 	if err := emailTaskEnvelope(job, domain.JobAssociationQuoteAssign); err != nil {
 		return err
 	}
+	ctx, err := paymentPublicationContext(ctx, s.store, job)
+	if err != nil {
+		return err
+	}
 	now := s.now().UTC()
 	associations, err := s.plan(ctx, job, now)
 	if err != nil {

@@ -50,17 +50,17 @@
         # public application is in maintenance mode.
         handle /api/readyz {
             rewrite * /readyz
-            reverse_proxy api:8000
+            reverse_proxy active-api:8000
         }
 
         handle /api/v1/readyz {
             rewrite * /readyz
-            reverse_proxy api:8000
+            reverse_proxy active-api:8000
         }
 
         handle /api/v2/readyz {
             rewrite * /readyz
-            reverse_proxy api-go:8000
+            reverse_proxy active-api:8000
         }
 
         handle /sw.js {
@@ -93,39 +93,37 @@
             respond 503
         }
 
-        # Bakney contracts use root paths, without the /api prefix. The upstream
-        # is Django unless the instance selects the Go backend; the path always
-        # reaches the chosen backend unchanged.
+        # Root Bakney requests retain the complete protocol path.
         handle /bakney/v1/* {
-            reverse_proxy {$ASSOZETA_BAKNEY_PROTOCOL_UPSTREAM:api:8000}
+            reverse_proxy active-api:8000
         }
 
         # Versioned routes must precede the compatibility alias. Root protocols
         # and WebSockets also work under these prefixes, without upstream changes.
         handle /api/v1 {
             rewrite * /
-            reverse_proxy api:8000
+            reverse_proxy active-api:8000
         }
 
         handle /api/v2 {
             rewrite * /
-            reverse_proxy api-go:8000
+            reverse_proxy active-api:8000
         }
 
         handle_path /api/v1/* {
-            reverse_proxy api:8000
+            reverse_proxy active-api:8000
         }
 
         handle_path /api/v2/* {
-            reverse_proxy api-go:8000
+            reverse_proxy active-api:8000
         }
 
         handle_path /api/* {
-            reverse_proxy api:8000
+            reverse_proxy active-api:8000
         }
 
         handle /ws/* {
-            reverse_proxy api:8000
+            reverse_proxy active-api:8000
         }
 
         @ui_static {

@@ -612,9 +612,9 @@ def assert_effect(case, before, after, source, context):
         if welcome is not None:
             spec = welcome_spec(binding['$new_user'], password)
             for index, raw in enumerate(messages):
-                harness.check_celery_message(contract, raw, spec, since=since, until=until, where=f':{index}')
-            key, member = harness.CELERY_BINDING
-            contract.require({m.decode() for m in fixture['celery_broker'].smembers(key)} == {member}, 'celery.binding')
+                harness.check_celery_message(contract, raw, harness.owned_spec(contract, raw, spec), since=since, until=until,
+                                             where=f':{index}')
+            harness.require_celery_binding(contract, fixture, messages)
         check_audit(case, effect, before, after, fixture, context, binding, since, until)
     except BaseException:
         try:  # drain the notification side channels, keeping the first failure

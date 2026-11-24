@@ -1,0 +1,1 @@
+-- The historical state at auth.0011 contains no proxy models.

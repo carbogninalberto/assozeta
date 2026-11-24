@@ -542,6 +542,32 @@
         "route:BE/communications/urls.py:communications/messages/<str:message_id>/delete -> communication_messages_delete",
         "route:BE/communications/urls.py:communications/messages/add -> communication_messages_add"
       ]
+    },
+    "schedule-authority": {
+      "commands": [
+        {
+          "argv": [
+            "{python}",
+            "-m",
+            "TESTS.handoff.p4_driver",
+            "--suite",
+            "sched",
+            "--report",
+            "quality-reports/go-migration/schedule-authority-{label}/results.json"
+          ],
+          "receipt": "quality-reports/go-migration/schedule-authority-{label}/results.json",
+          "check": "json-success"
+        }
+      ],
+      "entries": [
+        "schedule_mutation:BE/instance/schedule_authority.py:PeriodicTask.objects.filter",
+        "schedule_mutation:BE/instance/schedule_authority.py:PeriodicTask.objects.filter#2",
+        "schedule_mutation:BE/instance/schedule_authority.py:PeriodicTask.objects.filter(enabled=True).select_related",
+        "schedule_mutation:BE/instance/schedule_authority.py:PeriodicTask.objects.filter(pk=pk).update",
+        "schedule_mutation:BE/instance/schedule_authority.py:PeriodicTask.objects.select_for_update",
+        "schedule_mutation:BE/instance/schedule_authority.py:PeriodicTask.objects.select_for_update().filter",
+        "schedule_mutation:BE/instance/schedule_authority.py:PeriodicTask.objects.select_for_update().filter(pk=pk).first"
+      ]
     }
   }
 }

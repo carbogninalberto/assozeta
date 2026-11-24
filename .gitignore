@@ -40,6 +40,7 @@ __pycache__/
 
 # Generated self-host configuration and data
 /selfhost/.env
+/selfhost/.env.exclusive-install
 /selfhost/.env.dev
 /selfhost/.lifecycle.lock/
 /selfhost/.lifecycle.flock

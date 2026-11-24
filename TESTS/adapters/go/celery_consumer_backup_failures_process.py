@@ -4,10 +4,14 @@ Extends ``celery_consumer_process.py`` (private PostgreSQL with the current
 Django schema, private Redis, recording fake SMTP server, the production
 prefork Django worker as the oracle) with:
 
-- a stub of the update runner: an HTTP server on ``<directory>/runner.sock``
-  with the bearer token in ``<directory>/token`` (ASSOZETA_UPDATER_DIRECTORY),
-  answering ``GET /status`` and ``GET /backups`` per scenario and recording
-  every request (method, path, headers);
+- a stub of the update runner's backup notices socket (Phase 4 family 08): an
+  HTTP server on ``<directory>/notices.sock`` with its own bearer token in
+  ``<directory>/token`` (ASSOZETA_UPDATER_NOTICES_DIRECTORY), answering
+  ``GET /backup-failures`` with the projection of the runner status and
+  backup inventory per scenario (``notices_payload``, the contract of
+  TESTS/handoff/test_p4_backup_notices.py) and recording every request
+  (method, path, headers). ASSOZETA_UPDATER_DIRECTORY points to a directory
+  without the administration socket: a job worker never reads it;
 - the production cache (django-redis, database 1 of the private Redis) on the
   Django side, which the Go consumer shares.
 
@@ -54,7 +58,8 @@ base.OUTPUT = OUTPUT  # consumer logs and difference.json of the shared Harness
 DJANGO_ONLY = base.DJANGO_ONLY
 TASK = 'instance.backups.notify_failures'
 BEAT_NAME = 'notify-backup-failures'
-RUNNER_TOKEN = 'fixture-runner-token'
+NOTICES_TOKEN = 'fixture-notices-token-' + '0' * 42
+RUNNER_TOKEN = NOTICES_TOKEN  # kept for callers of the earlier name
 NOTIFIED = ':1:instance:backup-failure-notified:'
 WEEK = 7 * 86400
 DOMAIN = 'istanza.example.test'
@@ -111,6 +116,21 @@ def body(value):
     return 200, json.dumps(value).encode()
 
 
+def reduced(entry, fields):
+    return {key: entry[key] for key in fields if isinstance(entry, dict) and key in entry}
+
+
+def notices_payload(status, inventory):
+    """GET /backup-failures: the failed backup operations and the two inventory entries notify_failures reads."""
+    return {'history': [reduced(item, ('id', 'kind', 'status', 'error', 'created_at', 'updated_at'))
+                        for item in status.get('history', [])
+                        if item.get('kind') == 'backup' and item.get('status') == 'failed'],
+            'schedule': {'last_run': reduced((inventory.get('schedule') or {}).get('last_run') or {},
+                                             ('at', 'status', 'operation', 'error'))},
+            'remote': {'last_failure': reduced((inventory.get('remote') or {}).get('last_failure') or {},
+                                               ('at', 'error', 'name'))}}
+
+
 class Scenario(base.Scenario):
     def __init__(self, name, *, runner=None, data=None, mode='production', instance='config', cached=(), smtp='ok', setup=None,
                  handoff=False, expect=None):
@@ -118,7 +138,7 @@ class Scenario(base.Scenario):
         self.runner, self.data, self.mode, self.instance, self.cached = runner or {}, data, mode, instance, tuple(cached)
 
 
-GETS = ['GET /status', 'GET /backups']
+GETS = ['GET /backup-failures']
 SCENARIOS = [
     Scenario('Beat message: failed backups, a scheduled run and the remote copy are each notified once', data=failures,
              expect={'status': 'SUCCESS', 'result': 4, 'mails': 4, 'requests': GETS,
@@ -136,10 +156,11 @@ SCENARIOS = [
              expect={'status': 'SUCCESS', 'result': 0, 'mails': 0, 'requests': [], 'keys': []}),
     Scenario('a missing runner token returns 0', data=failures, runner={'token': ''},
              expect={'status': 'SUCCESS', 'result': 0, 'mails': 0, 'requests': [], 'keys': []}),
-    Scenario('a runner refusal of the status returns 0', data=failures,
-             runner={'/status': (409, json.dumps({'error': 'Operazione in corso'}).encode())},
-             expect={'status': 'SUCCESS', 'result': 0, 'mails': 0, 'requests': ['GET /status'], 'keys': []}),
-    Scenario('an inventory that is not JSON returns 0', data=failures, runner={'/backups': (200, b'<html>gateway</html>')},
+    Scenario('a notices refusal returns 0', data=failures,
+             runner={'/backup-failures': (409, json.dumps({'error': 'Operazione in corso'}).encode())},
+             expect={'status': 'SUCCESS', 'result': 0, 'mails': 0, 'requests': GETS, 'keys': []}),
+    Scenario('a notices answer that is not JSON returns 0', data=failures,
+             runner={'/backup-failures': (200, b'<html>gateway</html>')},
              expect={'status': 'SUCCESS', 'result': 0, 'mails': 0, 'requests': GETS, 'keys': []}),
     Scenario('no instance configuration returns 0 after the runner reads', data=failures, instance=None,
              expect={'status': 'SUCCESS', 'result': 0, 'mails': 0, 'requests': GETS, 'keys': []}),
@@ -188,20 +209,20 @@ class Runner:
         self.handler = Handler
 
     def configure(self, scenario, status, inventory):
-        """The socket, the token and the two answers for one run."""
+        """The notices socket, its token and the one answer for one run."""
         self.stop()
         self.directory.mkdir(exist_ok=True)
-        for name in ('runner.sock', 'token'):
+        for name in ('notices.sock', 'token'):
             path = self.directory / name
             if path.exists() or path.is_socket():
                 path.unlink()
-        token = scenario.runner.get('token', RUNNER_TOKEN)
+        token = scenario.runner.get('token', NOTICES_TOKEN)
         (self.directory / 'token').write_text(token + '\n')
-        self.responses = {'/status': body(status), '/backups': body(inventory)}
+        self.responses = {'/backup-failures': body(notices_payload(status, inventory))}
         self.responses.update({k: v for k, v in scenario.runner.items() if k.startswith('/')})
         self.requests = []
         if scenario.runner.get('socket', True):
-            self.server = RunnerServer(str(self.directory / 'runner.sock'), self.handler)
+            self.server = RunnerServer(str(self.directory / 'notices.sock'), self.handler)
             self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
             self.thread.start()
 
@@ -287,14 +308,17 @@ class Harness(base.Harness):
     def oracle_settings(self, scenario):
         config = super().oracle_settings(scenario)
         config['routes'] = TASK
-        config['settings'].update(ASSOZETA_DEPLOYMENT_MODE=scenario.mode, ASSOZETA_UPDATER_DIRECTORY=str(self.stack.runner.directory))
+        config['settings'].update(ASSOZETA_DEPLOYMENT_MODE=scenario.mode,
+                                  ASSOZETA_UPDATER_NOTICES_DIRECTORY=str(self.stack.runner.directory),
+                                  ASSOZETA_UPDATER_DIRECTORY=str(self.stack.runner.directory / 'no-runner'))
         return config
 
     def env_file(self, scenario):
         path = super().env_file(scenario)
         lines = [line for line in path.read_text().splitlines() if not line.startswith('GO_TASK_QUEUE_TASKS=')]
         lines += [f'GO_TASK_QUEUE_TASKS={TASK}', f'ASSOZETA_DEPLOYMENT_MODE={scenario.mode}',
-                  f'ASSOZETA_UPDATER_DIRECTORY={self.stack.runner.directory}']
+                  f'ASSOZETA_UPDATER_NOTICES_DIRECTORY={self.stack.runner.directory}',
+                  f'ASSOZETA_UPDATER_DIRECTORY={self.stack.runner.directory / "no-runner"}']
         path.write_text(''.join(line + '\n' for line in lines))
         return path
 
@@ -342,7 +366,7 @@ class Harness(base.Harness):
     def run_go(self, scenario, payload, push=True, handoff=None):
         task_id = super().run_go(scenario, payload, push=push, handoff=handoff)
         if handoff if handoff is not None else scenario.handoff:
-            # The plan reads the runner before it can refuse the inputs: only those two reads, nothing else.
+            # The plan reads the notices before it can refuse the inputs: only that read, nothing else.
             reads = [f"{r['method']} {r['path']}" for r in self.stack.runner.take()]
             assert reads == GETS, reads
             assert self.stack.cache.dbsize() == len(scenario.cached), 'handoff wrote the cache'

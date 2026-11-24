@@ -70,9 +70,11 @@ class GoManualDeliveryTests(unittest.TestCase):
         carry_start = self.workflow.index('      - name: Carry the manual of the previous release')
         carry = self.workflow[carry_start:self.workflow.index('\n      - name:', carry_start + 1)]
         carry_condition = re.search(r'^        if: (.+)$', carry, re.M).group(1)
-        # Both backend images carry the same package: the Django :latest release
-        # image's manual, copied into the building image's own context.
-        self.assertIn('SOURCE_IMAGE: ghcr.io/${{ github.repository_owner }}/assozeta-backend:latest', carry)
+        # Each backend image carries the manual of its own :latest release image
+        # (Phase 6: the Go image no longer depends on the Django image), copied
+        # into the building image's own context.
+        self.assertIn('SOURCE_IMAGE: ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}:latest', carry)
+        self.assertNotIn('assozeta-backend:latest', carry)
         self.assertIn('DESTINATION: ${{ matrix.context }}/release-manual', carry)
         self.assertNotIn('BE/release-manual', carry)
         required = re.search(r'^            REQUIRE_MANUAL=(.+)$', self.workflow, re.M).group(1)

@@ -103,13 +103,16 @@ class SchedulerImage(Proof):
         assert self.sql('SELECT count(*) FROM assozeta_go_jobs;')=='0'
         self.stop(gate)
         self.case('Linux exclusive lifecycle lease defers packaged publication')
-        wait(lambda:self.sql('SELECT count(*) FROM assozeta_go_periodic_occurrences;')=='1','packaged occurrence')
+        # Scope to the fixture source: since migration 7 the scheduler also seeds the release Beat declarations, and
+        # its every-minute crontabs publish their own occurrences and jobs whenever a minute boundary passes.
+        own=f'periodic_task_id={source.pk}'
+        wait(lambda:self.sql(f'SELECT count(*) FROM assozeta_go_periodic_occurrences WHERE {own};')=='1','packaged occurrence')
         assert self.docker('exec',scheduler,'id','-u').stdout.strip()=='10001'
         self.docker('exec',scheduler,'sh','-c','test -w /operations/lifecycle.lock')
         self.stop(scheduler)
         assert 'scheduler stopped' in self.logs(scheduler)
         assert self.sql(f'SELECT total_run_count FROM django_celery_beat_periodictask WHERE id={source.pk};')=='1'
-        assert self.sql('SELECT count(*) FROM assozeta_go_jobs;')=='1'
+        assert self.sql(f'SELECT count(*) FROM assozeta_go_jobs WHERE id IN (SELECT job_id FROM assozeta_go_periodic_occurrences WHERE {own});')=='1'
         assert self.exclusive(),'exited process retained lifecycle lease'
         self.case('packaged scheduler publishes exactly one actual Beat occurrence and exits cleanly on TERM')
         assert set(self.completed)==EXPECTED and len(self.completed)==len(EXPECTED)

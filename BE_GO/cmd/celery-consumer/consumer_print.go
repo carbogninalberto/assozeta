@@ -32,6 +32,12 @@ func (o consumerPrintObjects) Put(ctx context.Context, key string, body []byte, 
 		CacheControl: o.cacheControl, ACL: o.acl})
 }
 
+func (o consumerPrintObjects) PutTaskMultipart(ctx context.Context, key string, body []byte, contentType, contentEncoding, taskID string,
+	checkpoint func(string) error, partUploaded func()) error {
+	return o.S3.PutMultipart(ctx, key, body, documentobjects.Upload{ContentType: contentType, ContentEncoding: contentEncoding,
+		CacheControl: o.cacheControl, ACL: o.acl}, taskID, checkpoint, partUploaded)
+}
+
 // Read is S3File's read of the whole object.
 func (o consumerPrintObjects) Read(ctx context.Context, key string) ([]byte, error) {
 	object, err := o.Open(ctx, key)

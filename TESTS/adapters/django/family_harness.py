@@ -13,6 +13,7 @@ runner has had:
 """
 from contextlib import contextmanager
 import ipaddress
+import json
 from pathlib import Path
 
 from TESTS.adapters.django import carnet_list_http as carnets
@@ -297,14 +298,62 @@ def with_celery_broker(fixture_context):
     return wrapped
 
 
+# With the handoff ledger (Phase 3+) the effective runtime owns publication: Django publishes on 'celery'; Go, when
+# it owns the instance (schema 8: every managed task; earlier, the families it executes), on its consumer queue.
+GO_QUEUE = 'assozeta-go'
+
+
 def drain_celery(fixture):
-    """The raw messages on the broker queue, oldest first; the queue is emptied."""
+    """The raw messages on the managed broker queues ('celery', then the Go consumer queue), oldest first; both
+    queues are emptied. owned_spec() pins each message to the queue of the runtime that owns the instance."""
     broker = fixture['celery_broker']
     with broker.pipeline(transaction=True) as pipe:
-        pipe.lrange(CELERY_QUEUE, 0, -1)
-        pipe.delete(CELERY_QUEUE)
-        raw, _ = pipe.execute()
-    return [item.decode('utf-8') for item in reversed(raw)]
+        for queue in (CELERY_QUEUE, GO_QUEUE):
+            pipe.lrange(queue, 0, -1)
+            pipe.delete(queue)
+        results = pipe.execute()
+    return [item.decode('utf-8') for raw in results[0::2] for item in reversed(raw)]
+
+
+def message_queue(raw):
+    return json.loads(raw)['properties']['delivery_info']['routing_key']
+
+
+def go_owns_jobs():
+    """True when the handoff ledger is installed and Go is the effective runtime."""
+    from django.db import connection
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT to_regclass('public.assozeta_handoff_work') IS NOT NULL")
+        if not cursor.fetchone()[0]:
+            return False
+        cursor.execute('SELECT runtime FROM public.assozeta_go_job_ownership WHERE singleton=1')
+        return cursor.fetchone()[0] == 'go'
+
+
+def owned_spec(contract, raw, spec):
+    """The authored spec, routed to the Go consumer queue when the message is there: only while Go owns jobs."""
+    if message_queue(raw) != GO_QUEUE:
+        return spec
+    contract.require(go_owns_jobs(), 'celery.owner-queue')
+    return {**spec, 'queue': GO_QUEUE}
+
+
+def deferred_sends(fixture, messages, expected):
+    """Go on the handoff ledger turns an in-request association SMTP send (Django: send_email_html called in the
+    request, a local Timer) into a durable send_email_html child for the Go consumer. When the authored effect has no
+    send_email_html message, those children are set aside in fixture['deferred_html'] for the family's SMTP check."""
+    if any(spec.get('task') == 'send_email_html' for spec in expected):
+        return messages
+    deferred = [raw for raw in messages if message_queue(raw) == GO_QUEUE and json.loads(raw)['headers']['task'] == 'send_email_html']
+    fixture.setdefault('deferred_html', []).extend(deferred)
+    return [raw for raw in messages if raw not in deferred]
+
+
+def require_celery_binding(contract, fixture, messages):
+    """The kombu binding Django's producer declares for 'celery' (the Go consumer queue has none)."""
+    if any(message_queue(raw) == CELERY_QUEUE for raw in messages):
+        key, member = CELERY_BINDING
+        contract.require({m.decode() for m in fixture['celery_broker'].smembers(key)} == {member}, 'celery.binding')
 
 
 def _celery_value(value):
@@ -342,7 +391,10 @@ def check_celery_message(contract, raw, spec, *, since, until, where=''):
     args = tuple(_celery_value(item) for item in spec['args'])
     kwargs = {key: _celery_value(item) for key, item in spec['kwargs']}
     task_id = headers['id']
-    contract.require(isinstance(task_id, str) and uuid_shape.match(task_id) and task_id[14] == '4', 'celery.id' + where)
+    if spec.get('id') is not None:  # a deterministic id (a child a job publishes again after a crash reuses it)
+        contract.require(task_id == spec['id'], 'celery.id' + where)
+    else:
+        contract.require(isinstance(task_id, str) and uuid_shape.match(task_id) and task_id[14] == '4', 'celery.id' + where)
     # apply_async(task_id=...): the authored id.
     contract.require(spec.get('id', task_id) == task_id, 'celery.task-id' + where)
     eta = spec.get('eta')
@@ -357,7 +409,9 @@ def check_celery_message(contract, raw, spec, *, since, until, where=''):
         eta = received
     expected_headers = {
         'lang': 'py', 'task': spec['task'], 'id': task_id, 'shadow': None, 'eta': eta, 'expires': spec.get('expires'),
-        'group': None, 'group_index': None, 'retries': 0, 'timelimit': spec.get('timelimit', [None, None]), 'root_id': task_id, 'parent_id': None,
+        'group': None, 'group_index': None, 'retries': 0, 'timelimit': spec.get('timelimit', [None, None]),
+        # A child published by a running job carries that job's lineage (Phase 4 contract); top-level work roots itself.
+        'root_id': spec.get('root_id') or task_id, 'parent_id': spec.get('parent_id'),
         'argsrepr': saferepr(list(args) if spec.get('args_list') else args, 1024), 'kwargsrepr': saferepr(kwargs, 1024), 'origin': headers['origin'], 'ignore_result': False,
         'replaced_task_nesting': 0, 'stamped_headers': None, 'stamps': {}, 'assozeta_published_at': headers['assozeta_published_at']}
     contract.require(headers == expected_headers, 'celery.headers' + where)
@@ -381,13 +435,13 @@ def check_celery_message(contract, raw, spec, *, since, until, where=''):
 def celery_published(contract, fixture, expected, *, since, until):
     """Effect check: the case published exactly `expected` (authored task specs,
     in order) to the default queue, and the queue's kombu binding is declared."""
-    messages = drain_celery(fixture)
+    messages = deferred_sends(fixture, drain_celery(fixture), expected)
     contract.require(len(messages) == len(expected), 'celery.count')
-    checked = [check_celery_message(contract, raw, spec, since=since, until=until, where=f':{index}')
+    checked = [check_celery_message(contract, raw, owned_spec(contract, raw, spec), since=since, until=until,
+                                    where=f':{index}')
                for index, (raw, spec) in enumerate(zip(messages, expected))]
     if expected:
-        key, member = CELERY_BINDING
-        contract.require({m.decode() for m in fixture['celery_broker'].smembers(key)} == {member}, 'celery.binding')
+        require_celery_binding(contract, fixture, messages)
         fixture.setdefault('celery_accepted', []).extend(messages)
     return checked
 
@@ -401,11 +455,15 @@ def celery_worker_accepts(contract, fixture, payload, kwargs, *, restore_owner, 
     with exactly `kwargs` (decoded values, e.g. UUIDs) and succeed. Then a
     data restore completed after the message's assozeta_published_at stamp is
     recorded and the same message must be refused by CoordinatedTask
-    (StaleDataTask). Result and restore rows and the worker's broker keys are
-    removed afterwards.
+    (StaleDataTask). The second delivery carries a fresh task id: with the
+    accepted-work ledger (migration 6) a redelivery of an already completed
+    logical job is acknowledged without running, before the restore fence is
+    reached. Result and restore rows and the worker's broker keys are removed
+    afterwards.
     """
     import json
     import time
+    import uuid
     from auditlog.context import disable_auditlog
     from celery.contrib.testing.worker import start_worker
     from celery.signals import task_prerun
@@ -416,12 +474,38 @@ def celery_worker_accepts(contract, fixture, payload, kwargs, *, restore_owner, 
     broker = fixture['celery_broker']
     message = json.loads(payload)
     task_id, name = message['headers']['id'], message['headers']['task']
+    stale_id = str(uuid.uuid4())
+    stale = json.loads(payload)
+    stale['headers']['id'] = stale['properties']['correlation_id'] = stale_id
+    # A Go-published message is executed here by a Django worker (wire compatibility). With the ledger the
+    # Django worker only claims while Django owns jobs, and the Go admission bound this task id to Go: lend
+    # Django the authority for the check and run the same envelope under a fresh id, then give it back.
+    from django.db import connection
+
+    def owner(runtime=None):
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT to_regclass('public.assozeta_handoff_work') IS NOT NULL")
+            if not cursor.fetchone()[0]:
+                return None
+            if runtime:
+                cursor.execute("UPDATE public.assozeta_go_job_ownership SET runtime=%s,generation=generation+1 "
+                               "WHERE singleton=1 AND runtime<>%s", [runtime, runtime])
+            cursor.execute('SELECT runtime FROM public.assozeta_go_job_ownership WHERE singleton=1')
+            return cursor.fetchone()[0]
+    lent = owner() not in (None, 'django')
+    run_id, first = task_id, payload
+    if lent:
+        owner('django')
+        run_id = str(uuid.uuid4())
+        copy = json.loads(payload)
+        copy['headers']['id'] = copy['properties']['correlation_id'] = run_id
+        first = json.dumps(copy)
     started = []
 
     def prerun(sender=None, task_id=None, task=None, args=None, kwargs=None, **_):
         started.append((task_id, task.name, tuple(args or ()), dict(kwargs or {})))
 
-    def wait(status):
+    def wait(status, task_id=run_id):
         deadline = time.monotonic() + timeout
         while time.monotonic() < deadline:
             row = TaskResult.objects.filter(task_id=task_id, status=status).first()
@@ -434,21 +518,23 @@ def celery_worker_accepts(contract, fixture, payload, kwargs, *, restore_owner, 
     task_prerun.connect(prerun, weak=False)
     try:
         with start_worker(app, pool='solo', concurrency=1, perform_ping_check=False, loglevel='WARNING', shutdown_timeout=30):
-            broker.lpush(CELERY_QUEUE, payload)
+            broker.lpush(CELERY_QUEUE, first)
             wait('SUCCESS')
-            contract.require(started == [(task_id, name, (), kwargs)], 'celery.worker-arguments')
+            contract.require(started == [(run_id, name, (), kwargs)], 'celery.worker-arguments')
             with disable_auditlog():
                 restore = DataRestore(owner_id=restore_owner, association_id=association, state='completed', completed_at=timezone.now(),
                                       sha256='0' * 64)
                 contract.require(restore.completed_at.timestamp() > message['headers']['assozeta_published_at'], 'celery.restore-after-publish')
                 DataRestore._base_manager.bulk_create([restore])
-            broker.lpush(CELERY_QUEUE, payload)
-            refused = wait('FAILURE')
+            broker.lpush(CELERY_QUEUE, json.dumps(stale))
+            refused = wait('FAILURE', stale_id)
             contract.require('StaleDataTask' in (refused.result or ''), 'celery.worker-restore-fence')
     finally:
         task_prerun.disconnect(prerun)
+        if lent:
+            owner('go')
         with disable_auditlog():
-            TaskResult.objects.filter(task_id=task_id).delete()
+            TaskResult.objects.filter(task_id__in=(task_id, run_id, stale_id)).delete()
             if restore is not None:
                 DataRestore._base_manager.filter(pk=restore.pk).delete()
         key, _ = CELERY_BINDING

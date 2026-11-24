@@ -42,6 +42,8 @@ from TESTS.adapters.go.worker_process import Rehearsal, await_condition, NIL
 from TESTS.adapters.go.age_worker_fixture import initialize_current_schema
 from TESTS.adapters.go import tasks_db_d_worker_process as stripe_stub
 from TESTS.adapters.go.email_tasks_worker_process import spec_from, Contract
+# The Go worker starts mark_as_paid_payments_checking_stripe no faster than Django's rate limit (3/m, 20 s apart).
+PACING = 20
 
 DATABASE = 'assozeta_contract_stripe_paid_check_worker'
 KIND = 'mark_as_paid_payments_checking_stripe'
@@ -288,8 +290,11 @@ class PaidRehearsal(Rehearsal):
         self.stub.reset()
 
     def messages(self):
-        raw = [item.decode() for item in reversed(self.store.lrange('celery', 0, -1))]
-        self.store.delete('celery')
+        # Under Go ownership (handoff ledger, migration 6+) the job's print children go to the Go consumer queue.
+        raw = []
+        for queue in ('celery', 'assozeta-go'):
+            raw += [item.decode() for item in reversed(self.store.lrange(queue, 0, -1))]
+            self.store.delete(queue)
         return raw
 
     def redis_state(self):
@@ -297,7 +302,7 @@ class PaidRehearsal(Rehearsal):
         for db, client in (('store', self.store), ('cache', self.cache)):
             for key in sorted(client.keys('*')):
                 name = key.decode()
-                if name == 'celery' or name.startswith('_kombu') or name.startswith('unacked'):
+                if name in ('celery', 'assozeta-go') or name.startswith('_kombu') or name.startswith('unacked'):
                     continue
                 kind = client.type(key).decode()
                 value = client.get(key) if kind == 'string' else kind
@@ -306,15 +311,20 @@ class PaidRehearsal(Rehearsal):
                 state[f'{db}:{name}'] = text
         return state
 
-    def outcome(self, before, since, until, started):
-        """State, Stripe requests, Celery bodies, Redis store/cache and Channels mirror, normalized."""
+    def outcome(self, before, since, until, started, job=None):
+        """State, Stripe requests, Celery bodies, Redis store/cache and Channels mirror, normalized. A Go job on the
+        handoff ledger publishes its print children on the Go consumer queue with the job as parent and root."""
         after = self.fixture.snapshot()
         seeded = {str(v) for rows in before.values() for row in rows for v in row.values() if isinstance(v, UUID)}
         names = labels(after, seeded)
         raw = self.messages()
         for i, item in enumerate(raw):
             from TESTS.adapters.django.family_harness import check_celery_message
-            check_celery_message(Contract(), item, spec_from(item), since=started, until=time.time(), where=f':{i}')
+            spec = spec_from(item)
+            if json.loads(item)['properties']['delivery_info']['routing_key'] == 'assozeta-go':
+                assert job is not None, 'only the Go job publishes on the Go consumer queue'
+                spec.update(queue='assozeta-go', root_id=str(job), parent_id=str(job))
+            check_celery_message(Contract(), item, spec, since=started, until=time.time(), where=f':{i}')
         bodies = [json.loads(base64.b64decode(json.loads(item)['body'])) for item in raw]
         published = []
         for body in bodies:
@@ -437,10 +447,11 @@ class PaidRehearsal(Rehearsal):
         return identifier, before
 
     def go_matches(self, identifier, before, variant):
-        await_condition(lambda: self.job(identifier)[0] in ('completed', 'failed'), 'registered stripe paid check worker durable outcome', 40)
+        await_condition(lambda: self.job(identifier)[0] in ('completed', 'failed'), 'registered stripe paid check worker durable outcome',
+                        40 + PACING)
         assert self.job(identifier)[:3] == ('completed', 1, ''), self.job(identifier)
         assert self.sql('SELECT result FROM assozeta_go_jobs WHERE id=%s', (identifier,)) == [(None,)]
-        outcome, _ = self.outcome(before, self.since, datetime.now(timezone.utc), self.started)
+        outcome, _ = self.outcome(before, self.since, datetime.now(timezone.utc), self.started, job=identifier)
         oracle = self.oracles[variant]
         for part in ('state', 'requests', 'published', 'redis', 'pushes'):
             if outcome[part] != oracle[part]:
@@ -470,7 +481,7 @@ class PaidRehearsal(Rehearsal):
         self.case('native worker reproduces the one-thread Django task')
         later = self.fixture.snapshot()
         identifier, _ = self.seed_job(reseed=False)
-        await_condition(lambda: self.job(identifier)[0] == 'completed', 'later stripe paid check run')
+        await_condition(lambda: self.job(identifier)[0] == 'completed', 'later stripe paid check run', 12 + PACING)
         requests = [r['path'] for r in stripe_stub.check_requests(self.stub.take())]
         assert requests == ['/v1/payment_intents/' + p for p in ('pi_pending', 'pi_missing', 'pi_card', 'pi_empty', 'pi_nostatus',
                                                                  'pi_ok_3')], requests
@@ -486,7 +497,7 @@ class PaidRehearsal(Rehearsal):
         for kwargs, code in [({'version': 2}, 'unsupported_version'), ({'payload': '{"unexpected":true}'}, 'task_failed'),
                              ({'association': str(U(11))}, 'task_failed')]:
             identifier, before = self.seed_job(**kwargs)
-            await_condition(lambda: self.job(identifier)[0] == 'failed', 'invalid envelope rejected')
+            await_condition(lambda: self.job(identifier)[0] == 'failed', 'invalid envelope rejected', 12 + PACING)
             assert self.sql('SELECT error_code FROM assozeta_go_jobs WHERE id=%s', (identifier,)) == [(code,)]
             assert self.fixture.snapshot() == before and not self.messages() and not self.stub.take()
         self.case('unsupported version payload and tenant fail before business effects')

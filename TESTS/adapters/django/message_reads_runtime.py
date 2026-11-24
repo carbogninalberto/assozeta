@@ -511,6 +511,38 @@ OUTBOX_SETTINGS_SQL = (
     " email_password_encrypted,email_revision,diagnostic_results,integration_settings"
     " FROM instance_instanceconfiguration ORDER BY id LIMIT 1"
 )
+# The WhatsApp outbox poller's idle gate (Phase 4 part B, migration 8): Django and Go poll when the instance switch is on
+# (credentials or not, as Django's deliver_whatsapp) or the environment has both credentials. With no queued delivery
+# it only checks the outbox schema, keeps its consumer registration alive and asks for the outbox claim; it never
+# records, confirms or reconciles an effect and never touches communications_whatsappdelivery rows.
+OUTBOX_GATE_SQL = {
+    "SELECT to_regclass('public.assozeta_outbox_effects') IS NOT NULL": None,
+    "SELECT outcome FROM public.assozeta_outbox_claim('go',$1,'whatsapp')": 1,
+    "SELECT runtime,operation_id FROM public.assozeta_handoff_heartbeat($1,'go',$2)": 2,
+    "UPDATE public.assozeta_handoff_consumers SET heartbeat_at=clock_timestamp(),heartbeat_seq=heartbeat_seq+1"
+    " WHERE consumer_id=$1": 1,
+    "SELECT public.assozeta_handoff_acknowledge_freeze($1,$2)": 2,
+    "SELECT id,recipient,body,template_name,template_language,attempts FROM communications_whatsappdelivery"
+    " WHERE status='queued' AND next_attempt_at<=now() AND NOT EXISTS (SELECT FROM public.assozeta_outbox_effects e"
+    " WHERE e.outbox='whatsapp' AND e.item_id=communications_whatsappdelivery.id::text AND e.state IN"
+    " ('confirmed','ambiguous','reconciled_sent')) ORDER BY next_attempt_at,id LIMIT 1 FOR UPDATE SKIP LOCKED": None,
+}
+OUTBOX_TRANSACTION_SQL = ("BEGIN", "BEGIN READ WRITE", "ROLLBACK", "COMMIT")
+
+
+def _outbox_gate_execution(sql, detail, protocol):
+    """One statement of the idle outbox gate, with exactly its bound-parameter count."""
+    text = " ".join(sql.split())
+    if protocol == "statement" and detail is None and text in OUTBOX_TRANSACTION_SQL:
+        return True
+    if text not in OUTBOX_GATE_SQL or not protocol.startswith("execute "):
+        return False
+    count = OUTBOX_GATE_SQL[text]
+    if count is None:
+        return detail is None
+    return isinstance(detail, str) and len(re.findall(r"\$\d+ = ", detail)) == count
+
+
 PORTABLE_POST_EXPECTATIONS = {
     "message-reads-list-post-method": (
         "/communications/messages/list", 405, "a1000000-0000-4000-8000-000000700001"),
@@ -778,12 +810,13 @@ def postgres_events(content):
                          "unexpected secondary statement")
         sql, detail, protocol = matched[2], event.get("detail"), matched[1]
         if event.get("application_name") == "assozeta-go-whatsapp-outbox":
-            # This fixture has no configured sender. Its independent worker
-            # may only check restore state, read settings or probe its connection.
+            # This fixture has no queued delivery. Its independent worker may only check restore state, read
+            # settings, probe its connection or run the idle outbox gate (OUTBOX_GATE_SQL).
             settings_read = (protocol.startswith("execute ") and detail is None
                              and " ".join(sql.split()) == OUTBOX_SETTINGS_SQL)
             evidence_require(
-                settings_read or _exact_probe(sql, detail, protocol) or _restore_pending_execution(sql, detail, protocol),
+                settings_read or _exact_probe(sql, detail, protocol) or _restore_pending_execution(sql, detail, protocol)
+                or _outbox_gate_execution(sql, detail, protocol),
                 "unexpected WhatsApp outbox execution",
             )
             continue

@@ -74,7 +74,7 @@ func TestQueueServerFence(t *testing.T) {
 			t.Run(mode+"/"+scenario, func(t *testing.T) {
 				ctx, stop := context.WithTimeout(context.Background(), 8*time.Second)
 				defer stop()
-				_, err := admin.ExecContext(ctx, `DROP TRIGGER IF EXISTS server_fence_deferred ON assozeta_go_jobs; DROP FUNCTION IF EXISTS server_fence_deferred(); TRUNCATE assozeta_go_periodic_occurrences,assozeta_go_jobs`)
+				_, err := admin.ExecContext(ctx, `DROP TRIGGER IF EXISTS server_fence_deferred ON assozeta_go_jobs; DROP FUNCTION IF EXISTS server_fence_deferred(); TRUNCATE assozeta_go_periodic_occurrences,assozeta_go_jobs,assozeta_handoff_attempts,assozeta_handoff_work CASCADE`)
 				fenceMust(t, err)
 				id, token := uuid.New(), uuid.New()
 				state, attempts, generation := "pending", 0, 0
@@ -83,6 +83,14 @@ func TestQueueServerFence(t *testing.T) {
 				}
 				_, err = admin.ExecContext(ctx, `INSERT INTO assozeta_go_jobs(id,association_id,kind,version,idempotency_key,payload,max_attempts,available_at,state,attempts,lease_owner,lease_token,lease_until,ownership_generation) VALUES($1,$2,$3,1,$4,'{}',3,clock_timestamp()-interval '1 minute',$5,$6,CASE WHEN $5='running' THEN 'fixture' ELSE '' END,CASE WHEN $5='running' THEN $7::uuid ELSE '00000000-0000-0000-0000-000000000000'::uuid END,CASE WHEN $5='running' THEN clock_timestamp()+interval '10 seconds' ELSE NULL END,$8)`, id, uuid.Nil, domain.JobResetDailyEmailBalance, mode, state, attempts, token, generation)
 				fenceMust(t, err)
+				if state == "running" {
+					// Phase 3 (migration 6): a running durable job holds a ledger attempt whose id is its lease
+					// token, as Jobs.Claim registers it; completion and failure finish that attempt.
+					_, err = admin.ExecContext(ctx, `INSERT INTO assozeta_handoff_work(task_id,task_name,transport,origin_runtime,owner_runtime,owner_generation,state,accepted_at) VALUES($1,$2,'sql','go','go',2,'running',clock_timestamp())`, id.String(), domain.JobResetDailyEmailBalance)
+					fenceMust(t, err)
+					_, err = admin.ExecContext(ctx, `INSERT INTO assozeta_handoff_attempts(attempt_id,task_id,runtime,generation,consumer_id) VALUES($1,$2,'go',2,'fixture')`, token, id.String())
+					fenceMust(t, err)
+				}
 				var before string
 				fenceMust(t, admin.GetContext(ctx, &before, `SELECT to_jsonb(j)::text FROM assozeta_go_jobs j WHERE id=$1`, id))
 				blocker, err := admin.Connx(ctx)
@@ -147,8 +155,12 @@ func TestQueueServerFence(t *testing.T) {
 						t.Fatal("successful mutation had no effect")
 					}
 					q := trace.snapshot()
-					if len(q) != 4 || strings.ToLower(q[0]) != "begin" || !strings.Contains(q[1], "pg_advisory_xact_lock_shared") || strings.ToLower(q[3]) != "commit" {
-						t.Fatalf("expected BEGIN, separate shared fence, effect, COMMIT; got %v", q)
+					// BEGIN, the separate shared fence, the effect, COMMIT; with the Phase 3 ledger the effect also
+					// probes the ledger and registers (claim) or finishes (complete, fail) the attempt, or cancels
+					// the ledger row (cancel_pending): a fixed number of statements per mode.
+					statements := map[string]int{"claim": 10, "renew": 4, "complete": 6, "fail": 6, "cancel_pending": 6}[mode]
+					if len(q) != statements || strings.ToLower(q[0]) != "begin" || !strings.Contains(q[1], "pg_advisory_xact_lock_shared") || strings.ToLower(q[len(q)-1]) != "commit" {
+						t.Fatalf("expected BEGIN, separate shared fence, %d-statement effect, COMMIT; got %v", statements-3, q)
 					}
 					var got string
 					fenceMust(t, admin.GetContext(ctx, &got, `SELECT state FROM assozeta_go_jobs WHERE id=$1`, id))

@@ -8,3 +8,7 @@
 !BE/
 !BE/instance/
 !BE/instance/release_catalog.py
+!docs/
+!docs/architecture/
+!docs/architecture/go-migration/
+!docs/architecture/go-migration/go-tasks-inventory.json

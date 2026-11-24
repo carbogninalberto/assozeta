@@ -3,7 +3,7 @@
     // that block or need the owner: an operation running, the app unreachable,
     // a recovery to perform, or an operation that just finished.
     import {CheckCircle, WarningCircle, XCircle, SpinnerGap, X} from 'phosphor-svelte';
-    import {operationTitle, operationProgress, recentOutcome} from './operationLabels.js';
+    import {operationTitle, operationProgress, recentOutcome, kindOf} from './operationLabels.js';
 
     export let runner = {active: null, history: []};
     export let simulation = null;
@@ -19,7 +19,9 @@
 
     $: active = simulation || runner.active;
     $: progress = active ? operationProgress(active) : null;
-    $: recovery = !active && (runner.history || []).find(operation => operation.stage === 'recovery_required');
+    // A runtime switch stays the active operation while it needs recovery.
+    $: stalled = active?.status === 'recovery_required' ? active : null;
+    $: recovery = stalled || (!active && (runner.history || []).find(operation => operation.stage === 'recovery_required'));
     $: outcome = !active && !recovery ? recentOutcome(runner.history) : null;
     $: showOutcome = outcome && dismissed !== outcome.id;
 </script>
@@ -46,7 +48,7 @@
             </div>
             {#if restartTimedOut}<button type="button" class="btn btn-sm btn-light" on:click={onRetryRestart}>Verifica di nuovo</button>{/if}
         </div>
-    {:else if active}
+    {:else if active && !stalled}
         <div class="si-banner info" role="status">
             <span class="si-banner-icon"><span class="si-spin"><SpinnerGap size={24} weight="bold" /></span></span>
             <div class="si-banner-text">
@@ -60,7 +62,7 @@
         <div class="si-banner warn" role="alert">
             <span class="si-banner-icon"><WarningCircle size={26} weight="duotone" /></span>
             <div class="si-banner-text">
-                <strong>Ripristino necessario · {recovery.target_version}</strong>
+                <strong>Ripristino necessario · {kindOf(recovery) === 'runtime_switch' ? operationTitle(recovery) : recovery.target_version}</strong>
                 {#if recovery.recovery}<p>{recovery.recovery}</p>{/if}
             </div>
         </div>

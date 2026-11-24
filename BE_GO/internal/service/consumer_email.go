@@ -59,17 +59,29 @@ func (s *SendMailAsync) WithDelay(delay func() time.Duration) *SendMailAsync {
 	return s
 }
 
-// PlanEmailHTMLInProcess is send_email_html(...) called directly by a web
-// view (not as a task) with an association: with a CommunicationConfiguration
-// it returns start, which runs send_email on the configuration loaded now
-// from a timer in this process after the delay; without one start is nil and
-// the caller publishes send_mail_async itself. Values the planner does not
-// take are celeryworker.ErrHandoff.
+// PlanEmailHTMLInProcess plans the configured HTML send for a web request.
+// The caller starts it after committing the business operation. Without a
+// configuration the caller publishes send_mail_async.
 func (s *SendMailAsync) PlanEmailHTMLInProcess(ctx context.Context, association uuid.UUID, html, subject string, recipients,
 	replyTo []any) (start func(), err error) {
 	configuration, err := s.store.FirstCommunicationConfiguration(ctx, association)
 	if err != nil || configuration == nil {
 		return nil, err
+	}
+	if producer, ok := s.publisher.(*celery.Producer); ok {
+		enabled, err := producer.HandoffLedgerEnabled(ctx)
+		if err != nil {
+			return nil, err
+		}
+		if enabled {
+			return func() {
+				if _, err := producer.Publish(ctx, celery.Task{Name: SendEmailHTMLTask, Args: []any{
+					html, subject, recipients, association, replyTo,
+				}}); err != nil {
+					s.logger.WarnContext(ctx, "could not queue the HTML email", "code", "send_email_html_publish_failed")
+				}
+			}, nil
+		}
 	}
 	call, err := s.planConfigSend(ctx, *configuration, subject, nil, &html, recipients, replyTo)
 	if err != nil {
@@ -191,6 +203,9 @@ func consumerEmailReplyTo(value any) (list []string, ok bool) {
 // current task, so neither applies.
 func (s *SendMailAsync) consumerEmailPublish(ctx context.Context, request *celeryworker.Request, kwargs celery.Dict) error {
 	task := celery.Task{Name: SendMailAsyncTask, Kwargs: kwargs}
+	if celeryworker.HasBrokerAttempt(ctx) {
+		task.Queue = celery.GoQueue
+	}
 	if request != nil {
 		task.RootID, task.ParentID = request.RootID, request.ID
 		if task.RootID == "" {
@@ -362,10 +377,13 @@ func (s *SendMailAsync) SendEmailTextTask() celeryworker.Task {
 	return celeryworker.Task{MaxRetries: 3, Plan: s.planEmailText, Run: s.runEmailText}
 }
 
-func (s *SendMailAsync) planEmailText(_ context.Context, request *celeryworker.Request) error {
+func (s *SendMailAsync) planEmailText(ctx context.Context, request *celeryworker.Request) error {
 	call, err := s.planForward(consumerEmailForwardNames, request)
 	if err != nil {
 		return err
+	}
+	if _, list := call.recipients.([]any); celeryworker.HasBrokerAttempt(ctx) && !list {
+		return celeryworker.ErrHandoff
 	}
 	request.State = call
 	return nil
@@ -466,6 +484,15 @@ func (s *SendMailAsync) runEmailHTML(ctx context.Context, request *celeryworker.
 	}
 	if plan.config != nil {
 		call := plan.config
+		if celeryworker.HasBrokerAttempt(ctx) {
+			select {
+			case <-ctx.Done():
+				return nil, ctx.Err()
+			case <-time.After(s.delay()):
+			}
+			s.configSend(ctx, request, call)
+			return nil, nil
+		}
 		s.timers.Add(1)
 		time.AfterFunc(s.delay(), func() {
 			defer s.timers.Done()
@@ -543,7 +570,7 @@ func (s *SendMailAsync) planEmailTemplate(ctx context.Context, request *celerywo
 		return err
 	}
 	name, ok := values["template"].(string)
-	if !ok {
+	if !ok || (name == emailrender.CertificateChanged && !celeryworker.HasBrokerAttempt(ctx)) {
 		return celeryworker.ErrHandoff
 	}
 	context := map[string]any{}

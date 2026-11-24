@@ -16,6 +16,9 @@ import time
 from uuid import uuid4
 
 ROOT = Path(__file__).resolve().parents[3]
+# The binary's operational schema version (BE_GO/migrations CurrentVersion):
+# clean/current, dirty, older and newer fixtures stay relative to it.
+CURRENT_SCHEMA = int(re.search(r'^const CurrentVersion = (\d+)$', (ROOT / 'BE_GO/migrations/migrations.go').read_text(), re.M)[1])
 KIND = 'reset_communication_daily_email_balance'
 NIL = '00000000-0000-0000-0000-000000000000'
 LABEL = 'org.assozeta.worker-image-proof'
@@ -84,6 +87,10 @@ class Proof:
             command += ['--detach', '--init']
         else:
             command += ['--rm']
+        if entrypoint == '/app/migrate' and '--help' not in arguments:
+            # Synthetic fixture databases have no Django history: Go operational schema only
+            # (Phase 6: /app/migrate builds the business schema by default).
+            arguments = ['--operational-only', *arguments]
         result = self.docker(*command, self.image, *arguments, timeout=40)
         return name if detached else result.stdout.strip()
 
@@ -228,7 +235,7 @@ class Proof:
         self.go('migrate-repeat', '/app/migrate', network=self.network)
         self.stop(migration_lock)
         assert self.value('SELECT json_build_array(runtime,generation) FROM assozeta_go_job_ownership;') == ['django', 1]
-        assert self.value('SELECT json_build_array(version,dirty) FROM assozeta_go_schema_migrations;') == [4, False]
+        assert self.value('SELECT json_build_array(version,dirty) FROM assozeta_go_schema_migrations;') == [CURRENT_SCHEMA, False]
         assert self.value('SELECT json_build_array(id,app,name) FROM django_migrations;') == [7, 'fixture', 'unchanged']
         self.case('forward migration preserves Django history and starts with Django ownership')
 

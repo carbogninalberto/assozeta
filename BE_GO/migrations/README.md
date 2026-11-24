@@ -1,5 +1,45 @@
-Django exclusively owns the existing business schema during coexistence. The Go
-server never runs schema migrations at startup.
+# PostgreSQL migrations
+
+`/app/migrate` applies the shared business schema and then the Go operational
+schema. The deployment lifecycle calls it under the exclusive operations lock
+using a direct PostgreSQL connection. HTTP and worker startup do no migration
+work. The `--operational-only` option is available to callers preparing a
+database whose business schema is managed separately.
+
+## Business schema
+
+`business/` starts at `000100` and is embedded in the Go migrator. Its plan
+follows the Django migration graph, including the pinned third-party apps.
+The file numbers identify business steps independently of the Go operational version.
+Each step runs in a PostgreSQL transaction with its `django_migrations` record.
+A database already migrated by Django keeps its history, including the
+individual names covered by the application squash. New databases record both
+the replacement and the migration names it covers. Content types and
+permissions are created using Django's natural keys after the plan completes.
+Existing numeric IDs, names and permission assignments are retained.
+
+Use the backend's pinned Python environment and the PostgreSQL 16 server tools to
+regenerate or verify the SQL. The tool creates its own disposable cluster.
+Pass `--pg-bin DIR` when the server tools are outside `PATH`.
+
+```sh
+python -B tools/go-migration/business_schema.py write
+python -B tools/go-migration/business_schema.py check
+```
+
+The generator runs Django's `sqlmigrate` SQL collector with a live schema in
+the private cluster. Later operations in the same migration can then see the
+constraints and indexes already installed there. It emits only DDL and
+markers for manual ports, and folds temporary callable defaults into SQL
+expressions. The manual ports live in [business/data](business/data) and
+cover squash seed rows and content-type rename, document token regeneration,
+OAuth table removal, retired invoice document cleanup, the group foreign key
+repair, Beat schedule retirement, workflow and audit cleanup, Bakney protocol
+reset, and the pinned auth, Celery results and social-auth data steps.
+[signatures.go](business/signatures.go) ports application migration 0426,
+which also reads and writes the configured signature object storage.
+
+## Operational schema
 
 The first additive migration owns only `public.assozeta_go_jobs`, its indexes and
 the distinct `public.assozeta_go_schema_migrations` history. The latter belongs to
@@ -37,28 +77,21 @@ events survive a binary rollback.
 the down script explicitly refuses deletion, retaining even terminal jobs and
 their deduplication keys during binary rollback. Invoking a third-party down tool
 will report that refusal and may leave its migration history dirty; it is not a
-supported rollback procedure. Operator recovery must inspect the actual schema,
-not blindly force a version. No Django table or migration history is changed.
+supported rollback procedure. Operator recovery uses the operational history and the installed schema together.
 Worker readiness requires the exact current clean operational version and table
 shape. An older worker binary expecting an earlier version therefore refuses a newer
 database. Rolling back that binary alone cannot resume Go workers; a coordinated
 and verified restoration/recovery procedure is required. No installed Go worker
 activation is offered by this increment.
 
-The explicit `/app/migrate` command is invoked by the tools-profile `migrate-go`
-service after Django migration in the ordinary installation/update/restore
-lifecycle. Its caller must hold the existing exclusive operations lock; it uses
-the existing direct PostgreSQL configuration. HTTP and worker startup do not
-call it. See [lifecycle contracts and evidence](../../docs/architecture/go-migration/operational-migrations.md).
-Importing Kuayle business migrations, forcing
-a baseline version, or changing an existing Django table here is prohibited.
+See [lifecycle contracts and evidence](../../docs/architecture/go-migration/operational-migrations.md)
+for details on operational versions and recovery.
 
 Rollback must preserve Go-written business data, pending durable jobs, file keys
 and identities. Reverting routing alone does not prove rollback. Ownership
 fencing has scoped tests; installed handoff, coordinated task draining and full
 historical restore compatibility remain incomplete. HTTP
 admission now uses the existing Django/CLI file lock and DataRestore active-state
-query; see `internal/service/restore_admission.md`. This does not transfer migration
-or restore ownership to Go.
+query. See `internal/service/restore_admission.md`.
 
 See `internal/repository/jobs.md` for queue semantics and verification limits.

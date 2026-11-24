@@ -5,7 +5,7 @@
     import ReleaseNotes from './release-notes/ReleaseNotes.svelte';
     import Switch from '../../../components/inputs/Switch.svelte';
     import {formatDate, formatRelative} from './instanceFormat.js';
-    import {historyTitle, historyTone, stageLabel} from './operationLabels.js';
+    import {historyTitle, historyTone, stageLabel, kindOf} from './operationLabels.js';
 
     export let info;
     export let catalog = null;
@@ -75,8 +75,11 @@
                         <div class="si-row-main">
                             <strong>{historyTitle(operation)}</strong>
                             <p class="si-muted si-small">{stageLabel(operation)}{#if operation.created_at}{' · '}<time datetime={operation.created_at} title={formatRelative(operation.created_at)}>{formatDate(operation.created_at)}</time>{/if}</p>
-                            {#if operation.error}<p class="text-danger si-small">{operation.error}</p>{/if}
-                            {#if operation.recovery && operation.stage === 'recovery_required'}<p class="si-small">{operation.recovery}</p>{/if}
+                            <!-- A runtime switch shows its failure and recovery in Impostazioni › Runtime. -->
+                            {#if kindOf(operation) !== 'runtime_switch'}
+                                {#if operation.error}<p class="text-danger si-small">{operation.error}</p>{/if}
+                                {#if operation.recovery && operation.stage === 'recovery_required'}<p class="si-small">{operation.recovery}</p>{/if}
+                            {/if}
                         </div>
                     </li>
                 {/each}

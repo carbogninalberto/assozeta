@@ -188,6 +188,35 @@ func TestScheduleDuePortableContract(t *testing.T) {
 	}
 }
 
+// Phase 4 (migration 7): the leased scheduler evaluates every timing Beat accepts
+// (TESTS/handoff/test_p4_go_units), so these inputs are refused only by the
+// legacy unleased publisher of schema 5/6 (validateLegacyPeriodicDefinition).
+var leasedSupported = map[string]bool{
+	"one off": true, "absolute expiry": true, "relative expiry even zero": true, "minutes interval": true,
+	"cron timezone": true, "cron minute steps": true, "cron minute steps in Rome": true,
+	"cron minute steps on one weekday": true, "cron oversized minute step": true, "cron ranged minute step": true,
+	"cron scalar minute any hour": true, "cron hour steps": true, "cron minute wildcard": true, "cron hour wildcard": true,
+	"cron every minute on one weekday": true, "cron every minute in Rome": true, "cron archive calendar in Rome": true,
+	"cron archive calendar on one weekday": true, "cron monthday any hour": true, "cron monthday minute steps": true,
+	"cron monthday hour list": true, "cron monthday step": true, "cron monthday wrapping range": true,
+	"cron month name": true, "cron month step": true, "cron hour list": true, "cron minute range": true,
+	"cron weekday": true,
+}
+
+func assertRefused(t *testing.T, name string, row domain.PeriodicSchedule, now time.Time) {
+	t.Helper()
+	if _, _, err := validateLegacyPeriodicDefinition(row); !errors.Is(err, domain.ErrScheduleUnsupported) {
+		t.Fatalf("the legacy unleased publisher must refuse it: %v", err)
+	}
+	if leasedSupported[name] {
+		return
+	}
+	result, err := EvaluateScheduleDue(row, now)
+	if !errors.Is(err, domain.ErrScheduleUnsupported) || result != (domain.ScheduleDue{}) {
+		t.Fatalf("unsupported row must return no decision: %+v %v", result, err)
+	}
+}
+
 func TestScheduleDueRejectsUnsupportedInputs(t *testing.T) {
 	now := time.Date(2026, 10, 22, 12, 0, 0, 0, time.UTC)
 	integer := 0
@@ -223,10 +252,7 @@ func TestScheduleDueRejectsUnsupportedInputs(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			row := basicSchedule()
 			mutate(&row)
-			result, err := EvaluateScheduleDue(row, now)
-			if !errors.Is(err, domain.ErrScheduleUnsupported) || result != (domain.ScheduleDue{}) {
-				t.Fatalf("unsupported row must return no decision: %+v %v", result, err)
-			}
+			assertRefused(t, name, row, now)
 		})
 	}
 	cronCases := map[string]func(*domain.PeriodicCron){
@@ -286,10 +312,7 @@ func TestScheduleDueRejectsUnsupportedInputs(t *testing.T) {
 			row.Interval = nil
 			row.Cron = &domain.PeriodicCron{Minute: "0", Hour: "0", DayOfWeek: "*", DayOfMonth: "*", MonthOfYear: "*", Timezone: "UTC"}
 			mutate(row.Cron)
-			result, err := EvaluateScheduleDue(row, now)
-			if !errors.Is(err, domain.ErrScheduleUnsupported) || result != (domain.ScheduleDue{}) {
-				t.Fatalf("%+v %v", result, err)
-			}
+			assertRefused(t, "cron "+name, row, now)
 		})
 	}
 }
@@ -371,10 +394,11 @@ func TestPeriodicJobKindMapsOnlyRegisteredTasks(t *testing.T) {
 }
 
 // Django Beat publishes these tasks. The native scheduler must leave them alone.
-var djangoBeatTasks = map[string]bool{
-	"instance.backups.notify_failures":      true, // May be routed to the Go Celery consumer.
-	"communications.tasks.deliver_whatsapp": true, // The Go API polls the same outbox directly.
-}
+var djangoBeatTasks = map[string]bool{}
+
+// Published by the leased Go scheduler as admitted broker tasks for the Go consumer: the backup notice
+// (Phase 4 part A) and the WhatsApp outbox poll (Phase 4 part B, one bounded drain per poll).
+var leasedBrokerTasks = map[string]bool{domain.PeriodicBackupNotice: true, domain.PeriodicWhatsApp: true}
 
 func TestScheduleDueEffectiveDeclarations(t *testing.T) {
 	data, err := os.ReadFile(filepath.Join("..", "..", "..", "TESTS", "fixtures", "scheduler-authority.json"))
@@ -438,6 +462,12 @@ func TestScheduleDueEffectiveDeclarations(t *testing.T) {
 		row.ExpireSeconds = declaration.Options.Expires
 		_, mapped := domain.PeriodicJobKind(declaration.Task)
 		_, err := EvaluateScheduleDue(row, now)
+		if leasedBrokerTasks[declaration.Task] {
+			if mapped || err != nil {
+				t.Fatalf("%s: the leased Go scheduler publishes it as a broker task (mapped=%v, err=%v)", name, mapped, err)
+			}
+			continue
+		}
 		if djangoBeatTasks[declaration.Task] {
 			owned++
 			if mapped || !errors.Is(err, domain.ErrScheduleUnsupported) {

@@ -171,9 +171,13 @@ type RedisBroker struct{ Client redis.Cmdable }
 const bindingSeparator = "\x06\x16"
 
 func (b RedisBroker) Push(ctx context.Context, queue string, payload []byte) error {
+	return b.pushPriority(ctx, queue, payload, 0)
+}
+
+func (b RedisBroker) pushPriority(ctx context.Context, queue string, payload []byte, priority int64) error {
 	_, err := b.Client.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
 		pipe.SAdd(ctx, "_kombu.binding."+queue, queue+bindingSeparator+bindingSeparator+queue)
-		pipe.LPush(ctx, queue, payload)
+		pipe.LPush(ctx, queueForPriority(queue, priority), payload)
 		return nil
 	})
 	return err
@@ -189,6 +193,15 @@ type Producer struct {
 	origin  string
 	replyTo string
 	routes  map[string]string
+}
+
+func (p *Producer) HandoffLedgerEnabled(ctx context.Context) (bool, error) {
+	if broker, ok := p.broker.(interface {
+		HandoffLedgerEnabled(context.Context) (bool, error)
+	}); ok {
+		return broker.HandoffLedgerEnabled(ctx)
+	}
+	return false, nil
 }
 
 // NewProducer returns a producer for broker with the process's origin and
@@ -215,6 +228,17 @@ var retryDelays = []time.Duration{0, 200 * time.Millisecond, 400 * time.Millisec
 // Publish encodes and pushes the task and returns its id. The publish stamp
 // is taken once, before the first attempt, like Celery's retries.
 func (p *Producer) Publish(ctx context.Context, task Task) (string, error) {
+	if parent, ok := ctx.Value(goParentKey{}).(goParent); ok {
+		if task.Queue == "" {
+			task.Queue = GoQueue
+		}
+		if task.ParentID == "" {
+			task.ParentID = parent.id
+		}
+		if task.RootID == "" {
+			task.RootID = parent.root
+		}
+	}
 	now := p.now()
 	id := task.ID
 	if id == "" {

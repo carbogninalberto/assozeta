@@ -7,23 +7,26 @@ import (
 	"errors"
 	"io"
 	"log/slog"
+	"os"
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/config"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/handoff"
 	"github.com/google/uuid"
 )
 
 var rank = map[string]int{"queued": 0, "sent": 1, "failed": 2, "delivered": 3, "read": 4}
 
 type DeliveryQueue struct {
+	owner    *handoff.OutboxOwner
 	db       *sql.DB
 	settings func(context.Context) (config.WhatsAppSettings, error)
 }
 
 func NewQueue(db *sql.DB, settings func(context.Context) (config.WhatsAppSettings, error)) *DeliveryQueue {
-	return &DeliveryQueue{db, settings}
+	return &DeliveryQueue{owner: handoff.NewOutboxOwner("outbox"), db: db, settings: settings}
 }
 
 func (q *DeliveryQueue) Enqueue(ctx context.Context, user, kind, message string) error {
@@ -79,21 +82,52 @@ func (q *DeliveryQueue) Enqueue(ctx context.Context, user, kind, message string)
 // DeliverOne locks one due row through the bounded provider request. Both
 // workers use the same locking protocol, including across backend rollouts.
 func (q *DeliveryQueue) DeliverOne(ctx context.Context) (bool, error) {
+	return q.deliverOne(ctx, q.owner.ID)
+}
+
+// Drain runs one bounded legacy poll under the broker consumer's identity.
+func (q *DeliveryQueue) Drain(ctx context.Context, consumer string) error {
+	for i := 0; i < 50; i++ {
+		worked, err := q.deliverOne(ctx, consumer)
+		if err != nil || !worked {
+			return err
+		}
+	}
+	return nil
+}
+
+func (q *DeliveryQueue) deliverOne(ctx context.Context, consumer string) (bool, error) {
 	cfg, err := q.settings(ctx)
 	if err != nil || !cfg.DeliveryEnabled() {
 		return false, err
 	}
-	provider := NewCloudAPI(cfg)
+	defer q.owner.Enter()()
+	managed, err := handoff.OutboxInstalled(ctx, q.db)
+	if err != nil {
+		return false, err
+	}
 	tx, err := q.db.BeginTx(ctx, nil)
 	if err != nil {
 		return false, err
 	}
 	defer tx.Rollback()
+	if managed {
+		var outcome string
+		err = tx.QueryRowContext(ctx, "SELECT outcome FROM public.assozeta_outbox_claim('go',$1,'whatsapp')", consumer).Scan(&outcome)
+		if err != nil || outcome != "owner" {
+			return false, err
+		}
+	}
+	provider := NewCloudAPI(cfg)
 	var id, recipient, body, name, language string
 	var attempts int
-	err = tx.QueryRowContext(ctx, `SELECT id,recipient,body,template_name,template_language,attempts
-		FROM communications_whatsappdelivery WHERE status='queued' AND next_attempt_at<=now()
-		ORDER BY next_attempt_at,id LIMIT 1 FOR UPDATE SKIP LOCKED`).Scan(&id, &recipient, &body, &name, &language, &attempts)
+	query := `SELECT id,recipient,body,template_name,template_language,attempts
+		FROM communications_whatsappdelivery WHERE status='queued' AND next_attempt_at<=now()`
+	if managed {
+		query += ` AND NOT EXISTS (SELECT FROM public.assozeta_outbox_effects e WHERE e.outbox='whatsapp'
+		AND e.item_id=communications_whatsappdelivery.id::text AND e.state IN ('confirmed','ambiguous','reconciled_sent'))`
+	}
+	err = tx.QueryRowContext(ctx, query+" ORDER BY next_attempt_at,id LIMIT 1 FOR UPDATE SKIP LOCKED").Scan(&id, &recipient, &body, &name, &language, &attempts)
 	if errors.Is(err, sql.ErrNoRows) {
 		return false, nil
 	}
@@ -101,6 +135,56 @@ func (q *DeliveryQueue) DeliverOne(ctx context.Context) (bool, error) {
 		return false, err
 	}
 	attempts++
+	if managed {
+		var outcome string
+		err = tx.QueryRowContext(ctx, "SELECT public.assozeta_outbox_effect_intent('go',$1,'whatsapp',$2,$3)", consumer, id, attempts).Scan(&outcome)
+		if err != nil {
+			return false, err
+		}
+		if err = tx.Commit(); err != nil {
+			return false, err
+		}
+		if outcome != "recorded" {
+			return true, nil
+		}
+		// Only the caller that just committed a new intent has permission to
+		// send. A competing poll can flag the intent while we reacquire the
+		// item lock, but it cannot obtain a second permission.
+		tx, err = q.db.BeginTx(ctx, nil)
+		if err != nil {
+			return false, err
+		}
+		defer tx.Rollback()
+		err = tx.QueryRowContext(ctx, "SELECT outcome FROM public.assozeta_outbox_claim('go',$1,'whatsapp')", consumer).Scan(&outcome)
+		if err != nil {
+			return false, err
+		}
+		var queued bool
+		err = tx.QueryRowContext(ctx, `SELECT status='queued' FROM communications_whatsappdelivery WHERE id=$1 FOR UPDATE`, id).Scan(&queued)
+		if err != nil || !queued {
+			return false, err
+		}
+		if outcome != "owner" {
+			// The freeze won before the send started. No provider call was made.
+			_, err = tx.ExecContext(ctx, "DELETE FROM public.assozeta_outbox_effects WHERE outbox='whatsapp' AND item_id=$1 AND attempt=$2 AND state IN ('intent','ambiguous')", id, attempts)
+			if err != nil {
+				return false, err
+			}
+			return false, tx.Commit()
+		}
+		var authorized bool
+		err = tx.QueryRowContext(ctx, `SELECT state IN ('intent','ambiguous')
+			FROM public.assozeta_outbox_effects e JOIN public.assozeta_go_job_ownership o
+			ON e.runtime=o.runtime AND e.ownership_generation=o.generation
+			CROSS JOIN LATERAL pg_advisory_xact_lock(hashtextextended(e.item_id,8))
+			WHERE e.outbox='whatsapp' AND e.item_id=$1 AND e.attempt=$2 AND o.singleton=1`, id, attempts).Scan(&authorized)
+		if errors.Is(err, sql.ErrNoRows) {
+			return false, nil
+		}
+		if err != nil || !authorized {
+			return false, err
+		}
+	}
 	var providerID string
 	if name == "" {
 		providerID, err = provider.SendText(ctx, recipient, body, id)
@@ -115,12 +199,30 @@ func (q *DeliveryQueue) DeliverOne(ctx context.Context) (bool, error) {
 		if !errors.As(err, &failure) {
 			return false, err
 		}
+		if managed {
+			if failure.Code == "network" || failure.Code == "invalid_response" {
+				// The provider may have accepted the message: the ambiguous effect keeps
+				// it from being sent again until a receipt or the owner resolves it.
+				// The row still records the outcome the task has always recorded.
+				_, err = tx.ExecContext(ctx, "UPDATE public.assozeta_outbox_effects SET state='ambiguous' WHERE outbox='whatsapp' AND item_id=$1 AND attempt=$2 AND state='intent'", id, attempts)
+			} else {
+				_, err = tx.ExecContext(ctx, "SELECT public.assozeta_outbox_reconcile('whatsapp',$1,'not_sent',$2)", id, consumer)
+			}
+			if err != nil {
+				return false, err
+			}
+		}
 		code, detail = failure.Code, failure.Message
 		if failure.Transient && attempts < 3 {
 			state = "queued"
 			delay = 30 << (attempts - 1)
 		}
 		slog.WarnContext(ctx, "WhatsApp send failed", "id", id, "attempt", attempts, "code", code)
+	} else if managed {
+		handoff.Barrier("effect:accepted", id)
+		if _, err = tx.ExecContext(ctx, "SELECT public.assozeta_outbox_effect_confirm('whatsapp',$1,$2,$3)", id, attempts, providerID); err != nil {
+			return false, err
+		}
 	}
 	_, err = tx.ExecContext(ctx, `UPDATE communications_whatsappdelivery SET provider_message_id=NULLIF($2,''),
 		status=$3,attempts=$4,error_code=$5,error_message=$6,updated_at=clock_timestamp(),
@@ -133,7 +235,13 @@ func (q *DeliveryQueue) DeliverOne(ctx context.Context) (bool, error) {
 }
 
 func (q *DeliveryQueue) Run(ctx context.Context, acquire func(context.Context) (io.Closer, error)) {
-	ticker := time.NewTicker(10 * time.Second)
+	interval, err := time.ParseDuration(os.Getenv("ASSOZETA_HANDOFF_HEARTBEAT"))
+	if err != nil || interval <= 0 {
+		interval = time.Second
+	}
+	stop := q.owner.Start(ctx, q.db, interval)
+	defer stop()
+	ticker := time.NewTicker(pollInterval())
 	defer ticker.Stop()
 	for {
 		select {
@@ -179,6 +287,18 @@ func recordStatus(ctx context.Context, db *sql.DB, event Status) error {
 	}
 	if err != nil {
 		return err
+	}
+	managed, err := handoff.OutboxInstalled(ctx, tx)
+	if err != nil {
+		return err
+	}
+	if managed {
+		_, err = tx.ExecContext(ctx, `UPDATE public.assozeta_outbox_effects SET state='reconciled_sent',
+			provider_ref=$1,resolved_at=clock_timestamp(),resolved_by='webhook'
+			WHERE outbox='whatsapp' AND item_id=$2 AND state IN ('intent','ambiguous')`, event.ID, id)
+		if err != nil {
+			return err
+		}
 	}
 	result, err := tx.ExecContext(ctx, `INSERT INTO communications_whatsappreceipt
 		(delivery_id,provider_message_id,status,occurred_at,error_code,error_message) VALUES($1,$2,$3,$4,$5,$6)

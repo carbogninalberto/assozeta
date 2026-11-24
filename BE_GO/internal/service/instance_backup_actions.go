@@ -202,6 +202,11 @@ func backupActionsRejection(outcome *backupActionsOutcome) (*BackupActionsReply,
 // non-finite runner number fails rendering after the entry is written).
 func (s *InstanceBackupActions) audit(ctx context.Context, request BackupActionsRequest, action, value string,
 	extra domain.RequestObject) error {
+	return s.auditChange(ctx, request, action, "", value, extra)
+}
+
+func (s *InstanceBackupActions) auditChange(ctx context.Context, request BackupActionsRequest, action, previous, value string,
+	extra domain.RequestObject) error {
 	additional := append(domain.RequestObject{{Name: "actor_id", Value: request.Actor}}, extra...)
 	if !dto.RenderableJSON(additional) {
 		return errInstanceBackupsUnhandled // PostgreSQL rejects the Infinity/NaN tokens and the lone surrogates of jsonb
@@ -214,7 +219,7 @@ func (s *InstanceBackupActions) audit(ctx context.Context, request BackupActions
 		return errInstanceBackupsUnhandled // log_create(None): no content type
 	}
 	return s.store.AppendBackupAction(ctx, repository.InstanceBackupAction{Target: *target, ActorID: request.Actor,
-		Changes:    dto.PythonJSONDumps(domain.RequestObject{{Name: action, Value: []any{"", value}}}),
+		Changes:    dto.PythonJSONDumps(domain.RequestObject{{Name: action, Value: []any{previous, value}}}),
 		Additional: dto.PythonJSONDumps(additional), Audit: request.Audit, At: s.now()})
 }
 

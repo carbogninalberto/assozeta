@@ -6,6 +6,7 @@ import time
 from datetime import datetime, timedelta
 import random
 from threading import Timer
+from uuid import NAMESPACE_URL, uuid5
 
 import pytz
 import requests
@@ -47,6 +48,7 @@ from application.views.stripe_views import mark_payment_as_paid
 from communications.models import AutomationWorkflow, CommunicationConfiguration
 from core import settings
 from core.celery import app
+from core.handoff import barrier, enabled as handoff_enabled
 from core.settings import STORAGE_DIR, CURRENT_HOST, WHITELABEL_NAME
 from rest_framework.test import APIRequestFactory
 from core.tasks import send_mail_async
@@ -227,16 +229,21 @@ def delete_users_with_request():
 
         users_list = list(users)
         logger.info("Found users to delete", extra={'count': len(users_list), 'task_name': 'delete_users_with_request'})
-        for user in users_list:
+        task_id = delete_users_with_request.request.id
+        handoff_task_id = task_id if task_id and handoff_enabled() else None
+        for completed, user in enumerate(users_list, 1):
             print(f"[DELETE USERS WITH REQUEST] found {len(users_list)} users to delete")
-            logger.info("Deleting user account", extra={'user_id': str(user.user_id), 'email': user.email})
+            logger.info("Deleting user account", extra={'user_id': str(user.user_id)})
             # email the user telling that the account is deleted
-            send_email_text.delay(
-                subject=f"{WHITELABEL_NAME} | Il tuo account è stato eliminato",
-                message=f"Ciao {user.first_name}, Il tuo account è stato eliminato dal sistema "
-                        f"perché hai richiesto la cancellazione 30 giorni fa. ",
-                recipient_list=[user.email],
-            )
+            notice_id = None
+            if handoff_task_id:
+                notice_id = str(uuid5(NAMESPACE_URL, f'assozeta:delete_users_with_request:{handoff_task_id}:{user.pk}'))
+            send_email_text.apply_async(task_id=notice_id, kwargs={
+                'subject': f"{WHITELABEL_NAME} | Il tuo account è stato eliminato",
+                'message': f"Ciao {user.first_name}, Il tuo account è stato eliminato dal sistema "
+                           "perché hai richiesto la cancellazione 30 giorni fa. ",
+                'recipient_list': [user.email],
+            })
 
             user.email = f"{user.email}__deleted"
             user.username = f"{user.username}__deleted"
@@ -244,6 +251,8 @@ def delete_users_with_request():
             user.deleted = True
             user.delete_on = None
             user.save()
+            if task_id:
+                barrier('batch:committed', f'delete_users_with_request-{completed}')
         logger.info("Completed delete_users_with_request task", extra={'count': len(users_list), 'task_name': 'delete_users_with_request'})
         print(f"[DELETE USERS WITH REQUEST] finished!")
     except Exception as e:
@@ -253,15 +262,17 @@ def delete_users_with_request():
 
 @shared_task(name="print_document_subscription")
 def print_document_subscription(subscription_id, auth_token):
+    from application.printing_tasks import print_request
+
     logger.info("Starting print_document_subscription task", extra={'task_name': 'print_document_subscription', 'subscription_id': str(subscription_id)})
     try:
         print(f"[PRINTING TASK] starting...")
         headers = {'Authorization': auth_token}
-        response = requests.get(f"{CURRENT_HOST}/document/subscription/{subscription_id}", headers=headers)
-        logger.info("Completed print_document_subscription task", extra={'task_name': 'print_document_subscription', 'subscription_id': str(subscription_id), 'status_code': response.status_code})
+        response = print_request(f"{CURRENT_HOST}/document/subscription/{subscription_id}", headers)
+        logger.info("Completed print_document_subscription task", extra={'task_name': 'print_document_subscription', 'subscription_id': str(subscription_id), 'status_code': getattr(response, 'status_code', None)})
         # Depending on the response, you can take further actions or handle errors
         print(f"[PRINTING TASK] finished!")
-    except Exception as e:
+    except requests.RequestException as e:
         logger.error("Error in print_document_subscription task", extra={'task_name': 'print_document_subscription', 'subscription_id': str(subscription_id)}, exc_info=True)
         print(f"[PRINTING TASK] error {e}")
 
@@ -572,6 +583,8 @@ def clear_deleted_subscription():
                     continue
                 _purge_deleted_subscription(subscription)
             removed += 1
+            if clear_deleted_subscription.request.id:
+                barrier('batch:committed', f'clear_deleted_subscription-{removed}')
         except Exception:
             logger.exception(
                 "clear_deleted_subscription: could not remove subscription",
@@ -616,6 +629,8 @@ def auto_archive_subscription():
             with transaction.atomic():
                 _archive_subscription(subscription)
             archived += 1
+            if auto_archive_subscription.request.id:
+                barrier('batch:committed', f'auto_archive_subscription-{archived}')
         except Exception:
             logger.exception(
                 "auto_archive_subscription: could not archive subscription",
@@ -772,7 +787,7 @@ def auto_delete_orphan_medical_certificate():
         subscriptions = Subscription.objects.all().filter(medical__isnull=False).values_list('medical', flat=True)
         print(subscriptions)
         medical_certificates = MedicalCertificate.objects.all().exclude(medical_id__in=subscriptions).select_related('document')
-        for medical_certificate in medical_certificates.iterator(chunk_size=50):
+        for completed, medical_certificate in enumerate(medical_certificates.iterator(chunk_size=50), 1):
             # get document from the medical certificate
             document = medical_certificate.document
             storing_path = os.path.join(STORAGE_DIR, str(document.creation_date.timestamp()), str(document.document_id))
@@ -781,6 +796,8 @@ def auto_delete_orphan_medical_certificate():
             default_storage.delete(file)
             document.delete()
             medical_certificate.delete()
+            if auto_delete_orphan_medical_certificate.request.id:
+                barrier('batch:committed', f'auto_delete_orphan_medical_certificate-{completed}')
             # print the result
             print(f"[DEPLOY TASK] deleted {file}")
         print("[DEPLOY TASK] OK!")
@@ -1743,6 +1760,8 @@ def cleanup_old_exports(sport_association_id: str = None, max_count: int = EXPOR
                         export.delete()
                         document.delete()
                         deleted_count += 1
+                        if cleanup_old_exports_task.request.id:
+                            barrier('batch:committed', f'cleanup_old_exports-{deleted_count}')
                         logger.info(
                             f"Deleted old export",
                             extra={
@@ -1771,6 +1790,8 @@ def cleanup_old_exports(sport_association_id: str = None, max_count: int = EXPOR
                 if document:
                     document.delete()
                 deleted_count += 1
+                if cleanup_old_exports_task.request.id:
+                    barrier('batch:committed', f'cleanup_old_exports-{deleted_count}')
                 logger.info(
                     f"Deleted excess export",
                     extra={

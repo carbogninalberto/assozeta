@@ -158,8 +158,13 @@ assert instance.name == 'Release Quality Sentinel'
 with default_storage.open(instance.logo_path, 'rb') as logo:
     assert logo.read() == __import__('base64').b64decode('iVBORw0KGgoAAAANSUhEUgAAAAMAAAACCAIAAAASFvFNAAAAEElEQVR4nGMwVJ0CQQxwFgA0mgV9TDUSVgAAAABJRU5ErkJggg==')
 '''))
+        # A dual-API release always runs the Go API; an exclusive release (runtime
+        # profiles) runs it only in Go mode and starts upgraded instances in Django mode.
+        exclusive = 'go' in command(compose('config', '--profiles'), capture=True).split()
         for service, image in {'api': 'backend', 'api-go': 'backend-go', 'worker': 'backend', 'beat': 'backend', 'web': 'web', 'renderer': 'renderer'}.items():
             container = command(compose('ps', '-q', service), capture=True)
+            if exclusive and service == 'api-go' and not container:
+                continue
             if command(['docker', 'inspect', '--format', '{{.Image}}', container], capture=True) != image_ids[image]:
                 raise ValueError(f'{service} is not running the verified release image')
         updater = command(['docker', 'compose', '--env-file', str(env_file), '-f', str(installation / 'compose.updater.yml'),
@@ -202,8 +207,9 @@ with default_storage.open(instance.logo_path, 'rb') as logo:
             with log.open('a') as output:
                 for filename, name in (('compose.updater.yml', f'{project}-updater'), ('compose.yml', project)):
                     if (installation / filename).exists():
+                        # Every profile: an exclusive release keeps its runtime services in profiles.
                         subprocess.run(['docker', 'compose', '--env-file', str(env_file), '-f', str(installation / filename),
-                            '--project-name', name, 'down', '--volumes', '--remove-orphans'], env=environment, stdout=output, stderr=output)
+                            '--project-name', name, '--profile', '*', 'down', '--volumes', '--remove-orphans'], env=environment, stdout=output, stderr=output)
                 subprocess.run(['docker', 'volume', 'rm', f'{project}_updater_api', f'{project}_updater_status'], stdout=output, stderr=output)
         assert_project_removed(project)
         if evidence is not None:

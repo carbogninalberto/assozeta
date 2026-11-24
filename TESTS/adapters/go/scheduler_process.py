@@ -8,6 +8,7 @@ import fcntl
 import hashlib
 import json
 import os
+import re
 from pathlib import Path
 import shutil
 import signal
@@ -18,6 +19,9 @@ import time
 from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[3]
+# The binary's operational schema version (BE_GO/migrations CurrentVersion):
+# clean/current, dirty, older and newer fixtures stay relative to it.
+CURRENT_SCHEMA = int(re.search(r'^const CurrentVersion = (\d+)$', (ROOT / 'BE_GO/migrations/migrations.go').read_text(), re.M)[1])
 sys.path.insert(0, str(ROOT))
 from TESTS.adapters.django.production_runtime import require_production_python
 from TESTS.adapters.go.worker_process import Rehearsal, await_condition, KIND, process_source_hashes
@@ -95,22 +99,25 @@ class SchedulerRehearsal(Rehearsal):
         assert process.poll() is None
         assert self.source_state(source)==state and self.receipt_count(source)==0
 
-    def published(self, source):
-        await_condition(lambda:self.receipt_count(source)==1,'one durable occurrence')
+    def published(self, source, timeout=12):
+        await_condition(lambda:self.receipt_count(source)==1,'one durable occurrence',timeout)
         assert self.source_state(source)[0]==1
 
     def blocked(self):
         return bool(self.sql("SELECT 1 FROM pg_stat_activity WHERE application_name='assozeta-go-scheduler' AND wait_event='advisory'"))
 
-    def gate(self, deferred):
+    def gate(self, deferred, source):
+        # Pause only the held source's publication: the seeded release declarations (migration 7) include
+        # minute crontabs that become due at any minute boundary and must keep publishing around the gate.
         self.sql('''CREATE FUNCTION fixture_pause_publication() RETURNS trigger LANGUAGE plpgsql AS $$
           BEGIN PERFORM pg_advisory_xact_lock(987613); RETURN NEW; END $$''')
+        only = f'WHEN (NEW.periodic_task_id = {int(source)})'
         if deferred:
-            self.sql('''CREATE CONSTRAINT TRIGGER fixture_pause_publication AFTER INSERT ON assozeta_go_periodic_occurrences
-              DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION fixture_pause_publication()''')
+            self.sql(f'''CREATE CONSTRAINT TRIGGER fixture_pause_publication AFTER INSERT ON assozeta_go_periodic_occurrences
+              DEFERRABLE INITIALLY DEFERRED FOR EACH ROW {only} EXECUTE FUNCTION fixture_pause_publication()''')
         else:
-            self.sql('''CREATE TRIGGER fixture_pause_publication BEFORE INSERT ON assozeta_go_periodic_occurrences
-              FOR EACH ROW EXECUTE FUNCTION fixture_pause_publication()''')
+            self.sql(f'''CREATE TRIGGER fixture_pause_publication BEFORE INSERT ON assozeta_go_periodic_occurrences
+              FOR EACH ROW {only} EXECUTE FUNCTION fixture_pause_publication()''')
         gate=self.connect('publication-gate')
         with gate.cursor() as c: c.execute('SELECT pg_advisory_xact_lock(987613)')
         return gate
@@ -140,11 +147,11 @@ class SchedulerRehearsal(Rehearsal):
         self.command('migrate')
         failed=self.command('scheduler',success=False,env_file=path)
         assert 'scheduler process initialized' not in failed.stderr
-        for version,dirty in [(4,True),(3,False),(2,False),(999,False)]:
+        for version,dirty in [(CURRENT_SCHEMA,True),(CURRENT_SCHEMA-1,False),(CURRENT_SCHEMA-2,False),(999,False)]:
             self.sql('UPDATE assozeta_go_schema_migrations SET version=%s,dirty=%s',(version,dirty))
             failed=self.command('scheduler',success=False)
             assert 'scheduler process initialized' not in failed.stderr
-        self.sql('UPDATE assozeta_go_schema_migrations SET version=4,dirty=false')
+        self.sql('UPDATE assozeta_go_schema_migrations SET version=%s,dirty=false',(CURRENT_SCHEMA,))
         self.case('dirty and unknown operational schema refuse readiness')
         self.sql('ALTER TABLE django_celery_beat_periodictask RENAME TO fixture_hidden_beat')
         try:
@@ -187,7 +194,9 @@ class SchedulerRehearsal(Rehearsal):
         time.sleep(.25)
         self.stop(a);self.stop(b)
         assert self.receipt_count(first)==1
-        assert self.sql('SELECT count(*) FROM assozeta_go_jobs')==[(1,)]
+        # Only this source's job: seeded minute crontabs (migration 7) may publish their own jobs meanwhile.
+        assert self.sql('SELECT count(*) FROM assozeta_go_jobs WHERE id IN (SELECT job_id FROM assozeta_go_periodic_occurrences'
+                        ' WHERE periodic_task_id=%s)',(first,))==[(1,)]
         job=self.sql('SELECT job_id FROM assozeta_go_periodic_occurrences WHERE periodic_task_id=%s',(first,))[0][0]
         worker=self.worker()
         self.complete(job)
@@ -202,7 +211,9 @@ class SchedulerRehearsal(Rehearsal):
         self.sql("UPDATE django_celery_beat_periodictask SET enabled=true,last_run_at=clock_timestamp()-interval '2 days' WHERE id=%s",(edited,))
         self.published(edited)
         assert self.sql('SELECT last_update FROM django_celery_beat_periodictasks')==marker
-        assert self.sql('SELECT count(*) FROM django_celery_beat_periodictask')==[(2,)]
+        # Migration 7: the scheduler seeds the release declarations once (assozeta_periodic_seed); no other row appears.
+        assert self.sql('SELECT count(*) FROM django_celery_beat_periodictask WHERE name NOT IN '
+                        '(SELECT name FROM assozeta_periodic_seed)')==[(2,)]
         self.case('persisted markerless edits are reread without static seeding')
         self.handoff('django')
         held=self.source('owner-loss')
@@ -224,8 +235,8 @@ class SchedulerRehearsal(Rehearsal):
         self.stop(process)
         self.case('pending restore and exclusive file lease defer publication')
 
-        gate=self.gate(False)
         held=self.source('term-admitted')
+        gate=self.gate(False,held)
         process=self.scheduler('--source-timeout','5s','--tick-timeout','5s')
         await_condition(self.blocked,'admitted scheduler SQL')
         self.assert_file_lease(True)
@@ -236,8 +247,8 @@ class SchedulerRehearsal(Rehearsal):
         process=self.scheduler();self.published(held);self.stop(process)
         self.case('TERM cancels admitted publication and joins cleanup before exit')
 
-        gate=self.gate(True)
         held=self.source('kill-commit')
+        gate=self.gate(True,held)
         process=self.scheduler('--source-timeout','5s','--tick-timeout','5s')
         await_condition(self.blocked,'deferred commit blocked')
         assert self.sql("SELECT count(*) FROM pg_stat_activity WHERE application_name='assozeta-go-scheduler' AND lower(query)='commit' AND wait_event='advisory'")[0][0]==1
@@ -248,7 +259,8 @@ class SchedulerRehearsal(Rehearsal):
         before=self.receipt_count(held)
         assert before in (0,1)
         self.ungate(gate)
-        process=self.scheduler();self.published(held);time.sleep(.25);self.stop(process)
+        # Without the killed commit, the next holder waits for the dead holder's scheduler lease (30 s default).
+        process=self.scheduler();self.published(held,12 if before else 45);time.sleep(.25);self.stop(process)
         assert self.receipt_count(held)==1
         assert self.sql('SELECT count(*) FROM assozeta_go_jobs WHERE id IN (SELECT job_id FROM assozeta_go_periodic_occurrences WHERE periodic_task_id=%s)',(held,))==[(1,)]
         self.case('KILL during commit reconciles durable outcome on restart without duplicate publication')

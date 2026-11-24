@@ -7,7 +7,7 @@
 //
 // Options: --once (process pending events once, print the counts and exit),
 // --poll-seconds SECONDS (default 2.0; "--name value" or "--name=value") and
-// --env-file PATH. Django's global management options and argparse prefix
+// --env-file PATH and --handoff-heartbeat DURATION. Django's global management options and argparse prefix
 // abbreviations are not accepted.
 package main
 
@@ -39,16 +39,17 @@ import (
 
 func main() { os.Exit(run(os.Args[1:], os.Stdout, os.Stderr)) }
 
-const usage = "usage: relay-go-realtime [--once] [--poll-seconds POLL_SECONDS] [--env-file PATH]"
+const usage = "usage: relay-go-realtime [--once] [--poll-seconds POLL_SECONDS] [--env-file PATH] [--handoff-heartbeat DURATION]"
 
 type options struct {
-	once    bool
-	poll    float64
-	envFile string
+	once      bool
+	heartbeat time.Duration
+	poll      float64
+	envFile   string
 }
 
 func parse(args []string) (options, error) {
-	parsed := options{poll: 2.0}
+	parsed := options{poll: 2.0, heartbeat: time.Second}
 	for index := 0; index < len(args); index++ {
 		name, value, inline := strings.Cut(args[index], "=")
 		switch name {
@@ -58,7 +59,7 @@ func parse(args []string) (options, error) {
 			}
 			parsed.once = true
 			continue
-		case "--poll-seconds", "--env-file":
+		case "--poll-seconds", "--env-file", "--handoff-heartbeat":
 		default:
 			return parsed, fmt.Errorf("unrecognized arguments: %s", args[index])
 		}
@@ -68,6 +69,14 @@ func parse(args []string) (options, error) {
 			}
 			index++
 			value = args[index]
+		}
+		if name == "--handoff-heartbeat" {
+			interval, err := time.ParseDuration(value)
+			if err != nil || interval <= 0 {
+				return parsed, fmt.Errorf("argument --handoff-heartbeat: invalid duration")
+			}
+			parsed.heartbeat = interval
+			continue
 		}
 		if name == "--env-file" {
 			parsed.envFile = value
@@ -103,7 +112,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 		fmt.Fprintln(stderr, "relay-go-realtime: error: "+err.Error())
 		return 2
 	}
-	cfg, err := config.Load(parsed.envFile)
+	cfg, err := config.LoadRelay(parsed.envFile)
 	if err != nil {
 		fmt.Fprintln(stderr, "invalid environment configuration")
 		return 1
@@ -125,10 +134,13 @@ func run(args []string, stdout, stderr io.Writer) int {
 	}
 	defer client.Close()
 	logger := slog.New(slog.NewTextHandler(stderr, nil))
-	relay := service.NewRelayGoRealtime(repository.NewRelayGoRealtimeOutbox(db),
+	store := repository.NewRelayGoRealtimeOutbox(db)
+	relay := service.NewRelayGoRealtime(store,
 		channels.NewLayer(client, nil, nil, logger), logger)
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
+	stopHeartbeat := store.StartHeartbeat(ctx, parsed.heartbeat)
+	defer stopHeartbeat()
 	if parsed.once {
 		counts, err := relay.Once(ctx)
 		if err != nil {

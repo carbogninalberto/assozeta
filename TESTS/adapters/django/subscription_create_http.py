@@ -957,7 +957,8 @@ def celery_specs(effect, fixture, binding):
         if spec != '$welcome':
             specs.append(fill(spec))
             continue
-        queued = fixture['celery_broker'].lrange(harness.CELERY_QUEUE, -1, -1)
+        queued = (fixture['celery_broker'].lrange(harness.CELERY_QUEUE, -1, -1)
+                  or fixture['celery_broker'].lrange(harness.GO_QUEUE, -1, -1))
         contract.require(len(queued) == 1, 'celery.welcome-queued')
         message = loads(base64.b64decode(json.loads(queued[0])['body']))[1].get('message') or ''
         match = re.search(r'password: <b>([A-Za-z0-9]{8})</b>', message)

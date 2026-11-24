@@ -45,6 +45,9 @@ REDIS_PASSWORD = 'private-redis-password-canary'
 BRAND = 'Assozeta Fixture'
 PUBLIC_KEY, SECRET_KEY = 'pk_test_placeholder', 'sk_test_placeholder'
 LOCK_KEY = ':1:renew_memberships_payments_lock'
+# The Go worker starts each kind no faster than Django's rate limit; renewals are the slowest (1/m). A rejected
+# envelope also takes a start slot, so back-to-back renewal cases can wait a full interval plus the worker's poll.
+PACING = 60
 CHANGE, COUPON, RENEW = 'change_type_of_stripe_payments', 'generate_coupon_if_not_exists', 'renew_memberships_payments'
 CODE = re.compile(r'\A[A-HJKMNP-Z2-9]{8}\Z')
 UUID4 = re.compile(r'[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\Z')
@@ -505,8 +508,11 @@ class TasksRehearsal(Rehearsal):
         return oracle
 
     def raw_messages(self, started):
-        raw = [item.decode() for item in reversed(self.broker.client.lrange('celery', 0, -1))]
-        self.broker.client.delete('celery')
+        # A Go job on the handoff ledger (migration 6+) publishes its delayed retry on the Go consumer queue.
+        raw = []
+        for queue in ('celery', 'assozeta-go'):
+            raw += [item.decode() for item in reversed(self.broker.client.lrange(queue, 0, -1))]
+            self.broker.client.delete(queue)
         return raw
 
     @staticmethod
@@ -528,7 +534,7 @@ class TasksRehearsal(Rehearsal):
         self.started, self.since = time.time(), datetime.now(timezone.utc)
         return identifier, before
 
-    def go_matches(self, identifier, label, *, timeout=40, state='completed'):
+    def go_matches(self, identifier, label, *, timeout=40 + PACING, state='completed'):
         await_condition(lambda: self.job(identifier)[0] in ('completed', 'failed'), f'{label}: registered worker durable outcome', timeout)
         assert self.job(identifier)[0] == state, f'{label}: job {self.job(identifier)[0]}'
         oracle = self.oracles[label]
@@ -650,7 +656,7 @@ class TasksRehearsal(Rehearsal):
         finally:
             unlock_row()
         raw = self.raw_messages(self.started)
-        self.check_retry(raw)
+        self.check_retry(raw, job=identifier)
         assert [self.body(m) for m in raw] == [self.body(m) for m in self.oracles['renew-locked']['messages']]
         self.case('renewals: a locked subscription is skipped and the retry is published')
 
@@ -674,7 +680,7 @@ class TasksRehearsal(Rehearsal):
             with blocker.cursor() as cursor:
                 cursor.execute('LOCK TABLE application_payment IN ACCESS EXCLUSIVE MODE')
             try:
-                await_condition(lambda: self.broker.cache.exists(LOCK_KEY), 'Go renewal lock in the Django cache', 20)
+                await_condition(lambda: self.broker.cache.exists(LOCK_KEY), 'Go renewal lock in the Django cache', 20 + PACING)
                 assert django_cache.get('renew_memberships_payments_lock') == 'LOCKED'
                 assert not django_cache.add('renew_memberships_payments_lock', 'LOCKED', 300)
                 assert self.broker.cache.get(LOCK_KEY) == self.held_value, 'Go lock value differs from django_redis'
@@ -686,7 +692,7 @@ class TasksRehearsal(Rehearsal):
         self.case('renewals: a held cache lock skips the run and the Go lock is the Django cache entry')
 
         identifier, before = self.seed_job(RENEW, lambda: f.renew_seed(paid_existing=True))
-        await_condition(lambda: self.job(identifier)[0] == 'failed', 'renewal support e-mail refused', 20)
+        await_condition(lambda: self.job(identifier)[0] == 'failed', 'renewal support e-mail refused', 20 + PACING)
         assert self.sql('SELECT error_code FROM assozeta_go_jobs WHERE id=%s', (identifier,)) == [('task_failed',)]
         assert self.fixture.snapshot() == before and self.broker.client.llen('celery') == 0 and not self.broker.cache.exists(LOCK_KEY)
         self.case('renewals: a run that would send the support e-mail is refused before any effect')
@@ -695,7 +701,7 @@ class TasksRehearsal(Rehearsal):
             for kwargs, code in [({'version': 2}, 'unsupported_version'), ({'payload': '{"unexpected":true}'}, 'task_failed'),
                                  ({'association': str(self.fixture.associations[0])}, 'task_failed')]:
                 identifier, before = self.seed_job(kind, f.change_seed, **kwargs)
-                await_condition(lambda: self.job(identifier)[0] == 'failed', 'invalid envelope rejected')
+                await_condition(lambda: self.job(identifier)[0] == 'failed', 'invalid envelope rejected', 12 + 2 * PACING)
                 assert self.sql('SELECT error_code FROM assozeta_go_jobs WHERE id=%s', (identifier,)) == [(code,)]
                 assert self.fixture.snapshot() == before and self.broker.client.llen('celery') == 0 and not self.stub.take()
         self.stop(process)
@@ -711,16 +717,25 @@ class TasksRehearsal(Rehearsal):
     def body(raw):
         return json.loads(raw)['body']
 
-    def check_retry(self, raw):
-        assert len(raw) == 1
+    def check_retry(self, raw, job=None):
+        assert len(raw) == 1, raw
         message = json.loads(raw[0])
+        lineage = {}
+        if message['properties']['delivery_info']['routing_key'] == 'assozeta-go':
+            # The Go job's retry: its child on the Go consumer queue, under the id it reuses after a crash.
+            from uuid import NAMESPACE_URL, uuid5
+            assert job is not None, 'only the Go job publishes on the Go consumer queue'
+            lineage = {'queue': 'assozeta-go', 'parent_id': str(job), 'root_id': message['headers']['root_id'],
+                       'id': str(uuid5(NAMESPACE_URL, f'assozeta:renew_memberships_payments:retry:{job}'))}
+            assert message['headers']['root_id'], 'the retry keeps the job lineage root'
         assert json.loads(base64.b64decode(message['body'])) == [[], {'attempt': 2, 'max_attempts': 3},
                                                                  {'callbacks': None, 'errbacks': None, 'chain': None, 'chord': None}]
         from TESTS.adapters.django.family_harness import check_celery_message
         eta = message['headers']['eta']
         stamp = message['headers']['assozeta_published_at']
         assert abs(datetime.fromisoformat(eta).timestamp() - stamp - 60) < 1, 'retry countdown'
-        check_celery_message(Contract(), raw[0], {'task': RENEW, 'args': [], 'kwargs': [['attempt', 2], ['max_attempts', 3]], 'eta': eta},
+        check_celery_message(Contract(), raw[0], {'task': RENEW, 'args': [], 'kwargs': [['attempt', 2], ['max_attempts', 3]], 'eta': eta,
+                                                  **lineage},
                              since=stamp - 1, until=stamp + 1, where=':retry')
 
     def close(self):

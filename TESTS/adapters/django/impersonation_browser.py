@@ -30,6 +30,7 @@ from urllib.error import URLError
 ROOT = Path(__file__).resolve().parents[3]
 sys.path[:0] = [str(ROOT / 'BE'), str(ROOT)]
 from TESTS.adapters.django.production_runtime import require_production_python
+from TESTS.adapters.django import browser_retry
 from TESTS.adapters.django.profile_browser import prepare_ui, fingerprints
 from TESTS.adapters.go.payment_category_image import ImageFixture, DATABASE
 from TESTS.adapters.go.age_worker_fixture import initialize_current_schema
@@ -383,18 +384,31 @@ def exercise(proof,work,log,args,report,tool_env):
                     'role':{'owner':'association','admin':'association','staff':'collaborator'}.get(name,'athlete')} for name,user in people.items()},
                     'playwright_module':str(args.playwright_module),'browser_cache_path':tool_env.get('PLAYWRIGHT_BROWSERS_PATH'),'checkpoints':str(checkpoints),'selected_routes':SELECTED,'coexistence_routes':COEXISTENCE}
                 fixture_path=work/('browser-'+version+'.json');fixture_path.write_text(json.dumps(fixture));fixture_path.chmod(0o600)
-                process=subprocess.Popen(['node',str(ROOT/'TESTS/browser/impersonation.mjs')],env={**tool_env,'TESTS_FIXTURE':str(fixture_path),'TESTS_OUTPUT':str(version_out)},stdout=log,stderr=subprocess.STDOUT)
+                process=None
                 try:
-                    until=time.monotonic()+270
-                    while process.poll() is None:
-                        candidate=checkpoints/f'{checked+1}.json'
-                        if candidate.exists() and checkpoint_error is None:
-                            row=json.loads(candidate.read_text());assert row['id']==checked+1
-                            try:handle(row)
-                            except BaseException as error:checkpoint_error=error
-                            write_private_json(checkpoints/f'{row["id"]}.ack.json',{'success':checkpoint_error is None})
-                        assert time.monotonic()<until,'Browser deadline exceeded'
-                        time.sleep(.025)
+                    for attempt in (1,2):
+                      # A child that died of the runner's network before its first checkpoint runs once more
+                      # (browser_retry); content assertions and anything after a checkpoint never do.
+                      attempt_output=browser_retry.attempt_log(work,'impersonation-'+version,attempt)
+                      with attempt_output.open('w') as child:
+                          process=subprocess.Popen(['node',str(ROOT/'TESTS/browser/impersonation.mjs')],env={**tool_env,'TESTS_FIXTURE':str(fixture_path),'TESTS_OUTPUT':str(version_out)},stdout=child,stderr=subprocess.STDOUT)
+                          until=time.monotonic()+270
+                          try:
+                              while process.poll() is None:
+                                  candidate=checkpoints/f'{checked+1}.json'
+                                  if candidate.exists() and checkpoint_error is None:
+                                      row=json.loads(candidate.read_text());assert row['id']==checked+1
+                                      try:handle(row)
+                                      except BaseException as error:checkpoint_error=error
+                                      write_private_json(checkpoints/f'{row["id"]}.ack.json',{'success':checkpoint_error is None})
+                                  assert time.monotonic()<until,'Browser deadline exceeded'
+                                  time.sleep(.025)
+                          except BaseException:
+                              browser_retry.flush(log,attempt_output);raise
+                      if process.returncode!=0 and checked==0 and checkpoint_error is None and browser_retry.retry(log,attempt_output,attempt,checkpoints):
+                          continue
+                      if process.returncode==0 or checked or checkpoint_error is not None:browser_retry.flush(log,attempt_output)
+                      break
                     browser=json.loads((version_out/'results.json').read_text())
                     report['browser_cleanup'][version]={'contexts_closed':browser['contexts_closed'],'browser_closed':browser['browser_closed']}
                     if checkpoint_error is not None:raise checkpoint_error

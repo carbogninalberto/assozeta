@@ -4,6 +4,7 @@ import "context"
 
 // RelayGoRealtimeEvent is one claimed row of public.assozeta_go_realtime_events.
 type RelayGoRealtimeEvent struct {
+	Owned    bool   `db:"-"`
 	ID       int64  `db:"id"`
 	Version  int64  `db:"envelope_version"`
 	Kind     string `db:"kind"`

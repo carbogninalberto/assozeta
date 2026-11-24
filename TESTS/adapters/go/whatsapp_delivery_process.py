@@ -225,6 +225,18 @@ def unseed():
     WhatsAppDelivery._base_manager.all().delete()
 
 
+def forget_effects():
+    """Send intents are committed on their own connection, so the rolled-back oracle run leaves them behind.
+
+    The ownership ledger (migration 8) keeps one effect per delivery; an intent left by the Django run
+    would make the Go run treat the same rows as already attempted."""
+    from django.db import connection
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT to_regclass('public.assozeta_outbox_effects') IS NOT NULL")
+        if cursor.fetchone()[0]:
+            cursor.execute("DELETE FROM public.assozeta_outbox_effects WHERE outbox='whatsapp'")
+
+
 def observed():
     from communications.models import WhatsAppDelivery
     return {str(item['id']): item for item in WhatsAppDelivery._base_manager.values()}
@@ -296,6 +308,7 @@ def run_django(scenario):
         rows, requests = observed(), stub.taken()
         # The running Go server never sees this scenario.
         transaction.set_rollback(True)
+    forget_effects()
     return rows, requests, started, finished
 
 
@@ -322,6 +335,7 @@ def run_go(scenario):
     finally:
         with transaction.atomic():
             unseed()
+            forget_effects()
     return rows, requests, started, finished - timedelta(seconds=1.5)
 
 

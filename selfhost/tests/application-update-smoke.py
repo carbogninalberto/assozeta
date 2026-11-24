@@ -12,6 +12,7 @@ import hashlib
 import io
 import json
 import os
+import re
 import select
 from pathlib import Path
 import shutil
@@ -500,9 +501,19 @@ InstanceConfiguration.objects.update(logo_path=path)
                               'sh', str(bootstrap), '--directory', str(installation), '--version', '2.0.1'])
             assert json.loads((installation / '.updater/provisioning.json').read_text())['schema_version'] == 2
             current_environment = read_env(env_file)
+            # An exclusive target (runtime profiles) moves the generated internal API
+            # references to the runtime-independent active-api alias and adds that host
+            # to ALLOWED_HOSTS; every other legacy value, and any override, is kept.
+            exclusive = 'go' in capture(compose('config', '--profiles'), env=environment).split()
             for key, value in legacy_environment.items():
-                if key != 'ASSOZETA_VERSION':
-                    assert current_environment[key] == value, f'Legacy environment changed: {key}'
+                if key == 'ASSOZETA_VERSION':
+                    continue
+                expected = value
+                if exclusive and key in ('CURRENT_HOST', 'CURRENT_HOST_PUPPETEER') and value == 'http://api:8000':
+                    expected = 'http://active-api:8000'
+                elif exclusive and key == 'ALLOWED_HOSTS' and 'active-api' not in value.split(','):
+                    expected = value + ',active-api'
+                assert current_environment[key] == expected, f'Legacy environment changed: {key}'
             command(compose('exec', '-T', 'api', 'python', 'manage.py', 'shell', '-c', '''
 from django.db import connection
 from django.core.files.storage import default_storage
@@ -636,6 +647,24 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
                     '--filter', f'label=com.docker.compose.service={service}'])
                 assert not running, 'Data service still running: ' + service
 
+        # Ordinary lifecycle and update steps never move execution ownership. A completed
+        # restore of a format 2 backup advances the generation once, past both the live and
+        # the archived database, and keeps the installation's runtime (Phase 6 A5).
+        owner = {'runtime': 'django', 'generation': 1}
+
+        def expect_restore(archive):
+            with tarfile.open(archive) as bundle:
+                names = {member.name: member for member in bundle.getmembers()}
+                member = names.get('./manifest.txt') or names.get('manifest.txt')
+                manifest = dict(line.split('=', 1) for line in bundle.extractfile(member).read().decode().splitlines()
+                                if '=' in line) if member else {}
+            if manifest.get('format') == '2':
+                owner['generation'] = max(owner['generation'], int(manifest['runtime_generation'])) + 1
+
+        def restore(arguments):
+            expect_restore(arguments[-1])
+            command(arguments)
+
         def assert_dual_apis(version):
             for prefix in ('/api', '/api/v1', '/api/v2'):
                 for probe in ('healthz', 'readyz'):
@@ -647,16 +676,23 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
                     if probe == 'healthz':
                         assert value['version'].removeprefix('v') == version, (prefix, value)
             container = capture(compose('ps', '-q', 'api-go'), env=environment)
-            details = json.loads(capture(['docker', 'inspect', container]))[0]
-            assert details['Config']['Image'] == backend_go[int(version.rsplit('.', 1)[1])]
-            assert details['Config']['User'] == '10001:10001'
-            assert details['HostConfig']['ReadonlyRootfs']
+            # A dual-API distribution always runs the Go API next to Django. An
+            # exclusive one (runtime profiles) runs it only in Go mode; the default
+            # Django mode is pinned by TESTS/handoff/test_p2_*.py.
+            exclusive = 'go' in capture(compose('config', '--profiles'), env=environment).split()
+            if container or not exclusive:
+                details = json.loads(capture(['docker', 'inspect', container]))[0]
+                assert details['Config']['Image'] == backend_go[int(version.rsplit('.', 1)[1])]
+                assert details['Config']['User'] == '10001:10001'
+                assert details['HostConfig']['ReadonlyRootfs']
             # Delivery retains existing authoritative Celery ownership.
             for service in ('worker', 'beat'):
                 assert len(capture(compose('ps', '-q', service), env=environment).splitlines()) == 1
             settings = read_env(env_file)
             sql = ['exec', '-T', 'postgres', 'psql', '-U', settings['DBUSER'], '-d', settings['DBNAME'], '-At', '-c']
-            assert capture(compose(*sql, 'SELECT version,dirty FROM public.assozeta_go_schema_migrations'), env=environment) == '4|f'
+            # Every fixture Go image is built from this checkout's backend-go image.
+            schema = re.search(r'^const CurrentVersion = (\d+)$', (ROOT / 'BE_GO/migrations/migrations.go').read_text(), re.M)[1]
+            assert capture(compose(*sql, 'SELECT version,dirty FROM public.assozeta_go_schema_migrations'), env=environment) == f'{schema}|f'
             # The managed relay forwards Go outbox events through Django Channels.
             assert len(capture(compose('ps', '-q', 'realtime-relay'), env=environment).splitlines()) == 1
             assert not capture(compose('ps', '--all', '-q', 'realtime-relay-go'), env=environment)
@@ -670,7 +706,8 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
             else:
                 raise AssertionError('Realtime relay did not deliver the outbox probe')
             realtime_probes.append({'version': version, 'delivered': True})
-            assert capture(compose(*sql, 'SELECT runtime,generation FROM public.assozeta_go_job_ownership'), env=environment) == 'django|1'
+            assert capture(compose(*sql, 'SELECT runtime,generation FROM public.assozeta_go_job_ownership'),
+                           env=environment) == f"{owner['runtime']}|{owner['generation']}", owner
             if go_intent_snapshot is not None:
                 actual = capture(compose(*sql, "SELECT md5(row_to_json(j)::text) FROM public.assozeta_go_jobs j WHERE id='11111111-1111-4111-8111-111111111111'"), env=environment)
                 assert actual == go_intent_snapshot, 'Recovery changed or lost durable Go intent'
@@ -763,6 +800,9 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
 
         manifest_checkpoint('before-installed-upgrade', '1.0.17' if legacy_controller else '2.0.1', old_source=legacy_controller)
         if legacy_controller:
+            # The source runs the current fixture backend, whose Django migrate also prepares the
+            # operational tables (Phase 6 B1); recovery must bring back exactly this state.
+            source_go_history = capture(compose(*database, "SELECT to_regclass('public.assozeta_go_schema_migrations') IS NULL"), env=environment)
             (fixtures / 'releases.json').write_text(json.dumps(catalog))
             print('Testing failed first Go delivery through frozen owner-request controller and rollback to four-image source.', flush=True)
             failed_transition = api('admin/updates', {'release_id': 4, 'tag': 'v2.0.4',
@@ -770,13 +810,23 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
             failed_transition = await_operation(failed_transition['id'])
             assert failed_transition['status'] == 'recovery_required' and failed_transition['failed_stage'] == 'health_check', failed_transition
             target_go = capture(compose('ps', '-q', 'api-go'), env=environment)
-            assert target_go, 'First Go delivery never started its target API'
-            target_go_state = json.loads(capture(['docker', 'inspect', target_go]))[0]
-            assert target_go_state['Config']['Image'] == backend_go[4]
-            assert target_go_state['State']['Running'] and target_go_state['State']['Health']['Status'] == 'healthy'
+            # The injected failure is the target's public /healthz (Caddy 503), so the
+            # transition fails at health_check in either distribution. A dual-API target
+            # (the historical distribution) starts its Go API on first delivery; an
+            # exclusive target upgrades in Django mode and never starts Go. A Go-mode
+            # target whose Go image fails health is a Phase 6 lifecycle obligation
+            # (handoff-inventory.json rollback_source:interrupted-upgrade).
+            if 'go' in capture(compose('config', '--profiles'), env=environment).split():
+                assert not target_go, 'A Django-mode delivery started the Go API'
+            else:
+                assert target_go, 'First Go delivery never started its target API'
+                target_go_state = json.loads(capture(['docker', 'inspect', target_go]))[0]
+                assert target_go_state['Config']['Image'] == backend_go[4]
+                assert target_go_state['State']['Running'] and target_go_state['State']['Health']['Status'] == 'healthy'
             assert_maintenance_web()
             pending = json.loads((installation / '.updater/pending-distribution/transaction.json').read_text())
             assert pending['source_version'] == '1.0.17'
+            expect_restore(pending['backup']['path'])
             command(helper + ['-c', 'import subprocess,sys; subprocess.run(sys.argv[1:],check=True)',
                               cli, 'recover-upgrade', pending['backup']['path'], '--yes'])
             assert read_env(env_file) == original_env
@@ -784,7 +834,7 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
             assert not capture(['docker', 'ps', '-aq', '--filter',
                 f'label=com.docker.compose.project={project}', '--filter', 'label=com.docker.compose.service=api-go'])
             assert capture(compose(*database, 'SELECT value FROM upgrade_sentinel'), env=environment) == 'preserved'
-            assert capture(compose(*database, "SELECT to_regclass('public.assozeta_go_schema_migrations') IS NULL"), env=environment) == 't'
+            assert capture(compose(*database, "SELECT to_regclass('public.assozeta_go_schema_migrations') IS NULL"), env=environment) == source_go_history
             assert_logo()
             manifest_checkpoint('first-go-delivery-recovered', '1.0.17', old_source=True, restored=True)
             await_runner_version('1.0.17')
@@ -835,7 +885,7 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
         go_intent_query = "SELECT md5(row_to_json(j)::text) FROM public.assozeta_go_jobs j WHERE id='11111111-1111-4111-8111-111111111111'"
         go_intent_snapshot = capture(compose(*database, go_intent_query), env=environment)
         # Storage sentinel, without enabling a scheduler or changing the owner.
-        command(compose(*database, "INSERT INTO public.assozeta_go_periodic_occurrences(id,periodic_task_id,source_name,dispatch_sequence,job_id,dispatched_at,ownership_generation,definition_sha256) VALUES ('22222222-2222-4222-8222-222222222222',17,'fixture-retained',9,'11111111-1111-4111-8111-111111111111',clock_timestamp(),7,repeat('a',64))"), env=environment)
+        command(compose(*database, "INSERT INTO public.assozeta_go_periodic_occurrences(id,periodic_task_id,source_name,dispatch_sequence,job_id,task_id,dispatched_at,ownership_generation,definition_sha256) VALUES ('22222222-2222-4222-8222-222222222222',17,'fixture-retained',9,'11111111-1111-4111-8111-111111111111','11111111-1111-4111-8111-111111111111',clock_timestamp(),7,repeat('a',64))"), env=environment)
         go_occurrence_snapshot = capture(compose(*database, "SELECT md5(row_to_json(r)::text) FROM public.assozeta_go_periodic_occurrences r WHERE id='22222222-2222-4222-8222-222222222222'"), env=environment)
         assert api('admin')['config']['oem']['name'] == 'Preserved Club'
         assert_logo()
@@ -920,6 +970,7 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
         assert capture(compose(*database, 'SELECT value FROM upgrade_sentinel'), env=environment) == 'changed-by-failed-migration'
         resume = installation / '.updater/recover-upgrade'
         assert resume.exists()
+        expect_restore(recovery_archive)
         command(helper + ['-c', 'import subprocess,sys; subprocess.run(sys.argv[1:],check=True)', str(resume), recovery_archive, '--yes'])
         assert api('admin')['running_version'].removeprefix('v') == '2.0.2'
         assert_dual_apis('2.0.2')
@@ -942,7 +993,7 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
         assert unhealthy['status'] == 'recovery_required' and unhealthy['failed_stage'] == 'health_check', unhealthy
         assert_maintenance_web()
         transaction = json.loads((installation / '.updater/pending-distribution/transaction.json').read_text())
-        command(recover + [transaction['backup']['path']])
+        restore(recover + [transaction['backup']['path']])
         assert api('admin')['running_version'].removeprefix('v') == '2.0.2'
         assert_dual_apis('2.0.2')
         assert read_env(env_file) == upgraded_env
@@ -971,7 +1022,7 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
         while capture(running_migrations) and time.monotonic() < deadline:
             time.sleep(1)
         assert not capture(running_migrations)
-        command(recover + [transaction['backup']['path']])
+        restore(recover + [transaction['backup']['path']])
         assert api('admin')['running_version'].removeprefix('v') == '2.0.2'
         assert_dual_apis('2.0.2')
         assert runner_status()['can_update']
@@ -979,7 +1030,10 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
         assert_logo()
         manifest_checkpoint('interrupted-migration-recovered', '2.0.2', restored=True)
 
-        print('Testing abrupt runner interruption while the packaged Go migration waits in PostgreSQL.', flush=True)
+        # Phase 6 B1: in Django mode the schema one-shot is Django's migrate, which also prepares the
+        # operational tables; the Go migrator no longer runs here. The interrupted helper is that one-shot,
+        # held on its own migration history table.
+        print('Testing abrupt runner interruption while the packaged schema migration waits in PostgreSQL.', flush=True)
         (fixtures / 'go-launch-ready').unlink(missing_ok=True)
         (fixtures / 'hold-go-launch').touch()
         interrupted_go = api('admin/updates', {'release_id': 4, 'tag': 'v2.0.4', 'request_id': str(uuid4())})['operation']
@@ -993,25 +1047,24 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
             go_blocker = subprocess.Popen(compose('exec', '-T', 'postgres', 'psql', '-X', '-qAt', '-v', 'ON_ERROR_STOP=1',
                 '-U', original_env['DBUSER'], '-d', original_env['DBNAME']), env=environment,
                 stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=output, text=True)
-        go_blocker.stdin.write("BEGIN; LOCK TABLE public.assozeta_go_schema_migrations IN ACCESS EXCLUSIVE MODE; SELECT 'go-schema-locked';\n")
+        go_blocker.stdin.write("BEGIN; LOCK TABLE public.django_migrations IN ACCESS EXCLUSIVE MODE; SELECT 'go-schema-locked';\n")
         go_blocker.stdin.flush()
         assert select.select([go_blocker.stdout], [], [], 10)[0], 'Fixture PostgreSQL lock not acquired'
         assert go_blocker.stdout.readline().strip() == 'go-schema-locked'
         (fixtures / 'hold-go-launch').unlink()
         running_go = ['docker', 'ps', '-q', '--filter', f'label=com.docker.compose.project={project}',
-                      '--filter', 'label=com.docker.compose.service=migrate-go', '--filter', 'label=com.docker.compose.oneoff=True']
+                      '--filter', 'label=com.docker.compose.service=migrate', '--filter', 'label=com.docker.compose.oneoff=True']
         deadline = time.monotonic() + 10
         while time.monotonic() < deadline:
             go_container = capture(running_go)
-            waiting = capture(compose(*database, "SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE wait_event_type='Lock' AND query ILIKE '%assozeta_go_schema_migrations%')"), env=environment)
+            waiting = capture(compose(*database, "SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE wait_event_type='Lock' AND query ILIKE '%django_migrations%')"), env=environment)
             if go_container and waiting == 't':
                 break
             time.sleep(0.1)
         else:
-            raise AssertionError('Packaged Go migration never blocked on actual PostgreSQL history')
+            raise AssertionError('Packaged schema migration never blocked on actual PostgreSQL history')
         details = json.loads(capture(['docker', 'inspect', go_container]))[0]
-        assert details['Config']['Image'] == backend_go[4] and details['Config']['Entrypoint'] == ['/app/migrate']
-        assert details['Config']['User'] == '10001:10001' and details['HostConfig']['ReadonlyRootfs']
+        assert details['Config']['Image'] == backend[4]
         go_waiter = subprocess.Popen(['docker', 'wait', go_container], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         runner_container = capture(['docker', 'ps', '-q', '--filter', f'label=com.docker.compose.project={project}-updater'])
         command(['docker', 'kill', '--signal', 'KILL', runner_container])
@@ -1045,7 +1098,7 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
         command(['docker', 'start', runner_container])
         await_runner_version('2.0.2')
         assert assert_interrupted_gate(interrupted_go)['failed_stage'] == 'migrating'
-        command(recover + [transaction['backup']['path']])
+        restore(recover + [transaction['backup']['path']])
         assert_dual_apis('2.0.2')
         assert next(item for item in runner_status()['history'] if item['id'] == interrupted_go['id'])['status'] == 'recovered'
         assert_logo()
@@ -1120,7 +1173,8 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
             for filename in ('compose.updater.yml', 'compose.yml'):
                 with log.open('a') as output:
                     project_args = ['--project-name', f'{project}-updater'] if filename == 'compose.updater.yml' else []
-                    subprocess.run(['docker', 'compose', '--env-file', str(env_file), '-f', str(installation / filename), *project_args, 'down', '--timeout', '10', '--volumes', '--remove-orphans'],
+                    # Every profile: an exclusive release keeps its runtime services in profiles.
+                    subprocess.run(['docker', 'compose', '--env-file', str(env_file), '-f', str(installation / filename), *project_args, '--profile', '*', 'down', '--timeout', '10', '--volumes', '--remove-orphans'],
                                    env=environment, stdout=output, stderr=output)
             subprocess.run(['docker', 'volume', 'rm', f'{project}_updater_api', f'{project}_updater_status'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         for tag in reversed(image_tags):

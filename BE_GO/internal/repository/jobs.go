@@ -27,7 +27,10 @@ type DurableJobs interface {
 	CancelPending(context.Context, uuid.UUID, uuid.UUID) error
 }
 
-type Jobs struct{ db *sqlx.DB }
+type Jobs struct {
+	db         *sqlx.DB
+	consumerID string
+}
 
 type JobExecutionStore interface {
 	Claim(context.Context, []string, string, int, time.Duration) ([]domain.Job, error)
@@ -57,9 +60,36 @@ func (r *Jobs) Enqueue(ctx context.Context, tx *sqlx.Tx, in domain.JobIntent) (d
 	if !in.AvailableAt.IsZero() {
 		available = in.AvailableAt
 	}
-	err := tx.GetContext(ctx, &job, `INSERT INTO public.assozeta_go_jobs (id,association_id,kind,version,idempotency_key,payload,max_attempts,available_at)
+	handoff, err := handoffInstalled(ctx, tx)
+	if err != nil {
+		return job, err
+	}
+	if handoff {
+		var runtime string
+		err = tx.GetContext(ctx, &runtime, `SELECT runtime FROM public.assozeta_go_job_ownership WHERE singleton=1 FOR SHARE`)
+		if errors.Is(err, sql.ErrNoRows) || (err == nil && runtime != "go") {
+			return job, domain.ErrHandoffAdmissionRejected
+		}
+		if err != nil {
+			return job, err
+		}
+	}
+	err = tx.GetContext(ctx, &job, `INSERT INTO public.assozeta_go_jobs (id,association_id,kind,version,idempotency_key,payload,max_attempts,available_at)
  VALUES ($1,$2,$3,$4,$5,$6::jsonb,$7,COALESCE($8::timestamptz,clock_timestamp()))
  ON CONFLICT (association_id,kind,idempotency_key) DO NOTHING RETURNING `+jobColumns, in.ID, in.AssociationID, in.Kind, in.Version, in.Key, string(in.Payload), in.MaxAttempts, available)
+	if err == nil && handoff {
+		var outcome string
+		err = tx.GetContext(ctx, &outcome, `SELECT outcome FROM public.assozeta_handoff_admit(
+ 'go',$1,$2,'sql',NULL,NULL,$3,$4,NULL)`, job.ID.String(), job.Kind, job.CreatedAt, job.AvailableAt)
+		if err != nil {
+			return job, err
+		}
+		if outcome != "accepted" && outcome != "held" {
+			return job, domain.ErrJobConflict
+		}
+		_, err = tx.ExecContext(ctx, `UPDATE public.assozeta_handoff_work SET association_id=$2 WHERE task_id=$1`,
+			job.ID.String(), job.AssociationID)
+	}
 	if !errors.Is(err, sql.ErrNoRows) {
 		return job, err
 	}
@@ -84,7 +114,33 @@ func (r *Jobs) Claim(ctx context.Context, kinds []string, owner string, limit in
 	}
 	jobs := []domain.Job{}
 	err := r.withOwnedTransaction(ctx, func(tx *sqlx.Tx) error {
-		return tx.SelectContext(ctx, &jobs, claimJobsSQL, kinds, limit, owner, uuid.New(), lease.Milliseconds())
+		installed, err := handoffInstalled(ctx, tx)
+		if err != nil {
+			return err
+		}
+		query := claimJobsSQL
+		if installed {
+			query = handoffClaimJobsSQL
+		}
+		var changed []domain.Job
+		if err := tx.SelectContext(ctx, &changed, query, kinds, limit, owner, uuid.New(), lease.Milliseconds()); err != nil {
+			return err
+		}
+		for _, job := range changed {
+			if installed {
+				consumer := r.consumerID
+				if consumer == "" {
+					consumer = owner
+				}
+				if err := registerDurableClaim(ctx, tx, &job, consumer); err != nil {
+					return err
+				}
+			}
+			if job.State == "running" {
+				jobs = append(jobs, job)
+			}
+		}
+		return nil
 	})
 	if err != nil {
 		return nil, err
@@ -121,7 +177,7 @@ func (r *Jobs) CompleteInTx(ctx context.Context, tx *sqlx.Tx, id, token uuid.UUI
 	return completeJob(ctx, tx, id, token, result)
 }
 
-func completeJob(ctx context.Context, executor sqlx.ExecerContext, id, token uuid.UUID, result json.RawMessage) error {
+func completeJob(ctx context.Context, executor *sqlx.Tx, id, token uuid.UUID, result json.RawMessage) error {
 	var payload any
 	if result != nil {
 		if !validJobJSON(result) {
@@ -131,19 +187,33 @@ func completeJob(ctx context.Context, executor sqlx.ExecerContext, id, token uui
 	}
 	changed, err := executor.ExecContext(ctx, goJobOwnershipCTE+`UPDATE public.assozeta_go_jobs j SET state='completed',finished_at=clock_timestamp(),result=$3::jsonb,error_code='',`+clearJobLease+`
  FROM ownership o WHERE id=$1 AND lease_token=$2 AND state='running' AND lease_until>clock_timestamp() AND j.ownership_generation=o.generation`, id, token, payload)
-	return jobLeaseResult(changed, err)
+	if err = jobLeaseResult(changed, err); err != nil {
+		return err
+	}
+	return finishDurableAttempt(ctx, executor, token, "completed")
 }
 func (r *Jobs) Fail(ctx context.Context, id, token uuid.UUID, code string, retry bool, delay time.Duration) error {
 	if !jobKind.MatchString(code) || delay < 0 || delay > 30*24*time.Hour {
 		return domain.ErrJobInvalid
 	}
 	return r.withOwnedTransaction(ctx, func(tx *sqlx.Tx) error {
-		changed, err := tx.ExecContext(ctx, goJobOwnershipCTE+`UPDATE public.assozeta_go_jobs j SET
+		var state string
+		err := tx.GetContext(ctx, &state, goJobOwnershipCTE+`UPDATE public.assozeta_go_jobs j SET
  state=CASE WHEN $4 AND attempts<max_attempts THEN 'pending' ELSE 'failed' END,
  finished_at=CASE WHEN $4 AND attempts<max_attempts THEN NULL ELSE clock_timestamp() END,
  available_at=CASE WHEN $4 AND attempts<max_attempts THEN clock_timestamp()+make_interval(secs=>$5::double precision/1000) ELSE available_at END,
- error_code=$3,`+clearJobLease+` FROM ownership o WHERE id=$1 AND lease_token=$2 AND state='running' AND lease_until>clock_timestamp() AND j.ownership_generation=o.generation`, id, token, code, retry, delay.Milliseconds())
-		return jobLeaseResult(changed, err)
+ error_code=$3,`+clearJobLease+` FROM ownership o WHERE id=$1 AND lease_token=$2 AND state='running' AND lease_until>clock_timestamp() AND j.ownership_generation=o.generation RETURNING j.state`, id, token, code, retry, delay.Milliseconds())
+		if errors.Is(err, sql.ErrNoRows) {
+			return domain.ErrJobLeaseLost
+		}
+		if err != nil {
+			return err
+		}
+		outcome := "failed"
+		if state == "pending" {
+			outcome = "retried"
+		}
+		return finishDurableAttempt(ctx, tx, token, outcome)
 	})
 }
 func jobLeaseResult(result sql.Result, err error) error {
@@ -182,7 +252,13 @@ func (r *Jobs) CancelPending(ctx context.Context, association, id uuid.UUID) err
 			return err
 		}
 		if n == 1 {
-			return nil
+			installed, err := handoffInstalled(ctx, tx)
+			if err != nil || !installed {
+				return err
+			}
+			_, err = tx.ExecContext(ctx, `UPDATE public.assozeta_handoff_work SET state='cancelled',
+ updated_at=clock_timestamp() WHERE task_id=$1 AND transport='sql' AND state IN ('pending','held')`, id.String())
+			return err
 		}
 		// The private transaction retains its pool connection. Read the fallback
 		// on that same connection, including with a one-connection pool.
@@ -218,21 +294,32 @@ func (r *Jobs) withOwnedTransaction(ctx context.Context, action func(*sqlx.Tx) e
 // still check/extend ownership against wall-clock time after acquiring row locks.
 // The correlated LIMIT requires ownership to be evaluated before either branch
 // locks candidate jobs; an uncorrelated CROSS JOIN alone permits join reordering.
-const claimJobsSQL = goJobOwnershipCTE + `, kinds AS (SELECT DISTINCT unnest($1::text[]) AS kind),
- due AS MATERIALIZED (
+var claimJobsSQL = claimQuery(goJobOwnershipCTE, "")
+var handoffClaimJobsSQL = claimQuery(`WITH ownership AS MATERIALIZED (
+ SELECT generation FROM public.assozeta_go_job_ownership
+ WHERE singleton=1 AND runtime='go' AND admission='open' FOR SHARE
+)`, `AND NOT EXISTS (
+ SELECT 1 FROM public.assozeta_handoff_work w WHERE w.task_id=j.id::text
+ AND (w.owner_runtime IS DISTINCT FROM 'go' OR w.owner_generation IS DISTINCT FROM ownership.generation
+      OR w.task_name <> j.kind OR w.transport <> 'sql' OR w.state <> j.state)
+)`)
+
+func claimQuery(ownership, eligible string) string {
+	return ownership + `, kinds AS (SELECT DISTINCT unnest($1::text[]) AS kind),
+ due_candidates AS MATERIALIZED (
  SELECT item.id,item.available_at AS due_at FROM ownership CROSS JOIN kinds k CROSS JOIN LATERAL (
-   SELECT id,available_at FROM public.assozeta_go_jobs WHERE kind=k.kind
+   SELECT id,available_at FROM public.assozeta_go_jobs j WHERE kind=k.kind
    AND state='pending' AND available_at<=statement_timestamp()
-   ORDER BY available_at,id LIMIT CASE WHEN ownership.generation>0 THEN $2 ELSE 0 END FOR UPDATE SKIP LOCKED
+   ` + eligible + ` ORDER BY available_at,id LIMIT CASE WHEN ownership.generation>0 THEN $2 ELSE 0 END FOR UPDATE SKIP LOCKED
  ) item
  UNION ALL
  SELECT item.id,item.lease_until AS due_at FROM ownership CROSS JOIN kinds k CROSS JOIN LATERAL (
-   SELECT id,lease_until FROM public.assozeta_go_jobs WHERE kind=k.kind
+   SELECT id,lease_until FROM public.assozeta_go_jobs j WHERE kind=k.kind
    AND state='running' AND lease_until<=statement_timestamp()
-   ORDER BY lease_until,id LIMIT CASE WHEN ownership.generation>0 THEN $2 ELSE 0 END FOR UPDATE SKIP LOCKED
+   ` + eligible + ` ORDER BY lease_until,id LIMIT CASE WHEN ownership.generation>0 THEN $2 ELSE 0 END FOR UPDATE SKIP LOCKED
  ) item
  ), candidates AS (
- SELECT id FROM due ORDER BY due_at,id LIMIT $2
+ SELECT id FROM due_candidates ORDER BY due_at,id LIMIT $2
  ), updated AS (
  UPDATE public.assozeta_go_jobs j SET
  state=CASE WHEN attempts>=max_attempts THEN 'failed' ELSE 'running' END,
@@ -244,4 +331,5 @@ const claimJobsSQL = goJobOwnershipCTE + `, kinds AS (SELECT DISTINCT unnest($1:
  finished_at=CASE WHEN attempts>=max_attempts THEN clock_timestamp() ELSE NULL END,
  error_code=CASE WHEN attempts>=max_attempts THEN 'lease_expired' ELSE error_code END
  FROM candidates c CROSS JOIN ownership o WHERE j.id=c.id RETURNING j.*)
- SELECT ` + jobColumns + ` FROM updated WHERE state='running'`
+ SELECT ` + jobColumns + ` FROM updated`
+}

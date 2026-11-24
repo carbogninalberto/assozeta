@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/handoff"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/documentkey"
 	"github.com/google/uuid"
 )
@@ -65,6 +66,7 @@ func (s *ExportCleanup) Run(ctx context.Context, job domain.Job) error {
 			}
 			if done {
 				deleted++
+				handoff.Barrier("batch:committed", job.Kind+"-"+strconv.Itoa(deleted))
 			}
 		}
 		// list(remaining_exports[max_count:]) re-queries after the age pass.
@@ -79,6 +81,7 @@ func (s *ExportCleanup) Run(ctx context.Context, job domain.Job) error {
 			}
 			if done {
 				deleted++
+				handoff.Barrier("batch:committed", job.Kind+"-"+strconv.Itoa(deleted))
 			}
 		}
 	}

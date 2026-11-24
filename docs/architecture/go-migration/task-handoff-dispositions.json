@@ -1,0 +1,1521 @@
+{
+  "format": 1,
+  "handback_sites": {
+    "BE_GO/internal/celeryworker/worker.go:execute#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-handoff-input"
+      ]
+    },
+    "BE_GO/internal/celeryworker/prefork.go:RunChild#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": []
+    },
+    "BE_GO/cmd/celery-consumer/probe_tasks.go:probeTask#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-probe_tasks-38"
+      ]
+    },
+    "BE_GO/cmd/celery-consumer/probe_tasks.go:probeTask#2": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-probe_tasks-42"
+      ]
+    },
+    "BE_GO/cmd/celery-consumer/probe_tasks.go:probeTask#3": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-probe_tasks-47"
+      ]
+    },
+    "BE_GO/internal/service/consumer_email.go:planEmailText#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": []
+    },
+    "BE_GO/internal/service/consumer_email.go:consumerEmailBind#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_send_email_text__go",
+      "sites": [
+        "consumer-plan-consumer_email-148"
+      ]
+    },
+    "BE_GO/internal/service/consumer_email.go:consumerEmailBind#2": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_send_email_text__go",
+      "sites": [
+        "consumer-plan-consumer_email-156"
+      ]
+    },
+    "BE_GO/internal/service/consumer_email.go:consumerEmailBind#3": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_send_email_text__go",
+      "sites": [
+        "consumer-plan-consumer_email-162"
+      ]
+    },
+    "BE_GO/internal/service/consumer_email.go:planConfigSend#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_send_email_text__go",
+      "sites": [
+        "consumer-plan-consumer_email-262"
+      ]
+    },
+    "BE_GO/internal/service/consumer_email.go:planConfigSend#2": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_send_email_text__go",
+      "sites": [
+        "consumer-plan-consumer_email-265"
+      ]
+    },
+    "BE_GO/internal/service/consumer_email.go:planConfigSend#3": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_send_email_text__go",
+      "sites": [
+        "consumer-plan-consumer_email-268"
+      ]
+    },
+    "BE_GO/internal/service/consumer_email.go:planConfigSend#4": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_send_email_text__go",
+      "sites": [
+        "consumer-plan-consumer_email-283"
+      ]
+    },
+    "BE_GO/internal/service/consumer_email.go:planForward#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_send_email_text__go",
+      "sites": [
+        "consumer-plan-consumer_email-387"
+      ]
+    },
+    "BE_GO/internal/service/consumer_email.go:planEmailHTML#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_send_email_html__go",
+      "sites": [
+        "consumer-plan-consumer_email-434"
+      ]
+    },
+    "BE_GO/internal/service/consumer_email.go:planEmailHTML#2": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_send_email_html__go",
+      "sites": [
+        "consumer-plan-consumer_email-443"
+      ]
+    },
+    "BE_GO/internal/service/consumer_email.go:planEmailHTML#3": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_send_email_html__go",
+      "sites": [
+        "consumer-plan-consumer_email-447"
+      ]
+    },
+    "BE_GO/internal/service/consumer_email.go:planEmailTemplate#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_send_email_template__go",
+      "sites": [
+        "consumer-plan-consumer_email-547"
+      ]
+    },
+    "BE_GO/internal/service/consumer_email.go:planEmailTemplate#2": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_send_email_template__go",
+      "sites": [
+        "consumer-plan-consumer_email-553"
+      ]
+    },
+    "BE_GO/internal/service/consumer_email.go:planEmailTemplate#3": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_send_email_template__go",
+      "sites": [
+        "consumer-plan-consumer_email-556"
+      ]
+    },
+    "BE_GO/internal/service/consumer_email.go:planEmailTemplate#4": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_send_email_template__go",
+      "sites": [
+        "consumer-plan-consumer_email-563"
+      ]
+    },
+    "BE_GO/internal/service/consumer_email.go:planEmailTemplate#5": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_send_email_template__go",
+      "sites": [
+        "consumer-plan-consumer_email-578"
+      ]
+    },
+    "BE_GO/internal/service/consumer_email.go:planEmailTemplate#6": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_send_email_template__go",
+      "sites": [
+        "consumer-plan-consumer_email-582"
+      ]
+    },
+    "BE_GO/internal/service/consumer_email.go:planEmailTemplate#7": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_send_email_template__go",
+      "sites": [
+        "consumer-plan-consumer_email-587"
+      ]
+    },
+    "BE_GO/internal/service/consumer_email.go:planEmailTemplate#8": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_send_email_template__go",
+      "sites": [
+        "consumer-plan-consumer_email-596"
+      ]
+    },
+    "BE_GO/internal/service/send_mail_async.go:bind#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_core_tasks_send_mail_async__go",
+      "sites": [
+        "consumer-plan-send_mail_async-146"
+      ]
+    },
+    "BE_GO/internal/service/send_mail_async.go:bind#2": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_core_tasks_send_mail_async__go",
+      "sites": [
+        "consumer-plan-send_mail_async-155"
+      ]
+    },
+    "BE_GO/internal/service/send_mail_async.go:bind#3": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_core_tasks_send_mail_async__go",
+      "sites": [
+        "consumer-plan-send_mail_async-158"
+      ]
+    },
+    "BE_GO/internal/service/send_mail_async.go:bind#4": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_core_tasks_send_mail_async__go",
+      "sites": [
+        "consumer-plan-send_mail_async-164"
+      ]
+    },
+    "BE_GO/internal/service/send_mail_async.go:plan#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_core_tasks_send_mail_async__go",
+      "sites": [
+        "consumer-plan-send_mail_async-187"
+      ]
+    },
+    "BE_GO/internal/service/send_mail_async.go:plan#2": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_core_tasks_send_mail_async__go",
+      "sites": [
+        "consumer-plan-send_mail_async-194"
+      ]
+    },
+    "BE_GO/internal/service/send_mail_async.go:plan#3": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_core_tasks_send_mail_async__go",
+      "sites": [
+        "consumer-plan-send_mail_async-197"
+      ]
+    },
+    "BE_GO/internal/service/send_mail_async.go:plan#4": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_core_tasks_send_mail_async__go",
+      "sites": [
+        "consumer-plan-send_mail_async-201"
+      ]
+    },
+    "BE_GO/internal/service/send_mail_async.go:plan#5": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_core_tasks_send_mail_async__go",
+      "sites": [
+        "consumer-plan-send_mail_async-208"
+      ]
+    },
+    "BE_GO/internal/service/send_mail_async.go:plan#6": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_core_tasks_send_mail_async__go",
+      "sites": [
+        "consumer-plan-send_mail_async-212"
+      ]
+    },
+    "BE_GO/internal/service/send_mail_async.go:plan#7": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_core_tasks_send_mail_async__go",
+      "sites": [
+        "consumer-plan-send_mail_async-216"
+      ]
+    },
+    "BE_GO/internal/service/send_mail_async.go:plan#8": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_core_tasks_send_mail_async__go",
+      "sites": [
+        "consumer-plan-send_mail_async-221"
+      ]
+    },
+    "BE_GO/internal/service/send_mail_async.go:plan#9": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_core_tasks_send_mail_async__go",
+      "sites": [
+        "consumer-plan-send_mail_async-232"
+      ]
+    },
+    "BE_GO/internal/service/send_mail_async.go:plan#10": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_core_tasks_send_mail_async__go",
+      "sites": [
+        "consumer-plan-send_mail_async-237"
+      ]
+    },
+    "BE_GO/internal/service/send_mail_async.go:plan#11": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_core_tasks_send_mail_async__go",
+      "sites": [
+        "consumer-plan-send_mail_async-254"
+      ]
+    },
+    "BE_GO/internal/service/send_mail_async.go:plan#12": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_core_tasks_send_mail_async__go",
+      "sites": []
+    },
+    "BE_GO/internal/service/send_mail_async.go:plan#13": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_core_tasks_send_mail_async__go",
+      "sites": [
+        "consumer-plan-send_mail_async-283"
+      ]
+    },
+    "BE_GO/internal/service/send_mail_async.go:plan#14": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_core_tasks_send_mail_async__go",
+      "sites": [
+        "consumer-plan-send_mail_async-291"
+      ]
+    },
+    "BE_GO/internal/service/send_mail_async.go:planSource#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_core_tasks_send_mail_async__go",
+      "sites": [
+        "consumer-plan-send_mail_async-321"
+      ]
+    },
+    "BE_GO/internal/service/send_mail_async.go:planSource#2": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_core_tasks_send_mail_async__go",
+      "sites": [
+        "consumer-plan-send_mail_async-326"
+      ]
+    },
+    "BE_GO/internal/service/send_mail_async.go:planSource#3": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_core_tasks_send_mail_async__go",
+      "sites": [
+        "consumer-plan-send_mail_async-343"
+      ]
+    },
+    "BE_GO/internal/service/send_mail_async.go:planSource#4": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_core_tasks_send_mail_async__go",
+      "sites": [
+        "consumer-plan-send_mail_async-351"
+      ]
+    },
+    "BE_GO/internal/service/send_mail_async.go:planSource#5": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_core_tasks_send_mail_async__go",
+      "sites": [
+        "consumer-plan-send_mail_async-357"
+      ]
+    },
+    "BE_GO/internal/service/send_mail_async.go:planSource#6": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_core_tasks_send_mail_async__go",
+      "sites": [
+        "consumer-plan-send_mail_async-365"
+      ]
+    },
+    "BE_GO/internal/service/send_mail_async.go:planSource#7": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_core_tasks_send_mail_async__go",
+      "sites": [
+        "consumer-plan-send_mail_async-375"
+      ]
+    },
+    "BE_GO/internal/service/send_mail_async.go:planSource#8": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Email.test_core_tasks_send_mail_async__go",
+      "sites": [
+        "consumer-plan-send_mail_async-378"
+      ]
+    },
+    "BE_GO/internal/service/workflow_tasks.go:finish#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-workflow_tasks-96"
+      ]
+    },
+    "BE_GO/internal/service/workflow_tasks.go:workflowTasksBind#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-workflow_tasks-151"
+      ]
+    },
+    "BE_GO/internal/service/workflow_tasks.go:workflowTasksBind#2": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-workflow_tasks-166"
+      ]
+    },
+    "BE_GO/internal/service/workflow_tasks.go:workflowTasksBind#3": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-workflow_tasks-172"
+      ]
+    },
+    "BE_GO/internal/service/workflow_tasks.go:workflowTasksUUID#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-workflow_tasks-195"
+      ]
+    },
+    "BE_GO/internal/service/workflow_tasks.go:workflowTasksDecodeTree#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-workflow_tasks-275"
+      ]
+    },
+    "BE_GO/internal/service/workflow_tasks.go:workflowTasksInt#1": {
+      "disposition": "unreachable",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": []
+    },
+    "BE_GO/internal/service/workflow_tasks.go:workflowTasksInt#2": {
+      "disposition": "unreachable",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-workflow_tasks-319"
+      ]
+    },
+    "BE_GO/internal/service/workflow_tasks.go:workflowTasksInt#3": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-workflow_tasks-324"
+      ]
+    },
+    "BE_GO/internal/service/workflow_tasks.go:workflowTasksInt#4": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-workflow_tasks-328"
+      ]
+    },
+    "BE_GO/internal/service/workflow_tasks.go:workflowTasksInt#5": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-workflow_tasks-332"
+      ]
+    },
+    "BE_GO/internal/service/workflow_tasks.go:workflowTasksIdx#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-workflow_tasks-342"
+      ]
+    },
+    "BE_GO/internal/service/workflow_tasks.go:workflowTasksIdx#2": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-workflow_tasks-349"
+      ]
+    },
+    "BE_GO/internal/service/workflow_tasks.go:trigger#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-workflow_tasks-370"
+      ]
+    },
+    "BE_GO/internal/service/workflow_tasks.go:trigger#2": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-workflow_tasks-372"
+      ]
+    },
+    "BE_GO/internal/service/workflow_tasks.go:cron#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-workflow_tasks-447"
+      ]
+    },
+    "BE_GO/internal/service/workflow_tasks.go:block#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-workflow_tasks-534"
+      ]
+    },
+    "BE_GO/internal/service/workflow_tasks.go:block#2": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-workflow_tasks-537"
+      ]
+    },
+    "BE_GO/internal/service/workflow_tasks.go:email#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-workflow_tasks-621"
+      ]
+    },
+    "BE_GO/internal/service/workflow_tasks.go:wait#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-workflow_tasks-719"
+      ]
+    },
+    "BE_GO/internal/service/consumer_export_invoices_zip.go:consumerPythonUUID#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-consumer_export_invoices_zip-93"
+      ]
+    },
+    "BE_GO/internal/service/consumer_export_invoices_zip.go:consumerPythonUUID#2": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-consumer_export_invoices_zip-98"
+      ]
+    },
+    "BE_GO/internal/service/consumer_export_invoices_zip.go:plan#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-consumer_export_invoices_zip-127"
+      ]
+    },
+    "BE_GO/internal/service/consumer_export_invoices_zip.go:plan#2": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-consumer_export_invoices_zip-131"
+      ]
+    },
+    "BE_GO/internal/service/consumer_export_invoices_zip.go:plan#3": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-consumer_export_invoices_zip-148"
+      ]
+    },
+    "BE_GO/internal/service/consumer_save_to_storage.go:plan#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-consumer_save_to_storage-108"
+      ]
+    },
+    "BE_GO/internal/service/consumer_save_to_storage.go:plan#2": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-consumer_save_to_storage-112"
+      ]
+    },
+    "BE_GO/internal/service/consumer_save_to_storage.go:plan#3": {
+      "disposition": "unreachable",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-consumer_save_to_storage-119"
+      ]
+    },
+    "BE_GO/internal/service/consumer_save_to_storage.go:plan#4": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-consumer_save_to_storage-129"
+      ]
+    },
+    "BE_GO/internal/service/consumer_save_to_storage.go:plan#5": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-consumer_save_to_storage-133"
+      ]
+    },
+    "BE_GO/internal/service/consumer_save_to_storage.go:plan#6": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-consumer_save_to_storage-137"
+      ]
+    },
+    "BE_GO/internal/service/consumer_save_to_storage.go:plan#7": {
+      "disposition": "unreachable",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": []
+    },
+    "BE_GO/internal/service/consumer_print_tasks.go:consumerPrintBind#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-consumer_print_tasks-94"
+      ]
+    },
+    "BE_GO/internal/service/consumer_print_tasks.go:consumerPrintBind#2": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-consumer_print_tasks-102"
+      ]
+    },
+    "BE_GO/internal/service/consumer_print_tasks.go:consumerPrintBind#3": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-consumer_print_tasks-108"
+      ]
+    },
+    "BE_GO/internal/service/consumer_print_tasks.go:consumerPrintAuthorization#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-consumer_print_tasks-165"
+      ]
+    },
+    "BE_GO/internal/service/consumer_print_tasks.go:consumerPrintAuthorization#2": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-consumer_print_tasks-175"
+      ]
+    },
+    "BE_GO/internal/service/consumer_print_tasks.go:plan#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-consumer_print_tasks-187"
+      ]
+    },
+    "BE_GO/internal/service/consumer_print_tasks.go:plan#2": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-consumer_print_tasks-197"
+      ]
+    },
+    "BE_GO/internal/service/consumer_export_association.go:plan_#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-consumer_export_association-157"
+      ]
+    },
+    "BE_GO/internal/service/consumer_export_association.go:plan_#2": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-consumer_export_association-161"
+      ]
+    },
+    "BE_GO/internal/service/consumer_export_association.go:plan_#3": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-consumer_export_association-164"
+      ]
+    },
+    "BE_GO/internal/service/consumer_export_association.go:plan_#4": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-consumer_export_association-172"
+      ]
+    },
+    "BE_GO/internal/service/consumer_export_association.go:plan_#5": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-consumer_export_association-180"
+      ]
+    },
+    "BE_GO/internal/service/consumer_export_association.go:plan_#6": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-consumer_export_association-183"
+      ]
+    },
+    "BE_GO/internal/service/consumer_export_association.go:plan_#7": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-consumer_export_association-189"
+      ]
+    },
+    "BE_GO/internal/service/consumer_export_association.go:credentialPasswords#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-consumer_export_association-241"
+      ]
+    },
+    "BE_GO/internal/service/consumer_import_association.go:prepare#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-consumer_import_association-146"
+      ]
+    },
+    "BE_GO/internal/service/consumer_import_association.go:prepare#2": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-consumer_import_association-151"
+      ]
+    },
+    "BE_GO/internal/service/consumer_import_association.go:prepare#3": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-consumer_import_association-156"
+      ]
+    },
+    "BE_GO/internal/service/consumer_import_association.go:prepare#4": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-consumer_import_association-162"
+      ]
+    },
+    "BE_GO/internal/service/consumer_import_association.go:prepare#5": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-consumer_import_association-166"
+      ]
+    },
+    "BE_GO/internal/service/consumer_import_association.go:prepare#6": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-consumer_import_association-174"
+      ]
+    },
+    "BE_GO/internal/service/consumer_import_association.go:prepare#7": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-consumer_import_association-194",
+        "consumer-restore-archive-sentinel"
+      ]
+    },
+    "BE_GO/internal/service/consumer_restore_instance.go:plan#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-consumer_restore_instance-194"
+      ]
+    },
+    "BE_GO/internal/service/consumer_restore_instance.go:plan#2": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-consumer_restore_instance-210"
+      ]
+    },
+    "BE_GO/internal/service/consumer_restore_instance.go:plan#3": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-consumer_restore_instance-215"
+      ]
+    },
+    "BE_GO/internal/service/consumer_restore_instance.go:plan#4": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-consumer_restore_instance-224"
+      ]
+    },
+    "BE_GO/internal/service/consumer_restore_instance.go:plan#5": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue",
+      "sites": [
+        "consumer-plan-consumer_restore_instance-248"
+      ]
+    },
+    "BE_GO/internal/service/consumer_backup_failures.go:plan#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.BackupNotify.test_instance_backups_notify_failures__go",
+      "sites": [
+        "consumer-plan-consumer_backup_failures-115"
+      ]
+    },
+    "BE_GO/internal/service/consumer_backup_failures.go:prepare#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.BackupNotify.test_instance_backups_notify_failures__go",
+      "sites": [
+        "consumer-plan-consumer_backup_failures-183"
+      ]
+    },
+    "BE_GO/internal/service/consumer_backup_failures.go:prepare#2": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.BackupNotify.test_instance_backups_notify_failures__go",
+      "sites": [
+        "consumer-plan-consumer_backup_failures-187"
+      ]
+    },
+    "BE_GO/internal/service/consumer_backup_failures.go:call#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.BackupNotify.test_instance_backups_notify_failures__go",
+      "sites": [
+        "consumer-plan-consumer_backup_failures-208"
+      ]
+    },
+    "BE_GO/internal/service/consumer_backup_failures.go:call#2": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.BackupNotify.test_instance_backups_notify_failures__go",
+      "sites": [
+        "consumer-plan-consumer_backup_failures-217"
+      ]
+    },
+    "BE_GO/internal/service/consumer_backup_failures.go:call#3": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.BackupNotify.test_instance_backups_notify_failures__go",
+      "sites": [
+        "consumer-plan-consumer_backup_failures-223"
+      ]
+    },
+    "BE_GO/internal/service/consumer_backup_failures.go:backupFailuresObject#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.BackupNotify.test_instance_backups_notify_failures__go",
+      "sites": [
+        "consumer-plan-consumer_backup_failures-278"
+      ]
+    },
+    "BE_GO/internal/service/consumer_backup_failures.go:backupFailuresParse#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.BackupNotify.test_instance_backups_notify_failures__go",
+      "sites": [
+        "consumer-plan-consumer_backup_failures-293"
+      ]
+    },
+    "BE_GO/internal/service/consumer_backup_failures.go:backupFailuresParse#2": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.BackupNotify.test_instance_backups_notify_failures__go",
+      "sites": [
+        "consumer-plan-consumer_backup_failures-300"
+      ]
+    },
+    "BE_GO/internal/service/consumer_backup_failures.go:backupFailuresParse#3": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.BackupNotify.test_instance_backups_notify_failures__go",
+      "sites": [
+        "consumer-plan-consumer_backup_failures-310"
+      ]
+    },
+    "BE_GO/internal/service/consumer_backup_failures.go:backupFailuresParse#4": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.BackupNotify.test_instance_backups_notify_failures__go",
+      "sites": [
+        "consumer-plan-consumer_backup_failures-314"
+      ]
+    },
+    "BE_GO/internal/service/consumer_backup_failures.go:consumerBackupFailuresList#1": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.BackupNotify.test_instance_backups_notify_failures__go",
+      "sites": [
+        "consumer-plan-consumer_backup_failures-335"
+      ]
+    },
+    "BE_GO/internal/service/consumer_backup_failures.go:consumerBackupFailuresList#2": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.BackupNotify.test_instance_backups_notify_failures__go",
+      "sites": [
+        "consumer-plan-consumer_backup_failures-347"
+      ]
+    },
+    "BE_GO/internal/service/consumer_backup_failures.go:consumerBackupFailuresList#3": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.BackupNotify.test_instance_backups_notify_failures__go",
+      "sites": [
+        "consumer-plan-consumer_backup_failures-362"
+      ]
+    },
+    "BE_GO/internal/service/consumer_backup_failures.go:consumerBackupFailuresList#4": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.BackupNotify.test_instance_backups_notify_failures__go",
+      "sites": [
+        "consumer-plan-consumer_backup_failures-368"
+      ]
+    },
+    "BE_GO/internal/service/consumer_backup_failures.go:consumerBackupFailuresList#5": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.BackupNotify.test_instance_backups_notify_failures__go",
+      "sites": [
+        "consumer-plan-consumer_backup_failures-372"
+      ]
+    },
+    "BE_GO/internal/service/consumer_backup_failures.go:consumerBackupFailuresList#6": {
+      "disposition": "unsupported",
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.BackupNotify.test_instance_backups_notify_failures__go",
+      "sites": [
+        "consumer-plan-consumer_backup_failures-375"
+      ]
+    },
+    "BE_GO/internal/service/consumer_backup_failures.go:run#1": {
+      "disposition": "unsupported",
+      "outcome": "failure:ValueError",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.BackupNotify.test_instance_backups_notify_failures__go",
+      "sites": [
+        "consumer-plan-consumer_backup_failures-448"
+      ]
+    }
+  },
+  "handback_reasons": {
+    "undecodable": {
+      "outcome": "blocked:undecodable",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_undecodable_never_reaches_the_django_queue"
+    },
+    "unregistered": {
+      "outcome": "blocked:unregistered",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_unregistered_never_reaches_the_django_queue"
+    },
+    "options": {
+      "outcome": "blocked:unsupported_options",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_options_never_reaches_the_django_queue"
+    },
+    "input": {
+      "outcome": "blocked:unsupported_input",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.Handback.test_input_never_reaches_the_django_queue"
+    }
+  },
+  "ported_sites": [
+    "consumer-handoff-queue",
+    "consumer-handoff-undecodable",
+    "consumer-handoff-unregistered",
+    "consumer-handoff-options",
+    "consumer-plan-payment_misc-794",
+    "consumer-plan-in-process-payment-fee-mail",
+    "consumer-plan-consumer_save_to_storage-150"
+  ],
+  "legacy_names": {
+    "auto_move_users_to_base_plan": {
+      "disposition": "retired",
+      "outcome": "Migration 0430 disabled the schedule. Go activation cancels the queued tombstone with reason retired_task.",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.LegacyNames.test_auto_move_users_to_base_plan__queued_forward"
+    },
+    "nurturing_warm_leads": {
+      "disposition": "retired",
+      "outcome": "Migration 0430 disabled the schedule. Go activation cancels the queued tombstone with reason retired_task.",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.LegacyNames.test_nurturing_warm_leads__queued_forward"
+    },
+    "save_binary_to_storage": {
+      "disposition": "refuse_transition",
+      "outcome": "Preflight blocks Go activation with reason retired_task. Django keeps the original envelope and can write the binary object.",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.LegacyNames.test_save_binary_to_storage__queued_forward"
+    },
+    "send_updated_certificate_email": {
+      "disposition": "refuse_transition",
+      "outcome": "Preflight blocks Go activation with reason retired_task. Django keeps the original envelope and can send the certificate email.",
+      "evidence": "TESTS.handoff.test_p4_task_matrix.LegacyNames.test_send_updated_certificate_email__queued_forward"
+    }
+  },
+  "tasks": {
+    "auto_move_users_to_base_plan": {
+      "family": "legacy_names",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "nurturing_warm_leads": {
+      "family": "legacy_names",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "save_binary_to_storage": {
+      "family": "legacy_names",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "send_updated_certificate_email": {
+      "family": "legacy_names",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "auto_mark_attendance": {
+      "family": "db_maintenance",
+      "rate_limit": "4/m",
+      "go_rate_limit": "JobExecutor enforces a minimum claim interval per task kind and worker process",
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "auto_archive_subscription": {
+      "family": "collectors",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "clear_deleted_subscription": {
+      "family": "collectors",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "auto_delete_orphan_medical_certificate": {
+      "family": "collectors",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "delete_users_with_request": {
+      "family": "collectors",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "cleanup_old_exports": {
+      "family": "retention",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "delete_old_audit_logs": {
+      "family": "retention",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "instance.restore.cleanup": {
+      "family": "retention",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "instance.sso.tasks.maintain_bakney_pairings": {
+      "family": "retention",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "association_quote_assign": {
+      "family": "payments",
+      "rate_limit": "1/m",
+      "go_rate_limit": "JobExecutor enforces a minimum claim interval per task kind and worker process",
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "renew_memberships_payments": {
+      "family": "payments",
+      "rate_limit": "1/m",
+      "go_rate_limit": "JobExecutor enforces a minimum claim interval per task kind and worker process",
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "change_type_of_stripe_payments": {
+      "family": "payments",
+      "rate_limit": "30/m",
+      "go_rate_limit": "JobExecutor enforces a minimum claim interval per task kind and worker process",
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "generate_coupon_if_not_exists": {
+      "family": "payments",
+      "rate_limit": "4/m",
+      "go_rate_limit": "JobExecutor enforces a minimum claim interval per task kind and worker process",
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "mark_as_paid_payments_checking_stripe": {
+      "family": "payments",
+      "rate_limit": "3/m",
+      "go_rate_limit": "JobExecutor enforces a minimum claim interval per task kind and worker process",
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "update_age_of_associates": {
+      "family": "db_maintenance",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "reset_communication_daily_email_balance": {
+      "family": "db_maintenance",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "clear_expired_subscription_tokens": {
+      "family": "db_maintenance",
+      "rate_limit": "60/m",
+      "go_rate_limit": "JobExecutor enforces a minimum claim interval per task kind and worker process",
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "send_expiring_certificate_email": {
+      "family": "certificate_emails",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "send_expired_certificate_email": {
+      "family": "certificate_emails",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "send_reminders": {
+      "family": "certificate_emails",
+      "rate_limit": "60/m",
+      "go_rate_limit": "EmailTasks.waitForReminderSlot paces starts in each handoff worker",
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "send_user_partial_registration_email": {
+      "family": "certificate_emails",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "core.tasks.send_mail_async": {
+      "family": "email",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "send_email_text": {
+      "family": "email",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "send_email_template": {
+      "family": "email",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "send_email_html": {
+      "family": "email",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "check_workflows_trigger": {
+      "family": "workflows",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "check_workflows_trigger_cron": {
+      "family": "workflows",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "workflow_block_execute": {
+      "family": "workflows",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "export_invoices_to_zip": {
+      "family": "storage",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "save_to_storage": {
+      "family": "storage",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "print_document_compensation": {
+      "family": "print",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "print_document_customer_invoice": {
+      "family": "print",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "print_document_invoice": {
+      "family": "print",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "print_document_medical_appointment": {
+      "family": "print",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "print_document_subscription": {
+      "family": "print",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "export_association_data": {
+      "family": "association_data",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "import_association_data": {
+      "family": "association_data",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "instance.restore.execute": {
+      "family": "association_data",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        3300,
+        3600
+      ],
+      "go_time_limits": "prefork envelope timelimit"
+    },
+    "celery.backend_cleanup": {
+      "family": "scheduled_exceptions",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "communications.tasks.deliver_whatsapp": {
+      "family": "scheduled_exceptions",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    },
+    "instance.backups.notify_failures": {
+      "family": "backup_notify",
+      "rate_limit": null,
+      "go_rate_limit": null,
+      "time_limits": [
+        null,
+        null
+      ],
+      "go_time_limits": null
+    }
+  }
+}

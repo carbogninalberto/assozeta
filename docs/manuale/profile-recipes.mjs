@@ -13,7 +13,7 @@ const reviewed = {
   "BE/application/serializers/subscriptions_serializers.py": "19b0a153b95d3d82599820ce3d41ecc4e9ab73e335a7924c389203b1a3ee4904",
   "BE/application/models/subscriptions_models.py": "348705bf0908ccd489167eb26c4975dc51ddfd77d82d7699f7cc1dbf69c17c7c",
   "BE/application/permissions_registry.py": "d6f30e78c76ea081c5c16331ae0f53b6e9051a04dc8faee2e263c81366e28a9b",
-  "UI/src/routes/association/Members/detail/sections/Medical.svelte": "e577b134442d77f32b4950935b9efd2e650cb6d3248c2f9c481bf0eae6bef2c5",
+  "UI/src/routes/association/Members/detail/sections/Medical.svelte": "79d036985cf8fd39eccb9885255b1ccfb9baa4dfa5c657a0bc3d0efcee07e150",
   "UI/src/routes/association/Members/detail/sections/modals/AddMedicalCertificate.svelte": "5f24574bfba22af294439d2844ff6ada728fbc9ed483dac5f0d22badf54ec7ae",
   "UI/src/routes/association/Members/detail/sections/modals/medicalCertificateUpload.js": "8b78ae7aaf29c309c5eaf6d8f2ed00078a085beba54ef7316675a585f2a83f21"
 };

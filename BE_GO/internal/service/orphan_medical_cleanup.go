@@ -5,9 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"log/slog"
+	"strconv"
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/handoff"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/documentkey"
 	"github.com/google/uuid"
 )
@@ -51,7 +53,7 @@ func (s *OrphanMedicalCleanup) Run(ctx context.Context, job domain.Job) error {
 	if err != nil {
 		return err
 	}
-	for _, step := range steps {
+	for i, step := range steps {
 		if step.stop {
 			s.logger.WarnContext(ctx, "orphan medical cleanup stopped", "code", "orphan_medical_stopped")
 			break
@@ -84,6 +86,7 @@ func (s *OrphanMedicalCleanup) Run(ctx context.Context, job domain.Job) error {
 			s.logger.WarnContext(ctx, "orphan medical audit delete failed", "code", "orphan_medical_audit_delete")
 			break
 		}
+		handoff.Barrier("batch:committed", job.Kind+"-"+strconv.Itoa(i+1))
 	}
 	if truncated {
 		// A later chunk held a timestamp psycopg2 cannot convert: Django

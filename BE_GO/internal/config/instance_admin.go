@@ -19,7 +19,8 @@ type InstanceAdminSettings struct {
 	DeploymentMode    string
 	// UpdaterDirectory is ASSOZETA_UPDATER_DIRECTORY (env.str, default
 	// '/run/assozeta-updater'): the update runner's socket and token.
-	UpdaterDirectory string
+	UpdaterDirectory        string
+	UpdaterNoticesDirectory string
 	// BackupUploadMaxBytes is ASSOZETA_BACKUP_UPLOAD_MAX_BYTES (backups.upload_max_bytes:
 	// os.environ, ASCII digits after trimming, else 50 GiB).
 	BackupUploadMaxBytes int64
@@ -72,6 +73,9 @@ func parseInstanceAdmin(values map[string]string) (InstanceAdminSettings, error)
 		return s, err
 	}
 	if s.UpdaterDirectory, err = environmentString(values, "ASSOZETA_UPDATER_DIRECTORY", "/run/assozeta-updater", false); err != nil {
+		return s, err
+	}
+	if s.UpdaterNoticesDirectory, err = environmentString(values, "ASSOZETA_UPDATER_NOTICES_DIRECTORY", "/run/assozeta-updater-notices", false); err != nil {
 		return s, err
 	}
 	s.BackupUploadMaxBytes = backupUploadMaxBytes(values["ASSOZETA_BACKUP_UPLOAD_MAX_BYTES"])

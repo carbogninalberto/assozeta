@@ -2,7 +2,6 @@ import {readImpersonation, contextKey, recoverInvalidImpersonation} from './impe
 import {sessionToken} from '../store/stores.js';
 import {get} from 'svelte/store';
 import {hasSessionToken} from './accountSession.js';
-import {rewriteApiUrl, rewriteFetchInput} from './apiVersion.js';
 
 sessionToken.useLocalStorage();
 
@@ -35,6 +34,22 @@ export const updateTableSettings = function (cols, table) {
 // Store the original fetch function in a variable
 export const originalFetch = window.fetch;
 
+// True when the URL is on the configured API (__bakney.env.HOST): same scheme,
+// host and port, without user information, under its path. Only these
+// requests get session headers.
+export function isApiRequest(url) {
+    try {
+        const base = globalThis.location?.href || globalThis.location?.origin;
+        const api = new URL(__bakney.env.HOST || '/api', base);
+        const target = new URL(url, base);
+        const root = api.pathname.replace(/\/$/, '');
+        return target.protocol === api.protocol && target.host === api.host && !target.username && !target.password
+            && (target.pathname === root || target.pathname.startsWith(root + '/'));
+    } catch {
+        return false;
+    }
+}
+
 const mergeHeaders = function (headers) {
     return new Headers(headers || undefined);
 };
@@ -53,7 +68,7 @@ let checkExpired = async function () {
                 Accept: 'application/json',
                 'Content-Type': 'application/json',
             };
-            let res = await originalFetch(rewriteApiUrl(__bakney.env.API.OAUTH2.REFRESH_TOKEN), {
+            let res = await originalFetch(__bakney.env.API.OAUTH2.REFRESH_TOKEN, {
                 method: 'POST',
                 headers: headers,
                 body: JSON.stringify({
@@ -86,13 +101,10 @@ let checkExpired = async function () {
 
 // Override the fetch function with your custom function
 window.fetch = async (...args) => {
-    // Same-origin '/api' requests follow the active API version.
-    if (args.length) args[0] = await rewriteFetchInput(args[0]);
     // Handle fetch(url, options), fetch(URL) and fetch(request) patterns
     const requestUrl = typeof args[0] === 'string' ? args[0] : args[0] instanceof URL ? args[0].href : args[0]?.url;
 
-    // skip for fetch on urls different from same origin (api)
-    if (!requestUrl?.includes('/api')) return await originalFetch(...args);
+    if (!requestUrl || !isApiRequest(requestUrl)) return await originalFetch(...args);
 
     const identitySnapshot = localStorage.getItem(contextKey);
 
@@ -182,17 +194,14 @@ window.fetch = async (...args) => {
 
         // Override the open method
         xhr.open = function (m, u) {
-            const args = Array.from(arguments);
-            args[1] = rewriteApiUrl(u);
             method = m;
-            url = args[1] instanceof URL ? args[1].href : args[1];
-            originalOpen.apply(xhr, args);
+            url = u instanceof URL ? u.href : u;
+            originalOpen.apply(xhr, arguments);
         };
 
         // Override the send method
         xhr.send = async function (data) {
-            // Only intercept for same origin (api) requests
-            if (!url?.includes('/api')) {
+            if (!url || !isApiRequest(url)) {
                 originalSend.call(xhr, data);
                 return;
             }
@@ -235,23 +244,29 @@ window.fetch = async (...args) => {
     };
 })(XMLHttpRequest);
 
-export const apiFetch = async function (url, fetchData = {method: 'GET'}) {
+export const apiFetch = async function (input, options) {
+    // A Request keeps its own method, headers and body unless options replace them.
+    const request = typeof Request !== 'undefined' && input instanceof Request ? input : null;
+    const fetchData = options || (request ? {} : {method: 'GET'});
+    const url = request ? request.url : String(input);
     let sessionToken = JSON.parse(localStorage.getItem('sessionToken'));
-    let headers = mergeHeaders(fetchData.headers);
+    let headers = mergeHeaders(fetchData.headers || request?.headers);
     headers.set('Accept', 'application/json');
     if (fetchData.body instanceof FormData) {
         headers.delete('Content-Type');
     } else if (!headers.has('Content-Type')) {
         headers.set('Content-Type', 'application/json');
     }
-    if (sessionToken) headers.set('Authorization', `Bearer ${sessionToken}`);
-    // get selectedGroup from localStorage
-    let selectedGroup = localStorage.getItem('selectedGroup');
-    if (selectedGroup && JSON.parse(selectedGroup) != null) headers.set('X-Group-ID', JSON.parse(selectedGroup));
+    if (isApiRequest(url)) {
+        if (sessionToken) headers.set('Authorization', `Bearer ${sessionToken}`);
+        // get selectedGroup from localStorage
+        let selectedGroup = localStorage.getItem('selectedGroup');
+        if (selectedGroup && JSON.parse(selectedGroup) != null) headers.set('X-Group-ID', JSON.parse(selectedGroup));
+    }
 
     fetchData['headers'] = headers;
 
-    const response = await window.fetch(rewriteApiUrl(url), fetchData);
+    const response = await window.fetch(request || url, fetchData);
     let error = false;
     let jsonResponse = {};
 

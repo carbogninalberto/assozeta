@@ -21,6 +21,21 @@ type TasksDBD struct{ db *sqlx.DB }
 
 func NewTasksDBD(db *sqlx.DB) *TasksDBD { return &TasksDBD{db: db} }
 
+func (r *TasksDBD) HandoffRoot(ctx context.Context, id uuid.UUID) (string, error) {
+	return paymentJobRoot(ctx, r.db, id)
+}
+
+func paymentJobRoot(ctx context.Context, db *sqlx.DB, id uuid.UUID) (string, error) {
+	installed, err := handoffInstalled(ctx, db)
+	if err != nil || !installed {
+		return "", err
+	}
+	var root string
+	err = db.GetContext(ctx, &root, `SELECT coalesce(nullif(root_id,''), task_id)
+ FROM public.assozeta_handoff_work WHERE task_id=$1`, id.String())
+	return root, err
+}
+
 func (r *TasksDBD) BeginTasksDBD(ctx context.Context, job domain.Job) (domain.TasksDBDTransaction, error) {
 	tx, err := beginOwnedTransaction(ctx, r.db, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
 	if err != nil {
