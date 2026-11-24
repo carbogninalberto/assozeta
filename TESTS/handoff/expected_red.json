@@ -134,6 +134,38 @@
       "signatures": [
         "P6A contract red"
       ]
+    },
+    "TESTS.handoff.test_p4_task_matrix.Payments.test_mark_as_paid_payments_checking_stripe__django": {
+      "phase": 4,
+      "owner": "t-p4",
+      "signatures": [
+        "completed attempts; expected"
+      ],
+      "reason": "Phase 4 family 13 (print) defect sent to i-p4c3 (work/t-p4/defects-C13.md): a print request whose connection is refused keeps its print intent, so the paid check's completed print children end blocked/ambiguous_effect and the identity oracle counts 4 completed attempts for 1 completed job"
+    },
+    "TESTS.handoff.test_p4_task_matrix.Payments.test_mark_as_paid_payments_checking_stripe__go": {
+      "phase": 4,
+      "owner": "t-p4",
+      "signatures": [
+        "completed attempts; expected"
+      ],
+      "reason": "Phase 4 family 13 (print) defect sent to i-p4c3 (work/t-p4/defects-C13.md): a print request whose connection is refused keeps its print intent, so the paid check's completed print children end blocked/ambiguous_effect and the identity oracle counts 4 completed attempts for 1 completed job"
+    },
+    "TESTS.handoff.test_p4_task_matrix.Payments.test_mark_as_paid_payments_checking_stripe__queued_forward": {
+      "phase": 4,
+      "owner": "t-p4",
+      "signatures": [
+        "completed attempts; expected"
+      ],
+      "reason": "Phase 4 family 13 (print) defect sent to i-p4c3 (work/t-p4/defects-C13.md): a print request whose connection is refused keeps its print intent, so the paid check's completed print children end blocked/ambiguous_effect and the identity oracle counts 4 completed attempts for 1 completed job"
+    },
+    "TESTS.handoff.test_p4_task_matrix.Payments.test_mark_as_paid_payments_checking_stripe__queued_reverse": {
+      "phase": 4,
+      "owner": "t-p4",
+      "signatures": [
+        "completed attempts; expected"
+      ],
+      "reason": "Phase 4 family 13 (print) defect sent to i-p4c3 (work/t-p4/defects-C13.md): a print request whose connection is refused keeps its print intent, so the paid check's completed print children end blocked/ambiguous_effect and the identity oracle counts 4 completed attempts for 1 completed job"
     }
   }
 }
