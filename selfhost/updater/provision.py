@@ -7,6 +7,8 @@ import re
 import subprocess
 import sys
 
+import yaml
+
 import notices
 
 from common import atomic_write, compose_command, compose_environment, write_json, read_env
@@ -37,14 +39,19 @@ def provision(root, env_file, start=True):
     if not re.fullmatch(r'[a-z0-9][a-z0-9_-]*', project):
         raise RuntimeError('Invalid installation project name')
     image = values.get('ASSOZETA_UPDATER_REF') or f'ghcr.io/carbogninalberto/assozeta-updater:{values["ASSOZETA_VERSION"].removeprefix("v")}'
-    for name in ('updater_api', 'updater_status', 'updater_notices'):
+    volumes = {'updater_api': ('/run/assozeta-updater', '--credentials'), 'updater_status': None}
+    # Recovery restores the release's Compose file and updater image together.
+    compose = root / 'compose.updater.yml'
+    if compose.is_file() and 'updater_notices' in yaml.safe_load(compose.read_bytes()).get('volumes', {}):
+        volumes['updater_notices'] = (notices.DIRECTORY, '--notices-credentials')
+    for name, credential in volumes.items():
         subprocess.run(['docker', 'volume', 'create', '--label', f'com.docker.compose.project={project}',
                         '--label', f'com.docker.compose.volume={name}', f'{project}_{name}'],
                        check=True, stdout=subprocess.DEVNULL)
-    for name, directory, option in (('updater_api', '/run/assozeta-updater', '--credentials'),
-                                    ('updater_notices', notices.DIRECTORY, '--notices-credentials')):
-        subprocess.run(['docker', 'run', '--rm', '-v', f'{project}_{name}:{directory}', image,
-                        '/runner/provision.py', option], check=True)
+        if credential:
+            directory, option = credential
+            subprocess.run(['docker', 'run', '--rm', '-v', f'{project}_{name}:{directory}', image,
+                            '/runner/provision.py', option], check=True)
     baseline = state / 'managed.json'
     if not baseline.exists():
         write_json(baseline, snapshot_managed(root))
