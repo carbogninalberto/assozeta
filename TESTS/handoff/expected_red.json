@@ -98,7 +98,7 @@
     "TESTS.handoff.test_p5_installed.InstalledLanes.test_1_forward": {
       "phase": 5,
       "owner": "t-p5",
-      "reason": "Phase 5 part D: the browser step could not click the runtime switch (fixed test-side: it clicks the wrapping label); behind it a switch requested through the owner API (POST /api/instance/admin/runtime) fails at once while the same switch through ./bin/assozeta runtime-switch succeeds (CI run 45378476362, triage run4 group A; cause under investigation by i-p5, the next run carries error_code/failed_stage and the updater logs)",
+      "reason": "Phase 5 part D: the browser step could not click the runtime switch (fixed test-side: it clicks the wrapping label); behind it a switch requested through the owner API (POST /api/instance/admin/runtime) fails at once while the same switch through ./bin/assozeta runtime-switch succeeds (CI run 45378476362, triage run4 group A; cause under investigation by i-p5, the next run carries error_code/failed_stage and the updater logs); the \"cold signed-in browser ... saw null\" check in run 45384724020 is the same cause: the operation failed at queued (lifecycle_busy), so no maintenance window ever opened",
       "signatures": [
         "P5 contract red"
       ]
@@ -131,22 +131,6 @@
       "phase": 7,
       "owner": "t-p7",
       "reason": "part C (installed): the PDF probe asked Django for /api/healthz, which active-api:8000 does not serve (fixed test-side: /healthz on both runtimes); Go mode not yet reached, the next installed run decides",
-      "signatures": [
-        "P7 contract red"
-      ]
-    },
-    "TESTS.handoff.test_p7_installed.ReleaseLanes.test_2_recovery_to_go_without_either_app_api": {
-      "phase": 7,
-      "owner": "t-p7",
-      "reason": "part C (installed): the seeded work was due now and completed on Django before the switch (fixed test-side: due tomorrow); the recovery itself succeeded, the next installed run decides",
-      "signatures": [
-        "P7 contract red"
-      ]
-    },
-    "TESTS.handoff.test_p7_installed.ReleaseLanes.test_3_recovery_to_django_without_either_app_api": {
-      "phase": 7,
-      "owner": "t-p7",
-      "reason": "part C (installed): a barrier arrival file left by test_2 satisfied the wait before the controller existed (fixed test-side: one barrier directory per switch); the recovery itself succeeded, the next installed run decides",
       "signatures": [
         "P7 contract red"
       ]
@@ -197,7 +181,7 @@
       "signatures": [
         "P7 contract red"
       ],
-      "reason": "part C2 (installed): the test transport docker shim raised KeyError fixture-backend-3 on the first pull (fixed test-side), so the v1.0.48 upgrade never ran; the next installed run decides"
+      "reason": "part C2 (installed): in run 45384724020 the adoption itself succeeded in this mode; the bootstrapped CLI then failed its public readiness check because the fixture's APP_URL was localhost, which does not reach the host from inside the updater container, and the root-owned .env it left blocked cleanup (both fixed test-side: docker host domain as in the update smoke, .env reclaimed); the next installed run decides"
     },
     "TESTS.handoff.test_p7_legacy.LegacyMixedUpgrade.test_mixed_release_upgraded_into_django": {
       "phase": 7,
@@ -205,7 +189,7 @@
       "signatures": [
         "P7 contract red"
       ],
-      "reason": "part C2 (installed): the test transport docker shim raised KeyError fixture-backend-3 on the first pull (fixed test-side), so the v1.0.48 upgrade never ran; the next installed run decides"
+      "reason": "part C2 (installed): in run 45384724020 the adoption itself succeeded in this mode; the bootstrapped CLI then failed its public readiness check because the fixture's APP_URL was localhost, which does not reach the host from inside the updater container, and the root-owned .env it left blocked cleanup (both fixed test-side: docker host domain as in the update smoke, .env reclaimed); the next installed run decides"
     }
   }
 }

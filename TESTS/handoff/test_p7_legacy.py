@@ -56,6 +56,9 @@ from TESTS.handoff import test_p6_installed as p6
 from TESTS.handoff.test_p7_installed import now
 from TESTS.handoff.topology import ROOT
 
+sys.path.insert(0, str(ROOT / 'selfhost/tests'))
+from quality_support import docker_host  # noqa: E402
+
 RED = r.RED
 SOURCE = 'v1.0.48'
 # The release job sets the candidate's own version (its images carry it, so they are used unchanged);
@@ -146,17 +149,21 @@ class LegacyInstalled(p5.Installed):
             (self.tools / 'flock').chmod(0o755)
         self.project = 'assozeta-p7l-' + uuid.uuid4().hex[:8]
         self.port = h.free_port()
-        self.base = f'http://localhost:{self.port}'
+        # The bootstrapped target CLI runs in the updater container and checks public readiness at
+        # APP_URL from there, so the domain must reach the host from inside a container (as in
+        # selfhost/tests/application-update-smoke.py and release-rehearsal.py), not 'localhost'.
+        self.host = docker_host()
+        self.base = f'http://{self.host}:{self.port}'
 
     def install(self):
-        self.cli('configure', '--domain', f'localhost:{self.port}', '--version', SOURCE[1:])
+        self.cli('configure', '--domain', f'http://{self.host}:{self.port}', '--version', SOURCE[1:])
         p5.STATE['secrets'] = sorted({value for key, value in self.env().items() if len(value) >= 16 and any(
             word in key for word in ('PASSWORD', 'SECRET', 'TOKEN', 'KEY'))} | {p5.OWNER_PASSWORD}, key=len, reverse=True)
         self.set_env(COMPOSE_PROJECT_NAME=self.project, HTTP_PORT=self.port, HTTPS_PORT=h.free_port())
         self.cli('install', timeout=3600)
         values = self.env()
         code, _ = self.http('POST', '/api/instance/configure', headers={'X-Setup-Token': values['INSTANCE_SETUP_TOKEN']},
-                            body={'domain': f'localhost:{self.port}',
+                            body={'domain': f'{self.host}:{self.port}',
                                   'oem': {'name': 'P7 Club', 'abbreviation': 'P7', 'primaryColor': '#351DC2',
                                           'supportEmail': p5.OWNER_EMAIL, 'logo': ''}, 'oauth': {}, 'stripe': {},
                                   'initialization': {'type': 'fresh', 'associationName': 'P7 Association',
@@ -169,7 +176,19 @@ class LegacyInstalled(p5.Installed):
             raise h.HarnessError(f'v1.0.48 owner login failed: HTTP {code}')
         self.token, self.refresh = login['access_token'], login.get('refresh_token')
 
+    def reclaim(self):
+        """The bootstrap runs the target CLI as root in the updater container, which rewrites .env as a
+        root-owned private file (by design; the project's quality scenarios inspect such installs with
+        sudo). This non-root test runner takes the disposable installation's .env back so it can keep
+        inspecting and uninstall it."""
+        image = candidate_images()['updater']
+        p5.run(['docker', 'run', '--rm', '-v', f'{self.root}:{self.root}', '--entrypoint', 'sh', image, '-c',
+                f'chown {os.getuid()}:{os.getgid()} "$1" && chmod u+rw "$1"', 'reclaim', str(self.env_file)],
+               log=self.log, check=False)
+
     def uninstall(self):
+        if self.env_file.exists() and not os.access(self.env_file, os.R_OK):
+            self.reclaim()
         super().uninstall()
         compose = ['docker', 'compose', '--project-name', self.project, '-f', self.root / 'compose.yml',
                    '--env-file', self.env_file, '--profile', '*', 'down', '--volumes', '--remove-orphans']
@@ -289,6 +308,7 @@ USER 10001:10001
         images = self.publish_target()
         started = time.time()
         result = inst.cli('upgrade', TARGET, check=False, timeout=5400)
+        inst.reclaim()
         self.assertEqual(result.returncode, 0, f'./bin/assozeta upgrade {TARGET} from the mixed {SOURCE} '
                                                f'(instance {ui_api_version}): {result.stdout[-800:]}')
         reports = [line.split(' ', 1)[1] for line in result.stdout.splitlines()
