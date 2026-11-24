@@ -459,8 +459,26 @@ def default_steps(root, env_file, *, barrier=None):
             'target_preflight': target_preflight, 'activate': activate, 'verify': verify, 'abort': abort}
 
 
+def lock_operations(handle, wait_for_readers):
+    # An owner POST holds a shared restore lease through its audit write, even
+    # after the runner has returned 202 and woken the worker.
+    deadline = time.monotonic() + 5
+    while True:
+        try:
+            fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            return
+        except BlockingIOError:
+            if not wait_for_readers or time.monotonic() >= deadline:
+                raise
+            # An exclusive restore must still fail fast. Drop the probe lease
+            # before sleeping so other lifecycle work can take the lock.
+            fcntl.flock(handle, fcntl.LOCK_SH | fcntl.LOCK_NB)
+            fcntl.flock(handle, fcntl.LOCK_UN)
+            time.sleep(0.05)
+
+
 @contextmanager
-def lifecycle_locks(root, caller_holds_locks, *, caller_holds_directory=False):
+def lifecycle_locks(root, caller_holds_locks, *, caller_holds_directory=False, wait_for_readers=False):
     root = Path(root)
     with ExitStack() as stack:
         if not caller_holds_locks:
@@ -470,7 +488,9 @@ def lifecycle_locks(root, caller_holds_locks, *, caller_holds_directory=False):
                 handle = stack.enter_context(path.open('a'))
                 if path.name == 'lifecycle.lock':
                     path.chmod(0o666)
-                fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                    lock_operations(handle, wait_for_readers)
+                else:
+                    fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
             if not caller_holds_directory and legacy.exists() and not (legacy / 'flock-managed').exists():
                 raise BlockingIOError()
         yield
@@ -703,7 +723,7 @@ def advance(root, env_file, journal, authority, record, steps, barrier, recoveri
 def run(root, env_file, journal, authority, operation, steps=None, barrier=None, caller_holds_locks=False):
     operation_id = operation['id']
     try:
-        with lifecycle_locks(root, caller_holds_locks):
+        with lifecycle_locks(root, caller_holds_locks, wait_for_readers=True):
             if caller_holds_locks and operation['status'] == 'running':
                 current = next(r for r in journal.records() if r['id'] == operation_id)
                 if current['status'] == 'running':

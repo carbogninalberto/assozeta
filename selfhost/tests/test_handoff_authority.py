@@ -84,6 +84,7 @@ import subprocess
 import sys
 from tempfile import TemporaryDirectory
 import threading
+import time
 import unittest
 from unittest.mock import patch
 from uuid import UUID, uuid4
@@ -691,6 +692,33 @@ class SerializationTests(HandoffCase):
         self.assertEqual((final['status'], final['error_code']), ('failed', 'lifecycle_busy'))
         self.assertEqual(self.world(), before)
         self.assertNoCommands()
+
+    def test_a_request_lease_released_within_the_wait_does_not_fail_the_switch(self):
+        # The owner's POST /instance/admin/runtime keeps its shared request lease through the audit
+        # write after the runner answered 202 and woke its worker (run 4 of the installed lanes).
+        operation, calls = self.queued(), []
+        handle = (self.root / '.operations/lifecycle.lock').open('a')
+        fcntl.flock(handle, fcntl.LOCK_SH)
+        release = threading.Timer(0.4, handle.close)
+        release.start()
+        try:
+            final = self.run_op(operation, steps=self.noop_steps(calls))
+        finally:
+            release.join()
+        self.assertEqual((final['status'], final['error_code']), ('succeeded', None))
+        self.assertTrue(calls, 'the switch ran no stage after the lease was released')
+
+    def test_the_request_lease_wait_is_bounded_and_an_exclusive_restore_fails_at_once(self):
+        for mode, longest in ((fcntl.LOCK_EX, 1.0), (fcntl.LOCK_SH, 15.0)):
+            with self.subTest(exclusive=mode == fcntl.LOCK_EX):
+                operation, calls = self.queued(), []
+                with (self.root / '.operations/lifecycle.lock').open('a') as handle:
+                    fcntl.flock(handle, mode)
+                    started = time.monotonic()
+                    final = self.run_op(operation, steps=self.noop_steps(calls))
+                    elapsed = time.monotonic() - started
+                self.assertEqual((final['status'], final['error_code'], calls), ('failed', 'lifecycle_busy', []))
+                self.assertLess(elapsed, longest, 'an exclusive holder must fail at once; a shared one after a bounded wait')
 
 
 class RecoveryTests(HandoffCase):
