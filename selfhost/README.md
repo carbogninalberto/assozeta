@@ -12,26 +12,13 @@ images, creates its local configuration, and starts them.
 - `openssl`, `curl`, `tar`, and `flock` (from util-linux)
 - At least 4 GB RAM; 8 GB is recommended when rendering PDFs
 
-The default stack contains PostgreSQL, Redis, MinIO, the Django and Go APIs, Celery
-worker and scheduler, the Svelte/Caddy web image, and a private Chromium PDF
-renderer. Only Caddy publishes production ports.
+Fresh installations run Django. The selected runtime serves the API and runs the
+workers, scheduler and realtime relay. Both runtimes share PostgreSQL, Redis,
+MinIO, the PDF renderer and the Svelte/Caddy web image. Only Caddy publishes
+production ports.
 
-The in-progress Go migration defines fixed proxy routes `/api/v1` (Django) and
-`/api/v2` (Go); `/api` and existing root protocols still use Django. Compose
-delivers `api-go` alongside Django, sharing the existing environment and data.
-Django remains the worker/scheduler owner. Backend selection and complete Go
-application support remain unfinished, and the installable-release gate rejects
-this incomplete migration. See the [delivery status](../docs/architecture/go-migration/delivery-transition.md)
-and [routing status](../docs/architecture/go-migration/versioned-routing.md)
-before migration testing.
-The Go image includes `/app/worker` and `/app/migrate`. The CLI runs the tools
-service `migrate-go` after Django migrations under the existing exclusive
-operations lock. Missing lock support fails before schema migration; migration
-failure keeps maintenance active and services stopped. Historical distributions
-without the service remain recoverable. Compose does not start a Go worker or
-scheduler by default; the Go Celery consumer `worker-go` is opt-in
-(`ASSOZETA_GO_TASKS=1`, see [OPERATIONS.md](OPERATIONS.md#run-background-tasks-on-go)). These commands are not a backend-switch procedure; see
-[migration lifecycle and recovery](../docs/architecture/go-migration/operational-migrations.md).
+For runtime selection, upgrades from a mixed installation and recovery, see
+[Choosing the application runtime](RUNTIME.md).
 
 The Go API prepares S3 logo responses in a private, disk-backed anonymous Docker
 volume at `/var/cache/assozeta-logo`. Compose supplies `GO_LOGO_SPOOL_DIR`; no

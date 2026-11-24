@@ -11,6 +11,7 @@ on:
       - ".github/actions/go-foundation-setup/**"
       - "UI/**"
       - "selfhost/**"
+      - "tools/release/**"
       - ".github/workflows/publish-images.yml"
       - ".github/actions/prepare-storage/**"
       - ".github/workflows/selfhost-quality.yml"
@@ -48,7 +49,7 @@ permissions:
 # manual is rebuilt, verified and bundled only on an explicit manual dispatch
 # with include_manual.
 env:
-  RELEASE_TAG: ${{ github.event.release.tag_name || inputs.release_tag }}
+  RELEASE_TAG: ${{ github.event.release.tag_name || inputs.release_tag || (github.event_name == 'push' && github.ref_type == 'tag' && github.ref_name) || '' }}
 
 jobs:
   go-quality:
@@ -56,7 +57,7 @@ jobs:
 
   release-target:
     name: Check release target
-    if: github.event_name == 'release' || inputs.release_tag
+    if: github.event_name == 'release' || inputs.release_tag || (github.event_name == 'push' && github.ref_type == 'tag')
     runs-on: ubuntu-latest
     steps:
       - name: Require the workflow to run from the release tag
@@ -96,7 +97,7 @@ jobs:
 
   selfhost-quality:
     # PRs run affected checks separately; pushes only need the smoke/static gates.
-    if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
+    if: github.event_name != 'push' || github.ref_type == 'tag'
     uses: ./.github/workflows/selfhost-quality.yml
 
   validate:
@@ -123,43 +124,19 @@ jobs:
       - name: Run development smoke test
         run: make selfhost-smoke
 
-  production-smoke:
-    name: Run production smoke suite
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Check out source
-        uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-
-      - uses: ./.github/actions/prepare-storage
-
-      - name: Build production images and run smoke test
-        run: make selfhost-production-smoke
-
-  publish:
-    name: Publish ${{ matrix.name }}
-    # A skipped full-quality job is expected only for branch pushes. Explicit
-    # results keep failures/cancellation from bypassing the publication gates.
-    # A requested manual must succeed; an unrequested one is skipped.
+  candidate-images:
+    name: Build candidate ${{ matrix.name }}
+    needs: [release-target, manual-release]
     if: >-
-      ${{ !cancelled() &&
-          needs.validate.result == 'success' &&
-          needs.go-quality.result == 'success' &&
-          needs.production-smoke.result == 'success' &&
-          (needs.release-target.result == 'success' ||
-           (github.event_name != 'release' && !inputs.release_tag && needs.release-target.result == 'skipped')) &&
+      ${{ !cancelled() && needs.release-target.result == 'success' &&
           (needs.manual-release.result == 'success' ||
-           (!(github.event_name == 'workflow_dispatch' && inputs.include_manual) && needs.manual-release.result == 'skipped')) &&
-          (needs.selfhost-quality.result == 'success' ||
-           (github.event_name == 'push' && needs.selfhost-quality.result == 'skipped')) }}
-    needs: [validate, production-smoke, selfhost-quality, manual-release, release-target, go-quality]
+           (!(github.event_name == 'workflow_dispatch' && inputs.include_manual) && needs.manual-release.result == 'skipped')) }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
       id-token: write
-    strategy:
+    strategy: &images
       fail-fast: false
       matrix:
         include:
@@ -189,7 +166,7 @@ jobs:
             file: ./selfhost/updater/Dockerfile
             target: ""
 
-    steps:
+    steps: &build-images
       - name: Check out source
         uses: actions/checkout@v4
         with:
@@ -246,7 +223,8 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Generate image metadata
+      - &image-metadata
+        name: Generate image metadata
         id: metadata
         uses: docker/metadata-action@v5
         with:
@@ -259,6 +237,7 @@ jobs:
             type=raw,value=latest,enable=${{ env.RELEASE_TAG != '' && !github.event.release.prerelease }}
 
       - name: Build and publish
+        id: build
         uses: docker/build-push-action@v6
         with:
           context: ${{ matrix.context }}
@@ -266,7 +245,7 @@ jobs:
           target: ${{ matrix.target }}
           platforms: ${{ (github.event_name == 'workflow_dispatch' && inputs.include_arm64) && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
           push: true
-          tags: ${{ steps.metadata.outputs.tags }}
+          tags: ${{ env.RELEASE_TAG != '' && format('ghcr.io/{0}/{1}:candidate-{2}-{3}', github.repository_owner, matrix.image, github.run_id, github.run_attempt) || steps.metadata.outputs.tags }}
           labels: ${{ steps.metadata.outputs.labels }}
           build-args: |
             VERSION=${{ env.RELEASE_TAG || github.sha }}
@@ -278,9 +257,280 @@ jobs:
           provenance: true
           sbom: true
 
+      - name: Record the built manifest digest
+        if: env.RELEASE_TAG != ''
+        env:
+          REPOSITORY: ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}
+          DIGEST: ${{ steps.build.outputs.digest }}
+          IMAGE: ${{ matrix.name }}
+        run: printf '%s@%s\n' "${REPOSITORY,,}" "$DIGEST" > "$RUNNER_TEMP/$IMAGE"
+      - uses: actions/upload-artifact@v4
+        if: env.RELEASE_TAG != ''
+        with:
+          name: image-digest-${{ matrix.name }}
+          path: ${{ runner.temp }}/${{ matrix.name }}
+          if-no-files-found: error
+
+  release-candidate:
+    needs: candidate-images
+    runs-on: ubuntu-latest
+    outputs:
+      images: ${{ steps.candidate.outputs.images }}
+    steps:
+      - &checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: image-digest-*
+          path: ${{ runner.temp }}/digests
+          merge-multiple: true
+      - name: Package the distribution and bind the candidate
+        id: candidate
+        env:
+          IMAGE_OWNER: ${{ github.repository_owner }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/package" "$RUNNER_TEMP/candidate"
+          git archive HEAD selfhost | tar -x -C "$RUNNER_TEMP/package"
+          cd "$RUNNER_TEMP/package"
+          sed -i "s|ghcr.io/carbogninalberto/assozeta-|ghcr.io/${IMAGE_OWNER,,}/assozeta-|g" \
+            selfhost/bin/assozeta selfhost/compose.yml selfhost/.env.example
+          archive="$RUNNER_TEMP/candidate/assozeta-selfhost-$RELEASE_TAG.tar.gz"
+          tar -czf "$archive" selfhost
+          cd "$GITHUB_WORKSPACE"
+          python3 -B tools/release/qualify.py candidate --images "$RUNNER_TEMP/digests" \
+            --version "$RELEASE_TAG" --bundle "$archive" --output "$RUNNER_TEMP/candidate/candidate.json"
+          echo "images=$(jq -c .images "$RUNNER_TEMP/candidate/candidate.json")" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: selfhost-candidate
+          path: ${{ runner.temp }}/candidate/
+          if-no-files-found: error
+
+  release-contracts:
+    needs: release-candidate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    env:
+      PIP_CONSTRAINT: ${{ github.workspace }}/TESTS/adapters/django/constraints-parity.txt
+      GOTOOLCHAIN: local
+    steps:
+      - *checkout
+      - uses: ./.github/actions/go-foundation-setup
+      - &download-candidate
+        uses: actions/download-artifact@v4
+        with:
+          name: selfhost-candidate
+          path: ${{ runner.temp }}/candidate
+      - name: Run the simulated handoff contracts
+        run: |
+          docker pull "$(sed -n 's/^FROM \(caddy:[^ ]*\) AS production$/\1/p' UI/Dockerfile)"
+          python3 -c 'import subprocess; from TESTS.adapters.django.s3_objects import IMAGE; subprocess.run(["docker", "pull", IMAGE], check=True)'
+          modules=()
+          for file in TESTS/handoff/test_*.py; do
+            [[ $file == *_installed.py || $file == */test_p7_legacy.py ]] && continue
+            module=${file%.py}
+            modules+=("${module//\//.}")
+          done
+          started=$(date -u +%FT%TZ)
+          report="$RUNNER_TEMP/contracts.json"
+          python3 -B -m TESTS.handoff.run_expected_red --report "$report" "${modules[@]}" || test -s "$report"
+          python3 -B tools/release/qualify.py receipt --lane contracts --report "$report" \
+            --candidate "$RUNNER_TEMP/candidate/candidate.json" --run "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" \
+            --started-at "$started" --finished-at "$(date -u +%FT%TZ)" --output "$RUNNER_TEMP/receipts/contracts.json"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: receipts-contracts
+          path: ${{ runner.temp }}/receipts/
+          if-no-files-found: error
+
+  release-installed:
+    needs: [release-candidate, selfhost-quality]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 270
+    env:
+      ASSOZETA_HANDOFF_P5_IMAGES: ${{ needs.release-candidate.outputs.images }}
+    steps:
+      - *checkout
+      - *download-candidate
+      - name: Install the candidate distribution and pull its exact images
+        run: |
+          cd "$RUNNER_TEMP/candidate"
+          archive="assozeta-selfhost-$RELEASE_TAG.tar.gz"
+          echo "$(jq -r .bundle_sha256 candidate.json)  $archive" | sha256sum --check
+          tar -xzf "$archive" -C "$GITHUB_WORKSPACE"
+          version=${RELEASE_TAG#v}
+          echo "ASSOZETA_RELEASE_VERSION=$version" >> "$GITHUB_ENV"
+          while read -r name ref; do
+            docker pull "$ref"
+            docker tag "$ref" "assozeta-$name:$version"
+            if [[ $name == renderer ]]; then docker tag "$ref" assozeta-renderer:test; fi
+            if [[ $name == updater ]]; then docker tag "$ref" "${ref%@*}:$version"; fi
+          done < <(jq -r '.images | to_entries[] | [.key,.value] | @tsv' candidate.json)
+      - uses: ./.github/actions/prepare-storage
+        with:
+          legacy: 'true'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install the forward lane browser
+        run: |
+          npm ci --prefix selfhost/tests/browser
+          npm exec --prefix selfhost/tests/browser -- playwright install --with-deps chromium
+      - name: Rehearse the Django lifecycle with the candidate images
+        env:
+          QUALITY: ${{ needs.selfhost-quality.result }}
+        run: |
+          started=$(date -u +%FT%TZ)
+          make SELFHOST_PREBUILT_IMAGES=1 selfhost-production-smoke
+          test "$QUALITY" = success
+          jq -n --arg revision "$(git rev-parse HEAD)" \
+            '{ $revision, tests: {"make selfhost-production-smoke": {state:"pass"}, "selfhost-quality": {state:"pass"}} }' \
+            > "$RUNNER_TEMP/smoke.json"
+          python3 -B tools/release/qualify.py receipt --lane django_mode_lifecycle --report "$RUNNER_TEMP/smoke.json" \
+            --candidate "$RUNNER_TEMP/candidate/candidate.json" --run "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" \
+            --started-at "$started" --finished-at "$(date -u +%FT%TZ)" --output "$RUNNER_TEMP/receipts/django_mode_lifecycle.json"
+      - name: Exercise both installed runtimes, recovery and legacy upgrades
+        env:
+          ASSOZETA_RELEASE_OBSERVATIONS: ${{ runner.temp }}/observations
+        run: |
+          started=$(date -u +%FT%TZ)
+          report="$RUNNER_TEMP/installed.json"
+          python3 -B -m TESTS.handoff.run_expected_red --report "$report" \
+            TESTS.handoff.test_p5_installed TESTS.handoff.test_p6_installed TESTS.handoff.test_p7_installed TESTS.handoff.test_p7_legacy || test -s "$report"
+          finished=$(date -u +%FT%TZ)
+          for lane in fresh_round_trip failure_recovery go_mode_lifecycle steady_state legacy_mixed_upgrade; do
+            observations=()
+            for file in "$ASSOZETA_RELEASE_OBSERVATIONS/$lane.json" "$ASSOZETA_RELEASE_OBSERVATIONS/$lane"-*.json; do
+              if [[ -f $file ]]; then observations+=(--observations "$file"); fi
+            done
+            python3 -B tools/release/qualify.py receipt --lane "$lane" --report "$report" "${observations[@]}" \
+              --candidate "$RUNNER_TEMP/candidate/candidate.json" --run "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" \
+              --started-at "$started" --finished-at "$finished" --output "$RUNNER_TEMP/receipts/$lane.json"
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: receipts-installed
+          path: ${{ runner.temp }}/receipts/
+          if-no-files-found: error
+
+  release-qualification:
+    needs: [release-contracts, release-installed]
+    runs-on: ubuntu-latest
+    steps:
+      - *checkout
+      - *download-candidate
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: receipts-*
+          path: ${{ runner.temp }}/receipts
+          merge-multiple: true
+      - name: Qualify the candidate on its clean source checkout
+        run: |
+          python3 -B tools/release/qualify.py check --candidate "$RUNNER_TEMP/candidate/candidate.json" \
+            --receipts "$RUNNER_TEMP/receipts" --output "$RUNNER_TEMP/assozeta-release-qualification.json"
+      - uses: actions/upload-artifact@v4
+        if: success() || failure()
+        with:
+          name: release-qualification
+          path: ${{ runner.temp }}/assozeta-release-qualification.json
+          if-no-files-found: error
+
+  production-smoke:
+    name: Run production smoke suite
+    needs: release-installed
+    if: >-
+      ${{ !cancelled() && (needs.release-installed.result == 'success' ||
+          (github.event_name != 'release' && !inputs.release_tag && !(github.event_name == 'push' && github.ref_type == 'tag') && needs.release-installed.result == 'skipped')) }}
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out source
+        if: env.RELEASE_TAG == ''
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - if: env.RELEASE_TAG == ''
+        uses: ./.github/actions/prepare-storage
+
+      - name: Build production images and run smoke test
+        if: env.RELEASE_TAG == ''
+        run: make selfhost-production-smoke
+
+      - name: Confirm the candidate smoke receipt
+        if: env.RELEASE_TAG != ''
+        uses: actions/download-artifact@v4
+        with:
+          name: receipts-installed
+          path: ${{ runner.temp }}/receipts
+      - if: env.RELEASE_TAG != ''
+        run: jq -e '.tests["make selfhost-production-smoke"] == "passed"' "$RUNNER_TEMP/receipts/django_mode_lifecycle.json"
+
+  publish:
+    name: Publish ${{ matrix.name }}
+    needs: [release-qualification, validate, production-smoke, selfhost-quality, manual-release, release-target, go-quality]
+    if: >-
+      ${{ !cancelled() && needs.release-qualification.result == 'success' &&
+          needs.production-smoke.result == 'success' &&
+          needs.validate.result == 'success' && needs.go-quality.result == 'success' &&
+          needs.selfhost-quality.result == 'success' && needs.release-target.result == 'success' &&
+          (needs.manual-release.result == 'success' ||
+           (!(github.event_name == 'workflow_dispatch' && inputs.include_manual) && needs.manual-release.result == 'skipped')) }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy: *images
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - *image-metadata
+      - &download-qualification
+        uses: actions/download-artifact@v4
+        with:
+          name: release-qualification
+          path: ${{ runner.temp }}/qualification
+      - name: Promote qualified image
+        env:
+          IMAGE: ${{ matrix.name }}
+          TAGS: ${{ steps.metadata.outputs.tags }}
+        run: |
+          python3 -B tools/release/qualify.py promote --image "$IMAGE" --tags "$TAGS" \
+            --qualification "$RUNNER_TEMP/qualification/assozeta-release-qualification.json"
+
+  branch-images:
+    name: Publish commit image ${{ matrix.name }}
+    needs: [release-qualification, validate, production-smoke, selfhost-quality, manual-release, release-target, go-quality]
+    if: >-
+      ${{ !cancelled() && github.event_name != 'release' && !inputs.release_tag &&
+          !(github.event_name == 'push' && github.ref_type == 'tag') &&
+          needs.release-qualification.result == 'skipped' && needs.release-target.result == 'skipped' &&
+          needs.validate.result == 'success' && needs.go-quality.result == 'success' &&
+          needs.production-smoke.result == 'success' &&
+          (needs.selfhost-quality.result == 'success' ||
+           (github.event_name == 'push' && needs.selfhost-quality.result == 'skipped')) &&
+          (needs.manual-release.result == 'success' ||
+           (!(github.event_name == 'workflow_dispatch' && inputs.include_manual) && needs.manual-release.result == 'skipped')) }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    strategy: *images
+    steps: *build-images
+
   verify-release-images:
     name: Verify release images are public
-    if: ${{ !cancelled() && needs.publish.result == 'success' && (github.event_name == 'release' || inputs.release_tag) }}
+    if: ${{ !cancelled() && needs.publish.result == 'success' && (github.event_name == 'release' || inputs.release_tag || (github.event_name == 'push' && github.ref_type == 'tag')) }}
     needs: publish
     runs-on: ubuntu-latest
     steps:
@@ -289,55 +539,19 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Verify anonymous pull of release-tag images
-        env:
-          IMAGE_OWNER: ${{ github.repository_owner }}
+      - *download-qualification
+      - uses: docker/setup-buildx-action@v3
+      - name: Resolve release tags without registry credentials
         run: |
-          set -euo pipefail
-          RELEASE_TAG="${RELEASE_TAG#v}"
-
-          images=(assozeta-backend assozeta-backend-go assozeta-web assozeta-renderer assozeta-updater)
-          failures=()
-
-          for image in "${images[@]}"; do
-            repo="${IMAGE_OWNER}/${image}"
-            ref="ghcr.io/${repo}:${RELEASE_TAG}"
-            echo "Verifying anonymous pull of ${ref}"
-
-            if ! token="$(curl -fsSL "https://ghcr.io/token?service=ghcr.io&scope=repository:${repo}:pull" | python3 -c 'import json,sys; print(json.load(sys.stdin)["token"])')"; then
-              failures+=("${ref}")
-              continue
-            fi
-            if ! curl -fsSL -o /dev/null \
-              -H "Authorization: Bearer ${token}" \
-              -H "Accept: application/vnd.oci.image.index.v1+json, application/vnd.docker.distribution.manifest.list.v2+json, application/vnd.oci.image.manifest.v1+json, application/vnd.docker.distribution.manifest.v2+json" \
-              "https://ghcr.io/v2/${repo}/manifests/${RELEASE_TAG}"; then
-              failures+=("${ref}")
-            fi
-          done
-
-          if [ "${#failures[@]}" -gt 0 ]; then
-            printf '\nAnonymous pull verification failed for:\n' >&2
-            printf '  - %s\n' "${failures[@]}" >&2
-            printf '\nGHCR container packages are private by default, but the self-host installer\n' >&2
-            printf 'pulls images without credentials. Set all five packages to Public\n' >&2
-            printf '(Package settings > Change visibility > Public), then rerun this workflow:\n' >&2
-            printf '  - ghcr.io/%s/assozeta-backend\n' "${IMAGE_OWNER}" >&2
-            printf '  - ghcr.io/%s/assozeta-backend-go\n' "${IMAGE_OWNER}" >&2
-            printf '  - ghcr.io/%s/assozeta-web\n' "${IMAGE_OWNER}" >&2
-            printf '  - ghcr.io/%s/assozeta-renderer\n' "${IMAGE_OWNER}" >&2
-            printf '  - ghcr.io/%s/assozeta-updater\n' "${IMAGE_OWNER}" >&2
-            exit 1
-          fi
-
-          echo "All five release images are anonymously pullable."
+          python3 -B tools/release/qualify.py verify-published \
+            --qualification "$RUNNER_TEMP/qualification/assozeta-release-qualification.json"
 
   release-bundle:
     name: Attach self-host bundle
     if: >-
       ${{ !cancelled() && needs.publish.result == 'success' &&
           needs.verify-release-images.result == 'success' &&
-          (github.event_name == 'release' || inputs.release_tag) }}
+          (github.event_name == 'release' || inputs.release_tag || (github.event_name == 'push' && github.ref_type == 'tag')) }}
     needs: [publish, verify-release-images]
     runs-on: ubuntu-latest
     permissions:
@@ -348,37 +562,23 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Set bundle image owner
+      - *download-candidate
+      - *download-qualification
+      - name: Prepare the qualified release assets
         env:
-          BUNDLE_IMAGE_OWNER: ${{ github.repository_owner }}
-        run: |
-          python3 - <<'PY'
-          import os
-          from pathlib import Path
-
-          owner = os.environ["BUNDLE_IMAGE_OWNER"]
-          replacement = f"ghcr.io/{owner}/assozeta-"
-          for filename in (
-              "selfhost/bin/assozeta",
-              "selfhost/compose.yml",
-              "selfhost/.env.example",
-          ):
-              path = Path(filename)
-              path.write_text(path.read_text().replace("ghcr.io/carbogninalberto/assozeta-", replacement))
-          PY
-
-      - name: Create bundle
-        run: tar -czf "assozeta-selfhost-$RELEASE_TAG.tar.gz" selfhost
-
-      - name: Upload release asset
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh release upload "$RELEASE_TAG" "assozeta-selfhost-$RELEASE_TAG.tar.gz" --clobber
-
-      - name: Publish verified update manifest
-        env:
-          GH_TOKEN: ${{ github.token }}
           PYTHONPATH: BE/instance
         run: |
-          python3 selfhost/updater/build_manifest.py "$RELEASE_TAG" "assozeta-selfhost-$RELEASE_TAG.tar.gz" assozeta-update.json
+          archive="assozeta-selfhost-$RELEASE_TAG.tar.gz"
+          cp "$RUNNER_TEMP/candidate/$archive" .
+          cp "$RUNNER_TEMP/qualification/assozeta-release-qualification.json" .
+          python3 selfhost/updater/build_manifest.py "$RELEASE_TAG" "$archive" assozeta-update.json
+          jq -e --slurpfile q assozeta-release-qualification.json '
+            .bundle_sha256 == $q[0].candidate.bundle_sha256 and
+            (.images + {"backend-go": .extensions.go_backend.image}) == $q[0].candidate.images
+          ' assozeta-update.json
+      - name: Attach the archive, qualification and verified update manifest
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload "$RELEASE_TAG" "assozeta-selfhost-$RELEASE_TAG.tar.gz" assozeta-release-qualification.json --clobber
           gh release upload "$RELEASE_TAG" assozeta-update.json --clobber
