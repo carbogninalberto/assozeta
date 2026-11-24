@@ -510,6 +510,22 @@
       "signatures": [
         "P7 contract red"
       ]
+    },
+    "TESTS.handoff.test_p7_legacy.LegacyMixedUpgrade.test_mixed_release_upgraded_into_go": {
+      "phase": 7,
+      "owner": "t-p7",
+      "signatures": [
+        "P7 contract red"
+      ],
+      "reason": "part C2 (installed, CI only): setUp loads the release gate, which does not exist; the v1.0.48 mixed install, the upgrade to the candidate and its adoption are unexercised until part A lands"
+    },
+    "TESTS.handoff.test_p7_legacy.LegacyMixedUpgrade.test_mixed_release_upgraded_into_django": {
+      "phase": 7,
+      "owner": "t-p7",
+      "signatures": [
+        "P7 contract red"
+      ],
+      "reason": "part C2 (installed, CI only): setUp loads the release gate, which does not exist; the v1.0.48 mixed install, the upgrade to the candidate and its adoption are unexercised until part A lands"
     }
   }
 }

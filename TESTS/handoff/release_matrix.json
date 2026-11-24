@@ -81,9 +81,19 @@
       "open": null
     },
     "legacy_mixed_upgrade": {
-      "tests": [],
-      "observations": [],
-      "open": "no installed lane upgrades a published mixed (dual-API) release into each steady mode against the candidate yet; decision pending (CONTRACT P7, open points)"
+      "tests": [
+        "TESTS.handoff.test_p7_legacy.LegacyMixedUpgrade.test_mixed_release_upgraded_into_django",
+        "TESTS.handoff.test_p7_legacy.LegacyMixedUpgrade.test_mixed_release_upgraded_into_go"
+      ],
+      "observations": [
+        {"kind": "services", "runtime": "django"},
+        {"kind": "work", "runtime": "django"},
+        {"kind": "inactive_runtime", "runtime": "django"},
+        {"kind": "services", "runtime": "go"},
+        {"kind": "work", "runtime": "go"},
+        {"kind": "inactive_runtime", "runtime": "go"}
+      ],
+      "open": null
     }
   }
 }

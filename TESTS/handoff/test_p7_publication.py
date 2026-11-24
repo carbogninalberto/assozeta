@@ -10,7 +10,7 @@ dispatch is a rehearsal and must publish nothing releasable (pinned with every o
 Contract (publish-images.yml):
   - job `release-qualification` runs in every release context and runs
     `tools/release/qualify.py check` (part A) on the candidate it built; the installed lanes it
-    depends on (test_p5_installed, test_p6_installed, test_p7_installed) run against the candidate's
+    depends on (test_p5_installed, test_p6_installed, test_p7_installed, test_p7_legacy) run against the candidate's
     images (ASSOZETA_HANDOFF_P5_IMAGES), never images rebuilt from source;
   - every job that publishes release artifacts (registry pushes, tags, release assets) depends on it
     and does not run unless it succeeded (failure, cancelled or skipped all block);
@@ -35,7 +35,8 @@ QUALIFY = 'release-qualification'
 BAD_RESULTS = ('failure', 'cancelled', 'skipped')
 PUBLISHING = re.compile(r'gh release (upload|create)|docker push|imagetools create|qualify\.py promote|'
                         r'gh api .*releases', re.I)
-INSTALLED = ('TESTS.handoff.test_p5_installed', 'TESTS.handoff.test_p6_installed', 'TESTS.handoff.test_p7_installed')
+INSTALLED = ('TESTS.handoff.test_p5_installed', 'TESTS.handoff.test_p6_installed', 'TESTS.handoff.test_p7_installed',
+             'TESTS.handoff.test_p7_legacy')
 
 
 def builds_and_pushes(step, scope_value):

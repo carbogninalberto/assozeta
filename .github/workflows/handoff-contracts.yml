@@ -34,7 +34,7 @@ jobs:
         run: docker pull "$(sed -n 's/^FROM \(caddy:[^ ]*\) AS production$/\1/p' UI/Dockerfile)"
       - name: Run the handoff suite with expected-red tracking (the task matrix, Phase 6 and installed lanes run separately)
         run: |
-          modules=$(ls TESTS/handoff/test_*.py | grep -v -e '/test_p4_task_matrix\.py$' -e '/test_p5_installed\.py$' -e '/test_p6_' -e '/test_p7_installed\.py$' | sed 's#/#.#g; s#\.py$##')
+          modules=$(ls TESTS/handoff/test_*.py | grep -v -e '/test_p4_task_matrix\.py$' -e '/test_p5_installed\.py$' -e '/test_p6_' -e '/test_p7_installed\.py$' -e '/test_p7_legacy\.py$' | sed 's#/#.#g; s#\.py$##')
           python3 -B -m TESTS.handoff.run_expected_red $modules
       - name: Retain the expected-red report
         if: always()
@@ -117,8 +117,9 @@ jobs:
     runs-on: ubuntu-24.04
     # ~20-25 min to build the five release images from this commit, ~10-15 min of lanes
     # per phase (Phase 5 switch lanes, the Phase 6 Go-mode lifecycle lane), then ~25 min of
-    # Phase 7 release lanes and installed mutation controls.
-    timeout-minutes: 150
+    # Phase 7 release lanes and installed mutation controls, then ~50 min for the two
+    # legacy mixed upgrade lanes.
+    timeout-minutes: 210
     steps:
       - uses: actions/checkout@v4
         with:
@@ -138,6 +139,9 @@ jobs:
       - name: Run the Phase 7 release lanes and installed mutation controls (same images, rebuilt from cache)
         if: success() || failure()
         run: python3 -B -m TESTS.handoff.run_expected_red --report quality-reports/handoff/expected-red-installed-p7.json TESTS.handoff.test_p7_installed
+      - name: Run the Phase 7 legacy mixed upgrade lanes (published v1.0.48 upgraded to these images)
+        if: success() || failure()
+        run: python3 -B -m TESTS.handoff.run_expected_red --report quality-reports/handoff/expected-red-installed-p7-legacy.json TESTS.handoff.test_p7_legacy
       - name: Retain the installed-lane report and log
         if: always()
         uses: actions/upload-artifact@v4
@@ -152,6 +156,9 @@ jobs:
             quality-reports/handoff/expected-red-installed-p7.json
             quality-reports/handoff/p7/installed/lanes.log
             quality-reports/handoff/p7/installed/observations.json
+            quality-reports/handoff/expected-red-installed-p7-legacy.json
+            quality-reports/handoff/p7/legacy/lanes.log
+            quality-reports/handoff/p7/legacy/observations.json
           if-no-files-found: warn
           retention-days: 14
 
