@@ -10,7 +10,8 @@ counter the plan asks for.
 
 Lanes (release matrix lanes in TESTS/handoff/release_matrix.json):
   1 steady state, both modes   in Django mode then in Go mode: running services; accepted work by
-      identity (a database task and a mail due now, a mail due next month) until the due work
+      identity (a database task in each runtime's own form - a Celery message in Django mode, a native
+      durable job in Go mode - and a mail due now, a mail due next month) until the due work
       completes on the active runtime; a PDF probe (the renderer renders the active API through the
       internal alias active-api (its /healthz, served by both runtimes), as the application's documents do); the inactive runtime's
       container history and running set since the lane started; provider counts at the SMTP sink.
@@ -252,11 +253,31 @@ class ReleaseLanes(r.ContractCase, unittest.TestCase):
                               args=(subject, 'Synthetic body', 'sender@example.invalid', ['recipient@example.invalid']))
         return task, subject
 
+    def database_task(self, runtime):
+        """Work a database task, as each runtime's own producers create it: in Django mode a Celery message on
+        `celery`; in Go mode a native durable job (the Go scheduler's form of the same task, run by the durable
+        worker). A Celery envelope of it on the Go queue is not a Go-mode producer path; the Go consumer blocks it."""
+        if runtime == 'django':
+            return self.inst.seed(h.QUEUE['django'], h.DB_TASK)
+        job = str(uuid.uuid4())
+        self.inst.psql('INSERT INTO public.assozeta_go_jobs(id,association_id,kind,version,idempotency_key,payload,'
+                       f"max_attempts,available_at) VALUES ('{job}','00000000-0000-0000-0000-000000000000',"
+                       f"'{h.DB_TASK}',1,'p7-{job}','{{}}',3,clock_timestamp());")
+        return 'job:' + job
+
+    def state(self, task_id):
+        """(state, owner) of a Celery task in the ledger, or of a native Go durable job ('job:<id>')."""
+        if task_id.startswith('job:'):
+            state = self.inst.psql(f"SELECT state FROM public.assozeta_go_jobs WHERE id='{task_id[4:]}';")
+            return (state, 'go') if state else None
+        row = self.inst.ledger(task_id)
+        return (row[0], row[1]) if row else None
+
     def work_items(self, runtime, seeded):
         items = []
         for task_id, future in seeded:
-            row = self.inst.ledger(task_id) or ('absent', '', '0')
-            items.append({'id': task_id, 'state': row[0], 'owner': row[1], 'eta_future': future})
+            state, owner = self.state(task_id) or ('absent', '')
+            items.append({'id': task_id, 'state': state, 'owner': owner, 'eta_future': future})
         return items
 
     def services(self, runtime):
@@ -295,7 +316,7 @@ class ReleaseLanes(r.ContractCase, unittest.TestCase):
     def wait_completed(self, task_ids, timeout=600):
         deadline = time.monotonic() + timeout
         while time.monotonic() < deadline:
-            rows = [self.inst.ledger(task_id) for task_id in task_ids]
+            rows = [self.state(task_id) for task_id in task_ids]
             if all(row and row[0] == 'completed' for row in rows):
                 return
             time.sleep(2)
@@ -335,7 +356,7 @@ class ReleaseLanes(r.ContractCase, unittest.TestCase):
         for runtime in ('django', 'go'):
             self.ensure(runtime)
             since = time.time()
-            due = self.inst.seed(h.QUEUE[runtime], h.DB_TASK)
+            due = self.database_task(runtime)
             mail, subject = self.mail(runtime)
             later, _ = self.mail(runtime, eta=h.future(30))
             self.wait_completed([due, mail])
@@ -424,7 +445,7 @@ class ReleaseLanes(r.ContractCase, unittest.TestCase):
 
     def test_5_mutation_unresolved_task(self):
         self.ensure('go')
-        due = self.inst.seed(h.QUEUE['go'], h.DB_TASK)
+        due = self.database_task('go')
         self.wait_completed([due])
         self.assert_clean([{'kind': 'work', 'runtime': 'go', 'items': self.work_items('go', [(due, False)])}],
                           'control: a completed task')
@@ -463,11 +484,15 @@ class ReleaseLanes(r.ContractCase, unittest.TestCase):
         p5.run([*self.compose_files(), '--profile', 'django', 'up', '-d', '--no-deps', 'api'], log=self.inst.log,
                env=self.compose_env())
         try:
-            call = ("fetch('http://api:8000/api/healthz').then(r => console.log(r.status))"
+            # Django serves its health route at /healthz on its own port (the proxy adds /api).
+            call = ("fetch('http://api:8000/healthz').then(r => console.log(r.status))"
                     ".catch(e => console.log(String(e)))")
-            h.wait_for(lambda: '200' in p5.run([*self.compose_files(), 'exec', '-T', 'renderer', 'node', '-e', call],
-                                               log=self.inst.log, check=False, env=self.compose_env()).stdout,
-                       'the forced call to the Django API', timeout=300, interval=3)
+            try:
+                h.wait_for(lambda: '200' in p5.run([*self.compose_files(), 'exec', '-T', 'renderer', 'node', '-e', call],
+                                                   log=self.inst.log, check=False, env=self.compose_env()).stdout,
+                           'the forced call to the Django API', timeout=300, interval=3)
+            except AssertionError as error:
+                self.fail(f'fixture: {error}')
             self.assert_refused([self.inactive('go', since)], 'inactive_runtime_call', 'the Django API called in Go mode')
         finally:
             p5.run([*self.compose_files(), '--profile', 'django', 'rm', '-s', '-f', 'api'], log=self.inst.log,

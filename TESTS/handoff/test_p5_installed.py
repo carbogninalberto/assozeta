@@ -452,6 +452,12 @@ class InstalledLanes(h.ContractCase, unittest.TestCase):
         STATE.setdefault('lanes', []).append({'browser': target, 'checks': report.get('checks')})
         failure = report.get('failure')
         self.assertIsNone(failure, f'{RED}: browser step: {failure}')
+        # The browser step returns only once the switch completed, so a status poll started afterwards
+        # never sees the maintenance window. The browser sampled it itself: its cold signed-in page loaded
+        # the operation from the runner while public readiness was down.
+        cold = any(row.get('ok') and str(row.get('message', '')).startswith(
+            'a cold signed-in browser during maintenance resumes operation') for row in report.get('checks') or ())
+        self.browser_window = [{'code': 200, 'ready': 'down (browser)', 'stage': None, 'maintenance': True}] if cold else []
         return report['operation']
 
     def follow(self, operation_id, timeout=1800):
@@ -537,7 +543,7 @@ class InstalledLanes(h.ContractCase, unittest.TestCase):
         self.wrong_password('go')
         operation = self.browser_switch('go')
         status, seen = self.follow(operation)
-        self.assert_switched('go', generation + 1, operation, seen, work)
+        self.assert_switched('go', generation + 1, operation, self.browser_window + seen, work)
         tables = {'p5': {'columns': ['name'], 'written_by': 'go'}}
         written, _ = inst.http('POST', '/api/profile/settings/tables', inst.token, {'tables_settings': tables})
         self.assertIn(written, (200, 201, 204), f'{RED}: a settings write through the Go API failed: {written}')
