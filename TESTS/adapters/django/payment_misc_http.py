@@ -76,6 +76,7 @@ MANAGED = (PAYMENT, SIGNATURE, harness.AUDIT, harness.INDEX)
 
 SMTP = {}
 SMTP_WAIT = 40
+FIXTURE = {}  # the running fixture (its broker client), for the deferred-send check
 
 
 def _assert_case(case, base_url, *, token, sessions):
@@ -91,7 +92,10 @@ def _assert_case(case, base_url, *, token, sessions):
     else:
         with smtp_configuration():
             status = base_contract.assert_case(case, base_url, token=token, sessions=sessions)
-            check_deliveries(spec)
+            if harness.go_owns_jobs():
+                check_deferred_deliveries(spec)
+            else:
+                check_deliveries(spec)
     printer.check_prints(case, None)
     return status
 
@@ -121,6 +125,37 @@ def smtp_configuration():
 
 def delivered(transcripts):
     return [t for t in transcripts if any(unit.endswith('\r\n.\r\n') for unit in t)]
+
+
+def check_deferred_deliveries(spec):
+    """Go on the handoff ledger does not start the association SMTP Timer in the request: it publishes one durable
+    send_email_html child per authored delivery for the Go consumer (whose SMTP effects the e-mail adapters and the
+    P4 e-mail matrix check). The request itself sends nothing and leaves the daily balance as it was."""
+    import base64
+    from kombu.utils.json import loads
+    from communications.models import CommunicationConfiguration
+    require = base_contract.require
+    config = base_contract.load_source()['smtp_config']
+    expected = spec['deliveries']
+    require(len(expected) > 0, 'smtp.authored')
+    fixture = FIXTURE['current']
+    found, deadline = fixture.pop('deferred_html', []), time.monotonic() + 10
+    while time.monotonic() < deadline and len(found) < len(expected):
+        found += [raw for raw in harness.drain_celery(fixture) if json.loads(raw)['headers']['task'] == 'send_email_html']
+        time.sleep(0.2)
+    require(len(found) == len(expected), f'smtp.deferred-count:{len(found)}')
+    recipients = []
+    for raw in found:
+        require(harness.message_queue(raw) == harness.GO_QUEUE, 'smtp.deferred-queue')
+        args, kwargs, _ = loads(base64.b64decode(json.loads(raw)['body']))
+        call = dict(zip(('html_message', 'subject', 'recipient_list', 'sport_association_id', 'reply_to'), args), **kwargs)
+        require(str(call['sport_association_id']) == str(base_contract.load_source()['plans_owner']['association']),
+                'smtp.deferred-association')
+        recipients += list(call['recipient_list'])
+    require(sorted(recipients) == sorted(item['to'] for item in expected), 'smtp.deferred-recipients')
+    require(not delivered(SMTP['server'].take()), 'smtp.deferred-no-request-send')
+    balance = CommunicationConfiguration._base_manager.filter(pk=config['id']).values_list('daily_email_balance', flat=True).first()
+    require(balance == config['balance'], f'smtp.deferred-balance:{balance}')
 
 
 def check_deliveries(spec):
@@ -307,6 +342,7 @@ def fixture_context(apps, private_work, raw, *, cleanup_receipt=None):
         token = AccessToken()
         token['user_id'] = contract.load_source()['plans_owner']['id']
         fixture['tokens'] = {**fixture['tokens'], 'plans_owner': str(token)}
+        FIXTURE['current'] = fixture
         yield fixture
 
 
@@ -429,6 +465,8 @@ def check_configuration_audit(effect, events, indexes, before, source):
     config = [e for e in events if kinds.get(e['content_type_id']) == ('communications', 'communicationconfiguration')]
     rest = [e for e in events if e not in config]
     spec = effect.get('smtp_config_audit')
+    if spec and harness.go_owns_jobs():
+        spec = None  # the send (and its balance save) is deferred to the Go consumer: check_deferred_deliveries
     contract.require(len(config) == (1 if spec else 0), 'audit.configuration-count')
     if spec:
         event, key = config[0], source['smtp_config']['id']

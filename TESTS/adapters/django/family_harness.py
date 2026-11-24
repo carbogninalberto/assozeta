@@ -13,6 +13,7 @@ runner has had:
 """
 from contextlib import contextmanager
 import ipaddress
+import json
 from pathlib import Path
 
 from TESTS.adapters.django import carnet_list_http as carnets
@@ -297,14 +298,62 @@ def with_celery_broker(fixture_context):
     return wrapped
 
 
+# With the handoff ledger (Phase 3+) the effective runtime owns publication: Django publishes on 'celery'; Go, when
+# it owns the instance (schema 8: every managed task; earlier, the families it executes), on its consumer queue.
+GO_QUEUE = 'assozeta-go'
+
+
 def drain_celery(fixture):
-    """The raw messages on the broker queue, oldest first; the queue is emptied."""
+    """The raw messages on the managed broker queues ('celery', then the Go consumer queue), oldest first; both
+    queues are emptied. owned_spec() pins each message to the queue of the runtime that owns the instance."""
     broker = fixture['celery_broker']
     with broker.pipeline(transaction=True) as pipe:
-        pipe.lrange(CELERY_QUEUE, 0, -1)
-        pipe.delete(CELERY_QUEUE)
-        raw, _ = pipe.execute()
-    return [item.decode('utf-8') for item in reversed(raw)]
+        for queue in (CELERY_QUEUE, GO_QUEUE):
+            pipe.lrange(queue, 0, -1)
+            pipe.delete(queue)
+        results = pipe.execute()
+    return [item.decode('utf-8') for raw in results[0::2] for item in reversed(raw)]
+
+
+def message_queue(raw):
+    return json.loads(raw)['properties']['delivery_info']['routing_key']
+
+
+def go_owns_jobs():
+    """True when the handoff ledger is installed and Go is the effective runtime."""
+    from django.db import connection
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT to_regclass('public.assozeta_handoff_work') IS NOT NULL")
+        if not cursor.fetchone()[0]:
+            return False
+        cursor.execute('SELECT runtime FROM public.assozeta_go_job_ownership WHERE singleton=1')
+        return cursor.fetchone()[0] == 'go'
+
+
+def owned_spec(contract, raw, spec):
+    """The authored spec, routed to the Go consumer queue when the message is there: only while Go owns jobs."""
+    if message_queue(raw) != GO_QUEUE:
+        return spec
+    contract.require(go_owns_jobs(), 'celery.owner-queue')
+    return {**spec, 'queue': GO_QUEUE}
+
+
+def deferred_sends(fixture, messages, expected):
+    """Go on the handoff ledger turns an in-request association SMTP send (Django: send_email_html called in the
+    request, a local Timer) into a durable send_email_html child for the Go consumer. When the authored effect has no
+    send_email_html message, those children are set aside in fixture['deferred_html'] for the family's SMTP check."""
+    if any(spec.get('task') == 'send_email_html' for spec in expected):
+        return messages
+    deferred = [raw for raw in messages if message_queue(raw) == GO_QUEUE and json.loads(raw)['headers']['task'] == 'send_email_html']
+    fixture.setdefault('deferred_html', []).extend(deferred)
+    return [raw for raw in messages if raw not in deferred]
+
+
+def require_celery_binding(contract, fixture, messages):
+    """The kombu binding Django's producer declares for 'celery' (the Go consumer queue has none)."""
+    if any(message_queue(raw) == CELERY_QUEUE for raw in messages):
+        key, member = CELERY_BINDING
+        contract.require({m.decode() for m in fixture['celery_broker'].smembers(key)} == {member}, 'celery.binding')
 
 
 def _celery_value(value):
@@ -386,13 +435,13 @@ def check_celery_message(contract, raw, spec, *, since, until, where=''):
 def celery_published(contract, fixture, expected, *, since, until):
     """Effect check: the case published exactly `expected` (authored task specs,
     in order) to the default queue, and the queue's kombu binding is declared."""
-    messages = drain_celery(fixture)
+    messages = deferred_sends(fixture, drain_celery(fixture), expected)
     contract.require(len(messages) == len(expected), 'celery.count')
-    checked = [check_celery_message(contract, raw, spec, since=since, until=until, where=f':{index}')
+    checked = [check_celery_message(contract, raw, owned_spec(contract, raw, spec), since=since, until=until,
+                                    where=f':{index}')
                for index, (raw, spec) in enumerate(zip(messages, expected))]
     if expected:
-        key, member = CELERY_BINDING
-        contract.require({m.decode() for m in fixture['celery_broker'].smembers(key)} == {member}, 'celery.binding')
+        require_celery_binding(contract, fixture, messages)
         fixture.setdefault('celery_accepted', []).extend(messages)
     return checked
 
