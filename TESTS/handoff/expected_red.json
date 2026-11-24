@@ -95,22 +95,6 @@
       ],
       "reason": "Phase 4 part D: instance.backups.notify_failures has no limits record; family 08 backup_notify: the scoped backup notices socket is not built yet (contract TESTS/handoff/test_p4_backup_notices.py; implementer brief work/i-p4c2/prompt-3.md); the notify_failures record, its hand-back sites and its Go owner land with it"
     },
-    "TESTS.handoff.test_p7_legacy.LegacyMixedUpgrade.test_mixed_release_upgraded_into_go": {
-      "phase": 7,
-      "owner": "t-p7",
-      "signatures": [
-        "P7 contract red"
-      ],
-      "reason": "part C2 (installed): in run 45402517048 v1.0.48's configure refused the Docker host address domain without --email (fixed test-side: a fixture contact email, as in the update smoke); in run 45384724020 the adoption itself succeeded in this mode and only the fixture's localhost domain failed the readiness check; the next installed run decides"
-    },
-    "TESTS.handoff.test_p7_legacy.LegacyMixedUpgrade.test_mixed_release_upgraded_into_django": {
-      "phase": 7,
-      "owner": "t-p7",
-      "signatures": [
-        "P7 contract red"
-      ],
-      "reason": "part C2 (installed): in run 45402517048 v1.0.48's configure refused the Docker host address domain without --email (fixed test-side: a fixture contact email, as in the update smoke); in run 45384724020 the adoption itself succeeded in this mode and only the fixture's localhost domain failed the readiness check; the next installed run decides"
-    },
     "TESTS.handoff.test_p4_backup_notices.NoticesSocket.test_the_socket_answers_the_failures_to_the_notices_token_only": {
       "phase": 4,
       "owner": "t-p4",
