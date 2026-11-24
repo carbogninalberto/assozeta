@@ -953,7 +953,7 @@
           "BaseCommand"
         ]
       },
-      "status": "needs_review",
+      "status": "verified",
       "go": [
         "BE_GO/cmd/relay-go-realtime/main.go",
         "BE_GO/internal/service/relay_go_realtime.go",
@@ -992,10 +992,10 @@
       "evidence": [
         {
           "command": "RELAY_LABEL={label} python -m TESTS.adapters.go.relay_go_realtime_command",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "a243265121c22a9ddcb80cb63b84ab141897691c",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/ledger-verified-r8/relay-go-realtime/1-results.json",
-          "receipt_sha256": "59a7828317942906bb819127b6cd5168c5d24ac6c0f93424389306d6d24aac09",
+          "artifact": "quality-reports/go-migration/ledger-verified-p4-final2/relay-go-realtime/1-results.json",
+          "receipt_sha256": "b20dea47ebb7d3c0b52b81d89a24e745522235274a18d54bde6764240e74476a",
           "scope": "relay-go-realtime harness: success=True."
         }
       ],
@@ -1006,7 +1006,8 @@
         "Implementing evidence: RED: Django 9/9 against authored counts, row outcomes and mirror groups; Go command absent. (quality-reports/go-migration/relay-go-realtime/red-r3/results.json)",
         "Implementing evidence: GREEN: 9/9 identical exit status, stdout, outbox rows, Redis keys (decoded channel messages, group sets, TTLs) and mirror envelopes between manage.py relay_go_realtime --once and the race-built Go command. (quality-reports/go-migration/relay-go-realtime/green-r3/results.json)",
         "Implementing evidence: Mutation control: fails Go on 'channel layer unreachable: retry, then exhausted'. (quality-reports/go-migration/relay-go-realtime/mutation-r2/results.json)",
-        "Implementing evidence: GREEN re-run after the merge: 9/9. (quality-reports/go-migration/relay-go-realtime/green-merged/results.json)"
+        "Implementing evidence: GREEN re-run after the merge: 9/9. (quality-reports/go-migration/relay-go-realtime/green-merged/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/ledger-verified-r8/relay-go-realtime/1-results.json)"
       ]
     },
     {
@@ -42007,9 +42008,9 @@
       "kind": "task",
       "django": {
         "file": "BE/application/printing_tasks.py",
-        "line": 31,
+        "line": 56,
         "symbol": "print_document_compensation",
-        "sha256": "858df2f90a7788ca9c2a27ce43266b62d8ec9b1f86ab197570834975b6b2fde9"
+        "sha256": "18ea298cb7cae14596433c2979d9b57384fefbb7947cf02876886e8fd1f28faf"
       },
       "source_present": true,
       "declaration": {
@@ -42058,11 +42059,11 @@
       "evidence": [
         {
           "command": "python -m TESTS.adapters.go.celery_consumer_print_process",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "a243265121c22a9ddcb80cb63b84ab141897691c",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/sweep-final-3/process-celery_consumer_print_process.log",
-          "receipt_sha256": "e212bcbdb739d753bff7bab73edae4f3576ab974fae79b64eec84977ea8760d7",
-          "scope": "Process harness celery_consumer_print_process: {\"success\": true, \"minio\": {\"image\": \"ghcr.io/carbogninalberto/minio:RELEASE.2025-04-22T22-12-26Z-assozeta.1@sha256:8d35f39307b12cbc9ba3eedd26587d77ab30c21c3e904aee552df8b17b600389\", \"container\": \"az-instance-logo-minio-55ae60093433\", \"owned\": true}, \"binary_sha256\": \"666bdf180a9e1220ff9d787079dc5bd"
+          "artifact": "quality-reports/go-migration/sweep-rerun-p4-final/process-celery_consumer_print_process.log",
+          "receipt_sha256": "c2c3f4bc45abddae8944e0c66b0a5c5952cd3597e8cf90fceb86449c6eccffde",
+          "scope": "Process harness celery_consumer_print_process: {\"success\": true, \"minio\": {\"image\": \"ghcr.io/carbogninalberto/minio:RELEASE.2025-04-22T22-12-26Z-assozeta.1@sha256:8d35f39307b12cbc9ba3eedd26587d77ab30c21c3e904aee552df8b17b600389\", \"container\": \"az-instance-logo-minio-2499eeac9657\", \"owned\": true}, \"binary_sha256\": \"e5443c9f371f5dda92bf08eb919e7a7"
         }
       ],
       "notes": [
@@ -42072,7 +42073,8 @@
         "consumer-print: cmd/celery-consumer runs the message-consumed print_document_compensation when GO_TASK_QUEUE_TASKS routes it to assozeta-go: requests.get(CURRENT_HOST/document/compensation/<id>) with the Authorization token and requests' default headers, every error swallowed (SUCCESS null). Handed off before any effect: wrong arity or keywords, ids outside UUIDs/unreserved URL characters, tokens with control, non-ASCII or trailing blank characters. The eager .apply calls inside routes are separate (route ports). execution_owner stays django until a deployment sets GO_TASK_QUEUE_TASKS. See docs/architecture/go-migration/consumer-print.md.",
         "Implementing evidence: passed: 30 differential scenarios against the actual Django worker (race-built consumer) (quality-reports/go-migration/celery-consumer-print-process/results.json)",
         "Implementing evidence: red: Django oracle passed, Go timed out on the first scenario (all messages handed off) (quality-reports/go-migration/celery-consumer-print-process-red/results.json)",
-        "Implementing evidence: caught: Go differs from Django (2_ricevuta-2.pdf instead of 3_ricevuta-2.pdf) (quality-reports/go-migration/celery-consumer-print-process-mutation/results.json)"
+        "Implementing evidence: caught: Go differs from Django (2_ricevuta-2.pdf instead of 3_ricevuta-2.pdf) (quality-reports/go-migration/celery-consumer-print-process-mutation/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/sweep-final-3/process-celery_consumer_print_process.log)"
       ]
     },
     {
@@ -42080,9 +42082,9 @@
       "kind": "task",
       "django": {
         "file": "BE/application/printing_tasks.py",
-        "line": 19,
+        "line": 44,
         "symbol": "print_document_customer_invoice",
-        "sha256": "858df2f90a7788ca9c2a27ce43266b62d8ec9b1f86ab197570834975b6b2fde9"
+        "sha256": "18ea298cb7cae14596433c2979d9b57384fefbb7947cf02876886e8fd1f28faf"
       },
       "source_present": true,
       "declaration": {
@@ -42131,11 +42133,11 @@
       "evidence": [
         {
           "command": "python -m TESTS.adapters.go.celery_consumer_print_process",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "a243265121c22a9ddcb80cb63b84ab141897691c",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/sweep-final-3/process-celery_consumer_print_process.log",
-          "receipt_sha256": "e212bcbdb739d753bff7bab73edae4f3576ab974fae79b64eec84977ea8760d7",
-          "scope": "Process harness celery_consumer_print_process: {\"success\": true, \"minio\": {\"image\": \"ghcr.io/carbogninalberto/minio:RELEASE.2025-04-22T22-12-26Z-assozeta.1@sha256:8d35f39307b12cbc9ba3eedd26587d77ab30c21c3e904aee552df8b17b600389\", \"container\": \"az-instance-logo-minio-55ae60093433\", \"owned\": true}, \"binary_sha256\": \"666bdf180a9e1220ff9d787079dc5bd"
+          "artifact": "quality-reports/go-migration/sweep-rerun-p4-final/process-celery_consumer_print_process.log",
+          "receipt_sha256": "c2c3f4bc45abddae8944e0c66b0a5c5952cd3597e8cf90fceb86449c6eccffde",
+          "scope": "Process harness celery_consumer_print_process: {\"success\": true, \"minio\": {\"image\": \"ghcr.io/carbogninalberto/minio:RELEASE.2025-04-22T22-12-26Z-assozeta.1@sha256:8d35f39307b12cbc9ba3eedd26587d77ab30c21c3e904aee552df8b17b600389\", \"container\": \"az-instance-logo-minio-2499eeac9657\", \"owned\": true}, \"binary_sha256\": \"e5443c9f371f5dda92bf08eb919e7a7"
         }
       ],
       "notes": [
@@ -42145,7 +42147,8 @@
         "consumer-print: cmd/celery-consumer runs the message-consumed print_document_customer_invoice when GO_TASK_QUEUE_TASKS routes it to assozeta-go: requests.get(CURRENT_HOST/document/einvoice/<id>) with the Authorization token and requests' default headers, every error swallowed (SUCCESS null). Handed off before any effect: wrong arity or keywords, ids outside UUIDs/unreserved URL characters, tokens with control, non-ASCII or trailing blank characters. The eager .apply calls inside routes are separate (route ports). execution_owner stays django until a deployment sets GO_TASK_QUEUE_TASKS. See docs/architecture/go-migration/consumer-print.md.",
         "Implementing evidence: passed: 30 differential scenarios against the actual Django worker (race-built consumer) (quality-reports/go-migration/celery-consumer-print-process/results.json)",
         "Implementing evidence: red: Django oracle passed, Go timed out on the first scenario (all messages handed off) (quality-reports/go-migration/celery-consumer-print-process-red/results.json)",
-        "Implementing evidence: caught: Go differs from Django (2_ricevuta-2.pdf instead of 3_ricevuta-2.pdf) (quality-reports/go-migration/celery-consumer-print-process-mutation/results.json)"
+        "Implementing evidence: caught: Go differs from Django (2_ricevuta-2.pdf instead of 3_ricevuta-2.pdf) (quality-reports/go-migration/celery-consumer-print-process-mutation/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/sweep-final-3/process-celery_consumer_print_process.log)"
       ]
     },
     {
@@ -42153,9 +42156,9 @@
       "kind": "task",
       "django": {
         "file": "BE/application/printing_tasks.py",
-        "line": 8,
+        "line": 33,
         "symbol": "print_document_invoice",
-        "sha256": "858df2f90a7788ca9c2a27ce43266b62d8ec9b1f86ab197570834975b6b2fde9"
+        "sha256": "18ea298cb7cae14596433c2979d9b57384fefbb7947cf02876886e8fd1f28faf"
       },
       "source_present": true,
       "declaration": {
@@ -42204,11 +42207,11 @@
       "evidence": [
         {
           "command": "python -m TESTS.adapters.go.celery_consumer_print_process",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "a243265121c22a9ddcb80cb63b84ab141897691c",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/sweep-final-3/process-celery_consumer_print_process.log",
-          "receipt_sha256": "e212bcbdb739d753bff7bab73edae4f3576ab974fae79b64eec84977ea8760d7",
-          "scope": "Process harness celery_consumer_print_process: {\"success\": true, \"minio\": {\"image\": \"ghcr.io/carbogninalberto/minio:RELEASE.2025-04-22T22-12-26Z-assozeta.1@sha256:8d35f39307b12cbc9ba3eedd26587d77ab30c21c3e904aee552df8b17b600389\", \"container\": \"az-instance-logo-minio-55ae60093433\", \"owned\": true}, \"binary_sha256\": \"666bdf180a9e1220ff9d787079dc5bd"
+          "artifact": "quality-reports/go-migration/sweep-rerun-p4-final/process-celery_consumer_print_process.log",
+          "receipt_sha256": "c2c3f4bc45abddae8944e0c66b0a5c5952cd3597e8cf90fceb86449c6eccffde",
+          "scope": "Process harness celery_consumer_print_process: {\"success\": true, \"minio\": {\"image\": \"ghcr.io/carbogninalberto/minio:RELEASE.2025-04-22T22-12-26Z-assozeta.1@sha256:8d35f39307b12cbc9ba3eedd26587d77ab30c21c3e904aee552df8b17b600389\", \"container\": \"az-instance-logo-minio-2499eeac9657\", \"owned\": true}, \"binary_sha256\": \"e5443c9f371f5dda92bf08eb919e7a7"
         }
       ],
       "notes": [
@@ -42218,7 +42221,8 @@
         "consumer-print: cmd/celery-consumer runs the message-consumed print_document_invoice when GO_TASK_QUEUE_TASKS routes it to assozeta-go: requests.get(CURRENT_HOST/document/invoice/<id>?send_receipt_email=<str(flag)>) with the Authorization token and requests' default headers, every error swallowed (SUCCESS null). Handed off before any effect: wrong arity or keywords, ids outside UUIDs/unreserved URL characters, tokens with control, non-ASCII or trailing blank characters. The eager .apply calls inside routes are separate (route ports). execution_owner stays django until a deployment sets GO_TASK_QUEUE_TASKS. See docs/architecture/go-migration/consumer-print.md.",
         "Implementing evidence: passed: 30 differential scenarios against the actual Django worker (race-built consumer) (quality-reports/go-migration/celery-consumer-print-process/results.json)",
         "Implementing evidence: red: Django oracle passed, Go timed out on the first scenario (all messages handed off) (quality-reports/go-migration/celery-consumer-print-process-red/results.json)",
-        "Implementing evidence: caught: Go differs from Django (2_ricevuta-2.pdf instead of 3_ricevuta-2.pdf) (quality-reports/go-migration/celery-consumer-print-process-mutation/results.json)"
+        "Implementing evidence: caught: Go differs from Django (2_ricevuta-2.pdf instead of 3_ricevuta-2.pdf) (quality-reports/go-migration/celery-consumer-print-process-mutation/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/sweep-final-3/process-celery_consumer_print_process.log)"
       ]
     },
     {
@@ -42226,9 +42230,9 @@
       "kind": "task",
       "django": {
         "file": "BE/application/printing_tasks.py",
-        "line": 43,
+        "line": 68,
         "symbol": "print_document_medical_appointment",
-        "sha256": "858df2f90a7788ca9c2a27ce43266b62d8ec9b1f86ab197570834975b6b2fde9"
+        "sha256": "18ea298cb7cae14596433c2979d9b57384fefbb7947cf02876886e8fd1f28faf"
       },
       "source_present": true,
       "declaration": {
@@ -42277,11 +42281,11 @@
       "evidence": [
         {
           "command": "python -m TESTS.adapters.go.celery_consumer_print_process",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "a243265121c22a9ddcb80cb63b84ab141897691c",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/sweep-final-3/process-celery_consumer_print_process.log",
-          "receipt_sha256": "e212bcbdb739d753bff7bab73edae4f3576ab974fae79b64eec84977ea8760d7",
-          "scope": "Process harness celery_consumer_print_process: {\"success\": true, \"minio\": {\"image\": \"ghcr.io/carbogninalberto/minio:RELEASE.2025-04-22T22-12-26Z-assozeta.1@sha256:8d35f39307b12cbc9ba3eedd26587d77ab30c21c3e904aee552df8b17b600389\", \"container\": \"az-instance-logo-minio-55ae60093433\", \"owned\": true}, \"binary_sha256\": \"666bdf180a9e1220ff9d787079dc5bd"
+          "artifact": "quality-reports/go-migration/sweep-rerun-p4-final/process-celery_consumer_print_process.log",
+          "receipt_sha256": "c2c3f4bc45abddae8944e0c66b0a5c5952cd3597e8cf90fceb86449c6eccffde",
+          "scope": "Process harness celery_consumer_print_process: {\"success\": true, \"minio\": {\"image\": \"ghcr.io/carbogninalberto/minio:RELEASE.2025-04-22T22-12-26Z-assozeta.1@sha256:8d35f39307b12cbc9ba3eedd26587d77ab30c21c3e904aee552df8b17b600389\", \"container\": \"az-instance-logo-minio-2499eeac9657\", \"owned\": true}, \"binary_sha256\": \"e5443c9f371f5dda92bf08eb919e7a7"
         }
       ],
       "notes": [
@@ -42291,7 +42295,8 @@
         "consumer-print: cmd/celery-consumer runs the message-consumed print_document_medical_appointment when GO_TASK_QUEUE_TASKS routes it to assozeta-go: requests.get(CURRENT_HOST/document/medical-appointment/<id>) with the Authorization token and requests' default headers, every error swallowed (SUCCESS null). Handed off before any effect: wrong arity or keywords, ids outside UUIDs/unreserved URL characters, tokens with control, non-ASCII or trailing blank characters. The eager .apply calls inside routes are separate (route ports). execution_owner stays django until a deployment sets GO_TASK_QUEUE_TASKS. See docs/architecture/go-migration/consumer-print.md.",
         "Implementing evidence: passed: 30 differential scenarios against the actual Django worker (race-built consumer) (quality-reports/go-migration/celery-consumer-print-process/results.json)",
         "Implementing evidence: red: Django oracle passed, Go timed out on the first scenario (all messages handed off) (quality-reports/go-migration/celery-consumer-print-process-red/results.json)",
-        "Implementing evidence: caught: Go differs from Django (2_ricevuta-2.pdf instead of 3_ricevuta-2.pdf) (quality-reports/go-migration/celery-consumer-print-process-mutation/results.json)"
+        "Implementing evidence: caught: Go differs from Django (2_ricevuta-2.pdf instead of 3_ricevuta-2.pdf) (quality-reports/go-migration/celery-consumer-print-process-mutation/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/sweep-final-3/process-celery_consumer_print_process.log)"
       ]
     },
     {
@@ -42299,9 +42304,9 @@
       "kind": "task",
       "django": {
         "file": "BE/application/tasks.py",
-        "line": 1418,
+        "line": 1435,
         "symbol": "association_quote_assign",
-        "sha256": "36e3babcc1d2ff6692e322560948ed96c0fc8274958f438a84c4b69e1bad247c"
+        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
       },
       "source_present": true,
       "declaration": {
@@ -42366,18 +42371,18 @@
       "evidence": [
         {
           "command": "python -m TESTS.adapters.go.quote_assign_worker_process",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "a243265121c22a9ddcb80cb63b84ab141897691c",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/sweep-final-3/process-quote_assign_worker_process.log",
-          "receipt_sha256": "172077c02d1c7acca48e64986d6b6a72127b74f90265b98e17073dd243e69e9c",
+          "artifact": "quality-reports/go-migration/sweep-rerun-p4-final/process-quote_assign_worker_process.log",
+          "receipt_sha256": "f982990a50dbcc718b07200809a7e9d5723cb32882f7904ce93d7bf934c937fb",
           "scope": "Process harness quote_assign_worker_process: {\"success\": true, \"scope\": \"Native association_quote_assign worker on actual Django-created current schema.\\n\\nPrivate PostgreSQL, a private Redis broker (DB 0, default queue ``celery``)\\nand a local fake SMTP server (STARTTLS, throwaway certificate) recording every\\nclient byte. Each seed is first "
         },
         {
           "command": "python -m TESTS.adapters.go.email_tasks_worker_process",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "a243265121c22a9ddcb80cb63b84ab141897691c",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/sweep-final-3/process-email_tasks_worker_process.log",
-          "receipt_sha256": "ffee05ad7304c923cacb366257dc415a15794a4b4fa6d4272a9100a34e7276f9",
+          "artifact": "quality-reports/go-migration/sweep-rerun-p4-final/process-email_tasks_worker_process.log",
+          "receipt_sha256": "fb960d24d3a409f5a06867542d787deee704970790dd4cca57c57ebdcfada4cc",
           "scope": "Process harness email_tasks_worker_process: {\"success\": true, \"scope\": \"Native e-mail periodic task workers on actual Django-created current schema.\\n\\nPrivate PostgreSQL, a private Redis broker (DB 0, default queue ``celery``)\\nand two local fake SMTP servers (STARTTLS and implicit TLS with a throwaway\\ncertificate) that record every client "
         }
       ],
@@ -42389,7 +42394,9 @@
         "Implementing evidence: passed: quote_assign_worker_process parity groups against the actual Django task (quality-reports/go-migration/quote-assign-worker-process/results.json)",
         "Implementing evidence: passed: 87 Go tests (render goldens regenerated byte-identical from current Django templates, SMTP transcripts, subscription dates) (quality-reports/go-migration/ledger-refresh-go-tests/results.json)",
         "Implementing evidence: passed: quote_assign_worker_process parity groups against the actual Django task (quality-reports/go-migration/quote-assign-worker-process/results.json)",
-        "Implementing evidence: passed: 92 Go tests (render goldens, SMTP transcripts, subscription dates) (quality-reports/go-migration/sync-v1035/reverify/go-tests.json)"
+        "Implementing evidence: passed: 92 Go tests (render goldens, SMTP transcripts, subscription dates) (quality-reports/go-migration/sync-v1035/reverify/go-tests.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/sweep-final-3/process-quote_assign_worker_process.log)",
+        "Implementing evidence: passed (quality-reports/go-migration/sweep-final-3/process-email_tasks_worker_process.log)"
       ]
     },
     {
@@ -42397,9 +42404,9 @@
       "kind": "task",
       "django": {
         "file": "BE/application/tasks.py",
-        "line": 598,
+        "line": 611,
         "symbol": "auto_archive_subscription",
-        "sha256": "36e3babcc1d2ff6692e322560948ed96c0fc8274958f438a84c4b69e1bad247c"
+        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
       },
       "source_present": true,
       "declaration": {
@@ -42455,10 +42462,10 @@
       "evidence": [
         {
           "command": "python -m TESTS.adapters.go.nightly_subscriptions_worker_process",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "a243265121c22a9ddcb80cb63b84ab141897691c",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/sweep-final-3/process-nightly_subscriptions_worker_process.log",
-          "receipt_sha256": "bb01b67d0c5ed16c2df566f9e081a2edb85b6e7b9c27a0282b1666628f111277",
+          "artifact": "quality-reports/go-migration/sweep-rerun-p4-final/process-nightly_subscriptions_worker_process.log",
+          "receipt_sha256": "5a338219279814a735ce354f2b4f6d754d73e859e296477fc3503eb11f4e057f",
           "scope": "Process harness nightly_subscriptions_worker_process: {\"success\": true, \"scope\": \"Native clear_deleted_subscription and auto_archive_subscription workers on actual Django-created current schema.\\n\\nPrivate PostgreSQL and a private MinIO (the S3 default storage of the\\nsignature objects). Each seed is first processed by the actual Django task\\nwith the "
         }
       ],
@@ -42466,7 +42473,8 @@
         "v1.0.35 rewrite (PR #63) ported in docs/architecture/go-migration/sync-v1035.md; the earlier single-transaction body and its evidence followed the task before v1.0.35 and are replaced. RED: without the registration the job stays pending after the Django oracles pass.",
         "Implementing evidence: passed: 8/8 groups; Django task first on private PostgreSQL and MinIO, native worker state and bucket identical (quality-reports/go-migration/sync-v1035/nightly-green-r2.json)",
         "Implementing evidence: passed: 13 authored Django cases at a frozen instant; Go service state identical; 4 Go groups (quality-reports/go-migration/sync-v1035/archive-body-green-r2.json)",
-        "Implementing evidence: CAUGHT: a strict year-end test leaves the boundary instant unarchived, unlike Django (quality-reports/go-migration/sync-v1035/archive-mutation-r1.txt)"
+        "Implementing evidence: CAUGHT: a strict year-end test leaves the boundary instant unarchived, unlike Django (quality-reports/go-migration/sync-v1035/archive-mutation-r1.txt)",
+        "Implementing evidence: passed (quality-reports/go-migration/sweep-final-3/process-nightly_subscriptions_worker_process.log)"
       ]
     },
     {
@@ -42474,9 +42482,9 @@
       "kind": "task",
       "django": {
         "file": "BE/application/tasks.py",
-        "line": 768,
+        "line": 783,
         "symbol": "auto_delete_orphan_medical_certificate",
-        "sha256": "36e3babcc1d2ff6692e322560948ed96c0fc8274958f438a84c4b69e1bad247c"
+        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
       },
       "source_present": true,
       "declaration": {
@@ -42566,10 +42574,10 @@
       "evidence": [
         {
           "command": "python -m TESTS.adapters.go.orphan_medical_worker_process",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "a243265121c22a9ddcb80cb63b84ab141897691c",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/sweep-final-3/process-orphan_medical_worker_process.log",
-          "receipt_sha256": "6ee10b29065dbdcbc373de4d15b1631876b08801d7ed0e16605000070a303366",
+          "artifact": "quality-reports/go-migration/sweep-rerun-p4-final/process-orphan_medical_worker_process.log",
+          "receipt_sha256": "f2f91f3f746c76150cef591fb47d46a9464e65f47f387f96712dc328b9406962",
           "scope": "Process harness orphan_medical_worker_process: {\"success\": true, \"scope\": \"Native auto_delete_orphan_medical_certificate worker on actual Django-created current schema.\\n\\nPrivate PostgreSQL and a private MinIO (the S3 default storage). Each seed is\\nfirst processed by the actual Django task with the production S3Boto3Storage\\nbackend pointed at"
         }
       ],
@@ -42591,7 +42599,8 @@
         "Implementing evidence: 38 authored S3Storage/Boto3 web-identity cases pass over local STS: unsigned requests, session names, tested profile/environment/static priorities, nested source signatures, literal UTF-8/universal-newline token files, symlinks and malformed/denied/missing/expired responses. A 1 MiB file cap is an oracle-recorded correction; exact-limit success and nonblocking FIFO rejection are checked. Two 64-caller waves observe actual credential expiry and atomic token rotation with one STS call per wave. Existing 82 role and 44 selection cases, seven MinIO groups, Go vet/race and workflow/inventory checks pass. Full provider precedence/INI/renewal, live IdP/AWS policy and production composition remain open. See quality-reports/go-migration/storage-web-identity/.",
         "Implementing evidence: Native worker registration (version 1). TESTS/adapters/go/orphan_medical_worker_process.py: race-built worker/migrate on actual current Django models in private PostgreSQL and pinned MinIO; three Django oracles (main: 5 certificates deleted, 15 audit entries, cleared SET_NULL references; a certificate without document and a name outside the location each stop after the first deletion); Go must match the complete state (audit ids/times normalized) and bucket. Groups: default owner, the three variants, invalid envelopes, later run, cascade refusal. RED: job pending after the oracles. GREEN 7/7. See docs/architecture/go-migration/tasks-db-f.md.",
         "Implementing evidence: passed: orphan_medical_worker_process parity groups against the actual Django task (quality-reports/go-migration/orphan-medical-worker-process/results.json)",
-        "Implementing evidence: passed: orphan_medical_worker_process parity groups against the actual Django task (quality-reports/go-migration/orphan-medical-worker-process/results.json)"
+        "Implementing evidence: passed: orphan_medical_worker_process parity groups against the actual Django task (quality-reports/go-migration/orphan-medical-worker-process/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/sweep-final-3/process-orphan_medical_worker_process.log)"
       ]
     },
     {
@@ -42599,9 +42608,9 @@
       "kind": "task",
       "django": {
         "file": "BE/application/tasks.py",
-        "line": 642,
+        "line": 657,
         "symbol": "auto_mark_attendance",
-        "sha256": "36e3babcc1d2ff6692e322560948ed96c0fc8274958f438a84c4b69e1bad247c"
+        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
       },
       "source_present": true,
       "declaration": {
@@ -42651,10 +42660,10 @@
       "evidence": [
         {
           "command": "python -m TESTS.adapters.go.auto_mark_worker_process",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "a243265121c22a9ddcb80cb63b84ab141897691c",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/sweep-final-3/process-auto_mark_worker_process.log",
-          "receipt_sha256": "9e0d631072ec2733064947c3bdd4a43d44f649d1128334cdeadb43fa45c05670",
+          "artifact": "quality-reports/go-migration/sweep-rerun-p4-final/process-auto_mark_worker_process.log",
+          "receipt_sha256": "ebc5b3e193fc8522016bd54ce259a17c48e115965d4bd351666b6691c1f8e1e7",
           "scope": "Process harness auto_mark_worker_process: {\"success\": true, \"scope\": \"Native auto_mark_attendance worker on actual Django-created current schema.\\n\\nPrivate PostgreSQL. Each seeded fixture is first processed by the actual Django\\n``auto_mark_attendance`` task; the native Go worker must then leave the\\nidentical complete managed-model state "
         }
       ],
@@ -42664,7 +42673,8 @@
         "Celery rate_limit 4/m is a Django consumer throttle without Go counterpart. See docs/architecture/go-migration/tasks-db-c.md.",
         "Implementing evidence: Native worker registration (version 1). TESTS/adapters/go/auto_mark_worker_process.py builds race-instrumented worker/migrate on actual current Django models in private PostgreSQL; four seeds (main, malformed meta, malformed expected absences, missing lessons_registry) are first processed by the actual Django task with authored path assertions, and the Go job must leave the identical complete managed-model state (audit ids/timestamps normalized). Groups: default Django owner, native parity, invalid version/payload/tenant, replay and later run, three stop paths. RED: job stays pending without the registration. GREEN 7/7. Mutation caught: unpaid-payment check removed. See docs/architecture/go-migration/tasks-db-c.md.",
         "Implementing evidence: passed: auto_mark_worker_process parity groups against the actual Django task (quality-reports/go-migration/auto-mark-worker-process/results.json)",
-        "Implementing evidence: passed: auto_mark_worker_process parity groups against the actual Django task (quality-reports/go-migration/auto-mark-worker-process/results.json)"
+        "Implementing evidence: passed: auto_mark_worker_process parity groups against the actual Django task (quality-reports/go-migration/auto-mark-worker-process/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/sweep-final-3/process-auto_mark_worker_process.log)"
       ]
     },
     {
@@ -42672,9 +42682,9 @@
       "kind": "task",
       "django": {
         "file": "BE/application/tasks.py",
-        "line": 629,
+        "line": 644,
         "symbol": "auto_move_users_to_base_plan",
-        "sha256": "36e3babcc1d2ff6692e322560948ed96c0fc8274958f438a84c4b69e1bad247c"
+        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
       },
       "source_present": true,
       "declaration": {
@@ -42717,9 +42727,9 @@
       "kind": "task",
       "django": {
         "file": "BE/application/tasks.py",
-        "line": 350,
+        "line": 361,
         "symbol": "change_type_of_stripe_payments",
-        "sha256": "36e3babcc1d2ff6692e322560948ed96c0fc8274958f438a84c4b69e1bad247c"
+        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
       },
       "source_present": true,
       "declaration": {
@@ -42771,10 +42781,10 @@
       "evidence": [
         {
           "command": "python -m TESTS.adapters.go.tasks_db_d_worker_process",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "a243265121c22a9ddcb80cb63b84ab141897691c",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/sweep-final-3/process-tasks_db_d_worker_process.log",
-          "receipt_sha256": "6d98d481fd82218b28586a77d579af2776af76652f03e29aae3f410cac65790b",
+          "artifact": "quality-reports/go-migration/sweep-rerun-p4-final/process-tasks_db_d_worker_process.log",
+          "receipt_sha256": "109899b023d41a2b150e01dff7d1eb75fc7d7161cc52c744578a8183082df8f5",
           "scope": "Process harness tasks_db_d_worker_process: {\"success\": true, \"scope\": \"Native Stripe and membership periodic task workers on actual Django-created current schema.\\n\\nPrivate PostgreSQL, a private Redis (Celery broker DB 0, Django cache DB 1)\\nand a private Stripe API stub (a local HTTP server that records every request\\nand answers by path)."
         }
       ],
@@ -42784,7 +42794,8 @@
         "Celery rate_limit 30/m is a Django consumer throttle without Go counterpart. Batches beyond 100 payments are not exercised by the seeds. Django carries X-Stripe-Client-Telemetry across tasks in one worker thread; Go starts each job without it. See docs/architecture/go-migration/tasks-db-d.md.",
         "Implementing evidence: Native worker registration (version 1). TESTS/adapters/go/tasks_db_d_worker_process.py builds race-instrumented worker/migrate on actual current Django models in private PostgreSQL with a private Redis (broker DB 0, cache DB 1) and a private Stripe stub; ten seeds are first processed by the actual Django tasks with authored path assertions, and each Go job must leave the same effects on the seeded rows (random keys, codes, timestamps and audit ids normalized after shape/window checks), send the same Stripe requests and publish the same Celery messages. RED: job stays pending without the registrations. GREEN 12/12 (green-r1; green-r2 after merging the export cleanup slice). Mutation caught: renewal month arithmetic without the day clamp. See docs/architecture/go-migration/tasks-db-d.md.",
         "Implementing evidence: passed: tasks_db_d_worker_process parity groups against the actual Django task (quality-reports/go-migration/tasks-db-d-worker-process/results.json)",
-        "Implementing evidence: passed: tasks_db_d_worker_process parity groups against the actual Django task (quality-reports/go-migration/tasks-db-d-worker-process/results.json)"
+        "Implementing evidence: passed: tasks_db_d_worker_process parity groups against the actual Django task (quality-reports/go-migration/tasks-db-d-worker-process/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/sweep-final-3/process-tasks_db_d_worker_process.log)"
       ]
     },
     {
@@ -42792,9 +42803,9 @@
       "kind": "task",
       "django": {
         "file": "BE/application/tasks.py",
-        "line": 1319,
+        "line": 1336,
         "symbol": "check_workflows_trigger",
-        "sha256": "36e3babcc1d2ff6692e322560948ed96c0fc8274958f438a84c4b69e1bad247c"
+        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
       },
       "source_present": true,
       "declaration": {
@@ -42841,10 +42852,10 @@
       "evidence": [
         {
           "command": "python -m TESTS.adapters.go.celery_consumer_workflow_process",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "a243265121c22a9ddcb80cb63b84ab141897691c",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/sweep-final-3/process-celery_consumer_workflow_process.log",
-          "receipt_sha256": "0de91cc8a2029e08c5bcfad6250e4d9aacce22cca81c94d636ab11075d9fc338",
+          "artifact": "quality-reports/go-migration/sweep-rerun-p4-final/process-celery_consumer_workflow_process.log",
+          "receipt_sha256": "d7d16291239f6afffaf3af0be84fede767cb1855e929d3c9b2ee3a58379abf12",
           "scope": "Process harness celery_consumer_workflow_process: {\"success\": true, \"scope\": \"Differential harness for the Go Celery consumer: the automation workflow tasks.\\n\\ncheck_workflows_trigger, check_workflows_trigger_cron and workflow_block_execute\\n(BE/application/tasks.py, AutomationWorkflow.trigger in BE/communications/models.py),\\nrouted to ``assozeta"
         }
       ],
@@ -42859,7 +42870,8 @@
         "Implementing evidence: passed: Django oracle 20/20 before the Go registration existed (quality-reports/go-migration/consumer-workflow-process-oracle/results.json)",
         "Implementing evidence: red: Django passed, Go timed out on the first scenario (every message handed off) (quality-reports/go-migration/consumer-workflow-process-red/results.json)",
         "Implementing evidence: caught: Timed out: Go consumer: cron approved target fans out to the accepted subscription (extra fan-out to the archived subscription) (quality-reports/go-migration/consumer-workflow-process-mutation/results.json)",
-        "Implementing evidence: re-run green 14/14 after the shared celery.Task and cmd/celery-consumer changes (quality-reports/go-migration/celery-consumer-process/results.json)"
+        "Implementing evidence: re-run green 14/14 after the shared celery.Task and cmd/celery-consumer changes (quality-reports/go-migration/celery-consumer-process/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/sweep-final-3/process-celery_consumer_workflow_process.log)"
       ]
     },
     {
@@ -42867,9 +42879,9 @@
       "kind": "task",
       "django": {
         "file": "BE/application/tasks.py",
-        "line": 1346,
+        "line": 1363,
         "symbol": "check_workflows_trigger_cron",
-        "sha256": "36e3babcc1d2ff6692e322560948ed96c0fc8274958f438a84c4b69e1bad247c"
+        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
       },
       "source_present": true,
       "declaration": {
@@ -42916,10 +42928,10 @@
       "evidence": [
         {
           "command": "python -m TESTS.adapters.go.celery_consumer_workflow_process",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "a243265121c22a9ddcb80cb63b84ab141897691c",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/sweep-final-3/process-celery_consumer_workflow_process.log",
-          "receipt_sha256": "0de91cc8a2029e08c5bcfad6250e4d9aacce22cca81c94d636ab11075d9fc338",
+          "artifact": "quality-reports/go-migration/sweep-rerun-p4-final/process-celery_consumer_workflow_process.log",
+          "receipt_sha256": "d7d16291239f6afffaf3af0be84fede767cb1855e929d3c9b2ee3a58379abf12",
           "scope": "Process harness celery_consumer_workflow_process: {\"success\": true, \"scope\": \"Differential harness for the Go Celery consumer: the automation workflow tasks.\\n\\ncheck_workflows_trigger, check_workflows_trigger_cron and workflow_block_execute\\n(BE/application/tasks.py, AutomationWorkflow.trigger in BE/communications/models.py),\\nrouted to ``assozeta"
         }
       ],
@@ -42934,7 +42946,8 @@
         "Implementing evidence: passed: Django oracle 20/20 before the Go registration existed (quality-reports/go-migration/consumer-workflow-process-oracle/results.json)",
         "Implementing evidence: red: Django passed, Go timed out on the first scenario (every message handed off) (quality-reports/go-migration/consumer-workflow-process-red/results.json)",
         "Implementing evidence: caught: Timed out: Go consumer: cron approved target fans out to the accepted subscription (extra fan-out to the archived subscription) (quality-reports/go-migration/consumer-workflow-process-mutation/results.json)",
-        "Implementing evidence: re-run green 14/14 after the shared celery.Task and cmd/celery-consumer changes (quality-reports/go-migration/celery-consumer-process/results.json)"
+        "Implementing evidence: re-run green 14/14 after the shared celery.Task and cmd/celery-consumer changes (quality-reports/go-migration/celery-consumer-process/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/sweep-final-3/process-celery_consumer_workflow_process.log)"
       ]
     },
     {
@@ -42942,9 +42955,9 @@
       "kind": "task",
       "django": {
         "file": "BE/application/tasks.py",
-        "line": 1789,
+        "line": 1810,
         "symbol": "cleanup_old_exports_task",
-        "sha256": "36e3babcc1d2ff6692e322560948ed96c0fc8274958f438a84c4b69e1bad247c"
+        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
       },
       "source_present": true,
       "declaration": {
@@ -43000,10 +43013,10 @@
       "evidence": [
         {
           "command": "python -m TESTS.adapters.go.export_cleanup_worker_process",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "a243265121c22a9ddcb80cb63b84ab141897691c",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/sweep-final-3/process-export_cleanup_worker_process.log",
-          "receipt_sha256": "93cf5a563bcaf2c63092a2527b846c4057c24abb6a4665ab52fcd51880994986",
+          "artifact": "quality-reports/go-migration/sweep-rerun-p4-final/process-export_cleanup_worker_process.log",
+          "receipt_sha256": "63006786e90654668e017dfc1c621b09ee04eee170952a923bbae324235df3be",
           "scope": "Process harness export_cleanup_worker_process: {\"success\": true, \"scope\": \"Native cleanup_old_exports worker on actual Django-created current schema.\\n\\nPrivate PostgreSQL and a private MinIO (the S3 default storage). Each seed is\\nfirst processed by the actual Django ``cleanup_old_exports_task`` with the\\nproduction S3Boto3Storage backend point"
         }
       ],
@@ -43013,7 +43026,8 @@
         "Ported by tasks-db-e; document cascades beyond the SET_NULL references refuse the run. See docs/architecture/go-migration/tasks-db-e.md.",
         "Implementing evidence: Native worker registration (version 1). TESTS/adapters/go/export_cleanup_worker_process.py builds race-instrumented worker/migrate on actual current Django models in private PostgreSQL with a private pinned MinIO; the actual Django task runs first with S3Boto3Storage on the MinIO and authored assertions (result 5, remaining rows, bucket listing, cleared SET_NULL reference, 10 audit entries / 4 indexes); the Go job must leave the identical complete managed-model state (audit ids/timestamps normalized), bucket contents and result. Groups: default Django owner, native parity, invalid version/payload/tenant, later run deleting nothing, cascade refusal without effects. RED: job stays pending without the registration. GREEN 5/5. Mutation caught: EXPORT_MAX_COUNT 3 to 4. See docs/architecture/go-migration/tasks-db-e.md.",
         "Implementing evidence: passed: export_cleanup_worker_process parity groups against the actual Django task (quality-reports/go-migration/export-cleanup-worker-process/results.json)",
-        "Implementing evidence: passed: export_cleanup_worker_process parity groups against the actual Django task (quality-reports/go-migration/export-cleanup-worker-process/results.json)"
+        "Implementing evidence: passed: export_cleanup_worker_process parity groups against the actual Django task (quality-reports/go-migration/export-cleanup-worker-process/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/sweep-final-3/process-export_cleanup_worker_process.log)"
       ]
     },
     {
@@ -43021,9 +43035,9 @@
       "kind": "task",
       "django": {
         "file": "BE/application/tasks.py",
-        "line": 556,
+        "line": 567,
         "symbol": "clear_deleted_subscription",
-        "sha256": "36e3babcc1d2ff6692e322560948ed96c0fc8274958f438a84c4b69e1bad247c"
+        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
       },
       "source_present": true,
       "declaration": {
@@ -43081,17 +43095,18 @@
       "evidence": [
         {
           "command": "python -m TESTS.adapters.go.nightly_subscriptions_worker_process",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "a243265121c22a9ddcb80cb63b84ab141897691c",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/sweep-final-3/process-nightly_subscriptions_worker_process.log",
-          "receipt_sha256": "bb01b67d0c5ed16c2df566f9e081a2edb85b6e7b9c27a0282b1666628f111277",
+          "artifact": "quality-reports/go-migration/sweep-rerun-p4-final/process-nightly_subscriptions_worker_process.log",
+          "receipt_sha256": "5a338219279814a735ce354f2b4f6d754d73e859e296477fc3503eb11f4e057f",
           "scope": "Process harness nightly_subscriptions_worker_process: {\"success\": true, \"scope\": \"Native clear_deleted_subscription and auto_archive_subscription workers on actual Django-created current schema.\\n\\nPrivate PostgreSQL and a private MinIO (the S3 default storage of the\\nsignature objects). Each seed is first processed by the actual Django task\\nwith the "
         }
       ],
       "notes": [
         "v1.0.35 rewrite (PR #63) ported in docs/architecture/go-migration/sync-v1035.md. RED: without the registration the job stays pending after the Django oracles pass. Earlier notes described the task before v1.0.35.",
         "Implementing evidence: passed: 8/8 groups; Django task first on private PostgreSQL and MinIO, native worker state and bucket identical (quality-reports/go-migration/sync-v1035/nightly-green-r2.json)",
-        "Implementing evidence: CAUGHT: deleting paid payments too makes the Go state differ from the Django task (quality-reports/go-migration/sync-v1035/clear-mutation-r1.txt)"
+        "Implementing evidence: CAUGHT: deleting paid payments too makes the Go state differ from the Django task (quality-reports/go-migration/sync-v1035/clear-mutation-r1.txt)",
+        "Implementing evidence: passed (quality-reports/go-migration/sweep-final-3/process-nightly_subscriptions_worker_process.log)"
       ]
     },
     {
@@ -43099,9 +43114,9 @@
       "kind": "task",
       "django": {
         "file": "BE/application/tasks.py",
-        "line": 270,
+        "line": 281,
         "symbol": "clear_expired_subscription_tokens",
-        "sha256": "36e3babcc1d2ff6692e322560948ed96c0fc8274958f438a84c4b69e1bad247c"
+        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
       },
       "source_present": true,
       "declaration": {
@@ -43155,10 +43170,10 @@
       "evidence": [
         {
           "command": "python -m TESTS.adapters.go.token_worker_process",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "a243265121c22a9ddcb80cb63b84ab141897691c",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/sweep-final-3/process-token_worker_process.log",
-          "receipt_sha256": "a58c2b4fa891e76a7f94c1dd4e03826f3bae34f89f253f9497d19881728486c9",
+          "artifact": "quality-reports/go-migration/sweep-rerun-p4-final/process-token_worker_process.log",
+          "receipt_sha256": "6851e27dbab239e30adc56783155fdf48373a6cd5d87a69532ed77fa2b031ff7",
           "scope": "Process harness token_worker_process: {\"success\": true, \"scope\": \"Native token cleanup on actual Django-created current schema in private PostgreSQL.\\n\\nThe fixture queue intents and ownership changes are not installed activation.\\nThis proves native command composition and durable process behavior; the\\nseparate Django adapter remains "
         }
       ],
@@ -43178,7 +43193,8 @@
         "Implementing evidence: passed: token_worker_process parity groups against the actual Django task (quality-reports/go-migration/token-worker-process/results.json)",
         "Implementing evidence: passed: 12 token cleanup groups (quality-reports/go-migration/task-bodies/results.json)",
         "Implementing evidence: passed: token_worker_process parity groups against the actual Django task (quality-reports/go-migration/token-worker-process/results.json)",
-        "Implementing evidence: passed: five task bodies (reset, token, age, retention, archive) (quality-reports/go-migration/sync-v1035/reverify/task-bodies.json)"
+        "Implementing evidence: passed: five task bodies (reset, token, age, retention, archive) (quality-reports/go-migration/sync-v1035/reverify/task-bodies.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/sweep-final-3/process-token_worker_process.log)"
       ]
     },
     {
@@ -43186,9 +43202,9 @@
       "kind": "task",
       "django": {
         "file": "BE/application/tasks.py",
-        "line": 1666,
+        "line": 1683,
         "symbol": "delete_old_audit_logs",
-        "sha256": "36e3babcc1d2ff6692e322560948ed96c0fc8274958f438a84c4b69e1bad247c"
+        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
       },
       "source_present": true,
       "declaration": {
@@ -43239,10 +43255,10 @@
       "evidence": [
         {
           "command": "python -m TESTS.adapters.go.audit_worker_process",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "a243265121c22a9ddcb80cb63b84ab141897691c",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/sweep-final-3/process-audit_worker_process.log",
-          "receipt_sha256": "e346d720e82e51b4b36f118431aad57df1943221e7136c75ae9fffc6af987f17",
+          "artifact": "quality-reports/go-migration/sweep-rerun-p4-final/process-audit_worker_process.log",
+          "receipt_sha256": "f6ad051f0587062310f61b475dc51414d6016d3ec04443c16237aceb8eacc2ba",
           "scope": "Process harness audit_worker_process: {\"success\": true, \"scope\": \"Native audit retention worker on actual Django-created current schema in private PostgreSQL.\\n\\nEach seeded fixture is first processed by the actual Django ``delete_old_audit_logs``\\ntask; the native Go worker must then leave the identical complete managed-model\\nstate on"
         }
       ],
@@ -43260,7 +43276,8 @@
         "Implementing evidence: passed: audit_worker_process parity groups against the actual Django task (quality-reports/go-migration/audit-worker-process/results.json)",
         "Implementing evidence: passed: 12 audit retention groups (quality-reports/go-migration/task-bodies/results.json)",
         "Implementing evidence: passed: audit_worker_process parity groups against the actual Django task (quality-reports/go-migration/audit-worker-process/results.json)",
-        "Implementing evidence: passed: five task bodies (reset, token, age, retention, archive) (quality-reports/go-migration/sync-v1035/reverify/task-bodies.json)"
+        "Implementing evidence: passed: five task bodies (reset, token, age, retention, archive) (quality-reports/go-migration/sync-v1035/reverify/task-bodies.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/sweep-final-3/process-audit_worker_process.log)"
       ]
     },
     {
@@ -43268,9 +43285,9 @@
       "kind": "task",
       "django": {
         "file": "BE/application/tasks.py",
-        "line": 216,
+        "line": 218,
         "symbol": "delete_users_with_request",
-        "sha256": "36e3babcc1d2ff6692e322560948ed96c0fc8274958f438a84c4b69e1bad247c"
+        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
       },
       "source_present": true,
       "declaration": {
@@ -43321,10 +43338,10 @@
       "evidence": [
         {
           "command": "python -m TESTS.adapters.go.user_deletion_worker_process",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "a243265121c22a9ddcb80cb63b84ab141897691c",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/sweep-final-3/process-user_deletion_worker_process.log",
-          "receipt_sha256": "8bce0befa3fc04b9a83cbef3e523fdf3b3304e4ccb8488f1b989b719df89442b",
+          "artifact": "quality-reports/go-migration/sweep-rerun-p4-final/process-user_deletion_worker_process.log",
+          "receipt_sha256": "936eb325916d62e094ffa4a6e80cd2e37971db7f72f402dde3692bd65cd10c43",
           "scope": "Process harness user_deletion_worker_process: {\"success\": true, \"scope\": \"Native delete_users_with_request worker on actual Django-created current schema.\\n\\nPrivate PostgreSQL and a private Redis broker. Each seeded fixture is first\\nprocessed by the actual Django ``delete_users_with_request`` task, publishing\\nto the private broker like produ"
         }
       ],
@@ -43333,7 +43350,8 @@
         "The worker now composes a Celery producer on the shared Redis settings (DB 0); production broker credentials/TLS for the worker service must match the server.",
         "Implementing evidence: Native worker registration (version 1). TESTS/adapters/go/user_deletion_worker_process.py builds race-instrumented worker/migrate on actual current Django models in private PostgreSQL with a private Redis broker; each seed is first processed by the actual Django task with production broker settings, and the Go job must leave the identical complete managed-model state (audit ids/timestamps normalized within the run window) and publish identical send_email_text messages (protocol 2 envelope, argsrepr/kwargsrepr, body bytes). Nine users cover every filter, association owner with/without a deleted association, empty first name/email, quotes and non-ASCII. RED: without the registration the job stays pending after the Django oracle and default-owner groups pass. GREEN 5/5: default Django owner does not claim; native completion equals Django; invalid version/payload/tenant fail before effects; replay after a later request; taken suffixed username keeps the audit entry and completes. Service unit tests pin notice-before-save order, failed-save audit commit, publish failure and lost lease. Mutations caught: due date <= to < and dropping the failed-save audit commit. See docs/architecture/go-migration/tasks-db-b.md; receipts under ignored quality-reports/go-migration/tasks-db-b/ and user-deletion-worker-process/.",
         "Implementing evidence: passed: user_deletion_worker_process parity groups against the actual Django task (quality-reports/go-migration/user-deletion-worker-process/results.json)",
-        "Implementing evidence: passed: user_deletion_worker_process parity groups against the actual Django task (quality-reports/go-migration/user-deletion-worker-process/results.json)"
+        "Implementing evidence: passed: user_deletion_worker_process parity groups against the actual Django task (quality-reports/go-migration/user-deletion-worker-process/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/sweep-final-3/process-user_deletion_worker_process.log)"
       ]
     },
     {
@@ -43341,9 +43359,9 @@
       "kind": "task",
       "django": {
         "file": "BE/application/tasks.py",
-        "line": 1880,
+        "line": 1901,
         "symbol": "export_association_data",
-        "sha256": "36e3babcc1d2ff6692e322560948ed96c0fc8274958f438a84c4b69e1bad247c"
+        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
       },
       "source_present": true,
       "declaration": {
@@ -43410,11 +43428,11 @@
       "evidence": [
         {
           "command": "python -m TESTS.adapters.go.celery_consumer_export_process",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "a243265121c22a9ddcb80cb63b84ab141897691c",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/sweep-final-3/process-celery_consumer_export_process.log",
-          "receipt_sha256": "b05b1f01903172e4e365a8e065e5b81b69f0e3747bb6cb82a8f64c9e7b85f674",
-          "scope": "Process harness celery_consumer_export_process: {\"success\": true, \"minio\": {\"image\": \"ghcr.io/carbogninalberto/minio:RELEASE.2025-04-22T22-12-26Z-assozeta.1@sha256:8d35f39307b12cbc9ba3eedd26587d77ab30c21c3e904aee552df8b17b600389\", \"container\": \"az-instance-logo-minio-d1591e191da4\", \"owned\": true}, \"plan_current\": true, \"binary_sha256\": \"666bdf180"
+          "artifact": "quality-reports/go-migration/sweep-rerun-p4-final/process-celery_consumer_export_process.log",
+          "receipt_sha256": "b20e16c8c965a5ff2ae6d3d644247ee15ec2406be397525fc3a9966c20bc0967",
+          "scope": "Process harness celery_consumer_export_process: {\"success\": true, \"minio\": {\"image\": \"ghcr.io/carbogninalberto/minio:RELEASE.2025-04-22T22-12-26Z-assozeta.1@sha256:8d35f39307b12cbc9ba3eedd26587d77ab30c21c3e904aee552df8b17b600389\", \"container\": \"az-instance-logo-minio-ad5a467c3c0e\", \"owned\": true}, \"plan_current\": true, \"binary_sha256\": \"e5443c9f3"
         }
       ],
       "notes": [
@@ -43437,7 +43455,8 @@
         "Implementing evidence: CAUGHT: Go differs from Django on the rich export (quality-reports/go-migration/sec-data-portability-mutation-export-scope/result.txt)",
         "Implementing evidence: re-run (RecoveryExport shares the plan): passed 23/23 (quality-reports/go-migration/sec-data-portability-restore-process/results.json)",
         "Implementing evidence: re-run after the shared changes: passed 13/13 (quality-reports/go-migration/sec-data-portability-rerun-capabilities/results.json)",
-        "Implementing evidence: re-run after the shared changes: passed 15/15 (quality-reports/go-migration/sec-data-portability-rerun-celery-consumer-process/results.json)"
+        "Implementing evidence: re-run after the shared changes: passed 15/15 (quality-reports/go-migration/sec-data-portability-rerun-celery-consumer-process/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/sweep-final-3/process-celery_consumer_export_process.log)"
       ]
     },
     {
@@ -43445,9 +43464,9 @@
       "kind": "task",
       "django": {
         "file": "BE/application/tasks.py",
-        "line": 1615,
+        "line": 1632,
         "symbol": "export_invoices_to_zip",
-        "sha256": "36e3babcc1d2ff6692e322560948ed96c0fc8274958f438a84c4b69e1bad247c"
+        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
       },
       "source_present": true,
       "declaration": {
@@ -43509,11 +43528,11 @@
       "evidence": [
         {
           "command": "python -m TESTS.adapters.go.celery_consumer_print_process",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "a243265121c22a9ddcb80cb63b84ab141897691c",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/sweep-final-3/process-celery_consumer_print_process.log",
-          "receipt_sha256": "e212bcbdb739d753bff7bab73edae4f3576ab974fae79b64eec84977ea8760d7",
-          "scope": "Process harness celery_consumer_print_process: {\"success\": true, \"minio\": {\"image\": \"ghcr.io/carbogninalberto/minio:RELEASE.2025-04-22T22-12-26Z-assozeta.1@sha256:8d35f39307b12cbc9ba3eedd26587d77ab30c21c3e904aee552df8b17b600389\", \"container\": \"az-instance-logo-minio-55ae60093433\", \"owned\": true}, \"binary_sha256\": \"666bdf180a9e1220ff9d787079dc5bd"
+          "artifact": "quality-reports/go-migration/sweep-rerun-p4-final/process-celery_consumer_print_process.log",
+          "receipt_sha256": "c2c3f4bc45abddae8944e0c66b0a5c5952cd3597e8cf90fceb86449c6eccffde",
+          "scope": "Process harness celery_consumer_print_process: {\"success\": true, \"minio\": {\"image\": \"ghcr.io/carbogninalberto/minio:RELEASE.2025-04-22T22-12-26Z-assozeta.1@sha256:8d35f39307b12cbc9ba3eedd26587d77ab30c21c3e904aee552df8b17b600389\", \"container\": \"az-instance-logo-minio-2499eeac9657\", \"owned\": true}, \"binary_sha256\": \"e5443c9f371f5dda92bf08eb919e7a7"
         }
       ],
       "notes": [
@@ -43523,7 +43542,8 @@
         "consumer-print: Go runs export_invoices_to_zip; the ZIP headers match Python zipfile (golden) but the deflate stream is compress/flate, so compressed bytes, sizes, object size and ETag differ; archives needing ZIP64 fail after the rows and archives of 8 MiB or more are one PutObject (Django multipart); database errors are stored as OperationalError instead of being swallowed. Handed off before any effect: non-list files, non-UUID/string elements or associations, 32-character strings only int(x, 16) would decide. See docs/architecture/go-migration/consumer-print.md.",
         "Implementing evidence: passed: 30 differential scenarios against the actual Django worker (race-built consumer) (quality-reports/go-migration/celery-consumer-print-process/results.json)",
         "Implementing evidence: red: Django oracle passed, Go timed out on the first scenario (all messages handed off) (quality-reports/go-migration/celery-consumer-print-process-red/results.json)",
-        "Implementing evidence: caught: Go differs from Django (2_ricevuta-2.pdf instead of 3_ricevuta-2.pdf) (quality-reports/go-migration/celery-consumer-print-process-mutation/results.json)"
+        "Implementing evidence: caught: Go differs from Django (2_ricevuta-2.pdf instead of 3_ricevuta-2.pdf) (quality-reports/go-migration/celery-consumer-print-process-mutation/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/sweep-final-3/process-celery_consumer_print_process.log)"
       ]
     },
     {
@@ -43531,9 +43551,9 @@
       "kind": "task",
       "django": {
         "file": "BE/application/tasks.py",
-        "line": 315,
+        "line": 326,
         "symbol": "generate_coupon_if_not_exists",
-        "sha256": "36e3babcc1d2ff6692e322560948ed96c0fc8274958f438a84c4b69e1bad247c"
+        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
       },
       "source_present": true,
       "declaration": {
@@ -43587,10 +43607,10 @@
       "evidence": [
         {
           "command": "python -m TESTS.adapters.go.tasks_db_d_worker_process",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "a243265121c22a9ddcb80cb63b84ab141897691c",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/sweep-final-3/process-tasks_db_d_worker_process.log",
-          "receipt_sha256": "6d98d481fd82218b28586a77d579af2776af76652f03e29aae3f410cac65790b",
+          "artifact": "quality-reports/go-migration/sweep-rerun-p4-final/process-tasks_db_d_worker_process.log",
+          "receipt_sha256": "109899b023d41a2b150e01dff7d1eb75fc7d7161cc52c744578a8183082df8f5",
           "scope": "Process harness tasks_db_d_worker_process: {\"success\": true, \"scope\": \"Native Stripe and membership periodic task workers on actual Django-created current schema.\\n\\nPrivate PostgreSQL, a private Redis (Celery broker DB 0, Django cache DB 1)\\nand a private Stripe API stub (a local HTTP server that records every request\\nand answers by path)."
         }
       ],
@@ -43600,7 +43620,8 @@
         "Celery rate_limit 4/m is a Django consumer throttle without Go counterpart. See docs/architecture/go-migration/tasks-db-d.md.",
         "Implementing evidence: Native worker registration (version 1). TESTS/adapters/go/tasks_db_d_worker_process.py builds race-instrumented worker/migrate on actual current Django models in private PostgreSQL with a private Redis (broker DB 0, cache DB 1) and a private Stripe stub; ten seeds are first processed by the actual Django tasks with authored path assertions, and each Go job must leave the same effects on the seeded rows (random keys, codes, timestamps and audit ids normalized after shape/window checks), send the same Stripe requests and publish the same Celery messages. RED: job stays pending without the registrations. GREEN 12/12 (green-r1; green-r2 after merging the export cleanup slice). Mutation caught: renewal month arithmetic without the day clamp. See docs/architecture/go-migration/tasks-db-d.md.",
         "Implementing evidence: passed: tasks_db_d_worker_process parity groups against the actual Django task (quality-reports/go-migration/tasks-db-d-worker-process/results.json)",
-        "Implementing evidence: passed: tasks_db_d_worker_process parity groups against the actual Django task (quality-reports/go-migration/tasks-db-d-worker-process/results.json)"
+        "Implementing evidence: passed: tasks_db_d_worker_process parity groups against the actual Django task (quality-reports/go-migration/tasks-db-d-worker-process/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/sweep-final-3/process-tasks_db_d_worker_process.log)"
       ]
     },
     {
@@ -43608,9 +43629,9 @@
       "kind": "task",
       "django": {
         "file": "BE/application/tasks.py",
-        "line": 2116,
+        "line": 2137,
         "symbol": "import_association_data",
-        "sha256": "36e3babcc1d2ff6692e322560948ed96c0fc8274958f438a84c4b69e1bad247c"
+        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
       },
       "source_present": true,
       "declaration": {
@@ -43672,11 +43693,11 @@
       "evidence": [
         {
           "command": "python -m TESTS.adapters.go.celery_consumer_import_process",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "a243265121c22a9ddcb80cb63b84ab141897691c",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/sweep-final-3/process-celery_consumer_import_process.log",
-          "receipt_sha256": "f6304b2bf5ca6ee3e7f525487be6ad66fa808266bfbaf214ced2831cac52ba08",
-          "scope": "Process harness celery_consumer_import_process: {\"success\": true, \"minio\": {\"image\": \"ghcr.io/carbogninalberto/minio:RELEASE.2025-04-22T22-12-26Z-assozeta.1@sha256:8d35f39307b12cbc9ba3eedd26587d77ab30c21c3e904aee552df8b17b600389\", \"container\": \"az-instance-logo-minio-98ceab6e7d1f\", \"owned\": true}, \"plan_current\": true, \"binary_sha256\": \"666bdf180"
+          "artifact": "quality-reports/go-migration/sweep-rerun-p4-final/process-celery_consumer_import_process.log",
+          "receipt_sha256": "35c3eec496729c5c249f05cec7fd5487c97acdaeb2e1cafc8e43b3b9c291244e",
+          "scope": "Process harness celery_consumer_import_process: {\"success\": true, \"minio\": {\"image\": \"ghcr.io/carbogninalberto/minio:RELEASE.2025-04-22T22-12-26Z-assozeta.1@sha256:8d35f39307b12cbc9ba3eedd26587d77ab30c21c3e904aee552df8b17b600389\", \"container\": \"az-instance-logo-minio-7397e97061b7\", \"owned\": true}, \"plan_current\": true, \"binary_sha256\": \"e5443c9f3"
         }
       ],
       "notes": [
@@ -43701,7 +43722,8 @@
         "Implementing evidence: CAUGHT: Go differs from Django (quality-reports/go-migration/sec-data-portability-mutation-import-link/result.txt)",
         "Implementing evidence: re-run (shared importer): passed 23/23 (quality-reports/go-migration/sec-data-portability-restore-process/results.json)",
         "Implementing evidence: re-run after the shared changes: passed 13/13 (quality-reports/go-migration/sec-data-portability-rerun-capabilities/results.json)",
-        "Implementing evidence: re-run after the shared changes: passed 15/15 (quality-reports/go-migration/sec-data-portability-rerun-celery-consumer-process/results.json)"
+        "Implementing evidence: re-run after the shared changes: passed 15/15 (quality-reports/go-migration/sec-data-portability-rerun-celery-consumer-process/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/sweep-final-3/process-celery_consumer_import_process.log)"
       ]
     },
     {
@@ -43709,9 +43731,9 @@
       "kind": "task",
       "django": {
         "file": "BE/application/tasks.py",
-        "line": 403,
+        "line": 414,
         "symbol": "mark_as_paid_payments_checking_stripe",
-        "sha256": "36e3babcc1d2ff6692e322560948ed96c0fc8274958f438a84c4b69e1bad247c"
+        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
       },
       "source_present": true,
       "declaration": {
@@ -43774,18 +43796,18 @@
       "evidence": [
         {
           "command": "python -m TESTS.adapters.go.stripe_paid_check_worker_process",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "a243265121c22a9ddcb80cb63b84ab141897691c",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/sweep-final-3/process-stripe_paid_check_worker_process.log",
-          "receipt_sha256": "a68d48675100a567ffff8f97870bb8971ca739084cdd887c2fcde95a142dec19",
+          "artifact": "quality-reports/go-migration/sweep-rerun-p4-final/process-stripe_paid_check_worker_process.log",
+          "receipt_sha256": "7ad50ab5b76c5ac438f7f3a1102365b7a08eab434c5f2a1d02388aa867209268",
           "scope": "Process harness stripe_paid_check_worker_process: {\"success\": true, \"scope\": \"Native mark_as_paid_payments_checking_stripe worker on actual Django-created current schema.\\n\\nPrivate PostgreSQL, a private Redis (Celery broker and notification store on\\nDB 0, Django cache on DB 1, the Channels mirror channel) and a private Stripe\\nAPI stub (a local H"
         },
         {
           "command": "python -m TESTS.adapters.go.tasks_db_d_worker_process",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "a243265121c22a9ddcb80cb63b84ab141897691c",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/sweep-final-3/process-tasks_db_d_worker_process.log",
-          "receipt_sha256": "6d98d481fd82218b28586a77d579af2776af76652f03e29aae3f410cac65790b",
+          "artifact": "quality-reports/go-migration/sweep-rerun-p4-final/process-tasks_db_d_worker_process.log",
+          "receipt_sha256": "109899b023d41a2b150e01dff7d1eb75fc7d7161cc52c744578a8183082df8f5",
           "scope": "Process harness tasks_db_d_worker_process: {\"success\": true, \"scope\": \"Native Stripe and membership periodic task workers on actual Django-created current schema.\\n\\nPrivate PostgreSQL, a private Redis (Celery broker DB 0, Django cache DB 1)\\nand a private Stripe API stub (a local HTTP server that records every request\\nand answers by path)."
         }
       ],
@@ -43800,7 +43822,9 @@
         "Implementing evidence: RED: Django one-thread oracle passes the updated authored checks (published invoices 8, 9, 10; paid 0, 7, 9, 10, 12; audit order); Go state differs. (quality-reports/go-migration/payments-impersonation-reverify-stripe-paid-check-red/results.json)",
         "Implementing evidence: GREEN: 6/6 parity groups against the actual Django task (state, Stripe requests, on-commit print bodies, notifications). (quality-reports/go-migration/payments-impersonation-reverify-stripe-paid-check-green/results.json)",
         "Implementing evidence: Rerun (shared stripe_routes.go): 12/12. (quality-reports/go-migration/payments-impersonation-reverify-rerun-tasks-db-d-worker-process/results.json)",
-        "Implementing evidence: Rerun (print_document_invoice consumer): 30/30. (quality-reports/go-migration/payments-impersonation-reverify-rerun-celery-consumer-print-process/results.json)"
+        "Implementing evidence: Rerun (print_document_invoice consumer): 30/30. (quality-reports/go-migration/payments-impersonation-reverify-rerun-celery-consumer-print-process/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/sweep-final-3/process-stripe_paid_check_worker_process.log)",
+        "Implementing evidence: passed (quality-reports/go-migration/sweep-final-3/process-tasks_db_d_worker_process.log)"
       ]
     },
     {
@@ -43808,9 +43832,9 @@
       "kind": "task",
       "django": {
         "file": "BE/application/tasks.py",
-        "line": 636,
+        "line": 651,
         "symbol": "nurturing_warm_leads",
-        "sha256": "36e3babcc1d2ff6692e322560948ed96c0fc8274958f438a84c4b69e1bad247c"
+        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
       },
       "source_present": true,
       "declaration": {
@@ -43853,9 +43877,9 @@
       "kind": "task",
       "django": {
         "file": "BE/application/tasks.py",
-        "line": 255,
+        "line": 264,
         "symbol": "print_document_subscription",
-        "sha256": "36e3babcc1d2ff6692e322560948ed96c0fc8274958f438a84c4b69e1bad247c"
+        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
       },
       "source_present": true,
       "declaration": {
@@ -43904,11 +43928,11 @@
       "evidence": [
         {
           "command": "python -m TESTS.adapters.go.celery_consumer_print_process",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "a243265121c22a9ddcb80cb63b84ab141897691c",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/sweep-final-3/process-celery_consumer_print_process.log",
-          "receipt_sha256": "e212bcbdb739d753bff7bab73edae4f3576ab974fae79b64eec84977ea8760d7",
-          "scope": "Process harness celery_consumer_print_process: {\"success\": true, \"minio\": {\"image\": \"ghcr.io/carbogninalberto/minio:RELEASE.2025-04-22T22-12-26Z-assozeta.1@sha256:8d35f39307b12cbc9ba3eedd26587d77ab30c21c3e904aee552df8b17b600389\", \"container\": \"az-instance-logo-minio-55ae60093433\", \"owned\": true}, \"binary_sha256\": \"666bdf180a9e1220ff9d787079dc5bd"
+          "artifact": "quality-reports/go-migration/sweep-rerun-p4-final/process-celery_consumer_print_process.log",
+          "receipt_sha256": "c2c3f4bc45abddae8944e0c66b0a5c5952cd3597e8cf90fceb86449c6eccffde",
+          "scope": "Process harness celery_consumer_print_process: {\"success\": true, \"minio\": {\"image\": \"ghcr.io/carbogninalberto/minio:RELEASE.2025-04-22T22-12-26Z-assozeta.1@sha256:8d35f39307b12cbc9ba3eedd26587d77ab30c21c3e904aee552df8b17b600389\", \"container\": \"az-instance-logo-minio-2499eeac9657\", \"owned\": true}, \"binary_sha256\": \"e5443c9f371f5dda92bf08eb919e7a7"
         }
       ],
       "notes": [
@@ -43918,7 +43942,8 @@
         "consumer-print: cmd/celery-consumer runs the message-consumed print_document_subscription when GO_TASK_QUEUE_TASKS routes it to assozeta-go: requests.get(CURRENT_HOST/document/subscription/<id>) with the Authorization token and requests' default headers, every error swallowed (SUCCESS null). Handed off before any effect: wrong arity or keywords, ids outside UUIDs/unreserved URL characters, tokens with control, non-ASCII or trailing blank characters. The eager .apply calls inside routes are separate (route ports). execution_owner stays django until a deployment sets GO_TASK_QUEUE_TASKS. See docs/architecture/go-migration/consumer-print.md.",
         "Implementing evidence: passed: 30 differential scenarios against the actual Django worker (race-built consumer) (quality-reports/go-migration/celery-consumer-print-process/results.json)",
         "Implementing evidence: red: Django oracle passed, Go timed out on the first scenario (all messages handed off) (quality-reports/go-migration/celery-consumer-print-process-red/results.json)",
-        "Implementing evidence: caught: Go differs from Django (2_ricevuta-2.pdf instead of 3_ricevuta-2.pdf) (quality-reports/go-migration/celery-consumer-print-process-mutation/results.json)"
+        "Implementing evidence: caught: Go differs from Django (2_ricevuta-2.pdf instead of 3_ricevuta-2.pdf) (quality-reports/go-migration/celery-consumer-print-process-mutation/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/sweep-final-3/process-celery_consumer_print_process.log)"
       ]
     },
     {
@@ -43926,9 +43951,9 @@
       "kind": "task",
       "django": {
         "file": "BE/application/tasks.py",
-        "line": 60,
+        "line": 62,
         "symbol": "renew_memberships_payments",
-        "sha256": "36e3babcc1d2ff6692e322560948ed96c0fc8274958f438a84c4b69e1bad247c"
+        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
       },
       "source_present": true,
       "declaration": {
@@ -43981,10 +44006,10 @@
       "evidence": [
         {
           "command": "python -m TESTS.adapters.go.tasks_db_d_worker_process",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "a243265121c22a9ddcb80cb63b84ab141897691c",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/sweep-final-3/process-tasks_db_d_worker_process.log",
-          "receipt_sha256": "6d98d481fd82218b28586a77d579af2776af76652f03e29aae3f410cac65790b",
+          "artifact": "quality-reports/go-migration/sweep-rerun-p4-final/process-tasks_db_d_worker_process.log",
+          "receipt_sha256": "109899b023d41a2b150e01dff7d1eb75fc7d7161cc52c744578a8183082df8f5",
           "scope": "Process harness tasks_db_d_worker_process: {\"success\": true, \"scope\": \"Native Stripe and membership periodic task workers on actual Django-created current schema.\\n\\nPrivate PostgreSQL, a private Redis (Celery broker DB 0, Django cache DB 1)\\nand a private Stripe API stub (a local HTTP server that records every request\\nand answers by path)."
         }
       ],
@@ -43994,7 +44019,8 @@
         "Celery rate_limit 1/m is a Django consumer throttle without Go counterpart. A paid payment that appears concurrently after planning saves the run and then fails the job instead of sending the support e-mail. See docs/architecture/go-migration/tasks-db-d.md.",
         "Implementing evidence: Native worker registration (version 1). TESTS/adapters/go/tasks_db_d_worker_process.py builds race-instrumented worker/migrate on actual current Django models in private PostgreSQL with a private Redis (broker DB 0, cache DB 1) and a private Stripe stub; ten seeds are first processed by the actual Django tasks with authored path assertions, and each Go job must leave the same effects on the seeded rows (random keys, codes, timestamps and audit ids normalized after shape/window checks), send the same Stripe requests and publish the same Celery messages. RED: job stays pending without the registrations. GREEN 12/12 (green-r1; green-r2 after merging the export cleanup slice). Mutation caught: renewal month arithmetic without the day clamp. See docs/architecture/go-migration/tasks-db-d.md.",
         "Implementing evidence: passed: tasks_db_d_worker_process parity groups against the actual Django task (quality-reports/go-migration/tasks-db-d-worker-process/results.json)",
-        "Implementing evidence: passed: tasks_db_d_worker_process parity groups against the actual Django task (quality-reports/go-migration/tasks-db-d-worker-process/results.json)"
+        "Implementing evidence: passed: tasks_db_d_worker_process parity groups against the actual Django task (quality-reports/go-migration/tasks-db-d-worker-process/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/sweep-final-3/process-tasks_db_d_worker_process.log)"
       ]
     },
     {
@@ -44002,9 +44028,9 @@
       "kind": "task",
       "django": {
         "file": "BE/application/tasks.py",
-        "line": 1601,
+        "line": 1618,
         "symbol": "reset_email_balance",
-        "sha256": "36e3babcc1d2ff6692e322560948ed96c0fc8274958f438a84c4b69e1bad247c"
+        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
       },
       "source_present": true,
       "declaration": {
@@ -44087,18 +44113,18 @@
       "evidence": [
         {
           "command": "python -m TESTS.adapters.go.worker_process",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "a243265121c22a9ddcb80cb63b84ab141897691c",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/sweep-final-3/process-worker_process.log",
-          "receipt_sha256": "4122e972e557ef3bc0172ad07870a69e0c7d586398106bfb4839c308c16c8c9a",
+          "artifact": "quality-reports/go-migration/sweep-rerun-p4-final/process-worker_process.log",
+          "receipt_sha256": "0bdb5777ad8915f652606fa45e5352e3722189822b9b5883c23e61aeb92f628e",
           "scope": "Process harness worker_process: {\"success\": true, \"scope\": \"native binary and synthetic transaction boundary; not installed activation or historical task parity\", \"source_hashes\": {\"BE/application/__init__.py\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"BE/application/admin.py\": \"0179181acb87a508f6473ee51"
         },
         {
           "command": "python -m TESTS.adapters.go.scheduler_process",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "a243265121c22a9ddcb80cb63b84ab141897691c",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/sweep-final-3/process-scheduler_process.log",
-          "receipt_sha256": "ddcb1b6f4f13e9fb1d1460da9f02cdd84e6d2f0bdb6bcc75de5feaf4c388f53a",
+          "artifact": "quality-reports/go-migration/sweep-rerun-p4-final/process-scheduler_process.log",
+          "receipt_sha256": "f742907f900dd6c9d0887230d58fc7aa775632e2deefca3dda2103c6e5df55af",
           "scope": "Process harness scheduler_process: {\"success\": true, \"scope\": \"native scheduler; actual Beat schema; synthetic restore/business effects; no installed handoff\", \"source_hashes\": {\"BE/application/__init__.py\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"BE/application/admin.py\": \"0179181acb87a508f6473ee51ffdefd"
         }
       ],
@@ -44121,7 +44147,9 @@
         "Implementing evidence: passed: worker_process parity groups against the actual Django task (quality-reports/go-migration/worker-process/results.json)",
         "Implementing evidence: passed: 7 email balance reset groups (quality-reports/go-migration/task-bodies/results.json)",
         "Implementing evidence: passed: worker_process parity groups against the actual Django task (quality-reports/go-migration/worker-process/results.json)",
-        "Implementing evidence: passed: five task bodies (reset, token, age, retention, archive) (quality-reports/go-migration/sync-v1035/reverify/task-bodies.json)"
+        "Implementing evidence: passed: five task bodies (reset, token, age, retention, archive) (quality-reports/go-migration/sync-v1035/reverify/task-bodies.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/sweep-final-3/process-worker_process.log)",
+        "Implementing evidence: passed (quality-reports/go-migration/sweep-final-3/process-scheduler_process.log)"
       ]
     },
     {
@@ -44129,9 +44157,9 @@
       "kind": "task",
       "django": {
         "file": "BE/application/tasks.py",
-        "line": 1184,
+        "line": 1201,
         "symbol": "send_email_html",
-        "sha256": "36e3babcc1d2ff6692e322560948ed96c0fc8274958f438a84c4b69e1bad247c"
+        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
       },
       "source_present": true,
       "declaration": {
@@ -44194,18 +44222,18 @@
       "evidence": [
         {
           "command": "python -m TESTS.adapters.go.celery_consumer_email_process",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "a243265121c22a9ddcb80cb63b84ab141897691c",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/sweep-final-3/process-celery_consumer_email_process.log",
-          "receipt_sha256": "a1cc7961ccb8351faa822df9620caeb6715f6e0707d7a42370e5c0e417f0478b",
+          "artifact": "quality-reports/go-migration/sweep-rerun-p4-final/process-celery_consumer_email_process.log",
+          "receipt_sha256": "c631dbee95a773c1a8f6cbef777e12389fe537035f6ee1a1f5a3d1fffb2d59aa",
           "scope": "Process harness celery_consumer_email_process: {\"success\": true, \"scope\": \"Differential harness for the Go Celery consumer's e-mail tasks.\\n\\nExtends ``celery_consumer_process.py`` (same private PostgreSQL with the\\ncurrent Django schema, private Redis and recording fake SMTP server) to\\n``send_email_text``, ``send_email_template`` and ``send_em"
         },
         {
           "command": "python -m TESTS.adapters.go.celery_consumer_process",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "a243265121c22a9ddcb80cb63b84ab141897691c",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/sweep-final-3/process-celery_consumer_process.log",
-          "receipt_sha256": "761837bddedc29c43d1286c6a5e47b14f3a7209444e7527d478fd59e409e1f92",
+          "artifact": "quality-reports/go-migration/sweep-rerun-p4-final/process-celery_consumer_process.log",
+          "receipt_sha256": "d719ddd5ef65da2850438a8e0916ceeaa0b5b28c1e333b449cf5aabd53a7eaf4",
           "scope": "Process harness celery_consumer_process: {\"success\": true, \"scope\": \"Differential harness for the Go Celery consumer (first task: core.tasks.send_mail_async).\\n\\nPrivate PostgreSQL (actual Django current schema), a private Redis broker\\n(DB 0, password) and a local fake SMTP server that records every client byte.\\nEach scenario builds one "
         }
       ],
@@ -44219,7 +44247,9 @@
         "Implementing evidence: passed: Django oracle 25/25 authored scenarios (quality-reports/go-migration/celery-consumer-email-process-django/results.json)",
         "Implementing evidence: red: Django oracle passed, Go timed out (Go consumer: send_email_text publishes send_mail_async with the team address) (quality-reports/go-migration/celery-consumer-email-process-red/run.log)",
         "Implementing evidence: caught: Go differs from Django on the published send_mail_async message (parent_id) (quality-reports/go-migration/celery-consumer-email-process-mutation/run.log)",
-        "Implementing evidence: passed: 15 scenarios (configuration path and fail_silently now run in Go; unknown keyword handed off) (quality-reports/go-migration/celery-consumer-process-consumer-email/results.json)"
+        "Implementing evidence: passed: 15 scenarios (configuration path and fail_silently now run in Go; unknown keyword handed off) (quality-reports/go-migration/celery-consumer-process-consumer-email/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/sweep-final-3/process-celery_consumer_email_process.log)",
+        "Implementing evidence: passed (quality-reports/go-migration/sweep-final-3/process-celery_consumer_process.log)"
       ]
     },
     {
@@ -44227,9 +44257,9 @@
       "kind": "task",
       "django": {
         "file": "BE/application/tasks.py",
-        "line": 1121,
+        "line": 1138,
         "symbol": "send_email_template",
-        "sha256": "36e3babcc1d2ff6692e322560948ed96c0fc8274958f438a84c4b69e1bad247c"
+        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
       },
       "source_present": true,
       "declaration": {
@@ -44292,18 +44322,18 @@
       "evidence": [
         {
           "command": "python -m TESTS.adapters.go.celery_consumer_email_process",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "a243265121c22a9ddcb80cb63b84ab141897691c",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/sweep-final-3/process-celery_consumer_email_process.log",
-          "receipt_sha256": "a1cc7961ccb8351faa822df9620caeb6715f6e0707d7a42370e5c0e417f0478b",
+          "artifact": "quality-reports/go-migration/sweep-rerun-p4-final/process-celery_consumer_email_process.log",
+          "receipt_sha256": "c631dbee95a773c1a8f6cbef777e12389fe537035f6ee1a1f5a3d1fffb2d59aa",
           "scope": "Process harness celery_consumer_email_process: {\"success\": true, \"scope\": \"Differential harness for the Go Celery consumer's e-mail tasks.\\n\\nExtends ``celery_consumer_process.py`` (same private PostgreSQL with the\\ncurrent Django schema, private Redis and recording fake SMTP server) to\\n``send_email_text``, ``send_email_template`` and ``send_em"
         },
         {
           "command": "python -m TESTS.adapters.go.celery_consumer_process",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "a243265121c22a9ddcb80cb63b84ab141897691c",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/sweep-final-3/process-celery_consumer_process.log",
-          "receipt_sha256": "761837bddedc29c43d1286c6a5e47b14f3a7209444e7527d478fd59e409e1f92",
+          "artifact": "quality-reports/go-migration/sweep-rerun-p4-final/process-celery_consumer_process.log",
+          "receipt_sha256": "d719ddd5ef65da2850438a8e0916ceeaa0b5b28c1e333b449cf5aabd53a7eaf4",
           "scope": "Process harness celery_consumer_process: {\"success\": true, \"scope\": \"Differential harness for the Go Celery consumer (first task: core.tasks.send_mail_async).\\n\\nPrivate PostgreSQL (actual Django current schema), a private Redis broker\\n(DB 0, password) and a local fake SMTP server that records every client byte.\\nEach scenario builds one "
         }
       ],
@@ -44317,7 +44347,9 @@
         "Implementing evidence: passed: Django oracle 25/25 authored scenarios (quality-reports/go-migration/celery-consumer-email-process-django/results.json)",
         "Implementing evidence: red: Django oracle passed, Go timed out (Go consumer: send_email_text publishes send_mail_async with the team address) (quality-reports/go-migration/celery-consumer-email-process-red/run.log)",
         "Implementing evidence: caught: Go differs from Django on the published send_mail_async message (parent_id) (quality-reports/go-migration/celery-consumer-email-process-mutation/run.log)",
-        "Implementing evidence: passed: 15 scenarios (configuration path and fail_silently now run in Go; unknown keyword handed off) (quality-reports/go-migration/celery-consumer-process-consumer-email/results.json)"
+        "Implementing evidence: passed: 15 scenarios (configuration path and fail_silently now run in Go; unknown keyword handed off) (quality-reports/go-migration/celery-consumer-process-consumer-email/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/sweep-final-3/process-celery_consumer_email_process.log)",
+        "Implementing evidence: passed (quality-reports/go-migration/sweep-final-3/process-celery_consumer_process.log)"
       ]
     },
     {
@@ -44325,9 +44357,9 @@
       "kind": "task",
       "django": {
         "file": "BE/application/tasks.py",
-        "line": 1162,
+        "line": 1179,
         "symbol": "send_email_text",
-        "sha256": "36e3babcc1d2ff6692e322560948ed96c0fc8274958f438a84c4b69e1bad247c"
+        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
       },
       "source_present": true,
       "declaration": {
@@ -44390,18 +44422,18 @@
       "evidence": [
         {
           "command": "python -m TESTS.adapters.go.celery_consumer_email_process",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "a243265121c22a9ddcb80cb63b84ab141897691c",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/sweep-final-3/process-celery_consumer_email_process.log",
-          "receipt_sha256": "a1cc7961ccb8351faa822df9620caeb6715f6e0707d7a42370e5c0e417f0478b",
+          "artifact": "quality-reports/go-migration/sweep-rerun-p4-final/process-celery_consumer_email_process.log",
+          "receipt_sha256": "c631dbee95a773c1a8f6cbef777e12389fe537035f6ee1a1f5a3d1fffb2d59aa",
           "scope": "Process harness celery_consumer_email_process: {\"success\": true, \"scope\": \"Differential harness for the Go Celery consumer's e-mail tasks.\\n\\nExtends ``celery_consumer_process.py`` (same private PostgreSQL with the\\ncurrent Django schema, private Redis and recording fake SMTP server) to\\n``send_email_text``, ``send_email_template`` and ``send_em"
         },
         {
           "command": "python -m TESTS.adapters.go.celery_consumer_process",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "a243265121c22a9ddcb80cb63b84ab141897691c",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/sweep-final-3/process-celery_consumer_process.log",
-          "receipt_sha256": "761837bddedc29c43d1286c6a5e47b14f3a7209444e7527d478fd59e409e1f92",
+          "artifact": "quality-reports/go-migration/sweep-rerun-p4-final/process-celery_consumer_process.log",
+          "receipt_sha256": "d719ddd5ef65da2850438a8e0916ceeaa0b5b28c1e333b449cf5aabd53a7eaf4",
           "scope": "Process harness celery_consumer_process: {\"success\": true, \"scope\": \"Differential harness for the Go Celery consumer (first task: core.tasks.send_mail_async).\\n\\nPrivate PostgreSQL (actual Django current schema), a private Redis broker\\n(DB 0, password) and a local fake SMTP server that records every client byte.\\nEach scenario builds one "
         }
       ],
@@ -44414,7 +44446,9 @@
         "Implementing evidence: passed: Django oracle 25/25 authored scenarios (quality-reports/go-migration/celery-consumer-email-process-django/results.json)",
         "Implementing evidence: red: Django oracle passed, Go timed out (Go consumer: send_email_text publishes send_mail_async with the team address) (quality-reports/go-migration/celery-consumer-email-process-red/run.log)",
         "Implementing evidence: caught: Go differs from Django on the published send_mail_async message (parent_id) (quality-reports/go-migration/celery-consumer-email-process-mutation/run.log)",
-        "Implementing evidence: passed: 15 scenarios (configuration path and fail_silently now run in Go; unknown keyword handed off) (quality-reports/go-migration/celery-consumer-process-consumer-email/results.json)"
+        "Implementing evidence: passed: 15 scenarios (configuration path and fail_silently now run in Go; unknown keyword handed off) (quality-reports/go-migration/celery-consumer-process-consumer-email/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/sweep-final-3/process-celery_consumer_email_process.log)",
+        "Implementing evidence: passed (quality-reports/go-migration/sweep-final-3/process-celery_consumer_process.log)"
       ]
     },
     {
@@ -44422,9 +44456,9 @@
       "kind": "task",
       "django": {
         "file": "BE/application/tasks.py",
-        "line": 907,
+        "line": 924,
         "symbol": "send_expired_certificate_email",
-        "sha256": "36e3babcc1d2ff6692e322560948ed96c0fc8274958f438a84c4b69e1bad247c"
+        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
       },
       "source_present": true,
       "declaration": {
@@ -44487,10 +44521,10 @@
       "evidence": [
         {
           "command": "python -m TESTS.adapters.go.email_tasks_worker_process",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "a243265121c22a9ddcb80cb63b84ab141897691c",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/sweep-final-3/process-email_tasks_worker_process.log",
-          "receipt_sha256": "ffee05ad7304c923cacb366257dc415a15794a4b4fa6d4272a9100a34e7276f9",
+          "artifact": "quality-reports/go-migration/sweep-rerun-p4-final/process-email_tasks_worker_process.log",
+          "receipt_sha256": "fb960d24d3a409f5a06867542d787deee704970790dd4cca57c57ebdcfada4cc",
           "scope": "Process harness email_tasks_worker_process: {\"success\": true, \"scope\": \"Native e-mail periodic task workers on actual Django-created current schema.\\n\\nPrivate PostgreSQL, a private Redis broker (DB 0, default queue ``celery``)\\nand two local fake SMTP servers (STARTTLS and implicit TLS with a throwaway\\ncertificate) that record every client "
         }
       ],
@@ -44502,7 +44536,8 @@
         "Implementing evidence: passed: email_tasks_worker_process parity groups against the actual Django task (quality-reports/go-migration/email-tasks-worker-process/results.json)",
         "Implementing evidence: passed: 87 Go tests (render goldens regenerated byte-identical from current Django templates, SMTP transcripts, subscription dates) (quality-reports/go-migration/ledger-refresh-go-tests/results.json)",
         "Implementing evidence: passed: email_tasks_worker_process parity groups against the actual Django task (quality-reports/go-migration/email-tasks-worker-process/results.json)",
-        "Implementing evidence: passed: 92 Go tests (render goldens, SMTP transcripts, subscription dates) (quality-reports/go-migration/sync-v1035/reverify/go-tests.json)"
+        "Implementing evidence: passed: 92 Go tests (render goldens, SMTP transcripts, subscription dates) (quality-reports/go-migration/sync-v1035/reverify/go-tests.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/sweep-final-3/process-email_tasks_worker_process.log)"
       ]
     },
     {
@@ -44510,9 +44545,9 @@
       "kind": "task",
       "django": {
         "file": "BE/application/tasks.py",
-        "line": 792,
+        "line": 809,
         "symbol": "send_expiring_certificate_email",
-        "sha256": "36e3babcc1d2ff6692e322560948ed96c0fc8274958f438a84c4b69e1bad247c"
+        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
       },
       "source_present": true,
       "declaration": {
@@ -44575,10 +44610,10 @@
       "evidence": [
         {
           "command": "python -m TESTS.adapters.go.email_tasks_worker_process",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "a243265121c22a9ddcb80cb63b84ab141897691c",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/sweep-final-3/process-email_tasks_worker_process.log",
-          "receipt_sha256": "ffee05ad7304c923cacb366257dc415a15794a4b4fa6d4272a9100a34e7276f9",
+          "artifact": "quality-reports/go-migration/sweep-rerun-p4-final/process-email_tasks_worker_process.log",
+          "receipt_sha256": "fb960d24d3a409f5a06867542d787deee704970790dd4cca57c57ebdcfada4cc",
           "scope": "Process harness email_tasks_worker_process: {\"success\": true, \"scope\": \"Native e-mail periodic task workers on actual Django-created current schema.\\n\\nPrivate PostgreSQL, a private Redis broker (DB 0, default queue ``celery``)\\nand two local fake SMTP servers (STARTTLS and implicit TLS with a throwaway\\ncertificate) that record every client "
         }
       ],
@@ -44590,7 +44625,8 @@
         "Implementing evidence: passed: email_tasks_worker_process parity groups against the actual Django task (quality-reports/go-migration/email-tasks-worker-process/results.json)",
         "Implementing evidence: passed: 87 Go tests (render goldens regenerated byte-identical from current Django templates, SMTP transcripts, subscription dates) (quality-reports/go-migration/ledger-refresh-go-tests/results.json)",
         "Implementing evidence: passed: email_tasks_worker_process parity groups against the actual Django task (quality-reports/go-migration/email-tasks-worker-process/results.json)",
-        "Implementing evidence: passed: 92 Go tests (render goldens, SMTP transcripts, subscription dates) (quality-reports/go-migration/sync-v1035/reverify/go-tests.json)"
+        "Implementing evidence: passed: 92 Go tests (render goldens, SMTP transcripts, subscription dates) (quality-reports/go-migration/sync-v1035/reverify/go-tests.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/sweep-final-3/process-email_tasks_worker_process.log)"
       ]
     },
     {
@@ -44598,9 +44634,9 @@
       "kind": "task",
       "django": {
         "file": "BE/application/tasks.py",
-        "line": 1366,
+        "line": 1383,
         "symbol": "send_reminders",
-        "sha256": "36e3babcc1d2ff6692e322560948ed96c0fc8274958f438a84c4b69e1bad247c"
+        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
       },
       "source_present": true,
       "declaration": {
@@ -44663,10 +44699,10 @@
       "evidence": [
         {
           "command": "python -m TESTS.adapters.go.email_tasks_worker_process",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "a243265121c22a9ddcb80cb63b84ab141897691c",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/sweep-final-3/process-email_tasks_worker_process.log",
-          "receipt_sha256": "ffee05ad7304c923cacb366257dc415a15794a4b4fa6d4272a9100a34e7276f9",
+          "artifact": "quality-reports/go-migration/sweep-rerun-p4-final/process-email_tasks_worker_process.log",
+          "receipt_sha256": "fb960d24d3a409f5a06867542d787deee704970790dd4cca57c57ebdcfada4cc",
           "scope": "Process harness email_tasks_worker_process: {\"success\": true, \"scope\": \"Native e-mail periodic task workers on actual Django-created current schema.\\n\\nPrivate PostgreSQL, a private Redis broker (DB 0, default queue ``celery``)\\nand two local fake SMTP servers (STARTTLS and implicit TLS with a throwaway\\ncertificate) that record every client "
         }
       ],
@@ -44678,7 +44714,8 @@
         "Implementing evidence: passed: email_tasks_worker_process parity groups against the actual Django task (quality-reports/go-migration/email-tasks-worker-process/results.json)",
         "Implementing evidence: passed: 87 Go tests (render goldens regenerated byte-identical from current Django templates, SMTP transcripts, subscription dates) (quality-reports/go-migration/ledger-refresh-go-tests/results.json)",
         "Implementing evidence: passed: email_tasks_worker_process parity groups against the actual Django task (quality-reports/go-migration/email-tasks-worker-process/results.json)",
-        "Implementing evidence: passed: 92 Go tests (render goldens, SMTP transcripts, subscription dates) (quality-reports/go-migration/sync-v1035/reverify/go-tests.json)"
+        "Implementing evidence: passed: 92 Go tests (render goldens, SMTP transcripts, subscription dates) (quality-reports/go-migration/sync-v1035/reverify/go-tests.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/sweep-final-3/process-email_tasks_worker_process.log)"
       ]
     },
     {
@@ -44686,9 +44723,9 @@
       "kind": "task",
       "django": {
         "file": "BE/application/tasks.py",
-        "line": 1068,
+        "line": 1085,
         "symbol": "send_updated_certificate_email",
-        "sha256": "36e3babcc1d2ff6692e322560948ed96c0fc8274958f438a84c4b69e1bad247c"
+        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
       },
       "source_present": true,
       "declaration": {
@@ -44727,9 +44764,9 @@
       "kind": "task",
       "django": {
         "file": "BE/application/tasks.py",
-        "line": 1022,
+        "line": 1039,
         "symbol": "send_user_partial_registration_email",
-        "sha256": "36e3babcc1d2ff6692e322560948ed96c0fc8274958f438a84c4b69e1bad247c"
+        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
       },
       "source_present": true,
       "declaration": {
@@ -44792,10 +44829,10 @@
       "evidence": [
         {
           "command": "python -m TESTS.adapters.go.email_tasks_worker_process",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "a243265121c22a9ddcb80cb63b84ab141897691c",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/sweep-final-3/process-email_tasks_worker_process.log",
-          "receipt_sha256": "ffee05ad7304c923cacb366257dc415a15794a4b4fa6d4272a9100a34e7276f9",
+          "artifact": "quality-reports/go-migration/sweep-rerun-p4-final/process-email_tasks_worker_process.log",
+          "receipt_sha256": "fb960d24d3a409f5a06867542d787deee704970790dd4cca57c57ebdcfada4cc",
           "scope": "Process harness email_tasks_worker_process: {\"success\": true, \"scope\": \"Native e-mail periodic task workers on actual Django-created current schema.\\n\\nPrivate PostgreSQL, a private Redis broker (DB 0, default queue ``celery``)\\nand two local fake SMTP servers (STARTTLS and implicit TLS with a throwaway\\ncertificate) that record every client "
         }
       ],
@@ -44807,7 +44844,8 @@
         "Implementing evidence: passed: email_tasks_worker_process parity groups against the actual Django task (quality-reports/go-migration/email-tasks-worker-process/results.json)",
         "Implementing evidence: passed: 87 Go tests (render goldens regenerated byte-identical from current Django templates, SMTP transcripts, subscription dates) (quality-reports/go-migration/ledger-refresh-go-tests/results.json)",
         "Implementing evidence: passed: email_tasks_worker_process parity groups against the actual Django task (quality-reports/go-migration/email-tasks-worker-process/results.json)",
-        "Implementing evidence: passed: 92 Go tests (render goldens, SMTP transcripts, subscription dates) (quality-reports/go-migration/sync-v1035/reverify/go-tests.json)"
+        "Implementing evidence: passed: 92 Go tests (render goldens, SMTP transcripts, subscription dates) (quality-reports/go-migration/sync-v1035/reverify/go-tests.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/sweep-final-3/process-email_tasks_worker_process.log)"
       ]
     },
     {
@@ -44815,9 +44853,9 @@
       "kind": "task",
       "django": {
         "file": "BE/application/tasks.py",
-        "line": 284,
+        "line": 295,
         "symbol": "update_age_of_associates",
-        "sha256": "36e3babcc1d2ff6692e322560948ed96c0fc8274958f438a84c4b69e1bad247c"
+        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
       },
       "source_present": true,
       "declaration": {
@@ -44873,10 +44911,10 @@
       "evidence": [
         {
           "command": "python -m TESTS.adapters.go.age_worker_process",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "a243265121c22a9ddcb80cb63b84ab141897691c",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/sweep-final-3/process-age_worker_process.log",
-          "receipt_sha256": "9f1699bb192d7899f7ce4e8b359628168c244fe4b4db526babf77265d9bc7c4e",
+          "artifact": "quality-reports/go-migration/sweep-rerun-p4-final/process-age_worker_process.log",
+          "receipt_sha256": "d4e4fb30849832e0d848ce1b7ca7cd6c1757446a330730f7ab810971edf67168",
           "scope": "Process harness age_worker_process: {\"success\": true, \"scope\": \"Native age worker on actual Django-created current schema in private PostgreSQL.\\n\\nExplicit fixture producers/ownership are not installed activation. The existing\\ntask-body oracle separately compares the historical Django task. This rehearsal\\nproves the native command "
         }
       ],
@@ -44895,7 +44933,8 @@
         "Implementing evidence: passed: age_worker_process parity groups against the actual Django task (quality-reports/go-migration/age-worker-process/results.json)",
         "Implementing evidence: passed: 11 associate age groups (quality-reports/go-migration/task-bodies/results.json)",
         "Implementing evidence: passed: age_worker_process parity groups against the actual Django task (quality-reports/go-migration/age-worker-process/results.json)",
-        "Implementing evidence: passed: five task bodies (reset, token, age, retention, archive) (quality-reports/go-migration/sync-v1035/reverify/task-bodies.json)"
+        "Implementing evidence: passed: five task bodies (reset, token, age, retention, archive) (quality-reports/go-migration/sync-v1035/reverify/task-bodies.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/sweep-final-3/process-age_worker_process.log)"
       ]
     },
     {
@@ -44903,9 +44942,9 @@
       "kind": "task",
       "django": {
         "file": "BE/application/tasks.py",
-        "line": 1231,
+        "line": 1248,
         "symbol": "workflow_block_execute",
-        "sha256": "36e3babcc1d2ff6692e322560948ed96c0fc8274958f438a84c4b69e1bad247c"
+        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
       },
       "source_present": true,
       "declaration": {
@@ -44952,10 +44991,10 @@
       "evidence": [
         {
           "command": "python -m TESTS.adapters.go.celery_consumer_workflow_process",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "a243265121c22a9ddcb80cb63b84ab141897691c",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/sweep-final-3/process-celery_consumer_workflow_process.log",
-          "receipt_sha256": "0de91cc8a2029e08c5bcfad6250e4d9aacce22cca81c94d636ab11075d9fc338",
+          "artifact": "quality-reports/go-migration/sweep-rerun-p4-final/process-celery_consumer_workflow_process.log",
+          "receipt_sha256": "d7d16291239f6afffaf3af0be84fede767cb1855e929d3c9b2ee3a58379abf12",
           "scope": "Process harness celery_consumer_workflow_process: {\"success\": true, \"scope\": \"Differential harness for the Go Celery consumer: the automation workflow tasks.\\n\\ncheck_workflows_trigger, check_workflows_trigger_cron and workflow_block_execute\\n(BE/application/tasks.py, AutomationWorkflow.trigger in BE/communications/models.py),\\nrouted to ``assozeta"
         }
       ],
@@ -44970,7 +45009,8 @@
         "Implementing evidence: passed: Django oracle 20/20 before the Go registration existed (quality-reports/go-migration/consumer-workflow-process-oracle/results.json)",
         "Implementing evidence: red: Django passed, Go timed out on the first scenario (every message handed off) (quality-reports/go-migration/consumer-workflow-process-red/results.json)",
         "Implementing evidence: caught: Timed out: Go consumer: cron approved target fans out to the accepted subscription (extra fan-out to the archived subscription) (quality-reports/go-migration/consumer-workflow-process-mutation/results.json)",
-        "Implementing evidence: re-run green 14/14 after the shared celery.Task and cmd/celery-consumer changes (quality-reports/go-migration/celery-consumer-process/results.json)"
+        "Implementing evidence: re-run green 14/14 after the shared celery.Task and cmd/celery-consumer changes (quality-reports/go-migration/celery-consumer-process/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/sweep-final-3/process-celery_consumer_workflow_process.log)"
       ]
     },
     {
@@ -45153,9 +45193,9 @@
       "kind": "task",
       "django": {
         "file": "BE/docmanager/tasks.py",
-        "line": 24,
+        "line": 26,
         "symbol": "save_binary_to_storage",
-        "sha256": "ffd749d2177f27b1dff05dd9245f96ac21579782e39cb6882aa46fe79befbc87"
+        "sha256": "d659eb584a5e2475575d835a9eb8809f2c169738aa562385b5fe1de2c3d4b0e5"
       },
       "source_present": true,
       "declaration": {
@@ -45192,9 +45232,9 @@
       "kind": "task",
       "django": {
         "file": "BE/docmanager/tasks.py",
-        "line": 12,
+        "line": 14,
         "symbol": "save_to_storage",
-        "sha256": "ffd749d2177f27b1dff05dd9245f96ac21579782e39cb6882aa46fe79befbc87"
+        "sha256": "d659eb584a5e2475575d835a9eb8809f2c169738aa562385b5fe1de2c3d4b0e5"
       },
       "source_present": true,
       "declaration": {
@@ -45247,11 +45287,11 @@
       "evidence": [
         {
           "command": "python -m TESTS.adapters.go.celery_consumer_print_process",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "a243265121c22a9ddcb80cb63b84ab141897691c",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/sweep-final-3/process-celery_consumer_print_process.log",
-          "receipt_sha256": "e212bcbdb739d753bff7bab73edae4f3576ab974fae79b64eec84977ea8760d7",
-          "scope": "Process harness celery_consumer_print_process: {\"success\": true, \"minio\": {\"image\": \"ghcr.io/carbogninalberto/minio:RELEASE.2025-04-22T22-12-26Z-assozeta.1@sha256:8d35f39307b12cbc9ba3eedd26587d77ab30c21c3e904aee552df8b17b600389\", \"container\": \"az-instance-logo-minio-55ae60093433\", \"owned\": true}, \"binary_sha256\": \"666bdf180a9e1220ff9d787079dc5bd"
+          "artifact": "quality-reports/go-migration/sweep-rerun-p4-final/process-celery_consumer_print_process.log",
+          "receipt_sha256": "c2c3f4bc45abddae8944e0c66b0a5c5952cd3597e8cf90fceb86449c6eccffde",
+          "scope": "Process harness celery_consumer_print_process: {\"success\": true, \"minio\": {\"image\": \"ghcr.io/carbogninalberto/minio:RELEASE.2025-04-22T22-12-26Z-assozeta.1@sha256:8d35f39307b12cbc9ba3eedd26587d77ab30c21c3e904aee552df8b17b600389\", \"container\": \"az-instance-logo-minio-2499eeac9657\", \"owned\": true}, \"binary_sha256\": \"e5443c9f371f5dda92bf08eb919e7a7"
         }
       ],
       "notes": [
@@ -45261,7 +45301,8 @@
         "consumer-print: Go runs save_to_storage for string arguments; handed off before any effect: base64 outside the standard-alphabet subset, names with backslashes/NUL/invalid UTF-8, content of 8 MiB or more (multipart upload), a name that already exists without AWS_S3_FILE_OVERWRITE (random alternative name). The existence check runs before admission. See docs/architecture/go-migration/consumer-print.md.",
         "Implementing evidence: passed: 30 differential scenarios against the actual Django worker (race-built consumer) (quality-reports/go-migration/celery-consumer-print-process/results.json)",
         "Implementing evidence: red: Django oracle passed, Go timed out on the first scenario (all messages handed off) (quality-reports/go-migration/celery-consumer-print-process-red/results.json)",
-        "Implementing evidence: caught: Go differs from Django (2_ricevuta-2.pdf instead of 3_ricevuta-2.pdf) (quality-reports/go-migration/celery-consumer-print-process-mutation/results.json)"
+        "Implementing evidence: caught: Go differs from Django (2_ricevuta-2.pdf instead of 3_ricevuta-2.pdf) (quality-reports/go-migration/celery-consumer-print-process-mutation/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/sweep-final-3/process-celery_consumer_print_process.log)"
       ]
     },
     {
@@ -45269,9 +45310,9 @@
       "kind": "task",
       "django": {
         "file": "BE/instance/sso/tasks.py",
-        "line": 10,
+        "line": 11,
         "symbol": "maintain_bakney_pairings",
-        "sha256": "57bd4a8cd80a6b0c96ed9b83717c8d4c3b9117c6099c091b2bf154421463da42"
+        "sha256": "6875c314afa7b6d47e6ca09a0ca8718500b0eb834a3b171d231f4174950f48f6"
       },
       "source_present": true,
       "declaration": {
@@ -45319,10 +45360,10 @@
       "evidence": [
         {
           "command": "python -m TESTS.adapters.go.bakney_maintenance_worker_process",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "a243265121c22a9ddcb80cb63b84ab141897691c",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/sweep-final-3/process-bakney_maintenance_worker_process.log",
-          "receipt_sha256": "bcc1fc076537d65763ed5e8dd2f5dcebf0e662cbdf417834a923187762d082a0",
+          "artifact": "quality-reports/go-migration/sweep-rerun-p4-final/process-bakney_maintenance_worker_process.log",
+          "receipt_sha256": "22d79494c984bb6a4fd14da86952ef873aee8f15038f6d4688be225c0e4b61ba",
           "scope": "Process harness bakney_maintenance_worker_process: {\"success\": true, \"scope\": \"Native maintain_bakney_pairings worker on actual Django-created current schema.\\n\\nPrivate PostgreSQL and a private Bakney authority stub (a local HTTP server\\nrecording every request and answering from the variant's script). Each seed\\nis first processed by the actual Dj"
         }
       ],
@@ -45333,7 +45374,8 @@
         "Implementing evidence: docs/architecture/go-migration/sso-pairing.md",
         "Implementing evidence: RED: Django oracles and the default-owner group pass; the native job stays pending. (quality-reports/go-migration/bakney-maintenance-worker-process-red-r1/results.json)",
         "Implementing evidence: GREEN: 7/7 groups (default Django owner, four seeds matching the Django task state and byte-identical authority requests, invalid envelopes, replay). (quality-reports/go-migration/bakney-maintenance-worker-process-green-r3/results.json)",
-        "Implementing evidence: Mutation control: Go state differs from the Django task on the main seed. (quality-reports/go-migration/bakney-maintenance-worker-process-mutation-r1/results.json)"
+        "Implementing evidence: Mutation control: Go state differs from the Django task on the main seed. (quality-reports/go-migration/bakney-maintenance-worker-process-mutation-r1/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/sweep-final-3/process-bakney_maintenance_worker_process.log)"
       ]
     },
     {
@@ -45343,7 +45385,7 @@
         "file": "BE/instance/tasks.py",
         "line": 18,
         "symbol": "cleanup_data_restores",
-        "sha256": "4c7d08c6f6c3e88cb3ac63f4980552c9f8c8a0d68bdac8d232f3f4ee7c9f4619"
+        "sha256": "0b413e6d4814f4bf1fdb1cd5e71cb545f549aad4b70cdcb41ad22527356ccbf6"
       },
       "source_present": true,
       "declaration": {
@@ -45404,18 +45446,18 @@
       "evidence": [
         {
           "command": "python -m TESTS.adapters.go.data_restore_cleanup_worker_process",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "a243265121c22a9ddcb80cb63b84ab141897691c",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/sweep-final-3/process-data_restore_cleanup_worker_process.log",
-          "receipt_sha256": "cee2ceff266aca5ff15481ceacc675b0e86f30471ae35e4cc4f22d533b615184",
+          "artifact": "quality-reports/go-migration/sweep-rerun-p4-final/process-data_restore_cleanup_worker_process.log",
+          "receipt_sha256": "73242d9f839f8bfdd4c16e6a7d9e1801b7163e989f45af5f36ecc2838ab2fc57",
           "scope": "Process harness data_restore_cleanup_worker_process: {\"success\": true, \"scope\": \"Native cleanup_data_restores worker on actual Django-created current schema.\\n\\nPrivate PostgreSQL, a private MinIO (the S3 default storage) and the restore\\nlock file. Each seed is first processed by the actual Django\\n``cleanup_data_restores`` task (``instance.restore.c"
         },
         {
           "command": "python -m TESTS.adapters.go.worker_process",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "a243265121c22a9ddcb80cb63b84ab141897691c",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/sweep-final-3/process-worker_process.log",
-          "receipt_sha256": "4122e972e557ef3bc0172ad07870a69e0c7d586398106bfb4839c308c16c8c9a",
+          "artifact": "quality-reports/go-migration/sweep-rerun-p4-final/process-worker_process.log",
+          "receipt_sha256": "0bdb5777ad8915f652606fa45e5352e3722189822b9b5883c23e61aeb92f628e",
           "scope": "Process harness worker_process: {\"success\": true, \"scope\": \"native binary and synthetic transaction boundary; not installed activation or historical task parity\", \"source_hashes\": {\"BE/application/__init__.py\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"BE/application/admin.py\": \"0179181acb87a508f6473ee51"
         }
       ],
@@ -45425,7 +45467,9 @@
         "Ported by restore-cleanup; refusals and infrastructure differences in docs/architecture/go-migration/restore-cleanup.md.",
         "Implementing evidence: Native worker registration (version 1) on its own executor. TESTS/adapters/go/data_restore_cleanup_worker_process.py builds race-instrumented worker/migrate on actual current Django models in private PostgreSQL with a private pinned MinIO and the restore lock file; the actual Django task runs first (S3Boto3Storage, DATA_RESTORE_LOCK_PATH) with authored assertions on eleven receipts, the bucket and the lock file; the Go job must leave the identical complete managed-model state (receipt updated_at normalized within the run window), bucket, lock file and NULL result. Groups: default Django owner, native parity, invalid version/payload/tenant, later run, held lock, DATA_RESTORE_RECOVERY_BACKUPS from the environment, media refusal. RED: the job is never claimed without the registration (ordinary admission defers claims while a receipt is queued). GREEN 7/7. Mutation caught: signature-URL references dropped. See docs/architecture/go-migration/restore-cleanup.md.",
         "Implementing evidence: passed: data_restore_cleanup_worker_process parity groups against the actual Django task (quality-reports/go-migration/restore-cleanup-worker-process/results.json)",
-        "Implementing evidence: passed: 7 worker-process scenarios against the actual Django task; the task is unchanged, its beat entry moved from settings.CELERY_BEAT_SCHEDULE to core/celery.py (the Go worker does not schedule). (quality-reports/go-migration/instance-reverify-cleanup/results.json)"
+        "Implementing evidence: passed: 7 worker-process scenarios against the actual Django task; the task is unchanged, its beat entry moved from settings.CELERY_BEAT_SCHEDULE to core/celery.py (the Go worker does not schedule). (quality-reports/go-migration/instance-reverify-cleanup/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/sweep-final-3/process-data_restore_cleanup_worker_process.log)",
+        "Implementing evidence: passed (quality-reports/go-migration/sweep-final-3/process-worker_process.log)"
       ]
     },
     {
@@ -45433,9 +45477,9 @@
       "kind": "task",
       "django": {
         "file": "BE/instance/tasks.py",
-        "line": 37,
+        "line": 42,
         "symbol": "notify_backup_failures",
-        "sha256": "4c7d08c6f6c3e88cb3ac63f4980552c9f8c8a0d68bdac8d232f3f4ee7c9f4619"
+        "sha256": "0b413e6d4814f4bf1fdb1cd5e71cb545f549aad4b70cdcb41ad22527356ccbf6"
       },
       "source_present": true,
       "declaration": {
@@ -45486,11 +45530,11 @@
       "evidence": [
         {
           "command": "python -m TESTS.adapters.go.celery_consumer_backup_failures_process",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "a243265121c22a9ddcb80cb63b84ab141897691c",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/sweep-final-3/process-celery_consumer_backup_failures_process.log",
-          "receipt_sha256": "dc087662d05d6ef971e4b08f00f961f57cb965f9cb47a2cfa25d38daf4aceaaf",
-          "scope": "Process harness celery_consumer_backup_failures_process: {\"success\": true, \"binary_sha256\": \"666bdf180a9e1220ff9d787079dc5bdec154fee77553729900bb4157e52050fb\", \"scenarios\": [\"Beat message: failed backups, a scheduled run and the remote copy are each notified once\", \"failures already notified are skipped\", \"a scheduled run with its own operation and an old"
+          "artifact": "quality-reports/go-migration/sweep-rerun-p4-final/process-celery_consumer_backup_failures_process.log",
+          "receipt_sha256": "5cd5968d22a449975e37ac5e7ad26d7afb10e136fc001cfaafcc886180cda4d9",
+          "scope": "Process harness celery_consumer_backup_failures_process: {\"success\": true, \"binary_sha256\": \"e5443c9f371f5dda92bf08eb919e7a75899003a5d5a0286ffebfb3b4091a901d\", \"scenarios\": [\"Beat message: failed backups, a scheduled run and the remote copy are each notified once\", \"failures already notified are skipped\", \"a scheduled run with its own operation and an old"
         }
       ],
       "notes": [
@@ -45502,7 +45546,8 @@
         "Implementing evidence: passed after the consumer registration change (quality-reports/go-migration/beat-reverify-consumer-process/results.json)",
         "Implementing evidence: passed after the consumer registration change (quality-reports/go-migration/beat-reverify-consumer-capabilities/results.json)",
         "Implementing evidence: passed: 15/15 scenarios, race-built Go consumer against the prefork Django worker; notices give the time and archive, no runner message. (quality-reports/go-migration/sec-backups-consumer-green/results.json)",
-        "Implementing evidence: Mutation control: CAUGHT, Go differs from Django on the first scenario. (quality-reports/go-migration/sec-backups-consumer-mutation/results.json)"
+        "Implementing evidence: Mutation control: CAUGHT, Go differs from Django on the first scenario. (quality-reports/go-migration/sec-backups-consumer-mutation/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/sweep-final-3/process-celery_consumer_backup_failures_process.log)"
       ]
     },
     {
@@ -45512,7 +45557,7 @@
         "file": "BE/instance/tasks.py",
         "line": 7,
         "symbol": "restore_instance_data",
-        "sha256": "4c7d08c6f6c3e88cb3ac63f4980552c9f8c8a0d68bdac8d232f3f4ee7c9f4619"
+        "sha256": "0b413e6d4814f4bf1fdb1cd5e71cb545f549aad4b70cdcb41ad22527356ccbf6"
       },
       "source_present": true,
       "declaration": {
@@ -45592,11 +45637,11 @@
       "evidence": [
         {
           "command": "python -m TESTS.adapters.go.celery_consumer_restore_process",
-          "revision": "6f8968f4534f75853e535517e2445f44a7723b3c",
+          "revision": "a243265121c22a9ddcb80cb63b84ab141897691c",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/sweep-final-3/process-celery_consumer_restore_process.log",
-          "receipt_sha256": "ac5eae739bb3c4e61cec0b3f7c1c0e48d643c55a359abf6284321a537bada329",
-          "scope": "Process harness celery_consumer_restore_process: {\"success\": true, \"minio\": {\"image\": \"ghcr.io/carbogninalberto/minio:RELEASE.2025-04-22T22-12-26Z-assozeta.1@sha256:8d35f39307b12cbc9ba3eedd26587d77ab30c21c3e904aee552df8b17b600389\", \"container\": \"az-instance-logo-minio-1f9432e6b2c3\", \"owned\": true}, \"plans_current\": true, \"binary_sha256\": \"666bdf18"
+          "artifact": "quality-reports/go-migration/sweep-rerun-p4-final/process-celery_consumer_restore_process.log",
+          "receipt_sha256": "686efe0ae0575e7d9bd8947a877fd2231abf7e7dfbc689d4c307023291d318eb",
+          "scope": "Process harness celery_consumer_restore_process: {\"success\": true, \"minio\": {\"image\": \"ghcr.io/carbogninalberto/minio:RELEASE.2025-04-22T22-12-26Z-assozeta.1@sha256:8d35f39307b12cbc9ba3eedd26587d77ab30c21c3e904aee552df8b17b600389\", \"container\": \"az-instance-logo-minio-60026a0f3207\", \"owned\": true}, \"plans_current\": true, \"binary_sha256\": \"e5443c9f"
         }
       ],
       "notes": [
@@ -45620,7 +45665,8 @@
         "Implementing evidence: re-run (shared importer): passed 20/20 (quality-reports/go-migration/sec-data-portability-import-process/results.json)",
         "Implementing evidence: re-run (shared plan): passed 8/8 (quality-reports/go-migration/sec-data-portability-export-process/results.json)",
         "Implementing evidence: re-run after the shared changes: passed 13/13 (quality-reports/go-migration/sec-data-portability-rerun-capabilities/results.json)",
-        "Implementing evidence: re-run after the shared changes: passed 15/15 (quality-reports/go-migration/sec-data-portability-rerun-celery-consumer-process/results.json)"
+        "Implementing evidence: re-run after the shared changes: passed 15/15 (quality-reports/go-migration/sec-data-portability-rerun-celery-consumer-process/results.json)",
+        "Implementing evidence: passed (quality-reports/go-migration/sweep-final-3/process-celery_consumer_restore_process.log)"
       ]
     },
     {

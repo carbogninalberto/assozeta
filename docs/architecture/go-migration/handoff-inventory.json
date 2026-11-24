@@ -9200,13 +9200,6 @@
   ],
   "ledger_reconciliation": [
     {
-      "ledger_id": "command:BE/notifications/management/commands/relay_go_realtime.py:relay_go_realtime",
-      "status": "needs_review",
-      "finding": "Both relays claim ownership and stamp event IDs on schema 8. The command's existing evidence covers the earlier schema.",
-      "executable_gap": false,
-      "evidence_gap": true
-    },
-    {
       "ledger_id": "schedule_mutation:BE/instance/schedule_authority.py:PeriodicTask.objects.filter",
       "status": "characterized",
       "finding": "Phase 4 scheduling scenarios exercise the shared cursor. Exact revision verification belongs to the test author.",
