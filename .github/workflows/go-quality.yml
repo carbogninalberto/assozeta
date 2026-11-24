@@ -1254,7 +1254,7 @@ jobs:
             --playwright-module selfhost/tests/browser/node_modules/@playwright/test/index.mjs
       - name: Verify unchanged browser manifest and logo consumers on the packaged server
         run: |
-          python -m unittest TESTS.adapters.django.test_instance_pwa_browser -v
+          python -m unittest TESTS.adapters.django.test_instance_pwa_browser TESTS.adapters.django.test_browser_retry -v
           python - <<'PY'
           import subprocess
           from TESTS.adapters.django.s3_objects import IMAGE

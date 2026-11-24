@@ -1159,8 +1159,8 @@ def exercise(proof, work, output, log, options, tool_env, report):
 
                             try:
                                 for attempt in (1, 2):
-                                    output = browser_retry.attempt_log(work, version + '-collaborator', attempt)
-                                    with output.open('w') as child:
+                                    attempt_output = browser_retry.attempt_log(work, version + '-collaborator', attempt)
+                                    with attempt_output.open('w') as child:
                                         process = subprocess.Popen(
                                             ['node', str(ROOT / 'TESTS/browser/collaborator-list.mjs')],
                                             cwd=ROOT,
@@ -1181,12 +1181,12 @@ def exercise(proof, work, output, log, options, tool_env, report):
                                             # Only a child that died before its first checkpoint, of the
                                             # runner's network, runs once more (browser_retry).
                                             exited = str(error) == 'Browser exited before all checkpoints'
-                                            if exited and browser_retry.retry(log, output, attempt, checkpoints):
+                                            if exited and browser_retry.retry(log, attempt_output, attempt, checkpoints):
                                                 continue
                                             if not exited:
-                                                browser_retry.flush(log, output)
+                                                browser_retry.flush(log, attempt_output)
                                             raise
-                                    browser_retry.flush(log, output)
+                                    browser_retry.flush(log, attempt_output)
                                     break
                             finally:
                                 fixture_path.unlink(missing_ok=True)

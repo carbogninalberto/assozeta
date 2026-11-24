@@ -261,19 +261,19 @@ def exercise(proof, work, log, args, report, browser_environment):
                         private = work / 'browser-input.json'; private.write_text(json.dumps(fixture)); private.chmod(0o600)
                         try:
                             for attempt in (1, 2):
-                                output = browser_retry.attempt_log(work, 'pwa-' + name, attempt)
+                                attempt_output = browser_retry.attempt_log(work, 'pwa-' + name, attempt)
                                 try:
-                                    with output.open('w') as child:
+                                    with attempt_output.open('w') as child:
                                         result = subprocess.run(['node', str(ROOT / 'TESTS/browser/instance-pwa.mjs')], cwd=ROOT,
                                             env={**browser_environment, 'TESTS_FIXTURE': str(private), 'TESTS_OUTPUT': str(target)},
                                             stdout=child, stderr=subprocess.STDOUT, timeout=120)
                                 except subprocess.TimeoutExpired:
-                                    browser_retry.flush(log, output)
+                                    browser_retry.flush(log, attempt_output)
                                     raise
                                 if result.returncode == 0:
-                                    browser_retry.flush(log, output)
+                                    browser_retry.flush(log, attempt_output)
                                     break
-                                if not browser_retry.retry(log, output, attempt):
+                                if not browser_retry.retry(log, attempt_output, attempt):
                                     raise subprocess.CalledProcessError(result.returncode, 'instance-pwa.mjs')
                                 observer.clear()
                         finally: private.unlink(missing_ok=True)
