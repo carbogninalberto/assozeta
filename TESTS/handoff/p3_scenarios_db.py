@@ -519,7 +519,7 @@ def legacy_without_ledger_is_unchanged(stack):
     """A database before migration 6 (no ledger table, schema version 5): both runtimes publish and execute as before."""
     stack.seed_balance()
     # Emulate a version-5 database: hide the ledger and every later operational table, record version 5.
-    later = [t for t in ('assozeta_scheduler_lease',) if stack.exists('public.' + t)]
+    later = [t for t in ('assozeta_scheduler_lease', 'assozeta_outbox_effects') if stack.exists('public.' + t)]
     recorded = stack.sql('SELECT version FROM public.assozeta_go_schema_migrations')[0][0]
     stack.sql('ALTER TABLE public.assozeta_handoff_work RENAME TO assozeta_handoff_work_hidden')
     for table in later:
