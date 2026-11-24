@@ -39,6 +39,12 @@ def main(argv=None):
     stack = module.STACK(output)
 
     def write():
+        # A component receipt (tools/go-migration/ledger_components.json): success only for a complete, unfiltered
+        # run whose setup and every scenario passed.
+        results = report['scenarios'].values()
+        report['success'] = bool(report['setup'].get('ok') and results and all(r['ok'] for r in results)
+                                 and not args.only and not families and len(report['scenarios']) == len(scenarios))
+        args.report.parent.mkdir(parents=True, exist_ok=True)
         args.report.write_text(json.dumps(report, indent=1, default=str) + '\n')
 
     try:
