@@ -35,8 +35,8 @@ func (b AdmittingBroker) PublishAttempt(ctx context.Context, queue string, raw [
 	if !installed {
 		return b.Redis.Push(ctx, queue, raw)
 	}
-	// Admission only needs the protocol headers. Decoding a body here would
-	// make publication depend on the target consumer's supported argument types.
+	// Read only admission metadata. encoding/json skips the body and display
+	// headers (including lone surrogate escapes); keep raw for storage and dispatch.
 	var envelope struct {
 		Headers struct {
 			ID, Task     string
