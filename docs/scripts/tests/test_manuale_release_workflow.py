@@ -59,16 +59,21 @@ class ReleaseWorkflowTests(unittest.TestCase):
         gate = jobs['manual-release']
         self.assertEqual(gate['uses'], './.github/workflows/manuale-release.yml')
         self.assertEqual(gate['if'], "github.event_name == 'workflow_dispatch' && inputs.include_manual")
-        self.assertIn('manual-release', jobs['publish']['needs'])
-        self.assertIn("needs.manual-release.result == 'success'", jobs['publish']['if'])
-        steps = jobs['publish']['steps']
+        # Release images are built once as the candidate (Phase 7) and promoted by digest after
+        # qualification; commit images use the same build steps. Both carry the manual.
+        builder = jobs['candidate-images']
+        self.assertEqual(jobs['branch-images']['steps'], builder['steps'])
+        for name in ('candidate-images', 'publish', 'branch-images'):
+            self.assertIn('manual-release', jobs[name]['needs'])
+            self.assertIn("needs.manual-release.result == 'success'", jobs[name]['if'])
+        steps = builder['steps']
         download = next(step for step in steps if step.get('uses', '').startswith('actions/download-artifact@'))
         self.assertEqual(download['with']['name'], 'manuale-release-runtime')
         self.assertEqual(download['with']['path'], '${{ matrix.context }}/release-manual')
         self.assertIn("needs.manual-release.result == 'success'", download['if'])
         for backend, context in (('backend', './BE'), ('backend-go', './BE_GO')):
             self.assertIn("matrix.name == '" + backend + "'", download['if'])
-            entry = next(item for item in jobs['publish']['strategy']['matrix']['include']
+            entry = next(item for item in builder['strategy']['matrix']['include']
                          if item['name'] == backend)
             self.assertEqual(entry['context'], context)
         carried = next(step for step in steps if step.get('id') == 'carried')
@@ -77,7 +82,7 @@ class ReleaseWorkflowTests(unittest.TestCase):
         # Each backend image carries the manual of its own previous image (Phase 6 B4).
         self.assertEqual(carried['env']['SOURCE_IMAGE'], 'ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}:latest')
         for backend, image in (('backend', 'assozeta-backend'), ('backend-go', 'assozeta-backend-go')):
-            entry = next(item for item in jobs['publish']['strategy']['matrix']['include'] if item['name'] == backend)
+            entry = next(item for item in builder['strategy']['matrix']['include'] if item['name'] == backend)
             self.assertEqual(entry['image'], image)
         for backend in ('backend', 'backend-go'):
             self.assertIn("matrix.name == '" + backend + "'", carried['if'])
@@ -150,39 +155,49 @@ class ReleaseWorkflowTests(unittest.TestCase):
 
     def test_failed_manual_gate_cannot_allow_release_publication(self):
         jobs = yaml.safe_load((ROOT / '.github/workflows/publish-images.yml').read_text())['jobs']
-        expression = jobs['publish']['if'].strip().removeprefix('${{').removesuffix('}}').strip()
+        # Releases publish through `publish` (qualified digests), commit images through `branch-images`.
+        guards = {name: jobs[name]['if'].strip().removeprefix('${{').removesuffix('}}').strip()
+                  for name in ('publish', 'branch-images')}
         results = ('success', 'failure', 'cancelled', 'skipped')
-        for event, manual, quality, target, go_quality, include, tag, cancelled in itertools.product(
-                ('release', 'workflow_dispatch', 'push'), results, results, results, results,
+        for event, manual, quality, target, go_quality, qualification, include, tag, cancelled in itertools.product(
+                ('release', 'workflow_dispatch', 'push'), results, results, results, results, results,
                 (True, False), ('', 'v1.0.0'), (True, False)):
             if event != 'workflow_dispatch' and (include or tag):
                 continue  # inputs exist only on manual dispatch
-            with self.subTest(event=event, manual=manual, quality=quality, target=target,
-                              go_quality=go_quality, include=include, tag=tag, cancelled=cancelled):
-                values = {'validate': 'success', 'production-smoke': 'success', 'release-target': target,
-                          'manual-release': manual, 'selfhost-quality': quality, 'go-quality': go_quality}
-                source = re.sub(r'needs\.([a-z-]+)\.result', lambda match: repr(values[match[1]]), expression)
-                source = source.replace('github.event_name', repr(event))
-                source = source.replace('inputs.include_manual', repr(include)).replace('inputs.release_tag', repr(tag))
-                source = source.replace('!cancelled()', repr(not cancelled)).replace('!=', ' NE ')
-                source = source.replace('!', ' not ').replace(' NE ', '!=')
-                source = source.replace('&&', ' and ').replace('||', ' or ')
-                tree = ast.parse('(' + source + ')', mode='eval')
-                allowed = (ast.Expression, ast.BoolOp, ast.And, ast.Or, ast.Compare, ast.Eq, ast.NotEq,
-                           ast.UnaryOp, ast.Not, ast.Constant)
-                self.assertTrue(all(isinstance(node, allowed) for node in ast.walk(tree)))
-                permitted = eval(compile(tree, '<publication guard>', 'eval'), {'__builtins__': {}})
-                release_mode = event == 'release' or bool(tag)
-                requested = event == 'workflow_dispatch' and include
-                expected = not cancelled and go_quality == 'success' and (
-                    target == 'success' or not release_mode and target == 'skipped') and (
-                    manual == 'success' or not requested and manual == 'skipped') and (
-                    quality == 'success' or event == 'push' and quality == 'skipped')
-                self.assertEqual(bool(permitted), expected)
-                if requested and manual != 'success':
-                    self.assertFalse(permitted, 'a requested manual must succeed')
-                if release_mode and target != 'success':
-                    self.assertFalse(permitted, 'a release must run from its tag')
+            values = {'validate': 'success', 'production-smoke': 'success', 'release-target': target,
+                      'manual-release': manual, 'selfhost-quality': quality, 'go-quality': go_quality,
+                      'release-qualification': qualification}
+            release_mode = event == 'release' or bool(tag)
+            requested = event == 'workflow_dispatch' and include
+            manual_ok = manual == 'success' or not requested and manual == 'skipped'
+            expected = {
+                'publish': not cancelled and qualification == 'success' and go_quality == 'success'
+                           and target == 'success' and manual_ok and quality == 'success',
+                'branch-images': not cancelled and not release_mode and qualification == 'skipped'
+                                 and target == 'skipped' and go_quality == 'success' and manual_ok
+                                 and (quality == 'success' or event == 'push' and quality == 'skipped')}
+            for job, expression in guards.items():
+                with self.subTest(job=job, event=event, manual=manual, quality=quality, target=target,
+                                  go_quality=go_quality, qualification=qualification, include=include, tag=tag,
+                                  cancelled=cancelled):
+                    source = re.sub(r'needs\.([a-z-]+)\.result', lambda match: repr(values[match[1]]), expression)
+                    source = source.replace('github.event_name', repr(event)).replace('github.ref_type', repr('branch'))
+                    source = source.replace('inputs.include_manual', repr(include)).replace('inputs.release_tag', repr(tag))
+                    source = source.replace('!cancelled()', repr(not cancelled)).replace('!=', ' NE ')
+                    source = source.replace('!', ' not ').replace(' NE ', '!=')
+                    source = source.replace('&&', ' and ').replace('||', ' or ')
+                    tree = ast.parse('(' + source + ')', mode='eval')
+                    allowed = (ast.Expression, ast.BoolOp, ast.And, ast.Or, ast.Compare, ast.Eq, ast.NotEq,
+                               ast.UnaryOp, ast.Not, ast.Constant)
+                    self.assertTrue(all(isinstance(node, allowed) for node in ast.walk(tree)))
+                    permitted = eval(compile(tree, '<publication guard>', 'eval'), {'__builtins__': {}})
+                    self.assertEqual(bool(permitted), expected[job])
+                    if requested and manual != 'success':
+                        self.assertFalse(permitted, 'a requested manual must succeed')
+                    if release_mode and job == 'publish' and qualification != 'success':
+                        self.assertFalse(permitted, 'a release publishes only a qualified candidate')
+                    if release_mode and target != 'success':
+                        self.assertFalse(permitted, 'a release must run from its tag')
 
 FAKE_CACHE = '''import json, sys
 from pathlib import Path

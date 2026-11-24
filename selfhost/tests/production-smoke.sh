@@ -240,7 +240,8 @@ create_corrupt_object_archive() {
 }
 
 phase "configure production environment"
-ASSOZETA_ENV_FILE="$ENV_FILE" "$CLI" configure --domain localhost:58080 --version test
+# A release candidate's images carry its version; local builds use "test".
+ASSOZETA_ENV_FILE="$ENV_FILE" "$CLI" configure --domain localhost:58080 --version "${ASSOZETA_RELEASE_VERSION:-test}"
 set_value COMPOSE_PROJECT_NAME assozeta-production-smoke
 set_value ASSOZETA_BACKEND_IMAGE assozeta-backend
 set_value ASSOZETA_BACKEND_GO_IMAGE assozeta-backend-go

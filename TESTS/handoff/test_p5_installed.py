@@ -146,7 +146,9 @@ class Installed:
         self.env_file.write_text('\n'.join(lines) + '\n')
 
     def install(self):
-        self.cli('configure', '--domain', f'localhost:{self.port}', '--version', 'test')
+        # A release candidate's images carry its version (/app/VERSION); the CLI checks it at start.
+        self.cli('configure', '--domain', f'localhost:{self.port}', '--version',
+                 os.environ.get('ASSOZETA_RELEASE_VERSION') or 'test')
         # The retained log never carries this disposable installation's credentials.
         STATE['secrets'] = sorted({value for key, value in self.env().items() if len(value) >= 16 and any(
             word in key for word in ('PASSWORD', 'SECRET', 'TOKEN', 'KEY'))} | {OWNER_PASSWORD}, key=len, reverse=True)

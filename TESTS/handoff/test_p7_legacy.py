@@ -10,7 +10,9 @@ selectors, and delayed work already on both historical queues (`celery` and `ass
 month, so no old worker can finish it before the upgrade).
 
 Target: this commit's images (the candidate's in the release workflow, ASSOZETA_HANDOFF_P5_IMAGES),
-published as release v9.9.9 through the Phase 6 test transport (selfhost/tests/fixtures: the updater
+published as release v<ASSOZETA_RELEASE_VERSION> with the candidate application images unchanged (release
+job), or as v9.9.9 with backend/backend-go restamped to that version (local/PR builds carry VERSION=test),
+through the Phase 6 test transport (selfhost/tests/fixtures: the updater
 image gains the transport, which serves releases.json, the bundle of this checkout's selfhost/ and
 its assozeta-update.json from <installation>/.fixtures; local image ids are the allowlisted
 references). The operator runs the SOURCE CLI exactly as documented: `./bin/assozeta upgrade 9.9.9`
@@ -55,7 +57,10 @@ from TESTS.handoff.topology import ROOT
 
 RED = r.RED
 SOURCE = 'v1.0.48'
-TARGET = '9.9.9'
+# The release job sets the candidate's own version (its images carry it, so they are used unchanged);
+# local and PR builds carry VERSION=test, which is not a stable release, and are restamped as 9.9.9.
+TARGET = os.environ.get('ASSOZETA_RELEASE_VERSION') or '9.9.9'
+RESTAMP = not os.environ.get('ASSOZETA_RELEASE_VERSION')
 OUTPUT = ROOT / 'quality-reports/handoff/p7/legacy'
 MIXED = {'ASSOZETA_GO_TASKS': '1',
          'GO_TASK_QUEUE_TASKS': 'core.tasks.send_mail_async,send_email_text,send_email_template,send_email_html',
@@ -79,6 +84,8 @@ def tearDownModule():
     try:
         for tag in STATE.get('tags', []):
             p5.run(['docker', 'image', 'rm', '-f', tag], log=STATE['log'], check=False)
+        for tag, identifier in STATE.get('retag', {}).items():
+            p5.run(['docker', 'tag', identifier, tag], log=STATE['log'], check=False)
     finally:
         if STATE.get('work'):
             shutil.rmtree(STATE['work'], ignore_errors=True)
@@ -186,22 +193,33 @@ RUN mv /usr/local/bin/docker /usr/local/bin/docker-real && cp /test-transport/do
 ENV PYTHONPATH=/test-transport:/runner ASSOZETA_TEST_FIXTURES={fixtures} RUNNER_VERSION={TARGET} ASSOZETA_READINESS_ATTEMPTS=5 ASSOZETA_READINESS_DELAY=1
 ENTRYPOINT ["python3", "/test-transport/entrypoint.py"]
 ''', f'{name}-updater:{TARGET}')
-        backend = build(context, f'''FROM {candidate['backend']}
+        inspect = lambda ref: p5.run(['docker', 'image', 'inspect', '--format', '{{.Id}}', ref],
+                                     log=STATE['log']).stdout.strip()
+        if RESTAMP:
+            backend = build(context, f'''FROM {candidate['backend']}
 USER root
 RUN printf '{TARGET}\\n' > /app/VERSION
 USER assozeta
 ''', f'{name}-backend:{TARGET}')
-        backend_go = build(context, f'''FROM {candidate['backend-go']}
+            backend_go = build(context, f'''FROM {candidate['backend-go']}
 USER root
 RUN printf '{TARGET}\\n' > /app/VERSION
 USER 10001:10001
 ''', f'{name}-backend-go:{TARGET}')
-        inspect = lambda ref: p5.run(['docker', 'image', 'inspect', '--format', '{{.Id}}', ref],
-                                     log=STATE['log']).stdout.strip()
+        else:
+            # The exact candidate application images; only the updater gains the test transport layer.
+            backend, backend_go = inspect(candidate['backend']), inspect(candidate['backend-go'])
         web, renderer = inspect(candidate['web']), inspect(candidate['renderer'])
         tag = f'ghcr.io/carbogninalberto/assozeta-updater:{TARGET}'
+        previous = p5.run(['docker', 'image', 'inspect', '--format', '{{.Id}}', tag], log=STATE['log'],
+                          check=False).stdout.strip()
         p5.run(['docker', 'tag', updater, tag], log=STATE['log'])
-        STATE['tags'].append(tag)
+        if tag in STATE['tags'] or tag in STATE.setdefault('retag', {}):
+            pass  # an earlier lane already recorded how to restore this tag
+        elif previous.startswith('sha256:'):
+            STATE['retag'][tag] = previous  # the release job's own tag of the candidate updater
+        else:
+            STATE['tags'].append(tag)
         (fixtures / 'images.json').write_text(json.dumps({
             'fixture-backend': backend, 'fixture-backend-go': backend_go, 'fixture-web': web,
             'fixture-renderer': renderer, tag: updater}))

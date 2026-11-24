@@ -138,7 +138,7 @@
     "TESTS.handoff.test_p7_installed.ReleaseLanes.test_1_steady_state_observations_in_both_modes": {
       "phase": 7,
       "owner": "t-p7",
-      "reason": "part C (installed, CI only): setUp loads the release gate, which does not exist; lanes and mutation controls are unexercised until part A lands",
+      "reason": "part C (installed, CI only): the gate exists now; this lane has not yet run on CI (no local Docker lanes), so it stays tracked until the first installed run shows its result",
       "signatures": [
         "P7 contract red"
       ]
@@ -146,7 +146,7 @@
     "TESTS.handoff.test_p7_installed.ReleaseLanes.test_2_recovery_to_go_without_either_app_api": {
       "phase": 7,
       "owner": "t-p7",
-      "reason": "part C (installed, CI only): setUp loads the release gate, which does not exist; lanes and mutation controls are unexercised until part A lands",
+      "reason": "part C (installed, CI only): the gate exists now; this lane has not yet run on CI (no local Docker lanes), so it stays tracked until the first installed run shows its result",
       "signatures": [
         "P7 contract red"
       ]
@@ -154,7 +154,7 @@
     "TESTS.handoff.test_p7_installed.ReleaseLanes.test_3_recovery_to_django_without_either_app_api": {
       "phase": 7,
       "owner": "t-p7",
-      "reason": "part C (installed, CI only): setUp loads the release gate, which does not exist; lanes and mutation controls are unexercised until part A lands",
+      "reason": "part C (installed, CI only): the gate exists now; this lane has not yet run on CI (no local Docker lanes), so it stays tracked until the first installed run shows its result",
       "signatures": [
         "P7 contract red"
       ]
@@ -162,7 +162,7 @@
     "TESTS.handoff.test_p7_installed.ReleaseLanes.test_4_mutation_missing_worker": {
       "phase": 7,
       "owner": "t-p7",
-      "reason": "part C (installed, CI only): setUp loads the release gate, which does not exist; lanes and mutation controls are unexercised until part A lands",
+      "reason": "part C (installed, CI only): the gate exists now; this lane has not yet run on CI (no local Docker lanes), so it stays tracked until the first installed run shows its result",
       "signatures": [
         "P7 contract red"
       ]
@@ -170,7 +170,7 @@
     "TESTS.handoff.test_p7_installed.ReleaseLanes.test_5_mutation_unresolved_task": {
       "phase": 7,
       "owner": "t-p7",
-      "reason": "part C (installed, CI only): setUp loads the release gate, which does not exist; lanes and mutation controls are unexercised until part A lands",
+      "reason": "part C (installed, CI only): the gate exists now; this lane has not yet run on CI (no local Docker lanes), so it stays tracked until the first installed run shows its result",
       "signatures": [
         "P7 contract red"
       ]
@@ -178,7 +178,7 @@
     "TESTS.handoff.test_p7_installed.ReleaseLanes.test_6_mutation_denied_pdf_host": {
       "phase": 7,
       "owner": "t-p7",
-      "reason": "part C (installed, CI only): setUp loads the release gate, which does not exist; lanes and mutation controls are unexercised until part A lands",
+      "reason": "part C (installed, CI only): the gate exists now; this lane has not yet run on CI (no local Docker lanes), so it stays tracked until the first installed run shows its result",
       "signatures": [
         "P7 contract red"
       ]
@@ -186,7 +186,7 @@
     "TESTS.handoff.test_p7_installed.ReleaseLanes.test_7_mutation_forced_old_runtime_http_call": {
       "phase": 7,
       "owner": "t-p7",
-      "reason": "part C (installed, CI only): setUp loads the release gate, which does not exist; lanes and mutation controls are unexercised until part A lands",
+      "reason": "part C (installed, CI only): the gate exists now; this lane has not yet run on CI (no local Docker lanes), so it stays tracked until the first installed run shows its result",
       "signatures": [
         "P7 contract red"
       ]
@@ -194,7 +194,7 @@
     "TESTS.handoff.test_p7_installed.ReleaseLanes.test_8_mutation_duplicate_provider_effect": {
       "phase": 7,
       "owner": "t-p7",
-      "reason": "part C (installed, CI only): setUp loads the release gate, which does not exist; lanes and mutation controls are unexercised until part A lands",
+      "reason": "part C (installed, CI only): the gate exists now; this lane has not yet run on CI (no local Docker lanes), so it stays tracked until the first installed run shows its result",
       "signatures": [
         "P7 contract red"
       ]
@@ -205,7 +205,7 @@
       "signatures": [
         "P7 contract red"
       ],
-      "reason": "part C2 (installed, CI only): setUp loads the release gate, which does not exist; the v1.0.48 mixed install, the upgrade to the candidate and its adoption are unexercised until part A lands"
+      "reason": "part C2 (installed, CI only): the gate exists now; the v1.0.48 mixed install and its upgrade to this commit have not yet run on CI, so it stays tracked until the first installed run"
     },
     "TESTS.handoff.test_p7_legacy.LegacyMixedUpgrade.test_mixed_release_upgraded_into_django": {
       "phase": 7,
@@ -213,7 +213,7 @@
       "signatures": [
         "P7 contract red"
       ],
-      "reason": "part C2 (installed, CI only): setUp loads the release gate, which does not exist; the v1.0.48 mixed install, the upgrade to the candidate and its adoption are unexercised until part A lands"
+      "reason": "part C2 (installed, CI only): the gate exists now; the v1.0.48 mixed install and its upgrade to this commit have not yet run on CI, so it stays tracked until the first installed run"
     }
   }
 }
