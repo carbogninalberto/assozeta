@@ -3257,17 +3257,17 @@
         "go": {
           "runtime": "shared",
           "component": "web (Caddy)",
-          "status": "planned",
-          "phase": 6
+          "status": "present"
         }
       },
       "refs": [
         "selfhost/caddy/Caddyfile:131",
         "selfhost/caddy/Caddyfile:141",
-        "selfhost/compose.yml:399"
+        "selfhost/compose.yml:399",
+        "UI/Dockerfile"
       ],
       "notes": [
-        "The fallback reads the Django collectstatic volume. Phase 6 makes Go documentation assets independent of it."
+        "Caddy serves the packaged Swagger UI and Redoc files from /srv/static in both modes."
       ]
     },
     {
@@ -3627,8 +3627,7 @@
         },
         "go": {
           "runtime": "none",
-          "status": "planned",
-          "phase": 6,
+          "status": "present",
           "disposition": "not-applicable: full Go lifecycle replaces this Python one-shot with native schema and static-asset preparation"
         }
       },
@@ -8702,16 +8701,16 @@
         },
         "go": {
           "runtime": "go",
-          "component": "Go bundle with static docs and native manual tooling",
-          "status": "planned",
-          "phase": 6
+          "component": "Web image documentation assets and Go manual tooling",
+          "status": "present"
         }
       },
       "refs": [
         ".github/workflows/publish-images.yml",
         "BE_GO/cmd/check-manual/main.go",
         "selfhost/bin/assozeta",
-        "selfhost/compose.yml"
+        "selfhost/compose.yml",
+        "UI/Dockerfile"
       ]
     },
     {

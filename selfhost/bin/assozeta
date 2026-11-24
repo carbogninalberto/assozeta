@@ -954,6 +954,12 @@ prod_optional_go_api() {
     fi
 }
 
+prod_authority_missing() {
+    prod_compose exec -T postgres psql -X -qAt -v ON_ERROR_STOP=1 \
+        -U "$(env_value DBUSER "$PROD_ENV")" -d "$(env_value DBNAME "$PROD_ENV")" \
+        -c "SELECT to_regclass('public.assozeta_go_job_ownership') IS NULL;"
+}
+
 prod_effective_runtime() {
     authority_runtime=$(prod_compose exec -T postgres psql -X -qAt -v ON_ERROR_STOP=1 \
         -U "$(env_value DBUSER "$PROD_ENV")" -d "$(env_value DBNAME "$PROD_ENV")" \
@@ -1041,12 +1047,23 @@ drain_prod_go_transactions() {
 
 migrate_prod_schemas() {
     drain_prod_go_transactions || return $?
-    prod_compose --profile tools run --rm --no-deps migrate || return $?
-    if [ -n "$go_migration_service" ]; then
-        migration_profile=$(prod_start_profile) || return $?
-        if [ "$migration_profile" != django ]; then
-            prod_compose --profile tools run --rm --no-deps "$go_migration_service" || return $?
+    migration_profile=${1:-legacy}
+    if [ -z "${1:-}" ] && prod_has_runtime_profiles; then
+        # The first migration creates the authority table on a fresh instance.
+        missing_authority=$(prod_authority_missing) || return $?
+        if [ "$missing_authority" = t ]; then
+            migration_profile=django
+        else
+            migration_profile=$(prod_effective_runtime) || return $?
         fi
+    fi
+    if [ "$migration_profile" != go ]; then
+        prod_compose --profile tools run --rm --no-deps migrate || return $?
+    elif [ -z "$go_migration_service" ]; then
+        die "Go mode requires the packaged Go migrator"
+    fi
+    if [ "$migration_profile" != django ] && [ -n "$go_migration_service" ]; then
+        prod_compose --profile tools run --rm --no-deps "$go_migration_service" || return $?
     fi
 }
 
@@ -1362,6 +1379,46 @@ backup_on_exit() {
     exit "$status"
 }
 
+restore_swap_names() {
+    bucket_suffix=$(printf '%s' "$1" | tr _ -)
+    restore_validation_database="assozeta_restore_stage_$1"
+    restore_rollback_database="assozeta_restore_rollback_$1"
+    restore_stage_bucket="assozeta-restore-stage-$bucket_suffix"
+    restore_rollback_bucket="assozeta-restore-rollback-$bucket_suffix"
+    restore_database_user=$(env_value DBUSER "$PROD_ENV")
+    restore_database_name=$(env_value DBNAME "$PROD_ENV")
+    restore_bucket=$(env_value AWS_STORAGE_BUCKET_NAME "$PROD_ENV")
+}
+
+recover_interrupted_swap() (
+    [ -f "$SELFHOST_DIR/.operations/restore-swap.json" ] || return 0
+    log "recovering interrupted restore"
+    swap_record=$(maintenance_work swap-journal read) || return 1
+    read -r swap_phase swap_suffix swap_directory swap_running <<EOF
+$swap_record
+EOF
+    restore_swap_names "$swap_suffix"
+    restore_temporary="$SELFHOST_DIR/$swap_directory"
+    restore_swap_recorded=true
+    restore_validation_database_created=true
+    restore_rollback_database_created=true
+    restore_stage_bucket_created=true
+    restore_rollback_bucket_created=true
+    prod_compose up -d --wait postgres redis minio || return 1
+    if [ "$swap_phase" = swapping ]; then
+        restore_rollback_database_needed=true
+        restore_rollback_bucket_needed=true
+        restore_broker_modified=true
+        restore_rollback_live_data || return 1
+        maintenance_work swap-journal rolled-back || return 1
+        swap_phase=rolled-back
+    fi
+    if [ "$swap_phase" = rolled-back ] && [ "$swap_running" = true ]; then
+        start_prod_app_services || return 1
+    fi
+    restore_cleanup 0
+)
+
 restore_cleanup() {
     status=${1:-$?}
     [ "${restore_cleanup_done:-false}" = true ] && return "$status"
@@ -1370,8 +1427,11 @@ restore_cleanup() {
     if [ "$status" -ne 0 ] && [ "${restore_live_modified:-false}" = true ]; then
         log "restore failed; rolling back live database/object data"
         if ! restore_rollback_live_data; then
-            log "restore rollback failed; manual recovery may be required"
-            status=1
+            log "restore rollback failed; preserving recovery data and leaving services stopped"
+            return 1
+        fi
+        if [ "${restore_swap_recorded:-false}" = true ]; then
+            maintenance_work swap-journal rolled-back || return 1
         fi
     fi
 
@@ -1380,8 +1440,9 @@ restore_cleanup() {
         if ! postgres_drop_database "$restore_database_user" "$restore_validation_database" >/dev/null 2>&1; then
             log "failed to remove restore validation database: $restore_validation_database"
             [ "$status" -eq 0 ] && status=1
+        else
+            restore_validation_database_created=false
         fi
-        restore_validation_database_created=false
     fi
 
     if [ "${restore_rollback_database_created:-false}" = true ]; then
@@ -1426,14 +1487,20 @@ restore_cleanup() {
         log "restarting application services"
         if ! start_prod_app_services || ! wait_public_readiness; then
             log "failed to restart application services after restore failure"
-            status=1
+            return 1
         fi
     fi
 
+    if [ "${restore_swap_recorded:-false}" = true ]; then
+        [ "$restore_validation_database_created/$restore_rollback_database_created/$restore_stage_bucket_created/$restore_rollback_bucket_created" = false/false/false/false ] || return 1
+    fi
     if [ -n "${restore_temporary:-}" ]; then
         rm -rf "$restore_temporary" || true
     fi
 
+    if [ "${restore_swap_recorded:-false}" = true ]; then
+        maintenance_work swap-journal clear || return 1
+    fi
     return "$status"
 }
 
@@ -1561,9 +1628,9 @@ restore_rollback_live_data() {
         fi
     fi
 
-    prod_compose exec -T \
-        -e REDISCLI_AUTH="$(env_value REDIS_PASSWORD "$PROD_ENV")" \
-        redis redis-cli FLUSHALL >/dev/null 2>&1 || true
+    if [ "${restore_broker_modified:-false}" = true ] && [ -d "$restore_temporary/live-broker" ]; then
+        maintenance_work restore-broker "$restore_temporary/live-broker" || rollback_status=1
+    fi
 
     return "$rollback_status"
 }
@@ -2006,6 +2073,7 @@ restore_prod() {
     restore_rollback_bucket_created=false
     restore_rollback_bucket_needed=false
     restore_live_modified=false
+    restore_broker_modified=false
     restore_app_was_running=false
     restore_app_stopped=false
     if [ "${restore_safety_stopped:-false}" = true ]; then
@@ -2029,6 +2097,16 @@ restore_prod() {
     [ -f "$temporary/postgres.dump" ] || die "backup has no PostgreSQL dump"
     [ -d "$temporary/objects" ] || die "backup has no object-storage data"
 
+    restore_format=
+    if [ -f "$temporary/manifest.txt" ]; then
+        restore_format=$(env_value format "$temporary/manifest.txt")
+    fi
+    case "$restore_format" in
+        '') printf '%s\n' '@@ASSOZETA_RESTORE_LIMITATION no_work_checkpoint' ;;
+        2) [ "$(env_value work_checkpoint "$temporary/manifest.txt")" = ledger ] || die "missing ledger checkpoint" ;;
+        *) die "unsupported backup format" ;;
+    esac
+
     backup_aws_location=storage
     if [ -f "$temporary/manifest.txt" ]; then
         manifest_aws_location=$(env_value aws_location "$temporary/manifest.txt")
@@ -2046,18 +2124,11 @@ restore_prod() {
         die "backup AWS_LOCATION is $backup_aws_location but current AWS_LOCATION is $current_aws_location; restore requires matching object prefixes"
     fi
     database_suffix="$(date -u +%Y%m%d%H%M%S)_$$"
-    bucket_suffix="$(date -u +%Y%m%d%H%M%S)-$$"
-    validation_database="assozeta_restore_stage_$database_suffix"
-    rollback_database="assozeta_restore_rollback_$database_suffix"
-    stage_bucket="assozeta-restore-stage-$bucket_suffix"
-    rollback_bucket="assozeta-restore-rollback-$bucket_suffix"
-    restore_database_user=$database_user
-    restore_database_name=$database_name
-    restore_bucket=$bucket
-    restore_validation_database=$validation_database
-    restore_rollback_database=$rollback_database
-    restore_stage_bucket=$stage_bucket
-    restore_rollback_bucket=$rollback_bucket
+    restore_swap_names "$database_suffix"
+    validation_database=$restore_validation_database
+    rollback_database=$restore_rollback_database
+    stage_bucket=$restore_stage_bucket
+    rollback_bucket=$restore_rollback_bucket
 
     log "validating PostgreSQL dump"
     prod_compose up -d --wait postgres minio
@@ -2065,6 +2136,17 @@ restore_prod() {
     prod_compose exec -T postgres createdb -U "$database_user" "$validation_database"
     restore_validation_database_created=true
     prod_compose exec -T postgres pg_restore --exit-on-error -U "$database_user" -d "$validation_database" --no-owner --no-privileges < "$temporary/postgres.dump"
+
+    if [ "$restore_format" = 2 ]; then
+        checkpoint_query="SELECT runtime,generation,(SELECT count(*) FROM public.assozeta_handoff_work
+                WHERE state IN ('pending','held','staged','running','blocked'))
+                FROM public.assozeta_go_job_ownership WHERE singleton=1;"
+        archive_owner=$(prod_compose exec -T postgres psql -X -qAt -v ON_ERROR_STOP=1 \
+            -U "$database_user" -d "$validation_database" \
+            -c "$checkpoint_query") || return $?
+        manifest_owner="$(env_value runtime "$temporary/manifest.txt")|$(env_value runtime_generation "$temporary/manifest.txt")|$(env_value work_outstanding "$temporary/manifest.txt")"
+        [ "$archive_owner" = "$manifest_owner" ] || die "archive ledger checkpoint does not match its manifest"
+    fi
 
     log "staging object storage"
     restore_stage_bucket_created=true
@@ -2091,6 +2173,28 @@ restore_prod() {
     stop_prod_data_services
     prod_compose up -d --wait postgres redis minio
 
+    restore_runtime=
+    if prod_has_runtime_profiles; then
+        restore_runtime=django
+        restore_generation=0
+        ledger=$(prod_work_ledger) || return $?
+        if [ -n "$ledger" ]; then
+            if [ "${restore_take_backup:-true}" = false ]; then
+                maintenance_work require-empty || return $?
+            fi
+        fi
+        missing_authority=$(prod_authority_missing) || return $?
+        if [ "$missing_authority" != t ]; then
+            restore_runtime=$(prod_effective_runtime) || return $?
+            restore_generation=$(prod_compose exec -T postgres psql -X -qAt -v ON_ERROR_STOP=1 \
+                -U "$database_user" -d "$database_name" \
+                -c 'SELECT generation FROM public.assozeta_go_job_ownership WHERE singleton=1;') || return $?
+            restore_generation=${restore_generation:-0}
+        fi
+        mkdir "$temporary/live-broker"
+        maintenance_work save-broker "$temporary/live-broker" || return $?
+    fi
+
     log "snapshotting current object storage for rollback"
     restore_rollback_bucket_created=true
     prod_compose --profile tools run --rm -T \
@@ -2105,6 +2209,12 @@ restore_prod() {
          mc mirror --overwrite --remove "local/$RESTORE_BUCKET" "local/$RESTORE_ROLLBACK_BUCKET" >/dev/null'
 
     log "swapping PostgreSQL databases"
+    swap_restart=$restore_app_was_running
+    [ "${recover_upgrade_active:-false}" != true ] || swap_restart=false
+    if [ -n "$restore_runtime" ]; then
+        maintenance_work swap-journal begin "$database_suffix" "${temporary##*/}" "$swap_restart" || return $?
+        restore_swap_recorded=true
+    fi
     restore_rollback_database_needed=true
     restore_live_modified=true
     postgres_terminate_database "$database_user" "$database_name"
@@ -2118,14 +2228,22 @@ restore_prod() {
     minio_mirror_bucket "$stage_bucket" "$bucket"
 
     log "flushing Redis"
+    restore_broker_modified=true
     prod_compose exec -T \
         -e REDISCLI_AUTH="$(env_value REDIS_PASSWORD "$PROD_ENV")" \
         redis redis-cli FLUSHALL >/dev/null
 
-    migrate_prod_schemas
+    migrate_prod_schemas "$restore_runtime"
+    if [ -n "$restore_runtime" ]; then
+        maintenance_work recover "$restore_runtime" "$restore_generation" || return $?
+    fi
     printf '%s\n' '@@ASSOZETA_STAGE restarting'
     start_prod_app_services "${recover_upgrade_active:-false}" true
     require_public_readiness
+    if [ "${restore_swap_recorded:-false}" = true ]; then
+        maintenance_work swap-journal committed || return $?
+    fi
+    restore_live_modified=false
     cleanup_status=0
     restore_cleanup 0 || cleanup_status=$?
     [ "$cleanup_status" -eq 0 ] || exit "$cleanup_status"
@@ -2171,6 +2289,12 @@ restore_command_prod() {
         restore_safety_stopped=$backup_app_was_running
         printf '@@ASSOZETA_BACKUP %s\n' "$(basename -- "$archive")"
         log "safety backup created: $archive"
+    elif prod_has_runtime_profiles; then
+        prod_compose up -d --wait postgres redis
+        ledger=$(prod_work_ledger) || return $?
+        if [ -n "$ledger" ]; then
+            maintenance_work require-empty || return $?
+        fi
     fi
     printf '%s\n' '@@ASSOZETA_STAGE restoring'
     restore_prod "$restore_source" --yes
@@ -2464,6 +2588,7 @@ run_locked_prod_command() {
         flock -x 8 || die "failed to acquire exclusive operations lease"
         prod_operations_lock_held=true
     fi
+    recover_interrupted_swap || die "interrupted restore recovery did not finish"
     case "$locked_command" in
         configure) configure "$@" ;;
         install) preflight; install_prod "$@" ;;

@@ -32,10 +32,19 @@ ENV VERSION=$VERSION \
 COPY . .
 RUN npm run css:vendor-bootstrap && npm run build:vite:production
 
+FROM caddy:2.11.7-alpine AS api-docs
+
+# Match BE/requirements.txt. Only the browser assets and licenses enter the web image.
+ADD --checksum=sha256:6b9c96204c8e45a06c39928dad704b18536d3253b61591c478540b63db6bdcea \
+    https://files.pythonhosted.org/packages/5e/09/7382eb93a09f33fac72a8af1fc986f43681d15dd5fda750b238a8aace0e8/drf_spectacular_sidecar-2025.3.1-py3-none-any.whl /tmp/sidecar.whl
+RUN unzip -q /tmp/sidecar.whl 'drf_spectacular_sidecar/static/*' '*.dist-info/LICENSE' -d /assets \
+    && cp /assets/*.dist-info/LICENSE /assets/drf_spectacular_sidecar/static/drf_spectacular_sidecar/LICENSE
+
 FROM caddy:2.11.7-alpine AS production
 
 COPY Caddyfile /etc/caddy/Caddyfile
 COPY --from=build /app/dist/public /srv
+COPY --from=api-docs /assets/drf_spectacular_sidecar/static/ /srv/static/
 
 EXPOSE 80 443
 
