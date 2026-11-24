@@ -21,7 +21,7 @@ const reviewed = {
   "UI/src/components/modals/InvoicePreviewModal.svelte": "d65ee4f5163e304ff2f4a5de11fbca7f724c388e7c1e652e3d1b44d98fc21ed6",
   "UI/src/routes/accounting/receipts/modals/ShareModal.svelte": "0c86445d001a0d9141f26b673471a5b8b1ed1b9f15dc22264e125dc34d61bda3",
   "BE/application/views/invoice_views.py": "efaa933dd75f26a644a617ea7a604493936b737cd5ad458bd0239cfb98ce439e",
-  "BE/application/printing_tasks.py": "18ea298cb7cae14596433c2979d9b57384fefbb7947cf02876886e8fd1f28faf",
+  "BE/application/printing_tasks.py": "9364fb65623461e7ea6f326b76e040039e95044328ab94b35328728d5de51488",
   "BE/docmanager/views/printing_views.py": "2986b9d21dbbc85f46d779880e692f700f421136d597a41f16d9cf6f64343e26",
   "BE/docmanager/views/document_view.py": "29d4901df07aa93ee0540f214feb87ce6c3173656968c10a0a197bb16cda2905",
   "BE/application/utils/printing.py": "19f15d3591d7a9af792896b2a67f4ea60e983fd1653afcabd43073202c0ab388",

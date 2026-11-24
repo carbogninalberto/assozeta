@@ -1,8 +1,30 @@
+from traceback import walk_tb
+
 from celery import shared_task
 import requests
+from urllib3.connection import HTTPSConnection
+from urllib3.exceptions import HTTPError, MaxRetryError, NewConnectionError
 
 from core.settings import CURRENT_HOST
 from core.handoff import _fetch, _running, barrier
+
+
+def _failed_before_send(error):
+    if isinstance(error, (requests.exceptions.InvalidHeader, requests.exceptions.MissingSchema,
+                          requests.exceptions.InvalidURL, requests.exceptions.ConnectTimeout)):
+        return True
+    cause = error.__cause__ or (error.args[0] if error.args else None)
+    while isinstance(cause, Exception):
+        if isinstance(cause, NewConnectionError):  # Includes DNS failures.
+            return True
+        # TLS errors can also occur after sending. Only a failure inside HTTPS
+        # connection setup proves that no request reached the renderer.
+        if any(frame.f_code is HTTPSConnection.connect.__code__ for frame, _ in walk_tb(cause.__traceback__)):
+            return True
+        if not isinstance(cause, HTTPError):
+            break
+        cause = cause.reason if isinstance(cause, MaxRetryError) else cause.__cause__ or cause.__context__
+    return False
 
 
 def print_request(url, headers):
@@ -18,11 +40,19 @@ def print_request(url, headers):
         return None
     if outcome != 'recorded':
         raise RuntimeError('Print effect needs reconciliation')
+    received_response = False
+
+    def mark_response(response, **kwargs):
+        nonlocal received_response
+        received_response = True
+
     try:
-        response = requests.get(url, headers=headers)
-    except (requests.exceptions.InvalidHeader, requests.exceptions.MissingSchema, requests.exceptions.InvalidURL):
-        _fetch("""DELETE FROM public.assozeta_handoff_effects
-            WHERE effect_key=%s AND attempt_id=%s AND state='intent' RETURNING 1""", (effect_key, attempt))
+        response = requests.get(url, headers=headers, hooks={'response': mark_response})
+    except requests.RequestException as error:
+        # A failed redirect can follow a request the renderer already handled.
+        if not received_response and _failed_before_send(error):
+            _fetch("""DELETE FROM public.assozeta_handoff_effects
+                WHERE effect_key=%s AND attempt_id=%s AND state='intent' RETURNING 1""", (effect_key, attempt))
         raise
     barrier('effect:accepted', task_id)
     _fetch('SELECT public.assozeta_handoff_effect_confirm(%s,NULL)', (effect_key,))

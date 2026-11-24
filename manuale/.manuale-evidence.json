@@ -1915,10 +1915,10 @@
       "title": "Creare un pagamento",
       "content_sha256": "18650e7327ece3274bc8d1dbbbd51a2b8e54f5c3ec775cc7d7573656907983d3",
       "recipe_module": "docs/manuale/payment-recipes.mjs",
-      "recipe_sha256": "d9b3fd9df3a75115f956481eebafe219c1eb7a0e96396bfbeefe3b150afa87eb",
+      "recipe_sha256": "f8278a529f649afd70a48e9f2d18c51cf8c2ff256e377670470fbe568bf52838",
       "recipe_review": {
-        "previous_sha256": "af89af821df3cb85908fc7774fdc37cf8b9fa15d911ab77544509a862a83d666",
-        "sha256": "d9b3fd9df3a75115f956481eebafe219c1eb7a0e96396bfbeefe3b150afa87eb",
+        "previous_sha256": "d9b3fd9df3a75115f956481eebafe219c1eb7a0e96396bfbeefe3b150afa87eb",
+        "sha256": "f8278a529f649afd70a48e9f2d18c51cf8c2ff256e377670470fbe568bf52838",
         "purpose": "editorial-review-only"
       },
       "content_source": "authored-mdx"
@@ -1927,10 +1927,10 @@
       "title": "Modificare un pagamento",
       "content_sha256": "9abb61368ec31e4bd3f616dd81a31977f883cb773ef3165b71d2e25dc2253896",
       "recipe_module": "docs/manuale/payment-recipes.mjs",
-      "recipe_sha256": "d9b3fd9df3a75115f956481eebafe219c1eb7a0e96396bfbeefe3b150afa87eb",
+      "recipe_sha256": "f8278a529f649afd70a48e9f2d18c51cf8c2ff256e377670470fbe568bf52838",
       "recipe_review": {
-        "previous_sha256": "af89af821df3cb85908fc7774fdc37cf8b9fa15d911ab77544509a862a83d666",
-        "sha256": "d9b3fd9df3a75115f956481eebafe219c1eb7a0e96396bfbeefe3b150afa87eb",
+        "previous_sha256": "d9b3fd9df3a75115f956481eebafe219c1eb7a0e96396bfbeefe3b150afa87eb",
+        "sha256": "f8278a529f649afd70a48e9f2d18c51cf8c2ff256e377670470fbe568bf52838",
         "purpose": "editorial-review-only"
       },
       "content_source": "authored-mdx"
@@ -1939,10 +1939,10 @@
       "title": "Segna un pagamento come \"pagato\"",
       "content_sha256": "6930f13a2aa74bc1d424b006d190316216f886db9145e8c4eeaed0d5820eb273",
       "recipe_module": "docs/manuale/payment-recipes.mjs",
-      "recipe_sha256": "d9b3fd9df3a75115f956481eebafe219c1eb7a0e96396bfbeefe3b150afa87eb",
+      "recipe_sha256": "f8278a529f649afd70a48e9f2d18c51cf8c2ff256e377670470fbe568bf52838",
       "recipe_review": {
-        "previous_sha256": "af89af821df3cb85908fc7774fdc37cf8b9fa15d911ab77544509a862a83d666",
-        "sha256": "d9b3fd9df3a75115f956481eebafe219c1eb7a0e96396bfbeefe3b150afa87eb",
+        "previous_sha256": "d9b3fd9df3a75115f956481eebafe219c1eb7a0e96396bfbeefe3b150afa87eb",
+        "sha256": "f8278a529f649afd70a48e9f2d18c51cf8c2ff256e377670470fbe568bf52838",
         "purpose": "editorial-review-only"
       },
       "content_source": "authored-mdx"
@@ -2131,10 +2131,10 @@
       "title": "Come posso scaricare una ricevuta?",
       "content_sha256": "b0f33d8f7c116e2bd71217d9ac7e9971d817542c9f7ef0ed46748a1d53893216",
       "recipe_module": "docs/manuale/payment-recipes.mjs",
-      "recipe_sha256": "d9b3fd9df3a75115f956481eebafe219c1eb7a0e96396bfbeefe3b150afa87eb",
+      "recipe_sha256": "f8278a529f649afd70a48e9f2d18c51cf8c2ff256e377670470fbe568bf52838",
       "recipe_review": {
-        "previous_sha256": "af89af821df3cb85908fc7774fdc37cf8b9fa15d911ab77544509a862a83d666",
-        "sha256": "d9b3fd9df3a75115f956481eebafe219c1eb7a0e96396bfbeefe3b150afa87eb",
+        "previous_sha256": "d9b3fd9df3a75115f956481eebafe219c1eb7a0e96396bfbeefe3b150afa87eb",
+        "sha256": "f8278a529f649afd70a48e9f2d18c51cf8c2ff256e377670470fbe568bf52838",
         "purpose": "editorial-review-only"
       },
       "content_source": "authored-mdx"
@@ -2143,10 +2143,10 @@
       "title": "Come vengono emesse le ricevute?",
       "content_sha256": "696aaf31b722f6b4c80b556ace8d6972ccbdda933a45b85444f5f3a799ff5be6",
       "recipe_module": "docs/manuale/payment-recipes.mjs",
-      "recipe_sha256": "d9b3fd9df3a75115f956481eebafe219c1eb7a0e96396bfbeefe3b150afa87eb",
+      "recipe_sha256": "f8278a529f649afd70a48e9f2d18c51cf8c2ff256e377670470fbe568bf52838",
       "recipe_review": {
-        "previous_sha256": "af89af821df3cb85908fc7774fdc37cf8b9fa15d911ab77544509a862a83d666",
-        "sha256": "d9b3fd9df3a75115f956481eebafe219c1eb7a0e96396bfbeefe3b150afa87eb",
+        "previous_sha256": "d9b3fd9df3a75115f956481eebafe219c1eb7a0e96396bfbeefe3b150afa87eb",
+        "sha256": "f8278a529f649afd70a48e9f2d18c51cf8c2ff256e377670470fbe568bf52838",
         "purpose": "editorial-review-only"
       },
       "content_source": "authored-mdx"
@@ -2155,10 +2155,10 @@
       "title": "Configurazioni possibili",
       "content_sha256": "9801e464a6b875e8d9c3ea0ebfb2cea815192309dc5e345300dd335b56cf4822",
       "recipe_module": "docs/manuale/payment-recipes.mjs",
-      "recipe_sha256": "d9b3fd9df3a75115f956481eebafe219c1eb7a0e96396bfbeefe3b150afa87eb",
+      "recipe_sha256": "f8278a529f649afd70a48e9f2d18c51cf8c2ff256e377670470fbe568bf52838",
       "recipe_review": {
-        "previous_sha256": "af89af821df3cb85908fc7774fdc37cf8b9fa15d911ab77544509a862a83d666",
-        "sha256": "d9b3fd9df3a75115f956481eebafe219c1eb7a0e96396bfbeefe3b150afa87eb",
+        "previous_sha256": "d9b3fd9df3a75115f956481eebafe219c1eb7a0e96396bfbeefe3b150afa87eb",
+        "sha256": "f8278a529f649afd70a48e9f2d18c51cf8c2ff256e377670470fbe568bf52838",
         "purpose": "editorial-review-only"
       },
       "content_source": "authored-mdx"
@@ -2167,10 +2167,10 @@
       "title": "Eliminare una ricevuta",
       "content_sha256": "4522c808419025ceed247c1e60db3f173b17b80a5810e4cd79777d8e14806212",
       "recipe_module": "docs/manuale/payment-recipes.mjs",
-      "recipe_sha256": "d9b3fd9df3a75115f956481eebafe219c1eb7a0e96396bfbeefe3b150afa87eb",
+      "recipe_sha256": "f8278a529f649afd70a48e9f2d18c51cf8c2ff256e377670470fbe568bf52838",
       "recipe_review": {
-        "previous_sha256": "af89af821df3cb85908fc7774fdc37cf8b9fa15d911ab77544509a862a83d666",
-        "sha256": "d9b3fd9df3a75115f956481eebafe219c1eb7a0e96396bfbeefe3b150afa87eb",
+        "previous_sha256": "d9b3fd9df3a75115f956481eebafe219c1eb7a0e96396bfbeefe3b150afa87eb",
+        "sha256": "f8278a529f649afd70a48e9f2d18c51cf8c2ff256e377670470fbe568bf52838",
         "purpose": "editorial-review-only"
       },
       "content_source": "authored-mdx"
@@ -2179,10 +2179,10 @@
       "title": "Modifica del progressivo della ricevuta",
       "content_sha256": "73c8460b6f261146375617f9783d557ed087b7e3f6e9e62d48b125c2c94cf1e0",
       "recipe_module": "docs/manuale/payment-recipes.mjs",
-      "recipe_sha256": "d9b3fd9df3a75115f956481eebafe219c1eb7a0e96396bfbeefe3b150afa87eb",
+      "recipe_sha256": "f8278a529f649afd70a48e9f2d18c51cf8c2ff256e377670470fbe568bf52838",
       "recipe_review": {
-        "previous_sha256": "af89af821df3cb85908fc7774fdc37cf8b9fa15d911ab77544509a862a83d666",
-        "sha256": "d9b3fd9df3a75115f956481eebafe219c1eb7a0e96396bfbeefe3b150afa87eb",
+        "previous_sha256": "d9b3fd9df3a75115f956481eebafe219c1eb7a0e96396bfbeefe3b150afa87eb",
+        "sha256": "f8278a529f649afd70a48e9f2d18c51cf8c2ff256e377670470fbe568bf52838",
         "purpose": "editorial-review-only"
       },
       "content_source": "authored-mdx"
@@ -2191,10 +2191,10 @@
       "title": "Numerazione progressiva",
       "content_sha256": "42ced68100192df0dc0271d8029113bc6824f5cb7704bc4beb68b1350b8d3abd",
       "recipe_module": "docs/manuale/payment-recipes.mjs",
-      "recipe_sha256": "d9b3fd9df3a75115f956481eebafe219c1eb7a0e96396bfbeefe3b150afa87eb",
+      "recipe_sha256": "f8278a529f649afd70a48e9f2d18c51cf8c2ff256e377670470fbe568bf52838",
       "recipe_review": {
-        "previous_sha256": "af89af821df3cb85908fc7774fdc37cf8b9fa15d911ab77544509a862a83d666",
-        "sha256": "d9b3fd9df3a75115f956481eebafe219c1eb7a0e96396bfbeefe3b150afa87eb",
+        "previous_sha256": "d9b3fd9df3a75115f956481eebafe219c1eb7a0e96396bfbeefe3b150afa87eb",
+        "sha256": "f8278a529f649afd70a48e9f2d18c51cf8c2ff256e377670470fbe568bf52838",
         "purpose": "editorial-review-only"
       },
       "content_source": "authored-mdx"

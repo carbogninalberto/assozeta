@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/http/httptrace"
+	"sync/atomic"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/celeryworker"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/handoff"
@@ -226,6 +228,7 @@ func (p *ConsumerPrint) run(ctx context.Context, request *celeryworker.Request) 
 	}
 	db, attempt := celeryworker.ActiveBrokerAttempt(ctx)
 	key := fmt.Sprintf("%s:%d:print", request.ID, request.Retries)
+	var gotConn atomic.Bool
 	if db != nil {
 		var disposition string
 		if err := db.QueryRowContext(ctx, "SELECT public.assozeta_handoff_effect_intent($1,$2,'print')", attempt, key).Scan(&disposition); err != nil {
@@ -238,9 +241,18 @@ func (p *ConsumerPrint) run(ctx context.Context, request *celeryworker.Request) 
 		default:
 			return nil, errors.New("print effect needs reconciliation")
 		}
+		// GotConn runs after dialing and TLS setup, before the transport can
+		// write the GET. Keep it set across retries and redirects.
+		trace := &httptrace.ClientTrace{GotConn: func(httptrace.GotConnInfo) { gotConn.Store(true) }}
+		outbound = outbound.WithContext(httptrace.WithClientTrace(outbound.Context(), trace))
 	}
 	response, err := p.client.Do(outbound)
 	if err != nil {
+		if db != nil && !gotConn.Load() {
+			_, err = db.ExecContext(ctx, `DELETE FROM public.assozeta_handoff_effects
+				WHERE effect_key=$1 AND attempt_id=$2 AND state='intent'`, key, attempt)
+			return nil, err
+		}
 		return nil, nil
 	}
 	_, _ = io.Copy(io.Discard, response.Body)
