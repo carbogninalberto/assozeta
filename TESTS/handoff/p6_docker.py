@@ -252,9 +252,11 @@ def kill_if_requested(arguments):
 
 
 def runner_credentials(arguments):
-    """`docker run ... IMAGE /runner/provision.py --credentials` writes into a Docker volume: simulated."""
-    if arguments[:1] == ['run'] and '/runner/provision.py' in arguments and arguments[-1] == '--credentials':
-        record({'call': ['run', 'provision.py', '--credentials'], 'tool': 'provision.py'})
+    """`docker run ... IMAGE /runner/provision.py --credentials` (updater_api) or `--notices-credentials`
+    (updater_notices, Phase 4 family 08) writes into a Docker volume as the image's root user: simulated."""
+    options = ('--credentials', '--notices-credentials')
+    if arguments[:1] == ['run'] and '/runner/provision.py' in arguments and arguments[-1] in options:
+        record({'call': ['run', 'provision.py', arguments[-1]], 'tool': 'provision.py'})
         return 0
     return None
 

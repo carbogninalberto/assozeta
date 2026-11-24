@@ -19,6 +19,14 @@
         "backup notices:"
       ],
       "reason": "Phase 4 family 08 backup_notify: the scoped backup notices socket is not built yet (contract TESTS/handoff/test_p4_backup_notices.py; implementer brief work/i-p4c2/prompt-3.md): no installed notices volume or socket"
+    },
+    "TESTS.handoff.test_p4_backup_notices.NoticesProvisioning.test_a_restored_release_without_the_notices_socket_is_provisioned_without_it": {
+      "phase": 4,
+      "owner": "t-p4",
+      "signatures": [
+        "restored pre-notices release:"
+      ],
+      "reason": "Phase 4 family 08 backup_notify: provision.py asks the environment's updater image for --notices-credentials even when the restored release predates the notices socket, so recover-upgrade to such a source fails (defect work/i-p4c2/defect-08-provision.md)"
     }
   }
 }

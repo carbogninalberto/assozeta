@@ -22,6 +22,10 @@ CONTRACT (t-p4; implementer brief tmp/go-handoff/work/i-p4c2/prompt-3.md):
     selfhost/updater/provision.py provision() creates the <project>_updater_notices volume (compose labels, like
       updater_api) and fills it with `/runner/provision.py --notices-credentials`; common.compose_environment()
       exports ASSOZETA_UPDATER_NOTICES_VOLUME.
+      Provisioning a restored release that predates the notices socket (its compose.updater.yml does not mount
+      updater_notices and its ASSOZETA_UPDATER_REF image has no --notices-credentials) completes without asking
+      that image for notices credentials: recover-upgrade to such a source runs the current provision.py with the
+      restored environment, whose updater image would fail the option.
     selfhost/compose.updater.yml mounts it read-write into the updater; selfhost/compose.yml declares it and
     mounts it read-only into worker and worker-go only. No job worker (worker, worker-go, job-worker-go, beat,
     the realtime relays) mounts updater_api.
@@ -179,7 +183,8 @@ class NoticesProvisioning(unittest.TestCase):
         with TemporaryDirectory() as directory:
             root = Path(directory)
             env_file = root / 'assozeta.env'
-            env_file.write_text('COMPOSE_PROJECT_NAME=fixture\nASSOZETA_VERSION=v1.2.3\n')
+            env_file.write_text('COMPOSE_PROJECT_NAME=fixture\nASSOZETA_VERSION=v2.0.4\n')
+            (root / 'compose.updater.yml').write_text((ROOT / 'selfhost/compose.updater.yml').read_text())
             with mock.patch.object(provision.subprocess, 'run') as run, \
                     mock.patch.object(provision, 'snapshot_managed', return_value={}):
                 provision.provision(root, env_file, start=False)
@@ -190,6 +195,30 @@ class NoticesProvisioning(unittest.TestCase):
         self.assertEqual(len(filled), 1, f'one --notices-credentials run: {calls}')
         self.assertIn('fixture_updater_notices:/run/assozeta-updater-notices', filled[0])
 
+    def test_a_restored_release_without_the_notices_socket_is_provisioned_without_it(self):
+        import provision
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            env_file = root / 'assozeta.env'
+            env_file.write_text('COMPOSE_PROJECT_NAME=fixture\nASSOZETA_VERSION=v1.0.17\n'
+                                'ASSOZETA_UPDATER_REF=fixture-updater:1.0.17\n')
+            (root / 'compose.updater.yml').write_text(PRE_NOTICES_UPDATER_COMPOSE)
+
+            def run(command, *args, **kwargs):
+                # The v1.0.17 updater's provision.py reads an unknown option as the installation root.
+                if '--notices-credentials' in command:
+                    raise provision.subprocess.CalledProcessError(1, command)
+                return mock.DEFAULT
+
+            with mock.patch.object(provision.subprocess, 'run', side_effect=run) as calls, \
+                    mock.patch.object(provision, 'snapshot_managed', return_value={}):
+                try:
+                    provision.provision(root, env_file, start=False)
+                except provision.subprocess.CalledProcessError as error:
+                    raise AssertionError(f'restored pre-notices release: provisioning failed on {error.cmd}') from None
+        asked = [list(c.args[0]) for c in calls.call_args_list if '--notices-credentials' in list(c.args[0])]
+        self.assertEqual(asked, [], 'restored pre-notices release: the old updater image was asked for notices credentials')
+
     def test_the_compose_environment_names_the_notices_volume(self):
         import common
         with TemporaryDirectory() as directory:
@@ -197,6 +226,26 @@ class NoticesProvisioning(unittest.TestCase):
             env_file.write_text('COMPOSE_PROJECT_NAME=fixture\n')
             values = common.compose_environment(Path(directory), env_file)
         self.assertEqual(values.get('ASSOZETA_UPDATER_NOTICES_VOLUME'), 'fixture_updater_notices')
+
+
+# compose.updater.yml as v1.0.17 shipped it (no updater_notices): the source a recover-upgrade restores.
+PRE_NOTICES_UPDATER_COMPOSE = '''services:
+  updater:
+    image: ${ASSOZETA_UPDATER_REF}
+    volumes:
+      - ${ASSOZETA_SELFHOST_DIR}:${ASSOZETA_SELFHOST_DIR}
+      - updater_api:/run/assozeta-updater
+      - updater_status:/run/assozeta-update-status
+      - /var/run/docker.sock:/var/run/docker.sock
+
+volumes:
+  updater_status:
+    external: true
+    name: ${ASSOZETA_UPDATER_STATUS_VOLUME:?Shared read-only status volume is required}
+  updater_api:
+    external: true
+    name: ${ASSOZETA_UPDATER_API_VOLUME:?Shared updater API volume is required}
+'''
 
 
 def services(name):
