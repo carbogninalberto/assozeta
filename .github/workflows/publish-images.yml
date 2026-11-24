@@ -136,7 +136,7 @@ jobs:
       contents: read
       packages: write
       id-token: write
-    strategy: &images
+    strategy:
       fail-fast: false
       matrix:
         include:
@@ -166,7 +166,7 @@ jobs:
             file: ./selfhost/updater/Dockerfile
             target: ""
 
-    steps: &build-images
+    steps:
       - name: Check out source
         uses: actions/checkout@v4
         with:
@@ -223,8 +223,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - &image-metadata
-        name: Generate image metadata
+      - name: Generate image metadata
         id: metadata
         uses: docker/metadata-action@v5
         with:
@@ -277,8 +276,7 @@ jobs:
     outputs:
       images: ${{ steps.candidate.outputs.images }}
     steps:
-      - &checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -317,10 +315,12 @@ jobs:
       PIP_CONSTRAINT: ${{ github.workspace }}/TESTS/adapters/django/constraints-parity.txt
       GOTOOLCHAIN: local
     steps:
-      - *checkout
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
       - uses: ./.github/actions/go-foundation-setup
-      - &download-candidate
-        uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v4
         with:
           name: selfhost-candidate
           path: ${{ runner.temp }}/candidate
@@ -353,8 +353,14 @@ jobs:
     env:
       ASSOZETA_HANDOFF_P5_IMAGES: ${{ needs.release-candidate.outputs.images }}
     steps:
-      - *checkout
-      - *download-candidate
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: selfhost-candidate
+          path: ${{ runner.temp }}/candidate
       - name: Install the candidate distribution and pull its exact images
         run: |
           cd "$RUNNER_TEMP/candidate"
@@ -420,8 +426,14 @@ jobs:
     needs: [release-contracts, release-installed]
     runs-on: ubuntu-latest
     steps:
-      - *checkout
-      - *download-candidate
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: selfhost-candidate
+          path: ${{ runner.temp }}/candidate
       - uses: actions/download-artifact@v4
         with:
           pattern: receipts-*
@@ -482,7 +494,35 @@ jobs:
     permissions:
       contents: read
       packages: write
-    strategy: *images
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: backend
+            image: assozeta-backend
+            context: ./BE
+            file: ./BE/Dockerfile
+            target: production
+          - name: backend-go
+            image: assozeta-backend-go
+            context: ./BE_GO
+            file: ./BE_GO/Dockerfile
+            target: ""
+          - name: web
+            image: assozeta-web
+            context: ./UI
+            file: ./UI/Dockerfile
+            target: production
+          - name: renderer
+            image: assozeta-renderer
+            context: ./selfhost/renderer
+            file: ./selfhost/renderer/Dockerfile
+            target: ""
+          - name: updater
+            image: assozeta-updater
+            context: .
+            file: ./selfhost/updater/Dockerfile
+            target: ""
     steps:
       - uses: actions/checkout@v4
         with:
@@ -493,9 +533,18 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - *image-metadata
-      - &download-qualification
-        uses: actions/download-artifact@v4
+      - name: Generate image metadata
+        id: metadata
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}
+          tags: |
+            type=sha,prefix=sha-
+            type=raw,value=edge,enable=${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+            type=semver,pattern={{version}},value=${{ env.RELEASE_TAG }},enable=${{ env.RELEASE_TAG != '' }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ env.RELEASE_TAG }},enable=${{ env.RELEASE_TAG != '' }}
+            type=raw,value=latest,enable=${{ env.RELEASE_TAG != '' && !github.event.release.prerelease }}
+      - uses: actions/download-artifact@v4
         with:
           name: release-qualification
           path: ${{ runner.temp }}/qualification
@@ -525,8 +574,138 @@ jobs:
       contents: read
       packages: write
       id-token: write
-    strategy: *images
-    steps: *build-images
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: backend
+            image: assozeta-backend
+            context: ./BE
+            file: ./BE/Dockerfile
+            target: production
+          - name: backend-go
+            image: assozeta-backend-go
+            context: ./BE_GO
+            file: ./BE_GO/Dockerfile
+            target: ""
+          - name: web
+            image: assozeta-web
+            context: ./UI
+            file: ./UI/Dockerfile
+            target: production
+          - name: renderer
+            image: assozeta-renderer
+            context: ./selfhost/renderer
+            file: ./selfhost/renderer/Dockerfile
+            target: ""
+          - name: updater
+            image: assozeta-updater
+            context: .
+            file: ./selfhost/updater/Dockerfile
+            target: ""
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Download the verified release manual
+        if: (matrix.name == 'backend' || matrix.name == 'backend-go') && needs.manual-release.result == 'success'
+        uses: actions/download-artifact@v4
+        with:
+          name: manuale-release-runtime
+          path: ${{ matrix.context }}/release-manual
+
+      - name: Carry the manual of the previous release
+        # Releases without include_manual reuse the verified manual of the
+        # current :latest release image unchanged (it may itself be carried).
+        id: carried
+        if: (matrix.name == 'backend' || matrix.name == 'backend-go') && needs.manual-release.result != 'success' && env.RELEASE_TAG != ''
+        env:
+          SOURCE_IMAGE: ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}:latest
+          DESTINATION: ${{ matrix.context }}/release-manual
+        run: |
+          set -euo pipefail
+          if ! docker pull --quiet "$SOURCE_IMAGE"; then
+            echo "::warning::No previous release image; publishing without a manual"
+            exit 0
+          fi
+          container=$(docker create "$SOURCE_IMAGE")
+          trap 'docker rm -f "$container" >/dev/null' EXIT
+          work=$(mktemp -d)
+          # The image directory is read-only: stream it and make the copy writable.
+          docker cp "$container:/app/release-manual" - | tar -x -C "$work"
+          chmod -R u+rwX "$work/release-manual"
+          if [ ! -f "$work/release-manual/bundle.json" ]; then
+            echo "::warning::$SOURCE_IMAGE has no manual; publishing without a manual"
+            exit 0
+          fi
+          origin=$(python3 -c 'import json,sys; b=json.load(open(sys.argv[1])); print(b["release"], b["application_revision"])' "$work/release-manual/bundle.json")
+          find "$DESTINATION" -mindepth 1 ! -name .gitkeep -exec rm -rf {} +
+          cp -a "$work/release-manual/." "$DESTINATION/"
+          echo "Carrying the manual verified for $origin"
+          echo "origin=$origin" >> "$GITHUB_OUTPUT"
+
+      - name: Set up QEMU
+        if: github.event_name == 'workflow_dispatch' && inputs.include_arm64
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate image metadata
+        id: metadata
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}
+          tags: |
+            type=sha,prefix=sha-
+            type=raw,value=edge,enable=${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+            type=semver,pattern={{version}},value=${{ env.RELEASE_TAG }},enable=${{ env.RELEASE_TAG != '' }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ env.RELEASE_TAG }},enable=${{ env.RELEASE_TAG != '' }}
+            type=raw,value=latest,enable=${{ env.RELEASE_TAG != '' && !github.event.release.prerelease }}
+
+      - name: Build and publish
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.file }}
+          target: ${{ matrix.target }}
+          platforms: ${{ (github.event_name == 'workflow_dispatch' && inputs.include_arm64) && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
+          push: true
+          tags: ${{ env.RELEASE_TAG != '' && format('ghcr.io/{0}/{1}:candidate-{2}-{3}', github.repository_owner, matrix.image, github.run_id, github.run_attempt) || steps.metadata.outputs.tags }}
+          labels: ${{ steps.metadata.outputs.labels }}
+          build-args: |
+            VERSION=${{ env.RELEASE_TAG || github.sha }}
+            CODE_REVISION=${{ github.sha }}
+            REQUIRE_MANUAL=${{ needs.manual-release.result == 'success' || steps.carried.outputs.origin != '' }}
+            MANUAL_CARRIED_FROM=${{ steps.carried.outputs.origin }}
+          cache-from: type=gha,scope=${{ matrix.name }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.name }}
+          provenance: true
+          sbom: true
+
+      - name: Record the built manifest digest
+        if: env.RELEASE_TAG != ''
+        env:
+          REPOSITORY: ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}
+          DIGEST: ${{ steps.build.outputs.digest }}
+          IMAGE: ${{ matrix.name }}
+        run: printf '%s@%s\n' "${REPOSITORY,,}" "$DIGEST" > "$RUNNER_TEMP/$IMAGE"
+      - uses: actions/upload-artifact@v4
+        if: env.RELEASE_TAG != ''
+        with:
+          name: image-digest-${{ matrix.name }}
+          path: ${{ runner.temp }}/${{ matrix.name }}
+          if-no-files-found: error
 
   verify-release-images:
     name: Verify release images are public
@@ -539,7 +718,10 @@ jobs:
         with:
           persist-credentials: false
 
-      - *download-qualification
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-qualification
+          path: ${{ runner.temp }}/qualification
       - uses: docker/setup-buildx-action@v3
       - name: Resolve release tags without registry credentials
         run: |
@@ -562,8 +744,14 @@ jobs:
         with:
           persist-credentials: false
 
-      - *download-candidate
-      - *download-qualification
+      - uses: actions/download-artifact@v4
+        with:
+          name: selfhost-candidate
+          path: ${{ runner.temp }}/candidate
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-qualification
+          path: ${{ runner.temp }}/qualification
       - name: Prepare the qualified release assets
         env:
           PYTHONPATH: BE/instance
