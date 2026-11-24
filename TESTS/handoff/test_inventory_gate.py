@@ -350,7 +350,7 @@ class CheckedInInventory(ToolCase):
                         'compose:migrate-go', 'compose:web', 'go-cmd:scheduler', 'go-cmd:worker',
                         'go-cmd:celery-consumer', 'go-cmd:relay-go-realtime', 'go-cmd:server'],
             'route': ['caddy:/api/v2/*', 'caddy:/api/*', 'caddy:/ws/*', 'caddy:/bakney/v1/*', 'go:ANY /*',
-                      'go:GET /communications/whatsapp/webhook', 'go:ANY /communications/send/email',
+                      'go:ANY /communications/whatsapp/webhook', 'go:ANY /communications/send/email',
                       'go:ANY /communications/settings/message-templates', 'go:WS /ws/notifications/',
                       'go:WS /ws/agent/'],
             'publisher': ['go:BE_GO/internal/service/tasks_db_d.go:', 'py:BE/application/signals.py:',
