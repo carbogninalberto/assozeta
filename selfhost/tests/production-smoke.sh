@@ -129,12 +129,21 @@ assert_go_operational_schema() {
         printf 'Expected clean Go operational schema %s, got %s.\n' "$expected_schema" "$actual" >&2
         exit 1
     }
-    actual=$(db_query "SELECT runtime || ':' || generation FROM public.assozeta_go_job_ownership WHERE singleton=1;")
-    [ "$actual" = 'django:1' ] || {
-        printf 'Ordinary lifecycle changed default Django execution ownership: %s.\n' "$actual" >&2
+    actual=$(owner_generation)
+    [ "$actual" = "django:$expected_owner_generation" ] || {
+        printf 'Ordinary lifecycle changed default Django execution ownership: %s (expected django:%s).\n' \
+            "$actual" "$expected_owner_generation" >&2
         exit 1
     }
 }
+
+owner_generation() {
+    db_query "SELECT runtime || ':' || generation FROM public.assozeta_go_job_ownership WHERE singleton=1;"
+}
+
+# Ordinary lifecycle steps never move execution ownership. Only a completed restore
+# advances the generation, once, past both the live and the archived database (Phase 6 A5).
+expected_owner_generation=1
 
 go_intent_digest() {
     db_query "SELECT md5(row_to_json(j)::text) FROM public.assozeta_go_jobs j WHERE id='11111111-1111-4111-8111-111111111111';"
@@ -522,9 +531,19 @@ assert_object_sentinel after-backup
 go_probe verify --receipt "$TEMPORARY/go-after-backup.json"
 assert_go_intent "$go_after_backup"
 
+live_owner=$(owner_generation)
+archived_generation=$(tar -xzOf "$archive" ./manifest.txt | sed -n 's/^runtime_generation=\([0-9][0-9]*\)$/\1/p')
+[ "${live_owner%%:*}" = django ] && [ -n "$archived_generation" ] || {
+    printf 'Expected a Django-owned installation and a format 2 checkpoint before restore, got %s / %s.\n' \
+        "$live_owner" "$archived_generation" >&2
+    exit 1
+}
 ASSOZETA_ENV_FILE="$ENV_FILE" "$CLI" restore "$archive" --yes
 
 phase "verify valid restore"
+live_generation=${live_owner#*:}
+expected_owner_generation=$(( (live_generation > archived_generation ? live_generation : archived_generation) + 1 ))
+assert_go_operational_schema
 curl_ready
 assert_db_sentinel before-backup
 assert_object_sentinel before-backup

@@ -647,6 +647,24 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
                     '--filter', f'label=com.docker.compose.service={service}'])
                 assert not running, 'Data service still running: ' + service
 
+        # Ordinary lifecycle and update steps never move execution ownership. A completed
+        # restore of a format 2 backup advances the generation once, past both the live and
+        # the archived database, and keeps the installation's runtime (Phase 6 A5).
+        owner = {'runtime': 'django', 'generation': 1}
+
+        def expect_restore(archive):
+            with tarfile.open(archive) as bundle:
+                names = {member.name: member for member in bundle.getmembers()}
+                member = names.get('./manifest.txt') or names.get('manifest.txt')
+                manifest = dict(line.split('=', 1) for line in bundle.extractfile(member).read().decode().splitlines()
+                                if '=' in line) if member else {}
+            if manifest.get('format') == '2':
+                owner['generation'] = max(owner['generation'], int(manifest['runtime_generation'])) + 1
+
+        def restore(arguments):
+            expect_restore(arguments[-1])
+            command(arguments)
+
         def assert_dual_apis(version):
             for prefix in ('/api', '/api/v1', '/api/v2'):
                 for probe in ('healthz', 'readyz'):
@@ -688,7 +706,8 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
             else:
                 raise AssertionError('Realtime relay did not deliver the outbox probe')
             realtime_probes.append({'version': version, 'delivered': True})
-            assert capture(compose(*sql, 'SELECT runtime,generation FROM public.assozeta_go_job_ownership'), env=environment) == 'django|1'
+            assert capture(compose(*sql, 'SELECT runtime,generation FROM public.assozeta_go_job_ownership'),
+                           env=environment) == f"{owner['runtime']}|{owner['generation']}", owner
             if go_intent_snapshot is not None:
                 actual = capture(compose(*sql, "SELECT md5(row_to_json(j)::text) FROM public.assozeta_go_jobs j WHERE id='11111111-1111-4111-8111-111111111111'"), env=environment)
                 assert actual == go_intent_snapshot, 'Recovery changed or lost durable Go intent'
@@ -807,6 +826,7 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
             assert_maintenance_web()
             pending = json.loads((installation / '.updater/pending-distribution/transaction.json').read_text())
             assert pending['source_version'] == '1.0.17'
+            expect_restore(pending['backup']['path'])
             command(helper + ['-c', 'import subprocess,sys; subprocess.run(sys.argv[1:],check=True)',
                               cli, 'recover-upgrade', pending['backup']['path'], '--yes'])
             assert read_env(env_file) == original_env
@@ -950,6 +970,7 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
         assert capture(compose(*database, 'SELECT value FROM upgrade_sentinel'), env=environment) == 'changed-by-failed-migration'
         resume = installation / '.updater/recover-upgrade'
         assert resume.exists()
+        expect_restore(recovery_archive)
         command(helper + ['-c', 'import subprocess,sys; subprocess.run(sys.argv[1:],check=True)', str(resume), recovery_archive, '--yes'])
         assert api('admin')['running_version'].removeprefix('v') == '2.0.2'
         assert_dual_apis('2.0.2')
@@ -972,7 +993,7 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
         assert unhealthy['status'] == 'recovery_required' and unhealthy['failed_stage'] == 'health_check', unhealthy
         assert_maintenance_web()
         transaction = json.loads((installation / '.updater/pending-distribution/transaction.json').read_text())
-        command(recover + [transaction['backup']['path']])
+        restore(recover + [transaction['backup']['path']])
         assert api('admin')['running_version'].removeprefix('v') == '2.0.2'
         assert_dual_apis('2.0.2')
         assert read_env(env_file) == upgraded_env
@@ -1001,7 +1022,7 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
         while capture(running_migrations) and time.monotonic() < deadline:
             time.sleep(1)
         assert not capture(running_migrations)
-        command(recover + [transaction['backup']['path']])
+        restore(recover + [transaction['backup']['path']])
         assert api('admin')['running_version'].removeprefix('v') == '2.0.2'
         assert_dual_apis('2.0.2')
         assert runner_status()['can_update']
@@ -1077,7 +1098,7 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
         command(['docker', 'start', runner_container])
         await_runner_version('2.0.2')
         assert assert_interrupted_gate(interrupted_go)['failed_stage'] == 'migrating'
-        command(recover + [transaction['backup']['path']])
+        restore(recover + [transaction['backup']['path']])
         assert_dual_apis('2.0.2')
         assert next(item for item in runner_status()['history'] if item['id'] == interrupted_go['id'])['status'] == 'recovered'
         assert_logo()
