@@ -22,6 +22,7 @@ from uuid import uuid4
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path[:0] = [str(ROOT / 'BE'), str(ROOT)]
+from TESTS.adapters.django import browser_retry
 from TESTS.adapters.django.profile_browser import prepare_ui, fingerprints
 from TESTS.adapters.go.payment_category_image import ImageFixture, DATABASE
 from TESTS.adapters.go.age_worker_fixture import initialize_current_schema
@@ -259,9 +260,22 @@ def exercise(proof, work, log, args, report, browser_environment):
                             'selected': ['/api/' + value for value in SELECTED], 'playwright_module': str(args.playwright_module)}
                         private = work / 'browser-input.json'; private.write_text(json.dumps(fixture)); private.chmod(0o600)
                         try:
-                            subprocess.run(['node', str(ROOT / 'TESTS/browser/instance-pwa.mjs')], cwd=ROOT,
-                                env={**browser_environment, 'TESTS_FIXTURE': str(private), 'TESTS_OUTPUT': str(target)},
-                                stdout=log, stderr=subprocess.STDOUT, check=True, timeout=120)
+                            for attempt in (1, 2):
+                                output = browser_retry.attempt_log(work, 'pwa-' + name, attempt)
+                                try:
+                                    with output.open('w') as child:
+                                        result = subprocess.run(['node', str(ROOT / 'TESTS/browser/instance-pwa.mjs')], cwd=ROOT,
+                                            env={**browser_environment, 'TESTS_FIXTURE': str(private), 'TESTS_OUTPUT': str(target)},
+                                            stdout=child, stderr=subprocess.STDOUT, timeout=120)
+                                except subprocess.TimeoutExpired:
+                                    browser_retry.flush(log, output)
+                                    raise
+                                if result.returncode == 0:
+                                    browser_retry.flush(log, output)
+                                    break
+                                if not browser_retry.retry(log, output, attempt):
+                                    raise subprocess.CalledProcessError(result.returncode, 'instance-pwa.mjs')
+                                observer.clear()
                         finally: private.unlink(missing_ok=True)
                         browser = json.loads((target / 'browser.json').read_text())
                         assert browser['success'] and len(browser['checks']) == 2
