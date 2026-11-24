@@ -42008,9 +42008,9 @@
       "kind": "task",
       "django": {
         "file": "BE/application/printing_tasks.py",
-        "line": 56,
+        "line": 86,
         "symbol": "print_document_compensation",
-        "sha256": "18ea298cb7cae14596433c2979d9b57384fefbb7947cf02876886e8fd1f28faf"
+        "sha256": "9364fb65623461e7ea6f326b76e040039e95044328ab94b35328728d5de51488"
       },
       "source_present": true,
       "declaration": {
@@ -42059,11 +42059,11 @@
       "evidence": [
         {
           "command": "python -m TESTS.adapters.go.celery_consumer_print_process",
-          "revision": "a243265121c22a9ddcb80cb63b84ab141897691c",
+          "revision": "8bb316a0d2d3f4af8a8ab436995c978389424d5b",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/sweep-rerun-p4-final/process-celery_consumer_print_process.log",
-          "receipt_sha256": "c2c3f4bc45abddae8944e0c66b0a5c5952cd3597e8cf90fceb86449c6eccffde",
-          "scope": "Process harness celery_consumer_print_process: {\"success\": true, \"minio\": {\"image\": \"ghcr.io/carbogninalberto/minio:RELEASE.2025-04-22T22-12-26Z-assozeta.1@sha256:8d35f39307b12cbc9ba3eedd26587d77ab30c21c3e904aee552df8b17b600389\", \"container\": \"az-instance-logo-minio-2499eeac9657\", \"owned\": true}, \"binary_sha256\": \"e5443c9f371f5dda92bf08eb919e7a7"
+          "artifact": "quality-reports/go-migration/sweep-rerun-p4-print/process-celery_consumer_print_process.log",
+          "receipt_sha256": "f5d53b53252cb9efa6e71bd3174afa9f2d88176f2f5522fe159f97f9932999da",
+          "scope": "Process harness celery_consumer_print_process: {\"success\": true, \"minio\": {\"image\": \"ghcr.io/carbogninalberto/minio:RELEASE.2025-04-22T22-12-26Z-assozeta.1@sha256:8d35f39307b12cbc9ba3eedd26587d77ab30c21c3e904aee552df8b17b600389\", \"container\": \"az-instance-logo-minio-a2efbc0871c3\", \"owned\": true}, \"binary_sha256\": \"0c2da79e3929b745e6e55c370af295b"
         }
       ],
       "notes": [
@@ -42074,7 +42074,8 @@
         "Implementing evidence: passed: 30 differential scenarios against the actual Django worker (race-built consumer) (quality-reports/go-migration/celery-consumer-print-process/results.json)",
         "Implementing evidence: red: Django oracle passed, Go timed out on the first scenario (all messages handed off) (quality-reports/go-migration/celery-consumer-print-process-red/results.json)",
         "Implementing evidence: caught: Go differs from Django (2_ricevuta-2.pdf instead of 3_ricevuta-2.pdf) (quality-reports/go-migration/celery-consumer-print-process-mutation/results.json)",
-        "Implementing evidence: passed (quality-reports/go-migration/sweep-final-3/process-celery_consumer_print_process.log)"
+        "Implementing evidence: passed (quality-reports/go-migration/sweep-final-3/process-celery_consumer_print_process.log)",
+        "Implementing evidence: passed (quality-reports/go-migration/sweep-rerun-p4-final/process-celery_consumer_print_process.log)"
       ]
     },
     {
@@ -42082,9 +42083,9 @@
       "kind": "task",
       "django": {
         "file": "BE/application/printing_tasks.py",
-        "line": 44,
+        "line": 74,
         "symbol": "print_document_customer_invoice",
-        "sha256": "18ea298cb7cae14596433c2979d9b57384fefbb7947cf02876886e8fd1f28faf"
+        "sha256": "9364fb65623461e7ea6f326b76e040039e95044328ab94b35328728d5de51488"
       },
       "source_present": true,
       "declaration": {
@@ -42133,11 +42134,11 @@
       "evidence": [
         {
           "command": "python -m TESTS.adapters.go.celery_consumer_print_process",
-          "revision": "a243265121c22a9ddcb80cb63b84ab141897691c",
+          "revision": "8bb316a0d2d3f4af8a8ab436995c978389424d5b",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/sweep-rerun-p4-final/process-celery_consumer_print_process.log",
-          "receipt_sha256": "c2c3f4bc45abddae8944e0c66b0a5c5952cd3597e8cf90fceb86449c6eccffde",
-          "scope": "Process harness celery_consumer_print_process: {\"success\": true, \"minio\": {\"image\": \"ghcr.io/carbogninalberto/minio:RELEASE.2025-04-22T22-12-26Z-assozeta.1@sha256:8d35f39307b12cbc9ba3eedd26587d77ab30c21c3e904aee552df8b17b600389\", \"container\": \"az-instance-logo-minio-2499eeac9657\", \"owned\": true}, \"binary_sha256\": \"e5443c9f371f5dda92bf08eb919e7a7"
+          "artifact": "quality-reports/go-migration/sweep-rerun-p4-print/process-celery_consumer_print_process.log",
+          "receipt_sha256": "f5d53b53252cb9efa6e71bd3174afa9f2d88176f2f5522fe159f97f9932999da",
+          "scope": "Process harness celery_consumer_print_process: {\"success\": true, \"minio\": {\"image\": \"ghcr.io/carbogninalberto/minio:RELEASE.2025-04-22T22-12-26Z-assozeta.1@sha256:8d35f39307b12cbc9ba3eedd26587d77ab30c21c3e904aee552df8b17b600389\", \"container\": \"az-instance-logo-minio-a2efbc0871c3\", \"owned\": true}, \"binary_sha256\": \"0c2da79e3929b745e6e55c370af295b"
         }
       ],
       "notes": [
@@ -42148,7 +42149,8 @@
         "Implementing evidence: passed: 30 differential scenarios against the actual Django worker (race-built consumer) (quality-reports/go-migration/celery-consumer-print-process/results.json)",
         "Implementing evidence: red: Django oracle passed, Go timed out on the first scenario (all messages handed off) (quality-reports/go-migration/celery-consumer-print-process-red/results.json)",
         "Implementing evidence: caught: Go differs from Django (2_ricevuta-2.pdf instead of 3_ricevuta-2.pdf) (quality-reports/go-migration/celery-consumer-print-process-mutation/results.json)",
-        "Implementing evidence: passed (quality-reports/go-migration/sweep-final-3/process-celery_consumer_print_process.log)"
+        "Implementing evidence: passed (quality-reports/go-migration/sweep-final-3/process-celery_consumer_print_process.log)",
+        "Implementing evidence: passed (quality-reports/go-migration/sweep-rerun-p4-final/process-celery_consumer_print_process.log)"
       ]
     },
     {
@@ -42156,9 +42158,9 @@
       "kind": "task",
       "django": {
         "file": "BE/application/printing_tasks.py",
-        "line": 33,
+        "line": 63,
         "symbol": "print_document_invoice",
-        "sha256": "18ea298cb7cae14596433c2979d9b57384fefbb7947cf02876886e8fd1f28faf"
+        "sha256": "9364fb65623461e7ea6f326b76e040039e95044328ab94b35328728d5de51488"
       },
       "source_present": true,
       "declaration": {
@@ -42207,11 +42209,11 @@
       "evidence": [
         {
           "command": "python -m TESTS.adapters.go.celery_consumer_print_process",
-          "revision": "a243265121c22a9ddcb80cb63b84ab141897691c",
+          "revision": "8bb316a0d2d3f4af8a8ab436995c978389424d5b",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/sweep-rerun-p4-final/process-celery_consumer_print_process.log",
-          "receipt_sha256": "c2c3f4bc45abddae8944e0c66b0a5c5952cd3597e8cf90fceb86449c6eccffde",
-          "scope": "Process harness celery_consumer_print_process: {\"success\": true, \"minio\": {\"image\": \"ghcr.io/carbogninalberto/minio:RELEASE.2025-04-22T22-12-26Z-assozeta.1@sha256:8d35f39307b12cbc9ba3eedd26587d77ab30c21c3e904aee552df8b17b600389\", \"container\": \"az-instance-logo-minio-2499eeac9657\", \"owned\": true}, \"binary_sha256\": \"e5443c9f371f5dda92bf08eb919e7a7"
+          "artifact": "quality-reports/go-migration/sweep-rerun-p4-print/process-celery_consumer_print_process.log",
+          "receipt_sha256": "f5d53b53252cb9efa6e71bd3174afa9f2d88176f2f5522fe159f97f9932999da",
+          "scope": "Process harness celery_consumer_print_process: {\"success\": true, \"minio\": {\"image\": \"ghcr.io/carbogninalberto/minio:RELEASE.2025-04-22T22-12-26Z-assozeta.1@sha256:8d35f39307b12cbc9ba3eedd26587d77ab30c21c3e904aee552df8b17b600389\", \"container\": \"az-instance-logo-minio-a2efbc0871c3\", \"owned\": true}, \"binary_sha256\": \"0c2da79e3929b745e6e55c370af295b"
         }
       ],
       "notes": [
@@ -42222,7 +42224,8 @@
         "Implementing evidence: passed: 30 differential scenarios against the actual Django worker (race-built consumer) (quality-reports/go-migration/celery-consumer-print-process/results.json)",
         "Implementing evidence: red: Django oracle passed, Go timed out on the first scenario (all messages handed off) (quality-reports/go-migration/celery-consumer-print-process-red/results.json)",
         "Implementing evidence: caught: Go differs from Django (2_ricevuta-2.pdf instead of 3_ricevuta-2.pdf) (quality-reports/go-migration/celery-consumer-print-process-mutation/results.json)",
-        "Implementing evidence: passed (quality-reports/go-migration/sweep-final-3/process-celery_consumer_print_process.log)"
+        "Implementing evidence: passed (quality-reports/go-migration/sweep-final-3/process-celery_consumer_print_process.log)",
+        "Implementing evidence: passed (quality-reports/go-migration/sweep-rerun-p4-final/process-celery_consumer_print_process.log)"
       ]
     },
     {
@@ -42230,9 +42233,9 @@
       "kind": "task",
       "django": {
         "file": "BE/application/printing_tasks.py",
-        "line": 68,
+        "line": 98,
         "symbol": "print_document_medical_appointment",
-        "sha256": "18ea298cb7cae14596433c2979d9b57384fefbb7947cf02876886e8fd1f28faf"
+        "sha256": "9364fb65623461e7ea6f326b76e040039e95044328ab94b35328728d5de51488"
       },
       "source_present": true,
       "declaration": {
@@ -42281,11 +42284,11 @@
       "evidence": [
         {
           "command": "python -m TESTS.adapters.go.celery_consumer_print_process",
-          "revision": "a243265121c22a9ddcb80cb63b84ab141897691c",
+          "revision": "8bb316a0d2d3f4af8a8ab436995c978389424d5b",
           "result": "passed",
-          "artifact": "quality-reports/go-migration/sweep-rerun-p4-final/process-celery_consumer_print_process.log",
-          "receipt_sha256": "c2c3f4bc45abddae8944e0c66b0a5c5952cd3597e8cf90fceb86449c6eccffde",
-          "scope": "Process harness celery_consumer_print_process: {\"success\": true, \"minio\": {\"image\": \"ghcr.io/carbogninalberto/minio:RELEASE.2025-04-22T22-12-26Z-assozeta.1@sha256:8d35f39307b12cbc9ba3eedd26587d77ab30c21c3e904aee552df8b17b600389\", \"container\": \"az-instance-logo-minio-2499eeac9657\", \"owned\": true}, \"binary_sha256\": \"e5443c9f371f5dda92bf08eb919e7a7"
+          "artifact": "quality-reports/go-migration/sweep-rerun-p4-print/process-celery_consumer_print_process.log",
+          "receipt_sha256": "f5d53b53252cb9efa6e71bd3174afa9f2d88176f2f5522fe159f97f9932999da",
+          "scope": "Process harness celery_consumer_print_process: {\"success\": true, \"minio\": {\"image\": \"ghcr.io/carbogninalberto/minio:RELEASE.2025-04-22T22-12-26Z-assozeta.1@sha256:8d35f39307b12cbc9ba3eedd26587d77ab30c21c3e904aee552df8b17b600389\", \"container\": \"az-instance-logo-minio-a2efbc0871c3\", \"owned\": true}, \"binary_sha256\": \"0c2da79e3929b745e6e55c370af295b"
         }
       ],
       "notes": [
@@ -42296,7 +42299,8 @@
         "Implementing evidence: passed: 30 differential scenarios against the actual Django worker (race-built consumer) (quality-reports/go-migration/celery-consumer-print-process/results.json)",
         "Implementing evidence: red: Django oracle passed, Go timed out on the first scenario (all messages handed off) (quality-reports/go-migration/celery-consumer-print-process-red/results.json)",
         "Implementing evidence: caught: Go differs from Django (2_ricevuta-2.pdf instead of 3_ricevuta-2.pdf) (quality-reports/go-migration/celery-consumer-print-process-mutation/results.json)",
-        "Implementing evidence: passed (quality-reports/go-migration/sweep-final-3/process-celery_consumer_print_process.log)"
+        "Implementing evidence: passed (quality-reports/go-migration/sweep-final-3/process-celery_consumer_print_process.log)",
+        "Implementing evidence: passed (quality-reports/go-migration/sweep-rerun-p4-final/process-celery_consumer_print_process.log)"
       ]
     },
     {

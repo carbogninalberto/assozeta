@@ -298,7 +298,7 @@
   },
   {
     "name": "print_document_compensation",
-    "django_site": "BE/application/printing_tasks.py:55",
+    "django_site": "BE/application/printing_tasks.py:85",
     "scheduled": false,
     "consumer": true,
     "job": false,
@@ -309,7 +309,7 @@
   },
   {
     "name": "print_document_customer_invoice",
-    "django_site": "BE/application/printing_tasks.py:43",
+    "django_site": "BE/application/printing_tasks.py:73",
     "scheduled": false,
     "consumer": true,
     "job": false,
@@ -320,7 +320,7 @@
   },
   {
     "name": "print_document_invoice",
-    "django_site": "BE/application/printing_tasks.py:32",
+    "django_site": "BE/application/printing_tasks.py:62",
     "scheduled": false,
     "consumer": true,
     "job": false,
@@ -331,7 +331,7 @@
   },
   {
     "name": "print_document_medical_appointment",
-    "django_site": "BE/application/printing_tasks.py:67",
+    "django_site": "BE/application/printing_tasks.py:97",
     "scheduled": false,
     "consumer": true,
     "job": false,
