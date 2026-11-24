@@ -7,9 +7,9 @@ Two boundaries, both driven by the distribution's own `bin/assozeta`:
   2. proxy: the installation's own Caddyfile in the pinned Caddy image, where
      only running application services resolve (needs a Docker daemon).
 
-`TargetTopology` holds the two expected-red contracts of the plan. They are
-tracked in TESTS/handoff/expected_red.json and run through
-`python3 -B -m TESTS.handoff.run_expected_red`; they are never release evidence.
+`TargetTopology` holds the two target contracts of the plan, red at the
+baseline and green since Phases 2 and 5 (run through
+`python3 -B -m TESTS.handoff.run_expected_red`; never release evidence).
 `LegacyDualTopology` characterizes historical distributions (the plan's
 baseline revision) and must stay green.
 
@@ -33,6 +33,11 @@ REQUEST_GO = ('runtime-switch', 'go')
 RUNTIME_STATUS = ('runtime-status',)
 
 
+def tearDownModule():
+    from TESTS.handoff import p5_harness
+    p5_harness.stop_services()  # no-op unless the Go-request case started them
+
+
 class InstallationCase(unittest.TestCase):
     revision = None
 
@@ -54,7 +59,7 @@ class InstallationCase(unittest.TestCase):
 
 
 class TargetTopology(InstallationCase):
-    """Expected red on this revision; turned green by Phases 2 and 5."""
+    """Red at the baseline; turned green by Phases 2 and 5."""
 
     def test_fresh_install_runs_no_go_application_process(self):
         self.installation.install()
@@ -67,6 +72,13 @@ class TargetTopology(InstallationCase):
                          + '\n' + self.installation.describe())
 
     def test_go_request_leaves_only_go_application_processes_and_serves_cold_client(self):
+        # A real switch commits the runtime authority in PostgreSQL and runs the controller from the
+        # updater image (ASSOZETA_UPDATER_REF). Plain fake_docker has neither, so this case uses the
+        # Phase 5 stand-in: the same simulated containers plus private PostgreSQL/Redis and the
+        # checkout's updater tools run for `docker run <updater> /runner/...`.
+        from TESTS.handoff import p5_harness
+        (self.directory / 'switch').mkdir()
+        self.installation = p5_harness.P5Installation(self.directory / 'switch')
         self.installation.install()
         before, _, django_before = self.runtimes()
         self.assertTrue(set(DJANGO_RESIDENT) <= django_before, self.installation.describe())
@@ -80,11 +92,15 @@ class TargetTopology(InstallationCase):
                          + ', '.join(sorted(django)) + '\n' + self.installation.describe())
         self.assertTrue(SHARED <= set(running), self.installation.describe())
         self.assertTrue(golang, 'no Go application service runs after the Go request\n' + self.installation.describe())
-        with self.proxy() as request:
-            status, marker = request(COLD_CLIENT_FIRST_REQUEST)
-        self.assertEqual((status, marker.get('X-Fixture-Runtime')), (200, 'go'),
-                         f'cold client GET {COLD_CLIENT_FIRST_REQUEST} served by {marker or "nothing"} '
-                         f'(HTTP {status}) after the Go request')
+        # The proxy reaches the API through the stable alias active-api (Phase 2), which the Phase 2
+        # evidence proxy gives to the running API's marker; caddy_routes knows only service names.
+        from TESTS.handoff.p2_harness import evidence_proxy
+        log = (self.directory / 'proxy.log').open('w')
+        self.addCleanup(log.close)
+        with evidence_proxy(self.installation, set(running), log) as request:
+            response = request(COLD_CLIENT_FIRST_REQUEST)
+        self.assertEqual((response.status, response.runtime), (200, 'go'),
+                         f'cold client GET {COLD_CLIENT_FIRST_REQUEST} served by {response!r} after the Go request')
         output = self.installation.cli(*RUNTIME_STATUS).stdout
         reported = json.loads(output[output.index('{'):output.rindex('}') + 1])
         self.assertEqual(reported.get('effective_runtime'), 'go', reported)

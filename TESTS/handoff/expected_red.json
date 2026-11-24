@@ -3,14 +3,5 @@
   "release_evidence": false,
   "rule": "Tests listed here must fail with one of their signatures. Remove an entry in the change that turns it green (test author verifies). A release or phase-exit gate must refuse while any entry remains.",
   "baseline_revision": "2284ed46",
-  "tests": {
-    "TESTS.handoff.test_topology.TargetTopology.test_go_request_leaves_only_go_application_processes_and_serves_cold_client": {
-      "phase": 5,
-      "owner": "Phase 5 (bidirectional switch)",
-      "reason": "the distribution has no instance-wide switch: bin/assozeta rejects runtime-switch (unknown command); after Phase 1 it refuses with switch_unavailable. Legacy per-component Go settings keep api/worker/beat and route /api/* to api (LegacyDualTopology)",
-      "signatures": [
-        "Go request rejected: bin/assozeta runtime-switch go"
-      ]
-    }
-  }
+  "tests": {}
 }
