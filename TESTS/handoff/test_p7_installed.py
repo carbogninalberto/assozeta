@@ -12,7 +12,7 @@ Lanes (release matrix lanes in TESTS/handoff/release_matrix.json):
   1 steady state, both modes   in Django mode then in Go mode: running services; accepted work by
       identity (a database task and a mail due now, a mail due next month) until the due work
       completes on the active runtime; a PDF probe (the renderer renders the active API through the
-      internal alias active-api, as the application's documents do); the inactive runtime's
+      internal alias active-api (its /healthz, served by both runtimes), as the application's documents do); the inactive runtime's
       container history and running set since the lane started; provider counts at the SMTP sink.
       The observations go through the release gate (tools/release/qualify.py evaluate, lane
       steady_state) and must be clean, and are written to quality-reports/handoff/p7/installed/
@@ -114,7 +114,7 @@ async def main():
 asyncio.run(main())
 '''
 PDF_PROBE = r'''
-const body = JSON.stringify({url: 'http://active-api:8000/api/healthz', type: 'pdf'});
+const body = JSON.stringify({url: 'http://active-api:8000/healthz', type: 'pdf'});  // served by both runtimes
 fetch('http://127.0.0.1:' + (process.env.PORT || 3000) + '/render', {method: 'POST', body,
       headers: {'content-type': 'application/json'}})
   .then(async response => {
@@ -354,8 +354,9 @@ class ReleaseLanes(r.ContractCase, unittest.TestCase):
 
     def kill_after_commit(self, target):
         inst = self.inst
-        barriers = inst.root / '.p7-barriers'
-        barriers.mkdir(exist_ok=True)
+        # A fresh directory per switch: an arrival file left by an earlier switch must not satisfy this wait.
+        barriers = inst.root / f'.p7-barriers-{uuid.uuid4().hex[:8]}'
+        barriers.mkdir()
         (barriers / 'hold.activate:started.all').write_text('')
         environment = {key: value for key, value in os.environ.items() if not key.startswith('ASSOZETA_')}
         environment.update(ASSOZETA_ENV_FILE=str(inst.env_file), PATH=f'{inst.tools}{os.pathsep}{os.environ["PATH"]}',
@@ -404,7 +405,8 @@ class ReleaseLanes(r.ContractCase, unittest.TestCase):
                             f'work accepted before the kill is not owned by {target}: {row}')
 
     def test_2_recovery_to_go_without_either_app_api(self):
-        self.recover_without_apis('django', 'go', lambda: [self.inst.seed('celery', h.DB_TASK)])
+        # Not due before the switch, so it is still accepted work when the controller is killed.
+        self.recover_without_apis('django', 'go', lambda: [self.inst.seed('celery', h.DB_TASK, eta=h.future(1))])
 
     def test_3_recovery_to_django_without_either_app_api(self):
         self.recover_without_apis('go', 'django', lambda: [self.mail('go', eta=h.future(30))[0]])

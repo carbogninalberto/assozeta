@@ -159,6 +159,7 @@ jobs:
             quality-reports/handoff/expected-red-installed-p7-legacy.json
             quality-reports/handoff/p7/legacy/lanes.log
             quality-reports/handoff/p7/legacy/observations.json
+            quality-reports/handoff/diagnostics/
           if-no-files-found: warn
           retention-days: 14
 

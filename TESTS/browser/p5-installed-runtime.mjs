@@ -47,7 +47,9 @@ try {
     navigations = 0;
 
     const toggle = page.getByRole('switch', {name: 'Usa Go per l’istanza', exact: true});
-    await toggle.click();
+    // The drawn track (an aria-hidden span) covers the transparent input; people click that track,
+    // so click the label that wraps both (no forced click).
+    await toggle.locator('xpath=ancestor::label[1]').click();
     const dialog = page.getByRole('dialog');
     await dialog.getByLabel('Conferma la tua password').fill(password);
     await dialog.getByRole('button', {name: 'Conferma cambio'}).click();

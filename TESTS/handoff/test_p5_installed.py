@@ -13,8 +13,8 @@ POST /instance-update-status, key 'runtime').
 Lanes (each test brings the installation to its starting mode itself, so one lane can
 run alone; in order they run forward, reverse, a second round trip with rapid and
 opposite requests, failed-before-commit and failed-after-commit):
-  forward / reverse   accepted work seeded at the source (a database-only task due now and
-      a mail task due next month) is accounted for on the target by identity; the
+  forward / reverse   accepted work seeded at the source (a database-only task due tomorrow and
+      a mail task due next month, so neither completes before the switch) is accounted for on the target by identity; the
       owner's access token from before the switch still works afterwards (session
       preserved) and a settings write made on one runtime reads back on the other;
       `docker compose ps` runs exactly the shared services plus the target set; every
@@ -81,6 +81,12 @@ DJANGO_APP, GO_APP = h.DJANGO_APP, h.GO_APP
 LANES = [lane for lane in os.environ.get('ASSOZETA_HANDOFF_P5_LANES', '').split(',') if lane]
 OWNER_EMAIL, OWNER_PASSWORD = 'owner-p5@example.invalid', 'P5-' + secrets.token_hex(12) + '!a'
 STATE = {}
+
+
+def redact(text):
+    for secret in STATE.get('secrets', ()):
+        text = text.replace(secret, '[redacted]')
+    return text
 
 
 def run(command, *, log, check=True, timeout=1800, **kwargs):
@@ -173,8 +179,35 @@ class Installed:
             raise h.HarnessError(f'owner login failed: HTTP {status}')
         self.token, self.refresh = login['access_token'], login.get('refresh_token')
 
+    def collect(self):
+        """Copy the updater's operation logs, .operations/ and the runner container log into
+        quality-reports/handoff/diagnostics/<project>/ (the CI artifact), with this installation's
+        generated credentials redacted."""
+        target = DIAGNOSTICS / self.project
+        target.mkdir(parents=True, exist_ok=True)
+        archive = subprocess.run(['docker', 'run', '--rm', '-v', f'{self.root}:{self.root}', '--entrypoint', 'sh',
+                                  self.images.get('updater') or 'alpine', '-c',
+                                  'cd "$1" && tar -cf - $(ls -d .updater/logs .operations 2>/dev/null)', 'collect',
+                                  str(self.root)], capture_output=True, timeout=300)
+        if archive.returncode == 0 and archive.stdout:
+            import io
+            import tarfile
+            with tarfile.open(fileobj=io.BytesIO(archive.stdout)) as files:
+                for member in files.getmembers():
+                    if member.isfile() and member.size < 5_000_000:
+                        content = files.extractfile(member).read().decode('utf-8', 'replace')
+                        path = target / member.name.lstrip('./').replace('/', '__')
+                        path.write_text(redact(content))
+        runner = subprocess.run(['docker', 'logs', f'{self.project}-updater-updater-1'], stdout=subprocess.PIPE,
+                                stderr=subprocess.STDOUT, text=True, timeout=120)
+        (target / 'updater-container.log').write_text(redact(runner.stdout[-200000:]))
+
     def uninstall(self):
         if self.env_file.exists():
+            try:
+                self.collect()
+            except (OSError, subprocess.SubprocessError, ValueError) as error:
+                self.log.write(f'diagnostics not collected: {error}\n')
             self.cli('uninstall', '--volumes', '--yes', check=False)
             run(['docker', 'compose', '--project-name', f'{self.project}-updater', '-f', self.root / 'compose.updater.yml',
                  '--env-file', self.env_file, 'down', '--volumes', '--remove-orphans'], log=self.log, check=False,
@@ -310,6 +343,12 @@ class Installed:
         return found
 
 
+def diagnosis(operation):
+    """The failure fields of a runtime operation, for assertion messages (no payloads or credentials)."""
+    return {key: operation.get(key) for key in ('status', 'stage', 'error_code', 'failed_stage', 'error',
+                                                 'recovery_action', 'abort_code', 'abort_stage')}
+
+
 def images(log):
     given = os.environ.get('ASSOZETA_HANDOFF_P5_IMAGES')
     if given:
@@ -330,6 +369,7 @@ def images(log):
 
 
 OUTPUT = ROOT / 'quality-reports/handoff/p5/installed'
+DIAGNOSTICS = ROOT / 'quality-reports/handoff/diagnostics'
 
 
 def setUpModule():
@@ -431,6 +471,8 @@ class InstalledLanes(h.ContractCase, unittest.TestCase):
                          'maintenance': (status or {}).get('maintenance')})
             if operation.get('id') == operation_id and operation.get('status') in ('succeeded', 'failed',
                                                                                     'recovery_required'):
+                if operation.get('status') != 'succeeded':
+                    self.inst.log.write(f'operation {operation_id} ended: {json.dumps(diagnosis(operation))}\n')
                 return status, seen
             time.sleep(1)
         self.fail(f'{RED}: operation {operation_id} did not finish within {timeout} s; last {seen[-3:]}')
@@ -439,7 +481,8 @@ class InstalledLanes(h.ContractCase, unittest.TestCase):
         if self.inst.authority()[0] != runtime:
             operation, _ = self.request(runtime)
             status, _ = self.follow(operation)
-            self.assertEqual(status['operation']['status'], 'succeeded', f'{RED}: could not reach {runtime} mode')
+            self.assertEqual(status['operation']['status'], 'succeeded', f'{RED}: could not reach {runtime} mode: '
+                                                                         f'{diagnosis(status["operation"])}')
 
     def assert_topology(self, runtime, since_commit):
         inst = self.inst
@@ -487,7 +530,8 @@ class InstalledLanes(h.ContractCase, unittest.TestCase):
         inst = self.inst
         self.ensure('django')
         generation = inst.authority()[1]
-        work = {'due now': inst.seed('celery', h.DB_TASK), 'next month': inst.seed('celery', h.MAIL_TASK, eta=h.future(30),
+        # Not due before the switch: due work would complete on the source runtime first and stay its own.
+        work = {'tomorrow': inst.seed('celery', h.DB_TASK, eta=h.future(1)), 'next month': inst.seed('celery', h.MAIL_TASK, eta=h.future(30),
                                                                                     args=h.mail_args(1))}
         self.assertEqual(inst.websocket('/ws/notifications/'), 101, 'the socket works before the switch (control)')
         self.wrong_password('go')
@@ -503,7 +547,7 @@ class InstalledLanes(h.ContractCase, unittest.TestCase):
         inst = self.inst
         self.ensure('go')
         generation = inst.authority()[1]
-        work = {'due now': inst.seed('assozeta-go', h.MAIL_TASK, args=h.mail_args(2)),
+        work = {'tomorrow': inst.seed('assozeta-go', h.MAIL_TASK, eta=h.future(1), args=h.mail_args(2)),
                 'next month': inst.seed('assozeta-go', h.MAIL_TASK, eta=h.future(30), args=h.mail_args(3))}
         self.wrong_password('django')
         operation, key = self.request('django')
@@ -516,7 +560,9 @@ class InstalledLanes(h.ContractCase, unittest.TestCase):
                          (202, True, operation), f'{RED}: replaying the request on the new runtime')
         if STATE.get('tables'):
             code, settings = inst.http('GET', '/api/profile/settings', inst.token)
-            self.assertEqual((code, (settings or {}).get('tables_settings', {}).get('p5')), (200, STATE['tables']['p5']),
+            # GET /api/profile/settings answers {'settings': {..., 'table_settings': ...}} on both runtimes.
+            stored = (((settings or {}).get('settings') or {}).get('table_settings') or {}).get('p5')
+            self.assertEqual((code, stored), (200, STATE['tables']['p5']),
                              f'{RED}: a write made on Go does not read back on Django')
 
     def test_3_round_trip_with_rapid_and_opposite_requests(self):
@@ -563,7 +609,7 @@ class InstalledLanes(h.ContractCase, unittest.TestCase):
         inst = self.inst
         self.ensure('django')
         generation = inst.authority()[1]
-        work = {'due now': inst.seed('celery', h.DB_TASK)}
+        work = {'tomorrow': inst.seed('celery', h.DB_TASK, eta=h.future(1))}
         barriers = inst.root / '.p5-barriers'
         barriers.mkdir(exist_ok=True)
         (barriers / 'hold.activate:started.all').write_text('')
@@ -592,7 +638,7 @@ class InstalledLanes(h.ContractCase, unittest.TestCase):
         self.assertEqual((status['effective_runtime'], status['operation']['status'], status['maintenance']),
                          ('go', 'succeeded', False), f'{RED}: recovery after the post-commit kill')
         self.assert_topology('go', inst.authority()[3])
-        row = inst.ledger(work['due now'])
+        row = inst.ledger(work['tomorrow'])
         self.assertTrue(row and row[1] == 'go', f'{RED}: work accepted before the kill is not on Go: {row}')
         self.ensure('django')
 

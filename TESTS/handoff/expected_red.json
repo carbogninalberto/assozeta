@@ -98,7 +98,7 @@
     "TESTS.handoff.test_p5_installed.InstalledLanes.test_1_forward": {
       "phase": 5,
       "owner": "t-p5",
-      "reason": "Phase 5 part D: the runner status socket carries no runtime status and the installed controller refuses the switch (switch_unavailable)",
+      "reason": "Phase 5 part D: the browser step could not click the runtime switch (fixed test-side: it clicks the wrapping label); behind it a switch requested through the owner API (POST /api/instance/admin/runtime) fails at once while the same switch through ./bin/assozeta runtime-switch succeeds (CI run 45378476362, triage run4 group A; cause under investigation by i-p5, the next run carries error_code/failed_stage and the updater logs)",
       "signatures": [
         "P5 contract red"
       ]
@@ -106,7 +106,7 @@
     "TESTS.handoff.test_p5_installed.InstalledLanes.test_2_reverse": {
       "phase": 5,
       "owner": "t-p5",
-      "reason": "Phase 5 part D: no installed switch to reach Go first; status socket lacks the runtime status",
+      "reason": "Phase 5 part D: reaching Go first: a switch requested through the owner API (POST /api/instance/admin/runtime) fails at once while the same switch through ./bin/assozeta runtime-switch succeeds (CI run 45378476362, triage run4 group A; cause under investigation by i-p5, the next run carries error_code/failed_stage and the updater logs)",
       "signatures": [
         "P5 contract red"
       ]
@@ -114,7 +114,7 @@
     "TESTS.handoff.test_p5_installed.InstalledLanes.test_3_round_trip_with_rapid_and_opposite_requests": {
       "phase": 5,
       "owner": "t-p5",
-      "reason": "Phase 5 part D: the first switch fails at once (switch_unavailable), so an opposite request is a no-op instead of 409 operation_in_progress",
+      "reason": "Phase 5 part D: the first switch is already terminal when the opposite request arrives (no-op instead of 409 operation_in_progress): a switch requested through the owner API (POST /api/instance/admin/runtime) fails at once while the same switch through ./bin/assozeta runtime-switch succeeds (CI run 45378476362, triage run4 group A; cause under investigation by i-p5, the next run carries error_code/failed_stage and the updater logs)",
       "signatures": [
         "P5 contract red"
       ]
@@ -122,7 +122,7 @@
     "TESTS.handoff.test_p5_installed.InstalledLanes.test_5_failed_after_commit": {
       "phase": 5,
       "owner": "t-p5",
-      "reason": "Phase 5 part D: ./bin/assozeta runtime-switch go exits before any authority commit (switch_unavailable)",
+      "reason": "Phase 5 part D: the seeded work was due now and completed on Django before the switch (fixed test-side: due tomorrow); the CLI switch, kill and runtime-recover themselves succeeded in run 45378476362, so the next installed run decides",
       "signatures": [
         "P5 contract red"
       ]
@@ -130,7 +130,7 @@
     "TESTS.handoff.test_p7_installed.ReleaseLanes.test_1_steady_state_observations_in_both_modes": {
       "phase": 7,
       "owner": "t-p7",
-      "reason": "part C (installed, CI only): the gate exists now; this lane has not yet run on CI (no local Docker lanes), so it stays tracked until the first installed run shows its result",
+      "reason": "part C (installed): the PDF probe asked Django for /api/healthz, which active-api:8000 does not serve (fixed test-side: /healthz on both runtimes); Go mode not yet reached, the next installed run decides",
       "signatures": [
         "P7 contract red"
       ]
@@ -138,7 +138,7 @@
     "TESTS.handoff.test_p7_installed.ReleaseLanes.test_2_recovery_to_go_without_either_app_api": {
       "phase": 7,
       "owner": "t-p7",
-      "reason": "part C (installed, CI only): the gate exists now; this lane has not yet run on CI (no local Docker lanes), so it stays tracked until the first installed run shows its result",
+      "reason": "part C (installed): the seeded work was due now and completed on Django before the switch (fixed test-side: due tomorrow); the recovery itself succeeded, the next installed run decides",
       "signatures": [
         "P7 contract red"
       ]
@@ -146,7 +146,7 @@
     "TESTS.handoff.test_p7_installed.ReleaseLanes.test_3_recovery_to_django_without_either_app_api": {
       "phase": 7,
       "owner": "t-p7",
-      "reason": "part C (installed, CI only): the gate exists now; this lane has not yet run on CI (no local Docker lanes), so it stays tracked until the first installed run shows its result",
+      "reason": "part C (installed): a barrier arrival file left by test_2 satisfied the wait before the controller existed (fixed test-side: one barrier directory per switch); the recovery itself succeeded, the next installed run decides",
       "signatures": [
         "P7 contract red"
       ]
@@ -154,7 +154,7 @@
     "TESTS.handoff.test_p7_installed.ReleaseLanes.test_4_mutation_missing_worker": {
       "phase": 7,
       "owner": "t-p7",
-      "reason": "part C (installed, CI only): the gate exists now; this lane has not yet run on CI (no local Docker lanes), so it stays tracked until the first installed run shows its result",
+      "reason": "part C (installed): ensure(go) goes through the owner API: a switch requested through the owner API (POST /api/instance/admin/runtime) fails at once while the same switch through ./bin/assozeta runtime-switch succeeds (CI run 45378476362, triage run4 group A; cause under investigation by i-p5, the next run carries error_code/failed_stage and the updater logs)",
       "signatures": [
         "P7 contract red"
       ]
@@ -162,7 +162,7 @@
     "TESTS.handoff.test_p7_installed.ReleaseLanes.test_5_mutation_unresolved_task": {
       "phase": 7,
       "owner": "t-p7",
-      "reason": "part C (installed, CI only): the gate exists now; this lane has not yet run on CI (no local Docker lanes), so it stays tracked until the first installed run shows its result",
+      "reason": "part C (installed): ensure(go) goes through the owner API: a switch requested through the owner API (POST /api/instance/admin/runtime) fails at once while the same switch through ./bin/assozeta runtime-switch succeeds (CI run 45378476362, triage run4 group A; cause under investigation by i-p5, the next run carries error_code/failed_stage and the updater logs)",
       "signatures": [
         "P7 contract red"
       ]
@@ -170,7 +170,7 @@
     "TESTS.handoff.test_p7_installed.ReleaseLanes.test_6_mutation_denied_pdf_host": {
       "phase": 7,
       "owner": "t-p7",
-      "reason": "part C (installed, CI only): the gate exists now; this lane has not yet run on CI (no local Docker lanes), so it stays tracked until the first installed run shows its result",
+      "reason": "part C (installed): ensure(go) goes through the owner API: a switch requested through the owner API (POST /api/instance/admin/runtime) fails at once while the same switch through ./bin/assozeta runtime-switch succeeds (CI run 45378476362, triage run4 group A; cause under investigation by i-p5, the next run carries error_code/failed_stage and the updater logs)",
       "signatures": [
         "P7 contract red"
       ]
@@ -178,7 +178,7 @@
     "TESTS.handoff.test_p7_installed.ReleaseLanes.test_7_mutation_forced_old_runtime_http_call": {
       "phase": 7,
       "owner": "t-p7",
-      "reason": "part C (installed, CI only): the gate exists now; this lane has not yet run on CI (no local Docker lanes), so it stays tracked until the first installed run shows its result",
+      "reason": "part C (installed): ensure(go) goes through the owner API: a switch requested through the owner API (POST /api/instance/admin/runtime) fails at once while the same switch through ./bin/assozeta runtime-switch succeeds (CI run 45378476362, triage run4 group A; cause under investigation by i-p5, the next run carries error_code/failed_stage and the updater logs)",
       "signatures": [
         "P7 contract red"
       ]
@@ -186,7 +186,7 @@
     "TESTS.handoff.test_p7_installed.ReleaseLanes.test_8_mutation_duplicate_provider_effect": {
       "phase": 7,
       "owner": "t-p7",
-      "reason": "part C (installed, CI only): the gate exists now; this lane has not yet run on CI (no local Docker lanes), so it stays tracked until the first installed run shows its result",
+      "reason": "part C (installed): ensure(go) goes through the owner API: a switch requested through the owner API (POST /api/instance/admin/runtime) fails at once while the same switch through ./bin/assozeta runtime-switch succeeds (CI run 45378476362, triage run4 group A; cause under investigation by i-p5, the next run carries error_code/failed_stage and the updater logs)",
       "signatures": [
         "P7 contract red"
       ]
@@ -197,7 +197,7 @@
       "signatures": [
         "P7 contract red"
       ],
-      "reason": "part C2 (installed, CI only): the gate exists now; the v1.0.48 mixed install and its upgrade to this commit have not yet run on CI, so it stays tracked until the first installed run"
+      "reason": "part C2 (installed): the test transport docker shim raised KeyError fixture-backend-3 on the first pull (fixed test-side), so the v1.0.48 upgrade never ran; the next installed run decides"
     },
     "TESTS.handoff.test_p7_legacy.LegacyMixedUpgrade.test_mixed_release_upgraded_into_django": {
       "phase": 7,
@@ -205,7 +205,7 @@
       "signatures": [
         "P7 contract red"
       ],
-      "reason": "part C2 (installed, CI only): the gate exists now; the v1.0.48 mixed install and its upgrade to this commit have not yet run on CI, so it stays tracked until the first installed run"
+      "reason": "part C2 (installed): the test transport docker shim raised KeyError fixture-backend-3 on the first pull (fixed test-side), so the v1.0.48 upgrade never ran; the next installed run decides"
     }
   }
 }
