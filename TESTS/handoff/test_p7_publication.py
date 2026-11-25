@@ -102,6 +102,46 @@ class Publication(r.ContractCase, unittest.TestCase):
                     steps.append((entry, step))
         return steps
 
+    def test_jobs_with_conditional_ancestors_check_their_direct_results(self):
+        for name, job in self.jobs.items():
+            if any('if' in self.jobs[parent] for parent in w.upstream(self.jobs, name)):
+                condition = w.strip(job.get('if', '')).strip()
+                with self.subTest(job=name):
+                    self.assertRegex(condition, r'^!cancelled\(\)\s*&&')
+                    for need in w.needs_of(job):
+                        self.assertRegex(condition, rf"\bneeds\.{re.escape(need)}\.result\s*==\s*'(success|skipped)'")
+
+    def test_release_and_commit_image_paths(self):
+        release_jobs = ('release-target', 'candidate-images', 'release-candidate', 'release-contracts',
+                        'release-installed', QUALIFY, 'publish', 'verify-release-images', 'release-bundle')
+        contexts = dict(self.contexts)
+        for event, inputs in [('push', {}), ('workflow_dispatch', {'include_manual': False}),
+                              ('workflow_dispatch', {'include_manual': True})]:
+            label = f'{event} main {inputs}'
+            contexts[label] = {'github': {'event_name': event, 'ref': 'refs/heads/main', 'ref_type': 'branch'},
+                               'inputs': w.dispatch_inputs(self.workflow, inputs) if event == 'workflow_dispatch' else {}}
+        for label, raw in contexts.items():
+            with self.subTest(event=label):
+                tag = raw['github']['ref'].removeprefix('refs/tags/') if label in self.contexts else ''
+                self.assertEqual(w.with_env(self.workflow, raw)['env']['RELEASE_TAG'], tag)
+                results = w.simulate(self.workflow, raw)
+                self.assertEqual({job: results[job] for job in release_jobs},
+                                 dict.fromkeys(release_jobs, 'success' if tag else 'skipped'))
+                self.assertEqual(results['branch-images'], 'skipped' if tag else 'success')
+                self.assertEqual(results['production-smoke'], 'success')
+                manual = 'success' if raw['inputs'].get('include_manual') else 'skipped'
+                self.assertEqual(results['manual-release'], manual)
+                self.assertEqual(results['manual-evidence-store'], manual)
+
+    def test_qualification_jobs_require_every_direct_need_to_succeed(self):
+        for job in ('release-candidate', 'release-contracts', 'release-installed', QUALIFY):
+            for need in w.needs_of(self.jobs[job]):
+                for result in BAD_RESULTS:
+                    with self.subTest(job=job, need=need, result=result):
+                        results = w.simulate(self.workflow, self.contexts['release'], {need: result})
+                        self.assertEqual(results[job], 'skipped')
+                        self.assertEqual(results['publish'], 'skipped')
+
     def test_every_release_entry_point_runs_the_qualification(self):
         self.require_qualification_job()
         for label, raw in self.contexts.items():
@@ -192,6 +232,16 @@ class Publication(r.ContractCase, unittest.TestCase):
 
 class Simulator(unittest.TestCase):
     """Controls (green today): the simulator sees the gates publish-images already has."""
+
+    def test_implicit_success_inherits_a_skipped_grandparent(self):
+        workflow = {'jobs': {
+            'optional': {'if': 'false'},
+            'candidate': {'needs': 'optional', 'if': "!cancelled() && needs.optional.result == 'skipped'"},
+            'implicit': {'needs': 'candidate'},
+            'explicit': {'needs': 'candidate', 'if': "!cancelled() && needs.candidate.result == 'success'"},
+        }}
+        self.assertEqual(w.simulate(workflow, {}), {
+            'optional': 'skipped', 'candidate': 'success', 'implicit': 'skipped', 'explicit': 'success'})
 
     def test_existing_gates_block_publication_and_a_removed_gate_is_noticed(self):
         workflow = w.load(PUBLISH)

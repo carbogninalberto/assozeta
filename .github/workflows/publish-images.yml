@@ -89,7 +89,7 @@ jobs:
     # depends on it, so it can never delay or block image publication.
     name: Publish trusted per-workflow manual evidence
     needs: manual-release
-    if: ${{ needs.manual-release.result == 'success' && !startsWith(github.event_name, 'pull_request') }}
+    if: ${{ !cancelled() && needs.manual-release.result == 'success' && !startsWith(github.event_name, 'pull_request') }}
     uses: ./.github/workflows/manuale-evidence-publish.yml
     permissions:
       contents: read
@@ -272,6 +272,7 @@ jobs:
 
   release-candidate:
     needs: candidate-images
+    if: ${{ !cancelled() && needs.candidate-images.result == 'success' }}
     runs-on: ubuntu-latest
     outputs:
       images: ${{ steps.candidate.outputs.images }}
@@ -309,6 +310,7 @@ jobs:
 
   release-contracts:
     needs: release-candidate
+    if: ${{ !cancelled() && needs.release-candidate.result == 'success' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 240
     env:
@@ -348,6 +350,7 @@ jobs:
 
   release-installed:
     needs: [release-candidate, selfhost-quality]
+    if: ${{ !cancelled() && needs.release-candidate.result == 'success' && needs.selfhost-quality.result == 'success' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 270
     env:
@@ -424,6 +427,7 @@ jobs:
 
   release-qualification:
     needs: [release-contracts, release-installed]
+    if: ${{ !cancelled() && needs.release-contracts.result == 'success' && needs.release-installed.result == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
