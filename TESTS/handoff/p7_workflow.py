@@ -319,15 +319,18 @@ def simulate(workflow, context, overrides=None):
         needs = needs_of(job)
         scope = dict(context, needs={need: {'result': results[need], 'outputs': {}} for need in needs})
 
-        def status(function, needs=needs):
-            states = [results[need] for need in needs]
+        # Job status functions include indirect dependencies. The needs context
+        # above exposes only direct dependencies to the expression.
+        ancestor_states = {results[need] for need in upstream(jobs, name)}
+
+        def status(function):
             if function == 'always':
                 return True
             if function == 'cancelled':
                 return False
             if function == 'failure':
-                return any(state == 'failure' for state in states)
-            return all(state == 'success' for state in states)
+                return 'failure' in ancestor_states
+            return ancestor_states <= {'success'}
 
         condition = job.get('if', True)
         if condition is True:
