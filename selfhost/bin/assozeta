@@ -56,6 +56,7 @@ Production commands:
   logs [SERVICE]
   sync-manual               Install the published manual for the configured release.
   backup [--scheduled] [DIRECTORY]
+  reclaim-space             Stop the app and reclaim PostgreSQL audit table space now.
   restore ARCHIVE [--yes] [--no-backup]
                             Back up the current data first (unless --no-backup), then restore.
   restore --from-s3 [NAME] [--bucket B] [--endpoint URL] [--region R] [--prefix P] [--path-style] [--yes]
@@ -1850,6 +1851,78 @@ maintenance_work() (
     run_updater_tool /runner/maintenance_work.py "$maintenance_action" "$SELFHOST_DIR" "$PROD_ENV" "$@"
 )
 
+reclaim_sql() {
+    prod_compose exec -T -e 'PGOPTIONS=-c lock_timeout=60s' postgres psql -X -qAt -v ON_ERROR_STOP=1 \
+        -U "$database_user" -d "$database_name" -c "$1"
+}
+
+reclaim_database_bytes() {
+    measured=$(reclaim_sql 'SELECT pg_database_size(current_database())') || return 1
+    validate_positive_integer "$measured" || return 1
+    if [ "${ASSOZETA_BACKUP_STAGES:-0}" = 1 ]; then
+        printf '@@ASSOZETA_DATABASE_BYTES_%s %s\n' "$1" "$measured"
+    else
+        log "PostgreSQL size ($1): $measured bytes"
+    fi
+}
+
+resume_reclaim_services() {
+    prod_compose --profile "$reclaim_profile" start $reclaim_services || return 1
+    wait_public_readiness || return 1
+    require_app_services_running "$reclaim_profile" $reclaim_services || return 1
+    rm -f "$MAINTENANCE_FLAG"
+}
+
+reclaim_space_prod() (
+    [ "$#" -eq 0 ] || die "reclaim-space does not accept arguments"
+    preflight
+    [ -f "$PROD_ENV" ] || die "run configure first"
+    require_prod_migration_lease
+    database_user=$(env_value DBUSER "$PROD_ENV")
+    database_name=$(env_value DBNAME "$PROD_ENV")
+    margin_mb=$(unquoted_env_value ASSOZETA_BACKUP_SPACE_MARGIN_MB "$PROD_ENV")
+    margin_mb=${margin_mb:-1024}
+    reclaim_database_bytes BEFORE
+    table_bytes=$(reclaim_sql "SELECT pg_total_relation_size('public.auditlog_logentry') + pg_total_relation_size('public.application_auditlogindex')") || table_bytes=
+    disk=$(prod_compose exec -T postgres sh -c 'df -Pk "$PGDATA"') || disk=
+    free_kib=$(printf '%s\n' "$disk" | awk 'NR == 2 {print $4}')
+    if ! validate_positive_integer "$table_bytes" || ! validate_positive_integer "$margin_mb" ||
+       ! validate_positive_integer "$free_kib" ||
+       ! awk -v free="$free_kib" -v tables="$table_bytes" -v margin="$margin_mb" \
+           'BEGIN {exit !(free * 1024 > tables + margin * 1048576)}'; then
+        report_failure "Spazio su disco insufficiente o non verificabile per riscrivere le tabelle."
+        reclaim_database_bytes AFTER || :
+        exit 1
+    fi
+
+    [ ! -e "$MAINTENANCE_FLAG" ] || die "maintenance already in progress"
+    reclaim_profile=$(prod_start_profile)
+    reclaim_services=$(runtime_app_services "$reclaim_profile")
+    [ -n "$reclaim_services" ] || die "no application services in Compose profile $reclaim_profile"
+    running=$(prod_compose --profile "$reclaim_profile" ps --status running --services $reclaim_services)
+    if [ -n "$running" ]; then
+        trap 'if ! resume_reclaim_services; then report_failure "Riavvio dei servizi non riuscito."; exit 1; fi' EXIT
+    else
+        # Preserve an operator's stopped application after maintenance.
+        trap 'rm -f "$MAINTENANCE_FLAG"' EXIT
+    fi
+    trap 'exit 129' HUP
+    trap 'exit 130' INT
+    trap 'exit 143' TERM
+    stop_prod_data_services
+    drain_prod_go_transactions
+    vacuum_status=0
+    for table in auditlog_logentry application_auditlogindex; do
+        if ! reclaim_sql "VACUUM (FULL, ANALYZE) public.$table"; then
+            report_failure "Recupero dello spazio non riuscito per la tabella $table."
+            vacuum_status=1
+            break
+        fi
+    done
+    reclaim_database_bytes AFTER || log "PostgreSQL size after reclaim is unknown"
+    exit "$vacuum_status"
+)
+
 backup_prod() {
     backup_origin=${backup_origin:-manual}
     while [ "$#" -gt 0 ]; do
@@ -2604,6 +2677,7 @@ run_locked_prod_command() {
         stop) preflight; [ -f "$PROD_ENV" ] || die "run configure first"; prod_compose stop ;;
         restart) restart_prod ;;
         backup) backup_prod "$@" ;;
+        reclaim-space) reclaim_space_prod "$@" ;;
         restore) restore_command_prod "$@" ;;
         recover-upgrade) recover_upgrade_prod "$@" ;;
         reconcile-updates) reconcile_updates_prod "$@" ;;
@@ -2656,7 +2730,7 @@ case "$command" in
         fi
         ;;
     runtime-status) runtime_status_prod "$@" ;;
-    configure|install|pull|migrate|start|stop|restart|sync-manual|backup|restore|recover-upgrade|reconcile-updates|runtime-recover|runtime-switch|runtime-adopt|uninstall) run_locked_prod_command "$command" "$@" ;;
+    configure|install|pull|migrate|start|stop|restart|sync-manual|backup|reclaim-space|restore|recover-upgrade|reconcile-updates|runtime-recover|runtime-switch|runtime-adopt|uninstall) run_locked_prod_command "$command" "$@" ;;
     validate) validate_prod ;;
     health) preflight; health_prod ;;
     status) preflight; status_prod ;;

@@ -160,7 +160,7 @@ def overview(inv, sizes, *, margin=2):
         next_backup = {'estimated': estimated, 'required': required, 'fits': free is None or free >= required}
     return {'available': True, 'archives': inv.get('archives', []), 'retention': inv.get('retention', {}), 'disk': merged,
             'next_backup': next_backup, 'schedule': inv.get('schedule'), 'actions': inv.get('actions', {}),
-            'remote': inv.get('remote')}
+            'remote': inv.get('remote'), 'reclaim_space': inv.get('reclaim_space', {'pending': False, 'last_run': None})}
 
 
 def ok(inv):
@@ -249,6 +249,10 @@ ACTIONS = {'create': True, 'delete': True, 'keep': False, 'restore': True, 'uplo
 REMOTE = {'configured': True, 'provider': 's3', 'bucket': 'remote-placeholder', 'last_upload': {'at': '2026-11-01T03:00:00Z'},
           'last_failure': None, 'note': 'copia àè €'}
 for name, inv in (
+        ('reclaim-pending', inventory(reclaim_space={'pending': True, 'last_run': None})),
+        ('reclaim-completed', inventory(reclaim_space={'pending': False, 'last_run': {
+            'started_at': '2026-11-01T01:59:00Z', 'finished_at': '2026-11-01T01:59:25Z',
+            'database_bytes_before': 3145728, 'database_bytes_after': 2097152, 'ok': True, 'error': None}})),
         ('schedule-actions-remote', inventory(schedule=SCHEDULE, actions=ACTIONS, remote=REMOTE)),
         ('schedule-null', inventory(schedule=None, actions={}, remote=None)),
         ('schedule-only', inventory(schedule={'enabled': False})),

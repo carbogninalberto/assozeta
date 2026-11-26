@@ -146,9 +146,8 @@ func (s *InstanceBackupActions) call(ctx context.Context, method, path string, p
 	return backupActionsDecode(reply, err, backupActionsDefault)
 }
 
-// relay is backups.relay: the runner's answer with the success status, its
-// Italian message on refusal (an older runner for /backups and
-// /backups/schedule), 503 when unavailable.
+// relay preserves the runner's refusal message and translates a missing
+// backup management endpoint into a request to update the runner.
 func (s *InstanceBackupActions) relay(ctx context.Context, method, path string, payload any, success int) (*BackupActionsReply, error) {
 	outcome, err := s.call(ctx, method, path, payload, backupActionsNormal)
 	if err != nil {
@@ -157,7 +156,7 @@ func (s *InstanceBackupActions) relay(ctx context.Context, method, path string, 
 	switch {
 	case outcome.unavailable != "":
 		return backupActionsError(503, outcome.unavailable), nil
-	case outcome.rejected && outcome.status == 404 && (path == "/backups" || path == "/backups/schedule"):
+	case outcome.rejected && outcome.status == 404 && (path == "/backups" || path == "/backups/schedule" || path == "/backups/reclaim-space"):
 		return backupActionsError(409, backupActionsNewer), nil
 	case outcome.rejected:
 		return backupActionsRejection(outcome)
@@ -291,6 +290,28 @@ func (s *InstanceBackupActions) Delete(ctx context.Context, request BackupAction
 		return reply, err
 	}
 	if err := s.audit(ctx, request, "backup_delete", name, domain.RequestObject{{Name: "backup", Value: name}}); err != nil {
+		return nil, err
+	}
+	return backupActionsRendered(reply)
+}
+
+func (s *InstanceBackupActions) ReclaimSpace(ctx context.Context, request BackupActionsRequest, method string, body any) (*BackupActionsReply, error) {
+	payload := domain.RequestObject{}
+	action, status := "cancel", 200
+	if method == "POST" {
+		object, _ := body.(domain.RequestObject)
+		confirm, _ := object.Lookup("confirm")
+		if confirm != true {
+			return backupActionsError(400, backupActionsBadRequest), nil
+		}
+		payload = domain.RequestObject{{Name: "confirm", Value: true}}
+		action, status = "queue", 202
+	}
+	reply, err := s.relay(ctx, method, "/backups/reclaim-space", payload, status)
+	if err != nil || reply.Status != status {
+		return reply, err
+	}
+	if err := s.audit(ctx, request, "backup_reclaim_space", action, nil); err != nil {
 		return nil, err
 	}
 	return backupActionsRendered(reply)

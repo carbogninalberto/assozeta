@@ -84,8 +84,10 @@ try {
         ];
         let schedule = {enabled: false, frequency: 'daily', time: '03:00', weekday: 0, next_run: null, last_run: null};
         let retention = {automatic: 3};
-        const backupOverview = () => ({available: true, retention, schedule, archives: backupArchives,
-            actions: {create: true, keep: true, delete: true, restore: true, upload: true},
+        const reclaimSpace = {pending: false, last_run: null};
+        const reclaimCalls = [];
+        const backupOverview = () => ({available: true, retention, schedule, reclaim_space: reclaimSpace, archives: backupArchives,
+            actions: {create: true, keep: true, delete: true, restore: true, upload: true, reclaim_space: true},
             disk: {total: 40 * GIB, used: 33 * GIB, free: 7 * GIB, backups: 8 * GIB, database: GIB, objects: 3 * GIB},
             next_backup: {estimated: 4 * GIB, required: 9 * GIB, fits: false}});
         const backupPasswords = [];
@@ -110,6 +112,15 @@ try {
                 backupCalls.push('create');
                 runnerActive = {id: 'fixture-backup', kind: 'backup', stage: 'backup', status: 'running', target_version: '1.0.3', created_at: new Date().toISOString()};
                 value = {operation: runnerActive}; status = 202;
+            }
+            else if (endpoint === '/admin/backups/reclaim-space' && ['POST', 'DELETE'].includes(method)) {
+                if (method === 'POST') {
+                    assert.deepEqual(request.postDataJSON(), {confirm: true});
+                    status = 202;
+                }
+                reclaimCalls.push(method);
+                reclaimSpace.pending = method === 'POST';
+                value = {reclaim_space: reclaimSpace};
             }
             else if (endpoint === '/admin/backups/schedule' && method === 'PUT') {
                 const input = request.postDataJSON();
@@ -456,6 +467,33 @@ try {
         await expect(scheduleCard.getByText(/^Prossimo:/)).toBeVisible();
         await expect(scheduleCard.getByRole('button', {name: 'Salva pianificazione'})).toBeDisabled();
         await shot('backups-schedule');
+
+        const reclaim = page.getByRole('button', {name: 'Recupera spazio database', exact: true});
+        const pendingReclaim = page.getByText('Programmato prima del prossimo backup', {exact: true});
+        await expect(reclaim).toBeVisible();
+        await reclaim.click();
+        const confirmReclaim = page.getByRole('dialog');
+        await expect(confirmReclaim).toContainText(/indisponibil|non (sarà |è )?(disponibile|accessibile)|inaccessibil|offline|fuori servizio|interruzione/i);
+        await expect(confirmReclaim).toContainText(/minut/i);
+        await expect(confirmReclaim).toContainText(/prima.*backup (automatico|notturno)/is);
+        await confirmReclaim.getByRole('button', {name: 'Annulla'}).click();
+        assert.deepEqual(reclaimCalls, []);
+        await reclaim.click();
+        await confirmReclaim.getByRole('button', {name: /conferma|programma|pianifica|recupera spazio/i}).click();
+        await expect(pendingReclaim).toBeVisible();
+        await page.reload();
+        await navigate('Backup');
+        await expect(pendingReclaim).toBeVisible();
+        await page.getByRole('button', {name: 'Annulla', exact: true}).click();
+        await expect(pendingReclaim).toHaveCount(0);
+        await expect(reclaim).toBeVisible();
+        assert.deepEqual(reclaimCalls, ['POST', 'DELETE']);
+
+        reclaimSpace.last_run = {started_at: hoursAgo(2), finished_at: hoursAgo(1), ok: false,
+            database_bytes_before: GIB, database_bytes_after: GIB, error: 'Spazio insufficiente per riscrivere le tabelle.'};
+        await page.reload();
+        await navigate('Backup');
+        await expect(page.getByText(reclaimSpace.last_run.error, {exact: false})).toBeVisible();
 
         // Copia remota: S3 drawer, key wizard, location icons and recovering a remote-only copy.
         // Self-contained: its own routes and state, removed at the end.

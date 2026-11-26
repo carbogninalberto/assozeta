@@ -309,6 +309,18 @@ add('delete-runner-null', 'owner', item(), 200, '<none>', method='DELETE', body=
     run=runner(200, 'null', expect=[call('DELETE', f'/backups/{ARCHIVE}', {'confirm': True})]),
     audit=logged('backup_delete', ARCHIVE, backup=ARCHIVE))
 
+# Maintenance request and cancellation share the owner's backup permissions.
+RECLAIM = BASE + '/reclaim-space'
+for method, payload, pending, status, label in [('POST', {'confirm': True}, True, 202, 'queue'),
+                                                ('DELETE', {}, False, 200, 'cancel')]:
+    reply = {'reclaim_space': {'pending': pending, 'last_run': None}}
+    add('reclaim-' + label, 'owner', RECLAIM, status, reply, method=method, body=payload,
+        run=runner(status, reply, expect=[call(method, '/backups/reclaim-space', payload)]),
+        audit=logged('backup_reclaim_space', label))
+    add('reclaim-' + label + '-denied', 'athlete', RECLAIM, 403, DENIED, method=method, body=payload)
+add('reclaim-cancel-running', 'owner', RECLAIM, 409, error('Manutenzione già avviata.'), method='DELETE', body={},
+    run=runner(409, error('Manutenzione già avviata.'), expect=[call('DELETE', '/backups/reclaim-space', {})]))
+
 # ---------------------------------------------------------------------------
 # PUT admin/backups/schedule (ScheduleSerializer, relay, audit sorted JSON).
 # ---------------------------------------------------------------------------

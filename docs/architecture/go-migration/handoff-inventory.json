@@ -2008,6 +2008,7 @@
         "django:route:BE/instance/urls.py:admin/backups/<str:name>/download -> BackupDownloadView.as_view()",
         "django:route:BE/instance/urls.py:admin/backups/<str:name>/restore -> BackupRestoreView.as_view()",
         "django:route:BE/instance/urls.py:admin/backups/download-token -> BackupDownloadTokenView.as_view()",
+        "django:route:BE/instance/urls.py:admin/backups/reclaim-space -> BackupReclaimSpaceView.as_view()",
         "django:route:BE/instance/urls.py:admin/backups/remote -> RemoteBackupSettingsView.as_view()",
         "django:route:BE/instance/urls.py:admin/backups/remote/fetch -> RemoteBackupFetchView.as_view()",
         "django:route:BE/instance/urls.py:admin/backups/remote/key -> RemoteBackupKeyView.as_view()",
@@ -2030,6 +2031,7 @@
         "go:ANY /instance/admin/backups/:name/download",
         "go:ANY /instance/admin/backups/:name/restore",
         "go:ANY /instance/admin/backups/download-token",
+        "go:ANY /instance/admin/backups/reclaim-space",
         "go:ANY /instance/admin/backups/remote",
         "go:ANY /instance/admin/backups/remote/fetch",
         "go:ANY /instance/admin/backups/remote/key",
@@ -9196,7 +9198,274 @@
       ]
     }
   ],
-  "ledger_reconciliation": [],
+  "ledger_reconciliation": [
+    {
+      "ledger_id": "route:BE/instance/urls.py:access -> InstanceAccessView.as_view()",
+      "status": "needs_review",
+      "finding": "The instance URL file changed. The catalog requires a new review of the existing route evidence.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "route:BE/instance/urls.py:admin -> InstanceAdminView.as_view()",
+      "status": "needs_review",
+      "finding": "The instance URL file changed. The catalog requires a new review of the existing route evidence.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "route:BE/instance/urls.py:admin/backups -> BackupOverviewView.as_view()",
+      "status": "needs_review",
+      "finding": "Reclaim-space HTTP and audit parity awaits a shared PostgreSQL run of the updated backup fixtures.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "route:BE/instance/urls.py:admin/backups/<str:name> -> BackupItemView.as_view()",
+      "status": "needs_review",
+      "finding": "The instance URL file changed. The catalog requires a new review of the existing route evidence.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "route:BE/instance/urls.py:admin/backups/<str:name>/download -> BackupDownloadView.as_view()",
+      "status": "needs_review",
+      "finding": "The instance URL file changed. The catalog requires a new review of the existing route evidence.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "route:BE/instance/urls.py:admin/backups/<str:name>/restore -> BackupRestoreView.as_view()",
+      "status": "needs_review",
+      "finding": "The instance URL file changed. The catalog requires a new review of the existing route evidence.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "route:BE/instance/urls.py:admin/backups/download-token -> BackupDownloadTokenView.as_view()",
+      "status": "needs_review",
+      "finding": "The instance URL file changed. The catalog requires a new review of the existing route evidence.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "route:BE/instance/urls.py:admin/backups/reclaim-space -> BackupReclaimSpaceView.as_view()",
+      "status": "implementing",
+      "finding": "Reclaim-space HTTP and audit parity awaits a shared PostgreSQL run of the updated backup fixtures.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "route:BE/instance/urls.py:admin/backups/remote -> RemoteBackupSettingsView.as_view()",
+      "status": "needs_review",
+      "finding": "The instance URL file changed. The catalog requires a new review of the existing route evidence.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "route:BE/instance/urls.py:admin/backups/remote/fetch -> RemoteBackupFetchView.as_view()",
+      "status": "needs_review",
+      "finding": "The instance URL file changed. The catalog requires a new review of the existing route evidence.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "route:BE/instance/urls.py:admin/backups/remote/key -> RemoteBackupKeyView.as_view()",
+      "status": "needs_review",
+      "finding": "The instance URL file changed. The catalog requires a new review of the existing route evidence.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "route:BE/instance/urls.py:admin/backups/remote/key/confirm -> RemoteBackupKeyConfirmView.as_view()",
+      "status": "needs_review",
+      "finding": "The instance URL file changed. The catalog requires a new review of the existing route evidence.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "route:BE/instance/urls.py:admin/backups/remote/test -> RemoteBackupTestView.as_view()",
+      "status": "needs_review",
+      "finding": "The instance URL file changed. The catalog requires a new review of the existing route evidence.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "route:BE/instance/urls.py:admin/backups/schedule -> BackupScheduleView.as_view()",
+      "status": "needs_review",
+      "finding": "The instance URL file changed. The catalog requires a new review of the existing route evidence.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "route:BE/instance/urls.py:admin/backups/upload -> BackupUploadView.as_view()",
+      "status": "needs_review",
+      "finding": "The instance URL file changed. The catalog requires a new review of the existing route evidence.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "route:BE/instance/urls.py:admin/bakney-pairing -> PairingAdminView.as_view()",
+      "status": "needs_review",
+      "finding": "The instance URL file changed. The catalog requires a new review of the existing route evidence.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "route:BE/instance/urls.py:admin/data-restore -> DataRestoreView.as_view()",
+      "status": "needs_review",
+      "finding": "The instance URL file changed. The catalog requires a new review of the existing route evidence.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "route:BE/instance/urls.py:admin/data-restore/<uuid:operation_id>/<str:action> -> DataRestoreActionView.as_view()",
+      "status": "needs_review",
+      "finding": "The instance URL file changed. The catalog requires a new review of the existing route evidence.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "route:BE/instance/urls.py:admin/data-restore/<uuid:operation_id>/download -> DataRestoreDownloadView.as_view()",
+      "status": "needs_review",
+      "finding": "The instance URL file changed. The catalog requires a new review of the existing route evidence.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "route:BE/instance/urls.py:admin/data-restore/backups -> DataRestoreBackupsView.as_view()",
+      "status": "needs_review",
+      "finding": "The instance URL file changed. The catalog requires a new review of the existing route evidence.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "route:BE/instance/urls.py:admin/diagnostics -> DiagnosticsView.as_view()",
+      "status": "needs_review",
+      "finding": "The instance URL file changed. The catalog requires a new review of the existing route evidence.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "route:BE/instance/urls.py:admin/email -> EmailSettingsView.as_view()",
+      "status": "needs_review",
+      "finding": "The instance URL file changed. The catalog requires a new review of the existing route evidence.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "route:BE/instance/urls.py:admin/email/test -> EmailTestView.as_view()",
+      "status": "needs_review",
+      "finding": "The instance URL file changed. The catalog requires a new review of the existing route evidence.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "route:BE/instance/urls.py:admin/integrations/<str:provider> -> IntegrationSettingsView.as_view()",
+      "status": "needs_review",
+      "finding": "The instance URL file changed. The catalog requires a new review of the existing route evidence.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "route:BE/instance/urls.py:admin/integrations/<str:provider>/test -> IntegrationTestView.as_view()",
+      "status": "needs_review",
+      "finding": "The instance URL file changed. The catalog requires a new review of the existing route evidence.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "route:BE/instance/urls.py:admin/logo -> OwnerLogoView.as_view()",
+      "status": "needs_review",
+      "finding": "The instance URL file changed. The catalog requires a new review of the existing route evidence.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "route:BE/instance/urls.py:admin/releases -> InstanceReleasesView.as_view()",
+      "status": "needs_review",
+      "finding": "The instance URL file changed. The catalog requires a new review of the existing route evidence.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "route:BE/instance/urls.py:admin/restarts -> InstanceRestartsView.as_view()",
+      "status": "needs_review",
+      "finding": "The instance URL file changed. The catalog requires a new review of the existing route evidence.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "route:BE/instance/urls.py:admin/runtime -> InstanceRuntimeView.as_view()",
+      "status": "needs_review",
+      "finding": "The instance URL file changed. The catalog requires a new review of the existing route evidence.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "route:BE/instance/urls.py:admin/updates -> InstanceUpdatesView.as_view()",
+      "status": "needs_review",
+      "finding": "The instance URL file changed. The catalog requires a new review of the existing route evidence.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "route:BE/instance/urls.py:config -> InstanceConfigView.as_view()",
+      "status": "needs_review",
+      "finding": "The instance URL file changed. The catalog requires a new review of the existing route evidence.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "route:BE/instance/urls.py:configure -> InstanceSetupView.as_view()",
+      "status": "needs_review",
+      "finding": "The instance URL file changed. The catalog requires a new review of the existing route evidence.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "route:BE/instance/urls.py:logo -> InstanceLogoUploadView.as_view()",
+      "status": "needs_review",
+      "finding": "The instance URL file changed. The catalog requires a new review of the existing route evidence.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "route:BE/instance/urls.py:logo.png -> InstanceLogoServeView.as_view()",
+      "status": "needs_review",
+      "finding": "The instance URL file changed. The catalog requires a new review of the existing route evidence.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "route:BE/instance/urls.py:manifest.json -> InstanceManifestView.as_view()",
+      "status": "needs_review",
+      "finding": "The instance URL file changed. The catalog requires a new review of the existing route evidence.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "route:BE/instance/urls.py:reconfigure -> InstanceReconfigureView.as_view()",
+      "status": "needs_review",
+      "finding": "The instance URL file changed. The catalog requires a new review of the existing route evidence.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "route:BE/instance/urls.py:setup-token/validate -> InstanceSetupTokenValidateView.as_view()",
+      "status": "needs_review",
+      "finding": "The instance URL file changed. The catalog requires a new review of the existing route evidence.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "route:BE/instance/urls.py:status -> InstanceStatusView.as_view()",
+      "status": "needs_review",
+      "finding": "The instance URL file changed. The catalog requires a new review of the existing route evidence.",
+      "executable_gap": false,
+      "evidence_gap": true
+    }
+  ],
   "django_handoff": [],
   "django_handoff_evidence": {
     "revision": "2284ed467908b5f90f6330fae4c18de3b275036f",

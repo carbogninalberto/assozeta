@@ -85,6 +85,59 @@ class BackupActionTests(TestCase):
         runner.assert_called_once_with('PUT', '/backups/schedule', SCHEDULE)
         self.assertEqual(self.audited('backup_schedule'), 1)
 
+    @patch('instance.backups.data_sizes', return_value={'database': 2048, 'objects': 0})
+    @patch('instance.backups.call_runner')
+    def test_reclaim_space_overview_reports_pending_and_last_run(self, runner, sizes):
+        last = {'ok': True, 'started_at': '2026-11-01T02:00:00Z', 'finished_at': '2026-11-01T02:01:00Z',
+                'database_bytes_before': 4096, 'database_bytes_after': 2048, 'error': None}
+        for state in [{'pending': True, 'last_run': None}, {'pending': False, 'last_run': last}]:
+            with self.subTest(state=state):
+                runner.return_value = {'reclaim_space': state}
+                response = self.client.get('/instance/admin/backups')
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(response.data.get('reclaim_space'), state)
+
+    @patch('instance.backups.call_runner')
+    def test_reclaim_space_queue_and_cancel_are_relayed_and_audited(self, runner):
+        path = '/instance/admin/backups/reclaim-space'
+        for method, body, status, pending in [('post', {'confirm': True}, 202, True), ('delete', {}, 200, False)]:
+            with self.subTest(method=method):
+                state = {'reclaim_space': {'pending': pending, 'last_run': None}}
+                runner.return_value = state
+                before = self.audited('reclaim_space')
+                response = getattr(self.client, method)(path, body, format='json')
+                self.assertEqual(response.status_code, status)
+                self.assertEqual(response.data, state)
+                runner.assert_called_once_with(method.upper(), '/backups/reclaim-space', body)
+                self.assertEqual(self.audited('reclaim_space'), before + 1)
+                runner.reset_mock()
+
+    @patch('instance.backups.call_runner')
+    def test_reclaim_space_requires_confirmation(self, runner):
+        for body in ({}, {'confirm': False}):
+            with self.subTest(body=body):
+                response = self.client.post('/instance/admin/backups/reclaim-space', body, format='json')
+                self.assertEqual(response.status_code, 400)
+                runner.assert_not_called()
+                self.assertEqual(self.audited('reclaim_space'), 0)
+
+    @patch('instance.backups.call_runner')
+    def test_reclaim_space_requires_the_owner_for_queue_and_cancel(self, runner):
+        other = User.objects.create_user(username='other-association', role=User.ASSOCIATION)
+        self.client.force_authenticate(user=other)
+        for method, body in [('post', {'confirm': True}), ('delete', {})]:
+            with self.subTest(method=method):
+                response = getattr(self.client, method)('/instance/admin/backups/reclaim-space', body, format='json')
+                self.assertEqual(response.status_code, 403)
+                runner.assert_not_called()
+
+    @patch('instance.backups.call_runner', side_effect=UpdaterRejected('Manutenzione già avviata.', 409))
+    def test_reclaim_space_cannot_cancel_after_start(self, runner):
+        response = self.client.delete('/instance/admin/backups/reclaim-space', {}, format='json')
+        self.assertEqual(response.status_code, 409)
+        self.assertEqual(response.data['error'], 'Manutenzione già avviata.')
+        self.assertEqual(self.audited('reclaim_space'), 0)
+
     def test_failed_backups_are_emailed_to_the_owner_once(self):
         recent = timezone.now().isoformat()
         old = (timezone.now() - timedelta(days=5)).isoformat()

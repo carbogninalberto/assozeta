@@ -621,7 +621,11 @@
     },
     "schedule": null,
     "actions": {},
-    "remote": null
+    "remote": null,
+    "reclaim_space": {
+     "pending": false,
+     "last_run": null
+    }
    },
    "runner": {
     "state": "up",
@@ -760,7 +764,11 @@
     },
     "schedule": null,
     "actions": {},
-    "remote": null
+    "remote": null,
+    "reclaim_space": {
+     "pending": false,
+     "last_run": null
+    }
    },
    "runner": {
     "state": "up",
@@ -851,7 +859,11 @@
     },
     "schedule": null,
     "actions": {},
-    "remote": null
+    "remote": null,
+    "reclaim_space": {
+     "pending": false,
+     "last_run": null
+    }
    },
    "runner": {
     "state": "up",
@@ -941,7 +953,11 @@
     },
     "schedule": null,
     "actions": {},
-    "remote": null
+    "remote": null,
+    "reclaim_space": {
+     "pending": false,
+     "last_run": null
+    }
    },
    "runner": {
     "state": "up",
@@ -1026,7 +1042,11 @@
     },
     "schedule": null,
     "actions": {},
-    "remote": null
+    "remote": null,
+    "reclaim_space": {
+     "pending": false,
+     "last_run": null
+    }
    },
    "runner": {
     "state": "up",
@@ -1116,7 +1136,11 @@
     },
     "schedule": null,
     "actions": {},
-    "remote": null
+    "remote": null,
+    "reclaim_space": {
+     "pending": false,
+     "last_run": null
+    }
    },
    "runner": {
     "state": "up",
@@ -1208,7 +1232,11 @@
     },
     "schedule": null,
     "actions": {},
-    "remote": null
+    "remote": null,
+    "reclaim_space": {
+     "pending": false,
+     "last_run": null
+    }
    },
    "runner": {
     "state": "up",
@@ -1302,7 +1330,11 @@
     },
     "schedule": null,
     "actions": {},
-    "remote": null
+    "remote": null,
+    "reclaim_space": {
+     "pending": false,
+     "last_run": null
+    }
    },
    "runner": {
     "state": "up",
@@ -1384,7 +1416,11 @@
     "next_backup": null,
     "schedule": null,
     "actions": {},
-    "remote": null
+    "remote": null,
+    "reclaim_space": {
+     "pending": false,
+     "last_run": null
+    }
    },
    "runner": {
     "state": "up",
@@ -1459,7 +1495,11 @@
     "next_backup": null,
     "schedule": null,
     "actions": {},
-    "remote": null
+    "remote": null,
+    "reclaim_space": {
+     "pending": false,
+     "last_run": null
+    }
    },
    "runner": {
     "state": "up",
@@ -1548,7 +1588,11 @@
     },
     "schedule": null,
     "actions": {},
-    "remote": null
+    "remote": null,
+    "reclaim_space": {
+     "pending": false,
+     "last_run": null
+    }
    },
    "runner": {
     "state": "up",
@@ -1731,7 +1775,11 @@
     },
     "schedule": null,
     "actions": {},
-    "remote": null
+    "remote": null,
+    "reclaim_space": {
+     "pending": false,
+     "last_run": null
+    }
    },
    "runner": {
     "state": "up",
@@ -1817,7 +1865,11 @@
     },
     "schedule": null,
     "actions": {},
-    "remote": null
+    "remote": null,
+    "reclaim_space": {
+     "pending": false,
+     "last_run": null
+    }
    },
    "runner": {
     "state": "up",
@@ -1903,7 +1955,11 @@
     },
     "schedule": null,
     "actions": {},
-    "remote": null
+    "remote": null,
+    "reclaim_space": {
+     "pending": false,
+     "last_run": null
+    }
    },
    "runner": {
     "state": "up",
@@ -1990,7 +2046,11 @@
     },
     "schedule": null,
     "actions": {},
-    "remote": null
+    "remote": null,
+    "reclaim_space": {
+     "pending": false,
+     "last_run": null
+    }
    },
    "runner": {
     "state": "up",
@@ -2075,7 +2135,11 @@
     },
     "schedule": null,
     "actions": {},
-    "remote": null
+    "remote": null,
+    "reclaim_space": {
+     "pending": false,
+     "last_run": null
+    }
    },
    "runner": {
     "state": "up",
@@ -2161,7 +2225,11 @@
     },
     "schedule": null,
     "actions": {},
-    "remote": null
+    "remote": null,
+    "reclaim_space": {
+     "pending": false,
+     "last_run": null
+    }
    },
    "runner": {
     "state": "up",
@@ -2249,7 +2317,11 @@
     },
     "schedule": null,
     "actions": {},
-    "remote": null
+    "remote": null,
+    "reclaim_space": {
+     "pending": false,
+     "last_run": null
+    }
    },
    "runner": {
     "state": "up",
@@ -2337,7 +2409,11 @@
     },
     "schedule": null,
     "actions": {},
-    "remote": null
+    "remote": null,
+    "reclaim_space": {
+     "pending": false,
+     "last_run": null
+    }
    },
    "runner": {
     "state": "up",
@@ -2425,7 +2501,11 @@
     },
     "schedule": null,
     "actions": {},
-    "remote": null
+    "remote": null,
+    "reclaim_space": {
+     "pending": false,
+     "last_run": null
+    }
    },
    "runner": {
     "state": "up",
@@ -2513,7 +2593,11 @@
     },
     "schedule": null,
     "actions": {},
-    "remote": null
+    "remote": null,
+    "reclaim_space": {
+     "pending": false,
+     "last_run": null
+    }
    },
    "runner": {
     "state": "up",
@@ -2601,7 +2685,11 @@
     },
     "schedule": null,
     "actions": {},
-    "remote": null
+    "remote": null,
+    "reclaim_space": {
+     "pending": false,
+     "last_run": null
+    }
    },
    "runner": {
     "state": "up",
@@ -2687,7 +2775,11 @@
     },
     "schedule": null,
     "actions": {},
-    "remote": null
+    "remote": null,
+    "reclaim_space": {
+     "pending": false,
+     "last_run": null
+    }
    },
    "runner": {
     "state": "up",
@@ -2757,7 +2849,11 @@
     },
     "schedule": null,
     "actions": {},
-    "remote": null
+    "remote": null,
+    "reclaim_space": {
+     "pending": false,
+     "last_run": null
+    }
    },
    "runner": {
     "state": "up",
@@ -2838,12 +2934,207 @@
     },
     "schedule": null,
     "actions": {},
-    "remote": null
+    "remote": null,
+    "reclaim_space": {
+     "pending": false,
+     "last_run": null
+    }
    },
    "runner": {
     "state": "up",
     "status": 200,
     "body": "{\"archives\": [{\"size\": 1000000000000000000000000000000, \"ratio\": 0.1, \"n\": 0, \"flags\": [true, null, \"x\"]}], \"retention\": [], \"disk\": {\"total\": 536870912000, \"used\": 128849018880, \"free\": 408021893120}, \"space_margin_mb\": 2, \"extra\": {\"ignored\": true}}",
+    "chunked": false,
+    "expect": [
+     {
+      "method": "GET",
+      "path": "/backups",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json"
+      }
+     }
+    ]
+   },
+   "objects": {},
+   "bucket_absent": false,
+   "cache": {
+    "sizes": {
+     "payload": {
+      "database": 3145728,
+      "objects": 5242880
+     }
+    }
+   },
+   "cache_after": {
+    "sizes": {
+     "payload": {
+      "database": 3145728,
+      "objects": 5242880
+     }
+    }
+   },
+   "token": null,
+   "password": null,
+   "audit": null,
+   "rehash": false,
+   "stream": null,
+   "database": false
+  },
+  {
+   "name": "instance-backups-overview-reclaim-pending",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instance/admin/backups",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "available": true,
+    "archives": [
+     {
+      "name": "assozeta-20261102T020000Z-1.tar.gz",
+      "size": 73400320,
+      "created_at": "2026-11-02T02:00:00Z",
+      "verified": true
+     },
+     {
+      "name": "assozeta-20261101T020000Z.tar.gz",
+      "size": 71303168,
+      "created_at": "2026-11-01T02:00:00Z",
+      "verified": false,
+      "note": "àè €"
+     }
+    ],
+    "retention": {
+     "daily": 7,
+     "weekly": 4,
+     "monthly": 3
+    },
+    "disk": {
+     "total": 536870912000,
+     "used": 128849018880,
+     "free": 408021893120,
+     "database": 3145728,
+     "objects": 5242880
+    },
+    "next_backup": {
+     "estimated": 8388608,
+     "required": 18874368,
+     "fits": true
+    },
+    "schedule": null,
+    "actions": {},
+    "remote": null,
+    "reclaim_space": {
+     "pending": true,
+     "last_run": null
+    }
+   },
+   "runner": {
+    "state": "up",
+    "status": 200,
+    "body": "{\"archives\": [{\"name\": \"assozeta-20261102T020000Z-1.tar.gz\", \"size\": 73400320, \"created_at\": \"2026-11-02T02:00:00Z\", \"verified\": true}, {\"name\": \"assozeta-20261101T020000Z.tar.gz\", \"size\": 71303168, \"created_at\": \"2026-11-01T02:00:00Z\", \"verified\": false, \"note\": \"àè €\"}], \"retention\": {\"daily\": 7, \"weekly\": 4, \"monthly\": 3}, \"disk\": {\"total\": 536870912000, \"used\": 128849018880, \"free\": 408021893120}, \"space_margin_mb\": 2, \"reclaim_space\": {\"pending\": true, \"last_run\": null}}",
+    "chunked": false,
+    "expect": [
+     {
+      "method": "GET",
+      "path": "/backups",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json"
+      }
+     }
+    ]
+   },
+   "objects": {},
+   "bucket_absent": false,
+   "cache": {
+    "sizes": {
+     "payload": {
+      "database": 3145728,
+      "objects": 5242880
+     }
+    }
+   },
+   "cache_after": {
+    "sizes": {
+     "payload": {
+      "database": 3145728,
+      "objects": 5242880
+     }
+    }
+   },
+   "token": null,
+   "password": null,
+   "audit": null,
+   "rehash": false,
+   "stream": null,
+   "database": false
+  },
+  {
+   "name": "instance-backups-overview-reclaim-completed",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instance/admin/backups",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "available": true,
+    "archives": [
+     {
+      "name": "assozeta-20261102T020000Z-1.tar.gz",
+      "size": 73400320,
+      "created_at": "2026-11-02T02:00:00Z",
+      "verified": true
+     },
+     {
+      "name": "assozeta-20261101T020000Z.tar.gz",
+      "size": 71303168,
+      "created_at": "2026-11-01T02:00:00Z",
+      "verified": false,
+      "note": "àè €"
+     }
+    ],
+    "retention": {
+     "daily": 7,
+     "weekly": 4,
+     "monthly": 3
+    },
+    "disk": {
+     "total": 536870912000,
+     "used": 128849018880,
+     "free": 408021893120,
+     "database": 3145728,
+     "objects": 5242880
+    },
+    "next_backup": {
+     "estimated": 8388608,
+     "required": 18874368,
+     "fits": true
+    },
+    "schedule": null,
+    "actions": {},
+    "remote": null,
+    "reclaim_space": {
+     "pending": false,
+     "last_run": {
+      "started_at": "2026-11-01T01:59:00Z",
+      "finished_at": "2026-11-01T01:59:25Z",
+      "database_bytes_before": 3145728,
+      "database_bytes_after": 2097152,
+      "ok": true,
+      "error": null
+     }
+    }
+   },
+   "runner": {
+    "state": "up",
+    "status": 200,
+    "body": "{\"archives\": [{\"name\": \"assozeta-20261102T020000Z-1.tar.gz\", \"size\": 73400320, \"created_at\": \"2026-11-02T02:00:00Z\", \"verified\": true}, {\"name\": \"assozeta-20261101T020000Z.tar.gz\", \"size\": 71303168, \"created_at\": \"2026-11-01T02:00:00Z\", \"verified\": false, \"note\": \"àè €\"}], \"retention\": {\"daily\": 7, \"weekly\": 4, \"monthly\": 3}, \"disk\": {\"total\": 536870912000, \"used\": 128849018880, \"free\": 408021893120}, \"space_margin_mb\": 2, \"reclaim_space\": {\"pending\": false, \"last_run\": {\"started_at\": \"2026-11-01T01:59:00Z\", \"finished_at\": \"2026-11-01T01:59:25Z\", \"database_bytes_before\": 3145728, \"database_bytes_after\": 2097152, \"ok\": true, \"error\": null}}}",
     "chunked": false,
     "expect": [
      {
@@ -2954,6 +3245,10 @@
      },
      "last_failure": null,
      "note": "copia àè €"
+    },
+    "reclaim_space": {
+     "pending": false,
+     "last_run": null
     }
    },
    "runner": {
@@ -3042,7 +3337,11 @@
     },
     "schedule": null,
     "actions": {},
-    "remote": null
+    "remote": null,
+    "reclaim_space": {
+     "pending": false,
+     "last_run": null
+    }
    },
    "runner": {
     "state": "up",
@@ -3132,7 +3431,11 @@
      "enabled": false
     },
     "actions": {},
-    "remote": null
+    "remote": null,
+    "reclaim_space": {
+     "pending": false,
+     "last_run": null
+    }
    },
    "runner": {
     "state": "up",
@@ -3222,7 +3525,11 @@
     "actions": {
      "create": false
     },
-    "remote": null
+    "remote": null,
+    "reclaim_space": {
+     "pending": false,
+     "last_run": null
+    }
    },
    "runner": {
     "state": "up",
@@ -3312,6 +3619,10 @@
     "actions": {},
     "remote": {
      "configured": false
+    },
+    "reclaim_space": {
+     "pending": false,
+     "last_run": null
     }
    },
    "runner": {
@@ -3403,7 +3714,11 @@
      "x"
     ],
     "actions": null,
-    "remote": "off"
+    "remote": "off",
+    "reclaim_space": {
+     "pending": false,
+     "last_run": null
+    }
    },
    "runner": {
     "state": "up",
@@ -3495,7 +3810,11 @@
      1.5,
      10000000000000000000000000
     ],
-    "remote": false
+    "remote": false,
+    "reclaim_space": {
+     "pending": false,
+     "last_run": null
+    }
    },
    "runner": {
     "state": "up",
@@ -3664,7 +3983,11 @@
     },
     "schedule": null,
     "actions": {},
-    "remote": null
+    "remote": null,
+    "reclaim_space": {
+     "pending": false,
+     "last_run": null
+    }
    },
    "runner": {
     "state": "up",
@@ -3825,7 +4148,11 @@
     },
     "schedule": null,
     "actions": {},
-    "remote": null
+    "remote": null,
+    "reclaim_space": {
+     "pending": false,
+     "last_run": null
+    }
    },
    "runner": {
     "state": "up",
@@ -3894,7 +4221,11 @@
     },
     "schedule": null,
     "actions": {},
-    "remote": null
+    "remote": null,
+    "reclaim_space": {
+     "pending": false,
+     "last_run": null
+    }
    },
    "runner": {
     "state": "up",
@@ -4455,7 +4786,11 @@
     },
     "schedule": null,
     "actions": {},
-    "remote": null
+    "remote": null,
+    "reclaim_space": {
+     "pending": false,
+     "last_run": null
+    }
    },
    "runner": {
     "state": "up",
@@ -4522,7 +4857,11 @@
     },
     "schedule": null,
     "actions": {},
-    "remote": null
+    "remote": null,
+    "reclaim_space": {
+     "pending": false,
+     "last_run": null
+    }
    },
    "runner": {
     "state": "up",
@@ -4590,7 +4929,11 @@
     },
     "schedule": null,
     "actions": {},
-    "remote": null
+    "remote": null,
+    "reclaim_space": {
+     "pending": false,
+     "last_run": null
+    }
    },
    "runner": {
     "state": "up",
@@ -4658,7 +5001,11 @@
     },
     "schedule": null,
     "actions": {},
-    "remote": null
+    "remote": null,
+    "reclaim_space": {
+     "pending": false,
+     "last_run": null
+    }
    },
    "runner": {
     "state": "up",
@@ -4726,7 +5073,11 @@
     },
     "schedule": null,
     "actions": {},
-    "remote": null
+    "remote": null,
+    "reclaim_space": {
+     "pending": false,
+     "last_run": null
+    }
    },
    "runner": {
     "state": "up",
@@ -4794,7 +5145,11 @@
     },
     "schedule": null,
     "actions": {},
-    "remote": null
+    "remote": null,
+    "reclaim_space": {
+     "pending": false,
+     "last_run": null
+    }
    },
    "runner": {
     "state": "up",
@@ -4903,7 +5258,11 @@
     },
     "schedule": null,
     "actions": {},
-    "remote": null
+    "remote": null,
+    "reclaim_space": {
+     "pending": false,
+     "last_run": null
+    }
    },
    "runner": {
     "state": "up",
@@ -4971,7 +5330,11 @@
     },
     "schedule": null,
     "actions": {},
-    "remote": null
+    "remote": null,
+    "reclaim_space": {
+     "pending": false,
+     "last_run": null
+    }
    },
    "runner": {
     "state": "up",
@@ -5039,7 +5402,11 @@
     },
     "schedule": null,
     "actions": {},
-    "remote": null
+    "remote": null,
+    "reclaim_space": {
+     "pending": false,
+     "last_run": null
+    }
    },
    "runner": {
     "state": "up",
@@ -5106,7 +5473,11 @@
     },
     "schedule": null,
     "actions": {},
-    "remote": null
+    "remote": null,
+    "reclaim_space": {
+     "pending": false,
+     "last_run": null
+    }
    },
    "runner": {
     "state": "up",

@@ -6,7 +6,7 @@ from .sso.views import PairingAdminView
 from .administration import InstanceAccessView, InstanceAdminView, OwnerLogoView, InstanceReleasesView, InstanceUpdatesView, InstanceRestartsView
 from .runtime import InstanceRuntimeView
 from .backups import (BackupDownloadTokenView, BackupDownloadView, BackupItemView, BackupOverviewView, BackupRestoreView,
-                      BackupScheduleView, BackupUploadView)
+                      BackupReclaimSpaceView, BackupScheduleView, BackupUploadView)
 from .remote_backups import (RemoteBackupFetchView, RemoteBackupKeyConfirmView, RemoteBackupKeyView,
                              RemoteBackupSettingsView, RemoteBackupTestView)
 from .diagnostics import DiagnosticsView
@@ -37,6 +37,7 @@ urlpatterns = [
     path('admin/backups', BackupOverviewView.as_view(), name='instance-backups'),
     path('admin/backups/download-token', BackupDownloadTokenView.as_view(), name='instance-backup-download-token'),
     path('admin/backups/<str:name>/download', BackupDownloadView.as_view(), name='instance-backup-download'),
+    path('admin/backups/reclaim-space', BackupReclaimSpaceView.as_view(), name='instance-backup-reclaim-space'),
     path('admin/backups/schedule', BackupScheduleView.as_view(), name='instance-backup-schedule'),
     path('admin/backups/upload', BackupUploadView.as_view(), name='instance-backup-upload'),
     path('admin/backups/<str:name>/restore', BackupRestoreView.as_view(), name='instance-backup-restore'),

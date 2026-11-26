@@ -77,6 +77,25 @@ the updater, which runs in a container. Legacy custom-image upgrades retain thei
 existing behavior. Cleanup needs a release containing this change on both paths;
 editing a checkout does not alter an already deployed updater.
 
+## Reclaim database space after an audit purge
+
+In **Self Instance → Backup**, choose **Recupera spazio database** and confirm.
+The updater runs it once, immediately before the next automatic backup. Enable
+the backup schedule if it is off. **Annulla** cancels a pending request. The
+page shows the latest scheduled result and the database sizes when measured.
+
+The updater checks the PostgreSQL volume for free space exceeding the combined
+size of both audit tables and their indexes plus `ASSOZETA_BACKUP_SPACE_MARGIN_MB`
+(default 1024 MiB). It then stops the application services, runs
+`VACUUM (FULL, ANALYZE)` on `auditlog_logentry` and `application_auditlogindex`,
+and restarts the selected runtime. Expect a few minutes of downtime, depending
+on table size and disk speed. If space is insufficient or a vacuum fails, the
+page records the reason and the scheduled backup still runs.
+
+To run the same maintenance immediately from the installation directory, use
+`./bin/assozeta reclaim-space`. The command reports the result in the terminal.
+If a scheduled request is also pending, cancel it to avoid a second run.
+
 ## System email
 
 Until the owner saves an override, the existing `EMAIL_HOST`, `EMAIL_PORT`,

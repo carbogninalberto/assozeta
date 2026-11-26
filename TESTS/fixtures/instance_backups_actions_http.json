@@ -2744,6 +2744,211 @@
    }
   },
   {
+   "name": "instance-backups-actions-reclaim-queue",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/reclaim-space",
+   "headers": {},
+   "status": 202,
+   "response": {
+    "reclaim_space": {
+     "pending": true,
+     "last_run": null
+    }
+   },
+   "runner": {
+    "state": "up",
+    "status": 202,
+    "body": "{\"reclaim_space\": {\"pending\": true, \"last_run\": null}}",
+    "early": false,
+    "expect": [
+     {
+      "method": "POST",
+      "path": "/backups/reclaim-space",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "$length"
+      },
+      "body": {
+       "json": {
+        "confirm": true
+       }
+      }
+     }
+    ]
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": {
+    "changes": {
+     "backup_reclaim_space": [
+      "",
+      "queue"
+     ]
+    },
+    "additional_data": {
+     "actor_id": "a1000000-0000-4000-8000-000000700001"
+    },
+    "actor": "owner",
+    "association": "own_association"
+   },
+   "send": null,
+   "no_store": false,
+   "body": {
+    "confirm": true
+   }
+  },
+  {
+   "name": "instance-backups-actions-reclaim-queue-denied",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/instance/admin/backups/reclaim-space",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Only the instance owner or an administrator can administer this installation."
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {
+    "confirm": true
+   }
+  },
+  {
+   "name": "instance-backups-actions-reclaim-cancel",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/instance/admin/backups/reclaim-space",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "reclaim_space": {
+     "pending": false,
+     "last_run": null
+    }
+   },
+   "runner": {
+    "state": "up",
+    "status": 200,
+    "body": "{\"reclaim_space\": {\"pending\": false, \"last_run\": null}}",
+    "early": false,
+    "expect": [
+     {
+      "method": "DELETE",
+      "path": "/backups/reclaim-space",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "$length"
+      },
+      "body": {
+       "json": {}
+      }
+     }
+    ]
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": {
+    "changes": {
+     "backup_reclaim_space": [
+      "",
+      "cancel"
+     ]
+    },
+    "additional_data": {
+     "actor_id": "a1000000-0000-4000-8000-000000700001"
+    },
+    "actor": "owner",
+    "association": "own_association"
+   },
+   "send": null,
+   "no_store": false,
+   "body": {}
+  },
+  {
+   "name": "instance-backups-actions-reclaim-cancel-denied",
+   "actor": "athlete",
+   "method": "DELETE",
+   "path": "/instance/admin/backups/reclaim-space",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Only the instance owner or an administrator can administer this installation."
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {}
+  },
+  {
+   "name": "instance-backups-actions-reclaim-cancel-running",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/instance/admin/backups/reclaim-space",
+   "headers": {},
+   "status": 409,
+   "response": {
+    "error": "Manutenzione già avviata."
+   },
+   "runner": {
+    "state": "up",
+    "status": 409,
+    "body": "{\"error\": \"Manutenzione già avviata.\"}",
+    "early": false,
+    "expect": [
+     {
+      "method": "DELETE",
+      "path": "/backups/reclaim-space",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "$length"
+      },
+      "body": {
+       "json": {}
+      }
+     }
+    ]
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "body": {}
+  },
+  {
    "name": "instance-backups-actions-schedule-empty",
    "actor": "owner",
    "method": "PUT",

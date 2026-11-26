@@ -913,6 +913,7 @@ func run() (runErr error) {
 	e.Any("/instance/admin/backups", instanceBackupsHandler.Overview, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin/backups/download-token", instanceBackupsHandler.Token, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin/backups/:name/download", instanceBackupsHandler.Download, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/instance/admin/backups/reclaim-space", instanceBackupActionsHandler.ReclaimSpace, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin/backups/schedule", instanceBackupActionsHandler.Schedule, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin/backups/upload", instanceBackupActionsHandler.Upload, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin/backups/:name/restore", instanceBackupActionsHandler.Restore, middleware.DjangoSessionAudit(sessionAuthentication))
