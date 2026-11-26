@@ -3201,15 +3201,15 @@
       "kind": "model_hook",
       "django": {
         "file": "BE/instance/models.py",
-        "line": 108,
+        "line": 115,
         "symbol": "InstanceConfiguration.save",
-        "sha256": "436c76fb372ae5e43cbdb3168ffedd5958b66e924abdd794e446c63a0963e7e7"
+        "sha256": "9784f1d47f14425c2423037c2e2ae0a56df3bb9b9c4e7389baefd273b674e207"
       },
       "source_present": true,
       "declaration": {
         "arguments": "self, *args, **kwargs"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/repository/instance_setup.go",
         "BE_GO/internal/service/instance_setup.go"
@@ -34677,14 +34677,14 @@
           "/api/v2/instance/admin",
           "/api/instance/admin"
         ],
-        "request": "PUT: JSON body whose keys are a non-empty subset of {'oem', 'uiApiVersion'}: 'oem' ({name, abbreviation, primaryColor, supportEmail}, partial) and 'uiApiVersion' (ChoiceField v1/v2, source ui_api_version).",
-        "response": "GET 200 {'config': InstanceConfigSerializer (features.uiApiVersion included), 'running_version', 'configured_version', 'mode'}; PUT 200 {'config': ...}.",
-        "errors": "401; 403 'Only the instance owner or an administrator can administer this installation.', 'Esci dall’impersonificazione per accedere all’amministrazione.'; 405; 400 ['Only instance branding can be edited here.'] nested oem field errors and uiApiVersion '\"<str(value)>\" is not a valid choice.' / 'This field may not be null.' (reported together); 500 number/null/unhashable body.",
+        "request": "PUT: JSON body whose keys are a non-empty subset of {'oem', 'uiApiVersion'}: 'oem' ({name, abbreviation, primaryColor, supportEmail}, partial) and 'uiApiVersion' (ChoiceField v1/v2, source ui_api_version). A separate PUT accepts audit_log_retention_months as an integer (3, 6, 12, 18, 24).",
+        "response": "GET 200 {'config': InstanceConfigSerializer (features.uiApiVersion included), 'running_version', 'configured_version', 'mode', 'go_tasks_enabled', 'audit_log_retention_months'}; PUT 200 {'config': ...}, plus audit_log_retention_months for a retention PUT.",
+        "errors": "401; 403 'Only the instance owner or an administrator can administer this installation.', 'Esci dall’impersonificazione per accedere all’amministrazione.'; 405; 400 ['Only instance branding can be edited here.'] nested oem field errors and uiApiVersion '\"<str(value)>\" is not a valid choice.' / 'This field may not be null.' (reported together); invalid retention returns 400 with an Italian field error; 500 number/null/unhashable body.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "IsInstanceOwner: active, non-deleted superuser or primary-association owner of a self-hosted configuration (the authenticated actor).",
         "resource_scope": "The singleton InstanceConfiguration.",
-        "side_effects": "PUT saves the edited OEM columns, ui_api_version and updated_at; a changed ui_api_version writes one auditlog UPDATE entry on the configuration {'ui_api_version': [previous, new]} with additional_data {'actor_id'} and its AuditLogIndex row (actor.sport_association).",
-        "transaction": "Single save(update_fields=...), then the auditlog entry (not atomic with the save).",
+        "side_effects": "PUT saves the edited OEM columns, ui_api_version and updated_at; a changed ui_api_version writes one auditlog UPDATE entry on the configuration {'ui_api_version': [previous, new]} with additional_data {'actor_id'} and its AuditLogIndex row (actor.sport_association). A retention change records the previous and new numeric values and the same actor.",
+        "transaction": "A retention PUT locks the configuration row and commits the save and log together. Branding saves precede their audit entry.",
         "execution_owner": "django"
       },
       "tests": [
@@ -42437,7 +42437,7 @@
         "file": "BE/application/tasks.py",
         "line": 1435,
         "symbol": "association_quote_assign",
-        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
+        "sha256": "bdf4474831c4a4ede3449b73f8172cd270de77b18d1f4371fed8bdd6fd059be1"
       },
       "source_present": true,
       "declaration": {
@@ -42447,7 +42447,7 @@
           "name": "'association_quote_assign'"
         }
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/quote_assign.go",
         "BE_GO/internal/repository/quote_assign.go",
@@ -42537,7 +42537,7 @@
         "file": "BE/application/tasks.py",
         "line": 611,
         "symbol": "auto_archive_subscription",
-        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
+        "sha256": "bdf4474831c4a4ede3449b73f8172cd270de77b18d1f4371fed8bdd6fd059be1"
       },
       "source_present": true,
       "declaration": {
@@ -42547,7 +42547,7 @@
           "name": "'auto_archive_subscription'"
         }
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/subscription_auto_archive.go",
         "BE_GO/internal/repository/subscription_auto_archive.go",
@@ -42615,7 +42615,7 @@
         "file": "BE/application/tasks.py",
         "line": 783,
         "symbol": "auto_delete_orphan_medical_certificate",
-        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
+        "sha256": "bdf4474831c4a4ede3449b73f8172cd270de77b18d1f4371fed8bdd6fd059be1"
       },
       "source_present": true,
       "declaration": {
@@ -42625,7 +42625,7 @@
           "name": "'auto_delete_orphan_medical_certificate'"
         }
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/orphan_medical_cleanup.go",
         "BE_GO/internal/repository/orphan_medical_cleanup.go",
@@ -42741,7 +42741,7 @@
         "file": "BE/application/tasks.py",
         "line": 657,
         "symbol": "auto_mark_attendance",
-        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
+        "sha256": "bdf4474831c4a4ede3449b73f8172cd270de77b18d1f4371fed8bdd6fd059be1"
       },
       "source_present": true,
       "declaration": {
@@ -42751,7 +42751,7 @@
           "name": "'auto_mark_attendance'"
         }
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/auto_mark_attendance.go",
         "BE_GO/internal/repository/auto_mark_attendance.go",
@@ -42815,7 +42815,7 @@
         "file": "BE/application/tasks.py",
         "line": 644,
         "symbol": "auto_move_users_to_base_plan",
-        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
+        "sha256": "bdf4474831c4a4ede3449b73f8172cd270de77b18d1f4371fed8bdd6fd059be1"
       },
       "source_present": true,
       "declaration": {
@@ -42860,7 +42860,7 @@
         "file": "BE/application/tasks.py",
         "line": 361,
         "symbol": "change_type_of_stripe_payments",
-        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
+        "sha256": "bdf4474831c4a4ede3449b73f8172cd270de77b18d1f4371fed8bdd6fd059be1"
       },
       "source_present": true,
       "declaration": {
@@ -42870,7 +42870,7 @@
           "name": "'change_type_of_stripe_payments'"
         }
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/tasks_db_d.go",
         "BE_GO/internal/repository/tasks_db_d.go",
@@ -42936,7 +42936,7 @@
         "file": "BE/application/tasks.py",
         "line": 1336,
         "symbol": "check_workflows_trigger",
-        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
+        "sha256": "bdf4474831c4a4ede3449b73f8172cd270de77b18d1f4371fed8bdd6fd059be1"
       },
       "source_present": true,
       "declaration": {
@@ -42946,7 +42946,7 @@
           "name": "'check_workflows_trigger'"
         }
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/service/workflow_tasks.go",
         "BE_GO/internal/repository/workflow_tasks.go",
@@ -43012,7 +43012,7 @@
         "file": "BE/application/tasks.py",
         "line": 1363,
         "symbol": "check_workflows_trigger_cron",
-        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
+        "sha256": "bdf4474831c4a4ede3449b73f8172cd270de77b18d1f4371fed8bdd6fd059be1"
       },
       "source_present": true,
       "declaration": {
@@ -43022,7 +43022,7 @@
           "name": "'check_workflows_trigger_cron'"
         }
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/service/workflow_tasks.go",
         "BE_GO/internal/repository/workflow_tasks.go",
@@ -43086,9 +43086,9 @@
       "kind": "task",
       "django": {
         "file": "BE/application/tasks.py",
-        "line": 1810,
+        "line": 1814,
         "symbol": "cleanup_old_exports_task",
-        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
+        "sha256": "bdf4474831c4a4ede3449b73f8172cd270de77b18d1f4371fed8bdd6fd059be1"
       },
       "source_present": true,
       "declaration": {
@@ -43098,7 +43098,7 @@
           "name": "'cleanup_old_exports'"
         }
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/export_cleanup.go",
         "BE_GO/internal/repository/export_cleanup.go",
@@ -43168,7 +43168,7 @@
         "file": "BE/application/tasks.py",
         "line": 567,
         "symbol": "clear_deleted_subscription",
-        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
+        "sha256": "bdf4474831c4a4ede3449b73f8172cd270de77b18d1f4371fed8bdd6fd059be1"
       },
       "source_present": true,
       "declaration": {
@@ -43178,7 +43178,7 @@
           "name": "'clear_deleted_subscription'"
         }
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/clear_deleted_subscription.go",
         "BE_GO/internal/repository/clear_deleted_subscription.go",
@@ -43247,7 +43247,7 @@
         "file": "BE/application/tasks.py",
         "line": 281,
         "symbol": "clear_expired_subscription_tokens",
-        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
+        "sha256": "bdf4474831c4a4ede3449b73f8172cd270de77b18d1f4371fed8bdd6fd059be1"
       },
       "source_present": true,
       "declaration": {
@@ -43257,7 +43257,7 @@
           "name": "'clear_expired_subscription_tokens'"
         }
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/subscription_token_cleanup.go",
         "BE_GO/internal/repository/subscription_token_cleanup.go",
@@ -43335,7 +43335,7 @@
         "file": "BE/application/tasks.py",
         "line": 1683,
         "symbol": "delete_old_audit_logs",
-        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
+        "sha256": "bdf4474831c4a4ede3449b73f8172cd270de77b18d1f4371fed8bdd6fd059be1"
       },
       "source_present": true,
       "declaration": {
@@ -43345,7 +43345,7 @@
           "name": "'delete_old_audit_logs'"
         }
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/audit_retention.go",
         "BE_GO/internal/repository/audit_retention.go",
@@ -43368,7 +43368,7 @@
         "errors": "Legacy catches collector/commit errors. Go rolls back delete failures and handles definite PostgreSQL 23503 commit rollback from concurrent index insertion, recording NULL completion in a fresh transaction. Cancellation, rollback/completion failure, unknown or other commit failures propagate; fixed diagnostic codes only.",
         "authentication": "Internal instance-wide task without an HTTP actor.",
         "permissions": "No public publisher; invalid association scope or retention arguments reject before SQL.",
-        "resource_scope": "All auditlog LogEntry rows strictly older than execution UTC instant minus exactly 365 days, across content types/actors/deleted associations and including unindexed logs. Equality is retained. Index age does not affect parent-based retention.",
+        "resource_scope": "All auditlog LogEntry rows strictly older than execution UTC instant minus the configured number of calendar months (12 without a configuration row), clamped to month end, across content types/actors/deleted associations and including unindexed logs. Equality is retained. Index age does not affect parent-based retention.",
         "side_effects": "Hard-delete qualifying audit logs and their dependent AuditLogIndex rows; aggregate deleted count includes both. No new audits, provider calls or child jobs. Retained audit/index records and other models are unchanged.",
         "transaction": "Early owner/generation/live-lease admission precedes the READ COMMITTED DELETE RETURNING/dependent-index DELETE command and fenced completion. The shared ownership lock lasts through commit/rollback; heartbeat can renew the job. Existing deferred FK is retained. Concurrent child insertion may reject commit: definite FK rollback is handled as Django None only after fresh fallback admission. Lost authority rejects completion, records stay intact, and a new occurrence may subsequently finish retention.",
         "execution_owner": "django"
@@ -43418,7 +43418,7 @@
         "file": "BE/application/tasks.py",
         "line": 218,
         "symbol": "delete_users_with_request",
-        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
+        "sha256": "bdf4474831c4a4ede3449b73f8172cd270de77b18d1f4371fed8bdd6fd059be1"
       },
       "source_present": true,
       "declaration": {
@@ -43428,7 +43428,7 @@
           "name": "'delete_users_with_request'"
         }
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/user_deletion_requests.go",
         "BE_GO/internal/repository/user_deletion_requests.go",
@@ -43490,9 +43490,9 @@
       "kind": "task",
       "django": {
         "file": "BE/application/tasks.py",
-        "line": 1901,
+        "line": 1905,
         "symbol": "export_association_data",
-        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
+        "sha256": "bdf4474831c4a4ede3449b73f8172cd270de77b18d1f4371fed8bdd6fd059be1"
       },
       "source_present": true,
       "declaration": {
@@ -43503,7 +43503,7 @@
           "name": "'export_association_data'"
         }
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/service/consumer_export_association.go",
         "BE_GO/internal/associationexport/plan.go",
@@ -43597,7 +43597,7 @@
         "file": "BE/application/tasks.py",
         "line": 1632,
         "symbol": "export_invoices_to_zip",
-        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
+        "sha256": "bdf4474831c4a4ede3449b73f8172cd270de77b18d1f4371fed8bdd6fd059be1"
       },
       "source_present": true,
       "declaration": {
@@ -43607,7 +43607,7 @@
           "name": "'export_invoices_to_zip'"
         }
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/service/consumer_export_invoices_zip.go",
         "BE_GO/internal/repository/consumer_export_zip.go",
@@ -43684,7 +43684,7 @@
         "file": "BE/application/tasks.py",
         "line": 326,
         "symbol": "generate_coupon_if_not_exists",
-        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
+        "sha256": "bdf4474831c4a4ede3449b73f8172cd270de77b18d1f4371fed8bdd6fd059be1"
       },
       "source_present": true,
       "declaration": {
@@ -43694,7 +43694,7 @@
           "name": "'generate_coupon_if_not_exists'"
         }
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/tasks_db_d.go",
         "BE_GO/internal/repository/tasks_db_d.go",
@@ -43760,9 +43760,9 @@
       "kind": "task",
       "django": {
         "file": "BE/application/tasks.py",
-        "line": 2137,
+        "line": 2141,
         "symbol": "import_association_data",
-        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
+        "sha256": "bdf4474831c4a4ede3449b73f8172cd270de77b18d1f4371fed8bdd6fd059be1"
       },
       "source_present": true,
       "declaration": {
@@ -43772,7 +43772,7 @@
           "name": "'import_association_data'"
         }
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/service/consumer_import_association.go",
         "BE_GO/internal/service/consumer_import_archive.go",
@@ -43864,7 +43864,7 @@
         "file": "BE/application/tasks.py",
         "line": 414,
         "symbol": "mark_as_paid_payments_checking_stripe",
-        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
+        "sha256": "bdf4474831c4a4ede3449b73f8172cd270de77b18d1f4371fed8bdd6fd059be1"
       },
       "source_present": true,
       "declaration": {
@@ -43874,7 +43874,7 @@
           "name": "'mark_as_paid_payments_checking_stripe'"
         }
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/stripe_paid_check.go",
         "BE_GO/internal/repository/stripe_paid_check.go",
@@ -43965,7 +43965,7 @@
         "file": "BE/application/tasks.py",
         "line": 651,
         "symbol": "nurturing_warm_leads",
-        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
+        "sha256": "bdf4474831c4a4ede3449b73f8172cd270de77b18d1f4371fed8bdd6fd059be1"
       },
       "source_present": true,
       "declaration": {
@@ -44010,7 +44010,7 @@
         "file": "BE/application/tasks.py",
         "line": 264,
         "symbol": "print_document_subscription",
-        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
+        "sha256": "bdf4474831c4a4ede3449b73f8172cd270de77b18d1f4371fed8bdd6fd059be1"
       },
       "source_present": true,
       "declaration": {
@@ -44020,7 +44020,7 @@
           "name": "'print_document_subscription'"
         }
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/service/consumer_print_tasks.go",
         "BE_GO/cmd/celery-consumer/consumer_print.go",
@@ -44084,7 +44084,7 @@
         "file": "BE/application/tasks.py",
         "line": 62,
         "symbol": "renew_memberships_payments",
-        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
+        "sha256": "bdf4474831c4a4ede3449b73f8172cd270de77b18d1f4371fed8bdd6fd059be1"
       },
       "source_present": true,
       "declaration": {
@@ -44094,7 +44094,7 @@
           "name": "'renew_memberships_payments'"
         }
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/tasks_db_d.go",
         "BE_GO/internal/repository/tasks_db_d.go",
@@ -44161,7 +44161,7 @@
         "file": "BE/application/tasks.py",
         "line": 1618,
         "symbol": "reset_email_balance",
-        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
+        "sha256": "bdf4474831c4a4ede3449b73f8172cd270de77b18d1f4371fed8bdd6fd059be1"
       },
       "source_present": true,
       "declaration": {
@@ -44171,7 +44171,7 @@
           "name": "'reset_communication_daily_email_balance'"
         }
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/email_balance_reset.go",
         "BE_GO/internal/repository/email_balance_reset.go",
@@ -44290,7 +44290,7 @@
         "file": "BE/application/tasks.py",
         "line": 1201,
         "symbol": "send_email_html",
-        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
+        "sha256": "bdf4474831c4a4ede3449b73f8172cd270de77b18d1f4371fed8bdd6fd059be1"
       },
       "source_present": true,
       "declaration": {
@@ -44300,7 +44300,7 @@
           "name": "'send_email_html'"
         }
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/service/consumer_email.go",
         "BE_GO/internal/service/send_mail_async.go",
@@ -44390,7 +44390,7 @@
         "file": "BE/application/tasks.py",
         "line": 1138,
         "symbol": "send_email_template",
-        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
+        "sha256": "bdf4474831c4a4ede3449b73f8172cd270de77b18d1f4371fed8bdd6fd059be1"
       },
       "source_present": true,
       "declaration": {
@@ -44400,7 +44400,7 @@
           "name": "'send_email_template'"
         }
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/service/consumer_email.go",
         "BE_GO/internal/service/send_mail_async.go",
@@ -44490,7 +44490,7 @@
         "file": "BE/application/tasks.py",
         "line": 1179,
         "symbol": "send_email_text",
-        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
+        "sha256": "bdf4474831c4a4ede3449b73f8172cd270de77b18d1f4371fed8bdd6fd059be1"
       },
       "source_present": true,
       "declaration": {
@@ -44500,7 +44500,7 @@
           "name": "'send_email_text'"
         }
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/service/consumer_email.go",
         "BE_GO/internal/service/send_mail_async.go",
@@ -44589,7 +44589,7 @@
         "file": "BE/application/tasks.py",
         "line": 924,
         "symbol": "send_expired_certificate_email",
-        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
+        "sha256": "bdf4474831c4a4ede3449b73f8172cd270de77b18d1f4371fed8bdd6fd059be1"
       },
       "source_present": true,
       "declaration": {
@@ -44599,7 +44599,7 @@
           "name": "'send_expired_certificate_email'"
         }
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/email_tasks.go",
         "BE_GO/internal/repository/email_tasks.go",
@@ -44678,7 +44678,7 @@
         "file": "BE/application/tasks.py",
         "line": 809,
         "symbol": "send_expiring_certificate_email",
-        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
+        "sha256": "bdf4474831c4a4ede3449b73f8172cd270de77b18d1f4371fed8bdd6fd059be1"
       },
       "source_present": true,
       "declaration": {
@@ -44688,7 +44688,7 @@
           "name": "'send_expiring_certificate_email'"
         }
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/email_tasks.go",
         "BE_GO/internal/repository/email_tasks.go",
@@ -44767,7 +44767,7 @@
         "file": "BE/application/tasks.py",
         "line": 1383,
         "symbol": "send_reminders",
-        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
+        "sha256": "bdf4474831c4a4ede3449b73f8172cd270de77b18d1f4371fed8bdd6fd059be1"
       },
       "source_present": true,
       "declaration": {
@@ -44777,7 +44777,7 @@
           "name": "'send_reminders'"
         }
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/email_tasks.go",
         "BE_GO/internal/repository/email_tasks.go",
@@ -44856,7 +44856,7 @@
         "file": "BE/application/tasks.py",
         "line": 1085,
         "symbol": "send_updated_certificate_email",
-        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
+        "sha256": "bdf4474831c4a4ede3449b73f8172cd270de77b18d1f4371fed8bdd6fd059be1"
       },
       "source_present": true,
       "declaration": {
@@ -44897,7 +44897,7 @@
         "file": "BE/application/tasks.py",
         "line": 1039,
         "symbol": "send_user_partial_registration_email",
-        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
+        "sha256": "bdf4474831c4a4ede3449b73f8172cd270de77b18d1f4371fed8bdd6fd059be1"
       },
       "source_present": true,
       "declaration": {
@@ -44907,7 +44907,7 @@
           "name": "'send_user_partial_registration_email'"
         }
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/email_tasks.go",
         "BE_GO/internal/repository/email_tasks.go",
@@ -44986,7 +44986,7 @@
         "file": "BE/application/tasks.py",
         "line": 295,
         "symbol": "update_age_of_associates",
-        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
+        "sha256": "bdf4474831c4a4ede3449b73f8172cd270de77b18d1f4371fed8bdd6fd059be1"
       },
       "source_present": true,
       "declaration": {
@@ -44996,7 +44996,7 @@
           "name": "'update_age_of_associates'"
         }
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/associate_age_update.go",
         "BE_GO/internal/repository/associate_age_update.go",
@@ -45075,7 +45075,7 @@
         "file": "BE/application/tasks.py",
         "line": 1248,
         "symbol": "workflow_block_execute",
-        "sha256": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
+        "sha256": "bdf4474831c4a4ede3449b73f8172cd270de77b18d1f4371fed8bdd6fd059be1"
       },
       "source_present": true,
       "declaration": {
@@ -45085,7 +45085,7 @@
           "name": "'workflow_block_execute'"
         }
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/service/workflow_tasks.go",
         "BE_GO/internal/repository/workflow_tasks.go",
@@ -45704,7 +45704,7 @@
           "max_retries": "None"
         }
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/service/consumer_restore_instance.go",
         "BE_GO/internal/service/consumer_restore_archive.go",
@@ -45752,7 +45752,7 @@
         "authentication": "Internal task message.",
         "permissions": "Exclusive DATA_RESTORE_LOCK_PATH flock; the receipt owner must still administer the self-hosted single-association instance.",
         "resource_scope": "The receipt, its uploaded archive, the primary association's exported graph (the recovery export's keys) and its users, restores/<op>/ storage prefixes and earlier terminal receipts' recovery archives and staged media.",
-        "side_effects": "Receipt saves (running, attempts, backup, files, media, restoring, completed or failed), progress cache and WebSocket events, recovery archive upload, attachment staging, the Collector delete with pre_delete receivers and auditlog delete entries, the replacement import through internal/importeffects, detachment rows and deactivated collaborators, cache.clear(), cleanup and prune_storage.",
+        "side_effects": "Receipt saves (running, attempts, backup, files, media, restoring, completed or failed), progress cache and WebSocket events, recovery archive upload, attachment staging, the Collector delete with pre_delete receivers, the replacement import through internal/importeffects, one configuration UPDATE audit summary in the replacement transaction (receipt owner, operation_id and validated record_count), detachment rows and deactivated collaborators, cache.clear(), cleanup and prune_storage.",
         "transaction": "Replacement (delete, import, user links, completed receipt) in one transaction prepared during Plan and committed after the staging; other receipt saves autocommit.",
         "execution_owner": "django"
       },

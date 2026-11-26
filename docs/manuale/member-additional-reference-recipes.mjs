@@ -11,7 +11,7 @@ export const memberAdditionalReviewedSources = Object.freeze({
     "UI/src/routes/association/Members/subscription/partials/QuoteIscrizione.svelte": "c9d41719a3ec8cff5fd5d7896564d7a6c471f8904cae7d3765ceb36ae2d0351c",
     "UI/src/components/Sidebar.svelte": "261e159d3c922f77a6ab19e5b04cdbdeae4ca09c70f1c0abbf4815b8a51be571",
     "UI/src/routes/association/Members/MembersList.svelte": "2205d4071d49dc3c96bad02299dd157668037807f33811b395f811197841650a",
-    "BE/application/tasks.py": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b",
+    "BE/application/tasks.py": "bdf4474831c4a4ede3449b73f8172cd270de77b18d1f4371fed8bdd6fd059be1",
     "UI/src/components/modals/ShareModuleSubscriptionLink.svelte": "999bf9e16be7b8389a0181cd7f5c45f383dcb9c690925b653b9bf7d3333261ea",
     "UI/src/routes/association/Members/MembersBook.svelte": "e123edd1de7d765f5a9b98d9ad019940ed2de36c40df3d78d1e605205849ae7d",
     "UI/src/routes/association/Members/import/ImportMembers.svelte": "5010c836e7ceff18cf4a049d3a34696ac9df5eec41592201bec6bc5c1855b19d",

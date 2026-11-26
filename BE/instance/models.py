@@ -66,6 +66,13 @@ class InstanceConfiguration(models.Model):
     # of the updater runner to the Go queue (worker-go). False keeps Django.
     go_tasks_enabled = models.BooleanField(default=False, db_default=False)
 
+    AUDIT_RETENTION_MONTHS = (3, 6, 12, 18, 24)
+    DEFAULT_AUDIT_RETENTION_MONTHS = 12
+    audit_log_retention_months = models.PositiveSmallIntegerField(
+        choices=[(months, f'{months} mesi') for months in AUDIT_RETENTION_MONTHS],
+        default=DEFAULT_AUDIT_RETENTION_MONTHS, db_default=DEFAULT_AUDIT_RETENTION_MONTHS,
+    )
+
     # Feature flags
     is_reseller = models.BooleanField(default=False)
     self_hosted = models.BooleanField(default=True)

@@ -6,8 +6,8 @@ diagnostics lease and a Stripe override; secret markers are encrypted with
 the run's SECRET_KEY. Every case is checked against the complete model state:
 only that row may change, and a write case states every managed field. Stored
 secrets are compared by decrypting them; updated_at must advance exactly when
-the view saves it. The model is not registered with auditlog; the only entry
-is the explicit UPDATE log of a web UI API version change (case['audit']),
+the view saves it. The model is not registered with auditlog; audited settings changes
+write an explicit UPDATE log (case['audit']),
 with its AuditLogIndex row resolved from the actor's association.
 
 service_context owns, for the whole run and before either server starts,
@@ -63,7 +63,7 @@ SOURCES = ('TESTS/fixtures/instance_admin_http.json', 'TESTS/contracts/test_inst
 CONFIG = 'instance.InstanceConfiguration'
 AUDIT, INDEX = harness.AUDIT, harness.INDEX
 FIELDS = ('name', 'abbreviation', 'primary_color', 'support_email', 'ui_api_version', 'email_settings', 'email_revision',
-          'diagnostic_results', 'integration_settings')
+          'diagnostic_results', 'integration_settings', 'audit_log_retention_months')
 FERNET = '$fernet-integration:'
 
 
@@ -442,7 +442,7 @@ run_workload = harness.run_workload_for(contract, assert_effect)
 
 
 def check_audit(case, before, after, source, context):
-    """No entry, or the one UPDATE entry of a web UI API version change."""
+    """Compare the expected instance setting change and its association index."""
     added, indexes = harness.audit_delta(base_contract, before, after)
     expected = case.get('audit')
     base_contract.require(len(added) == (1 if expected else 0), 'audit.count')

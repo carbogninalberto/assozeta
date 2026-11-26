@@ -139,20 +139,23 @@ func (h *InstanceAdminHandler) Admin(c echo.Context) error {
 		defer release()
 		data := write.Body
 		c.SetRequest(c.Request().WithContext(write.Context))
+		actor, _ := c.Get(instanceAdminActorKey).(string)
 		// set(request.data) & {'goTasksEnabled', 'password'}: the go-tasks
 		// switch (an unhashable body keeps the branding path).
 		if goTasks, _ := dto.InstanceAdminKeysIntersect(data, "goTasksEnabled", "password"); goTasks && h.backups != nil {
-			actor, _ := c.Get(instanceAdminActorKey).(string)
 			reply, err := h.backups.GoTasks(c.Request().Context(), service.BackupActionsRequest{Actor: actor,
 				Form: write.Form, Audit: write.Audit}, data)
 			return h.backupActionsReply(c, reply, err)
+		}
+		if retention, _ := dto.InstanceAdminKeysEqual(data, "audit_log_retention_months"); retention {
+			body, err := h.admin.SetAuditRetention(c.Request().Context(), data, actor, write.Audit)
+			return h.answer(c, body, err)
 		}
 		if write.Form {
 			if data, err = dto.InstanceAdminBrandingForm(data); err != nil {
 				return h.fail(c, err)
 			}
 		}
-		actor, _ := c.Get(instanceAdminActorKey).(string)
 		body, err := h.admin.Branding(c.Request().Context(), data, actor, write.Audit)
 		return h.answer(c, body, err)
 	}

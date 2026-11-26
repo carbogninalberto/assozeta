@@ -983,6 +983,7 @@ class Harness:
         keys = [k for k in observed['bucket'] if '/upload/' in k]
         assert not keys, ('the upload object is deleted', keys)
         if expect.get('untouched'):
+            assert not observed['audit'] and not observed['audit_removed'], 'completed redelivery preserves audit history'
             assert set(observed['models']) == {'instance.DataRestore'}, observed['models'].keys()
             return
         if expect['state'] == 'failed':
@@ -1000,7 +1001,19 @@ class Harness:
         assert observed['models']['application.Payment']['removed'], 'the current payment is replaced'
         assert len(observed['recovery']) == 1, 'one recovery archive is kept'
         assert not [k for k in observed['bucket'] if str(PRIOR) in k], 'the earlier restore is pruned'
-        assert any(e['action'] == 2 for e in observed['audit']) and any(e['action'] == 0 for e in observed['audit']), 'audited'
+        from auditlog.models import LogEntry
+        from django.contrib.contenttypes.models import ContentType
+        from instance.models import InstanceConfiguration
+        from instance.restore.archive import Archive
+        assert not observed['audit_removed'], 'existing audit history is retained'
+        assert len(observed['audit']) == 1, 'one audit summary per committed restore'
+        event = observed['audit'][0]
+        config = InstanceConfiguration.objects.get()
+        assert event['action'] == LogEntry.Action.UPDATE and event['actor_id'] == str(OWNER)
+        assert event['content_type_id'] == ContentType.objects.get_for_model(config).pk and event['object_pk'] == str(config.pk)
+        assert event['additional_data']['operation_id'] == str(OPERATION)
+        archive = Archive(io.BytesIO(self.stack.archives[scenario.archive])).validate()
+        assert event['additional_data']['record_count'] == archive.summary()['records']
         cache = observed['cache']
         assert list(cache) == [f':1:data-restore-progress:{OPERATION}'], cache
         assert cache[f':1:data-restore-progress:{OPERATION}']['value']['phase'] == 'completed', cache

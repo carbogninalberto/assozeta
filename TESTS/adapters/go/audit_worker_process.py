@@ -44,7 +44,7 @@ EXPECTED = {
 
 
 class RetentionFixture:
-    """Audit rows on both sides of the 365-day cutoff, with and without indexes."""
+    """Audit rows on both sides of the default twelve-month cutoff, with and without indexes."""
     def __init__(self):
         from application.models import User, SportAssociation, Associate
         from django.contrib.contenttypes.models import ContentType
@@ -60,7 +60,7 @@ class RetentionFixture:
         # from the cutoff, so Django and Go clocks minutes apart select the same rows.
         self.base = datetime.now(timezone.utc).replace(microsecond=0)
         # days before base, indexed, association, expected deletion
-        self.controls = [(900, True, 0, True), (400, False, 1, True), (366, True, 1, True),
+        self.controls = [(900, True, 0, True), (400, False, 1, True), (368, True, 1, True),
                          (364, True, 0, False), (30, False, 0, False), (0, True, 1, False), (-1, False, 0, False)]
 
     def rows(self):

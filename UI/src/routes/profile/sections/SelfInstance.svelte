@@ -7,7 +7,7 @@
     import {apiErrorMessage} from './backupPassword.js';
     import {createCompletionRefresh, mergeRunnerStatus, restartResult} from './updateStatus.js';
     import {v4 as uuidv4} from 'uuid';
-    import {SquaresFour, Archive, ArrowsClockwise, GearSix, IdentificationCard, EnvelopeSimple, Plugs, Robot, LinkSimple, Power, Cpu} from 'phosphor-svelte';
+    import {SquaresFour, Archive, ArrowsClockwise, GearSix, IdentificationCard, EnvelopeSimple, Plugs, ListBullets, Robot, LinkSimple, Power, Cpu} from 'phosphor-svelte';
     import './selfInstance.css';
     import InstanceBanner from './InstanceBanner.svelte';
     import InstanceMenu from './InstanceMenu.svelte';
@@ -28,7 +28,7 @@
     // Top-level tabs; settings has its own sub-sections. The URL keeps the
     // sub-section id (tab=email…) so earlier links keep working.
     const tabs = [['overview', 'Panoramica', SquaresFour], ['backups', 'Backup', Archive], ['updates', 'Aggiornamenti', ArrowsClockwise], ['settings', 'Impostazioni', GearSix]];
-    const settingsSections = [['branding', 'Identità', IdentificationCard], ['email', 'Email', EnvelopeSimple], ['integrations', 'Integrazioni', Plugs], ['ai', 'Bot AI', Robot], ['pairing', 'Bakney', LinkSimple], ['api', 'Runtime', Cpu]];
+    const settingsSections = [['branding', 'Identità', IdentificationCard], ['email', 'Email', EnvelopeSimple], ['integrations', 'Integrazioni', Plugs], ['audit', 'Registro modifiche', ListBullets], ['ai', 'Bot AI', Robot], ['pairing', 'Bakney', LinkSimple], ['api', 'Runtime', Cpu]];
     const settingsIds = settingsSections.map(([id]) => id);
     let tab = 'overview';
     let settingsSection = 'branding';
@@ -74,6 +74,8 @@
     let integrationChanges = false;
     let integrationBusy = false;
     let pairingBusy = false;
+    let retentionBusy = false;
+    let retentionMessage = '';
 
     let diagnostics;
     let diagnosticError = '';
@@ -112,7 +114,7 @@
 
     $: settingsDirty = {branding: logoChanges, email: emailChanges, integrations: integrationChanges, ai: aiChanges, pairing: false, api: false};
     $: changes = aiChanges || integrationChanges || emailChanges || logoChanges;
-    $: settingsBusy = logoBusy || emailBusy || aiBusy || integrationBusy || pairingBusy;
+    $: settingsBusy = logoBusy || emailBusy || aiBusy || integrationBusy || pairingBusy || retentionBusy;
     $: active = simulation || runner.active || (restartRequestId ? {kind: 'restart', stage: 'queued'} : null);
     $: locked = apiUnavailable || !!active || starting;
     $: restartBlocked = info?.mode !== 'production' ? 'Disponibile solo in produzione.'
@@ -139,6 +141,23 @@
         const result = await apiFetch(`${endpoint}${path}`, {method: 'GET', skipForbidden: true, ...options});
         if (result.error) throw Object.assign(new Error(apiErrorMessage(result.response)), {status: result.status});
         return result.response;
+    }
+
+    async function saveRetention(event) {
+        const select = event.currentTarget;
+        const previous = info.audit_log_retention_months;
+        retentionBusy = true;
+        retentionMessage = '';
+        try {
+            const saved = await request('/admin', {method: 'PUT', body: JSON.stringify({audit_log_retention_months: Number(select.value)})});
+            info = {...info, audit_log_retention_months: saved.audit_log_retention_months};
+            retentionMessage = 'Periodo di conservazione salvato.';
+        } catch (e) {
+            select.value = previous;
+            retentionMessage = e.message;
+        } finally {
+            retentionBusy = false;
+        }
     }
 
     async function loadDiagnostics() {
@@ -450,6 +469,18 @@
                         </div>
                         <div id="instance-settings-panel-integrations" role="tabpanel" aria-labelledby="instance-settings-integrations" hidden={settingsSection !== 'integrations'}>
                             <InstanceIntegrations {request} checks={diagnostics?.integrations || []} bind:changes={integrationChanges} bind:busy={integrationBusy} disabled={locked} onSaved={refreshIntegrations} />
+                        </div>
+                        <div id="instance-settings-panel-audit" role="tabpanel" aria-labelledby="instance-settings-audit" hidden={settingsSection !== 'audit'}>
+                            <div class="si-card">
+                                <label for="audit-retention">Conservazione registro modifiche</label>
+                                <select id="audit-retention" class="form-control" value={info.audit_log_retention_months} disabled={locked || retentionBusy} on:change={saveRetention}>
+                                    {#each [3, 6, 12, 18, 24] as months}
+                                        <option value={months}>{months} mesi</option>
+                                    {/each}
+                                </select>
+                                <p>Le voci del registro più vecchie del periodo scelto vengono eliminate ogni giorno.</p>
+                                <span role="status">{retentionMessage}</span>
+                            </div>
                         </div>
                         <div id="instance-settings-panel-ai" role="tabpanel" aria-labelledby="instance-settings-ai" hidden={settingsSection !== 'ai'}>
                             <InstanceIntegration provider="ai" title="Bot AI" {request} bind:changes={aiChanges} bind:busy={aiBusy} disabled={locked} onSaved={refreshAI} />

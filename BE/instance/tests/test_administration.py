@@ -2,7 +2,9 @@ from unittest.mock import patch
 from urllib.error import HTTPError
 from uuid import uuid4
 
+from auditlog.models import LogEntry
 from django.core.cache import cache
+from django.core.exceptions import ValidationError
 from django.test import TestCase, override_settings
 from rest_framework.test import APIClient
 
@@ -35,6 +37,47 @@ class InstanceAdministrationTests(TestCase):
         self.config = InstanceConfiguration.objects.create(
             domain='admin.example.test', name='Owner ASD', primary_association=self.association,
         )
+
+    def test_audit_log_retention_model(self):
+        field = 'audit_log_retention_months'
+        self.assertEqual(getattr(self.config, field, None), 12)
+        other_fields = [f.name for f in self.config._meta.fields if f.name != field]
+        for months in (3, 6, 12, 18, 24):
+            setattr(self.config, field, months)
+            self.config.full_clean(exclude=other_fields)
+        setattr(self.config, field, 9)
+        with self.assertRaises(ValidationError) as invalid:
+            self.config.full_clean(exclude=other_fields)
+        self.assertIn(field, invalid.exception.message_dict)
+
+    def test_audit_log_retention_setting(self):
+        self.client.force_authenticate(self.owner)
+        field = 'audit_log_retention_months'
+        self.assertEqual(self.client.get('/instance/admin').data.get(field), 12)
+        response = self.client.put('/instance/admin', {field: 6}, format='json')
+        self.assertEqual(response.status_code, 200, response.data)
+        self.config.refresh_from_db()
+        self.assertEqual(getattr(self.config, field), 6)
+        self.assertEqual(self.client.get('/instance/admin').data[field], 6)
+        event = LogEntry.objects.get_for_object(self.config).get()
+        self.assertEqual((event.action, event.actor_id), (LogEntry.Action.UPDATE, self.owner.pk))
+        self.assertEqual(event.changes, {field: [12, 6]})
+
+    def test_audit_log_retention_refusals(self):
+        field = 'audit_log_retention_months'
+        outsider = User.objects.create_user(username='retention-outsider', role=User.ASSOCIATION)
+        self.client.force_authenticate(outsider)
+        existing = self.client.put('/instance/admin', {'oem': {}}, format='json')
+        denied = self.client.put('/instance/admin', {field: 6}, format='json')
+        self.assertEqual(denied.status_code, 403)
+        self.assertEqual(denied.data, existing.data)
+        self.client.force_authenticate(self.owner)
+        invalid = self.client.put('/instance/admin', {field: 9}, format='json')
+        self.assertEqual(invalid.status_code, 400)
+        self.assertEqual(invalid.json(), {field: ['Scegli un periodo di conservazione di 3, 6, 12, 18 o 24 mesi.']})
+        self.config.refresh_from_db()
+        self.assertEqual(getattr(self.config, field), 12)
+        self.assertFalse(LogEntry.objects.get_for_object(self.config).exists())
 
     def test_owner_access_is_preserved_and_unrelated_users_are_denied(self):
         collaborator = User.objects.create_user(username='admin-collaborator', role=User.COLLABORATOR, connected_user=self.owner)

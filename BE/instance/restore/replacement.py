@@ -1,6 +1,7 @@
 """Replace an explicitly scoped export graph while preserving local root identities."""
 import uuid
 
+from auditlog.context import disable_auditlog
 from django.db import transaction
 from django.db.models.deletion import Collector
 from application.models import SportAssociation, User
@@ -235,7 +236,7 @@ def replace(archive, backup, config, media, complete, progress=None):
     require_single(config)
     importer = ReplacementImporter(archive, config, media, progress=progress,
                                    replaced_user_ids=backup.identities['User'])
-    with transaction.atomic():
+    with transaction.atomic(), disable_auditlog():
         deletion_plan(backup).delete()
         importer.import_all()
         # The setup importer intentionally knows nothing about the retired

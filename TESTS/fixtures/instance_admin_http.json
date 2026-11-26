@@ -670,7 +670,8 @@
     "running_version": "v0.0.0",
     "configured_version": "latest",
     "mode": "development",
-    "go_tasks_enabled": false
+    "go_tasks_enabled": false,
+    "audit_log_retention_months": 12
    },
    "effect": null,
    "cache_control": null,
@@ -757,7 +758,8 @@
     "running_version": "v0.0.0",
     "configured_version": "latest",
     "mode": "development",
-    "go_tasks_enabled": false
+    "go_tasks_enabled": false,
+    "audit_log_retention_months": 12
    },
    "effect": null,
    "cache_control": null,
@@ -847,7 +849,1481 @@
     "running_version": "v0.0.0",
     "configured_version": "latest",
     "mode": "development",
-    "go_tasks_enabled": false
+    "go_tasks_enabled": false,
+    "audit_log_retention_months": 12
+   },
+   "effect": null,
+   "cache_control": null,
+   "retry_after": null,
+   "audit": null
+  },
+  {
+   "name": "instance-admin-retention-denied",
+   "actor": "full_collaborator",
+   "method": "PUT",
+   "path": "/instance/admin",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Only the instance owner or an administrator can administer this installation."
+   },
+   "effect": null,
+   "cache_control": null,
+   "retry_after": null,
+   "audit": null,
+   "body": {
+    "audit_log_retention_months": 3
+   }
+  },
+  {
+   "name": "instance-admin-retention-invalid-zero",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "audit_log_retention_months": [
+     "Scegli un periodo di conservazione di 3, 6, 12, 18 o 24 mesi."
+    ]
+   },
+   "effect": null,
+   "cache_control": null,
+   "retry_after": null,
+   "audit": null,
+   "body": {
+    "audit_log_retention_months": 0
+   }
+  },
+  {
+   "name": "instance-admin-retention-invalid-unsupported",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "audit_log_retention_months": [
+     "Scegli un periodo di conservazione di 3, 6, 12, 18 o 24 mesi."
+    ]
+   },
+   "effect": null,
+   "cache_control": null,
+   "retry_after": null,
+   "audit": null,
+   "body": {
+    "audit_log_retention_months": 9
+   }
+  },
+  {
+   "name": "instance-admin-retention-invalid-fraction",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "audit_log_retention_months": [
+     "Scegli un periodo di conservazione di 3, 6, 12, 18 o 24 mesi."
+    ]
+   },
+   "effect": null,
+   "cache_control": null,
+   "retry_after": null,
+   "audit": null,
+   "body": {
+    "audit_log_retention_months": 6.5
+   }
+  },
+  {
+   "name": "instance-admin-retention-invalid-null",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "audit_log_retention_months": [
+     "Scegli un periodo di conservazione di 3, 6, 12, 18 o 24 mesi."
+    ]
+   },
+   "effect": null,
+   "cache_control": null,
+   "retry_after": null,
+   "audit": null,
+   "body": {
+    "audit_log_retention_months": null
+   }
+  },
+  {
+   "name": "instance-admin-retention-invalid-bool",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "audit_log_retention_months": [
+     "Scegli un periodo di conservazione di 3, 6, 12, 18 o 24 mesi."
+    ]
+   },
+   "effect": null,
+   "cache_control": null,
+   "retry_after": null,
+   "audit": null,
+   "body": {
+    "audit_log_retention_months": true
+   }
+  },
+  {
+   "name": "instance-admin-retention-invalid-text",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "audit_log_retention_months": [
+     "Scegli un periodo di conservazione di 3, 6, 12, 18 o 24 mesi."
+    ]
+   },
+   "effect": null,
+   "cache_control": null,
+   "retry_after": null,
+   "audit": null,
+   "body": {
+    "audit_log_retention_months": "tre"
+   }
+  },
+  {
+   "name": "instance-admin-retention-set-3",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "config": {
+     "oem": {
+      "name": "Istanza di prova",
+      "abbreviation": "IP",
+      "logo": "/oem/assozeta/brand/logo.svg",
+      "supportEmail": "supporto@example.test",
+      "primaryColor": "#123456",
+      "displaySettings": {
+       "general": {
+        "searchBar": true,
+        "cookieConsent": true,
+        "showDemoButton": false
+       },
+       "login": {
+        "showSportAssociationCreation": false,
+        "allowOauthLogin": true,
+        "showFooterInfo": true,
+        "allowOnlyAthletes": false,
+        "showTestimonials": false,
+        "termsAndConditionsUrl": ""
+       },
+       "navbar": {
+        "showAffiliateLink": false,
+        "showReview": false,
+        "showNotifications": true
+       },
+       "sidebar": {
+        "showPlanUpgrades": false,
+        "showPrivacyPolicy": true,
+        "showTermsOfService": true,
+        "showPreferences": true
+       }
+      },
+      "manualUrl": "/#/manuale"
+     },
+     "oauth": {
+      "googleClientId": null,
+      "appleClientId": null,
+      "googleEnabled": false
+     },
+     "stripe": {
+      "publicKey": null,
+      "pricingTable": null,
+      "clientPortal": null
+     },
+     "meta": {
+      "title": "Istanza di prova",
+      "description": "Gestionale per associazioni sportive",
+      "manifest": "/api/instance/manifest.json"
+     },
+     "features": {
+      "aiEnabled": false,
+      "manualEnabled": false,
+      "isReseller": false,
+      "selfHosted": true,
+      "supportMultipleAssociations": false,
+      "showCourseAthletes": true,
+      "showMinorExemption": true,
+      "showTutorial": true,
+      "familyRegistration": true,
+      "federationRegistration": false,
+      "multipleRegistration": false,
+      "uiApiVersion": "v1"
+     },
+     "setup": {
+      "provenance": "fresh",
+      "onboardingComplete": false
+     }
+    },
+    "audit_log_retention_months": 3
+   },
+   "effect": {
+    "fields": {
+     "name": "Istanza di prova",
+     "abbreviation": "IP",
+     "primary_color": "#123456",
+     "support_email": "supporto@example.test",
+     "ui_api_version": "v1",
+     "email_settings": {
+      "host": "smtp.seed.example.test",
+      "port": 587,
+      "security": "tls",
+      "username": "seed-user",
+      "from_email": "seed@example.test",
+      "sender_name": "Seed"
+     },
+     "audit_log_retention_months": 3,
+     "email_password": {
+      "$literal": "not-a-fernet-token"
+     },
+     "email_revision": 0,
+     "diagnostic_results": {
+      "checks": [
+       {
+        "id": "database",
+        "status": "passed",
+        "level": "connectivity",
+        "message": "Database raggiungibile.",
+        "checked_at": "2026-01-02T03:04:05+00:00"
+       },
+       {
+        "id": "email",
+        "status": "failed",
+        "level": "connectivity",
+        "message": "SMTP non raggiungibile.",
+        "checked_at": "2026-01-02T03:04:05+00:00"
+       }
+      ],
+      "checked_at": "2026-01-02T03:04:06+00:00",
+      "email_test": {
+       "status": "failed",
+       "level": "connectivity",
+       "message": "Connessione rifiutata.",
+       "checked_at": "2026-01-02T03:04:07+00:00",
+       "revision": 0,
+       "action": "connect"
+      },
+      "integration_tests": {
+       "google": {
+        "status": "passed",
+        "level": "configuration",
+        "message": "Verifica completata.",
+        "checked_at": "2026-01-02T03:04:08+00:00",
+        "revision": 0
+       },
+       "apple": {
+        "status": "passed",
+        "level": "configuration",
+        "message": "Verifica completata.",
+        "checked_at": "2026-01-02T03:04:09+00:00",
+        "revision": 9
+       }
+      },
+      "operation_leases": {
+       "diagnostics": 4102444800.0
+      }
+     },
+     "integration_settings": {
+      "stripe": {
+       "revision": 3,
+       "settings": {
+        "enabled": false,
+        "public_key": "pk_test_seed",
+        "secret_key": {
+         "$literal": "not-a-fernet-token"
+        },
+        "webhook_secret": {
+         "$secret": "legacy-format"
+        }
+       }
+      }
+     }
+    },
+    "touched": true
+   },
+   "cache_control": null,
+   "retry_after": null,
+   "audit": {
+    "actor": "owner",
+    "association": "own_association",
+    "changes": {
+     "audit_log_retention_months": [
+      12,
+      3
+     ]
+    }
+   },
+   "body": {
+    "audit_log_retention_months": 3
+   }
+  },
+  {
+   "name": "instance-admin-retention-read-3",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instance/admin",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "config": {
+     "oem": {
+      "name": "Istanza di prova",
+      "abbreviation": "IP",
+      "logo": "/oem/assozeta/brand/logo.svg",
+      "supportEmail": "supporto@example.test",
+      "primaryColor": "#123456",
+      "displaySettings": {
+       "general": {
+        "searchBar": true,
+        "cookieConsent": true,
+        "showDemoButton": false
+       },
+       "login": {
+        "showSportAssociationCreation": false,
+        "allowOauthLogin": true,
+        "showFooterInfo": true,
+        "allowOnlyAthletes": false,
+        "showTestimonials": false,
+        "termsAndConditionsUrl": ""
+       },
+       "navbar": {
+        "showAffiliateLink": false,
+        "showReview": false,
+        "showNotifications": true
+       },
+       "sidebar": {
+        "showPlanUpgrades": false,
+        "showPrivacyPolicy": true,
+        "showTermsOfService": true,
+        "showPreferences": true
+       }
+      },
+      "manualUrl": "/#/manuale"
+     },
+     "oauth": {
+      "googleClientId": null,
+      "appleClientId": null,
+      "googleEnabled": false
+     },
+     "stripe": {
+      "publicKey": null,
+      "pricingTable": null,
+      "clientPortal": null
+     },
+     "meta": {
+      "title": "Istanza di prova",
+      "description": "Gestionale per associazioni sportive",
+      "manifest": "/api/instance/manifest.json"
+     },
+     "features": {
+      "aiEnabled": false,
+      "manualEnabled": false,
+      "isReseller": false,
+      "selfHosted": true,
+      "supportMultipleAssociations": false,
+      "showCourseAthletes": true,
+      "showMinorExemption": true,
+      "showTutorial": true,
+      "familyRegistration": true,
+      "federationRegistration": false,
+      "multipleRegistration": false,
+      "uiApiVersion": "v1"
+     },
+     "setup": {
+      "provenance": "fresh",
+      "onboardingComplete": false
+     }
+    },
+    "running_version": "v0.0.0",
+    "configured_version": "latest",
+    "mode": "development",
+    "go_tasks_enabled": false,
+    "audit_log_retention_months": 3
+   },
+   "effect": null,
+   "cache_control": null,
+   "retry_after": null,
+   "audit": null
+  },
+  {
+   "name": "instance-admin-retention-set-6",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "config": {
+     "oem": {
+      "name": "Istanza di prova",
+      "abbreviation": "IP",
+      "logo": "/oem/assozeta/brand/logo.svg",
+      "supportEmail": "supporto@example.test",
+      "primaryColor": "#123456",
+      "displaySettings": {
+       "general": {
+        "searchBar": true,
+        "cookieConsent": true,
+        "showDemoButton": false
+       },
+       "login": {
+        "showSportAssociationCreation": false,
+        "allowOauthLogin": true,
+        "showFooterInfo": true,
+        "allowOnlyAthletes": false,
+        "showTestimonials": false,
+        "termsAndConditionsUrl": ""
+       },
+       "navbar": {
+        "showAffiliateLink": false,
+        "showReview": false,
+        "showNotifications": true
+       },
+       "sidebar": {
+        "showPlanUpgrades": false,
+        "showPrivacyPolicy": true,
+        "showTermsOfService": true,
+        "showPreferences": true
+       }
+      },
+      "manualUrl": "/#/manuale"
+     },
+     "oauth": {
+      "googleClientId": null,
+      "appleClientId": null,
+      "googleEnabled": false
+     },
+     "stripe": {
+      "publicKey": null,
+      "pricingTable": null,
+      "clientPortal": null
+     },
+     "meta": {
+      "title": "Istanza di prova",
+      "description": "Gestionale per associazioni sportive",
+      "manifest": "/api/instance/manifest.json"
+     },
+     "features": {
+      "aiEnabled": false,
+      "manualEnabled": false,
+      "isReseller": false,
+      "selfHosted": true,
+      "supportMultipleAssociations": false,
+      "showCourseAthletes": true,
+      "showMinorExemption": true,
+      "showTutorial": true,
+      "familyRegistration": true,
+      "federationRegistration": false,
+      "multipleRegistration": false,
+      "uiApiVersion": "v1"
+     },
+     "setup": {
+      "provenance": "fresh",
+      "onboardingComplete": false
+     }
+    },
+    "audit_log_retention_months": 6
+   },
+   "effect": {
+    "fields": {
+     "name": "Istanza di prova",
+     "abbreviation": "IP",
+     "primary_color": "#123456",
+     "support_email": "supporto@example.test",
+     "ui_api_version": "v1",
+     "email_settings": {
+      "host": "smtp.seed.example.test",
+      "port": 587,
+      "security": "tls",
+      "username": "seed-user",
+      "from_email": "seed@example.test",
+      "sender_name": "Seed"
+     },
+     "audit_log_retention_months": 6,
+     "email_password": {
+      "$literal": "not-a-fernet-token"
+     },
+     "email_revision": 0,
+     "diagnostic_results": {
+      "checks": [
+       {
+        "id": "database",
+        "status": "passed",
+        "level": "connectivity",
+        "message": "Database raggiungibile.",
+        "checked_at": "2026-01-02T03:04:05+00:00"
+       },
+       {
+        "id": "email",
+        "status": "failed",
+        "level": "connectivity",
+        "message": "SMTP non raggiungibile.",
+        "checked_at": "2026-01-02T03:04:05+00:00"
+       }
+      ],
+      "checked_at": "2026-01-02T03:04:06+00:00",
+      "email_test": {
+       "status": "failed",
+       "level": "connectivity",
+       "message": "Connessione rifiutata.",
+       "checked_at": "2026-01-02T03:04:07+00:00",
+       "revision": 0,
+       "action": "connect"
+      },
+      "integration_tests": {
+       "google": {
+        "status": "passed",
+        "level": "configuration",
+        "message": "Verifica completata.",
+        "checked_at": "2026-01-02T03:04:08+00:00",
+        "revision": 0
+       },
+       "apple": {
+        "status": "passed",
+        "level": "configuration",
+        "message": "Verifica completata.",
+        "checked_at": "2026-01-02T03:04:09+00:00",
+        "revision": 9
+       }
+      },
+      "operation_leases": {
+       "diagnostics": 4102444800.0
+      }
+     },
+     "integration_settings": {
+      "stripe": {
+       "revision": 3,
+       "settings": {
+        "enabled": false,
+        "public_key": "pk_test_seed",
+        "secret_key": {
+         "$literal": "not-a-fernet-token"
+        },
+        "webhook_secret": {
+         "$secret": "legacy-format"
+        }
+       }
+      }
+     }
+    },
+    "touched": true
+   },
+   "cache_control": null,
+   "retry_after": null,
+   "audit": {
+    "actor": "owner",
+    "association": "own_association",
+    "changes": {
+     "audit_log_retention_months": [
+      3,
+      6
+     ]
+    }
+   },
+   "body": {
+    "audit_log_retention_months": 6
+   }
+  },
+  {
+   "name": "instance-admin-retention-read-6",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instance/admin",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "config": {
+     "oem": {
+      "name": "Istanza di prova",
+      "abbreviation": "IP",
+      "logo": "/oem/assozeta/brand/logo.svg",
+      "supportEmail": "supporto@example.test",
+      "primaryColor": "#123456",
+      "displaySettings": {
+       "general": {
+        "searchBar": true,
+        "cookieConsent": true,
+        "showDemoButton": false
+       },
+       "login": {
+        "showSportAssociationCreation": false,
+        "allowOauthLogin": true,
+        "showFooterInfo": true,
+        "allowOnlyAthletes": false,
+        "showTestimonials": false,
+        "termsAndConditionsUrl": ""
+       },
+       "navbar": {
+        "showAffiliateLink": false,
+        "showReview": false,
+        "showNotifications": true
+       },
+       "sidebar": {
+        "showPlanUpgrades": false,
+        "showPrivacyPolicy": true,
+        "showTermsOfService": true,
+        "showPreferences": true
+       }
+      },
+      "manualUrl": "/#/manuale"
+     },
+     "oauth": {
+      "googleClientId": null,
+      "appleClientId": null,
+      "googleEnabled": false
+     },
+     "stripe": {
+      "publicKey": null,
+      "pricingTable": null,
+      "clientPortal": null
+     },
+     "meta": {
+      "title": "Istanza di prova",
+      "description": "Gestionale per associazioni sportive",
+      "manifest": "/api/instance/manifest.json"
+     },
+     "features": {
+      "aiEnabled": false,
+      "manualEnabled": false,
+      "isReseller": false,
+      "selfHosted": true,
+      "supportMultipleAssociations": false,
+      "showCourseAthletes": true,
+      "showMinorExemption": true,
+      "showTutorial": true,
+      "familyRegistration": true,
+      "federationRegistration": false,
+      "multipleRegistration": false,
+      "uiApiVersion": "v1"
+     },
+     "setup": {
+      "provenance": "fresh",
+      "onboardingComplete": false
+     }
+    },
+    "running_version": "v0.0.0",
+    "configured_version": "latest",
+    "mode": "development",
+    "go_tasks_enabled": false,
+    "audit_log_retention_months": 6
+   },
+   "effect": null,
+   "cache_control": null,
+   "retry_after": null,
+   "audit": null
+  },
+  {
+   "name": "instance-admin-retention-set-18",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "config": {
+     "oem": {
+      "name": "Istanza di prova",
+      "abbreviation": "IP",
+      "logo": "/oem/assozeta/brand/logo.svg",
+      "supportEmail": "supporto@example.test",
+      "primaryColor": "#123456",
+      "displaySettings": {
+       "general": {
+        "searchBar": true,
+        "cookieConsent": true,
+        "showDemoButton": false
+       },
+       "login": {
+        "showSportAssociationCreation": false,
+        "allowOauthLogin": true,
+        "showFooterInfo": true,
+        "allowOnlyAthletes": false,
+        "showTestimonials": false,
+        "termsAndConditionsUrl": ""
+       },
+       "navbar": {
+        "showAffiliateLink": false,
+        "showReview": false,
+        "showNotifications": true
+       },
+       "sidebar": {
+        "showPlanUpgrades": false,
+        "showPrivacyPolicy": true,
+        "showTermsOfService": true,
+        "showPreferences": true
+       }
+      },
+      "manualUrl": "/#/manuale"
+     },
+     "oauth": {
+      "googleClientId": null,
+      "appleClientId": null,
+      "googleEnabled": false
+     },
+     "stripe": {
+      "publicKey": null,
+      "pricingTable": null,
+      "clientPortal": null
+     },
+     "meta": {
+      "title": "Istanza di prova",
+      "description": "Gestionale per associazioni sportive",
+      "manifest": "/api/instance/manifest.json"
+     },
+     "features": {
+      "aiEnabled": false,
+      "manualEnabled": false,
+      "isReseller": false,
+      "selfHosted": true,
+      "supportMultipleAssociations": false,
+      "showCourseAthletes": true,
+      "showMinorExemption": true,
+      "showTutorial": true,
+      "familyRegistration": true,
+      "federationRegistration": false,
+      "multipleRegistration": false,
+      "uiApiVersion": "v1"
+     },
+     "setup": {
+      "provenance": "fresh",
+      "onboardingComplete": false
+     }
+    },
+    "audit_log_retention_months": 18
+   },
+   "effect": {
+    "fields": {
+     "name": "Istanza di prova",
+     "abbreviation": "IP",
+     "primary_color": "#123456",
+     "support_email": "supporto@example.test",
+     "ui_api_version": "v1",
+     "email_settings": {
+      "host": "smtp.seed.example.test",
+      "port": 587,
+      "security": "tls",
+      "username": "seed-user",
+      "from_email": "seed@example.test",
+      "sender_name": "Seed"
+     },
+     "audit_log_retention_months": 18,
+     "email_password": {
+      "$literal": "not-a-fernet-token"
+     },
+     "email_revision": 0,
+     "diagnostic_results": {
+      "checks": [
+       {
+        "id": "database",
+        "status": "passed",
+        "level": "connectivity",
+        "message": "Database raggiungibile.",
+        "checked_at": "2026-01-02T03:04:05+00:00"
+       },
+       {
+        "id": "email",
+        "status": "failed",
+        "level": "connectivity",
+        "message": "SMTP non raggiungibile.",
+        "checked_at": "2026-01-02T03:04:05+00:00"
+       }
+      ],
+      "checked_at": "2026-01-02T03:04:06+00:00",
+      "email_test": {
+       "status": "failed",
+       "level": "connectivity",
+       "message": "Connessione rifiutata.",
+       "checked_at": "2026-01-02T03:04:07+00:00",
+       "revision": 0,
+       "action": "connect"
+      },
+      "integration_tests": {
+       "google": {
+        "status": "passed",
+        "level": "configuration",
+        "message": "Verifica completata.",
+        "checked_at": "2026-01-02T03:04:08+00:00",
+        "revision": 0
+       },
+       "apple": {
+        "status": "passed",
+        "level": "configuration",
+        "message": "Verifica completata.",
+        "checked_at": "2026-01-02T03:04:09+00:00",
+        "revision": 9
+       }
+      },
+      "operation_leases": {
+       "diagnostics": 4102444800.0
+      }
+     },
+     "integration_settings": {
+      "stripe": {
+       "revision": 3,
+       "settings": {
+        "enabled": false,
+        "public_key": "pk_test_seed",
+        "secret_key": {
+         "$literal": "not-a-fernet-token"
+        },
+        "webhook_secret": {
+         "$secret": "legacy-format"
+        }
+       }
+      }
+     }
+    },
+    "touched": true
+   },
+   "cache_control": null,
+   "retry_after": null,
+   "audit": {
+    "actor": "owner",
+    "association": "own_association",
+    "changes": {
+     "audit_log_retention_months": [
+      6,
+      18
+     ]
+    }
+   },
+   "body": {
+    "audit_log_retention_months": 18
+   }
+  },
+  {
+   "name": "instance-admin-retention-read-18",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instance/admin",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "config": {
+     "oem": {
+      "name": "Istanza di prova",
+      "abbreviation": "IP",
+      "logo": "/oem/assozeta/brand/logo.svg",
+      "supportEmail": "supporto@example.test",
+      "primaryColor": "#123456",
+      "displaySettings": {
+       "general": {
+        "searchBar": true,
+        "cookieConsent": true,
+        "showDemoButton": false
+       },
+       "login": {
+        "showSportAssociationCreation": false,
+        "allowOauthLogin": true,
+        "showFooterInfo": true,
+        "allowOnlyAthletes": false,
+        "showTestimonials": false,
+        "termsAndConditionsUrl": ""
+       },
+       "navbar": {
+        "showAffiliateLink": false,
+        "showReview": false,
+        "showNotifications": true
+       },
+       "sidebar": {
+        "showPlanUpgrades": false,
+        "showPrivacyPolicy": true,
+        "showTermsOfService": true,
+        "showPreferences": true
+       }
+      },
+      "manualUrl": "/#/manuale"
+     },
+     "oauth": {
+      "googleClientId": null,
+      "appleClientId": null,
+      "googleEnabled": false
+     },
+     "stripe": {
+      "publicKey": null,
+      "pricingTable": null,
+      "clientPortal": null
+     },
+     "meta": {
+      "title": "Istanza di prova",
+      "description": "Gestionale per associazioni sportive",
+      "manifest": "/api/instance/manifest.json"
+     },
+     "features": {
+      "aiEnabled": false,
+      "manualEnabled": false,
+      "isReseller": false,
+      "selfHosted": true,
+      "supportMultipleAssociations": false,
+      "showCourseAthletes": true,
+      "showMinorExemption": true,
+      "showTutorial": true,
+      "familyRegistration": true,
+      "federationRegistration": false,
+      "multipleRegistration": false,
+      "uiApiVersion": "v1"
+     },
+     "setup": {
+      "provenance": "fresh",
+      "onboardingComplete": false
+     }
+    },
+    "running_version": "v0.0.0",
+    "configured_version": "latest",
+    "mode": "development",
+    "go_tasks_enabled": false,
+    "audit_log_retention_months": 18
+   },
+   "effect": null,
+   "cache_control": null,
+   "retry_after": null,
+   "audit": null
+  },
+  {
+   "name": "instance-admin-retention-set-24",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "config": {
+     "oem": {
+      "name": "Istanza di prova",
+      "abbreviation": "IP",
+      "logo": "/oem/assozeta/brand/logo.svg",
+      "supportEmail": "supporto@example.test",
+      "primaryColor": "#123456",
+      "displaySettings": {
+       "general": {
+        "searchBar": true,
+        "cookieConsent": true,
+        "showDemoButton": false
+       },
+       "login": {
+        "showSportAssociationCreation": false,
+        "allowOauthLogin": true,
+        "showFooterInfo": true,
+        "allowOnlyAthletes": false,
+        "showTestimonials": false,
+        "termsAndConditionsUrl": ""
+       },
+       "navbar": {
+        "showAffiliateLink": false,
+        "showReview": false,
+        "showNotifications": true
+       },
+       "sidebar": {
+        "showPlanUpgrades": false,
+        "showPrivacyPolicy": true,
+        "showTermsOfService": true,
+        "showPreferences": true
+       }
+      },
+      "manualUrl": "/#/manuale"
+     },
+     "oauth": {
+      "googleClientId": null,
+      "appleClientId": null,
+      "googleEnabled": false
+     },
+     "stripe": {
+      "publicKey": null,
+      "pricingTable": null,
+      "clientPortal": null
+     },
+     "meta": {
+      "title": "Istanza di prova",
+      "description": "Gestionale per associazioni sportive",
+      "manifest": "/api/instance/manifest.json"
+     },
+     "features": {
+      "aiEnabled": false,
+      "manualEnabled": false,
+      "isReseller": false,
+      "selfHosted": true,
+      "supportMultipleAssociations": false,
+      "showCourseAthletes": true,
+      "showMinorExemption": true,
+      "showTutorial": true,
+      "familyRegistration": true,
+      "federationRegistration": false,
+      "multipleRegistration": false,
+      "uiApiVersion": "v1"
+     },
+     "setup": {
+      "provenance": "fresh",
+      "onboardingComplete": false
+     }
+    },
+    "audit_log_retention_months": 24
+   },
+   "effect": {
+    "fields": {
+     "name": "Istanza di prova",
+     "abbreviation": "IP",
+     "primary_color": "#123456",
+     "support_email": "supporto@example.test",
+     "ui_api_version": "v1",
+     "email_settings": {
+      "host": "smtp.seed.example.test",
+      "port": 587,
+      "security": "tls",
+      "username": "seed-user",
+      "from_email": "seed@example.test",
+      "sender_name": "Seed"
+     },
+     "audit_log_retention_months": 24,
+     "email_password": {
+      "$literal": "not-a-fernet-token"
+     },
+     "email_revision": 0,
+     "diagnostic_results": {
+      "checks": [
+       {
+        "id": "database",
+        "status": "passed",
+        "level": "connectivity",
+        "message": "Database raggiungibile.",
+        "checked_at": "2026-01-02T03:04:05+00:00"
+       },
+       {
+        "id": "email",
+        "status": "failed",
+        "level": "connectivity",
+        "message": "SMTP non raggiungibile.",
+        "checked_at": "2026-01-02T03:04:05+00:00"
+       }
+      ],
+      "checked_at": "2026-01-02T03:04:06+00:00",
+      "email_test": {
+       "status": "failed",
+       "level": "connectivity",
+       "message": "Connessione rifiutata.",
+       "checked_at": "2026-01-02T03:04:07+00:00",
+       "revision": 0,
+       "action": "connect"
+      },
+      "integration_tests": {
+       "google": {
+        "status": "passed",
+        "level": "configuration",
+        "message": "Verifica completata.",
+        "checked_at": "2026-01-02T03:04:08+00:00",
+        "revision": 0
+       },
+       "apple": {
+        "status": "passed",
+        "level": "configuration",
+        "message": "Verifica completata.",
+        "checked_at": "2026-01-02T03:04:09+00:00",
+        "revision": 9
+       }
+      },
+      "operation_leases": {
+       "diagnostics": 4102444800.0
+      }
+     },
+     "integration_settings": {
+      "stripe": {
+       "revision": 3,
+       "settings": {
+        "enabled": false,
+        "public_key": "pk_test_seed",
+        "secret_key": {
+         "$literal": "not-a-fernet-token"
+        },
+        "webhook_secret": {
+         "$secret": "legacy-format"
+        }
+       }
+      }
+     }
+    },
+    "touched": true
+   },
+   "cache_control": null,
+   "retry_after": null,
+   "audit": {
+    "actor": "owner",
+    "association": "own_association",
+    "changes": {
+     "audit_log_retention_months": [
+      18,
+      24
+     ]
+    }
+   },
+   "body": {
+    "audit_log_retention_months": 24
+   }
+  },
+  {
+   "name": "instance-admin-retention-read-24",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instance/admin",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "config": {
+     "oem": {
+      "name": "Istanza di prova",
+      "abbreviation": "IP",
+      "logo": "/oem/assozeta/brand/logo.svg",
+      "supportEmail": "supporto@example.test",
+      "primaryColor": "#123456",
+      "displaySettings": {
+       "general": {
+        "searchBar": true,
+        "cookieConsent": true,
+        "showDemoButton": false
+       },
+       "login": {
+        "showSportAssociationCreation": false,
+        "allowOauthLogin": true,
+        "showFooterInfo": true,
+        "allowOnlyAthletes": false,
+        "showTestimonials": false,
+        "termsAndConditionsUrl": ""
+       },
+       "navbar": {
+        "showAffiliateLink": false,
+        "showReview": false,
+        "showNotifications": true
+       },
+       "sidebar": {
+        "showPlanUpgrades": false,
+        "showPrivacyPolicy": true,
+        "showTermsOfService": true,
+        "showPreferences": true
+       }
+      },
+      "manualUrl": "/#/manuale"
+     },
+     "oauth": {
+      "googleClientId": null,
+      "appleClientId": null,
+      "googleEnabled": false
+     },
+     "stripe": {
+      "publicKey": null,
+      "pricingTable": null,
+      "clientPortal": null
+     },
+     "meta": {
+      "title": "Istanza di prova",
+      "description": "Gestionale per associazioni sportive",
+      "manifest": "/api/instance/manifest.json"
+     },
+     "features": {
+      "aiEnabled": false,
+      "manualEnabled": false,
+      "isReseller": false,
+      "selfHosted": true,
+      "supportMultipleAssociations": false,
+      "showCourseAthletes": true,
+      "showMinorExemption": true,
+      "showTutorial": true,
+      "familyRegistration": true,
+      "federationRegistration": false,
+      "multipleRegistration": false,
+      "uiApiVersion": "v1"
+     },
+     "setup": {
+      "provenance": "fresh",
+      "onboardingComplete": false
+     }
+    },
+    "running_version": "v0.0.0",
+    "configured_version": "latest",
+    "mode": "development",
+    "go_tasks_enabled": false,
+    "audit_log_retention_months": 24
+   },
+   "effect": null,
+   "cache_control": null,
+   "retry_after": null,
+   "audit": null
+  },
+  {
+   "name": "instance-admin-retention-set-12",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "config": {
+     "oem": {
+      "name": "Istanza di prova",
+      "abbreviation": "IP",
+      "logo": "/oem/assozeta/brand/logo.svg",
+      "supportEmail": "supporto@example.test",
+      "primaryColor": "#123456",
+      "displaySettings": {
+       "general": {
+        "searchBar": true,
+        "cookieConsent": true,
+        "showDemoButton": false
+       },
+       "login": {
+        "showSportAssociationCreation": false,
+        "allowOauthLogin": true,
+        "showFooterInfo": true,
+        "allowOnlyAthletes": false,
+        "showTestimonials": false,
+        "termsAndConditionsUrl": ""
+       },
+       "navbar": {
+        "showAffiliateLink": false,
+        "showReview": false,
+        "showNotifications": true
+       },
+       "sidebar": {
+        "showPlanUpgrades": false,
+        "showPrivacyPolicy": true,
+        "showTermsOfService": true,
+        "showPreferences": true
+       }
+      },
+      "manualUrl": "/#/manuale"
+     },
+     "oauth": {
+      "googleClientId": null,
+      "appleClientId": null,
+      "googleEnabled": false
+     },
+     "stripe": {
+      "publicKey": null,
+      "pricingTable": null,
+      "clientPortal": null
+     },
+     "meta": {
+      "title": "Istanza di prova",
+      "description": "Gestionale per associazioni sportive",
+      "manifest": "/api/instance/manifest.json"
+     },
+     "features": {
+      "aiEnabled": false,
+      "manualEnabled": false,
+      "isReseller": false,
+      "selfHosted": true,
+      "supportMultipleAssociations": false,
+      "showCourseAthletes": true,
+      "showMinorExemption": true,
+      "showTutorial": true,
+      "familyRegistration": true,
+      "federationRegistration": false,
+      "multipleRegistration": false,
+      "uiApiVersion": "v1"
+     },
+     "setup": {
+      "provenance": "fresh",
+      "onboardingComplete": false
+     }
+    },
+    "audit_log_retention_months": 12
+   },
+   "effect": {
+    "fields": {
+     "name": "Istanza di prova",
+     "abbreviation": "IP",
+     "primary_color": "#123456",
+     "support_email": "supporto@example.test",
+     "ui_api_version": "v1",
+     "email_settings": {
+      "host": "smtp.seed.example.test",
+      "port": 587,
+      "security": "tls",
+      "username": "seed-user",
+      "from_email": "seed@example.test",
+      "sender_name": "Seed"
+     },
+     "audit_log_retention_months": 12,
+     "email_password": {
+      "$literal": "not-a-fernet-token"
+     },
+     "email_revision": 0,
+     "diagnostic_results": {
+      "checks": [
+       {
+        "id": "database",
+        "status": "passed",
+        "level": "connectivity",
+        "message": "Database raggiungibile.",
+        "checked_at": "2026-01-02T03:04:05+00:00"
+       },
+       {
+        "id": "email",
+        "status": "failed",
+        "level": "connectivity",
+        "message": "SMTP non raggiungibile.",
+        "checked_at": "2026-01-02T03:04:05+00:00"
+       }
+      ],
+      "checked_at": "2026-01-02T03:04:06+00:00",
+      "email_test": {
+       "status": "failed",
+       "level": "connectivity",
+       "message": "Connessione rifiutata.",
+       "checked_at": "2026-01-02T03:04:07+00:00",
+       "revision": 0,
+       "action": "connect"
+      },
+      "integration_tests": {
+       "google": {
+        "status": "passed",
+        "level": "configuration",
+        "message": "Verifica completata.",
+        "checked_at": "2026-01-02T03:04:08+00:00",
+        "revision": 0
+       },
+       "apple": {
+        "status": "passed",
+        "level": "configuration",
+        "message": "Verifica completata.",
+        "checked_at": "2026-01-02T03:04:09+00:00",
+        "revision": 9
+       }
+      },
+      "operation_leases": {
+       "diagnostics": 4102444800.0
+      }
+     },
+     "integration_settings": {
+      "stripe": {
+       "revision": 3,
+       "settings": {
+        "enabled": false,
+        "public_key": "pk_test_seed",
+        "secret_key": {
+         "$literal": "not-a-fernet-token"
+        },
+        "webhook_secret": {
+         "$secret": "legacy-format"
+        }
+       }
+      }
+     }
+    },
+    "touched": true
+   },
+   "cache_control": null,
+   "retry_after": null,
+   "audit": {
+    "actor": "owner",
+    "association": "own_association",
+    "changes": {
+     "audit_log_retention_months": [
+      24,
+      12
+     ]
+    }
+   },
+   "body": {
+    "audit_log_retention_months": 12
+   }
+  },
+  {
+   "name": "instance-admin-retention-read-12",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instance/admin",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "config": {
+     "oem": {
+      "name": "Istanza di prova",
+      "abbreviation": "IP",
+      "logo": "/oem/assozeta/brand/logo.svg",
+      "supportEmail": "supporto@example.test",
+      "primaryColor": "#123456",
+      "displaySettings": {
+       "general": {
+        "searchBar": true,
+        "cookieConsent": true,
+        "showDemoButton": false
+       },
+       "login": {
+        "showSportAssociationCreation": false,
+        "allowOauthLogin": true,
+        "showFooterInfo": true,
+        "allowOnlyAthletes": false,
+        "showTestimonials": false,
+        "termsAndConditionsUrl": ""
+       },
+       "navbar": {
+        "showAffiliateLink": false,
+        "showReview": false,
+        "showNotifications": true
+       },
+       "sidebar": {
+        "showPlanUpgrades": false,
+        "showPrivacyPolicy": true,
+        "showTermsOfService": true,
+        "showPreferences": true
+       }
+      },
+      "manualUrl": "/#/manuale"
+     },
+     "oauth": {
+      "googleClientId": null,
+      "appleClientId": null,
+      "googleEnabled": false
+     },
+     "stripe": {
+      "publicKey": null,
+      "pricingTable": null,
+      "clientPortal": null
+     },
+     "meta": {
+      "title": "Istanza di prova",
+      "description": "Gestionale per associazioni sportive",
+      "manifest": "/api/instance/manifest.json"
+     },
+     "features": {
+      "aiEnabled": false,
+      "manualEnabled": false,
+      "isReseller": false,
+      "selfHosted": true,
+      "supportMultipleAssociations": false,
+      "showCourseAthletes": true,
+      "showMinorExemption": true,
+      "showTutorial": true,
+      "familyRegistration": true,
+      "federationRegistration": false,
+      "multipleRegistration": false,
+      "uiApiVersion": "v1"
+     },
+     "setup": {
+      "provenance": "fresh",
+      "onboardingComplete": false
+     }
+    },
+    "running_version": "v0.0.0",
+    "configured_version": "latest",
+    "mode": "development",
+    "go_tasks_enabled": false,
+    "audit_log_retention_months": 12
    },
    "effect": null,
    "cache_control": null,
@@ -1316,6 +2792,7 @@
       "from_email": "seed@example.test",
       "sender_name": "Seed"
      },
+     "audit_log_retention_months": 12,
      "email_password": {
       "$literal": "not-a-fernet-token"
      },
@@ -1484,6 +2961,7 @@
       "from_email": "seed@example.test",
       "sender_name": "Seed"
      },
+     "audit_log_retention_months": 12,
      "email_password": {
       "$literal": "not-a-fernet-token"
      },
@@ -1656,6 +3134,7 @@
       "from_email": "seed@example.test",
       "sender_name": "Seed"
      },
+     "audit_log_retention_months": 12,
      "email_password": {
       "$literal": "not-a-fernet-token"
      },
@@ -1827,6 +3306,7 @@
       "from_email": "seed@example.test",
       "sender_name": "Seed"
      },
+     "audit_log_retention_months": 12,
      "email_password": {
       "$literal": "not-a-fernet-token"
      },
@@ -2383,6 +3863,7 @@
       "from_email": "seed@example.test",
       "sender_name": "Seed"
      },
+     "audit_log_retention_months": 12,
      "email_password": {
       "$literal": "not-a-fernet-token"
      },
@@ -2560,6 +4041,7 @@
       "from_email": "seed@example.test",
       "sender_name": "Seed"
      },
+     "audit_log_retention_months": 12,
      "email_password": {
       "$literal": "not-a-fernet-token"
      },
@@ -2716,7 +4198,8 @@
     "running_version": "v0.0.0",
     "configured_version": "latest",
     "mode": "development",
-    "go_tasks_enabled": false
+    "go_tasks_enabled": false,
+    "audit_log_retention_months": 12
    },
    "effect": null,
    "cache_control": null,
@@ -2816,6 +4299,7 @@
       "from_email": "seed@example.test",
       "sender_name": "Seed"
      },
+     "audit_log_retention_months": 12,
      "email_password": {
       "$literal": "not-a-fernet-token"
      },
@@ -3869,6 +5353,7 @@
       "from_email": "Mailer@Example.test",
       "sender_name": "Assozeta Test"
      },
+     "audit_log_retention_months": 12,
      "email_password": {
       "$secret": "placeholder secret 1 "
      },
@@ -4001,6 +5486,7 @@
       "from_email": "mailer@example.test",
       "sender_name": ""
      },
+     "audit_log_retention_months": 12,
      "email_password": {
       "$secret": "placeholder secret 1 "
      },
@@ -4127,6 +5613,7 @@
       "from_email": "mailer@example.test",
       "sender_name": "Senza TLS"
      },
+     "audit_log_retention_months": 12,
      "email_password": {
       "$secret": ""
      },
@@ -4308,6 +5795,7 @@
      "support_email": "Admin@Example.test",
      "ui_api_version": "v1",
      "email_settings": {},
+     "audit_log_retention_months": 12,
      "email_password": {
       "$secret": ""
      },
@@ -4431,6 +5919,7 @@
       "from_email": "relay@example.test",
       "sender_name": "Relay"
      },
+     "audit_log_retention_months": 12,
      "email_password": {
       "$secret": ""
      },
@@ -4969,6 +6458,7 @@
       "from_email": "relay@example.test",
       "sender_name": "Relay"
      },
+     "audit_log_retention_months": 12,
      "email_password": {
       "$secret": ""
      },
@@ -5071,6 +6561,7 @@
       "from_email": "relay@example.test",
       "sender_name": "Relay"
      },
+     "audit_log_retention_months": 12,
      "email_password": {
       "$secret": ""
      },
@@ -5361,7 +6852,8 @@
     "running_version": "v0.0.0",
     "configured_version": "latest",
     "mode": "development",
-    "go_tasks_enabled": false
+    "go_tasks_enabled": false,
+    "audit_log_retention_months": 12
    },
    "effect": null,
    "cache_control": null,
@@ -5439,6 +6931,7 @@
       "from_email": "relay@example.test",
       "sender_name": "Relay"
      },
+     "audit_log_retention_months": 12,
      "email_password": {
       "$secret": ""
      },
@@ -5615,6 +7108,7 @@
       "from_email": "relay@example.test",
       "sender_name": "Relay"
      },
+     "audit_log_retention_months": 12,
      "email_password": {
       "$secret": ""
      },
@@ -5710,6 +7204,7 @@
       "from_email": "relay@example.test",
       "sender_name": "Relay"
      },
+     "audit_log_retention_months": 12,
      "email_password": {
       "$secret": ""
      },
@@ -6398,6 +7893,7 @@
       "from_email": "relay@example.test",
       "sender_name": "Relay"
      },
+     "audit_log_retention_months": 12,
      "email_password": {
       "$secret": ""
      },
@@ -6572,7 +8068,8 @@
     "running_version": "v0.0.0",
     "configured_version": "latest",
     "mode": "development",
-    "go_tasks_enabled": false
+    "go_tasks_enabled": false,
+    "audit_log_retention_months": 12
    },
    "effect": null,
    "cache_control": null,
@@ -6771,6 +8268,7 @@
       "from_email": "relay@example.test",
       "sender_name": "Relay"
      },
+     "audit_log_retention_months": 12,
      "email_password": {
       "$secret": ""
      },
@@ -6994,6 +8492,7 @@
       "from_email": "relay@example.test",
       "sender_name": "Relay"
      },
+     "audit_log_retention_months": 12,
      "email_password": {
       "$secret": ""
      },
@@ -7169,6 +8668,7 @@
       "from_email": "relay@example.test",
       "sender_name": "Relay"
      },
+     "audit_log_retention_months": 12,
      "email_password": {
       "$secret": ""
      },
@@ -7363,6 +8863,7 @@
       "from_email": "relay@example.test",
       "sender_name": "Relay"
      },
+     "audit_log_retention_months": 12,
      "email_password": {
       "$secret": ""
      },
@@ -7547,6 +9048,7 @@
       "from_email": "relay@example.test",
       "sender_name": "Relay"
      },
+     "audit_log_retention_months": 12,
      "email_password": {
       "$secret": ""
      },
@@ -7771,6 +9273,7 @@
       "from_email": "a@example.com",
       "sender_name": ""
      },
+     "audit_log_retention_months": 12,
      "email_password": {
       "$secret": ""
      },
@@ -7906,6 +9409,7 @@
       "from_email": "form@example.test",
       "sender_name": ""
      },
+     "audit_log_retention_months": 12,
      "email_password": {
       "$secret": ""
      },
@@ -8034,6 +9538,7 @@
      "support_email": "Admin@Example.test",
      "ui_api_version": "v2",
      "email_settings": {},
+     "audit_log_retention_months": 12,
      "email_password": {
       "$secret": ""
      },
@@ -8145,6 +9650,7 @@
      "support_email": "Admin@Example.test",
      "ui_api_version": "v2",
      "email_settings": {},
+     "audit_log_retention_months": 12,
      "email_password": {
       "$secret": ""
      },
@@ -8451,6 +9957,7 @@
      "support_email": "Admin@Example.test",
      "ui_api_version": "v2",
      "email_settings": {},
+     "audit_log_retention_months": 12,
      "email_password": {
       "$secret": ""
      },
@@ -8561,6 +10068,7 @@
      "support_email": "Admin@Example.test",
      "ui_api_version": "v2",
      "email_settings": {},
+     "audit_log_retention_months": 12,
      "email_password": {
       "$secret": ""
      },
@@ -8670,6 +10178,7 @@
      "support_email": "Admin@Example.test",
      "ui_api_version": "v2",
      "email_settings": {},
+     "audit_log_retention_months": 12,
      "email_password": {
       "$secret": ""
      },
@@ -8958,7 +10467,8 @@
     "running_version": "v0.0.0",
     "configured_version": "latest",
     "mode": "development",
-    "go_tasks_enabled": false
+    "go_tasks_enabled": false,
+    "audit_log_retention_months": 12
    },
    "effect": null,
    "cache_control": null,
@@ -9271,6 +10781,7 @@
       "from_email": "relay@example.test",
       "sender_name": "Relay"
      },
+     "audit_log_retention_months": 12,
      "email_password": {
       "$secret": "placeholder secret 2"
      },
@@ -9920,6 +11431,7 @@
       "from_email": "relay@example.test",
       "sender_name": "Relay"
      },
+     "audit_log_retention_months": 12,
      "email_password": {
       "$secret": ""
      },
@@ -10401,6 +11913,7 @@
       "from_email": "relay@example.test",
       "sender_name": "Relay"
      },
+     "audit_log_retention_months": 12,
      "email_password": {
       "$literal": "not-a-fernet-token"
      },
@@ -10878,6 +12391,7 @@
       "from_email": "relay@example.test",
       "sender_name": "Relay"
      },
+     "audit_log_retention_months": 12,
      "email_password": {
       "$secret": ""
      },
@@ -11355,6 +12869,7 @@
       "from_email": "relay@example.test",
       "sender_name": "Relay"
      },
+     "audit_log_retention_months": 12,
      "email_password": {
       "$secret": "placeholder secret 2"
      },

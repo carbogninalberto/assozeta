@@ -4888,7 +4888,7 @@
         "delete_old_audit_logs"
       ],
       "fixture": "legacy-mixed",
-      "effect": "Remove auditlog entries older than 365 days and their cascading index rows.",
+      "effect": "Remove auditlog entries older than the configured retention in UTC calendar months and their cascading index rows.",
       "owner": {
         "django": {
           "runtime": "django",
@@ -9200,6 +9200,13 @@
   ],
   "ledger_reconciliation": [
     {
+      "ledger_id": "model_hook:BE/instance/models.py:InstanceConfiguration.save",
+      "status": "needs_review",
+      "finding": "The configuration model gained the audit retention field. The existing save-hook evidence predates the model change.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
       "ledger_id": "route:BE/instance/urls.py:access -> InstanceAccessView.as_view()",
       "status": "needs_review",
       "finding": "The instance URL file changed. The catalog requires a new review of the existing route evidence.",
@@ -9209,7 +9216,7 @@
     {
       "ledger_id": "route:BE/instance/urls.py:admin -> InstanceAdminView.as_view()",
       "status": "needs_review",
-      "finding": "The instance URL file changed. The catalog requires a new review of the existing route evidence.",
+      "finding": "The admin endpoint now reads and updates audit retention. The updated HTTP fixture awaits a shared parity run.",
       "executable_gap": false,
       "evidence_gap": true
     },
@@ -9462,6 +9469,216 @@
       "ledger_id": "route:BE/instance/urls.py:status -> InstanceStatusView.as_view()",
       "status": "needs_review",
       "finding": "The instance URL file changed. The catalog requires a new review of the existing route evidence.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "task:BE/application/tasks.py:association_quote_assign",
+      "status": "needs_review",
+      "finding": "The task declaration and body are unchanged. The catalog invalidated its evidence when the retention task in the same file changed.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "task:BE/application/tasks.py:auto_archive_subscription",
+      "status": "needs_review",
+      "finding": "The task declaration and body are unchanged. The catalog invalidated its evidence when the retention task in the same file changed.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "task:BE/application/tasks.py:auto_delete_orphan_medical_certificate",
+      "status": "needs_review",
+      "finding": "The task declaration and body are unchanged. The catalog invalidated its evidence when the retention task in the same file changed.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "task:BE/application/tasks.py:auto_mark_attendance",
+      "status": "needs_review",
+      "finding": "The task declaration and body are unchanged. The catalog invalidated its evidence when the retention task in the same file changed.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "task:BE/application/tasks.py:change_type_of_stripe_payments",
+      "status": "needs_review",
+      "finding": "The task declaration and body are unchanged. The catalog invalidated its evidence when the retention task in the same file changed.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "task:BE/application/tasks.py:check_workflows_trigger",
+      "status": "needs_review",
+      "finding": "The task declaration and body are unchanged. The catalog invalidated its evidence when the retention task in the same file changed.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "task:BE/application/tasks.py:check_workflows_trigger_cron",
+      "status": "needs_review",
+      "finding": "The task declaration and body are unchanged. The catalog invalidated its evidence when the retention task in the same file changed.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "task:BE/application/tasks.py:cleanup_old_exports_task",
+      "status": "needs_review",
+      "finding": "The task declaration and body are unchanged. The catalog invalidated its evidence when the retention task in the same file changed.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "task:BE/application/tasks.py:clear_deleted_subscription",
+      "status": "needs_review",
+      "finding": "The task declaration and body are unchanged. The catalog invalidated its evidence when the retention task in the same file changed.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "task:BE/application/tasks.py:clear_expired_subscription_tokens",
+      "status": "needs_review",
+      "finding": "The task declaration and body are unchanged. The catalog invalidated its evidence when the retention task in the same file changed.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "task:BE/application/tasks.py:delete_old_audit_logs",
+      "status": "needs_review",
+      "finding": "The nightly purge now uses the configured retention period. Its process evidence predates the new cutoff.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "task:BE/application/tasks.py:delete_users_with_request",
+      "status": "needs_review",
+      "finding": "The task declaration and body are unchanged. The catalog invalidated its evidence when the retention task in the same file changed.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "task:BE/application/tasks.py:export_association_data",
+      "status": "needs_review",
+      "finding": "The task declaration and body are unchanged. The catalog invalidated its evidence when the retention task in the same file changed.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "task:BE/application/tasks.py:export_invoices_to_zip",
+      "status": "needs_review",
+      "finding": "The task declaration and body are unchanged. The catalog invalidated its evidence when the retention task in the same file changed.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "task:BE/application/tasks.py:generate_coupon_if_not_exists",
+      "status": "needs_review",
+      "finding": "The task declaration and body are unchanged. The catalog invalidated its evidence when the retention task in the same file changed.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "task:BE/application/tasks.py:import_association_data",
+      "status": "needs_review",
+      "finding": "The task declaration and body are unchanged. The catalog invalidated its evidence when the retention task in the same file changed.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "task:BE/application/tasks.py:mark_as_paid_payments_checking_stripe",
+      "status": "needs_review",
+      "finding": "The task declaration and body are unchanged. The catalog invalidated its evidence when the retention task in the same file changed.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "task:BE/application/tasks.py:print_document_subscription",
+      "status": "needs_review",
+      "finding": "The task declaration and body are unchanged. The catalog invalidated its evidence when the retention task in the same file changed.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "task:BE/application/tasks.py:renew_memberships_payments",
+      "status": "needs_review",
+      "finding": "The task declaration and body are unchanged. The catalog invalidated its evidence when the retention task in the same file changed.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "task:BE/application/tasks.py:reset_email_balance",
+      "status": "needs_review",
+      "finding": "The task declaration and body are unchanged. The catalog invalidated its evidence when the retention task in the same file changed.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "task:BE/application/tasks.py:send_email_html",
+      "status": "needs_review",
+      "finding": "The task declaration and body are unchanged. The catalog invalidated its evidence when the retention task in the same file changed.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "task:BE/application/tasks.py:send_email_template",
+      "status": "needs_review",
+      "finding": "The task declaration and body are unchanged. The catalog invalidated its evidence when the retention task in the same file changed.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "task:BE/application/tasks.py:send_email_text",
+      "status": "needs_review",
+      "finding": "The task declaration and body are unchanged. The catalog invalidated its evidence when the retention task in the same file changed.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "task:BE/application/tasks.py:send_expired_certificate_email",
+      "status": "needs_review",
+      "finding": "The task declaration and body are unchanged. The catalog invalidated its evidence when the retention task in the same file changed.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "task:BE/application/tasks.py:send_expiring_certificate_email",
+      "status": "needs_review",
+      "finding": "The task declaration and body are unchanged. The catalog invalidated its evidence when the retention task in the same file changed.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "task:BE/application/tasks.py:send_reminders",
+      "status": "needs_review",
+      "finding": "The task declaration and body are unchanged. The catalog invalidated its evidence when the retention task in the same file changed.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "task:BE/application/tasks.py:send_user_partial_registration_email",
+      "status": "needs_review",
+      "finding": "The task declaration and body are unchanged. The catalog invalidated its evidence when the retention task in the same file changed.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "task:BE/application/tasks.py:update_age_of_associates",
+      "status": "needs_review",
+      "finding": "The task declaration and body are unchanged. The catalog invalidated its evidence when the retention task in the same file changed.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "task:BE/application/tasks.py:workflow_block_execute",
+      "status": "needs_review",
+      "finding": "The task declaration and body are unchanged. The catalog invalidated its evidence when the retention task in the same file changed.",
+      "executable_gap": false,
+      "evidence_gap": true
+    },
+    {
+      "ledger_id": "task:BE/instance/tasks.py:restore_instance_data",
+      "status": "needs_review",
+      "finding": "The restore now writes one audit summary for the replacement. The existing process receipt predates that change.",
       "executable_gap": false,
       "evidence_gap": true
     }

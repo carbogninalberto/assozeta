@@ -1,4 +1,4 @@
-"""Audit retention: exact 365-day cutoff and collector cascade on current schema."""
+"""Audit retention: UTC calendar-month cutoff and collector cascade on current schema."""
 from contextlib import redirect_stdout
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
@@ -20,6 +20,7 @@ def run(work, log, tool_env):
     from django.db import connection, connections, transaction
     from django.test.utils import CaptureQueriesContext
     from django_celery_beat.models import PeriodicTask
+    from instance.models import InstanceConfiguration
     from application import tasks
     from application.models import User, SportAssociation, Associate
     from application.models.audit_models import AuditLogIndex
@@ -37,9 +38,12 @@ def run(work, log, tool_env):
     User.original_objects.bulk_create([User(user_id=pk, username=f'retention-{i}', role=1, password='!fixture') for i, pk in enumerate(owners)])
     SportAssociation.original_objects.bulk_create([SportAssociation(sport_association_id=pk, user_id=owner,
         denomination='Retention fixture', tax_code='00000000000', deleted=bool(i)) for i,(pk,owner) in enumerate(zip(associations,owners))])
-    now = datetime(2032,3,1,12,34,56,123400,tzinfo=timezone.utc)
-    cutoff = now - timedelta(days=365)  # 2031-03-02, not the calendar-year anniversary.
-    assert cutoff.date().isoformat() == '2031-03-02'
+    # All five clocks have the same calendar cutoff. Month ends exercise clamping.
+    cutoff = datetime(2023, 2, 28, 23, 34, 56, 123400, tzinfo=timezone.utc)
+    now = cutoff.replace(year=2024, day=29)
+    periods = [(3, cutoff.replace(month=5, day=31)), (6, cutoff.replace(month=8, day=31)),
+               (12, now), (18, cutoff.replace(year=2024, month=8, day=31)), (24, cutoff.replace(year=2025))]
+    assert not InstanceConfiguration.objects.exists(), 'requires an unconfigured instance'
     content_types = [ContentType.objects.get_for_model(model) for model in (User,Associate)]
     rows = [dict(id=100100+i, stamp=stamp.isoformat(), expired=i<3, indexed=i%2==0,
                  association=associations[(i//2)%2], content_type=content_types[i%2].pk)
@@ -53,8 +57,8 @@ def run(work, log, tool_env):
         AuditLogIndex.objects.bulk_create([AuditLogIndex(audit_log_index_id=uid(200000+r['id']),log_entry_id=r['id'],
             sport_association_id=r['association'],resolution_path='fixture',created_at=now if r['expired'] else cutoff-timedelta(days=30))
             for r in records if r['indexed']])
-    def call():
-        with patch.object(tasks.timezone, 'now', return_value=now), redirect_stdout(io.StringIO()), CaptureQueriesContext(connection) as queries:
+    def call(clock=now):
+        with patch.object(tasks.timezone, 'now', return_value=clock), redirect_stdout(io.StringIO()), CaptureQueriesContext(connection) as queries:
             assert tasks.delete_old_audit_logs.run() is None
         return len(queries)
     def expected(before,records):
@@ -67,6 +71,20 @@ def run(work, log, tool_env):
         seed([]);before=snapshot();call();assert snapshot()==before
         seed(rows);before=snapshot();call();assert snapshot()==expected(before,rows)
         before=snapshot();call();assert snapshot()==before, 'replay changed retained audit or index'
+        config = InstanceConfiguration.objects.create(domain='retention.example.test')
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute('SELECT to_jsonb(c)::text FROM instance_instanceconfiguration c WHERE id=%s', [config.pk])
+                config_row = json.loads(cursor.fetchone()[0])
+            for months, clock in periods:
+                config.audit_log_retention_months = months
+                config.save(update_fields=['audit_log_retention_months'])
+                seed(rows)
+                before = snapshot()
+                call(clock)
+                assert snapshot() == expected(before, rows), f'{months}-month cutoff or index cascade'
+        finally:
+            config.delete()
         query_counts={}
         for size in (1,16,128):
             scaled=[dict(rows[0],id=101000+i) for i in range(size)]
@@ -113,7 +131,8 @@ def run(work, log, tool_env):
         assert snapshot()==expected(race_expected,rows), 'later invocation could not remove the new index'
         seed(rows);before_go=snapshot()
         fixture=work/'audit-retention.json'
-        fixture.write_text(json.dumps({'now':now.isoformat(),'cutoff':cutoff.isoformat(),'rows':rows}))
+        fixture.write_text(json.dumps({'now': now.isoformat(), 'config': config_row, 'rows': rows,
+                                       'periods': [{'months': months, 'now': clock.isoformat()} for months, clock in periods]}))
         task=tasks.delete_old_audit_logs
         policy={k:getattr(task,k) for k in ('acks_late','max_retries','default_retry_delay','rate_limit','time_limit','soft_time_limit')}
         policy.update(timezone=task.app.conf.timezone,
@@ -121,7 +140,7 @@ def run(work, log, tool_env):
             persisted_occurrences=list(PeriodicTask.objects.filter(task=task.name).values('name','enabled')))
         (output/'django-oracle.json').write_text(json.dumps({'success':True,'query_counts':query_counts,'policy':policy,
             'concurrent_index_commit_failure_returns_none':True,'expired_entries':3,'expired_indexes':2,'retained_entries':4,'retained_indexes':2},indent=2)+'\n')
-        print('Django audit retention: exact 365 days, equality/microsecond boundary, unindexed logs, deleted associations, index-age independence, replay and both cascade failures pass',flush=True)
+        print('Django audit retention: default and all five configured calendar-month cutoffs, equality/microsecond boundary, unindexed logs, deleted associations, index-age independence, replay and both cascade failures pass',flush=True)
         completed=subprocess.run(['go','test','-race','-tags=auditretentionintegration','./internal/service','-run','^TestAuditRetentionPostgres$','-json'],
             cwd=ROOT/'BE_GO',env={**tool_env,'ASSOZETA_AUDIT_FIXTURE':str(fixture),'ASSOZETA_AUDIT_PLAN_OUTPUT':str(output/'query-plan.json'),
                 'ASSOZETA_AUDIT_DSN':f'host={work} user=contracts dbname=assozeta_contract_accounts sslmode=disable'},

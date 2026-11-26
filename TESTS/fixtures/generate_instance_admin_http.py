@@ -84,7 +84,7 @@ INSTANCE = {
 state = {
     'name': INSTANCE['name'], 'abbreviation': INSTANCE['abbreviation'], 'primary_color': INSTANCE['primary_color'],
     'support_email': INSTANCE['support_email'], 'ui_api_version': 'v1', 'email_settings': copy.deepcopy(INSTANCE['email_settings']),
-    'email_password': {'$literal': 'not-a-fernet-token'}, 'email_revision': 0,
+    'audit_log_retention_months': 12, 'email_password': {'$literal': 'not-a-fernet-token'}, 'email_revision': 0,
     'diagnostic_results': copy.deepcopy(INSTANCE['diagnostic_results']),
     'integration_settings': {'stripe': {'revision': 3, 'settings': {
         'enabled': False, 'public_key': 'pk_test_seed', 'secret_key': {'$literal': 'not-a-fernet-token'},
@@ -217,7 +217,7 @@ def config_body():
 
 def admin_body():
     return {'config': config_body(), 'running_version': 'v0.0.0', 'configured_version': 'latest', 'mode': 'development',
-            'go_tasks_enabled': False}
+            'go_tasks_enabled': False, 'audit_log_retention_months': state['audit_log_retention_months']}
 
 
 CHECKS = (('public_url', 'URL pubblico e HTTPS', True, 'overview'), ('api', 'API', True, 'diagnostics'),
@@ -320,6 +320,19 @@ add('superuser-admin-without-session', 'admin', ADMIN, 200, admin_body())
 # Administration paths ignore an administrator's session header.
 add('superuser-admin-session-ignored', 'admin', ADMIN, 200, admin_body(), headers={'X-Impersonation-Id': '$session:admin_owner', 'User-Id': IDS['owner']})
 ONLY_BRANDING = ['Only instance branding can be edited here.']
+retention = 'audit_log_retention_months'
+invalid_retention = {retention: ['Scegli un periodo di conservazione di 3, 6, 12, 18 o 24 mesi.']}
+add('retention-denied', 'full_collaborator', ADMIN, 403, DENIED, method='PUT', body={retention: 3})
+for name, value in [('zero', 0), ('unsupported', 9), ('fraction', 6.5), ('null', None), ('bool', True), ('text', 'tre')]:
+    add('retention-invalid-' + name, 'owner', ADMIN, 400, invalid_retention, method='PUT', body={retention: value})
+for months in (3, 6, 18, 24, 12):
+    previous = state[retention]
+    state[retention] = months
+    add(f'retention-set-{months}', 'owner', ADMIN, 200, {'config': config_body(), retention: months}, method='PUT',
+        body={retention: months}, effect=write(),
+        audit={'actor': 'owner', 'association': 'own_association', 'changes': {retention: [previous, months]}})
+    add(f'retention-read-{months}', 'owner', ADMIN, 200, admin_body())
+
 add('put-empty-body', 'owner', ADMIN, 400, ONLY_BRANDING, method='PUT')
 add('put-empty-object', 'owner', ADMIN, 400, ONLY_BRANDING, method='PUT', body={})
 add('put-extra-key', 'owner', ADMIN, 400, ONLY_BRANDING, method='PUT', body={'oem': {'name': 'x'}, 'meta_title': 'x'})

@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -121,7 +120,7 @@ type RestoreCollector struct {
 // identities are the recovery export's keys by model name (canonical text).
 // A RestoreError comes back as *RestoreDeletionError.
 func (d *RestoreDeletion) Plan(ctx context.Context, tx *sqlx.Tx, identities map[string][]string, now func() time.Time) (*RestoreCollector, error) {
-	run := &collaboratorDeleteRun{tx: tx, graph: d.graph, audit: domain.LoginAuditContext{}, now: now}
+	run := &collaboratorDeleteRun{tx: tx, graph: d.graph, skipAudit: true, now: now}
 	collector := run.collector()
 	scope := map[string]map[string]bool{}
 	for name, keys := range identities {

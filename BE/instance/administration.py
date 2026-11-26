@@ -4,6 +4,7 @@ from uuid import uuid4
 from auditlog.models import LogEntry
 from django.conf import settings
 from django.core.cache import cache
+from django.db import transaction
 from django.utils import timezone
 from rest_framework import serializers, status
 from rest_framework.permissions import IsAuthenticated
@@ -52,6 +53,7 @@ class InstanceAdminView(APIView):
             'configured_version': getattr(settings, 'ASSOZETA_CONFIGURED_VERSION', ''),
             'mode': deployment_mode(),
             'go_tasks_enabled': config.go_tasks_enabled,
+            'audit_log_retention_months': config.audit_log_retention_months,
         })
 
     EDITABLE = {'oem', 'uiApiVersion'}
@@ -60,6 +62,8 @@ class InstanceAdminView(APIView):
         keys = set(request.data)
         if keys & {'goTasksEnabled', 'password'}:
             return self.put_go_tasks(request, keys)
+        if keys == {'audit_log_retention_months'}:
+            return self.put_audit_retention(request)
         if not keys or not keys <= self.EDITABLE:
             raise serializers.ValidationError('Only instance branding can be edited here.')
         config = InstanceConfiguration.get_config()
@@ -74,6 +78,25 @@ class InstanceAdminView(APIView):
                 changes={'ui_api_version': [previous, config.ui_api_version]},
                 additional_data={'actor_id': str(actor.pk)}, force_log=True)
         return Response({'config': InstanceConfigSerializer(config).data})
+
+    @transaction.atomic
+    def put_audit_retention(self, request):
+        months = request.data.get('audit_log_retention_months') if isinstance(request.data, dict) else None
+        if type(months) is not int or months not in InstanceConfiguration.AUDIT_RETENTION_MONTHS:
+            raise serializers.ValidationError({
+                'audit_log_retention_months': ['Scegli un periodo di conservazione di 3, 6, 12, 18 o 24 mesi.'],
+            })
+        config = InstanceConfiguration.objects.select_for_update().get()
+        previous = config.audit_log_retention_months
+        if previous != months:
+            config.audit_log_retention_months = months
+            config.save(update_fields=['audit_log_retention_months', 'updated_at'])
+            actor = actor_of(request)
+            LogEntry.objects.log_create(
+                config, action=LogEntry.Action.UPDATE, actor=actor,
+                changes={'audit_log_retention_months': [previous, months]},
+                additional_data={'actor_id': str(actor.pk)}, force_log=True)
+        return Response({'config': InstanceConfigSerializer(config).data, 'audit_log_retention_months': months})
 
     def put_go_tasks(self, request, keys):
         """The owner switch for the Go background tasks: password, then the runner.

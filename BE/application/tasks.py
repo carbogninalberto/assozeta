@@ -3,7 +3,7 @@ import os
 import shutil
 import tempfile
 import time
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 import random
 from threading import Timer
 from uuid import NAMESPACE_URL, uuid5
@@ -1682,20 +1682,24 @@ def export_invoices_to_zip(files=None, sport_association=None):
 @shared_task(name="delete_old_audit_logs")
 def delete_old_audit_logs():
     """
-    Delete audit log entries older than 365 days.
+    Delete audit log entries older than the instance's retention period.
     The AuditLogIndex entries are deleted automatically via CASCADE.
     """
     from auditlog.models import LogEntry
+    from instance.models import InstanceConfiguration
 
     logger.info("Starting delete_old_audit_logs task", extra={'task_name': 'delete_old_audit_logs'})
     try:
-        cutoff_date = timezone.now() - timedelta(days=365)
+        months = InstanceConfiguration.objects.values_list('audit_log_retention_months', flat=True).first()
+        if months is None:
+            months = InstanceConfiguration.DEFAULT_AUDIT_RETENTION_MONTHS
+        cutoff_date = timezone.now().astimezone(UTC) - relativedelta(months=months)
         deleted_count, _ = LogEntry.objects.filter(timestamp__lt=cutoff_date).delete()
         logger.info(
             "Completed delete_old_audit_logs task",
             extra={'task_name': 'delete_old_audit_logs', 'deleted_count': deleted_count}
         )
-        print(f"[delete_old_audit_logs] Deleted {deleted_count} audit log entries older than 365 days")
+        print(f"[delete_old_audit_logs] Deleted {deleted_count} audit log entries older than {months} months")
     except Exception as e:
         logger.error("Error in delete_old_audit_logs task", extra={'task_name': 'delete_old_audit_logs'}, exc_info=True)
         print(f"[delete_old_audit_logs] error {e}")

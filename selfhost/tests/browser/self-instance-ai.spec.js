@@ -104,3 +104,22 @@ for (const viewport of [{width: 1440, height: 1000}, {width: 390, height: 844}])
         expect(errors).toEqual([]);
     });
 }
+
+test('instance settings show the saved audit retention and all five periods', async ({page, request}) => {
+    await request.post('/fixture/reset');
+    await page.route('**/fixture/api/admin', async route => {
+        const response = await route.fetch();
+        await route.fulfill({response, json: {...await response.json(), audit_log_retention_months: 18}});
+    });
+    await page.goto('/');
+    await page.getByRole('tab', {name: 'Impostazioni'}).click();
+    const select = page.getByRole('combobox', {name: 'Conservazione registro modifiche', exact: true});
+    const sections = page.getByRole('tablist', {name: 'Impostazioni'}).getByRole('tab');
+    for (const section of await sections.all()) {
+        if (await select.isVisible()) break;
+        await section.click();
+    }
+    await expect(select).toBeVisible();
+    await expect(select.locator('option')).toHaveText(['3 mesi', '6 mesi', '12 mesi', '18 mesi', '24 mesi']);
+    await expect(select.locator('option:checked')).toHaveText('18 mesi');
+});

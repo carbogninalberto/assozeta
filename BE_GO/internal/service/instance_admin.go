@@ -49,7 +49,8 @@ type InstanceAdminStore interface {
 	UpdateBranding(context.Context, map[string]string, time.Time) error
 	UIAPIVersion(context.Context) (string, error)
 	AppendUIAPIVersionChange(context.Context, domain.InstanceUIAPIVersionChange) error
-	GoTasksEnabled(context.Context) (bool, error)
+	AdminSettings(context.Context) (bool, int, error)
+	SetAuditRetention(context.Context, int, string, domain.LoginAuditContext, time.Time) error
 }
 
 // InstanceAdminBootstrap is InstanceConfigSerializer and is_instance_administrator
@@ -151,12 +152,27 @@ func (s *InstanceAdmin) Admin(ctx context.Context) (map[string]any, error) {
 	if err != nil {
 		return nil, err
 	}
-	enabled, err := s.store.GoTasksEnabled(ctx)
+	enabled, months, err := s.store.AdminSettings(ctx)
 	if err != nil {
 		return nil, err
 	}
 	return map[string]any{"config": config, "running_version": s.env.Version, "configured_version": s.env.ConfiguredVersion,
-		"mode": s.env.DeploymentMode, "go_tasks_enabled": enabled}, nil
+		"mode": s.env.DeploymentMode, "go_tasks_enabled": enabled, "audit_log_retention_months": months}, nil
+}
+
+func (s *InstanceAdmin) SetAuditRetention(ctx context.Context, body any, actor string, audit domain.LoginAuditContext) (map[string]any, error) {
+	months, err := dto.InstanceAdminAuditRetention(body)
+	if err != nil {
+		return nil, err
+	}
+	if err := s.store.SetAuditRetention(ctx, months, actor, audit, s.now()); err != nil {
+		return nil, err
+	}
+	config, err := s.config(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return map[string]any{"config": config, "audit_log_retention_months": months}, nil
 }
 
 // Branding is InstanceAdminView.put: the branding ('oem') and the web UI API

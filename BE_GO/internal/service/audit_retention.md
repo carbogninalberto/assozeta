@@ -4,9 +4,10 @@
 `application.tasks.delete_old_audit_logs`. The internal version-1 envelope requires
 the exact task kind, nil association scope, an empty object and a running fenced
 job. Invalid scope/arguments fail before SQL. The retention period is not supplied
-by a caller: the service uses execution time in UTC minus exactly 365 days.
-Equality survives, with microsecond comparisons preserved. A leap-year fixture
-uses 2032-03-01 and a 2031-03-02 cutoff, distinguishing duration from calendar year.
+by a caller: the deletion reads `audit_log_retention_months` from the instance
+configuration, defaulting to 12 when the singleton is absent. PostgreSQL subtracts
+the calendar-month interval in UTC, clamping the day at month end like Django's
+`relativedelta`. Entries at the cutoff survive, including microsecond precision.
 
 The task is instance-wide across content types, actors and associations. Logs
 without an association index remain eligible; deleted associations do not exempt
@@ -24,7 +25,7 @@ job and acquires the shared server restore fence, then checks the live Go owners
 generation, lease token, running state and unexpired lease before returning the
 transaction. The shared ownership-row lock keeps the generation stable while
 effects run without locking the job row, so heartbeat renewal remains possible.
-There are no schema changes, new audit records, provider calls or child jobs.
+The task does not create audit records or child jobs or call providers.
 Retained rows and all other managed models are compared exactly through Django.
 
 Django catches collector errors and returns `None`. Go rolls back a failed delete,
@@ -66,8 +67,8 @@ or skipped groups fail the adapter. Two admission groups prove that a changed ow
 generation, token or expired lease sends no business SQL, and that a handled failure
 rolls back before a completion-only transaction checks ownership again.
 
-Django uses 5/5/6 statements at 1/16/128 indexed expired logs in the fixture. Go
-uses six at 0/1/16/128/512: BEGIN, shared server restore fence, live job ownership
+Before the configuration lookup, Django used 5/5/6 statements at 1/16/128 indexed expired logs in the fixture. Earlier Go measurements
+used six at 0/1/16/128/512: BEGIN, shared server restore fence, live job ownership
 fence, deletion, completion and COMMIT, excluding worker claim/admission/heartbeat
 and test setup/readback. EXPLAIN ANALYZE of the actual command over 4,096 logs and
 indexes deletes 128 of each and rolls back the experiment. The observed plan scans

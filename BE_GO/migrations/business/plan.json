@@ -2255,6 +2255,11 @@
     "sql": "000217_instance_0010_go_tasks_enabled.up.sql"
   },
   {
+    "app": "instance",
+    "name": "0011_audit_log_retention_months",
+    "sql": "000238_instance_0011_audit_log_retention_months.up.sql"
+  },
+  {
     "app": "notifications",
     "name": "0001_initial",
     "sql": "000218_notifications_0001_initial.up.sql"

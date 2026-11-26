@@ -23,7 +23,7 @@ export const settingsAdditionalReviewedSources = Object.freeze({
   "UI/src/routes/subscribe/wizard/Step1.svelte": "50bbcd39de0d80293f59f6a0953a2498efd488ebf062582ae6b964c4b9a4c4f5",
   "UI/src/routes/subscribe/wizard/Step2.svelte": "871d4ff3b52672efd93b0348c3b587d355aeaa31edd60696d777e1b5db35a128",
   "UI/src/routes/subscribe/wizard/Step0.svelte": "6219f8340109f6637059137a679d7e73d272b95a61893a0e2aa2f58d071064a9",
-  "BE/application/tasks.py": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b",
+  "BE/application/tasks.py": "bdf4474831c4a4ede3449b73f8172cd270de77b18d1f4371fed8bdd6fd059be1",
   "BE/core/celery.py": "df2fc7b696fed1f9939c3d1bd1799ad07ec9e75442c9b7c5f7ee28531a59277d",
   "BE/application/serializers/courses_serializers.py": "6b5ed962bb1aaf588e04ecffba1f6bcedd26f8a5d55c8e9a0d97430c893a1481",
   "BE/application/views/course_views.py": "28ce719b7f6897bccde939737866533899649def382f68a47def300a5dbc1c66",
@@ -31,7 +31,7 @@ export const settingsAdditionalReviewedSources = Object.freeze({
   "UI/src/routes/profile/sections/Stripe.svelte": "75899c0eb6ed827a07b0d2ad47ea102353a25a0c575c941757a828d5c65529be",
   "UI/src/routes/profile/sections/TwoFactor.svelte": "45f92360b4bd393d80d06c7f890ca290f172d7166eb8527eb586aa8802cd2a39",
   "BE/application/views/two_fa_views.py": "51b94979b66fae4afc9f65386b0f619258c061fc608b1dd29d3dc59a071cfdf3",
-  "UI/src/routes/profile/sections/SelfInstance.svelte": "afd45952e5249d300159b574209e7fe1d4a473e68d44fed39c50af455d13454f",
+  "UI/src/routes/profile/sections/SelfInstance.svelte": "d1e07d79d3728bb1900854b627da40540c9f7869ecd7dd663cc8ae4cda1255e7",
   "UI/src/routes/profile/sections/InstanceRuntime.svelte": "a9dd0e888538138df3dd06d838086a95b1c922e84c1c74998fc579f573967331",
   "UI/public/maintenance.html": "0e3dfe75f85e652ea693c4c2800fe3ae02e349bd996fd8b050a5802de1bd3dbe",
   "UI/src/routes/profile/sections/WhatsAppFields.svelte": "ac947ef125de6936935b9107d8ed1ee6bf27d1d061421be1ece86ea0ca7c33b6"

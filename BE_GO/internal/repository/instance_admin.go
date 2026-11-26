@@ -13,8 +13,7 @@ import (
 )
 
 // InstanceAdmin reads and saves the singleton InstanceConfiguration for the
-// owner-only administration views. It never writes auditlog rows: the model
-// is not registered with auditlog.
+// owner-only administration views. Audited settings write their entries explicitly.
 type InstanceAdmin struct{ db *sqlx.DB }
 
 func NewInstanceAdmin(db *sqlx.DB) *InstanceAdmin { return &InstanceAdmin{db: db} }
@@ -120,11 +119,45 @@ func (r *InstanceAdmin) UIAPIVersion(ctx context.Context) (string, error) {
 	return version, err
 }
 
-// GoTasksEnabled is InstanceConfiguration.get_config().go_tasks_enabled.
-func (r *InstanceAdmin) GoTasksEnabled(ctx context.Context) (bool, error) {
+func (r *InstanceAdmin) AdminSettings(ctx context.Context) (bool, int, error) {
 	var enabled bool
-	err := r.db.GetContext(ctx, &enabled, `SELECT go_tasks_enabled FROM instance_instanceconfiguration ORDER BY id LIMIT 1`)
-	return enabled, err
+	var months int
+	err := r.db.QueryRowxContext(ctx, `SELECT go_tasks_enabled, audit_log_retention_months
+ FROM instance_instanceconfiguration ORDER BY id LIMIT 1`).Scan(&enabled, &months)
+	return enabled, months, err
+}
+
+func (r *InstanceAdmin) SetAuditRetention(ctx context.Context, months int, actor string, audit domain.LoginAuditContext, at time.Time) error {
+	tx, err := r.db.BeginTxx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	var target InstanceBackupsLogTarget
+	var previous int
+	err = tx.QueryRowxContext(ctx, `SELECT id, name, domain, audit_log_retention_months
+ FROM instance_instanceconfiguration ORDER BY id LIMIT 1 FOR UPDATE`).Scan(&target.ID, &target.Name, &target.Domain, &previous)
+	if err != nil {
+		return err
+	}
+	if previous != months {
+		if _, err = tx.ExecContext(ctx, `UPDATE instance_instanceconfiguration SET audit_log_retention_months=$1, updated_at=$2 WHERE id=$3`, months, at, target.ID); err != nil {
+			return err
+		}
+		changes, err := json.Marshal(map[string][]int{"audit_log_retention_months": {previous, months}})
+		if err != nil {
+			return err
+		}
+		additional, err := json.Marshal(map[string]string{"actor_id": actor})
+		if err != nil {
+			return err
+		}
+		if err = appendInstanceUpdateAudit(ctx, tx, InstanceBackupAction{Target: target, ActorID: actor, Audit: audit,
+			Changes: changes, Additional: additional, At: at}); err != nil {
+			return err
+		}
+	}
+	return tx.Commit()
 }
 
 // AppendUIAPIVersionChange is LogEntry.objects.log_create(config, action=UPDATE,

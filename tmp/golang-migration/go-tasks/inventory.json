@@ -99,7 +99,7 @@
   },
   {
     "name": "cleanup_old_exports",
-    "django_site": "BE/application/tasks.py:1809",
+    "django_site": "BE/application/tasks.py:1813",
     "scheduled": true,
     "consumer": false,
     "job": true,
@@ -178,7 +178,7 @@
   },
   {
     "name": "export_association_data",
-    "django_site": "BE/application/tasks.py:1900",
+    "django_site": "BE/application/tasks.py:1904",
     "scheduled": false,
     "consumer": true,
     "job": false,
@@ -221,7 +221,7 @@
   },
   {
     "name": "import_association_data",
-    "django_site": "BE/application/tasks.py:2136",
+    "django_site": "BE/application/tasks.py:2140",
     "scheduled": false,
     "consumer": true,
     "job": false,

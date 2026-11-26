@@ -20193,6 +20193,43 @@
      "help_text": ""
     },
     {
+     "name": "audit_log_retention_months",
+     "class": "PositiveSmallIntegerField",
+     "relation": false,
+     "concrete": true,
+     "attname": "audit_log_retention_months",
+     "column": "audit_log_retention_months",
+     "internal": "PositiveSmallIntegerField",
+     "null": false,
+     "blank": false,
+     "has_default": true,
+     "max_length": null,
+     "verbose_name": "audit log retention months",
+     "help_text": "",
+     "choices": [
+      [
+       3,
+       "3 mesi"
+      ],
+      [
+       6,
+       "6 mesi"
+      ],
+      [
+       12,
+       "12 mesi"
+      ],
+      [
+       18,
+       "18 mesi"
+      ],
+      [
+       24,
+       "24 mesi"
+      ]
+     ]
+    },
+    {
      "name": "is_reseller",
      "class": "BooleanField",
      "relation": false,

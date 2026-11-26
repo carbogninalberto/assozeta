@@ -84,14 +84,19 @@ func (q *retentionQueries) TraceQueryEnd(ctx context.Context, _ *pgx.Conn, data 
 
 func TestAuditRetentionPostgres(t *testing.T) {
 	var fixture struct {
-		Now, Cutoff time.Time
-		Rows        []struct {
+		Now     time.Time
+		Periods []struct {
+			Months int
+			Now    time.Time
+		}
+		Config json.RawMessage
+		Rows   []struct {
 			ID               int
 			Expired, Indexed bool
 		}
 	}
 	raw, err := os.ReadFile(os.Getenv("ASSOZETA_AUDIT_FIXTURE"))
-	if err != nil || json.Unmarshal(raw, &fixture) != nil || len(fixture.Rows) != 7 {
+	if err != nil || json.Unmarshal(raw, &fixture) != nil || len(fixture.Rows) != 7 || len(fixture.Periods) != 5 {
 		t.Fatal("run accounts.py --only audit-retention")
 	}
 	dsn := os.Getenv("ASSOZETA_AUDIT_DSN")
@@ -210,23 +215,37 @@ func TestAuditRetentionPostgres(t *testing.T) {
 		return string(b)
 	}
 	t.Run("exact cutoff and dependent index cleanup", func(t *testing.T) {
-		reset(t, baseLogs, baseIndexes)
-		job := claim(t)
-		if e := service.Run(ctx, job); e != nil {
-			t.Fatal(e)
-		}
-		if j := state(t, job); j.State != "completed" || j.Result != nil {
-			t.Fatal("None completion changed")
-		}
-		counts(t, 4, 2)
-		for _, row := range fixture.Rows {
-			var found bool
-			if e := db.GetContext(ctx, &found, `SELECT EXISTS(SELECT 1 FROM auditlog_logentry WHERE id=$1)`, row.ID); e != nil || found == row.Expired {
-				t.Fatal("cutoff selection", e)
+		checkCutoff := func(months int, now time.Time) {
+			t.Helper()
+			messages.Reset()
+			worker := NewAuditRetention(repository.NewAuditRetentions(db), func() time.Time {
+				return now.In(time.FixedZone("offset", 14*3600))
+			}, slog.New(slog.NewTextHandler(&messages, nil)))
+			reset(t, baseLogs, baseIndexes)
+			job := claim(t)
+			if e := worker.Run(ctx, job); e != nil {
+				t.Fatal(e)
+			}
+			if j := state(t, job); j.State != "completed" || j.Result != nil {
+				t.Fatal("None completion changed")
+			}
+			counts(t, 4, 2)
+			for _, row := range fixture.Rows {
+				var found bool
+				if e := db.GetContext(ctx, &found, `SELECT EXISTS(SELECT 1 FROM auditlog_logentry WHERE id=$1)`, row.ID); e != nil || found == row.Expired {
+					t.Fatalf("%d months: log %d found=%v, expected expired=%v: %v", months, row.ID, found, row.Expired, e)
+				}
+			}
+			if !strings.Contains(messages.String(), "records=5") {
+				t.Fatal("cascade count must include three logs and two indexes")
 			}
 		}
-		if !strings.Contains(messages.String(), "records=5") {
-			t.Fatal("cascade count must include three logs and two indexes")
+		checkCutoff(12, fixture.Now)
+		exec(t, `INSERT INTO instance_instanceconfiguration SELECT * FROM jsonb_populate_record(NULL::instance_instanceconfiguration,$1::jsonb)`, string(fixture.Config))
+		defer exec(t, `DELETE FROM instance_instanceconfiguration WHERE id=($1::jsonb->>'id')::bigint`, string(fixture.Config))
+		for _, period := range fixture.Periods {
+			exec(t, `UPDATE instance_instanceconfiguration SET audit_log_retention_months=$1`, period.Months)
+			checkCutoff(period.Months, period.Now)
 		}
 	})
 	t.Run("invalid envelope before SQL", func(t *testing.T) {
@@ -568,6 +587,7 @@ func TestAuditRetentionPostgres(t *testing.T) {
 			}
 			return logs, indexes
 		}
+		var baseline int64
 		for _, n := range []int{0, 1, 16, 128, 512} {
 			logs, indexes := makeRows(n, n)
 			reset(t, logs, indexes)
@@ -576,8 +596,11 @@ func TestAuditRetentionPostgres(t *testing.T) {
 			if e := service.Run(ctx, job); e != nil {
 				t.Fatal(e)
 			}
-			// Phase 3 ledger (migration 6): the fenced completion also probes the ledger and finishes the attempt (+2).
-			if trace.count.Load() != 8 {
+			// The configuration lookup may add one query to the eight fenced job statements.
+			if n == 0 {
+				baseline = trace.count.Load()
+			}
+			if trace.count.Load() != baseline || baseline < 8 || baseline > 9 {
 				t.Fatalf("%d logs: %d statements", n, trace.count.Load())
 			}
 			counts(t, 0, 0)
