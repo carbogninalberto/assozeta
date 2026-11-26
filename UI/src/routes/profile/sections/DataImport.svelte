@@ -5,6 +5,7 @@
     import {onMount, onDestroy} from 'svelte';
     import {UploadSimple, FileZip, X, CheckCircle, WarningCircle, Info, ArrowCounterClockwise, DownloadSimple} from 'phosphor-svelte';
     import RestoreProgressCard from './RestoreProgressCard.svelte';
+    import InstanceDialog from './InstanceDialog.svelte';
     import NotificationService from 'utils/NotificationService.js';
     import {mergeRestoreProgress} from 'utils/restoreProgress.js';
     import Switch from '../../../components/inputs/Switch.svelte';
@@ -45,10 +46,12 @@
     let allowMissing = false;
     let confirming = false;
     let timer;
+    let refreshVersion = 0;
     let disposed = false;
     let backups = [];
     let backupCursor;
-    let backupsInitialized = false;
+    let backupToDelete;
+    let deleteError = '';
     // Safety copies stay short until asked: the newest three first.
     let showAllCopies = false;
 
@@ -103,17 +106,18 @@
     }
 
     async function refresh() {
+        // A poll started before deletion must not put the removed copy back.
+        const version = ++refreshVersion;
         clearTimeout(timer);
         try {
             const next = await request(endpoint);
-            if (disposed) return;
+            if (disposed || version !== refreshVersion) return;
             status = next;
             const overlapsKnownBackups = (next.backups || []).some(op => backups.some(known => known.id === op.id));
             // After a long disconnection a whole new page may have appeared.
             // Start from its boundary so that intervening backups stay reachable.
-            if (!backupsInitialized || (!overlapsKnownBackups && next.backups_next)) {
+            if (!overlapsKnownBackups || !next.backups_next) {
                 backupCursor = next.backups_next;
-                backupsInitialized = true;
             }
             mergeBackups(next.backups || []);
             const visible = next.history.filter(op => !op.preview.dismissed);
@@ -122,10 +126,12 @@
             if (liveProgress?.operation_id !== selected?.id) { liveProgress = undefined; liveSource = false; }
             progressNow = Date.now();
             connectionError = '';
-        } catch (e) { if (!disposed) connectionError = e.message; }
+        } catch (e) { if (!disposed && version === refreshVersion) connectionError = e.message; }
         finally {
-            loading = false;
-            if (!disposed) timer = setTimeout(refresh, 4000);
+            if (!disposed && version === refreshVersion) {
+                loading = false;
+                timer = setTimeout(refresh, 4000);
+            }
         }
     }
 
@@ -221,6 +227,22 @@
         document.body.appendChild(link);
         link.click();
         link.remove();
+    }
+
+    async function deleteBackup() {
+        if (!backupToDelete || busy || active) return;
+        busy = true;
+        deleteError = '';
+        const id = backupToDelete.id;
+        try {
+            await request(`${endpoint}/${id}/delete-backup`, {
+                method: 'POST', body: JSON.stringify({confirm: true}),
+            });
+            backups = backups.filter(op => op.id !== id);
+            backupToDelete = undefined;
+            refresh();
+        } catch (e) { deleteError = e.message; }
+        finally { busy = false; }
     }
 
     async function downloadReport(op) {
@@ -430,6 +452,8 @@
                                 <button type="button" class="btn btn-light btn-sm si-btn" aria-label="Scarica rapporto del backup" disabled={busy} on:click={() => downloadReport(op)}><DownloadSimple size={16} weight="duotone" />Rapporto</button>
                             {/if}
                             <button type="button" class="btn btn-light btn-sm si-btn" aria-label="Scarica backup di sicurezza" disabled={busy} on:click={() => downloadBackup(op)}><DownloadSimple size={16} weight="duotone" />Scarica</button>
+                            <button type="button" class="btn btn-light btn-sm text-danger" disabled={busy || active}
+                                on:click={() => { deleteError = ''; backupToDelete = op; }}>Elimina</button>
                         </li>
                     {/each}
                 </ul>
@@ -440,6 +464,17 @@
         {/if}
     {/if}
 </div>
+
+<InstanceDialog open={!!backupToDelete} title="Eliminare la copia di sicurezza?" locked={busy} on:close={() => backupToDelete = undefined}>
+    {#if backupToDelete}
+        <p>Copia del <strong>{formatDate(backupToDelete.created_at)}</strong>. Non potrai più tornare ai dati precedenti a questo ripristino. Scaricala prima se vuoi conservarla.</p>
+        {#if deleteError}<p class="text-danger mb-0" role="alert">{deleteError}</p>{/if}
+    {/if}
+    <svelte:fragment slot="footer">
+        <button type="button" class="btn btn-light" data-autofocus disabled={busy} on:click={() => backupToDelete = undefined}>Annulla</button>
+        <button type="button" class="btn btn-danger" disabled={busy || active} on:click={deleteBackup}>{busy ? 'Eliminazione…' : 'Elimina'}</button>
+    </svelte:fragment>
+</InstanceDialog>
 
 <style>
     .data-import { display: grid; gap: .75rem; min-width: 0; }
@@ -483,6 +518,8 @@
     .copies { display: grid; gap: .25rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color); }
     .copies .si-rows > li { align-items: center; padding: .5rem 0; }
     @media (max-width: 575px) {
+        .copies .si-rows > li { flex-wrap: wrap; gap: .5rem; }
+        .copies .si-row-main { flex-basis: 100%; }
         .summary { grid-template-columns: 1fr; }
         .step-actions { flex-direction: column-reverse; }
         .step-actions :global(.btn) { width: 100%; }
