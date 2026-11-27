@@ -12,7 +12,7 @@ const reviewed = {
   "UI/src/routes/accounting/balanceSheet/BalanceSheetEditor.svelte": "2af140853dabbcc5b989229cead80dc0e9bb5f16c94a0450ed4bb6dab563740d",
   "UI/src/routes/accounting/balanceSheet/balanceInputs/EditableSection.svelte": "b7d892a8b298248a9f028c3e3c9988a42848bf3b0b5153aa08690111b71eef25",
   "UI/src/routes/accounting/balanceSheet/balanceInputs/NumericInput.svelte": "a50bcd1a4fab2f6da29ca726604bc69228c3b12dcc45cafae45a1d9a4d20ae73",
-  "UI/src/routes/profile/sections/Settings.svelte": "aed683b4bbb10c7a226a6eed573d1d748defc4d8baa7c13fd121e833b6561901",
+  "UI/src/routes/profile/sections/Settings.svelte": "179d468f2f29f59162d9b722a0e4ee376cad5a633e6d53cbafd55b84594fac7f",
   "BE/application/views/balance_sheet_views.py": "136153e66f60f7aaa9533b8f3c8f5b1b276e5c1ccf35eba402c1b810fe63efe2",
   "BE/application/serializers/balance_sheet.py": "a24d31da2347f0b3252bacb96482595e2cd877a2576e6e698019b4fe09b8e3e0",
   "BE/application/models/balance_sheet_models.py": "08aef0835594ebea11087743e7e327289c2682a0944bc492eb9b2739c72b2aca",

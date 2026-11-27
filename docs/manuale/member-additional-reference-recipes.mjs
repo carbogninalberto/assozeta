@@ -5,7 +5,7 @@ export const memberAdditionalReviewedSources = Object.freeze({
     "UI/src/utils/enumUtils.js": "75b14f5fad15f456e7ad15ae691978698c5ef973bfb1ead9105c48fe815dd811",
     "UI/src/routes/association/Members/add/sections/Section1.svelte": "f4c6741669d9daeea510dc527de7609a7d8b77b131b5294f89c469140e16d7ca",
     "BE/application/permissions_registry.py": "d6f30e78c76ea081c5c16331ae0f53b6e9051a04dc8faee2e263c81366e28a9b",
-    "UI/src/routes/profile/sections/Settings.svelte": "aed683b4bbb10c7a226a6eed573d1d748defc4d8baa7c13fd121e833b6561901",
+    "UI/src/routes/profile/sections/Settings.svelte": "179d468f2f29f59162d9b722a0e4ee376cad5a633e6d53cbafd55b84594fac7f",
     "BE/application/models/subscriptions_models.py": "348705bf0908ccd489167eb26c4975dc51ddfd77d82d7699f7cc1dbf69c17c7c",
     "BE/application/utils/subscriptions_utils.py": "2befe90fee8d12947e43ce809973792bc84a5600d768bc4ba9b4a7f6709ea2ef",
     "UI/src/routes/association/Members/subscription/partials/QuoteIscrizione.svelte": "c9d41719a3ec8cff5fd5d7896564d7a6c471f8904cae7d3765ceb36ae2d0351c",

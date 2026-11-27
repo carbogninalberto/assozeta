@@ -2,7 +2,7 @@
 // These are additional unbound sections; existing reviewed sections are not replaced.
 export const coursePaymentAdditionalReviewedSources = Object.freeze({
     "UI/src/routes/association/course/add/sections/Section1.svelte": "f3e456ade95d87006f5a490dfef3ce9dd0e1f49ace814205a4cca049bb7622f7",
-    "UI/src/routes/association/course/add/sections/partials/multiple-quotes.svelte": "45ce4aa40b75354452632c655f11f424854901e3085b2a6540dd151a875d64a0",
+    "UI/src/routes/association/course/add/sections/partials/multiple-quotes.svelte": "7d1f5921db1b5891bdb413b8da935f585b97c9ba36a8521833b41c3deb9b316c",
     "UI/src/routes/association/course/add/sections/partials/membership.svelte": "9ac492d36a980b8889b36e3d414033041f8ad6d342d99927aad8aca92c43acf0",
     "BE/application/models/courses_models.py": "58b9f15cc8b2a946469685305b924aa5db38043ba6197c894bd25c9006819671",
     "UI/src/routes/association/course/overview/components/CourseNavigationTab.svelte": "d93d905aada618ee7254ff78c57808f100a32dcdd426ecd64ddc42aba84e1bf3",
@@ -17,11 +17,11 @@ export const coursePaymentAdditionalReviewedSources = Object.freeze({
     "BE/application/signals.py": "a14dd1d21a83573a8d2da26ca6da76c2c090d6bc419b51d593a7ead1012d2ff1",
     "UI/src/components/eventgenerator/EventGenerator.svelte": "ce771bd5b1543d294f59094218cabe6a19ac15571e92de91dd12210eb7738af9",
     "UI/src/components/eventgenerator/RateElement.svelte": "fb5f41fdcd81fa3a2628ba8e5031f895542b21614e7587ada586cf711192f77b",
-    "UI/src/routes/profile/sections/Settings.svelte": "aed683b4bbb10c7a226a6eed573d1d748defc4d8baa7c13fd121e833b6561901",
+    "UI/src/routes/profile/sections/Settings.svelte": "179d468f2f29f59162d9b722a0e4ee376cad5a633e6d53cbafd55b84594fac7f",
     "UI/src/routes/association/course/overview/components/Calendar.svelte": "5cdbdd7e450b7ccbcc87eee2349be0b156e9bdb2b79f79f750da99656fb6224e",
     "UI/src/routes/association/course/overview/components/modals/EditCalendarEvent.svelte": "9e524c5317b89a1c86c0d5153ba07b9286c9acbb560cef636324d302905819d3",
-    "UI/src/routes/accounting/payment/PaymentList.svelte": "31d3e103a34980df77ffe1178198789c0411f819f3ade64baba89ab0dcf3870a",
-    "UI/src/routes/accounting/payment/modals/AddEditModal.svelte": "77a7defcba165aae2d26f479d477f5864a8a04a6749a7a46e612dacda7f774c5",
+    "UI/src/routes/accounting/payment/PaymentList.svelte": "af2fa84c061ce9d1432055c00e8e4fd50c1fee04d94e621e50129fa39a034ea1",
+    "UI/src/routes/accounting/payment/modals/AddEditModal.svelte": "8fff9e89e120763222c84a080c2ffb34df98f3797747add355a7f026a3da3ba4",
     "BE/application/views/payment_views.py": "7d63fd98c253499dbb7d2be9026f1fd2921f89518e7aa854713e29642d88afae",
     "BE/application/models/payment_models.py": "30d4c9c5bf5b21d78a0fdda78edb45edc9266e9c0fc42e2ff83a3c9e3fcf0a4b",
     "BE/application/serializers/payment_serializers.py": "7381f90ea6fdec4ac99e8198deb8fe107cd0ad54fbce3625932a13035f2d179b",

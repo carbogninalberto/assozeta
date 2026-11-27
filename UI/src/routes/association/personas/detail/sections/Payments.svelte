@@ -15,6 +15,7 @@
     import {sessionToken, userData} from 'store/stores.js';
     import {onDestroy, onMount} from 'svelte';
     import {apiFetch, replaceUID} from 'utils/ApiMiddleware.js';
+    import {sortPaymentCategories} from 'utils/paymentCategories.js';
     const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 import {PaperPlaneTilt, PlusCircle, TrashSimple, XCircle as XCircleIcon} from 'phosphor-svelte';
     import {canPerformAction} from 'utils/Permissions';
@@ -409,7 +410,7 @@ import {PaperPlaneTilt, PlusCircle, TrashSimple, XCircle as XCircleIcon} from 'p
     async function fetchCategories() {
         let res = await apiFetch(__bakney.env.API.PAYMENT.CATEGORY.LIST);
 
-        if (!res.error) categories = res.response.data || [];
+        if (!res.error) categories = sortPaymentCategories(res.response.data);
         else if (res.status != 403 && res.status != 401) toast.error('Qualcosa è andato storto.');
     }
 

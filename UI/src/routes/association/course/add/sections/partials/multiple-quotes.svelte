@@ -5,6 +5,7 @@
     import {onMount} from 'svelte';
     import {toast} from 'svelte-sonner';
     import {apiFetch} from 'utils/ApiMiddleware';
+    import {sortPaymentCategories} from 'utils/paymentCategories.js';
     import {TrashSimple} from 'phosphor-svelte';
 
     export let course;
@@ -37,7 +38,7 @@
     async function fetchPaymentCategories() {
         let res = await apiFetch(__bakney.env.API.PAYMENT.CATEGORY.LIST);
         if (!res.error) {
-            paymentCategories = res.response.data.map(category => ({
+            paymentCategories = sortPaymentCategories(res.response.data).map(category => ({
                 label: `${category.name} (${category.expense ? 'Spesa' : 'Entrata'} ${
                     category.type === 1 ? 'Istituzionale' : 'Commerciale'
                 })`,

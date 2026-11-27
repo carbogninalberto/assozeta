@@ -9,6 +9,7 @@
     import * as easing from 'svelte/easing';
     import {onDestroy, onMount} from 'svelte';
     import {replaceUID, apiFetch, updateTableSettings} from 'utils/ApiMiddleware.js';
+    import {sortPaymentCategories} from 'utils/paymentCategories.js';
     import {
         Article,
         TrashSimple,
@@ -1006,7 +1007,7 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
     async function fetchCategories() {
         let res = await apiFetch(__bakney.env.API.PAYMENT.CATEGORY.LIST);
 
-        if (!res.error) categories = res.response.data || [];
+        if (!res.error) categories = sortPaymentCategories(res.response.data);
         else if (res.status != 403 && res.status != 401) toast.error('Qualcosa è andato storto.');
     }
 

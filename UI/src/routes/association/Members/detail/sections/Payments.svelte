@@ -13,6 +13,7 @@
     import * as easing from 'svelte/easing';
     import {onDestroy, onMount} from 'svelte';
     import {apiFetch, replaceUID} from 'utils/ApiMiddleware';
+    import {sortPaymentCategories} from 'utils/paymentCategories.js';
     import {canPerformAction} from 'utils/Permissions.js';
     import {PaperPlaneTilt, PlusCircle, TrashSimple, X, XCircle} from 'phosphor-svelte';
     import Upgrade from 'routes/Upgrade.svelte';
@@ -853,7 +854,7 @@
     async function fetchCategories() {
         let res = await apiFetch(__bakney.env.API.PAYMENT.CATEGORY.LIST);
 
-        if (!res.error) categories = res.response.data || [];
+        if (!res.error) categories = sortPaymentCategories(res.response.data);
         else if (res.status != 403 && res.status != 401) toast.error('Qualcosa è andato storto.');
     }
 

@@ -21,6 +21,7 @@
     import QrCode from 'svelte-qrcode';
     import {sessionToken, userData} from 'store/stores';
     import {apiFetch, replaceUID} from 'utils/ApiMiddleware';
+    import {sortPaymentCategories} from 'utils/paymentCategories.js';
     import {onMount} from 'svelte';
     import {toast} from 'svelte-sonner';
     export let elements = [];
@@ -202,15 +203,12 @@
         let res = await apiFetch(__bakney.env.API.PAYMENT.CATEGORY.LIST);
 
         if (!res.error)
-            categories =
-                res.response.data
-                    ?.filter(x => !x.expense)
-                    .map(x => {
-                        return {
-                            value: x.payment_category_id,
-                            label: x.name,
-                        };
-                    }) || [];
+            categories = sortPaymentCategories(res.response.data?.filter(x => !x.expense)).map(x => {
+                return {
+                    value: x.payment_category_id,
+                    label: x.name,
+                };
+            });
         else if (res.status != 403 && res.status != 401) toast.error('Qualcosa è andato storto.');
     }
 

@@ -7,8 +7,8 @@ const reviewed = {
   "UI/src/components/Sidebar.svelte": "261e159d3c922f77a6ab19e5b04cdbdeae4ca09c70f1c0abbf4815b8a51be571",
   "UI/src/routes.js": "65c76943b3751fb41201069b7c74d16ef31ca9fc28c86f45c2081fd3fe8876b4",
   "UI/src/utils/Permissions.js": "bf5966b4e5f67d53a7e59e84433e144bfeb5cbbea8a1842f13c10376f8405644",
-  "UI/src/routes/accounting/payment/modals/AddEditModal.svelte": "77a7defcba165aae2d26f479d477f5864a8a04a6749a7a46e612dacda7f774c5",
-  "UI/src/routes/accounting/payment/PaymentList.svelte": "31d3e103a34980df77ffe1178198789c0411f819f3ade64baba89ab0dcf3870a",
+  "UI/src/routes/accounting/payment/modals/AddEditModal.svelte": "8fff9e89e120763222c84a080c2ffb34df98f3797747add355a7f026a3da3ba4",
+  "UI/src/routes/accounting/payment/PaymentList.svelte": "af2fa84c061ce9d1432055c00e8e4fd50c1fee04d94e621e50129fa39a034ea1",
   "BE/application/views/payment_views.py": "7d63fd98c253499dbb7d2be9026f1fd2921f89518e7aa854713e29642d88afae",
   "BE/application/serializers/payment_serializers.py": "7381f90ea6fdec4ac99e8198deb8fe107cd0ad54fbce3625932a13035f2d179b",
   "BE/application/models/user_models.py": "4800cd1f7a757e9e7d5203d1ea086d58e92ac4592e43c7fa7758103071336c96",
@@ -31,7 +31,7 @@ const reviewed = {
   "BE/docmanager/tasks.py": "d659eb584a5e2475575d835a9eb8809f2c169738aa562385b5fe1de2c3d4b0e5",
   "UI/src/components/filters/FilterSelect.svelte": "556100c1c9aecd36f7aad7a3de0ad389ecd908517a8e8934586474ff111c35e5",
   "UI/src/routes/accounting/receipts/modals/EditModal.svelte": "33f23e11f3b2d8e8abc3ec748c8190915d6114f5128cadc7664d8824304f5873",
-  "UI/src/routes/profile/sections/Settings.svelte": "aed683b4bbb10c7a226a6eed573d1d748defc4d8baa7c13fd121e833b6561901",
+  "UI/src/routes/profile/sections/Settings.svelte": "179d468f2f29f59162d9b722a0e4ee376cad5a633e6d53cbafd55b84594fac7f",
   "BE/application/views/profile_views.py": "adea11d45c4364fe508860db111f574d1e99a752bb5e792309d1a74ae6200c09"
 };
 const contracts = [
