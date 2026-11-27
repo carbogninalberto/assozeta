@@ -61,6 +61,35 @@ def delete_unreadable(model, keep):
                 break
 
 
+HANDOFF_CHILDREN = ('assozeta_handoff_effects', 'assozeta_handoff_transfers', 'assozeta_handoff_attempts')
+
+
+def handoff_task_ids():
+    """The task ids on the job handoff ledger (None when it is not installed)."""
+    from django.db import connection
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT to_regclass('public.assozeta_handoff_work') IS NOT NULL")
+        if not cursor.fetchone()[0]:
+            return None
+        cursor.execute('SELECT task_id FROM public.assozeta_handoff_work')
+        return {row[0] for row in cursor.fetchall()}
+
+
+def delete_handoff_work(before):
+    """Remove the ledger rows a workload's publications added. Families author fixed task ids, so a row
+    left by one workload would make the next workload's publication of the same id a duplicate."""
+    if before is None:
+        return
+    from django.db import connection
+    added = sorted(handoff_task_ids() - before)
+    if not added:
+        return
+    with connection.cursor() as cursor:
+        for table in HANDOFF_CHILDREN:
+            cursor.execute(f'DELETE FROM public.{table} WHERE task_id = ANY(%s)', [added])
+        cursor.execute('DELETE FROM public.assozeta_handoff_work WHERE task_id = ANY(%s)', [added])
+
+
 def fixture_context_for(contract, seed, *, purge=()):
     """The driver's fixture_context.
 
@@ -93,6 +122,7 @@ def fixture_context_for(contract, seed, *, purge=()):
         before = scopes.snapshot_state(apps)
         original_audit = [row['id'] for row in before[AUDIT]]
         original = {model: list(model._base_manager.values_list('pk', flat=True)) for model in (load() for load in purge)}
+        handoff_before = handoff_task_ids()
         cache_before, sequences_before = snapshot_historical_read_cache(raw), mutations.sequence_snapshot()
         fixture = None
         receipt = cleanup_receipt if cleanup_receipt is not None else {}
@@ -116,6 +146,7 @@ def fixture_context_for(contract, seed, *, purge=()):
                         for model, keys in kept.items():
                             model._base_manager.exclude(pk__in=keys).delete()
                         shared.delete_created(fixture)
+                delete_handoff_work(handoff_before)
                 carnets.state_unchanged(before, scopes.snapshot_state(apps))
                 return True
             receipt.update(scopes.cleanup_steps((

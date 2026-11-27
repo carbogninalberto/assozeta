@@ -406,6 +406,33 @@ def check_worker(case, log):
     require(leftover == [], 'worker.reply-queue-removed')
 
 
+@contextmanager
+def django_job_authority(case):
+    """Run a diagnostics probe with Django as job owner on both backends.
+
+    The family's probes are the Celery control ping and the Beat heartbeat these stubs answer. Under a Go job
+    authority (the go-native workload owns jobs) Go probes its own worker heartbeats and scheduler lease instead
+    (Phase 6 A3); that answer is proven by the installed diagnostics lane, not by these stubs."""
+    if case['method'] != 'POST' or case['path'] != '/instance/admin/diagnostics':
+        yield
+        return
+    from django.db import connection
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT to_regclass('public.assozeta_go_job_ownership') IS NOT NULL")
+        owner = None
+        if cursor.fetchone()[0]:
+            cursor.execute('SELECT runtime FROM public.assozeta_go_job_ownership WHERE singleton=1')
+            owner = cursor.fetchone()[0]
+        if owner == 'go':
+            cursor.execute("UPDATE public.assozeta_go_job_ownership SET runtime='django',generation=generation+1 WHERE singleton=1")
+    try:
+        yield
+    finally:
+        if owner == 'go':
+            with connection.cursor() as cursor:
+                cursor.execute("UPDATE public.assozeta_go_job_ownership SET runtime='go',generation=generation+1 WHERE singleton=1")
+
+
 def _assert_case(case, base_url, *, token, sessions):
     from TESTS.adapters.django import instance_outbound_http as outbound
     source = base_contract.load_source()
@@ -421,7 +448,8 @@ def _assert_case(case, base_url, *, token, sessions):
         outbound.STUB['script'] = case.get('outbound') or []
     STUBS['worker'].take((case.get('worker') or {}).get('mode', 'silent'))
     try:
-        status = base_contract.assert_case(case, base_url, token=token, sessions=sessions)
+        with django_job_authority(case):
+            status = base_contract.assert_case(case, base_url, token=token, sessions=sessions)
     finally:
         from django.core.cache import cache
         cache.delete('instance:scheduler:heartbeat')
