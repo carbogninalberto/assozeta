@@ -29,7 +29,7 @@
 
     const origins = {manual: 'Manuale', scheduled: 'Pianificato', 'pre-upgrade': 'Prima dell’aggiornamento', 'pre-restore': 'Prima del ripristino', uploaded: 'Caricato'};
 
-    let dialog = null; // {kind: 'download'|'delete'|'unkeep'|'create'|'restore'|'upload'|'fetch', archive}
+    let dialog = null; // {kind: 'download'|'delete'|'unkeep'|'create'|'restore'|'upload'|'fetch'|'reclaim', archive}
     let password = '';
     let recoveryKey = '';
     let confirmWord = '';
@@ -42,6 +42,7 @@
     let pending = {};
 
     $: actions = overview?.actions || {};
+    $: reclaim = overview?.reclaim_space;
     $: archives = overview?.archives || [];
     $: disk = overview?.disk;
     $: data = disk ? (disk.database || 0) + (disk.objects || 0) : 0;
@@ -212,6 +213,23 @@
         finally { password = ''; working = false; }
     }
 
+    async function setReclaim(queue) {
+        if (working) return;
+        working = true;
+        dialogError = '';
+        try {
+            const result = await request('/admin/backups/reclaim-space', {
+                method: queue ? 'POST' : 'DELETE', body: JSON.stringify(queue ? {confirm: true} : {}),
+            });
+            overview = {...overview, reclaim_space: result.reclaim_space};
+            working = false;
+            closeDialog();
+        } catch (e) {
+            if (queue) dialogError = e.message;
+            else toast.error(e.message);
+        } finally { working = false; }
+    }
+
     async function confirmCreate() {
         if (working) return;
         working = true;
@@ -326,6 +344,31 @@
     {#if overview?.available && overview.schedule}
         <BackupSchedule {request} schedule={overview.schedule} retention={overview.retention} disabled={!!active} onSaved={() => onReload()} />
     {/if}
+    {#if overview?.available && actions.reclaim_space && reclaim}
+        <div class="si-card">
+            <div class="si-card-head">
+                <div>
+                    <h2 class="si-title">Spazio del database</h2>
+                    <p class="si-muted si-small">Libera lo spazio lasciato dalle voci eliminate dal registro attività.</p>
+                </div>
+                {#if reclaim.pending}
+                    <button type="button" class="btn btn-light" disabled={working || !!active} on:click={() => setReclaim(false)}>Annulla</button>
+                {:else}
+                    <button type="button" class="btn btn-light" disabled={working || !!busyReason} title={busyReason} on:click={() => openDialog('reclaim')}>Recupera spazio database</button>
+                {/if}
+            </div>
+            {#if reclaim.pending}
+                <p class="mb-0" role="status">Programmato prima del prossimo backup</p>
+                {#if !overview.schedule?.enabled}<p class="si-hint mb-0">Attiva i backup automatici per eseguire il recupero.</p>{/if}
+            {/if}
+            {#if reclaim.last_run}
+                <p class="mb-0">Ultimo recupero · {formatDate(reclaim.last_run.finished_at)} · {reclaim.last_run.ok ? 'Completato' : reclaim.last_run.error}</p>
+                {#if reclaim.last_run.database_bytes_before != null && reclaim.last_run.database_bytes_after != null}
+                    <p class="si-hint mb-0">Database prima del recupero {formatSize(reclaim.last_run.database_bytes_before)}, dopo {formatSize(reclaim.last_run.database_bytes_after)}.</p>
+                {/if}
+            {/if}
+        </div>
+    {/if}
     {#if overview?.available && overview.remote}
         <RemoteBackup {request} remote={overview.remote} disabled={!!active} onSaved={() => onReload()} />
     {/if}
@@ -381,6 +424,15 @@
     <svelte:fragment slot="footer">
         <button type="button" class="btn btn-light" disabled={working} on:click={closeDialog}>Annulla</button>
         <button type="submit" form="backup-unkeep-form" class="btn btn-primary si-btn" disabled={!password || working}>{working ? 'Verifica…' : 'Non conservare più'}</button>
+    </svelte:fragment>
+</InstanceDialog>
+
+<InstanceDialog open={dialog?.kind === 'reclaim'} title="Programmare il recupero dello spazio?" locked={working} on:close={closeDialog}>
+    <p>L’app sarà indisponibile per alcuni minuti prima del prossimo backup automatico, mentre il server compatta il registro attività.</p>
+    {#if dialogError}<p class="text-danger mb-0" role="alert">{dialogError}</p>{/if}
+    <svelte:fragment slot="footer">
+        <button type="button" class="btn btn-light" data-autofocus disabled={working} on:click={closeDialog}>Annulla</button>
+        <button type="button" class="btn btn-primary" disabled={working} on:click={() => setReclaim(true)}>Programma recupero</button>
     </svelte:fragment>
 </InstanceDialog>
 

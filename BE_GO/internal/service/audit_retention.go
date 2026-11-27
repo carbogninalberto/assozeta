@@ -28,16 +28,12 @@ func (s *AuditRetention) Run(ctx context.Context, job domain.Job) error {
 	if job.AssociationID != uuid.Nil || job.ID == uuid.Nil || job.LeaseToken == uuid.Nil || job.State != "running" || job.Kind != domain.JobDeleteOldAuditLogs || job.Version != 1 || len(job.Payload) > 65536 || json.Unmarshal(job.Payload, &payload) != nil || payload == nil || len(payload) != 0 {
 		return domain.ErrJobInvalid
 	}
-	// The existing task uses timezone.now() - timedelta(days=365): retain
-	// equality and preserve the exact instant across leap years and offsets.
-	cutoff := s.now().UTC().Add(-365 * 24 * time.Hour)
-
 	tx, err := s.store.BeginAuditRetention(ctx, job)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
-	count, err := tx.DeleteExpiredAuditRecords(ctx, cutoff)
+	count, err := tx.DeleteExpiredAuditRecords(ctx, s.now().UTC())
 	if err != nil {
 		rollbackErr := tx.Rollback()
 		if ctx.Err() != nil {

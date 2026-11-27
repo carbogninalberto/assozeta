@@ -65,6 +65,77 @@ def save_schedule(root, value):
     atomic_write(Path(root) / SCHEDULE_FILE, json.dumps(value, indent=2) + '\n')
 
 
+def reclaim_state(schedule):
+    return {'pending': schedule.get('reclaim_pending', False), 'last_run': schedule.get('reclaim_last_run')}
+
+
+def set_reclaim(root, body, *, pending):
+    if not isinstance(body, dict) or (pending and body.get('confirm') is not True):
+        raise ValueError('Invalid maintenance request.')
+    with _lock(root):
+        schedule = load_schedule(root)
+        if schedule.get('reclaim_started'):
+            raise BackupRejected('Manutenzione già avviata.')
+        if not pending and not schedule.get('reclaim_pending'):
+            raise BackupRejected('Nessun recupero dello spazio programmato.')
+        schedule['reclaim_pending'] = pending
+        save_schedule(root, schedule)
+        return {'reclaim_space': reclaim_state(schedule)}
+
+
+def _finish_reclaim(schedule, before, after, error):
+    schedule['reclaim_last_run'] = {
+        'started_at': schedule.pop('reclaim_started'), 'finished_at': now(), 'ok': error is None,
+        'error': error, 'database_bytes_before': before, 'database_bytes_after': after,
+    }
+
+
+def interrupt_reclaim(root):
+    with _lock(root):
+        schedule = load_schedule(root)
+        if schedule.get('reclaim_started'):
+            _finish_reclaim(schedule, None, None, 'Il recupero dello spazio è stato interrotto.')
+            save_schedule(root, schedule)
+
+
+def run_pending_reclaim(root, environment, output):
+    with _lock(root):
+        schedule = load_schedule(root)
+        if not schedule.get('reclaim_pending'):
+            return
+        schedule.update(reclaim_pending=False, reclaim_started=now())
+        save_schedule(root, schedule)
+
+    before = after = None
+    error = 'Recupero dello spazio non riuscito. Controlla il registro sul server.'
+    try:
+        completed = subprocess.run([str(root / 'bin/assozeta'), 'reclaim-space'], cwd=root, env=environment,
+                                   stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, errors='replace',
+                                   timeout=2 * 60 * 60)
+        output.write(completed.stdout)
+        output.flush()
+        for line in completed.stdout.splitlines():
+            size = re.fullmatch(r'@@ASSOZETA_DATABASE_BYTES_(BEFORE|AFTER) ([0-9]+)', line)
+            if size and size[1] == 'BEFORE':
+                before = int(size[2])
+            elif size:
+                after = int(size[2])
+            elif line.startswith('@@ASSOZETA_ERROR '):
+                error = line.split(' ', 1)[1]
+        if completed.returncode == 0 and before is not None:
+            error = None
+    except subprocess.TimeoutExpired:
+        error = 'Tempo massimo superato per il recupero dello spazio.'
+        output.write(f'{error}\n')
+    except OSError as exc:
+        output.write(f'{exc}\n')
+
+    with _lock(root):
+        schedule = load_schedule(root)
+        _finish_reclaim(schedule, before, after, error)
+        save_schedule(root, schedule)
+
+
 def validate_schedule(body):
     if not isinstance(body, dict) or not {'enabled', 'frequency', 'time', 'keep'} <= set(body) or set(body) - {'enabled', 'frequency', 'time', 'weekday', 'keep'}:
         raise ValueError('Invalid schedule fields.')
@@ -244,6 +315,8 @@ def run_backup(root, env_file, journal, operation):
     error = None
     try:
         with os.fdopen(os.open(log, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600), 'w') as output:
+            if scheduled:
+                run_pending_reclaim(root, environment, output)
             with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
                                   env=environment, cwd=str(root)) as process:
                 for line in process.stdout:

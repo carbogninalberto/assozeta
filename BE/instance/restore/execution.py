@@ -6,6 +6,7 @@ import tempfile
 import uuid
 import zipfile
 from contextlib import contextmanager
+from auditlog.models import LogEntry
 from django.conf import settings
 from django.core.cache import cache
 from django.core.files import File
@@ -229,6 +230,10 @@ def execute(operation_id):
                     media = stage_media(op, archive, progress)
                     save_operation(op, stage='restoring')
                     def completed(importer):
+                        LogEntry.objects.log_create(
+                            config, action=LogEntry.Action.UPDATE, actor=op.owner,
+                            changes={'data_restore': ['', str(op.pk)]},
+                            additional_data={'operation_id': str(op.pk), 'record_count': importer.total_records})
                         save_operation(op, state='completed', stage='completed', error='', completed_at=timezone.now())
                     progress.publish('restoring')
                     replace(archive, backup, config, media, completed, progress=progress)

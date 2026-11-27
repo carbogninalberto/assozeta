@@ -4,7 +4,7 @@
 // Authored MDX is the only prose source. These descriptors seal code review only.
 // No browser report, capture or runtime success is implied by a verified text reference.
 export const organizationAdditionalReviewedSources = Object.freeze({
-    "UI/src/routes/profile/sections/Settings.svelte": "aed683b4bbb10c7a226a6eed573d1d748defc4d8baa7c13fd121e833b6561901",
+    "UI/src/routes/profile/sections/Settings.svelte": "179d468f2f29f59162d9b722a0e4ee376cad5a633e6d53cbafd55b84594fac7f",
     "UI/src/routes/association/Members/detail/sections/Info.svelte": "720d401c86e498d7efdba75321ce399fe2788033cf453690b3c6bf6869d5cff7",
     "UI/src/routes/association/Members/detail/sections/subcomponents/Tessera.svelte": "47539a823dbdc092996cb671eec8044a6168da923a2b2a62550d438673a86fd7",
     "BE/application/views/subscriptions_views.py": "5fb701ca27d2ca4bbf9a11b0a6f374cd79f6db6bb556f52e10b441aae06f064c",
@@ -12,12 +12,12 @@ export const organizationAdditionalReviewedSources = Object.freeze({
     "BE/application/permissions_registry.py": "d6f30e78c76ea081c5c16331ae0f53b6e9051a04dc8faee2e263c81366e28a9b",
     "UI/src/routes/association/Members/shared/ExportData.svelte": "119330667e35cbc6b316abb6c45f484ef4a8aae2ea5951d477f21c32ca9f7307",
     "UI/src/components/modals/CurrentViewPrintingModal.svelte": "89cd17ec6bc9c60c50579a72a88ce83ef716dbd4ffa2719f5c0d3bd064b9be7a",
-    "UI/src/routes/accounting/payment/PaymentList.svelte": "31d3e103a34980df77ffe1178198789c0411f819f3ade64baba89ab0dcf3870a",
+    "UI/src/routes/accounting/payment/PaymentList.svelte": "af2fa84c061ce9d1432055c00e8e4fd50c1fee04d94e621e50129fa39a034ea1",
     "BE/application/views/payment_views.py": "7d63fd98c253499dbb7d2be9026f1fd2921f89518e7aa854713e29642d88afae",
     "UI/src/routes/profile/sections/DataManagement.svelte": "349a510108fde62e09cd746c5934f445f3c176efe43946541a59a50cd1890bbd",
     "UI/src/routes/profile/sections/DataExports.svelte": "4fec2d01e6e95c2f7dfc65dfa156e68110e0479264dc86995598948e7f4b2ca9",
     "BE/application/views/export_views.py": "6d2984cdc7c859d2a6a63801a0776c815dede42dbcb5087f10e0006b8dcf736d",
-    "BE/application/tasks.py": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b",
+    "BE/application/tasks.py": "bdf4474831c4a4ede3449b73f8172cd270de77b18d1f4371fed8bdd6fd059be1",
     "UI/src/routes/profile/ProfileMenu.svelte": "5bb6b5afa551d786105d4ccea32a42358182e8cff50ddc6662bddb6e79c73e13",
     // Reviewed: association scope is retained for both endpoints; links to
     // soft-deleted associates now survive export and repeated restore.

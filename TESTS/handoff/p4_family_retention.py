@@ -8,7 +8,7 @@ deleted items by mistake.
 Fixtures: ExportFixture, RetentionFixture, RestoreFixture, MaintenanceFixture (TESTS/adapters/go/
 export_cleanup_, audit_, data_restore_cleanup_, bakney_maintenance_worker_process.py), compared by
 identity with the in-process Django control on the same seed (p4_family_collectors.Controlled):
-  - rows on both sides of each cutoff (365-day audit, 30-day/3-per-association exports, 24-hour
+  - rows on both sides of each cutoff (12-month audit, 30-day/3-per-association exports, 24-hour
     restore reviews) equal the control, deletion scope included (other associations untouched);
   - the MinIO listing equals the control: deleted objects stay deleted, retained ones and the
     unrelated sentinel stay;

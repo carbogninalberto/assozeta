@@ -15,7 +15,7 @@ const reviewed = {
   "UI/src/components/inputs/DateRangeCalendar.svelte": "0f1347e4bcc861917f53f0d118c9c35f8207172644a9191b0f9ef6a50440b281",
   "UI/src/routes/association/course/campsAndRetreats/overview/modals/AddServiceModal.svelte": "7ebb41be26d34c7fe84b5a60915ade6460ba12212e55f6610d7f0630d5e1dfca",
   "UI/src/routes/association/course/campsAndRetreats/overview/modals/EditServiceModal.svelte": "2a153566f8486a9bb1e088e5e9a87c0ec808eeb386a318168c2bf846b4f7857a",
-  "UI/src/routes/association/course/campsAndRetreats/overview/modals/camps-and-retreats-services-form.svelte": "1eb7e2a5a959b13c6b5fc94c1e0001f5c3d84d86367e421abee704a006c94d78",
+  "UI/src/routes/association/course/campsAndRetreats/overview/modals/camps-and-retreats-services-form.svelte": "cee5ccda469f9c477366145153186ca8d92814249065c7097f80d85f88da66d9",
   "UI/src/routes/association/course/campsAndRetreats/overview/modals/camps-and-retreats-subscriptions-form.svelte": "4d9a4e38e4c0ed3c2751c8c22a77c614007867d9af8a89d2860752cc23b9abf2",
   "UI/src/routes/association/course/campsAndRetreats/overview/modals/components/PeriodAndServiceSelector.svelte": "045c64688e145e887b0d6025067c6162c87100607cc66d497cbd4c92ac53ef97",
   "UI/src/routes/forms/CampsAndRetreatsForm.svelte": "967c5b4bbc5ac737350f4e9ad281249aaed8b8f060a118ad6fed60c16da2254d",

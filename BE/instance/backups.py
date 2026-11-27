@@ -19,6 +19,8 @@ from django.core.cache import cache
 from django.db import connection
 from django.http import StreamingHttpResponse
 from django.utils.http import content_disposition_header
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema
 from rest_framework import serializers
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -137,6 +139,7 @@ class BackupOverviewView(APIView):
             'actions': inventory.get('actions', {}),
             # Remote copy status; absent on runners without it.
             'remote': inventory.get('remote'),
+            'reclaim_space': inventory.get('reclaim_space', {'pending': False, 'last_run': None}),
         })
 
     def post(self, request):
@@ -155,7 +158,7 @@ def relay(method, path, payload, success=200):
     except UpdaterUnavailable as exc:
         return Response({'error': str(exc)}, status=503)
     except UpdaterRejected as exc:
-        if exc.status == 404 and path in ('/backups', '/backups/schedule'):
+        if exc.status == 404 and path in ('/backups', '/backups/schedule', '/backups/reclaim-space'):
             return Response({'error': 'Il servizio di aggiornamento richiede una versione più recente.'}, status=409)
         return Response({'error': str(exc)}, status=exc.status if 400 <= exc.status < 500 else 503)
 
@@ -164,6 +167,28 @@ def audit(actor, action, value, **extra):
     LogEntry.objects.log_create(
         InstanceConfiguration.get_config(), action=LogEntry.Action.UPDATE, actor=actor,
         changes={action: ['', str(value)]}, additional_data={'actor_id': str(actor.pk), **extra}, force_log=True)
+
+
+class BackupReclaimSpaceView(APIView):
+    permission_classes = [IsInstanceOwner]
+
+    @extend_schema(request={'application/json': {
+        'type': 'object', 'properties': {'confirm': {'type': 'boolean', 'enum': [True]}}, 'required': ['confirm'],
+    }}, responses={202: OpenApiTypes.OBJECT})
+    def post(self, request):
+        if not isinstance(request.data, dict) or request.data.get('confirm') is not True:
+            return Response({'error': 'Richiesta non valida.'}, status=400)
+        response = relay('POST', '/backups/reclaim-space', {'confirm': True}, success=202)
+        if response.status_code == 202:
+            audit(actor_of(request), 'backup_reclaim_space', 'queue')
+        return response
+
+    @extend_schema(responses={200: OpenApiTypes.OBJECT})
+    def delete(self, request):
+        response = relay('DELETE', '/backups/reclaim-space', {})
+        if response.status_code == 200:
+            audit(actor_of(request), 'backup_reclaim_space', 'cancel')
+        return response
 
 
 class BackupItemView(APIView):

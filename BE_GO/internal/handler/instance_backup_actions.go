@@ -97,7 +97,12 @@ func (h *InstanceAdminHandler) backupActionsReply(c echo.Context, reply *service
 		c.Response().WriteHeader(reply.Status)
 		return nil
 	}
-	return c.Blob(reply.Status, "application/json", dto.PythonJSONDumpsCompact(reply.Body))
+	// DRF renders response strings as UTF-8, including the runner's Italian errors.
+	body, err := (dto.AgentJSON{Item: ",", Key: ":", RejectNaN: true}).Dumps(reply.Body)
+	if err != nil {
+		return h.fail(c, err)
+	}
+	return c.Blob(reply.Status, "application/json", []byte(body))
 }
 
 // backupActionsName is the <str:name> path value, percent-decoded.
@@ -145,6 +150,23 @@ func (h *InstanceBackupActionsHandler) serializerWrite(c echo.Context, actor *do
 	return h.backupActionsWrite(c, actor, true, func(request service.BackupActionsRequest, body any, _ bool) (*service.BackupActionsReply, error) {
 		return run(request, body)
 	})
+}
+
+func (h *InstanceBackupActionsHandler) ReclaimSpace(c echo.Context) error {
+	actor, err := h.backupActionsBegin(c, "POST, DELETE, OPTIONS", "instance_backup_reclaim_space")
+	if actor == nil {
+		return err
+	}
+	method := c.Request().Method
+	switch method {
+	case http.MethodOptions:
+		return supplierOptions(c, "Backup Reclaim Space", "")
+	case http.MethodPost, http.MethodDelete:
+		return h.backupActionsWrite(c, actor, method == http.MethodPost, func(request service.BackupActionsRequest, body any, _ bool) (*service.BackupActionsReply, error) {
+			return h.actions.ReclaimSpace(c.Request().Context(), request, method, body)
+		})
+	}
+	return h.notAllowed(c)
 }
 
 // Schedule is BackupScheduleView (PUT).

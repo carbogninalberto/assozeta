@@ -6,7 +6,9 @@ import zipfile
 from pathlib import Path
 from unittest.mock import patch
 
+from auditlog.models import LogEntry
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -105,6 +107,32 @@ class RestoreTests(TransactionTestCase):
         self.client.force_authenticate(self.owner)
         self.assertEqual(self.client.get('/instance/admin').status_code, 200)
         self.assertEqual(self.client.get(self.endpoint).status_code, 200)
+
+    def test_restore_adds_one_audit_summary(self):
+        old = Associate.objects.create(sport_association=self.association, first_name='Old')
+        new_id = uuid.uuid4()
+        archive = self.archive({'Associate': [{'associate_id': str(new_id), 'sport_association_id': self.source_association,
+                                               'first_name': 'New'}]})
+        # The operator can differ from the association owner.
+        operator = User.objects.create_superuser(username='restore-operator', password='TestSecret')
+        self.client.force_authenticate(operator)
+        before = set(LogEntry.objects.values_list('pk', flat=True))
+        op = self.start(self.upload(archive))
+        execute(op.pk)
+        op.refresh_from_db()
+        self.assertEqual(op.state, 'completed', op.error)
+        self.assertFalse(Associate._base_manager.filter(pk=old.pk).exists())
+        self.assertTrue(Associate.objects.filter(pk=new_id).exists())
+        self.assertEqual(LogEntry.objects.count(), len(before) + 1)
+        event = LogEntry.objects.exclude(pk__in=before).get()
+        self.assertEqual(event.content_type, ContentType.objects.get_for_model(self.config))
+        self.assertEqual(event.object_pk, str(self.config.pk))
+        self.assertEqual(event.action, LogEntry.Action.UPDATE)
+        self.assertEqual(event.actor_id, operator.pk)
+        self.assertEqual(event.additional_data['operation_id'], str(op.pk))
+        self.assertEqual(event.additional_data['record_count'], 3)  # User, SportAssociation, Associate
+        execute(op.pk)
+        self.assertEqual(LogEntry.objects.count(), len(before) + 1)
 
     def test_replacement_preserves_all_configuration_owner_and_same_uuid(self):
         old_family = Family.objects.create()

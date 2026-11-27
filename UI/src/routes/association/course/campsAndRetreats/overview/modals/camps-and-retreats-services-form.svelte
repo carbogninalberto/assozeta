@@ -3,6 +3,7 @@
     import {getDataFromForm} from 'utils/Functions.js';
     import {createEventDispatcher} from 'svelte';
     import {apiFetch} from 'utils/ApiMiddleware.js';
+    import {sortPaymentCategories} from 'utils/paymentCategories.js';
     import {onMount} from 'svelte';
     import {toast} from 'svelte-sonner';
     import {canPerformAction} from 'utils/Permissions';
@@ -88,15 +89,12 @@
         let res = await apiFetch(__bakney.env.API.PAYMENT.CATEGORY.LIST);
 
         if (!res.error)
-            categories =
-                res.response.data
-                    ?.filter(x => !x.expense)
-                    .map(x => {
-                        return {
-                            value: x.payment_category_id,
-                            label: x.name,
-                        };
-                    }) || [];
+            categories = sortPaymentCategories(res.response.data?.filter(x => !x.expense)).map(x => {
+                return {
+                    value: x.payment_category_id,
+                    label: x.name,
+                };
+            });
         else if (res.status != 403 && res.status != 401) toast.error('Qualcosa è andato storto.');
     }
 

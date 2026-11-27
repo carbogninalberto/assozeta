@@ -524,9 +524,7 @@ func (s *ConsumerRestoreInstance) prepareReplacement(ctx context.Context, call *
 		}
 		replacement.missing[key][relation.field] = true
 	}
-	for _, rows := range archive.records {
-		replacement.total += len(rows)
-	}
+	replacement.total = archive.recordCount()
 	replacement.replacedUsers = map[string]bool{}
 	for _, id := range backup.identityList["User"] {
 		replacement.replacedUsers[id] = true
@@ -559,7 +557,7 @@ func (s *ConsumerRestoreInstance) prepareReplacement(ctx context.Context, call *
 	if err := collector.Delete(ctx); err != nil {
 		return err
 	}
-	run.effects = &importeffects.Effects{Plan: s.imports.plan, Tx: tx, Audit: s.imports.audit, Now: s.now, NewUUID: s.ids}
+	run.effects = &importeffects.Effects{Plan: s.imports.plan, Tx: tx, SkipAudit: true, Now: s.now, NewUUID: s.ids}
 	err = run.importAll()
 	if err == nil {
 		err = replacement.restoreUserLinks(run, backup.identityList["User"], archive.records["User"])
@@ -583,7 +581,7 @@ func (s *ConsumerRestoreInstance) prepareReplacement(ctx context.Context, call *
 		return err
 	}
 	call.importEvents = replacement.events
-	return nil
+	return s.store.AppendRestoreSummary(ctx, tx, config.InstanceBackupsLogTarget, op, replacement.total, s.now())
 }
 
 func (s *ConsumerRestoreInstance) replaceFailed(call *restoreCall, message string) error {

@@ -23,6 +23,12 @@ Verifica con il gestore **quali dati vengono copiati**, **con quale frequenza**,
 Il ripristino dell'installazione self-hosted è riservato al proprietario dell'installazione o a un amministratore; un collaboratore ordinario non può avviarlo.
 Nella pagina **Profilo → Istanza → Backup**, riservata al proprietario dell'installazione, l'applicazione chiede di nuovo la sua password per scaricare, ripristinare o eliminare un backup, per rimetterlo nella rotazione, per modificare le impostazioni o la chiave della copia remota e per provarne la connessione.
 
+In **Profilo → Istanza → Impostazioni → Registro modifiche** puoi conservare le voci per 3, 6, 12, 18 o 24 mesi. Il valore iniziale è 12 mesi. Ogni giorno vengono eliminate le voci più vecchie del periodo scelto.
+
+Per liberare lo spazio su disco lasciato da queste voci, nella pagina **Backup** scegli **Recupera spazio database** e conferma con **Programma recupero**. Servono i backup automatici attivi. L’app sarà indisponibile durante la compattazione, prima del prossimo backup automatico.
+
+Dopo un ripristino da Bakney, in **Importa da Bakney → Copie di sicurezza** puoi scaricare lo ZIP dei dati precedenti. Per rimuoverlo dal server, scegli **Elimina** accanto alla copia e conferma. Scaricalo prima se vuoi poter recuperare quei dati.
+
 <Note>La presenza della funzione di ripristino non garantisce copie ogni quattro ore, conservazione per trenta giorni o una politica già attiva. Questa guida lascia tali condizioni da verificare.</Note>
 
 ## Misure di sicurezza avanzate

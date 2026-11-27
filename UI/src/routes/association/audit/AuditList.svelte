@@ -398,7 +398,7 @@
                 <div class="card-title">
                     <h3 class="card-label font-size-h2">
                         Registro Audit
-                        <span class="d-block text-muted pt-2 font-size-sm">Cronologia delle operazioni eseguite negli ultimi 365 giorni.</span>
+                        <span class="d-block text-muted pt-2 font-size-sm">Cronologia delle modifiche registrate per l’associazione.</span>
                     </h3>
                 </div>
             </div>

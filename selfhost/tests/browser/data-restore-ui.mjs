@@ -59,6 +59,9 @@ try {
         let op = null;
         let failUpload = false;
         let failStatus = false;
+        let failDelete = true;
+        const deleteRequests = [];
+        const deleteError = 'Archivio di recupero occupato. Riprova tra un minuto.';
         let starts = 0;
         let downloads = 0;
         let relationReports = 0;
@@ -96,16 +99,25 @@ try {
                         original_tax_code:'RSSMRA80A01H501U', conflicting_associate_id:'member-original-id'}],
                 }});
             }
-            if (request.method() === 'GET' && endpoint.endsWith('/backups')) {
-                const cursor = new URL(request.url()).searchParams.get('before');
-                const start = historicBackups.findIndex(item => item.id === cursor) + 1;
-                assert.ok(start > 0);
-                return route.fulfill({json:{backups:historicBackups.slice(start),backups_next:null}});
+            if (endpoint.endsWith('/delete-backup')) {
+                deleteRequests.push({method:request.method(), path:endpoint, body:request.postDataJSON()});
+                if (failDelete) return route.fulfill({status:503, json:{error:deleteError}});
+                const index = historicBackups.findIndex(item => item.id === endpoint.split('/').at(-2));
+                if (index < 0) return route.fulfill({status:404, json:{error:'Copia non trovata.'}});
+                const [removed] = historicBackups.splice(index, 1);
+                return route.fulfill({json:{...removed, has_recovery_backup:false, download_token:null}});
             }
             if (request.method() === 'GET') {
+                const allBackups = [...(op?.has_recovery_backup ? [op] : []), ...historicBackups];
+                const cursor = new URL(request.url()).searchParams.get('before');
+                const start = cursor ? allBackups.findIndex(item => item.id === cursor) + 1 : 0;
+                assert.ok(!cursor || start > 0);
+                const backups = allBackups.slice(start, start + 10);
+                const backupPage = {backups, backups_next: start + 10 < allBackups.length ? backups.at(-1).id : null};
+                if (endpoint.endsWith('/backups')) return route.fulfill({json:backupPage});
                 if (failStatus) return route.fulfill({status:503, json:{error:'Connessione temporaneamente non disponibile'}});
                 return route.fulfill({json: {available: true, max_upload_bytes: 5*1024**3, history: op ? [op] : [],
-                    backups: [...(op?.has_recovery_backup ? [op] : []), ...historicBackups].slice(0,10), backups_next:op?.has_recovery_backup ? 'old-backup-8' : 'old-backup-9',
+                    ...backupPage,
                     active: op && ['queued','running'].includes(op.state) ? op : null}});
             }
             if (endpoint.endsWith('/data-restore')) {
@@ -134,6 +146,9 @@ try {
         const drawer = page.getByRole('dialog', {name:'Importa da Bakney'});
         await openImport.click();
         await expect(drawer.getByRole('heading', {name:'Scegli il file', exact:true})).toBeVisible();
+        const copies = drawer.getByRole('region', {name:'Copie di sicurezza'});
+        const deleteButtons = copies.getByRole('button', {name:/^Elimina\b/i});
+        await expect(deleteButtons).toHaveCount(3);
         await page.keyboard.press('Escape');
         await expect(drawer).toHaveCount(0);
         await expect(openImport).toBeFocused();
@@ -211,6 +226,8 @@ try {
         assert.equal(await drawer.evaluate(element => element.scrollWidth <= element.clientWidth + 1), true, 'drawer overflows horizontally');
         await confirm.click();
         await expect(drawer.getByRole('heading',{name:'In attesa del worker',exact:true})).toBeVisible();
+        await expect(deleteButtons).toHaveCount(3);
+        for (const button of await deleteButtons.all()) await expect(button).toBeDisabled();
         assert.equal(starts,1);
         await page.evaluate(() => window.restoreProgressFixture({operation_id:'fixture-restore', attempt:1, sequence:2,
             phase:'files', completed:1048576, total:2097152, unit:'bytes', percent:50, eta_seconds:120, updated_at:new Date().toISOString()}));
@@ -257,6 +274,38 @@ try {
         await expect.poll(()=>downloads).toBe(1);
         assert.equal(downloadedPath, '/api/instance/admin/data-restore/old-backup-11/download');
         await page.screenshot({path:path.join(output,`${viewport.width}-completed.png`)});
+        await expect(deleteButtons).toHaveCount(13);
+        // Target the second row (old-backup-0), distinct from the selected restore.
+        const rows = copies.getByRole('listitem');
+        const targetDate = await rows.nth(1).locator('strong').innerText();
+        const retainedDate = await rows.nth(2).locator('strong').innerText();
+        const targetRow = rows.filter({hasText:targetDate});
+        const remove = targetRow.getByRole('button', {name:/^Elimina\b/i});
+        const dialog = page.getByRole('dialog', {name:/elimin.*copia di sicurezza/i});
+        const cancelDelete = dialog.getByRole('button', {name:'Annulla', exact:true});
+        const confirmDelete = dialog.getByRole('button', {name:/^Elimina\b/i});
+        const expectedRequest = {method:'POST', path:'/api/instance/admin/data-restore/old-backup-0/delete-backup', body:{confirm:true}};
+        await remove.click();
+        await expect(dialog).toContainText(/dati precedenti/i);
+        await expect(dialog).toContainText(/scaric/i);
+        await cancelDelete.click();
+        await expect(remove).toBeVisible();
+        assert.deepEqual(deleteRequests, []);
+
+        await remove.click();
+        await confirmDelete.click();
+        await expect(page.getByText(deleteError, {exact:true})).toBeVisible();
+        assert.deepEqual(deleteRequests, [expectedRequest]);
+        if (await dialog.isVisible()) await cancelDelete.click();
+        await expect(remove).toBeVisible();
+
+        failDelete = false;
+        await remove.click();
+        await confirmDelete.click();
+        await expect(dialog).toBeHidden();
+        await expect(rows.filter({hasText:retainedDate})).toBeVisible();
+        await expect(targetRow).toHaveCount(0);
+        assert.deepEqual(deleteRequests, [expectedRequest, expectedRequest]);
         await page.evaluate(() => {
             localStorage.setItem('userData', JSON.stringify({user_id:'owner-fixture',sport_association:{denomination:'Old ASD'}}));
             localStorage.setItem('selectedGroup', 'old-group');
@@ -286,7 +335,7 @@ try {
         assert.deepEqual(errors, []);
         await context.close();
     }
-    await fs.writeFile(path.join(output,'report.json'),JSON.stringify({passed:true,checks:['desktop','mobile','export card','drawer escape and focus return','validation error','summary and report','typed confirmation','missing media consent','reload while running','connection failure and retry','resume','failed restore and retry','completion','safety copy pagination and download','profile refresh before reload','profile refresh failure retry','authentication retained','Bakney keeps export only']},null,2));
+    await fs.writeFile(path.join(output,'report.json'),JSON.stringify({passed:true,checks:['desktop','mobile','export card','drawer escape and focus return','validation error','summary and report','typed confirmation','missing media consent','reload while running','connection failure and retry','resume','failed restore and retry','completion','safety copy pagination and download','safety copy deletion disabled during restore','safety copy delete cancellation, API error and confirmed removal','profile refresh before reload','profile refresh failure retry','authentication retained','Bakney keeps export only']},null,2));
     console.log('PASS: desktop/mobile Trasferisci dati card and import drawer: review, confirmation, status reload, error recovery, completion and download.');
 } finally {
     await browser?.close();

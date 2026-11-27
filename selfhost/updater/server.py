@@ -16,8 +16,8 @@ from uuid import UUID
 
 from backups import BackupNotFound, inventory, open_archive
 from diagnostics import backup_readiness
-from backup_jobs import (BackupRejected, create_backup, delete_archive, run_backup, schedule_payload,
-                         schedule_tick, set_keep, update_schedule)
+from backup_jobs import (BackupRejected, create_backup, delete_archive, interrupt_reclaim, load_schedule, reclaim_state,
+                         run_backup, schedule_payload, schedule_tick, set_keep, set_reclaim, update_schedule)
 from restore_jobs import ArchiveInvalid, UploadIncomplete, receive_upload, run_restore, start_restore
 from engine import Engine
 from go_tasks import RETIRED, retired, CHECK_FAILED, MISSING_WORKER, apply_go_tasks, release_has_go_worker, validate_go_tasks_request
@@ -87,6 +87,7 @@ def serve(root, env_file, engine_class=Engine):
         raise RuntimeError('Independent notices credentials are required')
     journal = Journal(directory / 'operations.sqlite3')
     journal.interrupt_running()
+    interrupt_reclaim(root)
     runtime_switch.recover(root, env_file, journal, None)
     reconcile_restarts(journal)
     engine = engine_class(root, env_file, journal)
@@ -120,7 +121,8 @@ def serve(root, env_file, engine_class=Engine):
     def backup_inventory():
         value = remote_backups.merge_inventory(root, inventory(root, env_file))
         return {**value, 'schedule': schedule_payload(root, env_file),
-                'actions': {'create': True, 'keep': True, 'delete': True, 'restore': True,
+                'reclaim_space': reclaim_state(load_schedule(root)),
+                'actions': {'reclaim_space': True, 'create': True, 'keep': True, 'delete': True, 'restore': True,
                             'upload': True, 'remote': True}}
 
     class Handler(BaseHTTPRequestHandler):
@@ -245,7 +247,7 @@ def serve(root, env_file, engine_class=Engine):
                     pass
 
         def archive_name(self):
-            reserved = self.path == '/backups/schedule' or self.path.startswith('/backups/remote')
+            reserved = self.path in ('/backups/schedule', '/backups/reclaim-space') or self.path.startswith('/backups/remote')
             return self.path[len('/backups/'):] if self.path.startswith('/backups/') and not reserved else None
 
         def do_PATCH(self):
@@ -256,6 +258,9 @@ def serve(root, env_file, engine_class=Engine):
             self.backup_action(lambda body: (200, set_keep(root, env_file, journal, name, body)))
 
         def do_DELETE(self):
+            if self.path == '/backups/reclaim-space':
+                self.backup_action(lambda body: (200, set_reclaim(root, body, pending=False)))
+                return
             name = self.archive_name()
             if name is None:
                 self.respond(404, {'error': 'Unknown endpoint.'})
@@ -273,6 +278,9 @@ def serve(root, env_file, engine_class=Engine):
                                                     'retention': inventory(root, env_file)['retention']}))
 
         def do_POST(self):
+            if self.path == '/backups/reclaim-space':
+                self.backup_action(lambda body: (202, set_reclaim(root, body, pending=True)))
+                return
             if self.path == '/backups':
                 self.backup_action(lambda body: (202, {'operation': create_backup(root, env_file, journal, body)}))
                 return

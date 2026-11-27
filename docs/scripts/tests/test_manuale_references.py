@@ -13,7 +13,9 @@ FILES = ['BE/application/management/commands/seed_selfhost.py', 'BE/application/
          'BE/core/authentication.py', 'BE/application/views/two_fa_views.py', 'BE/application/views/auth_views.py',
          'BE/instance/restore/views.py', 'BE/instance/permissions.py', 'BE/application/views/payment_views.py',
          'BE/application/audit_context.py', 'BE/application/signals.py', 'BE/instance/backups.py',
-         'BE/instance/remote_backups.py']
+         'BE/instance/remote_backups.py', 'BE/instance/models.py',
+         'UI/src/routes/profile/sections/InstanceBackups.svelte', 'UI/src/routes/profile/sections/DataImport.svelte',
+         'UI/src/routes/profile/sections/SelfInstance.svelte']
 SCRIPT = r'''
 import fs from 'node:fs';
 import path from 'node:path';
@@ -73,6 +75,7 @@ class ReferenceRecipeTests(unittest.TestCase):
             ('BE/application/views/billing_views.py', 'status.HTTP_410_GONE', 'status.HTTP_200_OK'),
             ('BE/application/audit_context.py', '_strict_audit_indexes.set(True)', '_strict_audit_indexes.set(False)'),
             ('BE/application/signals.py', 'if audit_index_errors_are_fatal():', 'if False:'),
+            ('BE/instance/models.py', 'DEFAULT_AUDIT_RETENTION_MONTHS = 12', 'DEFAULT_AUDIT_RETENTION_MONTHS = 6'),
             ('BE/core/authentication.py', 'from rest_framework_simplejwt.authentication', 'from unsupported.authentication')]:
             with self.subTest(relative=relative):
                 source = self.root / relative

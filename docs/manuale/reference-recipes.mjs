@@ -18,8 +18,12 @@ const reviewed = {
   "BE/application/signals.py": "a14dd1d21a83573a8d2da26ca6da76c2c090d6bc419b51d593a7ead1012d2ff1",
   // Reviewed: download, restore, delete, un-keep and remote copy changes on the
   // owner Backup page confirm the owner password again.
-  "BE/instance/backups.py": "7f482e3b8e555d696ca53d489710cde7e382c4f5023057e51f76e10bd6aec8eb",
-  "BE/instance/remote_backups.py": "d930d4ce634f0df806f54e19ac28f162a0a136bdb5dee1eb7f673703b543d46b"
+  "BE/instance/backups.py": "685877c1b78c55a7a7e79b625df6fefcef4d4907ee293c7f81c37a70fcf75fc5",
+  "BE/instance/remote_backups.py": "d930d4ce634f0df806f54e19ac28f162a0a136bdb5dee1eb7f673703b543d46b",
+  "UI/src/routes/profile/sections/InstanceBackups.svelte": "e6f9910c9cf0de669923062e1f715adf568fa524f807aca25384a3712fb12e65",
+  "UI/src/routes/profile/sections/DataImport.svelte": "2e2728ba41e82651a2bdbfc621ff84689d550b81dab9d443e3004886aa76b205",
+  "UI/src/routes/profile/sections/SelfInstance.svelte": "d1e07d79d3728bb1900854b627da40540c9f7869ecd7dd663cc8ae4cda1255e7",
+  "BE/instance/models.py": "9784f1d47f14425c2423037c2e2ae0a56df3bb9b9c4e7389baefd273b674e207"
 };
 const contracts = [
   ["BE/application/management/commands/seed_selfhost.py","class Command(BaseCommand):",6],
@@ -37,7 +41,12 @@ const contracts = [
   ["BE/instance/backups.py","class BackupItemView(APIView):",34],
   ["BE/instance/backups.py","def password_refusal(actor, password):",30],
   ["BE/instance/remote_backups.py","class RemoteBackupSettingsView(APIView):",90],
-  ["BE/application/views/auth_views.py","def _existing_account_signin(candidates, data):",26]
+  ["BE/application/views/auth_views.py","def _existing_account_signin(candidates, data):",26],
+  ["UI/src/routes/profile/sections/InstanceBackups.svelte","{#if overview?.available && actions.reclaim_space && reclaim}",25],
+  ["UI/src/routes/profile/sections/InstanceBackups.svelte","title=\"Programmare il recupero dello spazio?\"",8],
+  ["UI/src/routes/profile/sections/DataImport.svelte","id=\"data-import-copies\"",31],
+  ["UI/src/routes/profile/sections/SelfInstance.svelte","id=\"instance-settings-panel-audit\"",12],
+  ["BE/instance/models.py","AUDIT_RETENTION_MONTHS = (",6]
 ];
 const sections = [
   {
@@ -140,7 +149,12 @@ const sections = [
       8,
       12,
       13,
-      14
+      14,
+      16,
+      17,
+      18,
+      19,
+      20
     ]
   },
   {
@@ -297,7 +311,12 @@ const references = [
       8,
       12,
       13,
-      14
+      14,
+      16,
+      17,
+      18,
+      19,
+      20
     ]
   },
   {

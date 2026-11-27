@@ -1,13 +1,19 @@
 """Owner backup actions and the automatic schedule, against disposable directories."""
-from datetime import datetime, timezone
+from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timedelta, timezone
 import importlib.util
 import json
+import math
 import os
 from pathlib import Path
+import re
 import stat
+import subprocess
 import sys
 import tempfile
+import time
 import unittest
+from unittest.mock import patch
 from uuid import uuid4
 
 UPDATER = Path(__file__).resolve().parents[1] / 'updater'
@@ -16,6 +22,9 @@ spec = importlib.util.spec_from_file_location('backup_jobs', UPDATER / 'backup_j
 jobs = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(jobs)
 from journal import Journal  # noqa: E402
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from reclaim_fixture import install_cli, runner_request, with_runner  # noqa: E402
 
 UTC = timezone.utc
 
@@ -203,6 +212,229 @@ class RunBackupTests(Base):
         record = self.journal.records()[0]
         self.assertEqual(record['status'], 'failed')
         self.assertEqual(self.journal.requiring_recovery(), [])
+
+
+class ReclaimSpaceTests(Base):
+    def setUp(self):
+        super().setUp()
+        snapshots = tempfile.TemporaryDirectory()
+        self.addCleanup(snapshots.cleanup)
+        self.snapshot = Path(snapshots.name) / 'installation'
+        self.cli = install_cli(self.root)
+        self.events = self.root / 'commands'
+        self.events.touch()
+        self.env.write_text(self.env.read_text() + 'DBUSER=test\nDBNAME=test\nASSOZETA_BACKUP_SPACE_MARGIN_MB=1\n')
+        self.enable()
+        jobs.save_schedule(self.root, {**jobs.load_schedule(self.root), 'anchor': '2026-11-01T12:00:00+00:00'})
+        self.next_backup = at('2026-11-02T12:00:00')
+        env = patch.dict(os.environ, ASSOZETA_INSTALL_ROOT=str(self.root), ASSOZETA_ENV_FILE=str(self.env),
+                         PATH=str(self.cli.parent) + os.pathsep + os.environ['PATH'], TEST_EVENTS=str(self.events),
+                         TEST_FREE_KIB='5120', TEST_VACUUM_FAILURE='0', TEST_BACKUP_SNAPSHOT=str(self.snapshot))
+        env.start()
+        self.addCleanup(env.stop)
+
+    def request(self, method, body=None):
+        return runner_request(self.root, self.env, method, body=body)
+
+    def state(self, root=None):
+        status, inventory = runner_request(root or self.root, (root or self.root) / '.env', 'GET', '/backups')
+        self.assertEqual(status, 200)
+        self.assertIn('reclaim_space', inventory)
+        return inventory['reclaim_space']
+
+    def queue_reclaim(self):
+        status, reply = self.request('POST', {'confirm': True})
+        self.assertEqual(status, 202, reply)
+        self.assertTrue(reply['reclaim_space']['pending'])
+        self.assertEqual(self.events.read_text(), '')
+
+    def run_backup(self, scheduled):
+        if scheduled:
+            operation = jobs.schedule_tick(self.root, self.env, self.journal, self.next_backup)
+            self.next_backup += timedelta(days=1)
+        else:
+            operation = jobs.create_backup(self.root, self.env, self.journal,
+                                           {'request_id': str(uuid4()), 'actor_id': str(uuid4())})
+        jobs.run_backup(self.root, self.env, self.journal, operation)
+        record = next(row for row in self.journal.records() if row['id'] == operation['id'])
+        self.assertEqual(record['status'], 'succeeded', record.get('error'))
+
+    def assert_maintenance_cycle(self, *, backup):
+        trace = self.events.read_text().splitlines()
+        vacuums = [i for i, line in enumerate(trace) if re.search(r'\bVACUUM\b', line, re.I)]
+        self.assertEqual(len(vacuums), 2, trace)
+        tables = set()
+        for index in vacuums:
+            sql = trace[index]
+            match = re.search(r'\bVACUUM\s*\(\s*(?:FULL\s*,\s*ANALYZE|ANALYZE\s*,\s*FULL)\s*\)\s+'
+                              r'(?:public\.)?(auditlog_logentry|application_auditlogindex)\b', sql, re.I)
+            self.assertIsNotNone(match, sql)
+            tables.add(match[1].lower())
+        self.assertEqual(tables, {'auditlog_logentry', 'application_auditlogindex'})
+        django_services = {'api', 'worker', 'beat', 'realtime-relay'}
+        stopped = set()
+        started = set()
+        for index, line in enumerate(trace):
+            words = line.split()
+            for action in ('stop', 'start', 'restart', 'up'):
+                if action not in words:
+                    continue
+                services = {word for word in words[words.index(action) + 1:] if not word.startswith('-')}
+                self.assertNotIn('web', services, f'Caddy must keep serving maintenance: {line}')
+                if action == 'stop':
+                    stopped.update(services)
+                else:
+                    stopped.difference_update(services)
+                    if index > vacuums[-1]:
+                        started.update(services)
+            if index in vacuums:
+                self.assertEqual(stopped, django_services | {'api-go'}, trace)
+        self.assertEqual(started, django_services, trace)
+        if backup:
+            self.assertEqual(trace[-1], 'backup --scheduled', trace)
+        self.assertFalse((self.root / '.operations/maintenance.flag').exists())
+
+    def result(self, ok):
+        state = self.state()
+        self.assertEqual(self.state(self.snapshot), state, 'reclaim result must be durable before backup')
+        self.assertIs(state['pending'], False)
+        run = state['last_run']
+        self.assertIs(run['ok'], ok, run)
+        self.assertLessEqual(at(run['started_at']), at(run['finished_at']))
+        return run
+
+    def test_backup_without_reclaim_only_runs_the_scheduled_backup(self):
+        self.run_backup(scheduled=True)
+        self.assertEqual(self.events.read_text().splitlines(), ['backup --scheduled'])
+
+    def test_cli_reclaims_immediately(self):
+        command = subprocess.run([self.cli, 'reclaim-space'], capture_output=True, text=True, timeout=20)
+        self.assertEqual(command.returncode, 0, command.stderr)
+        self.assert_maintenance_cycle(backup=False)
+        self.assertFalse(any(line.startswith('backup') for line in self.events.read_text().splitlines()))
+
+    def test_each_vacuum_has_60_second_lock_timeout(self):
+        subprocess.run([self.cli, 'reclaim-space'], check=True, capture_output=True, timeout=20)
+        calls = (self.root / 'vacuum-commands.jsonl').read_text().splitlines()
+        self.assertEqual(len(calls), 2)
+        minute = r"(?:60s|60000(?:ms)?|1min)"
+        for line in calls:
+            pgoptions, *args = json.loads(line)
+            with self.subTest(pgoptions=pgoptions, command=args):
+                sql = [args[i + 1] for i, arg in enumerate(args) if arg in ('-c', '--command')]
+                vacuum, = [i for i, statement in enumerate(sql) if re.search(r'\bVACUUM\b', statement, re.I)]
+                # A single -c containing SET; VACUUM would run inside a transaction.
+                self.assertRegex(sql[vacuum], r'(?i)^\s*VACUUM\b[^;]*;?\s*$')
+                via_env = re.search(r'(?:^|\s)-c\s*lock_timeout=' + minute + r'(?:$|\s)', pgoptions)
+                via_sql = any(re.fullmatch(r"\s*SET\s+(?:SESSION\s+)?lock_timeout\s*(?:=|TO)\s*'?"
+                                           + minute + r"'?\s*;?\s*", stmt, re.I) for stmt in sql[:vacuum])
+                self.assertTrue(via_env or via_sql, 'missing 60-second lock_timeout for VACUUM')
+
+    def test_cli_succeeds_when_only_the_after_measurement_fails(self):
+        with patch.dict(os.environ, TEST_AFTER_SIZE_FAILURE='1', ASSOZETA_BACKUP_STAGES='1'):
+            command = subprocess.run([self.cli, 'reclaim-space'], capture_output=True, text=True, timeout=20)
+        self.assertTrue((self.root / 'vacuum-finished').exists())
+        self.assertEqual(command.returncode, 0, command.stderr)
+        self.assertIn('@@ASSOZETA_DATABASE_BYTES_BEFORE 7340032000', command.stdout)
+        self.assertNotRegex(command.stdout, r'@@ASSOZETA_DATABASE_BYTES_AFTER [0-9]+')
+
+    def test_scheduled_backup_records_success_with_unknown_after_size(self):
+        self.queue_reclaim()
+        with patch.dict(os.environ, TEST_AFTER_SIZE_FAILURE='1'):
+            self.run_backup(scheduled=True)
+        last = self.result(True)
+        self.assertEqual(last['database_bytes_before'], 7340032000)
+        self.assertIsNone(last['database_bytes_after'])
+        self.assertFalse(last['error'])
+
+    def test_updater_gives_reclaim_a_finite_maintenance_window(self):
+        self.queue_reclaim()
+        with patch.object(jobs.subprocess, 'run', wraps=subprocess.run) as reclaim:
+            self.run_backup(scheduled=True)
+        reclaim.assert_called_once()
+        timeout = reclaim.call_args.kwargs.get('timeout')
+        self.assertIsNotNone(timeout, 'the reclaim subprocess needs a deadline')
+        self.assertTrue(math.isfinite(timeout))
+        self.assertGreaterEqual(timeout, 3600)
+
+    def test_reclaim_timeout_is_recorded_before_scheduled_backup(self):
+        self.queue_reclaim()
+        with patch.object(jobs.subprocess, 'run', side_effect=subprocess.TimeoutExpired('reclaim-space', 7200)):
+            self.run_backup(scheduled=True)
+        self.assertTrue(self.result(False)['error'])
+        self.assertEqual(self.events.read_text().splitlines(), ['backup --scheduled'])
+
+    def test_request_round_trip_and_cancel_survive_runner_restart(self):
+        idle = {'pending': False, 'last_run': None}
+        self.assertEqual(self.state(), idle)
+        for body in ({}, {'confirm': False}):
+            status, reply = self.request('POST', body)
+            self.assertEqual(status, 400, reply)
+            self.assertEqual(self.state(), idle)
+        self.queue_reclaim()
+        self.assertEqual(self.state(), {**idle, 'pending': True})
+        self.assertEqual(self.request('DELETE', {}), (200, {'reclaim_space': idle}))
+        self.run_backup(scheduled=True)
+        self.assertEqual(self.events.read_text().splitlines(), ['backup --scheduled'])
+        self.assertEqual(self.state(), idle)
+
+    def test_next_scheduled_backup_consumes_reclaim_once(self):
+        self.queue_reclaim()
+        self.run_backup(scheduled=False)
+        self.assertEqual(self.events.read_text().splitlines(), ['backup'])
+        self.assertTrue(self.state()['pending'])
+        self.events.write_text('')
+        self.run_backup(scheduled=True)
+        self.assert_maintenance_cycle(backup=True)
+        last = self.result(True)
+        self.assertEqual((last['database_bytes_before'], last['database_bytes_after']), (7340032000, 3145728000))
+        self.assertFalse(last.get('error'))
+        self.events.write_text('')
+        self.run_backup(scheduled=True)
+        self.assertEqual(self.events.read_text().splitlines(), ['backup --scheduled'])
+        self.assertEqual(self.state()['last_run'], last)
+
+    def test_cancel_during_vacuum_is_rejected(self):
+        self.queue_reclaim()
+        gate = self.root / 'vacuum'
+
+        def cancel_while_running(request):
+            with patch.dict(os.environ, TEST_VACUUM_GATE=str(gate)), ThreadPoolExecutor(max_workers=1) as pool:
+                backup = pool.submit(self.run_backup, scheduled=True)
+                try:
+                    deadline = time.monotonic() + 10
+                    while not gate.with_suffix('.started').exists():
+                        if backup.done():
+                            backup.result()
+                            self.fail('backup finished before the first VACUUM')
+                        self.assertLess(time.monotonic(), deadline, 'timed out waiting for VACUUM')
+                        time.sleep(0.02)
+                    status, reply = request('DELETE', '/backups/reclaim-space', {})
+                    self.assertEqual(status, 409, reply)
+                finally:
+                    gate.with_suffix('.done').touch()
+                backup.result(timeout=10)
+
+        with_runner(self.root, self.env, cancel_while_running)
+        self.assert_maintenance_cycle(backup=True)
+        self.result(True)
+
+    def test_vacuum_failure_restarts_services_and_backup_succeeds(self):
+        self.queue_reclaim()
+        with patch.dict(os.environ, TEST_VACUUM_FAILURE='1'):
+            self.run_backup(scheduled=True)
+        self.assert_maintenance_cycle(backup=True)
+        self.assertTrue(self.result(False)['error'])
+
+    def test_free_space_must_exceed_both_tables_plus_margin(self):
+        self.queue_reclaim()
+        # 2 MiB of log entries + 1 MiB of index + 1 MiB of margin. Equality is insufficient.
+        with patch.dict(os.environ, TEST_FREE_KIB='4096'):
+            self.run_backup(scheduled=True)
+        trace = self.events.read_text()
+        self.assertNotRegex(trace, r'(?i)\bvacuum\b')
+        self.assertIn('backup --scheduled\n', trace)
+        self.assertRegex(self.result(False)['error'], r'(?i)spazio|disco')
 
 
 if __name__ == '__main__':

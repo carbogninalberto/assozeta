@@ -5,6 +5,7 @@
     import {scale} from 'svelte/transition';
 
     import {apiFetch} from 'utils/ApiMiddleware.js';
+    import {sortPaymentCategories} from 'utils/paymentCategories.js';
     import {sessionToken, subPage, userData} from 'store/stores.js';
     import {Warning, WarningCircle} from 'phosphor-svelte';
     import {canPerformAction} from 'utils/Permissions';
@@ -60,7 +61,7 @@
     async function fetchPaymentCategories() {
         let res = await apiFetch(__bakney.env.API.PAYMENT.CATEGORY.LIST);
         if (!res.error) {
-            paymentCategories = res.response.data.map(category => ({
+            paymentCategories = sortPaymentCategories(res.response.data).map(category => ({
                 label: `${category.name} (${category.expense ? 'Spesa' : 'Entrata'} ${
                     category.type === 1 ? 'Istituzionale' : 'Commerciale'
                 })`,

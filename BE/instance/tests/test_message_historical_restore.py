@@ -5,7 +5,7 @@ TransactionTestCase tests: execute() must own its transaction and advisory lock.
 Only Celery dispatch is patched by the existing start helper; persistence,
 deletion, audit/index hooks, recovery export, storage and locks remain real.
 """
-from datetime import datetime, timezone
+from datetime import datetime
 import hashlib
 import io
 import json
@@ -15,10 +15,11 @@ from uuid import UUID
 import zipfile
 
 from auditlog.models import LogEntry
-from auditlog.signals import post_log
+from django.contrib.contenttypes.models import ContentType
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.db import IntegrityError, connection
+from django.db.models.signals import post_save
 from django.test import TransactionTestCase, override_settings
 
 from application.audit_resolvers import setup_audit_resolvers
@@ -227,32 +228,15 @@ class HistoricalMessageReplacementRestoreTests(TransactionTestCase):
                 self.assertEqual(stored.read(), content.encode('utf-8'))
         self.assertEqual(len(operation.media), 1)
 
-    def _assert_audit_delta(self, before, *, deleted_ids, historical=True):
+    def _assert_audit_summary(self, before, operation):
         self.assertTrue(before <= self._log_ids(), 'Existing audit history must remain append-only')
-        events = LogEntry.objects.get_for_model(Message).exclude(pk__in=before)
-        creates = events.filter(action=LogEntry.Action.CREATE)
-        deletes = events.filter(action=LogEntry.Action.DELETE)
-        self.assertEqual(events.count(), (4 if historical else 0) + len(deleted_ids))
-        self.assertCountEqual(deletes.values_list('object_pk', flat=True), deleted_ids)
-        self.assertCountEqual(creates.values_list('object_pk', flat=True),
-                              [row['message_id'] for row in self.expected['messages']] if historical else [])
-        for source in self.expected['messages'] if historical else []:
-            event = creates.get(object_pk=source['message_id'])
-            self.assertIsNone(event.actor_id)  # execute is the worker boundary, outside the HTTP actor.
-            self.assertEqual(event.changes['sport_association'], ['None', str(self.association.pk)])
-            timestamp = source['created_at']
-            serialized = 'None' if timestamp is None else str(
-                datetime.fromisoformat(timestamp).astimezone(timezone.utc).replace(tzinfo=None),
-            )
-            self.assertEqual(event.changes['created_at'], ['None', serialized])
-        for event in events:
-            indexes = AuditLogIndex.objects.filter(log_entry=event)
-            self.assertEqual(indexes.count(), 1)
-            index = indexes.get()
-            self.assertEqual(index.sport_association_id, self.association.pk)
-            self.assertEqual(index.resolution_path, 'direct' if event.action == LogEntry.Action.CREATE
-                             else 'changes_json.sport_association')
-        self.assertFalse(LogEntry.objects.get_for_model(MessageTransaction).exists())
+        summary = LogEntry.objects.exclude(pk__in=before).get()
+        self.assertEqual(summary.content_type, ContentType.objects.get_for_model(self.config))
+        self.assertEqual(summary.object_pk, str(self.config.pk))
+        self.assertEqual(summary.action, LogEntry.Action.UPDATE)
+        self.assertEqual(summary.actor_id, operation.owner_id)
+        self.assertEqual(summary.additional_data['operation_id'], str(operation.pk))
+        self.assertEqual(summary.additional_data['record_count'], operation.preview['records'])
 
     def _log_ids(self):
         return set(LogEntry.objects.values_list('pk', flat=True))
@@ -308,7 +292,7 @@ class HistoricalMessageReplacementRestoreTests(TransactionTestCase):
         self.assertEqual(operation.sha256, fixture.ARCHIVE_SHA256)
         self._execute_success(operation)
         self._assert_historical_state(operation)
-        self._assert_audit_delta(before, deleted_ids=[str(self.old_message.pk)])
+        self._assert_audit_summary(before, operation)
         self._recovery_bytes(operation, historical=False)
 
     def test_repeated_replacement_and_duplicate_delivery_preserve_complete_message_state(self):
@@ -319,7 +303,7 @@ class HistoricalMessageReplacementRestoreTests(TransactionTestCase):
         second = self._queue_historical()
         self._execute_success(second)
         self._assert_historical_state(second)
-        self._assert_audit_delta(before, deleted_ids=[row['message_id'] for row in self.expected['messages']])
+        self._assert_audit_summary(before, second)
         self._recovery_bytes(second, historical=True)
         self.assertNotEqual(first.backup_path, second.backup_path)
         self.assertNotEqual(first.media, second.media)
@@ -354,8 +338,7 @@ class HistoricalMessageReplacementRestoreTests(TransactionTestCase):
         self.assertEqual(initial.media, {})
         for key in superseded.values():
             self.assertFalse(default_storage.exists(key))
-        self._assert_audit_delta(before, deleted_ids=[row['message_id'] for row in self.expected['messages']],
-                                 historical=False)
+        self._assert_audit_summary(before, cleared)
         recovery_bytes = self._recovery_bytes(cleared, historical=True)
         before = self._log_ids()
         recovery = self.upload(recovery_bytes)
@@ -365,7 +348,7 @@ class HistoricalMessageReplacementRestoreTests(TransactionTestCase):
         self.start(recovery, allow_missing_media=True)
         self._execute_success(recovery)
         self._assert_historical_state(recovery)
-        self._assert_audit_delta(before, deleted_ids=[])
+        self._assert_audit_summary(before, recovery)
 
     def _assert_failed_rollback(self, operation, before_db, before_files, upload_key):
         operation.refresh_from_db()
@@ -385,36 +368,35 @@ class HistoricalMessageReplacementRestoreTests(TransactionTestCase):
         with default_storage.open(operation.backup_path, 'rb') as backup:
             self.assertEqual(hashlib.sha256(backup.read()).hexdigest(), operation.backup_sha256)
 
-    def test_audit_failure_after_real_deletion_insert_and_index_rolls_back_and_cleans_media(self):
+    def test_failure_after_summary_insert_rolls_back_replacement_and_audit_and_cleans_media(self):
         before_db, before_files = self._database_state(), self._files()
         operation = self._queue_historical()
         upload_key = operation.upload_path
         observed = []
 
-        def fail_after_index(sender, instance, action, log_created, log_entry, **kwargs):
-            if action != LogEntry.Action.CREATE:
-                return
+        def fail_after_summary(sender, instance, created, **kwargs):
             self.assertTrue(connection.in_atomic_block)
-            self.assertTrue(log_created)
+            self.assertTrue(created)
+            self.assertEqual(instance.additional_data['operation_id'], str(operation.pk))
             self.assertFalse(Message.objects.filter(pk=self.old_message.pk).exists())
             self.assertFalse(MessageTransaction.objects.filter(pk__in=[row.pk for row in self.old_deliveries]).exists())
-            self.assertTrue(Message.objects.filter(pk=instance.pk).exists())
-            self.assertEqual(log_entry.sport_association_index.sport_association_id, self.association.pk)
+            self.assertCountEqual(Message.objects.values_list('pk', flat=True),
+                                  [UUID(row['message_id']) for row in self.expected['messages']])
             # Documents import before messages; this same-PK row must already
             # contain the incoming metadata, not the deleted local document.
             replaced_document = Document.objects.get(pk=self.old_document.pk)
             self.assertEqual(replaced_document.filename, 'historical.txt')
             self.assertFalse(SportAssociationDocumentsArchive.objects.filter(pk=self.old_link.pk).exists())
             self.assertTrue(any(f'restores/{operation.id}/media/' in key for key in self._files()))
-            observed.append(log_entry.pk)
-            raise RuntimeError('synthetic restore audit hook failure after real index')
+            observed.append(instance.pk)
+            raise RuntimeError('synthetic failure after restore summary insert')
 
-        post_log.connect(fail_after_index, sender=Message, weak=False)
+        post_save.connect(fail_after_summary, sender=LogEntry, weak=False)
         try:
             execute(operation.pk)
         finally:
-            post_log.disconnect(fail_after_index, sender=Message)
-        self.assertEqual(len(observed), 1, 'Must reach real replacement mutation/index, not fail during setup')
+            post_save.disconnect(fail_after_summary, sender=LogEntry)
+        self.assertEqual(len(observed), 1, 'Must reach the summary insert after replacement')
         self._assert_failed_rollback(operation, before_db, before_files, upload_key)
 
     def test_null_last_delivery_sent_on_hits_postgresql_constraint_and_rolls_back_complete_restore(self):

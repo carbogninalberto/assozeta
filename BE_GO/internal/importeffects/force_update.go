@@ -33,7 +33,7 @@ func (e *Effects) SaveForceUpdate(ctx context.Context, instance *Instance) error
 	if err != nil {
 		return err
 	}
-	if model.audited() && !instance.Adding {
+	if e.audits(model) && !instance.Adding {
 		if len(model.Audit.Include) > 0 {
 			// plan.json: no imported model registers include_fields.
 			return planUnreachable("auditlog include_fields on %s", model.Name)

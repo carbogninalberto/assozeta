@@ -3171,6 +3171,43 @@ paths:
       responses:
         '200':
           description: No response body
+  /instance/admin/backups/reclaim-space:
+    post:
+      operationId: instance_admin_backups_reclaim_space_create
+      tags:
+      - instance
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                confirm:
+                  type: boolean
+                  enum:
+                  - true
+              required:
+              - confirm
+      responses:
+        '202':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+    delete:
+      operationId: instance_admin_backups_reclaim_space_destroy
+      tags:
+      - instance
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
   /instance/admin/backups/remote:
     get:
       operationId: instance_admin_backups_remote_retrieve

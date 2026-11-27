@@ -62,9 +62,10 @@ func (i *Instance) PK() Value { return i.Values[i.Model.PK.Attname] }
 
 // Effects performs the ORM operations of one import inside its transaction.
 type Effects struct {
-	Plan  *Plan
-	Tx    *sqlx.Tx
-	Audit AuditWriter
+	Plan      *Plan
+	Tx        *sqlx.Tx
+	Audit     AuditWriter
+	SkipAudit bool // Restore writes one summary in the replacement transaction.
 	// Now is timezone.now(); NewUUID is str(uuid.uuid4()).
 	Now     func() time.Time
 	NewUUID func() string
@@ -73,7 +74,8 @@ type Effects struct {
 	Random func() uint32
 }
 
-func (e *Effects) now() time.Time { return e.Now() }
+func (e *Effects) audits(model *Model) bool { return !e.SkipAudit && model.audited() }
+func (e *Effects) now() time.Time           { return e.Now() }
 func (e *Effects) randomColor() string {
 	n := rand.Uint32()
 	if e.Random != nil {
@@ -309,7 +311,7 @@ func (e *Effects) entry(instance *Instance, action int, changes map[string][2]st
 
 func (e *Effects) logCreate(ctx context.Context, instance *Instance) error {
 	model := instance.Model
-	if !model.audited() {
+	if !e.audits(model) {
 		return nil
 	}
 	excluded := map[string]bool{}
@@ -380,7 +382,7 @@ func (e *Effects) SaveFields(ctx context.Context, instance *Instance, names ...s
 	if err != nil {
 		return err
 	}
-	if model.audited() {
+	if e.audits(model) {
 		changes := map[string][2]string{}
 		selects := make([]string, len(fields))
 		for i, field := range fields {
@@ -667,7 +669,7 @@ func (e *Effects) setThrough(ctx context.Context, field *M2M, key Value, prepped
 	// connects log_delete to post_delete and so writes the one auditlog delete
 	// entry per row after that row is gone.
 	excluded := map[string]bool{}
-	if through.audited() {
+	if e.audits(through) {
 		if len(through.Audit.Include) > 0 {
 			// plan.json: no imported model registers include_fields.
 			return planUnreachable("auditlog include_fields on %s", through.Name)
@@ -690,7 +692,7 @@ func (e *Effects) setThrough(ctx context.Context, field *M2M, key Value, prepped
 		}
 		// log_delete runs on post_delete: the entry is written after the row's
 		// DELETE, from the instance the collector still holds.
-		if through.audited() {
+		if e.audits(through) {
 			changes := map[string][2]string{}
 			for _, column := range through.Fields {
 				if excluded[column.Name] {

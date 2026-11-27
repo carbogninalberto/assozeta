@@ -34,14 +34,17 @@ type auditRetentionTransaction struct{ *ownedTransaction }
 // DeleteExpiredAuditRecords replaces the collector's explicit index cascade.
 // Django's existing foreign key is deferred; both deletes and fenced completion
 // share the transaction. The query returns only the aggregate collector count.
-func (t *auditRetentionTransaction) DeleteExpiredAuditRecords(ctx context.Context, cutoff time.Time) (int64, error) {
+func (t *auditRetentionTransaction) DeleteExpiredAuditRecords(ctx context.Context, now time.Time) (int64, error) {
 	var count int64
-	err := t.tx.GetContext(ctx, &count, deleteExpiredAuditRecordsSQL, cutoff)
+	err := t.tx.GetContext(ctx, &count, deleteExpiredAuditRecordsSQL, now)
 	return count, err
 }
 
 const deleteExpiredAuditRecordsSQL = `WITH expired_audits AS (
- DELETE FROM auditlog_logentry WHERE timestamp<$1 RETURNING id
+ DELETE FROM auditlog_logentry
+ WHERE timestamp < ((($1::timestamptz AT TIME ZONE 'UTC') - make_interval(months => COALESCE(
+   (SELECT audit_log_retention_months FROM instance_instanceconfiguration ORDER BY id LIMIT 1), 12))) AT TIME ZONE 'UTC')
+ RETURNING id
 ), expired_indexes AS (
  DELETE FROM application_auditlogindex i USING expired_audits a
  WHERE i.log_entry_id=a.id RETURNING i.audit_log_index_id

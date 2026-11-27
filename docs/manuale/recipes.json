@@ -100,6 +100,7 @@
     "BE/docmanager/views/printing_views.py",
     "BE/instance/backups.py",
     "BE/instance/integrations.py",
+    "BE/instance/models.py",
     "BE/instance/permissions.py",
     "BE/instance/remote_backups.py",
     "BE/instance/restore/views.py",
@@ -270,6 +271,8 @@
     "UI/src/routes/profile/ProfileMenu.svelte",
     "UI/src/routes/profile/sections/Account.svelte",
     "UI/src/routes/profile/sections/DataExports.svelte",
+    "UI/src/routes/profile/sections/DataImport.svelte",
+    "UI/src/routes/profile/sections/InstanceBackups.svelte",
     "UI/src/routes/profile/sections/InstanceIntegration.svelte",
     "UI/src/routes/profile/sections/InstanceIntegrations.svelte",
     "UI/src/routes/profile/sections/InstanceRuntime.svelte",
@@ -7330,9 +7333,13 @@
     ],
     "faq/i-miei-dati-sono-al-sicuro.mdx#robusta-politica-di-backup": [
       "BE/instance/backups.py",
+      "BE/instance/models.py",
       "BE/instance/permissions.py",
       "BE/instance/remote_backups.py",
-      "BE/instance/restore/views.py"
+      "BE/instance/restore/views.py",
+      "UI/src/routes/profile/sections/DataImport.svelte",
+      "UI/src/routes/profile/sections/InstanceBackups.svelte",
+      "UI/src/routes/profile/sections/SelfInstance.svelte"
     ],
     "faq/quali-sono-piani-abbonamento.mdx#come-cambiare-piano": [
       "BE/application/views/billing_views.py",

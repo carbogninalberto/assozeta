@@ -211,9 +211,14 @@ func (s *InstanceBackups) Overview(ctx context.Context, refresh bool) (*Instance
 		actions = domain.RequestObject{}
 	}
 	remote, _ := inventory.Lookup("remote")
+	reclaim, found := inventory.Lookup("reclaim_space")
+	if !found {
+		reclaim = domain.RequestObject{{Name: "pending", Value: false}, {Name: "last_run", Value: nil}}
+	}
 	body := domain.RequestObject{{Name: "available", Value: true}, {Name: "archives", Value: archives},
 		{Name: "retention", Value: retention}, {Name: "disk", Value: merged}, {Name: "next_backup", Value: next},
-		{Name: "schedule", Value: schedule}, {Name: "actions", Value: actions}, {Name: "remote", Value: remote}}
+		{Name: "schedule", Value: schedule}, {Name: "actions", Value: actions}, {Name: "remote", Value: remote},
+		{Name: "reclaim_space", Value: reclaim}}
 	if !dto.RenderableJSON(body) {
 		return nil, errInstanceBackupsUnhandled // strict JSONRenderer: a non-finite number raises, a lone surrogate fails the UTF-8 encode
 	}

@@ -6,6 +6,7 @@ import (
 	"math/big"
 	"net/netip"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"unicode/utf8"
@@ -366,6 +367,16 @@ var instanceAdminColor = regexp.MustCompile(`^#[0-9a-fA-F]{6}$`)
 
 // InstanceAdminUIAPIVersions are InstanceConfiguration.UI_API_VERSION_CHOICES.
 var InstanceAdminUIAPIVersions = []string{"v1", "v2"}
+
+func InstanceAdminAuditRetention(body any) (int, error) {
+	value, _ := InstanceAdminFormGet(body, "audit_log_retention_months")
+	number, _ := value.(json.Number)
+	months, err := strconv.Atoi(string(number))
+	if err != nil || !slices.Contains([]int{3, 6, 12, 18, 24}, months) {
+		return 0, &InstanceAdminInvalid{Body: map[string]any{"audit_log_retention_months": []string{"Scegli un periodo di conservazione di 3, 6, 12, 18 o 24 mesi."}}}
+	}
+	return months, nil
+}
 
 // InstanceAdminEdit is InstanceAdminSerializer(config, data, partial=True)
 // (InstanceReconfigureSerializer restricted to 'oem' and 'uiApiVersion'):

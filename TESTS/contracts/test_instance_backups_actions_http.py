@@ -39,7 +39,7 @@ def allowed(path):
     fixed = {BASE + '/schedule': {'PUT', 'OPTIONS'}, BASE + '/upload': {'POST', 'OPTIONS'},
              BASE + '/remote': {'GET', 'HEAD', 'PUT', 'OPTIONS'}, BASE + '/remote/test': {'POST', 'OPTIONS'},
              BASE + '/remote/key': {'POST', 'OPTIONS'}, BASE + '/remote/key/confirm': {'POST', 'OPTIONS'},
-             BASE + '/remote/fetch': {'POST', 'OPTIONS'}}
+             BASE + '/remote/fetch': {'POST', 'OPTIONS'}, BASE + '/reclaim-space': {'POST', 'DELETE', 'OPTIONS'}}
     if path in fixed:
         return fixed[path]
     if path.endswith('/restore'):

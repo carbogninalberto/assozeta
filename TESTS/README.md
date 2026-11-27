@@ -882,7 +882,7 @@ atomicity defects, stale attempts, concurrent updates, cancellation and heartbea
 The full accounts adapter includes it. Evidence covers current-schema task behavior;
 production publication/scheduling and historical migration proof remain separate.
 
-`accounts.py --only audit-retention` verifies exact 365-day retention, dependent
+`accounts.py --only audit-retention` verifies UTC calendar-month retention for all five settings and the 12-month default, dependent
 index deletion and concurrent index writers against actual Django and ten required
 Go/PostgreSQL groups. `--only task-bodies` runs all five current task fixtures in
 one private schema (7 reset, 10 token, 8 age, 10 retention and 13 archive groups). These checks

@@ -11,6 +11,7 @@
     } from 'components/formBuilder/preview-blocks/index.js';
     import {getDataFromForm, toBase64Safe} from 'utils/Functions.js';
     import {apiFetch, replaceUID} from 'utils/ApiMiddleware.js';
+    import {sortPaymentCategories} from 'utils/paymentCategories.js';
     import {toast} from 'svelte-sonner';
     import {createEventDispatcher, onMount} from 'svelte';
     import {File, FileText, TrashSimple} from 'phosphor-svelte';
@@ -296,7 +297,7 @@
     async function fetchCategories() {
         let res = await apiFetch(__bakney.env.API.PAYMENT.CATEGORY.LIST);
 
-        if (!res.error) categories = res.response.data || [];
+        if (!res.error) categories = sortPaymentCategories(res.response.data);
         else if (res.status != 403 && res.status != 401) toast.error('Qualcosa è andato storto.');
     }
 

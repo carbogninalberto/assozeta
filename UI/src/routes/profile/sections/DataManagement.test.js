@@ -55,6 +55,13 @@ test('the import keeps the typed confirmation and the media consent', () => {
     assert.doesNotMatch(source, /<details|InstanceAlert|InstanceAccordion/);
 });
 
+test('each recovery copy offers Elimina next to its download', () => {
+    const rows = read('DataImport.svelte').match(/<li\b[^>]*>[\s\S]*?<\/li>/g);
+    const row = rows?.find(item => item.includes('Scarica backup di sicurezza'));
+    assert.ok(row, 'Expected the recovery copy row with its download button');
+    assert.match(row, /\bElimina\b/, 'Missing Elimina in the recovery copy row');
+});
+
 test('recovered terminal exports are synchronized without a completion announcement', () => {
     const source = readFileSync(new URL('../../../utils/NotificationService.js', import.meta.url), 'utf8');
     assert.match(source, /exportProgress\.applyCompleted\(terminal, false\)/);

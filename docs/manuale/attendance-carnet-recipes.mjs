@@ -21,7 +21,7 @@ const reviewed = {
   "UI/src/routes/association/course/carnet/detail/sections/Info.svelte": "6326b6ff03fc46c26d120fce5a0198c7b392b84d43d398d8a81805320f86c2f7",
   "UI/src/routes/association/course/carnet/detail/sections/Usage.svelte": "569092d44ead6627058eecaf5c0f7bb391dc47f16be54cde5808ca9769c4be4d",
   "UI/src/routes/association/course/carnet/detail/modals/AddCarnetModal.svelte": "00dcea9bfea001c1b12209d79d485448640826173e5bf33da8fc886c7e50857f",
-  "UI/src/routes/accounting/payment/PaymentList.svelte": "31d3e103a34980df77ffe1178198789c0411f819f3ade64baba89ab0dcf3870a",
+  "UI/src/routes/accounting/payment/PaymentList.svelte": "af2fa84c061ce9d1432055c00e8e4fd50c1fee04d94e621e50129fa39a034ea1",
   "BE/application/urls.py": "b475e7ed8c26a891854c4021d7308aefb192d2a26df8b3ee916a33f88e7cc359",
   "BE/application/permissions_registry.py": "d6f30e78c76ea081c5c16331ae0f53b6e9051a04dc8faee2e263c81366e28a9b",
   "BE/application/views/course_views.py": "28ce719b7f6897bccde939737866533899649def382f68a47def300a5dbc1c66",
@@ -38,7 +38,7 @@ const reviewed = {
   "BE/application/models/attendee_models.py": "5f7e748de06d17bd2d8eb1bbfa4c9d69eb9d3af6d6ec63bfd0e919b3af5f58f4",
   "BE/application/models/payment_models.py": "30d4c9c5bf5b21d78a0fdda78edb45edc9266e9c0fc42e2ff83a3c9e3fcf0a4b",
   "BE/application/models/user_models.py": "4800cd1f7a757e9e7d5203d1ea086d58e92ac4592e43c7fa7758103071336c96",
-  "BE/application/tasks.py": "14f2e0bf481cd432117564deb73293094d42af2e375caeadfdf37953ef5ee85b"
+  "BE/application/tasks.py": "bdf4474831c4a4ede3449b73f8172cd270de77b18d1f4371fed8bdd6fd059be1"
 };
 const contracts = [
   ["UI/src/components/Sidebar.svelte","<span class=\"menu-text\">Corsi e Abbonamenti</span>",75],

@@ -151,6 +151,16 @@ func (s *DataRestore) storeUpload(ctx context.Context, name, path string) error 
 
 // summary is Archive.summary() after validate(): the manifest's skipped
 // sections, the record and media counts, and the normalizers' reports.
+func (a *restoreArchive) recordCount() int {
+	records := 0
+	for name, rows := range a.records {
+		if name != "BillingPlan" && name != "PreviewAndCustomFeatures" {
+			records += len(rows)
+		}
+	}
+	return records
+}
+
 func (a *restoreArchive) summary() (domain.RequestObject, error) {
 	denomination := any("")
 	if associations := a.records["SportAssociation"]; len(associations) == 1 {
@@ -167,12 +177,6 @@ func (a *restoreArchive) summary() (domain.RequestObject, error) {
 		}
 		skippedObject = append(skippedObject, domain.RequestField{Name: item.Key, Value: int64ToNumber(int(count))})
 	}
-	records := 0
-	for name, rows := range a.records {
-		if name != "BillingPlan" && name != "PreviewAndCustomFeatures" {
-			records += len(rows)
-		}
-	}
 	details := make([]any, 0, len(a.missingRelations))
 	for _, relation := range a.missingRelations {
 		details = append(details, domain.RequestObject{{Name: "model", Value: relation.model}, {Name: "record_id", Value: relation.record},
@@ -188,7 +192,7 @@ func (a *restoreArchive) summary() (domain.RequestObject, error) {
 		reassignments = append(reassignments, detail)
 	}
 	return domain.RequestObject{{Name: "association", Value: denomination}, {Name: "export_date", Value: exportDate},
-		{Name: "skipped_records", Value: skippedObject}, {Name: "records", Value: int64ToNumber(records)},
+		{Name: "skipped_records", Value: skippedObject}, {Name: "records", Value: int64ToNumber(a.recordCount())},
 		{Name: "files", Value: int64ToNumber(len(a.media))}, {Name: "missing_media", Value: int64ToNumber(a.missingMedia)},
 		{Name: "legacy_invoices", Value: int64ToNumber(a.legacyInvoices)}, {Name: "reassigned_tutors", Value: int64ToNumber(len(a.reassignedTutors))},
 		{Name: "tutor_tax_code_conflicts", Value: int64ToNumber(conflicts)}, {Name: "tutor_reassignment_details", Value: reassignments},

@@ -54,6 +54,7 @@ func (r *ConsumerRestoreInstance) Receipt(ctx context.Context, q dataRestoreQuer
 // .select_related('primary_association__user') with the owner flags
 // is_instance_administrator reads.
 type RestoreConfiguration struct {
+	InstanceBackupsLogTarget
 	SelfHosted         bool           `db:"self_hosted"`
 	Multiple           bool           `db:"support_multiple_associations"`
 	Primary            sql.NullString `db:"primary_association_id"`
@@ -65,13 +66,28 @@ type RestoreConfiguration struct {
 // Configurations lists every configuration row (get() needs exactly one).
 func (r *ConsumerRestoreInstance) Configurations(ctx context.Context) ([]RestoreConfiguration, error) {
 	var rows []RestoreConfiguration
-	err := r.db.SelectContext(ctx, &rows, `SELECT c.self_hosted, c.support_multiple_associations,
+	err := r.db.SelectContext(ctx, &rows, `SELECT c.id, c.name, c.domain, c.self_hosted, c.support_multiple_associations,
  c.primary_association_id::text AS primary_association_id, a.user_id::text AS primary_owner_id, a.deleted AS primary_deleted,
  (u.user_id IS NOT NULL) AS primary_owner_exists
  FROM instance_instanceconfiguration c
  LEFT JOIN application_sportassociation a ON a.sport_association_id = c.primary_association_id
  LEFT JOIN bakney_user u ON u.user_id = a.user_id ORDER BY c.id`)
 	return rows, err
+}
+
+// AppendRestoreSummary writes the single audit entry for the replacement in its transaction.
+func (r *ConsumerRestoreInstance) AppendRestoreSummary(ctx context.Context, tx *sqlx.Tx, target InstanceBackupsLogTarget,
+	op *domain.DataRestoreReceipt, count int, at time.Time) error {
+	changes, err := json.Marshal(map[string][]string{"data_restore": {"", op.ID}})
+	if err != nil {
+		return err
+	}
+	additional, err := json.Marshal(map[string]any{"operation_id": op.ID, "record_count": count})
+	if err != nil {
+		return err
+	}
+	return appendInstanceUpdateAudit(ctx, tx, InstanceBackupAction{Target: target, ActorID: op.OwnerID,
+		Changes: changes, Additional: additional, At: at})
 }
 
 // OtherAssociations is SportAssociation.original_objects.exclude(pk=primary).exists().

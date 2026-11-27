@@ -213,6 +213,7 @@ type collaboratorDeleteRun struct {
 	graph        *collaboratorDeleteGraph
 	audit        domain.LoginAuditContext
 	group        *string
+	skipAudit    bool
 	disconnected bool
 	now          func() time.Time
 }
@@ -504,7 +505,7 @@ func (c *collaboratorDeleteCollector) delete(ctx context.Context) error {
 			collaboratorDeleteArray(bucket.model.PKType)+`)`, keys); err != nil {
 			return err
 		}
-		if bucket.model.AutoCreated || len(bucket.model.PostDelete) == 0 {
+		if c.run.skipAudit || bucket.model.AutoCreated || len(bucket.model.PostDelete) == 0 {
 			continue
 		}
 		for index := len(bucket.rows) - 1; index >= 0; index-- {

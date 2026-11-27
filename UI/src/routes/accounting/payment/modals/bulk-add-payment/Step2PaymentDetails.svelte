@@ -2,6 +2,7 @@
     import moment from 'moment';
     import {createEventDispatcher, onMount} from 'svelte';
     import {apiFetch} from 'utils/ApiMiddleware.js';
+    import {sortPaymentCategories} from 'utils/paymentCategories.js';
     import {toast} from 'svelte-sonner';
     import {userData} from 'store/stores.js';
     import {
@@ -56,7 +57,7 @@
     async function fetchCategories() {
         const res = await apiFetch(__bakney.env.API.PAYMENT.CATEGORY.LIST);
         if (!res.error) {
-            categories = res.response.data || [];
+            categories = sortPaymentCategories(res.response.data);
         } else if (res.status != 403 && res.status != 401) {
             toast.error('Errore nel caricamento delle causali.');
         }
