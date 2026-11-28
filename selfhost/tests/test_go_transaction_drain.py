@@ -37,7 +37,8 @@ prod_compose() {
 }
 prod_operations_lock_held=$TEST_LEASE
 '''
-            result = subprocess.run(['sh', '-c', DEFINITIONS + harness + '\n' + operation],
+            result = subprocess.run(['sh', '-c', DEFINITIONS + harness + '\n' + operation,
+                                     str(ROOT / 'selfhost/bin/assozeta')],
                 env={**os.environ, 'ASSOZETA_INSTALL_ROOT': directory,
                      'TEST_GO': str(golang).lower(), 'TEST_FAILURE': str(failure).lower(),
                      'TEST_LEASE': str(lease).lower(), 'TEST_CALLS': str(root / 'calls')},

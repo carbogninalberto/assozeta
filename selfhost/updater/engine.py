@@ -208,7 +208,8 @@ class Engine:
         services.update(web='WEB', renderer='RENDERER')
         if runtime is not None:
             # Shared storage needs a health check. Its images are outside the release manifest.
-            for service in SHARED_SERVICES:
+            storage = values.get('ASSOZETA_STORAGE_BACKEND') or 'minio'
+            for service in (SHARED_SERVICES - {'garage', 'minio'}) | {storage}:
                 services.setdefault(service, None)
         for service, image in services.items():
             container = subprocess.check_output(command + ['ps', '-q', service], env=environment, text=True).strip()

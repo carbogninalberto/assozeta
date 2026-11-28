@@ -1,0 +1,61 @@
+services:
+  minio:
+    profiles: [minio]
+
+  # Replace only the storage dependencies inherited from the default model.
+  minio-init:
+    depends_on:
+      minio: !reset null
+
+  migrate:
+    depends_on:
+      minio-init: !reset null
+      garage: {condition: service_healthy}
+
+  # Compose v2 processes !reset at its literal path, including for services
+  # whose base dependencies are shared. Keep the reset explicit per service.
+  api:
+    depends_on:
+      minio: !reset null
+      garage: &healthy {condition: service_healthy}
+  worker:
+    depends_on:
+      minio: !reset null
+      garage: *healthy
+  api-go:
+    depends_on:
+      minio: !reset null
+      garage: *healthy
+  worker-go:
+    depends_on:
+      minio: !reset null
+      garage: *healthy
+  job-worker-go:
+    depends_on:
+      minio: !reset null
+      garage: *healthy
+
+  garage:
+    image: ${GARAGE_IMAGE:-dxflrs/garage:v2.1.0@sha256:4c9b34c113e61358466e83fd6e7d66e6d18657ede14b776eb78a93ee8da7cf6a}
+    environment:
+      GARAGE_RPC_SECRET: ${GARAGE_RPC_SECRET}
+    volumes:
+      - ./config/garage.toml:/etc/garage.toml:ro,z
+      - garage_data:/var/lib/garage
+    networks:
+      - internal
+      - renderer_egress
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/garage", "status"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    logging:
+      driver: json-file
+      options:
+        max-size: 20m
+        max-file: "5"
+
+volumes:
+  garage_data:

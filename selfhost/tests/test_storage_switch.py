@@ -1,0 +1,253 @@
+"""Exercise host cutover and rollback boundaries without Docker or real credentials."""
+import json
+import os
+import runpy
+from pathlib import Path
+import subprocess
+import tempfile
+from io import BytesIO
+import unittest
+from unittest.mock import Mock, patch
+
+ROOT = Path(__file__).resolve().parents[1]
+CLI = (ROOT / 'bin/assozeta').read_text().split('\ncommand=${1:-help}\n')[0]
+STUBS = '''
+validate_prod() { :; }
+compose_version() { echo 2.24.0; }
+prod_operations_lock_held=true
+random_hex() { echo test-value; }
+record() { echo "$*" >> "$EVENTS"; }
+prod_compose() { record "$@"; }
+init_storage() { record "init $1"; }
+prod_app_services_running() { return 0; }
+stop_prod_data_services() { record pause; }
+drain_prod_go_transactions() { record drain; }
+start_prod_app_services() { record "resume $(storage_backend)"; }
+storage_objects() {
+    record "$* $(storage_backend)"
+    [ "$*" != "$FAIL" ]
+}
+'''
+
+
+class CutoverTests(unittest.TestCase):
+    def setUp(self):
+        work = tempfile.TemporaryDirectory()
+        self.addCleanup(work.cleanup)
+        self.root = Path(work.name)
+        self.env = self.root / '.env'
+        self.env.write_text('AWS_S3_ENDPOINT_URL=http://minio:9000\nAWS_S3_REGION_NAME=us-east-1\n'
+                            'AWS_ACCESS_KEY_ID=test-key\nAWS_SECRET_ACCESS_KEY=test\\value\n')
+
+    def switch(self, target='garage', failure=''):
+        events = self.root / 'events'
+        events.write_text('')
+        result = subprocess.run(['sh', '-c', CLI + STUBS + '\nstorage_switch_prod "$1"', 'sh', target],
+                                env={**os.environ, 'ASSOZETA_ENV_FILE': str(self.env),
+                                     'EVENTS': str(events), 'FAIL': failure}, capture_output=True, text=True)
+        return result, events.read_text().splitlines()
+
+    def test_copy_and_verification_failures_leave_live_settings_and_allow_retry(self):
+        for phase in ('copy garage initial', 'copy garage final', 'probe active'):
+            with self.subTest(phase=phase):
+                result, events = self.switch(failure=phase)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn('minio remains authoritative', result.stdout)
+                self.assertIn('AWS_S3_ENDPOINT_URL=http://minio:9000', self.env.read_text())
+                self.assertIn('rm -sf garage', events)
+                self.assertNotIn('rm -sf minio', events)
+                if phase == 'copy garage initial':
+                    self.assertNotIn('pause', events)
+                else:
+                    self.assertIn('resume minio', events)
+        result, _ = self.switch()
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_both_directions_verify_before_committing_and_resume_the_selected_store(self):
+        for source, target in [('minio', 'garage'), ('garage', 'minio')]:
+            result, events = self.switch(target)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(events[2:], [f'copy {target} initial {source}', 'pause',
+                                         'up -d --wait postgres', 'drain', f'copy {target} final {source}',
+                                         f'probe active {target}', f'rm -sf {source}', f'resume {target}'])
+        self.assertIn('AWS_ACCESS_KEY_ID=test-key\n', self.env.read_text())
+        self.assertIn('AWS_SECRET_ACCESS_KEY=test\\value\n', self.env.read_text())
+
+    def test_external_endpoint_is_never_synchronized(self):
+        self.env.write_text('AWS_S3_ENDPOINT_URL=https://example.invalid\n')
+        result, events = self.switch()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(events, [])
+
+
+class ObjectVerificationTests(unittest.TestCase):
+    def setUp(self):
+        self.helper = runpy.run_path(str(ROOT / 'updater/storage_objects.py'))
+
+    @staticmethod
+    def store(entries):
+        store = Mock()
+        store.get_paginator.return_value.paginate.side_effect = lambda Bucket: [
+            {'Contents': [{'Key': key, 'Size': len(body), 'ETag': body.hex()}]}
+            for key, (body, _) in entries.items()]
+
+        def read(Bucket, Key):
+            body, metadata = entries[Key]
+            return {'Body': BytesIO(body), 'ContentType': 'text/plain', 'Metadata': metadata}
+
+        store.get_object.side_effect = read
+        store.head_object.side_effect = lambda Bucket, Key: {'ContentType': 'text/plain', 'Metadata': entries[Key][1]}
+        return store
+
+    def test_final_sync_copies_metadata_only_changes_and_reads_unchanged_content_once(self):
+        source = self.store({'same': (b'a', {}), 'edited': (b'b', {'v': '2'})})
+        entries = {'same': (b'a', {}), 'edited': (b'b', {'v': '1'}), 'deleted': (b'c', {})}
+        target = self.store(entries)
+        target.delete_object.side_effect = lambda Bucket, Key: entries.pop(Key)
+
+        def upload(store, bucket, key, body, headers):
+            self.assertEqual(key, 'edited')
+            entries[key] = (body.read(), headers['Metadata'])
+
+        mirror = self.helper['mirror']
+        with patch.dict(mirror.__globals__, upload=upload):
+            mirror(source, 'src', target, 'dst', True)
+        self.assertEqual(entries, {'same': (b'a', {}), 'edited': (b'b', {'v': '2'})})
+        for store in (source, target):
+            reads = [call.kwargs['Key'] for call in store.get_object.call_args_list]
+            self.assertEqual(reads.count('same'), 1)
+
+    def test_verify_reads_every_page_and_rejects_key_byte_and_metadata_changes(self):
+        source = {'a': (b'first', {}), 'b': (b'abc', {'revision': '1'})}
+        self.helper['verify'](self.store(source), 'src', self.store(source), 'dst')
+        for changed in [{'a': source['a']}, {**source, 'extra': source['b']},
+                        {**source, 'b': (b'xyz', {'revision': '1'})},
+                        {**source, 'b': (b'abc', {'revision': '2'})}]:
+            with self.subTest(keys=list(changed)), self.assertRaises(ValueError):
+                self.helper['verify'](self.store(source), 'src', self.store(changed), 'dst')
+
+    def test_legacy_archive_restores_original_keys_and_infers_content_type(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / 'objects/docs').mkdir(parents=True)
+            (root / 'objects/docs/form.pdf').write_bytes(b'%PDF')
+            uploads = []
+
+            def upload(store, bucket, key, body, headers):
+                uploads.append((key, body.read(), headers))
+
+            restore = self.helper['import_archive']
+            with patch.dict(restore.__globals__, upload=upload):
+                restore(None, 'dst', root)
+            self.assertEqual(uploads, [('docs/form.pdf', b'%PDF', {'ContentType': 'application/pdf'})])
+
+    def test_backup_index_preserves_colliding_keys_and_detects_truncation(self):
+        objects = {'a': (b'plain', {}), 'a/b': (b'nested', {}), '../b': (b'other', {})}
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / 'objects').mkdir()
+            self.helper['export_archive'](self.store(objects), 'src', root)
+            index = root / 'object-index.jsonl'
+            for key, path, _, _ in map(json.loads, index.read_text().splitlines()):
+                self.assertTrue((root / path).resolve().is_relative_to(root))
+                self.assertEqual((root / path).read_bytes(), objects[key][0])
+            index.write_text('')
+            with self.assertRaisesRegex(ValueError, 'index does not match'):
+                self.helper['import_archive'](None, 'dst', root)
+
+
+class StorageConfigurationTests(unittest.TestCase):
+    def test_garage_key_import_uses_stdin(self):
+        script = CLI + r'''
+garage_cli() {
+    case "$*" in
+        'layout show') echo 'Current cluster layout version: 1' ;;
+        'key info GK00') return 1 ;;
+        'json-api ImportKey -') cat > "$IMPORT" ;;
+        'key allow '*|'bucket info '*|'bucket allow '*) return 0 ;;
+        *) return 1 ;;
+    esac
+}
+storage_objects() { :; }
+init_storage garage
+'''
+        with tempfile.TemporaryDirectory() as directory:
+            payload = Path(directory) / 'import'
+            env_file = Path(directory) / '.env'
+            env_file.write_text('GARAGE_ACCESS_KEY=GK00\nGARAGE_SECRET_KEY=00\nAWS_STORAGE_BUCKET_NAME=docs\n')
+            result = subprocess.run(['sh', '-c', script], capture_output=True, text=True,
+                                    env={**os.environ, 'ASSOZETA_ENV_FILE': str(env_file), 'IMPORT': str(payload)})
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(json.loads(payload.read_text()),
+                             {'accessKeyId': 'GK00', 'secretAccessKey': '00', 'name': 'assozeta'})
+
+    def test_garage_validation_names_each_missing_credential(self):
+        script = CLI + '''
+preflight() { :; }
+compose_version() { echo 2.24.0; }
+ensure_configuration_values() { :; }
+validate_file() { :; }
+validate_prod
+'''
+        with tempfile.TemporaryDirectory() as directory:
+            env_file = Path(directory) / '.env'
+            required = ('GARAGE_RPC_SECRET', 'GARAGE_ACCESS_KEY', 'GARAGE_SECRET_KEY')
+            for missing in required:
+                with self.subTest(missing=missing):
+                    env_file.write_text('ASSOZETA_STORAGE_BACKEND=garage\nAWS_S3_ENDPOINT_URL=http://garage:3900\n'
+                                        + ''.join(f'{key}=fixture\n' for key in required if key != missing)
+                                        + f'{missing}=\n')
+                    result = subprocess.run(['sh', '-c', script], capture_output=True, text=True,
+                                            env={**os.environ, 'ASSOZETA_ENV_FILE': str(env_file)})
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertIn(f'missing required value in {env_file}: {missing}', result.stderr)
+
+    def test_historical_updater_can_execute_a_standalone_target_cli(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            cli = root / 'assozeta'
+            # The old distribution supplies the network but has no storage tool.
+            (root / '.env').write_text('ASSOZETA_UPDATER_REF=old-image\n'
+                                       'ASSOZETA_VERIFIED_UPDATER_REF=stale-image\n'
+                                       'ASSOZETA_RECOVERY_UPDATER_REF=stale-image\n')
+            (root / 'compose.yml').write_text('services: {}\nnetworks: {internal: {}}\n')
+            cli.write_text(CLI + """
+docker() {
+    [ "$*" = "compose --env-file $PROD_ENV -f $PROD_COMPOSE --profile tools -f - run --rm --no-deps -T storage-objects /runner/storage_objects.py size" ] || return 1
+    command docker compose --env-file "$PROD_ENV" -f "$PROD_COMPOSE" -f - --profile tools config --images storage-objects
+}
+storage_objects size
+""")
+            for ref in ('ASSOZETA_VERIFIED_UPDATER_REF', 'ASSOZETA_RECOVERY_UPDATER_REF'):
+                with self.subTest(ref=ref):
+                    result = subprocess.run(['sh', str(cli)], env={**os.environ, 'ASSOZETA_INSTALL_ROOT': directory,
+                                            'ASSOZETA_ENV_FILE': str(root / '.env'), ref: 'verified-image:test'},
+                                            capture_output=True, text=True)
+                    self.assertEqual(result.returncode, 0, result.stderr)
+                    self.assertEqual(result.stdout.strip(), 'verified-image:test')
+
+    def test_installation_selects_one_store_for_both_runtimes(self):
+        for backend in ('minio', 'garage'):
+            with tempfile.TemporaryDirectory() as directory:
+                env_file = Path(directory) / '.env'
+                env = {**os.environ, 'ASSOZETA_INSTALL_ROOT': str(ROOT), 'ASSOZETA_ENV_FILE': str(env_file)}
+                options = ['--storage', backend] if backend == 'garage' else []
+                subprocess.run(['sh', '-c', CLI + '\nconfigure "$@"', 'test',
+                                '--domain', 'localhost', *options], env=env, check=True, capture_output=True)
+                if backend == 'minio':
+                    # Existing installations predate the selector.
+                    env_file.write_text(env_file.read_text().replace('ASSOZETA_STORAGE_BACKEND=minio\n', ''))
+                for runtime, api in [('django', 'api'), ('go', 'api-go')]:
+                    with self.subTest(backend=backend, runtime=runtime):
+                        result = subprocess.run(['sh', '-c', CLI + '\nprod_compose "$@"', 'test',
+                                                 '--profile', runtime, 'config', '--format', 'json'],
+                                                env=env, capture_output=True)
+                        self.assertEqual(result.returncode, 0, result.stderr.decode())
+                        services = json.loads(result.stdout)['services']
+                        self.assertEqual(set(services) & {'minio', 'garage'}, {backend})
+                        self.assertIn(backend, services[api]['depends_on'])
+                        self.assertEqual(services[api]['environment']['AWS_S3_REGION_NAME'],
+                                         'garage' if backend == 'garage' else 'us-east-1')
+                        self.assertIn(backend, services['renderer']['environment']['RENDER_ALLOWED_HOSTS'].split(','))
+                        self.assertEqual(services[api]['environment']['AWS_S3_ENDPOINT_URL'],
+                                         'http://garage:3900' if backend == 'garage' else 'http://minio:9000')

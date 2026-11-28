@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 import subprocess
 import sys
+import tarfile
 from tempfile import TemporaryDirectory
 import unittest
 
@@ -37,6 +38,55 @@ sys.exit(98)
 
     def write_env(self, values):
         self.env.write_text(''.join(f'{key}={value}\n' for key, value in values.items()))
+
+    def test_upgrade_backs_up_and_restarts_with_the_same_store(self):
+        definitions = CLI.read_text().split('\ncommand=${1:-help}\n')[0]
+        script = definitions + r'''
+preflight() { :; }
+ensure_configuration_values() { :; }
+docker() { :; }
+run_updater_tool() { printf '%s\n' "$*" >> "$EVENTS"; }
+curl() { :; }
+init_storage() { printf 'init %s\n' "$1" >> "$EVENTS"; }
+prod_compose() {
+    printf '%s\n' "$*" >> "$EVENTS"
+    case "$*" in
+        *'config --services') printf 'api\n' ;;
+        *'config --profiles') printf 'django\ngo\n' ;;
+        *'ps --status running --services'*) printf '%s\n' api web postgres redis "$(storage_backend)" renderer ;;
+        *'pg_dump '*) printf 'fixture dump' ;;
+    esac
+}
+upgrade_prod 1.0.6
+'''
+        for storage in ('minio', 'garage'):
+            with self.subTest(storage=storage):
+                self.calls.write_text('')
+                # An existing MinIO installation has no backend selector.
+                values = self.values | {
+                    'APP_URL': 'http://localhost', 'CURRENT_HOST_PUPPETEER': 'http://active-api:8000',
+                    'AWS_S3_ENDPOINT_URL': 'http://garage:3900' if storage == 'garage' else 'http://minio:9000',
+                }
+                if storage == 'garage':
+                    values['ASSOZETA_STORAGE_BACKEND'] = storage
+                self.write_env(values)
+                result = subprocess.run(['sh', '-c', script, str(CLI)], env={
+                    **os.environ, 'ASSOZETA_INSTALL_ROOT': str(self.root), 'EVENTS': str(self.calls)},
+                    text=True, capture_output=True)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                calls = self.calls.read_text().splitlines()
+                self.assertIn(f'up -d --wait postgres {storage}', calls)
+                self.assertIn(f'init {storage}', calls)
+                self.assertTrue(any(call.endswith('storage-objects /runner/storage_objects.py export') for call in calls))
+                self.assertIn(f'--profile django ps --status running --services postgres redis {storage} renderer web api', calls)
+                self.assertTrue(any(call.startswith('/runner/engine.py ') for call in calls))
+                updated = read_env(self.env)
+                self.assertEqual(updated.get('ASSOZETA_STORAGE_BACKEND'), values.get('ASSOZETA_STORAGE_BACKEND'))
+                self.assertEqual(updated['ASSOZETA_VERSION'], '1.0.6')
+                archive, = (self.root / 'backups').glob('*.tar.gz')
+                with tarfile.open(archive) as backup:
+                    self.assertIn(b'ASSOZETA_VERSION=1.0.5\n', backup.extractfile('./config.env').read())
+                archive.unlink()
 
     def run_cli(self, **extra):
         environment = {key: value for key, value in os.environ.items() if not key.startswith('ASSOZETA_')}

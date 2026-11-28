@@ -20,12 +20,17 @@ stop_prod_data_services() { :; }
 start_prod_app_services() { :; }
 release_prod_lock() { :; }
 id() { printf '%s\n' "$TEST_UID"; }
+init_storage() { :; }
+storage_objects() {
+    case "$1" in
+        size) printf '%s\\n' "$TEST_OBJECT_BYTES" ;;
+        export) printf 'object export\\n' >> "$TEST_LOG" ;;
+    esac
+}
 prod_compose() {
     case "$*" in
         *pg_database_size*) [ -n "$TEST_DATABASE_BYTES" ] && printf '%s\\n' "$TEST_DATABASE_BYTES" ;;
-        *"mc du"*) printf '{"status":"success","prefix":"bucket","size":%s,"objects":3}\\n' "$TEST_OBJECT_BYTES" ;;
         *pg_dump*) printf 'dump' ;;
-        *"mc mirror"*) printf '%s\\n' "$*" >> "$TEST_LOG" ;;
     esac
 }
 df() { printf 'Filesystem 1024-blocks Used Available Capacity Mounted\\n/dev/x 1 1 %s 1%% /\\n' "$TEST_AVAILABLE_KIB"; }
@@ -77,7 +82,7 @@ class BackupSpaceTests(unittest.TestCase):
         result = self.run_cli('backup_prod', available=5 * GIB, gnu_tar='1')
         self.assertEqual(result.returncode, 0, result.stderr)
         commands = self.log.read_text()
-        self.assertIn('mc mirror --quiet', commands)
+        self.assertIn('object export', commands)
         self.assertIn('--remove-files', commands)
         archives = list(self.backups.glob('assozeta-*.tar.gz'))
         self.assertEqual(len(archives), 1)
