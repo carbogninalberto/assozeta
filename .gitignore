@@ -1,5 +1,8 @@
 tmp/
 
+# Local agent QA framework (configs, runs, reports, credentials)
+/agent_e2e/
+
 # Python bytecode
 __pycache__/
 *.py[cod]
