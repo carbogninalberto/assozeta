@@ -377,6 +377,45 @@ class DistributionTests(unittest.TestCase):
 
 
 class EngineTests(unittest.TestCase):
+    def test_upgrade_verification_requires_the_selected_storage_service(self):
+        for storage in ('minio', 'garage'):
+            with self.subTest(storage=storage), TemporaryDirectory() as directory:
+                root = Path(directory)
+                env = root / '.env'
+                env.write_text(official_environment('1.0.5'))
+                if storage == 'garage':
+                    update_env(env, {'ASSOZETA_STORAGE_BACKEND': storage})
+                engine = Engine(root, env, None)
+                services = {'api': {'profiles': ['django'], 'image': 'backend'},
+                            'web': {'image': 'web'}, 'renderer': {'image': 'renderer'},
+                            'postgres': {}, 'redis': {}, storage: {}}
+                inspected = []
+
+                def docker(command, **kwargs):
+                    if command[:2] == ['docker', 'inspect']:
+                        name = command[-1]
+                        inspected.append(name)
+                        return json.dumps([{'State': {'Running': True, 'Health': {
+                            'Status': health if name == storage else 'healthy'}},
+                            'Config': {'Image': services[name].get('image')}}])
+                    self.assertEqual(str(root / 'config/compose.garage.yml') in command, storage == 'garage')
+                    if 'config' in command:
+                        return json.dumps({'services': services})
+                    if '--status' in command:
+                        return '\n'.join(services)
+                    if 'exec' in command:
+                        return '1.0.5'
+                    return command[-1]
+
+                with patch('engine.effective_runtime', return_value='django'), \
+                        patch('engine.subprocess.check_output', side_effect=docker):
+                    health = 'healthy'
+                    engine.verify_running('1.0.5', allow_configured_images=True)
+                    self.assertIn(storage, inspected)
+                    health = 'unhealthy'
+                    with self.assertRaisesRegex(RuntimeError, f'Unhealthy service: {storage}'):
+                        engine.verify_running('1.0.5', allow_configured_images=True)
+
     def test_private_log_failure_still_persists_failed_operation(self):
         with TemporaryDirectory() as directory:
             root = Path(directory)

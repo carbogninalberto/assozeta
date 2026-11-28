@@ -25,7 +25,7 @@ cleanup() {
 trap cleanup EXIT
 trap 'exit 1' HUP INT TERM
 
-"$cli" configure --domain "localhost:$port" --version "$version"
+"$cli" configure --storage garage --domain "localhost:$port" --version "$version"
 sed -i "s/^COMPOSE_PROJECT_NAME=.*/COMPOSE_PROJECT_NAME=$project/; s/^HTTPS_PORT=.*/HTTPS_PORT=$((port+1))/" "$ASSOZETA_ENV_FILE"
 "$cli" start
 app() { compose --profile django exec -T api python manage.py shell -c "$1"; }
@@ -69,6 +69,8 @@ rehearse_restore() {
     check_files "$2"
 }
 
+check_store garage
+"$cli" storage-switch minio
 check_store minio
 write_files first
 rehearse_restore minio first
@@ -77,6 +79,16 @@ check_store garage
 check_files first
 write_files second
 rehearse_restore garage second
+# Reject the destination application key after the final copy to the retained
+# MinIO volume. Garage must serve the current files until a retry succeeds.
+sed -i 's/^MINIO_APP_ACCESS_KEY=/MINIO_APP_ACCESS_KEY=invalid-/' "$ASSOZETA_ENV_FILE"
+if "$cli" storage-switch minio; then
+    echo 'Switch unexpectedly accepted invalid application credentials' >&2
+    exit 1
+fi
+check_store garage
+check_files second
+sed -i 's/^MINIO_APP_ACCESS_KEY=invalid-/MINIO_APP_ACCESS_KEY=/' "$ASSOZETA_ENV_FILE"
 "$cli" storage-switch minio
 check_store minio
 check_files second

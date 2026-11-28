@@ -941,6 +941,9 @@ validate_prod() {
     if [ "$selected_backend" = garage ]; then
         compose_version_at_least "$(compose_version)" 2.24.0 || die "Garage requires Docker Compose v2.24.0 or newer"
         [ "$(env_value AWS_S3_ENDPOINT_URL "$PROD_ENV")" = http://garage:3900 ] || die "use storage-switch to change the configured storage backend"
+        for garage_setting in GARAGE_RPC_SECRET GARAGE_ACCESS_KEY GARAGE_SECRET_KEY; do
+            [ -n "$(unquoted_env_value "$garage_setting" "$PROD_ENV")" ] || die "missing required value in $PROD_ENV: $garage_setting"
+        done
     elif [ "$(env_value AWS_S3_ENDPOINT_URL "$PROD_ENV")" = http://garage:3900 ]; then
         die "use storage-switch to change the configured storage backend"
     fi
@@ -1657,10 +1660,15 @@ init_storage() {
         garage_cli layout assign -z local -c 1G "${node%%@*}" || return 1
         garage_cli layout apply --version 1 || return 1
     fi
-    garage_key=$(env_value GARAGE_ACCESS_KEY "$PROD_ENV")
+    garage_key=$(unquoted_env_value GARAGE_ACCESS_KEY "$PROD_ENV")
     if ! garage_cli key info "$garage_key" >/dev/null 2>&1; then
-        garage_cli key import --yes -n assozeta "$garage_key" "$(env_value GARAGE_SECRET_KEY "$PROD_ENV")" \
-            >/dev/null 2>&1 || { log "Garage key import failed"; return 1; }
+        # The generated credentials are hexadecimal. Send the import over stdin
+        # so neither the Docker client nor the Garage process exposes the secret in ps.
+        garage_secret=$(unquoted_env_value GARAGE_SECRET_KEY "$PROD_ENV")
+        case "${garage_key#GK}$garage_secret" in *[!0-9a-fA-F]*) die "invalid Garage key format" ;; esac
+        garage_cli json-api ImportKey - >/dev/null 2>&1 <<EOF || { log "Garage key import failed"; return 1; }
+{"accessKeyId":"$garage_key","secretAccessKey":"$garage_secret","name":"assozeta"}
+EOF
     fi
     garage_cli key allow --create-bucket "$garage_key" >/dev/null || return 1
     garage_bucket=$(env_value AWS_STORAGE_BUCKET_NAME "$PROD_ENV")

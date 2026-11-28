@@ -87,15 +87,35 @@ class ObjectVerificationTests(unittest.TestCase):
     @staticmethod
     def store(entries):
         store = Mock()
-        store.get_paginator.return_value.paginate.return_value = [
-            {'Contents': [{'Key': key}]} for key in entries]
+        store.get_paginator.return_value.paginate.side_effect = lambda Bucket: [
+            {'Contents': [{'Key': key, 'Size': len(body), 'ETag': body.hex()}]}
+            for key, (body, _) in entries.items()]
 
         def read(Bucket, Key):
             body, metadata = entries[Key]
             return {'Body': BytesIO(body), 'ContentType': 'text/plain', 'Metadata': metadata}
 
         store.get_object.side_effect = read
+        store.head_object.side_effect = lambda Bucket, Key: {'ContentType': 'text/plain', 'Metadata': entries[Key][1]}
         return store
+
+    def test_final_sync_copies_metadata_only_changes_and_reads_unchanged_content_once(self):
+        source = self.store({'same': (b'a', {}), 'edited': (b'b', {'v': '2'})})
+        entries = {'same': (b'a', {}), 'edited': (b'b', {'v': '1'}), 'deleted': (b'c', {})}
+        target = self.store(entries)
+        target.delete_object.side_effect = lambda Bucket, Key: entries.pop(Key)
+
+        def upload(store, bucket, key, body, headers):
+            self.assertEqual(key, 'edited')
+            entries[key] = (body.read(), headers['Metadata'])
+
+        mirror = self.helper['mirror']
+        with patch.dict(mirror.__globals__, upload=upload):
+            mirror(source, 'src', target, 'dst', True)
+        self.assertEqual(entries, {'same': (b'a', {}), 'edited': (b'b', {'v': '2'})})
+        for store in (source, target):
+            reads = [call.kwargs['Key'] for call in store.get_object.call_args_list]
+            self.assertEqual(reads.count('same'), 1)
 
     def test_verify_reads_every_page_and_rejects_key_byte_and_metadata_changes(self):
         source = {'a': (b'first', {}), 'b': (b'abc', {'revision': '1'})}
@@ -137,6 +157,51 @@ class ObjectVerificationTests(unittest.TestCase):
 
 
 class StorageConfigurationTests(unittest.TestCase):
+    def test_garage_key_import_uses_stdin(self):
+        script = CLI + r'''
+garage_cli() {
+    case "$*" in
+        'layout show') echo 'Current cluster layout version: 1' ;;
+        'key info GK00') return 1 ;;
+        'json-api ImportKey -') cat > "$IMPORT" ;;
+        'key allow '*|'bucket info '*|'bucket allow '*) return 0 ;;
+        *) return 1 ;;
+    esac
+}
+storage_objects() { :; }
+init_storage garage
+'''
+        with tempfile.TemporaryDirectory() as directory:
+            payload = Path(directory) / 'import'
+            env_file = Path(directory) / '.env'
+            env_file.write_text('GARAGE_ACCESS_KEY=GK00\nGARAGE_SECRET_KEY=00\nAWS_STORAGE_BUCKET_NAME=docs\n')
+            result = subprocess.run(['sh', '-c', script], capture_output=True, text=True,
+                                    env={**os.environ, 'ASSOZETA_ENV_FILE': str(env_file), 'IMPORT': str(payload)})
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(json.loads(payload.read_text()),
+                             {'accessKeyId': 'GK00', 'secretAccessKey': '00', 'name': 'assozeta'})
+
+    def test_garage_validation_names_each_missing_credential(self):
+        script = CLI + '''
+preflight() { :; }
+compose_version() { echo 2.24.0; }
+ensure_configuration_values() { :; }
+validate_file() { :; }
+validate_prod
+'''
+        with tempfile.TemporaryDirectory() as directory:
+            env_file = Path(directory) / '.env'
+            required = ('GARAGE_RPC_SECRET', 'GARAGE_ACCESS_KEY', 'GARAGE_SECRET_KEY')
+            for missing in required:
+                with self.subTest(missing=missing):
+                    env_file.write_text('ASSOZETA_STORAGE_BACKEND=garage\nAWS_S3_ENDPOINT_URL=http://garage:3900\n'
+                                        + ''.join(f'{key}=fixture\n' for key in required if key != missing)
+                                        + f'{missing}=\n')
+                    result = subprocess.run(['sh', '-c', script], capture_output=True, text=True,
+                                            env={**os.environ, 'ASSOZETA_ENV_FILE': str(env_file)})
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertIn(f'missing required value in {env_file}: {missing}', result.stderr)
+
     def test_historical_updater_can_execute_a_standalone_target_cli(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -169,7 +234,8 @@ storage_objects size
                     with self.subTest(backend=backend, runtime=runtime):
                         result = subprocess.run(['sh', '-c', CLI + '\nprod_compose "$@"', 'test',
                                                  '--profile', runtime, 'config', '--format', 'json'],
-                                                env=env, capture_output=True, check=True)
+                                                env=env, capture_output=True)
+                        self.assertEqual(result.returncode, 0, result.stderr.decode())
                         services = json.loads(result.stdout)['services']
                         self.assertEqual(set(services) & {'minio', 'garage'}, {backend})
                         self.assertIn(backend, services[api]['depends_on'])

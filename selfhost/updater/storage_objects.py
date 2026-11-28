@@ -62,13 +62,19 @@ def fingerprint(store, bucket, key):
 
 
 def mirror(source, src, target, dst, final):
-    remaining = {entry['Key'] for entry in objects(target, dst)}
+    remaining = {entry['Key']: (entry['Size'], entry['ETag']) for entry in objects(target, dst)}
     for entry in objects(source, src):
         key = entry['Key']
-        if key in remaining:
-            remaining.remove(key)
-            if fingerprint(source, src, key) == fingerprint(target, dst, key):
+        existing = remaining.pop(key, None)
+        if existing is not None:
+            if not final and fingerprint(source, src, key) == fingerprint(target, dst, key):
                 continue
+            # ETags are only a copy hint. A metadata-only edit keeps the ETag,
+            # and verify() still hashes every object before accepting the mirror.
+            if final and (entry['Size'], entry['ETag']) == existing:
+                headers = metadata(source.head_object(Bucket=src, Key=key))
+                if headers == metadata(target.head_object(Bucket=dst, Key=key)):
+                    continue
         obj = source.get_object(Bucket=src, Key=key)
         with closing(obj['Body']) as body:
             upload(target, dst, key, body, metadata(obj))

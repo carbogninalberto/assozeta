@@ -133,11 +133,14 @@ remains available. To switch back, run
 on Garage also reach MinIO. Use this command for existing data each time you
 change stores. Editing the backend selector alone bypasses synchronization.
 
-`backup` and `restore ARCHIVE` operate on the currently selected store. An
+`upgrade VERSION` keeps the selected store and includes its documents in
+the pre-upgrade backup. `backup` and `restore ARCHIVE` also operate on that store. An
 archive from either backend can be restored to the other with the same
 `AWS_LOCATION`. For a disposable end-to-end rehearsal using release images,
-run `selfhost/tests/storage-roundtrip.sh VERSION` on a Docker host. It uses
-ports 58152 and 58153 by default and removes its test project afterward.
+run `selfhost/tests/storage-roundtrip.sh VERSION` on a Docker host. It starts
+with a fresh Garage installation, exercises a MinIO → Garage → MinIO round
+trip, and retries a switch after MinIO rejects the application credentials.
+It uses ports 58152 and 58153 by default and removes its test project afterward.
 
 The application runtime still
 supports public-ACL providers outside this bundled lifecycle: for example,
