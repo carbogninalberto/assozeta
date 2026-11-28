@@ -9,6 +9,7 @@ sh -n "$ROOT/selfhost/bin/assozeta"
 sh -n "$ROOT/selfhost/bin/update"
 sh -n "$ROOT/selfhost/bin/prepare-storage"
 sh -n "$ROOT/selfhost/tests/storage-smoke.sh"
+sh -n "$ROOT/selfhost/tests/storage-roundtrip.sh"
 sh -n "$ROOT/selfhost/tests/quality.sh"
 sh -n "$ROOT/selfhost/tests/smoke.sh"
 sh -n "$ROOT/selfhost/tests/production-smoke.sh"
@@ -97,4 +98,4 @@ for service in ("api", "api-go"):
 
 printf 'Self-host validation and updater regression tests passed.\n'
 
-python3 -m unittest discover -s "$ROOT/selfhost/tests" -p test_storage_images.py
+python3 -m unittest discover -s "$ROOT/selfhost/tests" -p "test_storage*.py"

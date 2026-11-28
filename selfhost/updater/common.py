@@ -87,6 +87,8 @@ def compose_command(root, env_file, updater=False):
     external = Path(root) / '.updater' / 'env-mount.json'
     if updater and external.exists():
         command += ['-f', str(external)]
+    if not updater and read_env(env_file).get('ASSOZETA_STORAGE_BACKEND') == 'garage':
+        command += ['-f', str(Path(root) / 'config/compose.garage.yml')]
     if not updater and edge_enabled(env_file):
         # Same optional front-proxy overlay as bin/assozeta.
         command += ['-f', str(Path(root) / EDGE_OVERLAY)]
@@ -97,7 +99,7 @@ def compose_command(root, env_file, updater=False):
 
 
 RUNTIME_PROFILES = {'django', 'go'}
-SHARED_SERVICES = {'postgres', 'redis', 'minio', 'renderer', 'web'}
+SHARED_SERVICES = {'postgres', 'redis', 'minio', 'garage', 'renderer', 'web'}
 
 
 def has_runtime_profiles(services):
@@ -164,6 +166,7 @@ def compose_environment(root, env_file):
     values = read_env(env_file)
     result = {key: value for key, value in os.environ.items() if key not in values}
     result.update(ASSOZETA_ENV_FILE=str(env_file), ASSOZETA_SELFHOST_DIR=str(root),
+                  ASSOZETA_STORAGE_BACKEND=values.get('ASSOZETA_STORAGE_BACKEND') or 'minio',
                   ASSOZETA_UPDATER_NOTICES_VOLUME=f'{values.get("COMPOSE_PROJECT_NAME", "assozeta")}_updater_notices',
                   ASSOZETA_UPDATER_STATUS_VOLUME=f'{values.get("COMPOSE_PROJECT_NAME", "assozeta")}_updater_status',
                   ASSOZETA_UPDATER_API_VOLUME=f'{values.get("COMPOSE_PROJECT_NAME", "assozeta")}_updater_api')

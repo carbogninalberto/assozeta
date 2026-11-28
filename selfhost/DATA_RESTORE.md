@@ -153,7 +153,7 @@ in directory components and Windows absolute/traversal paths remain forbidden.
 
 A recovery ZIP can be uploaded through the same workflow to restore the previous
 business data. This is separate from `selfhost/bin/assozeta restore`, which consumes
-a full PostgreSQL/MinIO server archive and replaces the database. A Bakney ZIP must
+a full PostgreSQL and object-storage archive and replaces the database. A Bakney ZIP must
 not be passed to that CLI command.
 
 ## Disposable verification

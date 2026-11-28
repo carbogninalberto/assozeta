@@ -66,6 +66,7 @@ services:
       REDIS_PASSWORD: ${REDIS_PASSWORD}
     logging: *default-logging
 
+  # The CLI applies config/compose.garage.yml for Garage installations.
   minio:
     image: ${MINIO_IMAGE:-ghcr.io/carbogninalberto/minio:RELEASE.2025-04-22T22-12-26Z-assozeta.1@sha256:8d35f39307b12cbc9ba3eedd26587d77ab30c21c3e904aee552df8b17b600389}
     command: server /data --console-address :9001
@@ -107,7 +108,7 @@ services:
   renderer:
     image: ${ASSOZETA_RENDERER_REF:-${ASSOZETA_RENDERER_IMAGE:-ghcr.io/carbogninalberto/assozeta-renderer}:${ASSOZETA_VERSION:-latest}}
     environment:
-      RENDER_ALLOWED_HOSTS: active-api,minio,cdn.jsdelivr.net
+      RENDER_ALLOWED_HOSTS: active-api,${ASSOZETA_STORAGE_BACKEND:-minio},cdn.jsdelivr.net
       RENDER_POOL_SIZE: ${RENDER_POOL_SIZE:-2}
       RENDER_POOL_ACQUIRE_TIMEOUT_MS: ${RENDER_POOL_ACQUIRE_TIMEOUT_MS:-30000}
       RENDER_REQUEST_TIMEOUT_MS: ${RENDER_REQUEST_TIMEOUT_MS:-55000}

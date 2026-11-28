@@ -14,7 +14,7 @@ images, creates its local configuration, and starts them.
 
 Fresh installations run Django. The selected runtime serves the API and runs the
 workers, scheduler and realtime relay. Both runtimes share PostgreSQL, Redis,
-MinIO, the PDF renderer and the Svelte/Caddy web image. Only Caddy publishes
+the selected object store, the PDF renderer and the Svelte/Caddy web image. Only Caddy publishes
 production ports.
 
 For runtime selection, upgrades from a mixed installation and recovery, see
@@ -32,7 +32,7 @@ files concurrently; disk capacity remains an operational resource requirement.
 Each S3 spool is unlinked before payload bytes are written and stays open only
 for its response. Closing or terminating the process releases its storage, with
 no private payload filename left for the next process. These transient files are
-not included in PostgreSQL/MinIO backups and do not need restoration. The
+not included in full-server backups and do not need restoration. The
 `migrate-go` tool does not mount this space. Normal `compose down` can leave an
 empty anonymous volume object; this does not contain retained logo payloads.
 The existing destructive `uninstall --volumes` option removes attached volumes
@@ -51,7 +51,7 @@ From a tagged source checkout or a self-host release bundle:
 
 The command generates `selfhost/.env` with mode `0600`, generates an Ed25519
 JWT key pair and first-run `INSTANCE_SETUP_TOKEN`, pulls the requested images,
-initializes PostgreSQL and MinIO, runs committed Django migrations, seeds
+initializes PostgreSQL and the selected object store, runs committed Django migrations, seeds
 required reference data, and waits for both public web and API readiness checks.
 
 Open the printed URL and complete the first-run wizard with the printed setup
@@ -92,22 +92,54 @@ containers so edited environment values are loaded:
 ./selfhost/bin/assozeta restart
 ```
 
-The bundled database, Redis, and MinIO services are intentionally not exposed
+The bundled database, Redis, and object storage services are intentionally not exposed
 on host ports. Change Compose only if an external managed service is required.
 The lifecycle wrapper runs Docker Compose with the selected env file isolated
 from conflicting exported shell variables such as `COMPOSE_PROJECT_NAME`, port
 values, passwords, or image names.
 
-MinIO is used as private S3-compatible storage. The generated self-host env sets
-`AWS_S3_USE_OBJECT_ACL=False` and leaves `AWS_S3_PUBLIC_BASE_URL` empty because
-MinIO does not support the public object ACL flow used by some hosted providers.
-The application stores subscription signatures by private storage key and reads
-them through the backend. Do not add a Caddy route or host port for MinIO to make
-objects public.
+### Document storage
 
-The self-host lifecycle commands are designed for the bundled private MinIO
-service. In particular, `backup` and `restore` mirror that MinIO bucket and are
-not a DigitalOcean Spaces backup/restore workflow. The application runtime still
+MinIO is the default for new installations and for existing configurations
+without `ASSOZETA_STORAGE_BACKEND`. To choose single-node Garage on a new
+installation, add `--storage garage` to `configure` or `install`. Garage
+requires Docker Compose 2.24.0 or newer. Both stores use private buckets.
+Application endpoints serve documents and signatures. The renderer can retrieve
+signed URLs on the selected store's private Docker network.
+
+On an existing installation, run the switch command from the installation host.
+Allow space for a second copy of the bucket, and pause any external programs
+that write directly to it for the duration of the command.
+
+```sh
+./selfhost/bin/assozeta storage-switch garage
+./selfhost/bin/assozeta status
+```
+
+The command copies the whole live bucket while the application runs, then
+stops the API and background services. During maintenance it copies new or
+changed objects, removes destination-only keys, and reads both buckets to
+compare keys, SHA-256 hashes, HTTP headers and user metadata. Once verified,
+it stops the old store, publishes the new endpoint and credentials together,
+and resumes the application if it was running. The final comparison reads
+every object, so downtime depends on bucket size and disk throughput.
+
+After a copy or verification failure the source configuration remains active.
+Correct the reported problem and retry the same command. If application startup
+fails after the CLI reports that the destination is selected and verified, run
+`./selfhost/bin/assozeta start` to resume on that store. The source volume
+remains available. To switch back, run
+`./selfhost/bin/assozeta storage-switch minio` so writes and deletions made
+on Garage also reach MinIO. Use this command for existing data each time you
+change stores. Editing the backend selector alone bypasses synchronization.
+
+`backup` and `restore ARCHIVE` operate on the currently selected store. An
+archive from either backend can be restored to the other with the same
+`AWS_LOCATION`. For a disposable end-to-end rehearsal using release images,
+run `selfhost/tests/storage-roundtrip.sh VERSION` on a Docker host. It uses
+ports 58152 and 58153 by default and removes its test project afterward.
+
+The application runtime still
 supports public-ACL providers outside this bundled lifecycle: for example,
 `AWS_S3_USE_OBJECT_ACL` defaults to enabled when `AWS_S3_ENDPOINT_URL` has a
 `*.digitaloceanspaces.com` hostname, or you may set it explicitly.
@@ -209,7 +241,7 @@ Caddy and API fixtures and requires Docker and the browser test dependencies.
 
 ## Backups
 
-Create a logical PostgreSQL dump, a bundled-MinIO object-storage mirror,
+Create a logical PostgreSQL dump, objects and their HTTP and user metadata,
 configuration snapshot, and manifest:
 
 ```bash
@@ -333,13 +365,12 @@ like `assozeta restore ARCHIVE`.
 
 ### How backup runs
 
-Backup stops both APIs, worker, and scheduler services while PostgreSQL and MinIO
+Backup stops both APIs, worker, and scheduler services while PostgreSQL and the selected bucket
 are snapshotted, then restarts them only if any were running beforehand. Caddy
 serves the maintenance page during this interval. Expect brief write downtime
 for the duration of the dump and object mirror.
 
-Backup archives are specific to the bundled private MinIO layout. New manifests
-record the source `AWS_LOCATION`; archives created before that manifest field are
+The manifest records the source `AWS_LOCATION`. Archives created before that field are
 read from their archived configuration when available and otherwise treated as
 the legacy self-host default `storage` prefix. Restore stops before the live swap
 if the source and target prefixes differ.
@@ -370,7 +401,7 @@ readiness checks succeed. Redis is flushed before the restored stack starts to
 avoid stale sessions, cache entries, or queued jobs.
 
 For backups created before the private signature-storage change, restore still
-brings back the database and full MinIO tree first; current Django migrations
+brings back the database and full object tree first. Current Django migrations
 then migrate legacy `Subscription.signature` URL/base64 values, preserve
 `signature_url` fallbacks, and conservatively recover existing
 `subscriptions/<subscription UUID>/signature_*.png` objects when no DB pointer
@@ -507,7 +538,7 @@ image disables managed automatic updates.
 
 - Do not commit `.env`, `.env.dev`, or backup archives.
 - Use exact image release versions in production.
-- Keep PostgreSQL, Redis, MinIO, and the renderer private.
+- Keep PostgreSQL, Redis, object storage, and the renderer private.
 - Protect and copy backups off-host.
 - Treat `INSTANCE_SETUP_TOKEN` as a secret until first-run setup is complete.
 - Keep Docker and the host operating system patched.
