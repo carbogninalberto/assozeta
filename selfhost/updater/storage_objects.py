@@ -1,4 +1,4 @@
-"""S3 operations for the self-host CLI. Runs inside the shipped Django image."""
+"""S3 operations for the self-host CLI, run in the shared updater image."""
 from contextlib import closing
 from datetime import datetime
 import errno

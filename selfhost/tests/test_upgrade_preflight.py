@@ -77,7 +77,7 @@ upgrade_prod 1.0.6
                 calls = self.calls.read_text().splitlines()
                 self.assertIn(f'up -d --wait postgres {storage}', calls)
                 self.assertIn(f'init {storage}', calls)
-                self.assertTrue(any(call.endswith('migrate - export') for call in calls))
+                self.assertTrue(any(call.endswith('storage-objects /runner/storage_objects.py export') for call in calls))
                 self.assertIn(f'--profile django ps --status running --services postgres redis {storage} renderer web api', calls)
                 self.assertTrue(any(call.startswith('/runner/engine.py ') for call in calls))
                 updated = read_env(self.env)

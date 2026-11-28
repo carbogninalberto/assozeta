@@ -1619,29 +1619,44 @@ postgres_database_exists() {
 }
 
 storage_objects() (
-    # Historical update runners and recovery scripts copy only bin/assozeta.
-    # Use its matching immutable updater image before the new files are installed
-    # or after recovery has already put the old distribution back.
-    if [ ! -f "$STORAGE_TOOL" ] || [ "${recover_upgrade_active:-false}" = true ]; then
-        image=${ASSOZETA_VERIFIED_UPDATER_REF:-${ASSOZETA_RECOVERY_UPDATER_REF:-}}
-        [ -n "$image" ] || die "storage helper is missing from the installation"
-        STORAGE_TOOL=$(mktemp)
-        trap 'rm -f "$STORAGE_TOOL"' EXIT
-        docker run --rm --network none --entrypoint cat "$image" /runner/storage_objects.py > "$STORAGE_TOOL" || return 1
-    fi
     action=$1
     shift
+    volumes=
     if [ "$action" = export ] || [ "$action" = stage ]; then
-        mount=$1
-        [ "$action" != stage ] || mount_options=ro,
+        mount_options=z
+        [ "$action" != stage ] || mount_options=ro,z
+        storage_archive_mount=$1:/backup:$mount_options
+        export storage_archive_mount
+        volumes='"${storage_archive_mount:?}"'
         shift
-        set -- migrate - "$action" "$@"
-        set -- -v "$mount:/backup:${mount_options:-}z" "$@"
-    else
-        set -- migrate - "$action" "$@"
     fi
-    prod_compose --profile tools run --rm --no-deps -T \
-        --entrypoint python "$@" < "$STORAGE_TOOL"
+
+    # A standalone upgrade/recovery CLI gets its helper from the verified
+    # image. A checkout can use its own script with an older updater image.
+    image=${ASSOZETA_VERIFIED_UPDATER_REF:-${ASSOZETA_RECOVERY_UPDATER_REF:-}}
+    if [ -z "$image" ]; then
+        [ -f "$STORAGE_TOOL" ] || die "storage helper is missing from the installation"
+        directory=$(CDPATH= cd -- "$(dirname -- "$STORAGE_TOOL")" && pwd) || return 1
+        storage_script_mount=$directory/storage_objects.py:/runner/storage_objects.py:ro,z
+        export storage_script_mount
+        volumes=${volumes:+$volumes, }'"${storage_script_mount:?}"'
+        image='${ASSOZETA_UPDATER_REF:-ghcr.io/carbogninalberto/assozeta-updater:${ASSOZETA_VERSION:-latest}}'
+    else
+        # Embed the pinned reference literally so the installation .env cannot override it.
+        case "$image" in *[!][a-zA-Z0-9_./:@+-]*) die "invalid storage helper image reference" ;; esac
+    fi
+    # Supply the one-shot service here so even a historical source distribution
+    # can use it before its Compose file is upgraded. It needs only the S3 network.
+    prod_compose --profile tools -f - run --rm --no-deps -T storage-objects /runner/storage_objects.py "$action" "$@" <<YAML
+services:
+  storage-objects:
+    image: "$image"
+    env_file: ["\${ASSOZETA_ENV_FILE}"]
+    volumes: [$volumes]
+    networks: [internal]
+    entrypoint: [python3]
+    profiles: [tools]
+YAML
 )
 
 garage_cli() {

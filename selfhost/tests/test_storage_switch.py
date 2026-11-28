@@ -206,18 +206,25 @@ validate_prod
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             cli = root / 'assozeta'
+            # The old distribution supplies the network but has no storage tool.
+            (root / '.env').write_text('ASSOZETA_UPDATER_REF=old-image\n'
+                                       'ASSOZETA_VERIFIED_UPDATER_REF=stale-image\n'
+                                       'ASSOZETA_RECOVERY_UPDATER_REF=stale-image\n')
+            (root / 'compose.yml').write_text('services: {}\nnetworks: {internal: {}}\n')
             cli.write_text(CLI + """
 docker() {
-    [ "$*" = "run --rm --network none --entrypoint cat verified-image /runner/storage_objects.py" ] || return 1
-    echo verified-helper
+    [ "$*" = "compose --env-file $PROD_ENV -f $PROD_COMPOSE --profile tools -f - run --rm --no-deps -T storage-objects /runner/storage_objects.py size" ] || return 1
+    command docker compose --env-file "$PROD_ENV" -f "$PROD_COMPOSE" -f - --profile tools config --images storage-objects
 }
-prod_compose() { cat; }
 storage_objects size
 """)
-            result = subprocess.run(['sh', str(cli)], env={**os.environ, 'ASSOZETA_INSTALL_ROOT': directory,
-                                    'ASSOZETA_VERIFIED_UPDATER_REF': 'verified-image'},
-                                    capture_output=True, text=True, check=True)
-            self.assertEqual(result.stdout.strip(), 'verified-helper')
+            for ref in ('ASSOZETA_VERIFIED_UPDATER_REF', 'ASSOZETA_RECOVERY_UPDATER_REF'):
+                with self.subTest(ref=ref):
+                    result = subprocess.run(['sh', str(cli)], env={**os.environ, 'ASSOZETA_INSTALL_ROOT': directory,
+                                            'ASSOZETA_ENV_FILE': str(root / '.env'), ref: 'verified-image:test'},
+                                            capture_output=True, text=True)
+                    self.assertEqual(result.returncode, 0, result.stderr)
+                    self.assertEqual(result.stdout.strip(), 'verified-image:test')
 
     def test_installation_selects_one_store_for_both_runtimes(self):
         for backend in ('minio', 'garage'):

@@ -3368,7 +3368,7 @@
         "django-default",
         "legacy-mixed"
       ],
-      "effect": "Run the tools-profile bucket initializer; the lifecycle CLI also reuses it for object inventory and mirroring.",
+      "effect": "Initialize the MinIO document bucket when MinIO is selected.",
       "owner": {
         "django": {
           "runtime": "shared",
@@ -3382,16 +3382,37 @@
         }
       },
       "refs": [
-        "selfhost/bin/assozeta:1167",
-        "selfhost/bin/assozeta:1452",
-        "selfhost/bin/assozeta:1463",
-        "selfhost/bin/assozeta:1535",
-        "selfhost/bin/assozeta:1766",
-        "selfhost/bin/assozeta:1781",
-        "selfhost/bin/assozeta:1987",
-        "selfhost/bin/assozeta:1994",
-        "selfhost/bin/assozeta:2019",
-        "selfhost/compose.yml:88"
+        "selfhost/bin/assozeta",
+        "selfhost/compose.yml"
+      ]
+    },
+    {
+      "id": "service:storage-objects",
+      "kind": "service",
+      "items": [
+        "cli-run:storage-objects"
+      ],
+      "fixture": [
+        "fresh",
+        "django-default",
+        "legacy-mixed"
+      ],
+      "effect": "Copy and verify document storage during backend switches, backups and restores.",
+      "owner": {
+        "django": {
+          "runtime": "shared",
+          "component": "updater",
+          "status": "present"
+        },
+        "go": {
+          "runtime": "shared",
+          "component": "updater",
+          "status": "present"
+        }
+      },
+      "refs": [
+        "selfhost/bin/assozeta",
+        "selfhost/updater/storage_objects.py"
       ]
     },
     {
